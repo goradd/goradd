@@ -1,0 +1,70 @@
+//typeAccessors.tmpl
+
+for _,col := range t.Columns {
+	if !col.IsReference() || !col.ForeignKey.IsType {
+		continue
+	}
+
+	suf := 	snaker.SnakeToCamel(dd.ForeignKeySuffix)
+	goName := strings.TrimSuffix(col.GoName, suf)
+
+{{
+
+
+func (o *{{privateName}}Base) {{= goName }}() {{= col.ForeignKey.GoType }} {
+	if o._restored && !o.{{= col.VarName }}IsValid {
+		panic ("{{= col.VarName }} was not selected in the last query and so is not valid")
+	}
+	return {{= col.ForeignKey.GoType }}(o.{{= col.VarName }})
+}
+
+}}
+
+	if col.IsNullable {
+{{
+
+func (o *{{privateName}}Base) {{= goName }}IsNull() bool {
+	return o.{{= col.VarName }}IsNull
+}
+
+}}
+	}
+
+	// If the column is nullable, we use an interface to allow a null to be passed in
+	if col.IsNullable {
+{{
+
+func (o *{{privateName}}Base) Set{{= goName }}(i interface{}) {
+	if i == nil {
+		if !o.{{= col.VarName }}IsNull {
+			o.{{= col.VarName }}IsNull = true
+			o.{{= col.VarName }}IsDirty = true
+			o.{{= col.VarName }}IsValid = true
+			o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+		}
+	} else {
+		v := i.({{= col.GoType.String() }})
+		if o.{{= col.VarName }}IsNull  {
+			o.{{= col.VarName }}IsNull = false
+			o.{{= col.VarName }} = v
+			o.{{= col.VarName }}IsDirty = true
+		}
+	}
+}
+
+}}
+	} else {
+{{
+
+func (o *{{privateName}}Base) Set{{= goName }}(v {{= col.ForeignKey.GoType }}) {
+	if o.{{= col.VarName }} != {{col.GoType.String()}}(v) {
+		o.{{= col.VarName }} = {{col.GoType.String()}}(v)
+		o.{{= col.VarName }}IsDirty = true
+		o.{{= col.VarName }}IsValid = true
+	}
+}
+
+}}
+	}
+
+} // for

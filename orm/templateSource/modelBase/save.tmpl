@@ -1,0 +1,76 @@
+//TODO: Make sure dirty related objects are saved first
+// TODO: Make sure id field cannot be set or updated
+
+{{
+
+// Save will update or insert the object, depending on the state of the object.
+// If it has any auto-generated ids, those will be updated.
+func (o *{{privateName}}Base) Save(ctx context.Context)  {
+	if o._restored {
+		o.Update(ctx)
+	} else {
+		o.Insert(ctx)
+	}
+}
+
+func (o *{{privateName}}Base) Update(ctx context.Context) {
+	if !o._restored {
+		panic ("Cannot update a record that was not originally read from the database.")
+	}
+	m := o.getModifiedFields()
+	if len(m) == 0 {
+		return
+	}
+	db := db.GetDatabase("{{t.DbKey}}")
+	db.Update(ctx, "{{t.DbName}}", m, "{{= t.PrimaryKeyColumn.DbName }}", fmt.Sprint(o.{{= t.PrimaryKeyColumn.VarName }}))
+	o.resetDirtyStatus()
+}
+
+func (o *{{privateName}}Base) Insert(ctx context.Context) {
+	m := o.getModifiedFields()
+	if len(m) == 0 {
+		return
+	}
+	db := db.GetDatabase("{{t.DbKey}}")
+{{if t.PrimaryKeyColumn.IsId }}
+	id := db.Insert(ctx, "{{t.DbName}}", m)
+	o.{{= t.PrimaryKeyColumn.VarName }} = id
+{{else}}
+	db.Insert(ctx, "{{t.DbName}}", m)
+{{if}}
+	o.resetDirtyStatus()
+	o._restored = true
+}
+
+func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+}}
+
+for _,col := range t.Columns {
+{{
+	if o.{{= col.VarName }}IsDirty {
+		fields["{{= col.DbName }}"] = o.{{= col.VarName }}
+	}
+
+}}
+}
+
+{{
+	return
+}
+
+}}
+
+{{
+func (o *{{privateName}}Base) resetDirtyStatus() {
+}}
+
+for _,col := range t.Columns {
+{{
+	o.{{= col.VarName }}IsDirty = false
+}}
+}
+
+{{
+}
+}}

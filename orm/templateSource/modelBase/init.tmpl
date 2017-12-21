@@ -1,0 +1,44 @@
+//init.tmpl
+{{
+
+// Create a new {{= t.GoName }} object and initialize to default values.
+func New{{= t.GoName }}() *{{= t.GoName }} {
+	o := {{= t.GoName }}{}
+	o.Initialize()
+	return &o
+}
+
+
+// Initialize or re-initialize a {{= t.GoName }} database object to default values.
+func (o *{{privateName}}Base) Initialize() {
+
+{{for _,col := range t.Columns}}
+	o.{{col.VarName}} = {{= col.DefaultValueAsValue() }}
+{{if col.IsNullable}}
+{{if col.DefaultValue == nil}}
+	o.{{col.VarName}}IsNull = true
+	o.{{col.VarName}}IsValid = true
+	o.{{col.VarName}}IsDirty = true
+{{else}}
+	o.{{col.VarName}}IsNull = false
+	o.{{col.VarName}}IsValid = true
+	o.{{col.VarName}}IsDirty = true
+{{if}}
+{{else}}
+{{if col.DefaultValue == nil}}
+	o.{{col.VarName}}IsValid = false
+	o.{{col.VarName}}IsDirty = false
+{{else}}
+	o.{{col.VarName}}IsValid = true
+	o.{{col.VarName}}IsDirty = true
+{{if}}
+{{if}}
+
+{{for}}
+
+
+	o._restored = false
+}
+
+
+}}

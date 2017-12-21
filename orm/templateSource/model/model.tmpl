@@ -1,0 +1,10 @@
+// The master template for the model classes
+
+{{
+package model
+
+type {{= t.GoName }} struct {
+	{{= util.LcFirst(t.GoName) }}Base
+}
+
+}}

@@ -1,0 +1,55 @@
+//reverseRefAccessors.tmpl
+for _,ref := range t.ReverseReferences {
+	var oName string
+	var mName string
+
+	if ref.IsUnique {
+		oName = dd.AssociatedObjectPrefix + ref.GoName
+	} else {
+		oName = dd.AssociatedObjectPrefix + ref.GoPlural
+		mName = "m" + ref.GoPlural
+	}
+
+
+	if ref.IsUnique {
+{{
+
+// {{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded
+// otherwise, it will return nil.
+func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.GoType}} {
+	if o.{{oName}} == nil {
+		return nil
+	}
+	return o.{{oName}}
+}
+
+}}
+	} else {
+{{
+// {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.
+// Otherwise, it will return nil.
+func (o *{{privateName}}Base) {{= ref.GoName }}(pk string) *{{ref.GoType}} {
+	if o.{{oName}} == nil || len(o.{{oName}}) == 0 {
+		return nil
+	}
+	v,_ := o.{{mName}}[pk]
+	return v
+}
+
+}}
+
+{{
+
+// {{ref.GoPlural}} returns a slice of {{ref.GoType}} objects if loaded.
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.GoType}} {
+	if o.{{oName}} == nil {
+		return nil
+	}
+	return o.{{oName}}
+}
+
+
+}}
+	}
+
+}

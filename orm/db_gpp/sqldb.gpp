@@ -1,0 +1,232 @@
+package db
+
+import (
+	"database/sql"
+	"database/sql/driver"
+	//"cmd/pprof/internal/report"
+	"fmt"
+	"reflect"
+	"strings"
+	gopp "github.com/spekary/gopp"
+	"context"
+)
+
+type EqualityOperation int
+
+const (
+	EqNone EqualityOperation = iota
+	Eq
+	NotEq
+)
+
+class SqlDb extends gopp.Base {
+	dbKey	string	// key of the database as used in the global database map
+	db *sql.DB	// Internal copy of golang database
+	escapeIdentifierBegin string
+	escapeIdentifierEnd string
+	tx *sql.Tx
+	txCount int
+
+	// codegen options
+	typeTableSuffix string	// Primarily for sql tables
+	associationTableSuffix string // Primarily for sql tables
+	idSuffix string // suffix to strip off the ends of names of foreign keys when converting them to internal names
+
+	// These codegen options may be moved higher up in hierarchy some day
+	goStructPrefix string	// Helps differentiate objects when different databases have the same name.
+	associatedObjectPrefix string // Helps differentiate between objects and local values
+
+
+
+	func Construct(dbKey string) {
+		this.dbKey = dbKey
+		this.typeTableSuffix = "_type"
+		this.associationTableSuffix = "_assn"
+		this.idSuffix = "_id"
+	}
+
+	func Begin() {
+		this.txCount++
+
+		if this.txCount == 1 {
+			var err error
+
+			this.tx, err = this.db.Begin()
+			if err != nil {
+				panic (err.Error())
+			}
+		}
+	}
+
+	func Commit() {
+		this.txCount--
+		if this.txCount < 0 {
+			panic ("Called Commit without a matching Begin")
+		}
+		if this.txCount == 0 {
+			err := this.tx.Commit()
+			if err != nil {
+				panic (err.Error())
+			}
+			this.tx = nil
+		}
+	}
+
+	// Rollback is generally called as part of a panic handler
+	// We rollback immediately, but still allow for multiple Rollback calls as it unwinds
+	func Rollback() {
+		if (this.tx != nil) {
+			err := this.tx.Rollback()
+			if err != nil {
+				panic (err.Error())
+			}
+			this.tx = nil
+			this.txCount = 0
+		}
+	}
+
+	// Execute a query without returning any rows
+	func Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error) {
+		if this.tx != nil {
+			r,err = this.tx.ExecContext(ctx, sql, args...)
+		} else {
+			r,err = this.db.ExecContext(ctx, sql, args...)
+		}
+		return
+	}
+
+
+
+	func Prepare(sql string) (r *sql.Stmt, err error) {
+		if this.tx != nil {
+			r,err = this.tx.Prepare(sql)
+		} else {
+			r,err = this.db.Prepare(sql)
+		}
+		return
+	}
+
+	func Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error) {
+		if this.tx != nil {
+			r,err = this.tx.QueryContext(ctx, sql, args...)
+		} else {
+			r,err = this.db.QueryContext(ctx, sql, args...)
+		}
+		return
+	}
+
+	// Convert a go variable to a sql string
+	func SqlValue(data interface{}, eq EqualityOperation) string {
+		var eqOp string
+
+		switch eq {
+		case Eq:
+			eqOp = "= "
+		case NotEq:
+			eqOp = "!= "
+		}
+
+		if value, ok := data.(driver.Valuer); ok {
+			data, _ = value.Value()
+		}
+
+		switch d := data.(type) {
+		case nil:
+			switch eq {
+			case EqNone:
+				return "NULL"
+			case Eq:
+				return "IS NULL"
+			case NotEq:
+				return "IS NOT NULL"
+			}
+		case bool:
+			switch eq {
+			case EqNone:
+				if d {
+					return "1"
+				} else {
+					return "0"
+				}
+			case Eq:
+				if d {
+					return "!= 0"
+				} else {
+					return "= 0"
+				}
+			case NotEq:
+				if d {
+					return "= 0"
+				} else {
+					return "!= 0"
+				}
+			}
+		case int, float64:
+			return eqOp + fmt.Sprint("%v", d)
+
+		case string, []byte:
+			return eqOp + this.EscapeString(data.(string))
+
+		default:
+			var items []string
+			var v = reflect.ValueOf(data)
+			if k := v.Kind(); k == reflect.Array || k == reflect.Slice {
+				for i := 0; i < v.Len(); i++ {
+					items = append(items, this.SqlValue(v.Index(i), eq))
+				}
+			}
+			return "(" + strings.Join(items, ",") + ")"
+		}
+		return "" // panic?
+	}
+
+	// abstract functions, must be implemented by subclass
+	func EscapeIdentifierBegin() string {return ""}
+	func EscapeIdentifierEnd() string {return ""}
+	func OnlyFullGroupBy() bool {return false}
+	func EscapeString(s string) string {return ""}
+	func DbKey() string {
+		return this.dbKey
+	}
+	func SetTypeTableSuffix(s string) {
+		this.typeTableSuffix = s
+	}
+	func SetAssociationTableSuffix(s string) {
+		this.associationTableSuffix = s
+	}
+	func TypeTableSuffix() string {
+		return this.typeTableSuffix
+	}
+	func AssociationTableSuffix() string {
+		return this.associationTableSuffix
+	}
+
+	func SetGoStructPrefix(s string) {
+		this.goStructPrefix = s
+	}
+	func SetAssociatedObjectPrefix(s string) {
+		this.associatedObjectPrefix = s
+	}
+	func GoStructPrefix() string {
+		return this.goStructPrefix
+	}
+	func AssociatedObjectPrefix() string {
+		return this.associatedObjectPrefix
+	}
+
+	func IdSuffix() string {
+		return this.idSuffix
+	}
+
+	func NewBuilder() QueryBuilderI {
+		return NewSqlBuilder(this);
+	}
+
+	func generateSelectSql(b *sqlBuilder) (sql string, args []interface{}) {
+		return	// drivers must implement sql building
+	}
+
+}
+
+
+

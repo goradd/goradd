@@ -1,0 +1,25 @@
+//const.tmpl
+{{
+// The {{= t.GoName }} is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
+// Do not directly access the internal variables, but rather use the accessor functions, since this class maintains internal state
+// related to the variables.
+
+const  (
+}}
+
+for _,col := range t.Columns {
+	v := col.DefaultValueAsConstant()
+	if v == "" {
+		continue // no way to represent this as a constant
+	}
+{{
+	{{= col.DefaultConstantName(t) }} = {{= v }}
+}}
+
+}
+
+{{ )
+
+}}
+
+

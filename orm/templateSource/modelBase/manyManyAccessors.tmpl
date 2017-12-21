@@ -1,0 +1,59 @@
+//manyManyAccessors.tmpl
+for _,ref := range t.ManyManyReferences {
+	oName := dd.AssociatedObjectPrefix + ref.GoPlural
+	if ref.IsTypeAssociation {
+
+{{
+
+// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectName}} objects if loaded. If not, will attempt to load
+// the related objects and return what it finds.
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []{{ref.AssociatedObjectName}} {
+	if o.{{oName}} == nil {
+		return nil
+	}
+	return o.{{oName}}
+}
+
+// {{ref.GoName}} returns a single {{ref.AssociatedObjectName}} object, if one was loaded
+// otherwise, it will return zero.
+func (o *{{privateName}}Base) {{= ref.GoName }}() {{ref.AssociatedObjectName}} {
+	if o.{{oName}} == nil {
+		return 0
+	}
+	return o.{{oName}}[0]
+}
+
+}}
+
+
+	} else {
+
+
+{{
+// {{ref.GoName}} returns a single {{ref.AssociatedObjectName}} object, if one was loaded
+// otherwise, it will return nil.
+func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.AssociatedObjectName}} {
+	if o.{{oName}} == nil {
+		return nil
+	}
+	return o.{{oName}}[0]
+}
+
+}}
+
+{{
+
+// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectName}} objects if loaded. If not, will attempt to load
+// the related objects and return what it finds.
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.AssociatedObjectName}} {
+	if o.{{oName}} == nil {
+		return nil
+	}
+	return o.{{oName}}
+}
+
+
+}}
+	}
+
+}

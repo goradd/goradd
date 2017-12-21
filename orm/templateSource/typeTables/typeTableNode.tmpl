@@ -1,0 +1,71 @@
+var nodeName = util.LcFirst(tt.GoName) + "Node"
+
+{{
+package node
+
+// This file is code generated. Do not edit.
+
+import (
+	"github.com/spekary/goradd/orm/db"
+)
+
+type {{nodeName}} struct {
+	db.NodeI
+}
+
+
+func (n *{{nodeName}}) SelectNodes_() (nodes []*db.ColumnNode) {
+}}
+
+i := 0
+fn := tt.FieldGoName(i)
+ft := tt.FieldGoType(i)
+
+
+for fn != "" {
+{{
+	nodes = append(nodes, n.{{= fn }}())
+}}
+	i++
+	fn = tt.FieldGoName(i)
+	ft = tt.FieldGoType(i)
+
+}
+{{
+	return nodes
+}
+
+func (n *{{nodeName}}) PrimaryKeyNode_() (*db.ColumnNode) {
+	return n.{{= tt.PkField }}()
+}
+
+func (n *{{nodeName}}) EmbeddedNode_() db.NodeI {
+	return n.NodeI
+}
+
+}}
+
+i = 0
+fn = tt.FieldGoName(i)
+ft = tt.FieldGoType(i)
+
+for fn != "" {
+{{
+func (n *{{nodeName}}) {{= fn }}() *db.ColumnNode {
+
+	cn := db.NewColumnNode (
+		"{{= tt.DbKey }}",
+		"{{= tt.DbName }}",
+		"{{= tt.FieldNames[i] }}",
+		"{{= fn }}",
+		"{{= ft }}",
+	)
+	db.SetParentNode(cn, n)
+	return cn
+}
+}}
+	i++
+	fn = tt.FieldGoName(i)
+	ft = tt.FieldGoType(i)
+}
+

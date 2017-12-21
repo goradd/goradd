@@ -1,0 +1,206 @@
+//loader.tmpl
+{{
+// load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
+// between the object chain requested by the user in the query.
+// If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
+// Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
+// Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
+func (o *{{privateName}}Base) load (m map[string]interface{}, linkParent bool, objThis *{{t.GoName}}, objParent interface{}, parentKey string) {
+}}
+
+for _, col := range t.Columns {
+	if col.IsNullable {
+{{
+	if v, ok := m["{{= col.DbName }}"]; ok {
+		if v == nil {
+			o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+			o.{{= col.VarName }}IsNull = true
+			o.{{= col.VarName }}IsValid = true
+			o.{{= col.VarName }}IsDirty = false
+		} else if o.{{= col.VarName }}, ok = v.({{= col.GoType.String() }}); ok {
+			o.{{= col.VarName }}IsNull = false
+			o.{{= col.VarName }}IsValid = true
+			o.{{= col.VarName }}IsDirty = false
+		} else {
+			panic("Wrong type found for {{= col.DbName }}.")
+		}
+	} else {
+		o.{{= col.VarName }}IsValid = false
+		o.{{= col.VarName }}IsNull = true
+		o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+	}
+}}
+
+	} else { // not IsNullable
+
+{{
+	if v, ok := m["{{= col.DbName }}"]; ok && v != nil {
+		if o.{{= col.VarName }}, ok = v.({{= col.GoType.String() }}); ok {
+			o.{{= col.VarName }}IsValid = true
+			o.{{= col.VarName }}IsDirty = false
+		} else {
+			panic("Wrong type found for {{= col.DbName }}.")
+		}
+	} else {
+		o.{{= col.VarName }}IsValid = false
+		o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+	}
+
+}}
+
+
+	} // else
+
+	if col.IsReference() && !col.ForeignKey.IsType {
+		oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+
+{{
+	if linkParent && parentKey == "{{= col.ForeignKey.GoName }}" {
+		o.{{oName}} = objParent.(*{{= col.ForeignKey.GoType }})
+		o.idIsValid = true
+		o.idIsDirty = false
+	} else if v, ok := m["{{= col.ForeignKey.GoName }}"]; ok {
+		if {{oName}}, ok2 := v.(map[string]interface{}); ok2 {
+			o.{{oName}} = New{{= col.ForeignKey.GoType }}()
+			o.{{oName}}.load({{oName}}, linkParent, o.{{oName}}, objThis, "{{col.ForeignKey.RR.GoPlural}}")
+			o.idIsValid = true
+			o.idIsDirty = false
+		} else {
+			panic("Wrong type found for {{oName}} object.")
+		}
+	} else {
+		o.{{oName}} = nil
+	}
+
+}}
+
+	}
+
+
+}
+
+
+// Many-Many references
+for _,ref := range t.ManyManyReferences {
+	oName := dd.AssociatedObjectPrefix + ref.GoPlural
+
+	if ref.IsTypeAssociation {
+
+{{
+	if v, ok := m["{{= ref.GoPlural }}"]; ok {
+		if {{oName}}, ok2 := v.([]uint); ok2 {
+			o.{{oName}} = []{{= ref.AssociatedObjectName }}{}
+			for _,m := range {{oName}} {
+				o.{{oName}} = append(o.{{oName}}, {{= ref.AssociatedObjectName }}(m))
+			}
+		} else {
+			panic("Wrong type found for {{oName}} object.")
+		}
+	} else {
+		o.{{oName}} = nil
+	}
+
+}}
+	} else {
+		mName := "m" + ref.GoPlural
+		pk := dd.TableDescription(ref.MM.AssociatedTableName).PrimaryKeyColumn.VarName
+
+{{
+	if v, ok := m["{{= ref.GoPlural }}"]; ok {
+		if {{oName}}, ok2 := v.([]db.ValueMap); ok2 {
+			o.{{oName}} = []*{{= ref.AssociatedObjectName }}{}
+			o.{{mName}} = map[string]*{{= ref.AssociatedObjectName }}{}
+
+			for _,v2 := range {{oName}} {
+				obj := New{{= ref.AssociatedObjectName }}()
+				obj.load(v2, linkParent, obj, objThis, "{{ref.MM.GoPlural}}")
+				if linkParent && parentKey == "{{= ref.GoPlural }}" && obj.{{pk}} == objParent.(*{{= ref.AssociatedObjectName }}).{{pk}} {
+					obj = objParent.(*{{= ref.AssociatedObjectName }})
+				}
+				o.{{oName}} = append(o.{{oName}}, obj)
+				o.{{mName}}[obj.{{pk}}] = obj
+			}
+		} else {
+			panic("Wrong type found for {{oName}} object.")
+		}
+	} else {
+		o.{{oName}} = nil
+	}
+
+}}
+
+	}
+}
+
+// Reverse references
+for _,ref := range t.ReverseReferences {
+	parentName := dd.TableDescription(ref.AssociatedTableName).GetColumn(ref.AssociatedColumnName).ForeignKey.GoName
+	if ref.IsUnique {
+		oName := dd.AssociatedObjectPrefix + ref.GoName
+
+{{
+	if v, ok := m["{{= ref.GoName }}"]; ok {
+		if {{oName}}, ok2 := v.(db.ValueMap); ok2 {
+			o.{{oName}} = New{{= ref.GoType }}()
+			o.{{oName}}.load({{oName}}, linkParent, o.{{oName}}, objThis, "{{parentName}}")
+		} else {
+			panic("Wrong type found for {{oName}} object.")
+		}
+	} else {
+		o.{{oName}} = nil
+	}
+
+}}
+
+	} else {
+		oName := dd.AssociatedObjectPrefix + ref.GoPlural
+		mName := "m" + ref.GoPlural
+		pk := dd.TableDescription(ref.DbTable).GetColumn(ref.DbColumn).VarName
+
+{{
+	if v, ok := m["{{= ref.GoPlural }}"]; ok {
+		switch {{oName}} := v.(type) {
+		case []db.ValueMap:
+			o.{{oName}} = []*{{= ref.GoType }}{}
+			o.{{mName}} = map[string]*{{= ref.GoType }}{}
+			for _,v2 := range {{oName}} {
+				obj := New{{= ref.GoType }}()
+				obj.load(v2, linkParent, obj, objThis, "{{parentName}}")
+				if linkParent && parentKey == "{{= ref.GoPlural }}" && obj.{{pk}} == objParent.(*{{= ref.GoType }}).{{pk}} {
+					obj = objParent.(*{{= ref.GoType }})
+				}
+				o.{{oName}} = append(o.{{oName}}, obj)
+				o.{{mName}}[obj.{{pk}}] = obj
+			}
+		case db.ValueMap:	// single expansion
+			obj := New{{= ref.GoType }}()
+			obj.load({{oName}}, linkParent, obj, objThis, "{{parentName}}")
+			if linkParent && parentKey == "{{= ref.GoPlural }}" && obj.{{pk}} == objParent.(*{{= ref.GoType }}).{{pk}} {
+				obj = objParent.(*{{= ref.GoType }})
+			}
+			o.{{oName}} = []*{{= ref.GoType }}{obj}
+		default:
+			panic("Wrong type found for {{oName}} object.")
+		}
+	} else {
+		o.{{oName}} = nil
+	}
+
+}}
+	}
+
+}
+
+{{
+
+	if v, ok := m["{{db.AliasResults}}"]; ok {
+		o._aliases = map[string]interface{}(v.(db.ValueMap))
+	}
+}}
+
+
+{{
+	o._restored = true
+}
+
+}}

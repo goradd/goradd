@@ -1,0 +1,74 @@
+// The master template for the nodes for a particular column.
+
+// ToDo: Move the node creation routines to the database driver, so that nodes can generate their own database code.
+
+var privateName string
+
+privateName = strings.ToLower(t.GoName[:1]) + t.GoName[1:]
+{{
+package node
+
+// This file is code generated. Do not edit.
+
+import (
+	"github.com/spekary/goradd/orm/db"
+)
+}}
+
+{{
+type {{privateName}}Node struct {
+	db.NodeI
+}
+
+func {{= t.GoName }}() *{{privateName}}Node {
+	n := {{privateName}}Node {
+		db.NewTableNode("{{= t.DbKey }}", "{{= t.DbName }}",  "{{= t.GoName }}"),
+	}
+	db.SetParentNode(&n, nil)
+	return &n
+}
+
+}}
+
+{{
+func (n *{{privateName}}Node) SelectNodes_() (nodes []*db.ColumnNode) {
+}}
+
+for _,col := range t.Columns {
+
+{{
+	nodes = append(nodes, n.{{col.GoName}}())
+}}
+
+}
+
+{{
+	return nodes
+}
+}}
+
+{{
+func (n *{{privateName}}Node) PrimaryKeyNode_() (*db.ColumnNode) {
+}}
+
+for _,col := range t.Columns {
+	if col.IsPk {
+{{
+	return n.{{col.GoName}}()
+}}
+		break
+	}
+}
+
+{{
+}
+}}
+
+{{
+func (n *{{privateName}}Node) EmbeddedNode_() db.NodeI {
+	return n.NodeI
+}
+}}
+
+
+{{: column.tmpl }}

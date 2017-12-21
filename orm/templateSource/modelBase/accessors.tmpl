@@ -1,0 +1,206 @@
+//accessors.tmpl
+
+// Getters
+for _,col := range t.Columns {
+	if col.IsReference() && col.ForeignKey.IsType {
+		continue
+	}
+
+	if col.IsId {
+{{
+
+func (o *{{privateName}}Base) {{= col.GoName }}() string {
+	return fmt.Sprint(o.{{= col.VarName }})
+}
+
+func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
+	return o._restored
+}
+
+}}
+	} else {
+
+{{
+
+func (o *{{privateName}}Base) {{= col.GoName }}() {{= col.GoType.String() }} {
+	if o._restored && !o.{{= col.VarName }}IsValid {
+		panic ("{{= col.VarName }} was not selected in the last query and so is not valid")
+	}
+	return o.{{= col.VarName }}
+}
+
+func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
+	return o.{{= col.VarName }}IsValid
+}
+
+}}
+	}
+
+	if col.IsNullable {
+{{
+
+func (o *{{privateName}}Base) {{= col.GoName }}IsNull() bool {
+	return o.{{= col.VarName }}IsNull
+}
+
+}}
+	}
+
+	if col.IsReference() {
+		oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+
+{{
+
+// Return current value of {{= col.ForeignKey.GoName }}
+func (o *{{privateName}}Base) {{= col.ForeignKey.GoName }}() *{{= col.ForeignKey.GoType }} {
+	return o.{{oName}}
+}
+
+// Load the related {{= col.ForeignKey.GoName }} and return it
+func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Context) *{{= col.ForeignKey.GoType }} {
+	if !o.{{= col.VarName }}IsValid  {
+		return nil
+	}
+
+	if o.{{oName}} == nil {
+		// Load and cache
+		o.{{oName}} = Load{{col.ForeignKey.GoType}}(ctx, o.{{col.GoName}}())
+	}
+	return o.{{oName}}
+}
+
+}}
+
+	}
+
+// Setters
+	if col.IsId {
+		continue	// ID columns are not setable, since the database will automatically set the valid
+	}
+
+	// If the column is nullable, we use an interface to allow a null to be passed in
+	if col.IsNullable {
+		var oName string
+		if col.IsReference() {
+			oName = dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+		}
+{{
+
+func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
+	if i == nil {
+		if !o.{{= col.VarName }}IsNull {
+			o.{{= col.VarName }}IsNull = true
+			o.{{= col.VarName }}IsDirty = true
+			o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+{{g if col.IsReference() && !col.ForeignKey.IsType { }}
+			o.{{oName}} = nil
+{{g } }}
+		}
+	} else {
+		v := i.({{= col.GoType.String() }})
+		if o.{{= col.VarName }}IsNull {{g if col.GoType != db.COL_TYPE_BYTES { }} || o.{{= col.VarName }} != v {{g } }} {
+			o.{{= col.VarName }}IsNull = false
+
+			// TODO: For bytes, should this be a copy?
+			o.{{= col.VarName }} = v
+
+			o.{{= col.VarName }}IsDirty = true
+{{g if col.IsReference() && !col.ForeignKey.IsType { }}
+			o.{{oName}} = nil
+{{g } }}
+		}
+	}
+}
+
+}}
+
+		if col.IsReference() && !col.ForeignKey.IsType {
+			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+
+{{
+
+func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.ForeignKey.GoType }}) {
+	if v == nil {
+		if !o.{{= col.VarName }}IsNull {
+			o.{{= col.VarName }}IsNull = true
+			o.{{= col.VarName }}IsDirty = true
+			o.{{= col.VarName }}IsValid = true
+			o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+			o.{{oName}} = nil
+		}
+	} else {
+		o.{{oName}}  = v
+		if o.{{= col.VarName }}IsNull || o.{{= col.VarName }} != v.PrimaryKey() {
+			o.{{= col.VarName }}IsNull = false
+			o.{{= col.VarName }} = v.PrimaryKey()
+			o.{{= col.VarName }}IsDirty = true
+			o.{{= col.VarName }}IsValid = true
+		}
+	}
+}
+
+}}
+
+		}
+
+	} else {	// Not nullable
+
+{{
+func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.GoType.String() }}) {
+{{g if col.GoType == db.COL_TYPE_BYTES { }}
+	o.{{= col.VarName }} = v		// TODO: Copy bytes??
+	o.{{= col.VarName }}IsDirty = true
+{{g } else { }}
+	if o.{{= col.VarName }} != v {
+		o.{{= col.VarName }} = v
+		o.{{= col.VarName }}IsDirty = true
+{{g 	if col.IsReference() && !col.ForeignKey.IsType {
+			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+}}
+		o.{{oName}} = nil
+{{g 	} }}
+	}
+{{g } }}
+
+
+}
+
+}}
+
+		if col.IsReference() && !col.ForeignKey.IsType {
+			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+
+{{
+
+func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.ForeignKey.GoType }})  {
+	if v == nil {
+		panic("Cannot set {{= col.ForeignKey.GoName }} to a null value.")
+	} else {
+		o.{{oName}} = v
+		if o.{{= col.VarName }} != v.PrimaryKey() {
+			o.{{= col.VarName }} = v.PrimaryKey()
+			o.{{= col.VarName }}IsDirty = true
+			o.{{= col.VarName }}IsValid = true
+		}
+	}
+}
+
+}}
+
+		}
+
+	} // else
+
+}
+
+{{
+
+func (o *{{privateName}}Base) GetAlias(key string) db.Alias {
+	if a,ok := o._aliases[key]; ok {
+		return db.NewAlias(a)
+	} else {
+		panic ("Alias " + key + " not found.")
+		return db.NewAlias([]byte{})
+	}
+}
+}}

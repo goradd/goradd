@@ -1,0 +1,462 @@
+package db
+
+import (
+	sqldb "database/sql"
+	"strings"
+	"fmt"
+	"github.com/go-sql-driver/mysql"
+	//"goradd/orm/query"
+	"github.com/knq/snaker"
+	"github.com/spekary/goradd/util"
+	"strconv"
+	"context"
+)
+
+// goradd additions to the mysql database driver
+// call NewMysql5, but afterwards, work through the DB parent interface
+class Mysql5 extends SqlDb {
+	description *DatabaseDescription
+	config  *mysql.Config
+
+	/*
+		func Construct(
+			// dbKey is the key as used in the global database map
+			dbKey string,
+			// params are the sql params used to open the database. If using the config options, leave this empty
+			params string,
+			// config is an optional mysql config. If not specified, it will be extracted.
+			config *mysql.Config,
+		) {*/
+
+	func Construct(dbKey string, params string, config *mysql.Config) {
+		var err error
+
+		parent::Construct(dbKey)
+
+		if params == "" && config == nil {
+			panic ("Must specify how to connect to the database.")
+		}
+		if params == "" {
+			params = config.FormatDSN()
+			this.config = config
+		} else {
+			this.config, err = mysql.ParseDSN(params)
+			if err != nil {
+				panic ("Could not parse the connection string.")
+			}
+		}
+		this.db, err = sqldb.Open("mysql", params)
+		if err != nil {
+			panic ("Could not open database: " + err.Error())
+		}
+		err = this.db.Ping()
+		if err != nil {
+			panic ("Could not ping database: " + err.Error())
+		}
+		m_.loadDescription()
+	}
+
+	override func EscapeIdentifierBegin() string {
+		return "`"
+	}
+
+	override func EscapeIdentifierEnd() string {
+		return "`"
+	}
+
+	override func OnlyFullGroupBy() bool {
+		return true
+	}
+
+	override func EscapeString(s string) string {
+		return fmt.Sprintf("'%#v'", s)
+	}
+
+	func Describe() *DatabaseDescription {
+		return this.description
+	}
+
+	// generateSelectSql generates a mysql select statement
+	override func generateSelectSql(b *sqlBuilder) (sql string, args []interface{}) {
+		var s string
+		var a []interface{}
+
+		if (b.distinct) {
+			sql = "SELECT DISTINCT\n"
+		} else {
+			sql = "SELECT\n"
+		}
+
+		s,a = this.generateColumnListWithAliases(b)
+		sql += s
+		args = append(args, a...)
+
+		s,a = this.generateFromSql(b)
+		sql += s
+		args = append(args, a...)
+
+		s,a = this.generateWhereSql(b)
+		sql += s
+		args = append(args, a...)
+
+		s,a = this.generateGroupBySql(b)
+		sql += s
+		args = append(args, a...)
+
+		s,a = this.generateOrderBySql(b)
+		sql += s
+		args = append(args, a...)
+
+		sql += this.generateLimitSql(b)
+
+		return
+	}
+
+	func generateColumnListWithAliases(b *sqlBuilder) (sql string, args []interface{}) {
+		b.columnAliases.Range(func(key string, v interface{}) bool {
+			node := v.(*ColumnNode)
+			sql += this.generateColumnNodeSql(node, false) + " AS `" + node.getAlias() + "`,\n"
+			return true
+		})
+
+		b.aliasNodes.Range(func(key string, v interface{}) bool {
+			node := v.(NodeI)
+			s,a := this.generateNodeSql(node, false)
+			sql += s + " AS `" + node.getAlias() + "`,\n"
+			args = append(args, a...)
+			return true
+		})
+
+		sql = strings.TrimSuffix(sql, ",\n")
+		sql += "\n"
+		return
+	}
+
+	// Mysql uses joins
+	func generateFromSql(b *sqlBuilder) (sql string, args []interface{}) {
+		var s string
+		var a []interface{}
+
+		sql = "FROM\n"
+
+		n := b.rootNode
+		sql += "`" + n.tableName() + "` AS `" + n.getAlias() + "`\n"
+
+		var childNodes []NodeI
+		var cn NodeI
+		if childNodes = n.getChildNodes(); childNodes != nil {
+			for _, cn = range childNodes {
+				s, a = this.generateJoinSql(b, cn)
+				sql += s
+				args = append(args, a...)
+			}
+		}
+		return
+	}
+
+	func generateJoinSql (b *sqlBuilder, n NodeI) (sql string, args []interface{}) {
+		var tn TableNodeI
+		var ok bool
+
+		if tn,ok = n.(TableNodeI); !ok {
+			return
+		}
+
+		switch node := tn.EmbeddedNode_().(type) {
+		case *ReferenceNode:
+			sql = "LEFT JOIN "
+			sql += "`" + node.refTable + "` AS `" + node.getAlias() + "` ON `" + node.getParentNode().getAlias() + "`.`" + node.dbColumn + "` = `" + node.getAlias() + "`.`" + node.refColumn + "`"
+			if conditions := node.getConditions(); conditions != nil {
+				s, a := this.generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
+				sql += " AND " + s
+				args = append(args, a...)
+			}
+		case *ReverseReferenceNode:
+			if b.limitInfo != nil {
+				panic("We do not currently support limited queries with an array join.")
+			}
+
+			sql = "LEFT JOIN "
+			sql += "`" + node.refTable + "` AS `" + node.getAlias() + "` ON `" + node.getParentNode().getAlias() + "`.`" + node.dbColumn + "` = `" + node.getAlias() + "`.`" + node.refColumn + "`"
+			if conditions := node.getConditions(); conditions != nil {
+				s , a := this.generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
+				sql += " AND " + s
+				args = append(args, a...)
+			}
+		case *ManyManyNode:
+			if b.limitInfo != nil {
+				panic("We do not currently support limited queries with an array join.")
+			}
+
+			sql = "LEFT JOIN "
+
+			var pk string
+			if node.isTypeTable {
+				pk = snaker.CamelToSnake(this.Describe().TypeTableDescription(node.refTable).PkField)
+			} else {
+				pk = this.Describe().TableDescription(node.refTable).PrimaryKeyColumn.DbName
+			}
+
+			// join the association table. Put an "a" after the alias to differentiate it from the end table
+			sql += "`" + node.dbTable + "` AS `" + node.getAlias() + "a` ON `" + node.getParentNode().getAlias() + "`.`" + node.getParentNode().(TableNodeI).PrimaryKeyNode_().name() +
+					"` = `" + node.getAlias() + "a`.`" + node.dbColumn + "`\n"
+			// join the other end
+			sql += "LEFT JOIN `" + node.refTable + "` AS `" + node.getAlias() + "` ON `" + node.getAlias() + "a`.`" + node.refColumn +
+					"` = `" + node.getAlias() + "`.`" + pk + "`"
+
+			if conditions := node.getConditions(); conditions != nil {
+				s , a := this.generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
+				sql += " AND " + s
+				args = append(args, a...)
+			}
+		default:
+			return // do not generate anything
+		}
+		sql += "\n"
+		if childNodes := n.getChildNodes(); childNodes != nil {
+			for _, cn := range childNodes {
+				s , a := this.generateJoinSql(b, cn)
+				sql += s
+				args = append(args, a...)
+
+			}
+		}
+		return
+	}
+
+	// Generate the sql for a particular leaf type node. If the node includes value nodes, they will be added to the argument list
+	// useAlias indicates that we want to use the alias for the node instead of the name of the column
+	func generateNodeSql(n NodeI, useAlias bool) (sql string, args []interface{}) {
+		switch node := n.(type) {
+			case *ValueNode:
+				sql = "?"
+				args = append(args, node.value)
+			case *OperationNode:
+				sql,args = this.generateOperationSql(node, useAlias)
+			case *ColumnNode:
+				sql = this.generateColumnNodeSql(node, useAlias)
+			default:
+				if tn,ok := n.(TableNodeI); ok {
+				// If we are using a table node as a leaf node, like when counting related objects, we can just use the primary key as a stand-in
+					sql = this.generateColumnNodeSql(tn.PrimaryKeyNode_(), false)
+				} else {
+					panic("Can't generate sql from this node type.")
+				}
+
+		}
+		return
+	}
+
+	func generateOperationSql(n *OperationNode, useAlias bool) (sql string, args []interface{}) {
+		if useAlias && n.getAlias() != "" {
+			sql = n.getAlias()
+			return
+		}
+		switch n.op {
+			case OpFunc:
+				if len(n.operands) > 0 {
+					for _,o := range n.operands {
+						s,a := this.generateNodeSql(o, useAlias)
+						sql += s + ","
+						args = append(args, a...)
+					}
+					sql = sql[:len(sql)- 1]
+				} else {
+					if n.functionName == "COUNT" {
+						sql = "*"
+					}
+				}
+
+				if n.distinct {
+					sql = "DISTINCT "+ sql
+				}
+				sql = n.functionName + "(" + sql + ") "
+
+			case OpNull: fallthrough
+			case OpNotNull:
+				s,a := this.generateNodeSql(n.operands[0], useAlias)
+				sql = s + " IS " + n.op.String()
+				args = append(args, a...)
+				sql = "(" + sql + ") "
+
+			case OpNot:
+				s,a := this.generateNodeSql(n.operands[0], useAlias)
+				sql = n.op.String() + " " + s
+				args = append(args, a...)
+				sql = "(" + sql + ") "
+
+			case OpIn:
+				s,a := this.generateNodeSql(n.operands[0], useAlias)
+				sql = s + " IN ("
+				args = append(args, a...)
+
+				for _,o := range n.operands[1].(*ValueNode).value.([]NodeI) {
+					s,a = this.generateNodeSql(o, useAlias)
+					sql += s + ","
+					args = append(args, a...)
+				}
+				sql = strings.TrimSuffix(sql, ",") + ") "
+
+
+			default:
+				for _,o := range n.operands {
+					s,a := this.generateNodeSql(o, useAlias)
+					sql += s + " " + n.op.String() + " "
+					args = append(args, a...)
+				}
+				sql = strings.TrimSuffix(sql, " " + n.op.String() + " ")
+				sql = "(" + sql + ") "
+
+		}
+		return
+	}
+
+	func generateColumnNodeSql(n *ColumnNode, useAlias bool) (sql string) {
+		if useAlias {
+			sql = "`" + n.getAlias() + "`"
+		} else {
+			sql = "`" + n.getParentNode().getAlias() + "`.`" + n.name() + "`"
+		}
+		return
+	}
+
+	// Generate sql for a list of nodes, combining them so there is a comma in between.
+	func generateNodeListSql(nodes []NodeI, useAlias bool) (sql string, args []interface{}) {
+		for _,node := range nodes {
+			s,a := this.generateNodeSql(node, useAlias)
+			sql += s + ","
+			args = append(args, a...)
+		}
+		sql = strings.TrimSuffix(sql, ",")
+		return
+	}
+
+	func generateOrderBySql(b *sqlBuilder) (sql string, args []interface{}) {
+		if b.orderBys != nil && len(b.orderBys) > 0 {
+			sql = "ORDER BY "
+			// Mysql allows us to use aliases in the Order By
+			for _,n := range b.orderBys {
+				s,a := this.generateNodeSql(n, true)
+				if sorter,ok := n.(NodeSorter); ok {
+					if sorter.sortDesc() {
+						s += " DESC"
+					}
+				}
+				sql += s + ","
+				args = append(args, a...)
+			}
+			sql = strings.TrimSuffix(sql, ",")
+			sql += "\n"
+		}
+		return
+	}
+
+	func generateGroupBySql(b *sqlBuilder) (sql string, args []interface{}) {
+		if b.groupBys != nil && len(b.groupBys) > 0 {
+			sql = "GROUP BY "
+			// Mysql allows us to use aliases in the Order By
+			for _,n := range b.groupBys {
+				s,a := this.generateNodeSql(n, true)
+				sql += s + ","
+				args = append(args, a...)
+			}
+			sql = strings.TrimSuffix(sql, ",")
+			sql += "\n"
+		}
+		return
+	}
+
+
+	func generateWhereSql(b *sqlBuilder) (sql string, args []interface{}) {
+		if b.condition != nil {
+			sql = "WHERE "
+			var s string
+			s,args = this.generateNodeSql(b.condition, false)
+			sql += s + "\n"
+		}
+		return
+	}
+
+	func generateLimitSql(b *sqlBuilder) (sql string) {
+		if b.limitInfo == nil {
+			return ""
+		}
+		if b.limitInfo.offset > 0 {
+			sql = strconv.FormatInt(b.limitInfo.offset, 10) + ","
+		}
+
+		if b.limitInfo.maxRowCount > -1 {
+			sql +=  strconv.FormatInt(b.limitInfo.maxRowCount, 10)
+		}
+
+		if sql != "" {
+			sql = "LIMIT " + sql + "\n"
+		}
+
+		return
+	}
+
+	func Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue string) {
+		var sql = "UPDATE " + table + "\n"
+		var args = []interface{}{}
+		s,a := this.makeSetSql(fields)
+		sql += s
+		args = append(args, a...)
+
+		sql += "WHERE " + pkName + " = ?"
+		args = append(args, pkValue)
+		_,e := this.Exec(ctx, sql, args...)
+		if e != nil {
+			panic(e.Error())
+		}
+	}
+
+	func Insert(ctx context.Context, table string, fields map[string]interface{}) (string) {
+		var sql = "INSERT " + table + "\n"
+		var args = []interface{}{}
+		s,a := this.makeSetSql(fields)
+		sql += s
+		args = append(args, a...)
+
+		if r,err := this.Exec(ctx, sql, args...); err != nil {
+			panic(err.Error())
+		} else {
+			if id,err := r.LastInsertId(); err != nil {
+				panic(err.Error())
+				return ""
+			} else {
+				return fmt.Sprint(id)
+			}
+		}
+
+	}
+
+	func Delete(ctx context.Context, table string, pkName string, pkValue interface{}) {
+		var sql = "DELETE FROM " + table + "\n"
+		var args = []interface{}{}
+		sql += "WHERE " + pkName + " = ?"
+		args = append(args, pkValue)
+		_,e := this.Exec(ctx, sql, args...)
+		if e != nil {
+			panic(e.Error())
+		}
+	}
+
+	func makeSetSql(fields map[string]interface{}) (sql string, args []interface{}) {
+		if len(fields) == 0 {
+			panic("No fields to set")
+		}
+		sql = "SET "
+		for k,v := range fields {
+			sql += fmt.Sprintf("%s=?, ", k)
+			args = append(args, v)
+		}
+
+		sql = strings.TrimSuffix(sql, ", ")
+		sql += "\n"
+		return
+	}
+
+
+}
+

@@ -1,0 +1,32 @@
+package template
+
+import (
+	"github.com/spekary/goradd/codegen/generator"
+	"grlocal/config"
+	"bytes"
+	"github.com/spekary/goradd/orm/db"
+	"fmt"
+)
+
+func init() {
+	t := NodeTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.LocalDir + "/model/node",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type NodeTemplate struct {
+	generator.Template
+}
+
+func (n *NodeTemplate) FileName(t *db.TableDescription) string {
+	return n.TargetDir + "/" + t.GoName + ".go"
+}
+
+func (n *NodeTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
+	{{: "node/node.tmpl" }}
+}
+
