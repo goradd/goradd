@@ -53,7 +53,10 @@ const (
 `)
 
 	for _, value := range tt.Values {
-		key := value[keyField].(uint)
+		key, ok := value[keyField].(uint)
+		if !ok {
+			key = uint(value[keyField].(int))
+		}
 		con := tt.Constants[key]
 
 		buf.WriteString(`	`)

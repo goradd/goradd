@@ -246,8 +246,12 @@ func (dd *DatabaseDescription) analyzeTypeTables()  {
 		names := tt.FieldNames
 		var key uint
 		var value string
+		var ok bool
 		for _,m := range tt.Values {
-			key = m[names[0]].(uint)
+			key,ok = m[names[0]].(uint)
+			if !ok {
+				key = uint(m[names[0]].(int))
+			}
 			value = m[names[1]].(string)
 			var con string
 			if strings.ToUpper(value) == value {
