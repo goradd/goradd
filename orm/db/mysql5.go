@@ -135,6 +135,31 @@ func (m_ *Mysql5) generateSelectSql(b *sqlBuilder) (sql string, args []interface
 	return
 }
 
+func (m_ *Mysql5) generateDeleteSql(b *sqlBuilder) (sql string, args []interface{}) {
+	var s string
+	var a []interface{}
+
+	n := b.rootNode
+
+	sql = "DELETE " + n.getAlias() + " "
+
+	s, a = m_.I().(Mysql5I).generateFromSql(b)
+	sql += s
+	args = append(args, a...)
+
+	s, a = m_.I().(Mysql5I).generateWhereSql(b)
+	sql += s
+	args = append(args, a...)
+
+	s, a = m_.I().(Mysql5I).generateOrderBySql(b)
+	sql += s
+	args = append(args, a...)
+
+	sql += m_.I().(Mysql5I).generateLimitSql(b)
+
+	return
+}
+
 func (m_ *Mysql5) generateColumnListWithAliases(b *sqlBuilder) (sql string, args []interface{}) {
 	b.columnAliases.Range(func(key string, v interface{}) bool {
 		node := v.(*ColumnNode)

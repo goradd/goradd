@@ -47,6 +47,7 @@ type SqlDbI interface {
 	IdSuffix() string
 	NewBuilder() QueryBuilderI
 	generateSelectSql(b *sqlBuilder) (sql string, args []interface{})
+	generateDeleteSql(b *sqlBuilder) (sql string, args []interface{})
 }
 
 type SqlDb struct {
@@ -272,6 +273,10 @@ func (s_ *SqlDb) NewBuilder() QueryBuilderI {
 }
 
 func (s_ *SqlDb) generateSelectSql(b *sqlBuilder) (sql string, args []interface{}) {
+	return
+}
+
+func (s_ *SqlDb) generateDeleteSql(b *sqlBuilder) (sql string, args []interface{}) {
 	return
 }
 

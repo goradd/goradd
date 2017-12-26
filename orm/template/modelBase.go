@@ -1298,6 +1298,12 @@ func (b *`)
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
+func (b *`)
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+	buf.WriteString(`Builder)  Delete(ctx context.Context) {
+	 b.base.Delete(ctx)
+}
+
 
 `)
 

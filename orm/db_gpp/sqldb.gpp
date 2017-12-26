@@ -226,6 +226,9 @@ class SqlDb extends gopp.Base {
 		return	// drivers must implement sql building
 	}
 
+	func generateDeleteSql(b *sqlBuilder) (sql string, args []interface{}) {
+		return	// drivers must implement sql building
+	}
 }
 
 

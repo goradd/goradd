@@ -124,6 +124,10 @@ func (b *{{t.LcGoName}}Builder)  Count(ctx context.Context, distinct bool, nodes
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
+func (b *{{t.LcGoName}}Builder)  Delete(ctx context.Context) {
+	 b.base.Delete(ctx)
+}
+
 
 }}
 

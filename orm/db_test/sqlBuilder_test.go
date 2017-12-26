@@ -36,21 +36,31 @@ func init() {
 
 
 
-
-func TestSelectById4(t *testing.T) {
+func TestDeleteQuery(t *testing.T) {
 	ctx := context.Background()
 
-	projects := model.QueryProjects().
-		OrderBy(node.Project().Name().Descending()).
-		Load(ctx)
+	person := model.NewPerson()
+	person.SetFirstName("Test1")
+	person.SetLastName("Last1")
+	person.Save(ctx)
 
-	id := projects[3].ID()
+	model.QueryPeople().
+		Where(
+		And(
+			Equal(
+				node.Person().FirstName(), "Test1"),
+			Equal(
+				node.Person().LastName(), "Last1"))).
+		Delete(ctx)
 
-	// Reverse references
 	people := model.QueryPeople().
-		Join(node.Person().ProjectsAsManager()).
-		Where(Equal(node.Person().LastName(), "Wolfe")).
+		Where(
+		And(
+			Equal(
+				node.Person().FirstName(), "Test1"),
+			Equal(
+				node.Person().LastName(), "Last1"))).
 		Load(ctx)
 
-	assert.Equal(t, people[0].ProjectAsManager(id).Name(), "ACME Payment System")
+	assert.Len(t, people, 0, "Deleted the person")
 }

@@ -213,7 +213,25 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 }
 
 func (b *sqlBuilder) Delete(ctx context.Context) {
+	b.makeColumnAliases() // not sure we need this
 
+	log.Println("Tree:")
+	b.logNode(b.rootNode, 0)
+
+	// So debugging will work, we declare variables
+	var sql string
+	var args []interface{}
+
+	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
+	sql, args = b.db.generateDeleteSql(b)
+
+	log.Print(sql)
+
+	_, err := b.db.Exec(ctx, sql, args...)
+
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 // Count creates a query that selects one thing, a count. If distinct is specified, only distinct items will be selected.
@@ -418,9 +436,8 @@ func (b *sqlBuilder) assignAliases (n NodeI) {
 func (b *sqlBuilder) makeColumnAliases() {
 
 	if len(b.selects) > 0 {
-		//if !b.distinct { This didn't work real well. Too hard to unpack. Probably need to manually remove duplicates
+		//if !b.distinct { This didn't work real well. Too hard to unpack without the ids present. Probably need to manually remove duplicates
 			// Have some selects, so go through and make sure the ids are selected
-			// Unless we are distinct, in which case the ids will interfere with the query
 			b.tableAliases.Range(func(key string, v interface{}) bool {
 				node := v.(NodeI)
 				n := node.(TableNodeI).PrimaryKeyNode_()

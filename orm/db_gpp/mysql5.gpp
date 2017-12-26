@@ -112,6 +112,32 @@ class Mysql5 extends SqlDb {
 		return
 	}
 
+	override func generateDeleteSql(b *sqlBuilder) (sql string, args []interface{}) {
+		var s string
+		var a []interface{}
+
+		n := b.rootNode
+
+		sql = "DELETE " + n.getAlias() + " "
+
+		s,a = this.generateFromSql(b)
+		sql += s
+		args = append(args, a...)
+
+		s,a = this.generateWhereSql(b)
+		sql += s
+		args = append(args, a...)
+
+		s,a = this.generateOrderBySql(b)
+		sql += s
+		args = append(args, a...)
+
+		sql += this.generateLimitSql(b)
+
+		return
+	}
+
+
 	func generateColumnListWithAliases(b *sqlBuilder) (sql string, args []interface{}) {
 		b.columnAliases.Range(func(key string, v interface{}) bool {
 			node := v.(*ColumnNode)
