@@ -66,10 +66,10 @@ func (n *ColumnNode) Equals(n2 NodeI) bool {
 	if cn,ok := n2.(*ColumnNode); ok {
 		if cn.dbTable == n.dbTable && cn.dbColumn == n.dbColumn {
 			// Special code to allow new nodes to be evaluated as equal, but manual aliased nodes are not equal.
-			if n.getAlias() == "" || n2.getAlias() == ""  {
+			if n.GetAlias() == "" || n2.GetAlias() == ""  {
 				return true
 			}
-			if n.getAlias() == n2.getAlias() {
+			if n.GetAlias() == n2.GetAlias() {
 				return true
 			}
 		}

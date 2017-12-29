@@ -24,4 +24,3 @@ func Sum(n NodeI) *OperationNode {
 func Count(distinct bool, nodes... NodeI) *OperationNode {
 	return NewCountNode(distinct, nodes...)
 }
-

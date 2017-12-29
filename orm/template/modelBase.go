@@ -1291,6 +1291,15 @@ func (b *`)
 	return b
 }
 
+func (b *`)
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+	buf.WriteString(`Builder)  Having(node db.NodeI)  *`)
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+	buf.WriteString(`Builder {
+	 b.base.Having(node)
+	 return b
+}
+
 // Count terminates a query and returns just the number of items selected.
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
@@ -1303,6 +1312,7 @@ func (b *`)
 	buf.WriteString(`Builder)  Delete(ctx context.Context) {
 	 b.base.Delete(ctx)
 }
+
 
 
 `)

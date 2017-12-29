@@ -7,8 +7,10 @@ import (
 	"context"
 	. 	"github.com/spekary/goradd/orm/op"
 	"grlocal/model/node"
-	//"goradd/orm/db"
+	//"github.com/spekary/goradd/orm/db"
 	//"goradd/datetime"
+	//"github.com/spekary/goradd/datetime"
+	//"github.com/spekary/goradd/datetime"
 )
 
 
@@ -35,32 +37,16 @@ func init() {
 */
 
 
-
-func TestDeleteQuery(t *testing.T) {
+func TestSubquery(t *testing.T) {
 	ctx := context.Background()
-
-	person := model.NewPerson()
-	person.SetFirstName("Test1")
-	person.SetLastName("Last1")
-	person.Save(ctx)
-
-	model.QueryPeople().
-		Where(
-		And(
-			Equal(
-				node.Person().FirstName(), "Test1"),
-			Equal(
-				node.Person().LastName(), "Last1"))).
-		Delete(ctx)
-
 	people := model.QueryPeople().
-		Where(
-		And(
-			Equal(
-				node.Person().FirstName(), "Test1"),
-			Equal(
-				node.Person().LastName(), "Last1"))).
+		Alias("manager_count",
+			Count(false,
+				Subquery(model.QueryProjects().
+					Where(Equal(node.Project().ManagerID(), node.Person().ID()))))).
+		Where(Equal(node.Person().LastName(), "Wolfe")).
 		Load(ctx)
-
-	assert.Len(t, people, 0, "Deleted the person")
+	assert.Equal(t, 2, people[0].GetAlias("manager_count").Int(), "Karen Wolfe manages 2 projects.")
 }
+
+

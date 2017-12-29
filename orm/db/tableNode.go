@@ -55,7 +55,7 @@ func (n *TableNode) Equals(n2 NodeI) bool {
 
 func (n *TableNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "Table: " + n.dbTable)
+	log.Print(tabs + "Table: " + n.dbTable + " AS " + n.GetAlias())
 }
 
 

@@ -73,7 +73,10 @@ func (n *ReverseReferenceNode) isExpanded() bool {
 func (n *ReverseReferenceNode) Equals(n2 NodeI) bool {
 	if n2.nodeType() == REVERSE_REFERENCE_NODE {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*ReverseReferenceNode)
-		return cn.dbTable == n.dbTable && cn.refTable == n.refTable && cn.refColumn == n.refColumn
+		return cn.dbTable == n.dbTable &&
+			cn.refTable == n.refTable &&
+			cn.refColumn == n.refColumn &&
+			(cn.alias == "" || n.alias == "" || cn.alias == n.alias)
 	}
 
 	return false
@@ -93,10 +96,14 @@ func (n *ReverseReferenceNode) getConditions() []NodeI {
 
 func (n *ReverseReferenceNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "RR: " + n.dbTable + "." + n.refTable + "." + n.refColumn)
+	log.Print(tabs + "RR: " + n.dbTable + "." + n.refTable + "." + n.refColumn + " AS " + n.GetAlias())
 }
 
 // Return the name as a captialized object name
 func (n *ReverseReferenceNode) objectName() string {
 	return n.goName
+}
+
+func (n *ReverseReferenceNode) containedNodes() (nodes []NodeI) {
+	return n.conditions
 }

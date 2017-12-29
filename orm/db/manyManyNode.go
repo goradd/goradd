@@ -74,7 +74,10 @@ func (n *ManyManyNode) isExpanded() bool {
 func (n *ManyManyNode) Equals(n2 NodeI) bool {
 	if n2.nodeType() == MANYMANY_NODE {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*ManyManyNode)
-		return cn.dbTable == n.dbTable && cn.goName == n.goName
+		return cn.dbTable == n.dbTable &&
+			cn.goName == n.goName &&
+			(cn.alias == "" || n.alias == "" || cn.alias == n.alias)
+
 	}
 	return false
 }
@@ -93,11 +96,15 @@ func (n *ManyManyNode) tableName() string {
 
 func (n *ManyManyNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "MM: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + "." + n.refColumn)
+	log.Print(tabs + "MM: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + "." + n.refColumn + " AS " + n.GetAlias())
 }
 
 
 // Return the name as a captialized object name
 func (n *ManyManyNode) objectName() string {
 	return n.goName
+}
+
+func (n *ManyManyNode) containedNodes() (nodes []NodeI) {
+	return n.conditions
 }

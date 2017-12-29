@@ -103,6 +103,10 @@ class Mysql5 extends SqlDb {
 		sql += s
 		args = append(args, a...)
 
+		s,a = this.generateHaving(b)
+		sql += s
+		args = append(args, a...)
+
 		s,a = this.generateOrderBySql(b)
 		sql += s
 		args = append(args, a...)
@@ -118,7 +122,7 @@ class Mysql5 extends SqlDb {
 
 		n := b.rootNode
 
-		sql = "DELETE " + n.getAlias() + " "
+		sql = "DELETE " + n.GetAlias() + " "
 
 		s,a = this.generateFromSql(b)
 		sql += s
@@ -141,14 +145,14 @@ class Mysql5 extends SqlDb {
 	func generateColumnListWithAliases(b *sqlBuilder) (sql string, args []interface{}) {
 		b.columnAliases.Range(func(key string, v interface{}) bool {
 			node := v.(*ColumnNode)
-			sql += this.generateColumnNodeSql(node, false) + " AS `" + node.getAlias() + "`,\n"
+			sql += this.generateColumnNodeSql(node, false) + " AS `" + node.GetAlias() + "`,\n"
 			return true
 		})
 
 		b.aliasNodes.Range(func(key string, v interface{}) bool {
 			node := v.(NodeI)
 			s,a := this.generateNodeSql(node, false)
-			sql += s + " AS `" + node.getAlias() + "`,\n"
+			sql += s + " AS `" + node.GetAlias() + "`,\n"
 			args = append(args, a...)
 			return true
 		})
@@ -166,7 +170,7 @@ class Mysql5 extends SqlDb {
 		sql = "FROM\n"
 
 		n := b.rootNode
-		sql += "`" + n.tableName() + "` AS `" + n.getAlias() + "`\n"
+		sql += "`" + n.tableName() + "` AS `" + n.GetAlias() + "`\n"
 
 		var childNodes []NodeI
 		var cn NodeI
@@ -191,7 +195,7 @@ class Mysql5 extends SqlDb {
 		switch node := tn.EmbeddedNode_().(type) {
 		case *ReferenceNode:
 			sql = "LEFT JOIN "
-			sql += "`" + node.refTable + "` AS `" + node.getAlias() + "` ON `" + node.getParentNode().getAlias() + "`.`" + node.dbColumn + "` = `" + node.getAlias() + "`.`" + node.refColumn + "`"
+			sql += "`" + node.refTable + "` AS `" + node.GetAlias() + "` ON `" + node.getParentNode().GetAlias() + "`.`" + node.dbColumn + "` = `" + node.GetAlias() + "`.`" + node.refColumn + "`"
 			if conditions := node.getConditions(); conditions != nil {
 				s, a := this.generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
 				sql += " AND " + s
@@ -203,7 +207,7 @@ class Mysql5 extends SqlDb {
 			}
 
 			sql = "LEFT JOIN "
-			sql += "`" + node.refTable + "` AS `" + node.getAlias() + "` ON `" + node.getParentNode().getAlias() + "`.`" + node.dbColumn + "` = `" + node.getAlias() + "`.`" + node.refColumn + "`"
+			sql += "`" + node.refTable + "` AS `" + node.GetAlias() + "` ON `" + node.getParentNode().GetAlias() + "`.`" + node.dbColumn + "` = `" + node.GetAlias() + "`.`" + node.refColumn + "`"
 			if conditions := node.getConditions(); conditions != nil {
 				s , a := this.generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
 				sql += " AND " + s
@@ -224,11 +228,11 @@ class Mysql5 extends SqlDb {
 			}
 
 			// join the association table. Put an "a" after the alias to differentiate it from the end table
-			sql += "`" + node.dbTable + "` AS `" + node.getAlias() + "a` ON `" + node.getParentNode().getAlias() + "`.`" + node.getParentNode().(TableNodeI).PrimaryKeyNode_().name() +
-					"` = `" + node.getAlias() + "a`.`" + node.dbColumn + "`\n"
+			sql += "`" + node.dbTable + "` AS `" + node.GetAlias() + "a` ON `" + node.getParentNode().GetAlias() + "`.`" + node.getParentNode().(TableNodeI).PrimaryKeyNode_().name() +
+					"` = `" + node.GetAlias() + "a`.`" + node.dbColumn + "`\n"
 			// join the other end
-			sql += "LEFT JOIN `" + node.refTable + "` AS `" + node.getAlias() + "` ON `" + node.getAlias() + "a`.`" + node.refColumn +
-					"` = `" + node.getAlias() + "`.`" + pk + "`"
+			sql += "LEFT JOIN `" + node.refTable + "` AS `" + node.GetAlias() + "` ON `" + node.GetAlias() + "a`.`" + node.refColumn +
+					"` = `" + node.GetAlias() + "`.`" + pk + "`"
 
 			if conditions := node.getConditions(); conditions != nil {
 				s , a := this.generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
@@ -261,6 +265,10 @@ class Mysql5 extends SqlDb {
 				sql,args = this.generateOperationSql(node, useAlias)
 			case *ColumnNode:
 				sql = this.generateColumnNodeSql(node, useAlias)
+			case *aliasNode:
+				sql = "`" + node.GetAlias() + "`"
+			case *SubqueryNode:
+				sql, args = this.generatSubquerySql(node)
 			default:
 				if tn,ok := n.(TableNodeI); ok {
 				// If we are using a table node as a leaf node, like when counting related objects, we can just use the primary key as a stand-in
@@ -273,9 +281,14 @@ class Mysql5 extends SqlDb {
 		return
 	}
 
+	func generateSubquerySql(node *SubqueryNode)  (sql string, args []interface{}) {
+		sql, args = this.generateSelectSql(node.b)
+		return
+	}
+
 	func generateOperationSql(n *OperationNode, useAlias bool) (sql string, args []interface{}) {
-		if useAlias && n.getAlias() != "" {
-			sql = n.getAlias()
+		if useAlias && n.GetAlias() != "" {
+			sql = n.GetAlias()
 			return
 		}
 		switch n.op {
@@ -311,9 +324,10 @@ class Mysql5 extends SqlDb {
 				args = append(args, a...)
 				sql = "(" + sql + ") "
 
-			case OpIn:
+			case OpIn: fallthrough
+			case OpNotIn:
 				s,a := this.generateNodeSql(n.operands[0], useAlias)
-				sql = s + " IN ("
+				sql = s + " " + n.op.String() + " ("
 				args = append(args, a...)
 
 				for _,o := range n.operands[1].(*ValueNode).value.([]NodeI) {
@@ -339,9 +353,9 @@ class Mysql5 extends SqlDb {
 
 	func generateColumnNodeSql(n *ColumnNode, useAlias bool) (sql string) {
 		if useAlias {
-			sql = "`" + n.getAlias() + "`"
+			sql = "`" + n.GetAlias() + "`"
 		} else {
-			sql = "`" + n.getParentNode().getAlias() + "`.`" + n.name() + "`"
+			sql = "`" + n.getParentNode().GetAlias() + "`.`" + n.name() + "`"
 		}
 		return
 	}
@@ -402,6 +416,17 @@ class Mysql5 extends SqlDb {
 		}
 		return
 	}
+
+	func generateHaving(b *sqlBuilder) (sql string, args []interface{}) {
+		if b.having != nil {
+			sql = "HAVING "
+			var s string
+			s,args = this.generateNodeSql(b.having, false)
+			sql += s + "\n"
+		}
+		return
+	}
+
 
 	func generateLimitSql(b *sqlBuilder) (sql string) {
 		if b.limitInfo == nil {

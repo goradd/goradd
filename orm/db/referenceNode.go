@@ -66,7 +66,10 @@ func (n *ReferenceNode) nodeType() NodeType {
 func (n *ReferenceNode) Equals(n2 NodeI) bool {
 	if n2.nodeType() == REFERENCE_NODE {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*ReferenceNode)
-		return cn.dbTable == n.dbTable && cn.goName == n.goName
+		return cn.dbTable == n.dbTable &&
+			cn.goName == n.goName &&
+			(cn.alias == "" || n.alias == "" || cn.alias == n.alias)
+
 	}
 	return false
 }
@@ -85,7 +88,7 @@ func (n *ReferenceNode) getConditions() []NodeI {
 
 func (n *ReferenceNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "R: " + n.dbTable + "." + n.dbColumn + "." + n.refTable)
+	log.Print(tabs + "R: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + " AS " + n.GetAlias())
 }
 
 // Return the name as a captialized object name
@@ -98,4 +101,8 @@ func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
 	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, COL_TYPE_STRING)
 	SetParentNode(n2, n.parentNode)
 	return n2
+}
+
+func (n *ReferenceNode) containedNodes() (nodes []NodeI) {
+	return n.conditions
 }

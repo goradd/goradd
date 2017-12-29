@@ -12,6 +12,7 @@ type QueryBuilderI interface {
 	Join(n NodeI, conditions... NodeI) QueryBuilderI
 	Expand(n NodeI) QueryBuilderI
 	Condition(c NodeI) QueryBuilderI
+	Having(c NodeI) QueryBuilderI
 	OrderBy(nodes... NodeI) QueryBuilderI
 	GroupBy(nodes... NodeI) QueryBuilderI
 	Limit(maxRowCount int64, offset int64) QueryBuilderI

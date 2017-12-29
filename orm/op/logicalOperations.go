@@ -53,6 +53,11 @@ func In(n NodeI, what... interface{})  *OperationNode {
 	return NewOperationNode(OpIn, n, what)	// by passing an array as what here, it will cause the values to be output as a list
 }
 
+func NotIn(n NodeI, what... interface{})  *OperationNode {
+	return NewOperationNode(OpNotIn, n, what)	// by passing an array as what here, it will cause the values to be output as a list
+}
+
+
 func IsNull (n interface{}) *OperationNode {
 	return NewOperationNode(OpNull, n)
 }

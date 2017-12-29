@@ -36,6 +36,7 @@ type sqlBuilder struct {
 	command string
 	columnAliases *types.OrderedMap
 	tableAliases *types.OrderedMap
+	joins []NodeI
 	orderBys []NodeI
 	condition NodeI
 	rootDbTable string
@@ -47,8 +48,7 @@ type sqlBuilder struct {
 	groupBys []NodeI
 	selects []NodeI
 	limitInfo *limitInfo
-
-	having []NodeI
+	having NodeI
 	distinctId int	// Counter for creating fake ids when doing distinct selects
 }
 
@@ -64,6 +64,7 @@ func NewSqlBuilder(db SqlDbI) *sqlBuilder {
 		groupBys: []NodeI{},
 		selects: []NodeI{},
 		aliasNodes: types.NewOrderedMap(),
+		joins: []NodeI{},
 	}
 }
 
@@ -74,15 +75,12 @@ func (b *sqlBuilder) Join(n NodeI, conditions... NodeI) QueryBuilderI {
 				panic("Cannot set join conditions on this type of node")
 			} else {
 				c.setConditions(conditions)
-				for _,cn := range conditions {
-					b.addNode(cn)
-				}
 			}
 		} else {
 			panic("Cannot set join conditions on this type of node")
 		}
 	}
-	b.addNode(n)
+	b.joins = append(b.joins, n)
 
 	if b.limitInfo != nil {
 
@@ -93,7 +91,7 @@ func (b *sqlBuilder) Join(n NodeI, conditions... NodeI) QueryBuilderI {
 // Add a node that is given a manual alias name. This is usually some kind of operation.
 // We can recover this using the GetAlias() function of the result.
 func (b *sqlBuilder) Alias(name string, n NodeI) QueryBuilderI {
-	n.setAlias(name)
+	n.SetAlias(name)
 	b.aliasNodes.Set(name, n)
 	return b
 }
@@ -117,16 +115,12 @@ func (b *sqlBuilder) Expand(n NodeI) QueryBuilderI {
 
 
 func (b *sqlBuilder) Condition(c NodeI) QueryBuilderI {
-	b.addNode(c)
 	b.condition = c
 	return b
 }
 
 func (b *sqlBuilder) OrderBy(nodes... NodeI) QueryBuilderI {
-	for _, node := range nodes {
-		b.addNode(node)
-		b.orderBys = append(b.orderBys, node)
-	}
+	b.orderBys = append(b.orderBys, nodes...)
 	return b
 }
 
@@ -140,10 +134,7 @@ func (b *sqlBuilder) Limit(maxRowCount int64, offset int64) QueryBuilderI {
 }
 
 func (b *sqlBuilder) Select(nodes... NodeI) QueryBuilderI {
-	for _, node := range nodes {
-		b.addNode(node)
-		b.selects = append(b.selects, node)
-	}
+	b.selects = append(b.selects, nodes...)
 	return b
 }
 
@@ -153,14 +144,14 @@ func (b *sqlBuilder) Distinct() QueryBuilderI {
 }
 
 func (b *sqlBuilder) GroupBy(nodes... NodeI) QueryBuilderI {
-	for _, node := range nodes {
-		b.addNode(node)	// Most SQLs require you to select what you group by
-		b.groupBys = append(b.groupBys, node)
-	}
+	b.groupBys = append(b.groupBys, nodes...)
 	return b
 }
 
-
+func (b *sqlBuilder) Having(node NodeI) QueryBuilderI {
+	b.having = node
+	return b
+}
 
 
 // Load terminates the builder, queries the database, and returns the results as an array of interfaces similar in structure to a json structure
@@ -203,7 +194,7 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 
 	result = ReceiveRows(rows, columnTypes, names)
 
-	result2 := b.unpackResult(result)
+	var result2 []map[string]interface{} = b.unpackResult(result)
 
 	p, err := json.MarshalIndent(result2, "", "  ")
 
@@ -332,9 +323,19 @@ func (b *sqlBuilder) logNode(node NodeI, level int) {
 
 // assuming that both nodes point to a same location, merges the source node into the destination node tree
 func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI) {
+	var a string = srcNode.GetAlias()
 	if !srcNode.Equals(destNode) {
 		log.Fatal("mergeNode must start with equal nodes")
 	}
+	if srcNode.GetAlias() != "" &&
+		srcNode.GetAlias() != destNode.GetAlias() &&
+		srcNode.nodeType() != COLUMN_NODE {
+		// Adding a pre-aliased node that is at the same level as this node, so just add it.
+		b.insertNode(srcNode, destNode.getParentNode())
+		return
+	}
+	_ = a
+
 	var childNodes = srcNode.getChildNodes()
 	if childNodes == nil {
 		// The node already exists in the tree
@@ -351,13 +352,13 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI) {
 			}
 		}
 		b.assignAliases(destNode)	// potentially was added by SelectNodes_, and so did not get aliases
-		if srcNode.getAlias() == "" {
-			srcNode.setAlias(destNode.getAlias()) // If src node does not get added, it still needs to know what its alias is
+		if srcNode.GetAlias() == "" {
+			srcNode.SetAlias(destNode.GetAlias()) // If src node does not get added, it still needs to know what its alias is
 		} else { // alias was manually assigned, so use that one
-			destNode.setAlias(srcNode.getAlias())
+			destNode.SetAlias(srcNode.GetAlias())
 		}
-		if p := srcNode.getParentNode(); p != nil && p.getAlias() == "" {
-			p.setAlias(destNode.getParentNode().getAlias()) // parent node generation for src node alias in case src node is not added to tree, but is still used in sql generation
+		if p := srcNode.getParentNode(); p != nil && p.GetAlias() == "" {
+			p.SetAlias(destNode.getParentNode().GetAlias()) // parent node generation for src node alias in case src node is not added to tree, but is still used in sql generation
 		}
 
 
@@ -377,12 +378,7 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI) {
 	if destNode.getChildNodes() == nil {
 		// We have found the end of a chain, but we want to extend it
 		for _,srcChild = range childNodes {
-			SetParentNode(srcChild, destNode)
-			b.assignAliases(srcChild)
-			if srcChild.nodeType() == REFERENCE_NODE {
-				e := srcChild.(TableNodeI).EmbeddedNode_().(*ReferenceNode).relatedColumnNode()
-				b.addNode(e)
-			}
+			b.insertNode(srcChild, destNode)
 		}
 	} else {
 		for _,srcChild = range childNodes {
@@ -394,46 +390,56 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI) {
 					// found a matching child node, recurse
 					b.mergeNode(srcChild, destChild)
 					found = true
-					break;
+					break
 				}
 			}
 			if !found {
 				// Add the child node and stop
-				SetParentNode(srcChild, destNode)
-				b.assignAliases(srcChild)
-				if srcChild.nodeType() == REFERENCE_NODE {
-					e := srcChild.(TableNodeI).EmbeddedNode_().(*ReferenceNode).relatedColumnNode()
-					b.addNode(e)
-				}
+				b.insertNode(srcChild, destNode)
 				break
 			}
 		}
 	}
 }
 
+func (b *sqlBuilder) insertNode(srcNode, parentNode NodeI) {
+	SetParentNode (srcNode, parentNode)
+	b.assignAliases(srcNode)
+	if srcNode.nodeType() == REFERENCE_NODE {
+		e := srcNode.(TableNodeI).EmbeddedNode_().(*ReferenceNode).relatedColumnNode()
+		b.addNode(e)
+	}
+}
+
 // Walk DOWN the chain and assign aliases to the nodes found.
 func (b *sqlBuilder) assignAliases (n NodeI) {
 
-	if n.getAlias() == "" {
+	if n.GetAlias() == "" {
+		// if it doesn't have a pre-assigned alias, give it an automated one
 		if _,ok := n.(*ColumnNode); ok {
 			key := "c" + strconv.Itoa(b.columnAliases.Len())
-			n.setAlias(key)
-			b.columnAliases.Set(key, n)
+			n.SetAlias(key)
 		} else {
 			key := "t" + strconv.Itoa(b.tableAliases.Len())
-			n.setAlias(key)
-			b.tableAliases.Set(key, n)
+			n.SetAlias(key)
 		}
 	}
-	if childNodes := n.getChildNodes(); childNodes != nil {
-		for _,cn := range childNodes {
-			b.assignAliases(cn)
+
+	if _,ok := n.(*ColumnNode); ok {
+		b.columnAliases.Set(n.GetAlias(), n)
+	} else {
+		b.tableAliases.Set(n.GetAlias(), n)
+		if childNodes := n.getChildNodes(); childNodes != nil {
+			for _, cn := range childNodes {
+				b.assignAliases(cn)
+			}
 		}
 	}
 }
 
 // Generate the column aliases for tables that did not get specified by Select commands, but need column aliases by implication
 func (b *sqlBuilder) makeColumnAliases() {
+	b.buildNodeTree()
 
 	if len(b.selects) > 0 {
 		//if !b.distinct { This didn't work real well. Too hard to unpack without the ids present. Probably need to manually remove duplicates
@@ -462,6 +468,27 @@ func (b *sqlBuilder) makeColumnAliases() {
 	})
 }
 
+func (b *sqlBuilder) buildNodeTree() {
+	for _,n := range b.joins {
+		b.addNode(n)
+	}
+	for _,n := range b.orderBys {
+		b.addNode(n)
+	}
+	if b.condition != nil {
+		b.addNode(b.condition)
+	}
+	for _,n := range b.groupBys {
+		b.addNode(n)
+	}
+	if b.having != nil {
+		b.addNode(b.having)
+	}
+	for _,n := range b.selects {
+		b.addNode(n)
+	}
+}
+
 /*
 Notes on the unpacking process:
 This is quite tricky. Depending on the node structure, you may get repeated branches, or repeated entire structures with
@@ -486,7 +513,7 @@ that each object arrives, but then look for items in order.
 func (b *sqlBuilder) unpackResult(rows []map[string]interface{}) (out []map[string]interface{}) {
 	var o2 ValueMap
 
-	oMap := types.NewOrderedMap()
+	var oMap *types.OrderedMap = types.NewOrderedMap()
 	aliasMap := types.NewOrderedMap()
 
 	// First we create a tree structure of the data that will mirror the node structure
@@ -527,7 +554,7 @@ func (b *sqlBuilder) unpackObject(parent NodeI, row ValueMap, oMap *types.Ordere
 	if pk == "" {
 		// pk of object was not found in the row. This would happen for two reasons: 1) Object was not created because of a conditional expansion that failed, or
 		// 2) This is a distinct select, and we are not selecting pks to avoid affecting the results of the query, in which case we will likely need to make up some ids
-		if (!b.distinct) {
+		if !b.distinct {
 			return
 		} else {
 			b.distinctId++
@@ -569,8 +596,8 @@ func (b *sqlBuilder) unpackLeaf(n NodeI, row ValueMap, obj ValueMap) {
 
 	switch node := n.(type) {
 	case *ColumnNode:
-		key = node.getAlias()
-		if b.columnAliases.Has(key) {	// could be a special alias, which we should unpack differently
+		key = node.GetAlias()
+		if b.columnAliases.Has(key) && !b.aliasNodes.Has(key) {	// could be a special alias, which we should unpack differently
 			fieldName = node.dbColumn
 			obj[fieldName] = row[key]
 		}
@@ -583,11 +610,11 @@ func (b *sqlBuilder) makeObjectKey(n NodeI, row ValueMap) string {
 	var alias interface{}
 
 	pkNode := b.getPkNode(n)
-	if alias,_ = row[pkNode.getAlias()]; alias == nil {
+	if alias,_ = row[pkNode.GetAlias()]; alias == nil {
 		return ""
 	}
 	pk := fmt.Sprint(alias)
-	return pkNode.getAlias() + "." + pk
+	return pkNode.GetAlias() + "." + pk
 }
 
 // Returns the primary key value corresponding to the

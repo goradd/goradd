@@ -49,6 +49,7 @@ const (
 	// SQL functions that act like operators in that the operator is put in between the operands
 	OpLike = "LIKE"
 	OpIn = "IN"
+	OpNotIn = "NOT IN"
 
 	// Special NULL tests
 	OpNull = "NULL"
@@ -102,7 +103,6 @@ func NewCountNode(distinct bool, operands... NodeI) *OperationNode {
 
 	return n
 }
-
 
 // process the list of operands at run time, making sure all static values are escaped
 func (n *OperationNode) assignOperands(operands... interface{}) {

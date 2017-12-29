@@ -120,3 +120,38 @@ func TestAggregates(t *testing.T) {
 
 	assert.EqualValues(t,4200.50, projects2[0].GetAlias("min").Float())
 }
+
+
+func TestAliases(t *testing.T) {
+	ctx := context.Background()
+	nVoyel := node.Person().ProjectsAsManager().Milestones()
+	nVoyel.SetAlias("voyel")
+	nConson := node.Person().ProjectsAsManager().Milestones()
+	nConson.SetAlias("conson")
+
+	people := model.QueryPeople().
+		GroupBy(node.Person().ID()).
+		OrderBy(node.Person().LastName(), node.Person().FirstName()).
+		Where(IsNotNull(nConson)).
+		Join(nVoyel, In(nVoyel.Name(), "Milestone A", "Milestone E", "Milestone I")).
+		Join(nConson, NotIn(nConson.Name(), "Milestone A", "Milestone E", "Milestone I")).
+		GroupBy(node.Person().ID()).
+		Alias("min_voyel", Min(nVoyel.Name())).
+		Alias("min_conson", Min(nConson.Name())).
+		Select(node.Person().FirstName(), node.Person().LastName()).
+		Load(ctx)
+
+	assert.EqualValues(t, 3, len(people))
+	assert.Equal(t, "Doe", people[0].LastName())
+	assert.Equal(t, "Ho", people[1].LastName())
+	assert.Equal(t, "Wolfe", people[2].LastName())
+
+	assert.True(t, people[0].GetAlias("min_voyel").IsNil())
+	assert.Equal(t, "Milestone F", people[0].GetAlias("min_conson").String())
+
+	assert.Equal(t, "Milestone E", people[1].GetAlias("min_voyel").String())
+	assert.Equal(t, "Milestone D", people[1].GetAlias("min_conson").String())
+
+	assert.Equal(t, "Milestone A", people[2].GetAlias("min_voyel").String())
+	assert.Equal(t, "Milestone B", people[2].GetAlias("min_conson").String())
+}

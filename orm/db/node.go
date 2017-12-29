@@ -28,6 +28,7 @@ const (
 	VALUE_NODE
 	OPERATION_NODE
 	ALIAS_NODE
+	SUBQUERY_NODE
 
 )
 
@@ -53,9 +54,9 @@ type Expander interface {
 type NodeI interface {
 	nodeLinkI
 	Equals(NodeI) bool
+	SetAlias(string)
+	GetAlias() string
 	nodeType() NodeType
-	setAlias(string)
-	getAlias() string
 	tableName() string
 	log(level int)
 }
@@ -71,10 +72,10 @@ type conditioner interface {
 	getConditions() []NodeI
 }
 
-func (n *Node) setAlias(a string) {
+func (n *Node) SetAlias(a string) {
 	n.alias = a
 }
 
-func (n *Node) getAlias() string {
+func (n *Node) GetAlias() string {
 	return n.alias
 }

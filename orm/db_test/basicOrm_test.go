@@ -373,3 +373,50 @@ func TestLazyLoad(t *testing.T) {
 	manager := projects[0].LoadManager(ctx)
 	assert.Equal(t, "7", manager.ID())
 }
+
+
+func TestDeleteQuery(t *testing.T) {
+	ctx := context.Background()
+
+	person := model.NewPerson()
+	person.SetFirstName("Test1")
+	person.SetLastName("Last1")
+	person.Save(ctx)
+
+	model.QueryPeople().
+		Where(
+		And(
+			Equal(
+				node.Person().FirstName(), "Test1"),
+			Equal(
+				node.Person().LastName(), "Last1"))).
+		Delete(ctx)
+
+	people := model.QueryPeople().
+		Where(
+		And(
+			Equal(
+				node.Person().FirstName(), "Test1"),
+			Equal(
+				node.Person().LastName(), "Last1"))).
+		Load(ctx)
+
+	assert.Len(t, people, 0, "Deleted the person")
+}
+
+
+func TestHaving(t *testing.T) {
+	ctx := context.Background()
+	projects := model.QueryProjects().
+		Select(node.Project().ID(), node.Project().Name()).
+		GroupBy(node.Project().ID()).
+		OrderBy(node.Project().ID()).
+		Alias("team_member_count", Count(false, node.Project().TeamMembers().ID())).
+		Having(GreaterThan(Count(false, db.AliasNode("team_member_count")), 5)).
+		Load(ctx)
+
+	assert.Len(t, projects, 2)
+	assert.Equal(t, "State College HR System", projects[0].Name())
+	assert.Equal(t, 6, projects[0].GetAlias("team_member_count").Int())
+}
+

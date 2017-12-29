@@ -119,6 +119,11 @@ func (b *{{t.LcGoName}}Builder)  GroupBy(nodes... db.NodeI) *{{t.LcGoName}}Build
 	return b
 }
 
+func (b *{{t.LcGoName}}Builder)  Having(node db.NodeI)  *{{t.LcGoName}}Builder {
+	 b.base.Having(node)
+	 return b
+}
+
 // Count terminates a query and returns just the number of items selected.
 func (b *{{t.LcGoName}}Builder)  Count(ctx context.Context, distinct bool, nodes... db.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
@@ -127,6 +132,7 @@ func (b *{{t.LcGoName}}Builder)  Count(ctx context.Context, distinct bool, nodes
 func (b *{{t.LcGoName}}Builder)  Delete(ctx context.Context) {
 	 b.base.Delete(ctx)
 }
+
 
 
 }}
