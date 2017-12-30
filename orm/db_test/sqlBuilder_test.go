@@ -1,11 +1,11 @@
 package db
-
+/*
 import (
 	"testing"
 	"grlocal/model"
 	"github.com/stretchr/testify/assert"
 	"context"
-	. 	"github.com/spekary/goradd/orm/op"
+	//. 	"github.com/spekary/goradd/orm/op"
 	"grlocal/model/node"
 	//"github.com/spekary/goradd/orm/db"
 	//"goradd/datetime"
@@ -13,7 +13,7 @@ import (
 	//"github.com/spekary/goradd/datetime"
 )
 
-
+*/
 
 /*
 func init() {
@@ -36,7 +36,7 @@ func init() {
 
 */
 
-
+/*
 func TestSubquery(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople().
@@ -50,3 +50,4 @@ func TestSubquery(t *testing.T) {
 }
 
 
+*/

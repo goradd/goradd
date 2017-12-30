@@ -63,13 +63,13 @@ type NodeI interface {
 
 type Node struct {
 	nodeLink
-	conditions []NodeI	// Used only by expansion nodes
+	condition NodeI	// Used only by expansion nodes
 	alias string
 }
 
 type conditioner interface {
-	setConditions(conditions []NodeI)
-	getConditions() []NodeI
+	setCondition(condition NodeI)
+	getCondition() NodeI
 }
 
 func (n *Node) SetAlias(a string) {

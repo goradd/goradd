@@ -22,15 +22,15 @@ func (c *LimitClause) AddToBuilder(b QueryBuilderI) {
 
 type ExpandClause struct {
 	node NodeI
-	conditions []NodeI
+	condition NodeI
 }
 
-func Expand(node NodeI, conditions... NodeI) *ExpandClause {
-	return &ExpandClause{node, conditions}
+func Expand(node NodeI, condition NodeI) *ExpandClause {
+	return &ExpandClause{node, condition}
 }
 
 func (c *ExpandClause) AddToBuilder(b QueryBuilderI) {
-	b.Join(c.node, c.conditions...)
+	b.Join(c.node, c.condition)
 }
 
 type OrderByClause struct {

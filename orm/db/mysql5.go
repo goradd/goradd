@@ -8,9 +8,9 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"strings"
 	//"goradd/orm/query"
-	"context"
 	"github.com/knq/snaker"
-	"github.com/spekary/goradd/util"
+	//"github.com/spekary/goradd/util"
+	"context"
 	"strconv"
 )
 
@@ -25,6 +25,7 @@ type Mysql5I interface {
 	generateFromSql(b *sqlBuilder) (sql string, args []interface{})
 	generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []interface{})
 	generateNodeSql(n NodeI, useAlias bool) (sql string, args []interface{})
+	generateSubquerySql(node *SubqueryNode) (sql string, args []interface{})
 	generateOperationSql(n *OperationNode, useAlias bool) (sql string, args []interface{})
 	generateColumnNodeSql(n *ColumnNode, useAlias bool) (sql string)
 	generateNodeListSql(nodes []NodeI, useAlias bool) (sql string, args []interface{})
@@ -218,8 +219,8 @@ func (m_ *Mysql5) generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []in
 	case *ReferenceNode:
 		sql = "LEFT JOIN "
 		sql += "`" + node.refTable + "` AS `" + node.GetAlias() + "` ON `" + node.getParentNode().GetAlias() + "`.`" + node.dbColumn + "` = `" + node.GetAlias() + "`.`" + node.refColumn + "`"
-		if conditions := node.getConditions(); conditions != nil {
-			s, a := m_.I().(Mysql5I).generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
+		if condition := node.getCondition(); condition != nil {
+			s, a := m_.I().(Mysql5I).generateNodeSql(condition, false)
 			sql += " AND " + s
 			args = append(args, a...)
 		}
@@ -230,8 +231,8 @@ func (m_ *Mysql5) generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []in
 
 		sql = "LEFT JOIN "
 		sql += "`" + node.refTable + "` AS `" + node.GetAlias() + "` ON `" + node.getParentNode().GetAlias() + "`.`" + node.dbColumn + "` = `" + node.GetAlias() + "`.`" + node.refColumn + "`"
-		if conditions := node.getConditions(); conditions != nil {
-			s, a := m_.I().(Mysql5I).generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
+		if condition := node.getCondition(); condition != nil {
+			s, a := m_.I().(Mysql5I).generateNodeSql(condition, false)
 			sql += " AND " + s
 			args = append(args, a...)
 		}
@@ -254,8 +255,8 @@ func (m_ *Mysql5) generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []in
 		sql += "LEFT JOIN `" + node.refTable + "` AS `" + node.GetAlias() + "` ON `" + node.GetAlias() + "a`.`" + node.refColumn +
 			"` = `" + node.GetAlias() + "`.`" + pk + "`"
 
-		if conditions := node.getConditions(); conditions != nil {
-			s, a := m_.I().(Mysql5I).generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
+		if condition := node.getCondition(); condition != nil {
+			s, a := m_.I().(Mysql5I).generateNodeSql(condition, false)
 			sql += " AND " + s
 			args = append(args, a...)
 		}
@@ -285,6 +286,8 @@ func (m_ *Mysql5) generateNodeSql(n NodeI, useAlias bool) (sql string, args []in
 		sql = m_.I().(Mysql5I).generateColumnNodeSql(node, useAlias)
 	case *aliasNode:
 		sql = "`" + node.GetAlias() + "`"
+	case *SubqueryNode:
+		sql, args = m_.I().(Mysql5I).generateSubquerySql(node)
 	default:
 		if tn, ok := n.(TableNodeI); ok {
 			sql = m_.I().(Mysql5I).generateColumnNodeSql(tn.PrimaryKeyNode_(), false)
@@ -293,6 +296,10 @@ func (m_ *Mysql5) generateNodeSql(n NodeI, useAlias bool) (sql string, args []in
 		}
 
 	}
+	return
+}
+
+func (m_ *Mysql5) generateSubquerySql(node *SubqueryNode) (sql string, args []interface{}) {
 	return
 }
 

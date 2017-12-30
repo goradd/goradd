@@ -64,8 +64,14 @@ func (b *{{t.LcGoName}}Builder) Expand(n db.NodeI) *{{t.LcGoName}}Builder {
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *{{t.LcGoName}}Builder) Join(n db.NodeI, conditions... db.NodeI) *{{t.LcGoName}}Builder {
-	b.base.Join(n, conditions...)
-	if conditions != nil {
+	var condition db.NodeI
+	if len(conditions) > 1 {
+		condition = And(conditions)
+	} else if len(conditions) == 1 {
+		condition = conditions[0]
+	}
+	b.base.Join(n, condition)
+	if condition != nil {
 		b.hasConditionalJoins = true
 	}
 	return b

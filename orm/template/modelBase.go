@@ -1208,8 +1208,14 @@ func (b *`)
 	buf.WriteString(`Builder) Join(n db.NodeI, conditions... db.NodeI) *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder {
-	b.base.Join(n, conditions...)
-	if conditions != nil {
+	var condition db.NodeI
+	if len(conditions) > 1 {
+		condition = And(conditions)
+	} else if len(conditions) == 1 {
+		condition = conditions[0]
+	}
+	b.base.Join(n, condition)
+	if condition != nil {
 		b.hasConditionalJoins = true
 	}
 	return b

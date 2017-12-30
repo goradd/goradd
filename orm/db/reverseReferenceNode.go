@@ -86,12 +86,12 @@ func (n *ReverseReferenceNode) tableName() string {
 	return n.refTable
 }
 
-func (n *ReverseReferenceNode) setConditions(conditions []NodeI){
-	n.conditions = conditions
+func (n *ReverseReferenceNode) setCondition(condition NodeI){
+	n.condition = condition
 }
 
-func (n *ReverseReferenceNode) getConditions() []NodeI {
-	return n.conditions
+func (n *ReverseReferenceNode) getCondition() NodeI {
+	return n.condition
 }
 
 func (n *ReverseReferenceNode) log(level int) {
@@ -105,5 +105,5 @@ func (n *ReverseReferenceNode) objectName() string {
 }
 
 func (n *ReverseReferenceNode) containedNodes() (nodes []NodeI) {
-	return n.conditions
+	return []NodeI{n.condition}
 }

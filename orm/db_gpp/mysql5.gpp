@@ -7,7 +7,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	//"goradd/orm/query"
 	"github.com/knq/snaker"
-	"github.com/spekary/goradd/util"
+	//"github.com/spekary/goradd/util"
 	"strconv"
 	"context"
 )
@@ -196,8 +196,8 @@ class Mysql5 extends SqlDb {
 		case *ReferenceNode:
 			sql = "LEFT JOIN "
 			sql += "`" + node.refTable + "` AS `" + node.GetAlias() + "` ON `" + node.getParentNode().GetAlias() + "`.`" + node.dbColumn + "` = `" + node.GetAlias() + "`.`" + node.refColumn + "`"
-			if conditions := node.getConditions(); conditions != nil {
-				s, a := this.generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
+			if condition := node.getCondition(); condition != nil {
+				s, a := this.generateNodeSql(condition, false)
 				sql += " AND " + s
 				args = append(args, a...)
 			}
@@ -208,8 +208,8 @@ class Mysql5 extends SqlDb {
 
 			sql = "LEFT JOIN "
 			sql += "`" + node.refTable + "` AS `" + node.GetAlias() + "` ON `" + node.getParentNode().GetAlias() + "`.`" + node.dbColumn + "` = `" + node.GetAlias() + "`.`" + node.refColumn + "`"
-			if conditions := node.getConditions(); conditions != nil {
-				s , a := this.generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
+			if condition := node.getCondition(); condition != nil {
+				s , a := this.generateNodeSql(condition, false)
 				sql += " AND " + s
 				args = append(args, a...)
 			}
@@ -234,8 +234,8 @@ class Mysql5 extends SqlDb {
 			sql += "LEFT JOIN `" + node.refTable + "` AS `" + node.GetAlias() + "` ON `" + node.GetAlias() + "a`.`" + node.refColumn +
 					"` = `" + node.GetAlias() + "`.`" + pk + "`"
 
-			if conditions := node.getConditions(); conditions != nil {
-				s , a := this.generateNodeSql(NewOperationNode(OpAnd, util.GetSlice(conditions)...), false)
+			if condition := node.getCondition(); condition != nil {
+				s , a := this.generateNodeSql(condition, false)
 				sql += " AND " + s
 				args = append(args, a...)
 			}
@@ -268,7 +268,7 @@ class Mysql5 extends SqlDb {
 			case *aliasNode:
 				sql = "`" + node.GetAlias() + "`"
 			case *SubqueryNode:
-				sql, args = this.generatSubquerySql(node)
+				sql, args = this.generateSubquerySql(node)
 			default:
 				if tn,ok := n.(TableNodeI); ok {
 				// If we are using a table node as a leaf node, like when counting related objects, we can just use the primary key as a stand-in
@@ -282,7 +282,7 @@ class Mysql5 extends SqlDb {
 	}
 
 	func generateSubquerySql(node *SubqueryNode)  (sql string, args []interface{}) {
-		sql, args = this.generateSelectSql(node.b)
+		//sql, args = this.generateSelectSql(node.b)
 		return
 	}
 

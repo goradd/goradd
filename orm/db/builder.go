@@ -9,7 +9,7 @@ const AliasResults = "aliases_"
 
 // The query builder is the primary aid in creating cross-platform, portable queries to the database(s)
 type QueryBuilderI interface {
-	Join(n NodeI, conditions... NodeI) QueryBuilderI
+	Join(n NodeI, condition NodeI) QueryBuilderI
 	Expand(n NodeI) QueryBuilderI
 	Condition(c NodeI) QueryBuilderI
 	Having(c NodeI) QueryBuilderI

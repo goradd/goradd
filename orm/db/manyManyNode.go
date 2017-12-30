@@ -82,12 +82,12 @@ func (n *ManyManyNode) Equals(n2 NodeI) bool {
 	return false
 }
 
-func (n *ManyManyNode) setConditions(conditions []NodeI){
-	n.conditions = conditions
+func (n *ManyManyNode) setCondition(condition NodeI){
+	n.condition = condition
 }
 
-func (n *ManyManyNode) getConditions() []NodeI {
-	return n.conditions
+func (n *ManyManyNode) getCondition() NodeI {
+	return n.condition
 }
 
 func (n *ManyManyNode) tableName() string {
@@ -106,5 +106,5 @@ func (n *ManyManyNode) objectName() string {
 }
 
 func (n *ManyManyNode) containedNodes() (nodes []NodeI) {
-	return n.conditions
+	return []NodeI{n.condition}
 }

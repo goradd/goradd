@@ -68,13 +68,13 @@ func NewSqlBuilder(db SqlDbI) *sqlBuilder {
 	}
 }
 
-func (b *sqlBuilder) Join(n NodeI, conditions... NodeI) QueryBuilderI {
-	if conditions != nil {
+func (b *sqlBuilder) Join(n NodeI, condition NodeI) QueryBuilderI {
+	if condition != nil {
 		if tn, ok := n.(TableNodeI); ok {
 			if c, ok := tn.EmbeddedNode_().(conditioner); !ok {
-				panic("Cannot set join conditions on this type of node")
+				panic("Cannot set join a condition on this type of node")
 			} else {
-				c.setConditions(conditions)
+				c.setCondition(condition)
 			}
 		} else {
 			panic("Cannot set join conditions on this type of node")
@@ -106,7 +106,7 @@ func (b *sqlBuilder) Expand(n NodeI) QueryBuilderI {
 			panic("You can only expand a node that is a ReverseReference or ManyMany node.")
 		} else {
 			en.Expand()
-			b.Join(n)
+			b.Join(n, nil)
 		}
 	}
 
@@ -241,6 +241,8 @@ func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes... NodeI) u
 		panic ("Cannot count a query that also has group by items. Use an alias for a Count node instead.")
 	}
 
+	b.buildNodeTree()
+
 	b.Alias(countAlias, NewCountNode(distinct, nodes...))
 
 	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
@@ -342,12 +344,12 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI) {
 		// Update information as needed.
 		if tn, ok := srcNode.(TableNodeI); ok {
 			if cn, ok := tn.EmbeddedNode_().(conditioner); ok &&
-				cn.getConditions() != nil {
+				cn.getCondition() != nil {
 
-				if destNode.(TableNodeI).EmbeddedNode_().(conditioner).getConditions() == nil {
-					destNode.(TableNodeI).EmbeddedNode_().(conditioner).setConditions(cn.getConditions())
-				} else {
-					panic("Error, attempting to Expand with conditions on a node which already has conditions.")
+				if destCond := destNode.(TableNodeI).EmbeddedNode_().(conditioner).getCondition(); destCond == nil {
+					destNode.(TableNodeI).EmbeddedNode_().(conditioner).setCondition(cn.getCondition())
+				} else if !destCond.Equals(cn.getCondition()) {
+					panic("Error, attempting to Join with conditions on a node which already has conditions.")
 				}
 			}
 		}
@@ -471,6 +473,11 @@ func (b *sqlBuilder) makeColumnAliases() {
 func (b *sqlBuilder) buildNodeTree() {
 	for _,n := range b.joins {
 		b.addNode(n)
+		if cn, ok := n.(TableNodeI).EmbeddedNode_().(conditioner); ok {
+			if cn.getCondition() != nil {
+				b.addNode(cn.getCondition())
+			}
+		}
 	}
 	for _,n := range b.orderBys {
 		b.addNode(n)
