@@ -33,8 +33,7 @@ func (n *SubqueryNode) Equals(n2 NodeI) bool {
 }
 
 func (n *SubqueryNode) containedNodes() (nodes []NodeI) {
-
-	return nodes
+	return n.b.nodes()
 }
 
 func (n *SubqueryNode) tableName() string {

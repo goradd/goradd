@@ -103,7 +103,3 @@ func (n *ReverseReferenceNode) log(level int) {
 func (n *ReverseReferenceNode) objectName() string {
 	return n.goName
 }
-
-func (n *ReverseReferenceNode) containedNodes() (nodes []NodeI) {
-	return []NodeI{n.condition}
-}

@@ -22,4 +22,5 @@ type QueryBuilderI interface {
 	Load(ctx context.Context) []map[string]interface{}
 	Delete(ctx context.Context)
 	Count(ctx context.Context, distinct bool, nodes... NodeI) uint
+	nodes() []NodeI
 }

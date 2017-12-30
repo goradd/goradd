@@ -104,7 +104,3 @@ func (n *ManyManyNode) log(level int) {
 func (n *ManyManyNode) objectName() string {
 	return n.goName
 }
-
-func (n *ManyManyNode) containedNodes() (nodes []NodeI) {
-	return []NodeI{n.condition}
-}

@@ -470,31 +470,42 @@ func (b *sqlBuilder) makeColumnAliases() {
 	})
 }
 
+
+// After the intention of the query is gathered, this will add various nodes to the node tree to establish
+// where the joins are. This process also adds aliases to the nodes.
 func (b *sqlBuilder) buildNodeTree() {
-	for _,n := range b.joins {
-		b.addNode(n)
-		if cn, ok := n.(TableNodeI).EmbeddedNode_().(conditioner); ok {
-			if cn.getCondition() != nil {
-				b.addNode(cn.getCondition())
-			}
-		}
-	}
-	for _,n := range b.orderBys {
-		b.addNode(n)
-	}
-	if b.condition != nil {
-		b.addNode(b.condition)
-	}
-	for _,n := range b.groupBys {
-		b.addNode(n)
-	}
-	if b.having != nil {
-		b.addNode(b.having)
-	}
-	for _,n := range b.selects {
+	for _, n := range b.nodes() {
 		b.addNode(n)
 	}
 }
+
+// Returns the nodes referred to in the query. Some nodes will be container nodes, and so will have nodes
+// inside them, but every node is either referred to, or contained in the returned nodes.
+func (b *sqlBuilder) nodes() []NodeI {
+	var nodes = []NodeI{}
+	for _,n := range b.joins {
+		nodes = append(nodes, n)
+		if cn, ok := n.(TableNodeI).EmbeddedNode_().(conditioner); ok {
+			if cn.getCondition() != nil {
+				nodes = append(nodes, cn.getCondition())
+			}
+		}
+	}
+	nodes = append (nodes, b.orderBys...)
+
+	if b.condition != nil {
+		nodes = append (nodes, b.condition)
+	}
+	nodes = append (nodes, b.groupBys...)
+
+	if b.having != nil {
+		nodes = append (nodes, b.having)
+	}
+	nodes = append (nodes, b.selects...)
+
+	return nodes
+}
+
 
 /*
 Notes on the unpacking process:

@@ -1,11 +1,11 @@
 package db
-/*
+
 import (
 	"testing"
 	"grlocal/model"
 	"github.com/stretchr/testify/assert"
 	"context"
-	//. 	"github.com/spekary/goradd/orm/op"
+	. 	"github.com/spekary/goradd/orm/op"
 	"grlocal/model/node"
 	//"github.com/spekary/goradd/orm/db"
 	//"goradd/datetime"
@@ -13,7 +13,7 @@ import (
 	//"github.com/spekary/goradd/datetime"
 )
 
-*/
+
 
 /*
 func init() {
@@ -36,18 +36,18 @@ func init() {
 
 */
 
-/*
+
 func TestSubquery(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople().
 		Alias("manager_count",
 			Count(false,
-				Subquery(model.QueryProjects().
-					Where(Equal(node.Project().ManagerID(), node.Person().ID()))))).
+				model.QueryProjects().
+					Where(Equal(node.Project().ManagerID(), node.Person().ID())).
+			Subquery())).
 		Where(Equal(node.Person().LastName(), "Wolfe")).
 		Load(ctx)
 	assert.Equal(t, 2, people[0].GetAlias("manager_count").Int(), "Karen Wolfe manages 2 projects.")
 }
 
 
-*/

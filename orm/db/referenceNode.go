@@ -102,7 +102,3 @@ func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
 	SetParentNode(n2, n.parentNode)
 	return n2
 }
-
-func (n *ReferenceNode) containedNodes() (nodes []NodeI) {
-	return []NodeI{n.condition}
-}

@@ -1313,10 +1313,18 @@ func (b *`)
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
+// Use the query builder to delete a group of records that match the criteria
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder)  Delete(ctx context.Context) {
 	 b.base.Delete(ctx)
+}
+
+// Use the query builder to define a subquery within a larger query
+func (b *`)
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+	buf.WriteString(`Builder)  Subquery() *db.SubqueryNode {
+	 return db.NewSubqueryNode(b.base)
 }
 
 
