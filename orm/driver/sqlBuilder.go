@@ -1,4 +1,4 @@
-package db
+package driver
 import (
 	"strconv"
 	"github.com/spekary/goradd/util/types"
@@ -6,6 +6,8 @@ import (
 	"log"
 	"fmt"
 	"encoding/json"
+	. 	"github.com/spekary/goradd/orm/db"
+
 )
 
 const (

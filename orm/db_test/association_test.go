@@ -16,7 +16,7 @@ func TestMany2(t *testing.T) {
 	// All People Who Are on a Project Managed by Karen Wolfe (Person ID #7)
 	people := model.QueryPeople().
 		OrderBy(node.Person().LastName(), node.Person().FirstName()).
-		Where(Equal(node.Person().ProjectsAsTeamMember().ManagerID(), 7)).
+		Where(Equal(node.Person().ProjectsAsTeamMember().Manager().LastName(), "Wolfe")).
 		Distinct().
 		Select(node.Person().LastName(), node.Person().FirstName()).
 		Load(ctx)
@@ -66,10 +66,9 @@ func TestManyTypes(t *testing.T) {
 func TestManySelect(t *testing.T) {
 	ctx := context.Background()
 
-	// All People Who Are on a Project Managed by Karen Wolfe (Person ID #7)
 	people := model.QueryPeople().
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsTeamMember().Name()).
-		Where(Equal(node.Person().ProjectsAsTeamMember().ManagerID(), 7)).
+		Where(Equal(node.Person().ProjectsAsTeamMember().Manager().LastName(), "Wolfe")).
 		Select(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsTeamMember().Name()).
 		Load(ctx)
 

@@ -37,7 +37,7 @@ func init() {
 */
 
 
-func TestSubquery(t *testing.T) {
+func TestSubquery2(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople().
 		Alias("manager_count",

@@ -7,7 +7,7 @@ import (
 
 type LoaderFunc func(QueryBuilderI, map[string]interface{})
 
-// The dataStore is the central database collection used in codegneration and the orm.
+// The dataStore is the central database collection used in codegeneration and the orm.
 type DatabaseI interface {
 	Describe() *DatabaseDescription
 
