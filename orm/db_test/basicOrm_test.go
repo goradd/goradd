@@ -248,7 +248,7 @@ func TestCount(t *testing.T) {
 func TestGroupBy(t *testing.T) {
 	ctx := context.Background()
 	projects := model.QueryProjects().
-		Alias("teamMemberCount", Count(false, node.Project().TeamMembers())).
+		Alias("teamMemberCount", Count(node.Project().TeamMembers())).
 		GroupBy(node.Project()).
 		Load(ctx)
 
@@ -411,8 +411,8 @@ func TestHaving(t *testing.T) {
 		Select(node.Project().ID(), node.Project().Name()).
 		GroupBy(node.Project().ID()).
 		OrderBy(node.Project().ID()).
-		Alias("team_member_count", Count(false, node.Project().TeamMembers().ID())).
-		Having(GreaterThan(Count(false, db.AliasNode("team_member_count")), 5)).
+		Alias("team_member_count", Count(node.Project().TeamMembers().ID())).
+		Having(GreaterThan(Count(db.AliasNode("team_member_count")), 5)).
 		Load(ctx)
 
 	assert.Len(t, projects, 2)

@@ -239,7 +239,7 @@ func (o *OrderedMap) IterKeys() <-chan string {
 
 // Range will call the given function with every key and value in the order they were placed into the OrderedMap
 // During this process, the map will be locked, so do not use a function that will be taking significant amounts of time
-// If f returns false, it stops the iteration. This is taken from the sync.Map thingy
+// If f returns false, it stops the iteration. This pattern is taken from sync.Map.
 func (o *OrderedMap) Range(f func(key string, value interface{}) bool) {
 	for _, k := range o.order {
 		if !f(k, o.items[k]) {

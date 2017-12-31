@@ -33,7 +33,7 @@ const (
 )
 
 type nodeContainer interface {
-	containedNodes() []NodeI
+	containedNodes() (nodes []NodeI)
 }
 
 type objectNode interface {

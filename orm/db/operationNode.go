@@ -91,11 +91,10 @@ func NewFunctionNode (functionName string,operands... interface{}) *OperationNod
 
 // NewCountNode creates a Count function node. If no operands are given, it will use * as the parameter to the function
 // which means it will count nulls. To NOT count nulls, at least one column name needs to be specified.
-func NewCountNode(distinct bool, operands... NodeI) *OperationNode {
+func NewCountNode(operands... NodeI) *OperationNode {
 	n := &OperationNode {
 		op:       OpFunc,
 		functionName: "COUNT",
-		distinct: distinct,
 	}
 	for _,op := range operands {
 		n.operands = append(n.operands, op)
@@ -117,13 +116,18 @@ func (n *OperationNode) assignOperands(operands... interface{}) {
 	}
 }
 
-func (n *OperationNode) Ascending() NodeI {
+func (n *OperationNode) Ascending() *OperationNode {
 	n.sortDescending = false
 	return n
 }
 
-func (n *OperationNode) Descending() NodeI {
+func (n *OperationNode) Descending() *OperationNode {
 	n.sortDescending = true
+	return n
+}
+
+func (n *OperationNode) Distinct() *OperationNode {
+	n.distinct = true
 	return n
 }
 
@@ -175,7 +179,7 @@ func (n *OperationNode) containedNodes() (nodes []NodeI) {
 			nodes = append(nodes,op)
 		}
 	}
-	return nodes
+	return
 }
 
 func (n *OperationNode) tableName() string {

@@ -142,7 +142,7 @@ func (b *{{t.LcGoName}}Builder)  Delete(ctx context.Context) {
 
 // Use the query builder to define a subquery within a larger query
 func (b *{{t.LcGoName}}Builder)  Subquery() *db.SubqueryNode {
-	 return db.NewSubqueryNode(b.base)
+	 return b.base.Subquery()
 }
 
 

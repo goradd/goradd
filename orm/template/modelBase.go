@@ -1324,7 +1324,7 @@ func (b *`)
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder)  Subquery() *db.SubqueryNode {
-	 return db.NewSubqueryNode(b.base)
+	 return b.base.Subquery()
 }
 
 

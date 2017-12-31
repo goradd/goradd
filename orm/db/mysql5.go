@@ -300,6 +300,8 @@ func (m_ *Mysql5) generateNodeSql(n NodeI, useAlias bool) (sql string, args []in
 }
 
 func (m_ *Mysql5) generateSubquerySql(node *SubqueryNode) (sql string, args []interface{}) {
+	sql, args = m_.I().(Mysql5I).generateSelectSql(node.b.(*sqlBuilder))
+	sql = "(" + sql + ")"
 	return
 }
 

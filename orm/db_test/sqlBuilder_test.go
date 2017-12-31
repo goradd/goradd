@@ -41,10 +41,10 @@ func TestSubquery(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople().
 		Alias("manager_count",
-			Count(false,
-				model.QueryProjects().
+			model.QueryProjects().
+					Alias("", Count(node.Project().ManagerID())).
 					Where(Equal(node.Project().ManagerID(), node.Person().ID())).
-			Subquery())).
+				Subquery()).
 		Where(Equal(node.Person().LastName(), "Wolfe")).
 		Load(ctx)
 	assert.Equal(t, 2, people[0].GetAlias("manager_count").Int(), "Karen Wolfe manages 2 projects.")

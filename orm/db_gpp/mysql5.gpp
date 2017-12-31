@@ -282,7 +282,8 @@ class Mysql5 extends SqlDb {
 	}
 
 	func generateSubquerySql(node *SubqueryNode)  (sql string, args []interface{}) {
-		//sql, args = this.generateSelectSql(node.b)
+		sql, args = this.generateSelectSql(node.b.(*sqlBuilder))
+		sql = "(" + sql + ")"
 		return
 	}
 

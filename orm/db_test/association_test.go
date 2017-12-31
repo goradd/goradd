@@ -43,7 +43,7 @@ func TestMany2(t *testing.T) {
 func TestManyTypes(t *testing.T) {
 	ctx := context.Background()
 
-	// All People Who Are on a Project Managed by Karen Wolfe (Person ID #7)
+	// All people who are inactive
 	people := model.QueryPeople().
 		OrderBy(node.Person().LastName(), node.Person().FirstName()).
 		Where(Equal(node.Person().PersonTypes().ID(), model.PERSON_TYPE_INACTIVE)).

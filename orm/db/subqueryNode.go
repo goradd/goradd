@@ -33,7 +33,17 @@ func (n *SubqueryNode) Equals(n2 NodeI) bool {
 }
 
 func (n *SubqueryNode) containedNodes() (nodes []NodeI) {
-	return n.b.nodes()
+	nodes = append(nodes, n) // Return the subquery node itself, because we need to do some work on it
+
+	// must expand the returned nodes one more time
+	for _,n2 := range n.b.nodes() {
+		if cn,_ := n2.(nodeContainer); cn != nil {
+			nodes = append(nodes, cn.containedNodes()...)
+		} else {
+			nodes = append(nodes, n2)
+		}
+	}
+	return nodes
 }
 
 func (n *SubqueryNode) tableName() string {
