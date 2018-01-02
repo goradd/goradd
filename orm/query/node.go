@@ -118,7 +118,9 @@ func NodeSetCondition(n NodeI, condition NodeI) {
 }
 
 func NodeCondition(n NodeI) NodeI {
-	if tn, ok := n.(TableNodeI); ok {
+	if cn, ok := n.(conditioner); ok {
+		return cn.getCondition()
+	} else if tn, ok := n.(TableNodeI); ok {
 		if cn, ok := tn.EmbeddedNode_().(conditioner); ok {
 			return cn.getCondition()
 		}

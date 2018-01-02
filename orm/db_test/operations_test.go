@@ -130,7 +130,6 @@ func TestAliases(t *testing.T) {
 	nConson.SetAlias("conson")
 
 	people := model.QueryPeople().
-		GroupBy(node.Person().ID()).
 		OrderBy(node.Person().LastName(), node.Person().FirstName()).
 		Where(IsNotNull(nConson)).
 		Join(nVoyel, In(nVoyel.Name(), "Milestone A", "Milestone E", "Milestone I")).
