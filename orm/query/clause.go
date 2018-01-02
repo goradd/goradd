@@ -1,7 +1,4 @@
-package db
-
-import (
-)
+package query
 
 type ClauseI interface {
 	AddToBuilder(b QueryBuilderI)

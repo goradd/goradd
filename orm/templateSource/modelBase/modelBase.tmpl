@@ -5,7 +5,7 @@
 var hasDateTime bool
 
 for _,col := range t.Columns {
-	if col.GoType == db.COL_TYPE_DATETIME {
+	if col.GoType == query.COL_TYPE_DATETIME {
 		hasDateTime = true
 		break
 	}
@@ -19,6 +19,7 @@ package model
 import (
 	"grlocal/model/node"
 	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
 	"context"
 	"fmt"
 	. "github.com/spekary/goradd/orm/op"

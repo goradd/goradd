@@ -7,7 +7,7 @@ import (
 	. 	"github.com/spekary/goradd/orm/op"
 	"grlocal/model/node"
 	"github.com/stretchr/testify/assert"
-	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
 	"github.com/spekary/goradd/datetime"
 
 )
@@ -26,11 +26,11 @@ func TestEqualBasic(t *testing.T) {
 
 func TestLogical(t *testing.T) {
 	type testCase struct {
-		testNode db.NodeI
-		objectNum int
+		testNode   query.NodeI
+		objectNum  int
 		expectedId interface{}
-		count int
-		desc string
+		count      int
+		desc       string
 	}
 	var tests = []testCase {
 		{GreaterThan(node.Project().Num(), 3), 0, 4, 1,"Greater than uint test"},
@@ -76,10 +76,10 @@ func TestCount2(t *testing.T) {
 
 func TestCalculations(t *testing.T) {
 	type testCase struct {
-		testNode db.NodeI
-		objectNum int
+		testNode      query.NodeI
+		objectNum     int
 		expectedValue interface{}
-		desc string
+		desc          string
 	}
 	var tests = []testCase {
 		{Add(node.Project().Spent(), node.Project().Budget()), 0, "19811.00","Add test"},

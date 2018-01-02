@@ -1,4 +1,4 @@
-package driver
+package db
 import (
 	"strconv"
 	"github.com/spekary/goradd/util/types"
@@ -6,8 +6,7 @@ import (
 	"log"
 	"fmt"
 	"encoding/json"
-	. 	"github.com/spekary/goradd/orm/db"
-
+	. "github.com/spekary/goradd/orm/query"
 )
 
 const (
@@ -75,16 +74,8 @@ func NewSqlBuilder(db SqlDbI) *sqlBuilder {
 }
 
 func (b *sqlBuilder) Join(n NodeI, condition NodeI) QueryBuilderI {
-	if condition != nil {
-		if tn, ok := n.(TableNodeI); ok {
-			if c, ok := tn.EmbeddedNode_().(conditioner); !ok {
-				panic("Cannot set join a condition on this type of node")
-			} else {
-				c.setCondition(condition)
-			}
-		} else {
-			panic("Cannot set join conditions on this type of node")
-		}
+	if NodeIsConditioner(n) {
+		NodeSetCondition(n, condition)
 	}
 	b.joins = append(b.joins, n)
 
@@ -199,7 +190,7 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 	columnTypes := make([]GoColumnType, len(names))
 	colCount := b.columnAliases.Len()
 	for i:= 0; i < colCount; i++ {
-		columnTypes[i] = b.columnAliases.Get(names[i]).(*ColumnNode).goType
+		columnTypes[i] = ColumnNodeGoType(b.columnAliases.Get(names[i]).(*ColumnNode))
 	}
 	// add special aliases
 	for i := colCount; i < len(names); i++ {
@@ -305,10 +296,19 @@ func (b *sqlBuilder) addNode(n NodeI, addColumn bool) {
 	var cn []NodeI
 
 	var nodes = []NodeI{}
-	if nc, ok := n.(nodeContainer); ok {
-		cn = nc.containedNodes()
-		if cn != nil &&
-			!b.isCount { // Adding contained nodes in this situation will impact how the count is calculated in some cases???
+	if sn,ok := n.(*SubqueryNode); ok {
+		nodes = append(nodes, n) // Return the subquery node itself, because we need to do some work on it
+
+		// must expand the returned nodes one more time
+		for _,n2 := range SubqueryBuilder(sn).(*sqlBuilder).nodes() {
+			if cn := ContainedNodes(n2); cn != nil {
+				nodes = append(nodes, cn...)
+			} else {
+				nodes = append(nodes, n2)
+			}
+		}
+	} else if cn = ContainedNodes(n);cn != nil {
+		if !b.isCount { // Adding contained nodes in this situation will impact how the count is calculated in some cases???
 			nodes = append(nodes, cn...)
 		}
 	} else {
@@ -319,13 +319,13 @@ func (b *sqlBuilder) addNode(n NodeI, addColumn bool) {
 		if sq,ok := node.(*SubqueryNode); ok {
 			hasSubquery = true
 			b.subqueryCounter++
-			sq.b.(*sqlBuilder).subPrefix = strconv.Itoa(b.subqueryCounter) + "_"
-			sq.b.(*sqlBuilder).buildNodeTree()
+			SubqueryBuilder(sq).(*sqlBuilder).subPrefix = strconv.Itoa(b.subqueryCounter) + "_"
+			SubqueryBuilder(sq).(*sqlBuilder).buildNodeTree()
 			continue
 		}
-		treeNode = node.rootNode()
+		treeNode = RootNode(node)
 		if treeNode == nil {continue} // could be value node or operation node. Aliased operation nodes are handled elsewhere.
-		tableName = treeNode.(TableNodeI).tableName()
+		tableName = NodeTableName(treeNode)
 
 		if b.rootDbTable == "" {
 			b.rootDbTable = tableName
@@ -342,7 +342,7 @@ func (b *sqlBuilder) addNode(n NodeI, addColumn bool) {
 			b.rootNode = treeNode
 			b.assignAliases(b.rootNode, addColumn)
 		} else {
-			np = node.rootNode()
+			np = RootNode(node)
 			if np == nil {
 				np = node		// This is the case when we are adding an operation node that is going to be aliased
 			}
@@ -353,8 +353,8 @@ func (b *sqlBuilder) addNode(n NodeI, addColumn bool) {
 }
 
 func (b *sqlBuilder) logNode(node NodeI, level int) {
-	node.log(level)
-	if childNodes := node.getChildNodes(); childNodes != nil {
+	LogNode(node, level)
+	if childNodes := ChildNodes(node); childNodes != nil {
 		for _,cn := range childNodes {
 			b.logNode(cn, level + 1)
 		}
@@ -370,26 +370,24 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 	}
 	if srcNode.GetAlias() != "" &&
 		srcNode.GetAlias() != destNode.GetAlias() &&
-		srcNode.nodeType() != COLUMN_NODE {
+		GetNodeType(srcNode) != COLUMN_NODE {
 		// Adding a pre-aliased node that is at the same level as this node, so just add it.
-		b.insertNode(srcNode, destNode.getParentNode(), addColumn)
+		b.insertNode(srcNode, ParentNode(destNode), addColumn)
 		return
 	}
 	_ = a
 
-	var childNodes = srcNode.getChildNodes()
+	var childNodes = ChildNodes(srcNode)
 	if childNodes == nil {
 		// The node already exists in the tree
 		// Update information as needed.
-		if tn, ok := srcNode.(TableNodeI); ok {
-			if cn, ok := tn.EmbeddedNode_().(conditioner); ok &&
-				cn.getCondition() != nil {
+		prevCond := NodeCondition(srcNode)
 
-				if destCond := destNode.(TableNodeI).EmbeddedNode_().(conditioner).getCondition(); destCond == nil {
-					destNode.(TableNodeI).EmbeddedNode_().(conditioner).setCondition(cn.getCondition())
-				} else if !destCond.Equals(cn.getCondition()) {
-					panic("Error, attempting to Join with conditions on a node which already has conditions.")
-				}
+		if prevCond != nil {
+			if destCond := NodeCondition(destNode); destCond == nil {
+				NodeSetCondition(destNode, prevCond)
+			} else if !destCond.Equals(prevCond) {
+				panic("Error, attempting to Join with conditions on a node which already has conditions.")
 			}
 		}
 		b.assignAliases(destNode, addColumn)	// potentially was added by SelectNodes_, and so did not get aliases
@@ -398,17 +396,14 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 		} else { // alias was manually assigned, so use that one
 			destNode.SetAlias(srcNode.GetAlias())
 		}
-		if p := srcNode.getParentNode(); p != nil && p.GetAlias() == "" {
-			p.SetAlias(destNode.getParentNode().GetAlias()) // parent node generation for src node alias in case src node is not added to tree, but is still used in sql generation
+		if p := ParentNode(srcNode); p != nil && p.GetAlias() == "" {
+			p.SetAlias(ParentNode(destNode).GetAlias()) // parent node generation for src node alias in case src node is not added to tree, but is still used in sql generation
 		}
 
 
-		if tn, ok := destNode.(TableNodeI); ok {
-			if dn,ok := tn.EmbeddedNode_().(Expander); ok {
-				// if we are expanding an array node, copy that to the destNode
-				if srcNode.(TableNodeI).EmbeddedNode_().(Expander).isExpanded() {
-					dn.Expand()
-				}
+		if NodeIsExpander(destNode) {
+			if NodeIsExpanded(srcNode) {
+				ExpandNode(destNode)
 			}
 		}
 		return
@@ -416,7 +411,7 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 
 	var srcChild NodeI
 
-	if destNode.getChildNodes() == nil {
+	if ChildNodes(destNode) == nil {
 		// We have found the end of a chain, but we want to extend it
 		for _,srcChild = range childNodes {
 			b.insertNode(srcChild, destNode, addColumn)
@@ -426,7 +421,7 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 			// TODO: Potentially improve speed by skipping column nodes. I suspect we will have already added those.
 			// try to find the child node in the next level of the tree
 			found := false
-			for _,destChild:= range destNode.getChildNodes() {
+			for _,destChild := range ChildNodes(destNode) {
 				if destChild.Equals(srcChild) {
 					// found a matching child node, recurse
 					b.mergeNode(srcChild, destChild, addColumn)
@@ -446,9 +441,8 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 func (b *sqlBuilder) insertNode(srcNode, parentNode NodeI, addColumn bool) {
 	SetParentNode (srcNode, parentNode)
 	b.assignAliases(srcNode, addColumn)
-	if srcNode.nodeType() == REFERENCE_NODE {
-		e := srcNode.(TableNodeI).EmbeddedNode_().(*ReferenceNode).relatedColumnNode()
-		b.addNode(e, addColumn)
+	if rn := RelatedColumnNode(srcNode); rn != nil {
+		b.addNode(rn, addColumn)
 	}
 }
 
@@ -473,7 +467,7 @@ func (b *sqlBuilder) assignAliases (n NodeI, addColumn bool) {
 		}
 	} else {
 		b.tableAliases.Set(n.GetAlias(), n)
-		if childNodes := n.getChildNodes(); childNodes != nil {
+		if childNodes := ChildNodes(n); childNodes != nil {
 			for _, cn := range childNodes {
 				b.assignAliases(cn, addColumn)
 			}
@@ -548,10 +542,8 @@ func (b *sqlBuilder) nodes() []NodeI {
 	var nodes = []NodeI{}
 	for _,n := range b.joins {
 		nodes = append(nodes, n)
-		if cn, ok := n.(TableNodeI).EmbeddedNode_().(conditioner); ok {
-			if cn.getCondition() != nil {
-				nodes = append(nodes, cn.getCondition())
-			}
+		if c := NodeCondition(n); c != nil {
+			nodes = append(nodes, c)
 		}
 	}
 	nodes = append (nodes, b.orderBys...)
@@ -635,7 +627,6 @@ func (b *sqlBuilder) unpackObject(parent NodeI, row ValueMap, oMap *types.Ordere
 	var childNode NodeI
 	var childTableNode TableNodeI
 	var ok bool
-	var objNode objectNode
 
 	pk := b.makeObjectKey(parent, row)
 	if pk == "" {
@@ -656,11 +647,10 @@ func (b *sqlBuilder) unpackObject(parent NodeI, row ValueMap, oMap *types.Ordere
 		oMap.Set(pk, obj)
 	}
 
-	for _,childNode = range parent.getChildNodes() {
+	for _,childNode = range ChildNodes(parent) {
 		if childTableNode,ok = childNode.(TableNodeI); ok {
 			// if this is an embedded object, collect a group of objects
-			objNode,_ = childTableNode.EmbeddedNode_().(objectNode)
-			arrayKey = objNode.objectName()
+			arrayKey = NodeGoName(childTableNode)
 			if 	iface,ok = obj[arrayKey]; !ok {
 				// If this is the first time, create the group
 				newArray := types.NewOrderedMap()
@@ -685,7 +675,7 @@ func (b *sqlBuilder) unpackLeaf(n NodeI, row ValueMap, obj ValueMap) {
 	case *ColumnNode:
 		key = node.GetAlias()
 		if b.columnAliases.Has(key) && !b.aliasNodes.Has(key) {	// could be a special alias, which we should unpack differently
-			fieldName = node.dbColumn
+			fieldName = ColumnNodeDbName(node)
 			obj[fieldName] = row[key]
 		}
 	default:
@@ -719,7 +709,7 @@ func (b *sqlBuilder) getPkNode(n NodeI) NodeI {
 func (b *sqlBuilder) findMatchingChildNode(n NodeI, parent NodeI) (match NodeI) {
 	var childNodes []NodeI
 
-	if childNodes = parent.getChildNodes(); childNodes != nil {
+	if childNodes = ChildNodes(parent); childNodes != nil {
 		for _,cn := range childNodes {
 			if cn.Equals(n) {
 				return cn
@@ -739,43 +729,44 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 	var newArray []ValueMap
 	var nodeCopy ValueMap
 
-	if n.getChildNodes() == nil || len(n.getChildNodes()) == 0 {
+	childNodes := ChildNodes(n)
+	if childNodes == nil || len(childNodes) == 0 {
 		return
 	}
 
 	outArray = append(outArray, NewValueMap())
 
-	for _,childNode = range n.getChildNodes()  {
+	for _,childNode = range childNodes  {
 		copies = []ValueMap{}
 		for _, item = range outArray {
 			switch node:=childNode.(type) {
 			case *ColumnNode:
-				item[node.dbColumn] = nodeObject[node.dbColumn]
+				item[ColumnNodeDbName(node)] = nodeObject[ColumnNodeDbName(node)]
 			case TableNodeI:
 				switch tableNode := node.EmbeddedNode_().(type) {
 				case *ReferenceNode:
 					// Should be a one or zero item array here
-					om := nodeObject[tableNode.goName].(*types.OrderedMap)
+					om := nodeObject[NodeGoName(tableNode)].(*types.OrderedMap)
 					if om.Len() > 1 {
 						panic ("Cannot have an array with more than one item here.")
 					} else if om.Len() == 1 {
-						innerNodeObject = nodeObject[tableNode.goName].(*types.OrderedMap).GetAt(0).(ValueMap)
+						innerNodeObject = nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).GetAt(0).(ValueMap)
 						innerCopies = b.expandNode(childNode, innerNodeObject)
 						if len(innerCopies) > 1 {
 							for _, cp2 := range innerCopies {
 								nodeCopy := item.Copy().(ValueMap)
-								nodeCopy[tableNode.goName] = cp2
+								nodeCopy[NodeGoName(tableNode)] = cp2
 								copies = append(copies, nodeCopy)
 							}
 						} else {
-							item[tableNode.goName] = map[string]interface{}(innerCopies[0])
+							item[NodeGoName(tableNode)] = map[string]interface{}(innerCopies[0])
 						}
 					}
 					// else we likely were not included because of a conditional join
 				case *ReverseReferenceNode:
-					if !tableNode.isArray { // unique reverse or single expansion many
+					if !ReverseReferenceNodeIsArray(tableNode) { // unique reverse or single expansion many
 						newArray = []ValueMap{}
-						nodeObject[tableNode.goName].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
+						nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
 							innerNodeObject = value.(ValueMap)
 							innerCopies = b.expandNode(childNode, innerNodeObject)
 							for _,ic := range innerCopies {
@@ -785,14 +776,14 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 						})
 						for _,cp2 := range newArray {
 							nodeCopy = item.Copy().(ValueMap)
-							nodeCopy[tableNode.goName] = cp2
+							nodeCopy[NodeGoName(tableNode)] = cp2
 							copies = append(copies, nodeCopy)
 						}
 					} else {
 						// From this point up, we should not be creating additional copies, since from this point down, we
 						// are gathering an array
 						newArray = []ValueMap{}
-						nodeObject[tableNode.goName].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
+						nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
 							innerNodeObject = value.(ValueMap)
 							innerCopies = b.expandNode(childNode, innerNodeObject)
 							for _,ic := range innerCopies {
@@ -800,15 +791,15 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 							}
 							return true
 						})
-						item[tableNode.goName] = newArray
+						item[NodeGoName(tableNode)] = newArray
 					}
 
 				case *ManyManyNode:
-					if tableNode.isTypeTable {
+					if ManyManyNodeIsTypeTable(tableNode) {
 						intArray := []uint{}
-						nodeObject[tableNode.goName].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
+						nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
 							innerNodeObject = value.(ValueMap)
-							typeKey := innerNodeObject[node.PrimaryKeyNode_().dbColumn]
+							typeKey := innerNodeObject[ColumnNodeDbName(node.PrimaryKeyNode_())]
 							switch v := typeKey.(type) {
 							case uint:
 								intArray = append(intArray, v)
@@ -817,19 +808,19 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 							}
 							return true
 						})
-						if tableNode.isArray { // single expansion many
-							item[tableNode.goName] = intArray
+						if ManyManyNodeIsArray(tableNode) { // single expansion many
+							item[NodeGoName(tableNode)] = intArray
 						} else {
 							for _, cp2 := range intArray {
 								nodeCopy = item.Copy().(ValueMap)
-								nodeCopy[tableNode.goName] = []uint{cp2}
+								nodeCopy[NodeGoName(tableNode)] = []uint{cp2}
 								copies = append(copies, nodeCopy)
 							}
 						}
 
 					} else {
 						newArray = []ValueMap{}
-						nodeObject[tableNode.goName].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
+						nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
 							innerNodeObject = value.(ValueMap)
 							innerCopies = b.expandNode(childNode, innerNodeObject)
 							for _, ic := range innerCopies {
@@ -837,12 +828,12 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 							}
 							return true
 						})
-						if tableNode.isArray {
-							item[tableNode.goName] = newArray
+						if  ManyManyNodeIsArray(tableNode) {
+							item[NodeGoName(tableNode)] = newArray
 						} else {
 							for _, cp2 := range newArray {
 								nodeCopy = item.Copy().(ValueMap)
-								nodeCopy[tableNode.goName] = []ValueMap{cp2}
+								nodeCopy[NodeGoName(tableNode)] = []ValueMap{cp2}
 								copies = append(copies, nodeCopy)
 							}
 						}

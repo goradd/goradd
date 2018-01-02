@@ -1,4 +1,4 @@
-package db
+package query
 
 import (
 	"log"
@@ -191,4 +191,28 @@ func (n *OperationNode) tableName() string {
 func (n *OperationNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Op: " + n.op.String())
+}
+
+func OperationNodeOperator (n *OperationNode) Operator {
+	return n.op
+}
+
+func OperationNodeOperands (n *OperationNode) []NodeI {
+	return n.operands
+}
+
+func OperationNodeFunction (n *OperationNode) string {
+	return n.functionName
+}
+
+func OperationNodeDistinct (n *OperationNode) bool {
+	return n.distinct
+}
+
+func OperationIsAggregate (n *OperationNode) bool {
+	return n.isAggregate
+}
+
+func OperationSortDescending (n *OperationNode) bool {
+	return n.sortDescending
 }

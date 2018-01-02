@@ -98,7 +98,7 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 		}
 	} else {
 		v := i.({{= col.GoType.String() }})
-		if o.{{= col.VarName }}IsNull {{g if col.GoType != db.COL_TYPE_BYTES { }} || o.{{= col.VarName }} != v {{g } }} {
+		if o.{{= col.VarName }}IsNull {{g if col.GoType != query.COL_TYPE_BYTES { }} || o.{{= col.VarName }} != v {{g } }} {
 			o.{{= col.VarName }}IsNull = false
 
 			// TODO: For bytes, should this be a copy?
@@ -147,7 +147,7 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 
 {{
 func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.GoType.String() }}) {
-{{g if col.GoType == db.COL_TYPE_BYTES { }}
+{{g if col.GoType == query.COL_TYPE_BYTES { }}
 	o.{{= col.VarName }} = v		// TODO: Copy bytes??
 	o.{{= col.VarName }}IsDirty = true
 {{g } else { }}
@@ -195,12 +195,12 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 
 {{
 
-func (o *{{privateName}}Base) GetAlias(key string) db.Alias {
+func (o *{{privateName}}Base) GetAlias(key string) query.AliasValue {
 	if a,ok := o._aliases[key]; ok {
-		return db.NewAlias(a)
+		return query.NewAliasValue(a)
 	} else {
 		panic ("Alias " + key + " not found.")
-		return db.NewAlias([]byte{})
+		return query.NewAliasValue([]byte{})
 	}
 }
 }}

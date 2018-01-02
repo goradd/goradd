@@ -3,6 +3,8 @@ package db
 import (
 	"log"
 	"context"
+	. "github.com/spekary/goradd/orm/query"
+
 )
 
 type LoaderFunc func(QueryBuilderI, map[string]interface{})

@@ -11,27 +11,27 @@ package node
 // This file is code generated. Do not edit.
 
 import (
-	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
 )
 }}
 
 {{
 type {{privateName}}Node struct {
-	db.NodeI
+	query.NodeI
 }
 
 func {{= t.GoName }}() *{{privateName}}Node {
 	n := {{privateName}}Node {
-		db.NewTableNode("{{= t.DbKey }}", "{{= t.DbName }}",  "{{= t.GoName }}"),
+		query.NewTableNode("{{= t.DbKey }}", "{{= t.DbName }}",  "{{= t.GoName }}"),
 	}
-	db.SetParentNode(&n, nil)
+	query.SetParentNode(&n, nil)
 	return &n
 }
 
 }}
 
 {{
-func (n *{{privateName}}Node) SelectNodes_() (nodes []*db.ColumnNode) {
+func (n *{{privateName}}Node) SelectNodes_() (nodes []*query.ColumnNode) {
 }}
 
 for _,col := range t.Columns {
@@ -48,7 +48,7 @@ for _,col := range t.Columns {
 }}
 
 {{
-func (n *{{privateName}}Node) PrimaryKeyNode_() (*db.ColumnNode) {
+func (n *{{privateName}}Node) PrimaryKeyNode_() (*query.ColumnNode) {
 }}
 
 for _,col := range t.Columns {
@@ -65,7 +65,7 @@ for _,col := range t.Columns {
 }}
 
 {{
-func (n *{{privateName}}Node) EmbeddedNode_() db.NodeI {
+func (n *{{privateName}}Node) EmbeddedNode_() query.NodeI {
 	return n.NodeI
 }
 }}

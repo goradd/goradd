@@ -39,19 +39,19 @@ func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.Codegen, dd 
 // This file is code generated. Do not edit.
 
 import (
-	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
 )
 
 type `)
 	buf.WriteString(fmt.Sprintf("%v", nodeName))
 	buf.WriteString(` struct {
-	db.NodeI
+	query.NodeI
 }
 
 
 func (n *`)
 	buf.WriteString(fmt.Sprintf("%v", nodeName))
-	buf.WriteString(`) SelectNodes_() (nodes []*db.ColumnNode) {
+	buf.WriteString(`) SelectNodes_() (nodes []*query.ColumnNode) {
 `)
 
 	i := 0
@@ -76,7 +76,7 @@ func (n *`)
 
 func (n *`)
 	buf.WriteString(fmt.Sprintf("%v", nodeName))
-	buf.WriteString(`) PrimaryKeyNode_() (*db.ColumnNode) {
+	buf.WriteString(`) PrimaryKeyNode_() (*query.ColumnNode) {
 	return n.`)
 	buf.WriteString(tt.PkField)
 	buf.WriteString(`()
@@ -84,7 +84,7 @@ func (n *`)
 
 func (n *`)
 	buf.WriteString(fmt.Sprintf("%v", nodeName))
-	buf.WriteString(`) EmbeddedNode_() db.NodeI {
+	buf.WriteString(`) EmbeddedNode_() query.NodeI {
 	return n.NodeI
 }
 
@@ -100,9 +100,9 @@ func (n *`)
 		buf.WriteString(fmt.Sprintf("%v", nodeName))
 		buf.WriteString(`) `)
 		buf.WriteString(fn)
-		buf.WriteString(`() *db.ColumnNode {
+		buf.WriteString(`() *query.ColumnNode {
 
-	cn := db.NewColumnNode (
+	cn := query.NewColumnNode (
 		"`)
 		buf.WriteString(tt.DbKey)
 		buf.WriteString(`",
@@ -119,7 +119,7 @@ func (n *`)
 		buf.WriteString(ft)
 		buf.WriteString(`",
 	)
-	db.SetParentNode(cn, n)
+	query.SetParentNode(cn, n)
 	return cn
 }
 `)

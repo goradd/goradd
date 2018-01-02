@@ -1,4 +1,4 @@
-package db
+package query
 
 // The nodeLinkI interface provides an interface to allow nodes to be linked in a parent multi-child chain
 type nodeLinkI interface {
@@ -57,6 +57,10 @@ func SetParentNode(child NodeI, parent NodeI) {
 	child.setSelf(child)
 }
 
+func ParentNode(n NodeI) NodeI {
+	return n.getParentNode()
+}
+
 // rootNode returns the top node in the node chain
 func (n *nodeLink) rootNode() NodeI {
 	if n.self == nil {
@@ -75,4 +79,23 @@ func (n *nodeLink) getParentNode() NodeI {
 
 func (n *nodeLink) getChildNodes() []NodeI {
 	return n.childNodes
+}
+
+/**
+
+Public Accessors
+
+The following functions are designed primarily to be used by the db package to help it unpack queries. The are not
+given an accessor at the beginning so that they do not show up as a function in editors that provide code hinting when
+trying to put together a node chain during the code creation process. Essentially they are trying to create exported
+functions for the db package without broadcasting them to the world.
+
+ */
+
+func ChildNodes(n nodeLinkI) []NodeI {
+	return n.getChildNodes()
+}
+
+func RootNode(n nodeLinkI) NodeI {
+	return n.rootNode()
 }

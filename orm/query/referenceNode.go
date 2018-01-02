@@ -1,4 +1,4 @@
-package db
+package query
 
 import (
 	"log"
@@ -20,7 +20,7 @@ type ReferenceNode struct {
 	// The name of the column related to this reference
 	goColumnName	string
 	// The name of the function used to access the property as a node or ORM item
-	goName			string
+	goPropName string
 	// The name of the variable in the model structure used to hold the object
 	goVarName		string
 
@@ -47,14 +47,14 @@ func NewReferenceNode (
 	isType bool,
 ) *ReferenceNode {
 	n :=  &ReferenceNode {
-		dbKey:       dbKey,
-		dbTable:     dbTableName,
-		dbColumn:    dbColumnName,
-		goColumnName:goColumnName,
-		goName:      goName,
-		refTable:    refTableName,
-		refColumn:   refColumn,
-		isTypeTable: isType,
+		dbKey:        dbKey,
+		dbTable:      dbTableName,
+		dbColumn:     dbColumnName,
+		goColumnName: goColumnName,
+		goPropName:   goName,
+		refTable:     refTableName,
+		refColumn:    refColumn,
+		isTypeTable:  isType,
 	}
 	return n
 }
@@ -67,7 +67,7 @@ func (n *ReferenceNode) Equals(n2 NodeI) bool {
 	if n2.nodeType() == REFERENCE_NODE {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*ReferenceNode)
 		return cn.dbTable == n.dbTable &&
-			cn.goName == n.goName &&
+			cn.goPropName == n.goPropName &&
 			(cn.alias == "" || n.alias == "" || cn.alias == n.alias)
 
 	}
@@ -91,9 +91,9 @@ func (n *ReferenceNode) log(level int) {
 	log.Print(tabs + "R: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + " AS " + n.GetAlias())
 }
 
-// Return the name as a captialized object name
-func (n *ReferenceNode) objectName() string {
-	return n.goName
+// Return the name as a capitalized object name
+func (n *ReferenceNode) goName() string {
+	return n.goPropName
 }
 
 // Return a node for the column that is the foreign key
@@ -101,4 +101,26 @@ func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
 	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, COL_TYPE_STRING)
 	SetParentNode(n2, n.parentNode)
 	return n2
+}
+
+
+func RelatedColumnNode(n NodeI) NodeI {
+	if tn,_ := n.(TableNodeI); tn != nil {
+		if rn,_ := tn.EmbeddedNode_().(*ReferenceNode); rn != nil {
+			return rn.relatedColumnNode()
+		}
+	}
+	return nil
+}
+
+func ReferenceNodeRefTable(n *ReferenceNode) string {
+	return n.refTable
+}
+
+func ReferenceNodeRefColumn(n *ReferenceNode) string {
+	return n.refColumn
+}
+
+func ReferenceNodeDbColumnName(n *ReferenceNode) string {
+	return n.dbColumn
 }

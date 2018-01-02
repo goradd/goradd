@@ -1,4 +1,4 @@
-package db
+package query
 
 import (
 	"log"
@@ -23,7 +23,7 @@ type TableNode struct {
 	// Name of table in the database we point to
 	dbTable       string
 	// The name of the function used to access the property as a node or ORM item
-	goName			string
+	goPropName			string
 }
 
 
@@ -32,7 +32,7 @@ func NewTableNode(dbKey string, dbName string, goName string) *TableNode {
 	return &TableNode {
 		dbKey:   dbKey,
 		dbTable: dbName,
-		goName:  goName,
+		goPropName:  goName,
 	}
 }
 
@@ -42,6 +42,10 @@ func (n *TableNode) nodeType() NodeType {
 
 func (n *TableNode) tableName() string {
 	return n.dbTable
+}
+
+func (n *TableNode) goName() string {
+	return n.goPropName
 }
 
 func (n *TableNode) Equals(n2 NodeI) bool {
@@ -56,10 +60,4 @@ func (n *TableNode) Equals(n2 NodeI) bool {
 func (n *TableNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Table: " + n.dbTable + " AS " + n.GetAlias())
-}
-
-
-// Return the name as a captialized object name
-func (n *TableNode) objectName() string {
-	return n.goName
 }

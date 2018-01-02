@@ -1,3 +1,4 @@
-package db_gpp
+package tmp
 
+/*
 //go:generate gopp -all -o ../db

@@ -1,4 +1,4 @@
-package db
+package query
 
 import (
 	"log"
@@ -17,7 +17,7 @@ type ManyManyNode struct {
 	// NoSQL: The column storing the array of ids on the other end. SQL: the column in the association table pointing towards us.
 	dbColumn       string
 	// Property in the original object used to ref to this object or node.
-	goName			string
+	goPropName			string
 
 	// NoSQL & SQL: The table we are joining to
 	refTable string
@@ -48,7 +48,7 @@ func NewManyManyNode(
 		dbKey:       dbKey,
 		dbTable:     dbTable,
 		dbColumn:    dbColumn,
-		goName:      goName,
+		goPropName:      goName,
 		refTable:    refTableName,
 		refColumn:   refColumn,
 		isArray: 	 true,
@@ -75,7 +75,7 @@ func (n *ManyManyNode) Equals(n2 NodeI) bool {
 	if n2.nodeType() == MANYMANY_NODE {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*ManyManyNode)
 		return cn.dbTable == n.dbTable &&
-			cn.goName == n.goName &&
+			cn.goPropName == n.goPropName &&
 			(cn.alias == "" || n.alias == "" || cn.alias == n.alias)
 
 	}
@@ -101,6 +101,32 @@ func (n *ManyManyNode) log(level int) {
 
 
 // Return the name as a captialized object name
-func (n *ManyManyNode) objectName() string {
-	return n.goName
+func (n *ManyManyNode) goName() string {
+	return n.goPropName
 }
+
+func ManyManyNodeIsArray(n *ManyManyNode) bool {
+	return n.isArray
+}
+
+func ManyManyNodeIsTypeTable(n *ManyManyNode) bool {
+	return n.isTypeTable
+}
+
+func ManyManyNodeRefTable(n *ManyManyNode) string {
+	return n.refTable
+}
+
+func ManyManyNodeRefColumn(n *ManyManyNode) string {
+	return n.refColumn
+}
+
+
+func ManyManyNodeDbTable(n *ManyManyNode) string {
+	return n.dbTable
+}
+
+func ManyManyNodeDbColumn(n *ManyManyNode) string {
+	return n.dbColumn
+}
+

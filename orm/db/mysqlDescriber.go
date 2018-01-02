@@ -8,6 +8,7 @@ import (
 	"github.com/knq/snaker"
 	"math"
 	"github.com/spekary/goradd/util/types"
+	. "github.com/spekary/goradd/orm/query"
 )
 
 const (

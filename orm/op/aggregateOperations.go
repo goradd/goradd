@@ -1,6 +1,6 @@
 package op
 
-import . 	"github.com/spekary/goradd/orm/db"
+import . 	"github.com/spekary/goradd/orm/query"
 
 
 // On some databases, these aggregate oeprations will only work if there is a GroupBy clause as well.

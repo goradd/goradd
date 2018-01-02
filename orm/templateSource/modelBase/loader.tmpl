@@ -193,7 +193,7 @@ for _,ref := range t.ReverseReferences {
 
 {{
 
-	if v, ok := m["{{db.AliasResults}}"]; ok {
+	if v, ok := m["{{query.AliasResults}}"]; ok {
 		o._aliases = map[string]interface{}(v.(db.ValueMap))
 	}
 }}

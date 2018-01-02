@@ -7,6 +7,8 @@ import (
 	"database/sql"
 	"github.com/spekary/goradd/datetime"
 	"fmt"
+	. "github.com/spekary/goradd/orm/query"
+
 )
 
 // SqlReceiver is an encapsulation of a way of receiving data from sql queries as interface{} pointers. This allows you

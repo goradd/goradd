@@ -6,15 +6,15 @@ package node
 // This file is code generated. Do not edit.
 
 import (
-	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
 )
 
 type {{nodeName}} struct {
-	db.NodeI
+	query.NodeI
 }
 
 
-func (n *{{nodeName}}) SelectNodes_() (nodes []*db.ColumnNode) {
+func (n *{{nodeName}}) SelectNodes_() (nodes []*query.ColumnNode) {
 }}
 
 i := 0
@@ -35,11 +35,11 @@ for fn != "" {
 	return nodes
 }
 
-func (n *{{nodeName}}) PrimaryKeyNode_() (*db.ColumnNode) {
+func (n *{{nodeName}}) PrimaryKeyNode_() (*query.ColumnNode) {
 	return n.{{= tt.PkField }}()
 }
 
-func (n *{{nodeName}}) EmbeddedNode_() db.NodeI {
+func (n *{{nodeName}}) EmbeddedNode_() query.NodeI {
 	return n.NodeI
 }
 
@@ -51,16 +51,16 @@ ft = tt.FieldGoType(i)
 
 for fn != "" {
 {{
-func (n *{{nodeName}}) {{= fn }}() *db.ColumnNode {
+func (n *{{nodeName}}) {{= fn }}() *query.ColumnNode {
 
-	cn := db.NewColumnNode (
+	cn := query.NewColumnNode (
 		"{{= tt.DbKey }}",
 		"{{= tt.DbName }}",
 		"{{= tt.FieldNames[i] }}",
 		"{{= fn }}",
 		"{{= ft }}",
 	)
-	db.SetParentNode(cn, n)
+	query.SetParentNode(cn, n)
 	return cn
 }
 }}

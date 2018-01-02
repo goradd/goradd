@@ -1,4 +1,4 @@
-package db
+package query
 
 import (
 	"log"
@@ -16,7 +16,7 @@ type ReverseReferenceNode struct {
 	// NoSQL only. The column containing an array of items we are pointing to.
 	dbColumn       string
 	// Property we are using to refer to the many side of the relationship
-	goName			string
+	goPropName			string
 
 	// Is this pointing to a type table item?
 	isTypeTable bool
@@ -49,7 +49,7 @@ func NewReverseReferenceNode (
 		dbKey:       dbKey,
 		dbTable:     dbTable,
 		dbColumn:    dbColumn,
-		goName:      goName,
+		goPropName:      goName,
 		refTable:    refTable,
 		refColumn:   refColumn,
 		isArray: 	isArray,
@@ -100,6 +100,23 @@ func (n *ReverseReferenceNode) log(level int) {
 }
 
 // Return the name as a captialized object name
-func (n *ReverseReferenceNode) objectName() string {
-	return n.goName
+func (n *ReverseReferenceNode) goName() string {
+	return n.goPropName
+}
+
+func ReverseReferenceNodeIsArray(n *ReverseReferenceNode) bool {
+	return n.isArray
+}
+
+func ReverseReferenceNodeRefTable(n *ReverseReferenceNode) string {
+	return n.refTable
+}
+
+func ReverseReferenceNodeRefColumn(n *ReverseReferenceNode) string {
+	return n.refColumn
+}
+
+
+func ReverseReferenceNodeDbColumnName(n *ReverseReferenceNode) string {
+	return n.dbColumn
 }

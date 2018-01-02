@@ -1,4 +1,4 @@
-package db
+package query
 
 import (
 	"github.com/spekary/goradd/datetime"
@@ -7,40 +7,40 @@ import (
 	"fmt"
 )
 
-// Aliases are returned by the GetAlias function that is generated for each type. You then convert the alias to a
+// AliasValues are returned by the GetAlias function that is generated for each type. You then convert the alias to a
 // particular type to use it.
 
 
-type Alias struct {
+type AliasValue struct {
 	value string
 	isNil bool
 }
 
-func NewAlias(a interface{}) Alias {
+func NewAliasValue(a interface{}) AliasValue {
 	switch v := a.(type) {
 	case nil:
-		return  Alias{"", true}
+		return  AliasValue{"", true}
 	case []byte:
-		return Alias{string(v[:]), false}
+		return AliasValue{string(v[:]), false}
 	default:
-		return Alias{fmt.Sprint(a), false}
+		return AliasValue{fmt.Sprint(a), false}
 	}
 }
 
-func (a Alias) IsNil() bool {
+func (a AliasValue) IsNil() bool {
 	return a.isNil
 }
 
-func (a Alias) IsNull() bool {
+func (a AliasValue) IsNull() bool {
 	return a.isNil
 }
 
 
-func (a Alias) String() string {
+func (a AliasValue) String() string {
 	return string(a.value[:])
 }
 
-func (a Alias) Int() int {
+func (a AliasValue) Int() int {
 	i, err := strconv.ParseInt(a.String(), 10, 64)
 	if err != nil {
 		log.Panic(err)
@@ -48,11 +48,11 @@ func (a Alias) Int() int {
 	return int(i)
 }
 
-func (a Alias) DateTime() datetime.DateTime {
+func (a AliasValue) DateTime() datetime.DateTime {
 	return datetime.FromSqlDateTime(a.String())
 }
 
-func (a Alias) Float() float64 {
+func (a AliasValue) Float() float64 {
 	f,err := strconv.ParseFloat(a.String(), 64)
 	if err != nil {
 		log.Panic(err)
@@ -60,7 +60,7 @@ func (a Alias) Float() float64 {
 	return f
 }
 
-func (a Alias) Bool() bool {
+func (a AliasValue) Bool() bool {
 	b, err := strconv.ParseBool(a.String())
 	if err != nil {
 		log.Panic(err)

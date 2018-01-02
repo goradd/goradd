@@ -12,6 +12,7 @@ import (
 	"github.com/knq/snaker"
 	"github.com/spekary/goradd/codegen/generator"
 	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
 )
 
 func init() {
@@ -88,9 +89,9 @@ func (`)
 `)
 	for _, value := range tt.Values {
 		buf.WriteString(`	case `)
-		buf.WriteString(generator.AsConstant(value[keyField], db.COL_TYPE_UNSIGNED))
+		buf.WriteString(generator.AsConstant(value[keyField], query.COL_TYPE_UNSIGNED))
 		buf.WriteString(`: return `)
-		buf.WriteString(generator.AsConstant(value[tt.FieldNames[1]], db.COL_TYPE_STRING))
+		buf.WriteString(generator.AsConstant(value[tt.FieldNames[1]], query.COL_TYPE_STRING))
 		buf.WriteString(`
 `)
 	}
@@ -124,7 +125,7 @@ func (`)
 `)
 		for _, value := range tt.Values {
 			buf.WriteString(`	case `)
-			buf.WriteString(generator.AsConstant(value[keyField], db.COL_TYPE_UNSIGNED))
+			buf.WriteString(generator.AsConstant(value[keyField], query.COL_TYPE_UNSIGNED))
 			buf.WriteString(`: return `)
 			buf.WriteString(generator.AsConstant(value[tt.FieldNames[i+2]], typ))
 			buf.WriteString(`

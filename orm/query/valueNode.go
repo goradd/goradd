@@ -1,4 +1,4 @@
-package db
+package query
 
 import (
 	"reflect"
@@ -94,3 +94,6 @@ func (n *ValueNode) log(level int) {
 	log.Print(tabs + "Val: " + fmt.Sprint(n.value) + alias)
 }
 
+func ValueNodeGetValue(n *ValueNode) interface{} {
+	return n.value
+}

@@ -47,14 +47,14 @@ func (n *NodeTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseD
 // This file is code generated. Do not edit.
 
 import (
-	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
 )
 `)
 
 	buf.WriteString(`type `)
 	buf.WriteString(fmt.Sprintf("%v", privateName))
 	buf.WriteString(`Node struct {
-	db.NodeI
+	query.NodeI
 }
 
 func `)
@@ -65,7 +65,7 @@ func `)
 	n := `)
 	buf.WriteString(fmt.Sprintf("%v", privateName))
 	buf.WriteString(`Node {
-		db.NewTableNode("`)
+		query.NewTableNode("`)
 	buf.WriteString(t.DbKey)
 	buf.WriteString(`", "`)
 	buf.WriteString(t.DbName)
@@ -73,7 +73,7 @@ func `)
 	buf.WriteString(t.GoName)
 	buf.WriteString(`"),
 	}
-	db.SetParentNode(&n, nil)
+	query.SetParentNode(&n, nil)
 	return &n
 }
 
@@ -81,7 +81,7 @@ func `)
 
 	buf.WriteString(`func (n *`)
 	buf.WriteString(fmt.Sprintf("%v", privateName))
-	buf.WriteString(`Node) SelectNodes_() (nodes []*db.ColumnNode) {
+	buf.WriteString(`Node) SelectNodes_() (nodes []*query.ColumnNode) {
 `)
 
 	for _, col := range t.Columns {
@@ -99,7 +99,7 @@ func `)
 
 	buf.WriteString(`func (n *`)
 	buf.WriteString(fmt.Sprintf("%v", privateName))
-	buf.WriteString(`Node) PrimaryKeyNode_() (*db.ColumnNode) {
+	buf.WriteString(`Node) PrimaryKeyNode_() (*query.ColumnNode) {
 `)
 
 	for _, col := range t.Columns {
@@ -119,7 +119,7 @@ func `)
 
 	buf.WriteString(`func (n *`)
 	buf.WriteString(fmt.Sprintf("%v", privateName))
-	buf.WriteString(`Node) EmbeddedNode_() db.NodeI {
+	buf.WriteString(`Node) EmbeddedNode_() query.NodeI {
 	return n.NodeI
 }
 `)
@@ -134,8 +134,8 @@ func (n *`)
 		buf.WriteString(fmt.Sprintf("%v", privateName))
 		buf.WriteString(`Node) `)
 		buf.WriteString(col.GoName)
-		buf.WriteString(`() *db.ColumnNode {
-	cn := db.NewColumnNode (
+		buf.WriteString(`() *query.ColumnNode {
+	cn := query.NewColumnNode (
 		"`)
 		buf.WriteString(dbKey)
 		buf.WriteString(`",
@@ -152,7 +152,7 @@ func (n *`)
 		buf.WriteString(col.GoType.String())
 		buf.WriteString(`",
 	)
-	db.SetParentNode(cn, n)
+	query.SetParentNode(cn, n)
 	return cn
 }
 
@@ -178,7 +178,7 @@ func (n *`)
 	cn := &`)
 			buf.WriteString(util.LcFirst(objName))
 			buf.WriteString(`Node {
-		db.NewReferenceNode (
+		query.NewReferenceNode (
 			"`)
 			buf.WriteString(dbKey)
 			buf.WriteString(`",
@@ -205,7 +205,7 @@ func (n *`)
 			buf.WriteString(`,
 		),
 	}
-	db.SetParentNode(cn, n)
+	query.SetParentNode(cn, n)
 	return cn
 }
 
@@ -230,7 +230,7 @@ func (n *`)
 	cn := &`)
 			buf.WriteString(util.LcFirst(assnTable.GoName))
 			buf.WriteString(`Node {
-		db.NewManyManyNode (
+		query.NewManyManyNode (
 			"`)
 			buf.WriteString(t.DbKey)
 			buf.WriteString(`",
@@ -252,7 +252,7 @@ func (n *`)
 			true,
 		),
 	}
-	db.SetParentNode(cn, n)
+	query.SetParentNode(cn, n)
 	return cn
 
 }
@@ -274,7 +274,7 @@ func (n *`)
 	cn := &`)
 			buf.WriteString(util.LcFirst(assnTable.GoName))
 			buf.WriteString(`Node {
-		db.NewManyManyNode (
+		query.NewManyManyNode (
 			"`)
 			buf.WriteString(t.DbKey)
 			buf.WriteString(`",
@@ -296,7 +296,7 @@ func (n *`)
 			false,
 		),
 	}
-	db.SetParentNode(cn, n)
+	query.SetParentNode(cn, n)
 	return cn
 
 }
@@ -323,7 +323,7 @@ func (n *`)
 	cn := &`)
 			buf.WriteString(util.LcFirst(assnTable.GoName))
 			buf.WriteString(`Node {
-		db.NewReverseReferenceNode (
+		query.NewReverseReferenceNode (
 			"`)
 			buf.WriteString(t.DbKey)
 			buf.WriteString(`",
@@ -345,7 +345,7 @@ func (n *`)
 			false,
 		),
 	}
-	db.SetParentNode(cn, n)
+	query.SetParentNode(cn, n)
 	return cn
 
 }
@@ -366,7 +366,7 @@ func (n *`)
 	cn := &`)
 			buf.WriteString(util.LcFirst(assnTable.GoName))
 			buf.WriteString(`Node {
-		db.NewReverseReferenceNode (
+		query.NewReverseReferenceNode (
 			"`)
 			buf.WriteString(t.DbKey)
 			buf.WriteString(`",
@@ -388,7 +388,7 @@ func (n *`)
 			true,
 		),
 	}
-	db.SetParentNode(cn, n)
+	query.SetParentNode(cn, n)
 	return cn
 
 }

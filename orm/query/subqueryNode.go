@@ -1,12 +1,16 @@
-package db
+package query
 
 import (
 	"strings"
 	"log"
 )
 
-// An operation is a general purpose structure that specs an operation on a node or group of nodes
-// The operation could be arithmetic, boolean, or a function.
+// A Subquery node represents a "select" subquery. Subqueries are not always portable to other databases, and are not
+// easily checked for syntax errors, since a subquery can return a scalar, vector, or even an entire table.
+// You generally do not create a subquery node directly, but rather you use the codegenerated models to start a
+// query on a table, and then end the query with "Subquery()" which will turn the query into a usable subquery node
+// that you can embed in other queries.
+
 type SubqueryNode struct {
 	Node
 	b QueryBuilderI
@@ -32,11 +36,12 @@ func (n *SubqueryNode) Equals(n2 NodeI) bool {
 	return false
 }
 
+/*
 func (n *SubqueryNode) containedNodes() (nodes []NodeI) {
 	nodes = append(nodes, n) // Return the subquery node itself, because we need to do some work on it
 
 	// must expand the returned nodes one more time
-	for _,n2 := range n.b.nodes() {
+	for _,n2 := range n.b.nodes() {	// Refers back to db package, so do this differently
 		if cn,_ := n2.(nodeContainer); cn != nil {
 			nodes = append(nodes, cn.containedNodes()...)
 		} else {
@@ -45,6 +50,7 @@ func (n *SubqueryNode) containedNodes() (nodes []NodeI) {
 	}
 	return nodes
 }
+*/
 
 func (n *SubqueryNode) tableName() string {
 	return ""
@@ -56,5 +62,6 @@ func (n *SubqueryNode) log(level int) {
 	log.Print(tabs + "Subquery: ")
 }
 
-
-
+func SubqueryBuilder(n *SubqueryNode) QueryBuilderI {
+	return n.b
+}

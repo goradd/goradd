@@ -11,6 +11,7 @@ import (
 	"github.com/knq/snaker"
 	"github.com/spekary/goradd/codegen/generator"
 	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
 	"github.com/spekary/goradd/util"
 )
 
@@ -42,7 +43,7 @@ func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.Data
 	var hasDateTime bool
 
 	for _, col := range t.Columns {
-		if col.GoType == db.COL_TYPE_DATETIME {
+		if col.GoType == query.COL_TYPE_DATETIME {
 			hasDateTime = true
 			break
 		}
@@ -55,6 +56,7 @@ func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.Data
 import (
 	"grlocal/model/node"
 	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
 	"context"
 	"fmt"
 	. "github.com/spekary/goradd/orm/op"
@@ -541,7 +543,7 @@ func (o *`)
 		if o.`)
 			buf.WriteString(col.VarName)
 			buf.WriteString(`IsNull `)
-			if col.GoType != db.COL_TYPE_BYTES {
+			if col.GoType != query.COL_TYPE_BYTES {
 				buf.WriteString(` || o.`)
 				buf.WriteString(col.VarName)
 				buf.WriteString(` != v `)
@@ -644,7 +646,7 @@ func (o *`)
 			buf.WriteString(col.GoType.String())
 			buf.WriteString(`) {
 `)
-			if col.GoType == db.COL_TYPE_BYTES {
+			if col.GoType == query.COL_TYPE_BYTES {
 				buf.WriteString(`	o.`)
 				buf.WriteString(col.VarName)
 				buf.WriteString(` = v		// TODO: Copy bytes??
@@ -726,12 +728,12 @@ func (o *`)
 	buf.WriteString(`
 func (o *`)
 	buf.WriteString(fmt.Sprintf("%v", privateName))
-	buf.WriteString(`Base) GetAlias(key string) db.Alias {
+	buf.WriteString(`Base) GetAlias(key string) query.AliasValue {
 	if a,ok := o._aliases[key]; ok {
-		return db.NewAlias(a)
+		return query.NewAliasValue(a)
 	} else {
 		panic ("Alias " + key + " not found.")
-		return db.NewAlias([]byte{})
+		return query.NewAliasValue([]byte{})
 	}
 }
 `)
@@ -1125,7 +1127,7 @@ func Query`)
 type `)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder struct {
-	base db.QueryBuilderI
+	base query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
@@ -1194,7 +1196,7 @@ func (b *`)
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder) Expand(n db.NodeI) *`)
+	buf.WriteString(`Builder) Expand(n query.NodeI) *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder {
 	b.base.Expand(n)
@@ -1205,10 +1207,10 @@ func (b *`)
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder) Join(n db.NodeI, conditions... db.NodeI) *`)
+	buf.WriteString(`Builder) Join(n query.NodeI, conditions... query.NodeI) *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder {
-	var condition db.NodeI
+	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
 	} else if len(conditions) == 1 {
@@ -1224,7 +1226,7 @@ func (b *`)
 // Where adds a condition to filter what gets selected.
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder)  Where(c db.NodeI) *`)
+	buf.WriteString(`Builder)  Where(c query.NodeI) *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder {
 	b.base.Condition(c)
@@ -1234,7 +1236,7 @@ func (b *`)
 // OrderBy  spedifies how the resulting data should be sorted.
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder)  OrderBy(nodes... db.NodeI) *`)
+	buf.WriteString(`Builder)  OrderBy(nodes... query.NodeI) *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder {
 	b.base.OrderBy(nodes...)
@@ -1257,7 +1259,7 @@ func (b *`)
 // as the child node if you are querying those fields.
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder)  Select(nodes... db.NodeI) *`)
+	buf.WriteString(`Builder)  Select(nodes... query.NodeI) *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder {
 	b.base.Select(nodes...)
@@ -1268,7 +1270,7 @@ func (b *`)
 // returned object. Alias is useful for adding calculations or subqueries to the query.
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder)  Alias(name string, n db.NodeI) *`)
+	buf.WriteString(`Builder)  Alias(name string, n query.NodeI) *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder {
 	b.base.Alias(name, n)
@@ -1290,7 +1292,7 @@ func (b *`)
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder)  GroupBy(nodes... db.NodeI) *`)
+	buf.WriteString(`Builder)  GroupBy(nodes... query.NodeI) *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder {
 	b.base.GroupBy(nodes...)
@@ -1299,7 +1301,7 @@ func (b *`)
 
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder)  Having(node db.NodeI)  *`)
+	buf.WriteString(`Builder)  Having(node query.NodeI)  *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 	buf.WriteString(`Builder {
 	 b.base.Having(node)
@@ -1309,7 +1311,7 @@ func (b *`)
 // Count terminates a query and returns just the number of items selected.
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder)  Count(ctx context.Context, distinct bool, nodes... db.NodeI) uint {
+	buf.WriteString(`Builder)  Count(ctx context.Context, distinct bool, nodes... query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
@@ -1323,7 +1325,7 @@ func (b *`)
 // Use the query builder to define a subquery within a larger query
 func (b *`)
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
-	buf.WriteString(`Builder)  Subquery() *db.SubqueryNode {
+	buf.WriteString(`Builder)  Subquery() *query.SubqueryNode {
 	 return b.base.Subquery()
 }
 
@@ -1739,7 +1741,7 @@ func (o *`)
 
 	buf.WriteString(`
 	if v, ok := m["`)
-	buf.WriteString(fmt.Sprintf("%v", db.AliasResults))
+	buf.WriteString(fmt.Sprintf("%v", query.AliasResults))
 	buf.WriteString(`"]; ok {
 		o._aliases = map[string]interface{}(v.(db.ValueMap))
 	}

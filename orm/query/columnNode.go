@@ -1,4 +1,4 @@
-package db
+package query
 
 import (
 	"log"
@@ -13,7 +13,7 @@ type ColumnNode struct {
 	dbKey			string
 	// Name of table in the database we point to
 	dbTable       string
-	// The name of the column that is the foreign key
+	// The name of the column in the database
 	dbColumn       string
 	// The name of the function used to access the property as a node or ORM item
 	goName			string
@@ -93,4 +93,12 @@ func (n *ColumnNode) log(level int) {
 	}
 
 	log.Print(tabs + "Col: " + n.dbTable + "." + n.dbColumn + alias)
+}
+
+func ColumnNodeGoType (n *ColumnNode) GoColumnType {
+	return n.goType
+}
+
+func ColumnNodeDbName (n *ColumnNode) string {
+	return n.dbColumn
 }

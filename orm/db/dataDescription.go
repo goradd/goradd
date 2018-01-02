@@ -8,6 +8,7 @@ import (
 	"github.com/spekary/goradd/util/types"
 	"fmt"
 	"github.com/spekary/goradd/datetime"
+	. "github.com/spekary/goradd/orm/query"
 )
 
 // The DatabaseDescription is the top level struct that contains a complete description of a database for purposes of

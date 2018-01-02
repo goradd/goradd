@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/spekary/goradd/datetime"
+	"github.com/spekary/goradd/orm/query"
 )
 
 func init() {
@@ -68,7 +69,7 @@ func TestSort(t *testing.T) {
 
 func TestWhere(t *testing.T) {
 	ctx := context.Background()
-	_ = db.Value("Smith").(db.NodeI)
+	_ = query.Value("Smith").(query.NodeI)
 	people := model.QueryPeople().
 		Where(Equal(node.Person().LastName(), "Smith")).
 		OrderBy(node.Person().FirstName().Descending(), node.Person().LastName()).
@@ -412,7 +413,7 @@ func TestHaving(t *testing.T) {
 		GroupBy(node.Project().ID()).
 		OrderBy(node.Project().ID()).
 		Alias("team_member_count", Count(node.Project().TeamMembers().ID())).
-		Having(GreaterThan(Count(db.AliasNode("team_member_count")), 5)).
+		Having(GreaterThan(Count(query.Alias("team_member_count")), 5)).
 		Load(ctx)
 
 	assert.Len(t, projects, 2)

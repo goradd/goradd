@@ -1,6 +1,6 @@
 package op
 
-import . 	"github.com/spekary/goradd/orm/db"
+import . 	"github.com/spekary/goradd/orm/query"
 
 
 
