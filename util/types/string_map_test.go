@@ -72,11 +72,11 @@ func TestStringMapChange(t *testing.T) {
 	m.Set("A","That")
 	m.Set("C", "Other")
 
-	if changed, _ := m.Set("D", "And another"); !changed {
+	if changed, _ := m.SetChanged("D", "And another"); !changed {
 		t.Error("Set did not produce a change flag")
 	}
 
-	if changed, _ := m.Set("D", "And another"); changed {
+	if changed, _ := m.SetChanged("D", "And another"); changed {
 		t.Error("Set again erroneously produced a change flag")
 	}
 }
@@ -122,7 +122,7 @@ func ExampleStringMap_Keys() {
 }
 
 
-func ExampleStringMap_Iter() {
+func ExampleStringMap_Range() {
 	m := NewStringMap()
 	a :=[]string{}
 
@@ -130,28 +130,15 @@ func ExampleStringMap_Iter() {
 	m.Set("A","That")
 	m.Set("C", "Other")
 
-	for s := range m.Iter() {
-		a = append(a, s)
-	}
-	sort.Sort(sort.StringSlice(a))
+	m.Range(func (key string, val string) bool {
+		a = append(a, val)
+		return true	// keep iterating to the end
+	})
+	fmt.Println()
+
+	sort.Sort(sort.StringSlice(a))	// unordered maps cannot be guaranteed to range in a particular order. Sort it so we can compare it.
 	fmt.Println(a)
 	//Output: [Other That This]
-}
-
-func ExampleStringMap_IterKeys() {
-	m := NewStringMap()
-	a :=[]string{}
-
-	m.Set("B", "This")
-	m.Set("A","That")
-	m.Set("C", "Other")
-
-	for s := range m.IterKeys() {
-		a = append(a, s)
-	}
-	sort.Sort(sort.StringSlice(a))
-	fmt.Println(a)
-	//Output: [A B C]
 
 }
 

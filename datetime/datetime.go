@@ -3,7 +3,12 @@
 // timezone support in the context of a web application.
 package datetime
 
-import "time"
+import (
+	"time"
+	"encoding/json"
+	"github.com/spekary/goradd/javascript"
+	"fmt"
+)
 
 
 const (
@@ -50,5 +55,29 @@ func NewDateTime(args... interface{}) DateTime {
 		}
 	}
 	return d
+}
+
+// Satisfies the javacript.JavaScripter interface to output the date as a javascript value
+func (d DateTime) JavaScript() string {
+	return fmt.Sprintf("new Date(%d, %d, %d, %d, %d, %d)", d.Year(), d.Month() - 1, d.Day(), d.Hour(), d.Minute(), d.Second())
+}
+
+// Satisfies the json.Marshaller interface to output the date as a value embedded in JSON and that will be unpacked by our javascript file.
+func (d DateTime) MarshalJSON() (buf []byte, err error) {
+	// We specify numbers explicitly to avoid the warnings about browsers parsing date strings inconsistently
+	var obj = map[string]interface{} {
+		javascript.JsonObjectType: "datetime",
+		"year": d.Year(),
+		"month": d.Month() - 1, // javascript is zero based
+		"day": d.Day(),
+		"hour": d.Hour(),
+		"minute": d.Minute(),
+		"second": d.Second(),
+	}
+
+	buf,err = json.Marshal(obj)
+	return
+
+	// TODO: Deal with timezones vs. local time. As of 2017, there still is not a good consistent javascript way of discovering the browser timezone.
 }
 

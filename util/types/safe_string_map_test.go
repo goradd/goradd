@@ -63,11 +63,11 @@ func TestSafeStringMapChange(t *testing.T) {
 	m.Set("A","That")
 	m.Set("C", "Other")
 
-	if changed, _ := m.Set("D", "And another"); !changed {
+	if changed, _ := m.SetChanged("D", "And another"); !changed {
 		t.Error("Set did not produce a change flag")
 	}
 
-	if changed, _ := m.Set("D", "And another"); changed {
+	if changed, _ := m.SetChanged("D", "And another"); changed {
 		t.Error("Set again erroneously produced a change flag")
 	}
 }
@@ -80,7 +80,7 @@ func ExampleOrderedSafeStringMap_Set() {
 }
 
 
-func ExampleSafeStringMap_Iter() {
+func ExampleSafeStringMap_Range() {
 	m := NewSafeStringMap()
 	a :=[]string{}
 
@@ -88,29 +88,15 @@ func ExampleSafeStringMap_Iter() {
 	m.Set("A","That")
 	m.Set("C", "Other")
 
-	for s := range m.Iter() {
-		a = append(a, s)
-	}
+	m.Range(func (key string, val string) bool {
+		a = append(a, val)
+		return true	// keep iterating to the end
+	})
+	fmt.Println()
+
 	sort.Sort(sort.StringSlice(a))
 	fmt.Println(a)
 	//Output: [Other That This]
-}
-
-func ExampleSafeStringMap_IterKeys() {
-	m := NewSafeStringMap()
-	a :=[]string{}
-
-	m.Set("B", "This")
-	m.Set("A","That")
-	m.Set("C", "Other")
-
-	for s := range m.IterKeys() {
-		a = append(a, s)
-	}
-	sort.Sort(sort.StringSlice(a))
-	fmt.Println(a)
-	//Output: [A B C]
-
 }
 
 func ExampleSafeStringMap_MarshalBinary() {

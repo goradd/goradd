@@ -2,7 +2,7 @@ package datetime
 
 import (
 	"time"
-	"grlocal/i18n"
+	"goradd/i18n"
 	"context"
 )
 

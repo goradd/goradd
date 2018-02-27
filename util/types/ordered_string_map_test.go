@@ -77,7 +77,7 @@ func TestOrderedStringMap(t *testing.T) {
 		t.Error("Sort interface test failed.")
 	}
 
-	if changed, _ := m.Set("F", "9");  !changed {
+	if changed, _ := m.SetChanged("F", "9");  !changed {
 		t.Error("Add non-string value failed.")
 	}
 	if m.Get("F") != "9" {
@@ -93,17 +93,17 @@ func TestOrderedStringMapChange(t *testing.T) {
 	m.Set("A","That")
 	m.Set("C", "Other")
 
-	if changed, _ := m.Set("D", "And another"); !changed {
+	if changed, _ := m.SetChanged("D", "And another"); !changed {
 		t.Error("Set did not produce a change flag")
 	}
 
-	if changed, _ := m.Set("D", "And another"); changed {
+	if changed, _ := m.SetChanged("D", "And another"); changed {
 		t.Error("Set again erroneously produced a change flag")
 	}
 }
 
 
-func ExampleOrderedStringMap_Iter() {
+func ExampleOrderedStringMap_Range() {
 	m := NewOrderedStringMap()
 
 	m.Set("B", "This")
@@ -111,46 +111,34 @@ func ExampleOrderedStringMap_Iter() {
 	m.Set("C", "Other")
 
 	// Iterate by insertion order
-	for s := range m.Iter() {
-		fmt.Print(s)
-	}
+	m.Range(func (key string, val string) bool {
+		fmt.Printf("%s:%s,", key, val)
+		return true	// keep iterating to the end
+	})
 	fmt.Println()
 
-	// Iterate after sorting
+	// Iterate after sorting values
 	sort.Sort(m)
-	for s := range m.Iter() {
-		fmt.Print(s)
-	}
-	fmt.Println()
-
-	// Output: ThisThatOther
-	// OtherThatThis
-}
-
-func ExampleOrderedStringMap_IterKeys() {
-	m := NewOrderedStringMap()
-
-	m.Set("B", "This")
-	m.Set("A","That")
-	m.Set("C", "Other")
-
-	// Iterate on keys in order added
-	for s := range m.IterKeys() {
-		fmt.Print(s)
-	}
+	m.Range(func (key string, val string) bool {
+		fmt.Printf("%s:%s,", key, val)
+		return true	// keep iterating to the end
+	})
 	fmt.Println()
 
 	// Iterate after sorting keys
 	sort.Sort(OrderStringMapByKeys(m))
-	for s := range m.IterKeys() {
-		fmt.Print(s)
-	}
+	m.Range(func (key string, val string) bool {
+		fmt.Printf("%s:%s,", key, val)
+		return true	// keep iterating to the end
+	})
 	fmt.Println()
 
 
-	// Output: BAC
-	// ABC
+	// Output: B:This,A:That,C:Other,
+	// C:Other,A:That,B:This,
+	// A:That,B:This,C:Other,
 }
+
 
 func ExampleOrderedStringMap_MarshalBinary() {
 	// You would rarely call MarshallBinary directly, but rather would use an encoder, like GOB for binary encoding
@@ -244,22 +232,6 @@ func ExampleNewOrderedStringMapFrom() {
 	//Output: that
 }
 
-func (o *OrderedStringMap) Equals(i StringMapI) bool {
-	if i == nil {
-		return false
-	}
-	if i.Len() != o.Len() {
-		return false
-	}
-	var ret bool = true
-
-	for k := range i.IterKeys() {
-		if ret && (!o.Has(k) || o.Get(k) != i.Get(k)) {
-			ret = false	// don't just return because we are in a channel and we want to use up the channel
-		}
-	}
-	return ret
-}
 
 func ExampleOrderedStringMap_Equals() {
 	m := NewOrderedStringMapFrom(StringMap{"A":"This","B":"That"})

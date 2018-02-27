@@ -1,0 +1,192 @@
+/**
+ * This is the bare-bones css file needed to use Goradd in your application. If you need to modify an item, simply
+ * override it in an additional css class you include after this one. Or you can copy this and completely replace it
+ * by overriding the AddRelatedFiles method in your form.
+ */
+
+button {
+  cursor: pointer;
+}
+
+// The basic layout of all forms, which is the main control container
+form {
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/**
+ * Styles of individual Control types
+ */
+.datagrid {
+  margin: auto;
+  width: 100%;
+  th { // headers of datagrids, filled in with cells and dropdowns for sorting
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    a {
+      color: #f6f6f6;
+      text-decoration: none;
+      //text-transform: uppercase;
+      white-space: nowrap;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    &.sortable {
+      :hover {
+        opacity: 0.95;
+      }
+      div {
+        span { // sortable header title
+          display: table-cell;
+          vertical-align: bottom;
+          padding-right: 4px;
+        }
+        i.fa { // icon showing sort direction
+          display: table-cell;
+          vertical-align: bottom;
+          padding-bottom: 2px;
+        }
+      }
+    }
+  }
+  td {
+    border-bottom: 1px solid #dedede;
+    padding: 5px;
+  }
+  caption { // contains paginator, and possibly other things
+    overflow: hidden;
+    padding: 5px;
+    position: relative;
+  }
+  .paginator-control {
+    float: right;
+  }
+  .paginator-results {
+    float: left;
+  }
+}
+
+.paginator {
+  .arrow {
+    color: #dedede;
+    font-style: italic;
+    a {
+      font-style: normal;
+    }
+  }
+  .break {
+    color: #dedede;
+    padding: 5px;
+  }
+  .page {
+    color: #dedede;
+    display: inline-block;
+    padding: 0 5px;
+  }
+  .selected {
+    background: #780000;
+    border: 1px solid #d90d0d;
+    border-radius: 3px;
+    display: inline-block;
+    color: #fff;
+    padding: 0 5px;
+  }
+}
+
+/* Status coloring */
+.warning {
+  color: orange;
+}
+
+.error {
+  color: red;
+}
+
+.success {
+  color: green;
+}
+
+/* SQL Profiling */
+.qDbProfile {
+  /*position: absolute;*/
+  background-color: white;
+  padding: 5px;
+  top: 0;
+  right: 0;
+  z-index: 5000;
+  border: 1px solid black;
+  a {
+    position: relative;
+  }
+}
+
+/* Modification to jquery ui dialog styling that allows for left/right buttons and other fixes */
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+  float: none !important;
+  text-align: right;
+}
+
+.ui-button-left {
+  float: left;
+}
+
+/* The following is to allow for correct positioning of an alert icon */
+.ui-dialog-title {
+  float: none !important;
+  width: auto !important;
+}
+
+.ui-dialog-titlebar .ui-icon {
+  display: inline-block;
+  margin-right: .3em;
+  vertical-align: middle;
+}
+
+/**
+ * Utility classes to format objects as tables, without using table tags to be more correct in our html.
+ Used in CheckList and RadioList
+ */
+.qc-table {
+  display: table;
+}
+
+.qc-tableRow {
+  display: table-row;
+}
+
+.qc-tableCell {
+  display: table-cell;
+}
+
+/**
+ * For generated list forms that you can click on to edit an item, this styles the cursor so it looks like the
+ * row is clickable, and it prevents accidentally selecting text in the row.
+ */
+.clickable-rows tr {
+  td, th {
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
+    cursor: default;
+  }
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}
+
+/** Error notice styling */
+#Goradd_AJAX_Error {
+  position: fixed;
+  background-color: white;
+  border: 2px solid black;
+  left: 20px;
+  right: 20px;
+  top: 20px;
+  z-index: 10000;
+  padding: 20px;
+}
+

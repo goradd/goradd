@@ -6,7 +6,7 @@ import (
 	"math/rand"
 )
 
-func TestOrderedStringMap(t *testing.T) {
+func TestRandomHtmlValueString(t *testing.T) {
 	rand.Seed(1)	// reset random seed
 
 	s := RandomHtmlValueString(40);

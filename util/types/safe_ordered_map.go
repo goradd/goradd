@@ -26,7 +26,7 @@ func NewSafeOrderedMap() *SafeOrderedMap {
 
 // Set sets the value, but also appends the value to the end of the list for when you
 // iterate over the list. If the value already exists, the order does not change
-func (o *SafeOrderedMap) Set(key string, val interface{}) {
+func (o *SafeOrderedMap) Set(key string, val interface{}) *SafeOrderedMap {
 	o.Lock()
 	defer o.Unlock()
 
@@ -40,7 +40,9 @@ func (o *SafeOrderedMap) Set(key string, val interface{}) {
 		o.order = append(o.order, key)
 	}
 	o.items[key] = val
+	return o
 }
+
 
 func (o *SafeOrderedMap) Remove(key string) {
 	if o.items == nil {
@@ -168,45 +170,6 @@ func (o *SafeOrderedMap) Keys() []string {
 
 func (o *SafeOrderedMap) Len() int {
 	return len (o.order)
-}
-
-// Iter can be used with range to iterate over the strings in the order in which they were added.
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o *SafeOrderedMap) Iter() <-chan interface{} {
-	c := make(chan interface{}, o.Len())
-
-	f := func() {
-		o.RLock()
-		defer o.RUnlock()
-
-		for _, v := range o.order {
-			c <- o.items[v]
-		}
-		close(c)
-	}
-	go f()
-
-	return c
-}
-
-// IterKeys can be used with range to iterate over the keys in the order in which they were added.
-// You can then use Get(key) to get the actual value
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o *SafeOrderedMap) IterKeys() <-chan string {
-	c := make(chan string, o.Len())
-
-	f := func() {
-		o.RLock()
-		defer o.RUnlock()
-
-		for _, v := range o.order {
-			c <- v
-		}
-		close(c)
-	}
-	go f()
-
-	return c
 }
 
 // Range will call the given function with every key and value in the order they were placed into the SafeOrderedMap

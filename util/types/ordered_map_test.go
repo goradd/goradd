@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"os"
 	"bytes"
+	"github.com/stretchr/testify/assert"
 )
 
 
@@ -45,53 +46,40 @@ func TestOrderedMap(t *testing.T) {
 }
 
 
-func ExampleOrderedMap_Iter() {
-	m := NewOrderedMap()
+func ExampleOrderedMap_Range() {
+	m := NewOrderedStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	// Iterate by insertion order
-	for s := range m.Iter() {
-		fmt.Print(s)
-	}
+	m.Range(func(key string, val string) bool {
+		fmt.Printf("%s:%s,", key, val)
+		return true // keep iterating to the end
+	})
 	fmt.Println()
 
-	// Iterate after sorting
+	// Iterate after sorting values
 	sort.Sort(m)
-	for s := range m.Iter() {
-		fmt.Print(s)
-	}
-	fmt.Println()
-
-	// Output: ThisThatOther
-	// ThatThisOther
-}
-
-func ExampleOrderedMap_IterKeys() {
-	m := NewOrderedMap()
-
-	m.Set("B", "This")
-	m.Set("A","That")
-	m.Set("C", "Other")
-
-	// Iterate on keys in order added
-	for s := range m.IterKeys() {
-		fmt.Print(s)
-	}
+	m.Range(func(key string, val string) bool {
+		fmt.Printf("%s:%s,", key, val)
+		return true // keep iterating to the end
+	})
 	fmt.Println()
 
 	// Iterate after sorting keys
-	sort.Sort(OrderMapByKeys(m))
-	for s := range m.IterKeys() {
-		fmt.Print(s)
-	}
+	sort.Sort(OrderStringMapByKeys(m))
+	m.Range(func(key string, val string) bool {
+		fmt.Printf("%s:%s,", key, val)
+		return true // keep iterating to the end
+	})
 	fmt.Println()
 
+	// Output: B:This,A:That,C:Other,
+	// C:Other,A:That,B:This,
+	// A:That,B:This,C:Other,
 
-	// Output: BAC
-	// ABC
 }
 
 func ExampleOrderedMap_MarshalJSON() {
@@ -142,4 +130,29 @@ func TestOrderedMap_JSON(t *testing.T) {
 	if !bytes.Equal(b,s) {
 		t.Errorf("JSON test failed.")
 	}
+}
+
+func TestOrderedMap_Nil(t *testing.T) {
+	m := NewOrderedMap()
+
+	m.Set("a", nil)
+
+	b:= m.Get("a")
+
+	assert.Nil(t, b)
+	assert.True(t, b==nil)
+
+	var c *int
+
+	m.Set("c", c)
+
+	d := m.Get("c")
+
+	assert.Nil(t, d)
+	//assert.True(t, d==nil)
+
+	e := d.(*int)
+
+	assert.Nil(t, e)
+	assert.True(t, e==nil)
 }

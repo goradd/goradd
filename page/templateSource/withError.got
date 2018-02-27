@@ -1,0 +1,21 @@
+package page
+
+import (
+	"context"
+	"bytes"
+)
+
+func ErrorTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+
+{{
+<div id="{{= ctrl.Id() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
+    {{= html }}
+    <div id="{{= ctrl.Id() }}_err" class="goradd-err">{{= ctrl.ValidationError() }}</div>
+{{if ctrl.Instructions() != "" }}
+    <div class="goradd-instructions">{{= ctrl.Instructions() }}</div>
+{{if}}
+</div>
+}}
+    return
+
+}

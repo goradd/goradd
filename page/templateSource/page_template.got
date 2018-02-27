@@ -1,0 +1,25 @@
+package page
+
+import (
+    "context"
+    "bytes"
+)
+
+func PageTmpl(ctx context.Context, page PageI, buf *bytes.Buffer) (err error) {
+
+{{
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+{{g page.DrawHeaderTags(ctx, buf) }}
+</head>
+<body>
+{{err page.Form().Draw(ctx, buf) }}
+</body>
+</html>
+
+}}
+    return
+
+}

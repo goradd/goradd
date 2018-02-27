@@ -1,0 +1,36 @@
+package page
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"strings"
+	"html"
+)
+
+func DefaultErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, buf *bytes.Buffer) {
+{{
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+</head>
+<body>
+<h1>Error</h1>
+<h2>{{= err.Error() }}</h2>
+<h3>Call Path</h3>
+<p>
+{{for _,stack := range err.Stack}}
+    {{= fmt.Sprintf("%s line %d in %s", stack.File, stack.Line, stack.Func) }} <br />
+{{for}}
+</p>
+<h3>Generated Html</h3>
+{{!h partialHtml }}
+
+</body>
+</html>
+
+}}
+	return
+}

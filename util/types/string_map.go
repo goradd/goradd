@@ -3,16 +3,15 @@ package types
 // The StringMapI (pronounced StringMappy) interface describes structures that implement the important
 // and common map of strings indexed by strings which is a part of most modern languages.
 type StringMapI interface {
-	Set(key string, val string) (changed bool, err error)
+	SetChanged(key string, val string) (changed bool, err error)
 	Get(key string) (val string)
 	Has(key string) (exists bool)
 	Remove(key string)
 	Values()([]string)
 	Keys()([]string)
 	Len()(int)
-	// Iter returns a channel to iterate over that can be used in a for loop
-	Iter() <-chan string
-	IterKeys() <-chan string
+	// Range will iterate ove the keys and values in the map. Pattern is taken from sync.Map
+	Range(f func(key string, value string) bool)
 	Merge(i StringMapI)
 }
 
@@ -33,10 +32,9 @@ func NewStringMapFrom(i StringMapI) StringMap {
 }
 
 
-// Set the key to the value. Non-string values will be converted to strings
-// using fmt's default conversion for the type. Returns two values: whether
+// SetChanged sets the key to the value. Returns two values: whether
 // something actually changed, and if there was an error.
-func (o StringMap) Set(key string, val string) (changed bool, err error) {
+func (o StringMap) SetChanged(key string, val string) (changed bool, err error) {
 	var ok bool
 	var oldVal string
 
@@ -50,6 +48,13 @@ func (o StringMap) Set(key string, val string) (changed bool, err error) {
 	}
 	return
 }
+
+// Set will set the key to the value and return itself for easy chaining
+func (o StringMap) Set(key string, val string) StringMap {
+	o[key] = val
+	return o
+}
+
 
 // Get returns the string based on its key. If it does not exist, an empty string will be returned.
 func (o StringMap) Get(key string) (val string) {
@@ -95,47 +100,24 @@ func (o StringMap) Len() int {
 	return len (o)
 }
 
-// Iter can be used with range to iterate over the string values. Order of values is not
-// guaranteed. See OrderedStringMap for an ordered version.
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o StringMap) Iter() <-chan string {
-	c := make(chan string, o.Len())
-
-	f := func() {
-		for _, v := range o {
-			c <- v
+// Range will call the given function with every key and value.
+// If f returns false, it stops the iteration. This pattern is taken from sync.Map.
+func (o StringMap) Range(f func(key string, value string) bool) {
+	for k, v := range o {
+		if !f(k, v) {
+			break
 		}
-		close(c)
 	}
-	go f()
-
-	return c
-}
-
-// IterKeys can be used with range to iterate over the string keys. Order of values is not
-// guaranteed. See OrderedStringMap for an ordered version.
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o StringMap) IterKeys() <-chan string {
-	c := make(chan string, o.Len())
-
-	f := func() {
-		for k := range o {
-			c <- k
-		}
-		close(c)
-	}
-	go f()
-
-	return c
 }
 
 func (o StringMap) Merge(i StringMapI) {
 	if i == nil {
 		return
 	}
-	for k := range i.IterKeys() {
+	i.Range(func(k,v string) bool {
 		o[k] = i.Get(k)
-	}
+		return true
+	})
 }
 
 func (o StringMap) Equals(i StringMapI) bool {
@@ -147,10 +129,14 @@ func (o StringMap) Equals(i StringMapI) bool {
 	}
 	var ret bool = true
 
-	for k := range i.IterKeys() {
-		if ret && (!o.Has(k) || o[k] != i.Get(k)) {
+	i.Range(func(k,v string) bool {
+		if !o.Has(k) || o[k] != i.Get(k) {
 			ret = false	// don't just return because we are in a channel and we want to use up the channel
+			return false // stop iterating
 		}
-	}
+		return true
+	})
+
 	return ret
 }
+

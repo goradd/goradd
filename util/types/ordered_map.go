@@ -25,7 +25,7 @@ func NewOrderedMap() *OrderedMap {
 // Set sets the value, but also appends the value to the end of the list for when you
 // iterate over the list. If the value already exists, the value is replaced, the order does not change. If you want
 // the order to change in this situations, you must Remove then Set.
-func (o *OrderedMap) Set(key string, val interface{}) {
+func (o *OrderedMap) Set(key string, val interface{}) *OrderedMap {
 	if o.items == nil {
 		o.items = make(map[string]interface{})
 	}
@@ -36,6 +36,7 @@ func (o *OrderedMap) Set(key string, val interface{}) {
 		o.order = append(o.order, key)
 	}
 	o.items[key] = val
+	return o
 }
 
 // Remove an item from the list by key. If the item does not exist, nothing happens.
@@ -204,38 +205,6 @@ func (o *OrderedMap) Len() int {
 	return len (o.order)
 }
 
-// Iter can be used with range to iterate over the strings in the order in which they were added.
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o *OrderedMap) Iter() <-chan interface{} {
-	c := make(chan interface{}, o.Len())
-
-	f := func() {
-		for _, v := range o.order {
-			c <- o.items[v]
-		}
-		close(c)
-	}
-	go f()
-
-	return c
-}
-
-// IterKeys can be used with range to iterate over the keys in the order in which they were added.
-// You can then use Get(key) to get the actual value
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o *OrderedMap) IterKeys() <-chan string {
-	c := make(chan string, o.Len())
-
-	f := func() {
-		for _, v := range o.order {
-			c <- v
-		}
-		close(c)
-	}
-	go f()
-
-	return c
-}
 
 // Range will call the given function with every key and value in the order they were placed into the OrderedMap
 // During this process, the map will be locked, so do not use a function that will be taking significant amounts of time

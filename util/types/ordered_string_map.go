@@ -29,21 +29,31 @@ func NewOrderedStringMapFrom(i StringMapI) *OrderedStringMap {
 	return m
 }
 
-// Set sets the value, but also appends the value to the end of the list for when you
-// iterate over the list
-func (o *OrderedStringMap) Set(key string, val string) (changed bool, err error) {
+// SetChanged sets the value, but also appends the value to the end of the list for when you
+// iterate over the list. Returns whether something changed, and if an error occurred. If the key
+// was already in the map, the order will not change, but the value will be replaced. If you want the
+// order to change, you must Remove then SetChanged
+func (o *OrderedStringMap) SetChanged(key string, val string) (changed bool, err error) {
 	o.Lock()
 	defer o.Unlock()
 
 	var ok bool
 	var oldVal string
 
-	if oldVal,ok = o.items[key]; !ok && oldVal != val {
-		o.order = append(o.order, key)
+	if oldVal,ok = o.items[key]; !ok || oldVal != val {
+		if !ok {
+			o.order = append(o.order, key)
+		}
 		o.items[key] = val
 		changed = true
 	}
 	return
+}
+
+// Set sets the given key to the given value, and returns the OrderedStringMap for chaining
+func (o *OrderedStringMap) Set(key string, val string) *OrderedStringMap {
+	o.SetChanged(key, val)
+	return o
 }
 
 func (o *OrderedStringMap) Remove(key string) {
@@ -122,44 +132,6 @@ func (o *OrderedStringMap) Len() int {
 	return len (o.order)
 }
 
-// Iter can be used with range to iterate over the strings in the order in which they were added.
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o *OrderedStringMap) Iter() <-chan string {
-	c := make(chan string, o.Len())
-
-	f := func() {
-		o.RLock()
-		defer o.RUnlock()
-
-		for _, v := range o.order {
-			c <- o.items[v]
-		}
-		close(c)
-	}
-	go f()
-
-	return c
-}
-
-// IterKeys can be used with range to iterate over the keys in the order in which they were added.
-// You can then use Get(key) to get the actual value
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o *OrderedStringMap) IterKeys() <-chan string {
-	c := make(chan string, o.Len())
-
-	f := func() {
-		o.RLock()
-		defer o.RUnlock()
-
-		for _, v := range o.order {
-			c <- v
-		}
-		close(c)
-	}
-	go f()
-
-	return c
-}
 
 func (o *OrderedStringMap) Less(i, j int) bool {
 	o.RLock()
@@ -187,7 +159,6 @@ func OrderStringMapByKeys(o *OrderedStringMap) sort.Interface {
 }
 
 // A helper function to allow OrderedStringMaps to be sorted by keys
-// See the IterKeys example
 func (r orderedstringbykeys) Less(i, j int) bool {
 	var o *OrderedStringMap = r.Interface.(*OrderedStringMap)
 	o.Lock()
@@ -241,9 +212,10 @@ func (o *OrderedStringMap) String() string {
 	var s string
 
 	s = "{"
-	for k := range o.IterKeys() {
+	o.Range(func(k,v string) bool {
 		s += `"` + k + `":"` + o.Get(k) + `",`
-	}
+		return true
+	})
 	s = strings.TrimRight(s, ",")
 	s += "}"
 	return s
@@ -253,7 +225,40 @@ func (o *OrderedStringMap) String() string {
 // Merge the given string map into the current one
 // Can be any kind of string map
 func (o *OrderedStringMap) Merge(i StringMapI) {
-	for k := range i.IterKeys() {
-		o.Set(k, i.Get(k))
+	i.Range(func(k,v string) bool {
+		o.Set(k, v)
+		return true
+	})
+}
+
+// Range will call the given function with every key and value in the order they were placed into the OrderedMap
+// During this process, the map will be locked, so do not use a function that will be taking significant amounts of time
+// If f returns false, it stops the iteration. This pattern is taken from sync.Map.
+func (o *OrderedStringMap) Range(f func(key string, value string) bool) {
+	for _, k := range o.order {
+		if !f(k, o.items[k]) {
+			break
+		}
 	}
+}
+
+
+// Equals returns true if the map equals the given map, paying attention only to the content of the map and not the order.
+func (o *OrderedStringMap) Equals(i StringMapI) bool {
+	if i == nil {
+		return o == nil
+	}
+	if i.Len() != o.Len() {
+		return false
+	}
+	var ret bool = true
+
+	o.Range(func (k,v string) bool {
+		if !o.Has(k) || o.Get(k) != i.Get(k) {
+			ret = false	// don't just return because we are in a channel and we want to use up the channel
+			return false
+		}
+		return true
+	})
+	return ret
 }

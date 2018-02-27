@@ -24,7 +24,7 @@ func NewSafeStringMapFrom(i StringMapI) *SafeStringMap {
 	return m
 }
 
-func (o *SafeStringMap) Set(key string, val string) (changed bool, err error) {
+func (o *SafeStringMap) SetChanged(key string, val string) (changed bool, err error) {
 	o.Lock()
 	defer o.Unlock()
 	var ok bool
@@ -36,6 +36,14 @@ func (o *SafeStringMap) Set(key string, val string) (changed bool, err error) {
 		changed = true
 	}
 	return
+}
+
+func (o *SafeStringMap) Set(key string, val string) *SafeStringMap {
+	o.Lock()
+	defer o.Unlock()
+
+	o.items[key] = val
+	return o
 }
 
 // Get returns the string based on its key. If it does not exist, an empty string will be returned.
@@ -91,45 +99,6 @@ func (o *SafeStringMap) Len() int {
 	return len (o.items)
 }
 
-// Iter can be used with range to iterate over the string values. Order of values is not
-// guaranteed. See OrderedStringMap for an ordered version.
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o *SafeStringMap) Iter() <-chan string {
-	c := make(chan string, o.Len())
-
-	f := func() {
-		o.Lock()
-		defer o.Unlock()
-
-		for _, v := range o.items {
-			c <- v
-		}
-		close(c)
-	}
-	go f()
-
-	return c
-}
-
-// IterKeys can be used with range to iterate over the string keys. Order of values is not
-// guaranteed. See OrderedStringMap for an ordered version.
-// Note that we return a buffered channel the size of the return values so there is no blocking
-func (o *SafeStringMap) IterKeys() <-chan string {
-	c := make(chan string, o.Len())
-
-	f := func() {
-		o.Lock()
-		defer o.Unlock()
-
-		for k := range o.items {
-			c <- k
-		}
-		close(c)
-	}
-	go f()
-
-	return c
-}
 
 func (o *SafeStringMap) MarshalBinary() (data []byte, err error) {
 	buf := new(bytes.Buffer)
@@ -157,24 +126,41 @@ func (o *SafeStringMap) UnmarshalJSON(data []byte) error {
 }
 
 func (o *SafeStringMap) Merge(i StringMapI) {
-	for k := range i.IterKeys() {
-		o.Set(k, i.Get(k))
-	}
+	i.Range(func (k,v string) bool {
+		o.Set(k, v)
+		return true
+	})
 }
 
 func (o *SafeStringMap) Equals(i StringMapI) bool {
 	if i == nil {
-		return false
+		return o == nil
 	}
 	if i.Len() != o.Len() {
 		return false
 	}
 	var ret bool = true
 
-	for k := range i.IterKeys() {
-		if ret && (!o.Has(k) || o.Get(k) != i.Get(k)) {
+	o.Range(func (k,v string) bool {
+		if !o.Has(k) || o.Get(k) != i.Get(k) {
 			ret = false	// don't just return because we are in a channel and we want to use up the channel
+			return false
+		}
+		return true
+	})
+	return ret
+}
+
+// Range will call the given function with every key and value in the order they were placed into the SafeString
+// During this process, the map will be locked, so do not use a function that will be taking significant amounts of time
+// If f returns false, it stops the iteration. This pattern is taken from sync.Map.
+func (o *SafeStringMap) Range(f func(key string, value string) bool) {
+	o.Lock()
+	defer o.Unlock()
+
+	for k, v := range o.items {
+		if !f(k, v) {
+			break
 		}
 	}
-	return ret
 }

@@ -3,7 +3,7 @@ package datetime
 import (
 	"time"
 	"context"
-	"grlocal/i18n"
+	"goradd/i18n"	// project specific translation
 )
 
 type Weekday int
