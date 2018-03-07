@@ -50,7 +50,7 @@ type ControlI interface {
 
 	SetAttribute(name string, val interface{})
 	Attribute(string) string
-	Attributes() *html.Attributes
+	DrawingAttributes() *html.Attributes
 	WrapperAttributes() *html.Attributes
 
 	HasFor() bool
@@ -70,7 +70,7 @@ type ControlI interface {
 
 	Refresh()
 
-	Action(*ActionParams)
+	Action(context.Context, *ActionParams)
 	SetActionValue(interface{})
 	ActionValue() interface{}
 	On(e EventI, a ...ActionI)
@@ -203,7 +203,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		if c.wrapper == nil {
 			// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
 			// To fix this, we create an empty, invisible control in the place where we would normally draw
-			ctrl = "<span id=\"" + c.this().Id() + "\" style=\"display:none;\"></span>"
+			ctrl = "<span id=\"" + c.this().Id() + "\" style=\"display:none;\" data-goradd></span>"
 		} else {
 			ctrl = "" // when going visible, we will redraw the inner text of the wrapper
 		}
@@ -252,13 +252,12 @@ func (c *Control) PostRender(ctx context.Context, buf *bytes.Buffer) (err error)
 func (c *Control) DrawTag(ctx context.Context, buf *bytes.Buffer) string {
 	var ctrl string
 
-	attributes := html.NewAttributesFrom(c.this().Attributes())
-	if c.wrapper == nil {
+	attributes := c.this().DrawingAttributes()
+	if c.wrapper != nil {
 		if a := c.this().WrapperAttributes(); a != nil {
 			attributes.Merge(a)
 		}
 	}
-	attributes.SetId(c.this().Id())
 
 	if c.IsVoidTag {
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
@@ -325,6 +324,10 @@ func (c *Control) SetAttribute(name string, val interface{}) {
 	var v string
 	var ok bool
 
+	if name == "id" {
+		panic ("You can only set the 'id' attribute of a control when it is created")
+	}
+
 	if v,ok = val.(string); !ok {
 		v = fmt.Sprintf("%v", v)
 	}
@@ -344,13 +347,18 @@ func (c *Control) Attribute(name string) string {
 	return c.attributes.Get(name)
 }
 
-// Returns the set of attributes. Subclasses can override this and add isRequired attributes. This gets called just before drawing.
-func (c *Control) Attributes() *html.Attributes {
-	return c.attributes
+// Returns a set of attributes that should override those set by the user. This allows controls to set attributes
+// just before drawing that should take precedence over other attributes, and that are critical to drawing the
+// tag of the control.
+func (c *Control) DrawingAttributes() *html.Attributes {
+	a := html.NewAttributesFrom(c.attributes)
+	a.SetId(c.id) // make sure the control id is set at a minimum
+	a.Set("data-goradd", "ctl")
+	return a
 }
 
 func (c *Control) WrapperAttributes() *html.Attributes {
-	return c.wrapperAttributes
+	return html.NewAttributesFrom(c.wrapperAttributes)
 }
 
 func (c *Control) SetDataAttribute(name string, val interface{}) {
@@ -553,6 +561,9 @@ func (c *Control) On(e EventI, actions... ActionI) {
 	for {
 		if _,ok := c.events[c.eventCounter]; ok {
 			c.eventCounter ++
+
+		} else {
+			break
 		}
 	}
 	c.events[c.eventCounter] = e
@@ -578,7 +589,7 @@ func (c *Control) ActionValue() interface{} {
 
 // Action processes actions. Typically, the Action function will first look at the id to know how to handle it.
 // This is just an empty implemenation. Sub-controls should implement this.
-func (c *Control) Action(a *ActionParams) {
+func (c *Control) Action(ctx context.Context, a *ActionParams) {
 }
 
 

@@ -59,6 +59,7 @@ func (o *LruCache) Set(key string, v interface{})  {
 		// To prevent some memory thrashing with an active cache, we only update the order if the item is slightly stale
 		if i < o.maxItemCount / 2 || item.timestamp < t - o.ttl / 8 { // if 1/8th of the ttl has passed, or the item is getting close to be pushed off the end, bring it to front
 			o.order = append(o.order[:i], o.order[i + 1:]...)
+			o.order = append(o.order, key)
 			item.timestamp = t
 		}
 	} else {
@@ -68,7 +69,7 @@ func (o *LruCache) Set(key string, v interface{})  {
 	}
 
 	// garbage collect
-	if t % (int64(o.maxItemCount) / 8) == 1 {
+	if t % ((int64(o.maxItemCount) / 8) + 1 ) == 1 {
 		go o.gc()
 	}
 }
@@ -97,7 +98,7 @@ func (o *LruCache) gc() {
 
 
 // Get returns the item based on its id.
-// If not found, will return null.
+// If not found, it will return nil.
 func (o *LruCache) Get(key string)  interface{} {
 	o.Lock()
 	defer o.Unlock()
@@ -109,6 +110,8 @@ func (o *LruCache) Get(key string)  interface{} {
 	return i.v
 }
 
+
+// Has tests for the existence of the key
 func (o *LruCache) Has(key string) (exists bool) {
 	o.Lock()
 	defer o.Unlock()

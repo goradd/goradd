@@ -63,6 +63,7 @@ type PageI interface {
 
 	DrawHeaderTags(context.Context, *bytes.Buffer)
 	SetTitle(title string)
+	StateId() string
 }
 
 type PageDrawFunc func(context.Context, PageI, *bytes.Buffer) error
@@ -257,3 +258,6 @@ func (p *PageBase) Path() string {
 	return p.path
 }
 
+func (p *PageBase) StateId() string {
+	return p.stateId
+}

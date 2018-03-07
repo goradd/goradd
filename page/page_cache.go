@@ -7,8 +7,7 @@ import (
 )
 
 // The page cache is an LRU cache of page objects. Objects that are too old are removed, and if the cache is full,
-// the oldest item(s) will be removed. Pages that are set multiple times will be pushed to the top. Whenever an item
-// is retrieved from the cache, it is removed. Whenever an item is set, we garbage collect.
+// the oldest item(s) will be removed. Pages that are set multiple times will be pushed to the top. Whenever an item is set, we garbage collect.
 type pageCache struct {
 	types.LruCache
 }

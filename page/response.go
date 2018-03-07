@@ -91,8 +91,8 @@ type Response struct {
 	controls               map[string]ResponseControl
 }
 
-func NewResponse() *Response {
-	return &Response{}
+func NewResponse() Response {
+	return Response{}
 }
 
 func (r *Response) displayAlert(message string) {

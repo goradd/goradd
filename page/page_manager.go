@@ -67,9 +67,11 @@ func (m *PageManager) IsPage (ctx context.Context) bool {
 }
 
 func (m *PageManager) getPage(ctx context.Context) (page PageI, isNew bool) {
+	var pageStateId string
+
 	gCtx := GetContext(ctx)
 
-	pageStateId := gCtx.pageStateId
+	pageStateId = gCtx.pageStateId
 
 	if pageStateId != "" {
 		page = m.cache.Get(pageStateId)
@@ -82,9 +84,9 @@ func (m *PageManager) getPage(ctx context.Context) (page PageI, isNew bool) {
 			panic("Could not find the page creation function")
 		}
 		page = f(ctx)	// call the page create function
-		stateId := m.cache.NewPageId()
+		pageStateId = m.cache.NewPageId()
 		page.GetPageBase().stateId = pageStateId
-		m.cache.Set(stateId, page)
+		m.cache.Set(pageStateId, page)
 		isNew = true
 	}
 	return
@@ -108,7 +110,11 @@ func (m *PageManager) RunPage(ctx context.Context, w http.ResponseWriter) {
 		}
 	}()
 
-	//gCtx := GetContext(ctx)
+	grCtx := GetContext(ctx)
+
+	if (grCtx.err != nil) {
+		panic(grCtx.err)	// If we received an error during the unpacking process, let the deferred code above handle the error.
+	}
 	pageI, isNew := m.getPage(ctx)
 
 	page := pageI.GetPageBase()
@@ -168,6 +174,12 @@ func (m *PageManager) ServeAsset (ctx context.Context, w http.ResponseWriter, r 
 	localpath := GetAssetFilePath(GetContext(ctx).HttpContext.URL.Path)
 	if localpath == "" {
 		panic("Invalid asset")
+	}
+
+	if config.Mode == config.Dev {
+		w.Header().Set("Cache-Control",  "no-cache, no-store, must-revalidate")
+	} else {
+		// TODO: Set up a validating cache control
 	}
 	http.ServeFile(w, r, localpath)
 }

@@ -6,10 +6,11 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	localPage "goradd/page"
+	"strconv"
 )
 
 const (
-	TEXTBOX_TYPE_DEFAULT    = "text"
+	TEXTBOX_TYPE_DEFAULT   = "text"
 	TEXTBOX_TYPE_PASSWORD    = "password"
 	TEXTBOX_TYPE_SEARCH    = "search"
 	TEXTBOX_TYPE_NUMBER = "number"
@@ -29,18 +30,23 @@ type TextBoxI interface {
 type TextBox struct {
 	localPage.Control
 
+	typ string
+
 	sanitizer Sanitizer
 	ValidationFilter func(string)bool
 	ValidationMessage string
 
 	minLength int
 	maxLength int
+
+	value string
 }
 
 // Creates a new standard html text box
 func NewTextBox(parent page.ControlI, id string) *TextBox {
 	t := &TextBox{}
 	t.Init(t, parent, id)
+	t.typ = TEXTBOX_TYPE_DEFAULT
 	return t
 }
 
@@ -63,18 +69,28 @@ func (t *TextBox) Init(self TextBoxI, parent page.ControlI, id string) {
 
 	t.Tag = "input"
 	t.IsVoidTag = true
-	t.SetAttribute("type", TEXTBOX_TYPE_DEFAULT)
+	t.typ = TEXTBOX_TYPE_DEFAULT
 }
 
 func (t *TextBox) this() TextBoxI {
 	return t.Self.(TextBoxI)
 }
 
-func (t *TextBox) Attributes() *html.Attributes {
-	attr := html.NewAttributes()
-	attr.Set("name", t.Id())	// needed for posts
-	a := t.Control.Attributes()
-	return a.Override(attr)
+// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// attributes are disposed of after drawing, so they are essentially read-only.
+func (t *TextBox) DrawingAttributes() *html.Attributes {
+	a := t.Control.DrawingAttributes()
+	a.Set("name", t.Id())	// needed for posts
+	a.Set("type", t.typ)
+	a.Set("value", t.value)
+	if t.maxLength != 0 {
+		a.Set("maxlength", strconv.Itoa(t.maxLength))
+	}
+	if t.minLength != 0 {
+		a.Set("minlength", strconv.Itoa(t.maxLength))
+	}
+
+	return a
 }
 
 // Set the value of the text. Returns itself for chaining
@@ -84,11 +100,12 @@ func (t *TextBox) SetText(s string) page.ControlI {
 }
 
 func (t *TextBox) Text() string {
-	return t.Attribute("value")
+	return t.value
 }
 
 func (t *TextBox) SetValue(v interface{}) page.ControlI {
-	return t.SetText(v.(string))
+	t.value,_ = v.(string)
+	return t.this()
 }
 
 func (t *TextBox) Value() interface{} {
@@ -97,7 +114,6 @@ func (t *TextBox) Value() interface{} {
 
 func (t *TextBox) SetMaxLength(len int) TextBoxI {
 	t.maxLength = len
-	t.SetAttribute("maxlength", len)
 	return t.this()
 }
 
@@ -123,9 +139,10 @@ func (t *TextBox) Placeholder() string {
 	return t.Attribute("placeholder")
 }
 
-// SetType sets the type of textbox this is. Pass it a TEXTBOX_TYPE... constant
-func (t *TextBox) SetType(s string) TextBoxI {
-	t.Attributes().Set("type", s) // directly set our attribute value to reflect what the browser already has
+// SetType sets the type of textbox this is. Pass it a TEXTBOX_TYPE... constant normally, thought you can pass
+// any string and it will become the input type
+func (t *TextBox) SetType(typ string) TextBoxI {
+	t.typ = typ
 	t.Refresh() // can't change this without completely redrawing the control
 	return t.this()
 }
@@ -133,8 +150,7 @@ func (t *TextBox) SetType(s string) TextBoxI {
 func (t *TextBox) ParsePostData(c context.Context) {
 	ctx := page.GetContext(c)
 	if text,ok := ctx.FormValue(t.Id()); ok {
-		text = t.sanitize(text)
-		t.Attributes().Set("value", text) // directly set our attribute value to reflect what the browser already has
+		t.value = t.sanitize(text)
 	}
 }
 

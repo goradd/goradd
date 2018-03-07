@@ -22,6 +22,7 @@ type FormI interface {
 
 type FormBase struct {
 	Control
+	response Response
 
 	// serialized lists of related files
 	headerStyleSheets *types.OrderedMap
@@ -35,7 +36,6 @@ func (f *FormBase) Init(self FormI, page PageI, id string) {
 	f.page = page
 	f.Control.Init(self, nil, id)
 	f.Tag = "form"
-	f.SetAttribute("action", page.GetPageBase().path)
 	self.AddRelatedFiles()
 }
 
@@ -57,14 +57,14 @@ func (f *FormBase) InitializeControls(ctx context.Context) {
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
-func (c *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = c.this().PreRender(ctx, buf)
-	buf.WriteString(`<form ` + c.this().Attributes().String() + ">\n")
-	if err = c.this().DrawTemplate(ctx, buf); err != nil {
+func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
+	err = f.this().PreRender(ctx, buf)
+	buf.WriteString(`<form ` + f.this().DrawingAttributes().String() + ">\n")
+	if err = f.this().DrawTemplate(ctx, buf); err != nil {
 		return // the template is required
 	}
 	// Render controls that are marked to auto render if the form did not render them
-	for _,ctrl := range c.children {
+	for _,ctrl := range f.children {
 		if ctrl.ShouldAutoRender() &&
 			!ctrl.WasRendered() {
 
@@ -75,47 +75,64 @@ func (c *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 			}
 		}
 	}
-	buf.WriteString("\n<\form>\n")
-	c.this().PostRender(ctx, buf)
-	return
-}
-
-func (c *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = c.Control.PreRender(ctx, buf); err != nil {
-		return
-	}
-
-	c.SetAttribute("method", "post")
-	c.SetAttribute("action", c.page.Path())
-
-	return
-}
-
-func (c *FormBase) PostRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-
-	c.drawBodyScriptFiles(ctx, buf)
-
-	// Render control level JavaScript
-
-	var r = &GetContext(ctx).Response
 
 	// Go through all controls and gather up any JS or CSS to run or Form Attributes to modify
 	// Controls should use the response to execute commands on controls or execute general javascript.
+	// This must be done before we save the form state
+	f.this().getScripts(&f.response)
+	f.resetFlags()
+	formstate := f.saveState() // From this point on we should not change any controls, just draw
 
-	c.this().getScripts(r)
-	s := r.JavaScript()
+	// Render hidden controls
 
-	// TODO: Remove jQuery dependency. Probably should attach to a window.load so that initializing functions can get accurate measurements of themselves since domready does not guarantee css has been loaded.
+	// Place holder for postBack and postAjax functions to place their data
+	buf.WriteString(`<input type="hidden" name="Goradd__Params" id="Goradd__Params" value="" />` + "\n")
+
+	// Serialize and write out the formstate
+	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="Goradd__FormState" id="Goradd__Formstate" value="%s" />`, formstate))
+
+	buf.WriteString("\n</form>\n")
+
+	// Draw things that come after the form tag
+	f.drawBodyScriptFiles(ctx, buf)
+
+	// Write out the control scripts gathered above
+	s := `goradd.initForm();` + "\n";
+	s += f.response.JavaScript()
+	f.response = NewResponse()	// Reset
 	s = fmt.Sprintf(`<script type="text/javascript">jQuery(document).ready(function($j) { %s; });</script>`, s)
 	buf.WriteString(s)
 
-	err = c.Control.PostRender(ctx, buf)
-
-	c.resetFlags()
+	f.this().PostRender(ctx, buf)
 
 	return
 }
 
+func (f *FormBase) DrawingAttributes() *html.Attributes {
+	a := f.Control.DrawingAttributes()
+	a.Set("action", f.Page().GetPageBase().path)
+	a.Set("data-goradd", "form")
+	return a
+}
+
+func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
+	if err = f.Control.PreRender(ctx, buf); err != nil {
+		return
+	}
+
+	f.SetAttribute("method", "post")
+	f.SetAttribute("action", f.page.Path())
+
+	return
+}
+
+// saveState saves the state of the form in the page cache.
+// This version keeps the page in memory. Future versions may serialize formstates to store them on disk.
+func (f *FormBase) saveState() string {
+	var s = f.page.StateId()
+	GetPageManager().cache.Set(s, f.page) // the page should already exist in the cache. This just tells the cache that we used it, so make it current.
+	return f.page.StateId()
+}
 
 // AddJavaScriptFile registers a JavaScript file such that it will get loaded on the page.
 // If forceHeader is true, the file will be listed in the header, which you should only do if the file has some
@@ -130,32 +147,32 @@ func (c *FormBase) PostRender(ctx context.Context, buf *bytes.Buffer) (err error
 // deployment and so that the MUX can find the file and serve it (this happens at draw time).
 // The attributes are extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
-func (c *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes) {
-	if forceHeader && c.isOnPage {
+func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes) {
+	if forceHeader && f.isOnPage {
 		panic ("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
 	}
-	if c.isOnPage {
-		if c.importedJavaScripts == nil {
-			c.importedJavaScripts = types.NewOrderedMap()
+	if f.isOnPage {
+		if f.importedJavaScripts == nil {
+			f.importedJavaScripts = types.NewOrderedMap()
 		}
-		c.importedJavaScripts.Set(path, attributes)
+		f.importedJavaScripts.Set(path, attributes)
 	} else if forceHeader {
-		if c.headerJavaScripts == nil {
-			c.headerJavaScripts = types.NewOrderedMap()
+		if f.headerJavaScripts == nil {
+			f.headerJavaScripts = types.NewOrderedMap()
 		}
-		c.headerJavaScripts.Set(path, attributes)
+		f.headerJavaScripts.Set(path, attributes)
 	} else {
-		if c.bodyJavaScripts == nil {
-			c.bodyJavaScripts = types.NewOrderedMap()
+		if f.bodyJavaScripts == nil {
+			f.bodyJavaScripts = types.NewOrderedMap()
 		}
-		c.bodyJavaScripts.Set(path, attributes)
+		f.bodyJavaScripts.Set(path, attributes)
 	}
 }
 
 // Add a javascript file that is a concatenation of other javascript files the system uses.
 // This allows you to concatenate and minimize all the javascript files you are using without worrying about
 // libraries and controls that are adding the individual files through the AddJavaScriptFile function
-func (c *FormBase) AddMasterJavaScriptFile(url string, attributes []string, files []string) {
+func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, files []string) {
 	// TODO
 }
 
@@ -166,25 +183,25 @@ func (c *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 // deployment and so that the MUX can find the file and serve it (this happens at draw time).
 // The attributes will be extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
-func (c *FormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
-	if c.isOnPage {
-		if c.importedStyleSheets == nil {
-			c.importedStyleSheets = types.NewOrderedMap()
+func (f *FormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
+	if f.isOnPage {
+		if f.importedStyleSheets == nil {
+			f.importedStyleSheets = types.NewOrderedMap()
 		}
-		c.importedStyleSheets.Set(path, attributes)
+		f.importedStyleSheets.Set(path, attributes)
 	} else {
-		if c.headerStyleSheets == nil {
-			c.headerStyleSheets = types.NewOrderedMap()
+		if f.headerStyleSheets == nil {
+			f.headerStyleSheets = types.NewOrderedMap()
 		}
-		c.headerStyleSheets.Set(path, attributes)
+		f.headerStyleSheets.Set(path, attributes)
 	}
 }
 
 // DrawHeaderTags is called by the page drawing routine to draw its header tags
 // If you override this, be sure to call this version too
-func (c *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
-	if c.headerStyleSheets != nil {
-		c.headerStyleSheets.Range(func (path string, attr interface{}) bool {
+func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
+	if f.headerStyleSheets != nil {
+		f.headerStyleSheets.Range(func (path string, attr interface{}) bool {
 			var attributes *html.Attributes = attr.(*html.Attributes)
 			if attributes == nil {
 				attributes = html.NewAttributes()
@@ -200,8 +217,8 @@ func (c *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 			return true
 		})
 	}
-	if c.headerJavaScripts != nil {
-		c.headerJavaScripts.Range(func (path string, attr interface{}) bool {
+	if f.headerJavaScripts != nil {
+		f.headerJavaScripts.Range(func (path string, attr interface{}) bool {
 			var attributes *html.Attributes = attr.(*html.Attributes)
 			if attributes == nil {
 				attributes = html.NewAttributes()
@@ -218,8 +235,8 @@ func (c *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	}
 }
 
-func (c *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
-	c.bodyJavaScripts.Range(func (path string, attr interface{}) bool {
+func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
+	f.bodyJavaScripts.Range(func (path string, attr interface{}) bool {
 		var attributes *html.Attributes = attr.(*html.Attributes)
 		if attributes == nil {
 			attributes = html.NewAttributes()
@@ -230,8 +247,12 @@ func (c *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 			_,fileName := filepath.Split(path)
 			attributes.Set("src", RegisterAssetFile("/js/" + fileName, path))
 		}
-		buf.WriteString(html.RenderTag("script", attributes, ""))
+		buf.WriteString(html.RenderTag("script", attributes, "") + "\n")
 		return true
 	})
 
+}
+
+func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
+	f.response.displayAlert(msg)
 }

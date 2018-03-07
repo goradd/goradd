@@ -65,3 +65,27 @@ func TestLruCacheTtl(t *testing.T) {
 	}
 
 }
+
+func TestLruReset(t *testing.T) {
+	cache := NewLruCache(2, 60 * 60)
+	p1:="1"
+	p2:="2"
+	p3:="3"
+
+	cache.Set("1", p1)
+	cache.Set("2", p2)
+	cache.Set("1", p1)
+	cache.Set("3", p3)
+	cache.gc()
+
+	p4 := cache.Get("2")
+
+	if p4 != nil {
+		t.Error("Item did not fall off end")
+	}
+
+	p4 = cache.Get("1")
+	if p4 != p1 {
+		t.Error("Item was lost")
+	}
+}

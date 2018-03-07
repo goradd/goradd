@@ -48,7 +48,7 @@ func (a *Application) ProcessCommand (args []string) {
 func (a *Application) PutContext(ctx context.Context, r *http.Request) context.Context {
 	grctx := &page.Context{}
 	grctx.FillFromRequest(os.Args[1:], r)
-	return context.WithValue(ctx, "goradd", grctx)	// TODO: Need to have separate App and Http Contexts
+	return context.WithValue(ctx, "goradd", grctx)
 }
 
 func (a *Application) ProcessRequest(ctx context.Context, w http.ResponseWriter, r *http.Request) {

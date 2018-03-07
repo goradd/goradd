@@ -7,6 +7,8 @@ import (
 	"strings"
 	"goradd/config"
 	"context"
+	"encoding/json"
+	"fmt"
 )
 
 type RequestMode int
@@ -37,23 +39,25 @@ type HttpContext struct {
 	Header http.Header
 }
 
-// Goradd application specific nodes
+// AppContext has Goradd application specific nodes
 type AppContext struct {
+	err error					// An error that occurred during the unpacking of the context. We save this for later so we can let the page manager display it if we get that far.
 	requestMode RequestMode
 	cliArgs []string			// All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId string
+	customControlValues map[string]interface{} // map of new control values keyed by control id
+	checkableValues map[string]interface{} // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
 	// TODO: Session object
 }
 
 type Context struct {
 	HttpContext
 	AppContext
-	Response
 }
 
 func (ctx *Context) FillFromRequest(cliArgs []string, r *http.Request)() {
-	ctx.FillHttp(r);
-	ctx.FillApp(cliArgs);
+	ctx.FillHttp(r)
+	ctx.FillApp(cliArgs)
 }
 
 func (ctx *Context) FillHttp(r *http.Request) {
@@ -97,7 +101,7 @@ func (ctx *Context) FormValue(key string) (value string, ok bool) {
 	}
 	var v []string
 	if v, ok = ctx.formVars[key]; ok && len(v) == 1 {
-		value = v[0];
+		value = v[0]
 	}
 	return
 }
@@ -112,19 +116,55 @@ func (ctx *Context) FormValues(key string) (value []string, ok bool) {
 	return
 }
 
-
+// FillApp fills the app structure with app specific information from the request
+// Do not panic here!
 func (ctx *Context) FillApp(cliArgs []string) {
+	var ok bool
+	var v string = ""
+	var i interface{}
+	var err error
+
+
 	if ctx.URL != nil {
-		if v,ok := ctx.FormValue("Qform__FormCallType"); ok {
-			if v == "Ajax" {
+		if v,ok = ctx.FormValue("Goradd__Params"); ok {
+			if h := ctx.Header.Get("X-Requested-With"); strings.ToLower(h) == "xmlhttprequest" {
 				ctx.requestMode = Ajax
 			} else {
 				ctx.requestMode = Server
 			}
+
+			// We have posted back from our form. Unpack our params values
+			var params map[string]interface{}
+			if err = json.Unmarshal([]byte(v), &params); err == nil {
+				if i, ok = params["controlValues"]; !ok {
+					ctx.customControlValues = make(map[string]interface{}) // empty map so we don't have to check for nil
+				} else {
+					ctx.customControlValues = i.(map[string]interface{})
+				}
+
+				if i, ok = params["checkableValues"]; !ok {
+					ctx.checkableValues = make(map[string]interface{})
+				} else {
+					ctx.checkableValues = i.(map[string]interface{})
+				}
+
+				if ctx.pageStateId,ok = ctx.FormValue("Goradd__FormState"); !ok {
+					ctx.err = fmt.Errorf("No formstate found in response")
+					return
+				}
+			} else {
+				ctx.err = err
+				return
+			}
+
 		} else {
-			if h := ctx.Header.Get("HTTP_X_REQUESTED_WITH"); strings.ToLower(h) == "xmlhttprequest" {
+			// Scenarios where we are not posting the form
+
+			if h := ctx.Header.Get("X-Requested-With"); strings.ToLower(h) == "xmlhttprequest" {
+				// A custom ajax call
 				ctx.requestMode = CustomAjax
 			} else {
+				// A new call to our web page
 				ctx.requestMode = Http
 			}
 		}
@@ -132,8 +172,6 @@ func (ctx *Context) FillApp(cliArgs []string) {
 		ctx.requestMode = Cli
 	}
 	ctx.cliArgs = cliArgs
-	ctx.pageStateId,_ = ctx.FormValue("Qform__FormState")
-
 }
 
 func GetContext(ctx context.Context) *Context {

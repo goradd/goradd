@@ -54,20 +54,28 @@ func Server(destControlId string, actionId int) *serverAction {
 
 func (a *serverAction) RenderScript(params page.RenderParams) string {
 	v := types.NewOrderedMap()
-	v.Set("c", a.destControlId)
-	v.Set("a", a.id)
-	v.Set("e", params.EventId)
-	if params.EventActionValue != nil {
-		v.Set("eV", params.EventActionValue)
+	v.Set("controlId", a.destControlId)
+	v.Set("eventId", params.EventId)
+	if a.async {
+		v.Set("async", true)
 	}
-	if a.actionValue != nil {
-		v.Set("aV", a.actionValue)
+
+	if eV,aV,cV := params.EventActionValue, a.actionValue, params.TriggeringControl.ActionValue(); eV != nil || aV != nil || cV != nil {
+		v2 := types.NewOrderedMap()
+		if eV != nil {
+			v2.Set("event", eV)
+		}
+		if aV != nil {
+			v2.Set("action", aV)
+		}
+		if cV != nil {
+			v2.Set("control", cV)
+		}
+		v.Set("actionValues", v2)
 	}
-	if cV := params.TriggeringControl.ActionValue(); cV != nil {
-		v.Set("cV", cV)
-	}
-	return fmt.Sprintf(`goradd.postback(%s)`, javascript.ToJavaScript(v))
+	return fmt.Sprintf(`goradd.postBack(%s)`, javascript.ToJavaScript(v))
 }
+
 
 
 type ajaxAction struct {
@@ -85,19 +93,24 @@ func Ajax(destControlId string, actionId int) *ajaxAction {
 
 func (a *ajaxAction) RenderScript(params page.RenderParams) string {
 	v := types.NewOrderedMap()
-	v.Set("c", a.destControlId)
-	v.Set("a", a.id)
-	v.Set("e", params.EventId)
-	if params.EventActionValue != nil {
-		v.Set("eV", params.EventActionValue)
+	v.Set("controlId", a.destControlId)
+	v.Set("eventId", params.EventId)
+	if a.async {
+		v.Set("async", true)
 	}
-	if a.actionValue != nil {
-		v.Set("aV", a.actionValue)
+
+	if eV,aV,cV := params.EventActionValue, a.actionValue, params.TriggeringControl.ActionValue(); eV != nil || aV != nil || cV != nil {
+		v2 := types.NewOrderedMap()
+		if eV != nil {
+			v2.Set("event", eV)
+		}
+		if aV != nil {
+			v2.Set("action", aV)
+		}
+		if cV != nil {
+			v2.Set("control", cV)
+		}
+		v.Set("actionValues", v2)
 	}
-	if cV := params.TriggeringControl.ActionValue(); cV != nil {
-		v.Set("cV", cV)
-	}
-	return fmt.Sprintf(`goradd.postajax(%s)`, javascript.ToJavaScript(v))
+	return fmt.Sprintf(`goradd.postAjax(%s)`, javascript.ToJavaScript(v))
 }
-
-

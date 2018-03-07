@@ -40,5 +40,3 @@ type CallbackActionI interface {
 	Validator(interface{})        CallbackActionI
 	Async()                       CallbackActionI
 }
-
-

@@ -71,7 +71,7 @@ func RenderAssetTag(filePath string, tag string, attributes *html.Attributes, co
 // appear in the browser, and by convention it is of the form /dir/filename.
 // filePath is the path on the development system where the file is located. This file will be copied to the url path
 // under the config.LocalAssets() directory if the app is in development mode.
-// Returns the url for easy chaining. Panics if the url is already associated with a different filePath.
+// Returns the url. Panics if the url is already associated with a different filePath.
 func RegisterAssetFile(url string, filePath string) string {
 	if !assetFiles.Has(url) {
 		dir,fileName := filepath.Split(url)
@@ -89,15 +89,18 @@ func RegisterAssetFile(url string, filePath string) string {
 
 		a := AssetFile{url:url, filePath: filePath, localPath: localPath}
 		assetFiles.Set(url, a)
-		return localPath
+		return url
 	} else {
+		if !assetIsRegistered(url) {
+			panic ("No file for " + url + " has been registered.")
+		}
 		a := assetFiles.Get(url).(AssetFile)
 		if config.Mode <= config.Debug {
 			if a.filePath != filePath {
 				panic("Attempting to register two different files to the same url:" + filePath)
 			}
 		}
-		return a.localPath
+		return url
 	}
 }
 
