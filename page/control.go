@@ -11,12 +11,17 @@ import (
 	"github.com/spekary/goradd"
 )
 
+const PrivateActionBase = 1000
+
+type ValidationType int
 
 const  (
-	ValidateNone int = iota
-	ValidateAll
+	ValidateDefault ValidationType = iota		// This is used by the event to indicate it is not overriding.
+	ValidateNone								// Force no validation.
+	ValidateForm
 	ValidateSiblingsAndChildren
 	ValidateSiblingsOnly
+	ValidateTargetsOnly
 )
 
 type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *bytes.Buffer) error
@@ -70,7 +75,8 @@ type ControlI interface {
 
 	Refresh()
 
-	Action(context.Context, *ActionParams)
+	Action(context.Context, ActionParams)
+	PrivateAction(context.Context, ActionParams)
 	SetActionValue(interface{})
 	ActionValue() interface{}
 	On(e EventI, a ...ActionI)
@@ -83,6 +89,10 @@ type ControlI interface {
 	addChildControlsToPage()
 	addChildControl(ControlI)
 	markOnPage(bool)
+
+	UpdateFormValues(*Context)
+
+	Validate() bool
 }
 
 type Control struct {
@@ -125,6 +135,10 @@ type Control struct {
 	instructions		string			// Instructions, if the field needs extra explanation. You could also try adding a tooltip to the wrapper.
 	validationError		string			// The message to display if there was a validation error
 	warning				string			// Warning message
+
+	validationType		ValidationType
+	validationTargets	[]string		// List of control IDs to target validation
+	blockParentValidation	bool		// This blocks a parent from validating this control. Useful for dialogs, or situations where multiple panels control their own space.
 
 	actionValue			interface{}
 
@@ -589,13 +603,19 @@ func (c *Control) ActionValue() interface{} {
 
 // Action processes actions. Typically, the Action function will first look at the id to know how to handle it.
 // This is just an empty implemenation. Sub-controls should implement this.
-func (c *Control) Action(ctx context.Context, a *ActionParams) {
+func (c *Control) Action(ctx context.Context, a ActionParams) {
+}
+
+// PrivateAction processes actions that a control sets up for itself, and that it does not want to give the opportunity
+// for users of the control to manipulate or remove those actions. Generally, private actions should call their superclass
+// PrivateAction function too.
+func (c *Control) PrivateAction(ctx context.Context, a ActionParams) {
 }
 
 
+
 // getScripts is an internal function called by the form to recursively process javascripts needed by the control that should be sent to the
-// browser. There are two main ways to send a response, either by calling functions on the response object, or
-// by returning javascript to execute. Returned javascript executes at medium priority in the order given.
+// browser. To send a response, call functions on the response object.
 // This function gets called when the entire control is redrawn.
 func (c *Control) getScripts(r *Response) {
 	// Render actions
@@ -647,8 +667,170 @@ func (c *Control) resetFlags() {
 
 // An internal function to allow the control to customize its treatment of event processing.
 func (c *Control) wrapEvent(eventName string, eventJs string) string {
-	return fmt.Sprintf("$j('#%s').on('%s', function(event, ui){%s});", c.Id(), eventName, eventJs);
+	return fmt.Sprintf("$j('#%s').on('%s', function(event, ui){%s});", c.Id(), eventName, eventJs)
 }
 
 
+// updateValues is called by the form during event handling. It reflexively updates the values in each of its child controls
+func (c *Control) updateValues(ctx *Context) {
+	c.this().UpdateFormValues(ctx)
+	children := c.Children()
+	if children != nil {
+		for _,child := range children {
+			child.control().updateValues(ctx)
+		}
+	}
+}
 
+// UpdateFormValues should be implemented by controls to get their values from the context.
+func (c *Control) UpdateFormValues(ctx *Context) {
+
+}
+
+// doAction is an internal function that the page manager uses to send actions to controls.
+func (c *Control) doAction(ctx context.Context) {
+	var e EventI
+	var ok bool
+	var isPrivate bool
+	var grCtx = GetContext(ctx)
+
+	if e,ok = c.events[grCtx.eventId]; !ok {
+		e,ok = c.privateEvents[grCtx.eventId]
+		isPrivate = true
+	}
+
+	if ok && c.passesValidation(e) {
+		for _,a := range e.GetActions() {
+			callbackAction := a.(CallbackActionI)
+			p := ActionParams {
+				Id:        callbackAction.Id(),
+				Action:    a,
+				Values:    grCtx.actionValues,
+				ControlId: c.Id(),
+			}
+			dest := c.Page().GetControl(callbackAction.GetDestinationControlId())
+
+			if dest != nil {
+				if isPrivate {
+					dest.PrivateAction(ctx, p)
+				} else {
+					dest.Action(ctx, p)
+				}
+			}
+		}
+
+	}
+}
+
+// SetBlockParentValidation will prevent a parent from validating this control. This is generally useful for panels and
+// other containers of controls that wish to have their own validation scheme. Dialogs in particular need this since
+// they essentially act as a separate form, even though technically they are included in a form.
+func (c *Control) SetBlockParentValidation(block bool) {
+	c.blockParentValidation = block
+}
+
+// SetValidationType specifies how this control validates other controls. Typically its either ValidateNone or ValidateForm.
+// ValidateForm will validate all the controls on the form.
+// ValidateSiblingsAndChildren will validate the immediate siblings of the target controls and their children
+// ValidateSiblingsOnly will validate only the siblings of the target controls
+// ValidateTargetsOnly will validate only the specified target controls
+func (c *Control) SetValidationType(typ ValidationType) {
+	c.validationType = typ
+}
+
+// SetValidationTargets specifies which controls to validate, in conjunction with the ValidationType setting. The default
+// is to use just this control as the target.
+func (c *Control) SetValidationTargets(controlIds... string) {
+	c.validationTargets = controlIds
+}
+
+// passesValidation checks to see if the event requires validation, and if so, if it passes the required validation
+func (c *Control) passesValidation(event EventI) (valid bool) {
+	validation := c.validationType
+
+	if v := event.event().validationOverride; v != ValidateDefault {
+		validation = v
+	}
+
+	if validation == ValidateDefault || validation == ValidateNone {
+		return true
+	}
+
+	var targets []ControlI
+
+	if c.validationTargets == nil {
+		if c.validationType == ValidateForm {
+			targets = []ControlI{c.Form()}
+		} else {
+			targets = []ControlI{c}
+		}
+	} else {
+		for _,id := range c.validationTargets {
+			if c2 := c.Page().GetControl(id); c2 != nil {
+				targets = append(targets, c2)
+			}
+		}
+	}
+
+	valid = true
+
+	switch validation {
+	case ValidateForm:
+		valid = c.Form().control().validateChildren()
+	case ValidateSiblingsAndChildren:
+		for _,t := range targets {
+			valid = t.control().validateSiblingsAndChildren() && valid
+		}
+	case ValidateSiblingsOnly:
+		for _,t := range targets {
+			valid = t.control().validateSiblings() && valid
+		}
+
+	case ValidateTargetsOnly:
+		var valid bool
+		for _,t := range targets {
+			valid = t.Validate() && valid
+		}
+	}
+	return valid
+}
+
+func (c *Control) Validate() bool {
+	return true
+}
+
+func (c *Control) validateSiblings() bool {
+
+	if c.parent == nil {return true}
+
+	p := c.parent.control()
+	siblings := p.children
+
+	var valid = true
+	for _,child := range siblings {
+		if child.Id() != c.Id() {
+			valid = child.Validate() && valid
+		}
+	}
+	return valid
+}
+
+func (c *Control) validateChildren() bool {
+	if c.children == nil || len(c.children) == 0 {
+		return true
+	}
+
+	var valid = true
+	for _,child := range c.children {
+		if child.Id() != c.Id() {
+			valid = child.Validate() && valid
+		}
+	}
+	return valid
+}
+
+func (c *Control) validateSiblingsAndChildren() bool {
+	valid := c.validateSiblings()
+	valid = c.validateChildren() && valid
+	return valid
+}

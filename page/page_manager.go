@@ -4,10 +4,9 @@ import (
 	"context"
 	"goradd/config"
 	"strings"
-	"net/http"
 	"fmt"
-	"github.com/shiyanhui/hero"
 	"html/template"
+	"bytes"
 )
 
 var pageManager *PageManager
@@ -93,26 +92,26 @@ func (m *PageManager) getPage(ctx context.Context) (page PageI, isNew bool) {
 }
 
 
-func (m *PageManager) RunPage(ctx context.Context, w http.ResponseWriter) {
+func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) {
 	defer func() {
 		if r := recover(); r != nil {
 			switch v := r.(type) {
 			case error:
 				err := newRunError(ctx, v)
-				m.makeErrorResponse(ctx, err, "", w)
+				m.makeErrorResponse(ctx, err, "", buf)
 			case string:
 				err := newRunError(ctx, v)
-				m.makeErrorResponse(ctx, err, "", w)
+				m.makeErrorResponse(ctx, err, "", buf)
 			default:
 				err := newRunError(ctx,fmt.Errorf("Unknown package error: %v", r))
-				m.makeErrorResponse(ctx, err, "", w)
+				m.makeErrorResponse(ctx, err, "", buf)
 			}
 		}
 	}()
 
 	grCtx := GetContext(ctx)
 
-	if (grCtx.err != nil) {
+	if grCtx.err != nil {
 		panic(grCtx.err)	// If we received an error during the unpacking process, let the deferred code above handle the error.
 	}
 	pageI, isNew := m.getPage(ctx)
@@ -125,22 +124,23 @@ func (m *PageManager) RunPage(ctx context.Context, w http.ResponseWriter) {
 	pageI.Run()
 
 	if !isNew {
-		// TODO: handle actions
+		pageI.Form().control().updateValues(grCtx)	// Tell all the controls to update their values.
+		// if this is an event response, do the actions associated with the event
+		if c := pageI.GetControl(grCtx.actionControlId); c != nil {
+			c.control().doAction(ctx)
+		}
 	}
 
 	//if server {
-	// TODO: Make our own version of this so we are not dependent on hero
-	buf := hero.GetBuffer()
-	defer hero.PutBuffer(buf)
 
 	err := pageI.Draw(ctx, buf)
 
-
 	if err != nil {
-		m.makeErrorResponse(ctx, newRunError(ctx, err), buf.String(), w)
-	} else {
-		w.Write(buf.Bytes())
+		var html = buf.String() // copy current html
+		buf.Reset()
+		m.makeErrorResponse(ctx, newRunError(ctx, err), html, buf)
 	}
+
 	//}
 
 }
@@ -153,35 +153,18 @@ func (m *PageManager) cleanup (p PageI) {
 func (m *PageManager) makeErrorResponse(ctx context.Context,
 	err *Error,
 	html string,
-	w http.ResponseWriter) {
+	buf *bytes.Buffer) {
 
 	if ErrorPageFunc == nil {
 		panic("No error page template function is defined")
 	}
 
-	buf := hero.GetBuffer()
-	defer hero.PutBuffer(buf)
-
 	ErrorPageFunc(ctx, html, err, buf)
-	w.Write(buf.Bytes())
 }
 
 func (m *PageManager) IsAsset (ctx context.Context) bool {
 	return assetIsRegistered(GetContext(ctx).HttpContext.URL.Path)
 }
 
-func (m *PageManager) ServeAsset (ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	localpath := GetAssetFilePath(GetContext(ctx).HttpContext.URL.Path)
-	if localpath == "" {
-		panic("Invalid asset")
-	}
-
-	if config.Mode == config.Dev {
-		w.Header().Set("Cache-Control",  "no-cache, no-store, must-revalidate")
-	} else {
-		// TODO: Set up a validating cache control
-	}
-	http.ServeFile(w, r, localpath)
-}
 
 

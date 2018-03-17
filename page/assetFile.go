@@ -7,6 +7,9 @@ import (
 	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/html"
 	"os"
+	"strings"
+	"net/http"
+	"log"
 )
 
 // A css, js or other file we want the browser to add
@@ -74,12 +77,15 @@ func RenderAssetTag(filePath string, tag string, attributes *html.Attributes, co
 // Returns the url. Panics if the url is already associated with a different filePath.
 func RegisterAssetFile(url string, filePath string) string {
 	if !assetFiles.Has(url) {
-		dir,fileName := filepath.Split(url)
-		localDir := config.LocalAssets() + dir
-		localPath := localDir + "/" + fileName
+		var dir,fileName string = filepath.Split(url)
 
-		// if we are in development mode, copy the file to the local assets directory. Otherwise, we will trust its already there.
-		if config.Mode == config.Dev {
+		dir = strings.TrimPrefix(dir, config.ASSET_PREFIX)
+
+		var localDir = config.LocalAssets() + dir
+		var localPath = localDir + fileName
+
+		// if we are in the correct mode, copy the file to the local assets directory. Otherwise, we will trust its already there.
+		if config.Mode == config.DeploymentPrep {
 			os.MkdirAll(localDir, 0777)
 			err := util.FileCopyIfNewer(filePath, localPath)
 			if err != nil {
@@ -104,10 +110,21 @@ func RegisterAssetFile(url string, filePath string) string {
 	}
 }
 
+func RegisterCssFile(urlPath string, filePath string) string {
+	return RegisterAssetFile(config.ASSET_PREFIX + "/css/" + urlPath, filePath)
+}
+
+func RegisterJsFile(urlPath string, filePath string) string {
+	return RegisterAssetFile(config.ASSET_PREFIX + "/js/" + urlPath, filePath)
+}
+
+
 
 func GetAssetFilePath(url string) string {
 	if asset := assetFiles.Get(url); asset == nil {
 		return ""
+	} else if config.Mode == config.Dev {
+		return asset.(AssetFile).filePath
 	} else {
 		return asset.(AssetFile).localPath
 	}
@@ -116,4 +133,22 @@ func GetAssetFilePath(url string) string {
 
 func assetIsRegistered(url string) bool {
 	return assetFiles.Has(url)
+}
+
+func ServeAsset (w http.ResponseWriter, r *http.Request) {
+	localpath := GetAssetFilePath(r.URL.Path)
+	if localpath == "" {
+		log.Printf("Invalid asset %s", r.URL.Path)
+		return
+	}
+	//log.Printf("Served %s", localpath)
+
+	if config.Mode == config.Dev {
+		// TODO: Set up per file cache control
+		w.Header().Set("Cache-Control",  "no-cache, no-store, must-revalidate")
+	} else {
+		// TODO: Set up a validating cache control
+	}
+
+	http.ServeFile(w, r, localpath)
 }

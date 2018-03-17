@@ -263,7 +263,7 @@ goradd = {
      *  eventId {int}: The event id
      *  async: If true, process the event asynchronously without waiting for other events to complete
      *  formId: The id of the form getting posted
-     *  values {object} (optional): An optional object, that contains values coming to send with the event
+     *  values {object} (optional): An optional object, that contains values to send with the event
      *      event: The event's action value, if one is provided. This can be any type, including an object.
      *      action: The action's action value, if one is provided. Any type.
      *      control: The control's action value, if one is provided. Any type.
@@ -1002,9 +1002,8 @@ goradd.inputSupport = true;
 goradd.blockEvents = false;
 goradd.finalCommands = [];
 
-goradd.registerControl = function(mixControl) {
-    var objControl = goradd.getControl(mixControl),
-        objWrapper;
+goradd.registerControl = function(objControl) {
+    var objWrapper;
 
     if (!objControl) {
         return;
@@ -1026,7 +1025,7 @@ goradd.registerControl = function(mixControl) {
 
 
     // Link the Wrapper and the Control together
-    objWrapper = gr.getWapper(objControl.id);
+    objWrapper = goradd.getWrapper(objControl.id);
     if (objWrapper) {
         objWrapper.control = objControl;
     }
@@ -1051,7 +1050,6 @@ gr.pA = gr.postAjax;
 gr.getC = gr.getControl;
 gr.getW = gr.getWrapper;
 gr.regC = gr.registerControl;
-gr.regCA = gr.registerControlArray;
 gr.recCM = gr.setControlValue;
 
 goradd.initialize();

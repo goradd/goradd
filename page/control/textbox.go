@@ -2,7 +2,6 @@ package control
 import (
 	//"github.com/microcosm-cc/bluemonday"
 	"net/mail"
-	"context"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	localPage "goradd/page"
@@ -147,13 +146,6 @@ func (t *TextBox) SetType(typ string) TextBoxI {
 	return t.this()
 }
 
-func (t *TextBox) ParsePostData(c context.Context) {
-	ctx := page.GetContext(c)
-	if text,ok := ctx.FormValue(t.Id()); ok {
-		t.value = t.sanitize(text)
-	}
-}
-
 func (t *TextBox) SetSanitizer(s Sanitizer) {
 	t.sanitizer = s
 }
@@ -199,4 +191,13 @@ func ValidateEmail(s string)bool {
 		return false
 	}
 	return true
+}
+
+// updateFormValues is an internal call that lets us internally reflect the value of the textbox on the web page
+func (t *TextBox) UpdateFormValues(ctx *page.Context) {
+	id := t.Id()
+
+	if v,ok := ctx.FormValue(id); ok {
+		t.value = t.sanitize(v)
+	}
 }

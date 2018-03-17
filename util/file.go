@@ -10,6 +10,8 @@ import (
 // Copy copies the src file to the destination. The destination file must either exist, or the directory in the file's
 // path must exist.
 func FileCopy(src, dst string) (err error) {
+	var count int64
+
 	from, err := os.Open(src)
 	if err != nil {
 		return
@@ -23,8 +25,9 @@ func FileCopy(src, dst string) (err error) {
 
 	defer to.Close()
 
-	_, err = io.Copy(to, from)
+	count, err = io.Copy(to, from)
 	if err != nil {
+		to.Truncate(count) // chop end of file in case file gets smaller
 		to.Close()
 		return err
 	}

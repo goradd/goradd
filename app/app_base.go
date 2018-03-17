@@ -2,7 +2,6 @@ package app
 
 import (
 	//"flag"
-	"context"
 	"net/http"
 	"os"
 	"github.com/spekary/goradd/page"
@@ -16,9 +15,9 @@ import (
 // The main routine offers a way of creating mock applications, and alternate versions of the application from the default
 type ApplicationI interface {
 	Init(mode string)
-	ProcessRequest(context.Context, http.ResponseWriter, *http.Request)
+	ServeHTTP(w http.ResponseWriter, r *http.Request)
 	ProcessCommand([]string)
-	PutContext(context.Context, *http.Request) context.Context
+	PutContext(*http.Request) *http.Request
 }
 
 
@@ -45,40 +44,32 @@ func (a *Application) ProcessCommand (args []string) {
 }
 
 
-func (a *Application) PutContext(ctx context.Context, r *http.Request) context.Context {
-	grctx := &page.Context{}
-	grctx.FillFromRequest(os.Args[1:], r)
-	return context.WithValue(ctx, "goradd", grctx)
+func (a *Application) PutContext(r *http.Request) *http.Request {
+	return page.PutContext(r, os.Args[1:])
 }
 
-func (a *Application) ProcessRequest(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
-	/* ToDo
-	   Problem: If someone duplicates a page, which is easily doable in chrome, two pages will be sharing the same form state. We should detect this
-	   somehow and respond by creating a new formstate for each
-	   Solution: Return a request counter that increments on each request. If the counter is not in sync, then respond with
-	   an error and regenerate a new formstate. The request therefore must
-	   state whether it should be a synchronous or asynchronous request so that we ignore the counter on async requests
-	   (should be rare, and client is responsible for specifying)
-	*/
+func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	//go func() {
 	pm := page.GetPageManager()
 	if pm == nil {
 		panic ("No page manager defined")
 	}
 
-		if pm.IsPage(ctx) {
-			pm.RunPage(ctx, w) // Use a go routine to make sure our http server is not blocking in general.
-		} else if pm.IsAsset(ctx) {
-			pm.ServeAsset(ctx, w, r)
-		} else {
-			// pass this on to ServeFile or ServeContent
-			// or return
-		}
+	ctx := r.Context()
+	buf := page.GetBuffer()
+	defer page.PutBuffer(buf)
+	if pm.IsPage(ctx) {
+		pm.RunPage(ctx, buf)
+	}
 
-	//}
+	// TODO: Check context for anything that might change headers and write those out first
+	// Like if we are dynamically generating a PDF file and want to set a mime type, etc.
+
+	w.Write(buf.Bytes())
 }
+
+
 
 func init() {
 	var filename string

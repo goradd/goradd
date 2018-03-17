@@ -16,6 +16,10 @@ type callbackAction struct {
 	async bool
 }
 
+func (a *callbackAction) Id() int {
+	return a.id
+}
+
 // SetValue lets you set a value that will be available to the action handler as the GetActionValue in the ActionParam structure
 // sent to the handler. This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
 // javascript.Closures will be called immediately with a (this) parameter.
@@ -37,6 +41,10 @@ func (a *callbackAction) Async() *callbackAction {
 func (a *callbackAction) DestinationControlId(id string) *callbackAction {
 	a.destControlId = id
 	return a
+}
+
+func (a *callbackAction) GetDestinationControlId() string {
+	return a.destControlId
 }
 
 type serverAction struct {

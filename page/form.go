@@ -91,16 +91,18 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Serialize and write out the formstate
 	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="Goradd__FormState" id="Goradd__Formstate" value="%s" />`, formstate))
 
+	f.drawBodyScriptFiles(ctx, buf)	// Fixing a bug?
+
 	buf.WriteString("\n</form>\n")
 
 	// Draw things that come after the form tag
-	f.drawBodyScriptFiles(ctx, buf)
+
 
 	// Write out the control scripts gathered above
 	s := `goradd.initForm();` + "\n";
 	s += f.response.JavaScript()
 	f.response = NewResponse()	// Reset
-	s = fmt.Sprintf(`<script type="text/javascript">jQuery(document).ready(function($j) { %s; });</script>`, s)
+	s = fmt.Sprintf(`<script>jQuery(document).ready(function($j) { %s; });</script>`, s)
 	buf.WriteString(s)
 
 	f.this().PostRender(ctx, buf)
@@ -211,7 +213,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 				attributes.Set("href", path)
 			} else {
 				_,fileName := filepath.Split(path)
-				attributes.Set("href", RegisterAssetFile("/css/" + fileName, path))
+				attributes.Set("href", RegisterCssFile(fileName, path))
 			}
 			buf.WriteString(html.RenderVoidTag("link", attributes))
 			return true
@@ -227,7 +229,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 				attributes.Set("src", path)
 			} else {
 				_,fileName := filepath.Split(path)
-				attributes.Set("src", RegisterAssetFile("/js/" + fileName, path))
+				attributes.Set("src", RegisterJsFile(fileName, path))
 			}
 			buf.WriteString(html.RenderTag("script", attributes, ""))
 			return true
@@ -245,7 +247,7 @@ func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 			attributes.Set("src", path)
 		} else {
 			_,fileName := filepath.Split(path)
-			attributes.Set("src", RegisterAssetFile("/js/" + fileName, path))
+			attributes.Set("src", RegisterJsFile(fileName, path))
 		}
 		buf.WriteString(html.RenderTag("script", attributes, "") + "\n")
 		return true
