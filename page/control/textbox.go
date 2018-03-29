@@ -6,6 +6,8 @@ import (
 	"github.com/spekary/goradd/page"
 	localPage "goradd/page"
 	"strconv"
+	"github.com/spekary/goradd/util/types"
+	"fmt"
 )
 
 const (
@@ -22,6 +24,14 @@ type Sanitizer interface {
 	Sanitize(string)string
 }
 
+// A TextboxValidator can be added to a textbox to validate its input on the server side. A textbox can have more than one validator.
+// A number of built-in validators are provided.
+type Validater interface {
+	// Validate evaluates the input, and returns an empty string if the input is valid, and an error string to display
+	// to the user if the input does not pass the validator.
+	Validate(page.Translater, string) (string)
+}
+
 type TextBoxI interface {
 	page.ControlI
 }
@@ -32,21 +42,12 @@ type TextBox struct {
 	typ string
 
 	sanitizer Sanitizer
-	ValidationFilter func(string)bool
-	ValidationMessage string
+	validators []Validater
 
 	minLength int
 	maxLength int
 
 	value string
-}
-
-// Creates a new standard html text box
-func NewTextBox(parent page.ControlI, id string) *TextBox {
-	t := &TextBox{}
-	t.Init(t, parent, id)
-	t.typ = TEXTBOX_TYPE_DEFAULT
-	return t
 }
 
 //TODO
@@ -75,6 +76,15 @@ func (t *TextBox) this() TextBoxI {
 	return t.Self.(TextBoxI)
 }
 
+// ValidateWith adds a TextboxValidator to the validator list
+func (t *TextBox) ValidateWith (v Validater) {
+	t.validators = append(t.validators, v)
+}
+
+func (t *TextBox) ResetValidators () {
+	t.validators = nil
+}
+
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (t *TextBox) DrawingAttributes() *html.Attributes {
@@ -94,6 +104,7 @@ func (t *TextBox) DrawingAttributes() *html.Attributes {
 
 // Set the value of the text. Returns itself for chaining
 func (t *TextBox) SetText(s string) page.ControlI {
+	t.value = s
 	t.SetAttribute("value", s)
 	return t.this()
 }
@@ -103,12 +114,13 @@ func (t *TextBox) Text() string {
 }
 
 func (t *TextBox) SetValue(v interface{}) page.ControlI {
-	t.value,_ = v.(string)
+	s := fmt.Sprintf("%T", v)
+	t.this().SetText(s)
 	return t.this()
 }
 
 func (t *TextBox) Value() interface{} {
-	return t.Text()
+	return t.this().Text()
 }
 
 func (t *TextBox) SetMaxLength(len int) TextBoxI {
@@ -151,38 +163,42 @@ func (t *TextBox) SetSanitizer(s Sanitizer) {
 }
 func (t *TextBox) sanitize(s string) string {
 	if t.sanitizer == nil {
-		t.sanitizer = DefaultSanitizer{}
+		panic ("You have to create a sanitizer. Not having a sanitizer is too dangerous.")
 	}
 	return t.sanitizer.Sanitize(s)
 }
 
-// Sanitizers
-
-type DefaultSanitizer struct {
-}
-
-func (d DefaultSanitizer) Sanitize(s string) string {
-	/*
-	s = strings.TrimSpace(s)
-	p := bluemonday.StrictPolicy()
-	s = p.Sanitize(s)
-	return s*/
-	return ""
-}
-
 // Validators
-func (t *TextBox) Validate()bool {
-	valid := true
+func (t *TextBox) Validate() bool {
 	text := t.Text()
 	if t.Required() && text == "" {
-		valid = false
-		t.SetValidationError("Value is isRequired")
+		t.SetValidationError(t.T("A value is required"))
+		return false
 	}
-	if t.ValidationFilter != nil && !t.ValidationFilter(text) {
-		valid = false
-		t.SetValidationError(t.ValidationMessage)
+	if t.minLength > 0 {
+		v := MinLengthValidator{Length: t.minLength}
+		if msg := v.Validate(t.Page().GoraddTranslator(), t.value); msg != "" {
+			t.SetValidationError(msg)
+			return false
+		}
 	}
-	return valid
+	if t.maxLength > 0 {
+		v := MaxLengthValidator{Length: t.maxLength}
+		if msg := v.Validate(t.Page().GoraddTranslator(), t.value); msg != "" {
+			t.SetValidationError(msg)
+			return false
+		}
+	}
+
+	if t.validators != nil {
+		for _,v := range t.validators {
+			if msg := v.Validate(t.Page().GoraddTranslator(), t.value); msg != "" {
+				t.SetValidationError(msg)
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func ValidateEmail(s string)bool {
@@ -200,4 +216,54 @@ func (t *TextBox) UpdateFormValues(ctx *page.Context) {
 	if v,ok := ctx.FormValue(id); ok {
 		t.value = t.sanitize(v)
 	}
+}
+
+/**
+ * Puts the current state of the control to be able to restore it later.
+ */
+func (t *TextBox) MarshalState(m types.MapI) {
+	m.Set("text", t.Text())
+}
+
+/**
+ * Restore the state of the control.
+ * @param mixed $state Previously saved state as returned by GetState above.
+ */
+func (t *TextBox) UnmarshalState(m types.MapI) {
+	if m.Has("text") {
+		s,_ := m.GetString("text")
+		t.SetText(s)
+	}
+}
+
+type MinLengthValidator struct {
+	Length int
+	Message string
+}
+
+func (v MinLengthValidator) Validate(t page.Translater, s string) (msg string) {
+	if len(s) < v.Length {
+		if msg == "" {
+			return fmt.Sprintf (t.Translate("Enter at least %d characters"), v.Length)
+		} else {
+			return v.Message
+		}
+	}
+	return
+}
+
+type MaxLengthValidator struct {
+	Length int
+	Message string
+}
+
+func (v MaxLengthValidator) Validate(t page.Translater, s string) (msg string) {
+	if len(s) > v.Length {
+		if msg == "" {
+			return fmt.Sprintf (t.Translate("Enter at most %d characters"), v.Length)
+		} else {
+			return v.Message
+		}
+	}
+	return
 }

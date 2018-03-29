@@ -22,10 +22,15 @@ func NewOrderedMap() *OrderedMap {
 	return &OrderedMap{items: make(map[string]interface{})}
 }
 
+func (o *OrderedMap) Clear() {
+	o.items = nil
+	o.order = nil
+}
+
 // Set sets the value, but also appends the value to the end of the list for when you
 // iterate over the list. If the value already exists, the value is replaced, the order does not change. If you want
 // the order to change in this situations, you must Remove then Set.
-func (o *OrderedMap) Set(key string, val interface{}) *OrderedMap {
+func (o *OrderedMap) Set(key string, val interface{}) MapI {
 	if o.items == nil {
 		o.items = make(map[string]interface{})
 	}
@@ -361,7 +366,7 @@ func (o *OrderedMap) MarshalJSON() (out []byte, err error) {
 type Copier interface {
 	Copy() interface{}
 }
-func (o *OrderedMap) Copy() interface{} {
+func (o *OrderedMap) Copy() MapI {
 	cp := NewOrderedMap()
 
 	o.Range(func (key string, value interface{}) bool {

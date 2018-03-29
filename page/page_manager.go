@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"html/template"
 	"bytes"
+	"reflect"
 )
 
 var pageManager *PageManager
 var errorTemplate *template.Template
 
-type PageCreationFunc func(ctx context.Context) PageI
+type PageCreationFunc func() PageI
 
 
 type PageManagerI interface {
@@ -20,10 +21,8 @@ type PageManagerI interface {
 }
 
 type PageManager struct {
-	cache *pageCache
-	registry map[string] PageCreationFunc // maps paths to functions that create pages
-	renderState int
-	ErrorTemplate string
+	pathRegistry map[string] PageCreationFunc // maps paths to functions that create pages
+	typeRegistry map[string] PageCreationFunc // maps object types to functions that create pages
 }
 
 
@@ -32,22 +31,24 @@ func GetPageManager() *PageManager {
 }
 
 func NewPageManager() *PageManager {
-
-	return &PageManager{cache: NewPageCache(), registry:make(map[string] PageCreationFunc), ErrorTemplate:"error.tpl.html"}
+	return &PageManager{pathRegistry:make(map[string] PageCreationFunc), typeRegistry:make(map[string] PageCreationFunc)}
 }
 
 func RegisterPage(path string, creationFunction PageCreationFunc) {
 	if pageManager == nil {
 		pageManager = NewPageManager()	// Create a new singleton page manager
 	}
-	if _,ok := pageManager.registry[path]; ok {
+	if _,ok := pageManager.pathRegistry[path]; ok {
 		panic ("Page is already registered: " + path)
 	}
-	pageManager.registry[path] = creationFunction
+	pageManager.pathRegistry[path] = creationFunction
+
+	p := creationFunction()
+	pageManager.typeRegistry[reflect.TypeOf(p).String()] = creationFunction
 }
 
-func (m *PageManager) getNewPageFunc (ctx context.Context) (f PageCreationFunc, ok bool) {
-	path := GetContext(ctx).URL.Path
+func (m *PageManager) getNewPageFunc (ctx context.Context) (f PageCreationFunc, path string, ok bool) {
+	path = GetContext(ctx).URL.Path
 	prefix := config.PAGE_PATH_PREFIX
 	if prefix != "" {
 		if strings.Index(path, prefix) == 0 { // starts with prefix
@@ -56,12 +57,12 @@ func (m *PageManager) getNewPageFunc (ctx context.Context) (f PageCreationFunc, 
 			return // not found in path
 		}
 	}
-	f,ok = m.registry[path]
+	f,ok = m.pathRegistry[path]
 	return
 }
 
 func (m *PageManager) IsPage (ctx context.Context) bool {
-	_,ok := m.getNewPageFunc(ctx)
+	_,_,ok := m.getNewPageFunc(ctx)
 	return ok
 }
 
@@ -73,26 +74,31 @@ func (m *PageManager) getPage(ctx context.Context) (page PageI, isNew bool) {
 	pageStateId = gCtx.pageStateId
 
 	if pageStateId != "" {
-		page = m.cache.Get(pageStateId)
+		page = pageCache.Get(pageStateId)
 	}
 
 	if page == nil {
 		// page was not found, so make a new one
-		f,_ := m.getNewPageFunc(ctx)
+		f,path, _ := m.getNewPageFunc(ctx)
 		if f == nil {
 			panic("Could not find the page creation function")
 		}
-		page = f(ctx)	// call the page create function
-		pageStateId = m.cache.NewPageId()
+		page = f()	// call the page create function
+		page.GetPageBase().Self = page
+		page.Init(ctx, path)
+		pageStateId = pageCache.NewPageId()
 		page.GetPageBase().stateId = pageStateId
-		m.cache.Set(pageStateId, page)
+		//pageCache.Set(pageStateId, page)
 		isNew = true
+	} else {
+		page.GetPageBase().Self = page
+		page.Restore()
 	}
 	return
 }
 
-
-func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) {
+// RunPage processes the page and writes the response into the buffer. Any special response headers are returned.
+func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) map[string]string {
 	defer func() {
 		if r := recover(); r != nil {
 			switch v := r.(type) {
@@ -109,40 +115,18 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) {
 		}
 	}()
 
-	grCtx := GetContext(ctx)
-
-	if grCtx.err != nil {
-		panic(grCtx.err)	// If we received an error during the unpacking process, let the deferred code above handle the error.
-	}
 	pageI, isNew := m.getPage(ctx)
-
 	page := pageI.GetPageBase()
-
 	defer m.cleanup(pageI)
-
-	page.renderStatus = UNRENDERED
-	pageI.Run()
-
-	if !isNew {
-		pageI.Form().control().updateValues(grCtx)	// Tell all the controls to update their values.
-		// if this is an event response, do the actions associated with the event
-		if c := pageI.GetControl(grCtx.actionControlId); c != nil {
-			c.control().doAction(ctx)
-		}
-	}
-
-	//if server {
-
-	err := pageI.Draw(ctx, buf)
+	err := page.runPage(ctx, buf, isNew)
 
 	if err != nil {
 		var html = buf.String() // copy current html
 		buf.Reset()
 		m.makeErrorResponse(ctx, newRunError(ctx, err), html, buf)
+		return nil
 	}
-
-	//}
-
+	return page.responseHeader
 }
 
 func (m *PageManager) cleanup (p PageI) {

@@ -24,9 +24,16 @@ func NewSafeOrderedMap() *SafeOrderedMap {
 	return &SafeOrderedMap{items: make(map[string]interface{})}
 }
 
+func (o *SafeOrderedMap) Clear() {
+	o.Lock()
+	defer o.Unlock()
+	o.items = nil
+	o.order = nil
+}
+
 // Set sets the value, but also appends the value to the end of the list for when you
 // iterate over the list. If the value already exists, the order does not change
-func (o *SafeOrderedMap) Set(key string, val interface{}) *SafeOrderedMap {
+func (o *SafeOrderedMap) Set(key string, val interface{}) MapI {
 	o.Lock()
 	defer o.Unlock()
 
@@ -333,7 +340,7 @@ func (o *SafeOrderedMap) MarshalJSON() (out []byte, err error) {
 }
 
 
-func (o *SafeOrderedMap) Copy() interface{} {
+func (o *SafeOrderedMap) Copy() MapI {
 	cp := NewSafeOrderedMap()
 
 	o.Range(func (key string, value interface{}) bool {

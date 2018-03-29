@@ -9,9 +9,15 @@ import (
 	"fmt"
 	 gohtml "html"
 	"github.com/spekary/goradd"
+	"github.com/spekary/goradd/page/session"
+	"github.com/spekary/goradd/util/types"
 )
 
 const PrivateActionBase = 1000
+const sessionControlStates string = "goradd.controlStates"
+const sessionControlTypeState string = "goradd.controlType"
+
+const RequiredErrorMessage string = "A value is required"
 
 type ValidationType int
 
@@ -42,6 +48,7 @@ type ControlI interface {
 	PreRender(context.Context, *bytes.Buffer) error
 	PostRender(context.Context, *bytes.Buffer) error
 	ShouldAutoRender() bool
+	DrawAjax(ctx context.Context, response *Response) error
 
 	// Hierarchy functions
 	Parent() ControlI
@@ -54,9 +61,12 @@ type ControlI interface {
 	Form() FormI
 
 	SetAttribute(name string, val interface{})
+	SetWrapperAttribute(name string, val interface{})
 	Attribute(string) string
 	DrawingAttributes() *html.Attributes
 	WrapperAttributes() *html.Attributes
+
+	PutCustomScript (ctx context.Context, response *Response)
 
 	HasFor() bool
 	SetHasFor(bool) ControlI
@@ -82,9 +92,6 @@ type ControlI interface {
 	On(e EventI, a ...ActionI)
 	Off()
 	wrapEvent(eventName string, eventJs string) string
-	getCustomScript(response *Response)
-	getScripts(r *Response)
-	resetFlags()
 
 	addChildControlsToPage()
 	addChildControl(ControlI)
@@ -93,6 +100,20 @@ type ControlI interface {
 	UpdateFormValues(*Context)
 
 	Validate() bool
+
+	// SaveState tells the control whether to save the basic state of the control, so that when the form is reentered, the
+	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
+	// contents of another control.
+	SaveState(context.Context, bool)
+	MarshalState(m types.MapI)
+	UnmarshalState(m types.MapI)
+
+	// Shortcuts for translation
+	T(string)string
+	Translate(string)string
+
+	// Serialization helpers
+	Restore()
 }
 
 type Control struct {
@@ -100,6 +121,7 @@ type Control struct {
 
 	id string
 	page PageI							// Page this control is part of
+
 	parent   ControlI					// Parent control
 	children []ControlI					// Child controls
 
@@ -134,7 +156,6 @@ type Control struct {
 	hasFor	 			bool			// When drawing the label, should it use a for attribute? This is helpful for screen readers and navigation on certain kinds of tags.
 	instructions		string			// Instructions, if the field needs extra explanation. You could also try adding a tooltip to the wrapper.
 	validationError		string			// The message to display if there was a validation error
-	warning				string			// Warning message
 
 	validationType		ValidationType
 	validationTargets	[]string		// List of control IDs to target validation
@@ -145,6 +166,8 @@ type Control struct {
 	events	EventMap
 	privateEvents EventMap
 	eventCounter EventId
+
+	shouldSaveState bool
 }
 
 func (c *Control) Init (self ControlI, parent ControlI, id string) {
@@ -190,7 +213,7 @@ func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 		return NewError(ctx, "This control has already been drawn.")
 	}
 
-	// Because we may be re-isRendering a parent control, we need to make sure all "children" controls are marked as NOT being on the page.
+	// Because we may be re-isRendering a parent control, we need to make sure all "child" controls are marked as NOT being on the page.
 	if c.children != nil {
 		for _,child := range c.children {
 			child.markOnPage(false)
@@ -226,28 +249,69 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	}
 
 	if c.wrapper != nil {
-		if GetContext(ctx).AppContext.requestMode == Ajax {
-			if c.parent == nil {
-				if !c.isOnPage {
-					c.wrapper.Wrap(ctx, ctrl, buf)
-				}
-			} else {
-				if c.parent.WasRendered() || c.parent.IsRendering() {
-					c.wrapper.Wrap(ctx, ctrl, buf)
-				}
-				// otherwise RenderAjax will handle the drawing
-			}
-		} else {
-			c.wrapper.Wrap(ctx, ctrl, buf)
-			// TODO: Comment if in debug mode
-		}
+		c.wrapper.Wrap(ctx, ctrl, buf)
 	} else {
 		buf.WriteString(ctrl)
 	}
 
+	response := c.Form().Response()
+	c.this().PutCustomScript(ctx, response)
+	c.getActionScripts(response)
 	c.this().PostRender(ctx, buf)
 	return
 }
+
+// PutCustomScript is the place where you add javascript that transforms the html into a custom javascript control.
+// Do this by calling functions on the response object.
+// This implementation is a stub.
+func (c *Control) PutCustomScript(ctx context.Context, response *Response) {
+
+}
+
+/**
+* DrawAjax will be called during an Ajax rendering of the controls. Every control gets called. Each control
+* is responsible for rendering itself. Some objects automatically render their child objects, and some don't,
+* so we detect whether the parent is being rendered, and assume the parent is taking care of rendering for
+* us if so.
+*
+* Override if you want more control over ajax drawing, like if you detect parts of your control that have changed
+* and then want to draw only those parts. This will get called on every control on every ajax draw request.
+* It is up to you to test the blnRendered flag of the control to know whether the control was already rendered
+* by a parent control before drawing here.
+*
+*/
+
+func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) {
+
+	if c.isModified {
+		// simply re-render the control and assume rendering will handle rendering its children
+
+		func() {
+			// wrap in a function to get deferred PutBuffer to execute immediately after drawing
+			buf := GetBuffer()
+			defer PutBuffer(buf)
+
+			err = c.Draw(ctx, buf)
+			response.SetControlHtml(c.Id(), buf.String())
+		}()
+	} else {
+		// add attribute changes
+		if c.attributeScripts != nil {
+			for _,scripts := range c.attributeScripts {
+				response.executeControlCommand(c.Id(), (*scripts)[0], PriorityStandard, (*scripts)[:1])
+			}
+			c.attributeScripts = nil
+		}
+
+		// ask the child controls to potentially render, since this control doesn't need to
+		for _,child := range c.children {
+			err = child.DrawAjax(ctx, response)
+			if err != nil { return }
+		}
+	}
+	return
+}
+
 
 func (c *Control) PostRender(ctx context.Context, buf *bytes.Buffer) (err error){
 	// Update watcher
@@ -258,6 +322,9 @@ func (c *Control) PostRender(ctx context.Context, buf *bytes.Buffer) (err error)
 	c.isRendering = false
 	c.wasRendered = true
 	c.isOnPage = true
+	c.isModified = false
+	c.attributeScripts = nil // Entire control was redrawn, so don't need these
+
 	return
 }
 
@@ -310,7 +377,7 @@ func (c *Control) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err err
 			}
 		}
 		return
-	} else {
+	} else if c.text != "" {
 		err = nil
 		text := c.text
 
@@ -336,16 +403,10 @@ func (c *Control) With(w WrapperI) ControlI {
 
 func (c *Control) SetAttribute(name string, val interface{}) {
 	var v string
-	var ok bool
 
 	if name == "id" {
 		panic ("You can only set the 'id' attribute of a control when it is created")
 	}
-
-	if v,ok = val.(string); !ok {
-		v = fmt.Sprintf("%v", v)
-	}
-
 
 	changed, err := c.attributes.SetChanged(name, v)
 	if err != nil {
@@ -353,9 +414,35 @@ func (c *Control) SetAttribute(name string, val interface{}) {
 	}
 
 	if changed {
-		c.addRenderScript("attr", name, v)
+		// The val passed in might be a calculation, so we need to get the ultimate new value
+		v2 := c.attributes.Get(name)
+		c.addRenderScript("attr", name, v2)
 	}
 }
+
+func (c *Control) SetWrapperAttribute(name string, val interface{}) {
+	var v string
+	var ok bool
+
+	if name == "id" {
+		panic ("You cannot set the 'id' attribute of a wrapper")
+	}
+
+	if v,ok = val.(string); !ok {
+		v = fmt.Sprintf("%v", v)
+	}
+
+
+	changed, err := c.wrapperAttributes.SetChanged(name, v)
+	if err != nil {
+		panic (err)
+	}
+
+	if changed {
+		c.isModified = true	// TODO: Make this an attribute script instead of redrawing the whole control, a minor performance enhancement
+	}
+}
+
 
 func (c *Control) Attribute(name string) string {
 	return c.attributes.Get(name)
@@ -534,8 +621,6 @@ func (c *Control) Instructions() string {
 }
 
 
-
-
 func (c *Control) markOnPage(v bool) {
 	c.isOnPage = v
 }
@@ -566,12 +651,14 @@ func (c *Control) ShouldAutoRender() bool {
 
 // On adds an event listener to the control that will trigger the given actions
 func (c *Control) On(e EventI, actions... ActionI) {
-	c.isModified = true
+	c.isModified = true	// completely redraw the control. The act of redrawing will turn off old scripts.
 	e.AddActions(actions...)
 	c.eventCounter++
 	if c.events == nil {
 		c.events = map[EventId]EventI{}
 	}
+
+	// Get a new event id
 	for {
 		if _,ok := c.events[c.eventCounter]; ok {
 			c.eventCounter ++
@@ -614,10 +701,9 @@ func (c *Control) PrivateAction(ctx context.Context, a ActionParams) {
 
 
 
-// getScripts is an internal function called by the form to recursively process javascripts needed by the control that should be sent to the
-// browser. To send a response, call functions on the response object.
-// This function gets called when the entire control is redrawn.
-func (c *Control) getScripts(r *Response) {
+// getActionScripts is an internal function called by the form to recursively gather up all the event related
+// scripts attached to the control and send them to the response.
+func (c *Control) getActionScripts(r *Response) {
 	// Render actions
 	if c.privateEvents != nil {
 		for id,e := range c.privateEvents {
@@ -632,26 +718,11 @@ func (c *Control) getScripts(r *Response) {
 			r.executeJavaScript(s, PriorityStandard)
 		}
 	}
-
-	c.this().getCustomScript(r)
-
-	for _,child := range c.this().Children() {
-		child.getScripts(r)
-	}
-
-	c.attributeScripts = nil // Entire control was redrawn, so don't need these
 }
 
-
-// getCustomScript is the place custom controls will render their javascript that would transform the html object into a javascript control.
-// This supports the style of controls jQuery plugins and jQuery UI is based on. It usually involves some kind of
-// jQuery call to a function attached to the object. To return a script, call functions on the response object.
-func (c *Control) getCustomScript(r *Response) {
-
-}
 
 // Recursively reset the drawing flags
-func (c *Control) resetFlags() {
+func (c *Control) resetDrawingFlags() {
 	c.wasRendered = false
 	c.isModified = false
 	if c.wrapper != nil {
@@ -660,10 +731,22 @@ func (c *Control) resetFlags() {
 
 	if children := c.this().Children(); children != nil {
 		for _,child := range children {
-			child.resetFlags()
+			child.control().resetDrawingFlags()
 		}
 	}
 }
+
+// Recursively reset the validation state
+func (c *Control) resetValidation() {
+	c.validationError = "";
+
+	if children := c.this().Children(); children != nil {
+		for _,child := range children {
+			child.control().resetValidation()
+		}
+	}
+}
+
 
 // An internal function to allow the control to customize its treatment of event processing.
 func (c *Control) wrapEvent(eventName string, eventJs string) string {
@@ -697,6 +780,12 @@ func (c *Control) doAction(ctx context.Context) {
 	if e,ok = c.events[grCtx.eventId]; !ok {
 		e,ok = c.privateEvents[grCtx.eventId]
 		isPrivate = true
+	}
+
+
+	if c.ValidationType() != ValidateNone ||
+		(e.event().validationOverride != ValidateDefault && e.event().validationOverride != ValidateNone) {
+			c.Form().control().resetValidation()
 	}
 
 	if ok && c.passesValidation(e) {
@@ -738,7 +827,16 @@ func (c *Control) SetValidationType(typ ValidationType) {
 	c.validationType = typ
 }
 
-// SetValidationTargets specifies which controls to validate, in conjunction with the ValidationType setting. The default
+func (c *Control) ValidationType() ValidationType {
+	if c.validationType == ValidateNone || c.validationType == ValidateDefault {
+		return ValidateNone
+	} else {
+		return c.validationType
+	}
+}
+
+// SetValidationTargets specifies which controls to validate, in conjunction with the ValidationType setting,
+// giving you very fine-grained control over validation. The default
 // is to use just this control as the target.
 func (c *Control) SetValidationTargets(controlIds... string) {
 	c.validationTargets = controlIds
@@ -834,3 +932,117 @@ func (c *Control) validateSiblingsAndChildren() bool {
 	valid = c.validateChildren() && valid
 	return valid
 }
+
+// SaveState sets whether the control should save its value and other state information so that if the form is redrawn,
+// the value can be restored. This function is also responsible for restoring the previously saved state of the control,
+// so call this only after you have set the default state of a control during creation or initialization.
+func (c *Control) SaveState(ctx context.Context, saveIt bool) {
+	c.shouldSaveState = saveIt
+	c.readState(ctx)
+}
+
+// writeState is an internal function that will recursively write out the state of itself and its subcontrols
+func (c *Control) writeState(ctx context.Context) {
+	var stateStore *types.Map
+	var state *types.Map
+	var ok bool
+
+	if c.shouldSaveState {
+		state = types.NewMap()
+		c.this().MarshalState(state)
+		if state.Len() > 0 {
+			state.Set(sessionControlTypeState, c.Type()) // so we can make sure the type is the same when we read, in situations where control Ids are dynamic
+			i := session.Get(ctx, sessionControlStates)
+			if i == nil {
+				stateStore = types.NewMap()
+				session.Set(ctx, sessionControlStates, stateStore)
+			} else if _,ok = i.(*types.Map); !ok {
+				stateStore = types.NewMap()
+				session.Set(ctx, sessionControlStates, stateStore)
+			} else {
+				stateStore = i.(*types.Map)
+			}
+			key := c.Form().Id() + ":" + c.Id()
+			stateStore.Set(key, state)
+		}
+	}
+
+	if c.children == nil || len(c.children) == 0 {
+		return
+	}
+
+	for _,child := range c.children {
+		child.control().writeState(ctx)
+	}
+}
+
+// readState is an internal function that will recursively read the state of itself and its subcontrols
+func (c *Control) readState(ctx context.Context) {
+	var stateStore types.MapI
+	var state types.MapI
+	var ok bool
+
+	if c.shouldSaveState {
+		if i := session.Get(ctx, sessionControlStates); i != nil {
+			if stateStore, ok = i.(types.MapI); !ok {
+				return
+				// Indicates the entire control state store changed types, so completely ignore it
+			}
+
+			key := c.Form().Id() + ":" + c.Id()
+			i2 := stateStore.Get(key)
+			if state,ok = i2.(types.MapI); !ok {
+				return
+				// Indicates this particular item was not stored correctly
+			}
+
+			if typ,_ := state.GetString(sessionControlTypeState); typ != c.Type() {
+				return // doesn't compare types
+			}
+
+			c.this().UnmarshalState(state)
+		}
+	}
+
+	if c.children == nil || len(c.children) == 0 {
+		return
+	}
+
+	for _,child := range c.children {
+		child.control().readState(ctx)
+	}
+}
+
+
+// MarshalState is a helper function for controls to save their basic state, so that if the form is reloaded, the
+// value that the user entered will not be lost. Implementing controls should add items to the given map.
+// Note that the control id is used as a key for the state,
+// so that if you are dynamically adding controls, you should make sure you give a specific, non-changing control id
+// to the control, or the state may be lost.
+func (c *Control) MarshalState(m types.MapI) {
+}
+
+// UnmarshalState is a helper function for controls to get their state from the stateStore. To implement it, a control
+// should read the data out of the given map. If needed, implemet your own version checking scheme. The given map will
+// be guaranteed to have been written out by the same kind of control as the one reading it. Be sure to call the super-class
+// version too.
+func (c *Control) UnmarshalState(m types.MapI) {
+}
+
+// T is a shortcut for the page translator that should only be used by internal goradd code. See Translate() for the
+// version to use for your project.
+func (c *Control) T(in string)string {
+	return c.Page().GoraddTranslator().Translate(in)
+}
+
+
+// Translate is a shortcut to the page translator.
+// All static strings that could create output to the user should be wrapped in this. The translator itself is designed
+// to be capable of per-page translation, meaning each user of the web service can potentially choose their own language
+// and see the web page in that language.
+func (c *Control) Translate(in string)string {
+	return c.Page().ProjectTranslator().Translate(in)
+}
+
+// Restore is called after the control has been deserialized
+func (c *Control) Restore() {}

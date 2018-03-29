@@ -11,6 +11,8 @@ import (
 
 type PageRenderStatus int
 
+type PageDrawFunc func(context.Context, PageI, *bytes.Buffer) error
+
 const (
 	UNRENDERED PageRenderStatus = iota // Form has not started isRendering
 	BEGUN // Form has started isRendering but has not finished
@@ -24,6 +26,11 @@ Implementation of the Create function is isRequired, but all other lifecycle fun
 
  */
 type PageI interface {
+	goradd.BaseI
+	Init(ctx context.Context, path string)
+	Restore()
+
+
 	// Run is a good place to do user authentication. It runs every time the page is invoked, whether from an Ajax call
 	// a Server call, or initial page creation. Note that the form controls are not set up yet if its a new form.
 	Run()
@@ -64,9 +71,14 @@ type PageI interface {
 	DrawHeaderTags(context.Context, *bytes.Buffer)
 	SetTitle(title string)
 	StateId() string
-}
 
-type PageDrawFunc func(context.Context, PageI, *bytes.Buffer) error
+	GoraddTranslator() Translater
+	ProjectTranslator() Translater
+	DrawFunction() PageDrawFunc
+
+	Encode(e Encoder)(err error)
+	Decode(e Decoder)(err error)
+}
 
 // Anything that draws into the draw buffer must implement this interface
 type DrawI interface {
@@ -81,25 +93,42 @@ type PageBase struct {
 	renderStatus PageRenderStatus
 	idPrefix 	 string	// For creating unique ids for the app
 
-	controlRegistry  *types.OrderedMap
-	form FormI
-	idCounter	 int
-	drawFunc PageDrawFunc
-	title	string	// page title to draw in head tag
-	headerTags []html.VoidTag
+	controlRegistry *types.OrderedMap
+	form            FormI
+	idCounter       int
+	drawFunc        PageDrawFunc
+	title           string	// page title to draw in head tag
+	htmlHeaderTags  []html.VoidTag
+	responseHeader  map[string]string	// queues up anything to be sent in the response header
+
+	goraddTranslator PageTranslator
+	projectTranslator PageTranslator
 }
 
-// Initialize the page base. Should be called by a page just after creating PageBase
-func (p *PageBase) Init(self interface{}, path string) {
-	p.controlRegistry = types.NewOrderedMap()
+// Initialize the page base. Should be called by a page just after creating PageBase.
+func (p *PageBase) Init(ctx context.Context, self PageI, path string) {
 	p.Base.Init(self)
 	p.path = path
-	p.drawFunc = PageTmpl	// The default draw function. Replace it if you want something else.
-	p.headerTags = []html.VoidTag{}
+	p.drawFunc = p.this().DrawFunction()
+	p.goraddTranslator = PageTranslator{Domain:GoraddDomain}
+	p.projectTranslator = PageTranslator{Domain:ProjectDomain}
 }
+
+// Restore is called immediately after the page has been unserialized, to restore data that did not get serialized.
+func (p *PageBase) Restore() {
+	p.drawFunc = p.this().DrawFunction()
+	p.form.Restore()
+}
+
+
 
 func (p *PageBase) this() PageI {
 	return p.Self.(PageI)
+}
+
+// DrawFunction returns the drawing function. This implementation returns the default. Override to change it.
+func (p *PageBase) DrawFunction() PageDrawFunc {
+	return PageTmpl
 }
 
 func (p *PageBase) GetPageBase() *PageBase {
@@ -113,9 +142,40 @@ func (p *PageBase) setStateId(stateId string) {
 
 // The following are the lifecycle events of the page. The only isRequired one to implement is Create.
 
-func (p *PageBase) Run() {
+func (p *PageBase) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
+	grCtx := GetContext(ctx)
+
+	if grCtx.err != nil {
+		panic(grCtx.err)	// If we received an error during the unpacking process, let the deferred code above handle the error.
+	}
+
+	p.renderStatus = UNRENDERED
+
+	// TODO: Lifecycle calls
+
+	if !isNew {
+		p.Form().control().updateValues(grCtx)	// Tell all the controls to update their values.
+		// if this is an event response, do the actions associated with the event
+		if c := p.GetControl(grCtx.actionControlId); c != nil {
+			c.control().doAction(ctx)
+		}
+	}
+
+	if grCtx.RequestMode() == Ajax {
+		err = p.DrawAjax(ctx, buf)
+		p.SetResponseHeader("Content-Type", "application/json")
+	} else if grCtx.RequestMode() == Server || grCtx.RequestMode() == Http {
+		err = p.Draw(ctx, buf)
+	} else {
+		// TODO: Implement a hook for the CustomAjax call and/or Rest API calls?
+	}
+
+	p.Form().control().writeState(ctx)
+	return
 }
 
+func (p *PageBase) Run() {
+}
 
 func (p *PageBase) Load() {
 }
@@ -159,7 +219,7 @@ func (p *PageBase) FormById(id string) FormI {
 // Draws from the page template. The default should be fine for most situations.
 // You can replace the template function with your own, or override this for even more control
 func (p *PageBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	return p.drawFunc(ctx, p, buf)
+	return p.drawFunc(ctx, p.Self.(PageI), buf)
 }
 
 func (p *PageBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
@@ -170,8 +230,10 @@ func (p *PageBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	}
 
 	// draw things like additional meta tags, etc
-	for _,tag := range p.headerTags {
-		buf.WriteString(tag.Render())
+	if p.htmlHeaderTags != nil {
+		for _,tag := range p.htmlHeaderTags {
+			buf.WriteString(tag.Render())
+		}
 	}
 
 	p.Form().DrawHeaderTags(ctx, buf)
@@ -199,28 +261,24 @@ func (p *PageBase) GenerateControlId(given string) string {
 }
 
 func (p *PageBase) GetControl(id string) ControlI {
+	if p.controlRegistry == nil {
+		return nil
+	}
 	return p.controlRegistry.Get(id).(ControlI)
 }
-/*
-// Gets and draws the named control
-func (p *PageBase) DrawControl(ctx context.Context, id string, buf *bytes.Buffer) (err error) {
-	if c := p.GetControl(id); c != nil {
-		err = c.Draw(ctx, buf)
-	} else {
-		// TODO: issue warning
-	}
-	return
-}
 
-*/
-
-// Add the given control to the registry
+// Add the given control to the pathRegistry. Call by the control code whenever a control is created or restored
 func (p *PageBase) addControl(control ControlI) {
 	id := control.Id()
 
 	if id == "" {
 		panic("Control must have an id before being added.")
 	}
+
+	if (p.controlRegistry == nil) {
+		p.controlRegistry = types.NewOrderedMap()
+	}
+
 	if p.controlRegistry.Has(id) {
 		panic("Control id already exists. Control must have a unique id on the page before being added.")
 	}
@@ -261,3 +319,61 @@ func (p *PageBase) Path() string {
 func (p *PageBase) StateId() string {
 	return p.stateId
 }
+
+func (p *PageBase) DrawAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
+	err = p.Form().renderAjax(ctx, buf)
+	return
+}
+
+func (p *PageBase) GoraddTranslator() Translater {
+	return &p.goraddTranslator
+}
+
+func (p *PageBase) ProjectTranslator() Translater {
+	return &p.projectTranslator
+}
+
+
+func (p *PageBase) SetLanguage(l string) {
+	p.goraddTranslator.Language = l
+	p.projectTranslator.Language = l
+}
+
+// MarshalBinary will binary encode the page for the purpose of saving the page in the formstate.
+func (p *PageBase) Encode(e Encoder)(err error) {
+	if err = e.Encode(p.stateId); err != nil {return}
+	if err = e.Encode(p.path); err != nil {return}
+	if err = e.Encode(p.idPrefix); err != nil {return}
+	if err = e.Encode(p.form); err != nil {return}
+	if err = e.Encode(p.idCounter); err != nil {return}
+	if err = e.Encode(p.title); err != nil {return}
+	if err = e.Encode(p.htmlHeaderTags); err != nil {return}
+	if err = e.Encode(p.goraddTranslator); err != nil {return}
+	if err = e.Encode(p.projectTranslator); err != nil {return}
+	return
+}
+
+func (p *PageBase) Decode(d Decoder)(err error) {
+	if err = d.Decode(&p.stateId); err != nil {return}
+	if err = d.Decode(&p.path); err != nil {return}
+	if err = d.Decode(&p.idPrefix); err != nil {return}
+	if err = d.Decode(&p.form); err != nil {return}
+	if err = d.Decode(&p.idCounter); err != nil {return}
+	if err = d.Decode(&p.title); err != nil {return}
+	if err = d.Decode(&p.htmlHeaderTags); err != nil {return}
+	if err = d.Decode(&p.goraddTranslator); err != nil {return}
+	if err = d.Decode(&p.projectTranslator); err != nil {return}
+	return
+}
+
+func (p *PageBase) AddHtmlHeaderTag(t html.VoidTag) {
+	p.htmlHeaderTags = append(p.htmlHeaderTags, t)
+}
+
+func (p *PageBase) SetResponseHeader(key, value string) {
+	if p.responseHeader == nil {
+		p.responseHeader = map[string]string{}
+	}
+	p.responseHeader[key] = value
+}
+

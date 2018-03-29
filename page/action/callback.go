@@ -23,28 +23,32 @@ func (a *callbackAction) Id() int {
 // SetValue lets you set a value that will be available to the action handler as the GetActionValue in the ActionParam structure
 // sent to the handler. This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
 // javascript.Closures will be called immediately with a (this) parameter.
-func (a *callbackAction) ActionValue(v interface{}) *callbackAction {
+func (a *callbackAction) ActionValue(v interface{}) page.CallbackActionI {
 	a.actionValue = v
 	return a
 }
 
-func (a *callbackAction) Validator(v interface{}) *callbackAction {
+func (a *callbackAction) Validator(v interface{}) page.CallbackActionI {
 	a.validationOverride = v
 	return a
 }
 
-func (a *callbackAction) Async() *callbackAction {
+func (a *callbackAction) Async() page.CallbackActionI {
 	a.async = true
 	return a
 }
 
-func (a *callbackAction) DestinationControlId(id string) *callbackAction {
+func (a *callbackAction) DestinationControlId(id string) page.CallbackActionI {
 	a.destControlId = id
 	return a
 }
 
 func (a *callbackAction) GetDestinationControlId() string {
 	return a.destControlId
+}
+
+func (a *callbackAction) RenderScript(params page.RenderParams) string {
+	return ""
 }
 
 type serverAction struct {
@@ -62,7 +66,7 @@ func Server(destControlId string, actionId int) *serverAction {
 
 func (a *serverAction) RenderScript(params page.RenderParams) string {
 	v := types.NewOrderedMap()
-	v.Set("controlId", a.destControlId)
+	v.Set("controlId", params.TriggeringControl.Id())
 	v.Set("eventId", params.EventId)
 	if a.async {
 		v.Set("async", true)
@@ -101,7 +105,7 @@ func Ajax(destControlId string, actionId int) *ajaxAction {
 
 func (a *ajaxAction) RenderScript(params page.RenderParams) string {
 	v := types.NewOrderedMap()
-	v.Set("controlId", a.destControlId)
+	v.Set("controlId", params.TriggeringControl.Id())
 	v.Set("eventId", params.EventId)
 	if a.async {
 		v.Set("async", true)

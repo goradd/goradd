@@ -447,6 +447,9 @@ goradd = {
                 .appendTo('form');
         }
     },
+    msg:function(text) {
+        alert(text);
+    },
 
     /**
      * Start me up.
@@ -523,8 +526,8 @@ goradd = {
 
                 if (this.html !== undefined) {
                     if ($wrapper.length) {
-                        // Control's wrapper was found, so fill it in
-                        $wrapper.html(this.html);
+                        // Control's wrapper was found, so the html should include the wrapper
+                        $wrapper.before(this.html).remove();
                     }
                     else if ($control.length) {
                         // control was found without a wrapper, replace it in the same position it was in.

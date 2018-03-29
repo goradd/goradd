@@ -8,21 +8,27 @@ import (
 	"github.com/spekary/goradd/util/types"
 	"path/filepath"
 	"fmt"
+	"encoding/json"
 )
 
+const htmlVarFormstate string = "Goradd__FormState"
+const htmlVarParams string = "Goradd__Params"
 
 type FormI interface {
 	ControlI
 	// Create the objects on the form without necessarily initializing them
+	Init(ctx context.Context, self FormI, page PageI, id string)
 	CreateControls(ctx context.Context)
 	InitializeControls(ctx context.Context)
 	AddRelatedFiles()
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
+	Response() *Response
+	renderAjax(ctx context.Context, buf *bytes.Buffer) error
 }
 
 type FormBase struct {
 	Control
-	response Response
+	response Response // don't serialize this
 
 	// serialized lists of related files
 	headerStyleSheets *types.OrderedMap
@@ -32,12 +38,29 @@ type FormBase struct {
 	importedJavaScripts *types.OrderedMap // when refreshing, these get moved to the bodyJavaScripts
 }
 
-func (f *FormBase) Init(self FormI, page PageI, id string) {
+func (f *FormBase) Init(ctx context.Context, self FormI, page PageI, id string) {
 	f.page = page
 	f.Control.Init(self, nil, id)
 	f.Tag = "form"
 	self.AddRelatedFiles()
+	self.CreateControls(ctx)
+	self.InitializeControls(ctx)
+
+	/*	TODO: Add a dialog and designer click if in design mode
+	            if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
+                // Attach custom event to dialog to handle right click menu items sent by form
+
+                $dlg = new Q\ModelConnector\EditDlg ($objClass, 'qconnectoreditdlg');
+
+                $dlg->addAction(
+                    new Q\Event\On('qdesignerclick'),
+                    new Q\Action\Ajax ('ctlDesigner_Click', null, null, 'ui')
+                );
+            }
+
+	 */
 }
+
 
 // AddRelatedFiles adds related javascript and style sheet files. Override this to get these files from a different location,
 // or to load additional files. The order is important, so if you override this, be sure these files get loaded
@@ -76,20 +99,16 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		}
 	}
 
-	// Go through all controls and gather up any JS or CSS to run or Form Attributes to modify
-	// Controls should use the response to execute commands on controls or execute general javascript.
-	// This must be done before we save the form state
-	f.this().getScripts(&f.response)
-	f.resetFlags()
+	f.resetDrawingFlags()
 	formstate := f.saveState() // From this point on we should not change any controls, just draw
 
 	// Render hidden controls
 
 	// Place holder for postBack and postAjax functions to place their data
-	buf.WriteString(`<input type="hidden" name="Goradd__Params" id="Goradd__Params" value="" />` + "\n")
+	buf.WriteString(`<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n")
 
 	// Serialize and write out the formstate
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="Goradd__FormState" id="Goradd__Formstate" value="%s" />`, formstate))
+	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="` + htmlVarFormstate + `" id="` + htmlVarFormstate + `" value="%s" />`, formstate))
 
 	f.drawBodyScriptFiles(ctx, buf)	// Fixing a bug?
 
@@ -110,8 +129,30 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return
 }
 
+
+// Assembles the ajax response for the entire form and draws it to the return buffer
+func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
+	var buf2 []byte
+	var formstate string
+
+	if !f.response.hasExclusiveCommand() {	// skip drawing if we are in a high priority situation
+		// gather modified controls
+		f.DrawAjax(ctx, &f.response)
+	}
+
+	formstate = f.saveState() // Make sure formstate hasn't changed?
+	f.response.SetControlValue(htmlVarFormstate, formstate)
+	f.resetDrawingFlags()
+	buf2, err = json.Marshal(f.response)
+	f.response = NewResponse()	// Reset
+	buf.Write(buf2)
+	return
+}
+
+
 func (f *FormBase) DrawingAttributes() *html.Attributes {
 	a := f.Control.DrawingAttributes()
+	a.Set("method", "post")
 	a.Set("action", f.Page().GetPageBase().path)
 	a.Set("data-goradd", "form")
 	return a
@@ -132,7 +173,7 @@ func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error)
 // This version keeps the page in memory. Future versions may serialize formstates to store them on disk.
 func (f *FormBase) saveState() string {
 	var s = f.page.StateId()
-	GetPageManager().cache.Set(s, f.page) // the page should already exist in the cache. This just tells the cache that we used it, so make it current.
+	pageCache.Set(s, f.page) // the page should already exist in the cache. This just tells the cache that we used it, so make it current.
 	return f.page.StateId()
 }
 
@@ -258,3 +299,10 @@ func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 	f.response.displayAlert(msg)
 }
+
+// Response returns the form's response object that you can use to queue up javascript commands to the browser to be sent on
+// the next ajax or server request
+func (f *FormBase) Response() *Response {
+	return &f.response
+}
+

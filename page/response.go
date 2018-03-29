@@ -72,9 +72,9 @@ func (r ResponseCommand)  MarshalJSON() (buf []byte, err error) {
 
 // A response packet that leads to the manipulation or replacement of an html object
 type ResponseControl struct {
-	id string
 	html string	// replaces the entire control's html
 	attributes map[string]string // replace only specific attributes of the control
+	value string // call the jQuery .val function with this value
 }
 
 type Response struct {
@@ -108,11 +108,11 @@ func (r *Response) executeJavaScript(js string, priority Priority) {
 	case PriorityHigh:
 		r.highPriorityCommands = append(r.highPriorityCommands, ResponseCommand{script: js})
 	case PriorityStandard:
-		r.mediumPriorityCommands = append(r.highPriorityCommands, ResponseCommand{script: js})
+		r.mediumPriorityCommands = append(r.mediumPriorityCommands, ResponseCommand{script: js})
 	case PriorityLow:
-		r.lowPriorityCommands = append(r.highPriorityCommands, ResponseCommand{script: js})
+		r.lowPriorityCommands = append(r.lowPriorityCommands, ResponseCommand{script: js})
 	case PriorityFinal:
-		r.finalCommands = append(r.highPriorityCommands, ResponseCommand{script: js})
+		r.finalCommands = append(r.finalCommands, ResponseCommand{script: js})
 	}
 }
 
@@ -131,12 +131,12 @@ func (r *Response) executeSelectorFunction(selector string, functionName string,
 	case PriorityHigh:
 		r.highPriorityCommands = append(r.highPriorityCommands, c)
 	case PriorityStandard:
-		r.mediumPriorityCommands = append(r.highPriorityCommands, c)
+		r.mediumPriorityCommands = append(r.mediumPriorityCommands, c)
 	case PriorityLow:
-		r.lowPriorityCommands = append(r.highPriorityCommands, c)
+		r.lowPriorityCommands = append(r.lowPriorityCommands, c)
 	case PriorityFinal:
 		c.final = true
-		r.finalCommands = append(r.highPriorityCommands, c)
+		r.finalCommands = append(r.finalCommands, c)
 	}
 
 }
@@ -152,12 +152,12 @@ func (r *Response) executeJsFunction(functionName string, priority Priority, arg
 	case PriorityHigh:
 		r.highPriorityCommands = append(r.highPriorityCommands, c)
 	case PriorityStandard:
-		r.mediumPriorityCommands = append(r.highPriorityCommands, c)
+		r.mediumPriorityCommands = append(r.mediumPriorityCommands, c)
 	case PriorityLow:
-		r.lowPriorityCommands = append(r.highPriorityCommands, c)
+		r.lowPriorityCommands = append(r.lowPriorityCommands, c)
 	case PriorityFinal:
 		c.final = true
-		r.finalCommands = append(r.highPriorityCommands, c)
+		r.finalCommands = append(r.finalCommands, c)
 	}
 }
 
@@ -305,6 +305,11 @@ func (r *Response)  MarshalJSON() (buf []byte, err error) {
 		if r.jsFiles != nil {
 			reply[ResponseJavaScripts] = strings.Join(r.jsFiles.Values(), ",")
 		}
+
+		if r.styleSheets != nil {
+			reply[ResponseStyleSheets] = strings.Join(r.styleSheets.Values(), ",")
+		}
+
 	}
 
 	return json.Marshal(reply)
@@ -322,4 +327,40 @@ func (r *Response) closeWindow() {
 func (r *Response) hasExclusiveCommand() bool {
 	return r.exclusiveCommand != nil
 }
+
+func (r *Response) SetControlHtml(id string, html string) {
+	if r.controls == nil {
+		r.controls = map[string]ResponseControl{}
+	}
+	if v,ok := r.controls[id]; ok && v.html != "" {
+		panic ("Setting ajax html twice on same control: " + id)
+	}
+	r.controls[id] = ResponseControl{html: html}
+}
+
+func (r *Response) SetControlAttribute(id string, attribute string, value string) {
+	if r.controls == nil {
+		r.controls = map[string]ResponseControl{}
+	}
+	if v,ok := r.controls[id]; ok {
+		if v.html != "" {
+			return // whole control is being redrawn so ignore individual attribute changes
+		}
+		if v.attributes != nil {
+			v.attributes[attribute] = value
+		} else {
+			v.attributes = map[string]string {attribute:value}
+		}
+	} else {
+		r.controls[id] = ResponseControl{attributes:map[string]string{attribute:value}}
+	}
+}
+
+func (r *Response) SetControlValue(id string, value string) {
+	if r.controls == nil {
+		r.controls = map[string]ResponseControl{}
+	}
+	r.controls[id] = ResponseControl{value: value}
+}
+
 

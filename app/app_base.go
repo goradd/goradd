@@ -60,13 +60,15 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	buf := page.GetBuffer()
 	defer page.PutBuffer(buf)
 	if pm.IsPage(ctx) {
-		pm.RunPage(ctx, buf)
+		headers := pm.RunPage(ctx, buf)
+		if headers != nil {
+			for k,v := range headers {
+				// Multi-value headers can simply be separated with commas I believe
+				w.Header().Set(k,v)
+			}
+		}
+		w.Write(buf.Bytes())
 	}
-
-	// TODO: Check context for anything that might change headers and write those out first
-	// Like if we are dynamically generating a PDF file and want to set a mime type, etc.
-
-	w.Write(buf.Bytes())
 }
 
 

@@ -17,10 +17,12 @@ func NewSCSManager(mgr *scs.Manager) ManagerI {
 
 func (mgr SCS_Manager) Use (next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		var data []byte
+		var temp string
 		// get the session. All of our session data is stored in only one key in the session manager.
 		session := mgr.Manager.Load(r)
-		session.Touch(w) // Make sure get a cookie in our header if we don't have one
-		data,_ := session.GetBytes("goradd.data")
+		session.Touch(w) // Make sure to get a cookie in our header if we don't have one
+		data,_ = session.GetBytes("goradd.data")
 		sessionData := NewSession()
 		if data != nil {
 			sessionData.UnmarshalBinary(data)
@@ -41,6 +43,8 @@ func (mgr SCS_Manager) Use (next http.Handler) http.Handler {
 		// That is OK, because of our Touch above.
 		if sessionData.Len() > 0 {
 			data,_ = sessionData.MarshalBinary()
+			temp = string(data)
+			_ = temp
 			session.PutBytes(w, "goradd.data", data)
 		} else {
 			session.Clear(w)

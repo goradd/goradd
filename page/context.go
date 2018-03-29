@@ -54,7 +54,7 @@ type AppContext struct {
 	pageStateId string
 	customControlValues map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables.
 	checkableValues map[string]interface{} // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
-	actionControlId string	// If an action, the control receiving the action
+	actionControlId string	// If an action, the control sending the action
 	eventId EventId	// The event to send to the control
 	actionValues map[string]interface{}
 	// TODO: Session object
@@ -232,6 +232,10 @@ func (ctx *Context) FillApp(cliArgs []string) {
 		ctx.requestMode = Cli
 	}
 	ctx.cliArgs = cliArgs
+}
+
+func (ctx *Context) RequestMode() RequestMode {
+	return ctx.requestMode
 }
 
 func GetContext(ctx context.Context) *Context {

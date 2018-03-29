@@ -10,6 +10,10 @@ type messageAction struct {
 	message interface{}
 }
 
+// Note: actions currently depend on a javascript eval if they are introduced to a form during an ajax response.
+// One way to fix that would be to register all javascript actions so that they get added to the form at drawing time,
+// so that when an event gets attached during an ajax call, the resulting action is already in the browser.
+
 // Message returns an action that will display a standard browser alert message. Specify a string, or one of the
 // javascript.* types.
 func Message(m interface{}) *messageAction {

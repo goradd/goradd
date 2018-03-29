@@ -10,6 +10,7 @@ type EventI interface {
 	Delay(int) EventI
 	Selector(string) EventI
 	Blocking() EventI
+	Terminating() EventI
 	ActionValue(interface{}) EventI
 	GetActionValue() interface{}
 	AddActions(a... ActionI)

@@ -17,12 +17,12 @@ const (
 )
 
 type VoidTag struct {
-	tag string
-	attr *Attributes
+	Tag string
+	Attr *Attributes
 }
 
 func (t VoidTag) Render() string {
-	return RenderVoidTag(t.tag, t.attr)
+	return RenderVoidTag(t.Tag, t.Attr)
 }
 
 // Render a void tag that has no closing tag
