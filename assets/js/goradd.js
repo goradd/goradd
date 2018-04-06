@@ -95,6 +95,8 @@ goradd = {
      * @param event
      */
     formObjChanged: function (event) {
+        console.time("formObjChanged")
+
         var ctl = event.target,
             id = gr._formObjChangeIndex(ctl),
             strType = $j(ctl).prop("type"),
@@ -113,6 +115,7 @@ goradd = {
         else if (id) {
             gr.formObjsModified[id] = true;
         }
+        console.timeEnd("formObjChanged")
     },
     /**
      * Initialize form related scripts
@@ -478,12 +481,12 @@ goradd = {
         /////////////////////////////
         // Form-related functionality
         /////////////////////////////
-        
+        /*
         $j(window).on ("storage", function (o) {
             if (o.originalEvent.key === "goradd.broadcast") {
                 gr.updateForm();
             }
-        });
+        });*/
 
         gr.inputSupport = 'oninput' in document;
 
@@ -511,8 +514,8 @@ goradd = {
     },
     processImmediateAjaxResponse: function(json, params) {
         if (json.controls) {
-            $j.each(json.controls, function() {
-                var strControlId = this.id,
+            $j.each(json.controls, function(id) {
+                var strControlId = id,
                     $control = $j(goradd.getControl(strControlId)),
                     $wrapper = $j(goradd.getWrapper(strControlId));
 
@@ -812,6 +815,31 @@ goradd.stopTimer = function(strControlId, blnPeriodic) {
             clearTimeout(goradd._objTimers[strTimerId]);
         }
         goradd._objTimers[strTimerId] = null;
+    }
+};
+
+//////////////////////////////
+// Action queue support
+//////////////////////////////
+/* Javascript/jquery has a problem when two events happen simultaneously. In particular, a click event might also
+result in a change event, and under certain circumstances this could cause the click event to be dropped. We therefore delay
+the processing of all events to try to queue them up before processing. This seems to happen only the first time a page is visited.
+Its very strange. Something to debug at a future date.
+*/
+
+goradd.actionQueue = []
+goradd.queueAction = function(params) {
+    goradd.actionQueue.push(params)
+    goradd.setTimeout("goraddActions", goradd.processActions, 150);    // will reset timer as actions come in
+};
+goradd.processActions = function() {
+    while (goradd.actionQueue.length > 0) {
+        params = goradd.actionQueue.pop();
+        if (params.d > 0) {
+            setTimeout(params.f, params.d);
+        } else {
+            params.f();
+        }
     }
 };
 

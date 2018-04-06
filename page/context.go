@@ -21,6 +21,22 @@ const (
 	Cli							// From command line
 )
 
+func (m RequestMode) String() string {
+	switch m {
+	case Server:
+		return "Server"
+	case Http:
+		return "Http"
+	case Ajax:
+		return "Ajax"
+	case CustomAjax:
+		return "Custom Ajax"
+	case Cli:
+		return "Command-line"
+	}
+	return "Unknown"
+}
+
 type contextKey string
 
 const (
@@ -48,7 +64,7 @@ type HttpContext struct {
 
 // AppContext has Goradd application specific nodes
 type AppContext struct {
-	err error					// An error that occurred during the unpacking of the context. We save this for later so we can let the page manager display it if we get that far.
+	err error					// An error that occurred during the unpacking of the context. We save This for later so we can let the page manager display it if we get that far.
 	requestMode RequestMode
 	cliArgs []string			// All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId string
@@ -63,6 +79,12 @@ type AppContext struct {
 type Context struct {
 	HttpContext
 	AppContext
+}
+
+func (c *Context) String() string {
+	b,_ := json.Marshal(c.actionValues)
+	actionValues := string(b[:])
+	return fmt.Sprintf("URL: %s, Mode: %s, Form Values: %v, Control ID: %s, Event ID: %d, Action Values: %s, Page State: %s", c.URL, c.requestMode, c.formVars, c.actionControlId, c.eventId, actionValues, c.pageStateId)
 }
 
 func PutContext(r *http.Request, cliArgs []string) *http.Request {
@@ -121,7 +143,7 @@ func (ctx *Context) FormValue(key string) (value string, ok bool) {
 	return
 }
 
-// Returns the corresponding form value as a string slice. Use this when you are expecting more than one value in the
+// Returns the corresponding form value as a string slice. Use This when you are expecting more than one value in the
 // given form variable
 func (ctx *Context) FormValues(key string) (value []string, ok bool) {
 	if ctx.formVars == nil {
@@ -130,6 +152,15 @@ func (ctx *Context) FormValues(key string) (value []string, ok bool) {
 	value, ok = ctx.formVars[key]
 	return
 }
+
+func (ctx *Context) CheckableValue(key string) (value interface{}, ok bool) {
+	if ctx.checkableValues == nil {
+		return
+	}
+	value, ok = ctx.checkableValues[key]
+	return
+}
+
 
 // FillApp fills the app structure with app specific information from the request
 // Do not panic here!
@@ -141,7 +172,7 @@ func (ctx *Context) FillApp(cliArgs []string) {
 
 
 	if ctx.URL != nil {
-		if v,ok = ctx.FormValue("Goradd__Params"); ok {
+		if v,ok = ctx.FormValue(htmlVarParams); ok {
 			if h := ctx.Header.Get("X-Requested-With"); strings.ToLower(h) == "xmlhttprequest" {
 				ctx.requestMode = Ajax
 			} else {
@@ -233,6 +264,8 @@ func (ctx *Context) FillApp(cliArgs []string) {
 	}
 	ctx.cliArgs = cliArgs
 }
+
+
 
 func (ctx *Context) RequestMode() RequestMode {
 	return ctx.requestMode

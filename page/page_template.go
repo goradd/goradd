@@ -15,8 +15,7 @@ func PageTmpl(ctx context.Context, page PageI, buf *bytes.Buffer) (err error) {
 	<meta charset="utf-8"/>
 `)
 	page.DrawHeaderTags(ctx, buf)
-	buf.WriteString(`
-</head>
+	buf.WriteString(`</head>
 <body>
 `)
 
@@ -27,9 +26,9 @@ func PageTmpl(ctx context.Context, page PageI, buf *bytes.Buffer) (err error) {
 		}
 	}
 
-	buf.WriteString(`
-</body>
+	buf.WriteString(`</body>
 </html>
+
 `)
 
 	return

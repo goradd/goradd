@@ -15,7 +15,7 @@ type BufferPoolI interface {
 
 // BufferPool is the global buffer pool used by the page drawing system. You can use it to get buffers for you own
 // writes as well. The default buffer pool uses config.MaxBufferSize to limit the size of buffers that are put back into
-// the pool. If a particular http request required a large buffer to satisfy, this prevents that buffer from hanging around too long.
+// the pool. If a particular http request required a large buffer to satisfy, This prevents that buffer from hanging around too long.
 // You should set config.MaxBufferSize to a value that is bigger than most http request sizes.
 var BufferPool BufferPoolI
 
@@ -45,7 +45,7 @@ func (p pool) PutBuffer(buffer *bytes.Buffer)  {
 		p.Put(buffer)
 	}
 	// otherwise we will not put the buffer back, allowing the garbage collector to reclaim the memory
-	// TODO: log when our buffer is bigger than config.MaxBufferSize so that we can inform the sysop when this is happening a lot and the value should be increased.
+	// TODO: log when our buffer is bigger than config.MaxBufferSize so that we can inform the sysop when This is happening a lot and the value should be increased.
 }
 
 

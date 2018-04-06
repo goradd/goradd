@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func NameTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+func LabelTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
 
 	buf.WriteString(`<div id="`)
 
@@ -24,7 +24,7 @@ func NameTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer
 
 		buf.WriteString(ctrl.Id())
 
-		buf.WriteString(`_name" class="goradd-name"`)
+		buf.WriteString(`_lbl" class="goradd-lbl"`)
 		if ctrl.HasFor() {
 			buf.WriteString(` for="`)
 
@@ -55,7 +55,11 @@ func NameTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer
 	buf.WriteString(`</div>
 `)
 	if ctrl.Instructions() != "" {
-		buf.WriteString(`    <div class="goradd-instructions">`)
+		buf.WriteString(`    <div id="`)
+
+		buf.WriteString(ctrl.Id())
+
+		buf.WriteString(`_inst" class="goradd-inst" >`)
 
 		buf.WriteString(ctrl.Instructions())
 

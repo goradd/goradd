@@ -76,6 +76,7 @@ func TestLruReset(t *testing.T) {
 	cache.Set("2", p2)
 	cache.Set("1", p1)
 	cache.Set("3", p3)
+	cache.Set("1", p1)
 	cache.gc()
 
 	p4 := cache.Get("2")
@@ -84,7 +85,7 @@ func TestLruReset(t *testing.T) {
 		t.Error("Item did not fall off end")
 	}
 
-	p4 = cache.Get("1")
+	p4 = cache.Get("1").(string)
 	if p4 != p1 {
 		t.Error("Item was lost")
 	}

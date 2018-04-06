@@ -81,16 +81,17 @@ func RenderTagNoSpace(tag string, attr *Attributes, innerHtml string) string {
 
 // A utility function to render a label, together with its text. Various CSS frameworks require labels to be rendered
 // a certain way.
-func RenderLabel(tag string, attributes *Attributes, text string, ctrlHtml string, mode LabelDrawingMode) string {
+func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mode LabelDrawingMode) string {
+	tag := "label"
 	switch mode {
 	case LABEL_BEFORE:
-		return RenderTagNoSpace(tag, attributes, text) + ctrlHtml
+		return RenderTagNoSpace(tag, labelAttributes, label) + ctrlHtml
 	case LABEL_AFTER:
-		return ctrlHtml + RenderTagNoSpace(tag, attributes, text)
+		return ctrlHtml + RenderTagNoSpace(tag, labelAttributes, label)
 	case WRAP_LABEL_BEFORE:
-		return RenderTag(tag, attributes, text + " " + ctrlHtml)
+		return RenderTag(tag, labelAttributes, label + " " + ctrlHtml)
 	case WRAP_LABEL_AFTER:
-		return RenderTag(tag, attributes,ctrlHtml + " " + text)
+		return RenderTag(tag, labelAttributes,ctrlHtml + " " + label)
 	}
 	panic ("Unknown label mode")
 }

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"fmt"
 	"encoding/json"
+	"github.com/spekary/goradd/log"
 )
 
 const htmlVarFormstate string = "Goradd__FormState"
@@ -28,7 +29,7 @@ type FormI interface {
 
 type FormBase struct {
 	Control
-	response Response // don't serialize this
+	response Response // don't serialize This
 
 	// serialized lists of related files
 	headerStyleSheets *types.OrderedMap
@@ -62,8 +63,8 @@ func (f *FormBase) Init(ctx context.Context, self FormI, page PageI, id string) 
 }
 
 
-// AddRelatedFiles adds related javascript and style sheet files. Override this to get these files from a different location,
-// or to load additional files. The order is important, so if you override this, be sure these files get loaded
+// AddRelatedFiles adds related javascript and style sheet files. Override This to get these files from a different location,
+// or to load additional files. The order is important, so if you override This, be sure these files get loaded
 // before other files.
 func (f *FormBase) AddRelatedFiles() {
 	f.AddJavaScriptFile("http://code.jquery.com/jquery-3.3.1.min.js", false, html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="))
@@ -81,9 +82,9 @@ func (f *FormBase) InitializeControls(ctx context.Context) {
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
 func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = f.this().PreRender(ctx, buf)
-	buf.WriteString(`<form ` + f.this().DrawingAttributes().String() + ">\n")
-	if err = f.this().DrawTemplate(ctx, buf); err != nil {
+	err = f.This().PreRender(ctx, buf)
+	buf.WriteString(`<form ` + f.This().DrawingAttributes().String() + ">\n")
+	if err = f.This().DrawTemplate(ctx, buf); err != nil {
 		return // the template is required
 	}
 	// Render controls that are marked to auto render if the form did not render them
@@ -100,7 +101,7 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	}
 
 	f.resetDrawingFlags()
-	formstate := f.saveState() // From this point on we should not change any controls, just draw
+	formstate := f.saveState() // From This point on we should not change any controls, just draw
 
 	// Render hidden controls
 
@@ -124,7 +125,7 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	s = fmt.Sprintf(`<script>jQuery(document).ready(function($j) { %s; });</script>`, s)
 	buf.WriteString(s)
 
-	f.this().PostRender(ctx, buf)
+	f.This().PostRender(ctx, buf)
 
 	return
 }
@@ -143,9 +144,10 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 	formstate = f.saveState() // Make sure formstate hasn't changed?
 	f.response.SetControlValue(htmlVarFormstate, formstate)
 	f.resetDrawingFlags()
-	buf2, err = json.Marshal(f.response)
+	buf2, err = json.Marshal(&f.response)
 	f.response = NewResponse()	// Reset
 	buf.Write(buf2)
+	log.FrameworkDebug("renderAjax - ", string(buf2))
 	return
 }
 
@@ -182,12 +184,12 @@ func (f *FormBase) saveState() string {
 // preliminary javascript that needs to be executed before the dom loads. Otherwise, the file will be loaded after
 // the dom is loaded, allowing the browser to show the page and then load the javascript in the background, giving the
 // appearance of a more responsive website. If you add the file during an ajax operation, the file will be loaded
-// dynamically by the goradd javascript. Controls generally should call this during the initial creation of the control if the control
+// dynamically by the goradd javascript. Controls generally should call This during the initial creation of the control if the control
 // requires additional javascript to function.
 //
 // The path is either a url, or an internal path to the location of the file
 // in the development environment. Development files will automatically get copied to the local assets directory for easy
-// deployment and so that the MUX can find the file and serve it (this happens at draw time).
+// deployment and so that the MUX can find the file and serve it (This happens at draw time).
 // The attributes are extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
 func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes) {
@@ -223,7 +225,7 @@ func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 // The file will be loaded on the page at initial draw in the header, or will be inserted into the file if the page
 // is already drawn. The path is either a url, or an internal path to the location of the file
 // in the development environment. Development files will automatically get copied to the local assets directory for easy
-// deployment and so that the MUX can find the file and serve it (this happens at draw time).
+// deployment and so that the MUX can find the file and serve it (This happens at draw time).
 // The attributes will be extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
 func (f *FormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
@@ -241,7 +243,7 @@ func (f *FormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
 }
 
 // DrawHeaderTags is called by the page drawing routine to draw its header tags
-// If you override this, be sure to call this version too
+// If you override This, be sure to call This version too
 func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	if f.headerStyleSheets != nil {
 		f.headerStyleSheets.Range(func (path string, attr interface{}) bool {

@@ -67,15 +67,31 @@ func (r ResponseCommand)  MarshalJSON() (buf []byte, err error) {
 			reply["final"] = true
 		}
 	}
-	return
+	return json.Marshal(reply)
 }
 
 // A response packet that leads to the manipulation or replacement of an html object
 type ResponseControl struct {
+	id string
 	html string	// replaces the entire control's html
 	attributes map[string]string // replace only specific attributes of the control
-	value string // call the jQuery .val function with this value
+	value string // call the jQuery .val function with This value
 }
+
+func (r ResponseControl)  MarshalJSON() (buf []byte, err error) {
+	var reply = map[string]interface{}{}
+
+	if r.html != "" {
+		reply["html"] = r.html
+	} else if r.attributes != nil {
+		reply["attributes"] = r.attributes
+	} else {
+		reply["value"] = r.value
+	}
+
+	return json.Marshal(reply)
+}
+
 
 type Response struct {
 	exclusiveCommand       *ResponseCommand
@@ -141,7 +157,7 @@ func (r *Response) executeSelectorFunction(selector string, functionName string,
 
 }
 
-// Call the given function with the given arguments. If just a function name, then the window object is searched.
+// Call the given function with the given arguments. If just a function label, then the window object is searched.
 // The function can be inside an object accessible from the global namespace by separating with periods.
 func (r *Response) executeJsFunction(functionName string, priority Priority, args... interface{}) {
 	c := ResponseCommand{function: functionName, args: args}
@@ -276,10 +292,10 @@ func (r *Response) renderCommandArray(commands []ResponseCommand) string {
 // Return the JSON for use by the form ajax response. Will essentially do the same thing as
 // above, but working in cooperation with the javascript file to process these through an ajax response.
 func (r *Response)  MarshalJSON() (buf []byte, err error) {
-	var reply map[string]interface{}
+	var reply = map[string]interface{}{}
 
 	if r.exclusiveCommand != nil {
-		// only render this one;
+		// only render This one;
 		reply[ResponseCommandsMedium] = []ResponseCommand{*r.exclusiveCommand}
 		r.exclusiveCommand = nil
 	} else {
@@ -310,6 +326,14 @@ func (r *Response)  MarshalJSON() (buf []byte, err error) {
 			reply[ResponseStyleSheets] = strings.Join(r.styleSheets.Values(), ",")
 		}
 
+		// alerts
+		if r.alerts != nil {
+			reply[ResponseAlert] = r.alerts
+		}
+
+		if r.controls != nil {
+			reply[ResponseControls] = r.controls
+		}
 	}
 
 	return json.Marshal(reply)

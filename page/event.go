@@ -16,6 +16,7 @@ type EventI interface {
 	AddActions(a... ActionI)
 	RenderActions(control ControlI, eventId EventId) string
 	GetActions() []ActionI
+	String() string
 	event() *Event
 }
 
@@ -34,6 +35,11 @@ type Event struct {
 	actionsMustTerminate bool
 	validationOverride ValidationType
 	validationTargetsOverride []string
+}
+
+func (e *Event) String() string {
+	return fmt.Sprintf("Event: %s, Condition: %s, Delay: %d, Selector: %s, Blocking: %t, ActionCount: %d",
+		e.JsEvent, e.condition, e.delay, e.selector, e.blocking, len(e.actions))
 }
 
 
@@ -62,7 +68,7 @@ func (e *Event) Selector (s string) EventI {
 	return e
 }
 
-// Call Blocking to cause this event to prevent other events from firing after this fires, but before it processes.
+// Call Blocking to cause This event to prevent other events from firing after This fires, but before it processes.
 // This is particularly useful to debounce button clicks. (The infamous double-click of the submit button when processing financial transactions for example).
 func (e *Event) Blocking () EventI {
 	e.blocking = true
@@ -75,7 +81,7 @@ func (e *Event) Terminating() EventI {
 	return e
 }
 
-// ActionValue is a value that will be returned to the actions that will be process by this event. Specify a static
+// ActionValue is a value that will be returned to the actions that will be process by This event. Specify a static
 // value, or javascript objects that will gather data at the time the event fires.
 // Example: ActionValue(javascript.VarName("ui")) will return the "ui" variable that is part of the event call.
 func (e *Event) ActionValue(r interface{}) EventI {
@@ -87,13 +93,13 @@ func (e *Event) GetActionValue() interface{} {
 	return e.actionValue
 }
 
-// Validate overrides the controls validation setting just for this event.
+// Validate overrides the controls validation setting just for This event.
 func (e *Event) Validate(v ValidationType) EventI {
 	e.validationOverride = v
 	return e
 }
 
-// ValidationTargets overrides the control's validation targets just for this event.
+// ValidationTargets overrides the control's validation targets just for This event.
 func (e *Event) ValidationTargets(targets... string) EventI {
 	e.validationTargetsOverride = targets
 	return e
@@ -142,9 +148,7 @@ func (e *Event) RenderActions(control ControlI, eventId EventId) string {
 		js += "goradd.blockEvents = true;\n"
 	}
 
-	if e.delay != 0 {
-		js = fmt.Sprintf("goradd.setTimeout('%s', $j.proxy(function(){\n%s\n},this), %d);\n", control.Id(), js, e.delay)
-	}
+	js = fmt.Sprintf("goradd.queueAction({f: $j.proxy(function(){\n%s\n},this), d: %d});\n", js, e.delay)
 
 	if e.condition != "" {
 		js = fmt.Sprintf("\nif (%s) {\n%s\n};", e.condition, js)
@@ -154,7 +158,7 @@ func (e *Event) RenderActions(control ControlI, eventId EventId) string {
 
 	if config.Mode == config.Dev {
 		// Render a comment
-		js = fmt.Sprintf("/*** Event: %s  Control Type: %T, Control Name: %s, Control Id: %s  ***/\n%s\n", e.JsEvent, control, control.Name(), control.Id(), js)
+		js = fmt.Sprintf("/*** Event: %s  Control Type: %T, Control Label: %s, Control Id: %s  ***/\n%s\n", e.JsEvent, control, control.Label(), control.Id(), js)
 	}
 
 	return js

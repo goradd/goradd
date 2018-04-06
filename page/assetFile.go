@@ -17,7 +17,7 @@ type AssetFile struct {
 	url string
 	filePath string
 	attributes *html.Attributes
-	localPath string	// where this file is located locally, in case we copied it to a more accessible location
+	localPath string	// where This file is located locally, in case we copied it to a more accessible location
 }
 
 
@@ -25,8 +25,8 @@ var assetFiles = types.NewSafeOrderedMap()
 
 // RenderAssetTag will render a tag that points to a static file asset that should be served by the MUX. filePath points
 // to the file on the development server, and it will be copied to the appropriate subdirectory in the local assets directory
-// for easy deployment. tag is the tag name to put in the tag, and attributes are additional attributes to include in the tag.
-// The copied location of the file and structure of the tag will be deduced from the type of tag and the name of the file.
+// for easy deployment. tag is the tag label to put in the tag, and attributes are additional attributes to include in the tag.
+// The copied location of the file and structure of the tag will be deduced from the type of tag and the label of the file.
 // The type of tag will also be used to automatically insert the location of the file into the correct tag attribute.
 /*
 func RenderAssetTag(filePath string, tag string, attributes *html.Attributes, content string) string {

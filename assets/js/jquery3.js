@@ -5160,6 +5160,7 @@ jQuery.event = {
 	},
 
 	dispatch: function( nativeEvent ) {
+		console.time("dispatch");
 
 		// Make a writable jQuery.Event from the native event object
 		var event = jQuery.event.fix( nativeEvent );
@@ -5180,6 +5181,7 @@ jQuery.event = {
 
 		// Call the preDispatch hook for the mapped type, and let it bail if desired
 		if ( special.preDispatch && special.preDispatch.call( this, event ) === false ) {
+			console.timeEnd("dispatch");
 			return;
 		}
 
@@ -5219,6 +5221,8 @@ jQuery.event = {
 		if ( special.postDispatch ) {
 			special.postDispatch.call( this, event );
 		}
+
+        console.timeEnd("dispatch");
 
 		return event.result;
 	},
@@ -8112,6 +8116,8 @@ jQuery.extend( jQuery.event, {
 
 	trigger: function( event, data, elem, onlyHandlers ) {
 
+		console.time("trigger");
+
 		var i, cur, tmp, bubbleType, ontype, handle, special,
 			eventPath = [ elem || document ],
 			type = hasOwn.call( event, "type" ) ? event.type : event,
@@ -8121,11 +8127,14 @@ jQuery.extend( jQuery.event, {
 
 		// Don't do events on text and comment nodes
 		if ( elem.nodeType === 3 || elem.nodeType === 8 ) {
-			return;
+            console.timeEnd("trigger");
+
+            return;
 		}
 
 		// focus/blur morphs to focusin/out; ensure we're not firing them right now
 		if ( rfocusMorph.test( type + jQuery.event.triggered ) ) {
+            console.timeEnd("trigger");
 			return;
 		}
 
@@ -8164,6 +8173,7 @@ jQuery.extend( jQuery.event, {
 		// Allow special events to draw outside the lines
 		special = jQuery.event.special[ type ] || {};
 		if ( !onlyHandlers && special.trigger && special.trigger.apply( elem, data ) === false ) {
+            console.timeEnd("trigger");
 			return;
 		}
 
@@ -8242,6 +8252,7 @@ jQuery.extend( jQuery.event, {
 			}
 		}
 
+        console.timeEnd("trigger");
 		return event.result;
 	},
 

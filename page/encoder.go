@@ -7,7 +7,7 @@ import (
 
 // These objects and functions are helpers in the page serialization process. Serialization is a big nut to crack in Go,
 // with many opinions and options on how to implement. This current implementation tries to be flexible and supportable first, before fast.
-// As goradd matures, this can evolve into something that is more optimized. It is essentially implemented as a service that is
+// As goradd matures, This can evolve into something that is more optimized. It is essentially implemented as a service that is
 // initialized at startup time.
 // This is only needed when we are serializing pages. Not needed on single machine implementations that keep the pagecache in memory.
 
@@ -27,13 +27,13 @@ func SetPageEncoder(e PageEncoderI) {
 }
 
 
-// Encoder defines objects that can be encoded into a pagestate. If the object does not implement this, we will look for MarshalBinary support,
+// Encoder defines objects that can be encoded into a pagestate. If the object does not implement This, we will look for MarshalBinary support,
 // and finally just encode the exported members.
 type Encoder interface {
 	Encode(v interface{}) error
 }
 
-// Decoder defines objects that can be decoded from a pagestate. If the object does not implement this, we will look for MarshalBinary support,
+// Decoder defines objects that can be decoded from a pagestate. If the object does not implement This, we will look for MarshalBinary support,
 // and finally just decode using the exported members.
 type Decoder interface {
 	Decode (v interface{}) error
@@ -76,7 +76,7 @@ func (e GobEncoder) Encode(v interface{}) error {
 
 func (e GobDecoder) Decode(v interface{}) error {
 	switch v2 := v.(type) {
-	case Encodable: // assume this is a pointer to an interface
+	case Encodable: // assume This is a pointer to an interface
 		// TODO: Retrieve the type, and then create a new object with that type, then decode into that variable, then set the v to that. Will need a registry of types to do that, like gob.
 		return v2.Decode(e)
 	default:

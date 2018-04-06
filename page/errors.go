@@ -44,7 +44,7 @@ type DbError struct {
 	DbStatement string
 }
 
-// Represents no error. A request starts with this.
+// Represents no error. A request starts with This.
 type NoErr struct {
 }
 

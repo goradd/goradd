@@ -70,7 +70,7 @@ func (m *Attributes) SetChanged(name string, v string) (changed bool, err error)
 }
 
 // Set is similar to SetChanged, but instead returns an attribute pointer so it can be chained. Will panic on errors.
-// Use this when you are setting attributes using implicit strings. Returns the attributes for chaining.
+// Use this when you are setting attributes using implicit strings. Set v to an empty string to create a boolean attribute.
 func (m *Attributes) Set(name string, v string) *Attributes {
 	_,err := m.SetChanged(name, v)
 	if err != nil {
@@ -94,10 +94,15 @@ func (m *Attributes) RemoveAttribute(a string) bool {
 // be output in random order: id, name, class
 func (m *Attributes) String() string {
 	var id, name, class, styles, others string
-
 	m.Range(func (k,v string) bool {
-		v = gohtml.EscapeString(v)
-		str := fmt.Sprintf("%v=%q ", k, v)
+		var str string
+
+		if v == "" {
+			str = k + " "
+		} else {
+			v = gohtml.EscapeString(v)
+			str = fmt.Sprintf("%s=%q ", k, v)
+		}
 
 		switch k {
 		case "id":id = str
@@ -110,6 +115,7 @@ func (m *Attributes) String() string {
 		return true
 	})
 
+	// put the attributes in a somewhat predictable order
 	ret := id + name + class + styles + others
 	ret = strings.TrimSpace(ret)
 
@@ -368,4 +374,25 @@ func (m *Attributes) RemoveStyle (name string) (changed bool) {
 		m.OrderedStringMap.Set("style", s.String())
 	}
 	return changed
+}
+
+
+func (m *Attributes) SetDisabled(d bool) {
+	if d {
+		m.Set("disabled", "")
+	} else {
+		m.RemoveAttribute("disabled")
+	}
+}
+
+func (m *Attributes) IsDisabled() bool {
+	return m.Has("disabled")
+}
+
+func (m *Attributes) SetDisplay(d string) {
+	m.SetStyle("display", d)
+}
+
+func (m *Attributes) IsDisplayed() bool {
+	return m.GetStyle("display") != "none"
 }

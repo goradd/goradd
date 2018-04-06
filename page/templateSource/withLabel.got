@@ -1,0 +1,24 @@
+package page
+
+import (
+	"context"
+	"bytes"
+)
+
+func LabelTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+
+{{
+<div id="{{= ctrl.Id() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
+{{if ctrl.Label() != "" }}
+    <label id="{{= ctrl.Id() }}_lbl" class="goradd-lbl"{{if ctrl.HasFor() }} for="{{= ctrl.Id() }}" {{if}}>{{= ctrl.Label() }}</label>
+{{if}}
+    {{= html }}
+    <div id="{{= ctrl.Id() }}_err" class="goradd-err">{{= ctrl.ValidationError() }}</div>
+{{if ctrl.Instructions() != "" }}
+    <div id="{{= ctrl.Id() }}_inst" class="goradd-inst" >{{= ctrl.Instructions() }}</div>
+{{if}}
+</div>
+}}
+return
+
+}

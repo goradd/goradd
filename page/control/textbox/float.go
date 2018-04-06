@@ -8,25 +8,31 @@ import (
 	grcontrol "github.com/spekary/goradd/page/control"
 )
 
-type FloatTextbox struct {
-	control.TextBox
+type Float struct {
+	control.Textbox
 }
 
-func (i *FloatTextbox) Init(self grcontrol.TextBoxI, parent page.ControlI, id string) {
-	i.TextBox.Init(self, parent, id)
+func NewFloatTextbox(parent page.ControlI, id string) *Float {
+	t := &Float{}
+	t.Init(t, parent, id)
+	return t
+}
+
+func (i *Float) Init(self grcontrol.TextboxI, parent page.ControlI, id string) {
+	i.Textbox.Init(self, parent, id)
 	i.ValidateWith(FloatValidator{})
 }
 
-func (i *FloatTextbox) SetMinValue(minValue float64, invalidMessage string) {
+func (i *Float) SetMinValue(minValue float64, invalidMessage string) {
 	i.ValidateWith(MinFloatValidator{minValue, invalidMessage})
 }
 
-func (i *FloatTextbox) SetMaxValue(maxValue float64, invalidMessage string) {
+func (i *Float) SetMaxValue(maxValue float64, invalidMessage string) {
 	i.ValidateWith(MaxFloatValidator{maxValue, invalidMessage})
 }
 
-func (i *FloatTextbox) Value() interface{} {
-	t := i.TextBox.Text()
+func (i *Float) Value() interface{} {
+	t := i.Textbox.Text()
 	v,_ := strconv.ParseFloat(t,64)
 	return v
 }
@@ -36,6 +42,9 @@ type FloatValidator struct {
 }
 
 func (v FloatValidator) Validate(t page.Translater, s string) (msg string) {
+	if s == "" {
+		return "" // empty textbox is checked elsewhere
+	}
 	if _,err := strconv.ParseFloat(s, 64); err != nil {
 		if msg == "" {
 			return t.Translate("Please enter a number.")
@@ -53,6 +62,9 @@ type MinFloatValidator struct {
 }
 
 func (v MinFloatValidator) Validate(t page.Translater, s string) (msg string) {
+	if s == "" {
+		return "" // empty textbox is checked elsewhere
+	}
 	if val,_ := strconv.ParseFloat(s, 64); val < v.MinValue {
 		if msg == "" {
 			return fmt.Sprintf (t.Translate("Enter at least %f"), v.MinValue)
@@ -69,6 +81,9 @@ type MaxFloatValidator struct {
 }
 
 func (v MaxFloatValidator) Validate(t page.Translater, s string) (msg string) {
+	if s == "" {
+		return "" // empty textbox is checked elsewhere
+	}
 	if val,_ := strconv.ParseFloat(s, 64); val < v.MaxValue {
 		if msg == "" {
 			return fmt.Sprintf (t.Translate("Enter at most %f"), v.MaxValue)

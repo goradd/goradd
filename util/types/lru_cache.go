@@ -57,10 +57,11 @@ func (o *LruCache) Set(key string, v interface{})  {
 			panic ("Lru cache is not in sync")	// this would be a bug in the cache if this happens
 		}
 		// To prevent some memory thrashing with an active cache, we only update the order if the item is slightly stale
-		if i < o.maxItemCount / 2 || item.timestamp < t - o.ttl / 8 { // if 1/8th of the ttl has passed, or the item is getting close to be pushed off the end, bring it to front
+		if i < o.maxItemCount / 2 || item.timestamp < t - o.ttl / 8 { // if 1/8th of the ttl has passed, or the item is getting close to getting pushed off the end, bring it to front
 			o.order = append(o.order[:i], o.order[i + 1:]...)
 			o.order = append(o.order, key)
 			item.timestamp = t
+			o.items[key] = item
 		}
 	} else {
 		// new item

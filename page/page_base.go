@@ -7,6 +7,7 @@ import (
 	"github.com/spekary/goradd"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/goradd/log"
 )
 
 type PageRenderStatus int
@@ -43,7 +44,7 @@ type PageI interface {
 
 
 	// The Validate method validates the form after all its controls are validated. If you have form level validations,
-	// implement this method. This method will be called whether the controls were valid or not. valid will be true
+	// implement This method. This method will be called whether the controls were valid or not. valid will be true
 	// if the controls passed validation, and false if not, so you know whether validation is going to pass. Return
 	// false to invalidate the form and cancel the current request.
 	Validate(valid bool) bool
@@ -51,7 +52,7 @@ type PageI interface {
 	// Called in response to an invalid form or control, just before handling the invalid state
 	Invalid()
 
-	// Exit is called in all situations at the end of processing a call. The form has already been drawn at this point
+	// Exit is called in all situations at the end of processing a call. The form has already been drawn at This point
 	// and the results saved. This is a good place to update any per-user settings.
 	Exit()
 
@@ -62,7 +63,7 @@ type PageI interface {
 	GenerateControlId(givenId string) string
 
 	GetPageBase() *PageBase	// Return its page base composition
-	Path() string // The url path corresponding to this page.
+	Path() string // The url path corresponding to This page.
 
 	GetControl(id string) ControlI
 	addControl(ControlI)
@@ -80,7 +81,7 @@ type PageI interface {
 	Decode(e Decoder)(err error)
 }
 
-// Anything that draws into the draw buffer must implement this interface
+// Anything that draws into the draw buffer must implement This interface
 type DrawI interface {
 	Draw (context.Context, *bytes.Buffer) error
 }
@@ -89,7 +90,7 @@ type DrawI interface {
 type PageBase struct {
 	goradd.Base
 	stateId      string // Id in cache of the page. Needs to be output by form.
-	path         string // The path to the page. Form needs to know this so it can make the action tag
+	path         string // The path to the page. Form needs to know This so it can make the action tag
 	renderStatus PageRenderStatus
 	idPrefix 	 string	// For creating unique ids for the app
 
@@ -151,20 +152,25 @@ func (p *PageBase) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (
 
 	p.renderStatus = UNRENDERED
 
+	log.FrameworkDebugf("Run page: %s", grCtx)
+
 	// TODO: Lifecycle calls
 
 	if !isNew {
 		p.Form().control().updateValues(grCtx)	// Tell all the controls to update their values.
-		// if this is an event response, do the actions associated with the event
+		// if This is an event response, do the actions associated with the event
 		if c := p.GetControl(grCtx.actionControlId); c != nil {
 			c.control().doAction(ctx)
 		}
 	}
 
+	p.ClearResponseHeaders()
+	//p.SetResponseHeader("charset", "utf-8")
 	if grCtx.RequestMode() == Ajax {
 		err = p.DrawAjax(ctx, buf)
 		p.SetResponseHeader("Content-Type", "application/json")
 	} else if grCtx.RequestMode() == Server || grCtx.RequestMode() == Http {
+		//p.SetResponseHeader("Content-Type", "text/html")	// default for web page. Response can change This if drawing something else.
 		err = p.Draw(ctx, buf)
 	} else {
 		// TODO: Implement a hook for the CustomAjax call and/or Rest API calls?
@@ -217,7 +223,7 @@ func (p *PageBase) FormById(id string) FormI {
 */
 
 // Draws from the page template. The default should be fine for most situations.
-// You can replace the template function with your own, or override this for even more control
+// You can replace the template function with your own, or override This for even more control
 func (p *PageBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return p.drawFunc(ctx, p.Self.(PageI), buf)
 }
@@ -250,7 +256,7 @@ func (p *PageBase) SetControlIdPrefix(prefix string) *PageBase {
 }
 
 
-// Overridable generator for control ids. This is called through the PageI interface, meaning you can change how this
+// Overridable generator for control ids. This is called through the PageI interface, meaning you can change how This
 // is done by simply implementing it in a subclass.
 func (p *PageBase) GenerateControlId(given string) string {
 	if given != "" {
@@ -261,7 +267,7 @@ func (p *PageBase) GenerateControlId(given string) string {
 }
 
 func (p *PageBase) GetControl(id string) ControlI {
-	if p.controlRegistry == nil {
+	if id == "" || p.controlRegistry == nil {
 		return nil
 	}
 	return p.controlRegistry.Get(id).(ControlI)
@@ -275,7 +281,7 @@ func (p *PageBase) addControl(control ControlI) {
 		panic("Control must have an id before being added.")
 	}
 
-	if (p.controlRegistry == nil) {
+	if p.controlRegistry == nil {
 		p.controlRegistry = types.NewOrderedMap()
 	}
 
@@ -301,7 +307,7 @@ func (p *PageBase) addControl(control ControlI) {
 func (p *PageBase) removeControl(id string) {
 	// Execute the javascript to remove the control from the dom if we are in ajax mode
 	// TODO: Application::executeSelectorFunction('#' . $objControl->getWrapperId(), 'remove');
-	// TODO: Make this a direct command in the ajax renderer
+	// TODO: Make This a direct command in the ajax renderer
 
 
 	p.controlRegistry.Remove(id)
@@ -376,4 +382,9 @@ func (p *PageBase) SetResponseHeader(key, value string) {
 	}
 	p.responseHeader[key] = value
 }
+
+func (p *PageBase) ClearResponseHeaders() {
+	p.responseHeader = nil
+}
+
 
