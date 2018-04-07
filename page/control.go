@@ -173,15 +173,14 @@ type Control struct {
 	shouldSaveState bool
 }
 
-func (c *Control) Init (self ControlI, parent ControlI, id string) {
+func (c *Control) Init (self ControlI, parent ControlI) {
 	c.Base.Init(self)
 	c.attributes = html.NewAttributes()
 	c.wrapperAttributes = html.NewAttributes()
 	if parent != nil {
 		c.page = parent.Page()
-		id = c.page.GenerateControlId(id)
+		c.id = c.page.GenerateControlId()
 	}
-	c.id = id
 	self.SetParent(parent)
 	c.htmlEncodeText = true // default to encoding the text portion. Explicitly turn This off if you need something else
 	c.isVisible = true
@@ -189,6 +188,21 @@ func (c *Control) Init (self ControlI, parent ControlI, id string) {
 
 func (c *Control) This() ControlI {
 	return c.Self.(ControlI)
+}
+
+// SetId sets the control's internal id, and the id that appears in html. Normally, goradd will create an id for you.
+// It is up to you to ensure that this id is unique on the page, as required by html.
+// Note that some css/js frameworks go even farther an require ids to be
+// unique in the entire application (JQuery Mobile for one).
+//
+// If you want a custom id, you should  call this function just after you create it, or you may get unexpected results.
+// Once you assign a custom id, you should not change it.
+func (c *Control) SetId(id string) {
+	if c.isOnPage {
+		panic ("You cannot change the id for a control that has already been drawn.")
+	}
+	c.page.changeControlId(c.id, id)
+	c.id = id
 }
 
 func (c *Control) Id() string {

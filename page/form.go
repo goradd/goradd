@@ -41,7 +41,11 @@ type FormBase struct {
 
 func (f *FormBase) Init(ctx context.Context, self FormI, page PageI, id string) {
 	f.page = page
-	f.Control.Init(self, nil, id)
+	if id == "" {
+		panic ("Forms must have an id assigned")
+	}
+	f.Control.id = id
+	f.Control.Init(self, nil)
 	f.Tag = "form"
 	self.AddRelatedFiles()
 	self.CreateControls(ctx)

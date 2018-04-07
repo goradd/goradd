@@ -18,14 +18,14 @@ type Button struct {
 }
 
 // Creates a new standard html button
-func NewButton(parent page.ControlI, id string) *Button {
+func NewButton(parent page.ControlI) *Button {
 	b := &Button{}
-	b.Init(b, parent, id)
+	b.Init(b, parent)
 	return b
 }
 
-func (b *Button) Init(self TextboxI, parent page.ControlI, id string) {
-	b.Control.Init(self, parent, id)
+func (b *Button) Init(self TextboxI, parent page.ControlI) {
+	b.Control.Init(self, parent)
 	b.Tag = "button"
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }

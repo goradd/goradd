@@ -64,8 +64,8 @@ func (t *Textbox) Unserialize(data interface{}) {
 // t := &MyTextBox{}
 // t.Textbox.Init(t, parent, id)
 // A parent control is isRequired. Leave id blank to have the system assign an id to the control.
-func (t *Textbox) Init(self TextboxI, parent page.ControlI, id string) {
-	t.Control.Init(self, parent, id)
+func (t *Textbox) Init(self TextboxI, parent page.ControlI) {
+	t.Control.Init(self, parent)
 
 	t.Tag = "input"
 	t.IsVoidTag = true

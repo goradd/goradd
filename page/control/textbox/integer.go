@@ -12,14 +12,14 @@ type Integer struct {
 	control.Textbox
 }
 
-func NewIntegerTextbox(parent page.ControlI, id string) *Integer {
+func NewIntegerTextbox(parent page.ControlI) *Integer {
 	t := &Integer{}
-	t.Init(t, parent, id)
+	t.Init(t, parent)
 	return t
 }
 
-func (i *Integer) Init(self grcontrol.TextboxI, parent page.ControlI, id string) {
-	i.Textbox.Init(self, parent, id)
+func (i *Integer) Init(self grcontrol.TextboxI, parent page.ControlI) {
+	i.Textbox.Init(self, parent)
 	i.ValidateWith(IntValidator{})
 }
 

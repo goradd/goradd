@@ -12,8 +12,78 @@ import (
 	html2 "html"
 )
 
-
 type Checkbox struct {
+	checkboxBase
+}
+
+func (c *Checkbox) DrawingAttributes() *html.Attributes {
+	a := c.checkboxBase.DrawingAttributes()
+	a.Set("name", c.Id())	// needed for posts
+	a.Set("type", "checkbox")
+	return a
+}
+
+// UpdateFormValues is an internal call that lets us reflect the value of the checkbox on the web page
+func (c *Checkbox) UpdateFormValues(ctx *page.Context) {
+	id := c.Id()
+
+	if v,ok := ctx.CheckableValue(id); ok {
+		c.checked = c.convertToBool(v)
+	}
+}
+
+type RadioButton struct {
+	checkboxBase
+	group string
+}
+
+func (c *RadioButton) DrawingAttributes() *html.Attributes {
+	a := c.checkboxBase.DrawingAttributes()
+	a.Set("type", "radio")
+	if c.group == "" {
+		a.Set("name", c.Id())	// treat it like a checkbox if no group is specified
+	} else {
+		a.Set("name", c.group)
+		a.Set("value", c.Id())
+	}
+	return a
+}
+
+func (c *RadioButton) UpdateFormValues(ctx *page.Context) {
+	id := c.Id()
+
+	if v,ok := ctx.CheckableValue(id); ok {
+		c.checked = c.convertToBool(v)
+	}
+}
+
+func (c *RadioButton) SetGroup (g string) page.ControlI {
+	c.group = g
+	c.Refresh()
+	return c.This()
+}
+
+func (c *RadioButton) Group() string {
+	return c.group
+}
+
+func (c *RadioButton) SetChecked(v bool) page.ControlI {
+	if c.group != "" && v {
+		if c.checked != v {
+			c.checked = v
+			c.Form().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.Id());
+		}
+	} else {
+		if c.checked != v {
+			c.checked = v
+			c.AddRenderScript("prop", "checked", v)
+		}
+	}
+	return c.This()
+}
+
+
+type checkboxBase struct {
 	localPage.Control
 	checked bool
 	labelMode	html.LabelDrawingMode		// how to draw the label associating the text with the checkbox
@@ -26,8 +96,8 @@ type Checkbox struct {
 // t := &MyTextBox{}
 // t.Textbox.Init(t, parent, id)
 // A parent control is isRequired. Leave id blank to have the system assign an id to the control.
-func (c *Checkbox) Init(self TextboxI, parent page.ControlI, id string) {
-	c.Control.Init(self, parent, id)
+func (c *checkboxBase) Init(self TextboxI, parent page.ControlI) {
+	c.Control.Init(self, parent)
 
 	c.Tag = "input"
 	c.IsVoidTag = true
@@ -37,10 +107,8 @@ func (c *Checkbox) Init(self TextboxI, parent page.ControlI, id string) {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (c *Checkbox) DrawingAttributes() *html.Attributes {
+func (c *checkboxBase) DrawingAttributes() *html.Attributes {
 	a := c.Control.DrawingAttributes()
-	a.Set("name", c.Id())	// needed for posts
-	a.Set("type", "checkbox")
 	if c.Text() != "" && (c.labelMode == html.LABEL_BEFORE || c.labelMode == html.LABEL_AFTER) {
 		// Treat the closer text label as more important than the wrapper label
 		a.Set("aria-labeledby", c.Id() + "_ilbl")
@@ -48,7 +116,7 @@ func (c *Checkbox) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (c *Checkbox) SetLabelDrawingMode(m html.LabelDrawingMode) {
+func (c *checkboxBase) SetLabelDrawingMode(m html.LabelDrawingMode) {
 	c.labelMode = m
 	c.Refresh()
 }
@@ -56,7 +124,7 @@ func (c *Checkbox) SetLabelDrawingMode(m html.LabelDrawingMode) {
 // Draw the checkbox tag. This can be quite tricky. Some CSS frameworks are very particular about how checkboxes get
 // associated with labels. The Text value of the control will become the text directly associated with the checkbox,
 // while the Label value is only shown when drawing a checkbox with a wrapper.
-func (c *Checkbox) DrawTag(ctx context.Context, buf *bytes.Buffer) (ctrl string) {
+func (c *checkboxBase) DrawTag(ctx context.Context, buf *bytes.Buffer) (ctrl string) {
 	attributes := c.This().DrawingAttributes()
 	if c.checked {
 		attributes.Set("checked", "")
@@ -109,14 +177,14 @@ func (c *Checkbox) DrawTag(ctx context.Context, buf *bytes.Buffer) (ctrl string)
 // The input label attributes are the attributes for the label tag that associates the Text with the checkbox.
 // This is specific to checkbox style controls and is not the same as the label tag that appears when using a name wrapper.
 // After setting attributes, be sure to call Refresh on the control if you do this during an Ajax response.
-func (c *Checkbox) InputLabelAttributes() *html.Attributes {
+func (c *checkboxBase) InputLabelAttributes() *html.Attributes {
 	if c.labelAttributes == nil {
 		c.labelAttributes = html.NewAttributes()
 	}
 	return c.labelAttributes
 }
 
-func (c *Checkbox) getDrawingInputLabelAttributes() *html.Attributes {
+func (c *checkboxBase) getDrawingInputLabelAttributes() *html.Attributes {
 	a := c.InputLabelAttributes().Clone()
 
 	// copy tooltip to wrapping label
@@ -135,26 +203,26 @@ func (c *Checkbox) getDrawingInputLabelAttributes() *html.Attributes {
 }
 
 
-// Set the value of the text. Returns itself for chaining
-func (c *Checkbox) SetChecked(v bool) page.ControlI {
+// Set the value of the checkbox. Returns itself for chaining.
+func (c *checkboxBase) SetChecked(v bool) page.ControlI {
 	if c.checked != v {
 		c.checked = v
 		c.AddRenderScript("prop", "checked", v)
 	}
 
-	return c.Self.(page.ControlI)
+	return c.This()
 }
 
-func (c *Checkbox) Checked() bool {
+func (c *checkboxBase) Checked() bool {
 	return c.checked
 }
 
-func (c *Checkbox) SetValue(v interface{}) page.ControlI {
+func (c *checkboxBase) SetValue(v interface{}) page.ControlI {
 	c.SetChecked(c.convertToBool(v))
 	return c.Self.(page.ControlI)
 }
 
-func (c *Checkbox) convertToBool(v interface{}) bool {
+func (c *checkboxBase) convertToBool(v interface{}) bool {
 	var val bool
 	switch s := v.(type) {
 	case string:
@@ -181,24 +249,14 @@ func (c *Checkbox) convertToBool(v interface{}) bool {
 	return val
 }
 
-func (c *Checkbox) Value() interface{} {
+func (c *checkboxBase) Value() interface{} {
 	return c.checked
-}
-
-
-// updateFormValues is an internal call that lets us internally reflect the value of the textbox on the web page
-func (c *Checkbox) UpdateFormValues(ctx *page.Context) {
-	id := c.Id()
-
-	if v,ok := ctx.CheckableValue(id); ok {
-		c.checked = c.convertToBool(v)
-	}
 }
 
 /**
  * Puts the current state of the control to be able to restore it later.
  */
-func (c *Checkbox) MarshalState(m types.MapI) {
+func (c *checkboxBase) MarshalState(m types.MapI) {
 	m.Set("checked", c.checked)
 }
 
@@ -206,7 +264,7 @@ func (c *Checkbox) MarshalState(m types.MapI) {
  * Restore the state of the control.
  * @param mixed $state Previously saved state as returned by GetState above.
  */
-func (c *Checkbox) UnmarshalState(m types.MapI) {
+func (c *checkboxBase) UnmarshalState(m types.MapI) {
 	if m.Has("checked") {
 		v,_ := m.GetBool("checked")
 		c.checked = v

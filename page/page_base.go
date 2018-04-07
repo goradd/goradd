@@ -60,7 +60,7 @@ type PageI interface {
 
 	DrawI
 
-	GenerateControlId(givenId string) string
+	GenerateControlId() string
 
 	GetPageBase() *PageBase	// Return its page base composition
 	Path() string // The url path corresponding to This page.
@@ -79,6 +79,8 @@ type PageI interface {
 
 	Encode(e Encoder)(err error)
 	Decode(e Decoder)(err error)
+
+	changeControlId(oldId string, newId string)
 }
 
 // Anything that draws into the draw buffer must implement This interface
@@ -258,10 +260,7 @@ func (p *PageBase) SetControlIdPrefix(prefix string) *PageBase {
 
 // Overridable generator for control ids. This is called through the PageI interface, meaning you can change how This
 // is done by simply implementing it in a subclass.
-func (p *PageBase) GenerateControlId(given string) string {
-	if given != "" {
-		return p.idPrefix + given
-	}
+func (p *PageBase) GenerateControlId() string {
 	p.idCounter++	// id counter defaults to zero, so pre-increment
 	return p.idPrefix + "c" + strconv.Itoa(p.idCounter)
 }
@@ -302,6 +301,12 @@ func (p *PageBase) addControl(control ControlI) {
 			panic("Controls must have a parent.")
 		}
 	}
+}
+
+func (p *PageBase) changeControlId(oldId string, newId string) {
+	ctrl := p.GetControl(oldId)
+	p.controlRegistry.Remove(oldId)
+	p.controlRegistry.Set(newId, ctrl)
 }
 
 func (p *PageBase) removeControl(id string) {
