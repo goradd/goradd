@@ -18,13 +18,17 @@ const htmlVarParams string = "Goradd__Params"
 type FormI interface {
 	ControlI
 	// Create the objects on the form without necessarily initializing them
-	Init(ctx context.Context, self FormI, page PageI, id string)
+	Init(ctx context.Context, self FormI, path string, id string)
 	CreateControls(ctx context.Context)
 	InitializeControls(ctx context.Context)
 	AddRelatedFiles()
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
 	Response() *Response
 	renderAjax(ctx context.Context, buf *bytes.Buffer) error
+
+	// Lifecycle calls
+	Run(ctx context.Context) error
+	Exit(ctx context.Context, err error)
 }
 
 type FormBase struct {
@@ -39,8 +43,11 @@ type FormBase struct {
 	importedJavaScripts *types.OrderedMap // when refreshing, these get moved to the bodyJavaScripts
 }
 
-func (f *FormBase) Init(ctx context.Context, self FormI, page PageI, id string) {
-	f.page = page
+func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string) {
+	var p = &Page{}
+	p.Init(ctx, path)
+
+	f.page = p
 	if id == "" {
 		panic ("Forms must have an id assigned")
 	}
@@ -138,15 +145,18 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 // Assembles the ajax response for the entire form and draws it to the return buffer
 func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var buf2 []byte
-	var formstate string
+	var pagestate string
 
 	if !f.response.hasExclusiveCommand() {	// skip drawing if we are in a high priority situation
 		// gather modified controls
 		f.DrawAjax(ctx, &f.response)
 	}
 
-	formstate = f.saveState() // Make sure formstate hasn't changed?
-	f.response.SetControlValue(htmlVarFormstate, formstate)
+	pagestate = f.saveState() //
+	if pagestate != GetContext(ctx).pageStateId {
+		panic("page state changed")
+	}
+	//f.response.SetControlValue(htmlVarFormstate, formstate)
 	f.resetDrawingFlags()
 	buf2, err = json.Marshal(&f.response)
 	f.response = NewResponse()	// Reset
@@ -312,3 +322,15 @@ func (f *FormBase) Response() *Response {
 	return &f.response
 }
 
+// Run is a lifecycle function that gets called whenever a page is run, either by a whole page load, or an ajax call.
+// Its a good place to validate that the current user should have access to the information on the page.
+// Returning an error will result in the error message being displayed.
+func (f *FormBase) Run(ctx context.Context) error {
+	return nil
+}
+
+// Exit is a lifecycle function that gets called after the form is processed, just before control is returned to the client.
+// err will be set if an error response was detected.
+func (f *FormBase) Exit(ctx context.Context, err error) {
+	return
+}

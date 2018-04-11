@@ -61,7 +61,7 @@ type ControlI interface {
 	Remove()
 	RemoveChild(id string)
 	RemoveChildren()
-	Page() PageI
+	Page() *Page
 	Form() FormI
 
 	SetAttribute(name string, val interface{})
@@ -125,7 +125,7 @@ type Control struct {
 	goradd.Base
 
 	id string
-	page PageI							// Page This control is part of
+	page *Page							// Page This control is part of
 
 	parent   ControlI					// Parent control
 	children []ControlI					// Child controls
@@ -142,8 +142,10 @@ type Control struct {
 	attributeScripts []*[]interface{} // commands to send to our javascript to redraw portions of This control via ajax. Allows us to skip drawing the entire control.
 
 	isRequired bool
-	isVisible  bool
-	isOnPage   bool
+	// ErrorForRequired is the error that will display if a control value is required but not set.
+	ErrorForRequired string
+	isVisible        bool
+	isOnPage         bool
 	shouldAutoRender bool
 
 	// internal status functions. Do not serialize.
@@ -380,7 +382,7 @@ func (c *Control) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err erro
 }
 
 // Returns the inner text of the control, if the control is not a self terminating (void) control. Sub-controls can
-// override This.
+// override this.
 func (c *Control) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if err = c.This().DrawTemplate(ctx, buf); err == nil {
 		return
@@ -424,13 +426,11 @@ func (c *Control) HasWrapper() bool {
 }
 
 func (c *Control) SetAttribute(name string, val interface{}) {
-	var v string
-
 	if name == "id" {
 		panic ("You can only set the 'id' attribute of a control when it is created")
 	}
 
-	changed, err := c.attributes.SetChanged(name, v)
+	changed, err := c.attributes.SetChanged(name, html.AttributeString(val))
 	if err != nil {
 		panic (err)
 	}
@@ -443,19 +443,11 @@ func (c *Control) SetAttribute(name string, val interface{}) {
 }
 
 func (c *Control) SetWrapperAttribute(name string, val interface{}) {
-	var v string
-	var ok bool
-
 	if name == "id" {
 		panic ("You cannot set the 'id' attribute of a wrapper")
 	}
 
-	if v,ok = val.(string); !ok {
-		v = fmt.Sprintf("%v", v)
-	}
-
-
-	changed, err := c.wrapperAttributes.SetChanged(name, v)
+	changed, err := c.wrapperAttributes.SetChanged(name, html.AttributeString(val))
 	if err != nil {
 		panic (err)
 	}
@@ -489,9 +481,6 @@ func (c *Control) DrawingAttributes() *html.Attributes {
 		if c.label != "" {
 			a.Set("aria-labeledby", c.Id() + "_lbl")
 		}
-	}
-	if c.Required() {
-		a.Set("required", "")
 	}
 
 	return a
@@ -599,7 +588,7 @@ func (c *Control) Form() FormI {
 	return c.page.Form()
 }
 
-func (c *Control) Page() PageI {
+func (c *Control) Page() *Page {
 	return c.page
 }
 

@@ -53,7 +53,7 @@ func NewLabelWrapper() LabelWrapper {
 }
 
 func (w LabelWrapper) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
-	NameTmpl(ctx, ctrl, html, buf)
+	LabelTmpl(ctx, ctrl, html, buf)
 }
 
 func (w LabelWrapper) TypeName() string {

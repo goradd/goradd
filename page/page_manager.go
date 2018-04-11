@@ -5,24 +5,21 @@ import (
 	"goradd/config"
 	"strings"
 	"fmt"
-	"html/template"
 	"bytes"
-	"reflect"
 )
 
 var pageManager *PageManager
-var errorTemplate *template.Template
 
-type PageCreationFunc func() PageI
+type FormCreationFunction func(context.Context) FormI
 
 
 type PageManagerI interface {
-	RegisterPage(path string, creationFunction PageCreationFunc)
+	RegisterPage(path string, creationFunction FormCreationFunction)
 }
 
 type PageManager struct {
-	pathRegistry map[string] PageCreationFunc // maps paths to functions that create pages
-	typeRegistry map[string] PageCreationFunc // maps object types to functions that create pages
+	pathRegistry map[string]FormCreationFunction // maps paths to functions that create forms
+	formIdRegistry map[string]FormCreationFunction // maps form ids to functions that create forms
 }
 
 
@@ -31,10 +28,10 @@ func GetPageManager() *PageManager {
 }
 
 func NewPageManager() *PageManager {
-	return &PageManager{pathRegistry:make(map[string] PageCreationFunc), typeRegistry:make(map[string] PageCreationFunc)}
+	return &PageManager{pathRegistry:make(map[string]FormCreationFunction), formIdRegistry:make(map[string]FormCreationFunction)}
 }
 
-func RegisterPage(path string, creationFunction PageCreationFunc) {
+func RegisterPage(path string, creationFunction FormCreationFunction, formId string) {
 	if pageManager == nil {
 		pageManager = NewPageManager()	// Create a new singleton page manager
 	}
@@ -42,12 +39,10 @@ func RegisterPage(path string, creationFunction PageCreationFunc) {
 		panic ("Page is already registered: " + path)
 	}
 	pageManager.pathRegistry[path] = creationFunction
-
-	p := creationFunction()
-	pageManager.typeRegistry[reflect.TypeOf(p).String()] = creationFunction
+	pageManager.formIdRegistry[formId] = creationFunction
 }
 
-func (m *PageManager) getNewPageFunc (ctx context.Context) (f PageCreationFunc, path string, ok bool) {
+func (m *PageManager) getNewPageFunc (ctx context.Context) (f FormCreationFunction, path string, ok bool) {
 	path = GetContext(ctx).URL.Path
 	prefix := config.PAGE_PATH_PREFIX
 	if prefix != "" {
@@ -66,7 +61,7 @@ func (m *PageManager) IsPage (ctx context.Context) bool {
 	return ok
 }
 
-func (m *PageManager) getPage(ctx context.Context) (page PageI, isNew bool) {
+func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 	var pageStateId string
 
 	gCtx := GetContext(ctx)
@@ -79,19 +74,16 @@ func (m *PageManager) getPage(ctx context.Context) (page PageI, isNew bool) {
 
 	if page == nil {
 		// page was not found, so make a new one
-		f,path, _ := m.getNewPageFunc(ctx)
+		f,_, _ := m.getNewPageFunc(ctx)
 		if f == nil {
 			panic("Could not find the page creation function")
 		}
-		page = f()	// call the page create function
-		page.GetPageBase().Self = page
-		page.Init(ctx, path)
+		page = f(ctx).Page()	// call the page create function and get the page
 		pageStateId = pageCache.NewPageId()
 		page.GetPageBase().stateId = pageStateId
 		//pageCache.Set(pageStateId, page)
 		isNew = true
 	} else {
-		page.GetPageBase().Self = page
 		page.Restore()
 	}
 	return
@@ -129,7 +121,7 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) map[string
 	return page.responseHeader
 }
 
-func (m *PageManager) cleanup (p PageI) {
+func (m *PageManager) cleanup (p *Page) {
 
 
 }

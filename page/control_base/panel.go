@@ -1,4 +1,4 @@
-package control
+package control_base
 
 import (
 	localPage "goradd/page"
@@ -15,9 +15,9 @@ type TemplateDrawer interface {
 	DrawTemplate(ctx context.Context, c page.ControlI, buf *bytes.Buffer) (err error)
 }
 
-// PanelBase is the base type for all panel-type controls. These controls are surrounded by a span or div, and can
+// Panel is the base type for all panel-type controls. These controls are surrounded by a span or div, and can
 // have a template draw into the inner-html of the template.
-type PanelBase struct {
+type Panel struct {
 	localPage.Control
 	goTemplate string					// a locally defined go template, to be parsed
 	parsedTemplate *template.Template	// a parsed template to use for drawing
@@ -26,22 +26,22 @@ type PanelBase struct {
 }
 
 
-func (c *PanelBase) SetGoTemplate(t string) {
+func (c *Panel) SetGoTemplate(t string) {
 	c.goTemplate = t
 	c.parsedTemplate = nil
 	c.Refresh()
 }
 
-func (c *PanelBase) SetNamedGoTemplate(name string) {
+func (c *Panel) SetNamedGoTemplate(name string) {
 	c.goTemplateName = name
 	c.Refresh()
 }
 
-func (c *PanelBase) SetTemplateDrawer(t TemplateDrawer) {
+func (c *Panel) SetTemplateDrawer(t TemplateDrawer) {
 	c.gotTemplate = t
 }
 
-func (c *PanelBase) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (c *Panel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if c.gotTemplate != nil {
 		c.gotTemplate.DrawTemplate(ctx, c.Self.(page.ControlI), buf)
 		return

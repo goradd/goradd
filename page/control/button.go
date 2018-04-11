@@ -24,7 +24,7 @@ func NewButton(parent page.ControlI) *Button {
 	return b
 }
 
-func (b *Button) Init(self TextboxI, parent page.ControlI) {
+func (b *Button) Init(self page.ControlI, parent page.ControlI) {
 	b.Control.Init(self, parent)
 	b.Tag = "button"
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.

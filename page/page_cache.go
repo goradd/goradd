@@ -8,8 +8,8 @@ import (
 )
 
 type PageCacheI interface {
-	Set(pageId string, page PageI)
-	Get(pageId string) PageI
+	Set(pageId string, page *Page)
+	Get(pageId string) *Page
 	NewPageId() string
 }
 
@@ -38,18 +38,18 @@ func NewFastPageCache() *FastPageCache {
 
 // Puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
-func (o *FastPageCache) Set(pageId string, page PageI)  {
+func (o *FastPageCache) Set(pageId string, page *Page)  {
 	o.LruCache.Set(pageId, page)
 }
 
 
 // Get returns the page based on its page id.
 // If not found, will return null.
-func (o *FastPageCache) Get(pageId string) (PageI) {
-	var p PageI
+func (o *FastPageCache) Get(pageId string) (*Page) {
+	var p *Page
 
 	if i:= o.LruCache.Get(pageId); i != nil {
-		p = i.(PageI)
+		p = i.(*Page)
 	}
 
 	if p != nil && p.GetPageBase().stateId != pageId {
@@ -84,12 +84,12 @@ func NewSerializedPageCache() *SerializedPageCache {
 
 // Puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
-func (o *SerializedPageCache) Set(pageId string, page PageI)  {
+func (o *SerializedPageCache) Set(pageId string, page *Page)  {
 	b := GetBuffer()
 	defer PutBuffer(b)
 	enc := pageEncoder.NewEncoder(b)
 	enc.Encode(config.PageCacheVersion)
-	enc.Encode(page.Type())
+	enc.Encode(page.Form().Id())
 	err := page.Encode(enc)
 	if err != nil {
 		o.LruCache.Set(pageId, b.Bytes())
@@ -99,7 +99,7 @@ func (o *SerializedPageCache) Set(pageId string, page PageI)  {
 
 // Get returns the page based on its page id.
 // If not found, will return null.
-func (o *SerializedPageCache) Get(pageId string) (PageI) {
+func (o *SerializedPageCache) Get(pageId string) (*Page) {
 	b := o.LruCache.Get(pageId).([]byte)
 	dec := pageEncoder.NewDecoder(bytes.NewBuffer(b))
 	var ver int32
@@ -110,15 +110,15 @@ func (o *SerializedPageCache) Get(pageId string) (PageI) {
 		return nil
 	}
 
-	var pageType string
-	var p PageI
-	if err := dec.Decode(&pageType); err != nil {
+	var formId string
+	var p *Page
+	if err := dec.Decode(&formId); err != nil {
 		panic(err)
 	}
-	if newPageFunc, ok := pageManager.typeRegistry[pageType]; !ok {
-		panic("Page type not found")
+	if newPageFunc, ok := pageManager.formIdRegistry[formId]; !ok {
+		panic("Page id not found")
 	} else {
-		p = newPageFunc()
+		p = newPageFunc(nil).Page()
 	}
 
 	if err := p.Decode(dec); err != nil {

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"os"
+	"github.com/stretchr/testify/assert"
 )
 
 
@@ -242,4 +243,30 @@ func ExampleOrderedStringMap_Equals() {
 		fmt.Print("Not Equal")
 	}
 	//Output: Equal
+}
+
+func TestOrderedStringMap_SetAt(t *testing.T) {
+	m := NewOrderedStringMap()
+
+	m.Set("a", "A")
+	m.Set("b", "B")
+
+	// Test middle inserts
+	m.SetAt(1, "c", "C")
+	assert.Equal(t, "C", m.GetAt(1))
+	m.SetAt(-2, "d", "D")
+	assert.EqualValues(t, "D", m.GetAt(2))
+	assert.EqualValues(t, "B", m.GetAt(3))
+
+	// Test end inserts
+	m.SetAt(-1, "e", "E")
+	m.SetAt(1000, "f", "F")
+	assert.EqualValues(t, "E", m.GetAt(4))
+	assert.EqualValues(t, "F", m.GetAt(5))
+
+	// Test beginning inserts
+	m.SetAt(0, "g", "G")
+	m.SetAt(-1000, "h", "H")
+	assert.EqualValues(t, "H", m.GetAt(0))
+	assert.EqualValues(t, "G", m.GetAt(1))
 }

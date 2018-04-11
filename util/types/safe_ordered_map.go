@@ -50,6 +50,36 @@ func (o *SafeOrderedMap) Set(key string, val interface{}) MapI {
 	return o
 }
 
+func (o *SafeOrderedMap) SetAt(index int, key string, val interface{}) MapI {
+	if index == -1 || index >= len(o.items) {
+		return o.Set(key, val)
+	}
+
+	o.Lock()
+	defer o.Unlock()
+
+	if o.items == nil {
+		o.items = make(map[string]interface{})
+	}
+
+	var ok bool
+
+	if _,ok = o.items[key]; !ok  {
+		if index < -len(o.items) {
+			index = 0
+		}
+		if index < 0 {
+			index = len(o.items) + index + 1
+		}
+
+		o.order = append(o.order, "")
+		copy(o.order[index+1:], o.order[index:])
+		o.order[index] = key
+	}
+	o.items[key] = val
+	return o
+}
+
 
 func (o *SafeOrderedMap) Remove(key string) {
 	if o.items == nil {

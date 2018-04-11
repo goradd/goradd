@@ -156,3 +156,44 @@ func TestOrderedMap_Nil(t *testing.T) {
 	assert.Nil(t, e)
 	assert.True(t, e==nil)
 }
+
+func ExampleOrderMap_SetAt() {
+	m := NewOrderedMap()
+
+	m.Set("a", 1)
+	m.Set("b", 2)
+
+	m.SetAt(1, "c", 3)
+
+	for _,i := range m.Values() {
+		fmt.Printf("%d", i.(int))
+	}
+
+	// Output: 132
+}
+
+func TestOrderedMap_SetAt(t *testing.T) {
+	m := NewOrderedMap()
+
+	m.Set("a", 1)
+	m.Set("b", 2)
+
+	// Test middle inserts
+	m.SetAt(1, "c", 3)
+	assert.EqualValues(t, 3, m.GetAt(1))
+	m.SetAt(-2, "d", 4)
+	assert.EqualValues(t, 4, m.GetAt(2))
+	assert.EqualValues(t, 2, m.GetAt(3))
+
+	// Test end inserts
+	m.SetAt(-1, "e", 5)
+	m.SetAt(1000, "f", 6)
+	assert.EqualValues(t, 5, m.GetAt(4))
+	assert.EqualValues(t, 6, m.GetAt(5))
+
+	// Test beginning inserts
+	m.SetAt(0, "g", 7)
+	m.SetAt(-1000, "h", 8)
+	assert.EqualValues(t, 8, m.GetAt(0))
+	assert.EqualValues(t, 7, m.GetAt(1))
+}

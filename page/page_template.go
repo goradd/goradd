@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func PageTmpl(ctx context.Context, page PageI, buf *bytes.Buffer) (err error) {
+func PageTmpl(ctx context.Context, page *Page, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`<!DOCTYPE html>
 <html>

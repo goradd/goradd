@@ -56,6 +56,32 @@ func (o *OrderedStringMap) Set(key string, val string) *OrderedStringMap {
 	return o
 }
 
+// SetAt sets the given key to the given value, but also inserts it at the index specified.  If the index is bigger than
+// the length, or -1, it is the same as Set, in that it puts it at the end. Negative indexes are backwards from the
+// end, if smaller than the negative length, just inserts at the beginning.
+func (o *OrderedStringMap) SetAt(index int, key string, val string) *OrderedStringMap {
+	if index == -1 || index >= len(o.items) {
+		return o.Set(key, val)
+	}
+
+	var ok bool
+
+	if _,ok = o.items[key]; !ok  {
+		if index < -len(o.items) {
+			index = 0
+		}
+		if index < 0 {
+			index = len(o.items) + index + 1
+		}
+
+		o.order = append(o.order, "")
+		copy(o.order[index+1:], o.order[index:])
+		o.order[index] = key
+	}
+	o.items[key] = val
+	return o
+}
+
 func (o *OrderedStringMap) Remove(key string) {
 	o.Lock()
 	defer o.Unlock()
@@ -261,4 +287,12 @@ func (o *OrderedStringMap) Equals(i StringMapI) bool {
 		return true
 	})
 	return ret
+}
+
+func (o *OrderedStringMap) Clear() {
+	o.Lock()
+	defer o.Unlock()
+
+	o.items = make(map[string]string)
+	o.order = nil
 }

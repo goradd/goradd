@@ -11,6 +11,9 @@ form {
   padding: 0;
   position: relative;
 }
+textarea {
+  resize: none;
+}
 /**
  * Styles of individual Control types
  */

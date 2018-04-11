@@ -14,7 +14,10 @@ import (
 	"errors"
 	gohtml "html"
 	"github.com/spekary/goradd/util/types"
+	"strconv"
 )
+
+const attributeFalse = "**GORADD-FALSE**"
 
 // An html attribute manager. Use SetAttribute to set specific attribute values, and then convert it to a string
 // to get the attributes in a version embeddable in an html tag.
@@ -40,6 +43,11 @@ func NewAttributesFrom(i types.StringMapI) *Attributes {
 func (m *Attributes) SetChanged(name string, v string) (changed bool, err error) {
 	if strings.Contains(name, " ") {
 		err = errors.New("Attribute names cannot contain spaces.")
+		return
+	}
+
+	if v == attributeFalse {
+		changed = m.RemoveAttribute(name)
 		return
 	}
 
@@ -395,4 +403,25 @@ func (m *Attributes) SetDisplay(d string) {
 
 func (m *Attributes) IsDisplayed() bool {
 	return m.GetStyle("display") != "none"
+}
+
+// AttributeString is a helper function to convert an interface type to a string that is appropriate for the value
+// in the Set function.
+func AttributeString(i interface{}) string {
+	switch v := i.(type) {
+	case fmt.Stringer:
+		return v.String()
+	case bool:
+		if v {
+			return ""	// boolean true
+		} else {
+			return attributeFalse // Our special value to indicate to NOT print the attribute at all
+		}
+	case string:
+		return v
+	case int:
+		return strconv.Itoa(v)
+	default:
+		return fmt.Sprintf("%v", i)
+	}
 }

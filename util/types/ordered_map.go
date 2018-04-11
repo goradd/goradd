@@ -29,7 +29,7 @@ func (o *OrderedMap) Clear() {
 
 // Set sets the value, but also appends the value to the end of the list for when you
 // iterate over the list. If the value already exists, the value is replaced, the order does not change. If you want
-// the order to change in this situations, you must Remove then Set.
+// the order to change in this situation, you must Remove then Set.
 func (o *OrderedMap) Set(key string, val interface{}) MapI {
 	if o.items == nil {
 		o.items = make(map[string]interface{})
@@ -43,6 +43,37 @@ func (o *OrderedMap) Set(key string, val interface{}) MapI {
 	o.items[key] = val
 	return o
 }
+
+// SetAt sets the given key to the given value, but also inserts it at the index specified.  If the index is bigger than
+// the length, or -1, it is the same as Set, in that it puts it at the end. Negative indexes are backwards from the
+// end, if smaller than the negative length, just inserts at the beginning.
+func (o *OrderedMap) SetAt(index int, key string, val interface{}) MapI {
+	if index == -1 || index >= len(o.items) {
+		return o.Set(key, val)
+	}
+
+	if o.items == nil {
+		o.items = make(map[string]interface{})
+	}
+
+	var ok bool
+
+	if _,ok = o.items[key]; !ok  {
+		if index < -len(o.items) {
+			index = 0
+		}
+		if index < 0 {
+			index = len(o.items) + index + 1
+		}
+
+		o.order = append(o.order, "")
+		copy(o.order[index+1:], o.order[index:])
+		o.order[index] = key
+	}
+	o.items[key] = val
+	return o
+}
+
 
 // Remove an item from the list by key. If the item does not exist, nothing happens.
 func (o *OrderedMap) Remove(key string) {

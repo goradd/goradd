@@ -1,37 +1,36 @@
-package textbox
+package control
 
 import (
-	"goradd/page/control"
 	"strconv"
 	"fmt"
 	"github.com/spekary/goradd/page"
-	grcontrol "github.com/spekary/goradd/page/control"
 )
 
-type Float struct {
-	control.Textbox
+// FloatTextbox is a text control that ensures a valid floating point number is entered in the field.
+type FloatTextbox struct {
+	Textbox
 }
 
-func NewFloatTextbox(parent page.ControlI) *Float {
-	t := &Float{}
+func NewFloatTextbox(parent page.ControlI) *FloatTextbox {
+	t := &FloatTextbox{}
 	t.Init(t, parent)
 	return t
 }
 
-func (i *Float) Init(self grcontrol.TextboxI, parent page.ControlI) {
+func (i *FloatTextbox) Init(self page.ControlI, parent page.ControlI) {
 	i.Textbox.Init(self, parent)
 	i.ValidateWith(FloatValidator{})
 }
 
-func (i *Float) SetMinValue(minValue float64, invalidMessage string) {
+func (i *FloatTextbox) SetMinValue(minValue float64, invalidMessage string) {
 	i.ValidateWith(MinFloatValidator{minValue, invalidMessage})
 }
 
-func (i *Float) SetMaxValue(maxValue float64, invalidMessage string) {
+func (i *FloatTextbox) SetMaxValue(maxValue float64, invalidMessage string) {
 	i.ValidateWith(MaxFloatValidator{maxValue, invalidMessage})
 }
 
-func (i *Float) Value() interface{} {
+func (i *FloatTextbox) Value() interface{} {
 	t := i.Textbox.Text()
 	v,_ := strconv.ParseFloat(t,64)
 	return v
