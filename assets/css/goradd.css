@@ -6,13 +6,44 @@
 button {
   cursor: pointer;
 }
-form {
+form[data-grctl] {
   margin: 0;
   padding: 0;
   position: relative;
 }
-textarea {
+textarea[data-grctl] {
   resize: none;
+}
+/**
+ * Default styles for checkbox-type lists
+ */
+.gr-cbl {
+  outline: 1px solid black;
+  margin: 5px;
+  display: inline-block;
+}
+.gr-cbl-scroller {
+  overflow-x: scroll;
+  height: 200px;
+  padding-right: 10px;
+}
+.gr-cbl-table {
+  display: table;
+}
+.gr-cbl-column {
+  display: table-column;
+}
+.gr-cbl-row {
+  display: table-row;
+}
+.gr-cbl-item {
+  display: table-cell;
+  padding-left: 3px;
+  padding-right: 8px;
+}
+.gr-cbl-heading {
+  font-weight: bold;
+  color: gray;
 }
 /**
  * Styles of individual Control types

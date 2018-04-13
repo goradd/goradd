@@ -17,6 +17,7 @@ func NewCheckbox(parent page.ControlI) *Checkbox {
 
 func (c *Checkbox) DrawingAttributes() *html.Attributes {
 	a := c.DrawingAttributes()
+	a.SetDataAttribute("grctl", "checkbox")
 	a.Set("name", c.Id())	// needed for posts
 	a.Set("type", "checkbox")
 	return a

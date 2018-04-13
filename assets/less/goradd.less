@@ -8,16 +8,49 @@ button {
   cursor: pointer;
 }
 
-// The basic layout of all forms, which is the main control container
-form {
+// The basic layout of all goradd forms, which is the main control container
+form[data-grctl] {
   margin: 0;    // A reset to make sure form is the same as the page
   padding: 0;   // A reset to make sure form is the same as the page
   position: relative; // Allows sub items to be positioned more easily.
 }
 
-textarea {
+textarea[data-grctl] {
     resize: none;   // Webkit browsers put a resize in a textarea. Since this is not universally supported, we reset this.
 }
+
+/**
+ * Default styles for checkbox-type lists
+ */
+.gr-cbl { // the frame of the list
+  outline: 1px solid black;
+  margin: 5px;
+  display: inline-block;
+}
+.gr-cbl-scroller {
+  overflow-x: scroll;
+  height: 200px; // default height that you should set pro
+  padding-right: 10px; // make room for popup scrollbars
+}
+.gr-cbl-table {
+  display:table;
+}
+.gr-cbl-column {
+  display:table-column;
+}
+.gr-cbl-row {
+  display: table-row;
+}
+.gr-cbl-item{
+  display:table-cell;
+  padding-left: 3px;
+  padding-right: 8px;
+}
+.gr-cbl-heading {
+  font-weight: bold;
+  color:gray;
+}
+
 
 /**
  * Styles of individual Control types

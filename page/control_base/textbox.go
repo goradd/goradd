@@ -81,6 +81,7 @@ func (t *Textbox) ResetValidators () {
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (t *Textbox) DrawingAttributes() *html.Attributes {
 	a := t.Control.DrawingAttributes()
+	a.SetDataAttribute("grctl", "textbox")
 	a.Set("name", t.Id())	// needed for posts
 	if t.Required() {
 		a.Set("required", "")

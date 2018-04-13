@@ -276,7 +276,6 @@ func OrderMapByKeys(o *OrderedMap) sort.Interface {
 }
 
 // A helper function to allow OrderedMaps to be sorted by keys
-// See the IterKeys example
 func (r orderedbykeys) Less(i, j int) bool {
 	var o *OrderedMap = r.Interface.(*OrderedMap)
 	return o.order[i] < o.order[j]

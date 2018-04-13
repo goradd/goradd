@@ -170,7 +170,7 @@ func (f *FormBase) DrawingAttributes() *html.Attributes {
 	a := f.Control.DrawingAttributes()
 	a.Set("method", "post")
 	a.Set("action", f.Page().GetPageBase().path)
-	a.Set("data-goradd", "form")
+	a.SetDataAttribute("grctl", "form")
 	return a
 }
 

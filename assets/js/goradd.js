@@ -155,7 +155,7 @@ goradd = {
         var formId = $objForm.attr("id");
 
         var checkableControls = $objForm.find('input[type="checkbox"], input[type="radio"]');
-        params.checkableControls = gr._checkableControlValues(formId, $j.makeArray(checkableControls));
+        params.checkableValues = gr._checkableControlValues(formId, $j.makeArray(checkableControls));
 
         params.callType = "Server";
 
@@ -182,7 +182,7 @@ goradd = {
      *   items getting a true or false.
      *
      * To solve all of these issues, we post a value that has all the values of all visible checked items, either
-     * true or false for individual items, or an array of values, single value, or null for groups. QCubed controls that
+     * true or false for individual items, or an array of values, single value, or null for groups. Goradd controls that
      * deal with checkable controls must look for this special posted variable to know how to update their internal state.
      *
      * Checkboxes that are part of a group will return an array of values, keyed by the group id.
@@ -1003,7 +1003,7 @@ goradd.getWrapper = function(mixControl) {
 };
 
 goradd.getForm = function() {
-    return $j('form[data-goradd="form"]')[0]
+    return $j('form[data-grctl="form"]')[0]
 };
 
 /**
@@ -1042,7 +1042,7 @@ goradd.registerControl = function(objControl) {
 
     var $control = $j(objControl);
 
-    if ($control.data('gr') === 'reg') {
+    if ($control.data('gr-reg') === 'reg') {
         return // this control is already registered
     }
 
@@ -1060,11 +1060,11 @@ goradd.registerControl = function(objControl) {
     if (objWrapper) {
         objWrapper.control = objControl;
     }
-    $control.data('gr', 'reg') // mark the control as registered so we don't attach events twice
+    $control.data('gr-reg', 'reg') // mark the control as registered so we don't attach events twice
 };
 
 goradd.registerControls = function() {
-    $j('[data-goradd="ctl"]').each(function() {
+    $j('[data-grctl]').not('[data-grctl="form"]').each(function() {
         goradd.registerControl(this);
     });
 };

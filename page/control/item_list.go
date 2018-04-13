@@ -3,6 +3,7 @@ package control
 import (
 	"strings"
 	"strconv"
+	"sort"
 )
 
 // Ider is an object that can embed an ItemList
@@ -14,7 +15,6 @@ type Ider interface {
 type ItemListI interface {
 	AddItem(value interface{}, label string) ListItemI
 	AddItemAt(index int, value interface{}, label string)
-	AddListItem(item ListItemI)
 	AddListItemAt(index int, item ListItemI)
 	AddListItems(items... ListItemI)
 	AddItemListers(items... ItemLister)
@@ -45,7 +45,7 @@ func NewItemList(owner Ider) ItemList {
 // AddItem adds the given item to the end of the list.
 func (l *ItemList) AddItem(value interface{}, label string) ListItemI {
 	i := NewListItem(value, label)
-	l.AddListItem(i)
+	l.AddListItems(i)
 	return i
 }
 
@@ -58,14 +58,6 @@ func (l *ItemList) AddItemAt(index int, value interface{}, label string) {
 }
 
 
-// AddItem adds the given item to the end of the list.
-func (l *ItemList) AddListItem(item ListItemI) {
-	id := l.owner.Id() + "_" + strconv.Itoa(len(l.items))
-	item.SetId(id)
-	l.items = append(l.items, item)
-	item.reindex(0)
-}
-
 // AddItemAt adds the item at the given index. If the index is negative, it counts from the end. If the index is
 // -1 or bigger than the number of items, it adds it to the end. If the index is zero, or is negative and smaller than
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
@@ -77,13 +69,15 @@ func (l *ItemList) AddListItemAt(index int, item ListItemI) {
 	l.reindex(index)
 }
 
-// AddItems adds a slice of ListItemI objects to the end of the list.
+// AddItems adds one or more ListItemI objects to the end of the list.
 func (l *ItemList) AddListItems(items... ListItemI) {
+	start := len(l.items)
 	for _,item := range items {
 		id := l.owner.Id() + "_" + strconv.Itoa(len(l.items))
 		item.SetId(id)
 	}
 	l.items = append(l.items, items...)
+	l.reindex(start)
 }
 
 // AddItems adds to the list a slice of objects that contain a Value and Label method.
@@ -102,9 +96,9 @@ func (l *ItemList) reindex(start int) {
 	if l.owner.Id() == "" || len(l.items) == 0 || start >= len (l.items) {
 		return
 	}
-	for i,item := range l.items[start:] {
+	for i := start; i < len(l.items); i++ {
 		id := l.owner.Id() + "_" + strconv.Itoa(i)
-		item.SetId(id)
+		l.items[i].SetId(id)
 	}
 }
 
@@ -186,3 +180,39 @@ func (l *ItemList) FindByValue(value interface{}) (id string, foundItem ListItem
 
 	return "", nil
 }
+
+// SortIds sorts a list of auto-generated ids in numerical and hierarchical order
+func SortIds (ids []string) {
+	if len(ids) > 1 {
+		sort.Sort(IdSlice(ids))
+ 	}
+}
+
+type IdSlice []string
+
+func (p IdSlice) Len() int           { return len(p) }
+func (p IdSlice) Less(i, j int) bool {
+	// First ones are always the main control id, and should be equal
+	vals1 := strings.SplitN(p[i], "_", 2)
+	vals2 := strings.SplitN(p[j], "_", 2)
+	if vals1[0] != vals2[0] {
+		panic("The first part of an id should be equal when sorting.")
+	}
+
+	for {
+		vals1 = strings.SplitN(vals1[1], "_", 2)
+		vals2 = strings.SplitN(vals2[1], "_", 2)
+		i1,_ := strconv.Atoi(vals1[0])
+		i2,_ := strconv.Atoi(vals2[0])
+		if i1 < i2 {
+			return true
+		} else if i1 > i2 {
+			return false
+		} else if len(vals1) < len(vals2) {
+			return true
+		} else if len(vals1) > len(vals2) || len(vals2) <= 1 {
+			return false
+		}
+	}
+}
+func (p IdSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }

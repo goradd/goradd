@@ -21,15 +21,15 @@ type MultiselectList struct {
 
 func NewMultiselectList(parent page.ControlI) *MultiselectList {
 	l := &MultiselectList{}
-	l.ItemList = NewItemList(l)
 	l.Init(l, parent)
-	l.selectedIds = map[string]bool{}
 	return l
 }
 
 
 func (l *MultiselectList) Init(self page.ControlI, parent page.ControlI) {
 	l.Control.Init(self, parent)
+	l.ItemList = NewItemList(l)
+	l.selectedIds = map[string]bool{}
 	l.Tag = "select"
 }
 
@@ -68,10 +68,12 @@ func (l *MultiselectList) Validate() bool {
 // UpdateFormValues is an internal function that lets us reflect the value of the selection on the web page
 func (l *MultiselectList) UpdateFormValues(ctx *page.Context) {
 	id := l.Id()
+	if ctx.RequestMode() == page.Ajax {
+		id += "[]" // an odd remnant of jquery processing
+	}
 
-	l.selectedIds = map[string]bool{}
-	if v,ok := ctx.FormValue(id); ok {
-		a := strings.Split(v, ",")
+	if a,ok := ctx.FormValues(id); ok {
+		l.selectedIds = map[string]bool{}
 		for _,v := range a {
 			l.selectedIds[v] = true
 		}
@@ -138,10 +140,20 @@ func (l *MultiselectList) SetValue(v interface{})  {
 	}
 }
 
+// SelectedIds returns a list of ids sorted by id number that correspond to the selection
+func (l *MultiselectList) SelectedIds() []string {
+	ids := make([]string, 0, len(l.selectedIds))
+	for id := range l.selectedIds {
+		ids = append(ids,id)
+	}
+	SortIds(ids)
+	return ids
+}
+
 func (l *MultiselectList) SelectedLabels() []string {
 	labels := []string{}
 
-	for id := range l.selectedIds {
+	for _,id := range l.SelectedIds() {
 		item := l.FindById(id)
 		if item != nil {
 			labels = append(labels, item.Label())
@@ -149,6 +161,19 @@ func (l *MultiselectList) SelectedLabels() []string {
 	}
 	return labels
 }
+
+func (l *MultiselectList) SelectedValues() []interface{} {
+	values := []interface{}{}
+
+	for _,id := range l.SelectedIds() {
+		item := l.FindById(id)
+		if item != nil {
+			values = append(values, item.Value())
+		}
+	}
+	return values
+}
+
 
 // MarshalState is an internal function to save the state of the control
 func (l *MultiselectList) MarshalState(m types.MapI) {
@@ -178,6 +203,7 @@ func (l *MultiselectList) UnmarshalState(m types.MapI) {
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *MultiselectList) DrawingAttributes() *html.Attributes {
 	a := l.Control.DrawingAttributes()
+	a.SetDataAttribute("grctl", "multilist")
 	a.Set("name", l.Id())	// needed for posts
 	a.Set("multiple", "")
 	if l.Required() {

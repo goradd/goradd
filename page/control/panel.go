@@ -3,6 +3,7 @@ package control
 import (
 	"github.com/spekary/goradd/page/control_base"
 	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/html"
 )
 
 
@@ -19,3 +20,8 @@ func NewPanel(parent page.ControlI) *Panel {
 	return p
 }
 
+func (c *Panel) DrawingAttributes() *html.Attributes {
+	a := c.Control.DrawingAttributes()
+	a.SetDataAttribute("grctl", "panel")
+	return a
+}

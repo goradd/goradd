@@ -40,6 +40,8 @@ func (b *Button) On(e page.EventI, actions... page.ActionI) {
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (b *Button) DrawingAttributes() *html.Attributes {
 	a := b.Control.DrawingAttributes()
+	a.SetDataAttribute("grctl", "button")
+
 	a.Set("name", b.Id())	// needed for posts
 	if b.isPrimary {
 		a.Set("type", "submit")

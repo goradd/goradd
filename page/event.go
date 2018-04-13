@@ -154,7 +154,7 @@ func (e *Event) RenderActions(control ControlI, eventId EventId) string {
 		js = fmt.Sprintf("\nif (%s) {\n%s\n};", e.condition, js)
 	}
 
-	js = control.wrapEvent(e.JsEvent, js)
+	js = control.wrapEvent(e.JsEvent, e.selector, js)
 
 	if config.Mode == config.Dev {
 		// Render a comment

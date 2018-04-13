@@ -22,6 +22,7 @@ func NewRadioButton(parent page.ControlI) *RadioButton {
 
 func (c *RadioButton) DrawingAttributes() *html.Attributes {
 	a := c.DrawingAttributes()
+	a.SetDataAttribute("grctl", "radio")
 	a.Set("type", "radio")
 	if c.group == "" {
 		a.Set("name", c.Id())	// treat it like a checkbox if no group is specified

@@ -96,7 +96,7 @@ type ControlI interface {
 	ActionValue() interface{}
 	On(e EventI, a ...ActionI)
 	Off()
-	wrapEvent(eventName string, eventJs string) string
+	wrapEvent(eventName string, selector string, eventJs string) string
 
 	addChildControlsToPage()
 	addChildControl(ControlI)
@@ -257,7 +257,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		if c.wrapper == nil {
 			// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
 			// To fix This, we create an empty, invisible control in the place where we would normally draw
-			html = "<span id=\"" + c.This().Id() + "\" style=\"display:none;\" data-goradd></span>"
+			html = "<span id=\"" + c.This().Id() + "\" style=\"display:none;\" data-grctl></span>"
 		} else {
 			html = "" // when going visible, we will redraw the inner text of the wrapper
 		}
@@ -469,7 +469,7 @@ func (c *Control) Attribute(name string) string {
 func (c *Control) DrawingAttributes() *html.Attributes {
 	a := html.NewAttributesFrom(c.attributes)
 	a.SetId(c.id) // make sure the control id is set at a minimum
-	a.SetDataAttribute("goradd", "ctl")
+	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
 
 	if c.HasWrapper() {
 		if c.validationError != "" {
@@ -787,8 +787,12 @@ func (c *Control) resetValidation() {
 
 
 // An internal function to allow the control to customize its treatment of event processing.
-func (c *Control) wrapEvent(eventName string, eventJs string) string {
-	return fmt.Sprintf("$j('#%s').on('%s', function(event, ui){%s});", c.Id(), eventName, eventJs)
+func (c *Control) wrapEvent(eventName string, selector string, eventJs string) string {
+	if selector != "" {
+		return fmt.Sprintf("$j('#%s').on('%s', '%s', function(event, ui){%s});", c.Id(), eventName, selector, eventJs)
+	} else {
+		return fmt.Sprintf("$j('#%s').on('%s', function(event, ui){%s});", c.Id(), eventName, eventJs)
+	}
 }
 
 
@@ -1050,7 +1054,7 @@ func (c *Control) readState(ctx context.Context) {
 			}
 
 			if typ,_ := state.GetString(sessionControlTypeState); typ != c.Type() {
-				return // doesn't compare types
+				return // types are not equal, ids must have changed
 			}
 
 			c.This().UnmarshalState(state)

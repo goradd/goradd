@@ -60,6 +60,11 @@ func (t *EmailTextbox) Validate() bool {
 
 func (t *EmailTextbox) UpdateFormValues(ctx *page.Context) {
 	t.Textbox.UpdateFormValues(ctx)
+	if t.Text() == "" {
+		t.items = nil
+		t.parseErr = nil
+		return
+	}
 	t.items, t.parseErr = mail.ParseAddressList(t.Text())
 }
 

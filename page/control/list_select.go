@@ -124,6 +124,7 @@ func (l *SelectList) UnmarshalState(m types.MapI) {
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *SelectList) DrawingAttributes() *html.Attributes {
 	a := l.Control.DrawingAttributes()
+	a.SetDataAttribute("grctl", "selectlist")
 	a.Set("name", l.Id())	// needed for posts
 	if l.Required() {
 		a.Set("required", "")
