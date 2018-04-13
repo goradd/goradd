@@ -16,6 +16,11 @@ const (
 	VerticalItemDirection = 1
 )
 
+// Lets us create subclasses that change how items are rendered. This is used by the radio list.
+type checkboxListI interface {
+	renderItem(tag string, item ListItemI) (h string)
+}
+
 // CheckboxList is a multi-select control that presents its choices as a list of checkboxes.
 // Styling is provided by divs and spans that you can provide css for in your style sheets. The
 // goradd.css file has default styling to handle the basics. It wraps the whole thing in a div that can be set
@@ -118,7 +123,6 @@ func (l *CheckboxList) verticalHtml (items []ListItemI) (h string) {
 	}
 }
 
-
 func (l *CheckboxList) verticalHtmlItems(items []ListItemI) (h []string) {
 	for _,item := range items {
 		if item.HasChildItems() {
@@ -129,7 +133,7 @@ func (l *CheckboxList) verticalHtmlItems(items []ListItemI) (h []string) {
 			h = append(h, html.RenderTag(tag, attributes, item.Label()))
 			h = append(h, subItems...)
 		} else {
-			h = append(h, l.renderItem("div", item))
+			h = append(h, l.This().(checkboxListI).renderItem("div", item))
 		}
 	}
 	return
@@ -140,7 +144,7 @@ func (l *CheckboxList) renderItem(tag string, item ListItemI) (h string) {
 	attributes.SetId(item.Id())
 	attributes.Set("name", item.Id())
 	attributes.Set("type", "checkbox")
-	if l.selectedIds[item.Id()] {
+	if l.isIdSelected(item.Id()) {
 		attributes.Set("checked", "")
 	}
 	ctrl := html.RenderVoidTag("input", attributes)
@@ -169,7 +173,7 @@ func (l *CheckboxList) horizontalHtml (items []ListItemI) (h string) {
 			h += html.RenderTag(tag, attributes, item.Label())
 			h += l.horizontalHtml(item.ListItems())
 		} else {
-			rowHtml += l.renderItem("span", item)
+			rowHtml += l.This().(checkboxListI).renderItem("span", item)
 			itemNum ++
 			if itemNum == l.columns {
 				// output a row

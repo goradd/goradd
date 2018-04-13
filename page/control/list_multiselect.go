@@ -231,11 +231,16 @@ func (l *MultiselectList) getItemsHtml(items []ListItemI) string {
 		} else {
 			attributes := item.Attributes().Clone()
 			attributes.Set("value", item.Id())
-			if _,ok := l.selectedIds[item.Id()]; ok {
+			if l.isIdSelected(item.Id()) {
 				attributes.Set("selected", "")
 			}
 			h += html.RenderTag("option",attributes, item.Label()) + "\n"
 		}
 	}
 	return h
+}
+
+func (l *MultiselectList) isIdSelected(id string) bool {
+	_, ok := l.selectedIds[id]
+	return ok
 }

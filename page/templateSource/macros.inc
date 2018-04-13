@@ -4,3 +4,12 @@
 {{define draw}}
 {{e $1.Draw(ctx, buf) }}
 {{end}}
+
+{{define drawWithLabel}}
+{{e $1.With(page.NewLabelWrapper()).Draw(ctx, buf) }}
+{{end}}
+
+{{define drawWithError}}
+{{e $1.With(page.NewErrorWrapper()).Draw(ctx, buf) }}
+{{end}}
+

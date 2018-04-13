@@ -2,6 +2,7 @@ package html
 
 import (
 	"strings"
+	html2 "html"
 )
 
 type LabelDrawingMode int
@@ -83,6 +84,7 @@ func RenderTagNoSpace(tag string, attr *Attributes, innerHtml string) string {
 // a certain way.
 func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mode LabelDrawingMode) string {
 	tag := "label"
+	label = html2.EscapeString(label)
 	switch mode {
 	case LABEL_BEFORE:
 		return RenderTagNoSpace(tag, labelAttributes, label) + ctrlHtml
