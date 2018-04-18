@@ -161,6 +161,10 @@ func (ctx *Context) CheckableValue(key string) (value interface{}, ok bool) {
 	return
 }
 
+func (ctx *Context) CheckableValues() map[string]interface{}  {
+	return ctx.checkableValues
+}
+
 
 // FillApp fills the app structure with app specific information from the request
 // Do not panic here!

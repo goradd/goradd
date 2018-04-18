@@ -3,16 +3,17 @@ package page
 import (
 	"context"
 	"bytes"
+	"github.com/spekary/goradd/html"
 )
 
-func ErrorTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+func ErrorTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {
 
 {{
 <div id="{{= ctrl.Id() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
-    {{= html }}
-    <div id="{{= ctrl.Id() }}_err" class="goradd-err">{{= ctrl.ValidationError() }}</div>
+{{= html.Indent(h) }}
+  <div id="{{= ctrl.Id() }}_err" class="goradd-err">{{= ctrl.ValidationError() }}</div>
 {{if ctrl.Instructions() != "" }}
-    <div class="goradd-instructions">{{= ctrl.Instructions() }}</div>
+  <div class="goradd-instructions">{{= ctrl.Instructions() }}</div>
 {{if}}
 </div>
 }}

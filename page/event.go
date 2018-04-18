@@ -3,6 +3,7 @@ package page
 import (
 	"fmt"
 	"goradd/config"
+	"github.com/spekary/goradd/html"
 )
 
 type EventI interface {
@@ -148,6 +149,9 @@ func (e *Event) RenderActions(control ControlI, eventId EventId) string {
 		js += "goradd.blockEvents = true;\n"
 	}
 
+	if !config.Minify {
+		js = html.Indent(js)
+	}
 	js = fmt.Sprintf("goradd.queueAction({f: $j.proxy(function(){\n%s\n},this), d: %d});\n", js, e.delay)
 
 	if e.condition != "" {
@@ -156,7 +160,7 @@ func (e *Event) RenderActions(control ControlI, eventId EventId) string {
 
 	js = control.wrapEvent(e.JsEvent, e.selector, js)
 
-	if config.Mode == config.Dev {
+	if !config.Minify {
 		// Render a comment
 		js = fmt.Sprintf("/*** Event: %s  Control Type: %T, Control Label: %s, Control Id: %s  ***/\n%s\n", e.JsEvent, control, control.Label(), control.Id(), js)
 	}

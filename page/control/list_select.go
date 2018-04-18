@@ -7,6 +7,7 @@ import (
 	"github.com/spekary/goradd/html"
 	"bytes"
 	"context"
+	html2 "html"
 )
 
 // SelectList is a typical dropdown list with a single selection. Items are selected by id number, and the SelectList
@@ -147,7 +148,7 @@ func (l *SelectList) getItemsHtml(items []ListItemI) string {
 			innerhtml := l.getItemsHtml(item.ListItems())
 			attributes := item.Attributes().Clone()
 			attributes.Set("label", item.Label())
-			h += html.RenderTag(tag, attributes, innerhtml) + "\n"
+			h += html.RenderTag(tag, attributes, innerhtml)
 		} else {
 			attributes := item.Attributes().Clone()
 			attributes.Set("value", item.Id())
@@ -155,7 +156,7 @@ func (l *SelectList) getItemsHtml(items []ListItemI) string {
 				attributes.Set("selected", "")
 			}
 
-			h += html.RenderTag("option",attributes, item.Label()) + "\n"
+			h += html.RenderTag("option",attributes, html2.EscapeString(item.Label()))
 		}
 	}
 	return h

@@ -13,6 +13,7 @@ import (
 	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/log"
 	"reflect"
+	"goradd/config"
 )
 
 const PrivateActionBase = 1000
@@ -36,6 +37,8 @@ type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *byt
 
 type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string, buffer *bytes.Buffer)
 
+var DefaultCheckboxLabelDrawingMode = html.LABEL_AFTER	// Settind used by checkboxes and radio buttons to default how they draw labels.
+
 
 
 type ControlI interface {
@@ -44,7 +47,7 @@ type ControlI interface {
 	DrawI
 
 	// Drawing support
-	DrawTag(context.Context, *bytes.Buffer) string
+	DrawTag(context.Context) string
 	DrawInnerHtml(context.Context, *bytes.Buffer) error
 	DrawTemplate(context.Context, *bytes.Buffer) error
 	PreRender(context.Context, *bytes.Buffer) error
@@ -197,7 +200,7 @@ func (c *Control) This() ControlI {
 // Note that some css/js frameworks go even farther an require ids to be
 // unique in the entire application (JQuery Mobile for one).
 //
-// If you want a custom id, you should  call this function just after you create it, or you may get unexpected results.
+// If you want a custom id, you should  call this function just after you create the control, or you may get unexpected results.
 // Once you assign a custom id, you should not change it.
 func (c *Control) SetId(id string) {
 	if c.isOnPage {
@@ -230,7 +233,7 @@ func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 		return NewError(ctx, "This control has already been drawn.")
 	}
 
-	// Because we may be re-isRendering a parent control, we need to make sure all "child" controls are marked as NOT being on the page.
+	// Because we may be rerendering a parent control, we need to make sure all "child" controls are marked as NOT being on the page.
 	if c.children != nil {
 		for _,child := range c.children {
 			child.markOnPage(false)
@@ -251,25 +254,27 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		return err
 	}
 
-	var html string
+	var h string
 
 	if !c.isVisible {
-		if c.wrapper == nil {
-			// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
-			// To fix This, we create an empty, invisible control in the place where we would normally draw
-			html = "<span id=\"" + c.This().Id() + "\" style=\"display:none;\" data-grctl></span>"
-		} else {
-			html = "" // when going visible, we will redraw the inner text of the wrapper
-		}
+		// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
+		// To fix This, we create an empty, invisible control in the place where we would normally draw
+		h = "<span id=\"" + c.This().Id() + "\" style=\"display:none;\" data-grctl></span>\n"
 	} else {
-		html = c.This().DrawTag(ctx, buf)
+		h = c.This().DrawTag(ctx)
 	}
 
-	if c.wrapper != nil {
-		c.wrapper.Wrap(ctx, c.This(), html, buf)
-	} else {
-		buf.WriteString(html)
+	if !config.Minify {
+		s := html.Comment(fmt.Sprintf("Control Type:%s, Id:%s", c.Type(), c.Id())) + "\n"
+		buf.WriteString(s)
 	}
+
+	if c.wrapper != nil && c.isVisible {
+		c.wrapper.Wrap(ctx, c.This(), h, buf)
+	} else {
+		buf.WriteString(h)
+	}
+
 
 	response := c.Form().Response()
 	c.This().PutCustomScript(ctx, response)
@@ -347,7 +352,7 @@ func (c *Control) PostRender(ctx context.Context, buf *bytes.Buffer) (err error)
 
 // Draw the control tag itself. Override to draw the tag in a different way, or draw more than one tag if
 // drawing a compound control.
-func (c *Control) DrawTag(ctx context.Context, buf *bytes.Buffer) string {
+func (c *Control) DrawTag(ctx context.Context) string {
 	var ctrl string
 
 	attributes := c.This().DrawingAttributes()
@@ -360,7 +365,8 @@ func (c *Control) DrawTag(ctx context.Context, buf *bytes.Buffer) string {
 	if c.IsVoidTag {
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
 	} else {
-		buf := new(bytes.Buffer) // TODO: Get This buffer from the buffer pool, or better simply render the tag manually straight to the buffer.
+		buf := GetBuffer()
+		defer PutBuffer(buf)
 		if err := c.This().DrawInnerHtml(ctx, buf); err != nil {
 			panic (err)
 		}

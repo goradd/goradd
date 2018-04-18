@@ -5,9 +5,11 @@ package page
 import (
 	"bytes"
 	"context"
+
+	"github.com/spekary/goradd/html"
 )
 
-func ErrorTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+func ErrorTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {
 
 	buf.WriteString(`<div id="`)
 
@@ -18,12 +20,12 @@ func ErrorTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffe
 	buf.WriteString(ctrl.WrapperAttributes().String())
 
 	buf.WriteString(` >
-    `)
+`)
 
-	buf.WriteString(html)
+	buf.WriteString(html.Indent(h))
 
 	buf.WriteString(`
-    <div id="`)
+  <div id="`)
 
 	buf.WriteString(ctrl.Id())
 
@@ -34,7 +36,7 @@ func ErrorTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffe
 	buf.WriteString(`</div>
 `)
 	if ctrl.Instructions() != "" {
-		buf.WriteString(`    <div class="goradd-instructions">`)
+		buf.WriteString(`  <div class="goradd-instructions">`)
 
 		buf.WriteString(ctrl.Instructions())
 

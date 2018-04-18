@@ -13,3 +13,27 @@
 {{e $1.With(page.NewErrorWrapper()).Draw(ctx, buf) }}
 {{end}}
 
+{{define renderTemplate}}
+package {{package }}
+
+import (
+    "context"
+    "github.com/spekary/goradd/page"
+    "bytes"
+    {{imports}}
+)
+
+
+func (form *{{form}}) AddHeadTags()  {
+	form.Page().SetTitle("{{title}}")
+	{{headTags}}
+}
+
+
+func (form *{{form}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+{{
+{{template}}
+}}
+	return
+}
+{{end}}

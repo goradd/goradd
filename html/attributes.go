@@ -19,6 +19,11 @@ import (
 
 const attributeFalse = "**GORADD-FALSE**"
 
+// Attributer is a general purpose interface for objects that return attributes based on information given.
+type Attributer interface {
+	Attributes(...interface{}) *Attributes
+}
+
 // An html attribute manager. Use SetAttribute to set specific attribute values, and then convert it to a string
 // to get the attributes in a version embeddable in an html tag.
 type Attributes struct {
@@ -293,6 +298,10 @@ func (m *Attributes) SetDataAttributeChanged(name string, v string) (changed boo
 	return
 }
 
+
+// SetDataAttribute sets the given data attribute. Note that data attribute keys must be in camelCase notation and
+// connot be hyphenated. camelCase will get converted to kebab-case in html, and converted back to camelCase when
+// referring to the data attribute using jQuery.data.
 func (m *Attributes) SetDataAttribute(name string, v string) *Attributes {
 	_, err := m.SetDataAttributeChanged(name, v)
 	if err != nil {

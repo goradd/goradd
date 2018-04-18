@@ -2,7 +2,7 @@ package control
 import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/page/control_base"
+	"github.com/spekary/goradd/page/control/control_base"
 )
 
 type Checkbox struct {
@@ -20,6 +20,7 @@ func (c *Checkbox) DrawingAttributes() *html.Attributes {
 	a.SetDataAttribute("grctl", "checkbox")
 	a.Set("name", c.Id())	// needed for posts
 	a.Set("type", "checkbox")
+	a.Set("value", "1") // required for html validity
 	return a
 }
 
@@ -31,4 +32,5 @@ func (c *Checkbox) UpdateFormValues(ctx *page.Context) {
 		c.SetCheckedNoRefresh(v)
 	}
 }
+
 

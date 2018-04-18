@@ -123,7 +123,7 @@ func RegisterJsFile(urlPath string, filePath string) string {
 func GetAssetFilePath(url string) string {
 	if asset := assetFiles.Get(url); asset == nil {
 		return ""
-	} else if config.Mode == config.Dev {
+	} else if config.Mode == config.Development {
 		return asset.(AssetFile).filePath
 	} else {
 		return asset.(AssetFile).localPath
@@ -143,7 +143,7 @@ func ServeAsset (w http.ResponseWriter, r *http.Request) {
 	}
 	//log.Printf("Served %s", localpath)
 
-	if config.Mode == config.Dev {
+	if config.Mode == config.Development {
 		// TODO: Set up per file cache control
 		w.Header().Set("Cache-Control",  "no-cache, no-store, must-revalidate")
 	} else {

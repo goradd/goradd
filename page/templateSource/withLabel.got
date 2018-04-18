@@ -3,19 +3,20 @@ package page
 import (
 	"context"
 	"bytes"
+	"github.com/spekary/goradd/html"
 )
 
-func LabelTmpl(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {
 
 {{
 <div id="{{= ctrl.Id() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
 {{if ctrl.Label() != "" }}
-    <label id="{{= ctrl.Id() }}_lbl" class="goradd-lbl"{{if ctrl.HasFor() }} for="{{= ctrl.Id() }}" {{if}}>{{= ctrl.Label() }}</label>
+  <label id="{{= ctrl.Id() }}_lbl" class="goradd-lbl"{{if ctrl.HasFor() }} for="{{= ctrl.Id() }}" {{if}}>{{= ctrl.Label() }}</label>
 {{if}}
-    {{= html }}
-    <div id="{{= ctrl.Id() }}_err" class="goradd-err">{{= ctrl.ValidationError() }}</div>
+{{= html.Indent(h) }}
+  <div id="{{= ctrl.Id() }}_err" class="goradd-err">{{= ctrl.ValidationError() }}</div>
 {{if ctrl.Instructions() != "" }}
-    <div id="{{= ctrl.Id() }}_inst" class="goradd-inst" >{{= ctrl.Instructions() }}</div>
+  <div id="{{= ctrl.Id() }}_inst" class="goradd-inst" >{{= ctrl.Instructions() }}</div>
 {{if}}
 </div>
 }}

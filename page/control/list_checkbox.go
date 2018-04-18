@@ -6,7 +6,6 @@ import (
 	"context"
 	"github.com/spekary/goradd/html"
 	"strings"
-	"goradd/config"
 )
 
 type ItemDirection int
@@ -45,7 +44,7 @@ func (l *CheckboxList) Init(self page.ControlI, parent page.ControlI) {
 	l.MultiselectList.Init(self, parent)
 	l.Tag = "div"
 	l.columns = 1
-	l.labelDrawingMode = config.DefaultCheckboxLabelDrawingMode
+	l.labelDrawingMode = page.DefaultCheckboxLabelDrawingMode
 }
 
 func (l *CheckboxList) SetColumns(columns int) *CheckboxList {
@@ -94,7 +93,7 @@ func (l *CheckboxList) DrawingAttributes() *html.Attributes {
 func (l *CheckboxList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml(l.items)
 	if l.isScrolling {
-		h = html.RenderTag("div",html.NewAttributes().SetClass("gr-cbl-table"), h) + "\n"
+		h = html.RenderTag("div",html.NewAttributes().SetClass("gr-cbl-table"), h)
 	}
 	buf.WriteString(h)
 	return nil

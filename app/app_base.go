@@ -31,9 +31,9 @@ func (a *Application) Init(mode string) {
 	case "debug":
 		config.Mode = config.Debug
 	case "rel":
-		config.Mode = config.Rel
+		config.Mode = config.Release
 	case "dev":
-		config.Mode = config.Dev
+		config.Mode = config.Development
 	default:
 		panic ("Unknown application mode")
 	}

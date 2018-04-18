@@ -22,6 +22,7 @@ type FormI interface {
 	CreateControls(ctx context.Context)
 	InitializeControls(ctx context.Context)
 	AddRelatedFiles()
+	AddHeadTags()
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
 	Response() *Response
 	renderAjax(ctx context.Context, buf *bytes.Buffer) error
@@ -320,6 +321,13 @@ func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 // the next ajax or server request
 func (f *FormBase) Response() *Response {
 	return &f.response
+}
+
+// AddHeadTags is a lifecycle call that happens when a new page is created. This is where you should call
+// AddHtmlHeaderTag or SetTitle on the page to set tags that appear in the <head> tag of the page.
+// Head tags cannot be changed after the page is created.
+func (f *FormBase) AddHeadTags() {
+
 }
 
 // Run is a lifecycle function that gets called whenever a page is run, either by a whole page load, or an ajax call.

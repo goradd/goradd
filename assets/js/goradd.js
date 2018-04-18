@@ -65,14 +65,19 @@ goradd = {
      * @private
      */
     _formObjChangeIndex: function (ctl) {
-        var id = $j(ctl).attr('id'),
-            strType = $j(ctl).prop("type"),
-            name = $j(ctl).attr("name"),
+        var $element = $j(ctl),
+            id = $element.attr('id'),
+            strType = $element.prop("type"),
+            ctrlname = $element.attr("name"),
             indexOffset;
 
         if (((strType === 'checkbox') || (strType === 'radio')) &&
            id && ((indexOffset = id.lastIndexOf('_')) >= 0)) { // a member of a control list
-            return id.substr(0, indexOffset); // use the id of the group
+            if ($element.data('grTrackchanges')) {
+                return id;
+            } else {
+                return id.substr(0, indexOffset); // use the id of the group
+            }
         }
         else if (id && strType === 'radio' && name !== id) { // a radio button with a group name
             return id; // these buttons are changed individually
@@ -81,11 +86,11 @@ goradd = {
             if ((indexOffset = id.lastIndexOf('_')) >= 0) {
                 return id.substr(0, indexOffset); // use the id of the parent control
             }
-            return name;
+            return ctrlname;
         }
-        else if (name && !id) {
-            name = name.replace('[]', ''); // remove brackets if they are there for array
-            return name;
+        else if (ctrlname && !id) {
+            ctrlname = ctrlname.replace('[]', ''); // remove brackets if they are there for array
+            return ctrlname;
         }
         return id;
     },
@@ -99,10 +104,11 @@ goradd = {
 
         var ctl = event.target,
             id = gr._formObjChangeIndex(ctl),
-            strType = $j(ctl).prop("type"),
-            name = $j(ctl).attr("name");
+            $element = $j(ctl),
+            strType = $element.prop("type"),
+            name = $element.attr("name");
 
-        if (strType === 'radio' && name !== id) { // a radio button with a group name
+        if (strType === 'radio' && name !== id && !$element.data('grTrackchanges')) { // a radio button with a group name
             // since html does not submit a changed event on the deselected radio, we are going to invalidate all the controls in the group
             var group = $j('input[name=' + name + ']');
             if (group) {
@@ -210,6 +216,7 @@ goradd = {
         $j.each(controls, function() {
             var $element = $j(this),
                 id = $element.attr("id"),
+                groupid,
                 strType = $element.prop("type"),
                 index = null,
                 offset;
@@ -218,23 +225,30 @@ goradd = {
                 (offset = id.lastIndexOf('_')) !== -1) {
                 // A control group
                 index = id.substr(offset + 1);
-                id = id.substr(0, offset);
+                groupid = id.substr(0, offset);
             }
             switch (strType) {
                 case "checkbox":
                     if (index !== null) {   // this is a group of checkboxes
-                        var a = values[id];
-                        if ($element.is(":checked")) {
-                            if (a) {
-                                a.push(index);
-                            } else {
-                                a = [index];
+                        if ($element.data('grTrackchanges')) {
+                            // We are only interested in seeing what has changed since the last time we posted
+                            if (gr.formObjsModified[id]) {
+                                values[id] = $element.is(":checked")
                             }
-                            values[id] = a;
-                        }
-                        else {
-                            if (!a) {
-                                values[id] = null; // empty array to notify that the group has a null value, if nothing gets checked
+                        } else {
+                            var a = values[groupid];
+                            if ($element.is(":checked")) {
+                                if (a) {
+                                    a.push(index);
+                                } else {
+                                    a = [index];
+                                }
+                                values[groupid] = a;
+                            }
+                            else {
+                                if (!a) {
+                                    values[groupid] = null; // empty array to notify that the group has a null value, if nothing gets checked
+                                }
                             }
                         }
                     } else {
@@ -245,7 +259,7 @@ goradd = {
                 case "radio":
                     if (index !== null) {
                         if ($element.is(":checked")) {
-                            values[id] = index;
+                            values[groupId] = index;
                         }
                     } else {
                         // control name MIGHT be a group name, which we don't want here, so we use control id instead
@@ -529,7 +543,7 @@ goradd = {
 
                 if (this.html !== undefined) {
                     if ($wrapper.length) {
-                        // Control's wrapper was found, so the html should include the wrapper
+                        // Control's wrapper was found, so replace the control and the wrapper
                         $wrapper.before(this.html).remove();
                     }
                     else if ($control.length) {

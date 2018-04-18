@@ -1,8 +1,6 @@
 package control_base
 
 import (
-	"goradd/config"
-	"bytes"
 	"strings"
 	"fmt"
 	localPage "goradd/page"
@@ -32,7 +30,7 @@ func (c *Checkbox) Init(self TextboxI, parent page.ControlI) {
 
 	c.Tag = "input"
 	c.IsVoidTag = true
-	c.labelMode = config.DefaultCheckboxLabelDrawingMode
+	c.labelMode = page.DefaultCheckboxLabelDrawingMode
 	c.SetHasFor(true)
 }
 
@@ -55,7 +53,7 @@ func (c *Checkbox) SetLabelDrawingMode(m html.LabelDrawingMode) {
 // Draw the checkbox tag. This can be quite tricky. Some CSS frameworks are very particular about how checkboxes get
 // associated with labels. The Text value of the control will become the text directly associated with the checkbox,
 // while the Label value is only shown when drawing a checkbox with a wrapper.
-func (c *Checkbox) DrawTag(ctx context.Context, buf *bytes.Buffer) (ctrl string) {
+func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 	attributes := c.This().DrawingAttributes()
 	if c.checked {
 		attributes.Set("checked", "")
@@ -146,7 +144,7 @@ func (c *Checkbox) SetChecked(v bool) page.ControlI {
 
 // SetCheckedNoRefresh is used internally to update values without causing a refresh loop.
 func (c *Checkbox) SetCheckedNoRefresh(v interface{}) {
-	c.checked = c.convertToBool(v)
+	c.checked = ConvertToBool(v)
 }
 
 
@@ -155,11 +153,11 @@ func (c *Checkbox) Checked() bool {
 }
 
 func (c *Checkbox) SetValue(v interface{}) page.ControlI {
-	c.SetChecked(c.convertToBool(v))
+	c.SetChecked(ConvertToBool(v))
 	return c.Self.(page.ControlI)
 }
 
-func (c *Checkbox) convertToBool(v interface{}) bool {
+func ConvertToBool(v interface{}) bool {
 	var val bool
 	switch s := v.(type) {
 	case string:

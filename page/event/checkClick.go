@@ -15,6 +15,6 @@ func CheckboxColumnClick() page.EventI {
 	}
 
 	e.ActionValue(`{"row": $j(this).closest("tr")[0].rowIndex, "col": $j(this).closest("th,td")[0].cellIndex, "checked":this.checked, "id":this.id}`)
-	e.Selector(`input[type="checkbox"]`)
+	e.Selector(`input[gr-checkcol]`)
 	return e
 }

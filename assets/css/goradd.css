@@ -45,6 +45,10 @@ textarea[data-grctl] {
   font-weight: bold;
   color: gray;
 }
+.gr-table {
+  empty-cells: show;
+  border-collapse: collapse;
+}
 /**
  * Styles of individual Control types
  */
@@ -157,19 +161,6 @@ textarea[data-grctl] {
   display: inline-block;
   margin-right: .3em;
   vertical-align: middle;
-}
-/**
- * Utility classes to format objects as tables, without using table tags to be more correct in our html.
- Used in CheckList and RadioList
- */
-.qc-table {
-  display: table;
-}
-.qc-tableRow {
-  display: table-row;
-}
-.qc-tableCell {
-  display: table-cell;
 }
 /**
  * For generated list forms that you can click on to edit an item, this styles the cursor so it looks like the

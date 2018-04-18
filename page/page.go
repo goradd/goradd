@@ -89,7 +89,9 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 
 	// TODO: Lifecycle calls - push them to the form
 
-	if !isNew {
+	if isNew {
+		p.Form().AddHeadTags()
+	} else {
 		p.Form().control().updateValues(grCtx)	// Tell all the controls to update their values.
 		// if This is an event response, do the actions associated with the event
 		if c := p.GetControl(grCtx.actionControlId); c != nil {

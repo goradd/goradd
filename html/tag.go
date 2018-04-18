@@ -3,6 +3,8 @@ package html
 import (
 	"strings"
 	html2 "html"
+	"goradd/config"
+	"fmt"
 )
 
 type LabelDrawingMode int
@@ -27,12 +29,16 @@ func (t VoidTag) Render() string {
 }
 
 // Render a void tag that has no closing tag
-func RenderVoidTag(tag string, attr *Attributes) string {
+func RenderVoidTag(tag string, attr *Attributes) (s string) {
 	if attr == nil {
-		return "<" + tag + " />\n"
+		s = "<" + tag + " />"
 	} else {
-		return "<" + tag + " " + attr.String() + " />\n"
+		s = "<" + tag + " " + attr.String() + " />"
 	}
+	if !config.Minify {
+		s += "\n"
+	}
+	return s
 }
 
 // RenderTag renders a standard html tag with a closing tag
@@ -51,8 +57,15 @@ func RenderTag(tag string, attr *Attributes, innerHtml string) string {
 	if innerHtml == "" {
 		ret +=  "</" + tag + ">"
 	} else {
+		if innerHtml[len(innerHtml) - 1:] != "\n" {
+			innerHtml += "\n"
+		}
+		if !config.Minify {
+			innerHtml = Indent(innerHtml)
+		}
+
 		ret += "\n"	+ // required here for consistency, will force a space between itself and its neighbors in certain situations
-			innerHtml + "\n" +
+			innerHtml +
 			"</" + tag + ">\n"
 	}
 	return ret
@@ -70,10 +83,17 @@ func RenderTagNoSpace(tag string, attr *Attributes, innerHtml string) string {
 	ret := "<" + tag + attrString + ">"
 
 	if innerHtml == "" || innerHtml[:1] != "<" {
+		// either innerHtml is blank, or it is text and not a tag, so reproduce it verbatim
 		ret += innerHtml + "</" + tag + ">"
 	} else {
+		if !config.Minify {
+			innerHtml = Indent(innerHtml)
+		}
+		if innerHtml[len(innerHtml) - 1:] != "\n" {
+			innerHtml += "\n"
+		}
 		ret += "\n"	+ // innerhtml is a tag, and so spacing will not matter, so make it look good
-			innerHtml + "\n" +
+			innerHtml +
 			"</" + tag + ">\n"
 	}
 	return ret
@@ -96,4 +116,22 @@ func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mod
 		return RenderTag(tag, labelAttributes,ctrlHtml + " " + label)
 	}
 	panic ("Unknown label mode")
+}
+
+// Indent will add space to the front of every line in the string. Since indent is used to format code for reading
+// while we are in development mode, we do not need it to be particularly efficient.
+func Indent(s string) string {
+	if config.Minify {
+		return s
+	}
+
+	in := "  "
+	r := strings.NewReplacer("\n", "\n" + in)
+	s = r.Replace(s)
+	return in + strings.TrimSuffix(s, in)
+}
+
+// Comment turns the given text into an html comment and returns the comment
+func Comment(s string) string {
+	return fmt.Sprintf("<!-- %s -->", s)
 }
