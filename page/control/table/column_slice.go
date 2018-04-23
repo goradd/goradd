@@ -1,4 +1,4 @@
-package column
+package table
 
 import (
 	"fmt"
@@ -8,27 +8,27 @@ import (
 	reflect "reflect"
 )
 
-// Slice is a column that works with data that is in the form of a slice. The data item itself must be convertable into
+// SliceColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into
 // a string, either by normal string conversion symantecs, or using the supplied format string. The format string will
 // be applied to a date if the data is a date, or to the string using fmt.Sprintf
-type Slice struct {
+type SliceColumn struct {
 	ColumnBase
 }
 
-func NewSliceColumn(index int) *Slice {
-	i := Slice{}
+func NewSliceColumn(index int) *SliceColumn {
+	i := SliceColumn{}
 	i.Init(index)
 	return &i
 }
 
-func (c *Slice) Init(index int) {
+func (c *SliceColumn) Init(index int) {
 	c.ColumnBase.Init(c)
 	c.SetCellTexter(SliceTexter{Index: index})
 }
 
 // SliceTexter is the default CellTexter for tables. It lets you get items out of slices and maps.
 type SliceTexter struct {
-	// Index is the index into the data that corresponds to this column
+	// Index is the index into the data that corresponds to this table
 	Index int
 	// Format is a format string. It will be applied using fmt.Sprintf. If you don't provide a Format string, standard
 	// string conversion operations will be used.

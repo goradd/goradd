@@ -72,7 +72,7 @@ func RemoveClass(class string, removeClass string) (string, bool) {
 
 /*
 Many CSS frameworks use families of classes, which are built up from a base family name. For example,
-Bootstrap uses 'col-lg-6' to represent a column that is 6 units wide on large screens and Foundation
+Bootstrap uses 'col-lg-6' to represent a table that is 6 units wide on large screens and Foundation
 uses 'large-6' to do the same thing. This utility removes classes that start with a particular prefix
 to remove whatever sizing class was specified.
 Returns the resulting class list, and true if the list actually changed.

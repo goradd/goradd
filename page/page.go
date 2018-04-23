@@ -235,7 +235,7 @@ func (p *Page) changeControlId(oldId string, newId string) {
 
 func (p *Page) removeControl(id string) {
 	// Execute the javascript to remove the control from the dom if we are in ajax mode
-	// TODO: Application::executeSelectorFunction('#' . $objControl->getWrapperId(), 'remove');
+	// TODO: Application::ExecuteSelectorFunction('#' . $objControl->getWrapperId(), 'remove');
 	// TODO: Make This a direct command in the ajax renderer
 
 

@@ -1,4 +1,4 @@
-package control
+package table
 
 import (
 	"github.com/spekary/goradd/page"
@@ -7,11 +7,13 @@ import (
 	"github.com/spekary/goradd/html"
 	"fmt"
 	html2 "golang.org/x/net/html"
-	"github.com/spekary/goradd/page/control/column"
 	"strconv"
+	"github.com/spekary/goradd/page/action"
+	"github.com/spekary/goradd/page/control"
 )
 
 type TableI interface {
+	page.ControlI
 	DrawCaption(context.Context, *bytes.Buffer) error
 	GetHeaderRowAttributes(row int) *html.Attributes
 	GetFooterRowAttributes(row int) *html.Attributes
@@ -20,11 +22,9 @@ type TableI interface {
 
 type Table struct {
 	page.Control
-	DataManager
+	control.DataManager
 
-	columns []column.ColumnI
-	showHeader bool
-	showFooter bool
+	columns []ColumnI
 	renderColumnTags bool
 	caption string
 	hideIfEmpty bool
@@ -48,7 +48,17 @@ func NewTable(parent page.ControlI) *Table {
 func (t *Table) Init(self page.ControlI, parent page.ControlI) {
 	t.Control.Init(self, parent)
 	t.Tag = "table"
-	t.columns = []column.ColumnI{}
+	t.columns = []ColumnI{}
+}
+
+func (t *Table) SetHeaderRowCount(count int) *Table {
+	t.headerRowCount = count
+	return t
+}
+
+func (t *Table) SetFooterRowCount(count int) *Table {
+	t.footerRowCount = count
+	return t
 }
 
 func (t *Table) DrawTag(ctx context.Context) string {
@@ -67,8 +77,6 @@ func (t *Table) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-
-
 func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var t2 = t.This().(TableI)	// Get the sub class so we call into its hooks for drawing
 
@@ -85,9 +93,8 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 		if err = t.drawColumnTags(ctx, buf1); err != nil {return}
 	}
 
-	if t.showHeader {
+	if t.headerRowCount > 0 {
 		err = t.drawHeaderRows(ctx, buf2)
-		buf1.WriteString(buf2.String())
 		buf1.WriteString(html.RenderTag("thead", nil, buf2.String()))
 		if err != nil {
 			return
@@ -95,9 +102,8 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 		buf2.Reset()
 	}
 
-	if t.showFooter {
+	if t.footerRowCount > 0 {
 		err = t.drawFooterRows(ctx, buf2)
-		buf1.WriteString(buf2.String())
 		buf1.WriteString(html.RenderTag("tfoot", nil, buf2.String()))
 		if err != nil {
 			return
@@ -138,12 +144,13 @@ func (t *Table) drawColumnTags(ctx context.Context, buf *bytes.Buffer) (err erro
 
 func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
 	buf1 := page.GetBuffer()
-	defer page.PutBuffer(buf)
+	defer page.PutBuffer(buf1)
 	for j := 0; j < t.headerRowCount; j++ {
 		for i,col := range t.columns {
-			col.DrawHeaderCell(ctx, j, i, buf1)
+			col.DrawHeaderCell(ctx, j, i, t.headerRowCount, buf1)
 		}
 		buf.WriteString(html.RenderTag("tr", t.GetHeaderRowAttributes(j), buf1.String()))
+		buf1.Reset()
 	}
 	return
 }
@@ -157,12 +164,13 @@ func (t *Table) GetHeaderRowAttributes(row int) *html.Attributes {
 
 func (t *Table) drawFooterRows(ctx context.Context, buf *bytes.Buffer) (err error) {
 	buf1 := page.GetBuffer()
-	defer page.PutBuffer(buf)
+	defer page.PutBuffer(buf1)
 	for j := 0; j < t.footerRowCount; j++ {
 		for i,col := range t.columns {
-			col.DrawFooterCell(ctx, j, i, buf1)
+			col.DrawFooterCell(ctx, j, i, t.footerRowCount, buf1)
 		}
 		buf.WriteString(html.RenderTag("tr", t.GetFooterRowAttributes(j), buf1.String()))
+		buf1.Reset()
 	}
 	return
 }
@@ -192,7 +200,7 @@ func (t *Table) GetRowAttributes(row int, data interface{}) *html.Attributes {
 	return nil
 }
 
-func (t *Table) AddColumnAt(column column.ColumnI, loc int) {
+func (t *Table) AddColumnAt(column ColumnI, loc int) {
 	t.columnIdCounter ++
 	if column.Id() == "" {
 		column.SetId(t.Id() + "_" + strconv.Itoa(t.columnIdCounter))
@@ -204,18 +212,20 @@ func (t *Table) AddColumnAt(column column.ColumnI, loc int) {
 		copy(t.columns[loc+1:], t.columns[loc:])
 		t.columns[loc] = column
 	}
+	column.AddActions(t)
+
 	t.Refresh()
 }
 
-func (t *Table) AddColumn(column column.ColumnI) {
+func (t *Table) AddColumn(column ColumnI) {
 	t.AddColumnAt(column, -1)
 }
 
-func (t *Table) GetColumn(loc int) column.ColumnI {
+func (t *Table) GetColumn(loc int) ColumnI {
 	return t.columns[loc]
 }
 
-func (t *Table) GetColumnById(id string) column.ColumnI {
+func (t *Table) GetColumnById(id string) ColumnI {
 	for _,col := range t.columns {
 		if col.Id() == id {
 			return col
@@ -224,7 +234,7 @@ func (t *Table) GetColumnById(id string) column.ColumnI {
 	return nil
 }
 
-func (t *Table) GetColumnByLabel(label string) column.ColumnI {
+func (t *Table) GetColumnByLabel(label string) ColumnI {
 	for _,col := range t.columns {
 		if col.Label() == label {
 			return col
@@ -262,7 +272,7 @@ func (t *Table) RemoveColumnByLabel(label string) {
 
 func (t *Table) ClearColumns() {
 	if len(t.columns) > 0 {
-		t.columns = []column.ColumnI{}
+		t.columns = []ColumnI{}
 		t.Refresh()
 	}
 }
@@ -298,5 +308,24 @@ func (t *Table) SetFooterRowStyler(a html.Attributer) {
 func (t *Table) UpdateFormValues(ctx *page.Context) {
 	for _,col := range t.columns {
 		col.UpdateFormValues(ctx)
+	}
+}
+
+func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
+	switch p.Id {
+	case ColumnAction:
+		var subId string
+		var a action.CallbackActionI
+		var ok bool
+		if a,ok = p.Action.(action.CallbackActionI); !ok {
+			panic("Column actions must be a callback action")
+		}
+		if subId = a.GetDestinationControlSubId(); subId == "" {
+			panic("Column actions must be a callback action")
+		}
+		c := t.GetColumnById(t.Id() + "_" + subId)
+		if c != nil {
+			c.Action(ctx, p)
+		}
 	}
 }

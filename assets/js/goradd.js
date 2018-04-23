@@ -121,7 +121,9 @@ goradd = {
         else if (id) {
             gr.formObjsModified[id] = true;
         }
+
         console.timeEnd("formObjChanged")
+
     },
     /**
      * Initialize form related scripts

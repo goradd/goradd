@@ -24,3 +24,23 @@ func RoundFloat(f float64, digits int) float64 {
 	f = float64(v) / math.Pow10(digits)
 	return f
 }
+
+func MinInt(is... int) int {
+	var min int = is[0]
+	for _,i := range is[1:] {
+		if i<min {
+			min = i
+		}
+	}
+	return min
+}
+
+func MaxInt(is... int) int {
+	var max int = is[0]
+	for _,i := range is[1:] {
+		if i>max {
+			max = i
+		}
+	}
+	return max
+}

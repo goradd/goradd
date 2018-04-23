@@ -14,14 +14,14 @@ type ManyManyNode struct {
 	dbKey			string
 	// NoSQL: The originating table. SQL: The association table
 	dbTable       string
-	// NoSQL: The column storing the array of ids on the other end. SQL: the column in the association table pointing towards us.
+	// NoSQL: The table storing the array of ids on the other end. SQL: the table in the association table pointing towards us.
 	dbColumn       string
 	// Property in the original object used to ref to this object or node.
 	goPropName			string
 
 	// NoSQL & SQL: The table we are joining to
 	refTable string
-	// NoSQL: column point backwards to us. SQL: Column in association table pointing forwards to refTable
+	// NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
 	refColumn string
 	// Are we expanding as an array, or one item at a time.
 	isArray bool
@@ -33,13 +33,13 @@ func NewManyManyNode(
 	dbKey string,
 // NoSQL: The originating table. SQL: The association table
 	dbTable string,
-// NoSQL: The column storing the array of ids on the other end. SQL: the column in the association table pointing towards us.
+// NoSQL: The table storing the array of ids on the other end. SQL: the table in the association table pointing towards us.
 	dbColumn string,
 // Property in the original object used to ref to this object or node.
 	goName string,
 // NoSQL & SQL: The table we are joining to
 	refTableName string,
-// NoSQL: column point backwards to us. SQL: Column in association table pointing forwards to refTable
+// NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
 	refColumn string,
 // Are we pointing to a type table
 	isType bool,

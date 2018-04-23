@@ -3,8 +3,23 @@ package action
 import (
 	"fmt"
 	"github.com/spekary/goradd/javascript"
-	"github.com/spekary/goradd/page"
 )
+
+// ActionI is an interface that defines actions that can be triggered by events
+type ActionI interface {
+	// RenderScript returns the action's javascript
+	RenderScript(params RenderParams) string
+}
+
+
+type RenderParams struct {
+	TriggeringControlId string
+	ControlActionValue interface{}
+	EventId uint16
+	EventActionValue interface{}
+}
+
+
 
 type messageAction struct {
 	message interface{}
@@ -20,7 +35,7 @@ func Message(m interface{}) *messageAction {
 	return &messageAction{message: m}
 }
 
-func (a *messageAction) RenderScript(params page.RenderParams) string {
+func (a *messageAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.msg(%s)`, javascript.ToJavaScript(a.message))
 }
 
@@ -33,7 +48,7 @@ func Confirm(m interface{}) *confirmAction {
 	return &confirmAction{message: m}
 }
 
-func (a *confirmAction) RenderScript(params page.RenderParams) string {
+func (a *confirmAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`if (!goradd.confirm(%s)) return false;`, javascript.ToJavaScript(a.message))
 }
 
@@ -46,7 +61,7 @@ func Blur(controlId string) *blurAction {
 	return &blurAction{controlId: controlId}
 }
 
-func (a *blurAction) RenderScript(params page.RenderParams) string {
+func (a *blurAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.blur('%s');`, a.controlId)
 }
 
@@ -58,7 +73,7 @@ func Focus(controlId string) *focusAction {
 	return &focusAction{controlId: controlId}
 }
 
-func (a *focusAction) RenderScript(params page.RenderParams) string {
+func (a *focusAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.focus('%s');`, a.controlId)
 }
 
@@ -70,7 +85,7 @@ func Select(controlId string) *selectAction {
 	return &selectAction{controlId: controlId}
 }
 
-func (a *selectAction) RenderScript(params page.RenderParams) string {
+func (a *selectAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.select('%s');`, a.controlId)
 }
 
@@ -85,7 +100,7 @@ func SetCssProperty(controlId string, property string, value interface{}) *cssPr
 	return &cssPropertyAction{controlId: controlId}
 }
 
-func (a *cssPropertyAction) RenderScript(params page.RenderParams) string {
+func (a *cssPropertyAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.css('%s', '%s', '%s');`, a.controlId, a.property, a.value)
 }
 
@@ -98,7 +113,7 @@ func AddClass(controlId string, addClasses string) *cssAddClassAction {
 	return &cssAddClassAction{controlId: controlId, classes:addClasses}
 }
 
-func (a *cssAddClassAction) RenderScript(params page.RenderParams) string {
+func (a *cssAddClassAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.addClass('%s', '%s');`, a.controlId, a.classes)
 }
 
@@ -111,7 +126,7 @@ func ToggleClass(controlId string, classes string) *cssToggleClassAction {
 	return &cssToggleClassAction{controlId: controlId, classes: classes}
 }
 
-func (a *cssToggleClassAction) RenderScript(params page.RenderParams) string {
+func (a *cssToggleClassAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.toggleClass('%s', '%s');`, a.controlId, a.classes)
 }
 
@@ -124,8 +139,15 @@ func Redirect(l string) *redirectAction {
 	return &redirectAction{location: l}
 }
 
-func (a *redirectAction) RenderScript(params page.RenderParams) string {
+func (a *redirectAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.redirect(%s)`, a.location)
+}
+
+// PrivateAction is used by control implementations to add a private action to a controls action list. Unless you are
+// creating a control, you should not use this.
+type PrivateAction struct{}
+func (a PrivateAction) RenderScript(params RenderParams) string {
+	return ""
 }
 
 

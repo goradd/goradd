@@ -103,6 +103,9 @@ func (o StringMap) Len() int {
 // Range will call the given function with every key and value.
 // If f returns false, it stops the iteration. This pattern is taken from sync.Map.
 func (o StringMap) Range(f func(key string, value string) bool) {
+	if o == nil {
+		return
+	}
 	for k, v := range o {
 		if !f(k, v) {
 			break

@@ -126,6 +126,10 @@ func (o *SafeStringMap) UnmarshalJSON(data []byte) error {
 }
 
 func (o *SafeStringMap) Merge(i StringMapI) {
+	if o == nil {
+		return
+	}
+
 	i.Range(func (k,v string) bool {
 		o.Set(k, v)
 		return true
@@ -155,6 +159,10 @@ func (o *SafeStringMap) Equals(i StringMapI) bool {
 // During this process, the map will be locked, so do not use a function that will be taking significant amounts of time
 // If f returns false, it stops the iteration. This pattern is taken from sync.Map.
 func (o *SafeStringMap) Range(f func(key string, value string) bool) {
+	if o == nil {
+		return
+	}
+
 	o.Lock()
 	defer o.Unlock()
 

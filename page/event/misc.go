@@ -25,14 +25,14 @@ func Select() page.EventI {
 // DataGridSort is a custom event for responding to a data grid sort event
 func DataGridSort() page.EventI {
 	e := &page.Event{JsEvent: "goradd.datagrid.sort"}
-	e.ActionValue(javascript.VarName("ui"))
+	e.ActionValue(javascript.JsCode("ui"))
 	return e
 }
 
 // DialogButton returns an event that detects clicking on a dialog's button.
 func DialogButton() page.EventI {
 	e := &page.Event{JsEvent: "goradd.datagrid.dialogbtn"}
-	e.ActionValue(javascript.VarName("ui"))
+	e.ActionValue(javascript.JsCode("ui"))
 	return e
 }
 

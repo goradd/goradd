@@ -91,7 +91,7 @@ func extractOptions(comment string) (options *types.OrderedMap, err error) {
 	return
 }
 
-// Given a data definition description of the column, will extract the length from the definition
+// Given a data definition description of the table, will extract the length from the definition
 // If more than one number, returns the first number
 // Example:
 //	bigint(21) -> 21
@@ -138,7 +138,7 @@ func getMinMax(o *types.OrderedMap, defaultMin float64, defaultMax float64, tabl
 	if columnName == "" {
 		errString = "table " + tableName
 	} else {
-		errString = "column " + tableName + ":" + columnName
+		errString = "table " + tableName + ":" + columnName
 	}
 
 	v, ok := getNumericOption(o,"min", defaultMin)

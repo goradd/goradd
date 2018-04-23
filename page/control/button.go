@@ -3,6 +3,8 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	localPage "goradd/page"
+	"github.com/spekary/goradd/page/action"
+	"github.com/spekary/goradd/page/event"
 )
 
 
@@ -31,7 +33,7 @@ func (b *Button) Init(self page.ControlI, parent page.ControlI) {
 }
 
 
-func (b *Button) On(e page.EventI, actions... page.ActionI) {
+func (b *Button) On(e page.EventI, actions... action.ActionI) {
 	e.Terminating()	// prevent default action (page submit)
 	b.Control.On(e, actions...)
 }
@@ -59,6 +61,12 @@ func (b *Button) SetIsPrimary(isPrimary bool) {
 
 func (b *Button) IsPrimary() bool {
 	return b.isPrimary
+}
+
+// OnClick is a shortcut for adding a click event handler that is particular to buttons. It debounces the click, to
+// prevent potential accidental multiple form submissions.
+func (b *Button) OnClick(actions... action.ActionI) {
+	b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
 }
 
 // Use SetText to set the text of the button

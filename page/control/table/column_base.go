@@ -1,4 +1,4 @@
-package column
+package table
 
 import (
 	"bytes"
@@ -10,6 +10,8 @@ import (
 	"github.com/spekary/goradd/page"
 )
 
+const ColumnAction = 1000
+
 type ColumnI interface {
 	Id() string
 	SetId(string)
@@ -18,8 +20,8 @@ type ColumnI interface {
 	IsHidden() bool
 	SetHidden(bool)
 	DrawColumnTag(ctx context.Context, buf *bytes.Buffer)
-	DrawHeaderCell(ctx context.Context, row int, col int, buf *bytes.Buffer)
-	DrawFooterCell(ctx context.Context, row int, col int, buf *bytes.Buffer)
+	DrawHeaderCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer)
+	DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer)
 	DrawCell(ctx context.Context, row int, col int, data interface{}, buf *bytes.Buffer)
 	CellText(ctx context.Context, row int, col int, data interface{}) string
 	HeaderCellText(ctx context.Context, row int, col int) string
@@ -28,6 +30,8 @@ type ColumnI interface {
 	FooterAttributes() *html.Attributes
 	ColTagAttributes() *html.Attributes
 	UpdateFormValues(ctx *page.Context)
+	AddActions(ctrl page.ControlI)
+	Action(ctx context.Context, params page.ActionParams)
 }
 
 type CellTexter interface {
@@ -50,7 +54,7 @@ type ColumnBase struct {
 	headerTexter	 CellTexter
 	footerTexter	 CellTexter
 	isHidden         bool
-	orderByObj		interface{}			// Indicates we are sorting. Is any kind of data that is saved in the column and
+	orderByObj		interface{}			// Indicates we are sorting. Is any kind of data that is saved in the table and
 										// then fed back to the table to determine how to sort.
 	reverseOrderByObj	interface{}
 }
@@ -69,8 +73,8 @@ func (c *ColumnBase) Id() string {
 	return c.id
 }
 
-// SetId sets the id of the column. If you are going to provide your own id, do this as the first thing after you create
-// a column, or the new id might not propogate through the system correctly.
+// SetId sets the id of the table. If you are going to provide your own id, do this as the first thing after you create
+// a table, or the new id might not propogate through the system correctly.
 func (c *ColumnBase) SetId(id string) {
 	c.id = id
 }
@@ -79,8 +83,9 @@ func (c *ColumnBase) Label() string {
 	return c.label
 }
 
-func (c *ColumnBase) SetLabel(label string) {
+func (c *ColumnBase) SetLabel(label string) ColumnI {
 	c.label = label
+	return c.This()
 }
 
 func (c *ColumnBase) Span() int {
@@ -138,7 +143,7 @@ func (c *ColumnBase) FooterAttributes() *html.Attributes {
 	return c.footerAttributes
 }
 
-// ColTagAttributes specifies attributes that will appear in the column tag. Note that you have to turn on column
+// ColTagAttributes specifies attributes that will appear in the table tag. Note that you have to turn on table
 // tags in the table object as well for these to appear.
 func (c *ColumnBase) ColTagAttributes() *html.Attributes {
 	if c.colTagAttributes == nil {
@@ -161,7 +166,7 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 	buf.WriteString(html.RenderTag("col", a, ""))
 }
 
-func (c *ColumnBase) DrawHeaderCell(ctx context.Context, row int, col int, buf *bytes.Buffer) {
+func (c *ColumnBase) DrawHeaderCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer) {
 	if c.isHidden {
 		return
 	}
@@ -184,7 +189,7 @@ func (c *ColumnBase) HeaderCellText(ctx context.Context, row int, col int) strin
 	return c.label
 }
 
-func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, buf *bytes.Buffer) {
+func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer) {
 	if c.isHidden {
 		return
 	}
@@ -250,5 +255,10 @@ func (c *ColumnBase) SetReverseOrderByObj(o interface{}) {
 // UpdateFormValues is called by the system whenever values are sent by client controls.
 // This default version does nothing. Columns that need to record information (checkbox columns for example), should
 // implement this.
-func (c *ColumnBase) UpdateFormValues(ctx *page.Context) {
-}
+func (c *ColumnBase) UpdateFormValues(ctx *page.Context) {}
+
+func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
+
+// Do a table action that is directed at this table
+// Column implementations can implement this method to receive private actions that they have added using AddActions
+func (c *ColumnBase) Action(ctx context.Context, params page.ActionParams) {}

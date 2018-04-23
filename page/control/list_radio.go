@@ -9,7 +9,7 @@ import (
 // RadioList is a multi-select control that presents its choices as a list of checkboxes.
 // Styling is provided by divs and spans that you can provide css for in your style sheets. The
 // goradd.css file has default styling to handle the basics. It wraps the whole thing in a div that can be set
-// to scroll as well, so that the final structure can be styled like a multi-column table, or a single-column
+// to scroll as well, so that the final structure can be styled like a multi-table table, or a single-table
 // scrolling list much like a standard html select list.
 type RadioList struct {
 	CheckboxList

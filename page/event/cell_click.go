@@ -28,14 +28,14 @@ type CellClickEvent struct {
  * Here are some examples of return params you can specify to return data to your action handler:
  * 	this.id - the cell id
  *  this.tagName - the tag for the cell (either th or td)
- *  this.cellIndex - the column index that was clicked on, starting on the left with column zero
+ *  this.cellIndex - the table index that was clicked on, starting on the left with table zero
  *  $j(this).data('value') - the "data-value" attribute of the cell (if you specify one). Use this formula for any kind of "data-" attribute.
  *  $j(this).parent() - the jQuery row object
  *  this.parentElement - the html row object
  *  this.parentElement.rowIndex - the index of the row clicked, starting with zero at the top (including any header rows).
  *  $j(this).parent().attr('id') or $j(this).parent()[0].id - the id of the row clicked on
  *  $j(this).parent().data("value") - the "data-value" attribute of the row. Use this formula for any kind of "data-" attribute.
- *  $j(this).parent().closest('table').find('thead').find('th')[this.cellIndex].id - the id of the column clicked in
+ *  $j(this).parent().closest('table').find('thead').find('th')[this.cellIndex].id - the id of the table clicked in
  *  event.target - the html object clicked in. If your table cell had other objects in it, this will return the
  *    object clicked inside the cell. This could be important, for example, if you had form objects inside the cell,
  *    and you wanted to behave differently if a form object was clicked on, verses clicking outside the form object.

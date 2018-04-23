@@ -261,6 +261,9 @@ func (o *OrderedStringMap) Merge(i StringMapI) {
 // During this process, the map will be locked, so do not use a function that will be taking significant amounts of time
 // If f returns false, it stops the iteration. This pattern is taken from sync.Map.
 func (o *OrderedStringMap) Range(f func(key string, value string) bool) {
+	if o == nil {
+		return
+	}
 	for _, k := range o.order {
 		if !f(k, o.items[k]) {
 			break
@@ -295,4 +298,8 @@ func (o *OrderedStringMap) Clear() {
 
 	o.items = make(map[string]string)
 	o.order = nil
+}
+
+func (o *OrderedStringMap) IsNil() bool {
+	return o == nil
 }

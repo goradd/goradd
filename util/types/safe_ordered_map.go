@@ -213,6 +213,10 @@ func (o *SafeOrderedMap) Len() int {
 // During this process, the map will be locked, so do not use a function that will be taking significant amounts of time
 // If f returns false, it stops the iteration. This is taken from the sync.Map thingy
 func (o *SafeOrderedMap) Range(f func(key string, value interface{}) bool) {
+	if o == nil {
+		return
+	}
+
 	o.RLock()
 	defer o.RUnlock()
 

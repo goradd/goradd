@@ -500,7 +500,7 @@ func (o *`)
 			continue // ID columns are not setable, since the database will automatically set the valid
 		}
 
-		// If the column is nullable, we use an interface to allow a null to be passed in
+		// If the table is nullable, we use an interface to allow a null to be passed in
 		if col.IsNullable {
 			var oName string
 			if col.IsReference() {
@@ -790,7 +790,7 @@ func (o *`)
 
 		}
 
-		// If the column is nullable, we use an interface to allow a null to be passed in
+		// If the table is nullable, we use an interface to allow a null to be passed in
 		if col.IsNullable {
 
 			buf.WriteString(`

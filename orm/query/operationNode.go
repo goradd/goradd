@@ -90,7 +90,7 @@ func NewFunctionNode (functionName string,operands... interface{}) *OperationNod
 }
 
 // NewCountNode creates a Count function node. If no operands are given, it will use * as the parameter to the function
-// which means it will count nulls. To NOT count nulls, at least one column name needs to be specified.
+// which means it will count nulls. To NOT count nulls, at least one table name needs to be specified.
 func NewCountNode(operands... NodeI) *OperationNode {
 	n := &OperationNode {
 		op:       OpFunc,

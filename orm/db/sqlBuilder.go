@@ -232,7 +232,7 @@ func (b *sqlBuilder) Delete(ctx context.Context) {
 
 // Count creates a query that selects one thing, a count. If distinct is specified, only distinct items will be selected.
 // If no columns are specified, the count will include NULL items. Otherwise, it will not include NULL results in the count.
-// You cannot include any other select items in a count. If you want to do that, you should do a normal query and add a COUNT column.
+// You cannot include any other select items in a count. If you want to do that, you should do a normal query and add a COUNT table.
 func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes... NodeI) uint {
 	var result = []map[string]interface{}{}
 
@@ -283,11 +283,11 @@ func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes... NodeI) u
 
 // Adds the node to the node tree, which is what determines how we do joins. If parts of the node are not in the tree, the node
 // will be added and assigned an alias. If the node already exists in the tree, the previously assigned alias will be copied to the
-// node so that it can refer to the table or column by alias.
+// node so that it can refer to the table or table by alias.
 //
-// If addColumn is true, and the node refers to a column node, the node will be also added to the list of nodes that are
-// selected on. If addColumn is false, the node will be assigned an alias in case a future similar node is added to the column list,
-// but the node will not be added to the column list.
+// If addColumn is true, and the node refers to a table node, the node will be also added to the list of nodes that are
+// selected on. If addColumn is false, the node will be assigned an alias in case a future similar node is added to the table list,
+// but the node will not be added to the table list.
 func (b *sqlBuilder) addNode(n NodeI, addColumn bool) {
 	var node, treeNode NodeI
 	var tableName string
@@ -418,7 +418,7 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 		}
 	} else {
 		for _,srcChild = range childNodes {
-			// TODO: Potentially improve speed by skipping column nodes. I suspect we will have already added those.
+			// TODO: Potentially improve speed by skipping table nodes. I suspect we will have already added those.
 			// try to find the child node in the next level of the tree
 			found := false
 			for _,destChild := range ChildNodes(destNode) {

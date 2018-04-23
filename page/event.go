@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"goradd/config"
 	"github.com/spekary/goradd/html"
+	action2 "github.com/spekary/goradd/page/action"
 )
 
 type EventI interface {
@@ -14,9 +15,9 @@ type EventI interface {
 	Terminating() EventI
 	ActionValue(interface{}) EventI
 	GetActionValue() interface{}
-	AddActions(a... ActionI)
+	AddActions(a... action2.ActionI)
 	RenderActions(control ControlI, eventId EventId) string
-	GetActions() []ActionI
+	GetActions() []action2.ActionI
 	String() string
 	event() *Event
 }
@@ -32,7 +33,7 @@ type Event struct {
 	selector    string
 	blocking    bool
 	actionValue interface{} // A static value, or js to get a dynamic value when the action returns to us.
-	actions     []ActionI
+	actions     []action2.ActionI
 	actionsMustTerminate bool
 	validationOverride ValidationType
 	validationTargetsOverride []string
@@ -82,8 +83,9 @@ func (e *Event) Terminating() EventI {
 	return e
 }
 
-// ActionValue is a value that will be returned to the actions that will be process by This event. Specify a static
-// value, or javascript objects that will gather data at the time the event fires.
+// ActionValue is a value that will be returned to the actions that will be process by this event. Specify a static
+// value, or javascript objects that will gather data at the time the event fires. The event will appear in the
+// ActionParams as the EventValue.
 // Example: ActionValue(javascript.VarName("ui")) will return the "ui" variable that is part of the event call.
 func (e *Event) ActionValue(r interface{}) EventI {
 	e.actionValue = r
@@ -108,10 +110,13 @@ func (e *Event) ValidationTargets(targets... string) EventI {
 
 
 
-func (e *Event) AddActions(actions... ActionI) {
+func (e *Event) AddActions(actions... action2.ActionI) {
 	var foundCallback bool
 	for _,action := range actions {
-		if _,ok := action.(CallbackActionI); ok {
+		if _,ok := action.(action2.PrivateAction); ok {
+			continue
+		}
+		if _,ok := action.(action2.CallbackActionI); ok {
 			if foundCallback {
 				panic ("You can only associate one callback action with an event, and it must be the last action.")
 			}
@@ -121,11 +126,12 @@ func (e *Event) AddActions(actions... ActionI) {
 				panic ("You can only associate one callback action with an event, and it must be the last action.")
 			}
 		}
+
+		e.actions = append (e.actions, action)
 	}
 
 	// Note, the above could be more robust and allow multiple callback actions, but it would get quite tricky if different
 	// kinds of actions were interleaved. We will wait until someone presents a compelling need for something like that.
-	e.actions = append (e.actions, actions...)
 }
 
 func (e *Event) RenderActions(control ControlI, eventId EventId) string {
@@ -139,7 +145,7 @@ func (e *Event) RenderActions(control ControlI, eventId EventId) string {
 		js = "event.preventDefault();\n"
 	}
 
-	var params = RenderParams{control, eventId, e.actionValue}
+	var params = action2.RenderParams{control.Id(), control.ActionValue(), uint16(eventId), e.actionValue}
 
 	for _,a := range e.actions {
 		js += a.RenderScript(params)
@@ -158,7 +164,7 @@ func (e *Event) RenderActions(control ControlI, eventId EventId) string {
 		js = fmt.Sprintf("\nif (%s) {\n%s\n};", e.condition, js)
 	}
 
-	js = control.wrapEvent(e.JsEvent, e.selector, js)
+	js = control.WrapEvent(e.JsEvent, e.selector, js)
 
 	if !config.Minify {
 		// Render a comment
@@ -168,6 +174,6 @@ func (e *Event) RenderActions(control ControlI, eventId EventId) string {
 	return js
 }
 
-func (e *Event) GetActions() []ActionI {
+func (e *Event) GetActions() []action2.ActionI {
 	return e.actions
 }

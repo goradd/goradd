@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 )
 
 type RequestMode int
@@ -68,13 +69,14 @@ type AppContext struct {
 	requestMode RequestMode
 	cliArgs []string			// All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId string
-	customControlValues map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables.
+	customControlValues map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
 	checkableValues map[string]interface{} // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
 	actionControlId string	// If an action, the control sending the action
 	eventId EventId	// The event to send to the control
-	actionValues map[string]interface{}
+	actionValues ActionValues
 	// TODO: Session object
 }
+
 
 type Context struct {
 	HttpContext
@@ -183,15 +185,18 @@ func (ctx *Context) FillApp(cliArgs []string) {
 				ctx.requestMode = Server
 			}
 
+
 			var params struct {
 				ControlValues map[string]interface{} `json:"controlValues"`
 				CheckableValues map[string]interface{} `json:"checkableValues"`
 				ControlId string `json:"controlId"`
 				EventId int `json:"eventId"`
-				Values map[string]interface{} `json:"values"`
+				Values ActionValues `json:"actionValues"`
 			}
 
-			if err = json.Unmarshal([]byte(v), &params); err == nil {
+			dec := json.NewDecoder(strings.NewReader(v))
+			dec.UseNumber()
+			if err = dec.Decode (&params); err == nil {
 				ctx.customControlValues = params.ControlValues
 				ctx.checkableValues = params.CheckableValues
 				ctx.actionControlId = params.ControlId
@@ -199,7 +204,6 @@ func (ctx *Context) FillApp(cliArgs []string) {
 					ctx.eventId = EventId(params.EventId)
 				}
 				ctx.actionValues = params.Values
-
 
 			/*
 				// We have posted back from our form. Unpack our params values
@@ -277,4 +281,22 @@ func (ctx *Context) RequestMode() RequestMode {
 
 func GetContext(ctx context.Context) *Context {
 	return ctx.Value(context_key).(*Context) // TODO: Must replace the context key with something that is not a basic string. See https://medium.com/@matryer/context-keys-in-go-5312346a868d.
+}
+
+func fixActionValues(values ActionValues) ActionValues {
+	values.Control = fixActionValue(values.Control)
+	values.Event = fixActionValue(values.Event)
+	values.Action = fixActionValue(values.Action)
+	return values
+}
+
+func fixActionValue(val interface{}) interface{} {
+	switch v := val.(type) {
+	case float64:
+		if i := math.Trunc(v); v == i {
+			return int(i)
+		}
+		return val
+	}
+	return val
 }

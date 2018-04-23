@@ -13,7 +13,7 @@ type ReverseReferenceNode struct {
 	dbKey			string
 	// table which has the reverse reference
 	dbTable       string
-	// NoSQL only. The column containing an array of items we are pointing to.
+	// NoSQL only. The table containing an array of items we are pointing to.
 	dbColumn       string
 	// Property we are using to refer to the many side of the relationship
 	goPropName			string
@@ -23,7 +23,7 @@ type ReverseReferenceNode struct {
 
 	// The table containing the pointer back to us
 	refTable string
-	// The column that is the foreign key pointing back to us.
+	// The table that is the foreign key pointing back to us.
 	refColumn	string
 
 	isArray bool
@@ -35,13 +35,13 @@ func NewReverseReferenceNode (
 	dbKey string,
 // table which has the reverse reference
 	dbTable string,
-// NoSQL: the column containing an array of items we are pointing to. SQL: The primary key of this table.
+// NoSQL: the table containing an array of items we are pointing to. SQL: The primary key of this table.
 	dbColumn string,
 // Property we are using to refer to the many side of the relationship
 	goName string,
 // The table containing the pointer back to us
 	refTable string,
-// The column that is the foreign key pointing back to us.
+// The table that is the foreign key pointing back to us.
 	refColumn string,
 	isArray bool,
 ) *ReverseReferenceNode {

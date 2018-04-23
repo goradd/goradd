@@ -106,7 +106,7 @@ func (m *Mysql5) getRawTables() (map[string]mysqlTable){
 		for _,fk := range foreignKeys {
 			if fk.referencedColumnName.Valid && fk.referencedTableName.Valid {
 				if _,ok := table.fkMap[fk.columnName];  ok {
-					log.Printf("Warning: Column %s:%s multi-column foreign keys are not supported.", table.name, fk.columnName)
+					log.Printf("Warning: Column %s:%s multi-table foreign keys are not supported.", table.name, fk.columnName)
 					delete(table.fkMap, fk.columnName)
 				} else {
 					table.fkMap[fk.columnName] = fk
@@ -213,7 +213,7 @@ func (m *Mysql5) getColumns(table string) (columns []mysqlColumn, err error) {
 		}
 
 		if col.options, err = extractOptions(col.comment); err != nil {
-			log.Print("Error in column comment options for column " + table + ":" + col.name + " - " + err.Error())
+			log.Print("Error in table comment options for table " + table + ":" + col.name + " - " + err.Error())
 		}
 		columns = append(columns, col)
 	}
@@ -308,7 +308,7 @@ func (m *Mysql5) getForeignKeys(table string) (foreignKeys []mysqlForeignKey, er
 	return foreignKeys, err
 }
 
-// Convert the database native type to a more generic sql type, and a go column type.
+// Convert the database native type to a more generic sql type, and a go table type.
 func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *ColumnDescription) {
 	dataLen := getDataDefLength(column.columnType)
 
@@ -406,10 +406,10 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 
 			if v := column.options.Get("min"); v != nil {
 				if v2,ok := v.(float64); !ok {
-					log.Print("Error in min value in comment for column " + tableName + ":" + column.name + ". Value is not a valid number.")
+					log.Print("Error in min value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
 					cd.MinValue = uint64(0)
 				} else if v2 < 0 {
-					log.Print("Error in min value in comment for column " + tableName + ":" + column.name + ". Value cannot be less than zero.")
+					log.Print("Error in min value in comment for table " + tableName + ":" + column.name + ". Value cannot be less than zero.")
 					cd.MinValue = uint64(0)
 				} else {
 					cd.MinValue = uint64(v2)
@@ -420,7 +420,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 
 			if v := column.options.Get("max"); v != nil {
 				if v2,ok := v.(float64); !ok {
-					log.Print("Error in max value in comment for column " + tableName + ":" + column.name + ". Value is not a valid number.")
+					log.Print("Error in max value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
 					cd.MaxValue = uint64(math.MaxUint64)
 				} else {
 					cd.MaxValue = int64(v2)
@@ -434,7 +434,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 			cd.GoType = COL_TYPE_INTEGER64
 			if v := column.options.Get("min"); v != nil {
 				if v2,ok := v.(float64); !ok {
-					log.Print("Error in min value in comment for column " + tableName + ":" + column.name + ". Value is not a valid number.")
+					log.Print("Error in min value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
 					cd.MinValue = int64(math.MinInt64)
 				} else {
 					cd.MinValue = int64(v2)
@@ -445,7 +445,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 
 			if v := column.options.Get("max"); v != nil {
 				if v2,ok := v.(float64); !ok {
-					log.Print("Error in max value in comment for column " + tableName + ":" + column.name + ". Value is not a valid number.")
+					log.Print("Error in max value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
 					cd.MaxValue = int64(math.MaxInt64)
 				} else {
 					cd.MaxValue = int64(v2)
@@ -519,13 +519,13 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 		cd.GoType = COL_TYPE_INTEGER
 
 	case "set":
-		log.Print("Note: Using association tables is preferred to using Mysql5 SET columns in column " + tableName + ":" + column.name + ".")
+		log.Print("Note: Using association tables is preferred to using Mysql5 SET columns in table " + tableName + ":" + column.name + ".")
 		cd.NativeType = MYSQL_TYPE_SET
 		cd.GoType = COL_TYPE_STRING
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	case "enum":
-		log.Print("Note: Using type tables is preferred to using Mysql5 ENUM columns in column " + tableName + ":" + column.name + ".")
+		log.Print("Note: Using type tables is preferred to using Mysql5 ENUM columns in table " + tableName + ":" + column.name + ".")
 		cd.NativeType = MYSQL_TYPE_ENUM
 		cd.GoType = COL_TYPE_STRING
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
@@ -631,7 +631,7 @@ func (m *Mysql5) getTypeTableDescription (td *TableDescription) *TypeTableDescri
 func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, table mysqlTable) *ColumnDescription {
 	options, err := extractOptions(column.comment)
 	if err != nil {
-		log.Print("Error in column comment for column " + tableName + ":" + column.name + ": " + err.Error())
+		log.Print("Error in table comment for table " + tableName + ":" + column.name + ": " + err.Error())
 	}
 
 	cd := ColumnDescription{
@@ -641,13 +641,13 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 	opt := options.Get("goName")
 	if opt != nil {
 		if cd.GoName,ok = opt.(string); !ok {
-			log.Print("Error in table comment for column " + tableName + ":" +column.name + ": goName is not a string")
+			log.Print("Error in table comment for table " + tableName + ":" +column.name + ": goName is not a string")
 		}
 	} else {
 		cd.GoName = snaker.SnakeToCamel(column.name)
 	}
 
-	//cd.DefaultValue, _ = column.defaultValue.Value()
+	//cd.DefaultValue, _ = table.defaultValue.Value()
 
 	m.processTypeInfo(tableName, column, &cd)
 
@@ -662,11 +662,11 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 
 	// indicates that the we want our generated code to update the timestamp manually. This should be mutually exclusive of isAutoUpdateTimestamp
 	if cd.ShouldUpdateTimestamp, ok = options.GetBool("shouldAutoUpdate"); !ok {
-		log.Print("Error in table comment for column " + tableName + ":" + column.name + ": shouldAutoUpdate is not a boolean")
+		log.Print("Error in table comment for table " + tableName + ":" + column.name + ": shouldAutoUpdate is not a boolean")
 	}
 
 	if cd.IsAutoUpdateTimestamp && cd.ShouldUpdateTimestamp {
-		log.Print("Error in table comment for column " + tableName + ":" + column.name + ": shouldAutoUpdate should not be set on a column that the database is automatically updating.")
+		log.Print("Error in table comment for table " + tableName + ":" + column.name + ": shouldAutoUpdate should not be set on a table that the database is automatically updating.")
 		cd.ShouldUpdateTimestamp = false
 	}
 
@@ -702,7 +702,7 @@ func (m *Mysql5) getIndexDescriptions(tableName string, sqlIndexes []mysqlIndex)
 	return indexes
 }
 
-// Process the raw list of foreign keys to return a map of foreign keys organized by column name in the current table.
+// Process the raw list of foreign keys to return a map of foreign keys organized by table name in the current table.
 // Will output any errors it finds too
 /*
 func (m *Mysql5) getForeignKeyDescriptions(tableName string, sqlFks []mysqlForeignKey) (foreignKeys []ForeignKeyDescription) {

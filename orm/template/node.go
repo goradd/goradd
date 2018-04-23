@@ -34,7 +34,7 @@ func (n *NodeTemplate) FileName(t *db.TableDescription) string {
 
 func (n *NodeTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
 
-	// The master template for the nodes for a particular column.
+	// The master template for the nodes for a particular table.
 
 	// ToDo: Move the node creation routines to the database driver, so that nodes can generate their own database code.
 

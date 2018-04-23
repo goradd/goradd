@@ -118,9 +118,9 @@ type ForeignKeyType struct {
 }
 
 type ColumnDescription struct {
-	DbName                string // name in database. Blank if this is a "virtual" column for sql tables. i.e. an association or virtual attribute query
+	DbName                string // name in database. Blank if this is a "virtual" table for sql tables. i.e. an association or virtual attribute query
 	GoName                string
-	NativeType            string       // type of column based on native description of column
+	NativeType            string       // type of table based on native description of table
 	GoType                GoColumnType // represents a basic go type
 	MaxCharLength         uint64       // To help fields limit the number of characters or bytes they will accept, when its known
 	DefaultValue          interface{}  // gets cast to the goType
@@ -138,24 +138,24 @@ type ColumnDescription struct {
 	// Filled in by analyzer
 	Options			 *types.OrderedMap
 	ForeignKey       *ForeignKeyType
-	VarName			 string // code generating convenience. The name to use for the internal variable name corresponding to this column.
+	VarName			 string // code generating convenience. The name to use for the internal variable name corresponding to this table.
 }
 
 // The ManyManyReference structure is used by the templates during the codegen process to describe a many-to-any relationship.
 type ManyManyReference struct {
 	// NoSQL: The originating table. SQL: The association table
 	AssnTableName string
-	// NoSQL: The column storing the array of ids on the other end. SQL: the column in the association table pointing towards us.
+	// NoSQL: The table storing the array of ids on the other end. SQL: the table in the association table pointing towards us.
 	AssnColumnName string
 
 	// NoSQL & SQL: The table we are joining to
 	AssociatedTableName string
-	// NoSQL: column point backwards to us. SQL: Column in association table pointing forwards to refTable
+	// NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
 	AssociatedColumnName string
 
 	AssociatedObjectName string
 
-	// The virtual column names used to describe the objects on the other end of the association
+	// The virtual table names used to describe the objects on the other end of the association
 	GoName string
 	GoPlural string
 
@@ -186,7 +186,7 @@ type IndexDescription struct {
 }
 
 // Describes a foreign key relationship between columns in one table and columns in a different table
-// We currently allow the collection of multi-column and cross-database fk data, but we don't currently support them in codegen.
+// We currently allow the collection of multi-table and cross-database fk data, but we don't currently support them in codegen.
 type ForeignKeyDescription struct {
 	KeyName         string
 	Columns         []string
@@ -382,7 +382,7 @@ func (dd *DatabaseDescription) analyzeReverseReferences(td *TableDescription) {
 				// This is somewhat tricky, because there is no easy way to extract an expression for this.
 				// For example, a team-member  relationship would simply be called team_id from the person side, so
 				// where would you get the word "member". Our strategy will be to first look for something explicit in the
-				// options, and if not found, try to create a name from the column and table names.
+				// options, and if not found, try to create a name from the table and table names.
 
 				goName,_ := cd.Options.GetString("GoName")
 				goPlural,_ := cd.Options.GetString("GoPlural")
@@ -434,17 +434,17 @@ func (dd *DatabaseDescription) analyzeAssociation(td *TableDescription) {
 	var typeIndex int = -1
 	for i,cd := range td.Columns {
 		if !cd.IsPk {
-			log.Print("Error: column " + td.DbName + ":" + cd.DbName + " must be a primary key.")
+			log.Print("Error: table " + td.DbName + ":" + cd.DbName + " must be a primary key.")
 			return
 		}
 
 		if cd.ForeignKey == nil {
-			log.Print("Error: column " + td.DbName + ":" + cd.DbName + " must be a foreign key.")
+			log.Print("Error: table " + td.DbName + ":" + cd.DbName + " must be a foreign key.")
 			return
 		}
 
 		if cd.IsNullable {
-			log.Print("Error: column " + td.DbName + ":" + cd.DbName + " cannot be nullable.")
+			log.Print("Error: table " + td.DbName + ":" + cd.DbName + " cannot be nullable.")
 			return
 		}
 
@@ -453,7 +453,7 @@ func (dd *DatabaseDescription) analyzeAssociation(td *TableDescription) {
 		}
 	}
 
-	if typeIndex == -1 {	// normal column-column link
+	if typeIndex == -1 {	// normal table-table link
 		ref1 := dd.makeManyManyRef(td, td.Columns[0], td.Columns[1])
 		ref2 := dd.makeManyManyRef(td, td.Columns[1], td.Columns[0])
 		ref1.MM = ref2

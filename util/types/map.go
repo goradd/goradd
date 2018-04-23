@@ -297,6 +297,11 @@ func (o *Map) Copy() MapI {
 	return cp
 }
 
+func (o *Map) IsNil() bool {
+	return o == nil
+}
+
+
 func init() {
 	gob.Register(NewMap())
 }

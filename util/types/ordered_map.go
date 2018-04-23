@@ -246,6 +246,9 @@ func (o *OrderedMap) Len() int {
 // During this process, the map will be locked, so do not use a function that will be taking significant amounts of time
 // If f returns false, it stops the iteration. This pattern is taken from sync.Map.
 func (o *OrderedMap) Range(f func(key string, value interface{}) bool) {
+	if o == nil {
+		return
+	}
 	for _, k := range o.order {
 		if !f(k, o.items[k]) {
 			break

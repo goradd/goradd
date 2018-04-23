@@ -115,9 +115,9 @@ func (r *Response) displayAlert(message string) {
 	r.alerts = append(r.alerts, message)
 }
 
-// executeJavaScript will execute the given code with the given priority. Note that all javascript code is run in
+// ExecuteJavaScript will execute the given code with the given priority. Note that all javascript code is run in
 // strict mode.
-func (r *Response) executeJavaScript(js string, priority Priority) {
+func (r *Response) ExecuteJavaScript(js string, priority Priority) {
 	switch priority {
 	case PriorityExclusive:
 		r.exclusiveCommand = &ResponseCommand{script: js}
@@ -133,12 +133,12 @@ func (r *Response) executeJavaScript(js string, priority Priority) {
 }
 
 
-func (r *Response) executeControlCommand(controlId string, functionName string, priority Priority, args... interface{}) {
-	r.executeSelectorFunction("#" + controlId, functionName, priority, args...)
+func (r *Response) ExecuteControlCommand(controlId string, functionName string, priority Priority, args... interface{}) {
+	r.ExecuteSelectorFunction("#" + controlId, functionName, priority, args...)
 }
 
 // Calls a function on a jQuery selector
-func (r *Response) executeSelectorFunction(selector string, functionName string, priority Priority, args... interface{}) {
+func (r *Response) ExecuteSelectorFunction(selector string, functionName string, priority Priority, args... interface{}) {
 	c := ResponseCommand{selector: selector, function: functionName, args: args}
 
 	switch priority {

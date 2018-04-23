@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"github.com/spekary/goradd/util/types"
 )
 
 // Interface that allows an object to be converted to javascript (not JSON!)
@@ -21,12 +22,6 @@ func ToJavaScript(v interface{}) string {
 	switch s := v.(type) {
 	case JavaScripter:
 		return s.JavaScript()
-	case VarName:
-		return string(s)	// we are going to assume variable names are not going to containing anything needing to be escaped
-	case json.Marshaler:
-		b, _ := json.Marshal(s)
-		s1 := strings.Replace(string(b), "/", `\/`, -1) // Replace forward slashes to avoid potential confusion in browser from closing html tags
-		return fmt.Sprintf("%s", s1)
 	case string:
 		b, _ := json.Marshal(s)                         // This does a good job of handling most escape sequences we might need
 		s1 := strings.Replace(string(b), "/", `\/`, -1) // Replace forward slashes to avoid potential confusion in browser from closing html tags
@@ -48,7 +43,32 @@ func ToJavaScript(v interface{}) string {
 		} else {
 			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
 		}
-
+	case types.MapI:
+		var out string
+		s.Range(func(k string, v interface{}) bool {
+			if v2, ok := v.(NoQuoteKey); ok {
+				out += k + ":" + ToJavaScript(v2.Value) + ","
+			} else {
+				out += ToJavaScript(k) + ":" + ToJavaScript(v) + ","
+			}
+			return true
+		})
+		if len(out) == 0 {
+			return "{}"
+		} else {
+			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
+		}
+	case types.StringMapI:
+		var out string
+		s.Range(func(k string, v string) bool {
+			out += ToJavaScript(k) + ":" + ToJavaScript(v) + ","
+			return true
+		})
+		if len(out) == 0 {
+			return "{}"
+		} else {
+			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
+		}
 	default:
 		return fmt.Sprint(s)
 	}
@@ -69,11 +89,21 @@ func (n NoQuoteKey) JavaScript() string {
 	panic("NoQuoteKey should only be used as a value in a string map.")
 }
 
-// VarName represents a global variable name that can be used as a value in a javascript argument list. Normally,
-// string values would be quoted. This outputs a string without a quote, which in javascript will be treated as
-// a variable or function name.
-type VarName string
+// JsCode represents straight javascript code that should not be escaped.
+// A global variable name that can be used as a value in a javascript argument list could be used here too. Normally,
+// string values would be quoted. This outputs a string without quoting or escaping.
+type jsCode struct {
+	code string
+	isInt bool
+}
 
+func JsCode(s string) jsCode {
+	return jsCode{code: s}
+}
+
+func (c jsCode) JavaScript() string {
+	return c.code
+}
 
 // Undefined explicitly outputs as "undefined" in javascript. Generally, nil pointers become "null" in javascript, so
 // use this if you would rather have an undefined value.
@@ -82,4 +112,30 @@ type Undefined struct {
 
 func (n Undefined) JavaScript() string {
 	return "undefined"
+}
+
+func (n Undefined) MarshalJSON() ([]byte, error) {
+	return []byte("undefined"), nil
+}
+
+// NumberInt is a helper function to convert an expected integer that is returned from a json Unmarshal as a Number,
+// into an actual integer without returning any errors. If there is an error, it just returns 0. Use this when you absolutely
+// know you are expecting an integer.
+func NumberInt(i interface{}) int {
+	if n,ok := i.(json.Number); ok {
+		v,_ := n.Int64()
+		return int(v)
+	}
+	return 0
+}
+
+// NumberFloat is a helper function to convert an expected float that is returned from a json Unmarshal as a Number,
+// into an actual float64 without returning any errors. If there is an error, it just returns 0. Use this when you absolutely
+// know you are expecting a float.
+func NumberFloat(i interface{}) float64 {
+	if n,ok := i.(json.Number); ok {
+		v,_ := n.Float64()
+		return v
+	}
+	return 0
 }

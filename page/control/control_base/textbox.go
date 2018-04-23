@@ -174,13 +174,13 @@ func (t *Textbox) SetType(typ string) TextboxI {
 	return t.this()
 }
 
-// SetColumns sets the visible width of the text control. Each column is an approximate with of a character, and is browser
+// SetColumns sets the visible width of the text control. Each table is an approximate with of a character, and is browser
 // dependent, so its not a very good way of setting the width. The css width property is more accurate. Also, this is
 // only the visible width, not the maximum number of characters.
 func (t *Textbox) SetColumns(columns int) {
 	t.columns = columns
 	if columns <= 0 {
-		panic("Invalid column value.")
+		panic("Invalid table value.")
 	}
 	t.Refresh()
 }

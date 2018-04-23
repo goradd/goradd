@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// A Column represents a column or field in a database structure, and is the leaf of a node tree or chain.
+// A Column represents a table or field in a database structure, and is the leaf of a node tree or chain.
 type ColumnNode struct {
 	Node
 
@@ -13,7 +13,7 @@ type ColumnNode struct {
 	dbKey			string
 	// Name of table in the database we point to
 	dbTable       string
-	// The name of the column in the database
+	// The name of the table in the database
 	dbColumn       string
 	// The name of the function used to access the property as a node or ORM item
 	goName			string

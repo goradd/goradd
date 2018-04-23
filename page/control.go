@@ -14,6 +14,7 @@ import (
 	"github.com/spekary/goradd/log"
 	"reflect"
 	"goradd/config"
+	action2 "github.com/spekary/goradd/page/action"
 )
 
 const PrivateActionBase = 1000
@@ -38,6 +39,15 @@ type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *byt
 type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string, buffer *bytes.Buffer)
 
 var DefaultCheckboxLabelDrawingMode = html.LABEL_AFTER	// Settind used by checkboxes and radio buttons to default how they draw labels.
+
+
+// ActionValues is the structure representing the values send in Action. Note that all numeric values are returned as
+// a json.Number type. You then can call Float64() or Int64() as appropriate to extract the value.
+type ActionValues struct {
+	Event interface{} `json:"event"`
+	Control interface{} `json:"control"`
+	Action interface{} `json:"action"`
+}
 
 
 
@@ -95,11 +105,11 @@ type ControlI interface {
 
 	Action(context.Context, ActionParams)
 	PrivateAction(context.Context, ActionParams)
-	SetActionValue(interface{})
+	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
-	On(e EventI, a ...ActionI)
+	On(e EventI, a ...action2.ActionI)
 	Off()
-	wrapEvent(eventName string, selector string, eventJs string) string
+	WrapEvent(eventName string, selector string, eventJs string) string
 
 	addChildControlsToPage()
 	addChildControl(ControlI)
@@ -278,7 +288,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	response := c.Form().Response()
 	c.This().PutCustomScript(ctx, response)
-	c.getActionScripts(response)
+	c.GetActionScripts(response)
 	c.This().PostRender(ctx, buf)
 	return
 }
@@ -320,7 +330,7 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 		// add attribute changes
 		if c.attributeScripts != nil {
 			for _,scripts := range c.attributeScripts {
-				response.executeControlCommand(c.Id(), (*scripts)[0].(string), PriorityStandard, (*scripts)[1:]...)
+				response.ExecuteControlCommand(c.Id(), (*scripts)[0].(string), PriorityStandard, (*scripts)[1:]...)
 			}
 			c.attributeScripts = nil
 		}
@@ -692,29 +702,51 @@ func (c *Control) SetHasFor(v bool) ControlI {
 	return c.This()
 }
 
+func (c *Control) SetShouldAutoRender(r bool) {
+	c.shouldAutoRender = r
+}
+
 func (c *Control) ShouldAutoRender() bool {
 	return c.shouldAutoRender
 }
 
 // On adds an event listener to the control that will trigger the given actions
-func (c *Control) On(e EventI, actions... ActionI) {
+func (c *Control) On(e EventI, actions... action2.ActionI) {
+	var isPrivate bool
 	c.isModified = true	// completely redraw the control. The act of redrawing will turn off old scripts.
+						// TODO: Adding scripts should instead just redraw the associated script block. We will need to
+						// implement a script block with every control connected by id
 	e.AddActions(actions...)
 	c.eventCounter++
-	if c.events == nil {
-		c.events = map[EventId]EventI{}
+	for _,action := range actions {
+		if _,ok := action.(action2.PrivateAction); ok {
+			isPrivate = true
+			break
+		}
 	}
 
 	// Get a new event id
 	for {
 		if _,ok := c.events[c.eventCounter]; ok {
 			c.eventCounter ++
-
+		} else if _,ok := c.privateEvents[c.eventCounter]; ok {
+			c.eventCounter ++
 		} else {
 			break
 		}
 	}
-	c.events[c.eventCounter] = e
+
+	if isPrivate {
+		if c.privateEvents == nil {
+			c.privateEvents = map[EventId]EventI{}
+		}
+		c.privateEvents[c.eventCounter] = e
+	} else {
+		if c.events == nil {
+			c.events = map[EventId]EventI{}
+		}
+		c.events[c.eventCounter] = e
+	}
 }
 
 // Off removes all event handlers from the control
@@ -725,8 +757,9 @@ func (c *Control) Off() {
 // SetActionValue sets a value that is provided to actions when they are triggered. The value can be a static value
 // or one of the javascript.* objects that can dynamically generated values. The value is then sent back to the action
 // handler after the action is triggered.
-func (c *Control) SetActionValue(v interface{}) {
+func (c *Control) SetActionValue(v interface{}) ControlI {
 	c.actionValue = v
+	return c.This()
 }
 
 // ActionValue returns the control's action value
@@ -736,7 +769,7 @@ func (c *Control) ActionValue() interface{} {
 
 
 // Action processes actions. Typically, the Action function will first look at the id to know how to handle it.
-// This is just an empty implemenation. Sub-controls should implement This.
+// This is just an empty implemenation. Sub-controls should implement this.
 func (c *Control) Action(ctx context.Context, a ActionParams) {
 }
 
@@ -748,21 +781,21 @@ func (c *Control) PrivateAction(ctx context.Context, a ActionParams) {
 
 
 
-// getActionScripts is an internal function called by the form to recursively gather up all the event related
+// GetActionScripts is an internal function called during drawing to recursively gather up all the event related
 // scripts attached to the control and send them to the response.
-func (c *Control) getActionScripts(r *Response) {
+func (c *Control) GetActionScripts(r *Response) {
 	// Render actions
 	if c.privateEvents != nil {
 		for id,e := range c.privateEvents {
 			s := e.RenderActions(c.This(), id)
-			r.executeJavaScript(s, PriorityStandard)
+			r.ExecuteJavaScript(s, PriorityStandard)
 		}
 	}
 
 	if c.events != nil {
 		for id,e := range c.events {
 			s := e.RenderActions(c.This(), id)
-			r.executeJavaScript(s, PriorityStandard)
+			r.ExecuteJavaScript(s, PriorityStandard)
 		}
 	}
 }
@@ -792,8 +825,8 @@ func (c *Control) resetValidation() {
 }
 
 
-// An internal function to allow the control to customize its treatment of event processing.
-func (c *Control) wrapEvent(eventName string, selector string, eventJs string) string {
+// WrapEvent is an internal function to allow the control to customize its treatment of event processing.
+func (c *Control) WrapEvent(eventName string, selector string, eventJs string) string {
 	if selector != "" {
 		return fmt.Sprintf("$j('#%s').on('%s', '%s', function(event, ui){%s});", c.Id(), eventName, selector, eventJs)
 	} else {
@@ -844,25 +877,29 @@ func (c *Control) doAction(ctx context.Context) {
 	if c.passesValidation(e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
 		for _,a := range e.GetActions() {
-			callbackAction := a.(CallbackActionI)
+			callbackAction := a.(action2.CallbackActionI)
 			p := ActionParams {
 				Id:        callbackAction.Id(),
 				Action:    a,
-				Values:    grCtx.actionValues,
 				ControlId: c.Id(),
 			}
+
+			// grCtx.actionValues is a json representation of the action values. We extract the json, but since json does
+			// not differentiate between float and int, we will leave all numbers as json.Number types so we can extract later.
+			// use javascript.NumberInt() to easily convert numbers in interfaces to int values.
+			p.Values = grCtx.actionValues
 			dest := c.Page().GetControl(callbackAction.GetDestinationControlId())
 
 			if dest != nil {
 				if isPrivate {
 					if (log.HasLogger(log.FrameworkDebugLog)) {
-						log.FrameworkDebugf("doAction - PrivateAction, DestId: %s, ActionId: %d, Action: %s, TriggerId: %s",
+						log.FrameworkDebugf("doAction - PrivateAction, DestId: %s, action2.ActionId: %d, Action: %s, TriggerId: %s",
 							dest.Id(), p.Id, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
 					dest.PrivateAction(ctx, p)
 				} else {
 					if (log.HasLogger(log.FrameworkDebugLog)) {
-						log.FrameworkDebugf("doAction - Action, DestId: %s, ActionId: %d, Action: %s, TriggerId: %s",
+						log.FrameworkDebugf("doAction - Action, DestId: %s, action2.ActionId: %d, Action: %s, TriggerId: %s",
 							dest.Id(), p.Id, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
 					dest.Action(ctx, p)

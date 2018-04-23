@@ -284,8 +284,8 @@ func (r SqlReceiver) Unpack(typ GoColumnType) interface{} {
 	}
 }
 
-// ReceiveRows gets data from a sql result set and returns it as a slice of maps. Each row is mapped to its column name.
-// If you provide column names, those will be used in the map. Otherwise it will get the column names out of the
+// ReceiveRows gets data from a sql result set and returns it as a slice of maps. Each row is mapped to its table name.
+// If you provide table names, those will be used in the map. Otherwise it will get the table names out of the
 // result set provided
 func ReceiveRows(rows *sql.Rows, columnTypes []GoColumnType, columnNames []string) (values []map[string]interface{}) {
 	var err error
