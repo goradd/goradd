@@ -6,6 +6,7 @@ import (
 	"strings"
 	"fmt"
 	"bytes"
+	"github.com/spekary/goradd/log"
 )
 
 var pageManager *PageManager
@@ -73,6 +74,10 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 	}
 
 	if page == nil {
+		if gCtx.requestMode == Ajax {
+			// TODO: If this happens, we need to reload the whole page, because we lost the formstate completely
+			log.FrameworkDebug("Ajax lost the page state") // generally this should only happen if the page state drops out of the cash, which might happen after a long time
+		}
 		// page was not found, so make a new one
 		f,_, _ := m.getNewPageFunc(ctx)
 		if f == nil {
@@ -113,6 +118,7 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) map[string
 	err := page.runPage(ctx, buf, isNew)
 
 	if err != nil {
+		log.Error(err)
 		var html = buf.String() // copy current html
 		buf.Reset()
 		m.makeErrorResponse(ctx, newRunError(ctx, err), html, buf)

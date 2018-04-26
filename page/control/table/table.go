@@ -14,6 +14,7 @@ import (
 
 type TableI interface {
 	page.ControlI
+	SetCaption(interface{})
 	DrawCaption(context.Context, *bytes.Buffer) error
 	GetHeaderRowAttributes(row int) *html.Attributes
 	GetFooterRowAttributes(row int) *html.Attributes
@@ -26,7 +27,7 @@ type Table struct {
 
 	columns []ColumnI
 	renderColumnTags bool
-	caption string
+	caption interface{}
 	hideIfEmpty bool
 	headerRowCount int
 	footerRowCount int
@@ -50,6 +51,11 @@ func (t *Table) Init(self page.ControlI, parent page.ControlI) {
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 }
+
+func (t *Table) SetCaption(caption interface{}) {
+	t.caption = caption
+}
+
 
 func (t *Table) SetHeaderRowCount(count int) *Table {
 	t.headerRowCount = count
@@ -122,8 +128,15 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 }
 
 func (t *Table) DrawCaption(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if t.caption != "" {
-		buf.WriteString(fmt.Sprintf("<caption>%s</caption>\n", html2.EscapeString(t.caption)))
+	switch obj := t.caption.(type) {
+	case string:
+		buf.WriteString(fmt.Sprintf("<caption>%s</caption>\n", html2.EscapeString(obj)))
+	case page.ControlI:
+		buf.WriteString("<caption>")
+		err = obj.Draw(ctx, buf)
+		if err != nil {
+			buf.WriteString("</caption>\n")
+		}
 	}
 	return
 }

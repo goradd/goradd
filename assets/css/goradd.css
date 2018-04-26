@@ -97,29 +97,28 @@ textarea[data-grctl] {
 .datagrid .paginator-results {
   float: left;
 }
-.paginator .arrow {
-  color: #dedede;
-  font-style: italic;
+.data-scrollbar {
+  white-space: nowrap;
 }
-.paginator .arrow a {
-  font-style: normal;
+.data-scrollbar button {
+  border: solid black 1px;
+  display: inline-block;
+  margin: 0;
+  padding: 3px 5px;
+  background: white;
 }
-.paginator .break {
-  color: #dedede;
+.data-scrollbar .break {
   padding: 5px;
 }
-.paginator .page {
-  color: #dedede;
-  display: inline-block;
-  padding: 0 5px;
+.data-scrollbar .page {
+  margin-left: -1px;
 }
-.paginator .selected {
-  background: #780000;
-  border: 1px solid #d90d0d;
-  border-radius: 3px;
-  display: inline-block;
-  color: #fff;
-  padding: 0 5px;
+.data-scrollbar .next {
+  margin-left: -1px;
+}
+.data-scrollbar .selected {
+  background: #eeeeee;
+  border: solid darkgray 2px;
 }
 /* Status coloring */
 .warning {

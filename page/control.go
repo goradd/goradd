@@ -256,6 +256,7 @@ func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 	return nil
 }
 
+
 // Draws the default control structure into the given buffer.
 func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// TODO: Capture errors and panics, writing what we can to the buffer on error
@@ -380,6 +381,9 @@ func (c *Control) DrawTag(ctx context.Context) string {
 		if err := c.This().DrawInnerHtml(ctx, buf); err != nil {
 			panic (err)
 		}
+		if err := c.RenderAutoControls(ctx, buf); err != nil {
+			panic (err)
+		}
 		if c.hasNoSpace {
 			ctrl = html.RenderTagNoSpace(c.Tag, attributes, buf.String())
 
@@ -388,6 +392,25 @@ func (c *Control) DrawTag(ctx context.Context) string {
 		}
 	}
 	return ctrl
+}
+
+// RenderAutoControls is an internal function to draw controls marked to autoRender. These are generally used for hidden controls
+// that can be shown without impacting layout, or that are scripts only.
+func (c *Control) RenderAutoControls(ctx context.Context, buf *bytes.Buffer) (err error) {
+	// Figuring out where to draw these controls can be difficult.
+
+	for _,ctrl := range c.children {
+		if ctrl.ShouldAutoRender() &&
+			!ctrl.WasRendered() {
+
+			err = ctrl.Draw(ctx, buf)
+
+			if err != nil {
+				break
+			}
+		}
+	}
+	return
 }
 
 // Controls that use templates should use This function signature for the template. That will override This one, and
@@ -583,6 +606,9 @@ func (c *Control) SetParent(newParent ControlI) {
 		c.parent.addChildControl(c.This())
 	}
 	c.page.addControl(c.This())
+	// TODO: Refresh control, except if the control being added is an auto-render control, in which case we should
+	// just add the control through ajax. Will need to specify the parent. Javascript should tack it to the end of the
+	// inner-html of the control.
 }
 
 func (c *Control) addChildControlsToPage() {

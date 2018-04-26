@@ -100,16 +100,8 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		return // the template is required
 	}
 	// Render controls that are marked to auto render if the form did not render them
-	for _,ctrl := range f.children {
-		if ctrl.ShouldAutoRender() &&
-			!ctrl.WasRendered() {
-
-			err = ctrl.Draw(ctx, buf)
-
-			if err != nil {
-				break
-			}
-		}
+	if err = f.RenderAutoControls(ctx, buf); err != nil {
+		panic (err)
 	}
 
 	f.resetDrawingFlags()
@@ -153,8 +145,9 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 		f.DrawAjax(ctx, &f.response)
 	}
 
-	pagestate = f.saveState() //
-	if pagestate != GetContext(ctx).pageStateId {
+	pagestate = f.saveState()
+	var grctx = GetContext(ctx)
+	if pagestate != grctx.pageStateId {
 		panic("page state changed")
 	}
 	//f.response.SetControlValue(htmlVarFormstate, formstate)

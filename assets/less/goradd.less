@@ -110,30 +110,29 @@ textarea[data-grctl] {
   }
 }
 
-.paginator {
+.data-scrollbar {
+  white-space: nowrap;
+  button {
+    border: solid black 1px;
+    display: inline-block;
+    margin:0;
+    padding: 3px 5px;
+    background: white;
+  }
   .arrow {
-    color: #dedede;
-    font-style: italic;
-    a {
-      font-style: normal;
-    }
   }
   .break {
-    color: #dedede;
     padding: 5px;
   }
   .page {
-    color: #dedede;
-    display: inline-block;
-    padding: 0 5px;
+    margin-left: -1px;
+  }
+  .next {
+    margin-left: -1px;
   }
   .selected {
-    background: #780000;
-    border: 1px solid #d90d0d;
-    border-radius: 3px;
-    display: inline-block;
-    color: #fff;
-    padding: 0 5px;
+    background: #eeeeee;
+    border: solid darkgray 2px;
   }
 }
 

@@ -33,41 +33,41 @@ func (p *Proxy) Init(parent page.ControlI) {
 // OnClick is a shortcut for adding a click event handler that is particular to buttons. It debounces the click, to
 // prevent potential accidental multiple form submissions.
 func (p *Proxy) OnClick(actions... action.ActionI) {
-	p.On(event.Click().Terminating().Delay(5).Blocking(), actions...)
+	p.On(event.Click().Terminating().Delay(250), actions...)
 }
 
+// Draw is used by the form engine to draw the control. As a proxy, there is no html to draw, but this is where the scripts attached to the
+// proxy get sent to the response. This should get drawn by the auto-drawing routine, since proxies are not rendered in templates.
 func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
     response := p.Form().Response()
     p.This().PutCustomScript(ctx, response)
     p.GetActionScripts(response)
+    p.PostRender(ctx, buf)
     return
 }
 
 // DrawAsLink draws the proxy as a link. Generally, only do this if you are actually linking to a page. If not, use
 // a button.
-func (p *Proxy) DrawAsLink(ctx context.Context,
-    label string,
+func (p *Proxy) LinkHtml(label string,
     actionValue string,
     attributes *html.Attributes,
-    buf *bytes.Buffer,
-) (err error) {
+) string {
 	if attributes == nil {
 		attributes = html.NewAttributes()
 	}
 	if !attributes.Has("href") {
 		attributes.Set("href", "javascript:;")
 	}
-	return p.DrawAsTag(ctx, label, actionValue, attributes, "a", false, buf)
+	return p.TagHtml(label, actionValue, attributes, "a", false)
 }
 
-func (p *Proxy) DrawAsTag(ctx context.Context,
-    label string,
+// TagHtml lets you customize the tag that will be used to embed the proxy.
+func (p *Proxy) TagHtml(label string,
     actionValue string,
     attributes *html.Attributes,
     tag string,
-    dontEscape bool,
-    buf *bytes.Buffer,
-) (err error) {
+    rawHtml bool,
+) string {
     a := html.NewAttributes()
     a.SetDataAttribute("grProxy", p.Id())
 
@@ -79,29 +79,25 @@ func (p *Proxy) DrawAsTag(ctx context.Context,
 		a.Merge(attributes) // will only apply defaults that are not in attributes
 	}
 
-    if !dontEscape {
+    if !rawHtml {
         label = html2.EscapeString(label)
     }
 
-    _, err = buf.WriteString(html.RenderTag(tag, a, label))
-    return
+    return html.RenderTagNoSpace(tag, a, label)
 }
 
-func (p *Proxy) DrawAsButton(ctx context.Context,
-    label string,
+func (p *Proxy) ButtonHtml(label string,
     actionValue string,
     attributes *html.Attributes,
-    dontEscape bool,
-    buf *bytes.Buffer,
-) (err error) {
+    rawHtml bool,
+) string {
     a := html.NewAttributes()
     a.Set("onclick", "return false")
     a.Set("type", "button")
     if attributes != nil {
 		a.Merge(attributes)
 	}
-    p.DrawAsTag(ctx, label, actionValue, a, "button", dontEscape, buf)
-    return
+    return p.TagHtml(label, actionValue, a, "button", rawHtml)
 }
 
 // Attributes returns attributes that can be included in any tag to attach a proxy to the tag.
