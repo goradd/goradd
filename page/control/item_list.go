@@ -6,8 +6,8 @@ import (
 	"sort"
 )
 
-// Ider is an object that can embed an ItemList
-type Ider interface {
+// IDer is an object that can embed an ItemList
+type IDer interface {
 	ID() string
 	SetID(id string)
 }
@@ -32,13 +32,13 @@ type ItemListI interface {
 // turn that object into a manager of list items. ItemList will manage the id's of the items in its list, you do not
 // have control of that, and it needs to manage those ids in order to efficiently manage the selection process.
 type ItemList struct {
-	owner Ider
+	owner IDer
 	items []ListItemI
 }
 
 // NewItemList creates a new item list. "owner" is the object that has the ItemList embedded in it, and must be
-// an Ider.
-func NewItemList(owner Ider) ItemList {
+// an IDer.
+func NewItemList(owner IDer) ItemList {
 	return ItemList{owner: owner, items: []ListItemI{}}
 }
 

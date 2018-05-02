@@ -13,6 +13,7 @@ func (o *{{privateName}}Base) Save(ctx context.Context)  {
 	}
 }
 
+// Update will update the values in the database, saving any changed values.
 func (o *{{privateName}}Base) Update(ctx context.Context) {
 	if !o._restored {
 		panic ("Cannot update a record that was not originally read from the database.")
@@ -26,6 +27,8 @@ func (o *{{privateName}}Base) Update(ctx context.Context) {
 	o.resetDirtyStatus()
 }
 
+// Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
+// this will create a duplicate in the database.
 func (o *{{privateName}}Base) Insert(ctx context.Context) {
 	m := o.getModifiedFields()
 	if len(m) == 0 {

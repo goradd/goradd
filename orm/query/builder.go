@@ -15,7 +15,7 @@ type QueryBuilderI interface {
 	Having(c NodeI) QueryBuilderI
 	OrderBy(nodes... NodeI) QueryBuilderI
 	GroupBy(nodes... NodeI) QueryBuilderI
-	Limit(maxRowCount int64, offset int64) QueryBuilderI
+	Limit(maxRowCount int, offset int) QueryBuilderI
 	Select(nodes... NodeI) QueryBuilderI
 	Distinct() QueryBuilderI
 	Alias(name string, n NodeI) QueryBuilderI

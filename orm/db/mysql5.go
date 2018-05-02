@@ -419,11 +419,11 @@ func (m *Mysql5) generateLimitSql(b *sqlBuilder) (sql string) {
 		return ""
 	}
 	if b.limitInfo.offset > 0 {
-		sql = strconv.FormatInt(b.limitInfo.offset, 10) + ","
+		sql = strconv.Itoa(b.limitInfo.offset) + ","
 	}
 
 	if b.limitInfo.maxRowCount > -1 {
-		sql += strconv.FormatInt(b.limitInfo.maxRowCount, 10)
+		sql += strconv.Itoa(b.limitInfo.maxRowCount)
 	}
 
 	if sql != "" {

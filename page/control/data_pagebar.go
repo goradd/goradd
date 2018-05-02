@@ -17,11 +17,11 @@ const (
 	PageClick  = iota + 1000
 )
 
-// DataPagebar is a toolbar designed to aid scrolling through a large set of data. It is implemented using Aria design
+// DataPager is a toolbar designed to aid scrolling through a large set of data. It is implemented using Aria design
 // best practices. It is designed to be paired with a Table or DataRepeater to aid in navigating through the data.
 // It is similar to a Paginator, but a paginator is for navigating through a whole series of pages and not just for
 // data on one page.
-type DataPagebar struct {
+type DataPager struct {
 	localPage.Control
 
 	totalItems int
@@ -38,13 +38,13 @@ type DataPagebar struct {
 	proxy *Proxy
 }
 
-func NewPaginator(parent page.ControlI, paginatedControl page.ControlI) *DataPagebar {
-	p := DataPagebar{paginatedControl:paginatedControl}
+func NewDataPager(parent page.ControlI, paginatedControl page.ControlI) *DataPager {
+	p := DataPager{paginatedControl:paginatedControl}
 	p.Init(parent)
 	return &p
 }
 
-func (d *DataPagebar) Init(parent page.ControlI) {
+func (d *DataPager) Init(parent page.ControlI) {
 	d.Control.Init(d, parent)
 	d.labelForNext = d.T("Next")
 	d.labelForPrevious = d.T("Previous")
@@ -57,36 +57,36 @@ func (d *DataPagebar) Init(parent page.ControlI) {
 	d.pageNum = 1
 }
 
-func (d *DataPagebar) Action(ctx context.Context, params page.ActionParams) {
+func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
 	switch params.Id {
 	case PageClick:
 		d.SetPageNum(javascript.NumberInt(params.Values.Control))
 	}
 }
 
-func (d *DataPagebar) SetTotalItems(count int) {
+func (d *DataPager) SetTotalItems(count int) {
 	d.totalItems = count
 	d.limitPageNumber()
 	d.Refresh()
 }
 
-func (d *DataPagebar) TotalItems() int {
+func (d *DataPager) TotalItems() int {
 	return d.totalItems
 }
 
-func (d *DataPagebar)  SetPageSize(size int) {
+func (d *DataPager)  SetPageSize(size int) {
 	d.pageSize = size
 }
 
-func (d *DataPagebar) PageSize() int {
+func (d *DataPager) PageSize() int {
 	return d.pageSize
 }
 
-func (d *DataPagebar) PageNum() int {
+func (d *DataPager) PageNum() int {
 	return d.pageNum
 }
 
-func (d *DataPagebar) SetPageNum(n int) {
+func (d *DataPager) SetPageNum(n int) {
 	if d.pageNum != n {
 		d.pageNum = n
 		d.Refresh()
@@ -94,33 +94,43 @@ func (d *DataPagebar) SetPageNum(n int) {
 	}
 }
 
-func (d *DataPagebar) refreshPaginatedControl() {
+func (d *DataPager) refreshPaginatedControl() {
 	d.paginatedControl.Refresh()
 }
 
 // SetMaxPageButtons sets the maximum number of buttons that will be displayed in the paginator.
-func (d *DataPagebar) SetMaxPageButtons(b int) {
+func (d *DataPager) SetMaxPageButtons(b int) {
 	d.maxPageButtons = b
 }
 
-func (d *DataPagebar) SetObjectNames(singular string, plural string) {
+func (d *DataPager) SetObjectNames(singular string, plural string) {
 	d.objectName = singular
 	d.objectPluralName = plural
 }
 
-func (d *DataPagebar) SliceOffsets() (start, end int) {
+// SliceOffsets returns the start and end values to use to specify a portion of a slice corresponding to the
+// data the pager refers to
+func (d *DataPager) SliceOffsets() (start, end int) {
 	start = (d.pageNum - 1) * d.pageSize
 	end = util.MinInt(start + d.pageSize, d.totalItems)
 	return
 }
 
+// SqlLimits returns the limits you would use in a sql database limit clause
+func (d *DataPager) SqlLimits() (maxRowCount, offset int) {
+	offset = (d.pageNum - 1) * d.pageSize
+	maxRowCount = d.pageSize
+	return
+}
+
+
 // SetLabels sets the previous and next labels. Translate these first.
-func (d *DataPagebar) SetLabels(previous string, next string) {
+func (d *DataPager) SetLabels(previous string, next string) {
 	d.labelForPrevious = previous
 	d.labelForNext = next
 }
 
-func (d *DataPagebar) limitPageNumber() {
+func (d *DataPager) limitPageNumber() {
 	pageCount := d.calcPageCount()
 
 	if d.pageNum > pageCount {
@@ -132,7 +142,7 @@ func (d *DataPagebar) limitPageNumber() {
 	}
 }
 
-func (d *DataPagebar) calcPageCount() int {
+func (d *DataPager) calcPageCount() int {
 	if d.pageSize == 0 || d.totalItems == 0 {
 		return 0
 	}
@@ -192,7 +202,7 @@ Note: there are likely better ways to do this. Some innovative ones are to have 
 Or, use the ellipsis as a dropdown menu for more selections
  */
 
-func (d *DataPagebar) calcBunch() (pageStart, pageEnd int) {
+func (d *DataPager) calcBunch() (pageStart, pageEnd int) {
 
 	pageCount := d.calcPageCount()
 	if pageCount <= d.maxPageButtons {
@@ -222,7 +232,7 @@ func (d *DataPagebar) calcBunch() (pageStart, pageEnd int) {
 	}
 }
 
-func (d *DataPagebar) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (d *DataPager) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := d.previousButtonsHtml()
 	pageStart, pageEnd := d.calcBunch()
 	for i := pageStart; i <= pageEnd; i++ {
@@ -235,7 +245,7 @@ func (d *DataPagebar) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err
 }
 
 
-func (d *DataPagebar) previousButtonsHtml() string {
+func (d *DataPager) previousButtonsHtml() string {
 	var prev string
 	var actionValue string
 	actionValue = strconv.Itoa(d.pageNum - 1)
@@ -260,7 +270,7 @@ func (d *DataPagebar) previousButtonsHtml() string {
 	return h
 }
 
-func (d *DataPagebar) nextButtonsHtml() string {
+func (d *DataPager) nextButtonsHtml() string {
 	var next string
 	var actionValue string
 
@@ -287,7 +297,7 @@ func (d *DataPagebar) nextButtonsHtml() string {
 	return h
 }
 
-func (d *DataPagebar) pageButtonsHtml(i int) string {
+func (d *DataPager) pageButtonsHtml(i int) string {
 	actionValue := strconv.Itoa(i)
 	attr := html.NewAttributes().Set("id", d.ID() + "_page_" + actionValue).Set("role","tab").AddClass("page")
 	if d.pageNum == i {
@@ -303,12 +313,12 @@ func (d *DataPagebar) pageButtonsHtml(i int) string {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (d *DataPagebar) MarshalState(m types.MapI) {
+func (d *DataPager) MarshalState(m types.MapI) {
 	m.Set("pageNum", d.pageNum)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (d *DataPagebar) UnmarshalState(m types.MapI) {
+func (d *DataPager) UnmarshalState(m types.MapI) {
 	if m.Has("pageNum") {
 		i,_ := m.GetInt("pageNum")
 		d.pageNum = i

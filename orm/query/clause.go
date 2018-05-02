@@ -5,11 +5,11 @@ type ClauseI interface {
 }
 
 type LimitClause struct {
-	maxRowCount int64
-	offset int64
+	maxRowCount int
+	offset int
 }
 
-func Limit(maxRowCount int64, offset int64) *LimitClause {
+func Limit(maxRowCount int, offset int) *LimitClause {
 	return &LimitClause{maxRowCount, offset}
 }
 

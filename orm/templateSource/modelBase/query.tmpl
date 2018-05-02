@@ -47,6 +47,23 @@ func (b *{{t.LcGoName}}Builder) Load(ctx context.Context) ({{t.LcGoName}}Slice [
 	return {{t.LcGoName}}Slice
 }
 
+// LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
+// any errors, they are returned in the context object. If no results come back from the query, it will return
+// an empty slice.
+func (b *{{t.LcGoName}}Builder) LoadI(ctx context.Context) ({{t.LcGoName}}Slice []interface{}) {
+	results := b.base.Load(ctx)
+	if results == nil {
+		return
+	}
+	for _,item := range results {
+		o := New{{t.GoName}}()
+		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		{{t.LcGoName}}Slice = append({{t.LcGoName}}Slice, o)
+	}
+	return {{t.LcGoName}}Slice
+}
+
+
 // Get is a convenience method to return only the first item found in a query. It is equivalent to adding
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
@@ -90,7 +107,7 @@ func (b *{{t.LcGoName}}Builder)  OrderBy(nodes... query.NodeI) *{{t.LcGoName}}Bu
 }
 
 // Limit willl return a subset of the data, limited to the offset and number of rows specified
-func (b *{{t.LcGoName}}Builder)  Limit(maxRowCount int64, offset int64) *{{t.LcGoName}}Builder {
+func (b *{{t.LcGoName}}Builder)  Limit(maxRowCount int, offset int) *{{t.LcGoName}}Builder {
 	b.base.Limit(maxRowCount, offset)
 	return b
 }

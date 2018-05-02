@@ -80,7 +80,7 @@ func (t *Table) SetFooterRowCount(count int) *Table {
 }
 
 func (t *Table) DrawTag(ctx context.Context) string {
-	t.GetData(t)
+	t.GetData(ctx, t)
 	defer t.ResetData()
 	return t.Control.DrawTag(ctx)
 }

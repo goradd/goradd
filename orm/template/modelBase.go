@@ -458,6 +458,15 @@ func (o *`)
 		if col.IsId {
 
 			buf.WriteString(`
+// `)
+
+			buf.WriteString(col.GoName)
+
+			buf.WriteString(` returns the loaded value of `)
+
+			buf.WriteString(col.GoName)
+
+			buf.WriteString(`.
 func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -474,6 +483,11 @@ func (o *`)
 			buf.WriteString(`)
 }
 
+// `)
+
+			buf.WriteString(col.GoName)
+
+			buf.WriteString(`IsValid returns true if the value was loaded from the database or has been set.
 func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -483,7 +497,11 @@ func (o *`)
 			buf.WriteString(col.GoName)
 
 			buf.WriteString(`IsValid() bool {
-	return o._restored
+	return o._restored && o.`)
+
+			buf.WriteString(col.VarName)
+
+			buf.WriteString(`IsValid
 }
 
 `)
@@ -522,6 +540,11 @@ func (o *`)
 			buf.WriteString(`
 }
 
+// `)
+
+			buf.WriteString(col.GoName)
+
+			buf.WriteString(`IsValid returns true if the value was loaded from the database or has been set.
 func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -545,6 +568,11 @@ func (o *`)
 		if col.IsNullable {
 
 			buf.WriteString(`
+// `)
+
+			buf.WriteString(col.GoName)
+
+			buf.WriteString(`IsNull returns true if the related database value is null.
 func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -569,11 +597,15 @@ func (o *`)
 			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
 
 			buf.WriteString(`
-// Return current value of `)
+// `)
 
 			buf.WriteString(col.ForeignKey.GoName)
 
-			buf.WriteString(`
+			buf.WriteString(` returns the current value of the loaded `)
+
+			buf.WriteString(col.ForeignKey.GoName)
+
+			buf.WriteString(`, and nil if its not loaded.
 func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -594,11 +626,16 @@ func (o *`)
 			buf.WriteString(`
 }
 
-// Load the related `)
+// Load`)
 
 			buf.WriteString(col.ForeignKey.GoName)
 
-			buf.WriteString(` and return it
+			buf.WriteString(` returns the related `)
+
+			buf.WriteString(col.ForeignKey.GoName)
+
+			buf.WriteString(`. If it is not already loaded,
+// it will attempt to load it first.
 func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -858,7 +895,16 @@ func (o *`)
 
 		} else { // Not nullable
 
-			buf.WriteString(`func (o *`)
+			buf.WriteString(`// Set`)
+
+			buf.WriteString(col.GoName)
+
+			buf.WriteString(` sets the value of `)
+
+			buf.WriteString(col.GoName)
+
+			buf.WriteString(` in the object, to be saved later using the Save() function.
+func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", privateName))
 
@@ -923,7 +969,15 @@ func (o *`)
 			if col.IsReference() && !col.ForeignKey.IsType {
 				oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
 
-				buf.WriteString(`
+				buf.WriteString(`// Set`)
+
+				buf.WriteString(col.ForeignKey.GoName)
+
+				buf.WriteString(` sets the value of `)
+
+				buf.WriteString(col.ForeignKey.GoName)
+
+				buf.WriteString(` in the object, to be saved later using the Save() function.
 func (o *`)
 
 				buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -982,6 +1036,7 @@ func (o *`)
 	}
 
 	buf.WriteString(`
+// GetAlias returns the alias for the given key.
 func (o *`)
 
 	buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -1211,8 +1266,7 @@ func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
 
-			buf.WriteString(` objects if loaded. If not, will attempt to load
-// the related objects and return what it finds.
+			buf.WriteString(` objects if loaded.
 func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -1649,6 +1703,47 @@ func (b *`)
 	buf.WriteString(`Slice
 }
 
+// LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
+// any errors, they are returned in the context object. If no results come back from the query, it will return
+// an empty slice.
+func (b *`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
+	buf.WriteString(`Builder) LoadI(ctx context.Context) (`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
+	buf.WriteString(`Slice []interface{}) {
+	results := b.base.Load(ctx)
+	if results == nil {
+		return
+	}
+	for _,item := range results {
+		o := New`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+	buf.WriteString(`()
+		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
+	buf.WriteString(`Slice = append(`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
+	buf.WriteString(`Slice, o)
+	}
+	return `)
+
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
+	buf.WriteString(`Slice
+}
+
+
 // Get is a convenience method to return only the first item found in a query. It is equivalent to adding
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
@@ -1736,7 +1831,7 @@ func (b *`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 
-	buf.WriteString(`Builder)  Limit(maxRowCount int64, offset int64) *`)
+	buf.WriteString(`Builder)  Limit(maxRowCount int, offset int) *`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
 
@@ -2510,6 +2605,7 @@ func (o *`)
 	}
 }
 
+// Update will update the values in the database, saving any changed values.
 func (o *`)
 
 	buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -2543,6 +2639,8 @@ func (o *`)
 	o.resetDirtyStatus()
 }
 
+// Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
+// this will create a duplicate in the database.
 func (o *`)
 
 	buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -2639,6 +2737,7 @@ func (o *`)
 `)
 
 	buf.WriteString(`
+// Delete deletes the associated record from the database.
 func (o *`)
 
 	buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -2667,6 +2766,137 @@ func (o *`)
 	buf.WriteString(`)
 }
 
+`)
+
+	//get.tmpl
+	// Get Implements the Get function to return a field based on a field name
+	// Returns an interface for further processing
+
+	buf.WriteString(`
+// Get returns the value of a field in the object based on the field's name.
+// It will also get related objects if they are loaded.
+// Invalid fields and objects are returned as nil
+func (o *`)
+
+	buf.WriteString(fmt.Sprintf("%v", privateName))
+
+	buf.WriteString(`Base) Get(key string) interface{} {
+
+    switch key {
+`)
+
+	for _, col := range t.Columns {
+		var goName string
+
+		if col.IsReference() {
+			if col.ForeignKey.IsType {
+				goName = col.GoName
+			} else {
+				goName = col.GoName
+			}
+		} else {
+			goName = col.GoName
+		}
+
+		buf.WriteString(`    case "`)
+
+		buf.WriteString(goName)
+
+		buf.WriteString(`":
+        if !o.`)
+
+		buf.WriteString(col.VarName)
+
+		buf.WriteString(`IsValid {
+            return nil
+        }
+        return o.`)
+
+		buf.WriteString(col.VarName)
+
+		buf.WriteString(`
+`)
+
+		if col.IsReference() {
+
+			buf.WriteString(`    case "`)
+
+			buf.WriteString(col.ForeignKey.GoName)
+
+			buf.WriteString(`":
+        return o.`)
+
+			buf.WriteString(col.ForeignKey.GoName)
+
+			buf.WriteString(`()
+`)
+
+		} //if
+
+	} // for
+
+	for _, ref := range t.ReverseReferences {
+
+		if ref.IsUnique {
+
+			buf.WriteString(`    case "`)
+
+			buf.WriteString(ref.GoName)
+
+			buf.WriteString(`":
+        return o.`)
+
+			buf.WriteString(ref.GoName)
+
+			buf.WriteString(`()
+`)
+
+		} else {
+
+			buf.WriteString(`    case "`)
+
+			buf.WriteString(ref.GoPlural)
+
+			buf.WriteString(`":
+        return o.`)
+
+			buf.WriteString(ref.GoPlural)
+
+			buf.WriteString(`()
+`)
+
+		} //else
+	} // for
+
+	for _, ref := range t.ManyManyReferences {
+
+		buf.WriteString(`    case "`)
+
+		buf.WriteString(ref.GoName)
+
+		buf.WriteString(`":
+        return o.`)
+
+		buf.WriteString(ref.GoName)
+
+		buf.WriteString(`()
+    case "`)
+
+		buf.WriteString(ref.GoPlural)
+
+		buf.WriteString(`":
+        return o.`)
+
+		buf.WriteString(ref.GoPlural)
+
+		buf.WriteString(`()
+`)
+
+	}
+
+	buf.WriteString(`    }
+    return nil
+}
 `)
 
 }

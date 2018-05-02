@@ -145,7 +145,7 @@ goradd = {
      * Post the form. ServerActions go here.
      *
      * @param {object} params An object containing the following:
-     *  controlID {string}: The control id to post an action to
+     *  controlId {string}: The control id to post an action to
      *  eventId {int}: The event id
      *  async: If true, process the event asynchronously without waiting for other events to complete
      *  values {object} (optional): An optional object, that contains values coming to send with the event
@@ -278,7 +278,7 @@ goradd = {
      * will erase the cache of changed objects to prepare for the next call.
      *
      * @param {object} params An object containing the following:
-     *  controlID {string}: The control id to post an action to
+     *  controlId {string}: The control id to post an action to
      *  eventId {int}: The event id
      *  async: If true, process the event asynchronously without waiting for other events to complete
      *  formId: The id of the form getting posted
@@ -372,7 +372,7 @@ goradd = {
 
     /**
      * @param {object} params An object containing the following:
-     *  controlID {string}: The control id to post an action to
+     *  controlId {string}: The control id to post an action to
      *  eventId {int}: The event id
      *  async: If true, process the event asynchronously without waiting for other events to complete
      *  values {object} (optional): An optional object, that contains values coming to send with the event
@@ -578,7 +578,7 @@ goradd = {
 
         gr.registerControls();
 
-        if (json.watcher && params.controlID) {
+        if (json.watcher && params.controlId) {
             gr.broadcastChange();
         }
         if (json.ss) {
@@ -924,8 +924,8 @@ goradd.resizable = function (parentId, resizeableId) {
 // JQueryUI Support
 /////////////////////////////////////
 
-goradd.dialog = function(controlID) {
-    $j('#' + controlID).on ("keydown", "input,select", function(event) {
+goradd.dialog = function(controlId) {
+    $j('#' + controlId).on ("keydown", "input,select", function(event) {
         // makes sure a return key fires the default button if there is one
         if (event.which === 13) {
             var b = $j(this).closest("[role=\'dialog\']").find("button[type=\'submit\']");
@@ -937,21 +937,21 @@ goradd.dialog = function(controlID) {
     });
 };
 
-goradd.accordion = function(controlID) {
-    $j('#' + controlID).on("accordionactivate", function(event, ui) {
-        goradd.setControlValue(controlID, "_SelectedIndex", $j(this).accordion("option", "active"));
+goradd.accordion = function(controlId) {
+    $j('#' + controlId).on("accordionactivate", function(event, ui) {
+        goradd.setControlValue(controlId, "_SelectedIndex", $j(this).accordion("option", "active"));
         $j(this).trigger("change");
     });
 };
 
-goradd.progressbar = function(controlID) {
-    $j('#' + controlID).on("progressbarchange", function (event, ui) {
-        goradd.setControlValue(controlID, "_Value", $j(this).progressbar ("value"));
+goradd.progressbar = function(controlId) {
+    $j('#' + controlId).on("progressbarchange", function (event, ui) {
+        goradd.setControlValue(controlId, "_Value", $j(this).progressbar ("value"));
     });
 };
 
-goradd.selectable = function(controlID) {
-    $j('#' + controlID).on("selectablestop", function (event, ui) {
+goradd.selectable = function(controlId) {
+    $j('#' + controlId).on("selectablestop", function (event, ui) {
         var strItems;
 
         strItems = "";
@@ -962,42 +962,42 @@ goradd.selectable = function(controlID) {
         if (strItems) {
             strItems = strItems.substring (1);
         }
-        goradd.setControlValue(controlID, "_SelectedItems", strItems);
+        goradd.setControlValue(controlId, "_SelectedItems", strItems);
 
     });
 };
 
-goradd.slider = function(controlID) {
-    $j('#' + controlID).on("slidechange", function (event, ui) {
+goradd.slider = function(controlId) {
+    $j('#' + controlId).on("slidechange", function (event, ui) {
         if (ui.values && ui.values.length) {
-            gr.setControlValue(controlID, "_Values", ui.values[0] + ',' +  ui.values[1]);
+            gr.setControlValue(controlId, "_Values", ui.values[0] + ',' +  ui.values[1]);
         } else {
-            gr.setControlValue(controlID, "_Value", ui.value);
+            gr.setControlValue(controlId, "_Value", ui.value);
         }
     });
 };
 
-goradd.tabs = function(controlID) {
-    $j('#' + controlID).on("tabsactivate", function(event, ui) {
+goradd.tabs = function(controlId) {
+    $j('#' + controlId).on("tabsactivate", function(event, ui) {
         var i = $j(this).tabs( "option", "active" );
         var id = ui.newPanel ? ui.newPanel.attr("id") : null;
-        gr.setControlValue(controlID, "_active", [i,id]);
+        gr.setControlValue(controlId, "_active", [i,id]);
     });
 };
 
-goradd.datagrid2 = function(controlID) {
-    $j('#' + controlID).on("click", "thead tr th a", function(event, ui) {
+goradd.datagrid2 = function(controlId) {
+    $j('#' + controlId).on("click", "thead tr th a", function(event, ui) {
         var cellIndex = $j(this).parent()[0].cellIndex;
         $j(this).trigger('qdg2sort', cellIndex); // Triggers the QDataGrid_SortEvent
         event.stopPropagation();
     });
 };
 
-goradd.dialog = function(controlID) {
-    $j('#' + controlID).on("tabsactivate", function(event, ui) {
+goradd.dialog = function(controlId) {
+    $j('#' + controlId).on("tabsactivate", function(event, ui) {
         var i = $j(this).tabs( "option", "active" );
         var id = ui.newPanel ? ui.newPanel.attr("id") : null;
-        gr.setControlValue(controlID, "_active", [i,id]);
+        gr.setControlValue(controlId, "_active", [i,id]);
     });
 };
 
@@ -1005,16 +1005,16 @@ goradd.dialog = function(controlID) {
 // Controls-related functionality
 /////////////////////////////////
 
-goradd.getControl = function(controlID) {
-    return document.getElementByID(controlID);
+goradd.getControl = function(controlId) {
+    return document.getElementById(controlId);
 };
 
 goradd.getWrapper = function(mixControl) {
     if (typeof mixControl === 'string') {
-        return document.getElementByID(mixControl + "_ctl")
+        return document.getElementById(mixControl + "_ctl")
     }
     else {
-        return document.getElementByID($j(mixControl).attr('id') + "_ctl")
+        return document.getElementById($j(mixControl).attr('id') + "_ctl")
     }
 };
 

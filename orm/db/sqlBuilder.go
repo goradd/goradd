@@ -24,8 +24,8 @@ type Copier interface {
 }
 
 type limitInfo struct {
-	maxRowCount int64
-	offset int64
+	maxRowCount int
+	offset int
 }
 
 
@@ -121,7 +121,7 @@ func (b *sqlBuilder) OrderBy(nodes... NodeI) QueryBuilderI {
 	return b
 }
 
-func (b *sqlBuilder) Limit(maxRowCount int64, offset int64) QueryBuilderI {
+func (b *sqlBuilder) Limit(maxRowCount int, offset int) QueryBuilderI {
 	if b.limitInfo != nil {
 		panic("Query already has a limit")
 	}

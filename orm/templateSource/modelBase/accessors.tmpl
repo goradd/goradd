@@ -9,12 +9,14 @@ for _,col := range t.Columns {
 	if col.IsId {
 {{
 
+// {{= col.GoName }} returns the loaded value of {{= col.GoName }}.
 func (o *{{privateName}}Base) {{= col.GoName }}() string {
 	return fmt.Sprint(o.{{= col.VarName }})
 }
 
+// {{= col.GoName }}IsValid returns true if the value was loaded from the database or has been set.
 func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
-	return o._restored
+	return o._restored && o.{{= col.VarName }}IsValid
 }
 
 }}
@@ -29,6 +31,7 @@ func (o *{{privateName}}Base) {{= col.GoName }}() {{= col.GoType.String() }} {
 	return o.{{= col.VarName }}
 }
 
+// {{= col.GoName }}IsValid returns true if the value was loaded from the database or has been set.
 func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
 	return o.{{= col.VarName }}IsValid
 }
@@ -39,6 +42,7 @@ func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
 	if col.IsNullable {
 {{
 
+// {{= col.GoName }}IsNull returns true if the related database value is null.
 func (o *{{privateName}}Base) {{= col.GoName }}IsNull() bool {
 	return o.{{= col.VarName }}IsNull
 }
@@ -51,12 +55,13 @@ func (o *{{privateName}}Base) {{= col.GoName }}IsNull() bool {
 
 {{
 
-// Return current value of {{= col.ForeignKey.GoName }}
+// {{= col.ForeignKey.GoName }} returns the current value of the loaded {{= col.ForeignKey.GoName }}, and nil if its not loaded.
 func (o *{{privateName}}Base) {{= col.ForeignKey.GoName }}() *{{= col.ForeignKey.GoType }} {
 	return o.{{oName}}
 }
 
-// Load the related {{= col.ForeignKey.GoName }} and return it
+// Load{{= col.ForeignKey.GoName }} returns the related {{= col.ForeignKey.GoName }}. If it is not already loaded,
+// it will attempt to load it first.
 func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Context) *{{= col.ForeignKey.GoType }} {
 	if !o.{{= col.VarName }}IsValid  {
 		return nil
@@ -146,6 +151,7 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 	} else {	// Not nullable
 
 {{
+// Set{{= col.GoName }} sets the value of {{= col.GoName }} in the object, to be saved later using the Save() function.
 func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.GoType.String() }}) {
 {{g if col.GoType == query.COL_TYPE_BYTES { }}
 	o.{{= col.VarName }} = v		// TODO: Copy bytes??
@@ -171,7 +177,7 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.GoType.String() }})
 			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
 
 {{
-
+// Set{{= col.ForeignKey.GoName }} sets the value of {{= col.ForeignKey.GoName }} in the object, to be saved later using the Save() function.
 func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.ForeignKey.GoType }})  {
 	if v == nil {
 		panic("Cannot set {{= col.ForeignKey.GoName }} to a null value.")
@@ -195,6 +201,7 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 
 {{
 
+// GetAlias returns the alias for the given key.
 func (o *{{privateName}}Base) GetAlias(key string) query.AliasValue {
 	if a,ok := o._aliases[key]; ok {
 		return query.NewAliasValue(a)
