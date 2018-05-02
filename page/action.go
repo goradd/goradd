@@ -12,6 +12,6 @@ type ActionParams struct {
 	// Values are the action values returned by the application. Note that if you are expecting arrays, maps or structs
 	// to be returned that
 	Values ActionValues
-	// ControlId is the control that originated the action
+	// ControlID is the control that originated the action
 	ControlId string
 }

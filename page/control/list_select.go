@@ -46,7 +46,7 @@ func (l *SelectList) Validate() bool {
 
 // UpdateFormValues is an internal function that lets us reflect the value of the selection on the web page
 func (l *SelectList) UpdateFormValues(ctx *page.Context) {
-	id := l.Id()
+	id := l.ID()
 
 	if v,ok := ctx.FormValue(id); ok {
 		l.selectedId = v
@@ -57,12 +57,12 @@ func (l *SelectList) SelectedItem() ListItemI {
 	if l.selectedId == "" {
 		return nil
 	}
-	return l.FindById(l.selectedId)
+	return l.FindByID(l.selectedId)
 }
 
 // SetSelectedId sets the current selection to the given id. You must ensure that the item with the id exists, it will
 // not attempt to make sure the item exists.
-func (l *SelectList) SetSelectedId(id string) {
+func (l *SelectList) SetSelectedID(id string) {
 	l.selectedId = id
 	l.AddRenderScript("val", id)
 }
@@ -80,7 +80,7 @@ func (l *SelectList) Value() interface{} {
 func (l *SelectList) SetValue(v interface{})  {
 	s := fmt.Sprintf("%v")
 	id, _ := l.FindByValue(s)
-	l.SetSelectedId(id)
+	l.SetSelectedID(id)
 }
 
 func (l *SelectList) IntValue() int {
@@ -126,7 +126,7 @@ func (l *SelectList) UnmarshalState(m types.MapI) {
 func (l *SelectList) DrawingAttributes() *html.Attributes {
 	a := l.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "selectlist")
-	a.Set("name", l.Id())	// needed for posts
+	a.Set("name", l.ID())	// needed for posts
 	if l.Required() {
 		a.Set("required", "")
 	}
@@ -151,8 +151,8 @@ func (l *SelectList) getItemsHtml(items []ListItemI) string {
 			h += html.RenderTag(tag, attributes, innerhtml)
 		} else {
 			attributes := item.Attributes().Clone()
-			attributes.Set("value", item.Id())
-			if l.selectedId == item.Id() {
+			attributes.Set("value", item.ID())
+			if l.selectedId == item.ID() {
 				attributes.Set("selected", "")
 			}
 

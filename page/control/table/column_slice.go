@@ -38,7 +38,7 @@ type SliceTexter struct {
 	TimeFormat string
 }
 
-func (t SliceTexter) CellText (ctx context.Context, row int, col int, data interface{}) string {
+func (t SliceTexter) CellText (ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	vSlice := reflect.ValueOf(data)
 	if vSlice.Kind() != reflect.Slice {
 		panic("data must be a slice.")

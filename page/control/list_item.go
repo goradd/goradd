@@ -8,8 +8,8 @@ import (
 type ListItemI interface {
 	ItemListI
 	Value() interface{}
-	Id() string
-	SetId(string)
+	ID() string
+	SetID(string)
 	Label() string
 	SetLabel(string)
 	IntValue() int
@@ -65,11 +65,11 @@ func (i *ListItem) StringValue() string {
 	}
 }
 
-func (i *ListItem) Id() string {
+func (i *ListItem) ID() string {
 	return i.id
 }
 
-func (i *ListItem) SetId(id string) {
+func (i *ListItem) SetID(id string) {
 	i.id = id
 	i.ItemList.reindex(0)
 }

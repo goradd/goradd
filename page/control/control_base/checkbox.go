@@ -40,7 +40,7 @@ func (c *Checkbox) DrawingAttributes() *html.Attributes {
 	a := c.Control.DrawingAttributes()
 	if c.Text() != "" && (c.labelMode == html.LABEL_BEFORE || c.labelMode == html.LABEL_AFTER) {
 		// Treat the closer text label as more important than the wrapper label
-		a.Set("aria-labeledby", c.Id() + "_ilbl")
+		a.Set("aria-labeledby", c.ID() + "_ilbl")
 	}
 	return a
 }
@@ -92,8 +92,8 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 		}
 
 		labelAttributes2 := html.NewAttributes()
-		labelAttributes2.Set("for", c.Id())
-		labelAttributes2.Set("id", c.Id() + "_ilbl")
+		labelAttributes2.Set("for", c.ID())
+		labelAttributes2.Set("id", c.ID() + "_ilbl")
 
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
 		ctrl = html.RenderLabel(labelAttributes2, text, ctrl, c.labelMode)

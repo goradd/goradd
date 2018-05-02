@@ -36,15 +36,15 @@ func (l *RadioList) DrawingAttributes() *html.Attributes {
 
 func (l *RadioList) renderItem(tag string, item ListItemI) (h string) {
 	attributes := html.NewAttributes()
-	attributes.SetId(item.Id())
-	attributes.Set("name", l.Id())
-	attributes.Set("value", item.Id())
+	attributes.SetID(item.ID())
+	attributes.Set("name", l.ID())
+	attributes.Set("value", item.ID())
 	attributes.Set("type", "radio")
-	if l.selectedIds[item.Id()] {
+	if l.selectedIds[item.ID()] {
 		attributes.Set("checked", "")
 	}
 	ctrl := html.RenderVoidTag("input", attributes)
-	h = html.RenderLabel(html.NewAttributes().Set("for", item.Id()), item.Label(), ctrl, l.labelDrawingMode)
+	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, l.labelDrawingMode)
 	attributes = item.Attributes().Clone()
 	attributes.AddClass("gr-cbl-item")
 	h = html.RenderTag(tag, attributes, h)
@@ -52,16 +52,16 @@ func (l *RadioList) renderItem(tag string, item ListItemI) (h string) {
 }
 
 func (l *RadioList) UpdateFormValues(ctx *page.Context) {
-	controlId := l.Id()
+	controlID := l.ID()
 
 	if ctx.RequestMode() == page.Ajax {
-		if v,ok := ctx.CheckableValue(controlId); ok {
+		if v,ok := ctx.CheckableValue(controlID); ok {
 			if s, ok := v.(string); ok {
-				l.selectedIds = map[string]bool{l.Id() + "_" + s:true}
+				l.selectedIds = map[string]bool{l.ID() + "_" + s:true}
 			}
 		}
 	} else {
-		if v,ok := ctx.FormValue(controlId); ok {
+		if v,ok := ctx.FormValue(controlID); ok {
 			l.selectedIds = map[string]bool{v:true}
 		}
 	}

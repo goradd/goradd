@@ -5,7 +5,7 @@ package template
 import (
 	"bytes"
 	"fmt"
-	"grlocal/config"
+	"goradd/config"
 
 	"github.com/spekary/goradd/codegen/generator"
 	"github.com/spekary/goradd/orm/db"
@@ -31,7 +31,6 @@ func (n *TypeTableNodeTemplate) FileName(tt *db.TypeTableDescription) string {
 }
 
 func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.DatabaseDescription, tt *db.TypeTableDescription, buf *bytes.Buffer) {
-
 	var nodeName = util.LcFirst(tt.GoName) + "Node"
 
 	buf.WriteString(`package node
@@ -43,14 +42,18 @@ import (
 )
 
 type `)
+
 	buf.WriteString(fmt.Sprintf("%v", nodeName))
+
 	buf.WriteString(` struct {
 	query.NodeI
 }
 
 
 func (n *`)
+
 	buf.WriteString(fmt.Sprintf("%v", nodeName))
+
 	buf.WriteString(`) SelectNodes_() (nodes []*query.ColumnNode) {
 `)
 
@@ -61,7 +64,9 @@ func (n *`)
 	for fn != "" {
 
 		buf.WriteString(`	nodes = append(nodes, n.`)
+
 		buf.WriteString(fn)
+
 		buf.WriteString(`())
 `)
 
@@ -75,15 +80,21 @@ func (n *`)
 }
 
 func (n *`)
+
 	buf.WriteString(fmt.Sprintf("%v", nodeName))
+
 	buf.WriteString(`) PrimaryKeyNode_() (*query.ColumnNode) {
 	return n.`)
+
 	buf.WriteString(tt.PkField)
+
 	buf.WriteString(`()
 }
 
 func (n *`)
+
 	buf.WriteString(fmt.Sprintf("%v", nodeName))
+
 	buf.WriteString(`) EmbeddedNode_() query.NodeI {
 	return n.NodeI
 }
@@ -97,26 +108,40 @@ func (n *`)
 	for fn != "" {
 
 		buf.WriteString(`func (n *`)
+
 		buf.WriteString(fmt.Sprintf("%v", nodeName))
+
 		buf.WriteString(`) `)
+
 		buf.WriteString(fn)
+
 		buf.WriteString(`() *query.ColumnNode {
 
 	cn := query.NewColumnNode (
 		"`)
+
 		buf.WriteString(tt.DbKey)
+
 		buf.WriteString(`",
 		"`)
+
 		buf.WriteString(tt.DbName)
+
 		buf.WriteString(`",
 		"`)
+
 		buf.WriteString(tt.FieldNames[i])
+
 		buf.WriteString(`",
 		"`)
+
 		buf.WriteString(fn)
+
 		buf.WriteString(`",
 		"`)
+
 		buf.WriteString(ft)
+
 		buf.WriteString(`",
 	)
 	query.SetParentNode(cn, n)

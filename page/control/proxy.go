@@ -69,7 +69,7 @@ func (p *Proxy) TagHtml(label string,
     rawHtml bool,
 ) string {
     a := html.NewAttributes()
-    a.SetDataAttribute("grProxy", p.Id())
+    a.SetDataAttribute("grProxy", p.ID())
 
     if actionValue != "" {
         a.SetDataAttribute("grAv", actionValue)
@@ -86,8 +86,10 @@ func (p *Proxy) TagHtml(label string,
     return html.RenderTagNoSpace(tag, a, label)
 }
 
+// ButtonHtml outputs the proxy as a button tag.
+// eventActionValue becomes the event's value parameter
 func (p *Proxy) ButtonHtml(label string,
-    actionValue string,
+    eventActionValue string,
     attributes *html.Attributes,
     rawHtml bool,
 ) string {
@@ -97,13 +99,13 @@ func (p *Proxy) ButtonHtml(label string,
     if attributes != nil {
 		a.Merge(attributes)
 	}
-    return p.TagHtml(label, actionValue, a, "button", rawHtml)
+    return p.TagHtml(label, eventActionValue, a, "button", rawHtml)
 }
 
 // Attributes returns attributes that can be included in any tag to attach a proxy to the tag.
 func (p *Proxy) Attributes(actionValue string) *html.Attributes {
     a := html.NewAttributes()
-    a.SetDataAttribute("grProxy", p.Id())
+    a.SetDataAttribute("grProxy", p.ID())
 
     if actionValue != "" {
         a.SetDataAttribute("grAv", actionValue)
@@ -114,6 +116,6 @@ func (p *Proxy) Attributes(actionValue string) *html.Attributes {
 
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string) string {
-	return fmt.Sprintf(`$j('#%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.Form().Id(), eventName, p.Id(), eventJs)
+	return fmt.Sprintf(`$j('#%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.Form().ID(), eventName, p.ID(), eventJs)
 }
 

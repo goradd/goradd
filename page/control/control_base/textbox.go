@@ -82,7 +82,7 @@ func (t *Textbox) ResetValidators () {
 func (t *Textbox) DrawingAttributes() *html.Attributes {
 	a := t.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "textbox")
-	a.Set("name", t.Id())	// needed for posts
+	a.Set("name", t.ID())	// needed for posts
 	if t.Required() {
 		a.Set("required", "")
 	}
@@ -242,7 +242,7 @@ func (t *Textbox) Validate() bool {
 
 // UpdateFormValues is an internal function that lets us reflect the value of the textbox on the web page
 func (t *Textbox) UpdateFormValues(ctx *page.Context) {
-	id := t.Id()
+	id := t.ID()
 
 	if v,ok := ctx.FormValue(id); ok {
 		t.value = t.sanitize(v)

@@ -8,8 +8,8 @@ import (
 
 // Ider is an object that can embed an ItemList
 type Ider interface {
-	Id() string
-	SetId(id string)
+	ID() string
+	SetID(id string)
 }
 
 type ItemListI interface {
@@ -23,7 +23,7 @@ type ItemListI interface {
 	Clear()
 	RemoveAt(index int)
 	Len() int
-	FindById(id string) (foundItem ListItemI)
+	FindByID(id string) (foundItem ListItemI)
 	FindByValue(value interface{}) (id string, foundItem ListItemI)
 	reindex(start int)
 }
@@ -73,8 +73,8 @@ func (l *ItemList) AddListItemAt(index int, item ListItemI) {
 func (l *ItemList) AddListItems(items... ListItemI) {
 	start := len(l.items)
 	for _,item := range items {
-		id := l.owner.Id() + "_" + strconv.Itoa(len(l.items))
-		item.SetId(id)
+		id := l.owner.ID() + "_" + strconv.Itoa(len(l.items))
+		item.SetID(id)
 	}
 	l.items = append(l.items, items...)
 	l.reindex(start)
@@ -93,12 +93,12 @@ func (l *ItemList) AddItemListers(items... ItemLister) {
 
 // reindex is internal and should get called whenever an item gets added to the list out of order or an id changes.
 func (l *ItemList) reindex(start int) {
-	if l.owner.Id() == "" || len(l.items) == 0 || start >= len (l.items) {
+	if l.owner.ID() == "" || len(l.items) == 0 || start >= len (l.items) {
 		return
 	}
 	for i := start; i < len(l.items); i++ {
-		id := l.owner.Id() + "_" + strconv.Itoa(i)
-		l.items[i].SetId(id)
+		id := l.owner.ID() + "_" + strconv.Itoa(i)
+		l.items[i].SetID(id)
 	}
 }
 
@@ -135,7 +135,7 @@ func (l *ItemList) Len() int {
 
 // FindById recursively searches for and returns the item corresponding to the given id. Since we are managing the
 // id numbers, we can efficiently find the item. Note that if you add items to the list, the ids may change.
-func (l *ItemList) FindById(id string) (foundItem ListItemI) {
+func (l *ItemList) FindByID(id string) (foundItem ListItemI) {
 	parts := strings.SplitN(id, "_", 3) // first item is our own id, 2nd is id from the list, 3rd is a level beyond the list
 
 	l1Id,err := strconv.Atoi(parts[1])
@@ -154,7 +154,7 @@ func (l *ItemList) FindById(id string) (foundItem ListItemI) {
 		return item
 	}
 
-	return item.FindById(parts[1] + "_" + parts[2])
+	return item.FindByID(parts[1] + "_" + parts[2])
 }
 
 // FindByValue recursively searches the list to find the item with the given value.
@@ -166,7 +166,7 @@ func (l *ItemList) FindByValue(value interface{}) (id string, foundItem ListItem
 
 	for _,foundItem = range l.items {
 		if foundItem.Value() == value {
-			id = foundItem.Id()
+			id = foundItem.ID()
 			return
 		}
 	}

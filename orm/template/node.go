@@ -5,7 +5,7 @@ package template
 import (
 	"bytes"
 	"fmt"
-	"grlocal/config"
+	"goradd/config"
 	"strconv"
 	"strings"
 
@@ -33,8 +33,7 @@ func (n *NodeTemplate) FileName(t *db.TableDescription) string {
 }
 
 func (n *NodeTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
-
-	// The master template for the nodes for a particular table.
+	// The master template for the nodes for a particular column.
 
 	// ToDo: Move the node creation routines to the database driver, so that nodes can generate their own database code.
 
@@ -52,25 +51,39 @@ import (
 `)
 
 	buf.WriteString(`type `)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Node struct {
 	query.NodeI
 }
 
 func `)
+
 	buf.WriteString(t.GoName)
+
 	buf.WriteString(`() *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Node {
 	n := `)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Node {
 		query.NewTableNode("`)
+
 	buf.WriteString(t.DbKey)
+
 	buf.WriteString(`", "`)
+
 	buf.WriteString(t.DbName)
+
 	buf.WriteString(`",  "`)
+
 	buf.WriteString(t.GoName)
+
 	buf.WriteString(`"),
 	}
 	query.SetParentNode(&n, nil)
@@ -80,14 +93,18 @@ func `)
 `)
 
 	buf.WriteString(`func (n *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Node) SelectNodes_() (nodes []*query.ColumnNode) {
 `)
 
 	for _, col := range t.Columns {
 
 		buf.WriteString(`	nodes = append(nodes, n.`)
+
 		buf.WriteString(fmt.Sprintf("%v", col.GoName))
+
 		buf.WriteString(`())
 `)
 
@@ -98,7 +115,9 @@ func `)
 `)
 
 	buf.WriteString(`func (n *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Node) PrimaryKeyNode_() (*query.ColumnNode) {
 `)
 
@@ -106,7 +125,9 @@ func `)
 		if col.IsPk {
 
 			buf.WriteString(`	return n.`)
+
 			buf.WriteString(fmt.Sprintf("%v", col.GoName))
+
 			buf.WriteString(`()
 `)
 
@@ -118,7 +139,9 @@ func `)
 `)
 
 	buf.WriteString(`func (n *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Node) EmbeddedNode_() query.NodeI {
 	return n.NodeI
 }
@@ -131,25 +154,39 @@ func `)
 
 		buf.WriteString(`
 func (n *`)
+
 		buf.WriteString(fmt.Sprintf("%v", privateName))
+
 		buf.WriteString(`Node) `)
+
 		buf.WriteString(col.GoName)
+
 		buf.WriteString(`() *query.ColumnNode {
 	cn := query.NewColumnNode (
 		"`)
+
 		buf.WriteString(dbKey)
+
 		buf.WriteString(`",
 		"`)
+
 		buf.WriteString(tableName)
+
 		buf.WriteString(`",
 		"`)
+
 		buf.WriteString(col.DbName)
+
 		buf.WriteString(`",
 		"`)
+
 		buf.WriteString(col.GoName)
+
 		buf.WriteString(`",
 		"`)
+
 		buf.WriteString(col.GoType.String())
+
 		buf.WriteString(`",
 	)
 	query.SetParentNode(cn, n)
@@ -169,39 +206,63 @@ func (n *`)
 			}
 
 			buf.WriteString(`func (n *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Node) `)
+
 			buf.WriteString(col.ForeignKey.GoName)
+
 			buf.WriteString(`() *`)
+
 			buf.WriteString(util.LcFirst(objName))
+
 			buf.WriteString(`Node {
 	cn := &`)
+
 			buf.WriteString(util.LcFirst(objName))
+
 			buf.WriteString(`Node {
 		query.NewReferenceNode (
 			"`)
+
 			buf.WriteString(dbKey)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(tableName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(col.DbName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(col.GoName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(col.ForeignKey.GoName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(col.ForeignKey.TableName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(col.ForeignKey.ColumnName)
+
 			buf.WriteString(`",
 			`)
+
 			buf.WriteString(strconv.FormatBool(isType))
+
 			buf.WriteString(`,
 		),
 	}
@@ -221,33 +282,53 @@ func (n *`)
 
 			buf.WriteString(`
 func (n *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Node) `)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`() *`)
+
 			buf.WriteString(util.LcFirst(assnTable.GoName))
+
 			buf.WriteString(`Node  {
 	cn := &`)
+
 			buf.WriteString(util.LcFirst(assnTable.GoName))
+
 			buf.WriteString(`Node {
 		query.NewManyManyNode (
 			"`)
+
 			buf.WriteString(t.DbKey)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.AssnTableName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.AssnColumnName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.AssociatedTableName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.AssociatedColumnName)
+
 			buf.WriteString(`",
 			true,
 		),
@@ -265,33 +346,53 @@ func (n *`)
 
 			buf.WriteString(`
 func (n *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Node) `)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`() *`)
+
 			buf.WriteString(util.LcFirst(assnTable.GoName))
+
 			buf.WriteString(`Node  {
 	cn := &`)
+
 			buf.WriteString(util.LcFirst(assnTable.GoName))
+
 			buf.WriteString(`Node {
 		query.NewManyManyNode (
 			"`)
+
 			buf.WriteString(t.DbKey)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.AssnTableName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.AssnColumnName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.AssociatedTableName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref.AssociatedColumnName)
+
 			buf.WriteString(`",
 			false,
 		),
@@ -313,34 +414,54 @@ func (n *`)
 
 			buf.WriteString(`
 func (n *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Node) `)
+
 			buf.WriteString(ref2.GoName)
+
 			buf.WriteString(`() *`)
+
 			buf.WriteString(util.LcFirst(assnTable.GoName))
+
 			buf.WriteString(`Node  {
 
 	cn := &`)
+
 			buf.WriteString(util.LcFirst(assnTable.GoName))
+
 			buf.WriteString(`Node {
 		query.NewReverseReferenceNode (
 			"`)
+
 			buf.WriteString(t.DbKey)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.DbTable)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.DbColumn)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.GoName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.AssociatedTableName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.AssociatedColumnName)
+
 			buf.WriteString(`",
 			false,
 		),
@@ -356,34 +477,54 @@ func (n *`)
 
 			buf.WriteString(`
 func (n *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Node) `)
+
 			buf.WriteString(ref2.GoPlural)
+
 			buf.WriteString(`() *`)
+
 			buf.WriteString(util.LcFirst(assnTable.GoName))
+
 			buf.WriteString(`Node  {
 
 	cn := &`)
+
 			buf.WriteString(util.LcFirst(assnTable.GoName))
+
 			buf.WriteString(`Node {
 		query.NewReverseReferenceNode (
 			"`)
+
 			buf.WriteString(t.DbKey)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.DbTable)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.DbColumn)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.GoPlural)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.AssociatedTableName)
+
 			buf.WriteString(`",
 			"`)
+
 			buf.WriteString(ref2.AssociatedColumnName)
+
 			buf.WriteString(`",
 			true,
 		),

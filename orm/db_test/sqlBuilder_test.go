@@ -2,11 +2,11 @@ package db
 
 import (
 	"testing"
-	"grlocal/model"
+	"goradd/model"
 	"github.com/stretchr/testify/assert"
 	"context"
 	. 	"github.com/spekary/goradd/orm/op"
-	"grlocal/model/node"
+	"goradd/model/node"
 	//"github.com/spekary/goradd/orm/db"
 	//"goradd/datetime"
 	//"github.com/spekary/goradd/datetime"

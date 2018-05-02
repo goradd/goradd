@@ -140,14 +140,14 @@ func (l *CheckboxList) verticalHtmlItems(items []ListItemI) (h []string) {
 
 func (l *CheckboxList) renderItem(tag string, item ListItemI) (h string) {
 	attributes := html.NewAttributes()
-	attributes.SetId(item.Id())
-	attributes.Set("name", item.Id())
+	attributes.SetID(item.ID())
+	attributes.Set("name", item.ID())
 	attributes.Set("type", "checkbox")
-	if l.isIdSelected(item.Id()) {
+	if l.isIdSelected(item.ID()) {
 		attributes.Set("checked", "")
 	}
 	ctrl := html.RenderVoidTag("input", attributes)
-	h = html.RenderLabel(html.NewAttributes().Set("for", item.Id()), item.Label(), ctrl, l.labelDrawingMode)
+	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, l.labelDrawingMode)
 	attributes = item.Attributes().Clone()
 	attributes.AddClass("gr-cbl-item")
 	h = html.RenderTag(tag, attributes, h)
@@ -189,13 +189,13 @@ func (l *CheckboxList) horizontalHtml (items []ListItemI) (h string) {
 }
 
 func (l *CheckboxList) UpdateFormValues(ctx *page.Context) {
-	controlId := l.Id()
+	controlID := l.ID()
 
-	if v,ok := ctx.CheckableValue(controlId); ok {
+	if v,ok := ctx.CheckableValue(controlID); ok {
 		l.selectedIds = map[string]bool{}
 		if a,ok := v.([]interface{}); ok {
 			for _,id := range a {
-				l.selectedIds[controlId + "_" + id.(string)] = true
+				l.selectedIds[controlID + "_" + id.(string)] = true
 			}
 		}
 	}

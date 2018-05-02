@@ -13,10 +13,10 @@ type ActionI interface {
 
 
 type RenderParams struct {
-	TriggeringControlId string
-	ControlActionValue interface{}
-	EventId uint16
-	EventActionValue interface{}
+	TriggeringControlID string
+	ControlActionValue  interface{}
+	EventID             uint16
+	EventActionValue    interface{}
 }
 
 
@@ -54,80 +54,80 @@ func (a *confirmAction) RenderScript(params RenderParams) string {
 
 
 type blurAction struct {
-	controlId string
+	controlID string
 }
 
-func Blur(controlId string) *blurAction {
-	return &blurAction{controlId: controlId}
+func Blur(controlID string) *blurAction {
+	return &blurAction{controlID: controlID}
 }
 
 func (a *blurAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`goradd.blur('%s');`, a.controlId)
+	return fmt.Sprintf(`goradd.blur('%s');`, a.controlID)
 }
 
 type focusAction struct {
-	controlId string
+	controlID string
 }
 
-func Focus(controlId string) *focusAction {
-	return &focusAction{controlId: controlId}
+func Focus(controlID string) *focusAction {
+	return &focusAction{controlID: controlID}
 }
 
 func (a *focusAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`goradd.focus('%s');`, a.controlId)
+	return fmt.Sprintf(`goradd.focus('%s');`, a.controlID)
 }
 
 type selectAction struct {
-	controlId string
+	controlID string
 }
 
-func Select(controlId string) *selectAction {
-	return &selectAction{controlId: controlId}
+func Select(controlID string) *selectAction {
+	return &selectAction{controlID: controlID}
 }
 
 func (a *selectAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`goradd.select('%s');`, a.controlId)
+	return fmt.Sprintf(`goradd.select('%s');`, a.controlID)
 }
 
 
 type cssPropertyAction struct {
-	property string
-	value interface{}
-	controlId string
+	property  string
+	value     interface{}
+	controlID string
 }
 
-func SetCssProperty(controlId string, property string, value interface{}) *cssPropertyAction {
-	return &cssPropertyAction{controlId: controlId}
+func SetCssProperty(controlID string, property string, value interface{}) *cssPropertyAction {
+	return &cssPropertyAction{controlID: controlID}
 }
 
 func (a *cssPropertyAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`goradd.css('%s', '%s', '%s');`, a.controlId, a.property, a.value)
+	return fmt.Sprintf(`goradd.css('%s', '%s', '%s');`, a.controlID, a.property, a.value)
 }
 
 type cssAddClassAction struct {
 	classes string
-	controlId string
+	controlID string
 }
 
-func AddClass(controlId string, addClasses string) *cssAddClassAction {
-	return &cssAddClassAction{controlId: controlId, classes:addClasses}
+func AddClass(controlID string, addClasses string) *cssAddClassAction {
+	return &cssAddClassAction{controlID: controlID, classes:addClasses}
 }
 
 func (a *cssAddClassAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`goradd.addClass('%s', '%s');`, a.controlId, a.classes)
+	return fmt.Sprintf(`goradd.addClass('%s', '%s');`, a.controlID, a.classes)
 }
 
 type cssToggleClassAction struct {
 	classes string
-	controlId string
+	controlID string
 }
 
-func ToggleClass(controlId string, classes string) *cssToggleClassAction {
-	return &cssToggleClassAction{controlId: controlId, classes: classes}
+func ToggleClass(controlID string, classes string) *cssToggleClassAction {
+	return &cssToggleClassAction{controlID: controlID, classes: classes}
 }
 
 func (a *cssToggleClassAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`goradd.toggleClass('%s', '%s');`, a.controlId, a.classes)
+	return fmt.Sprintf(`goradd.toggleClass('%s', '%s');`, a.controlID, a.classes)
 }
 
 

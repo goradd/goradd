@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"grlocal/config"
+	"goradd/config"
 	"github.com/spekary/goradd/codegen/generator"
 	_ "github.com/spekary/goradd/orm/template"
 )

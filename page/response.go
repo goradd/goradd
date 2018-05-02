@@ -133,8 +133,8 @@ func (r *Response) ExecuteJavaScript(js string, priority Priority) {
 }
 
 
-func (r *Response) ExecuteControlCommand(controlId string, functionName string, priority Priority, args... interface{}) {
-	r.ExecuteSelectorFunction("#" + controlId, functionName, priority, args...)
+func (r *Response) ExecuteControlCommand(controlID string, functionName string, priority Priority, args... interface{}) {
+	r.ExecuteSelectorFunction("#" + controlID, functionName, priority, args...)
 }
 
 // Calls a function on a jQuery selector

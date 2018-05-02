@@ -5,7 +5,7 @@ package template
 import (
 	"bytes"
 	"fmt"
-	"grlocal/config"
+	"goradd/config"
 	"strings"
 
 	"github.com/knq/snaker"
@@ -35,7 +35,6 @@ func (n *ModelBaseTemplate) FileName(t *db.TableDescription) string {
 
 func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
 	var privateName = util.LcFirst(t.GoName)
-
 	//modelBase.tmpl
 
 	// The master template for the modelBase classes
@@ -54,7 +53,7 @@ func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.Data
 // This file is code generated. Do not edit.
 
 import (
-	"grlocal/model/node"
+	"goradd/model/node"
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/orm/query"
 	"context"
@@ -76,13 +75,17 @@ var _ = types.OrderedMap{}
 	// struct.tmpl
 
 	buf.WriteString(`// The `)
+
 	buf.WriteString(t.GoName)
+
 	buf.WriteString(` is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
 // Do not directly access the internal variables, but rather use the accessor functions, since this class maintains internal state
 // related to the variables.
 
 type `)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base struct {
 `)
 
@@ -91,38 +94,54 @@ type `)
 		buf.WriteString(``)
 		if col.IsId {
 			buf.WriteString(`	`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` string
 `)
 		} else {
 			buf.WriteString(`	`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` `)
+
 			buf.WriteString(col.GoType.String())
+
 			buf.WriteString(`
 `)
 		}
 		buf.WriteString(``)
 		if col.IsNullable {
 			buf.WriteString(`	`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull bool
 `)
 		}
 		buf.WriteString(`	`)
+
 		buf.WriteString(col.VarName)
+
 		buf.WriteString(`IsValid bool
 	`)
+
 		buf.WriteString(col.VarName)
+
 		buf.WriteString(`IsDirty bool
 `)
 		if col.IsReference() && !col.ForeignKey.IsType {
 			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
 
 			buf.WriteString(`	`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` *`)
+
 			buf.WriteString(col.ForeignKey.GoType)
+
 			buf.WriteString(`
 `)
 		}
@@ -143,27 +162,43 @@ type `)
 		if ref.IsUnique {
 
 			buf.WriteString(`	`)
+
 			buf.WriteString(fmt.Sprintf("%v", dd.AssociatedObjectPrefix))
+
 			buf.WriteString(``)
+
 			buf.WriteString(ref.GoName)
+
 			buf.WriteString(` *`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`
 `)
 
 		} else {
 
 			buf.WriteString(`	`)
+
 			buf.WriteString(fmt.Sprintf("%v", dd.AssociatedObjectPrefix))
+
 			buf.WriteString(``)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(` []*`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(` // Objects in the order they were queried
 	m`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(` map[string] *`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`					  // Objects by PK
 `)
 
@@ -181,26 +216,35 @@ type `)
 	for _, ref := range t.ManyManyReferences {
 
 		buf.WriteString(`	`)
+
 		buf.WriteString(fmt.Sprintf("%v", dd.AssociatedObjectPrefix))
+
 		buf.WriteString(``)
+
 		buf.WriteString(fmt.Sprintf("%v", ref.GoPlural))
+
 		buf.WriteString(` []`)
 		if !ref.IsTypeAssociation {
 			buf.WriteString(`*`)
 		}
 		buf.WriteString(``)
+
 		buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 		buf.WriteString(`
 `)
 		if !ref.IsTypeAssociation {
 			buf.WriteString(`	m`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(` map[string] *`)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 			buf.WriteString(`					  // Objects by PK
 `)
 		}
-
 	} // for
 
 	buf.WriteString(`
@@ -218,7 +262,9 @@ type `)
 	//const.tmpl
 
 	buf.WriteString(`// The `)
+
 	buf.WriteString(t.GoName)
+
 	buf.WriteString(` is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
 // Do not directly access the internal variables, but rather use the accessor functions, since this class maintains internal state
 // related to the variables.
@@ -233,9 +279,13 @@ const  (
 		}
 
 		buf.WriteString(`	`)
+
 		buf.WriteString(col.DefaultConstantName(t))
+
 		buf.WriteString(` = `)
+
 		buf.WriteString(v)
+
 		buf.WriteString(`
 `)
 
@@ -249,15 +299,23 @@ const  (
 
 	buf.WriteString(`
 // Create a new `)
+
 	buf.WriteString(t.GoName)
+
 	buf.WriteString(` object and initialize to default values.
 func New`)
+
 	buf.WriteString(t.GoName)
+
 	buf.WriteString(`() *`)
+
 	buf.WriteString(t.GoName)
+
 	buf.WriteString(` {
 	o := `)
+
 	buf.WriteString(t.GoName)
+
 	buf.WriteString(`{}
 	o.Initialize()
 	return &o
@@ -265,42 +323,62 @@ func New`)
 
 
 // Initialize or re-initialize a `)
+
 	buf.WriteString(t.GoName)
+
 	buf.WriteString(` database object to default values.
 func (o *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base) Initialize() {
 
 `)
 	for _, col := range t.Columns {
 		buf.WriteString(`	o.`)
+
 		buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 		buf.WriteString(` = `)
+
 		buf.WriteString(col.DefaultValueAsValue())
+
 		buf.WriteString(`
 `)
 		if col.IsNullable {
 			buf.WriteString(``)
 			if col.DefaultValue == nil {
 				buf.WriteString(`	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsNull = true
 	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsValid = true
 	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsDirty = true
 `)
 			} else {
 				buf.WriteString(`	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsNull = false
 	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsValid = true
 	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsDirty = true
 `)
 			}
@@ -309,18 +387,26 @@ func (o *`)
 			buf.WriteString(``)
 			if col.DefaultValue == nil {
 				buf.WriteString(`	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsValid = false
 	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsDirty = false
 `)
 			} else {
 				buf.WriteString(`	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsValid = true
 	o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
 				buf.WriteString(`IsDirty = true
 `)
 			}
@@ -343,12 +429,18 @@ func (o *`)
 
 		buf.WriteString(`
 func (o *`)
+
 		buf.WriteString(fmt.Sprintf("%v", privateName))
+
 		buf.WriteString(`Base) PrimaryKey() `)
+
 		buf.WriteString(fmt.Sprintf("%v", typ))
+
 		buf.WriteString(` {
 	return o.`)
+
 		buf.WriteString(t.PrimaryKeyColumn.VarName)
+
 		buf.WriteString(`
 }
 `)
@@ -367,19 +459,29 @@ func (o *`)
 
 			buf.WriteString(`
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(col.GoName)
+
 			buf.WriteString(`() string {
 	return fmt.Sprint(o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`)
 }
 
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(col.GoName)
+
 			buf.WriteString(`IsValid() bool {
 	return o._restored
 }
@@ -390,31 +492,49 @@ func (o *`)
 
 			buf.WriteString(`
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(col.GoName)
+
 			buf.WriteString(`() `)
+
 			buf.WriteString(col.GoType.String())
+
 			buf.WriteString(` {
 	if o._restored && !o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid {
 		panic ("`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` was not selected in the last query and so is not valid")
 	}
 	return o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`
 }
 
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(col.GoName)
+
 			buf.WriteString(`IsValid() bool {
 	return o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid
 }
 
@@ -426,12 +546,18 @@ func (o *`)
 
 			buf.WriteString(`
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(col.GoName)
+
 			buf.WriteString(`IsNull() bool {
 	return o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull
 }
 
@@ -444,50 +570,80 @@ func (o *`)
 
 			buf.WriteString(`
 // Return current value of `)
+
 			buf.WriteString(col.ForeignKey.GoName)
+
 			buf.WriteString(`
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(col.ForeignKey.GoName)
+
 			buf.WriteString(`() *`)
+
 			buf.WriteString(col.ForeignKey.GoType)
+
 			buf.WriteString(` {
 	return o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`
 }
 
 // Load the related `)
+
 			buf.WriteString(col.ForeignKey.GoName)
+
 			buf.WriteString(` and return it
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) Load`)
+
 			buf.WriteString(col.ForeignKey.GoName)
+
 			buf.WriteString(`(ctx context.Context) *`)
+
 			buf.WriteString(col.ForeignKey.GoType)
+
 			buf.WriteString(` {
 	if !o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid  {
 		return nil
 	}
 
 	if o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` == nil {
 		// Load and cache
 		o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = Load`)
+
 			buf.WriteString(fmt.Sprintf("%v", col.ForeignKey.GoType))
+
 			buf.WriteString(`(ctx, o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", col.GoName))
+
 			buf.WriteString(`())
 	}
 	return o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`
 }
 
@@ -500,7 +656,7 @@ func (o *`)
 			continue // ID columns are not setable, since the database will automatically set the valid
 		}
 
-		// If the table is nullable, we use an interface to allow a null to be passed in
+		// If the column is nullable, we use an interface to allow a null to be passed in
 		if col.IsNullable {
 			var oName string
 			if col.IsReference() {
@@ -509,62 +665,92 @@ func (o *`)
 
 			buf.WriteString(`
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) Set`)
+
 			buf.WriteString(col.GoName)
+
 			buf.WriteString(`(i interface{}) {
 	if i == nil {
 		if !o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull {
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull = true
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsDirty = true
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` = `)
+
 			buf.WriteString(col.DefaultValueAsValue())
+
 			buf.WriteString(`
 `)
 			if col.IsReference() && !col.ForeignKey.IsType {
 				buf.WriteString(`			o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", oName))
+
 				buf.WriteString(` = nil
 `)
 			}
 			buf.WriteString(`		}
 	} else {
 		v := i.(`)
+
 			buf.WriteString(col.GoType.String())
+
 			buf.WriteString(`)
 		if o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull `)
 			if col.GoType != query.COL_TYPE_BYTES {
 				buf.WriteString(` || o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(` != v `)
 			}
 			buf.WriteString(` {
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull = false
 
 			// TODO: For bytes, should this be a copy?
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` = v
 
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsDirty = true
 `)
 			if col.IsReference() && !col.ForeignKey.IsType {
 				buf.WriteString(`			o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", oName))
+
 				buf.WriteString(` = nil
 `)
 			}
@@ -579,54 +765,88 @@ func (o *`)
 
 				buf.WriteString(`
 func (o *`)
+
 				buf.WriteString(fmt.Sprintf("%v", privateName))
+
 				buf.WriteString(`Base) Set`)
+
 				buf.WriteString(col.ForeignKey.GoName)
+
 				buf.WriteString(`(v *`)
+
 				buf.WriteString(col.ForeignKey.GoType)
+
 				buf.WriteString(`) {
 	if v == nil {
 		if !o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsNull {
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsNull = true
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsDirty = true
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsValid = true
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(` = `)
+
 				buf.WriteString(col.DefaultValueAsValue())
+
 				buf.WriteString(`
 			o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", oName))
+
 				buf.WriteString(` = nil
 		}
 	} else {
 		o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", oName))
+
 				buf.WriteString(`  = v
 		if o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsNull || o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(` != v.PrimaryKey() {
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsNull = false
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(` = v.PrimaryKey()
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsDirty = true
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsValid = true
 		}
 	}
@@ -639,37 +859,55 @@ func (o *`)
 		} else { // Not nullable
 
 			buf.WriteString(`func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) Set`)
+
 			buf.WriteString(col.GoName)
+
 			buf.WriteString(`(v `)
+
 			buf.WriteString(col.GoType.String())
+
 			buf.WriteString(`) {
 `)
 			if col.GoType == query.COL_TYPE_BYTES {
 				buf.WriteString(`	o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(` = v		// TODO: Copy bytes??
 	o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsDirty = true
 `)
 			} else {
 				buf.WriteString(`	if o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(` != v {
 		o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(` = v
 		o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsDirty = true
 `)
 				if col.IsReference() && !col.ForeignKey.IsType {
 					oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
 
 					buf.WriteString(`		o.`)
+
 					buf.WriteString(fmt.Sprintf("%v", oName))
+
 					buf.WriteString(` = nil
 `)
 				}
@@ -687,31 +925,49 @@ func (o *`)
 
 				buf.WriteString(`
 func (o *`)
+
 				buf.WriteString(fmt.Sprintf("%v", privateName))
+
 				buf.WriteString(`Base) Set`)
+
 				buf.WriteString(col.ForeignKey.GoName)
+
 				buf.WriteString(`(v *`)
+
 				buf.WriteString(col.ForeignKey.GoType)
+
 				buf.WriteString(`)  {
 	if v == nil {
 		panic("Cannot set `)
+
 				buf.WriteString(col.ForeignKey.GoName)
+
 				buf.WriteString(` to a null value.")
 	} else {
 		o.`)
+
 				buf.WriteString(fmt.Sprintf("%v", oName))
+
 				buf.WriteString(` = v
 		if o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(` != v.PrimaryKey() {
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(` = v.PrimaryKey()
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsDirty = true
 			o.`)
+
 				buf.WriteString(col.VarName)
+
 				buf.WriteString(`IsValid = true
 		}
 	}
@@ -727,7 +983,9 @@ func (o *`)
 
 	buf.WriteString(`
 func (o *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base) GetAlias(key string) query.AliasValue {
 	if a,ok := o._aliases[key]; ok {
 		return query.NewAliasValue(a)
@@ -751,23 +1009,37 @@ func (o *`)
 		buf.WriteString(`
 
 func (o *`)
+
 		buf.WriteString(fmt.Sprintf("%v", privateName))
+
 		buf.WriteString(`Base) `)
+
 		buf.WriteString(goName)
+
 		buf.WriteString(`() `)
+
 		buf.WriteString(col.ForeignKey.GoType)
+
 		buf.WriteString(` {
 	if o._restored && !o.`)
+
 		buf.WriteString(col.VarName)
+
 		buf.WriteString(`IsValid {
 		panic ("`)
+
 		buf.WriteString(col.VarName)
+
 		buf.WriteString(` was not selected in the last query and so is not valid")
 	}
 	return `)
+
 		buf.WriteString(col.ForeignKey.GoType)
+
 		buf.WriteString(`(o.`)
+
 		buf.WriteString(col.VarName)
+
 		buf.WriteString(`)
 }
 
@@ -777,12 +1049,18 @@ func (o *`)
 
 			buf.WriteString(`
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(goName)
+
 			buf.WriteString(`IsNull() bool {
 	return o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull
 }
 
@@ -790,49 +1068,75 @@ func (o *`)
 
 		}
 
-		// If the table is nullable, we use an interface to allow a null to be passed in
+		// If the column is nullable, we use an interface to allow a null to be passed in
 		if col.IsNullable {
 
 			buf.WriteString(`
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) Set`)
+
 			buf.WriteString(goName)
+
 			buf.WriteString(`(i interface{}) {
 	if i == nil {
 		if !o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull {
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull = true
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsDirty = true
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid = true
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` = `)
+
 			buf.WriteString(col.DefaultValueAsValue())
+
 			buf.WriteString(`
 		}
 	} else {
 		v := i.(`)
+
 			buf.WriteString(col.GoType.String())
+
 			buf.WriteString(`)
 		if o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull  {
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull = false
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` = v
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsDirty = true
 		}
 	}
@@ -844,27 +1148,45 @@ func (o *`)
 
 			buf.WriteString(`
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) Set`)
+
 			buf.WriteString(goName)
+
 			buf.WriteString(`(v `)
+
 			buf.WriteString(col.ForeignKey.GoType)
+
 			buf.WriteString(`) {
 	if o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` != `)
+
 			buf.WriteString(fmt.Sprintf("%v", col.GoType.String()))
+
 			buf.WriteString(`(v) {
 		o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` = `)
+
 			buf.WriteString(fmt.Sprintf("%v", col.GoType.String()))
+
 			buf.WriteString(`(v)
 		o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsDirty = true
 		o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid = true
 	}
 }
@@ -882,48 +1204,76 @@ func (o *`)
 
 			buf.WriteString(`
 // `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoPlural))
+
 			buf.WriteString(` returns a slice of `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 			buf.WriteString(` objects if loaded. If not, will attempt to load
 // the related objects and return what it finds.
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`() []`)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 			buf.WriteString(` {
 	if o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` == nil {
 		return nil
 	}
 	return o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`
 }
 
 // `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoName))
+
 			buf.WriteString(` returns a single `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 			buf.WriteString(` object, if one was loaded
 // otherwise, it will return zero.
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(ref.GoName)
+
 			buf.WriteString(`() `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 			buf.WriteString(` {
 	if o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` == nil {
 		return 0
 	}
 	return o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`[0]
 }
 
@@ -932,25 +1282,39 @@ func (o *`)
 		} else {
 
 			buf.WriteString(`// `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoName))
+
 			buf.WriteString(` returns a single `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 			buf.WriteString(` object, if one was loaded
 // otherwise, it will return nil.
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(ref.GoName)
+
 			buf.WriteString(`() *`)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 			buf.WriteString(` {
 	if o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` == nil {
 		return nil
 	}
 	return o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`[0]
 }
 
@@ -958,25 +1322,39 @@ func (o *`)
 
 			buf.WriteString(`
 // `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoPlural))
+
 			buf.WriteString(` returns a slice of `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 			buf.WriteString(` objects if loaded. If not, will attempt to load
 // the related objects and return what it finds.
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`() []*`)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
+
 			buf.WriteString(` {
 	if o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` == nil {
 		return nil
 	}
 	return o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`
 }
 
@@ -1003,25 +1381,39 @@ func (o *`)
 
 			buf.WriteString(`
 // `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoName))
+
 			buf.WriteString(` returns the connected `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoType))
+
 			buf.WriteString(` object, if one was loaded
 // otherwise, it will return nil.
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(ref.GoName)
+
 			buf.WriteString(`() *`)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoType))
+
 			buf.WriteString(` {
 	if o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` == nil {
 		return nil
 	}
 	return o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`
 }
 
@@ -1030,27 +1422,43 @@ func (o *`)
 		} else {
 
 			buf.WriteString(`// `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoName))
+
 			buf.WriteString(` returns a single `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoType))
+
 			buf.WriteString(` object by primary key, if one was loaded.
 // Otherwise, it will return nil.
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(ref.GoName)
+
 			buf.WriteString(`(pk string) *`)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoType))
+
 			buf.WriteString(` {
 	if o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` == nil || len(o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`) == 0 {
 		return nil
 	}
 	v,_ := o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", mName))
+
 			buf.WriteString(`[pk]
 	return v
 }
@@ -1059,24 +1467,38 @@ func (o *`)
 
 			buf.WriteString(`
 // `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoPlural))
+
 			buf.WriteString(` returns a slice of `)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoType))
+
 			buf.WriteString(` objects if loaded.
 func (o *`)
+
 			buf.WriteString(fmt.Sprintf("%v", privateName))
+
 			buf.WriteString(`Base) `)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`() []*`)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.GoType))
+
 			buf.WriteString(` {
 	if o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` == nil {
 		return nil
 	}
 	return o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`
 }
 
@@ -1091,16 +1513,26 @@ func (o *`)
 	// Top level query functions
 
 	buf.WriteString(`func Load`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(`(ctx context.Context, id string) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(` {
 	results := Query`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoPlural))
+
 	buf.WriteString(`().Where(Equal(node.`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(`().`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.PrimaryKeyColumn.GoName))
+
 	buf.WriteString(`(), id)).Load(ctx)
 	if results != nil && len(results) > 0 {
 		return results[0]
@@ -1110,56 +1542,84 @@ func (o *`)
 }
 
 func Query`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoPlural))
+
 	buf.WriteString(`() *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	return new`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(`Builder()
 }
 
 // The `)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder is a private object using the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type `)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder struct {
 	base query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
 func new`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(`Builder() *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	b := &`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder{
 		base: db.GetDatabase("`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+
 	buf.WriteString(`").
 		NewBuilder(),
 	}
 	return b.Join(node.`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(`())
 }
 
 // Load terminates the query builder, performs the query, and returns a slice of `)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(` objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder) Load(ctx context.Context) (`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Slice []*`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(`) {
 	results := b.base.Load(ctx)
 	if results == nil {
@@ -1167,17 +1627,25 @@ func (b *`)
 	}
 	for _,item := range results {
 		o := New`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(`()
 		o.load(item, !b.hasConditionalJoins, o, nil, "")
 		`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Slice = append(`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Slice, o)
 	}
 	return `)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Slice
 }
 
@@ -1185,9 +1653,13 @@ func (b *`)
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder) Get(ctx context.Context) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(` {
 	results := b.Limit(1,0).Load(ctx)
 	return results[0]
@@ -1195,9 +1667,13 @@ func (b *`)
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder) Expand(n query.NodeI) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	b.base.Expand(n)
 	return b
@@ -1206,9 +1682,13 @@ func (b *`)
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder) Join(n query.NodeI, conditions... query.NodeI) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
@@ -1225,9 +1705,13 @@ func (b *`)
 
 // Where adds a condition to filter what gets selected.
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  Where(c query.NodeI) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	b.base.Condition(c)
 	return b
@@ -1235,9 +1719,13 @@ func (b *`)
 
 // OrderBy  spedifies how the resulting data should be sorted.
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  OrderBy(nodes... query.NodeI) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	b.base.OrderBy(nodes...)
 	return b
@@ -1245,9 +1733,13 @@ func (b *`)
 
 // Limit willl return a subset of the data, limited to the offset and number of rows specified
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  Limit(maxRowCount int64, offset int64) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	b.base.Limit(maxRowCount, offset)
 	return b
@@ -1258,9 +1750,13 @@ func (b *`)
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  Select(nodes... query.NodeI) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	b.base.Select(nodes...)
 	return b
@@ -1269,9 +1765,13 @@ func (b *`)
 // Alias lets you add a node with a custom name. After the query, you can read out the data using getAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  Alias(name string, n query.NodeI) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	b.base.Alias(name, n)
 	return b
@@ -1281,9 +1781,13 @@ func (b *`)
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  Distinct() *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	b.base.Distinct()
 	return b
@@ -1291,18 +1795,26 @@ func (b *`)
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  GroupBy(nodes... query.NodeI) *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	b.base.GroupBy(nodes...)
 	return b
 }
 
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  Having(node query.NodeI)  *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder {
 	 b.base.Having(node)
 	 return b
@@ -1310,21 +1822,27 @@ func (b *`)
 
 // Count terminates a query and returns just the number of items selected.
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  Count(ctx context.Context, distinct bool, nodes... query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
 // Use the query builder to delete a group of records that match the criteria
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  Delete(ctx context.Context) {
 	 b.base.Delete(ctx)
 }
 
 // Use the query builder to define a subquery within a larger query
 func (b *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
 	buf.WriteString(`Builder)  Subquery() *query.SubqueryNode {
 	 return b.base.Subquery()
 }
@@ -1341,9 +1859,13 @@ func (b *`)
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
 // Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
 func (o *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base) load (m map[string]interface{}, linkParent bool, objThis *`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
 	buf.WriteString(`, objParent interface{}, parentKey string) {
 `)
 
@@ -1351,53 +1873,85 @@ func (o *`)
 		if col.IsNullable {
 
 			buf.WriteString(`	if v, ok := m["`)
+
 			buf.WriteString(col.DbName)
+
 			buf.WriteString(`"]; ok {
 		if v == nil {
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` = `)
+
 			buf.WriteString(col.DefaultValueAsValue())
+
 			buf.WriteString(`
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull = true
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid = true
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsDirty = false
 		} else if o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`, ok = v.(`)
+
 			buf.WriteString(col.GoType.String())
+
 			buf.WriteString(`); ok {
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull = false
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid = true
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsDirty = false
 		} else {
 			panic("Wrong type found for `)
+
 			buf.WriteString(col.DbName)
+
 			buf.WriteString(`.")
 		}
 	} else {
 		o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid = false
 		o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsNull = true
 		o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` = `)
+
 			buf.WriteString(col.DefaultValueAsValue())
+
 			buf.WriteString(`
 	}
 `)
@@ -1405,32 +1959,50 @@ func (o *`)
 		} else { // not IsNullable
 
 			buf.WriteString(`	if v, ok := m["`)
+
 			buf.WriteString(col.DbName)
+
 			buf.WriteString(`"]; ok && v != nil {
 		if o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`, ok = v.(`)
+
 			buf.WriteString(col.GoType.String())
+
 			buf.WriteString(`); ok {
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid = true
 			o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsDirty = false
 		} else {
 			panic("Wrong type found for `)
+
 			buf.WriteString(col.DbName)
+
 			buf.WriteString(`.")
 		}
 	} else {
 		o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(`IsValid = false
 		o.`)
+
 			buf.WriteString(col.VarName)
+
 			buf.WriteString(` = `)
+
 			buf.WriteString(col.DefaultValueAsValue())
+
 			buf.WriteString(`
 	}
 
@@ -1442,45 +2014,71 @@ func (o *`)
 			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
 
 			buf.WriteString(`	if linkParent && parentKey == "`)
+
 			buf.WriteString(col.ForeignKey.GoName)
+
 			buf.WriteString(`" {
 		o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = objParent.(*`)
+
 			buf.WriteString(col.ForeignKey.GoType)
+
 			buf.WriteString(`)
 		o.idIsValid = true
 		o.idIsDirty = false
 	} else if v, ok := m["`)
+
 			buf.WriteString(col.ForeignKey.GoName)
+
 			buf.WriteString(`"]; ok {
 		if `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, ok2 := v.(map[string]interface{}); ok2 {
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = New`)
+
 			buf.WriteString(col.ForeignKey.GoType)
+
 			buf.WriteString(`()
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`.load(`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, linkParent, o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, objThis, "`)
+
 			buf.WriteString(fmt.Sprintf("%v", col.ForeignKey.RR.GoPlural))
+
 			buf.WriteString(`")
 			o.idIsValid = true
 			o.idIsDirty = false
 		} else {
 			panic("Wrong type found for `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` object.")
 		}
 	} else {
 		o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = nil
 	}
 
@@ -1497,35 +2095,55 @@ func (o *`)
 		if ref.IsTypeAssociation {
 
 			buf.WriteString(`	if v, ok := m["`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`"]; ok {
 		if `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, ok2 := v.([]uint); ok2 {
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = []`)
+
 			buf.WriteString(ref.AssociatedObjectName)
+
 			buf.WriteString(`{}
 			for _,m := range `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` {
 				o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = append(o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, `)
+
 			buf.WriteString(ref.AssociatedObjectName)
+
 			buf.WriteString(`(m))
 			}
 		} else {
 			panic("Wrong type found for `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` object.")
 		}
 	} else {
 		o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = nil
 	}
 
@@ -1536,63 +2154,103 @@ func (o *`)
 			pk := dd.TableDescription(ref.MM.AssociatedTableName).PrimaryKeyColumn.VarName
 
 			buf.WriteString(`	if v, ok := m["`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`"]; ok {
 		if `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, ok2 := v.([]db.ValueMap); ok2 {
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = []*`)
+
 			buf.WriteString(ref.AssociatedObjectName)
+
 			buf.WriteString(`{}
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", mName))
+
 			buf.WriteString(` = map[string]*`)
+
 			buf.WriteString(ref.AssociatedObjectName)
+
 			buf.WriteString(`{}
 
 			for _,v2 := range `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` {
 				obj := New`)
+
 			buf.WriteString(ref.AssociatedObjectName)
+
 			buf.WriteString(`()
 				obj.load(v2, linkParent, obj, objThis, "`)
+
 			buf.WriteString(fmt.Sprintf("%v", ref.MM.GoPlural))
+
 			buf.WriteString(`")
 				if linkParent && parentKey == "`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`" && obj.`)
+
 			buf.WriteString(fmt.Sprintf("%v", pk))
+
 			buf.WriteString(` == objParent.(*`)
+
 			buf.WriteString(ref.AssociatedObjectName)
+
 			buf.WriteString(`).`)
+
 			buf.WriteString(fmt.Sprintf("%v", pk))
+
 			buf.WriteString(` {
 					obj = objParent.(*`)
+
 			buf.WriteString(ref.AssociatedObjectName)
+
 			buf.WriteString(`)
 				}
 				o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = append(o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, obj)
 				o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", mName))
+
 			buf.WriteString(`[obj.`)
+
 			buf.WriteString(fmt.Sprintf("%v", pk))
+
 			buf.WriteString(`] = obj
 			}
 		} else {
 			panic("Wrong type found for `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` object.")
 		}
 	} else {
 		o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = nil
 	}
 
@@ -1608,33 +2266,53 @@ func (o *`)
 			oName := dd.AssociatedObjectPrefix + ref.GoName
 
 			buf.WriteString(`	if v, ok := m["`)
+
 			buf.WriteString(ref.GoName)
+
 			buf.WriteString(`"]; ok {
 		if `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, ok2 := v.(db.ValueMap); ok2 {
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = New`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`()
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`.load(`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, linkParent, o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, objThis, "`)
+
 			buf.WriteString(fmt.Sprintf("%v", parentName))
+
 			buf.WriteString(`")
 		} else {
 			panic("Wrong type found for `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` object.")
 		}
 	} else {
 		o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = nil
 	}
 
@@ -1646,90 +2324,150 @@ func (o *`)
 			pk := dd.TableDescription(ref.DbTable).GetColumn(ref.DbColumn).VarName
 
 			buf.WriteString(`	if v, ok := m["`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`"]; ok {
 		switch `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` := v.(type) {
 		case []db.ValueMap:
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = []*`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`{}
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", mName))
+
 			buf.WriteString(` = map[string]*`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`{}
 			for _,v2 := range `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` {
 				obj := New`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`()
 				obj.load(v2, linkParent, obj, objThis, "`)
+
 			buf.WriteString(fmt.Sprintf("%v", parentName))
+
 			buf.WriteString(`")
 				if linkParent && parentKey == "`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`" && obj.`)
+
 			buf.WriteString(fmt.Sprintf("%v", pk))
+
 			buf.WriteString(` == objParent.(*`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`).`)
+
 			buf.WriteString(fmt.Sprintf("%v", pk))
+
 			buf.WriteString(` {
 					obj = objParent.(*`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`)
 				}
 				o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = append(o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, obj)
 				o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", mName))
+
 			buf.WriteString(`[obj.`)
+
 			buf.WriteString(fmt.Sprintf("%v", pk))
+
 			buf.WriteString(`] = obj
 			}
 		case db.ValueMap:	// single expansion
 			obj := New`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`()
 			obj.load(`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(`, linkParent, obj, objThis, "`)
+
 			buf.WriteString(fmt.Sprintf("%v", parentName))
+
 			buf.WriteString(`")
 			if linkParent && parentKey == "`)
+
 			buf.WriteString(ref.GoPlural)
+
 			buf.WriteString(`" && obj.`)
+
 			buf.WriteString(fmt.Sprintf("%v", pk))
+
 			buf.WriteString(` == objParent.(*`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`).`)
+
 			buf.WriteString(fmt.Sprintf("%v", pk))
+
 			buf.WriteString(` {
 				obj = objParent.(*`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`)
 			}
 			o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = []*`)
+
 			buf.WriteString(ref.GoType)
+
 			buf.WriteString(`{obj}
 		default:
 			panic("Wrong type found for `)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` object.")
 		}
 	} else {
 		o.`)
+
 			buf.WriteString(fmt.Sprintf("%v", oName))
+
 			buf.WriteString(` = nil
 	}
 
@@ -1741,7 +2479,9 @@ func (o *`)
 
 	buf.WriteString(`
 	if v, ok := m["`)
+
 	buf.WriteString(fmt.Sprintf("%v", query.AliasResults))
+
 	buf.WriteString(`"]; ok {
 		o._aliases = map[string]interface{}(v.(db.ValueMap))
 	}
@@ -1759,7 +2499,9 @@ func (o *`)
 // Save will update or insert the object, depending on the state of the object.
 // If it has any auto-generated ids, those will be updated.
 func (o *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base) Save(ctx context.Context)  {
 	if o._restored {
 		o.Update(ctx)
@@ -1769,7 +2511,9 @@ func (o *`)
 }
 
 func (o *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base) Update(ctx context.Context) {
 	if !o._restored {
 		panic ("Cannot update a record that was not originally read from the database.")
@@ -1779,40 +2523,58 @@ func (o *`)
 		return
 	}
 	db := db.GetDatabase("`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+
 	buf.WriteString(`")
 	db.Update(ctx, "`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.DbName))
+
 	buf.WriteString(`", m, "`)
+
 	buf.WriteString(t.PrimaryKeyColumn.DbName)
+
 	buf.WriteString(`", fmt.Sprint(o.`)
+
 	buf.WriteString(t.PrimaryKeyColumn.VarName)
+
 	buf.WriteString(`))
 	o.resetDirtyStatus()
 }
 
 func (o *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base) Insert(ctx context.Context) {
 	m := o.getModifiedFields()
 	if len(m) == 0 {
 		return
 	}
 	db := db.GetDatabase("`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+
 	buf.WriteString(`")
 `)
 	if t.PrimaryKeyColumn.IsId {
 		buf.WriteString(`	id := db.Insert(ctx, "`)
+
 		buf.WriteString(fmt.Sprintf("%v", t.DbName))
+
 		buf.WriteString(`", m)
 	o.`)
+
 		buf.WriteString(t.PrimaryKeyColumn.VarName)
+
 		buf.WriteString(` = id
 `)
 	} else {
 		buf.WriteString(`	db.Insert(ctx, "`)
+
 		buf.WriteString(fmt.Sprintf("%v", t.DbName))
+
 		buf.WriteString(`", m)
 `)
 	}
@@ -1821,7 +2583,9 @@ func (o *`)
 }
 
 func (o *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 `)
@@ -1829,12 +2593,18 @@ func (o *`)
 	for _, col := range t.Columns {
 
 		buf.WriteString(`	if o.`)
+
 		buf.WriteString(col.VarName)
+
 		buf.WriteString(`IsDirty {
 		fields["`)
+
 		buf.WriteString(col.DbName)
+
 		buf.WriteString(`"] = o.`)
+
 		buf.WriteString(col.VarName)
+
 		buf.WriteString(`
 	}
 
@@ -1848,14 +2618,18 @@ func (o *`)
 `)
 
 	buf.WriteString(`func (o *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base) resetDirtyStatus() {
 `)
 
 	for _, col := range t.Columns {
 
 		buf.WriteString(`	o.`)
+
 		buf.WriteString(col.VarName)
+
 		buf.WriteString(`IsDirty = false
 `)
 
@@ -1866,20 +2640,30 @@ func (o *`)
 
 	buf.WriteString(`
 func (o *`)
+
 	buf.WriteString(fmt.Sprintf("%v", privateName))
+
 	buf.WriteString(`Base) Delete(ctx context.Context) {
 	if !o._restored {
 		panic ("Cannot delete a record that has no primary key value.")
 	}
 	db := db.GetDatabase("`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+
 	buf.WriteString(`")
 	db.Delete(ctx, "`)
+
 	buf.WriteString(fmt.Sprintf("%v", t.DbName))
+
 	buf.WriteString(`", "`)
+
 	buf.WriteString(t.PrimaryKeyColumn.DbName)
+
 	buf.WriteString(`", o.`)
+
 	buf.WriteString(t.PrimaryKeyColumn.VarName)
+
 	buf.WriteString(`)
 }
 

@@ -15,7 +15,7 @@ type IdTree struct {
 
 // Any object that returns a string id can be stored in the tree.
 type Ider interface {
-	Id() string
+	ID() string
 }
 
 type node struct {
@@ -44,7 +44,7 @@ func (t *IdTree) Get(id string) Ider {
 func (t *IdTree) Add(parent Ider, child Ider) {
 	var childId string
 
-	if childId = child.Id(); childId == "" {
+	if childId = child.ID(); childId == "" {
 		panic ("An item must have an id before it can be added to the tree")
 	}
 
@@ -58,7 +58,7 @@ func (t *IdTree) Add(parent Ider, child Ider) {
 	var parentId string
 
 	if parent != nil {
-		if parentId = parent.Id(); parentId == "" {
+		if parentId = parent.ID(); parentId == "" {
 			panic ("Parent must have an id.")
 		}
 
@@ -72,7 +72,7 @@ func (t *IdTree) Add(parent Ider, child Ider) {
 			} else {
 				parentNode.children = append(parentNode.children, childId)
 			}
-			t.nodes[parentNode.value.Id()] = parentNode
+			t.nodes[parentNode.value.ID()] = parentNode
 		}
 	} else {
 		// a top level item
@@ -84,7 +84,7 @@ func (t *IdTree) Add(parent Ider, child Ider) {
 
 // Removes the item from the tree and all its sub-itmes
 func (t *IdTree) Remove(item Ider) {
-	var id string = item.Id()
+	var id string = item.ID()
 	if id == "" {
 		panic("The item to remove does not have an id")
 	}
@@ -97,7 +97,7 @@ func (t *IdTree) Remove(item Ider) {
 
 // Remove all child controls
 func (t *IdTree) RemoveChildren(parent Ider) {
-	var id string = parent.Id()
+	var id string = parent.ID()
 	if id == "" {
 		panic("The item does not have an id")
 	}
@@ -146,7 +146,7 @@ func (t *IdTree) GetAll() []Ider {
 }
 
 func (t *IdTree) Children(parent Ider) []Ider {
-	var parentId string = parent.Id()
+	var parentId string = parent.ID()
 	var n node
 	var ok bool
 
@@ -173,7 +173,7 @@ func (t *IdTree) Children(parent Ider) []Ider {
 }
 
 func (t *IdTree) Parent(child Ider) Ider {
-	var childId string = child.Id()
+	var childId string = child.ID()
 	var ok bool
 	var n node
 
@@ -188,7 +188,7 @@ func (t *IdTree) Parent(child Ider) Ider {
 
 // Root returns the root of the branch that the given object is on
 func (t *IdTree) Root(child Ider) Ider {
-	var childId string = child.Id()
+	var childId string = child.ID()
 	var ok bool
 	var n node
 

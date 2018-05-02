@@ -21,7 +21,6 @@ const (
 type CheckboxColumn struct {
 	ColumnBase
 	showCheckAll bool
-	parentTable TableI
 	checkboxer CheckboxProvider
 	changes map[string]bool			// records changes
 }
@@ -37,15 +36,12 @@ type CheckboxColumnI interface {
 //
 // The table will keep track of what checkboxes have been clicked and the new values. Call Changes() to get those
 // changes. Or, if you are recording your changes in real time, attach a CheckboxColumnClick event to the table.
-func NewCheckboxColumn(parentTable TableI, p CheckboxProvider) *CheckboxColumn {
+func NewCheckboxColumn(p CheckboxProvider) *CheckboxColumn {
 	if p == nil {
 		panic("A checkbox attribute provider is required.")
 	}
-	if parentTable.Id() == "" {
-		panic("The parent table id is required.")
-	}
 
-	i := CheckboxColumn{parentTable:parentTable, checkboxer:p}
+	i := CheckboxColumn{checkboxer:p}
 	i.Init()
 	return &i
 }
@@ -65,13 +61,16 @@ func (c *CheckboxColumn) SetShowCheckAll(s bool) *CheckboxColumn {
 	return c
 }
 
-func (c *CheckboxColumn) HeaderCellText(ctx context.Context, row int, col int) string {
+func (c *CheckboxColumn) HeaderCellHtml(ctx context.Context, row int, col int) (h string) {
 	if c.showCheckAll {
 		a := c.This().CheckboxAttributes(nil)
 		a.Set("type", "checkbox")
-		return html.RenderVoidTag("input", a)
+		h = html.RenderVoidTag("input", a)
 	}
-	return ""
+	if c.IsSortable() {
+		h += c.RenderSortButton("")
+	}
+	return
 }
 
 // CheckboxAttributes returns the attributes for the input tag that will display the checkbox.
@@ -84,12 +83,12 @@ func (c *CheckboxColumn) CheckboxAttributes(data interface{}) *html.Attributes {
 	}
 	var id string
 	if data == nil {
-		pubid := c.Id() + "_all"
+		pubid := c.ID() + "_all"
 		a.Set("id", pubid)
 		a.SetDataAttribute("grAll", "1")
-	} else if id = p.Id(data); id != "" {
+	} else if id = p.ID(data); id != "" {
 		// TODO: optionally encrypt the id in case its a database id. Difficult since database ids might themselves be large hashes (aka Google data store)
-		pubid := c.Id() + "_" + id
+		pubid := c.ID() + "_" + id
 		a.Set("id", pubid)
 		a.SetDataAttribute("grCheckcol", "1")
 	} else {
@@ -131,7 +130,7 @@ func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 			column_id := k[:index]
 			check_id := k[index+1:]
 
-			if column_id == c.Id() {
+			if column_id == c.ID() {
 				c.changes[check_id] = control_base.ConvertToBool(v)
 			}
 		}
@@ -140,7 +139,7 @@ func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 
 // AddActions adds actions to the table that the table can respond to.
 func (c *CheckboxColumn) AddActions(table page.ControlI) {
-	table.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(c.Id(), ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
+	table.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(c.ID(), ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
 }
 
 func (c *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
@@ -182,7 +181,7 @@ func (c *CheckboxColumn) allClick(id string, checked bool, row int, col int) {
 
 type CheckboxProvider interface {
 	// Id should return a unique id corresponding to the data. It is used to track the checked state of the checkbox.
-	Id(data interface{}) string
+	ID(data interface{}) string
 	// IsChecked should return true if the checkbox corresponding to the row data should initially be checked. After the
 	// initial draw, the table will keep track of the state of the checkbox, meaning you do not need to live update your data.
 	// If you are using the table just as a selction of items to act on, just return false here.

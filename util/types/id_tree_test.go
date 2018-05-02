@@ -8,7 +8,7 @@ type testObj2 struct {
 	id string
 }
 
-func (t *testObj2) Id() string {
+func (t *testObj2) ID() string {
 	return t.id
 }
 
@@ -36,7 +36,7 @@ func TestBasicIdTree(t *testing.T) {
 
 	o = tree.Get("2")
 
-	if o.Id() != "2" {
+	if o.ID() != "2" {
 		t.Error("Could not get object from tree")
 	}
 
@@ -60,12 +60,12 @@ func TestIdTree2(t *testing.T) {
 
 	o := tree.Get("b2-1")
 
-	if o.Id() != "b2-1" {
+	if o.ID() != "b2-1" {
 		t.Error("Could not get object from tree")
 	}
 
-	if p := tree.Parent(o); p.Id() != "b2" {
-		t.Error("Parent not correct. Found: %q", p.Id())
+	if p := tree.Parent(o); p.ID() != "b2" {
+		t.Error("Parent not correct. Found: %q", p.ID())
 	}
 
 	o = tree.Root(n2)

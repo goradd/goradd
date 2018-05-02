@@ -17,11 +17,11 @@ const (
 	PageClick  = iota + 1000
 )
 
-// DataScrollbar is a toolbar designed to aid scrolling through a large set of data. It is implemented using Aria design
+// DataPagebar is a toolbar designed to aid scrolling through a large set of data. It is implemented using Aria design
 // best practices. It is designed to be paired with a Table or DataRepeater to aid in navigating through the data.
 // It is similar to a Paginator, but a paginator is for navigating through a whole series of pages and not just for
 // data on one page.
-type DataScrollbar struct {
+type DataPagebar struct {
 	localPage.Control
 
 	totalItems int
@@ -38,55 +38,55 @@ type DataScrollbar struct {
 	proxy *Proxy
 }
 
-func NewPaginator(parent page.ControlI, paginatedControl page.ControlI) *DataScrollbar {
-	p := DataScrollbar{paginatedControl:paginatedControl}
+func NewPaginator(parent page.ControlI, paginatedControl page.ControlI) *DataPagebar {
+	p := DataPagebar{paginatedControl:paginatedControl}
 	p.Init(parent)
 	return &p
 }
 
-func (d *DataScrollbar) Init(parent page.ControlI) {
+func (d *DataPagebar) Init(parent page.ControlI) {
 	d.Control.Init(d, parent)
 	d.labelForNext = d.T("Next")
 	d.labelForPrevious = d.T("Previous")
 	d.maxPageButtons = 10
 	d.proxy = NewProxy(d)
-	d.proxy.OnClick(action.Ajax(d.Id(), PageClick))
+	d.proxy.OnClick(action.Ajax(d.ID(), PageClick))
 	d.Tag = "div"
 	d.SetAttribute("role", "tablist")
 	d.AddClass("data-scrollbar")
 	d.pageNum = 1
 }
 
-func (d *DataScrollbar) Action(ctx context.Context, params page.ActionParams) {
+func (d *DataPagebar) Action(ctx context.Context, params page.ActionParams) {
 	switch params.Id {
 	case PageClick:
 		d.SetPageNum(javascript.NumberInt(params.Values.Control))
 	}
 }
 
-func (d *DataScrollbar) SetTotalItems(count int) {
+func (d *DataPagebar) SetTotalItems(count int) {
 	d.totalItems = count
 	d.limitPageNumber()
 	d.Refresh()
 }
 
-func (d *DataScrollbar) TotalItems() int {
+func (d *DataPagebar) TotalItems() int {
 	return d.totalItems
 }
 
-func (d *DataScrollbar)  SetPageSize(size int) {
+func (d *DataPagebar)  SetPageSize(size int) {
 	d.pageSize = size
 }
 
-func (d *DataScrollbar) PageSize() int {
+func (d *DataPagebar) PageSize() int {
 	return d.pageSize
 }
 
-func (d *DataScrollbar) PageNum() int {
+func (d *DataPagebar) PageNum() int {
 	return d.pageNum
 }
 
-func (d *DataScrollbar) SetPageNum(n int) {
+func (d *DataPagebar) SetPageNum(n int) {
 	if d.pageNum != n {
 		d.pageNum = n
 		d.Refresh()
@@ -94,33 +94,33 @@ func (d *DataScrollbar) SetPageNum(n int) {
 	}
 }
 
-func (d *DataScrollbar) refreshPaginatedControl() {
+func (d *DataPagebar) refreshPaginatedControl() {
 	d.paginatedControl.Refresh()
 }
 
 // SetMaxPageButtons sets the maximum number of buttons that will be displayed in the paginator.
-func (d *DataScrollbar) SetMaxPageButtons(b int) {
+func (d *DataPagebar) SetMaxPageButtons(b int) {
 	d.maxPageButtons = b
 }
 
-func (d *DataScrollbar) SetObjectNames(singular string, plural string) {
+func (d *DataPagebar) SetObjectNames(singular string, plural string) {
 	d.objectName = singular
 	d.objectPluralName = plural
 }
 
-func (d *DataScrollbar) SliceOffsets() (start, end int) {
+func (d *DataPagebar) SliceOffsets() (start, end int) {
 	start = (d.pageNum - 1) * d.pageSize
 	end = util.MinInt(start + d.pageSize, d.totalItems)
 	return
 }
 
 // SetLabels sets the previous and next labels. Translate these first.
-func (d *DataScrollbar) SetLabels(previous string, next string) {
+func (d *DataPagebar) SetLabels(previous string, next string) {
 	d.labelForPrevious = previous
 	d.labelForNext = next
 }
 
-func (d *DataScrollbar) limitPageNumber() {
+func (d *DataPagebar) limitPageNumber() {
 	pageCount := d.calcPageCount()
 
 	if d.pageNum > pageCount {
@@ -132,7 +132,7 @@ func (d *DataScrollbar) limitPageNumber() {
 	}
 }
 
-func (d *DataScrollbar) calcPageCount() int {
+func (d *DataPagebar) calcPageCount() int {
 	if d.pageSize == 0 || d.totalItems == 0 {
 		return 0
 	}
@@ -192,7 +192,7 @@ Note: there are likely better ways to do this. Some innovative ones are to have 
 Or, use the ellipsis as a dropdown menu for more selections
  */
 
-func (d *DataScrollbar) calcBunch() (pageStart, pageEnd int) {
+func (d *DataPagebar) calcBunch() (pageStart, pageEnd int) {
 
 	pageCount := d.calcPageCount()
 	if pageCount <= d.maxPageButtons {
@@ -222,7 +222,7 @@ func (d *DataScrollbar) calcBunch() (pageStart, pageEnd int) {
 	}
 }
 
-func (d *DataScrollbar) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (d *DataPagebar) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := d.previousButtonsHtml()
 	pageStart, pageEnd := d.calcBunch()
 	for i := pageStart; i <= pageEnd; i++ {
@@ -235,13 +235,13 @@ func (d *DataScrollbar) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (e
 }
 
 
-func (d *DataScrollbar) previousButtonsHtml() string {
+func (d *DataPagebar) previousButtonsHtml() string {
 	var prev string
 	var actionValue string
 	actionValue = strconv.Itoa(d.pageNum - 1)
 
 	attr := html.NewAttributes().
-		Set("id", d.Id() + "_arrow_" + actionValue).
+		Set("id", d.ID() + "_arrow_" + actionValue).
 		SetClass("arrow previous")
 
 	if d.pageNum <= 1 {
@@ -260,12 +260,12 @@ func (d *DataScrollbar) previousButtonsHtml() string {
 	return h
 }
 
-func (d *DataScrollbar) nextButtonsHtml() string {
+func (d *DataPagebar) nextButtonsHtml() string {
 	var next string
 	var actionValue string
 
 	attr := html.NewAttributes().
-		Set("id", d.Id() + "_arrow_" + actionValue).
+		Set("id", d.ID() + "_arrow_" + actionValue).
 		SetClass("arrow next")
 
 	actionValue = strconv.Itoa(d.pageNum + 1)
@@ -287,9 +287,9 @@ func (d *DataScrollbar) nextButtonsHtml() string {
 	return h
 }
 
-func (d *DataScrollbar) pageButtonsHtml(i int) string {
+func (d *DataPagebar) pageButtonsHtml(i int) string {
 	actionValue := strconv.Itoa(i)
-	attr := html.NewAttributes().Set("id", d.Id() + "_page_" + actionValue).Set("role","tab").AddClass("page")
+	attr := html.NewAttributes().Set("id", d.ID() + "_page_" + actionValue).Set("role","tab").AddClass("page")
 	if d.pageNum == i {
 		attr.AddClass("selected")
 		attr.Set("aria-selected", "true")
@@ -303,12 +303,12 @@ func (d *DataScrollbar) pageButtonsHtml(i int) string {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (d *DataScrollbar) MarshalState(m types.MapI) {
+func (d *DataPagebar) MarshalState(m types.MapI) {
 	m.Set("pageNum", d.pageNum)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (d *DataScrollbar) UnmarshalState(m types.MapI) {
+func (d *DataPagebar) UnmarshalState(m types.MapI) {
 	if m.Has("pageNum") {
 		i,_ := m.GetInt("pageNum")
 		d.pageNum = i

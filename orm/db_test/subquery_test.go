@@ -2,8 +2,8 @@ package db
 
 import (
 	"testing"
-	"grlocal/model"
-	"grlocal/model/node"
+	"goradd/model"
+	"goradd/model/node"
 	"github.com/stretchr/testify/assert"
 	"context"
 	. 	"github.com/spekary/goradd/orm/op"

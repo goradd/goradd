@@ -10,7 +10,7 @@ import (
 type PageCacheI interface {
 	Set(pageId string, page *Page)
 	Get(pageId string) *Page
-	NewPageId() string
+	NewPageID() string
 }
 
 var pageCache PageCacheI
@@ -59,7 +59,7 @@ func (o *FastPageCache) Get(pageId string) (*Page) {
 }
 
 // Returns a new page id
-func (o *FastPageCache) NewPageId() string {
+func (o *FastPageCache) NewPageID() string {
 	s := util.RandomHtmlValueString(40)
 	for o.Has(s) {	// while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure
 		s = util.RandomHtmlValueString(40)
@@ -89,7 +89,7 @@ func (o *SerializedPageCache) Set(pageId string, page *Page)  {
 	defer PutBuffer(b)
 	enc := pageEncoder.NewEncoder(b)
 	enc.Encode(config.PageCacheVersion)
-	enc.Encode(page.Form().Id())
+	enc.Encode(page.Form().ID())
 	err := page.Encode(enc)
 	if err != nil {
 		o.LruCache.Set(pageId, b.Bytes())
@@ -133,7 +133,7 @@ func (o *SerializedPageCache) Get(pageId string) (*Page) {
 }
 
 // Returns a new page id
-func (o *SerializedPageCache) NewPageId() string {
+func (o *SerializedPageCache) NewPageID() string {
 	s := util.RandomHtmlValueString(40)
 	for o.Has(s) {	// while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure
 		s = util.RandomHtmlValueString(40)

@@ -10,7 +10,7 @@ type testObj struct {
 }
 
 type testObjI interface {
-	getId() string
+	getID() string
 }
 
 var idCounter int = 0
@@ -23,7 +23,7 @@ func newObj() *testObj {
 	return c
 }
 
-func (o *testObj) getId() string {
+func (o *testObj) getID() string {
 	return o.id
 }
 
@@ -58,7 +58,7 @@ func TestTreeNodeBasic (t *testing.T) {
 
 	if i,ok := children2[0].TopNode().(testObjI); !ok {
 		t.Error("Could not cast top node.")
-	} else if i.getId() != "0" {
+	} else if i.getID() != "0" {
 		t.Error("Top node is not correct.")
 	}
 }

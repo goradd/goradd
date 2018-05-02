@@ -13,7 +13,7 @@ func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 
 	buf.WriteString(`<div id="`)
 
-	buf.WriteString(ctrl.Id())
+	buf.WriteString(ctrl.ID())
 
 	buf.WriteString(`_ctl" `)
 
@@ -24,13 +24,13 @@ func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 	if ctrl.Label() != "" {
 		buf.WriteString(`  <label id="`)
 
-		buf.WriteString(ctrl.Id())
+		buf.WriteString(ctrl.ID())
 
 		buf.WriteString(`_lbl" class="goradd-lbl"`)
 		if ctrl.HasFor() {
 			buf.WriteString(` for="`)
 
-			buf.WriteString(ctrl.Id())
+			buf.WriteString(ctrl.ID())
 
 			buf.WriteString(`" `)
 		}
@@ -48,7 +48,7 @@ func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 	buf.WriteString(`
   <div id="`)
 
-	buf.WriteString(ctrl.Id())
+	buf.WriteString(ctrl.ID())
 
 	buf.WriteString(`_err" class="goradd-err">`)
 
@@ -59,7 +59,7 @@ func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 	if ctrl.Instructions() != "" {
 		buf.WriteString(`  <div id="`)
 
-		buf.WriteString(ctrl.Id())
+		buf.WriteString(ctrl.ID())
 
 		buf.WriteString(`_inst" class="goradd-inst" >`)
 

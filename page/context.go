@@ -68,12 +68,12 @@ type AppContext struct {
 	err error					// An error that occurred during the unpacking of the context. We save This for later so we can let the page manager display it if we get that far.
 	requestMode RequestMode
 	cliArgs []string			// All arguments from the command line, whether from the command line call, or the ones that started the daemon
-	pageStateId string
+	pageStateId         string
 	customControlValues map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
-	checkableValues map[string]interface{} // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
-	actionControlId string	// If an action, the control sending the action
-	eventId EventId	// The event to send to the control
-	actionValues ActionValues
+	checkableValues     map[string]interface{} // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
+	actionControlID     string                 // If an action, the control sending the action
+	eventID             EventID                // The event to send to the control
+	actionValues        ActionValues
 	// TODO: Session object
 }
 
@@ -86,7 +86,7 @@ type Context struct {
 func (c *Context) String() string {
 	b,_ := json.Marshal(c.actionValues)
 	actionValues := string(b[:])
-	return fmt.Sprintf("URL: %s, Mode: %s, Form Values: %v, Control ID: %s, Event ID: %d, Action Values: %s, Page State: %s", c.URL, c.requestMode, c.formVars, c.actionControlId, c.eventId, actionValues, c.pageStateId)
+	return fmt.Sprintf("URL: %s, Mode: %s, Form Values: %v, Control ID: %s, Event ID: %d, Action Values: %s, Page State: %s", c.URL, c.requestMode, c.formVars, c.actionControlID, c.eventID, actionValues, c.pageStateId)
 }
 
 func PutContext(r *http.Request, cliArgs []string) *http.Request {
@@ -187,11 +187,11 @@ func (ctx *Context) FillApp(cliArgs []string) {
 
 
 			var params struct {
-				ControlValues map[string]interface{} `json:"controlValues"`
+				ControlValues   map[string]interface{} `json:"controlValues"`
 				CheckableValues map[string]interface{} `json:"checkableValues"`
-				ControlId string `json:"controlId"`
-				EventId int `json:"eventId"`
-				Values ActionValues `json:"actionValues"`
+				ControlID       string                 `json:"controlID"`
+				EventID         int                    `json:"eventID"`
+				Values          ActionValues           `json:"actionValues"`
 			}
 
 			dec := json.NewDecoder(strings.NewReader(v))
@@ -199,9 +199,9 @@ func (ctx *Context) FillApp(cliArgs []string) {
 			if err = dec.Decode (&params); err == nil {
 				ctx.customControlValues = params.ControlValues
 				ctx.checkableValues = params.CheckableValues
-				ctx.actionControlId = params.ControlId
-				if params.EventId != 0 {
-					ctx.eventId = EventId(params.EventId)
+				ctx.actionControlID = params.ControlID
+				if params.EventID != 0 {
+					ctx.eventID = EventID(params.EventID)
 				}
 				ctx.actionValues = params.Values
 
@@ -225,17 +225,17 @@ func (ctx *Context) FillApp(cliArgs []string) {
 					}
 				}
 
-				if i, ok = params["controlId"]; ok {
-					if ctx.actionControlId, ok = i.(string); !ok {
-						ctx.err = fmt.Errorf("controlId wrong type")
+				if i, ok = params["controlID"]; ok {
+					if ctx.actionControlID, ok = i.(string); !ok {
+						ctx.err = fmt.Errorf("controlID wrong type")
 					}
 				}
 
-				if i, ok = params["eventId"]; ok {
+				if i, ok = params["eventID"]; ok {
 					if v, ok2 := i.(int); !ok2 {
-						ctx.err = fmt.Errorf("eventId wrong type")
+						ctx.err = fmt.Errorf("eventID wrong type")
 					} else {
-						ctx.eventId = EventId(v)
+						ctx.eventID = EventID(v)
 					}
 				}
 

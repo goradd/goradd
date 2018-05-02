@@ -2,8 +2,8 @@ package db
 
 import (
 	"testing"
-	"grlocal/model"
-	"grlocal/model/node"
+	"goradd/model"
+	"goradd/model/node"
 	"context"
 	. 	"github.com/spekary/goradd/orm/op"
 	"github.com/stretchr/testify/assert"
@@ -353,7 +353,7 @@ func TestConditionalExpand(t *testing.T) {
 
 }
 
-func TestSelectById(t *testing.T) {
+func TestSelectByID(t *testing.T) {
 	ctx := context.Background()
 
 	projects := model.QueryProjects().

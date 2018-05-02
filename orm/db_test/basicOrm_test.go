@@ -3,11 +3,11 @@ package db
 import (
 	"testing"
 	"github.com/go-sql-driver/mysql"
-	"grlocal/model"
+	"goradd/model"
 	"context"
 	"github.com/spekary/goradd/orm/db"
 
-	"grlocal/model/node"
+	"goradd/model/node"
 	"strconv"
 	. 	"github.com/spekary/goradd/orm/op"
 

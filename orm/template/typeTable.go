@@ -4,7 +4,7 @@ package template
 
 import (
 	"bytes"
-	"grlocal/config"
+	"goradd/config"
 	"strconv"
 	"strings"
 
@@ -61,11 +61,17 @@ const (
 		con := tt.Constants[key]
 
 		buf.WriteString(`	`)
+
 		buf.WriteString(constPrefix)
+
 		buf.WriteString(``)
+
 		buf.WriteString(con)
+
 		buf.WriteString(` = `)
+
 		buf.WriteString(strconv.FormatUint(uint64(key), 10))
+
 		buf.WriteString(`
 `)
 
@@ -74,24 +80,36 @@ const (
 	buf.WriteString(`)
 
 type `)
+
 	buf.WriteString(propName)
+
 	buf.WriteString(` uint
 
 func (`)
+
 	buf.WriteString(propLetter)
+
 	buf.WriteString(` `)
+
 	buf.WriteString(propName)
+
 	buf.WriteString(`) String() string {
 	switch `)
+
 	buf.WriteString(propLetter)
+
 	buf.WriteString(` {
 	case 0: return ""
 `)
 	for _, value := range tt.Values {
 		buf.WriteString(`	case `)
+
 		buf.WriteString(generator.AsConstant(value[keyField], query.COL_TYPE_UNSIGNED))
+
 		buf.WriteString(`: return `)
+
 		buf.WriteString(generator.AsConstant(value[tt.FieldNames[1]], query.COL_TYPE_STRING))
+
 		buf.WriteString(`
 `)
 	}
@@ -108,33 +126,51 @@ func (`)
 		title := snaker.SnakeToCamel(fieldName)
 
 		buf.WriteString(`func (`)
+
 		buf.WriteString(propLetter)
+
 		buf.WriteString(` `)
+
 		buf.WriteString(propName)
+
 		buf.WriteString(`) `)
+
 		buf.WriteString(title)
+
 		buf.WriteString(`() `)
+
 		buf.WriteString(typeName)
+
 		buf.WriteString(` {
 	switch `)
+
 		buf.WriteString(propLetter)
+
 		buf.WriteString(` {
 	case 0: return `)
+
 		buf.WriteString(typ.DefaultValue())
+
 		buf.WriteString(`
 `)
 		for _, value := range tt.Values {
 			buf.WriteString(`	case `)
+
 			buf.WriteString(generator.AsConstant(value[keyField], query.COL_TYPE_UNSIGNED))
+
 			buf.WriteString(`: return `)
+
 			buf.WriteString(generator.AsConstant(value[tt.FieldNames[i+2]], typ))
+
 			buf.WriteString(`
 `)
 		}
 		buf.WriteString(`	default: panic("Index out of range")
 	}
 	return `)
+
 		buf.WriteString(typ.DefaultValue())
+
 		buf.WriteString(` // prevent warning
 }
 `)
@@ -147,33 +183,53 @@ func (`)
 		title := inflector.Pluralize(snaker.SnakeToCamel(fieldName))
 
 		buf.WriteString(`func `)
+
 		buf.WriteString(propName)
+
 		buf.WriteString(``)
+
 		buf.WriteString(title)
+
 		buf.WriteString(`() []`)
+
 		buf.WriteString(typeName)
+
 		buf.WriteString(` {
 	`)
+
 		buf.WriteString(varName)
+
 		buf.WriteString(` := make([]`)
+
 		buf.WriteString(typeName)
+
 		buf.WriteString(`, `)
+
 		buf.WriteString(strconv.Itoa(len(tt.Values) + 1))
+
 		buf.WriteString(`)
 	// 0 item will be a blank
 `)
 		for i, value := range tt.Values {
 			buf.WriteString(`	`)
+
 			buf.WriteString(varName)
+
 			buf.WriteString(`[`)
+
 			buf.WriteString(strconv.Itoa(i + 1))
+
 			buf.WriteString(`] = `)
+
 			buf.WriteString(generator.AsConstant(value[fieldName], tt.FieldTypes[fieldName]))
+
 			buf.WriteString(`
 `)
 		}
 		buf.WriteString(`	return `)
+
 		buf.WriteString(varName)
+
 		buf.WriteString(`
 }
 

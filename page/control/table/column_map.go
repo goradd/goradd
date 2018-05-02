@@ -23,7 +23,7 @@ func (c *MapColumn) Init(index interface{}) {
 	c.SetCellTexter(MapTexter{Index: index})
 }
 
-// MapTexter is the default CellTexter for tables. It lets you get items out of slices and maps.
+// MapTexter is the default CellTexter for tables. It lets you get items out of maps.
 type MapTexter struct {
 	// Index is the index into the data that corresponds to this table
 	Index interface{}
@@ -35,7 +35,7 @@ type MapTexter struct {
 	TimeFormat string
 }
 
-func (t MapTexter) CellText (ctx context.Context, row int, col int, data interface{}) string {
+func (t MapTexter) CellText (ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 
 	vKey := reflect.ValueOf(t.Index)
 	vMap := reflect.ValueOf(data)

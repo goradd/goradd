@@ -182,9 +182,9 @@ func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error)
 // saveState saves the state of the form in the page cache.
 // This version keeps the page in memory. Future versions may serialize formstates to store them on disk.
 func (f *FormBase) saveState() string {
-	var s = f.page.StateId()
+	var s = f.page.StateID()
 	pageCache.Set(s, f.page) // the page should already exist in the cache. This just tells the cache that we used it, so make it current.
-	return f.page.StateId()
+	return f.page.StateID()
 }
 
 // AddJavaScriptFile registers a JavaScript file such that it will get loaded on the page.

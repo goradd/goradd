@@ -13,7 +13,7 @@ func ErrorTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 
 	buf.WriteString(`<div id="`)
 
-	buf.WriteString(ctrl.Id())
+	buf.WriteString(ctrl.ID())
 
 	buf.WriteString(`_ctl" `)
 
@@ -27,7 +27,7 @@ func ErrorTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 	buf.WriteString(`
   <div id="`)
 
-	buf.WriteString(ctrl.Id())
+	buf.WriteString(ctrl.ID())
 
 	buf.WriteString(`_err" class="goradd-err">`)
 

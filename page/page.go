@@ -67,7 +67,7 @@ func (p *Page) GetPageBase() *Page {
 	return p
 }
 
-func (p *Page) setStateId(stateId string) {
+func (p *Page) setStateID(stateId string) {
 	p.stateId = stateId
 }
 
@@ -94,7 +94,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 	} else {
 		p.Form().control().updateValues(grCtx)	// Tell all the controls to update their values.
 		// if This is an event response, do the actions associated with the event
-		if c := p.GetControl(grCtx.actionControlId); c != nil {
+		if c := p.GetControl(grCtx.actionControlID); c != nil {
 			c.control().doAction(ctx)
 		}
 	}
@@ -129,7 +129,7 @@ func (p *Page) SetForm(f FormI) {
 
 // For pages that have multiple forms, get the form by id
 /*
-func (p *Page) FormById(id string) FormI {
+func (p *Page) FormByID(id string) FormI {
 	if id == "" {
 		panic("Can't get a form by a blank id")
 	} else if !p.forms.Has(id) {
@@ -176,7 +176,7 @@ func (p *Page) SetControlIdPrefix(prefix string) *Page {
 
 // Overridable generator for control ids. This is called through the PageI interface, meaning you can change how This
 // is done by simply implementing it in a subclass.
-func (p *Page) GenerateControlId() string {
+func (p *Page) GenerateControlID() string {
 	p.idCounter++	// id counter defaults to zero, so pre-increment
 	return p.idPrefix + "c" + strconv.Itoa(p.idCounter)
 }
@@ -195,7 +195,7 @@ func (p *Page) GetControl(id string) ControlI {
 
 // Add the given control to the pathRegistry. Called by the control code whenever a control is created or restored
 func (p *Page) addControl(control ControlI) {
-	id := control.Id()
+	id := control.ID()
 
 	if id == "" {
 		panic("Control must have an id before being added.")
@@ -224,7 +224,7 @@ func (p *Page) addControl(control ControlI) {
 	}
 }
 
-func (p *Page) changeControlId(oldId string, newId string) {
+func (p *Page) changeControlID(oldId string, newId string) {
 	if p.GetControl(newId) != nil {
 		panic(fmt.Errorf("This control id is already defined on the page: %s", newId))
 	}
@@ -235,7 +235,7 @@ func (p *Page) changeControlId(oldId string, newId string) {
 
 func (p *Page) removeControl(id string) {
 	// Execute the javascript to remove the control from the dom if we are in ajax mode
-	// TODO: Application::ExecuteSelectorFunction('#' . $objControl->getWrapperId(), 'remove');
+	// TODO: Application::ExecuteSelectorFunction('#' . $objControl->getWrapperID(), 'remove');
 	// TODO: Make This a direct command in the ajax renderer
 
 
@@ -251,7 +251,7 @@ func (p *Page) Path() string {
 	return p.path
 }
 
-func (p *Page) StateId() string {
+func (p *Page) StateID() string {
 	return p.stateId
 }
 

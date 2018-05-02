@@ -13,13 +13,13 @@ import (
 type CallbackActionI interface {
 	ActionI
 	ActionValue(interface{})      CallbackActionI
-	DestinationControlId(string)  CallbackActionI
+	DestinationControlID(string)  CallbackActionI
 	Validator(interface{})        CallbackActionI
 	Async()                       CallbackActionI
 
-	Id() 						  int
-	GetDestinationControlId()	  string
-	GetDestinationControlSubId()  string
+	ID() 						  int
+	GetDestinationControlID()	  string
+	GetDestinationControlSubID()  string
 	GetActionValue() interface{}
 }
 
@@ -40,7 +40,7 @@ func (a *callbackAction) This() CallbackActionI {
 }
 
 
-func (a *callbackAction) Id() int {
+func (a *callbackAction) ID() int {
 	return a.id
 }
 
@@ -69,7 +69,7 @@ func (a *callbackAction) Async() CallbackActionI {
 // Assign the destination control id. You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the controls id with another id that indicates the internal destination,
 // separated with an underscore.
-func (a *callbackAction) DestinationControlId(id string) CallbackActionI {
+func (a *callbackAction) DestinationControlID(id string) CallbackActionI {
 	parts := strings.SplitN(id, "_", 2)
 	if len(parts) == 2 {
 		a.destControlId = parts[0]
@@ -80,11 +80,11 @@ func (a *callbackAction) DestinationControlId(id string) CallbackActionI {
 	return a.This()
 }
 
-func (a *callbackAction) GetDestinationControlId() string {
+func (a *callbackAction) GetDestinationControlID() string {
 	return a.destControlId
 }
 
-func (a *callbackAction) GetDestinationControlSubId() string {
+func (a *callbackAction) GetDestinationControlSubID() string {
 	return a.subId
 }
 
@@ -105,14 +105,14 @@ func Server(destControlId string, actionId int) *serverAction {
 		},
 	}
 	a.Self = a
-	a.DestinationControlId(destControlId)
+	a.DestinationControlID(destControlId)
 	return a
 }
 
 func (a *serverAction) RenderScript(params RenderParams) string {
 	v := types.NewOrderedMap()
-	v.Set("controlId", params.TriggeringControlId)
-	v.Set("eventId", params.EventId)
+	v.Set("controlID", params.TriggeringControlID)
+	v.Set("eventId", params.EventID)
 	if a.async {
 		v.Set("async", true)
 	}
@@ -146,14 +146,14 @@ func Ajax(destControlId string, actionId int) *ajaxAction {
 		},
 	}
 	a.Self = a
-	a.DestinationControlId(destControlId)
+	a.DestinationControlID(destControlId)
 	return a
 }
 
 func (a *ajaxAction) RenderScript(params RenderParams) string {
 	v := types.NewOrderedMap()
-	v.Set("controlId", params.TriggeringControlId)
-	v.Set("eventId", params.EventId)
+	v.Set("controlID", params.TriggeringControlID)
+	v.Set("eventId", params.EventID)
 	if a.async {
 		v.Set("async", true)
 	}

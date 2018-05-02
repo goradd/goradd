@@ -25,16 +25,16 @@ func (c *RadioButton) DrawingAttributes() *html.Attributes {
 	a.SetDataAttribute("grctl", "radio")
 	a.Set("type", "radio")
 	if c.group == "" {
-		a.Set("name", c.Id())	// treat it like a checkbox if no group is specified
+		a.Set("name", c.ID())	// treat it like a checkbox if no group is specified
 	} else {
 		a.Set("name", c.group)
-		a.Set("value", c.Id())
+		a.Set("value", c.ID())
 	}
 	return a
 }
 
 func (c *RadioButton) UpdateFormValues(ctx *page.Context) {
-	id := c.Id()
+	id := c.ID()
 
 	if v,ok := ctx.CheckableValue(id); ok {
 		c.SetCheckedNoRefresh(v)
@@ -56,7 +56,7 @@ func (c *RadioButton) SetChecked(v bool) page.ControlI {
 		if c.Checked() != v {
 			c.SetCheckedNoRefresh(v)
 			// make sure any other buttons in the group are unchecked
-			c.Form().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.Id());
+			c.Form().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.ID());
 		}
 	} else {
 		c.Checkbox.SetChecked(v)

@@ -44,7 +44,7 @@ func (b *Button) DrawingAttributes() *html.Attributes {
 	a := b.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "button")
 
-	a.Set("name", b.Id())	// needed for posts
+	a.Set("name", b.ID())	// needed for posts
 	if b.isPrimary {
 		a.Set("type", "submit")
 	} else {

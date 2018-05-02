@@ -84,7 +84,7 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 			panic("Could not find the page creation function")
 		}
 		page = f(ctx).Page()	// call the page create function and get the page
-		pageStateId = pageCache.NewPageId()
+		pageStateId = pageCache.NewPageID()
 		page.GetPageBase().stateId = pageStateId
 		//pageCache.Set(pageStateId, page)
 		isNew = true

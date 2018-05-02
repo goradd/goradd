@@ -67,7 +67,7 @@ func (l *MultiselectList) Validate() bool {
 
 // UpdateFormValues is an internal function that lets us reflect the value of the selection on the web page
 func (l *MultiselectList) UpdateFormValues(ctx *page.Context) {
-	id := l.Id()
+	id := l.ID()
 	if ctx.RequestMode() == page.Ajax {
 		id += "[]" // an odd remnant of jquery processing
 	}
@@ -86,7 +86,7 @@ func (l *MultiselectList) SelectedItems() []ListItemI {
 		return nil
 	}
 	for id := range l.selectedIds {
-		item := l.FindById(id)
+		item := l.FindByID(id)
 		if item != nil {
 			items = append(items, item)
 		}
@@ -128,11 +128,11 @@ func (l *MultiselectList) SetValue(v interface{})  {
 		}
 
 	case ListItemI:
-		l.selectedIds[ids.Id()] = true
+		l.selectedIds[ids.ID()] = true
 
 	case []ListItemI:
 		for _,v := range ids {
-			l.selectedIds[v.Id()] = true
+			l.selectedIds[v.ID()] = true
 		}
 
 	default:
@@ -154,7 +154,7 @@ func (l *MultiselectList) SelectedLabels() []string {
 	labels := []string{}
 
 	for _,id := range l.SelectedIds() {
-		item := l.FindById(id)
+		item := l.FindByID(id)
 		if item != nil {
 			labels = append(labels, item.Label())
 		}
@@ -166,7 +166,7 @@ func (l *MultiselectList) SelectedValues() []interface{} {
 	values := []interface{}{}
 
 	for _,id := range l.SelectedIds() {
-		item := l.FindById(id)
+		item := l.FindByID(id)
 		if item != nil {
 			values = append(values, item.Value())
 		}
@@ -204,7 +204,7 @@ func (l *MultiselectList) UnmarshalState(m types.MapI) {
 func (l *MultiselectList) DrawingAttributes() *html.Attributes {
 	a := l.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "multilist")
-	a.Set("name", l.Id())	// needed for posts
+	a.Set("name", l.ID())	// needed for posts
 	a.Set("multiple", "")
 	if l.Required() {
 		a.Set("required", "")
@@ -230,8 +230,8 @@ func (l *MultiselectList) getItemsHtml(items []ListItemI) string {
 			h += html.RenderTag(tag, attributes, innerhtml) + "\n"
 		} else {
 			attributes := item.Attributes().Clone()
-			attributes.Set("value", item.Id())
-			if l.isIdSelected(item.Id()) {
+			attributes.Set("value", item.ID())
+			if l.isIdSelected(item.ID()) {
 				attributes.Set("selected", "")
 			}
 			h += html.RenderTag("option",attributes, item.Label()) + "\n"

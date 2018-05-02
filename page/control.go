@@ -52,7 +52,7 @@ type ActionValues struct {
 
 
 type ControlI interface {
-	Id() string
+	ID() string
 	control() *Control
 	DrawI
 
@@ -181,9 +181,9 @@ type Control struct {
 
 	actionValue			interface{}
 
-	events	EventMap
+	events        EventMap
 	privateEvents EventMap
-	eventCounter EventId
+	eventCounter  EventID
 
 	shouldSaveState bool
 }
@@ -194,7 +194,7 @@ func (c *Control) Init (self ControlI, parent ControlI) {
 	c.wrapperAttributes = html.NewAttributes()
 	if parent != nil {
 		c.page = parent.Page()
-		c.id = c.page.GenerateControlId()
+		c.id = c.page.GenerateControlID()
 	}
 	self.SetParent(parent)
 	c.htmlEncodeText = true // default to encoding the text portion. Explicitly turn This off if you need something else
@@ -212,15 +212,15 @@ func (c *Control) This() ControlI {
 //
 // If you want a custom id, you should  call this function just after you create the control, or you may get unexpected results.
 // Once you assign a custom id, you should not change it.
-func (c *Control) SetId(id string) {
+func (c *Control) SetID(id string) {
 	if c.isOnPage {
 		panic ("You cannot change the id for a control that has already been drawn.")
 	}
-	c.page.changeControlId(c.id, id)
+	c.page.changeControlID(c.id, id)
 	c.id = id
 }
 
-func (c *Control) Id() string {
+func (c *Control) ID() string {
 	return c.id
 }
 
@@ -270,13 +270,13 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if !c.isVisible {
 		// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
 		// To fix This, we create an empty, invisible control in the place where we would normally draw
-		h = "<span id=\"" + c.This().Id() + "\" style=\"display:none;\" data-grctl></span>\n"
+		h = "<span id=\"" + c.This().ID() + "\" style=\"display:none;\" data-grctl></span>\n"
 	} else {
 		h = c.This().DrawTag(ctx)
 	}
 
 	if !config.Minify {
-		s := html.Comment(fmt.Sprintf("Control Type:%s, Id:%s", c.Type(), c.Id())) + "\n"
+		s := html.Comment(fmt.Sprintf("Control Type:%s, Id:%s", c.Type(), c.ID())) + "\n"
 		buf.WriteString(s)
 	}
 
@@ -325,13 +325,13 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 			defer PutBuffer(buf)
 
 			err = c.This().Draw(ctx, buf)
-			response.SetControlHtml(c.Id(), buf.String())
+			response.SetControlHtml(c.ID(), buf.String())
 		}()
 	} else {
 		// add attribute changes
 		if c.attributeScripts != nil {
 			for _,scripts := range c.attributeScripts {
-				response.ExecuteControlCommand(c.Id(), (*scripts)[0].(string), PriorityStandard, (*scripts)[1:]...)
+				response.ExecuteControlCommand(c.ID(), (*scripts)[0].(string), PriorityStandard, (*scripts)[1:]...)
 			}
 			c.attributeScripts = nil
 		}
@@ -507,18 +507,18 @@ func (c *Control) Attribute(name string) string {
 // tag of the control.
 func (c *Control) DrawingAttributes() *html.Attributes {
 	a := html.NewAttributesFrom(c.attributes)
-	a.SetId(c.id) // make sure the control id is set at a minimum
+	a.SetID(c.id) // make sure the control id is set at a minimum
 	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
 
 	if c.HasWrapper() {
 		if c.validationError != "" {
-			a.Set("aria-describedby", c.Id() + "_err")
+			a.Set("aria-describedby", c.ID() + "_err")
 			a.Set("aria-invalid", "true")
 		} else if c.instructions != "" {
-			a.Set("aria-describedby", c.Id() + "_inst")
+			a.Set("aria-describedby", c.ID() + "_inst")
 		}
 		if c.label != "" {
-			a.Set("aria-labeledby", c.Id() + "_lbl")
+			a.Set("aria-labeledby", c.ID() + "_lbl")
 		}
 	}
 
@@ -573,16 +573,16 @@ func (c *Control) Children() [] ControlI {
 
 func (c *Control) Remove() {
 	if c.parent != nil {
-		c.parent.RemoveChild(c.This().Id())
+		c.parent.RemoveChild(c.This().ID())
 	} else {
 		c.RemoveChildren()
-		c.page.removeControl(c.This().Id())
+		c.page.removeControl(c.This().ID())
 	}
 }
 
 func (c *Control) RemoveChild(id string) {
 	for i,v := range c.children {
-		if v.Id() == id {
+		if v.ID() == id {
 			c.children = append(c.children[:i], c.children[i+1:]...) // remove found item from list
 			break
 		}
@@ -592,7 +592,7 @@ func (c *Control) RemoveChild(id string) {
 func (c *Control) RemoveChildren() {
 	for _,child := range c.children {
 		child.RemoveChildren()
-		c.page.removeControl(child.Id())
+		c.page.removeControl(child.ID())
 	}
 	c.children = nil
 }
@@ -764,12 +764,12 @@ func (c *Control) On(e EventI, actions... action2.ActionI) {
 
 	if isPrivate {
 		if c.privateEvents == nil {
-			c.privateEvents = map[EventId]EventI{}
+			c.privateEvents = map[EventID]EventI{}
 		}
 		c.privateEvents[c.eventCounter] = e
 	} else {
 		if c.events == nil {
-			c.events = map[EventId]EventI{}
+			c.events = map[EventID]EventI{}
 		}
 		c.events[c.eventCounter] = e
 	}
@@ -854,9 +854,9 @@ func (c *Control) resetValidation() {
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (c *Control) WrapEvent(eventName string, selector string, eventJs string) string {
 	if selector != "" {
-		return fmt.Sprintf("$j('#%s').on('%s', '%s', function(event, ui){%s});", c.Id(), eventName, selector, eventJs)
+		return fmt.Sprintf("$j('#%s').on('%s', '%s', function(event, ui){%s});", c.ID(), eventName, selector, eventJs)
 	} else {
-		return fmt.Sprintf("$j('#%s').on('%s', function(event, ui){%s});", c.Id(), eventName, eventJs)
+		return fmt.Sprintf("$j('#%s').on('%s', function(event, ui){%s});", c.ID(), eventName, eventJs)
 	}
 }
 
@@ -884,13 +884,13 @@ func (c *Control) doAction(ctx context.Context) {
 	var isPrivate bool
 	var grCtx = GetContext(ctx)
 
-	if e,ok = c.events[grCtx.eventId]; !ok {
-		e,ok = c.privateEvents[grCtx.eventId]
+	if e,ok = c.events[grCtx.eventID]; !ok {
+		e,ok = c.privateEvents[grCtx.eventID]
 		isPrivate = true
 	}
 
 	if !ok {
-		log.FrameworkDebug("doAction - event not found: ", grCtx.eventId)
+		log.FrameworkDebug("doAction - event not found: ", grCtx.eventID)
 		return
 	}
 
@@ -905,28 +905,28 @@ func (c *Control) doAction(ctx context.Context) {
 		for _,a := range e.GetActions() {
 			callbackAction := a.(action2.CallbackActionI)
 			p := ActionParams {
-				Id:        callbackAction.Id(),
+				Id:        callbackAction.ID(),
 				Action:    a,
-				ControlId: c.Id(),
+				ControlId: c.ID(),
 			}
 
 			// grCtx.actionValues is a json representation of the action values. We extract the json, but since json does
 			// not differentiate between float and int, we will leave all numbers as json.Number types so we can extract later.
 			// use javascript.NumberInt() to easily convert numbers in interfaces to int values.
 			p.Values = grCtx.actionValues
-			dest := c.Page().GetControl(callbackAction.GetDestinationControlId())
+			dest := c.Page().GetControl(callbackAction.GetDestinationControlID())
 
 			if dest != nil {
 				if isPrivate {
 					if (log.HasLogger(log.FrameworkDebugLog)) {
 						log.FrameworkDebugf("doAction - PrivateAction, DestId: %s, action2.ActionId: %d, Action: %s, TriggerId: %s",
-							dest.Id(), p.Id, reflect.TypeOf(p.Action).String(), p.ControlId)
+							dest.ID(), p.Id, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
 					dest.PrivateAction(ctx, p)
 				} else {
 					if (log.HasLogger(log.FrameworkDebugLog)) {
 						log.FrameworkDebugf("doAction - Action, DestId: %s, action2.ActionId: %d, Action: %s, TriggerId: %s",
-							dest.Id(), p.Id, reflect.TypeOf(p.Action).String(), p.ControlId)
+							dest.ID(), p.Id, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
 					dest.Action(ctx, p)
 				}
@@ -964,8 +964,8 @@ func (c *Control) ValidationType() ValidationType {
 // SetValidationTargets specifies which controls to validate, in conjunction with the ValidationType setting,
 // giving you very fine-grained control over validation. The default
 // is to use just This control as the target.
-func (c *Control) SetValidationTargets(controlIds... string) {
-	c.validationTargets = controlIds
+func (c *Control) SetValidationTargets(controlIDs ... string) {
+	c.validationTargets = controlIDs
 }
 
 // passesValidation checks to see if the event requires validation, and if so, if it passes the required validation
@@ -1032,7 +1032,7 @@ func (c *Control) validateSiblings() bool {
 
 	var valid = true
 	for _,child := range siblings {
-		if child.Id() != c.Id() {
+		if child.ID() != c.ID() {
 			valid = child.Validate() && valid
 		}
 	}
@@ -1046,7 +1046,7 @@ func (c *Control) validateChildren() bool {
 
 	var valid = true
 	for _,child := range c.children {
-		if child.Id() != c.Id() {
+		if child.ID() != c.ID() {
 			valid = child.Validate() && valid
 		}
 	}
@@ -1088,7 +1088,7 @@ func (c *Control) writeState(ctx context.Context) {
 			} else {
 				stateStore = i.(*types.Map)
 			}
-			key := c.Form().Id() + ":" + c.Id()
+			key := c.Form().ID() + ":" + c.ID()
 			stateStore.Set(key, state)
 		}
 	}
@@ -1115,7 +1115,7 @@ func (c *Control) readState(ctx context.Context) {
 				// Indicates the entire control state store changed types, so completely ignore it
 			}
 
-			key := c.Form().Id() + ":" + c.Id()
+			key := c.Form().ID() + ":" + c.ID()
 			i2 := stateStore.Get(key)
 			if state,ok = i2.(types.MapI); !ok {
 				return

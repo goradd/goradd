@@ -786,7 +786,7 @@ function Sizzle( selector, context, results, seed ) {
 
 					// Document context
 					if ( nodeType === 9 ) {
-						if ( (elem = context.getElementById( m )) ) {
+						if ( (elem = context.getElementByID( m )) ) {
 
 							// Support: IE, Opera, Webkit
 							// TODO: identify versions
@@ -805,7 +805,7 @@ function Sizzle( selector, context, results, seed ) {
 						// Support: IE, Opera, Webkit
 						// TODO: identify versions
 						// getElementById can match elements by name instead of ID
-						if ( newContext && (elem = newContext.getElementById( m )) &&
+						if ( newContext && (elem = newContext.getElementByID( m )) &&
 							contains( context, elem ) &&
 							elem.id === m ) {
 
@@ -1176,7 +1176,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 		};
 		Expr.find["ID"] = function( id, context ) {
 			if ( typeof context.getElementById !== "undefined" && documentIsHTML ) {
-				var elem = context.getElementById( id );
+				var elem = context.getElementByID( id );
 				return elem ? [ elem ] : [];
 			}
 		};
@@ -1195,7 +1195,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 		Expr.find["ID"] = function( id, context ) {
 			if ( typeof context.getElementById !== "undefined" && documentIsHTML ) {
 				var node, i, elems,
-					elem = context.getElementById( id );
+					elem = context.getElementByID( id );
 
 				if ( elem ) {
 
@@ -3016,7 +3016,7 @@ var rootjQuery,
 
 				// HANDLE: $(#id)
 				} else {
-					elem = document.getElementById( match[ 2 ] );
+					elem = document.getElementByID( match[ 2 ] );
 
 					if ( elem ) {
 

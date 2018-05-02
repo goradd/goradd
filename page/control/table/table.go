@@ -12,6 +12,12 @@ import (
 	"github.com/spekary/goradd/page/control"
 )
 
+const (
+	ColumnAction = iota + 2000
+	SortClick
+)
+
+
 type TableI interface {
 	page.ControlI
 	SetCaption(interface{})
@@ -19,6 +25,7 @@ type TableI interface {
 	GetHeaderRowAttributes(row int) *html.Attributes
 	GetFooterRowAttributes(row int) *html.Attributes
 	GetRowAttributes(row int, data interface{}) *html.Attributes
+	HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes *html.Attributes)
 }
 
 type Table struct {
@@ -37,6 +44,10 @@ type Table struct {
 	headerRowStyler html.Attributer
 	footerRowStyler html.Attributer
 	columnIdCounter int
+
+	// Sort info. Sorting is difficult enough, and intertwined with tables enough, that we just make it built in to every column
+	sortColumns []string	// keeps a historical list of columns sorted on
+	sortHistoryLimit int // how far back to go
 }
 
 func NewTable(parent page.ControlI) *Table {
@@ -50,6 +61,7 @@ func (t *Table) Init(self page.ControlI, parent page.ControlI) {
 	t.Control.Init(self, parent)
 	t.Tag = "table"
 	t.columns = []ColumnI{}
+	t.sortHistoryLimit = 1
 }
 
 func (t *Table) SetCaption(caption interface{}) {
@@ -156,15 +168,26 @@ func (t *Table) drawColumnTags(ctx context.Context, buf *bytes.Buffer) (err erro
 }
 
 func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
+	var t2 = t.This().(TableI)	// Get the sub class so we call into its hooks for drawing
+
 	buf1 := page.GetBuffer()
 	defer page.PutBuffer(buf1)
-	for j := 0; j < t.headerRowCount; j++ {
-		for i,col := range t.columns {
-			col.DrawHeaderCell(ctx, j, i, t.headerRowCount, buf1)
+	for rowNum := 0; rowNum < t.headerRowCount; rowNum++ {
+		for colNum,col := range t.columns {
+			if !col.IsHidden() {
+				cellHtml, attr := t2.HeaderCellDrawingInfo(ctx, col, rowNum, colNum)
+				buf.WriteString(html.RenderTag("th", attr, cellHtml))
+			}
 		}
-		buf.WriteString(html.RenderTag("tr", t.GetHeaderRowAttributes(j), buf1.String()))
+		buf.WriteString(html.RenderTag("tr", t.GetHeaderRowAttributes(rowNum), buf1.String()))
 		buf1.Reset()
 	}
+	return
+}
+
+func (t *Table) HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes *html.Attributes) {
+	cellHtml = col.HeaderCellHtml(ctx, rowNum, colNum)
+	cellAttributes = col.HeaderAttributes(rowNum, colNum)
 	return
 }
 
@@ -215,8 +238,9 @@ func (t *Table) GetRowAttributes(row int, data interface{}) *html.Attributes {
 
 func (t *Table) AddColumnAt(column ColumnI, loc int) {
 	t.columnIdCounter ++
-	if column.Id() == "" {
-		column.SetId(t.Id() + "_" + strconv.Itoa(t.columnIdCounter))
+	column.setParentTable(t)
+	if column.ID() == "" {
+		column.SetID(t.ID() + "_" + strconv.Itoa(t.columnIdCounter))
 	}
 	if loc < 0 || loc >= len(t.columns) {
 		t.columns = append(t.columns, column)
@@ -238,9 +262,9 @@ func (t *Table) GetColumn(loc int) ColumnI {
 	return t.columns[loc]
 }
 
-func (t *Table) GetColumnById(id string) ColumnI {
+func (t *Table) GetColumnByID(id string) ColumnI {
 	for _,col := range t.columns {
-		if col.Id() == id {
+		if col.ID() == id {
 			return col
 		}
 	}
@@ -263,9 +287,9 @@ func (t *Table) RemoveColumn(loc int) {
 	t.Refresh()
 }
 
-func (t *Table) RemoveColumnById(id string) {
+func (t *Table) RemoveColumnByID(id string) {
 	for i,col := range t.columns {
-		if col.Id() == id {
+		if col.ID() == id {
 			t.RemoveColumn(i)
 			t.Refresh()
 			return
@@ -333,12 +357,66 @@ func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
 		if a,ok = p.Action.(action.CallbackActionI); !ok {
 			panic("Column actions must be a callback action")
 		}
-		if subId = a.GetDestinationControlSubId(); subId == "" {
+		if subId = a.GetDestinationControlSubID(); subId == "" {
 			panic("Column actions must be a callback action")
 		}
-		c := t.GetColumnById(t.Id() + "_" + subId)
+		c := t.GetColumnByID(t.ID() + "_" + subId)
 		if c != nil {
 			c.Action(ctx, p)
 		}
+	case SortClick:
+		t.sortClick(p.Values.Event.(string))
+		t.Refresh()
+	}
+
+}
+
+// SetSortHistoryLimit sets the number of columns that the table will remember for the sort history. It defaults to 1,
+// meaning it will remember only the current column. Setting it more than 1 will let the system report back on secondary
+// sort columns that the user chose. For example, if the user clicks to sort a first name column, and then a last name column,
+// it will let you know to sort by last name, and then first name.
+func (t *Table) SetSortHistoryLimit(n int) {
+	t.sortHistoryLimit = n
+	t.Refresh()
+}
+
+func (t *Table) sortClick(id string) {
+	var foundLoc = -1
+	var firstCol ColumnI
+
+	if t.sortColumns != nil {
+		firstCol = t.GetColumnByID(t.sortColumns[0])
+	}
+
+	if t.sortColumns != nil {
+		// If the column clicked is already the first one in the list, just change direction
+		if t.sortColumns[0] == id {
+			firstCol.SetSortDirection(firstCol.SortDirection() * -1)
+			return
+		}
+
+		firstCol.SetSortDirection(NotSorted)	// tell the first one in the list to not be sorted
+
+		// remove the column from the sort list if it is there
+		for i := 0; i < len(t.sortColumns); i++ {
+			if t.sortColumns[i] == id {
+				foundLoc = i
+				break
+			}
+		}
+
+		if foundLoc != -1 {
+			t.sortColumns = append(t.sortColumns[:foundLoc], t.sortColumns[foundLoc+1:]...)
+		}
+	}
+
+	//push front
+	t.sortColumns = append([]string{id}, t.sortColumns...)
+	col := t.GetColumnByID(id)
+	col.SetSortDirection(SortAscending) // start out ascending
+
+	//remove back
+	if len(t.sortColumns) > t.sortHistoryLimit {
+		t.sortColumns = t.sortColumns[:len(t.sortColumns) - 1]
 	}
 }

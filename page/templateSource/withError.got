@@ -9,9 +9,9 @@ import (
 func ErrorTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {
 
 {{
-<div id="{{= ctrl.Id() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
+<div id="{{= ctrl.ID() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
 {{= html.Indent(h) }}
-  <div id="{{= ctrl.Id() }}_err" class="goradd-err">{{= ctrl.ValidationError() }}</div>
+  <div id="{{= ctrl.ID() }}_err" class="goradd-err">{{= ctrl.ValidationError() }}</div>
 {{if ctrl.Instructions() != "" }}
   <div class="goradd-instructions">{{= ctrl.Instructions() }}</div>
 {{if}}

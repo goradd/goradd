@@ -16,26 +16,27 @@ type EventI interface {
 	ActionValue(interface{}) EventI
 	GetActionValue() interface{}
 	AddActions(a... action2.ActionI)
-	RenderActions(control ControlI, eventId EventId) string
+	RenderActions(control ControlI, eventID EventID) string
 	GetActions() []action2.ActionI
 	String() string
 	event() *Event
 }
 
-type EventId uint16
-type EventMap map[EventId]EventI
+type EventID uint16
+type EventMap map[EventID]EventI
 
 // Event is a base class for other events. You should not call it directly. See the event package for implementations.
 type Event struct {
-	JsEvent     string
-	condition   string
-	delay       int
-	selector    string
-	blocking    bool
-	actionValue interface{} // A static value, or js to get a dynamic value when the action returns to us.
-	actions     []action2.ActionI
-	actionsMustTerminate bool
-	validationOverride ValidationType
+	JsEvent                   string
+	condition                 string
+	delay                     int
+	selector                  string
+	blocking                  bool
+	actionValue               interface{} // A static value, or js to get a dynamic value when the action returns to us.
+	actions                   []action2.ActionI
+	preventDefault            bool
+	stopPropagation			  bool
+	validationOverride        ValidationType
 	validationTargetsOverride []string
 }
 
@@ -79,9 +80,24 @@ func (e *Event) Blocking () EventI {
 
 // Call Terminating to cause the event not to bubble or do the default action.
 func (e *Event) Terminating() EventI {
-	e.actionsMustTerminate = true
+	e.preventDefault = true
+	e.stopPropagation = true
 	return e
 }
+
+// Call PreventingDefault to cause the event not to do the default action.
+func (e *Event) PreventingDefault() EventI {
+	e.preventDefault = true
+	return e
+}
+
+// Call NoBubbling to cause the event to not bubble to enclosing objects.
+func (e *Event) NotBubbling() EventI {
+	e.stopPropagation = true
+	return e
+}
+
+
 
 // ActionValue is a value that will be returned to the actions that will be process by this event. Specify a static
 // value, or javascript objects that will gather data at the time the event fires. The event will appear in the
@@ -134,41 +150,47 @@ func (e *Event) AddActions(actions... action2.ActionI) {
 	// kinds of actions were interleaved. We will wait until someone presents a compelling need for something like that.
 }
 
-func (e *Event) RenderActions(control ControlI, eventId EventId) string {
+func (e *Event) RenderActions(control ControlI, eventID EventID) string {
 	if e.actions == nil {
 		return ""
 	}
 
 	var js string
 
-	if e.actionsMustTerminate {
-		js = "event.preventDefault();\n"
+	if e.preventDefault {
+		js += "event.preventDefault();\n"
+	}
+	if e.stopPropagation {
+		js += "event.stopPropagation();\n"
 	}
 
-	var params = action2.RenderParams{control.Id(), control.ActionValue(), uint16(eventId), e.actionValue}
+	var params = action2.RenderParams{control.ID(), control.ActionValue(), uint16(eventID), e.actionValue}
 
+	var actionJs string
 	for _,a := range e.actions {
-		js += a.RenderScript(params)
+		actionJs += a.RenderScript(params)
 	}
 
 	if e.blocking {
-		js += "goradd.blockEvents = true;\n"
+		actionJs += "goradd.blockEvents = true;\n"
 	}
 
 	if !config.Minify {
-		js = html.Indent(js)
+		actionJs = html.Indent(actionJs)
 	}
-	js = fmt.Sprintf("goradd.queueAction({f: $j.proxy(function(){\n%s\n},this), d: %d});\n", js, e.delay)
+	actionJs = fmt.Sprintf("goradd.queueAction({f: $j.proxy(function(){\n%s\n},this), d: %d});\n", actionJs, e.delay)
 
 	if e.condition != "" {
-		js = fmt.Sprintf("\nif (%s) {\n%s\n};", e.condition, js)
+		js = fmt.Sprintf("%s\nif (%s) {\n%s\n};", js, e.condition, actionJs)
+	} else {
+		js = js + actionJs
 	}
 
 	js = control.WrapEvent(e.JsEvent, e.selector, js)
 
 	if !config.Minify {
 		// Render a comment
-		js = fmt.Sprintf("/*** Event: %s  Control Type: %T, Control Label: %s, Control Id: %s  ***/\n%s\n", e.JsEvent, control, control.Label(), control.Id(), js)
+		js = fmt.Sprintf("/*** Event: %s  Control Type: %T, Control Label: %s, Control Id: %s  ***/\n%s\n", e.JsEvent, control, control.Label(), control.ID(), js)
 	}
 
 	return js

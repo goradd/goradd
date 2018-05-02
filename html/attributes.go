@@ -69,7 +69,7 @@ func (m *Attributes) SetChanged(name string, v string) (changed bool, err error)
 		return
 	}
 	if name == "id" {
-		return m.SetIdChanged(v)
+		return m.SetIDChanged(v)
 	}
 	if name == "class" {
 		changed = m.SetClassChanged(v)
@@ -157,7 +157,7 @@ func (m *Attributes) Clone() *Attributes {
 
 
 // Set the id to the given value. Returns true if something changed.
-func (m *Attributes) SetIdChanged(i string) (changed bool, err error) {
+func (m *Attributes) SetIDChanged(i string) (changed bool, err error) {
 	if i == "" {	// empty attribute is not allowed, so its the same as removal
 		changed = m.RemoveAttribute("id")
 		return
@@ -172,8 +172,8 @@ func (m *Attributes) SetIdChanged(i string) (changed bool, err error) {
 	return
 }
 
-func (m *Attributes) SetId(i string) *Attributes {
-	_,err := m.SetIdChanged(i)
+func (m *Attributes) SetID(i string) *Attributes {
+	_,err := m.SetIDChanged(i)
 	if err != nil {
 		panic(err)
 	}
@@ -182,7 +182,7 @@ func (m *Attributes) SetId(i string) *Attributes {
 
 
 // Return the value of the id attribute.
-func (m *Attributes) Id() string {
+func (m *Attributes) ID() string {
 	return m.Get("id")
 }
 

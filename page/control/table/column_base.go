@@ -8,39 +8,53 @@ import (
 	html2 "html"
 	"github.com/spekary/goradd"
 	"github.com/spekary/goradd/page"
+	"fmt"
 )
 
-const ColumnAction = 1000
+const (
+	NotSortable = 0
+	SortAscending = 1
+	SortDescending = -1
+	NotSorted = 2
+)
 
 type ColumnI interface {
-	Id() string
-	SetId(string)
+	ID() string
+	SetID(string)
+	setParentTable(TableI)
 	Label() string
 	Span() int
 	IsHidden() bool
 	SetHidden(bool)
 	DrawColumnTag(ctx context.Context, buf *bytes.Buffer)
-	DrawHeaderCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer)
 	DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer)
 	DrawCell(ctx context.Context, row int, col int, data interface{}, buf *bytes.Buffer)
 	CellText(ctx context.Context, row int, col int, data interface{}) string
-	HeaderCellText(ctx context.Context, row int, col int) string
-	FooterCellText(ctx context.Context, row int, col int) string
-	HeaderAttributes() *html.Attributes
-	FooterAttributes() *html.Attributes
+	HeaderCellHtml(ctx context.Context, row int, col int) string
+	FooterCellHtml(ctx context.Context, row int, col int) string
+	HeaderAttributes(row int, col int) *html.Attributes
+	FooterAttributes(row int, col int) *html.Attributes
 	ColTagAttributes() *html.Attributes
 	UpdateFormValues(ctx *page.Context)
 	AddActions(ctrl page.ControlI)
 	Action(ctx context.Context, params page.ActionParams)
+	SetHeaderTexter(s CellTexter)
+	SetCellTexter(s CellTexter)
+	SetFooterTexter(s CellTexter)
+	SetCellStyler(s html.Attributer)
+	IsSortable() bool
+	SortDirection() int
+	SetSortDirection(int)
 }
 
 type CellTexter interface {
-	CellText(ctx context.Context, row int, col int, data interface{}) string
+	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string
 }
 
 type ColumnBase struct {
 	goradd.Base
 	id               string
+	parentTable		 TableI
 	label            string
 	*html.Attributes					// These are attributes that will appear on the cell
 	headerAttributes *html.Attributes
@@ -54,9 +68,7 @@ type ColumnBase struct {
 	headerTexter	 CellTexter
 	footerTexter	 CellTexter
 	isHidden         bool
-	orderByObj		interface{}			// Indicates we are sorting. Is any kind of data that is saved in the table and
-										// then fed back to the table to determine how to sort.
-	reverseOrderByObj	interface{}
+	sortDirection	 int
 }
 
 func (c *ColumnBase) Init(self ColumnI) {
@@ -69,14 +81,18 @@ func (c *ColumnBase) This() ColumnI {
 	return c.Self.(ColumnI)
 }
 
-func (c *ColumnBase) Id() string {
+func (c *ColumnBase) ID() string {
 	return c.id
 }
 
 // SetId sets the id of the table. If you are going to provide your own id, do this as the first thing after you create
 // a table, or the new id might not propogate through the system correctly.
-func (c *ColumnBase) SetId(id string) {
+func (c *ColumnBase) SetID(id string) {
 	c.id = id
+}
+
+func (c *ColumnBase) setParentTable(t TableI) {
+	c.parentTable = t
 }
 
 func (c *ColumnBase) Label() string {
@@ -129,14 +145,15 @@ func (c *ColumnBase) SetHidden(h bool) {
 	c.isHidden = h
 }
 
-func (c *ColumnBase) HeaderAttributes() *html.Attributes {
+func (c *ColumnBase) HeaderAttributes(row int, col int) *html.Attributes {
 	if c.headerAttributes == nil {
 		c.headerAttributes = html.NewAttributes()
+		c.headerAttributes.Set("scope", "col")
 	}
 	return c.headerAttributes
 }
 
-func (c *ColumnBase) FooterAttributes() *html.Attributes {
+func (c *ColumnBase) FooterAttributes(row int, col int) *html.Attributes {
 	if c.footerAttributes == nil {
 		c.footerAttributes = html.NewAttributes()
 	}
@@ -166,44 +183,35 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 	buf.WriteString(html.RenderTag("col", a, ""))
 }
 
-func (c *ColumnBase) DrawHeaderCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer) {
-	if c.isHidden {
-		return
-	}
-	cellHtml := c.This().HeaderCellText(ctx, row, col)
-	if !c.dontEscape {
-		cellHtml = html2.EscapeString(cellHtml)
-	}
-	a := c.This().HeaderAttributes()
-	a.Set("scope", "col")
-	buf.WriteString(html.RenderTag("th", a, cellHtml))
-}
-
-// HeaderCellText returns the text of the indicated header cell. The default will call into the headerTexter if it
+// HeaderCellHtml returns the text of the indicated header cell. The default will call into the headerTexter if it
 // is provided, or just return the Label value. This function can also be overridden by embedding the ColumnBase object
 // into another object.
-func (c *ColumnBase) HeaderCellText(ctx context.Context, row int, col int) string {
+func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h string) {
 	if c.headerTexter != nil {
-		return c.headerTexter.CellText(ctx, row, col, nil)
+		h = c.headerTexter.CellText(ctx, c.This(), row, col, nil)
+	} else {
+		h = html2.EscapeString(c.label)
 	}
-	return c.label
+
+	if c.IsSortable() {
+		h = c.RenderSortButton(h)
+	}
+	return
 }
 
 func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer) {
 	if c.isHidden {
 		return
 	}
-	cellHtml := c.This().FooterCellText(ctx, row, col)
-	if !c.dontEscape {
-		cellHtml = html2.EscapeString(cellHtml)
-	}
-	a := c.This().FooterAttributes()
+	cellHtml := c.This().FooterCellHtml(ctx, row, col)
+
+	a := c.This().FooterAttributes(row, col)
 	buf.WriteString(html.RenderTag("td", a, cellHtml))
 }
 
-func (c *ColumnBase) FooterCellText(ctx context.Context, row int, col int) string {
+func (c *ColumnBase) FooterCellHtml(ctx context.Context, row int, col int) string {
 	if c.footerTexter != nil {
-		return c.footerTexter.CellText(ctx, row, col, nil)
+		return c.footerTexter.CellText(ctx, c.This(), row, col, nil)	// careful, this does not get escaped
 	}
 
 	return ""
@@ -224,7 +232,7 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 
 func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interface{}) string {
 	if c.cellTexter != nil {
-		return c.cellTexter.CellText(ctx, row, col, data)
+		return c.cellTexter.CellText(ctx, c.This(), row, col, data)
 	}
 	return ""
 }
@@ -236,20 +244,13 @@ func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data 
 	return nil
 }
 
-func (c *ColumnBase) OrderByObj() interface{} {
-	return c.orderByObj
+// Sortable indicates that the column should be drawn with sort indicators.
+func (c *ColumnBase) Sortable() {
+	c.sortDirection = NotSorted
 }
 
-func (c *ColumnBase) SetOrderByObj(o interface{}) {
-	c.orderByObj = o
-}
-
-func (c *ColumnBase) ReverseOrderByObj() interface{} {
-	return c.reverseOrderByObj
-}
-
-func (c *ColumnBase) SetReverseOrderByObj(o interface{}) {
-	c.reverseOrderByObj = o
+func (c *ColumnBase) IsSortable() bool {
+	return c.sortDirection != NotSortable
 }
 
 // UpdateFormValues is called by the system whenever values are sent by client controls.
@@ -262,3 +263,24 @@ func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 // Do a table action that is directed at this table
 // Column implementations can implement this method to receive private actions that they have added using AddActions
 func (c *ColumnBase) Action(ctx context.Context, params page.ActionParams) {}
+
+func (c *ColumnBase) RenderSortButton(labelHtml string) string {
+	switch c.sortDirection {
+	case NotSortable: // do nothing
+	case NotSorted:
+		labelHtml += " " + html.RenderTag("i", html.NewAttributes().SetClass("fa fa-sort fa-lg"), "")
+	case SortAscending:
+		labelHtml += " " + html.RenderTag("i", html.NewAttributes().SetClass("fa fa-sort-asc fa-lg"), "")
+	case SortDescending:
+		labelHtml += " " + html.RenderTag("i", html.NewAttributes().SetClass("fa fa-sort-desc fa-lg"), "")
+	}
+	return fmt.Sprintf(`<button onclick="$j('#%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
+}
+
+func (c *ColumnBase) SortDirection() int {
+	return c.sortDirection
+}
+// SetSortDirection is used internally to set the sort direction indicator
+func (c *ColumnBase) SetSortDirection(d int) {
+	c.sortDirection = d
+}
