@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/control"
+	"github.com/spekary/goradd/page/event"
 )
 
 const (
@@ -62,6 +63,7 @@ func (t *Table) Init(self page.ControlI, parent page.ControlI) {
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1
+	t.On(event.TableSort(), action.Ajax(t.ID(), SortClick), action.PrivateAction{})
 }
 
 func (t *Table) SetCaption(caption interface{}) {
@@ -271,9 +273,9 @@ func (t *Table) GetColumnByID(id string) ColumnI {
 	return nil
 }
 
-func (t *Table) GetColumnByLabel(label string) ColumnI {
+func (t *Table) GetColumnByTitle(title string) ColumnI {
 	for _,col := range t.columns {
-		if col.Label() == label {
+		if col.Title() == title {
 			return col
 		}
 	}
@@ -297,9 +299,9 @@ func (t *Table) RemoveColumnByID(id string) {
 	}
 }
 
-func (t *Table) RemoveColumnByLabel(label string) {
+func (t *Table) RemoveColumnByTitle(title string) {
 	for i,col := range t.columns {
-		if col.Label() == label {
+		if col.Title() == title {
 			t.RemoveColumn(i)
 			t.Refresh()
 			return
@@ -349,7 +351,7 @@ func (t *Table) UpdateFormValues(ctx *page.Context) {
 }
 
 func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
-	switch p.Id {
+	switch p.ID {
 	case ColumnAction:
 		var subId string
 		var a action.CallbackActionI
@@ -386,6 +388,9 @@ func (t *Table) sortClick(id string) {
 
 	if t.sortColumns != nil {
 		firstCol = t.GetColumnByID(t.sortColumns[0])
+		if firstCol.SortDirection() == NotSortable {
+			return
+		}
 	}
 
 	if t.sortColumns != nil {
@@ -419,4 +424,14 @@ func (t *Table) sortClick(id string) {
 	if len(t.sortColumns) > t.sortHistoryLimit {
 		t.sortColumns = t.sortColumns[:len(t.sortColumns) - 1]
 	}
+}
+
+// SortColumns returns a slice of columns in sort order
+func (t *Table) SortColumns() (ret []ColumnI) {
+	for _,id := range t.sortColumns {
+		if col := t.GetColumnByID(id); col != nil {
+			ret = append(ret, col)
+		}
+	}
+	return ret
 }

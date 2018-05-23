@@ -29,8 +29,16 @@ const  (
 	ValidateDefault ValidationType = iota		// This is used by the event to indicate it is not overriding.
 	ValidateNone								// Force no validation.
 	ValidateForm
-	ValidateSiblingsAndChildren
+
+	ValidateSiblingsAndChildren					// container validations
 	ValidateSiblingsOnly
+	ValidateChildrenOnly
+
+	// ValidateContainer will use the validation setting of a parent control with ValidateSiblingsAndChildren, ValidateSiblingsOnly,
+	// ValidateChildrenOnly, or ValidateTarget as the stopping point for validation.
+	ValidateContainer
+
+	// ValidateTargetsOnly will only validate the specified targets
 	ValidateTargetsOnly
 )
 
@@ -53,21 +61,25 @@ type ActionValues struct {
 
 type ControlI interface {
 	ID() string
+	SetID(string)
 	control() *Control
 	DrawI
 
 	// Drawing support
+
 	DrawTag(context.Context) string
 	DrawInnerHtml(context.Context, *bytes.Buffer) error
 	DrawTemplate(context.Context, *bytes.Buffer) error
 	PreRender(context.Context, *bytes.Buffer) error
 	PostRender(context.Context, *bytes.Buffer) error
 	ShouldAutoRender() bool
+	SetShouldAutoRender(bool)
 	DrawAjax(ctx context.Context, response *Response) error
 	With(w WrapperI) ControlI
 	HasWrapper() bool
 
 	// Hierarchy functions
+
 	Parent() ControlI
 	Children() []ControlI
 	SetParent(parent ControlI)
@@ -76,6 +88,9 @@ type ControlI interface {
 	RemoveChildren()
 	Page() *Page
 	Form() FormI
+	Child(string) ControlI
+
+	// hmtl and css
 
 	SetAttribute(name string, val interface{})
 	SetWrapperAttribute(name string, val interface{})
@@ -83,6 +98,7 @@ type ControlI interface {
 	DrawingAttributes() *html.Attributes
 	WrapperAttributes() *html.Attributes
 	AddClass(class string) ControlI
+	SetStyles(*html.Style)
 
 	PutCustomScript (ctx context.Context, response *Response)
 
@@ -100,6 +116,8 @@ type ControlI interface {
 
 	WasRendered() bool
 	IsRendering() bool
+	IsVisible() bool
+	SetVisible(bool)
 
 	Refresh()
 
@@ -157,7 +175,7 @@ type Control struct {
 	isRequired bool
 	// ErrorForRequired is the error that will display if a control value is required but not set.
 	ErrorForRequired string
-	isVisible        bool
+	isHidden         bool
 	isOnPage         bool
 	shouldAutoRender bool
 
@@ -198,7 +216,6 @@ func (c *Control) Init (self ControlI, parent ControlI) {
 	}
 	self.SetParent(parent)
 	c.htmlEncodeText = true // default to encoding the text portion. Explicitly turn This off if you need something else
-	c.isVisible = true
 }
 
 func (c *Control) This() ControlI {
@@ -267,7 +284,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	var h string
 
-	if !c.isVisible {
+	if c.isHidden {
 		// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
 		// To fix This, we create an empty, invisible control in the place where we would normally draw
 		h = "<span id=\"" + c.This().ID() + "\" style=\"display:none;\" data-grctl></span>\n"
@@ -280,7 +297,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		buf.WriteString(s)
 	}
 
-	if c.wrapper != nil && c.isVisible {
+	if c.wrapper != nil && !c.isHidden {
 		c.wrapper.Wrap(ctx, c.This(), h, buf)
 	} else {
 		buf.WriteString(h)
@@ -413,7 +430,7 @@ func (c *Control) RenderAutoControls(ctx context.Context, buf *bytes.Buffer) (er
 	return
 }
 
-// Controls that use templates should use This function signature for the template. That will override This one, and
+// Controls that use templates should use this function signature for the template. That will override this one, and
 // we will then detect that the template was drawn. Otherwise, we detect that no template was defined and it will move
 // on to drawing the controls without a template, or just the text if text is defined.
 func (c *Control) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
@@ -583,7 +600,9 @@ func (c *Control) Remove() {
 func (c *Control) RemoveChild(id string) {
 	for i,v := range c.children {
 		if v.ID() == id {
+			v.RemoveChildren()
 			c.children = append(c.children[:i], c.children[i+1:]...) // remove found item from list
+			c.page.removeControl(id)
 			break
 		}
 	}
@@ -606,9 +625,19 @@ func (c *Control) SetParent(newParent ControlI) {
 		c.parent.addChildControl(c.This())
 	}
 	c.page.addControl(c.This())
+	c.Refresh()
 	// TODO: Refresh control, except if the control being added is an auto-render control, in which case we should
 	// just add the control through ajax. Will need to specify the parent. Javascript should tack it to the end of the
 	// inner-html of the control.
+}
+
+func (c *Control) Child(id string) ControlI {
+	for _,c := range c.children {
+		if c.ID() == id {
+			return c
+		}
+	}
+	return nil
 }
 
 func (c *Control) addChildControlsToPage() {
@@ -905,7 +934,7 @@ func (c *Control) doAction(ctx context.Context) {
 		for _,a := range e.GetActions() {
 			callbackAction := a.(action2.CallbackActionI)
 			p := ActionParams {
-				Id:        callbackAction.ID(),
+				ID:        callbackAction.ID(),
 				Action:    a,
 				ControlId: c.ID(),
 			}
@@ -920,13 +949,13 @@ func (c *Control) doAction(ctx context.Context) {
 				if isPrivate {
 					if (log.HasLogger(log.FrameworkDebugLog)) {
 						log.FrameworkDebugf("doAction - PrivateAction, DestId: %s, action2.ActionId: %d, Action: %s, TriggerId: %s",
-							dest.ID(), p.Id, reflect.TypeOf(p.Action).String(), p.ControlId)
+							dest.ID(), p.ID, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
 					dest.PrivateAction(ctx, p)
 				} else {
 					if (log.HasLogger(log.FrameworkDebugLog)) {
 						log.FrameworkDebugf("doAction - Action, DestId: %s, action2.ActionId: %d, Action: %s, TriggerId: %s",
-							dest.ID(), p.Id, reflect.TypeOf(p.Action).String(), p.ControlId)
+							dest.ID(), p.ID, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
 					dest.Action(ctx, p)
 				}
@@ -963,7 +992,7 @@ func (c *Control) ValidationType() ValidationType {
 
 // SetValidationTargets specifies which controls to validate, in conjunction with the ValidationType setting,
 // giving you very fine-grained control over validation. The default
-// is to use just This control as the target.
+// is to use just this control as the target.
 func (c *Control) SetValidationTargets(controlIDs ... string) {
 	c.validationTargets = controlIDs
 }
@@ -985,10 +1014,29 @@ func (c *Control) passesValidation(event EventI) (valid bool) {
 	if c.validationTargets == nil {
 		if c.validationType == ValidateForm {
 			targets = []ControlI{c.Form()}
+		} else if c.validationType == ValidateContainer {
+			for target := c.Parent(); target != nil; target = target.Parent() {
+				switch target.control().validationType {
+				case ValidateChildrenOnly:fallthrough
+				case ValidateSiblingsAndChildren: fallthrough
+				case ValidateSiblingsOnly:
+				case ValidateTargetsOnly:
+					validation = target.control().validationType
+					targets = []ControlI{target}
+					break
+				}
+			}
+			// Target is the form
+			targets = []ControlI{c.Form()}
+			validation = ValidateForm
 		} else {
 			targets = []ControlI{c}
 		}
 	} else {
+		if c.validationType == ValidateForm ||
+			c.validationType == ValidateContainer {
+				panic ("Unsupported validation type and target combo.")
+		}
 		for _,id := range c.validationTargets {
 			if c2 := c.Page().GetControl(id); c2 != nil {
 				targets = append(targets, c2)
@@ -1008,6 +1056,10 @@ func (c *Control) passesValidation(event EventI) (valid bool) {
 	case ValidateSiblingsOnly:
 		for _,t := range targets {
 			valid = t.control().validateSiblings() && valid
+		}
+	case ValidateChildrenOnly:
+		for _,t := range targets {
+			valid = t.control().validateChildren() && valid
 		}
 
 	case ValidateTargetsOnly:
@@ -1189,4 +1241,23 @@ func (c *Control) SetDisplay(d string) {
 
 func (c *Control) IsDisplayed() bool {
 	return c.attributes.IsDisplayed()
+}
+
+func (c *Control) IsVisible() bool {
+	return !c.isHidden
+}
+
+func (c *Control) SetVisible(v bool) {
+	if c.isHidden == v {	// these are opposite in meaning
+		c.isHidden = !v
+		c.Refresh()
+	}
+}
+
+func (c *Control) SetStyles(s *html.Style) {
+	c.attributes.SetStyles(s)
+}
+
+func (c *Control) SetEscapeText(e bool) {
+	c.htmlEncodeText = e
 }

@@ -15,6 +15,11 @@ type Getter interface {
 	Get(string) interface{}
 }
 
+type StringGetter interface {
+	Get(string) string
+}
+
+
 func NewGetterColumn(index string) *GetterColumn {
 	i := GetterColumn{}
 	i.Init(index)
@@ -39,7 +44,14 @@ type GetterTexter struct {
 }
 
 func (t GetterTexter) CellText (ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
-	d := data.(Getter).Get(t.Key)
-	return ApplyFormat(d, t.Format, t.TimeFormat)
+	switch v := data.(type) {
+	case Getter:
+		d := v.Get(t.Key)
+		return ApplyFormat(d, t.Format, t.TimeFormat)
+	case StringGetter:
+		d := v.Get(t.Key)
+		return ApplyFormat(d, t.Format, t.TimeFormat)
+	}
+	return ""
 }
 

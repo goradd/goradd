@@ -58,7 +58,7 @@ func (d *DataPager) Init(parent page.ControlI) {
 }
 
 func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
-	switch params.Id {
+	switch params.ID {
 	case PageClick:
 		d.SetPageNum(javascript.NumberInt(params.Values.Control))
 	}

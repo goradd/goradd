@@ -25,16 +25,24 @@ func Select() page.EventI {
 // DataGridSort is a custom event for responding to a table sort event
 func TableSort() page.EventI {
 	e := &page.Event{JsEvent: "grsort"}
-	e.ActionValue(javascript.JsCode("ui"))	// this will be the colum id
+	e.ActionValue(javascript.JsCode("ui"))	// this will be the column id
 	return e
 }
 
+const DialogButtonEvent = "grdlgbtn"
 // DialogButton returns an event that detects clicking on a dialog's button.
 func DialogButton() page.EventI {
-	e := &page.Event{JsEvent: "goradd.datagrid.dialogbtn"}
+	e := &page.Event{JsEvent: DialogButtonEvent}
 	e.ActionValue(javascript.JsCode("ui"))
 	return e
 }
+
+const DialogCloseEvent = "grdlgclose"
+func DialogClose() page.EventI {
+	e := &page.Event{JsEvent: DialogCloseEvent}
+	return e
+}
+
 
 // TimerExpired is used in conjunction with a JsTimer control to detect the expiration of the timer
 func TimerExpired() page.EventI {

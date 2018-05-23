@@ -143,6 +143,22 @@ func (a *redirectAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.redirect(%s)`, a.location)
 }
 
+type triggerAction struct {
+	controlID string
+	event string
+	data interface{}
+}
+
+// Trigger will trigger a javascript event on a control
+func Trigger(controlID string, event string, data interface{}) *triggerAction {
+	return &triggerAction{controlID: controlID, event: event, data: data}
+}
+
+func (a *triggerAction) RenderScript(params RenderParams) string {
+	return fmt.Sprintf(`$j("#%s").trigger("%s", %s)`, a.controlID, a.event, javascript.ToJavaScript(a.data))
+}
+
+
 // PrivateAction is used by control implementations to add a private action to a controls action list. Unless you are
 // creating a control, you should not use this.
 type PrivateAction struct{}

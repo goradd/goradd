@@ -20,10 +20,12 @@ const (
 
 type ColumnI interface {
 	ID() string
-	SetID(string)
+	SetID(string) ColumnI
 	setParentTable(TableI)
-	Label() string
+	Title() string
+	SetTitle(string) ColumnI
 	Span() int
+	SetSpan(int) ColumnI
 	IsHidden() bool
 	SetHidden(bool)
 	DrawColumnTag(ctx context.Context, buf *bytes.Buffer)
@@ -45,6 +47,8 @@ type ColumnI interface {
 	IsSortable() bool
 	SortDirection() int
 	SetSortDirection(int)
+	Sortable() ColumnI
+	SetIsHtml(columnIsHtml bool)
 }
 
 type CellTexter interface {
@@ -54,21 +58,21 @@ type CellTexter interface {
 type ColumnBase struct {
 	goradd.Base
 	id               string
-	parentTable		 TableI
-	label            string
+	parentTable      TableI
+	title            string
 	*html.Attributes					// These are attributes that will appear on the cell
 	headerAttributes *html.Attributes
 	footerAttributes *html.Attributes
 	colTagAttributes *html.Attributes
 	span             int
 	renderAsHeader   bool
-	dontEscape       bool
-	cellTexter		 CellTexter
+	isHtml           bool
+	cellTexter       CellTexter
 	cellStyler       html.Attributer	// for individually styling cells
-	headerTexter	 CellTexter
-	footerTexter	 CellTexter
+	headerTexter     CellTexter
+	footerTexter     CellTexter
 	isHidden         bool
-	sortDirection	 int
+	sortDirection    int
 }
 
 func (c *ColumnBase) Init(self ColumnI) {
@@ -87,20 +91,21 @@ func (c *ColumnBase) ID() string {
 
 // SetId sets the id of the table. If you are going to provide your own id, do this as the first thing after you create
 // a table, or the new id might not propogate through the system correctly.
-func (c *ColumnBase) SetID(id string) {
+func (c *ColumnBase) SetID(id string) ColumnI {
 	c.id = id
+	return c.This()
 }
 
 func (c *ColumnBase) setParentTable(t TableI) {
 	c.parentTable = t
 }
 
-func (c *ColumnBase) Label() string {
-	return c.label
+func (c *ColumnBase) Title() string {
+	return c.title
 }
 
-func (c *ColumnBase) SetLabel(label string) ColumnI {
-	c.label = label
+func (c *ColumnBase) SetTitle(title string) ColumnI {
+	c.title = title
 	return c.This()
 }
 
@@ -108,16 +113,17 @@ func (c *ColumnBase) Span() int {
 	return c.span
 }
 
-func (c *ColumnBase) SetSpan(span int) {
+func (c *ColumnBase) SetSpan(span int) ColumnI {
 	c.span = span
+	return c.This()
 }
 
 func (c *ColumnBase) SetRenderAsHeader(r bool) {
 	c.renderAsHeader = r
 }
 
-func (c *ColumnBase) SetHtmlEscape(e bool) {
-	c.dontEscape = !e
+func (c *ColumnBase) SetIsHtml(columnIsHtml bool) {
+	c.isHtml = columnIsHtml
 }
 
 func (c *ColumnBase) SetCellStyler(s html.Attributer) {
@@ -190,7 +196,7 @@ func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h st
 	if c.headerTexter != nil {
 		h = c.headerTexter.CellText(ctx, c.This(), row, col, nil)
 	} else {
-		h = html2.EscapeString(c.label)
+		h = html2.EscapeString(c.title)
 	}
 
 	if c.IsSortable() {
@@ -223,7 +229,7 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 	}
 
 	cellHtml := c.This().CellText(ctx, row, col, data)
-	if !c.dontEscape {
+	if !c.isHtml {
 		cellHtml = html2.EscapeString(cellHtml)
 	}
 	a := c.CellAttributes(ctx, row, col, data)
@@ -245,8 +251,9 @@ func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data 
 }
 
 // Sortable indicates that the column should be drawn with sort indicators.
-func (c *ColumnBase) Sortable() {
+func (c *ColumnBase) Sortable() ColumnI {
 	c.sortDirection = NotSorted
+	return c.This()
 }
 
 func (c *ColumnBase) IsSortable() bool {

@@ -48,7 +48,7 @@ func NewCheckboxColumn(p CheckboxProvider) *CheckboxColumn {
 
 func (c *CheckboxColumn) Init() {
 	c.ColumnBase.Init(c)
-	c.dontEscape = true
+	c.isHtml = true
 	c.changes = map[string]bool {}
 }
 

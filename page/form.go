@@ -26,6 +26,8 @@ type FormI interface {
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
 	Response() *Response
 	renderAjax(ctx context.Context, buf *bytes.Buffer) error
+	AddStyleSheetFile(path string, attributes *html.Attributes)
+	AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes)
 
 	// Lifecycle calls
 	Run(ctx context.Context) error
@@ -151,6 +153,7 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 		panic("page state changed")
 	}
 	//f.response.SetControlValue(htmlVarFormstate, formstate)
+	// TODO: render imported style sheets and java scripts
 	f.resetDrawingFlags()
 	buf2, err = json.Marshal(&f.response)
 	f.response = NewResponse()	// Reset
@@ -251,8 +254,16 @@ func (f *FormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
 }
 
 // DrawHeaderTags is called by the page drawing routine to draw its header tags
-// If you override This, be sure to call This version too
+// If you override this, be sure to call this version too
 func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
+	if f.importedStyleSheets != nil {
+		if f.headerStyleSheets == nil {
+			f.headerStyleSheets = types.NewOrderedMap()
+		}
+		f.headerStyleSheets.Merge(f.importedStyleSheets)
+		f.importedStyleSheets = nil
+	}
+
 	if f.headerStyleSheets != nil {
 		f.headerStyleSheets.Range(func (path string, attr interface{}) bool {
 			var attributes *html.Attributes = attr.(*html.Attributes)
@@ -270,6 +281,15 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 			return true
 		})
 	}
+
+	if f.importedJavaScripts != nil {
+		if f.headerJavaScripts == nil {
+			f.headerJavaScripts = types.NewOrderedMap()
+		}
+		f.headerJavaScripts.Merge(f.importedJavaScripts)
+		f.importedJavaScripts = nil
+	}
+
 	if f.headerJavaScripts != nil {
 		f.headerJavaScripts.Range(func (path string, attr interface{}) bool {
 			var attributes *html.Attributes = attr.(*html.Attributes)
@@ -334,4 +354,8 @@ func (f *FormBase) Run(ctx context.Context) error {
 // err will be set if an error response was detected.
 func (f *FormBase) Exit(ctx context.Context, err error) {
 	return
+}
+
+func (f *FormBase) Refresh() {
+	panic("Do not refresh the form. It cannot be drawn in ajax.")
 }

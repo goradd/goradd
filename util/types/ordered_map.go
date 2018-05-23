@@ -27,6 +27,19 @@ func (o *OrderedMap) Clear() {
 	o.order = nil
 }
 
+// Merge merges the given MapI object into this one. Values from the given MapI override the ones in this one if the
+// keys are the same.
+func (o *OrderedMap) Merge(i MapI) {
+	if i == nil {
+		return
+	}
+	i.Range(func(k string,v interface{}) bool {
+		o.Set(k, v)
+		return true
+	})
+}
+
+
 // Set sets the value, but also appends the value to the end of the list for when you
 // iterate over the list. If the value already exists, the value is replaced, the order does not change. If you want
 // the order to change in this situation, you must Remove then Set.

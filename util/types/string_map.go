@@ -113,6 +113,7 @@ func (o StringMap) Range(f func(key string, value string) bool) {
 	}
 }
 
+// Merge merges the given string map with the current one. The given one takes precedent on collisions.
 func (o StringMap) Merge(i StringMapI) {
 	if i == nil {
 		return
