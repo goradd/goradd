@@ -13,8 +13,8 @@ type IDer interface {
 }
 
 type ItemListI interface {
-	AddItem(value interface{}, label string) ListItemI
-	AddItemAt(index int, value interface{}, label string)
+	AddItem(label string, value ...interface{}) ListItemI
+	AddItemAt(index int, label string, value ...interface{})
 	AddListItemAt(index int, item ListItemI)
 	AddListItems(items... ListItemI)
 	AddItemListers(items... ItemLister)
@@ -39,12 +39,12 @@ type ItemList struct {
 // NewItemList creates a new item list. "owner" is the object that has the ItemList embedded in it, and must be
 // an IDer.
 func NewItemList(owner IDer) ItemList {
-	return ItemList{owner: owner, items: []ListItemI{}}
+	return ItemList{owner: owner}
 }
 
 // AddItem adds the given item to the end of the list.
-func (l *ItemList) AddItem(value interface{}, label string) ListItemI {
-	i := NewListItem(value, label)
+func (l *ItemList) AddItem(label string, value ...interface{}) ListItemI {
+	i := NewListItem(label, value)
 	l.AddListItems(i)
 	return i
 }
@@ -53,8 +53,8 @@ func (l *ItemList) AddItem(value interface{}, label string) ListItemI {
 // -1 or bigger than the number of items, it adds it to the end. If the index is zero, or is negative and smaller than
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
 // hierarchical list, so use sparingly.
-func (l *ItemList) AddItemAt(index int, value interface{}, label string) {
-	l.AddListItemAt(index, NewListItem(value, label))
+func (l *ItemList) AddItemAt(index int, label string, value ...interface{}) {
+	l.AddListItemAt(index, NewListItem(label, value))
 }
 
 
@@ -69,20 +69,21 @@ func (l *ItemList) AddListItemAt(index int, item ListItemI) {
 	l.reindex(index)
 }
 
-// AddItems adds one or more ListItemI objects to the end of the list.
+// AddListItems adds one or more ListItemI objects to the end of the list. It will change the ids of the list items
+// and will point to the list items given.
 func (l *ItemList) AddListItems(items... ListItemI) {
-	start := len(l.items)
-	for _,item := range items {
-		id := l.owner.ID() + "_" + strconv.Itoa(len(l.items))
-		item.SetID(id)
+	var start int
+
+	if l.items != nil {
+		start = len(l.items)
 	}
 	l.items = append(l.items, items...)
 	l.reindex(start)
 }
 
-// AddItems adds to the list a slice of objects that contain a Value and Label method.
+// AddItemListers adds to the list a slice of objects that contain a Value and Label method.
 func (l *ItemList) AddItemListers(items... ItemLister) {
-	iList := []ListItemI{}
+	var iList []ListItemI
 	for _,i := range items {
 		item := NewItemFromItemLister(i)
 		iList = append(iList, item)
@@ -93,7 +94,7 @@ func (l *ItemList) AddItemListers(items... ItemLister) {
 
 // reindex is internal and should get called whenever an item gets added to the list out of order or an id changes.
 func (l *ItemList) reindex(start int) {
-	if l.owner.ID() == "" || len(l.items) == 0 || start >= len (l.items) {
+	if l.owner.ID() == "" || l.items == nil || len(l.items) == 0 || start >= len (l.items) {
 		return
 	}
 	for i := start; i < len(l.items); i++ {
@@ -117,7 +118,7 @@ func (l *ItemList) ListItems() []ListItemI {
 
 // Clear removes all the items from the list.
 func (l *ItemList) Clear() {
-	l.items = []ListItemI{}
+	l.items = nil
 }
 
 // RemoveAt removes an item at the given index.
@@ -130,14 +131,20 @@ func (l *ItemList) RemoveAt(index int) {
 
 // Len returns the length of the item list at the current level. In other words, it does not count items in sublists.
 func (l *ItemList) Len() int {
+	if l.items == nil {
+		return 0
+	}
 	return len(l.items)
 }
 
 // FindById recursively searches for and returns the item corresponding to the given id. Since we are managing the
 // id numbers, we can efficiently find the item. Note that if you add items to the list, the ids may change.
 func (l *ItemList) FindByID(id string) (foundItem ListItemI) {
-	parts := strings.SplitN(id, "_", 3) // first item is our own id, 2nd is id from the list, 3rd is a level beyond the list
+	if l.items == nil {
+		return nil
+	}
 
+	parts := strings.SplitN(id, "_", 3) // first item is our own id, 2nd is id from the list, 3rd is a level beyond the list
 	l1Id,err := strconv.Atoi(parts[1])
 	if err != nil || l1Id < 0 {
 		panic("Bad id")
@@ -160,7 +167,7 @@ func (l *ItemList) FindByID(id string) (foundItem ListItemI) {
 // FindByValue recursively searches the list to find the item with the given value.
 // It starts with the current list, and if not found, will search in sublists.
 func (l *ItemList) FindByValue(value interface{}) (id string, foundItem ListItemI) {
-	if len(l.items) == 0 {
+	if l.items == nil || len(l.items) == 0 {
 		return "", nil
 	}
 

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"github.com/spekary/goradd/log"
+	"github.com/spekary/goradd/orm/db"
 )
 
 const htmlVarFormstate string = "Goradd__FormState"
@@ -133,7 +134,21 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	f.This().PostRender(ctx, buf)
 
+	f.outputSqlProfile(ctx, buf)
 	return
+}
+
+// outputSqlProfile looks for sql profiling information and sends it to the browser if found
+func (f *FormBase) outputSqlProfile(ctx context.Context, buf *bytes.Buffer)  {
+	if profiles := db.GetProfiles(ctx); profiles != nil {
+		var s = "<h2>SQL Profile</h2>"
+		for _, profile := range profiles {
+			dif := profile.EndTime.Sub(profile.BeginTime)
+			s += fmt.Sprintf(`<p class="profile"><div>Time: %s Begin: %s End: %s</div><div>SQL: %s</div></p>`,
+				dif.String(), profile.BeginTime.Format("3:04:05.000"), profile.EndTime.Format("3:04:05.000"), profile.Sql)
+		}
+		buf.WriteString(s)
+	}
 }
 
 
@@ -207,6 +222,9 @@ func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *
 	if forceHeader && f.isOnPage {
 		panic ("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
 	}
+
+	// TODO: decompose path here, rather than at draw time to save some processing time.
+
 	if f.isOnPage {
 		if f.importedJavaScripts == nil {
 			f.importedJavaScripts = types.NewOrderedMap()

@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"context"
 	. "github.com/spekary/goradd/orm/query"
+	"time"
+	"github.com/spekary/goradd"
 )
 
 type SqlDbI interface {
@@ -16,12 +18,30 @@ type SqlDbI interface {
 	generateDeleteSql(QueryBuilderI) (sql string, args []interface{})
 }
 
+// ProfileEntry contains the data collected during sql profiling
+type ProfileEntry struct {
+	DbKey     string
+	BeginTime time.Time
+	EndTime   time.Time
+	Typ       string
+	Sql       string
+}
+
+// SqlContext is what is stored in the current context to keep track of queries. You must save a copy of this in the
+// current context with the SqlContext key before calling database functions in order to use transactions or
+// database profiling, or anything else the context is required for. The framework does this for you, but you will need
+// to do this yourself if using the orm without the framework.
+type SqlContext struct {
+	tx      *sql.Tx
+	txCount int // Keeps track of when to close a transaction
+
+	profiles []ProfileEntry
+}
+
 
 type SqlDb struct {
 	dbKey   string  // key of the database as used in the global database map
 	db      *sql.DB // Internal copy of golang database
-	tx      *sql.Tx
-	txCount int // Keeps track of when to close a transaction
 
 	// codegen options
 	typeTableSuffix        string // Primarily for sql tables
@@ -31,6 +51,8 @@ type SqlDb struct {
 	// These codegen options may be moved higher up in hierarchy some day
 	goStructPrefix         string // Helps differentiate objects when different databases have the same name.
 	associatedObjectPrefix string // Helps differentiate between objects and local values
+
+	profiling bool
 }
 
 
@@ -44,69 +66,138 @@ func NewSqlDb(dbKey string) SqlDb {
 	return s
 }
 
+// Begin starts a transaction. You must use the context returned from this function for all subsequent
+func (s *SqlDb) Begin(ctx context.Context)  {
+	var c *SqlContext
 
-func (s *SqlDb) Begin() {
-	s.txCount++
+	i := ctx.Value(goradd.SqlContext)
+	if i == nil {
+		panic ("Can't use transactions without pre-loading a context")
+	} else {
+		c = i.(*SqlContext)
+	}
+	c.txCount++
 
-	if s.txCount == 1 {
+	if c.txCount == 1 {
 		var err error
 
-		s.tx, err = s.db.Begin()
+		c.tx, err = s.db.Begin()
 		if err != nil {
 			panic(err.Error())
 		}
 	}
+	if i == nil {
+		ctx = context.WithValue(ctx, goradd.SqlContext, c)
+	}
 }
 
-func (s *SqlDb) Commit() {
-	s.txCount--
-	if s.txCount < 0 {
+func (s *SqlDb) Commit(ctx context.Context) {
+	var c *SqlContext
+	i := ctx.Value(goradd.SqlContext)
+	if i == nil {
+		panic ("Can't use transactions without pre-loading a context")
+	} else {
+		c = i.(*SqlContext)
+	}
+
+	c.txCount--
+	if c.txCount < 0 {
 		panic("Called Commit without a matching Begin")
 	}
-	if s.txCount == 0 {
-		err := s.tx.Commit()
+	if c.txCount == 0 {
+		err := c.tx.Commit()
 		if err != nil {
 			panic(err.Error())
 		}
-		s.tx = nil
+		c.tx = nil
 	}
 }
 
-func (s *SqlDb) Rollback() {
-	if s.tx != nil {
-		err := s.tx.Rollback()
+func (s *SqlDb) Rollback(ctx context.Context) {
+	var c *SqlContext
+	i := ctx.Value(goradd.SqlContext)
+	if i == nil {
+		panic ("Can't use transactions without pre-loading a context")
+	} else {
+		c = i.(*SqlContext)
+	}
+
+	if c.tx == nil {
+		panic ("Called Rollback without matching Begin")
+	} else {
+		err := c.tx.Rollback()
 		if err != nil {
 			panic(err.Error())
 		}
-		s.tx = nil
-		s.txCount = 0
+		c.tx = nil
+		c.txCount = 0
 	}
 }
 
 func (s *SqlDb) Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error) {
-	if s.tx != nil {
-		r, err = s.tx.ExecContext(ctx, sql, args...)
+	var c *SqlContext
+	i := ctx.Value(goradd.SqlContext)
+	if i != nil {
+		c = i.(*SqlContext)
+	}
+
+	var beginTime = time.Now()
+
+	if c != nil && c.tx != nil {
+		r, err = c.tx.ExecContext(ctx, sql, args...)
 	} else {
 		r, err = s.db.ExecContext(ctx, sql, args...)
 	}
+
+	var endTime = time.Now()
+
+	if c != nil && s.profiling {
+		c.profiles = append(c.profiles, ProfileEntry{DbKey:s.dbKey, BeginTime:beginTime, EndTime:endTime, Typ:"Exec", Sql: sql})
+	}
+
 	return
 }
 
-func (s *SqlDb) Prepare(sql string) (r *sql.Stmt, err error) {
-	if s.tx != nil {
-		r, err = s.tx.Prepare(sql)
+func (s *SqlDb) Prepare(ctx context.Context, sql string) (r *sql.Stmt, err error) {
+	var c *SqlContext
+	i := ctx.Value(goradd.SqlContext)
+	if i != nil {
+		c = i.(*SqlContext)
+	}
+
+	var beginTime = time.Now()
+	if  c != nil && c.tx != nil {
+		r, err = c.tx.Prepare(sql)
 	} else {
 		r, err = s.db.Prepare(sql)
 	}
+	var endTime = time.Now()
+	if c != nil && s.profiling {
+		c.profiles = append(c.profiles, ProfileEntry{DbKey:s.dbKey, BeginTime:beginTime, EndTime:endTime, Typ:"Prepare", Sql: sql})
+	}
+
+
 	return
 }
 
 func (s *SqlDb) Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error) {
-	if s.tx != nil {
-		r, err = s.tx.QueryContext(ctx, sql, args...)
+	var c *SqlContext
+	i := ctx.Value(goradd.SqlContext)
+	if i != nil {
+		c = i.(*SqlContext)
+	}
+
+	var beginTime = time.Now()
+	if  c != nil && c.tx != nil {
+		r, err = c.tx.QueryContext(ctx, sql, args...)
 	} else {
 		r, err = s.db.QueryContext(ctx, sql, args...)
 	}
+	var endTime = time.Now()
+	if c != nil && s.profiling {
+		c.profiles = append(c.profiles, ProfileEntry{DbKey:s.dbKey, BeginTime:beginTime, EndTime:endTime, Typ:"Query", Sql: sql})
+	}
+
 	return
 }
 
@@ -149,4 +240,25 @@ func (s *SqlDb) AssociatedObjectPrefix() string {
 
 func (s *SqlDb) IdSuffix() string {
 	return s.idSuffix
+}
+
+func (s *SqlDb) StartProfiling() {
+	s.profiling = true
+}
+
+func GetProfiles(ctx context.Context) []ProfileEntry {
+	var c *SqlContext
+	i := ctx.Value(goradd.SqlContext)
+	if i == nil {
+		panic ("Profiling requires a preloaded context.")
+	} else {
+		c = i.(*SqlContext)
+	}
+
+	if  c != nil {
+		p := c.profiles
+		c.profiles = nil
+		return p
+	}
+	return nil
 }

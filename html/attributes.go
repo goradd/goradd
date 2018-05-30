@@ -229,6 +229,9 @@ func (a *Attributes) RemoveClass(v string) bool {
 // If a class is not present, the class will be added to the end of the class list
 // If a class is present, it will not be added, and the position of the current class in the list will not change
 func (a *Attributes) AddClassChanged(v string) bool {
+	if v == "" {
+		return false; // nothing to add
+	}
 	if a.Has("class") {
 		newClass,changed := AddClass(a.Get("class"), v)
 		if changed {

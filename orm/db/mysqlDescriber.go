@@ -69,7 +69,7 @@ func NewMysql2 (dbKey string , options DbOptions, config *mysql.Config) (*Mysql5
 	source := Mysql5{}
 	db, err := sql.Open("mysql", config.FormatDSN())
 
-	source.dbKey = dbKey
+	source.dbKey = DbKey
 	source.db = db
 	source.config = *config
 	source.options = options

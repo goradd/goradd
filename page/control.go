@@ -1258,6 +1258,11 @@ func (c *Control) SetStyles(s *html.Style) {
 	c.attributes.SetStyles(s)
 }
 
+func (c *Control) SetStyle(name string, value string) {
+	c.attributes.SetStyle(name, value)
+}
+
+
 func (c *Control) SetEscapeText(e bool) {
 	c.htmlEncodeText = e
 }

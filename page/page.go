@@ -74,13 +74,14 @@ func (p *Page) setStateID(stateId string) {
 
 func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
 	grCtx := GetContext(ctx)
+	grCtx.WasHandled = true		// Notify listeners that the app handled the page
 
 	if err = p.Form().Run(ctx); err != nil {
 		return err
 	}
 
 	if grCtx.err != nil {
-		panic(grCtx.err)	// If we received an error during the unpacking process, let the deferred code above handle the error.
+		panic(grCtx.err)
 	}
 
 	p.renderStatus = UNRENDERED

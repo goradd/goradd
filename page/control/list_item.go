@@ -23,6 +23,11 @@ type ItemLister interface {
 	Label() string
 }
 
+type Labeler interface {
+	Label() string
+}
+
+
 type ListItem struct {
 	value interface{}
 	id string
@@ -32,18 +37,31 @@ type ListItem struct {
 }
 
 // NewListItem creates a new item for a list. Specify an empty value for an item that represents no selection.
-func NewListItem(value interface{}, label string) *ListItem {
-	l := &ListItem{attributes:html.NewAttributes(), value: value, label: label}
+func NewListItem(label string, value ...interface{}) *ListItem {
+	l := &ListItem{attributes:html.NewAttributes(), label: label}
+	if c := len(value); c == 1 {
+		l.value = value[0]
+	} else if c > 1 {
+		panic ("Call NewListItem with zero or one value only.")
+	}
+
 	l.ItemList = NewItemList(l)
 	return l
 }
 
-// NewItemFromItemLister creates a new item from any object that has a value and label method.
+// NewItemFromItemLister creates a new item from any object that has a Value and Label method.
 func NewItemFromItemLister(i ItemLister) *ListItem {
 	l := &ListItem{attributes:html.NewAttributes(), value: i.Value(), label: i.Label()}
 	l.ItemList = NewItemList(l)
 	return l
 }
+
+func NewItemFromLabeler(i Labeler) *ListItem {
+	l := &ListItem{attributes:html.NewAttributes(), label: i.Label()}
+	l.ItemList = NewItemList(l)
+	return l
+}
+
 
 func (i *ListItem) SetValue(v interface{}) {
 	i.value = v
@@ -71,6 +89,7 @@ func (i *ListItem) ID() string {
 
 func (i *ListItem) SetID(id string) {
 	i.id = id
+	i.attributes.SetID(id)
 	i.ItemList.reindex(0)
 }
 

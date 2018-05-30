@@ -1,0 +1,15 @@
+{{< imports }}{{end}}
+{{< headTags }}{{end}}
+{{< package }}examples{{end}}
+{{< title }}Bootstrap Components Examples{{end}}
+{{< form }}ComponentsForm{{end}}
+
+{{define template }}
+<h1>Bootstrap Components</h1>
+
+{{draw form.ButtonPanel.SetLabel("Buttons") }}
+
+{{end}}
+
+
+{{renderTemplate}}

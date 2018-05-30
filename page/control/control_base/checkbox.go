@@ -32,6 +32,7 @@ func (c *Checkbox) Init(self TextboxI, parent page.ControlI) {
 	c.IsVoidTag = true
 	c.labelMode = page.DefaultCheckboxLabelDrawingMode
 	c.SetHasFor(true)
+	c.SetAttribute("autocomplete", "off")	// fixes an html quirk
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the

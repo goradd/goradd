@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"github.com/spekary/goradd"
+	"github.com/spekary/goradd/orm/db"
 )
 
 type RequestMode int
@@ -37,13 +39,6 @@ func (m RequestMode) String() string {
 	}
 	return "Unknown"
 }
-
-type contextKey string
-
-const (
-	context_key = contextKey ("goradd.context")
-	session_key = contextKey ("goradd.session")
-)
 
 type ContextI interface {
 	Http() *HttpContext
@@ -74,6 +69,7 @@ type AppContext struct {
 	actionControlID     string                 // If an action, the control sending the action
 	eventID             EventID                // The event to send to the control
 	actionValues        ActionValues
+	WasHandled			bool
 	// TODO: Session object
 }
 
@@ -95,7 +91,11 @@ func PutContext(r *http.Request, cliArgs []string) *http.Request {
 
 	grctx.FillHttp(r)
 	grctx.FillApp(cliArgs)
-	ctx = context.WithValue(ctx, context_key, grctx)
+	ctx = context.WithValue(ctx, goradd.PageContext, grctx)
+
+	// Create a context that the orm can use
+	ctx = context.WithValue(ctx, goradd.SqlContext, &db.SqlContext{})
+
 	return r.WithContext(ctx)
 }
 
@@ -280,7 +280,7 @@ func (ctx *Context) RequestMode() RequestMode {
 }
 
 func GetContext(ctx context.Context) *Context {
-	return ctx.Value(context_key).(*Context) // TODO: Must replace the context key with something that is not a basic string. See https://medium.com/@matryer/context-keys-in-go-5312346a868d.
+	return ctx.Value(goradd.PageContext).(*Context)
 }
 
 func fixActionValues(values ActionValues) ActionValues {
