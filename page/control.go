@@ -24,7 +24,6 @@ const sessionControlTypeState string = "goradd.controlType"
 const RequiredErrorMessage string = "A value is required"
 
 type ValidationType int
-
 const  (
 	ValidateDefault ValidationType = iota		// This is used by the event to indicate it is not overriding.
 	ValidateNone								// Force no validation.
@@ -40,6 +39,13 @@ const  (
 
 	// ValidateTargetsOnly will only validate the specified targets
 	ValidateTargetsOnly
+)
+
+type ValidationState int
+const (
+	NotValidated ValidationState = iota
+	Valid
+	Invalid
 )
 
 type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *bytes.Buffer) error
@@ -75,6 +81,8 @@ type ControlI interface {
 	ShouldAutoRender() bool
 	SetShouldAutoRender(bool)
 	DrawAjax(ctx context.Context, response *Response) error
+	DrawChildren(ctx context.Context, buf *bytes.Buffer) error
+	DrawText(ctx context.Context, buf *bytes.Buffer)
 	With(w WrapperI) ControlI
 	HasWrapper() bool
 
@@ -95,9 +103,12 @@ type ControlI interface {
 	SetAttribute(name string, val interface{})
 	SetWrapperAttribute(name string, val interface{})
 	Attribute(string) string
+	HasAttribute(string) bool
 	DrawingAttributes() *html.Attributes
 	WrapperAttributes() *html.Attributes
 	AddClass(class string) ControlI
+	RemoveClass(class string) ControlI
+	AddWrapperClass(class string) ControlI
 	SetStyles(*html.Style)
 
 	PutCustomScript (ctx context.Context, response *Response)
@@ -109,7 +120,7 @@ type ControlI interface {
 	SetLabel(n string) ControlI
 	Text() string
 	SetText(t string) ControlI
-	ValidationError() string
+	ValidationMessage() string
 	SetValidationError(e string)
 	Instructions() string
 	SetInstructions(string) ControlI
@@ -136,6 +147,7 @@ type ControlI interface {
 	UpdateFormValues(*Context)
 
 	Validate() bool
+	ValidationState() ValidationState
 
 	// SaveState tells the control whether to save the basic state of the control, so that when the form is reentered, the
 	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
@@ -162,19 +174,17 @@ type Control struct {
 	children []ControlI					// Child controls
 
 	Tag         string
-	IsVoidTag   bool                        // tag does not get wrapped with a terminating tag, but just ends instead
-	hasNoSpace  bool                        // For special situations where we want no space between This and next tag. Spans in particular may need This.
-	attributes  *html.Attributes            // a collection of attributes to apply to the control
-	text        string                      // multi purpose, can be button text, inner text inside of tags, etc.
-	textIsLabel bool                        // special situation like checkboxes where the text should be wrapped in a label as part of the control
-	textLabelMode	 html.LabelDrawingMode // describes how to draw This special label
-	htmlEncodeText bool                // whether to encode the text output, or send straight text
+	IsVoidTag   bool                     // tag does not get wrapped with a terminating tag, but just ends instead
+	hasNoSpace  bool                     // For special situations where we want no space between This and next tag. Spans in particular may need This.
+	attributes     *html.Attributes      // a collection of attributes to apply to the control
+	text           string                // multi purpose, can be button text, inner text inside of tags, etc.
+	textIsLabel    bool                  // special situation like checkboxes where the text should be wrapped in a label as part of the control
+	textLabelMode  html.LabelDrawingMode // describes how to draw This special label
+	htmlEscapeText bool                  // whether to escape the text output, or send straight text
 
 	attributeScripts []*[]interface{} // commands to send to our javascript to redraw portions of This control via ajax. Allows us to skip drawing the entire control.
 
 	isRequired bool
-	// ErrorForRequired is the error that will display if a control value is required but not set.
-	ErrorForRequired string
 	isHidden         bool
 	isOnPage         bool
 	shouldAutoRender bool
@@ -191,11 +201,16 @@ type Control struct {
 
 	hasFor	 			bool			// When drawing the label, should it use a for attribute? This is helpful for screen readers and navigation on certain kinds of tags.
 	instructions		string			// Instructions, if the field needs extra explanation. You could also try adding a tooltip to the wrapper.
-	validationError		string			// The message to display if there was a validation error
 
-	validationType		ValidationType
-	validationTargets	[]string		// List of control IDs to target validation
-	blockParentValidation	bool		// This blocks a parent from validating This control. Useful for dialogs, or situations where multiple panels control their own space.
+	// ErrorForRequired is the error that will display if a control value is required but not set.
+	ErrorForRequired string
+	// ValidMessage is the message to display if the control has successfully been validated. Leave blank if you don't want a message to show when valid. Can be useful to contrast between invalid and valid controls in a busy form.
+	ValidMessage          string
+	validationMessage     string // The message to display when showing the validation condition
+	validationState       ValidationState
+	validationType        ValidationType
+	validationTargets     []string		// List of control IDs to target validation
+	blockParentValidation bool		// This blocks a parent from validating this control. Useful for dialogs, or situations where multiple panels control their own space.
 
 	actionValue			interface{}
 
@@ -215,7 +230,7 @@ func (c *Control) Init (self ControlI, parent ControlI) {
 		c.id = c.page.GenerateControlID()
 	}
 	self.SetParent(parent)
-	c.htmlEncodeText = true // default to encoding the text portion. Explicitly turn This off if you need something else
+	c.htmlEscapeText = true // default to encoding the text portion. Explicitly turn This off if you need something else
 }
 
 func (c *Control) This() ControlI {
@@ -267,7 +282,7 @@ func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 		}
 	}
 
-	// Finally, let's specify that we have begun isRendering This control
+	// Finally, let's specify that we have begun rendering this control
 	c.isRendering = true
 
 	return nil
@@ -384,7 +399,7 @@ func (c *Control) DrawTag(ctx context.Context) string {
 	var ctrl string
 
 	attributes := c.This().DrawingAttributes()
-	if c.wrapper != nil {
+	if c.wrapper == nil {
 		if a := c.This().WrapperAttributes(); a != nil {
 			attributes.Merge(a)
 		}
@@ -449,25 +464,41 @@ func (c *Control) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err err
 	err = nil
 
 	if c.children != nil && len(c.children) > 0 {
+		err = c.This().DrawChildren(ctx, buf)
+		return
+	}
+
+	c.This().DrawText(ctx, buf)
+
+	return
+}
+
+func (c *Control) DrawChildren(ctx context.Context, buf *bytes.Buffer) (err error) {
+	if c.children != nil {
 		for _, child := range c.children {
 			err = child.Draw(ctx, buf)
 			if err != nil {
 				break
 			}
 		}
-		return
 	}
+	return
+}
 
+// Draws the text of the control, escaping if needed
+func (c *Control) DrawText(ctx context.Context, buf *bytes.Buffer) {
 	if c.text != "" {
 		text := c.text
 
-		if c.htmlEncodeText {
+		if c.htmlEscapeText {
 			text = gohtml.EscapeString(text)
 		}
 		buf.WriteString(text)
 	}
-	return
 }
+
+
+
 
 
 // With sets the wrapper style for the control, essentially setting the wrapper template function that will be used.
@@ -519,22 +550,31 @@ func (c *Control) Attribute(name string) string {
 	return c.attributes.Get(name)
 }
 
+func (c *Control) HasAttribute(name string) bool {
+	return c.attributes.Has(name)
+}
+
+
 // Returns a set of attributes that should override those set by the user. This allows controls to set attributes
 // just before drawing that should take precedence over other attributes, and that are critical to drawing the
-// tag of the control.
+// tag of the control. This function is designed to only be called by overriding functions, changes will not be remembered.
 func (c *Control) DrawingAttributes() *html.Attributes {
 	a := html.NewAttributesFrom(c.attributes)
 	a.SetID(c.id) // make sure the control id is set at a minimum
 	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
 
 	if c.HasWrapper() {
-		if c.validationError != "" {
+		if c.validationState != NotValidated {
 			a.Set("aria-describedby", c.ID() + "_err")
-			a.Set("aria-invalid", "true")
+			if c.validationState == Valid {
+				a.Set("aria-invalid", "false")
+			} else {
+				a.Set("aria-invalid", "true")
+			}
 		} else if c.instructions != "" {
 			a.Set("aria-describedby", c.ID() + "_inst")
 		}
-		if c.label != "" {
+		if c.label != "" && !c.hasFor { // if it has a for, then screen readers already know about the label
 			a.Set("aria-labeledby", c.ID() + "_lbl")
 		}
 	}
@@ -542,8 +582,10 @@ func (c *Control) DrawingAttributes() *html.Attributes {
 	return a
 }
 
+// WrapperAttributes returns the actual attributes for the wrapper. Changes WILL be remembered so that subsequent ajax
+// drawing will draw the wrapper correctly.
 func (c *Control) WrapperAttributes() *html.Attributes {
-	return html.NewAttributesFrom(c.wrapperAttributes)
+	return c.wrapperAttributes
 }
 
 func (c *Control) SetDataAttribute(name string, val interface{}) {
@@ -571,6 +613,22 @@ func (c *Control) AddClass(class string) ControlI {
 	}
 	return c
 }
+
+func (c *Control) RemoveClass(class string) ControlI {
+	if changed := c.attributes.RemoveClass(class); changed {
+		c.isModified = true
+	}
+	return c
+}
+
+
+func (c *Control) AddWrapperClass(class string) ControlI {
+	if changed := c.wrapperAttributes.AddClassChanged(class); changed {
+		c.isModified = true
+	}
+	return c
+}
+
 
 // Adds a variadic parameter list to the renderScripts array, which is an array of javascript commands to send to the
 // browser the next time control drawing happens. These commands allow javascript to change an aspect of the control without
@@ -677,23 +735,29 @@ func (c *Control) Required() bool {
 	return c.isRequired
 }
 
-func (c *Control) ValidationError() string {
-	return c.validationError
+func (c *Control) ValidationMessage() string {
+	return c.validationMessage
 }
 
 // SetValidationError sets the validation error to the given string. It will also handle setting the wrapper class
 // to indicate an error. Override if you have a different way of handling errors.
 func (c *Control) SetValidationError(e string) {
-	if c.validationError != e {
-		c.validationError = e
-		c.isModified = true // TODO: Set a response attribute instead to only update the inner text of the ctlId_err div
+	if c.validationMessage != e {
+		c.validationMessage = e
+		c.isModified = true // TODO: Set a response attribute instead to only update the inner text of the ctlId_err div and possibly the div class. Tricky because bootstrap has multiple options to set the div class.
 
 		if e == "" {
+			c.validationState = NotValidated
 			c.SetWrapperAttribute("class", "- error")
 		} else {
+			c.validationState = Invalid
 			c.SetWrapperAttribute("class", "+ error")
 		}
 	}
+}
+
+func (c *Control) ValidationState() ValidationState {
+	return c.validationState
 }
 
 func (c *Control) SetText(t string) ControlI {
@@ -1071,7 +1135,10 @@ func (c *Control) passesValidation(event EventI) (valid bool) {
 	return valid
 }
 
+// Validate is designed to be overridden. Overriding controls should call the parent version before doing their own validation.
 func (c *Control) Validate() bool {
+	c.validationState = Valid
+	c.validationMessage = c.ValidMessage
 	return true
 }
 
@@ -1262,7 +1329,7 @@ func (c *Control) SetStyle(name string, value string) {
 	c.attributes.SetStyle(name, value)
 }
 
-
+// SetEscapeText to false to turn off html escaping of the text output. It is on by default.
 func (c *Control) SetEscapeText(e bool) {
-	c.htmlEncodeText = e
+	c.htmlEscapeText = e
 }

@@ -33,6 +33,10 @@ func (l *SelectList) Init(self page.ControlI, parent page.ControlI) {
 }
 
 func (l *SelectList) Validate() bool {
+	if v := l.Validate(); !v {
+		return false
+	}
+
 	if l.Required() && l.selectedId == "" {
 		if l.ErrorForRequired == "" {
 			l.SetValidationError(l.T("A selection is required"))

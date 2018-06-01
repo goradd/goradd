@@ -118,6 +118,13 @@ func RegisterJsFile(urlPath string, filePath string) string {
 	return RegisterAssetFile(config.ASSET_PREFIX + "/js/" + urlPath, filePath)
 }
 
+func RegisterImageFile(urlPath string, filePath string) string {
+	return RegisterAssetFile(config.ASSET_PREFIX + "/image/" + urlPath, filePath)
+}
+
+func RegisterFontFile(urlPath string, filePath string) string {
+	return RegisterAssetFile(config.ASSET_PREFIX + "/font/" + urlPath, filePath)
+}
 
 
 func GetAssetFilePath(url string) string {

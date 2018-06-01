@@ -118,6 +118,19 @@ func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mod
 	panic ("Unknown label mode")
 }
 
+func RenderImage(src string, alt string, attributes *Attributes) string {
+	var a *Attributes
+
+	if attributes != nil {
+		a = attributes.Clone()
+	} else {
+		a = NewAttributes()
+	}
+	a.Set("src", src)
+	a.Set("alt", alt)
+	return RenderVoidTag("img", a)
+}
+
 // Indent will add space to the front of every line in the string. Since indent is used to format code for reading
 // while we are in development mode, we do not need it to be particularly efficient.
 func Indent(s string) string {

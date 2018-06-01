@@ -6,7 +6,6 @@ import (
 )
 
 func PageTmpl(ctx context.Context, page *Page, buf *bytes.Buffer) (err error) {
-
 {{
 <!DOCTYPE html>
 <html>

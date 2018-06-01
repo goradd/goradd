@@ -63,6 +63,10 @@ func (p *Page) DrawFunction() PageDrawFunc {
 	return PageTmpl
 }
 
+func (p *Page) SetDrawFunction(f PageDrawFunc) {
+	p.drawFunc = f
+}
+
 func (p *Page) GetPageBase() *Page {
 	return p
 }

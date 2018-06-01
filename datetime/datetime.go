@@ -14,8 +14,10 @@ import (
 const (
 	Current = "now"
 	Zero = "zero"
-	UsDate     = "1/2/2006"
-
+	UsDate = "1/2/2006"
+	EuroDate = "2/1/2006"
+	LongDateDOW = "Monday, January 2, 2006"
+	LongDate = "January 2, 2006"
 )
 
 type DateTime struct {
@@ -55,6 +57,10 @@ func NewDateTime(args... interface{}) DateTime {
 		}
 	}
 	return d
+}
+
+func (d DateTime) Equal(d2 DateTime) bool {
+	return d.Time.Equal(d2.Time)
 }
 
 // Satisfies the javacript.JavaScripter interface to output the date as a javascript value

@@ -219,6 +219,9 @@ func (t *Textbox) sanitize(s string) string {
 // Validate will first check for the Required attribute, and if set, will make sure a value is in the text field. It
 // will then check the validators in the order assigned. The first invalid value found will return false.
 func (t *Textbox) Validate() bool {
+	if v := t.Control.Validate(); !v {
+		return false
+	}
 	text := t.Text()
 	if t.Required() && text == "" {
 		if t.ErrorForRequired == "" {
