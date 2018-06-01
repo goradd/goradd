@@ -2,7 +2,7 @@ package db
 
 import (
 	"testing"
-	"goradd/model/node"
+	"goradd/gen/goradd/model/node"
 )
 
 func TestNodeEquality(t *testing.T) {

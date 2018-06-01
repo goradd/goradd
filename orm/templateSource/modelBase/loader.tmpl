@@ -57,14 +57,14 @@ for _, col := range t.Columns {
 {{
 	if linkParent && parentKey == "{{= col.ForeignKey.GoName }}" {
 		o.{{oName}} = objParent.(*{{= col.ForeignKey.GoType }})
-		o.idIsValid = true
-		o.idIsDirty = false
+		o.{{= col.VarName }}IsValid = true
+		o.{{= col.VarName }}IsDirty = false
 	} else if v, ok := m["{{= col.ForeignKey.GoName }}"]; ok {
 		if {{oName}}, ok2 := v.(map[string]interface{}); ok2 {
 			o.{{oName}} = New{{= col.ForeignKey.GoType }}()
 			o.{{oName}}.load({{oName}}, linkParent, o.{{oName}}, objThis, "{{col.ForeignKey.RR.GoPlural}}")
-			o.idIsValid = true
-			o.idIsDirty = false
+			o.{{= col.VarName }}IsValid = true
+			o.{{= col.VarName }}IsDirty = false
 		} else {
 			panic("Wrong type found for {{oName}} object.")
 		}
@@ -155,7 +155,7 @@ for _,ref := range t.ReverseReferences {
 	} else {
 		oName := dd.AssociatedObjectPrefix + ref.GoPlural
 		mName := "m" + ref.GoPlural
-		pk := dd.TableDescription(ref.DbTable).GetColumn(ref.DbColumn).VarName
+		pk := dd.TableDescription(ref.AssociatedTableName).GetColumn(ref.AssociatedColumnName).VarName
 
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {

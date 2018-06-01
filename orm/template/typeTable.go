@@ -19,7 +19,7 @@ func init() {
 	t := TypeTableTemplate{
 		generator.Template{
 			Overwrite: true,
-			TargetDir: config.LocalDir + "/model",
+			TargetDir: config.LocalDir + "/gen",
 		},
 	}
 	generator.AddTypeTableTemplate(&t)
@@ -29,8 +29,8 @@ type TypeTableTemplate struct {
 	generator.Template
 }
 
-func (n *TypeTableTemplate) FileName(tt *db.TypeTableDescription) string {
-	return n.TargetDir + "/" + tt.GoName + ".base.go"
+func (n *TypeTableTemplate) FileName(key string, tt *db.TypeTableDescription) string {
+	return n.TargetDir + "/" + key + "/model/" + tt.GoName + ".base.go"
 }
 
 func (n *TypeTableTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.DatabaseDescription, tt *db.TypeTableDescription, buf *bytes.Buffer) {
@@ -63,8 +63,6 @@ const (
 		buf.WriteString(`	`)
 
 		buf.WriteString(constPrefix)
-
-		buf.WriteString(``)
 
 		buf.WriteString(con)
 
@@ -186,8 +184,6 @@ func (`)
 
 		buf.WriteString(propName)
 
-		buf.WriteString(``)
-
 		buf.WriteString(title)
 
 		buf.WriteString(`() []`)
@@ -237,4 +233,8 @@ func (`)
 
 	}
 
+}
+
+func (n *TypeTableTemplate) Overwrite() bool {
+	return n.Template.Overwrite
 }

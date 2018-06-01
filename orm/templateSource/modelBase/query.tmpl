@@ -3,13 +3,35 @@
 
 {{
 func Load{{t.GoName}}(ctx context.Context, id string) *{{t.GoName}} {
-	results := Query{{t.GoPlural}}().Where(Equal(node.{{t.GoName}}().{{t.PrimaryKeyColumn.GoName}}(), id)).Load(ctx)
-	if results != nil && len(results) > 0 {
-		return results[0]
-	} else {
-		return nil
-	}
+	return Query{{t.GoPlural}}().Where(Equal(node.{{t.GoName}}().{{t.PrimaryKeyColumn.GoName}}(), id)).Get(ctx)
 }
+
+{{g
+    if t.Indexes != nil {
+        for _,idx := range t.Indexes {
+            if !idx.IsPrimary && idx.IsUnique {
+                var names string
+
+                for _,name := range idx.ColumnNames {
+                    names += snaker.SnakeToCamel(name)
+                }
+{{
+func Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} (ctx context.Context{{for _,name := range idx.ColumnNames}}, {{= name }} {{= string(t.GetColumn(name).GoType) }} {{for}}) *{{t.GoName}} {
+    return Query{{t.GoPlural}}().
+{{if len(idx.ColumnNames) == 1}}
+        Where(Equal(node.{{t.GoName}}().{{= snaker.SnakeToCamel(idx.ColumnNames[0]) }}(), {{= idx.ColumnNames[0] }})).
+{{else}}
+        Where(And({{for _,name := range idx.ColumnNames}}Equal(node.{{t.GoName}}().{{= snaker.SnakeToCamel(name) }}(), {{= name }}), {{for}})).
+{{if}}
+        Get(ctx)
+}
+}}
+            }
+        }
+    }
+}}
+
+
 
 func Query{{t.GoPlural}}() *{{t.LcGoName}}Builder {
 	return new{{t.GoName}}Builder()
@@ -69,7 +91,11 @@ func (b *{{t.LcGoName}}Builder) LoadI(ctx context.Context) ({{t.LcGoName}}Slice 
 // Limits with joins do not currently work, so don't try it if you have a join
 func (b *{{t.LcGoName}}Builder) Get(ctx context.Context) *{{t.GoName}} {
 	results := b.Limit(1,0).Load(ctx)
-	return results[0]
+	if results != nil && len(results) > 0 {
+		return results[0]
+	} else {
+		return nil
+	}
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items

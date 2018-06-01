@@ -660,7 +660,7 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 	// In MySQL this is detectable. In other databases, if you can set this up, but its hard to detect, you can create a comment propery to spec this
 	cd.IsAutoUpdateTimestamp = strings.Contains(column.extra, "CURRENT_TIMESTAMP")
 
-	// indicates that the we want our generated code to update the timestamp manually. This should be mutually exclusive of isAutoUpdateTimestamp
+	// indicates that we want our generated code to update the timestamp manually. This should be mutually exclusive of isAutoUpdateTimestamp
 	if cd.ShouldUpdateTimestamp, ok = options.GetBool("shouldAutoUpdate"); !ok {
 		log.Print("Error in table comment for table " + tableName + ":" + column.name + ": shouldAutoUpdate is not a boolean")
 	}
@@ -696,7 +696,7 @@ func (m *Mysql5) getIndexDescriptions(tableName string, sqlIndexes []mysqlIndex)
 			indexes = append(indexes, IndexDescription{sqlIndex.name, !sqlIndex.nonUnique, sqlIndex.name == "PRIMARY", []string{sqlIndex.columnName}})
 			indexMap[sqlIndex.name] = len(indexes) - 1
 		} else {
-			indexes[offset].columnNames = append(indexes[offset].columnNames, sqlIndex.columnName)
+			indexes[offset].ColumnNames = append(indexes[offset].ColumnNames, sqlIndex.columnName)
 		}
 	}
 	return indexes

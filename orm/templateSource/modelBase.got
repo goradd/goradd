@@ -11,7 +11,7 @@ func init() {
 	t := ModelBaseTemplate {
 		generator.Template {
 			Overwrite: true,
-			TargetDir: config.LocalDir + "/model",
+			TargetDir: config.LocalDir + "/gen",
 		},
 	}
 	generator.AddTableTemplate(&t)
@@ -21,8 +21,8 @@ type ModelBaseTemplate struct {
 	generator.Template
 }
 
-func (n *ModelBaseTemplate) FileName(t *db.TableDescription) string {
-	return n.TargetDir + "/" + t.GoName + ".base.go"
+func (n *ModelBaseTemplate) FileName(key string, t *db.TableDescription) string {
+	return n.TargetDir + "/" + key + "/model/" + t.GoName + ".base.go"
 }
 
 func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
@@ -30,3 +30,6 @@ func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.Data
 	{{: "modelBase/modelBase.tmpl" }}
 }
 
+func (n *ModelBaseTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}

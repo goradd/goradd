@@ -5,8 +5,8 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
 	if !o._restored {
 		panic ("Cannot delete a record that has no primary key value.")
 	}
-	db := db.GetDatabase("{{t.DbKey}}")
-	db.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn.DbName }}", o.{{= t.PrimaryKeyColumn.VarName }})
+	d := db.GetDatabase("{{t.DbKey}}")
+	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn.DbName }}", o.{{= t.PrimaryKeyColumn.VarName }})
 }
 
 }}

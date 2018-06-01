@@ -245,9 +245,15 @@ func (r SqlReceiver) TimeI() interface{} {
 	switch r.R.(type) {
 	case string:
 		s:= string(r.R.(string))
+		if s == "CURRENT_TIMESTAMP" {
+			return nil	// database itself is handling the setting of the time
+		}
 		return datetime.FromSqlDateTime(s)
 	case []byte:
 		s:= string(r.R.([]byte)[:])
+		if s == "CURRENT_TIMESTAMP" {
+			return nil	// database itself is handling the setting of the time
+		}
 		return datetime.FromSqlDateTime(s)
 	default:
 		log.Panicln("Unknown type returned from sql driver")

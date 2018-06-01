@@ -22,8 +22,8 @@ func (o *{{privateName}}Base) Update(ctx context.Context) {
 	if len(m) == 0 {
 		return
 	}
-	db := db.GetDatabase("{{t.DbKey}}")
-	db.Update(ctx, "{{t.DbName}}", m, "{{= t.PrimaryKeyColumn.DbName }}", fmt.Sprint(o.{{= t.PrimaryKeyColumn.VarName }}))
+	d := db.GetDatabase("{{t.DbKey}}")
+	d.Update(ctx, "{{t.DbName}}", m, "{{= t.PrimaryKeyColumn.DbName }}", fmt.Sprint(o.{{= t.PrimaryKeyColumn.VarName }}))
 	o.resetDirtyStatus()
 }
 
@@ -34,12 +34,12 @@ func (o *{{privateName}}Base) Insert(ctx context.Context) {
 	if len(m) == 0 {
 		return
 	}
-	db := db.GetDatabase("{{t.DbKey}}")
+	d := db.GetDatabase("{{t.DbKey}}")
 {{if t.PrimaryKeyColumn.IsId }}
-	id := db.Insert(ctx, "{{t.DbName}}", m)
+	id := d.Insert(ctx, "{{t.DbName}}", m)
 	o.{{= t.PrimaryKeyColumn.VarName }} = id
 {{else}}
-	db.Insert(ctx, "{{t.DbName}}", m)
+	d.Insert(ctx, "{{t.DbName}}", m)
 {{if}}
 	o.resetDirtyStatus()
 	o._restored = true
@@ -52,7 +52,7 @@ func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}
 for _,col := range t.Columns {
 {{
 	if o.{{= col.VarName }}IsDirty {
-		fields["{{= col.DbName }}"] = o.{{= col.VarName }}
+		fields["{{= col.DbName }}"] = {{if col.GoType == query.COL_TYPE_DATETIME }}o.{{= col.VarName }}.GoTime(){{else}}o.{{= col.VarName }}{{if}}
 	}
 
 }}

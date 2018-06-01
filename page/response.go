@@ -334,17 +334,25 @@ func (r *Response)  MarshalJSON() (buf []byte, err error) {
 		if r.controls != nil {
 			reply[ResponseControls] = r.controls
 		}
+
+		if r.newLocation != "" {
+			reply[ResponseLocation] = r.newLocation
+		}
+
+		if r.winClose {
+			reply[ResponseClose] = 1
+		}
 	}
 
 	return json.Marshal(reply)
 }
 
 
-func (r *Response) setLocation(newLocation string) {
+func (r *Response) SetLocation(newLocation string) {
 	r.newLocation = newLocation
 }
 
-func (r *Response) closeWindow() {
+func (r *Response) CloseWindow() {
 	r.winClose = true
 }
 

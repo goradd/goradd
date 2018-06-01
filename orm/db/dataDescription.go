@@ -179,10 +179,10 @@ type ReverseReference struct {
 
 
 type IndexDescription struct {
-	keyName string
-	isUnique bool
-	isPrimary bool
-	columnNames []string
+	KeyName     string
+	IsUnique    bool
+	IsPrimary   bool
+	ColumnNames []string
 }
 
 // Describes a foreign key relationship between columns in one table and columns in a different table
@@ -293,7 +293,9 @@ func (dd *DatabaseDescription) analyzeTables() {
 		if !td.IsAssociation {
 			dd.analyzeTable(td)
 		}
-		dd.tableMap[td.DbName] = td
+		if !td.Skip {
+			dd.tableMap[td.DbName] = td
+		}
 	}
 
 	for _,td := range dd.tableMap {
@@ -330,6 +332,12 @@ func (dd *DatabaseDescription) analyzeTable(td *TableDescription)  {
 	if td.EnglishPlural == "" {
 		td.EnglishPlural = dd.dbNameToEnglishPlural(td.DbName)
 	}
+
+	if td.EnglishName == td.EnglishPlural {
+		log.Print("Error: table " + td.DbName + " is a plural name. Change it to a singular name.")
+		td.Skip = true
+	}
+
 	if td.GoName == "" {
 		td.GoName = dd.dbNameToGoName(td.DbName)
 		td.LcGoName = strings.ToLower(td.GoName[:1]) + td.GoName[1:]
@@ -619,7 +627,7 @@ func (cd *ColumnDescription) DefaultValueAsConstant() string {
 				return "datetime.Zero"
 			} else {
 				s := string(b[:])
-				return s
+				return fmt.Sprintf("%#v", s)
 			}
 		}
 	} else if cd.DefaultValue == nil {

@@ -348,6 +348,11 @@ func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 	f.response.displayAlert(msg)
 }
 
+func (f *FormBase) Redirect(url string) {
+	f.response.SetLocation(url)
+}
+
+
 // Response returns the form's response object that you can use to queue up javascript commands to the browser to be sent on
 // the next ajax or server request
 func (f *FormBase) Response() *Response {

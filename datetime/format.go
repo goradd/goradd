@@ -46,6 +46,10 @@ func FromSqlDateTime(s string) DateTime {
 	var err error
 	var hasDate, hasTime, hasNano bool
 
+	if strings.ToUpper(s) == "CURRENT_TIMESTAMP" {
+		return NewDateTime(Current)
+	}
+
 	if strings.Contains(s, ".") {
 		hasNano = true
 	}

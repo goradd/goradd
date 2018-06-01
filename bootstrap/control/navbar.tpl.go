@@ -19,6 +19,7 @@ func (b *Navbar) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error
 	if b.brandLocation == NavbarCollapsedBrandHidden {
 		b.drawBrand(ctx, buf)
 	}
+
 	buf.WriteString(`		`)
 
 	{
@@ -59,8 +60,10 @@ func (b *Navbar) drawBrand(ctx context.Context, buf *bytes.Buffer) {
 		if b.headerAnchor == "" {
 			buf.WriteString(`#`)
 		} else {
+
 			buf.WriteString(b.headerAnchor)
 		}
+
 		buf.WriteString(`">`)
 		b.DrawText(ctx, buf)
 		buf.WriteString(`</a>

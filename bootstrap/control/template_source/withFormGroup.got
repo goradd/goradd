@@ -3,8 +3,9 @@ package control
 import (
 	"context"
 	"bytes"
-	"github.com/spekary/goradd/html"
+	grhtml "github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
+	"html"
 )
 
 func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.ControlI, h string, buf *bytes.Buffer) {
@@ -18,26 +19,38 @@ func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.Con
 {{
 <div id="{{= ctrl.ID() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
 {{if ctrl.Label() != "" }}
-  <label id="{{= ctrl.ID() }}_lbl" {{if ctrl.HasFor() }} for="{{= ctrl.ID() }}"{{if}} {{if wrapper.HasLabelAttributes() }}{{= wrapper.LabelAttributes().String() }}{{if}}>{{= ctrl.Label() }}</label>
+  <label id="{{= ctrl.ID() }}_lbl" {{if ctrl.HasFor() }} for="{{= ctrl.ID() }}"{{if}} {{if wrapper.HasLabelAttributes() }}{{= wrapper.LabelAttributes().String() }}{{if}}>{{!= ctrl.Label() }}</label>
 {{else}}
     {{if ctrl.HasAttribute("placeholder")}}
-  <label id="{{= ctrl.ID() }}_lbl" {{if ctrl.HasFor() }} for="{{= ctrl.ID() }}"{{if}} class="sr-only">{{= ctrl.Attribute("placeholder") }}</label>
+  <label id="{{= ctrl.ID() }}_lbl" {{if ctrl.HasFor() }} for="{{= ctrl.ID() }}"{{if}} class="sr-only">{{!= ctrl.Attribute("placeholder") }}</label>
     {{if}}
 {{if}}
 
 {{if hasInnerDivAttributes }}<div {{= wrapper.InnerDivAttributes().String() }}>{{if}}
-{{= html.Indent(h) }}
+{{= grhtml.Indent(h) }}
 {{if hasInnerDivAttributes }}</div>{{if}}
 
 {{g
     switch ctrl.ValidationState() {
     case page.Valid:
-      {{ <div id="{{= ctrl.ID() }}_err" class="{{if wrapper.useTooltips}}valid-tooltip{{else}}valid-feedback{{if}}">{{= ctrl.ValidationMessage() }}</div> }}
+        msg := ctrl.ValidationMessage()
+        if msg == "" {
+            msg = "&nbsp";
+        } else {
+            msg = html.EscapeString(msg)
+        }
+      {{ <div id="{{= ctrl.ID() }}_err" class="{{if wrapper.useTooltips}}valid-tooltip{{else}}valid-feedback{{if}}">{{= msg }}</div> }}
     case page.Invalid:
-      {{ <div id="{{= ctrl.ID() }}_err" class="{{if wrapper.useTooltips}}invalid-tooltip{{else}}invalid-feedback{{if}}">{{= ctrl.ValidationMessage() }}</div> }}
+         msg := ctrl.ValidationMessage()
+         if msg == "" {
+             msg = "&nbsp";
+         } else {
+            msg = html.EscapeString(msg)
+         }
+     {{ <div id="{{= ctrl.ID() }}_err" class="{{if wrapper.useTooltips}}invalid-tooltip{{else}}invalid-feedback{{if}}">{{= msg }}</div> }}
     default:
         // Either draw instructions, or draw an empty space so that if a validation error is shown, the layout will not shift
-        {{ <small id="{{= ctrl.ID() }}_inst" class="form-text text-muted" >{{if (!hasInstructions && !wrapper.useTooltips) }}&nbsp;{{else}}{{= ctrl.Instructions() }}{{if}}</small> }}
+        {{ <small id="{{= ctrl.ID() }}_inst" class="form-text text-muted" >{{if (!hasInstructions && !wrapper.useTooltips) }}&nbsp;{{else}}{{!= ctrl.Instructions() }}{{if}}</small> }}
     }
 }}
 </div>

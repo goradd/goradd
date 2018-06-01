@@ -19,7 +19,7 @@ func init() {
 	t := ModelBaseTemplate{
 		generator.Template{
 			Overwrite: true,
-			TargetDir: config.LocalDir + "/model",
+			TargetDir: config.LocalDir + "/gen",
 		},
 	}
 	generator.AddTableTemplate(&t)
@@ -29,8 +29,8 @@ type ModelBaseTemplate struct {
 	generator.Template
 }
 
-func (n *ModelBaseTemplate) FileName(t *db.TableDescription) string {
-	return n.TargetDir + "/" + t.GoName + ".base.go"
+func (n *ModelBaseTemplate) FileName(key string, t *db.TableDescription) string {
+	return n.TargetDir + "/" + key + "/model/" + t.GoName + ".base.go"
 }
 
 func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
@@ -53,7 +53,11 @@ func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.Data
 // This file is code generated. Do not edit.
 
 import (
-	"goradd/model/node"
+	"goradd/gen/`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+
+	buf.WriteString(`/model/node"
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/orm/query"
 	"context"
@@ -65,6 +69,7 @@ import (
 		buf.WriteString(`	"github.com/spekary/goradd/datetime"
 `)
 	}
+
 	buf.WriteString(`	"github.com/spekary/goradd/util/types"
 )
 
@@ -91,7 +96,6 @@ type `)
 
 	for _, col := range t.Columns {
 
-		buf.WriteString(``)
 		if col.IsId {
 			buf.WriteString(`	`)
 
@@ -100,6 +104,7 @@ type `)
 			buf.WriteString(` string
 `)
 		} else {
+
 			buf.WriteString(`	`)
 
 			buf.WriteString(col.VarName)
@@ -111,7 +116,6 @@ type `)
 			buf.WriteString(`
 `)
 		}
-		buf.WriteString(``)
 		if col.IsNullable {
 			buf.WriteString(`	`)
 
@@ -120,6 +124,7 @@ type `)
 			buf.WriteString(`IsNull bool
 `)
 		}
+
 		buf.WriteString(`	`)
 
 		buf.WriteString(col.VarName)
@@ -165,8 +170,6 @@ type `)
 
 			buf.WriteString(fmt.Sprintf("%v", dd.AssociatedObjectPrefix))
 
-			buf.WriteString(``)
-
 			buf.WriteString(ref.GoName)
 
 			buf.WriteString(` *`)
@@ -181,8 +184,6 @@ type `)
 			buf.WriteString(`	`)
 
 			buf.WriteString(fmt.Sprintf("%v", dd.AssociatedObjectPrefix))
-
-			buf.WriteString(``)
 
 			buf.WriteString(ref.GoPlural)
 
@@ -219,15 +220,12 @@ type `)
 
 		buf.WriteString(fmt.Sprintf("%v", dd.AssociatedObjectPrefix))
 
-		buf.WriteString(``)
-
 		buf.WriteString(fmt.Sprintf("%v", ref.GoPlural))
 
 		buf.WriteString(` []`)
 		if !ref.IsTypeAssociation {
 			buf.WriteString(`*`)
 		}
-		buf.WriteString(``)
 
 		buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
 
@@ -245,6 +243,7 @@ type `)
 			buf.WriteString(`					  // Objects by PK
 `)
 		}
+
 	} // for
 
 	buf.WriteString(`
@@ -346,7 +345,6 @@ func (o *`)
 		buf.WriteString(`
 `)
 		if col.IsNullable {
-			buf.WriteString(``)
 			if col.DefaultValue == nil {
 				buf.WriteString(`	o.`)
 
@@ -365,6 +363,7 @@ func (o *`)
 				buf.WriteString(`IsDirty = true
 `)
 			} else {
+
 				buf.WriteString(`	o.`)
 
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
@@ -382,9 +381,7 @@ func (o *`)
 				buf.WriteString(`IsDirty = true
 `)
 			}
-			buf.WriteString(``)
 		} else {
-			buf.WriteString(``)
 			if col.DefaultValue == nil {
 				buf.WriteString(`	o.`)
 
@@ -398,6 +395,7 @@ func (o *`)
 				buf.WriteString(`IsDirty = false
 `)
 			} else {
+
 				buf.WriteString(`	o.`)
 
 				buf.WriteString(fmt.Sprintf("%v", col.VarName))
@@ -410,11 +408,12 @@ func (o *`)
 				buf.WriteString(`IsDirty = true
 `)
 			}
-			buf.WriteString(``)
 		}
+
 		buf.WriteString(`
 `)
 	}
+
 	buf.WriteString(`
 
 	o._restored = false
@@ -1575,7 +1574,7 @@ func (o *`)
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
 
 	buf.WriteString(` {
-	results := Query`)
+	return Query`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.GoPlural))
 
@@ -1587,13 +1586,100 @@ func (o *`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.PrimaryKeyColumn.GoName))
 
-	buf.WriteString(`(), id)).Load(ctx)
-	if results != nil && len(results) > 0 {
-		return results[0]
-	} else {
-		return nil
-	}
+	buf.WriteString(`(), id)).Get(ctx)
 }
+
+`)
+	if t.Indexes != nil {
+		for _, idx := range t.Indexes {
+			if !idx.IsPrimary && idx.IsUnique {
+				var names string
+
+				for _, name := range idx.ColumnNames {
+					names += snaker.SnakeToCamel(name)
+				}
+
+				buf.WriteString(`func Load`)
+
+				buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+				buf.WriteString(`By`)
+				for _, name := range idx.ColumnNames {
+					buf.WriteString(snaker.SnakeToCamel(name))
+				}
+
+				buf.WriteString(` (ctx context.Context`)
+				for _, name := range idx.ColumnNames {
+					buf.WriteString(`, `)
+
+					buf.WriteString(name)
+
+					buf.WriteString(` `)
+
+					buf.WriteString(string(t.GetColumn(name).GoType))
+
+					buf.WriteString(` `)
+				}
+
+				buf.WriteString(`) *`)
+
+				buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+				buf.WriteString(` {
+    return Query`)
+
+				buf.WriteString(fmt.Sprintf("%v", t.GoPlural))
+
+				buf.WriteString(`().
+`)
+				if len(idx.ColumnNames) == 1 {
+					buf.WriteString(`        Where(Equal(node.`)
+
+					buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+					buf.WriteString(`().`)
+
+					buf.WriteString(snaker.SnakeToCamel(idx.ColumnNames[0]))
+
+					buf.WriteString(`(), `)
+
+					buf.WriteString(idx.ColumnNames[0])
+
+					buf.WriteString(`)).
+`)
+				} else {
+
+					buf.WriteString(`        Where(And(`)
+					for _, name := range idx.ColumnNames {
+						buf.WriteString(`Equal(node.`)
+
+						buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+						buf.WriteString(`().`)
+
+						buf.WriteString(snaker.SnakeToCamel(name))
+
+						buf.WriteString(`(), `)
+
+						buf.WriteString(name)
+
+						buf.WriteString(`), `)
+					}
+
+					buf.WriteString(`)).
+`)
+				}
+
+				buf.WriteString(`        Get(ctx)
+}
+`)
+
+			}
+		}
+	}
+
+	buf.WriteString(`
+
 
 func Query`)
 
@@ -1757,7 +1843,11 @@ func (b *`)
 
 	buf.WriteString(` {
 	results := b.Limit(1,0).Load(ctx)
-	return results[0]
+	if results != nil && len(results) > 0 {
+		return results[0]
+	} else {
+		return nil
+	}
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
@@ -2122,8 +2212,16 @@ func (o *`)
 			buf.WriteString(col.ForeignKey.GoType)
 
 			buf.WriteString(`)
-		o.idIsValid = true
-		o.idIsDirty = false
+		o.`)
+
+			buf.WriteString(col.VarName)
+
+			buf.WriteString(`IsValid = true
+		o.`)
+
+			buf.WriteString(col.VarName)
+
+			buf.WriteString(`IsDirty = false
 	} else if v, ok := m["`)
 
 			buf.WriteString(col.ForeignKey.GoName)
@@ -2160,8 +2258,16 @@ func (o *`)
 			buf.WriteString(fmt.Sprintf("%v", col.ForeignKey.RR.GoPlural))
 
 			buf.WriteString(`")
-			o.idIsValid = true
-			o.idIsDirty = false
+			o.`)
+
+			buf.WriteString(col.VarName)
+
+			buf.WriteString(`IsValid = true
+			o.`)
+
+			buf.WriteString(col.VarName)
+
+			buf.WriteString(`IsDirty = false
 		} else {
 			panic("Wrong type found for `)
 
@@ -2416,7 +2522,7 @@ func (o *`)
 		} else {
 			oName := dd.AssociatedObjectPrefix + ref.GoPlural
 			mName := "m" + ref.GoPlural
-			pk := dd.TableDescription(ref.DbTable).GetColumn(ref.DbColumn).VarName
+			pk := dd.TableDescription(ref.AssociatedTableName).GetColumn(ref.AssociatedColumnName).VarName
 
 			buf.WriteString(`	if v, ok := m["`)
 
@@ -2618,12 +2724,12 @@ func (o *`)
 	if len(m) == 0 {
 		return
 	}
-	db := db.GetDatabase("`)
+	d := db.GetDatabase("`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
 
 	buf.WriteString(`")
-	db.Update(ctx, "`)
+	d.Update(ctx, "`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.DbName))
 
@@ -2650,14 +2756,14 @@ func (o *`)
 	if len(m) == 0 {
 		return
 	}
-	db := db.GetDatabase("`)
+	d := db.GetDatabase("`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
 
 	buf.WriteString(`")
 `)
 	if t.PrimaryKeyColumn.IsId {
-		buf.WriteString(`	id := db.Insert(ctx, "`)
+		buf.WriteString(`	id := d.Insert(ctx, "`)
 
 		buf.WriteString(fmt.Sprintf("%v", t.DbName))
 
@@ -2669,13 +2775,15 @@ func (o *`)
 		buf.WriteString(` = id
 `)
 	} else {
-		buf.WriteString(`	db.Insert(ctx, "`)
+
+		buf.WriteString(`	d.Insert(ctx, "`)
 
 		buf.WriteString(fmt.Sprintf("%v", t.DbName))
 
 		buf.WriteString(`", m)
 `)
 	}
+
 	buf.WriteString(`	o.resetDirtyStatus()
 	o._restored = true
 }
@@ -2699,12 +2807,21 @@ func (o *`)
 
 		buf.WriteString(col.DbName)
 
-		buf.WriteString(`"] = o.`)
+		buf.WriteString(`"] = `)
+		if col.GoType == query.COL_TYPE_DATETIME {
+			buf.WriteString(`o.`)
 
-		buf.WriteString(col.VarName)
+			buf.WriteString(col.VarName)
 
-		buf.WriteString(`
-	}
+			buf.WriteString(`.GoTime()`)
+		} else {
+
+			buf.WriteString(`o.`)
+
+			buf.WriteString(col.VarName)
+		}
+
+		buf.WriteString(`	}
 
 `)
 
@@ -2746,12 +2863,12 @@ func (o *`)
 	if !o._restored {
 		panic ("Cannot delete a record that has no primary key value.")
 	}
-	db := db.GetDatabase("`)
+	d := db.GetDatabase("`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
 
 	buf.WriteString(`")
-	db.Delete(ctx, "`)
+	d.Delete(ctx, "`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.DbName))
 
@@ -2899,4 +3016,8 @@ func (o *`)
 }
 `)
 
+}
+
+func (n *ModelBaseTemplate) Overwrite() bool {
+	return n.Template.Overwrite
 }

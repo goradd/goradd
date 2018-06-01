@@ -34,6 +34,7 @@ type Session struct {
 }
 
 // NewSession creates a new session object for use by session managers. You should not normally need to call this.
+// To reset the session data, call Reset()
 func NewSession() *Session {
 	return &Session{types.NewSafeMap()}
 }

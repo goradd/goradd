@@ -2,11 +2,11 @@ package db
 
 import (
 	"testing"
-	"goradd/model"
+	"goradd/gen/goradd/model"
 	"github.com/stretchr/testify/assert"
 	"context"
 	. 	"github.com/spekary/goradd/orm/op"
-	"goradd/model/node"
+	"goradd/gen/goradd/model/node"
 	//"github.com/spekary/goradd/orm/db"
 	//"goradd/datetime"
 	//"github.com/spekary/goradd/datetime"

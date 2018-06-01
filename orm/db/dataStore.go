@@ -28,8 +28,8 @@ type DatabaseI interface {
 
 var datastore struct {
 	databases map[string]DatabaseI
-	tables map[string]*TableDescription
-	typeTables map[string]*TypeTableDescription
+	tables map[string]map[string]*TableDescription
+	typeTables map[string]map[string]*TypeTableDescription
 }
 
 
@@ -51,16 +51,16 @@ func GetDatabases() map[string]DatabaseI {
 }
 
 
-func GetTableDescription(goTypeName string) *TableDescription {
-	td, ok := datastore.tables[goTypeName]
+func GetTableDescription(key string, goTypeName string) *TableDescription {
+	td, ok := datastore.tables[key][goTypeName]
 	if !ok {
 		return nil
 	}
 	return td
 }
 
-func GetTypeTableDescription(goTypeName string) *TypeTableDescription {
-	td, ok := datastore.typeTables[goTypeName]
+func GetTypeTableDescription(key string, goTypeName string) *TypeTableDescription {
+	td, ok := datastore.typeTables[key][goTypeName]
 	if !ok {
 		return nil
 	}
@@ -69,23 +69,25 @@ func GetTypeTableDescription(goTypeName string) *TypeTableDescription {
 
 func AnalyzeDatabases() {
 	var dd *DatabaseDescription
-	for _, database := range datastore.databases {
+	datastore.tables = make(map[string]map[string]*TableDescription)
+	datastore.typeTables = make(map[string]map[string]*TypeTableDescription)
+	for key, database := range datastore.databases {
 		dd = database.Describe()
-		datastore.tables = make(map[string]*TableDescription)
-		datastore.typeTables = make(map[string]*TypeTableDescription)
+		datastore.tables[key] = make(map[string]*TableDescription)
+		datastore.typeTables[key] = make(map[string]*TypeTableDescription)
 		for _,td := range dd.Tables {
-			if !td.IsAssociation {	// association tables are private to individual databases
-				if _,ok := datastore.tables[td.GoName]; ok {
-					log.Panic("Table " + td.GoName + " already exists.")
+			if !td.IsAssociation {
+				if _,ok := datastore.tables[key][td.GoName]; ok {
+					log.Panic("Table " + key + ":" + td.GoName + " already exists.")
 				}
-				datastore.tables[td.GoName] = td
+				datastore.tables[key][td.GoName] = td
 			}
 		}
 		for _,td := range dd.TypeTables {
-			if _,ok := datastore.typeTables[td.GoName]; ok {
-				log.Panic("TypeTable " + td.GoName + " already exists.")
+			if _,ok := datastore.typeTables[key][td.GoName]; ok {
+				log.Panic("TypeTable " + key + ":" + td.GoName + " already exists.")
 			}
-			datastore.typeTables[td.GoName] = td
+			datastore.typeTables[key][td.GoName] = td
 		}
 	}
 

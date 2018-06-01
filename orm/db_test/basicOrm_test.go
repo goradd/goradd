@@ -3,11 +3,11 @@ package db
 import (
 	"testing"
 	"github.com/go-sql-driver/mysql"
-	"goradd/model"
+	"goradd/gen/goradd/model"
 	"context"
 	"github.com/spekary/goradd/orm/db"
 
-	"goradd/model/node"
+	"goradd/gen/goradd/model/node"
 	"strconv"
 	. 	"github.com/spekary/goradd/orm/op"
 
@@ -25,7 +25,7 @@ func init() {
 	cfg.User = "root"
 	cfg.Passwd = "12345"
 
-	key := "main"
+	key := "goradd"
 
 	db1 := db.NewMysql5(key, "", cfg)
 

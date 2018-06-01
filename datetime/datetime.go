@@ -87,3 +87,6 @@ func (d DateTime) MarshalJSON() (buf []byte, err error) {
 	// TODO: Deal with timezones vs. local time. As of 2017, there still is not a good consistent javascript way of discovering the browser timezone.
 }
 
+func (d DateTime) GoTime() time.Time {
+	return d.Time
+}

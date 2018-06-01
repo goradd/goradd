@@ -5,8 +5,9 @@ package control
 import (
 	"bytes"
 	"context"
+	"html"
 
-	"github.com/spekary/goradd/html"
+	grhtml "github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 )
 
@@ -42,17 +43,20 @@ func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.Con
 
 			buf.WriteString(`"`)
 		}
+
 		buf.WriteString(` `)
 		if wrapper.HasLabelAttributes() {
 			buf.WriteString(wrapper.LabelAttributes().String())
 		}
+
 		buf.WriteString(`>`)
 
-		buf.WriteString(ctrl.Label())
+		buf.WriteString(html.EscapeString(ctrl.Label()))
 
 		buf.WriteString(`</label>
 `)
 	} else {
+
 		buf.WriteString(`    `)
 		if ctrl.HasAttribute("placeholder") {
 			buf.WriteString(`  <label id="`)
@@ -67,14 +71,16 @@ func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.Con
 
 				buf.WriteString(`"`)
 			}
+
 			buf.WriteString(` class="sr-only">`)
 
-			buf.WriteString(ctrl.Attribute("placeholder"))
+			buf.WriteString(html.EscapeString(ctrl.Attribute("placeholder")))
 
 			buf.WriteString(`</label>
     `)
 		}
 	}
+
 	buf.WriteString(`
 `)
 	if hasInnerDivAttributes {
@@ -84,17 +90,25 @@ func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.Con
 
 		buf.WriteString(`>`)
 	}
-	buf.WriteString(html.Indent(h))
+
+	buf.WriteString(grhtml.Indent(h))
 
 	buf.WriteString(`
 `)
 	if hasInnerDivAttributes {
 		buf.WriteString(`</div>`)
 	}
+
 	buf.WriteString(`
 `)
 	switch ctrl.ValidationState() {
 	case page.Valid:
+		msg := ctrl.ValidationMessage()
+		if msg == "" {
+			msg = "&nbsp"
+		} else {
+			msg = html.EscapeString(msg)
+		}
 
 		buf.WriteString(`<div id="`)
 
@@ -104,15 +118,23 @@ func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.Con
 		if wrapper.useTooltips {
 			buf.WriteString(`valid-tooltip`)
 		} else {
+
 			buf.WriteString(`valid-feedback`)
 		}
+
 		buf.WriteString(`">`)
 
-		buf.WriteString(ctrl.ValidationMessage())
+		buf.WriteString(msg)
 
 		buf.WriteString(`</div>`)
 
 	case page.Invalid:
+		msg := ctrl.ValidationMessage()
+		if msg == "" {
+			msg = "&nbsp"
+		} else {
+			msg = html.EscapeString(msg)
+		}
 
 		buf.WriteString(`<div id="`)
 
@@ -122,11 +144,13 @@ func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.Con
 		if wrapper.useTooltips {
 			buf.WriteString(`invalid-tooltip`)
 		} else {
+
 			buf.WriteString(`invalid-feedback`)
 		}
+
 		buf.WriteString(`">`)
 
-		buf.WriteString(ctrl.ValidationMessage())
+		buf.WriteString(msg)
 
 		buf.WriteString(`</div>`)
 
@@ -141,8 +165,10 @@ func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.Con
 		if !hasInstructions && !wrapper.useTooltips {
 			buf.WriteString(`&nbsp;`)
 		} else {
-			buf.WriteString(ctrl.Instructions())
+
+			buf.WriteString(html.EscapeString(ctrl.Instructions()))
 		}
+
 		buf.WriteString(`</small>`)
 
 	}
