@@ -6,6 +6,8 @@ import (
 	"github.com/spekary/goradd"
 	. "github.com/spekary/goradd/orm/query"
 	"time"
+	"fmt"
+	"strings"
 )
 
 type SqlDbI interface {
@@ -150,6 +152,12 @@ func (s *SqlDb) Exec(ctx context.Context, sql string, args ...interface{}) (r sq
 	var endTime = time.Now()
 
 	if c != nil && s.profiling {
+		if args != nil {
+			for _,arg := range args {
+				sql = strings.TrimSpace(sql)
+				sql += fmt.Sprintf(",\n%#v", arg)
+			}
+		}
 		c.profiles = append(c.profiles, ProfileEntry{DbKey: s.dbKey, BeginTime: beginTime, EndTime: endTime, Typ: "Exec", Sql: sql})
 	}
 
@@ -192,6 +200,12 @@ func (s *SqlDb) Query(ctx context.Context, sql string, args ...interface{}) (r *
 	}
 	var endTime = time.Now()
 	if c != nil && s.profiling {
+		if args != nil {
+			for _,arg := range args {
+				sql = strings.TrimSpace(sql)
+				sql += fmt.Sprintf(",\n%#v", arg)
+			}
+		}
 		c.profiles = append(c.profiles, ProfileEntry{DbKey: s.dbKey, BeginTime: beginTime, EndTime: endTime, Typ: "Query", Sql: sql})
 	}
 
