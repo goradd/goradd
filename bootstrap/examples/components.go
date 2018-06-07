@@ -3,22 +3,20 @@ package examples
 import (
 	"context"
 	"github.com/spekary/goradd/page"
-	localPage "goradd/page"
 	grctl "github.com/spekary/goradd/page/control"
+	localPage "goradd/page"
 
 	bootstrap "github.com/spekary/goradd/bootstrap/control"
 )
 
-
 const COMPONENTS_PATH = "/bootstrap/components"
 const COMPONENTS_ID = "ComponentsForm"
 
-const (
-)
+const ()
 
 type ComponentsForm struct {
 	localPage.FormBase
-	ButtonPanel	*grctl.Fieldset
+	ButtonPanel *grctl.Fieldset
 }
 
 func NewComponentsForm(ctx context.Context) page.FormI {
@@ -37,8 +35,6 @@ func (f *ComponentsForm) Action(ctx context.Context, a page.ActionParams) {
 	}
 }
 
-
 func init() {
 	page.RegisterPage(COMPONENTS_PATH, NewComponentsForm, COMPONENTS_ID)
 }
-

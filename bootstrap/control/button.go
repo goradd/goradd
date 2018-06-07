@@ -1,15 +1,16 @@
 package control
 
 import (
-	grctl "github.com/spekary/goradd/page/control"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
+	grctl "github.com/spekary/goradd/page/control"
 	"goradd/app"
 )
+
 type Button struct {
 	grctl.Button
 	style ButtonStyle
-	size ButtonSize
+	size  ButtonSize
 }
 
 const ButtonClass = "btn"
@@ -17,32 +18,32 @@ const ButtonClass = "btn"
 type ButtonStyle string
 
 const (
-	ButtonStylePrimary ButtonStyle = "btn-primary"
-	ButtonStyleSecondary = "btn-secondary"
-	ButtonStyleSuccess = "btn-success"
-	ButtonStyleInfo = "btn-info"
-	ButtonStyleWarning = "btn-warning"
-	ButtonStyleDanger = "btn-danger"
-	ButtonStyleLight = "btn-light"
-	ButtonStyleDark = "btn-dark"
-	ButtonStyleLink = "btn-link"
+	ButtonStylePrimary   ButtonStyle = "btn-primary"
+	ButtonStyleSecondary             = "btn-secondary"
+	ButtonStyleSuccess               = "btn-success"
+	ButtonStyleInfo                  = "btn-info"
+	ButtonStyleWarning               = "btn-warning"
+	ButtonStyleDanger                = "btn-danger"
+	ButtonStyleLight                 = "btn-light"
+	ButtonStyleDark                  = "btn-dark"
+	ButtonStyleLink                  = "btn-link"
 
-	ButtonStyleOutlinePrimary = "btn-outline-primary"
+	ButtonStyleOutlinePrimary   = "btn-outline-primary"
 	ButtonStyleOutlineSecondary = "btn-outline-secondary"
-	ButtonStyleOutlineSuccess = "btn-outline-success"
-	ButtonStyleOutlineInfo = "btn-outline-info"
-	ButtonStyleOutlineWarning = "btn-outline-warning"
-	ButtonStyleOutlineDanger = "btn-outline-danger"
-	ButtonStyleOutlineLight = "btn-outline-light"
-	ButtonStyleOutlineDark = "btn-outline-dark"
+	ButtonStyleOutlineSuccess   = "btn-outline-success"
+	ButtonStyleOutlineInfo      = "btn-outline-info"
+	ButtonStyleOutlineWarning   = "btn-outline-warning"
+	ButtonStyleOutlineDanger    = "btn-outline-danger"
+	ButtonStyleOutlineLight     = "btn-outline-light"
+	ButtonStyleOutlineDark      = "btn-outline-dark"
 )
 
 type ButtonSize string
 
 const (
-	ButtonSizeLarge ButtonSize = "btn-lg"
-	ButtonSizeMedium= ""
-	ButtonSizeSmall= "btn-sm"
+	ButtonSizeLarge  ButtonSize = "btn-lg"
+	ButtonSizeMedium            = ""
+	ButtonSizeSmall             = "btn-sm"
 )
 
 // Add ButtonBlock as a class to a button to make it span a full block
@@ -62,12 +63,12 @@ func (b *Button) Init(self page.ControlI, parent page.ControlI) {
 }
 
 // SetButtonStyle will set the button's style to one of the predefined bootstrap styles.
-func (b *Button) SetButtonStyle (style ButtonStyle) {
+func (b *Button) SetButtonStyle(style ButtonStyle) {
 	b.style = style
 }
 
 // SetButtonsSize sets the size class of the button.
-func (b *Button) SetButtonSize (size ButtonSize) {
+func (b *Button) SetButtonSize(size ButtonSize) {
 	b.size = size
 }
 

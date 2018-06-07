@@ -3,36 +3,35 @@ package db
 // Helper utilities for extracting a description out of a database
 
 import (
-	"strings"
-	"encoding/json"
-	"log"
-	"github.com/spekary/goradd/util"
-	"strconv"
 	"database/sql"
+	"encoding/json"
+	"github.com/spekary/goradd/util"
 	"github.com/spekary/goradd/util/types"
+	"log"
+	"strconv"
+	"strings"
 )
 
-
 const (
-	SQL_TYPE_UNKNOWN = "Unknown"
-	SQL_TYPE_BLOB = "Blob"
-	SQL_TYPE_VARCHAR = "VarChar"
-	SQL_TYPE_CHAR = "Char"
-	SQL_TYPE_TEXT = "Text"
-	SQL_TYPE_INTEGER = "Int"
+	SQL_TYPE_UNKNOWN  = "Unknown"
+	SQL_TYPE_BLOB     = "Blob"
+	SQL_TYPE_VARCHAR  = "VarChar"
+	SQL_TYPE_CHAR     = "Char"
+	SQL_TYPE_TEXT     = "Text"
+	SQL_TYPE_INTEGER  = "Int"
 	SQL_TYPE_DATETIME = "DateTime"
-	SQL_TYPE_DATE = "Date"
-	SQL_TYPE_TIME = "Time"
-	SQL_TYPE_FLOAT = "Float"
-	SQL_TYPE_DOUBLE = "Double"
-	SQL_TYPE_BOOL = "Bool"
-	SQL_TYPE_DECIMAL = "Decimal" // a fixed point type
+	SQL_TYPE_DATE     = "Date"
+	SQL_TYPE_TIME     = "Time"
+	SQL_TYPE_FLOAT    = "Float"
+	SQL_TYPE_DOUBLE   = "Double"
+	SQL_TYPE_BOOL     = "Bool"
+	SQL_TYPE_DECIMAL  = "Decimal" // a fixed point type
 )
 
 func getTableDescription(tableName string, tableComment string, db SqlDbI) *TableDescription {
 	var ok bool
 
-	options,err := extractOptions(tableComment)
+	options, err := extractOptions(tableComment)
 
 	if err != nil {
 		log.Print("Error in table comment for table " + tableName + ": " + err.Error())
@@ -44,21 +43,21 @@ func getTableDescription(tableName string, tableComment string, db SqlDbI) *Tabl
 
 	td := NewTableDescription(tableName)
 
-	if td.EnglishName,ok = options.GetString("englishName"); !ok {
+	if td.EnglishName, ok = options.GetString("englishName"); !ok {
 		log.Print("Error in table comment for table " + tableName + ": englishName is not a string")
 	}
 
-	if td.EnglishPlural,ok = options.GetString("englishPlural"); !ok {
+	if td.EnglishPlural, ok = options.GetString("englishPlural"); !ok {
 		log.Print("Error in table comment for table " + tableName + ": EnglishPlural is not a string")
 	}
 
-	if td.GoName,ok = options.GetString("goName"); !ok {
+	if td.GoName, ok = options.GetString("goName"); !ok {
 		log.Print("Error in table comment for table " + tableName + ": goName is not a string")
 	} else {
 		td.GoName = strings.Title(td.GoName)
 	}
 
-	if td.GoPlural,ok = options.GetString("goPlural"); !ok {
+	if td.GoPlural, ok = options.GetString("goPlural"); !ok {
 		log.Print("Error in table comment for table " + tableName + ": goName is not a string")
 	} else {
 		td.GoPlural = strings.Title(td.GoName)
@@ -71,7 +70,6 @@ func getTableDescription(tableName string, tableComment string, db SqlDbI) *Tabl
 	return td
 }
 
-
 // Find the json encoded list of options in the given string
 func extractOptions(comment string) (options *types.OrderedMap, err error) {
 	var optionString string
@@ -80,11 +78,10 @@ func extractOptions(comment string) (options *types.OrderedMap, err error) {
 	options = types.NewOrderedMap()
 
 	if firstIndex != -1 &&
-			lastIndex != -1 &&
-			lastIndex > firstIndex {
+		lastIndex != -1 &&
+		lastIndex > firstIndex {
 
-
-		optionString = comment[firstIndex:lastIndex+1]
+		optionString = comment[firstIndex : lastIndex+1]
 
 		err = json.Unmarshal([]byte(optionString), &options)
 	}
@@ -102,9 +99,9 @@ func getDataDefLength(description string) int {
 	var size string
 	if lenPos = strings.Index(description, "("); lenPos != -1 {
 		lastPos = strings.LastIndex(description, ")")
-		size = description[lenPos + 1:lastPos]
-		sizes := strings.Split(size,",")
-		i,_ := strconv.Atoi(sizes[0])
+		size = description[lenPos+1 : lastPos]
+		sizes := strings.Split(size, ",")
+		i, _ := strconv.Atoi(sizes[0])
 		return i
 	}
 	return 0
@@ -113,7 +110,7 @@ func getDataDefLength(description string) int {
 // Retrieves a numeric value from the options, which is always going to return a float64
 func getNumericOption(o *types.OrderedMap, option string, defaultValue float64) (float64, bool) {
 	if v := o.Get(option); v != nil {
-		if v2,ok := v.(float64); !ok {
+		if v2, ok := v.(float64); !ok {
 			return defaultValue, false
 		} else {
 			return v2, true
@@ -129,7 +126,6 @@ func getBooleanOption(o *types.OrderedMap, option string) (val bool, ok bool) {
 	return
 }
 
-
 // Extracts a minimum and maximum value from the option map, returning defaults if none was found, and making sure
 // the boundaries of anything found are not exceeded
 func getMinMax(o *types.OrderedMap, defaultMin float64, defaultMax float64, tableName string, columnName string) (min float64, max float64) {
@@ -141,7 +137,7 @@ func getMinMax(o *types.OrderedMap, defaultMin float64, defaultMax float64, tabl
 		errString = "table " + tableName + ":" + columnName
 	}
 
-	v, ok := getNumericOption(o,"min", defaultMin)
+	v, ok := getNumericOption(o, "min", defaultMin)
 	if !ok {
 		log.Print("Error in min value in comment for " + errString + ". Value is not a valid number.")
 		min = defaultMin
@@ -154,7 +150,7 @@ func getMinMax(o *types.OrderedMap, defaultMin float64, defaultMax float64, tabl
 		}
 	}
 
-	v, ok = getNumericOption(o,"max", defaultMax)
+	v, ok = getNumericOption(o, "max", defaultMax)
 	if !ok {
 		log.Print("Error in max value in comment for " + errString + ". Value is not a valid number.")
 		max = defaultMax
@@ -173,10 +169,11 @@ func getMinMax(o *types.OrderedMap, defaultMin float64, defaultMax float64, tabl
 func fkRuleToAction(rule sql.NullString) FKAction {
 
 	if !rule.Valid {
-		return FK_ACTION_NONE	// This means we will emulate foreign key actions
+		return FK_ACTION_NONE // This means we will emulate foreign key actions
 	}
 	switch strings.ToUpper(rule.String) {
-	case "NO ACTION":fallthrough
+	case "NO ACTION":
+		fallthrough
 	case "RESTRICT":
 		return FK_ACTION_RESTRICT
 	case "CASCADE":

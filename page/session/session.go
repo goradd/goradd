@@ -1,9 +1,9 @@
 package session
 
 import (
-	"net/http"
 	"context"
 	"github.com/spekary/goradd/util/types"
+	"net/http"
 )
 
 type sessionContextType string
@@ -20,9 +20,8 @@ type ManagerI interface {
 	Use(http.Handler) http.Handler
 }
 
-
 // SetSessionManager injects the given session manager as the global session manager
-func SetSessionManager (m ManagerI) {
+func SetSessionManager(m ManagerI) {
 	sessionManager = m
 }
 
@@ -30,7 +29,7 @@ func SetSessionManager (m ManagerI) {
 // You normally do not work with the Session object, but instead should call session.GetInt, session.SetInt, etc.
 // Session is exported so that it can be created by custom session managers.
 type Session struct {
-	*types.SafeMap	// container for session data
+	*types.SafeMap // container for session data
 }
 
 // NewSession creates a new session object for use by session managers. You should not normally need to call this.
@@ -53,7 +52,7 @@ func (s *Session) UnmarshalBinary(data []byte) error {
 // context in the Request object so that later session requests can get to the session information, and also
 // wraps the given handler in pre and post processing functions. It should be called from your middleware
 // processing stack.
-func Use (next http.Handler) http.Handler {
+func Use(next http.Handler) http.Handler {
 	return sessionManager.Use(next)
 }
 
@@ -138,13 +137,3 @@ func Clear(ctx context.Context) {
 func Reset(ctx context.Context) {
 	getSession(ctx).Set(sessionResetKey, true)
 }
-
-
-
-
-
-
-
-
-
-

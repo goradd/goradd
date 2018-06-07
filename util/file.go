@@ -1,9 +1,9 @@
 package util
 
 import (
-	"os"
-	"io"
 	"fmt"
+	"io"
+	"os"
 	"time"
 )
 
@@ -82,7 +82,7 @@ func FileCopyIfNewer(src, dst string) (err error) {
 			return fmt.Errorf("%s is a directory, not a file. \n", dst)
 		}
 
-		if diff,err = FileModDateCompare(src, dst); diff != 1 || err != nil {
+		if diff, err = FileModDateCompare(src, dst); diff != 1 || err != nil {
 			// either src is older or the same as dst
 			return
 		}

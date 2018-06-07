@@ -2,7 +2,6 @@ package page
 
 import "github.com/spekary/goradd/page/action"
 
-
 // ActionParams are sent to the Action() function in controls in response to a user action.
 type ActionParams struct {
 	// Id is the id assigned when the action is created

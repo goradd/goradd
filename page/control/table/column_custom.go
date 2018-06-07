@@ -1,7 +1,6 @@
 package table
 
-import (
-)
+import ()
 
 // CustomColumn is a table column that you can customize any way you want. You simply give it a CellTexter, and return
 // the text or html from the cell texter.
@@ -23,4 +22,3 @@ func (c *CustomColumn) Init(texter CellTexter, isHtml bool) {
 	c.ColumnBase.isHtml = isHtml
 	c.SetCellTexter(texter)
 }
-

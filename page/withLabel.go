@@ -34,6 +34,7 @@ func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 
 			buf.WriteString(`" `)
 		}
+
 		buf.WriteString(`>`)
 
 		buf.WriteString(ctrl.Label())
@@ -41,6 +42,7 @@ func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 		buf.WriteString(`</label>
 `)
 	}
+
 	buf.WriteString(html.Indent(h))
 
 	buf.WriteString(`
@@ -48,7 +50,7 @@ func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 
 	buf.WriteString(ctrl.ID())
 
-	buf.WriteString(`_err" class="goradd-err">`)
+	buf.WriteString(`_err" class="goradd-error">`)
 
 	buf.WriteString(ctrl.ValidationMessage())
 
@@ -59,13 +61,14 @@ func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 
 		buf.WriteString(ctrl.ID())
 
-		buf.WriteString(`_inst" class="goradd-inst" >`)
+		buf.WriteString(`_inst" class="goradd-instructions" >`)
 
 		buf.WriteString(ctrl.Instructions())
 
 		buf.WriteString(`</div>
 `)
 	}
+
 	buf.WriteString(`</div>
 `)
 

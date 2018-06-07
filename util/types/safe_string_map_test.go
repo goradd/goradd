@@ -1,15 +1,14 @@
 package types
 
 import (
-	"testing"
-	"fmt"
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"fmt"
 	"os"
 	"sort"
+	"testing"
 )
-
 
 func TestSafeStringMap(t *testing.T) {
 	var s string
@@ -17,7 +16,7 @@ func TestSafeStringMap(t *testing.T) {
 	m := NewSafeStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	if s = m.Get("B"); s != "This" {
@@ -34,8 +33,7 @@ func TestSafeStringMap(t *testing.T) {
 		t.Error("Len Failed.")
 	}
 
-
-	if  m.Has ("NOT THERE") {
+	if m.Has("NOT THERE") {
 		t.Error("Getting non-existant value did not return false")
 	}
 
@@ -45,9 +43,8 @@ func TestSafeStringMap(t *testing.T) {
 	}
 
 	if !m.Has("B") {
-		t.Error ("Existance test failed.")
+		t.Error("Existance test failed.")
 	}
-
 
 	// Verify it satisfies the StringMapI interface
 	var i StringMapI = m
@@ -60,7 +57,7 @@ func TestSafeStringMapChange(t *testing.T) {
 	m := NewSafeStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	if changed, _ := m.SetChanged("D", "And another"); !changed {
@@ -79,18 +76,17 @@ func ExampleOrderedSafeStringMap_Set() {
 	// Output Here
 }
 
-
 func ExampleSafeStringMap_Range() {
 	m := NewSafeStringMap()
-	a :=[]string{}
+	a := []string{}
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
-	m.Range(func (key string, val string) bool {
+	m.Range(func(key string, val string) bool {
 		a = append(a, val)
-		return true	// keep iterating to the end
+		return true // keep iterating to the end
 	})
 	fmt.Println()
 
@@ -106,7 +102,7 @@ func ExampleSafeStringMap_MarshalBinary() {
 	var m2 SafeStringMap
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	var buf bytes.Buffer
@@ -125,7 +121,7 @@ func ExampleSafeStringMap_MarshalJSON() {
 	m := NewSafeStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	s, _ := json.Marshal(m)
@@ -151,10 +147,10 @@ func ExampleSafeStringMap_Merge() {
 	m := NewSafeStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
-	m.Merge(StringMap{"D":"Last"})
+	m.Merge(StringMap{"D": "Last"})
 
 	fmt.Println(m.Get("D"))
 	//Output: Last
@@ -163,10 +159,10 @@ func ExampleSafeStringMap_Merge() {
 func ExampleSafeStringMap_Values() {
 	m := NewSafeStringMap()
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
-	values := m.Values();
+	values := m.Values()
 	sort.Sort(sort.StringSlice(values))
 	fmt.Println(values)
 	//Output: [Other That This]
@@ -175,24 +171,24 @@ func ExampleSafeStringMap_Values() {
 func ExampleSafeStringMap_Keys() {
 	m := NewSafeStringMap()
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
-	values := m.Keys();
+	values := m.Keys()
 	sort.Sort(sort.StringSlice(values))
 	fmt.Println(values)
 	//Output: [A B C]
 }
 
 func ExampleNewSafeStringMapFrom() {
-	m := NewSafeStringMapFrom(StringMap{"a":"this","b":"that"})
+	m := NewSafeStringMapFrom(StringMap{"a": "this", "b": "that"})
 	fmt.Println(m.Get("b"))
 	//Output: that
 }
 
 func ExampleSafeStringMap_Equals() {
-	m := NewSafeStringMapFrom(StringMap{"A":"This","B":"That"})
-	n := StringMap{"B":"That", "A":"This"}
+	m := NewSafeStringMapFrom(StringMap{"A": "This", "B": "That"})
+	n := StringMap{"B": "That", "A": "This"}
 	if m.Equals(n) {
 		fmt.Print("Equal")
 	} else {

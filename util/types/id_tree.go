@@ -21,37 +21,36 @@ type Ider interface {
 type node struct {
 	parentId string
 	children []string
-	value Ider
+	value    Ider
 }
 
 func NewIdTree() *IdTree {
-	return &IdTree{nodes: make (map[string]node)}
+	return &IdTree{nodes: make(map[string]node)}
 }
 
 func (t *IdTree) Get(id string) Ider {
 	t.Lock()
 	defer t.Unlock()
 
-	if node,ok := t.nodes[id]; ok {
+	if node, ok := t.nodes[id]; ok {
 		return node.value
 	} else {
 		return nil
 	}
 }
 
-
 // Add an item to the tree.
 func (t *IdTree) Add(parent Ider, child Ider) {
 	var childId string
 
 	if childId = child.ID(); childId == "" {
-		panic ("An item must have an id before it can be added to the tree")
+		panic("An item must have an id before it can be added to the tree")
 	}
 
 	t.Lock()
 	defer t.Unlock()
 
-	if _,ok := t.nodes[childId]; ok {
+	if _, ok := t.nodes[childId]; ok {
 		panic(fmt.Sprintf("An item already exists with the id: %q", childId))
 	}
 
@@ -59,14 +58,14 @@ func (t *IdTree) Add(parent Ider, child Ider) {
 
 	if parent != nil {
 		if parentId = parent.ID(); parentId == "" {
-			panic ("Parent must have an id.")
+			panic("Parent must have an id.")
 		}
 
-		if parentNode,ok := t.nodes[parentId]; !ok {
+		if parentNode, ok := t.nodes[parentId]; !ok {
 			panic("Parent not found in tree.")
 		} else {
 			n := node{parentId, nil, child}
-			t.nodes[childId] = n;
+			t.nodes[childId] = n
 			if parentNode.children == nil {
 				parentNode.children = []string{childId}
 			} else {
@@ -77,10 +76,9 @@ func (t *IdTree) Add(parent Ider, child Ider) {
 	} else {
 		// a top level item
 		n := node{"", nil, child}
-		t.nodes[childId] = n;
+		t.nodes[childId] = n
 	}
 }
-
 
 // Removes the item from the tree and all its sub-itmes
 func (t *IdTree) Remove(item Ider) {
@@ -104,15 +102,14 @@ func (t *IdTree) RemoveChildren(parent Ider) {
 	t.Lock()
 	defer t.Unlock()
 
-	if node,ok := t.nodes[id]; !ok {
+	if node, ok := t.nodes[id]; !ok {
 		panic("The item is not in the tree.")
 	} else if node.children != nil {
-		for _,id2 := range node.children {
+		for _, id2 := range node.children {
 			t.remove(id2)
 		}
 	}
 }
-
 
 func (t *IdTree) remove(id string) {
 	var n node
@@ -127,7 +124,7 @@ func (t *IdTree) remove(id string) {
 			t.remove(childId) // recurse
 		}
 	}
-	delete (t.nodes, id)
+	delete(t.nodes, id)
 }
 
 // GetAll returns a list of all the Ider items in the tree. Order is random.
@@ -138,7 +135,7 @@ func (t *IdTree) GetAll() []Ider {
 	t.Lock()
 	defer t.Unlock()
 
-	for _,n := range t.nodes {
+	for _, n := range t.nodes {
 		l[i] = n.value
 		i++
 	}
@@ -164,7 +161,7 @@ func (t *IdTree) Children(parent Ider) []Ider {
 	defer t.Unlock()
 
 	i := 0
-	for _,childId := range n.children {
+	for _, childId := range n.children {
 		l[i] = t.nodes[childId].value
 		i++
 	}
@@ -199,7 +196,7 @@ func (t *IdTree) Root(child Ider) Ider {
 	t.Lock()
 	defer t.Unlock()
 	for n.parentId != "" {
-		n = t.nodes[n.parentId];
+		n = t.nodes[n.parentId]
 	}
 	return n.value
 }
@@ -208,5 +205,5 @@ func (t *IdTree) Clear() {
 	t.Lock()
 	defer t.Unlock()
 
-	t.nodes = make (map[string]node)
+	t.nodes = make(map[string]node)
 }

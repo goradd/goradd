@@ -1,11 +1,11 @@
 package db
 
 import (
-	"database/sql"
 	"context"
+	"database/sql"
+	"github.com/spekary/goradd"
 	. "github.com/spekary/goradd/orm/query"
 	"time"
-	"github.com/spekary/goradd"
 )
 
 type SqlDbI interface {
@@ -38,10 +38,9 @@ type SqlContext struct {
 	profiles []ProfileEntry
 }
 
-
 type SqlDb struct {
-	dbKey   string  // key of the database as used in the global database map
-	db      *sql.DB // Internal copy of golang database
+	dbKey string  // key of the database as used in the global database map
+	db    *sql.DB // Internal copy of golang database
 
 	// codegen options
 	typeTableSuffix        string // Primarily for sql tables
@@ -55,24 +54,23 @@ type SqlDb struct {
 	profiling bool
 }
 
-
 func NewSqlDb(dbKey string) SqlDb {
 	s := SqlDb{
-		dbKey:dbKey,
-		typeTableSuffix:"_type",
-		associationTableSuffix:"_assn",
-		idSuffix: "_id",
+		dbKey:                  dbKey,
+		typeTableSuffix:        "_type",
+		associationTableSuffix: "_assn",
+		idSuffix:               "_id",
 	}
 	return s
 }
 
 // Begin starts a transaction. You must use the context returned from this function for all subsequent
-func (s *SqlDb) Begin(ctx context.Context)  {
+func (s *SqlDb) Begin(ctx context.Context) {
 	var c *SqlContext
 
 	i := ctx.Value(goradd.SqlContext)
 	if i == nil {
-		panic ("Can't use transactions without pre-loading a context")
+		panic("Can't use transactions without pre-loading a context")
 	} else {
 		c = i.(*SqlContext)
 	}
@@ -95,7 +93,7 @@ func (s *SqlDb) Commit(ctx context.Context) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
 	if i == nil {
-		panic ("Can't use transactions without pre-loading a context")
+		panic("Can't use transactions without pre-loading a context")
 	} else {
 		c = i.(*SqlContext)
 	}
@@ -117,13 +115,13 @@ func (s *SqlDb) Rollback(ctx context.Context) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
 	if i == nil {
-		panic ("Can't use transactions without pre-loading a context")
+		panic("Can't use transactions without pre-loading a context")
 	} else {
 		c = i.(*SqlContext)
 	}
 
 	if c.tx == nil {
-		panic ("Called Rollback without matching Begin")
+		panic("Called Rollback without matching Begin")
 	} else {
 		err := c.tx.Rollback()
 		if err != nil {
@@ -152,7 +150,7 @@ func (s *SqlDb) Exec(ctx context.Context, sql string, args ...interface{}) (r sq
 	var endTime = time.Now()
 
 	if c != nil && s.profiling {
-		c.profiles = append(c.profiles, ProfileEntry{DbKey:s.dbKey, BeginTime:beginTime, EndTime:endTime, Typ:"Exec", Sql: sql})
+		c.profiles = append(c.profiles, ProfileEntry{DbKey: s.dbKey, BeginTime: beginTime, EndTime: endTime, Typ: "Exec", Sql: sql})
 	}
 
 	return
@@ -166,16 +164,15 @@ func (s *SqlDb) Prepare(ctx context.Context, sql string) (r *sql.Stmt, err error
 	}
 
 	var beginTime = time.Now()
-	if  c != nil && c.tx != nil {
+	if c != nil && c.tx != nil {
 		r, err = c.tx.Prepare(sql)
 	} else {
 		r, err = s.db.Prepare(sql)
 	}
 	var endTime = time.Now()
 	if c != nil && s.profiling {
-		c.profiles = append(c.profiles, ProfileEntry{DbKey:s.dbKey, BeginTime:beginTime, EndTime:endTime, Typ:"Prepare", Sql: sql})
+		c.profiles = append(c.profiles, ProfileEntry{DbKey: s.dbKey, BeginTime: beginTime, EndTime: endTime, Typ: "Prepare", Sql: sql})
 	}
-
 
 	return
 }
@@ -188,19 +185,18 @@ func (s *SqlDb) Query(ctx context.Context, sql string, args ...interface{}) (r *
 	}
 
 	var beginTime = time.Now()
-	if  c != nil && c.tx != nil {
+	if c != nil && c.tx != nil {
 		r, err = c.tx.QueryContext(ctx, sql, args...)
 	} else {
 		r, err = s.db.QueryContext(ctx, sql, args...)
 	}
 	var endTime = time.Now()
 	if c != nil && s.profiling {
-		c.profiles = append(c.profiles, ProfileEntry{DbKey:s.dbKey, BeginTime:beginTime, EndTime:endTime, Typ:"Query", Sql: sql})
+		c.profiles = append(c.profiles, ProfileEntry{DbKey: s.dbKey, BeginTime: beginTime, EndTime: endTime, Typ: "Query", Sql: sql})
 	}
 
 	return
 }
-
 
 func (s *SqlDb) DbKey() string {
 	return s.dbKey
@@ -250,12 +246,12 @@ func GetProfiles(ctx context.Context) []ProfileEntry {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
 	if i == nil {
-		panic ("Profiling requires a preloaded context.")
+		panic("Profiling requires a preloaded context.")
 	} else {
 		c = i.(*SqlContext)
 	}
 
-	if  c != nil {
+	if c != nil {
 		p := c.profiles
 		c.profiles = nil
 		return p

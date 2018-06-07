@@ -1,12 +1,12 @@
 package control
+
 import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	localPage "goradd/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/event"
+	localPage "goradd/page"
 )
-
 
 type ButtonI interface {
 	page.ControlI
@@ -16,7 +16,6 @@ type Button struct {
 	localPage.Control
 
 	isPrimary bool
-
 }
 
 // Creates a new standard html button
@@ -32,9 +31,8 @@ func (b *Button) Init(self page.ControlI, parent page.ControlI) {
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
 
-
-func (b *Button) On(e page.EventI, actions... action.ActionI) {
-	e.Terminating()	// prevent default action (page submit)
+func (b *Button) On(e page.EventI, actions ...action.ActionI) {
+	e.Terminating() // prevent default action (page submit)
 	b.Control.On(e, actions...)
 }
 
@@ -44,7 +42,7 @@ func (b *Button) DrawingAttributes() *html.Attributes {
 	a := b.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "button")
 
-	a.Set("name", b.ID())	// needed for posts
+	a.Set("name", b.ID()) // needed for posts
 	if b.isPrimary {
 		a.Set("type", "submit")
 	} else {
@@ -65,7 +63,7 @@ func (b *Button) IsPrimary() bool {
 
 // OnClick is a shortcut for adding a click event handler that is particular to buttons. It debounces the click, to
 // prevent potential accidental multiple form submissions.
-func (b *Button) OnClick(actions... action.ActionI) {
+func (b *Button) OnClick(actions ...action.ActionI) {
 	b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
 }
 

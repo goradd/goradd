@@ -12,17 +12,17 @@ type ReferenceNode struct {
 	Node
 
 	// Which database in the global list of databases does the node belong to
-	dbKey			string
+	dbKey string
 	// Name of table in the database we point to
-	dbTable       string
+	dbTable string
 	// The name of the table that is the foreign key
-	dbColumn       string
+	dbColumn string
 	// The name of the table related to this reference
-	goColumnName	string
+	goColumnName string
 	// The name of the function used to access the property as a node or ORM item
 	goPropName string
 	// The name of the variable in the model structure used to hold the object
-	goVarName		string
+	goVarName string
 
 	// Is this pointing to a type table item?
 	isTypeTable bool
@@ -30,13 +30,11 @@ type ReferenceNode struct {
 	// The name of the table we are joining to
 	refTable string
 	// If a forward reference and NoSQL, the name of the table that will contain the reference or references backwards to us. If SQL, the Pk of the RefTable
-	refColumn	string
+	refColumn string
 }
 
-
-
 // NewReferenceNode creates a forward reference node.
-func NewReferenceNode (
+func NewReferenceNode(
 	dbKey string,
 	dbTableName string,
 	dbColumnName string,
@@ -46,7 +44,7 @@ func NewReferenceNode (
 	refColumn string, // only used in NoSQL situation
 	isType bool,
 ) *ReferenceNode {
-	n :=  &ReferenceNode {
+	n := &ReferenceNode{
 		dbKey:        dbKey,
 		dbTable:      dbTableName,
 		dbColumn:     dbColumnName,
@@ -78,7 +76,7 @@ func (n *ReferenceNode) tableName() string {
 	return n.refTable
 }
 
-func (n *ReferenceNode) setCondition(condition NodeI){
+func (n *ReferenceNode) setCondition(condition NodeI) {
 	n.condition = condition
 }
 
@@ -103,10 +101,9 @@ func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
 	return n2
 }
 
-
 func RelatedColumnNode(n NodeI) NodeI {
-	if tn,_ := n.(TableNodeI); tn != nil {
-		if rn,_ := tn.EmbeddedNode_().(*ReferenceNode); rn != nil {
+	if tn, _ := n.(TableNodeI); tn != nil {
+		if rn, _ := tn.EmbeddedNode_().(*ReferenceNode); rn != nil {
 			return rn.relatedColumnNode()
 		}
 	}

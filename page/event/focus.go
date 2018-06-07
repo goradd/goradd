@@ -17,7 +17,3 @@ func FocusIn() page.EventI {
 func FocusOut() page.EventI {
 	return &page.Event{JsEvent: "focusout"}
 }
-
-
-
-

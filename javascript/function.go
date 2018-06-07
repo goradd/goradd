@@ -11,7 +11,7 @@ type Function struct {
 	// The function name
 	Name string
 	// Function arguments. Strings will be quoted. Use a VarName object to output the name of a javascript variable.
-	Args    []interface{}
+	Args []interface{}
 	// If given, the object in the window object which contains the function and is the context for the function.
 	// Use dot '.' notation to traverse the object tree. i.e. "obj1.obj2" refers to window.obj1.obj2 in javascript
 	Context string
@@ -47,7 +47,6 @@ func (f Function) MarshalJSON() (buf []byte, err error) {
 		obj["params"] = f.Args
 	}
 
-	buf,err = json.Marshal(obj)
+	buf, err = json.Marshal(obj)
 	return
 }
-

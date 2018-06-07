@@ -14,19 +14,19 @@ type nodeLinkI interface {
 // In particular, the SetParentNode method get exported for codegen purposes
 type nodeLink struct {
 	// We need to be able to get to the surrounding class. This is our aid to doing that. It must be set up correctly though.
-	self	  NodeI
+	self NodeI
 	// Parent in the chain, so its doubly linked
-	parentNode     NodeI
+	parentNode NodeI
 	// Child nodes. Multiple child nodes are used to indicate where in the chain of a query we are expanding.
-	childNodes    []NodeI
+	childNodes []NodeI
 }
 
-func (n *nodeLink) addChildNode(cn NodeI ) {
+func (n *nodeLink) addChildNode(cn NodeI) {
 	if n.childNodes == nil {
 		n.childNodes = []NodeI{cn}
 	} else {
 		var found = false
-		for _,n2 := range n.childNodes {
+		for _, n2 := range n.childNodes {
 			if n2.Equals(cn) {
 				found = true
 			}
@@ -47,7 +47,6 @@ func (n *nodeLink) setParent(p NodeI) {
 	n.parentNode = p
 }
 
-
 // Used by the query builder to build a join tree, and by the codegenerator to initialize nodes
 func SetParentNode(child NodeI, parent NodeI) {
 	if parent != nil {
@@ -64,7 +63,7 @@ func ParentNode(n NodeI) NodeI {
 // rootNode returns the top node in the node chain
 func (n *nodeLink) rootNode() NodeI {
 	if n.self == nil {
-		return nil	// value or operation node
+		return nil // value or operation node
 	}
 	var n1 NodeI = n.self
 	for pn := n1.getParentNode(); pn != nil; pn = n1.getParentNode() {
@@ -90,7 +89,7 @@ given an accessor at the beginning so that they do not show up as a function in 
 trying to put together a node chain during the code creation process. Essentially they are trying to create exported
 functions for the db package without broadcasting them to the world.
 
- */
+*/
 
 func ChildNodes(n nodeLinkI) []NodeI {
 	return n.getChildNodes()

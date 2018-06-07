@@ -1,10 +1,9 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
 )
-
 
 // RadioList is a multi-select control that presents its choices as a list of checkboxes.
 // Styling is provided by divs and spans that you can provide css for in your style sheets. The
@@ -20,7 +19,6 @@ func NewRadioList(parent page.ControlI) *RadioList {
 	l.Init(l, parent)
 	return l
 }
-
 
 func (l *RadioList) Init(self page.ControlI, parent page.ControlI) {
 	l.CheckboxList.Init(self, parent)
@@ -55,14 +53,14 @@ func (l *RadioList) UpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()
 
 	if ctx.RequestMode() == page.Ajax {
-		if v,ok := ctx.CheckableValue(controlID); ok {
+		if v, ok := ctx.CheckableValue(controlID); ok {
 			if s, ok := v.(string); ok {
-				l.selectedIds = map[string]bool{l.ID() + "_" + s:true}
+				l.selectedIds = map[string]bool{l.ID() + "_" + s: true}
 			}
 		}
 	} else {
-		if v,ok := ctx.FormValue(controlID); ok {
-			l.selectedIds = map[string]bool{v:true}
+		if v, ok := ctx.FormValue(controlID); ok {
+			l.selectedIds = map[string]bool{v: true}
 		}
 	}
 }

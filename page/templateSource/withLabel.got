@@ -14,7 +14,7 @@ func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
   <label id="{{= ctrl.ID() }}_lbl" class="goradd-lbl"{{if ctrl.HasFor() }} for="{{= ctrl.ID() }}" {{if}}>{{= ctrl.Label() }}</label>
 {{if}}
 {{= html.Indent(h) }}
-  <div id="{{= ctrl.ID() }}_err" class="goradd-error">{{= ctrl.ValidationError() }}</div>
+  <div id="{{= ctrl.ID() }}_err" class="goradd-error">{{= ctrl.ValidationMessage() }}</div>
 {{if ctrl.Instructions() != "" }}
   <div id="{{= ctrl.ID() }}_inst" class="goradd-instructions" >{{= ctrl.Instructions() }}</div>
 {{if}}

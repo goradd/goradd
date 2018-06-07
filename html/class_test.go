@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-
 func ExampleAddClass() {
 	classes, changed := AddClass("myClass1 myClass2", "myClass1 myClass3")
 	fmt.Println(classes + ":" + strconv.FormatBool(changed))

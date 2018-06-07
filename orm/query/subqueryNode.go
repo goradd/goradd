@@ -1,8 +1,8 @@
 package query
 
 import (
-	"strings"
 	"log"
+	"strings"
 )
 
 // A Subquery node represents a "select" subquery. Subqueries are not always portable to other databases, and are not
@@ -17,20 +17,18 @@ type SubqueryNode struct {
 }
 
 func NewSubqueryNode(b QueryBuilderI) *SubqueryNode {
-	n := &SubqueryNode {
+	n := &SubqueryNode{
 		b: b,
 	}
 	return n
 }
 
-
 func (n *SubqueryNode) nodeType() NodeType {
 	return SUBQUERY_NODE
 }
 
-
 func (n *SubqueryNode) Equals(n2 NodeI) bool {
-	if cn,ok := n2.(*SubqueryNode); ok {
+	if cn, ok := n2.(*SubqueryNode); ok {
 		return cn.b == n.b
 	}
 	return false
@@ -55,7 +53,6 @@ func (n *SubqueryNode) containedNodes() (nodes []NodeI) {
 func (n *SubqueryNode) tableName() string {
 	return ""
 }
-
 
 func (n *SubqueryNode) log(level int) {
 	tabs := strings.Repeat("\t", level)

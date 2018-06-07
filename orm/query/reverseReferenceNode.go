@@ -10,13 +10,13 @@ type ReverseReferenceNode struct {
 	Node
 
 	// Which database in the global list of databases does the node belong to
-	dbKey			string
+	dbKey string
 	// table which has the reverse reference
-	dbTable       string
+	dbTable string
 	// NoSQL only. The table containing an array of items we are pointing to.
-	dbColumn       string
+	dbColumn string
 	// Property we are using to refer to the many side of the relationship
-	goPropName			string
+	goPropName string
 
 	// Is this pointing to a type table item?
 	isTypeTable bool
@@ -24,35 +24,33 @@ type ReverseReferenceNode struct {
 	// The table containing the pointer back to us
 	refTable string
 	// The table that is the foreign key pointing back to us.
-	refColumn	string
+	refColumn string
 
 	isArray bool
 }
 
-
-
-func NewReverseReferenceNode (
+func NewReverseReferenceNode(
 	dbKey string,
-// table which has the reverse reference
+	// table which has the reverse reference
 	dbTable string,
-// NoSQL: the table containing an array of items we are pointing to. SQL: The primary key of this table.
+	// NoSQL: the table containing an array of items we are pointing to. SQL: The primary key of this table.
 	dbColumn string,
-// Property we are using to refer to the many side of the relationship
+	// Property we are using to refer to the many side of the relationship
 	goName string,
-// The table containing the pointer back to us
+	// The table containing the pointer back to us
 	refTable string,
-// The table that is the foreign key pointing back to us.
+	// The table that is the foreign key pointing back to us.
 	refColumn string,
 	isArray bool,
 ) *ReverseReferenceNode {
-	n:= &ReverseReferenceNode {
-		dbKey:       dbKey,
-		dbTable:     dbTable,
-		dbColumn:    dbColumn,
-		goPropName:      goName,
-		refTable:    refTable,
-		refColumn:   refColumn,
-		isArray: 	isArray,
+	n := &ReverseReferenceNode{
+		dbKey:      dbKey,
+		dbTable:    dbTable,
+		dbColumn:   dbColumn,
+		goPropName: goName,
+		refTable:   refTable,
+		refColumn:  refColumn,
+		isArray:    isArray,
 	}
 	return n
 }
@@ -68,7 +66,6 @@ func (n *ReverseReferenceNode) Expand() {
 func (n *ReverseReferenceNode) isExpanded() bool {
 	return !n.isArray
 }
-
 
 func (n *ReverseReferenceNode) Equals(n2 NodeI) bool {
 	if n2.nodeType() == REVERSE_REFERENCE_NODE {
@@ -86,7 +83,7 @@ func (n *ReverseReferenceNode) tableName() string {
 	return n.refTable
 }
 
-func (n *ReverseReferenceNode) setCondition(condition NodeI){
+func (n *ReverseReferenceNode) setCondition(condition NodeI) {
 	n.condition = condition
 }
 
@@ -115,7 +112,6 @@ func ReverseReferenceNodeRefTable(n *ReverseReferenceNode) string {
 func ReverseReferenceNodeRefColumn(n *ReverseReferenceNode) string {
 	return n.refColumn
 }
-
 
 func ReverseReferenceNodeDbColumnName(n *ReverseReferenceNode) string {
 	return n.dbColumn

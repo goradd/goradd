@@ -1,17 +1,16 @@
 package types
 
 import (
-	"sync"
-	"encoding/json"
-	"bytes"
-	"errors"
 	"bufio"
+	"bytes"
 	"encoding/gob"
+	"encoding/json"
+	"errors"
+	"sync"
 )
 
-
 // SafeMap is your basic GoMap with a read/write mutex so that it can read and write concurrently.
-// Go now has a sync.Map item, but that is primarily for situations of high read contention on a large amount of 
+// Go now has a sync.Map item, but that is primarily for situations of high read contention on a large amount of
 // cores.
 type SafeMap struct {
 	sync.RWMutex
@@ -41,13 +40,12 @@ func (o *SafeMap) Set(key string, val interface{}) MapI {
 	return o
 }
 
-
 func (o *SafeMap) Remove(key string) {
 	if o.items == nil {
 		return
 	}
 	o.Lock()
-	delete (o.items,key)
+	delete(o.items, key)
 	o.Unlock()
 }
 
@@ -58,7 +56,7 @@ func (o *SafeMap) Get(key string) (val interface{}) {
 	if o.items == nil {
 		return nil
 	}
-	val, _ =  o.items[key]
+	val, _ = o.items[key]
 	return
 }
 
@@ -102,7 +100,6 @@ func (o *SafeMap) GetFloat(key string) (val float64, typeOk bool) {
 	}
 }
 
-
 func (o *SafeMap) Has(key string) (ok bool) {
 	o.RLock()
 	defer o.RUnlock()
@@ -110,7 +107,7 @@ func (o *SafeMap) Has(key string) (ok bool) {
 		return false
 	}
 
-	_, ok =  o.items[key]
+	_, ok = o.items[key]
 	return
 }
 
@@ -119,7 +116,7 @@ func (o *SafeMap) Values() []interface{} {
 	o.Lock()
 	defer o.Unlock()
 
-	vals := make ([]interface{}, 0, len(o.items))
+	vals := make([]interface{}, 0, len(o.items))
 
 	for _, v := range o.items {
 		vals = append(vals, v)
@@ -127,12 +124,11 @@ func (o *SafeMap) Values() []interface{} {
 	return vals
 }
 
-
 // Keys returns a slice of they keys
 func (o *SafeMap) Keys() []string {
 	o.Lock()
 	defer o.Unlock()
-	vals := make ([]string, 0, len(o.items))
+	vals := make([]string, 0, len(o.items))
 
 	for i := range o.items {
 		vals = append(vals, i)
@@ -141,7 +137,7 @@ func (o *SafeMap) Keys() []string {
 }
 
 func (o *SafeMap) Len() int {
-	return len (o.items)
+	return len(o.items)
 }
 
 // Range will call the given function with every key and value in the SafeMap
@@ -191,7 +187,7 @@ func (o *SafeMap) UnmarshalJSON(in []byte) error {
 	b := bytes.TrimSpace(in)
 
 	dec := json.NewDecoder(bytes.NewReader(b))
-	t,err := dec.Token()
+	t, err := dec.Token()
 	if err != nil {
 		return err
 	}
@@ -217,7 +213,7 @@ func (o *SafeMap) getJsonMap(dec *json.Decoder) (err error) {
 			return errors.New("Must be an object with string keys.")
 		}
 
-		value,err = o.getJsonToken(dec)
+		value, err = o.getJsonToken(dec)
 
 		if err != nil {
 			return err
@@ -230,7 +226,7 @@ func (o *SafeMap) getJsonMap(dec *json.Decoder) (err error) {
 
 func (o *SafeMap) getJsonToken(dec *json.Decoder) (ret interface{}, err error) {
 	t, err := dec.Token()
-	if err !=  nil {
+	if err != nil {
 		return nil, err
 	}
 	switch t.(type) {
@@ -270,7 +266,7 @@ func (o *SafeMap) MarshalJSON() (out []byte, err error) {
 	writer := bufio.NewWriter(&b)
 	writer.WriteString("{")
 
-	o.Range(func(k string,v interface{}) bool {
+	o.Range(func(k string, v interface{}) bool {
 		var b2 []byte
 		writer.WriteString("\"" + k + "\":")
 		if b2, err = json.Marshal(v); err != nil {
@@ -288,16 +284,15 @@ func (o *SafeMap) MarshalJSON() (out []byte, err error) {
 	}
 	out = b.Bytes()
 
-	out = append(out[:len(out) - 2], out[len(out)-1]) // get rid of comma
+	out = append(out[:len(out)-2], out[len(out)-1]) // get rid of comma
 	return out, nil
 }
-
 
 func (o *SafeMap) Copy() MapI {
 	cp := NewSafeMap()
 
-	o.Range(func (key string, value interface{}) bool {
-		if copier,ok := value.(Copier); ok {
+	o.Range(func(key string, value interface{}) bool {
+		if copier, ok := value.(Copier); ok {
 			value = copier.Copy()
 		}
 		cp.Set(key, value)

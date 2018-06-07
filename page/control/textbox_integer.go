@@ -1,9 +1,10 @@
 package control
 
 import (
-	"strconv"
 	"fmt"
 	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/page/control/control_base"
+	"strconv"
 )
 
 type IntegerTextbox struct {
@@ -16,7 +17,7 @@ func NewIntegerTextbox(parent page.ControlI) *IntegerTextbox {
 	return t
 }
 
-func (i *IntegerTextbox) Init(self page.ControlI, parent page.ControlI) {
+func (i *IntegerTextbox) Init(self control_base.TextboxI, parent page.ControlI) {
 	i.Textbox.Init(self, parent)
 	i.ValidateWith(IntValidator{})
 }
@@ -37,7 +38,7 @@ func (i *IntegerTextbox) SetMaxValue(maxValue int, invalidMessage string) {
 
 func (i *IntegerTextbox) Value() interface{} {
 	t := i.Textbox.Text()
-	v,_ := strconv.Atoi(t)
+	v, _ := strconv.Atoi(t)
 	return v
 }
 
@@ -49,7 +50,7 @@ func (v IntValidator) Validate(t page.Translater, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if _,err := strconv.Atoi(s); err != nil {
+	if _, err := strconv.Atoi(s); err != nil {
 		if v.Message == "" {
 			return t.Translate("Please enter an integer.")
 		} else {
@@ -59,19 +60,18 @@ func (v IntValidator) Validate(t page.Translater, s string) (msg string) {
 	return
 }
 
-
 type MinIntValidator struct {
 	MinValue int
-	Message string
+	Message  string
 }
 
 func (v MinIntValidator) Validate(t page.Translater, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if val,_ := strconv.Atoi(s); val < v.MinValue {
+	if val, _ := strconv.Atoi(s); val < v.MinValue {
 		if v.Message == "" {
-			return fmt.Sprintf (t.Translate("Enter at least %d"), v.MinValue)
+			return fmt.Sprintf(t.Translate("Enter at least %d"), v.MinValue)
 		} else {
 			return v.Message
 		}
@@ -81,21 +81,19 @@ func (v MinIntValidator) Validate(t page.Translater, s string) (msg string) {
 
 type MaxIntValidator struct {
 	MaxValue int
-	Message string
+	Message  string
 }
 
 func (v MaxIntValidator) Validate(t page.Translater, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if val,_ := strconv.Atoi(s); val < v.MaxValue {
+	if val, _ := strconv.Atoi(s); val < v.MaxValue {
 		if v.Message == "" {
-			return fmt.Sprintf (t.Translate("Enter at most %d"), v.MaxValue)
+			return fmt.Sprintf(t.Translate("Enter at most %d"), v.MaxValue)
 		} else {
 			return v.Message
 		}
 	}
 	return
 }
-
-

@@ -1,11 +1,11 @@
 package types
 
 import (
-	"sort"
-	"encoding/json"
-	"bytes"
-	"errors"
 	"bufio"
+	"bytes"
+	"encoding/json"
+	"errors"
+	"sort"
 )
 
 // An OrderedMap is similar to PHP's indexed arrays. You can get the strings
@@ -33,12 +33,11 @@ func (o *OrderedMap) Merge(i MapI) {
 	if i == nil {
 		return
 	}
-	i.Range(func(k string,v interface{}) bool {
+	i.Range(func(k string, v interface{}) bool {
 		o.Set(k, v)
 		return true
 	})
 }
-
 
 // Set sets the value, but also appends the value to the end of the list for when you
 // iterate over the list. If the value already exists, the value is replaced, the order does not change. If you want
@@ -50,7 +49,7 @@ func (o *OrderedMap) Set(key string, val interface{}) MapI {
 
 	var ok bool
 
-	if _,ok = o.items[key]; !ok  {
+	if _, ok = o.items[key]; !ok {
 		o.order = append(o.order, key)
 	}
 	o.items[key] = val
@@ -71,7 +70,7 @@ func (o *OrderedMap) SetAt(index int, key string, val interface{}) MapI {
 
 	var ok bool
 
-	if _,ok = o.items[key]; !ok  {
+	if _, ok = o.items[key]; !ok {
 		if index < -len(o.items) {
 			index = 0
 		}
@@ -87,7 +86,6 @@ func (o *OrderedMap) SetAt(index int, key string, val interface{}) MapI {
 	return o
 }
 
-
 // Remove an item from the list by key. If the item does not exist, nothing happens.
 func (o *OrderedMap) Remove(key string) {
 	if o.items == nil {
@@ -95,11 +93,11 @@ func (o *OrderedMap) Remove(key string) {
 	}
 	for i, v := range o.order {
 		if v == key {
-			o.order = append(o.order[:i], o.order[i + 1:]...)
+			o.order = append(o.order[:i], o.order[i+1:]...)
 			continue
 		}
 	}
-	delete (o.items,key)
+	delete(o.items, key)
 }
 
 func (o *OrderedMap) RemoveAt(offset int) {
@@ -115,20 +113,19 @@ func (o *OrderedMap) Get(key string) (val interface{}) {
 		return nil
 	}
 
-	val, _ =  o.items[key]
+	val, _ = o.items[key]
 	return
 }
 
 // Find returns the offest of the key in the list, or -1 if not found.
 func (o *OrderedMap) Find(key string) int {
-	for i,k := range o.order {
+	for i, k := range o.order {
 		if k == key {
 			return i
 		}
 	}
 	return -1
 }
-
 
 // Return a string, or the default value if not found. If the value was found, but is not a string, returns false in typeOk.
 func (o *OrderedMap) GetString(key string) (val string, typeOk bool) {
@@ -170,16 +167,14 @@ func (o *OrderedMap) GetFloat(key string) (val float64, typeOk bool) {
 	}
 }
 
-
 func (o *OrderedMap) Has(key string) (ok bool) {
 	if o.items == nil {
 		return false
 	}
 
-	_, ok =  o.items[key]
+	_, ok = o.items[key]
 	return
 }
-
 
 // GetAt returns the string based on its position
 // To see if a value exists, simply test that the position is less than the length
@@ -201,7 +196,7 @@ func (o *OrderedMap) GetStringAt(position int) (val string, ok bool) {
 		return "", false
 	}
 
-	val,ok = o.GetString(o.order[position])
+	val, ok = o.GetString(o.order[position])
 	return
 }
 
@@ -210,7 +205,7 @@ func (o *OrderedMap) GetBoolAt(position int) (val bool, ok bool) {
 	if position < 0 || position >= len(o.order) {
 		return false, false
 	}
-	val,ok = o.GetBool(o.order[position])
+	val, ok = o.GetBool(o.order[position])
 	return
 }
 
@@ -219,7 +214,7 @@ func (o *OrderedMap) GetIntAt(position int) (val int, ok bool) {
 	if position < 0 || position >= len(o.order) {
 		return 0, false
 	}
-	val,ok = o.GetInt(o.order[position])
+	val, ok = o.GetInt(o.order[position])
 	return
 }
 
@@ -228,13 +223,13 @@ func (o *OrderedMap) GetFloatAt(position int) (val float64, ok bool) {
 	if position < 0 || position >= len(o.order) {
 		return 0, false
 	}
-	val,ok = o.GetFloat(o.order[position])
+	val, ok = o.GetFloat(o.order[position])
 	return
 }
 
 // Values returns a slice of the values in the order they were added
 func (o *OrderedMap) Values() []interface{} {
-	vals := make ([]interface{}, len(o.order))
+	vals := make([]interface{}, len(o.order))
 
 	for i, v := range o.order {
 		vals[i] = o.items[v]
@@ -242,18 +237,16 @@ func (o *OrderedMap) Values() []interface{} {
 	return vals
 }
 
-
 // Keys are the keys of the items, in the order they were added
 func (o *OrderedMap) Keys() []string {
-	vals := make ([]string, len(o.order))
+	vals := make([]string, len(o.order))
 	copy(vals, o.order)
 	return vals
 }
 
 func (o *OrderedMap) Len() int {
-	return len (o.order)
+	return len(o.order)
 }
-
 
 // Range will call the given function with every key and value in the order they were placed into the OrderedMap
 // During this process, the map will be locked, so do not use a function that will be taking significant amounts of time
@@ -273,11 +266,9 @@ func (o *OrderedMap) Less(i, j int) bool {
 	return o.order[i] < o.order[j]
 }
 
-func (o *OrderedMap) Swap(i, j int)      {
+func (o *OrderedMap) Swap(i, j int) {
 	o.order[i], o.order[j] = o.order[j], o.order[i]
 }
-
-
 
 // Sort by keys interface
 type orderedbykeys struct {
@@ -297,7 +288,6 @@ func (r orderedbykeys) Less(i, j int) bool {
 	return o.order[i] < o.order[j]
 }
 
-
 // UnmarshalJSON implements the json.Unmarshaller interface so that you can output a json structure in the same order
 // it was saved in. The golang json library saves a json object as a golang map, and golang maps are not guaranteed to
 // be iterated in the same order they were created. This function remedies that. It requires that you give it
@@ -307,7 +297,7 @@ func (o *OrderedMap) UnmarshalJSON(in []byte) error {
 	b := bytes.TrimSpace(in)
 
 	dec := json.NewDecoder(bytes.NewReader(b))
-	t,err := dec.Token()
+	t, err := dec.Token()
 	if err != nil {
 		return err
 	}
@@ -333,7 +323,7 @@ func (o *OrderedMap) getJsonMap(dec *json.Decoder) (err error) {
 			return errors.New("Must be an object with string keys.")
 		}
 
-		value,err = o.getJsonToken(dec)
+		value, err = o.getJsonToken(dec)
 
 		if err != nil {
 			return err
@@ -346,7 +336,7 @@ func (o *OrderedMap) getJsonMap(dec *json.Decoder) (err error) {
 
 func (o *OrderedMap) getJsonToken(dec *json.Decoder) (ret interface{}, err error) {
 	t, err := dec.Token()
-	if err !=  nil {
+	if err != nil {
 		return nil, err
 	}
 	switch t.(type) {
@@ -386,7 +376,7 @@ func (o *OrderedMap) MarshalJSON() (out []byte, err error) {
 	writer := bufio.NewWriter(&b)
 	writer.WriteString("{")
 
-	o.Range(func(k string,v interface{}) bool {
+	o.Range(func(k string, v interface{}) bool {
 		var b2 []byte
 		writer.WriteString("\"" + k + "\":")
 		if b2, err = json.Marshal(v); err != nil {
@@ -404,19 +394,19 @@ func (o *OrderedMap) MarshalJSON() (out []byte, err error) {
 	}
 	out = b.Bytes()
 
-	out = append(out[:len(out) - 2], out[len(out)-1]) // get rid of comma
+	out = append(out[:len(out)-2], out[len(out)-1]) // get rid of comma
 	return out, nil
 }
-
 
 type Copier interface {
 	Copy() interface{}
 }
+
 func (o *OrderedMap) Copy() MapI {
 	cp := NewOrderedMap()
 
-	o.Range(func (key string, value interface{}) bool {
-		if copier,ok := value.(Copier); ok {
+	o.Range(func(key string, value interface{}) bool {
+		if copier, ok := value.(Copier); ok {
 			value = copier.Copy()
 		}
 		cp.Set(key, value)

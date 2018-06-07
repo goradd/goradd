@@ -1,16 +1,17 @@
 package page
 
 import (
-	"context"
 	"bytes"
-	"goradd/config"
-	"github.com/spekary/goradd/html"
-	"github.com/spekary/goradd/util/types"
-	"path/filepath"
-	"fmt"
+	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/util/types"
+	"goradd/config"
+	"path/filepath"
+	"strings"
 )
 
 const htmlVarFormstate string = "Goradd__FormState"
@@ -29,6 +30,7 @@ type FormI interface {
 	renderAjax(ctx context.Context, buf *bytes.Buffer) error
 	AddStyleSheetFile(path string, attributes *html.Attributes)
 	AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes)
+	DisplayAlert(ctx context.Context, msg string)
 
 	// Lifecycle calls
 	Run(ctx context.Context) error
@@ -40,10 +42,10 @@ type FormBase struct {
 	response Response // don't serialize This
 
 	// serialized lists of related files
-	headerStyleSheets *types.OrderedMap
+	headerStyleSheets   *types.OrderedMap
 	importedStyleSheets *types.OrderedMap // when refreshing, these get moved to the headerStyleSheets
-	headerJavaScripts *types.OrderedMap
-	bodyJavaScripts *types.OrderedMap
+	headerJavaScripts   *types.OrderedMap
+	bodyJavaScripts     *types.OrderedMap
 	importedJavaScripts *types.OrderedMap // when refreshing, these get moved to the bodyJavaScripts
 }
 
@@ -53,7 +55,7 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 
 	f.page = p
 	if id == "" {
-		panic ("Forms must have an id assigned")
+		panic("Forms must have an id assigned")
 	}
 	f.Control.id = id
 	f.Control.Init(self, nil)
@@ -63,28 +65,27 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 	self.InitializeControls(ctx)
 
 	/*	TODO: Add a dialog and designer click if in design mode
-	            if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
-                // Attach custom event to dialog to handle right click menu items sent by form
+		            if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
+	                // Attach custom event to dialog to handle right click menu items sent by form
 
-                $dlg = new Q\ModelConnector\EditDlg ($objClass, 'qconnectoreditdlg');
+	                $dlg = new Q\ModelConnector\EditDlg ($objClass, 'qconnectoreditdlg');
 
-                $dlg->addAction(
-                    new Q\Event\On('qdesignerclick'),
-                    new Q\Action\Ajax ('ctlDesigner_Click', null, null, 'ui')
-                );
-            }
+	                $dlg->addAction(
+	                    new Q\Event\On('qdesignerclick'),
+	                    new Q\Action\Ajax ('ctlDesigner_Click', null, null, 'ui')
+	                );
+	            }
 
-	 */
+	*/
 }
-
 
 // AddRelatedFiles adds related javascript and style sheet files. Override This to get these files from a different location,
 // or to load additional files. The order is important, so if you override This, be sure these files get loaded
 // before other files.
 func (f *FormBase) AddRelatedFiles() {
 	f.AddJavaScriptFile("http://code.jquery.com/jquery-3.3.1.min.js", false, html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="))
-	f.AddJavaScriptFile(config.GoraddAssets() + "/js/goradd.js", false, nil)
-	f.AddStyleSheetFile(config.GoraddAssets() + "/css/goradd.css", nil)
+	f.AddJavaScriptFile(config.GoraddAssets()+"/js/goradd.js", false, nil)
+	f.AddStyleSheetFile(config.GoraddAssets()+"/css/goradd.css", nil)
 }
 
 func (f *FormBase) CreateControls(ctx context.Context) {
@@ -92,7 +93,6 @@ func (f *FormBase) CreateControls(ctx context.Context) {
 
 func (f *FormBase) InitializeControls(ctx context.Context) {
 }
-
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
@@ -104,7 +104,7 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	}
 	// Render controls that are marked to auto render if the form did not render them
 	if err = f.RenderAutoControls(ctx, buf); err != nil {
-		panic (err)
+		panic(err)
 	}
 
 	f.resetDrawingFlags()
@@ -116,19 +116,18 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	buf.WriteString(`<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n")
 
 	// Serialize and write out the formstate
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="` + htmlVarFormstate + `" id="` + htmlVarFormstate + `" value="%s" />`, formstate))
+	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlVarFormstate+`" id="`+htmlVarFormstate+`" value="%s" />`, formstate))
 
-	f.drawBodyScriptFiles(ctx, buf)	// Fixing a bug?
+	f.drawBodyScriptFiles(ctx, buf) // Fixing a bug?
 
 	buf.WriteString("\n</form>\n")
 
 	// Draw things that come after the form tag
 
-
 	// Write out the control scripts gathered above
-	s := `goradd.initForm();` + "\n";
+	s := `goradd.initForm();` + "\n"
 	s += f.response.JavaScript()
-	f.response = NewResponse()	// Reset
+	f.response = NewResponse() // Reset
 	s = fmt.Sprintf(`<script>jQuery(document).ready(function($j) { %s; });</script>`, s)
 	buf.WriteString(s)
 
@@ -139,25 +138,25 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 }
 
 // outputSqlProfile looks for sql profiling information and sends it to the browser if found
-func (f *FormBase) outputSqlProfile(ctx context.Context, buf *bytes.Buffer)  {
+func (f *FormBase) outputSqlProfile(ctx context.Context, buf *bytes.Buffer) {
 	if profiles := db.GetProfiles(ctx); profiles != nil {
 		var s = "<h2>SQL Profile</h2>"
 		for _, profile := range profiles {
 			dif := profile.EndTime.Sub(profile.BeginTime)
-			s += fmt.Sprintf(`<p class="profile"><div>Time: %s Begin: %s End: %s</div><div>SQL: %s</div></p>`,
-				dif.String(), profile.BeginTime.Format("3:04:05.000"), profile.EndTime.Format("3:04:05.000"), profile.Sql)
+			sql := strings.Replace(profile.Sql, "\n", "<br />", -1)
+			s += fmt.Sprintf(`<p class="profile"><div>Time: %s Begin: %s End: %s</div><div>%s</div></p>`,
+				dif.String(), profile.BeginTime.Format("3:04:05.000"), profile.EndTime.Format("3:04:05.000"), sql)
 		}
 		buf.WriteString(s)
 	}
 }
-
 
 // Assembles the ajax response for the entire form and draws it to the return buffer
 func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var buf2 []byte
 	var pagestate string
 
-	if !f.response.hasExclusiveCommand() {	// skip drawing if we are in a high priority situation
+	if !f.response.hasExclusiveCommand() { // skip drawing if we are in a high priority situation
 		// gather modified controls
 		f.DrawAjax(ctx, &f.response)
 	}
@@ -171,12 +170,11 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 	// TODO: render imported style sheets and java scripts
 	f.resetDrawingFlags()
 	buf2, err = json.Marshal(&f.response)
-	f.response = NewResponse()	// Reset
+	f.response = NewResponse() // Reset
 	buf.Write(buf2)
 	log.FrameworkDebug("renderAjax - ", string(buf2))
 	return
 }
-
 
 func (f *FormBase) DrawingAttributes() *html.Attributes {
 	a := f.Control.DrawingAttributes()
@@ -220,7 +218,7 @@ func (f *FormBase) saveState() string {
 // which is useful for things like crossorigin and integrity attributes.
 func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes) {
 	if forceHeader && f.isOnPage {
-		panic ("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
+		panic("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
 	}
 
 	// TODO: decompose path here, rather than at draw time to save some processing time.
@@ -283,7 +281,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	}
 
 	if f.headerStyleSheets != nil {
-		f.headerStyleSheets.Range(func (path string, attr interface{}) bool {
+		f.headerStyleSheets.Range(func(path string, attr interface{}) bool {
 			var attributes *html.Attributes = attr.(*html.Attributes)
 			if attributes == nil {
 				attributes = html.NewAttributes()
@@ -292,7 +290,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 			if path[:4] == "http" {
 				attributes.Set("href", path)
 			} else {
-				_,fileName := filepath.Split(path)
+				_, fileName := filepath.Split(path)
 				attributes.Set("href", RegisterCssFile(fileName, path))
 			}
 			buf.WriteString(html.RenderVoidTag("link", attributes))
@@ -309,7 +307,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	}
 
 	if f.headerJavaScripts != nil {
-		f.headerJavaScripts.Range(func (path string, attr interface{}) bool {
+		f.headerJavaScripts.Range(func(path string, attr interface{}) bool {
 			var attributes *html.Attributes = attr.(*html.Attributes)
 			if attributes == nil {
 				attributes = html.NewAttributes()
@@ -317,7 +315,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 			if path[:4] == "http" {
 				attributes.Set("src", path)
 			} else {
-				_,fileName := filepath.Split(path)
+				_, fileName := filepath.Split(path)
 				attributes.Set("src", RegisterJsFile(fileName, path))
 			}
 			buf.WriteString(html.RenderTag("script", attributes, ""))
@@ -327,7 +325,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 }
 
 func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
-	f.bodyJavaScripts.Range(func (path string, attr interface{}) bool {
+	f.bodyJavaScripts.Range(func(path string, attr interface{}) bool {
 		var attributes *html.Attributes = attr.(*html.Attributes)
 		if attributes == nil {
 			attributes = html.NewAttributes()
@@ -335,7 +333,7 @@ func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 		if path[:4] == "http" {
 			attributes.Set("src", path)
 		} else {
-			_,fileName := filepath.Split(path)
+			_, fileName := filepath.Split(path)
 			attributes.Set("src", RegisterJsFile(fileName, path))
 		}
 		buf.WriteString(html.RenderTag("script", attributes, "") + "\n")
@@ -348,10 +346,9 @@ func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 	f.response.displayAlert(msg)
 }
 
-func (f *FormBase) Redirect(url string) {
+func (f *FormBase) ChangeLocation(url string) {
 	f.response.SetLocation(url)
 }
-
 
 // Response returns the form's response object that you can use to queue up javascript commands to the browser to be sent on
 // the next ajax or server request

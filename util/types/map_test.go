@@ -1,16 +1,15 @@
 package types
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
-
 
 func TestMap(t *testing.T) {
 	m := NewMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	if m.Get("A").(string) != "That" {
@@ -18,16 +17,15 @@ func TestMap(t *testing.T) {
 	}
 }
 
-
 func TestMap_Nil(t *testing.T) {
 	m := NewMap()
 
 	m.Set("a", nil)
 
-	b:= m.Get("a")
+	b := m.Get("a")
 
 	assert.Nil(t, b)
-	assert.True(t, b==nil)
+	assert.True(t, b == nil)
 
 	var c *int
 
@@ -41,7 +39,7 @@ func TestMap_Nil(t *testing.T) {
 	e := d.(*int)
 
 	assert.Nil(t, e)
-	assert.True(t, e==nil)
+	assert.True(t, e == nil)
 }
 
 func TestMap_MarshalBinary(t *testing.T) {
@@ -49,7 +47,7 @@ func TestMap_MarshalBinary(t *testing.T) {
 	m3 := NewMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	m3.Set("D", 1)
@@ -65,6 +63,6 @@ func TestMap_MarshalBinary(t *testing.T) {
 	m2.UnmarshalBinary(data)
 
 	assert.Equal(t, 4, m2.Len())
-	assert.Equal(t, "That", 	m2.Get("A").(string))
+	assert.Equal(t, "That", m2.Get("A").(string))
 	assert.Equal(t, 2, m2.Get("map").(*Map).Get("E").(int))
 }

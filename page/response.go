@@ -1,31 +1,31 @@
 package page
 
 import (
-	"github.com/spekary/goradd/util/types"
 	"encoding/json"
 	"fmt"
 	"github.com/spekary/goradd/javascript"
+	"github.com/spekary/goradd/util/types"
 	"strings"
 )
 
 const (
-	ResponseWatcher = "watcher"
-	ResponseControls = "controls"
-	ResponseCommandsHigh = "commandsHigh"
+	ResponseWatcher        = "watcher"
+	ResponseControls       = "controls"
+	ResponseCommandsHigh   = "commandsHigh"
 	ResponseCommandsMedium = "commands"
-	ResponseCommandsLow = "commandsLow"
-	ResponseCommandsFinal = "commandsFinal"
-	ResponseRegC = "regc" // register control list
-	ResponseHtml = "html"
-	ResponseValue = "value"
-	ResponseId = "id"
-	ResponseAttributes = "attributes"
-	ResponseCss = "css"
-	ResponseClose = "winclose"
-	ResponseLocation = "loc"
-	ResponseAlert = "alert"
-	ResponseStyleSheets = "ss"
-	ResponseJavaScripts = "js"
+	ResponseCommandsLow    = "commandsLow"
+	ResponseCommandsFinal  = "commandsFinal"
+	ResponseRegC           = "regc" // register control list
+	ResponseHtml           = "html"
+	ResponseValue          = "value"
+	ResponseId             = "id"
+	ResponseAttributes     = "attributes"
+	ResponseCss            = "css"
+	ResponseClose          = "winclose"
+	ResponseLocation       = "loc"
+	ResponseAlert          = "alert"
+	ResponseStyleSheets    = "ss"
+	ResponseJavaScripts    = "js"
 )
 
 type Priority int
@@ -40,15 +40,14 @@ const (
 
 // ResponseCommand is a response packet that leads to execution of a javascript function
 type ResponseCommand struct {
-	script		string	// if just straight javascript
-	selector 	string
-	function	string
-	args 		[]interface{}
-	final		bool
+	script   string // if just straight javascript
+	selector string
+	function string
+	args     []interface{}
+	final    bool
 }
 
-
-func (r ResponseCommand)  MarshalJSON() (buf []byte, err error) {
+func (r ResponseCommand) MarshalJSON() (buf []byte, err error) {
 	var reply = map[string]interface{}{}
 
 	if r.script != "" {
@@ -72,13 +71,13 @@ func (r ResponseCommand)  MarshalJSON() (buf []byte, err error) {
 
 // A response packet that leads to the manipulation or replacement of an html object
 type ResponseControl struct {
-	id string
-	html string	// replaces the entire control's html
+	id         string
+	html       string            // replaces the entire control's html
 	attributes map[string]string // replace only specific attributes of the control
-	value string // call the jQuery .val function with This value
+	value      string            // call the jQuery .val function with This value
 }
 
-func (r ResponseControl)  MarshalJSON() (buf []byte, err error) {
+func (r ResponseControl) MarshalJSON() (buf []byte, err error) {
 	var reply = map[string]interface{}{}
 
 	if r.html != "" {
@@ -91,7 +90,6 @@ func (r ResponseControl)  MarshalJSON() (buf []byte, err error) {
 
 	return json.Marshal(reply)
 }
-
 
 type Response struct {
 	exclusiveCommand       *ResponseCommand
@@ -132,13 +130,12 @@ func (r *Response) ExecuteJavaScript(js string, priority Priority) {
 	}
 }
 
-
-func (r *Response) ExecuteControlCommand(controlID string, functionName string, priority Priority, args... interface{}) {
-	r.ExecuteSelectorFunction("#" + controlID, functionName, priority, args...)
+func (r *Response) ExecuteControlCommand(controlID string, functionName string, priority Priority, args ...interface{}) {
+	r.ExecuteSelectorFunction("#"+controlID, functionName, priority, args...)
 }
 
 // Calls a function on a jQuery selector
-func (r *Response) ExecuteSelectorFunction(selector string, functionName string, priority Priority, args... interface{}) {
+func (r *Response) ExecuteSelectorFunction(selector string, functionName string, priority Priority, args ...interface{}) {
 	c := ResponseCommand{selector: selector, function: functionName, args: args}
 
 	switch priority {
@@ -159,7 +156,7 @@ func (r *Response) ExecuteSelectorFunction(selector string, functionName string,
 
 // Call the given function with the given arguments. If just a function label, then the window object is searched.
 // The function can be inside an object accessible from the global namespace by separating with periods.
-func (r *Response) ExecuteJsFunction(functionName string, priority Priority, args... interface{}) {
+func (r *Response) ExecuteJsFunction(functionName string, priority Priority, args ...interface{}) {
 	c := ResponseCommand{function: functionName, args: args}
 
 	switch priority {
@@ -178,25 +175,24 @@ func (r *Response) ExecuteJsFunction(functionName string, priority Priority, arg
 }
 
 // One time add of style sheets, to be used by Form only for last minute style sheet injection.
-func (r *Response) addStyleSheets(styleSheets... string) {
+func (r *Response) addStyleSheets(styleSheets ...string) {
 	if r.styleSheets == nil {
 		r.styleSheets = types.NewOrderedStringMap()
 	}
-	for _,s := range styleSheets {
-		r.styleSheets.Set(s,s)
+	for _, s := range styleSheets {
+		r.styleSheets.Set(s, s)
 	}
 }
 
 // Add javascript files to the response.
-func (r *Response) addJavaScriptFiles(files... string) {
+func (r *Response) addJavaScriptFiles(files ...string) {
 	if r.jsFiles == nil {
 		r.jsFiles = types.NewOrderedStringMap()
 	}
-	for _,f := range files {
-		r.jsFiles.Set(f,f)
+	for _, f := range files {
+		r.jsFiles.Set(f, f)
 	}
 }
-
 
 /**
  * Function renders all the Javascript commands as output to the client browser. This is a mirror of what
@@ -210,7 +206,7 @@ func (r *Response) addJavaScriptFiles(files... string) {
 func (r *Response) JavaScript() (script string) {
 	// Style sheet injection by a control. Not very common, as other ways of adding style sheets would normally be done first.
 	if r.styleSheets != nil {
-		for _,s := range r.styleSheets.Keys() {
+		for _, s := range r.styleSheets.Keys() {
 			script += `goradd.loadStyleSheetFile("` + s + `", "all);\n"`
 		}
 		r.styleSheets = nil
@@ -218,10 +214,10 @@ func (r *Response) JavaScript() (script string) {
 
 	// alerts
 	if r.alerts != nil {
-		for _,a := range r.alerts {
-			b,err := json.Marshal(a)
+		for _, a := range r.alerts {
+			b, err := json.Marshal(a)
 			if err != nil {
-				panic (err)
+				panic(err)
 			}
 			script += fmt.Sprintf("goradd.msg(%s);\n", b[:])
 		}
@@ -242,10 +238,9 @@ func (r *Response) JavaScript() (script string) {
 		r.lowPriorityCommands = nil
 	}
 
-
 	// A redirect
 	if r.newLocation != "" {
-		script += fmt.Sprintf(`goradd.redirect(%s);` + "\n", r.newLocation)
+		script += fmt.Sprintf(`goradd.redirect(%s);`+"\n", r.newLocation)
 		r.newLocation = ""
 	}
 
@@ -291,7 +286,7 @@ func (r *Response) renderCommandArray(commands []ResponseCommand) string {
 
 // Return the JSON for use by the form ajax response. Will essentially do the same thing as
 // above, but working in cooperation with the javascript file to process these through an ajax response.
-func (r *Response)  MarshalJSON() (buf []byte, err error) {
+func (r *Response) MarshalJSON() (buf []byte, err error) {
 	var reply = map[string]interface{}{}
 
 	if r.exclusiveCommand != nil {
@@ -347,7 +342,6 @@ func (r *Response)  MarshalJSON() (buf []byte, err error) {
 	return json.Marshal(reply)
 }
 
-
 func (r *Response) SetLocation(newLocation string) {
 	r.newLocation = newLocation
 }
@@ -364,8 +358,8 @@ func (r *Response) SetControlHtml(id string, html string) {
 	if r.controls == nil {
 		r.controls = map[string]ResponseControl{}
 	}
-	if v,ok := r.controls[id]; ok && v.html != "" {
-		panic ("Setting ajax html twice on same control: " + id)
+	if v, ok := r.controls[id]; ok && v.html != "" {
+		panic("Setting ajax html twice on same control: " + id)
 	}
 	r.controls[id] = ResponseControl{html: html}
 }
@@ -374,17 +368,17 @@ func (r *Response) SetControlAttribute(id string, attribute string, value string
 	if r.controls == nil {
 		r.controls = map[string]ResponseControl{}
 	}
-	if v,ok := r.controls[id]; ok {
+	if v, ok := r.controls[id]; ok {
 		if v.html != "" {
 			return // whole control is being redrawn so ignore individual attribute changes
 		}
 		if v.attributes != nil {
 			v.attributes[attribute] = value
 		} else {
-			v.attributes = map[string]string {attribute:value}
+			v.attributes = map[string]string{attribute: value}
 		}
 	} else {
-		r.controls[id] = ResponseControl{attributes:map[string]string{attribute:value}}
+		r.controls[id] = ResponseControl{attributes: map[string]string{attribute: value}}
 	}
 }
 
@@ -394,5 +388,3 @@ func (r *Response) SetControlValue(id string, value string) {
 	}
 	r.controls[id] = ResponseControl{value: value}
 }
-
-

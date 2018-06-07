@@ -23,7 +23,7 @@ func TestToDataAttr(t *testing.T) {
 
 	cases := []struct {
 		in, expected string
-		err bool
+		err          bool
 	}{
 		{"ThisThat", "", true},
 		{"thisANDthat", "", true},
@@ -35,9 +35,9 @@ func TestToDataAttr(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		result,err := ToDataAttr(c.in)
+		result, err := ToDataAttr(c.in)
 		if err != nil {
-			if c.err {	// expected an error
+			if c.err { // expected an error
 				continue
 			} else {
 				t.Errorf("Unexpected error on (%q): %v", c.in, err)
@@ -45,7 +45,7 @@ func TestToDataAttr(t *testing.T) {
 			}
 		}
 
-		if (c.err && err == nil) { // expected an error, but didn't get one
+		if c.err && err == nil { // expected an error, but didn't get one
 			t.Errorf("Expected error on (%q)", c.in)
 			continue // no sense in checking other things, since we were expecting an error
 		}
@@ -61,7 +61,7 @@ func TestToDataJqKey(t *testing.T) {
 
 	cases := []struct {
 		in, expected string
-		err bool
+		err          bool
 	}{
 		{"ThisThat", "", true},
 		{"thisANDthat", "", true},
@@ -75,7 +75,7 @@ func TestToDataJqKey(t *testing.T) {
 	for _, c := range cases {
 		result, err := ToDataJqKey(c.in)
 		if err != nil {
-			if c.err {	// expected an error
+			if c.err { // expected an error
 				continue
 			} else {
 				t.Errorf("Unexpected error on (%q): %v", c.in, err)
@@ -83,7 +83,7 @@ func TestToDataJqKey(t *testing.T) {
 			}
 		}
 
-		if (c.err && err == nil) { // expected an error, but didn't get one
+		if c.err && err == nil { // expected an error, but didn't get one
 			t.Errorf("Expected error on (%q)", c.in)
 			continue // no sense in checking other things, since we were expecting an error
 		}

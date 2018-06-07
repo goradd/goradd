@@ -1,8 +1,8 @@
 package page
 
 import (
-	"encoding/gob"
 	"bytes"
+	"encoding/gob"
 )
 
 // These objects and functions are helpers in the page serialization process. Serialization is a big nut to crack in Go,
@@ -11,12 +11,11 @@ import (
 // initialized at startup time.
 // This is only needed when we are serializing pages. Not needed on single machine implementations that keep the pagecache in memory.
 
-
 var pageEncoder PageEncoderI
 
 type PageEncoderI interface {
 	NewEncoder(b *bytes.Buffer) Encoder
-	NewDecoder (b *bytes.Buffer) Decoder
+	NewDecoder(b *bytes.Buffer) Decoder
 }
 
 func SetPageEncoder(e PageEncoderI) {
@@ -25,7 +24,6 @@ func SetPageEncoder(e PageEncoderI) {
 	}
 	pageEncoder = e
 }
-
 
 // Encoder defines objects that can be encoded into a pagestate. If the object does not implement This, we will look for MarshalBinary support,
 // and finally just encode the exported members.
@@ -36,13 +34,13 @@ type Encoder interface {
 // Decoder defines objects that can be decoded from a pagestate. If the object does not implement This, we will look for MarshalBinary support,
 // and finally just decode using the exported members.
 type Decoder interface {
-	Decode (v interface{}) error
+	Decode(v interface{}) error
 }
 
 // Encodable defines the interface that all controls and any object inside a control should implement in order to serialize itself to the page cache
 type Encodable interface {
-	Encode (e Encoder) error
-	Decode (d Decoder) error
+	Encode(e Encoder) error
+	Decode(d Decoder) error
 }
 
 type GobPageEncoder struct {

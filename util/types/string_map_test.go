@@ -1,11 +1,10 @@
 package types
 
 import (
-	"testing"
 	"fmt"
 	"sort"
+	"testing"
 )
-
 
 func TestStringMap(t *testing.T) {
 	var s string
@@ -13,7 +12,7 @@ func TestStringMap(t *testing.T) {
 	m := NewStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	if s = m.Get("B"); s != "This" {
@@ -30,8 +29,7 @@ func TestStringMap(t *testing.T) {
 		t.Error("Len Failed.")
 	}
 
-
-	if  m.Has ("NOT THERE") {
+	if m.Has("NOT THERE") {
 		t.Error("Getting non-existant value did not return false")
 	}
 
@@ -41,16 +39,15 @@ func TestStringMap(t *testing.T) {
 	}
 
 	if !m.Has("B") {
-		t.Error ("Existance test failed.")
+		t.Error("Existance test failed.")
 	}
 
 	// Can set non-string values
 
 	m.Set("E", "8")
 	if m.Get("E") != "8" {
-		t.Error ("Setting non-string value failed.")
+		t.Error("Setting non-string value failed.")
 	}
-
 
 	// Verify it satisfies the StringMapI interface
 	var i StringMapI = m
@@ -69,7 +66,7 @@ func TestStringMapChange(t *testing.T) {
 	m := NewStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	if changed, _ := m.SetChanged("D", "And another"); !changed {
@@ -82,13 +79,12 @@ func TestStringMapChange(t *testing.T) {
 }
 
 func TestStringMapNotEqual(t *testing.T) {
-	m := StringMap{"A":"This","B":"That"}
-	n := StringMap{"B":"This", "A":"That"}
+	m := StringMap{"A": "This", "B": "That"}
+	n := StringMap{"B": "This", "A": "That"}
 	if m.Equals(n) {
 		t.Error("Equals test failed")
 	}
 }
-
 
 func ExampleStringMap_Set() {
 	m := NewStringMap()
@@ -100,7 +96,7 @@ func ExampleStringMap_Set() {
 func ExampleStringMap_Values() {
 	m := NewStringMap()
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	values := m.Values()
@@ -112,7 +108,7 @@ func ExampleStringMap_Values() {
 func ExampleStringMap_Keys() {
 	m := NewStringMap()
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	values := m.Keys()
@@ -121,22 +117,21 @@ func ExampleStringMap_Keys() {
 	//Output: [A B C]
 }
 
-
 func ExampleStringMap_Range() {
 	m := NewStringMap()
-	a :=[]string{}
+	a := []string{}
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
-	m.Range(func (key string, val string) bool {
+	m.Range(func(key string, val string) bool {
 		a = append(a, val)
-		return true	// keep iterating to the end
+		return true // keep iterating to the end
 	})
 	fmt.Println()
 
-	sort.Sort(sort.StringSlice(a))	// unordered maps cannot be guaranteed to range in a particular order. Sort it so we can compare it.
+	sort.Sort(sort.StringSlice(a)) // unordered maps cannot be guaranteed to range in a particular order. Sort it so we can compare it.
 	fmt.Println(a)
 	//Output: [Other That This]
 
@@ -146,24 +141,24 @@ func ExampleStringMap_Merge() {
 	m := NewStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
-	m.Merge(StringMap{"D":"Last"})
+	m.Merge(StringMap{"D": "Last"})
 
 	fmt.Println(m.Get("D"))
 	//Output: Last
 }
 
 func ExampleNewStringMapFrom() {
-	m := NewStringMapFrom(StringMap{"a":"this", "b":"that"})
+	m := NewStringMapFrom(StringMap{"a": "this", "b": "that"})
 	fmt.Println(m.Get("b"))
 	//Output: that
 }
 
 func ExampleStringMap_Equals() {
-	m := StringMap{"A":"This","B":"That"}
-	n := StringMap{"B":"That", "A":"This"}
+	m := StringMap{"A": "This", "B": "That"}
+	n := StringMap{"B": "That", "A": "This"}
 	if m.Equals(n) {
 		fmt.Print("Equal")
 	} else {

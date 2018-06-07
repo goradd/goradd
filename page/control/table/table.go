@@ -1,23 +1,22 @@
 package table
 
 import (
-	"github.com/spekary/goradd/page"
 	"bytes"
 	"context"
-	"github.com/spekary/goradd/html"
 	"fmt"
-	html2 "golang.org/x/net/html"
-	"strconv"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/control"
 	"github.com/spekary/goradd/page/event"
+	html2 "golang.org/x/net/html"
+	"strconv"
 )
 
 const (
 	ColumnAction = iota + 2000
 	SortClick
 )
-
 
 type TableI interface {
 	page.ControlI
@@ -33,22 +32,22 @@ type Table struct {
 	page.Control
 	control.DataManager
 
-	columns []ColumnI
-	renderColumnTags bool
-	caption interface{}
-	hideIfEmpty bool
-	headerRowCount int
-	footerRowCount int
+	columns               []ColumnI
+	renderColumnTags      bool
+	caption               interface{}
+	hideIfEmpty           bool
+	headerRowCount        int
+	footerRowCount        int
 	currentHeaderRowIndex int //??
-	currentRowIndex int			//??
-	rowStyler html.Attributer
-	headerRowStyler html.Attributer
-	footerRowStyler html.Attributer
-	columnIdCounter int
+	currentRowIndex       int //??
+	rowStyler             html.Attributer
+	headerRowStyler       html.Attributer
+	footerRowStyler       html.Attributer
+	columnIdCounter       int
 
 	// Sort info. Sorting is difficult enough, and intertwined with tables enough, that we just make it built in to every column
-	sortColumns []string	// keeps a historical list of columns sorted on
-	sortHistoryLimit int // how far back to go
+	sortColumns      []string // keeps a historical list of columns sorted on
+	sortHistoryLimit int      // how far back to go
 }
 
 func NewTable(parent page.ControlI) *Table {
@@ -56,7 +55,6 @@ func NewTable(parent page.ControlI) *Table {
 	t.Init(t, parent)
 	return t
 }
-
 
 func (t *Table) Init(self page.ControlI, parent page.ControlI) {
 	t.Control.Init(self, parent)
@@ -70,7 +68,6 @@ func (t *Table) SetCaption(caption interface{}) {
 	t.caption = caption
 }
 
-
 func (t *Table) SetHeaderRowCount(count int) *Table {
 	t.headerRowCount = count
 	return t
@@ -82,15 +79,16 @@ func (t *Table) SetFooterRowCount(count int) *Table {
 }
 
 func (t *Table) DrawTag(ctx context.Context) string {
-	t.GetData(ctx, t)
-	defer t.ResetData()
+	if t.HasDataProvider() {
+		t.GetData(ctx, t)
+		defer t.ResetData()
+	}
 	return t.Control.DrawTag(ctx)
 }
 
-
 func (t *Table) DrawingAttributes() *html.Attributes {
 	a := t.Control.DrawingAttributes()
-	t.SetDataAttribute("grctl", "table")
+	a.SetDataAttribute("grctl", "table")
 	if t.Data == nil {
 		a.SetStyle("display", "none")
 	}
@@ -98,19 +96,22 @@ func (t *Table) DrawingAttributes() *html.Attributes {
 }
 
 func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	var t2 = t.This().(TableI)	// Get the sub class so we call into its hooks for drawing
+	var t2 = t.This().(TableI) // Get the sub class so we call into its hooks for drawing
 
 	buf1 := page.GetBuffer()
 	defer page.PutBuffer(buf1)
 	buf2 := page.GetBuffer()
 	defer page.PutBuffer(buf2)
-	defer func() {buf.WriteString(buf1.String())}()	// Make sure we write out the content of buf 1 even on an error
+	defer func() { buf.WriteString(buf1.String()) }() // Make sure we write out the content of buf 1 even on an error
 
-	if err = t2.DrawCaption(ctx, buf1); err != nil {return}
-
+	if err = t2.DrawCaption(ctx, buf1); err != nil {
+		return
+	}
 
 	if t.renderColumnTags {
-		if err = t.drawColumnTags(ctx, buf1); err != nil {return}
+		if err = t.drawColumnTags(ctx, buf1); err != nil {
+			return
+		}
 	}
 
 	if t.headerRowCount > 0 {
@@ -131,10 +132,12 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 		buf2.Reset()
 	}
 
-	if t.Data != nil && len (t.Data) > 0 {
-		for i,row := range t.Data {
+	if t.Data != nil && len(t.Data) > 0 {
+		for i, row := range t.Data {
 			err = t.drawRow(ctx, i, row, buf2)
-			if err != nil {return}
+			if err != nil {
+				return
+			}
 		}
 	}
 	buf1.WriteString(html.RenderTag("tbody", nil, buf2.String()))
@@ -170,12 +173,12 @@ func (t *Table) drawColumnTags(ctx context.Context, buf *bytes.Buffer) (err erro
 }
 
 func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
-	var t2 = t.This().(TableI)	// Get the sub class so we call into its hooks for drawing
+	var t2 = t.This().(TableI) // Get the sub class so we call into its hooks for drawing
 
 	buf1 := page.GetBuffer()
 	defer page.PutBuffer(buf1)
 	for rowNum := 0; rowNum < t.headerRowCount; rowNum++ {
-		for colNum,col := range t.columns {
+		for colNum, col := range t.columns {
 			if !col.IsHidden() {
 				cellHtml, attr := t2.HeaderCellDrawingInfo(ctx, col, rowNum, colNum)
 				buf.WriteString(html.RenderTag("th", attr, cellHtml))
@@ -204,7 +207,7 @@ func (t *Table) drawFooterRows(ctx context.Context, buf *bytes.Buffer) (err erro
 	buf1 := page.GetBuffer()
 	defer page.PutBuffer(buf1)
 	for j := 0; j < t.footerRowCount; j++ {
-		for i,col := range t.columns {
+		for i, col := range t.columns {
 			col.DrawFooterCell(ctx, j, i, t.footerRowCount, buf1)
 		}
 		buf.WriteString(html.RenderTag("tr", t.GetFooterRowAttributes(j), buf1.String()))
@@ -221,10 +224,10 @@ func (t *Table) GetFooterRowAttributes(row int) *html.Attributes {
 }
 
 func (t *Table) drawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error) {
-	var t2 = t.This().(TableI)	// Get the sub class so we call into its hooks for drawing
+	var t2 = t.This().(TableI) // Get the sub class so we call into its hooks for drawing
 	buf1 := page.GetBuffer()
 	defer page.PutBuffer(buf1)
-	for i,col := range t.columns {
+	for i, col := range t.columns {
 		col.DrawCell(ctx, row, i, data, buf1)
 	}
 	buf.WriteString(html.RenderTag("tr", t2.GetRowAttributes(row, data), buf1.String()))
@@ -239,7 +242,7 @@ func (t *Table) GetRowAttributes(row int, data interface{}) *html.Attributes {
 }
 
 func (t *Table) AddColumnAt(column ColumnI, loc int) {
-	t.columnIdCounter ++
+	t.columnIdCounter++
 	column.setParentTable(t)
 	if column.ID() == "" {
 		column.SetID(t.ID() + "_" + strconv.Itoa(t.columnIdCounter))
@@ -256,8 +259,9 @@ func (t *Table) AddColumnAt(column ColumnI, loc int) {
 	t.Refresh()
 }
 
-func (t *Table) AddColumn(column ColumnI) {
+func (t *Table) AddColumn(column ColumnI) ColumnI {
 	t.AddColumnAt(column, -1)
+	return column
 }
 
 func (t *Table) GetColumn(loc int) ColumnI {
@@ -265,7 +269,7 @@ func (t *Table) GetColumn(loc int) ColumnI {
 }
 
 func (t *Table) GetColumnByID(id string) ColumnI {
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		if col.ID() == id {
 			return col
 		}
@@ -274,7 +278,7 @@ func (t *Table) GetColumnByID(id string) ColumnI {
 }
 
 func (t *Table) GetColumnByTitle(title string) ColumnI {
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		if col.Title() == title {
 			return col
 		}
@@ -290,7 +294,7 @@ func (t *Table) RemoveColumn(loc int) {
 }
 
 func (t *Table) RemoveColumnByID(id string) {
-	for i,col := range t.columns {
+	for i, col := range t.columns {
 		if col.ID() == id {
 			t.RemoveColumn(i)
 			t.Refresh()
@@ -300,7 +304,7 @@ func (t *Table) RemoveColumnByID(id string) {
 }
 
 func (t *Table) RemoveColumnByTitle(title string) {
-	for i,col := range t.columns {
+	for i, col := range t.columns {
 		if col.Title() == title {
 			t.RemoveColumn(i)
 			t.Refresh()
@@ -317,14 +321,14 @@ func (t *Table) ClearColumns() {
 }
 
 func (t *Table) HideColumns() {
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		col.SetHidden(true)
 	}
 	t.Refresh()
 }
 
 func (t *Table) ShowColumns() {
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		col.SetHidden(false)
 	}
 	t.Refresh()
@@ -342,10 +346,9 @@ func (t *Table) SetFooterRowStyler(a html.Attributer) {
 	t.rowStyler = a
 }
 
-
 // UpdateFormValues is called by the system whenever values are sent by client controls. We forward that to the columns.
 func (t *Table) UpdateFormValues(ctx *page.Context) {
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		col.UpdateFormValues(ctx)
 	}
 }
@@ -356,7 +359,7 @@ func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
 		var subId string
 		var a action.CallbackActionI
 		var ok bool
-		if a,ok = p.Action.(action.CallbackActionI); !ok {
+		if a, ok = p.Action.(action.CallbackActionI); !ok {
 			panic("Column actions must be a callback action")
 		}
 		if subId = a.GetDestinationControlSubID(); subId == "" {
@@ -400,7 +403,7 @@ func (t *Table) sortClick(id string) {
 			return
 		}
 
-		firstCol.SetSortDirection(NotSorted)	// tell the first one in the list to not be sorted
+		firstCol.SetSortDirection(NotSorted) // tell the first one in the list to not be sorted
 
 		// remove the column from the sort list if it is there
 		for i := 0; i < len(t.sortColumns); i++ {
@@ -422,13 +425,13 @@ func (t *Table) sortClick(id string) {
 
 	//remove back
 	if len(t.sortColumns) > t.sortHistoryLimit {
-		t.sortColumns = t.sortColumns[:len(t.sortColumns) - 1]
+		t.sortColumns = t.sortColumns[:len(t.sortColumns)-1]
 	}
 }
 
 // SortColumns returns a slice of columns in sort order
 func (t *Table) SortColumns() (ret []ColumnI) {
-	for _,id := range t.sortColumns {
+	for _, id := range t.sortColumns {
 		if col := t.GetColumnByID(id); col != nil {
 			ret = append(ret, col)
 		}

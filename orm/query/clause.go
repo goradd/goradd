@@ -6,7 +6,7 @@ type ClauseI interface {
 
 type LimitClause struct {
 	maxRowCount int
-	offset int
+	offset      int
 }
 
 func Limit(maxRowCount int, offset int) *LimitClause {
@@ -18,7 +18,7 @@ func (c *LimitClause) AddToBuilder(b QueryBuilderI) {
 }
 
 type ExpandClause struct {
-	node NodeI
+	node      NodeI
 	condition NodeI
 }
 
@@ -34,7 +34,7 @@ type OrderByClause struct {
 	nodes []NodeI
 }
 
-func OrderBy(nodes... NodeI) *OrderByClause {
+func OrderBy(nodes ...NodeI) *OrderByClause {
 	return &OrderByClause{nodes}
 }
 
@@ -46,12 +46,10 @@ type SelectClause struct {
 	nodes []NodeI
 }
 
-func Select(nodes... NodeI) *SelectClause {
+func Select(nodes ...NodeI) *SelectClause {
 	return &SelectClause{nodes}
 }
 
 func (c *SelectClause) AddToBuilder(b QueryBuilderI) {
 	b.Select(c.nodes...)
 }
-
-

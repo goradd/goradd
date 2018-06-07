@@ -1,21 +1,28 @@
 package control
 
 import (
-	localPage "goradd/page"
-	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/util"
-	"github.com/spekary/goradd/page/action"
-	"context"
-	"strconv"
-	"github.com/spekary/goradd/javascript"
 	"bytes"
+	"context"
 	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/javascript"
+	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/page/action"
+	"github.com/spekary/goradd/util"
 	"github.com/spekary/goradd/util/types"
+	localPage "goradd/page"
+	"strconv"
 )
 
 const (
-	PageClick  = iota + 1000
+	PageClick = iota + 1000
 )
+
+// DataPagerI is the data pager interface that allows this object to call into subclasses.
+type DataPagerI interface {
+	PreviousButtonsHtml() string
+	NextButtonsHtml() string
+	PageButtonsHtml(i int) string
+}
 
 // DataPager is a toolbar designed to aid scrolling through a large set of data. It is implemented using Aria design
 // best practices. It is designed to be paired with a Table or DataRepeater to aid in navigating through the data.
@@ -24,37 +31,43 @@ const (
 type DataPager struct {
 	localPage.Control
 
-	totalItems int
-	pageSize int
-	pageNum int
-	maxPageButtons int
-	objectName string
-	objectPluralName string
-	labelForNext string
-	labelForPrevious string
+	totalItems       int
+	pageSize         int
+	pageNum          int
+	maxPageButtons   int
+	ObjectName       string
+	ObjectPluralName string
+	LabelForNext     string
+	LabelForPrevious string
 
-	paginatedControl page.ControlI	// TODO: Switch to a Scrollerer or ScrollI. Scrolled control should be able to draw just a portion of itself
+	paginatedControl page.ControlI // TODO: Switch to a Scrollerer or ScrollI. Scrolled control should be able to draw just a portion of itself
 
-	proxy *Proxy
+	Proxy *Proxy
 }
 
 func NewDataPager(parent page.ControlI, paginatedControl page.ControlI) *DataPager {
-	p := DataPager{paginatedControl:paginatedControl}
-	p.Init(parent)
-	return &p
+	d := DataPager{}
+	d.Tag = "div"
+	d.LabelForNext = d.T("Next")
+	d.LabelForPrevious = d.T("Previous")
+	d.maxPageButtons = 10
+	d.Init(&d, parent, paginatedControl)
+	return &d
 }
 
-func (d *DataPager) Init(parent page.ControlI) {
-	d.Control.Init(d, parent)
-	d.labelForNext = d.T("Next")
-	d.labelForPrevious = d.T("Previous")
-	d.maxPageButtons = 10
-	d.proxy = NewProxy(d)
-	d.proxy.OnClick(action.Ajax(d.ID(), PageClick))
-	d.Tag = "div"
+func (d *DataPager) Init(self page.ControlI, parent page.ControlI, paginatedControl page.ControlI) {
+	d.Control.Init(self, parent)
+	d.paginatedControl = paginatedControl
+	d.Proxy = NewProxy(d)
+	d.Proxy.OnClick(action.Ajax(d.ID(), PageClick))
 	d.SetAttribute("role", "tablist")
-	d.AddClass("data-scrollbar")
 	d.pageNum = 1
+}
+
+func (d *DataPager) DrawingAttributes() *html.Attributes {
+	a := d.Control.DrawingAttributes()
+	a.SetDataAttribute("grctl", "datapager")
+	return a
 }
 
 func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
@@ -64,8 +77,8 @@ func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
 	}
 }
 
-func (d *DataPager) SetTotalItems(count int) {
-	d.totalItems = count
+func (d *DataPager) SetTotalItems(count uint) {
+	d.totalItems = int(count)
 	d.limitPageNumber()
 	d.Refresh()
 }
@@ -74,7 +87,7 @@ func (d *DataPager) TotalItems() int {
 	return d.totalItems
 }
 
-func (d *DataPager)  SetPageSize(size int) {
+func (d *DataPager) SetPageSize(size int) {
 	d.pageSize = size
 }
 
@@ -104,15 +117,15 @@ func (d *DataPager) SetMaxPageButtons(b int) {
 }
 
 func (d *DataPager) SetObjectNames(singular string, plural string) {
-	d.objectName = singular
-	d.objectPluralName = plural
+	d.ObjectName = singular
+	d.ObjectPluralName = plural
 }
 
 // SliceOffsets returns the start and end values to use to specify a portion of a slice corresponding to the
 // data the pager refers to
 func (d *DataPager) SliceOffsets() (start, end int) {
 	start = (d.pageNum - 1) * d.pageSize
-	end = util.MinInt(start + d.pageSize, d.totalItems)
+	end = util.MinInt(start+d.pageSize, d.totalItems)
 	return
 }
 
@@ -123,15 +136,14 @@ func (d *DataPager) SqlLimits() (maxRowCount, offset int) {
 	return
 }
 
-
 // SetLabels sets the previous and next labels. Translate these first.
 func (d *DataPager) SetLabels(previous string, next string) {
-	d.labelForPrevious = previous
-	d.labelForNext = next
+	d.LabelForPrevious = previous
+	d.LabelForNext = next
 }
 
 func (d *DataPager) limitPageNumber() {
-	pageCount := d.calcPageCount()
+	pageCount := d.CalcPageCount()
 
 	if d.pageNum > pageCount {
 		if pageCount <= 1 {
@@ -142,11 +154,11 @@ func (d *DataPager) limitPageNumber() {
 	}
 }
 
-func (d *DataPager) calcPageCount() int {
+func (d *DataPager) CalcPageCount() int {
 	if d.pageSize == 0 || d.totalItems == 0 {
 		return 0
 	}
-	return (d.totalItems - 1)/d.pageSize + 1
+	return (d.totalItems-1)/d.pageSize + 1
 }
 
 /**
@@ -200,11 +212,11 @@ func (d *DataPager) calcPageCount() int {
 
 Note: there are likely better ways to do this. Some innovative ones are to have groups of 10s, and then 100s etc.
 Or, use the ellipsis as a dropdown menu for more selections
- */
+*/
 
-func (d *DataPager) calcBunch() (pageStart, pageEnd int) {
+func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 
-	pageCount := d.calcPageCount()
+	pageCount := d.CalcPageCount()
 	if pageCount <= d.maxPageButtons {
 		return 1, pageCount
 	} else {
@@ -233,25 +245,24 @@ func (d *DataPager) calcBunch() (pageStart, pageEnd int) {
 }
 
 func (d *DataPager) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	h := d.previousButtonsHtml()
-	pageStart, pageEnd := d.calcBunch()
+	h := d.Self.(DataPagerI).PreviousButtonsHtml()
+	pageStart, pageEnd := d.CalcBunch()
 	for i := pageStart; i <= pageEnd; i++ {
-		h += d.pageButtonsHtml(i)
+		h += d.Self.(DataPagerI).PageButtonsHtml(i)
 	}
 
-	h += d.nextButtonsHtml()
-	_,err = buf.WriteString(h)
+	h += d.Self.(DataPagerI).NextButtonsHtml()
+	_, err = buf.WriteString(h)
 	return
 }
 
-
-func (d *DataPager) previousButtonsHtml() string {
+func (d *DataPager) PreviousButtonsHtml() string {
 	var prev string
 	var actionValue string
 	actionValue = strconv.Itoa(d.pageNum - 1)
 
 	attr := html.NewAttributes().
-		Set("id", d.ID() + "_arrow_" + actionValue).
+		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("arrow previous")
 
 	if d.pageNum <= 1 {
@@ -259,47 +270,48 @@ func (d *DataPager) previousButtonsHtml() string {
 		attr.SetStyle("cursor", "not-allowed")
 	}
 
-	prev = d.proxy.ButtonHtml(d.labelForPrevious, actionValue, attr, false)
+	prev = d.Proxy.ButtonHtml(d.LabelForPrevious, actionValue, attr, false)
 
 	h := prev
-	pageStart, _ := d.calcBunch()
+	pageStart, _ := d.CalcBunch()
 	if pageStart != 1 {
-		h += d.pageButtonsHtml(1)
+		h += d.Self.(DataPagerI).PageButtonsHtml(1)
 		h += `<span class="ellipsis">&hellip;</span>`
 	}
 	return h
 }
 
-func (d *DataPager) nextButtonsHtml() string {
+func (d *DataPager) NextButtonsHtml() string {
 	var next string
 	var actionValue string
 
 	attr := html.NewAttributes().
-		Set("id", d.ID() + "_arrow_" + actionValue).
+		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("arrow next")
 
 	actionValue = strconv.Itoa(d.pageNum + 1)
 
-	_, pageEnd := d.calcBunch()
-	pageCount := d.calcPageCount()
+	_, pageEnd := d.CalcBunch()
+	pageCount := d.CalcPageCount()
 
-	if d.pageNum >= pageCount {
+	if d.PageNum() >= pageCount-1 {
 		attr.SetDisabled(true)
+		attr.SetStyle("cursor", "not-allowed")
 	}
 
-	next = d.proxy.ButtonHtml(d.labelForNext, actionValue, attr, false)
+	next = d.Proxy.ButtonHtml(d.LabelForNext, actionValue, attr, false)
 
 	h := next
 	if pageEnd != pageCount {
-		h += d.pageButtonsHtml(pageCount) + h
+		h += d.Self.(DataPagerI).PageButtonsHtml(pageCount) + h
 		h = `<span class="ellipsis">&hellip;</span>` + h
 	}
 	return h
 }
 
-func (d *DataPager) pageButtonsHtml(i int) string {
+func (d *DataPager) PageButtonsHtml(i int) string {
 	actionValue := strconv.Itoa(i)
-	attr := html.NewAttributes().Set("id", d.ID() + "_page_" + actionValue).Set("role","tab").AddClass("page")
+	attr := html.NewAttributes().Set("id", d.ID()+"_page_"+actionValue).Set("role", "tab").AddClass("page")
 	if d.pageNum == i {
 		attr.AddClass("selected")
 		attr.Set("aria-selected", "true")
@@ -309,7 +321,7 @@ func (d *DataPager) pageButtonsHtml(i int) string {
 		attr.Set("tabindex", "-1")
 		// TODO: We need javascript to respond to arrow keys to set the focus on the buttons. User could then press space to click on button.
 	}
-	return d.proxy.ButtonHtml(actionValue, actionValue, attr, false)
+	return d.Proxy.ButtonHtml(actionValue, actionValue, attr, false)
 }
 
 // MarshalState is an internal function to save the state of the control
@@ -320,7 +332,7 @@ func (d *DataPager) MarshalState(m types.MapI) {
 // UnmarshalState is an internal function to restore the state of the control
 func (d *DataPager) UnmarshalState(m types.MapI) {
 	if m.Has("pageNum") {
-		i,_ := m.GetInt("pageNum")
+		i, _ := m.GetInt("pageNum")
 		d.pageNum = i
 	}
 }

@@ -1,10 +1,10 @@
 package html
 
 import (
-	"strings"
-	html2 "html"
-	"goradd/config"
 	"fmt"
+	"goradd/config"
+	html2 "html"
+	"strings"
 )
 
 type LabelDrawingMode int
@@ -12,15 +12,15 @@ type LabelDrawingMode int
 // The label drawing mode describes how to draw a label when it is drawn. Various CSS frameworks expect it a certain way. Many
 // are not very forgiving when you don't do it the way they expect.
 const (
-	LABEL_DEFAULT LabelDrawingMode = iota		// Label mode is defined elsewhere, like in a config setting
-	LABEL_BEFORE 								// Label tag is before the control's tag, and terminates before the control
-	LABEL_AFTER									// Label tag is after the control's tag, and start after the control
-	WRAP_LABEL_BEFORE							// Label tag is before the control's tag, and wraps the control tag
-	WRAP_LABEL_AFTER							// Label tag is after the control's tag, and wraps the control tag
+	LABEL_DEFAULT     LabelDrawingMode = iota // Label mode is defined elsewhere, like in a config setting
+	LABEL_BEFORE                              // Label tag is before the control's tag, and terminates before the control
+	LABEL_AFTER                               // Label tag is after the control's tag, and start after the control
+	WRAP_LABEL_BEFORE                         // Label tag is before the control's tag, and wraps the control tag
+	WRAP_LABEL_AFTER                          // Label tag is after the control's tag, and wraps the control tag
 )
 
 type VoidTag struct {
-	Tag string
+	Tag  string
 	Attr *Attributes
 }
 
@@ -55,16 +55,16 @@ func RenderTag(tag string, attr *Attributes, innerHtml string) string {
 	ret := "<" + tag + attrString + ">"
 
 	if innerHtml == "" {
-		ret +=  "</" + tag + ">"
+		ret += "</" + tag + ">"
 	} else {
-		if innerHtml[len(innerHtml) - 1:] != "\n" {
+		if innerHtml[len(innerHtml)-1:] != "\n" {
 			innerHtml += "\n"
 		}
 		if !config.Minify {
 			innerHtml = Indent(innerHtml)
 		}
 
-		ret += "\n"	+ // required here for consistency, will force a space between itself and its neighbors in certain situations
+		ret += "\n" + // required here for consistency, will force a space between itself and its neighbors in certain situations
 			innerHtml +
 			"</" + tag + ">\n"
 	}
@@ -89,16 +89,15 @@ func RenderTagNoSpace(tag string, attr *Attributes, innerHtml string) string {
 		if !config.Minify {
 			innerHtml = Indent(innerHtml)
 		}
-		if innerHtml[len(innerHtml) - 1:] != "\n" {
+		if innerHtml[len(innerHtml)-1:] != "\n" {
 			innerHtml += "\n"
 		}
-		ret += "\n"	+ // innerhtml is a tag, and so spacing will not matter, so make it look good
+		ret += "\n" + // innerhtml is a tag, and so spacing will not matter, so make it look good
 			innerHtml +
 			"</" + tag + ">\n"
 	}
 	return ret
 }
-
 
 // A utility function to render a label, together with its text. Various CSS frameworks require labels to be rendered
 // a certain way.
@@ -111,11 +110,11 @@ func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mod
 	case LABEL_AFTER:
 		return ctrlHtml + RenderTagNoSpace(tag, labelAttributes, label)
 	case WRAP_LABEL_BEFORE:
-		return RenderTag(tag, labelAttributes, label + " " + ctrlHtml)
+		return RenderTag(tag, labelAttributes, label+" "+ctrlHtml)
 	case WRAP_LABEL_AFTER:
-		return RenderTag(tag, labelAttributes,ctrlHtml + " " + label)
+		return RenderTag(tag, labelAttributes, ctrlHtml+" "+label)
 	}
-	panic ("Unknown label mode")
+	panic("Unknown label mode")
 }
 
 func RenderImage(src string, alt string, attributes *Attributes) string {
@@ -139,7 +138,7 @@ func Indent(s string) string {
 	}
 
 	in := "  "
-	r := strings.NewReplacer("\n", "\n" + in)
+	r := strings.NewReplacer("\n", "\n"+in)
 	s = r.Replace(s)
 	return in + strings.TrimSuffix(s, in)
 }

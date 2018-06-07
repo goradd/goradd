@@ -1,10 +1,10 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/html"
 	"bytes"
 	"context"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
 	html2 "html"
 	"strconv"
 )
@@ -17,11 +17,11 @@ type OrderedList struct {
 }
 
 const (
-	OrderedListNumberTypeNumber = "1"	// default
+	OrderedListNumberTypeNumber      = "1" // default
 	OrderedListNumberTypeUpperLetter = "A"
 	OrderedListNumberTypeLowerLetter = "a"
-	OrderedListNumberTypeUpperRoman = "I"
-	OrderedListNumberTypeLowerRoman = "i"
+	OrderedListNumberTypeUpperRoman  = "I"
+	OrderedListNumberTypeLowerRoman  = "i"
 )
 
 func NewOrderedList(parent page.ControlI) *OrderedList {
@@ -30,7 +30,6 @@ func NewOrderedList(parent page.ControlI) *OrderedList {
 	t.Init(t, parent)
 	return t
 }
-
 
 func (l *OrderedList) Init(self page.ControlI, parent page.ControlI) {
 	l.UnorderedList.Init(self, parent)
@@ -46,7 +45,7 @@ func (l *OrderedList) SetNumberType(t string) *OrderedList {
 
 // SetStart sets the starting number for the numbers in the top level list. To set the start of a sub-list, set
 // the "start" attribute on the list item that is the parent of the sub-list.
-func (l *OrderedList) SetStart (start int) *OrderedList {
+func (l *OrderedList) SetStart(start int) *OrderedList {
 	l.SetAttribute("start", strconv.Itoa(start))
 	return l
 }
@@ -68,7 +67,7 @@ func (l *OrderedList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err
 func (l *OrderedList) getItemsHtml(items []ListItemI) string {
 	var h = ""
 
-	for _,item := range items {
+	for _, item := range items {
 		if item.HasChildItems() {
 			innerhtml := l.getItemsHtml(item.ListItems())
 			a := item.Attributes().Clone()
@@ -86,7 +85,7 @@ func (l *OrderedList) getItemsHtml(items []ListItemI) string {
 			}
 
 			innerhtml = html.RenderTag(l.Tag, a2, innerhtml)
-			h += html.RenderTag(l.subItemTag, a, item.Label() + " " + innerhtml)
+			h += html.RenderTag(l.subItemTag, a, item.Label()+" "+innerhtml)
 		} else {
 			h += html.RenderTag(l.subItemTag, item.Attributes(), html2.EscapeString(item.Label()))
 		}

@@ -10,29 +10,27 @@ type ColumnNode struct {
 	Node
 
 	// Which database in the global list of databases does the node belong to
-	dbKey			string
+	dbKey string
 	// Name of table in the database we point to
-	dbTable       string
+	dbTable string
 	// The name of the table in the database
-	dbColumn       string
+	dbColumn string
 	// The name of the function used to access the property as a node or ORM item
-	goName			string
-	goType 			GoColumnType
+	goName string
+	goType GoColumnType
 	// Used by OrderBy clauses
-	sortDescending	bool
+	sortDescending bool
 	// When in an update or insert operation, stores the value we are attempting to update or insert
 	value interface{}
 }
 
-
-
 func NewColumnNode(dbKey string, dbTable string, dbName string, goName string, goType GoColumnType) *ColumnNode {
-	n := &ColumnNode {
-		dbKey:      dbKey,
-		dbTable:    dbTable,
-		dbColumn:   dbName,
-		goName:     goName,
-		goType:     goType,
+	n := &ColumnNode{
+		dbKey:    dbKey,
+		dbTable:  dbTable,
+		dbColumn: dbName,
+		goName:   goName,
+		goType:   goType,
 	}
 	return n
 }
@@ -42,7 +40,7 @@ func (n *ColumnNode) Ascending() NodeI {
 	return n
 }
 
-func (n *ColumnNode) Descending() NodeI  {
+func (n *ColumnNode) Descending() NodeI {
 	n.sortDescending = true
 	return n
 }
@@ -50,7 +48,6 @@ func (n *ColumnNode) Descending() NodeI  {
 func (n *ColumnNode) sortDesc() bool {
 	return n.sortDescending
 }
-
 
 func (n *ColumnNode) SetValue(v interface{}) error {
 	// TODO: verify
@@ -63,10 +60,10 @@ func (n *ColumnNode) nodeType() NodeType {
 }
 
 func (n *ColumnNode) Equals(n2 NodeI) bool {
-	if cn,ok := n2.(*ColumnNode); ok {
+	if cn, ok := n2.(*ColumnNode); ok {
 		if cn.dbTable == n.dbTable && cn.dbColumn == n.dbColumn {
 			// Special code to allow new nodes to be evaluated as equal, but manual aliased nodes are not equal.
-			if n.GetAlias() == "" || n2.GetAlias() == ""  {
+			if n.GetAlias() == "" || n2.GetAlias() == "" {
 				return true
 			}
 			if n.GetAlias() == n2.GetAlias() {
@@ -87,7 +84,7 @@ func (n *ColumnNode) tableName() string {
 
 func (n *ColumnNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	var  alias string
+	var alias string
 	if n.alias != "" {
 		alias = " as " + n.alias
 	}
@@ -95,10 +92,10 @@ func (n *ColumnNode) log(level int) {
 	log.Print(tabs + "Col: " + n.dbTable + "." + n.dbColumn + alias)
 }
 
-func ColumnNodeGoType (n *ColumnNode) GoColumnType {
+func ColumnNodeGoType(n *ColumnNode) GoColumnType {
 	return n.goType
 }
 
-func ColumnNodeDbName (n *ColumnNode) string {
+func ColumnNodeDbName(n *ColumnNode) string {
 	return n.dbColumn
 }

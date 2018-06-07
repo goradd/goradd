@@ -1,9 +1,9 @@
 package datetime
 
 import (
-	"time"
-	"strings"
 	"log"
+	"strings"
+	"time"
 )
 
 const (
@@ -28,16 +28,14 @@ const (
 
 	// Our additional formatters
 
-	SqlDateTime		= "2006-01-02 15:04:05.000000"
+	SqlDateTime = "2006-01-02 15:04:05.000000"
 )
 
-
 func Parse(layout, value string) (DateTime, error) {
-	t,err := time.Parse(layout, value)
+	t, err := time.Parse(layout, value)
 
 	return DateTime{t}, err
 }
-
 
 // FromSqlDateTime will receive a Date, Time, DateTime or Timestamp type of string that is typically output by SQL and
 // convert it to our own DateTime object.

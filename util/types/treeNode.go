@@ -3,7 +3,7 @@ package types
 // An interface and structure together that can turn any struct into a tree structure with parent/child relationships
 // To use it, simply embed the TreeNode structure into another structure and call Init. This TreeNodeI structure will
 // be convertable to the parent object
-type  TreeNodeI interface {
+type TreeNodeI interface {
 	AddChildNode(TreeNodeI)
 	RemoveAllChildNodes()
 	RemoveChildNode(TreeNodeI)
@@ -16,7 +16,7 @@ type  TreeNodeI interface {
 // A kind of mixin for anything that controls child controls, which are all controls, but also the top level form or page
 // Creates a parent/child tree of controls that is used by the drawing code to draw the controls
 type TreeNode struct {
-	self TreeNodeI
+	self     TreeNodeI
 	parent   TreeNodeI
 	children []TreeNodeI
 }
@@ -41,7 +41,7 @@ func (n *TreeNode) AddChildNode(c TreeNodeI) {
 
 // The central removal function. Manages the entire remove process. Other removal functions should call here.
 func (n *TreeNode) RemoveChildNode(c TreeNodeI) {
-	for i,v := range n.children {
+	for i, v := range n.children {
 		if v == c {
 			n.children = append(n.children[:i], n.children[i+1:]...) // remove found item from list
 			break
@@ -56,7 +56,6 @@ func (n *TreeNode) RemoveAllChildNodes() {
 func (n *TreeNode) ParentNode() TreeNodeI {
 	return n.parent
 }
-
 
 func (n *TreeNode) SetParent(p TreeNodeI) {
 	n.parent = p

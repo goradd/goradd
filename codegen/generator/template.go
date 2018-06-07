@@ -23,8 +23,6 @@ type TypeTableTemplateI interface {
 	Overwrite() bool
 }
 
-
-
 //type TemplateFunc func(codegen *Codegen, t *TableType, buf *bytes.Buffer)
 
 // Will be populated by the individual templates found

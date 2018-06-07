@@ -3,20 +3,19 @@ package event
 import "github.com/spekary/goradd/page"
 
 const (
-	CellClickDefault = `{"row": this.parentElement.rowIndex, "col": this.cellIndex}`
-	CellClickRowIndex = `this.parentElement.rowIndex`
+	CellClickDefault     = `{"row": this.parentElement.rowIndex, "col": this.cellIndex}`
+	CellClickRowIndex    = `this.parentElement.rowIndex`
 	CellClickColumnIndex = `this.cellIndex`
-	CellClickCellId = `this.id`
-	CellClickRowId = `$j(this).parent().attr("id")`
-	CellClickRowValue = `$j(this).parent().data("value")`
-	CellClickColId = `$j(this).parent().closest("table").find("thead").find("th")[this.cellIndex].id`
+	CellClickCellId      = `this.id`
+	CellClickRowId       = `$j(this).parent().attr("id")`
+	CellClickRowValue    = `$j(this).parent().data("value")`
+	CellClickColId       = `$j(this).parent().closest("table").find("thead").find("th")[this.cellIndex].id`
 )
 
 // CellClickEvent is a cell click event. Do not create it directly, but rather use CellClick()
 type CellClickEvent struct {
 	page.Event
 }
-
 
 /**
  * CellClick returns an event to detect clicking on a table cell.
@@ -44,9 +43,8 @@ type CellClickEvent struct {
  * Or you can put it in a javascript object, and a named array(hash) will be returned.
  */
 
-
 func CellClick() *CellClickEvent {
-	e := &CellClickEvent {page.Event{JsEvent:"click"}}
+	e := &CellClickEvent{page.Event{JsEvent: "click"}}
 	e.Selector("th,td").ActionValue(CellClickDefault)
 	return e
 }
@@ -68,4 +66,3 @@ func (e *CellClickEvent) CellDataActionValue(key string) *CellClickEvent {
 	e.ActionValue(`$j(this).data("` + key + `")`)
 	return e
 }
-

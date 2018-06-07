@@ -17,17 +17,16 @@ const (
 type NodeType int
 
 const (
-	UNKNOWN_NODE_TYPE		NodeType = iota
+	UNKNOWN_NODE_TYPE NodeType = iota
 	TABLE_NODE
 	COLUMN_NODE
-	REFERENCE_NODE                                                     // forward reference from a foreign key
+	REFERENCE_NODE // forward reference from a foreign key
 	MANYMANY_NODE
 	REVERSE_REFERENCE_NODE
 	VALUE_NODE
 	OPERATION_NODE
 	ALIAS_NODE
 	SUBQUERY_NODE
-
 )
 
 type goNamer interface {
@@ -61,8 +60,8 @@ type NodeI interface {
 
 type Node struct {
 	nodeLink
-	condition NodeI	// Used only by expansion nodes
-	alias string
+	condition NodeI // Used only by expansion nodes
+	alias     string
 }
 
 type conditioner interface {
@@ -78,7 +77,6 @@ func (n *Node) GetAlias() string {
 	return n.alias
 }
 
-
 /**
 
 Public Accessors
@@ -88,9 +86,9 @@ given an accessor at the beginning so that they do not show up as a function in 
 trying to put together a node chain during the code creation process. Essentially they are trying to create exported
 functions for the db package without broadcasting them to the world.
 
- */
+*/
 
-func NodeTableName (n NodeI) string {
+func NodeTableName(n NodeI) string {
 	return n.tableName()
 }
 
@@ -128,7 +126,6 @@ func NodeCondition(n NodeI) NodeI {
 	return nil
 }
 
-
 func ContainedNodes(n NodeI) (nodes []NodeI) {
 	if nc, ok := n.(nodeContainer); ok {
 		return nc.containedNodes()
@@ -147,7 +144,7 @@ func GetNodeType(n NodeI) NodeType {
 
 func NodeIsExpanded(n NodeI) bool {
 	if tn, ok := n.(TableNodeI); ok {
-		if en,ok := tn.EmbeddedNode_().(Expander); ok {
+		if en, ok := tn.EmbeddedNode_().(Expander); ok {
 			return en.isExpanded()
 		}
 	}
@@ -156,7 +153,7 @@ func NodeIsExpanded(n NodeI) bool {
 
 func NodeIsExpander(n NodeI) bool {
 	if tn, ok := n.(TableNodeI); ok {
-		if _,ok := tn.EmbeddedNode_().(Expander); ok {
+		if _, ok := tn.EmbeddedNode_().(Expander); ok {
 			return true
 		}
 	}
@@ -165,20 +162,20 @@ func NodeIsExpander(n NodeI) bool {
 
 func ExpandNode(n NodeI) {
 	if tn, ok := n.(TableNodeI); ok {
-		if en,ok := tn.EmbeddedNode_().(Expander); ok {
+		if en, ok := tn.EmbeddedNode_().(Expander); ok {
 			en.Expand()
 		} else {
-			panic ("Cannot expand a node of this type")
+			panic("Cannot expand a node of this type")
 		}
 	} else {
-		panic ("Cannot expand a node of this type")
+		panic("Cannot expand a node of this type")
 	}
 }
 
 func NodeGoName(n NodeI) string {
-	if gn,ok := n.(goNamer); ok {
+	if gn, ok := n.(goNamer); ok {
 		return gn.goName()
-	} else if tn,ok := n.(TableNodeI); ok {
+	} else if tn, ok := n.(TableNodeI); ok {
 		return tn.EmbeddedNode_().(goNamer).goName()
 	}
 	return ""

@@ -1,15 +1,14 @@
 package types
 
 import (
-	"testing"
-	"fmt"
-	"sort"
-	"encoding/json"
-	"os"
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"os"
+	"sort"
+	"testing"
 )
-
 
 func TestOrderedMap(t *testing.T) {
 	var s interface{}
@@ -18,7 +17,7 @@ func TestOrderedMap(t *testing.T) {
 	m := NewOrderedMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	if m.Values()[1] != "That" {
@@ -44,7 +43,6 @@ func TestOrderedMap(t *testing.T) {
 	}
 
 }
-
 
 func ExampleOrderedMap_Range() {
 	m := NewOrderedStringMap()
@@ -85,7 +83,7 @@ func ExampleOrderedMap_Range() {
 func ExampleOrderedMap_MarshalJSON() {
 	m := NewOrderedMap()
 
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("B", "This")
 	m.Set("C", "Other")
 
@@ -101,7 +99,7 @@ func ExampleOrderedMap_UnmarshalJSON() {
 
 	json.Unmarshal(b, m)
 
-	for _,i := range m.Values() {
+	for _, i := range m.Values() {
 		fmt.Print(i.(string))
 	}
 
@@ -116,7 +114,7 @@ func TestOrderedMap_JSON(t *testing.T) {
 
 	s, _ := json.Marshal(m)
 
-	if !bytes.Equal(b,s) {
+	if !bytes.Equal(b, s) {
 		t.Errorf("JSON test failed.")
 	}
 
@@ -127,7 +125,7 @@ func TestOrderedMap_JSON(t *testing.T) {
 
 	s, _ = json.Marshal(m)
 
-	if !bytes.Equal(b,s) {
+	if !bytes.Equal(b, s) {
 		t.Errorf("JSON test failed.")
 	}
 }
@@ -137,10 +135,10 @@ func TestOrderedMap_Nil(t *testing.T) {
 
 	m.Set("a", nil)
 
-	b:= m.Get("a")
+	b := m.Get("a")
 
 	assert.Nil(t, b)
-	assert.True(t, b==nil)
+	assert.True(t, b == nil)
 
 	var c *int
 
@@ -154,7 +152,7 @@ func TestOrderedMap_Nil(t *testing.T) {
 	e := d.(*int)
 
 	assert.Nil(t, e)
-	assert.True(t, e==nil)
+	assert.True(t, e == nil)
 }
 
 func ExampleOrderMap_SetAt() {
@@ -165,7 +163,7 @@ func ExampleOrderMap_SetAt() {
 
 	m.SetAt(1, "c", 3)
 
-	for _,i := range m.Values() {
+	for _, i := range m.Values() {
 		fmt.Printf("%d", i.(int))
 	}
 

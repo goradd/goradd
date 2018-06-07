@@ -3,20 +3,18 @@ package main
 import (
 	"flag"
 	"fmt"
-	"goradd/config"
 	"github.com/spekary/goradd/codegen/generator"
 	_ "github.com/spekary/goradd/orm/template"
+	"goradd/config"
 )
 
 var test = flag.Bool("test", false, "test")
 
 var Options = make(map[string]interface{})
 
-
 // Create other flags you might care about here
 
-type myHandler struct {}
-
+type myHandler struct{}
 
 func main() {
 	var err error
@@ -34,4 +32,3 @@ func main() {
 		fmt.Println(err)
 	}
 }
-

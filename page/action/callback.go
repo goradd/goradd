@@ -2,43 +2,41 @@ package action
 
 import (
 	"fmt"
+	"github.com/spekary/goradd"
 	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/util/types"
 	"strings"
-	"github.com/spekary/goradd"
 )
 
 // CallbackI defines actions that result in a callback to us. Specifically Server and Ajax actions are defined for now.
 // Potential for WebSocket action.
 type CallbackActionI interface {
 	ActionI
-	ActionValue(interface{})      CallbackActionI
-	DestinationControlID(string)  CallbackActionI
-	Validator(interface{})        CallbackActionI
-	Async()                       CallbackActionI
+	ActionValue(interface{}) CallbackActionI
+	DestinationControlID(string) CallbackActionI
+	Validator(interface{}) CallbackActionI
+	Async() CallbackActionI
 
-	ID() 						  int
-	GetDestinationControlID()	  string
-	GetDestinationControlSubID()  string
+	ID() int
+	GetDestinationControlID() string
+	GetDestinationControlSubID() string
 	GetActionValue() interface{}
 }
-
 
 // CallbackAction is a kind of superclass for Ajax and Server actions
 type callbackAction struct {
 	goradd.Base
-	id int
-	destControlId string
-	subId string
-	actionValue interface{}
-	validationOverride interface{}	// overrides the validation setting that is on the control
-	async bool
+	id                 int
+	destControlId      string
+	subId              string
+	actionValue        interface{}
+	validationOverride interface{} // overrides the validation setting that is on the control
+	async              bool
 }
 
 func (a *callbackAction) This() CallbackActionI {
 	return a.Self.(CallbackActionI)
 }
-
 
 func (a *callbackAction) ID() int {
 	return a.id
@@ -88,7 +86,6 @@ func (a *callbackAction) GetDestinationControlSubID() string {
 	return a.subId
 }
 
-
 func (a *callbackAction) RenderScript(params RenderParams) string {
 	panic("You need to embed this action and implement RenderScript")
 	return ""
@@ -117,7 +114,7 @@ func (a *serverAction) RenderScript(params RenderParams) string {
 		v.Set("async", true)
 	}
 
-	if eV,aV,cV := params.EventActionValue, a.actionValue, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
+	if eV, aV, cV := params.EventActionValue, a.actionValue, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
 		v2 := types.NewOrderedMap()
 		if eV != nil {
 			v2.Set("event", eV)
@@ -132,8 +129,6 @@ func (a *serverAction) RenderScript(params RenderParams) string {
 	}
 	return fmt.Sprintf("goradd.postBack(%s);\n", javascript.ToJavaScript(v))
 }
-
-
 
 type ajaxAction struct {
 	callbackAction
@@ -158,7 +153,7 @@ func (a *ajaxAction) RenderScript(params RenderParams) string {
 		v.Set("async", true)
 	}
 
-	if eV,aV,cV := params.EventActionValue, a.actionValue, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
+	if eV, aV, cV := params.EventActionValue, a.actionValue, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
 		v2 := types.NewOrderedMap()
 		if eV != nil {
 			v2.Set("event", eV)
@@ -171,5 +166,5 @@ func (a *ajaxAction) RenderScript(params RenderParams) string {
 		}
 		v.Set("actionValues", v2)
 	}
-	return fmt.Sprintf("goradd.postAjax(%s);\n" , javascript.ToJavaScript(v))
+	return fmt.Sprintf("goradd.postAjax(%s);\n", javascript.ToJavaScript(v))
 }

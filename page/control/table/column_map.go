@@ -12,15 +12,39 @@ type MapColumn struct {
 	ColumnBase
 }
 
-func NewMapColumn(index interface{}) *MapColumn {
+func NewMapColumn(index interface{}, format ...string) *MapColumn {
 	i := MapColumn{}
-	i.Init(index)
+	var f string
+	if len(format) > 0 {
+		f = format[0]
+	}
+	i.Init(index, f, "")
 	return &i
 }
 
-func (c *MapColumn) Init(index interface{}) {
+func NewTimeMapColumn(index interface{}, timeFormat string, format ...string) *MapColumn {
+	i := MapColumn{}
+	var f string
+	if len(format) > 0 {
+		f = format[0]
+	}
+	i.Init(index, f, timeFormat)
+	return &i
+}
+
+func (c *MapColumn) Init(index interface{}, format string, timeFormat string) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(MapTexter{Index: index})
+	c.SetCellTexter(MapTexter{Index: index, Format: format, TimeFormat: timeFormat})
+}
+
+func (c *MapColumn) SetFormat(format string) *MapColumn {
+	c.cellTexter.(*MapTexter).Format = format
+	return c
+}
+
+func (c *MapColumn) SetTimeFormat(format string) *MapColumn {
+	c.cellTexter.(*MapTexter).TimeFormat = format
+	return c
 }
 
 // MapTexter is the default CellTexter for tables. It lets you get items out of maps.
@@ -35,7 +59,7 @@ type MapTexter struct {
 	TimeFormat string
 }
 
-func (t MapTexter) CellText (ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t MapTexter) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 
 	vKey := reflect.ValueOf(t.Index)
 	vMap := reflect.ValueOf(data)
@@ -47,4 +71,3 @@ func (t MapTexter) CellText (ctx context.Context, col ColumnI, rowNum int, colNu
 	}
 	return ""
 }
-

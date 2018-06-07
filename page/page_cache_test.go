@@ -4,12 +4,11 @@ import (
 	"testing"
 )
 
-
 func TestBasicPageCache(t *testing.T) {
 	cache := NewPageCache()
 
-	p1:=NewPage("1")
-	p2:=NewPage("2")
+	p1 := NewPage("1")
+	p2 := NewPage("2")
 
 	cache.Set("1", p1)
 	cache.Set("2", p2)

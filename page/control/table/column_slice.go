@@ -1,29 +1,52 @@
 package table
 
 import (
-	"fmt"
 	"context"
-	"time"
+	"fmt"
 	"github.com/spekary/goradd/datetime"
 	reflect "reflect"
+	"time"
 )
 
 // SliceColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into
-// a string, either by normal string conversion symantecs, or using the supplied format string. The format string will
-// be applied to a date if the data is a date, or to the string using fmt.Sprintf
+// a string, either by normal string conversion symantecs, or using the supplied format string.
 type SliceColumn struct {
 	ColumnBase
 }
 
-func NewSliceColumn(index int) *SliceColumn {
+func NewSliceColumn(index int, format ...string) *SliceColumn {
 	i := SliceColumn{}
-	i.Init(index)
+	var f string
+	if len(format) > 0 {
+		f = format[0]
+	}
+	i.Init(index, f, "")
 	return &i
 }
 
-func (c *SliceColumn) Init(index int) {
+func NewTimeSliceColumn(index int, timeFormat string, format ...string) *SliceColumn {
+	i := SliceColumn{}
+	var f string
+	if len(format) > 0 {
+		f = format[0]
+	}
+	i.Init(index, f, timeFormat)
+	return &i
+}
+
+func (c *SliceColumn) Init(index int, format string, timeFormat string) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(SliceTexter{Index: index})
+	c.SetCellTexter(SliceTexter{Index: index, Format: format, TimeFormat: timeFormat})
+}
+
+func (c *SliceColumn) SetFormat(format string) *SliceColumn {
+	c.cellTexter.(*SliceTexter).Format = format
+	return c
+}
+
+func (c *SliceColumn) SetTimeFormat(format string) *SliceColumn {
+	c.cellTexter.(*SliceTexter).TimeFormat = format
+	return c
 }
 
 // SliceTexter is the default CellTexter for tables. It lets you get items out of slices and maps.
@@ -38,7 +61,7 @@ type SliceTexter struct {
 	TimeFormat string
 }
 
-func (t SliceTexter) CellText (ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t SliceTexter) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	vSlice := reflect.ValueOf(data)
 	if vSlice.Kind() != reflect.Slice {
 		panic("data must be a slice.")

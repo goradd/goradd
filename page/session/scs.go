@@ -1,9 +1,9 @@
 package session
 
 import (
-	"net/http"
-	"github.com/alexedwards/scs"
 	"context"
+	"github.com/alexedwards/scs"
+	"net/http"
 )
 
 // SCS_Manager satisfies the ManagerI interface for the github.com/alexedwards/scs session manager
@@ -15,14 +15,14 @@ func NewSCSManager(mgr *scs.Manager) ManagerI {
 	return SCS_Manager{mgr}
 }
 
-func (mgr SCS_Manager) Use (next http.Handler) http.Handler {
+func (mgr SCS_Manager) Use(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		var data []byte
 		var temp string
 		// get the session. All of our session data is stored in only one key in the session manager.
 		session := mgr.Manager.Load(r)
 		session.Touch(w) // Make sure to get a cookie in our header if we don't have one
-		data,_ = session.GetBytes("goradd.data")
+		data, _ = session.GetBytes("goradd.data")
 		sessionData := NewSession()
 		if data != nil {
 			sessionData.UnmarshalBinary(data)
@@ -42,7 +42,7 @@ func (mgr SCS_Manager) Use (next http.Handler) http.Handler {
 		// write out the changed session. The below will attempt to write a cookie, but it can't because headers have already been written.
 		// That is OK, because of our Touch above.
 		if sessionData.Len() > 0 {
-			data,_ = sessionData.MarshalBinary()
+			data, _ = sessionData.MarshalBinary()
 			temp = string(data)
 			_ = temp
 			session.PutBytes(w, "goradd.data", data)
@@ -56,8 +56,8 @@ func (mgr SCS_Manager) Use (next http.Handler) http.Handler {
 // SCS_Session is a goradd session manager that uses the github.com/alexedwards/scs session manager.
 // It implements the SessionI interface
 type SCS_Session struct {
-	writer http.ResponseWriter
-	mgr *scs.Manager
+	writer  http.ResponseWriter
+	mgr     *scs.Manager
 	session *scs.Session
 }
 
@@ -66,4 +66,3 @@ func (s *SCS_Session) Load(mgr *scs.Manager, w http.ResponseWriter, r *http.Requ
 	s.mgr = mgr
 	s.session = mgr.Load(r)
 }
-

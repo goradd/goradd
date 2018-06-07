@@ -1,8 +1,8 @@
 package event
 
 import (
-	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/javascript"
+	"github.com/spekary/goradd/page"
 )
 
 func Change() page.EventI {
@@ -25,11 +25,12 @@ func Select() page.EventI {
 // DataGridSort is a custom event for responding to a table sort event
 func TableSort() page.EventI {
 	e := &page.Event{JsEvent: "grsort"}
-	e.ActionValue(javascript.JsCode("ui"))	// this will be the column id
+	e.ActionValue(javascript.JsCode("ui")) // this will be the column id
 	return e
 }
 
 const DialogButtonEvent = "grdlgbtn"
+
 // DialogButton returns an event that detects clicking on a dialog's button.
 func DialogButton() page.EventI {
 	e := &page.Event{JsEvent: DialogButtonEvent}
@@ -38,11 +39,11 @@ func DialogButton() page.EventI {
 }
 
 const DialogCloseEvent = "grdlgclose"
+
 func DialogClose() page.EventI {
 	e := &page.Event{JsEvent: DialogCloseEvent}
 	return e
 }
-
 
 // TimerExpired is used in conjunction with a JsTimer control to detect the expiration of the timer
 func TimerExpired() page.EventI {

@@ -1,13 +1,12 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page"
-	"fmt"
-	"github.com/spekary/goradd/util/types"
-	"github.com/spekary/goradd/html"
 	"bytes"
 	"context"
-	html2 "html"
+	"fmt"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/util/types"
 )
 
 // SelectList is a typical dropdown list with a single selection. Items are selected by id number, and the SelectList
@@ -24,7 +23,6 @@ func NewSelectList(parent page.ControlI) *SelectList {
 	t.Init(t, parent)
 	return t
 }
-
 
 func (l *SelectList) Init(self page.ControlI, parent page.ControlI) {
 	l.Control.Init(self, parent)
@@ -52,7 +50,7 @@ func (l *SelectList) Validate() bool {
 func (l *SelectList) UpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 
-	if v,ok := ctx.FormValue(id); ok {
+	if v, ok := ctx.FormValue(id); ok {
 		l.selectedId = v
 	}
 }
@@ -61,7 +59,7 @@ func (l *SelectList) SelectedItem() ListItemI {
 	if l.selectedId == "" {
 		return nil
 	}
-	return l.FindByID(l.selectedId)
+	return l.GetItem(l.selectedId)
 }
 
 // SetSelectedId sets the current selection to the given id. You must ensure that the item with the id exists, it will
@@ -81,9 +79,9 @@ func (l *SelectList) Value() interface{} {
 }
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
-func (l *SelectList) SetValue(v interface{})  {
+func (l *SelectList) SetValue(v interface{}) {
 	s := fmt.Sprintf("%v")
-	id, _ := l.FindByValue(s)
+	id, _ := l.GetItemByValue(s)
 	l.SetSelectedID(id)
 }
 
@@ -103,7 +101,6 @@ func (l *SelectList) StringValue() string {
 	}
 }
 
-
 func (l *SelectList) SelectedLabel() string {
 	item := l.SelectedItem()
 	if item != nil {
@@ -120,7 +117,7 @@ func (l *SelectList) MarshalState(m types.MapI) {
 // UnmarshalState is an internal function to restore the state of the control
 func (l *SelectList) UnmarshalState(m types.MapI) {
 	if m.Has("sel") {
-		s,_ := m.GetString("sel")
+		s, _ := m.GetString("sel")
 		l.selectedId = s
 	}
 }
@@ -130,7 +127,7 @@ func (l *SelectList) UnmarshalState(m types.MapI) {
 func (l *SelectList) DrawingAttributes() *html.Attributes {
 	a := l.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "selectlist")
-	a.Set("name", l.ID())	// needed for posts
+	a.Set("name", l.ID()) // needed for posts
 	if l.Required() {
 		a.Set("required", "")
 	}
@@ -146,7 +143,7 @@ func (l *SelectList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err 
 func (l *SelectList) getItemsHtml(items []ListItemI) string {
 	var h = ""
 
-	for _,item := range items {
+	for _, item := range items {
 		if item.HasChildItems() {
 			tag := "optgroup"
 			innerhtml := l.getItemsHtml(item.ListItems())
@@ -160,7 +157,7 @@ func (l *SelectList) getItemsHtml(items []ListItemI) string {
 				attributes.Set("selected", "")
 			}
 
-			h += html.RenderTag("option",attributes, html2.EscapeString(item.Label()))
+			h += html.RenderTag("option", attributes, item.RenderLabel())
 		}
 	}
 	return h

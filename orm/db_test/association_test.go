@@ -1,12 +1,12 @@
 package db
 
 import (
-	"testing"
+	"context"
+	. "github.com/spekary/goradd/orm/op"
+	"github.com/stretchr/testify/assert"
 	"goradd/gen/goradd/model"
 	"goradd/gen/goradd/model/node"
-	"context"
-	. 	"github.com/spekary/goradd/orm/op"
-	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestMany2(t *testing.T) {
@@ -77,7 +77,6 @@ func TestManySelect(t *testing.T) {
 	assert.Equal(t, "ACME Payment System", name)
 }
 
-
 func TestReverse2(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople().
@@ -93,8 +92,8 @@ func TestReverse2(t *testing.T) {
 
 	assert.Len(t, people[2].ProjectsAsManager(), 2)
 	assert.Equal(t, people[2].ProjectsAsManager()[0].Name(), "ACME Payment System")
-	assert.True(t,people[2].ProjectsAsManager()[0].IDIsValid())
-	assert.False(t,people[2].ProjectsAsManager()[0].NumIsValid())
+	assert.True(t, people[2].ProjectsAsManager()[0].IDIsValid())
+	assert.False(t, people[2].ProjectsAsManager()[0].NumIsValid())
 }
 
 func Test2Nodes(t *testing.T) {
@@ -104,12 +103,12 @@ func Test2Nodes(t *testing.T) {
 		Where(Equal(node.Milestone().ID(), 1)). // Filter out people who are not managers
 		Load(ctx)
 
-	assert.True(t, milestones[0].NameIsValid(), "Milestone 1 has a name");
-	assert.Equal(t, "Milestone A", milestones[0].Name(), "Milestone 1 has name of Milestone A");
-	assert.True(t, milestones[0].Project().NameIsValid(), "Project 1 has a name");
-	assert.Equal(t, "ACME Website Redesign", milestones[0].Project().Name(), "Project 1 has name of ACME Website Redesign");
-	assert.True(t, milestones[0].Project().Manager().FirstNameIsValid(), "Person 7 has a name");
-	assert.Equal(t, "Karen", milestones[0].Project().Manager().FirstName(), "Person 7 has first name of Karen");
+	assert.True(t, milestones[0].NameIsValid(), "Milestone 1 has a name")
+	assert.Equal(t, "Milestone A", milestones[0].Name(), "Milestone 1 has name of Milestone A")
+	assert.True(t, milestones[0].Project().NameIsValid(), "Project 1 has a name")
+	assert.Equal(t, "ACME Website Redesign", milestones[0].Project().Name(), "Project 1 has name of ACME Website Redesign")
+	assert.True(t, milestones[0].Project().Manager().FirstNameIsValid(), "Person 7 has a name")
+	assert.Equal(t, "Karen", milestones[0].Project().Manager().FirstName(), "Person 7 has first name of Karen")
 }
 
 func TestForwardMany(t *testing.T) {
@@ -157,13 +156,12 @@ func TestReverseMany(t *testing.T) {
 	assert.Equal(t, names2, names)
 
 	names = []string{}
-	for _,pr := range people[6].ProjectsAsManager() {
+	for _, pr := range people[6].ProjectsAsManager() {
 		for _, p := range pr.TeamMembers() {
 			names = append(names, p.FirstName()+" "+p.LastName())
 		}
 	}
 	assert.Len(t, names, 12) // Includes duplicates. If we ever get Distinct to manually remove duplicates, we should fix this.
-
 
 	// Test an intermediate expansion
 	people = model.QueryPeople().
@@ -179,14 +177,14 @@ func TestReverseMany(t *testing.T) {
 	assert.Equal(t, names2, names)
 
 	names = []string{}
-	for _,pr := range people[6].ProjectsAsManager() {
+	for _, pr := range people[6].ProjectsAsManager() {
 		for _, p := range pr.TeamMembers() {
 			names = append(names, p.FirstName()+" "+p.LastName())
 		}
 	}
 
 	// Should only select first group
-	names4 := []string {
+	names4 := []string{
 		"Brett Carlisle",
 		"John Doe",
 		"Samantha Jones",
@@ -232,8 +230,6 @@ func TestUniqueReverse(t *testing.T) {
 		Load(ctx)[0]
 	assert.Equal(t, "jdoe", person.Login().Username())
 }
-
-
 
 func TestReverseReferences(t *testing.T) {
 	// Test early binding

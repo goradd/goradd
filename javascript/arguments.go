@@ -10,12 +10,11 @@ import "strings"
 
 type Arguments []interface{}
 
-
 // Implements the JavaScripter interface
 func (a Arguments) JavaScript() string {
 	var values []string
-	for _,v := range a {
-		values = append (values, ToJavaScript(v))
+	for _, v := range a {
+		values = append(values, ToJavaScript(v))
 	}
 
 	return strings.Join(values, ", ")

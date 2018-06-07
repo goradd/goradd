@@ -9,34 +9,37 @@ type Operator string
 
 const (
 	// Standard logical operators
-	OpEqual Operator = "="
-	OpNotEqual Operator = "<>"
-	OpAnd = "AND"
-	OpOr = "OR"
-	OpXor = "XOR"
-	OpGreater = ">"
-	OpGreaterEqual = ">="
-	OpLess = "<"
-	OpLessEqual = "<="
+	OpEqual        Operator = "="
+	OpNotEqual     Operator = "<>"
+	OpAnd                   = "AND"
+	OpOr                    = "OR"
+	OpXor                   = "XOR"
+	OpGreater               = ">"
+	OpGreaterEqual          = ">="
+	OpLess                  = "<"
+	OpLessEqual             = "<="
 
 	// Unary logical
 	OpNot = "NOT"
 
+	OpAll  = "1=1"
+	OpNone = "1=0"
+
 	// Math operators
-	OpAdd = "+"
+	OpAdd      = "+"
 	OpSubtract = "-"
 	OpMultiply = "*"
-	OpDivide = "/"
-	OpModulo = "%"
+	OpDivide   = "/"
+	OpModulo   = "%"
 
 	// Unary math
 	OpNegate = " -"
 
 	// Bit operators
-	OpBitAnd = "&"
-	OpBitOr = "|"
-	OpBitXor = "^"
-	OpShiftLeft = "<<"
+	OpBitAnd     = "&"
+	OpBitOr      = "|"
+	OpBitXor     = "^"
+	OpShiftLeft  = "<<"
 	OpShiftRight = ">>"
 
 	// Unary bit
@@ -47,12 +50,12 @@ const (
 	OpFunc = "func"
 
 	// SQL functions that act like operators in that the operator is put in between the operands
-	OpLike = "LIKE"
-	OpIn = "IN"
+	OpLike  = "LIKE"
+	OpIn    = "IN"
 	OpNotIn = "NOT IN"
 
 	// Special NULL tests
-	OpNull = "NULL"
+	OpNull    = "NULL"
 	OpNotNull = "NOT NULL"
 )
 
@@ -64,25 +67,25 @@ func (o Operator) String() string {
 // The operation could be arithmetic, boolean, or a function.
 type OperationNode struct {
 	Node
-	op Operator
-	operands []NodeI
-	functionName string // for function operations specific to the db driver
-	isAggregate bool // requires that an aggregation clause be present in the query
+	op             Operator
+	operands       []NodeI
+	functionName   string // for function operations specific to the db driver
+	isAggregate    bool   // requires that an aggregation clause be present in the query
 	sortDescending bool
-	distinct bool // some aggregate queries, particularly count, allow this inside the function
+	distinct       bool // some aggregate queries, particularly count, allow this inside the function
 }
 
-func NewOperationNode (op Operator, operands... interface{}) *OperationNode {
-	n := &OperationNode {
-		op:       op,
+func NewOperationNode(op Operator, operands ...interface{}) *OperationNode {
+	n := &OperationNode{
+		op: op,
 	}
 	n.assignOperands(operands...)
 	return n
 }
 
-func NewFunctionNode (functionName string,operands... interface{}) *OperationNode {
-	n := &OperationNode {
-		op:       OpFunc,
+func NewFunctionNode(functionName string, operands ...interface{}) *OperationNode {
+	n := &OperationNode{
+		op:           OpFunc,
 		functionName: functionName,
 	}
 	n.assignOperands(operands...)
@@ -91,12 +94,12 @@ func NewFunctionNode (functionName string,operands... interface{}) *OperationNod
 
 // NewCountNode creates a Count function node. If no operands are given, it will use * as the parameter to the function
 // which means it will count nulls. To NOT count nulls, at least one table name needs to be specified.
-func NewCountNode(operands... NodeI) *OperationNode {
-	n := &OperationNode {
-		op:       OpFunc,
+func NewCountNode(operands ...NodeI) *OperationNode {
+	n := &OperationNode{
+		op:           OpFunc,
 		functionName: "COUNT",
 	}
-	for _,op := range operands {
+	for _, op := range operands {
 		n.operands = append(n.operands, op)
 	}
 
@@ -104,14 +107,16 @@ func NewCountNode(operands... NodeI) *OperationNode {
 }
 
 // process the list of operands at run time, making sure all static values are escaped
-func (n *OperationNode) assignOperands(operands... interface{}) {
+func (n *OperationNode) assignOperands(operands ...interface{}) {
 	var op interface{}
 
-	for _,op = range operands {
-		if ni,ok := op.(NodeI); ok {
-			n.operands = append(n.operands, ni)
-		} else {
-			n.operands = append(n.operands, NewValueNode(op))
+	if operands != nil {
+		for _, op = range operands {
+			if ni, ok := op.(NodeI); ok {
+				n.operands = append(n.operands, ni)
+			} else {
+				n.operands = append(n.operands, NewValueNode(op))
+			}
 		}
 	}
 }
@@ -139,9 +144,8 @@ func (n *OperationNode) nodeType() NodeType {
 	return OPERATION_NODE
 }
 
-
 func (n *OperationNode) Equals(n2 NodeI) bool {
-	if cn,ok := n2.(*OperationNode); ok {
+	if cn, ok := n2.(*OperationNode); ok {
 		if cn.op != n.op {
 			return false
 		}
@@ -161,7 +165,7 @@ func (n *OperationNode) Equals(n2 NodeI) bool {
 			return false
 		}
 
-		for i,o := range n.operands {
+		for i, o := range n.operands {
 			if !o.Equals(cn.operands[i]) {
 				return false
 			}
@@ -172,11 +176,11 @@ func (n *OperationNode) Equals(n2 NodeI) bool {
 }
 
 func (n *OperationNode) containedNodes() (nodes []NodeI) {
-	for _,op := range n.operands {
-		if nc,ok := op.(nodeContainer); ok {
+	for _, op := range n.operands {
+		if nc, ok := op.(nodeContainer); ok {
 			nodes = append(nodes, nc.containedNodes()...)
 		} else {
-			nodes = append(nodes,op)
+			nodes = append(nodes, op)
 		}
 	}
 	return
@@ -186,33 +190,31 @@ func (n *OperationNode) tableName() string {
 	return ""
 }
 
-
-
 func (n *OperationNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Op: " + n.op.String())
 }
 
-func OperationNodeOperator (n *OperationNode) Operator {
+func OperationNodeOperator(n *OperationNode) Operator {
 	return n.op
 }
 
-func OperationNodeOperands (n *OperationNode) []NodeI {
+func OperationNodeOperands(n *OperationNode) []NodeI {
 	return n.operands
 }
 
-func OperationNodeFunction (n *OperationNode) string {
+func OperationNodeFunction(n *OperationNode) string {
 	return n.functionName
 }
 
-func OperationNodeDistinct (n *OperationNode) bool {
+func OperationNodeDistinct(n *OperationNode) bool {
 	return n.distinct
 }
 
-func OperationIsAggregate (n *OperationNode) bool {
+func OperationIsAggregate(n *OperationNode) bool {
 	return n.isAggregate
 }
 
-func OperationSortDescending (n *OperationNode) bool {
+func OperationSortDescending(n *OperationNode) bool {
 	return n.sortDescending
 }

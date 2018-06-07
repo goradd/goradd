@@ -61,7 +61,7 @@ func RemoveClass(class string, removeClass string) (string, bool) {
 			}
 		}
 		if !found {
-			ret = ret + s +  " "
+			ret = ret + s + " "
 		}
 	}
 

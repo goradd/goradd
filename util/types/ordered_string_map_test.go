@@ -1,16 +1,15 @@
 package types
 
 import (
-	"testing"
-	"fmt"
-	"sort"
-	"encoding/json"
 	"bytes"
 	"encoding/gob"
-	"os"
+	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"os"
+	"sort"
+	"testing"
 )
-
 
 func TestOrderedStringMap(t *testing.T) {
 	var s string
@@ -19,7 +18,7 @@ func TestOrderedStringMap(t *testing.T) {
 	m := NewOrderedStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	if m.Values()[1] != "That" {
@@ -37,7 +36,6 @@ func TestOrderedStringMap(t *testing.T) {
 	if s = m.GetAt(3); ok {
 		t.Errorf("GetAt test failed. Expected no response, got %q", s)
 	}
-
 
 	s = m.Join("+")
 
@@ -57,7 +55,7 @@ func TestOrderedStringMap(t *testing.T) {
 		t.Error("Len Failed.")
 	}
 
-	if m.Has ("NOT THERE") {
+	if m.Has("NOT THERE") {
 		t.Error("Getting non-existant value did not return false")
 	}
 
@@ -78,7 +76,7 @@ func TestOrderedStringMap(t *testing.T) {
 		t.Error("Sort interface test failed.")
 	}
 
-	if changed, _ := m.SetChanged("F", "9");  !changed {
+	if changed, _ := m.SetChanged("F", "9"); !changed {
 		t.Error("Add non-string value failed.")
 	}
 	if m.Get("F") != "9" {
@@ -86,12 +84,11 @@ func TestOrderedStringMap(t *testing.T) {
 	}
 }
 
-
 func TestOrderedStringMapChange(t *testing.T) {
 	m := NewOrderedStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	if changed, _ := m.SetChanged("D", "And another"); !changed {
@@ -103,43 +100,40 @@ func TestOrderedStringMapChange(t *testing.T) {
 	}
 }
 
-
 func ExampleOrderedStringMap_Range() {
 	m := NewOrderedStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	// Iterate by insertion order
-	m.Range(func (key string, val string) bool {
+	m.Range(func(key string, val string) bool {
 		fmt.Printf("%s:%s,", key, val)
-		return true	// keep iterating to the end
+		return true // keep iterating to the end
 	})
 	fmt.Println()
 
 	// Iterate after sorting values
 	sort.Sort(m)
-	m.Range(func (key string, val string) bool {
+	m.Range(func(key string, val string) bool {
 		fmt.Printf("%s:%s,", key, val)
-		return true	// keep iterating to the end
+		return true // keep iterating to the end
 	})
 	fmt.Println()
 
 	// Iterate after sorting keys
 	sort.Sort(OrderStringMapByKeys(m))
-	m.Range(func (key string, val string) bool {
+	m.Range(func(key string, val string) bool {
 		fmt.Printf("%s:%s,", key, val)
-		return true	// keep iterating to the end
+		return true // keep iterating to the end
 	})
 	fmt.Println()
-
 
 	// Output: B:This,A:That,C:Other,
 	// C:Other,A:That,B:This,
 	// A:That,B:This,C:Other,
 }
-
 
 func ExampleOrderedStringMap_MarshalBinary() {
 	// You would rarely call MarshallBinary directly, but rather would use an encoder, like GOB for binary encoding
@@ -148,7 +142,7 @@ func ExampleOrderedStringMap_MarshalBinary() {
 	var m2 OrderedStringMap
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	var buf bytes.Buffer
@@ -170,7 +164,7 @@ func ExampleOrderedStringMap_MarshalJSON() {
 	m := NewOrderedStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	s, _ := json.Marshal(m)
@@ -196,10 +190,10 @@ func ExampleOrderedStringMap_Merge() {
 	m := NewOrderedStringMap()
 
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
-	m.Merge(StringMap{"D":"Last"})
+	m.Merge(StringMap{"D": "Last"})
 
 	fmt.Println(m.GetAt(3))
 	//Output: Last
@@ -208,7 +202,7 @@ func ExampleOrderedStringMap_Merge() {
 func ExampleOrderedStringMap_Values() {
 	m := NewOrderedStringMap()
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	values := m.Values()
@@ -219,7 +213,7 @@ func ExampleOrderedStringMap_Values() {
 func ExampleOrderedStringMap_Keys() {
 	m := NewOrderedStringMap()
 	m.Set("B", "This")
-	m.Set("A","That")
+	m.Set("A", "That")
 	m.Set("C", "Other")
 
 	values := m.Keys()
@@ -228,15 +222,14 @@ func ExampleOrderedStringMap_Keys() {
 }
 
 func ExampleNewOrderedStringMapFrom() {
-	m := NewOrderedStringMapFrom(StringMap{"a":"this","b":"that"})
+	m := NewOrderedStringMapFrom(StringMap{"a": "this", "b": "that"})
 	fmt.Println(m.Get("b"))
 	//Output: that
 }
 
-
 func ExampleOrderedStringMap_Equals() {
-	m := NewOrderedStringMapFrom(StringMap{"A":"This","B":"That"})
-	n := StringMap{"B":"That", "A":"This"}
+	m := NewOrderedStringMapFrom(StringMap{"A": "This", "B": "That"})
+	n := StringMap{"B": "That", "A": "This"}
 	if m.Equals(n) {
 		fmt.Print("Equal")
 	} else {

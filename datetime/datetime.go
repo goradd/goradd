@@ -4,20 +4,19 @@
 package datetime
 
 import (
-	"time"
 	"encoding/json"
-	"github.com/spekary/goradd/javascript"
 	"fmt"
+	"github.com/spekary/goradd/javascript"
+	"time"
 )
 
-
 const (
-	Current = "now"
-	Zero = "zero"
-	UsDate = "1/2/2006"
-	EuroDate = "2/1/2006"
+	Current     = "now"
+	Zero        = "zero"
+	UsDate      = "1/2/2006"
+	EuroDate    = "2/1/2006"
 	LongDateDOW = "Monday, January 2, 2006"
-	LongDate = "January 2, 2006"
+	LongDate    = "January 2, 2006"
 )
 
 type DateTime struct {
@@ -29,7 +28,7 @@ func Now() DateTime {
 }
 
 //
-func NewDateTime(args... interface{}) DateTime {
+func NewDateTime(args ...interface{}) DateTime {
 	d := DateTime{}
 	v := args[0]
 	if v == nil {
@@ -65,23 +64,23 @@ func (d DateTime) Equal(d2 DateTime) bool {
 
 // Satisfies the javacript.JavaScripter interface to output the date as a javascript value
 func (d DateTime) JavaScript() string {
-	return fmt.Sprintf("new Date(%d, %d, %d, %d, %d, %d)", d.Year(), d.Month() - 1, d.Day(), d.Hour(), d.Minute(), d.Second())
+	return fmt.Sprintf("new Date(%d, %d, %d, %d, %d, %d)", d.Year(), d.Month()-1, d.Day(), d.Hour(), d.Minute(), d.Second())
 }
 
 // Satisfies the json.Marshaller interface to output the date as a value embedded in JSON and that will be unpacked by our javascript file.
 func (d DateTime) MarshalJSON() (buf []byte, err error) {
 	// We specify numbers explicitly to avoid the warnings about browsers parsing date strings inconsistently
-	var obj = map[string]interface{} {
+	var obj = map[string]interface{}{
 		javascript.JsonObjectType: "datetime",
-		"year": d.Year(),
-		"month": d.Month() - 1, // javascript is zero based
-		"day": d.Day(),
-		"hour": d.Hour(),
+		"year":   d.Year(),
+		"month":  d.Month() - 1, // javascript is zero based
+		"day":    d.Day(),
+		"hour":   d.Hour(),
 		"minute": d.Minute(),
 		"second": d.Second(),
 	}
 
-	buf,err = json.Marshal(obj)
+	buf, err = json.Marshal(obj)
 	return
 
 	// TODO: Deal with timezones vs. local time. As of 2017, there still is not a good consistent javascript way of discovering the browser timezone.

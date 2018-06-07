@@ -1,14 +1,12 @@
 package db
 
-
 import (
-	"strconv"
-	"log"
 	"database/sql"
-	"github.com/spekary/goradd/datetime"
 	"fmt"
+	"github.com/spekary/goradd/datetime"
 	. "github.com/spekary/goradd/orm/query"
-
+	"log"
+	"strconv"
 )
 
 // SqlReceiver is an encapsulation of a way of receiving data from sql queries as interface{} pointers. This allows you
@@ -22,7 +20,6 @@ import (
 type SqlReceiver struct {
 	R interface{}
 }
-
 
 func (r SqlReceiver) IntI() interface{} {
 	if r.R == nil {
@@ -54,7 +51,7 @@ func (r SqlReceiver) IntI() interface{} {
 
 // Some drivers (like MySQL) return all integers as Int64. This converts to basic golang uint. Its up to you to make sure
 // you only use this on 32-bit uints or smaller
-func (r SqlReceiver) UintI()  interface{} {
+func (r SqlReceiver) UintI() interface{} {
 	if r.R == nil {
 		return nil
 	}
@@ -121,7 +118,7 @@ func (r SqlReceiver) Uint64I() interface{} {
 		return uint64(r.R.(int64))
 	case int:
 		return uint64(r.R.(int))
-	case string:	// Mysql returns this if the detected value is greater than int64 size
+	case string: // Mysql returns this if the detected value is greater than int64 size
 		i, err := strconv.ParseUint(r.R.(string), 10, 64)
 		if err != nil {
 			log.Panic(err)
@@ -193,13 +190,13 @@ func (r SqlReceiver) FloatI() interface{} {
 	case float64:
 		return float32(r.R.(float64))
 	case string:
-		f,err := strconv.ParseFloat(r.R.(string), 32)
+		f, err := strconv.ParseFloat(r.R.(string), 32)
 		if err != nil {
 			log.Panic(err)
 		}
 		return f
 	case []byte:
-		f,err := strconv.ParseFloat(string(r.R.([]byte)[:]), 32)
+		f, err := strconv.ParseFloat(string(r.R.([]byte)[:]), 32)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -220,13 +217,13 @@ func (r SqlReceiver) DoubleI() interface{} {
 	case float64:
 		return r.R
 	case string:
-		f,err := strconv.ParseFloat(r.R.(string), 64)
+		f, err := strconv.ParseFloat(r.R.(string), 64)
 		if err != nil {
 			log.Panic(err)
 		}
 		return f
 	case []byte:
-		f,err := strconv.ParseFloat(string(r.R.([]byte)[:]), 64)
+		f, err := strconv.ParseFloat(string(r.R.([]byte)[:]), 64)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -244,15 +241,15 @@ func (r SqlReceiver) TimeI() interface{} {
 
 	switch r.R.(type) {
 	case string:
-		s:= string(r.R.(string))
+		s := string(r.R.(string))
 		if s == "CURRENT_TIMESTAMP" {
-			return nil	// database itself is handling the setting of the time
+			return nil // database itself is handling the setting of the time
 		}
 		return datetime.FromSqlDateTime(s)
 	case []byte:
-		s:= string(r.R.([]byte)[:])
+		s := string(r.R.([]byte)[:])
 		if s == "CURRENT_TIMESTAMP" {
-			return nil	// database itself is handling the setting of the time
+			return nil // database itself is handling the setting of the time
 		}
 		return datetime.FromSqlDateTime(s)
 	default:

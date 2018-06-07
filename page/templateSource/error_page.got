@@ -18,7 +18,16 @@ func DefaultErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, b
 </head>
 <body>
 <h1>Error</h1>
-<h2>{{= err.Error() }}</h2>
+{{g
+    items := strings.Split(err.Error(), "\n")
+    errTitle := items[0]
+    var errDesc string
+    if len(items) > 1 {
+        errDesc = strings.Join(items[1:], "<br />")
+    }
+}}
+<h2>{{= errTitle }}</h2>
+{{if errDesc != ""}}<p>{{= errDesc }}</p>{{if}}
 <h3>Call Path</h3>
 <p>
 {{for _,stack := range err.Stack}}

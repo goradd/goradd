@@ -5,16 +5,16 @@ import "log"
 
 // Logging support
 
-const FrameworkDebugLog = 1	// Should only exist when debugging style logs are required for debugging the goradd framework itself.
-const InfoLog = 2			// Info log is designed to always exist. These would be messages we only need to check periodically to know the system is working correctly.
-const WarningLog = 3		// Should be sent to sysop periodically (daily perhaps?). Would generally be issues involving low resources.
-const ErrorLog = 4			// Should be sent to sysop immediately
-const DebugLog = 10			// Debug log for the developer's application, separate from the goradd debug log
+const FrameworkDebugLog = 1 // Should only exist when debugging style logs are required for debugging the goradd framework itself.
+const InfoLog = 2           // Info log is designed to always exist. These would be messages we only need to check periodically to know the system is working correctly.
+const WarningLog = 3        // Should be sent to sysop periodically (daily perhaps?). Would generally be issues involving low resources.
+const ErrorLog = 4          // Should be sent to sysop immediately
+const DebugLog = 10         // Debug log for the developer's application, separate from the goradd debug log
 
 var Loggers = map[int]*log.Logger{}
 
 func HasLogger(id int) bool {
-	_,ok := Loggers[id]
+	_, ok := Loggers[id]
 	return ok
 }
 
@@ -56,14 +56,13 @@ func Debugf(format string, v ...interface{}) {
 }
 
 func Print(logType int, v ...interface{}) {
-	if l,ok := Loggers[logType]; ok {
+	if l, ok := Loggers[logType]; ok {
 		l.Print(v...)
 	}
 }
 
 func Printf(logType int, format string, v ...interface{}) {
-	if l,ok := Loggers[logType]; ok {
+	if l, ok := Loggers[logType]; ok {
 		l.Printf(format, v...)
 	}
 }
-

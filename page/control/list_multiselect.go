@@ -1,13 +1,13 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/util/types"
-	"github.com/spekary/goradd/html"
 	"bytes"
 	"context"
-	"strings"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/util/types"
 	"strconv"
+	"strings"
 )
 
 // MultiselectList is a generic list box which allows multiple selections. It is here for completeness, but is not used
@@ -25,7 +25,6 @@ func NewMultiselectList(parent page.ControlI) *MultiselectList {
 	return l
 }
 
-
 func (l *MultiselectList) Init(self page.ControlI, parent page.ControlI) {
 	l.Control.Init(self, parent)
 	l.ItemList = NewItemList(l)
@@ -39,19 +38,18 @@ func (l *MultiselectList) SetSize(size int) *MultiselectList {
 	return l
 }
 
-func (l *MultiselectList) Size() int  {
+func (l *MultiselectList) Size() int {
 	a := l.Attribute("size")
 	if a == "" {
 		return 0
 	} else {
-		s,err := strconv.Atoi(a)
+		s, err := strconv.Atoi(a)
 		if err != nil {
 			return 0
 		}
 		return s
 	}
 }
-
 
 func (l *MultiselectList) Validate() bool {
 	if l.Required() && len(l.selectedIds) == 0 {
@@ -72,9 +70,9 @@ func (l *MultiselectList) UpdateFormValues(ctx *page.Context) {
 		id += "[]" // an odd remnant of jquery processing
 	}
 
-	if a,ok := ctx.FormValues(id); ok {
+	if a, ok := ctx.FormValues(id); ok {
 		l.selectedIds = map[string]bool{}
-		for _,v := range a {
+		for _, v := range a {
 			l.selectedIds[v] = true
 		}
 	}
@@ -86,7 +84,7 @@ func (l *MultiselectList) SelectedItems() []ListItemI {
 		return nil
 	}
 	for id := range l.selectedIds {
-		item := l.FindByID(id)
+		item := l.GetItem(id)
 		if item != nil {
 			items = append(items, item)
 		}
@@ -101,7 +99,7 @@ func (l *MultiselectList) SetSelectedIds(ids []string) {
 		return
 	}
 
-	for _,id := range ids {
+	for _, id := range ids {
 		l.selectedIds[id] = true
 	}
 	l.Refresh()
@@ -113,17 +111,17 @@ func (l *MultiselectList) Value() interface{} {
 }
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
-func (l *MultiselectList) SetValue(v interface{})  {
+func (l *MultiselectList) SetValue(v interface{}) {
 	l.selectedIds = map[string]bool{}
 	switch ids := v.(type) {
 	case string:
 		a := strings.Split(ids, ",")
-		for _,v := range a {
+		for _, v := range a {
 			l.selectedIds[v] = true
 		}
 
 	case []string:
-		for _,v := range ids {
+		for _, v := range ids {
 			l.selectedIds[v] = true
 		}
 
@@ -131,12 +129,12 @@ func (l *MultiselectList) SetValue(v interface{})  {
 		l.selectedIds[ids.ID()] = true
 
 	case []ListItemI:
-		for _,v := range ids {
+		for _, v := range ids {
 			l.selectedIds[v.ID()] = true
 		}
 
 	default:
-		panic ("Unknown id list type")
+		panic("Unknown id list type")
 	}
 }
 
@@ -144,7 +142,7 @@ func (l *MultiselectList) SetValue(v interface{})  {
 func (l *MultiselectList) SelectedIds() []string {
 	ids := make([]string, 0, len(l.selectedIds))
 	for id := range l.selectedIds {
-		ids = append(ids,id)
+		ids = append(ids, id)
 	}
 	SortIds(ids)
 	return ids
@@ -153,8 +151,8 @@ func (l *MultiselectList) SelectedIds() []string {
 func (l *MultiselectList) SelectedLabels() []string {
 	labels := []string{}
 
-	for _,id := range l.SelectedIds() {
-		item := l.FindByID(id)
+	for _, id := range l.SelectedIds() {
+		item := l.GetItem(id)
 		if item != nil {
 			labels = append(labels, item.Label())
 		}
@@ -165,15 +163,14 @@ func (l *MultiselectList) SelectedLabels() []string {
 func (l *MultiselectList) SelectedValues() []interface{} {
 	values := []interface{}{}
 
-	for _,id := range l.SelectedIds() {
-		item := l.FindByID(id)
+	for _, id := range l.SelectedIds() {
+		item := l.GetItem(id)
 		if item != nil {
 			values = append(values, item.Value())
 		}
 	}
 	return values
 }
-
 
 // MarshalState is an internal function to save the state of the control
 func (l *MultiselectList) MarshalState(m types.MapI) {
@@ -191,8 +188,8 @@ func (l *MultiselectList) UnmarshalState(m types.MapI) {
 	if m.Has("sel") {
 		s := m.Get("sel")
 
-		if ids,ok := s.([]string); ok {
-			for _,id := range ids {
+		if ids, ok := s.([]string); ok {
+			for _, id := range ids {
 				l.selectedIds[id] = true
 			}
 		}
@@ -204,7 +201,7 @@ func (l *MultiselectList) UnmarshalState(m types.MapI) {
 func (l *MultiselectList) DrawingAttributes() *html.Attributes {
 	a := l.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "multilist")
-	a.Set("name", l.ID())	// needed for posts
+	a.Set("name", l.ID()) // needed for posts
 	a.Set("multiple", "")
 	if l.Required() {
 		a.Set("required", "")
@@ -221,7 +218,7 @@ func (l *MultiselectList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) 
 func (l *MultiselectList) getItemsHtml(items []ListItemI) string {
 	var h = ""
 
-	for _,item := range items {
+	for _, item := range items {
 		if item.HasChildItems() {
 			tag := "optgroup"
 			innerhtml := l.getItemsHtml(item.ListItems())
@@ -234,7 +231,7 @@ func (l *MultiselectList) getItemsHtml(items []ListItemI) string {
 			if l.isIdSelected(item.ID()) {
 				attributes.Set("selected", "")
 			}
-			h += html.RenderTag("option",attributes, item.Label()) + "\n"
+			h += html.RenderTag("option", attributes, item.Label()) + "\n"
 		}
 	}
 	return h

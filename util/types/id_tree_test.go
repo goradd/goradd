@@ -14,7 +14,6 @@ func (t *testObj2) ID() string {
 
 var tree *IdTree = NewIdTree()
 
-
 func newObj2(id string) *testObj2 {
 	c := &testObj2{id}
 	return c
@@ -24,7 +23,7 @@ func TestBasicIdTree(t *testing.T) {
 	tree := NewIdTree()
 
 	o := tree.Get("2")
-	if (o != nil) {
+	if o != nil {
 		t.Error("Empty tree error")
 	}
 
@@ -94,7 +93,4 @@ func TestIdTree2(t *testing.T) {
 		t.Error("Could not GetAll after a clear")
 	}
 
-
 }
-
-

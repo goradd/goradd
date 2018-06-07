@@ -5,8 +5,8 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
-	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/page/control/control_base"
+	"github.com/spekary/goradd/page/event"
 )
 
 // event codes
@@ -50,10 +50,10 @@ type Dialog struct {
 	control_base.Panel
 	buttonBar   *Panel
 	titleBar    *Panel
-	closeBox	*Button
+	closeBox    *Button
 	isOpen      bool
 	dialogState int
-	title		string
+	title       string
 	//validators map[string]bool
 }
 
@@ -115,7 +115,6 @@ func (c *Dialog) SetTitle(t string) *Dialog {
 func (c *Dialog) Title() string {
 	return c.titleBar.Text()
 }
-
 
 func (c *Dialog) DrawingAttributes() *html.Attributes {
 	a := c.Panel.DrawingAttributes()

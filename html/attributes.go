@@ -9,12 +9,12 @@ needlessly redrawing html after setting values that had no affect on the attribu
 package html
 
 import (
-	"fmt"
-	"strings"
 	"errors"
-	gohtml "html"
+	"fmt"
 	"github.com/spekary/goradd/util/types"
+	gohtml "html"
 	"strconv"
+	"strings"
 )
 
 const attributeFalse = "**GORADD-FALSE**"
@@ -31,8 +31,8 @@ type Attributes struct {
 }
 
 // NewAttributes initializes a group of html attributes.
-func NewAttributes() *Attributes {	// TODO: This should not return a pointer, since all it contains is a pointer
-    return &Attributes{*types.NewOrderedStringMap()}
+func NewAttributes() *Attributes { // TODO: This should not return a pointer, since all it contains is a pointer
+	return &Attributes{*types.NewOrderedStringMap()}
 }
 
 func NewAttributesFrom(i types.StringMapI) *Attributes {
@@ -62,7 +62,7 @@ func (a *Attributes) SetChanged(name string, v string) (changed bool, err error)
 
 		oldStyles := a.StyleMap()
 
-		if !oldStyles.Equals(styles) {	// since maps are not ordered, we must use a special equality test. We can't just compare strings for equality here.
+		if !oldStyles.Equals(styles) { // since maps are not ordered, we must use a special equality test. We can't just compare strings for equality here.
 			changed = true
 			_, err = a.OrderedStringMap.SetChanged("style", styles.String())
 		}
@@ -78,14 +78,14 @@ func (a *Attributes) SetChanged(name string, v string) (changed bool, err error)
 	if strings.HasPrefix(name, "data-") {
 		return a.SetDataAttributeChanged(name[5:], v)
 	}
-	changed, err = a.OrderedStringMap.SetChanged(name,v)
+	changed, err = a.OrderedStringMap.SetChanged(name, v)
 	return
 }
 
 // Set is similar to SetChanged, but instead returns an attribute pointer so it can be chained. Will panic on errors.
 // Use this when you are setting attributes using implicit strings. Set v to an empty string to create a boolean attribute.
 func (a *Attributes) Set(name string, v string) *Attributes {
-	_,err := a.SetChanged(name, v)
+	_, err := a.SetChanged(name, v)
 	if err != nil {
 		panic(err)
 	}
@@ -107,7 +107,7 @@ func (a *Attributes) RemoveAttribute(name string) bool {
 // be output in random order: id, name, class
 func (a *Attributes) String() string {
 	var id, name, class, styles, others string
-	a.Range(func (k,v string) bool {
+	a.Range(func(k, v string) bool {
 		var str string
 
 		if v == "" {
@@ -118,11 +118,16 @@ func (a *Attributes) String() string {
 		}
 
 		switch k {
-		case "id":id = str
-		case "name":name = str
-		case "class":class = str
-		case "styles":styles = str
-		default:others += str
+		case "id":
+			id = str
+		case "name":
+			name = str
+		case "class":
+			class = str
+		case "styles":
+			styles = str
+		default:
+			others += str
 		}
 
 		return true
@@ -155,10 +160,9 @@ func (a *Attributes) Clone() *Attributes {
 	return NewAttributesFrom(a)
 }
 
-
 // Set the id to the given value. Returns true if something changed.
 func (a *Attributes) SetIDChanged(i string) (changed bool, err error) {
-	if i == "" {	// empty attribute is not allowed, so its the same as removal
+	if i == "" { // empty attribute is not allowed, so its the same as removal
 		changed = a.RemoveAttribute("id")
 		return
 	}
@@ -173,13 +177,12 @@ func (a *Attributes) SetIDChanged(i string) (changed bool, err error) {
 }
 
 func (a *Attributes) SetID(i string) *Attributes {
-	_,err := a.SetIDChanged(i)
+	_, err := a.SetIDChanged(i)
 	if err != nil {
 		panic(err)
 	}
 	return a
 }
-
 
 // Return the value of the id attribute.
 func (a *Attributes) ID() string {
@@ -193,7 +196,7 @@ func (a *Attributes) ID() string {
 // Returns whether something actually changed or not.
 // v can be multiple classes separated by a space
 func (a *Attributes) SetClassChanged(v string) bool {
-	if v == "" {	// empty attribute is not allowed, so its the same as removal
+	if v == "" { // empty attribute is not allowed, so its the same as removal
 		a.RemoveAttribute("class")
 	}
 
@@ -203,11 +206,11 @@ func (a *Attributes) SetClassChanged(v string) bool {
 		return a.RemoveClass(v[2:])
 	}
 
-	changed,_ := a.OrderedStringMap.SetChanged("class", v)
+	changed, _ := a.OrderedStringMap.SetChanged("class", v)
 	return changed
 }
 
-func (a * Attributes) SetClass(v string) *Attributes {
+func (a *Attributes) SetClass(v string) *Attributes {
 	a.SetClassChanged(v)
 	return a
 }
@@ -215,7 +218,7 @@ func (a * Attributes) SetClass(v string) *Attributes {
 // Use RemoveClass to remove the named class from the list of classes in the class attribute.
 func (a *Attributes) RemoveClass(v string) bool {
 	if a.Has("class") {
-		newClass,changed := RemoveClass(a.Get("class"), v)
+		newClass, changed := RemoveClass(a.Get("class"), v)
 		if changed {
 			a.OrderedStringMap.Set("class", newClass)
 		}
@@ -230,10 +233,10 @@ func (a *Attributes) RemoveClass(v string) bool {
 // If a class is present, it will not be added, and the position of the current class in the list will not change
 func (a *Attributes) AddClassChanged(v string) bool {
 	if v == "" {
-		return false; // nothing to add
+		return false // nothing to add
 	}
 	if a.Has("class") {
-		newClass,changed := AddClass(a.Get("class"), v)
+		newClass, changed := AddClass(a.Get("class"), v)
 		if changed {
 			a.OrderedStringMap.Set("class", newClass)
 		}
@@ -249,7 +252,6 @@ func (a *Attributes) AddClass(v string) *Attributes {
 	return a
 }
 
-
 // Return the value of the class attribute.
 func (a *Attributes) Class() string {
 	return a.Get("class")
@@ -262,8 +264,10 @@ func (a *Attributes) HasClass(c string) bool {
 		return false
 	}
 	f := strings.Fields(curClass)
-	for _,s := range f {
-		if s == c {return true}
+	for _, s := range f {
+		if s == c {
+			return true
+		}
 	}
 	return false
 }
@@ -293,7 +297,7 @@ func (a *Attributes) SetDataAttributeChanged(name string, v string) (changed boo
 		err = errors.New("Data attribute names cannot contain spaces or $ or ! chars")
 		return
 	}
-	suffix,err := ToDataAttr(name)
+	suffix, err := ToDataAttr(name)
 	if err == nil {
 		name = "data-" + suffix
 		changed, err = a.OrderedStringMap.SetChanged(name, v)
@@ -301,18 +305,16 @@ func (a *Attributes) SetDataAttributeChanged(name string, v string) (changed boo
 	return
 }
 
-
 // SetDataAttribute sets the given data attribute. Note that data attribute keys must be in camelCase notation and
 // connot be hyphenated. camelCase will get converted to kebab-case in html, and converted back to camelCase when
 // referring to the data attribute using jQuery.data.
 func (a *Attributes) SetDataAttribute(name string, v string) *Attributes {
 	_, err := a.SetDataAttributeChanged(name, v)
 	if err != nil {
-		panic (err)
+		panic(err)
 	}
 	return a
 }
-
 
 /*
 DataAttribute gets the data-* attribute value that was set previously.
@@ -320,21 +322,21 @@ Does NOT call into javascript to return a value that was set on the browser side
 mechanism to retrieve that.
 */
 func (a *Attributes) DataAttribute(name string) string {
-	suffix,_ := ToDataAttr(name)
+	suffix, _ := ToDataAttr(name)
 	name = "data-" + suffix
 	return a.Get(name)
 }
 
 // RemoveDataAttribute removes the named data attribute. Returns true if the data attribute existed.
 func (a *Attributes) RemoveDataAttribute(name string) bool {
-	suffix,_ := ToDataAttr(name)
+	suffix, _ := ToDataAttr(name)
 	name = "data-" + suffix
 	return a.RemoveAttribute(name)
 }
 
 // HasDataAttribute returns true if the data attribute is set.
 func (a *Attributes) HasDataAttribute(name string) bool {
-	suffix,_ := ToDataAttr(name)
+	suffix, _ := ToDataAttr(name)
 	name = "data-" + suffix
 	return a.Has(name)
 }
@@ -366,9 +368,9 @@ func (a *Attributes) SetStyleChanged(name string, v string) (changed bool, err e
 }
 
 func (a *Attributes) SetStyle(name string, v string) *Attributes {
-	_,err := a.SetStyleChanged(name, v)
+	_, err := a.SetStyleChanged(name, v)
 	if err != nil {
-		panic (err)
+		panic(err)
 	}
 	return a
 }
@@ -387,13 +389,13 @@ func (a *Attributes) GetStyle(name string) string {
 	return s.Get(name)
 }
 
-func (a *Attributes) HasStyle (name string) bool {
+func (a *Attributes) HasStyle(name string) bool {
 	s := a.StyleMap()
 	return s.Has(name)
 }
 
 // RemoveStyle removes the style from the style list. Returns true if there was a changed.
-func (a *Attributes) RemoveStyle (name string) (changed bool) {
+func (a *Attributes) RemoveStyle(name string) (changed bool) {
 	s := a.StyleMap()
 	if s.Has(name) {
 		changed = true
@@ -402,7 +404,6 @@ func (a *Attributes) RemoveStyle (name string) (changed bool) {
 	}
 	return changed
 }
-
 
 func (a *Attributes) SetDisabled(d bool) {
 	if d {
@@ -432,7 +433,7 @@ func AttributeString(i interface{}) string {
 		return v.String()
 	case bool:
 		if v {
-			return ""	// boolean true
+			return "" // boolean true
 		} else {
 			return attributeFalse // Our special value to indicate to NOT print the attribute at all
 		}

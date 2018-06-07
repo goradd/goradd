@@ -9,8 +9,8 @@ import (
 	"github.com/knq/snaker"
 	//"github.com/spekary/goradd/util"
 	"context"
-	"strconv"
 	. "github.com/spekary/goradd/orm/query"
+	"strconv"
 )
 
 // goradd additions to the mysql database driver
@@ -54,9 +54,8 @@ func NewMysql5(dbKey string, params string, config *mysql.Config) *Mysql5 {
 	return &m
 }
 
-
 func (s *Mysql5) NewBuilder() QueryBuilderI {
-	return NewSqlBuilder(s);
+	return NewSqlBuilder(s)
 }
 
 func (m *Mysql5) Describe() *DatabaseDescription {
@@ -329,12 +328,18 @@ func (m *Mysql5) generateOperationSql(n *OperationNode, useAlias bool) (sql stri
 		}
 		sql = strings.TrimSuffix(sql, ",") + ") "
 
+	case OpAll:
+		fallthrough
+	case OpNone:
+		sql = "(" + OperationNodeOperator(n).String() + ") "
+
 	default:
 		for _, o := range OperationNodeOperands(n) {
 			s, a := m.generateNodeSql(o, useAlias)
 			sql += s + " " + OperationNodeOperator(n).String() + " "
 			args = append(args, a...)
 		}
+
 		sql = strings.TrimSuffix(sql, " "+OperationNodeOperator(n).String()+" ")
 		sql = "(" + sql + ") "
 
@@ -492,5 +497,3 @@ func (m *Mysql5) makeSetSql(fields map[string]interface{}) (sql string, args []i
 	sql += "\n"
 	return
 }
-
-

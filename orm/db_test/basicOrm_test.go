@@ -1,19 +1,19 @@
 package db
 
 import (
-	"testing"
-	"github.com/go-sql-driver/mysql"
-	"goradd/gen/goradd/model"
 	"context"
+	"github.com/go-sql-driver/mysql"
 	"github.com/spekary/goradd/orm/db"
+	"goradd/gen/goradd/model"
+	"testing"
 
+	. "github.com/spekary/goradd/orm/op"
 	"goradd/gen/goradd/model/node"
 	"strconv"
-	. 	"github.com/spekary/goradd/orm/op"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/spekary/goradd/datetime"
 	"github.com/spekary/goradd/orm/query"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -106,7 +106,6 @@ func TestManyMany(t *testing.T) {
 
 }
 
-
 func TestReverseReference(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople().
@@ -123,7 +122,6 @@ func TestReverseReference(t *testing.T) {
 	}
 
 }
-
 
 func TestBasicType(t *testing.T) {
 	ctx := context.Background()
@@ -160,14 +158,13 @@ func TestManyManySingles(t *testing.T) {
 		OrderBy(node.Project().ID(), node.Project().TeamMembers().FirstName()).
 		Load(ctx)
 
-	if projects[4].Name() != "ACME Website Redesign" {	// should have 5 lines here that are all project 1
+	if projects[4].Name() != "ACME Website Redesign" { // should have 5 lines here that are all project 1
 		t.Error("Did not find expanded project ACME Website Redesign.")
 	}
 
-	if projects[5].Name() != "State College HR System" {	// should have 5 lines here that are all project 1
+	if projects[5].Name() != "State College HR System" { // should have 5 lines here that are all project 1
 		t.Error("Did not find expanded project State College HR System.")
 	}
-
 
 	if projects[3].TeamMember().FirstName() != "Samantha" {
 		t.Error("Did not find Samantha. Found: " + projects[3].TeamMember().FirstName())
@@ -205,7 +202,6 @@ func TestManyTypeSingles(t *testing.T) {
 
 }
 
-
 func TestAlias(t *testing.T) {
 	ctx := context.Background()
 	projects := model.QueryProjects().
@@ -214,7 +210,7 @@ func TestAlias(t *testing.T) {
 		Load(ctx)
 
 	v := projects[0].GetAlias("Difference").Float()
-	assert.EqualValues(t,-690.5, v)
+	assert.EqualValues(t, -690.5, v)
 }
 
 func TestAlias2(t *testing.T) {
@@ -229,21 +225,20 @@ func TestAlias2(t *testing.T) {
 		Load(ctx)
 
 	project := projects[0]
-	assert.Equal(t,1, project.GetAlias("a").Int())
-	assert.Equal(t,"ACME Website Redesign" , project.GetAlias("b").String())
-	assert.Equal(t,10250.75, project.GetAlias("c").Float())
-	assert.EqualValues(t,datetime.FromSqlDateTime("2004-03-01"), project.GetAlias("d").DateTime())
+	assert.Equal(t, 1, project.GetAlias("a").Int())
+	assert.Equal(t, "ACME Website Redesign", project.GetAlias("b").String())
+	assert.Equal(t, 10250.75, project.GetAlias("c").Float())
+	assert.EqualValues(t, datetime.FromSqlDateTime("2004-03-01"), project.GetAlias("d").DateTime())
 	assert.Equal(t, false, project.GetAlias("e").Bool())
 
 }
-
 
 func TestCount(t *testing.T) {
 	ctx := context.Background()
 	count := model.QueryProjects().
 		Count(ctx, false)
 
-	assert.EqualValues(t,4, count)
+	assert.EqualValues(t, 4, count)
 }
 
 func TestGroupBy(t *testing.T) {
@@ -253,10 +248,9 @@ func TestGroupBy(t *testing.T) {
 		GroupBy(node.Project()).
 		Load(ctx)
 
-	assert.EqualValues(t,5, projects[0].GetAlias("teamMemberCount").Int())
+	assert.EqualValues(t, 5, projects[0].GetAlias("teamMemberCount").Int())
 
 }
-
 
 func TestSelect(t *testing.T) {
 	ctx := context.Background()
@@ -265,19 +259,19 @@ func TestSelect(t *testing.T) {
 		Load(ctx)
 
 	project := projects[0]
-	assert.True(t,project.NameIsValid())
-	assert.False(t,project.ManagerIDIsValid())
-	assert.True(t,project.IDIsValid())
+	assert.True(t, project.NameIsValid())
+	assert.False(t, project.ManagerIDIsValid())
+	assert.True(t, project.IDIsValid())
 }
 
 func TestLimit(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople().
 		OrderBy(node.Person().ID()).
-		Limit(2,3).
+		Limit(2, 3).
 		Load(ctx)
 
-	assert.EqualValues(t,"Mike", people[0].FirstName())
+	assert.EqualValues(t, "Mike", people[0].FirstName())
 	assert.Len(t, people, 2)
 }
 
@@ -291,11 +285,11 @@ func TestSaveAndDelete(t *testing.T) {
 
 	people := model.QueryPeople().
 		Where(
-		And(
-			Equal(
-				node.Person().FirstName(), "Test1"),
-			Equal(
-				node.Person().LastName(), "Last1"))).
+			And(
+				Equal(
+					node.Person().FirstName(), "Test1"),
+				Equal(
+					node.Person().LastName(), "Last1"))).
 		Load(ctx)
 
 	assert.EqualValues(t, person.ID(), people[0].ID())
@@ -304,16 +298,15 @@ func TestSaveAndDelete(t *testing.T) {
 
 	people = model.QueryPeople().
 		Where(
-		And(
-			Equal(
-				node.Person().FirstName(), "Test1"),
-			Equal(
-				node.Person().LastName(), "Last1"))).
+			And(
+				Equal(
+					node.Person().FirstName(), "Test1"),
+				Equal(
+					node.Person().LastName(), "Last1"))).
 		Load(ctx)
 
 	assert.Len(t, people, 0, "Deleted the person")
 }
-
 
 func TestUpdate(t *testing.T) {
 	ctx := context.Background()
@@ -328,10 +321,10 @@ func TestUpdate(t *testing.T) {
 
 	people := model.QueryPeople().
 		Where(
-		And(
-			Equal(
-				node.Person().FirstName(), "Test2"),
-		)).
+			And(
+				Equal(
+					node.Person().FirstName(), "Test2"),
+			)).
 		Load(ctx)
 
 	assert.EqualValues(t, person.ID(), people[0].ID())
@@ -340,10 +333,10 @@ func TestUpdate(t *testing.T) {
 
 	people = model.QueryPeople().
 		Where(
-		And(
-			Equal(
-				node.Person().FirstName(), "Test2"),
-		)).
+			And(
+				Equal(
+					node.Person().FirstName(), "Test2"),
+			)).
 		Load(ctx)
 
 	assert.Len(t, people, 0, "Deleted the person")
@@ -368,13 +361,12 @@ func TestLazyLoad(t *testing.T) {
 		Where(Equal(node.Project().ID(), 1)).
 		Load(ctx)
 
-	var mId string = projects[0].ID()	// foreign keys are treated as strings for cross-database compatibility
+	var mId string = projects[0].ID() // foreign keys are treated as strings for cross-database compatibility
 	assert.Equal(t, "1", mId)
 
 	manager := projects[0].LoadManager(ctx)
 	assert.Equal(t, "7", manager.ID())
 }
-
 
 func TestDeleteQuery(t *testing.T) {
 	ctx := context.Background()
@@ -386,25 +378,24 @@ func TestDeleteQuery(t *testing.T) {
 
 	model.QueryPeople().
 		Where(
-		And(
-			Equal(
-				node.Person().FirstName(), "Test1"),
-			Equal(
-				node.Person().LastName(), "Last1"))).
+			And(
+				Equal(
+					node.Person().FirstName(), "Test1"),
+				Equal(
+					node.Person().LastName(), "Last1"))).
 		Delete(ctx)
 
 	people := model.QueryPeople().
 		Where(
-		And(
-			Equal(
-				node.Person().FirstName(), "Test1"),
-			Equal(
-				node.Person().LastName(), "Last1"))).
+			And(
+				Equal(
+					node.Person().FirstName(), "Test1"),
+				Equal(
+					node.Person().LastName(), "Last1"))).
 		Load(ctx)
 
 	assert.Len(t, people, 0, "Deleted the person")
 }
-
 
 func TestHaving(t *testing.T) {
 	ctx := context.Background()
@@ -420,4 +411,3 @@ func TestHaving(t *testing.T) {
 	assert.Equal(t, "State College HR System", projects[0].Name())
 	assert.Equal(t, 6, projects[0].GetAlias("team_member_count").Int())
 }
-

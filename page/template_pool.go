@@ -13,15 +13,13 @@ type TemplateExecuter interface {
 	Execute(wr io.Writer, data interface{}) error
 }
 
-
 var templatePool map[string]TemplateExecuter
-
 
 func RegisterTemplate(name string, t TemplateExecuter) {
 	templatePool[name] = t
 }
 
 func GetTemplate(name string) TemplateExecuter {
-	t,_ := templatePool[name]
+	t, _ := templatePool[name]
 	return t
 }

@@ -5,12 +5,11 @@ import (
 	"time"
 )
 
-
 func TestBasicLruCache(t *testing.T) {
-	cache := NewLruCache(100, 60 * 60)
+	cache := NewLruCache(100, 60*60)
 
-	p1:="1"
-	p2:="2"
+	p1 := "1"
+	p2 := "2"
 
 	cache.Set("1", p1)
 	cache.Set("2", p2)
@@ -23,9 +22,9 @@ func TestBasicLruCache(t *testing.T) {
 }
 
 func TestLruCacheExit(t *testing.T) {
-	cache := NewLruCache(1, 60 * 60)
-	p1:="1"
-	p2:="2"
+	cache := NewLruCache(1, 60*60)
+	p1 := "1"
+	p2 := "2"
 
 	cache.Set("1", p1)
 	cache.Set("2", p2)
@@ -45,8 +44,8 @@ func TestLruCacheExit(t *testing.T) {
 
 func TestLruCacheTtl(t *testing.T) {
 	cache := NewLruCache(10, 1)
-	p1:="1"
-	p2:="2"
+	p1 := "1"
+	p2 := "2"
 
 	cache.Set("1", p1)
 	cache.Set("2", p2)
@@ -67,10 +66,10 @@ func TestLruCacheTtl(t *testing.T) {
 }
 
 func TestLruReset(t *testing.T) {
-	cache := NewLruCache(2, 60 * 60)
-	p1:="1"
-	p2:="2"
-	p3:="3"
+	cache := NewLruCache(2, 60*60)
+	p1 := "1"
+	p2 := "2"
+	p3 := "3"
 
 	cache.Set("1", p1)
 	cache.Set("2", p2)

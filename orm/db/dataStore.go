@@ -1,10 +1,9 @@
 package db
 
 import (
-	"log"
 	"context"
 	. "github.com/spekary/goradd/orm/query"
-
+	"log"
 )
 
 type LoaderFunc func(QueryBuilderI, map[string]interface{})
@@ -23,19 +22,17 @@ type DatabaseI interface {
 	Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue string)
 	Insert(ctx context.Context, table string, fields map[string]interface{}) string
 	Delete(ctx context.Context, table string, pkName string, pkValue interface{})
-
 }
 
 var datastore struct {
-	databases map[string]DatabaseI
-	tables map[string]map[string]*TableDescription
+	databases  map[string]DatabaseI
+	tables     map[string]map[string]*TableDescription
 	typeTables map[string]map[string]*TypeTableDescription
 }
 
-
 func AddDatabase(d DatabaseI, key string) {
 	if datastore.databases == nil {
-		datastore.databases = make (map[string]DatabaseI)
+		datastore.databases = make(map[string]DatabaseI)
 	}
 
 	datastore.databases[key] = d
@@ -49,7 +46,6 @@ func GetDatabase(key string) DatabaseI {
 func GetDatabases() map[string]DatabaseI {
 	return datastore.databases
 }
-
 
 func GetTableDescription(key string, goTypeName string) *TableDescription {
 	td, ok := datastore.tables[key][goTypeName]
@@ -75,16 +71,16 @@ func AnalyzeDatabases() {
 		dd = database.Describe()
 		datastore.tables[key] = make(map[string]*TableDescription)
 		datastore.typeTables[key] = make(map[string]*TypeTableDescription)
-		for _,td := range dd.Tables {
+		for _, td := range dd.Tables {
 			if !td.IsAssociation {
-				if _,ok := datastore.tables[key][td.GoName]; ok {
+				if _, ok := datastore.tables[key][td.GoName]; ok {
 					log.Panic("Table " + key + ":" + td.GoName + " already exists.")
 				}
 				datastore.tables[key][td.GoName] = td
 			}
 		}
-		for _,td := range dd.TypeTables {
-			if _,ok := datastore.typeTables[key][td.GoName]; ok {
+		for _, td := range dd.TypeTables {
+			if _, ok := datastore.typeTables[key][td.GoName]; ok {
 				log.Panic("TypeTable " + key + ":" + td.GoName + " already exists.")
 			}
 			datastore.typeTables[key][td.GoName] = td
@@ -92,4 +88,3 @@ func AnalyzeDatabases() {
 	}
 
 }
-

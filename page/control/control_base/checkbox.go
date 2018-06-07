@@ -1,38 +1,37 @@
 package control_base
 
 import (
-	"strings"
+	"context"
 	"fmt"
-	localPage "goradd/page"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"context"
-	html2 "html"
 	"github.com/spekary/goradd/util/types"
+	localPage "goradd/page"
+	html2 "html"
+	"strings"
 )
 
 // Checkbox is a base class for checkbox-like objects, including html checkboxes and radio buttons.
 type Checkbox struct {
 	localPage.Control
-	checked bool
-	labelMode	html.LabelDrawingMode		// how to draw the label associating the text with the checkbox
+	checked         bool
+	labelMode       html.LabelDrawingMode // how to draw the label associating the text with the checkbox
 	labelAttributes *html.Attributes
 }
-
 
 // Initializes a textbox. Normally you will not call this directly. However, sub controls should call this after
 // creation to get the enclosed control initialized. Self is the newly created class. Like so:
 // t := &MyTextBox{}
 // t.Textbox.Init(t, parent, id)
 // A parent control is isRequired. Leave id blank to have the system assign an id to the control.
-func (c *Checkbox) Init(self TextboxI, parent page.ControlI) {
+func (c *Checkbox) Init(self page.ControlI, parent page.ControlI) {
 	c.Control.Init(self, parent)
 
 	c.Tag = "input"
 	c.IsVoidTag = true
 	c.labelMode = page.DefaultCheckboxLabelDrawingMode
 	c.SetHasFor(true)
-	c.SetAttribute("autocomplete", "off")	// fixes an html quirk
+	c.SetAttribute("autocomplete", "off") // fixes an html quirk
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
@@ -41,7 +40,7 @@ func (c *Checkbox) DrawingAttributes() *html.Attributes {
 	a := c.Control.DrawingAttributes()
 	if c.Text() != "" && (c.labelMode == html.LABEL_BEFORE || c.labelMode == html.LABEL_AFTER) {
 		// Treat the closer text label as more important than the wrapper label
-		a.Set("aria-labeledby", c.ID() + "_ilbl")
+		a.Set("aria-labeledby", c.ID()+"_ilbl")
 	}
 	return a
 }
@@ -94,7 +93,7 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 
 		labelAttributes2 := html.NewAttributes()
 		labelAttributes2.Set("for", c.ID())
-		labelAttributes2.Set("id", c.ID() + "_ilbl")
+		labelAttributes2.Set("id", c.ID()+"_ilbl")
 
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
 		ctrl = html.RenderLabel(labelAttributes2, text, ctrl, c.labelMode)
@@ -123,7 +122,7 @@ func (c *Checkbox) getDrawingInputLabelAttributes() *html.Attributes {
 	}
 
 	if c.IsDisabled() {
-		a.AddClass("disabled")	// For styling the text associated with a disabled checkbox or control.
+		a.AddClass("disabled") // For styling the text associated with a disabled checkbox or control.
 	}
 
 	if !c.IsDisplayed() {
@@ -131,7 +130,6 @@ func (c *Checkbox) getDrawingInputLabelAttributes() *html.Attributes {
 	}
 	return a
 }
-
 
 // Set the value of the checkbox. Returns itself for chaining.
 func (c *Checkbox) SetChecked(v bool) page.ControlI {
@@ -147,7 +145,6 @@ func (c *Checkbox) SetChecked(v bool) page.ControlI {
 func (c *Checkbox) SetCheckedNoRefresh(v interface{}) {
 	c.checked = ConvertToBool(v)
 }
-
 
 func (c *Checkbox) Checked() bool {
 	return c.checked
@@ -202,7 +199,7 @@ func (c *Checkbox) MarshalState(m types.MapI) {
  */
 func (c *Checkbox) UnmarshalState(m types.MapI) {
 	if m.Has("checked") {
-		v,_ := m.GetBool("checked")
+		v, _ := m.GetBool("checked")
 		c.checked = v
 	}
 }

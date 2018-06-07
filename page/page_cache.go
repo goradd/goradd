@@ -1,10 +1,10 @@
 package page
 
 import (
-	"goradd/config"
-	"github.com/spekary/goradd/util/types"
-	"github.com/spekary/goradd/util"
 	"bytes"
+	"github.com/spekary/goradd/util"
+	"github.com/spekary/goradd/util/types"
+	"goradd/config"
 )
 
 type PageCacheI interface {
@@ -14,7 +14,6 @@ type PageCacheI interface {
 }
 
 var pageCache PageCacheI
-
 
 func SetPageCache(c PageCacheI) {
 	if pageCache != nil {
@@ -38,17 +37,16 @@ func NewFastPageCache() *FastPageCache {
 
 // Puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
-func (o *FastPageCache) Set(pageId string, page *Page)  {
+func (o *FastPageCache) Set(pageId string, page *Page) {
 	o.LruCache.Set(pageId, page)
 }
 
-
 // Get returns the page based on its page id.
 // If not found, will return null.
-func (o *FastPageCache) Get(pageId string) (*Page) {
+func (o *FastPageCache) Get(pageId string) *Page {
 	var p *Page
 
-	if i:= o.LruCache.Get(pageId); i != nil {
+	if i := o.LruCache.Get(pageId); i != nil {
 		p = i.(*Page)
 	}
 
@@ -61,7 +59,7 @@ func (o *FastPageCache) Get(pageId string) (*Page) {
 // Returns a new page id
 func (o *FastPageCache) NewPageID() string {
 	s := util.RandomHtmlValueString(40)
-	for o.Has(s) {	// while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure
+	for o.Has(s) { // while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure
 		s = util.RandomHtmlValueString(40)
 	}
 	return s
@@ -78,13 +76,13 @@ type SerializedPageCache struct {
 }
 
 func NewSerializedPageCache() *SerializedPageCache {
-	panic ("Serialized pages are not ready for prime time yet")
+	panic("Serialized pages are not ready for prime time yet")
 	return &SerializedPageCache{*types.NewLruCache(config.PAGE_CACHE_MAX_SIZE, config.PAGE_CACHE_TTL)}
 }
 
 // Puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
-func (o *SerializedPageCache) Set(pageId string, page *Page)  {
+func (o *SerializedPageCache) Set(pageId string, page *Page) {
 	b := GetBuffer()
 	defer PutBuffer(b)
 	enc := pageEncoder.NewEncoder(b)
@@ -96,10 +94,9 @@ func (o *SerializedPageCache) Set(pageId string, page *Page)  {
 	}
 }
 
-
 // Get returns the page based on its page id.
 // If not found, will return null.
-func (o *SerializedPageCache) Get(pageId string) (*Page) {
+func (o *SerializedPageCache) Get(pageId string) *Page {
 	b := o.LruCache.Get(pageId).([]byte)
 	dec := pageEncoder.NewDecoder(bytes.NewBuffer(b))
 	var ver int32
@@ -135,7 +132,7 @@ func (o *SerializedPageCache) Get(pageId string) (*Page) {
 // Returns a new page id
 func (o *SerializedPageCache) NewPageID() string {
 	s := util.RandomHtmlValueString(40)
-	for o.Has(s) {	// while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure
+	for o.Has(s) { // while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure
 		s = util.RandomHtmlValueString(40)
 	}
 	return s

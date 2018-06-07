@@ -15,12 +15,11 @@ type AliasNode struct {
 	Node
 }
 
-
 // Alias returns an AliasNode type, which allows you to refer to a prior created named alias operation.
 
 func Alias(goName string) *AliasNode {
 	return &AliasNode{
-		Node: Node {
+		Node: Node{
 			alias: goName,
 		},
 	}
@@ -46,7 +45,6 @@ func (n *AliasNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Alias: " + n.GetAlias())
 }
-
 
 // Return the name as a capitalized object name
 func (n *AliasNode) goName() string {

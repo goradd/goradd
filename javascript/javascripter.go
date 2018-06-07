@@ -4,9 +4,9 @@ package javascript
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"github.com/spekary/goradd/util/types"
 	"strconv"
+	"strings"
 )
 
 // Interface that allows an object to be converted to javascript (not JSON!)
@@ -26,7 +26,7 @@ func ToJavaScript(v interface{}) string {
 	case string:
 		b, _ := json.Marshal(s)                         // This does a good job of handling most escape sequences we might need
 		s1 := strings.Replace(string(b), "/", `\/`, -1) // Replace forward slashes to avoid potential confusion in browser from closing html tags
-		return fmt.Sprintf("%v", s1) // will surround with quotes
+		return fmt.Sprintf("%v", s1)                    // will surround with quotes
 	case []interface{}:
 		a := Arguments(s)
 		return "[" + a.JavaScript() + "]"
@@ -70,6 +70,8 @@ func ToJavaScript(v interface{}) string {
 		} else {
 			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
 		}
+	case nil:
+		return "null"
 	default:
 		return fmt.Sprint(s)
 	}
@@ -90,14 +92,13 @@ func (n NoQuoteKey) JavaScript() string {
 	panic("NoQuoteKey should only be used as a value in a string map.")
 }
 
-// JsCode represents straight javascript code that should not be escaped.
-// A global variable name that can be used as a value in a javascript argument list could be used here too. Normally,
-// string values would be quoted. This outputs a string without quoting or escaping.
 type jsCode struct {
-	code string
+	code  string
 	isInt bool
 }
 
+// JsCode represents straight javascript code that should not be escaped or quoted.
+// Normally, string values would be quoted. This outputs a string without quoting or escaping.
 func JsCode(s string) jsCode {
 	return jsCode{code: s}
 }
@@ -125,10 +126,10 @@ func (n Undefined) MarshalJSON() ([]byte, error) {
 func NumberInt(i interface{}) int {
 	switch n := i.(type) {
 	case json.Number:
-		v,_ := n.Int64()
+		v, _ := n.Int64()
 		return int(v)
 	case string:
-		v,_ := strconv.Atoi(n)
+		v, _ := strconv.Atoi(n)
 		return v
 	}
 	return 0
@@ -140,10 +141,10 @@ func NumberInt(i interface{}) int {
 func NumberFloat(i interface{}) float64 {
 	switch n := i.(type) {
 	case json.Number:
-		v,_ := n.Float64()
+		v, _ := n.Float64()
 		return v
 	case string:
-		v,_ := strconv.ParseFloat(n, 64)
+		v, _ := strconv.ParseFloat(n, 64)
 		return v
 	}
 	return 0

@@ -19,20 +19,19 @@ type TableNode struct {
 	Node
 
 	// Which database in the global list of databases does the node belong to
-	dbKey			string
+	dbKey string
 	// Name of table in the database we point to
-	dbTable       string
+	dbTable string
 	// The name of the function used to access the property as a node or ORM item
-	goPropName			string
+	goPropName string
 }
-
 
 // NewTableNode creates a table node, which is always the starting node in a node chain
 func NewTableNode(dbKey string, dbName string, goName string) *TableNode {
-	return &TableNode {
-		dbKey:   dbKey,
-		dbTable: dbName,
-		goPropName:  goName,
+	return &TableNode{
+		dbKey:      dbKey,
+		dbTable:    dbName,
+		goPropName: goName,
 	}
 }
 

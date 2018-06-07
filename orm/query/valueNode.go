@@ -1,12 +1,12 @@
 package query
 
 import (
-	"reflect"
-	"log"
 	"fmt"
 	"github.com/spekary/goradd/datetime"
-	"time"
+	"log"
+	"reflect"
 	"strings"
+	"time"
 )
 
 type ValueNode struct {
@@ -55,7 +55,7 @@ func NewValueNode(i interface{}) NodeI {
 		n.value = v.Time
 	default:
 		// Arrays of items
-		if reflect.TypeOf(v).Kind() == reflect.Slice  || reflect.TypeOf(v).Kind() == reflect.Array {
+		if reflect.TypeOf(v).Kind() == reflect.Slice || reflect.TypeOf(v).Kind() == reflect.Array {
 			ary := []NodeI{}
 			s := reflect.ValueOf(v)
 			for i := 0; i < s.Len(); i++ {
@@ -75,7 +75,7 @@ func (n *ValueNode) nodeType() NodeType {
 }
 
 func (n *ValueNode) Equals(n2 NodeI) bool {
-	if cn,ok := n2.(*ValueNode); ok {
+	if cn, ok := n2.(*ValueNode); ok {
 		return cn.value == n.value
 	}
 	return false
@@ -87,7 +87,7 @@ func (n *ValueNode) tableName() string {
 
 func (n *ValueNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	var  alias string
+	var alias string
 	if n.alias != "" {
 		alias = " as " + n.alias
 	}

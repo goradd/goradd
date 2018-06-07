@@ -1,8 +1,8 @@
 package util
 
 import (
-	"runtime"
 	"fmt"
+	"runtime"
 )
 
 // Various error management utilities
@@ -15,7 +15,6 @@ type StackFrame struct {
 	Line int
 	Func string
 }
-
 
 // GetStackTrace returns an array of stack frames, minus "skip" frames
 func GetStackTrace(skip int) (trace []StackFrame) {
@@ -36,9 +35,9 @@ func GetStackTrace(skip int) (trace []StackFrame) {
 	return trace
 }
 
-func FormatStackTrace(trace []StackFrame) (out string){
+func FormatStackTrace(trace []StackFrame) (out string) {
 	for _, frame := range trace {
-		out += fmt.Sprintf("%s() at %s:%d\n" , frame.Func, frame.File, frame.Line)
+		out += fmt.Sprintf("%s() at %s:%d\n", frame.Func, frame.File, frame.Line)
 	}
 	return out
 }

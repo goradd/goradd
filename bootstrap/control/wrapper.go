@@ -1,16 +1,16 @@
 package control
 
 import (
-	"github.com/spekary/goradd/html"
 	"bytes"
 	"context"
+	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 )
 
 type FormGroupWrapper struct {
 	innerDivAttributes *html.Attributes
-	labelAttributes *html.Attributes
-	useTooltips bool	// uses tooltips for the error class
+	labelAttributes    *html.Attributes
+	useTooltips        bool // uses tooltips for the error class
 }
 
 func NewFormGroupWrapper() *FormGroupWrapper {

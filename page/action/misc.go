@@ -11,15 +11,12 @@ type ActionI interface {
 	RenderScript(params RenderParams) string
 }
 
-
 type RenderParams struct {
 	TriggeringControlID string
 	ControlActionValue  interface{}
 	EventID             uint16
 	EventActionValue    interface{}
 }
-
-
 
 type messageAction struct {
 	message interface{}
@@ -43,7 +40,6 @@ type confirmAction struct {
 	message interface{}
 }
 
-
 func Confirm(m interface{}) *confirmAction {
 	return &confirmAction{message: m}
 }
@@ -51,7 +47,6 @@ func Confirm(m interface{}) *confirmAction {
 func (a *confirmAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`if (!goradd.confirm(%s)) return false;`, javascript.ToJavaScript(a.message))
 }
-
 
 type blurAction struct {
 	controlID string
@@ -89,7 +84,6 @@ func (a *selectAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.select('%s');`, a.controlID)
 }
 
-
 type cssPropertyAction struct {
 	property  string
 	value     interface{}
@@ -105,12 +99,12 @@ func (a *cssPropertyAction) RenderScript(params RenderParams) string {
 }
 
 type cssAddClassAction struct {
-	classes string
+	classes   string
 	controlID string
 }
 
 func AddClass(controlID string, addClasses string) *cssAddClassAction {
-	return &cssAddClassAction{controlID: controlID, classes:addClasses}
+	return &cssAddClassAction{controlID: controlID, classes: addClasses}
 }
 
 func (a *cssAddClassAction) RenderScript(params RenderParams) string {
@@ -118,7 +112,7 @@ func (a *cssAddClassAction) RenderScript(params RenderParams) string {
 }
 
 type cssToggleClassAction struct {
-	classes string
+	classes   string
 	controlID string
 }
 
@@ -129,7 +123,6 @@ func ToggleClass(controlID string, classes string) *cssToggleClassAction {
 func (a *cssToggleClassAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`goradd.toggleClass('%s', '%s');`, a.controlID, a.classes)
 }
-
 
 type redirectAction struct {
 	location string
@@ -145,8 +138,8 @@ func (a *redirectAction) RenderScript(params RenderParams) string {
 
 type triggerAction struct {
 	controlID string
-	event string
-	data interface{}
+	event     string
+	data      interface{}
 }
 
 // Trigger will trigger a javascript event on a control
@@ -158,12 +151,10 @@ func (a *triggerAction) RenderScript(params RenderParams) string {
 	return fmt.Sprintf(`$j("#%s").trigger("%s", %s)`, a.controlID, a.event, javascript.ToJavaScript(a.data))
 }
 
-
 // PrivateAction is used by control implementations to add a private action to a controls action list. Unless you are
 // creating a control, you should not use this.
 type PrivateAction struct{}
+
 func (a PrivateAction) RenderScript(params RenderParams) string {
 	return ""
 }
-
-

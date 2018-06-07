@@ -3,19 +3,19 @@ package table
 import (
 	"bytes"
 	"context"
-	"github.com/spekary/goradd/html"
-	"strconv"
-	html2 "html"
-	"github.com/spekary/goradd"
-	"github.com/spekary/goradd/page"
 	"fmt"
+	"github.com/spekary/goradd"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
+	html2 "html"
+	"strconv"
 )
 
 const (
-	NotSortable = 0
-	SortAscending = 1
+	NotSortable    = 0
+	SortAscending  = 1
 	SortDescending = -1
-	NotSorted = 2
+	NotSorted      = 2
 )
 
 type ColumnI interface {
@@ -60,7 +60,7 @@ type ColumnBase struct {
 	id               string
 	parentTable      TableI
 	title            string
-	*html.Attributes					// These are attributes that will appear on the cell
+	*html.Attributes // These are attributes that will appear on the cell
 	headerAttributes *html.Attributes
 	footerAttributes *html.Attributes
 	colTagAttributes *html.Attributes
@@ -68,7 +68,7 @@ type ColumnBase struct {
 	renderAsHeader   bool
 	isHtml           bool
 	cellTexter       CellTexter
-	cellStyler       html.Attributer	// for individually styling cells
+	cellStyler       html.Attributer // for individually styling cells
 	headerTexter     CellTexter
 	footerTexter     CellTexter
 	isHidden         bool
@@ -141,7 +141,6 @@ func (c *ColumnBase) SetHeaderTexter(s CellTexter) {
 func (c *ColumnBase) SetFooterTexter(s CellTexter) {
 	c.footerTexter = s
 }
-
 
 func (c *ColumnBase) IsHidden() bool {
 	return c.isHidden
@@ -217,7 +216,7 @@ func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count
 
 func (c *ColumnBase) FooterCellHtml(ctx context.Context, row int, col int) string {
 	if c.footerTexter != nil {
-		return c.footerTexter.CellText(ctx, c.This(), row, col, nil)	// careful, this does not get escaped
+		return c.footerTexter.CellText(ctx, c.This(), row, col, nil) // careful, this does not get escaped
 	}
 
 	return ""
@@ -287,6 +286,7 @@ func (c *ColumnBase) RenderSortButton(labelHtml string) string {
 func (c *ColumnBase) SortDirection() int {
 	return c.sortDirection
 }
+
 // SetSortDirection is used internally to set the sort direction indicator
 func (c *ColumnBase) SetSortDirection(d int) {
 	c.sortDirection = d

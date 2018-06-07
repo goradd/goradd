@@ -1,10 +1,10 @@
 package types
 
 import (
-	"sync"
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"sync"
 )
 
 // SafeStringMap is an implementention of the map of strings keyed by strings. It is concurrency
@@ -31,7 +31,7 @@ func (o *SafeStringMap) SetChanged(key string, val string) (changed bool, err er
 
 	var oldVal string
 
-	if oldVal,ok = o.items[key]; !ok || oldVal != val {
+	if oldVal, ok = o.items[key]; !ok || oldVal != val {
 		o.items[key] = val
 		changed = true
 	}
@@ -50,21 +50,21 @@ func (o *SafeStringMap) Set(key string, val string) *SafeStringMap {
 func (o *SafeStringMap) Get(key string) (val string) {
 	o.Lock()
 	defer o.Unlock()
-	val, _ =  o.items[key]
+	val, _ = o.items[key]
 	return
 }
 
 func (o *SafeStringMap) Has(key string) (exists bool) {
 	o.Lock()
 	defer o.Unlock()
-	_, exists =  o.items[key]
+	_, exists = o.items[key]
 	return
 }
 
 func (o *SafeStringMap) Remove(key string) {
 	o.Lock()
 	defer o.Unlock()
-	delete (o.items,key)
+	delete(o.items, key)
 }
 
 // Values returns a slice of the string values
@@ -72,7 +72,7 @@ func (o *SafeStringMap) Values() []string {
 	o.Lock()
 	defer o.Unlock()
 
-	vals := make ([]string, 0, len(o.items))
+	vals := make([]string, 0, len(o.items))
 
 	for _, v := range o.items {
 		vals = append(vals, v)
@@ -85,7 +85,7 @@ func (o *SafeStringMap) Keys() []string {
 	o.Lock()
 	defer o.Unlock()
 
-	keys := make ([]string, 0, len(o.items))
+	keys := make([]string, 0, len(o.items))
 
 	for k := range o.items {
 		keys = append(keys, k)
@@ -93,12 +93,9 @@ func (o *SafeStringMap) Keys() []string {
 	return keys
 }
 
-
-
 func (o *SafeStringMap) Len() int {
-	return len (o.items)
+	return len(o.items)
 }
-
 
 func (o *SafeStringMap) MarshalBinary() (data []byte, err error) {
 	buf := new(bytes.Buffer)
@@ -130,7 +127,7 @@ func (o *SafeStringMap) Merge(i StringMapI) {
 		return
 	}
 
-	i.Range(func (k,v string) bool {
+	i.Range(func(k, v string) bool {
 		o.Set(k, v)
 		return true
 	})
@@ -145,9 +142,9 @@ func (o *SafeStringMap) Equals(i StringMapI) bool {
 	}
 	var ret bool = true
 
-	o.Range(func (k,v string) bool {
+	o.Range(func(k, v string) bool {
 		if !o.Has(k) || o.Get(k) != i.Get(k) {
-			ret = false	// don't just return because we are in a channel and we want to use up the channel
+			ret = false // don't just return because we are in a channel and we want to use up the channel
 			return false
 		}
 		return true

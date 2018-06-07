@@ -1,9 +1,10 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page"
-	"net/mail"
 	"fmt"
+	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/page/control/control_base"
+	"net/mail"
 )
 
 // EmailTextbox is a Text control that validates for email addresses.
@@ -12,7 +13,7 @@ import (
 type EmailTextbox struct {
 	Textbox
 	maxItems int
-	items []*mail.Address
+	items    []*mail.Address
 	parseErr error
 }
 
@@ -26,14 +27,14 @@ func NewEmailTextbox(parent page.ControlI) *EmailTextbox {
 	return t
 }
 
-func (t *EmailTextbox) Init(self page.ControlI, parent page.ControlI) {
+func (t *EmailTextbox) Init(self control_base.TextboxI, parent page.ControlI) {
 	t.Textbox.Init(self, parent)
 }
 
 func (t *EmailTextbox) SetMaxCount(max int) {
 	t.maxItems = max
 	if t.maxItems > 1 {
-		t.SetType(TEXTBOX_TYPE_DEFAULT)	// Some browsers cannot handle multiple emails in an email type of text input
+		t.SetType(TEXTBOX_TYPE_DEFAULT) // Some browsers cannot handle multiple emails in an email type of text input
 	}
 	t.Refresh()
 }
@@ -72,9 +73,8 @@ func (t *EmailTextbox) UpdateFormValues(ctx *page.Context) {
 func (t *EmailTextbox) Addresses() []string {
 	ret := []string{}
 
-	for _,item := range t.items {
+	for _, item := range t.items {
 		ret = append(ret, item.Address)
 	}
 	return ret
 }
-

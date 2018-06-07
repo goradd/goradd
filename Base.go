@@ -12,7 +12,7 @@ type Base struct {
 	Self interface{}
 }
 
-func (b *Base) Init (self interface{}) {
+func (b *Base) Init(self interface{}) {
 	b.Self = self
 }
 

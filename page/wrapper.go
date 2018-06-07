@@ -21,7 +21,7 @@ func RegisterControlWrapper(name string, w WrapperI) {
 }
 
 func GetRegisteredWrapper(name string) WrapperI {
-	if w,ok := wrapperRegistry[name]; ok {
+	if w, ok := wrapperRegistry[name]; ok {
 		var i interface{}
 		i = reflect.New(w)
 		return i.(WrapperI)
@@ -60,7 +60,24 @@ func (w LabelWrapper) TypeName() string {
 	return "page.Label"
 }
 
+type DivWrapper struct {
+}
+
+func NewDivWrapper() DivWrapper {
+	return DivWrapper{}
+}
+
+func (w DivWrapper) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+	DivTmpl(ctx, ctrl, html, buf)
+}
+
+func (w DivWrapper) TypeName() string {
+	return "page.Div"
+}
+
+
 func init() {
 	RegisterControlWrapper("page.Error", &ErrorWrapper{})
 	RegisterControlWrapper("page.Label", &LabelWrapper{})
+	RegisterControlWrapper("page.Div", &DivWrapper{})
 }

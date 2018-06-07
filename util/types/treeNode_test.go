@@ -1,7 +1,8 @@
 package types
+
 import (
-	"testing"
 	"strconv"
+	"testing"
 )
 
 type testObj struct {
@@ -27,7 +28,7 @@ func (o *testObj) getID() string {
 	return o.id
 }
 
-func TestTreeNodeBasic (t *testing.T) {
+func TestTreeNodeBasic(t *testing.T) {
 	top := newObj()
 
 	top.AddChildNode(newObj())
@@ -40,11 +41,11 @@ func TestTreeNodeBasic (t *testing.T) {
 		t.Error("Wrong number of children.")
 	}
 
-	if _,ok := children[0].(*testObj); !ok {
+	if _, ok := children[0].(*testObj); !ok {
 		t.Error("Could not case object to parent.")
 	}
 
-	if _,ok := children[0].(testObjI); !ok {
+	if _, ok := children[0].(testObjI); !ok {
 		t.Error("Could not case object to parent interface.")
 	}
 
@@ -56,7 +57,7 @@ func TestTreeNodeBasic (t *testing.T) {
 		t.Error("Could not get top node.")
 	}
 
-	if i,ok := children2[0].TopNode().(testObjI); !ok {
+	if i, ok := children2[0].TopNode().(testObjI); !ok {
 		t.Error("Could not cast top node.")
 	} else if i.getID() != "0" {
 		t.Error("Top node is not correct.")

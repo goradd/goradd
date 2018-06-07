@@ -1,12 +1,12 @@
 package page
 
 import (
-	"time"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"runtime"
-	"bytes"
+	"time"
 )
 
 const MaxStackDepth = 50
@@ -65,7 +65,8 @@ func NewAppErr(err int) AppErr {
 
 func (e AppErr) Error() string {
 	switch e.Err {
-	case AppErrNoTemplate: return "Form or control does not have a template"
+	case AppErrNoTemplate:
+		return "Form or control does not have a template"
 	}
 	return ""
 }
@@ -75,7 +76,7 @@ func (e *NoErr) Error() string {
 }
 
 func IsError(e error) bool {
-	_,ok := e.(*NoErr)
+	_, ok := e.(*NoErr)
 	return !ok
 }
 
@@ -88,7 +89,7 @@ func newRunError(ctx context.Context, msg interface{}) *Error {
 		e.Err = errors.New(m)
 		e.fillErr(ctx, 3)
 
-	case error:	// system generated error
+	case error: // system generated error
 		e.Err = m
 		e.fillErr(ctx, 4)
 
@@ -108,7 +109,6 @@ func NewError(ctx context.Context, msg string) *Error {
 	e.fillErr(ctx, 1)
 	return e
 }
-
 
 func (e *Error) fillErr(ctx context.Context, skip int) {
 	e.Time = time.Now()

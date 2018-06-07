@@ -1,11 +1,10 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/html"
 	"bytes"
 	"context"
-	html2 "html"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
 )
 
 // UnorderedList is a dynamically generated html unordered list (ul). Such lists are often used as the basis for
@@ -19,10 +18,10 @@ type UnorderedList struct {
 }
 
 const (
-	UnorderedListStyleDisc = "disc" // default
+	UnorderedListStyleDisc   = "disc" // default
 	UnorderedListStyleCircle = "circle"
 	UnorderedListStyleSquare = "square"
-	UnorderedListStyleNone = "none"
+	UnorderedListStyleNone   = "none"
 )
 
 func NewUnorderedList(parent page.ControlI) *UnorderedList {
@@ -31,7 +30,6 @@ func NewUnorderedList(parent page.ControlI) *UnorderedList {
 	t.Init(t, parent)
 	return t
 }
-
 
 func (l *UnorderedList) Init(self page.ControlI, parent page.ControlI) {
 	l.Control.Init(self, parent)
@@ -50,7 +48,6 @@ func (l *UnorderedList) DrawTag(ctx context.Context) string {
 	return l.Control.DrawTag(ctx)
 }
 
-
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *UnorderedList) DrawingAttributes() *html.Attributes {
@@ -68,13 +65,13 @@ func (l *UnorderedList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (e
 func (l *UnorderedList) getItemsHtml(items []ListItemI) string {
 	var h = ""
 
-	for _,item := range items {
+	for _, item := range items {
 		if item.HasChildItems() {
 			innerhtml := l.getItemsHtml(item.ListItems())
 			innerhtml = html.RenderTag(l.Tag, nil, innerhtml)
-			h += html.RenderTag(l.subItemTag, item.Attributes(), item.Label() + " " + innerhtml)
+			h += html.RenderTag(l.subItemTag, item.Attributes(), item.Label()+" "+innerhtml)
 		} else {
-			h += html.RenderTag(l.subItemTag, item.Attributes(), html2.EscapeString(item.Label()))
+			h += html.RenderTag(l.subItemTag, item.Attributes(), item.RenderLabel())
 		}
 	}
 	return h

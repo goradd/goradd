@@ -29,7 +29,7 @@ func ErrorTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 
 	buf.WriteString(ctrl.ID())
 
-	buf.WriteString(`_err" class="goradd-err">`)
+	buf.WriteString(`_err" class="goradd-error">`)
 
 	buf.WriteString(ctrl.ValidationMessage())
 
@@ -43,6 +43,7 @@ func ErrorTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) 
 		buf.WriteString(`</div>
 `)
 	}
+
 	buf.WriteString(`</div>
 `)
 

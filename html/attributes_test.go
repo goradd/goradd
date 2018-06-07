@@ -1,19 +1,17 @@
 package html
 
 import (
-	"testing"
 	"fmt"
 	"github.com/spekary/goradd/util/types"
-	"strconv"
 	"github.com/stretchr/testify/assert"
+	"strconv"
+	"testing"
 )
-
 
 func TestBasicAttributes(t *testing.T) {
 	cases := []struct {
-		attr, val string
+		attr, val    string
 		changed, err bool
-
 	}{
 		{"a", "t", true, false},
 		{"b", "t", true, false},
@@ -26,9 +24,9 @@ func TestBasicAttributes(t *testing.T) {
 
 	a := NewAttributes()
 	for _, c := range cases {
-		changed,err := a.SetChanged(c.attr, c.val)
+		changed, err := a.SetChanged(c.attr, c.val)
 		if err != nil {
-			if c.err {	// expected an error
+			if c.err { // expected an error
 				continue
 			} else {
 				t.Errorf("Unexpected error on (%q, %q): %v", c.attr, c.val, err)
@@ -54,10 +52,9 @@ func TestBasicAttributes(t *testing.T) {
 
 func TestBasicStyles(t *testing.T) {
 	cases := []struct {
-		attr string
-		val string
+		attr         string
+		val          string
 		changed, err bool
-
 	}{
 		{"color", "blue", true, false},
 		{"color", "red", true, false},
@@ -70,9 +67,9 @@ func TestBasicStyles(t *testing.T) {
 
 	a := NewAttributes()
 	for _, c := range cases {
-		changed,err = a.SetStyleChanged(c.attr, c.val)
+		changed, err = a.SetStyleChanged(c.attr, c.val)
 		if err != nil {
-			if c.err {	// expected an error
+			if c.err { // expected an error
 				continue
 			} else {
 				t.Errorf("Unexpected error on (%q, %q): %v", c.attr, c.val, err)
@@ -94,18 +91,18 @@ func TestBasicStyles(t *testing.T) {
 	}
 
 	a = NewAttributes()
-	if changed, err = a.SetChanged("style", "height:4px;width:6px"); !changed || err != nil{
-		t.Error ("Problem setting style")
+	if changed, err = a.SetChanged("style", "height:4px;width:6px"); !changed || err != nil {
+		t.Error("Problem setting style")
 	}
 
 	a.SetStyle("width", "+ 2")
 
 	if changed, err = a.SetChanged("style", "width:8px; height:4px"); changed || err != nil {
-		t.Errorf ("Problem setting same style again: (%v, %v)", changed, err)
+		t.Errorf("Problem setting same style again: (%v, %v)", changed, err)
 	}
 
 	if a.GetStyle("width") != "8px" {
-		t.Error ("Problem with setting style")
+		t.Error("Problem with setting style")
 	}
 
 	a = NewAttributes()
@@ -127,10 +124,9 @@ func TestBasicStyles(t *testing.T) {
 
 func TestClass(t *testing.T) {
 	cases := []struct {
-		val string
-		got string
+		val     string
+		got     string
 		changed bool
-
 	}{
 		{"c1", "c1", true},
 		{"c2", "c2", true},
@@ -144,20 +140,20 @@ func TestClass(t *testing.T) {
 	for _, c := range cases {
 		changed := a.SetClassChanged(c.val)
 		/*
-		if err != nil {
-			if c.err {	// expected an error
-				continue
-			} else {
-				t.Errorf("Unexpected error on (%q): %v", c.val, err)
-				continue
+			if err != nil {
+				if c.err {	// expected an error
+					continue
+				} else {
+					t.Errorf("Unexpected error on (%q): %v", c.val, err)
+					continue
+				}
 			}
-		}
 
-		if (c.err && err == nil) { // expected an error, but didn't get one
-			t.Errorf("Expected error on (%q)", c.val)
-			continue // no sense in checking other things, since we were expecting an error
-		}
-*/
+			if (c.err && err == nil) { // expected an error, but didn't get one
+				t.Errorf("Expected error on (%q)", c.val)
+				continue // no sense in checking other things, since we were expecting an error
+			}
+		*/
 		got := a.Class()
 		if got != c.got {
 			t.Errorf("Class set (%q), expected (%q), got (%q)", c.val, c.got, got)
@@ -172,9 +168,8 @@ func TestClass(t *testing.T) {
 
 func TestDataAttributes(t *testing.T) {
 	cases := []struct {
-		attr, val string
+		attr, val    string
 		changed, err bool
-
 	}{
 		{"data-a", "t", true, false},
 		{"data-b", "t", true, false},
@@ -186,9 +181,9 @@ func TestDataAttributes(t *testing.T) {
 
 	a := NewAttributes()
 	for _, c := range cases {
-		changed,err := a.SetChanged(c.attr, c.val)
+		changed, err := a.SetChanged(c.attr, c.val)
 		if err != nil {
-			if c.err {	// expected an error
+			if c.err { // expected an error
 				continue
 			} else {
 				t.Errorf("Unexpected error on (%q, %q): %v", c.attr, c.val, err)
@@ -260,7 +255,7 @@ func TestOverride(t *testing.T) {
 	a.Set("id", "b")
 	a.Set("style", "height:4px; width:3px")
 
-	m := a.Override(types.StringMap{"id":"c","style":"height:7px"})
+	m := a.Override(types.StringMap{"id": "c", "style": "height:7px"})
 
 	if m.Get("id") != "c" {
 		t.Error("Error overriding id")
@@ -276,13 +271,10 @@ func TestOverride(t *testing.T) {
 
 }
 
-
-
-
 // Examples
 
 func ExampleNewAttributesFrom() {
-	a := NewAttributesFrom(types.StringMap{"id":"1", "name":"test"})
+	a := NewAttributesFrom(types.StringMap{"id": "1", "name": "test"})
 	fmt.Println(a.Get("id"))
 	//Output: 1
 }
@@ -321,8 +313,8 @@ func ExampleAttributes_Override() {
 	a.SetStyle("height", "4em")
 
 	b := NewAttributes()
-	b.Set("class","that")
-	b.SetStyle("width",strconv.Itoa(6))
+	b.Set("class", "that")
+	b.SetStyle("width", strconv.Itoa(6))
 
 	a = a.Override(b)
 	fmt.Println(a)

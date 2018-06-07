@@ -1,15 +1,14 @@
 package query
 
 import (
-	"github.com/spekary/goradd/datetime"
-	"strconv"
-	"log"
 	"fmt"
+	"github.com/spekary/goradd/datetime"
+	"log"
+	"strconv"
 )
 
 // AliasValues are returned by the GetAlias function that is generated for each type. You then convert the alias to a
 // particular type to use it.
-
 
 type AliasValue struct {
 	value string
@@ -19,7 +18,7 @@ type AliasValue struct {
 func NewAliasValue(a interface{}) AliasValue {
 	switch v := a.(type) {
 	case nil:
-		return  AliasValue{"", true}
+		return AliasValue{"", true}
 	case []byte:
 		return AliasValue{string(v[:]), false}
 	default:
@@ -34,7 +33,6 @@ func (a AliasValue) IsNil() bool {
 func (a AliasValue) IsNull() bool {
 	return a.isNil
 }
-
 
 func (a AliasValue) String() string {
 	return string(a.value[:])
@@ -53,7 +51,7 @@ func (a AliasValue) DateTime() datetime.DateTime {
 }
 
 func (a AliasValue) Float() float64 {
-	f,err := strconv.ParseFloat(a.String(), 64)
+	f, err := strconv.ParseFloat(a.String(), 64)
 	if err != nil {
 		log.Panic(err)
 	}

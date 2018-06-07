@@ -3,32 +3,30 @@ package table
 import (
 	"context"
 	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page"
-	"strings"
+	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/control/control_base"
 	"github.com/spekary/goradd/page/event"
-	"github.com/spekary/goradd/page/action"
-	"github.com/spekary/goradd/javascript"
+	"strings"
 )
 
 const (
 	AllClickAction = iota + 1000
 )
 
-
 // CheckboxColumn is a table that contains a checkbox. You must provide it a CheckboxProvider to connect ids and default data
 // to the checkbox. Use Changes() to get the list of checkbox ids that have changed since the list was initially drawn.
 type CheckboxColumn struct {
 	ColumnBase
 	showCheckAll bool
-	checkboxer CheckboxProvider
-	changes map[string]bool			// records changes
+	checkboxer   CheckboxProvider
+	changes      map[string]bool // records changes
 }
 
 type CheckboxColumnI interface {
 	ColumnI
 	CheckboxAttributes(data interface{}) *html.Attributes
-
 }
 
 // NewChecboxColumn creates a new table table that contains a checkbox. You must provide the id of the parent table,
@@ -41,7 +39,7 @@ func NewCheckboxColumn(p CheckboxProvider) *CheckboxColumn {
 		panic("A checkbox attribute provider is required.")
 	}
 
-	i := CheckboxColumn{checkboxer:p}
+	i := CheckboxColumn{checkboxer: p}
 	i.Init()
 	return &i
 }
@@ -49,7 +47,7 @@ func NewCheckboxColumn(p CheckboxProvider) *CheckboxColumn {
 func (c *CheckboxColumn) Init() {
 	c.ColumnBase.Init(c)
 	c.isHtml = true
-	c.changes = map[string]bool {}
+	c.changes = map[string]bool{}
 }
 
 func (c *CheckboxColumn) This() CheckboxColumnI {
@@ -95,14 +93,14 @@ func (c *CheckboxColumn) CheckboxAttributes(data interface{}) *html.Attributes {
 		panic("A checkbox id is required.")
 	}
 
-	if newVal, ok := c.changes[id]; ok {	// If we have recorded a change, use this value on  refresh.
+	if newVal, ok := c.changes[id]; ok { // If we have recorded a change, use this value on  refresh.
 		if newVal {
 			a.Set("checked", "")
 		}
-	} else if p.IsChecked(data) {	// otherwise, use the data value
+	} else if p.IsChecked(data) { // otherwise, use the data value
 		a.Set("checked", "")
 	}
-	if !a.Has("value") {		// value is required by html
+	if !a.Has("value") { // value is required by html
 		a.Set("value", "1")
 	}
 	a.SetDataAttribute("grTrackchanges", "1")
@@ -124,7 +122,7 @@ func (c *CheckboxColumn) Changes() map[string]bool {
 
 // UpdateFormValues will look for changes to our checkboxes and record those changes.
 func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
-	for k,v := range ctx.CheckableValues() {
+	for k, v := range ctx.CheckableValues() {
 		index := strings.LastIndexAny(k, "_")
 		if index > 0 {
 			column_id := k[:index]
@@ -153,9 +151,9 @@ func (c *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
 // The check all checkbox has been checked.
 func (c *CheckboxColumn) allClick(id string, checked bool, row int, col int) {
 	all := c.checkboxer.All()
-	
+
 	if all != nil {
-		for k,v := range all {
+		for k, v := range all {
 			if v == checked {
 				c.changes[k] = checked
 			} else {
@@ -165,15 +163,15 @@ func (c *CheckboxColumn) allClick(id string, checked bool, row int, col int) {
 		// Fire javascript to check all visible
 		//js := fmt.Sprintf(`$j('input[data-gr-checkcol]').prop('checked', %t)`, checked)
 		//c.parentTable.Form().Response().ExecuteJavaScript(js, page.PriorityStandard)
-		c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`,page.PriorityStandard, `checked`, checked)
+		c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
 
 	} else {
 		// Fire javascript to check all visible and trigger a change
 		if checked {
-			c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `trigger`,page.PriorityStandard, `click`)
+			c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `trigger`, page.PriorityStandard, `click`)
 
 		} else {
-			c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `trigger`,page.PriorityStandard, `click`)
+			c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `trigger`, page.PriorityStandard, `click`)
 		}
 	}
 
@@ -188,7 +186,7 @@ type CheckboxProvider interface {
 	IsChecked(data interface{}) bool
 	// Attributes returns the attributes that will be applied to the checkbox corresponding to the data row.
 	// Use this primarily for providing custom attributes. Return nil if you have no custom attributes.
-	Attributes(data interface{})  *html.Attributes
+	Attributes(data interface{}) *html.Attributes
 	// If you enable the checkAll box, you can use this to return a map of all the ids and their inital values here. This is
 	// mostly helpful if your table is not showing all the rows at once (i.e. you are using a paginator or scroller and
 	// only showing a subset of data at one time). If your table is show a checkAll box, and you return nil here, the

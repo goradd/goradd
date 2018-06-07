@@ -2,9 +2,9 @@ package page
 
 import (
 	"fmt"
-	"goradd/config"
 	"github.com/spekary/goradd/html"
 	action2 "github.com/spekary/goradd/page/action"
+	"goradd/config"
 )
 
 type EventI interface {
@@ -15,7 +15,7 @@ type EventI interface {
 	Terminating() EventI
 	ActionValue(interface{}) EventI
 	GetActionValue() interface{}
-	AddActions(a... action2.ActionI)
+	AddActions(a ...action2.ActionI)
 	RenderActions(control ControlI, eventID EventID) string
 	GetActions() []action2.ActionI
 	String() string
@@ -35,7 +35,7 @@ type Event struct {
 	actionValue               interface{} // A static value, or js to get a dynamic value when the action returns to us.
 	actions                   []action2.ActionI
 	preventDefault            bool
-	stopPropagation			  bool
+	stopPropagation           bool
 	validationOverride        ValidationType
 	validationTargetsOverride []string
 }
@@ -45,7 +45,6 @@ func (e *Event) String() string {
 		e.JsEvent, e.condition, e.delay, e.selector, e.blocking, len(e.actions))
 }
 
-
 // returns underlying event structure for private access within package
 func (e *Event) event() *Event {
 	return e
@@ -53,27 +52,27 @@ func (e *Event) event() *Event {
 
 // Condition specifies a javascript condition to check before triggering the event. The given string should be javascript
 // code that evaluates to a boolean value.
-func (e *Event) Condition (javascript string) EventI {
+func (e *Event) Condition(javascript string) EventI {
 	e.condition = javascript
 	return e
 }
 
 // Delay is the time in milliseconds to wait before triggering the actions.
-func (e *Event) Delay (d int) EventI {
+func (e *Event) Delay(d int) EventI {
 	e.delay = d
 	return e
 }
 
 // Selector specifies a CSS filter that is used to check for bubbled events. This allows the event to be fired from
 // child controls.
-func (e *Event) Selector (s string) EventI {
+func (e *Event) Selector(s string) EventI {
 	e.selector = s
 	return e
 }
 
 // Call Blocking to cause This event to prevent other events from firing after This fires, but before it processes.
 // This is particularly useful to debounce button clicks. (The infamous double-click of the submit button when processing financial transactions for example).
-func (e *Event) Blocking () EventI {
+func (e *Event) Blocking() EventI {
 	e.blocking = true
 	return e
 }
@@ -97,8 +96,6 @@ func (e *Event) NotBubbling() EventI {
 	return e
 }
 
-
-
 // ActionValue is a value that will be returned to the actions that will be process by this event. Specify a static
 // value, or javascript objects that will gather data at the time the event fires. The event will appear in the
 // ActionParams as the EventValue.
@@ -119,31 +116,29 @@ func (e *Event) Validate(v ValidationType) EventI {
 }
 
 // ValidationTargets overrides the control's validation targets just for This event.
-func (e *Event) ValidationTargets(targets... string) EventI {
+func (e *Event) ValidationTargets(targets ...string) EventI {
 	e.validationTargetsOverride = targets
 	return e
 }
 
-
-
-func (e *Event) AddActions(actions... action2.ActionI) {
+func (e *Event) AddActions(actions ...action2.ActionI) {
 	var foundCallback bool
-	for _,action := range actions {
-		if _,ok := action.(action2.PrivateAction); ok {
+	for _, action := range actions {
+		if _, ok := action.(action2.PrivateAction); ok {
 			continue
 		}
-		if _,ok := action.(action2.CallbackActionI); ok {
+		if _, ok := action.(action2.CallbackActionI); ok {
 			if foundCallback {
-				panic ("You can only associate one callback action with an event, and it must be the last action.")
+				panic("You can only associate one callback action with an event, and it must be the last action.")
 			}
 			foundCallback = true
 		} else {
 			if foundCallback {
-				panic ("You can only associate one callback action with an event, and it must be the last action.")
+				panic("You can only associate one callback action with an event, and it must be the last action.")
 			}
 		}
 
-		e.actions = append (e.actions, action)
+		e.actions = append(e.actions, action)
 	}
 
 	// Note, the above could be more robust and allow multiple callback actions, but it would get quite tricky if different
@@ -167,7 +162,7 @@ func (e *Event) RenderActions(control ControlI, eventID EventID) string {
 	var params = action2.RenderParams{control.ID(), control.ActionValue(), uint16(eventID), e.actionValue}
 
 	var actionJs string
-	for _,a := range e.actions {
+	for _, a := range e.actions {
 		actionJs += a.RenderScript(params)
 	}
 
@@ -181,7 +176,7 @@ func (e *Event) RenderActions(control ControlI, eventID EventID) string {
 	actionJs = fmt.Sprintf("goradd.queueAction({f: $j.proxy(function(){\n%s\n},this), d: %d});\n", actionJs, e.delay)
 
 	if e.condition != "" {
-		js = fmt.Sprintf("%s\nif (%s) {\n%s\n};", js, e.condition, actionJs)
+		js = fmt.Sprintf("if (%s) {%s%s\n};", e.condition, js, actionJs)
 	} else {
 		js = js + actionJs
 	}

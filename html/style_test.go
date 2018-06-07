@@ -1,9 +1,9 @@
 package html
 
 import (
-	"testing"
 	"fmt"
 	"github.com/spekary/goradd/util/types"
+	"testing"
 )
 
 func ExampleStyle_SetTo() {
@@ -51,7 +51,6 @@ func ExampleStyle_Has() {
 	//Output:false
 }
 
-
 func ExampleStyle_Set_b() {
 	s := NewStyle()
 	s.SetTo("height:9px")
@@ -59,7 +58,6 @@ func ExampleStyle_Set_b() {
 	fmt.Print(s)
 	//Output: height:19px
 }
-
 
 func TestStyleSet(t *testing.T) {
 	s := NewStyle()
@@ -166,7 +164,7 @@ func TestStyleMath(t *testing.T) {
 
 	s.Set("width", "1.6in")
 	s.Set("width", "- 2")
-	if h := s.Get("width"); h != "-0.4in" {	// this test in particular can produce a rounding error if not handled carefully
+	if h := s.Get("width"); h != "-0.4in" { // this test in particular can produce a rounding error if not handled carefully
 		t.Error("Expected -0.4in, got " + h)
 	}
 }

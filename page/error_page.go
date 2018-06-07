@@ -20,12 +20,29 @@ func DefaultErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, b
 </head>
 <body>
 <h1>Error</h1>
-<h2>`)
+`)
+	items := strings.Split(err.Error(), "\n")
+	errTitle := items[0]
+	var errDesc string
+	if len(items) > 1 {
+		errDesc = strings.Join(items[1:], "<br />")
+	}
 
-	buf.WriteString(err.Error())
+	buf.WriteString(`<h2>`)
+
+	buf.WriteString(errTitle)
 
 	buf.WriteString(`</h2>
-<h3>Call Path</h3>
+`)
+	if errDesc != "" {
+		buf.WriteString(`<p>`)
+
+		buf.WriteString(errDesc)
+
+		buf.WriteString(`</p>`)
+	}
+
+	buf.WriteString(`<h3>Call Path</h3>
 <p>
 `)
 	for _, stack := range err.Stack {
@@ -36,6 +53,7 @@ func DefaultErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, b
 		buf.WriteString(` <br />
 `)
 	}
+
 	buf.WriteString(`</p>
 <h3>Generated Html</h3>
 `)

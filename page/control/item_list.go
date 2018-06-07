@@ -1,9 +1,9 @@
 package control
 
 import (
-	"strings"
-	"strconv"
 	"sort"
+	"strconv"
+	"strings"
 )
 
 // IDer is an object that can embed an ItemList
@@ -16,15 +16,15 @@ type ItemListI interface {
 	AddItem(label string, value ...interface{}) ListItemI
 	AddItemAt(index int, label string, value ...interface{})
 	AddListItemAt(index int, item ListItemI)
-	AddListItems(items... ListItemI)
-	AddItemListers(items... ItemLister)
+	AddListItems(items ...ListItemI)
+	AddItemListers(items ...ItemLister)
 	GetItemAt(index int) ListItemI
 	ListItems() []ListItemI
 	Clear()
 	RemoveAt(index int)
 	Len() int
-	FindByID(id string) (foundItem ListItemI)
-	FindByValue(value interface{}) (id string, foundItem ListItemI)
+	GetItem(id string) (foundItem ListItemI)
+	GetItemByValue(value interface{}) (id string, foundItem ListItemI)
 	reindex(start int)
 }
 
@@ -57,7 +57,6 @@ func (l *ItemList) AddItemAt(index int, label string, value ...interface{}) {
 	l.AddListItemAt(index, NewListItem(label, value))
 }
 
-
 // AddItemAt adds the item at the given index. If the index is negative, it counts from the end. If the index is
 // -1 or bigger than the number of items, it adds it to the end. If the index is zero, or is negative and smaller than
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
@@ -71,7 +70,7 @@ func (l *ItemList) AddListItemAt(index int, item ListItemI) {
 
 // AddListItems adds one or more ListItemI objects to the end of the list. It will change the ids of the list items
 // and will point to the list items given.
-func (l *ItemList) AddListItems(items... ListItemI) {
+func (l *ItemList) AddListItems(items ...ListItemI) {
 	var start int
 
 	if l.items != nil {
@@ -82,19 +81,18 @@ func (l *ItemList) AddListItems(items... ListItemI) {
 }
 
 // AddItemListers adds to the list a slice of objects that contain a Value and Label method.
-func (l *ItemList) AddItemListers(items... ItemLister) {
+func (l *ItemList) AddItemListers(items ...ItemLister) {
 	var iList []ListItemI
-	for _,i := range items {
+	for _, i := range items {
 		item := NewItemFromItemLister(i)
 		iList = append(iList, item)
 	}
 	l.AddListItems(iList...)
 }
 
-
 // reindex is internal and should get called whenever an item gets added to the list out of order or an id changes.
 func (l *ItemList) reindex(start int) {
-	if l.owner.ID() == "" || l.items == nil || len(l.items) == 0 || start >= len (l.items) {
+	if l.owner.ID() == "" || l.items == nil || len(l.items) == 0 || start >= len(l.items) {
 		return
 	}
 	for i := start; i < len(l.items); i++ {
@@ -124,7 +122,7 @@ func (l *ItemList) Clear() {
 // RemoveAt removes an item at the given index.
 func (l *ItemList) RemoveAt(index int) {
 	if index < 0 || index >= len(l.items) {
-		panic ("Index out of range.")
+		panic("Index out of range.")
 	}
 	l.items = append(l.items[:index], l.items[index+1:]...)
 }
@@ -137,15 +135,15 @@ func (l *ItemList) Len() int {
 	return len(l.items)
 }
 
-// FindById recursively searches for and returns the item corresponding to the given id. Since we are managing the
+// GetItem recursively searches for and returns the item corresponding to the given id. Since we are managing the
 // id numbers, we can efficiently find the item. Note that if you add items to the list, the ids may change.
-func (l *ItemList) FindByID(id string) (foundItem ListItemI) {
+func (l *ItemList) GetItem(id string) (foundItem ListItemI) {
 	if l.items == nil {
 		return nil
 	}
 
 	parts := strings.SplitN(id, "_", 3) // first item is our own id, 2nd is id from the list, 3rd is a level beyond the list
-	l1Id,err := strconv.Atoi(parts[1])
+	l1Id, err := strconv.Atoi(parts[1])
 	if err != nil || l1Id < 0 {
 		panic("Bad id")
 	}
@@ -161,25 +159,25 @@ func (l *ItemList) FindByID(id string) (foundItem ListItemI) {
 		return item
 	}
 
-	return item.FindByID(parts[1] + "_" + parts[2])
+	return item.GetItem(parts[1] + "_" + parts[2])
 }
 
-// FindByValue recursively searches the list to find the item with the given value.
+// GetItemByValue recursively searches the list to find the item with the given value.
 // It starts with the current list, and if not found, will search in sublists.
-func (l *ItemList) FindByValue(value interface{}) (id string, foundItem ListItemI) {
+func (l *ItemList) GetItemByValue(value interface{}) (id string, foundItem ListItemI) {
 	if l.items == nil || len(l.items) == 0 {
 		return "", nil
 	}
 
-	for _,foundItem = range l.items {
+	for _, foundItem = range l.items {
 		if foundItem.Value() == value {
 			id = foundItem.ID()
 			return
 		}
 	}
 
-	for _,item := range l.items {
-		id, foundItem = item.FindByValue(value)
+	for _, item := range l.items {
+		id, foundItem = item.GetItemByValue(value)
 		if foundItem != nil {
 			return
 		}
@@ -189,15 +187,15 @@ func (l *ItemList) FindByValue(value interface{}) (id string, foundItem ListItem
 }
 
 // SortIds sorts a list of auto-generated ids in numerical and hierarchical order
-func SortIds (ids []string) {
+func SortIds(ids []string) {
 	if len(ids) > 1 {
 		sort.Sort(IdSlice(ids))
- 	}
+	}
 }
 
 type IdSlice []string
 
-func (p IdSlice) Len() int           { return len(p) }
+func (p IdSlice) Len() int { return len(p) }
 func (p IdSlice) Less(i, j int) bool {
 	// First ones are always the main control id, and should be equal
 	vals1 := strings.SplitN(p[i], "_", 2)
@@ -209,8 +207,8 @@ func (p IdSlice) Less(i, j int) bool {
 	for {
 		vals1 = strings.SplitN(vals1[1], "_", 2)
 		vals2 = strings.SplitN(vals2[1], "_", 2)
-		i1,_ := strconv.Atoi(vals1[0])
-		i2,_ := strconv.Atoi(vals2[0])
+		i1, _ := strconv.Atoi(vals1[0])
+		i2, _ := strconv.Atoi(vals2[0])
 		if i1 < i2 {
 			return true
 		} else if i1 > i2 {
@@ -222,4 +220,4 @@ func (p IdSlice) Less(i, j int) bool {
 		}
 	}
 }
-func (p IdSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p IdSlice) Swap(i, j int) { p[i], p[j] = p[j], p[i] }

@@ -5,31 +5,30 @@ import (
 	"github.com/spekary/goradd/page"
 	"goradd/app"
 	localPage "goradd/page"
-
 )
 
 const (
-	NavTabs = "nav-tabs"
-	NavPills = "nav-pills"
+	NavTabs      = "nav-tabs"
+	NavPills     = "nav-pills"
 	NavJustified = "nav-justified"
 
-	NavbarHeader = "navbar-header"
+	NavbarHeader   = "navbar-header"
 	NavbarCollapse = "navbar-collapse"
-	NavbarBrand = "navbar-brand"
-	NavbarToggle = "navbar-toggle"
-	NavbarNav = "navbar-nav"
-	NavbarLeft = "navbar-left"
-	NavbarRight = "navbar-right"
-	NavbarForm = "navbar-form"
+	NavbarBrand    = "navbar-brand"
+	NavbarToggle   = "navbar-toggle"
+	NavbarNav      = "navbar-nav"
+	NavbarLeft     = "navbar-left"
+	NavbarRight    = "navbar-right"
+	NavbarForm     = "navbar-form"
 )
 
 type NavbarExpandClass string
 
 const (
 	NavbarExpandExtraLarge NavbarExpandClass = "navbar-expand-xl"
-	NavbarExpandLarge = "navbar-expand-lg"
-	NavbarExpandMedium = "navbar-expand-md"
-	NavbarExpandSmall = "navbar-expand-sm"
+	NavbarExpandLarge                        = "navbar-expand-lg"
+	NavbarExpandMedium                       = "navbar-expand-md"
+	NavbarExpandSmall                        = "navbar-expand-sm"
 	// NavbarExpandNone will always show the navbar as collapsed at any size
 	NavbarExpandNone = ""
 )
@@ -39,15 +38,15 @@ type NavbarCollapsedBrandPlacement int
 
 const (
 	// NavbarCollapsedBrandLeft will place the brand on the left and the toggle button on the right when collapsed
-	NavbarCollapsedBrandLeft   NavbarCollapsedBrandPlacement = iota
+	NavbarCollapsedBrandLeft NavbarCollapsedBrandPlacement = iota
 	// NavbarCollapsedBrandRight will place the brand on the right and the toggle button on the left when collapsed
 	NavbarCollapsedBrandRight
 	// NavbarCollapsedBrandHidden means the brand will be hidden when collapsed, and shown when expanded
 	NavbarCollapsedBrandHidden
 )
 
-// Navbar is a bootstrap navbar object. Use SetText() to set the display text of the navbar, and
-// SetEscapeText() to false to turn off encoding if needed
+// Navbar is a bootstrap navbar object. Use SetText() to set the logo text of the navbar, and
+// SetEscapeText() to false to turn off encoding if needed. Add child controls to populate it.
 type Navbar struct {
 	localPage.Control
 	headerAnchor string
@@ -62,8 +61,8 @@ type Navbar struct {
 type NavbarStyle string
 
 const (
-	NavbarDark NavbarStyle = "navbar-dark"    // black on white
-	NavbarLight = "navbar-light"
+	NavbarDark  NavbarStyle = "navbar-dark" // black on white
+	NavbarLight             = "navbar-light"
 )
 
 // Creates a new standard html button
@@ -82,28 +81,27 @@ func (b *Navbar) Init(self page.ControlI, parent page.ControlI) {
 	app.LoadBootstrap(b.Form())
 }
 
-func (b *Navbar) SetNavbarStyle (style NavbarStyle) *Navbar {
+func (b *Navbar) SetNavbarStyle(style NavbarStyle) *Navbar {
 	b.style = style
 	return b
 }
 
-func (b *Navbar) SetBackgroundClass (c BackgroundColorClass) *Navbar {
+func (b *Navbar) SetBackgroundClass(c BackgroundColorClass) *Navbar {
 	b.background = c
 	return b
 }
 
-func (b *Navbar) SetHeaderAnchor (a string) *Navbar {
+func (b *Navbar) SetHeaderAnchor(a string) *Navbar {
 	b.headerAnchor = a
 	return b
 }
 
 // SetBrandPlacement places the brand left, right, or hidden (meaning inside the collapse area).
 // The expand button location will be affected by the placement
-func (b *Navbar) SetBrandPlacement (p NavbarCollapsedBrandPlacement) *Navbar {
+func (b *Navbar) SetBrandPlacement(p NavbarCollapsedBrandPlacement) *Navbar {
 	b.brandLocation = p
 	return b
 }
-
 
 func (b *Navbar) DrawingAttributes() *html.Attributes {
 	a := b.Control.DrawingAttributes()
@@ -114,5 +112,3 @@ func (b *Navbar) DrawingAttributes() *html.Attributes {
 	a.SetDataAttribute("grctl", "bs-navbar")
 	return a
 }
-
-

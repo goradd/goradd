@@ -8,8 +8,7 @@ package goradd
 type ContextKey string
 
 const (
-	PageContext = ContextKey ("goradd.page")
-	SessionContext = ContextKey ("goradd.session")
-	SqlContext = ContextKey("goradd.sql")
+	PageContext    = ContextKey("goradd.page")
+	SessionContext = ContextKey("goradd.session")
+	SqlContext     = ContextKey("goradd.sql")
 )
-

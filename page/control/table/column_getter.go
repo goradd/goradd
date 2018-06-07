@@ -4,9 +4,8 @@ import (
 	"context"
 )
 
-// MapColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into
-// a string, either by normal string conversion symantecs, or using the supplied format string. The format string will
-// be applied to a date if the data is a date, or to the string using fmt.Sprintf
+// GetterColumn is a column that uses the Getter interface to get the text out of columns. The data therefore should be
+// a slice of objects that implement the Getter interface.
 type GetterColumn struct {
 	ColumnBase
 }
@@ -19,16 +18,39 @@ type StringGetter interface {
 	Get(string) string
 }
 
-
-func NewGetterColumn(index string) *GetterColumn {
+func NewGetterColumn(index string, format ...string) *GetterColumn {
 	i := GetterColumn{}
-	i.Init(index)
+	var f string
+	if len(format) > 0 {
+		f = format[0]
+	}
+	i.Init(index, f, "")
 	return &i
 }
 
-func (c *GetterColumn) Init(index string) {
+func NewDateGetterColumn(index string, timeFormat string, format ...string) *GetterColumn {
+	i := GetterColumn{}
+	var f string
+	if len(format) > 0 {
+		f = format[0]
+	}
+	i.Init(index, f, timeFormat)
+	return &i
+}
+
+func (c *GetterColumn) Init(index string, format string, timeFormat string) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(GetterTexter{Key: index})
+	c.SetCellTexter(GetterTexter{Key: index, Format: format, TimeFormat: timeFormat})
+}
+
+func (c *GetterColumn) SetFormat(format string) *GetterColumn {
+	c.cellTexter.(*GetterTexter).Format = format
+	return c
+}
+
+func (c *GetterColumn) SetTimeFormat(format string) *GetterColumn {
+	c.cellTexter.(*GetterTexter).TimeFormat = format
+	return c
 }
 
 // GetterTexter lets you get items out of map like objects using the Getter interface.
@@ -43,7 +65,7 @@ type GetterTexter struct {
 	TimeFormat string
 }
 
-func (t GetterTexter) CellText (ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t GetterTexter) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	switch v := data.(type) {
 	case Getter:
 		d := v.Get(t.Key)
@@ -54,4 +76,3 @@ func (t GetterTexter) CellText (ctx context.Context, col ColumnI, rowNum int, co
 	}
 	return ""
 }
-

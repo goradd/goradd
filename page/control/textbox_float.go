@@ -1,9 +1,10 @@
 package control
 
 import (
-	"strconv"
 	"fmt"
 	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/page/control/control_base"
+	"strconv"
 )
 
 // FloatTextbox is a text control that ensures a valid floating point number is entered in the field.
@@ -17,7 +18,7 @@ func NewFloatTextbox(parent page.ControlI) *FloatTextbox {
 	return t
 }
 
-func (i *FloatTextbox) Init(self page.ControlI, parent page.ControlI) {
+func (i *FloatTextbox) Init(self control_base.TextboxI, parent page.ControlI) {
 	i.Textbox.Init(self, parent)
 	i.ValidateWith(FloatValidator{})
 }
@@ -32,7 +33,7 @@ func (i *FloatTextbox) SetMaxValue(maxValue float64, invalidMessage string) {
 
 func (i *FloatTextbox) Value() interface{} {
 	t := i.Textbox.Text()
-	v,_ := strconv.ParseFloat(t,64)
+	v, _ := strconv.ParseFloat(t, 64)
 	return v
 }
 
@@ -44,7 +45,7 @@ func (v FloatValidator) Validate(t page.Translater, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if _,err := strconv.ParseFloat(s, 64); err != nil {
+	if _, err := strconv.ParseFloat(s, 64); err != nil {
 		if msg == "" {
 			return t.Translate("Please enter a number.")
 		} else {
@@ -54,19 +55,18 @@ func (v FloatValidator) Validate(t page.Translater, s string) (msg string) {
 	return
 }
 
-
 type MinFloatValidator struct {
 	MinValue float64
-	Message string
+	Message  string
 }
 
 func (v MinFloatValidator) Validate(t page.Translater, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if val,_ := strconv.ParseFloat(s, 64); val < v.MinValue {
+	if val, _ := strconv.ParseFloat(s, 64); val < v.MinValue {
 		if msg == "" {
-			return fmt.Sprintf (t.Translate("Enter at least %f"), v.MinValue)
+			return fmt.Sprintf(t.Translate("Enter at least %f"), v.MinValue)
 		} else {
 			return v.Message
 		}
@@ -76,21 +76,19 @@ func (v MinFloatValidator) Validate(t page.Translater, s string) (msg string) {
 
 type MaxFloatValidator struct {
 	MaxValue float64
-	Message string
+	Message  string
 }
 
 func (v MaxFloatValidator) Validate(t page.Translater, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if val,_ := strconv.ParseFloat(s, 64); val < v.MaxValue {
+	if val, _ := strconv.ParseFloat(s, 64); val < v.MaxValue {
 		if msg == "" {
-			return fmt.Sprintf (t.Translate("Enter at most %f"), v.MaxValue)
+			return fmt.Sprintf(t.Translate("Enter at most %f"), v.MaxValue)
 		} else {
 			return v.Message
 		}
 	}
 	return
 }
-
-

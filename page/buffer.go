@@ -1,9 +1,9 @@
 package page
 
 import (
-	"sync"
 	"bytes"
 	"goradd/config"
+	"sync"
 )
 
 // BufferPoolI describes a buffer pool that can be used to improve memory allocation and garbage collection for the
@@ -39,7 +39,7 @@ func (p pool) GetBuffer() *bytes.Buffer {
 	return p.Get().(*bytes.Buffer)
 }
 
-func (p pool) PutBuffer(buffer *bytes.Buffer)  {
+func (p pool) PutBuffer(buffer *bytes.Buffer) {
 	if buffer.Cap() < config.MaxBufferSize {
 		buffer.Reset()
 		p.Put(buffer)
@@ -47,7 +47,6 @@ func (p pool) PutBuffer(buffer *bytes.Buffer)  {
 	// otherwise we will not put the buffer back, allowing the garbage collector to reclaim the memory
 	// TODO: log when our buffer is bigger than config.MaxBufferSize so that we can inform the sysop when This is happening a lot and the value should be increased.
 }
-
 
 // GetBuffer returns a buffer from the pool. It will create a new pool if one is not already allocated. This allows
 // you to inject your own replacement BufferPool before the first use of GetBuffer()

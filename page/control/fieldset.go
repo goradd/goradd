@@ -1,12 +1,11 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page/control/control_base"
-	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/html"
 	"context"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/page/control/control_base"
 )
-
 
 // Fieldset is a Panel that is drawn with a fieldset tag. The panel's label is used as the legend tag.
 // Fieldset's cannot have wrappers.
@@ -27,13 +26,12 @@ func (c *Fieldset) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-
 func (c *Fieldset) DrawTag(ctx context.Context) string {
 	var ctrl string
 
 	attributes := c.This().DrawingAttributes()
-	if c.HasWrapper()  {
-		panic ("Fieldsets cannot have wrappers.")
+	if c.HasWrapper() {
+		panic("Fieldsets cannot have wrappers.")
 	}
 
 	buf := page.GetBuffer()
@@ -43,8 +41,8 @@ func (c *Fieldset) DrawTag(ctx context.Context) string {
 		ctrl = html.RenderTag("legend", nil, l)
 	}
 	if err := c.This().DrawInnerHtml(ctx, buf); err != nil {
-		panic (err)
+		panic(err)
 	}
-	ctrl = html.RenderTag(c.Tag, attributes, ctrl + buf.String())
+	ctrl = html.RenderTag(c.Tag, attributes, ctrl+buf.String())
 	return ctrl
 }

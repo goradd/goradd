@@ -1,19 +1,20 @@
 package control_base
+
 import (
 	//"github.com/microcosm-cc/bluemonday"
-	"github.com/spekary/goradd/html"
-	"github.com/spekary/goradd/page"
-	localPage "goradd/page"
-	"strconv"
-	"github.com/spekary/goradd/util/types"
-	"fmt"
 	"bytes"
 	"context"
+	"fmt"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/util/types"
+	localPage "goradd/page"
 	html2 "html"
+	"strconv"
 )
 
 type Sanitizer interface {
-	Sanitize(string)string
+	Sanitize(string) string
 }
 
 // A TextboxValidator can be added to a textbox to validate its input on the server side. A textbox can have more than one validator.
@@ -21,11 +22,12 @@ type Sanitizer interface {
 type Validater interface {
 	// Validate evaluates the input, and returns an empty string if the input is valid, and an error string to display
 	// to the user if the input does not pass the validator.
-	Validate(page.Translater, string) (string)
+	Validate(page.Translater, string) string
 }
 
 type TextboxI interface {
 	page.ControlI
+	SetType(typ string) TextboxI
 }
 
 type Textbox struct {
@@ -33,7 +35,7 @@ type Textbox struct {
 
 	typ string
 
-	sanitizer Sanitizer
+	sanitizer  Sanitizer
 	validators []Validater
 
 	minLength int
@@ -42,13 +44,10 @@ type Textbox struct {
 	value string
 
 	columns int
-	rows int
+	rows    int
 
 	readonly bool
 }
-
-
-
 
 // Initializes a textbox. Normally you will not call this directly. However, sub controls should call this after
 // creation to get the enclosed control initialized. Self is the newly created class. Like so:
@@ -69,11 +68,11 @@ func (t *Textbox) this() TextboxI {
 }
 
 // ValidateWith adds a TextboxValidator to the validator list
-func (t *Textbox) ValidateWith (v Validater) {
+func (t *Textbox) ValidateWith(v Validater) {
 	t.validators = append(t.validators, v)
 }
 
-func (t *Textbox) ResetValidators () {
+func (t *Textbox) ResetValidators() {
 	t.validators = nil
 }
 
@@ -82,14 +81,14 @@ func (t *Textbox) ResetValidators () {
 func (t *Textbox) DrawingAttributes() *html.Attributes {
 	a := t.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "textbox")
-	a.Set("name", t.ID())	// needed for posts
+	a.Set("name", t.ID()) // needed for posts
 	if t.Required() {
 		a.Set("required", "")
 	}
 	if t.maxLength != 0 {
 		a.Set("maxlength", strconv.Itoa(t.maxLength))
 	}
-	if t.rows == 0 {	// single-line textbox
+	if t.rows == 0 { // single-line textbox
 		a.Set("type", t.typ)
 		a.Set("value", t.value)
 		if t.columns != 0 {
@@ -107,7 +106,7 @@ func (t *Textbox) DrawingAttributes() *html.Attributes {
 // DrawInnerHtml is an internal function that renders the inner html of a tag. In this case, it is rendering the inner
 // text of a textarea
 func (t *Textbox) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	_,err = buf.WriteString(html2.EscapeString(t.Text()))
+	_, err = buf.WriteString(html2.EscapeString(t.Text()))
 	return
 }
 
@@ -134,7 +133,7 @@ func (t *Textbox) Value() interface{} {
 
 func (t *Textbox) SetMaxLength(len int) *MaxLengthValidator {
 	t.maxLength = len
-	v := MaxLengthValidator{Length:len}
+	v := MaxLengthValidator{Length: len}
 	t.ValidateWith(v)
 	return &v
 }
@@ -145,10 +144,10 @@ func (t *Textbox) MaxLength() int {
 
 func (t *Textbox) SetMinLength(len int) *MinLengthValidator {
 	if len <= 0 {
-		panic ("Cannot set minimum length to zero or less.")
+		panic("Cannot set minimum length to zero or less.")
 	}
 	t.minLength = len
-	v := MinLengthValidator{Length:len}
+	v := MinLengthValidator{Length: len}
 	t.ValidateWith(v)
 	return &v
 }
@@ -186,7 +185,7 @@ func (t *Textbox) SetColumns(columns int) {
 }
 
 // SetRows sets the number of rows the Textbox will have. A value of 0 produces an input tag, and a value of 1 or greater produces a textarea tag.
-func (t *Textbox) SetRows(rows int)  {
+func (t *Textbox) SetRows(rows int) {
 	if rows < 0 {
 		panic("Invalid row value.")
 	}
@@ -211,7 +210,7 @@ func (t *Textbox) SetSanitizer(s Sanitizer) {
 }
 func (t *Textbox) sanitize(s string) string {
 	if t.sanitizer == nil {
-		panic ("You have to create a sanitizer. Not having a sanitizer is too dangerous.")
+		panic("You have to create a sanitizer. Not having a sanitizer is too dangerous.")
 	}
 	return t.sanitizer.Sanitize(s)
 }
@@ -233,7 +232,7 @@ func (t *Textbox) Validate() bool {
 	}
 
 	if t.validators != nil {
-		for _,v := range t.validators {
+		for _, v := range t.validators {
 			if msg := v.Validate(t.Page().GoraddTranslator(), t.value); msg != "" {
 				t.SetValidationError(msg)
 				return false
@@ -247,7 +246,7 @@ func (t *Textbox) Validate() bool {
 func (t *Textbox) UpdateFormValues(ctx *page.Context) {
 	id := t.ID()
 
-	if v,ok := ctx.FormValue(id); ok {
+	if v, ok := ctx.FormValue(id); ok {
 		t.value = t.sanitize(v)
 	}
 }
@@ -260,7 +259,7 @@ func (t *Textbox) MarshalState(m types.MapI) {
 // UnmarshalState is an internal function to restore the state of the control
 func (t *Textbox) UnmarshalState(m types.MapI) {
 	if m.Has("text") {
-		s,_ := m.GetString("text")
+		s, _ := m.GetString("text")
 		t.value = s
 	}
 }
@@ -274,9 +273,8 @@ func (t *Textbox) Unserialize(data interface{}) {
 
 }
 
-
 type MinLengthValidator struct {
-	Length int
+	Length  int
 	Message string
 }
 
@@ -286,7 +284,7 @@ func (v MinLengthValidator) Validate(t page.Translater, s string) (msg string) {
 	}
 	if len(s) < v.Length {
 		if v.Message == "" {
-			return fmt.Sprintf (t.Translate("Enter at least %d characters"), v.Length)
+			return fmt.Sprintf(t.Translate("Enter at least %d characters"), v.Length)
 		} else {
 			return v.Message
 		}
@@ -295,7 +293,7 @@ func (v MinLengthValidator) Validate(t page.Translater, s string) (msg string) {
 }
 
 type MaxLengthValidator struct {
-	Length int
+	Length  int
 	Message string
 }
 
@@ -305,7 +303,7 @@ func (v MaxLengthValidator) Validate(t page.Translater, s string) (msg string) {
 	}
 	if len(s) > v.Length {
 		if v.Message == "" {
-			return fmt.Sprintf (t.Translate("Enter at most %d characters"), v.Length)
+			return fmt.Sprintf(t.Translate("Enter at most %d characters"), v.Length)
 		} else {
 			return v.Message
 		}

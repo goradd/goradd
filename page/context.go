@@ -1,27 +1,27 @@
 package page
 
 import (
-	"net/url"
-	"net/http"
-	"mime/multipart"
-	"strings"
-	"goradd/config"
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"github.com/spekary/goradd"
 	"github.com/spekary/goradd/orm/db"
+	"goradd/config"
+	"math"
+	"mime/multipart"
+	"net/http"
+	"net/url"
+	"strings"
 )
 
 type RequestMode int
 
 const (
-	Server RequestMode = iota 	// calling back in to currently showing page using a standard form post
-	Http						// new page request
-	Ajax						// calling back in to a currently showing page using an ajax request
-	CustomAjax					// calling an entry point from ajax, but not through our js file. REST API perhaps?
-	Cli							// From command line
+	Server     RequestMode = iota // calling back in to currently showing page using a standard form post
+	Http                          // new page request
+	Ajax                          // calling back in to a currently showing page using an ajax request
+	CustomAjax                    // calling an entry point from ajax, but not through our js file. REST API perhaps?
+	Cli                           // From command line
 )
 
 func (m RequestMode) String() string {
@@ -47,32 +47,31 @@ type ContextI interface {
 
 // Typical things we can extract from http
 type HttpContext struct {
-	Req *http.Request
-	URL *url.URL
-	formVars url.Values
-	Host string
+	Req        *http.Request
+	URL        *url.URL
+	formVars   url.Values
+	Host       string
 	RemoteAddr string
-	Referrer string
-	Cookies map[string]*http.Cookie
-	Files map[string][]*multipart.FileHeader
-	Header http.Header
+	Referrer   string
+	Cookies    map[string]*http.Cookie
+	Files      map[string][]*multipart.FileHeader
+	Header     http.Header
 }
 
 // AppContext has Goradd application specific nodes
 type AppContext struct {
-	err error					// An error that occurred during the unpacking of the context. We save This for later so we can let the page manager display it if we get that far.
-	requestMode RequestMode
-	cliArgs []string			// All arguments from the command line, whether from the command line call, or the ones that started the daemon
+	err                 error // An error that occurred during the unpacking of the context. We save This for later so we can let the page manager display it if we get that far.
+	requestMode         RequestMode
+	cliArgs             []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId         string
 	customControlValues map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
 	checkableValues     map[string]interface{} // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
 	actionControlID     string                 // If an action, the control sending the action
 	eventID             EventID                // The event to send to the control
 	actionValues        ActionValues
-	WasHandled			bool
+	WasHandled          bool
 	// TODO: Session object
 }
-
 
 type Context struct {
 	HttpContext
@@ -80,7 +79,7 @@ type Context struct {
 }
 
 func (c *Context) String() string {
-	b,_ := json.Marshal(c.actionValues)
+	b, _ := json.Marshal(c.actionValues)
 	actionValues := string(b[:])
 	return fmt.Sprintf("URL: %s, Mode: %s, Form Values: %v, Control ID: %s, Event ID: %d, Action Values: %s, Page State: %s", c.URL, c.requestMode, c.formVars, c.actionControlID, c.eventID, actionValues, c.pageStateId)
 }
@@ -100,7 +99,7 @@ func PutContext(r *http.Request, cliArgs []string) *http.Request {
 }
 
 func (ctx *Context) FillHttp(r *http.Request) {
-	if _,ok := r.Header["content-type"]; ok {
+	if _, ok := r.Header["content-type"]; ok {
 		contentType := r.Header["content-type"][0]
 		// Per comments in the ResponseWriter, we need to read and processs the entire request before attempting to write.
 		if strings.Contains(contentType, "multipart") {
@@ -120,7 +119,7 @@ func (ctx *Context) FillHttp(r *http.Request) {
 	ctx.Referrer = r.Referer()
 	ctx.Header = r.Header
 
-	ctx.Cookies = make (map[string]*http.Cookie)
+	ctx.Cookies = make(map[string]*http.Cookie)
 	for _, c := range r.Cookies() {
 		ctx.Cookies[c.Name] = c
 	}
@@ -163,10 +162,9 @@ func (ctx *Context) CheckableValue(key string) (value interface{}, ok bool) {
 	return
 }
 
-func (ctx *Context) CheckableValues() map[string]interface{}  {
+func (ctx *Context) CheckableValues() map[string]interface{} {
 	return ctx.checkableValues
 }
-
 
 // FillApp fills the app structure with app specific information from the request
 // Do not panic here!
@@ -176,15 +174,13 @@ func (ctx *Context) FillApp(cliArgs []string) {
 	//var i interface{}
 	var err error
 
-
 	if ctx.URL != nil {
-		if v,ok = ctx.FormValue(htmlVarParams); ok {
+		if v, ok = ctx.FormValue(htmlVarParams); ok {
 			if h := ctx.Header.Get("X-Requested-With"); strings.ToLower(h) == "xmlhttprequest" {
 				ctx.requestMode = Ajax
 			} else {
 				ctx.requestMode = Server
 			}
-
 
 			var params struct {
 				ControlValues   map[string]interface{} `json:"controlValues"`
@@ -196,7 +192,7 @@ func (ctx *Context) FillApp(cliArgs []string) {
 
 			dec := json.NewDecoder(strings.NewReader(v))
 			dec.UseNumber()
-			if err = dec.Decode (&params); err == nil {
+			if err = dec.Decode(&params); err == nil {
 				ctx.customControlValues = params.ControlValues
 				ctx.checkableValues = params.CheckableValues
 				ctx.actionControlID = params.ControlID
@@ -205,49 +201,49 @@ func (ctx *Context) FillApp(cliArgs []string) {
 				}
 				ctx.actionValues = params.Values
 
-			/*
-				// We have posted back from our form. Unpack our params values
-			var params map[string]interface{}
-			if err = json.Unmarshal([]byte(v), &params); err == nil {
-				if i, ok = params["controlValues"]; !ok {
-					ctx.customControlValues = make(map[string]interface{}) // empty map so we don't have to check for nil
-				} else {
-					if ctx.customControlValues, ok = i.(map[string]interface{}); !ok {
-						ctx.err = fmt.Errorf("customControlValues wrong type")
-					}
-				}
+				/*
+						// We have posted back from our form. Unpack our params values
+					var params map[string]interface{}
+					if err = json.Unmarshal([]byte(v), &params); err == nil {
+						if i, ok = params["controlValues"]; !ok {
+							ctx.customControlValues = make(map[string]interface{}) // empty map so we don't have to check for nil
+						} else {
+							if ctx.customControlValues, ok = i.(map[string]interface{}); !ok {
+								ctx.err = fmt.Errorf("customControlValues wrong type")
+							}
+						}
 
-				if i, ok = params["checkableValues"]; !ok {
-					ctx.checkableValues = make(map[string]interface{})
-				} else {
-					if ctx.checkableValues, ok = i.(map[string]interface{}); !ok {
-						ctx.err = fmt.Errorf("checkableValues wrong type")
-					}
-				}
+						if i, ok = params["checkableValues"]; !ok {
+							ctx.checkableValues = make(map[string]interface{})
+						} else {
+							if ctx.checkableValues, ok = i.(map[string]interface{}); !ok {
+								ctx.err = fmt.Errorf("checkableValues wrong type")
+							}
+						}
 
-				if i, ok = params["controlID"]; ok {
-					if ctx.actionControlID, ok = i.(string); !ok {
-						ctx.err = fmt.Errorf("controlID wrong type")
-					}
-				}
+						if i, ok = params["controlID"]; ok {
+							if ctx.actionControlID, ok = i.(string); !ok {
+								ctx.err = fmt.Errorf("controlID wrong type")
+							}
+						}
 
-				if i, ok = params["eventID"]; ok {
-					if v, ok2 := i.(int); !ok2 {
-						ctx.err = fmt.Errorf("eventID wrong type")
-					} else {
-						ctx.eventID = EventID(v)
-					}
-				}
+						if i, ok = params["eventID"]; ok {
+							if v, ok2 := i.(int); !ok2 {
+								ctx.err = fmt.Errorf("eventID wrong type")
+							} else {
+								ctx.eventID = EventID(v)
+							}
+						}
 
-				if i, ok = params["values"]; ok {
-					if m,ok2 := i.(map[string]interface{}); !ok2 {
-						ctx.err = fmt.Errorf("values wrong type")
-					} else {
-						ctx.actionValues = m
-					}
-				}
-*/
-				if ctx.pageStateId,ok = ctx.FormValue("Goradd__FormState"); !ok {
+						if i, ok = params["values"]; ok {
+							if m,ok2 := i.(map[string]interface{}); !ok2 {
+								ctx.err = fmt.Errorf("values wrong type")
+							} else {
+								ctx.actionValues = m
+							}
+						}
+				*/
+				if ctx.pageStateId, ok = ctx.FormValue("Goradd__FormState"); !ok {
 					ctx.err = fmt.Errorf("No formstate found in response")
 					return
 				}
@@ -272,8 +268,6 @@ func (ctx *Context) FillApp(cliArgs []string) {
 	}
 	ctx.cliArgs = cliArgs
 }
-
-
 
 func (ctx *Context) RequestMode() RequestMode {
 	return ctx.requestMode

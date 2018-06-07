@@ -1,8 +1,8 @@
 package db
 
 import (
-	"testing"
 	"goradd/gen/goradd/model/node"
+	"testing"
 )
 
 func TestNodeEquality(t *testing.T) {

@@ -1,0 +1,22 @@
+{{#
+    This is a convenience wrapper making it easy to just wrap a control in a div, with no other error or
+    instruction placeholders.
+}}
+package page
+
+import (
+	"context"
+	"bytes"
+	"github.com/spekary/goradd/html"
+)
+
+func DivTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {
+
+{{
+<div id="{{= ctrl.ID() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
+{{= html.Indent(h) }}
+</div>
+}}
+    return
+
+}

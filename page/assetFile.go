@@ -1,25 +1,24 @@
 package page
 
 import (
-	"path/filepath"
-	"goradd/config"
+	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/util"
 	"github.com/spekary/goradd/util/types"
-	"github.com/spekary/goradd/html"
-	"os"
-	"strings"
-	"net/http"
+	"goradd/config"
 	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 // A css, js or other file we want the browser to add
 type AssetFile struct {
-	url string
-	filePath string
+	url        string
+	filePath   string
 	attributes *html.Attributes
-	localPath string	// where This file is located locally, in case we copied it to a more accessible location
+	localPath  string // where This file is located locally, in case we copied it to a more accessible location
 }
-
 
 var assetFiles = types.NewSafeOrderedMap()
 
@@ -77,7 +76,7 @@ func RenderAssetTag(filePath string, tag string, attributes *html.Attributes, co
 // Returns the url. Panics if the url is already associated with a different filePath.
 func RegisterAssetFile(url string, filePath string) string {
 	if !assetFiles.Has(url) {
-		var dir,fileName string = filepath.Split(url)
+		var dir, fileName string = filepath.Split(url)
 
 		dir = strings.TrimPrefix(dir, config.ASSET_PREFIX)
 
@@ -93,12 +92,12 @@ func RegisterAssetFile(url string, filePath string) string {
 			}
 		}
 
-		a := AssetFile{url:url, filePath: filePath, localPath: localPath}
+		a := AssetFile{url: url, filePath: filePath, localPath: localPath}
 		assetFiles.Set(url, a)
 		return url
 	} else {
 		if !assetIsRegistered(url) {
-			panic ("No file for " + url + " has been registered.")
+			panic("No file for " + url + " has been registered.")
 		}
 		a := assetFiles.Get(url).(AssetFile)
 		if config.Mode <= config.Debug {
@@ -111,21 +110,20 @@ func RegisterAssetFile(url string, filePath string) string {
 }
 
 func RegisterCssFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.ASSET_PREFIX + "/css/" + urlPath, filePath)
+	return RegisterAssetFile(config.ASSET_PREFIX+"/css/"+urlPath, filePath)
 }
 
 func RegisterJsFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.ASSET_PREFIX + "/js/" + urlPath, filePath)
+	return RegisterAssetFile(config.ASSET_PREFIX+"/js/"+urlPath, filePath)
 }
 
 func RegisterImageFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.ASSET_PREFIX + "/image/" + urlPath, filePath)
+	return RegisterAssetFile(config.ASSET_PREFIX+"/image/"+urlPath, filePath)
 }
 
 func RegisterFontFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.ASSET_PREFIX + "/font/" + urlPath, filePath)
+	return RegisterAssetFile(config.ASSET_PREFIX+"/font/"+urlPath, filePath)
 }
-
 
 func GetAssetFilePath(url string) string {
 	if asset := assetFiles.Get(url); asset == nil {
@@ -142,7 +140,7 @@ func assetIsRegistered(url string) bool {
 	return assetFiles.Has(url)
 }
 
-func ServeAsset (w http.ResponseWriter, r *http.Request) {
+func ServeAsset(w http.ResponseWriter, r *http.Request) {
 	localpath := GetAssetFilePath(r.URL.Path)
 	if localpath == "" {
 		log.Printf("Invalid asset %s", r.URL.Path)
@@ -152,7 +150,7 @@ func ServeAsset (w http.ResponseWriter, r *http.Request) {
 
 	if config.Mode == config.Development {
 		// TODO: Set up per file cache control
-		w.Header().Set("Cache-Control",  "no-cache, no-store, must-revalidate")
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	} else {
 		// TODO: Set up a validating cache control
 	}

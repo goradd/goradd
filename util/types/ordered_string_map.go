@@ -1,12 +1,12 @@
 package types
 
 import (
-	"strings"
-	"sync"
-	"sort"
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"sort"
+	"strings"
+	"sync"
 )
 
 // An OrderedStringMap is similar to PHP's indexed arrays. You can get the strings
@@ -40,7 +40,7 @@ func (o *OrderedStringMap) SetChanged(key string, val string) (changed bool, err
 	var ok bool
 	var oldVal string
 
-	if oldVal,ok = o.items[key]; !ok || oldVal != val {
+	if oldVal, ok = o.items[key]; !ok || oldVal != val {
 		if !ok {
 			o.order = append(o.order, key)
 		}
@@ -66,7 +66,7 @@ func (o *OrderedStringMap) SetAt(index int, key string, val string) *OrderedStri
 
 	var ok bool
 
-	if _,ok = o.items[key]; !ok  {
+	if _, ok = o.items[key]; !ok {
 		if index < -len(o.items) {
 			index = 0
 		}
@@ -87,28 +87,27 @@ func (o *OrderedStringMap) Remove(key string) {
 	defer o.Unlock()
 	for i, v := range o.order {
 		if v == key {
-			o.order = append(o.order[:i], o.order[i + 1:]...)
+			o.order = append(o.order[:i], o.order[i+1:]...)
 			continue
 		}
 	}
-	delete (o.items,key)
+	delete(o.items, key)
 }
 
 // Get returns the string based on its key. If it does not exist, will return the empty string
 func (o *OrderedStringMap) Get(key string) (val string) {
 	o.RLock()
 	defer o.RUnlock()
-	val, _ =  o.items[key]
+	val, _ = o.items[key]
 	return
 }
 
 func (o *OrderedStringMap) Has(key string) (ok bool) {
 	o.Lock()
 	defer o.Unlock()
-	_, ok =  o.items[key]
+	_, ok = o.items[key]
 	return
 }
-
 
 // GetAt returns the string based on its position
 // To see if a value exists, simply test that the position is less than the length
@@ -123,7 +122,6 @@ func (o *OrderedStringMap) GetAt(position int) (val string) {
 	return
 }
 
-
 // Join is just like strings.Join
 func (o *OrderedStringMap) Join(glue string) string {
 	return strings.Join(o.Values(), glue)
@@ -133,7 +131,7 @@ func (o *OrderedStringMap) Join(glue string) string {
 func (o *OrderedStringMap) Values() []string {
 	o.RLock()
 	defer o.RUnlock()
-	vals := make ([]string, len(o.order))
+	vals := make([]string, len(o.order))
 
 	for i, v := range o.order {
 		vals[i] = o.items[v]
@@ -141,12 +139,11 @@ func (o *OrderedStringMap) Values() []string {
 	return vals
 }
 
-
 // Keys are the keys of the strings, in the order they were added
 func (o *OrderedStringMap) Keys() []string {
 	o.Lock()
 	defer o.Unlock()
-	vals := make ([]string, len(o.order))
+	vals := make([]string, len(o.order))
 
 	for i, v := range o.order {
 		vals[i] = v
@@ -155,9 +152,8 @@ func (o *OrderedStringMap) Keys() []string {
 }
 
 func (o *OrderedStringMap) Len() int {
-	return len (o.order)
+	return len(o.order)
 }
-
 
 func (o *OrderedStringMap) Less(i, j int) bool {
 	o.RLock()
@@ -165,12 +161,11 @@ func (o *OrderedStringMap) Less(i, j int) bool {
 	return o.items[o.order[i]] < o.items[o.order[j]]
 }
 
-func (o *OrderedStringMap) Swap(i, j int)      {
+func (o *OrderedStringMap) Swap(i, j int) {
 	o.Lock()
 	defer o.Unlock()
 	o.order[i], o.order[j] = o.order[j], o.order[i]
 }
-
 
 // Sort by keys interface
 type orderedstringbykeys struct {
@@ -224,7 +219,7 @@ func (o *OrderedStringMap) UnmarshalJSON(data []byte) error {
 	err := json.Unmarshal(data, &o.items)
 	if err == nil {
 		// Create a default order, since these are inherently unordered
-		o.order = make ([]string, len(o.items))
+		o.order = make([]string, len(o.items))
 		i := 0
 		for k := range o.items {
 			o.order[i] = k
@@ -238,7 +233,7 @@ func (o *OrderedStringMap) String() string {
 	var s string
 
 	s = "{"
-	o.Range(func(k,v string) bool {
+	o.Range(func(k, v string) bool {
 		s += `"` + k + `":"` + o.Get(k) + `",`
 		return true
 	})
@@ -247,11 +242,10 @@ func (o *OrderedStringMap) String() string {
 	return s
 }
 
-
 // Merge the given string map into the current one
 // Can be any kind of string map
 func (o *OrderedStringMap) Merge(i StringMapI) {
-	i.Range(func(k,v string) bool {
+	i.Range(func(k, v string) bool {
 		o.Set(k, v)
 		return true
 	})
@@ -271,7 +265,6 @@ func (o *OrderedStringMap) Range(f func(key string, value string) bool) {
 	}
 }
 
-
 // Equals returns true if the map equals the given map, paying attention only to the content of the map and not the order.
 func (o *OrderedStringMap) Equals(i StringMapI) bool {
 	if i == nil {
@@ -282,9 +275,9 @@ func (o *OrderedStringMap) Equals(i StringMapI) bool {
 	}
 	var ret bool = true
 
-	o.Range(func (k,v string) bool {
+	o.Range(func(k, v string) bool {
 		if !o.Has(k) || o.Get(k) != i.Get(k) {
-			ret = false	// don't just return because we are in a channel and we want to use up the channel
+			ret = false // don't just return because we are in a channel and we want to use up the channel
 			return false
 		}
 		return true

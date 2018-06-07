@@ -11,13 +11,13 @@ type ManyManyNode struct {
 	Node
 
 	// Which database in the global list of databases does the node belong to
-	dbKey			string
+	dbKey string
 	// NoSQL: The originating table. SQL: The association table
-	dbTable       string
+	dbTable string
 	// NoSQL: The table storing the array of ids on the other end. SQL: the table in the association table pointing towards us.
-	dbColumn       string
+	dbColumn string
 	// Property in the original object used to ref to this object or node.
-	goPropName			string
+	goPropName string
 
 	// NoSQL & SQL: The table we are joining to
 	refTable string
@@ -31,27 +31,27 @@ type ManyManyNode struct {
 
 func NewManyManyNode(
 	dbKey string,
-// NoSQL: The originating table. SQL: The association table
+	// NoSQL: The originating table. SQL: The association table
 	dbTable string,
-// NoSQL: The table storing the array of ids on the other end. SQL: the table in the association table pointing towards us.
+	// NoSQL: The table storing the array of ids on the other end. SQL: the table in the association table pointing towards us.
 	dbColumn string,
-// Property in the original object used to ref to this object or node.
+	// Property in the original object used to ref to this object or node.
 	goName string,
-// NoSQL & SQL: The table we are joining to
+	// NoSQL & SQL: The table we are joining to
 	refTableName string,
-// NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
+	// NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
 	refColumn string,
-// Are we pointing to a type table
+	// Are we pointing to a type table
 	isType bool,
 ) *ManyManyNode {
-	n:= &ManyManyNode {
+	n := &ManyManyNode{
 		dbKey:       dbKey,
 		dbTable:     dbTable,
 		dbColumn:    dbColumn,
-		goPropName:      goName,
+		goPropName:  goName,
 		refTable:    refTableName,
 		refColumn:   refColumn,
-		isArray: 	 true,
+		isArray:     true,
 		isTypeTable: isType,
 	}
 	return n
@@ -69,8 +69,6 @@ func (n *ManyManyNode) isExpanded() bool {
 	return !n.isArray
 }
 
-
-
 func (n *ManyManyNode) Equals(n2 NodeI) bool {
 	if n2.nodeType() == MANYMANY_NODE {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*ManyManyNode)
@@ -82,7 +80,7 @@ func (n *ManyManyNode) Equals(n2 NodeI) bool {
 	return false
 }
 
-func (n *ManyManyNode) setCondition(condition NodeI){
+func (n *ManyManyNode) setCondition(condition NodeI) {
 	n.condition = condition
 }
 
@@ -98,7 +96,6 @@ func (n *ManyManyNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "MM: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + "." + n.refColumn + " AS " + n.GetAlias())
 }
-
 
 // Return the name as a captialized object name
 func (n *ManyManyNode) goName() string {
@@ -121,7 +118,6 @@ func ManyManyNodeRefColumn(n *ManyManyNode) string {
 	return n.refColumn
 }
 
-
 func ManyManyNodeDbTable(n *ManyManyNode) string {
 	return n.dbTable
 }
@@ -129,4 +125,3 @@ func ManyManyNodeDbTable(n *ManyManyNode) string {
 func ManyManyNodeDbColumn(n *ManyManyNode) string {
 	return n.dbColumn
 }
-

@@ -17,11 +17,15 @@ type DataSetter interface {
 // DataManager is an object designed to be embedded in a control that will help manage the data binding process.
 type DataManager struct {
 	dataProvider DataBinder
-	Data   []interface{}
+	Data         []interface{}
 }
 
 func (d *DataManager) SetDataProvider(b DataBinder) {
 	d.dataProvider = b
+}
+
+func (d *DataManager) HasDataProvider() bool {
+	return d.dataProvider != nil
 }
 
 func (d *DataManager) SetData(data []interface{}) {
@@ -39,4 +43,3 @@ func (d *DataManager) GetData(ctx context.Context, owner DataSetter) {
 		d.dataProvider.BindData(ctx, owner) // tell the data binder to call SetData on the given object, or load data some other way
 	}
 }
-

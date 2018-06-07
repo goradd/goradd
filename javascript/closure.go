@@ -1,8 +1,8 @@
 package javascript
 
 import (
-	"strings"
 	"encoding/json"
+	"strings"
 )
 
 // Closure represents a javascript function pointer that can be called by javascript at a later time.
@@ -32,7 +32,7 @@ func (c Closure) MarshalJSON() (buf []byte, err error) {
 	obj["func"] = c.Body
 	obj["params"] = c.Args
 
-	buf,err = json.Marshal(obj)
+	buf, err = json.Marshal(obj)
 	return
 }
 
@@ -66,6 +66,6 @@ func (c ClosureCall) MarshalJSON() (buf []byte, err error) {
 	obj["params"] = c.Args
 	obj["call"] = c.Context
 
-	buf,err = json.Marshal(obj)
+	buf, err = json.Marshal(obj)
 	return
 }

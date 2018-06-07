@@ -1,13 +1,13 @@
 package page
 
 import (
-	"context"
 	"bytes"
-	"strconv"
-	"github.com/spekary/goradd/html"
-	"github.com/spekary/goradd/util/types"
-	"github.com/spekary/goradd/log"
+	"context"
 	"fmt"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/log"
+	"github.com/spekary/goradd/util/types"
+	"strconv"
 )
 
 type PageRenderStatus int
@@ -16,31 +16,31 @@ type PageDrawFunc func(context.Context, *Page, *bytes.Buffer) error
 
 const (
 	UNRENDERED PageRenderStatus = iota // Form has not started isRendering
-	BEGUN // Form has started isRendering but has not finished
-	ENDED // Form isRendering has already been started and finished
+	BEGUN                              // Form has started isRendering but has not finished
+	ENDED                              // Form isRendering has already been started and finished
 )
 
 // Anything that draws into the draw buffer must implement This interface
 type DrawI interface {
-	Draw (context.Context, *bytes.Buffer) error
+	Draw(context.Context, *bytes.Buffer) error
 }
-
 
 type Page struct {
 	stateId      string // Id in cache of the page. Needs to be output by form.
-	path         string // The path to the page. Form needs to know This so it can make the action tag
+	path         string // The path to the page. Form needs to know this so it can make the action tag
 	renderStatus PageRenderStatus
-	idPrefix 	 string	// For creating unique ids for the app
+	idPrefix     string // For creating unique ids for the app
 
 	controlRegistry *types.OrderedMap
 	form            FormI
 	idCounter       int
 	drawFunc        PageDrawFunc
-	title           string	// page title to draw in head tag
+	title           string // page title to draw in head tag
 	htmlHeaderTags  []html.VoidTag
-	responseHeader  map[string]string	// queues up anything to be sent in the response header
+	responseHeader  map[string]string // queues up anything to be sent in the response header
+	responseError	int
 
-	goraddTranslator PageTranslator
+	goraddTranslator  PageTranslator
 	projectTranslator PageTranslator
 }
 
@@ -48,8 +48,8 @@ type Page struct {
 func (p *Page) Init(ctx context.Context, path string) {
 	p.path = path
 	p.drawFunc = p.DrawFunction()
-	p.goraddTranslator = PageTranslator{Domain:GoraddDomain}
-	p.projectTranslator = PageTranslator{Domain:ProjectDomain}
+	p.goraddTranslator = PageTranslator{Domain: GoraddDomain}
+	p.projectTranslator = PageTranslator{Domain: ProjectDomain}
 }
 
 // Restore is called immediately after the page has been unserialized, to restore data that did not get serialized.
@@ -75,17 +75,16 @@ func (p *Page) setStateID(stateId string) {
 	p.stateId = stateId
 }
 
-
 func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
 	grCtx := GetContext(ctx)
-	grCtx.WasHandled = true		// Notify listeners that the app handled the page
+	grCtx.WasHandled = true // Notify listeners that the app handled the page
+
+	if grCtx.err != nil {
+		panic(grCtx.err)	// An error occurred during unpacking of the context, so report that now
+	}
 
 	if err = p.Form().Run(ctx); err != nil {
 		return err
-	}
-
-	if grCtx.err != nil {
-		panic(grCtx.err)
 	}
 
 	p.renderStatus = UNRENDERED
@@ -97,7 +96,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 	if isNew {
 		p.Form().AddHeadTags()
 	} else {
-		p.Form().control().updateValues(grCtx)	// Tell all the controls to update their values.
+		p.Form().control().updateValues(grCtx) // Tell all the controls to update their values.
 		// if This is an event response, do the actions associated with the event
 		if c := p.GetControl(grCtx.actionControlID); c != nil {
 			c.control().doAction(ctx)
@@ -120,7 +119,6 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 	p.Form().Exit(ctx, err)
 	return
 }
-
 
 // Returns the form for pages that only have one form
 func (p *Page) Form() FormI {
@@ -160,14 +158,13 @@ func (p *Page) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 
 	// draw things like additional meta tags, etc
 	if p.htmlHeaderTags != nil {
-		for _,tag := range p.htmlHeaderTags {
+		for _, tag := range p.htmlHeaderTags {
 			buf.WriteString(tag.Render())
 		}
 	}
 
 	p.Form().DrawHeaderTags(ctx, buf)
 }
-
 
 // Sets the prefix for control ids. Some javascript frameworks (i.e. jQueryMobile) require that control ids
 // be unique across the application, vs just in the page, because they create internal caches of control ids. This
@@ -178,11 +175,10 @@ func (p *Page) SetControlIdPrefix(prefix string) *Page {
 	return p
 }
 
-
 // Overridable generator for control ids. This is called through the PageI interface, meaning you can change how This
 // is done by simply implementing it in a subclass.
 func (p *Page) GenerateControlID() string {
-	p.idCounter++	// id counter defaults to zero, so pre-increment
+	p.idCounter++ // id counter defaults to zero, so pre-increment
 	return p.idPrefix + "c" + strconv.Itoa(p.idCounter)
 }
 
@@ -191,7 +187,7 @@ func (p *Page) GetControl(id string) ControlI {
 		return nil
 	}
 	i := p.controlRegistry.Get(id)
-	if c,ok := i.(ControlI); ok {
+	if c, ok := i.(ControlI); ok {
 		return c
 	} else {
 		return nil
@@ -217,9 +213,9 @@ func (p *Page) addControl(control ControlI) {
 	p.controlRegistry.Set(id, control)
 
 	if control.Parent() == nil {
-		if f,ok := control.(FormI); ok {
+		if f, ok := control.(FormI); ok {
 			if p.form != nil {
-				panic ("The Form object for the page has already been set.")
+				panic("The Form object for the page has already been set.")
 			} else {
 				p.form = f
 			}
@@ -243,10 +239,8 @@ func (p *Page) removeControl(id string) {
 	// TODO: Application::ExecuteSelectorFunction('#' . $objControl->getWrapperID(), 'remove');
 	// TODO: Make This a direct command in the ajax renderer
 
-
 	p.controlRegistry.Remove(id)
 }
-
 
 func (p *Page) SetTitle(title string) {
 	p.title = title
@@ -273,36 +267,71 @@ func (p *Page) ProjectTranslator() Translater {
 	return &p.projectTranslator
 }
 
-
 func (p *Page) SetLanguage(l string) {
 	p.goraddTranslator.Language = l
 	p.projectTranslator.Language = l
 }
 
 // MarshalBinary will binary encode the page for the purpose of saving the page in the formstate.
-func (p *Page) Encode(e Encoder)(err error) {
-	if err = e.Encode(p.stateId); err != nil {return}
-	if err = e.Encode(p.path); err != nil {return}
-	if err = e.Encode(p.idPrefix); err != nil {return}
-	if err = e.Encode(p.form); err != nil {return}
-	if err = e.Encode(p.idCounter); err != nil {return}
-	if err = e.Encode(p.title); err != nil {return}
-	if err = e.Encode(p.htmlHeaderTags); err != nil {return}
-	if err = e.Encode(p.goraddTranslator); err != nil {return}
-	if err = e.Encode(p.projectTranslator); err != nil {return}
+func (p *Page) Encode(e Encoder) (err error) {
+	if err = e.Encode(p.stateId); err != nil {
+		return
+	}
+	if err = e.Encode(p.path); err != nil {
+		return
+	}
+	if err = e.Encode(p.idPrefix); err != nil {
+		return
+	}
+	if err = e.Encode(p.form); err != nil {
+		return
+	}
+	if err = e.Encode(p.idCounter); err != nil {
+		return
+	}
+	if err = e.Encode(p.title); err != nil {
+		return
+	}
+	if err = e.Encode(p.htmlHeaderTags); err != nil {
+		return
+	}
+	if err = e.Encode(p.goraddTranslator); err != nil {
+		return
+	}
+	if err = e.Encode(p.projectTranslator); err != nil {
+		return
+	}
 	return
 }
 
-func (p *Page) Decode(d Decoder)(err error) {
-	if err = d.Decode(&p.stateId); err != nil {return}
-	if err = d.Decode(&p.path); err != nil {return}
-	if err = d.Decode(&p.idPrefix); err != nil {return}
-	if err = d.Decode(&p.form); err != nil {return}
-	if err = d.Decode(&p.idCounter); err != nil {return}
-	if err = d.Decode(&p.title); err != nil {return}
-	if err = d.Decode(&p.htmlHeaderTags); err != nil {return}
-	if err = d.Decode(&p.goraddTranslator); err != nil {return}
-	if err = d.Decode(&p.projectTranslator); err != nil {return}
+func (p *Page) Decode(d Decoder) (err error) {
+	if err = d.Decode(&p.stateId); err != nil {
+		return
+	}
+	if err = d.Decode(&p.path); err != nil {
+		return
+	}
+	if err = d.Decode(&p.idPrefix); err != nil {
+		return
+	}
+	if err = d.Decode(&p.form); err != nil {
+		return
+	}
+	if err = d.Decode(&p.idCounter); err != nil {
+		return
+	}
+	if err = d.Decode(&p.title); err != nil {
+		return
+	}
+	if err = d.Decode(&p.htmlHeaderTags); err != nil {
+		return
+	}
+	if err = d.Decode(&p.goraddTranslator); err != nil {
+		return
+	}
+	if err = d.Decode(&p.projectTranslator); err != nil {
+		return
+	}
 	return
 }
 
@@ -320,5 +349,4 @@ func (p *Page) SetResponseHeader(key, value string) {
 func (p *Page) ClearResponseHeaders() {
 	p.responseHeader = nil
 }
-
 

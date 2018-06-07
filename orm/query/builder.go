@@ -13,14 +13,14 @@ type QueryBuilderI interface {
 	Expand(n NodeI) QueryBuilderI
 	Condition(c NodeI) QueryBuilderI
 	Having(c NodeI) QueryBuilderI
-	OrderBy(nodes... NodeI) QueryBuilderI
-	GroupBy(nodes... NodeI) QueryBuilderI
+	OrderBy(nodes ...NodeI) QueryBuilderI
+	GroupBy(nodes ...NodeI) QueryBuilderI
 	Limit(maxRowCount int, offset int) QueryBuilderI
-	Select(nodes... NodeI) QueryBuilderI
+	Select(nodes ...NodeI) QueryBuilderI
 	Distinct() QueryBuilderI
 	Alias(name string, n NodeI) QueryBuilderI
 	Load(ctx context.Context) []map[string]interface{}
 	Delete(ctx context.Context)
-	Count(ctx context.Context, distinct bool, nodes... NodeI) uint
+	Count(ctx context.Context, distinct bool, nodes ...NodeI) uint
 	Subquery() *SubqueryNode
 }

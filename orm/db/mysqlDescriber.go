@@ -3,24 +3,24 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"strings"
 	"github.com/knq/snaker"
-	"math"
-	"github.com/spekary/goradd/util/types"
 	. "github.com/spekary/goradd/orm/query"
+	"github.com/spekary/goradd/util/types"
+	"log"
+	"math"
+	"strings"
 )
 
 const (
-	MYSQL_TYPE_SET = "Set"
+	MYSQL_TYPE_SET  = "Set"
 	MYSQL_TYPE_ENUM = "Enum"
 )
 
 type mysqlTable struct {
-	name string
+	name    string
 	columns []mysqlColumn
 	indexes []mysqlIndex
-	fkMap map[string]mysqlForeignKey
+	fkMap   map[string]mysqlForeignKey
 	comment string
 }
 
@@ -29,30 +29,30 @@ type mysqlColumn struct {
 	defaultValue    SqlReceiver
 	isNullable      string
 	dataType        string
-	goType 			GoColumnType
-	dataLen			int
+	goType          GoColumnType
+	dataLen         int
 	characterMaxLen sql.NullInt64
 	columnType      string
 	key             string
 	extra           string
 	comment         string
-	options			*types.OrderedMap
+	options         *types.OrderedMap
 }
 
 type mysqlIndex struct {
-	name	string
-	nonUnique	bool
-	columnName	string
+	name       string
+	nonUnique  bool
+	columnName string
 }
 
 type mysqlForeignKey struct {
-	name	string
-	columnName	string
-	referencedSchema sql.NullString
-	referencedTableName	sql.NullString
-	referencedColumnName	sql.NullString
-	updateRule sql.NullString
-	deleteRule sql.NullString
+	name                 string
+	columnName           string
+	referencedSchema     sql.NullString
+	referencedTableName  sql.NullString
+	referencedColumnName sql.NullString
+	updateRule           sql.NullString
+	deleteRule           sql.NullString
 }
 
 /*
@@ -86,12 +86,12 @@ func (m *Mysql5) loadDescription() {
 
 }
 
-func (m *Mysql5) getRawTables() (map[string]mysqlTable){
-	var tableMap map[string]mysqlTable = make (map[string]mysqlTable)
+func (m *Mysql5) getRawTables() map[string]mysqlTable {
+	var tableMap map[string]mysqlTable = make(map[string]mysqlTable)
 
 	tables := m.getTables()
 
-	for _,table := range tables {
+	for _, table := range tables {
 		indexes, err := m.getIndexes(table.name)
 		if err != nil {
 			return nil
@@ -103,9 +103,9 @@ func (m *Mysql5) getRawTables() (map[string]mysqlTable){
 		}
 
 		// Do some processing on the foreign keys
-		for _,fk := range foreignKeys {
+		for _, fk := range foreignKeys {
 			if fk.referencedColumnName.Valid && fk.referencedTableName.Valid {
-				if _,ok := table.fkMap[fk.columnName];  ok {
+				if _, ok := table.fkMap[fk.columnName]; ok {
 					log.Printf("Warning: Column %s:%s multi-table foreign keys are not supported.", table.name, fk.columnName)
 					delete(table.fkMap, fk.columnName)
 				} else {
@@ -129,7 +129,7 @@ func (m *Mysql5) getRawTables() (map[string]mysqlTable){
 }
 
 // Gets some of the information for a table
-func (m *Mysql5) getTables() ([]mysqlTable) {
+func (m *Mysql5) getTables() []mysqlTable {
 	var tableName, tableComment string
 	tables := []mysqlTable{}
 
@@ -159,10 +159,10 @@ func (m *Mysql5) getTables() ([]mysqlTable) {
 		}
 		log.Println(tableName)
 		table := mysqlTable{
-			name: tableName,
+			name:    tableName,
 			comment: tableComment,
 			columns: []mysqlColumn{},
-			fkMap: make(map[string]mysqlForeignKey),
+			fkMap:   make(map[string]mysqlForeignKey),
 			indexes: []mysqlIndex{},
 		}
 		tables = append(tables, table)
@@ -174,7 +174,6 @@ func (m *Mysql5) getTables() ([]mysqlTable) {
 
 	return tables
 }
-
 
 func (m *Mysql5) getColumns(table string) (columns []mysqlColumn, err error) {
 
@@ -224,7 +223,6 @@ func (m *Mysql5) getColumns(table string) (columns []mysqlColumn, err error) {
 
 	return columns, err
 }
-
 
 func (m *Mysql5) getIndexes(table string) (indexes []mysqlIndex, err error) {
 
@@ -318,7 +316,8 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 	case "time":
 		cd.NativeType = SQL_TYPE_TIME
 		cd.GoType = COL_TYPE_DATETIME
-	case "timestamp": fallthrough
+	case "timestamp":
+		fallthrough
 	case "datetime":
 		cd.NativeType = SQL_TYPE_DATETIME
 		cd.GoType = COL_TYPE_DATETIME
@@ -333,7 +332,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 			if isUnsigned {
 				cd.NativeType = SQL_TYPE_INTEGER
 				cd.GoType = COL_TYPE_UNSIGNED
-				min, max := getMinMax(column.options,0, 255, tableName, column.name)
+				min, max := getMinMax(column.options, 0, 255, tableName, column.name)
 				cd.MinValue = uint(min)
 				cd.MaxValue = uint(max)
 				cd.MaxCharLength = 3
@@ -358,7 +357,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 		} else {
 			cd.NativeType = SQL_TYPE_INTEGER
 			cd.GoType = COL_TYPE_INTEGER
-			min, max := getMinMax(column.options,-2147483648, 2147483647, tableName, column.name)
+			min, max := getMinMax(column.options, -2147483648, 2147483647, tableName, column.name)
 			cd.MinValue = int(min)
 			cd.MaxValue = int(max)
 			cd.MaxCharLength = 11
@@ -368,14 +367,14 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 		if isUnsigned {
 			cd.NativeType = SQL_TYPE_INTEGER
 			cd.GoType = COL_TYPE_UNSIGNED
-			min, max := getMinMax(column.options,0, 65535, tableName, column.name)
+			min, max := getMinMax(column.options, 0, 65535, tableName, column.name)
 			cd.MinValue = uint(min)
 			cd.MaxValue = uint(max)
 			cd.MaxCharLength = 5
 		} else {
 			cd.NativeType = SQL_TYPE_INTEGER
 			cd.GoType = COL_TYPE_INTEGER
-			min, max := getMinMax(column.options,-32768, 32767, tableName, column.name)
+			min, max := getMinMax(column.options, -32768, 32767, tableName, column.name)
 			cd.MinValue = int(min)
 			cd.MaxValue = int(max)
 			cd.MaxCharLength = 6
@@ -385,27 +384,27 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 		if isUnsigned {
 			cd.NativeType = SQL_TYPE_INTEGER
 			cd.GoType = COL_TYPE_UNSIGNED
-			min, max := getMinMax(column.options,0, 16777215, tableName, column.name)
+			min, max := getMinMax(column.options, 0, 16777215, tableName, column.name)
 			cd.MinValue = uint(min)
 			cd.MaxValue = uint(max)
 			cd.MaxCharLength = 8
 		} else {
 			cd.NativeType = SQL_TYPE_INTEGER
 			cd.GoType = COL_TYPE_INTEGER
-			min, max := getMinMax(column.options,-8388608, 8388607, tableName, column.name)
+			min, max := getMinMax(column.options, -8388608, 8388607, tableName, column.name)
 			cd.MinValue = int(min)
 			cd.MaxValue = int(max)
 			cd.MaxCharLength = 8
 		}
 
-	case "bigint":	// We need to be explicit about this in go, since int will be whatever the OS native int size is, but go will support int64 always.
+	case "bigint": // We need to be explicit about this in go, since int will be whatever the OS native int size is, but go will support int64 always.
 		// Also, since Json can only be decoded into float64s, we are limited in our ability to represent large min and max numbers in the json to about 2^53
 		if isUnsigned {
 			cd.NativeType = SQL_TYPE_INTEGER
 			cd.GoType = COL_TYPE_UNSIGNED64
 
 			if v := column.options.Get("min"); v != nil {
-				if v2,ok := v.(float64); !ok {
+				if v2, ok := v.(float64); !ok {
 					log.Print("Error in min value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
 					cd.MinValue = uint64(0)
 				} else if v2 < 0 {
@@ -419,7 +418,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 			}
 
 			if v := column.options.Get("max"); v != nil {
-				if v2,ok := v.(float64); !ok {
+				if v2, ok := v.(float64); !ok {
 					log.Print("Error in max value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
 					cd.MaxValue = uint64(math.MaxUint64)
 				} else {
@@ -433,7 +432,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 			cd.NativeType = SQL_TYPE_INTEGER
 			cd.GoType = COL_TYPE_INTEGER64
 			if v := column.options.Get("min"); v != nil {
-				if v2,ok := v.(float64); !ok {
+				if v2, ok := v.(float64); !ok {
 					log.Print("Error in min value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
 					cd.MinValue = int64(math.MinInt64)
 				} else {
@@ -444,7 +443,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 			}
 
 			if v := column.options.Get("max"); v != nil {
-				if v2,ok := v.(float64); !ok {
+				if v2, ok := v.(float64); !ok {
 					log.Print("Error in max value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
 					cd.MaxValue = int64(math.MaxInt64)
 				} else {
@@ -509,7 +508,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 		cd.GoType = COL_TYPE_STRING
 		cd.MaxCharLength = math.MaxUint32
 
-	case "decimal":	// No native equivalent in Go. See the "Big" go package for support. You will need to shephard numbers into and out of string format to move data to the database
+	case "decimal": // No native equivalent in Go. See the "Big" go package for support. You will need to shephard numbers into and out of string format to move data to the database
 		cd.NativeType = SQL_TYPE_DECIMAL
 		cd.GoType = COL_TYPE_STRING
 		cd.MaxCharLength = uint64(dataLen) + 3
@@ -538,9 +537,9 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 	cd.DefaultValue = column.defaultValue.Unpack(cd.GoType)
 }
 
-func (m *Mysql5) descriptionFromRawTables (rawTables map[string]mysqlTable) *DatabaseDescription {
+func (m *Mysql5) descriptionFromRawTables(rawTables map[string]mysqlTable) *DatabaseDescription {
 
-	dd := NewDatabaseDescription (m.DbKey(), m.AssociatedObjectPrefix(), m.idSuffix)
+	dd := NewDatabaseDescription(m.DbKey(), m.AssociatedObjectPrefix(), m.idSuffix)
 
 tableLoop:
 	for tableName, table := range rawTables {
@@ -571,38 +570,37 @@ tableLoop:
 		if td.IsType {
 
 			dd.TypeTables = append(dd.TypeTables, m.getTypeTableDescription(td))
- 		} else {
+		} else {
 			dd.Tables = append(dd.Tables, td)
 		}
 	}
 	return dd
 }
 
-func (m *Mysql5) getTypeTableDescription (td *TableDescription) *TypeTableDescription {
+func (m *Mysql5) getTypeTableDescription(td *TableDescription) *TypeTableDescription {
 	var pkField string
-	for _,col := range td.Columns {
+	for _, col := range td.Columns {
 		if col.IsPk {
 			pkField = col.GoName
 			break
 		}
 	}
 
-
 	tt := TypeTableDescription{
-		DbKey: td.DbKey,
-		DbName: td.DbName,
-		EnglishName: td.EnglishName,
+		DbKey:         td.DbKey,
+		DbName:        td.DbName,
+		EnglishName:   td.EnglishName,
 		EnglishPlural: td.EnglishPlural,
-		GoName: td.GoName,
-		GoPlural: td.GoPlural,
-		PkField: pkField,
+		GoName:        td.GoName,
+		GoPlural:      td.GoPlural,
+		PkField:       pkField,
 	}
 
 	columnNames := []string{}
 	columnTypes := []GoColumnType{}
 	columnTypes2 := map[string]GoColumnType{}
 
-	for _,col := range td.Columns {
+	for _, col := range td.Columns {
 		columnNames = append(columnNames, col.DbName)
 		columnTypes = append(columnTypes, col.GoType)
 		columnTypes2[col.DbName] = col.GoType
@@ -610,11 +608,11 @@ func (m *Mysql5) getTypeTableDescription (td *TableDescription) *TypeTableDescri
 
 	result, err := m.db.Query(`
 	SELECT ` +
-	strings.Join(columnNames, ",") +
-	`
+		strings.Join(columnNames, ",") +
+		`
 	FROM ` +
-	td.DbName +
-	` ORDER BY ` + columnNames[0])
+		td.DbName +
+		` ORDER BY ` + columnNames[0])
 
 	if err != nil {
 		log.Fatal(err)
@@ -640,8 +638,8 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 	var ok bool
 	opt := options.Get("goName")
 	if opt != nil {
-		if cd.GoName,ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + tableName + ":" +column.name + ": goName is not a string")
+		if cd.GoName, ok = opt.(string); !ok {
+			log.Print("Error in table comment for table " + tableName + ":" + column.name + ": goName is not a string")
 		}
 	} else {
 		cd.GoName = snaker.SnakeToCamel(column.name)
@@ -674,13 +672,12 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 
 	if fk, ok := table.fkMap[cd.DbName]; ok {
 		cd.ForeignKey = &ForeignKeyType{
-			TableName: fk.referencedTableName.String,
-			ColumnName: fk.referencedColumnName.String,
+			TableName:    fk.referencedTableName.String,
+			ColumnName:   fk.referencedColumnName.String,
 			UpdateAction: fkRuleToAction(fk.updateRule),
 			DeleteAction: fkRuleToAction(fk.deleteRule),
 		}
 	}
-
 
 	return &cd
 }
@@ -691,7 +688,7 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 func (m *Mysql5) getIndexDescriptions(tableName string, sqlIndexes []mysqlIndex) (indexes []IndexDescription) {
 	indexMap := map[string]int{}
 
-	for _,sqlIndex := range sqlIndexes {
+	for _, sqlIndex := range sqlIndexes {
 		if offset, ok := indexMap[sqlIndex.name]; !ok {
 			indexes = append(indexes, IndexDescription{sqlIndex.name, !sqlIndex.nonUnique, sqlIndex.name == "PRIMARY", []string{sqlIndex.columnName}})
 			indexMap[sqlIndex.name] = len(indexes) - 1

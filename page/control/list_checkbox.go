@@ -1,10 +1,10 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page"
 	"bytes"
 	"context"
 	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
 	"strings"
 )
 
@@ -12,7 +12,7 @@ type ItemDirection int
 
 const (
 	HorizontalItemDirection ItemDirection = 0
-	VerticalItemDirection = 1
+	VerticalItemDirection                 = 1
 )
 
 // Lets us create subclasses that change how items are rendered. This is used by the radio list.
@@ -27,10 +27,10 @@ type checkboxListI interface {
 // scrolling list much like a standard html select list.
 type CheckboxList struct {
 	MultiselectList
-	columns int
-	direction ItemDirection
+	columns          int
+	direction        ItemDirection
 	labelDrawingMode html.LabelDrawingMode
-	isScrolling bool
+	isScrolling      bool
 }
 
 func NewCheckboxList(parent page.ControlI) *CheckboxList {
@@ -38,7 +38,6 @@ func NewCheckboxList(parent page.ControlI) *CheckboxList {
 	l.Init(l, parent)
 	return l
 }
-
 
 func (l *CheckboxList) Init(self page.ControlI, parent page.ControlI) {
 	l.MultiselectList.Init(self, parent)
@@ -49,7 +48,7 @@ func (l *CheckboxList) Init(self page.ControlI, parent page.ControlI) {
 
 func (l *CheckboxList) SetColumns(columns int) *CheckboxList {
 	if l.columns <= 0 {
-		panic ("Columns must be at least 1.")
+		panic("Columns must be at least 1.")
 	}
 	l.columns = columns
 	l.Refresh()
@@ -74,7 +73,6 @@ func (l *CheckboxList) SetIsScrolling(s bool) *CheckboxList {
 	return l
 }
 
-
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *CheckboxList) DrawingAttributes() *html.Attributes {
@@ -93,7 +91,7 @@ func (l *CheckboxList) DrawingAttributes() *html.Attributes {
 func (l *CheckboxList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml(l.items)
 	if l.isScrolling {
-		h = html.RenderTag("div",html.NewAttributes().SetClass("gr-cbl-table"), h)
+		h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table"), h)
 	}
 	buf.WriteString(h)
 	return nil
@@ -107,14 +105,14 @@ func (l *CheckboxList) getItemsHtml(items []ListItemI) string {
 	}
 }
 
-func (l *CheckboxList) verticalHtml (items []ListItemI) (h string) {
+func (l *CheckboxList) verticalHtml(items []ListItemI) (h string) {
 	lines := l.verticalHtmlItems(items)
 	if l.columns == 1 {
 		return strings.Join(lines, "\n")
 	} else {
-		columnHeight := len(lines) / l.columns + 1
+		columnHeight := len(lines)/l.columns + 1
 		for col := 0; col < l.columns; col++ {
-			colHtml := strings.Join(lines[col * columnHeight:(col + 1)* columnHeight], "\n")
+			colHtml := strings.Join(lines[col*columnHeight:(col+1)*columnHeight], "\n")
 			colHtml = html.RenderTag("div", html.NewAttributes().AddClass("gr-cbl-table"), colHtml)
 			h += colHtml
 		}
@@ -123,7 +121,7 @@ func (l *CheckboxList) verticalHtml (items []ListItemI) (h string) {
 }
 
 func (l *CheckboxList) verticalHtmlItems(items []ListItemI) (h []string) {
-	for _,item := range items {
+	for _, item := range items {
 		if item.HasChildItems() {
 			tag := "div"
 			attributes := item.Attributes().Clone()
@@ -154,11 +152,11 @@ func (l *CheckboxList) renderItem(tag string, item ListItemI) (h string) {
 	return
 }
 
-func (l *CheckboxList) horizontalHtml (items []ListItemI) (h string) {
+func (l *CheckboxList) horizontalHtml(items []ListItemI) (h string) {
 	var itemNum int
 	var rowHtml string
 
-	for _,item := range items {
+	for _, item := range items {
 		if item.HasChildItems() {
 			if itemNum != 0 {
 				// output a row
@@ -173,7 +171,7 @@ func (l *CheckboxList) horizontalHtml (items []ListItemI) (h string) {
 			h += l.horizontalHtml(item.ListItems())
 		} else {
 			rowHtml += l.This().(checkboxListI).renderItem("span", item)
-			itemNum ++
+			itemNum++
 			if itemNum == l.columns {
 				// output a row
 				h += html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-row"), rowHtml)
@@ -191,11 +189,11 @@ func (l *CheckboxList) horizontalHtml (items []ListItemI) (h string) {
 func (l *CheckboxList) UpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()
 
-	if v,ok := ctx.CheckableValue(controlID); ok {
+	if v, ok := ctx.CheckableValue(controlID); ok {
 		l.selectedIds = map[string]bool{}
-		if a,ok := v.([]interface{}); ok {
-			for _,id := range a {
-				l.selectedIds[controlID + "_" + id.(string)] = true
+		if a, ok := v.([]interface{}); ok {
+			for _, id := range a {
+				l.selectedIds[controlID+"_"+id.(string)] = true
 			}
 		}
 	}

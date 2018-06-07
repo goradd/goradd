@@ -1,12 +1,12 @@
 package types
 
 import (
-	"sync"
-	"sort"
-	"encoding/json"
-	"bytes"
-	"errors"
 	"bufio"
+	"bytes"
+	"encoding/json"
+	"errors"
+	"sort"
+	"sync"
 )
 
 // A SafeOrderedMap is similar to PHP's indexed arrays. You can get the strings
@@ -43,7 +43,7 @@ func (o *SafeOrderedMap) Set(key string, val interface{}) MapI {
 
 	var ok bool
 
-	if _,ok = o.items[key]; !ok  {
+	if _, ok = o.items[key]; !ok {
 		o.order = append(o.order, key)
 	}
 	o.items[key] = val
@@ -64,7 +64,7 @@ func (o *SafeOrderedMap) SetAt(index int, key string, val interface{}) MapI {
 
 	var ok bool
 
-	if _,ok = o.items[key]; !ok  {
+	if _, ok = o.items[key]; !ok {
 		if index < -len(o.items) {
 			index = 0
 		}
@@ -80,7 +80,6 @@ func (o *SafeOrderedMap) SetAt(index int, key string, val interface{}) MapI {
 	return o
 }
 
-
 func (o *SafeOrderedMap) Remove(key string) {
 	if o.items == nil {
 		return
@@ -89,11 +88,11 @@ func (o *SafeOrderedMap) Remove(key string) {
 	defer o.Unlock()
 	for i, v := range o.order {
 		if v == key {
-			o.order = append(o.order[:i], o.order[i + 1:]...)
+			o.order = append(o.order[:i], o.order[i+1:]...)
 			continue
 		}
 	}
-	delete (o.items,key)
+	delete(o.items, key)
 }
 
 // Get returns the string based on its key. If it does not exist, will return nil
@@ -104,7 +103,7 @@ func (o *SafeOrderedMap) Get(key string) (val interface{}) {
 		return nil
 	}
 
-	val, _ =  o.items[key]
+	val, _ = o.items[key]
 	return
 }
 
@@ -148,7 +147,6 @@ func (o *SafeOrderedMap) GetFloat(key string) (val float64, typeOk bool) {
 	}
 }
 
-
 func (o *SafeOrderedMap) Has(key string) (ok bool) {
 	o.RLock()
 	defer o.RUnlock()
@@ -156,10 +154,9 @@ func (o *SafeOrderedMap) Has(key string) (ok bool) {
 		return false
 	}
 
-	_, ok =  o.items[key]
+	_, ok = o.items[key]
 	return
 }
-
 
 // GetAt returns the string based on its position
 // To see if a value exists, simply test that the position is less than the length
@@ -178,13 +175,12 @@ func (o *SafeOrderedMap) GetAt(position int) (val interface{}) {
 	return
 }
 
-
 // Values returns a slice of the values in the order they were added
 func (o *SafeOrderedMap) Values() []interface{} {
 	o.Lock()
 	defer o.Unlock()
 
-	vals := make ([]interface{}, len(o.order))
+	vals := make([]interface{}, len(o.order))
 
 	for i, v := range o.order {
 		vals[i] = o.items[v]
@@ -192,12 +188,11 @@ func (o *SafeOrderedMap) Values() []interface{} {
 	return vals
 }
 
-
 // Keys are the keys of the strings, in the order they were added
 func (o *SafeOrderedMap) Keys() []string {
 	o.Lock()
 	defer o.Unlock()
-	vals := make ([]string, len(o.order))
+	vals := make([]string, len(o.order))
 
 	for i, v := range o.order {
 		vals[i] = v
@@ -206,7 +201,7 @@ func (o *SafeOrderedMap) Keys() []string {
 }
 
 func (o *SafeOrderedMap) Len() int {
-	return len (o.order)
+	return len(o.order)
 }
 
 // Range will call the given function with every key and value in the order they were placed into the SafeOrderedMap
@@ -233,13 +228,11 @@ func (o *SafeOrderedMap) Less(i, j int) bool {
 	return o.order[i] < o.order[j]
 }
 
-func (o *SafeOrderedMap) Swap(i, j int)      {
+func (o *SafeOrderedMap) Swap(i, j int) {
 	o.Lock()
 	defer o.Unlock()
 	o.order[i], o.order[j] = o.order[j], o.order[i]
 }
-
-
 
 // Sort by keys interface
 type safeOrderedByKeys struct {
@@ -262,7 +255,6 @@ func (r safeOrderedByKeys) Less(i, j int) bool {
 	return o.order[i] < o.order[j]
 }
 
-
 // UnmarshalJSON implements the json.Unmarshaller interface so that you can output a json structure in the same order
 // it was saved in. The golang json library saves a json object as a golang map, and golang maps are not guaranteed to
 // be iterated in the same order they were created. This function remedies that. It requires that you give it
@@ -272,7 +264,7 @@ func (o *SafeOrderedMap) UnmarshalJSON(in []byte) error {
 	b := bytes.TrimSpace(in)
 
 	dec := json.NewDecoder(bytes.NewReader(b))
-	t,err := dec.Token()
+	t, err := dec.Token()
 	if err != nil {
 		return err
 	}
@@ -298,7 +290,7 @@ func (o *SafeOrderedMap) getJsonMap(dec *json.Decoder) (err error) {
 			return errors.New("Must be an object with string keys.")
 		}
 
-		value,err = o.getJsonToken(dec)
+		value, err = o.getJsonToken(dec)
 
 		if err != nil {
 			return err
@@ -311,7 +303,7 @@ func (o *SafeOrderedMap) getJsonMap(dec *json.Decoder) (err error) {
 
 func (o *SafeOrderedMap) getJsonToken(dec *json.Decoder) (ret interface{}, err error) {
 	t, err := dec.Token()
-	if err !=  nil {
+	if err != nil {
 		return nil, err
 	}
 	switch t.(type) {
@@ -351,7 +343,7 @@ func (o *SafeOrderedMap) MarshalJSON() (out []byte, err error) {
 	writer := bufio.NewWriter(&b)
 	writer.WriteString("{")
 
-	o.Range(func(k string,v interface{}) bool {
+	o.Range(func(k string, v interface{}) bool {
 		var b2 []byte
 		writer.WriteString("\"" + k + "\":")
 		if b2, err = json.Marshal(v); err != nil {
@@ -369,16 +361,15 @@ func (o *SafeOrderedMap) MarshalJSON() (out []byte, err error) {
 	}
 	out = b.Bytes()
 
-	out = append(out[:len(out) - 2], out[len(out)-1]) // get rid of comma
+	out = append(out[:len(out)-2], out[len(out)-1]) // get rid of comma
 	return out, nil
 }
-
 
 func (o *SafeOrderedMap) Copy() MapI {
 	cp := NewSafeOrderedMap()
 
-	o.Range(func (key string, value interface{}) bool {
-		if copier,ok := value.(Copier); ok {
+	o.Range(func(key string, value interface{}) bool {
+		if copier, ok := value.(Copier); ok {
 			value = copier.Copy()
 		}
 		cp.Set(key, value)
