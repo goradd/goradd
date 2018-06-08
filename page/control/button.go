@@ -31,6 +31,13 @@ func (b *Button) Init(self page.ControlI, parent page.ControlI) {
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
 
+// SetLabel is an alias for SetText on buttons. Buttons do not normally have separate labels.
+func (b *Button) SetLabel(label string) page.ControlI {
+	b.SetText(label)
+	return b
+}
+
+
 func (b *Button) On(e page.EventI, actions ...action.ActionI) page.EventI {
 	e.Terminating() // prevent default action (page submit)
 	b.Control.On(e, actions...)

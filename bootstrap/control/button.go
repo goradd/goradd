@@ -79,3 +79,12 @@ func (b *Button) DrawingAttributes() *html.Attributes {
 	a.AddClass(string(b.size))
 	return a
 }
+
+func (b *Button) SetIsPrimary(isPrimary bool) {
+	b.Button.SetIsPrimary(isPrimary)
+	if isPrimary {
+		b.style = ButtonStylePrimary
+	} else {
+		b.style = ButtonStyleSecondary
+	}
+}
