@@ -41,6 +41,7 @@ func NewDateGetterColumn(index string, timeFormat string, format ...string) *Get
 func (c *GetterColumn) Init(index string, format string, timeFormat string) {
 	c.ColumnBase.Init(c)
 	c.SetCellTexter(GetterTexter{Key: index, Format: format, TimeFormat: timeFormat})
+	c.SetTitle(index)
 }
 
 func (c *GetterColumn) SetFormat(format string) *GetterColumn {

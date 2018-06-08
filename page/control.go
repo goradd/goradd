@@ -135,7 +135,7 @@ type ControlI interface {
 	PrivateAction(context.Context, ActionParams)
 	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
-	On(e EventI, a ...action2.ActionI)
+	On(e EventI, a ...action2.ActionI) EventI
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string) string
 
@@ -160,7 +160,7 @@ type ControlI interface {
 	Translate(string) string
 
 	// Serialization helpers
-	Restore()
+	Restore(self ControlI)
 }
 
 type Control struct {
@@ -220,6 +220,10 @@ type Control struct {
 	shouldSaveState bool
 }
 
+// Init should be called immediately after a control is created and is responsible for setting up the initial state of a
+// new control. Your subclasses should have their own Init function, and
+// should call the superclass function. This Init function is sets up a parent-child relationship with the given parent
+// control, and sets up data structures to use the control in object-oriented ways with virtual functions.
 func (c *Control) Init(self ControlI, parent ControlI) {
 	c.Base.Init(self)
 	c.attributes = html.NewAttributes()
@@ -230,6 +234,18 @@ func (c *Control) Init(self ControlI, parent ControlI) {
 	}
 	self.SetParent(parent)
 	c.htmlEscapeText = true // default to encoding the text portion. Explicitly turn This off if you need something else
+}
+
+// Restore is called after the control has been deserialized. It creates any required data structures
+// that are not saved in serialization.
+func (c *Control) Restore(self ControlI) {
+	c.Base.Init(self)
+	if c.attributes == nil {
+		c.attributes = html.NewAttributes()
+	}
+	if c.wrapperAttributes == nil {
+		c.wrapperAttributes = html.NewAttributes()
+	}
 }
 
 func (c *Control) This() ControlI {
@@ -818,7 +834,7 @@ func (c *Control) ShouldAutoRender() bool {
 }
 
 // On adds an event listener to the control that will trigger the given actions
-func (c *Control) On(e EventI, actions ...action2.ActionI) {
+func (c *Control) On(e EventI, actions ...action2.ActionI) EventI {
 	var isPrivate bool
 	c.isModified = true // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
@@ -854,6 +870,7 @@ func (c *Control) On(e EventI, actions ...action2.ActionI) {
 		}
 		c.events[c.eventCounter] = e
 	}
+	return e
 }
 
 // Off removes all event handlers from the control
@@ -1272,9 +1289,6 @@ func (c *Control) Translate(in string) string {
 	return c.Page().ProjectTranslator().Translate(in)
 }
 
-// Restore is called after the control has been deserialized
-func (c *Control) Restore() {}
-
 func (c *Control) SetDisabled(d bool) {
 	c.attributes.SetDisabled(d)
 	c.Refresh()
@@ -1316,3 +1330,4 @@ func (c *Control) SetStyle(name string, value string) {
 func (c *Control) SetEscapeText(e bool) {
 	c.htmlEscapeText = e
 }
+

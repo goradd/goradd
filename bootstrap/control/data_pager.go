@@ -18,20 +18,18 @@ type DataPager struct {
 	HighlightStyle ButtonStyle
 }
 
-func NewDataPager(parent page.ControlI, paginatedControl page.ControlI) *DataPager {
+func NewDataPager(parent page.ControlI, paginatedControl control.PaginatedControlI) *DataPager {
 	d := DataPager{}
 	d.Init(&d, parent, paginatedControl)
-	d.Tag = "div"
-	d.SetLabels(`<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>`,
-		`<span aria-hidden="true">&raquo;</span> <span class="sr-only">Next</span>`)
-	d.SetMaxPageButtons(10)
-	d.ButtonStyle = ButtonStyleOutlineSecondary
-	d.HighlightStyle = ButtonStyleSecondary
 	return &d
 }
 
-func (d *DataPager) Init(self page.ControlI, parent page.ControlI, paginatedControl page.ControlI) {
+func (d *DataPager) Init(self page.ControlI, parent page.ControlI, paginatedControl control.PaginatedControlI) {
 	d.DataPager.Init(self, parent, paginatedControl)
+	d.SetLabels(`<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>`,
+		`<span aria-hidden="true">&raquo;</span> <span class="sr-only">Next</span>`)
+	d.ButtonStyle = ButtonStyleOutlineSecondary
+	d.HighlightStyle = ButtonStylePrimary
 	d.SetAttribute("aria-label", "Data pager")
 }
 
@@ -44,13 +42,15 @@ func (l *DataPager) DrawingAttributes() *html.Attributes {
 func (d *DataPager) PreviousButtonsHtml() string {
 	var prev string
 	var actionValue string
-	actionValue = strconv.Itoa(d.PageNum() - 1)
+
+	pageNum := d.PaginatedControl().PageNum()
+	actionValue = strconv.Itoa(pageNum - 1)
 
 	attr := html.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("btn " + string(d.ButtonStyle))
 
-	if d.PageNum() <= 1 {
+	if pageNum <= 1 {
 		attr.SetDisabled(true)
 		attr.SetStyle("cursor", "not-allowed")
 	}
@@ -69,17 +69,18 @@ func (d *DataPager) PreviousButtonsHtml() string {
 func (d *DataPager) NextButtonsHtml() string {
 	var next string
 	var actionValue string
+	pageNum := d.PaginatedControl().PageNum()
 
 	attr := html.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("btn " + string(d.ButtonStyle))
 
-	actionValue = strconv.Itoa(d.PageNum() + 1)
+	actionValue = strconv.Itoa(pageNum + 1)
 
 	_, pageEnd := d.CalcBunch()
-	pageCount := d.CalcPageCount()
+	pageCount := d.PaginatedControl().CalcPageCount()
 
-	if d.PageNum() >= pageCount-1 {
+	if pageNum >= pageCount-1 {
 		attr.SetDisabled(true)
 		attr.SetStyle("cursor", "not-allowed")
 	}
@@ -95,11 +96,13 @@ func (d *DataPager) NextButtonsHtml() string {
 }
 
 func (d *DataPager) PageButtonsHtml(i int) string {
+	pageNum := d.PaginatedControl().PageNum()
+
 	actionValue := strconv.Itoa(i)
 	attr := html.NewAttributes().Set("id", d.ID()+"_page_"+actionValue).
 		Set("role", "tab").
 		AddClass("btn")
-	if d.PageNum() == i {
+	if pageNum == i {
 		attr.AddClass(string(d.HighlightStyle))
 		attr.Set("aria-selected", "true")
 		attr.Set("tabindex", "0")

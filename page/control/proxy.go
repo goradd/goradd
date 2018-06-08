@@ -29,10 +29,16 @@ func (p *Proxy) Init(parent page.ControlI) {
 	p.SetActionValue(javascript.JsCode(`$j(this).data("grAv")`))
 }
 
+func (p *Proxy) On(e page.EventI, actions ...action.ActionI) page.EventI {
+	e.Terminating() // prevent default action (page submit)
+	p.Control.On(e, actions...)
+	return e
+}
+
 // OnClick is a shortcut for adding a click event handler that is particular to buttons. It debounces the click, to
 // prevent potential accidental multiple form submissions.
-func (p *Proxy) OnClick(actions ...action.ActionI) {
-	p.On(event.Click().Terminating().Delay(250), actions...)
+func (p *Proxy) OnClick(actions ...action.ActionI) page.EventI {
+	return p.On(event.Click().Terminating().Delay(250), actions...)
 }
 
 // Draw is used by the form engine to draw the control. As a proxy, there is no html to draw, but this is where the scripts attached to the

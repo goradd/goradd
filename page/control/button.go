@@ -4,8 +4,8 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
-	"github.com/spekary/goradd/page/event"
 	localPage "goradd/page"
+	"github.com/spekary/goradd/page/event"
 )
 
 type ButtonI interface {
@@ -31,9 +31,10 @@ func (b *Button) Init(self page.ControlI, parent page.ControlI) {
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
 
-func (b *Button) On(e page.EventI, actions ...action.ActionI) {
+func (b *Button) On(e page.EventI, actions ...action.ActionI) page.EventI {
 	e.Terminating() // prevent default action (page submit)
 	b.Control.On(e, actions...)
+	return e
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
@@ -61,10 +62,12 @@ func (b *Button) IsPrimary() bool {
 	return b.isPrimary
 }
 
-// OnClick is a shortcut for adding a click event handler that is particular to buttons. It debounces the click, to
-// prevent potential accidental multiple form submissions.
-func (b *Button) OnClick(actions ...action.ActionI) {
-	b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
+
+// OnClick is a shortcut for adding a click event handler that is particular to buttons and button like objects.
+// It debounces the click, to prevent potential accidental multiple form submissions.
+func (b *Button) OnClick(actions ...action.ActionI) page.EventI {
+	return b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
 }
+
 
 // Use SetText to set the text of the button

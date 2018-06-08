@@ -68,13 +68,13 @@ const (
 // Creates a new standard html button
 func NewNavbar(parent page.ControlI) *Navbar {
 	b := &Navbar{}
-	b.Tag = "nav"
 	b.Init(b, parent)
 	return b
 }
 
 func (b *Navbar) Init(self page.ControlI, parent page.ControlI) {
 	b.Control.Init(self, parent)
+	b.Tag = "nav"
 	b.style = NavbarDark // default
 	b.background = BackgroundColorDark
 	b.expand = NavbarExpandLarge

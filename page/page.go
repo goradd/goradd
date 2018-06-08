@@ -55,7 +55,7 @@ func (p *Page) Init(ctx context.Context, path string) {
 // Restore is called immediately after the page has been unserialized, to restore data that did not get serialized.
 func (p *Page) Restore() {
 	p.drawFunc = p.DrawFunction()
-	p.form.Restore()
+	p.form.Restore(p.form)
 }
 
 // DrawFunction returns the drawing function. This implementation returns the default. Override to change it.
