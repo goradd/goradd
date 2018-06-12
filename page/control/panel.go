@@ -14,10 +14,15 @@ type Panel struct {
 
 func NewPanel(parent page.ControlI) *Panel {
 	p := &Panel{}
-	p.Tag = "div"
 	p.Init(p, parent)
 	return p
 }
+
+func (c *Panel) Init(self page.ControlI, parent page.ControlI) {
+	c.Panel.Init(self, parent)
+	c.Tag = "div"
+}
+
 
 func (c *Panel) DrawingAttributes() *html.Attributes {
 	a := c.Control.DrawingAttributes()

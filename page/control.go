@@ -99,8 +99,8 @@ type ControlI interface {
 
 	// hmtl and css
 
-	SetAttribute(name string, val interface{})
-	SetWrapperAttribute(name string, val interface{})
+	SetAttribute(name string, val interface{}) ControlI
+	SetWrapperAttribute(name string, val interface{}) ControlI
 	Attribute(string) string
 	HasAttribute(string) bool
 	DrawingAttributes() *html.Attributes
@@ -147,6 +147,7 @@ type ControlI interface {
 
 	Validate() bool
 	ValidationState() ValidationState
+	ValidationType(EventI) ValidationType
 
 	// SaveState tells the control whether to save the basic state of the control, so that when the form is reentered, the
 	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
@@ -339,7 +340,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 }
 
 // PutCustomScript is the place where you add javascript that transforms the html into a custom javascript control.
-// Do This by calling functions on the response object.
+// Do this by calling functions on the response object.
 // This implementation is a stub.
 func (c *Control) PutCustomScript(ctx context.Context, response *Response) {
 
@@ -462,6 +463,7 @@ func (c *Control) RenderAutoControls(ctx context.Context, buf *bytes.Buffer) (er
 // we will then detect that the template was drawn. Otherwise, we detect that no template was defined and it will move
 // on to drawing the controls without a template, or just the text if text is defined.
 func (c *Control) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+	// Don't change this to use some kind of function injection, as such things are not serializable
 	return NewAppErr(AppErrNoTemplate)
 }
 
@@ -521,7 +523,7 @@ func (c *Control) HasWrapper() bool {
 	return c.wrapper != nil
 }
 
-func (c *Control) SetAttribute(name string, val interface{}) {
+func (c *Control) SetAttribute(name string, val interface{}) ControlI {
 	if name == "id" {
 		panic("You can only set the 'id' attribute of a control when it is created")
 	}
@@ -536,9 +538,10 @@ func (c *Control) SetAttribute(name string, val interface{}) {
 		v2 := c.attributes.Get(name)
 		c.AddRenderScript("attr", name, v2)
 	}
+	return c.This()
 }
 
-func (c *Control) SetWrapperAttribute(name string, val interface{}) {
+func (c *Control) SetWrapperAttribute(name string, val interface{}) ControlI {
 	if name == "id" {
 		panic("You cannot set the 'id' attribute of a wrapper")
 	}
@@ -552,6 +555,7 @@ func (c *Control) SetWrapperAttribute(name string, val interface{}) {
 		// TODO: Make This an attribute script instead of redrawing the whole control. Will prevent having to redraw the whole control
 		c.isModified = true
 	}
+	return c.This()
 }
 
 func (c *Control) Attribute(name string) string {
@@ -986,7 +990,7 @@ func (c *Control) doAction(ctx context.Context) {
 		return
 	}
 
-	if c.ValidationType() != ValidateNone ||
+	if c.This().ValidationType(e) != ValidateNone ||
 		(e.event().validationOverride != ValidateDefault && e.event().validationOverride != ValidateNone) {
 		c.Form().control().resetValidation()
 	}
@@ -1028,14 +1032,14 @@ func (c *Control) doAction(ctx context.Context) {
 	}
 }
 
-// SetBlockParentValidation will prevent a parent from validating This control. This is generally useful for panels and
-// other containers of controls that wish to have their own validation scheme. Dialogs in particular need This since
+// SetBlockParentValidation will prevent a parent from validating this control. This is generally useful for panels and
+// other containers of controls that wish to have their own validation scheme. Dialogs in particular need this since
 // they essentially act as a separate form, even though technically they are included in a form.
 func (c *Control) SetBlockParentValidation(block bool) {
 	c.blockParentValidation = block
 }
 
-// SetValidationType specifies how This control validates other controls. Typically its either ValidateNone or ValidateForm.
+// SetValidationType specifies how this control validates other controls. Typically its either ValidateNone or ValidateForm.
 // ValidateForm will validate all the controls on the form.
 // ValidateSiblingsAndChildren will validate the immediate siblings of the target controls and their children
 // ValidateSiblingsOnly will validate only the siblings of the target controls
@@ -1044,7 +1048,8 @@ func (c *Control) SetValidationType(typ ValidationType) {
 	c.validationType = typ
 }
 
-func (c *Control) ValidationType() ValidationType {
+// ValidationType is an internal function to return the validation type. It allows subclasses to override it.
+func (c *Control) ValidationType(e EventI) ValidationType {
 	if c.validationType == ValidateNone || c.validationType == ValidateDefault {
 		return ValidateNone
 	} else {
@@ -1061,7 +1066,7 @@ func (c *Control) SetValidationTargets(controlIDs ...string) {
 
 // passesValidation checks to see if the event requires validation, and if so, if it passes the required validation
 func (c *Control) passesValidation(event EventI) (valid bool) {
-	validation := c.validationType
+	validation := c.This().ValidationType(event)
 
 	if v := event.event().validationOverride; v != ValidateDefault {
 		validation = v
@@ -1084,6 +1089,7 @@ func (c *Control) passesValidation(event EventI) (valid bool) {
 				case ValidateSiblingsAndChildren:
 					fallthrough
 				case ValidateSiblingsOnly:
+					fallthrough
 				case ValidateTargetsOnly:
 					validation = target.control().validationType
 					targets = []ControlI{target}

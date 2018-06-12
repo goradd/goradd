@@ -14,9 +14,13 @@ type Span struct {
 
 func NewSpan(parent page.ControlI) *Span {
 	p := &Span{}
-	p.Tag = "span"
 	p.Init(p, parent)
 	return p
+}
+
+func (c *Span) Init(self page.ControlI, parent page.ControlI) {
+	c.Panel.Init(self, parent)
+	c.Tag = "span"
 }
 
 func (c *Span) DrawingAttributes() *html.Attributes {

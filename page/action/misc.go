@@ -45,7 +45,7 @@ func Confirm(m interface{}) *confirmAction {
 }
 
 func (a *confirmAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`if (!goradd.confirm(%s)) return false;`, javascript.ToJavaScript(a.message))
+	return fmt.Sprintf(`if (!window.confirm(%s)) return false;`, javascript.ToJavaScript(a.message))
 }
 
 type blurAction struct {
@@ -133,7 +133,7 @@ func Redirect(l string) *redirectAction {
 }
 
 func (a *redirectAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`goradd.redirect(%s)`, a.location)
+	return fmt.Sprintf(`goradd.redirect(%s);`, a.location)
 }
 
 type triggerAction struct {
@@ -148,7 +148,7 @@ func Trigger(controlID string, event string, data interface{}) *triggerAction {
 }
 
 func (a *triggerAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`$j("#%s").trigger("%s", %s)`, a.controlID, a.event, javascript.ToJavaScript(a.data))
+	return fmt.Sprintf(`$j("#%s").trigger("%s", %s);` + "\n", a.controlID, a.event, javascript.ToJavaScript(a.data))
 }
 
 // PrivateAction is used by control implementations to add a private action to a controls action list. Unless you are

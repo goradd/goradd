@@ -1,0 +1,57 @@
+package control
+
+import (
+	"context"
+	"bytes"
+	"html"
+)
+
+func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+{{
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+}}
+    d.titleBar.AddClass("modal-header")
+    d.titleBar.Draw(ctx, buf)
+{{
+            <div class="modal-body">
+}}
+    l := len(d.Children())
+    if l > 2 {
+        for _,child := range d.Children() {
+            if child.ID() != d.titleBar.ID() && child.ID() != d.buttonBar.ID() {
+                child.Draw(ctx, buf)
+            }
+        }
+    } else {
+{{ <p>{{!= d.Text() }} </p>}}
+    }
+
+{{
+            </div>
+}}
+    d.buttonBar.AddClass("modal-footer")
+    d.buttonBar.Draw(ctx, buf)
+{{
+        </div>
+    </div>
+
+}}
+	return
+}
+
+func (d *TitleBar) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+    if d.title != "" {
+{{
+     <h5 id="{{= d.Parent().ID() }}_title" class="modal-title">{{= d.title }}</h5>
+}}
+    }
+    if d.hasCloseBox {
+{{
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+}}
+    }
+	return
+}

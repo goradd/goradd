@@ -69,6 +69,9 @@ type DialogButtonOptions struct {
 	// PushLeft pushes this button to the left side of the dialog. Buttons are typically aligned right. This is helpful to separate particular
 	// buttons from the main grouping of buttons.
 	PushLeft bool
+	// IsClose will set the button up to automatically close the dialog. Detect closes with the DialogCloseEvent if needed.
+	// The button will not send a DialogButton event.
+	IsClose bool
 	// Options are additional options specific to the dialog implementation you are using.
 	Options map[string]interface{}
 }
@@ -102,7 +105,7 @@ func (c *Dialog) Init(parent page.ControlI) {
 	c.buttonBar.SetID(c.ID() + "_buttons")
 	c.buttonBar.AddClass("gr-dialog-buttons")
 	c.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
-	c.On(event.DialogClose(), action.Ajax(c.ID(), DialogClose), action.PrivateAction{})
+	c.On(event.DialogClosed(), action.Ajax(c.ID(), DialogClose), action.PrivateAction{})
 
 	//c.Form().AddStyleSheetFile(config.GORADD_FONT_AWESOME_CSS, nil)
 }
@@ -163,7 +166,7 @@ func (c *Dialog) AddButton(
 }
 
 func (c *Dialog) RemoveButton(id string) {
-	c.RemoveChild(id)
+	c.buttonBar.RemoveChild(id)
 	c.Refresh()
 	//delete(c.validators, id)
 
@@ -206,7 +209,7 @@ func (c *Dialog) addCloseBox() {
 func (c *Dialog) AddCloseButton(label string) {
 	btn := NewButton(c.buttonBar)
 	btn.SetLabel(label)
-	btn.OnClick(action.Trigger(c.ID(), event.DialogCloseEvent, nil))
+	btn.OnClick(action.Trigger(c.ID(), event.DialogClosedEvent, nil))
 	// Note: We will also do the public doAction with a DialogCloseEvent
 }
 

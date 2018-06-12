@@ -38,12 +38,23 @@ func DialogButton() page.EventI {
 	return e
 }
 
-const DialogCloseEvent = "grdlgclose"
+const DialogClosingEvent = "grdlgclosing"
 
-func DialogClose() page.EventI {
-	e := &page.Event{JsEvent: DialogCloseEvent}
+// DialogClosing indicates that a dialog is about to close. This is a good time to gather up any information that
+// you might need.
+func DialogClosing() page.EventI {
+	e := &page.Event{JsEvent: DialogClosingEvent}
 	return e
 }
+
+const DialogClosedEvent = "grdlgclosed"
+
+// DialogClosed indicates that a dialog has closed. This is a good time to do any required cleanup.
+func DialogClosed() page.EventI {
+	e := &page.Event{JsEvent: DialogClosedEvent}
+	return e
+}
+
 
 // TimerExpired is used in conjunction with a JsTimer control to detect the expiration of the timer
 func TimerExpired() page.EventI {
