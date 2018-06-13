@@ -6,7 +6,11 @@ import (
 	"github.com/spekary/goradd/page/control/control_base"
 )
 
-// Panel is a Goradd control that is a basic "div" wrapper. Use it to style and listen to events on a div. It
+type SpanI interface {
+	control_base.PanelI
+}
+
+// Span is a Goradd control that is a basic "span" wrapper. Use it to style and listen to events on a span. It
 // can also be used as the basis for more advanced javascript controls.
 type Span struct {
 	control_base.Panel
@@ -18,7 +22,7 @@ func NewSpan(parent page.ControlI) *Span {
 	return p
 }
 
-func (c *Span) Init(self page.ControlI, parent page.ControlI) {
+func (c *Span) Init(self SpanI, parent page.ControlI) {
 	c.Panel.Init(self, parent)
 	c.Tag = "span"
 }

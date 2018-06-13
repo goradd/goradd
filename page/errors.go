@@ -69,7 +69,7 @@ func NewFrameworkError(err int) FrameworkError {
 func (e FrameworkError) Error() string {
 	switch e.Err {
 	case FrameworkErrNoTemplate:                          // Indicates a template does not exist. The control will move on to other ways of rendering. No message.
-		return "Form or control does not have a template" // just detected, this is not likely to be used
+		return "FormBase or control does not have a template" // just detected, this is not likely to be used
 	case FrameworkErrRecordNotFound:	// This is a rare situation that might come up as a race condition error between viewing a record, and actually editing it.
 		return "Record does not exist. Perhaps it has been deleted by someone else?"
 	}

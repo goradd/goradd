@@ -5,6 +5,10 @@ import (
 	"github.com/spekary/goradd/page"
 )
 
+type RadioListI interface {
+	CheckboxListI
+}
+
 // RadioList is a multi-select control that presents its choices as a list of checkboxes.
 // Styling is provided by divs and spans that you can provide css for in your style sheets. The
 // goradd.css file has default styling to handle the basics. It wraps the whole thing in a div that can be set
@@ -24,6 +28,10 @@ func (l *RadioList) Init(self page.ControlI, parent page.ControlI) {
 	l.CheckboxList.Init(self, parent)
 }
 
+func (l *RadioList) this() RadioListI {
+	return l.Self.(RadioListI)
+}
+
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *RadioList) DrawingAttributes() *html.Attributes {
@@ -32,7 +40,7 @@ func (l *RadioList) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (l *RadioList) renderItem(tag string, item ListItemI) (h string) {
+func (l *RadioList) RenderItem(tag string, item ListItemI) (h string) {
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", l.ID())

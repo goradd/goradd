@@ -18,7 +18,7 @@ const htmlVarFormstate string = "Goradd__FormState"
 const htmlVarParams string = "Goradd__Params"
 
 type FormI interface {
-	ControlI
+	ControlI	// Note we are not inheriting from localpage here, to avoid import loop and because its not really necessary
 	// Create the objects on the form without necessarily initializing them
 	Init(ctx context.Context, self FormI, path string, id string)
 	CreateControls(ctx context.Context)
@@ -37,9 +37,12 @@ type FormI interface {
 	Exit(ctx context.Context, err error)
 }
 
+// FormBase is the basic form controller structure for the application and also serves as the drawing mechanism for the
+// <form> tag in the html output. Normally, you should not descend your forms from here, but rather the version in
+// your local goradd directory so that you can easily make modifications to the way forms work in your application.
 type FormBase struct {
 	Control
-	response Response // don't serialize This
+	response Response // don't serialize this
 
 	// serialized lists of related files
 	headerStyleSheets   *types.OrderedMap
@@ -79,6 +82,10 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 	*/
 }
 
+func (f *FormBase) this() FormI {
+	return f.Self.(FormI)
+}
+
 // AddRelatedFiles adds related javascript and style sheet files. Override This to get these files from a different location,
 // or to load additional files. The order is important, so if you override This, be sure these files get loaded
 // before other files.
@@ -88,18 +95,23 @@ func (f *FormBase) AddRelatedFiles() {
 	f.AddStyleSheetFile(config.GoraddAssets()+"/css/goradd.css", nil)
 }
 
+// CreateControls is a stub function for you to implement in an overriding object. This is where you will create your
+// controls.
 func (f *FormBase) CreateControls(ctx context.Context) {
 }
 
+// InitializeControls is a stub function for you to implement in an overriding object. This is where you would
+// initialize your controls to initial values if not the default. Note that you should also call SetSaveState on
+// controls here, but only after initializing the control
 func (f *FormBase) InitializeControls(ctx context.Context) {
 }
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
 func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = f.This().PreRender(ctx, buf)
-	buf.WriteString(`<form ` + f.This().DrawingAttributes().String() + ">\n")
-	if err = f.This().DrawTemplate(ctx, buf); err != nil {
+	err = f.this().PreRender(ctx, buf)
+	buf.WriteString(`<form ` + f.this().DrawingAttributes().String() + ">\n")
+	if err = f.this().DrawTemplate(ctx, buf); err != nil {
 		return // the template is required
 	}
 	// Render controls that are marked to auto render if the form did not render them
@@ -131,7 +143,7 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	s = fmt.Sprintf(`<script>jQuery(document).ready(function($j) { %s; });</script>`, s)
 	buf.WriteString(s)
 
-	f.This().PostRender(ctx, buf)
+	f.this().PostRender(ctx, buf)
 
 	f.outputSqlProfile(ctx, buf)
 	return

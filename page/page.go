@@ -15,9 +15,9 @@ type PageRenderStatus int
 type PageDrawFunc func(context.Context, *Page, *bytes.Buffer) error
 
 const (
-	UNRENDERED PageRenderStatus = iota // Form has not started isRendering
-	BEGUN                              // Form has started isRendering but has not finished
-	ENDED                              // Form isRendering has already been started and finished
+	UNRENDERED PageRenderStatus = iota // FormBase has not started isRendering
+	BEGUN                              // FormBase has started isRendering but has not finished
+	ENDED                              // FormBase isRendering has already been started and finished
 )
 
 // Anything that draws into the draw buffer must implement This interface
@@ -27,7 +27,7 @@ type DrawI interface {
 
 type Page struct {
 	stateId      string // Id in cache of the page. Needs to be output by form.
-	path         string // The path to the page. Form needs to know this so it can make the action tag
+	path         string // The path to the page. FormBase needs to know this so it can make the action tag
 	renderStatus PageRenderStatus
 	idPrefix     string // For creating unique ids for the app
 
@@ -215,7 +215,7 @@ func (p *Page) addControl(control ControlI) {
 	if control.Parent() == nil {
 		if f, ok := control.(FormI); ok {
 			if p.form != nil {
-				panic("The Form object for the page has already been set.")
+				panic("The FormBase object for the page has already been set.")
 			} else {
 				p.form = f
 			}

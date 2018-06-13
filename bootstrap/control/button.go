@@ -7,6 +7,10 @@ import (
 	"goradd/app"
 )
 
+type ButtonI interface {
+	grctl.ButtonI
+}
+
 type Button struct {
 	grctl.Button
 	style ButtonStyle
@@ -62,9 +66,14 @@ func (b *Button) Init(self page.ControlI, parent page.ControlI) {
 	app.LoadBootstrap(b.Form())
 }
 
+func (b *Button) this() ButtonI {
+	return b.Self.(ButtonI)
+}
+
 // SetButtonStyle will set the button's style to one of the predefined bootstrap styles.
-func (b *Button) SetButtonStyle(style ButtonStyle) {
+func (b *Button) SetButtonStyle(style ButtonStyle) ButtonI {
 	b.style = style
+	return b.this()
 }
 
 // SetButtonsSize sets the size class of the button.
@@ -80,11 +89,12 @@ func (b *Button) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (b *Button) SetIsPrimary(isPrimary bool) {
+func (b *Button) SetIsPrimary(isPrimary bool) ButtonI {
 	b.Button.SetIsPrimary(isPrimary)
 	if isPrimary {
 		b.style = ButtonStylePrimary
 	} else {
 		b.style = ButtonStyleSecondary
 	}
+	return b.this()
 }

@@ -12,8 +12,10 @@ import (
 )
 
 type CheckboxI interface {
-
+	localPage.ControlI
 }
+
+
 // Checkbox is a base class for checkbox-like objects, including html checkboxes and radio buttons.
 type Checkbox struct {
 	localPage.Control
@@ -37,6 +39,10 @@ func (c *Checkbox) Init(self page.ControlI, parent page.ControlI) {
 	c.SetAttribute("autocomplete", "off") // fixes an html quirk
 }
 
+func (c *Checkbox) this() CheckboxI {
+	return c.Self.(CheckboxI)
+}
+
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (c *Checkbox) DrawingAttributes() *html.Attributes {
@@ -57,7 +63,7 @@ func (c *Checkbox) SetLabelDrawingMode(m html.LabelDrawingMode) {
 // associated with labels. The Text value of the control will become the text directly associated with the checkbox,
 // while the Label value is only shown when drawing a checkbox with a wrapper.
 func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
-	attributes := c.This().DrawingAttributes()
+	attributes := c.this().DrawingAttributes()
 	if c.checked {
 		attributes.Set("checked", "")
 	}
@@ -65,7 +71,7 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 	if text := c.Text(); text == "" {
 		// there is no label to draw, just draw the input
 		if !c.HasWrapper() {
-			if a := c.This().WrapperAttributes(); a != nil {
+			if a := c.this().WrapperAttributes(); a != nil {
 				attributes.Merge(a)
 			}
 		}
@@ -76,7 +82,7 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 		labelAttributes := c.getDrawingInputLabelAttributes()
 
 		if !c.HasWrapper() {
-			if a := c.This().WrapperAttributes(); a != nil {
+			if a := c.this().WrapperAttributes(); a != nil {
 				labelAttributes.Merge(a)
 			}
 		}
@@ -89,7 +95,7 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 		labelAttributes := c.getDrawingInputLabelAttributes()
 
 		if !c.HasWrapper() {
-			if a := c.This().WrapperAttributes(); a != nil {
+			if a := c.this().WrapperAttributes(); a != nil {
 				labelAttributes.Merge(a)
 			}
 		}
@@ -141,7 +147,7 @@ func (c *Checkbox) SetChecked(v bool) page.ControlI {
 		c.AddRenderScript("prop", "checked", v)
 	}
 
-	return c.This()
+	return c.this()
 }
 
 // SetCheckedNoRefresh is used internally to update values without causing a refresh loop.
@@ -153,9 +159,9 @@ func (c *Checkbox) Checked() bool {
 	return c.checked
 }
 
-func (c *Checkbox) SetValue(v interface{}) page.ControlI {
+func (c *Checkbox) SetValue(v interface{}) CheckboxI {
 	c.SetChecked(ConvertToBool(v))
-	return c.Self.(page.ControlI)
+	return c.this()
 }
 
 func ConvertToBool(v interface{}) bool {

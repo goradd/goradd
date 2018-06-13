@@ -13,6 +13,10 @@ import (
 	html2 "html"
 )
 
+type ProxyI interface {
+	localPage.ControlI
+}
+
 type Proxy struct {
 	localPage.Control
 }
@@ -28,6 +32,11 @@ func (p *Proxy) Init(parent page.ControlI) {
 	p.SetShouldAutoRender(true)
 	p.SetActionValue(javascript.JsCode(`$j(this).data("grAv")`))
 }
+
+func (p *Proxy) this() ProxyI {
+	return p.Self.(ProxyI)
+}
+
 
 func (p *Proxy) On(e page.EventI, actions ...action.ActionI) page.EventI {
 	e.Terminating() // prevent default action (page submit)
@@ -45,7 +54,7 @@ func (p *Proxy) OnClick(actions ...action.ActionI) page.EventI {
 // proxy get sent to the response. This should get drawn by the auto-drawing routine, since proxies are not rendered in templates.
 func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	response := p.Form().Response()
-	p.This().PutCustomScript(ctx, response)
+	p.this().PutCustomScript(ctx, response)
 	p.GetActionScripts(response)
 	p.PostRender(ctx, buf)
 	return

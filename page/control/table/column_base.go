@@ -81,7 +81,7 @@ func (c *ColumnBase) Init(self ColumnI) {
 	c.Attributes = html.NewAttributes()
 }
 
-func (c *ColumnBase) This() ColumnI {
+func (c *ColumnBase) this() ColumnI {
 	return c.Self.(ColumnI)
 }
 
@@ -93,7 +93,7 @@ func (c *ColumnBase) ID() string {
 // a table, or the new id might not propogate through the system correctly.
 func (c *ColumnBase) SetID(id string) ColumnI {
 	c.id = id
-	return c.This()
+	return c.this()
 }
 
 func (c *ColumnBase) setParentTable(t TableI) {
@@ -106,7 +106,7 @@ func (c *ColumnBase) Title() string {
 
 func (c *ColumnBase) SetTitle(title string) ColumnI {
 	c.title = title
-	return c.This()
+	return c.this()
 }
 
 func (c *ColumnBase) Span() int {
@@ -115,7 +115,7 @@ func (c *ColumnBase) Span() int {
 
 func (c *ColumnBase) SetSpan(span int) ColumnI {
 	c.span = span
-	return c.This()
+	return c.this()
 }
 
 func (c *ColumnBase) SetRenderAsHeader(r bool) {
@@ -178,7 +178,7 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 	if c.isHidden {
 		return
 	}
-	a := c.This().ColTagAttributes()
+	a := c.this().ColTagAttributes()
 	if c.id != "" {
 		a.Set("id", c.id)
 	}
@@ -193,7 +193,7 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 // into another object.
 func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h string) {
 	if c.headerTexter != nil {
-		h = c.headerTexter.CellText(ctx, c.This(), row, col, nil)
+		h = c.headerTexter.CellText(ctx, c.this(), row, col, nil)
 	} else {
 		h = html2.EscapeString(c.title)
 	}
@@ -208,15 +208,15 @@ func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count
 	if c.isHidden {
 		return
 	}
-	cellHtml := c.This().FooterCellHtml(ctx, row, col)
+	cellHtml := c.this().FooterCellHtml(ctx, row, col)
 
-	a := c.This().FooterAttributes(row, col)
+	a := c.this().FooterAttributes(row, col)
 	buf.WriteString(html.RenderTag("td", a, cellHtml))
 }
 
 func (c *ColumnBase) FooterCellHtml(ctx context.Context, row int, col int) string {
 	if c.footerTexter != nil {
-		return c.footerTexter.CellText(ctx, c.This(), row, col, nil) // careful, this does not get escaped
+		return c.footerTexter.CellText(ctx, c.this(), row, col, nil) // careful, this does not get escaped
 	}
 
 	return ""
@@ -227,7 +227,7 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 		return
 	}
 
-	cellHtml := c.This().CellText(ctx, row, col, data)
+	cellHtml := c.this().CellText(ctx, row, col, data)
 	if !c.isHtml {
 		cellHtml = html2.EscapeString(cellHtml)
 	}
@@ -237,7 +237,7 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 
 func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interface{}) string {
 	if c.cellTexter != nil {
-		return c.cellTexter.CellText(ctx, c.This(), row, col, data)
+		return c.cellTexter.CellText(ctx, c.this(), row, col, data)
 	}
 	return ""
 }
@@ -252,7 +252,7 @@ func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data 
 // Sortable indicates that the column should be drawn with sort indicators.
 func (c *ColumnBase) Sortable() ColumnI {
 	c.sortDirection = NotSorted
-	return c.This()
+	return c.this()
 }
 
 func (c *ColumnBase) IsSortable() bool {

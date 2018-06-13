@@ -7,6 +7,9 @@ import (
 	"github.com/spekary/goradd/page/control/control_base"
 )
 
+type FieldsetI interface {
+	control_base.PanelI
+}
 // Fieldset is a Panel that is drawn with a fieldset tag. The panel's label is used as the legend tag.
 // Fieldset's cannot have wrappers.
 type Fieldset struct {
@@ -15,9 +18,17 @@ type Fieldset struct {
 
 func NewFieldset(parent page.ControlI) *Fieldset {
 	p := &Fieldset{}
-	p.Tag = "fieldset"
 	p.Init(p, parent)
 	return p
+}
+
+func (c *Fieldset) Init (self FieldsetI, parent page.ControlI) {
+	c.Panel.Init(self, parent)
+	c.Tag = "fieldset"
+}
+
+func (c *Fieldset) this() FieldsetI {
+	return c.Self.(FieldsetI)
 }
 
 func (c *Fieldset) DrawingAttributes() *html.Attributes {
@@ -29,7 +40,7 @@ func (c *Fieldset) DrawingAttributes() *html.Attributes {
 func (c *Fieldset) DrawTag(ctx context.Context) string {
 	var ctrl string
 
-	attributes := c.This().DrawingAttributes()
+	attributes := c.this().DrawingAttributes()
 	if c.HasWrapper() {
 		panic("Fieldsets cannot have wrappers.")
 	}
@@ -40,7 +51,7 @@ func (c *Fieldset) DrawTag(ctx context.Context) string {
 	if l := c.Label(); l != "" {
 		ctrl = html.RenderTag("legend", nil, l)
 	}
-	if err := c.This().DrawInnerHtml(ctx, buf); err != nil {
+	if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
 		panic(err)
 	}
 	ctrl = html.RenderTag(c.Tag, attributes, ctrl+buf.String())

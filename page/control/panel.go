@@ -6,6 +6,11 @@ import (
 	"github.com/spekary/goradd/page/control/control_base"
 )
 
+
+type PanelI interface {
+	control_base.PanelI
+}
+
 // Panel is a Goradd control that is a basic "div" wrapper. Use it to style and listen to events on a div. It
 // can also be used as the basis for more advanced javascript controls.
 type Panel struct {
@@ -18,7 +23,7 @@ func NewPanel(parent page.ControlI) *Panel {
 	return p
 }
 
-func (c *Panel) Init(self page.ControlI, parent page.ControlI) {
+func (c *Panel) Init(self PanelI, parent page.ControlI) {
 	c.Panel.Init(self, parent)
 	c.Tag = "div"
 }

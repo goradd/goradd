@@ -2,7 +2,6 @@ package control
 
 import (
 	"github.com/spekary/goradd/page"
-	control_base_2 "github.com/spekary/goradd/page/control/control_base"
 	"goradd/page/control_base"
 )
 
@@ -22,7 +21,7 @@ type Textbox struct {
 }
 
 type TextboxI interface {
-	control_base_2.TextboxI
+	control_base.TextboxI
 }
 
 func NewTextbox(parent page.ControlI) *Textbox {

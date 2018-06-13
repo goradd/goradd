@@ -81,7 +81,7 @@ type Context struct {
 func (c *Context) String() string {
 	b, _ := json.Marshal(c.actionValues)
 	actionValues := string(b[:])
-	return fmt.Sprintf("URL: %s, Mode: %s, Form Values: %v, Control ID: %s, Event ID: %d, Action Values: %s, Page State: %s", c.URL, c.requestMode, c.formVars, c.actionControlID, c.eventID, actionValues, c.pageStateId)
+	return fmt.Sprintf("URL: %s, Mode: %s, FormBase Values: %v, Control ID: %s, Event ID: %d, Action Values: %s, Page State: %s", c.URL, c.requestMode, c.formVars, c.actionControlID, c.eventID, actionValues, c.pageStateId)
 }
 
 func PutContext(r *http.Request, cliArgs []string) *http.Request {

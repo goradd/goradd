@@ -44,7 +44,7 @@ combination of html tag(s), css and javascript widget. QCubed has many ways of p
 * by the default QCubed framework.
 */
 type DialogI interface {
-	page.ControlI
+	control_base.PanelI
 
 	SetTitle(string) DialogI
 	SetState(state int) DialogI
@@ -84,8 +84,12 @@ type DialogButtonOptions struct {
 
 func NewDialog(parent page.ControlI) *Dialog {
 	d := &Dialog{}
-	d.Tag = "div"
 
+	d.Init(d, parent) // parent is always the overlay
+	return d
+}
+
+func (d *Dialog) Init(self DialogI, parent page.ControlI) {
 	// We add the dialog to the overlay. The overlay acts as a dialog controller/container too.
 	overlay := parent.Page().GetControl("groverlay")
 
@@ -97,50 +101,47 @@ func NewDialog(parent page.ControlI) *Dialog {
 		overlay.SetVisible(true)
 	}
 
-	d.Init(overlay) // parent is always the overlay
+	d.Panel.Init(self, overlay)
+	d.Tag = "div"
+
+	d.titleBar = NewPanel(d)
+	d.titleBar.SetID(d.ID() + "_title")
+	d.titleBar.AddClass("gr-dialog-title")
+
+	d.buttonBar = NewPanel(d)
+	d.buttonBar.SetID(d.ID() + "_buttons")
+	d.buttonBar.AddClass("gr-dialog-buttons")
+	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
+	d.On(event.DialogClosed(), action.Ajax(d.ID(), DialogClose), action.PrivateAction{})
+
+	//d.FormBase().AddStyleSheetFile(config.GORADD_FONT_AWESOME_CSS, nil)
+}
+
+func (d *Dialog) SetTitle(t string) DialogI {
+	d.titleBar.SetText(t)
 	return d
 }
 
-func (c *Dialog) Init(parent page.ControlI) {
-	c.Panel.Init(c, parent)
-	c.titleBar = NewPanel(c)
-	c.titleBar.SetID(c.ID() + "_title")
-	c.titleBar.AddClass("gr-dialog-title")
-
-	c.buttonBar = NewPanel(c)
-	c.buttonBar.SetID(c.ID() + "_buttons")
-	c.buttonBar.AddClass("gr-dialog-buttons")
-	c.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
-	c.On(event.DialogClosed(), action.Ajax(c.ID(), DialogClose), action.PrivateAction{})
-
-	//c.Form().AddStyleSheetFile(config.GORADD_FONT_AWESOME_CSS, nil)
+func (d *Dialog) Title() string {
+	return d.titleBar.Text()
 }
 
-func (c *Dialog) SetTitle(t string) DialogI {
-	c.titleBar.SetText(t)
-	return c
+func (d *Dialog) SetState(state int) DialogI {
+	return d
 }
 
-func (c *Dialog) Title() string {
-	return c.titleBar.Text()
-}
-
-func (c *Dialog) SetState(state int) DialogI {
-	return c
-}
-
-func (c *Dialog) DrawingAttributes() *html.Attributes {
-	a := c.Panel.DrawingAttributes()
+func (d *Dialog) DrawingAttributes() *html.Attributes {
+	a := d.Panel.DrawingAttributes()
 	a.SetDataAttribute("grctl", "dialog")
 	return a
 }
 
-func (c *Dialog) AddButton(
+func (d *Dialog) AddButton(
 	label string,
 	id string,
 	options *DialogButtonOptions,
 ) page.ControlI {
-	btn := NewButton(c.buttonBar)
+	btn := NewButton(d.buttonBar)
 	btn.SetLabel(label)
 	if label == "" {
 		id = label
@@ -153,7 +154,7 @@ func (c *Dialog) AddButton(
 		}
 
 		if options.Validates {
-			//c.validators[id] = true
+			//d.validators[id] = true
 			btn.SetValidationType(page.ValidateContainer)
 		}
 
@@ -162,93 +163,93 @@ func (c *Dialog) AddButton(
 		}
 
 		if options.ConfirmationMessage == "" {
-			btn.OnClick(action.Trigger(c.ID(), DialogButtonEvent, id))
+			btn.OnClick(action.Trigger(d.ID(), DialogButtonEvent, id))
 		} else {
 			btn.OnClick(
 				action.Confirm(options.ConfirmationMessage),
-				action.Trigger(c.ID(), DialogButtonEvent, id),
+				action.Trigger(d.ID(), DialogButtonEvent, id),
 			)
 		}
 	}
 
-	c.Refresh()
+	d.Refresh()
 	return btn
 }
 
-func (c *Dialog) RemoveButton(id string) {
-	c.buttonBar.RemoveChild(id)
-	c.Refresh()
-	//delete(c.validators, id)
+func (d *Dialog) RemoveButton(id string) {
+	d.buttonBar.RemoveChild(id)
+	d.Refresh()
+	//delete(d.validators, id)
 
 }
 
-func (c *Dialog) RemoveAllButtons() {
-	c.buttonBar.RemoveChildren()
-	c.Refresh()
-	//delete(c.validators, id)
+func (d *Dialog) RemoveAllButtons() {
+	d.buttonBar.RemoveChildren()
+	d.Refresh()
+	//delete(d.validators, id)
 }
 
-func (c *Dialog) SetButtonVisible(id string, visible bool) {
-	if ctrl := c.buttonBar.Child(id); ctrl != nil {
+func (d *Dialog) SetButtonVisible(id string, visible bool) {
+	if ctrl := d.buttonBar.Child(id); ctrl != nil {
 		ctrl.SetVisible(false)
 	}
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (c *Dialog) SetButtonStyles(id string, a *html.Style) {
-	if ctrl := c.buttonBar.Child(id); ctrl != nil {
+func (d *Dialog) SetButtonStyles(id string, a *html.Style) {
+	if ctrl := d.buttonBar.Child(id); ctrl != nil {
 		ctrl.SetStyles(a)
 	}
 }
 
-func (c *Dialog) HasCloseBox() page.ControlI {
-	c.addCloseBox()
-	return c
+func (d *Dialog) HasCloseBox() page.ControlI {
+	d.addCloseBox()
+	return d
 }
 
-func (c *Dialog) addCloseBox() {
-	c.closeBox = NewButton(c.titleBar)
-	c.closeBox.AddClass("gr-dialog-close")
-	c.closeBox.SetText(`<i class="fa fa-times"></i>`)
-	c.closeBox.SetEscapeText(false)
-	c.closeBox.OnClick(action.Ajax(c.ID(), DialogClose))
+func (d *Dialog) addCloseBox() {
+	d.closeBox = NewButton(d.titleBar)
+	d.closeBox.AddClass("gr-dialog-close")
+	d.closeBox.SetText(`<i class="fa fa-times"></i>`)
+	d.closeBox.SetEscapeText(false)
+	d.closeBox.OnClick(action.Ajax(d.ID(), DialogClose))
 }
 
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog (by hiding it).
-func (c *Dialog) AddCloseButton(label string) {
-	btn := NewButton(c.buttonBar)
+func (d *Dialog) AddCloseButton(label string) {
+	btn := NewButton(d.buttonBar)
 	btn.SetLabel(label)
-	btn.OnClick(action.Trigger(c.ID(), event.DialogClosedEvent, nil))
+	btn.OnClick(action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 	// Note: We will also do the public doAction with a DialogCloseEvent
 }
 
-func (c *Dialog) Action(ctx context.Context, a page.ActionParams) {
+func (d *Dialog) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case DialogClose:
-		c.Close()
+		d.Close()
 	}
 }
 
-func (c *Dialog) Open() {
-	c.SetVisible(true)
-	c.isOpen = true
+func (d *Dialog) Open() {
+	d.SetVisible(true)
+	d.isOpen = true
 }
 
-func (c *Dialog) Close() {
-	c.SetVisible(false)
-	c.isOpen = false
-	parent := c.Parent()
+func (d *Dialog) Close() {
+	d.SetVisible(false)
+	d.isOpen = false
+	parent := d.Parent()
 	if len(parent.Children()) == 1 {
 		parent.SetVisible(false)
 	}
-	c.Remove()
+	d.Remove()
 }
 
-func (c *Dialog) SetDialogState(s int) *Dialog {
-	c.dialogState = s
-	c.Refresh()
-	return c
+func (d *Dialog) SetDialogState(s int) *Dialog {
+	d.dialogState = s
+	d.Refresh()
+	return d
 }
 
 /**

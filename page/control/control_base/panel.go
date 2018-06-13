@@ -15,6 +15,10 @@ type TemplateDrawer interface {
 	DrawTemplate(ctx context.Context, c page.ControlI, buf *bytes.Buffer) (err error)
 }
 
+type PanelI interface {
+	localPage.ControlI
+}
+
 // Panel is the base type for all panel-type controls. These controls are surrounded by a span or div, and can
 // have a template draw into the inner-html of the template.
 type Panel struct {
@@ -23,6 +27,10 @@ type Panel struct {
 	parsedTemplate *template.Template // a parsed template to use for drawing
 	goTemplateName string             // a named template from the global template pool
 	gotTemplate    TemplateDrawer     // a TemplateDrawer implementation
+}
+
+func (c *Panel) this() PanelI {
+	return c.Self.(PanelI)
 }
 
 func (c *Panel) SetGoTemplate(t string) {

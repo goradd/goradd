@@ -22,6 +22,11 @@ const (
 	ModalStaticBackdrop
 )
 
+type ModalI interface {
+	control.DialogI
+}
+
+
 // Modal is a bootstrap modal dialog.
 // To use a custom template in a bootstrap modal, add a Panel child element or subclass of a panel
 // child element. To use the grid system, add the container-fluid class to that embedded panel.
@@ -74,12 +79,16 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI) {
 	d.buttonBar = control.NewPanel(d)
 }
 
+func (d *Modal) this() ModalI {
+	return d.Self.(ModalI)
+}
+
 func (d *Modal) SetTitle(t string) control.DialogI {
 	if d.titleBar.title != t {
 		d.titleBar.title = t
 		d.titleBar.Refresh()
 	}
-	return d
+	return d.this()
 }
 
 func (d *Modal) SetHasCloseBox(h bool) control.DialogI {
@@ -87,7 +96,7 @@ func (d *Modal) SetHasCloseBox(h bool) control.DialogI {
 		d.titleBar.hasCloseBox = h
 		d.titleBar.Refresh()
 	}
-	return d
+	return d.this()
 }
 
 func (d *Modal) SetState(state int) control.DialogI {
@@ -107,21 +116,23 @@ func (d *Modal) SetState(state int) control.DialogI {
 	d.titleBar.RemoveClassesWithPrefix("bg-")
 	d.titleBar.RemoveClassesWithPrefix("text-")
 	d.titleBar.AddClass(class)
-	return d
+	return d.this()
 }
 
 
-func (d *Modal) SetBackdrop(b ModalBackdropType) {
+func (d *Modal) SetBackdrop(b ModalBackdropType) ModalI {
 	d.backdrop = b
 	d.Refresh()
+	return d.this()
 }
 
 func (d *Modal) Title() string {
 	return d.titleBar.title
 }
 
-func (d *Modal) AddTitlebarClass(class string) {
+func (d *Modal) AddTitlebarClass(class string) ModalI {
 	d.titleBar.AddClass(class)
+	return d.this()
 }
 
 func (d *Modal) DrawingAttributes() *html.Attributes {
@@ -138,7 +149,7 @@ func (d *Modal) AddButton(
 	label string,
 	id string,
 	options *control.DialogButtonOptions,
-)  {
+)  ModalI {
 	btn := NewButton(d.buttonBar)
 	btn.SetLabel(label)
 	if id == "" {
@@ -182,7 +193,7 @@ func (d *Modal) AddButton(
 	}
 
 	d.buttonBar.Refresh()
-	return
+	return d.this()
 }
 
 func (d *Modal) RemoveButton(id string) {
@@ -195,23 +206,27 @@ func (d *Modal) RemoveAllButtons() {
 	d.Refresh()
 }
 
-func (d *Modal) SetButtonVisible(id string, visible bool) {
+func (d *Modal) SetButtonVisible(id string, visible bool) ModalI {
 	if ctrl := d.buttonBar.Child(d.ID() + "_btn_" + id); ctrl != nil {
 		ctrl.SetVisible(false)
 	}
+
+	return d.this()
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (d *Modal) SetButtonStyles(id string, a *html.Style) {
+func (d *Modal) SetButtonStyle(id string, a *html.Style) ModalI {
 	if ctrl := d.buttonBar.Child(d.ID() + "_btn_" + id); ctrl != nil {
 		ctrl.SetStyles(a)
 	}
+	return d.this()
 }
 
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog (by hiding it).
-func (d *Modal) AddCloseButton(label string) {
+func (d *Modal) AddCloseButton(label string) ModalI {
 	d.AddButton(label,"", &control.DialogButtonOptions{IsClose:true})
+	return d.this()
 }
 
 func (d *Modal) PrivateAction(ctx context.Context, a page.ActionParams) {

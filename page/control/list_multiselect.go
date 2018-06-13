@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+
+type MultiselectListI interface {
+	page.ControlI
+}
+
 // MultiselectList is a generic list box which allows multiple selections. It is here for completeness, but is not used
 // very often since it doesn't present an intuitive interface and is very browser dependent on what is presented.
 // A Checkboxlist is better.
@@ -25,17 +30,21 @@ func NewMultiselectList(parent page.ControlI) *MultiselectList {
 	return l
 }
 
-func (l *MultiselectList) Init(self page.ControlI, parent page.ControlI) {
+func (l *MultiselectList) Init(self MultiselectListI, parent page.ControlI) {
 	l.Control.Init(self, parent)
 	l.ItemList = NewItemList(l)
 	l.selectedIds = map[string]bool{}
 	l.Tag = "select"
 }
 
-func (l *MultiselectList) SetSize(size int) *MultiselectList {
+func (l *MultiselectList) this() MultiselectListI {
+	return l.Self.(MultiselectListI)
+}
+
+func (l *MultiselectList) SetSize(size int) MultiselectListI {
 	l.SetAttribute("size", strconv.Itoa(size))
 	l.Refresh()
-	return l
+	return l.this()
 }
 
 func (l *MultiselectList) Size() int {

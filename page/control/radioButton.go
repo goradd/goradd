@@ -6,6 +6,11 @@ import (
 	"github.com/spekary/goradd/page/control/control_base"
 )
 
+type RadioButtonI interface {
+	control_base.CheckboxI
+}
+
+
 // RadioButton is a standard html radio button. You can optionally specify a group name for the radiobutton to belong
 // to and the browser will make sure only one item in the group is selected.
 type RadioButton struct {
@@ -17,6 +22,10 @@ func NewRadioButton(parent page.ControlI) *RadioButton {
 	c := &RadioButton{}
 	c.Init(c, parent)
 	return c
+}
+
+func (c *RadioButton) this() RadioButtonI {
+	return c.Self.(RadioButtonI)
 }
 
 func (c *RadioButton) DrawingAttributes() *html.Attributes {
@@ -40,17 +49,17 @@ func (c *RadioButton) UpdateFormValues(ctx *page.Context) {
 	}
 }
 
-func (c *RadioButton) SetGroup(g string) page.ControlI {
+func (c *RadioButton) SetGroup(g string) RadioButtonI {
 	c.group = g
 	c.Refresh()
-	return c.This()
+	return c.this()
 }
 
 func (c *RadioButton) Group() string {
 	return c.group
 }
 
-func (c *RadioButton) SetChecked(v bool) page.ControlI {
+func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 	if c.group != "" && v {
 		if c.Checked() != v {
 			c.SetCheckedNoRefresh(v)
@@ -60,5 +69,5 @@ func (c *RadioButton) SetChecked(v bool) page.ControlI {
 	} else {
 		c.Checkbox.SetChecked(v)
 	}
-	return c.This()
+	return c.this()
 }

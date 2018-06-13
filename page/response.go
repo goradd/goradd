@@ -174,7 +174,7 @@ func (r *Response) ExecuteJsFunction(functionName string, priority Priority, arg
 	}
 }
 
-// One time add of style sheets, to be used by Form only for last minute style sheet injection.
+// One time add of style sheets, to be used by FormBase only for last minute style sheet injection.
 func (r *Response) addStyleSheets(styleSheets ...string) {
 	if r.styleSheets == nil {
 		r.styleSheets = types.NewOrderedStringMap()

@@ -233,6 +233,13 @@ func (c *Control) Init(self ControlI, parent ControlI) {
 	c.htmlEscapeText = true // default to encoding the text portion. Explicitly turn this off if you need something else
 }
 
+
+// this() supports object oriented features by giving easy access to the virtual function interface
+// Subclasses should provide a duplicate. Calls that implement chaining should return the result of this function.
+func (c *Control) this() ControlI {
+	return c.Self.(ControlI)
+}
+
 // Restore is called after the control has been deserialized. It creates any required data structures
 // that are not saved in serialization.
 func (c *Control) Restore(self ControlI) {
@@ -243,10 +250,6 @@ func (c *Control) Restore(self ControlI) {
 	if c.wrapperAttributes == nil {
 		c.wrapperAttributes = html.NewAttributes()
 	}
-}
-
-func (c *Control) This() ControlI {
-	return c.Self.(ControlI)
 }
 
 // SetId sets the control's internal id, and the id that appears in html. Normally, goradd will create an id for you.
@@ -289,7 +292,7 @@ func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 	// Because we may be rerendering a parent control, we need to make sure all "child" controls are marked as NOT being on the page.
 	if c.children != nil {
 		for _, child := range c.children {
-			child.markOnPage(false)
+			child.control().markOnPage(false)
 		}
 	}
 
@@ -303,7 +306,7 @@ func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// TODO: Capture errors and panics, writing what we can to the buffer on error
 
-	if err = c.This().PreRender(ctx, buf); err != nil {
+	if err = c.this().PreRender(ctx, buf); err != nil {
 		return err
 	}
 
@@ -312,9 +315,9 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if c.isHidden {
 		// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
 		// To fix This, we create an empty, invisible control in the place where we would normally draw
-		h = "<span id=\"" + c.This().ID() + "\" style=\"display:none;\" data-grctl></span>\n"
+		h = "<span id=\"" + c.this().ID() + "\" style=\"display:none;\" data-grctl></span>\n"
 	} else {
-		h = c.This().DrawTag(ctx)
+		h = c.this().DrawTag(ctx)
 	}
 
 	if !config.Minify {
@@ -323,15 +326,15 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	}
 
 	if c.wrapper != nil && !c.isHidden {
-		c.wrapper.Wrap(ctx, c.This(), h, buf)
+		c.wrapper.Wrap(ctx, c.this(), h, buf)
 	} else {
 		buf.WriteString(h)
 	}
 
 	response := c.Form().Response()
-	c.This().PutCustomScript(ctx, response)
+	c.this().PutCustomScript(ctx, response)
 	c.GetActionScripts(response)
-	c.This().PostRender(ctx, buf)
+	c.this().PostRender(ctx, buf)
 	return
 }
 
@@ -365,7 +368,7 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 			buf := GetBuffer()
 			defer PutBuffer(buf)
 
-			err = c.This().Draw(ctx, buf)
+			err = c.this().Draw(ctx, buf)
 			response.SetControlHtml(c.ID(), buf.String())
 		}()
 	} else {
@@ -408,9 +411,9 @@ func (c *Control) PostRender(ctx context.Context, buf *bytes.Buffer) (err error)
 func (c *Control) DrawTag(ctx context.Context) string {
 	var ctrl string
 
-	attributes := c.This().DrawingAttributes()
+	attributes := c.this().DrawingAttributes()
 	if c.wrapper == nil {
-		if a := c.This().WrapperAttributes(); a != nil {
+		if a := c.this().WrapperAttributes(); a != nil {
 			attributes.Merge(a)
 		}
 	}
@@ -420,7 +423,7 @@ func (c *Control) DrawTag(ctx context.Context) string {
 	} else {
 		buf := GetBuffer()
 		defer PutBuffer(buf)
-		if err := c.This().DrawInnerHtml(ctx, buf); err != nil {
+		if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
 			panic(err)
 		}
 		if err := c.RenderAutoControls(ctx, buf); err != nil {
@@ -466,7 +469,7 @@ func (c *Control) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err erro
 // Returns the inner text of the control, if the control is not a self terminating (void) control. Sub-controls can
 // override this.
 func (c *Control) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = c.This().DrawTemplate(ctx, buf); err == nil {
+	if err = c.this().DrawTemplate(ctx, buf); err == nil {
 		return
 	} else if appErr, ok := err.(FrameworkError); !ok || appErr.Err != FrameworkErrNoTemplate {
 		return
@@ -475,11 +478,11 @@ func (c *Control) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err err
 	err = nil
 
 	if c.children != nil && len(c.children) > 0 {
-		err = c.This().DrawChildren(ctx, buf)
+		err = c.this().DrawChildren(ctx, buf)
 		return
 	}
 
-	c.This().DrawText(ctx, buf)
+	c.this().DrawText(ctx, buf)
 
 	return
 }
@@ -511,7 +514,7 @@ func (c *Control) DrawText(ctx context.Context, buf *bytes.Buffer) {
 // With sets the wrapper style for the control, essentially setting the wrapper template function that will be used.
 func (c *Control) With(w WrapperI) ControlI {
 	c.wrapper = w
-	return c.This() // for chaining
+	return c.this() // for chaining
 
 }
 
@@ -534,7 +537,7 @@ func (c *Control) SetAttribute(name string, val interface{}) ControlI {
 		v2 := c.attributes.Get(name)
 		c.AddRenderScript("attr", name, v2)
 	}
-	return c.This()
+	return c.this()
 }
 
 func (c *Control) SetWrapperAttribute(name string, val interface{}) ControlI {
@@ -551,7 +554,7 @@ func (c *Control) SetWrapperAttribute(name string, val interface{}) ControlI {
 		// TODO: Make This an attribute script instead of redrawing the whole control. Will prevent having to redraw the whole control
 		c.isModified = true
 	}
-	return c.This()
+	return c.this()
 }
 
 func (c *Control) Attribute(name string) string {
@@ -656,12 +659,12 @@ func (c *Control) Children() []ControlI {
 // not be part of the page, but the child items will still be accessible through the control itself.
 func (c *Control) Remove() {
 	if c.parent != nil {
-		c.parent.control().removeChild(c.This().ID(), true)
+		c.parent.control().removeChild(c.this().ID(), true)
 		if !c.shouldAutoRender {
 			//c.Refresh() // TODO: Do this through ajax
 		}
 	} else {
-		c.page.removeControl(c.This().ID())
+		c.page.removeControl(c.this().ID())
 	}
 }
 
@@ -714,12 +717,12 @@ func (c *Control) SetParent(newParent ControlI) {
 	}
 	c.parent = newParent
 	if c.parent != nil {
-		c.parent.addChildControl(c.This())
+		c.parent.control().addChildControl(c.this())
 		if !c.shouldAutoRender {
 			// TODO: insert into DOM  instead of c.parent.Refresh()
 		}
 	}
-	c.page.addControl(c.This())
+	c.page.addControl(c.this())
 
 	if c.shouldAutoRender && newParent != nil {
 		//c.Refresh()
@@ -767,7 +770,7 @@ func (c *Control) Refresh() {
 
 func (c *Control) SetRequired(r bool) ControlI {
 	c.isRequired = r
-	return c.This()
+	return c.this()
 }
 
 func (c *Control) Required() bool {
@@ -807,7 +810,7 @@ func (c *Control) SetText(t string) ControlI {
 		c.text = t
 		c.Refresh()
 	}
-	return c.This()
+	return c.this()
 }
 
 func (c *Control) Text() string {
@@ -819,7 +822,7 @@ func (c *Control) SetLabel(n string) ControlI {
 		c.label = n
 		c.Refresh()
 	}
-	return c.This()
+	return c.this()
 }
 
 func (c *Control) Label() string {
@@ -831,7 +834,7 @@ func (c *Control) SetInstructions(i string) ControlI {
 		c.instructions = i
 		c.Refresh()
 	}
-	return c.This()
+	return c.this()
 }
 
 func (c *Control) Instructions() string {
@@ -859,7 +862,7 @@ func (c *Control) SetHasFor(v bool) ControlI {
 		c.hasFor = v
 		c.Refresh()
 	}
-	return c.This()
+	return c.this()
 }
 
 func (c *Control) SetShouldAutoRender(r bool) {
@@ -920,7 +923,7 @@ func (c *Control) Off() {
 // handler after the action is triggered.
 func (c *Control) SetActionValue(v interface{}) ControlI {
 	c.actionValue = v
-	return c.This()
+	return c.this()
 }
 
 // ActionValue returns the control's action value
@@ -945,14 +948,14 @@ func (c *Control) GetActionScripts(r *Response) {
 	// Render actions
 	if c.privateEvents != nil {
 		for id, e := range c.privateEvents {
-			s := e.RenderActions(c.This(), id)
+			s := e.RenderActions(c.this(), id)
 			r.ExecuteJavaScript(s, PriorityStandard)
 		}
 	}
 
 	if c.events != nil {
 		for id, e := range c.events {
-			s := e.RenderActions(c.This(), id)
+			s := e.RenderActions(c.this(), id)
 			r.ExecuteJavaScript(s, PriorityStandard)
 		}
 	}
@@ -963,7 +966,7 @@ func (c *Control) resetDrawingFlags() {
 	c.wasRendered = false
 	c.isModified = false
 
-	if children := c.This().Children(); children != nil {
+	if children := c.this().Children(); children != nil {
 		for _, child := range children {
 			child.control().resetDrawingFlags()
 		}
@@ -980,7 +983,7 @@ func (c *Control) resetValidation() {
 		c.Refresh() // TODO: Handle the above with javascript calls so base control does not have to be redrawn
 	}
 
-	if children := c.This().Children(); children != nil {
+	if children := c.this().Children(); children != nil {
 		for _, child := range children {
 			child.control().resetValidation()
 		}
@@ -998,7 +1001,7 @@ func (c *Control) WrapEvent(eventName string, selector string, eventJs string) s
 
 // updateValues is called by the form during event handling. It reflexively updates the values in each of its child controls
 func (c *Control) updateValues(ctx *Context) {
-	c.This().UpdateFormValues(ctx)
+	c.this().UpdateFormValues(ctx)
 	children := c.Children()
 	if children != nil {
 		for _, child := range children {
@@ -1030,7 +1033,7 @@ func (c *Control) doAction(ctx context.Context) {
 	}
 
 	if (e.event().validationOverride != ValidateNone && e.event().validationOverride != ValidateDefault) ||
-		(e.event().validationOverride == ValidateDefault && c.This().ValidationType(e) != ValidateNone) {
+		(e.event().validationOverride == ValidateDefault && c.this().ValidationType(e) != ValidateNone) {
 		c.Form().control().resetValidation()
 	}
 
@@ -1105,7 +1108,7 @@ func (c *Control) SetValidationTargets(controlIDs ...string) {
 
 // passesValidation checks to see if the event requires validation, and if so, if it passes the required validation
 func (c *Control) passesValidation(ctx context.Context, event EventI) (valid bool) {
-	validation := c.This().ValidationType(event)
+	validation := c.this().ValidationType(event)
 
 	if v := event.event().validationOverride; v != ValidateDefault {
 		validation = v
@@ -1209,7 +1212,7 @@ func (c *Control) validateSiblings(ctx context.Context) bool {
 func (c *Control) validateChildren(ctx context.Context) bool {
 
 	if c.children == nil || len(c.children) == 0 {
-		return c.This().Validate(ctx)
+		return c.this().Validate(ctx)
 	}
 
 	var isValid = true
@@ -1219,7 +1222,7 @@ func (c *Control) validateChildren(ctx context.Context) bool {
 		}
 	}
 	if isValid {
-		isValid = c.This().Validate(ctx)	// validate self after validating all children, because self might want to invalidate child items
+		isValid = c.this().Validate(ctx)	// validate self after validating all children, because self might want to invalidate child items
 	}
 
 	return isValid
@@ -1249,7 +1252,7 @@ func (c *Control) validateSiblingsAndChildren(ctx context.Context) bool {
 				}
 			}
 			if childrenValid {
-				isValid = c.This().Validate(ctx) // only validate self if children validate
+				isValid = c.this().Validate(ctx) // only validate self if children validate
 			} else {
 				isValid = false
 			}
@@ -1274,7 +1277,7 @@ func (c *Control) writeState(ctx context.Context) {
 
 	if c.shouldSaveState {
 		state = types.NewMap()
-		c.This().MarshalState(state)
+		c.this().MarshalState(state)
 		if state.Len() > 0 {
 			state.Set(sessionControlTypeState, c.Type()) // so we can make sure the type is the same when we read, in situations where control Ids are dynamic
 			i := session.Get(ctx, sessionControlStates)
@@ -1325,7 +1328,7 @@ func (c *Control) readState(ctx context.Context) {
 				return // types are not equal, ids must have changed
 			}
 
-			c.This().UnmarshalState(state)
+			c.this().UnmarshalState(state)
 		}
 	}
 

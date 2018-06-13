@@ -34,7 +34,7 @@ type callbackAction struct {
 	async              bool
 }
 
-func (a *callbackAction) This() CallbackActionI {
+func (a *callbackAction) this() CallbackActionI {
 	return a.Self.(CallbackActionI)
 }
 
@@ -47,7 +47,7 @@ func (a *callbackAction) ID() int {
 // javascript.Closures will be called immediately with a (this) parameter.
 func (a *callbackAction) ActionValue(v interface{}) CallbackActionI {
 	a.actionValue = v
-	return a.This()
+	return a.this()
 }
 
 func (a *callbackAction) GetActionValue() interface{} {
@@ -56,12 +56,12 @@ func (a *callbackAction) GetActionValue() interface{} {
 
 func (a *callbackAction) Validator(v interface{}) CallbackActionI {
 	a.validationOverride = v
-	return a.This()
+	return a.this()
 }
 
 func (a *callbackAction) Async() CallbackActionI {
 	a.async = true
-	return a.This()
+	return a.this()
 }
 
 // Assign the destination control id. You can specify a sub id which indicates that the action should be sent to something
@@ -75,7 +75,7 @@ func (a *callbackAction) DestinationControlID(id string) CallbackActionI {
 	} else {
 		a.destControlId = id
 	}
-	return a.This()
+	return a.this()
 }
 
 func (a *callbackAction) GetDestinationControlID() string {

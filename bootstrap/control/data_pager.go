@@ -8,6 +8,10 @@ import (
 	"strconv"
 )
 
+type DataPagerI interface {
+	control.DataPagerI
+}
+
 // DataPager is a toolbar designed to aid scrolling through a large set of data. It is implemented using Aria design
 // best practices. It is designed to be paired with a Table or DataRepeater to aid in navigating through the data.
 // It is similar to a Paginator, but a paginator is for navigating through a whole series of pages and not just for
@@ -31,6 +35,10 @@ func (d *DataPager) Init(self page.ControlI, parent page.ControlI, paginatedCont
 	d.ButtonStyle = ButtonStyleOutlineSecondary
 	d.HighlightStyle = ButtonStylePrimary
 	d.SetAttribute("aria-label", "Data pager")
+}
+
+func (d *DataPager) this() DataPagerI {
+	return d.Self.(DataPagerI)
 }
 
 func (l *DataPager) DrawingAttributes() *html.Attributes {

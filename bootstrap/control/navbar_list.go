@@ -2,6 +2,7 @@ package control
 
 import (
 	"github.com/spekary/goradd/page"
+	localPage "goradd/page"
 	"github.com/spekary/goradd/html"
 	"bytes"
 	"github.com/spekary/goradd/page/control"
@@ -12,8 +13,12 @@ import (
 	"github.com/spekary/goradd/javascript"
 )
 
+type NavbarListI interface {
+	localPage.ControlI
+}
+
 type NavbarList struct {
-	page.Control
+	localPage.Control
 	control.ItemList
 	subItemTag string
 	control.DataManager
@@ -36,7 +41,7 @@ func NewNavbarList(parent page.ControlI) *NavbarList {
 	return t
 }
 
-func (l *NavbarList) Init(self page.ControlI, parent page.ControlI) {
+func (l *NavbarList) Init(self NavbarListI, parent page.ControlI) {
 	l.Control.Init(self, parent)
 	l.Tag = "ul"
 	l.subItemTag = "li"
@@ -44,6 +49,9 @@ func (l *NavbarList) Init(self page.ControlI, parent page.ControlI) {
 	l.Proxy.On(event.Click(), action.Trigger(l.ID(), "gr-bs-navbarselect", javascript.JsCode("$j(this).data('grAv')")))
 }
 
+func (l *NavbarList) this() NavbarListI {
+	return l.Self.(NavbarListI)
+}
 
 func (l *NavbarList) DrawTag(ctx context.Context) string {
 	if l.DataManager.HasDataProvider() {

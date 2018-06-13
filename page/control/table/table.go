@@ -64,18 +64,22 @@ func (t *Table) Init(self page.ControlI, parent page.ControlI) {
 	t.On(event.TableSort(), action.Ajax(t.ID(), SortClick), action.PrivateAction{})
 }
 
+func (t *Table) this() TableI {
+	return t.Self.(TableI)
+}
+
 func (t *Table) SetCaption(caption interface{}) {
 	t.caption = caption
 }
 
-func (t *Table) SetHeaderRowCount(count int) *Table {
+func (t *Table) SetHeaderRowCount(count int) TableI {
 	t.headerRowCount = count
-	return t
+	return t.this()
 }
 
-func (t *Table) SetFooterRowCount(count int) *Table {
+func (t *Table) SetFooterRowCount(count int) TableI {
 	t.footerRowCount = count
-	return t
+	return t.this()
 }
 
 func (t *Table) DrawTag(ctx context.Context) string {
@@ -96,7 +100,7 @@ func (t *Table) DrawingAttributes() *html.Attributes {
 }
 
 func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	var t2 = t.This().(TableI) // Get the sub class so we call into its hooks for drawing
+	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
 
 	buf1 := page.GetBuffer()
 	defer page.PutBuffer(buf1)
@@ -173,7 +177,7 @@ func (t *Table) drawColumnTags(ctx context.Context, buf *bytes.Buffer) (err erro
 }
 
 func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
-	var t2 = t.This().(TableI) // Get the sub class so we call into its hooks for drawing
+	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
 
 	buf1 := page.GetBuffer()
 	defer page.PutBuffer(buf1)
@@ -224,7 +228,7 @@ func (t *Table) GetFooterRowAttributes(row int) *html.Attributes {
 }
 
 func (t *Table) drawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error) {
-	var t2 = t.This().(TableI) // Get the sub class so we call into its hooks for drawing
+	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
 	buf1 := page.GetBuffer()
 	defer page.PutBuffer(buf1)
 	for i, col := range t.columns {

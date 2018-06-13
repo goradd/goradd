@@ -15,6 +15,12 @@ const (
 	AllClickAction = iota + 1000
 )
 
+type CheckboxColumnI interface {
+	ColumnI
+	CheckboxAttributes(data interface{}) *html.Attributes
+}
+
+
 // CheckboxColumn is a table that contains a checkbox. You must provide it a CheckboxProvider to connect ids and default data
 // to the checkbox. Use Changes() to get the list of checkbox ids that have changed since the list was initially drawn.
 type CheckboxColumn struct {
@@ -22,11 +28,6 @@ type CheckboxColumn struct {
 	showCheckAll bool
 	checkboxer   CheckboxProvider
 	changes      map[string]bool // records changes
-}
-
-type CheckboxColumnI interface {
-	ColumnI
-	CheckboxAttributes(data interface{}) *html.Attributes
 }
 
 // NewChecboxColumn creates a new table table that contains a checkbox. You must provide the id of the parent table,
@@ -50,7 +51,7 @@ func (c *CheckboxColumn) Init() {
 	c.changes = map[string]bool{}
 }
 
-func (c *CheckboxColumn) This() CheckboxColumnI {
+func (c *CheckboxColumn) this() CheckboxColumnI {
 	return c.Self.(CheckboxColumnI)
 }
 
@@ -61,7 +62,7 @@ func (c *CheckboxColumn) SetShowCheckAll(s bool) *CheckboxColumn {
 
 func (c *CheckboxColumn) HeaderCellHtml(ctx context.Context, row int, col int) (h string) {
 	if c.showCheckAll {
-		a := c.This().CheckboxAttributes(nil)
+		a := c.this().CheckboxAttributes(nil)
 		a.Set("type", "checkbox")
 		h = html.RenderVoidTag("input", a)
 	}
@@ -108,7 +109,7 @@ func (c *CheckboxColumn) CheckboxAttributes(data interface{}) *html.Attributes {
 }
 
 func (c *CheckboxColumn) CellText(ctx context.Context, row int, col int, data interface{}) string {
-	a := c.This().CheckboxAttributes(data)
+	a := c.this().CheckboxAttributes(data)
 	a.Set("type", "checkbox")
 	return html.RenderVoidTag("input", a)
 }
@@ -162,7 +163,7 @@ func (c *CheckboxColumn) allClick(id string, checked bool, row int, col int) {
 		}
 		// Fire javascript to check all visible
 		//js := fmt.Sprintf(`$j('input[data-gr-checkcol]').prop('checked', %t)`, checked)
-		//c.parentTable.Form().Response().ExecuteJavaScript(js, page.PriorityStandard)
+		//c.parentTable.FormBase().Response().ExecuteJavaScript(js, page.PriorityStandard)
 		c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
 
 	} else {

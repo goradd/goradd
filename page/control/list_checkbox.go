@@ -15,9 +15,9 @@ const (
 	VerticalItemDirection                 = 1
 )
 
-// Lets us create subclasses that change how items are rendered. This is used by the radio list.
-type checkboxListI interface {
-	renderItem(tag string, item ListItemI) (h string)
+type CheckboxListI interface {
+	MultiselectListI
+	RenderItem(tag string, item ListItemI) (h string)
 }
 
 // CheckboxList is a multi-select control that presents its choices as a list of checkboxes.
@@ -46,31 +46,35 @@ func (l *CheckboxList) Init(self page.ControlI, parent page.ControlI) {
 	l.labelDrawingMode = page.DefaultCheckboxLabelDrawingMode
 }
 
-func (l *CheckboxList) SetColumns(columns int) *CheckboxList {
+func (l *CheckboxList) this() CheckboxListI {
+	return l.Self.(CheckboxListI)
+}
+
+func (l *CheckboxList) SetColumns(columns int) CheckboxListI {
 	if l.columns <= 0 {
 		panic("Columns must be at least 1.")
 	}
 	l.columns = columns
 	l.Refresh()
-	return l
+	return l.this()
 }
 
-func (l *CheckboxList) SetDirection(direction ItemDirection) *CheckboxList {
+func (l *CheckboxList) SetDirection(direction ItemDirection) CheckboxListI {
 	l.direction = direction
 	l.Refresh()
-	return l
+	return l.this()
 }
 
-func (l *CheckboxList) SetLabelDrawingMode(mode html.LabelDrawingMode) *CheckboxList {
+func (l *CheckboxList) SetLabelDrawingMode(mode html.LabelDrawingMode) CheckboxListI {
 	l.labelDrawingMode = mode
 	l.Refresh()
-	return l
+	return l.this()
 }
 
-func (l *CheckboxList) SetIsScrolling(s bool) *CheckboxList {
+func (l *CheckboxList) SetIsScrolling(s bool) CheckboxListI {
 	l.isScrolling = s
 	l.Refresh()
-	return l
+	return l.this()
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
@@ -130,13 +134,13 @@ func (l *CheckboxList) verticalHtmlItems(items []ListItemI) (h []string) {
 			h = append(h, html.RenderTag(tag, attributes, item.Label()))
 			h = append(h, subItems...)
 		} else {
-			h = append(h, l.This().(checkboxListI).renderItem("div", item))
+			h = append(h, l.this().RenderItem("div", item))
 		}
 	}
 	return
 }
 
-func (l *CheckboxList) renderItem(tag string, item ListItemI) (h string) {
+func (l *CheckboxList) RenderItem(tag string, item ListItemI) (h string) {
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", item.ID())
@@ -170,7 +174,7 @@ func (l *CheckboxList) horizontalHtml(items []ListItemI) (h string) {
 			h += html.RenderTag(tag, attributes, item.Label())
 			h += l.horizontalHtml(item.ListItems())
 		} else {
-			rowHtml += l.This().(checkboxListI).renderItem("span", item)
+			rowHtml += l.this().RenderItem("span", item)
 			itemNum++
 			if itemNum == l.columns {
 				// output a row

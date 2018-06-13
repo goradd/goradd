@@ -45,6 +45,10 @@ const (
 	NavbarCollapsedBrandHidden
 )
 
+type NavbarI interface {
+	localPage.ControlI
+}
+
 // Navbar is a bootstrap navbar object. Use SetText() to set the logo text of the navbar, and
 // SetEscapeText() to false to turn off encoding if needed. Add child controls to populate it.
 type Navbar struct {
@@ -81,26 +85,30 @@ func (b *Navbar) Init(self page.ControlI, parent page.ControlI) {
 	app.LoadBootstrap(b.Form())
 }
 
-func (b *Navbar) SetNavbarStyle(style NavbarStyle) *Navbar {
+func (b *Navbar) this() NavbarI {
+	return b.Self.(NavbarI)
+}
+
+func (b *Navbar) SetNavbarStyle(style NavbarStyle) NavbarI {
 	b.style = style
-	return b
+	return b.this()
 }
 
-func (b *Navbar) SetBackgroundClass(c BackgroundColorClass) *Navbar {
+func (b *Navbar) SetBackgroundClass(c BackgroundColorClass) NavbarI {
 	b.background = c
-	return b
+	return b.this()
 }
 
-func (b *Navbar) SetHeaderAnchor(a string) *Navbar {
+func (b *Navbar) SetHeaderAnchor(a string) NavbarI {
 	b.headerAnchor = a
-	return b
+	return b.this()
 }
 
 // SetBrandPlacement places the brand left, right, or hidden (meaning inside the collapse area).
 // The expand button location will be affected by the placement
-func (b *Navbar) SetBrandPlacement(p NavbarCollapsedBrandPlacement) *Navbar {
+func (b *Navbar) SetBrandPlacement(p NavbarCollapsedBrandPlacement) NavbarI {
 	b.brandLocation = p
-	return b
+	return b.this()
 }
 
 func (b *Navbar) DrawingAttributes() *html.Attributes {
