@@ -59,5 +59,5 @@ func (c *Panel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
 		}
 		return c.parsedTemplate.Execute(buf, c)
 	}
-	return page.NewAppErr(page.AppErrNoTemplate)
+	return page.NewFrameworkError(page.FrameworkErrNoTemplate)
 }

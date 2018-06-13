@@ -45,7 +45,7 @@ func Confirm(m interface{}) *confirmAction {
 }
 
 func (a *confirmAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`if (!window.confirm(%s)) return false;`, javascript.ToJavaScript(a.message))
+	return fmt.Sprintf("if (!window.confirm(%s)) return false;\n", javascript.ToJavaScript(a.message))
 }
 
 type blurAction struct {

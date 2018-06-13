@@ -30,8 +30,8 @@ func (l *SelectList) Init(self page.ControlI, parent page.ControlI) {
 	l.Tag = "select"
 }
 
-func (l *SelectList) Validate() bool {
-	if v := l.Validate(); !v {
+func (l *SelectList) Validate(ctx context.Context) bool {
+	if v := l.Validate(ctx); !v {
 		return false
 	}
 

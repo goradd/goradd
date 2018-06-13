@@ -13,6 +13,8 @@ type EventI interface {
 	Selector(string) EventI
 	Blocking() EventI
 	Terminating() EventI
+	Validate(v ValidationType) EventI
+	ValidationTargets(targets ...string) EventI
 	ActionValue(interface{}) EventI
 	GetActionValue() interface{}
 	AddActions(a ...action2.ActionI)
@@ -109,13 +111,13 @@ func (e *Event) GetActionValue() interface{} {
 	return e.actionValue
 }
 
-// Validate overrides the controls validation setting just for This event.
+// Validate overrides the controls validation setting just for this event.
 func (e *Event) Validate(v ValidationType) EventI {
 	e.validationOverride = v
 	return e
 }
 
-// ValidationTargets overrides the control's validation targets just for This event.
+// ValidationTargets overrides the control's validation targets just for this event.
 func (e *Event) ValidationTargets(targets ...string) EventI {
 	e.validationTargetsOverride = targets
 	return e

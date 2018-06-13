@@ -46,23 +46,22 @@ const (
 	DialogClosed
 )
 
-const DialogButtonEvent = "gr-dlgbtn"
-
-
 func NewModal(parent page.ControlI) *Modal {
 	d := &Modal{}
-	d.Init(d, parent) // parent is always the overlay
+	d.Init(d, parent)
 	return d
 }
 
 func (d *Modal) Init(self page.ControlI, parent page.ControlI) {
 	d.Panel.Init(self, parent)
 	d.Tag = "div"
+	d.SetShouldAutoRender(true)
 
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
-	d.On(event.Event("hide.bs.modal"), action.Trigger(d.ID(), event.DialogClosingEvent, nil))
-	d.On(event.Event("hidden.bs.modal"), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
-	d.On(event.Event("hidden.bs.modal"), action.Ajax(d.ID(), DialogClosed), action.PrivateAction{})
+	d.SetBlockParentValidation(true)
+	d.On(event.Event("hide.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosingEvent, nil))
+	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
+	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Ajax(d.ID(), DialogClosed), action.PrivateAction{})
 	app.LoadBootstrap(d.Form())
 	d.Form().AddStyleSheetFile(config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css", nil)
 
@@ -75,23 +74,54 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI) {
 	d.buttonBar = control.NewPanel(d)
 }
 
-func (d *Modal) SetTitle(t string) *Modal {
-	d.titleBar.title = t
+func (d *Modal) SetTitle(t string) control.DialogI {
+	if d.titleBar.title != t {
+		d.titleBar.title = t
+		d.titleBar.Refresh()
+	}
 	return d
 }
 
-func (d *Modal) SetHasCloseBox(h bool) *Modal {
-	d.titleBar.hasCloseBox = h
+func (d *Modal) SetHasCloseBox(h bool) control.DialogI {
+	if d.titleBar.hasCloseBox != h {
+		d.titleBar.hasCloseBox = h
+		d.titleBar.Refresh()
+	}
 	return d
 }
 
-// SetBack
+func (d *Modal) SetState(state int) control.DialogI {
+	var class string
+	switch state {
+	case control.DialogStateDefault:
+	class = BackgroundColorNone + " " + TextColorBody
+	case control.DialogStateWarning:
+		class = BackgroundColorWarning + " " + TextColorBody
+	case control.DialogStateError:
+		class = BackgroundColorDanger + " " + TextColorLight
+	case control.DialogStateSuccess:
+		class = BackgroundColorSuccess + " " + TextColorLight
+	case control.DialogStateInfo:
+		class = BackgroundColorInfo + " " + TextColorLight
+	}
+	d.titleBar.RemoveClassesWithPrefix("bg-")
+	d.titleBar.RemoveClassesWithPrefix("text-")
+	d.titleBar.AddClass(class)
+	return d
+}
+
+
 func (d *Modal) SetBackdrop(b ModalBackdropType) {
 	d.backdrop = b
+	d.Refresh()
 }
 
 func (d *Modal) Title() string {
 	return d.titleBar.title
+}
+
+func (d *Modal) AddTitlebarClass(class string) {
+	d.titleBar.AddClass(class)
 }
 
 func (d *Modal) DrawingAttributes() *html.Attributes {
@@ -133,11 +163,11 @@ func (d *Modal) AddButton(
 		if options.IsClose {
 			btn.SetAttribute("data-dismiss", "modal") // make it a close button
 		} else if options.ConfirmationMessage == "" {
-			btn.OnClick(action.Trigger(d.ID(), DialogButtonEvent, id))
+			btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
 		} else {
-			btn.OnClick(
+			btn.On(event.Click(),
 				action.Confirm(options.ConfirmationMessage),
-				action.Trigger(d.ID(), DialogButtonEvent, id),
+				action.Trigger(d.ID(), event.DialogButtonEvent, id),
 			)
 		}
 
@@ -151,7 +181,7 @@ func (d *Modal) AddButton(
 		}
 	}
 
-	d.Refresh()
+	d.buttonBar.Refresh()
 	return
 }
 
@@ -184,7 +214,7 @@ func (d *Modal) AddCloseButton(label string) {
 	d.AddButton(label,"", &control.DialogButtonOptions{IsClose:true})
 }
 
-func (d *Modal) Action(ctx context.Context, a page.ActionParams) {
+func (d *Modal) PrivateAction(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case DialogClosed:
 		d.closed()
@@ -192,12 +222,17 @@ func (d *Modal) Action(ctx context.Context, a page.ActionParams) {
 }
 
 func (d *Modal) Open() {
-	d.SetVisible(true)
+	if d.Parent() == nil {
+		d.SetParent(d.Form())	// This is a saved modal which has previously been created and removed. Insert it back into the form.
+	}
+	//d.SetVisible(true)
 	d.isOpen = true
+	//d.Refresh()
+	d.AddRenderScript("modal", "show")
 }
 
 func (d *Modal) Close() {
-	d.Form().Response().ExecuteControlCommand(d.ID(), "modal", page.PriorityStandard, "hide")
+	d.Form().Response().ExecuteControlCommand(d.ID(), "modal", page.PriorityLow, "hide")
 }
 
 
@@ -224,6 +259,7 @@ func (d *Modal) PutCustomScript(ctx context.Context, response *page.Response) {
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }
 
+
 /**
 Alert creates a message dialog.
 
@@ -234,7 +270,7 @@ If you specify more than one button, the first button will be the default button
 this case, you will need to detect the button by adding a On(event.DialogButton(), action) to the dialog returned.
 You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
 */
-func Alert(form page.FormI, message string, buttons interface{}) *Modal {
+func BootstrapAlert(form page.FormI, message string, buttons interface{}) control.DialogI {
 	dlg := NewModal(form)
 	dlg.SetText(message)
 	if buttons != nil {
@@ -261,7 +297,6 @@ func Alert(form page.FormI, message string, buttons interface{}) *Modal {
 
 
 
-
 type TitleBar struct {
 	control.Panel
 	hasCloseBox bool
@@ -272,4 +307,8 @@ func NewTitleBar(parent page.ControlI) *TitleBar {
 	d := &TitleBar{}
 	d.Panel.Init(d, parent)
 	return d
+}
+
+func init() {
+	control.RegisterAlertFunc(BootstrapAlert)
 }

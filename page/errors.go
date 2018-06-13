@@ -18,7 +18,7 @@ type ErrorPageFuncType func(ctx context.Context, html string, err *Error, buf *b
 
 var ErrorPageFunc ErrorPageFuncType
 
-// TODO: Convert to general purpose routines in the util pacakge
+// TODO: move to its own package so it is accessible from the entire framework
 
 // The error structure, specifically designed to manage panics during request handling
 type Error struct {
@@ -44,29 +44,34 @@ type DbError struct {
 	DbStatement string
 }
 
-// Represents no error. A request starts with This.
+// Represents no error. A request starts with this.
 type NoErr struct {
 }
 
 // Known application specific errors
 
 const (
-	AppErrNone = iota
-	AppErrNoTemplate
+	FrameworkErrNone = iota
+	FrameworkErrNoTemplate
+	FrameworkErrRecordNotFound
 )
 
-type AppErr struct {
+// FrameworkError is an expected error that is part of the framework. Usually you would respond to the error
+// by displaying a message to the user, but not always.
+type FrameworkError struct {
 	Err int
 }
 
-func NewAppErr(err int) AppErr {
-	return AppErr{err}
+func NewFrameworkError(err int) FrameworkError {
+	return FrameworkError{err}
 }
 
-func (e AppErr) Error() string {
+func (e FrameworkError) Error() string {
 	switch e.Err {
-	case AppErrNoTemplate:
-		return "Form or control does not have a template"
+	case FrameworkErrNoTemplate:                          // Indicates a template does not exist. The control will move on to other ways of rendering. No message.
+		return "Form or control does not have a template" // just detected, this is not likely to be used
+	case FrameworkErrRecordNotFound:	// This is a rare situation that might come up as a race condition error between viewing a record, and actually editing it.
+		return "Record does not exist. Perhaps it has been deleted by someone else?"
 	}
 	return ""
 }

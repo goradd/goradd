@@ -149,3 +149,18 @@ func NumberFloat(i interface{}) float64 {
 	}
 	return 0
 }
+
+// NumberString is a helper function to convert a value that might get cast as a Json Number into a string.
+// If there is an error, it just returns 0. Use this when you absolutely
+// know you are expecting a string.
+func NumberString(i interface{}) string {
+	switch n := i.(type) {
+	case json.Number:
+		v := n.String()
+		return v
+	case string:
+		return n
+	}
+	return ""
+}
+

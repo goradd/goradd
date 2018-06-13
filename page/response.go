@@ -311,7 +311,9 @@ func (r *Response) MarshalJSON() (buf []byte, err error) {
 			commands = append(commands, r.finalCommands...)
 			r.finalCommands = nil
 		}
-		reply["commands"] = commands
+		if commands != nil && len(commands) > 0 {
+			reply["commands"] = commands
+		}
 
 		if r.jsFiles != nil {
 			reply[ResponseJavaScripts] = strings.Join(r.jsFiles.Values(), ",")

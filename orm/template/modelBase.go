@@ -2036,6 +2036,49 @@ func (b *`)
 
 `)
 
+	for _, col := range t.Columns {
+
+		buf.WriteString(`
+func Count`)
+
+		buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+		buf.WriteString(`By`)
+
+		buf.WriteString(fmt.Sprintf("%v", col.GoName))
+
+		buf.WriteString(`(ctx context.Context, `)
+
+		buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
+		buf.WriteString(` `)
+
+		buf.WriteString(fmt.Sprintf("%v", col.GoType))
+
+		buf.WriteString(`) uint {
+	return Query`)
+
+		buf.WriteString(fmt.Sprintf("%v", t.GoPlural))
+
+		buf.WriteString(`().Where(Equal(node.`)
+
+		buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+		buf.WriteString(`().`)
+
+		buf.WriteString(fmt.Sprintf("%v", col.GoName))
+
+		buf.WriteString(`(), `)
+
+		buf.WriteString(fmt.Sprintf("%v", col.VarName))
+
+		buf.WriteString(`)).Count(ctx, false)
+}
+
+`)
+
+	}
+
 	//loader.tmpl
 
 	buf.WriteString(`// load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -2881,6 +2924,32 @@ func (o *`)
 	buf.WriteString(t.PrimaryKeyColumn.VarName)
 
 	buf.WriteString(`)
+}
+
+// Delete`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` deletes the associated record from the database.
+func Delete`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`(ctx context.Context, pk string) {
+	d := db.GetDatabase("`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+
+	buf.WriteString(`")
+	d.Delete(ctx, "`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.DbName))
+
+	buf.WriteString(`", "`)
+
+	buf.WriteString(t.PrimaryKeyColumn.DbName)
+
+	buf.WriteString(`", pk)
 }
 
 `)

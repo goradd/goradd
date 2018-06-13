@@ -194,7 +194,7 @@ func (p *Page) GetControl(id string) ControlI {
 	}
 }
 
-// Add the given control to the pathRegistry. Called by the control code whenever a control is created or restored
+// Add the given control to the controlRegistry. Called by the control code whenever a control is created or restored
 func (p *Page) addControl(control ControlI) {
 	id := control.ID()
 
@@ -259,6 +259,7 @@ func (p *Page) DrawAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return
 }
 
+// TODO: Move these to the session object, since language is likely the same on a session basis
 func (p *Page) GoraddTranslator() Translater {
 	return &p.goraddTranslator
 }

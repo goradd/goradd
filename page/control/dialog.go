@@ -18,8 +18,11 @@ const (
 const DialogButtonEvent = "gr-dlgbtn"
 
 const (
-	DialogStateError = iota + 1
+	DialogStateDefault = iota
+	DialogStateError
 	DialogStateWarning
+	DialogStateInfo
+	DialogStateSuccess
 )
 
 /*
@@ -42,6 +45,9 @@ combination of html tag(s), css and javascript widget. QCubed has many ways of p
 */
 type DialogI interface {
 	page.ControlI
+
+	SetTitle(string) DialogI
+	SetState(state int) DialogI
 }
 
 // Our own implementation of a dialog. This works cooperatively with javascript in qcubed.js to create a minimal
@@ -110,13 +116,17 @@ func (c *Dialog) Init(parent page.ControlI) {
 	//c.Form().AddStyleSheetFile(config.GORADD_FONT_AWESOME_CSS, nil)
 }
 
-func (c *Dialog) SetTitle(t string) *Dialog {
+func (c *Dialog) SetTitle(t string) DialogI {
 	c.titleBar.SetText(t)
 	return c
 }
 
 func (c *Dialog) Title() string {
 	return c.titleBar.Text()
+}
+
+func (c *Dialog) SetState(state int) DialogI {
+	return c
 }
 
 func (c *Dialog) DrawingAttributes() *html.Attributes {
@@ -250,8 +260,16 @@ specify just a string in buttons, or just one string as a slice of strings, one 
 If you specify more than one button, the first button will be the default button (the one pressed if the user presses the return key). In
 this case, you will need to detect the button by adding a On(event.DialogButton(), action) to the dialog returned.
 You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
+
+Call RegisterAlertFunc to register a different alert function for the framework to use.
+
 */
-func Alert(form page.FormI, message string, buttons interface{}) *Dialog {
+
+func Alert(form page.FormI, message string, buttons interface{}) DialogI {
+	return alertFunc(form, message, buttons)
+}
+
+func DefaultAlert(form page.FormI, message string, buttons interface{}) DialogI {
 	dlg := NewDialog(form)
 	dlg.SetText(message)
 	if buttons != nil {
@@ -273,4 +291,13 @@ func Alert(form page.FormI, message string, buttons interface{}) *Dialog {
 	}
 	dlg.Open()
 	return dlg
+}
+
+type AlertFuncType func(form page.FormI, message string, buttons interface{}) DialogI
+
+
+var alertFunc AlertFuncType = DefaultAlert // default to our built in one
+
+func RegisterAlertFunc(f AlertFuncType) {
+	alertFunc = f
 }

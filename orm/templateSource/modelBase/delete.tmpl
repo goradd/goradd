@@ -9,4 +9,10 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
 	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn.DbName }}", o.{{= t.PrimaryKeyColumn.VarName }})
 }
 
+// Delete{{= t.GoName }} deletes the associated record from the database.
+func Delete{{= t.GoName }}(ctx context.Context, pk string) {
+	d := db.GetDatabase("{{t.DbKey}}")
+	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn.DbName }}", pk)
+}
+
 }}

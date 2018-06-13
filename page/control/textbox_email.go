@@ -5,6 +5,7 @@ import (
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control/control_base"
 	"net/mail"
+	"context"
 )
 
 // EmailTextbox is a Text control that validates for email addresses.
@@ -39,8 +40,8 @@ func (t *EmailTextbox) SetMaxCount(max int) {
 	t.Refresh()
 }
 
-func (t *EmailTextbox) Validate() bool {
-	ret := t.Textbox.Validate()
+func (t *EmailTextbox) Validate(ctx context.Context) bool {
+	ret := t.Textbox.Validate(ctx)
 
 	if ret {
 		if t.parseErr != nil {

@@ -11,6 +11,9 @@ import (
 	"strings"
 )
 
+type CheckboxI interface {
+
+}
 // Checkbox is a base class for checkbox-like objects, including html checkboxes and radio buttons.
 type Checkbox struct {
 	localPage.Control

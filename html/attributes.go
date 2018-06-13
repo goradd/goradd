@@ -227,6 +227,24 @@ func (a *Attributes) RemoveClass(v string) bool {
 	return false
 }
 
+// Use RemoveClasses to remove classes with the given prefix.
+// Many CSS frameworks use families of classes, which are built up from a base family name. For example,
+// Bootstrap uses 'col-lg-6' to represent a table that is 6 units wide on large screens and Foundation
+// uses 'large-6' to do the same thing. This utility removes classes that start with a particular prefix
+// to remove whatever sizing class was specified.
+//Returns true if the list actually changed.
+func (a *Attributes) RemoveClassesWithPrefix(v string) bool {
+	if a.Has("class") {
+		newClass, changed := RemoveClassesWithPrefix(a.Get("class"), v)
+		if changed {
+			a.OrderedStringMap.Set("class", newClass)
+		}
+		return changed
+	}
+	return false
+}
+
+
 // Use AddClass to add a class or classes.
 // Multiple classes can be separated by spaces.
 // If a class is not present, the class will be added to the end of the class list

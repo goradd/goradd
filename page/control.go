@@ -30,7 +30,7 @@ const (
 	ValidateNone                          // Force no validation.
 	ValidateForm
 
-	ValidateSiblingsAndChildren // container validations
+	ValidateSiblingsAndChildren // container validations. Will include validating the current control.
 	ValidateSiblingsOnly
 	ValidateChildrenOnly
 
@@ -139,13 +139,9 @@ type ControlI interface {
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string) string
 
-	addChildControlsToPage()
-	addChildControl(ControlI)
-	markOnPage(bool)
-
 	UpdateFormValues(*Context)
 
-	Validate() bool
+	Validate(ctx context.Context) bool
 	ValidationState() ValidationState
 	ValidationType(EventI) ValidationType
 
@@ -223,7 +219,7 @@ type Control struct {
 
 // Init should be called immediately after a control is created and is responsible for setting up the initial state of a
 // new control. Your subclasses should have their own Init function, and
-// should call the superclass function. This Init function is sets up a parent-child relationship with the given parent
+// should call the superclass function. This Init function sets up a parent-child relationship with the given parent
 // control, and sets up data structures to use the control in object-oriented ways with virtual functions.
 func (c *Control) Init(self ControlI, parent ControlI) {
 	c.Base.Init(self)
@@ -234,7 +230,7 @@ func (c *Control) Init(self ControlI, parent ControlI) {
 		c.id = c.page.GenerateControlID()
 	}
 	self.SetParent(parent)
-	c.htmlEscapeText = true // default to encoding the text portion. Explicitly turn This off if you need something else
+	c.htmlEscapeText = true // default to encoding the text portion. Explicitly turn this off if you need something else
 }
 
 // Restore is called after the control has been deserialized. It creates any required data structures
@@ -464,7 +460,7 @@ func (c *Control) RenderAutoControls(ctx context.Context, buf *bytes.Buffer) (er
 // on to drawing the controls without a template, or just the text if text is defined.
 func (c *Control) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Don't change this to use some kind of function injection, as such things are not serializable
-	return NewAppErr(AppErrNoTemplate)
+	return NewFrameworkError(FrameworkErrNoTemplate)
 }
 
 // Returns the inner text of the control, if the control is not a self terminating (void) control. Sub-controls can
@@ -472,7 +468,7 @@ func (c *Control) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err erro
 func (c *Control) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if err = c.This().DrawTemplate(ctx, buf); err == nil {
 		return
-	} else if appErr, ok := err.(AppErr); !ok || appErr.Err != AppErrNoTemplate {
+	} else if appErr, ok := err.(FrameworkError); !ok || appErr.Err != FrameworkErrNoTemplate {
 		return
 	}
 
@@ -594,10 +590,11 @@ func (c *Control) DrawingAttributes() *html.Attributes {
 }
 
 // WrapperAttributes returns the actual attributes for the wrapper. Changes WILL be remembered so that subsequent ajax
-// drawing will draw the wrapper correctly.
+// drawing will draw the wrapper correctly. However, it is up to you to refresh the control if you change anything.
 func (c *Control) WrapperAttributes() *html.Attributes {
 	return c.wrapperAttributes
 }
+
 
 func (c *Control) SetDataAttribute(name string, val interface{}) {
 	var v string
@@ -655,47 +652,80 @@ func (c *Control) Children() []ControlI {
 	return c.children
 }
 
+// Remove removes the current control from its parent. After this is done, the control and all its child items will
+// not be part of the page, but the child items will still be accessible through the control itself.
 func (c *Control) Remove() {
 	if c.parent != nil {
-		c.parent.RemoveChild(c.This().ID())
+		c.parent.control().removeChild(c.This().ID(), true)
+		if !c.shouldAutoRender {
+			//c.Refresh() // TODO: Do this through ajax
+		}
 	} else {
-		c.RemoveChildren()
 		c.page.removeControl(c.This().ID())
 	}
 }
 
+// RemoveChild removes the given child control from both the control and the page.
 func (c *Control) RemoveChild(id string) {
+	c.removeChild(id, true)
+}
+
+
+// removeChild is a private function that will remove a child control from the current control
+func (c *Control) removeChild(id string, fromPage bool) {
 	for i, v := range c.children {
 		if v.ID() == id {
-			v.RemoveChildren()
 			c.children = append(c.children[:i], c.children[i+1:]...) // remove found item from list
-			c.page.removeControl(id)
+			if fromPage {
+				v.control().removeChildrenFromPage()
+				c.page.removeControl(id)
+			}
+			v.control().parent = nil
 			break
 		}
 	}
 }
 
+func (c *Control) removeChildrenFromPage() {
+	for _, v := range c.children {
+		v.control().removeChildrenFromPage()
+		c.page.removeControl(v.ID())
+	}
+}
+
+// RemoveChildren removes all the child controls from this control and the page
 func (c *Control) RemoveChildren() {
 	for _, child := range c.children {
-		child.RemoveChildren()
+		child.control().removeChildrenFromPage()
 		c.page.removeControl(child.ID())
+		child.control().parent = nil
 	}
 	c.children = nil
 }
 
 func (c *Control) SetParent(newParent ControlI) {
 	if c.parent == nil {
-		c.addChildControlsToPage()
+		c.control().addChildControlsToPage()
+	} else {
+		c.parent.control().removeChild(c.ID(), newParent == nil)
+		if !c.shouldAutoRender {
+			//c.parent.Refresh()
+		}
 	}
 	c.parent = newParent
 	if c.parent != nil {
 		c.parent.addChildControl(c.This())
+		if !c.shouldAutoRender {
+			// TODO: insert into DOM  instead of c.parent.Refresh()
+		}
 	}
 	c.page.addControl(c.This())
-	c.Refresh()
-	// TODO: Refresh control, except if the control being added is an auto-render control, in which case we should
-	// just add the control through ajax. Will need to specify the parent. Javascript should tack it to the end of the
-	// inner-html of the control.
+
+	if c.shouldAutoRender && newParent != nil {
+		//c.Refresh()
+	}
+
+	// TODO: Refresh as needed, but without refreshing the form
 }
 
 func (c *Control) Child(id string) ControlI {
@@ -709,7 +739,7 @@ func (c *Control) Child(id string) ControlI {
 
 func (c *Control) addChildControlsToPage() {
 	for _, child := range c.children {
-		child.addChildControlsToPage()
+		child.control().addChildControlsToPage()
 		c.page.addControl(child)
 	}
 }
@@ -751,9 +781,12 @@ func (c *Control) ValidationMessage() string {
 // SetValidationError sets the validation error to the given string. It will also handle setting the wrapper class
 // to indicate an error. Override if you have a different way of handling errors.
 func (c *Control) SetValidationError(e string) {
+	if !c.HasWrapper() {
+		panic("Only controls with wrappers can get a validation error.")
+	}
 	if c.validationMessage != e {
 		c.validationMessage = e
-		c.isModified = true // TODO: Set a response attribute instead to only update the inner text of the ctlId_err div and possibly the div class. Tricky because bootstrap has multiple options to set the div class.
+		c.Refresh() // TODO: Set a response attribute instead to only update the inner text of the ctlId_err div and possibly the div class. Tricky because bootstrap has multiple options to set the div class.
 
 		if e == "" {
 			c.validationState = NotValidated
@@ -772,7 +805,7 @@ func (c *Control) ValidationState() ValidationState {
 func (c *Control) SetText(t string) ControlI {
 	if t != c.text {
 		c.text = t
-		c.isModified = true
+		c.Refresh()
 	}
 	return c.This()
 }
@@ -784,7 +817,7 @@ func (c *Control) Text() string {
 func (c *Control) SetLabel(n string) ControlI {
 	if n != c.label {
 		c.label = n
-		c.isModified = true
+		c.Refresh()
 	}
 	return c.This()
 }
@@ -796,7 +829,7 @@ func (c *Control) Label() string {
 func (c *Control) SetInstructions(i string) ControlI {
 	if i != c.instructions {
 		c.instructions = i
-		c.isModified = true
+		c.Refresh()
 	}
 	return c.This()
 }
@@ -824,7 +857,7 @@ func (c *Control) HasFor() bool {
 func (c *Control) SetHasFor(v bool) ControlI {
 	if v != c.hasFor {
 		c.hasFor = v
-		c.isModified = true
+		c.Refresh()
 	}
 	return c.This()
 }
@@ -840,7 +873,7 @@ func (c *Control) ShouldAutoRender() bool {
 // On adds an event listener to the control that will trigger the given actions
 func (c *Control) On(e EventI, actions ...action2.ActionI) EventI {
 	var isPrivate bool
-	c.isModified = true // completely redraw the control. The act of redrawing will turn off old scripts.
+	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
 	// implement a script block with every control connected by id
 	e.AddActions(actions...)
@@ -939,7 +972,13 @@ func (c *Control) resetDrawingFlags() {
 
 // Recursively reset the validation state
 func (c *Control) resetValidation() {
-	c.This().SetValidationError("")
+	if c.HasWrapper() &&
+		(c.validationMessage != "" || c.validationState != NotValidated) {
+		c.validationMessage = ""
+		c.validationState = NotValidated
+		c.wrapperAttributes.RemoveClass("error")
+		c.Refresh() // TODO: Handle the above with javascript calls so base control does not have to be redrawn
+	}
 
 	if children := c.This().Children(); children != nil {
 		for _, child := range children {
@@ -990,12 +1029,12 @@ func (c *Control) doAction(ctx context.Context) {
 		return
 	}
 
-	if c.This().ValidationType(e) != ValidateNone ||
-		(e.event().validationOverride != ValidateDefault && e.event().validationOverride != ValidateNone) {
+	if (e.event().validationOverride != ValidateNone && e.event().validationOverride != ValidateDefault) ||
+		(e.event().validationOverride == ValidateDefault && c.This().ValidationType(e) != ValidateNone) {
 		c.Form().control().resetValidation()
 	}
 
-	if c.passesValidation(e) {
+	if c.passesValidation(ctx, e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
 		for _, a := range e.GetActions() {
 			callbackAction := a.(action2.CallbackActionI)
@@ -1065,7 +1104,7 @@ func (c *Control) SetValidationTargets(controlIDs ...string) {
 }
 
 // passesValidation checks to see if the event requires validation, and if so, if it passes the required validation
-func (c *Control) passesValidation(event EventI) (valid bool) {
+func (c *Control) passesValidation(ctx context.Context, event EventI) (valid bool) {
 	validation := c.This().ValidationType(event)
 
 	if v := event.event().validationOverride; v != ValidateDefault {
@@ -1118,37 +1157,40 @@ func (c *Control) passesValidation(event EventI) (valid bool) {
 
 	switch validation {
 	case ValidateForm:
-		valid = c.Form().control().validateChildren()
+		valid = c.Form().control().validateChildren(ctx)
 	case ValidateSiblingsAndChildren:
 		for _, t := range targets {
-			valid = t.control().validateSiblingsAndChildren() && valid
+			valid = t.control().validateSiblingsAndChildren(ctx) && valid
 		}
 	case ValidateSiblingsOnly:
 		for _, t := range targets {
-			valid = t.control().validateSiblings() && valid
+			valid = t.control().validateSiblings(ctx) && valid
 		}
 	case ValidateChildrenOnly:
 		for _, t := range targets {
-			valid = t.control().validateChildren() && valid
+			valid = t.control().validateChildren(ctx) && valid
 		}
 
 	case ValidateTargetsOnly:
 		var valid bool
 		for _, t := range targets {
-			valid = t.Validate() && valid
+			valid = t.Validate(ctx) && valid
 		}
 	}
 	return valid
 }
 
 // Validate is designed to be overridden. Overriding controls should call the parent version before doing their own validation.
-func (c *Control) Validate() bool {
+func (c *Control) Validate(ctx context.Context) bool {
+	if c.HasWrapper() && c.validationMessage != c.ValidMessage {
+		c.validationMessage = c.ValidMessage
+		c.Refresh() // TODO: Do this in javascript so whole control does not need to refresh
+	}
 	c.validationState = Valid
-	c.validationMessage = c.ValidMessage
 	return true
 }
 
-func (c *Control) validateSiblings() bool {
+func (c *Control) validateSiblings(ctx context.Context) bool {
 
 	if c.parent == nil {
 		return true
@@ -1159,31 +1201,61 @@ func (c *Control) validateSiblings() bool {
 
 	var valid = true
 	for _, child := range siblings {
-		if child.ID() != c.ID() {
-			valid = child.Validate() && valid
-		}
+		valid = child.Validate(ctx) && valid
 	}
 	return valid
 }
 
-func (c *Control) validateChildren() bool {
+func (c *Control) validateChildren(ctx context.Context) bool {
+
 	if c.children == nil || len(c.children) == 0 {
+		return c.This().Validate(ctx)
+	}
+
+	var isValid = true
+	for _, child := range c.children {
+		if !child.control().blockParentValidation {
+			isValid = child.Validate(ctx) && isValid
+		}
+	}
+	if isValid {
+		isValid = c.This().Validate(ctx)	// validate self after validating all children, because self might want to invalidate child items
+	}
+
+	return isValid
+}
+
+func (c *Control) validateSiblingsAndChildren(ctx context.Context) bool {
+
+	if c.parent == nil {
 		return true
 	}
 
-	var valid = true
-	for _, child := range c.children {
+	p := c.parent.control()
+	siblings := p.children
+
+	var isValid = true
+	for _, child := range siblings {
 		if child.ID() != c.ID() {
-			valid = child.Validate() && valid
+			isValid = child.control().validateChildren(ctx) && isValid
+		} else {
+			// validate self and children
+			var childrenValid = true
+			if c.children != nil {
+				for _, child := range c.children {
+					if !child.control().blockParentValidation {
+						childrenValid = child.Validate(ctx) && childrenValid
+					}
+				}
+			}
+			if childrenValid {
+				isValid = c.This().Validate(ctx) // only validate self if children validate
+			} else {
+				isValid = false
+			}
 		}
 	}
-	return valid
-}
-
-func (c *Control) validateSiblingsAndChildren() bool {
-	valid := c.validateSiblings()
-	valid = c.validateChildren() && valid
-	return valid
+	return isValid
 }
 
 // SaveState sets whether the control should save its value and other state information so that if the form is redrawn,
@@ -1326,11 +1398,21 @@ func (c *Control) SetVisible(v bool) {
 
 func (c *Control) SetStyles(s *html.Style) {
 	c.attributes.SetStyles(s)
+	c.Refresh() // TODO: Do this with javascript
 }
 
 func (c *Control) SetStyle(name string, value string) {
-	c.attributes.SetStyle(name, value)
+	if changed,_ := c.attributes.SetStyleChanged(name, value); changed {
+		c.Refresh() // TODO: Do this with javascript
+	}
 }
+
+func (c *Control) RemoveClassesWithPrefix(prefix string) {
+	if c.attributes.RemoveClassesWithPrefix(prefix) {
+		c.Refresh() // TODO: Do this with javascript
+	}
+}
+
 
 // SetEscapeText to false to turn off html escaping of the text output. It is on by default.
 func (c *Control) SetEscapeText(e bool) {
