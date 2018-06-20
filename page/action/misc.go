@@ -158,3 +158,21 @@ type PrivateAction struct{}
 func (a PrivateAction) RenderScript(params RenderParams) string {
 	return ""
 }
+
+type javascriptAction struct {
+	js string
+}
+
+// Trigger will trigger a javascript event on a control
+func Javascript(js string) *javascriptAction {
+	if js != "" {
+		if js[len(js) - 1: len(js)] != ";" {
+			js += ";\n"
+		}
+	}
+	return &javascriptAction{js:js}
+}
+
+func (a *javascriptAction) RenderScript(params RenderParams) string {
+	return a.js
+}

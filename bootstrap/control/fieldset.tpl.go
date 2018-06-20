@@ -11,16 +11,27 @@ import (
 	"github.com/spekary/goradd/page"
 )
 
-func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.ControlI, h string, buf *bytes.Buffer) {
-	var hasInnerDivAttributes bool = wrapper.HasInnerDivAttributes()
+// FieldsetTmpl is the template for special situations where you want to wrap a group of controls with a fieldset
+// This is useful for groups of related controls, like a group of radio buttons.
+// If you want the entire group to be a row, give the wrapper a "row" class. This will automatically pull out the
+// row class and add an independent div wrapper with a row class, which is a special requirement for this kind of object.
+func FieldsetTmpl(ctx context.Context, wrapper *FieldsetWrapper, ctrl page.ControlI, h string, buf *bytes.Buffer) {
 	var hasInstructions bool = (ctrl.Instructions() != "")
+	var hasRow bool
 
+	ctrl.WrapperAttributes().AddClass("form-group")
 	if wrapper.useTooltips {
 		// bootstrap requires that parent of a tooltipped object has position relative
 		ctrl.WrapperAttributes().SetStyle("position", "relative")
 	}
+	if ctrl.WrapperAttributes().HasClass("row") {
+		ctrl.WrapperAttributes().RemoveClass("row")
+		hasRow = true
+	}
+	wrapper.LabelAttributes().AddClass("col-form-label").
+		AddClass("pt-0") // helps with alignment
 
-	buf.WriteString(`<div id="`)
+	buf.WriteString(`<fieldset id="`)
 
 	buf.WriteString(ctrl.ID())
 
@@ -30,76 +41,33 @@ func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.Con
 
 	buf.WriteString(` >
 `)
+	if hasRow {
+		buf.WriteString(`<div class="row">`)
+	}
 	if ctrl.Label() != "" {
-		buf.WriteString(`  <label id="`)
+		buf.WriteString(`  <legend id="`)
 
 		buf.WriteString(ctrl.ID())
 
 		buf.WriteString(`_lbl" `)
-		if ctrl.HasFor() {
-			buf.WriteString(` for="`)
 
-			buf.WriteString(ctrl.ID())
-
-			buf.WriteString(`"`)
-		}
-
-		buf.WriteString(` `)
-		if wrapper.HasLabelAttributes() {
-			buf.WriteString(wrapper.LabelAttributes().String())
-		}
+		buf.WriteString(wrapper.LabelAttributes().String())
 
 		buf.WriteString(`>`)
 
 		buf.WriteString(html.EscapeString(ctrl.Label()))
 
-		buf.WriteString(`</label>
+		buf.WriteString(`</legend>
 `)
-	} else {
-
-		buf.WriteString(`    `)
-		if ctrl.HasAttribute("placeholder") {
-			buf.WriteString(`  <label id="`)
-
-			buf.WriteString(ctrl.ID())
-
-			buf.WriteString(`_lbl" `)
-			if ctrl.HasFor() {
-				buf.WriteString(` for="`)
-
-				buf.WriteString(ctrl.ID())
-
-				buf.WriteString(`"`)
-			}
-
-			buf.WriteString(` class="sr-only">`)
-
-			buf.WriteString(html.EscapeString(ctrl.Attribute("placeholder")))
-
-			buf.WriteString(`</label>
-    `)
-		}
 	}
 
 	buf.WriteString(`
 `)
-	if hasInnerDivAttributes {
-		buf.WriteString(`<div `)
-
-		buf.WriteString(wrapper.InnerDivAttributes().String())
-
-		buf.WriteString(`>`)
-	}
 
 	buf.WriteString(grhtml.Indent(h))
 
 	buf.WriteString(`
-`)
-	if hasInnerDivAttributes {
-		buf.WriteString(`</div>`)
-	}
 
-	buf.WriteString(`
 `)
 	switch ctrl.ValidationState() {
 	case page.Valid:
@@ -172,8 +140,12 @@ func FormGroupTmpl(ctx context.Context, wrapper *FormGroupWrapper, ctrl page.Con
 		buf.WriteString(`</small>`)
 
 	}
+	if hasRow {
+		buf.WriteString(`</div>`)
+	}
 
-	buf.WriteString(`</div>
+	buf.WriteString(`
+</fieldset>
 `)
 
 	return

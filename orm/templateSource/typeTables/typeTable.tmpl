@@ -1,5 +1,4 @@
 
-constPrefix := strings.ToUpper(tt.DbName) + "_"
 propName := tt.GoName
 propLetter := strings.ToLower(propName[0:1])
 keyField := tt.FieldNames[0]
@@ -23,7 +22,7 @@ for _,value := range tt.Values {
 	}
 	con := tt.Constants[key]
 {{
-	{{= constPrefix }}{{= con }} = {{u key }}
+	{{= propName }}{{= con }} {{= propName }} = {{u key }}
 }}
 }
 

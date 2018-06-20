@@ -34,6 +34,10 @@ func (n *ModelTemplate) GenerateTable(codegen generator.Codegen, dd *db.Database
 
 	buf.WriteString(`package model
 
+import (
+    "fmt"
+)
+
 type `)
 
 	buf.WriteString(t.GoName)
@@ -44,6 +48,16 @@ type `)
 	buf.WriteString(util.LcFirst(t.GoName))
 
 	buf.WriteString(`Base
+}
+
+// String implements the Stringer interface and returns the default label for the object when it is appears in html lists.
+// Typically you would change this to whatever was pertinent to you application.
+func (o *`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`) String() string  {
+    return fmt.Sprintf("Object id %v", o.PrimaryKey())
 }
 
 `)

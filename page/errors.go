@@ -54,6 +54,7 @@ const (
 	FrameworkErrNone = iota
 	FrameworkErrNoTemplate
 	FrameworkErrRecordNotFound
+	FrameworkErrNotAuthorized
 )
 
 // FrameworkError is an expected error that is part of the framework. Usually you would respond to the error
@@ -72,7 +73,10 @@ func (e FrameworkError) Error() string {
 		return "FormBase or control does not have a template" // just detected, this is not likely to be used
 	case FrameworkErrRecordNotFound:	// This is a rare situation that might come up as a race condition error between viewing a record, and actually editing it.
 		return "Record does not exist. Perhaps it has been deleted by someone else?"
+	case FrameworkErrNotAuthorized:
+		return "You are not authorized to view this information."
 	}
+
 	return ""
 }
 

@@ -35,7 +35,7 @@ func (l *SelectList) Validate(ctx context.Context) bool {
 		return false
 	}
 
-	if l.Required() && l.selectedId == "" {
+	if l.IsRequired() && l.selectedId == "" {
 		if l.ErrorForRequired == "" {
 			l.SetValidationError(l.T("A selection is required"))
 		} else {
@@ -128,7 +128,7 @@ func (l *SelectList) DrawingAttributes() *html.Attributes {
 	a := l.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "selectlist")
 	a.Set("name", l.ID()) // needed for posts
-	if l.Required() {
+	if l.IsRequired() {
 		a.Set("required", "")
 	}
 	return a

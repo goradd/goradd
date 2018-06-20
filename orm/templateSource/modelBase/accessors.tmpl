@@ -97,22 +97,25 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 			o.{{= col.VarName }}IsNull = true
 			o.{{= col.VarName }}IsDirty = true
 			o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
-{{g if col.IsReference() && !col.ForeignKey.IsType { }}
+{{if col.IsReference() && !col.ForeignKey.IsType }}
 			o.{{oName}} = nil
-{{g } }}
+{{if}}
 		}
 	} else {
 		v := i.({{= col.GoType.String() }})
-		if o.{{= col.VarName }}IsNull {{g if col.GoType != query.COL_TYPE_BYTES { }} || o.{{= col.VarName }} != v {{g } }} {
+		if o.{{= col.VarName }}IsNull ||
+		    {{if col.GoType != query.COL_TYPE_BYTES }} o.{{= col.VarName }} != v {{else}} !bytes.Equal(o.{{= col.VarName }}, v) {{if}}{
+
 			o.{{= col.VarName }}IsNull = false
-
-			// TODO: For bytes, should this be a copy?
+{{if col.GoType != query.COL_TYPE_BYTES }}
 			o.{{= col.VarName }} = v
-
+{{else}}
+            o.{{= col.VarName }} = append([]byte(nil), v...)
+{{if}}
 			o.{{= col.VarName }}IsDirty = true
-{{g if col.IsReference() && !col.ForeignKey.IsType { }}
+{{if col.IsReference() && !col.ForeignKey.IsType }}
 			o.{{oName}} = nil
-{{g } }}
+{{if}}
 		}
 	}
 }

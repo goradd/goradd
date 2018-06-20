@@ -36,7 +36,6 @@ func (n *TypeTableTemplate) FileName(key string, tt *db.TypeTableDescription) st
 func (n *TypeTableTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.DatabaseDescription, tt *db.TypeTableDescription, buf *bytes.Buffer) {
 	//var privateName = util.LcFirst(tt.GoName)
 
-	constPrefix := strings.ToUpper(tt.DbName) + "_"
 	propName := tt.GoName
 	propLetter := strings.ToLower(propName[0:1])
 	keyField := tt.FieldNames[0]
@@ -62,9 +61,13 @@ const (
 
 		buf.WriteString(`	`)
 
-		buf.WriteString(constPrefix)
+		buf.WriteString(propName)
 
 		buf.WriteString(con)
+
+		buf.WriteString(` `)
+
+		buf.WriteString(propName)
 
 		buf.WriteString(` = `)
 

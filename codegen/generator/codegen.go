@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
+	"os/exec"
 )
 
 type Codegen struct {
@@ -116,9 +118,25 @@ func Generate() {
 				if err != nil {
 					log.Print(err)
 				}
+				execCommand("goimports -w " + fileName)
 			}
 		}
 
 	}
 
+}
+
+func execCommand(command string) {
+	parts := strings.Split(command, " ")
+	if len(parts) == 0 {
+		return
+	}
+
+	cmd := exec.Command(parts[0], parts[1:]...)
+	cmd.Stderr = os.Stderr
+
+	err := cmd.Run()
+	if err != nil {
+		log.Print(err)
+	}
 }

@@ -218,7 +218,7 @@ goradd = {
         $j.each(controls, function() {
             var $element = $j(this),
                 id = $element.attr("id"),
-                groupid,
+                groupId,
                 strType = $element.prop("type"),
                 index = null,
                 offset;
@@ -227,7 +227,7 @@ goradd = {
                 (offset = id.lastIndexOf('_')) !== -1) {
                 // A control group
                 index = id.substr(offset + 1);
-                groupid = id.substr(0, offset);
+                groupId = id.substr(0, offset);
             }
             switch (strType) {
                 case "checkbox":
@@ -238,18 +238,18 @@ goradd = {
                                 values[id] = $element.is(":checked")
                             }
                         } else {
-                            var a = values[groupid];
+                            var a = values[groupId];
                             if ($element.is(":checked")) {
                                 if (a) {
                                     a.push(index);
                                 } else {
                                     a = [index];
                                 }
-                                values[groupid] = a;
+                                values[groupId] = a;
                             }
                             else {
                                 if (!a) {
-                                    values[groupid] = null; // empty array to notify that the group has a null value, if nothing gets checked
+                                    values[groupId] = null; // empty array to notify that the group has a null value, if nothing gets checked
                                 }
                             }
                         }
@@ -551,7 +551,7 @@ goradd = {
                     else if ($control.length) {
                         // control was found without a wrapper, replace it in the same position it was in.
                         // remove related controls (error, name ...) for wrapper-less controls
-                        var relSelector = "[data-qrel='" + strControlId + "']",
+                        var relSelector = "[data-grel='" + strControlId + "']",
                             relItems = $j(relSelector),
                             $relParent;
 

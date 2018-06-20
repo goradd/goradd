@@ -106,13 +106,13 @@ func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mod
 	label = html2.EscapeString(label)
 	switch mode {
 	case LABEL_BEFORE:
-		return RenderTagNoSpace(tag, labelAttributes, label) + ctrlHtml
+		return RenderTagNoSpace(tag, labelAttributes, label) + " " + ctrlHtml
 	case LABEL_AFTER:
-		return ctrlHtml + RenderTagNoSpace(tag, labelAttributes, label)
+		return ctrlHtml + " " + RenderTagNoSpace(tag, labelAttributes, label)
 	case WRAP_LABEL_BEFORE:
-		return RenderTag(tag, labelAttributes, label+" "+ctrlHtml)
+		return RenderTag(tag, labelAttributes, label + " " + ctrlHtml)
 	case WRAP_LABEL_AFTER:
-		return RenderTag(tag, labelAttributes, ctrlHtml+" "+label)
+		return RenderTag(tag, labelAttributes, ctrlHtml + " " + label)
 	}
 	panic("Unknown label mode")
 }

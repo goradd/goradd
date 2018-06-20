@@ -3,8 +3,18 @@
 {{
 package model
 
+import (
+    "fmt"
+)
+
 type {{= t.GoName }} struct {
 	{{= util.LcFirst(t.GoName) }}Base
+}
+
+// String implements the Stringer interface and returns the default label for the object when it is appears in html lists.
+// Typically you would change this to whatever was pertinent to you application.
+func (o *{{= t.GoName }}) String() string  {
+    return fmt.Sprintf("Object id %v", o.PrimaryKey())
 }
 
 }}

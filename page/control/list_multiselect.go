@@ -8,18 +8,19 @@ import (
 	"github.com/spekary/goradd/util/types"
 	"strconv"
 	"strings"
+	localPage "goradd/page"
 )
 
 
 type MultiselectListI interface {
-	page.ControlI
+	localPage.ControlI
 }
 
 // MultiselectList is a generic list box which allows multiple selections. It is here for completeness, but is not used
 // very often since it doesn't present an intuitive interface and is very browser dependent on what is presented.
 // A Checkboxlist is better.
 type MultiselectList struct {
-	page.Control
+	localPage.Control
 	ItemList
 	selectedIds map[string]bool
 }
@@ -61,7 +62,7 @@ func (l *MultiselectList) Size() int {
 }
 
 func (l *MultiselectList) Validate(ctx context.Context) bool {
-	if l.Required() && len(l.selectedIds) == 0 {
+	if l.IsRequired() && len(l.selectedIds) == 0 {
 		if l.ErrorForRequired == "" {
 			l.SetValidationError(l.T("A selection is required"))
 		} else {
@@ -104,6 +105,13 @@ func (l *MultiselectList) SelectedItems() []ListItemI {
 // SetSelectedIds sets the current selection to the given ids. You must ensure that the items with the ids exist, it will
 // not attempt to make sure the items exist.
 func (l *MultiselectList) SetSelectedIds(ids []string) {
+	l.SetSelectedIdsNoRefresh(ids)
+	l.Refresh()
+}
+
+func (l *MultiselectList) SetSelectedIdsNoRefresh(ids []string) {
+	l.selectedIds = map[string]bool{}
+
 	if ids == nil {
 		return
 	}
@@ -111,11 +119,12 @@ func (l *MultiselectList) SetSelectedIds(ids []string) {
 	for _, id := range ids {
 		l.selectedIds[id] = true
 	}
-	l.Refresh()
 }
+
 
 // Value implements the Valuer interface for general purpose value getting and setting
 func (l *MultiselectList) Value() interface{} {
+	// TODO: Not sure this is the right thing to return here. Perhaps array of selected values?
 	return l.selectedIds
 }
 
@@ -212,7 +221,7 @@ func (l *MultiselectList) DrawingAttributes() *html.Attributes {
 	a.SetDataAttribute("grctl", "multilist")
 	a.Set("name", l.ID()) // needed for posts
 	a.Set("multiple", "")
-	if l.Required() {
+	if l.IsRequired() {
 		a.Set("required", "")
 	}
 	return a
@@ -237,7 +246,7 @@ func (l *MultiselectList) getItemsHtml(items []ListItemI) string {
 		} else {
 			attributes := item.Attributes().Clone()
 			attributes.Set("value", item.ID())
-			if l.isIdSelected(item.ID()) {
+			if l.IsIdSelected(item.ID()) {
 				attributes.Set("selected", "")
 			}
 			h += html.RenderTag("option", attributes, item.Label()) + "\n"
@@ -246,7 +255,7 @@ func (l *MultiselectList) getItemsHtml(items []ListItemI) string {
 	return h
 }
 
-func (l *MultiselectList) isIdSelected(id string) bool {
-	_, ok := l.selectedIds[id]
-	return ok
+func (l *MultiselectList) IsIdSelected(id string) bool {
+	v, ok := l.selectedIds[id]
+	return ok && v
 }

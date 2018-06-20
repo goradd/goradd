@@ -36,6 +36,14 @@ type Labeler interface {
 	Label() string
 }
 
+// A ListItem is an object that is a member of a list. HTML has a few different kinds of lists, and this can be a member
+// of a select list (<select>), or an ordered or unordered list (<ul> or <ol>). It is up to the manager of the list to
+// render the item, but this serves as a place to store options about the item. Not all options are pertinent to
+// all lists.
+//
+// A list item generally has a value, and a label. Often, lists will have ids too, that will appear in the html output,
+// but the id values are managed by the list manager and generally should not be set by you. In situations where the
+// user selects a list item, you would use the id to retrieve the ListItem selected.
 type ListItem struct {
 	value interface{}
 	id    string

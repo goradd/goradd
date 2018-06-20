@@ -2,14 +2,6 @@
 
 // The master template for the modelBase classes
 
-var hasDateTime bool
-
-for _,col := range t.Columns {
-	if col.GoType == query.COL_TYPE_DATETIME {
-		hasDateTime = true
-		break
-	}
-}
 
 {{
 package model
@@ -24,13 +16,9 @@ import (
 	"fmt"
 	. "github.com/spekary/goradd/orm/op"
 	//"./node"
-{{if hasDateTime}}
 	"github.com/spekary/goradd/datetime"
-{{if}}
 	"github.com/spekary/goradd/util/types"
 )
-
-var _ = types.OrderedMap{}
 
 }}
 

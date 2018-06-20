@@ -42,9 +42,9 @@ func NewItemList(owner IDer) ItemList {
 	return ItemList{owner: owner}
 }
 
-// AddItem adds the given item to the end of the list.
+// AddItem adds the given item to the end of the list. The value is optional, but should only be one or zero values.
 func (l *ItemList) AddItem(label string, value ...interface{}) ListItemI {
-	i := NewListItem(label, value)
+	i := NewListItem(label, value...)
 	l.AddListItems(i)
 	return i
 }
@@ -54,7 +54,7 @@ func (l *ItemList) AddItem(label string, value ...interface{}) ListItemI {
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
 // hierarchical list, so use sparingly.
 func (l *ItemList) AddItemAt(index int, label string, value ...interface{}) {
-	l.AddListItemAt(index, NewListItem(label, value))
+	l.AddListItemAt(index, NewListItem(label, value...))
 }
 
 // AddItemAt adds the item at the given index. If the index is negative, it counts from the end. If the index is
@@ -170,7 +170,8 @@ func (l *ItemList) GetItemByValue(value interface{}) (id string, foundItem ListI
 	}
 
 	for _, foundItem = range l.items {
-		if foundItem.Value() == value {
+		v := foundItem.Value()
+		if v == value {
 			id = foundItem.ID()
 			return
 		}

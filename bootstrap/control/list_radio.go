@@ -1,14 +1,14 @@
 package control
 
 import (
-	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/page/control"
+	"github.com/spekary/goradd/html"
 )
 
 type RadioListI interface {
 	CheckboxListI
 }
-
 // RadioList is a multi-select control that presents its choices as a list of checkboxes.
 // Styling is provided by divs and spans that you can provide css for in your style sheets. The
 // goradd.css file has default styling to handle the basics. It wraps the whole thing in a div that can be set
@@ -24,7 +24,7 @@ func NewRadioList(parent page.ControlI) *RadioList {
 	return l
 }
 
-func (l *RadioList) Init(self page.ControlI, parent page.ControlI) {
+func (l *RadioList) Init(self RadioListI, parent page.ControlI) {
 	l.CheckboxList.Init(self, parent)
 }
 
@@ -32,29 +32,25 @@ func (l *RadioList) this() RadioListI {
 	return l.Self.(RadioListI)
 }
 
-// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
-// attributes are disposed of after drawing, so they are essentially read-only.
-func (l *RadioList) DrawingAttributes() *html.Attributes {
-	a := l.CheckboxList.DrawingAttributes()
-	a.SetDataAttribute("grctl", "radiolist")
-	return a
-}
-
-func (l *RadioList) RenderItem(tag string, item ListItemI) (h string) {
+func (l *RadioList) renderItem(item control.ListItemI) (h string) {
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", l.ID())
 	attributes.Set("value", item.ID())
 	attributes.Set("type", "radio")
-	if l.selectedIds[item.ID()] {
+	if l.IsIdSelected(item.ID()) {
 		attributes.Set("checked", "")
 	}
+	attributes.AddClass("form-check-input")
 	ctrl := html.RenderVoidTag("input", attributes)
-	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, l.labelDrawingMode)
+
+	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()).AddClass("form-check-label"), item.Label(), ctrl, html.LABEL_AFTER)
 	attributes = item.Attributes().Clone()
-	attributes.SetID(item.ID() + "_cell")
-	attributes.AddClass("gr-cbl-item")
-	h = html.RenderTag(tag, attributes, h)
+	attributes.AddClass("form-check")
+	if l.isInline {
+		attributes.AddClass("form-check-inline")
+	}
+	h = html.RenderTag("div", attributes, h)
 	return
 }
 
@@ -97,12 +93,12 @@ func (l *RadioList) SetSelectedValue(v interface{}) {
 }
 
 func (l *RadioList) SetSelectedID(id string) {
+	l.SetSelectedIds([]string{id})
 	if id == "" {
-		l.selectedIds = map[string]bool{}
+		l.SetSelectedIds(nil)
 	} else {
-		l.selectedIds = map[string]bool{id:true}
+		l.SetSelectedIds([]string{id})
 	}
-	l.Refresh()
 }
 
 
@@ -112,12 +108,12 @@ func (l *RadioList) UpdateFormValues(ctx *page.Context) {
 	if ctx.RequestMode() == page.Ajax {
 		if v, ok := ctx.CheckableValue(controlID); ok {
 			if s, ok := v.(string); ok {
-				l.selectedIds = map[string]bool{l.ID() + "_" + s: true}
+				l.SetSelectedIdsNoRefresh([]string{l.ID() + "_" + s})
 			}
 		}
 	} else {
 		if v, ok := ctx.FormValue(controlID); ok {
-			l.selectedIds = map[string]bool{v:true}
+			l.SetSelectedIdsNoRefresh([]string{v})
 		}
 	}
 }

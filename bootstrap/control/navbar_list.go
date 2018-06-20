@@ -8,9 +8,9 @@ import (
 	"github.com/spekary/goradd/page/control"
 	"context"
 	"fmt"
+	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/page/action"
-	"github.com/spekary/goradd/javascript"
 )
 
 type NavbarListI interface {
@@ -46,7 +46,9 @@ func (l *NavbarList) Init(self NavbarListI, parent page.ControlI) {
 	l.Tag = "ul"
 	l.subItemTag = "li"
 	l.Proxy = control.NewProxy(l)
-	l.Proxy.On(event.Click(), action.Trigger(l.ID(), "gr-bs-navbarselect", javascript.JsCode("$j(this).data('grAv')")))
+
+	l.Proxy.On(event.Click(),
+		action.Trigger(l.ID(), "gr-bs-navbarselect", javascript.JsCode("$j(this).data('grAv')")))
 }
 
 func (l *NavbarList) this() NavbarListI {

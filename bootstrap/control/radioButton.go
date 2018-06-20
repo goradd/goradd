@@ -3,19 +3,17 @@ package control
 import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/page/control/control_base"
+	"github.com/spekary/goradd/bootstrap/control/control_base"
 )
 
 type RadioButtonI interface {
 	control_base.CheckboxI
 }
 
-
-// RadioButton is a standard html radio button. You can optionally specify a group name for the radiobutton to belong
-// to and the browser will make sure only one item in the group is selected.
 type RadioButton struct {
 	control_base.Checkbox
 	group string
+
 }
 
 func NewRadioButton(parent page.ControlI) *RadioButton {
@@ -30,7 +28,7 @@ func (c *RadioButton) this() RadioButtonI {
 
 func (c *RadioButton) DrawingAttributes() *html.Attributes {
 	a := c.Checkbox.DrawingAttributes()
-	a.SetDataAttribute("grctl", "radio")
+	a.SetDataAttribute("grctl", "bs-radio")
 	a.Set("type", "radio")
 	if c.group == "" {
 		a.Set("name", c.ID()) // treat it like a checkbox if no group is specified
@@ -41,6 +39,7 @@ func (c *RadioButton) DrawingAttributes() *html.Attributes {
 	return a
 }
 
+// UpdateFormValues is an internal call that lets us reflect the value of the checkbox on the web page
 func (c *RadioButton) UpdateFormValues(ctx *page.Context) {
 	id := c.ID()
 
@@ -57,17 +56,4 @@ func (c *RadioButton) SetGroup(g string) RadioButtonI {
 
 func (c *RadioButton) Group() string {
 	return c.group
-}
-
-func (c *RadioButton) SetChecked(v bool) RadioButtonI {
-	if c.group != "" && v {
-		if c.Checked() != v {
-			c.SetCheckedNoRefresh(v)
-			// make sure any other buttons in the group are unchecked
-			c.Form().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.ID())
-		}
-	} else {
-		c.Checkbox.SetChecked(v)
-	}
-	return c.this()
 }

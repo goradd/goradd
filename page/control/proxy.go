@@ -1,15 +1,15 @@
 package control
 
 import (
-	"bytes"
-	"context"
-	"fmt"
-	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page"
+	localPage "goradd/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/event"
-	localPage "goradd/page"
+	"bytes"
+	"github.com/spekary/goradd/html"
+	"fmt"
+	"context"
 	html2 "html"
 )
 
@@ -35,13 +35,6 @@ func (p *Proxy) Init(parent page.ControlI) {
 
 func (p *Proxy) this() ProxyI {
 	return p.Self.(ProxyI)
-}
-
-
-func (p *Proxy) On(e page.EventI, actions ...action.ActionI) page.EventI {
-	e.Terminating() // prevent default action (page submit)
-	p.Control.On(e, actions...)
-	return e
 }
 
 // OnClick is a shortcut for adding a click event handler that is particular to buttons. It debounces the click, to

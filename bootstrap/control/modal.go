@@ -208,7 +208,7 @@ func (d *Modal) RemoveAllButtons() {
 
 func (d *Modal) SetButtonVisible(id string, visible bool) ModalI {
 	if ctrl := d.buttonBar.Child(d.ID() + "_btn_" + id); ctrl != nil {
-		ctrl.SetVisible(false)
+		ctrl.SetVisible(visible)
 	}
 
 	return d.this()
@@ -240,7 +240,7 @@ func (d *Modal) Open() {
 	if d.Parent() == nil {
 		d.SetParent(d.Form())	// This is a saved modal which has previously been created and removed. Insert it back into the form.
 	}
-	//d.SetVisible(true)
+	d.SetVisible(true)
 	d.isOpen = true
 	//d.Refresh()
 	d.AddRenderScript("modal", "show")
@@ -253,7 +253,8 @@ func (d *Modal) Close() {
 
 func (d *Modal) closed() {
 	d.isOpen = false
-	d.Remove()
+	//d.Remove()
+	d.SetVisible(false)
 }
 
 func (d *Modal) PutCustomScript(ctx context.Context, response *page.Response) {

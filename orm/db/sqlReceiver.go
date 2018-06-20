@@ -15,7 +15,7 @@ import (
 // a prepared statement can return different results than without one), or if the data does not quite fit (UInt64 in particular
 // will return a string if the returned value is bigger than MaxInt64, but smaller than MaxUint64.)
 //
-// Pass the address of the R member to the sql.Scan method when using an object of this type. Required because there are some idiosyncracies with
+// Pass the address of the R member to the sql.Scan method when using an object of this type. IsRequired because there are some idiosyncracies with
 // how Go treats return values that would prevent returning an address of R from a function
 type SqlReceiver struct {
 	R interface{}

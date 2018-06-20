@@ -115,7 +115,15 @@ func (r *Response) displayAlert(message string) {
 
 // ExecuteJavaScript will execute the given code with the given priority. Note that all javascript code is run in
 // strict mode.
-func (r *Response) ExecuteJavaScript(js string, priority Priority) {
+func (r *Response) ExecuteJavaScript(js string, priorities ...Priority) {
+	var priority = PriorityStandard
+	if priorities != nil {
+		if len(priorities) == 1 {
+			priority = priorities[0]
+		} else {
+			panic("Don't call ExecuteJavaScript with arguments")
+		}
+	}
 	switch priority {
 	case PriorityExclusive:
 		r.exclusiveCommand = &ResponseCommand{script: js}
@@ -130,13 +138,14 @@ func (r *Response) ExecuteJavaScript(js string, priority Priority) {
 	}
 }
 
-func (r *Response) ExecuteControlCommand(controlID string, functionName string, priority Priority, args ...interface{}) {
-	r.ExecuteSelectorFunction("#"+controlID, functionName, priority, args...)
+func (r *Response) ExecuteControlCommand(controlID string, functionName string, args ...interface{}) {
+	r.ExecuteSelectorFunction("#"+controlID, functionName, args...)
 }
 
 // Calls a function on a jQuery selector
-func (r *Response) ExecuteSelectorFunction(selector string, functionName string, priority Priority, args ...interface{}) {
-	c := ResponseCommand{selector: selector, function: functionName, args: args}
+func (r *Response) ExecuteSelectorFunction(selector string, functionName string, args ...interface{}) {
+	args2,priority := r.extractPriority(args...)
+	c := ResponseCommand{selector: selector, function: functionName, args: args2}
 
 	switch priority {
 	case PriorityExclusive:
@@ -156,8 +165,9 @@ func (r *Response) ExecuteSelectorFunction(selector string, functionName string,
 
 // Call the given function with the given arguments. If just a function label, then the window object is searched.
 // The function can be inside an object accessible from the global namespace by separating with periods.
-func (r *Response) ExecuteJsFunction(functionName string, priority Priority, args ...interface{}) {
-	c := ResponseCommand{function: functionName, args: args}
+func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
+	args2,priority := r.extractPriority(args)
+	c := ResponseCommand{function: functionName, args: args2}
 
 	switch priority {
 	case PriorityExclusive:
@@ -172,6 +182,19 @@ func (r *Response) ExecuteJsFunction(functionName string, priority Priority, arg
 		c.final = true
 		r.finalCommands = append(r.finalCommands, c)
 	}
+}
+
+func (r *Response) extractPriority (args ...interface{}) (args2 []interface{}, priority Priority) {
+	for i,a := range args {
+		if p,ok := a.(Priority); ok {
+			priority = p
+			args2 = append(args[:i], args[i+1:]...)
+			return
+		}
+	}
+	priority = PriorityStandard
+	args2 = args
+	return
 }
 
 // One time add of style sheets, to be used by FormBase only for last minute style sheet injection.
@@ -271,7 +294,7 @@ func (r *Response) renderCommandArray(commands []ResponseCommand) string {
 			if command.args != nil {
 				args = javascript.Arguments(command.args).JavaScript()
 			}
-			script += fmt.Sprintf("jQuery(%s).%s(%s);\n", command.selector, command.function, args)
+			script += fmt.Sprintf("jQuery('%s').%s(%s);\n", command.selector, command.function, args)
 		} else if command.function != "" {
 			var args string
 			if command.args != nil {

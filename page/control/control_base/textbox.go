@@ -43,8 +43,8 @@ type Textbox struct {
 
 	value string
 
-	columns int
-	rows    int
+	columnCount int
+	rowCount    int
 
 	readonly bool
 }
@@ -82,22 +82,22 @@ func (t *Textbox) DrawingAttributes() *html.Attributes {
 	a := t.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "textbox")
 	a.Set("name", t.ID()) // needed for posts
-	if t.Required() {
+	if t.IsRequired() {
 		a.Set("required", "")
 	}
 	if t.maxLength != 0 {
 		a.Set("maxlength", strconv.Itoa(t.maxLength))
 	}
-	if t.rows == 0 { // single-line textbox
+	if t.rowCount == 0 { // single-line textbox
 		a.Set("type", t.typ)
 		a.Set("value", t.value)
-		if t.columns != 0 {
-			a.Set("size", strconv.Itoa(t.columns))
+		if t.columnCount != 0 {
+			a.Set("size", strconv.Itoa(t.columnCount))
 		}
 	} else {
-		a.Set("rows", strconv.Itoa(t.rows))
-		if t.columns != 0 {
-			a.Set("cols", strconv.Itoa(t.columns))
+		a.Set("rowCount", strconv.Itoa(t.rowCount))
+		if t.columnCount != 0 {
+			a.Set("cols", strconv.Itoa(t.columnCount))
 		}
 	}
 	return a
@@ -173,19 +173,19 @@ func (t *Textbox) SetType(typ string) TextboxI {
 	return t.this()
 }
 
-// SetColumns sets the visible width of the text control. Each table is an approximate with of a character, and is browser
+// SetColumnCount sets the visible width of the text control. Each table is an approximate with of a character, and is browser
 // dependent, so its not a very good way of setting the width. The css width property is more accurate. Also, this is
 // only the visible width, not the maximum number of characters.
-func (t *Textbox) SetColumns(columns int) {
-	t.columns = columns
+func (t *Textbox) SetColumnCount(columns int) {
+	t.columnCount = columns
 	if columns <= 0 {
 		panic("Invalid table value.")
 	}
 	t.Refresh()
 }
 
-// SetRows sets the number of rows the Textbox will have. A value of 0 produces an input tag, and a value of 1 or greater produces a textarea tag.
-func (t *Textbox) SetRows(rows int) {
+// SetRowCount sets the number of rowCount the Textbox will have. A value of 0 produces an input tag, and a value of 1 or greater produces a textarea tag.
+func (t *Textbox) SetRowCount(rows int) {
 	if rows < 0 {
 		panic("Invalid row value.")
 	}
@@ -196,7 +196,7 @@ func (t *Textbox) SetRows(rows int) {
 		t.Tag = "textarea"
 		t.IsVoidTag = false
 	}
-	t.rows = rows
+	t.rowCount = rows
 	t.Refresh()
 }
 
@@ -215,14 +215,14 @@ func (t *Textbox) sanitize(s string) string {
 	return t.sanitizer.Sanitize(s)
 }
 
-// Validate will first check for the Required attribute, and if set, will make sure a value is in the text field. It
+// Validate will first check for the IsRequired attribute, and if set, will make sure a value is in the text field. It
 // will then check the validators in the order assigned. The first invalid value found will return false.
 func (t *Textbox) Validate(ctx context.Context) bool {
 	if v := t.Control.Validate(ctx); !v {
 		return false
 	}
 	text := t.Text()
-	if t.Required() && text == "" {
+	if t.IsRequired() && text == "" {
 		if t.ErrorForRequired == "" {
 			t.SetValidationError(t.T("A value is required"))
 		} else {

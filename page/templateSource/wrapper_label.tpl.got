@@ -6,12 +6,16 @@ import (
 	"github.com/spekary/goradd/html"
 )
 
-func LabelTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {
-
+func LabelTmpl(ctx context.Context, w LabelWrapper, ctrl ControlI, h string, buf *bytes.Buffer) {
+    labelAttr := w.LabelAttributes().String()
 {{
 <div id="{{= ctrl.ID() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
 {{if ctrl.Label() != "" }}
-  <label id="{{= ctrl.ID() }}_lbl" class="goradd-lbl"{{if ctrl.HasFor() }} for="{{= ctrl.ID() }}" {{if}}>{{= ctrl.Label() }}</label>
+    {{if ctrl.TextIsLabel() }}
+  <span id="{{= ctrl.ID() }}_lbl" class="goradd-lbl" {{= labelAttr }}>{{= ctrl.Label() }}</span>
+    {{else}}
+  <label id="{{= ctrl.ID() }}_lbl" class="goradd-lbl"{{if ctrl.HasFor() }} for="{{= ctrl.ID() }}" {{if}} {{= labelAttr }}>{{= ctrl.Label() }}</label>
+    {{if}}
 {{if}}
 {{= html.Indent(h) }}
   <div id="{{= ctrl.ID() }}_err" class="goradd-error">{{= ctrl.ValidationMessage() }}</div>

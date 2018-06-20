@@ -54,7 +54,7 @@ type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *byt
 
 type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string, buffer *bytes.Buffer)
 
-var DefaultCheckboxLabelDrawingMode = html.LABEL_AFTER // Settind used by checkboxes and radio buttons to default how they draw labels.
+var DefaultCheckboxLabelDrawingMode = html.LABEL_AFTER // Setting used by checkboxes and radio buttons to default how they draw labels.
 
 // ActionValues is the structure representing the values sent in Action. Note that all numeric values are returned as
 // a json.Number type. You then can call NumberFloat() or NumberInt() as appropriate to extract the value.
@@ -84,6 +84,7 @@ type ControlI interface {
 	DrawText(ctx context.Context, buf *bytes.Buffer)
 	With(w WrapperI) ControlI
 	HasWrapper() bool
+	Wrapper() WrapperI
 
 	// Hierarchy functions
 
@@ -117,6 +118,7 @@ type ControlI interface {
 
 	Label() string
 	SetLabel(n string) ControlI
+	TextIsLabel() bool
 	Text() string
 	SetText(t string) ControlI
 	ValidationMessage() string
@@ -158,6 +160,10 @@ type ControlI interface {
 
 	// Serialization helpers
 	Restore(self ControlI)
+
+	// API
+	SetIsRequired(r bool) ControlI
+
 }
 
 type Control struct {
@@ -174,8 +180,7 @@ type Control struct {
 	hasNoSpace     bool                  // For special situations where we want no space between This and next tag. Spans in particular may need This.
 	attributes     *html.Attributes      // a collection of attributes to apply to the control
 	text           string                // multi purpose, can be button text, inner text inside of tags, etc.
-	textIsLabel    bool                  // special situation like checkboxes where the text should be wrapped in a label as part of the control
-	textLabelMode  html.LabelDrawingMode // describes how to draw This special label
+	textLabelMode  html.LabelDrawingMode // describes how to draw the internal label
 	htmlEscapeText bool                  // whether to escape the text output, or send straight text
 
 	attributeScripts []*[]interface{} // commands to send to our javascript to redraw portions of This control via ajax. Allows us to skip drawing the entire control.
@@ -314,7 +319,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	if c.isHidden {
 		// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
-		// To fix This, we create an empty, invisible control in the place where we would normally draw
+		// To fix this, we create an empty, invisible control in the place where we would normally draw
 		h = "<span id=\"" + c.this().ID() + "\" style=\"display:none;\" data-grctl></span>\n"
 	} else {
 		h = c.this().DrawTag(ctx)
@@ -375,7 +380,7 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 		// add attribute changes
 		if c.attributeScripts != nil {
 			for _, scripts := range c.attributeScripts {
-				response.ExecuteControlCommand(c.ID(), (*scripts)[0].(string), PriorityStandard, (*scripts)[1:]...)
+				response.ExecuteControlCommand(c.ID(), (*scripts)[0].(string), (*scripts)[1:]...)
 			}
 			c.attributeScripts = nil
 		}
@@ -522,6 +527,11 @@ func (c *Control) HasWrapper() bool {
 	return c.wrapper != nil
 }
 
+func (c *Control) Wrapper() WrapperI {
+	return c.wrapper
+}
+
+
 func (c *Control) SetAttribute(name string, val interface{}) ControlI {
 	if name == "id" {
 		panic("You can only set the 'id' attribute of a control when it is created")
@@ -574,19 +584,7 @@ func (c *Control) DrawingAttributes() *html.Attributes {
 	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
 
 	if c.HasWrapper() {
-		if c.validationState != NotValidated {
-			a.Set("aria-describedby", c.ID()+"_err")
-			if c.validationState == Valid {
-				a.Set("aria-invalid", "false")
-			} else {
-				a.Set("aria-invalid", "true")
-			}
-		} else if c.instructions != "" {
-			a.Set("aria-describedby", c.ID()+"_inst")
-		}
-		if c.label != "" && !c.hasFor { // if it has a for, then screen readers already know about the label
-			a.Set("aria-labeledby", c.ID()+"_lbl")
-		}
+		c.wrapper.ModifyDrawingAttributes(c.this(), a)
 	}
 
 	return a
@@ -768,12 +766,12 @@ func (c *Control) Refresh() {
 	c.isModified = true
 }
 
-func (c *Control) SetRequired(r bool) ControlI {
+func (c *Control) SetIsRequired(r bool) ControlI {
 	c.isRequired = r
 	return c.this()
 }
 
-func (c *Control) Required() bool {
+func (c *Control) IsRequired() bool {
 	return c.isRequired
 }
 
@@ -827,6 +825,12 @@ func (c *Control) SetLabel(n string) ControlI {
 
 func (c *Control) Label() string {
 	return c.label
+}
+
+// TextIsLabel is used by the drawing routines to determine if the control's text should be wrapped with a label tag,
+// Meaning the Label itself
+func (c *Control) TextIsLabel() bool {
+	return false
 }
 
 func (c *Control) SetInstructions(i string) ControlI {

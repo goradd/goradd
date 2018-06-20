@@ -29,5 +29,4 @@ func DivTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {
 `)
 
 	return
-
 }

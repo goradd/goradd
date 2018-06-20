@@ -3,7 +3,7 @@ package control
 import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/page/control/control_base"
+	"github.com/spekary/goradd/bootstrap/control/control_base"
 )
 
 type Checkbox struct {
@@ -18,7 +18,7 @@ func NewCheckbox(parent page.ControlI) *Checkbox {
 
 func (c *Checkbox) DrawingAttributes() *html.Attributes {
 	a := c.Checkbox.DrawingAttributes()
-	a.SetDataAttribute("grctl", "checkbox")
+	a.SetDataAttribute("grctl", "bs-checkbox")
 	a.Set("name", c.ID()) // needed for posts
 	a.Set("type", "checkbox")
 	a.Set("value", "1") // required for html validity

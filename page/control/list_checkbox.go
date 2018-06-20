@@ -27,7 +27,7 @@ type CheckboxListI interface {
 // scrolling list much like a standard html select list.
 type CheckboxList struct {
 	MultiselectList
-	columns          int
+	columnCount      int
 	direction        ItemDirection
 	labelDrawingMode html.LabelDrawingMode
 	isScrolling      bool
@@ -42,7 +42,7 @@ func NewCheckboxList(parent page.ControlI) *CheckboxList {
 func (l *CheckboxList) Init(self page.ControlI, parent page.ControlI) {
 	l.MultiselectList.Init(self, parent)
 	l.Tag = "div"
-	l.columns = 1
+	l.columnCount = 1
 	l.labelDrawingMode = page.DefaultCheckboxLabelDrawingMode
 }
 
@@ -50,13 +50,17 @@ func (l *CheckboxList) this() CheckboxListI {
 	return l.Self.(CheckboxListI)
 }
 
-func (l *CheckboxList) SetColumns(columns int) CheckboxListI {
-	if l.columns <= 0 {
+func (l *CheckboxList) SetColumnCount(columns int) CheckboxListI {
+	if l.columnCount <= 0 {
 		panic("Columns must be at least 1.")
 	}
-	l.columns = columns
+	l.columnCount = columns
 	l.Refresh()
 	return l.this()
+}
+
+func (l *CheckboxList) ColumnCount() int {
+	return l.columnCount
 }
 
 func (l *CheckboxList) SetDirection(direction ItemDirection) CheckboxListI {
@@ -64,6 +68,11 @@ func (l *CheckboxList) SetDirection(direction ItemDirection) CheckboxListI {
 	l.Refresh()
 	return l.this()
 }
+
+func (l *CheckboxList) Direction() ItemDirection {
+	return l.direction
+}
+
 
 func (l *CheckboxList) SetLabelDrawingMode(mode html.LabelDrawingMode) CheckboxListI {
 	l.labelDrawingMode = mode
@@ -111,11 +120,11 @@ func (l *CheckboxList) getItemsHtml(items []ListItemI) string {
 
 func (l *CheckboxList) verticalHtml(items []ListItemI) (h string) {
 	lines := l.verticalHtmlItems(items)
-	if l.columns == 1 {
+	if l.columnCount == 1 {
 		return strings.Join(lines, "\n")
 	} else {
-		columnHeight := len(lines)/l.columns + 1
-		for col := 0; col < l.columns; col++ {
+		columnHeight := len(lines)/l.columnCount + 1
+		for col := 0; col < l.columnCount; col++ {
 			colHtml := strings.Join(lines[col*columnHeight:(col+1)*columnHeight], "\n")
 			colHtml = html.RenderTag("div", html.NewAttributes().AddClass("gr-cbl-table"), colHtml)
 			h += colHtml
@@ -145,12 +154,13 @@ func (l *CheckboxList) RenderItem(tag string, item ListItemI) (h string) {
 	attributes.SetID(item.ID())
 	attributes.Set("name", item.ID())
 	attributes.Set("type", "checkbox")
-	if l.isIdSelected(item.ID()) {
+	if l.IsIdSelected(item.ID()) {
 		attributes.Set("checked", "")
 	}
 	ctrl := html.RenderVoidTag("input", attributes)
 	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, l.labelDrawingMode)
 	attributes = item.Attributes().Clone()
+	attributes.SetID(item.ID() + "_cell")
 	attributes.AddClass("gr-cbl-item")
 	h = html.RenderTag(tag, attributes, h)
 	return
@@ -176,7 +186,7 @@ func (l *CheckboxList) horizontalHtml(items []ListItemI) (h string) {
 		} else {
 			rowHtml += l.this().RenderItem("span", item)
 			itemNum++
-			if itemNum == l.columns {
+			if itemNum == l.columnCount {
 				// output a row
 				h += html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-row"), rowHtml)
 				rowHtml = ""

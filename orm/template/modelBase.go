@@ -39,15 +39,6 @@ func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.Data
 
 	// The master template for the modelBase classes
 
-	var hasDateTime bool
-
-	for _, col := range t.Columns {
-		if col.GoType == query.COL_TYPE_DATETIME {
-			hasDateTime = true
-			break
-		}
-	}
-
 	buf.WriteString(`package model
 
 // This file is code generated. Do not edit.
@@ -64,26 +55,19 @@ import (
 	"fmt"
 	. "github.com/spekary/goradd/orm/op"
 	//"./node"
-`)
-	if hasDateTime {
-		buf.WriteString(`	"github.com/spekary/goradd/datetime"
-`)
-	}
-
-	buf.WriteString(`	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/goradd/datetime"
+	"github.com/spekary/goradd/util/types"
 )
-
-var _ = types.OrderedMap{}
 
 `)
 
 	// struct.tmpl
 
-	buf.WriteString(`// The `)
+	buf.WriteString(`// `)
 
-	buf.WriteString(t.GoName)
+	buf.WriteString(fmt.Sprintf("%v", privateName))
 
-	buf.WriteString(` is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
+	buf.WriteString(`Base is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
 // Do not directly access the internal variables, but rather use the accessor functions, since this class maintains internal state
 // related to the variables.
 
@@ -260,14 +244,7 @@ type `)
 
 	//const.tmpl
 
-	buf.WriteString(`// The `)
-
-	buf.WriteString(t.GoName)
-
-	buf.WriteString(` is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-// Do not directly access the internal variables, but rather use the accessor functions, since this class maintains internal state
-// related to the variables.
-
+	buf.WriteString(`
 const  (
 `)
 
@@ -743,6 +720,7 @@ func (o *`)
 				buf.WriteString(` = nil
 `)
 			}
+
 			buf.WriteString(`		}
 	} else {
 		v := i.(`)
@@ -754,29 +732,49 @@ func (o *`)
 
 			buf.WriteString(col.VarName)
 
-			buf.WriteString(`IsNull `)
+			buf.WriteString(`IsNull ||
+		    `)
 			if col.GoType != query.COL_TYPE_BYTES {
-				buf.WriteString(` || o.`)
+				buf.WriteString(` o.`)
 
 				buf.WriteString(col.VarName)
 
 				buf.WriteString(` != v `)
+			} else {
+
+				buf.WriteString(` !bytes.Equal(o.`)
+
+				buf.WriteString(col.VarName)
+
+				buf.WriteString(`, v) `)
 			}
-			buf.WriteString(` {
+
+			buf.WriteString(`{
+
 			o.`)
 
 			buf.WriteString(col.VarName)
 
 			buf.WriteString(`IsNull = false
+`)
+			if col.GoType != query.COL_TYPE_BYTES {
+				buf.WriteString(`			o.`)
 
-			// TODO: For bytes, should this be a copy?
-			o.`)
+				buf.WriteString(col.VarName)
 
-			buf.WriteString(col.VarName)
+				buf.WriteString(` = v
+`)
+			} else {
 
-			buf.WriteString(` = v
+				buf.WriteString(`            o.`)
 
-			o.`)
+				buf.WriteString(col.VarName)
+
+				buf.WriteString(` = append([]byte(nil), v...)
+`)
+			}
+
+			buf.WriteString(`			o.`)
 
 			buf.WriteString(col.VarName)
 
@@ -790,6 +788,7 @@ func (o *`)
 				buf.WriteString(` = nil
 `)
 			}
+
 			buf.WriteString(`		}
 	}
 }

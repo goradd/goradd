@@ -7,10 +7,51 @@ import (
 	"github.com/spekary/goradd/page"
 )
 
-type FormGroupWrapper struct {
+// DivWrapper is a wrapper similar to a form group, but simply without the FormGroup class added. Use this for
+// wrapping inline elements and other special situations listed in the Bootstrap doc under the Forms component.
+// https://getbootstrap.com/docs/4.1/components/forms/ as of this writing
+type DivWrapper struct {
+	page.LabelWrapper
 	innerDivAttributes *html.Attributes
-	labelAttributes    *html.Attributes
 	useTooltips        bool // uses tooltips for the error class
+}
+
+func NewDivWrapper() *DivWrapper {
+	return &DivWrapper{}
+}
+
+func (w *DivWrapper) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
+	FormGroupTmpl(ctx, w, ctrl, html, buf)
+}
+
+func (w DivWrapper) TypeName() string {
+	return "bootstrap.Div"
+}
+
+// InnerDivAttributes returns attributes for the innerDiv. Changes will be remembered. If you set these, the control
+// itself will be wrapped with a div with these attributes. This is useful for layouts that have the label next to
+// the control.
+func (w *DivWrapper) InnerDivAttributes() *html.Attributes {
+	if w.innerDivAttributes == nil {
+		w.innerDivAttributes = html.NewAttributes()
+	}
+	return w.innerDivAttributes
+}
+
+func (w DivWrapper) HasInnerDivAttributes() bool {
+	if w.innerDivAttributes == nil || w.innerDivAttributes.Len() == 0 {
+		return false
+	}
+	return true
+}
+
+func (w *DivWrapper) SetUseTooltips(t bool) *DivWrapper {
+	w.useTooltips = t
+	return w
+}
+
+type FormGroupWrapper struct {
+	DivWrapper
 }
 
 func NewFormGroupWrapper() *FormGroupWrapper {
@@ -18,52 +59,42 @@ func NewFormGroupWrapper() *FormGroupWrapper {
 }
 
 func (w *FormGroupWrapper) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
-	FormGroupTmpl(ctx, w, ctrl, html, buf)
+	ctrl.WrapperAttributes().AddClass("form-group")
+	FormGroupTmpl(ctx, &w.DivWrapper, ctrl, html, buf)
 }
 
 func (w FormGroupWrapper) TypeName() string {
 	return "bootstrap.FormGroup"
 }
 
-// InnerDivAttributes returns attributes for the innerDiv. Changes will be remembered. If you set these, the control
-// itself will be wrapped with a div with these attributes. This is useful for layouts that have the label next to
-// the control.
-func (w *FormGroupWrapper) InnerDivAttributes() *html.Attributes {
-	if w.innerDivAttributes == nil {
-		w.innerDivAttributes = html.NewAttributes()
-	}
-	return w.innerDivAttributes
+
+type FieldsetWrapper struct {
+	page.LabelWrapper
+	useTooltips        bool // uses tooltips for the error class
 }
 
-func (w FormGroupWrapper) HasInnerDivAttributes() bool {
-	if w.innerDivAttributes == nil || w.innerDivAttributes.Len() == 0 {
-		return false
-	}
-	return true
+// https://getbootstrap.com/docs/4.1/components/forms/#horizontal-form
+func NewFieldsetWrapper() *FieldsetWrapper {
+	return &FieldsetWrapper{}
 }
 
-// LabelAttributes returns attributes that will apply to the label. Changes will be remembered.
-func (w *FormGroupWrapper) LabelAttributes() *html.Attributes {
-	if w.labelAttributes == nil {
-		w.labelAttributes = html.NewAttributes()
-	}
-	return w.labelAttributes
+
+func (w *FieldsetWrapper) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
+	FieldsetTmpl(ctx, w, ctrl, html, buf)
 }
 
-func (w FormGroupWrapper) HasLabelAttributes() bool {
-	if w.labelAttributes == nil || w.labelAttributes.Len() == 0 {
-		return false
-	}
-	return true
-}
-
-func (w *FormGroupWrapper) SetUseTooltips(t bool) *FormGroupWrapper {
+func (w *FieldsetWrapper) SetUseTooltips(t bool) *FieldsetWrapper {
 	w.useTooltips = t
 	return w
 }
 
+func (w FieldsetWrapper) TypeName() string {
+	return "bootstrap.Fieldset"
+}
+
+
 func init() {
-	page.RegisterControlWrapper("bootstrap.FormGroup", &FormGroupWrapper{})
+	page.RegisterControlWrapper("bootstrap.FormGroup", &DivWrapper{})
 }
 
 // TODO: will need to serialize this when we are ready to serialize formstate

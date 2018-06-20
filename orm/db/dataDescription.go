@@ -253,12 +253,13 @@ func (dd *DatabaseDescription) analyzeTypeTables() {
 			value = m[names[1]].(string)
 			var con string
 			if strings.ToUpper(value) == value {
-				// All upper case values
-				con = strings.Replace(value, " ", "_", -1)
+				// All upper case values, convert to Camel Case
+				con = strings.ToLower(value)
+				con = strings.Title(con)
+				con = strings.Replace(con, " ", "", -1)
+
 			} else {
 				con = strings.Replace(value, " ", "", -1)
-				con = snaker.CamelToSnake(con)
-				con = strings.ToUpper(con)
 			}
 			tt.Constants[key] = con
 
@@ -652,8 +653,6 @@ func (cd *ColumnDescription) DefaultValueAsValue() string {
 
 func (cd *ColumnDescription) DefaultConstantName(td *TableDescription) string {
 	title := td.GoName + cd.GoName + "Default"
-	title = snaker.CamelToSnake(title)
-	title = strings.ToUpper(title)
 	return title
 }
 

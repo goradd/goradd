@@ -18,8 +18,6 @@ func (d *Dialog) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error
 		}
 	} else {
 
-		buf.WriteString(``)
-
 		buf.WriteString(html.EscapeString(d.Text()))
 
 	}

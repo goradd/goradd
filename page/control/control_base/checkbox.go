@@ -13,6 +13,7 @@ import (
 
 type CheckboxI interface {
 	localPage.ControlI
+	GetDrawingInputLabelAttributes() *html.Attributes
 }
 
 
@@ -20,7 +21,7 @@ type CheckboxI interface {
 type Checkbox struct {
 	localPage.Control
 	checked         bool
-	labelMode       html.LabelDrawingMode // how to draw the label associating the text with the checkbox
+	LabelMode       html.LabelDrawingMode // how to draw the label associating the text with the checkbox
 	labelAttributes *html.Attributes
 }
 
@@ -34,7 +35,7 @@ func (c *Checkbox) Init(self page.ControlI, parent page.ControlI) {
 
 	c.Tag = "input"
 	c.IsVoidTag = true
-	c.labelMode = page.DefaultCheckboxLabelDrawingMode
+	c.LabelMode = page.DefaultCheckboxLabelDrawingMode
 	c.SetHasFor(true)
 	c.SetAttribute("autocomplete", "off") // fixes an html quirk
 }
@@ -47,7 +48,7 @@ func (c *Checkbox) this() CheckboxI {
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (c *Checkbox) DrawingAttributes() *html.Attributes {
 	a := c.Control.DrawingAttributes()
-	if c.Text() != "" && (c.labelMode == html.LABEL_BEFORE || c.labelMode == html.LABEL_AFTER) {
+	if c.Text() != "" && (c.LabelMode == html.LABEL_BEFORE || c.LabelMode == html.LABEL_AFTER) {
 		// Treat the closer text label as more important than the wrapper label
 		a.Set("aria-labeledby", c.ID()+"_ilbl")
 	}
@@ -55,7 +56,7 @@ func (c *Checkbox) DrawingAttributes() *html.Attributes {
 }
 
 func (c *Checkbox) SetLabelDrawingMode(m html.LabelDrawingMode) {
-	c.labelMode = m
+	c.LabelMode = m
 	c.Refresh()
 }
 
@@ -76,10 +77,10 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 			}
 		}
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
-	} else if c.labelMode == html.WRAP_LABEL_AFTER || c.labelMode == html.WRAP_LABEL_BEFORE {
+	} else if c.LabelMode == html.WRAP_LABEL_AFTER || c.LabelMode == html.WRAP_LABEL_BEFORE {
 		// Use the text as a label wrapper
 		text = html2.EscapeString(text)
-		labelAttributes := c.getDrawingInputLabelAttributes()
+		labelAttributes := c.this().GetDrawingInputLabelAttributes()
 
 		if !c.HasWrapper() {
 			if a := c.this().WrapperAttributes(); a != nil {
@@ -88,11 +89,11 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 		}
 
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
-		ctrl = html.RenderLabel(labelAttributes, text, ctrl, c.labelMode)
+		ctrl = html.RenderLabel(labelAttributes, text, ctrl, c.LabelMode)
 	} else {
-		// label does not wrap. We will create a span to wrap the label and input together
+		// label does not wrap. We will put one after the other
 		text = html2.EscapeString(text)
-		labelAttributes := c.getDrawingInputLabelAttributes()
+		labelAttributes := c.this().GetDrawingInputLabelAttributes()
 
 		if !c.HasWrapper() {
 			if a := c.this().WrapperAttributes(); a != nil {
@@ -100,13 +101,11 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 			}
 		}
 
-		labelAttributes2 := html.NewAttributes()
-		labelAttributes2.Set("for", c.ID())
-		labelAttributes2.Set("id", c.ID()+"_ilbl")
+		labelAttributes.Set("for", c.ID())
+		labelAttributes.Set("id", c.ID()+"_ilbl")
 
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
-		ctrl = html.RenderLabel(labelAttributes2, text, ctrl, c.labelMode)
-		ctrl = html.RenderTag("span", labelAttributes, ctrl)
+		ctrl = html.RenderLabel(labelAttributes, text, ctrl, c.LabelMode)
 	}
 	return ctrl
 }
@@ -122,7 +121,7 @@ func (c *Checkbox) InputLabelAttributes() *html.Attributes {
 	return c.labelAttributes
 }
 
-func (c *Checkbox) getDrawingInputLabelAttributes() *html.Attributes {
+func (c *Checkbox) GetDrawingInputLabelAttributes() *html.Attributes {
 	a := c.InputLabelAttributes().Clone()
 
 	// copy tooltip to wrapping label
@@ -137,11 +136,13 @@ func (c *Checkbox) getDrawingInputLabelAttributes() *html.Attributes {
 	if !c.IsDisplayed() {
 		a.SetStyle("display", "none")
 	}
+
+	a.SetDataAttribute("grel", a.ID())	// make sure label gets replaced when drawing
 	return a
 }
 
 // Set the value of the checkbox. Returns itself for chaining.
-func (c *Checkbox) SetChecked(v bool) page.ControlI {
+func (c *Checkbox) SetChecked(v bool) CheckboxI {
 	if c.checked != v {
 		c.checked = v
 		c.AddRenderScript("prop", "checked", v)
@@ -211,4 +212,8 @@ func (c *Checkbox) UnmarshalState(m types.MapI) {
 		v, _ := m.GetBool("checked")
 		c.checked = v
 	}
+}
+
+func (c *Checkbox) TextIsLabel() bool {
+	return true
 }

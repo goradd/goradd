@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"reflect"
+	"github.com/spekary/goradd/html"
 )
 
 // WrapperI defines the control wrapper interface. A control wrapper takes the basic html output by a control and wraps
@@ -11,6 +12,7 @@ import (
 // For example, wrappers can be used to add labels that are connected to a control, give additional information, or show error conditions.
 type WrapperI interface {
 	Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer)
+	ModifyDrawingAttributes(ctrl ControlI, attributes *html.Attributes)
 }
 
 var wrapperRegistry = map[string]reflect.Type{}
@@ -44,8 +46,24 @@ func (w ErrorWrapper) TypeName() string {
 	return "page.Error"
 }
 
+func (w ErrorWrapper) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
+	state := c.control().validationState
+	if state != NotValidated {
+		a.Set("aria-describedby", c.ID() + "_err")
+		if state == Valid {
+			a.Set("aria-invalid", "false")
+		} else {
+			a.Set("aria-invalid", "true")
+		}
+	} else if c.control().instructions != "" {
+		a.Set("aria-describedby", c.ID() + "_inst")
+	}
+}
+
+
 type LabelWrapper struct {
 	ErrorWrapper
+	labelAttributes *html.Attributes
 }
 
 func NewLabelWrapper() LabelWrapper {
@@ -53,12 +71,46 @@ func NewLabelWrapper() LabelWrapper {
 }
 
 func (w LabelWrapper) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
-	LabelTmpl(ctx, ctrl, html, buf)
+	LabelTmpl(ctx, w, ctrl, html, buf)
 }
+
+// LabelAttributes returns attributes that will apply to the label. Changes will be remembered.
+func (w *LabelWrapper) LabelAttributes() *html.Attributes {
+	if w.labelAttributes == nil {
+		w.labelAttributes = html.NewAttributes()
+	}
+	return w.labelAttributes
+}
+
+func (w LabelWrapper) HasLabelAttributes() bool {
+	if w.labelAttributes == nil || w.labelAttributes.Len() == 0 {
+		return false
+	}
+	return true
+}
+
 
 func (w LabelWrapper) TypeName() string {
 	return "page.Label"
 }
+
+func (w LabelWrapper) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
+	state := c.control().validationState
+	if state != NotValidated {
+		a.Set("aria-describedby", c.ID() + "_err")
+		if state == Valid {
+			a.Set("aria-invalid", "false")
+		} else {
+			a.Set("aria-invalid", "true")
+		}
+	} else if c.control().instructions != "" {
+		a.Set("aria-describedby", c.ID() + "_inst")
+	}
+	if c.control().label != "" && !c.control().hasFor { // if it has a for, then screen readers already know about the label
+		a.Set("aria-labeledby", c.ID() + "_lbl")
+	}
+}
+
 
 type DivWrapper struct {
 }
@@ -74,6 +126,10 @@ func (w DivWrapper) Wrap(ctx context.Context, ctrl ControlI, html string, buf *b
 func (w DivWrapper) TypeName() string {
 	return "page.Div"
 }
+
+func (w DivWrapper) ModifyDrawingAttributes(ctrl ControlI, a *html.Attributes) {
+}
+
 
 
 func init() {

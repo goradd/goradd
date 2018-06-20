@@ -64,7 +64,7 @@ type AppContext struct {
 	requestMode         RequestMode
 	cliArgs             []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId         string
-	customControlValues map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
+	customControlValues map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
 	checkableValues     map[string]interface{} // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
 	actionControlID     string                 // If an action, the control sending the action
 	eventID             EventID                // The event to send to the control
@@ -166,6 +166,15 @@ func (ctx *Context) CheckableValues() map[string]interface{} {
 	return ctx.checkableValues
 }
 
+func (ctx *Context) CustomControlValue(id string, key string) interface{} {
+	if m,ok := ctx.customControlValues[id]; ok {
+		if v,ok2 := m[key]; ok2 {
+			return v
+		}
+	}
+	return nil
+}
+
 // FillApp fills the app structure with app specific information from the request
 // Do not panic here!
 func (ctx *Context) FillApp(cliArgs []string) {
@@ -183,7 +192,7 @@ func (ctx *Context) FillApp(cliArgs []string) {
 			}
 
 			var params struct {
-				ControlValues   map[string]interface{} `json:"controlValues"`
+				ControlValues   map[string]map[string]interface{} `json:"controlValues"`
 				CheckableValues map[string]interface{} `json:"checkableValues"`
 				ControlID       string                 `json:"controlID"`
 				EventID         int                    `json:"eventID"`
