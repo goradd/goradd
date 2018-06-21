@@ -56,13 +56,6 @@ type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string,
 
 var DefaultCheckboxLabelDrawingMode = html.LABEL_AFTER // Setting used by checkboxes and radio buttons to default how they draw labels.
 
-// ActionValues is the structure representing the values sent in Action. Note that all numeric values are returned as
-// a json.Number type. You then can call NumberFloat() or NumberInt() as appropriate to extract the value.
-type ActionValues struct {
-	Event   interface{} `json:"event"`
-	Control interface{} `json:"control"`
-	Action  interface{} `json:"action"`
-}
 
 type ControlI interface {
 	ID() string

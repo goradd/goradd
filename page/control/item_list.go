@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// IDer is an object that can embed an ItemList
+// IDer is an object that can embed an PatientList
 type IDer interface {
 	ID() string
 	SetID(id string)
@@ -28,15 +28,15 @@ type ItemListI interface {
 	reindex(start int)
 }
 
-// ItemList manages a list of ListItemI list items. ItemList is designed to be embedded in another structure, and will
-// turn that object into a manager of list items. ItemList will manage the id's of the items in its list, you do not
+// PatientList manages a list of ListItemI list items. PatientList is designed to be embedded in another structure, and will
+// turn that object into a manager of list items. PatientList will manage the id's of the items in its list, you do not
 // have control of that, and it needs to manage those ids in order to efficiently manage the selection process.
 type ItemList struct {
 	owner IDer
 	items []ListItemI
 }
 
-// NewItemList creates a new item list. "owner" is the object that has the ItemList embedded in it, and must be
+// NewItemList creates a new item list. "owner" is the object that has the PatientList embedded in it, and must be
 // an IDer.
 func NewItemList(owner IDer) ItemList {
 	return ItemList{owner: owner}
@@ -109,7 +109,7 @@ func (l *ItemList) GetItemAt(index int) ListItemI {
 	return l.items[index]
 }
 
-// Items returns a slice of the ListItemI items in the ItemList, in the order they were added or arranged.
+// Items returns a slice of the ListItemI items in the PatientList, in the order they were added or arranged.
 func (l *ItemList) ListItems() []ListItemI {
 	return l.items
 }

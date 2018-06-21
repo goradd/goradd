@@ -8,9 +8,9 @@ import (
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/control"
-	"github.com/spekary/goradd/page/event"
 	html2 "golang.org/x/net/html"
 	"strconv"
+	"github.com/spekary/goradd/page/event"
 )
 
 const (
@@ -61,11 +61,19 @@ func (t *Table) Init(self page.ControlI, parent page.ControlI) {
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1
-	t.On(event.TableSort(), action.Ajax(t.ID(), SortClick), action.PrivateAction{})
 }
 
 func (t *Table) this() TableI {
 	return t.Self.(TableI)
+}
+
+// Call Sortable to make a table sortable. It will attach sortable events and show the header if its not shown.
+func (t *Table) Sortable() TableI {
+	t.On(event.TableSort(), action.Ajax(t.ID(), SortClick), action.PrivateAction{})
+	if t.headerRowCount == 0 {
+		t.headerRowCount = 1
+	}
+	return t.this()
 }
 
 func (t *Table) SetCaption(caption interface{}) {
@@ -228,19 +236,19 @@ func (t *Table) GetFooterRowAttributes(row int) *html.Attributes {
 }
 
 func (t *Table) drawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error) {
-	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
+	var this = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
 	buf1 := page.GetBuffer()
 	defer page.PutBuffer(buf1)
 	for i, col := range t.columns {
 		col.DrawCell(ctx, row, i, data, buf1)
 	}
-	buf.WriteString(html.RenderTag("tr", t2.GetRowAttributes(row, data), buf1.String()))
+	buf.WriteString(html.RenderTag("tr", this.GetRowAttributes(row, data), buf1.String()))
 	return
 }
 
 func (t *Table) GetRowAttributes(row int, data interface{}) *html.Attributes {
 	if t.rowStyler != nil {
-		return t.rowStyler.Attributes(row)
+		return t.rowStyler.Attributes(row, data)
 	}
 	return nil
 }

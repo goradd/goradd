@@ -1,6 +1,9 @@
 package event
 
-import "github.com/spekary/goradd/page"
+import (
+	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/javascript"
+)
 
 const (
 	CellClickDefault     = `{"row": this.parentElement.rowIndex, "col": this.cellIndex}`
@@ -45,7 +48,7 @@ type CellClickEvent struct {
 
 func CellClick() *CellClickEvent {
 	e := &CellClickEvent{page.Event{JsEvent: "click"}}
-	e.Selector("th,td").ActionValue(CellClickDefault)
+	e.Selector("th,td").ActionValue(javascript.JsCode(CellClickDefault))
 	return e
 }
 
@@ -54,7 +57,7 @@ func CellClick() *CellClickEvent {
 // For example:
 //   e := CellClick().RowDataActionValue("rowVal").Delay(100)
 func (e *CellClickEvent) RowDataActionValue(key string) *CellClickEvent {
-	e.ActionValue(`$j(this).parent().data("` + key + `")`)
+	e.ActionValue(javascript.JsCode(`$j(this).parent().data("` + key + `")`))
 	return e
 }
 
@@ -63,6 +66,6 @@ func (e *CellClickEvent) RowDataActionValue(key string) *CellClickEvent {
 // For example:
 //   e := CellClick().CellDataActionValue("cellVal").Delay(100)
 func (e *CellClickEvent) CellDataActionValue(key string) *CellClickEvent {
-	e.ActionValue(`$j(this).data("` + key + `")`)
+	e.ActionValue(javascript.JsCode(`$j(this).data("` + key + `")`))
 	return e
 }

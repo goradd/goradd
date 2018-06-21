@@ -1564,11 +1564,28 @@ func (o *`)
 	//query.tmpl
 	// Top level query functions
 
-	buf.WriteString(`func Load`)
+	buf.WriteString(`
+// Load`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
 
-	buf.WriteString(`(ctx context.Context, id string) *`)
+	buf.WriteString(` queries for a single `)
+
+	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+	buf.WriteString(` object by primary key.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use Query`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.GoPlural))
+
+	buf.WriteString(`() to start a query builder.
+func Load`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+	buf.WriteString(`(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
 
@@ -1585,7 +1602,7 @@ func (o *`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.PrimaryKeyColumn.GoName))
 
-	buf.WriteString(`(), id)).Get(ctx)
+	buf.WriteString(`(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
 `)
@@ -1598,7 +1615,28 @@ func (o *`)
 					names += snaker.SnakeToCamel(name)
 				}
 
-				buf.WriteString(`func Load`)
+				buf.WriteString(`// Load`)
+
+				buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+				buf.WriteString(`By`)
+				for _, name := range idx.ColumnNames {
+					buf.WriteString(snaker.SnakeToCamel(name))
+				}
+
+				buf.WriteString(` queries for a single `)
+
+				buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+				buf.WriteString(` object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use Query`)
+
+				buf.WriteString(fmt.Sprintf("%v", t.GoPlural))
+
+				buf.WriteString(`() to start a query builder.
+func Load`)
 
 				buf.WriteString(fmt.Sprintf("%v", t.GoName))
 
@@ -1620,7 +1658,7 @@ func (o *`)
 					buf.WriteString(` `)
 				}
 
-				buf.WriteString(`) *`)
+				buf.WriteString(`, joinOrSelectNodes ...query.NodeI) *`)
 
 				buf.WriteString(fmt.Sprintf("%v", t.GoName))
 
@@ -1669,7 +1707,8 @@ func (o *`)
 `)
 				}
 
-				buf.WriteString(`        Get(ctx)
+				buf.WriteString(`        joinOrSelect(joinOrSelectNodes...).
+        Get(ctx)
 }
 `)
 
@@ -2031,6 +2070,27 @@ func (b *`)
 	 return b.base.Subquery()
 }
 
+
+// Private helper function for the Load* functions
+func (b *`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
+	buf.WriteString(`Builder) joinOrSelect(nodes ...query.NodeI) *`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
+
+	buf.WriteString(`Builder {
+	for _,n := range nodes {
+		switch n.(type) {
+		case query.TableNodeI:
+			b.base.Join(n, nil)
+		case *query.ColumnNode:
+			b.Select(n)
+		}
+	}
+	return b
+}
 
 
 `)

@@ -56,7 +56,7 @@ func NewImageCapture(parent page.ControlI) *ImageCapture {
 func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI) {
 	i.Control.Init(self, parent)
 	i.Tag = "div"
-	i.Form().AddJavaScriptFile(config.GoraddAssets() + "/js/image_capture.js", false, nil)
+	i.Form().AddJavaScriptFile(config.GoraddAssets() + "/js/image-capture.js", false, nil)
 	i.typ = "jpeg"
 	i.quality = 0.92
 

@@ -232,6 +232,11 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 		cellHtml = html2.EscapeString(cellHtml)
 	}
 	a := c.CellAttributes(ctx, row, col, data)
+
+	// TODO: Do not directly render a table, but rather provide the data in a data manager structure to javascript,
+	// and then render from javascript. This will allow us to refresh a table's contents without having to draw
+	// the entire table. Important for multi-user environments where underlying table data may be constantly changing.
+	// Then implement a DataChanged function that is similar to a refresh, but only redraws the internals from the data itself.
 	buf.WriteString(html.RenderTag("td", a, cellHtml))
 }
 

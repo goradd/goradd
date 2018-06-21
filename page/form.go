@@ -22,7 +22,7 @@ type FormI interface {
 	// Create the objects on the form without necessarily initializing them
 	Init(ctx context.Context, self FormI, path string, id string)
 	CreateControls(ctx context.Context)
-	InitializeControls(ctx context.Context)
+	LoadControls(ctx context.Context)
 	AddRelatedFiles()
 	AddHeadTags()
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
@@ -65,7 +65,7 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 	f.Tag = "form"
 	self.AddRelatedFiles()
 	self.CreateControls(ctx)
-	self.InitializeControls(ctx)
+	self.LoadControls(ctx)
 
 	/*	TODO: Add a dialog and designer click if in design mode
 		            if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
@@ -100,10 +100,10 @@ func (f *FormBase) AddRelatedFiles() {
 func (f *FormBase) CreateControls(ctx context.Context) {
 }
 
-// InitializeControls is a stub function for you to implement in an overriding object. This is where you would
+// LoadControls is a stub function for you to implement in an overriding object. This is where you would
 // initialize your controls to initial values if not the default. Note that you should also call SetSaveState on
 // controls here, but only after initializing the control
-func (f *FormBase) InitializeControls(ctx context.Context) {
+func (f *FormBase) LoadControls(ctx context.Context) {
 }
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
@@ -152,14 +152,16 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 // outputSqlProfile looks for sql profiling information and sends it to the browser if found
 func (f *FormBase) outputSqlProfile(ctx context.Context, buf *bytes.Buffer) {
 	if profiles := db.GetProfiles(ctx); profiles != nil {
-		var s = "<h2>SQL Profile</h2>"
+		var head = `<h4 onclick="$j('#sqlprofilelist').toggle();" style="position:fixed; bottom:0">SQL Profile <i class="fas fa-arrow-circle-down" ></i></h4>`
+		var s string
 		for _, profile := range profiles {
 			dif := profile.EndTime.Sub(profile.BeginTime)
 			sql := strings.Replace(profile.Sql, "\n", "<br />", -1)
 			s += fmt.Sprintf(`<p class="profile"><div>Time: %s Begin: %s End: %s</div><div>%s</div></p>`,
 				dif.String(), profile.BeginTime.Format("3:04:05.000"), profile.EndTime.Format("3:04:05.000"), sql)
 		}
-		buf.WriteString(s)
+		s = html.RenderTag("div", html.NewAttributes().SetID("sqlprofilelist").SetDisplay("none"), s)
+		buf.WriteString(html.RenderTag("div", html.NewAttributes().SetID("sqlprofile"), head + s))
 	}
 }
 

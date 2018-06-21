@@ -423,20 +423,22 @@ func (a *Attributes) RemoveStyle(name string) (changed bool) {
 	return changed
 }
 
-func (a *Attributes) SetDisabled(d bool) {
+func (a *Attributes) SetDisabled(d bool) *Attributes {
 	if d {
 		a.Set("disabled", "")
 	} else {
 		a.RemoveAttribute("disabled")
 	}
+	return a
 }
 
 func (a *Attributes) IsDisabled() bool {
 	return a.Has("disabled")
 }
 
-func (a *Attributes) SetDisplay(d string) {
+func (a *Attributes) SetDisplay(d string) *Attributes {
 	a.SetStyle("display", d)
+	return a
 }
 
 func (a *Attributes) IsDisplayed() bool {

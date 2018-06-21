@@ -2,8 +2,13 @@
 // Top level query functions
 
 {{
-func Load{{t.GoName}}(ctx context.Context, id string) *{{t.GoName}} {
-	return Query{{t.GoPlural}}().Where(Equal(node.{{t.GoName}}().{{t.PrimaryKeyColumn.GoName}}(), id)).Get(ctx)
+
+// Load{{t.GoName}} queries for a single {{t.GoName}} object by primary key.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use Query{{t.GoPlural}}() to start a query builder.
+func Load{{t.GoName}}(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {
+	return Query{{t.GoPlural}}().Where(Equal(node.{{t.GoName}}().{{t.PrimaryKeyColumn.GoName}}(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
 {{g
@@ -16,13 +21,18 @@ func Load{{t.GoName}}(ctx context.Context, id string) *{{t.GoName}} {
                     names += snaker.SnakeToCamel(name)
                 }
 {{
-func Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} (ctx context.Context{{for _,name := range idx.ColumnNames}}, {{= name }} {{= string(t.GetColumn(name).GoType) }} {{for}}) *{{t.GoName}} {
+// Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} queries for a single {{t.GoName}} object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use Query{{t.GoPlural}}() to start a query builder.
+func Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} (ctx context.Context{{for _,name := range idx.ColumnNames}}, {{= name }} {{= string(t.GetColumn(name).GoType) }} {{for}}, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {
     return Query{{t.GoPlural}}().
 {{if len(idx.ColumnNames) == 1}}
         Where(Equal(node.{{t.GoName}}().{{= snaker.SnakeToCamel(idx.ColumnNames[0]) }}(), {{= idx.ColumnNames[0] }})).
 {{else}}
         Where(And({{for _,name := range idx.ColumnNames}}Equal(node.{{t.GoName}}().{{= snaker.SnakeToCamel(name) }}(), {{= name }}), {{for}})).
 {{if}}
+        joinOrSelect(joinOrSelectNodes...).
         Get(ctx)
 }
 }}
@@ -188,6 +198,19 @@ func (b *{{t.LcGoName}}Builder)  Subquery() *query.SubqueryNode {
 	 return b.base.Subquery()
 }
 
+
+// Private helper function for the Load* functions
+func (b *{{t.LcGoName}}Builder) joinOrSelect(nodes ...query.NodeI) *{{t.LcGoName}}Builder {
+	for _,n := range nodes {
+		switch n.(type) {
+		case query.TableNodeI:
+			b.base.Join(n, nil)
+		case *query.ColumnNode:
+			b.Select(n)
+		}
+	}
+	return b
+}
 
 
 }}

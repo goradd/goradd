@@ -24,7 +24,7 @@ func NewEmailTextbox(parent page.ControlI) *EmailTextbox {
 	t := &EmailTextbox{}
 	t.Init(t, parent)
 	t.maxItems = 1
-	t.SetType(TEXTBOX_TYPE_EMAIL)
+	t.SetType(TextboxTypeEmail)
 	return t
 }
 
@@ -35,7 +35,7 @@ func (t *EmailTextbox) Init(self control_base.TextboxI, parent page.ControlI) {
 func (t *EmailTextbox) SetMaxCount(max int) {
 	t.maxItems = max
 	if t.maxItems > 1 {
-		t.SetType(TEXTBOX_TYPE_DEFAULT) // Some browsers cannot handle multiple emails in an email type of text input
+		t.SetType(TextboxTypeDefault) // Some browsers cannot handle multiple emails in an email type of text input
 	}
 	t.Refresh()
 }

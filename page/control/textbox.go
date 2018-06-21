@@ -6,13 +6,13 @@ import (
 )
 
 const (
-	TEXTBOX_TYPE_DEFAULT  = "text"
-	TEXTBOX_TYPE_PASSWORD = "password"
-	TEXTBOX_TYPE_SEARCH   = "search"
-	TEXTBOX_TYPE_NUMBER   = "number" // Puts little arrows in box, will need to widen it.
-	TEXTBOX_TYPE_EMAIL    = "email"  // see TextEmail. Prevents submission of RFC5322 email addresses (Gogh Fir <gf@example.com>)
-	TEXTBOX_TYPE_TEL      = "tel"    // not well supported
-	TEXTBOX_TYPE_URL      = "url"
+	TextboxTypeDefault  = "text"
+	TextboxTypePassword = "password"
+	TextboxTypeSearch   = "search"
+	TextboxTypeNumber   = "number" // Puts little arrows in box, will need to widen it.
+	TextboxTypeEmail    = "email"  // see TextEmail. Prevents submission of RFC5322 email addresses (Gogh Fir <gf@example.com>)
+	TextboxTypeTel    = "tel"    // not well supported
+	TextboxTypeUrl    = "url"
 )
 
 // Text is a basic text entry form item.
