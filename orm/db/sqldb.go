@@ -67,7 +67,8 @@ func NewSqlDb(dbKey string) SqlDb {
 }
 
 // Begin starts a transaction. You must use the context returned from this function for all subsequent
-func (s *SqlDb) Begin(ctx context.Context) {
+// database operations. Also, you should immediately defer a Rollback. If you Commit before the Rollback
+func (s *SqlDb) Begin(ctx context.Context) (txid int){
 	var c *SqlContext
 
 	i := ctx.Value(goradd.SqlContext)
@@ -83,15 +84,16 @@ func (s *SqlDb) Begin(ctx context.Context) {
 
 		c.tx, err = s.db.Begin()
 		if err != nil {
+			c.tx.Rollback()
+			c.txCount-- // transaction did not begin
 			panic(err.Error())
 		}
 	}
-	if i == nil {
-		ctx = context.WithValue(ctx, goradd.SqlContext, c)
-	}
+	return c.txCount
 }
 
-func (s *SqlDb) Commit(ctx context.Context) {
+// Commit commits the transaction, and if an error occurs, will panic with the error.
+func (s *SqlDb) Commit(ctx context.Context, txid int) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
 	if i == nil {
@@ -100,20 +102,28 @@ func (s *SqlDb) Commit(ctx context.Context) {
 		c = i.(*SqlContext)
 	}
 
-	c.txCount--
-	if c.txCount < 0 {
+	if c.txCount != txid {
+		panic("Missing Rollback after previous Begin")
+	}
+
+	if c.txCount == 0 {
 		panic("Called Commit without a matching Begin")
 	}
-	if c.txCount == 0 {
+	if c.txCount == 1 {
 		err := c.tx.Commit()
 		if err != nil {
 			panic(err.Error())
 		}
 		c.tx = nil
 	}
+	c.txCount--
 }
 
-func (s *SqlDb) Rollback(ctx context.Context) {
+// Rollback will rollback the transaction if the transaction is still pointing to the given txid. This gives the effect
+// that if you call Rollback on a transaction that has already been committed, no Rollback will happen. This makes it easier
+// to implement a transaction management scheme, because you simply always defer a Rollback after a Begin. Pass the txid
+// that you got from the Begin to the Rollback
+func (s *SqlDb) Rollback(ctx context.Context, txid int) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
 	if i == nil {
@@ -122,15 +132,15 @@ func (s *SqlDb) Rollback(ctx context.Context) {
 		c = i.(*SqlContext)
 	}
 
-	if c.tx == nil {
-		panic("Called Rollback without matching Begin")
-	} else {
+	if c.txCount == txid {
+		c.txCount--
 		err := c.tx.Rollback()
 		if err != nil {
 			panic(err.Error())
 		}
-		c.tx = nil
-		c.txCount = 0
+		if c.txCount == 0 {
+			c.tx = nil
+		}
 	}
 }
 

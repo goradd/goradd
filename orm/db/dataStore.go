@@ -22,6 +22,10 @@ type DatabaseI interface {
 	Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue string)
 	Insert(ctx context.Context, table string, fields map[string]interface{}) string
 	Delete(ctx context.Context, table string, pkName string, pkValue interface{})
+
+	Begin(ctx context.Context) int
+	Commit(ctx context.Context, txid int)
+	Rollback(ctx context.Context, txid int)
 }
 
 var datastore struct {

@@ -50,8 +50,49 @@ type `)
 	buf.WriteString(`Base
 }
 
-// String implements the Stringer interface and returns the default label for the object when it is appears in html lists.
-// Typically you would change this to whatever was pertinent to you application.
+// Create a new `)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` object and initialize to default values.
+func New`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`() *`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` {
+	o := `)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`{}
+	o.Initialize()
+	return &o
+}
+
+// Initialize or re-initialize a `)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` database object to default values.
+func (o *`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`) Initialize() {
+	o.`)
+
+	buf.WriteString(util.LcFirst(t.GoName))
+
+	buf.WriteString(`Base.Initialize()
+    // Add your own initializations here
+}
+
+// String implements the Stringer interface and returns the default label for the object as it appears in html lists.
+// Typically you would change this to whatever was pertinent to your application.
 func (o *`)
 
 	buf.WriteString(t.GoName)

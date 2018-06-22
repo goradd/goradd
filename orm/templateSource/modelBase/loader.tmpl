@@ -61,7 +61,7 @@ for _, col := range t.Columns {
 		o.{{= col.VarName }}IsDirty = false
 	} else if v, ok := m["{{= col.ForeignKey.GoName }}"]; ok {
 		if {{oName}}, ok2 := v.(map[string]interface{}); ok2 {
-			o.{{oName}} = New{{= col.ForeignKey.GoType }}()
+			o.{{oName}} = new({{= col.ForeignKey.GoType }})
 			o.{{oName}}.load({{oName}}, linkParent, o.{{oName}}, objThis, "{{col.ForeignKey.RR.GoPlural}}")
 			o.{{= col.VarName }}IsValid = true
 			o.{{= col.VarName }}IsDirty = false
@@ -112,7 +112,7 @@ for _,ref := range t.ManyManyReferences {
 			o.{{mName}} = map[string]*{{= ref.AssociatedObjectName }}{}
 
 			for _,v2 := range {{oName}} {
-				obj := New{{= ref.AssociatedObjectName }}()
+				obj := new({{= ref.AssociatedObjectName }})
 				obj.load(v2, linkParent, obj, objThis, "{{ref.MM.GoPlural}}")
 				if linkParent && parentKey == "{{= ref.GoPlural }}" && obj.{{pk}} == objParent.(*{{= ref.AssociatedObjectName }}).{{pk}} {
 					obj = objParent.(*{{= ref.AssociatedObjectName }})
@@ -141,7 +141,7 @@ for _,ref := range t.ReverseReferences {
 {{
 	if v, ok := m["{{= ref.GoName }}"]; ok {
 		if {{oName}}, ok2 := v.(db.ValueMap); ok2 {
-			o.{{oName}} = New{{= ref.GoType }}()
+			o.{{oName}} = new({{= ref.GoType }})
 			o.{{oName}}.load({{oName}}, linkParent, o.{{oName}}, objThis, "{{parentName}}")
 		} else {
 			panic("Wrong type found for {{oName}} object.")
@@ -164,7 +164,7 @@ for _,ref := range t.ReverseReferences {
 			o.{{oName}} = []*{{= ref.GoType }}{}
 			o.{{mName}} = map[string]*{{= ref.GoType }}{}
 			for _,v2 := range {{oName}} {
-				obj := New{{= ref.GoType }}()
+				obj := new({{= ref.GoType }})
 				obj.load(v2, linkParent, obj, objThis, "{{parentName}}")
 				if linkParent && parentKey == "{{= ref.GoPlural }}" && obj.{{pk}} == objParent.(*{{= ref.GoType }}).{{pk}} {
 					obj = objParent.(*{{= ref.GoType }})
@@ -173,7 +173,7 @@ for _,ref := range t.ReverseReferences {
 				o.{{mName}}[obj.{{pk}}] = obj
 			}
 		case db.ValueMap:	// single expansion
-			obj := New{{= ref.GoType }}()
+			obj := new({{= ref.GoType }})
 			obj.load({{oName}}, linkParent, obj, objThis, "{{parentName}}")
 			if linkParent && parentKey == "{{= ref.GoPlural }}" && obj.{{pk}} == objParent.(*{{= ref.GoType }}).{{pk}} {
 				obj = objParent.(*{{= ref.GoType }})

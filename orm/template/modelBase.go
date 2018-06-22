@@ -274,29 +274,6 @@ const  (
 	//init.tmpl
 
 	buf.WriteString(`
-// Create a new `)
-
-	buf.WriteString(t.GoName)
-
-	buf.WriteString(` object and initialize to default values.
-func New`)
-
-	buf.WriteString(t.GoName)
-
-	buf.WriteString(`() *`)
-
-	buf.WriteString(t.GoName)
-
-	buf.WriteString(` {
-	o := `)
-
-	buf.WriteString(t.GoName)
-
-	buf.WriteString(`{}
-	o.Initialize()
-	return &o
-}
-
 
 // Initialize or re-initialize a `)
 
@@ -1804,11 +1781,11 @@ func (b *`)
 		return
 	}
 	for _,item := range results {
-		o := New`)
+		o := new(`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
 
-	buf.WriteString(`()
+	buf.WriteString(`)
 		o.load(item, !b.hasConditionalJoins, o, nil, "")
 		`)
 
@@ -1844,11 +1821,11 @@ func (b *`)
 		return
 	}
 	for _,item := range results {
-		o := New`)
+		o := new(`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.GoName))
 
-	buf.WriteString(`()
+	buf.WriteString(`)
 		o.load(item, !b.hasConditionalJoins, o, nil, "")
 		`)
 
@@ -2338,11 +2315,11 @@ func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", oName))
 
-			buf.WriteString(` = New`)
+			buf.WriteString(` = new(`)
 
 			buf.WriteString(col.ForeignKey.GoType)
 
-			buf.WriteString(`()
+			buf.WriteString(`)
 			o.`)
 
 			buf.WriteString(fmt.Sprintf("%v", oName))
@@ -2490,11 +2467,11 @@ func (o *`)
 			buf.WriteString(fmt.Sprintf("%v", oName))
 
 			buf.WriteString(` {
-				obj := New`)
+				obj := new(`)
 
 			buf.WriteString(ref.AssociatedObjectName)
 
-			buf.WriteString(`()
+			buf.WriteString(`)
 				obj.load(v2, linkParent, obj, objThis, "`)
 
 			buf.WriteString(fmt.Sprintf("%v", ref.MM.GoPlural))
@@ -2582,11 +2559,11 @@ func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", oName))
 
-			buf.WriteString(` = New`)
+			buf.WriteString(` = new(`)
 
 			buf.WriteString(ref.GoType)
 
-			buf.WriteString(`()
+			buf.WriteString(`)
 			o.`)
 
 			buf.WriteString(fmt.Sprintf("%v", oName))
@@ -2660,11 +2637,11 @@ func (o *`)
 			buf.WriteString(fmt.Sprintf("%v", oName))
 
 			buf.WriteString(` {
-				obj := New`)
+				obj := new(`)
 
 			buf.WriteString(ref.GoType)
 
-			buf.WriteString(`()
+			buf.WriteString(`)
 				obj.load(v2, linkParent, obj, objThis, "`)
 
 			buf.WriteString(fmt.Sprintf("%v", parentName))
@@ -2713,11 +2690,11 @@ func (o *`)
 			buf.WriteString(`] = obj
 			}
 		case db.ValueMap:	// single expansion
-			obj := New`)
+			obj := new(`)
 
 			buf.WriteString(ref.GoType)
 
-			buf.WriteString(`()
+			buf.WriteString(`)
 			obj.load(`)
 
 			buf.WriteString(fmt.Sprintf("%v", oName))
