@@ -18,14 +18,14 @@ type RadioList struct {
 	CheckboxList
 }
 
-func NewRadioList(parent page.ControlI) *RadioList {
+func NewRadioList(parent page.ControlI, id string) *RadioList {
 	l := &RadioList{}
-	l.Init(l, parent)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *RadioList) Init(self RadioListI, parent page.ControlI) {
-	l.CheckboxList.Init(self, parent)
+func (l *RadioList) Init(self RadioListI, parent page.ControlI, id string) {
+	l.CheckboxList.Init(self, parent, id)
 }
 
 func (l *RadioList) this() RadioListI {

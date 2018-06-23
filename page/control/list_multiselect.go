@@ -25,14 +25,14 @@ type MultiselectList struct {
 	selectedIds map[string]bool
 }
 
-func NewMultiselectList(parent page.ControlI) *MultiselectList {
+func NewMultiselectList(parent page.ControlI, id string) *MultiselectList {
 	l := &MultiselectList{}
-	l.Init(l, parent)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *MultiselectList) Init(self MultiselectListI, parent page.ControlI) {
-	l.Control.Init(self, parent)
+func (l *MultiselectList) Init(self MultiselectListI, parent page.ControlI, id string) {
+	l.Control.Init(self, parent, id)
 	l.ItemList = NewItemList(l)
 	l.selectedIds = map[string]bool{}
 	l.Tag = "select"

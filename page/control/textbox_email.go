@@ -20,16 +20,16 @@ type EmailTextbox struct {
 
 // NewEmailTextbox creates a new textbox that validates its input as an email address.
 // multi will allow the textbox to accept multiple email addresses separated by a comma.
-func NewEmailTextbox(parent page.ControlI) *EmailTextbox {
+func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
 	t := &EmailTextbox{}
-	t.Init(t, parent)
+	t.Init(t, parent, id)
 	t.maxItems = 1
 	t.SetType(TextboxTypeEmail)
 	return t
 }
 
-func (t *EmailTextbox) Init(self control_base.TextboxI, parent page.ControlI) {
-	t.Textbox.Init(self, parent)
+func (t *EmailTextbox) Init(self control_base.TextboxI, parent page.ControlI, id string) {
+	t.Textbox.Init(self, parent, id)
 }
 
 func (t *EmailTextbox) SetMaxCount(max int) {

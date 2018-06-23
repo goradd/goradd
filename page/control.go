@@ -59,7 +59,6 @@ var DefaultCheckboxLabelDrawingMode = html.LABEL_AFTER // Setting used by checkb
 
 type ControlI interface {
 	ID() string
-	SetID(string)
 	control() *Control
 	DrawI
 
@@ -219,13 +218,14 @@ type Control struct {
 // new control. Your subclasses should have their own Init function, and
 // should call the superclass function. This Init function sets up a parent-child relationship with the given parent
 // control, and sets up data structures to use the control in object-oriented ways with virtual functions.
-func (c *Control) Init(self ControlI, parent ControlI) {
+// The id is the control id that will appear as the id in html. Leave blank for the system to create a unique id for you.
+func (c *Control) Init(self ControlI, parent ControlI, id string) {
 	c.Base.Init(self)
 	c.attributes = html.NewAttributes()
 	c.wrapperAttributes = html.NewAttributes()
 	if parent != nil {
 		c.page = parent.Page()
-		c.id = c.page.GenerateControlID()
+		c.id = c.page.GenerateControlID(id)
 	}
 	self.SetParent(parent)
 	c.htmlEscapeText = true // default to encoding the text portion. Explicitly turn this off if you need something else
@@ -248,21 +248,6 @@ func (c *Control) Restore(self ControlI) {
 	if c.wrapperAttributes == nil {
 		c.wrapperAttributes = html.NewAttributes()
 	}
-}
-
-// SetId sets the control's internal id, and the id that appears in html. Normally, goradd will create an id for you.
-// It is up to you to ensure that this id is unique on the page, as required by html.
-// Note that some css/js frameworks go even farther an require ids to be
-// unique in the entire application (JQuery Mobile for one).
-//
-// If you want a custom id, you should  call this function just after you create the control, or you may get unexpected results.
-// Once you assign a custom id, you should not change it.
-func (c *Control) SetID(id string) {
-	if c.isOnPage {
-		panic("You cannot change the id for a control that has already been drawn.")
-	}
-	c.page.changeControlID(c.id, id)
-	c.id = id
 }
 
 func (c *Control) ID() string {

@@ -22,14 +22,14 @@ type DataPager struct {
 	HighlightStyle ButtonStyle
 }
 
-func NewDataPager(parent page.ControlI, paginatedControl control.PaginatedControlI) *DataPager {
+func NewDataPager(parent page.ControlI, id string, paginatedControl control.PaginatedControlI) *DataPager {
 	d := DataPager{}
-	d.Init(&d, parent, paginatedControl)
+	d.Init(&d, parent, id, paginatedControl)
 	return &d
 }
 
-func (d *DataPager) Init(self page.ControlI, parent page.ControlI, paginatedControl control.PaginatedControlI) {
-	d.DataPager.Init(self, parent, paginatedControl)
+func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, paginatedControl control.PaginatedControlI) {
+	d.DataPager.Init(self, parent, id, paginatedControl)
 	d.SetLabels(`<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>`,
 		`<span aria-hidden="true">&raquo;</span> <span class="sr-only">Next</span>`)
 	d.ButtonStyle = ButtonStyleOutlineSecondary

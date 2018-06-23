@@ -82,34 +82,31 @@ type DialogButtonOptions struct {
 	Options map[string]interface{}
 }
 
-func NewDialog(parent page.ControlI) *Dialog {
+func NewDialog(parent page.ControlI, id string) *Dialog {
 	d := &Dialog{}
 
-	d.Init(d, parent) // parent is always the overlay
+	d.Init(d, parent, id) // parent is always the overlay
 	return d
 }
 
-func (d *Dialog) Init(self DialogI, parent page.ControlI) {
+func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
 	// We add the dialog to the overlay. The overlay acts as a dialog controller/container too.
 	overlay := parent.Page().GetControl("groverlay")
 
 	if overlay == nil {
-		overlay = NewPanel(parent.Form())
-		overlay.SetID("groverlay")
+		overlay = NewPanel(parent.Form(), "groverlay")
 		overlay.SetShouldAutoRender(true)
 	} else {
 		overlay.SetVisible(true)
 	}
 
-	d.Panel.Init(self, overlay)
+	d.Panel.Init(self, overlay, id)
 	d.Tag = "div"
 
-	d.titleBar = NewPanel(d)
-	d.titleBar.SetID(d.ID() + "_title")
+	d.titleBar = NewPanel(d, d.ID() + "_title")
 	d.titleBar.AddClass("gr-dialog-title")
 
-	d.buttonBar = NewPanel(d)
-	d.buttonBar.SetID(d.ID() + "_buttons")
+	d.buttonBar = NewPanel(d, d.ID() + "_buttons")
 	d.buttonBar.AddClass("gr-dialog-buttons")
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
 	d.On(event.DialogClosed(), action.Ajax(d.ID(), DialogClose), action.PrivateAction{})
@@ -141,12 +138,11 @@ func (d *Dialog) AddButton(
 	id string,
 	options *DialogButtonOptions,
 ) page.ControlI {
-	btn := NewButton(d.buttonBar)
-	btn.SetLabel(label)
 	if label == "" {
 		id = label
 	}
-	btn.SetID(id)
+	btn := NewButton(d.buttonBar, id)
+	btn.SetLabel(label)
 
 	if options != nil {
 		if options.IsPrimary {
@@ -208,7 +204,7 @@ func (d *Dialog) HasCloseBox() page.ControlI {
 }
 
 func (d *Dialog) addCloseBox() {
-	d.closeBox = NewButton(d.titleBar)
+	d.closeBox = NewButton(d.titleBar, d.ID() + "_closebox")
 	d.closeBox.AddClass("gr-dialog-close")
 	d.closeBox.SetText(`<i class="fa fa-times"></i>`)
 	d.closeBox.SetEscapeText(false)
@@ -217,8 +213,8 @@ func (d *Dialog) addCloseBox() {
 
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog (by hiding it).
-func (d *Dialog) AddCloseButton(label string) {
-	btn := NewButton(d.buttonBar)
+func (d *Dialog) AddCloseButton(label string, id string) {
+	btn := NewButton(d.buttonBar, id)
 	btn.SetLabel(label)
 	btn.OnClick(action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 	// Note: We will also do the public doAction with a DialogCloseEvent
@@ -271,15 +267,15 @@ func Alert(form page.FormI, message string, buttons interface{}) DialogI {
 }
 
 func DefaultAlert(form page.FormI, message string, buttons interface{}) DialogI {
-	dlg := NewDialog(form)
+	dlg := NewDialog(form, "")
 	dlg.SetText(message)
 	if buttons != nil {
 		switch b := buttons.(type) {
 		case string:
-			dlg.AddCloseButton(b)
+			dlg.AddCloseButton(b,"")
 		case []string:
 			if len(b) == 1 {
-				dlg.AddCloseButton(b[0])
+				dlg.AddCloseButton(b[0],"")
 			} else {
 				dlg.AddButton(b[0], "", &DialogButtonOptions{IsPrimary: true})
 				for _, l := range b[1:] {

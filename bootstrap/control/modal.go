@@ -51,14 +51,14 @@ const (
 	DialogClosed
 )
 
-func NewModal(parent page.ControlI) *Modal {
+func NewModal(parent page.ControlI, id string) *Modal {
 	d := &Modal{}
-	d.Init(d, parent)
+	d.Init(d, parent, id)
 	return d
 }
 
-func (d *Modal) Init(self page.ControlI, parent page.ControlI) {
-	d.Panel.Init(self, parent)
+func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
+	d.Panel.Init(self, parent, id)
 	d.Tag = "div"
 	d.SetShouldAutoRender(true)
 
@@ -75,8 +75,8 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI) {
 		SetAttribute("role", "dialog").
 		SetAttribute("aria-labelledby", d.ID() + "_title").
 		SetAttribute("aria-hidden", true)
-	d.titleBar = NewTitleBar(d)
-	d.buttonBar = control.NewPanel(d)
+	d.titleBar = NewTitleBar(d, d.ID() + "_titlebar")
+	d.buttonBar = control.NewPanel(d, d.ID() + "_btnbar")
 }
 
 func (d *Modal) this() ModalI {
@@ -150,12 +150,11 @@ func (d *Modal) AddButton(
 	id string,
 	options *control.DialogButtonOptions,
 )  ModalI {
-	btn := NewButton(d.buttonBar)
-	btn.SetLabel(label)
 	if id == "" {
 		id = label
 	}
-	btn.SetID(d.ID() + "_btn_" + id)
+	btn := NewButton(d.buttonBar, d.ID() + "_btn_" + id)
+	btn.SetLabel(label)
 
 	if options != nil {
 		if options.IsPrimary {
@@ -287,7 +286,7 @@ this case, you will need to detect the button by adding a On(event.DialogButton(
 You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
 */
 func BootstrapAlert(form page.FormI, message string, buttons interface{}) control.DialogI {
-	dlg := NewModal(form)
+	dlg := NewModal(form, "")
 	dlg.SetText(message)
 	if buttons != nil {
 		switch b := buttons.(type) {
@@ -319,9 +318,9 @@ type TitleBar struct {
 	title string
 }
 
-func NewTitleBar(parent page.ControlI) *TitleBar {
+func NewTitleBar(parent page.ControlI, id string) *TitleBar {
 	d := &TitleBar{}
-	d.Panel.Init(d, parent)
+	d.Panel.Init(d, parent, id)
 	return d
 }
 

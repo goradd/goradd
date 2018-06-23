@@ -121,14 +121,14 @@ type DataPager struct {
 	Proxy *Proxy
 }
 
-func NewDataPager(parent page.ControlI, paginatedControl PaginatedControlI) *DataPager {
+func NewDataPager(parent page.ControlI, id string, paginatedControl PaginatedControlI) *DataPager {
 	d := DataPager{}
-	d.Init(&d, parent, paginatedControl)
+	d.Init(&d, parent, id, paginatedControl)
 	return &d
 }
 
-func (d *DataPager) Init(self page.ControlI, parent page.ControlI, paginatedControl PaginatedControlI) {
-	d.Control.Init(self, parent)
+func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, paginatedControl PaginatedControlI) {
+	d.Control.Init(self, parent, id)
 	d.Tag = "div"
 	d.LabelForNext = d.T("Next")
 	d.LabelForPrevious = d.T("Previous")

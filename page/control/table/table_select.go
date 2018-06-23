@@ -25,14 +25,14 @@ type SelectTable struct {
 	selectedID string
 }
 
-func NewSelectTable(parent page.ControlI) *SelectTable {
+func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 	t := &SelectTable{}
-	t.Init(t, parent)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (t *SelectTable) Init(self page.ControlI, parent page.ControlI) {
-	t.Table.Init(self, parent)
+func (t *SelectTable) Init(self page.ControlI, parent page.ControlI, id string) {
+	t.Table.Init(self, parent, id)
 	t.Form().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
 	t.Form().AddJavaScriptFile(config.GoraddAssets() + "/js/select-table.js", false, nil)
 }

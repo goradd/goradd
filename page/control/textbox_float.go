@@ -12,14 +12,14 @@ type FloatTextbox struct {
 	Textbox
 }
 
-func NewFloatTextbox(parent page.ControlI) *FloatTextbox {
+func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
 	t := &FloatTextbox{}
-	t.Init(t, parent)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (i *FloatTextbox) Init(self control_base.TextboxI, parent page.ControlI) {
-	i.Textbox.Init(self, parent)
+func (i *FloatTextbox) Init(self control_base.TextboxI, parent page.ControlI, id string) {
+	i.Textbox.Init(self, parent, id)
 	i.ValidateWith(FloatValidator{})
 }
 

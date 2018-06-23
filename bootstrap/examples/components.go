@@ -26,8 +26,8 @@ func NewComponentsForm(ctx context.Context) page.FormI {
 }
 
 func (f *ComponentsForm) CreateControls(ctx context.Context) {
-	f.ButtonPanel = grctl.NewFieldset(f)
-	bootstrap.NewButton(f.ButtonPanel).SetText("Button1")
+	f.ButtonPanel = grctl.NewFieldset(f, "")
+	bootstrap.NewButton(f.ButtonPanel, "").SetText("Button1")
 }
 
 func (f *ComponentsForm) Action(ctx context.Context, a page.ActionParams) {

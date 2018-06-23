@@ -16,14 +16,14 @@ type Fieldset struct {
 	control_base.Panel
 }
 
-func NewFieldset(parent page.ControlI) *Fieldset {
+func NewFieldset(parent page.ControlI, id string) *Fieldset {
 	p := &Fieldset{}
-	p.Init(p, parent)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (c *Fieldset) Init (self FieldsetI, parent page.ControlI) {
-	c.Panel.Init(self, parent)
+func (c *Fieldset) Init (self FieldsetI, parent page.ControlI, id string) {
+	c.Panel.Init(self, parent, id)
 	c.Tag = "fieldset"
 }
 

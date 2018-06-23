@@ -42,9 +42,9 @@ type ImageCapture struct {
 	quality float32
 }
 
-func NewImageCapture(parent page.ControlI) *ImageCapture {
+func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 	i := &ImageCapture{}
-	i.Init(i, parent)
+	i.Init(i, parent, id)
 	return i
 }
 
@@ -53,25 +53,22 @@ func NewImageCapture(parent page.ControlI) *ImageCapture {
 // t := &MyTextBox{}
 // t.Textbox.Init(t, parent, id)
 // A parent control is isRequired. Leave id blank to have the system assign an id to the control.
-func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI) {
-	i.Control.Init(self, parent)
+func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string) {
+	i.Control.Init(self, parent, id)
 	i.Tag = "div"
 	i.Form().AddJavaScriptFile(config.GoraddAssets() + "/js/image-capture.js", false, nil)
 	i.typ = "jpeg"
 	i.quality = 0.92
 
-	i.Canvas = NewCanvas(i)
-	i.CaptureButton = NewButton(i)
-	i.CaptureButton.SetID(i.ID() + "_capture")
+	i.Canvas = NewCanvas(i, i.ID() + "_canvas")
+	i.CaptureButton = NewButton(i, i.ID() + "_capture")
 	i.CaptureButton.SetText(i.Form().T("New Image"))
 
-	i.SwitchCameraButton = NewButton(i)
-	i.SwitchCameraButton.SetID(i.ID() + "_switch")
+	i.SwitchCameraButton = NewButton(i, i.ID() + "_switch")
 	i.SwitchCameraButton.SetText(i.Form().T("Switch Camera"))
 	i.SwitchCameraButton.SetDisplay("none")
 
-	i.ErrText = NewPanel(i)
-	i.ErrText.SetID(i.ID() + "_err")
+	i.ErrText = NewPanel(i, i.ID() + "_err")
 	i.ErrText.Tag = "p"
 	i.ErrText.SetDisplay("none")
 	i.ErrText.SetText(i.Form().T("This browser or device does not support image capture"))

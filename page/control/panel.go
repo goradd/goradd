@@ -17,14 +17,14 @@ type Panel struct {
 	control_base.Panel
 }
 
-func NewPanel(parent page.ControlI) *Panel {
+func NewPanel(parent page.ControlI, id string) *Panel {
 	p := &Panel{}
-	p.Init(p, parent)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (c *Panel) Init(self PanelI, parent page.ControlI) {
-	c.Panel.Init(self, parent)
+func (c *Panel) Init(self PanelI, parent page.ControlI, id string) {
+	c.Panel.Init(self, parent, id)
 	c.Tag = "div"
 }
 

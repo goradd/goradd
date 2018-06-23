@@ -70,14 +70,14 @@ const (
 )
 
 // Creates a new standard html button
-func NewNavbar(parent page.ControlI) *Navbar {
+func NewNavbar(parent page.ControlI, id string) *Navbar {
 	b := &Navbar{}
-	b.Init(b, parent)
+	b.Init(b, parent, id)
 	return b
 }
 
-func (b *Navbar) Init(self page.ControlI, parent page.ControlI) {
-	b.Control.Init(self, parent)
+func (b *Navbar) Init(self page.ControlI, parent page.ControlI, id string) {
+	b.Control.Init(self, parent, id)
 	b.Tag = "nav"
 	b.style = NavbarDark // default
 	b.background = BackgroundColorDark

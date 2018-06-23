@@ -33,14 +33,14 @@ type CheckboxList struct {
 	isScrolling      bool
 }
 
-func NewCheckboxList(parent page.ControlI) *CheckboxList {
+func NewCheckboxList(parent page.ControlI, id string) *CheckboxList {
 	l := &CheckboxList{}
-	l.Init(l, parent)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *CheckboxList) Init(self page.ControlI, parent page.ControlI) {
-	l.MultiselectList.Init(self, parent)
+func (l *CheckboxList) Init(self page.ControlI, parent page.ControlI, id string) {
+	l.MultiselectList.Init(self, parent, id)
 	l.Tag = "div"
 	l.columnCount = 1
 	l.labelDrawingMode = page.DefaultCheckboxLabelDrawingMode

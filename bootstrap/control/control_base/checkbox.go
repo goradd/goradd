@@ -17,8 +17,8 @@ type Checkbox struct {
 	grbase.Checkbox
 }
 
-func (c *Checkbox) Init(self CheckboxI, parent page.ControlI) {
-	c.Checkbox.Init(self, parent)
+func (c *Checkbox) Init(self CheckboxI, parent page.ControlI, id string) {
+	c.Checkbox.Init(self, parent, id)
 	c.LabelMode = html.LABEL_AFTER
 }
 

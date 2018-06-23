@@ -50,14 +50,14 @@ type Table struct {
 	sortHistoryLimit int      // how far back to go
 }
 
-func NewTable(parent page.ControlI) *Table {
+func NewTable(parent page.ControlI, id string) *Table {
 	t := &Table{}
-	t.Init(t, parent)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (t *Table) Init(self page.ControlI, parent page.ControlI) {
-	t.Control.Init(self, parent)
+func (t *Table) Init(self page.ControlI, parent page.ControlI, id string) {
+	t.Control.Init(self, parent, id)
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1

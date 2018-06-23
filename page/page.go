@@ -8,6 +8,7 @@ import (
 	"github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/util/types"
 	"strconv"
+	"strings"
 )
 
 type PageRenderStatus int
@@ -175,11 +176,29 @@ func (p *Page) SetControlIdPrefix(prefix string) *Page {
 	return p
 }
 
-// Overridable generator for control ids. This is called through the PageI interface, meaning you can change how This
-// is done by simply implementing it in a subclass.
-func (p *Page) GenerateControlID() string {
-	p.idCounter++ // id counter defaults to zero, so pre-increment
-	return p.idPrefix + "c" + strconv.Itoa(p.idCounter)
+// Generates unique control ids. If you want to do your own id generation, or modifying of given ids, implement that
+// in an override to the control.Init function. The given id is one that the user supplies. User provided ids and
+// generated ids can be further munged by providing an id prefix through SetControlIdPrefix().
+func (p *Page) GenerateControlID(id string) string {
+	if id != "" {
+		if p.idPrefix != "" {
+			if !strings.HasPrefix(id, p.idPrefix) {	// subcontrols might already have this prefix
+				id = p.idPrefix + id
+			}
+		}
+		if p.GetControl(id) != nil {
+			panic (fmt.Sprintf(`A control with id "%s" is being added a second time to the page. Ids must be unique on the page.`))
+		} else {
+			return id
+		}
+	} else {
+		var trialid string
+		for trialid == "" || p.GetControl(trialid) != nil { // checks to make sure user did not previously add a control that might match our generation pattern
+			p.idCounter++
+			trialid = p.idPrefix + "c" + strconv.Itoa(p.idCounter)
+		}
+		return trialid
+	}
 }
 
 func (p *Page) GetControl(id string) ControlI {

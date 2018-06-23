@@ -19,9 +19,9 @@ type Image struct {
 	typ string			// the image MIME type (jpeg, gif, etc.) for data. Default is jpeg.
 }
 
-func NewImage(parent page.ControlI) *Image {
+func NewImage(parent page.ControlI, id string) *Image {
 	i := &Image{}
-	i.Init(i, parent)
+	i.Init(i, parent, id)
 	return i
 }
 
@@ -30,8 +30,8 @@ func NewImage(parent page.ControlI) *Image {
 // t := &MyTextBox{}
 // t.Textbox.Init(t, parent, id)
 // A parent control is isRequired. Leave id blank to have the system assign an id to the control.
-func (i *Image) Init(self ImageI, parent page.ControlI) {
-	i.Control.Init(self, parent)
+func (i *Image) Init(self ImageI, parent page.ControlI, id string) {
+	i.Control.Init(self, parent, id)
 	i.Tag = "img"
 	i.IsVoidTag = true
 	i.typ = "jpeg"

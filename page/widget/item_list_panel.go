@@ -31,34 +31,34 @@ type ItemListPanel struct {
 	EditButton *Button
 }
 
-func NewItemListPanel(parent page.ControlI) *ItemListPanel {
+func NewItemListPanel(parent page.ControlI, id string) *ItemListPanel {
 	p := &ItemListPanel{}
-	p.Init(p, parent)
+	p.Init(p, parent, id)
 	p.Form().AddStyleSheetFile(config.GoraddAssets() + "/css/item-list-panel.css", nil)
 
 	return p
 }
 
-func (p *ItemListPanel) Init(self ItemListPanelI, parent page.ControlI) {
-	p.Panel.Init(self, parent)
-	p.FilterPanel = NewPanel(p)
-	p.ScrollPanel = NewPanel(p)
-	p.ButtonPanel = NewPanel(p)
+func (p *ItemListPanel) Init(self ItemListPanelI, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
+	p.FilterPanel = NewPanel(p, p.ID() + "_filter")
+	p.ScrollPanel = NewPanel(p, p.ID() + "_scroller")
+	p.ButtonPanel = NewPanel(p, p.ID() + "_btnpnl")
 
 	p.FilterPanel.AddClass("filter")
 	p.ScrollPanel.AddClass("scroller")
 	p.ButtonPanel.AddClass("buttons")
 
-	p.FilterText = NewTextbox(p.FilterPanel)
+	p.FilterText = NewTextbox(p.FilterPanel, p.ID() + "_filtertxt")
 	p.FilterText.SetPlaceholder(p.Form().T("Search"))
 	p.FilterText.SetType(TextboxTypeSearch)
 
-	p.ItemTable = table.NewSelectTable(p.ScrollPanel)
+	p.ItemTable = table.NewSelectTable(p.ScrollPanel, p.ID() + "_table")
 
-	p.NewButton = NewButton(p.ButtonPanel)
+	p.NewButton = NewButton(p.ButtonPanel, p.ID() + "_newbtn")
 	p.NewButton.SetText(p.Form().T("New"))
 
-	p.EditButton = NewButton(p.ButtonPanel)
+	p.EditButton = NewButton(p.ButtonPanel, p.ID() + "_editbtn")
 	p.EditButton.SetText(p.Form().T("Edit"))
 
 	p.FilterText.On(event.Input().Delay(300), action.Ajax(p.ID(), filterChanged))

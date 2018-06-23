@@ -30,14 +30,14 @@ type CheckboxList struct {
 	isInline      bool
 }
 
-func NewCheckboxList(parent page.ControlI) *CheckboxList {
+func NewCheckboxList(parent page.ControlI, id string) *CheckboxList {
 	l := &CheckboxList{}
-	l.Init(l, parent)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *CheckboxList) Init(self CheckboxListI, parent page.ControlI) {
-	l.CheckboxList.Init(self, parent)
+func (l *CheckboxList) Init(self CheckboxListI, parent page.ControlI, id string) {
+	l.CheckboxList.Init(self, parent, id)
 	l.SetLabelDrawingMode(html.LABEL_AFTER)
 }
 

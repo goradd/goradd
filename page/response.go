@@ -166,7 +166,7 @@ func (r *Response) ExecuteSelectorFunction(selector string, functionName string,
 // Call the given function with the given arguments. If just a function label, then the window object is searched.
 // The function can be inside an object accessible from the global namespace by separating with periods.
 func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
-	args2,priority := r.extractPriority(args)
+	args2,priority := r.extractPriority(args...)
 	c := ResponseCommand{function: functionName, args: args2}
 
 	switch priority {

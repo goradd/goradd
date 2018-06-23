@@ -28,7 +28,7 @@ func NewProxy(parent page.ControlI) *Proxy {
 }
 
 func (p *Proxy) Init(parent page.ControlI) {
-	p.Control.Init(p, parent)
+	p.Control.Init(p, parent, "")
 	p.SetShouldAutoRender(true)
 	p.SetActionValue(javascript.JsCode(`$j(this).data("grAv")`))
 }

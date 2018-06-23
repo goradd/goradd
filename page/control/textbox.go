@@ -24,8 +24,8 @@ type TextboxI interface {
 	control_base.TextboxI
 }
 
-func NewTextbox(parent page.ControlI) *Textbox {
+func NewTextbox(parent page.ControlI, id string) *Textbox {
 	t := &Textbox{}
-	t.Init(t, parent)
+	t.Init(t, parent, id)
 	return t
 }

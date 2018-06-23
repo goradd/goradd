@@ -11,14 +11,14 @@ type IntegerTextbox struct {
 	Textbox
 }
 
-func NewIntegerTextbox(parent page.ControlI) *IntegerTextbox {
+func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 	t := &IntegerTextbox{}
-	t.Init(t, parent)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (i *IntegerTextbox) Init(self control_base.TextboxI, parent page.ControlI) {
-	i.Textbox.Init(self, parent)
+func (i *IntegerTextbox) Init(self control_base.TextboxI, parent page.ControlI, id string) {
+	i.Textbox.Init(self, parent, id)
 	i.ValidateWith(IntValidator{})
 }
 

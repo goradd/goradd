@@ -61,7 +61,7 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 		panic("Forms must have an id assigned")
 	}
 	f.Control.id = id
-	f.Control.Init(self, nil)
+	f.Control.Init(self, nil, id)
 	f.Tag = "form"
 	self.AddRelatedFiles()
 	self.CreateControls(ctx)

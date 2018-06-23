@@ -34,15 +34,15 @@ func NavbarSelectEvent() page.EventI {
 
 // TODO: Create a mechanism to post-process this event and have it automatically be loaded with the selected item
 
-func NewNavbarList(parent page.ControlI) *NavbarList {
+func NewNavbarList(parent page.ControlI, id string) *NavbarList {
 	t := &NavbarList{}
 	t.ItemList = control.NewItemList(t)
-	t.Init(t, parent)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (l *NavbarList) Init(self NavbarListI, parent page.ControlI) {
-	l.Control.Init(self, parent)
+func (l *NavbarList) Init(self NavbarListI, parent page.ControlI, id string) {
+	l.Control.Init(self, parent, id)
 	l.Tag = "ul"
 	l.subItemTag = "li"
 	l.Proxy = control.NewProxy(l)

@@ -24,15 +24,15 @@ const (
 	UnorderedListStyleNone   = "none"
 )
 
-func NewUnorderedList(parent page.ControlI) *UnorderedList {
+func NewUnorderedList(parent page.ControlI, id string) *UnorderedList {
 	t := &UnorderedList{}
 	t.ItemList = NewItemList(t)
-	t.Init(t, parent)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (l *UnorderedList) Init(self page.ControlI, parent page.ControlI) {
-	l.Control.Init(self, parent)
+func (l *UnorderedList) Init(self page.ControlI, parent page.ControlI, id string) {
+	l.Control.Init(self, parent, id)
 	l.Tag = "ul"
 	l.subItemTag = "li"
 }

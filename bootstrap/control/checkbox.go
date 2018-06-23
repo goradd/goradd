@@ -10,9 +10,9 @@ type Checkbox struct {
 	control_base.Checkbox
 }
 
-func NewCheckbox(parent page.ControlI) *Checkbox {
+func NewCheckbox(parent page.ControlI, id string) *Checkbox {
 	c := &Checkbox{}
-	c.Init(c, parent)
+	c.Init(c, parent, id)
 	return c
 }
 

@@ -6,9 +6,12 @@ import (
 	"strings"
 )
 
-// IDer is an object that can embed an PatientList
+// IDer is an object that can embed a list
 type IDer interface {
 	ID() string
+}
+
+type IDSetter interface {
 	SetID(id string)
 }
 

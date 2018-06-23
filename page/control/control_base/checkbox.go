@@ -30,8 +30,8 @@ type Checkbox struct {
 // t := &MyTextBox{}
 // t.Textbox.Init(t, parent, id)
 // A parent control is isRequired. Leave id blank to have the system assign an id to the control.
-func (c *Checkbox) Init(self page.ControlI, parent page.ControlI) {
-	c.Control.Init(self, parent)
+func (c *Checkbox) Init(self page.ControlI, parent page.ControlI, id string) {
+	c.Control.Init(self, parent, id)
 
 	c.Tag = "input"
 	c.IsVoidTag = true

@@ -49,14 +49,14 @@ const (
 const DialogButtonEvent = "grdlgbtn"
 
 
-func NewModal(parent page.ControlI) *Modal {
+func NewModal(parent page.ControlI, id string) *Modal {
 	d := &Modal{}
 	d.Init(d, parent) // parent is always the overlay
 	return d
 }
 
-func (d *Modal) Init(self page.ControlI, parent page.ControlI) {
-	d.Panel.Init(self, parent)
+func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
+	d.Panel.Init(self, parent, id)
 	d.Tag = "div"
 
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
@@ -252,7 +252,7 @@ type titleBar struct {
 	title string
 }
 
-func NewTitleBar(parent page.ControlI) *titleBar {
+func NewTitleBar(parent page.ControlI, id string) *titleBar {
 	d := &titleBar{}
 	d.Init(d, parent)
 	return d

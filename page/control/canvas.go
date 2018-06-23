@@ -16,14 +16,14 @@ type Canvas struct {
 	page.Control
 }
 
-func NewCanvas(parent page.ControlI) *Canvas {
+func NewCanvas(parent page.ControlI, id string) *Canvas {
 	p := &Canvas{}
-	p.Init(p, parent)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (c *Canvas) Init(self CanvasI, parent page.ControlI) {
-	c.Control.Init(self, parent)
+func (c *Canvas) Init(self CanvasI, parent page.ControlI, id string) {
+	c.Control.Init(self, parent, id)
 	c.Tag = "canvas"
 }
 

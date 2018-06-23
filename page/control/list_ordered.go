@@ -24,15 +24,15 @@ const (
 	OrderedListNumberTypeLowerRoman  = "i"
 )
 
-func NewOrderedList(parent page.ControlI) *OrderedList {
+func NewOrderedList(parent page.ControlI, id string) *OrderedList {
 	t := &OrderedList{}
 	t.ItemList = NewItemList(t)
-	t.Init(t, parent)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (l *OrderedList) Init(self page.ControlI, parent page.ControlI) {
-	l.UnorderedList.Init(self, parent)
+func (l *OrderedList) Init(self page.ControlI, parent page.ControlI, id string) {
+	l.UnorderedList.Init(self, parent, id)
 	l.Tag = "ol"
 }
 

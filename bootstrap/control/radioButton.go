@@ -16,9 +16,9 @@ type RadioButton struct {
 
 }
 
-func NewRadioButton(parent page.ControlI) *RadioButton {
+func NewRadioButton(parent page.ControlI, id string) *RadioButton {
 	c := &RadioButton{}
-	c.Init(c, parent)
+	c.Init(c, parent, id)
 	return c
 }
 
