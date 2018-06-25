@@ -163,7 +163,7 @@ type javascriptAction struct {
 	js string
 }
 
-// Trigger will trigger a javascript event on a control
+// Javascript will execute the given javascript
 func Javascript(js string) *javascriptAction {
 	if js != "" {
 		if js[len(js) - 1: len(js)] != ";" {
@@ -175,4 +175,24 @@ func Javascript(js string) *javascriptAction {
 
 func (a *javascriptAction) RenderScript(params RenderParams) string {
 	return a.js
+}
+
+type setControlValueAction struct {
+	id string
+	key string
+	value interface{}
+}
+
+// SetControlValue is primarily used by custom controls to set a value that eventually can get picked
+// up by the control in the UpdateFormValues function. It is an aid to tying javascript powered widgets together
+// with the go version of the control. Value gets converted to a javascript value, so use the javascript.* helpers
+// if you want to interpret a javascript value and pass it on. For example:
+//  action.SetControlValue(myControl.ID(), "myKey", javascript.JsCode("event.target.id"))
+// will pass the id of the target of an event to the receiver of the action.
+func SetControlValue(id string, key string, value interface{}) *setControlValueAction {
+	return &setControlValueAction{id:id, key:key, value:value}
+}
+
+func (a *setControlValueAction) RenderScript(params RenderParams) string {
+	return fmt.Sprintf("goradd.setControlValue(%s, %s, %s)", a.id, a.key, javascript.ToJavaScript(a.value))
 }

@@ -112,7 +112,7 @@ func (t *SelectTable) MarshalState(m types.MapI) {
 func (t *SelectTable) UnmarshalState(m types.MapI) {
 	if m.Has("selId") {
 		id, _ := m.GetString("selId")
-		t.SetSelectedID(id)
+		t.selectedID = id
 	}
 }
 

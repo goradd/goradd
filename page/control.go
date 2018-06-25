@@ -175,7 +175,7 @@ type Control struct {
 	textLabelMode  html.LabelDrawingMode // describes how to draw the internal label
 	htmlEscapeText bool                  // whether to escape the text output, or send straight text
 
-	attributeScripts []*[]interface{} // commands to send to our javascript to redraw portions of This control via ajax. Allows us to skip drawing the entire control.
+	attributeScripts []*[]interface{} // commands to send to our javascript to redraw portions of this control via ajax. Allows us to skip drawing the entire control.
 
 	isRequired       bool
 	isHidden         bool
@@ -1396,6 +1396,20 @@ func (c *Control) RemoveClassesWithPrefix(prefix string) {
 	if c.attributes.RemoveClassesWithPrefix(prefix) {
 		c.Refresh() // TODO: Do this with javascript
 	}
+}
+
+// SetWidthStyle sets the width css property
+func (c *Control) SetWidthStyle(w interface{}) {
+	v := html.StyleString(w)
+	c.attributes.SetStyle("width", v)
+	c.AddRenderScript("css", "width", v) // use javascript to set this value
+}
+
+// SetHeightStyle sets the height css property
+func (c *Control) SetHeightStyle(h interface{}) {
+	v := html.StyleString(h)
+	c.attributes.SetStyle("height", v)
+	c.AddRenderScript("css", "height", v) // use javascript so set this value
 }
 
 

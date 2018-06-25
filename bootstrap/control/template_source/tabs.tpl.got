@@ -1,0 +1,36 @@
+package control
+
+func (t *Tabs) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+    var children = t.Children()
+
+    if (children != nil && len(children) > 0) &&
+        (t.selectedID == "" || t.Child(t.selectedID) == nil) {
+        t.selectedID = children[0].ID()     // select first item if nothing is selected
+    }
+
+{{
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+{{for _, child := range children }}
+  <li class="nav-item">
+    <a class="nav-link {{if child.ID() == t.selectedID}}active{{if}}" id="{{child.ID()}}_tab" data-toggle="tab" href="#{{child.ID()}}" role="tab" aria-controls="{{child.ID()}}" aria-selected="true">{{child.Label()}}</a>
+  </li>
+{{for}}
+</ul>
+<div class="tab-content" id="myTabContent">
+{{for _, child := range children }}
+{{g
+    child.AddClass("tab-pane")
+    if child.ID() == t.selectedID {
+        child.AddClass("active")
+    }
+    child.SetAttribute("role", "tabpanel")
+    child.SetAttribute("aria-labelledby", child.ID() + "_tab")
+}}
+{{draw child}}
+{{for}}
+</div>
+
+}}
+    return
+}

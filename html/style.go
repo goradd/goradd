@@ -201,3 +201,24 @@ func (s Style) encode() (text []byte) {
 	text = []byte(strings.Join(items, ";"))
 	return text
 }
+
+// StyleString converts an interface type that is being used to set a style value to a string that can be fed into
+// the SetStyle* functions
+func StyleString(i interface{}) string {
+	var sValue string
+	switch v := i.(type) {
+	case int:
+		sValue = fmt.Sprintf("%dpx", v)
+	case float32:
+		sValue = fmt.Sprintf("%fpx", v)
+	case float64:
+		sValue = fmt.Sprintf("%fpx", v)
+	case string:
+		sValue = v
+	case fmt.Stringer:
+		sValue = v.String()
+	default:
+		sValue = fmt.Sprintf("%v", v)
+	}
+	return sValue
+}

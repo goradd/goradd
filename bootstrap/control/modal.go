@@ -12,8 +12,6 @@ import (
 	"fmt"
 )
 
-const MessageDialogId = "qAlertDialog" // The control id to use for the reusable global alert dialog.
-
 type ModalBackdropType int
 
 const (
