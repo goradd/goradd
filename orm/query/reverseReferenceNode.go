@@ -26,6 +26,7 @@ type ReverseReferenceNode struct {
 	// The table that is the foreign key pointing back to us.
 	refColumn string
 
+	// True to create new objects for each joined item, or false to create an array of joined objects here.
 	isArray bool
 }
 
@@ -65,6 +66,10 @@ func (n *ReverseReferenceNode) Expand() {
 
 func (n *ReverseReferenceNode) isExpanded() bool {
 	return !n.isArray
+}
+
+func (n *ReverseReferenceNode) IsArray() bool {
+	return n.isArray
 }
 
 func (n *ReverseReferenceNode) Equals(n2 NodeI) bool {

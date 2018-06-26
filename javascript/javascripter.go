@@ -18,7 +18,9 @@ const JsonObjectType = "goraddObject"
 
 // ToJavaScript will convert the given value to javascript such that it can be embedded in a browser. If it can, it will
 // use the JavaScripter interface to do the conversion. Otherwise it generally follows json encoding rules. Strings are
-// escaped. Nil pointers become null objects. String maps become javascript objects.
+// escaped. Nil pointers become null objects. String maps become javascript objects. To convert a fairly complex object,
+// like a map or slice of objects, convert the inner objects to interfaces
+// TODO: Add some introspection to handle any kind of complex object that is a Javascripter at the inner level
 func ToJavaScript(v interface{}) string {
 	switch s := v.(type) {
 	case JavaScripter:
@@ -27,9 +29,18 @@ func ToJavaScript(v interface{}) string {
 		b, _ := json.Marshal(s)                         // This does a good job of handling most escape sequences we might need
 		s1 := strings.Replace(string(b), "/", `\/`, -1) // Replace forward slashes to avoid potential confusion in browser from closing html tags
 		return fmt.Sprintf("%v", s1)                    // will surround with quotes
+	case []string:
+		var values []string
+		for _, item := range s {
+			values = append(values, `"` + item + `"`)
+		}
+		return "[" + strings.Join(values, ",") + "]"
 	case []interface{}:
-		a := Arguments(s)
-		return "[" + a.JavaScript() + "]"
+		var values []string
+		for _, item := range s {
+			values = append(values, ToJavaScript(item))
+		}
+		return "[" + strings.Join(values, ",") + "]"
 	case map[string]interface{}:
 		var out string
 		for k, v := range s {
@@ -44,6 +55,17 @@ func ToJavaScript(v interface{}) string {
 		} else {
 			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
 		}
+	case map[int]interface{}:
+		var out string
+		for k, item := range s {
+			out += fmt.Sprintf("%d:%s,", k, ToJavaScript(item))
+		}
+		if len(out) == 0 {
+			return "{}"
+		} else {
+			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
+		}
+
 	case types.MapI:
 		var out string
 		s.Range(func(k string, v interface{}) bool {

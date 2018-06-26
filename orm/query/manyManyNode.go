@@ -61,10 +61,13 @@ func (n *ManyManyNode) nodeType() NodeType {
 	return MANYMANY_NODE
 }
 
+// Expand tells this node to create multiple objects for each joined item, rather than to create an array of joined items
 func (n *ManyManyNode) Expand() {
 	n.isArray = false
 }
 
+// isExpanded reports whether this node is creating a new object for each joined item (true), or creating an array of
+// joined items (false).
 func (n *ManyManyNode) isExpanded() bool {
 	return !n.isArray
 }

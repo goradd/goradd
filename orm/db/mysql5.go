@@ -191,7 +191,7 @@ func (m *Mysql5) generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []int
 			args = append(args, a...)
 		}
 	case *ReverseReferenceNode:
-		if b.limitInfo != nil {
+		if b.limitInfo != nil && node.IsArray() {
 			panic("We do not currently support limited queries with an array join.")
 		}
 

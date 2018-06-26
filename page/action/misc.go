@@ -194,5 +194,5 @@ func SetControlValue(id string, key string, value interface{}) *setControlValueA
 }
 
 func (a *setControlValueAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf("goradd.setControlValue(%s, %s, %s)", a.id, a.key, javascript.ToJavaScript(a.value))
+	return fmt.Sprintf(`goradd.setControlValue("%s", "%s", %s)`, a.id, a.key, javascript.ToJavaScript(a.value))
 }
