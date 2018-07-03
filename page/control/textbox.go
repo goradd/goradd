@@ -3,6 +3,11 @@ package control
 import (
 	"github.com/spekary/goradd/page"
 	"goradd/page/control_base"
+	"goradd/config"
+	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
+	"github.com/spekary/goradd/codegen/connector"
 )
 
 const (
@@ -28,4 +33,56 @@ func NewTextbox(parent page.ControlI, id string) *Textbox {
 	t := &Textbox{}
 	t.Init(t, parent, id)
 	return t
+}
+
+
+// This structure describes the textbox to the connector dialog and code generator
+
+func init() {
+	if config.Mode == config.AppModeDevelopment {
+		connector.RegisterControl(TextboxDescriber{})
+	}
+}
+
+type TextboxDescriber struct {
+
+}
+
+func (d TextboxDescriber) Type() string {
+	return "Textbox"
+}
+
+func (d TextboxDescriber) NewFunc() string {
+	return "NewTextbox"
+}
+
+func (d TextboxDescriber) Import() string {
+	return "github.com/spekary/goradd/page/control"
+}
+
+func (d TextboxDescriber) SupportsColumn(col db.ColumnDescription) bool {
+	if col.GoType == query.COL_TYPE_BYTES ||
+		col.GoType == query.COL_TYPE_STRING {
+			return true
+	}
+	return false
+}
+
+func (d TextboxDescriber) ConnectorParams() *types.OrderedMap {
+	paramControls := page.ControlConnectorParams()
+	paramSet := types.NewOrderedMap()
+
+	paramSet.Set("ColumnCount", connector.ConnectorParam {
+		"Column Count",
+		"Width of field by the number of characters.",
+		connector.ControlTypeInteger,
+		`{{var}}.SetColumnCount{{val}}`,
+		func(c page.ControlI, val interface{}) {
+			c.(*Textbox).SetColumnCount(val.(int))
+		}})
+
+
+	paramControls.Set("Textbox", paramSet)
+
+	return paramControls
 }

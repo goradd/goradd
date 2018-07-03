@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"os/exec"
+	"github.com/spekary/goradd/orm/query"
+	"github.com/spekary/goradd/page"
 )
 
 type Codegen struct {
@@ -139,4 +141,26 @@ func execCommand(command string) {
 	if err != nil {
 		log.Print(err)
 	}
+}
+
+type NewControlF func(i page.ControlI, id string) page.ControlI
+
+
+// ControlType returns the default type of control for a column. Control types can be customized in other ways.
+// TODO: Provide a mechanism for the user to configure this, and for bootstrap to override easily.
+func (c *Codegen) ControlType(col *db.ColumnDescription) (typ string, createFunc string, importName string) {
+	// default control types for columns
+	switch col.GoType {
+	case query.COL_TYPE_UNKNOWN: return "", "", ""
+	case query.COL_TYPE_BYTES: return "", "", ""
+	case query.COL_TYPE_STRING: return "control.Textbox", "control.NewTextbox", "github.com/spekary/goradd/page/control"
+	case query.COL_TYPE_INTEGER: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/page/control"
+	case query.COL_TYPE_UNSIGNED: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/page/control"
+	case query.COL_TYPE_INTEGER64: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/page/control"
+	case query.COL_TYPE_UNSIGNED64: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/page/control"
+	case query.COL_TYPE_DATETIME: return "", "", ""
+	case query.COL_TYPE_FLOAT: return "control.FloatTextbox", "control.NewFloatTextbox", "github.com/spekary/goradd/page/control"
+	case query.COL_TYPE_BOOL: return "control.Checkbox", "control.NewCheckbox", "github.com/spekary/goradd/page/control"
+	}
+	return
 }

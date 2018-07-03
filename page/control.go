@@ -87,7 +87,7 @@ type ControlI interface {
 	RemoveChild(id string)
 	RemoveChildren()
 	Page() *Page
-	Form() FormI
+	GetForm() FormBaseI
 	Child(string) ControlI
 
 	// hmtl and css
@@ -260,7 +260,7 @@ func (c *Control) control() *Control {
 }
 
 func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
-	form := c.Form()
+	form := c.GetForm()
 	if c.Page() == nil ||
 		form == nil ||
 		c.Page() != form.Page() {
@@ -314,7 +314,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		buf.WriteString(h)
 	}
 
-	response := c.Form().Response()
+	response := c.GetForm().Response()
 	c.this().PutCustomScript(ctx, response)
 	c.GetActionScripts(response)
 	c.this().PostRender(ctx, buf)
@@ -731,7 +731,7 @@ func (c *Control) addChildControl(child ControlI) {
 	c.children = append(c.children, child)
 }
 
-func (c *Control) Form() FormI {
+func (c *Control) GetForm() FormBaseI {
 	return c.page.Form()
 }
 
@@ -1016,7 +1016,7 @@ func (c *Control) doAction(ctx context.Context) {
 
 	if (e.event().validationOverride != ValidateNone && e.event().validationOverride != ValidateDefault) ||
 		(e.event().validationOverride == ValidateDefault && c.this().ValidationType(e) != ValidateNone) {
-		c.Form().control().resetValidation()
+		c.GetForm().control().resetValidation()
 	}
 
 	if c.passesValidation(ctx, e) {
@@ -1104,7 +1104,7 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 
 	if c.validationTargets == nil {
 		if c.validationType == ValidateForm {
-			targets = []ControlI{c.Form()}
+			targets = []ControlI{c.GetForm()}
 		} else if c.validationType == ValidateContainer {
 			for target := c.Parent(); target != nil; target = target.Parent() {
 				switch target.control().validationType {
@@ -1121,7 +1121,7 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 				}
 			}
 			// Target is the form
-			targets = []ControlI{c.Form()}
+			targets = []ControlI{c.GetForm()}
 			validation = ValidateForm
 		} else {
 			targets = []ControlI{c}
@@ -1142,7 +1142,7 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 
 	switch validation {
 	case ValidateForm:
-		valid = c.Form().control().validateChildren(ctx)
+		valid = c.GetForm().control().validateChildren(ctx)
 	case ValidateSiblingsAndChildren:
 		for _, t := range targets {
 			valid = t.control().validateSiblingsAndChildren(ctx) && valid
@@ -1272,7 +1272,7 @@ func (c *Control) writeState(ctx context.Context) {
 			} else {
 				stateStore = i.(*types.Map)
 			}
-			key := c.Form().ID() + ":" + c.ID()
+			key := c.GetForm().ID() + ":" + c.ID()
 			stateStore.Set(key, state)
 		}
 	}
@@ -1299,7 +1299,7 @@ func (c *Control) readState(ctx context.Context) {
 				// Indicates the entire control state store changed types, so completely ignore it
 			}
 
-			key := c.Form().ID() + ":" + c.ID()
+			key := c.GetForm().ID() + ":" + c.ID()
 			i2 := stateStore.Get(key)
 			if state, ok = i2.(types.MapI); !ok {
 				return
@@ -1418,3 +1418,9 @@ func (c *Control) SetEscapeText(e bool) {
 	c.htmlEscapeText = e
 }
 
+func ControlConnectorParams() *types.OrderedMap {
+	m := types.NewOrderedMap()
+
+	// TODO: Add setable options for all controls
+	return m
+}

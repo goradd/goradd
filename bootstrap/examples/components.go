@@ -19,7 +19,7 @@ type ComponentsForm struct {
 	ButtonPanel *grctl.Fieldset
 }
 
-func NewComponentsForm(ctx context.Context) page.FormI {
+func NewComponentsForm(ctx context.Context) page.FormBaseI {
 	f := &ComponentsForm{}
 	f.Init(ctx, f, COMPONENTS_PATH, COMPONENTS_ID)
 	return f

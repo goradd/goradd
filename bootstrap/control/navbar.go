@@ -82,7 +82,7 @@ func (b *Navbar) Init(self page.ControlI, parent page.ControlI, id string) {
 	b.style = NavbarDark // default
 	b.background = BackgroundColorDark
 	b.expand = NavbarExpandLarge
-	app.LoadBootstrap(b.Form())
+	app.LoadBootstrap(b.GetForm())
 }
 
 func (b *Navbar) this() NavbarI {

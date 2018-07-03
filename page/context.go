@@ -103,7 +103,7 @@ func (ctx *Context) FillHttp(r *http.Request) {
 		contentType := r.Header["content-type"][0]
 		// Per comments in the ResponseWriter, we need to read and processs the entire request before attempting to write.
 		if strings.Contains(contentType, "multipart") {
-			r.ParseMultipartForm(config.MULTI_PART_FORM_MAX)
+			r.ParseMultipartForm(config.MultiPartFormMax)
 		} else {
 			r.ParseForm()
 		}

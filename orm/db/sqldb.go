@@ -266,6 +266,17 @@ func (s *SqlDb) StartProfiling() {
 	s.profiling = true
 }
 
+func IsProfiling(ctx context.Context) bool {
+	var c *SqlContext
+	i := ctx.Value(goradd.SqlContext)
+	if i != nil {
+		c = i.(*SqlContext)
+		return c.profiles != nil
+	}
+	return false
+}
+
+// TODO: Move profiles to a session variable so we can access ajax queries too
 func GetProfiles(ctx context.Context) []ProfileEntry {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)

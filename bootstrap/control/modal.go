@@ -65,8 +65,8 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
 	d.On(event.Event("hide.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosingEvent, nil))
 	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Ajax(d.ID(), DialogClosed), action.PrivateAction{})
-	app.LoadBootstrap(d.Form())
-	d.Form().AddStyleSheetFile(config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css", nil)
+	app.LoadBootstrap(d.GetForm())
+	d.GetForm().AddStyleSheetFile(config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css", nil)
 
 	d.AddClass("modal fade").
 		SetAttribute("tabindex", -1).
@@ -235,7 +235,7 @@ func (d *Modal) PrivateAction(ctx context.Context, a page.ActionParams) {
 
 func (d *Modal) Open() {
 	if d.Parent() == nil {
-		d.SetParent(d.Form())	// This is a saved modal which has previously been created and removed. Insert it back into the form.
+		d.SetParent(d.GetForm()) // This is a saved modal which has previously been created and removed. Insert it back into the form.
 	}
 	d.SetVisible(true)
 	d.isOpen = true
@@ -244,7 +244,7 @@ func (d *Modal) Open() {
 }
 
 func (d *Modal) Close() {
-	d.Form().Response().ExecuteControlCommand(d.ID(), "modal", page.PriorityLow, "hide")
+	d.GetForm().Response().ExecuteControlCommand(d.ID(), "modal", page.PriorityLow, "hide")
 }
 
 
@@ -283,7 +283,7 @@ If you specify more than one button, the first button will be the default button
 this case, you will need to detect the button by adding a On(event.DialogButton(), action) to the dialog returned.
 You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
 */
-func BootstrapAlert(form page.FormI, message string, buttons interface{}) control.DialogI {
+func BootstrapAlert(form control.FormI, message string, buttons interface{}) control.DialogI {
 	dlg := NewModal(form, "")
 	dlg.SetText(message)
 	if buttons != nil {

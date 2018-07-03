@@ -103,6 +103,7 @@ type Response struct {
 	newLocation            string
 	winClose               bool
 	controls               map[string]ResponseControl
+	profileHtml			   string
 }
 
 func NewResponse() Response {
@@ -413,3 +414,8 @@ func (r *Response) SetControlValue(id string, value string) {
 	}
 	r.controls[id] = ResponseControl{value: value}
 }
+
+func (r *Response) setProfileInfo(info string) {
+	r.profileHtml = info
+}
+

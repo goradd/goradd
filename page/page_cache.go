@@ -32,7 +32,7 @@ type FastPageCache struct {
 }
 
 func NewFastPageCache() *FastPageCache {
-	return &FastPageCache{*types.NewLruCache(config.PAGE_CACHE_MAX_SIZE, config.PAGE_CACHE_TTL)}
+	return &FastPageCache{*types.NewLruCache(config.PageCacheMaxSize, config.PageCacheTTL)}
 }
 
 // Puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
@@ -77,7 +77,7 @@ type SerializedPageCache struct {
 
 func NewSerializedPageCache() *SerializedPageCache {
 	panic("Serialized pages are not ready for prime time yet")
-	return &SerializedPageCache{*types.NewLruCache(config.PAGE_CACHE_MAX_SIZE, config.PAGE_CACHE_TTL)}
+	return &SerializedPageCache{*types.NewLruCache(config.PageCacheMaxSize, config.PageCacheTTL)}
 }
 
 // Puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue

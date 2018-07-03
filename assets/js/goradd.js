@@ -614,6 +614,14 @@ goradd = {
                 document.location = json.loc;
             }
         }
+        if (json.profileHtml) {
+            var c = $j("#dbProfilePane");
+            if (c.length == 0) {
+                c = $j("<div id = 'dbProfilePane'></div>");
+                $j(goradd.getForm()).parent().append(c);
+            }
+            c.html(json.profileHtml);
+        }
     },
     processCommand: function(command) {
         var params,

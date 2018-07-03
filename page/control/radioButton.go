@@ -64,7 +64,7 @@ func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 		if c.Checked() != v {
 			c.SetCheckedNoRefresh(v)
 			// make sure any other buttons in the group are unchecked
-			c.Form().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.ID())
+			c.GetForm().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.ID())
 		}
 	} else {
 		c.Checkbox.SetChecked(v)

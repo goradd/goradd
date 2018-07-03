@@ -394,11 +394,21 @@ func (a *Attributes) SetStyle(name string, v string) *Attributes {
 }
 
 // SetStyle merges the given styles with the current styles. The given style wins on collision.
-func (a *Attributes) SetStyles(s *Style) {
+func (a *Attributes) SetStyles(s *Style) *Attributes {
 	styles := a.StyleMap()
 	styles.Merge(s)
 	a.OrderedStringMap.Set("style", styles.String())
+	return a
 }
+
+// SetStylesTo sets the styles using a traditional css style string with colon and semicolon separatators
+func (a *Attributes) SetStylesTo(s string) *Attributes {
+	styles := a.StyleMap()
+	styles.SetTo(s)
+	a.OrderedStringMap.Set("style", styles.String())
+	return a
+}
+
 
 // Style gives you the value of a single style attribute value. If you want all the attributes as a style string, use
 // Attribute("style").

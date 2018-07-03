@@ -46,7 +46,7 @@ func (p *Proxy) OnClick(actions ...action.ActionI) page.EventI {
 // Draw is used by the form engine to draw the control. As a proxy, there is no html to draw, but this is where the scripts attached to the
 // proxy get sent to the response. This should get drawn by the auto-drawing routine, since proxies are not rendered in templates.
 func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	response := p.Form().Response()
+	response := p.GetForm().Response()
 	p.this().PutCustomScript(ctx, response)
 	p.GetActionScripts(response)
 	p.PostRender(ctx, buf)
@@ -123,5 +123,5 @@ func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
 
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string) string {
-	return fmt.Sprintf(`$j('#%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.Form().ID(), eventName, p.ID(), eventJs)
+	return fmt.Sprintf(`$j('#%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.GetForm().ID(), eventName, p.ID(), eventJs)
 }

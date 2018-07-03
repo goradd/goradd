@@ -94,7 +94,7 @@ func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
 	overlay := parent.Page().GetControl("groverlay")
 
 	if overlay == nil {
-		overlay = NewPanel(parent.Form(), "groverlay")
+		overlay = NewPanel(parent.GetForm(), "groverlay")
 		overlay.SetShouldAutoRender(true)
 	} else {
 		overlay.SetVisible(true)
@@ -262,11 +262,11 @@ Call RegisterAlertFunc to register a different alert function for the framework 
 
 */
 
-func Alert(form page.FormI, message string, buttons interface{}) DialogI {
+func Alert(form FormI, message string, buttons interface{}) DialogI {
 	return alertFunc(form, message, buttons)
 }
 
-func DefaultAlert(form page.FormI, message string, buttons interface{}) DialogI {
+func DefaultAlert(form FormI, message string, buttons interface{}) DialogI {
 	dlg := NewDialog(form, "")
 	dlg.SetText(message)
 	if buttons != nil {
@@ -290,7 +290,7 @@ func DefaultAlert(form page.FormI, message string, buttons interface{}) DialogI 
 	return dlg
 }
 
-type AlertFuncType func(form page.FormI, message string, buttons interface{}) DialogI
+type AlertFuncType func(form FormI, message string, buttons interface{}) DialogI
 
 
 var alertFunc AlertFuncType = DefaultAlert // default to our built in one

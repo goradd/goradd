@@ -27,11 +27,11 @@ func (a *Application) Init(mode string) {
 
 	switch mode {
 	case "debug":
-		config.Mode = config.Debug
+		config.Mode = config.AppModeDebug
 	case "rel":
-		config.Mode = config.Release
+		config.Mode = config.AppModeRelease
 	case "dev":
-		config.Mode = config.Development
+		config.Mode = config.AppModeDevelopment
 	default:
 		panic("Unknown application mode")
 	}

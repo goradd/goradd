@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/spekary/goradd/util/types"
 	"goradd/config"
-	"github.com/spekary/goradd/page/control"
 	"context"
+	"github.com/spekary/goradd/page/control"
 )
 
 // PrimaryKeyer is an interface that is often implemented by model objects.
@@ -33,8 +33,8 @@ func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 
 func (t *SelectTable) Init(self page.ControlI, parent page.ControlI, id string) {
 	t.Table.Init(self, parent, id)
-	t.Form().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
-	t.Form().AddJavaScriptFile(config.GoraddAssets() + "/js/select-table.js", false, nil)
+	t.GetForm().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
+	t.GetForm().AddJavaScriptFile(config.GoraddAssets() + "/js/select-table.js", false, nil)
 }
 
 func (t *SelectTable) this() SelectTableI {
@@ -42,24 +42,27 @@ func (t *SelectTable) this() SelectTableI {
 }
 
 func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attributes) {
+	var id string
+
 	if t.rowStyler != nil {
 		a = t.rowStyler.Attributes(row, data)
+		id = a.Get("id") // styler might be giving us an id
 	} else {
 		a = html.NewAttributes()
 	}
 
-	var id string
-
 	// try to guess the id from the data
-	switch obj := data.(type) {
-	case control.IDer:
-		id = obj.ID()
-	case PrimaryKeyer:
-		id = obj.PrimaryKey()
-	case map[string]string:
-		id,_ = obj["id"]
-	case StringGetter:
-		id = obj.Get("id")
+	if id == "" {
+		switch obj := data.(type) {
+		case control.IDer:
+			id = obj.ID()
+		case PrimaryKeyer:
+			id = obj.PrimaryKey()
+		case map[string]string:
+			id,_ = obj["id"]
+		case StringGetter:
+			id = obj.Get("id")
+		}
 	}
 	if id != "" {
 		// TODO: If configured, encrypt the id so its not publicly showing database ids
@@ -102,7 +105,7 @@ func (t *SelectTable) SelectedID() string {
 
 func (t *SelectTable) SetSelectedID(id string) {
 	t.selectedID = id
-	t.Form().Response().ExecuteControlCommand(t.ID(), "selectTable", "option", "selectedId", id)
+	t.GetForm().Response().ExecuteControlCommand(t.ID(), "selectTable", "option", "selectedId", id)
 }
 
 func (t *SelectTable) MarshalState(m types.MapI) {

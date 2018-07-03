@@ -33,7 +33,7 @@ type Page struct {
 	idPrefix     string // For creating unique ids for the app
 
 	controlRegistry *types.OrderedMap
-	form            FormI
+	form            FormBaseI
 	idCounter       int
 	drawFunc        PageDrawFunc
 	title           string // page title to draw in head tag
@@ -122,12 +122,12 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 }
 
 // Returns the form for pages that only have one form
-func (p *Page) Form() FormI {
+func (p *Page) Form() FormBaseI {
 	//return p.forms.GetAt(0).(FormI)
 	return p.form
 }
 
-func (p *Page) SetForm(f FormI) {
+func (p *Page) SetForm(f FormBaseI) {
 	p.form = f
 }
 
@@ -232,9 +232,9 @@ func (p *Page) addControl(control ControlI) {
 	p.controlRegistry.Set(id, control)
 
 	if control.Parent() == nil {
-		if f, ok := control.(FormI); ok {
+		if f, ok := control.(FormBaseI); ok {
 			if p.form != nil {
-				panic("The FormBase object for the page has already been set.")
+				panic("The Form object for the page has already been set.")
 			} else {
 				p.form = f
 			}

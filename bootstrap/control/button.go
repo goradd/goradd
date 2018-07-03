@@ -63,7 +63,7 @@ func NewButton(parent page.ControlI, id string) *Button {
 func (b *Button) Init(self page.ControlI, parent page.ControlI, id string) {
 	b.Button.Init(self, parent, id)
 	b.style = ButtonStyleSecondary // default
-	app.LoadBootstrap(b.Form())
+	app.LoadBootstrap(b.GetForm())
 }
 
 func (b *Button) this() ButtonI {

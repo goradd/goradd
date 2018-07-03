@@ -1,0 +1,24 @@
+//connector.tmpl
+
+// The master template for the connector classes
+
+
+{{
+package connector
+
+// This is the connector override. Feel free to edit.
+
+import (
+	"goradd/gen/{{t.DbKey}}/model/node"
+	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/orm/query"
+	"context"
+	"fmt"
+	. "github.com/spekary/goradd/orm/op"
+	//"./node"
+	"github.com/spekary/goradd/datetime"
+	"github.com/spekary/goradd/util/types"
+)
+
+}}
+

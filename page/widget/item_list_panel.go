@@ -34,7 +34,7 @@ type ItemListPanel struct {
 func NewItemListPanel(parent page.ControlI, id string) *ItemListPanel {
 	p := &ItemListPanel{}
 	p.Init(p, parent, id)
-	p.Form().AddStyleSheetFile(config.GoraddAssets() + "/css/item-list-panel.css", nil)
+	p.GetForm().AddStyleSheetFile(config.GoraddAssets() + "/css/item-list-panel.css", nil)
 
 	return p
 }
@@ -50,16 +50,16 @@ func (p *ItemListPanel) Init(self ItemListPanelI, parent page.ControlI, id strin
 	p.ButtonPanel.AddClass("buttons")
 
 	p.FilterText = NewTextbox(p.FilterPanel, p.ID() + "_filtertxt")
-	p.FilterText.SetPlaceholder(p.Form().T("Search"))
+	p.FilterText.SetPlaceholder(p.GetForm().T("Search"))
 	p.FilterText.SetType(TextboxTypeSearch)
 
 	p.ItemTable = table.NewSelectTable(p.ScrollPanel, p.ID() + "_table")
 
 	p.NewButton = NewButton(p.ButtonPanel, p.ID() + "_newbtn")
-	p.NewButton.SetText(p.Form().T("New"))
+	p.NewButton.SetText(p.GetForm().T("New"))
 
 	p.EditButton = NewButton(p.ButtonPanel, p.ID() + "_editbtn")
-	p.EditButton.SetText(p.Form().T("Edit"))
+	p.EditButton.SetText(p.GetForm().T("Edit"))
 
 	p.FilterText.On(event.Input().Delay(300), action.Ajax(p.ID(), filterChanged))
 	p.FilterText.On(event.EnterKey().Terminating(), action.Ajax(p.ID(), filterChanged))

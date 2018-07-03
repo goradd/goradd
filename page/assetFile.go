@@ -78,13 +78,13 @@ func RegisterAssetFile(url string, filePath string) string {
 	if !assetFiles.Has(url) {
 		var dir, fileName string = filepath.Split(url)
 
-		dir = strings.TrimPrefix(dir, config.ASSET_PREFIX)
+		dir = strings.TrimPrefix(dir, config.AssetPrefix)
 
 		var localDir = config.LocalAssets() + dir
 		var localPath = localDir + fileName
 
 		// if we are in the correct mode, copy the file to the local assets directory. Otherwise, we will trust its already there.
-		if config.Mode == config.DeploymentPrep {
+		if config.Mode == config.AppModeDeploymentPrep {
 			os.MkdirAll(localDir, 0777)
 			err := util.FileCopyIfNewer(filePath, localPath)
 			if err != nil {
@@ -100,7 +100,7 @@ func RegisterAssetFile(url string, filePath string) string {
 			panic("No file for " + url + " has been registered.")
 		}
 		a := assetFiles.Get(url).(AssetFile)
-		if config.Mode <= config.Debug {
+		if config.Mode <= config.AppModeDebug {
 			if a.filePath != filePath {
 				panic("Attempting to register two different files to the same url:" + filePath)
 			}
@@ -110,25 +110,25 @@ func RegisterAssetFile(url string, filePath string) string {
 }
 
 func RegisterCssFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.ASSET_PREFIX+"/css/"+urlPath, filePath)
+	return RegisterAssetFile(config.AssetPrefix+"/css/"+urlPath, filePath)
 }
 
 func RegisterJsFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.ASSET_PREFIX+"/js/"+urlPath, filePath)
+	return RegisterAssetFile(config.AssetPrefix+"/js/"+urlPath, filePath)
 }
 
 func RegisterImageFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.ASSET_PREFIX+"/image/"+urlPath, filePath)
+	return RegisterAssetFile(config.AssetPrefix+"/image/"+urlPath, filePath)
 }
 
 func RegisterFontFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.ASSET_PREFIX+"/font/"+urlPath, filePath)
+	return RegisterAssetFile(config.AssetPrefix+"/font/"+urlPath, filePath)
 }
 
 func GetAssetFilePath(url string) string {
 	if asset := assetFiles.Get(url); asset == nil {
 		return ""
-	} else if config.Mode == config.Development {
+	} else if config.Mode == config.AppModeDevelopment {
 		return asset.(AssetFile).filePath
 	} else {
 		return asset.(AssetFile).localPath
@@ -148,7 +148,7 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	//log.Printf("Served %s", localpath)
 
-	if config.Mode == config.Development {
+	if config.Mode == config.AppModeDevelopment {
 		// TODO: Set up per file cache control
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	} else {

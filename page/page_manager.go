@@ -11,7 +11,7 @@ import (
 
 var pageManager *PageManager
 
-type FormCreationFunction func(context.Context) FormI
+type FormCreationFunction func(context.Context) FormBaseI
 
 type PageManagerI interface {
 	RegisterPage(path string, creationFunction FormCreationFunction)
@@ -43,7 +43,7 @@ func RegisterPage(path string, creationFunction FormCreationFunction, formId str
 
 func (m *PageManager) getNewPageFunc(ctx context.Context) (f FormCreationFunction, path string, ok bool) {
 	path = GetContext(ctx).URL.Path
-	prefix := config.PAGE_PATH_PREFIX
+	prefix := config.PagePathPrefix
 	if prefix != "" {
 		if strings.Index(path, prefix) == 0 { // starts with prefix
 			path = path[len(prefix):] // remove path

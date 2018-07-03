@@ -164,15 +164,15 @@ func (c *CheckboxColumn) allClick(id string, checked bool, row int, col int) {
 		// Fire javascript to check all visible
 		//js := fmt.Sprintf(`$j('input[data-gr-checkcol]').prop('checked', %t)`, checked)
 		//c.parentTable.FormBase().Response().ExecuteJavaScript(js, page.PriorityStandard)
-		c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
+		c.parentTable.GetForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
 
 	} else {
 		// Fire javascript to check all visible and trigger a change
 		if checked {
-			c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `trigger`, page.PriorityStandard, `click`)
+			c.parentTable.GetForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `trigger`, page.PriorityStandard, `click`)
 
 		} else {
-			c.parentTable.Form().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `trigger`, page.PriorityStandard, `click`)
+			c.parentTable.GetForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `trigger`, page.PriorityStandard, `click`)
 		}
 	}
 

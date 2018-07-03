@@ -14,13 +14,13 @@ import (
 	"strings"
 )
 
-const htmlVarFormstate string = "Goradd__FormState"
-const htmlVarParams string = "Goradd__Params"
+const htmlVarFormstate  = "Goradd__FormState"
+const htmlVarParams  = "Goradd__Params"
 
-type FormI interface {
+type FormBaseI interface {
 	ControlI	// Note we are not inheriting from localpage here, to avoid import loop and because its not really necessary
 	// Create the objects on the form without necessarily initializing them
-	Init(ctx context.Context, self FormI, path string, id string)
+	Init(ctx context.Context, self FormBaseI, path string, id string)
 	CreateControls(ctx context.Context)
 	LoadControls(ctx context.Context)
 	AddRelatedFiles()
@@ -37,9 +37,10 @@ type FormI interface {
 	Exit(ctx context.Context, err error)
 }
 
-// FormBase is the basic form controller structure for the application and also serves as the drawing mechanism for the
-// <form> tag in the html output. Normally, you should not descend your forms from here, but rather the version in
-// your local goradd directory so that you can easily make modifications to the way forms work in your application.
+// FormBase is a base class for the Form class that is in the control package.
+// It is the basic form controller structure for the application and also serves as the drawing mechanism for the
+// <form> tag in the html output. Normally, you should not descend your forms from here, but rather from the
+// control.Form class. You can modify the basic form class by making modifications to the goradd/page/formbase.go file.
 type FormBase struct {
 	Control
 	response Response // don't serialize this
@@ -52,7 +53,7 @@ type FormBase struct {
 	importedJavaScripts *types.OrderedMap // when refreshing, these get moved to the bodyJavaScripts
 }
 
-func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string) {
+func (f *FormBase) Init(ctx context.Context, self FormBaseI, path string, id string) {
 	var p = &Page{}
 	p.Init(ctx, path)
 
@@ -66,24 +67,10 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 	self.AddRelatedFiles()
 	self.CreateControls(ctx)
 	self.LoadControls(ctx)
-
-	/*	TODO: Add a dialog and designer click if in design mode
-		            if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
-	                // Attach custom event to dialog to handle right click menu items sent by form
-
-	                $dlg = new Q\ModelConnector\EditDlg ($objClass, 'qconnectoreditdlg');
-
-	                $dlg->addAction(
-	                    new Q\Event\On('qdesignerclick'),
-	                    new Q\Action\Ajax ('ctlDesigner_Click', null, null, 'ui')
-	                );
-	            }
-
-	*/
 }
 
-func (f *FormBase) this() FormI {
-	return f.Self.(FormI)
+func (f *FormBase) this() FormBaseI {
+	return f.Self.(FormBaseI)
 }
 
 // AddRelatedFiles adds related javascript and style sheet files. Override This to get these files from a different location,
@@ -144,25 +131,20 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	buf.WriteString(s)
 
 	f.this().PostRender(ctx, buf)
-
-	f.outputSqlProfile(ctx, buf)
 	return
 }
 
 // outputSqlProfile looks for sql profiling information and sends it to the browser if found
-func (f *FormBase) outputSqlProfile(ctx context.Context, buf *bytes.Buffer) {
+func (f *FormBase) getDbProfile(ctx context.Context) (s string)  {
 	if profiles := db.GetProfiles(ctx); profiles != nil {
-		var head = `<h4 onclick="$j('#sqlprofilelist').toggle();" style="position:fixed; bottom:0">SQL Profile <i class="fas fa-arrow-circle-down" ></i></h4>`
-		var s string
 		for _, profile := range profiles {
 			dif := profile.EndTime.Sub(profile.BeginTime)
 			sql := strings.Replace(profile.Sql, "\n", "<br />", -1)
 			s += fmt.Sprintf(`<p class="profile"><div>Time: %s Begin: %s End: %s</div><div>%s</div></p>`,
 				dif.String(), profile.BeginTime.Format("3:04:05.000"), profile.EndTime.Format("3:04:05.000"), sql)
 		}
-		s = html.RenderTag("div", html.NewAttributes().SetID("sqlprofilelist").SetDisplay("none"), s)
-		buf.WriteString(html.RenderTag("div", html.NewAttributes().SetID("sqlprofile"), head + s))
 	}
+	return
 }
 
 // Assembles the ajax response for the entire form and draws it to the return buffer
@@ -226,7 +208,7 @@ func (f *FormBase) saveState() string {
 // requires additional javascript to function.
 //
 // The path is either a url, or an internal path to the location of the file
-// in the development environment. Development files will automatically get copied to the local assets directory for easy
+// in the development environment. AppModeDevelopment files will automatically get copied to the local assets directory for easy
 // deployment and so that the MUX can find the file and serve it (This happens at draw time).
 // The attributes are extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
@@ -265,7 +247,7 @@ func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 // AddStyleSheetFile registers a StyleSheet file such that it will get loaded on the page.
 // The file will be loaded on the page at initial draw in the header, or will be inserted into the file if the page
 // is already drawn. The path is either a url, or an internal path to the location of the file
-// in the development environment. Development files will automatically get copied to the local assets directory for easy
+// in the development environment. AppModeDevelopment files will automatically get copied to the local assets directory for easy
 // deployment and so that the MUX can find the file and serve it (This happens at draw time).
 // The attributes will be extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
