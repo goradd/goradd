@@ -8,6 +8,11 @@ import (
 	"errors"
 )
 
+
+type Getter interface {
+	Get(key string) (val interface{})
+}
+
 // MapI is a generic map interface that can store interface{} objects. It has helpers to save and restore built-in types too.
 // See Map, OrderedMap, Map, and SafeOrderedMap for various implementations of the interface
 type MapI interface {

@@ -1,4 +1,4 @@
-package table
+package column
 
 import (
 	"context"
@@ -6,12 +6,14 @@ import (
 	"github.com/spekary/goradd/datetime"
 	reflect "reflect"
 	"time"
+	"goradd/override/control_base"
+	"github.com/spekary/goradd/page/control/control_base/table"
 )
 
 // SliceColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into
 // a string, either by normal string conversion symantecs, or using the supplied format string.
 type SliceColumn struct {
-	ColumnBase
+	control_base.ColumnBase
 }
 
 func NewSliceColumn(index int, format ...string) *SliceColumn {
@@ -40,12 +42,12 @@ func (c *SliceColumn) Init(index int, format string, timeFormat string) {
 }
 
 func (c *SliceColumn) SetFormat(format string) *SliceColumn {
-	c.cellTexter.(*SliceTexter).Format = format
+	c.CellTexter().(*SliceTexter).Format = format
 	return c
 }
 
 func (c *SliceColumn) SetTimeFormat(format string) *SliceColumn {
-	c.cellTexter.(*SliceTexter).TimeFormat = format
+	c.CellTexter().(*SliceTexter).TimeFormat = format
 	return c
 }
 
@@ -61,7 +63,7 @@ type SliceTexter struct {
 	TimeFormat string
 }
 
-func (t SliceTexter) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t SliceTexter) CellText(ctx context.Context, col 	table.ColumnI, rowNum int, colNum int, data interface{}) string {
 	vSlice := reflect.ValueOf(data)
 	if vSlice.Kind() != reflect.Slice {
 		panic("data must be a slice.")

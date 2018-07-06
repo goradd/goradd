@@ -17,12 +17,12 @@ var pageCache PageCacheI
 
 func SetPageCache(c PageCacheI) {
 	if pageCache != nil {
-		panic("Only set the page cache when the application is initialized, and only once.")
+		panic("Only set the override cache when the application is initialized, and only once.")
 	}
 	pageCache = c
 }
 
-// FastPageCache is an in memory page cache that does no serialization and uses an LRU cache of page objects.
+// FastPageCache is an in memory override cache that does no serialization and uses an LRU cache of override objects.
 // Objects that are too old are removed, and if the cache is full,
 // the oldest item(s) will be removed. Pages that are set multiple times will be pushed to the top. Whenever an item is set,
 // we could potentially garbage collect. This cache is only appropriate when the pagecache itself is operating on a
@@ -35,13 +35,13 @@ func NewFastPageCache() *FastPageCache {
 	return &FastPageCache{*types.NewLruCache(config.PageCacheMaxSize, config.PageCacheTTL)}
 }
 
-// Puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
+// Puts the override into the override cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
 func (o *FastPageCache) Set(pageId string, page *Page) {
 	o.LruCache.Set(pageId, page)
 }
 
-// Get returns the page based on its page id.
+// Get returns the override based on its override id.
 // If not found, will return null.
 func (o *FastPageCache) Get(pageId string) *Page {
 	var p *Page
@@ -56,7 +56,7 @@ func (o *FastPageCache) Get(pageId string) *Page {
 	return p
 }
 
-// Returns a new page id
+// Returns a new override id
 func (o *FastPageCache) NewPageID() string {
 	s := util.RandomHtmlValueString(40)
 	for o.Has(s) { // while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure
@@ -65,8 +65,8 @@ func (o *FastPageCache) NewPageID() string {
 	return s
 }
 
-// SerializedPageCache is an in memory page cache that does serialization and uses an LRU cache of page objects.
-// Use the serialized page cache during development to ensure that you can eventually move your page cache to a database
+// SerializedPageCache is an in memory override cache that does serialization and uses an LRU cache of override objects.
+// Use the serialized override cache during development to ensure that you can eventually move your override cache to a database
 // or a separate machine so that your application is scalable.
 // Objects that are too old are removed, and if the cache is full,
 // the oldest item(s) will be removed. Pages that are set multiple times will be pushed to the top. Whenever an item is set,
@@ -80,7 +80,7 @@ func NewSerializedPageCache() *SerializedPageCache {
 	return &SerializedPageCache{*types.NewLruCache(config.PageCacheMaxSize, config.PageCacheTTL)}
 }
 
-// Puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
+// Puts the override into the override cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
 func (o *SerializedPageCache) Set(pageId string, page *Page) {
 	b := GetBuffer()
@@ -94,7 +94,7 @@ func (o *SerializedPageCache) Set(pageId string, page *Page) {
 	}
 }
 
-// Get returns the page based on its page id.
+// Get returns the override based on its override id.
 // If not found, will return null.
 func (o *SerializedPageCache) Get(pageId string) *Page {
 	b := o.LruCache.Get(pageId).([]byte)
@@ -129,7 +129,7 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 	return p
 }
 
-// Returns a new page id
+// Returns a new override id
 func (o *SerializedPageCache) NewPageID() string {
 	s := util.RandomHtmlValueString(40)
 	for o.Has(s) { // while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure

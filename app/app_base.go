@@ -49,7 +49,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	pm := page.GetPageManager()
 	if pm == nil {
-		panic("No page manager defined")
+		panic("No override manager defined")
 	}
 
 	ctx := r.Context()

@@ -1,5 +1,9 @@
 package types
 
+type StringGetter interface {
+	Get(key string) (val string)
+}
+
 // The StringMapI (pronounced StringMappy) interface describes structures that implement the important
 // and common map of strings indexed by strings which is a part of most modern languages.
 type StringMapI interface {

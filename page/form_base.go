@@ -17,10 +17,10 @@ import (
 const htmlVarFormstate  = "Goradd__FormState"
 const htmlVarParams  = "Goradd__Params"
 
-type FormBaseI interface {
+type FormI interface {
 	ControlI	// Note we are not inheriting from localpage here, to avoid import loop and because its not really necessary
 	// Create the objects on the form without necessarily initializing them
-	Init(ctx context.Context, self FormBaseI, path string, id string)
+	Init(ctx context.Context, self FormI, path string, id string)
 	CreateControls(ctx context.Context)
 	LoadControls(ctx context.Context)
 	AddRelatedFiles()
@@ -40,7 +40,7 @@ type FormBaseI interface {
 // FormBase is a base class for the Form class that is in the control package.
 // It is the basic form controller structure for the application and also serves as the drawing mechanism for the
 // <form> tag in the html output. Normally, you should not descend your forms from here, but rather from the
-// control.Form class. You can modify the basic form class by making modifications to the goradd/page/formbase.go file.
+// control.Form class. You can modify the basic form class by making modifications to the goradd/override/formbase.go file.
 type FormBase struct {
 	Control
 	response Response // don't serialize this
@@ -53,7 +53,7 @@ type FormBase struct {
 	importedJavaScripts *types.OrderedMap // when refreshing, these get moved to the bodyJavaScripts
 }
 
-func (f *FormBase) Init(ctx context.Context, self FormBaseI, path string, id string) {
+func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string) {
 	var p = &Page{}
 	p.Init(ctx, path)
 
@@ -69,8 +69,8 @@ func (f *FormBase) Init(ctx context.Context, self FormBaseI, path string, id str
 	self.LoadControls(ctx)
 }
 
-func (f *FormBase) this() FormBaseI {
-	return f.Self.(FormBaseI)
+func (f *FormBase) this() FormI {
+	return f.Self.(FormI)
 }
 
 // AddRelatedFiles adds related javascript and style sheet files. Override This to get these files from a different location,
@@ -160,7 +160,7 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 	pagestate = f.saveState()
 	var grctx = GetContext(ctx)
 	if pagestate != grctx.pageStateId {
-		panic("page state changed")
+		panic("override state changed")
 	}
 	//f.response.SetControlValue(htmlVarFormstate, formstate)
 	// TODO: render imported style sheets and java scripts
@@ -191,18 +191,18 @@ func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error)
 	return
 }
 
-// saveState saves the state of the form in the page cache.
-// This version keeps the page in memory. Future versions may serialize formstates to store them on disk.
+// saveState saves the state of the form in the override cache.
+// This version keeps the override in memory. Future versions may serialize formstates to store them on disk.
 func (f *FormBase) saveState() string {
 	var s = f.page.StateID()
-	pageCache.Set(s, f.page) // the page should already exist in the cache. This just tells the cache that we used it, so make it current.
+	pageCache.Set(s, f.page) // the override should already exist in the cache. This just tells the cache that we used it, so make it current.
 	return f.page.StateID()
 }
 
-// AddJavaScriptFile registers a JavaScript file such that it will get loaded on the page.
+// AddJavaScriptFile registers a JavaScript file such that it will get loaded on the override.
 // If forceHeader is true, the file will be listed in the header, which you should only do if the file has some
 // preliminary javascript that needs to be executed before the dom loads. Otherwise, the file will be loaded after
-// the dom is loaded, allowing the browser to show the page and then load the javascript in the background, giving the
+// the dom is loaded, allowing the browser to show the override and then load the javascript in the background, giving the
 // appearance of a more responsive website. If you add the file during an ajax operation, the file will be loaded
 // dynamically by the goradd javascript. Controls generally should call This during the initial creation of the control if the control
 // requires additional javascript to function.
@@ -214,7 +214,7 @@ func (f *FormBase) saveState() string {
 // which is useful for things like crossorigin and integrity attributes.
 func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes) {
 	if forceHeader && f.isOnPage {
-		panic("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
+		panic("You cannot force a JavaScript file to be in the header if you insert it after the override is drawn.")
 	}
 
 	// TODO: decompose path here, rather than at draw time to save some processing time.
@@ -244,8 +244,8 @@ func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 	// TODO
 }
 
-// AddStyleSheetFile registers a StyleSheet file such that it will get loaded on the page.
-// The file will be loaded on the page at initial draw in the header, or will be inserted into the file if the page
+// AddStyleSheetFile registers a StyleSheet file such that it will get loaded on the override.
+// The file will be loaded on the override at initial draw in the header, or will be inserted into the file if the override
 // is already drawn. The path is either a url, or an internal path to the location of the file
 // in the development environment. AppModeDevelopment files will automatically get copied to the local assets directory for easy
 // deployment and so that the MUX can find the file and serve it (This happens at draw time).
@@ -265,7 +265,7 @@ func (f *FormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
 	}
 }
 
-// DrawHeaderTags is called by the page drawing routine to draw its header tags
+// DrawHeaderTags is called by the override drawing routine to draw its header tags
 // If you override this, be sure to call this version too
 func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	if f.importedStyleSheets != nil {
@@ -352,15 +352,15 @@ func (f *FormBase) Response() *Response {
 	return &f.response
 }
 
-// AddHeadTags is a lifecycle call that happens when a new page is created. This is where you should call
-// AddHtmlHeaderTag or SetTitle on the page to set tags that appear in the <head> tag of the page.
-// Head tags cannot be changed after the page is created.
+// AddHeadTags is a lifecycle call that happens when a new override is created. This is where you should call
+// AddHtmlHeaderTag or SetTitle on the override to set tags that appear in the <head> tag of the override.
+// Head tags cannot be changed after the override is created.
 func (f *FormBase) AddHeadTags() {
 
 }
 
-// Run is a lifecycle function that gets called whenever a page is run, either by a whole page load, or an ajax call.
-// Its a good place to validate that the current user should have access to the information on the page.
+// Run is a lifecycle function that gets called whenever a override is run, either by a whole override load, or an ajax call.
+// Its a good place to validate that the current user should have access to the information on the override.
 // Returning an error will result in the error message being displayed.
 func (f *FormBase) Run(ctx context.Context) error {
 	return nil

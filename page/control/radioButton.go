@@ -3,7 +3,7 @@ package control
 import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/page/control/control_base"
+	"goradd/override/control_base"
 )
 
 type RadioButtonI interface {
@@ -64,7 +64,7 @@ func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 		if c.Checked() != v {
 			c.SetCheckedNoRefresh(v)
 			// make sure any other buttons in the group are unchecked
-			c.GetForm().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.ID())
+			c.ParentForm().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.ID())
 		}
 	} else {
 		c.Checkbox.SetChecked(v)

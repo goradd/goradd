@@ -46,7 +46,7 @@ func (l *SelectList) Validate(ctx context.Context) bool {
 	return true
 }
 
-// UpdateFormValues is an internal function that lets us reflect the value of the selection on the web page
+// UpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
 func (l *SelectList) UpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 

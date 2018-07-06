@@ -15,7 +15,7 @@ type DataPagerI interface {
 // DataPager is a toolbar designed to aid scrolling through a large set of data. It is implemented using Aria design
 // best practices. It is designed to be paired with a Table or DataRepeater to aid in navigating through the data.
 // It is similar to a Paginator, but a paginator is for navigating through a whole series of pages and not just for
-// data on one page.
+// data on one override.
 type DataPager struct {
 	control.DataPager
 	ButtonStyle    ButtonStyle

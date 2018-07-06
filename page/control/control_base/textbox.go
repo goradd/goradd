@@ -8,7 +8,7 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/util/types"
-	localPage "goradd/page"
+	localPage "goradd/override/page"
 	html2 "html"
 	"strconv"
 )
@@ -242,7 +242,7 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 	return true
 }
 
-// UpdateFormValues is an internal function that lets us reflect the value of the textbox on the web page
+// UpdateFormValues is an internal function that lets us reflect the value of the textbox on the web override
 func (t *Textbox) UpdateFormValues(ctx *page.Context) {
 	id := t.ID()
 

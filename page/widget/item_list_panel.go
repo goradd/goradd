@@ -5,7 +5,6 @@ import (
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/html"
 	"goradd/config"
-	"github.com/spekary/goradd/page/control/table"
 	"context"
 	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/page/action"
@@ -26,7 +25,7 @@ type ItemListPanel struct {
 	ButtonPanel *Panel
 
 	FilterText *Textbox
-	ItemTable *table.SelectTable
+	ItemTable *SelectTable
 	NewButton *Button
 	EditButton *Button
 }
@@ -34,32 +33,32 @@ type ItemListPanel struct {
 func NewItemListPanel(parent page.ControlI, id string) *ItemListPanel {
 	p := &ItemListPanel{}
 	p.Init(p, parent, id)
-	p.GetForm().AddStyleSheetFile(config.GoraddAssets() + "/css/item-list-panel.css", nil)
+	p.ParentForm().AddStyleSheetFile(config.GoraddAssets() + "/css/item-list-panel.css", nil)
 
 	return p
 }
 
 func (p *ItemListPanel) Init(self ItemListPanelI, parent page.ControlI, id string) {
 	p.Panel.Init(self, parent, id)
-	p.FilterPanel = NewPanel(p, p.ID() + "_filter")
-	p.ScrollPanel = NewPanel(p, p.ID() + "_scroller")
-	p.ButtonPanel = NewPanel(p, p.ID() + "_btnpnl")
+	p.FilterPanel = NewPanel(p, p.ID() + "-filter")
+	p.ScrollPanel = NewPanel(p, p.ID() + "-scroller")
+	p.ButtonPanel = NewPanel(p, p.ID() + "-btnpnl")
 
 	p.FilterPanel.AddClass("filter")
 	p.ScrollPanel.AddClass("scroller")
 	p.ButtonPanel.AddClass("buttons")
 
-	p.FilterText = NewTextbox(p.FilterPanel, p.ID() + "_filtertxt")
-	p.FilterText.SetPlaceholder(p.GetForm().T("Search"))
+	p.FilterText = NewTextbox(p.FilterPanel, p.ID() + "-filtertxt")
+	p.FilterText.SetPlaceholder(p.ParentForm().T("Search"))
 	p.FilterText.SetType(TextboxTypeSearch)
 
-	p.ItemTable = table.NewSelectTable(p.ScrollPanel, p.ID() + "_table")
+	p.ItemTable = NewSelectTable(p.ScrollPanel, p.ID() + "-table")
 
-	p.NewButton = NewButton(p.ButtonPanel, p.ID() + "_newbtn")
-	p.NewButton.SetText(p.GetForm().T("New"))
+	p.NewButton = NewButton(p.ButtonPanel, p.ID() + "-newbtn")
+	p.NewButton.SetText(p.ParentForm().T("New"))
 
-	p.EditButton = NewButton(p.ButtonPanel, p.ID() + "_editbtn")
-	p.EditButton.SetText(p.GetForm().T("Edit"))
+	p.EditButton = NewButton(p.ButtonPanel, p.ID() + "-editbtn")
+	p.EditButton.SetText(p.ParentForm().T("Edit"))
 
 	p.FilterText.On(event.Input().Delay(300), action.Ajax(p.ID(), filterChanged))
 	p.FilterText.On(event.EnterKey().Terminating(), action.Ajax(p.ID(), filterChanged))

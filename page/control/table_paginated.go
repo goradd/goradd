@@ -1,14 +1,13 @@
-package table
+package control
 
 import (
-	"github.com/spekary/goradd/page/control"
 	"github.com/spekary/goradd/page"
 	"goradd/config"
 )
 
 type PaginatedTable struct {
 	Table
-	control.PaginatedControl
+	PaginatedControl
 }
 
 func NewPaginatedTable(parent page.ControlI, id string) *PaginatedTable {

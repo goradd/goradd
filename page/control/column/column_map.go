@@ -1,15 +1,17 @@
-package table
+package column
 
 import (
 	"context"
 	"reflect"
+	"goradd/override/control_base"
+	"github.com/spekary/goradd/page/control/control_base/table"
 )
 
 // MapColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into
 // a string, either by normal string conversion symantecs, or using the supplied format string. The format string will
 // be applied to a date if the data is a date, or to the string using fmt.Sprintf
 type MapColumn struct {
-	ColumnBase
+	control_base.ColumnBase
 }
 
 func NewMapColumn(index interface{}, format ...string) *MapColumn {
@@ -38,12 +40,12 @@ func (c *MapColumn) Init(index interface{}, format string, timeFormat string) {
 }
 
 func (c *MapColumn) SetFormat(format string) *MapColumn {
-	c.cellTexter.(*MapTexter).Format = format
+	c.CellTexter().(*MapTexter).Format = format
 	return c
 }
 
 func (c *MapColumn) SetTimeFormat(format string) *MapColumn {
-	c.cellTexter.(*MapTexter).TimeFormat = format
+	c.CellTexter().(*MapTexter).TimeFormat = format
 	return c
 }
 
@@ -59,7 +61,7 @@ type MapTexter struct {
 	TimeFormat string
 }
 
-func (t MapTexter) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t MapTexter) CellText(ctx context.Context, col table.ColumnI, rowNum int, colNum int, data interface{}) string {
 
 	vKey := reflect.ValueOf(t.Index)
 	vMap := reflect.ValueOf(data)

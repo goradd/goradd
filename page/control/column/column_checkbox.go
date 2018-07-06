@@ -1,4 +1,4 @@
-package table
+package column
 
 import (
 	"context"
@@ -6,9 +6,10 @@ import (
 	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
-	"github.com/spekary/goradd/page/control/control_base"
+	"goradd/override/control_base"
 	"github.com/spekary/goradd/page/event"
 	"strings"
+	"github.com/spekary/goradd/page/control/control_base/table"
 )
 
 const (
@@ -16,7 +17,7 @@ const (
 )
 
 type CheckboxColumnI interface {
-	ColumnI
+	table.ColumnI
 	CheckboxAttributes(data interface{}) *html.Attributes
 }
 
@@ -24,7 +25,7 @@ type CheckboxColumnI interface {
 // CheckboxColumn is a table that contains a checkbox. You must provide it a CheckboxProvider to connect ids and default data
 // to the checkbox. Use Changes() to get the list of checkbox ids that have changed since the list was initially drawn.
 type CheckboxColumn struct {
-	ColumnBase
+	control_base.ColumnBase
 	showCheckAll bool
 	checkboxer   CheckboxProvider
 	changes      map[string]bool // records changes
@@ -47,7 +48,7 @@ func NewCheckboxColumn(p CheckboxProvider) *CheckboxColumn {
 
 func (c *CheckboxColumn) Init() {
 	c.ColumnBase.Init(c)
-	c.isHtml = true
+	c.SetIsHtml(true)
 	c.changes = map[string]bool{}
 }
 
@@ -130,15 +131,15 @@ func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 			check_id := k[index+1:]
 
 			if column_id == c.ID() {
-				c.changes[check_id] = control_base.ConvertToBool(v)
+				c.changes[check_id] = page.ConvertToBool(v)
 			}
 		}
 	}
 }
 
-// AddActions adds actions to the table that the table can respond to.
-func (c *CheckboxColumn) AddActions(table page.ControlI) {
-	table.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(c.ID(), ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
+// AddActions adds actions to the table that the column can respond to.
+func (c *CheckboxColumn) AddActions(t page.ControlI) {
+	t.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(c.ID(), table.ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
 }
 
 func (c *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
@@ -163,16 +164,16 @@ func (c *CheckboxColumn) allClick(id string, checked bool, row int, col int) {
 		}
 		// Fire javascript to check all visible
 		//js := fmt.Sprintf(`$j('input[data-gr-checkcol]').prop('checked', %t)`, checked)
-		//c.parentTable.FormBase().Response().ExecuteJavaScript(js, page.PriorityStandard)
-		c.parentTable.GetForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
+		//c.parentTable.FormBase().Response().ExecuteJavaScript(js, override.PriorityStandard)
+		c.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
 
 	} else {
 		// Fire javascript to check all visible and trigger a change
 		if checked {
-			c.parentTable.GetForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `trigger`, page.PriorityStandard, `click`)
+			c.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `trigger`, page.PriorityStandard, `click`)
 
 		} else {
-			c.parentTable.GetForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `trigger`, page.PriorityStandard, `click`)
+			c.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `trigger`, page.PriorityStandard, `click`)
 		}
 	}
 

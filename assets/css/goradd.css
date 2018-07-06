@@ -193,11 +193,11 @@ textarea[data-grctl] {
 }
 #groverlay {
   position: fixed;
-  /* Sit on top of the page content */
+  /* Sit on top of the override content */
   width: 100%;
-  /* Full width (cover the whole page) */
+  /* Full width (cover the whole override) */
   height: 100%;
-  /* Full height (cover the whole page) */
+  /* Full height (cover the whole override) */
   top: 0;
   left: 0;
   right: 0;

@@ -10,8 +10,8 @@ button {
 
 // The basic layout of all goradd forms, which is the main control container
 form[data-grctl] {
-  margin: 0;    // A reset to make sure form is the same as the page
-  padding: 0;   // A reset to make sure form is the same as the page
+  margin: 0;    // A reset to make sure form is the same as the override
+  padding: 0;   // A reset to make sure form is the same as the override
   position: relative; // Allows sub items to be positioned more easily.
 }
 
@@ -215,9 +215,9 @@ textarea[data-grctl] {
 }
 
 #groverlay {
-  position: fixed; /* Sit on top of the page content */
-  width: 100%; /* Full width (cover the whole page) */
-  height: 100%; /* Full height (cover the whole page) */
+  position: fixed; /* Sit on top of the override content */
+  width: 100%; /* Full width (cover the whole override) */
+  height: 100%; /* Full height (cover the whole override) */
   top: 0;
   left: 0;
   right: 0;

@@ -17,9 +17,9 @@ import (
 type RequestMode int
 
 const (
-	Server     RequestMode = iota // calling back in to currently showing page using a standard form post
-	Http                          // new page request
-	Ajax                          // calling back in to a currently showing page using an ajax request
+	Server     RequestMode = iota // calling back in to currently showing override using a standard form post
+	Http                          // new override request
+	Ajax                          // calling back in to a currently showing override using an ajax request
 	CustomAjax                    // calling an entry point from ajax, but not through our js file. REST API perhaps?
 	Cli                           // From command line
 )
@@ -60,7 +60,7 @@ type HttpContext struct {
 
 // AppContext has Goradd application specific nodes
 type AppContext struct {
-	err                 error // An error that occurred during the unpacking of the context. We save This for later so we can let the page manager display it if we get that far.
+	err                 error // An error that occurred during the unpacking of the context. We save This for later so we can let the override manager display it if we get that far.
 	requestMode         RequestMode
 	cliArgs             []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId         string
@@ -268,7 +268,7 @@ func (ctx *Context) FillApp(cliArgs []string) {
 				// A custom ajax call
 				ctx.requestMode = CustomAjax
 			} else {
-				// A new call to our web page
+				// A new call to our web override
 				ctx.requestMode = Http
 			}
 		}
@@ -301,5 +301,35 @@ func fixActionValue(val interface{}) interface{} {
 		}
 		return val
 	}
+	return val
+}
+
+
+// ConvertToBool is a helper function that can convert Put or Get values and other possible kinds of values into
+// a bool value.
+func ConvertToBool(v interface{}) bool {
+	var val bool
+	switch s := v.(type) {
+	case string:
+		slower := strings.ToLower(s)
+		if slower == "true" || slower == "on" || slower == "1" {
+			val = true
+		} else if slower == "false" || slower == "off" || slower == "" || slower == "0" {
+			val = false
+		} else {
+			panic(fmt.Errorf("unknown checkbox string value: %s", s))
+		}
+	case int:
+		if s == 0 {
+			val = false
+		} else {
+			val = true
+		}
+	case bool:
+		val = s
+	default:
+		panic(fmt.Errorf("unknown checkbox value: %v", v))
+	}
+
 	return val
 }

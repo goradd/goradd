@@ -153,14 +153,14 @@ func (c *Codegen) ControlType(col *db.ColumnDescription) (typ string, createFunc
 	switch col.GoType {
 	case query.COL_TYPE_UNKNOWN: return "", "", ""
 	case query.COL_TYPE_BYTES: return "", "", ""
-	case query.COL_TYPE_STRING: return "control.Textbox", "control.NewTextbox", "github.com/spekary/goradd/page/control"
-	case query.COL_TYPE_INTEGER: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/page/control"
-	case query.COL_TYPE_UNSIGNED: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/page/control"
-	case query.COL_TYPE_INTEGER64: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/page/control"
-	case query.COL_TYPE_UNSIGNED64: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/page/control"
+	case query.COL_TYPE_STRING: return "control.Textbox", "control.NewTextbox", "github.com/spekary/goradd/override/control"
+	case query.COL_TYPE_INTEGER: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/override/control"
+	case query.COL_TYPE_UNSIGNED: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/override/control"
+	case query.COL_TYPE_INTEGER64: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/override/control"
+	case query.COL_TYPE_UNSIGNED64: return "control.IntegerTextbox", "control.NewIntegerTextbox", "github.com/spekary/goradd/override/control"
 	case query.COL_TYPE_DATETIME: return "", "", ""
-	case query.COL_TYPE_FLOAT: return "control.FloatTextbox", "control.NewFloatTextbox", "github.com/spekary/goradd/page/control"
-	case query.COL_TYPE_BOOL: return "control.Checkbox", "control.NewCheckbox", "github.com/spekary/goradd/page/control"
+	case query.COL_TYPE_FLOAT: return "control.FloatTextbox", "control.NewFloatTextbox", "github.com/spekary/goradd/override/control"
+	case query.COL_TYPE_BOOL: return "control.Checkbox", "control.NewCheckbox", "github.com/spekary/goradd/override/control"
 	}
 	return
 }

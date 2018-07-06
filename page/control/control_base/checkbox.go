@@ -2,13 +2,11 @@ package control_base
 
 import (
 	"context"
-	"fmt"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/util/types"
-	localPage "goradd/page"
+	localPage "goradd/override/page"
 	html2 "html"
-	"strings"
 )
 
 type CheckboxI interface {
@@ -25,11 +23,8 @@ type Checkbox struct {
 	labelAttributes *html.Attributes
 }
 
-// Initializes a textbox. Normally you will not call this directly. However, sub controls should call this after
-// creation to get the enclosed control initialized. Self is the newly created class. Like so:
-// t := &MyTextBox{}
-// t.Textbox.Init(t, parent, id)
-// A parent control is isRequired. Leave id blank to have the system assign an id to the control.
+// Init initializes a checbox base class. Normally you will not call this directly. However, sub controls should call this after
+// creation to get the enclosed control initialized.
 func (c *Checkbox) Init(self page.ControlI, parent page.ControlI, id string) {
 	c.Control.Init(self, parent, id)
 
@@ -153,7 +148,7 @@ func (c *Checkbox) SetChecked(v bool) CheckboxI {
 
 // SetCheckedNoRefresh is used internally to update values without causing a refresh loop.
 func (c *Checkbox) SetCheckedNoRefresh(v interface{}) {
-	c.checked = ConvertToBool(v)
+	c.checked = page.ConvertToBool(v)
 }
 
 func (c *Checkbox) Checked() bool {
@@ -161,36 +156,10 @@ func (c *Checkbox) Checked() bool {
 }
 
 func (c *Checkbox) SetValue(v interface{}) CheckboxI {
-	c.SetChecked(ConvertToBool(v))
+	c.SetChecked(page.ConvertToBool(v))
 	return c.this()
 }
 
-func ConvertToBool(v interface{}) bool {
-	var val bool
-	switch s := v.(type) {
-	case string:
-		slower := strings.ToLower(s)
-		if slower == "true" || slower == "on" || slower == "1" {
-			val = true
-		} else if slower == "false" || slower == "off" || slower == "" || slower == "0" {
-			val = false
-		} else {
-			panic(fmt.Errorf("unknown checkbox string value: %s", s))
-		}
-	case int:
-		if s == 0 {
-			val = false
-		} else {
-			val = true
-		}
-	case bool:
-		val = s
-	default:
-		panic(fmt.Errorf("unknown checkbox value: %v", v))
-	}
-
-	return val
-}
 
 func (c *Checkbox) Value() interface{} {
 	return c.checked

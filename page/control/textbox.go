@@ -2,7 +2,7 @@ package control
 
 import (
 	"github.com/spekary/goradd/page"
-	"goradd/page/control_base"
+	"goradd/override/control_base"
 	"goradd/config"
 	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/orm/db"
@@ -57,7 +57,7 @@ func (d TextboxDescriber) NewFunc() string {
 }
 
 func (d TextboxDescriber) Import() string {
-	return "github.com/spekary/goradd/page/control"
+	return "github.com/spekary/goradd/override/control"
 }
 
 func (d TextboxDescriber) SupportsColumn(col db.ColumnDescription) bool {

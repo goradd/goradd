@@ -9,6 +9,7 @@ import (
 	"github.com/spekary/goradd/util/types"
 	"log"
 	"strings"
+	"regexp"
 )
 
 // The DatabaseDescription is the top level struct that contains a complete description of a database for purposes of
@@ -252,14 +253,11 @@ func (dd *DatabaseDescription) analyzeTypeTables() {
 			}
 			value = m[names[1]].(string)
 			var con string
-			if strings.ToUpper(value) == value {
-				// All upper case values, convert to Camel Case
-				con = strings.ToLower(value)
-				con = strings.Title(con)
-				con = strings.Replace(con, " ", "", -1)
 
-			} else {
-				con = strings.Replace(value, " ", "", -1)
+			r := regexp.MustCompile("[^a-zA-Z0-9_]+")
+			a := r.Split(value, -1)
+			for _,word := range a {
+				con += strings.Title(strings.ToLower(word))
 			}
 			tt.Constants[key] = con
 

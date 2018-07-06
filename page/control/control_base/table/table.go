@@ -7,10 +7,11 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
-	"github.com/spekary/goradd/page/control"
 	html2 "golang.org/x/net/html"
 	"strconv"
 	"github.com/spekary/goradd/page/event"
+	localPage "goradd/override/page"
+	"github.com/spekary/goradd/page/control/data"
 )
 
 const (
@@ -19,7 +20,7 @@ const (
 )
 
 type TableI interface {
-	page.ControlI
+	localPage.ControlI
 	SetCaption(interface{})
 	DrawCaption(context.Context, *bytes.Buffer) error
 	GetHeaderRowAttributes(row int) *html.Attributes
@@ -30,7 +31,7 @@ type TableI interface {
 
 type Table struct {
 	page.Control
-	control.DataManager
+	data.DataManager
 
 	columns               []ColumnI
 	renderColumnTags      bool
@@ -257,7 +258,7 @@ func (t *Table) AddColumnAt(column ColumnI, loc int) {
 	t.columnIdCounter++
 	column.setParentTable(t)
 	if column.ID() == "" {
-		column.SetID(t.ID() + "_" + strconv.Itoa(t.columnIdCounter))
+		column.SetID(strconv.Itoa(t.columnIdCounter))
 	}
 	if loc < 0 || loc >= len(t.columns) {
 		t.columns = append(t.columns, column)
@@ -350,6 +351,11 @@ func (t *Table) SetRowStyler(a html.Attributer) {
 	t.rowStyler = a
 }
 
+func (t *Table) RowStyler() html.Attributer {
+	return t.rowStyler
+}
+
+
 func (t *Table) SetHeaderRowStyler(a html.Attributer) {
 	t.rowStyler = a
 }
@@ -377,7 +383,7 @@ func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
 		if subId = a.GetDestinationControlSubID(); subId == "" {
 			panic("Column actions must be a callback action")
 		}
-		c := t.GetColumnByID(t.ID() + "_" + subId)
+		c := t.GetColumnByID(subId)
 		if c != nil {
 			c.Action(ctx, p)
 		}

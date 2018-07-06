@@ -1,4 +1,4 @@
-package table
+package control
 
 import (
 	"github.com/spekary/goradd/page"
@@ -7,7 +7,7 @@ import (
 	"github.com/spekary/goradd/util/types"
 	"goradd/config"
 	"context"
-	"github.com/spekary/goradd/page/control"
+	"goradd/override/control_base"
 )
 
 // PrimaryKeyer is an interface that is often implemented by model objects.
@@ -21,7 +21,7 @@ type SelectTableI interface {
 
 // SelectTable is a table that is row selectable. To detect a row selection, trigger on event.RowSelected
 type SelectTable struct {
-	Table
+	control_base.Table
 	selectedID string
 }
 
@@ -33,8 +33,8 @@ func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 
 func (t *SelectTable) Init(self page.ControlI, parent page.ControlI, id string) {
 	t.Table.Init(self, parent, id)
-	t.GetForm().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
-	t.GetForm().AddJavaScriptFile(config.GoraddAssets() + "/js/select-table.js", false, nil)
+	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
+	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/select-table.js", false, nil)
 }
 
 func (t *SelectTable) this() SelectTableI {
@@ -44,8 +44,8 @@ func (t *SelectTable) this() SelectTableI {
 func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attributes) {
 	var id string
 
-	if t.rowStyler != nil {
-		a = t.rowStyler.Attributes(row, data)
+	if t.RowStyler() != nil {
+		a = t.RowStyler().Attributes(row, data)
 		id = a.Get("id") // styler might be giving us an id
 	} else {
 		a = html.NewAttributes()
@@ -54,13 +54,13 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attri
 	// try to guess the id from the data
 	if id == "" {
 		switch obj := data.(type) {
-		case control.IDer:
+		case IDer:
 			id = obj.ID()
 		case PrimaryKeyer:
 			id = obj.PrimaryKey()
 		case map[string]string:
 			id,_ = obj["id"]
-		case StringGetter:
+		case types.StringGetter:
 			id = obj.Get("id")
 		}
 	}
@@ -105,7 +105,7 @@ func (t *SelectTable) SelectedID() string {
 
 func (t *SelectTable) SetSelectedID(id string) {
 	t.selectedID = id
-	t.GetForm().Response().ExecuteControlCommand(t.ID(), "selectTable", "option", "selectedId", id)
+	t.ParentForm().Response().ExecuteControlCommand(t.ID(), "selectTable", "option", "selectedId", id)
 }
 
 func (t *SelectTable) MarshalState(m types.MapI) {

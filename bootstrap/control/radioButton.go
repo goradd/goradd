@@ -39,7 +39,7 @@ func (c *RadioButton) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-// UpdateFormValues is an internal call that lets us reflect the value of the checkbox on the web page
+// UpdateFormValues is an internal call that lets us reflect the value of the checkbox on the web override
 func (c *RadioButton) UpdateFormValues(ctx *page.Context) {
 	id := c.ID()
 

@@ -61,9 +61,9 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
 
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
 	d.On(event.DialogClose(), action.Ajax(d.ID(), DialogClose), action.PrivateAction{})
-	app.LoadBootstrap(d.GetForm())
-	d.GetForm().AddJavaScriptFile(config.GoraddDir+"/bootstrap/assets/js/gr.bs.modal.js", false, nil)
-	d.GetForm().AddStyleSheetFile(config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css", nil)
+	app.LoadBootstrap(d.ParentForm())
+	d.ParentForm().AddJavaScriptFile(config.GoraddDir+"/bootstrap/assets/js/gr.bs.modal.js", false, nil)
+	d.ParentForm().AddStyleSheetFile(config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css", nil)
 }
 
 // ValidationType overrides the default ValidationType function to determine if the button clicked causes validation

@@ -183,7 +183,7 @@ goradd = {
      *
      * Checkable controls (checkboxes and radio buttons) can be problematic. We have the following issues to work around:
      * - On a submit, only the values of the checked items are submitted. Non-checked items are not submitted.
-     * - QCubed may have checkboxes that are part of the form object, but not visible on the html page. In particular,
+     * - QCubed may have checkboxes that are part of the form object, but not visible on the html override. In particular,
      *   this can happen when a grid is creating objects at render time, and then scrolls or pages so those objects
      *   are no longer "visible".
      * - Controls can be part of a group, and the group gets the value of the checked control(s), rather than individual
@@ -525,7 +525,7 @@ goradd = {
         });
 
         // TODO: Add a detector of the back button. This detector should ping the server to make sure the formstate exists on the server. If not,
-        // it should reload the page.
+        // it should reload the override.
         return this;
     },
     processImmediateAjaxResponse: function(json, params) {
@@ -850,7 +850,7 @@ goradd.stopTimer = function(strControlId, blnPeriodic) {
 //////////////////////////////
 /* Javascript/jquery has a problem when two events happen simultaneously. In particular, a click event might also
 result in a change event, and under certain circumstances this could cause the click event to be dropped. We therefore delay
-the processing of all events to try to queue them up before processing. This seems to happen only the first time a page is visited.
+the processing of all events to try to queue them up before processing. This seems to happen only the first time a override is visited.
 Its very strange. Something to debug at a future date.
 */
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/page/control/data"
 )
 
 // UnorderedList is a dynamically generated html unordered list (ul). Such lists are often used as the basis for
@@ -14,7 +15,7 @@ type UnorderedList struct {
 	page.Control
 	ItemList
 	subItemTag string
-	DataManager
+	data.DataManager
 }
 
 const (

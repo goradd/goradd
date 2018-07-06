@@ -3,7 +3,7 @@ package control
 import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/page/control/control_base"
+	"goradd/override/control_base"
 )
 
 type SpanI interface {

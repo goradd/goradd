@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/spekary/goradd/page"
-	localPage "goradd/page"
+	localPage "goradd/override/page"
 	"text/template"
 )
 

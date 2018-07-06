@@ -3,7 +3,7 @@ package control
 import (
 	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page"
-	localPage "goradd/page"
+	localPage "goradd/override/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/event"
 	"bytes"
@@ -46,14 +46,14 @@ func (p *Proxy) OnClick(actions ...action.ActionI) page.EventI {
 // Draw is used by the form engine to draw the control. As a proxy, there is no html to draw, but this is where the scripts attached to the
 // proxy get sent to the response. This should get drawn by the auto-drawing routine, since proxies are not rendered in templates.
 func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	response := p.GetForm().Response()
+	response := p.ParentForm().Response()
 	p.this().PutCustomScript(ctx, response)
 	p.GetActionScripts(response)
 	p.PostRender(ctx, buf)
 	return
 }
 
-// LinkHtml renders the proxy as a link. Generally, only do this if you are actually linking to a page. If not, use
+// LinkHtml renders the proxy as a link. Generally, only do this if you are actually linking to a override. If not, use
 // a button.
 func (p *Proxy) LinkHtml(label string,
 	actionValue string,
@@ -123,5 +123,5 @@ func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
 
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string) string {
-	return fmt.Sprintf(`$j('#%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.GetForm().ID(), eventName, p.ID(), eventJs)
+	return fmt.Sprintf(`$j('#%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.ParentForm().ID(), eventName, p.ID(), eventJs)
 }

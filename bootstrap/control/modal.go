@@ -65,16 +65,16 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
 	d.On(event.Event("hide.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosingEvent, nil))
 	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Ajax(d.ID(), DialogClosed), action.PrivateAction{})
-	app.LoadBootstrap(d.GetForm())
-	d.GetForm().AddStyleSheetFile(config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css", nil)
+	app.LoadBootstrap(d.ParentForm())
+	d.ParentForm().AddStyleSheetFile(config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css", nil)
 
 	d.AddClass("modal fade").
 		SetAttribute("tabindex", -1).
 		SetAttribute("role", "dialog").
-		SetAttribute("aria-labelledby", d.ID() + "_title").
+		SetAttribute("aria-labelledby", d.ID() + "-title").
 		SetAttribute("aria-hidden", true)
-	d.titleBar = NewTitleBar(d, d.ID() + "_titlebar")
-	d.buttonBar = control.NewPanel(d, d.ID() + "_btnbar")
+	d.titleBar = NewTitleBar(d, d.ID() + "-titlebar")
+	d.buttonBar = control.NewPanel(d, d.ID() + "-btnbar")
 }
 
 func (d *Modal) this() ModalI {
@@ -151,7 +151,7 @@ func (d *Modal) AddButton(
 	if id == "" {
 		id = label
 	}
-	btn := NewButton(d.buttonBar, d.ID() + "_btn_" + id)
+	btn := NewButton(d.buttonBar, d.ID() + "-btn-" + id)
 	btn.SetLabel(label)
 
 	if options != nil {
@@ -194,7 +194,7 @@ func (d *Modal) AddButton(
 }
 
 func (d *Modal) RemoveButton(id string) {
-	d.buttonBar.RemoveChild(d.ID() + "_btn_" + id)
+	d.buttonBar.RemoveChild(d.ID() + "-btn-" + id)
 	d.buttonBar.Refresh()
 }
 
@@ -204,7 +204,7 @@ func (d *Modal) RemoveAllButtons() {
 }
 
 func (d *Modal) SetButtonVisible(id string, visible bool) ModalI {
-	if ctrl := d.buttonBar.Child(d.ID() + "_btn_" + id); ctrl != nil {
+	if ctrl := d.buttonBar.Child(d.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetVisible(visible)
 	}
 
@@ -213,7 +213,7 @@ func (d *Modal) SetButtonVisible(id string, visible bool) ModalI {
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
 func (d *Modal) SetButtonStyle(id string, a *html.Style) ModalI {
-	if ctrl := d.buttonBar.Child(d.ID() + "_btn_" + id); ctrl != nil {
+	if ctrl := d.buttonBar.Child(d.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetStyles(a)
 	}
 	return d.this()
@@ -235,7 +235,7 @@ func (d *Modal) PrivateAction(ctx context.Context, a page.ActionParams) {
 
 func (d *Modal) Open() {
 	if d.Parent() == nil {
-		d.SetParent(d.GetForm()) // This is a saved modal which has previously been created and removed. Insert it back into the form.
+		d.SetParent(d.ParentForm()) // This is a saved modal which has previously been created and removed. Insert it back into the form.
 	}
 	d.SetVisible(true)
 	d.isOpen = true
@@ -244,7 +244,7 @@ func (d *Modal) Open() {
 }
 
 func (d *Modal) Close() {
-	d.GetForm().Response().ExecuteControlCommand(d.ID(), "modal", page.PriorityLow, "hide")
+	d.ParentForm().Response().ExecuteControlCommand(d.ID(), "modal", page.PriorityLow, "hide")
 }
 
 
@@ -283,7 +283,7 @@ If you specify more than one button, the first button will be the default button
 this case, you will need to detect the button by adding a On(event.DialogButton(), action) to the dialog returned.
 You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
 */
-func BootstrapAlert(form control.FormI, message string, buttons interface{}) control.DialogI {
+func BootstrapAlert(form page.FormI, message string, buttons interface{}) control.DialogI {
 	dlg := NewModal(form, "")
 	dlg.SetText(message)
 	if buttons != nil {

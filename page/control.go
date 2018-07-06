@@ -87,7 +87,7 @@ type ControlI interface {
 	RemoveChild(id string)
 	RemoveChildren()
 	Page() *Page
-	GetForm() FormBaseI
+	ParentForm() FormI
 	Child(string) ControlI
 
 	// hmtl and css
@@ -260,19 +260,19 @@ func (c *Control) control() *Control {
 }
 
 func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
-	form := c.GetForm()
+	form := c.ParentForm()
 	if c.Page() == nil ||
 		form == nil ||
 		c.Page() != form.Page() {
 
-		return NewError(ctx, "The control can not be drawn because it is not a member of a form that is on the page.")
+		return NewError(ctx, "The control can not be drawn because it is not a member of a form that is on the override.")
 	}
 
 	if c.wasRendered || c.isRendering {
 		return NewError(ctx, "This control has already been drawn.")
 	}
 
-	// Because we may be rerendering a parent control, we need to make sure all "child" controls are marked as NOT being on the page.
+	// Because we may be rerendering a parent control, we need to make sure all "child" controls are marked as NOT being on the override.
 	if c.children != nil {
 		for _, child := range c.children {
 			child.control().markOnPage(false)
@@ -314,7 +314,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		buf.WriteString(h)
 	}
 
-	response := c.GetForm().Response()
+	response := c.ParentForm().Response()
 	c.this().PutCustomScript(ctx, response)
 	c.GetActionScripts(response)
 	c.this().PostRender(ctx, buf)
@@ -632,7 +632,7 @@ func (c *Control) Children() []ControlI {
 }
 
 // Remove removes the current control from its parent. After this is done, the control and all its child items will
-// not be part of the page, but the child items will still be accessible through the control itself.
+// not be part of the override, but the child items will still be accessible through the control itself.
 func (c *Control) Remove() {
 	if c.parent != nil {
 		c.parent.control().removeChild(c.this().ID(), true)
@@ -644,7 +644,7 @@ func (c *Control) Remove() {
 	}
 }
 
-// RemoveChild removes the given child control from both the control and the page.
+// RemoveChild removes the given child control from both the control and the override.
 func (c *Control) RemoveChild(id string) {
 	c.removeChild(id, true)
 }
@@ -672,7 +672,7 @@ func (c *Control) removeChildrenFromPage() {
 	}
 }
 
-// RemoveChildren removes all the child controls from this control and the page
+// RemoveChildren removes all the child controls from this control and the override
 func (c *Control) RemoveChildren() {
 	for _, child := range c.children {
 		child.control().removeChildrenFromPage()
@@ -731,7 +731,8 @@ func (c *Control) addChildControl(child ControlI) {
 	c.children = append(c.children, child)
 }
 
-func (c *Control) GetForm() FormBaseI {
+// ParentForm returns the form object that encloses this control.
+func (c *Control) ParentForm() FormI {
 	return c.page.Form()
 }
 
@@ -997,7 +998,7 @@ func (c *Control) UpdateFormValues(ctx *Context) {
 
 }
 
-// doAction is an internal function that the page manager uses to send actions to controls.
+// doAction is an internal function that the override manager uses to send actions to controls.
 func (c *Control) doAction(ctx context.Context) {
 	var e EventI
 	var ok bool
@@ -1016,7 +1017,7 @@ func (c *Control) doAction(ctx context.Context) {
 
 	if (e.event().validationOverride != ValidateNone && e.event().validationOverride != ValidateDefault) ||
 		(e.event().validationOverride == ValidateDefault && c.this().ValidationType(e) != ValidateNone) {
-		c.GetForm().control().resetValidation()
+		c.ParentForm().control().resetValidation()
 	}
 
 	if c.passesValidation(ctx, e) {
@@ -1104,7 +1105,7 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 
 	if c.validationTargets == nil {
 		if c.validationType == ValidateForm {
-			targets = []ControlI{c.GetForm()}
+			targets = []ControlI{c.ParentForm()}
 		} else if c.validationType == ValidateContainer {
 			for target := c.Parent(); target != nil; target = target.Parent() {
 				switch target.control().validationType {
@@ -1121,7 +1122,7 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 				}
 			}
 			// Target is the form
-			targets = []ControlI{c.GetForm()}
+			targets = []ControlI{c.ParentForm()}
 			validation = ValidateForm
 		} else {
 			targets = []ControlI{c}
@@ -1142,7 +1143,7 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 
 	switch validation {
 	case ValidateForm:
-		valid = c.GetForm().control().validateChildren(ctx)
+		valid = c.ParentForm().control().validateChildren(ctx)
 	case ValidateSiblingsAndChildren:
 		for _, t := range targets {
 			valid = t.control().validateSiblingsAndChildren(ctx) && valid
@@ -1272,7 +1273,7 @@ func (c *Control) writeState(ctx context.Context) {
 			} else {
 				stateStore = i.(*types.Map)
 			}
-			key := c.GetForm().ID() + ":" + c.ID()
+			key := c.ParentForm().ID() + ":" + c.ID()
 			stateStore.Set(key, state)
 		}
 	}
@@ -1299,7 +1300,7 @@ func (c *Control) readState(ctx context.Context) {
 				// Indicates the entire control state store changed types, so completely ignore it
 			}
 
-			key := c.GetForm().ID() + ":" + c.ID()
+			key := c.ParentForm().ID() + ":" + c.ID()
 			i2 := stateStore.Get(key)
 			if state, ok = i2.(types.MapI); !ok {
 				return
@@ -1338,16 +1339,16 @@ func (c *Control) MarshalState(m types.MapI) {
 func (c *Control) UnmarshalState(m types.MapI) {
 }
 
-// T is a shortcut for the page translator that should only be used by internal goradd code. See Translate() for the
+// T is a shortcut for the override translator that should only be used by internal goradd code. See Translate() for the
 // version to use for your project.
 func (c *Control) T(in string) string {
 	return c.Page().GoraddTranslator().Translate(in)
 }
 
-// Translate is a shortcut to the page translator.
+// Translate is a shortcut to the override translator.
 // All static strings that could create output to the user should be wrapped in This. The translator itself is designed
-// to be capable of per-page translation, meaning each user of the web service can potentially choose their own language
-// and see the web page in that language.
+// to be capable of per-override translation, meaning each user of the web service can potentially choose their own language
+// and see the web override in that language.
 func (c *Control) Translate(in string) string {
 	return c.Page().ProjectTranslator().Translate(in)
 }

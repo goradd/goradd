@@ -3,32 +3,27 @@ package control
 import (
 	"context"
 	"github.com/spekary/goradd/page"
-	localpage "goradd/page"
 	"goradd/config"
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/page/action"
 	"strings"
 	"fmt"
+	"goradd/override/control_base"
 )
 
 const (
 	databaseProfileAction = iota + 10000
 )
 
-type FormI interface {
-	localpage.FormBaseI
-}
-
-
-// The Form is the control that all GetForm objects should descend from, and is the master container for all other goradd controls.
-type Form struct {
-	localpage.FormBase
+// The Form is the control that all Form objects should descend from, and is the master container for all other goradd controls.
+type FormBase struct {
+	control_base.FormBase
 }
 
 // The methods below are here to prevent import cycles.
 
-func (f *Form) Init(ctx context.Context, self page.FormBaseI, path string, id string) {
+func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
 	f.FormBase.Init(ctx, self, path, id)
 
 	if config.Mode == config.AppModeDevelopment && db.IsProfiling(ctx) {
@@ -62,7 +57,7 @@ func (f *Form) Init(ctx context.Context, self page.FormBaseI, path string, id st
 
 }
 
-func (f *Form) Action(ctx context.Context, a page.ActionParams) {
+func (f *FormBase) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case databaseProfileAction:
 		if c := f.Page().GetControl("grProfilePanel"); c != nil{

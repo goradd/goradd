@@ -27,25 +27,25 @@ type DrawI interface {
 }
 
 type Page struct {
-	stateId      string // Id in cache of the page. Needs to be output by form.
-	path         string // The path to the page. FormBase needs to know this so it can make the action tag
+	stateId      string // Id in cache of the override. Needs to be output by form.
+	path         string // The path to the override. FormBase needs to know this so it can make the action tag
 	renderStatus PageRenderStatus
 	idPrefix     string // For creating unique ids for the app
 
 	controlRegistry *types.OrderedMap
-	form            FormBaseI
+	form            FormI
 	idCounter       int
 	drawFunc        PageDrawFunc
-	title           string // page title to draw in head tag
+	title           string // override title to draw in head tag
 	htmlHeaderTags  []html.VoidTag
 	responseHeader  map[string]string // queues up anything to be sent in the response header
-	responseError	int
+	responseError   int
 
 	goraddTranslator  PageTranslator
 	projectTranslator PageTranslator
 }
 
-// Initialize the page base. Should be called by a page just after creating PageBase.
+// Initialize the override base. Should be called by a override just after creating PageBase.
 func (p *Page) Init(ctx context.Context, path string) {
 	p.path = path
 	p.drawFunc = p.DrawFunction()
@@ -53,7 +53,7 @@ func (p *Page) Init(ctx context.Context, path string) {
 	p.projectTranslator = PageTranslator{Domain: ProjectDomain}
 }
 
-// Restore is called immediately after the page has been unserialized, to restore data that did not get serialized.
+// Restore is called immediately after the override has been unserialized, to restore data that did not get serialized.
 func (p *Page) Restore() {
 	p.drawFunc = p.DrawFunction()
 	p.form.Restore(p.form)
@@ -78,7 +78,7 @@ func (p *Page) setStateID(stateId string) {
 
 func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
 	grCtx := GetContext(ctx)
-	grCtx.WasHandled = true // Notify listeners that the app handled the page
+	grCtx.WasHandled = true // Notify listeners that the app handled the override
 
 	if grCtx.err != nil {
 		panic(grCtx.err)	// An error occurred during unpacking of the context, so report that now
@@ -90,7 +90,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 
 	p.renderStatus = UNRENDERED
 
-	log.FrameworkDebugf("Run page: %s", grCtx)
+	log.FrameworkDebugf("Run override: %s", grCtx)
 
 	// TODO: Lifecycle calls - push them to the form
 
@@ -110,7 +110,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		err = p.DrawAjax(ctx, buf)
 		p.SetResponseHeader("Content-Type", "application/json")
 	} else if grCtx.RequestMode() == Server || grCtx.RequestMode() == Http {
-		//p.SetResponseHeader("Content-Type", "text/html")	// default for web page. Response can change This if drawing something else.
+		//p.SetResponseHeader("Content-Type", "text/html")	// default for web override. Response can change This if drawing something else.
 		err = p.Draw(ctx, buf)
 	} else {
 		// TODO: Implement a hook for the CustomAjax call and/or Rest API calls?
@@ -122,12 +122,12 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 }
 
 // Returns the form for pages that only have one form
-func (p *Page) Form() FormBaseI {
+func (p *Page) Form() FormI {
 	//return p.forms.GetAt(0).(FormI)
 	return p.form
 }
 
-func (p *Page) SetForm(f FormBaseI) {
+func (p *Page) SetForm(f FormI) {
 	p.form = f
 }
 
@@ -144,7 +144,7 @@ func (p *Page) FormByID(id string) FormI {
 }
 */
 
-// Draws from the page template. The default should be fine for most situations.
+// Draws from the override template. The default should be fine for most situations.
 // You can replace the template function with your own, or override This for even more control
 func (p *Page) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return p.drawFunc(ctx, p, buf)
@@ -168,9 +168,9 @@ func (p *Page) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 }
 
 // Sets the prefix for control ids. Some javascript frameworks (i.e. jQueryMobile) require that control ids
-// be unique across the application, vs just in the page, because they create internal caches of control ids. This
-// allows you to set a per page prefix that will be added on to all control ids to make them unique across the whole
-// application. However, its up to you to make sure the names are unique per page.
+// be unique across the application, vs just in the override, because they create internal caches of control ids. This
+// allows you to set a per override prefix that will be added on to all control ids to make them unique across the whole
+// application. However, its up to you to make sure the names are unique per override.
 func (p *Page) SetControlIdPrefix(prefix string) *Page {
 	p.idPrefix = prefix
 	return p
@@ -181,13 +181,17 @@ func (p *Page) SetControlIdPrefix(prefix string) *Page {
 // generated ids can be further munged by providing an id prefix through SetControlIdPrefix().
 func (p *Page) GenerateControlID(id string) string {
 	if id != "" {
+		if strings.Contains(id, "_") {
+			// underscores are used by the action system to route actions to sub items of the control.
+			panic ("You cannot add a control with an underscore in the name. Use a hyphen instead.")
+		}
 		if p.idPrefix != "" {
 			if !strings.HasPrefix(id, p.idPrefix) {	// subcontrols might already have this prefix
 				id = p.idPrefix + id
 			}
 		}
 		if p.GetControl(id) != nil {
-			panic (fmt.Sprintf(`A control with id "%s" is being added a second time to the page. Ids must be unique on the page.`))
+			panic (fmt.Sprintf(`A control with id "%s" is being added a second time to the override. Ids must be unique on the override.`))
 		} else {
 			return id
 		}
@@ -226,15 +230,15 @@ func (p *Page) addControl(control ControlI) {
 	}
 
 	if p.controlRegistry.Has(id) {
-		panic("Control id already exists. Control must have a unique id on the page before being added.")
+		panic("Control id already exists. Control must have a unique id on the override before being added.")
 	}
 
 	p.controlRegistry.Set(id, control)
 
 	if control.Parent() == nil {
-		if f, ok := control.(FormBaseI); ok {
+		if f, ok := control.(FormI); ok {
 			if p.form != nil {
-				panic("The Form object for the page has already been set.")
+				panic("The Form object for the override has already been set.")
 			} else {
 				p.form = f
 			}
@@ -246,7 +250,7 @@ func (p *Page) addControl(control ControlI) {
 
 func (p *Page) changeControlID(oldId string, newId string) {
 	if p.GetControl(newId) != nil {
-		panic(fmt.Errorf("This control id is already defined on the page: %s", newId))
+		panic(fmt.Errorf("This control id is already defined on the override: %s", newId))
 	}
 	ctrl := p.GetControl(oldId)
 	p.controlRegistry.Remove(oldId)
@@ -292,7 +296,7 @@ func (p *Page) SetLanguage(l string) {
 	p.projectTranslator.Language = l
 }
 
-// MarshalBinary will binary encode the page for the purpose of saving the page in the formstate.
+// MarshalBinary will binary encode the override for the purpose of saving the override in the formstate.
 func (p *Page) Encode(e Encoder) (err error) {
 	if err = e.Encode(p.stateId); err != nil {
 		return

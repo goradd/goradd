@@ -9,26 +9,19 @@ import (
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/util"
 	"github.com/spekary/goradd/util/types"
-	localPage "goradd/page"
+	localPage "goradd/override/page"
 	"strconv"
 	"goradd/config"
+	"github.com/spekary/goradd/page/control/data"
 )
 
 const (
 	PageClick = iota + 1000
 )
 
-// PaginatedControl is a mixin that makes a control controllable by a data pager
-type PaginatedControl struct {
-	totalItems       int
-	pageSize         int
-	pageNum          int
-	dataPagers 		 []DataPagerI
-}
-
 // PaginatedControlI is the interface that paginated controls must implement
 type PaginatedControlI interface {
-	DataManagerI
+	data.DataManagerI
 	SetTotalItems(uint)
 	TotalItems() int
 	SetPageSize(size int)
@@ -38,6 +31,14 @@ type PaginatedControlI interface {
 	AddDataPager(DataPagerI)
 	CalcPageCount() int
 	getDataPagers() []DataPagerI
+}
+
+// PaginatedControl is a mixin that makes a control controllable by a data pager
+type PaginatedControl struct {
+	totalItems       int
+	pageSize         int
+	pageNum          int
+	dataPagers 		 []DataPagerI
 }
 
 func (c *PaginatedControl) SetTotalItems(count uint) {
@@ -107,7 +108,7 @@ type DataPagerI interface {
 // DataPager is a toolbar designed to aid scrolling through a large set of data. It is implemented using Aria design
 // best practices. It is designed to be paired with a Table or DataRepeater to aid in navigating through the data.
 // It is similar to a Paginator, but a paginator is for navigating through a whole series of pages and not just for
-// data on one page.
+// data on one override.
 type DataPager struct {
 	localPage.Control
 
@@ -367,7 +368,7 @@ func (d *DataPager) NextButtonsHtml() string {
 
 func (d *DataPager) PageButtonsHtml(i int) string {
 	actionValue := strconv.Itoa(i)
-	attr := html.NewAttributes().Set("id", d.ID()+"_page_"+actionValue).Set("role", "tab").AddClass("page")
+	attr := html.NewAttributes().Set("id", d.ID()+"_page_"+actionValue).Set("role", "tab").AddClass("override")
 	pageNum := d.paginatedControl.PageNum()
 
 	if pageNum == i {

@@ -2,7 +2,7 @@ package control
 
 import (
 	"github.com/spekary/goradd/page"
-	localPage "goradd/page"
+	localPage "goradd/override/page"
 	"github.com/spekary/goradd/html"
 	"bytes"
 	"github.com/spekary/goradd/page/control"
@@ -11,6 +11,7 @@ import (
 	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/page/action"
+	"github.com/spekary/goradd/page/control/data"
 )
 
 type NavbarListI interface {
@@ -21,7 +22,7 @@ type NavbarList struct {
 	localPage.Control
 	control.ItemList
 	subItemTag string
-	control.DataManager
+	data.DataManager
 	Proxy *control.Proxy
 }
 

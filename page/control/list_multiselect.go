@@ -8,7 +8,7 @@ import (
 	"github.com/spekary/goradd/util/types"
 	"strconv"
 	"strings"
-	localPage "goradd/page"
+	localPage "goradd/override/page"
 )
 
 
@@ -73,7 +73,7 @@ func (l *MultiselectList) Validate(ctx context.Context) bool {
 	return true
 }
 
-// UpdateFormValues is an internal function that lets us reflect the value of the selection on the web page
+// UpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
 func (l *MultiselectList) UpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 	if ctx.RequestMode() == page.Ajax {

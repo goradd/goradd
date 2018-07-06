@@ -1,13 +1,15 @@
-package table
+package column
 
 import (
 	"context"
+	"goradd/override/control_base"
+	"github.com/spekary/goradd/page/control/control_base/table"
 )
 
 // GetterColumn is a column that uses the Getter interface to get the text out of columns. The data therefore should be
 // a slice of objects that implement the Getter interface.
 type GetterColumn struct {
-	ColumnBase
+	control_base.ColumnBase
 }
 
 type Getter interface {
@@ -45,12 +47,12 @@ func (c *GetterColumn) Init(index string, format string, timeFormat string) {
 }
 
 func (c *GetterColumn) SetFormat(format string) *GetterColumn {
-	c.cellTexter.(*GetterTexter).Format = format
+	c.CellTexter().(*GetterTexter).Format = format
 	return c
 }
 
 func (c *GetterColumn) SetTimeFormat(format string) *GetterColumn {
-	c.cellTexter.(*GetterTexter).TimeFormat = format
+	c.CellTexter().(*GetterTexter).TimeFormat = format
 	return c
 }
 
@@ -66,7 +68,7 @@ type GetterTexter struct {
 	TimeFormat string
 }
 
-func (t GetterTexter) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t GetterTexter) CellText(ctx context.Context, col table.ColumnI, rowNum int, colNum int, data interface{}) string {
 	switch v := data.(type) {
 	case Getter:
 		d := v.Get(t.Key)

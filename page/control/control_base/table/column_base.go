@@ -22,6 +22,7 @@ type ColumnI interface {
 	ID() string
 	SetID(string) ColumnI
 	setParentTable(TableI)
+	ParentTable() TableI
 	Title() string
 	SetTitle(string) ColumnI
 	Span() int
@@ -90,7 +91,8 @@ func (c *ColumnBase) ID() string {
 }
 
 // SetId sets the id of the table. If you are going to provide your own id, do this as the first thing after you create
-// a table, or the new id might not propogate through the system correctly.
+// a table, or the new id might not propogate through the system correctly. Note that the id in html will have the table
+// id prepended to it. This is required so that actions can be routed to a column.
 func (c *ColumnBase) SetID(id string) ColumnI {
 	c.id = id
 	return c.this()
@@ -99,6 +101,11 @@ func (c *ColumnBase) SetID(id string) ColumnI {
 func (c *ColumnBase) setParentTable(t TableI) {
 	c.parentTable = t
 }
+
+func (c *ColumnBase) ParentTable() TableI {
+	return c.parentTable
+}
+
 
 func (c *ColumnBase) Title() string {
 	return c.title
@@ -133,6 +140,11 @@ func (c *ColumnBase) SetCellStyler(s html.Attributer) {
 func (c *ColumnBase) SetCellTexter(s CellTexter) {
 	c.cellTexter = s
 }
+
+func (c *ColumnBase) CellTexter() CellTexter {
+	return c.cellTexter
+}
+
 
 func (c *ColumnBase) SetHeaderTexter(s CellTexter) {
 	c.headerTexter = s
@@ -180,7 +192,7 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 	}
 	a := c.this().ColTagAttributes()
 	if c.id != "" {
-		a.Set("id", c.id)
+		a.Set("id", c.this().ParentTable().ID() + "_" + c.id) // so that actions can get routed to a column
 	}
 	if c.span != 1 {
 		a.Set("span", strconv.Itoa(c.span))

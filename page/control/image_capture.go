@@ -2,7 +2,7 @@ package control
 
 import (
 	"github.com/spekary/goradd/page"
-	localPage "goradd/page"
+	localPage "goradd/override/page"
 	"context"
 	"goradd/config"
 	"encoding/base64"
@@ -56,22 +56,22 @@ func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string) {
 	i.Control.Init(self, parent, id)
 	i.Tag = "div"
-	i.GetForm().AddJavaScriptFile(config.GoraddAssets() + "/js/image-capture.js", false, nil)
+	i.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/image-capture.js", false, nil)
 	i.typ = "jpeg"
 	i.quality = 0.92
 
 	i.Canvas = NewCanvas(i, i.ID() + "_canvas")
 	i.CaptureButton = NewButton(i, i.ID() + "_capture")
-	i.CaptureButton.SetText(i.GetForm().T("New Image"))
+	i.CaptureButton.SetText(i.ParentForm().T("New Image"))
 
 	i.SwitchCameraButton = NewButton(i, i.ID() + "_switch")
-	i.SwitchCameraButton.SetText(i.GetForm().T("Switch Camera"))
+	i.SwitchCameraButton.SetText(i.ParentForm().T("Switch Camera"))
 	i.SwitchCameraButton.SetDisplay("none")
 
 	i.ErrText = NewPanel(i, i.ID() + "_err")
 	i.ErrText.Tag = "p"
 	i.ErrText.SetDisplay("none")
-	i.ErrText.SetText(i.GetForm().T("This browser or device does not support image capture"))
+	i.ErrText.SetText(i.ParentForm().T("This browser or device does not support image capture"))
 }
 
 func (i *ImageCapture) this() ImageCaptureI {
@@ -109,7 +109,7 @@ func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Respo
 	d := base64.StdEncoding.EncodeToString(i.data)
 	d = "data:image/" + i.typ + ";base64," + d
 	options["data"] = d
-	options["selectButtonName"] = i.GetForm().T("Capture")
+	options["selectButtonName"] = i.ParentForm().T("Capture")
 	if i.zoom > 0 {
 		options["zoom"] = i.zoom
 	}
@@ -123,7 +123,7 @@ func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Respo
 }
 
 func (i *ImageCapture) TurnOff() {
-	i.GetForm().Response().ExecuteControlCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
+	i.ParentForm().Response().ExecuteControlCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
 }
 
 
