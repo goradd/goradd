@@ -96,7 +96,7 @@ func (n *ReferenceNode) goName() string {
 
 // Return a node for the table that is the foreign key
 func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
-	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, COL_TYPE_STRING)
+	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, ColTypeString)
 	SetParentNode(n2, n.parentNode)
 	return n2
 }

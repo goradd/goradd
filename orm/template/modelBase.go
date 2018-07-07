@@ -711,7 +711,7 @@ func (o *`)
 
 			buf.WriteString(`IsNull ||
 		    `)
-			if col.GoType != query.COL_TYPE_BYTES {
+			if col.GoType != query.ColTypeBytes {
 				buf.WriteString(` o.`)
 
 				buf.WriteString(col.VarName)
@@ -734,7 +734,7 @@ func (o *`)
 
 			buf.WriteString(`IsNull = false
 `)
-			if col.GoType != query.COL_TYPE_BYTES {
+			if col.GoType != query.ColTypeBytes {
 				buf.WriteString(`			o.`)
 
 				buf.WriteString(col.VarName)
@@ -893,7 +893,7 @@ func (o *`)
 
 			buf.WriteString(`) {
 `)
-			if col.GoType == query.COL_TYPE_BYTES {
+			if col.GoType == query.ColTypeBytes {
 				buf.WriteString(`	o.`)
 
 				buf.WriteString(col.VarName)
@@ -2887,7 +2887,7 @@ func (o *`)
 		buf.WriteString(col.DbName)
 
 		buf.WriteString(`"] = `)
-		if col.GoType == query.COL_TYPE_DATETIME {
+		if col.GoType == query.ColTypeDateTime {
 			buf.WriteString(`o.`)
 
 			buf.WriteString(col.VarName)

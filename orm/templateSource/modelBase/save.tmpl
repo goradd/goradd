@@ -52,7 +52,7 @@ func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}
 for _,col := range t.Columns {
 {{
 	if o.{{= col.VarName }}IsDirty {
-		fields["{{= col.DbName }}"] = {{if col.GoType == query.COL_TYPE_DATETIME }}o.{{= col.VarName }}.GoTime(){{else}}o.{{= col.VarName }}{{if}}
+		fields["{{= col.DbName }}"] = {{if col.GoType == query.ColTypeDateTime }}o.{{= col.VarName }}.GoTime(){{else}}o.{{= col.VarName }}{{if}}
 	}
 
 }}

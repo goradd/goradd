@@ -517,7 +517,7 @@ func (dd *DatabaseDescription) analyzeColumn(td *TableDescription, cd *ColumnDes
 	}
 
 	if cd.IsId {
-		cd.GoType = COL_TYPE_STRING // We treat auto-generated ids as strings for cross database compatibility.
+		cd.GoType = ColTypeString // We treat auto-generated ids as strings for cross database compatibility.
 	}
 	if cd.ForeignKey != nil {
 		goName := cd.GoName
@@ -533,7 +533,7 @@ func (dd *DatabaseDescription) analyzeColumn(td *TableDescription, cd *ColumnDes
 			cd.ForeignKey.GoType = td.GoName
 			fkc := td.GetColumn(cd.ForeignKey.ColumnName)
 			if fkc.IsId {
-				cd.GoType = COL_TYPE_STRING // Always use strings to refer to auto-generated ids for cross database compatibility
+				cd.GoType = ColTypeString // Always use strings to refer to auto-generated ids for cross database compatibility
 			}
 		}
 	}
@@ -609,7 +609,7 @@ func (cd *ColumnDescription) IsReference() bool {
 
 // Returns the default
 func (cd *ColumnDescription) DefaultValueAsConstant() string {
-	if cd.GoType == COL_TYPE_DATETIME {
+	if cd.GoType == ColTypeDateTime {
 		if cd.DefaultValue == nil {
 			return "datetime.Zero" // pass this to datetime.NewDateTime()
 		} else {
@@ -636,7 +636,7 @@ func (cd *ColumnDescription) DefaultValueAsValue() string {
 		} else {
 			return v
 		}
-	} else if cd.GoType == COL_TYPE_DATETIME {
+	} else if cd.GoType == ColTypeDateTime {
 		if b, _ := cd.DefaultValue.(datetime.DateTime).MarshalText(); b == nil {
 			return cd.GoType.DefaultValue()
 		} else {

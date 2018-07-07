@@ -2,24 +2,46 @@
 
 // The master template for the connector classes
 
+// As a preliminary step, we need to vet all the controls associated with columns to manage their namespaces.
+var importToNamespace = types.NewOrderedStringMap()
+var namespaceToImport = types.NewOrderedStringMap()
+var controlType = make(map[*db.ColumnDescription]string)
+var createFunction = make(map[*db.ColumnDescription]string)
+
+for _,col := range t.Columns {
+    typ, createFunc, importName := codegen.ControlType(col)
+
+    if typ != "" {
+        if !importToNamespace.Has(importName) {
+            items := strings.Split(importName, `/`)
+            lastName := items[len(items)-1]
+            var suffix = ""
+            var count = 1
+            for namespaceToImport.Has(lastName + suffix) {
+                count ++
+                suffix = strconv.Itoa(count)
+            }
+            importToNamespace.Set(importName, lastName + suffix)
+            namespaceToImport.Set(lastName + suffix, importName)
+            controlType[col] = lastName + suffix + "." + typ
+            createFunction[col] = lastName + suffix + "." + createFunc
+        } else {
+            namespace := importToNamespace.Get(importName)
+            controlType[col] = namespace + "." + typ
+            createFunction[col] = namespace + "." + createFunc
+        }
+
+    }
+}
+
+var privateName = util.LcFirst(t.GoName)
 
 {{
 package connector
 
 // This file is code generated. Do not edit.
 
-import (
-	"goradd/gen/{{t.DbKey}}/model/node"
-	"github.com/spekary/goradd/orm/db"
-	"github.com/spekary/goradd/orm/query"
-	"context"
-	"fmt"
-	. "github.com/spekary/goradd/orm/op"
-	//"./node"
-	"github.com/spekary/goradd/datetime"
-	"github.com/spekary/goradd/util"
-)
-
 }}
 
-{{# struct.tmpl }}
+{{: import.tmpl }}
+{{: struct.tmpl }}

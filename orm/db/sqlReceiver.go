@@ -262,25 +262,25 @@ func (r SqlReceiver) TimeI() interface{} {
 // Convert an SqlReceiver to a type corresponding to the given GoColumnType
 func (r SqlReceiver) Unpack(typ GoColumnType) interface{} {
 	switch typ {
-	case COL_TYPE_BYTES:
+	case ColTypeBytes:
 		return r.R
-	case COL_TYPE_STRING:
+	case ColTypeString:
 		return r.StringI()
-	case COL_TYPE_INTEGER:
+	case ColTypeInteger:
 		return r.IntI()
-	case COL_TYPE_UNSIGNED:
+	case ColTypeUnsigned:
 		return r.UintI()
-	case COL_TYPE_INTEGER64:
+	case ColTypeInteger64:
 		return r.Int64I()
-	case COL_TYPE_UNSIGNED64:
+	case ColTypeUnsigned64:
 		return r.Uint64I()
-	case COL_TYPE_DATETIME:
+	case ColTypeDateTime:
 		return r.TimeI()
-	case COL_TYPE_FLOAT:
+	case ColTypeFloat:
 		return r.FloatI()
-	case COL_TYPE_DOUBLE:
+	case ColTypeDouble:
 		return r.DoubleI()
-	case COL_TYPE_BOOL:
+	case ColTypeBool:
 		return r.BoolI()
 	default:
 		return r.R

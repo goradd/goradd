@@ -5,7 +5,10 @@ import (
 	"goradd/config"
 	"bytes"
 	"github.com/spekary/goradd/orm/db"
-
+    "github.com/spekary/goradd/util/types"
+	"strconv"
+	"fmt"
+	"strings"
 )
 
 func init() {
@@ -23,11 +26,10 @@ type ConnectorBaseTemplate struct {
 }
 
 func (n *ConnectorBaseTemplate) FileName(key string, t *db.TableDescription) string {
-	return n.TargetDir + "/" + key + "/connector/" + t.GoName + ".go"
+	return n.TargetDir + "/" + key + "/connector/" + t.GoName + "Base.go"
 }
 
 func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
-	//var privateName = util.LcFirst(t.GoName)
 	{{: "connector/connectorBase.tmpl" }}
 }
 

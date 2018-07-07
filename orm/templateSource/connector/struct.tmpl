@@ -3,9 +3,9 @@
 // {{privateName}}Base is a base structure to be embedded in a "subclass" and provides the code generated
 // controls and CRUD operations.
 
-type {{privateName}}Base struct {
+type {{= privateName }}Base struct {
 {{for _,col := range t.Columns }}
-    {{col.GoName}} *{{codegen.ControlType(col)}}
+    {{= col.GoName }} {{= controlType[col]}}
 {{for}}
 }
 }}

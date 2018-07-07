@@ -69,3 +69,13 @@ func (c *Panel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
 	}
 	return page.NewFrameworkError(page.FrameworkErrNoTemplate)
 }
+
+// Value sets the value of the control. Since a panel's default is to display its Text value, that is what is returned.
+func (c *Panel) Value() interface{} {
+	return c.Text()
+}
+
+// Sets the value of the panel, which is its Text value.
+func (c *Panel) SetValue(i interface{}) {
+	c.SetText(fmt.Sprintf("%v", i))
+}

@@ -57,12 +57,12 @@ func (d TextboxDescriber) NewFunc() string {
 }
 
 func (d TextboxDescriber) Import() string {
-	return "github.com/spekary/goradd/override/control"
+	return "github.com/spekary/goradd/page/control"
 }
 
 func (d TextboxDescriber) SupportsColumn(col db.ColumnDescription) bool {
-	if col.GoType == query.COL_TYPE_BYTES ||
-		col.GoType == query.COL_TYPE_STRING {
+	if col.GoType == query.ColTypeBytes ||
+		col.GoType == query.ColTypeString {
 			return true
 	}
 	return false

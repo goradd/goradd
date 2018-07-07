@@ -315,30 +315,30 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 	switch column.dataType {
 	case "time":
 		cd.NativeType = SQL_TYPE_TIME
-		cd.GoType = COL_TYPE_DATETIME
+		cd.GoType = ColTypeDateTime
 	case "timestamp":
 		fallthrough
 	case "datetime":
 		cd.NativeType = SQL_TYPE_DATETIME
-		cd.GoType = COL_TYPE_DATETIME
+		cd.GoType = ColTypeDateTime
 	case "date":
 		cd.NativeType = SQL_TYPE_DATE
-		cd.GoType = COL_TYPE_DATETIME
+		cd.GoType = ColTypeDateTime
 	case "tinyint":
 		if dataLen == 1 {
 			cd.NativeType = SQL_TYPE_BOOL
-			cd.GoType = COL_TYPE_BOOL
+			cd.GoType = ColTypeBool
 		} else {
 			if isUnsigned {
 				cd.NativeType = SQL_TYPE_INTEGER
-				cd.GoType = COL_TYPE_UNSIGNED
+				cd.GoType = ColTypeUnsigned
 				min, max := getMinMax(column.options, 0, 255, tableName, column.name)
 				cd.MinValue = uint(min)
 				cd.MaxValue = uint(max)
 				cd.MaxCharLength = 3
 			} else {
 				cd.NativeType = SQL_TYPE_INTEGER
-				cd.GoType = COL_TYPE_INTEGER
+				cd.GoType = ColTypeInteger
 				min, max := getMinMax(column.options, -128, 127, tableName, column.name)
 				cd.MinValue = int(min)
 				cd.MaxValue = int(max)
@@ -349,14 +349,14 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 	case "int":
 		if isUnsigned {
 			cd.NativeType = SQL_TYPE_INTEGER
-			cd.GoType = COL_TYPE_UNSIGNED
+			cd.GoType = ColTypeUnsigned
 			min, max := getMinMax(column.options, 0, 4294967295, tableName, column.name)
 			cd.MinValue = uint(min)
 			cd.MaxValue = uint(max)
 			cd.MaxCharLength = 10
 		} else {
 			cd.NativeType = SQL_TYPE_INTEGER
-			cd.GoType = COL_TYPE_INTEGER
+			cd.GoType = ColTypeInteger
 			min, max := getMinMax(column.options, -2147483648, 2147483647, tableName, column.name)
 			cd.MinValue = int(min)
 			cd.MaxValue = int(max)
@@ -366,14 +366,14 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 	case "smallint":
 		if isUnsigned {
 			cd.NativeType = SQL_TYPE_INTEGER
-			cd.GoType = COL_TYPE_UNSIGNED
+			cd.GoType = ColTypeUnsigned
 			min, max := getMinMax(column.options, 0, 65535, tableName, column.name)
 			cd.MinValue = uint(min)
 			cd.MaxValue = uint(max)
 			cd.MaxCharLength = 5
 		} else {
 			cd.NativeType = SQL_TYPE_INTEGER
-			cd.GoType = COL_TYPE_INTEGER
+			cd.GoType = ColTypeInteger
 			min, max := getMinMax(column.options, -32768, 32767, tableName, column.name)
 			cd.MinValue = int(min)
 			cd.MaxValue = int(max)
@@ -383,14 +383,14 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 	case "mediumint":
 		if isUnsigned {
 			cd.NativeType = SQL_TYPE_INTEGER
-			cd.GoType = COL_TYPE_UNSIGNED
+			cd.GoType = ColTypeUnsigned
 			min, max := getMinMax(column.options, 0, 16777215, tableName, column.name)
 			cd.MinValue = uint(min)
 			cd.MaxValue = uint(max)
 			cd.MaxCharLength = 8
 		} else {
 			cd.NativeType = SQL_TYPE_INTEGER
-			cd.GoType = COL_TYPE_INTEGER
+			cd.GoType = ColTypeInteger
 			min, max := getMinMax(column.options, -8388608, 8388607, tableName, column.name)
 			cd.MinValue = int(min)
 			cd.MaxValue = int(max)
@@ -401,7 +401,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 		// Also, since Json can only be decoded into float64s, we are limited in our ability to represent large min and max numbers in the json to about 2^53
 		if isUnsigned {
 			cd.NativeType = SQL_TYPE_INTEGER
-			cd.GoType = COL_TYPE_UNSIGNED64
+			cd.GoType = ColTypeUnsigned64
 
 			if v := column.options.Get("min"); v != nil {
 				if v2, ok := v.(float64); !ok {
@@ -430,7 +430,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 			cd.MaxCharLength = 20
 		} else {
 			cd.NativeType = SQL_TYPE_INTEGER
-			cd.GoType = COL_TYPE_INTEGER64
+			cd.GoType = ColTypeInteger64
 			if v := column.options.Get("min"); v != nil {
 				if v2, ok := v.(float64); !ok {
 					log.Print("Error in min value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
@@ -457,81 +457,81 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 
 	case "float":
 		cd.NativeType = SQL_TYPE_FLOAT
-		cd.GoType = COL_TYPE_FLOAT
+		cd.GoType = ColTypeFloat
 		cd.MinValue, cd.MaxValue = getMinMax(column.options, -math.MaxFloat32, math.MaxFloat32, tableName, column.name)
 	case "double":
 		cd.NativeType = SQL_TYPE_DOUBLE
-		cd.GoType = COL_TYPE_FLOAT
+		cd.GoType = ColTypeFloat
 		cd.MinValue, cd.MaxValue = getMinMax(column.options, -math.MaxFloat64, math.MaxFloat64, tableName, column.name)
 
 	case "varchar":
 		cd.NativeType = SQL_TYPE_VARCHAR
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 		cd.MaxCharLength = uint64(dataLen)
 
 	case "char":
 		cd.NativeType = SQL_TYPE_CHAR
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 		cd.MaxCharLength = uint64(dataLen)
 
 	case "blob":
 		cd.NativeType = SQL_TYPE_BLOB
-		cd.GoType = COL_TYPE_BYTES
+		cd.GoType = ColTypeBytes
 		cd.MaxCharLength = 65535
 	case "tinyblob":
 		cd.NativeType = SQL_TYPE_BLOB
-		cd.GoType = COL_TYPE_BYTES
+		cd.GoType = ColTypeBytes
 		cd.MaxCharLength = 255
 	case "mediumblob":
 		cd.NativeType = SQL_TYPE_BLOB
-		cd.GoType = COL_TYPE_BYTES
+		cd.GoType = ColTypeBytes
 		cd.MaxCharLength = 16777215
 	case "longblob":
 		cd.NativeType = SQL_TYPE_BLOB
-		cd.GoType = COL_TYPE_BYTES
+		cd.GoType = ColTypeBytes
 		cd.MaxCharLength = math.MaxUint32
 
 	case "text":
 		cd.NativeType = SQL_TYPE_TEXT
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 		cd.MaxCharLength = 65535
 	case "tinytext":
 		cd.NativeType = SQL_TYPE_TEXT
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 		cd.MaxCharLength = 255
 	case "mediumtext":
 		cd.NativeType = SQL_TYPE_TEXT
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 		cd.MaxCharLength = 16777215
 	case "longtext":
 		cd.NativeType = SQL_TYPE_TEXT
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 		cd.MaxCharLength = math.MaxUint32
 
 	case "decimal": // No native equivalent in Go. See the "Big" go package for support. You will need to shephard numbers into and out of string format to move data to the database
 		cd.NativeType = SQL_TYPE_DECIMAL
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 		cd.MaxCharLength = uint64(dataLen) + 3
 
 	case "year":
 		cd.NativeType = SQL_TYPE_INTEGER
-		cd.GoType = COL_TYPE_INTEGER
+		cd.GoType = ColTypeInteger
 
 	case "set":
 		log.Print("Note: Using association tables is preferred to using Mysql5 SET columns in table " + tableName + ":" + column.name + ".")
 		cd.NativeType = MYSQL_TYPE_SET
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	case "enum":
 		log.Print("Note: Using type tables is preferred to using Mysql5 ENUM columns in table " + tableName + ":" + column.name + ".")
 		cd.NativeType = MYSQL_TYPE_ENUM
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	default:
 		cd.NativeType = SQL_TYPE_UNKNOWN
-		cd.GoType = COL_TYPE_STRING
+		cd.GoType = ColTypeString
 	}
 
 	cd.DefaultValue = column.defaultValue.Unpack(cd.GoType)

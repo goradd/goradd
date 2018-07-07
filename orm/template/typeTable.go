@@ -105,11 +105,11 @@ func (`)
 	for _, value := range tt.Values {
 		buf.WriteString(`	case `)
 
-		buf.WriteString(generator.AsConstant(value[keyField], query.COL_TYPE_UNSIGNED))
+		buf.WriteString(generator.AsConstant(value[keyField], query.ColTypeUnsigned))
 
 		buf.WriteString(`: return `)
 
-		buf.WriteString(generator.AsConstant(value[tt.FieldNames[1]], query.COL_TYPE_STRING))
+		buf.WriteString(generator.AsConstant(value[tt.FieldNames[1]], query.ColTypeString))
 
 		buf.WriteString(`
 `)
@@ -157,7 +157,7 @@ func (`)
 		for _, value := range tt.Values {
 			buf.WriteString(`	case `)
 
-			buf.WriteString(generator.AsConstant(value[keyField], query.COL_TYPE_UNSIGNED))
+			buf.WriteString(generator.AsConstant(value[keyField], query.ColTypeUnsigned))
 
 			buf.WriteString(`: return `)
 

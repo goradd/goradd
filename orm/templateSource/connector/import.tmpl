@@ -1,0 +1,14 @@
+// import.tmpl
+{{
+import (
+
+    {{g importToNamespace.Range(func(key string,val string)bool { }}
+    {{val}} "{{key}}"
+    {{g return true
+     })
+     }}
+
+)
+}}
+
+

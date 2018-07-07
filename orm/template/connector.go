@@ -4,17 +4,17 @@ package template
 
 import (
 	"bytes"
-	"fmt"
 	"goradd/config"
 
 	"github.com/spekary/goradd/codegen/generator"
 	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/util"
 )
 
 func init() {
 	t := ConnectorTemplate{
 		generator.Template{
-			Overwrite: false,
+			Overwrite: true,
 			TargetDir: config.LocalDir + "/gen",
 		},
 	}
@@ -34,25 +34,23 @@ func (n *ConnectorTemplate) GenerateTable(codegen generator.Codegen, dd *db.Data
 
 	// The master template for the connector classes
 
+	var privateName = util.LcFirst(t.GoName)
+
 	buf.WriteString(`package connector
 
 // This is the connector override. Feel free to edit.
 
-import (
-	"goradd/gen/`)
+type `)
 
-	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+	buf.WriteString(t.GoName)
 
-	buf.WriteString(`/model/node"
-	"github.com/spekary/goradd/orm/db"
-	"github.com/spekary/goradd/orm/query"
-	"context"
-	"fmt"
-	. "github.com/spekary/goradd/orm/op"
-	//"./node"
-	"github.com/spekary/goradd/datetime"
-	"github.com/spekary/goradd/util/types"
-)
+	buf.WriteString(` struct {
+    `)
+
+	buf.WriteString(privateName)
+
+	buf.WriteString(`Base
+}
 
 `)
 

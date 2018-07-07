@@ -104,10 +104,10 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 	} else {
 		v := i.({{= col.GoType.String() }})
 		if o.{{= col.VarName }}IsNull ||
-		    {{if col.GoType != query.COL_TYPE_BYTES }} o.{{= col.VarName }} != v {{else}} !bytes.Equal(o.{{= col.VarName }}, v) {{if}}{
+		    {{if col.GoType != query.ColTypeBytes }} o.{{= col.VarName }} != v {{else}} !bytes.Equal(o.{{= col.VarName }}, v) {{if}}{
 
 			o.{{= col.VarName }}IsNull = false
-{{if col.GoType != query.COL_TYPE_BYTES }}
+{{if col.GoType != query.ColTypeBytes }}
 			o.{{= col.VarName }} = v
 {{else}}
             o.{{= col.VarName }} = append([]byte(nil), v...)
@@ -156,7 +156,7 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 {{
 // Set{{= col.GoName }} sets the value of {{= col.GoName }} in the object, to be saved later using the Save() function.
 func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.GoType.String() }}) {
-{{g if col.GoType == query.COL_TYPE_BYTES { }}
+{{g if col.GoType == query.ColTypeBytes { }}
 	o.{{= col.VarName }} = v		// TODO: Copy bytes??
 	o.{{= col.VarName }}IsDirty = true
 {{g } else { }}

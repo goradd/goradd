@@ -196,7 +196,7 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 	}
 	// add special aliases
 	for i := colCount; i < len(names); i++ {
-		columnTypes[i] = COL_TYPE_BYTES // These will be unpacked when they are retrieved
+		columnTypes[i] = ColTypeBytes // These will be unpacked when they are retrieved
 	}
 
 	result = ReceiveRows(rows, columnTypes, names)
@@ -274,7 +274,7 @@ func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) u
 		log.Panic(err)
 	}
 
-	columnTypes := []GoColumnType{COL_TYPE_UNSIGNED}
+	columnTypes := []GoColumnType{ColTypeUnsigned}
 
 	result = ReceiveRows(rows, columnTypes, names)
 

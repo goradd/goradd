@@ -6,9 +6,13 @@ import (
 	"bytes"
 	"fmt"
 	"goradd/config"
+	"strconv"
+	"strings"
 
 	"github.com/spekary/goradd/codegen/generator"
 	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/util"
+	"github.com/spekary/goradd/util/types"
 )
 
 func init() {
@@ -26,35 +30,106 @@ type ConnectorBaseTemplate struct {
 }
 
 func (n *ConnectorBaseTemplate) FileName(key string, t *db.TableDescription) string {
-	return n.TargetDir + "/" + key + "/connector/" + t.GoName + ".go"
+	return n.TargetDir + "/" + key + "/connector/" + t.GoName + "Base.go"
 }
 
 func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
-	//var privateName = util.LcFirst(t.GoName)
 	//connector.tmpl
 
 	// The master template for the connector classes
+
+	// As a preliminary step, we need to vet all the controls associated with columns to manage their namespaces.
+	var importToNamespace = types.NewOrderedStringMap()
+	var namespaceToImport = types.NewOrderedStringMap()
+	var controlType = make(map[*db.ColumnDescription]string)
+	var createFunction = make(map[*db.ColumnDescription]string)
+
+	for _, col := range t.Columns {
+		typ, createFunc, importName := codegen.ControlType(col)
+
+		if typ != "" {
+			if !importToNamespace.Has(importName) {
+				items := strings.Split(importName, `/`)
+				lastName := items[len(items)-1]
+				var suffix = ""
+				var count = 1
+				for namespaceToImport.Has(lastName + suffix) {
+					count++
+					suffix = strconv.Itoa(count)
+				}
+				importToNamespace.Set(importName, lastName+suffix)
+				namespaceToImport.Set(lastName+suffix, importName)
+				controlType[col] = lastName + suffix + "." + typ
+				createFunction[col] = lastName + suffix + "." + createFunc
+			} else {
+				namespace := importToNamespace.Get(importName)
+				controlType[col] = namespace + "." + typ
+				createFunction[col] = namespace + "." + createFunc
+			}
+
+		}
+	}
+
+	var privateName = util.LcFirst(t.GoName)
 
 	buf.WriteString(`package connector
 
 // This file is code generated. Do not edit.
 
-import (
-	"goradd/gen/`)
+`)
 
-	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+	// import.tmpl
 
-	buf.WriteString(`/model/node"
-	"github.com/spekary/goradd/orm/db"
-	"github.com/spekary/goradd/orm/query"
-	"context"
-	"fmt"
-	. "github.com/spekary/goradd/orm/op"
-	//"./node"
-	"github.com/spekary/goradd/datetime"
-	"github.com/spekary/goradd/util"
+	buf.WriteString(`import (
+
+    `)
+	importToNamespace.Range(func(key string, val string) bool {
+		buf.WriteString(`    `)
+
+		buf.WriteString(fmt.Sprintf("%v", val))
+
+		buf.WriteString(` "`)
+
+		buf.WriteString(fmt.Sprintf("%v", key))
+
+		buf.WriteString(`"
+    `)
+		return true
+	})
+
+	buf.WriteString(`
 )
+`)
 
+	// struct.tmpl
+
+	buf.WriteString(`// `)
+
+	buf.WriteString(fmt.Sprintf("%v", privateName))
+
+	buf.WriteString(`Base is a base structure to be embedded in a "subclass" and provides the code generated
+// controls and CRUD operations.
+
+type `)
+
+	buf.WriteString(privateName)
+
+	buf.WriteString(`Base struct {
+`)
+	for _, col := range t.Columns {
+		buf.WriteString(`    `)
+
+		buf.WriteString(col.GoName)
+
+		buf.WriteString(` `)
+
+		buf.WriteString(controlType[col])
+
+		buf.WriteString(`
+`)
+	}
+
+	buf.WriteString(`}
 `)
 
 }

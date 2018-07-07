@@ -3,17 +3,17 @@ package query
 type GoColumnType string
 
 const (
-	COL_TYPE_UNKNOWN    GoColumnType = ""
-	COL_TYPE_BYTES                   = "[]byte"
-	COL_TYPE_STRING                  = "string"
-	COL_TYPE_INTEGER                 = "int"
-	COL_TYPE_UNSIGNED                = "uint"
-	COL_TYPE_INTEGER64               = "int64"
-	COL_TYPE_UNSIGNED64              = "uint64"
-	COL_TYPE_DATETIME                = "datetime.DateTime"
-	COL_TYPE_FLOAT                   = "float32" // always internally represent with max bits
-	COL_TYPE_DOUBLE                  = "float64" // always internally represent with max bits
-	COL_TYPE_BOOL                    = "bool"
+	ColTypeUnknown    GoColumnType = ""
+	ColTypeBytes                   = "[]byte"
+	ColTypeString                  = "string"
+	ColTypeInteger                 = "int"
+	ColTypeUnsigned                = "uint"
+	ColTypeInteger64               = "int64"
+	ColTypeUnsigned64              = "uint64"
+	ColTypeDateTime                = "datetime.DateTime"
+	ColTypeFloat                   = "float32" // always internally represent with max bits
+	ColTypeDouble                  = "float64" // always internally represent with max bits
+	ColTypeBool                    = "bool"
 )
 
 func (g GoColumnType) String() string {
@@ -22,32 +22,32 @@ func (g GoColumnType) String() string {
 
 func (g GoColumnType) DefaultValue() string {
 	switch g {
-	case COL_TYPE_UNKNOWN:
+	case ColTypeUnknown:
 		return ""
-	case COL_TYPE_BYTES:
+	case ColTypeBytes:
 		return ""
-	case COL_TYPE_STRING:
+	case ColTypeString:
 		return "\"\""
-	case COL_TYPE_INTEGER:
+	case ColTypeInteger:
 		return "0"
-	case COL_TYPE_UNSIGNED:
+	case ColTypeUnsigned:
 		return "0"
-	case COL_TYPE_INTEGER64:
+	case ColTypeInteger64:
 		return "0"
-	case COL_TYPE_UNSIGNED64:
+	case ColTypeUnsigned64:
 		return "0"
-	case COL_TYPE_DATETIME:
+	case ColTypeDateTime:
 		return "datetime.DateTime{}"
 		/*
 			v, _ := goradd.DateTime{}.MarshalText()
 			s := string(v[:])
 			return fmt.Sprintf("%#v", s)*/
 
-	case COL_TYPE_FLOAT:
+	case ColTypeFloat:
 		return "0.0" // always internally represent with max bits
-	case COL_TYPE_DOUBLE:
+	case ColTypeDouble:
 		return "0.0" // always internally represent with max bits
-	case COL_TYPE_BOOL:
+	case ColTypeBool:
 		return "false" // always internally represent with max bits
 	}
 	return string(g)
