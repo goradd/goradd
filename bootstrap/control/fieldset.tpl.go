@@ -15,7 +15,7 @@ import (
 // This is useful for groups of related controls, like a group of radio buttons.
 // If you want the entire group to be a row, give the wrapper a "row" class. This will automatically pull out the
 // row class and add an independent div wrapper with a row class, which is a special requirement for this kind of object.
-func FieldsetTmpl(ctx context.Context, wrapper *FieldsetWrapper, ctrl page.ControlI, h string, buf *bytes.Buffer) {
+func FieldsetTmpl(ctx context.Context, wrapper *FieldsetWrapperType, ctrl page.ControlI, h string, buf *bytes.Buffer) {
 	var hasInstructions bool = (ctrl.Instructions() != "")
 	var hasRow bool
 

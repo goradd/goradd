@@ -9,7 +9,7 @@ import (
 	"github.com/spekary/goradd/html"
 )
 
-func LabelTmpl(ctx context.Context, w LabelWrapper, ctrl ControlI, h string, buf *bytes.Buffer) {
+func LabelTmpl(ctx context.Context, w LabelWrapperType, ctrl ControlI, h string, buf *bytes.Buffer) {
 	labelAttr := w.LabelAttributes().String()
 
 	buf.WriteString(`<div id="`)

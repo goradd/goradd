@@ -1,0 +1,20 @@
+// newControl.tmpl
+{{
+
+{{for _,col := range t.Columns }}
+{{g
+    desc, ok := columnDescriptions[col.GoName]
+}}
+{{if ok}}
+func (c *{{t.GoName}}) New{{= desc.controlName }}(id string) *{{= desc.namespace}}.{{= desc.typ}} {
+    var ctrl *{{= desc.namespace}}.{{= desc.typ}}
+{{= desc.generator.GenerateCreate(col) }}
+    c.{{desc.controlName}} = ctrl
+    return ctrl
+}
+{{if}}
+{{for}}
+}
+}}
+
+

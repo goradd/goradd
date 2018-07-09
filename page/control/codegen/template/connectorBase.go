@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spekary/goradd/codegen/connector"
 	"github.com/spekary/goradd/codegen/generator"
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/util"
@@ -41,12 +42,22 @@ func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.
 	// As a preliminary step, we need to vet all the controls associated with columns to manage their namespaces.
 	var importToNamespace = types.NewOrderedStringMap()
 	var namespaceToImport = types.NewOrderedStringMap()
-	var controlType = make(map[*db.ColumnDescription]string)
-	var createFunction = make(map[*db.ColumnDescription]string)
+
+	type columnDescription struct {
+		namespace   string
+		typ         string
+		newFunc     string
+		controlName string
+		desc        *db.ColumnDescription
+		generator   connector.Generator
+	}
+
+	var columnDescriptions = make(map[string]columnDescription)
 
 	for _, col := range t.Columns {
-		typ, createFunc, importName := codegen.ControlType(col)
+		typ, newFunc, importName := codegen.ControlType(col)
 
+		var namespace string
 		if typ != "" {
 			if !importToNamespace.Has(importName) {
 				items := strings.Split(importName, `/`)
@@ -57,16 +68,21 @@ func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.
 					count++
 					suffix = strconv.Itoa(count)
 				}
-				importToNamespace.Set(importName, lastName+suffix)
-				namespaceToImport.Set(lastName+suffix, importName)
-				controlType[col] = lastName + suffix + "." + typ
-				createFunction[col] = lastName + suffix + "." + createFunc
+				namespace = lastName + suffix
+				importToNamespace.Set(importName, namespace)
+				namespaceToImport.Set(namespace, importName)
 			} else {
-				namespace := importToNamespace.Get(importName)
-				controlType[col] = namespace + "." + typ
-				createFunction[col] = namespace + "." + createFunc
+				namespace = importToNamespace.Get(importName)
 			}
-
+			ci := columnDescription{
+				namespace,
+				typ,
+				newFunc,
+				col.GoName + typ,
+				col,
+				connector.GetGenerator(importName, typ),
+			}
+			columnDescriptions[col.GoName] = ci
 		}
 	}
 
@@ -81,7 +97,11 @@ func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.
 	// import.tmpl
 
 	buf.WriteString(`import (
+	"goradd/gen/`)
 
+	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+
+	buf.WriteString(`/model"
     `)
 	importToNamespace.Range(func(key string, val string) bool {
 		buf.WriteString(`    `)
@@ -115,21 +135,58 @@ type `)
 	buf.WriteString(privateName)
 
 	buf.WriteString(`Base struct {
+    ParentControl page.ControlI
+    `)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` *model.`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`
 `)
 	for _, col := range t.Columns {
-		buf.WriteString(`    `)
+		desc, ok := columnDescriptions[col.GoName]
+		if ok {
+			buf.WriteString(`    `)
 
-		buf.WriteString(col.GoName)
+			buf.WriteString(desc.controlName)
 
-		buf.WriteString(` `)
+			buf.WriteString(` *`)
 
-		buf.WriteString(controlType[col])
+			buf.WriteString(desc.namespace)
 
-		buf.WriteString(`
+			buf.WriteString(`.`)
+
+			buf.WriteString(desc.typ)
+
+			buf.WriteString(`
 `)
+		}
 	}
 
 	buf.WriteString(`}
+`)
+
+	buf.WriteString(`func New`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+	buf.WriteString(`Connector(parent page.ControlI) *`)
+
+	buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+	buf.WriteString(` {
+    c := new(`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`)
+    c.ParentControl = parent
+    return c
+}
+
 `)
 
 }

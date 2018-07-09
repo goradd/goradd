@@ -4,7 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/spekary/goradd/codegen/generator"
+
+	// TODO: build the templates as plugin libraries so they do not need to be hard-linked
 	_ "github.com/spekary/goradd/orm/template"
+	_ "github.com/spekary/goradd/page/control/codegen/template"
 	"goradd/config"
 )
 

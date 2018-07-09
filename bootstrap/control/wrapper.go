@@ -7,94 +7,101 @@ import (
 	"github.com/spekary/goradd/page"
 )
 
-// DivWrapper is a wrapper similar to a form group, but simply without the FormGroup class added. Use this for
+const (
+	DivWrapper = "bootstrap.Div"
+	FormGroupWrapper = "bootstrap.FormGroup"
+	FieldsetWrapper = "bootstrap.Fieldset"
+)
+
+// DivWrapperType is a wrapper similar to a form group, but simply without the FormGroup class added. Use this for
 // wrapping inline elements and other special situations listed in the Bootstrap doc under the Forms component.
 // https://getbootstrap.com/docs/4.1/components/forms/ as of this writing
-type DivWrapper struct {
-	page.LabelWrapper
+type DivWrapperType struct {
+	page.LabelWrapperType
 	innerDivAttributes *html.Attributes
 	useTooltips        bool // uses tooltips for the error class
 }
 
-func NewDivWrapper() *DivWrapper {
-	return &DivWrapper{}
+func NewDivWrapper() *DivWrapperType {
+	return &DivWrapperType{}
 }
 
-func (w *DivWrapper) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
+func (w *DivWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
 	FormGroupTmpl(ctx, w, ctrl, html, buf)
 }
 
-func (w DivWrapper) TypeName() string {
-	return "bootstrap.Div"
+func (w DivWrapperType) TypeName() string {
+	return DivWrapper
 }
 
 // InnerDivAttributes returns attributes for the innerDiv. Changes will be remembered. If you set these, the control
 // itself will be wrapped with a div with these attributes. This is useful for layouts that have the label next to
 // the control.
-func (w *DivWrapper) InnerDivAttributes() *html.Attributes {
+func (w *DivWrapperType) InnerDivAttributes() *html.Attributes {
 	if w.innerDivAttributes == nil {
 		w.innerDivAttributes = html.NewAttributes()
 	}
 	return w.innerDivAttributes
 }
 
-func (w DivWrapper) HasInnerDivAttributes() bool {
+func (w DivWrapperType) HasInnerDivAttributes() bool {
 	if w.innerDivAttributes == nil || w.innerDivAttributes.Len() == 0 {
 		return false
 	}
 	return true
 }
 
-func (w *DivWrapper) SetUseTooltips(t bool) *DivWrapper {
+func (w *DivWrapperType) SetUseTooltips(t bool) *DivWrapperType {
 	w.useTooltips = t
 	return w
 }
 
-type FormGroupWrapper struct {
-	DivWrapper
+type FormGroupWrapperType struct {
+	DivWrapperType
 }
 
-func NewFormGroupWrapper() *FormGroupWrapper {
-	return &FormGroupWrapper{}
+func NewFormGroupWrapper() *FormGroupWrapperType {
+	return &FormGroupWrapperType{}
 }
 
-func (w *FormGroupWrapper) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
+func (w *FormGroupWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
 	ctrl.WrapperAttributes().AddClass("form-group")
-	FormGroupTmpl(ctx, &w.DivWrapper, ctrl, html, buf)
+	FormGroupTmpl(ctx, &w.DivWrapperType, ctrl, html, buf)
 }
 
-func (w FormGroupWrapper) TypeName() string {
-	return "bootstrap.FormGroup"
+func (w FormGroupWrapperType) TypeName() string {
+	return FormGroupWrapper
 }
 
 
-type FieldsetWrapper struct {
-	page.LabelWrapper
+type FieldsetWrapperType struct {
+	page.LabelWrapperType
 	useTooltips        bool // uses tooltips for the error class
 }
 
 // https://getbootstrap.com/docs/4.1/components/forms/#horizontal-form
-func NewFieldsetWrapper() *FieldsetWrapper {
-	return &FieldsetWrapper{}
+func NewFieldsetWrapper() *FieldsetWrapperType {
+	return &FieldsetWrapperType{}
 }
 
 
-func (w *FieldsetWrapper) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
+func (w *FieldsetWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
 	FieldsetTmpl(ctx, w, ctrl, html, buf)
 }
 
-func (w *FieldsetWrapper) SetUseTooltips(t bool) *FieldsetWrapper {
+func (w *FieldsetWrapperType) SetUseTooltips(t bool) *FieldsetWrapperType {
 	w.useTooltips = t
 	return w
 }
 
-func (w FieldsetWrapper) TypeName() string {
-	return "bootstrap.Fieldset"
+func (w FieldsetWrapperType) TypeName() string {
+	return FieldsetWrapper
 }
 
 
 func init() {
-	page.RegisterControlWrapper("bootstrap.FormGroup", &DivWrapper{})
+	page.RegisterControlWrapper(DivWrapper, &DivWrapperType{})
+	page.RegisterControlWrapper(FormGroupWrapper, &FormGroupWrapperType{})
+	page.RegisterControlWrapper(FieldsetWrapper, &FieldsetWrapperType{})
 }
 
-// TODO: will need to serialize this when we are ready to serialize formstate

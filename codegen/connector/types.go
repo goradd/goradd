@@ -20,12 +20,15 @@ type ConnectorParam struct {
 	DoFunc func(c page.ControlI, val interface{})
 }
 
-type Describer interface {
+type Generator interface {
 	Type() string
 	NewFunc() string
 	Import() string
-	SupportsColumn(col db.ColumnDescription) bool
+	SupportsColumn(col *db.ColumnDescription) bool
 	ConnectorParams() *types.OrderedMap
+	GenerateCreate(col *db.ColumnDescription) string
+	GenerateLoad(ctrlName string, objName string, col *db.ColumnDescription) string
+	GenerateSave(ctrlName string, objName string, col *db.ColumnDescription) string
 }
 
 type ControlRegistryKey struct {
@@ -33,13 +36,20 @@ type ControlRegistryKey struct {
 	typ string
 }
 
-var registry map[ControlRegistryKey]Describer
+var registry map[ControlRegistryKey]Generator
 
-func RegisterControl(c Describer) {
+func RegisterGenerator(c Generator) {
 	if registry == nil {
-		registry = make(map[ControlRegistryKey]Describer)
+		registry = make(map[ControlRegistryKey]Generator)
 	}
 
 	e := ControlRegistryKey{c.Import(), c.Type()}
 	registry[e] = c
+}
+
+func GetGenerator(imp string, typ string) Generator {
+	e := ControlRegistryKey{imp, typ}
+
+	d,_ := registry[e]
+	return d
 }

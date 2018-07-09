@@ -190,7 +190,7 @@ type Control struct {
 	isBlockLevel      bool // true to use a div for the wrapper, false for a span
 	wrapper           WrapperI
 	wrapperAttributes *html.Attributes
-	label             string // the given label, often used as a label. Not drawn by default, but the wrapper drawing function uses it. Can also get controls by label.
+	label             string // the given label, often used as a label tag. Not drawn by default, but the wrapper drawing function uses it. Can also get controls by label.
 
 	hasFor       bool   // When drawing the label, should it use a for attribute? This is helpful for screen readers and navigation on certain kinds of tags.
 	instructions string // Instructions, if the field needs extra explanation. You could also try adding a tooltip to the wrapper.
@@ -498,7 +498,6 @@ func (c *Control) DrawText(ctx context.Context, buf *bytes.Buffer) {
 func (c *Control) With(w WrapperI) ControlI {
 	c.wrapper = w
 	return c.this() // for chaining
-
 }
 
 func (c *Control) HasWrapper() bool {

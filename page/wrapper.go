@@ -7,9 +7,17 @@ import (
 	"github.com/spekary/goradd/html"
 )
 
+// Wrapper constants used in the With function
+const (
+	ErrorWrapper = "page.Error"
+	LabelWrapper = "page.Label"
+	DivWrapper = "page.Div"
+)
+
 // WrapperI defines the control wrapper interface. A control wrapper takes the basic html output by a control and wraps
-// it in additional html to give it context. See the 2 built-in wrappers: LabelWrapper and ErrorWrapper for examples.
-// For example, wrappers can be used to add labels that are connected to a control, give additional information, or show error conditions.
+// it in additional html to give it context.
+// For example, wrappers can be used to add labels that are connected to a control, give additional information,
+// or show error conditions. See the built-in wrappers LabelWrapperType and ErrorWrapperType for examples.
 type WrapperI interface {
 	Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer)
 	ModifyDrawingAttributes(ctrl ControlI, attributes *html.Attributes)
@@ -22,7 +30,8 @@ func RegisterControlWrapper(name string, w WrapperI) {
 	wrapperRegistry[name] = t
 }
 
-func GetRegisteredWrapper(name string) WrapperI {
+// NewRegisteredWrapper returns a newly allocated named wrapper.
+func NewRegisteredWrapper(name string) WrapperI {
 	if w, ok := wrapperRegistry[name]; ok {
 		var i interface{}
 		i = reflect.New(w)
@@ -31,22 +40,22 @@ func GetRegisteredWrapper(name string) WrapperI {
 	return nil
 }
 
-type ErrorWrapper struct {
+type ErrorWrapperType struct {
 }
 
-func NewErrorWrapper() ErrorWrapper {
-	return ErrorWrapper{}
+func NewErrorWrapper() ErrorWrapperType {
+	return ErrorWrapperType{}
 }
 
-func (w ErrorWrapper) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+func (w ErrorWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
 	ErrorTmpl(ctx, ctrl, html, buf)
 }
 
-func (w ErrorWrapper) TypeName() string {
-	return "page.Error"
+func (w ErrorWrapperType) TypeName() string {
+	return ErrorWrapper
 }
 
-func (w ErrorWrapper) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
+func (w ErrorWrapperType) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
 	state := c.control().validationState
 	if state != NotValidated {
 		a.Set("aria-describedby", c.ID() + "_err")
@@ -61,28 +70,28 @@ func (w ErrorWrapper) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
 }
 
 
-type LabelWrapper struct {
-	ErrorWrapper
+type LabelWrapperType struct {
+	ErrorWrapperType
 	labelAttributes *html.Attributes
 }
 
-func NewLabelWrapper() LabelWrapper {
-	return LabelWrapper{}
+func NewLabelWrapper() LabelWrapperType {
+	return LabelWrapperType{}
 }
 
-func (w LabelWrapper) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+func (w LabelWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
 	LabelTmpl(ctx, w, ctrl, html, buf)
 }
 
 // LabelAttributes returns attributes that will apply to the label. Changes will be remembered.
-func (w *LabelWrapper) LabelAttributes() *html.Attributes {
+func (w *LabelWrapperType) LabelAttributes() *html.Attributes {
 	if w.labelAttributes == nil {
 		w.labelAttributes = html.NewAttributes()
 	}
 	return w.labelAttributes
 }
 
-func (w LabelWrapper) HasLabelAttributes() bool {
+func (w LabelWrapperType) HasLabelAttributes() bool {
 	if w.labelAttributes == nil || w.labelAttributes.Len() == 0 {
 		return false
 	}
@@ -90,11 +99,11 @@ func (w LabelWrapper) HasLabelAttributes() bool {
 }
 
 
-func (w LabelWrapper) TypeName() string {
-	return "page.Label"
+func (w LabelWrapperType) TypeName() string {
+	return LabelWrapper
 }
 
-func (w LabelWrapper) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
+func (w LabelWrapperType) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
 	state := c.control().validationState
 	if state != NotValidated {
 		a.Set("aria-describedby", c.ID() + "_err")
@@ -112,28 +121,28 @@ func (w LabelWrapper) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
 }
 
 
-type DivWrapper struct {
+type DivWrapperType struct {
 }
 
-func NewDivWrapper() DivWrapper {
-	return DivWrapper{}
+func NewDivWrapper() DivWrapperType {
+	return DivWrapperType{}
 }
 
-func (w DivWrapper) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+func (w DivWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
 	DivTmpl(ctx, ctrl, html, buf)
 }
 
-func (w DivWrapper) TypeName() string {
-	return "page.Div"
+func (w DivWrapperType) TypeName() string {
+	return DivWrapper
 }
 
-func (w DivWrapper) ModifyDrawingAttributes(ctrl ControlI, a *html.Attributes) {
+func (w DivWrapperType) ModifyDrawingAttributes(ctrl ControlI, a *html.Attributes) {
 }
 
 
 
 func init() {
-	RegisterControlWrapper("page.Error", &ErrorWrapper{})
-	RegisterControlWrapper("page.Label", &LabelWrapper{})
-	RegisterControlWrapper("page.Div", &DivWrapper{})
+	RegisterControlWrapper(ErrorWrapper, &ErrorWrapperType{})
+	RegisterControlWrapper(LabelWrapper, &LabelWrapperType{})
+	RegisterControlWrapper(DivWrapper, &DivWrapperType{})
 }

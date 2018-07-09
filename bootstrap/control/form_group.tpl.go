@@ -13,7 +13,7 @@ import (
 
 // The FormGroupTmpl function is a wrapper template that draws form objects using bootstrap styling.
 // To use it, call the .With() function on your control and pass it the result of the NewFormGroupTmpl() function
-func FormGroupTmpl(ctx context.Context, wrapper *DivWrapper, ctrl page.ControlI, h string, buf *bytes.Buffer) {
+func FormGroupTmpl(ctx context.Context, wrapper *DivWrapperType, ctrl page.ControlI, h string, buf *bytes.Buffer) {
 	var hasInnerDivAttributes bool = wrapper.HasInnerDivAttributes()
 	var hasInstructions bool = (ctrl.Instructions() != "")
 

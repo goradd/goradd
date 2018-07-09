@@ -1,0 +1,27 @@
+// struct.tmpl
+{{
+// {{privateName}}Base is a base structure to be embedded in a "subclass" and provides the code generated
+// controls and CRUD operations.
+
+type {{= privateName }}Base struct {
+    ParentControl page.ControlI
+    {{= t.GoName }} *model.{{= t.GoName }}
+{{for _,col := range t.Columns }}
+{{g
+    desc, ok := columnDescriptions[col.GoName]
+}}
+{{if ok}}
+    {{= desc.controlName }} *{{= desc.namespace}}.{{= desc.typ}}
+{{if}}
+{{for}}
+}
+}}
+
+{{
+func New{{t.GoName}}Connector(parent page.ControlI) *{{t.GoName}} {
+    c := new({{= t.GoName }})
+    c.ParentControl = parent
+    return c
+}
+
+}}

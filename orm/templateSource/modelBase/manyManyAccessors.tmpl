@@ -42,8 +42,7 @@ func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.AssociatedObjectName}} 
 
 {{
 
-// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectName}} objects if loaded. If not, will attempt to load
-// the related objects and return what it finds.
+// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectName}} objects if loaded. If not loaded, will return nil.
 func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.AssociatedObjectName}} {
 	if o.{{oName}} == nil {
 		return nil
