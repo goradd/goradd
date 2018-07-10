@@ -30,8 +30,8 @@ func RegisterControlWrapper(name string, w WrapperI) {
 	wrapperRegistry[name] = t
 }
 
-// NewRegisteredWrapper returns a newly allocated named wrapper.
-func NewRegisteredWrapper(name string) WrapperI {
+// NewWrapper returns a newly allocated wrapper from the wrapper registry.
+func NewWrapper(name string) WrapperI {
 	if w, ok := wrapperRegistry[name]; ok {
 		var i interface{}
 		i = reflect.New(w)

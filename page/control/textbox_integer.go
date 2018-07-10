@@ -9,6 +9,8 @@ import (
 
 type IntegerTextbox struct {
 	Textbox
+	minValue *int
+	maxValue *int
 }
 
 func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
@@ -27,6 +29,8 @@ func (i *IntegerTextbox) Init(self control_base.TextboxI, parent page.ControlI, 
 // be presented if the value is not valid.
 func (i *IntegerTextbox) SetMinValue(minValue int, invalidMessage string) {
 	i.ValidateWith(MinIntValidator{minValue, invalidMessage})
+	i.minValue = new(int)
+	*i.minValue = minValue
 }
 
 // SetMaxValue creates a validator that makes sure the value of the text box is at most the
@@ -34,13 +38,50 @@ func (i *IntegerTextbox) SetMinValue(minValue int, invalidMessage string) {
 // be presented if the value is not valid.
 func (i *IntegerTextbox) SetMaxValue(maxValue int, invalidMessage string) {
 	i.ValidateWith(MaxIntValidator{maxValue, invalidMessage})
+	i.maxValue = new(int)
+	*i.maxValue = maxValue
 }
 
+func (i *IntegerTextbox) SetValue(v interface{}) *IntegerTextbox {
+	i.Textbox.SetValue(v)
+	newValue := i.Int()
+	if i.minValue != nil && *i.minValue > newValue {
+		panic("Setting IntegerTextbox to a value less than minimum value.")
+	}
+	if i.maxValue != nil && *i.maxValue < newValue {
+		panic("Setting IntegerTextbox to a value greater than the maximum value.")
+	}
+	return i
+}
+
+func (i *IntegerTextbox) SetInt(v int) *IntegerTextbox {
+	i.Textbox.SetValue(v)
+	if i.minValue != nil && *i.minValue > v {
+		panic("Setting IntegerTextbox to a value less than minimum value.")
+	}
+	if i.maxValue != nil && *i.maxValue < v {
+		panic("Setting IntegerTextbox to a value greater than the maximum value.")
+	}
+	return i
+}
+
+
 func (i *IntegerTextbox) Value() interface{} {
+	return i.Int()
+}
+
+func (i *IntegerTextbox) Int() int {
 	t := i.Textbox.Text()
 	v, _ := strconv.Atoi(t)
 	return v
 }
+
+func (i *IntegerTextbox) Int64() int64 {
+	t := i.Textbox.Text()
+	i64, _ := strconv.ParseInt(t, 10, 0)
+	return i64
+}
+
 
 type IntValidator struct {
 	Message string

@@ -99,10 +99,12 @@ func (b *{{t.LcGoName}}Builder) LoadI(ctx context.Context) ({{t.LcGoName}}Slice 
 // Get is a convenience method to return only the first item found in a query. It is equivalent to adding
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
+// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
 func (b *{{t.LcGoName}}Builder) Get(ctx context.Context) *{{t.GoName}} {
 	results := b.Limit(1,0).Load(ctx)
 	if results != nil && len(results) > 0 {
-		return results[0]
+	    obj := results[0]
+		return obj
 	} else {
 		return nil
 	}
@@ -142,7 +144,7 @@ func (b *{{t.LcGoName}}Builder)  OrderBy(nodes... query.NodeI) *{{t.LcGoName}}Bu
 	return b
 }
 
-// Limit willl return a subset of the data, limited to the offset and number of rows specified
+// Limit will return a subset of the data, limited to the offset and number of rows specified
 func (b *{{t.LcGoName}}Builder)  Limit(maxRowCount int, offset int) *{{t.LcGoName}}Builder {
 	b.base.Limit(maxRowCount, offset)
 	return b

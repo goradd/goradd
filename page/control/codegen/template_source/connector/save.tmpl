@@ -1,0 +1,29 @@
+// save.tmpl
+{{
+
+// Update will update the related model.{{= t.GoName}} object with data from the controls.
+func (c *{{= privateName }}Base) Update() {
+{{for _,col := range t.Columns }}
+
+{{g
+    var sUpdate string
+    desc, ok := columnDescriptions[col.GoName]
+    if ok && desc.generator != nil {
+        sUpdate = desc.generator.GeneratePut(desc.controlName, t.GoName, col)
+    }
+}}
+{{if sUpdate != ""}}
+    if c.{{desc.controlName}} != nil {
+        {{= sUpdate }}
+    }
+{{if}}
+{{for}}
+}
+
+// Save takes the data from the controls and saves it in the database.
+func (c *{{= privateName }}Base) Save(ctx context.Context) {
+    c.Update()
+    c.{{= t.GoName}}.Save(ctx)
+}
+
+}}

@@ -122,7 +122,7 @@ func (t *Textbox) Text() string {
 }
 
 func (t *Textbox) SetValue(v interface{}) page.ControlI {
-	s := fmt.Sprintf("%T", v)
+	s := fmt.Sprintf("%v", v)
 	t.this().SetText(s)
 	return t.this()
 }

@@ -97,6 +97,7 @@ func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.
 	// import.tmpl
 
 	buf.WriteString(`import (
+    "github.com/spekary/goradd/page"
 	"goradd/gen/`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
@@ -136,6 +137,7 @@ type `)
 
 	buf.WriteString(`Base struct {
     ParentControl page.ControlI
+    EditMode bool
     `)
 
 	buf.WriteString(t.GoName)
@@ -185,6 +187,195 @@ type `)
 	buf.WriteString(`)
     c.ParentControl = parent
     return c
+}
+
+`)
+
+	// newControl.tmpl
+
+	buf.WriteString(`
+`)
+	for _, col := range t.Columns {
+		desc, ok := columnDescriptions[col.GoName]
+		if ok && desc.generator != nil {
+			buf.WriteString(`func (c *`)
+
+			buf.WriteString(fmt.Sprintf("%v", t.GoName))
+
+			buf.WriteString(`) New`)
+
+			buf.WriteString(desc.controlName)
+
+			buf.WriteString(`(id string) *`)
+
+			buf.WriteString(desc.namespace)
+
+			buf.WriteString(`.`)
+
+			buf.WriteString(desc.typ)
+
+			buf.WriteString(` {
+    var ctrl *`)
+
+			buf.WriteString(desc.namespace)
+
+			buf.WriteString(`.`)
+
+			buf.WriteString(desc.typ)
+
+			buf.WriteString(`
+`)
+
+			buf.WriteString(desc.generator.GenerateCreate(desc.namespace, col))
+
+			buf.WriteString(`
+    c.`)
+
+			buf.WriteString(fmt.Sprintf("%v", desc.controlName))
+
+			buf.WriteString(` = ctrl
+    return ctrl
+}
+`)
+		}
+	}
+
+	buf.WriteString(`
+`)
+
+	// load.tmpl
+
+	buf.WriteString(`
+// Load will associate the controls with data from the given model.`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` object and load the controls with data.
+// Generally call this after creating the controls. Otherwise, call Refresh if you Load before creating the controls.
+// If you pass a nil object, it will prepare the controls for creating a new record in the database.
+func (c *`)
+
+	buf.WriteString(privateName)
+
+	buf.WriteString(`Base) Load(modelObj *model.`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`) {
+    if modelObj == nil {
+        c.`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` = model.New`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`()
+        c.EditMode = false
+    } else {
+        c.`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` = modelObj
+        c.EditMode = true
+    }
+    c.Refresh()
+}
+
+
+// Refresh loads the controls with the cached model.`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` object. To load the data fresh from the database,
+// call Load instead.
+func (c *`)
+
+	buf.WriteString(privateName)
+
+	buf.WriteString(`Base) Refresh() {
+`)
+	for _, col := range t.Columns {
+		buf.WriteString(`
+`)
+		var sLoad string
+		desc, ok := columnDescriptions[col.GoName]
+		if ok && desc.generator != nil {
+			sLoad = desc.generator.GenerateGet(desc.controlName, t.GoName, col)
+		}
+		if sLoad != "" {
+			buf.WriteString(`    if c.`)
+
+			buf.WriteString(fmt.Sprintf("%v", desc.controlName))
+
+			buf.WriteString(` != nil {
+        `)
+
+			buf.WriteString(sLoad)
+
+			buf.WriteString(`
+    }
+`)
+		}
+	}
+
+	buf.WriteString(`}
+`)
+
+	// save.tmpl
+
+	buf.WriteString(`
+// Update will update the related model.`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(` object with data from the controls.
+func (c *`)
+
+	buf.WriteString(privateName)
+
+	buf.WriteString(`Base) Update() {
+`)
+	for _, col := range t.Columns {
+		buf.WriteString(`
+`)
+		var sUpdate string
+		desc, ok := columnDescriptions[col.GoName]
+		if ok && desc.generator != nil {
+			sUpdate = desc.generator.GeneratePut(desc.controlName, t.GoName, col)
+		}
+		if sUpdate != "" {
+			buf.WriteString(`    if c.`)
+
+			buf.WriteString(fmt.Sprintf("%v", desc.controlName))
+
+			buf.WriteString(` != nil {
+        `)
+
+			buf.WriteString(sUpdate)
+
+			buf.WriteString(`
+    }
+`)
+		}
+	}
+
+	buf.WriteString(`}
+
+// Save takes the data from the controls and saves it in the database.
+func (c *`)
+
+	buf.WriteString(privateName)
+
+	buf.WriteString(`Base) Save(ctx context.Context) {
+    c.Update()
+    c.`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`.Save(ctx)
 }
 
 `)

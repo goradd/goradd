@@ -43,18 +43,18 @@ func (d Textbox) SupportsColumn(col *db.ColumnDescription) bool {
 	return false
 }
 
-func (d Textbox) GenerateCreate(col *db.ColumnDescription) (s string) {
+func (d Textbox) GenerateCreate(namespace string, col *db.ColumnDescription) (s string) {
 	s = fmt.Sprintf(
-		`	ctrl = NewTextbox(parent, id)
+`	ctrl = %s.NewTextbox(c.ParentControl, id)
 	ctrl.SetLabel("%s")
-`, col.GoName)
+`, namespace, col.GoName)
 	if col.MaxCharLength > 0 {
-		s += fmt.Sprintf(`	ctrl.SetMaxLength(%s)	
+		s += fmt.Sprintf(`	ctrl.SetMaxLength(%d)	
 `, col.MaxCharLength)
 	}
 
 	if codegen.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(control.NewNamedWrapper("%s"))
+		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
 `, codegen.DefaultWrapper)
 	}
 	if col.IsPk {
@@ -68,12 +68,12 @@ func (d Textbox) GenerateCreate(col *db.ColumnDescription) (s string) {
 	return
 }
 
-func (d Textbox) GenerateLoad(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d Textbox) GenerateGet(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
 	s = fmt.Sprintf(`c.%s.SetText(c.%s.%s())`, ctrlName, objName, col.GoName)
 	return
 }
 
-func (d Textbox) GenerateSave(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d Textbox) GeneratePut(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
 	s = fmt.Sprintf(`c.%s.Set%s(c.%s.Text())`, objName,  col.GoName, ctrlName)
 	return
 }

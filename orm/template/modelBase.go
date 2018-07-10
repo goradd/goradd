@@ -1358,8 +1358,7 @@ func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", ref.AssociatedObjectName))
 
-			buf.WriteString(` objects if loaded. If not, will attempt to load
-// the related objects and return what it finds.
+			buf.WriteString(` objects if loaded. If not loaded, will return nil.
 func (o *`)
 
 			buf.WriteString(fmt.Sprintf("%v", privateName))
@@ -1848,6 +1847,7 @@ func (b *`)
 // Get is a convenience method to return only the first item found in a query. It is equivalent to adding
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
+// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
 func (b *`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))
@@ -1859,7 +1859,8 @@ func (b *`)
 	buf.WriteString(` {
 	results := b.Limit(1,0).Load(ctx)
 	if results != nil && len(results) > 0 {
-		return results[0]
+	    obj := results[0]
+		return obj
 	} else {
 		return nil
 	}
@@ -1931,7 +1932,7 @@ func (b *`)
 	return b
 }
 
-// Limit willl return a subset of the data, limited to the offset and number of rows specified
+// Limit will return a subset of the data, limited to the offset and number of rows specified
 func (b *`)
 
 	buf.WriteString(fmt.Sprintf("%v", t.LcGoName))

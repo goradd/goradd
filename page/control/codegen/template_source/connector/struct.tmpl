@@ -5,6 +5,7 @@
 
 type {{= privateName }}Base struct {
     ParentControl page.ControlI
+    EditMode bool
     {{= t.GoName }} *model.{{= t.GoName }}
 {{for _,col := range t.Columns }}
 {{g

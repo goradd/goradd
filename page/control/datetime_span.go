@@ -17,9 +17,10 @@ type DateTimeSpan struct {
 	value datetime.DateTime
 }
 
-func NewDateTimeSpan(parent page.ControlI, id string) {
+func NewDateTimeSpan(parent page.ControlI, id string) *DateTimeSpan {
 	s := new(DateTimeSpan)
 	s.Init(s, parent, id)
+	return s
 }
 
 func (s *DateTimeSpan) Init(self page.ControlI, parent page.ControlI, id string) {
@@ -49,6 +50,12 @@ func (s *DateTimeSpan) SetDateTime(d datetime.DateTime){
 
 func (s *DateTimeSpan) Value() datetime.DateTime {
 	return s.value
+}
+
+func (s *DateTimeSpan) SetFormat(format string)  *DateTimeSpan {
+	s.format = format
+	s.Refresh()
+	return s
 }
 
 

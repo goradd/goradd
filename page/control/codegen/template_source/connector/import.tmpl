@@ -1,6 +1,7 @@
 // import.tmpl
 {{
 import (
+    "github.com/spekary/goradd/page"
 	"goradd/gen/{{t.DbKey}}/model"
     {{g importToNamespace.Range(func(key string,val string)bool { }}
     {{val}} "{{key}}"

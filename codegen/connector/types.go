@@ -10,6 +10,7 @@ type ControlType int
 
 const (
 	ControlTypeInteger ControlType = iota + 1
+	ControlTypeString
 )
 
 type ConnectorParam struct {
@@ -26,9 +27,9 @@ type Generator interface {
 	Import() string
 	SupportsColumn(col *db.ColumnDescription) bool
 	ConnectorParams() *types.OrderedMap
-	GenerateCreate(col *db.ColumnDescription) string
-	GenerateLoad(ctrlName string, objName string, col *db.ColumnDescription) string
-	GenerateSave(ctrlName string, objName string, col *db.ColumnDescription) string
+	GenerateCreate(namespace string, col *db.ColumnDescription) string
+	GenerateGet(ctrlName string, objName string, col *db.ColumnDescription) string
+	GeneratePut(ctrlName string, objName string, col *db.ColumnDescription) string
 }
 
 type ControlRegistryKey struct {

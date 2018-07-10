@@ -5,16 +5,16 @@
 {{g
     desc, ok := columnDescriptions[col.GoName]
 }}
-{{if ok}}
+{{if ok && desc.generator != nil}}
 func (c *{{t.GoName}}) New{{= desc.controlName }}(id string) *{{= desc.namespace}}.{{= desc.typ}} {
     var ctrl *{{= desc.namespace}}.{{= desc.typ}}
-{{= desc.generator.GenerateCreate(col) }}
+{{= desc.generator.GenerateCreate(desc.namespace, col) }}
     c.{{desc.controlName}} = ctrl
     return ctrl
 }
 {{if}}
 {{for}}
-}
+
 }}
 
 
