@@ -2,12 +2,14 @@
 {{
 import (
     "github.com/spekary/goradd/page"
-	"goradd/gen/{{t.DbKey}}/model"
-    {{g importToNamespace.Range(func(key string,val string)bool { }}
-    {{val}} "{{key}}"
-    {{g return true
-     })
-     }}
+	"goradd/gen/{{dd.DbKey}}/model"
+{{for _,imp := range t.Imports}}
+{{if imp.Alias == ""}}
+    "{{= imp.Path }}"
+{{else}}
+    {{= imp.Alias }} "{{= imp.Path }}"
+{{if}}
+{{for}}
 
 )
 }}

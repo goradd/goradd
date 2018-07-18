@@ -7,13 +7,12 @@ func (c *{{= privateName }}Base) Update() {
 
 {{g
     var sUpdate string
-    desc, ok := columnDescriptions[col.GoName]
-    if ok && desc.generator != nil {
-        sUpdate = desc.generator.GeneratePut(desc.controlName, t.GoName, col)
+    if col.Generator != nil {
+        sUpdate = col.Generator.GeneratePut(col.ControlName, t.GoName, col.ColumnDescription)
     }
 }}
 {{if sUpdate != ""}}
-    if c.{{desc.controlName}} != nil {
+    if c.{{col.ControlName}} != nil {
         {{= sUpdate }}
     }
 {{if}}

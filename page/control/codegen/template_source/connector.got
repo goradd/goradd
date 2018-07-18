@@ -22,11 +22,11 @@ type ConnectorTemplate struct {
 	generator.Template
 }
 
-func (n *ConnectorTemplate) FileName(key string, t *db.TableDescription) string {
+func (n *ConnectorTemplate) FileName(key string, t generator.TableType) string {
 	return n.TargetDir + "/" + key + "/connector/" + t.GoName + ".go"
 }
 
-func (n *ConnectorTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
+func (n *ConnectorTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
 	{{: "connector/connector.tmpl" }}
 }
 

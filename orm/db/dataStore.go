@@ -29,6 +29,7 @@ type DatabaseI interface {
 }
 
 var datastore struct {
+	// TODO: Change these to OrderedMaps. Since they are used for code generation, we want them to be iterated consistently
 	databases  map[string]DatabaseI
 	tables     map[string]map[string]*TableDescription
 	typeTables map[string]map[string]*TypeTableDescription

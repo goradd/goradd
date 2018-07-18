@@ -1,15 +1,12 @@
-// newControl.tmpl
+// createControl.tmpl
 {{
 
 {{for _,col := range t.Columns }}
-{{g
-    desc, ok := columnDescriptions[col.GoName]
-}}
-{{if ok && desc.generator != nil}}
-func (c *{{t.GoName}}) New{{= desc.controlName }}(id string) *{{= desc.namespace}}.{{= desc.typ}} {
-    var ctrl *{{= desc.namespace}}.{{= desc.typ}}
-{{= desc.generator.GenerateCreate(desc.namespace, col) }}
-    c.{{desc.controlName}} = ctrl
+{{if col.Generator != nil}}
+func (c *{{t.GoName}}) New{{= col.ControlName }}(id string) *{{= col.Import.Namespace}}.{{= col.ControlType}} {
+    var ctrl *{{= col.Import.Namespace}}.{{= col.ControlType}}
+{{= col.Generator.GenerateCreate(col.Import.Namespace, col.ColumnDescription) }}
+    c.{{= col.ControlName}} = ctrl
     return ctrl
 }
 {{if}}

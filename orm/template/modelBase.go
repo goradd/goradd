@@ -29,11 +29,11 @@ type ModelBaseTemplate struct {
 	generator.Template
 }
 
-func (n *ModelBaseTemplate) FileName(key string, t *db.TableDescription) string {
+func (n *ModelBaseTemplate) FileName(key string, t generator.TableType) string {
 	return n.TargetDir + "/" + key + "/model/" + t.GoName + ".base.go"
 }
 
-func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
+func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
 	var privateName = util.LcFirst(t.GoName)
 	//modelBase.tmpl
 
@@ -256,7 +256,7 @@ const  (
 
 		buf.WriteString(`	`)
 
-		buf.WriteString(col.DefaultConstantName(t))
+		buf.WriteString(col.DefaultConstantName(t.GoName))
 
 		buf.WriteString(` = `)
 

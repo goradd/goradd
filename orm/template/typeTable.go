@@ -29,11 +29,11 @@ type TypeTableTemplate struct {
 	generator.Template
 }
 
-func (n *TypeTableTemplate) FileName(key string, tt *db.TypeTableDescription) string {
+func (n *TypeTableTemplate) FileName(key string, tt generator.TypeTableType) string {
 	return n.TargetDir + "/" + key + "/model/" + tt.GoName + ".base.go"
 }
 
-func (n *TypeTableTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.DatabaseDescription, tt *db.TypeTableDescription, buf *bytes.Buffer) {
+func (n *TypeTableTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.DatabaseDescription, tt generator.TypeTableType, buf *bytes.Buffer) {
 	//var privateName = util.LcFirst(tt.GoName)
 
 	propName := tt.GoName

@@ -1,0 +1,38 @@
+package template
+
+import (
+	"github.com/spekary/goradd/codegen/generator"
+	"goradd/config"
+	"bytes"
+	"github.com/spekary/goradd/orm/db"
+    "strings"
+    "github.com/knq/snaker"
+
+)
+
+func init() {
+	t := EditPanelTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.LocalDir + "/gen",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type EditPanelTemplate struct {
+	generator.Template
+}
+
+func (n *EditPanelTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/panel/" + t.GoName + "Edit.go"
+}
+
+func (n *EditPanelTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+	{{: "panel/edit.tmpl" }}
+}
+
+func (n *EditPanelTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+

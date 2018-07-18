@@ -8,11 +8,8 @@ type {{= privateName }}Base struct {
     EditMode bool
     {{= t.GoName }} *model.{{= t.GoName }}
 {{for _,col := range t.Columns }}
-{{g
-    desc, ok := columnDescriptions[col.GoName]
-}}
-{{if ok}}
-    {{= desc.controlName }} *{{= desc.namespace}}.{{= desc.typ}}
+{{if col.Generator != nil}}
+    {{= col.ControlName }} *{{= col.Import.Namespace}}.{{= col.ControlType}}
 {{if}}
 {{for}}
 }

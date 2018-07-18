@@ -8,6 +8,7 @@ import (
 	"errors"
 )
 
+// TODO: Turn everything in this package to a code generated collection
 
 type Getter interface {
 	Get(key string) (val interface{})

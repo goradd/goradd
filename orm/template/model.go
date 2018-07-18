@@ -25,11 +25,11 @@ type ModelTemplate struct {
 	generator.Template
 }
 
-func (n *ModelTemplate) FileName(key string, t *db.TableDescription) string {
+func (n *ModelTemplate) FileName(key string, t generator.TableType) string {
 	return n.TargetDir + "/" + key + "/model/" + t.GoName + ".go"
 }
 
-func (n *ModelTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
+func (n *ModelTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
 	// The master template for the model classes
 
 	buf.WriteString(`package model

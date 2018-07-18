@@ -1,0 +1,26 @@
+// struct.tmpl
+{{
+
+type {{= panelName }} struct {
+	control.Panel
+	Connector *connector.{{= t.GoName }}
+	{{= t.GoName }} *model.{{= t.GoName }}
+{{for _,col := range t.Columns }}
+{{if col.Generator != nil}}
+    {{= col.ControlName }} *{{= col.Import.Namespace }}.{{= col.ControlType }}
+{{if}}
+{{for}}
+}
+
+func New{{= panelName }}(parent page.ControlI, id string) *{{= panelName}} {
+    p := new({{= panelName }})
+	p.Init(p, parent, id)
+	return p
+}
+
+func (p *{{= panelName }}) Init(self page.ControlI, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
+	p.Connector = connector.New{{= t.GoName }}Connector(p)
+}
+
+}}

@@ -6,14 +6,10 @@ import (
 	"bytes"
 	"fmt"
 	"goradd/config"
-	"strconv"
-	"strings"
 
-	"github.com/spekary/goradd/codegen/connector"
 	"github.com/spekary/goradd/codegen/generator"
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/util"
-	"github.com/spekary/goradd/util/types"
 )
 
 func init() {
@@ -30,61 +26,14 @@ type ConnectorBaseTemplate struct {
 	generator.Template
 }
 
-func (n *ConnectorBaseTemplate) FileName(key string, t *db.TableDescription) string {
+func (n *ConnectorBaseTemplate) FileName(key string, t generator.TableType) string {
 	return n.TargetDir + "/" + key + "/connector/" + t.GoName + "Base.go"
 }
 
-func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
+func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
 	//connector.tmpl
 
 	// The master template for the connector classes
-
-	// As a preliminary step, we need to vet all the controls associated with columns to manage their namespaces.
-	var importToNamespace = types.NewOrderedStringMap()
-	var namespaceToImport = types.NewOrderedStringMap()
-
-	type columnDescription struct {
-		namespace   string
-		typ         string
-		newFunc     string
-		controlName string
-		desc        *db.ColumnDescription
-		generator   connector.Generator
-	}
-
-	var columnDescriptions = make(map[string]columnDescription)
-
-	for _, col := range t.Columns {
-		typ, newFunc, importName := codegen.ControlType(col)
-
-		var namespace string
-		if typ != "" {
-			if !importToNamespace.Has(importName) {
-				items := strings.Split(importName, `/`)
-				lastName := items[len(items)-1]
-				var suffix = ""
-				var count = 1
-				for namespaceToImport.Has(lastName + suffix) {
-					count++
-					suffix = strconv.Itoa(count)
-				}
-				namespace = lastName + suffix
-				importToNamespace.Set(importName, namespace)
-				namespaceToImport.Set(namespace, importName)
-			} else {
-				namespace = importToNamespace.Get(importName)
-			}
-			ci := columnDescription{
-				namespace,
-				typ,
-				newFunc,
-				col.GoName + typ,
-				col,
-				connector.GetGenerator(importName, typ),
-			}
-			columnDescriptions[col.GoName] = ci
-		}
-	}
 
 	var privateName = util.LcFirst(t.GoName)
 
@@ -100,23 +49,32 @@ func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.
     "github.com/spekary/goradd/page"
 	"goradd/gen/`)
 
-	buf.WriteString(fmt.Sprintf("%v", t.DbKey))
+	buf.WriteString(fmt.Sprintf("%v", dd.DbKey))
 
 	buf.WriteString(`/model"
-    `)
-	importToNamespace.Range(func(key string, val string) bool {
-		buf.WriteString(`    `)
+`)
+	for _, imp := range t.Imports {
+		if imp.Alias == "" {
+			buf.WriteString(`    "`)
 
-		buf.WriteString(fmt.Sprintf("%v", val))
+			buf.WriteString(imp.Path)
 
-		buf.WriteString(` "`)
+			buf.WriteString(`"
+`)
+		} else {
 
-		buf.WriteString(fmt.Sprintf("%v", key))
+			buf.WriteString(`    `)
 
-		buf.WriteString(`"
-    `)
-		return true
-	})
+			buf.WriteString(imp.Alias)
+
+			buf.WriteString(` "`)
+
+			buf.WriteString(imp.Path)
+
+			buf.WriteString(`"
+`)
+		}
+	}
 
 	buf.WriteString(`
 )
@@ -149,19 +107,18 @@ type `)
 	buf.WriteString(`
 `)
 	for _, col := range t.Columns {
-		desc, ok := columnDescriptions[col.GoName]
-		if ok {
+		if col.Generator != nil {
 			buf.WriteString(`    `)
 
-			buf.WriteString(desc.controlName)
+			buf.WriteString(col.ControlName)
 
 			buf.WriteString(` *`)
 
-			buf.WriteString(desc.namespace)
+			buf.WriteString(col.Import.Namespace)
 
 			buf.WriteString(`.`)
 
-			buf.WriteString(desc.typ)
+			buf.WriteString(col.ControlType)
 
 			buf.WriteString(`
 `)
@@ -191,47 +148,46 @@ type `)
 
 `)
 
-	// newControl.tmpl
+	// createControl.tmpl
 
 	buf.WriteString(`
 `)
 	for _, col := range t.Columns {
-		desc, ok := columnDescriptions[col.GoName]
-		if ok && desc.generator != nil {
+		if col.Generator != nil {
 			buf.WriteString(`func (c *`)
 
 			buf.WriteString(fmt.Sprintf("%v", t.GoName))
 
 			buf.WriteString(`) New`)
 
-			buf.WriteString(desc.controlName)
+			buf.WriteString(col.ControlName)
 
 			buf.WriteString(`(id string) *`)
 
-			buf.WriteString(desc.namespace)
+			buf.WriteString(col.Import.Namespace)
 
 			buf.WriteString(`.`)
 
-			buf.WriteString(desc.typ)
+			buf.WriteString(col.ControlType)
 
 			buf.WriteString(` {
     var ctrl *`)
 
-			buf.WriteString(desc.namespace)
+			buf.WriteString(col.Import.Namespace)
 
 			buf.WriteString(`.`)
 
-			buf.WriteString(desc.typ)
+			buf.WriteString(col.ControlType)
 
 			buf.WriteString(`
 `)
 
-			buf.WriteString(desc.generator.GenerateCreate(desc.namespace, col))
+			buf.WriteString(col.Generator.GenerateCreate(col.Import.Namespace, col.ColumnDescription))
 
 			buf.WriteString(`
     c.`)
 
-			buf.WriteString(fmt.Sprintf("%v", desc.controlName))
+			buf.WriteString(col.ControlName)
 
 			buf.WriteString(` = ctrl
     return ctrl
@@ -289,8 +245,7 @@ func (c *`)
 
 	buf.WriteString(t.GoName)
 
-	buf.WriteString(` object. To load the data fresh from the database,
-// call Load instead.
+	buf.WriteString(` object.
 func (c *`)
 
 	buf.WriteString(privateName)
@@ -301,14 +256,13 @@ func (c *`)
 		buf.WriteString(`
 `)
 		var sLoad string
-		desc, ok := columnDescriptions[col.GoName]
-		if ok && desc.generator != nil {
-			sLoad = desc.generator.GenerateGet(desc.controlName, t.GoName, col)
+		if col.Generator != nil {
+			sLoad = col.Generator.GenerateGet(col.ControlName, t.GoName, col.ColumnDescription)
 		}
 		if sLoad != "" {
 			buf.WriteString(`    if c.`)
 
-			buf.WriteString(fmt.Sprintf("%v", desc.controlName))
+			buf.WriteString(fmt.Sprintf("%v", col.ControlName))
 
 			buf.WriteString(` != nil {
         `)
@@ -342,14 +296,13 @@ func (c *`)
 		buf.WriteString(`
 `)
 		var sUpdate string
-		desc, ok := columnDescriptions[col.GoName]
-		if ok && desc.generator != nil {
-			sUpdate = desc.generator.GeneratePut(desc.controlName, t.GoName, col)
+		if col.Generator != nil {
+			sUpdate = col.Generator.GeneratePut(col.ControlName, t.GoName, col.ColumnDescription)
 		}
 		if sUpdate != "" {
 			buf.WriteString(`    if c.`)
 
-			buf.WriteString(fmt.Sprintf("%v", desc.controlName))
+			buf.WriteString(fmt.Sprintf("%v", col.ControlName))
 
 			buf.WriteString(` != nil {
         `)
@@ -378,6 +331,23 @@ func (c *`)
 	buf.WriteString(`.Save(ctx)
 }
 
+`)
+
+	// delete.tmpl
+
+	buf.WriteString(`
+// Delete will deleted the related object.
+func (c *`)
+
+	buf.WriteString(privateName)
+
+	buf.WriteString(`Base) Delete(ctx context.Context) {
+    c.`)
+
+	buf.WriteString(t.GoName)
+
+	buf.WriteString(`.Delete(ctx)
+}
 `)
 
 }

@@ -2,14 +2,12 @@ package template
 
 import (
 	"github.com/spekary/goradd/codegen/generator"
-	"github.com/spekary/goradd/page"
 	"goradd/config"
 	"bytes"
 	"github.com/spekary/goradd/orm/db"
-    "github.com/spekary/goradd/util/types"
-	"strconv"
 	"fmt"
-	"strings"
+	"github.com/spekary/goradd/util"
+
 )
 
 func init() {
@@ -26,11 +24,11 @@ type ConnectorBaseTemplate struct {
 	generator.Template
 }
 
-func (n *ConnectorBaseTemplate) FileName(key string, t *db.TableDescription) string {
+func (n *ConnectorBaseTemplate) FileName(key string, t generator.TableType) string {
 	return n.TargetDir + "/" + key + "/connector/" + t.GoName + "Base.go"
 }
 
-func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
+func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
 	{{: "connector/connectorBase.tmpl" }}
 }
 

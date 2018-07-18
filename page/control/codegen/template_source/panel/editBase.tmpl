@@ -1,0 +1,78 @@
+//editPanelBase.tmpl
+
+// The master template for the EditPanelBase classes
+
+var panelName = t.GoName + "EditBase"
+
+{{
+
+package panel
+
+import(
+	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/page/control"
+	"context"
+	"goradd/gen/{{dd.DbKey}}/connector"
+	"goradd/gen/{{dd.DbKey}}/model"
+{{for _,imp := range t.Imports}}
+{{if imp.Alias == ""}}
+    "{{= imp.Path }}"
+{{else}}
+    {{= imp.Alias }} "{{= imp.Path }}"
+{{if}}
+{{for}}
+
+)
+
+const (
+)
+
+{{: struct.tmpl }}
+
+{{: createControls.tmpl }}
+
+func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
+	if pk == "" {
+		p.{{= t.GoName }} = model.New{{= t.GoName }}()
+	} else {
+		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk)
+
+		if p.{{= t.GoName }} == nil {
+			d := control.Alert(p.ParentForm(), p.ParentForm().T("The record was not found. Perhaps it was deleted by someone else?"), "OK")
+			d.SetTitle(p.ParentForm().T("Error"))
+			return page.NewFrameworkError(page.FrameworkErrRecordNotFound)
+		}
+	}
+
+	p.Connector.Load(p.{{= t.GoName }})
+
+	return nil
+}
+
+func (p *{{= panelName }}) Validate(ctx context.Context) bool {
+	isValid := p.Panel.Validate(ctx)
+    return isValid
+}
+
+// Refresh loads the controls with data from the cached {{= panelName }} object.
+func (p *{{= panelName }}) Refresh() {
+    p.Connector.Refresh()
+}
+
+// Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
+func (p *{{= panelName }}) Reload(ctx context.Context) {
+    p.Load(ctx, p.{{= t.GoName }}.PrimaryKey())
+}
+
+// Save writes out the data that is currently in the controls
+func (p *{{= panelName }}) Save(ctx context.Context) {
+    p.Connector.Save(ctx)
+}
+
+// Delete deletes the object currently being edited
+func (p *{{= panelName }}) Delete(ctx context.Context) {
+    p.Connector.Delete(ctx)
+}
+
+
+}}

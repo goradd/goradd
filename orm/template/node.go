@@ -28,11 +28,11 @@ type NodeTemplate struct {
 	generator.Template
 }
 
-func (n *NodeTemplate) FileName(key string, t *db.TableDescription) string {
+func (n *NodeTemplate) FileName(key string, t generator.TableType) string {
 	return n.TargetDir + "/" + key + "/model/node/" + t.GoName + ".go"
 }
 
-func (n *NodeTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer) {
+func (n *NodeTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
 	// The master template for the nodes for a particular column.
 
 	// ToDo: Move the node creation routines to the database driver, so that nodes can generate their own database code.

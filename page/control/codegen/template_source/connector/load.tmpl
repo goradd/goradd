@@ -16,24 +16,23 @@ func (c *{{= privateName }}Base) Load(modelObj *model.{{= t.GoName}}) {
 }
 
 
-// Refresh loads the controls with the cached model.{{= t.GoName}} object. To load the data fresh from the database,
-// call Load instead.
+// Refresh loads the controls with the cached model.{{= t.GoName}} object.
 func (c *{{= privateName }}Base) Refresh() {
 {{for _,col := range t.Columns }}
 
 {{g
     var sLoad string
-    desc, ok := columnDescriptions[col.GoName]
-    if ok && desc.generator != nil {
-        sLoad = desc.generator.GenerateGet(desc.controlName, t.GoName, col)
+    if col.Generator != nil {
+        sLoad = col.Generator.GenerateGet(col.ControlName, t.GoName, col.ColumnDescription)
     }
 }}
 {{if sLoad != ""}}
-    if c.{{desc.controlName}} != nil {
+    if c.{{col.ControlName}} != nil {
         {{= sLoad }}
     }
 {{if}}
 {{for}}
 }
 }}
+
 

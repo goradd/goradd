@@ -21,9 +21,9 @@ type FormI interface {
 	ControlI	// Note we are not inheriting from localpage here, to avoid import loop and because its not really necessary
 	// Create the objects on the form without necessarily initializing them
 	Init(ctx context.Context, self FormI, path string, id string)
-	CreateControls(ctx context.Context)
-	LoadControls(ctx context.Context)
-	AddRelatedFiles()
+	// CreateControls(ctx context.Context)
+	// LoadControls(ctx context.Context)
+	// AddRelatedFiles()
 	AddHeadTags()
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
 	Response() *Response
@@ -64,17 +64,17 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 	f.Control.id = id
 	f.Control.Init(self, nil, id)
 	f.Tag = "form"
-	self.AddRelatedFiles()
-	self.CreateControls(ctx)
-	self.LoadControls(ctx)
+	//self.AddRelatedFiles()
+	//self.CreateControls(ctx)
+	//self.LoadControls(ctx)
 }
 
 func (f *FormBase) this() FormI {
 	return f.Self.(FormI)
 }
 
-// AddRelatedFiles adds related javascript and style sheet files. Override This to get these files from a different location,
-// or to load additional files. The order is important, so if you override This, be sure these files get loaded
+// AddRelatedFiles adds related javascript and style sheet files. This is the default to get the minimum goradd installation working.,
+// The order is important, so if you override this, be sure these files get loaded
 // before other files.
 func (f *FormBase) AddRelatedFiles() {
 	f.AddJavaScriptFile("http://code.jquery.com/jquery-3.3.1.min.js", false, html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="))

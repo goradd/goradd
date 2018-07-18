@@ -144,7 +144,7 @@ func (ctx *Context) FormValue(key string) (value string, ok bool) {
 	return
 }
 
-// Returns the corresponding form value as a string slice. Use This when you are expecting more than one value in the
+// Returns the corresponding form value as a string slice. Use this when you are expecting more than one value in the
 // given form variable
 func (ctx *Context) FormValues(key string) (value []string, ok bool) {
 	if ctx.formVars == nil {

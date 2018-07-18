@@ -1,0 +1,18 @@
+// createControls.tmpl
+{{
+
+func (p *{{= panelName }}) CreateControls() {
+{{for _,col := range t.Columns }}
+{{if col.Generator != nil}}
+{{g
+    controlName := col.ControlName
+    controlID := snaker.CamelToSnake(controlName)
+}}
+    p.{{= controlName }} = p.Connector.New{{= controlName }}("{{= controlID }}")
+{{if}}
+{{for}}
+}
+
+}}
+
+

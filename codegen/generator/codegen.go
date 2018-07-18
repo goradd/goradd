@@ -9,65 +9,81 @@ import (
 	"path/filepath"
 	"strings"
 	"os/exec"
-	"github.com/spekary/goradd/page"
-	codegenConfig "goradd/config/codegen"
+	"github.com/spekary/goradd/codegen/connector"
 )
 
 type Codegen struct {
-	Tables     map[string]map[string]*db.TableDescription
-	TypeTables map[string]map[string]*db.TypeTableDescription
+	Tables     map[string]map[string]TableType	// TODO: Change to ordered maps for consistent codegeneration
+	TypeTables map[string]map[string]TypeTableType
 }
 
 type TableType struct {
-	db.TableDescription
-	Columns    []*ColumnType
-	PrimaryKey *ColumnType
+	*db.TableDescription
+	Columns    []ColumnType
+	Imports    []*ImportType
 }
 
 type TypeTableType struct {
-	db.TypeTableDescription
-
-	// Filled in by analyezer
-	Constants map[uint]string
+	*db.TypeTableDescription
 }
 
-type ForeignKeyType struct {
-	//DbKey string	// We don't support cross database foreign keys yet. Someday maybe.
-	TableName string
-	ColName   string
+// ImportType represents an import path required for a control. This is analyzed per-table.
+type ImportType struct {
+	Path string
+	Namespace string
+	Alias string // blank if not needing an alias
+}
+
+type ControlDescription struct {
+	Import *ImportType
+	ControlType string
+	NewControlFunc string
+	ControlName string
+	Generator connector.Generator
 }
 
 type ColumnType struct {
-	db.ColumnDescription
-
-	// Filled in by analyzer
-	ForeignKey *ForeignKeyType
+	*db.ColumnDescription
+	// Related control information
+	ControlDescription
 }
 
 func Generate() {
 
 	codegen := Codegen{
-		Tables:     map[string]map[string]*db.TableDescription{},
-		TypeTables: map[string]map[string]*db.TypeTableDescription{},
+		Tables:     make(map[string]map[string]TableType),
+		TypeTables: make(map[string]map[string]TypeTableType),
 	}
 
 	// Map object names to tables, making sure there are no duplicates
-	for key, database := range db.GetDatabases() {
-		codegen.Tables[key] = make(map[string]*db.TableDescription)
-		codegen.TypeTables[key] = make(map[string]*db.TypeTableDescription)
+	for _, database := range db.GetDatabases() {
+		key := database.Describe().DbKey
+		codegen.Tables[key] = make(map[string]TableType)
+		codegen.TypeTables[key] = make(map[string]TypeTableType)
 		dd := database.Describe()
+
+		// Create wrappers for the tables with extra analysis required for form generation
 		for _, typeTable := range dd.TypeTables {
 			if _, ok := codegen.TypeTables[key][typeTable.GoName]; ok {
 				log.Println("Error: type table " + typeTable.GoName + " is defined more than once.")
 			} else {
-				codegen.TypeTables[key][typeTable.GoName] = typeTable
+				tt := TypeTableType{
+					typeTable,
+				}
+				codegen.TypeTables[key][typeTable.GoName] = tt
 			}
 		}
 		for _, table := range dd.Tables {
 			if _, ok := codegen.Tables[key][table.GoName]; ok {
 				log.Println("Error:  table " + table.GoName + " is defined more than once.")
 			} else if !table.IsAssociation {
-				codegen.Tables[key][table.GoName] = table
+				columns, imports := ColumnsWithControls(table)
+				t := TableType {
+					table,
+					columns,
+					imports,
+				}
+				codegen.Tables[key][table.GoName] = t
 			}
 		}
 	}
@@ -75,9 +91,10 @@ func Generate() {
 	buf := new(bytes.Buffer)
 
 	// Generate the templates.
-	for key, database := range db.GetDatabases() {
+	for _, database := range db.GetDatabases() {
 		dd := database.Describe()
-		for _, typeTable := range dd.TypeTables {
+		key := dd.DbKey
+		for _, typeTable := range codegen.TypeTables[key] {
 			for _, typeTableTemplate := range TypeTableTemplates {
 				buf.Reset()
 				// the template generator function in each template, by convention
@@ -99,7 +116,7 @@ func Generate() {
 			}
 		}
 
-		for _, table := range dd.Tables {
+		for _, table := range codegen.Tables[key] {
 			if table.IsAssociation || table.Skip {
 				continue
 			}
@@ -143,10 +160,3 @@ func execCommand(command string) {
 	}
 }
 
-type NewControlF func(i page.ControlI, id string) page.ControlI
-
-
-// ControlType returns the default type of control for a column. Control types can be customized in other ways.
-func (c *Codegen) ControlType(col *db.ColumnDescription) (typ string, createFunc string, importName string) {
-	return codegenConfig.DefaultControlType(col)
-}

@@ -649,8 +649,8 @@ func (cd *ColumnDescription) DefaultValueAsValue() string {
 	}
 }
 
-func (cd *ColumnDescription) DefaultConstantName(td *TableDescription) string {
-	title := td.GoName + cd.GoName + "Default"
+func (cd *ColumnDescription) DefaultConstantName(tableName string) string {
+	title := tableName + cd.GoName + "Default"
 	return title
 }
 

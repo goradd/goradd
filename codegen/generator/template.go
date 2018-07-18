@@ -12,14 +12,14 @@ type Template struct {
 }
 
 type TableTemplateI interface {
-	GenerateTable(codegen Codegen, dd *db.DatabaseDescription, t *db.TableDescription, buf *bytes.Buffer)
-	FileName(key string, t *db.TableDescription) string
+	GenerateTable(codegen Codegen, dd *db.DatabaseDescription, t TableType, buf *bytes.Buffer)
+	FileName(key string, t TableType) string
 	Overwrite() bool
 }
 
 type TypeTableTemplateI interface {
-	GenerateTypeTable(codegen Codegen, dd *db.DatabaseDescription, t *db.TypeTableDescription, buf *bytes.Buffer)
-	FileName(key string, t *db.TypeTableDescription) string
+	GenerateTypeTable(codegen Codegen, dd *db.DatabaseDescription, t TypeTableType, buf *bytes.Buffer)
+	FileName(key string, t TypeTableType) string
 	Overwrite() bool
 }
 

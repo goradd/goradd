@@ -26,11 +26,11 @@ type TypeTableNodeTemplate struct {
 	generator.Template
 }
 
-func (n *TypeTableNodeTemplate) FileName(key string, tt *db.TypeTableDescription) string {
+func (n *TypeTableNodeTemplate) FileName(key string, tt generator.TypeTableType) string {
 	return n.TargetDir + "/" + key + "/model/node/" + tt.GoName + ".go"
 }
 
-func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.DatabaseDescription, tt *db.TypeTableDescription, buf *bytes.Buffer) {
+func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.DatabaseDescription, tt generator.TypeTableType, buf *bytes.Buffer) {
 	var nodeName = util.LcFirst(tt.GoName) + "Node"
 
 	buf.WriteString(`package node

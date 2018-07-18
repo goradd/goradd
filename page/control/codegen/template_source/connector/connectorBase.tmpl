@@ -2,53 +2,6 @@
 
 // The master template for the connector classes
 
-// As a preliminary step, we need to vet all the controls associated with columns to manage their namespaces.
-var importToNamespace = types.NewOrderedStringMap()
-var namespaceToImport = types.NewOrderedStringMap()
-
-type columnDescription struct {
-    namespace string
-    typ string
-    newFunc string
-    controlName string
-    desc *db.ColumnDescription
-    generator connector.Generator
-}
-
-var columnDescriptions = make (map[string]columnDescription)
-
-for _,col := range t.Columns {
-    typ, newFunc, importName := codegen.ControlType(col)
-
-    var namespace string
-    if typ != "" {
-        if !importToNamespace.Has(importName) {
-            items := strings.Split(importName, `/`)
-            lastName := items[len(items)-1]
-            var suffix = ""
-            var count = 1
-            for namespaceToImport.Has(lastName + suffix) {
-                count ++
-                suffix = strconv.Itoa(count)
-            }
-            namespace = lastName + suffix
-            importToNamespace.Set(importName, namespace)
-            namespaceToImport.Set(namespace, importName)
-        } else {
-            namespace = importToNamespace.Get(importName)
-        }
-        ci := columnDescription {
-            namespace,
-            typ,
-            newFunc,
-            col.GoName + typ,
-            col,
-            connector.GetGenerator(importName, typ),
-        }
-        columnDescriptions[col.GoName] = ci
-    }
-}
-
 var privateName = util.LcFirst(t.GoName)
 
 {{
@@ -63,4 +16,5 @@ package connector
 {{: createControl.tmpl }}
 {{: load.tmpl }}
 {{: save.tmpl }}
+{{: delete.tmpl }}
 
