@@ -36,6 +36,7 @@ func (n *ModelTemplate) GenerateTable(codegen generator.Codegen, dd *db.Database
 
 import (
     "fmt"
+    "context"
 )
 
 type `)
@@ -59,7 +60,7 @@ func New`)
 
 	buf.WriteString(t.GoName)
 
-	buf.WriteString(`() *`)
+	buf.WriteString(`(ctx context.Context) *`)
 
 	buf.WriteString(t.GoName)
 
@@ -69,7 +70,7 @@ func New`)
 	buf.WriteString(t.GoName)
 
 	buf.WriteString(`{}
-	o.Initialize()
+	o.Initialize(ctx)
 	return &o
 }
 
@@ -82,7 +83,7 @@ func (o *`)
 
 	buf.WriteString(t.GoName)
 
-	buf.WriteString(`) Initialize() {
+	buf.WriteString(`) Initialize(ctx context.Context) {
 	o.`)
 
 	buf.WriteString(util.LcFirst(t.GoName))

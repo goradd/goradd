@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"goradd/config"
+	"strings"
 
 	"github.com/knq/snaker"
 	"github.com/spekary/goradd/codegen/generator"
@@ -183,6 +184,7 @@ func (p *`)
 		if col.Generator != nil {
 			controlName := col.ControlName
 			controlID := snaker.CamelToSnake(controlName)
+			controlID = strings.Replace(controlID, "_", "-", -1)
 
 			buf.WriteString(`    p.`)
 
@@ -212,6 +214,7 @@ func (p *`)
 
 	buf.WriteString(`
 
+
 func (p *`)
 
 	buf.WriteString(panelName)
@@ -226,7 +229,7 @@ func (p *`)
 
 	buf.WriteString(t.GoName)
 
-	buf.WriteString(`()
+	buf.WriteString(`(ctx)
 	} else {
 		p.`)
 
@@ -249,7 +252,7 @@ func (p *`)
 		}
 	}
 
-	p.Connector.Load(p.`)
+	p.Connector.Load(ctx, p.`)
 
 	buf.WriteString(t.GoName)
 

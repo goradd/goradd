@@ -7,13 +7,16 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/goradd/page/control/data"
 )
 
 // SelectList is a typical dropdown list with a single selection. Items are selected by id number, and the SelectList
 // completely controls the ids in the list. Create the list by calling AddItem or AddItems to add ListItemI objects.
+// Or, use the embedded DataManager to load items.
 type SelectList struct {
 	page.Control
 	ItemList
+	data.DataManager
 	selectedId string
 }
 
@@ -135,6 +138,9 @@ func (l *SelectList) DrawingAttributes() *html.Attributes {
 }
 
 func (l *SelectList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+	if l.HasDataProvider() {
+		l.GetData(ctx, l)
+	}
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil
@@ -161,4 +167,10 @@ func (l *SelectList) getItemsHtml(items []ListItemI) string {
 		}
 	}
 	return h
+}
+
+// SetData overrides the default data setter to add objects to the item list. The result is kept in memory currently.
+func (l *SelectList) SetData(data ...interface{}) {
+	l.ItemList.Clear()
+	l.AddListItems(data...)
 }

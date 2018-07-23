@@ -31,9 +31,10 @@ const (
 
 {{: createControls.tmpl }}
 
+
 func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
 	if pk == "" {
-		p.{{= t.GoName }} = model.New{{= t.GoName }}()
+		p.{{= t.GoName }} = model.New{{= t.GoName }}(ctx)
 	} else {
 		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk)
 
@@ -44,7 +45,7 @@ func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
 		}
 	}
 
-	p.Connector.Load(p.{{= t.GoName }})
+	p.Connector.Load(ctx, p.{{= t.GoName }})
 
 	return nil
 }

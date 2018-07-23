@@ -7,6 +7,7 @@ func (p *{{= panelName }}) CreateControls() {
 {{g
     controlName := col.ControlName
     controlID := snaker.CamelToSnake(controlName)
+    controlID = strings.Replace(controlID, "_", "-", -1)
 }}
     p.{{= controlName }} = p.Connector.New{{= controlName }}("{{= controlID }}")
 {{if}}

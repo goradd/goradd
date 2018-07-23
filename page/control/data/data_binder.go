@@ -14,7 +14,7 @@ type DataManagerI interface {
 	page.ControlI
 	SetDataProvider(b DataBinder)
 	// SetData should be passed a slice of data items
-	SetData([]interface{})
+	SetData(...interface{})
 	GetData(ctx context.Context, owner DataManagerI)
 	ResetData()
 }
@@ -33,7 +33,7 @@ func (d *DataManager) HasDataProvider() bool {
 	return d.dataProvider != nil
 }
 
-func (d *DataManager) SetData(data []interface{}) {
+func (d *DataManager) SetData(data ...interface{}) {
 	d.Data = data
 }
 

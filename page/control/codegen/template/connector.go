@@ -14,7 +14,7 @@ import (
 func init() {
 	t := ConnectorTemplate{
 		generator.Template{
-			Overwrite: true,
+			Overwrite: false,
 			TargetDir: config.LocalDir + "/gen",
 		},
 	}

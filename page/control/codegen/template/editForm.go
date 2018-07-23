@@ -198,18 +198,21 @@ func (f *`)
 
 	buf.WriteString(`EditPanel(f, "edit-panel")
 	f.SaveButton = NewButton(f, "save-button")
+    f.SaveButton.SetText(f.T("Save"))
 	f.SaveButton.OnClick(action.Ajax(f.ID(), `)
 
 	buf.WriteString(t.GoName)
 
 	buf.WriteString(`SaveAction))
 	f.CancelButton = NewButton(f, "cancel-button")
+	f.CancelButton.SetText(f.T("Cancel"))
 	f.CancelButton.OnClick(action.Ajax(f.ID(), `)
 
 	buf.WriteString(t.GoName)
 
 	buf.WriteString(`CancelAction))
 	f.DeleteButton = NewButton(f, "delete-button")
+	f.DeleteButton.SetText(f.T("Delete"))
 	f.DeleteButton.OnClick(
 	    action.Confirm(fmt.Sprintf(f.T("Are you sure you want to delete this %s"), `)
 

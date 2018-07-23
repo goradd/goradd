@@ -46,6 +46,7 @@ func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.
 	// import.tmpl
 
 	buf.WriteString(`import (
+    "context"
     "github.com/spekary/goradd/page"
 	"goradd/gen/`)
 
@@ -213,28 +214,19 @@ func (c *`)
 
 	buf.WriteString(privateName)
 
-	buf.WriteString(`Base) Load(modelObj *model.`)
+	buf.WriteString(`Base) Load(ctx context.Context, modelObj *model.`)
 
 	buf.WriteString(t.GoName)
 
 	buf.WriteString(`) {
-    if modelObj == nil {
-        c.`)
-
-	buf.WriteString(t.GoName)
-
-	buf.WriteString(` = model.New`)
-
-	buf.WriteString(t.GoName)
-
-	buf.WriteString(`()
-        c.EditMode = false
-    } else {
-        c.`)
+    c.`)
 
 	buf.WriteString(t.GoName)
 
 	buf.WriteString(` = modelObj
+    if modelObj.PrimaryKey() == "" {
+        c.EditMode = false
+    } else {
         c.EditMode = true
     }
     c.Refresh()

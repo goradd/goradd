@@ -32,6 +32,14 @@ type ItemLister interface {
 	Label() string
 }
 
+// ItemIDer is an interface to a listable object that matches orm objects
+type ItemIDer interface {
+	ID() interface{}
+	String() string
+}
+
+
+
 type Labeler interface {
 	Label() string
 }
@@ -82,6 +90,24 @@ func NewItemFromLabeler(i Labeler) *ListItem {
 	l.ItemList = NewItemList(l)
 	return l
 }
+
+// NewItemFromStringer creates a new item from any object that has just a String method.
+func NewItemFromStringer(i fmt.Stringer) *ListItem {
+	l := &ListItem{attributes: html.NewAttributes(), label: i.String()}
+	l.ItemList = NewItemList(l)
+	return l
+}
+
+
+// NewItemFromItemIDer creates a new item from any object that has an ID and String method.
+// Note that the ID() of the ItemIDer will become the value of the select item, and the String()
+// will become the label
+func NewItemFromItemIDer(i ItemIDer) *ListItem {
+	l := &ListItem{attributes: html.NewAttributes(), value: i.ID(), label: i.String()}
+	l.ItemList = NewItemList(l)
+	return l
+}
+
 
 func (i *ListItem) SetValue(v interface{}) *ListItem {
 	i.value = v

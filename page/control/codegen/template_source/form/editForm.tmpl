@@ -63,10 +63,13 @@ func (f *{{= formName }}) AddReleatedFiles() {
 func (f *{{= formName }}) CreateControls(ctx context.Context) {
 	f.EditPanel = panel.New{{= t.GoName }}EditPanel(f, "edit-panel")
 	f.SaveButton = NewButton(f, "save-button")
+    f.SaveButton.SetText(f.T("Save"))
 	f.SaveButton.OnClick(action.Ajax(f.ID(), {{= t.GoName }}SaveAction))
 	f.CancelButton = NewButton(f, "cancel-button")
+	f.CancelButton.SetText(f.T("Cancel"))
 	f.CancelButton.OnClick(action.Ajax(f.ID(), {{= t.GoName }}CancelAction))
 	f.DeleteButton = NewButton(f, "delete-button")
+	f.DeleteButton.SetText(f.T("Delete"))
 	f.DeleteButton.OnClick(
 	    action.Confirm(fmt.Sprintf(f.T("Are you sure you want to delete this %s"), {{= t.GoName }}Singular)),
 	    action.Ajax(f.ID(), {{= t.GoName }}DeleteAction),

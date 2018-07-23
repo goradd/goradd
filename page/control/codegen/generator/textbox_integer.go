@@ -36,8 +36,9 @@ func (d IntegerTextbox) Import() string {
 }
 
 func (d IntegerTextbox) SupportsColumn(col *db.ColumnDescription) bool {
-	if col.GoType == query.ColTypeInteger ||
-		col.GoType == query.ColTypeInteger64 {
+	if (col.GoType == query.ColTypeInteger ||
+		col.GoType == query.ColTypeInteger64) &&
+		!col.IsReference() {
 		return true
 	}
 	return false

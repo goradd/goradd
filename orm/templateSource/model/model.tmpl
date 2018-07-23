@@ -5,6 +5,7 @@ package model
 
 import (
     "fmt"
+    "context"
 )
 
 type {{= t.GoName }} struct {
@@ -12,14 +13,14 @@ type {{= t.GoName }} struct {
 }
 
 // Create a new {{= t.GoName }} object and initialize to default values.
-func New{{= t.GoName }}() *{{= t.GoName }} {
+func New{{= t.GoName }}(ctx context.Context) *{{= t.GoName }} {
 	o := {{= t.GoName }}{}
-	o.Initialize()
+	o.Initialize(ctx)
 	return &o
 }
 
 // Initialize or re-initialize a {{= t.GoName }} database object to default values.
-func (o *{{= t.GoName }}) Initialize() {
+func (o *{{= t.GoName }}) Initialize(ctx context.Context) {
 	o.{{= util.LcFirst(t.GoName) }}Base.Initialize()
     // Add your own initializations here
 }

@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"fmt"
 )
 
 // IDer is an object that can embed a list
@@ -19,8 +20,7 @@ type ItemListI interface {
 	AddItem(label string, value ...interface{}) ListItemI
 	AddItemAt(index int, label string, value ...interface{})
 	AddListItemAt(index int, item ListItemI)
-	AddListItems(items ...ListItemI)
-	AddItemListers(items ...ItemLister)
+	AddListItems(items ...interface{})
 	GetItemAt(index int) ListItemI
 	ListItems() []ListItemI
 	Clear()
@@ -71,26 +71,37 @@ func (l *ItemList) AddListItemAt(index int, item ListItemI) {
 	l.reindex(index)
 }
 
-// AddListItems adds one or more ListItemI objects to the end of the list. It will change the ids of the list items
-// and will point to the list items given.
-func (l *ItemList) AddListItems(items ...ListItemI) {
+// AddListItems adds one or more objects to the end of the list. items should be a list of ListItemI,
+// ItemLister, ItemIDer, Labeler or Stringer types
+func (l *ItemList) AddListItems(items ...interface{}) {
 	var start int
 
 	if l.items != nil {
 		start = len(l.items)
 	}
-	l.items = append(l.items, items...)
-	l.reindex(start)
-}
 
-// AddItemListers adds to the list a slice of objects that contain a Value and Label method.
-func (l *ItemList) AddItemListers(items ...ItemLister) {
-	var iList []ListItemI
-	for _, i := range items {
-		item := NewItemFromItemLister(i)
-		iList = append(iList, item)
+	for _,itemI := range items {
+		switch v := itemI.(type) {
+		case ListItemI:
+			l.items = append(l.items, v)
+		case ItemLister:
+			item := NewItemFromItemLister(v)
+			l.items = append(l.items, item)
+		case ItemIDer:
+			item := NewItemFromItemIDer(v)
+			l.items = append(l.items, item)
+		case Labeler:
+			item := NewItemFromLabeler(v)
+			l.items = append(l.items, item)
+		case fmt.Stringer:
+			item := NewItemFromStringer(v)
+			l.items = append(l.items, item)
+		default:
+			panic("Unknown object type")
+		}
+
 	}
-	l.AddListItems(iList...)
+	l.reindex(start)
 }
 
 // reindex is internal and should get called whenever an item gets added to the list out of order or an id changes.

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"os/exec"
 	"github.com/spekary/goradd/codegen/connector"
+	"github.com/spekary/goradd/util"
 )
 
 type Codegen struct {
@@ -137,7 +138,13 @@ func Generate() {
 				if err != nil {
 					log.Print(err)
 				}
-				execCommand("goimports -w " + fileName)
+
+				// run imports on all generated go files
+				if util.EndsWith(fileName, ".go") {
+					execCommand("goimports -w " + fileName)
+				}
+
+				// TODO: If a build.go file exists in the directory we are writing to, run it
 			}
 		}
 
