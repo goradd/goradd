@@ -1,5 +1,6 @@
 
 propName := tt.GoName
+propPlural := tt.GoPlural
 propLetter := strings.ToLower(propName[0:1])
 keyField := tt.FieldNames[0]
 
@@ -11,6 +12,7 @@ package model
 import (
 	//"log"
 	//"github.com/spekary/goradd/orm/query"
+	"strconv"
 )
 
 const (
@@ -29,18 +31,34 @@ for _,value := range tt.Values {
 {{
 )
 
+const {{= propName }}MaxValue = {{i len(tt.Values) }}
+
 type {{= propName }} uint
 
+// String returns the name value of the type and satisfies the fmt.Stringer interface
 func ({{= propLetter }} {{= propName }}) String() string {
 	switch {{= propLetter }} {
 	case 0: return ""
-{{g for _,value := range tt.Values { }}
+{{for _,value := range tt.Values }}
 	case {{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }}: return {{= generator.AsConstant(value[tt.FieldNames[1]], query.ColTypeString) }}
-{{g } }}
+{{for}}
 	default: panic("Index out of range")
 	}
 	return "" // prevent warning
 }
+
+// ID returns a string representation of the id and satisfies the IDer interface
+func ({{= propLetter }} {{= propName }}) ID() string {
+	return strconv.Itoa(int({{= propLetter }}))
+}
+
+func {{= propPlural }}() (values []{{= propName }}) {
+{{for _,value := range tt.Values }}
+    values = append(values, {{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }})
+{{for}}
+    return
+}
+
 
 }}
 

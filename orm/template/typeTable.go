@@ -37,6 +37,7 @@ func (n *TypeTableTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.
 	//var privateName = util.LcFirst(tt.GoName)
 
 	propName := tt.GoName
+	propPlural := tt.GoPlural
 	propLetter := strings.ToLower(propName[0:1])
 	keyField := tt.FieldNames[0]
 
@@ -47,6 +48,7 @@ func (n *TypeTableTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.
 import (
 	//"log"
 	//"github.com/spekary/goradd/orm/query"
+	"strconv"
 )
 
 const (
@@ -80,12 +82,23 @@ const (
 
 	buf.WriteString(`)
 
+const `)
+
+	buf.WriteString(propName)
+
+	buf.WriteString(`MaxValue = `)
+
+	buf.WriteString(strconv.Itoa(len(tt.Values)))
+
+	buf.WriteString(`
+
 type `)
 
 	buf.WriteString(propName)
 
 	buf.WriteString(` uint
 
+// String returns the name value of the type and satisfies the fmt.Stringer interface
 func (`)
 
 	buf.WriteString(propLetter)
@@ -114,10 +127,51 @@ func (`)
 		buf.WriteString(`
 `)
 	}
+
 	buf.WriteString(`	default: panic("Index out of range")
 	}
 	return "" // prevent warning
 }
+
+// ID returns a string representation of the id and satisfies the IDer interface
+func (`)
+
+	buf.WriteString(propLetter)
+
+	buf.WriteString(` `)
+
+	buf.WriteString(propName)
+
+	buf.WriteString(`) ID() string {
+	return strconv.Itoa(int(`)
+
+	buf.WriteString(propLetter)
+
+	buf.WriteString(`))
+}
+
+func `)
+
+	buf.WriteString(propPlural)
+
+	buf.WriteString(`() (values []`)
+
+	buf.WriteString(propName)
+
+	buf.WriteString(`) {
+`)
+	for _, value := range tt.Values {
+		buf.WriteString(`    values = append(values, `)
+
+		buf.WriteString(generator.AsConstant(value[keyField], query.ColTypeUnsigned))
+
+		buf.WriteString(`)
+`)
+	}
+
+	buf.WriteString(`    return
+}
+
 
 `)
 

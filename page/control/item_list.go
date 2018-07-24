@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"fmt"
+	"reflect"
 )
 
 // IDer is an object that can embed a list
@@ -48,7 +49,7 @@ func NewItemList(owner IDer) ItemList {
 // AddItem adds the given item to the end of the list. The value is optional, but should only be one or zero values.
 func (l *ItemList) AddItem(label string, value ...interface{}) ListItemI {
 	i := NewListItem(label, value...)
-	l.AddListItems(i)
+	l.AddListItemAt(-1, i)
 	return i
 }
 
@@ -65,6 +66,9 @@ func (l *ItemList) AddItemAt(index int, label string, value ...interface{}) {
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
 // hierarchical list, so use sparingly.
 func (l *ItemList) AddListItemAt(index int, item ListItemI) {
+	if index < 0 || index > len(l.items) {
+		index = len(l.items)
+	}
 	l.items = append(l.items, nil)
 	copy(l.items[index+1:], l.items[index:])
 	l.items[index] = item
@@ -72,36 +76,50 @@ func (l *ItemList) AddListItemAt(index int, item ListItemI) {
 }
 
 // AddListItems adds one or more objects to the end of the list. items should be a list of ListItemI,
-// ItemLister, ItemIDer, Labeler or Stringer types
+// ItemLister, ItemIDer, Labeler or Stringer types. This function can accept one or more lists of items, or
+// single items
 func (l *ItemList) AddListItems(items ...interface{}) {
 	var start int
 
-	if l.items != nil {
-		start = len(l.items)
+	if items == nil {
+		return
 	}
-
-	for _,itemI := range items {
-		switch v := itemI.(type) {
-		case ListItemI:
-			l.items = append(l.items, v)
-		case ItemLister:
-			item := NewItemFromItemLister(v)
-			l.items = append(l.items, item)
-		case ItemIDer:
-			item := NewItemFromItemIDer(v)
-			l.items = append(l.items, item)
-		case Labeler:
-			item := NewItemFromLabeler(v)
-			l.items = append(l.items, item)
-		case fmt.Stringer:
-			item := NewItemFromStringer(v)
-			l.items = append(l.items, item)
-		default:
-			panic("Unknown object type")
+	for _,item := range items {
+		kind := reflect.TypeOf(item).Kind()
+		if kind == reflect.Array || kind == reflect.Slice {
+			listValue := reflect.ValueOf(item)
+			for i := 0;  i < listValue.Len(); i++ {
+				itemI := listValue.Index(i).Interface()
+				l.addListItem(itemI)
+			}
+		} else {
+			l.addListItem(item)
 		}
-
 	}
 	l.reindex(start)
+}
+
+
+// Private function to add an interface item to the end of the list. Will need to be reindexed eventually.
+func (l *ItemList) addListItem(item interface{}) {
+	switch v := item.(type) {
+	case ListItemI:
+		l.items = append(l.items, v)
+	case ItemLister:
+		item := NewItemFromItemLister(v)
+		l.items = append(l.items, item)
+	case ItemIDer:
+		item := NewItemFromItemIDer(v)
+		l.items = append(l.items, item)
+	case Labeler:
+		item := NewItemFromLabeler(v)
+		l.items = append(l.items, item)
+	case fmt.Stringer:
+		item := NewItemFromStringer(v)
+		l.items = append(l.items, item)
+	default:
+		panic("Unknown object type")
+	}
 }
 
 // reindex is internal and should get called whenever an item gets added to the list out of order or an id changes.
