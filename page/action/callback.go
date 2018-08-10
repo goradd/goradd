@@ -2,7 +2,7 @@ package action
 
 import (
 	"fmt"
-	"github.com/spekary/goradd"
+	"github.com/spekary/goradd/goradd"
 	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/util/types"
 	"strings"

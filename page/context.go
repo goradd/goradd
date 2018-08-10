@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/spekary/goradd"
+	"github.com/spekary/goradd/goradd"
 	"github.com/spekary/goradd/orm/db"
 	"goradd-project/config"
 	"math"

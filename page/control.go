@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/spekary/goradd"
+	"github.com/spekary/goradd/goradd"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/log"
 	action2 "github.com/spekary/goradd/page/action"
