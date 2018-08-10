@@ -3,8 +3,8 @@ package control
 import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"goradd/app"
-	localPage "goradd/override/page"
+	"goradd-project/app"
+	localPage "goradd-project/override/page"
 )
 
 const (

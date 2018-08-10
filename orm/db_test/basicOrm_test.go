@@ -4,11 +4,11 @@ import (
 	"context"
 	"github.com/go-sql-driver/mysql"
 	"github.com/spekary/goradd/orm/db"
-	"goradd/gen/goradd/model"
+	"goradd-project/gen/goradd/model"
 	"testing"
 
 	. "github.com/spekary/goradd/orm/op"
-	"goradd/gen/goradd/model/node"
+	"goradd-project/gen/goradd/model/node"
 	"strconv"
 
 	"github.com/spekary/goradd/datetime"

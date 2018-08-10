@@ -2,7 +2,7 @@ package control
 
 import (
 	"github.com/spekary/goradd/page"
-	"goradd/config"
+	"goradd-project/config"
 	"bytes"
 	"context"
 	"github.com/spekary/goradd/datetime"

@@ -1,0 +1,28 @@
+//editTpl.tmpl
+
+// The master template for the Edit panel template file. We are generating a got template.
+
+var panelName = t.GoName + "Edit"
+
+{{
+package panel
+
+import (
+	"bytes"
+	"context"
+)
+
+// DrawTemplate draws the contents of the {{panelName}} panel.
+func (p *{{panelName}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+{{begin open}}{{ {{open}}
+{{for _,col := range t.Columns }}
+{{if col.Generator != nil}}
+{{begin draw}}{{draw p.{{draw}}{{= col.ControlName }}{{begin draw2}} }}{{draw2}}
+{{if}}
+{{for}}
+{{begin close}}}} {{close}}
+
+    return
+}
+}}
+

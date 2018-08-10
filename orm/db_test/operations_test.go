@@ -6,8 +6,8 @@ import (
 	. "github.com/spekary/goradd/orm/op"
 	"github.com/spekary/goradd/orm/query"
 	"github.com/stretchr/testify/assert"
-	"goradd/gen/goradd/model"
-	"goradd/gen/goradd/model/node"
+	"goradd-project/gen/goradd/model"
+	"goradd-project/gen/goradd/model/node"
 	"testing"
 )
 

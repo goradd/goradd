@@ -4,7 +4,7 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
-	localPage "goradd/override/page"
+	localPage "goradd-project/override/page"
 	"github.com/spekary/goradd/page/event"
 )
 

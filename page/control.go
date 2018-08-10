@@ -12,7 +12,7 @@ import (
 	action2 "github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/session"
 	"github.com/spekary/goradd/util/types"
-	"goradd/config"
+	"goradd-project/config"
 	gohtml "html"
 	"reflect"
 )

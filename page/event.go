@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spekary/goradd/html"
 	action2 "github.com/spekary/goradd/page/action"
-	"goradd/config"
+	"goradd-project/config"
 )
 
 type EventI interface {

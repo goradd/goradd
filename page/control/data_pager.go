@@ -9,9 +9,9 @@ import (
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/util"
 	"github.com/spekary/goradd/util/types"
-	localPage "goradd/override/page"
+	localPage "goradd-project/override/page"
 	"strconv"
-	"goradd/config"
+	"goradd-project/config"
 	"github.com/spekary/goradd/page/control/data"
 )
 

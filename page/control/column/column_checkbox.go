@@ -6,7 +6,7 @@ import (
 	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
-	"goradd/override/control_base"
+	"goradd-project/override/control_base"
 	"github.com/spekary/goradd/page/event"
 	"strings"
 	"github.com/spekary/goradd/page/control/control_base/table"

@@ -5,9 +5,9 @@ import (
 	"github.com/spekary/goradd/html"
 	"fmt"
 	"github.com/spekary/goradd/util/types"
-	"goradd/config"
+	"goradd-project/config"
 	"context"
-	"goradd/override/control_base"
+	"goradd-project/override/control_base"
 )
 
 // PrimaryKeyer is an interface that is often implemented by model objects.

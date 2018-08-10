@@ -2,7 +2,7 @@ package datetime
 
 import (
 	"context"
-	"goradd/i18n"
+	"goradd-project/i18n"
 	"time"
 )
 

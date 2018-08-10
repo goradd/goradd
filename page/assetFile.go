@@ -4,7 +4,7 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/util"
 	"github.com/spekary/goradd/util/types"
-	"goradd/config"
+	"goradd-project/config"
 	"log"
 	"net/http"
 	"os"

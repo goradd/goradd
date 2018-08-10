@@ -1,7 +1,7 @@
 package db
 
 import (
-	"goradd/gen/goradd/model/node"
+	"goradd-project/gen/goradd/model/node"
 	"testing"
 )
 

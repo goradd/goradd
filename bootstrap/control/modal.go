@@ -6,8 +6,8 @@ import (
 	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/html"
-	"goradd/config"
-	"goradd/app"
+	"goradd-project/config"
+	"goradd-project/app"
 	"context"
 	"fmt"
 )

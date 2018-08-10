@@ -2,9 +2,9 @@ package control
 
 import (
 	"github.com/spekary/goradd/page"
-	localPage "goradd/override/page"
+	localPage "goradd-project/override/page"
 	"context"
-	"goradd/config"
+	"goradd-project/config"
 	"encoding/base64"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/log"

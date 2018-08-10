@@ -1,0 +1,11 @@
+This directory is managed by goradd generally. While you run your program in your development environment, the program will
+copy files to this directory as you need them. Later, when you are ready to deploy, you will have all of your files in
+one place. You can choose to concatenate them or minimize them at that point to improve performance. If you
+concatenate them, be sure to register the master file in goradd and list the files it contains, so that goradd knows
+to load the master file instead of the contained files.
+
+If you want to add your own assets, put them in your project directory. They also will be copied to this directory
+when your development environment uses them.
+
+You can always place other files here too, that you just want to statically serve from your webpages. In particular,
+you should place your image files in the image directory.

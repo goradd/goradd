@@ -3,7 +3,7 @@ package control
 import (
 	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page"
-	localPage "goradd/override/page"
+	localPage "goradd-project/override/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/event"
 	"bytes"

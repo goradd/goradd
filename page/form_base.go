@@ -9,7 +9,7 @@ import (
 	"github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/util/types"
-	"goradd/config"
+	"goradd-project/config"
 	"path/filepath"
 	"strings"
 )

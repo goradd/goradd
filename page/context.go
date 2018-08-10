@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/spekary/goradd"
 	"github.com/spekary/goradd/orm/db"
-	"goradd/config"
+	"goradd-project/config"
 	"math"
 	"mime/multipart"
 	"net/http"

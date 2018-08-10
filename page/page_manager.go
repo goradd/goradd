@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/spekary/goradd/log"
-	"goradd/config"
+	"goradd-project/config"
 	"strings"
 )
 

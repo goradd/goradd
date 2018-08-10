@@ -4,7 +4,7 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	grctl "github.com/spekary/goradd/page/control"
-	"goradd/app"
+	"goradd-project/app"
 )
 
 type ButtonI interface {

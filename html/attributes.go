@@ -41,6 +41,13 @@ func NewAttributesFrom(i types.StringMapI) *Attributes {
 	return a
 }
 
+func (a *Attributes) Copy() *Attributes {
+	if a == nil {
+		return nil
+	}
+	return NewAttributesFrom(a)
+}
+
 // SetChanged sets the value of an attribute. Looks for special attributes like "class" and "style" to do some error checking
 // on them. Returns changed if something in the attribute structure changed, which is useful to determine whether to send
 // the changed control to the browser.

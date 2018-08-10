@@ -8,7 +8,7 @@ import (
 	"github.com/spekary/goradd/util/types"
 	"strconv"
 	"strings"
-	localPage "goradd/override/page"
+	localPage "goradd-project/override/page"
 )
 
 

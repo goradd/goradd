@@ -29,6 +29,10 @@ func NewOrderedStringMapFrom(i StringMapI) *OrderedStringMap {
 	return m
 }
 
+func (o *OrderedStringMap) Copy() *OrderedStringMap {
+	return NewOrderedStringMapFrom(o)
+}
+
 // SetChanged sets the value, but also appends the value to the end of the list for when you
 // iterate over the list. Returns whether something changed, and if an error occurred. If the key
 // was already in the map, the order will not change, but the value will be replaced. If you want the
@@ -245,10 +249,12 @@ func (o *OrderedStringMap) String() string {
 // Merge the given string map into the current one
 // Can be any kind of string map
 func (o *OrderedStringMap) Merge(i StringMapI) {
-	i.Range(func(k, v string) bool {
-		o.Set(k, v)
-		return true
-	})
+	if i != nil {
+		i.Range(func(k, v string) bool {
+			o.Set(k, v) // TODO: Avoid multiple lock and unlock operations here
+			return true
+		})
+	}
 }
 
 // Range will call the given function with every key and value in the order they were placed into the OrderedMap

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/spekary/goradd/util"
 	"github.com/spekary/goradd/util/types"
-	"goradd/config"
+	"goradd-project/config"
 )
 
 type PageCacheI interface {

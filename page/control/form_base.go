@@ -3,13 +3,13 @@ package control
 import (
 	"context"
 	"github.com/spekary/goradd/page"
-	"goradd/config"
+	"goradd-project/config"
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/page/action"
 	"strings"
 	"fmt"
-	"goradd/override/control_base"
+	"goradd-project/override/control_base"
 )
 
 const (

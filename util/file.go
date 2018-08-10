@@ -90,3 +90,11 @@ func FileCopyIfNewer(src, dst string) (err error) {
 
 	return FileCopy(src, dst)
 }
+
+// PathExists returns true if the given path exists in the OS. This does not necessarily mean that the path is
+// usable. It may be write or read protected. But at least you know its there.
+func PathExists(path string) bool {
+	_, err := os.Stat(path);
+
+	return err == nil || !os.IsNotExist(err)
+}

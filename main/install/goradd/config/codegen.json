@@ -1,0 +1,8 @@
+{
+  "db": [
+    {
+      "type": "mysql",
+      "params": "root:12345/goradd"
+    }
+  ]
+}

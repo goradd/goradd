@@ -3,7 +3,6 @@ package page
 import (
 	"bytes"
 	"context"
-	"reflect"
 	"github.com/spekary/goradd/html"
 )
 
@@ -21,21 +20,21 @@ const (
 type WrapperI interface {
 	Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer)
 	ModifyDrawingAttributes(ctrl ControlI, attributes *html.Attributes)
+	CopyI() WrapperI
 }
 
-var wrapperRegistry = map[string]reflect.Type{}
+var wrapperRegistry = map[string]WrapperI{}
 
 func RegisterControlWrapper(name string, w WrapperI) {
-	t := reflect.TypeOf(w)
-	wrapperRegistry[name] = t
+	wrapperRegistry[name] = w
 }
 
 // NewWrapper returns a newly allocated wrapper from the wrapper registry.
 func NewWrapper(name string) WrapperI {
 	if w, ok := wrapperRegistry[name]; ok {
-		var i interface{}
-		i = reflect.New(w)
-		return i.(WrapperI)
+		return w.CopyI()
+	} else {
+		panic ("Unkown wrapper " + name)
 	}
 	return nil
 }
@@ -45,6 +44,11 @@ type ErrorWrapperType struct {
 
 func NewErrorWrapper() ErrorWrapperType {
 	return ErrorWrapperType{}
+}
+
+// Copy copies itself and returns it. This is used when a new wrapper is created from a named type.
+func (w ErrorWrapperType) CopyI() WrapperI {
+	return w // Since we are not a pointer type, a copy was sent in
 }
 
 func (w ErrorWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
@@ -78,6 +82,17 @@ type LabelWrapperType struct {
 func NewLabelWrapper() LabelWrapperType {
 	return LabelWrapperType{}
 }
+
+func (w LabelWrapperType) Copy() LabelWrapperType {
+	w.labelAttributes = w.labelAttributes.Copy()
+	return w
+}
+
+func (w LabelWrapperType) CopyI() WrapperI {
+	w.Copy()
+	return w
+}
+
 
 func (w LabelWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
 	LabelTmpl(ctx, w, ctrl, html, buf)
@@ -126,6 +141,10 @@ type DivWrapperType struct {
 
 func NewDivWrapper() DivWrapperType {
 	return DivWrapperType{}
+}
+
+func (w DivWrapperType) CopyI() WrapperI {
+	return w
 }
 
 func (w DivWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {

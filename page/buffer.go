@@ -2,7 +2,7 @@ package page
 
 import (
 	"bytes"
-	"goradd/config"
+	"goradd-project/config"
 	"sync"
 )
 

@@ -3,7 +3,7 @@ package control
 import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"goradd/override/control_base"
+	"goradd-project/override/control_base"
 )
 
 type RadioButtonI interface {

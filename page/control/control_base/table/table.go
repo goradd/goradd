@@ -10,7 +10,7 @@ import (
 	html2 "golang.org/x/net/html"
 	"strconv"
 	"github.com/spekary/goradd/page/event"
-	localPage "goradd/override/page"
+	localPage "goradd-project/override/page"
 	"github.com/spekary/goradd/page/control/data"
 )
 

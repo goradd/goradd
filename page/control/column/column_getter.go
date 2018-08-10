@@ -2,7 +2,7 @@ package column
 
 import (
 	"context"
-	"goradd/override/control_base"
+	"goradd-project/override/control_base"
 	"github.com/spekary/goradd/page/control/control_base/table"
 )
 

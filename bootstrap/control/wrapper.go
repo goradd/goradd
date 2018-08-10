@@ -26,6 +26,18 @@ func NewDivWrapper() *DivWrapperType {
 	return &DivWrapperType{}
 }
 
+func (w *DivWrapperType) Copy()  *DivWrapperType {
+	wNew := &DivWrapperType{}
+	wNew.LabelWrapperType = w.LabelWrapperType.Copy()
+	wNew.innerDivAttributes = w.innerDivAttributes.Copy()
+	wNew.useTooltips = w.useTooltips
+	return wNew
+}
+
+func (w *DivWrapperType) CopyI() page.WrapperI {
+	return w.Copy()
+}
+
 func (w *DivWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
 	FormGroupTmpl(ctx, w, ctrl, html, buf)
 }
@@ -44,7 +56,7 @@ func (w *DivWrapperType) InnerDivAttributes() *html.Attributes {
 	return w.innerDivAttributes
 }
 
-func (w DivWrapperType) HasInnerDivAttributes() bool {
+func (w *DivWrapperType) HasInnerDivAttributes() bool {
 	if w.innerDivAttributes == nil || w.innerDivAttributes.Len() == 0 {
 		return false
 	}
@@ -61,7 +73,13 @@ type FormGroupWrapperType struct {
 }
 
 func NewFormGroupWrapper() *FormGroupWrapperType {
-	return &FormGroupWrapperType{}
+	return new(FormGroupWrapperType)
+}
+
+func (w *FormGroupWrapperType)CopyI() page.WrapperI {
+	wNew := new(FormGroupWrapperType)
+	wNew.DivWrapperType = *w.Copy()
+	return wNew
 }
 
 func (w *FormGroupWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
@@ -81,9 +99,15 @@ type FieldsetWrapperType struct {
 
 // https://getbootstrap.com/docs/4.1/components/forms/#horizontal-form
 func NewFieldsetWrapper() *FieldsetWrapperType {
-	return &FieldsetWrapperType{}
+	return new(FieldsetWrapperType)
 }
 
+func (w *FieldsetWrapperType) CopyI() page.WrapperI {
+	wNew := NewFieldsetWrapper()
+	wNew.LabelWrapperType = w.LabelWrapperType.Copy()
+	wNew.useTooltips = w.useTooltips
+	return w
+}
 
 func (w *FieldsetWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
 	FieldsetTmpl(ctx, w, ctrl, html, buf)
@@ -94,7 +118,7 @@ func (w *FieldsetWrapperType) SetUseTooltips(t bool) *FieldsetWrapperType {
 	return w
 }
 
-func (w FieldsetWrapperType) TypeName() string {
+func (w *FieldsetWrapperType) TypeName() string {
 	return FieldsetWrapper
 }
 

@@ -3,7 +3,7 @@ package app
 import (
 	//"flag"
 	"github.com/spekary/goradd/page"
-	"goradd/config"
+	"goradd-project/config"
 	"net/http"
 	"os"
 	"path"
