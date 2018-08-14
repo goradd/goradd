@@ -1,4 +1,4 @@
-package main
+package buildtools
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ func drawHome(buf *bytes.Buffer) (err error) {
 <html>
 <head>
 </head>
-<bod>
+<body>
     <h1>Welcome to Goradd!</h1>
     <p>
     Goradd is the fastest way to build a full-featured web application in the GO language.
@@ -22,6 +22,23 @@ func drawHome(buf *bytes.Buffer) (err error) {
     <p>
     This web application is your utility to build and manage various parts of your application.
     </p>
+ }}
+
+   if !installed {
+{{
+<h2>Installation Required</h2>
+<p>
+You appear to be launching goradd for the first time for this project. Goradd needs to install a variety of
+dependencies (using go get), and also create the starting project directory under the "/src" directory.
+</p>
+<p>
+Click <a href="/install?cmd=start">here to install goradd<a>.
+</p>
+}}
+   } else {
+
+   }
+{{
 </body>
 </html>
 }}

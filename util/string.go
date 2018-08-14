@@ -8,7 +8,7 @@ import (
 
 const htmlValueBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789?=+-_(){}[]|#@!^"
 
-// Generates a pseudo random string of the given length
+// RandomHtmlValueString generates a pseudo random string of the given length
 // Characters are drawn from legal HTML values that do not need escaping
 // The distribution is not perfect, so its not good for crypto, but works for general purposes
 func RandomHtmlValueString(n int) string {
@@ -19,11 +19,21 @@ func RandomHtmlValueString(n int) string {
 	return string(b)
 }
 
+// StartsWith returns true if the string begins with the beginning string.
+func StartsWith(s string, beginning string) bool {
+	if len(beginning) > len(s) {
+		return false
+	}
+	return s[0:len(beginning)] == beginning
+}
+
+// EndsWith returns true if the string ends with the ending string.
 func EndsWith(s string, ending string) bool {
 	i := strings.LastIndex(s, ending)
 	return i != -1 && i == len(s)-len(ending)
 }
 
+// LcFirst makes sure the first character in the string is lower case.
 func LcFirst(s string) string {
 	if s == "" {
 		return ""

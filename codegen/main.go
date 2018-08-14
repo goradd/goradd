@@ -6,7 +6,7 @@ import (
 	"github.com/spekary/goradd/codegen/generator"
 
 	// TODO: build the templates as plugin libraries so they do not need to be hard-linked
-	_ "goradd-project/tmp/template"
+	_ "goradd-tmp/template"
 	_ "github.com/spekary/goradd/page/control/generator"
 
 	"goradd-project/config"

@@ -1,0 +1,40 @@
+package buildtools
+
+import (
+	"bytes"
+	"context"
+
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
+)
+
+
+func drawInstall(buf *bytes.Buffer) (err error) {
+{{
+<html>
+<head>
+</head>
+<body>
+    <h1>Goradd Installer</h1>
+    <p>
+    Installing...
+    </p>
+    <p>
+    {{= textToHtml(results) }}
+    </p>
+</body>
+</html>
+}}
+
+if !stop {
+{{
+<script>
+setTimeout(function() {
+    location = "/install";  // Refresh
+}, 2000);
+</script>
+}}
+}
+
+    return
+}

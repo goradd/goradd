@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"time"
+	"path/filepath"
 )
 
 // Copy copies the src file to the destination. The destination file must either exist, or the directory in the file's
@@ -12,13 +13,19 @@ import (
 func FileCopy(src, dst string) (err error) {
 	var count int64
 
+	srcInfo, srcErr := os.Stat(src)
+	if srcErr != nil {
+		return srcErr
+	}
+	perm := srcInfo.Mode() & os.ModePerm
+
 	from, err := os.Open(src)
 	if err != nil {
 		return
 	}
 	defer from.Close()
 
-	to, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, 0666)
+	to, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, perm) // copy source permissions
 	if err != nil {
 		return
 	}
@@ -27,10 +34,10 @@ func FileCopy(src, dst string) (err error) {
 
 	count, err = io.Copy(to, from)
 	if err != nil {
-		to.Truncate(count) // chop end of file in case file gets smaller
 		to.Close()
 		return err
 	}
+	to.Truncate(count) // chop end of file in case file gets smaller
 
 	return to.Close()
 }
@@ -94,7 +101,87 @@ func FileCopyIfNewer(src, dst string) (err error) {
 // PathExists returns true if the given path exists in the OS. This does not necessarily mean that the path is
 // usable. It may be write or read protected. But at least you know its there.
 func PathExists(path string) bool {
-	_, err := os.Stat(path);
+	_, err := os.Stat(path)
 
 	return err == nil || !os.IsNotExist(err)
+}
+
+
+// DirectoryCopy copies the src directory to the destination directory. The destination directory will be the parent of
+// the resulting directory, and the result will have the same name as the source. If the destination already exists,
+// it will perform a kind of merge, where existing files will not be touched, and only new files will be copied.
+// If you want to replace the destination, delete it first. dst must exist.
+func DirectoryCopy(src, dst string) (err error) {
+	dstInfo, dstErr := os.Stat(dst)
+	srcInfo, srcErr := os.Stat(src)
+
+	if srcErr != nil {
+		return fmt.Errorf("source directory error: %s", srcErr.Error())
+	}
+
+	if dstErr != nil {
+		return fmt.Errorf("destination directory error: %s", dstErr.Error())
+	}
+
+	if StartsWith(dst,src) {
+		return fmt.Errorf("destination directory is not allowed to be in the src directory")
+	}
+
+	if !dstInfo.Mode().IsDir() {
+		return fmt.Errorf("source %s is a file, not a directory", dst)
+	}
+
+	// create destination if needed
+	newPath := filepath.Join(dst, filepath.Base(src))
+
+	if !PathExists(newPath) {
+		perm := srcInfo.Mode() | os.ModePerm	// copy the permission
+		err = os.Mkdir(newPath, perm)
+		if err != nil {
+			return fmt.Errorf("error creating directory %s: %s", newPath, err.Error())
+		}
+	}
+
+	f, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	list, err := f.Readdir(-1)
+	f.Close()
+
+	for _,item := range list {
+		itemName := item.Name()
+		itemPath := filepath.Join(src, itemName)
+		if item.IsDir() {
+			if itemName != "." && itemName != ".." {
+				DirectoryCopy(itemPath, newPath)
+			}
+		} else {
+			newItemPath := filepath.Join(newPath, itemName)
+			dstFileInfo, dstFileErr := os.Stat(newItemPath)
+			if dstFileErr != nil {
+				if os.IsNotExist(dstFileErr) {
+					err = FileCopy(itemPath, newItemPath)
+					if err != nil {
+						return
+					}
+				} else {
+					return dstFileErr
+				}
+			} else {
+				if dstFileInfo.IsDir() {
+					return fmt.Errorf("Path %s is a file in the source, but %s is a directory in the destination.", itemPath, newItemPath)
+				}
+				// otherwise do no copying since the file already exists
+			}
+		}
+	}
+
+	return
+}
+
+// Recursively empty a directory. Very dangerous. Will not allow you to empty
+// the root directory to prevent mistakes. (You probably can't anyway).
+func DirectoryRemove(dir string) error {
+	return os.RemoveAll(dir)
 }
