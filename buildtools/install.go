@@ -29,7 +29,7 @@ func serveInstall() http.Handler {
 		if cmd == "start" {
 			go startInstaller()
 		}
-		drawInstall(buf)
+		drawInstaller(buf)
 		w.Write(buf.Bytes())
 	}
 	return http.HandlerFunc(fn)
@@ -39,11 +39,6 @@ func serveInstall() http.Handler {
 func startInstaller() {
 	results = ""
 	stop = false
-	err := goGet(dependencies...)
-	if err != nil {
-		stop = true
-		return
-	}
 
 	// copy
 	if isInstalled() {
@@ -51,6 +46,11 @@ func startInstaller() {
 		stop = true
 		return
 	} else {
+		err := goGet(dependencies...)
+		if err != nil {
+			stop = true
+			return
+		}
 		results += "Copying goradd-project directory\n"
 		err = util.DirectoryCopy(filepath.Join(goraddPath(), "buildtools", "install", "goradd-project"), srcPath())
 		if err != nil {
@@ -66,9 +66,20 @@ func startInstaller() {
 			stop = true
 			return
 		}
+
+		results += "Installing gofile\n"
+		cmdResult, errStr, err := executeCmd("go", "install", filepath.Join(srcPath(), "github.com", "spekary", "goradd", "buildtools", "gofile"))
+		if err != nil {
+			results += errStr
+			stop = true
+			return
+		} else {
+			results += cmdResult
+		}
+
 	}
 
-	results += "Done"
+	results += "Success!"
 	stop = true
 }
 

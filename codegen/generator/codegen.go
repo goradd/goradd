@@ -148,6 +148,27 @@ func Generate() {
 			}
 		}
 
+		for _, typeTableTemplate := range OneTimeTemplates {
+			buf.Reset()
+			// the template generator function in each template, by convention
+			typeTableTemplate.GenerateOnce(codegen, dd, buf)
+			fileName := typeTableTemplate.FileName(key)
+			path := filepath.Dir(fileName)
+
+			if _, err := os.Stat(fileName); err == nil {
+				if !typeTableTemplate.Overwrite() {
+					continue
+				}
+			}
+
+			os.MkdirAll(path, 0777)
+			err := ioutil.WriteFile(fileName, buf.Bytes(), 0644)
+			if err != nil {
+				log.Print(err)
+			}
+		}
+
+
 	}
 
 }

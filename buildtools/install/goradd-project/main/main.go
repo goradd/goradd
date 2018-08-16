@@ -17,7 +17,7 @@ import (
 	"github.com/alexedwards/scs/stores/memstore"
 	"github.com/spekary/goradd/page/session"
 	"time"
-	//"goradd/config"
+	//"goradd-project/config"
 	"bytes"
 	"github.com/spekary/goradd/page"
 	"goradd-project/config"
@@ -25,8 +25,8 @@ import (
 
 	// These are the packages that contain your actual goradd forms. init() code should register the forms
 	_ "github.com/spekary/goradd/bootstrap/examples"
-	//_ "project/pages/controlTest"
-	//_ "project/pages/mimic"
+
+
 )
 
 var local = flag.String("local", "", "serve as webserver from given port, example: -local 8000")
@@ -57,10 +57,13 @@ func runWebServer() (err error) {
 	mux := http.NewServeMux()
 
 	// Add handlers for your straight html files and anything not processed by goradd
-	mux.Handle("/html/", http.StripPrefix("/html/", http.FileServer(http.Dir(config.ProjectDir + "/pages/mimic/html"))))
+	// The line below serves up the form directory index in development mode. Feel free to remove it.
+	if config.Mode == config.AppModeDevelopment {
+		mux.Handle("/form/", http.StripPrefix("/form/", http.FileServer(http.Dir(config.ProjectDir + "/form"))))
+	}
 
-	mux.Handle(config.AssetPrefix + "/", http.HandlerFunc(page.ServeAsset)) // serve up application assets
-	mux.Handle("/", makeAppServer())                                       // send anything you don't explicitly handle to goradd
+	mux.Handle(config.CustomAssetPrefix+ "/", http.HandlerFunc(page.ServeAsset)) // serve up application assets
+	mux.Handle("/", makeAppServer())                                             // send anything you don't explicitly handle to goradd
 
 	// The two "Serve" functions below will launch go routines for each request, so that multiple requests can be
 	// processed in parallel. This may mean multiple requests for the same override, depending on the structure of the override.

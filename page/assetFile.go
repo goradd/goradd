@@ -78,7 +78,7 @@ func RegisterAssetFile(url string, filePath string) string {
 	if !assetFiles.Has(url) {
 		var dir, fileName string = filepath.Split(url)
 
-		dir = strings.TrimPrefix(dir, config.AssetPrefix)
+		dir = strings.TrimPrefix(dir, config.CustomAssetPrefix)
 
 		var localDir = config.LocalAssets() + dir
 		var localPath = localDir + fileName
@@ -110,19 +110,19 @@ func RegisterAssetFile(url string, filePath string) string {
 }
 
 func RegisterCssFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.AssetPrefix+"/css/"+urlPath, filePath)
+	return RegisterAssetFile(config.CustomAssetPrefix+"/css/"+urlPath, filePath)
 }
 
 func RegisterJsFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.AssetPrefix+"/js/"+urlPath, filePath)
+	return RegisterAssetFile(config.CustomAssetPrefix+"/js/"+urlPath, filePath)
 }
 
 func RegisterImageFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.AssetPrefix+"/image/"+urlPath, filePath)
+	return RegisterAssetFile(config.CustomAssetPrefix+"/image/"+urlPath, filePath)
 }
 
 func RegisterFontFile(urlPath string, filePath string) string {
-	return RegisterAssetFile(config.AssetPrefix+"/font/"+urlPath, filePath)
+	return RegisterAssetFile(config.CustomAssetPrefix+"/font/"+urlPath, filePath)
 }
 
 func GetAssetFilePath(url string) string {

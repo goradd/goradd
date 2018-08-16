@@ -12,8 +12,8 @@ import(
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control"
 	"context"
-	"goradd/gen/{{dd.DbKey}}/connector"
-	"goradd/gen/{{dd.DbKey}}/model"
+	"goradd-project/gen/{{dd.DbKey}}/connector"
+	"goradd-project/gen/{{dd.DbKey}}/model"
 {{for _,imp := range t.Imports}}
 {{if imp.Alias == ""}}
     "{{= imp.Path }}"

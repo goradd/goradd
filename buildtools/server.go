@@ -7,9 +7,7 @@ import (
 	"bytes"
 	"github.com/spekary/goradd/util"
 	"path/filepath"
-	"strings"
 	"os"
-	"go/build"
 	"flag"
 	"runtime"
 	"bufio"
@@ -17,14 +15,20 @@ import (
 )
 
 var port = flag.Int("p", 8082, "Start the webserver from the given port, example: -p 8082. Default is 8082.")
+var dev = flag.Bool("dev", false, "WARNING! Automatically erases the installation directories. Only use this if you are working on the installer itself. Not for general use.")
 var installed bool
 var results string // result of whatever the current operation is
 var stop bool
+var cmd string
 
 func Launch() {
 	flag.Parse()
 
-	os.RemoveAll(projectPath()) // TODO: Delete this line. Just for testing.
+	if *dev {
+		// Erase the installation directory so that it appears that we are in a new install.
+		// Use this only as an aid to developing the installer.
+		os.RemoveAll(projectPath())
+	}
 	installed = isInstalled()
 
 	launchWebpage() // hopefully by the time the web page gets to this address, the server will have started
@@ -44,7 +48,8 @@ func runWebServer(port int) (err error) {
 
 	// A very simple web server to act as an aid to configure and build a goradd app
 	mux.Handle("/", serveHome())
-	mux.Handle("/install", serveInstall())
+	mux.Handle("/installer", serveInstall())
+	mux.Handle("/builder", serveBuilder())
 
 	// The two "Serve" functions below will launch go routines for each request, so that multiple requests can be
 	// processed in parallel. This may mean multiple requests for the same override, depending on the structure of the override.
@@ -71,7 +76,7 @@ func isInstalled() bool {
 }
 
 func srcPath() string {
-	return filepath.Join(goPath(), "src")
+	return filepath.Join(util.GoPath(), "src")
 }
 
 func projectPath() string {
@@ -80,16 +85,6 @@ func projectPath() string {
 
 func goraddPath() string {
 	return filepath.Join(srcPath(), "github.com", "spekary", "goradd")
-}
-
-func goPath() string {
-	goPaths := strings.Split(os.Getenv("GOPATH"), string(os.PathListSeparator))
-	if len(goPaths) == 0 {
-		return build.Default.GOPATH
-	} else if goPaths[0] == "" {
-		return build.Default.GOPATH
-	}
-	return goPaths[0]
 }
 
 func launchWebpage() {

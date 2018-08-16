@@ -3,7 +3,7 @@
 import (
     "context"
     "github.com/spekary/goradd/page"
-	"goradd/gen/{{dd.DbKey}}/model"
+	"goradd-project/gen/{{dd.DbKey}}/model"
 {{for _,imp := range t.Imports}}
 {{if imp.Alias == ""}}
     "{{= imp.Path }}"

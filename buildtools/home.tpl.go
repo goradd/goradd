@@ -12,28 +12,36 @@ func drawHome(buf *bytes.Buffer) (err error) {
 <head>
 </head>
 <body>
-    <h1>Welcome to Goradd!</h1>
+`)
+
+	if !installed {
+
+		buf.WriteString(`    <h1>Welcome to Goradd!</h1>
     <p>
     Goradd is the fastest way to build a full-featured web application in the GO language.
     </p>
     <p>
     This web application is your utility to build and manage various parts of your application.
     </p>
-`)
 
-	if !installed {
-
-		buf.WriteString(`<h2>Installation Required</h2>
-<p>
-You appear to be launching goradd for the first time for this project. Goradd needs to install a variety of
-dependencies (using go get), and also create the starting project directory under the "/src" directory.
-</p>
-<p>
-Click <a href="/install?cmd=start">here to install goradd<a>.
-</p>
+    <h2>Installation Required</h2>
+    <p>
+    You appear to be launching goradd for the first time for this project. Goradd needs to install a variety of
+    dependencies (using go get), and also create the starting project directory under the "/src" directory.
+    </p>
+    <p>
+    Click <a href="/installer?cmd=start">here to install goradd<a>.
+    </p>
 `)
 
 	} else {
+
+		buf.WriteString(`    <h1>Goradd Build System</h1>
+
+    <ul>
+    <li> <a href="/builder?cmd=codegen">Run the Code Generator<a></li>
+    </ul>
+`)
 
 	}
 

@@ -6,6 +6,9 @@ import (
 	"os"
 	"time"
 	"path/filepath"
+	"io/ioutil"
+	"strings"
+	"go/build"
 )
 
 // Copy copies the src file to the destination. The destination file must either exist, or the directory in the file's
@@ -180,8 +183,49 @@ func DirectoryCopy(src, dst string) (err error) {
 	return
 }
 
-// Recursively empty a directory. Very dangerous. Will not allow you to empty
-// the root directory to prevent mistakes. (You probably can't anyway).
-func DirectoryRemove(dir string) error {
-	return os.RemoveAll(dir)
+// DirectoryClear recursively empties a directory. Basically, it applies RemoveAll to the contents of the directory. This is different
+// than RemoveAll on the directory, as it does not remove the directory itself.
+func DirectoryClear(dir string) error {
+	items, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _,item := range items {
+		os.RemoveAll(filepath.Join(dir, item.Name()))
+	}
+	return nil
+}
+
+// GoPath returns the current GoPath as best it can determine.
+func GoPath() string {
+	var path string
+	goPaths := strings.Split(os.Getenv("GOPATH"), string(os.PathListSeparator))
+	if len(goPaths) == 0 {
+		path = build.Default.GOPATH
+	} else if goPaths[0] == "" {
+		path = build.Default.GOPATH
+	} else {
+		path = goPaths[0]
+	}
+
+	// clean path so it does not end with a path separator
+	if path[len(path)-1] == os.PathSeparator {
+		path = path[:len(path)-1]
+	}
+
+	// If the GOPATH is empty, then see if the current executable looks like it is in a project
+	if path == "" {
+		if path2, err := os.Executable(); err == nil {
+			path2 = filepath.Join(filepath.Dir(filepath.Dir(path2)), "src")
+			dstInfo, err := os.Stat(path)
+			if err == nil && dstInfo.IsDir() {
+				path = path2
+			}
+		}
+	}
+
+	path,_ = filepath.Abs(path)
+
+	// TODO: GoPath may go away, so we might need to use another way to search for the current go project structure
+	return path
 }
