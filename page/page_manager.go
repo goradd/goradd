@@ -146,9 +146,6 @@ func (m *PageManager) makeErrorResponse(ctx context.Context,
 	ErrorPageFunc(ctx, html, err, buf)
 }
 
-func (m *PageManager) IsAsset(ctx context.Context) bool {
-	return assetIsRegistered(GetContext(ctx).HttpContext.URL.Path)
-}
 
 type HttpError struct {
 	headers map[string] string

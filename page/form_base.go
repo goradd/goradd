@@ -10,7 +10,6 @@ import (
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/util/types"
 	"goradd-project/config"
-	"path/filepath"
 	"strings"
 )
 
@@ -64,7 +63,6 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 	f.Control.id = id
 	f.Control.Init(self, nil, id)
 	f.Tag = "form"
-	//self.AddRelatedFiles()
 	//self.CreateControls(ctx)
 	//self.LoadControls(ctx)
 }
@@ -77,9 +75,13 @@ func (f *FormBase) this() FormI {
 // The order is important, so if you override this, be sure these files get loaded
 // before other files.
 func (f *FormBase) AddRelatedFiles() {
-	f.AddJavaScriptFile("http://code.jquery.com/jquery-3.3.1.min.js", false, html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="))
+	path, attr := config.JQueryPath()
+	f.AddJavaScriptFile(path, false, html.NewAttributesFrom(types.StringMap(attr)))
+	f.AddJavaScriptFile(config.GoraddAssets()+"/js/ajaxq/ajaxq.js", false, nil) // goradd.js needs this
 	f.AddJavaScriptFile(config.GoraddAssets()+"/js/goradd.js", false, nil)
 	f.AddStyleSheetFile(config.GoraddAssets()+"/css/goradd.css", nil)
+	f.AddStyleSheetFile("https://use.fontawesome.com/releases/v5.0.13/css/all.css",
+		html.NewAttributes().Set("integrity", "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp").Set("crossorigin", "anonymous"))
 }
 
 // CreateControls is a stub function for you to implement in an overriding object. This is where you will create your
@@ -208,16 +210,20 @@ func (f *FormBase) saveState() string {
 // requires additional javascript to function.
 //
 // The path is either a url, or an internal path to the location of the file
-// in the development environment. AppModeDevelopment files will automatically get copied to the local assets directory for easy
-// deployment and so that the MUX can find the file and serve it (This happens at draw time).
-// The attributes are extra attributes included with the tag,
-// which is useful for things like crossorigin and integrity attributes.
+// in the development environment.
 func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes) {
 	if forceHeader && f.isOnPage {
 		panic("You cannot force a JavaScript file to be in the header if you insert it after the override is drawn.")
 	}
 
-	// TODO: decompose path here, rather than at draw time to save some processing time.
+	if path[:4] != "http" {
+		url := GetAssetUrl(path)
+
+		if url == "" {
+			panic(path + " is not in a registered asset directory")
+		}
+		path = url
+	}
 
 	if f.isOnPage {
 		if f.importedJavaScripts == nil {
@@ -252,6 +258,15 @@ func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 // The attributes will be extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
 func (f *FormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
+	if path[:4] != "http" {
+		url := GetAssetUrl(path)
+
+		if url == "" {
+			panic(path + " is not in a registered asset directory")
+		}
+		path = url
+	}
+
 	if f.isOnPage {
 		if f.importedStyleSheets == nil {
 			f.importedStyleSheets = types.NewOrderedMap()
@@ -283,12 +298,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 				attributes = html.NewAttributes()
 			}
 			attributes.Set("rel", "stylesheet")
-			if path[:4] == "http" {
-				attributes.Set("href", path)
-			} else {
-				_, fileName := filepath.Split(path)
-				attributes.Set("href", RegisterCssFile(fileName, path))
-			}
+			attributes.Set("href", path)
 			buf.WriteString(html.RenderVoidTag("link", attributes))
 			return true
 		})
@@ -308,12 +318,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 			if attributes == nil {
 				attributes = html.NewAttributes()
 			}
-			if path[:4] == "http" {
-				attributes.Set("src", path)
-			} else {
-				_, fileName := filepath.Split(path)
-				attributes.Set("src", RegisterJsFile(fileName, path))
-			}
+			attributes.Set("src", path)
 			buf.WriteString(html.RenderTag("script", attributes, ""))
 			return true
 		})
@@ -326,12 +331,7 @@ func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 		if attributes == nil {
 			attributes = html.NewAttributes()
 		}
-		if path[:4] == "http" {
-			attributes.Set("src", path)
-		} else {
-			_, fileName := filepath.Split(path)
-			attributes.Set("src", RegisterJsFile(fileName, path))
-		}
+		attributes.Set("src", path)
 		buf.WriteString(html.RenderTag("script", attributes, "") + "\n")
 		return true
 	})

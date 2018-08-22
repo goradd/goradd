@@ -1,7 +1,10 @@
 // Package log provides logging support for the application and
 package log
 
-import "log"
+import (
+	"log"
+	"goradd-project/config"
+)
 
 // Logging support
 
@@ -23,11 +26,15 @@ func Info(v ...interface{}) {
 }
 
 func FrameworkDebug(v ...interface{}) {
-	Print(FrameworkDebugLog, v...)
+	if config.Debug {
+		Print(FrameworkDebugLog, v...)
+	}
 }
 
 func FrameworkDebugf(format string, v ...interface{}) {
-	Printf(FrameworkDebugLog, format, v...)
+	if config.Debug {
+		Printf(FrameworkDebugLog, format, v...)
+	}
 }
 
 func Warning(v ...interface{}) {
@@ -48,11 +55,15 @@ func Errorf(format string, v ...interface{}) {
 
 // Debug is for application debugging logging
 func Debug(v ...interface{}) {
-	Print(DebugLog, v...)
+	if config.Debug {
+		Print(DebugLog, v...)
+	}
 }
 
 func Debugf(format string, v ...interface{}) {
-	Printf(DebugLog, format, v...)
+	if config.Debug {
+		Printf(DebugLog, format, v...)
+	}
 }
 
 func Print(logType int, v ...interface{}) {

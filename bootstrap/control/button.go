@@ -4,7 +4,7 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	grctl "github.com/spekary/goradd/page/control"
-	"goradd-project/app"
+	"github.com/spekary/goradd/bootstrap/config"
 )
 
 type ButtonI interface {
@@ -63,7 +63,7 @@ func NewButton(parent page.ControlI, id string) *Button {
 func (b *Button) Init(self page.ControlI, parent page.ControlI, id string) {
 	b.Button.Init(self, parent, id)
 	b.style = ButtonStyleSecondary // default
-	app.LoadBootstrap(b.ParentForm())
+	config.LoadBootstrap(b.ParentForm())
 }
 
 func (b *Button) this() ButtonI {

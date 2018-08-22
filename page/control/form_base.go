@@ -3,7 +3,6 @@ package control
 import (
 	"context"
 	"github.com/spekary/goradd/page"
-	"goradd-project/config"
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/page/action"
@@ -26,7 +25,7 @@ type FormBase struct {
 func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
 	f.FormBase.Init(ctx, self, path, id)
 
-	if config.Mode == config.AppModeDevelopment && db.IsProfiling(ctx) {
+	if db.IsProfiling(ctx) {
 		btn := NewButton(f, "grProfileButton")
 		btn.SetText("SQL Profile <i class='fas fa-arrow-circle-down' ></i>")
 		btn.SetEscapeText(false)

@@ -8,16 +8,15 @@ import (
 	"net/http"
 	fcgiserver "net/http/fcgi"
 	"os"
+	"path/filepath"
 
 	// local imports
 	localapp "goradd-project/app"
 
-	//"io"
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/stores/memstore"
 	"github.com/spekary/goradd/page/session"
 	"time"
-	//"goradd-project/config"
 	"bytes"
 	"github.com/spekary/goradd/page"
 	"goradd-project/config"
@@ -26,12 +25,14 @@ import (
 	// These are the packages that contain your actual goradd forms. init() code should register the forms
 	_ "github.com/spekary/goradd/bootstrap/examples"
 
+	// Custom paths, including additional form directories
+	_ "site"
 
 )
 
 var local = flag.String("local", "", "serve as webserver from given port, example: -local 8000")
 var fcgi = flag.Bool("fcgi", false, "serve as fcgi, example: -fcgi")
-var mode = flag.String("mode", "dev", "The application mode, one of: dev, debug, rel")
+var assetDir = flag.String("assetDir", "", "The centralized asset directory. Required to run the release version of the app.")
 
 // Create other flags you might care about here
 
@@ -57,13 +58,13 @@ func runWebServer() (err error) {
 	mux := http.NewServeMux()
 
 	// Add handlers for your straight html files and anything not processed by goradd
-	// The line below serves up the form directory index in development mode. Feel free to remove it.
-	if config.Mode == config.AppModeDevelopment {
-		mux.Handle("/form/", http.StripPrefix("/form/", http.FileServer(http.Dir(config.ProjectDir + "/form"))))
+	if !config.Release {
+		mux.Handle("/form/", http.StripPrefix("/form/", http.FileServer(http.Dir(filepath.Join(config.ProjectDir() , "form")))))
 	}
 
-	mux.Handle(config.CustomAssetPrefix+ "/", http.HandlerFunc(page.ServeAsset)) // serve up application assets
-	mux.Handle("/", makeAppServer())                                             // send anything you don't explicitly handle to goradd
+	// serve up local static asset files
+	mux.Handle(config.AssetPrefix, http.HandlerFunc(page.ServeAsset)) // serve up application assets
+	mux.Handle("/", makeAppServer())   // send anything you don't explicitly handle to goradd
 
 	// The two "Serve" functions below will launch go routines for each request, so that multiple requests can be
 	// processed in parallel. This may mean multiple requests for the same override, depending on the structure of the override.
@@ -158,12 +159,13 @@ var goraddApp app.ApplicationI = makeApplication()
 func makeApplication() app.ApplicationI {
 	flag.Parse() // Parse the flags so we can read them
 
+	config.InitDatabases()
+	config.Init(*assetDir)
+
 	// create various flavors of application here
 	a := &localapp.Application{}
-	a.Init(*mode)
+	a.Init()
 	global.App = a // inject the created app into the global space
-
-	config.InitDatabases()
 
 	// create the session manager. The default uses an in-memory storage engine. Change as you see fit.
 	interval, _ := time.ParseDuration("24h")

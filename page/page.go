@@ -90,7 +90,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 
 	p.renderStatus = UNRENDERED
 
-	log.FrameworkDebugf("Run override: %s", grCtx)
+	log.FrameworkDebugf("Run: %s", grCtx)
 
 	// TODO: Lifecycle calls - push them to the form
 
@@ -145,7 +145,7 @@ func (p *Page) FormByID(id string) FormI {
 */
 
 // Draws from the override template. The default should be fine for most situations.
-// You can replace the template function with your own, or override This for even more control
+// You can replace the template function with your own
 func (p *Page) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return p.drawFunc(ctx, p, buf)
 }

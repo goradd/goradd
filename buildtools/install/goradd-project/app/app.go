@@ -5,10 +5,10 @@ import (
 	"github.com/spekary/goradd/html"
 	grlog "github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/page"
-	"goradd-project/config"
 	"log"
 	"net/http"
 	"os"
+	"goradd-project/config"
 )
 
 type Application struct {
@@ -19,11 +19,6 @@ type Application struct {
 	// Your own vars, methods and overrides
 }
 
-func (a *Application) initDatabases() {
-	//db := db.NewMysql5("username/password")
-
-	//a.dbs[0] = db
-}
 
 func (a *Application) GetDb(i int) {
 	//return a.dbs[i]
@@ -37,9 +32,8 @@ func (a *Application) Test() {
 	//p2.Load()
 }
 
-func (a *Application) Init(mode string) {
-	a.Application.Init(mode)
-	a.initDatabases()
+func (a *Application) Init() {
+	a.Application.Init()
 
 	// Replace this if you would like a different error display
 	page.ErrorPageFunc = page.DefaultErrorPageTmpl
@@ -56,13 +50,11 @@ func (a *Application) Init(mode string) {
 	grlog.Loggers[grlog.WarningLog] = log.New(os.Stderr, "Warning: ", log.Ldate|log.Ltime|log.Llongfile)
 	grlog.Loggers[grlog.ErrorLog] = log.New(os.Stderr, "Error: ", log.Ldate|log.Ltime|log.Llongfile)
 
-	// Control whether to try to minify output. The default minifies if we are in release mode.
-	if config.Mode == config.AppModeRelease {
-		config.Minify = true
-	}
 
 	page.DefaultCheckboxLabelDrawingMode = html.LABEL_AFTER
 
+	page.RegisterAssetDirectory(config.GoraddAssets(), config.AssetPrefix + "goradd")
+	page.RegisterAssetDirectory(config.ProjectAssets(), config.AssetPrefix + "project")
 }
 
 // PutContext allocates a blank context object for our application specific context data. It can be populated later.

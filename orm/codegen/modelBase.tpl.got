@@ -11,7 +11,7 @@ func init() {
 	t := ModelBaseTemplate {
 		generator.Template {
 			Overwrite: true,
-			TargetDir: config.LocalDir + "/gen",
+			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}
 	generator.AddTableTemplate(&t)

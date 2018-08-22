@@ -3,8 +3,8 @@ package control
 import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"goradd-project/app"
 	localPage "goradd-project/override/page"
+	"github.com/spekary/goradd/bootstrap/config"
 )
 
 const (
@@ -82,7 +82,7 @@ func (b *Navbar) Init(self page.ControlI, parent page.ControlI, id string) {
 	b.style = NavbarDark // default
 	b.background = BackgroundColorDark
 	b.expand = NavbarExpandLarge
-	app.LoadBootstrap(b.ParentForm())
+	config.LoadBootstrap(b.ParentForm())
 }
 
 func (b *Navbar) this() NavbarI {

@@ -133,7 +133,7 @@ func Redirect(l string) *redirectAction {
 }
 
 func (a *redirectAction) RenderScript(params RenderParams) string {
-	return fmt.Sprintf(`goradd.redirect(%s);`, a.location)
+	return fmt.Sprintf(`goradd.redirect("%s");`, a.location)
 }
 
 type triggerAction struct {

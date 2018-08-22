@@ -6,8 +6,7 @@ import (
 	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/html"
-	"goradd-project/config"
-	"goradd-project/app"
+	config2 "github.com/spekary/goradd/bootstrap/config"
 	"context"
 	"fmt"
 )
@@ -65,8 +64,7 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
 	d.On(event.Event("hide.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosingEvent, nil))
 	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Ajax(d.ID(), DialogClosed), action.PrivateAction{})
-	app.LoadBootstrap(d.ParentForm())
-	d.ParentForm().AddStyleSheetFile(config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css", nil)
+	config2.LoadBootstrap(d.ParentForm())
 
 	d.AddClass("modal fade").
 		SetAttribute("tabindex", -1).

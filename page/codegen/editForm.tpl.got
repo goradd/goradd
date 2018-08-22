@@ -12,7 +12,7 @@ func init() {
 	t := EditFormTemplate {
 		generator.Template {
 			Overwrite: true,
-			TargetDir: config.LocalDir + "/form",
+			TargetDir: config.ProjectDir() + "/form",
 		},
 	}
 	generator.AddTableTemplate(&t)

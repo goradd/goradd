@@ -12,7 +12,7 @@ func init() {
 	t := NodeTemplate {
 		generator.Template {
 			Overwrite: true,
-			TargetDir: config.LocalDir + "/gen",
+			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}
 	generator.AddTableTemplate(&t)

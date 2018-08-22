@@ -29,6 +29,7 @@ func LoadBootstrap(form page.FormI) {
 }
 
 func init() {
-	page.RegisterCssFile("bootstrap.min.css", config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css")
-	page.RegisterJsFile("bootstrap.bundle.js", config.GoraddDir+"/bootstrap/assets/js/bootstrap.bundle.js")
+	page.RegisterStaticFileServer(config.GoraddDir + "/bootstrap/assets", "/assets/bootstrap")
+	//page.RegisterCssFile("bootstrap.min.css", config.GoraddDir+"/bootstrap/assets/css/bootstrap.min.css")
+	//page.RegisterJsFile("bootstrap.bundle.js", config.GoraddDir+"/bootstrap/assets/js/bootstrap.bundle.js")
 }

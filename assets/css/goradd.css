@@ -6,14 +6,17 @@
 button {
   cursor: pointer;
 }
+
 form[data-grctl] {
   margin: 0;
   padding: 0;
   position: relative;
 }
+
 textarea[data-grctl] {
   resize: none;
 }
+
 /**
  * Default styles for checkbox-type lists
  */
@@ -22,33 +25,41 @@ textarea[data-grctl] {
   margin: 5px;
   display: inline-block;
 }
+
 .gr-cbl-scroller {
   overflow-x: scroll;
   height: 200px;
   padding-right: 10px;
 }
+
 .gr-cbl-table {
   display: table;
 }
+
 .gr-cbl-column {
   display: table-column;
 }
+
 .gr-cbl-row {
   display: table-row;
 }
+
 .gr-cbl-item {
   display: table-cell;
   padding-left: 3px;
   padding-right: 8px;
 }
+
 .gr-cbl-heading {
   font-weight: bold;
   color: gray;
 }
+
 .gr-table {
   empty-cells: show;
   border-collapse: collapse;
 }
+
 /**
  * Styles of individual Control types
  */
@@ -97,6 +108,7 @@ textarea[data-grctl] {
 .datagrid .paginator-results {
   float: left;
 }
+
 .data-scrollbar {
   white-space: nowrap;
 }
@@ -120,16 +132,20 @@ textarea[data-grctl] {
   background: #eeeeee;
   border: solid darkgray 2px;
 }
+
 /* Status coloring */
 .warning {
   color: orange;
 }
+
 .error {
   color: red;
 }
+
 .success {
   color: green;
 }
+
 /* SQL Profiling */
 .qDbProfile {
   /*position: absolute;*/
@@ -143,30 +159,34 @@ textarea[data-grctl] {
 .qDbProfile a {
   position: relative;
 }
+
 /* Modification to jquery ui dialog styling that allows for left/right buttons and other fixes */
 .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
   float: none !important;
   text-align: right;
 }
+
 .ui-button-left {
   float: left;
 }
+
 /* The following is to allow for correct positioning of an alert icon */
 .ui-dialog-title {
   float: none !important;
   width: auto !important;
 }
+
 .ui-dialog-titlebar .ui-icon {
   display: inline-block;
-  margin-right: .3em;
+  margin-right: 0.3em;
   vertical-align: middle;
 }
+
 /**
  * For generated list forms that you can click on to edit an item, this styles the cursor so it looks like the
  * row is clickable, and it prevents accidentally selecting text in the row.
  */
-.clickable-rows tr td,
-.clickable-rows tr th {
+.clickable-rows tr td, .clickable-rows tr th {
   -webkit-user-select: none;
   /* webkit (safari, chrome) browsers */
   -moz-user-select: none;
@@ -180,6 +200,7 @@ textarea[data-grctl] {
 .clickable-rows tr:hover {
   background-color: #f0f0f0;
 }
+
 /** Error notice styling */
 #Goradd_AJAX_Error {
   position: fixed;
@@ -191,6 +212,7 @@ textarea[data-grctl] {
   z-index: 10000;
   padding: 20px;
 }
+
 #groverlay {
   position: fixed;
   /* Sit on top of the override content */
@@ -209,6 +231,7 @@ textarea[data-grctl] {
   cursor: pointer;
   /* Add a pointer on hover */
 }
+
 div[data-grctl=dialog] {
   background-color: white;
   position: fixed;
@@ -236,6 +259,7 @@ div[data-grctl=dialog] .gr-dialog-buttons {
   background-color: #B0BBC5;
   border-top: solid black 1px;
 }
+
 #grProfilePanel {
   position: fixed;
   left: 0;
@@ -244,9 +268,12 @@ div[data-grctl=dialog] .gr-dialog-buttons {
   overflow-y: scroll;
   background: white;
 }
+
 #grProfileButton {
   position: fixed;
   right: 0;
   bottom: 0;
   opacity: 0.5;
 }
+
+/*# sourceMappingURL=../css/goradd.css.map */

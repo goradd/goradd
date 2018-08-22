@@ -2,29 +2,7 @@ package config
 
 import (
 	"path"
-	"runtime"
 )
-
-type AppMode int
-
-const (
-	AppModeDevelopment    AppMode = iota
-	AppModeDeploymentPrep    // preparing for deployment
-	AppModeDebug
-	AppModeRelease
-)
-
-var Mode AppMode // filled in by Goradd. The application mode.
-
-var LocalDir string
-var GoraddDir string // filled in by Goradd
-var ProjectDir string
-var Minify bool
-
-const JQuery = ""
-
-const PagePathPrefix = ""     // A path added to all goradd pages
-const AssetPrefix = "/assets" // A prefix added to all asset paths (js, css, etc. is added after this)
 
 const MultiPartFormMax = 10000000 // 10 MB max size for uploaded forms. Change how you want.
 
@@ -37,30 +15,34 @@ const PageCacheVersion = int32(1) // Change this every time we might change how 
 const DefaultPageSize = 10 // Default number of items in Pager controlled controls
 const MaxPageButtons = 10 // Maximum number of override buttons in a Pager control
 
+const PagePathPrefix = ""           // A path added to all goradd pages
+const AssetPrefix = "/assets/" 		// A prefix to indicate we are serving up an asset
 
-func init() {
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		panic("No caller information")
-	}
-	LocalDir = path.Dir(path.Dir(filename))
-	ProjectDir = path.Dir(LocalDir) + "/project"
-}
+// Minify controls whether we try to strip out unnecessary whitespace from our HTML output
+var Minify bool = !Debug
 
-func GoraddAssets() string {
-	return GoraddDir + "/assets"
-}
+var AssetDirectory string
 
-func LocalAssets() string {
-	return LocalDir + "/assets"
-}
-
-func ProjectAssets() string {
-	return ProjectDir + "/assets"
-}
 
 const (
 	DefaultDateFormat = "January 2, 2006"
 	DefaultTimeFormat = "3:04 am"
 	DefaultDateTimeFormat = "January 2, 2006 3:04am"
 )
+
+// JQueryPath returns either the local physical location of jquery, or a URL where to get jQuery. The default below
+// uses a local path for development, but gets jquery from a public location in the release version. Change how you want.
+func JQueryPath() (string, map[string]string) {
+	if Release {
+		return "http://code.jquery.com/jquery-3.3.1.min.js", map[string]string{"integrity": "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=", "crossorigin": "anonymous"}
+	} else {
+		return path.Join(GoraddAssets(),"/js/jquery3.js"), nil
+	}
+}
+
+func Init(assetDir string) {
+	if Release && assetDir == "" {
+		panic("The -assetDir flag is required when running the release build")
+	}
+	AssetDirectory = assetDir
+}

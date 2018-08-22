@@ -983,6 +983,10 @@ goradd.registerControls = function() {
     });
 };
 
+goradd.redirect = function(newLocation) {
+    location = newLocation
+}
+
 })( jQuery );
 
 ////////////////////////////////

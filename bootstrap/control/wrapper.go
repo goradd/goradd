@@ -73,7 +73,8 @@ type FormGroupWrapperType struct {
 }
 
 func NewFormGroupWrapper() *FormGroupWrapperType {
-	return new(FormGroupWrapperType)
+	w := new(FormGroupWrapperType)
+	return w
 }
 
 func (w *FormGroupWrapperType)CopyI() page.WrapperI {

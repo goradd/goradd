@@ -138,7 +138,7 @@ func DirectoryCopy(src, dst string) (err error) {
 	newPath := filepath.Join(dst, filepath.Base(src))
 
 	if !PathExists(newPath) {
-		perm := srcInfo.Mode() | os.ModePerm	// copy the permission
+		perm := srcInfo.Mode().Perm()	// copy the permission
 		err = os.Mkdir(newPath, perm)
 		if err != nil {
 			return fmt.Errorf("error creating directory %s: %s", newPath, err.Error())

@@ -1,11 +1,8 @@
-This directory is managed by goradd generally. While you run your program in your development environment, the program will
-copy files to this directory as you need them. Later, when you are ready to deploy, you will have all of your files in
-one place. You can choose to concatenate them or minimize them at that point to improve performance. If you
-concatenate them, be sure to register the master file in goradd and list the files it contains, so that goradd knows
-to load the master file instead of the contained files.
+This directory is where you place your statically served stylesheet, images, javascript, etc.
+You can refer to files in these directories from html by prepending "/assets/project" in front of the directory
+and file name. In other words, to display pic.jpg that is in the image directory, you can use the following html:
 
-If you want to add your own assets, put them in your project directory. They also will be copied to this directory
-when your development environment uses them.
+<img src="/assets/project/image/pic.jpg">
 
-You can always place other files here too, that you just want to statically serve from your webpages. In particular,
-you should place your image files in the image directory.
+There are ways to serve up static files from other directories. But by default the system is designed to serve
+these up in development mode, and easily deploy these when you are releasing.

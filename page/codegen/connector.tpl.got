@@ -12,7 +12,7 @@ func init() {
 	t := ConnectorTemplate {
 		generator.Template {
 			Overwrite: false,
-			TargetDir: config.LocalDir + "/gen",
+			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}
 	generator.AddTableTemplate(&t)

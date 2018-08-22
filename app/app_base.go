@@ -3,17 +3,14 @@ package app
 import (
 	//"flag"
 	"github.com/spekary/goradd/page"
-	"goradd-project/config"
 	"net/http"
 	"os"
-	"path"
-	"runtime"
 )
 
 // The application interface. A minimal set of commands that the main routine will ask the application to do.
 // The main routine offers a way of creating mock applications, and alternate versions of the application from the default
 type ApplicationI interface {
-	Init(mode string)
+	Init()
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 	ProcessCommand([]string)
 	PutContext(*http.Request) *http.Request
@@ -23,18 +20,8 @@ type ApplicationI interface {
 type Application struct {
 }
 
-func (a *Application) Init(mode string) {
+func (a *Application) Init() {
 
-	switch mode {
-	case "debug":
-		config.Mode = config.AppModeDebug
-	case "rel":
-		config.Mode = config.AppModeRelease
-	case "dev":
-		config.Mode = config.AppModeDevelopment
-	default:
-		panic("Unknown application mode")
-	}
 }
 
 // Our application was called from the command line
@@ -68,15 +55,4 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Write(buf.Bytes())
 	}
-}
-
-func init() {
-	var filename string
-	var ok bool
-
-	_, filename, _, ok = runtime.Caller(0)
-	if !ok {
-		panic("No caller information")
-	}
-	config.GoraddDir = path.Dir(path.Dir(filename))
 }

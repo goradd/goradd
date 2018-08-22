@@ -14,18 +14,18 @@ func init() {
 	t := FormBuildTemplate {
 		generator.Template {
 			Overwrite: false,
-			TargetDir: config.LocalDir + "/form/template_source",
+			TargetDir: config.ProjectDir() + "/form/template_source",
 		},
 	}
 	generator.AddOneTimeTemplate(&t)
 
-    t := FormIndexTemplate {
+    t2 := FormIndexTemplate {
         generator.Template {
             Overwrite: true,
-            TargetDir: config.LocalDir + "/form",
+            TargetDir: config.ProjectDir() + "/form",
         },
     }
-    generator.AddOneTimeTemplate(&t)
+    generator.AddOneTimeTemplate(&t2)
 }
 
 type FormBuildTemplate struct {
