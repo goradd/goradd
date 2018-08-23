@@ -96,11 +96,17 @@ func makeAppServer() http.Handler {
 	return h
 }
 
-// putContextHandler is an http handler that simply adds the application context to the current context
+// putContextHandler is an http handler that adds the application context to the current context
 func putContextHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		r = goraddApp.PutContext(r)
+
+		// Setup the output buffer
+		grctx := page.GetContext(r.Context())
+		grctx.AppContext.OutBuf = page.GetBuffer()
+		defer page.PutBuffer(grctx.AppContext.OutBuf)
 		next.ServeHTTP(w, r)
+		w.Write(grctx.AppContext.OutBuf.Bytes())
 	}
 	return http.HandlerFunc(fn)
 }
@@ -122,13 +128,12 @@ func serveFileHandler(buf *bytes.Buffer) http.Handler {
 
 		grctx := page.GetContext(r.Context())
 
-		if !grctx.WasHandled {
+		if grctx.AppContext.OutBuf.Len() == 0 {
 			found := serveStaticFile(w,r)
 			// if not handled by your static html output, return not found error
 			if !found {
 				w.WriteHeader(404)
 				fmt.Fprint(w, "<!DOCTYPE html><html><h1>Not Found</h1></html>")
-				grctx.WasHandled = true
 			}
 
 		}
