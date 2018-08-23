@@ -41,8 +41,8 @@ func RegisterPage(path string, creationFunction FormCreationFunction, formId str
 	pageManager.formIdRegistry[formId] = creationFunction
 }
 
-func (m *PageManager) getNewPageFunc(ctx context.Context) (f FormCreationFunction, path string, ok bool) {
-	path = GetContext(ctx).URL.Path
+func (m *PageManager) getNewPageFunc(grctx *Context) (f FormCreationFunction, path string, ok bool) {
+	path = grctx.URL.Path
 	prefix := config.PagePathPrefix
 	if prefix != "" {
 		if strings.Index(path, prefix) == 0 { // starts with prefix
@@ -55,8 +55,8 @@ func (m *PageManager) getNewPageFunc(ctx context.Context) (f FormCreationFunctio
 	return
 }
 
-func (m *PageManager) IsPage(ctx context.Context) bool {
-	_, _, ok := m.getNewPageFunc(ctx)
+func (m *PageManager) IsPage(grctx *Context) bool {
+	_, _, ok := m.getNewPageFunc(grctx)
 	return ok
 }
 
@@ -77,7 +77,7 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 			log.FrameworkDebug("Ajax lost the override state") // generally this should only happen if the override state drops out of the cash, which might happen after a long time
 		}
 		// override was not found, so make a new one
-		f, _, _ := m.getNewPageFunc(ctx)
+		f, _, _ := m.getNewPageFunc(gCtx)
 		if f == nil {
 			panic("Could not find the override creation function")
 		}
@@ -104,8 +104,6 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 				err := newRunError(ctx, v)
 				m.makeErrorResponse(ctx, err, "", buf)
 			case *HttpError:	// A kind of http panic that just returns a response code and headers
-				grCtx := GetContext(ctx)
-				grCtx.WasHandled = true // Notify listeners that the app handled the override
 				headers = v.headers
 				httpErrCode = v.errCode
 			default:

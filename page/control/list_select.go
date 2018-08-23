@@ -22,14 +22,13 @@ type SelectList struct {
 
 func NewSelectList(parent page.ControlI, id string) *SelectList {
 	t := &SelectList{}
-	t.ItemList = NewItemList(t)
 	t.Init(t, parent, id)
 	return t
 }
 
 func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.Control.Init(self, parent, id)
-
+	l.ItemList = NewItemList(l)
 	l.Tag = "select"
 }
 

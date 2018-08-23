@@ -40,9 +40,9 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	buf := page.GetBuffer()
-	defer page.PutBuffer(buf)
-	if pm.IsPage(ctx) {
+	grctx := page.GetContext(ctx)
+	buf := grctx.AppContext.OutBuf
+	if pm.IsPage(grctx) {
 		headers, errCode := pm.RunPage(ctx, buf)
 		if headers != nil {
 			for k, v := range headers {
@@ -53,6 +53,5 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if errCode != 0 {
 			w.WriteHeader(errCode)
 		}
-		w.Write(buf.Bytes())
 	}
 }

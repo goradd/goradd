@@ -78,7 +78,6 @@ func (p *Page) setStateID(stateId string) {
 
 func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
 	grCtx := GetContext(ctx)
-	grCtx.WasHandled = true // Notify listeners that the app handled the override
 
 	if grCtx.err != nil {
 		panic(grCtx.err)	// An error occurred during unpacking of the context, so report that now

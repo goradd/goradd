@@ -53,7 +53,7 @@ func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return
 }
 
-// LinkHtml renders the proxy as a link. Generally, only do this if you are actually linking to a override. If not, use
+// LinkHtml renders the proxy as a link. Generally, only do this if you are actually linking to a page. If not, use
 // a button.
 func (p *Proxy) LinkHtml(label string,
 	actionValue string,

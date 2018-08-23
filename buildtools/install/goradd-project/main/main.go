@@ -128,6 +128,7 @@ func serveFileHandler(buf *bytes.Buffer) http.Handler {
 			if !found {
 				w.WriteHeader(404)
 				fmt.Fprint(w, "<!DOCTYPE html><html><h1>Not Found</h1></html>")
+				grctx.WasHandled = true
 			}
 
 		}

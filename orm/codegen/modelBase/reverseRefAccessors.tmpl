@@ -12,6 +12,7 @@ for _,ref := range t.ReverseReferences {
 
 
 	if ref.IsUnique {
+	    associatedGoName := snaker.SnakeToCamel(ref.AssociatedColumnName)
 {{
 
 // {{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded
@@ -22,6 +23,16 @@ func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.GoType}} {
 	}
 	return o.{{oName}}
 }
+
+// Load{{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded
+// otherwise, it will return nil.
+func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.GoType}} {
+	if o.{{oName}} == nil {
+		o.{{oName}} = Load{{ref.GoType}}By{{= associatedGoName }}(ctx, o.{{= t.PrimaryKeyColumn.GoName }}())
+	}
+	return o.{{oName}}
+}
+
 
 }}
 	} else {

@@ -26,7 +26,6 @@ const (
 
 func NewOrderedList(parent page.ControlI, id string) *OrderedList {
 	t := &OrderedList{}
-	t.ItemList = NewItemList(t)
 	t.Init(t, parent, id)
 	return t
 }

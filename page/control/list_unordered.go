@@ -6,7 +6,16 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control/data"
+	page2 "goradd-project/override/page"
 )
+
+
+type UnorderedListI interface {
+	page2.ControlI
+	GetItemsHtml(items []ListItemI) string
+
+}
+
 
 // UnorderedList is a dynamically generated html unordered list (ul). Such lists are often used as the basis for
 // javascript and css widgets. If you use a data provider to set the data, you should call AddItems to the list
@@ -26,16 +35,26 @@ const (
 )
 
 func NewUnorderedList(parent page.ControlI, id string) *UnorderedList {
-	t := &UnorderedList{}
-	t.ItemList = NewItemList(t)
-	t.Init(t, parent, id)
-	return t
+	l := &UnorderedList{}
+	l.Init(l, parent, id)
+	return l
 }
 
 func (l *UnorderedList) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.Control.Init(self, parent, id)
+	l.ItemList = NewItemList(l)
 	l.Tag = "ul"
 	l.subItemTag = "li"
+}
+
+// this() supports object oriented features by giving easy access to the virtual function interface
+// Subclasses should provide a duplicate. Calls that implement chaining should return the result of this function.
+func (c *UnorderedList) this() UnorderedListI {
+	return c.Self.(UnorderedListI)
+}
+
+func (l *UnorderedList) SetSubTag(s string) {
+	l.subItemTag = s
 }
 
 // SetBulletType sets the bullet type. Choose from the UnorderedListStyle* constants.
@@ -58,17 +77,17 @@ func (l *UnorderedList) DrawingAttributes() *html.Attributes {
 }
 
 func (l *UnorderedList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	h := l.getItemsHtml(l.items)
+	h := l.this().GetItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil
 }
 
-func (l *UnorderedList) getItemsHtml(items []ListItemI) string {
+func (l *UnorderedList) GetItemsHtml(items []ListItemI) string {
 	var h = ""
 
 	for _, item := range items {
 		if item.HasChildItems() {
-			innerhtml := l.getItemsHtml(item.ListItems())
+			innerhtml := l.this().GetItemsHtml(item.ListItems())
 			innerhtml = html.RenderTag(l.Tag, nil, innerhtml)
 			h += html.RenderTag(l.subItemTag, item.Attributes(), item.Label()+" "+innerhtml)
 		} else {

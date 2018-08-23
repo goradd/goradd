@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"bytes"
 )
 
 type RequestMode int
@@ -69,8 +70,7 @@ type AppContext struct {
 	actionControlID     string                 // If an action, the control sending the action
 	eventID             EventID                // The event to send to the control
 	actionValues        ActionValues
-	WasHandled          bool
-	// TODO: Session object
+	OutBuf				*bytes.Buffer
 }
 
 type Context struct {

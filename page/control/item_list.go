@@ -32,8 +32,8 @@ type ItemListI interface {
 	reindex(start int)
 }
 
-// PatientList manages a list of ListItemI list items. PatientList is designed to be embedded in another structure, and will
-// turn that object into a manager of list items. PatientList will manage the id's of the items in its list, you do not
+// ItemList manages a list of ListItemI list items. ItemList is designed to be embedded in another structure, and will
+// turn that object into a manager of list items. ItemList will manage the id's of the items in its list, you do not
 // have control of that, and it needs to manage those ids in order to efficiently manage the selection process.
 type ItemList struct {
 	owner IDer
