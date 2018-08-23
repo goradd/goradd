@@ -15,11 +15,3 @@ type {{= privateName }}Base struct {
 }
 }}
 
-{{
-func New{{t.GoName}}Connector(parent page.ControlI) *{{t.GoName}} {
-    c := new({{= t.GoName }})
-    c.ParentControl = parent
-    return c
-}
-
-}}

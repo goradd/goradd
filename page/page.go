@@ -191,7 +191,7 @@ func (p *Page) GenerateControlID(id string) string {
 			}
 		}
 		if p.GetControl(id) != nil {
-			panic (fmt.Sprintf(`A control with id "%s" is being added a second time to the override. Ids must be unique on the override.`))
+			panic (fmt.Sprintf(`A control with id "%s" is being added a second time to the override. Ids must be unique on the override.`, id))
 		} else {
 			return id
 		}

@@ -49,6 +49,15 @@ type ColumnType struct {
 	ControlDescription
 }
 
+func (t *TableType) GetColumnByDbName(name string) *ColumnType {
+	for _,col := range t.Columns {
+		if col.DbName == name {
+			return &col
+		}
+	}
+	return nil
+}
+
 func Generate() {
 
 	codegen := Codegen{

@@ -183,7 +183,7 @@ func FormGroupTmpl(ctx context.Context, wrapper *DivWrapperType, ctrl page.Contr
 
 		buf.WriteString(ctrl.ID())
 
-		buf.WriteString(`_inst" class="form-text text-muted" >`)
+		buf.WriteString(`_inst" class="form-text" >`)
 		if !hasInstructions && !wrapper.useTooltips {
 			buf.WriteString(`&nbsp;`)
 		} else {

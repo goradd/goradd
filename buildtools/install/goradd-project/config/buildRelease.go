@@ -3,7 +3,6 @@
 package config
 
 import (
-	"github.com/spekary/goradd/buildtools/install/goradd-project/config"
 	"path"
 )
 
@@ -20,11 +19,11 @@ const Release = true
 // part of the deployment process. The variable must be set up as part of the initialization process.
 
 func GoraddAssets() string {
-	return path.Join(config.AssetPrefix, "goradd")
+	return path.Join(AssetPrefix, "goradd")
 }
 
 func ProjectAssets() string {
-	return path.Join(config.AssetPrefix, "project")
+	return path.Join(AssetPrefix, "project")
 }
 
 // This is here just to allow things to build, but should not be called

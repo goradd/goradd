@@ -7,7 +7,6 @@ import (
 	"github.com/spekary/goradd/orm/db"
     "strings"
     "github.com/knq/snaker"
-
 )
 
 func init() {
@@ -25,7 +24,7 @@ type EditPanelTemplate struct {
 }
 
 func (n *EditPanelTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/panel/" + t.GoName + "Edit.go"
+	return n.TargetDir + "/" + key + "/panel/" + t.GoName + "EditPanel.go"
 }
 
 func (n *EditPanelTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {

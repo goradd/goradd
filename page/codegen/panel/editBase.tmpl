@@ -2,7 +2,7 @@
 
 // The master template for the EditPanelBase classes
 
-var panelName = t.GoName + "EditBase"
+var panelName = t.GoName + "EditPanelBase"
 
 {{
 
@@ -31,29 +31,10 @@ const (
 
 {{: createControls.tmpl }}
 
+{{: load.tmpl }}
 
-func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
-	if pk == "" {
-		p.{{= t.GoName }} = model.New{{= t.GoName }}(ctx)
-	} else {
-		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk)
+{{: validate.tmpl }}
 
-		if p.{{= t.GoName }} == nil {
-			d := control.Alert(p.ParentForm(), p.ParentForm().T("The record was not found. Perhaps it was deleted by someone else?"), "OK")
-			d.SetTitle(p.ParentForm().T("Error"))
-			return page.NewFrameworkError(page.FrameworkErrRecordNotFound)
-		}
-	}
-
-	p.Connector.Load(ctx, p.{{= t.GoName }})
-
-	return nil
-}
-
-func (p *{{= panelName }}) Validate(ctx context.Context) bool {
-	isValid := p.Panel.Validate(ctx)
-    return isValid
-}
 
 // Refresh loads the controls with data from the cached {{= panelName }} object.
 func (p *{{= panelName }}) Refresh() {

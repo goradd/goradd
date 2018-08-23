@@ -38,7 +38,7 @@ func GoraddDir() string {
 }
 
 func ProjectDir() string {
-	return goraddDir
+	return projectDir
 }
 
 func init() {

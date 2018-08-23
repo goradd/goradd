@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	if config.Mode == config.AppModeDevelopment {
+	if !config.Release {
 		connector.RegisterGenerator(IntegerTextbox{})
 	}
 }

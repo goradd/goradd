@@ -2,7 +2,7 @@
 
 // The master template for the EditPanel classes
 
-var panelName = t.GoName + "Edit"
+var panelName = t.GoName + "EditPanel"
 
 {{
 
@@ -12,15 +12,15 @@ import(
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control"
 	"context"
-	"goradd-project/gen/goradd/connector"
-	"goradd-project/gen/goradd/model"
+	"goradd-project/gen/{{dd.DbKey}}/connector"
+	"goradd-project/gen/{{dd.DbKey}}/model"
 )
 
 type {{= panelName }} struct {
 	{{= panelName }}Base
 }
 
-func New{{= panelName }}Panel(parent page.ControlI, id string) *{{= panelName}} {
+func New{{= panelName }}(parent page.ControlI, id string) *{{= panelName}} {
     p := new({{= panelName }})
 	p.Init(p, parent, id)
 	return p
@@ -49,7 +49,7 @@ func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
 /* Override and call base class, or completely replace as you need
 // Validate validates the controls in the panel
 func (p *{{= panelName }}) Validate(ctx context.Context) bool {
-	isValid := d.{{= panelName }}Base.Validate(ctx)
+	isValid := p.{{= panelName }}Base.Validate(ctx)
 
 	// add other validations here
     return isValid

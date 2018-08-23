@@ -8,6 +8,8 @@ import (
 
 type LoaderFunc func(QueryBuilderI, map[string]interface{})
 
+type TransactionID int
+
 // The dataStore is the central database collection used in codegeneration and the orm.
 type DatabaseI interface {
 	Describe() *DatabaseDescription
@@ -23,9 +25,9 @@ type DatabaseI interface {
 	Insert(ctx context.Context, table string, fields map[string]interface{}) string
 	Delete(ctx context.Context, table string, pkName string, pkValue interface{})
 
-	Begin(ctx context.Context) int
-	Commit(ctx context.Context, txid int)
-	Rollback(ctx context.Context, txid int)
+	Begin(ctx context.Context) TransactionID
+	Commit(ctx context.Context, txid TransactionID)
+	Rollback(ctx context.Context, txid TransactionID)
 }
 
 var datastore struct {

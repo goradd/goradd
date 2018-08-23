@@ -1200,7 +1200,7 @@ func (c *Control) validateChildren(ctx context.Context) bool {
 	var isValid = true
 	for _, child := range c.children {
 		if !child.control().blockParentValidation {
-			isValid = child.Validate(ctx) && isValid
+			isValid = child.control().validateChildren(ctx) && isValid
 		}
 	}
 	if isValid {

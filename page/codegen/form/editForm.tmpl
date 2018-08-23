@@ -34,7 +34,7 @@ const (
 // To edit it, make a copy and move it out of this package and into another
 type {{= formName }} struct {
     FormBase
-    EditPanel *panel.{{= t.GoName }}Edit
+    EditPanel *panel.{{= t.GoName }}EditPanel
     SaveButton *Button
     CancelButton *Button
     DeleteButton *Button
@@ -50,8 +50,8 @@ func (f *{{= formName }})Init(ctx context.Context, self page.FormI, path string,
     f.FormBase.Init(ctx, self, path, id)
 
 	f.AddRelatedFiles()
-	f.CreateControls(ctx)
-	f.LoadControls(ctx)
+	f.createControls(ctx)
+	f.loadControls(ctx)
 }
 
 func (f *{{= formName }}) AddReleatedFiles() {
@@ -60,7 +60,7 @@ func (f *{{= formName }}) AddReleatedFiles() {
     // Add additional javascript, css and other files here
 }
 
-func (f *{{= formName }}) CreateControls(ctx context.Context) {
+func (f *{{= formName }}) createControls(ctx context.Context) {
 	f.EditPanel = panel.New{{= t.GoName }}EditPanel(f, "edit-panel")
 	f.SaveButton = NewButton(f, "save-button")
     f.SaveButton.SetText(f.T("Save"))
@@ -76,7 +76,7 @@ func (f *{{= formName }}) CreateControls(ctx context.Context) {
 	    )
 }
 
-func (f *{{= formName }}) LoadControls(ctx context.Context) {
+func (f *{{= formName }}) loadControls(ctx context.Context) {
     if id, ok := page.GetContext(ctx).FormValue("id"); ok {
     	f.EditPanel.Load(ctx, id)
         f.DeleteButton.SetVisible(true)
@@ -92,16 +92,16 @@ func (f *{{= formName }}) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case {{= t.GoName }}SaveAction:
 	    f.EditPanel.Save(ctx)
-	    f.ReturnToPrevious()
+	    f.returnToPrevious()
     case {{= t.GoName }}CancelAction:
-        f.ReturnToPrevious()
+        f.returnToPrevious()
     case {{= t.GoName }}DeleteAction:
         f.EditPanel.Delete(ctx)
-        f.ReturnToPrevious()
+        f.returnToPrevious()
     }
 }
 
-func (f *{{= formName }}) ReturnToPrevious() {
+func (f *{{= formName }}) returnToPrevious() {
 	f.ChangeLocation("/form/{{= t.GoName }}List")
 }
 

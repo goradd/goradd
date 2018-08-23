@@ -25,7 +25,7 @@ type ConnectorBaseTemplate struct {
 }
 
 func (n *ConnectorBaseTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/connector/" + t.GoName + "Base.go"
+	return n.TargetDir + "/" + key + "/connector/" + t.GoName + ".base.go"
 }
 
 func (n *ConnectorBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {

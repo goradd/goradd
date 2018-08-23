@@ -3,7 +3,7 @@
 
 {{for _,col := range t.Columns }}
 {{if col.Generator != nil}}
-func (c *{{t.GoName}}) New{{= col.ControlName }}(id string) *{{= col.Import.Namespace}}.{{= col.ControlType}} {
+func (c *{{= privateName }}Base) New{{= col.ControlName }}(id string) *{{= col.Import.Namespace}}.{{= col.ControlType}} {
     var ctrl *{{= col.Import.Namespace}}.{{= col.ControlType}}
 {{= col.Generator.GenerateCreate(col.Import.Namespace, col.ColumnDescription) }}
     c.{{= col.ControlName}} = ctrl

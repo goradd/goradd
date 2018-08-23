@@ -63,8 +63,6 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 	f.Control.id = id
 	f.Control.Init(self, nil, id)
 	f.Tag = "form"
-	//self.CreateControls(ctx)
-	//self.LoadControls(ctx)
 }
 
 func (f *FormBase) this() FormI {
@@ -84,16 +82,6 @@ func (f *FormBase) AddRelatedFiles() {
 		html.NewAttributes().Set("integrity", "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp").Set("crossorigin", "anonymous"))
 }
 
-// CreateControls is a stub function for you to implement in an overriding object. This is where you will create your
-// controls.
-func (f *FormBase) CreateControls(ctx context.Context) {
-}
-
-// LoadControls is a stub function for you to implement in an overriding object. This is where you would
-// initialize your controls to initial values if not the default. Note that you should also call SetSaveState on
-// controls here, but only after initializing the control
-func (f *FormBase) LoadControls(ctx context.Context) {
-}
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.

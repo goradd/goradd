@@ -66,9 +66,9 @@ func NewSqlDb(dbKey string) SqlDb {
 	return s
 }
 
-// Begin starts a transaction. You must use the context returned from this function for all subsequent
-// database operations. Also, you should immediately defer a Rollback. If you Commit before the Rollback
-func (s *SqlDb) Begin(ctx context.Context) (txid int){
+// Begin starts a transaction. You should immediately defer a Rollback using the returned transaction id.
+// If you Commit before the Rollback happens, no Rollback will occur.
+func (s *SqlDb) Begin(ctx context.Context) (txid TransactionID){
 	var c *SqlContext
 
 	i := ctx.Value(goradd.SqlContext)
@@ -89,11 +89,11 @@ func (s *SqlDb) Begin(ctx context.Context) (txid int){
 			panic(err.Error())
 		}
 	}
-	return c.txCount
+	return TransactionID(c.txCount)
 }
 
 // Commit commits the transaction, and if an error occurs, will panic with the error.
-func (s *SqlDb) Commit(ctx context.Context, txid int) {
+func (s *SqlDb) Commit(ctx context.Context, txid TransactionID) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
 	if i == nil {
@@ -102,7 +102,7 @@ func (s *SqlDb) Commit(ctx context.Context, txid int) {
 		c = i.(*SqlContext)
 	}
 
-	if c.txCount != txid {
+	if c.txCount != int(txid) {
 		panic("Missing Rollback after previous Begin")
 	}
 
@@ -123,7 +123,7 @@ func (s *SqlDb) Commit(ctx context.Context, txid int) {
 // that if you call Rollback on a transaction that has already been committed, no Rollback will happen. This makes it easier
 // to implement a transaction management scheme, because you simply always defer a Rollback after a Begin. Pass the txid
 // that you got from the Begin to the Rollback
-func (s *SqlDb) Rollback(ctx context.Context, txid int) {
+func (s *SqlDb) Rollback(ctx context.Context, txid TransactionID) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
 	if i == nil {
@@ -132,7 +132,7 @@ func (s *SqlDb) Rollback(ctx context.Context, txid int) {
 		c = i.(*SqlContext)
 	}
 
-	if c.txCount == txid {
+	if c.txCount == int(txid) {
 		c.txCount--
 		err := c.tx.Rollback()
 		if err != nil {

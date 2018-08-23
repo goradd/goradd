@@ -1,10 +1,12 @@
-// load.tmpl
 {{
 
 // Load will associate the controls with data from the given model.{{= t.GoName}} object and load the controls with data.
 // Generally call this after creating the controls. Otherwise, call Refresh if you Load before creating the controls.
-// If you pass a nil object, it will prepare the controls for creating a new record in the database.
-func (c *{{= privateName }}Base) Load(ctx context.Context, modelObj *model.{{= t.GoName}}) {
+// If you pass a new object, it will prepare the controls for creating a new record in the database.
+func (c *{{t.GoName}}) Load(ctx context.Context, modelObj *model.{{= t.GoName}}) {
+    if modelObj == nil {
+        modelObj = model.New{{= t.GoName}}(ctx)
+    }
     c.{{= t.GoName}} = modelObj
     if modelObj.PrimaryKey() == "" {
         c.EditMode = false
@@ -14,24 +16,6 @@ func (c *{{= privateName }}Base) Load(ctx context.Context, modelObj *model.{{= t
     c.Refresh()
 }
 
-
-// Refresh loads the controls with the cached model.{{= t.GoName}} object.
-func (c *{{= privateName }}Base) Refresh() {
-{{for _,col := range t.Columns }}
-
-{{g
-    var sLoad string
-    if col.Generator != nil {
-        sLoad = col.Generator.GenerateGet(col.ControlName, t.GoName, col.ColumnDescription)
-    }
-}}
-{{if sLoad != ""}}
-    if c.{{col.ControlName}} != nil {
-        {{= sLoad }}
-    }
-{{if}}
-{{for}}
-}
 }}
 
 
