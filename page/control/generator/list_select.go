@@ -2,18 +2,17 @@ package generator
 
 import (
 	"goradd-project/config"
-	"github.com/spekary/goradd/codegen/connector"
-	"github.com/spekary/goradd/orm/db"
 	"fmt"
 	"goradd-project/config/codegen"
 	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/page"
 	"github.com/gedex/inflector"
+	"github.com/spekary/goradd/codegen/generator"
 )
 
 func init() {
 	if !config.Release {
-		connector.RegisterGenerator(SelectList{})
+		generator.RegisterControlGenerator(SelectList{})
 	}
 }
 
@@ -36,18 +35,18 @@ func (d SelectList) Import() string {
 }
 
 // TODO: This has to be changed to support virtual column types like ManyMany and Reverse
-func (d SelectList) SupportsColumn(col *db.ColumnDescription) bool {
+func (d SelectList) SupportsColumn(col *generator.ColumnType) bool {
 	if col.ForeignKey != nil {
 		return true
 	}
 	return false
 }
 
-func (d SelectList) GenerateCreate(namespace string, col *db.ColumnDescription) (s string) {
+func (d SelectList) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 		`	ctrl = %s.NewSelectList(c.ParentControl, id)
 	ctrl.SetLabel("%s")
-`, namespace, col.GoName)
+`, namespace, col.DefaultLabel)
 
 	if codegen.DefaultWrapper != "" {
 		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
@@ -68,12 +67,12 @@ func (d SelectList) GenerateCreate(namespace string, col *db.ColumnDescription) 
 	return
 }
 
-func (d SelectList) GenerateGet(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d SelectList) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(`c.%s.SetValue(c.%s.%s())`, ctrlName, objName, col.ForeignKey.GoName)
 	return
 }
 
-func (d SelectList) GeneratePut(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d SelectList) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	if col.ForeignKey != nil && col.ForeignKey.IsType {
 		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Value().(model.%s))`, objName, col.ForeignKey.GoName, ctrlName, col.ForeignKey.GoType)
 	} else {

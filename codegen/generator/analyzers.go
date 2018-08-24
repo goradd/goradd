@@ -5,7 +5,6 @@ import (
 	codegenConfig "goradd-project/config/codegen"
 	"strings"
 	"strconv"
-	"github.com/spekary/goradd/codegen/connector"
 )
 
 
@@ -54,12 +53,14 @@ func ColumnsWithControls (t *db.TableDescription) (columns []ColumnType, imports
 				pathToImport[importPath] = imp
 				namespaceToImport[namespace] = imp
 			}
+			defaultLabel := strings.Title(strings.Replace(col.DbName, "_", " ", -1))
 			col2.ControlDescription = ControlDescription{
 				imp,
 				typ,
 				newFunc,
 				col.GoName + typ,
-				connector.GetGenerator(importPath, typ),
+				defaultLabel,
+				GetControlGenerator(importPath, typ),
 			}
 		}
 		columns = append(columns, col2)

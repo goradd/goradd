@@ -2,18 +2,17 @@ package generator
 
 import (
 	"goradd-project/config"
-	"github.com/spekary/goradd/codegen/connector"
-	"github.com/spekary/goradd/orm/db"
 	"fmt"
 	"goradd-project/config/codegen"
 	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/orm/query"
+	"github.com/spekary/goradd/codegen/generator"
 )
 
 func init() {
 	if !config.Release {
-		connector.RegisterGenerator(Checkbox{})
+		generator.RegisterControlGenerator(Checkbox{})
 	}
 }
 
@@ -35,18 +34,18 @@ func (d Checkbox) Import() string {
 	return "github.com/spekary/goradd/page/control"
 }
 
-func (d Checkbox) SupportsColumn(col *db.ColumnDescription) bool {
+func (d Checkbox) SupportsColumn(col *generator.ColumnType) bool {
 	if col.GoType == query.ColTypeBool {
 		return true
 	}
 	return false
 }
 
-func (d Checkbox) GenerateCreate(namespace string, col *db.ColumnDescription) (s string) {
+func (d Checkbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 		`	ctrl = %s.NewCheckbox(c.ParentControl, id)
 	ctrl.SetLabel("%s")
-`, namespace, col.GoName)
+`, namespace, col.DefaultLabel)
 
 	if codegen.DefaultWrapper != "" {
 		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
@@ -56,12 +55,12 @@ func (d Checkbox) GenerateCreate(namespace string, col *db.ColumnDescription) (s
 	return
 }
 
-func (d Checkbox) GenerateGet(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d Checkbox) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(`c.%s.SetChecked(c.%s.%s())`, ctrlName, objName, col.GoName)
 	return
 }
 
-func (d Checkbox) GeneratePut(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d Checkbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(`c.%s.Set%s(c.%s.Checked())`, objName,  col.GoName, ctrlName)
 	return
 }

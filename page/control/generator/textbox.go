@@ -2,19 +2,18 @@ package generator
 
 import (
 	"goradd-project/config"
-	"github.com/spekary/goradd/codegen/connector"
-	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/orm/query"
 	"fmt"
 	"goradd-project/config/codegen"
 	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control"
+	"github.com/spekary/goradd/codegen/generator"
 )
 
 func init() {
 	if !config.Release {
-		connector.RegisterGenerator(Textbox{})
+		generator.RegisterControlGenerator(Textbox{})
 	}
 }
 
@@ -35,7 +34,7 @@ func (d Textbox) Import() string {
 	return "github.com/spekary/goradd/page/control"
 }
 
-func (d Textbox) SupportsColumn(col *db.ColumnDescription) bool {
+func (d Textbox) SupportsColumn(col *generator.ColumnType) bool {
 	if col.GoType == query.ColTypeBytes ||
 		col.GoType == query.ColTypeString {
 		return true
@@ -43,11 +42,11 @@ func (d Textbox) SupportsColumn(col *db.ColumnDescription) bool {
 	return false
 }
 
-func (d Textbox) GenerateCreate(namespace string, col *db.ColumnDescription) (s string) {
+func (d Textbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 `	ctrl = %s.NewTextbox(c.ParentControl, id)
 	ctrl.SetLabel("%s")
-`, namespace, col.GoName)
+`, namespace, col.DefaultLabel)
 	if col.MaxCharLength > 0 {
 		s += fmt.Sprintf(`	ctrl.SetMaxLength(%d)	
 `, col.MaxCharLength)
@@ -68,12 +67,12 @@ func (d Textbox) GenerateCreate(namespace string, col *db.ColumnDescription) (s 
 	return
 }
 
-func (d Textbox) GenerateGet(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d Textbox) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(`c.%s.SetText(c.%s.%s())`, ctrlName, objName, col.GoName)
 	return
 }
 
-func (d Textbox) GeneratePut(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d Textbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(`c.%s.Set%s(c.%s.Text())`, objName,  col.GoName, ctrlName)
 	return
 }
@@ -83,10 +82,10 @@ func (d Textbox) ConnectorParams() *types.OrderedMap {
 	paramControls := page.ControlConnectorParams()
 	paramSet := types.NewOrderedMap()
 
-	paramSet.Set("ColumnCount", connector.ConnectorParam {
+	paramSet.Set("ColumnCount", generator.ConnectorParam {
 		"Column Count",
 		"Width of field by the number of characters.",
-		connector.ControlTypeInteger,
+		generator.ControlTypeInteger,
 		`{{var}}.SetColumnCount{{val}}`,
 		func(c page.ControlI, val interface{}) {
 			c.(*control.Textbox).SetColumnCount(val.(int))

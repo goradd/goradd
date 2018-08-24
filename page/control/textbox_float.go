@@ -32,9 +32,30 @@ func (i *FloatTextbox) SetMaxValue(maxValue float64, invalidMessage string) {
 }
 
 func (i *FloatTextbox) Value() interface{} {
+	return i.Float64()
+}
+
+func (i *FloatTextbox) Float64() float64 {
 	t := i.Textbox.Text()
 	v, _ := strconv.ParseFloat(t, 64)
 	return v
+}
+
+func (i *FloatTextbox) Float32() float32 {
+	t := i.Textbox.Text()
+	v, _ := strconv.ParseFloat(t, 32)
+	return float32(v)
+}
+
+
+func (i *FloatTextbox) SetFloat64(v float64) *FloatTextbox {
+	i.Textbox.SetValue(v)
+	return i
+}
+
+func (i *FloatTextbox) SetFloat32(v float32) *FloatTextbox {
+	i.Textbox.SetValue(v)
+	return i
 }
 
 type FloatValidator struct {

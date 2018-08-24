@@ -1,0 +1,28 @@
+{{# Macros to help with setting bootstrap styling in form groups. }}
+
+{{# asRow sets the control to draw as a forgroup and a row. 1st parameter is the control.}}
+{{define asFormGroupRow}}
+{{g $1.With(bootstrap.NewFormGroupWrapper()).AddWrapperClass("row") }}
+{{end}}
+
+{{define withFormGroup}}
+{{g $1.With(bootstrap.NewFormGroupWrapper()) }}
+{{end}}
+
+
+{{define setGroupClass}}
+{{g $1.WrapperAttributes().SetClass("$2") }}
+{{end}}
+
+{{# setLabelClass sets the label class for the label tag in the wrapped form group. 1st param is control and 2nd param is the class.
+    Quote the class if adding a list of classes, as in "class1 class2". Precede the class with a plus sign to add rather than set. }}
+{{define setLabelClass}}
+{{g  $1.Wrapper().(*bootstrap.FormGroupWrapperType).LabelAttributes().SetClass("$2") }}
+{{end}}
+
+{{# setDivClass sets the class for the inner div tag in the wrapped form group. 1st param is control and 2nd param is the class.}}
+{{define setDivClass}}
+{{g  $1.Wrapper().(*bootstrap.FormGroupWrapperType).InnerDivAttributes().SetClass("$2") }}
+{{end}}
+
+

@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 	"os/exec"
-	"github.com/spekary/goradd/codegen/connector"
 	"github.com/spekary/goradd/util"
 )
 
@@ -40,7 +39,8 @@ type ControlDescription struct {
 	ControlType string
 	NewControlFunc string
 	ControlName string
-	Generator connector.Generator
+	DefaultLabel string
+	Generator ControlGenerator
 }
 
 type ColumnType struct {

@@ -10,7 +10,7 @@ func (c *{{= privateName }}Base) Update() {
 {{g
     var sUpdate string
     if col.Generator != nil {
-        sUpdate = col.Generator.GeneratePut(col.ControlName, t.GoName, col.ColumnDescription)
+        sUpdate = col.Generator.GeneratePut(col.ControlName, t.GoName, &col)
     }
 }}
 {{if sUpdate != ""}}

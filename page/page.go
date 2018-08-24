@@ -264,6 +264,10 @@ func (p *Page) removeControl(id string) {
 	p.controlRegistry.Remove(id)
 }
 
+func (p *Page) Title() string {
+	return p.title
+}
+
 func (p *Page) SetTitle(title string) {
 	p.title = title
 }

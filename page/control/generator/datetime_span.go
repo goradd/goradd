@@ -2,18 +2,17 @@ package generator
 
 import (
 	"goradd-project/config"
-	"github.com/spekary/goradd/codegen/connector"
-	"github.com/spekary/goradd/orm/db"
 	"fmt"
 	"goradd-project/config/codegen"
 	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control"
+	"github.com/spekary/goradd/codegen/generator"
 )
 
 func init() {
 	if !config.Release {
-		connector.RegisterGenerator(DateTimeSpan{})
+		generator.RegisterControlGenerator(DateTimeSpan{})
 	}
 }
 
@@ -35,15 +34,15 @@ func (d DateTimeSpan) Import() string {
 	return "github.com/spekary/goradd/page/control"
 }
 
-func (d DateTimeSpan) SupportsColumn(col *db.ColumnDescription) bool {
+func (d DateTimeSpan) SupportsColumn(col *generator.ColumnType) bool {
 	return true
 }
 
-func (d DateTimeSpan) GenerateCreate(namespace string, col *db.ColumnDescription) (s string) {
+func (d DateTimeSpan) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 		`	ctrl = %s.NewDateTimeSpan(c.ParentControl, id)
 	ctrl.SetLabel("%s")
-`, namespace, col.GoName)
+`, namespace, col.DefaultLabel)
 
 	if codegen.DefaultWrapper != "" {
 		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
@@ -53,12 +52,12 @@ func (d DateTimeSpan) GenerateCreate(namespace string, col *db.ColumnDescription
 	return
 }
 
-func (d DateTimeSpan) GenerateGet(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d DateTimeSpan) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(`c.%s.SetDateTime(c.%s.%s())`, ctrlName, objName, col.GoName)
 	return
 }
 
-func (d DateTimeSpan) GeneratePut(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d DateTimeSpan) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	return
 }
 
@@ -66,10 +65,10 @@ func (d DateTimeSpan) GeneratePut(ctrlName string, objName string, col *db.Colum
 func (d DateTimeSpan) ConnectorParams() *types.OrderedMap {
 	paramControls := page.ControlConnectorParams()
 	paramSet := types.NewOrderedMap()
-	paramSet.Set("Format", connector.ConnectorParam {
+	paramSet.Set("Format", generator.ConnectorParam {
 		"Format",
 		"format string to use to format the DateTime. See time.Time doc for more info.",
-		connector.ControlTypeString,
+		generator.ControlTypeString,
 		`{{var}}.SetFormat{{val}}`,
 		func(c page.ControlI, val interface{}) {
 			c.(*control.DateTimeSpan).SetFormat(val.(string))

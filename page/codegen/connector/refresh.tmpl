@@ -10,7 +10,7 @@ func (c *{{= privateName }}Base) Refresh() {
 {{g
     var sLoad string
     if col.Generator != nil {
-        sLoad = col.Generator.GenerateGet(col.ControlName, t.GoName, col.ColumnDescription)
+        sLoad = col.Generator.GenerateGet(col.ControlName, t.GoName, &col)
     }
 }}
 {{if sLoad != ""}}

@@ -2,17 +2,16 @@ package generator
 
 import (
 	"goradd-project/config"
-	"github.com/spekary/goradd/codegen/connector"
-	"github.com/spekary/goradd/orm/db"
 	"fmt"
 	"goradd-project/config/codegen"
 	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/codegen/generator"
 )
 
 func init() {
 	if !config.Release {
-		connector.RegisterGenerator(Span{})
+		generator.RegisterControlGenerator(Span{})
 	}
 }
 
@@ -34,15 +33,15 @@ func (d Span) Import() string {
 	return "github.com/spekary/goradd/page/control"
 }
 
-func (d Span) SupportsColumn(col *db.ColumnDescription) bool {
+func (d Span) SupportsColumn(col *generator.ColumnType) bool {
 	return true
 }
 
-func (d Span) GenerateCreate(namespace string, col *db.ColumnDescription) (s string) {
+func (d Span) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 		`	ctrl = %s.NewSpan(c.ParentControl, id)
 	ctrl.SetLabel("%s")
-`, namespace, col.GoName)
+`, namespace, col.DefaultLabel)
 
 	if codegen.DefaultWrapper != "" {
 		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
@@ -52,12 +51,12 @@ func (d Span) GenerateCreate(namespace string, col *db.ColumnDescription) (s str
 	return
 }
 
-func (d Span) GenerateGet(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d Span) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(`c.%s.SetText(fmt.Sprintf("%%v", c.%s.%s()))`, ctrlName, objName, col.GoName)
 	return
 }
 
-func (d Span) GeneratePut(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d Span) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	return
 }
 

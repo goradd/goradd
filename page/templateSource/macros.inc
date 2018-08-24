@@ -25,7 +25,11 @@ import (
 
 
 func (form *{{form}}) AddHeadTags()  {
-	form.Page().SetTitle("{{title}}")
+    f.FormBase.AddHeadTags()
+    if "{{title}}" != "" {
+        form.Page().SetTitle("{{title}}")
+    }
+
 	{{headTags}}
 }
 

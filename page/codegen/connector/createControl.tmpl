@@ -5,7 +5,7 @@
 {{if col.Generator != nil}}
 func (c *{{= privateName }}Base) New{{= col.ControlName }}(id string) *{{= col.Import.Namespace}}.{{= col.ControlType}} {
     var ctrl *{{= col.Import.Namespace}}.{{= col.ControlType}}
-{{= col.Generator.GenerateCreate(col.Import.Namespace, col.ColumnDescription) }}
+{{= col.Generator.GenerateCreate(col.Import.Namespace, &col) }}
     c.{{= col.ControlName}} = ctrl
     return ctrl
 }

@@ -2,19 +2,18 @@ package generator
 
 import (
 	"goradd-project/config"
-	"github.com/spekary/goradd/codegen/connector"
-	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/orm/query"
 	"fmt"
 	"goradd-project/config/codegen"
 	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control"
+	"github.com/spekary/goradd/codegen/generator"
 )
 
 func init() {
 	if !config.Release {
-		connector.RegisterGenerator(IntegerTextbox{})
+		generator.RegisterControlGenerator(IntegerTextbox{})
 	}
 }
 
@@ -35,7 +34,7 @@ func (d IntegerTextbox) Import() string {
 	return "github.com/spekary/goradd/page/control"
 }
 
-func (d IntegerTextbox) SupportsColumn(col *db.ColumnDescription) bool {
+func (d IntegerTextbox) SupportsColumn(col *generator.ColumnType) bool {
 	if (col.GoType == query.ColTypeInteger ||
 		col.GoType == query.ColTypeInteger64) &&
 		!col.IsReference() {
@@ -44,11 +43,11 @@ func (d IntegerTextbox) SupportsColumn(col *db.ColumnDescription) bool {
 	return false
 }
 
-func (d IntegerTextbox) GenerateCreate(namespace string, col *db.ColumnDescription) (s string) {
+func (d IntegerTextbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 `	ctrl = %s.NewIntegerTextbox(c.ParentControl, id)
 	ctrl.SetLabel("%s")
-`, namespace, col.GoName)
+`, namespace, col.DefaultLabel)
 
 	// TODO: Set a maximum value based on database limit
 
@@ -64,12 +63,12 @@ func (d IntegerTextbox) GenerateCreate(namespace string, col *db.ColumnDescripti
 	return
 }
 
-func (d IntegerTextbox) GenerateGet(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d IntegerTextbox) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(`c.%s.SetInt(int(c.%s.%s()))`, ctrlName, objName, col.GoName)
 	return
 }
 
-func (d IntegerTextbox) GeneratePut(ctrlName string, objName string, col *db.ColumnDescription) (s string) {
+func (d IntegerTextbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	if col.GoType == query.ColTypeInteger64 {
 		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int64())`, objName,  col.GoName, ctrlName)
 	} else {
@@ -84,10 +83,10 @@ func (d IntegerTextbox) ConnectorParams() *types.OrderedMap {
 	paramSet := types.NewOrderedMap()
 
 	// TODO: Get the regular Textbox's parameters too
-	paramSet.Set("ColumnCount", connector.ConnectorParam {
+	paramSet.Set("ColumnCount", generator.ConnectorParam {
 		"Column Count",
 		"Width of field by the number of characters.",
-		connector.ControlTypeInteger,
+		generator.ControlTypeInteger,
 		`{{var}}.SetColumnCount{{val}}`,
 		func(c page.ControlI, val interface{}) {
 			c.(*control.IntegerTextbox).SetColumnCount(val.(int))

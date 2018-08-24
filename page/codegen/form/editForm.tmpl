@@ -51,8 +51,19 @@ func (f *{{= formName }})Init(ctx context.Context, self page.FormI, path string,
 
 	f.AddRelatedFiles()
 	f.createControls(ctx)
-	f.loadControls(ctx)
 }
+
+func (f *{{= formName }})Run(ctx context.Context) (err error) {
+
+    // If you are authorizing the current user, do that here
+    // if !authorized() {
+    //    return page.FrameworkErrNotAuthorized
+    //}
+
+	f.loadControls(ctx)
+	return
+}
+
 
 func (f *{{= formName }}) AddReleatedFiles() {
     f.FormBase.AddRelatedFiles()

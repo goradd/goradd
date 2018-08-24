@@ -1,21 +1,23 @@
+{{
 // Load reads a new record from the database and loads the edit controls with the information found. pk is the primary key
 // of the record.
-{{
 func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
 
-	if pk == "" {
-		p.{{= t.GoName }} = model.New{{= t.GoName }}(ctx)
-	} else {
-		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk)
+    var obj *model.{{= t.GoName }}
 
-		if p.{{= t.GoName }} == nil {
+	if pk == "" {
+		obj = model.New{{= t.GoName }}(ctx)
+	} else {
+		obj = model.Load{{= t.GoName }}(ctx, pk)
+
+		if obj == nil {
 			d := control.Alert(p.ParentForm(), p.ParentForm().T("The record was not found. Perhaps it was deleted by someone else?"), "OK")
 			d.SetTitle(p.ParentForm().T("Error"))
 			return page.NewFrameworkError(page.FrameworkErrRecordNotFound)
 		}
 	}
 
-	p.Connector.Load(ctx, p.{{= t.GoName }})
+	p.Connector.Load(ctx, obj)
 
 	return nil
 }

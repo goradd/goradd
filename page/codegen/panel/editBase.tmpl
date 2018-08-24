@@ -43,7 +43,7 @@ func (p *{{= panelName }}) Refresh() {
 
 // Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
 func (p *{{= panelName }}) Reload(ctx context.Context) {
-    p.Load(ctx, p.{{= t.GoName }}.PrimaryKey())
+    p.Load(ctx, p.Connector.{{= t.GoName }}.PrimaryKey())
 }
 
 // Save writes out the data that is currently in the controls

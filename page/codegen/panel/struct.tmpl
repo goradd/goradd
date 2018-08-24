@@ -3,7 +3,6 @@
 type {{= panelName }} struct {
 	control.Panel
 	Connector *connector.{{= t.GoName }}
-	{{= t.GoName }} *model.{{= t.GoName }}
 {{for _,col := range t.Columns }}
 {{if col.Generator != nil}}
     {{= col.ControlName }} *{{= col.Import.Namespace }}.{{= col.ControlType }}
