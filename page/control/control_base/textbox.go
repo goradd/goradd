@@ -247,7 +247,10 @@ func (t *Textbox) UpdateFormValues(ctx *page.Context) {
 	id := t.ID()
 
 	if v, ok := ctx.FormValue(id); ok {
-		t.value = t.sanitize(v)
+		value := t.sanitize(v)
+		// Bluemonday has the unfortunate side effect of turning some characters into their html entities. This will undo that.
+		value = html2.UnescapeString(value)
+		t.value = value
 	}
 }
 
