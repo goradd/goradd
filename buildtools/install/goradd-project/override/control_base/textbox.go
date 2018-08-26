@@ -6,15 +6,26 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	gr_control_base "github.com/spekary/goradd/page/control/control_base"
+	html2 "html"
 )
 
-var sanitizer *bluemonday.Policy
+var sanitizer mySanitizer
+
+type mySanitizer struct {
+	sanitizer2 *bluemonday.Policy
+}
+
+func (s *mySanitizer) Sanitize(in string) string {
+	v := s.sanitizer2.Sanitize(in)
+	v = html2.UnescapeString(v)	// Fix an issue with bluemonday
+	return v
+}
 
 type TextboxI interface {
 	gr_control_base.TextboxI
 }
 
-// The local Textbox override. All textboxes will descend from this one. You can make changes here that wil impact
+// The local Textbox override. All textboxes will descend from this one. You can make changes here that will impact
 // all the text fields in the system.
 type Textbox struct {
 	gr_control_base.Textbox
@@ -28,7 +39,7 @@ func NewTextbox(parent page.ControlI, id string) *Textbox {
 
 func (t *Textbox) Init(self gr_control_base.TextboxI, parent page.ControlI, id string) {
 	t.Textbox.Init(self, parent, id)
-	t.Textbox.SetSanitizer(sanitizer)
+	t.Textbox.SetSanitizer(&sanitizer)
 }
 
 func (t *Textbox) DrawingAttributes() *html.Attributes {
@@ -42,5 +53,5 @@ func (t *Textbox) DrawingAttributes() *html.Attributes {
 }
 
 func init() {
-	sanitizer = bluemonday.UGCPolicy() // Create a standard sanitizer.
+	sanitizer.sanitizer2 = bluemonday.StrictPolicy()
 }
