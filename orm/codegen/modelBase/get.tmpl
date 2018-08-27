@@ -25,10 +25,10 @@ for _,col := range t.Columns {
 
 {{
     case "{{= goName }}":
-        if !o.{{= col.VarName }}IsValid {
+        if !o.{{= col.ModelName }}IsValid {
             return nil
         }
-        return o.{{= col.VarName }}
+        return o.{{= col.ModelName }}
 }}
 	if col.IsReference() {
 {{

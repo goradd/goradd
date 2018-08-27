@@ -12,10 +12,10 @@ for _,col := range t.Columns {
 
 
 func (o *{{privateName}}Base) {{= goName }}() {{= col.ForeignKey.GoType }} {
-	if o._restored && !o.{{= col.VarName }}IsValid {
-		panic ("{{= col.VarName }} was not selected in the last query and so is not valid")
+	if o._restored && !o.{{= col.ModelName }}IsValid {
+		panic ("{{= col.ModelName }} was not selected in the last query and so is not valid")
 	}
-	return {{= col.ForeignKey.GoType }}(o.{{= col.VarName }})
+	return {{= col.ForeignKey.GoType }}(o.{{= col.ModelName }})
 }
 
 }}
@@ -24,7 +24,7 @@ func (o *{{privateName}}Base) {{= goName }}() {{= col.ForeignKey.GoType }} {
 {{
 
 func (o *{{privateName}}Base) {{= goName }}IsNull() bool {
-	return o.{{= col.VarName }}IsNull
+	return o.{{= col.ModelName }}IsNull
 }
 
 }}
@@ -36,18 +36,18 @@ func (o *{{privateName}}Base) {{= goName }}IsNull() bool {
 
 func (o *{{privateName}}Base) Set{{= goName }}(i interface{}) {
 	if i == nil {
-		if !o.{{= col.VarName }}IsNull {
-			o.{{= col.VarName }}IsNull = true
-			o.{{= col.VarName }}IsDirty = true
-			o.{{= col.VarName }}IsValid = true
-			o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+		if !o.{{= col.ModelName }}IsNull {
+			o.{{= col.ModelName }}IsNull = true
+			o.{{= col.ModelName }}IsDirty = true
+			o.{{= col.ModelName }}IsValid = true
+			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
 		}
 	} else {
 		v := i.({{= col.GoType.String() }})
-		if o.{{= col.VarName }}IsNull  {
-			o.{{= col.VarName }}IsNull = false
-			o.{{= col.VarName }} = v
-			o.{{= col.VarName }}IsDirty = true
+		if o.{{= col.ModelName }}IsNull  {
+			o.{{= col.ModelName }}IsNull = false
+			o.{{= col.ModelName }} = v
+			o.{{= col.ModelName }}IsDirty = true
 		}
 	}
 }
@@ -57,10 +57,10 @@ func (o *{{privateName}}Base) Set{{= goName }}(i interface{}) {
 {{
 
 func (o *{{privateName}}Base) Set{{= goName }}(v {{= col.ForeignKey.GoType }}) {
-	if o.{{= col.VarName }} != {{col.GoType.String()}}(v) {
-		o.{{= col.VarName }} = {{col.GoType.String()}}(v)
-		o.{{= col.VarName }}IsDirty = true
-		o.{{= col.VarName }}IsValid = true
+	if o.{{= col.ModelName }} != {{col.GoType.String()}}(v) {
+		o.{{= col.ModelName }} = {{col.GoType.String()}}(v)
+		o.{{= col.ModelName }}IsDirty = true
+		o.{{= col.ModelName }}IsValid = true
 	}
 }
 

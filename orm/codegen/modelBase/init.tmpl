@@ -6,24 +6,24 @@
 func (o *{{privateName}}Base) Initialize() {
 
 {{for _,col := range t.Columns}}
-	o.{{col.VarName}} = {{= col.DefaultValueAsValue() }}
+	o.{{col.ModelName}} = {{= col.DefaultValueAsValue() }}
 {{if col.IsNullable}}
 {{if col.DefaultValue == nil}}
-	o.{{col.VarName}}IsNull = true
-	o.{{col.VarName}}IsValid = true
-	o.{{col.VarName}}IsDirty = true
+	o.{{col.ModelName}}IsNull = true
+	o.{{col.ModelName}}IsValid = true
+	o.{{col.ModelName}}IsDirty = true
 {{else}}
-	o.{{col.VarName}}IsNull = false
-	o.{{col.VarName}}IsValid = true
-	o.{{col.VarName}}IsDirty = true
+	o.{{col.ModelName}}IsNull = false
+	o.{{col.ModelName}}IsValid = true
+	o.{{col.ModelName}}IsDirty = true
 {{if}}
 {{else}}
 {{if col.DefaultValue == nil}}
-	o.{{col.VarName}}IsValid = false
-	o.{{col.VarName}}IsDirty = false
+	o.{{col.ModelName}}IsValid = false
+	o.{{col.ModelName}}IsDirty = false
 {{else}}
-	o.{{col.VarName}}IsValid = true
-	o.{{col.VarName}}IsDirty = true
+	o.{{col.ModelName}}IsValid = true
+	o.{{col.ModelName}}IsDirty = true
 {{if}}
 {{if}}
 

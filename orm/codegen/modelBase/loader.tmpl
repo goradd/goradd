@@ -13,21 +13,21 @@ for _, col := range t.Columns {
 {{
 	if v, ok := m["{{= col.DbName }}"]; ok {
 		if v == nil {
-			o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
-			o.{{= col.VarName }}IsNull = true
-			o.{{= col.VarName }}IsValid = true
-			o.{{= col.VarName }}IsDirty = false
-		} else if o.{{= col.VarName }}, ok = v.({{= col.GoType.String() }}); ok {
-			o.{{= col.VarName }}IsNull = false
-			o.{{= col.VarName }}IsValid = true
-			o.{{= col.VarName }}IsDirty = false
+			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
+			o.{{= col.ModelName }}IsNull = true
+			o.{{= col.ModelName }}IsValid = true
+			o.{{= col.ModelName }}IsDirty = false
+		} else if o.{{= col.ModelName }}, ok = v.({{= col.GoType.String() }}); ok {
+			o.{{= col.ModelName }}IsNull = false
+			o.{{= col.ModelName }}IsValid = true
+			o.{{= col.ModelName }}IsDirty = false
 		} else {
 			panic("Wrong type found for {{= col.DbName }}.")
 		}
 	} else {
-		o.{{= col.VarName }}IsValid = false
-		o.{{= col.VarName }}IsNull = true
-		o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+		o.{{= col.ModelName }}IsValid = false
+		o.{{= col.ModelName }}IsNull = true
+		o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
 	}
 }}
 
@@ -35,15 +35,15 @@ for _, col := range t.Columns {
 
 {{
 	if v, ok := m["{{= col.DbName }}"]; ok && v != nil {
-		if o.{{= col.VarName }}, ok = v.({{= col.GoType.String() }}); ok {
-			o.{{= col.VarName }}IsValid = true
-			o.{{= col.VarName }}IsDirty = false
+		if o.{{= col.ModelName }}, ok = v.({{= col.GoType.String() }}); ok {
+			o.{{= col.ModelName }}IsValid = true
+			o.{{= col.ModelName }}IsDirty = false
 		} else {
 			panic("Wrong type found for {{= col.DbName }}.")
 		}
 	} else {
-		o.{{= col.VarName }}IsValid = false
-		o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+		o.{{= col.ModelName }}IsValid = false
+		o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
 	}
 
 }}
@@ -57,14 +57,14 @@ for _, col := range t.Columns {
 {{
 	if linkParent && parentKey == "{{= col.ForeignKey.GoName }}" {
 		o.{{oName}} = objParent.(*{{= col.ForeignKey.GoType }})
-		o.{{= col.VarName }}IsValid = true
-		o.{{= col.VarName }}IsDirty = false
+		o.{{= col.ModelName }}IsValid = true
+		o.{{= col.ModelName }}IsDirty = false
 	} else if v, ok := m["{{= col.ForeignKey.GoName }}"]; ok {
 		if {{oName}}, ok2 := v.(map[string]interface{}); ok2 {
 			o.{{oName}} = new({{= col.ForeignKey.GoType }})
 			o.{{oName}}.load({{oName}}, linkParent, o.{{oName}}, objThis, "{{col.ForeignKey.RR.GoPlural}}")
-			o.{{= col.VarName }}IsValid = true
-			o.{{= col.VarName }}IsDirty = false
+			o.{{= col.ModelName }}IsValid = true
+			o.{{= col.ModelName }}IsDirty = false
 		} else {
 			panic("Wrong type found for {{oName}} object.")
 		}
@@ -103,7 +103,7 @@ for _,ref := range t.ManyManyReferences {
 }}
 	} else {
 		mName := "m" + ref.GoPlural
-		pk := dd.TableDescription(ref.MM.AssociatedTableName).PrimaryKeyColumn.VarName
+		pk := dd.TableDescription(ref.MM.AssociatedTableName).PrimaryKeyColumn.ModelName
 
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {
@@ -155,7 +155,7 @@ for _,ref := range t.ReverseReferences {
 	} else {
 		oName := dd.AssociatedObjectPrefix + ref.GoPlural
 		mName := "m" + ref.GoPlural
-		pk := dd.TableDescription(ref.AssociatedTableName).GetColumn(ref.AssociatedColumnName).VarName
+		pk := dd.TableDescription(ref.AssociatedTableName).GetColumn(ref.AssociatedColumnName).ModelName
 
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {

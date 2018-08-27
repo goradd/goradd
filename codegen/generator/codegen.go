@@ -34,15 +34,19 @@ type ImportType struct {
 	Alias string // blank if not needing an alias
 }
 
+// ControlDescription is matched with a ColumnDescription below and provides additional information regarding
+// how information in a column can be used to generated a default control to edit that information.
 type ControlDescription struct {
 	Import *ImportType
 	ControlType string
 	NewControlFunc string
 	ControlName string
+	ControlID string	// default id to generate
 	DefaultLabel string
 	Generator ControlGenerator
 }
 
+// ColumnType combines a database ColumnDescription with a ControlDescription
 type ColumnType struct {
 	*db.ColumnDescription
 	// Related control information

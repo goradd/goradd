@@ -101,7 +101,7 @@ func (e *Event) NotBubbling() EventI {
 // ActionValue is a value that will be returned to the actions that will be process by this event. Specify a static
 // value, or javascript objects that will gather data at the time the event fires. The event will appear in the
 // ActionParams as the EventValue.
-// Example: ActionValue(javascript.VarName("ui")) will return the "ui" variable that is part of the event call.
+// Example: ActionValue(javascript.ModelName("ui")) will return the "ui" variable that is part of the event call.
 func (e *Event) ActionValue(r interface{}) EventI {
 	e.actionValue = r
 	return e

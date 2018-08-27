@@ -4,13 +4,7 @@
 func (p *{{= panelName }}) CreateControls() {
 {{for _,col := range t.Columns }}
 {{if col.Generator != nil && !col.IsPk}}
-{{g
-    controlName := col.ControlName
-    controlID := snaker.CamelToSnake(controlName)
-    controlID = strings.Replace(controlID, "_", "-", -1)
-    controlID = strings.Replace(t.DbName, "_", "-", -1) + "-" + controlID
-}}
-    p.{{= controlName }} = p.Connector.New{{= controlName }}("{{= controlID }}")
+    p.{{= col.ControlName }} = p.Connector.New{{= col.ControlName }}("{{= col.ControlID }}")
 {{if}}
 {{for}}
 }

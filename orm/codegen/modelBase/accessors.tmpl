@@ -11,12 +11,12 @@ for _,col := range t.Columns {
 
 // {{= col.GoName }} returns the loaded value of {{= col.GoName }}.
 func (o *{{privateName}}Base) {{= col.GoName }}() string {
-	return fmt.Sprint(o.{{= col.VarName }})
+	return fmt.Sprint(o.{{= col.ModelName }})
 }
 
 // {{= col.GoName }}IsValid returns true if the value was loaded from the database or has been set.
 func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
-	return o._restored && o.{{= col.VarName }}IsValid
+	return o._restored && o.{{= col.ModelName }}IsValid
 }
 
 }}
@@ -25,15 +25,15 @@ func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
 {{
 
 func (o *{{privateName}}Base) {{= col.GoName }}() {{= col.GoType.String() }} {
-	if o._restored && !o.{{= col.VarName }}IsValid {
-		panic ("{{= col.VarName }} was not selected in the last query and so is not valid")
+	if o._restored && !o.{{= col.ModelName }}IsValid {
+		panic ("{{= col.ModelName }} was not selected in the last query and so is not valid")
 	}
-	return o.{{= col.VarName }}
+	return o.{{= col.ModelName }}
 }
 
 // {{= col.GoName }}IsValid returns true if the value was loaded from the database or has been set.
 func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
-	return o.{{= col.VarName }}IsValid
+	return o.{{= col.ModelName }}IsValid
 }
 
 }}
@@ -44,7 +44,7 @@ func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
 
 // {{= col.GoName }}IsNull returns true if the related database value is null.
 func (o *{{privateName}}Base) {{= col.GoName }}IsNull() bool {
-	return o.{{= col.VarName }}IsNull
+	return o.{{= col.ModelName }}IsNull
 }
 
 }}
@@ -63,7 +63,7 @@ func (o *{{privateName}}Base) {{= col.ForeignKey.GoName }}() *{{= col.ForeignKey
 // Load{{= col.ForeignKey.GoName }} returns the related {{= col.ForeignKey.GoName }}. If it is not already loaded,
 // it will attempt to load it first.
 func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Context) *{{= col.ForeignKey.GoType }} {
-	if !o.{{= col.VarName }}IsValid  {
+	if !o.{{= col.ModelName }}IsValid  {
 		return nil
 	}
 
@@ -93,26 +93,26 @@ func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Conte
 
 func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 	if i == nil {
-		if !o.{{= col.VarName }}IsNull {
-			o.{{= col.VarName }}IsNull = true
-			o.{{= col.VarName }}IsDirty = true
-			o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+		if !o.{{= col.ModelName }}IsNull {
+			o.{{= col.ModelName }}IsNull = true
+			o.{{= col.ModelName }}IsDirty = true
+			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
 {{if col.IsReference() && !col.ForeignKey.IsType }}
 			o.{{oName}} = nil
 {{if}}
 		}
 	} else {
 		v := i.({{= col.GoType.String() }})
-		if o.{{= col.VarName }}IsNull ||
-		    {{if col.GoType != query.ColTypeBytes }} o.{{= col.VarName }} != v {{else}} !bytes.Equal(o.{{= col.VarName }}, v) {{if}}{
+		if o.{{= col.ModelName }}IsNull ||
+		    {{if col.GoType != query.ColTypeBytes }} o.{{= col.ModelName }} != v {{else}} !bytes.Equal(o.{{= col.ModelName }}, v) {{if}}{
 
-			o.{{= col.VarName }}IsNull = false
+			o.{{= col.ModelName }}IsNull = false
 {{if col.GoType != query.ColTypeBytes }}
-			o.{{= col.VarName }} = v
+			o.{{= col.ModelName }} = v
 {{else}}
-            o.{{= col.VarName }} = append([]byte(nil), v...)
+            o.{{= col.ModelName }} = append([]byte(nil), v...)
 {{if}}
-			o.{{= col.VarName }}IsDirty = true
+			o.{{= col.ModelName }}IsDirty = true
 {{if col.IsReference() && !col.ForeignKey.IsType }}
 			o.{{oName}} = nil
 {{if}}
@@ -129,20 +129,20 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 
 func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.ForeignKey.GoType }}) {
 	if v == nil {
-		if !o.{{= col.VarName }}IsNull {
-			o.{{= col.VarName }}IsNull = true
-			o.{{= col.VarName }}IsDirty = true
-			o.{{= col.VarName }}IsValid = true
-			o.{{= col.VarName }} = {{= col.DefaultValueAsValue() }}
+		if !o.{{= col.ModelName }}IsNull {
+			o.{{= col.ModelName }}IsNull = true
+			o.{{= col.ModelName }}IsDirty = true
+			o.{{= col.ModelName }}IsValid = true
+			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
 			o.{{oName}} = nil
 		}
 	} else {
 		o.{{oName}}  = v
-		if o.{{= col.VarName }}IsNull || o.{{= col.VarName }} != v.PrimaryKey() {
-			o.{{= col.VarName }}IsNull = false
-			o.{{= col.VarName }} = v.PrimaryKey()
-			o.{{= col.VarName }}IsDirty = true
-			o.{{= col.VarName }}IsValid = true
+		if o.{{= col.ModelName }}IsNull || o.{{= col.ModelName }} != v.PrimaryKey() {
+			o.{{= col.ModelName }}IsNull = false
+			o.{{= col.ModelName }} = v.PrimaryKey()
+			o.{{= col.ModelName }}IsDirty = true
+			o.{{= col.ModelName }}IsValid = true
 		}
 	}
 }
@@ -157,12 +157,12 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 // Set{{= col.GoName }} sets the value of {{= col.GoName }} in the object, to be saved later using the Save() function.
 func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.GoType.String() }}) {
 {{g if col.GoType == query.ColTypeBytes { }}
-	o.{{= col.VarName }} = v		// TODO: Copy bytes??
-	o.{{= col.VarName }}IsDirty = true
+	o.{{= col.ModelName }} = v		// TODO: Copy bytes??
+	o.{{= col.ModelName }}IsDirty = true
 {{g } else { }}
-	if o.{{= col.VarName }} != v {
-		o.{{= col.VarName }} = v
-		o.{{= col.VarName }}IsDirty = true
+	if o.{{= col.ModelName }} != v {
+		o.{{= col.ModelName }} = v
+		o.{{= col.ModelName }}IsDirty = true
 {{g 	if col.IsReference() && !col.ForeignKey.IsType {
 			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
 }}
@@ -186,10 +186,10 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 		panic("Cannot set {{= col.ForeignKey.GoName }} to a null value.")
 	} else {
 		o.{{oName}} = v
-		if o.{{= col.VarName }} != v.PrimaryKey() {
-			o.{{= col.VarName }} = v.PrimaryKey()
-			o.{{= col.VarName }}IsDirty = true
-			o.{{= col.VarName }}IsValid = true
+		if o.{{= col.ModelName }} != v.PrimaryKey() {
+			o.{{= col.ModelName }} = v.PrimaryKey()
+			o.{{= col.ModelName }}IsDirty = true
+			o.{{= col.ModelName }}IsValid = true
 		}
 	}
 }

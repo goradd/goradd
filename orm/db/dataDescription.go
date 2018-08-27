@@ -117,6 +117,10 @@ type ForeignKeyType struct {
 	RR           *ReverseReference // Filled in by analyzer, the corresponding
 }
 
+// ColumnDescription describes a database column for the purpose of code generation. Most of the information is either
+// gleaned from the structure of the database, or is taken from a file that describes the relationships between
+// different record types. Some of the information is filled in after analysis. Some of the information can be
+// provided through information embedded in database comments.
 type ColumnDescription struct {
 	DbName                string // name in database. Blank if this is a "virtual" table for sql tables. i.e. an association or virtual attribute query
 	GoName                string
@@ -138,7 +142,7 @@ type ColumnDescription struct {
 	// Filled in by analyzer
 	Options    *types.OrderedMap
 	ForeignKey *ForeignKeyType
-	VarName    string // code generating convenience. The name to use for the internal variable name corresponding to this table.
+	ModelName    string // code generating convenience. The internal name in the model corresponding to this column.
 }
 
 // The ManyManyReference structure is used by the templates during the codegen process to describe a many-to-any relationship.
@@ -540,9 +544,9 @@ func (dd *DatabaseDescription) analyzeColumn(td *TableDescription, cd *ColumnDes
 
 	if strings.Contains(cd.DbName, "_") {
 		camel := snaker.SnakeToCamel(cd.DbName)
-		cd.VarName = strings.ToLower(camel[0:1]) + camel[1:]
+		cd.ModelName = strings.ToLower(camel[0:1]) + camel[1:]
 	} else {
-		cd.VarName = cd.DbName
+		cd.ModelName = cd.DbName
 	}
 }
 

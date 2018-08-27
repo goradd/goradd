@@ -54,12 +54,19 @@ func ColumnsWithControls (t *db.TableDescription) (columns []ColumnType, imports
 				namespaceToImport[namespace] = imp
 			}
 			defaultLabel := strings.Title(strings.Replace(col.DbName, "_", " ", -1))
+
+			var defaultID string
+			if codegenConfig.GenerateControlIDs {
+				defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(col.DbName, "_", "-", -1)
+			}
+
 			col2.ControlDescription = ControlDescription{
 				imp,
 				typ,
 				newFunc,
 				col.GoName + typ,
 				defaultLabel,
+				defaultID,
 				GetControlGenerator(importPath, typ),
 			}
 		}
