@@ -69,7 +69,7 @@ const (
 	NavbarLight             = "navbar-light"
 )
 
-// Creates a new standard html button
+// NewNavbar returns a newly created Bootstrap Navbar object
 func NewNavbar(parent page.ControlI, id string) *Navbar {
 	b := &Navbar{}
 	b.Init(b, parent, id)

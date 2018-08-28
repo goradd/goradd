@@ -102,6 +102,9 @@ type ControlI interface {
 	RemoveClass(class string) ControlI
 	AddWrapperClass(class string) ControlI
 	SetStyles(*html.Style)
+	SetStyle(name string, value string) ControlI
+	SetWidthStyle(w interface{}) ControlI
+	SetHeightStyle(w interface{}) ControlI
 
 	PutCustomScript(ctx context.Context, response *Response)
 
@@ -597,21 +600,21 @@ func (c *Control) AddClass(class string) ControlI {
 		v2 := c.attributes.Class()
 		c.AddRenderScript("attr", "class", v2)
 	}
-	return c
+	return c.this()
 }
 
 func (c *Control) RemoveClass(class string) ControlI {
 	if changed := c.attributes.RemoveClass(class); changed {
 		c.isModified = true
 	}
-	return c
+	return c.this()
 }
 
 func (c *Control) AddWrapperClass(class string) ControlI {
 	if changed := c.wrapperAttributes.AddClassChanged(class); changed {
 		c.isModified = true
 	}
-	return c
+	return c.this()
 }
 
 // Adds a variadic parameter list to the renderScripts array, which is an array of javascript commands to send to the
@@ -1386,10 +1389,11 @@ func (c *Control) SetStyles(s *html.Style) {
 	c.Refresh() // TODO: Do this with javascript
 }
 
-func (c *Control) SetStyle(name string, value string) {
+func (c *Control) SetStyle(name string, value string) ControlI {
 	if changed,_ := c.attributes.SetStyleChanged(name, value); changed {
 		c.Refresh() // TODO: Do this with javascript
 	}
+	return c.this()
 }
 
 func (c *Control) RemoveClassesWithPrefix(prefix string) {
@@ -1399,23 +1403,26 @@ func (c *Control) RemoveClassesWithPrefix(prefix string) {
 }
 
 // SetWidthStyle sets the width css property
-func (c *Control) SetWidthStyle(w interface{}) {
+func (c *Control) SetWidthStyle(w interface{}) ControlI {
 	v := html.StyleString(w)
 	c.attributes.SetStyle("width", v)
 	c.AddRenderScript("css", "width", v) // use javascript to set this value
+	return c.this()
 }
 
 // SetHeightStyle sets the height css property
-func (c *Control) SetHeightStyle(h interface{}) {
+func (c *Control) SetHeightStyle(h interface{}) ControlI {
 	v := html.StyleString(h)
 	c.attributes.SetStyle("height", v)
-	c.AddRenderScript("css", "height", v) // use javascript so set this value
+	c.AddRenderScript("css", "height", v) // use javascript to set this value
+	return c.this()
 }
 
 
 // SetEscapeText to false to turn off html escaping of the text output. It is on by default.
-func (c *Control) SetEscapeText(e bool) {
+func (c *Control) SetEscapeText(e bool) ControlI {
 	c.htmlEscapeText = e
+	return c.this()
 }
 
 func ControlConnectorParams() *types.OrderedMap {

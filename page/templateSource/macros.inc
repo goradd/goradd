@@ -25,7 +25,7 @@ import (
 
 
 func (form *{{form}}) AddHeadTags()  {
-    f.FormBase.AddHeadTags()
+    form.FormBase.AddHeadTags()
     if "{{title}}" != "" {
         form.Page().SetTitle("{{title}}")
     }

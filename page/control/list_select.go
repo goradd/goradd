@@ -33,7 +33,7 @@ func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
 }
 
 func (l *SelectList) Validate(ctx context.Context) bool {
-	if v := l.Validate(ctx); !v {
+	if v := l.Control.Validate(ctx); !v {
 		return false
 	}
 
@@ -57,9 +57,17 @@ func (l *SelectList) UpdateFormValues(ctx *page.Context) {
 	}
 }
 
+// SelectedItem will return the currently selected item. If no item has been selected, it will return the first item
+// in the list, since that is what will be showing in the selection list, and will update its internal pointer to
+// make the first item the current selection.
 func (l *SelectList) SelectedItem() ListItemI {
 	if l.selectedId == "" {
-		return nil
+		if l.Len() == 0 {
+			return nil
+		} else {
+			l.selectedId = l.items[0].ID()
+			return l.items[0]
+		}
 	}
 	return l.GetItem(l.selectedId)
 }

@@ -65,8 +65,8 @@ func ColumnsWithControls (t *db.TableDescription) (columns []ColumnType, imports
 				typ,
 				newFunc,
 				col.GoName + typ,
-				defaultLabel,
 				defaultID,
+				defaultLabel,
 				GetControlGenerator(importPath, typ),
 			}
 		}

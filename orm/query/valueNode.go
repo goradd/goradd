@@ -53,6 +53,8 @@ func NewValueNode(i interface{}) NodeI {
 		n.value = float64(v)
 	case datetime.DateTime:
 		n.value = v.Time
+	case nil:
+		panic("You cannot use nil as an operator. If you are testing for a NULL, use the IsNull function.")
 	default:
 		// Arrays of items
 		if reflect.TypeOf(v).Kind() == reflect.Slice || reflect.TypeOf(v).Kind() == reflect.Array {

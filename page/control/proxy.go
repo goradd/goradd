@@ -47,7 +47,7 @@ func (p *Proxy) OnClick(actions ...action.ActionI) page.EventI {
 // proxy get sent to the response. This should get drawn by the auto-drawing routine, since proxies are not rendered in templates.
 func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	response := p.ParentForm().Response()
-	p.this().PutCustomScript(ctx, response)
+	// p.this().PutCustomScript(ctx, response) // Proxies should not have custom scripts?
 	p.GetActionScripts(response)
 	p.PostRender(ctx, buf)
 	return
