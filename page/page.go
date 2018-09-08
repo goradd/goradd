@@ -95,6 +95,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 
 	if isNew {
 		p.Form().AddHeadTags()
+		p.Form().LoadControls(ctx)
 	} else {
 		p.Form().control().updateValues(grCtx) // Tell all the controls to update their values.
 		// if This is an event response, do the actions associated with the event

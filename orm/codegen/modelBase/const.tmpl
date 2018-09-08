@@ -10,7 +10,7 @@ for _,col := range t.Columns {
 		continue // no way to represent this as a constant
 	}
 {{
-	{{= col.DefaultConstantName(t.GoName) }} = {{= v }}
+    {{= col.DefaultConstantName(t.GoName) }} = {{= v }}
 }}
 
 }

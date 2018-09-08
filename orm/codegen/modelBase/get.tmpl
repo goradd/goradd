@@ -29,11 +29,13 @@ for _,col := range t.Columns {
             return nil
         }
         return o.{{= col.ModelName }}
+
 }}
 	if col.IsReference() {
 {{
     case "{{= col.ForeignKey.GoName }}":
         return o.{{= col.ForeignKey.GoName }}()
+
 }}
 
     } //if
@@ -46,11 +48,13 @@ for _,ref := range t.ReverseReferences {
 {{
     case "{{= ref.GoName }}":
         return o.{{= ref.GoName }}()
+
 }}
 	} else {
 {{
     case "{{= ref.GoPlural }}":
         return o.{{= ref.GoPlural }}()
+
 }}
 	} //else
 } // for
@@ -62,6 +66,7 @@ for _,ref := range t.ManyManyReferences {
         return o.{{= ref.GoName }}()
     case "{{= ref.GoPlural }}":
         return o.{{= ref.GoPlural }}()
+
 }}
 }
 

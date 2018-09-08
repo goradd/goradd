@@ -104,6 +104,7 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 	} else {
 		v := i.({{= col.GoType.String() }})
 		if o.{{= col.ModelName }}IsNull ||
+		    !o._restored ||
 		    {{if col.GoType != query.ColTypeBytes }} o.{{= col.ModelName }} != v {{else}} !bytes.Equal(o.{{= col.ModelName }}, v) {{if}}{
 
 			o.{{= col.ModelName }}IsNull = false
@@ -129,7 +130,7 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 
 func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.ForeignKey.GoType }}) {
 	if v == nil {
-		if !o.{{= col.ModelName }}IsNull {
+		if !o.{{= col.ModelName }}IsNull || !o._restored {
 			o.{{= col.ModelName }}IsNull = true
 			o.{{= col.ModelName }}IsDirty = true
 			o.{{= col.ModelName }}IsValid = true
@@ -138,7 +139,7 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 		}
 	} else {
 		o.{{oName}}  = v
-		if o.{{= col.ModelName }}IsNull || o.{{= col.ModelName }} != v.PrimaryKey() {
+		if o.{{= col.ModelName }}IsNull || !o._restored || o.{{= col.ModelName }} != v.PrimaryKey() {
 			o.{{= col.ModelName }}IsNull = false
 			o.{{= col.ModelName }} = v.PrimaryKey()
 			o.{{= col.ModelName }}IsDirty = true
@@ -160,7 +161,7 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.GoType.String() }})
 	o.{{= col.ModelName }} = v		// TODO: Copy bytes??
 	o.{{= col.ModelName }}IsDirty = true
 {{g } else { }}
-	if o.{{= col.ModelName }} != v {
+	if o.{{= col.ModelName }} != v || !o._restored {
 		o.{{= col.ModelName }} = v
 		o.{{= col.ModelName }}IsDirty = true
 {{g 	if col.IsReference() && !col.ForeignKey.IsType {

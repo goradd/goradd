@@ -21,7 +21,7 @@ type FormI interface {
 	// Create the objects on the form without necessarily initializing them
 	Init(ctx context.Context, self FormI, path string, id string)
 	// CreateControls(ctx context.Context)
-	// LoadControls(ctx context.Context)
+	LoadControls(ctx context.Context)
 	// AddRelatedFiles()
 	AddHeadTags()
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
@@ -340,11 +340,16 @@ func (f *FormBase) Response() *Response {
 	return &f.response
 }
 
-// AddHeadTags is a lifecycle call that happens when a new override is created. This is where you should call
+// AddHeadTags is a lifecycle call that happens when a new form is created. This is where you should call
 // AddHtmlHeaderTag or SetTitle on the override to set tags that appear in the <head> tag of the override.
 // Head tags cannot be changed after the override is created.
 func (f *FormBase) AddHeadTags() {
 
+}
+
+// LoadControls is a lifecycle call that happens after a form is first created. It is the place to initialize the value
+// of the controls in the form based on variables sent to the form.
+func (f *FormBase) LoadControls(ctx context.Context) {
 }
 
 // Run is a lifecycle function that gets called whenever a override is run, either by a whole override load, or an ajax call.
