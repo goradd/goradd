@@ -42,7 +42,11 @@ func (mgr SCS_Manager) Use(next http.Handler) http.Handler {
 		// write out the changed session. The below will attempt to write a cookie, but it can't because headers have already been written.
 		// That is OK, because of our Touch above.
 		if sessionData.Len() > 0 {
-			data, _ = sessionData.MarshalBinary()
+			var err error
+			data, err = sessionData.MarshalBinary()
+			if err != nil {
+				w.Write([]byte(err.Error()))
+			}
 			temp = string(data)
 			_ = temp
 			session.PutBytes(w, "goradd.data", data)

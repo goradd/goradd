@@ -235,6 +235,12 @@ func (r SqlReceiver) DoubleI() interface{} {
 }
 
 func (r SqlReceiver) TimeI() interface{} {
+	// TODO: We need to adjust the output to match the timezone of the server
+	// Check the parseTime parameter to the database to see if it reads the server timezone
+	// Otherwise we need some kind of strategy to know what timezone the data is getting returned in
+	// The timezone saved may be different than that read
+	// Also the server and client timezones can be different
+
 	if r.R == nil {
 		return nil
 	}

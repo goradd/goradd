@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/spekary/goradd/javascript"
 	"time"
+	"encoding/gob"
 )
 
 const (
@@ -90,4 +91,7 @@ func (d DateTime) GoTime() time.Time {
 	return d.Time
 }
 
-
+func init() {
+	gob.Register(time.Time{})
+	gob.Register(DateTime{})
+}

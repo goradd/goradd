@@ -13,9 +13,30 @@ import (
 	"strconv"
 )
 
-// goradd additions to the mysql database driver
-// call NewMysql5, but afterwards, work through the DB parent interface
-
+// Mysql5 is the goradd driver for mysql databases. It works through the excellent go-sql-driver driver,
+// to supply functionality above go's built in driver. To use it, call NewMysql5, but afterwards,
+// work through the DB parent interface so that the underlying database can be swapped out later if needed.
+//
+// Timezones
+// Timezones are always tricky. Mysql has some interesting quirks:
+//  - Datetime types are internally stored in the timezone of the server, and then returned based on the
+// timezone of the client.
+//  - Timestamp types are internally stored in UTC. The benefit of this is that you can move your database
+// to a server in another timezone, and the times will automatically change to the correct timezone.
+//
+// So, as a general rule, use Datetime types to represent a date combined with a time, like an appointment in
+// a calendar or a recurring event that happens in whatever the current timezone is. Use Timestamp types to
+// store data that records when an event happened.
+//
+// A result of this whole thing is that when you save a datetime.DateTime type, or time.Time type into
+// the database, and then read it back, you might get the time back in a different timezone than you saved it,
+// since timezones are not recorded by mysql, but it will still represent the same
+// moment in time. In other words, if you save 5:00 UTC+2, you might get back 3:00 UTC. We try to adjust
+// times so that they are always in local server time so that the most common case will not require a change
+// in timezone.
+//
+// Setting up your server to save in UTC time is a good thing. UTC takes out the ambiguity of daylight
+// savings time. Your server is likely that way by default, but its good to check.
 type Mysql5 struct {
 	SqlDb
 	description *DatabaseDescription
