@@ -3,6 +3,9 @@ package data
 import (
 	"context"
 	"github.com/spekary/goradd/page"
+	"goradd-project/config"
+	"reflect"
+	"github.com/spekary/goradd/log"
 )
 
 type DataBinder interface {
@@ -33,7 +36,22 @@ func (d *DataManager) HasDataProvider() bool {
 	return d.dataProvider != nil
 }
 
+// Call SetData to set the data of a control that uses a data binder. Generally, you should call it with an expanded slice,
+// and in fact, it will issue a warning if you give it one item that is a slice, because it will assume that you accidentally
+// did not expand the array.
 func (d *DataManager) SetData(data ...interface{}) {
+// We use an expanded interface list here, instead of a slice of interfaces, because there is a subtle difference between the two.
+// A slice of interfaces will require just that, a slice of interfaces and nothing else. However, this declaration above lets you
+// send in a slice of whatever kind of object you want, and also just list out the objects if needed.
+
+	if (!config.Release) { // This code will only be included in the debug version
+		if len(data) == 1 &&
+			reflect.TypeOf(data[0]).Kind() == reflect.Slice {
+
+			// Its possible this is legitimate, but not likely, so we issue a warning
+			log.Warning("You called SetData with a single entry that is a slice. Did you not expand the slice?")
+		}
+	}
 	d.Data = data
 }
 

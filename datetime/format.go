@@ -25,10 +25,6 @@ const (
 	StampMilli = "Jan _2 15:04:05.000"
 	StampMicro = "Jan _2 15:04:05.000000"
 	StampNano  = "Jan _2 15:04:05.000000000"
-
-	// Our additional formatters
-
-	SqlDateTime = "2006-01-02 15:04:05.000000"
 )
 
 func Parse(layout, value string) (DateTime, error) {
@@ -38,11 +34,13 @@ func Parse(layout, value string) (DateTime, error) {
 }
 
 // FromSqlDateTime will receive a Date, Time, DateTime or Timestamp type of string that is typically output by SQL and
-// convert it to our own DateTime object.
+// convert it to our own DateTime object. If the SQL date time string does not have timezone information,
+// the resulting value will be in UTC time, and we are assuming that the SQL itself is in UTC.
 func FromSqlDateTime(s string) DateTime {
 	var t DateTime
 	var err error
-	var hasDate, hasTime, hasNano bool
+	var hasDate, hasTime, hasNano, hasTZ bool
+	var form string
 
 	if strings.ToUpper(s) == "CURRENT_TIMESTAMP" {
 		return NewDateTime(Current)
@@ -56,17 +54,32 @@ func FromSqlDateTime(s string) DateTime {
 	}
 	if strings.Contains(s, ":") {
 		hasTime = true
+
+		if strings.LastIndexAny(s, "+-") > strings.LastIndex(s, ":") {
+			hasTZ = true
+		}
 	}
 
+
+
 	if hasNano {
-		t, err = Parse("2006-01-02 15:04:05.999999", s)
+		form = "2006-01-02 15:04:05.999999"
+		if hasTZ {
+			form += "-07"
+		}
 	} else if hasDate && hasTime {
-		t, err = Parse("2006-01-02 15:04:05", s)
+		form = "2006-01-02 15:04:05"
+		if hasTZ {
+			form += "-07"
+		}
 	} else if hasDate {
-		t, err = Parse("2006-01-02", s)
+		form = "2006-01-02"
 	} else {
-		t, err = Parse("15:04:05", s)
+		form = "15:04:05"
 	}
+
+	t, err = Parse(form, s)
+
 	if err != nil {
 		log.Panic(err)
 	}

@@ -7,6 +7,7 @@ import (
 	. "github.com/spekary/goradd/orm/query"
 	"log"
 	"strconv"
+	"time"
 )
 
 // SqlReceiver is an encapsulation of a way of receiving data from sql queries as interface{} pointers. This allows you
@@ -235,34 +236,31 @@ func (r SqlReceiver) DoubleI() interface{} {
 }
 
 func (r SqlReceiver) TimeI() interface{} {
-	// TODO: We need to adjust the output to match the timezone of the server
-	// Check the parseTime parameter to the database to see if it reads the server timezone
-	// Otherwise we need some kind of strategy to know what timezone the data is getting returned in
-	// The timezone saved may be different than that read
-	// Also the server and client timezones can be different
-
 	if r.R == nil {
 		return nil
 	}
 
-	switch r.R.(type) {
+	var date datetime.DateTime
+	switch v:=r.R.(type) {
+	case time.Time:
+		date = datetime.NewDateTime(v)
 	case string:
-		s := string(r.R.(string))
-		if s == "CURRENT_TIMESTAMP" {
-			return nil // database itself is handling the setting of the time
+		if v == "CURRENT_TIMESTAMP" {
+			return nil // database itself is handling the setting of the time. This is just for reading default values.
 		}
-		return datetime.FromSqlDateTime(s)
+		date = datetime.FromSqlDateTime(v)
 	case []byte:
-		s := string(r.R.([]byte)[:])
+		s := string(v)
 		if s == "CURRENT_TIMESTAMP" {
-			return nil // database itself is handling the setting of the time
+			return nil // database itself is handling the setting of the time. This is just for reading default values.
 		}
-		return datetime.FromSqlDateTime(s)
+		date = datetime.FromSqlDateTime(s)
 	default:
 		log.Panicln("Unknown type returned from sql driver")
 		return nil
 	}
 
+	return date.Local()
 }
 
 // Convert an SqlReceiver to a type corresponding to the given GoColumnType

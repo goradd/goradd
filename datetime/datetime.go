@@ -16,6 +16,8 @@ const (
 	Zero        = "zero"
 	UsDate      = "1/2/2006"
 	EuroDate    = "2/1/2006"
+	UsDateTime  = "1/2/2006 3:04 PM"
+	UsDateTimeSeconds  = "1/2/2006 3:04:05 PM"
 	LongDateDOW = "Monday, January 2, 2006"
 	LongDate    = "January 2, 2006"
 )
@@ -26,6 +28,16 @@ type DateTime struct {
 
 func Now() DateTime {
 	return DateTime{time.Now()}
+}
+
+// Return a date-time that represents an empty date
+func NewZeroDate() DateTime {
+	return DateTime{}
+}
+
+func Date(year int, month Month, day, hour, min, sec, nsec int, loc *time.Location) DateTime {
+	t := time.Date(year, time.Month(month), day, hour, min, sec, nsec, loc)
+	return DateTime{t}
 }
 
 //
@@ -89,6 +101,22 @@ func (d DateTime) MarshalJSON() (buf []byte, err error) {
 
 func (d DateTime) GoTime() time.Time {
 	return d.Time
+}
+
+func (d DateTime) Month() Month {
+	return Month(d.Time.Month())
+}
+
+func (d DateTime) Local() DateTime {
+	return DateTime{d.Time.Local()}
+}
+
+func (d DateTime) UTC() DateTime {
+	return DateTime{d.Time.UTC()}
+}
+
+func (d DateTime) In(location *time.Location) DateTime {
+	return DateTime{d.Time.In(location)}
 }
 
 func init() {

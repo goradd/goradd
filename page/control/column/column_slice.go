@@ -51,7 +51,7 @@ func (c *SliceColumn) SetTimeFormat(format string) *SliceColumn {
 	return c
 }
 
-// SliceTexter is the default CellTexter for tables. It lets you get items out of slices and maps.
+// SliceTexter is the default CellTexter for tables. It lets you get items out of slices.
 type SliceTexter struct {
 	// Index is the index into the data that corresponds to this table
 	Index int
