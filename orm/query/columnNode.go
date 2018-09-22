@@ -16,7 +16,7 @@ type ColumnNode struct {
 	// The name of the table in the database
 	dbColumn string
 	// The name of the function used to access the property as a node or ORM item
-	goName string
+	gName string
 	goType GoColumnType
 	// Used by OrderBy clauses
 	sortDescending bool
@@ -29,7 +29,7 @@ func NewColumnNode(dbKey string, dbTable string, dbName string, goName string, g
 		dbKey:    dbKey,
 		dbTable:  dbTable,
 		dbColumn: dbName,
-		goName:   goName,
+		gName:   goName,
 		goType:   goType,
 	}
 	return n
@@ -76,6 +76,10 @@ func (n *ColumnNode) Equals(n2 NodeI) bool {
 
 func (n *ColumnNode) name() string {
 	return n.dbColumn
+}
+
+func (n *ColumnNode) goName() string {
+	return n.gName
 }
 
 func (n *ColumnNode) tableName() string {

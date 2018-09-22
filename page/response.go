@@ -264,7 +264,7 @@ func (r *Response) JavaScript() (script string) {
 
 	// A redirect
 	if r.newLocation != "" {
-		script += fmt.Sprintf(`goradd.redirect(%s);`+"\n", r.newLocation)
+		script += fmt.Sprintf(`goradd.redirect("%s");`+"\n", r.newLocation)
 		r.newLocation = ""
 	}
 
