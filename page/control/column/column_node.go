@@ -8,13 +8,15 @@ import (
 	"reflect"
 )
 
-// NodeColumn is a column that uses the Getter interface to get the text out of columns. The data therefore should be
-// a slice of objects that implement the Getter interface.
+// NodeColumn is a column that uses a query.NodeI to get its text out of data that is coming from the ORM.
 type NodeColumn struct {
 	control_base.ColumnBase
 	node query.NodeI
 }
 
+// NewNodeColumn creates a table column that uses a query.NodeI object to get its text out of an ORM object.
+// node should point to data that is preloaded in the ORM object. format is optional and if specified, should
+// be a format string suitable for the fmt package.
 func NewNodeColumn(node query.NodeI, format ...string) *NodeColumn {
 	i := NodeColumn{}
 	var f string
@@ -25,6 +27,10 @@ func NewNodeColumn(node query.NodeI, format ...string) *NodeColumn {
 	return &i
 }
 
+// NewDateNodeColumn creates a table column that uses a query.NodeI object to get a date out of an ORM object.
+// node should point to data that is preloaded in the ORM object.
+// timeFormat is a time format string for formatting the date.
+// format is optional and if specified, should be a format string suitable for the fmt package.
 func NewDateNodeColumn(node query.NodeI, timeFormat string, format ...string) *NodeColumn {
 	i := NodeColumn{}
 	var f string
@@ -41,17 +47,19 @@ func (c *NodeColumn) Init(node query.NodeI, format string, timeFormat string) {
 	c.SetTitle(query.NodeGoName(node))
 }
 
+// SetFormat sets the format string of the node column.
 func (c *NodeColumn) SetFormat(format string) *NodeColumn {
 	c.CellTexter().(*NodeTexter).Format = format
 	return c
 }
 
+// SetTimeFormat sets the time format of the string, specifically for a DateTime column.
 func (c *NodeColumn) SetTimeFormat(format string) *NodeColumn {
 	c.CellTexter().(*NodeTexter).TimeFormat = format
 	return c
 }
 
-// GetterTexter lets you get items out of map like objects using the Getter interface.
+// NodeTexter is used by the NodeColumn to get text out of a database column.
 type NodeTexter struct {
 	// Key is the key to use when calling the Get function on the object.
 	Node query.NodeI

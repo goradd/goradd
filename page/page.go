@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/spekary/goradd/html"
-	"github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/util/types"
 	"strconv"
 	"strings"
@@ -40,6 +39,7 @@ type Page struct {
 	htmlHeaderTags  []html.VoidTag
 	responseHeader  map[string]string // queues up anything to be sent in the response header
 	responseError   int
+	BodyAttributes  string
 
 	goraddTranslator  PageTranslator
 	projectTranslator PageTranslator
@@ -88,8 +88,6 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 	}
 
 	p.renderStatus = UNRENDERED
-
-	log.FrameworkDebugf("Run: %s", grCtx)
 
 	// TODO: Lifecycle calls - push them to the form
 
@@ -377,4 +375,3 @@ func (p *Page) SetResponseHeader(key, value string) {
 func (p *Page) ClearResponseHeaders() {
 	p.responseHeader = nil
 }
-

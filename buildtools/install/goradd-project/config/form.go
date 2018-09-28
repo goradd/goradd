@@ -34,7 +34,7 @@ const (
 // uses a local path for development, but gets jquery from a public location in the release version. Change how you want.
 func JQueryPath() (string, map[string]string) {
 	if Release {
-		return "http://code.jquery.com/jquery-3.3.1.min.js", map[string]string{"integrity": "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=", "crossorigin": "anonymous"}
+		return "https://code.jquery.com/jquery-3.3.1.min.js", map[string]string{"integrity": "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=", "crossorigin": "anonymous"}
 	} else {
 		return path.Join(GoraddAssets(),"/js/jquery3.js"), nil
 	}

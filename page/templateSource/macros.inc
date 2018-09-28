@@ -31,6 +31,9 @@ func (form *{{form}}) AddHeadTags()  {
     }
 
 	{{headTags}}
+
+	// double up to deal with body attributes if they exist
+    form.Page().BodyAttributes = `{{bodyAttributes}}`
 }
 
 

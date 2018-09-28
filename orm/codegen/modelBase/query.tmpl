@@ -159,7 +159,7 @@ func (b *{{t.LcGoName}}Builder)  Select(nodes... query.NodeI) *{{t.LcGoName}}Bui
 	return b
 }
 
-// Alias lets you add a node with a custom name. After the query, you can read out the data using getAlias() on a
+// Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
 func (b *{{t.LcGoName}}Builder)  Alias(name string, n query.NodeI) *{{t.LcGoName}}Builder {
 	b.base.Alias(name, n)
@@ -180,6 +180,7 @@ func (b *{{t.LcGoName}}Builder)  GroupBy(nodes... query.NodeI) *{{t.LcGoName}}Bu
 	return b
 }
 
+// Having does additional filtering on the results of the query.
 func (b *{{t.LcGoName}}Builder)  Having(node query.NodeI)  *{{t.LcGoName}}Builder {
 	 b.base.Having(node)
 	 return b
@@ -190,18 +191,20 @@ func (b *{{t.LcGoName}}Builder)  Count(ctx context.Context, distinct bool, nodes
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
-// Use the query builder to delete a group of records that match the criteria
+// Delete uses the query builder to delete a group of records that match the criteria
 func (b *{{t.LcGoName}}Builder)  Delete(ctx context.Context) {
 	 b.base.Delete(ctx)
 }
 
-// Use the query builder to define a subquery within a larger query
+// Subquery uses the query builder to define a subquery within a larger query. You MUST include what
+// you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
+// this as a node to an Alias function on the surrounding query builder.
 func (b *{{t.LcGoName}}Builder)  Subquery() *query.SubqueryNode {
 	 return b.base.Subquery()
 }
 
 
-// Private helper function for the Load* functions
+// joinOrSelect us a private helper function for the Load* functions
 func (b *{{t.LcGoName}}Builder) joinOrSelect(nodes ...query.NodeI) *{{t.LcGoName}}Builder {
 	for _,n := range nodes {
 		switch n.(type) {

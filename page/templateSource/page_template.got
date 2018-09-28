@@ -13,7 +13,7 @@ func PageTmpl(ctx context.Context, page *Page, buf *bytes.Buffer) (err error) {
 	<meta charset="utf-8"/>
 {{g page.DrawHeaderTags(ctx, buf) }}
 </head>
-<body>
+<body {{= page.BodyAttributes }}>
 {{err page.Form().Draw(ctx, buf) }}
 </body>
 </html>

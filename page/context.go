@@ -81,7 +81,7 @@ type Context struct {
 func (c *Context) String() string {
 	b, _ := json.Marshal(c.actionValues)
 	actionValues := string(b[:])
-	return fmt.Sprintf("URL: %s, Mode: %s, FormBase Values: %v, Control ID: %s, Event ID: %d, Action Values: %s, Page State: %s", c.URL, c.requestMode, c.formVars, c.actionControlID, c.eventID, actionValues, c.pageStateId)
+	return fmt.Sprintf("URL: %s, Mode: %s, FormBase Values: %v, Control ID: %s, Event ID: %d, Action Values: %s, Page State: %s, Error: %s", c.URL, c.requestMode, c.formVars, c.actionControlID, c.eventID, actionValues, c.pageStateId, c.err.Error())
 }
 
 func PutContext(r *http.Request, cliArgs []string) *http.Request {
@@ -184,7 +184,11 @@ func (ctx *Context) FillApp(cliArgs []string) {
 	var err error
 
 	if ctx.URL != nil {
-		if v, ok = ctx.FormValue(htmlVarParams); ok {
+		if v, ok = ctx.FormValue(htmlVarParams); ok  {
+			if v == "" {
+				// This is a javascript error. We unsuccessfully tried to gather form parameters
+				ctx.err = fmt.Errorf("Javascript was not able to gather the goradd parameters.")
+			}
 			if h := ctx.Header.Get("X-Requested-With"); strings.ToLower(h) == "xmlhttprequest" {
 				ctx.requestMode = Ajax
 			} else {
@@ -210,48 +214,6 @@ func (ctx *Context) FillApp(cliArgs []string) {
 				}
 				ctx.actionValues = params.Values
 
-				/*
-						// We have posted back from our form. Unpack our params values
-					var params map[string]interface{}
-					if err = json.Unmarshal([]byte(v), &params); err == nil {
-						if i, ok = params["controlValues"]; !ok {
-							ctx.customControlValues = make(map[string]interface{}) // empty map so we don't have to check for nil
-						} else {
-							if ctx.customControlValues, ok = i.(map[string]interface{}); !ok {
-								ctx.err = fmt.Errorf("customControlValues wrong type")
-							}
-						}
-
-						if i, ok = params["checkableValues"]; !ok {
-							ctx.checkableValues = make(map[string]interface{})
-						} else {
-							if ctx.checkableValues, ok = i.(map[string]interface{}); !ok {
-								ctx.err = fmt.Errorf("checkableValues wrong type")
-							}
-						}
-
-						if i, ok = params["controlID"]; ok {
-							if ctx.actionControlID, ok = i.(string); !ok {
-								ctx.err = fmt.Errorf("controlID wrong type")
-							}
-						}
-
-						if i, ok = params["eventID"]; ok {
-							if v, ok2 := i.(int); !ok2 {
-								ctx.err = fmt.Errorf("eventID wrong type")
-							} else {
-								ctx.eventID = EventID(v)
-							}
-						}
-
-						if i, ok = params["values"]; ok {
-							if m,ok2 := i.(map[string]interface{}); !ok2 {
-								ctx.err = fmt.Errorf("values wrong type")
-							} else {
-								ctx.actionValues = m
-							}
-						}
-				*/
 				if ctx.pageStateId, ok = ctx.FormValue("Goradd__FormState"); !ok {
 					ctx.err = fmt.Errorf("No formstate found in response")
 					return

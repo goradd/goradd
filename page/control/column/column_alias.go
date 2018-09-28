@@ -19,6 +19,7 @@ type AliasColumn struct {
 	alias string
 }
 
+// NewAliasColumn creates a new table column that gets its text from an alias attached to an ORM object.
 func NewAliasColumn(alias string, format ...string) *AliasColumn {
 	i := AliasColumn{}
 	var f string
@@ -29,6 +30,8 @@ func NewAliasColumn(alias string, format ...string) *AliasColumn {
 	return &i
 }
 
+// NewAliasColumn creates a new table column that gets its text from an alias attached to an ORM object.
+// The alias should get a DateTime type of data.
 func NewDateAliasColumn(alias string, timeFormat string, format ...string) *AliasColumn {
 	i := AliasColumn{}
 	var f string
@@ -45,17 +48,19 @@ func (c *AliasColumn) Init(alias string, format string, timeFormat string) {
 	c.SetTitle(alias)
 }
 
+// SetFormat sets the format string of the node column.
 func (c *AliasColumn) SetFormat(format string) *AliasColumn {
 	c.CellTexter().(*AliasTexter).Format = format
 	return c
 }
 
+// SetTimeFormat sets the time format of the string, specifically for a DateTime column.
 func (c *AliasColumn) SetTimeFormat(format string) *AliasColumn {
 	c.CellTexter().(*AliasTexter).TimeFormat = format
 	return c
 }
 
-// GetterTexter lets you get items out of map like objects using the Getter interface.
+// AliasTexter gets text out of an ORM object with an alias. If the alias does not exist, it will panic.
 type AliasTexter struct {
 	// Alias is the alias name in the database object that we are interested in.
 	Alias string

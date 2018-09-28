@@ -7,7 +7,6 @@ import (
 	"fmt"
 	. "github.com/spekary/goradd/orm/query"
 	"github.com/spekary/goradd/util/types"
-	"log"
 	"strconv"
 )
 
@@ -161,8 +160,8 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 
 	b.makeColumnAliases()
 
-	log.Println("Tree:")
-	b.logNode(b.rootNode, 0)
+	//log.Debug("Tree:")
+	//b.logNode(b.rootNode, 0)
 
 	// So debugging will work, we declare variables
 	var sql string
@@ -171,7 +170,7 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
 	sql, args = b.db.generateSelectSql(b)
 
-	log.Print(sql)
+	//log.Debug(sql)
 
 	rows, err := b.db.Query(ctx, sql, args...)
 
@@ -180,13 +179,13 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 		s := err.Error()
 		s += "\nSql: " + sql
 
-		log.Panic(errors.New(s))
+		panic(errors.New(s))
 	}
 	defer rows.Close()
 
 	names, err := rows.Columns()
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 
 	columnTypes := make([]GoColumnType, len(names))
@@ -203,9 +202,10 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 
 	var result2 []map[string]interface{} = b.unpackResult(result)
 
-	p, err := json.MarshalIndent(result2, "", "  ")
+	json.MarshalIndent(result2, "", "  ")
+	//p, err := json.MarshalIndent(result2, "", "  ")
 
-	log.Print(string(p))
+	//log.Debug(string(p))
 
 	return result2
 }
@@ -213,8 +213,8 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 func (b *sqlBuilder) Delete(ctx context.Context) {
 	b.buildNodeTree()
 
-	log.Println("Tree:")
-	b.logNode(b.rootNode, 0)
+	//log.Debug("Tree:")
+	//b.logNode(b.rootNode, 0)
 
 	// So debugging will work, we declare variables
 	var sql string
@@ -223,12 +223,12 @@ func (b *sqlBuilder) Delete(ctx context.Context) {
 	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
 	sql, args = b.db.generateDeleteSql(b)
 
-	log.Print(sql)
+	//log.Debug(sql)
 
 	_, err := b.db.Exec(ctx, sql, args...)
 
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 }
 
@@ -260,18 +260,18 @@ func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) u
 	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
 	sql, args := b.db.generateSelectSql(b)
 
-	log.Print(sql)
+	//log.Debug(sql)
 
 	rows, err := b.db.Query(ctx, sql, args...)
 
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 	defer rows.Close()
 
 	names, err := rows.Columns()
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 
 	columnTypes := []GoColumnType{ColTypeUnsigned}
@@ -369,7 +369,7 @@ func (b *sqlBuilder) logNode(node NodeI, level int) {
 func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 	var a string = srcNode.GetAlias()
 	if !srcNode.Equals(destNode) {
-		log.Fatal("mergeNode must start with equal nodes")
+		panic("mergeNode must start with equal nodes")
 	}
 	if srcNode.GetAlias() != "" &&
 		srcNode.GetAlias() != destNode.GetAlias() &&

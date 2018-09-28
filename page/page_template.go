@@ -16,7 +16,11 @@ func PageTmpl(ctx context.Context, page *Page, buf *bytes.Buffer) (err error) {
 `)
 	page.DrawHeaderTags(ctx, buf)
 	buf.WriteString(`</head>
-<body>
+<body `)
+
+	buf.WriteString(page.BodyAttributes)
+
+	buf.WriteString(`>
 `)
 
 	{

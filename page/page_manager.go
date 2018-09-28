@@ -116,6 +116,8 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 	pageI, isNew := m.getPage(ctx)
 	page := pageI.GetPageBase()
 	defer m.cleanup(pageI)
+	log.FrameworkDebugf("Run: %s", GetContext(ctx))
+
 	err := page.runPage(ctx, buf, isNew)
 
 	if err != nil {
