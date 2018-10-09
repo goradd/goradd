@@ -2,9 +2,9 @@ package action
 
 import (
 	"fmt"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/goradd"
 	"github.com/spekary/goradd/javascript"
-	"github.com/spekary/goradd/util/types"
 	"strings"
 )
 
@@ -107,7 +107,7 @@ func Server(destControlId string, actionId int) *serverAction {
 }
 
 func (a *serverAction) RenderScript(params RenderParams) string {
-	v := types.NewOrderedMap()
+	v := maps.NewSliceMap()
 	v.Set("controlID", params.TriggeringControlID)
 	v.Set("eventId", params.EventID)
 	if a.async {
@@ -115,7 +115,7 @@ func (a *serverAction) RenderScript(params RenderParams) string {
 	}
 
 	if eV, aV, cV := params.EventActionValue, a.actionValue, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
-		v2 := types.NewOrderedMap()
+		v2 := maps.NewSliceMap()
 		if eV != nil {
 			v2.Set("event", eV)
 		}
@@ -146,7 +146,7 @@ func Ajax(destControlId string, actionId int) *ajaxAction {
 }
 
 func (a *ajaxAction) RenderScript(params RenderParams) string {
-	v := types.NewOrderedMap()
+	v := maps.NewSliceMap()
 	v.Set("controlID", params.TriggeringControlID)
 	v.Set("eventId", params.EventID)
 	if a.async {
@@ -154,7 +154,7 @@ func (a *ajaxAction) RenderScript(params RenderParams) string {
 	}
 
 	if eV, aV, cV := params.EventActionValue, a.actionValue, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
-		v2 := types.NewOrderedMap()
+		v2 := maps.NewSliceMap()
 		if eV != nil {
 			v2.Set("event", eV)
 		}

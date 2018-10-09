@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/spekary/gengen/maps"
 	. "github.com/spekary/goradd/orm/query"
-	"github.com/spekary/goradd/util/types"
 	"strconv"
 )
 
@@ -35,16 +35,16 @@ type limitInfo struct {
 type sqlBuilder struct {
 	db                SqlDbI
 	command           string
-	columnAliases     *types.OrderedMap
+	columnAliases     *maps.SliceMap
 	columnAliasNumber int
-	tableAliases      *types.OrderedMap
+	tableAliases      *maps.SliceMap
 	joins             []NodeI
 	orderBys          []NodeI
 	condition         NodeI
 	rootDbTable       string
 	rootNode          NodeI
 	distinct          bool
-	aliasNodes        *types.OrderedMap
+	aliasNodes        *maps.SliceMap
 	// Adds a COUNT(*) to the select list
 	isCount         bool
 	groupBys        []NodeI
@@ -63,12 +63,12 @@ NewsqlBuilder creates a new sqlBuilder object.
 func NewSqlBuilder(db SqlDbI) *sqlBuilder {
 	return &sqlBuilder{
 		db:            db,
-		columnAliases: types.NewOrderedMap(),
-		tableAliases:  types.NewOrderedMap(),
+		columnAliases: maps.NewSliceMap(),
+		tableAliases:  maps.NewSliceMap(),
 		orderBys:      []NodeI{},
 		groupBys:      []NodeI{},
 		selects:       []NodeI{},
-		aliasNodes:    types.NewOrderedMap(),
+		aliasNodes:    maps.NewSliceMap(),
 		joins:         []NodeI{},
 	}
 }
@@ -200,7 +200,7 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 
 	result = ReceiveRows(rows, columnTypes, names)
 
-	var result2 []map[string]interface{} = b.unpackResult(result)
+	var result2 = b.unpackResult(result)
 
 	json.MarshalIndent(result2, "", "  ")
 	//p, err := json.MarshalIndent(result2, "", "  ")
@@ -236,7 +236,7 @@ func (b *sqlBuilder) Delete(ctx context.Context) {
 // If no columns are specified, the count will include NULL items. Otherwise, it will not include NULL results in the count.
 // You cannot include any other select items in a count. If you want to do that, you should do a normal query and add a COUNT table.
 func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) uint {
-	var result = []map[string]interface{}{}
+	var result []map[string]interface{}
 
 	b.isCount = true
 
@@ -296,7 +296,7 @@ func (b *sqlBuilder) addNode(n NodeI, addColumn bool) {
 	var hasSubquery bool // Turns off the check to make sure all nodes come from the same table, since subqueries might have different tables
 	var cn []NodeI
 
-	var nodes = []NodeI{}
+	var nodes []NodeI
 	if sn, ok := n.(*SubqueryNode); ok {
 		nodes = append(nodes, n) // Return the subquery node itself, because we need to do some work on it
 
@@ -367,7 +367,7 @@ func (b *sqlBuilder) logNode(node NodeI, level int) {
 
 // assuming that both nodes point to a same location, merges the source node into the destination node tree
 func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
-	var a string = srcNode.GetAlias()
+	var a = srcNode.GetAlias()
 	if !srcNode.Equals(destNode) {
 		panic("mergeNode must start with equal nodes")
 	}
@@ -540,7 +540,7 @@ func (b *sqlBuilder) buildNodeTree() {
 // Returns the nodes referred to in the query. Some nodes will be container nodes, and so will have nodes
 // inside them, but every node is either referred to, or contained in the returned nodes.
 func (b *sqlBuilder) nodes() []NodeI {
-	var nodes = []NodeI{}
+	var nodes []NodeI
 	for _, n := range b.joins {
 		nodes = append(nodes, n)
 		if c := NodeCondition(n); c != nil {
@@ -591,8 +591,8 @@ that each object arrives, but then look for items in order.
 func (b *sqlBuilder) unpackResult(rows []map[string]interface{}) (out []map[string]interface{}) {
 	var o2 ValueMap
 
-	var oMap *types.OrderedMap = types.NewOrderedMap()
-	aliasMap := types.NewOrderedMap()
+	oMap := maps.NewSliceMap()
+	aliasMap := maps.NewSliceMap()
 
 	// First we create a tree structure of the data that will mirror the node structure
 	for _, row := range rows {
@@ -618,10 +618,10 @@ func (b *sqlBuilder) unpackResult(rows []map[string]interface{}) (out []map[stri
 
 // unpackObject finds the object that corresponds to parent in the row, and either adds it to the oMap, or it its
 // already in the oMap, reuses the old one and adds more data to it. oMap should only contain objects of parent type.
-func (b *sqlBuilder) unpackObject(parent NodeI, row ValueMap, oMap *types.OrderedMap) {
+func (b *sqlBuilder) unpackObject(parent NodeI, row ValueMap, oMap *maps.SliceMap) {
 	var obj ValueMap
 	var arrayKey string
-	var currentArray *types.OrderedMap
+	var currentArray *maps.SliceMap
 	var iface interface{}
 	var childNode NodeI
 	var childTableNode TableNodeI
@@ -652,12 +652,12 @@ func (b *sqlBuilder) unpackObject(parent NodeI, row ValueMap, oMap *types.Ordere
 			arrayKey = NodeGoName(childTableNode)
 			if iface, ok = obj[arrayKey]; !ok {
 				// If this is the first time, create the group
-				newArray := types.NewOrderedMap()
+				newArray := maps.NewSliceMap()
 				obj[arrayKey] = newArray
 				b.unpackObject(childNode, row, newArray)
 			} else {
 				// Already have a group, so add to the group
-				currentArray = iface.(*types.OrderedMap)
+				currentArray = iface.(*maps.SliceMap)
 				b.unpackObject(childNode, row, currentArray)
 			}
 		} else {
@@ -745,11 +745,11 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 				switch tableNode := node.EmbeddedNode_().(type) {
 				case *ReferenceNode:
 					// Should be a one or zero item array here
-					om := nodeObject[NodeGoName(tableNode)].(*types.OrderedMap)
+					om := nodeObject[NodeGoName(tableNode)].(*maps.SliceMap)
 					if om.Len() > 1 {
 						panic("Cannot have an array with more than one item here.")
 					} else if om.Len() == 1 {
-						innerNodeObject = nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).GetAt(0).(ValueMap)
+						innerNodeObject = nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).GetAt(0).(ValueMap)
 						innerCopies = b.expandNode(childNode, innerNodeObject)
 						if len(innerCopies) > 1 {
 							for _, cp2 := range innerCopies {
@@ -765,7 +765,7 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 				case *ReverseReferenceNode:
 					if !ReverseReferenceNodeIsArray(tableNode) { // unique reverse or single expansion many
 						newArray = []ValueMap{}
-						nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
+						nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
 							innerNodeObject = value.(ValueMap)
 							innerCopies = b.expandNode(childNode, innerNodeObject)
 							for _, ic := range innerCopies {
@@ -782,7 +782,7 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 						// From this point up, we should not be creating additional copies, since from this point down, we
 						// are gathering an array
 						newArray = []ValueMap{}
-						nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
+						nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
 							innerNodeObject = value.(ValueMap)
 							innerCopies = b.expandNode(childNode, innerNodeObject)
 							for _, ic := range innerCopies {
@@ -795,8 +795,8 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 
 				case *ManyManyNode:
 					if ManyManyNodeIsTypeTable(tableNode) {
-						intArray := []uint{}
-						nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
+						var intArray []uint
+						nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
 							innerNodeObject = value.(ValueMap)
 							typeKey := innerNodeObject[ColumnNodeDbName(node.PrimaryKeyNode_())]
 							switch v := typeKey.(type) {
@@ -819,7 +819,7 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 
 					} else {
 						newArray = []ValueMap{}
-						nodeObject[NodeGoName(tableNode)].(*types.OrderedMap).Range(func(key string, value interface{}) bool {
+						nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
 							innerNodeObject = value.(ValueMap)
 							innerCopies = b.expandNode(childNode, innerNodeObject)
 							for _, ic := range innerCopies {
@@ -849,7 +849,7 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 	return
 }
 
-func (b *sqlBuilder) unpackSpecialAliases(rootNode NodeI, row ValueMap, aliasMap *types.OrderedMap) {
+func (b *sqlBuilder) unpackSpecialAliases(rootNode NodeI, row ValueMap, aliasMap *maps.SliceMap) {
 	var obj ValueMap
 
 	pk := b.makeObjectKey(rootNode, row)

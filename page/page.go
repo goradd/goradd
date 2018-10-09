@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
-	"github.com/spekary/goradd/util/types"
 	"strconv"
 	"strings"
 )
@@ -31,7 +31,7 @@ type Page struct {
 	renderStatus PageRenderStatus
 	idPrefix     string // For creating unique ids for the app
 
-	controlRegistry *types.OrderedMap
+	controlRegistry *maps.SliceMap
 	form            FormI
 	idCounter       int
 	drawFunc        PageDrawFunc
@@ -224,7 +224,7 @@ func (p *Page) addControl(control ControlI) {
 	}
 
 	if p.controlRegistry == nil {
-		p.controlRegistry = types.NewOrderedMap()
+		p.controlRegistry = maps.NewSliceMap()
 	}
 
 	if p.controlRegistry.Has(id) {
@@ -251,7 +251,7 @@ func (p *Page) changeControlID(oldId string, newId string) {
 		panic(fmt.Errorf("This control id is already defined on the override: %s", newId))
 	}
 	ctrl := p.GetControl(oldId)
-	p.controlRegistry.Remove(oldId)
+	p.controlRegistry.Delete(oldId)
 	p.controlRegistry.Set(newId, ctrl)
 }
 
@@ -260,7 +260,7 @@ func (p *Page) removeControl(id string) {
 	// TODO: Application::ExecuteSelectorFunction('#' . $objControl->getWrapperID(), 'remove');
 	// TODO: Make This a direct command in the ajax renderer
 
-	p.controlRegistry.Remove(id)
+	p.controlRegistry.Delete(id)
 }
 
 func (p *Page) Title() string {

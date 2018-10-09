@@ -25,7 +25,7 @@ type ControlGenerator interface {
 	NewFunc() string
 	Import() string
 	SupportsColumn(col *ColumnType) bool
-	ConnectorParams() *types.OrderedMap
+	ConnectorParams() *maps.SliceMap
 	GenerateCreate(namespace string, col *ColumnType) string
 	GenerateGet(ctrlName string, objName string, col *ColumnType) string
 	GeneratePut(ctrlName string, objName string, col *ColumnType) string

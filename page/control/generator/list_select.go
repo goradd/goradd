@@ -82,7 +82,7 @@ func (d SelectList) GeneratePut(ctrlName string, objName string, col *generator.
 }
 
 
-func (d SelectList) ConnectorParams() *types.OrderedMap {
+func (d SelectList) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
 
 	return paramControls

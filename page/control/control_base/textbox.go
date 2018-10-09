@@ -5,9 +5,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/util/types"
 	localPage "goradd-project/override/page"
 	html2 "html"
 	"strconv"
@@ -252,15 +252,16 @@ func (t *Textbox) UpdateFormValues(ctx *page.Context) {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (t *Textbox) MarshalState(m types.MapI) {
+func (t *Textbox) MarshalState(m maps.Setter) {
 	m.Set("text", t.Text())
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (t *Textbox) UnmarshalState(m types.MapI) {
-	if m.Has("text") {
-		s, _ := m.GetString("text")
-		t.value = s
+func (t *Textbox) UnmarshalState(m maps.Loader) {
+	if v,ok := m.Load("text"); ok {
+		if s, ok := v.(string); ok {
+			t.value = s
+		}
 	}
 }
 

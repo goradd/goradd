@@ -25,6 +25,11 @@ func Info(v ...interface{}) {
 	Print(InfoLog, v...)
 }
 
+func Infof(format string, v ...interface{}) {
+	Printf(InfoLog, format, v...)
+}
+
+
 func FrameworkDebug(v ...interface{}) {
 	if config.Debug {
 		Print(FrameworkDebugLog, v...)

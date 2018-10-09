@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/spekary/goradd/app"
 	"github.com/spekary/goradd/html"
 	grlog "github.com/spekary/goradd/log"
@@ -50,8 +51,13 @@ func (a *Application) Init() {
 	grlog.Loggers[grlog.WarningLog] = log.New(os.Stderr, "Warning: ", log.Ldate|log.Ltime|log.Llongfile)
 	grlog.Loggers[grlog.ErrorLog] = log.New(os.Stderr, "Error: ", log.Ldate|log.Ltime|log.Llongfile)
 
+	f,err := os.Create("shot.log")
+	if err != nil {
+		panic(fmt.Errorf("Error creating shot.log %s", err.Error()))
+	}
+	grlog.Loggers[config.ShotLog] = log.New(f, "", log.Ldate|log.Ltime)
 
-	page.DefaultCheckboxLabelDrawingMode = html.LABEL_AFTER
+	page.DefaultCheckboxLabelDrawingMode = html.LabelAfter
 
 	page.RegisterAssetDirectory(config.GoraddAssets(), config.AssetPrefix + "goradd")
 	page.RegisterAssetDirectory(config.ProjectAssets(), config.AssetPrefix + "project")

@@ -25,7 +25,7 @@ type Modal struct {
 	closeOnEscape bool
 	sizeClass	string
 
-	buttonOptions types.OrderedMap
+	buttonOptions maps.SliceMap
 }
 
 type ButtonOptions struct {

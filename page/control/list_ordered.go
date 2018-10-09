@@ -75,12 +75,12 @@ func (l *OrderedList) getItemsHtml(items []ListItemI) string {
 			a2 := html.NewAttributes()
 			if a.Has("type") {
 				a2.Set("type", a.Get("type"))
-				a.Remove("type")
+				a.RemoveAttribute("type")
 			}
 
 			if a.Has("start") {
 				a2.Set("start", a.Get("start"))
-				a.Remove("start")
+				a.RemoveAttribute("start")
 			}
 
 			innerhtml = html.RenderTag(l.Tag, a2, innerhtml)

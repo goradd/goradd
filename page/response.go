@@ -3,8 +3,8 @@ package page
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/javascript"
-	"github.com/spekary/goradd/util/types"
 	"strings"
 )
 
@@ -97,9 +97,9 @@ type Response struct {
 	mediumPriorityCommands []ResponseCommand
 	lowPriorityCommands    []ResponseCommand
 	finalCommands          []ResponseCommand
-	jsFiles                *types.OrderedStringMap
+	jsFiles                *maps.StringSliceMap
 	alerts                 []string
-	styleSheets            *types.OrderedStringMap
+	styleSheets            *maps.StringSliceMap
 	newLocation            string
 	winClose               bool
 	controls               map[string]ResponseControl
@@ -201,7 +201,7 @@ func (r *Response) extractPriority (args ...interface{}) (args2 []interface{}, p
 // One time add of style sheets, to be used by FormBase only for last minute style sheet injection.
 func (r *Response) addStyleSheets(styleSheets ...string) {
 	if r.styleSheets == nil {
-		r.styleSheets = types.NewOrderedStringMap()
+		r.styleSheets = maps.NewStringSliceMap()
 	}
 	for _, s := range styleSheets {
 		r.styleSheets.Set(s, s)
@@ -211,7 +211,7 @@ func (r *Response) addStyleSheets(styleSheets ...string) {
 // Add javascript files to the response.
 func (r *Response) addJavaScriptFiles(files ...string) {
 	if r.jsFiles == nil {
-		r.jsFiles = types.NewOrderedStringMap()
+		r.jsFiles = maps.NewStringSliceMap()
 	}
 	for _, f := range files {
 		r.jsFiles.Set(f, f)

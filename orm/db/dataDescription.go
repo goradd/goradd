@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gedex/inflector"
 	"github.com/knq/snaker"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/datetime"
 	. "github.com/spekary/goradd/orm/query"
-	"github.com/spekary/goradd/util/types"
 	"log"
 	"strings"
 	"regexp"
@@ -51,7 +51,7 @@ type TableDescription struct {
 	Columns       []*ColumnDescription
 	columnMap     map[string]*ColumnDescription
 	Indexes       []IndexDescription // Creates LoadBy functions. Mapped by index name.
-	Options       types.OrderedMap
+	Options       maps.SliceMap
 	IsType        bool
 	IsAssociation bool
 	Comment       string
@@ -140,7 +140,7 @@ type ColumnDescription struct {
 	Comment               string
 
 	// Filled in by analyzer
-	Options    *types.OrderedMap
+	Options    *maps.SliceMap
 	ForeignKey *ForeignKeyType
 	ModelName    string // code generating convenience. The internal name in the model corresponding to this column.
 }
@@ -164,7 +164,7 @@ type ManyManyReference struct {
 	GoPlural string
 
 	IsTypeAssociation bool
-	Options           types.OrderedMap
+	Options           maps.SliceMap
 
 	MM *ManyManyReference // ManyManyReference pointing back towards this one
 }
@@ -178,7 +178,7 @@ type ReverseReference struct {
 	GoPlural             string
 	GoType               string
 	IsUnique             bool
-	//Options types.OrderedMap
+	//Options maps.SliceMap
 }
 
 type IndexDescription struct {
@@ -391,8 +391,8 @@ func (dd *DatabaseDescription) analyzeReverseReferences(td *TableDescription) {
 				// where would you get the word "member". Our strategy will be to first look for something explicit in the
 				// options, and if not found, try to create a name from the table and table names.
 
-				goName, _ := cd.Options.GetString("GoName")
-				goPlural, _ := cd.Options.GetString("GoPlural")
+				goName, _ := cd.Options.LoadString("GoName")
+				goPlural, _ := cd.Options.LoadString("GoPlural")
 				objName := cd.DbName
 				objName = strings.TrimSuffix(objName, dd.ForeignKeySuffix)
 				objName = strings.Replace(objName, td2.DbName, "", 1)

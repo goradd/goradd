@@ -62,9 +62,9 @@ func (d DateTimeSpan) GeneratePut(ctrlName string, objName string, col *generato
 }
 
 
-func (d DateTimeSpan) ConnectorParams() *types.OrderedMap {
+func (d DateTimeSpan) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
-	paramSet := types.NewOrderedMap()
+	paramSet := maps.NewSliceMap()
 	paramSet.Set("Format", generator.ConnectorParam {
 		"Format",
 		"format string to use to format the DateTime. See time.Time doc for more info.",

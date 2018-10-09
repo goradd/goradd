@@ -3,7 +3,7 @@ package html
 import (
 	"errors"
 	"fmt"
-	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/gengen/maps"
 	"math"
 	"regexp"
 	"strconv"
@@ -29,12 +29,12 @@ var nonLengthNumerics = map[string]bool{
 // Its main use is for generating a style attribute in an HTML tag
 // It implements the String interface to get the style properties as an HTML embeddable string
 type Style struct {
-	types.StringMap
+	*maps.StringMap
 }
 
 // NewStyle initializes an empty Style object
 func NewStyle() *Style {
-	return &Style{types.NewStringMap()}
+	return &Style{maps.NewStringMap()}
 }
 
 // SetTo receives a style encoded "style" attribute into the Style structure (e.g. "width: 4px; border: 1px solid black")
@@ -67,7 +67,7 @@ func (s *Style) SetTo(text string) (changed bool, err error) {
 
 func (s Style) SetChanged(n string, v string) (changed bool, err error) {
 	if strings.Contains(n, " ") {
-		err = errors.New("Attribute names cannot contain spaces.")
+		err = errors.New("attribute names cannot contain spaces")
 		return
 	}
 	isNumeric, _ := regexp.MatchString("^"+numericMatch+"$", v)
@@ -163,7 +163,7 @@ func (s Style) mathOp(attribute string, op string, val string) (changed bool, er
 
 // RemoveAll resets the style to contain no styles
 func (s *Style) RemoveAll() {
-	s.StringMap = types.NewStringMap()
+	s.StringMap = maps.NewStringMap()
 }
 
 // Returns the string version of the style attribute, suitable for inclusion in an HTML style tag
@@ -176,7 +176,7 @@ func (s Style) String() string {
 
 // Raw set and return true if changed
 func (s Style) set(n string, v string) bool {
-	changed, _ := s.StringMap.SetChanged(n, v)
+	changed := s.StringMap.SetChanged(n, v)
 	return changed
 }
 
@@ -195,9 +195,10 @@ func roundFloat(f float64, digits int) float64 {
 func (s Style) encode() (text []byte) {
 	var items []string
 
-	for key, value := range s.StringMap {
+	s.StringMap.Range(func (key string, value string) bool {
 		items = append(items, key+":"+value)
-	}
+		return true
+	})
 	text = []byte(strings.Join(items, ";"))
 	return text
 }

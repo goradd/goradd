@@ -19,7 +19,7 @@ type Checkbox struct {
 
 func (c *Checkbox) Init(self CheckboxI, parent page.ControlI, id string) {
 	c.Checkbox.Init(self, parent, id)
-	c.LabelMode = html.LABEL_AFTER
+	c.LabelMode = html.LabelAfter
 }
 
 func (c *Checkbox) this() CheckboxI {

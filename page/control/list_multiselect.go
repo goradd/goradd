@@ -3,12 +3,12 @@ package control
 import (
 	"bytes"
 	"context"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/util/types"
+	localPage "goradd-project/override/page"
 	"strconv"
 	"strings"
-	localPage "goradd-project/override/page"
 )
 
 
@@ -191,7 +191,7 @@ func (l *MultiselectList) SelectedValues() []interface{} {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (l *MultiselectList) MarshalState(m types.MapI) {
+func (l *MultiselectList) MarshalState(m maps.Setter) {
 	var ids = []string{}
 	for id := range l.selectedIds {
 		ids = append(ids, id)
@@ -200,12 +200,10 @@ func (l *MultiselectList) MarshalState(m types.MapI) {
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (l *MultiselectList) UnmarshalState(m types.MapI) {
+func (l *MultiselectList) UnmarshalState(m maps.Loader) {
 	l.selectedIds = map[string]bool{}
 
-	if m.Has("sel") {
-		s := m.Get("sel")
-
+	if s,ok := m.Load("sel"); ok {
 		if ids, ok := s.([]string); ok {
 			for _, id := range ids {
 				l.selectedIds[id] = true

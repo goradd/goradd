@@ -39,7 +39,6 @@ func NewLruCache(maxItemCount int, ttl int64) *LruCache {
 // Puts the item into the cache, and updates its access time, pushing it to the end of the removal queue
 func (o *LruCache) Set(key string, v interface{}) {
 	o.Lock()
-	defer o.Unlock()
 
 	if v == nil {
 		panic("Cannot put a nil pointer into the lru cache")
@@ -68,6 +67,7 @@ func (o *LruCache) Set(key string, v interface{}) {
 		o.items[key] = lruItem{t, v}
 		o.order = append(o.order, key)
 	}
+	o.Unlock()
 
 	// garbage collect
 	if t%((int64(o.maxItemCount)/8)+1) == 1 {
@@ -76,10 +76,9 @@ func (o *LruCache) Set(key string, v interface{}) {
 }
 
 // Garbage collect
-// However we do this, we must MAKE SURE that any recent Set does not get garbage collected here
 func (o *LruCache) gc() {
+	// However we do this, we must MAKE SURE that any recent Set does not get garbage collected here
 	o.Lock()
-	defer o.Unlock()
 
 	// remove based on TTL
 	for len(o.order) > 0 && o.items[o.order[0]].timestamp < time.Now().UnixNano()-o.ttl {
@@ -95,16 +94,19 @@ func (o *LruCache) gc() {
 		delete(o.items, o.order[0])
 		o.order = o.order[1:]
 	}
+	o.Unlock()
 }
 
 // Get returns the item based on its id.
 // If not found, it will return nil.
 func (o *LruCache) Get(key string) interface{} {
-	o.Lock()
-	defer o.Unlock()
 	var i lruItem
 	var ok bool
-	if i, ok = o.items[key]; !ok {
+
+	o.RLock()
+	i, ok = o.items[key]
+	o.RUnlock()
+	if !ok {
 		return nil
 	}
 	return i.v
@@ -112,8 +114,8 @@ func (o *LruCache) Get(key string) interface{} {
 
 // Has tests for the existence of the key
 func (o *LruCache) Has(key string) (exists bool) {
-	o.Lock()
-	defer o.Unlock()
+	o.RLock()
 	_, exists = o.items[key]
+	o.RUnlock()
 	return
 }

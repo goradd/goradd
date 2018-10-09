@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/orm/db"
-	"github.com/spekary/goradd/util/types"
 	"goradd-project/config"
 	"strings"
 )
@@ -45,11 +45,11 @@ type FormBase struct {
 	response Response // don't serialize this
 
 	// serialized lists of related files
-	headerStyleSheets   *types.OrderedMap
-	importedStyleSheets *types.OrderedMap // when refreshing, these get moved to the headerStyleSheets
-	headerJavaScripts   *types.OrderedMap
-	bodyJavaScripts     *types.OrderedMap
-	importedJavaScripts *types.OrderedMap // when refreshing, these get moved to the bodyJavaScripts
+	headerStyleSheets   *maps.SliceMap
+	importedStyleSheets *maps.SliceMap // when refreshing, these get moved to the headerStyleSheets
+	headerJavaScripts   *maps.SliceMap
+	bodyJavaScripts     *maps.SliceMap
+	importedJavaScripts *maps.SliceMap // when refreshing, these get moved to the bodyJavaScripts
 }
 
 func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string) {
@@ -74,7 +74,7 @@ func (f *FormBase) this() FormI {
 // before other files.
 func (f *FormBase) AddRelatedFiles() {
 	path, attr := config.JQueryPath()
-	f.AddJavaScriptFile(path, false, html.NewAttributesFrom(types.StringMap(attr)))
+	f.AddJavaScriptFile(path, false, html.NewAttributesFromMap(attr))
 	f.AddJavaScriptFile(config.GoraddAssets()+"/js/ajaxq/ajaxq.js", false, nil) // goradd.js needs this
 	f.AddJavaScriptFile(config.GoraddAssets()+"/js/goradd.js", false, nil)
 	f.AddStyleSheetFile(config.GoraddAssets()+"/css/goradd.css", nil)
@@ -215,17 +215,17 @@ func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *
 
 	if f.isOnPage {
 		if f.importedJavaScripts == nil {
-			f.importedJavaScripts = types.NewOrderedMap()
+			f.importedJavaScripts = maps.NewSliceMap()
 		}
 		f.importedJavaScripts.Set(path, attributes)
 	} else if forceHeader {
 		if f.headerJavaScripts == nil {
-			f.headerJavaScripts = types.NewOrderedMap()
+			f.headerJavaScripts = maps.NewSliceMap()
 		}
 		f.headerJavaScripts.Set(path, attributes)
 	} else {
 		if f.bodyJavaScripts == nil {
-			f.bodyJavaScripts = types.NewOrderedMap()
+			f.bodyJavaScripts = maps.NewSliceMap()
 		}
 		f.bodyJavaScripts.Set(path, attributes)
 	}
@@ -257,12 +257,12 @@ func (f *FormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
 
 	if f.isOnPage {
 		if f.importedStyleSheets == nil {
-			f.importedStyleSheets = types.NewOrderedMap()
+			f.importedStyleSheets = maps.NewSliceMap()
 		}
 		f.importedStyleSheets.Set(path, attributes)
 	} else {
 		if f.headerStyleSheets == nil {
-			f.headerStyleSheets = types.NewOrderedMap()
+			f.headerStyleSheets = maps.NewSliceMap()
 		}
 		f.headerStyleSheets.Set(path, attributes)
 	}
@@ -273,7 +273,7 @@ func (f *FormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
 func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	if f.importedStyleSheets != nil {
 		if f.headerStyleSheets == nil {
-			f.headerStyleSheets = types.NewOrderedMap()
+			f.headerStyleSheets = maps.NewSliceMap()
 		}
 		f.headerStyleSheets.Merge(f.importedStyleSheets)
 		f.importedStyleSheets = nil
@@ -294,7 +294,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 
 	if f.importedJavaScripts != nil {
 		if f.headerJavaScripts == nil {
-			f.headerJavaScripts = types.NewOrderedMap()
+			f.headerJavaScripts = maps.NewSliceMap()
 		}
 		f.headerJavaScripts.Merge(f.importedJavaScripts)
 		f.importedJavaScripts = nil

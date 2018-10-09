@@ -66,7 +66,7 @@ func (d Checkbox) GeneratePut(ctrlName string, objName string, col *generator.Co
 }
 
 
-func (d Checkbox) ConnectorParams() *types.OrderedMap {
+func (d Checkbox) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
 
 	return paramControls

@@ -12,11 +12,11 @@ type LabelDrawingMode int
 // The label drawing mode describes how to draw a label when it is drawn. Various CSS frameworks expect it a certain way. Many
 // are not very forgiving when you don't do it the way they expect.
 const (
-	LABEL_DEFAULT     LabelDrawingMode = iota // Label mode is defined elsewhere, like in a config setting
-	LABEL_BEFORE                              // Label tag is before the control's tag, and terminates before the control
-	LABEL_AFTER                               // Label tag is after the control's tag, and start after the control
-	WRAP_LABEL_BEFORE                         // Label tag is before the control's tag, and wraps the control tag
-	WRAP_LABEL_AFTER                          // Label tag is after the control's tag, and wraps the control tag
+	LabelDefault    LabelDrawingMode = iota // Label mode is defined elsewhere, like in a config setting
+	LabelBefore                             // Label tag is before the control's tag, and terminates before the control
+	LabelAfter                              // Label tag is after the control's tag, and start after the control
+	LabelWrapBefore                         // Label tag is before the control's tag, and wraps the control tag
+	LabelWrapAfter                          // Label tag is after the control's tag, and wraps the control tag
 )
 
 type VoidTag struct {
@@ -105,13 +105,13 @@ func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mod
 	tag := "label"
 	label = html2.EscapeString(label)
 	switch mode {
-	case LABEL_BEFORE:
+	case LabelBefore:
 		return RenderTagNoSpace(tag, labelAttributes, label) + " " + ctrlHtml
-	case LABEL_AFTER:
+	case LabelAfter:
 		return ctrlHtml + " " + RenderTagNoSpace(tag, labelAttributes, label)
-	case WRAP_LABEL_BEFORE:
+	case LabelWrapBefore:
 		return RenderTag(tag, labelAttributes, label + " " + ctrlHtml)
-	case WRAP_LABEL_AFTER:
+	case LabelWrapAfter:
 		return RenderTag(tag, labelAttributes, ctrlHtml + " " + label)
 	}
 	panic("Unknown label mode")

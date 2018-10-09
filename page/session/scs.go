@@ -30,7 +30,7 @@ func (mgr SCS_Manager) Use(next http.Handler) http.Handler {
 
 		if sessionData.Has(sessionResetKey) {
 			// Our previous session requested a reset. We can't reset after writing, so we reset here at the start of the next request.
-			sessionData.Remove(sessionResetKey)
+			sessionData.Delete(sessionResetKey)
 			session.RenewToken(w)
 		}
 

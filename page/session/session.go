@@ -2,7 +2,7 @@ package session
 
 import (
 	"context"
-	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/gengen/maps"
 	"net/http"
 )
 
@@ -29,13 +29,13 @@ func SetSessionManager(m ManagerI) {
 // You normally do not work with the Session object, but instead should call session.GetInt, session.SetInt, etc.
 // Session is exported so that it can be created by custom session managers.
 type Session struct {
-	*types.SafeMap // container for session data
+	*maps.SafeMap // container for session data
 }
 
 // NewSession creates a new session object for use by session managers. You should not normally need to call this.
 // To reset the session data, call Reset()
 func NewSession() *Session {
-	return &Session{types.NewSafeMap()}
+	return &Session{maps.NewSafeMap()}
 }
 
 // MarshallBinary serializes the session data for storage.
@@ -66,28 +66,47 @@ func Has(ctx context.Context, key string) bool {
 	return getSession(ctx).Has(key)
 }
 
-// GetInt returns the integer at the given key in the session store. typeOk is false if a value exists, but is not an int.
-// If no value exists there, or typeOk is false, 0 is returned.
-func GetInt(ctx context.Context, key string) (v int, typeOk bool) {
-	return getSession(ctx).GetInt(key)
+// GetInt returns the integer at the given key in the session store. If the key does not exist
+// OR if what does exist at that key is not an integer, ok will be false and a zero will be returned.
+func GetInt(ctx context.Context, key string) (v int, ok bool) {
+	i,ok := getSession(ctx).Load(key)
+	if ok {
+		v,ok = i.(int)
+	}
+	return
 }
 
-// GetBool returns the boolean at the given key in the session store. typeOk is false if a value exists, but is not a bool.
-// If no value exists there, or typeOk is false, false is returned.
-func GetBool(ctx context.Context, key string) (v bool, typeOk bool) {
-	return getSession(ctx).GetBool(key)
+// GetBool returns the boolean at the given key in the session store.
+// If the key does not exist OR if what does exist at that key is not a boolean,
+// ok will be false and false will be returned.
+func GetBool(ctx context.Context, key string) (v bool, ok bool) {
+	i,ok := getSession(ctx).Load(key)
+	if ok {
+		v,ok = i.(bool)
+	}
+	return
 }
 
-// GetString returns the string at the given key in the session store. typeOk is false if a value exists, but is not a string.
-// If no value exists there, or typeOk is false, an empty string is returned.
-func GetString(ctx context.Context, key string) (v string, typeOk bool) {
-	return getSession(ctx).GetString(key)
+// GetString returns the string at the given key in the session store.
+// If the key does not exist OR if what does exist at that key is not a string,
+// ok will be false and an empty string will be returned.
+func GetString(ctx context.Context, key string) (v string, ok bool) {
+	i,ok := getSession(ctx).Load(key)
+	if ok {
+		v,ok = i.(string)
+	}
+	return
 }
 
-// GetString returns the float64 at the given key in the session store. typeOk is false if a value exists, but is not a float64.
-// If no value exists there, or typeOk is false, a zero is returned.
-func GetFloat(ctx context.Context, key string) (v float64, typeOk bool) {
-	return getSession(ctx).GetFloat(key)
+// GetFloat returns the float64 at the given key in the session store.
+// If the key does not exist OR if what does exist at that key is not a float,
+// ok will be false and 0.0 will be returned.
+func GetFloat(ctx context.Context, key string) (v float64, ok bool) {
+	i,ok := getSession(ctx).Load(key)
+	if ok {
+		v,ok = i.(float64)
+	}
+	return
 }
 
 // Get returns an interface value stored a the given key. nil is returned if nothing is there.
@@ -122,7 +141,7 @@ func SetString(ctx context.Context, key string, v string) {
 
 // Remove will remove the value at the given key in the session store.
 func Remove(ctx context.Context, key string) {
-	getSession(ctx).Remove(key)
+	getSession(ctx).Delete(key)
 }
 
 // Clear removes all of the values from the session store. It does not remove the session token itself (the Cookie for

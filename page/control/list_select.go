@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/page/control/data"
 )
 
@@ -120,15 +120,16 @@ func (l *SelectList) SelectedLabel() string {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (l *SelectList) MarshalState(m types.MapI) {
+func (l *SelectList) MarshalState(m maps.Setter) {
 	m.Set("sel", l.selectedId)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (l *SelectList) UnmarshalState(m types.MapI) {
-	if m.Has("sel") {
-		s, _ := m.GetString("sel")
-		l.selectedId = s
+func (l *SelectList) UnmarshalState(m maps.Loader) {
+	if v,ok := m.Load("sel"); ok {
+		if s, ok := v.(string); ok {
+			l.selectedId = s
+		}
 	}
 }
 

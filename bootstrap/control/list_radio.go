@@ -44,7 +44,7 @@ func (l *RadioList) renderItem(item control.ListItemI) (h string) {
 	attributes.AddClass("form-check-input")
 	ctrl := html.RenderVoidTag("input", attributes)
 
-	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()).AddClass("form-check-label"), item.Label(), ctrl, html.LABEL_AFTER)
+	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()).AddClass("form-check-label"), item.Label(), ctrl, html.LabelAfter)
 	attributes = item.Attributes().Clone()
 	attributes.AddClass("form-check")
 	if l.isInline {

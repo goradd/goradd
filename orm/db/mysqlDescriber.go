@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/knq/snaker"
+	"github.com/spekary/gengen/maps"
 	. "github.com/spekary/goradd/orm/query"
-	"github.com/spekary/goradd/util/types"
 	"log"
 	"math"
 	"strings"
@@ -36,7 +36,7 @@ type mysqlColumn struct {
 	key             string
 	extra           string
 	comment         string
-	options         *types.OrderedMap
+	options         *maps.SliceMap
 }
 
 type mysqlIndex struct {
@@ -659,7 +659,7 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 	cd.IsAutoUpdateTimestamp = strings.Contains(column.extra, "CURRENT_TIMESTAMP")
 
 	// indicates that we want our generated code to update the timestamp manually. This should be mutually exclusive of isAutoUpdateTimestamp
-	if cd.ShouldUpdateTimestamp, ok = options.GetBool("shouldAutoUpdate"); !ok {
+	if cd.ShouldUpdateTimestamp, ok = options.LoadBool("shouldAutoUpdate"); options.Has("shouldAutoUpdate") && !ok {
 		log.Print("Error in table comment for table " + tableName + ":" + column.name + ": shouldAutoUpdate is not a boolean")
 	}
 

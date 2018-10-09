@@ -4,7 +4,7 @@ package javascript
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/gengen/maps"
 	"strconv"
 	"strings"
 )
@@ -66,7 +66,7 @@ func ToJavaScript(v interface{}) string {
 			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
 		}
 
-	case types.MapI:
+	case maps.MapI:
 		var out string
 		s.Range(func(k string, v interface{}) bool {
 			if v2, ok := v.(NoQuoteKey); ok {
@@ -81,7 +81,7 @@ func ToJavaScript(v interface{}) string {
 		} else {
 			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
 		}
-	case types.StringMapI:
+	case maps.StringMapI:
 		var out string
 		s.Range(func(k string, v string) bool {
 			out += ToJavaScript(k) + ":" + ToJavaScript(v) + ","

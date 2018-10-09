@@ -61,7 +61,7 @@ func (d Span) GeneratePut(ctrlName string, objName string, col *generator.Column
 }
 
 
-func (d Span) ConnectorParams() *types.OrderedMap {
+func (d Span) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
 
 	return paramControls

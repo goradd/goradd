@@ -1,12 +1,12 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/html"
-	"fmt"
-	"github.com/spekary/goradd/util/types"
-	"goradd-project/config"
 	"context"
+	"fmt"
+	"github.com/spekary/gengen/maps"
+	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/page"
+	"goradd-project/config"
 	"goradd-project/override/control_base"
 )
 
@@ -60,7 +60,7 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attri
 			id = obj.PrimaryKey()
 		case map[string]string:
 			id,_ = obj["id"]
-		case types.StringGetter:
+		case maps.StringGetter:
 			id = obj.Get("id")
 		}
 	}
@@ -108,14 +108,15 @@ func (t *SelectTable) SetSelectedID(id string) {
 	t.ParentForm().Response().ExecuteControlCommand(t.ID(), "selectTable", "option", "selectedId", id)
 }
 
-func (t *SelectTable) MarshalState(m types.MapI) {
+func (t *SelectTable) MarshalState(m maps.Setter) {
 	m.Set("selId", t.selectedID)
 }
 
-func (t *SelectTable) UnmarshalState(m types.MapI) {
-	if m.Has("selId") {
-		id, _ := m.GetString("selId")
-		t.selectedID = id
+func (t *SelectTable) UnmarshalState(m maps.Loader) {
+	if v,ok := m.Load("selId"); ok {
+		if id, ok := v.(string); ok {
+			t.selectedID = id
+		}
 	}
 }
 

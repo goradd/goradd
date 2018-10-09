@@ -3,16 +3,16 @@ package control
 import (
 	"bytes"
 	"context"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
+	"github.com/spekary/goradd/page/control/data"
 	"github.com/spekary/goradd/util"
-	"github.com/spekary/goradd/util/types"
+	"goradd-project/config"
 	localPage "goradd-project/override/page"
 	"strconv"
-	"goradd-project/config"
-	"github.com/spekary/goradd/page/control/data"
 )
 
 const (
@@ -384,15 +384,16 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (d *DataPager) MarshalState(m types.MapI) {
+func (d *DataPager) MarshalState(m maps.Setter) {
 	m.Set("pageNum", d.paginatedControl.PageNum())
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (d *DataPager) UnmarshalState(m types.MapI) {
-	if m.Has("pageNum") {
-		i, _ := m.GetInt("pageNum")
-		d.paginatedControl.SetPageNum (i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
+func (d *DataPager) UnmarshalState(m maps.Loader) {
+	if v,ok := m.Load("pageNum"); ok {
+		if i, ok := v.(int); ok {
+			d.paginatedControl.SetPageNum (i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
+		}
 	}
 }
 

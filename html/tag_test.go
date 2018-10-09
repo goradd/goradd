@@ -2,7 +2,6 @@ package html
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/util/types"
 	"testing"
 )
 
@@ -12,18 +11,18 @@ func TestTag(t *testing.T) {
 	attr.Set("test", "test1")
 
 	s := RenderTag("p", attr, "testInner")
-
-	if s != "<p test=\"test1\">\ntestInner\n</p>\n" {
-		t.Error("Expected <p test=\"test1\">\ntestInner\n</p>, got " + s)
+	expected := "<p test=\"test1\">\n  testInner\n</p>\n"
+	if s != expected {
+		t.Error("Expected " + expected + ", got " + s)
 	}
 }
 
 func ExampleRenderTag() {
-	fmt.Println(RenderTagNoSpace("div", NewAttributesFrom(types.StringMap{"id": "me", "name": "you"}), "Here I am"))
+	fmt.Println(RenderTagNoSpace("div", NewAttributesFromMap(map[string]string{"id": "me", "name": "you"}), "Here I am"))
 	//Output:<div id="me" name="you">Here I am</div>
 }
 
 func ExampleRenderVoidTag() {
-	fmt.Println(RenderVoidTag("img", NewAttributesFrom(types.StringMap{"src": "thisFile"})))
+	fmt.Println(RenderVoidTag("img", NewAttributesFromMap(map[string]string{"src": "thisFile"})))
 	// Output: <img src="thisFile" />
 }

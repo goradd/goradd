@@ -6,12 +6,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/goradd"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/log"
 	action2 "github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/session"
-	"github.com/spekary/goradd/util/types"
 	"goradd-project/config"
 	gohtml "html"
 	"reflect"
@@ -54,7 +54,7 @@ type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *byt
 
 type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string, buffer *bytes.Buffer)
 
-var DefaultCheckboxLabelDrawingMode = html.LABEL_AFTER // Setting used by checkboxes and radio buttons to default how they draw labels.
+var DefaultCheckboxLabelDrawingMode = html.LabelAfter // Setting used by checkboxes and radio buttons to default how they draw labels.
 
 
 type ControlI interface {
@@ -146,8 +146,8 @@ type ControlI interface {
 	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
 	// contents of another control.
 	SaveState(context.Context, bool)
-	MarshalState(m types.MapI)
-	UnmarshalState(m types.MapI)
+	MarshalState(m maps.Setter)
+	UnmarshalState(m maps.Loader)
 
 	// Shortcuts for translation
 	T(string) string
@@ -1256,24 +1256,24 @@ func (c *Control) SaveState(ctx context.Context, saveIt bool) {
 
 // writeState is an internal function that will recursively write out the state of itself and its subcontrols
 func (c *Control) writeState(ctx context.Context) {
-	var stateStore *types.Map
-	var state *types.Map
+	var stateStore *maps.Map
+	var state *maps.Map
 	var ok bool
 
 	if c.shouldSaveState {
-		state = types.NewMap()
+		state = maps.NewMap()
 		c.this().MarshalState(state)
 		if state.Len() > 0 {
 			state.Set(sessionControlTypeState, c.Type()) // so we can make sure the type is the same when we read, in situations where control Ids are dynamic
 			i := session.Get(ctx, sessionControlStates)
 			if i == nil {
-				stateStore = types.NewMap()
+				stateStore = maps.NewMap()
 				session.Set(ctx, sessionControlStates, stateStore)
-			} else if _, ok = i.(*types.Map); !ok {
-				stateStore = types.NewMap()
+			} else if _, ok = i.(*maps.Map); !ok {
+				stateStore = maps.NewMap()
 				session.Set(ctx, sessionControlStates, stateStore)
 			} else {
-				stateStore = i.(*types.Map)
+				stateStore = i.(*maps.Map)
 			}
 			key := c.ParentForm().ID() + ":" + c.ID()
 			stateStore.Set(key, state)
@@ -1291,25 +1291,25 @@ func (c *Control) writeState(ctx context.Context) {
 
 // readState is an internal function that will recursively read the state of itself and its subcontrols
 func (c *Control) readState(ctx context.Context) {
-	var stateStore types.MapI
-	var state types.MapI
+	var stateStore *maps.Map
+	var state *maps.Map
 	var ok bool
 
 	if c.shouldSaveState {
 		if i := session.Get(ctx, sessionControlStates); i != nil {
-			if stateStore, ok = i.(types.MapI); !ok {
+			if stateStore, ok = i.(*maps.Map); !ok {
 				return
 				// Indicates the entire control state store changed types, so completely ignore it
 			}
 
 			key := c.ParentForm().ID() + ":" + c.ID()
 			i2 := stateStore.Get(key)
-			if state, ok = i2.(types.MapI); !ok {
+			if state, ok = i2.(*maps.Map); !ok {
 				return
 				// Indicates This particular item was not stored correctly
 			}
 
-			if typ, _ := state.GetString(sessionControlTypeState); typ != c.Type() {
+			if typ, _ := state.LoadString(sessionControlTypeState); typ != c.Type() {
 				return // types are not equal, ids must have changed
 			}
 
@@ -1331,14 +1331,14 @@ func (c *Control) readState(ctx context.Context) {
 // Note that the control id is used as a key for the state,
 // so that if you are dynamically adding controls, you should make sure you give a specific, non-changing control id
 // to the control, or the state may be lost.
-func (c *Control) MarshalState(m types.MapI) {
+func (c *Control) MarshalState(m maps.Setter) {
 }
 
 // UnmarshalState is a helper function for controls to get their state from the stateStore. To implement it, a control
 // should read the data out of the given map. If needed, implemet your own version checking scheme. The given map will
 // be guaranteed to have been written out by the same kind of control as the one reading it. Be sure to call the super-class
 // version too.
-func (c *Control) UnmarshalState(m types.MapI) {
+func (c *Control) UnmarshalState(m maps.Loader) {
 }
 
 // T is a shortcut for the override translator that should only be used by internal goradd code. See Translate() for the
@@ -1425,8 +1425,8 @@ func (c *Control) SetEscapeText(e bool) ControlI {
 	return c.this()
 }
 
-func ControlConnectorParams() *types.OrderedMap {
-	m := types.NewOrderedMap()
+func ControlConnectorParams() *maps.SliceMap {
+	m := maps.NewSliceMap()
 
 	// TODO: Add setable options for all controls
 	return m

@@ -2,9 +2,9 @@ package control_base
 
 import (
 	"context"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/util/types"
 	localPage "goradd-project/override/page"
 	html2 "html"
 )
@@ -43,7 +43,7 @@ func (c *Checkbox) this() CheckboxI {
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (c *Checkbox) DrawingAttributes() *html.Attributes {
 	a := c.Control.DrawingAttributes()
-	if c.Text() != "" && (c.LabelMode == html.LABEL_BEFORE || c.LabelMode == html.LABEL_AFTER) {
+	if c.Text() != "" && (c.LabelMode == html.LabelBefore || c.LabelMode == html.LabelAfter) {
 		// Treat the closer text label as more important than the wrapper label
 		a.Set("aria-labeledby", c.ID()+"_ilbl")
 	}
@@ -72,7 +72,7 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 			}
 		}
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
-	} else if c.LabelMode == html.WRAP_LABEL_AFTER || c.LabelMode == html.WRAP_LABEL_BEFORE {
+	} else if c.LabelMode == html.LabelWrapAfter || c.LabelMode == html.LabelWrapBefore {
 		// Use the text as a label wrapper
 		text = html2.EscapeString(text)
 		labelAttributes := c.this().GetDrawingInputLabelAttributes()
@@ -168,7 +168,7 @@ func (c *Checkbox) Value() interface{} {
 /**
  * Puts the current state of the control to be able to restore it later.
  */
-func (c *Checkbox) MarshalState(m types.MapI) {
+func (c *Checkbox) MarshalState(m maps.Setter) {
 	m.Set("checked", c.checked)
 }
 
@@ -176,10 +176,11 @@ func (c *Checkbox) MarshalState(m types.MapI) {
  * Restore the state of the control.
  * @param mixed $state Previously saved state as returned by GetState above.
  */
-func (c *Checkbox) UnmarshalState(m types.MapI) {
-	if m.Has("checked") {
-		v, _ := m.GetBool("checked")
-		c.checked = v
+func (c *Checkbox) UnmarshalState(m maps.Loader) {
+	if v,ok := m.Load("checked"); ok {
+		if v2,ok := v.(bool); ok {
+			c.checked = v2
+		}
 	}
 }
 

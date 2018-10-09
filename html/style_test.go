@@ -2,7 +2,6 @@ package html
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/util/types"
 	"testing"
 )
 
@@ -27,10 +26,10 @@ func ExampleStyle_Get() {
 	//Output: 100%
 }
 
-func ExampleStyle_Remove() {
+func ExampleStyle_Delete() {
 	s := NewStyle()
 	s.SetTo("height: 9em; width: 100%; position:absolute")
-	s.Remove("position")
+	s.Delete("position")
 	fmt.Print(s)
 	//Output: height:9em;width:100%
 }
@@ -172,12 +171,9 @@ func TestStyleMath(t *testing.T) {
 func TestStyle(t *testing.T) {
 	s := NewStyle()
 
-	// Test itnerface
-	var i types.StringMapI = s
+	s.Set("position", "9")
 
-	i.SetChanged("position", "9")
-
-	if a := i.Get("position"); a != "9px" {
-		t.Error("StringMapI compatibility failed: " + a)
+	if a := s.Get("position"); a != "9px" {
+		t.Error("Style test failed: " + a)
 	}
 }

@@ -2,7 +2,7 @@ package html
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/gengen/maps"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
@@ -255,7 +255,7 @@ func TestOverride(t *testing.T) {
 	a.Set("id", "b")
 	a.Set("style", "height:4px; width:3px")
 
-	m := a.Override(types.StringMap{"id": "c", "style": "height:7px"})
+	m := a.Override(maps.NewStringMapFromMap(map[string]string{"id": "c", "style": "height:7px"}))
 
 	if m.Get("id") != "c" {
 		t.Error("Error overriding id")
@@ -274,7 +274,7 @@ func TestOverride(t *testing.T) {
 // Examples
 
 func ExampleNewAttributesFrom() {
-	a := NewAttributesFrom(types.StringMap{"id": "1", "name": "test"})
+	a := NewAttributesFromMap(map[string]string{"id": "1", "name": "test"})
 	fmt.Println(a.Get("id"))
 	//Output: 1
 }

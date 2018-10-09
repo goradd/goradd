@@ -78,9 +78,9 @@ func (d Textbox) GeneratePut(ctrlName string, objName string, col *generator.Col
 }
 
 
-func (d Textbox) ConnectorParams() *types.OrderedMap {
+func (d Textbox) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
-	paramSet := types.NewOrderedMap()
+	paramSet := maps.NewSliceMap()
 
 	paramSet.Set("ColumnCount", generator.ConnectorParam {
 		"Column Count",

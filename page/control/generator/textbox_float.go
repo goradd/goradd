@@ -80,9 +80,9 @@ func (d FloatTextbox) GeneratePut(ctrlName string, objName string, col *generato
 }
 
 
-func (d FloatTextbox) ConnectorParams() *types.OrderedMap {
+func (d FloatTextbox) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
-	paramSet := types.NewOrderedMap()
+	paramSet := maps.NewSliceMap()
 
 	// TODO: Get the regular Textbox's parameters too
 	paramSet.Set("ColumnCount", generator.ConnectorParam {

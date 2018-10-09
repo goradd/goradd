@@ -11,7 +11,7 @@ package html
 import (
 	"errors"
 	"fmt"
-	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/gengen/maps"
 	gohtml "html"
 	"strconv"
 	"strings"
@@ -27,19 +27,24 @@ type Attributer interface {
 // An html attribute manager. Use SetAttribute to set specific attribute values, and then convert it to a string
 // to get the attributes in a version embeddable in an html tag.
 type Attributes struct {
-	types.OrderedStringMap // Use an ordered string map so that each time we draw the attributes, they do not change order
+	maps.StringSliceMap // Use an ordered string map so that each time we draw the attributes, they do not change order
 }
 
 // NewAttributes initializes a group of html attributes.
 func NewAttributes() *Attributes { // TODO: This should not return a pointer, since all it contains is a pointer
-	return &Attributes{*types.NewOrderedStringMap()}
+	return &Attributes{*maps.NewStringSliceMap()}
 }
 
-func NewAttributesFrom(i types.StringMapI) *Attributes {
+func NewAttributesFrom(i maps.StringMapI) *Attributes {
 	a := NewAttributes()
 	a.Merge(i)
 	return a
 }
+
+func NewAttributesFromMap(i map[string]string) *Attributes {
+	return &Attributes{*maps.NewStringSliceMapFromMap(i)}
+}
+
 
 func (a *Attributes) Copy() *Attributes {
 	if a == nil {
@@ -54,7 +59,7 @@ func (a *Attributes) Copy() *Attributes {
 // Returns err if the given attribute name or value is not valid.
 func (a *Attributes) SetChanged(name string, v string) (changed bool, err error) {
 	if strings.Contains(name, " ") {
-		err = errors.New("Attribute names cannot contain spaces.")
+		err = errors.New("attribute names cannot contain spaces")
 		return
 	}
 
@@ -71,7 +76,7 @@ func (a *Attributes) SetChanged(name string, v string) (changed bool, err error)
 
 		if !oldStyles.Equals(styles) { // since maps are not ordered, we must use a special equality test. We can't just compare strings for equality here.
 			changed = true
-			_, err = a.OrderedStringMap.SetChanged("style", styles.String())
+			a.StringSliceMap.Set("style", styles.String())
 		}
 		return
 	}
@@ -85,7 +90,7 @@ func (a *Attributes) SetChanged(name string, v string) (changed bool, err error)
 	if strings.HasPrefix(name, "data-") {
 		return a.SetDataAttributeChanged(name[5:], v)
 	}
-	changed, err = a.OrderedStringMap.SetChanged(name, v)
+	changed = a.StringSliceMap.SetChanged(name, v)
 	return
 }
 
@@ -103,7 +108,7 @@ func (a *Attributes) Set(name string, v string) *Attributes {
 // Returns true if the attribute existed.
 func (a *Attributes) RemoveAttribute(name string) bool {
 	if a.Has(name) {
-		a.Remove(name)
+		a.Delete(name)
 		return true
 	}
 	return false
@@ -149,7 +154,7 @@ func (a *Attributes) String() string {
 
 // Override returns a new Attributes structure with the current attributes merged with the given attributes.
 // Conflicts are won by the given overrides
-func (a *Attributes) Override(i types.StringMapI) *Attributes {
+func (a *Attributes) Override(i maps.StringMapI) *Attributes {
 	curStyles := a.StyleMap()
 	newStyles := NewStyle()
 	newStyles.SetTo(i.Get("style"))
@@ -157,9 +162,9 @@ func (a *Attributes) Override(i types.StringMapI) *Attributes {
 	attr.Merge(i)
 	curStyles.Merge(newStyles)
 	if curStyles.Len() > 0 {
-		a.OrderedStringMap.Set("style", curStyles.String())
+		attr.StringSliceMap.Set("style", curStyles.String())
 	}
-	return a
+	return attr
 }
 
 // Clone returns a copy of the attributes
@@ -179,7 +184,7 @@ func (a *Attributes) SetIDChanged(i string) (changed bool, err error) {
 		return
 	}
 
-	changed, err = a.OrderedStringMap.SetChanged("id", i)
+	changed = a.StringSliceMap.SetChanged("id", i)
 	return
 }
 
@@ -213,7 +218,7 @@ func (a *Attributes) SetClassChanged(v string) bool {
 		return a.RemoveClass(v[2:])
 	}
 
-	changed, _ := a.OrderedStringMap.SetChanged("class", v)
+	changed := a.StringSliceMap.SetChanged("class", v)
 	return changed
 }
 
@@ -227,7 +232,7 @@ func (a *Attributes) RemoveClass(v string) bool {
 	if a.Has("class") {
 		newClass, changed := RemoveClass(a.Get("class"), v)
 		if changed {
-			a.OrderedStringMap.Set("class", newClass)
+			a.StringSliceMap.Set("class", newClass)
 		}
 		return changed
 	}
@@ -244,7 +249,7 @@ func (a *Attributes) RemoveClassesWithPrefix(v string) bool {
 	if a.Has("class") {
 		newClass, changed := RemoveClassesWithPrefix(a.Get("class"), v)
 		if changed {
-			a.OrderedStringMap.Set("class", newClass)
+			a.StringSliceMap.Set("class", newClass)
 		}
 		return changed
 	}
@@ -263,11 +268,11 @@ func (a *Attributes) AddClassChanged(v string) bool {
 	if a.Has("class") {
 		newClass, changed := AddClass(a.Get("class"), v)
 		if changed {
-			a.OrderedStringMap.Set("class", newClass)
+			a.StringSliceMap.Set("class", newClass)
 		}
 		return changed
 	} else {
-		a.OrderedStringMap.Set("class", v)
+		a.StringSliceMap.Set("class", v)
 		return true
 	}
 }
@@ -319,13 +324,13 @@ you can get it using .data('testCase') in jQuery
 func (a *Attributes) SetDataAttributeChanged(name string, v string) (changed bool, err error) {
 	// validate the name
 	if strings.ContainsAny(name, " !$") {
-		err = errors.New("Data attribute names cannot contain spaces or $ or ! chars")
+		err = errors.New("data attribute names cannot contain spaces or $ or ! chars")
 		return
 	}
 	suffix, err := ToDataAttr(name)
 	if err == nil {
 		name = "data-" + suffix
-		changed, err = a.OrderedStringMap.SetChanged(name, v)
+		changed = a.StringSliceMap.SetChanged(name, v)
 	}
 	return
 }
@@ -387,7 +392,7 @@ func (a *Attributes) SetStyleChanged(name string, v string) (changed bool, err e
 	s := a.StyleMap()
 	changed, err = s.SetChanged(name, v)
 	if err == nil {
-		a.OrderedStringMap.Set("style", s.String())
+		a.StringSliceMap.Set("style", s.String())
 	}
 	return
 }
@@ -404,7 +409,7 @@ func (a *Attributes) SetStyle(name string, v string) *Attributes {
 func (a *Attributes) SetStyles(s *Style) *Attributes {
 	styles := a.StyleMap()
 	styles.Merge(s)
-	a.OrderedStringMap.Set("style", styles.String())
+	a.StringSliceMap.Set("style", styles.String())
 	return a
 }
 
@@ -412,7 +417,7 @@ func (a *Attributes) SetStyles(s *Style) *Attributes {
 func (a *Attributes) SetStylesTo(s string) *Attributes {
 	styles := a.StyleMap()
 	styles.SetTo(s)
-	a.OrderedStringMap.Set("style", styles.String())
+	a.StringSliceMap.Set("style", styles.String())
 	return a
 }
 
@@ -434,8 +439,8 @@ func (a *Attributes) RemoveStyle(name string) (changed bool) {
 	s := a.StyleMap()
 	if s.Has(name) {
 		changed = true
-		s.Remove(name)
-		a.OrderedStringMap.Set("style", s.String())
+		s.Delete(name)
+		a.StringSliceMap.Set("style", s.String())
 	}
 	return changed
 }
