@@ -1,0 +1,21 @@
+{{< imports }}
+{{end}}
+{{< headTags }}
+{{end}}
+{{< package }}test{{end}}
+{{< title }}Tests{{end}}
+{{< form }}TestForm{{end}}
+{{< bodyAttributes }}{{end}}
+
+{{define template }}
+<h1>Browser Based Tests</h1>
+{{draw form.TestList }}
+{{draw form.RunButton }}
+<div>
+Currently running:
+{{draw form.RunningLabel }}
+{{draw form.Controller }}
+</div>
+{{end}}
+
+{{renderTemplate}}

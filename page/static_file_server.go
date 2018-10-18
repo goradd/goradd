@@ -118,8 +118,8 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 
-// RegisterStaticFileServer registers the given directory as a static file server. The files are served by the normal
-// go static file process. This must happen during applciation initialization, as the static file directories
+// RegisterAssetDirectory registers the given directory as a static file server. The files are served by the normal
+// go static file process. This must happen during application initialization, as the static file directories
 // are added to the MUX at startup time.
 func RegisterAssetDirectory(dir string, pattern string) {
 	if _,ok := assetDirectories[pattern]; ok {

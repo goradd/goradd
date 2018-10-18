@@ -32,7 +32,7 @@ func NewPageManager() *PageManager {
 
 func RegisterPage(path string, creationFunction FormCreationFunction, formId string) {
 	if pageManager == nil {
-		pageManager = NewPageManager() // Create a new singleton override manager
+		pageManager = NewPageManager() // Create a new singleton page manager
 	}
 	if _, ok := pageManager.pathRegistry[path]; ok {
 		panic("Page is already registered: " + path)
@@ -60,6 +60,11 @@ func (m *PageManager) IsPage(grctx *Context) bool {
 	return ok
 }
 
+func (m *PageManager) HasPage(pageStateId string) bool {
+	return pageCache.Has(pageStateId)
+}
+
+
 func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 	var pageStateId string
 
@@ -73,26 +78,27 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 
 	if page == nil {
 		if gCtx.requestMode == Ajax {
-			// TODO: If this happens, we need to reload the whole override, because we lost the formstate completely
-			log.FrameworkDebug("Ajax lost the override state") // generally this should only happen if the override state drops out of the cash, which might happen after a long time
+			// TODO: If this happens, we need to reload the whole page, because we lost the formstate completely
+			log.FrameworkDebug("Ajax lost the page state") // generally this should only happen if the page state drops out of the cash, which might happen after a long time
 		}
-		// override was not found, so make a new one
+		// page was not found, so make a new one
 		f, _, _ := m.getNewPageFunc(gCtx)
 		if f == nil {
-			panic("Could not find the override creation function")
+			panic("Could not find the page creation function")
 		}
-		page = f(ctx).Page() // call the override create function and get the override
+		page = f(ctx).Page() // call the page create function and get the page
 		pageStateId = pageCache.NewPageID()
-		page.GetPageBase().stateId = pageStateId
-		//pageCache.Set(pageStateId, override)
+		page.stateId = pageStateId
+		log.Debugf("Created page %s", pageStateId)
+		//pageCache.Set(pageStateId, page)
 		isNew = true
 	} else {
-		//override.Restore() // TODO: Only restore if we were deserealized. Tricky to detect.
+		//page.Restore() // TODO: Only restore if we were deserealized. Tricky to detect.
 	}
 	return
 }
 
-// RunPage processes the override and writes the response into the buffer. Any special response headers are returned.
+// RunPage processes the page and writes the response into the buffer. Any special response headers are returned.
 func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, httpErrCode int) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -107,16 +113,19 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 				headers = v.headers
 				httpErrCode = v.errCode
 			default:
-				err := newRunError(ctx, fmt.Errorf("Unknown package error: %v", r))
+				err := newRunError(ctx, fmt.Errorf("unknown package error: %v", r))
 				m.makeErrorResponse(ctx, err, "", buf)
 			}
 		}
 	}()
 
-	pageI, isNew := m.getPage(ctx)
-	page := pageI.GetPageBase()
-	defer m.cleanup(pageI)
+	page, isNew := m.getPage(ctx)
+
+	defer m.cleanup(page)
 	log.FrameworkDebugf("Run: %s", GetContext(ctx))
+
+	page.renderStatus = PageIsRendering
+	log.Debugf("Page started rendering %s", page.stateId)
 
 	err := page.runPage(ctx, buf, isNew)
 
@@ -131,7 +140,8 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 }
 
 func (m *PageManager) cleanup(p *Page) {
-
+	p.renderStatus = PageIsNotRendering
+	log.Debugf("Page stopped rendering %s", p.stateId)
 }
 
 func (m *PageManager) makeErrorResponse(ctx context.Context,
@@ -140,7 +150,7 @@ func (m *PageManager) makeErrorResponse(ctx context.Context,
 	buf *bytes.Buffer) {
 
 	if ErrorPageFunc == nil {
-		panic("No error override template function is defined")
+		panic("No error page template function is defined")
 	}
 
 	ErrorPageFunc(ctx, html, err, buf)
@@ -165,7 +175,7 @@ func (e *HttpError) Send(errCode int) {
 	panic(e)
 }
 
-// Redirect aborts the current override load and tells the browser to load a different override
+// Redirect aborts the current page load and tells the browser to load a different url
 func Redirect(url string) {
 	e := HttpError{}
 	e.SetResponseHeader("Location", url)

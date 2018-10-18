@@ -11,6 +11,7 @@ type PageCacheI interface {
 	Set(pageId string, page *Page)
 	Get(pageId string) *Page
 	NewPageID() string
+	Has(pageId string) bool
 }
 
 var pageCache PageCacheI
@@ -50,11 +51,17 @@ func (o *FastPageCache) Get(pageId string) *Page {
 		p = i.(*Page)
 	}
 
-	if p != nil && p.GetPageBase().stateId != pageId {
+	if p != nil && p.stateId != pageId {
 		panic("pageId does not match")
 	}
 	return p
 }
+
+// Has tests to see if the given page id is in the page cache, without actually loading the page
+func (o *FastPageCache) Has(pageId string) bool {
+	return o.LruCache.Has(pageId)
+}
+
 
 // Returns a new override id
 func (o *FastPageCache) NewPageID() string {
@@ -122,11 +129,15 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 		panic(err)
 	}
 
-	if p != nil && p.GetPageBase().stateId != pageId {
+	if p != nil && p.stateId != pageId {
 		panic("pageId does not match")
 	}
 	p.Restore()
 	return p
+}
+
+func (o *SerializedPageCache) Has(pageId string) bool {
+	return o.LruCache.Has(pageId)
 }
 
 // Returns a new override id

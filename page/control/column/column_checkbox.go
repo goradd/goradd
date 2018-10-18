@@ -3,13 +3,12 @@ package column
 import (
 	"context"
 	"github.com/spekary/goradd/html"
-	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
-	"goradd-project/override/control_base"
-	"github.com/spekary/goradd/page/event"
-	"strings"
 	"github.com/spekary/goradd/page/control/control_base/table"
+	"github.com/spekary/goradd/page/event"
+	"goradd-project/override/control_base"
+	"strings"
 )
 
 const (
@@ -143,10 +142,13 @@ func (c *CheckboxColumn) AddActions(t page.ControlI) {
 }
 
 func (c *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
-	switch javascript.NumberInt(params.Values.Action) {
+	switch params.Values.ActionInt() {
 	case AllClickAction:
-		p := params.Values.Event.(map[string]interface{})
-		c.allClick(p["id"].(string), p["checked"].(bool), javascript.NumberInt(p["row"]), javascript.NumberInt(p["col"]))
+		p := new (event.CheckboxColumnActionValues)
+		ok,err := params.Values.EventValue(p)
+		if ok && err == nil {
+			c.allClick(p.Id, p.Checked, p.Row, p.Column)
+		}
 	}
 }
 

@@ -1,18 +1,17 @@
 package page
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/spekary/goradd/goradd"
 	"github.com/spekary/goradd/orm/db"
 	"goradd-project/config"
-	"math"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
-	"bytes"
 )
 
 type RequestMode int
@@ -252,25 +251,6 @@ func (ctx *Context) RequestMode() RequestMode {
 func GetContext(ctx context.Context) *Context {
 	return ctx.Value(goradd.PageContext).(*Context)
 }
-
-func fixActionValues(values ActionValues) ActionValues {
-	values.Control = fixActionValue(values.Control)
-	values.Event = fixActionValue(values.Event)
-	values.Action = fixActionValue(values.Action)
-	return values
-}
-
-func fixActionValue(val interface{}) interface{} {
-	switch v := val.(type) {
-	case float64:
-		if i := math.Trunc(v); v == i {
-			return int(i)
-		}
-		return val
-	}
-	return val
-}
-
 
 // ConvertToBool is a helper function that can convert Put or Get values and other possible kinds of values into
 // a bool value.

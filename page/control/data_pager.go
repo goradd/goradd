@@ -9,7 +9,7 @@ import (
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/control/data"
-	"github.com/spekary/goradd/util"
+	"github.com/spekary/goradd/util/math"
 	"goradd-project/config"
 	localPage "goradd-project/override/page"
 	"strconv"
@@ -178,7 +178,7 @@ func (d *DataPager) SetObjectNames(singular string, plural string) {
 // data the pager refers to
 func (d *DataPager) SliceOffsets() (start, end int) {
 	start = (d.paginatedControl.PageNum() - 1) * d.paginatedControl.PageSize()
-	end = util.MinInt(start+ d.paginatedControl.PageSize(),  d.paginatedControl.TotalItems())
+	_,end = math.MinInt(start+ d.paginatedControl.PageSize(),  d.paginatedControl.TotalItems())
 	return
 }
 
@@ -258,8 +258,8 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 	if pageCount <= d.maxPageButtons {
 		return 1, pageCount
 	} else {
-		minEndOfBunch := util.MinInt(d.maxPageButtons-2, pageCount)
-		maxStartOfBunch := util.MaxInt(pageCount-d.maxPageButtons+3, 1)
+		_,minEndOfBunch := math.MinInt(d.maxPageButtons-2, pageCount)
+		_,maxStartOfBunch := math.MaxInt(pageCount-d.maxPageButtons+3, 1)
 
 		leftOfBunchCount := (d.maxPageButtons - 5) / 2
 		rightOfBunchCount := (d.maxPageButtons - 4) / 2
@@ -270,13 +270,13 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 		if pageNum < leftBunchTrigger {
 			pageStart = 1
 		} else {
-			pageStart = util.MinInt(maxStartOfBunch, pageNum-leftOfBunchCount)
+			_,pageStart = math.MinInt(maxStartOfBunch, pageNum-leftOfBunchCount)
 		}
 
 		if pageNum > rightBunchTrigger {
 			pageEnd = pageCount
 		} else {
-			pageEnd = util.MaxInt(minEndOfBunch, pageNum+rightOfBunchCount)
+			_,pageEnd = math.MaxInt(minEndOfBunch, pageNum+rightOfBunchCount)
 		}
 		return
 	}

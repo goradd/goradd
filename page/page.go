@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
+	"github.com/spekary/goradd/messageServer"
 	"strconv"
 	"strings"
 )
@@ -14,10 +15,13 @@ type PageRenderStatus int
 
 type PageDrawFunc func(context.Context, *Page, *bytes.Buffer) error
 
+// Future note. Below is for general information but should NOT be used to synchronize multiple drawing routines
+// An architecture using channels to synchronize page changes and drawing would be better
+// For now, except for testing, we should not get in a situation where multiple copies of a form
+// are being used.
 const (
-	UNRENDERED PageRenderStatus = iota // FormBase has not started isRendering
-	BEGUN                              // FormBase has started isRendering but has not finished
-	ENDED                              // FormBase isRendering has already been started and finished
+	PageIsNotRendering PageRenderStatus = iota // FormBase has started rendering but has not finished
+	PageIsRendering
 )
 
 // Anything that draws into the draw buffer must implement This interface
@@ -68,10 +72,6 @@ func (p *Page) SetDrawFunction(f PageDrawFunc) {
 	p.drawFunc = f
 }
 
-func (p *Page) GetPageBase() *Page {
-	return p
-}
-
 func (p *Page) setStateID(stateId string) {
 	p.stateId = stateId
 }
@@ -86,8 +86,6 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 	if err = p.Form().Run(ctx); err != nil {
 		return err
 	}
-
-	p.renderStatus = UNRENDERED
 
 	// TODO: Lifecycle calls - push them to the form
 
@@ -375,3 +373,13 @@ func (p *Page) SetResponseHeader(key, value string) {
 func (p *Page) ClearResponseHeaders() {
 	p.responseHeader = nil
 }
+
+// PushRedraw will cause the form to refresh in between events. This will cause the client to pull
+// the ajax response. Its possible that this will happen while drawing. We avoid the race condition
+// by sending the message anyways, and allowing the client to send an event back to us, essentially
+// using the javascript event mechanism to synchronize us. We might get an unnecessary redraw, but
+// that is not a big deal.
+func (p *Page) PushRedraw() {
+	messageServer.SendMessage("form-" + p.stateId, `{"grup":true}`)
+}
+

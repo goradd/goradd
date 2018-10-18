@@ -393,6 +393,8 @@ goradd = {
 
         params.formId = $objForm.attr('id');
 
+        console.log("postAjax" + JSON.stringify(params));
+
         // Use an ajax queue so ajax requests happen synchronously
         gr.ajaxQueue(function() {
             var data = gr._getAjaxData(params);
@@ -413,7 +415,6 @@ goradd = {
                     }
                 },
                 success: function (json) {
-                    gr._prevUpdateTime = new Date().getTime();
                     if ($j.type(json) === 'string') {
                         // If server has a problem sending any ajax response, like when headers are already sent, we will get that error as a string here
                         gr.displayAjaxError(json, '', '');
@@ -888,13 +889,16 @@ goradd.updateForm = function() {
 
     // the following code prevents too many updates from happening in a short amount of time.
     // the default will update no faster than once per second.
-    if (newTime - goradd._prevUpdateTime >= goradd.minUpdateInterval) {
+    if (newTime - goradd._prevUpdateTime > goradd.minUpdateInterval) {
         //refresh immediately
+        console.log("Immediate update");
+        gr._prevUpdateTime = new Date().getTime();
         goradd.postAjax ({});
         goradd.clearTimeout ('goradd.update');
     } else if (!goradd._objTimers['goradd.update']) {
         // delay to let multiple fast actions only trigger periodic refreshes
-        goradd.setTimeout ('goradd.update', 'goradd.updateForm', goradd.minUpdateInterval);
+        console.log("Delayed update");
+        goradd.setTimeout ('goradd.update', goradd.updateForm, goradd.minUpdateInterval);
     }
 };
 
@@ -919,6 +923,11 @@ goradd.getWrapper = function(mixControl) {
 goradd.getForm = function() {
     return $j('form[data-grctl="form"]')[0]
 };
+
+goradd.getFormState = function() {
+    return document.getElementById("Goradd__FormState").value;
+};
+
 
 /**
  * Radio buttons are a little tricky to set if they are part of a group
@@ -990,7 +999,7 @@ goradd.redirect = function(newLocation) {
 })( jQuery );
 
 ////////////////////////////////
-// QCubed Shortcuts and Initialize
+// Goradd Shortcuts and Initialize
 ////////////////////////////////
 
 gr = goradd;

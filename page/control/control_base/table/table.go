@@ -388,7 +388,7 @@ func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
 			c.Action(ctx, p)
 		}
 	case SortClick:
-		t.sortClick(p.Values.Event.(string))
+		t.sortClick(p.Values.EventString())
 		t.Refresh()
 	}
 

@@ -1425,6 +1425,13 @@ func (c *Control) SetEscapeText(e bool) ControlI {
 	return c.this()
 }
 
+// ExecuteJqueryFunction will execute the given JQuery function on the given command, with the given
+// parameters. i.e. jQuery("#id").command(params...); will get executed in javascript.
+func (c *Control) ExecuteJqueryFunction(command string, params ...interface{}) {
+	c.ParentForm().Response().ExecuteControlCommand(c.ID(), command, params...)
+}
+
+// ConnectorParams returns a list of options setable by the connector dialog (not currently implemented)
 func ControlConnectorParams() *maps.SliceMap {
 	m := maps.NewSliceMap()
 

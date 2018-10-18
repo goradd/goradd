@@ -6,11 +6,12 @@ import (
 	"time"
 )
 
-const htmlValueBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789?=+-_(){}[]|#@!^"
+const htmlValueBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789-_()!"
 
 // RandomHtmlValueString generates a pseudo random string of the given length
-// Characters are drawn from legal HTML values that do not need escaping
+// Characters are drawn from legal HTML values that do not need encoding.
 // The distribution is not perfect, so its not good for crypto, but works for general purposes
+// This also works for GET variables
 func RandomHtmlValueString(n int) string {
 	b := make([]byte, n)
 	for i := range b {
