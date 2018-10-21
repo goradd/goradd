@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
@@ -113,3 +114,22 @@ func (f *TestForm) LoadUrl(url string) {
 	f.Log("Loading url: " + url)
 	f.Controller.LoadUrl(url)
 }
+
+// GetForm returns the currently loaded form.
+func (f *TestForm) GetForm() page.FormI {
+	if page.GetPageCache().Has(f.Controller.formstate) {
+		return page.GetPageCache().Get(f.Controller.formstate).Form()
+	}
+	return nil
+}
+
+func (f *TestForm) AssertEqual(expected, actual interface{}) {
+	if expected != actual {
+		f.Controller.LogLine(fmt.Sprintf("AssertEqual failed. %v != %v.", expected, actual))
+	}
+}
+
+func (f *TestForm) ChangeVal(id string, val interface{}) {
+
+}
+

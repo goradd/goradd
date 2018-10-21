@@ -521,7 +521,13 @@ goradd = {
 
         $j( document ).ajaxComplete(function( event, request, settings ) {
             if (!gr.ajaxQueueIsRunning()) {
-                gr.processFinalCommands();
+                gr.processFinalCommands();  // TODO: Fix this so a preliminary ajax command is not required.
+                                            // Likely means using a separate queue.
+
+                if (goradd.currentStep && goradd.stepFunction) {
+                    goradd.stepFunction(goradd.currentStep);
+                    goradd.currentStep = 0;
+                }
             }
         });
 
@@ -945,16 +951,14 @@ goradd.setRadioInGroup = function(strControlId) {
     }
 };
 
-/////////////////////////////
-// Register Control - General
-/////////////////////////////
-
 goradd.controlValues = {};
 goradd.formObjsModified = {};
 goradd.ajaxError = false;
 goradd.inputSupport = true;
 goradd.blockEvents = false;
 goradd.finalCommands = [];
+goradd.currentStep = 0;
+goradd.stepFunction = null;
 
 goradd.registerControl = function(objControl) {
     var objWrapper;

@@ -1035,7 +1035,7 @@ func (c *Control) doAction(ctx context.Context) {
 			// grCtx.actionValues is a json representation of the action values. We extract the json, but since json does
 			// not differentiate between float and int, we will leave all numbers as json.Number types so we can extract later.
 			// use javascript.NumberInt() to easily convert numbers in interfaces to int values.
-			p.Values = grCtx.actionValues
+			p.values = grCtx.actionValues
 			dest := c.Page().GetControl(callbackAction.GetDestinationControlID())
 
 			if dest != nil {

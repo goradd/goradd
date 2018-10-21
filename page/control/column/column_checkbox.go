@@ -142,10 +142,10 @@ func (c *CheckboxColumn) AddActions(t page.ControlI) {
 }
 
 func (c *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
-	switch params.Values.ActionInt() {
+	switch params.ActionValueInt() {
 	case AllClickAction:
 		p := new (event.CheckboxColumnActionValues)
-		ok,err := params.Values.EventValue(p)
+		ok,err := params.EventValue(p)
 		if ok && err == nil {
 			c.allClick(p.Id, p.Checked, p.Row, p.Column)
 		}

@@ -35,7 +35,7 @@ const (
 	PriorityHigh
 	PriorityStandard
 	PriorityLow
-	PriorityFinal
+	PriorityFinal	// TODO: Note that this currently requires a preliminary ajax command, or it will not fire. Should fix that, but its tricky.
 )
 
 // ResponseCommand is a response packet that leads to execution of a javascript function

@@ -114,3 +114,10 @@ func PowerInt(base int, power int) int {
 	}
 	return v
 }
+
+func AbsInt(a int) int {
+	if a < 0 {
+		return -a
+	}
+	return a
+}

@@ -16,7 +16,6 @@ const (
 	TestStepAction = iota + 100
 )
 
-
 // rowSelectedEvent indicates that a row was selected from the SelectTable
 type testStepEvent struct {
 	page.Event
@@ -39,15 +38,14 @@ type  TestController struct {
 	formstate         string
 	currentStepNumber int
 	stepTimeout       time.Duration	// number of seconds before a step should timeout
+	stepChannel chan stepItemType	// probably will leak memory TODO: Close this before it is removed from page cache
 }
-
-var stepChannel = make(chan stepItemType, 1)
-
 
 func NewTestController(parent page.ControlI, id string) *TestController {
 	p := new(TestController)
 	p.Init(parent, id)
 	p.Tag = "pre"
+	p.stepChannel = make(chan stepItemType, 1)
 	return p
 }
 
@@ -73,12 +71,7 @@ func (p *TestController) LogLine(line string) {
 }
 
 func (p *TestController) LoadUrl(url string) {
-	p.startStep()
 	p.ExecuteJqueryFunction("testController", "loadUrl", p.currentStepNumber, url)
-
-	//script := fmt.Sprintf (`$j("#%s").testController("loadUrl", %d, %q);`, p.ID(), p.currentStepNumber, url)
-	//p.ParentForm().Response().ExecuteJavaScript(script, page.PriorityStandard)
-
 	p.waitStep()
 }
 
@@ -86,11 +79,11 @@ func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case TestStepAction:
 		stepItem := new(stepItemType)
-		ok,err := a.Values.EventValue(stepItem)
+		ok,err := a.EventValue(stepItem)
 		if err != nil {panic(err)}
 		if !ok {panic("no step data found")}
 
-		stepChannel<-*stepItem
+		p.stepChannel<-*stepItem
 	}
 }
 
@@ -102,14 +95,12 @@ func (p *TestController) UpdateFormValues(ctx *page.Context) {
 	}
 }
 
-func (p *TestController) startStep() {
-	p.currentStepNumber ++
-}
-
 func (p *TestController) waitStep() {
+	p.currentStepNumber++
+	p.ExecuteJqueryFunction("testController", "waitStep", p.currentStepNumber, page.PriorityFinal)
 	for {
 		select {
-		case stepItem := <-stepChannel:
+		case stepItem := <-p.stepChannel:
 			if stepItem.Step != p.currentStepNumber {
 				continue // this is a return from a previous step that timed out. We want to ignore it.
 			}
@@ -122,6 +113,12 @@ func (p *TestController) waitStep() {
 		break // we successfully returned from the step
 	}
 }
+
+func (p *TestController) changeVal(id string, val interface{}) {
+	p.ExecuteJqueryFunction("testController", "changeVal", p.currentStepNumber, fmt.Sprintf("%v", val))
+	p.waitStep()
+}
+
 
 func init() {
 	page.RegisterAssetDirectory(config.GoraddDir() + "/test/assets", config.AssetPrefix + "test")

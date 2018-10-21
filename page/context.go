@@ -68,7 +68,7 @@ type AppContext struct {
 	checkableValues     map[string]interface{} // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
 	actionControlID     string                 // If an action, the control sending the action
 	eventID             EventID                // The event to send to the control
-	actionValues        ActionValues
+	actionValues        actionValues
 	OutBuf				*bytes.Buffer
 }
 
@@ -204,7 +204,7 @@ func (ctx *Context) FillApp(cliArgs []string) {
 				CheckableValues map[string]interface{} `json:"checkableValues"`
 				ControlID       string                 `json:"controlID"`
 				EventID         int                    `json:"eventID"`
-				Values          ActionValues           `json:"actionValues"`
+				Values          actionValues           `json:"actionValues"`
 			}
 
 			dec := json.NewDecoder(strings.NewReader(v))

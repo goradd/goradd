@@ -23,6 +23,11 @@ func SetPageCache(c PageCacheI) {
 	pageCache = c
 }
 
+// GetPageCache returns the page cache. Used internally by goradd.
+func GetPageCache() PageCacheI {
+	return pageCache
+}
+
 // FastPageCache is an in memory override cache that does no serialization and uses an LRU cache of override objects.
 // Objects that are too old are removed, and if the cache is full,
 // the oldest item(s) will be removed. Pages that are set multiple times will be pushed to the top. Whenever an item is set,

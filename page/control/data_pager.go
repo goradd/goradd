@@ -5,7 +5,6 @@ import (
 	"context"
 	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
-	"github.com/spekary/goradd/javascript"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/control/data"
@@ -151,7 +150,7 @@ func (d *DataPager) DrawingAttributes() *html.Attributes {
 func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
 	switch params.ID {
 	case PageClick:
-		d.paginatedControl.SetPageNum(javascript.NumberInt(params.Values.Control))
+		d.paginatedControl.SetPageNum(params.ControlValueInt())
 		d.paginatedControl.Refresh()
 		for _,c := range d.paginatedControl.getDataPagers() {
 			c.Refresh()

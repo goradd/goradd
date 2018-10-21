@@ -7,6 +7,7 @@ jQuery.widget( "goradd.testController",  {
     options: {
     },
     _window:null,
+    _err:"",
     _create: function() {
         this._super();
     },
@@ -16,9 +17,10 @@ jQuery.widget( "goradd.testController",  {
     loadUrl: function(step, url) {
         var self = this;
         if (!this._window || this._window.closed) {
-            this._window = window.open(url, "testWindow", "resizable,scrollbars,status");
+            this._window = window.open(url, "testWindow");
             if (!this._window) {
-                this._fireStepEvent("Opening a popup window was blocked by the browser.");
+                this._err += "Opening a popup window was blocked by the browser.";
+                this.fireStepEvent(step);
                 return;
             }
             this._window.addEventListener("load", function(event) {
@@ -44,17 +46,35 @@ jQuery.widget( "goradd.testController",  {
     },
     _windowLoadEvent: function(event, step) {
         // if we got a goradd form, get the formstate or the generated error
-        $formstate = $(this._window.document).find("form[dataGrctl=form] #Goradd__FormState");
+        $formstate = $(this._window.document).find("form[data-grctl=form] #Goradd__FormState");
         if ($formstate.length > 0) {
-            goradd.setControlValue(this.attr("id"), "formstate", $formstate.val());
+            goradd.setControlValue(this.element.attr("id"), "formstate", $formstate.val());
         }
         this._fireStepEvent(step, null);
     },
     _windowErrorEvent: function(event, step) {
-        this._fireStepEvent(step, "Browser load error.");
+        this._fireStepEvent(step, "Browser load error:" + event.error.message);
     },
-    _fireStepEvent(step, err) {
-        this.element.trigger("goradd.teststep", {step: step, err: err});
+    fireStepEvent(step) {
+        err = this._err;
+        this._err = "";
+        this.element.trigger("goradd.teststep", {Step: step, Err: err});
+    },
+    changeVal: function(step, id, val) {
+        var $control = this._findControl(id);
+
+        if (!$control.length) {
+            this._err += "Could not find control " + id;
+            this.fireStepEvent(step);
+            return;
+        }
+
+        $control.val(val);
+        $control.trigger("change");
+        this._fireStepEvent(step);
+    },
+    _findControl: function(id) {
+        return $(this._window.document).find("#" + id);
     }
 
 });

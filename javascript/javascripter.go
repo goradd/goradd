@@ -183,6 +183,7 @@ func NumberString(i interface{}) string {
 	case string:
 		return n
 	}
+	panic("Unknown type for NumberString")
 	return ""
 }
 

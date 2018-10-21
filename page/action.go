@@ -2,8 +2,9 @@ package page
 
 import (
 	"encoding/json"
-	"github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/page/action"
+	"strconv"
+	"strings"
 )
 
 // ActionParams are sent to the Action() function in controls in response to a user action.
@@ -12,238 +13,130 @@ type ActionParams struct {
 	ID int
 	// Action is an interface to the action itself
 	Action action.ActionI
-	// Values are the action values returned by the application. Note that if you are expecting arrays, maps or structs
-	// to be returned that
-	Values ActionValues
 	// ControlID is the control that originated the action
 	ControlId string
+
+	// values, to be accessesed with the Event*, Action* and Control* helper functions
+	values actionValues
 }
 
 
-// ActionValues is the structure representing the values sent in an ActionParam. Note that all numeric values are returned as
-// a json.Number type, use the helper functions to extract the proper value. If you are returning a javascript object, it
-// will come through as a string map, and you will have to call the javascript.Number* helper functions directly.
-type ActionValues struct {
+// actionValues is the structure representing the values sent in an ActionParam.
+// Use the helper functions to get to the values.
+type actionValues struct {
 	Event   json.RawMessage `json:"event"`
 	Control json.RawMessage `json:"control"`
 	Action  json.RawMessage `json:"action"`
 }
 
-// String returns the action's value as a string. If you are expecting values from
-// more than one place, you should call the more specific helper function. If will log a warning if more than one
-// value comes through. The precedence is Control over Action over Event.
-func (a ActionValues) String() (ret string) {
-	var count int
 
-	if a.Event != nil {
-		a.EventValue(&ret)
-		count++
-	}
-	if a.Action != nil {
-		a.ActionValue(&ret)
-		count++
-	}
-	if a.Control != nil {
-		a.ControlValue(&ret)
-		count++
-	}
-	if count > 1 {
-		log.Warning("The action had more than one value. Call the specific action helper.")
-	}
-	return ret
-}
-
-// Int returns the action's value as a int. If you are expecting values from
-// more than one place, you should call the more specific helper function. If will log a warning if more than one
-// value comes through. The precedence is Control over Action over Event.
-func (a ActionValues) Int() (ret int) {
-	var count int
-
-	if a.Event != nil {
-		a.EventValue(&ret)
-		count++
-	}
-	if a.Action != nil {
-		a.ActionValue(&ret)
-		count++
-	}
-	if a.Control != nil {
-		a.ControlValue(&ret)
-		count++
-	}
-	if count > 1 {
-		log.Warning("The action had more than one value. Call the specific action helper.")
-	}
-	return ret
-}
-
-// Float returns the action's value as a float64. If you are expecting values from
-// more than one place, you should call the more specific helper function. If will log a warning if more than one
-// value comes through. The precedence is Control over Action over Event.
-func (a ActionValues) Float() (ret float64) {
-	var count int
-
-	if a.Event != nil {
-		a.EventValue(&ret)
-		count++
-	}
-	if a.Action != nil {
-		a.ActionValue(&ret)
-		count++
-	}
-	if a.Control != nil {
-		a.ControlValue(&ret)
-		count++
-	}
-	if count > 1 {
-		log.Warning("The action had more than one value. Call the specific action helper.")
-	}
-	return ret
-}
-
-// Float returns the action's value as a bool. If you are expecting values from
-// more than one place, you should call the more specific helper function. If will log a warning if more than one
-// value comes through. The precedence is Control over Action over Event.
-func (a ActionValues) Bool() (ret bool) {
-	var count int
-
-	if a.Event != nil {
-		a.EventValue(&ret)
-		count++
-	}
-	if a.Action != nil {
-		a.ActionValue(&ret)
-		count++
-	}
-	if a.Control != nil {
-		a.ControlValue(&ret)
-		count++
-	}
-	if count > 1 {
-		log.Warning("The action had more than one value. Call the specific action helper.")
-	}
-	return ret
-}
-
-
-// Value returns the action's value as an interface{}. If you are expecting values from
-// more than one place, you should call the more specific helper function. If will log a warning if more than one
-// value comes through. The precedence is Control over Action over Event.
-func (a ActionValues) Value(ret interface{}) (ok bool, err error) {
-	var count int
-
-	if a.Event != nil {
-		ok,err = a.EventValue(ret)
-		count++
-	}
-	if a.Action != nil {
-		ok,err = a.ActionValue(ret)
-		count++
-	}
-	if a.Control != nil {
-		ok,err = a.ControlValue(ret)
-		count++
-	}
-	if count > 1 {
-		log.Warning("The action had more than one value. Call the specific action helper.")
-	}
-	return
-}
-
-// EventValue will attempt to put the Event value into the given object. The given value should be a pointer
-// to an object or variable that is the expected type for the data. ok will be false if no data was found.
+// EventValue will attempt to put the Event value into the given object using json.Unmarshal.
+// You should primarily use it to get object or array values out of the Action value. If you are
+// expecting a basic type, use one of the EventValue* helper functions instead.
+// The given value should be a pointer to an object or variable that is the expected type for the data.
+// ok will be false if no data was found.
 // It will return an error if the data was found, but could not be converted to the given type.
-func (a ActionValues) EventValue(i interface{}) (ok bool, err error) {
-	if a.Event != nil {
+func (a *ActionParams) EventValue(i interface{}) (ok bool, err error) {
+	if a.values.Event != nil {
 		ok = true
-		err = json.Unmarshal(a.Event, i)
+		err = json.Unmarshal(a.values.Event, i)
 	}
 	return
 }
 
-// ActionValue will attempt to put the Action value into the given object. The given value should be a pointer
-// to an object or variable that is the expected type for the data. ok will be false if no data was found.
+// ActionValue will attempt to put the Action value into the given object using json.Unmarshal.
+// You should primarily use it to get object or array values out of the Action value. If you are
+// expecting a basic type, use one of the ActionValue* helper functions instead.
+// The given value should be a pointer to an object or variable that is the expected type for the data.
+// ok will be false if no data was found.
 // It will return an error if the data was found, but could not be converted to the given type.
-func (a ActionValues) ActionValue(i interface{}) (ok bool, err error) {
-	if a.Action != nil {
+func (a *ActionParams) ActionValue(i interface{}) (ok bool, err error) {
+	if a.values.Action != nil {
 		ok = true
-		err = json.Unmarshal(a.Action, i)
+		err = json.Unmarshal(a.values.Action, i)
 	}
 	return
 }
 
-// ControlValue will attempt to put the Control value into the given object. The given value should be a pointer
-// to an object or variable that is the expected type for the data. ok will be false if no data was found.
+// ControlValue will attempt to put the Control value into the given object using json.Unmarshal.
+// You should primarily use it to get object or array values out of the Control value. If you are
+// expecting a basic type, use one of the ControlValue* helper functions instead.
+// The given value should be a pointer to an object or variable that is the expected type for the data.
+// ok will be false if no data was found.
 // It will return an error if the data was found, but could not be converted to the given type.
-func (a ActionValues) ControlValue(i interface{}) (ok bool, err error) {
-	if a.Control != nil {
+func (a *ActionParams) ControlValue(i interface{}) (ok bool, err error) {
+	if a.values.Control != nil {
 		ok = true
-		err = json.Unmarshal(a.Control, i)
+		err = json.Unmarshal(a.values.Control, i)
 	}
 	return
 }
 
-
-func (a ActionValues) EventString() (ret string) {
-	a.EventValue(&ret)
-	return
+// EventValueString returns the event value as a string. It will convert to a string, even if the value
+// is not a string.
+func (a *ActionParams) EventValueString() string {
+	return string(a.values.Event)
 }
 
-func (a ActionValues) EventInt() (ret int) {
-	a.EventValue(&ret)
-	return
+func (a *ActionParams) EventValueInt() int {
+	return int(a.EventValueFloat())	// json is always sent as float
 }
 
-func (a ActionValues) EventFloat() (ret float64) {
-	a.EventValue(&ret)
-	return
+func (a *ActionParams) EventValueFloat() float64 {
+	f,_ := strconv.ParseFloat(a.EventValueString(), 64)
+	return f
 }
 
-func (a ActionValues) EventBool() (ret bool) {
-	a.EventValue(&ret)
-	return
+func (a *ActionParams) EventValueBool() bool {
+	return actionValueToBool(a.EventValueString())
 }
 
-
-func (a ActionValues) ActionString() (ret string) {
-	a.ActionValue(&ret)
-	return
+// ActionString returns the action value as a string. It will convert to a string, even if the value
+// is not a string.
+func (a *ActionParams) ActionValueString() string {
+	return string(a.values.Action)
 }
 
-func (a ActionValues) ActionInt() (ret int) {
-	a.ActionValue(&ret)
-	return
+func (a *ActionParams) ActionValueInt() int {
+	return int(a.ActionValueFloat())	// json is always sent as float
 }
 
-func (a ActionValues) ActionFloat() (ret float64) {
-	a.ActionValue(&ret)
-	return
+func (a *ActionParams) ActionValueFloat() float64 {
+	f,_ := strconv.ParseFloat(a.ActionValueString(), 64)
+	return f
 }
 
-func (a ActionValues) ActionBool() (ret bool) {
-	a.ActionValue(&ret)
-	return
+func (a *ActionParams) ActionValueBool() bool {
+	return actionValueToBool(a.ActionValueString())
 }
 
-
-func (a ActionValues) ControlString() (ret string) {
-	a.ControlValue(&ret)
-	return
+// ControlString returns the control value as a string. It will convert to a string, even if the value
+// is not a string.
+func (a *ActionParams) ControlValueString() string {
+	return string(a.values.Control)
 }
 
-func (a ActionValues) ControlInt() (ret int) {
-	a.ControlValue(&ret)
-	return
+func (a *ActionParams) ControlValueInt() int {
+	return int(a.ControlValueFloat())	// json is always sent as float
 }
 
-func (a ActionValues) ControlFloat() (ret float64) {
-	a.ControlValue(&ret)
-	return
+func (a *ActionParams) ControlValueFloat() float64 {
+	f,_ := strconv.ParseFloat(a.ControlValueString(), 64)
+	return f
 }
 
-func (a ActionValues) ControlBool() (ret bool) {
-	a.ControlValue(&ret)
-	return
+func (a *ActionParams) ControlValueBool() (ret bool) {
+	return actionValueToBool(a.ControlValueString())
 }
 
+func actionValueToBool(v string) bool {
+	v = strings.TrimSpace(v)
+	if v == "" ||
+		v == "0" ||
+		v == "false" {
+			return false
+	} else {
+		return true
+	}
+}
 

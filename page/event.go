@@ -72,7 +72,7 @@ func (e *Event) Selector(s string) EventI {
 	return e
 }
 
-// Call Blocking to cause This event to prevent other events from firing after This fires, but before it processes.
+// Call Blocking to cause this event to prevent other events from firing after this fires, but before it processes.
 // This is particularly useful to debounce button clicks. (The infamous double-click of the submit button when processing financial transactions for example).
 func (e *Event) Blocking() EventI {
 	e.blocking = true
@@ -92,7 +92,7 @@ func (e *Event) PreventingDefault() EventI {
 	return e
 }
 
-// Call NoBubbling to cause the event to not bubble to enclosing objects.
+// Call NotBubbling to cause the event to not bubble to enclosing objects.
 func (e *Event) NotBubbling() EventI {
 	e.stopPropagation = true
 	return e
