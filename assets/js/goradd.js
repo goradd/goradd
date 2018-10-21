@@ -740,8 +740,14 @@ goradd = {
                     }
                     break;
 
-                case 'dateTime':
-                    return new Date(obj.year, obj.month, obj.day, obj.hour, obj.minute, obj.second);
+                case 'dt':
+                    if (obj.z) {
+                        return null;
+                    } else if (obj.t) {
+                        return new Date(Date.UTC(obj.y, obj.mo, obj.d, obj.h, obj.m, obj.s, obj.ms));
+                    } else {
+                        return new Date(obj.y, obj.mo, obj.d, obj.h, obj.m, obj.s, obj.ms);
+                    }
 
                 case 'varName':
                     // Find the variable value starting at the window context.

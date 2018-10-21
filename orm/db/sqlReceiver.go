@@ -248,7 +248,7 @@ func (r SqlReceiver) TimeI() interface{} {
 		if v == "CURRENT_TIMESTAMP" {
 			return nil // database itself is handling the setting of the time. This is just for reading default values.
 		}
-		date = datetime.FromSqlDateTime(v)
+		date = datetime.FromSqlDateTime(v) // Note that this must always include timezone information if coming from a timestamp with timezone column
 	case []byte:
 		s := string(v)
 		if s == "CURRENT_TIMESTAMP" {
