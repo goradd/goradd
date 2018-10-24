@@ -8,6 +8,8 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control/data"
+	page2 "goradd-project/override/page"
+	"reflect"
 )
 
 // SelectList is typically a dropdown list with a single selection. Items are selected by id number, and the SelectList
@@ -15,7 +17,7 @@ import (
 // Or, use the embedded DataManager to load items. Set the size attribute if you want to display it as a
 // scrolling list rather than a dropdown list.
 type SelectList struct {
-	page.Control
+	page2.Control
 	ItemList
 	data.DataManager
 	selectedId string
@@ -91,7 +93,7 @@ func (l *SelectList) Value() interface{} {
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
 func (l *SelectList) SetValue(v interface{}) {
-	s := fmt.Sprintf("%v")
+	s := fmt.Sprintf("%v", v)
 	id, _ := l.GetItemByValue(s)
 	l.SetSelectedID(id)
 }
@@ -179,7 +181,12 @@ func (l *SelectList) getItemsHtml(items []ListItemI) string {
 }
 
 // SetData overrides the default data setter to add objects to the item list. The result is kept in memory currently.
-func (l *SelectList) SetData(data ...interface{}) {
+func (l *SelectList) SetData(data interface{}) {
+	kind := reflect.TypeOf(data).Kind()
+	if kind != reflect.Slice {
+		panic("you must call SetData with a slice")
+	}
+
 	l.ItemList.Clear()
-	l.AddListItems(data...)
+	l.AddListItems(data)
 }

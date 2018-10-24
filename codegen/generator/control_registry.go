@@ -2,7 +2,7 @@ package generator
 
 import (
 	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/gengen/maps"
 )
 
 type ControlType int

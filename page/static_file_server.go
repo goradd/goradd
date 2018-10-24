@@ -104,17 +104,68 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	//log.Printf("Served %s", localpath)
 
-	if !config.Release {
+	if !config.Release && config.AssetDirectory == "" {
 		// TODO: Set up per file cache control
 
 		// During development, tell the browser not to cache our assets so that if we change an asset, we don't have to deal with
 		// trying to get the browser to refresh
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		http.ServeFile(w, r, localpath)
 	} else {
 		// TODO: Set up a validating cache control
-	}
+		var ext = filepath.Ext(localpath)
+		var minFileName string
 
-	http.ServeFile(w, r, localpath)
+		if !util.EndsWith(localpath, ".min" + ext) {
+			minFileName = localpath[:len(localpath) - len(ext)] + ".min" + ext
+		}
+
+		var acceptsGzip bool
+		var acceptsBr bool
+
+		if values,ok := r.Header["Accept-Encoding"]; ok {
+			for _, value1 := range values {
+				for _, value := range strings.Split(value1, ",") {
+					if value == "gzip" {
+						acceptsGzip = true
+					} else if value == "br" {
+						acceptsBr = true
+					}
+				}
+			}
+		}
+
+		type compType struct{file string; typ string}
+		// build search file list in the order we want to use them
+		var files []compType
+		if acceptsBr {
+			if minFileName != "" {
+				files = append(files, compType{minFileName + ".br", "br"})
+			}
+			files = append(files, compType{localpath + ".br", "br"})
+		}
+		if acceptsGzip {
+			files = append(files, compType{localpath + ".gz", "gzip"})
+			if minFileName != "" {
+				files = append(files, compType{minFileName + ".gz", "gzip"})
+			}
+		}
+
+		if minFileName != "" {
+			files = append(files, compType{minFileName, ""})
+		}
+
+		for _,comp := range files {
+			if util.PathExists(comp.file) {
+				if comp.typ != "" {
+					w.Header().Set("Content-Encoding", comp.typ)
+				}
+				http.ServeFile(w, r, comp.file)
+				return
+			}
+		}
+		http.ServeFile(w, r, localpath)
+	}
 }
 
 

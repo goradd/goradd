@@ -9,6 +9,7 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/session/location"
 	"goradd-project/config"
 	"strings"
 )
@@ -369,4 +370,17 @@ func (f *FormBase) Exit(ctx context.Context, err error) {
 
 func (f *FormBase) Refresh() {
 	panic("Do not refresh the form. It cannot be drawn in ajax.")
+}
+
+// PushLocation pushes the URL that got us to the current page on to the location stack.
+func (f *FormBase) PushLocation(ctx context.Context) {
+	grctx := GetContext(ctx)
+	location.Push(ctx, grctx.URL.RequestURI())
+}
+
+// PopLocation pops the most recent location off of the location stack and goes to that location.
+func (f *FormBase) PopLocation(ctx context.Context) {
+	if loc := location.Pop(ctx); loc != "" {
+		f.ChangeLocation(loc)
+	}
 }

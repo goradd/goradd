@@ -1,10 +1,10 @@
 package generator
 
 import (
+	"github.com/spekary/gengen/maps"
 	"goradd-project/config"
 	"fmt"
 	"goradd-project/config/codegen"
-	"github.com/spekary/goradd/util/types"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/orm/query"
 	"github.com/spekary/goradd/codegen/generator"

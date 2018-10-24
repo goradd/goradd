@@ -201,7 +201,7 @@ func (r SqlReceiver) FloatI() interface{} {
 		if err != nil {
 			log.Panic(err)
 		}
-		return f
+		return float32(f)
 	default:
 		log.Panicln("Unknown type returned from sql driver")
 		return nil

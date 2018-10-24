@@ -9,14 +9,35 @@ import (
 	"bufio"
 )
 
+
 func main() {
 	var files []string
+	var curOption string
+	var excludes = make(map[string]bool)
 
 	cmd := os.Args[1]
 
 	// Replace all GOPATH strings with the current go path, expand paths, apply OS specific stuff, clean path
 	// This stuff allows the tool to use forward slashes when specifying paths on WINDOWS, making it universal
+
+
 	for _,f := range os.Args[2:] {
+
+		if curOption != "" {
+			// in the process of getting a command option
+			if curOption == "x" {
+				for _,s := range strings.Split(f, ";") {
+					excludes[s] = true
+				}
+			}
+			curOption = ""
+			continue
+		}
+		if f[0:1] == "-" {
+			curOption = f[1:]
+			continue
+		}
+
 		f = filepath.FromSlash(f)
 		f = strings.Replace(f, "GOPATH", util.GoPath(), 1)
 
@@ -26,7 +47,9 @@ func main() {
 			if files2,_ := filepath.Glob(f); files2 != nil {
 				for _, file2 := range files2 {
 					_,fName := filepath.Split(file2)
-					if file2 != "" && fName[0] != '.' {	// ignore dot files
+					if file2 != "" &&
+						fName[0] != '.' && // ignore dot files
+						!excludes[fName] { // exclude specific files and directories
 						f2, err := filepath.Abs(file2)	// not sure this is necessary, but just in case
 						if err == nil {
 							files = append(files, f2)

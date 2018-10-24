@@ -15,6 +15,22 @@ import (
 
 type ProxyI interface {
 	localPage.ControlI
+	LinkHtml(label string,
+		actionValue string,
+		attributes *html.Attributes,
+	) string
+	TagHtml(label string,
+		actionValue string,
+		attributes *html.Attributes,
+		tag string,
+		rawHtml bool,
+	) string
+	ButtonHtml(label string,
+		eventActionValue string,
+		attributes *html.Attributes,
+		rawHtml bool,
+	) string
+	OnClick(actions ...action.ActionI) page.EventI
 }
 
 type Proxy struct {

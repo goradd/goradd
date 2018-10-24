@@ -1,13 +1,13 @@
 package generator
 
 import (
-	"goradd-project/config"
 	"fmt"
-	"goradd-project/config/codegen"
-	"github.com/spekary/goradd/util/types"
+	"github.com/spekary/gengen/maps"
+	"github.com/spekary/goradd/codegen/generator"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control"
-	"github.com/spekary/goradd/codegen/generator"
+	"goradd-project/config"
+	"goradd-project/config/codegen"
 )
 
 func init() {

@@ -30,8 +30,15 @@ func StartsWith(s string, beginning string) bool {
 
 // EndsWith returns true if the string ends with the ending string.
 func EndsWith(s string, ending string) bool {
-	i := strings.LastIndex(s, ending)
-	return i != -1 && i == len(s)-len(ending)
+	var sLen = len(s)
+	var eLen = len(ending)
+
+	if sLen >= eLen {
+		if s[sLen - eLen : sLen] == ending {
+			return true
+		}
+	}
+	return false
 }
 
 // LcFirst makes sure the first character in the string is lower case.

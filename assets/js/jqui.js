@@ -1,6 +1,3 @@
-/////////////////////////////////////
-// Drag and drop support
-/////////////////////////////////////
 
 goradd.draggable = function (parentId, draggableId) {
     // we are working around some jQuery UI bugs here..
@@ -9,13 +6,13 @@ goradd.draggable = function (parentId, draggableId) {
         c.data ("originalPosition", c.position());
     }).on("dragstop", function () {
         var c = $j(this);
-        gr.setControlValue(draggableId, "_DragData", {originalPosition: {left: c.data("originalPosition").left, top: c.data("originalPosition").top}, position: {left: c.position().left, top: c.position().top}});
+        goradd.setControlValue(draggableId, "_DragData", {originalPosition: {left: c.data("originalPosition").left, top: c.data("originalPosition").top}, position: {left: c.position().left, top: c.position().top}});
     });
 };
 
 goradd.droppable = function (parentId, droppableId) {
     $j('#' + parentId).on("drop", function (event, ui) {
-        gr.setControlValue(droppableId, "_DroppedId", ui.draggable.attr("id"));
+        goradd.setControlValue(droppableId, "_DroppedId", ui.draggable.attr("id"));
     });
 };
 
@@ -27,13 +24,9 @@ goradd.resizable = function (parentId, resizeableId) {
     })
         .on("resizestop", function () {
             var c = $j(this);
-            gr.setControlValue(resizeableId, "_ResizeData", {originalSize: {width: c.data("oW"), height: c.data("oH")} , size:{width: c.width(), height: c.height()}});
+            goradd.setControlValue(resizeableId, "_ResizeData", {originalSize: {width: c.data("oW"), height: c.data("oH")} , size:{width: c.width(), height: c.height()}});
         });
 };
-
-/////////////////////////////////////
-// JQueryUI Support
-/////////////////////////////////////
 
 goradd.dialog = function(controlId) {
     $j('#' + controlId).on ("keydown", "input,select", function(event) {
@@ -45,6 +38,11 @@ goradd.dialog = function(controlId) {
             }
             event.preventDefault();
         }
+    });
+    $j('#' + controlId).on("tabsactivate", function(event, ui) {
+        var i = $j(this).tabs( "option", "active" );
+        var id = ui.newPanel ? ui.newPanel.attr("id") : null;
+        goradd.setControlValue(controlId, "_active", [i,id]);
     });
 };
 
@@ -81,9 +79,9 @@ goradd.selectable = function(controlId) {
 goradd.slider = function(controlId) {
     $j('#' + controlId).on("slidechange", function (event, ui) {
         if (ui.values && ui.values.length) {
-            gr.setControlValue(controlId, "_Values", ui.values[0] + ',' +  ui.values[1]);
+            goradd.setControlValue(controlId, "_Values", ui.values[0] + ',' +  ui.values[1]);
         } else {
-            gr.setControlValue(controlId, "_Value", ui.value);
+            goradd.setControlValue(controlId, "_Value", ui.value);
         }
     });
 };
@@ -92,7 +90,7 @@ goradd.tabs = function(controlId) {
     $j('#' + controlId).on("tabsactivate", function(event, ui) {
         var i = $j(this).tabs( "option", "active" );
         var id = ui.newPanel ? ui.newPanel.attr("id") : null;
-        gr.setControlValue(controlId, "_active", [i,id]);
+        goradd.setControlValue(controlId, "_active", [i,id]);
     });
 };
 
@@ -101,13 +99,5 @@ goradd.datagrid2 = function(controlId) {
         var cellIndex = $j(this).parent()[0].cellIndex;
         $j(this).trigger('qdg2sort', cellIndex); // Triggers the QDataGrid_SortEvent
         event.stopPropagation();
-    });
-};
-
-goradd.dialog = function(controlId) {
-    $j('#' + controlId).on("tabsactivate", function(event, ui) {
-        var i = $j(this).tabs( "option", "active" );
-        var id = ui.newPanel ? ui.newPanel.attr("id") : null;
-        gr.setControlValue(controlId, "_active", [i,id]);
     });
 };

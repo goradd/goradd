@@ -15,7 +15,7 @@ import (
 
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/stores/memstore"
-	"github.com/spekary/goradd/page/session"
+	"github.com/spekary/goradd/session"
 	"time"
 	"bytes"
 	"github.com/spekary/goradd/page"

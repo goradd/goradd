@@ -3,9 +3,7 @@ package data
 import (
 	"context"
 	"github.com/spekary/goradd/page"
-	"goradd-project/config"
 	"reflect"
-	"github.com/spekary/goradd/log"
 )
 
 type DataBinder interface {
@@ -17,7 +15,7 @@ type DataManagerI interface {
 	page.ControlI
 	SetDataProvider(b DataBinder)
 	// SetData should be passed a slice of data items
-	SetData(...interface{})
+	SetData(interface{})
 	GetData(ctx context.Context, owner DataManagerI)
 	ResetData()
 }
@@ -25,7 +23,7 @@ type DataManagerI interface {
 // DataManager is an object designed to be embedded in a control that will help manage the data binding process.
 type DataManager struct {
 	dataProvider DataBinder
-	Data         []interface{}
+	Data         interface{}
 }
 
 func (d *DataManager) SetDataProvider(b DataBinder) {
@@ -36,21 +34,12 @@ func (d *DataManager) HasDataProvider() bool {
 	return d.dataProvider != nil
 }
 
-// Call SetData to set the data of a control that uses a data binder. Generally, you should call it with an expanded slice,
-// and in fact, it will issue a warning if you give it one item that is a slice, because it will assume that you accidentally
-// did not expand the array.
-func (d *DataManager) SetData(data ...interface{}) {
-// We use an expanded interface list here, instead of a slice of interfaces, because there is a subtle difference between the two.
-// A slice of interfaces will require just that, a slice of interfaces and nothing else. However, this declaration above lets you
-// send in a slice of whatever kind of object you want, and also just list out the objects if needed.
-
-	if (!config.Release) { // This code will only be included in the debug version
-		if len(data) == 1 &&
-			reflect.TypeOf(data[0]).Kind() == reflect.Slice {
-
-			// Its possible this is legitimate, but not likely, so we issue a warning
-			log.Warning("You called SetData with a single entry that is a slice. Did you not expand the slice?")
-		}
+// Call SetData to set the data of a control that uses a data binder. You MUST call it with a slice
+// of some kind of data.
+func (d *DataManager) SetData(data interface{}) {
+	kind := reflect.TypeOf(data).Kind()
+	if kind != reflect.Slice {
+		panic("you must call SetData with a slice")
 	}
 	d.Data = data
 }
@@ -68,3 +57,17 @@ func (d *DataManager) GetData(ctx context.Context, owner DataManagerI) {
 		d.dataProvider.BindData(ctx, owner) // tell the data binder to call SetData on the given object, or load data some other way
 	}
 }
+
+// RangeData will call the given function for each item in the data.
+// The function should return true to continue, and false to end early.
+func (d *DataManager) RangeData(f func( int, interface{}) bool) {
+	listValue := reflect.ValueOf(d.Data)
+	for i := 0;  i < listValue.Len(); i++ {
+		itemI := listValue.Index(i).Interface()
+		result := f(i, itemI)
+		if !result {
+			break
+		}
+	}
+}
+

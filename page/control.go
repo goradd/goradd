@@ -1,7 +1,5 @@
 package page
 
-//go:generate hero -source template
-
 import (
 	"bytes"
 	"context"
@@ -11,7 +9,7 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/log"
 	action2 "github.com/spekary/goradd/page/action"
-	"github.com/spekary/goradd/page/session"
+	"github.com/spekary/goradd/session"
 	"goradd-project/config"
 	gohtml "html"
 	"reflect"

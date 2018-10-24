@@ -145,14 +145,17 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 		buf2.Reset()
 	}
 
-	if t.Data != nil && len(t.Data) > 0 {
-		for i, row := range t.Data {
-			err = t.drawRow(ctx, i, row, buf2)
-			if err != nil {
-				return
-			}
+	t.RangeData(func(index int, value interface{}) bool {
+		err = t.drawRow(ctx, index, value, buf2)
+		if err != nil {
+			return false
 		}
+		return true
+	})
+	if err != nil {
+		return
 	}
+
 	buf1.WriteString(html.RenderTag("tbody", nil, buf2.String()))
 	return nil
 }
