@@ -4,10 +4,11 @@ import (
 	"github.com/spekary/goradd/util"
 	"goradd-project/config"
 	"log"
+	"mime"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strings"
-	"path"
 )
 
 var assetDirectories =  map[string]string{}
@@ -107,6 +108,10 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 	if !config.Release && config.AssetDirectory == "" {
 		// TODO: Set up per file cache control
 
+		if ext := filepath.Ext(localpath); ext == "" {
+			panic ("Asset file does not have an extension: " + localpath)
+		}
+
 		// During development, tell the browser not to cache our assets so that if we change an asset, we don't have to deal with
 		// trying to get the browser to refresh
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -114,6 +119,7 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// TODO: Set up a validating cache control
 		var ext = filepath.Ext(localpath)
+
 		var minFileName string
 
 		if !util.EndsWith(localpath, ".min" + ext) {
@@ -155,13 +161,17 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 			files = append(files, compType{minFileName, ""})
 		}
 
-		for _,comp := range files {
-			if util.PathExists(comp.file) {
-				if comp.typ != "" {
-					w.Header().Set("Content-Encoding", comp.typ)
+		if ext != "" {
+			for _,comp := range files {
+				if util.PathExists(comp.file) {
+					if comp.typ != "" {
+						w.Header().Set("Content-Encoding", comp.typ)
+					}
+					ctype := mime.TypeByExtension(ext)
+					w.Header().Set("Content-Type", ctype)
+					http.ServeFile(w, r, comp.file)
+					return
 				}
-				http.ServeFile(w, r, comp.file)
-				return
 			}
 		}
 		http.ServeFile(w, r, localpath)
