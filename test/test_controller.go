@@ -70,9 +70,9 @@ func (p *TestController) LogLine(line string) {
 	p.ParentForm().Response().ExecuteJavaScript(script, page.PriorityStandard)
 }
 
-func (p *TestController) LoadUrl(url string) {
+func (p *TestController) loadUrl(url string) {
 	p.ExecuteJqueryFunction("testController", "loadUrl", p.currentStepNumber, url)
-	p.waitStep()
+	p.waitStep(false) // load function will wait until window is loaded before firing
 }
 
 func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
@@ -95,9 +95,10 @@ func (p *TestController) UpdateFormValues(ctx *page.Context) {
 	}
 }
 
-func (p *TestController) waitStep() {
-	p.currentStepNumber++
-	p.ExecuteJqueryFunction("testController", "waitStep", p.currentStepNumber, page.PriorityFinal)
+func (p *TestController) waitStep(fire bool) {
+	if fire {
+		p.ExecuteJqueryFunction("testController", "fireStepEvent", p.currentStepNumber, page.PriorityFinal)
+	}
 	for {
 		select {
 		case stepItem := <-p.stepChannel:
@@ -107,17 +108,26 @@ func (p *TestController) waitStep() {
 			if stepItem.Err != "" {
 				panic (stepItem.Err)
 			}
-		case <-time.After(p.stepTimeout * time.Second):
-			panic ("test step timed out")
+		//case <-time.After(p.stepTimeout * time.Second):
+			//panic (fmt.Errorf("test step timed out: %d", p.currentStepNumber )
 		}
 		break // we successfully returned from the step
 	}
+	p.currentStepNumber++
 }
 
 func (p *TestController) changeVal(id string, val interface{}) {
-	p.ExecuteJqueryFunction("testController", "changeVal", p.currentStepNumber, fmt.Sprintf("%v", val))
-	p.waitStep()
+	p.ExecuteJqueryFunction("testController", "changeVal", p.currentStepNumber, id, fmt.Sprintf("%v", val))
+	p.Page().PushRedraw()
+	p.waitStep(true)
 }
+
+func (p *TestController) click(id string) {
+	p.ExecuteJqueryFunction("testController", "click", p.currentStepNumber, id)
+	p.Page().PushRedraw()
+	p.waitStep(true)
+}
+
 
 
 func init() {

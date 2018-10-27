@@ -5,7 +5,8 @@ import (
 )
 
 // CustomColumn is a table column that you can customize any way you want. You simply give it a CellTexter, and return
-// the text or html from the cell texter.
+// the text or html from the cell texter. One convenient way to use this is to define a CellText function on your
+// form object and make it the cell texter.
 type CustomColumn struct {
 	control_base.ColumnBase
 }

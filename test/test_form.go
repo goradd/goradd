@@ -107,12 +107,12 @@ func init() {
 	page.RegisterPage(TestFormPath, NewTestForm, TestFormId)
 }
 
-// LoadUrl will launch a new window controlled by the test form. It will wait for the
+// loadUrl will launch a new window controlled by the test form. It will wait for the
 // new url to be loaded in the window, and if the new url contains a goradd form, it will prepare
 // to return the form if you call GetForm.
 func (f *TestForm) LoadUrl(url string) {
 	f.Log("Loading url: " + url)
-	f.Controller.LoadUrl(url)
+	f.Controller.loadUrl(url)
 }
 
 // GetForm returns the currently loaded form.
@@ -130,6 +130,11 @@ func (f *TestForm) AssertEqual(expected, actual interface{}) {
 }
 
 func (f *TestForm) ChangeVal(id string, val interface{}) {
-
+	f.Controller.changeVal(id, val);
 }
+
+func (f *TestForm) Click(id string) {
+	f.Controller.click(id);
+}
+
 

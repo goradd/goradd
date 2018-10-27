@@ -8,52 +8,59 @@ jQuery.widget( "goradd.testController",  {
     },
     _window:null,
     _err:"",
+    _step:0,
     _create: function() {
+        var self = this;
         this._super();
+        window.addEventListener("message", function(event) {
+            self._receiveWindowMessage(event)
+        } , false);
+    },
+    _receiveWindowMessage: function(event) {
+        if (event.data.formstate) {
+            this._formLoadEvent(event.data.formstate);
+        }
     },
     logLine: function(line) {
         this.element.text(this.element.text() + line  + "\n");
     },
     loadUrl: function(step, url) {
         var self = this;
-        if (!this._window || this._window.closed) {
-            this._window = window.open(url, "testWindow");
-            if (!this._window) {
-                this._err += "Opening a popup window was blocked by the browser.";
-                this.fireStepEvent(step);
-                return;
+
+        this._step = step;
+
+        if (this._window && !this._window.closed) {
+            if (this._window.location.pathname == url) {
+                this._window.location.reload(true);
+            } else {
+                this._window.location.assign(url);
             }
-            this._window.addEventListener("load", function(event) {
-                self._windowLoadEvent(event, step)
-            });
-            this._window.addEventListener("error", function(event) {
-                self._windowErrorEvent(event, step)
-            });
-
-
-            /*
-            this._on( this._window, {
-                "load": function(event) {
-                    this._windowLoadEvent(event, step)
-                },
-                "error": function(event) {
-                    this._windowErrorEvent(event, step)
-                }
-            });*/
         } else {
-            this._window.location.href = url;
+            this._window = window.open(url);
         }
+
+        if (!this._window) {
+            this._err += "Opening a popup window was blocked by the browser.";
+            this.fireStepEvent(step);
+            return;
+        }/*
+        $(this._window).on("load", function(event) {
+            self._windowLoadEvent(event, step)
+        });*/
+        this._window.addEventListener("error", function(event) {
+            self._windowErrorEvent(event, step)
+        });
     },
+    _formLoadEvent: function(formstate) {
+        goradd.setControlValue(this.element.attr("id"), "formstate", formstate);
+        this.fireStepEvent(this._step, null);
+    },
+    /*
     _windowLoadEvent: function(event, step) {
-        // if we got a goradd form, get the formstate or the generated error
-        $formstate = $(this._window.document).find("form[data-grctl=form] #Goradd__FormState");
-        if ($formstate.length > 0) {
-            goradd.setControlValue(this.element.attr("id"), "formstate", $formstate.val());
-        }
-        this._fireStepEvent(step, null);
-    },
+        this.fireStepEvent(step, null);
+    },*/
     _windowErrorEvent: function(event, step) {
-        this._fireStepEvent(step, "Browser load error:" + event.error.message);
+        this.fireStepEvent(step, "Browser load error:" + event.error.message);
     },
     fireStepEvent(step) {
         err = this._err;
@@ -61,20 +68,34 @@ jQuery.widget( "goradd.testController",  {
         this.element.trigger("goradd.teststep", {Step: step, Err: err});
     },
     changeVal: function(step, id, val) {
-        var $control = this._findControl(id);
+        var control = this._findControl(id);
 
-        if (!$control.length) {
+        if (!control) {
             this._err += "Could not find control " + id;
-            this.fireStepEvent(step);
             return;
         }
 
-        $control.val(val);
-        $control.trigger("change");
-        this._fireStepEvent(step);
+        $(control).val(val);
+
+        // Note that jQuery is very quirky about calling events in another window, because it attaches its own events to the current window.
+        var event = new Event('change', { 'bubbles': true });
+        control.dispatchEvent(event);
     },
     _findControl: function(id) {
-        return $(this._window.document).find("#" + id);
+        return this._window.document.getElementById(id);
+    },
+    click: function (step, id) {
+        var control = this._findControl(id);
+        if (!control) {
+            this._err += "Could not find control " + id;
+            return;
+        }
+        var event = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+        });
+        control.dispatchEvent(event);
     }
 
 });

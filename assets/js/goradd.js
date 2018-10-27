@@ -124,6 +124,9 @@ goradd = {
             }
         });
         goradd.registerControls();
+        if (window.opener) {
+            window.opener.postMessage({formstate: $('#Goradd__FormState').val()}, "*")
+        }
     },
 
     /**
