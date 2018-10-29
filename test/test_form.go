@@ -95,7 +95,6 @@ func (f *TestForm) Log(s string) {
 	f.currentLog += s + "\n"
 	f.Controller.LogLine(s)
 	log.Debugf("Log line %s", s)
-	f.Page().PushRedraw()
 }
 
 func RegisterTestFunction (name string, f testRunnerFunction) {
@@ -137,4 +136,7 @@ func (f *TestForm) Click(id string) {
 	f.Controller.click(id);
 }
 
+func (f *TestForm) JqueryValue(id string, funcName string, params []string) string {
+	return f.Controller.jqValue(id, funcName, params)
+}
 

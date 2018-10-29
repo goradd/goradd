@@ -6,6 +6,7 @@ package messageServer
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -45,7 +46,7 @@ type Client struct {
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send chan []byte
+	send chan map[string]interface{}
 
 	channel string
 
@@ -101,17 +102,24 @@ func (c *Client) writePump() {
 				return
 			}
 
+			// messages are json objects. We gather them up here into an array.
+			var messages = []map[string]interface{}{message}
+
+			// Add queued messages to the current websocket message.
+			n := len(c.send)
+			for i := 0; i < n; i++ {
+				messages = append(messages, <-c.send)
+			}
+
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
 				return
 			}
-			w.Write(message)
 
-			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				w.Write(newline)
-				w.Write(<-c.send)
+			if buf, err := json.Marshal(messages); err != nil {
+				panic(err)
+			} else {
+				w.Write(buf)
 			}
 
 			if err := w.Close(); err != nil {
@@ -136,7 +144,7 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
 	channel := r.FormValue("ch")
 	formstate := r.FormValue("id")
 
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), channel: channel, formstate:formstate}
+	client := &Client{hub: hub, conn: conn, send: make(chan map[string]interface{}, 256), channel: channel, formstate:formstate}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

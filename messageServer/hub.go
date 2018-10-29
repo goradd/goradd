@@ -15,7 +15,7 @@ var hub *WebSocketHub
 // helper type to synchronize the clients map using a channel
 type messageType struct {
 	channel string
-	message string
+	message map[string]interface{}	// messages will be converted to json objects. Items in the object must be json serializable.
 }
 
 type WebSocketHub struct {
@@ -71,9 +71,9 @@ func (h *WebSocketHub) run() {
 
 		case msg := <-h.send:
 			if clients, ok := h.clients[msg.channel]; ok {
-				log.Debugf("Sending to channel %s - %s", msg.channel, msg.message)
+				log.Debugf("Sending to channel %s - %v", msg.channel, msg.message)
 				for _, client := range clients {
-					client.send <- []byte(msg.message)
+					client.send <- msg.message
 				}
 			} else {
 				log.Debugf("Could not find channel %s", msg.channel)
@@ -107,7 +107,7 @@ func (h *WebSocketHub) unregisterClient(channel string, formstate string) {
 	}
 }
 
-func SendMessage(channel string, message string) {
+func SendMessage(channel string, message map[string]interface{}) {
 	hub.send <- messageType{channel, message}
 }
 

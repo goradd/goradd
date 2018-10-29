@@ -380,6 +380,6 @@ func (p *Page) ClearResponseHeaders() {
 // using the javascript event mechanism to synchronize us. We might get an unnecessary redraw, but
 // that is not a big deal.
 func (p *Page) PushRedraw() {
-	messageServer.SendMessage("form-" + p.stateId, `{"grup":true}`)
+	messageServer.SendMessage("form-" + p.stateId, map[string]interface{}{"grup":true})
 }
 

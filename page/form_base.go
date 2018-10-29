@@ -79,6 +79,9 @@ func (f *FormBase) AddRelatedFiles() {
 	f.AddJavaScriptFile(config.GoraddAssets()+"/js/ajaxq/ajaxq.js", false, nil) // goradd.js needs this
 	f.AddJavaScriptFile(config.GoraddAssets()+"/js/goradd.js", false, nil)
 	f.AddJavaScriptFile(config.GoraddAssets()+"/js/goradd-ws.js", false, nil)
+	if !config.Release {
+		f.AddJavaScriptFile(config.GoraddAssets()+"/js/goradd-testing.js", false, nil)
+	}
 	f.AddStyleSheetFile(config.GoraddAssets()+"/css/goradd.css", nil)
 	f.AddStyleSheetFile("https://use.fontawesome.com/releases/v5.0.13/css/all.css",
 		html.NewAttributes().Set("integrity", "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp").Set("crossorigin", "anonymous"))
@@ -118,6 +121,10 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Write out the control scripts gathered above
 	s := `goradd.initForm();` + "\n"
 	s += fmt.Sprintf("goradd.initMessagingClient(%d, %d);\n", config.GoraddWebSocketPort, config.GoraddWebSocketTLSPort)
+	if !config.Release {
+		// This code registers the form with the test harness. We only want to do this in debug mode since it is a security risk.
+		s += "goradd.initFormTest();\n"
+	}
 	s += f.response.JavaScript()
 	f.response = NewResponse() // Reset
 	s = fmt.Sprintf(`<script>jQuery(document).ready(function($j) { %s; });</script>`, s)

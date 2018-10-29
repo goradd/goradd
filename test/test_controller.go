@@ -39,6 +39,7 @@ type  TestController struct {
 	currentStepNumber int
 	stepTimeout       time.Duration	// number of seconds before a step should timeout
 	stepChannel chan stepItemType	// probably will leak memory TODO: Close this before it is removed from page cache
+	latestJsValue string // A valure returned for the jsValue function
 }
 
 func NewTestController(parent page.ControlI, id string) *TestController {
@@ -46,6 +47,7 @@ func NewTestController(parent page.ControlI, id string) *TestController {
 	p.Init(parent, id)
 	p.Tag = "pre"
 	p.stepChannel = make(chan stepItemType, 1)
+	p.currentStepNumber = 1
 	return p
 }
 
@@ -68,11 +70,12 @@ func (p *TestController) PutCustomScript(ctx context.Context, response *page.Res
 func (p *TestController) LogLine(line string) {
 	script := fmt.Sprintf (`$j("#%s").testController("logLine", %q);`, p.ID(), line)
 	p.ParentForm().Response().ExecuteJavaScript(script, page.PriorityStandard)
+	p.Page().PushRedraw()
 }
 
 func (p *TestController) loadUrl(url string) {
 	p.ExecuteJqueryFunction("testController", "loadUrl", p.currentStepNumber, url)
-	p.waitStep(false) // load function will wait until window is loaded before firing
+	p.waitStep(); // load function will wait until window is loaded before firing
 }
 
 func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
@@ -93,12 +96,14 @@ func (p *TestController) UpdateFormValues(ctx *page.Context) {
 	if v := ctx.CustomControlValue(id, "formstate"); v != nil {
 		p.formstate = v.(string)
 	}
+	if v := ctx.CustomControlValue(id, "jsvalue"); v != nil {
+		p.latestJsValue = v.(string)
+	}
+
 }
 
-func (p *TestController) waitStep(fire bool) {
-	if fire {
-		p.ExecuteJqueryFunction("testController", "fireStepEvent", p.currentStepNumber, page.PriorityFinal)
-	}
+func (p *TestController) waitStep() {
+	p.Page().PushRedraw()
 	for {
 		select {
 		case stepItem := <-p.stepChannel:
@@ -109,7 +114,7 @@ func (p *TestController) waitStep(fire bool) {
 				panic (stepItem.Err)
 			}
 		//case <-time.After(p.stepTimeout * time.Second):
-			//panic (fmt.Errorf("test step timed out: %d", p.currentStepNumber )
+		//	panic (fmt.Errorf("test step timed out: %d", p.currentStepNumber ))
 		}
 		break // we successfully returned from the step
 	}
@@ -118,14 +123,18 @@ func (p *TestController) waitStep(fire bool) {
 
 func (p *TestController) changeVal(id string, val interface{}) {
 	p.ExecuteJqueryFunction("testController", "changeVal", p.currentStepNumber, id, fmt.Sprintf("%v", val))
-	p.Page().PushRedraw()
-	p.waitStep(true)
+	p.waitStep()
 }
 
 func (p *TestController) click(id string) {
 	p.ExecuteJqueryFunction("testController", "click", p.currentStepNumber, id)
-	p.Page().PushRedraw()
-	p.waitStep(true)
+	p.waitStep()
+}
+
+func (p *TestController) jqValue(id string, funcName string, params []string) string {
+	p.ExecuteJqueryFunction("testController", "jqValue", p.currentStepNumber, id, funcName, params)
+	p.waitStep()
+	return p.latestJsValue
 }
 
 

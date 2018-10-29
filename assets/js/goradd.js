@@ -1,4 +1,6 @@
-var $j;
+
+
+var $j; // Universal shorcut for jQuery so that you can execute jQuery code outside in a no-conflict mode.
 
 (function( $ ) {
 
@@ -16,15 +18,15 @@ goradd = {
      * @param {boolean} blnAsync true to launch right away.
      */
     ajaxQueue: function(o, blnAsync) {
-        if (typeof $j.ajaxq === "undefined" || blnAsync) {
-            $j.ajax(o()); // fallback in case ajaxq is not here
+        if (typeof $.ajaxq === "undefined" || blnAsync) {
+            $.ajax(o()); // fallback in case ajaxq is not here
         } else {
-            $j.ajaxq("goradd", o);
+            $.ajaxq("goradd", o);
         }
     },
     ajaxQueueIsRunning: function() {
-        if ($j.ajaxq) {
-            return $j.ajaxq.isRunning("goradd");
+        if ($.ajaxq) {
+            return $.ajaxq.isRunning("goradd");
         }
         return false;
     },
@@ -50,7 +52,7 @@ goradd = {
      * @private
      */
     _formObjChangeIndex: function (ctl) {
-        var $element = $j(ctl),
+        var $element = $(ctl),
             id = $element.attr('id'),
             strType = $element.prop("type"),
             ctrlname = $element.attr("name"),
@@ -89,16 +91,16 @@ goradd = {
 
         var ctl = event.target,
             id = goradd._formObjChangeIndex(ctl),
-            $element = $j(ctl),
+            $element = $(ctl),
             strType = $element.prop("type"),
             name = $element.attr("name");
 
         if (strType === 'radio' && name !== id && !$element.data('grTrackchanges')) { // a radio button with a group name
             // since html does not submit a changed event on the deselected radio, we are going to invalidate all the controls in the group
-            var group = $j('input[name=' + name + ']');
+            var group = $('input[name=' + name + ']');
             if (group) {
                 group.each(function () {
-                    id = $j(this).attr('id');
+                    id = $(this).attr('id');
                     goradd.formObjsModified[id] = true;
                 });
             }
@@ -115,18 +117,15 @@ goradd = {
      * @param {string} strFormId
      */
     initForm: function () {
-        var $form =  $j(goradd.getForm());
+        var $form =  $(goradd.getForm());
         $form.on ('formObjChanged', goradd.formObjChanged); // Allow any control, including hidden inputs, to trigger a change and post of its data.
         $form.submit(function(event) {
-            if (!$j('#Goradd__Params').val()) { // did postBack initiate the submit?
+            if (!$('#Goradd__Params').val()) { // did postBack initiate the submit?
                 // if not, prevent implicit form submission. This can happen in the rare case we have a single field and no submit button.
                 event.preventDefault();
             }
         });
         goradd.registerControls();
-        if (window.opener) {
-            window.opener.postMessage({formstate: $('#Goradd__FormState').val()}, "*")
-        }
     },
 
     /**
@@ -147,21 +146,21 @@ goradd = {
             return;  // We are waiting for a response from the server
         }
 
-        var $objForm = $j(goradd.getForm());
+        var $objForm = $(goradd.getForm());
         var formId = $objForm.attr("id");
 
         var checkableControls = $objForm.find('input[type="checkbox"], input[type="radio"]');
-        params.checkableValues = goradd._checkableControlValues(formId, $j.makeArray(checkableControls));
+        params.checkableValues = goradd._checkableControlValues(formId, $.makeArray(checkableControls));
 
         params.callType = "Server";
 
         // Notify custom controls that we are about to post
         $objForm.trigger("posting", "Server");
 
-        if (!$j.isEmptyObject(goradd.controlValues)) {
+        if (!$.isEmptyObject(goradd.controlValues)) {
             params.controlValues = goradd.controlValues;
         }
-        $j('#Goradd__Params').val(JSON.stringify(params));
+        $('#Goradd__Params').val(JSON.stringify(params));
 
         // have $ trigger the submit event (so it can catch all submit events)
         $objForm.trigger("submit");
@@ -203,8 +202,8 @@ goradd = {
         if (!controls || controls.length === 0) {
             return {};
         }
-        $j.each(controls, function() {
-            var $element = $j(this),
+        $.each(controls, function() {
+            var $element = $(this),
                 id = $element.attr("id"),
                 groupId,
                 strType = $element.prop("type"),
@@ -277,7 +276,7 @@ goradd = {
      * @return {object} Post Data
      */
     _getAjaxData: function(params) {
-        var $form = $j('#' + params.formId),
+        var $form = $('#' + params.formId),
             $formElements = $form.find('input,select,textarea'),
             checkables = [],
             controls = [],
@@ -289,7 +288,7 @@ goradd = {
         // Filter and separate controls into checkable and non-checkable controls
         // We ignore controls that have not changed to reduce the amount of data sent in an ajax post.
         $formElements.each(function() {
-            var $element = $j(this),
+            var $element = $(this),
                 id = $element.attr("id"),
                 blnForm = (id && (id.substr(0, 8) === 'Goradd__')),
                 strType = $element.prop("type"),
@@ -314,8 +313,8 @@ goradd = {
         });
 
 
-        $j.each(controls, function() {
-            var $element = $j(this),
+        $.each(controls, function() {
+            var $element = $(this),
                 strType = $element.prop("type"),
                 strControlId = $element.attr("id"),
                 strControlName = $element.attr("name"),
@@ -327,8 +326,8 @@ goradd = {
                     var items = $element.find(':selected'),
                         values = [];
                     if (items.length) {
-                        values = $j.map($j.makeArray(items), function(item) {
-                            return $j(item).val();
+                        values = $.map($.makeArray(items), function(item) {
+                            return $(item).val();
                         });
                         postData[strPostName] = values;
                     }
@@ -345,7 +344,7 @@ goradd = {
 
         // Update most of the Goradd__ parameters explicitly here. Others, like the state and form id will have been handled above.
         params.callType = "Ajax"
-        if (!$j.isEmptyObject(goradd.controlValues)) {
+        if (!$.isEmptyObject(goradd.controlValues)) {
             params.controlValues = goradd.controlValues;
         }
         params.checkableValues = goradd._checkableControlValues(params.formId, checkables);
@@ -371,7 +370,7 @@ goradd = {
      * @return {void}
      */
     postAjax: function(params) {
-        var $objForm = $j(goradd.getForm()),
+        var $objForm = $(goradd.getForm()),
             formAction = $objForm.attr("action"),
             async = params.hasOwnProperty("async");
 
@@ -403,7 +402,7 @@ goradd = {
                     }
                 },
                 success: function (json) {
-                    if ($j.type(json) === 'string') {
+                    if ($.type(json) === 'string') {
                         // If server has a problem sending any ajax response, like when headers are already sent, we will get that error as a string here
                         goradd.displayAjaxError(json, '', '');
                         return false;
@@ -411,11 +410,11 @@ goradd = {
                     if (json.js) {
                         var deferreds = [];
                         // Load all javascript files before attempting to process the rest of the response, in case some things depend on the injected files
-                        $j.each(json.js, function (i, v) {
+                        $.each(json.js, function (i, v) {
                             deferreds.push(goradd.loadJavaScriptFile(v));
                         });
                         goradd.processImmediateAjaxResponse(json, params); // go ahead and begin processing things that will not depend on the javascript files to allow parallel processing
-                        $j.when.apply($j, deferreds).then(
+                        $.when.apply($, deferreds).then(
                             function () {
                                 goradd.processDeferredAjaxResponse(json);
                                 goradd.blockEvents = false;
@@ -446,12 +445,12 @@ goradd = {
             objErrorWindow.focus();
             objErrorWindow.document.write(resultText);
         } else {
-            resultText = $j('<div>').html(resultText);
-            $j('<div id="Goradd_AJAX_Error" />')
+            resultText = $('<div>').html(resultText);
+            $('<div id="Goradd_AJAX_Error" />')
                 .append('<h1 style="text-transform:capitalize">' + textStatus + '</h1>')
                 .append('<p>' + errorThrown + '</p>')
                 .append(resultText)
-                .append('<button onclick="$j(this).parent().hide()">OK</button>')
+                .append('<button onclick="$(this).parent().hide()">OK</button>')
                 .appendTo('form');
         }
     },
@@ -468,7 +467,7 @@ goradd = {
         ////////////////////////////////
 
         goradd.loadJavaScriptFile = function(strScript, objCallback) {
-            return $j.ajax({
+            return $.ajax({
                 url: strScript,
                 success: objCallback,
                 dataType: "script",
@@ -480,14 +479,14 @@ goradd = {
             if (strMediaType){
                 strMediaType = " media="+strMediaType;
             }
-            $j('head').append('<link rel="stylesheet"'+strMediaType+' href="' + strStyleSheetFile + '" type="text/css" />');
+            $('head').append('<link rel="stylesheet"'+strMediaType+' href="' + strStyleSheetFile + '" type="text/css" />');
         };
 
         /////////////////////////////
         // Form-related functionality
         /////////////////////////////
         /*
-        $j(window).on ("storage", function (o) {
+        $(window).on ("storage", function (o) {
             if (o.originalEvent.key === "goradd.broadcast") {
                 goradd.updateForm();
             }
@@ -507,15 +506,11 @@ goradd = {
             }
         }
 
-        $j( document ).ajaxComplete(function( event, request, settings ) {
+        $( document ).ajaxComplete(function( event, request, settings ) {
             if (!goradd.ajaxQueueIsRunning()) {
                 goradd.processFinalCommands();  // TODO: Fix this so a preliminary ajax command is not required.
                                             // Likely means using a separate queue.
-
-                if (goradd.currentStep && goradd.stepFunction) {
-                    goradd.stepFunction(goradd.currentStep);
-                    goradd.currentStep = 0;
-                }
+                goradd.testStep();
             }
         });
 
@@ -525,10 +520,10 @@ goradd = {
     },
     processImmediateAjaxResponse: function(json, params) {
         if (json.controls) {
-            $j.each(json.controls, function(id) {
+            $.each(json.controls, function(id) {
                 var strControlId = id,
-                    $control = $j(goradd.getControl(strControlId)),
-                    $wrapper = $j(goradd.getWrapper(strControlId));
+                    $control = $(goradd.getControl(strControlId)),
+                    $wrapper = $(goradd.getWrapper(strControlId));
 
                 if (this.value !== undefined) {
                     $control.val(this.value);
@@ -547,7 +542,7 @@ goradd = {
                         // control was found without a wrapper, replace it in the same position it was in.
                         // remove related controls (error, name ...) for wrapper-less controls
                         var relSelector = "[data-grel='" + strControlId + "']",
-                            relItems = $j(relSelector),
+                            relItems = $(relSelector),
                             $relParent;
 
                         if (relItems && relItems.length) {
@@ -564,7 +559,7 @@ goradd = {
                     }
                     else {
                         // control is being injected at the top level, so put it at the end of the form.
-                        var $objForm = $j(goradd.getForm());
+                        var $objForm = $(goradd.getForm());
                         $objForm.append(this.html);
                     }
                 }
@@ -577,19 +572,19 @@ goradd = {
             goradd.broadcastChange();
         }
         if (json.ss) {
-            $j.each(json.ss, function (i,v) {
+            $.each(json.ss, function (i,v) {
                 goradd.loadStyleSheetFile(v, "all");
             });
         }
         if (json.alert) {
-            $j.each(json.alert, function (i,v) {
+            $.each(json.alert, function (i,v) {
                 window.alert(v);
             });
         }
     },
     processDeferredAjaxResponse: function(json) {
         if (json.commands) { // commands
-            $j.each(json.commands, function (index, command) {
+            $.each(json.commands, function (index, command) {
                 if (command.final &&
                     goradd.ajaxQueueIsRunning()) {
 
@@ -610,10 +605,10 @@ goradd = {
             }
         }
         if (json.profileHtml) {
-            var c = $j("#dbProfilePane");
+            var c = $("#dbProfilePane");
             if (c.length == 0) {
-                c = $j("<div id = 'dbProfilePane'></div>");
-                $j(goradd.getForm()).parent().append(c);
+                c = $("<div id = 'dbProfilePane'></div>");
+                $(goradd.getForm()).parent().append(c);
             }
             c.html(json.profileHtml);
         }
@@ -632,16 +627,16 @@ goradd = {
             params = goradd.unpackArray(command.params);
 
             if (typeof command.selector === 'string') {
-                objs = $j(command.selector);
+                objs = $(command.selector);
             } else {
-                objs = $j(command.selector[0], command.selector[1]);
+                objs = $(command.selector[0], command.selector[1]);
             }
 
             // apply the function on each jQuery object found, using the found jQuery object as the context.
             objs.each (function () {
-                var $item = $j(this);
+                var $item = $(this);
                 if ($item[command.func]) {
-                    $item[command.func].apply($j(this), params);
+                    $item[command.func].apply($(this), params);
                 }
             });
         }
@@ -653,7 +648,7 @@ goradd = {
             var obj = window;
             var ctx = null;
 
-            $j.each (objs, function (i, v) {
+            $.each (objs, function (i, v) {
                 ctx = obj;
                 obj = obj[v];
             });
@@ -672,6 +667,11 @@ goradd = {
         }
     },
     /**
+     * testStep is a stub function that is filled in by the test harness if it is loaded
+     */
+    testStep: function(event) {
+    },
+    /**
      * Convert from JSON return value to an actual jQuery object. Certain structures don't work in JSON, like closures,
      * but can be part of a javascript object.
      * @param params
@@ -683,21 +683,21 @@ goradd = {
         }
         var newParams = [];
 
-        $j.each(params, function (index, item){
-            if ($j.type(item) === 'object') {
+        $.each(params, function (index, item){
+            if ($.type(item) === 'object') {
                 if (item.goraddObject) {
                     item = goradd.unpackObj(item);  // top level special object
                 }
                 else {
                     // look for special objects inside top level objects.
                     var newItem = {};
-                    $j.each (item, function (key, obj) {
+                    $.each (item, function (key, obj) {
                         newItem[key] = goradd.unpackObj(obj);
                     });
                     item = newItem;
                 }
             }
-            else if ($j.type(item) === 'array') {
+            else if ($.type(item) === 'array') {
                 item = goradd.unpackArray (item);
             }
             newParams.push(item);
@@ -711,14 +711,14 @@ goradd = {
      * @returns {*}
      */
     unpackObj: function (obj) {
-        if ($j.type(obj) === 'object' &&
+        if ($.type(obj) === 'object' &&
                 obj.goraddObject) {
 
             switch (obj.goraddObject) {
                 case 'closure':
                     if (obj.params) {
                         params = [];
-                        $j.each (obj.params, function (i, v) {
+                        $.each (obj.params, function (i, v) {
                             params.push(goradd.unpackObj(v)); // recurse
                         });
 
@@ -741,7 +741,7 @@ goradd = {
                     // Find the variable value starting at the window context.
                     var vars = obj.varName.split(".");
                     var val = window;
-                    $j.each (vars, function (i, v) {
+                    $.each (vars, function (i, v) {
                         val = val[v];
                     });
                     return val;
@@ -753,14 +753,14 @@ goradd = {
                     var params;
                     if (obj.context) {
                        var objects = obj.context.split(".");
-                        $j.each (objects, function (i, v) {
+                        $.each (objects, function (i, v) {
                             target = target[v];
                         });
                     }
 
                     if (obj.params) {
                         params = [];
-                        $j.each (obj.params, function (i, v) {
+                        $.each (obj.params, function (i, v) {
                             params.push(goradd.unpackObj(v)); // recurse
                         });
                     }
@@ -769,37 +769,37 @@ goradd = {
                     return func.apply(target, params);
             }
         }
-        else if ($j.type(obj) === 'object') {
+        else if ($.type(obj) === 'object') {
             var newItem = {};
-            $j.each (obj, function (key, obj2) {
+            $.each (obj, function (key, obj2) {
                 newItem[key] = goradd.unpackObj(obj2);
             });
             return newItem;
         }
-        else if ($j.type(obj) === 'array') {
+        else if ($.type(obj) === 'array') {
             return goradd.unpackArray(obj);
         }
         return obj; // no change
     },
     setCookie: function(name, val, expires, path, dom, secure) {
-            var cookie = name + "=" + encodeURIComponent(val) + "; ";
+        var cookie = name + "=" + encodeURIComponent(val) + "; ";
 
-            if (expires) {
-                cookie += "expires=" + expires.toUTCString() + "; ";
-            }
-
-            if (path) {
-                cookie += "path=" + path + "; ";
-            }
-            if (dom) {
-                cookie += "domain=" + dom + "; ";
-            }
-            if (secure) {
-                cookie += "secure;";
-            }
-
-            document.cookie = cookie;
+        if (expires) {
+            cookie += "expires=" + expires.toUTCString() + "; ";
         }
+
+        if (path) {
+            cookie += "path=" + path + "; ";
+        }
+        if (dom) {
+            cookie += "domain=" + dom + "; ";
+        }
+        if (secure) {
+            cookie += "secure;";
+        }
+
+        document.cookie = cookie;
+    }
 };
 
 ///////////////////////////////
@@ -825,11 +825,11 @@ goradd.startTimer = function(strControlId, intDeltaTime, blnPeriodic) {
     goradd.stopTimer(strControlId, blnPeriodic);
     if (blnPeriodic) {
         goradd._objTimers[strTimerId] = setInterval(function() {
-            $j('#' + strControlId).trigger('timerexpiredevent')
+            $('#' + strControlId).trigger('timerexpiredevent')
         }, intDeltaTime);
     } else {
         goradd._objTimers[strTimerId] = setTimeout(function() {
-            $j('#' + strControlId).trigger('timerexpiredevent')
+            $('#' + strControlId).trigger('timerexpiredevent')
         }, intDeltaTime);
     }
 };
@@ -855,9 +855,19 @@ the processing of all events to try to queue them up before processing. This see
 Its very strange. Something to debug at a future date.
 */
 
-goradd.actionQueue = []
+goradd.actionQueue = [];
 goradd.queueAction = function(params) {
-    goradd.actionQueue.push(params)
+    if (params.last) {
+        var delay = 0;
+
+        goradd.actionQueue.forEach(function(item) {
+            if (item.d > delay) {
+                delay = item.d;
+            }
+        });
+        params.d = delay + 1;
+    }
+    goradd.actionQueue.push(params);
     goradd.setTimeout("goraddActions", goradd.processActions, 150);    // will reset timer as actions come in
 };
 goradd.processActions = function() {
@@ -870,6 +880,7 @@ goradd.processActions = function() {
         }
     }
 };
+
 
 ///////////////////////////////
 // Watcher support
@@ -916,12 +927,12 @@ goradd.getWrapper = function(mixControl) {
         return document.getElementById(mixControl + "_ctl")
     }
     else {
-        return document.getElementById($j(mixControl).attr('id') + "_ctl")
+        return document.getElementById($(mixControl).attr('id') + "_ctl")
     }
 };
 
 goradd.getForm = function() {
-    return $j('form[data-grctl="form"]')[0]
+    return $('form[data-grctl="form"]')[0]
 };
 
 goradd.getFormState = function() {
@@ -934,7 +945,7 @@ goradd.getFormState = function() {
  * @param strControlId
  */
 goradd.setRadioInGroup = function(strControlId) {
-    var $objControl = $j('#' + strControlId);
+    var $objControl = $('#' + strControlId);
     if ($objControl) {
         var groupName = $objControl.prop('name');
         if (groupName) {
@@ -961,7 +972,7 @@ goradd.registerControl = function(objControl) {
         return;
     }
 
-    var $control = $j(objControl);
+    var $control = $(objControl);
 
     if ($control.data('gr-reg') === 'reg') {
         return // this control is already registered
@@ -970,10 +981,10 @@ goradd.registerControl = function(objControl) {
     // detect changes to objects before any changes trigger other events
     if (objControl.type === 'checkbox' || objControl.type === 'radio') {
         // clicks are equivalent to changes for checkboxes and radio buttons, but some browsers send change way after a click. We need to capture the click first.
-        $j(objControl).on ('click', goradd.formObjChanged);
+        $(objControl).on ('click', goradd.formObjChanged);
     }
-    $j(objControl).on ('change input', goradd.formObjChanged);
-    $j(objControl).on ('change input', 'input, select, textarea', goradd.formObjChanged);   // make sure we get to bubbled events before later attached handlers
+    $(objControl).on ('change input', goradd.formObjChanged);
+    $(objControl).on ('change input', 'input, select, textarea', goradd.formObjChanged);   // make sure we get to bubbled events before later attached handlers
 
 
     // Link the Wrapper and the Control together
@@ -985,7 +996,7 @@ goradd.registerControl = function(objControl) {
 };
 
 goradd.registerControls = function() {
-    $j('[data-grctl]').not('[data-grctl="form"]').each(function() {
+    $('[data-grctl]').not('[data-grctl="form"]').each(function() {
         goradd.registerControl(this);
     });
 };

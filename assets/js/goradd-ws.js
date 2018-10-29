@@ -40,15 +40,19 @@ goradd.initMessagingClient = function(wsPort, wssPort) {
 };
 
 /*
-The default message handler. It treats the message data as a JSON object, looks for a 'grup' item
-there, and then updates the form if found. You can therefore send any other messages you want
-to your own handlers. If you message is a JSON object and has a grup item, your message will also
+The default message handler. It treats the message data as an array of JSON objects, looks for a 'grup' item
+there, and then updates the form if found. You can therefore send any other message you want
+to your own handlers. If your message has a grup item, your message will also
 update the form. Otherwise, it will be ignored here.
  */
 goradd._handleMessage = function(e) {
-    var message = JSON.parse(e.data);
+    var messages = JSON.parse(e.data);
     console.log("message");
-    if (message.grup) {
+
+    // messages is an array of individual message objects
+    if (messages.some(function(message) {
+        return (message.grup)
+    })) {
         console.log("update " + goradd.getFormState());
         goradd.updateForm();
     }
