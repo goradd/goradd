@@ -71,7 +71,8 @@ func (b *Navbar) drawBrand(ctx context.Context, buf *bytes.Buffer) {
 
 	} else { // draw a blank brand so toggler placement still works
 
-		buf.WriteString(` 		<a class="navbar-brand" href="#"> </a>
+		buf.WriteString(`
+ 		<a class="navbar-brand" href="#"> </a>
     `)
 
 	}

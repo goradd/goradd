@@ -21,6 +21,9 @@ type WrapperI interface {
 	Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer)
 	ModifyDrawingAttributes(ctrl ControlI, attributes *html.Attributes)
 	CopyI() WrapperI
+	SetValidationMessageChanged()
+	SetValidationStateChanged()
+	AjaxRender(ctx context.Context, response *Response, c ControlI)
 }
 
 var wrapperRegistry = map[string]WrapperI{}
@@ -40,36 +43,100 @@ func NewWrapper(name string) WrapperI {
 }
 
 type ErrorWrapperType struct {
+	validationMessageChanged bool
+	validationStateChanged bool
+	//instructionsChanged bool // do this with a complete redraw. This won't change often.
 }
 
-func NewErrorWrapper() ErrorWrapperType {
-	return ErrorWrapperType{}
+func NewErrorWrapper() *ErrorWrapperType {
+	return &ErrorWrapperType{}
 }
 
 // Copy copies itself and returns it. This is used when a new wrapper is created from a named type.
-func (w ErrorWrapperType) CopyI() WrapperI {
+func (w *ErrorWrapperType) CopyI() WrapperI {
 	return w // Since we are not a pointer type, a copy was sent in
 }
 
-func (w ErrorWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+func (w *ErrorWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
 	ErrorTmpl(ctx, ctrl, html, buf)
 }
 
-func (w ErrorWrapperType) TypeName() string {
+func (w *ErrorWrapperType) TypeName() string {
 	return ErrorWrapper
 }
 
-func (w ErrorWrapperType) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
+// ModifyDrawingAttributes should only be called by the framework during a draw.
+// It changes attributes of the wrapped control based on the validation state of the control.
+func (w *ErrorWrapperType) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
+	var describedBy string
 	state := c.control().validationState
-	if state != NotValidated {
-		a.Set("aria-describedby", c.ID() + "_err")
-		if state == Valid {
-			a.Set("aria-invalid", "false")
-		} else {
-			a.Set("aria-invalid", "true")
+	if state != ValidationNever {
+		describedBy = c.ID() + "_err"
+	}
+	if c.control().instructions != "" {
+		if describedBy != "" {
+			describedBy += " "
 		}
-	} else if c.control().instructions != "" {
-		a.Set("aria-describedby", c.ID() + "_inst")
+		describedBy += c.ID() + "_inst"
+	}
+	if describedBy != "" {
+		a.Set("aria-describedby", describedBy)
+	}
+
+	// has the side effect of resetting the validation state since we know the control is being completely redrawn
+	// instead of ajax drawn
+	w.validationMessageChanged = false
+	w.validationStateChanged = false
+
+	if w.validationStateChanged {
+		switch c.control().validationState {
+		case ValidationWaiting:fallthrough
+		case ValidationValid:
+			c.WrapperAttributes().RemoveClass("error")
+		case ValidationInvalid:
+			c.WrapperAttributes().AddClass("error")
+		}
+	}
+}
+
+// The following functions enable wrappers to only send changes during the refresh of a control, rather than drawing the
+// whole control.
+
+func (w *ErrorWrapperType) SetValidationMessageChanged() {
+	w.validationMessageChanged = true
+}
+
+func (w *ErrorWrapperType) SetValidationStateChanged() {
+	w.validationStateChanged = true
+}
+
+func (w *ErrorWrapperType) ValidationMessageChanged() bool {
+	return w.validationMessageChanged
+}
+
+func (w *ErrorWrapperType) ValidationStateChanged() bool {
+	return w.validationStateChanged
+}
+
+
+// Called by the framework to draw any changes to the wrapper that we have recorded.
+// This has to work closely with the wrapper template so that it would create the same effect as if that
+// entire control had been redrawn
+func (w *ErrorWrapperType) AjaxRender(ctx context.Context, response *Response, c ControlI) {
+	if w.validationMessageChanged {
+		response.ExecuteControlCommand(c.ID() + "_err", "text", c.ValidationMessage())
+		w.validationMessageChanged = false
+	}
+
+	if w.validationStateChanged {
+		switch c.control().validationState {
+		case ValidationWaiting:fallthrough
+		case ValidationValid:
+			response.ExecuteControlCommand(c.ID() + "_ctl", "removeClass", "error")
+		case ValidationInvalid:
+			response.ExecuteControlCommand(c.ID() + "_ctl", "addClass", "error")
+		}
+		w.validationStateChanged = false
 	}
 }
 
@@ -79,26 +146,27 @@ type LabelWrapperType struct {
 	labelAttributes *html.Attributes
 }
 
-func NewLabelWrapper() LabelWrapperType {
-	return LabelWrapperType{}
+func NewLabelWrapper() *LabelWrapperType {
+	return &LabelWrapperType{}
 }
 
-func (w LabelWrapperType) Copy() LabelWrapperType {
+func (w *LabelWrapperType) Copy() *LabelWrapperType {
 	w.labelAttributes = w.labelAttributes.Copy()
 	return w
 }
 
-func (w LabelWrapperType) CopyI() WrapperI {
+func (w *LabelWrapperType) CopyI() WrapperI {
 	w.Copy()
 	return w
 }
 
 
-func (w LabelWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
+func (w *LabelWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string, buf *bytes.Buffer) {
 	LabelTmpl(ctx, w, ctrl, html, buf)
 }
 
-// LabelAttributes returns attributes that will apply to the label. Changes will be remembered.
+// LabelAttributes returns attributes that will apply to the label. Changes will be remembered, but will not
+// be applied unless you redraw the control.
 func (w *LabelWrapperType) LabelAttributes() *html.Attributes {
 	if w.labelAttributes == nil {
 		w.labelAttributes = html.NewAttributes()
@@ -106,7 +174,7 @@ func (w *LabelWrapperType) LabelAttributes() *html.Attributes {
 	return w.labelAttributes
 }
 
-func (w LabelWrapperType) HasLabelAttributes() bool {
+func (w *LabelWrapperType) HasLabelAttributes() bool {
 	if w.labelAttributes == nil || w.labelAttributes.Len() == 0 {
 		return false
 	}
@@ -114,22 +182,12 @@ func (w LabelWrapperType) HasLabelAttributes() bool {
 }
 
 
-func (w LabelWrapperType) TypeName() string {
+func (w *LabelWrapperType) TypeName() string {
 	return LabelWrapper
 }
 
-func (w LabelWrapperType) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
-	state := c.control().validationState
-	if state != NotValidated {
-		a.Set("aria-describedby", c.ID() + "_err")
-		if state == Valid {
-			a.Set("aria-invalid", "false")
-		} else {
-			a.Set("aria-invalid", "true")
-		}
-	} else if c.control().instructions != "" {
-		a.Set("aria-describedby", c.ID() + "_inst")
-	}
+func (w *LabelWrapperType) ModifyDrawingAttributes(c ControlI, a *html.Attributes) {
+	w.ErrorWrapperType.ModifyDrawingAttributes(c, a)
 	if c.control().label != "" && !c.control().hasFor { // if it has a for, then screen readers already know about the label
 		a.Set("aria-labeledby", c.ID() + "_lbl")
 	}
@@ -158,7 +216,14 @@ func (w DivWrapperType) TypeName() string {
 func (w DivWrapperType) ModifyDrawingAttributes(ctrl ControlI, a *html.Attributes) {
 }
 
+func (w DivWrapperType) SetValidationMessageChanged() {
+}
 
+func (w DivWrapperType) SetValidationStateChanged() {
+}
+
+func (w DivWrapperType) AjaxRender(ctx context.Context, response *Response, c ControlI) {
+}
 
 func init() {
 	RegisterControlWrapper(ErrorWrapper, &ErrorWrapperType{})

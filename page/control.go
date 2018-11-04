@@ -21,6 +21,9 @@ const sessionControlTypeState string = "goradd.controlType"
 
 const RequiredErrorMessage string = "A value is required"
 
+// ValidationType is used by active controls, like buttons, to determine what other items on the form will get validated
+// when the button is pressed. You can set the ValidationType for a control, but you can also set it for individual events
+// and override the control's validation setting.
 type ValidationType int
 
 const (
@@ -40,12 +43,26 @@ const (
 	ValidateTargetsOnly
 )
 
+// ValidationState is used internally by the framework to determine how the control's wrapper handles drawing validation error
+// messages. Different wrappers use it to set classes or attributes of the error message or the overall control.
 type ValidationState int
 
 const (
-	NotValidated ValidationState = iota
-	Valid
-	Invalid
+	// ValidationWaiting is the default for controls that accept validation. It means that the control expects to be validated,
+	// but has not yet been validated. Wrappers should save a spot for the error message of this control so that if
+	// an error appears, it will not change the layout of the form.
+	ValidationWaiting ValidationState = iota
+	// ValidationNever indicates that the control will never fail validation. Essentially it indicates that the wrapper does not
+	// need to save a spot for an error message for this control.
+	ValidationNever
+	// ValidationValid indicates the control has been validated. This state gets entered if some control on the form has failed validation, but
+	// this control passed validation. You can choose to display a special message, or a special color, etc., to
+	// indicate to the user that this is not the source of the validation problem, or do nothing.
+	ValidationValid
+	// ValidationInvalid indicates the control has failed validation, and the wrapper should somehow call that out to the user. The error message
+	// should be displayed at a minimum, but likely other things should happen as well, like a special color, and
+	// aria attributes should be set.
+	ValidationInvalid
 )
 
 type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *bytes.Buffer) error
@@ -159,6 +176,12 @@ type ControlI interface {
 
 }
 
+type attributeScriptEntry struct {
+	id string	// id of the object to execute the command on. This should be the id of the control, or a a related html object.
+	f string	// the jquery function to call
+	commands []interface{}	// parameters to the jquery function
+}
+
 type Control struct {
 	goradd.Base
 
@@ -176,7 +199,7 @@ type Control struct {
 	textLabelMode  html.LabelDrawingMode // describes how to draw the internal label
 	htmlEscapeText bool                  // whether to escape the text output, or send straight text
 
-	attributeScripts []*[]interface{} // commands to send to our javascript to redraw portions of this control via ajax. Allows us to skip drawing the entire control.
+	attributeScripts []attributeScriptEntry // commands to send to our javascript to redraw portions of this control via ajax. Allows us to skip drawing the entire control.
 
 	isRequired       bool
 	isHidden         bool
@@ -358,13 +381,17 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 	} else {
 		// add attribute changes
 		if c.attributeScripts != nil {
-			for _, scripts := range c.attributeScripts {
-				response.ExecuteControlCommand(c.ID(), (*scripts)[0].(string), (*scripts)[1:]...)
+			for _, entry := range c.attributeScripts {
+				response.ExecuteControlCommand(entry.id, entry.f, entry.commands...)
 			}
 			c.attributeScripts = nil
 		}
 
-		// ask the child controls to potentially render, since This control doesn't need to
+		if c.wrapper != nil {
+			c.wrapper.AjaxRender(ctx, response, c)
+		}
+
+		// ask the child controls to potentially render, since this control doesn't need to
 		for _, child := range c.children {
 			err = child.DrawAjax(ctx, response)
 			if err != nil {
@@ -539,8 +566,9 @@ func (c *Control) SetWrapperAttribute(name string, val interface{}) ControlI {
 	}
 
 	if changed {
-		// TODO: Make This an attribute script instead of redrawing the whole control. Will prevent having to redraw the whole control
-		c.isModified = true
+		// The val passed in might be a calculation, so we need to get the ultimate new value
+		v2 := c.wrapperAttributes.Get(name)
+		c.AddRelatedRenderScript(c.ID() + "_ctl", "attr", name, v2)
 	}
 	return c.this()
 }
@@ -563,6 +591,10 @@ func (c *Control) DrawingAttributes() *html.Attributes {
 
 	if c.HasWrapper() {
 		c.wrapper.ModifyDrawingAttributes(c.this(), a)
+	}
+
+	if c.isRequired {
+		a.Set("aria-required", "true")
 	}
 
 	return a
@@ -603,24 +635,31 @@ func (c *Control) AddClass(class string) ControlI {
 
 func (c *Control) RemoveClass(class string) ControlI {
 	if changed := c.attributes.RemoveClass(class); changed {
-		c.isModified = true
+		v2 := c.attributes.Class()
+		c.AddRenderScript("attr", "class", v2)
 	}
 	return c.this()
 }
 
 func (c *Control) AddWrapperClass(class string) ControlI {
 	if changed := c.wrapperAttributes.AddClassChanged(class); changed {
-		c.isModified = true
+		v2 := c.wrapperAttributes.Class()
+		c.AddRelatedRenderScript(c.ID() + "_ctl", "attr", "class", v2)
 	}
 	return c.this()
 }
 
-// Adds a variadic parameter list to the renderScripts array, which is an array of javascript commands to send to the
-// browser the next time control drawing happens. These commands allow javascript to change an aspect of the control without
+// Adds a jQuery command to be executed on the next ajax draw. These commands allow javascript to change an aspect of the control without
 // having to redraw the entire control. This should primarily be used by control implementations only.
-func (c *Control) AddRenderScript(params ...interface{}) {
-	c.attributeScripts = append(c.attributeScripts, &params)
+func (c *Control) AddRenderScript(f string, params ...interface{}) {
+	c.attributeScripts = append(c.attributeScripts, attributeScriptEntry{id: c.ID(), f: f, commands: params})
 }
+
+// AddRelatedRenderScript adds a render script for a related html object. This is primarily used by control implementations.
+func (c *Control) AddRelatedRenderScript(id string, f string, params ...interface{}) {
+	c.attributeScripts = append(c.attributeScripts, attributeScriptEntry{id: id, f: f, commands: params})
+}
+
 
 // Control Hierarchy Functions
 func (c *Control) Parent() ControlI {
@@ -762,18 +801,23 @@ func (c *Control) ValidationMessage() string {
 // to indicate an error. Override if you have a different way of handling errors.
 func (c *Control) SetValidationError(e string) {
 	if !c.HasWrapper() {
-		panic("Only controls with wrappers can get a validation error.")
+		panic(fmt.Errorf("control %s does not have a wrapper and so you cannot set a validation error message for it", c.ID()))
 	}
+	if c.validationState == ValidationNever {
+		panic(fmt.Errorf("control %s has been set to never validate, so you cannot set a validation error message for it", c.ID()))
+	}
+
 	if c.validationMessage != e {
 		c.validationMessage = e
-		c.Refresh() // TODO: Set a response attribute instead to only update the inner text of the ctlId_err div and possibly the div class. Tricky because bootstrap has multiple options to set the div class.
+		c.wrapper.SetValidationMessageChanged()
+		c.wrapper.SetValidationStateChanged()
 
 		if e == "" {
-			c.validationState = NotValidated
-			c.SetWrapperAttribute("class", "- error")
+			c.validationState = ValidationWaiting
+			c.AddRenderScript("removeAttr", "aria-invalid")
 		} else {
-			c.validationState = Invalid
-			c.SetWrapperAttribute("class", "+ error")
+			c.validationState = ValidationInvalid
+			c.AddRenderScript("attr", "aria-invalid", "true")
 		}
 	}
 }
@@ -958,12 +1002,15 @@ func (c *Control) resetDrawingFlags() {
 
 // Recursively reset the validation state
 func (c *Control) resetValidation() {
-	if c.HasWrapper() &&
-		(c.validationMessage != "" || c.validationState != NotValidated) {
-		c.validationMessage = ""
-		c.validationState = NotValidated
-		c.wrapperAttributes.RemoveClass("error")
-		c.Refresh() // TODO: Handle the above with javascript calls so base control does not have to be redrawn
+	if c.HasWrapper() {
+		if c.validationMessage != "" {
+			c.wrapper.SetValidationMessageChanged()
+			c.validationMessage = ""
+		}
+		if c.validationState != ValidationWaiting {
+			c.wrapper.SetValidationStateChanged()
+			c.validationState = ValidationWaiting
+		}
 	}
 
 	if children := c.this().Children(); children != nil {
@@ -1168,11 +1215,18 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 
 // Validate is designed to be overridden. Overriding controls should call the parent version before doing their own validation.
 func (c *Control) Validate(ctx context.Context) bool {
-	if c.HasWrapper() && c.validationMessage != c.ValidMessage {
-		c.validationMessage = c.ValidMessage
-		c.Refresh() // TODO: Do this in javascript so whole control does not need to refresh
+	if c.HasWrapper() &&
+		c.validationState != ValidationNever {
+
+		if c.validationMessage != c.ValidMessage {
+			c.validationMessage = c.ValidMessage
+			c.wrapper.SetValidationMessageChanged()
+		}
+		if c.validationState != ValidationValid {
+			c.validationState = ValidationValid
+			c.wrapper.SetValidationStateChanged()
+		}
 	}
-	c.validationState = Valid
 	return true
 }
 
@@ -1428,6 +1482,16 @@ func (c *Control) SetEscapeText(e bool) ControlI {
 func (c *Control) ExecuteJqueryFunction(command string, params ...interface{}) {
 	c.ParentForm().Response().ExecuteControlCommand(c.ID(), command, params...)
 }
+
+// SetWillBeValidated indicates to the wrapper whether to save a spot for a validation message or not.
+func (c *Control) SetWillBeValidated(v bool) {
+	if v {
+		c.validationState = ValidationWaiting
+	} else {
+		c.validationState = ValidationNever
+	}
+}
+
 
 // ConnectorParams returns a list of options setable by the connector dialog (not currently implemented)
 func ControlConnectorParams() *maps.SliceMap {

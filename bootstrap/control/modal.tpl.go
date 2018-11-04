@@ -37,7 +37,8 @@ func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
 
 	}
 
-	buf.WriteString(`            </div>
+	buf.WriteString(`
+            </div>
 `)
 
 	d.buttonBar.AddClass("modal-footer")

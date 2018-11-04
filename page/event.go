@@ -73,11 +73,12 @@ func (e *Event) Selector(s string) EventI {
 }
 
 // Call Blocking to cause this event to prevent other events from firing after this fires, but before it processes.
-// This is particularly useful to debounce button clicks. (The infamous double-click of the submit button when processing financial transactions for example).
+// If another event fires between the time when this event fires and when a response is received, it will be lost.
 func (e *Event) Blocking() EventI {
 	e.blocking = true
 	return e
 }
+
 
 // Call Terminating to cause the event not to bubble or do the default action.
 func (e *Event) Terminating() EventI {
@@ -175,7 +176,7 @@ func (e *Event) RenderActions(control ControlI, eventID EventID) string {
 	if !config.Minify {
 		actionJs = html.Indent(actionJs)
 	}
-	actionJs = fmt.Sprintf("goradd.queueAction({f: $j.proxy(function(){\n%s\n},this), d: %d});\n", actionJs, e.delay)
+	actionJs = fmt.Sprintf("goradd.queueAction({f: $j.proxy(function(){\n%s\n},this), d: %d, name: '%s'});\n", actionJs, e.delay, e.JsEvent)
 
 	if e.condition != "" {
 		js = fmt.Sprintf("if (%s) {%s%s\n};", e.condition, js, actionJs)

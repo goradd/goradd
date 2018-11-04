@@ -94,19 +94,17 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		p.Form().LoadControls(ctx)
 	} else {
 		p.Form().control().updateValues(grCtx) // Tell all the controls to update their values.
-		// if This is an event response, do the actions associated with the event
+		// if this is an event response, do the actions associated with the event
 		if c := p.GetControl(grCtx.actionControlID); c != nil {
 			c.control().doAction(ctx)
 		}
 	}
 
 	p.ClearResponseHeaders()
-	//p.SetResponseHeader("charset", "utf-8")
 	if grCtx.RequestMode() == Ajax {
 		err = p.DrawAjax(ctx, buf)
 		p.SetResponseHeader("Content-Type", "application/json")
 	} else if grCtx.RequestMode() == Server || grCtx.RequestMode() == Http {
-		//p.SetResponseHeader("Content-Type", "text/html")	// default for web override. Response can change This if drawing something else.
 		err = p.Draw(ctx, buf)
 	} else {
 		// TODO: Implement a hook for the CustomAjax call and/or Rest API calls?

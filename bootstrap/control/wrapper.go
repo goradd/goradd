@@ -28,7 +28,7 @@ func NewDivWrapper() *DivWrapperType {
 
 func (w *DivWrapperType) Copy()  *DivWrapperType {
 	wNew := &DivWrapperType{}
-	wNew.LabelWrapperType = w.LabelWrapperType.Copy()
+	wNew.LabelWrapperType = *w.LabelWrapperType.Copy()
 	wNew.innerDivAttributes = w.innerDivAttributes.Copy()
 	wNew.useTooltips = w.useTooltips
 	return wNew
@@ -46,7 +46,8 @@ func (w DivWrapperType) TypeName() string {
 	return DivWrapper
 }
 
-// InnerDivAttributes returns attributes for the innerDiv. Changes will be remembered. If you set these, the control
+// InnerDivAttributes returns attributes for the innerDiv. Changes will be remembered, but only drawn if you redraw the
+// control. If you set these, the control
 // itself will be wrapped with a div with these attributes. This is useful for layouts that have the label next to
 // the control.
 func (w *DivWrapperType) InnerDivAttributes() *html.Attributes {
@@ -67,6 +68,46 @@ func (w *DivWrapperType) SetUseTooltips(t bool) *DivWrapperType {
 	w.useTooltips = t
 	return w
 }
+
+// Called by the framework to draw any changes to the wrapper that we have recorded.
+// This has to work closely with the wrapper template so that it would create the same effect as if that
+// entire control had been redrawn
+func (w *DivWrapperType) AjaxRender(ctx context.Context, response *page.Response, c page.ControlI) {
+	var class string
+	if w.ValidationStateChanged() {
+		switch c.ValidationState() {
+		case page.ValidationWaiting:
+			response.ExecuteControlCommand(c.ID(), "removeClass", "is-valid")
+			response.ExecuteControlCommand(c.ID(), "removeClass", "is-invalid")
+			if w.useTooltips {
+				class = "valid-tooltip"
+			} else {
+				class = "valid-feedback"
+			}
+
+		case page.ValidationValid:
+			response.ExecuteControlCommand(c.ID(), "addClass", "is-valid")
+			response.ExecuteControlCommand(c.ID(), "removeClass", "is-invalid")
+			if w.useTooltips {
+				class = "valid-tooltip"
+			} else {
+				class = "valid-feedback"
+			}
+
+		case page.ValidationInvalid:
+			response.ExecuteControlCommand(c.ID(), "removeClass", "is-valid")
+			response.ExecuteControlCommand(c.ID(), "addClass", "is-invalid")
+			if w.useTooltips {
+				class = "invalid-tooltip"
+			} else {
+				class = "invalid-feedback"
+			}
+		}
+		response.ExecuteControlCommand(c.ID() + "_err", "attr", "class", class)
+	}
+	w.LabelWrapperType.AjaxRender(ctx, response, c)
+}
+
 
 type FormGroupWrapperType struct {
 	DivWrapperType
@@ -105,7 +146,7 @@ func NewFieldsetWrapper() *FieldsetWrapperType {
 
 func (w *FieldsetWrapperType) CopyI() page.WrapperI {
 	wNew := NewFieldsetWrapper()
-	wNew.LabelWrapperType = w.LabelWrapperType.Copy()
+	wNew.LabelWrapperType = *w.LabelWrapperType.Copy()
 	wNew.useTooltips = w.useTooltips
 	return w
 }

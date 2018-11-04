@@ -50,7 +50,7 @@ func (h *WebSocketHub) run() {
 	for {
 		select {
 		case client := <-h.register:
-			log.Debugf("Client registering for channel %s formstate %s", client.channel, client.formstate)
+			log.FrameworkDebugf("Client registering for channel %s formstate %s", client.channel, client.formstate)
 			var clientsByFormstate map[string]*Client
 			var ok bool
 			if clientsByFormstate,ok = h.clients[client.channel]; !ok {
@@ -66,17 +66,17 @@ func (h *WebSocketHub) run() {
 			}
 
 		case client := <-h.unregister:
-			log.Debugf("Client UNregistering for channel %s formstate %s", client.channel, client.formstate)
+			log.FrameworkDebugf("Client UNregistering for channel %s formstate %s", client.channel, client.formstate)
 			h.unregisterClient(client.channel, client.formstate)
 
 		case msg := <-h.send:
 			if clients, ok := h.clients[msg.channel]; ok {
-				log.Debugf("Sending to channel %s - %v", msg.channel, msg.message)
+				log.FrameworkDebugf("Sending to channel %s - %v", msg.channel, msg.message)
 				for _, client := range clients {
 					client.send <- msg.message
 				}
 			} else {
-				log.Debugf("Could not find channel %s", msg.channel)
+				log.FrameworkDebugf("Could not find channel %s", msg.channel)
 			}
 
 

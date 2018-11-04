@@ -1,12 +1,20 @@
+// Package test contains the test harness, which controls browser based tests.
+// Tests should call RegisterTestFunction to register a particular test. These tests get presented to the user
+// in the test form available at the address "/test", and the user can select a test and execute it.
+// The form is also a repository for operations you can perform on the form being tested. A test generally should
+// start with a call to LoadURL. Follow that with calls to control the form and check for expected results.
+// page/test contains a variety of tests that serve to unit test the form framework.
 package test
 
 import (
 	"context"
 	"fmt"
-	"github.com/spekary/goradd/log"
+	"github.com/spekary/goradd/datetime"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
 	. "github.com/spekary/goradd/page/control"
+	"github.com/spekary/goradd/page/event"
+	"runtime"
 )
 
 
@@ -51,8 +59,8 @@ func (f *TestForm) createControls(ctx context.Context) {
 
 	f.RunButton = NewButton(f, "run-button")
 	f.RunButton.SetText("Run Test")
-	f.RunButton.SetIsPrimary(true)
-	f.RunButton.OnClick(action.Ajax(f.ID(), TestButtonAction))
+	f.RunButton.On(event.Click(), action.Ajax(f.ID(), TestButtonAction))
+	f.RunButton.SetValidationType(page.ValidateNone)
 }
 
 func (f *TestForm) LoadControls(ctx context.Context) {
@@ -78,11 +86,11 @@ func (f *TestForm) runTest() {
 			if r := recover(); r != nil {
 				switch v := r.(type) {
 				case error:
-					f.Log(v.Error())
+					f.Done(v.Error())
 				case string:
-					f.Log(v)
+					f.Done(v)
 				default:
-					f.Log("Unknown error")
+					f.Done("Unknown error")
 				}
 			}
 		}()
@@ -92,10 +100,19 @@ func (f *TestForm) runTest() {
 
 // Log will send a message to the log. The message might not draw right away.
 func (f *TestForm) Log(s string) {
+	d := datetime.Now()
+	s = d.Format(datetime.StampMicro) + ": " + s
 	f.currentLog += s + "\n"
-	f.Controller.LogLine(s)
-	log.Debugf("Log line %s", s)
+	f.Controller.logLine(s)
+	//log.Debugf("Log line %s", s)
 }
+
+// Mark the end of testing with a message.
+func (f *TestForm) Done(s string) {
+	f.Log(s)
+	f.Page().PushRedraw()
+}
+
 
 func RegisterTestFunction (name string, f testRunnerFunction) {
 	tests[name] = f
@@ -111,7 +128,9 @@ func init() {
 // to return the form if you call GetForm.
 func (f *TestForm) LoadUrl(url string) {
 	f.Log("Loading url: " + url)
-	f.Controller.loadUrl(url)
+	_, file, line, _ := runtime.Caller(1)
+	desc := fmt.Sprintf(`%s:%d LoadUrl(%q)`, file, line, url)
+	f.Controller.loadUrl(url, desc)
 }
 
 // GetForm returns the currently loaded form.
@@ -124,19 +143,39 @@ func (f *TestForm) GetForm() page.FormI {
 
 func (f *TestForm) AssertEqual(expected, actual interface{}) {
 	if expected != actual {
-		f.Controller.LogLine(fmt.Sprintf("AssertEqual failed. %v != %v.", expected, actual))
+		f.Controller.logLine(fmt.Sprintf("AssertEqual failed. %v != %v.", expected, actual))
 	}
 }
 
 func (f *TestForm) ChangeVal(id string, val interface{}) {
-	f.Controller.changeVal(id, val);
+	_, file, line, _ := runtime.Caller(1)
+	desc := fmt.Sprintf(`%s:%d ChangeVal(%q, %q)`, file, line, id, val)
+	f.Controller.changeVal(id, val, desc);
 }
 
 func (f *TestForm) Click(id string) {
-	f.Controller.click(id);
+	_, file, line, _ := runtime.Caller(1)
+	desc := fmt.Sprintf(`%s:%d Click(%q)`, file, line, id)
+	f.Controller.click(id, desc);
 }
 
 func (f *TestForm) JqueryValue(id string, funcName string, params []string) string {
-	return f.Controller.jqValue(id, funcName, params)
+	_, file, line, _ := runtime.Caller(1)
+	desc := fmt.Sprintf(`%s:%d JqueryValue(%q, %q, %q)`, file, line, id, funcName, params)
+	return f.Controller.jqValue(id, funcName, params, desc)
 }
+
+/*
+func (f *TestForm) TypeValue(id string, chars string) {
+	_, file, line, _ := runtime.Caller(1)
+	desc := fmt.Sprintf(`%s:%d JqueryValue(%q, %q, %q)`, file, line, id, funcName, params)
+	f.Controller.typeChars(id, chars)
+}*/
+
+func (f *TestForm) Focus(id string) {
+	_, file, line, _ := runtime.Caller(1)
+	desc := fmt.Sprintf(`%s:%d Focus(%q)`, file, line, id)
+	f.Controller.focus(id, desc)
+}
+
 

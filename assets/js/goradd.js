@@ -1,8 +1,17 @@
 
+if (!function () {
+    "use strict";
+    return Function.prototype.bind && !this;
+}()) {
+    window.location = "/Unsupported.g";
+}
+
 
 var $j; // Universal shorcut for jQuery so that you can execute jQuery code outside in a no-conflict mode.
+var goradd;
 
 (function( $ ) {
+"use strict";
 
 $j = $;
 
@@ -11,19 +20,26 @@ $j = $;
  */
 goradd = {
     /**
-     * Queued Ajax requests.
+     * Queues an ajax request.
      * A new Ajax request won't be started until the previous queued
      * request has finished.
      * @param {function} o function that returns ajax options.
      * @param {boolean} blnAsync true to launch right away.
      */
-    ajaxQueue: function(o, blnAsync) {
+    _ajaxQueue: function(o, blnAsync) {
         if (typeof $.ajaxq === "undefined" || blnAsync) {
             $.ajax(o()); // fallback in case ajaxq is not here
         } else {
             $.ajaxq("goradd", o);
         }
     },
+    /**
+     * Returns true if there is something in the ajax queue. This would happen if we have just queued an item,
+     * or if we are waiting for an item to return a result.
+     *
+     * @returns {boolean} true if the goradd ajax queue has an item in it.
+     */
+
     ajaxQueueIsRunning: function() {
         if ($.ajaxq) {
             return $.ajaxq.isRunning("goradd");
@@ -36,9 +52,9 @@ goradd = {
      * call it in response to the "posting" event. This is the preferred way for custom javascript controls to send data
      * to their goradd counterparts.
      *
-     * @param {string} strControlId
-     * @param {string} strProperty
-     * @param {mixed} strNewValue
+     * @param {string} strControlId     The controlId of the property to set
+     * @param {string} strProperty      The name of the property
+     * @param strNewValue               The new value of the property. Can be any type, including string, number, object or array
      */
     setControlValue: function(strControlId, strProperty, strNewValue) {
         if (!goradd.controlValues[strControlId]) {
@@ -48,7 +64,7 @@ goradd = {
     },
     /**
      * Given a control, returns the correct index to use in the formObjsModified array.
-     * @param ctl
+     * @param {Object} ctl      A jQuery or html reference to a goradd control
      * @private
      */
     _formObjChangeIndex: function (ctl) {
@@ -87,8 +103,6 @@ goradd = {
      * @param event
      */
     formObjChanged: function (event) {
-        console.time("formObjChanged")
-
         var ctl = event.target,
             id = goradd._formObjChangeIndex(ctl),
             $element = $(ctl),
@@ -108,13 +122,9 @@ goradd = {
         else if (id) {
             goradd.formObjsModified[id] = true;
         }
-
-        console.timeEnd("formObjChanged")
-
     },
     /**
-     * Initialize form related scripts
-     * @param {string} strFormId
+     * Initializes form related scripts. This is called by injected code on a goradd form.
      */
     initForm: function () {
         var $form =  $(goradd.getForm());
@@ -129,9 +139,9 @@ goradd = {
     },
 
     /**
-     * Post the form. ServerActions go here.
+     * Post the form. ServerActions call this.
      *
-     * @param {object} params An object containing the following:
+     * @param {Object} params An object containing the following:
      *  controlId {string}: The control id to post an action to
      *  eventId {int}: The event id
      *  async: If true, process the event asynchronously without waiting for other events to complete
@@ -274,6 +284,7 @@ goradd = {
      *      action: The action's action value, if one is provided. Any type.
      *      control: The control's action value, if one is provided. Any type.
      * @return {object} Post Data
+     * @private
      */
     _getAjaxData: function(params) {
         var $form = $('#' + params.formId),
@@ -343,7 +354,7 @@ goradd = {
         });
 
         // Update most of the Goradd__ parameters explicitly here. Others, like the state and form id will have been handled above.
-        params.callType = "Ajax"
+        params.callType = "Ajax";
         if (!$.isEmptyObject(goradd.controlValues)) {
             params.controlValues = goradd.controlValues;
         }
@@ -358,11 +369,13 @@ goradd = {
     },
 
     /**
-     * @param {object} params An object containing the following:
+     * Posts an ajax call to the ajax queue. Ajax actions call this.
+     *
+     * @param {Object} params An object containing the following:
      *  controlId {string}: The control id to post an action to
-     *  eventId {int}: The event id
-     *  async: If true, process the event asynchronously without waiting for other events to complete
-     *  values {object} (optional): An optional object, that contains values coming to send with the event
+     *  eventId {number}: The event id
+     *  async {boolean}: If true, process the event asynchronously without waiting for other events to complete
+     *  values {Object} (optional): An optional object, that contains values coming to send with the event
      *      event: The event's action value, if one is provided. This can be any type, including an object.
      *      action: The action's action value, if one is provided. Any type.
      *      control: The control's action value, if one is provided. Any type.
@@ -380,10 +393,10 @@ goradd = {
 
         params.formId = $objForm.attr('id');
 
-        console.log("postAjax" + JSON.stringify(params));
+        goradd.log("postAjax", params);
 
         // Use an ajax queue so ajax requests happen synchronously
-        goradd.ajaxQueue(function() {
+        goradd._ajaxQueue(function() {
             var data = goradd._getAjaxData(params);
 
             return {
@@ -394,46 +407,56 @@ goradd = {
                     var result = XMLHttpRequest.responseText;
 
                     if (XMLHttpRequest.status !== 0 || (result && result.length > 0)) {
-                        goradd.displayAjaxError(result, textStatus, errorThrown);
+                        goradd._displayAjaxError(result, textStatus, errorThrown);
                         return false;
                     } else {
-                        goradd.displayAjaxError("Unknown ajax error", '', '');
+                        goradd._displayAjaxError("Unknown ajax error", '', '');
                         return false;
                     }
+                    goradd.testStep();
                 },
                 success: function (json) {
                     if ($.type(json) === 'string') {
                         // If server has a problem sending any ajax response, like when headers are already sent, we will get that error as a string here
-                        goradd.displayAjaxError(json, '', '');
+                        goradd._displayAjaxError(json, '', '');
                         return false;
                     }
+                    goradd.log("Ajax success ", json);
+
                     if (json.js) {
                         var deferreds = [];
                         // Load all javascript files before attempting to process the rest of the response, in case some things depend on the injected files
                         $.each(json.js, function (i, v) {
                             deferreds.push(goradd.loadJavaScriptFile(v));
                         });
-                        goradd.processImmediateAjaxResponse(json, params); // go ahead and begin processing things that will not depend on the javascript files to allow parallel processing
+                        goradd._processImmediateAjaxResponse(json, params); // go ahead and begin processing things that will not depend on the javascript files to allow parallel processing
                         $.when.apply($, deferreds).then(
                             function () {
-                                goradd.processDeferredAjaxResponse(json);
+                                goradd._processDeferredAjaxResponse(json);
                                 goradd.blockEvents = false;
                             }, // success
                             function () {
-                                window.console.log('Failed to load a file');
+                                goradd.log('Failed to load a file');
                                 goradd.blockEvents = false;
                             } // failed to load a file. What to do?
                         );
                     } else {
-                        goradd.processImmediateAjaxResponse(json, params);
-                        goradd.processDeferredAjaxResponse(json);
+                        goradd._processImmediateAjaxResponse(json, params);
+                        goradd._processDeferredAjaxResponse(json);
                         goradd.blockEvents = false;
                     }
                 }
             };
         }, async);
     },
-    displayAjaxError: function(resultText, textStatus, errorThrown) {
+    /**
+     * Displays the ajax error in either a popup window, or a new web page.
+     * @param resultText
+     * @param textStatus
+     * @param errorThrown
+     * @private
+     */
+    _displayAjaxError: function(resultText, textStatus, errorThrown) {
         var objErrorWindow;
 
         goradd.ajaxError = true;
@@ -454,10 +477,6 @@ goradd = {
                 .appendTo('form');
         }
     },
-    msg:function(text) {
-        alert(text);
-    },
-
     /**
      * Start me up.
      */
@@ -493,32 +512,26 @@ goradd = {
         });*/
 
         goradd.inputSupport = 'oninput' in document;
-
-        // Detect browsers that do not correctly support the oninput event, even though they say they do.
-        // IE 9 in particular has a major bug
-        var ua = window.navigator.userAgent;
-        var intIeOffset = ua.indexOf ('MSIE');
-        if (intIeOffset > -1) {
-            var intOffset2 = ua.indexOf ('.', intIeOffset + 5);
-            var strVersion = ua.substr (intIeOffset + 5, intOffset2 - intIeOffset - 5);
-            if (strVersion < 10) {
-                goradd.inputSupport = false;
-            }
-        }
+        // IE 9 has a major bug in oninput, but we are requiring IE 10+, so no problem.
+        // I think the only major browser that does not support oninput is Opera mobile.
 
         $( document ).ajaxComplete(function( event, request, settings ) {
             if (!goradd.ajaxQueueIsRunning()) {
-                goradd.processFinalCommands();  // TODO: Fix this so a preliminary ajax command is not required.
-                                            // Likely means using a separate queue.
-                goradd.testStep();
+                goradd._processFinalCommands();  // If there was no ajax queue, we would have already processed final commands
             }
         });
 
         // TODO: Add a detector of the back button. This detector should ping the server to make sure the formstate exists on the server. If not,
-        // it should reload the override.
-        return this;
+        // it should reload the form.
     },
-    processImmediateAjaxResponse: function(json, params) {
+    /**
+     * Responds to the part of an ajax response that must be handled serially before other handlers can fire.
+     *
+     * @param {Object} json     json generated by goradd application
+     * @param {Object} params   option parameters
+     * @private
+     */
+    _processImmediateAjaxResponse: function(json, params) {
         if (json.controls) {
             $.each(json.controls, function(id) {
                 var strControlId = id,
@@ -582,15 +595,21 @@ goradd = {
             });
         }
     },
-    processDeferredAjaxResponse: function(json) {
+    /**
+     * Process the part of an ajax response that can be deferred and so be executed in parallel with other operations.
+     *
+     * @param {object} json  Json generated by the goradd application.
+     * @private
+     */
+    _processDeferredAjaxResponse: function(json) {
         if (json.commands) { // commands
             $.each(json.commands, function (index, command) {
                 if (command.final &&
                     goradd.ajaxQueueIsRunning()) {
 
-                    goradd.enqueueFinalCommand(command);
+                    goradd._enqueueFinalCommand(command);
                 } else {
-                    goradd.processCommand(command);
+                    goradd._processCommand(command);
                 }
             });
         }
@@ -612,8 +631,14 @@ goradd = {
             }
             c.html(json.profileHtml);
         }
+        goradd.testStep();
     },
-    processCommand: function(command) {
+    /**
+     * Process a single command.
+     * @param {object} command
+     * @private
+     */
+    _processCommand: function(command) {
         var params,
             objs;
 
@@ -624,7 +649,7 @@ goradd = {
             document.body.appendChild(script);
         }
         else if (command.selector) {
-            params = goradd.unpackArray(command.params);
+            params = goradd._unpackArray(command.params);
 
             if (typeof command.selector === 'string') {
                 objs = $(command.selector);
@@ -641,7 +666,7 @@ goradd = {
             });
         }
         else if (command.func) {
-            params = goradd.unpackArray(command.params);
+            params = goradd._unpackArray(command.params);
 
             // Find the function by name. Walk an object list in the process.
             objs = command.func.split(".");
@@ -657,27 +682,32 @@ goradd = {
         }
 
     },
-    enqueueFinalCommand: function(command) {
+    /**
+     * Places the given command in the queue so that it is executed last.
+     * @param command
+     * @private
+     */
+    _enqueueFinalCommand: function(command) {
         goradd.finalCommands.push(command);
     },
-    processFinalCommands: function() {
+    /**
+     * Execute the final commands.
+     * @private
+     */
+    _processFinalCommands: function() {
         while(goradd.finalCommands.length) {
             var command = goradd.finalCommands.pop();
-            goradd.processCommand(command);
+            goradd._processCommand(command);
         }
     },
     /**
-     * testStep is a stub function that is filled in by the test harness if it is loaded
-     */
-    testStep: function(event) {
-    },
-    /**
      * Convert from JSON return value to an actual jQuery object. Certain structures don't work in JSON, like closures,
-     * but can be part of a javascript object.
+     * but can be part of a javascript object. We use special codes to piece together functions, closures, dates, etc.
      * @param params
      * @returns {*}
+     * @private
      */
-    unpackArray: function(params) {
+    _unpackArray: function(params) {
         if (!params) {
             return null;
         }
@@ -686,19 +716,19 @@ goradd = {
         $.each(params, function (index, item){
             if ($.type(item) === 'object') {
                 if (item.goraddObject) {
-                    item = goradd.unpackObj(item);  // top level special object
+                    item = goradd._unpackObj(item);  // top level special object
                 }
                 else {
                     // look for special objects inside top level objects.
                     var newItem = {};
                     $.each (item, function (key, obj) {
-                        newItem[key] = goradd.unpackObj(obj);
+                        newItem[key] = goradd._unpackObj(obj);
                     });
                     item = newItem;
                 }
             }
             else if ($.type(item) === 'array') {
-                item = goradd.unpackArray (item);
+                item = goradd._unpackArray (item);
             }
             newParams.push(item);
         });
@@ -709,8 +739,9 @@ goradd = {
      * Given an object coming from goradd, will attempt to decode the object into a corresponding javascript object.
      * @param obj
      * @returns {*}
+     * @private
      */
-    unpackObj: function (obj) {
+    _unpackObj: function (obj) {
         if ($.type(obj) === 'object' &&
                 obj.goraddObject) {
 
@@ -719,14 +750,13 @@ goradd = {
                     if (obj.params) {
                         params = [];
                         $.each (obj.params, function (i, v) {
-                            params.push(goradd.unpackObj(v)); // recurse
+                            params.push(goradd._unpackObj(v)); // recurse
                         });
 
                         return new Function(params, obj.func);
                     } else {
                         return new Function(obj.func);
                     }
-                    break;
 
                 case 'dt':
                     if (obj.z) {
@@ -761,7 +791,7 @@ goradd = {
                     if (obj.params) {
                         params = [];
                         $.each (obj.params, function (i, v) {
-                            params.push(goradd.unpackObj(v)); // recurse
+                            params.push(goradd._unpackObj(v)); // recurse
                         });
                     }
                     var func = target[obj.func];
@@ -772,15 +802,46 @@ goradd = {
         else if ($.type(obj) === 'object') {
             var newItem = {};
             $.each (obj, function (key, obj2) {
-                newItem[key] = goradd.unpackObj(obj2);
+                newItem[key] = goradd._unpackObj(obj2);
             });
             return newItem;
         }
         else if ($.type(obj) === 'array') {
-            return goradd.unpackArray(obj);
+            return goradd._unpackArray(obj);
         }
         return obj; // no change
     },
+
+    /***********************
+     * Javascriptable Actions
+     ***********************/
+    focus: function(id) {
+        goradd.getControl(id).focus();
+    },
+
+    /******************************************
+     * Stub functions for debugging and testing
+     * See goradd-testing.js
+     ******************************************/
+
+    testStep: function(event) {
+    },
+    log: function() {
+    },
+
+    /***********************
+     * Utility Functions
+     ***********************/
+
+    /**
+     * Sets a cookie with the given parameters. Potentially called by the goradd app.
+     * @param name
+     * @param val
+     * @param expires
+     * @param path
+     * @param dom
+     * @param secure
+     */
     setCookie: function(name, val, expires, path, dom, secure) {
         var cookie = name + "=" + encodeURIComponent(val) + "; ";
 
@@ -799,59 +860,90 @@ goradd = {
         }
 
         document.cookie = cookie;
-    }
-};
+    },
 
-///////////////////////////////
-// Timers-related functionality
-///////////////////////////////
+    /**
+     * Named timer support. These allow you to create timers without having to keep a copy of the timer around.
+     */
 
-goradd._objTimers = {};
-
-goradd.clearTimeout = function(strTimerId) {
-    if (goradd._objTimers[strTimerId]) {
-        clearTimeout(goradd._objTimers[strTimerId]);
-        goradd._objTimers[strTimerId] = null;
-    }
-};
-
-goradd.setTimeout = function(strTimerId, action, intDelay) {
-    goradd.clearTimeout(strTimerId);
-    goradd._objTimers[strTimerId] = setTimeout(action, intDelay);
-};
-
-goradd.startTimer = function(strControlId, intDeltaTime, blnPeriodic) {
-    var strTimerId = strControlId + '_ct';
-    goradd.stopTimer(strControlId, blnPeriodic);
-    if (blnPeriodic) {
-        goradd._objTimers[strTimerId] = setInterval(function() {
-            $('#' + strControlId).trigger('timerexpiredevent')
-        }, intDeltaTime);
-    } else {
-        goradd._objTimers[strTimerId] = setTimeout(function() {
-            $('#' + strControlId).trigger('timerexpiredevent')
-        }, intDeltaTime);
-    }
-};
-
-goradd.stopTimer = function(strControlId, blnPeriodic) {
-    var strTimerId = strControlId + '_ct';
-    if (goradd._objTimers[strTimerId]) {
-        if (blnPeriodic) {
-            clearInterval(goradd._objTimers[strTimerId]);
-        } else {
+    /**
+     * Current timer store, by id
+     */
+    _objTimers: {},
+    /**
+     * Clears the named timer.
+     * @param {string} strTimerId
+     */
+    clearTimer: function(strTimerId) {
+        if (goradd._objTimers[strTimerId]) {
+            goradd.log("clearTimer", strTimerId);
             clearTimeout(goradd._objTimers[strTimerId]);
+            goradd._objTimers[strTimerId] = null;
         }
-        goradd._objTimers[strTimerId] = null;
+    },
+    /**
+     * Sets the named timer, given an action and a delay.
+     * @param strTimerId
+     * @param action
+     * @param intDelay
+     */
+    setTimer: function(strTimerId, action, intDelay) {
+        goradd.log("setTimer", strTimerId, intDelay);
+        goradd._objTimers[strTimerId] = setTimeout(
+            function() {
+                goradd.clearTimer(strTimerId);
+                action();
+            }, intDelay);
+    },
+    hasTimer: function(strTimerId) {
+        return !!goradd._objTimers[strTimerId];
+    },
+    /**
+     * Creates a timer that performs can perform periodic events, and that fires the timerexperedevent event when it is done.
+     * @param strControlId
+     * @param intDeltaTime
+     * @param blnPeriodic
+     */
+    startTimer: function(strControlId, intDeltaTime, blnPeriodic) {
+        var strTimerId = strControlId + '_ct';
+        goradd.stopTimer(strControlId, blnPeriodic);
+        if (blnPeriodic) {
+            goradd._objTimers[strTimerId] = setInterval(function() {
+                $('#' + strControlId).trigger('timerexpiredevent')
+            }, intDeltaTime);
+        } else {
+            goradd._objTimers[strTimerId] = setTimeout(function() {
+                $('#' + strControlId).trigger('timerexpiredevent')
+            }, intDeltaTime);
+        }
+    },
+    /**
+     * Stops the named timer, allowing you to specify whether its a periodic timer or not.
+     * @param strControlId
+     * @param blnPeriodic
+     */
+    stopTimer: function(strControlId, blnPeriodic) {
+        var strTimerId = strControlId + '_ct';
+        if (goradd._objTimers[strTimerId]) {
+            if (blnPeriodic) {
+                clearInterval(goradd._objTimers[strTimerId]);
+            } else {
+                clearTimeout(goradd._objTimers[strTimerId]);
+            }
+            goradd._objTimers[strTimerId] = null;
+        }
     }
+
 };
+
 
 //////////////////////////////
 // Action queue support
 //////////////////////////////
 /* Javascript/jquery has a problem when two events happen simultaneously. In particular, a click event might also
-result in a change event, and under certain circumstances this could cause the click event to be dropped. We therefore delay
-the processing of all events to try to queue them up before processing. This seems to happen only the first time a override is visited.
+result in a change event, and under certain circumstances this could cause the click event to be dropped. In particular,
+if the change event moves the focus away from the button, the click event will not record. We therefore delay
+the processing of all events to try to queue them up before processing.
 Its very strange. Something to debug at a future date.
 */
 
@@ -867,12 +959,16 @@ goradd.queueAction = function(params) {
         });
         params.d = delay + 1;
     }
+    goradd.log("queueAction: " + params.name);
     goradd.actionQueue.push(params);
-    goradd.setTimeout("goraddActions", goradd.processActions, 150);    // will reset timer as actions come in
+    if (!goradd.hasTimer("goradd.actions")) {
+        goradd.setTimer("goradd.actions", goradd.processActions, 10);
+    }
 };
 goradd.processActions = function() {
     while (goradd.actionQueue.length > 0) {
-        params = goradd.actionQueue.pop();
+        var params = goradd.actionQueue.shift();
+        goradd.log("processAction: " + params.name + " delay: " + params.d);
         if (params.d > 0) {
             setTimeout(params.f, params.d);
         } else {
@@ -886,7 +982,7 @@ goradd.processActions = function() {
 // Watcher support
 ///////////////////////////////
 goradd._prevUpdateTime = 0;
-goradd.minUpdateInterval = 1000; // milliseconds to limit broadcast updates. Feel free to change this.
+goradd.minUpdateInterval = 500; // milliseconds to limit broadcast updates. Feel free to change this.
 goradd.broadcastChange = function () {
     if ('localStorage' in window && window.localStorage !== null) {
         var newTime = new Date().getTime();
@@ -902,14 +998,14 @@ goradd.updateForm = function() {
     // the default will update no faster than once per second.
     if (newTime - goradd._prevUpdateTime > goradd.minUpdateInterval) {
         //refresh immediately
-        console.log("Immediate update");
+        goradd.log("Immediate update");
         goradd._prevUpdateTime = new Date().getTime();
         goradd.postAjax ({});
-        goradd.clearTimeout ('goradd.update');
+        goradd.clearTimer('goradd.update');
     } else if (!goradd._objTimers['goradd.update']) {
         // delay to let multiple fast actions only trigger periodic refreshes
-        console.log("Delayed update");
-        goradd.setTimeout ('goradd.update', goradd.updateForm, goradd.minUpdateInterval);
+        goradd.log("Delayed update");
+        goradd.setTimer ('goradd.update', goradd.updateForm, goradd.minUpdateInterval);
     }
 };
 
@@ -1003,7 +1099,7 @@ goradd.registerControls = function() {
 
 goradd.redirect = function(newLocation) {
     location = newLocation
-}
+};
 
 })( jQuery );
 

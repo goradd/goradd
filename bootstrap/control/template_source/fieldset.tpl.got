@@ -37,28 +37,43 @@ func FieldsetTmpl(ctx context.Context, wrapper *FieldsetWrapperType, ctrl page.C
 {{= grhtml.Indent(h) }}
 
 {{g
+    msg := ctrl.ValidationMessage()
+    var class string
+
     switch ctrl.ValidationState() {
-    case page.Valid:
-        msg := ctrl.ValidationMessage()
+    case page.ValidationWaiting: fallthrough // we need to correctly style
+    case page.ValidationValid:
         if msg == "" {
-            msg = "&nbsp";
+            msg = "&nbsp;";
         } else {
             msg = html.EscapeString(msg)
         }
-      {{ <div id="{{= ctrl.ID() }}_err" class="{{if wrapper.useTooltips}}valid-tooltip{{else}}valid-feedback{{if}}">{{= msg }}</div> }}
-    case page.Invalid:
-         msg := ctrl.ValidationMessage()
+        if wrapper.useTooltips {
+            class = "valid-tooltip"
+        } else {
+            class = "valid-feedback"
+        }
+
+    case page.ValidationInvalid:
          if msg == "" {
-             msg = "&nbsp";
+             msg = "&nbsp;";
          } else {
             msg = html.EscapeString(msg)
          }
-     {{ <div id="{{= ctrl.ID() }}_err" class="{{if wrapper.useTooltips}}invalid-tooltip{{else}}invalid-feedback{{if}}">{{= msg }}</div> }}
-    default:
-        // Either draw instructions, or draw an empty space so that if a validation error is shown, the layout will not shift
-        {{ <small id="{{= ctrl.ID() }}_inst" class="form-text text-muted" >{{if (!hasInstructions && !wrapper.useTooltips) }}&nbsp;{{else}}{{!= ctrl.Instructions() }}{{if}}</small> }}
+         if wrapper.useTooltips {
+             class = "invalid-tooltip"
+         } else {
+             class = "invalid-feedback"
+         }
+    }
+    if hasInstructions {
+        {{ <small id="{{= ctrl.ID() }}_inst" class="form-text" >{{!= ctrl.Instructions() }}</small> }}
+    }
+    if ctrl.ValidationState() != page.ValidationNever {
+        {{ <div id="{{= ctrl.ID() }}_err" class="{{= class }}">{{= msg }}</div> }}
     }
 }}
+
 {{if hasRow}}</div>{{if}}
 
 </fieldset>

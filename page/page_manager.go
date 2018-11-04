@@ -122,10 +122,8 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 	page, isNew := m.getPage(ctx)
 
 	defer m.cleanup(page)
-	log.FrameworkDebugf("Run: %s", GetContext(ctx))
-
 	page.renderStatus = PageIsRendering
-	log.Debugf("Page started rendering %s", page.stateId)
+	log.FrameworkDebugf("Page started rendering %s, %s", page.stateId, GetContext(ctx))
 
 	err := page.runPage(ctx, buf, isNew)
 
@@ -141,7 +139,7 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 
 func (m *PageManager) cleanup(p *Page) {
 	p.renderStatus = PageIsNotRendering
-	log.Debugf("Page stopped rendering %s", p.stateId)
+	log.FrameworkDebugf("Page stopped rendering %s", p.stateId)
 }
 
 func (m *PageManager) makeErrorResponse(ctx context.Context,

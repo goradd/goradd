@@ -47,7 +47,7 @@ func (a *Application) Init() {
 
 	grlog.Loggers[grlog.InfoLog] = log.New(os.Stdout, "Info: ", log.Ldate|log.Ltime)
 	grlog.Loggers[grlog.FrameworkDebugLog] = log.New(os.Stdout, "Framework: ", log.Ldate|log.Ltime|log.Lshortfile)
-	grlog.Loggers[grlog.DebugLog] = log.New(os.Stdout, "AppModeDebug: ", log.Ldate|log.Ltime|log.Lshortfile)
+	grlog.Loggers[grlog.DebugLog] = log.New(os.Stdout, "Debug: ", log.Ldate|log.Ltime|log.Lshortfile)
 	grlog.Loggers[grlog.WarningLog] = log.New(os.Stderr, "Warning: ", log.Ldate|log.Ltime|log.Llongfile)
 	grlog.Loggers[grlog.ErrorLog] = log.New(os.Stderr, "Error: ", log.Ldate|log.Ltime|log.Llongfile)
 

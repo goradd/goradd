@@ -69,77 +69,69 @@ func FieldsetTmpl(ctx context.Context, wrapper *FieldsetWrapperType, ctrl page.C
 	buf.WriteString(`
 
 `)
+	msg := ctrl.ValidationMessage()
+	var class string
+
 	switch ctrl.ValidationState() {
-	case page.Valid:
-		msg := ctrl.ValidationMessage()
+	case page.ValidationWaiting:
+		fallthrough // we need to correctly style
+	case page.ValidationValid:
 		if msg == "" {
-			msg = "&nbsp"
+			msg = "&nbsp;"
 		} else {
 			msg = html.EscapeString(msg)
 		}
-
-		buf.WriteString(`<div id="`)
-
-		buf.WriteString(ctrl.ID())
-
-		buf.WriteString(`_err" class="`)
 		if wrapper.useTooltips {
-			buf.WriteString(`valid-tooltip`)
+			class = "valid-tooltip"
 		} else {
-
-			buf.WriteString(`valid-feedback`)
+			class = "valid-feedback"
 		}
 
-		buf.WriteString(`">`)
-
-		buf.WriteString(msg)
-
-		buf.WriteString(`</div>`)
-
-	case page.Invalid:
-		msg := ctrl.ValidationMessage()
+	case page.ValidationInvalid:
 		if msg == "" {
-			msg = "&nbsp"
+			msg = "&nbsp;"
 		} else {
 			msg = html.EscapeString(msg)
 		}
-
-		buf.WriteString(`<div id="`)
-
-		buf.WriteString(ctrl.ID())
-
-		buf.WriteString(`_err" class="`)
 		if wrapper.useTooltips {
-			buf.WriteString(`invalid-tooltip`)
+			class = "invalid-tooltip"
 		} else {
-
-			buf.WriteString(`invalid-feedback`)
+			class = "invalid-feedback"
 		}
-
-		buf.WriteString(`">`)
-
-		buf.WriteString(msg)
-
-		buf.WriteString(`</div>`)
-
-	default:
-		// Either draw instructions, or draw an empty space so that if a validation error is shown, the layout will not shift
+	}
+	if hasInstructions {
 
 		buf.WriteString(`<small id="`)
 
 		buf.WriteString(ctrl.ID())
 
-		buf.WriteString(`_inst" class="form-text text-muted" >`)
-		if !hasInstructions && !wrapper.useTooltips {
-			buf.WriteString(`&nbsp;`)
-		} else {
+		buf.WriteString(`_inst" class="form-text" >`)
 
-			buf.WriteString(html.EscapeString(ctrl.Instructions()))
-		}
+		buf.WriteString(html.EscapeString(ctrl.Instructions()))
 
 		buf.WriteString(`</small>`)
 
 	}
+	if ctrl.ValidationState() != page.ValidationNever {
+
+		buf.WriteString(`<div id="`)
+
+		buf.WriteString(ctrl.ID())
+
+		buf.WriteString(`_err" class="`)
+
+		buf.WriteString(class)
+
+		buf.WriteString(`">`)
+
+		buf.WriteString(msg)
+
+		buf.WriteString(`</div>`)
+
+	}
+
+	buf.WriteString(`
+`)
 	if hasRow {
 		buf.WriteString(`</div>`)
 	}

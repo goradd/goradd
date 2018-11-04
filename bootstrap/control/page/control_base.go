@@ -28,9 +28,9 @@ func (c *BootstrapControl) DrawingAttributes() *html.Attributes {
 
 func (c *BootstrapControl) FormControlAddAttributes(attr *html.Attributes) {
 	switch c.ValidationState() {
-	case page2.Valid:
+	case page2.ValidationValid:
 		attr.AddClass("is-valid")
-	case page2.Invalid:
+	case page2.ValidationInvalid:
 		attr.AddClass("is-invalid")
 	}
 	attr.AddClass("form-control")

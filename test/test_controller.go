@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/javascript"
+	"github.com/spekary/goradd/log"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/control"
@@ -36,10 +37,10 @@ type stepItemType struct {
 type  TestController struct {
 	control.Panel
 	formstate         string
-	currentStepNumber int
 	stepTimeout       time.Duration	// number of seconds before a step should timeout
 	stepChannel chan stepItemType	// probably will leak memory TODO: Close this before it is removed from page cache
 	latestJsValue string // A valure returned for the jsValue function
+	stepDescriptions []string
 }
 
 func NewTestController(parent page.ControlI, id string) *TestController {
@@ -47,7 +48,6 @@ func NewTestController(parent page.ControlI, id string) *TestController {
 	p.Init(parent, id)
 	p.Tag = "pre"
 	p.stepChannel = make(chan stepItemType, 1)
-	p.currentStepNumber = 1
 	return p
 }
 
@@ -67,14 +67,14 @@ func (p *TestController) PutCustomScript(ctx context.Context, response *page.Res
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }
 
-func (p *TestController) LogLine(line string) {
+func (p *TestController) logLine(line string) {
 	script := fmt.Sprintf (`$j("#%s").testController("logLine", %q);`, p.ID(), line)
 	p.ParentForm().Response().ExecuteJavaScript(script, page.PriorityStandard)
-	p.Page().PushRedraw()
 }
 
-func (p *TestController) loadUrl(url string) {
-	p.ExecuteJqueryFunction("testController", "loadUrl", p.currentStepNumber, url)
+func (p *TestController) loadUrl(url string, description string) {
+	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.ExecuteJqueryFunction("testController", "loadUrl", len(p.stepDescriptions), url)
 	p.waitStep(); // load function will wait until window is loaded before firing
 }
 
@@ -103,39 +103,58 @@ func (p *TestController) UpdateFormValues(ctx *page.Context) {
 }
 
 func (p *TestController) waitStep() {
+	log.FrameworkDebugf("Waiting for step %d: %s", len(p.stepDescriptions), p.stepDescriptions[len(p.stepDescriptions)-1])
 	p.Page().PushRedraw()
 	for {
 		select {
 		case stepItem := <-p.stepChannel:
-			if stepItem.Step != p.currentStepNumber {
+			if stepItem.Step < len(p.stepDescriptions) {
+				log.FrameworkDebugf("Received old step: %d, wanted %d", stepItem.Step, len(p.stepDescriptions))
 				continue // this is a return from a previous step that timed out. We want to ignore it.
 			}
 			if stepItem.Err != "" {
 				panic (stepItem.Err)
 			}
-		//case <-time.After(p.stepTimeout * time.Second):
-		//	panic (fmt.Errorf("test step timed out: %d", p.currentStepNumber ))
+	//	case <-time.After(p.stepTimeout * time.Second):
+	//		panic (fmt.Errorf("test step timed out: %s", p.stepDescriptions[len(p.stepDescriptions) - 1] ))
 		}
+		log.FrameworkDebugf("Completed step %d: %s", len(p.stepDescriptions), p.stepDescriptions[len(p.stepDescriptions)-1])
 		break // we successfully returned from the step
 	}
-	p.currentStepNumber++
 }
 
-func (p *TestController) changeVal(id string, val interface{}) {
-	p.ExecuteJqueryFunction("testController", "changeVal", p.currentStepNumber, id, fmt.Sprintf("%v", val))
+func (p *TestController) changeVal(id string, val interface{}, description string) {
+	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.ExecuteJqueryFunction("testController", "changeVal", len(p.stepDescriptions), id, fmt.Sprintf("%v", val))
 	p.waitStep()
 }
 
-func (p *TestController) click(id string) {
-	p.ExecuteJqueryFunction("testController", "click", p.currentStepNumber, id)
+func (p *TestController) click(id string, description string) {
+	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.ExecuteJqueryFunction("testController", "click", len(p.stepDescriptions), id)
 	p.waitStep()
 }
 
-func (p *TestController) jqValue(id string, funcName string, params []string) string {
-	p.ExecuteJqueryFunction("testController", "jqValue", p.currentStepNumber, id, funcName, params)
+func (p *TestController) jqValue(id string, funcName string, params []string, description string) string {
+	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.ExecuteJqueryFunction("testController", "jqValue", len(p.stepDescriptions), id, funcName, params)
 	p.waitStep()
 	return p.latestJsValue
 }
+
+func (p *TestController) typeChars(id string, chars string, description string) {
+	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.ExecuteJqueryFunction("testController", "typeChars", len(p.stepDescriptions), id, chars)
+	p.waitStep()
+}
+
+func (p *TestController) focus(id string, description string) {
+	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.ExecuteJqueryFunction("testController", "focus", len(p.stepDescriptions), id)
+	p.waitStep()
+}
+
+
 
 
 

@@ -8,6 +8,7 @@ import (
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/action"
 	"github.com/spekary/goradd/page/control/data"
+	"github.com/spekary/goradd/page/event"
 	"github.com/spekary/goradd/util/math"
 	"goradd-project/config"
 	localPage "goradd-project/override/page"
@@ -136,7 +137,7 @@ func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pa
 	paginatedControl.AddDataPager(self.(DataPagerI))
 	d.paginatedControl = paginatedControl
 	d.Proxy = NewProxy(d)
-	d.Proxy.OnClick(action.Ajax(d.ID(), PageClick))
+	d.Proxy.On(event.Click(), action.Ajax(d.ID(), PageClick))
 	d.SetAttribute("role", "tablist")
 	d.paginatedControl.SetPageNum(1)
 }

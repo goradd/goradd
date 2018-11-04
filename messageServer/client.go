@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/websocket"
+	log2 "github.com/spekary/goradd/log"
 	"log"
 	"net/http"
 	"time"
@@ -120,7 +121,9 @@ func (c *Client) writePump() {
 				panic(err)
 			} else {
 				w.Write(buf)
+				log2.FrameworkDebugf("Writepump %s", string(buf))
 			}
+
 
 			if err := w.Close(); err != nil {
 				return

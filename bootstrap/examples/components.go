@@ -21,6 +21,7 @@ type ComponentsForm struct {
 func NewComponentsForm(ctx context.Context) page.FormI {
 	f := &ComponentsForm{}
 	f.Init(ctx, f, COMPONENTS_PATH, COMPONENTS_ID)
+	f.CreateControls(ctx)
 	return f
 }
 

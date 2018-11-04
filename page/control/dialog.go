@@ -159,9 +159,9 @@ func (d *Dialog) AddButton(
 		}
 
 		if options.ConfirmationMessage == "" {
-			btn.OnClick(action.Trigger(d.ID(), DialogButtonEvent, id))
+			btn.On(event.Click(), action.Trigger(d.ID(), DialogButtonEvent, id))
 		} else {
-			btn.OnClick(
+			btn.On(event.Click(),
 				action.Confirm(options.ConfirmationMessage),
 				action.Trigger(d.ID(), DialogButtonEvent, id),
 			)
@@ -208,7 +208,7 @@ func (d *Dialog) addCloseBox() {
 	d.closeBox.AddClass("gr-dialog-close")
 	d.closeBox.SetText(`<i class="fa fa-times"></i>`)
 	d.closeBox.SetEscapeText(false)
-	d.closeBox.OnClick(action.Ajax(d.ID(), DialogClose))
+	d.closeBox.On(event.Click(), action.Ajax(d.ID(), DialogClose))
 }
 
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
@@ -216,7 +216,7 @@ func (d *Dialog) addCloseBox() {
 func (d *Dialog) AddCloseButton(label string, id string) {
 	btn := NewButton(d.buttonBar, id)
 	btn.SetLabel(label)
-	btn.OnClick(action.Trigger(d.ID(), event.DialogClosedEvent, nil))
+	btn.On(event.Click(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 	// Note: We will also do the public doAction with a DialogCloseEvent
 }
 
