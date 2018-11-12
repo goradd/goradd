@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -889,4 +890,8 @@ func (m ValueMap) Copy() interface{} {
 		vm[k] = v
 	}
 	return vm
+}
+
+func init() {
+	gob.Register(&ValueMap{})
 }

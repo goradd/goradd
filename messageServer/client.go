@@ -51,7 +51,7 @@ type Client struct {
 
 	channel string
 
-	formstate string // authenticator
+	pagestate string // authenticator
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -145,9 +145,9 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	channel := r.FormValue("ch")
-	formstate := r.FormValue("id")
+	pagestate := r.FormValue("id")
 
-	client := &Client{hub: hub, conn: conn, send: make(chan map[string]interface{}, 256), channel: channel, formstate:formstate}
+	client := &Client{hub: hub, conn: conn, send: make(chan map[string]interface{}, 256), channel: channel, pagestate:pagestate}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

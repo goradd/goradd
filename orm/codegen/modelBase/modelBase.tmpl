@@ -16,8 +16,9 @@ import (
 	"fmt"
 	. "github.com/spekary/goradd/orm/op"
 	//"./node"
-	"github.com/spekary/goradd/datetime"
-	"github.com/spekary/goradd/util/types"
+	_ "github.com/spekary/goradd/datetime"
+	"bytes"
+	"encoding/gob"
 )
 
 }}
@@ -47,5 +48,7 @@ import (
 {{: delete.tmpl }}
 
 {{: get.tmpl }}
+
+{{: marshal.tmpl }}
 
 {{: include.tmpl }}

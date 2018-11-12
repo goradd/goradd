@@ -36,7 +36,7 @@ type stepItemType struct {
 
 type  TestController struct {
 	control.Panel
-	formstate         string
+	pagestate         string
 	stepTimeout       time.Duration	// number of seconds before a step should timeout
 	stepChannel chan stepItemType	// probably will leak memory TODO: Close this before it is removed from page cache
 	latestJsValue string // A valure returned for the jsValue function
@@ -93,8 +93,8 @@ func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
 func (p *TestController) UpdateFormValues(ctx *page.Context) {
 	id := p.ID()
 
-	if v := ctx.CustomControlValue(id, "formstate"); v != nil {
-		p.formstate = v.(string)
+	if v := ctx.CustomControlValue(id, "pagestate"); v != nil {
+		p.pagestate = v.(string)
 	}
 	if v := ctx.CustomControlValue(id, "jsvalue"); v != nil {
 		p.latestJsValue = v.(string)

@@ -4,7 +4,7 @@ websocket implementation. The platform is similar to other messaging platforms l
 in that it is channel based.
 
 The current implementation is limited to communication between goradd forms and objects on
-goradd forms, and the server. It uses the formstate as an authentication token to ensure
+goradd forms, and the server. It uses the pagestate as an authentication token to ensure
 that traffic is coming from a valid user of the system.
  */
 

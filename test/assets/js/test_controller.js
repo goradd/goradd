@@ -18,8 +18,8 @@ jQuery.widget( "goradd.testController",  {
     },
     _receiveWindowMessage: function(event) {
         goradd.log("Message received", event.data);
-        if (event.data.formstate) {
-            this._formLoadEvent(event.data.formstate);
+        if (event.data.pagestate) {
+            this._formLoadEvent(event.data.pagestate);
         } else if (event.data.ajaxComplete) {
             this._fireStepEvent(event.data.ajaxComplete);
         }
@@ -52,8 +52,8 @@ jQuery.widget( "goradd.testController",  {
         });
 
     },
-    _formLoadEvent: function(formstate) {
-        goradd.setControlValue(this.element.attr("id"), "formstate", formstate);
+    _formLoadEvent: function(pagestate) {
+        goradd.setControlValue(this.element.attr("id"), "pagestate", pagestate);
         this._fireStepEvent(this._step);
     },
     _windowErrorEvent: function(event, step) {

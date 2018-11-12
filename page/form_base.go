@@ -106,15 +106,15 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	}
 
 	f.resetDrawingFlags()
-	formstate := f.saveState() // From This point on we should not change any controls, just draw
+	pagestate := f.saveState() // From This point on we should not change any controls, just draw
 
 	// Render hidden controls
 
 	// Place holder for postBack and postAjax functions to place their data
 	buf.WriteString(`<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n")
 
-	// Serialize and write out the formstate
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlVarFormstate+`" id="`+htmlVarFormstate+`" value="%s" />`, formstate))
+	// Serialize and write out the pagestate
+	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlVarFormstate+`" id="`+htmlVarFormstate+`" value="%s" />`, pagestate))
 
 	f.drawBodyScriptFiles(ctx, buf) // Fixing a bug?
 
@@ -166,7 +166,7 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 	if pagestate != grctx.pageStateId {
 		panic("page state changed")
 	}
-	//f.response.SetControlValue(htmlVarFormstate, formstate)
+	//f.response.SetControlValue(htmlVarFormstate, pagestate)
 	// TODO: render imported style sheets and java scripts
 	f.resetDrawingFlags()
 	buf2, err = json.Marshal(&f.response)

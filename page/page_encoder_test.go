@@ -21,13 +21,13 @@ func TestEmptyFormEncoding(t *testing.T) {
 	pe := page.GobPageEncoder{}
 	e := pe.NewEncoder(&b)
 
-	assert.NoError(t, e.Encode(form.Page()))
+	assert.NoError(t, e.Serialize(form.Page()))
 
 	d := pe.NewDecoder(bytes.NewBuffer(b.Bytes()))
 
 	var p2 page.Page
 
-	assert.NoError(t, d.Decode(&p2))
+	assert.NoError(t, d.Deserialize(&p2))
 
 	assert.Equal (t, "TestForm", p2.Form().ID(), "Form id not restored")
 }*/

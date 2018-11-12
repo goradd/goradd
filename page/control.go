@@ -1502,7 +1502,7 @@ func (c *Control) SetWillBeValidated(v bool) {
 }
 
 
-// GobEncode here is implemented to intercept the GobEncoder to only encode an empty structure. We use this as part
+// GobEncode here is implemented to intercept the GobSerializer to only encode an empty structure. We use this as part
 // of our overall serialization stratgey for forms. Controls still need to be registered with gob.
 func (c *Control) GobEncode() (data []byte, err error) {
 	return

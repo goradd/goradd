@@ -3,7 +3,7 @@
 //
 // Defining Your Own Actions
 // You can define your own actions by creating a class that implements the ActionI interface, AND that is
-// encodable by gob.Encode, meaning it either implements the gob.Encoder interface or exports its structure, AND
+// encodable by gob.Serialize, meaning it either implements the gob.Encoder interface or exports its structure, AND
 // registers itself with gob.Register so that the gob.Decoder knows how to deserialize it into an interface.
 // We have chosen to export the structures that represent an action here, but we prefix the name of the structures with a
 // greek capital Omega (Ω). We do this to call out that these exported structures and variables are not for general use.

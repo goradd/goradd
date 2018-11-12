@@ -10,7 +10,7 @@ This file attaches some code used by the test harness to drive browser-based tes
     goradd.initFormTest = function() {
         if (window.opener) { //
             // This next line is a potential security hole, so its important that this code NOT be loaded by the release version.
-            window.opener.postMessage({formstate: $('#Goradd__FormState').val()}, "*");
+            window.opener.postMessage({pagestate: $('#Goradd__FormState').val()}, "*");
             goradd.getForm().addEventListener ('teststep', goradd.testStep);
         }
     };

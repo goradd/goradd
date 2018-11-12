@@ -10,7 +10,7 @@ the server is just telling the client that its time to pull updates. This simpli
 and makes it easier to implement this using a messaging server instead as the application expands.
 
 To implement this differently, you would need to substitute this js with a system that subscribes
-to a channel using the formstate as the channel id. On the server end, you would send to the channel
+to a channel using the pagestate as the channel id. On the server end, you would send to the channel
 the update message. Just replace the initMessageClient function with your own.
 
 You can piggyback on this and add your own websocket messages by simply adding event listeners

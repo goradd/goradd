@@ -19,7 +19,7 @@ type messageType struct {
 }
 
 type WebSocketHub struct {
-	// Registered clients, first by channel, and then by formstate.
+	// Registered clients, first by channel, and then by pagestate.
 	// This means a form or objects on a form can subscribe to multiple channels, but more
 	// then one object on the same form cannot subscribe to the same channel.
 	clients map[string]map[string]*Client
@@ -50,24 +50,24 @@ func (h *WebSocketHub) run() {
 	for {
 		select {
 		case client := <-h.register:
-			log.FrameworkDebugf("Client registering for channel %s formstate %s", client.channel, client.formstate)
+			log.FrameworkDebugf("Client registering for channel %s pagestate %s", client.channel, client.pagestate)
 			var clientsByFormstate map[string]*Client
 			var ok bool
 			if clientsByFormstate,ok = h.clients[client.channel]; !ok {
 				clientsByFormstate = make(map[string]*Client)
 				h.clients[client.channel] = clientsByFormstate
 			}
-			if _,ok := clientsByFormstate[client.formstate]; !ok {
-				clientsByFormstate[client.formstate] = client
+			if _,ok := clientsByFormstate[client.pagestate]; !ok {
+				clientsByFormstate[client.pagestate] = client
 			} else {
 				// The user is registering again for a particular channel. Maybe a page refresh? Close the previous channel to prevent a memory leak
-				h.unregisterClient(client.channel, client.formstate)
-				clientsByFormstate[client.formstate] = client
+				h.unregisterClient(client.channel, client.pagestate)
+				clientsByFormstate[client.pagestate] = client
 			}
 
 		case client := <-h.unregister:
-			log.FrameworkDebugf("Client UNregistering for channel %s formstate %s", client.channel, client.formstate)
-			h.unregisterClient(client.channel, client.formstate)
+			log.FrameworkDebugf("Client UNregistering for channel %s pagestate %s", client.channel, client.pagestate)
+			h.unregisterClient(client.channel, client.pagestate)
 
 		case msg := <-h.send:
 			if clients, ok := h.clients[msg.channel]; ok {
@@ -95,11 +95,11 @@ func (h *WebSocketHub) run() {
 	}
 }
 
-func (h *WebSocketHub) unregisterClient(channel string, formstate string) {
+func (h *WebSocketHub) unregisterClient(channel string, pagestate string) {
 	if clientsByFormstate, ok := h.clients[channel]; ok {
-		if client, ok2 := clientsByFormstate[formstate]; ok2 {
+		if client, ok2 := clientsByFormstate[pagestate]; ok2 {
 			close (client.send)
-			delete(clientsByFormstate, formstate)
+			delete(clientsByFormstate, pagestate)
 			if len(clientsByFormstate) == 0 {
 				delete(h.clients, channel)
 			}

@@ -78,7 +78,7 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 
 	if page == nil {
 		if gCtx.requestMode == Ajax {
-			// TODO: If this happens, we need to reload the whole page, because we lost the formstate completely
+			// TODO: If this happens, we need to reload the whole page, because we lost the pagestate completely
 			log.FrameworkDebug("Ajax lost the page state") // generally this should only happen if the page state drops out of the cash, which might happen after a long time
 		}
 		// page was not found, so make a new one

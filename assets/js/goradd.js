@@ -520,7 +520,7 @@ goradd = {
             }
         });
 
-        // TODO: Add a detector of the back button. This detector should ping the server to make sure the formstate exists on the server. If not,
+        // TODO: Add a detector of the back button. This detector should ping the server to make sure the pagestate exists on the server. If not,
         // it should reload the form.
     },
     /**

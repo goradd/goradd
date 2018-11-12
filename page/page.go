@@ -32,7 +32,7 @@ type DrawI interface {
 }
 
 type Page struct {
-	stateId      string // Id in cache of the formstate. Needs to be output by form.
+	stateId      string // Id in cache of the pagestate. Needs to be output by form.
 	path         string // The path to the page. FormBase needs to know this so it can make the action tag
 	renderStatus PageRenderStatus
 	idPrefix     string // For creating unique ids for the app
@@ -270,7 +270,7 @@ func (p *Page) SetLanguage(l string) {
 	p.projectTranslator.Language = l
 }
 
-// GobEncode here is implemented to intercept the GobEncoder to only encode an empty structure. We use this as part
+// GobEncode here is implemented to intercept the GobSerializer to only encode an empty structure. We use this as part
 // of our overall serialization stratgey for forms. Controls still need to be registered with gob.
 func (p *Page) GobEncode() (data []byte, err error) {
 	return
@@ -289,7 +289,7 @@ func (p *Page) UnmarshalJSON(data []byte) (err error) {
 }
 
 type pageEncoded struct {
-	StateId      string // Id in cache of the formstate. Needs to be output by form.
+	StateId      string // Id in cache of the pagestate. Needs to be output by form.
 	Path         string // The path to the page. FormBase needs to know this so it can make the action tag
 	IdPrefix     string // For creating unique ids for the app
 	IdCounter       int
@@ -370,7 +370,7 @@ func (p *Page) Decode(d Decoder) (err error) {
 	}
 	p.form = ci.(FormI)
 
-	// Decode the controls that were not part of the form structure, like dialogs
+	// Deserialize the controls that were not part of the form structure, like dialogs
 	var count int
 	if err = d.Decode(&count); err != nil {
 		return

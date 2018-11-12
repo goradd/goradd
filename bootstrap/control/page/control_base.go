@@ -43,7 +43,7 @@ func (c *BootstrapControl) Serialize(e page2.Encoder) (err error) {
 		return
 	}
 
-	err = e.Encode(c.IsFormControl)
+	err = e.Serialize(c.IsFormControl)
 	return
 }
 
@@ -52,7 +52,7 @@ func (c *BootstrapControl) Deserialize(d page2.Decoder, p *page2.Page) (err erro
 		return
 	}
 
-	err = d.Decode(&c.IsFormControl)
+	err = d.Deserialize(&c.IsFormControl)
 	return
 }
 */

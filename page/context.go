@@ -219,7 +219,7 @@ func (ctx *Context) FillApp(cliArgs []string) {
 				ctx.actionValues = params.Values
 
 				if ctx.pageStateId, ok = ctx.FormValue("Goradd__FormState"); !ok {
-					ctx.err = fmt.Errorf("No formstate found in response")
+					ctx.err = fmt.Errorf("No pagestate found in response")
 					return
 				}
 			} else {

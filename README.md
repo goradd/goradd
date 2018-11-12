@@ -48,10 +48,10 @@ scalability have not been built and are not scheduled for version 1. Some of tho
     They would not be difficult to do, but they will need to rely on a separate data structure definition. The
     plan is that a SQL database would be able to generate a schema that would be used by the NoSQL drivers to
     continue to maintain the data.
-    2. Goradd maintains state of each of each user of the website in internal memory we call the *formstate*.
+    2. Goradd maintains state of each of each user of the website in internal memory we call the *pagestate*.
     Since its in memory, each user is currently bound to one server. Go is incredibly fast, so one server should be
     able to manage thousands of users with a reasonable amount of RAM, but to grow beyone this, some work would
-    need to be done on serializing the formstate into an off-site database. Doable, but effort not currently planned.
+    need to be done on serializing the pagestate into an off-site database. Doable, but effort not currently planned.
     3. Live-updates. Live updates in a multi-user environment can be particularly difficult at the data model
     level. However, browser technologies also make them difficult at the client too. The browser world is in rapid flux
     around this topic, with different browsers supporting a variety of technologies 

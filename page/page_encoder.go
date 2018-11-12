@@ -38,49 +38,49 @@ type Decoder interface {
 	DecodeControl(p *Page) (ControlI,error)
 }
 
-// Encodable defines the interface that allows an object to be encodable using a pre-set encoder. This saves time
+// Serializable defines the interface that allows an object to be encodable using a pre-set encoder. This saves time
 // on memory allocations/deallocations, which might be extensive.
-// Objects should also implement the GobEncode and GobDecode functions, but return nil to those. This lets us use the
-// GobEncoder to encode an empty object that we can then fill later.
-type Encodable interface {
-	Encode(e Encoder) error
-	Decode(d Decoder) error
+// Controls are Serializable by default. Other objects that contain controls, or that are not gob.Encoders should implement
+// this as well if they are part of the pagestate.
+type Serializable interface {
+	Serialize(e Encoder) error
+	Deserialize(d Decoder) error
 }
 
 type GobPageEncoder struct {
 }
 
-type GobEncoder struct {
+type GobSerializer struct {
 	*gob.Encoder
 	//*json.Encoder
 }
 
-type GobDecoder struct {
+type GobDeserializer struct {
 	*gob.Decoder
 	//*json.Decoder
 }
 
 func (e GobPageEncoder) NewEncoder(b *bytes.Buffer) Encoder {
-	return &GobEncoder{gob.NewEncoder(b)}
-	//return &GobEncoder{json.NewEncoder(b)}
+	return &GobSerializer{gob.NewEncoder(b)}
 }
 
 func (e GobPageEncoder) NewDecoder(b *bytes.Buffer) Decoder {
-	return &GobDecoder{gob.NewDecoder(b)}
-	//return &GobDecoder{json.NewDecoder(b)}
+	return &GobDeserializer{gob.NewDecoder(b)}
 }
 
-func (e GobEncoder) Encode(v interface{}) (err error) {
+
+// Serialize sends
+func (e GobSerializer) Encode(v interface{}) (err error) {
 	switch v2 := v.(type) {
 	case ControlI:
 		panic("call EncodeControl instead")
 	case *Page:
 		return v2.Encode(e)
-	case Encodable:
+	case Serializable:
 		if err = e.Encoder.Encode(&v2); err !=nil { // essentially encodes an empty object
 			return
 		}
-		return v2.Encode(e)
+		return v2.Serialize(e)
 	default:
 		return e.Encoder.Encode(v2) // use the standard gob encoder
 	}
@@ -95,7 +95,7 @@ const (
 	ControlIsInPage
 )
 
-func (e GobEncoder) EncodeControl(c ControlI) (err error) {
+func (e GobSerializer) EncodeControl(c ControlI) (err error) {
 	vi := reflect.ValueOf(c)
 
 	if vi.IsNil() {
@@ -117,8 +117,8 @@ func (e GobEncoder) EncodeControl(c ControlI) (err error) {
 		}
 
 		// This is a bit of a hack. We know that controls implement the GobEncode method, but return nil so that
-		// no content is actually encoded. We do this so that we can use the GobEncoder to essentially serialize
-		// a completely empty control so that we can fill it using our own Encode/Decode methods, rather than GobEncode
+		// no content is actually encoded. We do this so that we can use the GobSerializer to essentially serialize
+		// a completely empty control so that we can fill it using our own Serialize/Deserialize methods, rather than GobEncode
 		// which requires a memory allocation for each little object.
 		// However, this interferes with being able to encode collections of things that might have a control in them.
 		// There is no simple solution to this.
@@ -126,7 +126,7 @@ func (e GobEncoder) EncodeControl(c ControlI) (err error) {
 			return
 		}
 
-		// TODO: Make our own registry of serializers, so we are not interfering with GobEncode, and so that we can use
+
 		if !c.ΩisSerializer(c) {
 			v := vi.Elem()
 			// No direct Serialize method, so we will attempt to handle serialization ourselves by serializing the individual members
@@ -166,7 +166,7 @@ func (e GobEncoder) EncodeControl(c ControlI) (err error) {
 }
 
 
-func (e GobDecoder) Decode(v interface{}) (err error) {
+func (e GobDeserializer) Decode(v interface{}) (err error) {
 	switch v2 := v.(type) {
 	case *ControlI:
 		panic ("call DecodeControl instead")
@@ -177,11 +177,11 @@ func (e GobDecoder) Decode(v interface{}) (err error) {
 			return
 		}
 
-	case *Encodable:
+	case *Serializable:
 		if err = e.Decoder.Decode(v2); err != nil {
 			return
 		}
-		if err = (*v2).Decode(e); err != nil {
+		if err = (*v2).Deserialize(e); err != nil {
 			return
 		}
 
@@ -192,7 +192,7 @@ func (e GobDecoder) Decode(v interface{}) (err error) {
 }
 
 // DecodeControl decodes a control from the stream and returns it as a ControlI.
-func (e GobDecoder) DecodeControl(p *Page) (c ControlI, err error) {
+func (e GobDeserializer) DecodeControl(p *Page) (c ControlI, err error) {
 	var loc ControlLoc
 	if err = e.Decoder.Decode(&loc); err != nil {
 		return

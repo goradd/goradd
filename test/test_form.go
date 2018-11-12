@@ -135,8 +135,8 @@ func (f *TestForm) LoadUrl(url string) {
 
 // GetForm returns the currently loaded form.
 func (f *TestForm) GetForm() page.FormI {
-	if page.GetPageCache().Has(f.Controller.formstate) {
-		return page.GetPageCache().Get(f.Controller.formstate).Form()
+	if page.GetPageCache().Has(f.Controller.pagestate) {
+		return page.GetPageCache().Get(f.Controller.pagestate).Form()
 	}
 	return nil
 }
