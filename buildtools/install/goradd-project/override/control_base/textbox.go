@@ -1,6 +1,7 @@
 package control_base
 
 import (
+	"encoding/gob"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/spekary/goradd/page"
 	gr_control_base "github.com/spekary/goradd/page/control/control_base"
@@ -42,4 +43,5 @@ func (t *Textbox) Init(self gr_control_base.TextboxI, parent page.ControlI, id s
 
 func init() {
 	sanitizer.sanitizer2 = bluemonday.StrictPolicy()
+	gob.Register(&mySanitizer{})
 }

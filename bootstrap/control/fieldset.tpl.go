@@ -20,7 +20,7 @@ func FieldsetTmpl(ctx context.Context, wrapper *FieldsetWrapperType, ctrl page.C
 	var hasRow bool
 
 	ctrl.WrapperAttributes().AddClass("form-group")
-	if wrapper.useTooltips {
+	if wrapper.UseTooltips {
 		// bootstrap requires that parent of a tooltipped object has position relative
 		ctrl.WrapperAttributes().SetStyle("position", "relative")
 	}
@@ -81,7 +81,7 @@ func FieldsetTmpl(ctx context.Context, wrapper *FieldsetWrapperType, ctrl page.C
 		} else {
 			msg = html.EscapeString(msg)
 		}
-		if wrapper.useTooltips {
+		if wrapper.UseTooltips {
 			class = "valid-tooltip"
 		} else {
 			class = "valid-feedback"
@@ -93,7 +93,7 @@ func FieldsetTmpl(ctx context.Context, wrapper *FieldsetWrapperType, ctrl page.C
 		} else {
 			msg = html.EscapeString(msg)
 		}
-		if wrapper.useTooltips {
+		if wrapper.UseTooltips {
 			class = "invalid-tooltip"
 		} else {
 			class = "invalid-feedback"

@@ -24,21 +24,22 @@ const (
 	PageIsRendering
 )
 
-// Anything that draws into the draw buffer must implement This interface
+const EncodingVersion = 1	//
+
+// Anything that draws into the draw buffer must implement this interface
 type DrawI interface {
 	Draw(context.Context, *bytes.Buffer) error
 }
 
 type Page struct {
-	stateId      string // Id in cache of the override. Needs to be output by form.
-	path         string // The path to the override. FormBase needs to know this so it can make the action tag
+	stateId      string // Id in cache of the formstate. Needs to be output by form.
+	path         string // The path to the page. FormBase needs to know this so it can make the action tag
 	renderStatus PageRenderStatus
 	idPrefix     string // For creating unique ids for the app
 
 	controlRegistry *maps.SliceMap
 	form            FormI
 	idCounter       int
-	drawFunc        PageDrawFunc
 	title           string // override title to draw in head tag
 	htmlHeaderTags  []html.VoidTag
 	responseHeader  map[string]string // queues up anything to be sent in the response header
@@ -52,24 +53,13 @@ type Page struct {
 // Initialize the override base. Should be called by a override just after creating PageBase.
 func (p *Page) Init(ctx context.Context, path string) {
 	p.path = path
-	p.drawFunc = p.DrawFunction()
 	p.goraddTranslator = PageTranslator{Domain: GoraddDomain}
 	p.projectTranslator = PageTranslator{Domain: ProjectDomain}
 }
 
 // Restore is called immediately after the override has been unserialized, to restore data that did not get serialized.
 func (p *Page) Restore() {
-	p.drawFunc = p.DrawFunction()
 	p.form.Restore(p.form)
-}
-
-// DrawFunction returns the drawing function. This implementation returns the default. Override to change it.
-func (p *Page) DrawFunction() PageDrawFunc {
-	return PageTmpl
-}
-
-func (p *Page) SetDrawFunction(f PageDrawFunc) {
-	p.drawFunc = f
 }
 
 func (p *Page) setStateID(stateId string) {
@@ -115,9 +105,8 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 	return
 }
 
-// Returns the form for pages that only have one form
+// Returns the form for the page
 func (p *Page) Form() FormI {
-	//return p.forms.GetAt(0).(FormI)
 	return p.form
 }
 
@@ -125,23 +114,10 @@ func (p *Page) SetForm(f FormI) {
 	p.form = f
 }
 
-// For pages that have multiple forms, get the form by id
-/*
-func (p *Page) FormByID(id string) FormI {
-	if id == "" {
-		panic("Can't get a form by a blank id")
-	} else if !p.forms.Has(id) {
-		panic("Unknown form, id: " + id)
-	} else {
-		return p.forms.Get(id).(FormI)
-	}
-}
-*/
-
-// Draws from the override template. The default should be fine for most situations.
-// You can replace the template function with your own
+// Draw draws the page.
 func (p *Page) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	return p.drawFunc(ctx, p, buf)
+	f := p.form.PageDrawingFunction()
+	return f(ctx, p, buf)
 }
 
 func (p *Page) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
@@ -244,7 +220,7 @@ func (p *Page) addControl(control ControlI) {
 
 func (p *Page) changeControlID(oldId string, newId string) {
 	if p.GetControl(newId) != nil {
-		panic(fmt.Errorf("This control id is already defined on the override: %s", newId))
+		panic(fmt.Errorf("this control id is already defined on the override: %s", newId))
 	}
 	ctrl := p.GetControl(oldId)
 	p.controlRegistry.Delete(oldId)
@@ -294,68 +270,121 @@ func (p *Page) SetLanguage(l string) {
 	p.projectTranslator.Language = l
 }
 
-// MarshalBinary will binary encode the override for the purpose of saving the override in the formstate.
+// GobEncode here is implemented to intercept the GobEncoder to only encode an empty structure. We use this as part
+// of our overall serialization stratgey for forms. Controls still need to be registered with gob.
+func (p *Page) GobEncode() (data []byte, err error) {
+	return
+}
+
+func (p *Page) GobDecode(data []byte) (err error) {
+	return
+}
+
+func (p *Page) MarshalJSON() (data []byte, err error) {
+	return
+}
+
+func (p *Page) UnmarshalJSON(data []byte) (err error) {
+	return
+}
+
+type pageEncoded struct {
+	StateId      string // Id in cache of the formstate. Needs to be output by form.
+	Path         string // The path to the page. FormBase needs to know this so it can make the action tag
+	IdPrefix     string // For creating unique ids for the app
+	IdCounter       int
+	Title           string // override title to draw in head tag
+	HtmlHeaderTags  []html.VoidTag
+	BodyAttributes  string
+	GoraddTranslator  PageTranslator
+	ProjectTranslator PageTranslator
+
+	FormID string // to record the form
+
+}
+
 func (p *Page) Encode(e Encoder) (err error) {
-	if err = e.Encode(p.stateId); err != nil {
+	s := pageEncoded{
+		StateId:           p.stateId,
+		Path:              p.path,
+		IdPrefix:          p.idPrefix,
+		Title:             p.title,
+		HtmlHeaderTags:    p.htmlHeaderTags,
+		BodyAttributes:    p.BodyAttributes,
+		GoraddTranslator:  p.goraddTranslator,
+		ProjectTranslator: p.projectTranslator,
+		FormID:			   p.form.ID(),
+	}
+
+	if err = e.Encode(s); err != nil {
 		return
 	}
-	if err = e.Encode(p.path); err != nil {
+
+	if err = e.EncodeControl(p.form); err != nil {
 		return
 	}
-	if err = e.Encode(p.idPrefix); err != nil {
+
+	// Add the items from the control registry that were not serialized as part of serializing the form.
+	// This might happen if the item had no parent, like dialogs or other objects that are automatically drawn.
+	var count int
+	p.controlRegistry.Range(func(key string, value interface{}) bool {
+		if !value.(ControlI).control().encoded {
+			count++
+		}
+		return true
+	})
+	if err = e.Encode(count); err != nil {
 		return
 	}
-	if err = e.Encode(p.form); err != nil {
-		return
-	}
-	if err = e.Encode(p.idCounter); err != nil {
-		return
-	}
-	if err = e.Encode(p.title); err != nil {
-		return
-	}
-	if err = e.Encode(p.htmlHeaderTags); err != nil {
-		return
-	}
-	if err = e.Encode(p.goraddTranslator); err != nil {
-		return
-	}
-	if err = e.Encode(p.projectTranslator); err != nil {
-		return
-	}
+	p.controlRegistry.Range(func(key string, value interface{}) bool {
+		c := value.(ControlI)
+		if !c.control().encoded {
+			if err = e.EncodeControl(c); err != nil {
+				return false
+			}
+		}
+		return true
+	})
+
 	return
 }
 
 func (p *Page) Decode(d Decoder) (err error) {
-	if err = d.Decode(&p.stateId); err != nil {
+	s := pageEncoded{}
+	if err = d.Decode(&s); err != nil {
 		return
 	}
-	if err = d.Decode(&p.path); err != nil {
+	p.controlRegistry = maps.NewSliceMap()
+	p.stateId = s.StateId
+	p.path = s.Path
+	p.idPrefix = s.IdPrefix
+	p.title = s.Title
+	p.htmlHeaderTags = s.HtmlHeaderTags
+	p.BodyAttributes = s.BodyAttributes
+	p.goraddTranslator = s.GoraddTranslator
+	p.projectTranslator = s.ProjectTranslator
+
+	var ci ControlI
+	if ci,err = d.DecodeControl(p); err != nil {
 		return
 	}
-	if err = d.Decode(&p.idPrefix); err != nil {
+	p.form = ci.(FormI)
+
+	// Decode the controls that were not part of the form structure, like dialogs
+	var count int
+	if err = d.Decode(&count); err != nil {
 		return
 	}
-	if err = d.Decode(&p.form); err != nil {
-		return
+
+	for i:=0; i<count;i++ {
+		if ci,err = d.DecodeControl(p); err != nil { // the process of decoding will automatically add to the control registry, so no need to do anything with the result.
+			return
+		}
 	}
-	if err = d.Decode(&p.idCounter); err != nil {
-		return
-	}
-	if err = d.Decode(&p.title); err != nil {
-		return
-	}
-	if err = d.Decode(&p.htmlHeaderTags); err != nil {
-		return
-	}
-	if err = d.Decode(&p.goraddTranslator); err != nil {
-		return
-	}
-	if err = d.Decode(&p.projectTranslator); err != nil {
-		return
-	}
-	return
+
+	return err
 }
+
 
 func (p *Page) AddHtmlHeaderTag(t html.VoidTag) {
 	p.htmlHeaderTags = append(p.htmlHeaderTags, t)

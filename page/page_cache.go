@@ -106,7 +106,7 @@ func (o *SerializedPageCache) Set(pageId string, page *Page) {
 	}
 }
 
-// Get returns the override based on its override id.
+// Get returns the page based on its page id.
 // If not found, will return null.
 func (o *SerializedPageCache) Get(pageId string) *Page {
 	b := o.LruCache.Get(pageId).([]byte)
@@ -120,25 +120,23 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 	}
 
 	var formId string
-	var p *Page
+	var p Page
 	if err := dec.Decode(&formId); err != nil {
 		panic(err)
 	}
-	if newPageFunc, ok := pageManager.formIdRegistry[formId]; !ok {
-		panic("Page id not found")
-	} else {
-		p = newPageFunc(nil).Page()
+	if _, ok := pageManager.formIdRegistry[formId]; !ok {
+		panic("Form id not found")
 	}
 
-	if err := p.Decode(dec); err != nil {
+	if err := dec.Decode(&p); err != nil {
 		panic(err)
 	}
 
-	if p != nil && p.stateId != pageId {
+	if p.stateId != pageId {
 		panic("pageId does not match")
 	}
-	p.Restore()
-	return p
+	//p.Restore()
+	return &p
 }
 
 func (o *SerializedPageCache) Has(pageId string) bool {

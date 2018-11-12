@@ -3,6 +3,7 @@ package page
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"github.com/spekary/goradd/html"
 )
 
@@ -30,6 +31,7 @@ var wrapperRegistry = map[string]WrapperI{}
 
 func RegisterControlWrapper(name string, w WrapperI) {
 	wrapperRegistry[name] = w
+	gob.RegisterName(name, w)
 }
 
 // NewWrapper returns a newly allocated wrapper from the wrapper registry.
@@ -43,8 +45,8 @@ func NewWrapper(name string) WrapperI {
 }
 
 type ErrorWrapperType struct {
-	validationMessageChanged bool
-	validationStateChanged bool
+	ValidationMessageChanged bool
+	ValidationStateChanged   bool
 	//instructionsChanged bool // do this with a complete redraw. This won't change often.
 }
 
@@ -85,10 +87,10 @@ func (w *ErrorWrapperType) ModifyDrawingAttributes(c ControlI, a *html.Attribute
 
 	// has the side effect of resetting the validation state since we know the control is being completely redrawn
 	// instead of ajax drawn
-	w.validationMessageChanged = false
-	w.validationStateChanged = false
+	w.ValidationMessageChanged = false
+	w.ValidationStateChanged = false
 
-	if w.validationStateChanged {
+	if w.ValidationStateChanged {
 		switch c.control().validationState {
 		case ValidationWaiting:fallthrough
 		case ValidationValid:
@@ -103,19 +105,11 @@ func (w *ErrorWrapperType) ModifyDrawingAttributes(c ControlI, a *html.Attribute
 // whole control.
 
 func (w *ErrorWrapperType) SetValidationMessageChanged() {
-	w.validationMessageChanged = true
+	w.ValidationMessageChanged = true
 }
 
 func (w *ErrorWrapperType) SetValidationStateChanged() {
-	w.validationStateChanged = true
-}
-
-func (w *ErrorWrapperType) ValidationMessageChanged() bool {
-	return w.validationMessageChanged
-}
-
-func (w *ErrorWrapperType) ValidationStateChanged() bool {
-	return w.validationStateChanged
+	w.ValidationStateChanged = true
 }
 
 
@@ -123,12 +117,12 @@ func (w *ErrorWrapperType) ValidationStateChanged() bool {
 // This has to work closely with the wrapper template so that it would create the same effect as if that
 // entire control had been redrawn
 func (w *ErrorWrapperType) AjaxRender(ctx context.Context, response *Response, c ControlI) {
-	if w.validationMessageChanged {
+	if w.ValidationMessageChanged {
 		response.ExecuteControlCommand(c.ID() + "_err", "text", c.ValidationMessage())
-		w.validationMessageChanged = false
+		w.ValidationMessageChanged = false
 	}
 
-	if w.validationStateChanged {
+	if w.ValidationStateChanged {
 		switch c.control().validationState {
 		case ValidationWaiting:fallthrough
 		case ValidationValid:
@@ -136,14 +130,14 @@ func (w *ErrorWrapperType) AjaxRender(ctx context.Context, response *Response, c
 		case ValidationInvalid:
 			response.ExecuteControlCommand(c.ID() + "_ctl", "addClass", "error")
 		}
-		w.validationStateChanged = false
+		w.ValidationStateChanged = false
 	}
 }
 
 
 type LabelWrapperType struct {
 	ErrorWrapperType
-	labelAttributes *html.Attributes
+	ΩlabelAttr *html.Attributes
 }
 
 func NewLabelWrapper() *LabelWrapperType {
@@ -151,7 +145,7 @@ func NewLabelWrapper() *LabelWrapperType {
 }
 
 func (w *LabelWrapperType) Copy() *LabelWrapperType {
-	w.labelAttributes = w.labelAttributes.Copy()
+	w.ΩlabelAttr = w.ΩlabelAttr.Copy()
 	return w
 }
 
@@ -168,14 +162,14 @@ func (w *LabelWrapperType) Wrap(ctx context.Context, ctrl ControlI, html string,
 // LabelAttributes returns attributes that will apply to the label. Changes will be remembered, but will not
 // be applied unless you redraw the control.
 func (w *LabelWrapperType) LabelAttributes() *html.Attributes {
-	if w.labelAttributes == nil {
-		w.labelAttributes = html.NewAttributes()
+	if w.ΩlabelAttr == nil {
+		w.ΩlabelAttr = html.NewAttributes()
 	}
-	return w.labelAttributes
+	return w.ΩlabelAttr
 }
 
 func (w *LabelWrapperType) HasLabelAttributes() bool {
-	if w.labelAttributes == nil || w.labelAttributes.Len() == 0 {
+	if w.ΩlabelAttr == nil || w.ΩlabelAttr.Len() == 0 {
 		return false
 	}
 	return true

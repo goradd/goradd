@@ -12,6 +12,7 @@ import (
 	"github.com/spekary/goradd/util/math"
 	"goradd-project/config"
 	localPage "goradd-project/override/page"
+	"reflect"
 	"strconv"
 )
 
@@ -399,4 +400,83 @@ func (d *DataPager) UnmarshalState(m maps.Loader) {
 
 func (d *DataPager) PaginatedControl() PaginatedControlI {
 	return d.paginatedControl
+}
+
+func (d *DataPager) Serialize(e page.Encoder) (err error) {
+	if err = d.Control.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.maxPageButtons); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.ObjectName); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.ObjectPluralName); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.LabelForNext); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.LabelForPrevious); err != nil {
+		return
+	}
+
+	if err = e.EncodeControl(d.paginatedControl); err != nil {
+		return
+	}
+
+	if err = e.EncodeControl(d.Proxy); err != nil {
+		return
+	}
+
+	return
+}
+
+// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
+// has to go before just calling serialize and deserialize
+func (d *DataPager) ΩisSerializer(i page.ControlI) bool {
+	return reflect.TypeOf(d) == reflect.TypeOf(i)
+}
+
+
+func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
+	if err = d.Control.Deserialize(dec, p); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.maxPageButtons); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.ObjectName); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.ObjectPluralName); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.LabelForNext); err != nil {
+		return
+	}
+
+	if ci,err := dec.DecodeControl(p); err != nil {
+		return err
+	} else {
+		d.paginatedControl = ci.(PaginatedControlI)
+	}
+
+	if ci,err := dec.DecodeControl(p); err != nil {
+		return err
+	} else {
+		d.Proxy = ci.(*Proxy)
+	}
+	
+	return
 }

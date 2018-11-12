@@ -39,7 +39,6 @@ goradd = {
      *
      * @returns {boolean} true if the goradd ajax queue has an item in it.
      */
-
     ajaxQueueIsRunning: function() {
         if ($.ajaxq) {
             return $.ajaxq.isRunning("goradd");

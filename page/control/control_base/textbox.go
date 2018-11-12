@@ -4,18 +4,18 @@ import (
 	//"github.com/microcosm-cc/bluemonday"
 	"bytes"
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
+	"goradd-project/config"
 	localPage "goradd-project/override/page"
 	html2 "html"
+	"reflect"
 	"strconv"
 )
 
-type Sanitizer interface {
-	Sanitize(string) string
-}
 
 // A TextboxValidator can be added to a textbox to validate its input on the server side. A textbox can have more than one validator.
 // A number of built-in validators are provided.
@@ -28,6 +28,7 @@ type Validater interface {
 type TextboxI interface {
 	page.ControlI
 	SetType(typ string) TextboxI
+	Sanitize(string) string
 }
 
 type Textbox struct {
@@ -35,7 +36,6 @@ type Textbox struct {
 
 	typ string
 
-	sanitizer  Sanitizer
 	validators []Validater
 
 	minLength int
@@ -205,14 +205,10 @@ func (t *Textbox) SetReadOnly(r bool) {
 	t.AddRenderScript("attr", "readonly", "")
 }
 
-func (t *Textbox) SetSanitizer(s Sanitizer) {
-	t.sanitizer = s
-}
-func (t *Textbox) sanitize(s string) string {
-	if t.sanitizer == nil {
-		panic("You have to create a sanitizer. Not having a sanitizer is too dangerous.")
-	}
-	return t.sanitizer.Sanitize(s)
+// Sanitize takes user input and strips it of potential malicious XSS scripts.
+// The default uses a global sanitizer creating a bootup. Override Sanitize in a subclass if you want a per-textbox sanitizer.
+func (t *Textbox) Sanitize(s string) string {
+	return config.GlobalSanitizer.Sanitize(s)
 }
 
 // Validate will first check for the IsRequired attribute, and if set, will make sure a value is in the text field. It
@@ -247,7 +243,7 @@ func (t *Textbox) UpdateFormValues(ctx *page.Context) {
 	id := t.ID()
 
 	if v, ok := ctx.FormValue(id); ok {
-		t.value = t.sanitize(v)
+		t.value = t.this().Sanitize(v)
 	}
 }
 
@@ -265,13 +261,66 @@ func (t *Textbox) UnmarshalState(m maps.Loader) {
 	}
 }
 
-//TODO
-func (t *Textbox) Serialize(buf []byte) {
 
+type encodedTextbox struct {
+	Typ string
+	Validators []Validater
+	MinLength int
+	MaxLength int
+	Value string
+	ColumnCount int
+	RowCount    int
+	Readonly bool
+}
+func (t *Textbox) Serialize(e page.Encoder) (err error) {
+	if err = t.Control.Serialize(e); err != nil {
+		return
+	}
+
+	s := encodedTextbox{
+		Typ:         t.typ,
+		Validators:  t.validators,
+		MinLength:   t.minLength,
+		MaxLength:   t.maxLength,
+		Value:       t.value,
+		ColumnCount: t.columnCount,
+		RowCount:    t.rowCount,
+		Readonly:    t.readonly,
+	}
+
+	if err = e.Encode(s); err != nil {
+		return err
+	}
+	return
 }
 
-func (t *Textbox) Unserialize(data interface{}) {
+// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
+// has to go before just calling serialize and deserialize
+func (c *Textbox) ΩisSerializer(i page.ControlI) bool {
+	return reflect.TypeOf(c) == reflect.TypeOf(i)
+}
 
+
+func (t *Textbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
+	if err = t.Control.Deserialize(d, p); err != nil {
+		return
+	}
+
+	s := encodedTextbox{}
+
+	if err = d.Decode(&s); err != nil {
+		return
+	}
+
+	t.typ = s.Typ
+	t.validators = s.Validators
+	t.minLength = s.MinLength
+	t.maxLength = s.MaxLength
+	t.value = s.Value
+	t.columnCount = s.ColumnCount
+	t.rowCount = s.RowCount
+	t.readonly = s.Readonly
+	return
 }
 
 type MinLengthValidator struct {
@@ -310,4 +359,11 @@ func (v MaxLengthValidator) Validate(t page.Translater, s string) (msg string) {
 		}
 	}
 	return
+}
+
+func init() {
+	// gob.Register(&Textbox{}) register control.Textbox instead
+	gob.Register(&MaxLengthValidator{})
+	gob.Register(&MinLengthValidator{})
+	gob.RegisterName("goradd.Textbox", &Textbox{})
 }

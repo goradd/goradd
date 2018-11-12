@@ -1,6 +1,7 @@
 package control
 
 import (
+	"encoding/gob"
 	"github.com/spekary/goradd/page"
 	"goradd-project/override/control_base"
 )
@@ -30,5 +31,8 @@ func NewTextbox(parent page.ControlI, id string) *Textbox {
 	return t
 }
 
+func init () {
+	gob.Register(&Textbox{})
+}
 
 

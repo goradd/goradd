@@ -1,6 +1,7 @@
 package javascript
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"strings"
 )
@@ -68,4 +69,10 @@ func (c ClosureCall) MarshalJSON() (buf []byte, err error) {
 
 	buf, err = json.Marshal(obj)
 	return
+}
+
+func init() {
+	// Register objects so they can be serialized
+	gob.Register(Closure{})
+	gob.Register(ClosureCall{})
 }

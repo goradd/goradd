@@ -65,11 +65,11 @@ type AppContext struct {
 	cliArgs             []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId         string
 	customControlValues map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
-	checkableValues     map[string]interface{} // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
-	actionControlID     string                 // If an action, the control sending the action
-	eventID             EventID                // The event to send to the control
+	checkableValues     map[string]interface{}            // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
+	actionControlID     string                            // If an action, the control sending the action
+	eventID             EventID                           // The event to send to the control
 	actionValues        actionValues
-	OutBuf				*bytes.Buffer
+	OutBuf              *bytes.Buffer
 }
 
 type Context struct {

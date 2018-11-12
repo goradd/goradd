@@ -6,6 +6,7 @@ import (
 	"github.com/spekary/goradd/page/action"
 	localPage "goradd-project/override/page"
 	"github.com/spekary/goradd/page/event"
+	"reflect"
 )
 
 type ButtonI interface {
@@ -61,6 +62,35 @@ func (b *Button) SetIsPrimary(isPrimary bool) {
 
 func (b *Button) IsPrimary() bool {
 	return b.isPrimary
+}
+
+func (b *Button) Serialize(e page.Encoder) (err error) {
+	if err = b.Control.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(b.isPrimary); err != nil {
+		return err
+	}
+	return
+}
+
+// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
+// has to go before just calling serialize and deserialize
+func (b *Button) ΩisSerializer(i page.ControlI) bool {
+	return reflect.TypeOf(b) == reflect.TypeOf(i)
+}
+
+
+func (b *Button) Deserialize(d page.Decoder, p *page.Page) (err error) {
+	if err = b.Control.Deserialize(d, p); err != nil {
+		return
+	}
+
+	if err = d.Decode(&b.isPrimary); err != nil {
+		return
+	}
+	return
 }
 
 

@@ -1,6 +1,9 @@
 package javascript
 
-import "strings"
+import (
+	"encoding/gob"
+	"strings"
+)
 
 // Arguments represents a list of javascript function arguments. We can output this as javascript, or as JSON, which
 // gets sent to the goradd javascript during Ajax calls and unpacked there.
@@ -18,4 +21,9 @@ func (a Arguments) JavaScript() string {
 	}
 
 	return strings.Join(values, ", ")
+}
+
+func init() {
+	// Register objects so they can be serialized
+	gob.Register(Arguments{})
 }

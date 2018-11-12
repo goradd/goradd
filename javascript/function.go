@@ -1,6 +1,7 @@
 package javascript
 
 import (
+	"encoding/gob"
 	"encoding/json"
 )
 
@@ -49,4 +50,9 @@ func (f Function) MarshalJSON() (buf []byte, err error) {
 
 	buf, err = json.Marshal(obj)
 	return
+}
+
+func init() {
+	// Register objects so they can be serialized
+	gob.Register(Function{})
 }

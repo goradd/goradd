@@ -3,6 +3,7 @@ package page
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"github.com/spekary/gengen/maps"
@@ -11,6 +12,7 @@ import (
 	"github.com/spekary/goradd/orm/db"
 	"github.com/spekary/goradd/session/location"
 	"goradd-project/config"
+	"reflect"
 	"strings"
 )
 
@@ -21,6 +23,8 @@ type FormI interface {
 	ControlI	// Note we are not inheriting from localpage here, to avoid import loop and because its not really necessary
 	// Create the objects on the form without necessarily initializing them
 	Init(ctx context.Context, self FormI, path string, id string)
+	PageDrawingFunction() PageDrawFunc
+
 	// CreateControls(ctx context.Context)
 	LoadControls(ctx context.Context)
 	// AddRelatedFiles()
@@ -189,6 +193,13 @@ func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error)
 	f.SetAttribute("action", f.page.Path())
 
 	return
+}
+
+
+// PageDrawingFunction returns the function used to draw the page object.
+// If you want a custom drawing function for your page, implement this function in your form override.
+func (f *FormBase) PageDrawingFunction() PageDrawFunc {
+	return PageTmpl	// Returns the default
 }
 
 // saveState saves the state of the form in the page cache.
@@ -390,4 +401,59 @@ func (f *FormBase) PopLocation(ctx context.Context) {
 	if loc := location.Pop(ctx); loc != "" {
 		f.ChangeLocation(loc)
 	}
+}
+
+type formEncoded struct {
+	HeaderSS *maps.SliceMap
+	ImportedSS *maps.SliceMap
+	HeaderJS *maps.SliceMap
+	BodyJS *maps.SliceMap
+	ImportedJS *maps.SliceMap
+}
+
+func (f *FormBase) Serialize(e Encoder) (err error) {
+	if err = f.Control.Serialize(e); err != nil {
+		return
+	}
+
+	s := formEncoded {
+		HeaderSS: f.headerStyleSheets,
+		ImportedSS: f.importedStyleSheets,
+		HeaderJS: f.headerJavaScripts,
+		BodyJS: f.bodyJavaScripts,
+		ImportedJS:f.importedJavaScripts,
+	}
+
+	if err = e.Encode(s); err != nil {
+		return
+	}
+	return
+}
+
+// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
+// has to go before just calling serialize and deserialize
+func (f *FormBase) ΩisSerializer(i ControlI) bool {
+	return reflect.TypeOf(f) == reflect.TypeOf(i)
+}
+
+func (f *FormBase) Deserialize(d Decoder, p *Page) (err error) {
+	if err = f.Control.Deserialize(d, p); err != nil {
+		return
+	}
+	s := formEncoded{}
+	if err = d.Decode(&s); err != nil {
+		return
+	}
+
+	f.headerStyleSheets = s.HeaderSS
+	f.importedStyleSheets = s.ImportedSS
+	f.headerJavaScripts = s.HeaderJS
+	f.bodyJavaScripts = s.BodyJS
+	f.importedJavaScripts = s.ImportedJS
+
+	return
+}
+
+func init() {
+	gob.Register(&FormBase{})
 }

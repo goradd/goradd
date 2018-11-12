@@ -5,6 +5,7 @@ import (
 	"github.com/spekary/goradd/html"
 	"github.com/spekary/goradd/page"
 	"github.com/spekary/goradd/page/control"
+	"reflect"
 	"strconv"
 )
 
@@ -121,4 +122,43 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 		// TODO: We need javascript to respond to arrow keys to set the focus on the buttons. User could then press space to click on button.
 	}
 	return d.Proxy.ButtonHtml(actionValue, actionValue, attr, false)
+}
+
+func (d *DataPager) Serialize(e page.Encoder) (err error) {
+	if err = d.DataPager.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.ButtonStyle); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.HighlightStyle); err != nil {
+		return
+	}
+
+	return
+}
+
+// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
+// has to go before just calling serialize and deserialize
+func (d *DataPager) ΩisSerializer(i page.ControlI) bool {
+	return reflect.TypeOf(d) == reflect.TypeOf(i)
+}
+
+
+func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
+	if err = d.DataPager.Deserialize(dec, p); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.ButtonStyle); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.HighlightStyle); err != nil {
+		return
+	}
+
+	return
 }

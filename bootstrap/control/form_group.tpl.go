@@ -17,7 +17,7 @@ func FormGroupTmpl(ctx context.Context, wrapper *DivWrapperType, ctrl page.Contr
 	var hasInnerDivAttributes bool = wrapper.HasInnerDivAttributes()
 	var hasInstructions bool = (ctrl.Instructions() != "")
 
-	if wrapper.useTooltips {
+	if wrapper.UseTooltips {
 		// bootstrap requires that parent of a tooltipped object has position relative
 		ctrl.WrapperAttributes().SetStyle("position", "relative")
 	}
@@ -135,7 +135,7 @@ func FormGroupTmpl(ctx context.Context, wrapper *DivWrapperType, ctrl page.Contr
 		} else {
 			msg = html.EscapeString(msg)
 		}
-		if wrapper.useTooltips {
+		if wrapper.UseTooltips {
 			class = "valid-tooltip"
 		} else {
 			class = "valid-feedback"
@@ -147,7 +147,7 @@ func FormGroupTmpl(ctx context.Context, wrapper *DivWrapperType, ctrl page.Contr
 		} else {
 			msg = html.EscapeString(msg)
 		}
-		if wrapper.useTooltips {
+		if wrapper.UseTooltips {
 			class = "invalid-tooltip"
 		} else {
 			class = "invalid-feedback"

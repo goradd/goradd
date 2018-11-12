@@ -9,17 +9,18 @@ import (
 type BootstrapControl struct {
 	page2.Control
 
-	isFormControl bool
+	IsFormControl bool
 }
 
-func (c *BootstrapControl) SetIsFormControl(is bool) {
-	c.isFormControl = is
+func (c *BootstrapControl) SetIsFormControl(is bool) *BootstrapControl {
+	c.IsFormControl = is
+	return c
 }
 
 func (c *BootstrapControl) DrawingAttributes() *html.Attributes {
 	a := c.Control.DrawingAttributes()
 
-	if c.isFormControl {
+	if c.IsFormControl {
 		c.FormControlAddAttributes(a)
 	}
 
@@ -35,3 +36,23 @@ func (c *BootstrapControl) FormControlAddAttributes(attr *html.Attributes) {
 	}
 	attr.AddClass("form-control")
 }
+
+/*
+func (c *BootstrapControl) Serialize(e page2.Encoder) (err error) {
+	if err = c.Control.Serialize(e); err != nil {
+		return
+	}
+
+	err = e.Encode(c.IsFormControl)
+	return
+}
+
+func (c *BootstrapControl) Deserialize(d page2.Decoder, p *page2.Page) (err error) {
+	if err = c.Control.Deserialize(d, p); err != nil {
+		return
+	}
+
+	err = d.Decode(&c.IsFormControl)
+	return
+}
+*/

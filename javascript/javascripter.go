@@ -1,7 +1,9 @@
-// Package javascript converts go objects and types to javascript code, suitable for embedding in html or sending to the browser via a specialized ajax call.
+// Package javascript converts go objects and types to javascript code, suitable for embedding in html or sending to the
+// browser via a specialized ajax call.
 package javascript
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"github.com/spekary/gengen/maps"
@@ -9,19 +11,23 @@ import (
 	"strings"
 )
 
-// Interface that allows an object to be converted to javascript (not JSON!)
+// JavaScripter specifies that an object can be converted to javascript (not JSON!). These objects should also be
+// gob encodable and registered with gob, since they might be embedded in a control and need to be serialized.
 type JavaScripter interface {
 	JavaScript() string
 }
 
+// JsonObjectType is used by the ajax processor in goradd.js to indicate that we are sending a special kind of
+// object to the browser. These are things like dates, closures, etc. that are not easily represented by JSON.
 const JsonObjectType = "goraddObject"
 
 // ToJavaScript will convert the given value to javascript such that it can be embedded in a browser. If it can, it will
 // use the JavaScripter interface to do the conversion. Otherwise it generally follows json encoding rules. Strings are
 // escaped. Nil pointers become null objects. String maps become javascript objects. To convert a fairly complex object,
 // like a map or slice of objects, convert the inner objects to interfaces
-// TODO: Add some introspection to handle any kind of complex object that is a Javascripter at the inner level
 func ToJavaScript(v interface{}) string {
+	// TODO: Add some introspection to handle any kind of complex object that is a Javascripter at the inner level
+
 	switch s := v.(type) {
 	case JavaScripter:
 		return s.JavaScript()
@@ -114,19 +120,19 @@ func (n NoQuoteKey) JavaScript() string {
 	panic("NoQuoteKey should only be used as a value in a string map.")
 }
 
-type jsCode struct {
-	code  string
-	isInt bool
+type ΩjsCode struct {
+	Code  string
+	IsInt bool
 }
 
 // JsCode represents straight javascript code that should not be escaped or quoted.
 // Normally, string values would be quoted. This outputs a string without quoting or escaping.
-func JsCode(s string) jsCode {
-	return jsCode{code: s}
+func JsCode(s string) ΩjsCode {
+	return ΩjsCode{Code: s}
 }
 
-func (c jsCode) JavaScript() string {
-	return c.code
+func (c ΩjsCode) JavaScript() string {
+	return c.Code
 }
 
 // Undefined explicitly outputs as "undefined" in javascript. Generally, nil pointers become "null" in javascript, so
@@ -187,3 +193,9 @@ func NumberString(i interface{}) string {
 	return ""
 }
 
+func init() {
+	// Register objects so they can be serialized
+	gob.Register(NoQuoteKey{})
+	gob.Register(ΩjsCode{})
+	gob.Register(Undefined{})
+}

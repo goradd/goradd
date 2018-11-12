@@ -7,6 +7,7 @@ import (
 	"github.com/spekary/goradd/page"
 	localPage "goradd-project/override/page"
 	html2 "html"
+	"reflect"
 )
 
 type CheckboxI interface {
@@ -186,4 +187,51 @@ func (c *Checkbox) UnmarshalState(m maps.Loader) {
 
 func (c *Checkbox) TextIsLabel() bool {
 	return true
+}
+
+func (c *Checkbox) Serialize(e page.Encoder) (err error) {
+	if err = c.Control.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(c.checked); err != nil {
+		return err
+	}
+
+	if err = e.Encode(c.LabelMode); err != nil {
+		return err
+	}
+
+	if err = e.Encode(c.labelAttributes); err != nil {
+		return err
+	}
+
+	return
+}
+
+// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
+// has to go before just calling serialize and deserialize
+func (c *Checkbox) ΩisSerializer(i page.ControlI) bool {
+	return reflect.TypeOf(c) == reflect.TypeOf(i)
+}
+
+
+func (c *Checkbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
+	if err = c.Control.Deserialize(d, p); err != nil {
+		return
+	}
+
+	if err = d.Decode(&c.checked); err != nil {
+		return
+	}
+
+	if err = d.Decode(&c.LabelMode); err != nil {
+		return
+	}
+
+	if err = d.Decode(&c.labelAttributes); err != nil {
+		return
+	}
+
+	return
 }

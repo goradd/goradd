@@ -3,6 +3,7 @@ package page
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/goradd"
@@ -174,6 +175,10 @@ type ControlI interface {
 	// API
 	SetIsRequired(r bool) ControlI
 
+	Serialize(e Encoder) (err error)
+	Deserialize(d Decoder, p *Page) (err error)
+	ΩisSerializer(i ControlI) bool
+
 }
 
 type attributeScriptEntry struct {
@@ -211,7 +216,7 @@ type Control struct {
 	isRendering bool
 	wasRendered bool
 
-	isBlockLevel      bool // true to use a div for the wrapper, false for a span
+	isBlock           bool // true to use a div for the wrapper, false for a span
 	wrapper           WrapperI
 	wrapperAttributes *html.Attributes
 	label             string // the given label, often used as a label tag. Not drawn by default, but the wrapper drawing function uses it. Can also get controls by label.
@@ -236,6 +241,10 @@ type Control struct {
 	eventCounter  EventID
 
 	shouldSaveState bool
+
+	encoded bool	// Used during the serialization process.
+
+	// anything added here needs to be also added to the GOB encoder!
 }
 
 // Init should be called immediately after a control is created and is responsible for setting up the initial state of a
@@ -906,7 +915,7 @@ func (c *Control) On(e EventI, actions ...action2.ActionI) EventI {
 	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
 	// implement a script block with every control connected by id
-	e.AddActions(actions...)
+	e.addActions(actions...)
 	c.eventCounter++
 	for _, action := range actions {
 		if _, ok := action.(action2.PrivateAction); ok {
@@ -946,7 +955,7 @@ func (c *Control) Off() {
 }
 
 // SetActionValue sets a value that is provided to actions when they are triggered. The value can be a static value
-// or one of the javascript.* objects that can dynamically generated values. The value is then sent back to the action
+// or one of the javascript.* objects that can dynamically generate values. The value is then sent back to the action
 // handler after the action is triggered.
 func (c *Control) SetActionValue(v interface{}) ControlI {
 	c.actionValue = v
@@ -975,14 +984,14 @@ func (c *Control) GetActionScripts(r *Response) {
 	// Render actions
 	if c.privateEvents != nil {
 		for id, e := range c.privateEvents {
-			s := e.RenderActions(c.this(), id)
+			s := e.renderActions(c.this(), id)
 			r.ExecuteJavaScript(s, PriorityStandard)
 		}
 	}
 
 	if c.events != nil {
 		for id, e := range c.events {
-			s := e.RenderActions(c.this(), id)
+			s := e.renderActions(c.this(), id)
 			r.ExecuteJavaScript(s, PriorityStandard)
 		}
 	}
@@ -1069,7 +1078,7 @@ func (c *Control) doAction(ctx context.Context) {
 
 	if c.passesValidation(ctx, e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
-		for _, a := range e.GetActions() {
+		for _, a := range e.getActions() {
 			callbackAction := a.(action2.CallbackActionI)
 			p := ActionParams{
 				ID:        callbackAction.ID(),
@@ -1493,10 +1502,184 @@ func (c *Control) SetWillBeValidated(v bool) {
 }
 
 
+// GobEncode here is implemented to intercept the GobEncoder to only encode an empty structure. We use this as part
+// of our overall serialization stratgey for forms. Controls still need to be registered with gob.
+func (c *Control) GobEncode() (data []byte, err error) {
+	return
+}
+
+func (c *Control) GobDecode(data []byte) (err error) {
+	return
+}
+
+func (c *Control) MarshalJSON() (data []byte, err error) {
+	return
+}
+
+func (c *Control) UnmarshalJSON(data []byte) (err error) {
+	return
+}
+
+type controlEncoding struct {
+	Id                string
+	ParentID          string
+	Children          []ControlI
+	Tag               string
+	IsVoidTag         bool
+	HasNoSpace        bool
+	Attributes        *html.Attributes
+	Text              string
+	TextLabelMode     html.LabelDrawingMode
+	HtmlEscapeText    bool
+	IsRequired        bool
+	IsHidden          bool
+	IsOnPage          bool
+	ShouldAutoRender  bool
+	IsBlock           bool
+	Wrapper           WrapperI
+	WrapperAttributes *html.Attributes
+	Label             string
+	HasFor            bool
+	Instructions      string
+	ErrorForRequired      string
+	ValidMessage          string
+	ValidationMessage     string
+	ValidationState       ValidationState
+	ValidationType        ValidationType
+	ValidationTargets     []string
+	BlockParentValidation bool
+	ActionValue           interface{}
+	Events                EventMap
+	PrivateEvents	      EventMap
+	EventCounter		  EventID
+	ShouldSaveState		  bool
+}
+
+func (c *Control) Serialize(e Encoder) (err error) {
+	if err = e.Encode(c.id); err != nil {
+		return
+	}
+
+	e.Encode(len(c.children))
+	c.encoded = true	// Make sure circular references in child controls do not encode twice
+	for _,child := range c.children {
+		err = e.EncodeControl(child)
+		if err != nil {
+			return
+		}
+	}
+
+	s := controlEncoding {
+		Tag: c.Tag,
+		IsVoidTag: c.IsVoidTag,
+		HasNoSpace: c.hasNoSpace,
+		Attributes: c.attributes,
+		Text: c.text,
+		TextLabelMode: c.textLabelMode,
+		HtmlEscapeText: c.htmlEscapeText,
+		IsRequired: c.isRequired,
+		IsHidden: c.isHidden,
+		IsOnPage: c.isOnPage,
+		ShouldAutoRender: c.shouldAutoRender,
+		IsBlock: c.isBlock,
+		Wrapper: c.wrapper,
+		Label: c.label,
+		HasFor: c.hasFor,
+		Instructions: c.instructions,
+		ErrorForRequired: c.ErrorForRequired,
+		ValidMessage: c.ValidMessage,
+		ValidationMessage: c.validationMessage,
+		ValidationState: c.validationState,
+		ValidationType: c.validationType,
+		ValidationTargets: c.validationTargets,
+		BlockParentValidation: c.blockParentValidation,
+		ActionValue: c.actionValue,
+		Events: c.events,
+		PrivateEvents: c.privateEvents,
+		EventCounter: c.eventCounter,
+		ShouldSaveState: c.shouldSaveState,
+	}
+
+	if c.parent !=  nil {
+		s.ParentID = c.parent.ID()
+	}
+
+	err = e.Encode(&s)
+
+	return
+}
+
+// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
+// has to go before just calling serialize and deserialize
+func (c *Control) ΩisSerializer(i ControlI) bool {
+	return reflect.TypeOf(c) == reflect.TypeOf(i)
+}
+
+func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
+	if err = d.Decode(&c.id); err != nil {
+		return
+	}
+
+	var count int
+	if err = d.Decode(&count); err != nil {
+		return
+	}
+
+	for i := 0; i < count; i++ {
+		var ci ControlI
+		if ci, err = d.DecodeControl(p); err != nil {
+			return
+		}
+		c.children = append(c.children, ci)
+	}
+
+	var s controlEncoding
+
+	if err = d.Decode(&s); err != nil {
+		return
+	}
+
+	c.parent = p.GetControl(s.ParentID)
+	c.Tag = s.Tag
+	c.IsVoidTag = s.IsVoidTag
+	c.hasNoSpace = s.HasNoSpace
+	c.attributes = s.Attributes
+	c.text = s.Text
+	c.textLabelMode = s.TextLabelMode
+	c.htmlEscapeText = s.HtmlEscapeText
+	c.isRequired = s.IsRequired
+	c.isHidden = s.IsHidden
+	c.isOnPage = s.IsOnPage
+	c.shouldAutoRender = s.ShouldAutoRender
+	c.isBlock = s.IsBlock
+	c.wrapper = s.Wrapper
+	c.label = s.Label
+	c.hasFor = s.HasFor
+	c.instructions = s.Instructions
+	c.ErrorForRequired = s.ErrorForRequired
+	c.ValidMessage = s.ValidMessage
+	c.validationState = s.ValidationState
+	c.validationType = s.ValidationType
+	c.validationTargets = s.ValidationTargets
+	c.blockParentValidation = s.BlockParentValidation
+	c.actionValue = s.ActionValue
+	c.events = s.Events
+	c.privateEvents = s.PrivateEvents
+	c.eventCounter = s.EventCounter
+	c.shouldSaveState = s.ShouldSaveState
+
+	return
+}
+
+
 // ConnectorParams returns a list of options setable by the connector dialog (not currently implemented)
 func ControlConnectorParams() *maps.SliceMap {
 	m := maps.NewSliceMap()
 
 	// TODO: Add setable options for all controls
 	return m
+}
+
+func init() {
+	gob.Register(&Control{})
 }

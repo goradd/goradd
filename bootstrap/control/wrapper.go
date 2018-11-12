@@ -18,8 +18,8 @@ const (
 // https://getbootstrap.com/docs/4.1/components/forms/ as of this writing
 type DivWrapperType struct {
 	page.LabelWrapperType
-	innerDivAttributes *html.Attributes
-	useTooltips        bool // uses tooltips for the error class
+	ΩinnerDivAttr *html.Attributes
+	UseTooltips   bool // uses tooltips for the error class
 }
 
 func NewDivWrapper() *DivWrapperType {
@@ -29,8 +29,8 @@ func NewDivWrapper() *DivWrapperType {
 func (w *DivWrapperType) Copy()  *DivWrapperType {
 	wNew := &DivWrapperType{}
 	wNew.LabelWrapperType = *w.LabelWrapperType.Copy()
-	wNew.innerDivAttributes = w.innerDivAttributes.Copy()
-	wNew.useTooltips = w.useTooltips
+	wNew.ΩinnerDivAttr = w.ΩinnerDivAttr.Copy()
+	wNew.UseTooltips = w.UseTooltips
 	return wNew
 }
 
@@ -51,21 +51,21 @@ func (w DivWrapperType) TypeName() string {
 // itself will be wrapped with a div with these attributes. This is useful for layouts that have the label next to
 // the control.
 func (w *DivWrapperType) InnerDivAttributes() *html.Attributes {
-	if w.innerDivAttributes == nil {
-		w.innerDivAttributes = html.NewAttributes()
+	if w.ΩinnerDivAttr == nil {
+		w.ΩinnerDivAttr = html.NewAttributes()
 	}
-	return w.innerDivAttributes
+	return w.ΩinnerDivAttr
 }
 
 func (w *DivWrapperType) HasInnerDivAttributes() bool {
-	if w.innerDivAttributes == nil || w.innerDivAttributes.Len() == 0 {
+	if w.ΩinnerDivAttr == nil || w.ΩinnerDivAttr.Len() == 0 {
 		return false
 	}
 	return true
 }
 
 func (w *DivWrapperType) SetUseTooltips(t bool) *DivWrapperType {
-	w.useTooltips = t
+	w.UseTooltips = t
 	return w
 }
 
@@ -74,12 +74,12 @@ func (w *DivWrapperType) SetUseTooltips(t bool) *DivWrapperType {
 // entire control had been redrawn
 func (w *DivWrapperType) AjaxRender(ctx context.Context, response *page.Response, c page.ControlI) {
 	var class string
-	if w.ValidationStateChanged() {
+	if w.ValidationStateChanged {
 		switch c.ValidationState() {
 		case page.ValidationWaiting:
 			response.ExecuteControlCommand(c.ID(), "removeClass", "is-valid")
 			response.ExecuteControlCommand(c.ID(), "removeClass", "is-invalid")
-			if w.useTooltips {
+			if w.UseTooltips {
 				class = "valid-tooltip"
 			} else {
 				class = "valid-feedback"
@@ -88,7 +88,7 @@ func (w *DivWrapperType) AjaxRender(ctx context.Context, response *page.Response
 		case page.ValidationValid:
 			response.ExecuteControlCommand(c.ID(), "addClass", "is-valid")
 			response.ExecuteControlCommand(c.ID(), "removeClass", "is-invalid")
-			if w.useTooltips {
+			if w.UseTooltips {
 				class = "valid-tooltip"
 			} else {
 				class = "valid-feedback"
@@ -97,7 +97,7 @@ func (w *DivWrapperType) AjaxRender(ctx context.Context, response *page.Response
 		case page.ValidationInvalid:
 			response.ExecuteControlCommand(c.ID(), "removeClass", "is-valid")
 			response.ExecuteControlCommand(c.ID(), "addClass", "is-invalid")
-			if w.useTooltips {
+			if w.UseTooltips {
 				class = "invalid-tooltip"
 			} else {
 				class = "invalid-feedback"
@@ -136,7 +136,7 @@ func (w FormGroupWrapperType) TypeName() string {
 
 type FieldsetWrapperType struct {
 	page.LabelWrapperType
-	useTooltips        bool // uses tooltips for the error class
+	UseTooltips bool // uses tooltips for the error class
 }
 
 // https://getbootstrap.com/docs/4.1/components/forms/#horizontal-form
@@ -147,7 +147,7 @@ func NewFieldsetWrapper() *FieldsetWrapperType {
 func (w *FieldsetWrapperType) CopyI() page.WrapperI {
 	wNew := NewFieldsetWrapper()
 	wNew.LabelWrapperType = *w.LabelWrapperType.Copy()
-	wNew.useTooltips = w.useTooltips
+	wNew.UseTooltips = w.UseTooltips
 	return w
 }
 
@@ -156,7 +156,7 @@ func (w *FieldsetWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html
 }
 
 func (w *FieldsetWrapperType) SetUseTooltips(t bool) *FieldsetWrapperType {
-	w.useTooltips = t
+	w.UseTooltips = t
 	return w
 }
 
