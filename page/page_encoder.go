@@ -245,6 +245,7 @@ func (e GobDeserializer) DecodeControl(p *Page) (c ControlI, err error) {
 		}
 
 		c.control().page = p
+		c.control().Self = c
 		p.controlRegistry.Set(c.control().ID(), c)
 	}
 	return
