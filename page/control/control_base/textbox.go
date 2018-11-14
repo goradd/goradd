@@ -17,7 +17,7 @@ import (
 )
 
 
-// A TextboxValidator can be added to a textbox to validate its input on the server side. A textbox can have more than one validator.
+// A Validater can be added to a textbox to validate its input on the server side. A textbox can have more than one validater.
 // A number of built-in validators are provided.
 type Validater interface {
 	// Validate evaluates the input, and returns an empty string if the input is valid, and an error string to display
