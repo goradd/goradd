@@ -1,17 +1,18 @@
-package buildtools
-
+package build
 
 import (
-	"net/http"
-	"fmt"
-	"bytes"
-	"github.com/spekary/goradd/util"
-	"path/filepath"
-	"os"
-	"flag"
-	"runtime"
 	"bufio"
+	"bytes"
+	"flag"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
+
+	"github.com/spekary/goradd/util"
 )
 
 var port = flag.Int("p", 8082, "Start the webserver from the given port, example: -p 8082. Default is 8082.")
@@ -20,8 +21,15 @@ var installed bool
 var results string // result of whatever the current operation is
 var stop bool
 var cmd string
+var cwd string // path we were launched from. This will be the installation directory.
+var modules map[string]string
 
 func Launch() {
+	var err error
+	if cwd, err = os.Getwd(); err != nil {
+		log.Fatal(fmt.Errorf("could not get the working directory: %s", err.Error()))
+	}
+
 	flag.Parse()
 
 	if *dev {
@@ -32,15 +40,12 @@ func Launch() {
 	installed = isInstalled()
 
 	launchWebpage() // hopefully by the time the web page gets to this address, the server will have started
-	err := runWebServer(*port)
+	err = runWebServer(*port)
 	if err != nil {
-		fmt.Println("There was a problem running the web server.")
-		fmt.Println(err)
-		return
+		log.Fatal(fmt.Errorf("there was a problem running the web server: %s", err.Error()))
 	}
-
+	return
 }
-
 
 func runWebServer(port int) (err error) {
 
@@ -59,24 +64,22 @@ func runWebServer(port int) (err error) {
 	return err
 }
 
-
 // serveHome serves the main page
 func serveHome() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		buf := new (bytes.Buffer)
+		buf := new(bytes.Buffer)
 		drawHome(buf)
 		w.Write(buf.Bytes())
 	}
 	return http.HandlerFunc(fn)
 }
 
-
 func isInstalled() bool {
 	return util.PathExists(projectPath())
 }
 
 func srcPath() string {
-	return filepath.Join(util.GoPath(), "src")
+	return filepath.Dir(cwd)
 }
 
 func projectPath() string {
@@ -84,24 +87,37 @@ func projectPath() string {
 }
 
 func goraddPath() string {
-	return filepath.Join(srcPath(), "github.com", "spekary", "goradd")
+	var err error
+	if modules == nil {
+		if modules, err = util.ModulePaths(); err != nil {
+			return ""
+		}
+	}
+
+	if v, ok := modules["github.com/spekary/goradd"]; ok {
+		return v
+	}
+	if v, ok := modules["github.com"]; ok {
+		return filepath.Join(srcPath(), v, "spekary", "goradd")
+	}
+	return ""
 }
 
 func launchWebpage() {
 
 	switch runtime.GOOS {
 	case `darwin`:
-		_,_,err := executeCmd(`open`,  fmt.Sprintf("http://localhost:%d", *port))
+		_, _, err := executeCmd(`open`, fmt.Sprintf("http://localhost:%d", *port))
 		if err == nil {
 			return
 		}
 	case `windows`:
-		_,_,err := executeCmd(`start`,  fmt.Sprintf("http://localhost:%d", *port))
+		_, _, err := executeCmd(`start`, fmt.Sprintf("http://localhost:%d", *port))
 		if err == nil {
 			return
 		}
 	}
-	fmt.Sprintln("The goradd server is running. Go to http://localhost:%d in a browser", *port)
+	fmt.Printf("The goradd server is running. Go to http://localhost:%d in a browser", *port)
 }
 
 func executeCmd(command string, args ...string) (stdOutText string, stdErrText string, err2 error) {

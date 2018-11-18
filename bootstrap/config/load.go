@@ -6,7 +6,7 @@ import (
 	"github.com/spekary/goradd/page"
 	"goradd-project/config"
 	"path/filepath"
-	"github.com/spekary/goradd/util"
+	"runtime"
 )
 
 // Loader is the injected loader. Set it during initialization if you want to load bootstrap differently than below.
@@ -38,7 +38,8 @@ func LoadBootstrap(form page.FormI) {
 }
 
 func BootstrapAssets() string {
-	return filepath.Join(util.GoPath(),"src", "github.com","spekary","goradd", "bootstrap", "assets")
+	_, filename, _, _ := runtime.Caller(0)
+	return filepath.Join(filepath.Dir(filepath.Dir(filename)), "assets")
 }
 
 func init() {

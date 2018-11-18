@@ -3,13 +3,11 @@ package generator
 import (
 	"bytes"
 	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/util"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
-	"os/exec"
-	"github.com/spekary/goradd/util"
 )
 
 type Codegen struct {
@@ -91,7 +89,7 @@ func Generate() {
 			if _, ok := codegen.Tables[key][table.GoName]; ok {
 				log.Println("Error:  table " + table.GoName + " is defined more than once.")
 			} else if !table.IsAssociation {
-				columns, imports := ColumnsWithControls(table)
+				columns, imports := columnsWithControls(table)
 				t := TableType {
 					table,
 					columns,
@@ -154,7 +152,7 @@ func Generate() {
 
 				// run imports on all generated go files
 				if util.EndsWith(fileName, ".go") {
-					execCommand("goimports -w " + fileName)
+					util.ExecuteShellCommand("goimports -w " + fileName)
 				}
 
 				// TODO: If a build.go file exists in the directory we are writing to, run it
@@ -185,19 +183,3 @@ func Generate() {
 	}
 
 }
-
-func execCommand(command string) {
-	parts := strings.Split(command, " ")
-	if len(parts) == 0 {
-		return
-	}
-
-	cmd := exec.Command(parts[0], parts[1:]...)
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
-	if err != nil {
-		log.Print(err)
-	}
-}
-

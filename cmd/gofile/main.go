@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"github.com/spekary/goradd/util"
 	"strings"
-	"os/exec"
-	"bufio"
 )
 
 
@@ -14,6 +12,12 @@ func main() {
 	var files []string
 	var curOption string
 	var excludes = make(map[string]bool)
+
+	modules, err  := util.ModulePaths()
+
+	if err != nil {
+		panic(err)
+	}
 
 	cmd := os.Args[1]
 
@@ -26,7 +30,7 @@ func main() {
 		if curOption != "" {
 			// in the process of getting a command option
 			if curOption == "x" {
-				for _,s := range strings.Split(f, ";") {
+				for _,s := range strings.Split(f, string([]byte{os.PathListSeparator})) {
 					excludes[s] = true
 				}
 			}
@@ -38,8 +42,7 @@ func main() {
 			continue
 		}
 
-		f = filepath.FromSlash(f)
-		f = strings.Replace(f, "GOPATH", util.GoPath(), 1)
+		f, err = util.GetModulePath(f, modules)
 
 		if cmd == "mkdir" {
 			files = append(files, f)
@@ -67,7 +70,7 @@ func main() {
 		}
 	case "generate":
 		for _,f := range files {
-			executeCmd("go", "generate", f)
+			util.ExecuteShellCommand("go generate " + f)
 		}
 	case "copy":
 		copyFiles(files)
@@ -77,53 +80,6 @@ func main() {
 	}
 }
 
-func executeCmd(command string, args ...string) (stdOutText string, stdErrText string, err2 error) {
-	cmd := exec.Command(command, args...)
-
-	stdOut, err := cmd.StdoutPipe()
-	if err != nil {
-		err2 = err
-		return
-	}
-
-	defer stdOut.Close()
-
-	scanner := bufio.NewScanner(stdOut)
-	go func() {
-		for scanner.Scan() {
-			stdOutText += scanner.Text() + "\n"
-		}
-	}()
-
-	stdErr, err := cmd.StderrPipe()
-	if err != nil {
-		err2 = err
-		return
-	}
-
-	defer stdErr.Close()
-
-	stdErrScanner := bufio.NewScanner(stdErr)
-	go func() {
-		for stdErrScanner.Scan() {
-
-			stdErrText += stdErrScanner.Text() + "\n"
-		}
-	}()
-
-	err = cmd.Start()
-	if err != nil {
-		err2 = err
-		return
-	}
-
-	err = cmd.Wait()
-
-	if err != nil {
-		err2 = err
-	}
-	return
-}
 
 func copyFiles(files []string) {
 	if len(files) < 2 {
@@ -182,3 +138,4 @@ func makeDirectory(files []string) {
 		os.MkdirAll(dir, os.FileMode(0777))
 	}
 }
+

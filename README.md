@@ -48,10 +48,10 @@ scalability have not been built and are not scheduled for version 1. Some of tho
     They would not be difficult to do, but they will need to rely on a separate data structure definition. The
     plan is that a SQL database would be able to generate a schema that would be used by the NoSQL drivers to
     continue to maintain the data.
-    2. Goradd maintains state of each of each user of the website in internal memory we call the *pagestate*.
+    2. Goradd maintains the state of each user of the website in internal memory we call the *pagestate*.
     Since its in memory, each user is currently bound to one server. Go is incredibly fast, so one server should be
-    able to manage thousands of users with a reasonable amount of RAM, but to grow beyone this, some work would
-    need to be done on serializing the pagestate into an off-site database. Doable, but effort not currently planned.
+    able to manage thousands of users with a reasonable amount of RAM, but to grow beyond this, some work would
+    need to be done on serializing the pagestate into an off-site database. This effort is in process.
     3. Live-updates. Live updates in a multi-user environment can be particularly difficult at the data model
     level. However, browser technologies also make them difficult at the client too. The browser world is in rapid flux
     around this topic, with different browsers supporting a variety of technologies 
@@ -66,7 +66,8 @@ Go purists will be particularly unhappy with the following:
 1) No microservices. While you can create microservices that serve parts of your application, at its
 core goradd is a monolithic framework that includes an ORM, an MVC architecture, and a basic control
 and form management library. If you are trying to build an application for millions of users, goradd is not
-for you at this time.
+for you at this time. However, it is architected to eventually allow parts of it to be handled off-line by
+other servers, so it is (or will be soon) scalable.
 2) Object-oriented. Some of goradd uses a code pattern that mirrors traditional object-oriented
 inheritance and gets around some of GO's limitations in this area, including implementing 
 virtual functions. If you hate inheritance, goradd is not for you. If you don't mind it, but you still
@@ -74,11 +75,18 @@ like object composition too, this is your place.
 3) Code generation. Goradd relies heavily on code generation, and in particular uses the
 related github.com/spekary/got template engine to generate code.
 
-##Installation
+## Installation
+### For Go 1.10 and below:
 1. Create a new directory and set your GOPATH environment variable to it, if needed.
 1. Make sure the GOPATH/bin directory is in your execution path, or execute commands from there.
 1. Execute ```go get github.com/spekary/goradd```
+1. Execute ```goradd install```
 
+### For Go 1.11 and above using modules:
+1. If you just installed go, make sure your GOPATH/bin directory is in your execution path.
+1. Create a new directory *outside* of your GOPATH and cd to that new directory.
+1. Execute ```go get github.com/spekary/goradd```
+1. Execute ```goradd install```
 
 ##Requirements
 ### For Development

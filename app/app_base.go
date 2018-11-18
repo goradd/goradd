@@ -3,8 +3,11 @@ package app
 import (
 	//"flag"
 	"github.com/spekary/goradd/page"
+	"goradd-project/config"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 )
 
 // The application interface. A minimal set of commands that the main routine will ask the application to do.
@@ -53,5 +56,13 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if errCode != 0 {
 			w.WriteHeader(errCode)
 		}
+	}
+}
+
+func init() {
+	if !config.Release {
+		// Initialize the directory path for the goradd source
+		_, filename, _, _ := runtime.Caller(0)
+		config.GoraddDir = filepath.Dir(filepath.Dir(filename))
 	}
 }

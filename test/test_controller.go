@@ -56,7 +56,7 @@ func (p *TestController) Init(parent page.ControlI, id string) {
 	path, attr := config.JQueryUIPath()
 	p.ParentForm().AddJavaScriptFile(path, false, html.NewAttributesFromMap(attr))
 
-	p.ParentForm().AddJavaScriptFile(config.GoraddDir() + "/test/assets/js/test_controller.js", false, nil)
+	p.ParentForm().AddJavaScriptFile(config.GoraddDir + "/test/assets/js/test_controller.js", false, nil)
 	p.On(TestStepEvent(), action.Ajax(p.ID(), TestStepAction))
 	p.stepTimeout = 3
 }
@@ -159,5 +159,5 @@ func (p *TestController) focus(id string, description string) {
 
 
 func init() {
-	page.RegisterAssetDirectory(config.GoraddDir() + "/test/assets", config.AssetPrefix + "test")
+	page.RegisterAssetDirectory(config.GoraddDir + "/test/assets", config.AssetPrefix + "test")
 }

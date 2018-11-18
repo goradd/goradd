@@ -8,7 +8,7 @@ import (
 )
 
 
-func ColumnsWithControls (t *db.TableDescription) (columns []ColumnType, imports []*ImportType) {
+func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports []*ImportType) {
 	var pathToImport = make(map[string]*ImportType)
 	var namespaceToImport = make(map[string]*ImportType)
 

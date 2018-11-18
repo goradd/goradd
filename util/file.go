@@ -3,12 +3,10 @@ package util
 import (
 	"fmt"
 	"io"
-	"os"
-	"time"
-	"path/filepath"
 	"io/ioutil"
-	"strings"
-	"go/build"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 // Copy copies the src file to the destination. The destination file must either exist, or the directory in the file's
@@ -196,7 +194,9 @@ func DirectoryClear(dir string) error {
 	return nil
 }
 
+/* Modules has obsoleted GoPath
 // GoPath returns the current GoPath as best it can determine.
+// Note that with modules, the executable might be run from outside of the GoPath
 func GoPath() string {
 	var path string
 	goPaths := strings.Split(os.Getenv("GOPATH"), string(os.PathListSeparator))
@@ -226,6 +226,6 @@ func GoPath() string {
 
 	path,_ = filepath.Abs(path)
 
-	// TODO: GoPath may go away, so we might need to use another way to search for the current go project structure
 	return path
 }
+*/

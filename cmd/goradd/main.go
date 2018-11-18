@@ -10,6 +10,6 @@ import (
 // Create other flags you might care about here
 
 func main() {
-	buildtools.Launch()
+	build.Launch()
 }
 

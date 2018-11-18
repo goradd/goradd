@@ -1,4 +1,4 @@
-package buildtools
+package build
 
 import (
 	"net/http"
