@@ -1,7 +1,7 @@
 package control_base
 
 import (
-	gr_control_base "github.com/spekary/goradd/page/control/control_base"
+	gr_control_base "github.com/spekary/goradd/pkg/page/control/control_base"
 )
 
 

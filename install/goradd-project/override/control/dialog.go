@@ -1,9 +1,9 @@
 package control
 
 import (
-	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/page/control"
-	bs "github.com/spekary/goradd/bootstrap/control"
+	"github.com/spekary/goradd/pkg/page"
+	"github.com/spekary/goradd/pkg/page/control"
+	bs "github.com/spekary/goradd/pkg/bootstrap/control"
 )
 
 

@@ -1,0 +1,128 @@
+//editForm.tmpl
+
+// The master template for the EditForm classes
+
+var key string = strings.Title(dd.DbKey)
+var formName = key + t.GoName + "EditForm"
+
+
+{{
+package form
+
+import (
+    "github.com/spekary/goradd/pkg/page"
+     .  "github.com/spekary/goradd/pkg/page/control"
+     "goradd-project/gen/{{dd.DbKey}}/panel"
+    "context"
+    "github.com/spekary/goradd/pkg/page/action"
+	"fmt"
+)
+
+const {{= key }}{{= t.GoName }}EditPath = "/form/{{= key }}/{{= t.GoName }}Edit"
+const {{= key }}{{= t.GoName }}EditID = "{{= formName }}"
+const {{= t.GoName }}Singular = "{{= t.GoName }}"
+const {{= t.GoName }}Plural = "{{= t.GoPlural }}"
+
+const (
+    {{= t.GoName }}SaveAction = iota + 1
+    {{= t.GoName }}CancelAction
+    {{= t.GoName }}DeleteAction
+)
+
+
+// The {{= formName }} is a form wrapper for the corresponding edit panel.
+// To edit it, make a copy and move it out of this package and into another
+type {{= formName }} struct {
+    FormBase
+    EditPanel *panel.{{= t.GoName }}EditPanel
+    SaveButton *Button
+    CancelButton *Button
+    DeleteButton *Button
+}
+
+func New{{= formName }}(ctx context.Context) page.FormI {
+    f := new({{= formName }})
+    f.Init(ctx, f, {{= key }}{{= t.GoName }}EditPath, {{= key }}{{= t.GoName }}EditID)
+    return f
+}
+
+func (f *{{= formName }})Init(ctx context.Context, self page.FormI, path string, id string) {
+    f.FormBase.Init(ctx, self, path, id)
+
+	f.AddRelatedFiles()
+	f.createControls(ctx)
+}
+
+func (f *{{= formName }})Run(ctx context.Context) (err error) {
+
+    // If you are authorizing the current user, do that here
+    // if !authorized() {
+    //    return page.FrameworkErrNotAuthorized
+    //}
+
+	return
+}
+
+
+func (f *{{= formName }}) AddReleatedFiles() {
+    f.FormBase.AddRelatedFiles()
+
+    // Add additional javascript, css and other files here
+}
+
+func (f *{{= formName }}) createControls(ctx context.Context) {
+	f.EditPanel = panel.New{{= t.GoName }}EditPanel(f, "edit-panel")
+	f.SaveButton = NewButton(f, "save-button")
+    f.SaveButton.SetText(f.T("Save"))
+	f.SaveButton.OnSubmit(action.Ajax(f.ID(), {{= t.GoName }}SaveAction))
+	f.CancelButton = NewButton(f, "cancel-button")
+	f.CancelButton.SetText(f.T("Cancel"))
+	f.CancelButton.OnSubmit(action.Ajax(f.ID(), {{= t.GoName }}CancelAction))
+	f.CancelButton.SetValidationType(page.ValidateNone)
+	f.DeleteButton = NewButton(f, "delete-button")
+	f.DeleteButton.SetText(f.T("Delete"))
+	f.DeleteButton.OnSubmit(
+	    action.Confirm(fmt.Sprintf(f.T("Are you sure you want to delete this %s"), {{= t.GoName }}Singular)),
+	    action.Ajax(f.ID(), {{= t.GoName }}DeleteAction),
+	    )
+	f.DeleteButton.SetValidationType(page.ValidateNone)
+}
+
+
+// LoadControls is the place to load up the form controls when the form is first created.
+func (f *{{= formName }}) LoadControls(ctx context.Context) {
+    if id, ok := page.GetContext(ctx).FormValue("id"); ok {
+    	f.EditPanel.Load(ctx, id)
+        f.DeleteButton.SetVisible(true)
+        f.Page().SetTitle(fmt.Sprintf(f.T("Edit %s"), {{= t.GoName }}Singular))
+    } else {
+        f.EditPanel.Load(ctx, "")
+        f.DeleteButton.SetVisible(false)
+        f.Page().SetTitle(fmt.Sprintf(f.T("New %s"), {{= t.GoName }}Singular))
+    }
+}
+
+func (f *{{= formName }}) Action(ctx context.Context, a page.ActionParams) {
+	switch a.ID {
+	case {{= t.GoName }}SaveAction:
+	    f.EditPanel.Save(ctx)
+	    f.returnToPrevious()
+    case {{= t.GoName }}CancelAction:
+        f.returnToPrevious()
+    case {{= t.GoName }}DeleteAction:
+        f.EditPanel.Delete(ctx)
+        f.returnToPrevious()
+    }
+}
+
+func (f *{{= formName }}) returnToPrevious() {
+	f.ChangeLocation("/form/{{= t.GoName }}List")
+}
+
+func init() {
+	page.RegisterPage({{= key }}{{= t.GoName }}EditPath,  New{{= formName }}, {{= key }}{{= t.GoName }}EditID)
+}
+
+
+}}
+

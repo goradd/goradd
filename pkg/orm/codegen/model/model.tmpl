@@ -1,0 +1,34 @@
+// The master template for the model classes
+
+{{
+package model
+
+import (
+    "fmt"
+    "context"
+)
+
+type {{= t.GoName }} struct {
+	{{= strings2.LcFirst(t.GoName) }}Base
+}
+
+// Create a new {{= t.GoName }} object and initialize to default values.
+func New{{= t.GoName }}(ctx context.Context) *{{= t.GoName }} {
+	o := {{= t.GoName }}{}
+	o.Initialize(ctx)
+	return &o
+}
+
+// Initialize or re-initialize a {{= t.GoName }} database object to default values.
+func (o *{{= t.GoName }}) Initialize(ctx context.Context) {
+	o.{{= strings2.LcFirst(t.GoName) }}Base.Initialize()
+    // Add your own initializations here
+}
+
+// String implements the Stringer interface and returns the default label for the object as it appears in html lists.
+// Typically you would change this to whatever was pertinent to your application.
+func (o *{{= t.GoName }}) String() string  {
+    return fmt.Sprintf("Object id %v", o.PrimaryKey())
+}
+
+}}

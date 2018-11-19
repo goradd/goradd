@@ -9,11 +9,11 @@ package test
 import (
 	"context"
 	"fmt"
-	"github.com/spekary/goradd/datetime"
-	"github.com/spekary/goradd/page"
-	"github.com/spekary/goradd/page/action"
-	. "github.com/spekary/goradd/page/control"
-	"github.com/spekary/goradd/page/event"
+	"github.com/spekary/goradd/pkg/datetime"
+	"github.com/spekary/goradd/pkg/page"
+	"github.com/spekary/goradd/pkg/page/action"
+	. "github.com/spekary/goradd/pkg/page/control"
+	"github.com/spekary/goradd/pkg/page/event"
 	"runtime"
 )
 

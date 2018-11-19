@@ -1,7 +1,7 @@
 package control_base
 
 import (
-	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/pkg/page"
 	"context"
 )
 

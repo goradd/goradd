@@ -1,0 +1,38 @@
+package template
+
+// This template generates a got template for the corresponding edit form
+
+import (
+	"github.com/spekary/goradd/tools/codegen/generator"
+	"goradd-project/config"
+	"bytes"
+	"github.com/spekary/goradd/pkg/orm/db"
+    "strings"
+)
+
+func init() {
+	t := EditPanelTplTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.ProjectDir() + "/gen",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type EditPanelTplTemplate struct {
+	generator.Template
+}
+
+func (n *EditPanelTplTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/panel/template_source/inactive/" + t.GoName + "EditPanel.tpl.got"
+}
+
+func (n *EditPanelTplTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+	{{: "panel/editTpl.tmpl" }}
+}
+
+func (n *EditPanelTplTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+

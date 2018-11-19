@@ -5,14 +5,13 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/spekary/goradd/pkg/sys"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
-
-	"github.com/spekary/goradd/util"
 )
 
 var port = flag.Int("p", 8082, "Start the webserver from the given port, example: -p 8082. Default is 8082.")
@@ -75,7 +74,7 @@ func serveHome() http.Handler {
 }
 
 func isInstalled() bool {
-	return util.PathExists(projectPath())
+	return sys.PathExists(projectPath())
 }
 
 func srcPath() string {
@@ -89,7 +88,7 @@ func projectPath() string {
 func goraddPath() string {
 	var err error
 	if modules == nil {
-		if modules, err = util.ModulePaths(); err != nil {
+		if modules, err = sys.ModulePaths(); err != nil {
 			return ""
 		}
 	}

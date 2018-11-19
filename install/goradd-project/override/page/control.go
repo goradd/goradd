@@ -1,7 +1,7 @@
 package page
 
 import (
-	grPage "github.com/spekary/goradd/page"
+	grPage "github.com/spekary/goradd/pkg/page"
 )
 
 // The public interface for control overrides

@@ -1,0 +1,36 @@
+package template
+
+import (
+	"github.com/spekary/goradd/tools/codegen/generator"
+	"goradd-project/config"
+	"bytes"
+	"github.com/spekary/goradd/pkg/orm/db"
+	strings2	"github.com/spekary/goradd/pkg/strings"
+)
+
+func init() {
+	t := ModelBaseTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.ProjectDir() + "/gen",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type ModelBaseTemplate struct {
+	generator.Template
+}
+
+func (n *ModelBaseTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/model/" + t.GoName + ".base.go"
+}
+
+func (n *ModelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+	privateName := strings.ToLower(t.GoName[:1]) + t.GoName[1:]
+	{{: "modelBase/modelBase.tmpl" }}
+}
+
+func (n *ModelBaseTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}

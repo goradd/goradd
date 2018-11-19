@@ -6,7 +6,7 @@ import (
 	"strings"
 	"html"
 	"fmt"
-	"github.com/spekary/goradd/util"
+	"github.com/spekary/goradd/ideas"
 	"path/filepath"
 )
 
@@ -52,7 +52,7 @@ func startInstaller() {
 			return
 		}
 		results += "Copying goradd-project directory\n"
-		err = util.DirectoryCopy(filepath.Join(goraddPath(), "buildtools", "install", "goradd-project"), srcPath())
+		err = ideas.DirectoryCopy(filepath.Join(goraddPath(), "buildtools", "install", "goradd-project"), srcPath())
 		if err != nil {
 			results += fmt.Sprintf("Error copying goradd-project directory: %s", err.Error())
 			stop = true
@@ -60,7 +60,7 @@ func startInstaller() {
 		}
 
 		results += "Copying goradd-tmp directory\n"
-		err = util.DirectoryCopy(filepath.Join(goraddPath(), "buildtools", "install", "goradd-tmp"), srcPath())
+		err = ideas.DirectoryCopy(filepath.Join(goraddPath(), "buildtools", "install", "goradd-tmp"), srcPath())
 		if err != nil {
 			results += fmt.Sprintf("Error copying goradd-tmp directory: %s", err.Error())
 			stop = true

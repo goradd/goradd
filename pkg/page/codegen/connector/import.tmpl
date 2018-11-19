@@ -1,0 +1,18 @@
+// import.tmpl
+{{
+import (
+    "context"
+    "github.com/spekary/goradd/pkg/page"
+	"goradd-project/gen/{{dd.DbKey}}/model"
+{{for _,imp := range t.Imports}}
+{{if imp.Alias == ""}}
+    "{{= imp.Path }}"
+{{else}}
+    {{= imp.Alias }} "{{= imp.Path }}"
+{{if}}
+{{for}}
+
+)
+}}
+
+

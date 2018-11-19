@@ -2,10 +2,10 @@ package app
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/app"
-	"github.com/spekary/goradd/html"
-	grlog "github.com/spekary/goradd/log"
-	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/web/app"
+	"github.com/spekary/goradd/pkg/html"
+	grlog "github.com/spekary/goradd/pkg/log"
+	"github.com/spekary/goradd/pkg/page"
 	"log"
 	"net/http"
 	"os"

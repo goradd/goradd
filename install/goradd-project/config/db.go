@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/go-sql-driver/mysql"
-	"github.com/spekary/goradd/orm/db"
+	"github.com/spekary/goradd/pkg/orm/db"
 )
 
 // Initialize the databases that the application will use through the database query interfaces

@@ -1,0 +1,64 @@
+//connector.tmpl
+
+// The master template for the connector classes
+
+var privateName = strings2.LcFirst(t.GoName)
+
+
+{{
+package connector
+
+import (
+   "github.com/spekary/goradd/pkg/page"
+   "context"
+)
+
+
+// This is the connector override. Feel free to edit.
+
+type {{= t.GoName }} struct {
+    {{= privateName }}Base
+
+    // Put additional controls here. Be sure to create a NewControl*** function for it, and also
+    // create entries in Update and Refresh below.
+}
+
+
+func New{{t.GoName}}Connector(parent page.ControlI) *{{t.GoName}} {
+    c := new({{= t.GoName }})
+    c.ParentControl = parent
+    return c
+}
+
+}}
+
+{{: load.tmpl }}
+
+{{: save.tmpl }}
+
+{{
+/*
+If you add your own control to the connector, uncomment this area and fill in with info on how to update and refresh the control
+from the data in the database.
+
+func (c *{{t.GoName}}) Refresh() {
+	c.{{= privateName }}Base.Refresh()
+
+	if c.MyControl != nil {
+		if c.{{t.GoName}}.MyDataIsValid() {
+			c.MyControl.SetValue(c.{{t.GoName}}.MyData())
+		} else {
+			c.MyControl.SetValue(nil)
+		}
+	}
+}
+
+func (c *{{t.GoName}}) Update() {
+	c.{{= privateName }}Base.Update()
+
+	if c.MyControl != nil {
+		c.{{t.GoName}}.SetMyData(c.MyControl.Value())
+	}
+}
+*/
+}}

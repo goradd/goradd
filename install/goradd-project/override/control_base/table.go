@@ -1,7 +1,7 @@
 package control_base
 
 import (
-	"github.com/spekary/goradd/page/control/control_base/table"
+	"github.com/spekary/goradd/pkg/page/control/control_base/table"
 )
 
 

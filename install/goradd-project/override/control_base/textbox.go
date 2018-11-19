@@ -3,8 +3,8 @@ package control_base
 import (
 	"encoding/gob"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/spekary/goradd/page"
-	gr_control_base "github.com/spekary/goradd/page/control/control_base"
+	"github.com/spekary/goradd/pkg/page"
+	gr_control_base "github.com/spekary/goradd/pkg/page/control/control_base"
 	html2 "html"
 )
 

@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/spekary/goradd/app"
+	"github.com/spekary/goradd/web/app"
 	"github.com/spekary/goradd/global"
 	"net/http"
 	fcgiserver "net/http/fcgi"
@@ -15,15 +15,15 @@ import (
 
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/stores/memstore"
-	"github.com/spekary/goradd/session"
+	"github.com/spekary/goradd/pkg/session"
 	"time"
 	"bytes"
-	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/pkg/page"
 	"goradd-project/config"
 	_ "goradd-project/form" // Your pre-built goradd forms. Move these to another package as needed.
 
 	// These are the packages that contain your actual goradd forms. init() code should register the forms
-	_ "github.com/spekary/goradd/bootstrap/examples"
+	_ "github.com/spekary/goradd/pkg/bootstrap/examples"
 
 	// Custom paths, including additional form directories
 	_ "site"

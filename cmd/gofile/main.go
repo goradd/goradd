@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"github.com/spekary/goradd/util"
+	"github.com/spekary/goradd/ideas"
 	"strings"
 )
 
@@ -13,7 +13,7 @@ func main() {
 	var curOption string
 	var excludes = make(map[string]bool)
 
-	modules, err  := util.ModulePaths()
+	modules, err  := ideas.ModulePaths()
 
 	if err != nil {
 		panic(err)
@@ -42,7 +42,7 @@ func main() {
 			continue
 		}
 
-		f, err = util.GetModulePath(f, modules)
+		f, err = ideas.GetModulePath(f, modules)
 
 		if cmd == "mkdir" {
 			files = append(files, f)
@@ -70,7 +70,7 @@ func main() {
 		}
 	case "generate":
 		for _,f := range files {
-			util.ExecuteShellCommand("go generate " + f)
+			ideas.ExecuteShellCommand("go generate " + f)
 		}
 	case "copy":
 		copyFiles(files)
@@ -111,7 +111,7 @@ func copyFiles(files []string) {
 			if !fInfo2.IsDir() {
 				panic ("Cannot copy a directory onto a file")
 			} else {
-				err = util.DirectoryCopy(file, dest)
+				err = ideas.DirectoryCopy(file, dest)
 				if err != nil {
 					panic (err)
 				}
@@ -125,7 +125,7 @@ func copyFiles(files []string) {
 				_,f := filepath.Split(file)
 				destFile = filepath.Join(destFile, f)
 			}
-			err = util.FileCopy(file, destFile)
+			err = ideas.FileCopy(file, destFile)
 			if err != nil {
 				panic (err)
 			}

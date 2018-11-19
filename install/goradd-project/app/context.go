@@ -2,8 +2,8 @@ package app
 
 import (
 	"context"
-	"github.com/spekary/goradd/goradd"
-	"github.com/spekary/goradd/page"
+	"github.com/spekary/goradd/internal/goradd"
+	"github.com/spekary/goradd/pkg/page"
 	"os"
 )
 

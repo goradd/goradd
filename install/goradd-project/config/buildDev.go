@@ -3,7 +3,7 @@
 package config
 
 import (
-	"github.com/spekary/goradd/util"
+	"github.com/spekary/goradd/ideas"
 	"path/filepath"
 )
 
@@ -42,7 +42,7 @@ func ProjectDir() string {
 }
 
 func init() {
-	gopath := util.GoPath()
+	gopath := ideas.GoPath()
 	goraddDir = filepath.Join(gopath, "src","github.com","spekary","goradd")
 	projectDir = filepath.Join(gopath, "src","goradd-project")
 	goraddAssets = filepath.Join(goraddDir, "assets")
