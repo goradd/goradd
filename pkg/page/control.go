@@ -6,7 +6,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/spekary/gengen/maps"
-	"github.com/spekary/goradd/internal/goradd"
+	"github.com/spekary/goradd/pkg/base"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/log"
 	action2 "github.com/spekary/goradd/pkg/page/action"
@@ -188,7 +188,7 @@ type attributeScriptEntry struct {
 }
 
 type Control struct {
-	goradd.Base
+	base.Base
 
 	id   string
 	page *Page // Page This control is part of

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/spekary/goradd/internal/goradd"
+	"github.com/spekary/goradd/pkg/base"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
 	html2 "html"
@@ -57,7 +57,7 @@ type CellTexter interface {
 }
 
 type ColumnBase struct {
-	goradd.Base
+	base.Base
 	id               string
 	parentTable      TableI
 	title            string
