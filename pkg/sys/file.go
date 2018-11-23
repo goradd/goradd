@@ -124,7 +124,7 @@ func DirectoryCopy(src, dst string) (err error) {
 		return fmt.Errorf("destination directory error: %s", dstErr.Error())
 	}
 
-	if len(src) >= len(dst) && dst[:len(src)] == src { // does dst start with src?
+	if len(src) <= len(dst) && dst[:len(src)] == src { // does dst start with src?
 		return fmt.Errorf("destination directory is not allowed to be in the src directory")
 	}
 

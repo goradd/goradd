@@ -71,11 +71,11 @@ func Debugf(format string, v ...interface{}) {
 }
 
 func Print(logType int, v ...interface{}) {
-	_print(logType, v)
+	_print(logType, v...)
 }
 
 func Printf(logType int, format string, v ...interface{}) {
-	_printf(logType, format, v)
+	_printf(logType, format, v...)
 }
 
 

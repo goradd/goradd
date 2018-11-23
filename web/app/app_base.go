@@ -63,6 +63,6 @@ func init() {
 	if !config.Release {
 		// Initialize the directory path for the goradd source
 		_, filename, _, _ := runtime.Caller(0)
-		config.GoraddDir = filepath.Dir(filepath.Dir(filename))
+		config.GoraddDir = filepath.Dir(filepath.Dir(filepath.Dir(filename)))
 	}
 }

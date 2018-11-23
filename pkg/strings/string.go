@@ -7,7 +7,7 @@ import (
 
 // StartsWith returns true if the string begins with the beginning string.
 func StartsWith(s string, beginning string) bool {
-	return len(beginning) >= len(s) && s[:len(beginning)] == beginning
+	return len(beginning) <= len(s) && s[:len(beginning)] == beginning
 }
 
 // EndsWith returns true if the string ends with the ending string.

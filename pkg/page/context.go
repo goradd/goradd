@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/spekary/goradd/internal/goradd"
+	"github.com/spekary/goradd/pkg/goradd"
 	"github.com/spekary/goradd/pkg/orm/db"
 	"goradd-project/config"
 	"mime/multipart"

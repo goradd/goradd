@@ -1,15 +1,14 @@
 package app
 
 import (
-	"fmt"
-	"github.com/spekary/goradd/web/app"
 	"github.com/spekary/goradd/pkg/html"
 	grlog "github.com/spekary/goradd/pkg/log"
 	"github.com/spekary/goradd/pkg/page"
+	"github.com/spekary/goradd/web/app"
+	"goradd-project/config"
 	"log"
 	"net/http"
 	"os"
-	"goradd-project/config"
 )
 
 type Application struct {
@@ -45,17 +44,14 @@ func (a *Application) Init() {
 	// Control how pages are serialized if a serialization cache is being used
 	page.SetPageEncoder(page.GobPageEncoder{})
 
-	grlog.Loggers[grlog.InfoLog] = log.New(os.Stdout, "Info: ", log.Ldate|log.Ltime)
+	// Framework error log
 	grlog.Loggers[grlog.FrameworkDebugLog] = log.New(os.Stdout, "Framework: ", log.Ldate|log.Ltime|log.Lshortfile)
-	grlog.Loggers[grlog.DebugLog] = log.New(os.Stdout, "Debug: ", log.Ldate|log.Ltime|log.Lshortfile)
+
+	// App specific loggers
+	grlog.Loggers[grlog.InfoLog] = log.New(os.Stdout, "Info: ", log.Ldate|log.Ltime)
 	grlog.Loggers[grlog.WarningLog] = log.New(os.Stderr, "Warning: ", log.Ldate|log.Ltime|log.Llongfile)
 	grlog.Loggers[grlog.ErrorLog] = log.New(os.Stderr, "Error: ", log.Ldate|log.Ltime|log.Llongfile)
-
-	f,err := os.Create("shot.log")
-	if err != nil {
-		panic(fmt.Errorf("Error creating shot.log %s", err.Error()))
-	}
-	grlog.Loggers[config.ShotLog] = log.New(f, "", log.Ldate|log.Ltime)
+	grlog.Loggers[grlog.DebugLog] = log.New(os.Stdout, "Debug: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	page.DefaultCheckboxLabelDrawingMode = html.LabelAfter
 
