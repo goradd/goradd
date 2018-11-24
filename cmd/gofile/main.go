@@ -79,7 +79,34 @@ func main() {
 
 	case "mkdir":
 		makeDirectory(files)
+
+	default:
+		usage()
 	}
+}
+
+// Print basic usage information
+func usage() {
+	u := `gofile is a tool to help with building go projects 
+
+Usage:
+
+	gofile <command> [arguments] <files or directories>
+
+The commands are:
+
+	remove      delete files or directories
+	generate	run go generate on files
+	copy        copy a file, files or a directory
+	mkdir       create a directory
+
+File and directory paths that start with a module path will have that path substituted by the location of that item on disk.
+
+The arguments are:
+	-x 			exclude the given named items from the operation 
+
+`
+	fmt.Print(u)
 }
 
 
