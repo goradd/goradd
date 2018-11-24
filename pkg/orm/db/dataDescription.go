@@ -250,6 +250,17 @@ func (dd *DatabaseDescription) analyzeTypeTables() {
 		var key uint
 		var value string
 		var ok bool
+
+		tt.EnglishName = dd.dbNameToEnglishName(tt.DbName)
+		tt.EnglishPlural = dd.dbNameToEnglishPlural(tt.DbName)
+		tt.GoName = dd.dbNameToGoName(tt.DbName)
+		tt.LcGoName = strings.ToLower(tt.GoName[:1]) + tt.GoName[1:]
+		tt.GoPlural = dd.dbNameToGoPlural(tt.DbName)
+
+		if len(tt.Values) == 0 {
+			log.Print("Warning: type table " + tt.DbName + " has no data entries. Specify constants by adding entries to this table.")
+		}
+
 		for _, m := range tt.Values {
 			key, ok = m[names[0]].(uint)
 			if !ok {
@@ -264,20 +275,6 @@ func (dd *DatabaseDescription) analyzeTypeTables() {
 				con += strings.Title(strings.ToLower(word))
 			}
 			tt.Constants[key] = con
-
-			if tt.EnglishName == "" {
-				tt.EnglishName = dd.dbNameToEnglishName(tt.DbName)
-			}
-			if tt.EnglishPlural == "" {
-				tt.EnglishPlural = dd.dbNameToEnglishPlural(tt.DbName)
-			}
-			if tt.GoName == "" {
-				tt.GoName = dd.dbNameToGoName(tt.DbName)
-				tt.LcGoName = strings.ToLower(tt.GoName[:1]) + tt.GoName[1:]
-			}
-			if tt.GoPlural == "" {
-				tt.GoPlural = dd.dbNameToGoPlural(tt.DbName)
-			}
 		}
 
 	}
