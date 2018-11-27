@@ -7,6 +7,9 @@ import (
 	"github.com/gedex/inflector"
 	"github.com/knq/snaker"
 	"github.com/spekary/goradd/pkg/orm/db"
+	"github.com/spekary/goradd/pkg/orm/query"
+	"strings"
+	"strconv"
 )
 
 func init() {
