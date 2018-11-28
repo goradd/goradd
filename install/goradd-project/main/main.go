@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 
 	// local imports
-	localapp "goradd-project/app"
+	localapp "goradd-project/web/app"
 
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/stores/memstore"
