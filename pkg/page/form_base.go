@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-const htmlVarFormstate  = "Goradd__FormState"
+const htmlVarFormstate  = "Goradd__PageState"
 const htmlVarParams  = "Goradd__Params"
 
 type FormI interface {

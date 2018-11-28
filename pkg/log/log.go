@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"goradd-project/config"
+	"os"
 )
 
 const FrameworkDebugLog = 1 // Should only exist when debugging style logs are required for debugging the goradd framework itself.
@@ -13,7 +14,33 @@ const WarningLog = 3        // Should be sent to sysop periodically (daily perha
 const ErrorLog = 4          // Should be sent to sysop immediately
 const DebugLog = 10         // Debug log for the developer's application, separate from the goradd framework debug log
 
-var Loggers = map[int]*log.Logger{}
+type LoggerI interface {
+	Log(err string)
+}
+
+type StandardLogger struct {
+	*log.Logger
+}
+
+type EmailLogger struct {
+	StandardLogger
+	EmailAddresses []string
+}
+
+func (l StandardLogger) Log(out string) {
+	l.Output(4, out)
+}
+
+func (l EmailLogger) Log(out string) {
+	l.Output(4, out)
+
+	// TODO: Create emailer
+	// email.ErrorSend(l.EmailAddresses, "Error", out)
+}
+
+
+
+var Loggers = map[int]LoggerI{}
 
 func HasLogger(id int) bool {
 	_, ok := Loggers[id]
@@ -81,12 +108,29 @@ func Printf(logType int, format string, v ...interface{}) {
 
 func _print(logType int, v ...interface{}) {
 	if l, ok := Loggers[logType]; ok {
-		l.Output(3, fmt.Sprint(v...))
+		l.Log(fmt.Sprint(v...))
 	}
 }
 
 func _printf(logType int, format string, v ...interface{}) {
 	if l, ok := Loggers[logType]; ok {
-		l.Output(3, fmt.Sprintf(format, v...))
+		l.Log(fmt.Sprintf(format, v...))
 	}
+}
+
+
+// Create's default loggers for the application. After calling this, you can replace the loggers with your own, and
+// add additional loggers to the logging array.
+func CreateDefaultLoggers() {
+	// make these strings the same size to improve the look of the log
+	Loggers[FrameworkDebugLog] = StandardLogger{log.New(os.Stdout,
+		"Framework: ", log.Ldate|log.Lmicroseconds|log.Lshortfile)}
+	Loggers[InfoLog] = StandardLogger{log.New(os.Stdout,
+		"Info:      ", log.Ldate|log.Lmicroseconds)}
+	Loggers[DebugLog] = StandardLogger{log.New(os.Stdout,
+		"Debug:     ", log.Ldate|log.Lmicroseconds|log.Lshortfile)}
+	Loggers[WarningLog] = StandardLogger{log.New(os.Stderr,
+		"Warning:   ", log.Ldate|log.Lmicroseconds|log.Llongfile)}
+	Loggers[ErrorLog] = StandardLogger{log.New(os.Stderr,
+		"Error:     ", log.Ldate|log.Lmicroseconds|log.Llongfile)}
 }

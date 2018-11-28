@@ -1030,8 +1030,8 @@ goradd.getForm = function() {
     return $('form[data-grctl="form"]')[0]
 };
 
-goradd.getFormState = function() {
-    return document.getElementById("Goradd__FormState").value;
+goradd.getPageState = function() {
+    return document.getElementById("Goradd__PageState").value;
 };
 
 

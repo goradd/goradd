@@ -10,7 +10,10 @@ import (
 	"strings"
 )
 
-func DefaultErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, buf *bytes.Buffer) {
+// The DebugErrorPageTmpl writes a debug error page to the html output so that it will display the error in the
+// browser, possibly as a popup. Do not use this on the release server, as it may expose details of your application
+// that you do not want exposed.
+func DebugErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, buf *bytes.Buffer) {
 
 	buf.WriteString(`<!DOCTYPE html>
 <html lang="en">

@@ -1,0 +1,39 @@
+package page
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+    "github.com/spekary/goradd/pkg/log"
+)
+
+// The ReleaseErrorPageTmpl function will output a friendly error message to a user in release mode, and log the
+// error to the Error log.
+func ReleaseErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, buf *bytes.Buffer) {
+{{
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+</head>
+<body>
+<h1>Error</h1>
+<p>
+An unexpected error has occurred and your request could not be processed. The error has been logged and we will
+attempt to fix the problem as soon as possible.
+</p>
+</body>
+</html>
+
+}}
+
+    // Build the logged error.
+    var s string
+    for _,stack := range err.Stack {
+        s += fmt.Sprintf("%s line %d in %s\n", stack.File, stack.Line, stack.Func)
+    }
+    log.Error(err.Error(), "\n", s, partialHtml)
+
+	return
+}

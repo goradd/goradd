@@ -20,9 +20,6 @@ type PageEncoderI interface {
 }
 
 func SetPageEncoder(e PageEncoderI) {
-	if pageEncoder != nil {
-		panic("Only set the page encoder when the application is initialized, and only once.")
-	}
 	pageEncoder = e
 }
 

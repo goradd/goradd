@@ -5,7 +5,6 @@ package page
 import (
 	"bytes"
 	"context"
-
 	"github.com/spekary/goradd/pkg/html"
 )
 

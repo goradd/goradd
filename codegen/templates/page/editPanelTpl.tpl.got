@@ -3,7 +3,7 @@ package template
 // This template generates a got template for the corresponding edit form
 
 import (
-	"github.com/spekary/goradd/tools/codegen/generator"
+	"github.com/spekary/goradd/codegen/generator"
 	"goradd-project/config"
 	"bytes"
 	"github.com/spekary/goradd/pkg/orm/db"

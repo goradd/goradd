@@ -6,7 +6,8 @@ import (
 	"net/http"
 )
 
-// SCS_Manager satisfies the ManagerI interface for the github.com/alexedwards/scs session manager
+// SCS_Manager satisfies the ManagerI interface for the github.com/alexedwards/scs session manager. You can use it as an example
+// of how to incorporate a different session manager into your app.
 type SCS_Manager struct {
 	*scs.Manager
 }
@@ -57,16 +58,3 @@ func (mgr SCS_Manager) Use(next http.Handler) http.Handler {
 	return mgr.Manager.Use(http.HandlerFunc(fn))
 }
 
-// SCS_Session is a goradd session manager that uses the github.com/alexedwards/scs session manager.
-// It implements the SessionI interface
-type SCS_Session struct {
-	writer  http.ResponseWriter
-	mgr     *scs.Manager
-	session *scs.Session
-}
-
-func (s *SCS_Session) Load(mgr *scs.Manager, w http.ResponseWriter, r *http.Request) {
-	s.writer = w
-	s.mgr = mgr
-	s.session = mgr.Load(r)
-}

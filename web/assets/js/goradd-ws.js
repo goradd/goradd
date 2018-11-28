@@ -31,7 +31,7 @@ goradd.initMessagingClient = function(wsPort, wssPort) {
             con = "ws://";
             port = wsPort;
         }
-        con += window.location.hostname + ":" + port + "/ws?id=" + goradd.getFormState() + "&ch=form-" + goradd.getFormState();
+        con += window.location.hostname + ":" + port + "/ws?id=" + goradd.getPageState() + "&ch=form-" + goradd.getPageState();
 
         goradd._ws = new WebSocket(con);
         goradd._ws.addEventListener("message", goradd._handleMessage);
@@ -53,7 +53,7 @@ goradd._handleMessage = function(e) {
     if (messages.some(function(message) {
         return (message.grup)
     })) {
-        console.log("update " + goradd.getFormState());
+        console.log("update " + goradd.getPageState());
         goradd.updateForm();
     }
 };

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"goradd-project/config/codegen"
 	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/tools/codegen/generator"
+	"github.com/spekary/goradd/codegen/generator"
 )
 
 func init() {

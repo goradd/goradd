@@ -1,3 +1,4 @@
+github.com/alexedwards/scs v1.4.0/go.mod h1:JRIFiXthhMSivuGbxpzUa0/hT5rz2hpyw61Bmd+S1bg=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/spekary/gengen v0.0.0-20181114132625-5a2d3e95c4f2 h1:4YGmSrdtPjjxpfMOC8U3zFhBEl1vVw7NrY07mvu+wnE=

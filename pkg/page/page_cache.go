@@ -17,9 +17,6 @@ type PageCacheI interface {
 var pageCache PageCacheI
 
 func SetPageCache(c PageCacheI) {
-	if pageCache != nil {
-		panic("Only set the override cache when the application is initialized, and only once.")
-	}
 	pageCache = c
 }
 
