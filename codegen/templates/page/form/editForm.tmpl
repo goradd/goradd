@@ -18,7 +18,7 @@ import (
 	"fmt"
 )
 
-const {{= key }}{{= t.GoName }}EditPath = "/form/{{= key }}/{{= t.GoName }}Edit"
+const {{= key }}{{= t.GoName }}EditPath = "/form/{{= dd.DbKey }}/{{= t.GoName }}Edit"
 const {{= key }}{{= t.GoName }}EditID = "{{= formName }}"
 const {{= t.GoName }}Singular = "{{= t.GoName }}"
 const {{= t.GoName }}Plural = "{{= t.GoPlural }}"

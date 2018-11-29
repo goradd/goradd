@@ -160,15 +160,15 @@ func Generate() {
 			}
 		}
 
-		for _, typeTableTemplate := range OneTimeTemplates {
+		for _, oneTimeTemplate := range OneTimeTemplates {
 			buf.Reset()
 			// the template generator function in each template, by convention
-			typeTableTemplate.GenerateOnce(codegen, dd, buf)
-			fileName := typeTableTemplate.FileName(key)
+			oneTimeTemplate.GenerateOnce(codegen, dd, buf)
+			fileName := oneTimeTemplate.FileName(key)
 			path := filepath.Dir(fileName)
 
 			if _, err := os.Stat(fileName); err == nil {
-				if !typeTableTemplate.Overwrite() {
+				if !oneTimeTemplate.Overwrite() {
 					continue
 				}
 			}

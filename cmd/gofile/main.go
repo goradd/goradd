@@ -14,6 +14,11 @@ func main() {
 	var curOption string
 	var excludes = make(map[string]bool)
 
+	if len(os.Args) <= 2 {
+		usage()
+		return
+	}
+
 	modules, err  := sys.ModulePaths()
 
 	if err != nil {
@@ -103,7 +108,10 @@ The commands are:
 File and directory paths that start with a module path will have that path substituted by the location of that item on disk.
 
 The arguments are:
-	-x 			exclude the given named items from the operation 
+	-x 			exclude the given named items from the operation
+
+Copyright (c) 2018 Shannon Pekary.
+All Rights Reserved.
 
 `
 	fmt.Print(u)

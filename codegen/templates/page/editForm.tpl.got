@@ -13,7 +13,7 @@ func init() {
 	t := EditFormTemplate {
 		generator.Template {
 			Overwrite: true,
-			TargetDir: config.ProjectDir() + "/form",
+			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}
 	generator.AddTableTemplate(&t)
@@ -24,7 +24,7 @@ type EditFormTemplate struct {
 }
 
 func (n *EditFormTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + strings.Title(key) + t.GoName + "EditForm.go"
+	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "EditForm.go"
 }
 
 func (n *EditFormTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {

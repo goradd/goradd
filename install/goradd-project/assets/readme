@@ -1,8 +1,0 @@
-This directory is where you place your statically served stylesheet, images, javascript, etc.
-You can refer to files in these directories from html by prepending "/assets/project" in front of the directory
-and file name. In other words, to display pic.jpg that is in the image directory, you can use the following html:
-
-<img src="/assets/project/image/pic.jpg">
-
-There are ways to serve up static files from other directories. But by default the system is designed to serve
-these up in development mode, and easily deploy these when you are releasing.

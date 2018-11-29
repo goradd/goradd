@@ -7,13 +7,14 @@ import (
 	"goradd-project/config"
 	"bytes"
 	"github.com/spekary/goradd/pkg/orm/db"
+	"strings"
 )
 
 func init() {
 	t := FormBuildTemplate {
 		generator.Template {
 			Overwrite: false,
-			TargetDir: config.ProjectDir() + "/form/template_source",
+			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}
 	generator.AddOneTimeTemplate(&t)
@@ -21,10 +22,19 @@ func init() {
     t2 := FormIndexTemplate {
         generator.Template {
             Overwrite: true,
-            TargetDir: config.ProjectDir() + "/form",
+            TargetDir: config.ProjectDir() + "/gen",
         },
     }
     generator.AddOneTimeTemplate(&t2)
+
+    t3 := FormImportTemplate {
+        generator.Template {
+            Overwrite: true,
+            TargetDir: config.ProjectDir() + "/gen",
+        },
+    }
+    generator.AddOneTimeTemplate(&t3)
+
 }
 
 type FormBuildTemplate struct {
@@ -32,7 +42,7 @@ type FormBuildTemplate struct {
 }
 
 func (n *FormBuildTemplate) FileName(key string) string {
-	return n.TargetDir + "/build.go"    // This ignores the key, so will overwrite itself for each database. Not a big deal.
+	return n.TargetDir + "/" + key + "/form/template_source/build.go"
 }
 
 func (n *FormBuildTemplate) GenerateOnce(codegen generator.Codegen, dd *db.DatabaseDescription, buf *bytes.Buffer) {
@@ -59,4 +69,20 @@ func (n *FormIndexTemplate) Overwrite() bool {
 	return n.Template.Overwrite
 }
 
-// TODO: Build out the index.html file
+type FormImportTemplate struct {
+	generator.Template
+}
+
+func (n *FormImportTemplate) FileName(key string) string {
+	return n.TargetDir + "/import.go"    // This ignores the key, so will overwrite itself for each database. Not a big deal.
+}
+
+func (n *FormImportTemplate) GenerateOnce(codegen generator.Codegen, dd *db.DatabaseDescription, buf *bytes.Buffer) {
+	{{: "form/import.tmpl" }}
+}
+
+func (n *FormImportTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+
+
