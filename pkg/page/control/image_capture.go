@@ -1,10 +1,9 @@
 package control
 
 import (
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/page"
-	localPage "goradd-project/override/page"
 	"context"
-	"goradd-project/config"
 	"encoding/base64"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/log"
@@ -21,7 +20,7 @@ const (
 const imageCaptureScriptCommand = "imageCapture"
 
 type ImageCaptureI interface {
-	localPage.ControlI
+	page.ControlI
 }
 
 // ImageCapture is a panel that has both an image and button to help you capture images from the user.

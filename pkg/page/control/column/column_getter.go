@@ -9,7 +9,7 @@ import (
 // GetterColumn is a column that uses the Getter interface to get the text out of columns. The data therefore should be
 // a slice of objects that implement the Getter interface.
 type GetterColumn struct {
-	control_base.ColumnBase
+	control.ColumnBase
 }
 
 type Getter interface {
@@ -68,7 +68,7 @@ type GetterTexter struct {
 	TimeFormat string
 }
 
-func (t GetterTexter) CellText(ctx context.Context, col table.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t GetterTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
 	switch v := data.(type) {
 	case Getter:
 		d := v.Get(t.Key)

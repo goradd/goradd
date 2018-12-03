@@ -3,18 +3,17 @@ package control
 import (
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	"goradd-project/override/control_base"
 )
 
 type RadioButtonI interface {
-	control_base.CheckboxI
+	CheckboxI
 }
 
 
 // RadioButton is a standard html radio button. You can optionally specify a group name for the radiobutton to belong
 // to and the browser will make sure only one item in the group is selected.
 type RadioButton struct {
-	control_base.Checkbox
+	CheckboxBase
 	group string
 }
 
@@ -29,7 +28,7 @@ func (c *RadioButton) this() RadioButtonI {
 }
 
 func (c *RadioButton) DrawingAttributes() *html.Attributes {
-	a := c.Checkbox.DrawingAttributes()
+	a := c.CheckboxBase.DrawingAttributes()
 	a.SetDataAttribute("grctl", "radio")
 	a.Set("type", "radio")
 	if c.group == "" {
@@ -67,7 +66,7 @@ func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 			c.ParentForm().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.ID())
 		}
 	} else {
-		c.Checkbox.SetChecked(v)
+		c.CheckboxBase.SetChecked(v)
 	}
 	return c.this()
 }

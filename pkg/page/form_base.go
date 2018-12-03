@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spekary/gengen/maps"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/log"
 	"github.com/spekary/goradd/pkg/orm/db"
 	"github.com/spekary/goradd/pkg/session/location"
-	"goradd-project/config"
 	"reflect"
 	"strings"
 )
@@ -124,7 +124,7 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	// Write out the control scripts gathered above
 	s := `goradd.initForm();` + "\n"
-	s += fmt.Sprintf("goradd.initMessagingClient(%d, %d);\n", config.GoraddWebSocketPort, config.GoraddWebSocketTLSPort)
+	s += fmt.Sprintf("goradd.initMessagingClient(%d, %d);\n", config.WebSocketPort, config.WebSocketTLSPort)
 	if !config.Release {
 		// This code registers the form with the test harness. We do not want to do this in release mode since it is a security risk.
 		s += "goradd.initFormTest();\n"

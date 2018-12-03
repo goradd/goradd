@@ -13,7 +13,7 @@ import (
 // SliceColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into
 // a string, either by normal string conversion symantecs, or using the supplied format string.
 type SliceColumn struct {
-	control_base.ColumnBase
+	control.ColumnBase
 }
 
 func NewSliceColumn(index int, format ...string) *SliceColumn {
@@ -63,7 +63,7 @@ type SliceTexter struct {
 	TimeFormat string
 }
 
-func (t SliceTexter) CellText(ctx context.Context, col 	table.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t SliceTexter) CellText(ctx context.Context, col 	control.ColumnI, rowNum int, colNum int, data interface{}) string {
 	vSlice := reflect.ValueOf(data)
 	if vSlice.Kind() != reflect.Slice {
 		panic("data must be a slice.")

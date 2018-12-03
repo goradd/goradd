@@ -10,7 +10,7 @@ import (
 
 // NodeColumn is a column that uses a query.NodeI to get its text out of data that is coming from the ORM.
 type NodeColumn struct {
-	control_base.ColumnBase
+	control.ColumnBase
 	node query.NodeI
 }
 
@@ -71,7 +71,7 @@ type NodeTexter struct {
 	TimeFormat string
 }
 
-func (t NodeTexter) CellText(ctx context.Context, col table.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t NodeTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
 	if v,ok := data.(Getter); !ok {
 		return ""
 	} else {

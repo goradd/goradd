@@ -3,7 +3,6 @@ package control
 import (
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	localPage "goradd-project/override/page"
 	"github.com/spekary/goradd/pkg/bootstrap/config"
 )
 
@@ -46,13 +45,13 @@ const (
 )
 
 type NavbarI interface {
-	localPage.ControlI
+	page.ControlI
 }
 
 // Navbar is a bootstrap navbar object. Use SetText() to set the logo text of the navbar, and
 // SetEscapeText() to false to turn off encoding if needed. Add child controls to populate it.
 type Navbar struct {
-	localPage.Control
+	page.Control
 	headerAnchor string
 
 	style NavbarStyle

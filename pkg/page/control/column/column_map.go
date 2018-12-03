@@ -11,7 +11,7 @@ import (
 // a string, either by normal string conversion symantecs, or using the supplied format string. The format string will
 // be applied to a date if the data is a date, or to the string using fmt.Sprintf
 type MapColumn struct {
-	control_base.ColumnBase
+	control.ColumnBase
 }
 
 func NewMapColumn(index interface{}, format ...string) *MapColumn {
@@ -61,7 +61,7 @@ type MapTexter struct {
 	TimeFormat string
 }
 
-func (t MapTexter) CellText(ctx context.Context, col table.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t MapTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
 
 	vKey := reflect.ValueOf(t.Index)
 	vMap := reflect.ValueOf(data)

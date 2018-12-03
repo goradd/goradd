@@ -5,7 +5,6 @@ import (
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/page/action"
-	"github.com/spekary/goradd/pkg/page/control/control_base"
 	"github.com/spekary/goradd/pkg/page/event"
 )
 
@@ -44,7 +43,7 @@ combination of html tag(s), css and javascript widget. QCubed has many ways of p
 * by the default QCubed framework.
 */
 type DialogI interface {
-	control_base.PanelI
+	PanelI
 
 	SetTitle(string) DialogI
 	SetState(state int) DialogI
@@ -53,7 +52,7 @@ type DialogI interface {
 // Our own implementation of a dialog. This works cooperatively with javascript in qcubed.js to create a minimal
 // implementation of the dialog interface.
 type Dialog struct {
-	control_base.Panel
+	Panel
 	buttonBar   *Panel
 	titleBar    *Panel
 	closeBox    *Button

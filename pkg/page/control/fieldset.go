@@ -4,16 +4,15 @@ import (
 	"context"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/control/control_base"
 )
 
 type FieldsetI interface {
-	control_base.PanelI
+	PanelI
 }
 // Fieldset is a Panel that is drawn with a fieldset tag. The panel's label is used as the legend tag.
 // Fieldset's cannot have wrappers.
 type Fieldset struct {
-	control_base.Panel
+	Panel
 }
 
 func NewFieldset(parent page.ControlI, id string) *Fieldset {

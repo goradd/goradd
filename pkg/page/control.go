@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/pkg/base"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/log"
 	action2 "github.com/spekary/goradd/pkg/page/action"
 	"github.com/spekary/goradd/pkg/session"
-	"goradd-project/config"
 	gohtml "html"
 	"reflect"
 )

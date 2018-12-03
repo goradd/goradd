@@ -2,7 +2,7 @@ package html
 
 import (
 	"fmt"
-	"goradd-project/config"
+	"github.com/spekary/goradd/pkg/config"
 	html2 "html"
 	"strings"
 )

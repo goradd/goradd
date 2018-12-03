@@ -3,7 +3,6 @@ package control
 import (
 	"fmt"
 	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/control/control_base"
 	"strconv"
 )
 
@@ -18,7 +17,7 @@ func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
 	return t
 }
 
-func (i *FloatTextbox) Init(self control_base.TextboxI, parent page.ControlI, id string) {
+func (i *FloatTextbox) Init(self TextboxI, parent page.ControlI, id string) {
 	i.Textbox.Init(self, parent, id)
 	i.ValidateWith(FloatValidator{})
 }

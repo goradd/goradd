@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/spekary/goradd/pkg/goradd"
 	"github.com/spekary/goradd/pkg/orm/db"
-	"goradd-project/config"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -23,6 +22,9 @@ const (
 	CustomAjax                    // calling an entry point from ajax, but not through our js file. REST API perhaps?
 	Cli                           // From command line
 )
+
+var MultipartFormMax int64 = 10000000 // 10MB max in memory file
+
 
 func (m RequestMode) String() string {
 	switch m {
@@ -102,17 +104,21 @@ func PutContext(r *http.Request, cliArgs []string) *http.Request {
 	return r.WithContext(ctx)
 }
 
-func (ctx *Context) FillHttp(r *http.Request) {
+func (ctx *Context) FillHttp(r *http.Request) (err error) {
 	if _, ok := r.Header["content-type"]; ok {
 		contentType := r.Header["content-type"][0]
 		// Per comments in the ResponseWriter, we need to read and processs the entire request before attempting to write.
 		if strings.Contains(contentType, "multipart") {
-			r.ParseMultipartForm(config.MultiPartFormMax)
+			// TODO: The Go doc is vague about how it handles file uploads larger than this value. Some doc suggests it
+			// will return an error, and other doc suggests it will just split it into multiple partial files.
+			// Nothing explains how to prevent malicious code from attempting to upload a gigantic file.
+			// We will need to experiment to try to prevent this.
+			err = r.ParseMultipartForm(MultipartFormMax)
 		} else {
-			r.ParseForm()
+			err = r.ParseForm()
 		}
 	} else {
-		r.ParseForm()
+		err = r.ParseForm()
 	}
 
 	ctx.Req = r

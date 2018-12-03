@@ -2,8 +2,7 @@ package column
 
 import (
 	"context"
-	"goradd-project/override/control_base"
-	"github.com/spekary/goradd/pkg/page/control/control_base/table"
+	"github.com/spekary/goradd/pkg/page/control"
 	"github.com/spekary/goradd/pkg/orm/query"
 )
 
@@ -15,7 +14,7 @@ type AliasGetter interface {
 // The data therefore should be a slice of objects that implement the AliasGetter interface. All ORM objects
 // are AliasGetters (or should be).
 type AliasColumn struct {
-	control_base.ColumnBase
+	control.ColumnBase
 	alias string
 }
 
@@ -72,7 +71,7 @@ type AliasTexter struct {
 	TimeFormat string
 }
 
-func (t AliasTexter) CellText(ctx context.Context, col table.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t AliasTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
 	if v,ok := data.(AliasGetter); !ok {
 		return ""
 	} else {

@@ -6,21 +6,20 @@ import (
 	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	localPage "goradd-project/override/page"
 	"strconv"
 	"strings"
 )
 
 
 type MultiselectListI interface {
-	localPage.ControlI
+	page.ControlI
 }
 
 // MultiselectList is a generic list box which allows multiple selections. It is here for completeness, but is not used
 // very often since it doesn't present an intuitive interface and is very browser dependent on what is presented.
 // A Checkboxlist is better.
 type MultiselectList struct {
-	localPage.Control
+	page.Control
 	ItemList
 	selectedIds map[string]bool
 }

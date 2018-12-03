@@ -6,12 +6,11 @@ import (
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/page/control/data"
-	page2 "goradd-project/override/page"
 )
 
 
 type UnorderedListI interface {
-	page2.ControlI
+	page.ControlI
 	GetItemsHtml(items []ListItemI) string
 
 }
@@ -49,8 +48,8 @@ func (l *UnorderedList) Init(self page.ControlI, parent page.ControlI, id string
 
 // this() supports object oriented features by giving easy access to the virtual function interface
 // Subclasses should provide a duplicate. Calls that implement chaining should return the result of this function.
-func (c *UnorderedList) this() UnorderedListI {
-	return c.Self.(UnorderedListI)
+func (l *UnorderedList) this() UnorderedListI {
+	return l.Self.(UnorderedListI)
 }
 
 func (l *UnorderedList) SetSubTag(s string) {

@@ -8,7 +8,6 @@ import (
 	"github.com/spekary/goradd/pkg/page/action"
 	"strings"
 	"fmt"
-	"goradd-project/override/control_base"
 )
 
 const (
@@ -17,10 +16,10 @@ const (
 
 // The Form is the control that all Form objects should descend from, and is the master container for all other goradd controls.
 type FormBase struct {
-	control_base.FormBase
+	page.FormBase
 }
 
-// The methods below are here to prevent import cycles.
+// TODO: Merge with page.FormBase
 
 func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
 	f.FormBase.Init(ctx, self, path, id)

@@ -15,7 +15,7 @@ type ProxyCellTexter interface {
 // To use it, you must define your own proxy control that also has a CellText method
 // attached to it, so that it satisfies the ProxyCellTexter interface above
 type ProxyColumn struct {
-	control_base.ColumnBase
+	control.ColumnBase
 	Proxy ProxyCellTexter
 }
 

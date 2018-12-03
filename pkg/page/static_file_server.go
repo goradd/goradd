@@ -1,7 +1,7 @@
 package page
 
 import (
-	"goradd-project/config"
+	"github.com/spekary/goradd/pkg/config"
 	"log"
 	"mime"
 	"net/http"

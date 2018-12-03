@@ -1,14 +1,14 @@
 package control
 
 import (
+	"encoding/gob"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/bootstrap/control/control_base"
 	"reflect"
 )
 
 type Checkbox struct {
-	control_base.Checkbox
+	checkboxBase
 }
 
 func NewCheckbox(parent page.ControlI, id string) *Checkbox {
@@ -18,7 +18,7 @@ func NewCheckbox(parent page.ControlI, id string) *Checkbox {
 }
 
 func (c *Checkbox) DrawingAttributes() *html.Attributes {
-	a := c.Checkbox.DrawingAttributes()
+	a := c.checkboxBase.DrawingAttributes()
 	a.SetDataAttribute("grctl", "bs-checkbox")
 	a.Set("name", c.ID()) // needed for posts
 	a.Set("type", "checkbox")
@@ -36,7 +36,7 @@ func (c *Checkbox) UpdateFormValues(ctx *page.Context) {
 }
 
 func (c *Checkbox) Serialize(e page.Encoder) (err error) {
-	if err = c.Checkbox.Serialize(e); err != nil {
+	if err = c.checkboxBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -51,9 +51,13 @@ func (c *Checkbox) ΩisSerializer(i page.ControlI) bool {
 
 
 func (c *Checkbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
-	if err = c.Checkbox.Deserialize(d, p); err != nil {
+	if err = c.checkboxBase.Deserialize(d, p); err != nil {
 		return
 	}
 
 	return
+}
+
+func init () {
+	gob.RegisterName("bootstrap.checkbox", new(Checkbox))
 }

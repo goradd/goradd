@@ -2,13 +2,13 @@ package control
 
 import (
 	"github.com/spekary/goradd/pkg/page"
-	"goradd-project/config"
 )
 
 type PaginatedTable struct {
 	Table
 	PaginatedControl
 }
+
 
 func NewPaginatedTable(parent page.ControlI, id string) *PaginatedTable {
 	t := &PaginatedTable{}
@@ -18,7 +18,7 @@ func NewPaginatedTable(parent page.ControlI, id string) *PaginatedTable {
 
 func (t *PaginatedTable) Init(self page.ControlI, parent page.ControlI, id string) {
 	t.Table.Init(self, parent, id)
-	t.PaginatedControl.SetPageSize(config.DefaultPageSize)
+	t.PaginatedControl.SetPageSize(0) // use the application default
 }
 
 

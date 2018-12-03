@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/spekary/gengen/maps"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	"goradd-project/config"
-	"goradd-project/override/control_base"
 )
 
 // PrimaryKeyer is an interface that is often implemented by model objects.
@@ -21,7 +20,7 @@ type SelectTableI interface {
 
 // SelectTable is a table that is row selectable. To detect a row selection, trigger on event.RowSelected
 type SelectTable struct {
-	control_base.Table
+	Table
 	selectedID string
 }
 

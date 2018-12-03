@@ -3,15 +3,14 @@ package control
 import (
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/bootstrap/control/control_base"
 )
 
 type RadioButtonI interface {
-	control_base.CheckboxI
+	CheckboxI
 }
 
 type RadioButton struct {
-	control_base.Checkbox
+	checkboxBase
 	group string
 
 }
@@ -27,7 +26,7 @@ func (c *RadioButton) this() RadioButtonI {
 }
 
 func (c *RadioButton) DrawingAttributes() *html.Attributes {
-	a := c.Checkbox.DrawingAttributes()
+	a := c.checkboxBase.DrawingAttributes()
 	a.SetDataAttribute("grctl", "bs-radio")
 	a.Set("type", "radio")
 	if c.group == "" {
@@ -57,3 +56,5 @@ func (c *RadioButton) SetGroup(g string) RadioButtonI {
 func (c *RadioButton) Group() string {
 	return c.group
 }
+
+// TODO: Serialize

@@ -3,7 +3,6 @@ package control
 import (
 	"github.com/spekary/goradd/pkg/javascript"
 	"github.com/spekary/goradd/pkg/page"
-	localPage "goradd-project/override/page"
 	"github.com/spekary/goradd/pkg/page/action"
 	"github.com/spekary/goradd/pkg/page/event"
 	"bytes"
@@ -14,7 +13,7 @@ import (
 )
 
 type ProxyI interface {
-	localPage.ControlI
+	page.ControlI
 	LinkHtml(label string,
 		actionValue string,
 		attributes *html.Attributes,
@@ -34,7 +33,7 @@ type ProxyI interface {
 }
 
 type Proxy struct {
-	localPage.Control
+	page.Control
 }
 
 func NewProxy(parent page.ControlI) *Proxy {

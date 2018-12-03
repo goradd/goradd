@@ -3,18 +3,17 @@ package control
 import (
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	"goradd-project/override/control_base"
 )
 
 
 type PanelI interface {
-	control_base.PanelI
+	page.ControlI
 }
 
 // Panel is a Goradd control that is a basic "div" wrapper. Use it to style and listen to events on a div. It
 // can also be used as the basis for more advanced javascript controls.
 type Panel struct {
-	control_base.Panel
+	page.Control
 }
 
 func NewPanel(parent page.ControlI, id string) *Panel {
@@ -24,7 +23,7 @@ func NewPanel(parent page.ControlI, id string) *Panel {
 }
 
 func (c *Panel) Init(self PanelI, parent page.ControlI, id string) {
-	c.Panel.Init(self, parent, id)
+	c.Control.Init(self, parent, id)
 	c.Tag = "div"
 }
 

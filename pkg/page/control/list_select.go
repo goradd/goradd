@@ -8,7 +8,6 @@ import (
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/page/control/data"
-	page2 "goradd-project/override/page"
 	"reflect"
 )
 
@@ -17,7 +16,7 @@ import (
 // Or, use the embedded DataManager to load items. Set the size attribute if you want to display it as a
 // scrolling list rather than a dropdown list.
 type SelectList struct {
-	page2.Control
+	page.Control
 	ItemList
 	data.DataManager
 	selectedId string

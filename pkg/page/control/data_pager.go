@@ -10,8 +10,6 @@ import (
 	"github.com/spekary/goradd/pkg/page/control/data"
 	"github.com/spekary/goradd/pkg/page/event"
 	"github.com/spekary/goradd/pkg/math"
-	"goradd-project/config"
-	localPage "goradd-project/override/page"
 	"reflect"
 	"strconv"
 )
@@ -42,6 +40,14 @@ type PaginatedControl struct {
 	dataPagers 		 []DataPagerI
 }
 
+
+// DefaultPaginatorPageSize is the default number of items that a paginated control will show. You can change this in an individual control, too.
+var DefaultPaginatorPageSize = 10
+
+// DefaultMaxPagintorButtons is the default maximum number of buttons to display on the pager. You can change this in an individual control, too.
+var DefaultMaxPagintorButtons = 10
+
+
 func (c *PaginatedControl) SetTotalItems(count uint) {
 	c.totalItems = int(count)
 	c.limitPageNumber()
@@ -51,7 +57,12 @@ func (c *PaginatedControl) TotalItems() int {
 	return c.totalItems
 }
 
+// SetPageSize sets the maximum number of items that will be displayed at one time. If more than this number of items
+// is being displayed, the pager will allow paging to other items.
 func (c *PaginatedControl) SetPageSize(size int) {
+	if size == 0 {
+		size = DefaultPaginatorPageSize
+	}
 	c.pageSize = size
 }
 
@@ -111,7 +122,7 @@ type DataPagerI interface {
 // It is similar to a Paginator, but a paginator is for navigating through a whole series of pages and not just for
 // data on one override.
 type DataPager struct {
-	localPage.Control
+	page.Control
 
 	maxPageButtons   int
 	ObjectName       string
@@ -134,7 +145,7 @@ func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pa
 	d.Tag = "div"
 	d.LabelForNext = d.T("Next")
 	d.LabelForPrevious = d.T("Previous")
-	d.maxPageButtons = config.MaxPageButtons
+	d.maxPageButtons = DefaultMaxPagintorButtons
 	paginatedControl.AddDataPager(self.(DataPagerI))
 	d.paginatedControl = paginatedControl
 	d.Proxy = NewProxy(d)

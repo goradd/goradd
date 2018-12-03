@@ -5,19 +5,17 @@ import (
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/stores/memstore"
 	"github.com/spekary/goradd/pkg/base"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/html"
 	grlog "github.com/spekary/goradd/pkg/log"
 	"github.com/spekary/goradd/pkg/session"
 	"time"
 
+	"github.com/spekary/goradd/pkg/messageServer"
 	//"flag"
 	"github.com/spekary/goradd/pkg/page"
-	"goradd-project/config"
 	"net/http"
 	"os"
-	"path/filepath"
-	"runtime"
-	"github.com/spekary/goradd/pkg/messageServer"
 )
 
 // The application interface. A minimal set of commands that the main routine will ask the application to do.
@@ -78,7 +76,7 @@ func (a *Application) SetupPageCaching() {
 	// and whether you are in development mode, etc. This default is for an in-memory store on one server and only one
 	// process on that server. It basically does not serialize anything and leaves the entire formstate intact in memory.
 	// This makes for a very fast server, but one that takes up quite a bit of RAM if you have a lot of simultaneous users.
-	page.SetPageCache(page.NewFastPageCache())
+	page.SetPageCache(page.NewFastPageCache(1000 ,60 * 60 * 24))
 
 	// Control how pages are serialized if a serialization cache is being used. This version uses the gob encoder.
 	// You likely will not need to change this, but you might if your database cannot handle binary data.
@@ -235,10 +233,3 @@ func (a *Application) PutContextHandler(next http.Handler) http.Handler {
 }
 
 
-func init() {
-	if !config.Release {
-		// Initialize the directory path for the goradd source
-		_, filename, _, _ := runtime.Caller(0)
-		config.GoraddDir = filepath.Dir(filepath.Dir(filepath.Dir(filename)))
-	}
-}

@@ -1,11 +1,10 @@
 package control
 
 import (
+	"context"
 	"fmt"
 	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/control/control_base"
 	"net/mail"
-	"context"
 )
 
 // EmailTextbox is a Text control that validates for email addresses.
@@ -28,7 +27,7 @@ func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
 	return t
 }
 
-func (t *EmailTextbox) Init(self control_base.TextboxI, parent page.ControlI, id string) {
+func (t *EmailTextbox) Init(self TextboxI, parent page.ControlI, id string) {
 	t.Textbox.Init(self, parent, id)
 }
 

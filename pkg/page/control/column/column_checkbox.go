@@ -5,6 +5,7 @@ import (
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/page/action"
+	"github.com/spekary/goradd/pkg/page/control"
 	"github.com/spekary/goradd/pkg/page/control/control_base/table"
 	"github.com/spekary/goradd/pkg/page/event"
 	"goradd-project/override/control_base"
@@ -16,7 +17,7 @@ const (
 )
 
 type CheckboxColumnI interface {
-	table.ColumnI
+	control.ColumnI
 	CheckboxAttributes(data interface{}) *html.Attributes
 }
 
@@ -24,7 +25,7 @@ type CheckboxColumnI interface {
 // CheckboxColumn is a table that contains a checkbox. You must provide it a CheckboxProvider to connect ids and default data
 // to the checkbox. Use Changes() to get the list of checkbox ids that have changed since the list was initially drawn.
 type CheckboxColumn struct {
-	control_base.ColumnBase
+	control.ColumnBase
 	showCheckAll bool
 	checkboxer   CheckboxProvider
 	changes      map[string]bool // records changes

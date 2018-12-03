@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/ideas/types"
-	"goradd-project/config"
 )
 
 type PageCacheI interface {
@@ -15,6 +14,13 @@ type PageCacheI interface {
 }
 
 var pageCache PageCacheI
+
+// PageCacheVersion helps us keep track of when a change to the application changes the pagecache format. It is only needed
+// when serializing the pagecache. Some page cache stores may be difficult to invalidate the whole thing, so this lets
+// lets us invalidate old pagecaches individually. If you implement your own pagecache, you may want to control this
+// independently of goradd, which is why this is exported. Goradd should bump this value whenever the pagecache serialization format
+// changes.
+var PageCacheVersion int32 = 1
 
 func SetPageCache(c PageCacheI) {
 	pageCache = c
@@ -34,8 +40,8 @@ type FastPageCache struct {
 	types.LruCache
 }
 
-func NewFastPageCache() *FastPageCache {
-	return &FastPageCache{*types.NewLruCache(config.PageCacheMaxSize, config.PageCacheTTL)}
+func NewFastPageCache(maxEntries int, TTL int64) *FastPageCache {
+	return &FastPageCache{*types.NewLruCache(maxEntries, TTL)}
 }
 
 // Puts the override into the override cache, and updates its access time, pushing it to the end of the removal queue
@@ -84,9 +90,9 @@ type SerializedPageCache struct {
 	types.LruCache
 }
 
-func NewSerializedPageCache() *SerializedPageCache {
+func NewSerializedPageCache(maxEntries int, TTL int64) *SerializedPageCache {
 	panic("Serialized pages are not ready for prime time yet")
-	return &SerializedPageCache{*types.NewLruCache(config.PageCacheMaxSize, config.PageCacheTTL)}
+	return &SerializedPageCache{*types.NewLruCache(maxEntries, TTL)}
 }
 
 // Puts the override into the override cache, and updates its access time, pushing it to the end of the removal queue
@@ -95,7 +101,7 @@ func (o *SerializedPageCache) Set(pageId string, page *Page) {
 	b := GetBuffer()
 	defer PutBuffer(b)
 	enc := pageEncoder.NewEncoder(b)
-	enc.Encode(config.PageCacheVersion)
+	enc.Encode(PageCacheVersion)
 	enc.Encode(page.Form().ID())
 	err := page.Encode(enc)
 	if err != nil {
@@ -112,7 +118,7 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 	if err := dec.Decode(&ver); err != nil {
 		panic(err)
 	}
-	if ver != config.PageCacheVersion {
+	if ver != PageCacheVersion {
 		return nil
 	}
 

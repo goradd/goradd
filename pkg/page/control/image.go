@@ -2,19 +2,18 @@ package control
 
 import (
 	"github.com/spekary/goradd/pkg/page"
-	localPage "goradd-project/override/page"
 	"strconv"
 	"github.com/spekary/goradd/pkg/html"
 	"encoding/base64"
 )
 
 type ImageI interface {
-	localPage.ControlI
+	page.ControlI
 }
 
 // Image is an img tag. You can display either a URL, or direct image information by setting the Src or the Data values.
 type Image struct {
-	localPage.Control
+	page.Control
 	data []byte			// slice of data itself
 	typ string			// the image MIME type (jpeg, gif, etc.) for data. Default is jpeg.
 }

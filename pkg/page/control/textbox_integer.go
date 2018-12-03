@@ -3,7 +3,6 @@ package control
 import (
 	"fmt"
 	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/control/control_base"
 	"strconv"
 )
 
@@ -19,7 +18,7 @@ func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 	return t
 }
 
-func (i *IntegerTextbox) Init(self control_base.TextboxI, parent page.ControlI, id string) {
+func (i *IntegerTextbox) Init(self TextboxI, parent page.ControlI, id string) {
 	i.Textbox.Init(self, parent, id)
 	i.ValidateWith(IntValidator{})
 }

@@ -3,17 +3,16 @@ package control
 import (
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	"goradd-project/override/control_base"
 )
 
 type SpanI interface {
-	control_base.PanelI
+	PanelI
 }
 
 // Span is a Goradd control that is a basic "span" wrapper. Use it to style and listen to events on a span. It
 // can also be used as the basis for more advanced javascript controls.
 type Span struct {
-	control_base.Panel
+	Panel
 }
 
 func NewSpan(parent page.ControlI, id string) *Span {

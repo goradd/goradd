@@ -2,9 +2,9 @@ package config
 
 
 import (
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
-	"goradd-project/config"
 	"path/filepath"
 	"runtime"
 )

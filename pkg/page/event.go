@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/html"
 	action2 "github.com/spekary/goradd/pkg/page/action"
-	"goradd-project/config"
 )
 
 // EventI defines the interface for an event. Many of the routines implement a Builder pattern, allowing you to

@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/spekary/goradd/pkg/log"
-	"goradd-project/config"
 	"strings"
 )
 
@@ -21,6 +20,11 @@ type PageManager struct {
 	pathRegistry   map[string]FormCreationFunction // maps paths to functions that create forms
 	formIdRegistry map[string]FormCreationFunction // maps form ids to functions that create forms
 }
+
+// PagePathPrefix is a prefix you can use in front of all goradd pages, like a directory path, to indicate that
+// this is a goradd path.
+
+var PagePathPrefix = ""
 
 func GetPageManager() *PageManager {
 	return pageManager
@@ -43,10 +47,9 @@ func RegisterPage(path string, creationFunction FormCreationFunction, formId str
 
 func (m *PageManager) getNewPageFunc(grctx *Context) (f FormCreationFunction, path string, ok bool) {
 	path = grctx.URL.Path
-	prefix := config.PagePathPrefix
-	if prefix != "" {
-		if strings.Index(path, prefix) == 0 { // starts with prefix
-			path = path[len(prefix):] // remove path
+	if PagePathPrefix != "" {
+		if strings.Index(path, PagePathPrefix) == 0 { // starts with prefix
+			path = path[len(PagePathPrefix):] // remove prefix from path
 		} else {
 			return // not found in path
 		}

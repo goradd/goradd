@@ -2,7 +2,7 @@ package page
 
 import (
 	"bytes"
-	"goradd-project/config"
+	"github.com/spekary/goradd/pkg/log"
 	"sync"
 )
 
@@ -14,10 +14,11 @@ type BufferPoolI interface {
 }
 
 // BufferPool is the global buffer pool used by the page drawing system. You can use it to get buffers for you own
-// writes as well. The default buffer pool uses config.MaxBufferSize to limit the size of buffers that are put back into
-// the pool. If a particular http request required a large buffer to satisfy, This prevents that buffer from hanging around too long.
-// You should set config.MaxBufferSize to a value that is bigger than most http request sizes.
+// writes as well. The default buffer pool uses MaxBufferSize to limit the size of buffers that are put back into
+// the pool. If a particular http request required a large buffer to satisfy, this prevents that buffer from hanging around too long.
+// You should set MaxBufferSize to a value that is bigger than most http request sizes.
 var BufferPool BufferPoolI
+var MaxBufferSize = 10000
 
 type pool struct {
 	sync.Pool
@@ -40,12 +41,14 @@ func (p pool) GetBuffer() *bytes.Buffer {
 }
 
 func (p pool) PutBuffer(buffer *bytes.Buffer) {
-	if buffer.Cap() < config.MaxBufferSize {
+	if buffer.Cap() < MaxBufferSize {
 		buffer.Reset()
 		p.Put(buffer)
+	} else {
+		// otherwise we will not put the buffer back, allowing the garbage collector to reclaim the memory
+		// Log when our buffer is bigger than MaxBufferSize. If this is happening a lot the value should be increased.
+		log.FrameworkDebug("Buffer size was bigger than MaxBufferSize")
 	}
-	// otherwise we will not put the buffer back, allowing the garbage collector to reclaim the memory
-	// TODO: log when our buffer is bigger than config.MaxBufferSize so that we can inform the sysop when This is happening a lot and the value should be increased.
 }
 
 // GetBuffer returns a buffer from the pool. It will create a new pool if one is not already allocated. This allows
