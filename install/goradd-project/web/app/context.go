@@ -10,7 +10,7 @@ const LocalContextKey = goradd.ContextKey("app.local")
 
 // LocalContext contains the items you want available to
 type LocalContext struct {
-	auth auth
+	//auth auth
 }
 
 type Context struct {

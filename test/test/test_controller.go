@@ -9,7 +9,7 @@ import (
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/page/action"
 	"github.com/spekary/goradd/pkg/page/control"
-	"goradd-project/config"
+	"github.com/spekary/goradd/pkg/config"
 	"time"
 )
 

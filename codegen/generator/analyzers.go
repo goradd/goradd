@@ -56,7 +56,7 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 			defaultLabel := strings.Title(strings.Replace(col.DbName, "_", " ", -1))
 
 			var defaultID string
-			if codegenConfig.GenerateControlIDs {
+			if GenerateControlIDs {
 				defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(col.DbName, "_", "-", -1)
 			}
 
@@ -77,9 +77,8 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 }
 
 
-// ControlType returns the default type of control for a column. Control types can be customized in other ways.
+// ControlType returns the default type of control for a column. Control types can be customized in other ways too.
 func  controlType(col *db.ColumnDescription) (typ string, createFunc string, importName string) {
-
-	// TODO: get control types for specific columns and other info out of a config file
-	return codegenConfig.DefaultControlType(col)
+	d := ControlTyper.DefaultControlType(col)
+	return d.Typ, d.CreateFunc, d.ImportName
 }

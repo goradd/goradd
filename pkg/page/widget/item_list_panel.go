@@ -4,7 +4,7 @@ import (
 	. "github.com/spekary/goradd/pkg/page/control"
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/html"
-	"goradd-project/config"
+	"github.com/spekary/goradd/pkg/config"
 	"context"
 	"github.com/spekary/goradd/pkg/page/event"
 	"github.com/spekary/goradd/pkg/page/action"

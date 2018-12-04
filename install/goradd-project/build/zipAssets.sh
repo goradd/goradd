@@ -17,3 +17,6 @@ gzip --best -f -k -r ../../deploy/assets/project/js/*
 
 minify -o ../../deploy/assets/project/css/ ../../deploy/assets/project/css/
 gzip --best -f -k -r ../../deploy/assets/project/css/*
+
+# Also zip your static html files
+gzip --best -f -k -r ../../deploy/html/*

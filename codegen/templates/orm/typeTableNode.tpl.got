@@ -2,7 +2,7 @@ package template
 
 import (
 	"github.com/spekary/goradd/codegen/generator"
-	"goradd-project/config"
+	"github.com/spekary/goradd/pkg/config"
 	"bytes"
 	//"github.com/gedex/inflector"
 	//"github.com/knq/snaker"

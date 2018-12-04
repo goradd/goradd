@@ -2,6 +2,7 @@ package config
 
 import (
 	"path"
+	"path/filepath"
 )
 
 // AssetPrefix is the path prefix for all goradd assets. It indicates to the program to look for the given file in the assets collection of files
@@ -12,7 +13,8 @@ var AssetPrefix = "/assets/"
 // Minify controls whether we try to strip out unnecessary whitespace from our HTML output
 var Minify bool = !Debug
 
-var AssetDirectory string
+var assetDirectory string
+var htmlDirectory string
 
 var DefaultDateFormat = "January 2, 2006"
 var DefaultTimeFormat = "3:04 am"
@@ -58,6 +60,26 @@ func SetAssetDirectory(assetDir string) {
 	if Release && assetDir == "" {
 		panic("The -assetDir flag is required when running the release build")
 	}
-	AssetDirectory = assetDir
+	assetDirectory = assetDir
 }
+
+func AssetDirectory() string {
+	return assetDirectory
+}
+
+func SetHtmlDirectory(d string) {
+	htmlDirectory = d
+}
+
+func HtmlDirectory() string {
+	if Release && htmlDirectory == "" {
+		return "" // Either you forgot to set htmlDir, or someone has entered a bad url
+	}
+	if !Release && htmlDirectory == "" {
+		return filepath.Join(ProjectDir(), "web","html")
+	}
+	return htmlDirectory
+}
+
+
 

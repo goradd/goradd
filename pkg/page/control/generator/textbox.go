@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/codegen/generator"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/orm/query"
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/page/control"
-	"goradd-project/config"
-	"goradd-project/config/codegen"
 )
 
 func init() {
@@ -52,9 +51,9 @@ func (d Textbox) GenerateCreate(namespace string, col *generator.ColumnType) (s 
 `, col.MaxCharLength)
 	}
 
-	if codegen.DefaultWrapper != "" {
+	if generator.DefaultWrapper != "" {
 		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, codegen.DefaultWrapper)
+`, generator.DefaultWrapper)
 	}
 	if col.IsPk {
 		s += `	ctrl.SetDisabled(true)

@@ -4,12 +4,12 @@
 package app
 
 import (
-	"flag"
 	"fmt"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/messageServer"
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/web/app"
-	"goradd-project/config"
+	"log"
 	"net/http"
 	"net/http/fcgi"
 	"net/http/pprof"
@@ -24,11 +24,9 @@ type Application struct {
 
 // Create the application object and related objects
 // You can potentially read command line params and make other versions of the app for testing purposes
-func MakeApplication(assetDir string) *Application {
-	flag.Parse() // Parse the flags so we can read them
+func MakeApplication() *Application {
 
-	config.Init(assetDir)
-	config.InitDatabases()
+	configure() // see config.go
 
 	a := new(Application)
 	a.Init()
@@ -95,7 +93,7 @@ func (a *Application) SetupAssetDirectories() {
 
 // RunWebServer launches the main webserver.
 
-func (a *Application) RunWebServer(port string, useFcgi bool) (err error) {
+func (a *Application) RunWebServer() (err error) {
 	// The message server communicates to the browser UI changes caused by database changes. If you are simply redrawing
 	// everything manually, and are not concerned about multi-user scenarios, you can comment it out.
 	messageServer.Start(a.MakeWebsocketMux())
@@ -105,19 +103,19 @@ func (a *Application) RunWebServer(port string, useFcgi bool) (err error) {
 	// If you are directly responding to encrypted requests, launch a server here. Note that you CAN put the app behind
 	// a web server, like Nginx or Apache and let the web server handle the certificate issues.
 
-	/*
-	if config.Release { // Depends on whether you need encryption during local development
+	if config.TLSPort != 0 {
 		go func() {
-			log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.AppTLSPort), config.AppTLSCertFile, config.AppTLSKeyFile, mux))
+			log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.TLSPort), config.TLSCertFile, config.TLSKeyFile, mux))
 		}()
-	}*/
+	}
 
 	// The  "Serve" functions below will launch go routines for each request, so that multiple requests can be
 	// processed in parallel.
-	if useFcgi { // Run as FCGI via standard I/O
+	if config.UseFCGI { // Run as FCGI via standard I/O
+		// FCGI requires a serialized pagestate server, outside session server and care with the websocket server
 		err = fcgi.Serve(nil, mux)
 	} else {
-		addr := ":" + port
+		addr := fmt.Sprintf(":%d", config.Port)
 		err = http.ListenAndServe(addr, mux)
 	}
 
@@ -129,10 +127,13 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 
 	// Add handlers for your straight html files and anything you want to simply be served without processing and
 	// that you can put in a specific directory. Note that you can also serve files from the ServeRequest handler below.
+
+	// This registers the goradd-project/web/html directory to serve files with urls that start with "/html". .
 	if !config.Release {
-		// This registers the goradd-project/web/html directory to serve files with urls that start with "/html". Feel
-		// free to change this.
 		mux.Handle("/html/", http.StripPrefix("/html/", http.FileServer(http.Dir(filepath.Join(config.ProjectDir(), "web", "html")))))
+	} else {
+		// TODO: Do the equivalent of ServeAsset with html files. Perhaps just expand ServeAsset to do html too.
+		//mux.Handle("/html/", http.StripPrefix("/html/", http.FileServer(http.Dir(filepath.Join(config.ProjectDir(), "web", "html")))))
 	}
 
 	if config.Debug {
@@ -176,28 +177,20 @@ func (a *Application) WebSocketAuthHandler(next http.Handler) http.Handler {
 */
 
 // ServeRequest is the place to serve up any files that have not been handled in any other way, either by a previously
-// declared handler, or by the goradd app server. ServeRequest is only called when all the other methods have failed.
-// This is a good place to handle serving up static html files, pdfs,
-// or any other kind of custom request.
+// declared handler, or by the goradd app server, or the static file server. ServeRequest is only called when all
+// the other methods have failed. The default serves up a 404 not found error, and you can customize whatever error
+// message you want to present to the user when a bad url is entered into the browser.
 func (a *Application) ServeRequest (w http.ResponseWriter, r *http.Request) {
-	url := r.URL.EscapedPath()
+	s := fmt.Sprintf("<!DOCTYPE html><html><h1>Page Not Found</h1><p>The page you are looking for is not here.</p></html>")
+	http.Error(w, s, http.StatusNotFound)
 
-	if !config.Release {
-		// serve up the /form/index.html file in development mode so that we can get to the code-generated forms.
-		if url == "/form/index.html" || url == "/form" || url == "/form/" {
-			http.ServeFile(w, r, filepath.Join(config.ProjectDir(), "gen", "index.html"))
-			return
-		}
-	}
-
-	// If the url simply points to nothing, then serve up an appropriate error page.
-	w.WriteHeader(404)
-	fmt.Fprint(w, "<!DOCTYPE html><html><h1>Page Not Found</h1><p>The page you are looking for is not here.</p></html>")
+	// If you want to log these errors to detect a potentially bad link somewhere on your site, uncomment below.
+	//log.Error("Bad url entered: " + r.URL.Path)
 }
 
 
 // SessionHandler initializes the global session handler. The default version uses the scs session handler.
-// To replace it with the session handler of your choice, uncommend the code below and implement your session handler here.
+// To replace it with the session handler of your choice, uncomment the code below and implement your session handler here.
 /*
 func (a *Application) SessionHandler(next http.Handler) http.Handler {
 	return session.Use(next)
@@ -215,3 +208,21 @@ func (a *Application) PutContext(r *http.Request) *http.Request {
 	return a.Application.PutContext(r)
 }
 
+
+// ServeStaticFile serves up static html and other files. The default will serve up the generated form index
+// and any files you put in the HTML directory. If you want to serve up files from other directories, uncomment
+// the line below, but remember you will have to put those files on your release server and point your custom
+// static file server there.
+/*
+func (a *Application) ServeStaticFile (w http.ResponseWriter, r *http.Request) bool {
+
+	// If you do not want the default behavior, remove the following lines
+	if a.Application.ServeStaticFile(w,r) {
+		return true
+	}
+
+	// Serve files from other directories here
+
+	return false	// indicates no static file was found
+}
+*/

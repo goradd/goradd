@@ -1402,16 +1402,16 @@ func (c *Control) MarshalState(m maps.Setter) {
 func (c *Control) UnmarshalState(m maps.Loader) {
 }
 
-// T is a shortcut for the override translator that should only be used by internal goradd code. See Translate() for the
+// T is a shortcut for the translator that should only be used by internal goradd code. See Translate() for the
 // version to use for your project.
 func (c *Control) T(in string) string {
 	return c.Page().GoraddTranslator().Translate(in)
 }
 
-// Translate is a shortcut to the override translator.
-// All static strings that could create output to the user should be wrapped in This. The translator itself is designed
-// to be capable of per-override translation, meaning each user of the web service can potentially choose their own language
-// and see the web override in that language.
+// Translate is a shortcut to the translator.
+// All static strings that could create output to the user should be wrapped in this. The translator itself is designed
+// to be capable of per-page translation, meaning each user of the web service can potentially choose their own language
+// and see the web page in that language.
 func (c *Control) Translate(in string) string {
 	return c.Page().ProjectTranslator().Translate(in)
 }

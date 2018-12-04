@@ -64,17 +64,17 @@ func RenderAssetTag(filePath string, tag string, attributes *html.Attributes, co
 
 func GetAssetLocation(url string) string {
 	// If we have an AssetDirectory, either we are in release mode, or we are locally testing the release process
-	if config.AssetDirectory != "" {
+	if config.AssetDirectory() != "" {
 		if !strings2.StartsWith(url, config.AssetPrefix) {
 			panic("Assets must start with the asset prefix.")
 		}
 		fPath := strings.TrimPrefix(url, config.AssetPrefix)
-		return filepath.Join(config.AssetDirectory, filepath.FromSlash(fPath))
+		return filepath.Join(config.AssetDirectory(), filepath.Clean(fPath))
 	}
 	for dirUrl, dir := range assetDirectories {
 		if strings2.StartsWith(url, dirUrl) {
 			fPath := strings.TrimPrefix(url, dirUrl)
-			return filepath.Join(dir, filepath.FromSlash(fPath))
+			return filepath.Join(dir, filepath.Clean(fPath))
 		}
 	}
 	return ""
@@ -104,7 +104,7 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	//log.Printf("Served %s", localpath)
 
-	if !config.Release && config.AssetDirectory == "" {
+	if !config.Release && config.AssetDirectory() == "" {
 		// TODO: Set up per file cache control
 
 		if ext := filepath.Ext(localpath); ext == "" {

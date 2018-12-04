@@ -1,7 +1,8 @@
-package config
+package dbconfig
 
 import (
 	"github.com/go-sql-driver/mysql"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/orm/db"
 )
 
@@ -9,28 +10,28 @@ import (
 func InitDatabases() {
 	cfg := mysql.NewConfig()
 
-	if !Release {
-		cfg.DBName = "impulse"
+	if !config.Release {
+		cfg.DBName = "goradd"
 		cfg.User = "root"
 		cfg.Passwd = "12345"
 		cfg.ParseTime = true
 	} else {
-		cfg.DBName = "impulse"
-		cfg.User = "impulse"
-		cfg.Passwd = "xKMMahB35SaDnLVZ"
-		cfg.ParseTime = true
 	}
 
 
-	key := "impulse"
+	key := "goradd"
 
 	db1 := db.NewMysql5(key, "", cfg)
 
-	if !Release {
+	if !config.Release {
 		db1.StartProfiling()
 	}
 
 	db.AddDatabase(db1, key)
 
+	// add more databases
+
+
+	// do this last
 	db.AnalyzeDatabases()
 }

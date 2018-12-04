@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/codegen/generator"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/orm/query"
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/page/control"
-	"goradd-project/config"
-	"goradd-project/config/codegen"
 )
 
 func init() {
@@ -49,9 +48,9 @@ func (d FloatTextbox) GenerateCreate(namespace string, col *generator.ColumnType
 
 	// TODO: Set a maximum value based on database limit
 
-	if codegen.DefaultWrapper != "" {
+	if generator.DefaultWrapper != "" {
 		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, codegen.DefaultWrapper)
+`, generator.DefaultWrapper)
 	}
 	if !col.IsNullable {
 		s += `	ctrl.SetIsRequired(true)

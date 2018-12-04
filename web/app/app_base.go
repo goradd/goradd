@@ -9,6 +9,8 @@ import (
 	"github.com/spekary/goradd/pkg/html"
 	grlog "github.com/spekary/goradd/pkg/log"
 	"github.com/spekary/goradd/pkg/session"
+	"github.com/spekary/goradd/pkg/sys"
+	"path/filepath"
 	"time"
 
 	"github.com/spekary/goradd/pkg/messageServer"
@@ -32,6 +34,7 @@ type ApplicationI interface {
 	WebSocketAuthHandler(next http.Handler) http.Handler
 	SessionHandler(next http.Handler) http.Handler
 	ServeRequest (w http.ResponseWriter, r *http.Request)
+	ServeStaticFile (w http.ResponseWriter, r *http.Request) bool
 }
 
 // The application base, to be embedded in your application
@@ -180,6 +183,7 @@ func (a *Application) MakeAppServer() http.Handler {
 
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler(buf)
+	h = a.ServeStaticFileHandler(buf, h)
 	h = a.ServeAppHandler(buf, h)
 	h = a.this().SessionHandler(h)
 	h = a.PutContextHandler(h)
@@ -193,7 +197,7 @@ func (a *Application) SessionHandler(next http.Handler) http.Handler {
 	return session.Use(next)
 }
 
-// ServeRequestHandler is the last handler on the default call chain. It calls ServeStaticFile so the sub-class can handle it.
+// ServeRequestHandler is the last handler on the default call chain. It calls ServeRequest so the sub-class can handle it.
 func (a *Application) ServeRequestHandler(buf *bytes.Buffer) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 
@@ -206,11 +210,26 @@ func (a *Application) ServeRequestHandler(buf *bytes.Buffer) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+// ServeStaticFileHandler serves up static files by calling ServeStaticFile.
+func (a *Application) ServeStaticFileHandler(buf *bytes.Buffer, next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+
+		if !a.this().ServeStaticFile(w,r) && next != nil {
+			next.ServeHTTP(w, r)
+		}
+	}
+	return http.HandlerFunc(fn)
+}
+
+
 // ServeAppHandler is the main handler that processes the current request
 func (a *Application) ServeAppHandler(buf *bytes.Buffer, next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		a.ServeHTTP(w, r)
-		if next != nil {
+
+		grctx := page.GetContext(r.Context())
+
+		if next != nil && grctx.AppContext.OutBuf.Len() == 0 {
 			next.ServeHTTP(w, r)
 		}
 	}
@@ -227,9 +246,45 @@ func (a *Application) PutContextHandler(next http.Handler) http.Handler {
 		grctx.AppContext.OutBuf = page.GetBuffer()
 		defer page.PutBuffer(grctx.AppContext.OutBuf)
 		next.ServeHTTP(w, r)
-		w.Write(grctx.AppContext.OutBuf.Bytes())
+		_,_ = w.Write(grctx.AppContext.OutBuf.Bytes())
 	}
 	return http.HandlerFunc(fn)
 }
+
+
+// ServeStaticFile serves up static html and other files. The default will serve up the generated form index
+// and any files you put in the HTML directory. It is overridable by creating a ServeStaticFile in your local
+// app.go file.
+func (a *Application) ServeStaticFile (w http.ResponseWriter, r *http.Request) bool {
+	url := r.URL.Path
+
+	if !config.Release {
+		// serve up the /form/index.html file in development mode so that we can get to the code-generated forms.
+		if url == "/form/index.html" || url == "/form" || url == "/form/" {
+			http.ServeFile(w, r, filepath.Join(config.ProjectDir(), "gen", "index.html"))
+			return true
+		}
+	}
+
+	// Attempt to serve the file out of the html directory
+	if dir := config.HtmlDirectory(); dir != "" {
+		if url[len(url)-1:] == "/" {
+			url += "index.html"
+		}
+
+		// This prevents someone from hacking by using .. to refer to files outside of the html directory
+		fp := filepath.Clean(url)
+
+		file := filepath.Join(dir, fp)
+		if sys.PathExists(file) {
+			http.ServeFile(w, r, file)
+			return true
+		}
+	}
+
+	return false	// indicates no static file was found
+}
+
+
 
 

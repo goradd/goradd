@@ -1,13 +1,12 @@
 package generator
 
 import (
-	"github.com/spekary/gengen/maps"
-	"goradd-project/config"
 	"fmt"
-	"goradd-project/config/codegen"
-	"github.com/spekary/goradd/pkg/page"
 	"github.com/gedex/inflector"
+	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/codegen/generator"
+	"github.com/spekary/goradd/pkg/config"
+	"github.com/spekary/goradd/pkg/page"
 )
 
 func init() {
@@ -48,9 +47,9 @@ func (d SelectList) GenerateCreate(namespace string, col *generator.ColumnType) 
 	ctrl.SetLabel("%s")
 `, namespace, col.DefaultLabel)
 
-	if codegen.DefaultWrapper != "" {
+	if generator.DefaultWrapper != "" {
 		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, codegen.DefaultWrapper)
+`, generator.DefaultWrapper)
 	}
 
 	if col.ForeignKey != nil {

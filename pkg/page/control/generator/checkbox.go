@@ -2,9 +2,8 @@ package generator
 
 import (
 	"github.com/spekary/gengen/maps"
-	"goradd-project/config"
 	"fmt"
-	"goradd-project/config/codegen"
+	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/orm/query"
 	"github.com/spekary/goradd/codegen/generator"
@@ -47,9 +46,9 @@ func (d Checkbox) GenerateCreate(namespace string, col *generator.ColumnType) (s
 	ctrl.SetLabel("%s")
 `, namespace, col.DefaultLabel)
 
-	if codegen.DefaultWrapper != "" {
+	if generator.DefaultWrapper != "" {
 		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, codegen.DefaultWrapper)
+`, generator.DefaultWrapper)
 	}
 
 	return

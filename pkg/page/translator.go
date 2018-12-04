@@ -1,5 +1,7 @@
 package page
 
+import "github.com/spekary/goradd/pkg/i18n"
+
 // GoraddDomain is the translation file domain for all strings provided by goradd
 const GoraddDomain = "goradd"
 
@@ -22,8 +24,5 @@ func (t *PageTranslator) SetLanguage(l string) {
 }
 
 func (t PageTranslator) Translate(in string) (out string) {
-	// TODO: Call the application translation service
-	// return I18N.Translate(t.domain, t.language, in)
-	// first argument is the domain, so that goradd can provide its own translation files, and project can have custom files without overlap
-	return in
+	return i18n.Translate(t.Domain, t.Language, in)
 }
