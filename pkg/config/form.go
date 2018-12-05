@@ -2,7 +2,6 @@ package config
 
 import (
 	"path"
-	"path/filepath"
 )
 
 // AssetPrefix is the path prefix for all goradd assets. It indicates to the program to look for the given file in the assets collection of files
@@ -72,12 +71,6 @@ func SetHtmlDirectory(d string) {
 }
 
 func HtmlDirectory() string {
-	if Release && htmlDirectory == "" {
-		return "" // Either you forgot to set htmlDir, or someone has entered a bad url
-	}
-	if !Release && htmlDirectory == "" {
-		return filepath.Join(ProjectDir(), "web","html")
-	}
 	return htmlDirectory
 }
 

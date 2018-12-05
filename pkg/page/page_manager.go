@@ -45,8 +45,7 @@ func RegisterPage(path string, creationFunction FormCreationFunction, formId str
 	pageManager.formIdRegistry[formId] = creationFunction
 }
 
-func (m *PageManager) getNewPageFunc(grctx *Context) (f FormCreationFunction, path string, ok bool) {
-	path = grctx.URL.Path
+func (m *PageManager) getNewPageFunc(path string) (f FormCreationFunction, ok bool) {
 	if PagePathPrefix != "" {
 		if strings.Index(path, PagePathPrefix) == 0 { // starts with prefix
 			path = path[len(PagePathPrefix):] // remove prefix from path
@@ -58,8 +57,8 @@ func (m *PageManager) getNewPageFunc(grctx *Context) (f FormCreationFunction, pa
 	return
 }
 
-func (m *PageManager) IsPage(grctx *Context) bool {
-	_, _, ok := m.getNewPageFunc(grctx)
+func (m *PageManager) IsPage(path string) bool {
+	_, ok := m.getNewPageFunc(path)
 	return ok
 }
 
@@ -82,10 +81,10 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 	if page == nil {
 		if gCtx.requestMode == Ajax {
 			// TODO: If this happens, we need to reload the whole page, because we lost the pagestate completely
-			log.FrameworkDebug("Ajax lost the page state") // generally this should only happen if the page state drops out of the cash, which might happen after a long time
+			log.FrameworkDebug("Ajax lost the page state") // generally this should only happen if the page state drops out of the cache, which might happen after a long time
 		}
 		// page was not found, so make a new one
-		f, _, _ := m.getNewPageFunc(gCtx)
+		f, _ := m.getNewPageFunc(gCtx.URL.Path)
 		if f == nil {
 			panic("Could not find the page creation function")
 		}

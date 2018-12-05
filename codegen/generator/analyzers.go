@@ -2,7 +2,6 @@ package generator
 
 import (
 	"github.com/spekary/goradd/pkg/orm/db"
-	codegenConfig "goradd-project/config/codegen"
 	"strings"
 	"strconv"
 )

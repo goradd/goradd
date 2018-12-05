@@ -59,7 +59,7 @@ type TableDescription struct {
 	// The following items are filled in by the analyze process
 	ManyManyReferences []*ManyManyReference
 	ReverseReferences  []*ReverseReference
-
+	HasDateTime bool
 	PrimaryKeyColumn *ColumnDescription
 
 	// Do not process this table
@@ -357,6 +357,9 @@ func (dd *DatabaseDescription) analyzeColumns(td *TableDescription) {
 				log.Print("Error: table " + td.DbName + " has multiple primary keys.")
 				td.Skip = true
 			}
+		}
+		if cd.GoType == ColTypeDateTime {
+			td.HasDateTime = true
 		}
 	}
 }

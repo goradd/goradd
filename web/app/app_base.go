@@ -129,7 +129,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	grctx := page.GetContext(ctx)
 	buf := grctx.AppContext.OutBuf
-	if pm.IsPage(grctx) {
+	if pm.IsPage(r.URL.Path) {
 		headers, errCode := pm.RunPage(ctx, buf)
 		if headers != nil {
 			for k, v := range headers {
@@ -175,7 +175,7 @@ func (a *Application) WebSocketAuthHandler(next http.Handler) http.Handler {
 // MakeAppServer creates the handler chain that will handle http requests. There are a ton of ways to do this, 3rd party
 // libraries to help with this, and middlewares you can use. This is a working example, and not a declaration of any
 // "right" way to do this, since it can be very application specific. Generally you must make sure that
-// PutContextHandler is called before the serveAppHandler in the chain.
+// PutContextHandler is called before ServeAppHandler in the chain.
 func (a *Application) MakeAppServer() http.Handler {
 	// the handler chain gets built in the reverse order of getting called
 	buf := page.GetBuffer()
@@ -183,7 +183,7 @@ func (a *Application) MakeAppServer() http.Handler {
 
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler(buf)
-	h = a.ServeStaticFileHandler(buf, h)
+	h = a.ServeStaticFileHandler(buf, h)	// TODO: Speed this handler up by checking to see if the url is a goradd form before deciding to get context and session
 	h = a.ServeAppHandler(buf, h)
 	h = a.this().SessionHandler(h)
 	h = a.PutContextHandler(h)

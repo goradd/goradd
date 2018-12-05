@@ -33,3 +33,7 @@ func (c *Panel) DrawingAttributes() *html.Attributes {
 	a.SetDataAttribute("grctl", "panel")
 	return a
 }
+
+func (c *Panel) Value() interface{} {
+	return c.Text()
+}

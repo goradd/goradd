@@ -1,8 +1,6 @@
 package datetime
 
 import (
-	"context"
-	"goradd-project/i18n"
 	"time"
 )
 
@@ -26,7 +24,3 @@ const (
 
 func (m Month) String() string { return time.Month(m).String() }
 
-// Translate implements the i18n.Translater interface
-func (m Month) Translate(ctx context.Context) string {
-	return i18n.T(ctx, m.String())
-}

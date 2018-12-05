@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/spekary/goradd/pkg/sys"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -76,8 +77,12 @@ func main() {
 		}
 	case "generate":
 		for _,f := range files {
-			result,_ := sys.ExecuteShellCommand("go generate " + f)
-			fmt.Print(result)
+			result,err := sys.ExecuteShellCommand("go generate " + f)
+			if err != nil {
+				log.Fatal(err)
+			} else {
+				fmt.Print(string(result))
+			}
 		}
 	case "copy":
 		copyFiles(files)

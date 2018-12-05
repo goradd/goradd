@@ -121,6 +121,7 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
 	if err = dec.Decode(&o.{{dd.AssociatedObjectPrefix}}{{ref.GoPlural}}); err != nil {
 	    return
 	}
+{{if !ref.IsTypeAssociation}}
     if len(o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}) > 0 {
         o.m{{= ref.GoPlural }} = make(map[string] *{{= ref.AssociatedObjectName }})
 
@@ -128,6 +129,7 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
             o.m{{= ref.GoPlural }}[p.PrimaryKey()] = p
         }
     }
+{{if}}
 {{for}}
 
     var hasAliases bool
