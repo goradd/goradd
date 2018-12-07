@@ -11,11 +11,12 @@ package form
 
 import (
     "github.com/spekary/goradd/pkg/page"
-     .  "github.com/spekary/goradd/pkg/page/control"
-     "goradd-project/gen/{{dd.DbKey}}/panel"
+    .  "github.com/spekary/goradd/pkg/page/control"
+    "goradd-project/gen/{{dd.DbKey}}/panel"
+    "goradd-project/control"
     "context"
     "github.com/spekary/goradd/pkg/page/action"
-	"fmt"
+    "fmt"
 )
 
 const {{= key }}{{= t.GoName }}EditPath = "/form/{{= dd.DbKey }}/{{= t.GoName }}Edit"
@@ -33,7 +34,7 @@ const (
 // The {{= formName }} is a form wrapper for the corresponding edit panel.
 // To edit it, make a copy and move it out of this package and into another
 type {{= formName }} struct {
-    FormBase
+    control.FormBase
     EditPanel *panel.{{= t.GoName }}EditPanel
     SaveButton *Button
     CancelButton *Button
