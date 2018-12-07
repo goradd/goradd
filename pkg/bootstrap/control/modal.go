@@ -321,5 +321,5 @@ func NewTitleBar(parent page.ControlI, id string) *TitleBar {
 }
 
 func init() {
-	control.RegisterAlertFunc(BootstrapAlert)
+	control.SetAlertFunction(BootstrapAlert)
 }

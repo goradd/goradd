@@ -257,7 +257,7 @@ If you specify more than one button, the first button will be the default button
 this case, you will need to detect the button by adding a On(event.DialogButton(), action) to the dialog returned.
 You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
 
-Call RegisterAlertFunc to register a different alert function for the framework to use.
+Call SetAlertFunction to register a different alert function for the framework to use.
 
 */
 
@@ -294,6 +294,6 @@ type AlertFuncType func(form page.FormI, message string, buttons interface{}) Di
 
 var alertFunc AlertFuncType = DefaultAlert // default to our built in one
 
-func RegisterAlertFunc(f AlertFuncType) {
+func SetAlertFunction(f AlertFuncType) {
 	alertFunc = f
 }
