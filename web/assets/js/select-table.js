@@ -1,5 +1,5 @@
 /**
- * Widget script designed to be attached to a select grid. Depends on ScrollIntoView.
+ * Widget script designed to be attached to a select grid. Depends on ScrollIntoView and JQuery UI.
  *
  * TODO: Capture focus and improve aria experience
  */
