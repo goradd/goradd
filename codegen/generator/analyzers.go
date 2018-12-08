@@ -78,6 +78,6 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 
 // ControlType returns the default type of control for a column. Control types can be customized in other ways too.
 func  controlType(col *db.ColumnDescription) (typ string, createFunc string, importName string) {
-	d := ControlTyper.DefaultControlType(col)
+	d := DefaultControlTypeFunc(col)
 	return d.Typ, d.CreateFunc, d.ImportName
 }

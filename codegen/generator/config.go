@@ -11,15 +11,9 @@ type ControlCreationInfo struct {
 	ImportName string
 }
 
-// DefaultControlTyper is the interface that describes the service that determines the default control type that corresponds to a particular column type.
-type DefaultControlTyper interface {
-	DefaultControlType(col *db.ColumnDescription) ControlCreationInfo
-}
-
-// ControlTyper is the global variable that controls how default control types are determined. The default sets up basic html controls
-// for various types. Insert your own to change it.
-
-var ControlTyper DefaultControlTyper = new(defaultControlTyper)
+// DefaultControlTypeFunc is the injected function that determines the default control type for a particular type of database column.
+// It gets initialized here, so that if you want to replace it, you can first call the default function
+var DefaultControlTypeFunc func(*db.ColumnDescription) ControlCreationInfo = DefaultControlType
 
 // DefaultWrapper defines what wrapper will be used for generated controls. It should correspond to the string the wrapper was registered with.
 var DefaultWrapper = "page.Label"
@@ -27,12 +21,7 @@ var DefaultWrapper = "page.Label"
 // GenerateControlIDs will determine if the code generator will assign ids to the controls based on table and column names
 var GenerateControlIDs = true
 
-//const FormSubDirectory = "/pkg/gen/form"
-
-
-type defaultControlTyper struct {}
-
-func (t defaultControlTyper) DefaultControlType(col *db.ColumnDescription) ControlCreationInfo {
+func DefaultControlType(col *db.ColumnDescription) ControlCreationInfo {
 	if col.IsPk {
 		return ControlCreationInfo{"Span", "NewSpan", "github.com/spekary/goradd/pkg/page/control"} // primary keys are not editable
 	}
