@@ -77,7 +77,8 @@ func main() {
 		}
 	case "generate":
 		for _,f := range files {
-			result,err := sys.ExecuteShellCommand("go generate " + f)
+			var result []byte
+			result,err = sys.ExecuteShellCommand("go generate " + f)
 			if err != nil {
 				log.Fatal(err)
 			} else {
