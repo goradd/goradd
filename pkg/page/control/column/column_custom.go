@@ -1,7 +1,7 @@
 package column
 
 import (
-	"goradd-project/override/control_base"
+	"github.com/spekary/goradd/pkg/page/control"
 )
 
 // CustomColumn is a table column that you can customize any way you want. You simply give it a CellTexter, and return

@@ -12,6 +12,7 @@ import (
 	"github.com/spekary/goradd/pkg/log"
 	"github.com/spekary/goradd/pkg/orm/db"
 	"github.com/spekary/goradd/pkg/session/location"
+	"path/filepath"
 	"reflect"
 	"strings"
 )
@@ -78,18 +79,53 @@ func (f *FormBase) this() FormI {
 // The order is important, so if you override this, be sure these files get loaded
 // before other files.
 func (f *FormBase) AddRelatedFiles() {
-	path, attr := config.JQueryPath()
-	f.AddJavaScriptFile(path, false, html.NewAttributesFromMap(attr))
-	f.AddJavaScriptFile(config.GoraddAssets()+"/js/ajaxq/ajaxq.js", false, nil) // goradd.js needs this
-	f.AddJavaScriptFile(config.GoraddAssets()+"/js/goradd.js", false, nil)
-	f.AddJavaScriptFile(config.GoraddAssets()+"/js/goradd-ws.js", false, nil)
+	f.AddJQuery()
+	f.AddGoraddFiles()
+	f.AddFontAwesome()
+}
+
+// AddJQuery adds the jquery javascript to the form
+func (f *FormBase) AddJQuery() {
 	if !config.Release {
-		f.AddJavaScriptFile(config.GoraddAssets()+"/js/goradd-testing.js", false, nil)
+		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery3.js"), false, nil)
+	} else {
+		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.3.1.min.js", false,
+			html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=").
+			Set("crossorigin", "anonymous"))
 	}
-	f.AddStyleSheetFile(config.GoraddAssets()+"/css/goradd.css", nil)
+}
+
+// AddJQueryUI adds the JQuery UI javascript to the form. This is not loaded by default, but many add-ons
+// use it, so its here for convenience.
+func (f *FormBase) AddJQueryUI() {
+	if !config.Release {
+		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery-ui.js"), false, nil)
+	} else {
+		f.AddJavaScriptFile("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", false,
+			html.NewAttributes().Set("integrity", "sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=").
+				Set("crossorigin", "anonymous"))
+	}
+}
+
+
+// AddGoraddFiles adds the various goradd files to the form
+func (f *FormBase) AddGoraddFiles() {
+	gr := config.GoraddAssets()
+	f.AddJavaScriptFile(filepath.Join(gr, "js", "ajaxq","ajaxq.js"), false, nil) // goradd.js needs this
+	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd.js"), false, nil)
+	f.AddJavaScriptFile(filepath.Join(gr, "js","goradd-ws.js"), false, nil)
+	if !config.Release {
+		f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-testing.js"), false, nil)
+	}
+	f.AddStyleSheetFile(filepath.Join(gr, "css", "goradd.css"), nil)
+}
+
+// AddFontAwesome adds the font-awesome files fo the form
+func (f *FormBase) AddFontAwesome() {
 	f.AddStyleSheetFile("https://use.fontawesome.com/releases/v5.0.13/css/all.css",
 		html.NewAttributes().Set("integrity", "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp").Set("crossorigin", "anonymous"))
 }
+
 
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing

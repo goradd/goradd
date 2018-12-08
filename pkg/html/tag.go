@@ -14,7 +14,7 @@ type LabelDrawingMode int
 const (
 	LabelDefault    LabelDrawingMode = iota // Label mode is defined elsewhere, like in a config setting
 	LabelBefore                             // Label tag is before the control's tag, and terminates before the control
-	LabelAfter                              // Label tag is after the control's tag, and start after the control
+	LabelAfter                              // Label tag is after the control's tag, and starts after the control
 	LabelWrapBefore                         // Label tag is before the control's tag, and wraps the control tag
 	LabelWrapAfter                          // Label tag is after the control's tag, and wraps the control tag
 )

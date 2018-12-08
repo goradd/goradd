@@ -6,9 +6,7 @@ import (
 	"github.com/spekary/goradd/pkg/page"
 	"github.com/spekary/goradd/pkg/page/action"
 	"github.com/spekary/goradd/pkg/page/control"
-	"github.com/spekary/goradd/pkg/page/control/control_base/table"
 	"github.com/spekary/goradd/pkg/page/event"
-	"goradd-project/override/control_base"
 	"strings"
 )
 
@@ -127,11 +125,11 @@ func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 	for k, v := range ctx.CheckableValues() {
 		index := strings.LastIndexAny(k, "_")
 		if index > 0 {
-			column_id := k[:index]
-			check_id := k[index+1:]
+			columnId := k[:index]
+			checkId := k[index+1:]
 
-			if column_id == c.ID() {
-				c.changes[check_id] = page.ConvertToBool(v)
+			if columnId == c.ID() {
+				c.changes[checkId] = page.ConvertToBool(v)
 			}
 		}
 	}
@@ -139,7 +137,7 @@ func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 
 // AddActions adds actions to the table that the column can respond to.
 func (c *CheckboxColumn) AddActions(t page.ControlI) {
-	t.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(c.ID(), table.ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
+	t.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(c.ID(), control.ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
 }
 
 func (c *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {

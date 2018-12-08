@@ -2,9 +2,8 @@ package column
 
 import (
 	"context"
-	"goradd-project/override/control_base"
-	"github.com/spekary/goradd/pkg/page/control/control_base/table"
 	"github.com/spekary/goradd/pkg/orm/query"
+	"github.com/spekary/goradd/pkg/page/control"
 	"reflect"
 )
 
