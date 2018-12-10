@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"github.com/spekary/goradd/pkg/orm/db"
 	"strings"
 	"strconv"
@@ -14,43 +15,58 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 	for _,col := range t.Columns {
 		col2 := ColumnType{ColumnDescription:col}
 
-		typ, newFunc, importPath := controlType(col)
+		typ, newFunc, importName := controlType(col)
 
-		var namespace string
-		var imp *ImportType
-		var ok bool
 		if typ != "" {
-			if imp,ok = pathToImport[importPath]; !ok {
-				// add new import path
-				items := strings.Split(importPath, `/`)
-				lastName := items[len(items)-1]
-				var suffix = ""
-				var count = 1
-				for  {
-					if _,ok = namespaceToImport[lastName + suffix]; !ok {
-						break
-					}
-					count ++
-					suffix = strconv.Itoa(count)
-				}
-				namespace = lastName + suffix
+			var mainImport *ImportType
 
-				if suffix == "" {
-					imp = &ImportType{
-						importPath,
-						lastName,
-						"",
+			generator := GetControlGenerator(importName, typ)
+			if generator == nil {
+				panic(fmt.Errorf("Generator for control type %s/%s is not defined", importName, typ))
+			}
+			for _,importPath := range generator.Imports() {
+				var ok bool
+				var imp *ImportType
+				if imp,ok = pathToImport[importPath]; !ok {
+					var namespace string
+					// add new import path
+					items := strings.Split(importPath, `/`)
+					lastName := items[len(items)-1]
+					var suffix = ""
+					var count = 1
+					for  {
+						if _,ok = namespaceToImport[lastName + suffix]; !ok {
+							break
+						}
+						count ++
+						suffix = strconv.Itoa(count)
+					}
+					namespace = lastName + suffix
+
+					if suffix == "" {
+						imp = &ImportType{
+							importPath,
+							lastName,
+							"",
+						}
+					} else {
+						imp = &ImportType{
+							importPath,
+							namespace,
+							namespace,
+						}
+					}
+					imports = append(imports, imp)
+					pathToImport[importPath] = imp
+					namespaceToImport[namespace] = imp
+					if mainImport == nil {
+						mainImport = imp
 					}
 				} else {
-					imp = &ImportType{
-						importPath,
-						namespace,
-						namespace,
+					if mainImport == nil {
+						mainImport = imp
 					}
 				}
-				imports = append(imports, imp)
-				pathToImport[importPath] = imp
-				namespaceToImport[namespace] = imp
 			}
 			defaultLabel := strings.Title(strings.Replace(col.DbName, "_", " ", -1))
 
@@ -59,14 +75,14 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 				defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(col.DbName, "_", "-", -1)
 			}
 
-			col2.ControlDescription = ControlDescription{
-				imp,
+			col2.ControlDescription = ControlDescription {
+				mainImport,
 				typ,
 				newFunc,
 				col.GoName + typ,
 				defaultID,
 				defaultLabel,
-				GetControlGenerator(importPath, typ),
+				generator,
 			}
 		}
 		columns = append(columns, col2)

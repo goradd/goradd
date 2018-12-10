@@ -29,8 +29,8 @@ func (d Textbox) NewFunc() string {
 	return "NewTextbox"
 }
 
-func (d Textbox) Import() string {
-	return "github.com/spekary/goradd/pkg/page/control"
+func (d Textbox) Imports() []string {
+	return []string{"github.com/spekary/goradd/pkg/page/control"}
 }
 
 func (d Textbox) SupportsColumn(col *generator.ColumnType) bool {

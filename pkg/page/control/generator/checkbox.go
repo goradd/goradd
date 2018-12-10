@@ -28,9 +28,8 @@ func (d Checkbox) NewFunc() string {
 	return "NewCheckbox"
 }
 
-func (d Checkbox) Import() string {
-	// TODO: Add fmt to the import list
-	return "github.com/spekary/goradd/pkg/page/control"
+func (d Checkbox) Imports() []string {
+	return []string{"github.com/spekary/goradd/pkg/page/control"}
 }
 
 func (d Checkbox) SupportsColumn(col *generator.ColumnType) bool {

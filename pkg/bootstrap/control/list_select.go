@@ -1,0 +1,32 @@
+package control
+
+import (
+	"encoding/gob"
+	"github.com/spekary/goradd/pkg/html"
+	"github.com/spekary/goradd/pkg/page"
+	"github.com/spekary/goradd/pkg/page/control"
+)
+
+type SelectList struct {
+	control.SelectList
+}
+
+func NewSelectList(parent page.ControlI, id string) *SelectList {
+	t := new (SelectList)
+	t.Init(t, parent, id)
+	return t
+}
+
+
+func (t *SelectList) DrawingAttributes() *html.Attributes {
+	a := t.SelectList.DrawingAttributes()
+	a.AddClass("form-control")
+	return a
+}
+
+
+func init () {
+	gob.RegisterName("bootstrap.selectlist", new(SelectList))
+}
+
+

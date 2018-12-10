@@ -2,9 +2,8 @@ package column
 
 import (
 	"context"
+	"github.com/spekary/goradd/pkg/page/control"
 	"reflect"
-	"goradd-project/override/control_base"
-	"github.com/spekary/goradd/pkg/page/control/control_base/table"
 )
 
 // MapColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into

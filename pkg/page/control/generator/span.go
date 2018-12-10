@@ -27,9 +27,8 @@ func (d Span) NewFunc() string {
 	return "NewSpan"
 }
 
-func (d Span) Import() string {
-	// TODO: Add fmt to the import list
-	return "github.com/spekary/goradd/pkg/page/control"
+func (d Span) Imports() []string {
+	return []string{"github.com/spekary/goradd/pkg/page/control","fmt"}
 }
 
 func (d Span) SupportsColumn(col *generator.ColumnType) bool {

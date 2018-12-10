@@ -29,8 +29,8 @@ func (d IntegerTextbox) NewFunc() string {
 	return "NewIntegerTextbox"
 }
 
-func (d IntegerTextbox) Import() string {
-	return "github.com/spekary/goradd/pkg/page/control"
+func (d IntegerTextbox) Imports() []string {
+	return []string{"github.com/spekary/goradd/pkg/page/control"}
 }
 
 func (d IntegerTextbox) SupportsColumn(col *generator.ColumnType) bool {

@@ -28,9 +28,8 @@ func (d SelectList) NewFunc() string {
 	return "NewSelectList"
 }
 
-func (d SelectList) Import() string {
-	// TODO: Add fmt to the import list
-	return "github.com/spekary/goradd/pkg/page/control"
+func (d SelectList) Imports() []string {
+	return []string{"github.com/spekary/goradd/pkg/page/control"}
 }
 
 // TODO: This has to be changed to support virtual column types like ManyMany and Reverse

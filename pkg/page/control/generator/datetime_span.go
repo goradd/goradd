@@ -28,9 +28,8 @@ func (d DateTimeSpan) NewFunc() string {
 	return "NewDateTimeSpan"
 }
 
-func (d DateTimeSpan) Import() string {
-	// TODO: Add fmt to the import list
-	return "github.com/spekary/goradd/pkg/page/control"
+func (d DateTimeSpan) Imports() []string {
+	return []string{"github.com/spekary/goradd/pkg/page/control"}
 }
 
 func (d DateTimeSpan) SupportsColumn(col *generator.ColumnType) bool {

@@ -36,6 +36,7 @@ type FormI interface {
 	AddStyleSheetFile(path string, attributes *html.Attributes)
 	AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
+	AddJQueryUI()
 
 	// Lifecycle calls
 	Run(ctx context.Context) error

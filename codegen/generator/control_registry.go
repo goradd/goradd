@@ -23,7 +23,7 @@ type ConnectorParam struct {
 type ControlGenerator interface {
 	Type() string
 	NewFunc() string
-	Import() string
+	Imports() []string
 	SupportsColumn(col *ColumnType) bool
 	ConnectorParams() *maps.SliceMap
 	GenerateCreate(namespace string, col *ColumnType) string
@@ -43,7 +43,8 @@ func RegisterControlGenerator(c ControlGenerator) {
 		controlGeneratorRegistry = make(map[ControlGeneratorRegistryKey]ControlGenerator)
 	}
 
-	e := ControlGeneratorRegistryKey{c.Import(), c.Type()}
+	i := c.Imports()
+	e := ControlGeneratorRegistryKey{i[0], c.Type()}
 	controlGeneratorRegistry[e] = c
 }
 

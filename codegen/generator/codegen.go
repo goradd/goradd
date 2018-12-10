@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/spekary/goradd/pkg/orm/db"
 	"github.com/spekary/goradd/pkg/strings"
+	"github.com/spekary/goradd/pkg/sys"
 	"io/ioutil"
 	"log"
 	"os"
@@ -152,7 +153,7 @@ func Generate() {
 
 				// run imports on all generated go files
 				if strings.EndsWith(fileName, ".go") {
-					//sys.ExecuteShellCommand("goimports -w " + fileName)
+					sys.ExecuteShellCommand("goimports -w " + fileName)
 				}
 			}
 		}

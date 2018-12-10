@@ -2,17 +2,13 @@ package app
 
 import (
 	"github.com/spekary/goradd/pkg/config"
-	"goradd-project/config/dbconfig"
 	"path/filepath"
 	"runtime"
 )
 
 func configure() {
-	dbconfig.InitDatabases()
-
 	setupPorts()
 
-	setupJQuery()
 	setupDateFormats()
 	setupTranslator()
 
@@ -55,26 +51,6 @@ func setupPorts() {
 */
 }
 
-func setupJQuery() {
-	// These are optional setups to control how jQuery and jQueryUI are retrieved from the web
-
-	/*
-	if config.Release {
-		// This will get jquery from jquery's own code base
-		config.SetJqueryPath("https://code.jquery.com/jquery-3.3.1.min.js", map[string]string{"integrity": "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=", "crossorigin": "anonymous"})
-	} else {
-		config.SetJqueryPath (path.Join(config.GoraddAssets(),"/js/jquery3.js"), nil)
-	}
-	*/
-
-	/*
-	if config.Release {
-		config.SetJqueryUIPath("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", map[string]string{"integrity": "sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=", "crossorigin": "anonymous"})
-	} else {
-		config.SetJqueryUIPath(path.Join(config.GoraddAssets(),"/js/jquery-ui.js"), nil)
-	}
-	*/
-}
 
 func setupDateFormats() {
 	// uncomment below to change the default formats used to display dates

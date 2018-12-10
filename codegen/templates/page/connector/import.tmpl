@@ -4,7 +4,6 @@ import (
     "context"
     "github.com/spekary/goradd/pkg/page"
 	"goradd-project/gen/{{dd.DbKey}}/model"
-	"fmt"
 {{for _,imp := range t.Imports}}
 {{if imp.Alias == ""}}
     "{{= imp.Path }}"

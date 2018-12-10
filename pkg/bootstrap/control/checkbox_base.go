@@ -16,7 +16,6 @@ type CheckboxI interface {
 // Checkbox is a base class for checkbox-like objects, including bootstrap checkboxes and radio buttons.
 type checkboxBase struct {
 	control.Checkbox
-	BootstrapControl
 }
 
 func (c *checkboxBase) Init(self CheckboxI, parent page.ControlI, id string) {
@@ -35,7 +34,6 @@ func (c *checkboxBase) DrawingAttributes() *html.Attributes {
 	if c.Text() == "" {
 		a.AddClass("position-static")
 	}
-	c.BootstrapControl.AddBootstrapAttributes(c.this(), a)
 	return a
 }
 
@@ -56,9 +54,6 @@ func (c *checkboxBase) Serialize(e page.Encoder) (err error) {
 	if err = c.Checkbox.Serialize(e); err != nil {
 		return
 	}
-	if err = c.BootstrapControl.Serialize(e); err != nil {
-		return
-	}
 	return
 }
 
@@ -71,9 +66,6 @@ func (c *checkboxBase) ΩisSerializer(i page.ControlI) bool {
 
 func (c *checkboxBase) Deserialize(d page.Decoder, p *page.Page) (err error) {
 	if err = c.Checkbox.Deserialize(d, p); err != nil {
-		return
-	}
-	if err = c.BootstrapControl.Deserialize(d, p); err != nil {
 		return
 	}
 	return

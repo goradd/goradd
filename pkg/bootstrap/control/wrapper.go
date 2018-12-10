@@ -108,6 +108,15 @@ func (w *DivWrapperType) AjaxRender(ctx context.Context, response *page.Response
 	w.LabelWrapperType.AjaxRender(ctx, response, c)
 }
 
+func (w *DivWrapperType) ModifyDrawingAttributes(c page.ControlI, attr *html.Attributes) {
+	switch c.ValidationState() {
+	case page.ValidationValid:
+		attr.AddClass("is-valid")
+	case page.ValidationInvalid:
+		attr.AddClass("is-invalid")
+	}
+}
+
 
 type FormGroupWrapperType struct {
 	DivWrapperType

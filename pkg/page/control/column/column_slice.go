@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/spekary/goradd/pkg/datetime"
-	reflect "reflect"
+	"github.com/spekary/goradd/pkg/page/control"
+	"reflect"
 	"time"
-	"goradd-project/override/control_base"
-	"github.com/spekary/goradd/pkg/page/control/control_base/table"
 )
 
 // SliceColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into
