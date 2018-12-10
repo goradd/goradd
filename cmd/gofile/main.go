@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/spekary/goradd/pkg/datetime"
 	"github.com/spekary/goradd/pkg/sys"
 	"log"
 	"os"
@@ -27,6 +28,8 @@ func main() {
 	}
 
 	cmd := os.Args[1]
+
+	fmt.Printf("gofile %s started: %v\n", cmd, datetime.Now())
 
 	// Replace all GOPATH strings with the current go path, expand paths, apply OS specific stuff, clean path
 	// This stuff allows the tool to use forward slashes when specifying paths on WINDOWS, making it universal
@@ -94,6 +97,8 @@ func main() {
 	default:
 		usage()
 	}
+
+	fmt.Printf("gofile %s completed: %v\n", cmd, datetime.Now())
 }
 
 // Print basic usage information

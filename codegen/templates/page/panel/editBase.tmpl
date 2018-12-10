@@ -15,10 +15,12 @@ import(
 	"goradd-project/gen/{{dd.DbKey}}/connector"
 	"goradd-project/gen/{{dd.DbKey}}/model"
 {{for _,imp := range t.Imports}}
+{{if imp.Primary }}
 {{if imp.Alias == ""}}
     "{{= imp.Path }}"
 {{else}}
     {{= imp.Alias }} "{{= imp.Path }}"
+{{if}}
 {{if}}
 {{for}}
 

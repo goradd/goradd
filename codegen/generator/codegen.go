@@ -31,6 +31,7 @@ type ImportType struct {
 	Path string
 	Namespace string
 	Alias string // blank if not needing an alias
+	Primary bool
 }
 
 // ControlDescription is matched with a ColumnDescription below and provides additional information regarding
@@ -153,7 +154,10 @@ func Generate() {
 
 				// run imports on all generated go files
 				if strings.EndsWith(fileName, ".go") {
-					sys.ExecuteShellCommand("goimports -w " + fileName)
+					_,err := sys.ExecuteShellCommand("goimports -w " + fileName)
+					if err != nil {
+						panic("error running goimports: " + err.Error())	// perhaps goimports is not installed?
+					}
 				}
 			}
 		}

@@ -24,7 +24,7 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 			if generator == nil {
 				panic(fmt.Errorf("Generator for control type %s/%s is not defined", importName, typ))
 			}
-			for _,importPath := range generator.Imports() {
+			for i,importPath := range generator.Imports() {
 				var ok bool
 				var imp *ImportType
 				if imp,ok = pathToImport[importPath]; !ok {
@@ -48,12 +48,14 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 							importPath,
 							lastName,
 							"",
+							i == 0,
 						}
 					} else {
 						imp = &ImportType{
 							importPath,
 							namespace,
 							namespace,
+							i == 0,
 						}
 					}
 					imports = append(imports, imp)
