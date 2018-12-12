@@ -1,4 +1,4 @@
-package test
+package browser
 
 type testRunnerFunction func(*TestForm)
 

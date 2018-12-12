@@ -1,4 +1,4 @@
-package test
+package browser
 
 import (
 	"context"
@@ -46,15 +46,15 @@ type  TestController struct {
 
 func NewTestController(parent page.ControlI, id string) *TestController {
 	p := new(TestController)
-	p.Init(parent, id)
+	p.Init(p, parent, id)
 	p.Tag = "pre"
 	p.stepChannel = make(chan stepItemType, 1)
 	return p
 }
 
-func (p *TestController) Init(parent page.ControlI, id string) {
+func (p *TestController) Init(self control.PanelI, parent page.ControlI, id string) {
+	p.Panel.Init(p, parent, id)
 	p.ParentForm().AddJQueryUI()
-
 	p.ParentForm().AddJavaScriptFile(filepath.Join(TestAssets(), "js", "test_controller.js"), false, nil)
 	p.On(TestStepEvent(), action.Ajax(p.ID(), TestStepAction))
 	p.stepTimeout = 3

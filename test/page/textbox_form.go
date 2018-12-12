@@ -48,7 +48,7 @@ func TestLoginLaunch(t *test.TestForm) {
 
 // Wrap this in panic catcher
 // Possibly turn this into saved commands. Would help with logging.
-func TestPasswordBlank(t *test.TestForm)  {
+func TestPasswordBlank(t *browser.TestForm)  {
 	t.Log("Start TestPasswordBlank")
 	t.LoadUrl("/")
 	f := t.GetForm().(*site.LoginForm)
@@ -73,5 +73,5 @@ func TestPasswordBlank(t *test.TestForm)  {
 }
 
 func init() {
-	test.RegisterTestFunction("PasswordBlank", TestPasswordBlank)
+	browser.RegisterTestFunction("PasswordBlank", TestPasswordBlank)
 }

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/spekary/goradd/pkg/messageServer"
-	//"flag"
 	"github.com/spekary/goradd/pkg/page"
 	"net/http"
 	"os"
@@ -286,5 +285,11 @@ func (a *Application) ServeStaticFile (w http.ResponseWriter, r *http.Request) b
 }
 
 
-
+// ServeRequest is the place to serve up any files that have not been handled in any other way, either by a previously
+// declared handler, or by the goradd app server, or the static file server. ServeRequest is only called when all
+// the other methods have failed. The default serves up a 404 not found error. Override it to handle other files,
+// or to change the messaging when a bad url is attempted.
+func (a *Application) ServeRequest (w http.ResponseWriter, r *http.Request) {
+	http.NotFound(w, r)
+}
 

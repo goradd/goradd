@@ -99,7 +99,7 @@ func (f *AjaxTimingForm) Action(ctx context.Context, a page.ActionParams) {
 
 }
 
-func TestForm(t *test.TestForm)  {
+func TestForm(t *browser.TestForm)  {
 	log.Debug("AjaxTiming test")
 
 	t.LoadUrl(AjaxTimingPath)
@@ -117,6 +117,6 @@ func TestForm(t *test.TestForm)  {
 
 func init() {
 	page.RegisterPage(AjaxTimingPath, NewAjaxTimingForm, AjaxTimingId)
-	test.RegisterTestFunction("AjaxTiming", TestForm)
+	browser.RegisterTestFunction("AjaxTiming", TestForm)
 
 }

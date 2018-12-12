@@ -4,7 +4,7 @@
 // The form is also a repository for operations you can perform on the form being tested. A test generally should
 // start with a call to LoadURL. Follow that with calls to control the form and check for expected results.
 // page/test contains a variety of tests that serve to unit test the form framework.
-package test
+package browser
 
 import (
 	"context"
