@@ -38,7 +38,7 @@ func (d Span) SupportsColumn(col *generator.ColumnType) bool {
 func (d Span) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 		`	ctrl = %s.NewSpan(c.ParentControl, id)
-	ctrl.SetLabel("%s")
+	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
 	if generator.DefaultWrapper != "" {

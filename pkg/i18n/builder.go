@@ -38,7 +38,7 @@ func (b *translationBuilder) Comment(comment string) *translationBuilder {
 
 // T ends the builder and performs the translation
 func (b *translationBuilder) T(s string) string {
-	if b.message == "" {
+	if s == "" {
 		return ""
 	}
 	if b.domain == "" {
@@ -54,7 +54,7 @@ func (b *translationBuilder) T(s string) string {
 
 // Sprintf ends the builder and performs the translation
 func (b *translationBuilder) Sprintf(s string, params... interface{}) string {
-	if b.message == "" {
+	if s == "" {
 		return ""
 	}
 	if b.domain == "" {
@@ -94,7 +94,7 @@ func Comment(c string) interface{} {
 	return comment{c}
 }
 
-func ExtractBuilderFromArguments(args... interface{}) (b *translationBuilder, args2 []interface{}) {
+func ExtractBuilderFromArguments(args []interface{}) (b *translationBuilder, args2 []interface{}) {
 	b = Build()
 	for _,a := range args {
 		if i,ok := a.(id); ok {

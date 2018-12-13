@@ -42,7 +42,7 @@ func (d Checkbox) SupportsColumn(col *generator.ColumnType) bool {
 func (d Checkbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 		`	ctrl = %s.NewCheckbox(c.ParentControl, id)
-	ctrl.SetLabel("%s")
+	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
 	if generator.DefaultWrapper != "" {

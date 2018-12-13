@@ -43,7 +43,7 @@ func (d FloatTextbox) SupportsColumn(col *generator.ColumnType) bool {
 func (d FloatTextbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 `	ctrl = %s.NewFloatTextbox(c.ParentControl, id)
-	ctrl.SetLabel("%s")
+	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
 	// TODO: Set a maximum value based on database limit

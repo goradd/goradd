@@ -44,7 +44,7 @@ func (d Textbox) SupportsColumn(col *generator.ColumnType) bool {
 func (d Textbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 `	ctrl = %s.NewTextbox(c.ParentControl, id)
-	ctrl.SetLabel("%s")
+	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 	if col.MaxCharLength > 0 {
 		s += fmt.Sprintf(`	ctrl.SetMaxLength(%d)	

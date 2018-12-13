@@ -43,7 +43,7 @@ func (d SelectList) SupportsColumn(col *generator.ColumnType) bool {
 func (d SelectList) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 		`	ctrl = %s.NewSelectList(c.ParentControl, id)
-	ctrl.SetLabel("%s")
+	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
 	if generator.DefaultWrapper != "" {
