@@ -1,23 +1,28 @@
 package i18n
 
-var translator TranslatorI = new(NonTranslator)
+import (
+	"fmt"
+)
+
+// Predefined domains. Plugins can add their own domains.
+const GoraddDomain = "goradd"
+const ProjectDomain = "project"
+
+
+var translators = map[string]TranslatorI{GoraddDomain: NonTranslator{}, ProjectDomain: NonTranslator{}}
 
 type TranslatorI interface {
-	Translate (domain string, language string, s string) string
+	Translate (b *translationBuilder) string
 }
 
 type NonTranslator struct {
 }
 
-func (n NonTranslator) Translate (domain string, language string, s string) string {
-	return s
+func (n NonTranslator) Translate (b *translationBuilder) string {
+	return fmt.Sprintf(b.message, b.arguments...)
 }
 
-// SetTranslator sets the translation service to the given translator
-func SetTranslator (t TranslatorI) {
-	translator = t
-}
-
-func Translate (domain string, language string, s string) string {
-	return translator.Translate(domain, language, s)
+// RegisterTranslator sets the translation service for the given domain to the given translator
+func RegisterTranslator (domain string, t TranslatorI) {
+	translators[domain] = t
 }

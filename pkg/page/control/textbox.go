@@ -31,7 +31,7 @@ const (
 type Validater interface {
 	// Validate evaluates the input, and returns an empty string if the input is valid, and an error string to display
 	// to the user if the input does not pass the validator.
-	Validate(page.Translater, string) string
+	Validate(page.ControlI, string) string
 }
 
 type TextboxI interface {
@@ -235,7 +235,7 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 	text := t.Text()
 	if t.IsRequired() && text == "" {
 		if t.ErrorForRequired == "" {
-			t.SetValidationError(t.T("A value is required"))
+			t.SetValidationError(t.ΩT("A value is required"))
 		} else {
 			t.SetValidationError(t.ErrorForRequired)
 		}
@@ -244,7 +244,7 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 
 	if t.validators != nil {
 		for _, v := range t.validators {
-			if msg := v.Validate(t.Page().GoraddTranslator(), t.value); msg != "" {
+			if msg := v.Validate(t, t.value); msg != "" {
 				t.SetValidationError(msg)
 				return false
 			}
@@ -343,13 +343,13 @@ type MinLengthValidator struct {
 	Message string
 }
 
-func (v MinLengthValidator) Validate(t page.Translater, s string) (msg string) {
+func (v MinLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
 	if len(s) < v.Length {
 		if v.Message == "" {
-			return fmt.Sprintf(t.Translate("Enter at least %d characters"), v.Length)
+			return fmt.Sprintf(c.ΩT("Enter at least %d characters"), v.Length) // not a great translation, probably should be an Sprintf implementation
 		} else {
 			return v.Message
 		}
@@ -362,13 +362,13 @@ type MaxLengthValidator struct {
 	Message string
 }
 
-func (v MaxLengthValidator) Validate(t page.Translater, s string) (msg string) {
+func (v MaxLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
 	if len(s) > v.Length {
 		if v.Message == "" {
-			return fmt.Sprintf(t.Translate("Enter at most %d characters"), v.Length)
+			return fmt.Sprintf(c.ΩT("Enter at most %d characters"), v.Length)
 		} else {
 			return v.Message
 		}

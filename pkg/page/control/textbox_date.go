@@ -92,13 +92,13 @@ type DateValidator struct {
 	Message string
 }
 
-func (v DateValidator) Validate(t page.Translater, s string) (msg string) {
+func (v DateValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
 	if _, err := datetime.Parse(v.ctrl.layout(), s); err != nil {
 		if v.Message == "" {
-			return t.Translate("Enter a date.")
+			return c.ΩT("Enter a date.")
 		} else {
 			return v.Message
 		}

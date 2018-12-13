@@ -61,16 +61,16 @@ func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string)
 
 	i.Canvas = NewCanvas(i, i.ID() + "_canvas")
 	i.CaptureButton = NewButton(i, i.ID() + "_capture")
-	i.CaptureButton.SetText(i.ParentForm().T("New Image"))
+	i.CaptureButton.SetText(i.ΩT("New Image"))
 
 	i.SwitchCameraButton = NewButton(i, i.ID() + "_switch")
-	i.SwitchCameraButton.SetText(i.ParentForm().T("Switch Camera"))
+	i.SwitchCameraButton.SetText(i.ΩT("Switch Camera"))
 	i.SwitchCameraButton.SetDisplay("none")
 
 	i.ErrText = NewPanel(i, i.ID() + "_err")
 	i.ErrText.Tag = "p"
 	i.ErrText.SetDisplay("none")
-	i.ErrText.SetText(i.ParentForm().T("This browser or device does not support image capture"))
+	i.ErrText.SetText(i.ΩT("This browser or device does not support image capture"))
 }
 
 func (i *ImageCapture) this() ImageCaptureI {
@@ -108,7 +108,7 @@ func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Respo
 	d := base64.StdEncoding.EncodeToString(i.data)
 	d = "data:image/" + i.typ + ";base64," + d
 	options["data"] = d
-	options["selectButtonName"] = i.ParentForm().T("Capture")
+	options["selectButtonName"] = i.ΩT("Capture")
 	if i.zoom > 0 {
 		options["zoom"] = i.zoom
 	}

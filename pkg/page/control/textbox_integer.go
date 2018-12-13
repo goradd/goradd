@@ -86,13 +86,13 @@ type IntValidator struct {
 	Message string
 }
 
-func (v IntValidator) Validate(t page.Translater, s string) (msg string) {
+func (v IntValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
 	if _, err := strconv.Atoi(s); err != nil {
 		if v.Message == "" {
-			return t.Translate("Please enter an integer.")
+			return c.T("Please enter an integer.")
 		} else {
 			return v.Message
 		}
@@ -105,13 +105,13 @@ type MinIntValidator struct {
 	Message  string
 }
 
-func (v MinIntValidator) Validate(t page.Translater, s string) (msg string) {
+func (v MinIntValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
 	if val, _ := strconv.Atoi(s); val < v.MinValue {
 		if v.Message == "" {
-			return fmt.Sprintf(t.Translate("Enter at least %d"), v.MinValue)
+			return fmt.Sprintf(c.ΩT("Enter at least %d"), v.MinValue)
 		} else {
 			return v.Message
 		}
@@ -124,13 +124,13 @@ type MaxIntValidator struct {
 	Message  string
 }
 
-func (v MaxIntValidator) Validate(t page.Translater, s string) (msg string) {
+func (v MaxIntValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
 	if val, _ := strconv.Atoi(s); val < v.MaxValue {
 		if v.Message == "" {
-			return fmt.Sprintf(t.Translate("Enter at most %d"), v.MaxValue)
+			return fmt.Sprintf(c.ΩT("Enter at most %d"), v.MaxValue)
 		} else {
 			return v.Message
 		}

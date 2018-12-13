@@ -589,8 +589,8 @@ func (m *Mysql5) getTypeTableDescription(td *TableDescription) *TypeTableDescrip
 	tt := TypeTableDescription{
 		DbKey:         td.DbKey,
 		DbName:        td.DbName,
-		EnglishName:   td.EnglishName,
-		EnglishPlural: td.EnglishPlural,
+		EnglishName:   td.LiteralName,
+		EnglishPlural: td.LiteralPlural,
 		GoName:        td.GoName,
 		GoPlural:      td.GoPlural,
 		PkField:       pkField,

@@ -43,11 +43,11 @@ func getTableDescription(tableName string, tableComment string, db SqlDbI) *Tabl
 
 	td := NewTableDescription(tableName)
 
-	if td.EnglishName, ok = options.LoadString("englishName"); options.Has("englishName") && !ok {
-		log.Print("Error in table comment for table " + tableName + ": englishName is not a string")
+	if td.LiteralName, ok = options.LoadString("literalName"); options.Has("literalName") && !ok {
+		log.Print("Error in table comment for table " + tableName + ": literalName is not a string")
 	}
 
-	if td.EnglishPlural, ok = options.LoadString("englishPlural"); options.Has("englishPlural") && !ok {
+	if td.LiteralPlural, ok = options.LoadString("literalPlural"); options.Has("literalPlural") && !ok {
 		log.Print("Error in table comment for table " + tableName + ": EnglishPlural is not a string")
 	}
 

@@ -12,3 +12,8 @@ const (
 	SessionContext = ContextKey("goradd.session")
 	SqlContext     = ContextKey("goradd.sql")
 )
+
+// Default session values
+const (
+	SessionLanguage = "goradd.lang"
+)

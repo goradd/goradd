@@ -9,6 +9,7 @@ import (
 	"github.com/spekary/goradd/pkg/base"
 	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/html"
+	"github.com/spekary/goradd/pkg/i18n"
 	"github.com/spekary/goradd/pkg/log"
 	action2 "github.com/spekary/goradd/pkg/page/action"
 	"github.com/spekary/goradd/pkg/session"
@@ -166,8 +167,9 @@ type ControlI interface {
 	UnmarshalState(m maps.Loader)
 
 	// Shortcuts for translation
-	T(string) string
-	Translate(string) string
+	ΩT(format string) string
+	T(format string, params... interface{}) string
+	TPrintf(format string, params... interface{}) string
 
 	// Serialization helpers
 	Restore(self ControlI)
@@ -1402,19 +1404,54 @@ func (c *Control) MarshalState(m maps.Setter) {
 func (c *Control) UnmarshalState(m maps.Loader) {
 }
 
-// T is a shortcut for the translator that should only be used by internal goradd code. See Translate() for the
-// version to use for your project.
-func (c *Control) T(in string) string {
-	return c.Page().GoraddTranslator().Translate(in)
+// ΩT is a shortcut for the translator that should only be used by internal goradd code. The translations are provided
+// by the goradd translator.
+func (c *Control) ΩT(message string) string {
+	// at this point, there is no need for comments or disambiguation, so we go right to translation
+
+	return i18n.
+		Build().
+		Domain(i18n.GoraddDomain).
+		Lang(c.page.LanguageCode()).
+		T(message)
 }
 
-// Translate is a shortcut to the translator.
-// All static strings that could create output to the user should be wrapped in this. The translator itself is designed
-// to be capable of per-page translation, meaning each user of the web service can potentially choose their own language
-// and see the web page in that language.
-func (c *Control) Translate(in string) string {
-	return c.Page().ProjectTranslator().Translate(in)
+
+// T sends strings to the translator for translation, and returns the translated string. The language is taken from the
+// session. See the i18n package for more info on that mechanism.
+// Additionally, you can add an i18n.ID() call to add an id to the translation to disambiguate it from similar strings, and
+// you can add a i18n.Comment() call to add an extracted comment for the translators. The message string should be a literal
+// string and not a variable, so that an extractor can extract it from your source to put it into a translation file.
+// This version passes the literal string.
+//
+// Examples
+//   textbox.T("I have %d things", count, i18n.Comment("This will need multiple translations based on the count value"));
+//	 textbox.SetLabel(textbox.T("S", i18n.ID("South")));
+func (c *Control) T(message string, params... interface{}) string {
+	builder, args := i18n.ExtractBuilderFromArguments(params)
+	if len(args) > 0 {
+		panic("T() cannot have arguments")
+	}
+
+	return builder.
+		Lang(c.page.LanguageCode()).
+		T(message)
 }
+
+// This is like T(), but works like Sprintf, returning the translated string, but sending the arguments to the message
+// as if the message was an Sprintf format string. The go/text extractor has code that can do interesting things with
+// this kind of string.
+func (c *Control) TPrintf(message string, params... interface{}) string {
+	builder, args := i18n.ExtractBuilderFromArguments(params)
+	if len(args) > 0 {
+		panic("T() cannot have arguments")
+	}
+
+	return builder.
+		Lang(c.page.LanguageCode()).
+		Sprintf(message, args)
+}
+
 
 func (c *Control) SetDisabled(d bool) {
 	c.attributes.SetDisabled(d)

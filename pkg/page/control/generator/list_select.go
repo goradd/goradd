@@ -53,7 +53,7 @@ func (d SelectList) GenerateCreate(namespace string, col *generator.ColumnType) 
 
 	if col.ForeignKey != nil {
 		if !col.IsNullable {
-			s += `	ctrl.AddItem(ctrl.ParentForm().T("- Select One -"), 0)
+			s += `	ctrl.AddItem(ctrl.ΩT("- Select One -"), 0)
 `
 		}
 		if col.ForeignKey.IsType {

@@ -10,4 +10,6 @@ require (
 	github.com/spekary/gengen v0.0.0-20181114132625-5a2d3e95c4f2
 	github.com/spekary/got v0.4.1
 	golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85 // indirect
+	golang.org/x/net v0.0.0-20181207154023-610586996380 // indirect
+	golang.org/x/text v0.3.0
 )

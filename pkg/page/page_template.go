@@ -10,7 +10,11 @@ import (
 func PageTmpl(ctx context.Context, page *Page, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`<!DOCTYPE html>
-<html>
+<html lang="`)
+
+	buf.WriteString(page.LanguageCode())
+
+	buf.WriteString(`">
 <head>
 	<meta charset="utf-8"/>
 `)

@@ -49,16 +49,16 @@ func (p *ItemListPanel) Init(self ItemListPanelI, parent page.ControlI, id strin
 	p.ButtonPanel.AddClass("buttons")
 
 	p.FilterText = NewTextbox(p.FilterPanel, p.ID() + "-filtertxt")
-	p.FilterText.SetPlaceholder(p.ParentForm().T("Search"))
+	p.FilterText.SetPlaceholder(p.ParentForm().ΩT("Search"))
 	p.FilterText.SetType(TextboxTypeSearch)
 
 	p.ItemTable = NewSelectTable(p.ScrollPanel, p.ID() + "-table")
 
 	p.NewButton = NewButton(p.ButtonPanel, p.ID() + "-newbtn")
-	p.NewButton.SetText(p.ParentForm().T("New"))
+	p.NewButton.SetText(p.ParentForm().ΩT("New"))
 
 	p.EditButton = NewButton(p.ButtonPanel, p.ID() + "-editbtn")
-	p.EditButton.SetText(p.ParentForm().T("Edit"))
+	p.EditButton.SetText(p.ParentForm().ΩT("Edit"))
 
 	p.FilterText.On(event.Input().Delay(300), action.Ajax(p.ID(), filterChanged))
 	p.FilterText.On(event.EnterKey().Terminating(), action.Ajax(p.ID(), filterChanged))

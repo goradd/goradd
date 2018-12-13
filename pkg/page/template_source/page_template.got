@@ -8,7 +8,7 @@ import (
 func PageTmpl(ctx context.Context, page *Page, buf *bytes.Buffer) (err error) {
 {{
 <!DOCTYPE html>
-<html>
+<html lang="{{= page.LanguageCode() }}">
 <head>
 	<meta charset="utf-8"/>
 {{g page.DrawHeaderTags(ctx, buf) }}

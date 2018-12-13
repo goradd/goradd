@@ -68,10 +68,16 @@ func (d IntegerTextbox) GenerateGet(ctrlName string, objName string, col *genera
 }
 
 func (d IntegerTextbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	if col.GoType == query.ColTypeInteger64 {
+	switch col.GoType {
+	case query.ColTypeInteger64:
 		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int64())`, objName,  col.GoName, ctrlName)
-	} else {
+	case query.ColTypeInteger:
 		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int())`, objName,  col.GoName, ctrlName)
+	case query.ColTypeUnsigned64:
+		s = fmt.Sprintf(`c.%s.Set%s(uint64(c.%s.Int64()))`, objName,  col.GoName, ctrlName)
+	case query.ColTypeUnsigned:
+		s = fmt.Sprintf(`c.%s.Set%s(uint(c.%s.Int()))`, objName,  col.GoName, ctrlName)
+
 	}
 	return
 }

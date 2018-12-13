@@ -61,13 +61,13 @@ type FloatValidator struct {
 	Message string
 }
 
-func (v FloatValidator) Validate(t page.Translater, s string) (msg string) {
+func (v FloatValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
 	if _, err := strconv.ParseFloat(s, 64); err != nil {
 		if msg == "" {
-			return t.Translate("Please enter a number.")
+			return c.ΩT("Please enter a number.")
 		} else {
 			return v.Message
 		}
@@ -80,13 +80,13 @@ type MinFloatValidator struct {
 	Message  string
 }
 
-func (v MinFloatValidator) Validate(t page.Translater, s string) (msg string) {
+func (v MinFloatValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
 	if val, _ := strconv.ParseFloat(s, 64); val < v.MinValue {
 		if msg == "" {
-			return fmt.Sprintf(t.Translate("Enter at least %f"), v.MinValue)
+			return fmt.Sprintf(c.ΩT("Enter at least %f"), v.MinValue)
 		} else {
 			return v.Message
 		}
@@ -99,13 +99,13 @@ type MaxFloatValidator struct {
 	Message  string
 }
 
-func (v MaxFloatValidator) Validate(t page.Translater, s string) (msg string) {
+func (v MaxFloatValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
 	if val, _ := strconv.ParseFloat(s, 64); val < v.MaxValue {
 		if msg == "" {
-			return fmt.Sprintf(t.Translate("Enter at most %f"), v.MaxValue)
+			return fmt.Sprintf(c.ΩT("Enter at most %f"), v.MaxValue)
 		} else {
 			return v.Message
 		}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/spekary/gengen/maps"
 	"github.com/spekary/goradd/pkg/html"
+	"github.com/spekary/goradd/pkg/i18n"
 	"github.com/spekary/goradd/pkg/messageServer"
 	"strconv"
 	"strings"
@@ -46,15 +47,12 @@ type Page struct {
 	responseError   int
 	BodyAttributes  string
 
-	goraddTranslator  PageTranslator
-	projectTranslator PageTranslator
+	language 	    int		// Don't serialize this. This is a cached version of what the session holds.
 }
 
 // Initialize the override base. Should be called by a override just after creating PageBase.
 func (p *Page) Init(ctx context.Context, path string) {
 	p.path = path
-	p.goraddTranslator = PageTranslator{Domain: GoraddDomain}
-	p.projectTranslator = PageTranslator{Domain: ProjectDomain}
 }
 
 // Restore is called immediately after the override has been unserialized, to restore data that did not get serialized.
@@ -79,9 +77,13 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 
 	// TODO: Lifecycle calls - push them to the form
 
+	// cache the language tags so we only need to look them up once for every call
+	p.language = i18n.SetDefaultLanguage(ctx, grCtx.Header.Get("accept-language"))
+
 	if isNew {
 		p.Form().AddHeadTags()
 		p.Form().LoadControls(ctx)
+
 	} else {
 		p.Form().control().updateValues(grCtx) // Tell all the controls to update their values.
 		// if this is an event response, do the actions associated with the event
@@ -256,20 +258,6 @@ func (p *Page) DrawAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return
 }
 
-// TODO: Move these to the session object, since language is likely the same on a session basis
-func (p *Page) GoraddTranslator() Translater {
-	return &p.goraddTranslator
-}
-
-func (p *Page) ProjectTranslator() Translater {
-	return &p.projectTranslator
-}
-
-func (p *Page) SetLanguage(l string) {
-	p.goraddTranslator.Language = l
-	p.projectTranslator.Language = l
-}
-
 // GobEncode here is implemented to intercept the GobSerializer to only encode an empty structure. We use this as part
 // of our overall serialization stratgey for forms. Controls still need to be registered with gob.
 func (p *Page) GobEncode() (data []byte, err error) {
@@ -296,8 +284,6 @@ type pageEncoded struct {
 	Title           string // override title to draw in head tag
 	HtmlHeaderTags  []html.VoidTag
 	BodyAttributes  string
-	GoraddTranslator  PageTranslator
-	ProjectTranslator PageTranslator
 
 	FormID string // to record the form
 
@@ -311,8 +297,6 @@ func (p *Page) Encode(e Encoder) (err error) {
 		Title:             p.title,
 		HtmlHeaderTags:    p.htmlHeaderTags,
 		BodyAttributes:    p.BodyAttributes,
-		GoraddTranslator:  p.goraddTranslator,
-		ProjectTranslator: p.projectTranslator,
 		FormID:			   p.form.ID(),
 	}
 
@@ -361,8 +345,6 @@ func (p *Page) Decode(d Decoder) (err error) {
 	p.title = s.Title
 	p.htmlHeaderTags = s.HtmlHeaderTags
 	p.BodyAttributes = s.BodyAttributes
-	p.goraddTranslator = s.GoraddTranslator
-	p.projectTranslator = s.ProjectTranslator
 
 	var ci ControlI
 	if ci,err = d.DecodeControl(p); err != nil {
@@ -410,3 +392,7 @@ func (p *Page) PushRedraw() {
 	messageServer.SendMessage("form-" + p.stateId, map[string]interface{}{"grup":true})
 }
 
+// LanguageCode returns the language code that should be put in the lang attribute of the html tag.
+func (p *Page) LanguageCode() string {
+	return i18n.CanonicalValue(p.language)
+}

@@ -38,10 +38,10 @@ type TableDescription struct {
 	DbKey string
 	// The name of the database table or object
 	DbName string
-	// The english name of the object when describing it to the world. Use the "englishName" option in the comment to override the default.
-	EnglishName string
-	// The plural english name of the object. Use the "englishPlural" option in the comment to override the default.
-	EnglishPlural string
+	// The literal name of the object when describing it to the world. Use the "literalName" option in the comment to override the default. Should be lower case.
+	LiteralName string
+	// The plural name of the object. Use the "literalPlural" option in the comment to override the default. Should be lower case.
+	LiteralPlural string
 	// The name of the struct when referring to it in go code. Use the "goName" option in the comment to override the default.
 	GoName string
 	// The name of a collection of these objects when referring to them in go code. Use the "goPlural" option in the comment to override the default.
@@ -74,9 +74,9 @@ type TypeTableDescription struct {
 	DbKey string
 	// Name in the database
 	DbName string
-	// The english name of the object when describing it to the world. Use the "englishName" option in the comment to override the default.
+	// The english name of the object when describing it to the world. Use the "literalName" option in the comment to override the default.
 	EnglishName string
-	// The plural english name of the object. Use the "englishPlural" option in the comment to override the default.
+	// The plural english name of the object. Use the "literalPlural" option in the comment to override the default.
 	EnglishPlural string
 	// The name of the item as a go type name.
 	GoName     string
@@ -323,14 +323,11 @@ func (dd *DatabaseDescription) analyzeTables() {
 
 func (dd *DatabaseDescription) analyzeTable(td *TableDescription) {
 
-	if td.EnglishName == "" {
-		td.EnglishName = dd.dbNameToEnglishName(td.DbName)
-	}
-	if td.EnglishPlural == "" {
-		td.EnglishPlural = dd.dbNameToEnglishPlural(td.DbName)
+	if td.LiteralName == "" {
+		td.LiteralName = dd.dbNameToEnglishName(td.DbName)
 	}
 
-	if td.EnglishName == td.EnglishPlural {
+	if td.LiteralName == td.LiteralPlural {
 		log.Print("Error: table " + td.DbName + " is a plural name. Change it to a singular name.")
 		td.Skip = true
 	}

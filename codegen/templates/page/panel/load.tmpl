@@ -11,8 +11,8 @@ func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
 		obj = model.Load{{= t.GoName }}(ctx, pk)
 
 		if obj == nil {
-			d := control.Alert(p.ParentForm(), p.ParentForm().T("The record was not found. Perhaps it was deleted by someone else?"), "OK")
-			d.SetTitle(p.ParentForm().T("Error"))
+			d := control.Alert(p.ParentForm(), p.ParentForm().ΩT("The record was not found. Perhaps it was recently deleted by someone else."), "OK")
+			d.SetTitle(p.ParentForm().ΩT("Error"))
 			return page.NewFrameworkError(page.FrameworkErrRecordNotFound)
 		}
 	}

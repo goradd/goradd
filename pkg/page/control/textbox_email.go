@@ -44,13 +44,13 @@ func (t *EmailTextbox) Validate(ctx context.Context) bool {
 
 	if ret {
 		if t.parseErr != nil {
-			t.SetValidationError(t.Translate("Not a valid email address"))
+			t.SetValidationError(t.ΩT("Not a valid email address"))
 			return false
 		} else if len(t.items) > t.maxItems {
 			if t.maxItems == 1 {
-				t.SetValidationError(t.Translate("Enter only one email address"))
+				t.SetValidationError(t.ΩT("Enter only one email address"))
 			} else {
-				t.SetValidationError(fmt.Sprintf(t.Translate("Enter at most %d email addresses separated by commas"), t.maxItems))
+				t.SetValidationError(fmt.Sprintf(t.ΩT("Enter at most %d email addresses separated by commas"), t.maxItems))
 			}
 
 			return false

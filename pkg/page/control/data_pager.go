@@ -143,8 +143,8 @@ func NewDataPager(parent page.ControlI, id string, paginatedControl PaginatedCon
 func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, paginatedControl PaginatedControlI) {
 	d.Control.Init(self, parent, id)
 	d.Tag = "div"
-	d.LabelForNext = d.T("Next")
-	d.LabelForPrevious = d.T("Previous")
+	d.LabelForNext = d.ΩT("Next")
+	d.LabelForPrevious = d.ΩT("Previous")
 	d.maxPageButtons = DefaultMaxPagintorButtons
 	paginatedControl.AddDataPager(self.(DataPagerI))
 	d.paginatedControl = paginatedControl

@@ -63,7 +63,7 @@ func (l *MultiselectList) Size() int {
 func (l *MultiselectList) Validate(ctx context.Context) bool {
 	if l.IsRequired() && len(l.selectedIds) == 0 {
 		if l.ErrorForRequired == "" {
-			l.SetValidationError(l.T("A selection is required"))
+			l.SetValidationError(l.ΩT("A selection is required"))
 		} else {
 			l.SetValidationError(l.ErrorForRequired)
 		}
