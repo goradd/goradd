@@ -4,7 +4,7 @@ package page
 import (
 	"context"
 	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/test/test"
+	"github.com/spekary/goradd/test/browser"
 	"site"
 
 	. "github.com/spekary/goradd/pkg/page/control"

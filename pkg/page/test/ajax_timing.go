@@ -8,7 +8,7 @@ import (
 	"github.com/spekary/goradd/pkg/page/action"
 	. "github.com/spekary/goradd/pkg/page/control"
 	"github.com/spekary/goradd/pkg/page/event"
-	"github.com/spekary/goradd/test/test"
+	"github.com/spekary/goradd/test/browser"
 )
 
 
