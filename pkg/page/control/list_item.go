@@ -2,7 +2,7 @@ package control
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html"
 	html2 "html"
 )
 

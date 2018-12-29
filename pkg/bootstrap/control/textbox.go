@@ -2,9 +2,9 @@ package control
 
 import (
 	"encoding/gob"
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
 )
 
 type Textbox struct {

@@ -1,7 +1,7 @@
 package column
 
 import (
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control"
 )
 
 

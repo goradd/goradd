@@ -3,8 +3,8 @@ package control
 import (
 	"context"
 	"bytes"
-	grhtml "github.com/spekary/goradd/html"
-	"github.com/spekary/goradd/pkg/page"
+	grhtml "github.com/goradd/goradd/html"
+	"github.com/goradd/goradd/pkg/page"
 	"html"
 )
 

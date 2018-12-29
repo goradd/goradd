@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 func (form *AjaxTimingForm) AddHeadTags() {

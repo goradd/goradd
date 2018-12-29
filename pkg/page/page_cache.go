@@ -2,8 +2,8 @@ package page
 
 import (
 	"bytes"
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/ideas/types"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/ideas/types"
 )
 
 type PageCacheI interface {

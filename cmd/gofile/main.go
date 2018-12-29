@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/pkg/datetime"
-	"github.com/spekary/goradd/pkg/sys"
+	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/sys"
 	"log"
 	"os"
 	"path/filepath"

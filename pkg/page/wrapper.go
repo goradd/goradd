@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"github.com/spekary/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html"
 )
 
 // Wrapper constants used in the With function

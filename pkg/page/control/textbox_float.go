@@ -2,7 +2,7 @@ package control
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page"
 	"strconv"
 )
 

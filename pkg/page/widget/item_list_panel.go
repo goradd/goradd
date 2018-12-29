@@ -1,13 +1,13 @@
 package widget
 
 import (
-	. "github.com/spekary/goradd/pkg/page/control"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/config"
+	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/config"
 	"context"
-	"github.com/spekary/goradd/pkg/page/event"
-	"github.com/spekary/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/page/action"
 )
 
 const (

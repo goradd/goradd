@@ -3,8 +3,8 @@ package column
 import (
 	"context"
 	"fmt"
-	"github.com/spekary/goradd/pkg/datetime"
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/page/control"
 	"reflect"
 	"time"
 )

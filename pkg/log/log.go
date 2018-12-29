@@ -3,7 +3,7 @@ package log
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/config"
 	"log"
 	"os"
 )

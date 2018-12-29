@@ -3,8 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/spekary/goradd/pkg/datetime"
-	. "github.com/spekary/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/datetime"
+	. "github.com/goradd/goradd/pkg/orm/query"
 	"log"
 	"strconv"
 	"time"

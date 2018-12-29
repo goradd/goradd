@@ -5,10 +5,10 @@ package app
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/pkg/config"
-	"github.com/spekary/goradd/pkg/messageServer"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/web/app"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/messageServer"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/web/app"
 	"log"
 	"net/http"
 	"net/http/fcgi"

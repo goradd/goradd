@@ -7,7 +7,7 @@ package location
 
 import (
 	"context"
-	"github.com/spekary/goradd/pkg/session"
+	"github.com/goradd/goradd/pkg/session"
 )
 
 const key = "goradd.locations"

@@ -2,7 +2,7 @@ package column
 
 import (
 	"context"
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control"
 	"reflect"
 )
 

@@ -2,8 +2,8 @@ package i18n
 
 import (
 	"context"
-	"github.com/spekary/goradd/pkg/goradd"
-	"github.com/spekary/goradd/pkg/session"
+	"github.com/goradd/goradd/pkg/goradd"
+	"github.com/goradd/goradd/pkg/session"
 	"golang.org/x/text/language"
 	"golang.org/x/text/language/display"
 )

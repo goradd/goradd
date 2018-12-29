@@ -2,7 +2,7 @@ package generator
 
 import (
 	"bytes"
-	"github.com/spekary/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/db"
 )
 
 type Template struct {

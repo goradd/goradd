@@ -5,8 +5,8 @@ package auth
 
 import (
 	"context"
-	"github.com/spekary/goradd/pkg/orm/op"
-	"github.com/spekary/goradd/pkg/session"
+	"github.com/goradd/goradd/pkg/orm/op"
+	"github.com/goradd/goradd/pkg/session"
 	"github.com/trustelem/zxcvbn"
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"

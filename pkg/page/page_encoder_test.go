@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

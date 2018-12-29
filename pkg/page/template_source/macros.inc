@@ -18,7 +18,7 @@ package {{package }}
 
 import (
     "context"
-    "github.com/spekary/goradd/pkg/page"
+    "github.com/goradd/goradd/pkg/page"
     "bytes"
     {{imports}}
 )

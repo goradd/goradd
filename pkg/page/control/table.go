@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	html2 "html"
 	"strconv"
-	"github.com/spekary/goradd/pkg/page/event"
-	"github.com/spekary/goradd/pkg/page/control/data"
+	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 const (

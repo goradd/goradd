@@ -3,7 +3,7 @@
 package goradd
 
 import (
-	"github.com/spekary/goradd/buildtools"
+	"github.com/goradd/goradd/buildtools"
 )
 
 

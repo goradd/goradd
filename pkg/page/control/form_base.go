@@ -2,10 +2,10 @@ package control
 
 import (
 	"context"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/orm/db"
-	"github.com/spekary/goradd/pkg/page/event"
-	"github.com/spekary/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/page/action"
 	"strings"
 	"fmt"
 )

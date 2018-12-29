@@ -1,12 +1,12 @@
 package template
 
 import (
-	"github.com/spekary/goradd/codegen/generator"
-	"github.com/spekary/goradd/pkg/config"
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
 	"bytes"
-	"github.com/spekary/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/db"
 	"fmt"
-	strings2 "github.com/spekary/goradd/pkg/strings"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 	"strings"
 	"strconv"
 

@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/spekary/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/config"
 	"goradd-project/web/app"
 	// Below is where you import packages that register forms
 	_ "goradd-project/web/form" // Your  forms.

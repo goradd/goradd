@@ -2,8 +2,8 @@ package app
 
 import (
 	"context"
-	"github.com/spekary/goradd/pkg/goradd"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/goradd"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 const LocalContextKey = goradd.ContextKey("app.local")

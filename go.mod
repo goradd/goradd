@@ -1,4 +1,4 @@
-module github.com/spekary/goradd
+module github.com/goradd/goradd
 
 require (
 	github.com/alexedwards/scs v1.4.0
@@ -12,4 +12,5 @@ require (
 	golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85 // indirect
 	golang.org/x/net v0.0.0-20181207154023-610586996380 // indirect
 	golang.org/x/text v0.3.0
+
 )

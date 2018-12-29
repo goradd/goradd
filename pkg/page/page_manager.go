@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/spekary/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 

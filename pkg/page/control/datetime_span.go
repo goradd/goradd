@@ -1,11 +1,11 @@
 package control
 
 import (
-	"github.com/spekary/goradd/pkg/config"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/page"
 	"bytes"
 	"context"
-	"github.com/spekary/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/datetime"
 	"time"
 )
 

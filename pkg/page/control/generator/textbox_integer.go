@@ -3,11 +3,11 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/gengen/maps"
-	"github.com/spekary/goradd/codegen/generator"
-	"github.com/spekary/goradd/pkg/config"
-	"github.com/spekary/goradd/pkg/orm/query"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
 )
 
 func init() {
@@ -30,7 +30,7 @@ func (d IntegerTextbox) NewFunc() string {
 }
 
 func (d IntegerTextbox) Imports() []string {
-	return []string{"github.com/spekary/goradd/pkg/page/control"}
+	return []string{"github.com/goradd/goradd/pkg/page/control"}
 }
 
 func (d IntegerTextbox) SupportsColumn(col *generator.ColumnType) bool {

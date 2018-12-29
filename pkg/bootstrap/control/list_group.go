@@ -1,8 +1,8 @@
 package control
 
 import (
-	"github.com/spekary/goradd/pkg/page/control"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 

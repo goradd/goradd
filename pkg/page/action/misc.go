@@ -13,7 +13,7 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/spekary/goradd/pkg/javascript"
+	"github.com/goradd/goradd/pkg/javascript"
 )
 
 // ActionI is an interface that defines actions that can be triggered by events

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/spekary/goradd/codegen/generator"
+	"github.com/goradd/goradd/codegen/generator"
 	"goradd-project/config/dbconfig"
 
-	_ "github.com/spekary/goradd/pkg/page/control/generator"
+	_ "github.com/goradd/goradd/pkg/page/control/generator"
 	_ "goradd-tmp/template"
 
 )

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/maps"
-	"github.com/spekary/goradd/pkg/config"
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 // PrimaryKeyer is an interface that is often implemented by model objects.

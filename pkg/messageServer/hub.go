@@ -5,7 +5,7 @@
 package messageServer
 
 import (
-	"github.com/spekary/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/log"
 	"net/http"
 )
 

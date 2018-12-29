@@ -79,13 +79,13 @@ related github.com/goradd/got template engine to generate code.
 ### For Go 1.10 and below:
 1. Create a new directory and set your GOPATH environment variable to it, if needed.
 1. Make sure the GOPATH/bin directory is in your execution path, or execute commands from there.
-1. Execute ```go get github.com/spekary/goradd```
+1. Execute ```go get github.com/goradd/goradd```
 1. Execute ```goradd install```
 
 ### For Go 1.11 and above using modules:
 1. If you just installed go, make sure your GOPATH/bin directory is in your execution path.
 1. Create a new directory *outside* of your GOPATH and cd to that new directory.
-1. Execute ```go get github.com/spekary/goradd```
+1. Execute ```go get github.com/goradd/goradd```
 1. Execute ```goradd install```
 
 ##Requirements

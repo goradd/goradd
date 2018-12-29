@@ -3,8 +3,8 @@ package db
 import (
 	"context"
 	"database/sql"
-	"github.com/spekary/goradd/pkg/goradd"
-	. "github.com/spekary/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/goradd"
+	. "github.com/goradd/goradd/pkg/orm/query"
 	"time"
 	"fmt"
 	"strings"

@@ -1,6 +1,6 @@
 package event
 
-import "github.com/spekary/goradd/pkg/page"
+import "github.com/goradd/goradd/pkg/page"
 
 func KeyDown() page.EventI {
 	return &page.Event{JsEvent: "keydown"}

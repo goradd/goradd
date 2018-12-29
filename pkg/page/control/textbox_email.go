@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page"
 	"net/mail"
 )
 

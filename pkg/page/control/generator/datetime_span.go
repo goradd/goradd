@@ -3,10 +3,10 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/gengen/maps"
-	"github.com/spekary/goradd/codegen/generator"
-	"github.com/spekary/goradd/pkg/config"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
 )
 
 func init() {
@@ -29,7 +29,7 @@ func (d DateTimeSpan) NewFunc() string {
 }
 
 func (d DateTimeSpan) Imports() []string {
-	return []string{"github.com/spekary/goradd/pkg/page/control"}
+	return []string{"github.com/goradd/goradd/pkg/page/control"}
 }
 
 func (d DateTimeSpan) SupportsColumn(col *generator.ColumnType) bool {

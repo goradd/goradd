@@ -3,16 +3,16 @@ package db
 import (
 	"context"
 	"github.com/go-sql-driver/mysql"
-	"github.com/spekary/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/db"
 	"goradd-project/gen/goradd/model"
 	"testing"
 
-	. "github.com/spekary/goradd/pkg/orm/op"
+	. "github.com/goradd/goradd/pkg/orm/op"
 	"goradd-project/gen/goradd/model/node"
 	"strconv"
 
-	"github.com/spekary/goradd/pkg/datetime"
-	"github.com/spekary/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/stretchr/testify/assert"
 )
 

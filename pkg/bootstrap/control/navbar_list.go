@@ -1,16 +1,16 @@
 package control
 
 import (
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/html"
 	"bytes"
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control"
 	"context"
 	"fmt"
-	"github.com/spekary/goradd/pkg/javascript"
-	"github.com/spekary/goradd/pkg/page/event"
-	"github.com/spekary/goradd/pkg/page/action"
-	"github.com/spekary/goradd/pkg/page/control/data"
+	"github.com/goradd/goradd/pkg/javascript"
+	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type NavbarListI interface {

@@ -1,7 +1,7 @@
 package page
 
 import (
-	"github.com/spekary/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/config"
 	"log"
 	"mime"
 	"net/http"
@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	strings2 "github.com/spekary/goradd/pkg/strings"
-	"github.com/spekary/goradd/pkg/sys"
+	strings2 "github.com/goradd/goradd/pkg/strings"
+	"github.com/goradd/goradd/pkg/sys"
 )
 
 var assetDirectories = map[string]string{}

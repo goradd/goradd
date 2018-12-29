@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/spekary/goradd/html"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/html"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 

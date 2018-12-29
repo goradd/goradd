@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-    "github.com/spekary/goradd/pkg/log"
+    "github.com/goradd/goradd/pkg/log"
 )
 
 // The ReleaseErrorPageTmpl function will output a friendly error message to a user in release mode, and log the

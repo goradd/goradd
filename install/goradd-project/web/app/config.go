@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/spekary/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/config"
 	"path/filepath"
 	"runtime"
 )

@@ -1,12 +1,12 @@
 package control
 
 import (
-	"github.com/spekary/goradd/pkg/page/control"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/event"
-	"github.com/spekary/goradd/pkg/page/action"
-	"github.com/spekary/goradd/pkg/html"
-	config2 "github.com/spekary/goradd/pkg/bootstrap/config"
+	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/html"
+	config2 "github.com/goradd/goradd/pkg/bootstrap/config"
 	"context"
 	"fmt"
 )

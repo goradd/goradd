@@ -10,16 +10,16 @@ package model
 
 import (
 	"goradd-project/gen/{{t.DbKey}}/model/node"
-	"github.com/spekary/goradd/pkg/orm/db"
-	"github.com/spekary/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/query"
 	"context"
 	"fmt"
-	. "github.com/spekary/goradd/pkg/orm/op"
+	. "github.com/goradd/goradd/pkg/orm/op"
 	//"./node"
 	"bytes"
 	"encoding/gob"
 {{if t.HasDateTime }}
-    "github.com/spekary/goradd/pkg/datetime"
+    "github.com/goradd/goradd/pkg/datetime"
 {{if}}
 )
 

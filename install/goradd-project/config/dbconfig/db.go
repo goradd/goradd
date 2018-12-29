@@ -2,8 +2,8 @@ package dbconfig
 
 import (
 	"github.com/go-sql-driver/mysql"
-	"github.com/spekary/goradd/pkg/config"
-	"github.com/spekary/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/db"
 )
 
 // Initialize the databases that the application will use through the database query interfaces

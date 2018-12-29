@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/goradd/gengen/maps"
-	. "github.com/spekary/goradd/pkg/orm/query"
+	. "github.com/goradd/goradd/pkg/orm/query"
 	"strconv"
 )
 

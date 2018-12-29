@@ -3,8 +3,8 @@ package control
 import (
 	"bytes"
 	"context"
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 const (

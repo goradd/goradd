@@ -1,12 +1,12 @@
 package control
 
 import (
-	"github.com/spekary/goradd/pkg/config"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/page"
 	"context"
 	"encoding/base64"
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 

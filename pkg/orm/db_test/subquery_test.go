@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	. "github.com/spekary/goradd/pkg/orm/op"
+	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/stretchr/testify/assert"
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"

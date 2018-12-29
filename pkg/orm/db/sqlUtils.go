@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/goradd/gengen/maps"
-	strings2 "github.com/spekary/goradd/pkg/strings"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 	"log"
 	"strconv"
 	"strings"

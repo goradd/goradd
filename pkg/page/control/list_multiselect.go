@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"github.com/goradd/gengen/maps"
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
 	"strconv"
 	"strings"
 )

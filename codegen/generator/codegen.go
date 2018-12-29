@@ -2,9 +2,9 @@ package generator
 
 import (
 	"bytes"
-	"github.com/spekary/goradd/pkg/orm/db"
-	"github.com/spekary/goradd/pkg/strings"
-	"github.com/spekary/goradd/pkg/sys"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/strings"
+	"github.com/goradd/goradd/pkg/sys"
 	"io/ioutil"
 	"log"
 	"os"

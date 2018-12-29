@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/spekary/goradd/pkg/sys"
+	"github.com/goradd/goradd/pkg/sys"
 	"log"
 	"net/http"
 	"os"
@@ -93,7 +93,7 @@ func goraddPath() string {
 		}
 	}
 
-	if v, ok := modules["github.com/spekary/goradd"]; ok {
+	if v, ok := modules["github.com/goradd/goradd"]; ok {
 		return v
 	}
 	if v, ok := modules["github.com"]; ok {

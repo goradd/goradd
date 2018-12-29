@@ -2,7 +2,7 @@ package page
 
 import (
 	"encoding/json"
-	"github.com/spekary/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/action"
 	"strconv"
 	"strings"
 )

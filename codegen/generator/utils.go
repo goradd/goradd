@@ -2,7 +2,7 @@ package generator
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 // Utilities used by the code generation process and templates

@@ -1,9 +1,9 @@
 package control
 
 import (
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page"
 	"strconv"
-	"github.com/spekary/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html"
 	"encoding/base64"
 )
 

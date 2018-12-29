@@ -1,6 +1,6 @@
 package op
 
-import . "github.com/spekary/goradd/pkg/orm/query"
+import . "github.com/goradd/goradd/pkg/orm/query"
 
 // Function lets you use any custom function which your database driver supports. Simply tell it the name and give
 // it the arguments, and the result of the function will be used in the query.

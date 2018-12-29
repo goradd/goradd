@@ -1,6 +1,6 @@
 package column
 
-import "github.com/spekary/goradd/pkg/page/control"
+import "github.com/goradd/goradd/pkg/page/control"
 
 type CellTexter interface {
 	control.CellTexter

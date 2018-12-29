@@ -8,7 +8,7 @@ import (
 	//"goradd/orm/query"
 	"github.com/knq/snaker"
 	"context"
-	. "github.com/spekary/goradd/pkg/orm/query"
+	. "github.com/goradd/goradd/pkg/orm/query"
 	"strconv"
 )
 

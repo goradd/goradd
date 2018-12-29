@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spekary/goradd/pkg/datetime"
-	"github.com/spekary/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 type DateTextboxFormat int

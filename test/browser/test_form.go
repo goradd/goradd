@@ -9,11 +9,11 @@ package browser
 import (
 	"context"
 	"fmt"
-	"github.com/spekary/goradd/pkg/datetime"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/action"
-	. "github.com/spekary/goradd/pkg/page/control"
-	"github.com/spekary/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
+	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/event"
 	"runtime"
 )
 

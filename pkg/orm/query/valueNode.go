@@ -2,7 +2,7 @@ package query
 
 import (
 	"fmt"
-	"github.com/spekary/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/datetime"
 	"log"
 	"reflect"
 	"strings"

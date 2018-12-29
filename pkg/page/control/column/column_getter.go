@@ -2,7 +2,7 @@ package column
 
 import (
 	"context"
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control"
 )
 
 // GetterColumn is a column that uses the Getter interface to get the text out of columns. The data therefore should be

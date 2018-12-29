@@ -5,7 +5,7 @@ package page
 import (
 	"bytes"
 	"context"
-	"github.com/spekary/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html"
 )
 
 func ErrorTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {

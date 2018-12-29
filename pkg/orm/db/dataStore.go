@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	. "github.com/spekary/goradd/pkg/orm/query"
+	. "github.com/goradd/goradd/pkg/orm/query"
 	"log"
 )
 

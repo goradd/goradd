@@ -2,7 +2,7 @@ package page
 
 import (
 	"bytes"
-	"github.com/spekary/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/log"
 	"sync"
 )
 

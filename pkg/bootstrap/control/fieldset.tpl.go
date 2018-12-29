@@ -7,8 +7,8 @@ import (
 	"context"
 	"html"
 
-	grhtml "github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/page"
+	grhtml "github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 // FieldsetTmpl is the template for special situations where you want to wrap a group of controls with a fieldset

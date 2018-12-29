@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/websocket"
-	log2 "github.com/spekary/goradd/pkg/log"
+	log2 "github.com/goradd/goradd/pkg/log"
 	"log"
 	"net/http"
 	"time"

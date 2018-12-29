@@ -2,10 +2,10 @@ package examples
 
 import (
 	"context"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
 
-	bootstrap "github.com/spekary/goradd/pkg/bootstrap/control"
+	bootstrap "github.com/goradd/goradd/pkg/bootstrap/control"
 )
 
 const COMPONENTS_PATH = "/bootstrap/components"

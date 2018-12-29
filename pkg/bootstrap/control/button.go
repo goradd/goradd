@@ -1,10 +1,10 @@
 package control
 
 import (
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/page"
-	grctl "github.com/spekary/goradd/pkg/page/control"
-	"github.com/spekary/goradd/pkg/bootstrap/config"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
+	grctl "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"reflect"
 )
 

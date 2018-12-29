@@ -3,11 +3,11 @@ package page
 
 import (
 	"context"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/test/browser"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/test/browser"
 	"site"
 
-	. "github.com/spekary/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control"
 )
 
 const TestTextboxPath = "/test/textbox.g"

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"html"
 	"fmt"
-	"github.com/spekary/goradd/ideas"
+	"github.com/goradd/goradd/ideas"
 	"path/filepath"
 )
 

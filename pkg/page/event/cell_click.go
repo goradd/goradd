@@ -1,8 +1,8 @@
 package event
 
 import (
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/javascript"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/javascript"
 )
 
 const (

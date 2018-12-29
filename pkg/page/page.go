@@ -5,9 +5,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/maps"
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/i18n"
-	"github.com/spekary/goradd/pkg/messageServer"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/i18n"
+	"github.com/goradd/goradd/pkg/messageServer"
 	"strconv"
 	"strings"
 )

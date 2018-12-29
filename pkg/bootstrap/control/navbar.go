@@ -1,9 +1,9 @@
 package control
 
 import (
-	"github.com/spekary/goradd/pkg/html"
-	"github.com/spekary/goradd/pkg/page"
-	"github.com/spekary/goradd/pkg/bootstrap/config"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/bootstrap/config"
 )
 
 const (

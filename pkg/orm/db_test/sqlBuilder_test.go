@@ -2,15 +2,15 @@ package db
 
 import (
 	"context"
-	. "github.com/spekary/goradd/pkg/orm/op"
+	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/stretchr/testify/assert"
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"
 	"testing"
-	//"github.com/spekary/goradd/pkg/orm/db"
+	//"github.com/goradd/goradd/pkg/orm/db"
 	//"goradd/datetime"
-	//"github.com/spekary/goradd/datetime"
-	//"github.com/spekary/goradd/datetime"
+	//"github.com/goradd/goradd/datetime"
+	//"github.com/goradd/goradd/datetime"
 )
 
 /*
