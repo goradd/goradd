@@ -68,7 +68,7 @@ func startInstaller() {
 		}
 
 		results += "Installing gofile\n"
-		cmdResult, errStr, err := executeCmd("go", "install", filepath.Join(srcPath(), "github.com", "spekary", "goradd", "buildtools", "gofile"))
+		cmdResult, errStr, err := executeCmd("go", "install", filepath.Join(srcPath(), "github.com", "goradd", "goradd", "buildtools", "gofile"))
 		if err != nil {
 			results += errStr
 			stop = true

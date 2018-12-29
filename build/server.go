@@ -97,7 +97,7 @@ func goraddPath() string {
 		return v
 	}
 	if v, ok := modules["github.com"]; ok {
-		return filepath.Join(srcPath(), v, "spekary", "goradd")
+		return filepath.Join(srcPath(), v, "goradd", "goradd")
 	}
 	return ""
 }
