@@ -9,7 +9,7 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.1
 	github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-	github.com/spekary/gengen v0.0.0-20181114132625-5a2d3e95c4f2
+	github.com/goradd/gengen v0.0.0-20181114132625-5a2d3e95c4f2
 	github.com/spekary/goradd v0.0.0-20181114160644-c5448c928cb9
 	github.com/stretchr/testify v1.2.2
 	github.com/test-go/testify v1.1.4 // indirect

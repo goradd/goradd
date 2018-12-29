@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/spekary/gengen/maps"
+	"github.com/goradd/gengen/maps"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/page"
 	html2 "html"

@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/spekary/gengen/maps"
+	"github.com/goradd/gengen/maps"
 	"fmt"
 	"github.com/spekary/goradd/pkg/config"
 	"github.com/spekary/goradd/pkg/page"

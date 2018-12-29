@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gedex/inflector"
 	"github.com/knq/snaker"
-	"github.com/spekary/gengen/maps"
+	"github.com/goradd/gengen/maps"
 	"github.com/spekary/goradd/pkg/datetime"
 	. "github.com/spekary/goradd/pkg/orm/query"
 	"log"

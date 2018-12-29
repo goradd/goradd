@@ -6,7 +6,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"github.com/spekary/gengen/maps"
+	"github.com/goradd/gengen/maps"
 	"strconv"
 	"strings"
 )

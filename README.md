@@ -73,7 +73,7 @@ inheritance and gets around some of GO's limitations in this area, including imp
 virtual functions. If you hate inheritance, goradd is not for you. If you don't mind it, but you still
 like object composition too, this is your place.
 3) Code generation. Goradd relies heavily on code generation, and in particular uses the
-related github.com/spekary/got template engine to generate code.
+related github.com/goradd/got template engine to generate code.
 
 ## Installation
 ### For Go 1.10 and below:

@@ -2,7 +2,7 @@ package html
 
 import (
 	"fmt"
-	"github.com/spekary/gengen/maps"
+	"github.com/goradd/gengen/maps"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"

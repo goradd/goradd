@@ -3,7 +3,7 @@ package html
 import (
 	"errors"
 	"fmt"
-	"github.com/spekary/gengen/maps"
+	"github.com/goradd/gengen/maps"
 	"math"
 	"regexp"
 	"strconv"

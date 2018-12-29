@@ -5,7 +5,7 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/spekary/gengen/maps"
+	"github.com/goradd/gengen/maps"
 	strings2 "github.com/spekary/goradd/pkg/strings"
 	"log"
 	"strconv"

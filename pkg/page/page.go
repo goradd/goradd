@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/spekary/gengen/maps"
+	"github.com/goradd/gengen/maps"
 	"github.com/spekary/goradd/pkg/html"
 	"github.com/spekary/goradd/pkg/i18n"
 	"github.com/spekary/goradd/pkg/messageServer"

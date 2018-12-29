@@ -2,7 +2,7 @@ package session
 
 import (
 	"context"
-	"github.com/spekary/gengen/maps"
+	"github.com/goradd/gengen/maps"
 	"net/http"
 )
 

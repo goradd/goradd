@@ -11,7 +11,7 @@ import (
 )
 
 var dependencies = []string {
-	"github.com/spekary/got",				// Template processor
+	"github.com/goradd/got",				// Template processor
 	"golang.org/x/tools/cmd/goimports",		// For auto-fixing of import declarations
 	"github.com/alexedwards/scs",			// session management
 	"github.com/patrickmn/go-cache",		// dependency of scs
