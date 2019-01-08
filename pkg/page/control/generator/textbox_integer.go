@@ -2,7 +2,7 @@ package generator
 
 import (
 	"fmt"
-	"github.com/goradd/gengen/maps"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/query"

@@ -11,7 +11,7 @@ package html
 import (
 	"errors"
 	"fmt"
-	"github.com/goradd/gengen/maps"
+	"github.com/goradd/gengen/pkg/maps"
 	gohtml "html"
 	"strconv"
 	"strings"

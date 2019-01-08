@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/goradd/gengen/maps"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
 	"github.com/goradd/goradd/pkg/messageServer"
@@ -32,30 +32,36 @@ type DrawI interface {
 	Draw(context.Context, *bytes.Buffer) error
 }
 
+// The Page object is the top level drawing object, and is essentially a wrapper for the form. The Page draws the
+// html, head and body tags, and includes the one Form object on the page. The page also maintains a record of all
+// the controls included on the form.
 type Page struct {
+	// BodyAttributes contains the attributes that will be output with the body tag. It should be set before the
+	// form draws, like in the AddHeadTags function.
+	BodyAttributes  string
+
 	stateId      string // Id in cache of the pagestate. Needs to be output by form.
-	path         string // The path to the page. FormBase needs to know this so it can make the action tag
+	path         string // The path to the page. FormBase needs to know this so it can make the action tag.
 	renderStatus PageRenderStatus
 	idPrefix     string // For creating unique ids for the app
 
 	controlRegistry *maps.SliceMap
 	form            FormI
 	idCounter       int
-	title           string // override title to draw in head tag
+	title           string // page title to draw in head tag
 	htmlHeaderTags  []html.VoidTag
 	responseHeader  map[string]string // queues up anything to be sent in the response header
 	responseError   int
-	BodyAttributes  string
 
 	language 	    int		// Don't serialize this. This is a cached version of what the session holds.
 }
 
-// Initialize the override base. Should be called by a override just after creating PageBase.
+// Initialize the page base. Should be called by a form just after creating Page.
 func (p *Page) Init(ctx context.Context, path string) {
 	p.path = path
 }
 
-// Restore is called immediately after the override has been unserialized, to restore data that did not get serialized.
+// Restore is called immediately after the page has been unserialized, to restore data that did not get serialized.
 func (p *Page) Restore() {
 	p.form.Restore(p.form)
 }
@@ -112,10 +118,6 @@ func (p *Page) Form() FormI {
 	return p.form
 }
 
-func (p *Page) SetForm(f FormI) {
-	p.form = f
-}
-
 // Draw draws the page.
 func (p *Page) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	f := p.form.PageDrawingFunction()
@@ -140,9 +142,9 @@ func (p *Page) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 }
 
 // Sets the prefix for control ids. Some javascript frameworks (i.e. jQueryMobile) require that control ids
-// be unique across the application, vs just in the override, because they create internal caches of control ids. This
-// allows you to set a per override prefix that will be added on to all control ids to make them unique across the whole
-// application. However, its up to you to make sure the names are unique per override.
+// be unique across the application, vs just in the page, because they create internal caches of control ids. This
+// allows you to set a per page prefix that will be added to all control ids to make them unique across the whole
+// application. However, its up to you to make sure the names are unique per page.
 func (p *Page) SetControlIdPrefix(prefix string) *Page {
 	p.idPrefix = prefix
 	return p
@@ -163,7 +165,7 @@ func (p *Page) GenerateControlID(id string) string {
 			}
 		}
 		if p.GetControl(id) != nil {
-			panic (fmt.Sprintf(`A control with id "%s" is being added a second time to the override. Ids must be unique on the override.`, id))
+			panic (fmt.Sprintf(`A control with id "%s" is being added a second time to the page. Ids must be unique on the page.`, id))
 		} else {
 			return id
 		}
@@ -177,6 +179,7 @@ func (p *Page) GenerateControlID(id string) string {
 	}
 }
 
+// GetControl returns the control with the given id. If not found, it returns nil.
 func (p *Page) GetControl(id string) ControlI {
 	if id == "" || p.controlRegistry == nil {
 		return nil
@@ -202,7 +205,7 @@ func (p *Page) addControl(control ControlI) {
 	}
 
 	if p.controlRegistry.Has(id) {
-		panic("Control id already exists. Control must have a unique id on the override before being added.")
+		panic("Control id already exists. Control must have a unique id on the page before being added.")
 	}
 
 	p.controlRegistry.Set(id, control)
@@ -210,7 +213,7 @@ func (p *Page) addControl(control ControlI) {
 	if control.Parent() == nil {
 		if f, ok := control.(FormI); ok {
 			if p.form != nil {
-				panic("The Form object for the override has already been set.")
+				panic("The Form object for the page has already been set.")
 			} else {
 				p.form = f
 			}
@@ -220,14 +223,16 @@ func (p *Page) addControl(control ControlI) {
 	}
 }
 
+/* Remove?
 func (p *Page) changeControlID(oldId string, newId string) {
 	if p.GetControl(newId) != nil {
-		panic(fmt.Errorf("this control id is already defined on the override: %s", newId))
+		panic(fmt.Errorf("this control id is already defined on the page: %s", newId))
 	}
 	ctrl := p.GetControl(oldId)
 	p.controlRegistry.Delete(oldId)
 	p.controlRegistry.Set(newId, ctrl)
 }
+*/
 
 func (p *Page) removeControl(id string) {
 	// Execute the javascript to remove the control from the dom if we are in ajax mode
@@ -237,22 +242,30 @@ func (p *Page) removeControl(id string) {
 	p.controlRegistry.Delete(id)
 }
 
+// Title returns the content of the <title> tag that will be output in the head of the page.
 func (p *Page) Title() string {
 	return p.title
 }
 
+// Call SetTitle to set the content of the <title> tag to be output in the head of the page.
 func (p *Page) SetTitle(title string) {
 	p.title = title
 }
 
+// Path returns the URL path that corresponds to this page. This is what is output in the form's action tag
+// so that the form calls back onto itself.
 func (p *Page) Path() string {
 	return p.path
 }
 
+// StateID returns the page state id. This is output by the form so that we can recover the saved state of the page
+// each time we call into the application.
 func (p *Page) StateID() string {
 	return p.stateId
 }
 
+// DrawAjax renders the page during an ajax call. Since the page itself is already rendered, it simply hands off this
+// responsibility to the form.
 func (p *Page) DrawAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	err = p.Form().renderAjax(ctx, buf)
 	return
@@ -281,7 +294,7 @@ type pageEncoded struct {
 	Path         string // The path to the page. FormBase needs to know this so it can make the action tag
 	IdPrefix     string // For creating unique ids for the app
 	IdCounter       int
-	Title           string // override title to draw in head tag
+	Title           string // page title to draw in head tag
 	HtmlHeaderTags  []html.VoidTag
 	BodyAttributes  string
 
@@ -289,6 +302,7 @@ type pageEncoded struct {
 
 }
 
+// Encode is called by the framework to serialize the page state.
 func (p *Page) Encode(e Encoder) (err error) {
 	s := pageEncoded{
 		StateId:           p.stateId,
@@ -333,6 +347,7 @@ func (p *Page) Encode(e Encoder) (err error) {
 	return
 }
 
+// Decode is called by the framework to serialize the page state.
 func (p *Page) Decode(d Decoder) (err error) {
 	s := pageEncoded{}
 	if err = d.Decode(&s); err != nil {
@@ -367,11 +382,13 @@ func (p *Page) Decode(d Decoder) (err error) {
 	return err
 }
 
-
+// AddHtmlHeaderTag adds the given tag to the head section of the page.
 func (p *Page) AddHtmlHeaderTag(t html.VoidTag) {
 	p.htmlHeaderTags = append(p.htmlHeaderTags, t)
 }
 
+// SetResponseHeader sets a value in the html response header. You generally would only need to do this if your are outputting
+// custom content, like a pdf file.
 func (p *Page) SetResponseHeader(key, value string) {
 	if p.responseHeader == nil {
 		p.responseHeader = map[string]string{}
@@ -379,6 +396,7 @@ func (p *Page) SetResponseHeader(key, value string) {
 	p.responseHeader[key] = value
 }
 
+// ClearResponseHeaders removes all the current response headers.
 func (p *Page) ClearResponseHeaders() {
 	p.responseHeader = nil
 }
@@ -392,7 +410,8 @@ func (p *Page) PushRedraw() {
 	messageServer.SendMessage("form-" + p.stateId, map[string]interface{}{"grup":true})
 }
 
-// LanguageCode returns the language code that should be put in the lang attribute of the html tag.
+// LanguageCode returns the language code that will be put in the lang attribute of the html tag.
+// It is taken from the i18n package.
 func (p *Page) LanguageCode() string {
 	return i18n.CanonicalValue(p.language)
 }

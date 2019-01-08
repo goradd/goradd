@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goradd/gengen/maps"
+	"github.com/goradd/gengen/pkg/maps"
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"strconv"
 )

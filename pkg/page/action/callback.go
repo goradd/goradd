@@ -3,7 +3,7 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/goradd/gengen/maps"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/javascript"
 	"strings"
 )

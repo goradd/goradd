@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/knq/snaker"
-	"github.com/goradd/gengen/maps"
+	"github.com/goradd/gengen/pkg/maps"
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"log"
 	"math"

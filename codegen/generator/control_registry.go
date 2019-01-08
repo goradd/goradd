@@ -2,7 +2,7 @@ package generator
 
 import (
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/gengen/maps"
+	"github.com/goradd/gengen/pkg/maps"
 )
 
 type ControlType int

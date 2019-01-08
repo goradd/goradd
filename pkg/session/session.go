@@ -2,7 +2,7 @@ package session
 
 import (
 	"context"
-	"github.com/goradd/gengen/maps"
+	"github.com/goradd/gengen/pkg/maps"
 	"net/http"
 )
 

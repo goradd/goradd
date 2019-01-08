@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"github.com/goradd/gengen/maps"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
@@ -193,7 +193,7 @@ type Control struct {
 	base.Base
 
 	id   string
-	page *Page // Page This control is part of
+	page *Page // Page that this control is part of
 
 	parent   ControlI   // Parent control
 	children []ControlI // Child controls
