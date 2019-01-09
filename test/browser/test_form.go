@@ -27,7 +27,7 @@ const (
 )
 
 type TestForm struct {
-	page.FormBase
+	page.ΩFormBase
 	TestList     *SelectList
 	RunningLabel *Span
 	RunButton    *Button

@@ -2,17 +2,14 @@ package page
 
 import (
 	"context"
-	"github.com/goradd/goradd/test/browser"
 	"testing"
 )
-
-// Page unit testing, just testing the public interface of the page part of a form at this point.
 
 const TestPath = "/test/PageTest"
 const TestId = "LoginForm"
 
 type testPageForm struct {
-	FormBase
+	ΩFormBase
 }
 
 func newTestForm(ctx context.Context) FormI {
@@ -30,5 +27,6 @@ func loadPageValues(f FormI) *Page {
 }
 
 func TestPageValues(t *testing.T)  {
-	f := newTestForm(ctx)
+	f := newTestForm(nil)
+	f
 }

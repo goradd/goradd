@@ -8,7 +8,7 @@ import (
 )
 
 func (form *TestForm) AddHeadTags() {
-	form.FormBase.AddHeadTags()
+	form.ΩFormBase.AddHeadTags()
 	if "Tests" != "" {
 		form.Page().SetTitle("Tests")
 	}

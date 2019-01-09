@@ -57,7 +57,7 @@ type Page struct {
 }
 
 // Initialize the page base. Should be called by a form just after creating Page.
-func (p *Page) Init(ctx context.Context, path string) {
+func (p *Page) Init(path string) {
 	p.path = path
 }
 

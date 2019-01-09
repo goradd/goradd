@@ -14,15 +14,17 @@ const (
 	databaseProfileAction = iota + 10000
 )
 
-// The Form is the control that all Form objects should descend from, and is the master container for all other goradd controls.
+// The FormBase is the control that all Form objects should include, and is the master container for all other goradd controls.
 type FormBase struct {
-	page.FormBase
+	page.ΩFormBase
 }
 
-// TODO: Merge with page.FormBase
-
+// Init initializes the FormBase. Call this before adding other controls.
 func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
-	f.FormBase.Init(ctx, self, path, id)
+	// Most of the FormBase code is in page.ΩFormBase. The code below specifically adds popup windows and controls
+	// to all standard forms, mostly for debug and development purposes.
+
+	f.ΩFormBase.Init(ctx, self, path, id)
 
 	if db.IsProfiling(ctx) {
 		btn := NewButton(f, "grProfileButton")
