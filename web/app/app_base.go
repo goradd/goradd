@@ -143,7 +143,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // MakeWebsocketMux creates the mux for the default websocket handler. The default handler provides session data to
-// the web socket handler below, since its very common to need to get to session data to authenticate to user before
+// the web socket handler below, since its very common to need to get to session data to authenticate the user before
 // responding to the request.
 func (a *Application) MakeWebsocketMux() (*http.ServeMux) {
 	mux := http.NewServeMux()
