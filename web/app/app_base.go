@@ -10,6 +10,7 @@ import (
 	grlog "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/sys"
+	"log"
 	"path/filepath"
 	"time"
 
@@ -39,10 +40,16 @@ type ApplicationI interface {
 // The application base, to be embedded in your application
 type Application struct {
 	base.Base
+
+	// StaticDirectoryPaths is a map of patterns to directory locations to serve statically.
+	// These can be registered at the command line or in the application
+	StaticDirectoryPaths map[string]string
 }
 
 func (a *Application) Init(self ApplicationI) {
 	a.Base.Init(self)
+
+	a.StaticDirectoryPaths = make(map[string]string)
 
 	self.SetupErrorPageTemplate()
 	self.SetupPageCaching()
@@ -293,3 +300,13 @@ func (a *Application) ServeRequest (w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
+// RegisterStaticPath registers the given url path such that it points to the given directory. For example, passing
+// "/test", "/my/test/dir" will statically serve everything out of /my/test/dir whenever a url has /test in front of it.
+// You can only call this during application startup. These directory paths take precedence over other similar paths that
+// you have registered through goradd forms or through the html directory.
+func (a *Application) RegisterStaticPath(path string, directory string) {
+	if path[0:1] != "/" {
+		log.Fatal("path must begin with a slash (must be a rooted path)")
+	}
+	a.StaticDirectoryPaths[path] = directory
+}

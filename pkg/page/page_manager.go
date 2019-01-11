@@ -8,7 +8,8 @@ import (
 	"strings"
 )
 
-var pageManager *PageManager
+var pageManager = NewPageManager() // Create a new singleton page manager.
+
 
 type FormCreationFunction func(context.Context) FormI
 
@@ -35,9 +36,6 @@ func NewPageManager() *PageManager {
 }
 
 func RegisterPage(path string, creationFunction FormCreationFunction, formId string) {
-	if pageManager == nil {
-		pageManager = NewPageManager() // Create a new singleton page manager
-	}
 	if _, ok := pageManager.pathRegistry[path]; ok {
 		panic("Page is already registered: " + path)
 	}

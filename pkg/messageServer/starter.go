@@ -18,7 +18,7 @@ func Start(mux *http.ServeMux) {
 	}
 
 	if config.WebSocketTLSPort != 0 {
-		// Here we confirm that the CertFile and KeyFile exist. If they don't, ListenAndServer just exits with an open error
+		// Here we confirm that the CertFile and KeyFile exist. If they don't, ListenAndServe just exits with an open error
 		// and you will not know why.
 		if !sys.PathExists(config.WebSocketTLSCertFile) {
 			log.Fatalf("WebSocketTLSCertFile does not exist: %s", config.WebSocketTLSCertFile)
