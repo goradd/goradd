@@ -94,6 +94,8 @@ func Comment(c string) interface{} {
 	return comment{c}
 }
 
+// ExtractBuilderFromArguments will return a new builder, but also will extract any builder-specific commands from the
+// argmument list, assign those to the builder, and then return what is left of the arguments after the extraction.
 func ExtractBuilderFromArguments(args []interface{}) (b *translationBuilder, args2 []interface{}) {
 	b = Build()
 	for _,a := range args {

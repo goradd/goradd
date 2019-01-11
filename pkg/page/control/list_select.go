@@ -92,7 +92,10 @@ func (l *SelectList) Value() interface{} {
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
 func (l *SelectList) SetValue(v interface{}) {
-	s := fmt.Sprintf("%v", v)
+	var s string
+	if v != nil {
+		s = fmt.Sprintf("%v", v)
+	}
 	id, _ := l.GetItemByValue(s)
 	l.SetSelectedID(id)
 }

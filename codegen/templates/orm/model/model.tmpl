@@ -28,6 +28,9 @@ func (o *{{= t.GoName }}) Initialize(ctx context.Context) {
 // String implements the Stringer interface and returns the default label for the object as it appears in html lists.
 // Typically you would change this to whatever was pertinent to your application.
 func (o *{{= t.GoName }}) String() string  {
+    if o == nil {
+        return ""   // Possibly - Select One -?
+    }
     return fmt.Sprintf("Object id %v", o.PrimaryKey())
 }
 

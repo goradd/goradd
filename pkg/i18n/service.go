@@ -19,6 +19,10 @@ type NonTranslator struct {
 }
 
 func (n NonTranslator) Translate (b *translationBuilder) string {
+	if b.arguments == nil {
+		// Just want a passthrough. If b.message has Sprintf format commands, calling fmt.Sprintf with no arguments will err.
+		return b.message
+	}
 	return fmt.Sprintf(b.message, b.arguments...)
 }
 

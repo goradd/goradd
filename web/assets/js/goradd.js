@@ -616,6 +616,9 @@ goradd = {
             window.close();
         }
         if (json.loc) {
+            if (goradd._closeWebSocket) {
+                goradd._closeWebSocket();
+            }
             if (json.loc === 'reload') {
                 window.location.reload(true);
             } else {

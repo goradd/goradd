@@ -34,7 +34,8 @@ goradd.initMessagingClient = function(wsPort, wssPort) {
         con += window.location.hostname + ":" + port + "/ws?id=" + goradd.getPageState() + "&ch=form-" + goradd.getPageState();
 
         goradd._ws = new WebSocket(con);
-        goradd._ws.addEventListener("message", goradd._handleMessage);
+        goradd._ws.addEventListener("message", goradd._handleWsMessage);
+        goradd._ws.addEventListener("close", goradd._handleWsClose);
         // we purposefully do not use goradd._ws.onmessage = ... so that we can add multiple event listeners.
     }
 };
@@ -45,7 +46,7 @@ there, and then updates the form if found. You can therefore send any other mess
 to your own handlers. If your message has a grup item, your message will also
 update the form. Otherwise, it will be ignored here.
  */
-goradd._handleMessage = function(e) {
+goradd._handleWsMessage = function(e) {
     var messages = JSON.parse(e.data);
     console.log("message");
 
@@ -57,3 +58,17 @@ goradd._handleMessage = function(e) {
         goradd.updateForm();
     }
 };
+
+/*
+Close the websocket connection.
+*/
+goradd._closeWebSocket = function() {
+    if (goradd._ws) {
+        goradd._ws.close();
+    }
+};
+
+goradd._handleWsClose = function(e) {
+    goradd._ws = null;
+};
+

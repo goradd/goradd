@@ -1443,13 +1443,10 @@ func (c *Control) T(message string, params... interface{}) string {
 // this kind of string.
 func (c *Control) TPrintf(message string, params... interface{}) string {
 	builder, args := i18n.ExtractBuilderFromArguments(params)
-	if len(args) > 0 {
-		panic("T() cannot have arguments")
-	}
 
 	return builder.
 		Lang(c.page.LanguageCode()).
-		Sprintf(message, args)
+		Sprintf(message, args...)
 }
 
 
