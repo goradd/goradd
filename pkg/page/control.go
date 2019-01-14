@@ -344,7 +344,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	}
 
 	if c.wrapper != nil && !c.isHidden {
-		c.wrapper.Wrap(ctx, c.this(), h, buf)
+		c.wrapper.ΩWrap(ctx, c.this(), h, buf)
 	} else {
 		buf.WriteString(h)
 	}
@@ -399,7 +399,7 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 		}
 
 		if c.wrapper != nil {
-			c.wrapper.AjaxRender(ctx, response, c)
+			c.wrapper.ΩAjaxRender(ctx, response, c)
 		}
 
 		// ask the child controls to potentially render, since this control doesn't need to
@@ -601,7 +601,7 @@ func (c *Control) DrawingAttributes() *html.Attributes {
 	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
 
 	if c.HasWrapper() {
-		c.wrapper.ModifyDrawingAttributes(c.this(), a)
+		c.wrapper.ΩModifyDrawingAttributes(c.this(), a)
 	}
 
 	if c.isRequired {
@@ -820,8 +820,8 @@ func (c *Control) SetValidationError(e string) {
 
 	if c.validationMessage != e {
 		c.validationMessage = e
-		c.wrapper.SetValidationMessageChanged()
-		c.wrapper.SetValidationStateChanged()
+		c.wrapper.ΩSetValidationMessageChanged()
+		c.wrapper.ΩSetValidationStateChanged()
 
 		if e == "" {
 			c.validationState = ValidationWaiting
@@ -1015,11 +1015,11 @@ func (c *Control) resetDrawingFlags() {
 func (c *Control) resetValidation() {
 	if c.HasWrapper() {
 		if c.validationMessage != "" {
-			c.wrapper.SetValidationMessageChanged()
+			c.wrapper.ΩSetValidationMessageChanged()
 			c.validationMessage = ""
 		}
 		if c.validationState != ValidationWaiting {
-			c.wrapper.SetValidationStateChanged()
+			c.wrapper.ΩSetValidationStateChanged()
 			c.validationState = ValidationWaiting
 		}
 	}
@@ -1231,11 +1231,11 @@ func (c *Control) Validate(ctx context.Context) bool {
 
 		if c.validationMessage != c.ValidMessage {
 			c.validationMessage = c.ValidMessage
-			c.wrapper.SetValidationMessageChanged()
+			c.wrapper.ΩSetValidationMessageChanged()
 		}
 		if c.validationState != ValidationValid {
 			c.validationState = ValidationValid
-			c.wrapper.SetValidationStateChanged()
+			c.wrapper.ΩSetValidationStateChanged()
 		}
 	}
 	return true
@@ -1404,8 +1404,7 @@ func (c *Control) MarshalState(m maps.Setter) {
 func (c *Control) UnmarshalState(m maps.Loader) {
 }
 
-// ΩT is a shortcut for the translator that should only be used by internal goradd code. The translations are provided
-// by the goradd translator.
+// ΩT is a shortcut for the translator that uses the internal Goradd domain for translations.
 func (c *Control) ΩT(message string) string {
 	// at this point, there is no need for comments or disambiguation, so we go right to translation
 
@@ -1555,26 +1554,26 @@ func (c *Control) UnmarshalJSON(data []byte) (err error) {
 }
 
 type controlEncoding struct {
-	Id                string
-	ParentID          string
-	Children          []ControlI
-	Tag               string
-	IsVoidTag         bool
-	HasNoSpace        bool
-	Attributes        *html.Attributes
-	Text              string
-	TextLabelMode     html.LabelDrawingMode
-	HtmlEscapeText    bool
-	IsRequired        bool
-	IsHidden          bool
-	IsOnPage          bool
-	ShouldAutoRender  bool
-	IsBlock           bool
-	Wrapper           WrapperI
-	WrapperAttributes *html.Attributes
-	Label             string
-	HasFor            bool
-	Instructions      string
+	Id                    string
+	ParentID              string
+	Children              []ControlI
+	Tag                   string
+	IsVoidTag             bool
+	HasNoSpace            bool
+	Attributes            *html.Attributes
+	Text                  string
+	TextLabelMode         html.LabelDrawingMode
+	HtmlEscapeText        bool
+	IsRequired            bool
+	IsHidden              bool
+	IsOnPage              bool
+	ShouldAutoRender      bool
+	IsBlock               bool
+	Wrapper               WrapperI
+	WrapperAttributes     *html.Attributes
+	Label                 string
+	HasFor                bool
+	Instructions          string
 	ErrorForRequired      string
 	ValidMessage          string
 	ValidationMessage     string
@@ -1584,9 +1583,9 @@ type controlEncoding struct {
 	BlockParentValidation bool
 	ActionValue           interface{}
 	Events                EventMap
-	PrivateEvents	      EventMap
-	EventCounter		  EventID
-	ShouldSaveState		  bool
+	PrivateEvents         EventMap
+	EventCounter          EventID
+	ShouldSaveState       bool
 }
 
 func (c *Control) Serialize(e Encoder) (err error) {

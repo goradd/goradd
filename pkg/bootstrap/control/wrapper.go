@@ -26,19 +26,20 @@ func NewDivWrapper() *DivWrapperType {
 	return &DivWrapperType{}
 }
 
+/*
 func (w *DivWrapperType) Copy()  *DivWrapperType {
 	wNew := &DivWrapperType{}
 	wNew.LabelWrapperType = *w.LabelWrapperType.Copy()
 	wNew.ΩinnerDivAttr = w.ΩinnerDivAttr.Copy()
 	wNew.UseTooltips = w.UseTooltips
 	return wNew
+}*/
+
+func (w *DivWrapperType) ΩNewI() page.WrapperI {
+	return NewDivWrapper()
 }
 
-func (w *DivWrapperType) CopyI() page.WrapperI {
-	return w.Copy()
-}
-
-func (w *DivWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
+func (w *DivWrapperType) ΩWrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
 	FormGroupTmpl(ctx, w, ctrl, html, buf)
 }
 
@@ -57,6 +58,7 @@ func (w *DivWrapperType) InnerDivAttributes() *html.Attributes {
 	return w.ΩinnerDivAttr
 }
 
+// HasInnerDivAttributes returns true if the wrapper has attributes on the inner div.
 func (w *DivWrapperType) HasInnerDivAttributes() bool {
 	if w.ΩinnerDivAttr == nil || w.ΩinnerDivAttr.Len() == 0 {
 		return false
@@ -64,15 +66,16 @@ func (w *DivWrapperType) HasInnerDivAttributes() bool {
 	return true
 }
 
+// SetUseTooltips sets whether to use tooltips to display validation messages.
 func (w *DivWrapperType) SetUseTooltips(t bool) *DivWrapperType {
 	w.UseTooltips = t
 	return w
 }
 
-// Called by the framework to draw any changes to the wrapper that we have recorded.
+// ΩAjaxRender is called by the framework to draw any changes to the wrapper that we have recorded.
 // This has to work closely with the wrapper template so that it would create the same effect as if that
 // entire control had been redrawn
-func (w *DivWrapperType) AjaxRender(ctx context.Context, response *page.Response, c page.ControlI) {
+func (w *DivWrapperType) ΩAjaxRender(ctx context.Context, response *page.Response, c page.ControlI) {
 	var class string
 	if w.ValidationStateChanged {
 		switch c.ValidationState() {
@@ -105,10 +108,10 @@ func (w *DivWrapperType) AjaxRender(ctx context.Context, response *page.Response
 		}
 		response.ExecuteControlCommand(c.ID() + "_err", "attr", "class", class)
 	}
-	w.LabelWrapperType.AjaxRender(ctx, response, c)
+	w.LabelWrapperType.ΩAjaxRender(ctx, response, c)
 }
 
-func (w *DivWrapperType) ModifyDrawingAttributes(c page.ControlI, attr *html.Attributes) {
+func (w *DivWrapperType) ΩModifyDrawingAttributes(c page.ControlI, attr *html.Attributes) {
 	switch c.ValidationState() {
 	case page.ValidationValid:
 		attr.AddClass("is-valid")
@@ -127,13 +130,11 @@ func NewFormGroupWrapper() *FormGroupWrapperType {
 	return w
 }
 
-func (w *FormGroupWrapperType)CopyI() page.WrapperI {
-	wNew := new(FormGroupWrapperType)
-	wNew.DivWrapperType = *w.Copy()
-	return wNew
+func (w *FormGroupWrapperType)ΩNewI() page.WrapperI {
+	return NewFormGroupWrapper()
 }
 
-func (w *FormGroupWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
+func (w *FormGroupWrapperType) ΩWrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
 	ctrl.WrapperAttributes().AddClass("form-group")
 	FormGroupTmpl(ctx, &w.DivWrapperType, ctrl, html, buf)
 }
@@ -153,14 +154,11 @@ func NewFieldsetWrapper() *FieldsetWrapperType {
 	return new(FieldsetWrapperType)
 }
 
-func (w *FieldsetWrapperType) CopyI() page.WrapperI {
-	wNew := NewFieldsetWrapper()
-	wNew.LabelWrapperType = *w.LabelWrapperType.Copy()
-	wNew.UseTooltips = w.UseTooltips
-	return w
+func (w *FieldsetWrapperType) ΩNewI() page.WrapperI {
+	return NewFieldsetWrapper()
 }
 
-func (w *FieldsetWrapperType) Wrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
+func (w *FieldsetWrapperType) ΩWrap(ctx context.Context, ctrl page.ControlI, html string, buf *bytes.Buffer) {
 	FieldsetTmpl(ctx, w, ctrl, html, buf)
 }
 

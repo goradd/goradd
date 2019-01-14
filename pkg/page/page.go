@@ -66,10 +66,6 @@ func (p *Page) Restore() {
 	p.form.Restore(p.form)
 }
 
-func (p *Page) setStateID(stateId string) {
-	p.stateId = stateId
-}
-
 func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
 	grCtx := GetContext(ctx)
 
@@ -256,6 +252,10 @@ func (p *Page) SetTitle(title string) {
 // so that the form calls back onto itself.
 func (p *Page) Path() string {
 	return p.path
+}
+
+func (p *Page) setStateID(stateId string) {
+	p.stateId = stateId
 }
 
 // StateID returns the page state id. This is output by the form so that we can recover the saved state of the page
