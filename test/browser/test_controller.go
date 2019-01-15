@@ -63,7 +63,7 @@ func (p *TestController) Init(self control.PanelI, parent page.ControlI, id stri
 func (p *TestController) PutCustomScript(ctx context.Context, response *page.Response) {
 
 	script := fmt.Sprintf (`$j("#%s").testController();`, p.ID())
-	response.ExecuteJavaScript(script, page.PriorityStandard)
+	response.ExecuteJavaScript(script, page.PriorityHigh) // Make sure the plugin gets initialized before being called
 }
 
 func (p *TestController) logLine(line string) {
@@ -114,8 +114,8 @@ func (p *TestController) waitStep() {
 			if stepItem.Err != "" {
 				panic (stepItem.Err)
 			}
-	//	case <-time.After(p.stepTimeout * time.Second):
-	//		panic (fmt.Errorf("test step timed out: %s", p.stepDescriptions[len(p.stepDescriptions) - 1] ))
+		case <-time.After(p.stepTimeout * time.Second):
+			panic (fmt.Errorf("test step timed out: %s", p.stepDescriptions[len(p.stepDescriptions) - 1] ))
 		}
 		log.FrameworkDebugf("Completed step %d: %s", len(p.stepDescriptions), p.stepDescriptions[len(p.stepDescriptions)-1])
 		break // we successfully returned from the step
@@ -134,9 +134,9 @@ func (p *TestController) click(id string, description string) {
 	p.waitStep()
 }
 
-func (p *TestController) jqValue(id string, funcName string, params []string, description string) string {
+func (p *TestController) callJqueryFunction(id string, funcName string, params []string, description string) string {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "jqValue", len(p.stepDescriptions), id, funcName, params)
+	p.ExecuteJqueryFunction("testController", "callJqueryFunction", len(p.stepDescriptions), id, funcName, params)
 	p.waitStep()
 	return p.latestJsValue
 }
@@ -152,6 +152,13 @@ func (p *TestController) focus(id string, description string) {
 	p.ExecuteJqueryFunction("testController", "focus", len(p.stepDescriptions), id)
 	p.waitStep()
 }
+
+func (p *TestController) closeWindow(description string) {
+	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.ExecuteJqueryFunction("testController", "closeWindow", len(p.stepDescriptions))
+	p.waitStep()
+}
+
 
 
 func TestAssets() string {

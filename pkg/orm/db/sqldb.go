@@ -268,6 +268,10 @@ func (s *SqlDb) StartProfiling() {
 
 func IsProfiling(ctx context.Context) bool {
 	var c *SqlContext
+
+	if ctx == nil {	// testing
+		return false
+	}
 	i := ctx.Value(goradd.SqlContext)
 	if i != nil {
 		c = i.(*SqlContext)

@@ -1,0 +1,16 @@
+{{< imports }}
+{{end}}
+{{< headTags }}
+{{end}}
+{{< package }}page{{end}}
+{{< title }}Textbox Tests{{end}}
+{{< form }}TestTextboxForm{{end}}
+{{< bodyAttributes }}{{end}}
+
+{{define template }}
+
+{{draw form.PlainText }}
+
+{{end}}
+
+{{renderTemplate}}

@@ -194,38 +194,3 @@ func DirectoryClear(dir string) error {
 	return nil
 }
 
-/* Modules has obsoleted GoPath
-// GoPath returns the current GoPath as best it can determine.
-// Note that with modules, the executable might be run from outside of the GoPath
-func GoPath() string {
-	var path string
-	goPaths := strings.Split(os.Getenv("GOPATH"), string(os.PathListSeparator))
-	if len(goPaths) == 0 {
-		path = build.Default.GOPATH
-	} else if goPaths[0] == "" {
-		path = build.Default.GOPATH
-	} else {
-		path = goPaths[0]
-	}
-
-	// clean path so it does not end with a path separator
-	if path[len(path)-1] == os.PathSeparator {
-		path = path[:len(path)-1]
-	}
-
-	// If the GOPATH is empty, then see if the current executable looks like it is in a project
-	if path == "" {
-		if path2, err := os.Executable(); err == nil {
-			path2 = filepath.Join(filepath.Dir(filepath.Dir(path2)), "src")
-			dstInfo, err := os.Stat(path)
-			if err == nil && dstInfo.IsDir() {
-				path = path2
-			}
-		}
-	}
-
-	path,_ = filepath.Abs(path)
-
-	return path
-}
-*/

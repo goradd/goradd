@@ -19,7 +19,6 @@ var dependencies = []string {
 	"github.com/knq/snaker",				// Snake-case to CamelCase and back
 	"github.com/go-sql-driver/mysql",		// Mysql driver
 	"github.com/microcosm-cc/bluemonday",	// Filters text input for possible XSS attacks
-	"golang.org/x/net/html",
 }
 
 func serveInstall() http.Handler {

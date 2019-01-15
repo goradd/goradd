@@ -30,8 +30,11 @@ const (
  * that we need to get under control. For example, if the user clicks a checkbox that also has a "click" handler, and
  * inside that handler, tests the value of the checkbox, the user should see the new value and not the one before the
  * click. Other problems come up when a Click causes a Change or FocusOut, which in turn changes the focus. Typically
- * in javascript, that would cause the Click to be lost. Our javascript tries to accomodate this by queueing all the
- * event responses before
+ * in javascript, that would cause the Click to be lost. Our javascript tries to accommodate this by queueing all the
+ * event responses before processing them.
+ *
+ * This is currently a manual test. Using a browser tester like Selenium, we could maybe make this part of the regular
+ * continuous integration test.
  */
 type AjaxTimingForm struct {
 	FormBase

@@ -5,7 +5,6 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/test/browser"
-	"site"
 
 	. "github.com/goradd/goradd/pkg/page/control"
 )
@@ -28,36 +27,26 @@ type TestTextboxForm struct {
 func NewTestTextboxForm(ctx context.Context) page.FormI {
 	f := &TestTextboxForm{}
 	f.Init(ctx, f, TestTextboxPath, TestTextboxId)
+	f.AddRelatedFiles()
 
+	f.PlainText = NewTextbox(f, "plain")
 	return f
 }
 
 
-/*
-func RunLoginSuite() {
-	TestLoginLaunch(t)
-	Test1()
-}
+func TestPlain(t *browser.TestForm)  {
+	t.LoadUrl(TestTextboxPath)
+	f := t.GetForm().(*TestTextboxForm)
+	t.AssertEqual(TestTextboxId, f.ID())
+	t.AssertEqual("plain", f.PlainText.ID())
+	t.Error("Bad boy")
 
-func TestLoginLaunch(t *test.TestForm) {
-	t.LaunchBrowser("/")
-	f := t.getForm("LoginForm")
-}
-*/
-
-
-// Wrap this in panic catcher
-// Possibly turn this into saved commands. Would help with logging.
-func TestPasswordBlank(t *browser.TestForm)  {
-	t.Log("Start TestPasswordBlank")
-	t.LoadUrl("/")
-	f := t.GetForm().(*site.LoginForm)
-	t.AssertEqual("LoginForm", f.ID())
+	/*
 	t.ChangeVal(f.UserName.ID(), "me")
 	t.Click(f.Submit.ID())
 	t.AssertEqual("me", f.UserName.Text())
 	t.AssertEqual("A value is required", f.Password.ValidationMessage())
-	t.AssertEqual("A value is required", t.JqueryValue(f.Password.ID() + "_err", "text", nil))
+	t.AssertEqual("A value is required", t.CallJqueryFunction(f.Password.ID() + "_err", "text", nil))
 
 	t.ChangeVal(f.Password.ID(), "me")
 	t.Click(f.Submit.ID())
@@ -73,5 +62,7 @@ func TestPasswordBlank(t *browser.TestForm)  {
 }
 
 func init() {
-	browser.RegisterTestFunction("PasswordBlank", TestPasswordBlank)
+	page.RegisterPage(TestTextboxPath, NewTestTextboxForm, TestTextboxId)
+
+	browser.RegisterTestFunction("Plain Textbox", TestPlain)
 }

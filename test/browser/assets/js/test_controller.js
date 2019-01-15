@@ -83,6 +83,10 @@ jQuery.widget( "goradd.testController",  {
     _findElement: function(id) {
         return this._window.document.getElementById(id);
     },
+    closeWindow: function(step) {
+        this._window.close();
+        this._fireStepEvent(step);
+    },
     click: function (step, id) {
         goradd.log("click", step, id);
         var control = this._findElement(id);
@@ -100,7 +104,7 @@ jQuery.widget( "goradd.testController",  {
         control.dispatchEvent(event);
 
     },
-    jqValue: function (step, id, f, params) {
+    callJqueryFunction: function (step, id, f, params) {
         goradd.log("jqValue", step, id, f, params);
         var ret;
 

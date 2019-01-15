@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -13,21 +14,20 @@ const TestFormId = "PageTest"
 const TestTxtId = "TxtTest"
 
 type testPageForm struct {
-	ΩFormBase
+	control.FormBase
 	txt *control.Textbox
 }
 
 func newTestForm(ctx context.Context) *testPageForm {
 	f := &testPageForm{}
 	f.Init(ctx, f, TestPath, TestFormId)
-	f.AddRelatedFiles()
 
 	f.txt = control.NewTextbox(f, TestTxtId)
 	return f
 }
 
 
-func loadTestFormValues(f *testPageForm) *Page {
+func loadTestFormValues(f *testPageForm) *page.Page {
 	p := f.Page()
 
 	return p
