@@ -24,6 +24,7 @@ func NewValueNode(i interface{}) NodeI {
 	n := &ValueNode{
 		value: i,
 	}
+
 	switch v := i.(type) {
 	// do nothings
 	case string:
@@ -32,40 +33,53 @@ func NewValueNode(i interface{}) NodeI {
 	case uint64:
 	case int64:
 	case float64:
+	case float32:
 	case time.Time:
 
 		// casts
 	case []byte:
 		n.value = string(v[:])
-	case uint8:
-		n.value = uint(v)
-	case uint16:
-		n.value = uint(v)
-	case uint32:
-		n.value = uint(v)
-	case int8:
-		n.value = int(v)
-	case int16:
-		n.value = int(v)
-	case int32:
-		n.value = int(v)
-	case float32:
-		n.value = float64(v)
 	case datetime.DateTime:
 		n.value = v.Time
 	case nil:
 		panic("You cannot use nil as an operator. If you are testing for a NULL, use the IsNull function.")
 	default:
-		// Arrays of items
-		if reflect.TypeOf(v).Kind() == reflect.Slice || reflect.TypeOf(v).Kind() == reflect.Array {
+		// Use reflection to do various conversions
+		typ := reflect.TypeOf(v)
+		k := typ.Kind()
+		val := reflect.ValueOf(v)
+
+		switch k {
+		case reflect.Int:fallthrough
+		case reflect.Int8:fallthrough
+		case reflect.Int16:fallthrough
+		case reflect.Int32:fallthrough
+		case reflect.Int64:
+			n.value = int(val.Int())
+		case reflect.Uint:fallthrough
+		case reflect.Uint8:fallthrough
+		case reflect.Uint16:fallthrough
+		case reflect.Uint32:fallthrough
+		case reflect.Uint64:
+			n.value = uint(val.Uint())
+		case reflect.Bool:
+			n.value = val.Bool()
+		case reflect.Float32:
+			// converting float32 to float64 might cause problems in the final sql statement, so we leave the type as float32
+			n.value = float32(val.Float())
+		case reflect.Float64:
+			n.value = val.Float()
+		case reflect.Slice:fallthrough
+		case reflect.Array:
 			ary := []NodeI{}
-			s := reflect.ValueOf(v)
-			for i := 0; i < s.Len(); i++ {
+			for i := 0; i < val.Len(); i++ {
 				// TODO: Handle NodeI's here too? Prevent more than one level deep?
-				ary = append(ary, NewValueNode(s.Index(i).Interface()))
+				ary = append(ary, NewValueNode(val.Index(i).Interface()))
 			}
 			n.value = ary
-		} else {
+		case reflect.String:
+			n.value = val.String()
+		default:
 			panic("Can't use this type as a value node.")
 		}
 	}
@@ -78,6 +92,20 @@ func (n *ValueNode) nodeType() NodeType {
 
 func (n *ValueNode) Equals(n2 NodeI) bool {
 	if cn, ok := n2.(*ValueNode); ok {
+		if an2, ok := cn.value.([]NodeI); ok {
+			if an1, ok := n.value.([]NodeI); !ok {
+				return false
+			} else if len(an2) != len(an1) {
+				return false
+			} else {
+				for i,n := range an1 {
+					if !n.Equals(an2[i]) {
+						return false
+					}
+				}
+			}
+			return true
+		}
 		return cn.value == n.value
 	}
 	return false
