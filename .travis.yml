@@ -1,0 +1,31 @@
+language: go
+
+go:
+  - "1.11.x"
+
+services:
+  - mysql
+
+addons:
+  chrome: stable
+
+before_install:
+  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost:8000?all=1 &
+
+install:
+  - go get -t -v ./...
+  - go get github.com/goradd/got/...
+  - go get golang.org/x/tools/cmd/goimports/...
+  - go get github.com/goradd/gofile/...
+
+before_script:
+  - cp test/goradd-test internal/install
+  - mysql -e 'create database goradd;'; mysql -u root goradd < test/dbtest/mysql.sql
+  - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('12345') where User='root'; FLUSH PRIVILEGES;"
+
+
+script:
+  - pushd internal/install/goradd-test/codegen && env GO111MODULE=on go generate build.go ; popd  # Codegen
+  - pushd internal/install/goradd-project && env GO111MODULE=on go test github.com/goradd/goradd/pkg/... ; popd  # Pkg unit tests
+  - pushd internal/install/goradd-project && env GO111MODULE=on go test github.com/goradd/goradd/test/dbtest ; popd  # Db unit tests
+  - pushd internal/install/goradd-test && env GO111MODULE=on go run main.go ; popd  # Browser based tests
