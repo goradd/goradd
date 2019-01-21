@@ -1,4 +1,4 @@
-package db
+package dbtest
 
 import (
 	"context"
@@ -7,34 +7,9 @@ import (
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"
 	"testing"
-	//"github.com/goradd/goradd/pkg/orm/db"
-	//"goradd/datetime"
-	//"github.com/goradd/goradd/datetime"
-	//"github.com/goradd/goradd/datetime"
 )
 
-/*
-func init() {
-	//
-	cfg := mysql.NewConfig()
-
-	cfg.DBName = "goradd"
-	//cfg.DBName = "test"
-	cfg.User = "root"
-	cfg.Passwd = "12345"
-
-	key := "main"
-
-	db1 := db.NewMysql5(key, "", cfg)
-
-	db.AddDatabase(db1, key)
-
-	db.AnalyzeDatabases()
-}
-
-*/
-
-func TestSubquery2(t *testing.T) {
+func TestSubquery(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople().
 		Alias("manager_count",

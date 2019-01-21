@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/strings"
-	"github.com/goradd/goradd/pkg/sys"
+	"github.com/goradd/gofile/pkg/sys"
 	"io/ioutil"
 	"log"
 	"os"

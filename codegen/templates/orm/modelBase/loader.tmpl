@@ -118,7 +118,7 @@ for _,ref := range t.ManyManyReferences {
 					obj = objParent.(*{{= ref.AssociatedObjectName }})
 				}
 				o.{{oName}} = append(o.{{oName}}, obj)
-				o.{{mName}}[obj.{{pk}}] = obj
+				o.{{mName}}[obj.PrimaryKey()] = obj
 			}
 		} else {
 			panic("Wrong type found for {{oName}} object.")
@@ -170,7 +170,7 @@ for _,ref := range t.ReverseReferences {
 					obj = objParent.(*{{= ref.GoType }})
 				}
 				o.{{oName}} = append(o.{{oName}}, obj)
-				o.{{mName}}[obj.{{pk}}] = obj
+				o.{{mName}}[obj.PrimaryKey()] = obj
 			}
 		case db.ValueMap:	// single expansion
 			obj := new({{= ref.GoType }})

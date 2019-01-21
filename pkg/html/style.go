@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	"math"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -167,11 +168,9 @@ func (s *Style) RemoveAll() {
 }
 
 // Returns the string version of the style attribute, suitable for inclusion in an HTML style tag
+// Will sort the
 func (s Style) String() string {
-	var text []byte
-
-	text = s.encode()
-	return string(text)
+	return s.encode()
 }
 
 // Raw set and return true if changed
@@ -192,14 +191,17 @@ func roundFloat(f float64, digits int) float64 {
 }
 
 // encode will output a text version of the style, suitable for inclusion in an html "style" attribute.
-func (s Style) encode() (text []byte) {
-	var items []string
+// it will sort the keys so that they are presented in a consistent and testable way.
+func (s Style) encode() (text string) {
+	keys := s.Keys()
+	sort.Strings(keys)
 
-	s.StringMap.Range(func (key string, value string) bool {
-		items = append(items, key+":"+value)
-		return true
-	})
-	text = []byte(strings.Join(items, ";"))
+	for i,k := range keys {
+		if i > 0 {
+			text += ";"
+		}
+		text += k + ":" + s.Get(k)
+	}
 	return text
 }
 

@@ -1,9 +1,7 @@
-package db
+package dbtest
 
 import (
 	"context"
-	"github.com/go-sql-driver/mysql"
-	"github.com/goradd/goradd/pkg/orm/db"
 	"goradd-project/gen/goradd/model"
 	"testing"
 
@@ -16,23 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	//
-	cfg := mysql.NewConfig()
-
-	cfg.DBName = "goradd"
-	//cfg.DBName = "test"
-	cfg.User = "root"
-	cfg.Passwd = "12345"
-
-	key := "goradd"
-
-	db1 := db.NewMysql5(key, "", cfg)
-
-	db.AddDatabase(db1, key)
-
-	db.AnalyzeDatabases()
-}
 
 func TestBasic(t *testing.T) {
 
@@ -129,7 +110,7 @@ func TestBasicType(t *testing.T) {
 		OrderBy(node.Project().ID()).
 		Load(ctx)
 
-	if projects[0].ProjectStatusType() != model.PROJECT_STATUS_TYPE_COMPLETED {
+	if projects[0].ProjectStatusType() != model.ProjectStatusTypeCompleted {
 		t.Error("Did not find correct project type.")
 	}
 }
@@ -145,7 +126,7 @@ func TestManyType(t *testing.T) {
 		t.Error("Did not expand to 2 person types.")
 	}
 
-	if people[0].PersonTypes()[0] != model.PERSON_TYPE_INACTIVE {
+	if people[0].PersonTypes()[0] != model.PersonTypeInactive {
 		t.Error("Did not find correct person type.")
 	}
 
@@ -196,7 +177,7 @@ func TestManyTypeSingles(t *testing.T) {
 		Expand(node.Person().PersonTypes()).
 		Load(ctx)
 
-	if people[1].PersonType() != model.PERSON_TYPE_MANAGER {
+	if people[1].PersonType() != model.PersonTypeManager {
 		t.Error("Did not find correct person type.")
 	}
 
@@ -278,7 +259,7 @@ func TestLimit(t *testing.T) {
 func TestSaveAndDelete(t *testing.T) {
 	ctx := context.Background()
 
-	person := model.NewPerson()
+	person := model.NewPerson(ctx)
 	person.SetFirstName("Test1")
 	person.SetLastName("Last1")
 	person.Save(ctx)
@@ -311,7 +292,7 @@ func TestSaveAndDelete(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	ctx := context.Background()
 
-	person := model.NewPerson()
+	person := model.NewPerson(ctx)
 	person.SetFirstName("Test1")
 	person.SetLastName("Last1")
 	person.Save(ctx)
@@ -371,7 +352,7 @@ func TestLazyLoad(t *testing.T) {
 func TestDeleteQuery(t *testing.T) {
 	ctx := context.Background()
 
-	person := model.NewPerson()
+	person := model.NewPerson(ctx)
 	person.SetFirstName("Test1")
 	person.SetLastName("Last1")
 	person.Save(ctx)

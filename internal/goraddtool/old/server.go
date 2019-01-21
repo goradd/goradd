@@ -1,4 +1,4 @@
-package build
+package old
 
 import (
 	"bufio"
@@ -27,6 +27,10 @@ func Launch() {
 	var err error
 	if cwd, err = os.Getwd(); err != nil {
 		log.Fatal(fmt.Errorf("could not get the working directory: %s", err.Error()))
+	}
+
+	if len(os.Args) < 2 {
+		log.Fatal("")
 	}
 
 	flag.Parse()

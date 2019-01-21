@@ -1,6 +1,8 @@
-package db
+package dbtest
 
 import (
+	"github.com/goradd/goradd/pkg/orm/query"
+	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"
 	"testing"
 )
@@ -26,4 +28,10 @@ func TestNodeEquality(t *testing.T) {
 	if !n3.Equals(n3) {
 		t.Error("Many-Many node not equal to self")
 	}
+
+	n4 := query.NewValueNode(model.PersonTypeContractor)
+	if !n4.Equals(n4) {
+		t.Error("Type node not equal to self")
+	}
+
 }

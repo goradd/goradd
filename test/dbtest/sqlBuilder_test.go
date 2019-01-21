@@ -1,4 +1,4 @@
-package db
+package dbtest
 
 import (
 	"context"
@@ -7,9 +7,14 @@ import (
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"
 	"testing"
+	//"github.com/goradd/goradd/pkg/orm/db"
+	//"goradd/datetime"
+	//"github.com/goradd/goradd/datetime"
+	//"github.com/goradd/goradd/datetime"
 )
 
-func TestSubquery(t *testing.T) {
+
+func TestSubquery2(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople().
 		Alias("manager_count",

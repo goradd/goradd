@@ -6,7 +6,7 @@ import (
 
 	_ "goradd-project/gen"	// Code-generated forms
 	_ "github.com/goradd/goradd/pkg/bootstrap/examples"	// Bootstrap examples
-	_ "github.com/goradd/goradd/test/browser"
+	_ "github.com/goradd/goradd/test/browsertest"
 )
 
 // This file conditionally builds examples, generated forms, and other things

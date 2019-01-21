@@ -8,7 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
-	"github.com/goradd/goradd/test/browser"
+	"github.com/goradd/goradd/test/browsertest"
 )
 
 
@@ -102,7 +102,7 @@ func (f *AjaxTimingForm) Action(ctx context.Context, a page.ActionParams) {
 
 }
 
-func TestForm(t *browser.TestForm)  {
+func TestForm(t *browsertest.TestForm)  {
 	log.Debug("AjaxTiming test")
 
 	t.LoadUrl(AjaxTimingPath)
@@ -120,6 +120,6 @@ func TestForm(t *browser.TestForm)  {
 
 func init() {
 	page.RegisterPage(AjaxTimingPath, NewAjaxTimingForm, AjaxTimingId)
-	browser.RegisterTestFunction("AjaxTiming", TestForm)
+	browsertest.RegisterTestFunction("AjaxTiming", TestForm)
 
 }

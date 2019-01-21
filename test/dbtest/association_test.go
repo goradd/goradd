@@ -1,9 +1,10 @@
-package db
+package dbtest
 
 import (
 	"context"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"
 	"testing"
@@ -46,7 +47,7 @@ func TestManyTypes(t *testing.T) {
 	// All people who are inactive
 	people := model.QueryPeople().
 		OrderBy(node.Person().LastName(), node.Person().FirstName()).
-		Where(Equal(node.Person().PersonTypes().ID(), model.PERSON_TYPE_INACTIVE)).
+		Where(Equal(node.Person().PersonTypes().ID(), model.PersonTypeInactive)).
 		Distinct().
 		Select(node.Person().LastName(), node.Person().FirstName()).
 		Load(ctx)
@@ -297,7 +298,7 @@ func TestConditionalJoin(t *testing.T) {
 	// Reverse references
 	people := model.QueryPeople().
 		Join(node.Person().Addresses(), Equal(node.Person().Addresses().City(), "New York")).
-		Join(node.Person().ProjectsAsManager(), Equal(node.Person().ProjectsAsManager().ProjectStatusTypeID(), model.PROJECT_STATUS_TYPE_OPEN)).
+		Join(node.Person().ProjectsAsManager(), Equal(node.Person().ProjectsAsManager().ProjectStatusTypeID(), model.ProjectStatusTypeOpen)).
 		Join(node.Person().ProjectsAsManager().Milestones()).
 		Join(node.Person().Login(), Like(node.Person().Login().Username(), "b%")).
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsManager().Name()).
@@ -356,6 +357,7 @@ func TestSelectByID(t *testing.T) {
 		OrderBy(node.Project().Name().Descending()).
 		Load(ctx)
 
+	require.Len(t, projects, 4)
 	id := projects[3].ID()
 
 	// Reverse references
@@ -364,5 +366,9 @@ func TestSelectByID(t *testing.T) {
 		Where(Equal(node.Person().LastName(), "Wolfe")).
 		Load(ctx)
 
-	assert.Equal(t, people[0].ProjectAsManager(id).Name(), "ACME Payment System")
+	p := people[0]
+	require.NotNil(t, p)
+	m := p.ProjectAsManager(id)
+	require.NotNil(t, m, "Could not fine project as manager: " + id)
+	assert.Equal(t, m.Name(), "ACME Payment System")
 }

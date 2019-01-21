@@ -4,7 +4,7 @@ package page
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/test/browser"
+	"github.com/goradd/goradd/test/browsertest"
 
 	. "github.com/goradd/goradd/pkg/page/control"
 )
@@ -34,12 +34,11 @@ func NewTestTextboxForm(ctx context.Context) page.FormI {
 }
 
 
-func TestPlain(t *browser.TestForm)  {
+func TestPlain(t *browsertest.TestForm)  {
 	t.LoadUrl(TestTextboxPath)
 	f := t.GetForm().(*TestTextboxForm)
 	t.AssertEqual(TestTextboxId, f.ID())
 	t.AssertEqual("plain", f.PlainText.ID())
-	t.Error("Bad boy")
 
 	/*
 	t.ChangeVal(f.UserName.ID(), "me")
@@ -64,5 +63,5 @@ func TestPlain(t *browser.TestForm)  {
 func init() {
 	page.RegisterPage(TestTextboxPath, NewTestTextboxForm, TestTextboxId)
 
-	browser.RegisterTestFunction("Plain Textbox", TestPlain)
+	browsertest.RegisterTestFunction("Plain Textbox", TestPlain)
 }
