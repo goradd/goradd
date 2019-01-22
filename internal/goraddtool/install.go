@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -83,6 +84,9 @@ func depInstall() {
 		var res []byte
 		res, err = sys2.ExecuteShellCommand("go get " + dep)
 		if err != nil {
+			fmt.Print(string(res))
+			fmt.Print(string(err.(*exec.ExitError).Stderr))
+			// the error message that was generated
 			log.Fatal("could not get " + dep + " " + err.Error())
 		}
 		fmt.Print(res)

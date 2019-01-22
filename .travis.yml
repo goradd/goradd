@@ -12,10 +12,13 @@ addons:
 install:
   - env GO111MODULE=on go get ./cmd/...  # install the goradd tool
   - cd ${TRAVIS_HOME}
-  - env GO111MODULE=on goradd install # Use the goradd tool to install dependencies
+  - cp -r ${TRAVIS_BUILD_DIR}/internal/install/goradd-project .
+  - cp -r ${TRAVIS_BUILD_DIR}/internal/install/goradd-tmp .
+  - cp -r ${TRAVIS_BUILD_DIR}/test/goradd-test .
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-project/go.mod
   - cp ${TRAVIS_BUILD_DIR}/test/goradd-test ${TRAVIS_HOME}
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-test/go.mod
+  - env GO111MODULE=on goradd install -s2  # use the goradd tool to complete the install
 
 before_script:
   - google-chrome-stable http://localhost:8000?all=1 &
