@@ -1,16 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 4.7.5
+-- version 4.7.6
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Dec 06, 2017 at 04:51 AM
+-- Generation Time: Jan 22, 2019 at 04:41 PM
 -- Server version: 5.6.34
 -- PHP Version: 7.1.9
 
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
 SET time_zone = "+00:00";
 
 --
@@ -216,6 +214,7 @@ INSERT INTO `person_with_lock` (`id`, `first_name`, `last_name`, `sys_timestamp`
 
 CREATE TABLE `project` (
   `id` int(10) UNSIGNED NOT NULL,
+  `num` int(11) NOT NULL COMMENT 'To simplify checking test results and as a non pk id test',
   `project_status_type_id` int(10) UNSIGNED NOT NULL,
   `manager_id` int(10) UNSIGNED DEFAULT NULL,
   `name` varchar(100) NOT NULL,
@@ -230,11 +229,11 @@ CREATE TABLE `project` (
 -- Dumping data for table `project`
 --
 
-INSERT INTO `project` (`id`, `project_status_type_id`, `manager_id`, `name`, `description`, `start_date`, `end_date`, `budget`, `spent`) VALUES
-(1, 3, 7, 'ACME Website Redesign', 'The redesign of the main website for ACME Incorporated', '2004-03-01', '2004-07-01', '9560.25', '10250.75'),
-(2, 1, 4, 'State College HR System', 'Implementation of a back-office Human Resources system for State College', '2006-02-15', NULL, '80500.00', '73200.00'),
-(3, 1, 1, 'Blueman Industrial Site Architecture', 'Main website architecture for the Blueman Industrial Group', '2006-03-01', '2006-04-15', '2500.00', '4200.50'),
-(4, 2, 7, 'ACME Payment System', 'Accounts Payable payment system for ACME Incorporated', '2005-08-15', '2005-10-20', '5124.67', '5175.30');
+INSERT INTO `project` (`id`, `num`, `project_status_type_id`, `manager_id`, `name`, `description`, `start_date`, `end_date`, `budget`, `spent`) VALUES
+(1, 1, 3, 7, 'ACME Website Redesign', 'The redesign of the main website for ACME Incorporated', '2004-03-01', '2004-07-01', '9560.25', '10250.75'),
+(2, 2, 1, 4, 'State College HR System', 'Implementation of a back-office Human Resources system for State College', '2006-02-15', NULL, '80500.00', '73200.00'),
+(3, 3, 1, 1, 'Blueman Industrial Site Architecture', 'Main website architecture for the Blueman Industrial Group', '2006-03-01', '2006-04-15', '2500.00', '4200.50'),
+(4, 4, 2, 7, 'ACME Payment System', 'Accounts Payable payment system for ACME Incorporated', '2005-08-15', '2005-10-20', '5124.67', '5175.30');
 
 -- --------------------------------------------------------
 
@@ -477,6 +476,7 @@ ALTER TABLE `person_with_lock`
 --
 ALTER TABLE `project`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `num` (`num`),
   ADD KEY `IDX_project_1` (`project_status_type_id`),
   ADD KEY `IDX_project_2` (`manager_id`);
 
@@ -560,7 +560,7 @@ ALTER TABLE `milestone`
 -- AUTO_INCREMENT for table `person`
 --
 ALTER TABLE `person`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `person_type`
@@ -655,4 +655,3 @@ ALTER TABLE `two_key`
   ADD CONSTRAINT `two_key_person` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`),
   ADD CONSTRAINT `two_key_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`);
 SET FOREIGN_KEY_CHECKS=1;
-COMMIT;

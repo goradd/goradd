@@ -10,9 +10,8 @@ func init() {
 	cfg := mysql.NewConfig()
 
 	cfg.DBName = "goradd"
-	//cfg.DBName = "test"
-	cfg.User = "root"
-	cfg.Passwd = "12345"
+	cfg.User = "travis"
+	cfg.Passwd = ""
 
 	key := "goradd"
 

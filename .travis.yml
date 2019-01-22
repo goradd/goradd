@@ -22,10 +22,10 @@ install:
 before_script:
   - google-chrome-stable http://localhost:8000?all=1 &
   - mysql -e 'create database goradd;'; mysql -u root goradd < ${TRAVIS_BUILD_DIR}/test/dbtest/mysql.sql
-  - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('12345') where User='root'; FLUSH PRIVILEGES;"
+#  - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('12345') where User='root'; FLUSH PRIVILEGES;"
 
 script:
-  - pushd ${TRAVIS_HOME}/goradd-test/codegen && env GO111MODULE=on go generate build.go ; popd  # Codegen
-  - pushd ${TRAVIS_HOME}/goradd-project && env GO111MODULE=on go test github.com/goradd/goradd/pkg/... ; popd  # Pkg unit tests
-  - pushd ${TRAVIS_HOME}/goradd-project && env GO111MODULE=on go test github.com/goradd/goradd/test/dbtest ; popd  # Db unit tests
-  - pushd ${TRAVIS_HOME}/goradd-test && env GO111MODULE=on go run main.go ; popd  # Browser based tests
+  - cd ${TRAVIS_HOME}/goradd-test/codegen && env GO111MODULE=on go generate build.go  # Codegen
+  - cd ${TRAVIS_HOME}/goradd-project && env GO111MODULE=on go test github.com/goradd/goradd/pkg/...  # Pkg unit tests
+  - cd ${TRAVIS_HOME}/goradd-project && env GO111MODULE=on go test github.com/goradd/goradd/test/dbtest  # Db unit tests
+  - cd ${TRAVIS_HOME}/goradd-test && env GO111MODULE=on ${TRAVIS_BUILD_DIR}/test/ci/test.sh  # Browser based tests

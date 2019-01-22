@@ -25,8 +25,8 @@ func initDatabases() {
 	cfg := mysql.NewConfig()
 
 	cfg.DBName = "goradd"
-	cfg.User = "root"
-	cfg.Passwd = "12345"
+	cfg.User = "travis"
+	cfg.Passwd = ""
 	cfg.ParseTime = true
 
 	key := "goradd"
