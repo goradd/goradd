@@ -20,23 +20,17 @@ func LaunchDefaultBrowser(url string) (err error) {
 }
 
 // LaunchChromeHeadlessBrowser will launch google chrome with the given url.
-// headless will launch it as a headless browser.
 // One nice feature of google chrome is that you can launch it, give it a URL, and then the browser will listen
 // for the URL and load it once the server on the other end becomes active.
-func LaunchChrome(url string, headless bool) (err error) {
-	var hl string
-
-	if headless {
-		hl = "--headless "
-	}
+func LaunchChrome(url string) (err error) {
 	go func() {
 		switch runtime.GOOS {
 		case `darwin`:
-			_, err = sys.ExecuteShellCommand(fmt.Sprintf(`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" %s--disable-gpu --remote-debugging-port=9222 %s &`, hl, url))
+			_, err = sys.ExecuteShellCommand(fmt.Sprintf(`"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" %s`, url))
 		case `windows`:
-			_, err = sys.ExecuteShellCommand(fmt.Sprintf("start chrome %s--disable-gpu --remote-debugging-port=9222 %s", hl, url))
+			_, err = sys.ExecuteShellCommand(fmt.Sprintf("start chrome %s", url))
 		case `linux`:
-			_, err = sys.ExecuteShellCommand(fmt.Sprintf("google-chrome-stable %s--disable-gpu --remote-debugging-port=9222 %s &", hl, url))
+			_, err = sys.ExecuteShellCommand(fmt.Sprintf("google-chrome-stable %s &", url))
 		}
 	}()
 

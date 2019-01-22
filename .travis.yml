@@ -9,9 +9,6 @@ services:
 addons:
   chrome: stable
 
-before_install:
-  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost:8000?all=1 &
-
 install:
   - env GO111MODULE=on go get -t -v ./...  # install the goradd tool
   - cd ${TRAVIS_HOME}
@@ -21,6 +18,7 @@ install:
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-test/go.mod
 
 before_script:
+  - google-chrome-stable http://localhost:8000?all=1 &
   - mysql -e 'create database goradd;'; mysql -u root goradd < test/dbtest/mysql.sql
   - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('12345') where User='root'; FLUSH PRIVILEGES;"
 

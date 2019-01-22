@@ -20,7 +20,7 @@ func test(step int, browser bool, headless bool) {
 		testCodegen()
 		pkgTest()
 		dbTest()
-		browserTest(browser, headless)
+		browserTest(browser)
 	case 1:
 		copyTestDir()
 	case 2:
@@ -30,7 +30,7 @@ func test(step int, browser bool, headless bool) {
 	case 4:
 		dbTest()
 	case 5:
-		browserTest(browser, headless)
+		browserTest(browser)
 	}
 }
 
@@ -126,9 +126,9 @@ func dbTest() {
 
 }
 
-func browserTest(browser bool, headless bool) {
+func browserTest(browser bool) {
 	if browser {
-		if err := sys.LaunchChrome("http://localhost:8000/test?all=1", headless); err != nil {
+		if err := sys.LaunchChrome("http://localhost:8000/test?all=1"); err != nil {
 			log.Fatal(err)
 		}
 	}
