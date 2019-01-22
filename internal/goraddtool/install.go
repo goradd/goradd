@@ -15,7 +15,7 @@ import (
 
 var dependencies = []string {
 	"github.com/goradd/got/...",				// Template processor
-	"golang.org/x/tools/cmd/goimports/...",		// For auto-fixing of import declarations
+	"golang.org/x/tools/cmd/goimports",		// For auto-fixing of import declarations
 	"github.com/goradd/gofile/...",				// For deployment
 	"github.com/goradd/gengen/...",				// For creation of generics
 }
