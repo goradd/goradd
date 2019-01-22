@@ -10,7 +10,7 @@ addons:
   chrome: stable
 
 install:
-  - env GO111MODULE=on go get ./...  # install the goradd tool
+  - env GO111MODULE=on go get ./cmd/...  # install the goradd tool
   - cd ${TRAVIS_HOME}
   - goradd install # Use the goradd tool to install dependencies
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-project/go.mod
