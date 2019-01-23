@@ -72,7 +72,7 @@ func Date(year int, month Month, day, hour, min, sec, nsec int, loc *time.Locati
 
 // Time creates a DateTime that only represents a time of day.
 func Time(hour, min, sec, nsec int) DateTime {
-	return Date(1,1,1,hour, min, sec, nsec, nil)
+	return Date(0,1,1,hour, min, sec, nsec, nil)
 }
 
 
@@ -84,7 +84,7 @@ func Time(hour, min, sec, nsec int) DateTime {
 //   datetime.Current - same as calling datetime.Now()
 //   datetime.Zero - same as calling datetime.NewZeroDate()
 //   anything else - RFC3339 string
-// (string, string) = a time.Parse format string, followed by a string representation of the date and time
+// (string, string) = a time.Parse layout string, followed by a string representation of the date and time
 func NewDateTime(args ...interface{}) DateTime {
 	d := DateTime{}
 	if len(args) == 0 || args[0] == nil {
@@ -106,7 +106,7 @@ func NewDateTime(args ...interface{}) DateTime {
 			// do nothing, we are already zero'd
 		} else {
 			if len(args) == 2 {
-				d.Time, _ = time.Parse(args[1].(string), c)
+				d.Time, _ = time.Parse(c, args[1].(string))
 			} else {
 				d.UnmarshalText([]byte(c))
 			}
@@ -142,7 +142,8 @@ func (d DateTime) JavaScript() string {
 	}
 }
 
-// Satisfies the json.Marshaller interface to output the date as a value embedded in JSON and that will be unpacked by our javascript file.
+// MarshalJSON satisfies the json.Marshaller interface to output the date as a value embedded in JSON and that
+// will be unpacked by our javascript file.
 func (d DateTime) MarshalJSON() (buf []byte, err error) {
 	// We specify numbers explicitly to avoid the warnings about browsers parsing date strings inconsistently
 	isTimestamp := d.IsTimestamp()
