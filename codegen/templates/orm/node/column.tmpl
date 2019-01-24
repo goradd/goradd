@@ -10,7 +10,7 @@ func (n *{{privateName}}Node) {{= col.GoName }}() *query.ColumnNode {
 		"{{= tableName }}",
 		"{{= col.DbName }}",
 		"{{= col.GoName }}",
-		"{{= col.GoType.String() }}",
+		query.{{= col.ColumnType.String() }},
 	)
 	query.SetParentNode(cn, n)
 	return cn

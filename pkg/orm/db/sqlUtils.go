@@ -19,6 +19,7 @@ const (
 	SQL_TYPE_CHAR     = "Char"
 	SQL_TYPE_TEXT     = "Text"
 	SQL_TYPE_INTEGER  = "Int"
+	SQL_TYPE_TIMESTAMP = "Timestamp"
 	SQL_TYPE_DATETIME = "DateTime"
 	SQL_TYPE_DATE     = "Date"
 	SQL_TYPE_TIME     = "Time"

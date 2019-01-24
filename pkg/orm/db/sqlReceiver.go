@@ -241,20 +241,22 @@ func (r SqlReceiver) TimeI() interface{} {
 	}
 
 	var date datetime.DateTime
+	var err error
 	switch v:=r.R.(type) {
 	case time.Time:
 		date = datetime.NewDateTime(v)
 	case string:
-		if v == "CURRENT_TIMESTAMP" {
-			return nil // database itself is handling the setting of the time. This is just for reading default values.
+		date,err = datetime.FromSqlDateTime(v) // Note that this must always include timezone information if coming from a timestamp with timezone column
+		if err != nil {
+			return nil	// This is likely caused by attempting to read a default value, and getting someting like "CURRENT_TIMESTAMP"
 		}
-		date = datetime.FromSqlDateTime(v) // Note that this must always include timezone information if coming from a timestamp with timezone column
 	case []byte:
 		s := string(v)
-		if s == "CURRENT_TIMESTAMP" {
-			return nil // database itself is handling the setting of the time. This is just for reading default values.
+		date,err = datetime.FromSqlDateTime(s)
+		if err != nil {
+			return nil
 		}
-		date = datetime.FromSqlDateTime(s)
+		// TODO: SQL Lite, may return an int or float. Not sure we can support these.
 	default:
 		log.Panicln("Unknown type returned from sql driver")
 		return nil
@@ -291,8 +293,8 @@ func (r SqlReceiver) Unpack(typ GoColumnType) interface{} {
 	}
 }
 
-// ReceiveRows gets data from a sql result set and returns it as a slice of maps. Each row is mapped to its table name.
-// If you provide table names, those will be used in the map. Otherwise it will get the table names out of the
+// ReceiveRows gets data from a sql result set and returns it as a slice of maps. Each column is mapped to its column name.
+// If you provide column names, those will be used in the map. Otherwise it will get the column names out of the
 // result set provided
 func ReceiveRows(rows *sql.Rows, columnTypes []GoColumnType, columnNames []string) (values []map[string]interface{}) {
 	var err error

@@ -38,36 +38,58 @@ const (
 // location, the time will be displayed in the local timezone as opposed to the timezone it was created
 // in. Some databases store these internally in UTC time, so that if the database is moved to a machine
 // in another location, the actual time is preserved, and then converted to local time when read from
-// the database. So for our purposes, these times are always associated with a particular timezone.
+// the database.
 //
 // Time only and Date only representations are always stored in UTC time. Time only times
 // have a date of January 1, year 1. Date only values have zero times at UTC. This means that
-// a Time only representation at time zero and zero time are ambiguous, and
-// a Date only representation and a DATETIME representation at time zero are also ambiguous, and you
+// a Time only representation at time zero and zero time are equal, and
+// a Date only representation at the zero date, and a DATETIME representation at time zero are also equal, and you
 // should resolve that ambiguity by the context you are using these in.
 type DateTime struct {
 	time.Time
+	isTimestamp bool
 }
 
+// SetIsTimestamp will change the state of the date time to the given value. Timestamps are communicated to the server
+// as a UTC time, whereas non-timestamp times are communicated in whatever value is currently in the DateTime without
+// changing the timezone
+func (d *DateTime) SetIsTimestamp(t bool) {
+	d.isTimestamp = t
+}
+
+// IsTimestamp returns whether the DateTime is a timestamp, representing a particular moment in world time.
+func (d *DateTime) IsTimestamp() bool {
+	return d.isTimestamp
+}
+
+
+// Now returns the current time as a timestamp, but with the time in local time.
 func Now() DateTime {
-	return DateTime{time.Now()}
+	return DateTime{time.Now(), true}
 }
 
-// Return a date-time that represents an empty date
+// Return a date-time that represents an empty date and time
 func NewZeroDate() DateTime {
 	return DateTime{}
 }
 
-// Date creates a DateTime with the given information. Set loc to nil or UTC to treat it as a datetime with
-// no timezone information. Set hour, min, sec, nsec and loc to zeros for a date-only representation.
+// Date creates a DateTime with the given information.
+// Set hour, min, sec, nsec and loc to zeros for a date-only representation.
+// Set year to 0, and month and day to 1's for a time-only representation.
+// Pass nil to loc to indicate a non-timestamp value . Otherwise it will create a timestamp
+// in the given timezone.
 func Date(year int, month Month, day, hour, min, sec, nsec int, loc *time.Location) DateTime {
 	if loc == nil {
 		t := time.Date(year, time.Month(month), day, hour, min, sec, nsec, time.UTC)
-		return DateTime{t}
+		return DateTime{t, false}
 	} else {
 		t := time.Date(year, time.Month(month), day, hour, min, sec, nsec, loc)
-		return DateTime{t}
+		return DateTime{t, true}
 	}
+}
+
+func DateOnly(year int, month Month, day int) DateTime {
+	return Date(year,month,day,0, 0, 0, 0, nil)
 }
 
 // Time creates a DateTime that only represents a time of day.
@@ -84,7 +106,7 @@ func Time(hour, min, sec, nsec int) DateTime {
 //   datetime.Current - same as calling datetime.Now()
 //   datetime.Zero - same as calling datetime.NewZeroDate()
 //   anything else - RFC3339 string
-// (string, string) = a time.Parse layout string, followed by a string representation of the date and time
+// (string, string) = a string representation of the date and time, followed by a time.Parse layout string
 func NewDateTime(args ...interface{}) DateTime {
 	d := DateTime{}
 	if len(args) == 0 || args[0] == nil {
@@ -106,35 +128,37 @@ func NewDateTime(args ...interface{}) DateTime {
 			// do nothing, we are already zero'd
 		} else {
 			if len(args) == 2 {
-				d.Time, _ = time.Parse(c, args[1].(string))
+				d.Time, _ = time.Parse(args[1].(string), c)
 			} else {
-				d.UnmarshalText([]byte(c))
+				_ = d.UnmarshalText([]byte(c))
 			}
 		}
 	}
 	return d
 }
 
-// IsTimestamp returns true if the DateTime is being treated as a moment in world time. False indicates
-// it is being treated as a datetime or time in whatever the current locale is, but when that locale
-// changes, or there is a daylight savings time change, it will not change the displayed time.
-func (d DateTime) IsTimestamp() bool {
-	return d.Location().String() != "UTC"
+// NewTimestamp is the same as NewDateTime, but also sets it as a Timestamp
+func NewTimestamp(args ...interface{}) DateTime {
+	d := NewDateTime(args...)
+	d.isTimestamp = true
+	return d
 }
 
-// Returns true if the given DateTime object is equal to the current one. TIMESTAMP objects will
-// take timezone into consideration.
+// Returns true if the given DateTime object is equal to the current one.
+// Timestamps are evaluated as being at the same instant in world time.
+// Non-timestamps are compared just for their values ignoring timestamp.
 func (d DateTime) Equal(d2 DateTime) bool {
+	// non-timestamp values should be stored in UTC, so they can be compared
 	return d.Time.Equal(d2.Time)
 }
 
 // Satisfies the javacript.JavaScripter interface to output the date as a javascript value.
-// Javascript stores dates internally as UTC times, and then you can print them out in local
-// time if needed.
+// TIMESTAMPS are converted to the local time corresponding to the given world time.
+// Non-timestamps are transmitted as if they were in the browser's local time.
 func (d DateTime) JavaScript() string {
 	if d.IsZero() {
 		return "null"
-	} else if d.IsTimestamp() {
+	} else if d.isTimestamp {
 		t := d.Time.UTC()
 		return fmt.Sprintf("new Date(Date.UTC(%d, %d, %d, %d, %d, %d, %d))", t.Year(), t.Month()-1, t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond()/1000000)
 	} else {
@@ -190,20 +214,20 @@ func (d DateTime) Month() Month {
 	return Month(d.Time.Month())
 }
 
-// Local converts the date and time to local values in the local locale.
+// Local resturns a new DateTime with the date and time converted to local values in the server's timezone.
 func (d DateTime) Local() DateTime {
-	return DateTime{d.Time.Local()}
+	return DateTime{d.Time.Local(), d.isTimestamp}
 }
 
-// UTC returns a datetime in UTC time. Note that this will then begin treating it as not having
+// UTC returns a new datetime in UTC time. Note that this will then begin treating it as not having
 // timezone information. Convert it to a local to re-establish it as a point in world time.
 func (d DateTime) UTC() DateTime {
-	return DateTime{d.Time.UTC()}
+	return DateTime{d.Time.UTC(), d.isTimestamp}
 }
 
 // In converts the datetime to the given locale.
 func (d DateTime) In(location *time.Location) DateTime {
-	return DateTime{d.Time.In(location)}
+	return DateTime{d.Time.In(location), d.isTimestamp}
 }
 
 func init() {

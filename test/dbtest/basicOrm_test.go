@@ -209,7 +209,8 @@ func TestAlias2(t *testing.T) {
 	assert.Equal(t, 1, project.GetAlias("a").Int())
 	assert.Equal(t, "ACME Website Redesign", project.GetAlias("b").String())
 	assert.Equal(t, 10250.75, project.GetAlias("c").Float())
-	assert.EqualValues(t, datetime.FromSqlDateTime("2004-03-01"), project.GetAlias("d").DateTime())
+	d,_ := datetime.FromSqlDateTime("2004-03-01")
+	assert.EqualValues(t, d, project.GetAlias("d").DateTime())
 	assert.Equal(t, false, project.GetAlias("e").Bool())
 
 }

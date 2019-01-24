@@ -33,7 +33,7 @@ func (d Checkbox) Imports() []string {
 }
 
 func (d Checkbox) SupportsColumn(col *generator.ColumnType) bool {
-	if col.GoType == query.ColTypeBool {
+	if col.ColumnType == query.ColTypeBool {
 		return true
 	}
 	return false

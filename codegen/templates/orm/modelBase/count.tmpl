@@ -1,7 +1,7 @@
 for _,col := range t.Columns {
 {{
 
-func Count{{t.GoName}}By{{col.GoName}}(ctx context.Context, {{col.ModelName}} {{col.GoType}}) uint {
+func Count{{t.GoName}}By{{col.GoName}}(ctx context.Context, {{col.ModelName}} {{= col.ColumnType.GoType() }}) uint {
 	return Query{{t.GoPlural}}().Where(Equal(node.{{t.GoName}}().{{col.GoName}}(), {{col.ModelName}})).Count(ctx, false)
 }
 

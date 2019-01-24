@@ -20,7 +20,7 @@ func BootstrapCodegenSetup() {
 		}
 
 		// default control types for columns
-		switch col.GoType {
+		switch col.ColumnType {
 		case query.ColTypeString: return generator.ControlCreationInfo{"Textbox", "NewTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
 		case query.ColTypeInteger: fallthrough
 		case query.ColTypeUnsigned: fallthrough

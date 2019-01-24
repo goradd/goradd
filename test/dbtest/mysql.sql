@@ -3,12 +3,14 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Jan 22, 2019 at 04:41 PM
+-- Generation Time: Jan 24, 2019 at 11:47 AM
 -- Server version: 5.6.34
 -- PHP Version: 7.1.9
 
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
 SET time_zone = "+00:00";
 
 --
@@ -384,12 +386,20 @@ CREATE TABLE `type_test` (
   `date` date DEFAULT NULL,
   `time` time DEFAULT NULL,
   `date_time` datetime DEFAULT NULL,
+  `ts` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `test_int` int(11) DEFAULT '5',
   `test_float` float DEFAULT NULL,
   `test_text` text,
   `test_bit` tinyint(1) DEFAULT NULL,
   `test_varchar` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `type_test`
+--
+
+INSERT INTO `type_test` (`id`, `date`, `time`, `date_time`, `ts`, `test_int`, `test_float`, `test_text`, `test_bit`, `test_varchar`) VALUES
+(1, '2019-01-02', '06:17:28', '2019-01-02 06:17:28', '2019-01-23 08:52:06', 5, 1.2, 'Sample', 1, 'Sample');
 
 -- --------------------------------------------------------
 
@@ -560,7 +570,7 @@ ALTER TABLE `milestone`
 -- AUTO_INCREMENT for table `person`
 --
 ALTER TABLE `person`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `person_type`
@@ -590,7 +600,7 @@ ALTER TABLE `project_status_type`
 -- AUTO_INCREMENT for table `type_test`
 --
 ALTER TABLE `type_test`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `unsupported_types`
@@ -655,3 +665,4 @@ ALTER TABLE `two_key`
   ADD CONSTRAINT `two_key_person` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`),
   ADD CONSTRAINT `two_key_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`);
 SET FOREIGN_KEY_CHECKS=1;
+COMMIT;

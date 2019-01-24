@@ -56,10 +56,10 @@ for _,col := range t.Columns {
         if 	o.{{= col.ModelName }}IsNull {
             fields["{{= col.DbName }}"] = nil
         } else {
-  		    fields["{{= col.DbName }}"] = {{if col.GoType == query.ColTypeDateTime }}o.{{= col.ModelName }}.GoTime(){{else}}o.{{= col.ModelName }}{{if}}
+  		    fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName }}.GoTime(){{else}}o.{{= col.ModelName }}{{if}}
         }
 {{else}}
-		fields["{{= col.DbName }}"] = {{if col.GoType == query.ColTypeDateTime }}o.{{= col.ModelName }}.GoTime(){{else}}o.{{= col.ModelName }}{{if}}
+		fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName }}.GoTime(){{else}}o.{{= col.ModelName }}{{if}}
 {{if}}
 	}
 

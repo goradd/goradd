@@ -34,8 +34,8 @@ func (d Textbox) Imports() []string {
 }
 
 func (d Textbox) SupportsColumn(col *generator.ColumnType) bool {
-	if col.GoType == query.ColTypeBytes ||
-		col.GoType == query.ColTypeString {
+	if col.ColumnType == query.ColTypeBytes ||
+		col.ColumnType == query.ColTypeString {
 		return true
 	}
 	return false

@@ -13,7 +13,7 @@ for _,col := range t.Columns {
 {{if col.IsId}}
 	{{= col.ModelName }} string
 {{else}}
-	{{= col.ModelName }} {{= col.GoType.String() }}
+	{{= col.ModelName }} {{= col.ColumnType.GoType() }}
 {{if}}
 {{if col.IsNullable}}
 	{{= col.ModelName }}IsNull bool

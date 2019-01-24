@@ -50,14 +50,18 @@ func TestLogical(t *testing.T) {
 	ctx := context.Background()
 
 	var projects []*model.Project
-	for _, c := range tests {
+	for i, c := range tests {
 		projects = model.QueryProjects().
 			Where(c.testNode).
 			OrderBy(node.Project().Num()).
 			Load(ctx)
 
-		assert.EqualValues(t, c.expectedId, projects[c.objectNum].Num(), c.desc)
-		assert.EqualValues(t, c.count, len(projects), c.desc+" - count")
+		if len(projects) <= c.objectNum {
+			t.Errorf("Test case produced out of range error. Test case #: %d", i)
+		} else {
+			assert.EqualValues(t, c.expectedId, projects[c.objectNum].Num(), c.desc)
+			assert.EqualValues(t, c.count, len(projects), c.desc + " - count")
+		}
 	}
 }
 

@@ -43,7 +43,7 @@ func (o *{{privateName}}Base) Set{{= goName }}(i interface{}) {
 			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
 		}
 	} else {
-		v := i.({{= col.GoType.String() }})
+		v := i.({{= col.ColumnType.GoType() }})
 		if o.{{= col.ModelName }}IsNull  {
 			o.{{= col.ModelName }}IsNull = false
 			o.{{= col.ModelName }} = v
@@ -57,8 +57,8 @@ func (o *{{privateName}}Base) Set{{= goName }}(i interface{}) {
 {{
 
 func (o *{{privateName}}Base) Set{{= goName }}(v {{= col.ForeignKey.GoType }}) {
-	if o.{{= col.ModelName }} != {{col.GoType.String()}}(v) {
-		o.{{= col.ModelName }} = {{col.GoType.String()}}(v)
+	if o.{{= col.ModelName }} != {{= col.ColumnType.GoType() }}(v) {
+		o.{{= col.ModelName }} = {{= col.ColumnType.GoType() }}(v)
 		o.{{= col.ModelName }}IsDirty = true
 		o.{{= col.ModelName }}IsValid = true
 	}

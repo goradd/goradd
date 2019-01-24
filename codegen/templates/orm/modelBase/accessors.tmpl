@@ -24,7 +24,7 @@ func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
 
 {{
 
-func (o *{{privateName}}Base) {{= col.GoName }}() {{= col.GoType.String() }} {
+func (o *{{privateName}}Base) {{= col.GoName }}() {{= col.ColumnType.GoType() }} {
 	if o._restored && !o.{{= col.ModelName }}IsValid {
 		panic ("{{= col.ModelName }} was not selected in the last query and so is not valid")
 	}
@@ -102,13 +102,13 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 {{if}}
 		}
 	} else {
-		v := i.({{= col.GoType.String() }})
+		v := i.({{= col.ColumnType.GoType() }})
 		if o.{{= col.ModelName }}IsNull ||
 		    !o._restored ||
-		    {{if col.GoType != query.ColTypeBytes }} o.{{= col.ModelName }} != v {{else}} !bytes.Equal(o.{{= col.ModelName }}, v) {{if}}{
+		    {{if col.ColumnType != query.ColTypeBytes }} o.{{= col.ModelName }} != v {{else}} !bytes.Equal(o.{{= col.ModelName }}, v) {{if}}{
 
 			o.{{= col.ModelName }}IsNull = false
-{{if col.GoType != query.ColTypeBytes }}
+{{if col.ColumnType != query.ColTypeBytes }}
 			o.{{= col.ModelName }} = v
 {{else}}
             o.{{= col.ModelName }} = append([]byte(nil), v...)
@@ -156,8 +156,8 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 
 {{
 // Set{{= col.GoName }} sets the value of {{= col.GoName }} in the object, to be saved later using the Save() function.
-func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.GoType.String() }}) {
-{{g if col.GoType == query.ColTypeBytes { }}
+func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.ColumnType.GoType() }}) {
+{{g if col.ColumnType == query.ColTypeBytes { }}
 	o.{{= col.ModelName }} = v		// TODO: Copy bytes??
 	o.{{= col.ModelName }}IsDirty = true
 {{g } else { }}

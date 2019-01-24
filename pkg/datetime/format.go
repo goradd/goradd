@@ -1,7 +1,6 @@
 package datetime
 
 import (
-	"log"
 	"strings"
 	"time"
 )
@@ -28,23 +27,22 @@ const (
 )
 
 func Parse(layout, value string) (DateTime, error) {
+	var ts bool
+	if layout == Stamp || layout == StampMilli || layout == StampMicro || layout == StampNano {
+		ts = true
+	}
 	t, err := time.Parse(layout, value)
-
-	return DateTime{t}, err
+	return DateTime{t, ts}, err
 }
 
 // FromSqlDateTime will receive a Date, Time, DateTime or Timestamp type of string that is typically output by SQL and
 // convert it to our own DateTime object. If the SQL date time string does not have timezone information,
-// the resulting value will be in UTC time, and we are assuming that the SQL itself is in UTC.
-func FromSqlDateTime(s string) DateTime {
-	var t DateTime
-	var err error
+// the resulting value will be in UTC time, will not be a timestamp, and we are assuming that the SQL itself is in UTC.
+// If it DOES have timezone information, we will assume its a timestamp.
+// If an error occurs, the returned value will be the zero date.
+func FromSqlDateTime(s string) (t DateTime, err error) {
 	var hasDate, hasTime, hasNano, hasTZ bool
 	var form string
-
-	if strings.ToUpper(s) == "CURRENT_TIMESTAMP" {
-		return NewDateTime(Current)
-	}
 
 	if strings.Contains(s, ".") {
 		hasNano = true
@@ -59,8 +57,6 @@ func FromSqlDateTime(s string) DateTime {
 			hasTZ = true
 		}
 	}
-
-
 
 	if hasNano {
 		form = "2006-01-02 15:04:05.999999"
@@ -80,9 +76,9 @@ func FromSqlDateTime(s string) DateTime {
 
 	t, err = Parse(form, s)
 
-	if err != nil {
-		log.Panic(err)
+	if hasTZ {
+		t.isTimestamp = true
 	}
-	return t
 
+	return
 }

@@ -64,8 +64,8 @@ func {{= propPlural }}() (values []{{= propName }}) {
 }}
 
 for i,fieldName := range tt.FieldNames[2:] {
-	typ := tt.FieldTypes[fieldName]
-	typeName := string(tt.FieldTypes[fieldName])
+	typ := tt.FieldGoColumnType(i+2)
+	typeName := typ.GoType()
 	title := snaker.SnakeToCamel(fieldName)
 
 {{
@@ -84,8 +84,9 @@ func ({{= propLetter }} {{= propName }}) {{= title }}() {{= typeName }} {
 }
 
 
-for _,fieldName := range tt.FieldNames[1:] {
-	typeName := string(tt.FieldTypes[fieldName])
+for i,fieldName := range tt.FieldNames[1:] {
+	typ := tt.FieldGoColumnType(i+1)
+	typeName := typ.GoType()
 	varName := inflector.Pluralize(fieldName)
 	title := inflector.Pluralize(snaker.SnakeToCamel(fieldName))
 
@@ -94,7 +95,7 @@ func {{= propName }}{{= title }}() []{{= typeName }} {
 	{{= varName }} := make([]{{= typeName }}, {{i len(tt.Values) + 1 }})
 	// 0 item will be a blank
 {{g for i,value := range tt.Values { }}
-	{{= varName }}[{{i i + 1 }}] = {{= generator.AsConstant(value[fieldName], tt.FieldTypes[fieldName]) }}
+	{{= varName }}[{{i i + 1 }}] = {{= generator.AsConstant(value[fieldName], typ) }}
 {{g } }}
 	return {{= varName }}
 }

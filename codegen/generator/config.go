@@ -31,7 +31,7 @@ func DefaultControlType(col *db.ColumnDescription) ControlCreationInfo {
 	}
 
 	// default control types for columns
-	switch col.GoType {
+	switch col.ColumnType {
 	case query.ColTypeBytes: return ControlCreationInfo{"", "", ""}
 	case query.ColTypeString: return ControlCreationInfo{"Textbox", "NewTextbox", "github.com/goradd/goradd/pkg/page/control"}
 	case query.ColTypeInteger: return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}

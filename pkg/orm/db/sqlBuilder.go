@@ -30,7 +30,7 @@ type limitInfo struct {
 	offset      int
 }
 
-// A sql builder is a helper object organize a Query object eventually into a SQL string.
+// A sql builder is a helper object to organize a Query object eventually into a SQL string.
 // It builds the join tree and creates the aliases that will eventually be used to generate
 // the sql and then unpack it into fields and objects.
 type sqlBuilder struct {

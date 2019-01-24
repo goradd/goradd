@@ -17,10 +17,13 @@ for _, col := range t.Columns {
 			o.{{= col.ModelName }}IsNull = true
 			o.{{= col.ModelName }}IsValid = true
 			o.{{= col.ModelName }}IsDirty = false
-		} else if o.{{= col.ModelName }}, ok = v.({{= col.GoType.String() }}); ok {
+		} else if o.{{= col.ModelName }}, ok = v.({{= col.ColumnType.GoType() }}); ok {
 			o.{{= col.ModelName }}IsNull = false
 			o.{{= col.ModelName }}IsValid = true
 			o.{{= col.ModelName }}IsDirty = false
+{{if col.IsTimestamp}}
+            o.{{= col.ModelName }}.SetIsTimestamp(true)
+{{if}}
 		} else {
 			panic("Wrong type found for {{= col.DbName }}.")
 		}
@@ -35,7 +38,7 @@ for _, col := range t.Columns {
 
 {{
 	if v, ok := m["{{= col.DbName }}"]; ok && v != nil {
-		if o.{{= col.ModelName }}, ok = v.({{= col.GoType.String() }}); ok {
+		if o.{{= col.ModelName }}, ok = v.({{= col.ColumnType.GoType() }}); ok {
 			o.{{= col.ModelName }}IsValid = true
 			o.{{= col.ModelName }}IsDirty = false
 		} else {

@@ -34,7 +34,7 @@ func (d FloatTextbox) Imports() []string {
 }
 
 func (d FloatTextbox) SupportsColumn(col *generator.ColumnType) bool {
-	if col.GoType == query.ColTypeFloat || col.GoType == query.ColTypeDouble {
+	if col.ColumnType == query.ColTypeFloat || col.ColumnType == query.ColTypeDouble {
 		return true
 	}
 	return false
@@ -61,7 +61,7 @@ func (d FloatTextbox) GenerateCreate(namespace string, col *generator.ColumnType
 }
 
 func (d FloatTextbox) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	if col.GoType == query.ColTypeFloat {
+	if col.ColumnType == query.ColTypeFloat {
 		s = fmt.Sprintf(`c.%s.SetFloat32(c.%s.%s())`, ctrlName, objName, col.GoName)
 	} else {
 		s = fmt.Sprintf(`c.%s.SetFloat64(c.%s.%s())`, ctrlName, objName, col.GoName)
@@ -70,7 +70,7 @@ func (d FloatTextbox) GenerateGet(ctrlName string, objName string, col *generato
 }
 
 func (d FloatTextbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	if col.GoType == query.ColTypeFloat {
+	if col.ColumnType == query.ColTypeFloat {
 		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Float32())`, objName,  col.GoName, ctrlName)
 	} else {
 		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Float64())`, objName,  col.GoName, ctrlName)

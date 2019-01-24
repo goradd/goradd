@@ -47,7 +47,11 @@ func (a AliasValue) Int() int {
 }
 
 func (a AliasValue) DateTime() datetime.DateTime {
-	return datetime.FromSqlDateTime(a.String())
+	t,err:= datetime.FromSqlDateTime(a.String())
+	if err != nil {
+		panic("Alias DateTime returned unparsable value: " + a.String() + " : "+ err.Error())
+	}
+	return t
 }
 
 func (a AliasValue) Float() float64 {

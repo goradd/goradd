@@ -19,17 +19,12 @@ func (n *{{nodeName}}) SelectNodes_() (nodes []*query.ColumnNode) {
 
 i := 0
 fn := tt.FieldGoName(i)
-ft := tt.FieldGoType(i)
-
-
 for fn != "" {
 {{
 	nodes = append(nodes, n.{{= fn }}())
 }}
-	i++
+    i++
 	fn = tt.FieldGoName(i)
-	ft = tt.FieldGoType(i)
-
 }
 {{
 	return nodes
@@ -47,7 +42,7 @@ func (n *{{nodeName}}) EmbeddedNode_() query.NodeI {
 
 i = 0
 fn = tt.FieldGoName(i)
-ft = tt.FieldGoType(i)
+ft := tt.FieldGoColumnType(i).String()
 
 for fn != "" {
 {{
@@ -58,7 +53,7 @@ func (n *{{nodeName}}) {{= fn }}() *query.ColumnNode {
 		"{{= tt.DbName }}",
 		"{{= tt.FieldNames[i] }}",
 		"{{= fn }}",
-		"{{= ft }}",
+		query.{{= ft }},
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -66,6 +61,6 @@ func (n *{{nodeName}}) {{= fn }}() *query.ColumnNode {
 }}
 	i++
 	fn = tt.FieldGoName(i)
-	ft = tt.FieldGoType(i)
+	ft = tt.FieldGoColumnType(i).String()
 }
 

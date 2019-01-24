@@ -34,8 +34,8 @@ func (d IntegerTextbox) Imports() []string {
 }
 
 func (d IntegerTextbox) SupportsColumn(col *generator.ColumnType) bool {
-	if (col.GoType == query.ColTypeInteger ||
-		col.GoType == query.ColTypeInteger64) &&
+	if (col.ColumnType == query.ColTypeInteger ||
+		col.ColumnType == query.ColTypeInteger64) &&
 		!col.IsReference() {
 		return true
 	}
@@ -68,7 +68,7 @@ func (d IntegerTextbox) GenerateGet(ctrlName string, objName string, col *genera
 }
 
 func (d IntegerTextbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	switch col.GoType {
+	switch col.ColumnType {
 	case query.ColTypeInteger64:
 		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int64())`, objName,  col.GoName, ctrlName)
 	case query.ColTypeInteger:

@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -156,7 +157,7 @@ func Generate() {
 				if strings.EndsWith(fileName, ".go") {
 					_,err := sys.ExecuteShellCommand("goimports -w " + fileName)
 					if err != nil {
-						panic("error running goimports: " + err.Error())	// perhaps goimports is not installed?
+						panic("error running goimports: " + string(err.(*exec.ExitError).Stderr))	// perhaps goimports is not installed?
 					}
 				}
 			}
