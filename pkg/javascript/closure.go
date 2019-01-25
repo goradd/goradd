@@ -7,7 +7,11 @@ import (
 )
 
 // Closure represents a javascript function pointer that can be called by javascript at a later time.
-type Closure struct {
+func Closure(body string, args... string) Ωclosure {
+	return Ωclosure{body, args}
+}
+
+type Ωclosure struct {
 	// Body is the body javascript of the closure
 	Body string
 	// Args are the names of the arguments in the argument list of the closure
@@ -15,7 +19,7 @@ type Closure struct {
 }
 
 // JavaScript implements the JavsScripter interface and returns the closure as javascript code.
-func (c Closure) JavaScript() string {
+func (c Ωclosure) JavaScript() string {
 	var args string
 
 	if c.Args != nil {
@@ -25,8 +29,9 @@ func (c Closure) JavaScript() string {
 	return "function(" + args + ") {" + c.Body + "}"
 }
 
-// MarshalJSON implements the json.Marshaller interface. The output of this is designed to be unpacked by the goradd javascript file.
-func (c Closure) MarshalJSON() (buf []byte, err error) {
+// MarshalJSON implements the json.Marshaller interface.
+// The output of this is designed to be unpacked by the goradd javascript file during Ajax calls.
+func (c Ωclosure) MarshalJSON() (buf []byte, err error) {
 	var obj = map[string]interface{}{}
 
 	obj[JsonObjectType] = "closure"
@@ -37,18 +42,23 @@ func (c Closure) MarshalJSON() (buf []byte, err error) {
 	return
 }
 
-// ClosureCall represents the result of a javascript closure that is called immediately.
-type ClosureCall struct {
+// ClosureCall represents the result of a javascript closure that is called immediately
+// context will become the "this" variable inside the closure when called.
+func ClosureCall(body string, context string, args... string) ΩclosureCall {
+	return ΩclosureCall{body, context, args}
+}
+
+type ΩclosureCall struct {
 	// Body is the body javascript of the closure
 	Body string
+	// Context is what will become the "this" var inside of the closure when called. Specifying "this" will bring the "this" from the outer context in to the closure.
+	Context string
 	// Args are the names of the arguments in the argument list of the closure
 	Args []string
-	// Context is what will become the "this" argument inside of the closure when called. Specifying "this" will bring the "this" from the outer context in to the closure.
-	Context string
 }
 
 // JavaScript implements the JavsScripter interface and returns the closure as javascript code.
-func (c ClosureCall) JavaScript() string {
+func (c ΩclosureCall) JavaScript() string {
 	var args string
 
 	if c.Args != nil {
@@ -59,7 +69,7 @@ func (c ClosureCall) JavaScript() string {
 }
 
 // Implements the json.Marshaller interface. The output of this is designed to be unpacked by the goradd javascript file.
-func (c ClosureCall) MarshalJSON() (buf []byte, err error) {
+func (c ΩclosureCall) MarshalJSON() (buf []byte, err error) {
 	var obj = map[string]interface{}{}
 
 	obj[JsonObjectType] = "closure"
@@ -73,6 +83,6 @@ func (c ClosureCall) MarshalJSON() (buf []byte, err error) {
 
 func init() {
 	// Register objects so they can be serialized
-	gob.Register(Closure{})
-	gob.Register(ClosureCall{})
+	gob.Register(Ωclosure{})
+	gob.Register(ΩclosureCall{})
 }

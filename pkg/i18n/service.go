@@ -15,6 +15,7 @@ type TranslatorI interface {
 	Translate (b *translationBuilder) string
 }
 
+// NonTranslator is the default translator that just passes all strings through unchanged.
 type NonTranslator struct {
 }
 

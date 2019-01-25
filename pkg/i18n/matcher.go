@@ -8,6 +8,8 @@ import (
 	"golang.org/x/text/language/display"
 )
 
+// ServerLanguageEntry is description of a supported language from the server's perspective. It includes the
+// information the server will need to describe the language to the browser and to do the translation.
 type ServerLanguageEntry struct {
 	// Tag is the language tag for the language
 	Tag language.Tag
@@ -17,7 +19,7 @@ type ServerLanguageEntry struct {
 	LangString	string
 }
 
-// serverLanguages is the list of languages that the application supports. By default we just support English, but you can
+// languages is the list of languages that the application supports. By default we just support English, but you can
 // change it to what you want
 var languages = []language.Tag {
 	language.AmericanEnglish, // first one is the default
@@ -60,6 +62,7 @@ func SetSupportedLanguages(l... ServerLanguageEntry) {
 	matcher = language.NewMatcher(languages)
 }
 
+// SupportedLanguages is returuned by GetSupported
 type SupportedLanguages []struct {
 	LocalName string
 	NativeName string

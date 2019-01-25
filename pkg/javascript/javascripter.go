@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -32,13 +33,14 @@ func ToJavaScript(v interface{}) string {
 	case JavaScripter:
 		return s.JavaScript()
 	case string:
+		// Note that we cannot use template literals here (backticks) because not all browsers support them
 		b, _ := json.Marshal(s)                         // This does a good job of handling most escape sequences we might need
-		s1 := strings.Replace(string(b), "/", `\/`, -1) // Replace forward slashes to avoid potential confusion in browser from closing html tags
-		return fmt.Sprintf("%v", s1)                    // will surround with quotes
+		//s1 := strings.Replace(string(b), "/", `\/`, -1) // Replace forward slashes to avoid potential confusion in browser from closing html tags
+		return fmt.Sprintf("%v", string(b))                    // will surround with quotes
 	case []string:
 		var values []string
 		for _, item := range s {
-			values = append(values, `"` + item + `"`)
+			values = append(values, ToJavaScript(item))
 		}
 		return "[" + strings.Join(values, ",") + "]"
 	case []interface{}:
@@ -49,11 +51,19 @@ func ToJavaScript(v interface{}) string {
 		return "[" + strings.Join(values, ",") + "]"
 	case map[string]interface{}:
 		var out string
-		for k, v := range s {
-			if v2, ok := v.(NoQuoteKey); ok {
-				out += k + ":" + ToJavaScript(v2.Value) + ","
+		// For testing and consistency, we always return maps in order sorted by key
+		keys := make([]string, 0, len(s))
+		for k := range s {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		for _, k := range keys {
+			v2 := s[k]
+			if v3, ok := v2.(ΩnoQuoteKey); ok {
+				out += k + ":" + ToJavaScript(v3.Value) + ","
 			} else {
-				out += ToJavaScript(k) + ":" + ToJavaScript(v) + ","
+				out += ToJavaScript(k) + ":" + ToJavaScript(v2) + ","
 			}
 		}
 		if len(out) == 0 {
@@ -63,8 +73,14 @@ func ToJavaScript(v interface{}) string {
 		}
 	case map[int]interface{}:
 		var out string
-		for k, item := range s {
-			out += fmt.Sprintf("%d:%s,", k, ToJavaScript(item))
+		// For testing and consistency, we always return maps in order sorted by key
+		keys := make([]int, 0, len(s))
+		for k := range s {
+			keys = append(keys, k)
+		}
+		sort.Ints(keys)
+		for _,k := range keys {
+			out += fmt.Sprintf("%d:%s,", k, ToJavaScript(s[k]))
 		}
 		if len(out) == 0 {
 			return "{}"
@@ -75,7 +91,7 @@ func ToJavaScript(v interface{}) string {
 	case maps.MapI:
 		var out string
 		s.Range(func(k string, v interface{}) bool {
-			if v2, ok := v.(NoQuoteKey); ok {
+			if v2, ok := v.(ΩnoQuoteKey); ok {
 				out += k + ":" + ToJavaScript(v2.Value) + ","
 			} else {
 				out += ToJavaScript(k) + ":" + ToJavaScript(v) + ","
@@ -105,18 +121,23 @@ func ToJavaScript(v interface{}) string {
 	}
 }
 
-// A value wrapper to specify a value in a map whose key should not be quoted when converting to javascript
+// NoQuoteKey is a value wrapper to specify a value in a map whose key should not be quoted when converting to javascript.
 // In some situations, a quoted key has a different meaning from a non-quoted key.
 // For example, when making a list of parameters to pass when calling the jQuery $() command,
 // (i.e. $j(selector, params)), quoted words are turned into parameters, and non-quoted words
 // are turned into functions. For example, "size" will set the size attribute of the object, and
 // size (no quotes), will call the size() function on the object.
-type NoQuoteKey struct {
+// i.e. map[string]string {"size":4, "size":NoQuoteKey(JsCode("obj"))}
+func NoQuoteKey(v interface{}) ΩnoQuoteKey {
+	return ΩnoQuoteKey{v}
+}
+
+type ΩnoQuoteKey struct {
 	Value interface{}
 }
 
 // Prevent using this as a general value.
-func (n NoQuoteKey) JavaScript() string {
+func (n ΩnoQuoteKey) JavaScript() string {
 	panic("NoQuoteKey should only be used as a value in a string map.")
 }
 
@@ -195,7 +216,7 @@ func NumberString(i interface{}) string {
 
 func init() {
 	// Register objects so they can be serialized
-	gob.Register(NoQuoteKey{})
+	gob.Register(ΩnoQuoteKey{})
 	gob.Register(ΩjsCode{})
 	gob.Register(Undefined{})
 }
