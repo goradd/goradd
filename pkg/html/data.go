@@ -7,7 +7,7 @@ import (
 )
 
 /*
- Helper function to convert a name from camel case to using dashes to separated words.
+ ToDataAttr is a helper function to convert a name from camelCase to kabob-case for data attributes in particular.
  data-* html attributes have special conversion rules. Attribute names should always be lower case. Dashes in the
  name get converted to camel case javascript variable names by jQuery.
  For example, if you want to pass the value with key name "testVar" to javascript by printing it in
@@ -29,7 +29,7 @@ func ToDataAttr(s string) (string, error) {
 }
 
 /*
- Helper function to convert a name from data attribute naming convention to camel case.
+ ToDataJqKey is a helper function to convert a name from kabob-case to camelCase.
  data-* html attributes have special conversion rules. Key names should always be lower case. Dashes in the
  name get converted to camel case javascript variable names by jQuery.
  For example, if you want to pass the value with key name "testVar" to javascript by printing it in

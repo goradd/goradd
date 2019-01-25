@@ -60,7 +60,7 @@ func (s *Style) SetTo(text string) (changed bool, err error) {
 	return
 }
 
-// Set sets the given style to the given value. If the value is prefixed with a plus, minus, multiply or divide, and then a space,
+// SetChanged sets the given style to the given value. If the value is prefixed with a plus, minus, multiply or divide, and then a space,
 // it assumes that a number will follow, and the specified operation will be performed in place on the current value
 // For example, Set ("height", "* 2") will double the height value without changing the unit specifier
 // When referring to a value that can be a length, you can use numeric values. In this case, "0" will be passed unchanged,
@@ -98,6 +98,7 @@ func (s Style) SetChanged(n string, v string) (changed bool, err error) {
 	return
 }
 
+// Set is like SetChanged, but returns the Style for chaining.
 func (s Style) Set(n string, v string) Style {
 	_, err := s.SetChanged(n, v)
 	if err != nil {
@@ -105,12 +106,12 @@ func (s Style) Set(n string, v string) Style {
 	}
 	return s
 }
-
+// Get returns the given style value, or an empty string if its not set.
 func (s Style) Get(name string) string {
 	return s.StringMap.Get(name)
 }
 
-// Used in the regular expression replacement function below
+// opReplacer is used in the regular expression replacement function below
 func opReplacer(op string, v float64) func(string) string {
 	return func(cur string) string {
 		if cur == "" {
@@ -167,19 +168,19 @@ func (s *Style) RemoveAll() {
 	s.StringMap = maps.NewStringMap()
 }
 
-// Returns the string version of the style attribute, suitable for inclusion in an HTML style tag
+// String returns the string version of the style attribute, suitable for inclusion in an HTML style tag
 // Will sort the
 func (s Style) String() string {
 	return s.encode()
 }
 
-// Raw set and return true if changed
+// set is a raw set and return true if changed
 func (s Style) set(n string, v string) bool {
 	changed := s.StringMap.SetChanged(n, v)
 	return changed
 }
 
-// code to take out rounding errors when doing length math
+// roundFloat takes out rounding errors when doing length math
 func roundFloat(f float64, digits int) float64 {
 	f = f * math.Pow10(digits)
 	if math.Abs(f) < 0.5 {

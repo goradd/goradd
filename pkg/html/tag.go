@@ -19,16 +19,18 @@ const (
 	LabelWrapAfter                          // Label tag is after the control's tag, and wraps the control tag
 )
 
+// VoidTag represents a void tag, which is a tag that does not need a matching closing tag.
 type VoidTag struct {
 	Tag  string
 	Attr *Attributes
 }
 
+// Render returns the rendered version of the tag.
 func (t VoidTag) Render() string {
 	return RenderVoidTag(t.Tag, t.Attr)
 }
 
-// Render a void tag that has no closing tag
+// RenderVoidTag renders a void tag using the given tag name and attributes.
 func RenderVoidTag(tag string, attr *Attributes) (s string) {
 	if attr == nil {
 		s = "<" + tag + " />"
@@ -99,8 +101,8 @@ func RenderTagNoSpace(tag string, attr *Attributes, innerHtml string) string {
 	return ret
 }
 
-// A utility function to render a label, together with its text. Various CSS frameworks require labels to be rendered
-// a certain way.
+// RenderLabel is a utility function to render a label, together with its text.
+// Various CSS frameworks require labels to be rendered a certain way.
 func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mode LabelDrawingMode) string {
 	tag := "label"
 	label = html2.EscapeString(label)
@@ -117,11 +119,12 @@ func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mod
 	panic("Unknown label mode")
 }
 
+// RenderImage renders an image tag with the given sourc, alt and attribute values.
 func RenderImage(src string, alt string, attributes *Attributes) string {
 	var a *Attributes
 
 	if attributes != nil {
-		a = attributes.Clone()
+		a = attributes.Copy()
 	} else {
 		a = NewAttributes()
 	}
@@ -143,7 +146,7 @@ func Indent(s string) string {
 	return in + strings.TrimSuffix(s, in)
 }
 
-// Comment turns the given text into an html comment and returns the comment
+// Comment turns the given text into an html comment and returns the rendered comment
 func Comment(s string) string {
 	return fmt.Sprintf("<!-- %s -->", s)
 }

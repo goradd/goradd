@@ -126,7 +126,7 @@ func (l *NavbarList) getItemsHtml(items []control.ListItemI, hasParent bool) str
 				}
 			} else {
 				itemH := item.RenderLabel()
-				itemAttributes := item.Attributes().Clone()
+				itemAttributes := item.Attributes().Copy()
 				itemAttributes.AddClass("nav-item")
 				linkAttributes := html.NewAttributes()
 

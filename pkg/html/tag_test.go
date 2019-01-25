@@ -19,7 +19,7 @@ func TestTag(t *testing.T) {
 
 func ExampleRenderTag() {
 	fmt.Println(RenderTagNoSpace("div", NewAttributesFromMap(map[string]string{"id": "me", "name": "you"}), "Here I am"))
-	//Output:<div id="me" name="you">Here I am</div>
+	// Output: <div id="me" name="you">Here I am</div>
 }
 
 func ExampleRenderVoidTag() {

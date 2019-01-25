@@ -7,7 +7,9 @@ import (
 	"time"
 )
 
-// Does a variety of transformations to make standard text presentable as HTML.
+// TextToHtml does a variety of transformations to make standard text presentable as HTML.
+// It escapes characters needing to be escaped, turns double-newline characters in paragrpahs, and
+// single newlines into breaks.
 func TextToHtml(in string) (out string) {
 	in = html2.EscapeString(in)
 	in = strings.Replace(in, "\n\n", "<p>", -1)

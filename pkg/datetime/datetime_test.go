@@ -43,7 +43,7 @@ func ExampleDateTime_JavaScript() {
 	// Output: new Date(2012, 10, 1, 22, 8, 41, 0)
 }
 
-func TestTime(t *testing.T) {
+func TestTimeOnly(t *testing.T) {
 	d := NewDateTime("8 41 PM", "3 04 PM")
 	d2 := Time(20,41,0,0)
 	assert.True(t, d.Equal(d2), d.String(), d2.String())

@@ -166,11 +166,11 @@ func (l *SelectList) getItemsHtml(items []ListItemI) string {
 		if item.HasChildItems() {
 			tag := "optgroup"
 			innerhtml := l.getItemsHtml(item.ListItems())
-			attributes := item.Attributes().Clone()
+			attributes := item.Attributes().Copy()
 			attributes.Set("label", item.Label())
 			h += html.RenderTag(tag, attributes, innerhtml)
 		} else {
-			attributes := item.Attributes().Clone()
+			attributes := item.Attributes().Copy()
 			attributes.Set("value", item.ID())
 			if l.selectedId == item.ID() {
 				attributes.Set("selected", "")

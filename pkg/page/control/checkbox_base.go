@@ -117,7 +117,7 @@ func (c *CheckboxBase) InputLabelAttributes() *html.Attributes {
 }
 
 func (c *CheckboxBase) GetDrawingInputLabelAttributes() *html.Attributes {
-	a := c.InputLabelAttributes().Clone()
+	a := c.InputLabelAttributes().Copy()
 
 	// copy tooltip to wrapping label
 	if title := c.Attribute("title"); title != "" {

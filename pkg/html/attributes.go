@@ -31,21 +31,23 @@ type Attributes struct {
 }
 
 // NewAttributes initializes a group of html attributes.
-func NewAttributes() *Attributes { // TODO: This should not return a pointer, since all it contains is a pointer
+func NewAttributes() *Attributes { // TODO: This should not return a pointer, since all it contains is a pointer???
 	return &Attributes{*maps.NewStringSliceMap()}
 }
 
+// NewAttributesFrom creates new attributes from the given string map.
 func NewAttributesFrom(i maps.StringMapI) *Attributes {
 	a := NewAttributes()
 	a.Merge(i)
 	return a
 }
 
+// NewAttributesFromMap returns new attributes base on the given map.
 func NewAttributesFromMap(i map[string]string) *Attributes {
 	return &Attributes{*maps.NewStringSliceMapFromMap(i)}
 }
 
-
+// Copy returns a copy of the attributes.
 func (a *Attributes) Copy() *Attributes {
 	if a == nil {
 		return nil
@@ -157,8 +159,8 @@ func (a *Attributes) String() string {
 func (a *Attributes) Override(i maps.StringMapI) *Attributes {
 	curStyles := a.StyleMap()
 	newStyles := NewStyle()
-	newStyles.SetTo(i.Get("style"))
-	attr := NewAttributesFrom(a)
+	_,_ = newStyles.SetTo(i.Get("style"))
+	attr := a.Copy()
 	attr.Merge(i)
 	curStyles.Merge(newStyles)
 	if curStyles.Len() > 0 {
@@ -167,12 +169,9 @@ func (a *Attributes) Override(i maps.StringMapI) *Attributes {
 	return attr
 }
 
-// Clone returns a copy of the attributes
-func (a *Attributes) Clone() *Attributes {
-	return NewAttributesFrom(a)
-}
-
-// Set the id to the given value. Returns true if something changed.
+// SetIDChanged sets the id to the given value and returns true if something changed.
+// In other words, if you set the id to the same value that it currently is, it will return false.
+// It will return an error if you attempt to set the id to an illegal value.
 func (a *Attributes) SetIDChanged(i string) (changed bool, err error) {
 	if i == "" { // empty attribute is not allowed, so its the same as removal
 		changed = a.RemoveAttribute("id")
@@ -188,6 +187,7 @@ func (a *Attributes) SetIDChanged(i string) (changed bool, err error) {
 	return
 }
 
+// SetID sets the id attribute to the given value
 func (a *Attributes) SetID(i string) *Attributes {
 	_, err := a.SetIDChanged(i)
 	if err != nil {
@@ -196,7 +196,7 @@ func (a *Attributes) SetID(i string) *Attributes {
 	return a
 }
 
-// Return the value of the id attribute.
+// ID returns the value of the id attribute.
 func (a *Attributes) ID() string {
 	return a.Get("id")
 }
@@ -222,6 +222,7 @@ func (a *Attributes) SetClassChanged(v string) bool {
 	return changed
 }
 
+// SetClass will set the class to the given value, and return the attributes so you can chain calls.
 func (a *Attributes) SetClass(v string) *Attributes {
 	a.SetClassChanged(v)
 	return a
@@ -239,7 +240,7 @@ func (a *Attributes) RemoveClass(v string) bool {
 	return false
 }
 
-// Use RemoveClasses to remove classes with the given prefix.
+// Use RemoveClassesWithPrefix to remove classes with the given prefix.
 // Many CSS frameworks use families of classes, which are built up from a base family name. For example,
 // Bootstrap uses 'col-lg-6' to represent a table that is 6 units wide on large screens and Foundation
 // uses 'large-6' to do the same thing. This utility removes classes that start with a particular prefix
@@ -256,11 +257,7 @@ func (a *Attributes) RemoveClassesWithPrefix(v string) bool {
 	return false
 }
 
-
-// Use AddClass to add a class or classes.
-// Multiple classes can be separated by spaces.
-// If a class is not present, the class will be added to the end of the class list
-// If a class is present, it will not be added, and the position of the current class in the list will not change
+// AddClassChanged is similar to AddClass, but will return true if the class changed at all.
 func (a *Attributes) AddClassChanged(v string) bool {
 	if v == "" {
 		return false // nothing to add
@@ -277,6 +274,9 @@ func (a *Attributes) AddClassChanged(v string) bool {
 	}
 }
 
+// AddClass adds a class or classes. Multiple classes can be separated by spaces.
+// If a class is not present, the class will be added to the end of the class list
+// If a class is present, it will not be added, and the position of the current class in the list will not change
 func (a *Attributes) AddClass(v string) *Attributes {
 	a.AddClassChanged(v)
 	return a
@@ -422,13 +422,14 @@ func (a *Attributes) SetStylesTo(s string) *Attributes {
 }
 
 
-// Style gives you the value of a single style attribute value. If you want all the attributes as a style string, use
-// Attribute("style").
+// GetStyle gives you the value of a single style attribute value. If you want all the attributes as a style string, use
+// StyleString().
 func (a *Attributes) GetStyle(name string) string {
 	s := a.StyleMap()
 	return s.Get(name)
 }
 
+// HasStyle returns true if the given style is set to any value, and false if not.
 func (a *Attributes) HasStyle(name string) bool {
 	s := a.StyleMap()
 	return s.Has(name)
@@ -445,6 +446,7 @@ func (a *Attributes) RemoveStyle(name string) (changed bool) {
 	return changed
 }
 
+// SetDisabled sets the "disabled" attribute to the given value.
 func (a *Attributes) SetDisabled(d bool) *Attributes {
 	if d {
 		a.Set("disabled", "")
@@ -454,15 +456,18 @@ func (a *Attributes) SetDisabled(d bool) *Attributes {
 	return a
 }
 
+// IsDisabled returns true if the "disabled" attribute is set to true.
 func (a *Attributes) IsDisabled() bool {
 	return a.Has("disabled")
 }
 
+// SetDisplay sets the "display" attribute to the given value.
 func (a *Attributes) SetDisplay(d string) *Attributes {
 	a.SetStyle("display", d)
 	return a
 }
 
+// IsDisplayed returns true if the "display" attribute is not set, or if it is set, if its not set to "none".
 func (a *Attributes) IsDisplayed() bool {
 	return a.GetStyle("display") != "none"
 }

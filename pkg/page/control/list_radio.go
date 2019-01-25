@@ -51,7 +51,7 @@ func (l *RadioList) RenderItem(tag string, item ListItemI) (h string) {
 	}
 	ctrl := html.RenderVoidTag("input", attributes)
 	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, l.labelDrawingMode)
-	attributes = item.Attributes().Clone()
+	attributes = item.Attributes().Copy()
 	attributes.SetID(item.ID() + "_cell")
 	attributes.AddClass("gr-cbl-item")
 	h = html.RenderTag(tag, attributes, h)

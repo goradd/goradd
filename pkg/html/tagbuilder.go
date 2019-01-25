@@ -100,12 +100,16 @@ func (b *TagBuilder) InnerText(text string) *TagBuilder {
 	return b
 }
 
-// String ends the builder and returns the html
+// String ends the builder and returns the html.
 func (b *TagBuilder) String() string {
 	if b.tag == "" {
 		panic("You cannot output the tag builder with no tag")
 	}
-	return RenderTag(b.tag, b.attributes, b.innerHtml)
+	if b.isVoid {
+		return RenderVoidTag(b.tag, b.attributes)
+	} else {
+		return RenderTag(b.tag, b.attributes, b.innerHtml)
+	}
 }
 
 

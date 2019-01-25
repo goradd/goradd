@@ -69,7 +69,7 @@ func (l *OrderedList) getItemsHtml(items []ListItemI) string {
 	for _, item := range items {
 		if item.HasChildItems() {
 			innerhtml := l.getItemsHtml(item.ListItems())
-			a := item.Attributes().Clone()
+			a := item.Attributes().Copy()
 
 			// Certain attributes apply to the sub list and not the list item, so we split them here
 			a2 := html.NewAttributes()

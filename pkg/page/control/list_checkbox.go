@@ -137,7 +137,7 @@ func (l *CheckboxList) verticalHtmlItems(items []ListItemI) (h []string) {
 	for _, item := range items {
 		if item.HasChildItems() {
 			tag := "div"
-			attributes := item.Attributes().Clone()
+			attributes := item.Attributes().Copy()
 			attributes.AddClass("gr-cbl-heading")
 			subItems := l.verticalHtmlItems(item.ListItems())
 			h = append(h, html.RenderTag(tag, attributes, item.Label()))
@@ -159,7 +159,7 @@ func (l *CheckboxList) RenderItem(tag string, item ListItemI) (h string) {
 	}
 	ctrl := html.RenderVoidTag("input", attributes)
 	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, l.labelDrawingMode)
-	attributes = item.Attributes().Clone()
+	attributes = item.Attributes().Copy()
 	attributes.SetID(item.ID() + "_cell")
 	attributes.AddClass("gr-cbl-item")
 	h = html.RenderTag(tag, attributes, h)
@@ -179,7 +179,7 @@ func (l *CheckboxList) horizontalHtml(items []ListItemI) (h string) {
 				itemNum = 0
 			}
 			tag := "div"
-			attributes := item.Attributes().Clone()
+			attributes := item.Attributes().Copy()
 			attributes.AddClass("gr-cbl-heading")
 			h += html.RenderTag(tag, attributes, item.Label())
 			h += l.horizontalHtml(item.ListItems())
