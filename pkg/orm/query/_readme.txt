@@ -1,0 +1,1 @@
+Most of the tests for the query package are in the test package, since they need a code-generated orm to really test them.

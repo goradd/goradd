@@ -10,7 +10,6 @@ type LoaderFunc func(QueryBuilderI, map[string]interface{})
 
 type TransactionID int
 
-// The dataStore is the central database collection used in codegeneration and the orm.
 type DatabaseI interface {
 	Describe() *DatabaseDescription
 
@@ -30,6 +29,7 @@ type DatabaseI interface {
 	Rollback(ctx context.Context, txid TransactionID)
 }
 
+// The dataStore is the central database collection used in codegeneration and the orm.
 var datastore struct {
 	// TODO: Change these to OrderedMaps. Since they are used for code generation, we want them to be iterated consistently
 	databases  map[string]DatabaseI
