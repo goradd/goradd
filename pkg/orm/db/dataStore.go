@@ -6,11 +6,24 @@ import (
 	"log"
 )
 
+// The dataStore is the central database collection used in codegeneration and the orm.
+var datastore struct {
+	// TODO: Change these to OrderedMaps. Since they are used for code generation, we want them to be iterated consistently
+	databases  map[string]DatabaseI
+	tables     map[string]map[string]*TableDescription
+	typeTables map[string]map[string]*TypeTableDescription
+}
+
 type LoaderFunc func(QueryBuilderI, map[string]interface{})
 
 type TransactionID int
 
+// DatabaseI is the interface that describes the behaviors required for a database implementation.
 type DatabaseI interface {
+	// Describe returns a DatabaseDescription object, which is a complete description of the tables and fields in
+	// a database and their potential relationships. SQL databases can, for the most part, generate this description
+	// based on their structure. NoSQL databases would need to get this description some other way, like through
+	// a json file.
 	Describe() *DatabaseDescription
 
 	// For codegen
@@ -29,13 +42,6 @@ type DatabaseI interface {
 	Rollback(ctx context.Context, txid TransactionID)
 }
 
-// The dataStore is the central database collection used in codegeneration and the orm.
-var datastore struct {
-	// TODO: Change these to OrderedMaps. Since they are used for code generation, we want them to be iterated consistently
-	databases  map[string]DatabaseI
-	tables     map[string]map[string]*TableDescription
-	typeTables map[string]map[string]*TypeTableDescription
-}
 
 func AddDatabase(d DatabaseI, key string) {
 	if datastore.databases == nil {

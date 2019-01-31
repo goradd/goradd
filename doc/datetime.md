@@ -12,7 +12,7 @@ What if the user changes timezones later?
 from a different timezone, what should that user see? What if the event is during a timezone change, 
 what is the actual timestamp?
 3. You have your database record a timestamp. When your server requests the value, what should be
-the timezone of the new value, the server's timezone, or the database's timezone? When you display the
+the timezone of the new value -- the server's timezone, or the database's timezone? When you display the
 timestamp to the client, how do you convert that value to the client's timezone? How do you localize
 what is displayed into the location and language of the client?
 
@@ -47,7 +47,7 @@ very careful to know the location of the viewer compared to the location of the 
 2. If you are showing a timestamped event that happened in the past, you might want to show it
 in the local time of when the event occurred, no matter where it is viewed from.
 
-## What is a timezone
+## What Is a Timezone?
 There really are two representations known as a timezone.
 1. A named timezone, like "America/New_York". This tells us the location in the world where a time
 will be displayed. However, the same timestamp might be displayed differently in that location
@@ -59,15 +59,20 @@ see the event in EST time or in EDT time. It depends on the application.
 offset from a daylight savings time agnostic UTC time. As in the above example, when you view
 this time from a particular location at a particular date and time, what you want to see will
 depend on the application.
+GO has excellent handling of named timezones, but browsers generally only work with offsets
+from UTC. In GO, you can create a Time object with a named timezone, and then if you change the timezone
+to either a named timezone, or offset timezone, GO will report back the correct time, taking
+into account whether daylight savings time was active in the old and new locations 
+at that particular time.
 
 ## Considerations
-### The movement of date-times
+### The Movement of Date-times
 The above date-time values will move between different locations. Consider that the client, the server,
 and the database may all be in different timezones. Also, while each physically might be in a 
 particular timezone, each might store the dates and times in a different timezone, or in
 UTC. Sometimes you have control over that, and sometimes not.
 
-### Database capabilities
+### Database Capabilities
 Some databases can store timezone information, and some can't. Sometimes, it doesn't matter.  
 
 MySQL DateTime objects do not save timezone information, but Postgres gives you the option. 
@@ -77,7 +82,7 @@ a number of seconds from a known UTC time, but are converted to a timezoned form
 is transferred to a server. The GO mysql drivers give you the ability to set what timezone that is,
 and it can be different than the server's timezone.
 
-### Browser capabilities
+### Browser Capabilities
 Date objects in browsers internally are represented as UTC Timestamps. 
 
 When creating a Date object, the only way to specify a timezone that is not the current
@@ -116,15 +121,19 @@ to know whether the current locale uses 12 or 24 hour time, and to translate day
 3. How do you do a database search when the date-time that the client is requesting as
 the bounding parameters for the search are possibly in a different timezone than the database.
 
-## Solutions
-1. Like JavaScript, we will attempt to always store Timestamps and DateTimes internally
-in UTC time. 
-2. When specifying search parameters on a timestamp, you must convert the client specified
+## Our Approach
+1. We create a DateTime structure that wraps a time.Time item with a boolean isTimeStamp.
+2. A timestamped DateTime is converted to UTC time before sending it somewhere else, like
+the database, or the client via JSON or JavaScript.
+2. A non-timestamped DateTime is always stored as a UTC time, and no conversions are made.
+
+## What You Need to Do
+1. When specifying search parameters on a timestamp, you must convert the client specified
 date-time to UTC before searching. You will likely need to do that in javascript.
 3. If you are providing the client a way to just search by date, then you should probably
 store date-times separately as a Date and Time in the database.
 4. If you are making an app like a scheduling app, where the timezone of the created event
-matters, you should probably store in the database separate date, time and timezone information
+matters, you should probably store in your database separate date, time and timezone information
 so you can recreate the details needed.
 5. If you are making an app that you believe will need to be internationalized, always let
 javascript do the drawing. Otherwise you can let the server draw, but you will need to find

@@ -8,6 +8,8 @@ import (
 const AliasResults = "aliases_"
 
 // The query builder is the primary aid in creating cross-platform, portable queries to the database(s)
+// The code-generated ORM classes call these functions to build a query. The query will eventually get
+// sent to the database for processing
 type QueryBuilderI interface {
 	Join(n NodeI, condition NodeI) QueryBuilderI
 	Expand(n NodeI) QueryBuilderI
