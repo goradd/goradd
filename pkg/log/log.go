@@ -14,93 +14,115 @@ const WarningLog = 3        // Should be sent to sysop periodically (daily perha
 const ErrorLog = 4          // Should be sent to sysop immediately
 const DebugLog = 10         // Debug log for the developer's application, separate from the goradd framework debug log
 
+// LoggerI is the interface for all loggers.
 type LoggerI interface {
 	Log(err string)
 }
 
+// StandardLogger reuses the GO default logger
 type StandardLogger struct {
 	*log.Logger
 }
 
+// EmailLogger is a logger that will email logging activity to the emails provided.
 type EmailLogger struct {
 	StandardLogger
 	EmailAddresses []string
 }
 
 func (l StandardLogger) Log(out string) {
-	l.Output(4, out)
+	if err := l.Output(4, out); err != nil {
+		panic ("Logging error: " + err.Error())
+	}
 }
 
 func (l EmailLogger) Log(out string) {
-	l.Output(4, out)
+	if err := l.Output(4, out); err != nil {
+		panic ("Logging error: " + err.Error())
+	}
 
 	// TODO: Create emailer
 	// email.ErrorSend(l.EmailAddresses, "Error", out)
 }
 
-
-
+// Loggers is the global map of loggers in use.
 var Loggers = map[int]LoggerI{}
 
+// HasLogger returns true if the given logger is available.
 func HasLogger(id int) bool {
 	_, ok := Loggers[id]
 	return ok
 }
 
+// Info prints information to the Info logger.
 func Info(v ...interface{}) {
 	_print(InfoLog, v...)
 }
 
+// Infof prints formatted information to the Info logger.
 func Infof(format string, v ...interface{}) {
 	_printf(InfoLog, format, v...)
 }
 
-
+// FrameworkDebug is used by the framework to log debugging information.
+// This is mostly for development of the framework, but it can also be used to track down problems
+// in your own code. It becomes a no-op in the release build.
 func FrameworkDebug(v ...interface{}) {
 	if config.Debug {
 		_print(FrameworkDebugLog, v...)
 	}
 }
 
+// FrameworkDebugf is used by the framework to log formatted debugging information.
+// It becomes a no-op in the release build.
 func FrameworkDebugf(format string, v ...interface{}) {
 	if config.Debug {
 		_printf(FrameworkDebugLog, format, v...)
 	}
 }
 
+// Warning prints to the Warning logger.
 func Warning(v ...interface{}) {
 	_print(WarningLog, v...)
 }
 
+// Warningf prints formatted information to the Warning logger.
 func Warningf(format string, v ...interface{}) {
 	_printf(WarningLog, format, v...)
 }
 
+// Error prints to the Error logger.
 func Error(v ...interface{}) {
 	_print(ErrorLog, v...)
 }
 
+// Error prints formmated information to the Error logger.
 func Errorf(format string, v ...interface{}) {
 	_printf(ErrorLog, format, v...)
 }
 
-// Debug is for application debugging logging
+// Debug is for application debugging logging. It becomes a no-op in the release build.
 func Debug(v ...interface{}) {
 	if config.Debug {
 		_print(DebugLog, v...)
 	}
 }
 
+// Debugf prints formatted information to the application Debug logger.
+// It becomes a no-op in the release build.
 func Debugf(format string, v ...interface{}) {
 	if config.Debug {
 		_printf(DebugLog, format, v...)
 	}
 }
 
+// Print prints information to the given logger.
+// You can use this to set up your own custom logger.
 func Print(logType int, v ...interface{}) {
 	_print(logType, v...)
 }
 
+// Printf prints formatted information to the given logger.
 func Printf(logType int, format string, v ...interface{}) {
 	_printf(logType, format, v...)
 }
@@ -119,8 +141,9 @@ func _printf(logType int, format string, v ...interface{}) {
 }
 
 
-// Create's default loggers for the application. After calling this, you can replace the loggers with your own, and
-// add additional loggers to the logging array.
+// CreateDefaultLoggers create's default loggers for the application.
+// After calling this, you can replace the loggers with your own, and
+// add additional loggers to the logging array, or remove ones you don't use.
 func CreateDefaultLoggers() {
 	// make these strings the same size to improve the look of the log
 	Loggers[FrameworkDebugLog] = StandardLogger{log.New(os.Stdout,

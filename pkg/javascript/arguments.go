@@ -12,7 +12,7 @@ import (
 // you want the output of the function now, or later.
 type Arguments []interface{}
 
-// Implements the JavaScripter interface
+// JavaScript returns the arguments as a comma separated list of values suitable to put in JavaScript function arguments.
 func (a Arguments) JavaScript() string {
 	var values []string
 	for _, v := range a {

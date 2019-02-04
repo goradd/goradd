@@ -11,7 +11,9 @@ const ProjectDomain = "project"
 
 var translators = map[string]TranslatorI{GoraddDomain: NonTranslator{}, ProjectDomain: NonTranslator{}}
 
+// TranslatorI is the interface that translators must fulfill
 type TranslatorI interface {
+	// Translate returns the translation of the string contained in the translationBuilder
 	Translate (b *translationBuilder) string
 }
 

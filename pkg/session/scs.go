@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+const scsSessionDataKey = "goradd.data"
+
 // SCS_Manager satisfies the ManagerI interface for the github.com/alexedwards/scs session manager. You can use it as an example
 // of how to incorporate a different session manager into your app.
 type SCS_Manager struct {
@@ -16,6 +18,8 @@ func NewSCSManager(mgr *scs.Manager) ManagerI {
 	return SCS_Manager{mgr}
 }
 
+// Use is an http handler that wraps the session management process. It will get and put session data
+// into the http context.
 func (mgr SCS_Manager) Use(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		var data []byte
@@ -23,7 +27,7 @@ func (mgr SCS_Manager) Use(next http.Handler) http.Handler {
 		// get the session. All of our session data is stored in only one key in the session manager.
 		session := mgr.Manager.Load(r)
 		session.Touch(w) // Make sure to get a cookie in our header if we don't have one
-		data, _ = session.GetBytes("goradd.data")
+		data, _ = session.GetBytes(scsSessionDataKey)
 		sessionData := NewSession()
 		if data != nil {
 			sessionData.UnmarshalBinary(data)
@@ -50,7 +54,7 @@ func (mgr SCS_Manager) Use(next http.Handler) http.Handler {
 			}
 			temp = string(data)
 			_ = temp
-			session.PutBytes(w, "goradd.data", data)
+			session.PutBytes(w, scsSessionDataKey, data)
 		} else {
 			session.Clear(w)
 		}

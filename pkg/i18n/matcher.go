@@ -8,7 +8,7 @@ import (
 	"golang.org/x/text/language/display"
 )
 
-// ServerLanguageEntry is description of a supported language from the server's perspective. It includes the
+// ServerLanguageEntry is a description of a supported language from the server's perspective. It includes the
 // information the server will need to describe the language to the browser and to do the translation.
 type ServerLanguageEntry struct {
 	// Tag is the language tag for the language

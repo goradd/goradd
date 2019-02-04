@@ -676,7 +676,7 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 	cd.Comment = column.comment
 
 	if fk, ok := table.fkMap[cd.DbName]; ok {
-		cd.ForeignKey = &ForeignKeyType{
+		cd.ForeignKey = &ForeignKeyColumn{
 			TableName:    fk.referencedTableName.String,
 			ColumnName:   fk.referencedColumnName.String,
 			UpdateAction: fkRuleToAction(fk.updateRule),

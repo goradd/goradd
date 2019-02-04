@@ -9,16 +9,19 @@ type translationBuilder struct {
 	arguments []interface{}
 }
 
+// Build returns a new translation builder.
 func Build() *translationBuilder {
 	return new(translationBuilder)
 }
 
+// Domain sets the domain of the builder. The Domain indicates what part of the application is responsible
+// for translating strings, and allows libraries and the framework to provide their own translations.
 func (b *translationBuilder) Domain(domain string) *translationBuilder {
 	b.domain = domain
 	return b
 }
 
-// Lang adds the canonical value to the builder
+// Lang sets the canonical value of the builder
 func (b *translationBuilder) Lang(lang string) *translationBuilder {
 	b.language = lang
 	return b
@@ -38,22 +41,16 @@ func (b *translationBuilder) Comment(comment string) *translationBuilder {
 
 // T ends the builder and performs the translation
 func (b *translationBuilder) T(s string) string {
-	if s == "" {
-		return ""
-	}
-	if b.domain == "" {
-		b.domain = ProjectDomain
-	}
-	if b.language == "" {
-		b.language = langAttributes[0]
-	}
-	b.message = s
-
-	return translators[b.domain].Translate(b)
+	return b.t(s)
 }
 
-// Sprintf ends the builder and performs the translation
+// Sprintf ends the builder and performs the translation using the given format string.
 func (b *translationBuilder) Sprintf(s string, params... interface{}) string {
+	b.arguments = params
+	return b.t(s)
+}
+
+func (b *translationBuilder) t(s string) string {
 	if s == "" {
 		return ""
 	}
@@ -64,15 +61,12 @@ func (b *translationBuilder) Sprintf(s string, params... interface{}) string {
 		b.language = langAttributes[0]
 	}
 	b.message = s
-	b.arguments = params
 
 	return translators[b.domain].Translate(b)
 }
-
 
 
 // The following are modifiers to the T() function in page.Control
-
 type id struct {
 	id string
 }
