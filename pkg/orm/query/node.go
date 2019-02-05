@@ -64,7 +64,10 @@ type NodeI interface {
 	log(level int)
 }
 
-// Node is the base mixin for all node structures
+// Node is the base mixin for all node structures. A node is a representation of an object or a relationship
+// between objects in a database that we use to create a query. It lets us abstract the structure of a database
+// to be able to query any kind of database. Obviously, this doesn't work for all possible database structures, but
+// it generally works well enough to solve most, if not all, of the situations that you will come across.
 type Node struct {
 	nodeLink
 	condition NodeI // Used only by expansion nodes

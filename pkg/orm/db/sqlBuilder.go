@@ -11,13 +11,6 @@ import (
 	"strconv"
 )
 
-const (
-	SELECT = "SELECT"
-	INSERT = "INSERT"
-	UPDATE = "UPDATE"
-	DELETE = "DELETE"
-)
-
 const countAlias = "_count"
 
 // Copier implements the copy interface, that returns a deep copy of an object.

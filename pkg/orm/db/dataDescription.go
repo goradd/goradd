@@ -119,12 +119,12 @@ type FKAction int
 // The foreign key actions tell us what the database will do automatically if a foreign key object is changed. This allows
 // us to do the appropriate thing when we detect in the ORM that a linked object is changing.
 const (
-	FK_ACTION_NONE FKAction = iota // In a typical database, this is the same as Restrict. For OUR purposes, it means we should deal with it ourselves.
+	FKActionNone FKAction = iota // In a typical database, this is the same as Restrict. For OUR purposes, it means we should deal with it ourselves.
 	// This would be the situation when we are emulating foreign key constraints for databases that don't support them.
-	FK_ACTION_SET_NULL
-	FK_ACTION_SET_DEFAULT // Not supported in MySQL!
-	FK_ACTION_CASCADE     //
-	FK_ACTION_RESTRICT    // The database is going to choke on this. We will try to error before something like this happens.
+	FKActionSetNull
+	FKActionSetDefault  // Not supported in MySQL!
+	FKActionCascade     //
+	FKActionRestrict    // The database is going to choke on this. We will try to error before something like this happens.
 )
 
 

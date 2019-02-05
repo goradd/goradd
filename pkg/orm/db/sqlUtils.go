@@ -13,20 +13,20 @@ import (
 )
 
 const (
-	SQL_TYPE_UNKNOWN  = "Unknown"
-	SQL_TYPE_BLOB     = "Blob"
-	SQL_TYPE_VARCHAR  = "VarChar"
-	SQL_TYPE_CHAR     = "Char"
-	SQL_TYPE_TEXT     = "Text"
-	SQL_TYPE_INTEGER  = "Int"
-	SQL_TYPE_TIMESTAMP = "Timestamp"
-	SQL_TYPE_DATETIME = "DateTime"
-	SQL_TYPE_DATE     = "Date"
-	SQL_TYPE_TIME     = "Time"
-	SQL_TYPE_FLOAT    = "Float"
-	SQL_TYPE_DOUBLE   = "Double"
-	SQL_TYPE_BOOL     = "Bool"
-	SQL_TYPE_DECIMAL  = "Decimal" // a fixed point type
+	SqlTypeUnknown   = "Unknown"
+	SqlTypeBlob      = "Blob"
+	SqlTypeVarchar   = "VarChar"
+	SqlTypeChar      = "Char"
+	SqlTypeText      = "Text"
+	SqlTypeInteger   = "Int"
+	SqlTypeTimestamp = "Timestamp"
+	SqlTypeDatetime  = "DateTime"
+	SqlTypeDate      = "Date"
+	SqlTypeTime      = "Time"
+	SqlTypeFloat     = "Float"
+	SqlTypeDouble    = "Double"
+	SqlTypeBool      = "Bool"
+	SqlTypeDecimal   = "Decimal" // a fixed point type
 )
 
 func getTableDescription(tableName string, tableComment string, db SqlDbI) *TableDescription {
@@ -170,20 +170,20 @@ func getMinMax(o *maps.SliceMap, defaultMin float64, defaultMax float64, tableNa
 func fkRuleToAction(rule sql.NullString) FKAction {
 
 	if !rule.Valid {
-		return FK_ACTION_NONE // This means we will emulate foreign key actions
+		return FKActionNone // This means we will emulate foreign key actions
 	}
 	switch strings.ToUpper(rule.String) {
 	case "NO ACTION":
 		fallthrough
 	case "RESTRICT":
-		return FK_ACTION_RESTRICT
+		return FKActionRestrict
 	case "CASCADE":
-		return FK_ACTION_CASCADE
+		return FKActionCascade
 	case "SET DEFAULT":
-		return FK_ACTION_SET_DEFAULT
+		return FKActionSetDefault
 	case "SET NULL":
-		return FK_ACTION_SET_NULL
+		return FKActionSetNull
 
 	}
-	return FK_ACTION_NONE
+	return FKActionNone
 }
