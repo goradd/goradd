@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// ManyManyNode creates an association node.
+// A ManyManyNode is an association node that links one table to another table with a many-to-many relationship.
 // Some of the columns have overloaded meanings depending on SQL or NoSQL mode.
 type ManyManyNode struct {
 	Node
@@ -29,6 +29,7 @@ type ManyManyNode struct {
 	isTypeTable bool
 }
 
+// NewManyManyNode  is used internally by the framework to return a new ManyMany node.
 func NewManyManyNode(
 	dbKey string,
 	// NoSQL: The originating table. SQL: The association table
@@ -58,10 +59,10 @@ func NewManyManyNode(
 }
 
 func (n *ManyManyNode) nodeType() NodeType {
-	return MANYMANY_NODE
+	return ManyManyNodeType
 }
 
-// Expand tells this node to create multiple objects for each joined item, rather than to create an array of joined items
+// Expand tells this node to create multiple original objects with a single link for each joined item, rather than to create one original with an array of joined items
 func (n *ManyManyNode) Expand() {
 	n.isArray = false
 }
@@ -72,8 +73,9 @@ func (n *ManyManyNode) isExpanded() bool {
 	return !n.isArray
 }
 
+// Equals is used internally by the framework to test if the node is the same as another node.
 func (n *ManyManyNode) Equals(n2 NodeI) bool {
-	if n2.nodeType() == MANYMANY_NODE {
+	if n2.nodeType() == ManyManyNodeType {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*ManyManyNode)
 		return cn.dbTable == n.dbTable &&
 			cn.goPropName == n.goPropName &&
@@ -105,26 +107,32 @@ func (n *ManyManyNode) goName() string {
 	return n.goPropName
 }
 
+// ManyManyNodeIsArray is used internally by the framework to return whether the node creates an array, or just a link to a single item.
 func ManyManyNodeIsArray(n *ManyManyNode) bool {
 	return n.isArray
 }
 
+// ManyManyNodeIsTypeTable is used internally by the framework to return whether the node points to a type table
 func ManyManyNodeIsTypeTable(n *ManyManyNode) bool {
 	return n.isTypeTable
 }
 
+// ManyManyNodeRefTable is used internally by the framework to return the table name on the other end of the link
 func ManyManyNodeRefTable(n *ManyManyNode) string {
 	return n.refTable
 }
 
+// ManyManyNodeRefColumn is used internally by the framework to return the column name on the other end of the link
 func ManyManyNodeRefColumn(n *ManyManyNode) string {
 	return n.refColumn
 }
 
+// ManyManyNodeDbTable is used internally by the framework to return the table name of the table the node belongs to
 func ManyManyNodeDbTable(n *ManyManyNode) string {
 	return n.dbTable
 }
 
+// ManyManyNodeDbColumn is used internally by the framework to return the column name in the table the node belongs to
 func ManyManyNodeDbColumn(n *ManyManyNode) string {
 	return n.dbColumn
 }

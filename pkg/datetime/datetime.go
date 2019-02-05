@@ -194,7 +194,8 @@ func (d DateTime) MarshalJSON() (buf []byte, err error) {
 	return
 }
 
-// GoTime returns a GO time.Time value.
+// GoTime returns a GO time.Time value. Be careful, as this returns the time in whatever timestamp it currently
+// is set to. Consider converting to UTC time before getting this.
 func (d DateTime) GoTime() time.Time {
 	return d.Time
 }
@@ -214,13 +215,12 @@ func (d DateTime) Month() Month {
 	return Month(d.Time.Month())
 }
 
-// Local resturns a new DateTime with the date and time converted to local values in the server's timezone.
+// Local returns a new DateTime with the date and time converted to local values in the server's timezone.
 func (d DateTime) Local() DateTime {
 	return DateTime{d.Time.Local(), d.isTimestamp}
 }
 
-// UTC returns a new datetime in UTC time. Note that this will then begin treating it as not having
-// timezone information. Convert it to a local to re-establish it as a point in world time.
+// UTC returns a new datetime in UTC time.
 func (d DateTime) UTC() DateTime {
 	return DateTime{d.Time.UTC(), d.isTimestamp}
 }

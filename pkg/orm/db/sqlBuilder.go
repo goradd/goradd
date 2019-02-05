@@ -32,7 +32,7 @@ type limitInfo struct {
 
 // A sql builder is a helper object to organize a Query object eventually into a SQL string.
 // It builds the join tree and creates the aliases that will eventually be used to generate
-// the sql and then unpack it into fields and objects.
+// the sql and then unpack it into fields and objects. It implements the QueryBuilderI interface.
 type sqlBuilder struct {
 	db                SqlDbI
 	command           string
@@ -58,9 +58,7 @@ type sqlBuilder struct {
 	subPrefix       string
 }
 
-/**
-NewsqlBuilder creates a new sqlBuilder object.
-*/
+// NewSqlBuilder creates a new sqlBuilder object.
 func NewSqlBuilder(db SqlDbI) *sqlBuilder {
 	return &sqlBuilder{
 		db:            db,
@@ -221,7 +219,7 @@ func (b *sqlBuilder) Delete(ctx context.Context) {
 	var sql string
 	var args []interface{}
 
-	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
+	// Hand off the generation of sql statements to the database, since different databases generate sql differently
 	sql, args = b.db.generateDeleteSql(b)
 
 	//log.Debug(sql)
@@ -374,7 +372,7 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 	}
 	if srcNode.GetAlias() != "" &&
 		srcNode.GetAlias() != destNode.GetAlias() &&
-		GetNodeType(srcNode) != COLUMN_NODE {
+		GetNodeType(srcNode) != ColumnNodeType {
 		// Adding a pre-aliased node that is at the same level as this node, so just add it.
 		b.insertNode(srcNode, ParentNode(destNode), addColumn)
 		return

@@ -26,7 +26,7 @@ func Alias(goName string) *AliasNode {
 }
 
 func (n *AliasNode) nodeType() NodeType {
-	return ALIAS_NODE
+	return AliasNodeType
 }
 
 func (n *AliasNode) tableName() string {
@@ -35,7 +35,7 @@ func (n *AliasNode) tableName() string {
 
 // Equals returns true if the given node points to the same alias value as receiver.
 func (n *AliasNode) Equals(n2 NodeI) bool {
-	if n2.nodeType() == ALIAS_NODE {
+	if n2.nodeType() == AliasNodeType {
 		return n.GetAlias() == n2.GetAlias()
 	}
 

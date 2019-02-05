@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// ValueNode represents a value for a built-in type that is to be used in a query.
 type ValueNode struct {
 	Node
 
@@ -20,6 +21,7 @@ func Value(i interface{}) NodeI {
 	return NewValueNode(i)
 }
 
+// NewValueNode returns a new ValueNode that wraps the given value.
 func NewValueNode(i interface{}) NodeI {
 	n := &ValueNode{
 		value: i,
@@ -40,7 +42,7 @@ func NewValueNode(i interface{}) NodeI {
 	case []byte:
 		n.value = string(v[:])
 	case datetime.DateTime:
-		n.value = v.Time
+		n.value = v.GoTime()
 	case nil:
 		panic("You cannot use nil as an operator. If you are testing for a NULL, use the IsNull function.")
 	default:
@@ -87,7 +89,7 @@ func NewValueNode(i interface{}) NodeI {
 }
 
 func (n *ValueNode) nodeType() NodeType {
-	return VALUE_NODE
+	return ValueNodeType
 }
 
 func (n *ValueNode) Equals(n2 NodeI) bool {
@@ -124,6 +126,7 @@ func (n *ValueNode) log(level int) {
 	log.Print(tabs + "Val: " + fmt.Sprint(n.value) + alias)
 }
 
+// ValueNodeGetValue is used internally by the framework to get the node's internal value.
 func ValueNodeGetValue(n *ValueNode) interface{} {
 	return n.value
 }

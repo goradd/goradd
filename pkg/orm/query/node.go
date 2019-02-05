@@ -1,5 +1,6 @@
 package query
 
+/*
 type FieldType int
 
 const (
@@ -12,21 +13,23 @@ const (
 	Time
 	Float
 	Bit
-)
+)*/
 
+
+// NodeType indicates the type of node, which saves us from having to use reflection to determine this
 type NodeType int
 
 const (
-	UNKNOWN_NODE_TYPE NodeType = iota
-	TABLE_NODE
-	COLUMN_NODE
-	REFERENCE_NODE // forward reference from a foreign key
-	MANYMANY_NODE
-	REVERSE_REFERENCE_NODE
-	VALUE_NODE
-	OPERATION_NODE
-	ALIAS_NODE
-	SUBQUERY_NODE
+	UnknownNodeType NodeType = iota
+	TableNodeType
+	ColumnNodeType
+	ReferenceNodeType  // forward reference from a foreign key
+	ManyManyNodeType
+	ReverseReferenceNodeType
+	ValueNodeType
+	OperationNodeType
+	AliasNodeType
+	SubqueryNodeType
 )
 
 type goNamer interface {
@@ -37,17 +40,20 @@ type nodeContainer interface {
 	containedNodes() (nodes []NodeI)
 }
 
+// NodeSorter is the interface a node must satisfy to be able to be used in an OrderBy statement.
 type NodeSorter interface {
 	Ascending() NodeI
 	Descending() NodeI
 	sortDesc() bool
 }
 
+// Expander is the interface a node must satisfy to be able to be expanded upon, making a many-* relationship create multiple versions of the original object.
 type Expander interface {
 	Expand()
 	isExpanded() bool
 }
 
+// NodeI is the interface that all nodes must satisfy
 type NodeI interface {
 	nodeLinkI
 	Equals(NodeI) bool
@@ -58,6 +64,7 @@ type NodeI interface {
 	log(level int)
 }
 
+// Node is the base mixin for all node structures
 type Node struct {
 	nodeLink
 	condition NodeI // Used only by expansion nodes
@@ -69,10 +76,12 @@ type conditioner interface {
 	getCondition() NodeI
 }
 
+// SetAlias sets an alias which is an alternate name to use for the node in the result of a query.
 func (n *Node) SetAlias(a string) {
 	n.alias = a
 }
 
+// GetAlias returns the alias name for the node.
 func (n *Node) GetAlias() string {
 	return n.alias
 }
@@ -81,17 +90,19 @@ func (n *Node) GetAlias() string {
 
 Public Accessors
 
-The following functions are designed primarily to be used by the db package to help it unpack queries. The are not
+The following functions are designed primarily to be used by the db package to help it unpack queries. They are not
 given an accessor at the beginning so that they do not show up as a function in editors that provide code hinting when
 trying to put together a node chain during the code creation process. Essentially they are trying to create exported
 functions for the db package without broadcasting them to the world.
 
 */
 
+// NodeTableName is used internally by the framework to return the table associated with a node.
 func NodeTableName(n NodeI) string {
 	return n.tableName()
 }
 
+// NodeIsConditioner is used internally by the framework to determine if the node has a condition.
 func NodeIsConditioner(n NodeI) bool {
 	if tn, _ := n.(TableNodeI); tn != nil {
 		if c, _ := tn.EmbeddedNode_().(conditioner); c != nil {
@@ -101,6 +112,7 @@ func NodeIsConditioner(n NodeI) bool {
 	return false
 }
 
+// NodeSetCondition is used internally by the framework to set a condition on a node.
 func NodeSetCondition(n NodeI, condition NodeI) {
 	if condition != nil {
 		if tn, ok := n.(TableNodeI); ok {
@@ -115,6 +127,7 @@ func NodeSetCondition(n NodeI, condition NodeI) {
 	}
 }
 
+// NodeCondition is used internally by the framework to get a condition node.
 func NodeCondition(n NodeI) NodeI {
 	if cn, ok := n.(conditioner); ok {
 		return cn.getCondition()
@@ -126,6 +139,7 @@ func NodeCondition(n NodeI) NodeI {
 	return nil
 }
 
+// ContainedNodes is used internally by the framework to return the contained nodes.
 func ContainedNodes(n NodeI) (nodes []NodeI) {
 	if nc, ok := n.(nodeContainer); ok {
 		return nc.containedNodes()
@@ -134,14 +148,17 @@ func ContainedNodes(n NodeI) (nodes []NodeI) {
 	}
 }
 
+// LogNode is used internally by the framework to debug node issues.
 func LogNode(n NodeI, level int) {
 	n.log(level)
 }
 
+// GetNodeType is used internally by the framework to get the type of node without using reflection.
 func GetNodeType(n NodeI) NodeType {
 	return n.nodeType()
 }
 
+// NodeIsExpanded is used internally by the framework to detect if the node is an expanded many-many relationship.
 func NodeIsExpanded(n NodeI) bool {
 	if tn, ok := n.(TableNodeI); ok {
 		if en, ok := tn.EmbeddedNode_().(Expander); ok {
@@ -151,6 +168,7 @@ func NodeIsExpanded(n NodeI) bool {
 	return false
 }
 
+// NodeIsExpander is used internally by the framework to detect if the node can be an expanded many-many relationship.
 func NodeIsExpander(n NodeI) bool {
 	if tn, ok := n.(TableNodeI); ok {
 		if _, ok := tn.EmbeddedNode_().(Expander); ok {
@@ -160,6 +178,7 @@ func NodeIsExpander(n NodeI) bool {
 	return false
 }
 
+// ExpandNode is used internally by the framework to expand a many-many relationship.
 func ExpandNode(n NodeI) {
 	if tn, ok := n.(TableNodeI); ok {
 		if en, ok := tn.EmbeddedNode_().(Expander); ok {
@@ -172,6 +191,7 @@ func ExpandNode(n NodeI) {
 	}
 }
 
+// NodeGoName is used internally by the framework to return the go name of the item the node refers to.
 func NodeGoName(n NodeI) string {
 	if gn, ok := n.(goNamer); ok {
 		return gn.goName()
@@ -181,6 +201,7 @@ func NodeGoName(n NodeI) string {
 	return ""
 }
 
+// NodeSorterSortDesc is used internally by the framework to determine if the NodeSorter is descending.
 func NodeSorterSortDesc(n NodeSorter) bool {
 	return n.sortDesc()
 }

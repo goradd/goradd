@@ -5,9 +5,8 @@ import (
 	"strings"
 )
 
-// A TableNode is a representation of the top level of a chain of nodes that point to a particular field in a query, even after
-// aliases and joins are taken into account.
-
+// TableNodeI is the interface that all table nodes must implement. TableNodes are create by the code generation
+// process, one for each table in the database.
 type TableNodeI interface {
 	NodeI
 	SelectNodes_() []*ColumnNode
@@ -15,6 +14,9 @@ type TableNodeI interface {
 	EmbeddedNode_() NodeI
 }
 
+// A TableNode is a representation of the top level of a chain of nodes that point to a particular field in a query, even after
+// aliases and joins are taken into account. TableNodes are create by the code generation
+// process, one for each table in the database.
 type TableNode struct {
 	Node
 
@@ -36,7 +38,7 @@ func NewTableNode(dbKey string, dbName string, goName string) *TableNode {
 }
 
 func (n *TableNode) nodeType() NodeType {
-	return TABLE_NODE
+	return TableNodeType
 }
 
 func (n *TableNode) tableName() string {
@@ -48,7 +50,7 @@ func (n *TableNode) goName() string {
 }
 
 func (n *TableNode) Equals(n2 NodeI) bool {
-	if n2.nodeType() == TABLE_NODE {
+	if n2.nodeType() == TableNodeType {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*TableNode)
 		return cn.dbTable == n.dbTable && cn.dbKey == n.dbKey
 	}

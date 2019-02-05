@@ -17,11 +17,12 @@ type ColumnNode struct {
 	dbColumn string
 	// The name of the function used to access the property as a node or ORM item
 	gName string
+	// The go type for the column
 	goType GoColumnType
 	// Used by OrderBy clauses
 	sortDescending bool
 	// When in an update or insert operation, stores the value we are attempting to update or insert
-	value interface{}
+	//value interface{}
 }
 
 func NewColumnNode(dbKey string, dbTable string, dbName string, goName string, goType GoColumnType) *ColumnNode {
@@ -35,11 +36,13 @@ func NewColumnNode(dbKey string, dbTable string, dbName string, goName string, g
 	return n
 }
 
+// Ascending is used in an OrderBy query builder function to sort the column in ascending order.
 func (n *ColumnNode) Ascending() NodeI {
 	n.sortDescending = false
 	return n
 }
 
+// Descending is used in an OrderBy query builder function to sort the column in descending order.
 func (n *ColumnNode) Descending() NodeI {
 	n.sortDescending = true
 	return n
@@ -49,16 +52,20 @@ func (n *ColumnNode) sortDesc() bool {
 	return n.sortDescending
 }
 
+/*
 func (n *ColumnNode) SetValue(v interface{}) error {
 	// TODO: verify
 	n.value = v
 	return nil
 }
+*/
+
 
 func (n *ColumnNode) nodeType() NodeType {
-	return COLUMN_NODE
+	return ColumnNodeType
 }
 
+// Equals is used internally by the framework to determine if two nodes are equal.
 func (n *ColumnNode) Equals(n2 NodeI) bool {
 	if cn, ok := n2.(*ColumnNode); ok {
 		if cn.dbTable == n.dbTable && cn.dbColumn == n.dbColumn {
@@ -96,10 +103,12 @@ func (n *ColumnNode) log(level int) {
 	log.Print(tabs + "Col: " + n.dbTable + "." + n.dbColumn + alias)
 }
 
+// GoColumnType is used internally by the framework to return the go type corresponding to the given column.
 func ColumnNodeGoType(n *ColumnNode) GoColumnType {
 	return n.goType
 }
 
+// ColumnNodeDbName is used internally by the framework to return the name of the column in the database.
 func ColumnNodeDbName(n *ColumnNode) string {
 	return n.dbColumn
 }

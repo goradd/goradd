@@ -5,17 +5,17 @@ import (
 	"strings"
 )
 
-// A Subquery node represents a "select" subquery. Subqueries are not always portable to other databases, and are not
+// A SubqueryNode represents a "select" subquery. Subqueries are not always portable to other databases, and are not
 // easily checked for syntax errors, since a subquery can return a scalar, vector, or even an entire table.
 // You generally do not create a subquery node directly, but rather you use the codegenerated models to start a
 // query on a table, and then end the query with "Subquery()" which will turn the query into a usable subquery node
 // that you can embed in other queries.
-
 type SubqueryNode struct {
 	Node
 	b QueryBuilderI
 }
 
+// NewSubqueryNode creates a new subquery
 func NewSubqueryNode(b QueryBuilderI) *SubqueryNode {
 	n := &SubqueryNode{
 		b: b,
@@ -24,9 +24,10 @@ func NewSubqueryNode(b QueryBuilderI) *SubqueryNode {
 }
 
 func (n *SubqueryNode) nodeType() NodeType {
-	return SUBQUERY_NODE
+	return SubqueryNodeType
 }
 
+// Equals is used internally by the framework to determine if two nodes are equal
 func (n *SubqueryNode) Equals(n2 NodeI) bool {
 	if cn, ok := n2.(*SubqueryNode); ok {
 		return cn.b == n.b
@@ -59,6 +60,7 @@ func (n *SubqueryNode) log(level int) {
 	log.Print(tabs + "Subquery: ")
 }
 
+// SubqueryBuilder is used internally by the framework to return the internal query builder of the subquery
 func SubqueryBuilder(n *SubqueryNode) QueryBuilderI {
 	return n.b
 }

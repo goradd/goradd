@@ -5,7 +5,13 @@ import (
 	"strings"
 )
 
-// ReverseReferenceNode creates a reverse reference node representing a one to many relationship. This is the many side of that relationship.
+// ReverseReferenceNode creates a reverse reference node representing a one to many relationship or one-to-one
+// relationship, depending on whether the foreign key is unique. The other side of the relationship will have
+// a matching forward ReferenceNode.
+//
+// For SQL databases, a ReverseReferenceNode will not have anything in its
+// table to indicate the relationship. It is a kind of virtual placeholder to indicate that a foreign key in
+// another table is pointing to this table, and therefore that relationship can be used to build a query.
 type ReverseReferenceNode struct {
 	Node
 
@@ -57,9 +63,11 @@ func NewReverseReferenceNode(
 }
 
 func (n *ReverseReferenceNode) nodeType() NodeType {
-	return REVERSE_REFERENCE_NODE
+	return ReverseReferenceNodeType
 }
 
+// Expand tells the node to expand its results into multiple records, one for each item found in this relationship,
+// rather than have this relationship create an array of items within an individual record.
 func (n *ReverseReferenceNode) Expand() {
 	n.isArray = false
 }
@@ -68,12 +76,9 @@ func (n *ReverseReferenceNode) isExpanded() bool {
 	return !n.isArray
 }
 
-func (n *ReverseReferenceNode) IsArray() bool {
-	return n.isArray
-}
-
+// Equals is used internally by the framework to determine if two nodes are equal.
 func (n *ReverseReferenceNode) Equals(n2 NodeI) bool {
-	if n2.nodeType() == REVERSE_REFERENCE_NODE {
+	if n2.nodeType() == ReverseReferenceNodeType {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*ReverseReferenceNode)
 		return cn.dbTable == n.dbTable &&
 			cn.refTable == n.refTable &&
@@ -106,18 +111,23 @@ func (n *ReverseReferenceNode) goName() string {
 	return n.goPropName
 }
 
+// ReverseReferenceNodeIsArray is used internally by the framework to determine if a node should create an array
 func ReverseReferenceNodeIsArray(n *ReverseReferenceNode) bool {
 	return n.isArray
 }
 
+// ReverseReferenceNodeRefTable is used internally by the framework to get the referenced table
 func ReverseReferenceNodeRefTable(n *ReverseReferenceNode) string {
 	return n.refTable
 }
 
+// ReverseReferenceNodeRefColumn is used internally by the framework to get the referenced column
 func ReverseReferenceNodeRefColumn(n *ReverseReferenceNode) string {
 	return n.refColumn
 }
 
+// ReverseReferenceNodeDbColumnName is used internally by the framework to get the database column on this side of the
+// relationship, which is most likely the primary key.
 func ReverseReferenceNodeDbColumnName(n *ReverseReferenceNode) string {
 	return n.dbColumn
 }

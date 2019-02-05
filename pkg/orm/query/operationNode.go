@@ -5,10 +5,13 @@ import (
 	"strings"
 )
 
+// Operator is used internally by the framework to specify an operation to be performed by the database.
+// Not all databases can perform all the operations. It will be up to the database driver to sort this out.
 type Operator string
 
 const (
 	// Standard logical operators
+
 	OpEqual        Operator = "="
 	OpNotEqual     Operator = "<>"
 	OpAnd                   = "AND"
@@ -59,22 +62,25 @@ const (
 	OpNotNull = "NOT NULL"
 )
 
+// String returns a string representation of the Operator type. For convenience, this also corresponds to the SQL
+// representation of an operator
 func (o Operator) String() string {
 	return string(o)
 }
 
-// An operation is a general purpose structure that specs an operation on a node or group of nodes
+// An OperationNode is a general purpose structure that specifies an operation on a node or group of nodes.
 // The operation could be arithmetic, boolean, or a function.
 type OperationNode struct {
 	Node
 	op             Operator
 	operands       []NodeI
 	functionName   string // for function operations specific to the db driver
-	isAggregate    bool   // requires that an aggregation clause be present in the query
-	sortDescending bool
+	//isAggregate    bool   // requires that an aggregation clause be present in the query
+	//sortDescending bool
 	distinct       bool // some aggregate queries, particularly count, allow this inside the function
 }
 
+// NewOperationNode returns a new operation.
 func NewOperationNode(op Operator, operands ...interface{}) *OperationNode {
 	n := &OperationNode{
 		op: op,
@@ -83,6 +89,7 @@ func NewOperationNode(op Operator, operands ...interface{}) *OperationNode {
 	return n
 }
 
+// NewFunctionNode returns an operation node that executes a database function.
 func NewFunctionNode(functionName string, operands ...interface{}) *OperationNode {
 	n := &OperationNode{
 		op:           OpFunc,
@@ -106,7 +113,7 @@ func NewCountNode(operands ...NodeI) *OperationNode {
 	return n
 }
 
-// process the list of operands at run time, making sure all static values are escaped
+// assignOperands processes the list of operands at run time, making sure all static values are escaped
 func (n *OperationNode) assignOperands(operands ...interface{}) {
 	var op interface{}
 
@@ -121,6 +128,7 @@ func (n *OperationNode) assignOperands(operands ...interface{}) {
 	}
 }
 
+/*
 func (n *OperationNode) Ascending() *OperationNode {
 	n.sortDescending = false
 	return n
@@ -130,20 +138,25 @@ func (n *OperationNode) Descending() *OperationNode {
 	n.sortDescending = true
 	return n
 }
+*/
 
+// Distinct sets the operation to return distinct results
 func (n *OperationNode) Distinct() *OperationNode {
 	n.distinct = true
 	return n
 }
 
+/*
 func (n *OperationNode) sortDesc() bool {
 	return n.sortDescending
 }
+*/
 
 func (n *OperationNode) nodeType() NodeType {
-	return OPERATION_NODE
+	return OperationNodeType
 }
 
+// Equals is used internally by the framework to tell if two nodes are equal
 func (n *OperationNode) Equals(n2 NodeI) bool {
 	if cn, ok := n2.(*OperationNode); ok {
 		if cn.op != n.op {
@@ -152,12 +165,15 @@ func (n *OperationNode) Equals(n2 NodeI) bool {
 		if cn.functionName != n.functionName {
 			return false
 		}
+		/*
 		if cn.isAggregate != n.isAggregate {
 			return false
 		}
+		*/
+		/*
 		if cn.sortDescending != n.sortDescending {
 			return false
-		}
+		}*/
 		if cn.operands == nil && n.operands == nil {
 			return true // neither side has operands, so no need to check further
 		}
@@ -195,26 +211,33 @@ func (n *OperationNode) log(level int) {
 	log.Print(tabs + "Op: " + n.op.String())
 }
 
+// OperationNodeOperator is used internally by the framework to get the operator.
 func OperationNodeOperator(n *OperationNode) Operator {
 	return n.op
 }
 
+// OperationNodeOperands is used internally by the framework to get the operands.
 func OperationNodeOperands(n *OperationNode) []NodeI {
 	return n.operands
 }
 
+// OperationNodeFunction is used internally by the framework to get the function.
 func OperationNodeFunction(n *OperationNode) string {
 	return n.functionName
 }
 
+// OperationNodeDistinct is used internally by the framework to get the distinct value.
 func OperationNodeDistinct(n *OperationNode) bool {
 	return n.distinct
 }
 
+/*
 func OperationIsAggregate(n *OperationNode) bool {
 	return n.isAggregate
 }
-
+*/
+/*
 func OperationSortDescending(n *OperationNode) bool {
 	return n.sortDescending
 }
+*/

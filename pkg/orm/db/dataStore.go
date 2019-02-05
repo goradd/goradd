@@ -14,7 +14,7 @@ var datastore struct {
 	typeTables map[string]map[string]*TypeTableDescription
 }
 
-type LoaderFunc func(QueryBuilderI, map[string]interface{})
+//type LoaderFunc func(QueryBuilderI, map[string]interface{})
 
 type TransactionID int
 
@@ -26,23 +26,32 @@ type DatabaseI interface {
 	// a json file.
 	Describe() *DatabaseDescription
 
-	// For codegen
-	GoStructPrefix() string
+	// AssociatedObjectPrefix is a prefix we add to all variables that point to ORM objects. By default this is an "o".
 	AssociatedObjectPrefix() string
 
-	// Aid to build queries and deletes
+	// NewBuilder returns a newly created query builder
 	NewBuilder() QueryBuilderI
 
+	// Update will put the given values into a record that already exists in the database. The "fields" value
+	// should include only fields that have changed.
 	Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue string)
+	// Insert will insert a new record into the database with the given values, and return the new record's primary key value.
+	// The fields value should include all the required values in the database.
 	Insert(ctx context.Context, table string, fields map[string]interface{}) string
+	// Delete will delete the given record from the database
 	Delete(ctx context.Context, table string, pkName string, pkValue interface{})
 
+	// Begin will begin a transaction in the database and return the transaction id
 	Begin(ctx context.Context) TransactionID
+	// Commit will commit the given transaction
 	Commit(ctx context.Context, txid TransactionID)
+	// Rollback will roll back the given transaction PROVIDED it has not been committed. If it has been
+	// committed, it will do nothing. Rollback can therefore be used in a defer statement as a safeguard in case
+	// a transaction fails.
 	Rollback(ctx context.Context, txid TransactionID)
 }
 
-
+// AddDatabase adds a database to the global database store. Only call this during app startup.
 func AddDatabase(d DatabaseI, key string) {
 	if datastore.databases == nil {
 		datastore.databases = make(map[string]DatabaseI)
@@ -51,15 +60,18 @@ func AddDatabase(d DatabaseI, key string) {
 	datastore.databases[key] = d
 }
 
+// GetDatabase returns the database given the database's key.
 func GetDatabase(key string) DatabaseI {
 	d := datastore.databases[key]
 	return d
 }
 
+// GetDatabases returns all databases in the datastore
 func GetDatabases() map[string]DatabaseI {
 	return datastore.databases
 }
 
+// GetTableDescription returns a table description given a database key and the struct name corresponding to the table.
 func GetTableDescription(key string, goTypeName string) *TableDescription {
 	td, ok := datastore.tables[key][goTypeName]
 	if !ok {
@@ -68,6 +80,7 @@ func GetTableDescription(key string, goTypeName string) *TableDescription {
 	return td
 }
 
+// GetTypeTableDescription returns a type table description given a database key and the struct name corresponding to the table.
 func GetTypeTableDescription(key string, goTypeName string) *TypeTableDescription {
 	td, ok := datastore.typeTables[key][goTypeName]
 	if !ok {
@@ -76,6 +89,8 @@ func GetTypeTableDescription(key string, goTypeName string) *TypeTableDescriptio
 	return td
 }
 
+// AnalyzeDatabases should be called at application startup after all the databases have been added to the
+// datastore. It will prepare the datastore for use by the ORM.
 func AnalyzeDatabases() {
 	var dd *DatabaseDescription
 	datastore.tables = make(map[string]map[string]*TableDescription)

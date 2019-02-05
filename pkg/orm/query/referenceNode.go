@@ -5,9 +5,9 @@ import (
 	"strings"
 )
 
-// A ReferenceNode is a forward-pointing foreignKey relationship, and can define a one-to-one or one-to-many relationship,
-// with this side always being the one side. It also sets up a many-to-one relationship, if it is not unique, when viewed
-// from the other side of the relationship.
+// A ReferenceNode is a forward-pointing foreign key relationship, and can define a one-to-one or
+// one-to-many relationship, depending on whether it is unique. If the other side of the relationship is
+// not a type table, then the other table will have a matching ReverseReferenceNode.
 type ReferenceNode struct {
 	Node
 
@@ -58,11 +58,12 @@ func NewReferenceNode(
 }
 
 func (n *ReferenceNode) nodeType() NodeType {
-	return REFERENCE_NODE
+	return ReferenceNodeType
 }
 
+// Equals is used internally by the framework to determine if two nodes are equal.
 func (n *ReferenceNode) Equals(n2 NodeI) bool {
-	if n2.nodeType() == REFERENCE_NODE {
+	if n2.nodeType() == ReferenceNodeType {
 		cn := n2.(TableNodeI).EmbeddedNode_().(*ReferenceNode)
 		return cn.dbTable == n.dbTable &&
 			cn.goPropName == n.goPropName &&
@@ -101,6 +102,7 @@ func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
 	return n2
 }
 
+// RelatedColumnNode is used internally by the framework to create a new node for the other side of the relationship.
 func RelatedColumnNode(n NodeI) NodeI {
 	if tn, _ := n.(TableNodeI); tn != nil {
 		if rn, _ := tn.EmbeddedNode_().(*ReferenceNode); rn != nil {
@@ -110,14 +112,17 @@ func RelatedColumnNode(n NodeI) NodeI {
 	return nil
 }
 
+// ReferenceNodeRefTable is used internally by the framework to get the table name for the other side of the relationship.
 func ReferenceNodeRefTable(n *ReferenceNode) string {
 	return n.refTable
 }
 
+// ReferenceNodeRefColumn is used internally by the framework to get the column name for the other side of the relationship.
 func ReferenceNodeRefColumn(n *ReferenceNode) string {
 	return n.refColumn
 }
 
+// ReferenceNodeDbColumnName is used internally by the framework to get the column name for this side of the relationship.
 func ReferenceNodeDbColumnName(n *ReferenceNode) string {
 	return n.dbColumn
 }

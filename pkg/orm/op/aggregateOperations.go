@@ -2,7 +2,7 @@ package op
 
 import . "github.com/goradd/goradd/pkg/orm/query"
 
-// On some databases, these aggregate oeprations will only work if there is a GroupBy clause as well.
+// On some databases, these aggregate operations will only work if there is a GroupBy clause as well.
 
 func Min(n NodeI) *OperationNode {
 	return NewFunctionNode("MIN", n)

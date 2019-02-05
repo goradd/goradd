@@ -3,13 +3,18 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/knq/snaker"
 	"github.com/goradd/gengen/pkg/maps"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	"github.com/knq/snaker"
 	"log"
 	"math"
 	"strings"
 )
+
+/*
+This file contains the code that parses the data structure found in a MySQL database into
+our own cross-platform internal database description object.
+ */
 
 const (
 	MYSQL_TYPE_SET  = "Set"

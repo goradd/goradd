@@ -10,13 +10,21 @@ import (
 	"strings"
 )
 
+// The SqlDbI interface describes the interface that a sql database needs to implement so that
+// it will work with the sqlBuilder object.
 type SqlDbI interface {
+	// Exec executes a query that does not expect to return values
 	Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error)
+	// Exec executes a query that returns values
 	Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error)
+	// TypeTableSuffix returns the suffix used in a table name to indicate that the table is a type table. By default this is "_type".
 	TypeTableSuffix() string
+	// AssociationTableSuffix returns the suffix used in a table name to indicate that the table is an association table. By default this is "_assn".
 	AssociationTableSuffix() string
 
+	// generateSelectSql will generate the select sql from the builder. This sql can be specific to the database used.
 	generateSelectSql(QueryBuilderI) (sql string, args []interface{})
+	// generateDeleteSql will generate delete sql from the given builder.
 	generateDeleteSql(QueryBuilderI) (sql string, args []interface{})
 }
 
@@ -40,6 +48,7 @@ type SqlContext struct {
 	profiles []ProfileEntry
 }
 
+// SqlDb is a mixin to specific SQL database driver that implements common code needed by all SQL database drivers.
 type SqlDb struct {
 	dbKey string  // key of the database as used in the global database map
 	db    *sql.DB // Internal copy of golang database
@@ -50,12 +59,12 @@ type SqlDb struct {
 	idSuffix               string // suffix to strip off the ends of names of foreign keys when converting them to internal names
 
 	// These codegen options may be moved higher up in hierarchy some day
-	goStructPrefix         string // Helps differentiate objects when different databases have the same name.
 	associatedObjectPrefix string // Helps differentiate between objects and local values
 
 	profiling bool
 }
 
+// NewSqlDb creates a default SqlDb mixin.
 func NewSqlDb(dbKey string) SqlDb {
 	s := SqlDb{
 		dbKey:                  dbKey,
@@ -84,7 +93,7 @@ func (s *SqlDb) Begin(ctx context.Context) (txid TransactionID){
 
 		c.tx, err = s.db.Begin()
 		if err != nil {
-			c.tx.Rollback()
+			_ = c.tx.Rollback()
 			c.txCount-- // transaction did not begin
 			panic(err.Error())
 		}
@@ -144,6 +153,7 @@ func (s *SqlDb) Rollback(ctx context.Context, txid TransactionID) {
 	}
 }
 
+// Exec executes the given SQL code, without returning any result rows.
 func (s *SqlDb) Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
@@ -174,6 +184,7 @@ func (s *SqlDb) Exec(ctx context.Context, sql string, args ...interface{}) (r sq
 	return
 }
 
+/*
 func (s *SqlDb) Prepare(ctx context.Context, sql string) (r *sql.Stmt, err error) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
@@ -193,8 +204,9 @@ func (s *SqlDb) Prepare(ctx context.Context, sql string) (r *sql.Stmt, err error
 	}
 
 	return
-}
+}*/
 
+// Query executes the given sql, and returns a row result set.
 func (s *SqlDb) Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
@@ -222,50 +234,52 @@ func (s *SqlDb) Query(ctx context.Context, sql string, args ...interface{}) (r *
 	return
 }
 
+// DbKey returns the database key used in the datastore.
 func (s *SqlDb) DbKey() string {
 	return s.dbKey
 }
 
+// SetTypeTableSuffix sets the suffix used to identify type tables.
 func (s *SqlDb) SetTypeTableSuffix(suffix string) {
 	s.typeTableSuffix = suffix
 }
 
+// SetAssociationTableSuffix sets the suffix used to identify association tables.
 func (s *SqlDb) SetAssociationTableSuffix(suffix string) {
 	s.associationTableSuffix = suffix
 }
 
+// TypeTableSuffix returns the suffix used to identify type tables.
 func (s *SqlDb) TypeTableSuffix() string {
 	return s.typeTableSuffix
 }
 
+// AssociationTableSuffix returns the suffix used to identify association tables.
 func (s *SqlDb) AssociationTableSuffix() string {
 	return s.associationTableSuffix
 }
 
-func (s *SqlDb) SetGoStructPrefix(prefix string) {
-	s.goStructPrefix = prefix
-}
-
+// SetAssociatedObjectPrefix sets the prefix string used in code generation to indicate a variable is a database object.
 func (s *SqlDb) SetAssociatedObjectPrefix(prefix string) {
 	s.associatedObjectPrefix = prefix
 }
 
-func (s *SqlDb) GoStructPrefix() string {
-	return s.goStructPrefix
-}
-
+// SetAssociatedObjectPrefix returns the prefix string used in code generation to indicate a variable is a database object.
 func (s *SqlDb) AssociatedObjectPrefix() string {
 	return s.associatedObjectPrefix
 }
 
+// IdSuffix is the suffix used to indicate that a field is a foreign ky to another table.
 func (s *SqlDb) IdSuffix() string {
 	return s.idSuffix
 }
 
+// StartProfiling will start the database profiling process.
 func (s *SqlDb) StartProfiling() {
 	s.profiling = true
 }
 
+// IsProfiling returns true if we are currently collection SQL database profiling information.
 func IsProfiling(ctx context.Context) bool {
 	var c *SqlContext
 
@@ -280,6 +294,7 @@ func IsProfiling(ctx context.Context) bool {
 	return false
 }
 
+// GetProfiles returns currently collected profile information
 // TODO: Move profiles to a session variable so we can access ajax queries too
 func GetProfiles(ctx context.Context) []ProfileEntry {
 	var c *SqlContext

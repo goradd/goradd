@@ -12,12 +12,13 @@ import (
 
 // SqlReceiver is an encapsulation of a way of receiving data from sql queries as interface{} pointers. This allows you
 // to get data without knowing the type of data you are asking for ahead of time, and is easier for dealing with NULL fields.
-// Some database drivers (MySql for one), return different results in fields depending on how you call the query (using
+// Some database drivers (MySql for one) return different results in fields depending on how you call the query (using
 // a prepared statement can return different results than without one), or if the data does not quite fit (UInt64 in particular
 // will return a string if the returned value is bigger than MaxInt64, but smaller than MaxUint64.)
 //
-// Pass the address of the R member to the sql.Scan method when using an object of this type. IsRequired because there are some idiosyncracies with
-// how Go treats return values that would prevent returning an address of R from a function
+// Pass the address of the R member to the sql.Scan method when using an object of this type,
+// because there are some idiosyncracies with
+// how Go treats return values that prevents returning an address of R from a function
 type SqlReceiver struct {
 	R interface{}
 }
@@ -50,7 +51,7 @@ func (r SqlReceiver) IntI() interface{} {
 	}
 }
 
-// Some drivers (like MySQL) return all integers as Int64. This converts to basic golang uint. Its up to you to make sure
+// Some drivers (like MySQL) return all integers as Int64. This converts a value to a GO uint. Its up to you to make sure
 // you only use this on 32-bit uints or smaller
 func (r SqlReceiver) UintI() interface{} {
 	if r.R == nil {
@@ -81,6 +82,7 @@ func (r SqlReceiver) UintI() interface{} {
 	}
 }
 
+// Returns the given value as an interface to an Int64
 func (r SqlReceiver) Int64I() interface{} {
 	if r.R == nil {
 		return nil
@@ -137,6 +139,7 @@ func (r SqlReceiver) Uint64I() interface{} {
 	}
 }
 
+// BoolI returns the value as an interface to a boolean
 func (r SqlReceiver) BoolI() interface{} {
 	if r.R == nil {
 		return nil
@@ -167,6 +170,7 @@ func (r SqlReceiver) BoolI() interface{} {
 	}
 }
 
+// StringI returns the value as an interface to a string
 func (r SqlReceiver) StringI() interface{} {
 	if r.R == nil {
 		return nil
@@ -181,6 +185,7 @@ func (r SqlReceiver) StringI() interface{} {
 	}
 }
 
+// FloatI returns the value as an interface to a float32 value.
 func (r SqlReceiver) FloatI() interface{} {
 	if r.R == nil {
 		return nil
@@ -208,6 +213,7 @@ func (r SqlReceiver) FloatI() interface{} {
 	}
 }
 
+// DoubleI returns the value as a float64 interface
 func (r SqlReceiver) DoubleI() interface{} {
 	if r.R == nil {
 		return nil
@@ -235,6 +241,7 @@ func (r SqlReceiver) DoubleI() interface{} {
 	}
 }
 
+// TimeI returns the value as a datetime.DateTime value in the server's timezone.
 func (r SqlReceiver) TimeI() interface{} {
 	if r.R == nil {
 		return nil
@@ -265,7 +272,7 @@ func (r SqlReceiver) TimeI() interface{} {
 	return date.Local()
 }
 
-// Convert an SqlReceiver to a type corresponding to the given GoColumnType
+// Unpack converts a SqlReceiver to a type corresponding to the given GoColumnType
 func (r SqlReceiver) Unpack(typ GoColumnType) interface{} {
 	switch typ {
 	case ColTypeBytes:

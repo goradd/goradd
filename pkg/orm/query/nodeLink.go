@@ -11,7 +11,7 @@ type nodeLinkI interface {
 }
 
 // The nodeLink is designed to be a mixin for the basic node structure. It encapsulates the chaining of nodes.
-// In particular, the SetParentNode method get exported for codegen purposes
+// In particular, the SetParentNode method gets exported for codegen purposes
 type nodeLink struct {
 	// We need to be able to get to the surrounding class. This is our aid to doing that. It must be set up correctly though.
 	self NodeI
@@ -47,7 +47,8 @@ func (n *nodeLink) setParent(p NodeI) {
 	n.parentNode = p
 }
 
-// Used by the query builder to build a join tree, and by the codegenerator to initialize nodes
+// SetParentNode is used internally by the framework.
+// It is used by the query builder to build a join tree, and by the codegenerator to initialize nodes
 func SetParentNode(child NodeI, parent NodeI) {
 	if parent != nil {
 		child.setParent(parent)
@@ -56,6 +57,7 @@ func SetParentNode(child NodeI, parent NodeI) {
 	child.setSelf(child)
 }
 
+// ParentNode is used internally by the framework to return a node's parent.
 func ParentNode(n NodeI) NodeI {
 	return n.getParentNode()
 }
@@ -91,10 +93,12 @@ functions for the db package without broadcasting them to the world.
 
 */
 
+// ChildNodes is used internally by the framework to get the child nodes of a ndoe
 func ChildNodes(n nodeLinkI) []NodeI {
 	return n.getChildNodes()
 }
 
+// RootNode is used internally by the framework to get the root node, which is the top parent in the node tree.
 func RootNode(n nodeLinkI) NodeI {
 	return n.rootNode()
 }

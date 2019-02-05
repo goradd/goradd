@@ -1,22 +1,8 @@
 package query
 
+// GoColumnType represents the GO type that corresponds to a database column
 type GoColumnType int
-/*
-const (
-	ColTypeUnknown    GoColumnType = ""
-	ColTypeBytes                   = "[]byte"
-	ColTypeString                  = "string"
-	ColTypeInteger                 = "int"
-	ColTypeUnsigned                = "uint"
-	ColTypeInteger64               = "int64"
-	ColTypeUnsigned64              = "uint64"
-	ColTypeDateTime                = "datetime.DateTime"
-	ColTypeTimestamp               = "datetime.Timestamp"
-	ColTypeFloat                   = "float32" // always internally represent with max bits
-	ColTypeDouble                  = "float64" // always internally represent with max bits
-	ColTypeBool                    = "bool"
-)
-*/
+
 const (
 	ColTypeUnknown    GoColumnType = iota
 	ColTypeBytes
@@ -31,7 +17,7 @@ const (
 	ColTypeBool
 )
 
-
+// String returns the constant type name as a string
 func (g GoColumnType) String() string {
 	switch g {
 	case ColTypeUnknown: return "ColTypeUnknown"
@@ -49,6 +35,7 @@ func (g GoColumnType) String() string {
 	return ""
 }
 
+// GoType returns the actual GO type as go code
 func (g GoColumnType) GoType() string {
 	switch g {
 	case ColTypeUnknown: return "Unknown"
@@ -66,7 +53,7 @@ func (g GoColumnType) GoType() string {
 	return ""
 }
 
-
+// DefaultValue returns a string that represents the GO default value for the corresponding type
 func (g GoColumnType) DefaultValue() string {
 	switch g {
 	case ColTypeUnknown:
