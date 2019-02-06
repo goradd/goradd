@@ -2,6 +2,7 @@ package session_test
 
 import (
 	"github.com/goradd/goradd/pkg/session"
+	"github.com/goradd/goradd/pkg/session/location"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
@@ -17,6 +18,10 @@ func setupStackRequestHandler() http.Handler {
 		session.PushStack(ctx, stack, "A")
 		session.PushStack(ctx, stack, "B")
 		session.PushStack(ctx, stack, "C")
+
+		location.Push(ctx, "Here")
+		location.Push(ctx, "There")
+		location.Clear(ctx)
 	}
 	return http.HandlerFunc(fn)
 }
@@ -30,6 +35,8 @@ func testStackRequestHandler(t *testing.T) http.Handler {
 		assert.Equal(t, "B", session.PopStack(ctx, stack))
 		assert.Equal(t, "A", session.PopStack(ctx, stack))
 		assert.Equal(t, "", session.PopStack(ctx, stack))
+
+		assert.Equal(t, "", location.Pop(ctx))
 	}
 	return http.HandlerFunc(fn)
 }

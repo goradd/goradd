@@ -76,6 +76,16 @@ func testRequestHandler(t *testing.T) http.Handler {
 		f,ok := session.GetFloat(ctx, floatKey)
 		assert.True(t, ok)
 		assert.Equal(t, 7.6, f)
+		// repeat
+		f,ok = session.GetFloat(ctx, floatKey)
+		assert.True(t, ok)
+		assert.Equal(t, 7.6, f)
+
+		session.Clear(ctx)
+		f,ok = session.GetFloat(ctx, floatKey)
+		assert.False(t, ok)
+		assert.Equal(t, 0.0, f)
+
 	}
 	return http.HandlerFunc(fn)
 }
