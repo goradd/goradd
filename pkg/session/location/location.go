@@ -11,34 +11,19 @@ import (
 )
 
 const key = "goradd.locations"
+
+// Push pushes the given location onto the location stack.
 func Push(ctx context.Context, loc string) {
-	var locations []string
-	if session.Has(ctx, key) {
-		locations,_ = session.Get(ctx, key).([]string)
-	}
-	locations = append(locations, loc)
-	session.Set(ctx, key, locations)
+	session.PushStack(ctx, key, loc)
 }
 
+// Pop pops the given location off of the location stack and returns it.
 func Pop(ctx context.Context) (loc string) {
-	var locations []string
-	if session.Has(ctx, key) {
-		locations,_ = session.Get(ctx, key).([]string)
-	}
-	if len(locations) > 0 {
-		loc = locations[len(locations)-1]
-		locations = locations[:len(locations)-1]
-	}
-
-	if len(locations) == 0 {
-		session.Remove(ctx, key)
-	} else {
-		session.Set(ctx, key, locations)
-	}
-	return
+	return session.PopStack(ctx, key)
 }
 
+// Clear removes all locations from the location stack
 func Clear(ctx context.Context) {
-	session.Remove(ctx, key)
+	session.ClearStack(ctx, key)
 }
 

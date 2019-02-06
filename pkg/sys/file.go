@@ -2,15 +2,11 @@ package sys
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"time"
 )
 
-// Copy copies the src file to the destination. The destination file must either exist, or the directory in the file's
-// path must exist.
+/* FileCopy has been replaced by the code in gofile
 func FileCopy(src, dst string) (err error) {
 	var count int64
 
@@ -42,6 +38,7 @@ func FileCopy(src, dst string) (err error) {
 
 	return to.Close()
 }
+*/
 
 // FileModDateCompare compares the modification date of two files, and returns -1 if the first is older than the second,
 // 0 if they are the same, and 1 if the 2nd is older than the first. Returns an error if either is not a file.
@@ -79,8 +76,7 @@ func FileModDateCompare(file1, file2 string) (diff int, err error) {
 	return
 }
 
-// CopyIfNewer performs a copy to the destination if the src is newer than the destination, or the destination does
-// not exist.
+/* FileCopyIfNewer has been replaced by code in gofile
 func FileCopyIfNewer(src, dst string) (err error) {
 	var diff int
 
@@ -98,6 +94,7 @@ func FileCopyIfNewer(src, dst string) (err error) {
 
 	return FileCopy(src, dst)
 }
+*/
 
 // PathExists returns true if the given path exists in the OS. This does not necessarily mean that the path is
 // usable. It may be write or read protected. But at least you know its there.
@@ -108,10 +105,7 @@ func PathExists(path string) bool {
 }
 
 
-// DirectoryCopy copies the src directory to the destination directory. The destination directory will be the parent of
-// the resulting directory, and the result will have the same name as the source. If the destination already exists,
-// it will perform a kind of merge, where existing files will not be touched, and only new files will be copied.
-// If you want to replace the destination, delete it first. dst must exist.
+/* DirectoryCopy has been replaced by code in gofile
 func DirectoryCopy(src, dst string) (err error) {
 	dstInfo, dstErr := os.Stat(dst)
 	srcInfo, srcErr := os.Stat(src)
@@ -180,9 +174,9 @@ func DirectoryCopy(src, dst string) (err error) {
 
 	return
 }
+*/
 
-// DirectoryClear recursively empties a directory. Basically, it applies RemoveAll to the contents of the directory. This is different
-// than RemoveAll on the directory, as it does not remove the directory itself.
+/* DirectoryClear has been replaced by code in gofile
 func DirectoryClear(dir string) error {
 	items, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -193,4 +187,4 @@ func DirectoryClear(dir string) error {
 	}
 	return nil
 }
-
+*/

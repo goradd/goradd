@@ -1,13 +1,13 @@
 package sys
 
 import (
-	"testing"
-	"os"
-	"path/filepath"
 	"io/ioutil"
+	"os"
+	"testing"
 	"time"
 )
 
+/*
 func TestFileCopy(t *testing.T) {
 	dir := os.TempDir()
 	src := filepath.Join(dir, "test.txt")
@@ -66,7 +66,7 @@ func TestFileCopy(t *testing.T) {
 		t.Error("File content does not match")
 	}
 }
-
+*/
 func TestFileModDateCompare(t *testing.T) {
 	f1,err := ioutil.TempFile("","test")
 	if err != nil {
@@ -99,7 +99,7 @@ func TestFileModDateCompare(t *testing.T) {
 
 }
 
-
+/*
 func TestDirectoryCopy(t *testing.T) {
 	dir1 := filepath.Join(os.TempDir(), "dir1")
 	dir2 := filepath.Join(os.TempDir(), "dir2")
@@ -151,3 +151,4 @@ func TestDirectoryCopy(t *testing.T) {
 		t.Fatal("Second item in directory is not test1, but rather: " + items[1].Name())
 	}
 }
+*/

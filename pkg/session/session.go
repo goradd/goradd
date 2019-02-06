@@ -16,7 +16,7 @@ var sessionManager ManagerI
 // ManagerI is the interface for session managers.
 type ManagerI interface {
 	// Use wraps the given handler in session management stuff. It must decode the session and put it into the sessionContext key in the context
-	// before processing the request, and then encode the session data after the request. See the SCS_Manager for an example.
+	// before processing the request, and then encode the session data after the request. See the ScsManager for an example.
 	Use(http.Handler) http.Handler
 }
 
@@ -61,7 +61,7 @@ func getSession(ctx context.Context) *Session {
 	return ctx.Value(sessionContext).(*Session)
 }
 
-// Has returns true if the give key exists in the session store
+// Has returns true if the given key exists in the session store
 func Has(ctx context.Context, key string) bool {
 	return getSession(ctx).Has(key)
 }

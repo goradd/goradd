@@ -56,8 +56,11 @@ type Expander interface {
 // NodeI is the interface that all nodes must satisfy
 type NodeI interface {
 	nodeLinkI
+	// Equals returns true if the given node is equal to this node
 	Equals(NodeI) bool
+	// SetAlias sets a unique name for the node as used in a database query
 	SetAlias(string)
+	// GetAlias returns the alias that was used in a database query
 	GetAlias() string
 	nodeType() NodeType
 	tableName() string

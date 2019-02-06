@@ -16,7 +16,7 @@ func GetString(values url.Values, name string) (value string, err error) {
 	}
 }
 
-// GetString extracts the named int out of values.
+// GetInt extracts the named int out of values.
 func GetInt(values url.Values, name string) (value int, err error) {
 	if v, ok := values[name]; !ok {
 		err = fmt.Errorf("%s was not found", name)
@@ -26,7 +26,7 @@ func GetInt(values url.Values, name string) (value int, err error) {
 	return
 }
 
-// GetString extracts the named float64 out of values.
+// GetFloat64 extracts the named float64 out of values.
 func GetFloat64(values url.Values, name string) (value float64, err error) {
 	if v, ok := values[name]; !ok {
 		err = fmt.Errorf("%s was not found", name)

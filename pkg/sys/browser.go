@@ -6,6 +6,8 @@ import (
 	"runtime"
 )
 
+// LaunchDefaultBrowser launches the system's default browser and opens the browser to the given url.
+// Not that most Linux systems do not have a default.
 func LaunchDefaultBrowser(url string) (err error) {
 	switch runtime.GOOS {
 	case `darwin`:
@@ -20,8 +22,6 @@ func LaunchDefaultBrowser(url string) (err error) {
 }
 
 // LaunchChromeHeadlessBrowser will launch google chrome with the given url.
-// One nice feature of google chrome is that you can launch it, give it a URL, and then the browser will listen
-// for the URL and load it once the server on the other end becomes active.
 func LaunchChrome(url string) (err error) {
 	go func() {
 		switch runtime.GOOS {

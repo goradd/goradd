@@ -118,7 +118,7 @@ func (a *Application) SetupAssetDirectories() {
 func (a *Application) SetupSessionManager() {
 	// create the session manager. The default uses an in-memory storage engine. Change as you see fit.
 	interval, _ := time.ParseDuration("24h")
-	session.SetSessionManager(session.NewSCSManager(scs.NewManager(memstore.New(interval))))
+	session.SetSessionManager(session.NewScsManager(scs.NewManager(memstore.New(interval))))
 }
 
 func (a *Application) PutContext(r *http.Request) *http.Request {
