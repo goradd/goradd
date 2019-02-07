@@ -78,53 +78,64 @@ func (a *ActionParams) EventValueString() string {
 	return string(a.values.Event)
 }
 
+// EventValueInt returns the event value as an integer. If the value was a floating point value at the client,
+// it will be truncated to an integer. If the value is not numeric, will return 0.
 func (a *ActionParams) EventValueInt() int {
 	return int(a.EventValueFloat())	// json is always sent as float
 }
 
+// EventValueFloat returns the event value as a float64. If the value was not numeric, it will return 0.
 func (a *ActionParams) EventValueFloat() float64 {
 	f,_ := strconv.ParseFloat(a.EventValueString(), 64)
 	return f
 }
 
+// EventValueBool returns the event value as a bool. To be false, the value should be a boolean false,
+// a numeric 0, an empty string, null or undefined on the client side. Otherwise, will return true.
 func (a *ActionParams) EventValueBool() bool {
 	return actionValueToBool(a.EventValueString())
 }
 
-// ActionString returns the action value as a string. It will convert to a string, even if the value
+// ActionValueString returns the action value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *ActionParams) ActionValueString() string {
 	return string(a.values.Action)
 }
 
+// ActionValueInt returns the action value as an integer.
 func (a *ActionParams) ActionValueInt() int {
 	return int(a.ActionValueFloat())	// json is always sent as float
 }
 
+// ActionValueFloat returns the action value as a float64.
 func (a *ActionParams) ActionValueFloat() float64 {
 	f,_ := strconv.ParseFloat(a.ActionValueString(), 64)
 	return f
 }
 
+// ActionValueBool returns the action value as a bool.
 func (a *ActionParams) ActionValueBool() bool {
 	return actionValueToBool(a.ActionValueString())
 }
 
-// ControlString returns the control value as a string. It will convert to a string, even if the value
+// ControlValueString returns the control value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *ActionParams) ControlValueString() string {
 	return string(a.values.Control)
 }
 
+// ControlValueInt returns the control value as an int.
 func (a *ActionParams) ControlValueInt() int {
 	return int(a.ControlValueFloat())	// json is always sent as float
 }
 
+// ControlValueFloat returns the control value as a float64.
 func (a *ActionParams) ControlValueFloat() float64 {
 	f,_ := strconv.ParseFloat(a.ControlValueString(), 64)
 	return f
 }
 
+// ControlValueBool returns the control value as a bool.
 func (a *ActionParams) ControlValueBool() (ret bool) {
 	return actionValueToBool(a.ControlValueString())
 }

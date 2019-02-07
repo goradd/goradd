@@ -29,18 +29,22 @@ const RequiredErrorMessage string = "A value is required"
 type ValidationType int
 
 const (
-	ValidateDefault ValidationType = iota // This is used by the event to indicate it is not overriding.
-	ValidateNone                          // Force no validation.
+	// ValidateDefault is used by events to indicate they are not overriding a control validation. You should not need to use this.
+	ValidateDefault ValidationType = iota
+	// ValidateNone indicates the control will not validate the form
+	ValidateNone
+	// ValidateForm is the default validation for buttons, and indicates the entire form and all controls will validate.
 	ValidateForm
-
-	ValidateSiblingsAndChildren // container validations. Will include validating the current control.
+	// ValidateSiblingsAndChildren will validate the current control, and all siblings of the control and all
+	// children of the siblings and current control.
+	ValidateSiblingsAndChildren
+	// ValidateSiblingOnly will validate only the siblings of the current control, but not any child controls.
 	ValidateSiblingsOnly
-	ValidateChildrenOnly
-
+	// ValidateChildrenOnly will validate only the children of the current control.
+ 	ValidateChildrenOnly
 	// ValidateContainer will use the validation setting of a parent control with ValidateSiblingsAndChildren, ValidateSiblingsOnly,
-	// ValidateChildrenOnly, or ValidateTarget as the stopping point for validation.
+	// ValidateChildrenOnly, or ValidateTargetsOnly as the stopping point for validation.
 	ValidateContainer
-
 	// ValidateTargetsOnly will only validate the specified targets
 	ValidateTargetsOnly
 )
@@ -67,13 +71,20 @@ const (
 	ValidationInvalid
 )
 
+// ControlTemplateFunc is the type of function control templates should create
 type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *bytes.Buffer) error
 
+// ControlWrapperFunc is a template function that specifies how wrappers will draw
 type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string, buffer *bytes.Buffer)
 
-var DefaultCheckboxLabelDrawingMode = html.LabelAfter // Setting used by checkboxes and radio buttons to default how they draw labels.
 
+// DefaultCheckboxLabelDrawingMode is a setting used by checkboxes and radio buttons to default how they draw labels.
+// Some CSS framworks are very picky about whether checkbox labels wrap the control, or sit next to the control,
+// and whether the label is before or after the control
+var DefaultCheckboxLabelDrawingMode = html.LabelAfter
 
+// ControlI is the interface that all controls must support. The functions are implemented by the
+// Control methods. See the Control method implementation for a description of each method.
 type ControlI interface {
 	ID() string
 	control() *Control
@@ -167,14 +178,17 @@ type ControlI interface {
 	UnmarshalState(m maps.Loader)
 
 	// Shortcuts for translation
+
 	ΩT(format string) string
 	T(format string, params... interface{}) string
 	TPrintf(format string, params... interface{}) string
 
 	// Serialization helpers
+
 	Restore(self ControlI)
 
 	// API
+
 	SetIsRequired(r bool) ControlI
 
 	Serialize(e Encoder) (err error)
@@ -189,6 +203,26 @@ type attributeScriptEntry struct {
 	commands []interface{}	// parameters to the jquery function
 }
 
+// A Control is a basic UI widget in goradd. It corresponds to a standard html form object or tag, or a custom javascript
+// widget. The Control renders a tag and everything inside of the tag, but can also include a wrapper which associates
+// a label, instructions and error messages with the tag. A Control can also associate javascript
+// with itself to make sure the javascript is loaded on the page when the control is drawn, and can render
+// javascript that will initialize a custom javascript widget.
+//
+// A Control can have child Controls. It
+// can either allow the framework to automatically draw the child Controls as part of the inner-html of
+// the Control, can use a template to draw the Child controls, or manually draw them. The Control is part
+// of a hierarchical tree structure, with the Form being the root of the tree.
+//
+// A Control is part of a system that will reflect the state of the control between the client and server.
+// When a user updates a control in the browser and performs an action that requires a response from the
+// server, the goradd javascript will gather up all the changes in the form and send those to the server.
+// The control can read those values and update its own internal state, so that from the perspective
+// of the programmer referring to the control, the values in the Control are the same as what the user sees in a browser.
+//
+// This Control struct is a mixin that all controls should use. You would not normally create a Control directly,
+// but rather create one of the "subclasses" of Control. See the control package for Controls that implement
+// standard html widgets.
 type Control struct {
 	base.Base
 
@@ -228,7 +262,10 @@ type Control struct {
 
 	// ErrorForRequired is the error that will display if a control value is required but not set.
 	ErrorForRequired string
-	// ValidMessage is the message to display if the control has successfully been validated. Leave blank if you don't want a message to show when valid. Can be useful to contrast between invalid and valid controls in a busy form.
+
+	// ValidMessage is the message to display if the control has successfully been validated.
+	// Leave blank if you don't want a message to show when valid.
+	// Can be useful to contrast between invalid and valid controls in a busy form.
 	ValidMessage          string
 	validationMessage     string // The message to display when showing the validation condition
 	validationState       ValidationState
@@ -267,7 +304,7 @@ func (c *Control) Init(self ControlI, parent ControlI, id string) {
 }
 
 
-// this() supports object oriented features by giving easy access to the virtual function interface
+// this supports object oriented features by giving easy access to the virtual function interface.
 // Subclasses should provide a duplicate. Calls that implement chaining should return the result of this function.
 func (c *Control) this() ControlI {
 	return c.Self.(ControlI)
@@ -275,6 +312,7 @@ func (c *Control) this() ControlI {
 
 // Restore is called after the control has been deserialized. It creates any required data structures
 // that are not saved in serialization.
+// TODO: Serialization is not yet implemented
 func (c *Control) Restore(self ControlI) {
 	c.Base.Init(self)
 	if c.attributes == nil {
@@ -285,15 +323,19 @@ func (c *Control) Restore(self ControlI) {
 	}
 }
 
+// ID returns the id assigned to the control. If you do not provide an ID when the control is created,
+// the framework will give the control a unique id.
 func (c *Control) ID() string {
 	return c.id
 }
 
-// Extract the control from an interface. This is for private use, when called through the interface
+// Extract the control from an interface. This is for package private use, when called through the interface.
 func (c *Control) control() *Control {
 	return c
 }
 
+// PreRender is called by the framework to notify the control that it is about to be drawn. If you
+// override it, be sure to also call this parent function as well.
 func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 	form := c.ParentForm()
 	if c.Page() == nil ||
@@ -320,10 +362,9 @@ func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 	return nil
 }
 
-// Draws the default control structure into the given buffer.
+// Draw renders the default control structure into the given buffer. Call this function from your templates
+// to draw the control.
 func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	// TODO: Capture errors and panics, writing what we can to the buffer on error
-
 	if err = c.this().PreRender(ctx, buf); err != nil {
 		return err
 	}
@@ -356,26 +397,23 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return
 }
 
-// PutCustomScript is the place where you add javascript that transforms the html into a custom javascript control.
-// Do this by calling functions on the response object.
+// PutCustomScript is called by the framework to ask the control to inject any javascript it needs into the form.
+// In particular, this is the place where Controls add javascript that transforms the html into a custom javascript control.
+// A Control implementation does this by calling functions on the response object.
 // This implementation is a stub.
 func (c *Control) PutCustomScript(ctx context.Context, response *Response) {
 
 }
 
-/**
-* DrawAjax will be called during an Ajax rendering of the controls. Every control gets called. Each control
-* is responsible for rendering itself. Some objects automatically render their child objects, and some don't,
-* so we detect whether the parent is being rendered, and assume the parent is taking care of rendering for
-* us if so.
-*
-* Override if you want more control over ajax drawing, like if you detect parts of your control that have changed
-* and then want to draw only those parts. This will get called on every control on every ajax draw request.
-* It is up to you to test the blnRendered flag of the control to know whether the control was already rendered
-* by a parent control before drawing here.
-*
- */
-
+// DrawAjax will be called by the frameowkr during an Ajax rendering of the Control. Every Control gets called. Each Control
+// is responsible for rendering itself. Some objects automatically render their child objects, and some don't,
+// so we detect whether the parent is being rendered, and assume the parent is taking care of rendering for
+// us if so.
+//
+// Override if you want more control over ajax drawing, like if you detect parts of your control that have changed
+// and then want to draw only those parts. This will get called on every control on every ajax draw request.
+// It is up to you to test the blnRendered flag of the control to know whether the control was already rendered
+// by a parent control before drawing here.
 func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) {
 
 	if c.isModified {
@@ -413,6 +451,8 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 	return
 }
 
+// PostRender is called by the framwork at the end of drawing, and is the place where controls
+// do any post-drawing cleanup needed.
 func (c *Control) PostRender(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Update watcher
 	//if ($This->objWatcher) {
@@ -428,9 +468,11 @@ func (c *Control) PostRender(ctx context.Context, buf *bytes.Buffer) (err error)
 	return
 }
 
-// Draw the control tag itself. Override to draw the tag in a different way, or draw more than one tag if
+// DrawTag is responsible for drawing the Control's tag itself.
+// Control implementations can override this to draw the tag in a different way, or draw more than one tag if
 // drawing a compound control.
 func (c *Control) DrawTag(ctx context.Context) string {
+	// TODO: Implement this with a buffer to reduce string allocations
 	var ctrl string
 
 	attributes := c.this().DrawingAttributes()
@@ -462,7 +504,8 @@ func (c *Control) DrawTag(ctx context.Context) string {
 }
 
 // RenderAutoControls is an internal function to draw controls marked to autoRender. These are generally used for hidden controls
-// that can be shown without impacting layout, or that are scripts only.
+// that can be shown without impacting layout, or that are scripts only. Control implementations that need to
+// put these controls in particular locations on the form can override this.
 func (c *Control) RenderAutoControls(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Figuring out where to draw these controls can be difficult.
 
@@ -480,6 +523,7 @@ func (c *Control) RenderAutoControls(ctx context.Context, buf *bytes.Buffer) (er
 	return
 }
 
+// DrawTemplate is used by the framework to draw the Control with a template.
 // Controls that use templates should use this function signature for the template. That will override this one, and
 // we will then detect that the template was drawn. Otherwise, we detect that no template was defined and it will move
 // on to drawing the controls without a template, or just the text if text is defined.
@@ -488,8 +532,8 @@ func (c *Control) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err erro
 	return NewFrameworkError(FrameworkErrNoTemplate)
 }
 
-// Returns the inner text of the control, if the control is not a self terminating (void) control. Sub-controls can
-// override this.
+// DrawInnerHtml is used by the framework to draw just the inner html of the control, if the control is not a self
+// terminating (void) control. Sub-controls can override this.
 func (c *Control) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if err = c.this().DrawTemplate(ctx, buf); err == nil {
 		return
@@ -509,6 +553,7 @@ func (c *Control) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err err
 	return
 }
 
+// DrawChildren renders the child controls into the buffer.
 func (c *Control) DrawChildren(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if c.children != nil {
 		for _, child := range c.children {
@@ -521,7 +566,7 @@ func (c *Control) DrawChildren(ctx context.Context, buf *bytes.Buffer) (err erro
 	return
 }
 
-// Draws the text of the control, escaping if needed
+// DrawText renders the text of the control, escaping if needed.
 func (c *Control) DrawText(ctx context.Context, buf *bytes.Buffer) {
 	if c.text != "" {
 		text := c.text
@@ -539,15 +584,19 @@ func (c *Control) With(w WrapperI) ControlI {
 	return c.this() // for chaining
 }
 
+// HasWrapper returns true if the control has a wrapper.
 func (c *Control) HasWrapper() bool {
 	return c.wrapper != nil
 }
 
+// Wrapper returns the controls wrapper, or nil if the control does not have a wrapper defined.
 func (c *Control) Wrapper() WrapperI {
 	return c.wrapper
 }
 
-
+// SetAttribute sets an html attribute of the control. You can manually set most any attribute, but be careful
+// not to set the id attribute, or any attribute that is managed by the control itself. If you are setting
+// a data-* attribute, use SetDataAttribute instead. If you are adding a class to the control, use AddClass.
 func (c *Control) SetAttribute(name string, val interface{}) ControlI {
 	if name == "id" {
 		panic("You can only set the 'id' attribute of a control when it is created")
@@ -561,11 +610,17 @@ func (c *Control) SetAttribute(name string, val interface{}) ControlI {
 	if changed {
 		// The val passed in might be a calculation, so we need to get the ultimate new value
 		v2 := c.attributes.Get(name)
+		// We are recording here that the attribute intends to change. If we are responding to an ajax
+		// request, we will send back a command to only change the attribute on the control if the
+		// control does not get completely redrawn. If the control is completely redrawn, the new
+		// attribute will automatically be drawn, so there would be no need to also send an attribute change command.
 		c.AddRenderScript("attr", name, v2)
 	}
 	return c.this()
 }
 
+// SetWrapperAttribute sets an attribute for the tag that wraps the control. Obviously this only works if
+// you have defined a wrapper for the control.
 func (c *Control) SetWrapperAttribute(name string, val interface{}) ControlI {
 	if name == "id" {
 		panic("You cannot set the 'id' attribute of a wrapper")
@@ -584,17 +639,21 @@ func (c *Control) SetWrapperAttribute(name string, val interface{}) ControlI {
 	return c.this()
 }
 
+// Return the value of a custom attribute. Note that this will not return values that are set only during
+// drawing and that are managed by the Control implementation.
 func (c *Control) Attribute(name string) string {
 	return c.attributes.Get(name)
 }
 
+// HasAttribute returns true if the control has the indicated custom attribute defined.
 func (c *Control) HasAttribute(name string) bool {
 	return c.attributes.Has(name)
 }
 
-// Returns a set of attributes that should override those set by the user. This allows controls to set attributes
-// just before drawing that should take precedence over other attributes, and that are critical to drawing the
-// tag of the control. This function is designed to only be called by overriding functions, changes will not be remembered.
+// DrawingAttributes is called by the framework just before drawing a control, and should
+// return a set of attributes that should override those set by the user. This allows controls to set attributes
+// that should take precedence over other attributes, and that are critical to drawing the
+// tag of the control. This function is designed to only be called by Control implementations.
 func (c *Control) DrawingAttributes() *html.Attributes {
 	a := html.NewAttributesFrom(c.attributes)
 	a.SetID(c.id)                   // make sure the control id is set at a minimum
@@ -617,7 +676,8 @@ func (c *Control) WrapperAttributes() *html.Attributes {
 	return c.wrapperAttributes
 }
 
-
+// SetDataAttribute will set a data-* attribute. You do not need to include the "data-" in the name, it will be added
+// automatically.
 func (c *Control) SetDataAttribute(name string, val interface{}) {
 	var v string
 	var ok bool
@@ -636,6 +696,8 @@ func (c *Control) SetDataAttribute(name string, val interface{}) {
 	}
 }
 
+// AddClass will add a class or classes to the control. If adding multiple classes at once, separate them with
+// a space.
 func (c *Control) AddClass(class string) ControlI {
 	if changed := c.attributes.AddClassChanged(class); changed {
 		v2 := c.attributes.Class()
@@ -644,6 +706,7 @@ func (c *Control) AddClass(class string) ControlI {
 	return c.this()
 }
 
+// RemoveClass will remove the named class from the control.
 func (c *Control) RemoveClass(class string) ControlI {
 	if changed := c.attributes.RemoveClass(class); changed {
 		v2 := c.attributes.Class()
@@ -652,6 +715,8 @@ func (c *Control) RemoveClass(class string) ControlI {
 	return c.this()
 }
 
+// AddWrapperClass will add a class or classes to the control's wrapper, if one is defined. Separate multiple
+// classes with a space.
 func (c *Control) AddWrapperClass(class string) ControlI {
 	if changed := c.wrapperAttributes.AddClassChanged(class); changed {
 		v2 := c.wrapperAttributes.Class()
@@ -660,8 +725,9 @@ func (c *Control) AddWrapperClass(class string) ControlI {
 	return c.this()
 }
 
-// Adds a jQuery command to be executed on the next ajax draw. These commands allow javascript to change an aspect of the control without
-// having to redraw the entire control. This should primarily be used by control implementations only.
+// AddRenderScript adds a jQuery command to be executed on the next ajax draw.
+// These commands allow javascript to change an aspect of the control without
+// having to redraw the entire control. This should be used by Control implementations only.
 func (c *Control) AddRenderScript(f string, params ...interface{}) {
 	c.attributeScripts = append(c.attributeScripts, attributeScriptEntry{id: c.ID(), f: f, commands: params})
 }
@@ -672,17 +738,18 @@ func (c *Control) AddRelatedRenderScript(id string, f string, params ...interfac
 }
 
 
-// Control Hierarchy Functions
+// Parent returns the parent control of the control. All controls have a parent, except the Form control.
 func (c *Control) Parent() ControlI {
 	return c.parent
 }
 
+// Children returns the child controls of the control.
 func (c *Control) Children() []ControlI {
 	return c.children
 }
 
 // Remove removes the current control from its parent. After this is done, the control and all its child items will
-// not be part of the override, but the child items will still be accessible through the control itself.
+// not be part of the drawn form, but the child items will still be accessible through the control itself.
 func (c *Control) Remove() {
 	if c.parent != nil {
 		c.parent.control().removeChild(c.this().ID(), true)
@@ -694,7 +761,7 @@ func (c *Control) Remove() {
 	}
 }
 
-// RemoveChild removes the given child control from both the control and the override.
+// RemoveChild removes the given child control from both the control and the form.
 func (c *Control) RemoveChild(id string) {
 	c.removeChild(id, true)
 }
@@ -722,7 +789,7 @@ func (c *Control) removeChildrenFromPage() {
 	}
 }
 
-// RemoveChildren removes all the child controls from this control and the override
+// RemoveChildren removes all the child controls from this control and the form
 func (c *Control) RemoveChildren() {
 	for _, child := range c.children {
 		child.control().removeChildrenFromPage()
@@ -732,6 +799,8 @@ func (c *Control) RemoveChildren() {
 	c.children = nil
 }
 
+// SetParent sets the parent of the control. Use this primarily if you are responding to some kind of user
+// interface that will move a child Control from one parent Control to another.
 func (c *Control) SetParent(newParent ControlI) {
 	if c.parent == nil {
 		c.control().addChildControlsToPage()
@@ -757,6 +826,7 @@ func (c *Control) SetParent(newParent ControlI) {
 	// TODO: Refresh as needed, but without refreshing the form
 }
 
+// Child returns the child control with the given id.
 func (c *Control) Child(id string) ControlI {
 	for _, c := range c.children {
 		if c.ID() == id {
@@ -786,24 +856,31 @@ func (c *Control) ParentForm() FormI {
 	return c.page.Form()
 }
 
+// Page returns the page object associated with the control.
 func (c *Control) Page() *Page {
 	return c.page
 }
 
-// Drawing aids
+// Refresh will force the control to be completely redrawn on the next update.
 func (c *Control) Refresh() {
 	c.isModified = true
 }
 
+// SetIsRequired will set whether the control requires a value from the user. Setting it to true
+// will cause the Control to check this during validation, and show an appropriate error message if the user
+// did not enter a value.
 func (c *Control) SetIsRequired(r bool) ControlI {
 	c.isRequired = r
 	return c.this()
 }
 
+// IsRequired returns true if the control requires input from the user to pass validation.
 func (c *Control) IsRequired() bool {
 	return c.isRequired
 }
 
+// ValidationMessage is the currently set validation message that will print with the control. Normally this only
+// gets set when a validation error occurs.
 func (c *Control) ValidationMessage() string {
 	return c.validationMessage
 }
@@ -833,10 +910,12 @@ func (c *Control) SetValidationError(e string) {
 	}
 }
 
+// ValidationState returns the current ValidationState value.
 func (c *Control) ValidationState() ValidationState {
 	return c.validationState
 }
 
+// SetText sets the text of the control. Not all controls use this value.
 func (c *Control) SetText(t string) ControlI {
 	if t != c.text {
 		c.text = t
@@ -845,10 +924,13 @@ func (c *Control) SetText(t string) ControlI {
 	return c.this()
 }
 
+// Text returns the text of the control.
 func (c *Control) Text() string {
 	return c.text
 }
 
+// SetLabel sets the text of the label that will be associated with the control. Labels only get rendered by
+// wrappers, so if there is no wrapper with the control, no label will be printed.
 func (c *Control) SetLabel(n string) ControlI {
 	if n != c.label {
 		c.label = n
@@ -857,16 +939,19 @@ func (c *Control) SetLabel(n string) ControlI {
 	return c.this()
 }
 
+// Label returns the text of the label associated with the control.
 func (c *Control) Label() string {
 	return c.label
 }
 
-// TextIsLabel is used by the drawing routines to determine if the control's text should be wrapped with a label tag,
-// Meaning the Label itself
+// TextIsLabel is used by the drawing routines to determine if the control's text should be wrapped with a label tag.
+// This is normally used by checkboxes and radio buttons that use the label tag in a special way.
 func (c *Control) TextIsLabel() bool {
 	return false
 }
 
+// SetInstructions sets the instructions that will be printed with the control. Instructions only get rendered
+// by wrappers, so if there is no wrapper, or the wrapper does not render  the instructions, this will not appear.
 func (c *Control) SetInstructions(i string) ControlI {
 	if i != c.instructions {
 		c.instructions = i
@@ -875,6 +960,7 @@ func (c *Control) SetInstructions(i string) ControlI {
 	return c.this()
 }
 
+// Instructions returns the instructions to be printed with the control
 func (c *Control) Instructions() string {
 	return c.instructions
 }
@@ -883,18 +969,23 @@ func (c *Control) markOnPage(v bool) {
 	c.isOnPage = v
 }
 
+// WasRendered returns true if the control has been rendered.
 func (c *Control) WasRendered() bool {
 	return c.wasRendered
 }
 
+// IsRendering returns true if we are in the process of rendering the control.
 func (c *Control) IsRendering() bool {
 	return c.isRendering
 }
 
+// HasFor is true if the label should have a "for" attribute. Most browsers respond to this by allowing the
+// label to be clicked in order to give focus to the control. Not all controls use this.
 func (c *Control) HasFor() bool {
 	return c.hasFor
 }
 
+// SetHasFor sets whether the control's label should have a "for" attribute that points to the Control.
 func (c *Control) SetHasFor(v bool) ControlI {
 	if v != c.hasFor {
 		c.hasFor = v
@@ -903,15 +994,22 @@ func (c *Control) SetHasFor(v bool) ControlI {
 	return c.this()
 }
 
+// SetShouldAutoRender sets whether this control will automatically render. AutoRendered controls are drawn
+// by the form automatically, after all other controls are drawn, if the control was not drawn in
+// some other way. An example of an auto-rendered control would be a dialog box that starts out hidden,
+// but then is shown by some user response. Such controls are normally shown by javascript, and are
+// absolutely positioned so that they do not effect the layout of the rest of the form.
 func (c *Control) SetShouldAutoRender(r bool) {
 	c.shouldAutoRender = r
 }
 
+// ShouldAutoRender returns true if the control is set up to auto-render.
 func (c *Control) ShouldAutoRender() bool {
 	return c.shouldAutoRender
 }
 
-// On adds an event listener to the control that will trigger the given actions
+// On adds an event listener to the control that will trigger the given actions.
+// It returns the event for chaining.
 func (c *Control) On(e EventI, actions ...action2.ActionI) EventI {
 	var isPrivate bool
 	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
@@ -1051,12 +1149,13 @@ func (c *Control) updateValues(ctx *Context) {
 	}
 }
 
-// UpdateFormValues should be implemented by controls to get their values from the context.
+// UpdateFormValues should be implemented by Control implementations to get their values from the context.
+// This is where a Control updates its internal state based on actions by the client.
 func (c *Control) UpdateFormValues(ctx *Context) {
 
 }
 
-// doAction is an internal function that the override manager uses to send actions to controls.
+// doAction is an internal function that the form manager uses to send actions to controls.
 func (c *Control) doAction(ctx context.Context) {
 	var e EventI
 	var ok bool
@@ -1224,7 +1323,9 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 	return valid
 }
 
-// Validate is designed to be overridden. Overriding controls should call the parent version before doing their own validation.
+// Validate is called by the framework to validate a control, but not the control's children.
+// It is designed to be overridden by Control implementations.
+// Overriding controls should call the parent version before doing their own validation.
 func (c *Control) Validate(ctx context.Context) bool {
 	if c.HasWrapper() &&
 		c.validationState != ValidationNever {
@@ -1310,8 +1411,10 @@ func (c *Control) validateSiblingsAndChildren(ctx context.Context) bool {
 }
 
 // SaveState sets whether the control should save its value and other state information so that if the form is redrawn,
-// the value can be restored. This function is also responsible for restoring the previously saved state of the control,
-// so call This only after you have set the default state of a control during creation or initialization.
+// the value can be restored. Call this during control initialization to cause the control to remember what it
+// is set to, so that if the user returns to the form, it will keep its value.
+// This function is also responsible for restoring the previously saved state of the control,
+// so call this only after you have set the default state of a control during creation or initialization.
 func (c *Control) SaveState(ctx context.Context, saveIt bool) {
 	c.shouldSaveState = saveIt
 	c.readState(ctx)
@@ -1437,7 +1540,7 @@ func (c *Control) T(message string, params... interface{}) string {
 		T(message)
 }
 
-// This is like T(), but works like Sprintf, returning the translated string, but sending the arguments to the message
+// TPrintf is like T(), but works like Sprintf, returning the translated string, but sending the arguments to the message
 // as if the message was an Sprintf format string. The go/text extractor has code that can do interesting things with
 // this kind of string.
 func (c *Control) TPrintf(message string, params... interface{}) string {
@@ -1448,29 +1551,37 @@ func (c *Control) TPrintf(message string, params... interface{}) string {
 		Sprintf(message, args...)
 }
 
-
+// SetDisable will set the "disabled" attribute of the control.
 func (c *Control) SetDisabled(d bool) {
 	c.attributes.SetDisabled(d)
 	c.Refresh()
 }
 
+// IsDisabled returns true if the disabled attribute is true.
 func (c *Control) IsDisabled() bool {
 	return c.attributes.IsDisabled()
 }
 
+// SetDisplay sets the "display" property of the style attribute of the html control to the given value.
+// Also consider using SetVisible. If you use SetDisplay to hide a control, the control will still be
+// rendered in html, but the browser will not show it.
 func (c *Control) SetDisplay(d string) {
 	c.attributes.SetDisplay(d)
 	c.Refresh()
 }
 
+// IsDisplayed returns true if the control will be displayed.
 func (c *Control) IsDisplayed() bool {
 	return c.attributes.IsDisplayed()
 }
 
+// IsVisible returns whether the control will be drawn.
 func (c *Control) IsVisible() bool {
 	return !c.isHidden
 }
 
+// SetVisible controls whether the Control will be drawn. Controls that are not visible are not rendered in
+// html, but rather a hidden stub is rendered as a placeholder in case the control is made visible again.
 func (c *Control) SetVisible(v bool) {
 	if c.isHidden == v { // these are opposite in meaning
 		c.isHidden = !v
@@ -1478,11 +1589,13 @@ func (c *Control) SetVisible(v bool) {
 	}
 }
 
+// SetStyles sets the style attribute of the control to the given values.
 func (c *Control) SetStyles(s *html.Style) {
 	c.attributes.SetStyles(s)
 	c.Refresh() // TODO: Do this with javascript
 }
 
+// SetStyle sets a particular property of the style attribute on the control.
 func (c *Control) SetStyle(name string, value string) ControlI {
 	if changed,_ := c.attributes.SetStyleChanged(name, value); changed {
 		c.Refresh() // TODO: Do this with javascript
@@ -1490,13 +1603,16 @@ func (c *Control) SetStyle(name string, value string) ControlI {
 	return c.this()
 }
 
+// RemoveClassesWithPrefix will remove the classes on a control that start with the given string.
+// Some CSS frameworks use prefixes to as a kind of namespace for their class tags, and this can
+// make it easier to remove a group of classes with this kind of prefix.
 func (c *Control) RemoveClassesWithPrefix(prefix string) {
 	if c.attributes.RemoveClassesWithPrefix(prefix) {
 		c.Refresh() // TODO: Do this with javascript
 	}
 }
 
-// SetWidthStyle sets the width css property
+// SetWidthStyle sets the width style property
 func (c *Control) SetWidthStyle(w interface{}) ControlI {
 	v := html.StyleString(w)
 	c.attributes.SetStyle("width", v)
@@ -1504,7 +1620,7 @@ func (c *Control) SetWidthStyle(w interface{}) ControlI {
 	return c.this()
 }
 
-// SetHeightStyle sets the height css property
+// SetHeightStyle sets the height style property
 func (c *Control) SetHeightStyle(h interface{}) ControlI {
 	v := html.StyleString(h)
 	c.attributes.SetStyle("height", v)
@@ -1588,7 +1704,9 @@ type controlEncoding struct {
 	ShouldSaveState       bool
 }
 
+// Serialize is used by the framework to serialize a control to be saved in the formstate.
 func (c *Control) Serialize(e Encoder) (err error) {
+	// TODO: This is in development and not yet used.
 	if err = e.Encode(c.id); err != nil {
 		return
 	}
@@ -1705,7 +1823,7 @@ func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
 }
 
 
-// ConnectorParams returns a list of options setable by the connector dialog (not currently implemented)
+// ControlConnectorParams returns a list of options setable by the connector dialog (not currently implemented)
 func ControlConnectorParams() *maps.SliceMap {
 	m := maps.NewSliceMap()
 

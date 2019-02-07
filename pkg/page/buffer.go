@@ -6,8 +6,8 @@ import (
 	"sync"
 )
 
-// BufferPoolI describes a buffer pool that can be used to improve memory allocation and garbage collection for the
-// frequent memory use.
+// BufferPoolI describes a buffer pool that can be used to improve memory allocation and garbage collection for
+// frequently used memory buffers.
 type BufferPoolI interface {
 	GetBuffer() *bytes.Buffer
 	PutBuffer(buffer *bytes.Buffer)
@@ -18,11 +18,20 @@ type BufferPoolI interface {
 // the pool. If a particular http request required a large buffer to satisfy, this prevents that buffer from hanging around too long.
 // You should set MaxBufferSize to a value that is bigger than most http request sizes.
 var BufferPool BufferPoolI
+
+// MaxBufferSize is the maximum size that a buffer will be allowed to grow before it is automatically removed
+// from the buffer pool. This prevents large memory allocations from permanently sitting in the buffer pool.
+// You should set MaxBufferSize to a value that is bigger than most http request sizes. The default is 10,000 bytes.
 var MaxBufferSize = 10000
 
 type pool struct {
 	sync.Pool
 }
+
+// TODO: Test and improve the allocation mechanism here under heavy load. We could potentially run out of memory
+// so we should attempt to limit how much memory the pool is allowed to hold on to. The sync.Pool documentation
+// says that the fmt package has an example of how to use pool such that it scales under heavy load, but
+// releases memory when quiet.
 
 func newPool() pool {
 	p := pool{
@@ -36,10 +45,15 @@ func newPool() pool {
 	return p
 }
 
+// GetBuffer returns a buffer from the pool if one is available, or creates a new one if all the buffers are being used.
+// Generally, you should follow a GetBuffer with a deferred PutBuffer, and the PutBuffer should be in the same
+// function as the GetBuffer to prevent memory leaks.
 func (p pool) GetBuffer() *bytes.Buffer {
 	return p.Get().(*bytes.Buffer)
 }
 
+// PutBuffer returns a buffer to the buffer pool. Always do this after you are done with a buffer. If the buffer
+// has grown bigger than MaxBufferSize, it will be removed from the pool so that it can be garbage collected.
 func (p pool) PutBuffer(buffer *bytes.Buffer) {
 	if buffer.Cap() < MaxBufferSize {
 		buffer.Reset()

@@ -1,3 +1,8 @@
+// The page package is the user-interface layer of goradd, and implements state management and rendering
+// of an html page, as well as the framework for rendering controls.
+//
+// To use the page package, you start by creating a form object, and then adding controls to that form.
+// You also should add a drawing template to define additional html for the form.
 package page
 
 import (
@@ -12,12 +17,11 @@ import (
 	"strings"
 )
 
+// PageRenderStatus keeps track of whether we are rendering the page or not
 type PageRenderStatus int
 
-type PageDrawFunc func(context.Context, *Page, *bytes.Buffer) error
-
-// Future note. Below is for general information but should NOT be used to synchronize multiple drawing routines
-// An architecture using channels to synchronize page changes and drawing would be better
+// Future note. Below is for general information but should NOT be used to synchronize multiple drawing routines.
+// An architecture using channels to synchronize page changes and drawing would be better.
 // For now, except for testing, we should not get in a situation where multiple copies of a form
 // are being used.
 const (
@@ -25,7 +29,10 @@ const (
 	PageIsRendering
 )
 
-const EncodingVersion = 1	//
+// PageDrawFunc is the type of the page drawing function. This is implemented by the page drawing template.
+type PageDrawFunc func(context.Context, *Page, *bytes.Buffer) error
+
+const EncodingVersion = 1
 
 // Anything that draws into the draw buffer must implement this interface
 type DrawI interface {
