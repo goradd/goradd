@@ -62,6 +62,11 @@ func RenderAssetTag(filePath string, tag string, attributes *html.Attributes, co
 }
 */
 
+
+// GetAssetLocation returns the disk location of the asset file indicated by the given url.
+// Asset directories must be registered with the RegisterAssetDirectory function. In debug mode, the
+// file is taken from the registered location, but in release mode, the file will have been copied to
+// a location on the server, and we will serve the file from there.
 func GetAssetLocation(url string) string {
 	// If we have an AssetDirectory, either we are in release mode, or we are locally testing the release process
 	if config.AssetDirectory() != "" {
@@ -80,6 +85,8 @@ func GetAssetLocation(url string) string {
 	return ""
 }
 
+// GetAssetUrl returns the url that corresponds to the asset at the given location. Its the reverse of
+// GetAssetLocation.
 func GetAssetUrl(location string) string {
 	if config.Release {
 		if !strings2.StartsWith(location, config.AssetPrefix) {
@@ -96,6 +103,7 @@ func GetAssetUrl(location string) string {
 	return ""
 }
 
+// ServeAsset is the default server for files in asset directories.
 func ServeAsset(w http.ResponseWriter, r *http.Request) {
 	localpath := GetAssetLocation(r.URL.Path)
 	if localpath == "" {

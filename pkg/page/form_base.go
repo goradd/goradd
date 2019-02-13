@@ -187,14 +187,18 @@ func (f *ΩFormBase) getDbProfile(ctx context.Context) (s string)  {
 	return
 }
 
-// Assembles the ajax response for the entire form and draws it to the return buffer
+// renderAjax assembles the ajax response for the entire form and draws it to the return buffer
 func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var buf2 []byte
 	var pagestate string
 
 	if !f.response.hasExclusiveCommand() { // skip drawing if we are in a high priority situation
 		// gather modified controls
-		f.DrawAjax(ctx, &f.response)
+		err = f.DrawAjax(ctx, &f.response)
+		if err != nil {
+			log.Error("renderAjax error - " + err.Error())
+			return
+		}
 	}
 
 	pagestate = f.saveState()
@@ -212,6 +216,7 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 	return
 }
 
+// DrawingAttributes returns the attributes to add to the form tag.
 func (f *ΩFormBase) DrawingAttributes() *html.Attributes {
 	a := f.Control.DrawingAttributes()
 	a.Set("method", "post")
@@ -220,6 +225,7 @@ func (f *ΩFormBase) DrawingAttributes() *html.Attributes {
 	return a
 }
 
+// PreRender performs setup operations just before drawing.
 func (f *ΩFormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if err = f.Control.PreRender(ctx, buf); err != nil {
 		return
@@ -288,7 +294,7 @@ func (f *ΩFormBase) AddJavaScriptFile(path string, forceHeader bool, attributes
 	}
 }
 
-// Add a javascript file that is a concatenation of other javascript files the system uses.
+// AddMasterJavaScriptFile adds a javascript file that is a concatenation of other javascript files the system uses.
 // This allows you to concatenate and minimize all the javascript files you are using without worrying about
 // libraries and controls that are adding the individual files through the AddJavaScriptFile function
 func (f *ΩFormBase) AddMasterJavaScriptFile(url string, attributes []string, files []string) {
@@ -383,10 +389,16 @@ func (f *ΩFormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer)
 
 }
 
+// DisplayAlert will display a javascript alert with the given message.
 func (f *ΩFormBase) DisplayAlert(ctx context.Context, msg string) {
 	f.response.displayAlert(msg)
 }
 
+// ChangeLocation will redirect the browser to a new URL. It does this AFTER processing the return
+// values sent to the browser. Generally you should use this to redirect the browser since you may
+// have some data that needs to be processed first. The exception is
+// if you are responding to some kind of security concern where you only want to send back an html
+// redirect without revealing any goradd information, in which case you should use the Page
 func (f *ΩFormBase) ChangeLocation(url string) {
 	f.response.SetLocation(url)
 }

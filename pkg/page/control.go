@@ -226,39 +226,65 @@ type attributeScriptEntry struct {
 type Control struct {
 	base.Base
 
+	// id is the id passed to the control when it is created, or assigned automatically if empty.
 	id   string
-	page *Page // Page that this control is part of
+	// page is a pointer to the page that encloses the entire control tree.
+	page *Page
 
-	parent   ControlI   // Parent control
+	// parent is the immediate parent control of this control. Only the form object will not have a parent.
+	parent   ControlI
+	// children are the child controls that belong to this control
 	children []ControlI // Child controls
 
+	// Tag is text of the tag that will enclose the control, like "div" or "input"
 	Tag            string
-	IsVoidTag      bool                  // tag does not get wrapped with a terminating tag, but just ends instead
-	hasNoSpace     bool                  // For special situations where we want no space between This and next tag. Spans in particular may need This.
-	attributes     *html.Attributes      // a collection of attributes to apply to the control
-	text           string                // multi purpose, can be button text, inner text inside of tags, etc.
-	textLabelMode  html.LabelDrawingMode // describes how to draw the internal label
-	htmlEscapeText bool                  // whether to escape the text output, or send straight text
+	// IsVoidTag should be true if the tag should not have a closing tag, like "img"
+	IsVoidTag      bool
+	// hasNoSpace is for special situations where we want no space between this and the next tag. Spans in particular may need this.
+	hasNoSpace     bool
+	// attributes are the collection of custom attributes to apply to the control. This does not include all the
+	// attributes that will be drawn, as some are added temporarily just before drawing by GetDrawingAttributes()
+	attributes     *html.Attributes
+	// test is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
+	text           string
+	// textLabelMode describes how to draw the internal label
+	textLabelMode  html.LabelDrawingMode
+	// htmlEscapeText tells us whether to escape the text output, or send straight text
+	htmlEscapeText bool
 
-	attributeScripts []attributeScriptEntry // commands to send to our javascript to redraw portions of this control via ajax. Allows us to skip drawing the entire control.
+	// attributeScripts are commands to send to our javascript to redraw portions of the control via ajax.
+	attributeScripts []attributeScriptEntry
 
+	// isRequired indicates that we will require a value during validation
 	isRequired       bool
+	// isHidden indicates that we will not draw the control, but rather an invisible placeholder for the control.
 	isHidden         bool
+	// isOnPage indicates we have drawn the control at some point in the past
 	isOnPage         bool
+	// shouldAutoRender indicates that we will eventually draw the control even if it is not drawn directly.
 	shouldAutoRender bool
 
 	// internal status functions. Do not serialize.
+
+	// isModified will cause the control to redraw as part of the response.
 	isModified  bool
+	// isRendering is true when we are in the middle of rendering the control.
 	isRendering bool
+	// wasRendered indicates that the page was drawn during the current response.
 	wasRendered bool
 
-	isBlock           bool // true to use a div for the wrapper, false for a span
+	// isBlock is true to use a div for the wrapper, false for a span
+	isBlock           bool
+	// wrapper is the wrapper object the control will use to draw the label, instructions and error message for the control.
 	wrapper           WrapperI
+	// wrapperAttributes are the attributes to add to the wrapper tag.
 	wrapperAttributes *html.Attributes
-	label             string // the given label, often used as a label tag. Not drawn by default, but the wrapper drawing function uses it. Can also get controls by label.
-
-	hasFor       bool   // When drawing the label, should it use a for attribute? This is helpful for screen readers and navigation on certain kinds of tags.
-	instructions string // Instructions, if the field needs extra explanation. You could also try adding a tooltip to the wrapper.
+	// label is the test to use for the label tag. Not drawn by default, but the wrapper drawing function uses it. Can also get controls by label.
+	label             string
+	// hasFor tells us if we should draw a for attribute in the label tag. This is helpful for screen readers and navigation on certain kinds of tags.
+	hasFor       bool
+	// instructions is text associated with the control for extra explanation. You could also try adding a tooltip to the wrapper.
+	instructions string
 
 	// ErrorForRequired is the error that will display if a control value is required but not set.
 	ErrorForRequired string
@@ -267,28 +293,41 @@ type Control struct {
 	// Leave blank if you don't want a message to show when valid.
 	// Can be useful to contrast between invalid and valid controls in a busy form.
 	ValidMessage          string
-	validationMessage     string // The message to display when showing the validation condition
+	// validationMessage is the current validation message that will display when drawing the control
+	// This gets copied from ValidMessage at drawing time if the control is in an invalid state
+	validationMessage     string
+	// validationState is the current validation state of the control, and will effect how the control is drawn.
 	validationState       ValidationState
+	// validationType indicates how the control will validate itself. See ValidationType for a description.
 	validationType        ValidationType
-	validationTargets     []string // List of control IDs to target validation
-	blockParentValidation bool     // This blocks a parent from validating this control. Useful for dialogs, or situations where multiple panels control their own space.
+	// validationTargets is the list of control IDs to target validation
+	validationTargets     []string
+	// This blocks a parent from validating this control. Useful for dialogs, and other situations where sub-controls should control their own space.
+	blockParentValidation bool
 
+	// actionValue is the value that will be provided as the ControlValue for any actions that are triggered by this control.
 	actionValue interface{}
-
+	// events are all the events added by the control user that the control might trigger
 	events        EventMap
+	// privateEvents are events that are private to the control and that should not be allowed to be canceled by a control's user.
 	privateEvents EventMap
+	// eventCounter is used to generate a unique id for an event to help us route the event through the system.
 	eventCounter  EventID
-
+	// shouldSaveState indicates that we should save parts of our state into a session variable so that if
+	// the client should come back to the form, we will attempt to restore the state of the control. The state
+	// in this situation would be the user's input, so text in a textbox, or the selection from a list.
 	shouldSaveState bool
-
-	encoded bool	// Used during the serialization process.
+	// encoded is used during the serialization process to prevent encoding a control multiple times.
+	encoded bool
 
 	// anything added here needs to be also added to the GOB encoder!
 }
 
-// Init should be called immediately after a control is created and is responsible for setting up the initial state of a
-// new control. Your subclasses should have their own Init function, and
-// should call the superclass function. This Init function sets up a parent-child relationship with the given parent
+// Init is used by Control implementations to initialize the standard control structure. You would only call this if you
+// are subclassing one of the standard controls.
+// Control implementations should call this immediately after a control is created.
+// The Control subclasses should have their own Init function that
+// call this superclass function. This Init function sets up a parent-child relationship with the given parent
 // control, and sets up data structures to use the control in object-oriented ways with virtual functions.
 // The id is the control id that will appear as the id in html. Leave blank for the system to create a unique id for you.
 func (c *Control) Init(self ControlI, parent ControlI, id string) {
@@ -1766,6 +1805,7 @@ func (c *Control) ΩisSerializer(i ControlI) bool {
 	return reflect.TypeOf(c) == reflect.TypeOf(i)
 }
 
+// Deserialize is called by the page serializer.
 func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
 	if err = d.Decode(&c.id); err != nil {
 		return

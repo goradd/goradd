@@ -10,6 +10,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 )
 
+// DivTmpl is the template function that outputs a DivWrapper.
 func DivTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {
 
 {{

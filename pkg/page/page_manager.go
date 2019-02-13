@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var pageManager = NewPageManager() // Create a new singleton page manager.
+var pageManager = newPageManager() // Create a new singleton page manager.
 
 
 type FormCreationFunction func(context.Context) FormI
@@ -17,6 +17,10 @@ type PageManagerI interface {
 	RegisterPage(path string, creationFunction FormCreationFunction)
 }
 
+// The PageManager is a singleton global that manages the registration and deployment of pages. It acts like
+// a URL router, returning the page that corresponds to a particular URL path. init() functions should be
+// created for each page that associate a function to create a page, with the URL that corresponds to the page,
+// and the ID of the page.
 type PageManager struct {
 	pathRegistry   map[string]FormCreationFunction // maps paths to functions that create forms
 	formIdRegistry map[string]FormCreationFunction // maps form ids to functions that create forms
@@ -24,17 +28,20 @@ type PageManager struct {
 
 // PagePathPrefix is a prefix you can use in front of all goradd pages, like a directory path, to indicate that
 // this is a goradd path.
-
 var PagePathPrefix = ""
 
+// GetPageManager returns the current page manager.
 func GetPageManager() *PageManager {
 	return pageManager
 }
 
-func NewPageManager() *PageManager {
+func newPageManager() *PageManager {
 	return &PageManager{pathRegistry: make(map[string]FormCreationFunction), formIdRegistry: make(map[string]FormCreationFunction)}
 }
 
+// RegisterPath associates the given URL path with the given form creation function and form id and registers it with page manager.
+// Call this from an init() function. Afterwards, whenever a user navigates to the given path, the form will be
+// created and presented to the user.
 func RegisterPage(path string, creationFunction FormCreationFunction, formId string) {
 	if _, ok := pageManager.pathRegistry[path]; ok {
 		panic("Page is already registered: " + path)
@@ -55,11 +62,14 @@ func (m *PageManager) getNewPageFunc(path string) (f FormCreationFunction, ok bo
 	return
 }
 
+// IsPage returns true if the given path has been registered with the page manager.
 func (m *PageManager) IsPage(path string) bool {
 	_, ok := m.getNewPageFunc(path)
 	return ok
 }
 
+// HasPage returns true if the given page state is currently in the page cache. This is indicates that a user
+// has recently accessed a page with the given state id. You can use this to validate client interactions.
 func (m *PageManager) HasPage(pageStateId string) bool {
 	return pageCache.Has(pageStateId)
 }
@@ -154,12 +164,13 @@ func (m *PageManager) makeErrorResponse(ctx context.Context,
 	ErrorPageFunc(ctx, html, err, buf)
 }
 
-
+// HttpError represents an error response to a http request.
 type HttpError struct {
 	headers map[string] string
 	errCode int
 }
 
+// SetResponseHeader sets a key-value in the header response.
 func (e *HttpError) SetResponseHeader(key, value string) {
 	if e.headers == nil {
 		e.headers = map[string]string{key: value}
@@ -168,12 +179,16 @@ func (e *HttpError) SetResponseHeader(key, value string) {
 	}
 }
 
+// Send will cause the page to error with the given http error code.
 func (e *HttpError) Send(errCode int) {
 	e.errCode = errCode
 	panic(e)
 }
 
-// Redirect aborts the current page load and tells the browser to load a different url
+// Redirect aborts the current page load and tells the browser to load a different url. Usually you should
+// use Form.ChangeLocation, but you can use this in extreme situations where you really do not want to return
+// a goradd page at all and just change locations. For example, if you detect some kind of attempt to hack
+// your website, you can use this to redirect to a login page or an error page.
 func Redirect(url string) {
 	e := HttpError{}
 	e.SetResponseHeader("Location", url)

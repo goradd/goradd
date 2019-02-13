@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 )
 
+// ErrorTmpl is the template function that outputs an ErrorWrapper.
 func ErrorTmpl(ctx context.Context, ctrl ControlI, h string, buf *bytes.Buffer) {
 
 {{

@@ -32,19 +32,21 @@ type Error struct {
 	Stack []StackFrame
 }
 
+// StackFrame holds the file, line and function name in a call chain
 type StackFrame struct {
 	File string
 	Line int
 	Func string
 }
 
+// DbError represents a database error.
 type DbError struct {
 	Error
-	// captured database statement if one caused the error, returned by the db adapter
+	// DbStatement is the captured database statement if one caused the error, returned by the db adapter
 	DbStatement string
 }
 
-// Represents no error. A request starts with this.
+// NoErr represents no error. A request starts with this.
 type NoErr struct {
 }
 
@@ -52,8 +54,14 @@ type NoErr struct {
 
 const (
 	FrameworkErrNone = iota
+	// FrameworkErrNoTemplate indicates a template does not exist. The control will move on to other ways of rendering.
+	// No message should be displayed.
 	FrameworkErrNoTemplate
+	// FrameworkErrRecordNotFound is a rare situation that might come up as a race condition error between viewing a
+	// record, and actually editing it. If in the time between clicking on a record to see detail, and viewing the detail,
+	// the record was deleted by another user, we would return this error.
 	FrameworkErrRecordNotFound
+	// A standard situation when someone tries to go to a page they are not authorized to view.
 	FrameworkErrNotAuthorized
 )
 
@@ -63,15 +71,17 @@ type FrameworkError struct {
 	Err int
 }
 
+// NewFrameworkError creates a new FrameworkError
 func NewFrameworkError(err int) FrameworkError {
 	return FrameworkError{err}
 }
 
+// Error returns the error string
 func (e FrameworkError) Error() string {
 	switch e.Err {
-	case FrameworkErrNoTemplate:                          // Indicates a template does not exist. The control will move on to other ways of rendering. No message.
+	case FrameworkErrNoTemplate:
 		return "FormBase or control does not have a template" // just detected, this is not likely to be used
-	case FrameworkErrRecordNotFound:	// This is a rare situation that might come up as a race condition error between viewing a record, and actually editing it.
+	case FrameworkErrRecordNotFound:
 		return "Record does not exist. Perhaps it has been deleted by someone else?"
 	case FrameworkErrNotAuthorized:
 		return "You are not authorized to view this information."
@@ -110,7 +120,7 @@ func newRunError(ctx context.Context, msg interface{}) *Error {
 	return e
 }
 
-// Call and return a generic message error
+// NewError return a generic message error
 func NewError(ctx context.Context, msg string) *Error {
 	e := &Error{}
 
@@ -142,6 +152,7 @@ func (e *Error) Error() string {
 	return e.Err.Error()
 }
 
+// NewDbErr returns a new database error
 func NewDbErr(ctx context.Context, msg interface{}, dbStatement string) *DbError {
 	e := &DbError{}
 	switch m := msg.(type) {

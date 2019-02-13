@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 )
 
+// LabelTmpl is the template function that outputs an LabelWrapper.
 func LabelTmpl(ctx context.Context, w *LabelWrapperType, ctrl ControlI, h string, buf *bytes.Buffer) {
     labelAttr := w.LabelAttributes().String()
 {{

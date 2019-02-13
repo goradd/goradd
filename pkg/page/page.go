@@ -24,6 +24,7 @@ type PageRenderStatus int
 // An architecture using channels to synchronize page changes and drawing would be better.
 // For now, except for testing, we should not get in a situation where multiple copies of a form
 // are being used.
+
 const (
 	PageIsNotRendering PageRenderStatus = iota // FormBase has started rendering but has not finished
 	PageIsRendering
@@ -34,7 +35,7 @@ type PageDrawFunc func(context.Context, *Page, *bytes.Buffer) error
 
 const EncodingVersion = 1
 
-// Anything that draws into the draw buffer must implement this interface
+// DrawI is the interface for items that draw into the draw buffer
 type DrawI interface {
 	Draw(context.Context, *bytes.Buffer) error
 }
@@ -63,7 +64,7 @@ type Page struct {
 	language 	    int		// Don't serialize this. This is a cached version of what the session holds.
 }
 
-// Initialize the page base. Should be called by a form just after creating Page.
+// Init initializes the page. Should be called by a form just after creating Page.
 func (p *Page) Init(path string) {
 	p.path = path
 }
@@ -127,6 +128,7 @@ func (p *Page) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return f(ctx, p, buf)
 }
 
+// DrawHeaderTags draws all the inner html for the head tag
 func (p *Page) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	if p.title != "" {
 		buf.WriteString("  <title>")
@@ -144,7 +146,7 @@ func (p *Page) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	p.Form().DrawHeaderTags(ctx, buf)
 }
 
-// Sets the prefix for control ids. Some javascript frameworks (i.e. jQueryMobile) require that control ids
+// SetControlIdPrefix sets the prefix for control ids. Some javascript frameworks (i.e. jQueryMobile) require that control ids
 // be unique across the application, vs just in the page, because they create internal caches of control ids. This
 // allows you to set a per page prefix that will be added to all control ids to make them unique across the whole
 // application. However, its up to you to make sure the names are unique per page.
@@ -153,7 +155,7 @@ func (p *Page) SetControlIdPrefix(prefix string) *Page {
 	return p
 }
 
-// Generates unique control ids. If you want to do your own id generation, or modifying of given ids, implement that
+// GenerateControlID generates unique control ids. If you want to do your own id generation, or modifying of given ids, implement that
 // in an override to the control.Init function. The given id is one that the user supplies. User provided ids and
 // generated ids can be further munged by providing an id prefix through SetControlIdPrefix().
 func (p *Page) GenerateControlID(id string) string {
@@ -195,7 +197,7 @@ func (p *Page) GetControl(id string) ControlI {
 	}
 }
 
-// Add the given control to the controlRegistry. Called by the control code whenever a control is created or restored
+// addControl adds the given control to the controlRegistry. It is called by the control code whenever a control is created.
 func (p *Page) addControl(control ControlI) {
 	id := control.ID()
 
@@ -310,6 +312,7 @@ type pageEncoded struct {
 }
 
 // Encode is called by the framework to serialize the page state.
+// TODO: serialization is not completely implemented yet
 func (p *Page) Encode(e Encoder) (err error) {
 	s := pageEncoded{
 		StateId:           p.stateId,

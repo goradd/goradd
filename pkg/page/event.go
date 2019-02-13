@@ -44,22 +44,39 @@ type EventI interface {
 	event() *Event
 }
 
+// EventID is a unique id used to specify which event is triggering.
 type EventID uint16
 type EventMap map[EventID]EventI
 
 // Event represents a javascript event that triggers an action. Create it with a call to NewEvent(), or one of the
 // predefined events in the event package, like event.Click()
 type Event struct {
+	// JsEvent is the JavaScript event that will be triggered by the event.
 	JsEvent                   string
+	// condtion is a javascript comparison test that if present, must evaluate as true for the event to fire
 	condition                 string
+	// delay is the number of milliseconds to delay firing the action after the event triggers
 	delay                     int
+	// selector is a css selector that will filter the event bubbling up from a sub-item. The event must originate from
+	// an html object that the selector specifies.
 	selector                  string
+	// blocking specifies that once the event fires, all other events will be blocked until the action associated with
+	// the event returns.
 	blocking                  bool
-	actionValue               interface{} // A static value, or a javascript.* to get a dynamic value when the action returns to us.
+	// actionValue is a static value, or a javascript.* to get a dynamic value when the action returns to us.
+	// this value will become the EventValue returned to the action.
+	actionValue               interface{}
+	// actions is the list of actions that the event triggers
 	actions                   []action2.ActionI
+	// preventDefault will cause the preventDefault jQuery function to be called on the event, which prevents the
+	// default action. In particular, this would prevent a submit button from submitting a form.
 	preventDefault            bool
+	// stopPropogation will cause the stopPropogation jQuery function to be called on the event, which prevents the event
+	// from bubbling.
 	stopPropagation           bool
+	// validationOverride allows the event to override the control's validation mechanism.
 	validationOverride        ValidationType
+	// validationTargetsOverride allows the event to specify custom targets for validation.
 	validationTargetsOverride []string
 }
 
@@ -69,13 +86,13 @@ func NewEvent(name string) EventI {
 	return &Event{JsEvent: name}
 }
 
-
+// String returns a debug string listing the conents of the event.
 func (e *Event) String() string {
 	return fmt.Sprintf("Event: %s, Condition: %s, Delay: %d, Selector: %s, Blocking: %t, ActionCount: %d",
 		e.JsEvent, e.condition, e.delay, e.selector, e.blocking, len(e.actions))
 }
 
-// returns underlying event structure for private access within package
+// event returns underlying event structure for private access within package
 func (e *Event) event() *Event {
 	return e
 }
@@ -136,6 +153,7 @@ func (e *Event) ActionValue(r interface{}) EventI {
 	return e
 }
 
+// GetActionValue returns the value associated with the action of the event.
 func (e *Event) GetActionValue() interface{} {
 	return e.actionValue
 }
@@ -226,6 +244,7 @@ func (e *Event) getActions() []action2.ActionI {
 	return e.actions
 }
 
+// eventEncoded contains exported types. We use this to serialize an event for the page serializer.
 type eventEncoded struct {
 	JsEvent                   string
 	Condition                 string

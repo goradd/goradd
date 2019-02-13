@@ -28,6 +28,8 @@ const (
 	ResponseJavaScripts    = "js"
 )
 
+// Priority orders the various responses to an Ajax request so that the framework can control the order they are processed,
+// and not necessarily order the responses in the order they are sent.
 type Priority int
 
 const (
@@ -47,6 +49,7 @@ type ResponseCommand struct {
 	final    bool
 }
 
+// MarshalJSON is used to form the Ajax response.
 func (r ResponseCommand) MarshalJSON() (buf []byte, err error) {
 	var reply = map[string]interface{}{}
 
@@ -69,7 +72,7 @@ func (r ResponseCommand) MarshalJSON() (buf []byte, err error) {
 	return json.Marshal(reply)
 }
 
-// A response packet that leads to the manipulation or replacement of an html object
+// ResponseControl is the response packet that leads to the manipulation or replacement of an html object
 type ResponseControl struct {
 	id         string
 	html       string            // replaces the entire control's html
@@ -77,6 +80,7 @@ type ResponseControl struct {
 	value      string            // call the jQuery .val function with This value
 }
 
+// MarshalJSON is used to form the Ajax response.
 func (r ResponseControl) MarshalJSON() (buf []byte, err error) {
 	var reply = map[string]interface{}{}
 
@@ -91,21 +95,39 @@ func (r ResponseControl) MarshalJSON() (buf []byte, err error) {
 	return json.Marshal(reply)
 }
 
+// Response contains the various commands you can send to the client in response to a goradd event.
+// These commands are packed as JSON (for an Ajax response) or JavaScript (for a Server response),
+// sent to the client, unpacked by JavaScript code in the goradd.js file, and then acted upon.
 type Response struct {
+	// exclusiveCommand is a single command that is sent by itself, overriding all other commands
 	exclusiveCommand       *ResponseCommand
+	// highPriorityCommands are sent first
 	highPriorityCommands   []ResponseCommand
+	// mediumPriorityCommands are sent after high priority commands
 	mediumPriorityCommands []ResponseCommand
+	// lowPriorityCommands are sent after medium priority commands
 	lowPriorityCommands    []ResponseCommand
+	// finalCommands are acted on after all other commands have been processed
 	finalCommands          []ResponseCommand
+	// jsFiles are JavaScript files that should be inserted into the page. This should rarely be used,
+	// but is needed in case the programmer inserts a control widget in response to an Ajax event,
+	// and that control depends on javascript that has not yet been sent to the client.
 	jsFiles                *maps.StringSliceMap
-	alerts                 []string
+	// styleSheets are css files that should be inserted into the page.
 	styleSheets            *maps.StringSliceMap
+	// alerts are strings that should be shown to the user in a javascript aler
+	alerts                 []string
+	// newLocation is a URL that the client should be redirected to.
 	newLocation            string
+	// winClose directs the browser to close the current window.
 	winClose               bool
+	// controls are goraddControls that should be inserted or replaced
 	controls               map[string]ResponseControl
+	// profileHtml is the html sent from the database profiling tool to display in a special window
 	profileHtml			   string
 }
 
+// NewResponse creates a new event response.
 func NewResponse() Response {
 	return Response{}
 }
@@ -139,11 +161,12 @@ func (r *Response) ExecuteJavaScript(js string, priorities ...Priority) {
 	}
 }
 
+// ExecuteControlCommand executes the named command on the given goradd control.
 func (r *Response) ExecuteControlCommand(controlID string, functionName string, args ...interface{}) {
 	r.ExecuteSelectorFunction("#"+controlID, functionName, args...)
 }
 
-// Calls a function on a jQuery selector
+// ExecuteSelectorFunction calls a function on a jQuery selector
 func (r *Response) ExecuteSelectorFunction(selector string, functionName string, args ...interface{}) {
 	args2,priority := r.extractPriority(args...)
 	c := ResponseCommand{selector: selector, function: functionName, args: args2}
@@ -164,8 +187,9 @@ func (r *Response) ExecuteSelectorFunction(selector string, functionName string,
 
 }
 
-// Call the given function with the given arguments. If just a function label, then the window object is searched.
-// The function can be inside an object accessible from the global namespace by separating with periods.
+// ExecuteJsFunction calls the given JavaScript function with the given arguments.
+// If the function name has a dot(.) in it, the items preceeding the dot will be considered global objects
+// to call the function on. If the named function just a function label, then the function is called on the window object.
 func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
 	args2,priority := r.extractPriority(args...)
 	c := ResponseCommand{function: functionName, args: args2}
@@ -218,15 +242,8 @@ func (r *Response) addJavaScriptFiles(files ...string) {
 	}
 }
 
-/**
- * Function renders all the Javascript commands as output to the client browser. This is a mirror of what
- * occurs in the success function in the qcubed.js ajax code.
- *
- * @param bool $blnBeforeControls True to only render the javascripts that need to come before the controls are defined.
- *                                This is used to break the commands issued into two groups.
- * @static
- * @return string
- */
+// JavaScript renders the Response object as JavaScript that will be inserted into the page sent back to the
+// client in response to a Server action.
 func (r *Response) JavaScript() (script string) {
 	// Style sheet injection by a control. Not very common, as other ways of adding style sheets would normally be done first.
 	if r.styleSheets != nil {
@@ -277,10 +294,7 @@ func (r *Response) JavaScript() (script string) {
 	return script
 }
 
-/**
- * @param array $commandArray
- * @return string
- */
+
 func (r *Response) renderCommandArray(commands []ResponseCommand) string {
 	var script string
 	for _, command := range commands {
@@ -308,8 +322,7 @@ func (r *Response) renderCommandArray(commands []ResponseCommand) string {
 	return script
 }
 
-// Return the JSON for use by the form ajax response. Will essentially do the same thing as
-// above, but working in cooperation with the javascript file to process these through an ajax response.
+// MarshalJSON returns the JSON for use by the form ajax response.
 func (r *Response) MarshalJSON() (buf []byte, err error) {
 	var reply = map[string]interface{}{}
 
@@ -368,10 +381,12 @@ func (r *Response) MarshalJSON() (buf []byte, err error) {
 	return json.Marshal(reply)
 }
 
+// Call SetLocation to change the url of the browser.
 func (r *Response) SetLocation(newLocation string) {
 	r.newLocation = newLocation
 }
 
+// Call CloseWindow to close the current window.
 func (r *Response) CloseWindow() {
 	r.winClose = true
 }
@@ -380,6 +395,7 @@ func (r *Response) hasExclusiveCommand() bool {
 	return r.exclusiveCommand != nil
 }
 
+// SetControlHtml will cause the given control's html to be completely replaced by the given HTML.
 func (r *Response) SetControlHtml(id string, html string) {
 	if r.controls == nil {
 		r.controls = map[string]ResponseControl{}
@@ -390,6 +406,7 @@ func (r *Response) SetControlHtml(id string, html string) {
 	r.controls[id] = ResponseControl{html: html}
 }
 
+// SetControlAttribute sets the named html attribute on the control to the given value.
 func (r *Response) SetControlAttribute(id string, attribute string, value string) {
 	if r.controls == nil {
 		r.controls = map[string]ResponseControl{}
@@ -408,6 +425,7 @@ func (r *Response) SetControlAttribute(id string, attribute string, value string
 	}
 }
 
+// SetControlValue calls the jQuery ".val()" function on the given control, passing it the given value.
 func (r *Response) SetControlValue(id string, value string) {
 	if r.controls == nil {
 		r.controls = map[string]ResponseControl{}

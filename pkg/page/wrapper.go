@@ -36,6 +36,8 @@ type WrapperI interface {
 
 var wrapperRegistry = map[string]WrapperI{}
 
+// RegisterControlWrapper registers a wrapper with goradd so that it can be called by name using
+// the Control.With() function. It should be called at init time.
 func RegisterControlWrapper(name string, w WrapperI) {
 	wrapperRegistry[name] = w
 	gob.RegisterName(name, w)
@@ -58,11 +60,12 @@ type ErrorWrapperType struct {
 	//instructionsChanged bool // do this with a complete redraw. This won't change often.
 }
 
+// NewErrorWrapper creates a new ErrorWrapperType.
 func NewErrorWrapper() *ErrorWrapperType {
 	return &ErrorWrapperType{}
 }
 
-// Copy copies itself and returns it. This is used when a new wrapper is created from a named type.
+// ΩNewI creates a new wrapper. This is used when a new wrapper is created from a named type.
 func (w ErrorWrapperType) ΩNewI() WrapperI {
 	return NewErrorWrapper()
 }
@@ -73,6 +76,7 @@ func (w *ErrorWrapperType) ΩWrap(ctx context.Context, ctrl ControlI, html strin
 	ErrorTmpl(ctx, ctrl, html, buf)
 }
 
+// TypeName returns the name of the type of wrapper.
 func (w *ErrorWrapperType) TypeName() string {
 	return ErrorWrapper
 }
@@ -114,10 +118,12 @@ func (w *ErrorWrapperType) ΩModifyDrawingAttributes(c ControlI, a *html.Attribu
 // The following functions enable wrappers to only send changes during the refresh of a control, rather than drawing the
 // whole control.
 
+// ΩSetValidationMessageChanged is called by the framework to indicate the validation message changed.
 func (w *ErrorWrapperType) ΩSetValidationMessageChanged() {
 	w.ValidationMessageChanged = true
 }
 
+// ΩSetValidationStateChanged is called by the framework to indicate the validation state changed.
 func (w *ErrorWrapperType) ΩSetValidationStateChanged() {
 	w.ValidationStateChanged = true
 }
@@ -144,12 +150,14 @@ func (w *ErrorWrapperType) ΩAjaxRender(ctx context.Context, response *Response,
 	}
 }
 
-
+// LabelWrapperType is a wrapper that associates a label tag with the control, as well
+// as instuctions and an error message.
 type LabelWrapperType struct {
 	ErrorWrapperType
 	labelAttr *html.Attributes
 }
 
+// NewLabelWrapper returns a new LabelWrapperType.
 func NewLabelWrapper() *LabelWrapperType {
 	return &LabelWrapperType{}
 }
@@ -159,7 +167,7 @@ func (w *LabelWrapperType) Copy() *LabelWrapperType {
 	return &LabelWrapperType{w.ErrorWrapperType, w.labelAttr.Copy()}
 }
 
-// Copy copies itself and returns it. This is used when a new wrapper is created from a named type.
+// ΩNewI is used when a new wrapper is created from a named type.
 func (w *LabelWrapperType) ΩNewI() WrapperI {
 	return NewLabelWrapper()
 }
@@ -189,7 +197,7 @@ func (w *LabelWrapperType) HasLabelAttributes() bool {
 	return true
 }
 
-
+// TypeName returns the name used to identify a LabelWrapper.
 func (w *LabelWrapperType) TypeName() string {
 	return LabelWrapper
 }
@@ -203,7 +211,8 @@ func (w *LabelWrapperType) ΩModifyDrawingAttributes(c ControlI, a *html.Attribu
 	}
 }
 
-
+// DivWrapperType is a wrapper that only wraps the control in a div tag. No instructions, error message
+// or label is included.
 type DivWrapperType struct {
 }
 

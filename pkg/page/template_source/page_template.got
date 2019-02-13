@@ -5,6 +5,8 @@ import (
     "bytes"
 )
 
+// PageTmpl is the template used to draw the initial html of a page, including the doctype tag, html tag,
+// head and body tag.
 func PageTmpl(ctx context.Context, page *Page, buf *bytes.Buffer) (err error) {
 {{
 <!DOCTYPE html>
