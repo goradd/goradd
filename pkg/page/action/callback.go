@@ -9,13 +9,17 @@ import (
 )
 
 // CallbackI defines actions that result in a callback to us. Specifically Server and Ajax actions are defined for now.
-// Potential for Message action, like through WebSocket, PubHub, etc.
+// There is potential for Message action, like through WebSocket, PubHub, etc.
 type CallbackActionI interface {
 	ActionI
 
+	// ID returns the id assigned to the action when the action was created.
 	ID() int
+	// GetDestinationControlID returns the id that the action was sent to.
 	GetDestinationControlID() string
+	// GetDestinationControlSubID returns the id of the subcontrol that is the destination of the action, if one was assigned.
 	GetDestinationControlSubID() string
+	// GetActionValue returns the action value that was assigned to the action when the action was fired.
 	GetActionValue() interface{}
 }
 
@@ -58,8 +62,8 @@ func (a *callbackAction) GetDestinationControlSubID() string {
 	return a.SubID
 }
 
-func (a *callbackAction) RenderScript(params ΩrenderParams) string {
-	panic("You need to embed this action and implement RenderScript")
+func (a *callbackAction) ΩRenderScript(params ΩrenderParams) string {
+	panic("You need to embed this action and implement ΩRenderScript")
 	return ""
 }
 
@@ -92,7 +96,8 @@ func Server(destControlId string, actionId int) *ΩserverAction {
 	return a
 }
 
-func (a *ΩserverAction) RenderScript(params ΩrenderParams) string {
+// ΩRenderScript is called by the framework to render the script as javascript.
+func (a *ΩserverAction) ΩRenderScript(params ΩrenderParams) string {
 	v := maps.NewSliceMap()
 	v.Set("controlID", params.TriggeringControlID)
 	v.Set("eventId", params.EventID)
@@ -169,7 +174,8 @@ func Ajax(destControlId string, actionID int) *ΩajaxAction {
 	return a
 }
 
-func (a *ΩajaxAction) RenderScript(params ΩrenderParams) string {
+// ΩRenderScript renders the script as javascript.
+func (a *ΩajaxAction) ΩRenderScript(params ΩrenderParams) string {
 	v := maps.NewSliceMap()
 	v.Set("controlID", params.TriggeringControlID)
 	v.Set("eventId", params.EventID)

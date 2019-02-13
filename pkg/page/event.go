@@ -212,7 +212,7 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 
 	var actionJs string
 	for _, a := range e.actions {
-		actionJs += a.RenderScript(params)
+		actionJs += a.ΩRenderScript(params)
 	}
 
 	if e.blocking {

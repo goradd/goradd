@@ -18,8 +18,8 @@ import (
 
 // ActionI is an interface that defines actions that can be triggered by events
 type ActionI interface {
-	// RenderScript returns the action's javascript
-	RenderScript(params ΩrenderParams) string
+	// ΩRenderScript is called by the framework to return the action's javascript
+	ΩRenderScript(params ΩrenderParams) string
 }
 
 type ΩrenderParams struct {
@@ -44,7 +44,7 @@ func Message(m interface{}) ΩmessageAction {
 	return ΩmessageAction{Message: m}
 }
 
-func (a ΩmessageAction) RenderScript(params ΩrenderParams) string {
+func (a ΩmessageAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.msg(%s)`, javascript.ToJavaScript(a.Message))
 }
 
@@ -58,7 +58,7 @@ func Confirm(m interface{}) ΩconfirmAction {
 	return ΩconfirmAction{Message: m}
 }
 
-func (a ΩconfirmAction) RenderScript(params ΩrenderParams) string {
+func (a ΩconfirmAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf("if (!window.confirm(%s)) return false;\n", javascript.ToJavaScript(a.Message))
 }
 
@@ -71,7 +71,7 @@ func Blur(controlID string) ΩblurAction {
 	return ΩblurAction{ControlID: controlID}
 }
 
-func (a ΩblurAction) RenderScript(params ΩrenderParams) string {
+func (a ΩblurAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.blur('%s');`, a.ControlID)
 }
 
@@ -84,7 +84,7 @@ func Focus(controlID string) ΩfocusAction {
 	return ΩfocusAction{ControlID: controlID}
 }
 
-func (a ΩfocusAction) RenderScript(params ΩrenderParams) string {
+func (a ΩfocusAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.focus('%s');`, a.ControlID)
 }
 
@@ -97,7 +97,7 @@ func Select(controlID string) ΩselectAction {
 	return ΩselectAction{ControlID: controlID}
 }
 
-func (a ΩselectAction) RenderScript(params ΩrenderParams) string {
+func (a ΩselectAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.select('%s');`, a.ControlID)
 }
 
@@ -112,7 +112,7 @@ func SetCssProperty(id string, property string, value interface{}) ΩcssProperty
 	return ΩcssPropertyAction{ControlID: id}
 }
 
-func (a ΩcssPropertyAction) RenderScript(params ΩrenderParams) string {
+func (a ΩcssPropertyAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.css('%s', '%s', '%s');`, a.ControlID, a.Property, a.Value)
 }
 
@@ -126,7 +126,7 @@ func AddClass(id string, addClasses string) ΩcssAddClassAction {
 	return ΩcssAddClassAction{ControlID: id, Classes: addClasses}
 }
 
-func (a ΩcssAddClassAction) RenderScript(params ΩrenderParams) string {
+func (a ΩcssAddClassAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.addClass('%s', '%s');`, a.ControlID, a.Classes)
 }
 
@@ -140,7 +140,7 @@ func ToggleClass(id string, classes string) ΩcssToggleClassAction {
 	return ΩcssToggleClassAction{ControlID: id, Classes: classes}
 }
 
-func (a ΩcssToggleClassAction) RenderScript(params ΩrenderParams) string {
+func (a ΩcssToggleClassAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.toggleClass('%s', '%s');`, a.ControlID, a.Classes)
 }
 
@@ -153,7 +153,7 @@ func Redirect(url string) ΩredirectAction {
 	return ΩredirectAction{Location: url}
 }
 
-func (a ΩredirectAction) RenderScript(params ΩrenderParams) string {
+func (a ΩredirectAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.redirect("%s");`, a.Location)
 }
 
@@ -168,7 +168,7 @@ func Trigger(controlID string, event string, data interface{}) ΩtriggerAction {
 	return ΩtriggerAction{ControlID: controlID, Event: event, Data: data}
 }
 
-func (a ΩtriggerAction) RenderScript(params ΩrenderParams) string {
+func (a ΩtriggerAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`$j("#%s").trigger("%s", %s);` + "\n", a.ControlID, a.Event, javascript.ToJavaScript(a.Data))
 }
 
@@ -176,7 +176,7 @@ func (a ΩtriggerAction) RenderScript(params ΩrenderParams) string {
 // creating a control, you should not use this.
 type PrivateAction struct{}
 
-func (a PrivateAction) RenderScript(params ΩrenderParams) string {
+func (a PrivateAction) ΩRenderScript(params ΩrenderParams) string {
 	return ""
 }
 
@@ -194,7 +194,7 @@ func Javascript(js string) ΩjavascriptAction {
 	return ΩjavascriptAction{JavaScript: js}
 }
 
-func (a ΩjavascriptAction) RenderScript(params ΩrenderParams) string {
+func (a ΩjavascriptAction) ΩRenderScript(params ΩrenderParams) string {
 	return a.JavaScript
 }
 
@@ -214,7 +214,7 @@ func SetControlValue(id string, key string, value interface{}) ΩsetControlValue
 	return ΩsetControlValueAction{ID: id, Key:key, Value:value}
 }
 
-func (a ΩsetControlValueAction) RenderScript(params ΩrenderParams) string {
+func (a ΩsetControlValueAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.setControlValue("%s", "%s", %s)`, a.ID, a.Key, javascript.ToJavaScript(a.Value))
 }
 
