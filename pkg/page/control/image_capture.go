@@ -23,10 +23,11 @@ type ImageCaptureI interface {
 	page.ControlI
 }
 
-// ImageCapture is a panel that has both an image and button to help you capture images from the user.
-// It is a kind of composite control that exports and image and button object that you can further manipulate after
-// creation. It also has javascript to manage the actual image capture process. It does not currently permit
-// uploading of image files. It only captures images from devices and browsers that support image capture.
+// ImageCapture is a panel that has both an image and button to help you capture images from the user's camera.
+// It is a kind of composite control that exports the image so that you can further manipulate it after
+// creation. It also has javascript to manage the actual image capture process. It does not currently allow
+// the user to upload an image in place of capturing an image from the camera.
+// It only captures images from devices and browsers that support image capture.
 type ImageCapture struct {
 	Panel
 	Canvas        *Canvas
@@ -41,17 +42,14 @@ type ImageCapture struct {
 	quality float32
 }
 
+// NewImageCapture creates a new image capture panel.
 func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 	i := &ImageCapture{}
 	i.Init(i, parent, id)
 	return i
 }
 
-// Initializes a textbox. Normally you will not call this directly. However, sub controls should call this after
-// creation to get the enclosed control initialized. Self is the newly created class. Like so:
-// t := &MyTextBox{}
-// t.Textbox.Init(t, parent, id)
-// A parent control is isRequired. Leave id blank to have the system assign an id to the control.
+// Init is called by subclasses.
 func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string) {
 	i.Control.Init(self, parent, id)
 	i.Tag = "div"
@@ -102,7 +100,7 @@ func (i *ImageCapture) SetZoom(zoom int) {
 	i.zoom = zoom
 }
 
-
+// PutCustomScript is called by the framework.
 func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Response) {
 	options := map[string]interface{}{}
 	d := base64.StdEncoding.EncodeToString(i.data)
@@ -121,6 +119,7 @@ func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Respo
 	response.ExecuteControlCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, options)
 }
 
+// TurnOff will turn off the camera and the image displayed in the control
 func (i *ImageCapture) TurnOff() {
 	i.ParentForm().Response().ExecuteControlCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
 }
@@ -138,6 +137,7 @@ func (i *ImageCapture) SetMaskShape (shape ImageCaptureShape) {
 	i.shape = shape
 }
 
+// DrawingAttributes is called by the framework.
 func (i *ImageCapture) DrawingAttributes() *html.Attributes {
 	a := i.Control.DrawingAttributes()
 	if i.data != nil {
@@ -149,6 +149,7 @@ func (i *ImageCapture) DrawingAttributes() *html.Attributes {
 	return a
 }
 
+// UpdateFormValues is called by the framework.
 func (i *ImageCapture) UpdateFormValues(ctx *page.Context) {
 	if data := ctx.CustomControlValue(i.ID(), "data"); data != nil {
 		s := data.(string)

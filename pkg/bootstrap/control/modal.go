@@ -79,56 +79,51 @@ func (d *Modal) this() ModalI {
 	return d.Self.(ModalI)
 }
 
-func (d *Modal) SetTitle(t string) control.DialogI {
+func (d *Modal) SetTitle(t string) {
 	if d.titleBar.title != t {
 		d.titleBar.title = t
 		d.titleBar.Refresh()
 	}
-	return d.this()
 }
 
-func (d *Modal) SetHasCloseBox(h bool) control.DialogI {
+func (d *Modal) SetHasCloseBox(h bool) {
 	if d.titleBar.hasCloseBox != h {
 		d.titleBar.hasCloseBox = h
 		d.titleBar.Refresh()
 	}
-	return d.this()
 }
 
-func (d *Modal) SetState(state int) control.DialogI {
+func (d *Modal) SetDialogStyle(style control.DialogStyle) {
 	var class string
-	switch state {
-	case control.DialogStateDefault:
+	switch style {
+	case control.DialogStyleDefault:
 	class = BackgroundColorNone + " " + TextColorBody
-	case control.DialogStateWarning:
+	case control.DialogStyleWarning:
 		class = BackgroundColorWarning + " " + TextColorBody
-	case control.DialogStateError:
+	case control.DialogStyleError:
 		class = BackgroundColorDanger + " " + TextColorLight
-	case control.DialogStateSuccess:
+	case control.DialogStyleSuccess:
 		class = BackgroundColorSuccess + " " + TextColorLight
-	case control.DialogStateInfo:
+	case control.DialogStyleInfo:
 		class = BackgroundColorInfo + " " + TextColorLight
 	}
 	d.titleBar.RemoveClassesWithPrefix("bg-")
 	d.titleBar.RemoveClassesWithPrefix("text-")
 	d.titleBar.AddClass(class)
-	return d.this()
 }
 
 
-func (d *Modal) SetBackdrop(b ModalBackdropType) ModalI {
+func (d *Modal) SetBackdrop(b ModalBackdropType) {
 	d.backdrop = b
 	d.Refresh()
-	return d.this()
 }
 
 func (d *Modal) Title() string {
 	return d.titleBar.title
 }
 
-func (d *Modal) AddTitlebarClass(class string) ModalI {
+func (d *Modal) AddTitlebarClass(class string) {
 	d.titleBar.AddClass(class)
-	return d.this()
 }
 
 func (d *Modal) DrawingAttributes() *html.Attributes {
@@ -145,7 +140,7 @@ func (d *Modal) AddButton(
 	label string,
 	id string,
 	options *control.DialogButtonOptions,
-)  ModalI {
+) {
 	if id == "" {
 		id = label
 	}
@@ -188,7 +183,6 @@ func (d *Modal) AddButton(
 	}
 
 	d.buttonBar.Refresh()
-	return d.this()
 }
 
 func (d *Modal) RemoveButton(id string) {

@@ -5,11 +5,11 @@ import (
 	"context"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/math"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
-	"github.com/goradd/goradd/pkg/math"
 	"reflect"
 	"strconv"
 )
@@ -32,7 +32,7 @@ type PaginatedControlI interface {
 	getDataPagers() []DataPagerI
 }
 
-// PaginatedControl is a mixin that makes a control controllable by a data pager
+// PaginatedControl is a mixin that makes a Control controllable by a data pager
 type PaginatedControl struct {
 	totalItems       int
 	pageSize         int
@@ -47,12 +47,14 @@ var DefaultPaginatorPageSize = 10
 // DefaultMaxPagintorButtons is the default maximum number of buttons to display on the pager. You can change this in an individual control, too.
 var DefaultMaxPagintorButtons = 10
 
-
+// SetTotalItems sets the total number of items that the paginator keeps track of. This will be divided by
+// the PageSize to determine the number of pages presented.
 func (c *PaginatedControl) SetTotalItems(count uint) {
 	c.totalItems = int(count)
 	c.limitPageNumber()
 }
 
+// TotalItems returns the number of items that the paginator is aware of in the list it is managing.
 func (c *PaginatedControl) TotalItems() int {
 	return c.totalItems
 }
@@ -66,20 +68,26 @@ func (c *PaginatedControl) SetPageSize(size int) {
 	c.pageSize = size
 }
 
+// PageSize returns the maximum number of items that will be allowed in a page.
 func (c *PaginatedControl) PageSize() int {
 	return c.pageSize
 }
 
+// PageNum returns the current page number.
 func (c *PaginatedControl) PageNum() int {
 	return c.pageNum
 }
 
+// SetPageNum sets the current page number. It does not redraw anything, nor does it determine if the
+// page is actually visible.
 func (c *PaginatedControl) SetPageNum(n int) {
 	if c.pageNum != n {
 		c.pageNum = n
 	}
 }
 
+// AddDataPager adds a data pager to the PaginatedControl. A PaginatedControl can have multiple
+// data pagers.
 func (c *PaginatedControl) AddDataPager(d DataPagerI) {
 	c.dataPagers = append(c.dataPagers, d)
 }
@@ -96,6 +104,7 @@ func (c *PaginatedControl) limitPageNumber() {
 	}
 }
 
+// CalcPageCount will return the number of pages based on the page size and total items.
 func (c *PaginatedControl) CalcPageCount() int {
 	if c.pageSize == 0 || c.totalItems == 0 {
 		return 0
@@ -117,10 +126,10 @@ type DataPagerI interface {
 	PageButtonsHtml(i int) string
 }
 
-// DataPager is a toolbar designed to aid scrolling through a large set of data. It is implemented using Aria design
+// DataPager is a toolbar designed to aid scrolling a large set of data. It is implemented using Aria design
 // best practices. It is designed to be paired with a Table or DataRepeater to aid in navigating through the data.
-// It is similar to a Paginator, but a paginator is for navigating through a whole series of pages and not just for
-// data on one override.
+// It is similar to a Paginator, but a paginator is for navigating through a series of related web pages and not just for
+// data on one form.
 type DataPager struct {
 	page.Control
 
@@ -134,12 +143,15 @@ type DataPager struct {
 	Proxy *Proxy
 }
 
+// NewDataPager creates a new DataPager
 func NewDataPager(parent page.ControlI, id string, paginatedControl PaginatedControlI) *DataPager {
 	d := DataPager{}
 	d.Init(&d, parent, id, paginatedControl)
 	return &d
 }
 
+// Init is called by subclasses of a DataPager to initialize the data pager. You do not normally need
+// to call this.
 func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, paginatedControl PaginatedControlI) {
 	d.Control.Init(self, parent, id)
 	d.Tag = "div"
@@ -154,12 +166,14 @@ func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pa
 	d.paginatedControl.SetPageNum(1)
 }
 
+// DrawingAttributes is called by the framework to add temporary attributes to the html.
 func (d *DataPager) DrawingAttributes() *html.Attributes {
 	a := d.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "datapager")
 	return a
 }
 
+// Action is called by the framework to respond to actions.
 func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
 	switch params.ID {
 	case PageClick:
@@ -181,6 +195,8 @@ func (d *DataPager) SetMaxPageButtons(b int) {
 	d.maxPageButtons = b
 }
 
+// SetObjectNames sets the single and plural names of the objects that are represented
+// in the data pager.
 func (d *DataPager) SetObjectNames(singular string, plural string) {
 	d.ObjectName = singular
 	d.ObjectPluralName = plural
@@ -209,59 +225,60 @@ func (d *DataPager) SetLabels(previous string, next string) {
 
 
 
-/**
- * "Bunch" is defined as the collection of numbers that lies in between the pair of Ellipsis ("...")
- *
- * LAYOUT
- *
- * For IndexCount of 10
- * 2   213   2 (two items to the left of the bunch, and then 2 indexes, selected index, 3 indexes, and then two items to the right of the bunch)
- * e.g. 1 ... 5 6 *7* 8 9 10 ... 100
- *
- * For IndexCount of 11
- * 2   313   2
- *
- * For IndexCount of 12
- * 2   314   2
- *
- * For IndexCount of 13
- * 2   414   2
- *
- * For IndexCount of 14
- * 2   415   2
- *
- *
- *
- * START/END PAGE NUMBERS FOR THE BUNCH
- *
- * For IndexCount of 10
- * 1 2 3 4 5 6 7 8 .. 100
- * 1 .. 4 5 *6* 7 8 9 .. 100
- * 1 .. 92 93 *94* 95 96 97 .. 100
- * 1 .. 93 94 95 96 97 98 99 100
- *
- * For IndexCount of 11
- * 1 2 3 4 5 6 7 8 9 .. 100
- * 1 .. 4 5 6 *7* 8 9 10 .. 100
- * 1 .. 91 92 93 *94* 95 96 97 .. 100
- * 1 .. 92 93 94 95 96 97 98 99 100
- *
- * For IndexCount of 12
- * 1 2 3 4 5 6 7 8 9 10 .. 100
- * 1 .. 4 5 6 *7* 8 9 10 11 .. 100
- * 1 .. 90 91 92 *93* 94 95 96 97 .. 100
- * 1 .. 91 92 93 94 95 96 97 98 99 100
- *
- * For IndexCount of 13
- * 1 2 3 4 5 6 7 8 9 11 .. 100
- * 1 .. 4 5 6 7 *8* 9 10 11 12 .. 100
- * 1 .. 89 90 91 92 *93* 94 95 96 97 .. 100
- * 1 .. 90 91 92 93 94 95 96 97 98 99 100
+/*
+CalcBunch is called by the framework to lay out the data pager based on the number of pages
+in the pager. It should try to represent an easy to navigate interface that can manage 2 or
+2000 pages.
+
+A "Bunch" is defined as the collection of numbers that lies in between the pair of Ellipsis ("...")
+
+Layout
+
+For an IndexCount of 10
+2   213   2 (two items to the left of the bunch, and then 2 indexes, selected index, 3 indexes, and then two items to the right of the bunch)
+e.g. 1 ... 5 6 *7* 8 9 10 ... 100
+
+For IndexCount of 11
+2   313   2
+
+For IndexCount of 12
+2   314   2
+
+For IndexCount of 13
+2   414   2
+
+For IndexCount of 14
+2   415   2
+
+Start/end page numbers for the bunch
+
+For IndexCount of 10
+1 2 3 4 5 6 7 8 .. 100
+1 .. 4 5 *6* 7 8 9 .. 100
+1 .. 92 93 *94* 95 96 97 .. 100
+1 .. 93 94 95 96 97 98 99 100
+
+For IndexCount of 11
+1 2 3 4 5 6 7 8 9 .. 100
+1 .. 4 5 6 *7* 8 9 10 .. 100
+1 .. 91 92 93 *94* 95 96 97 .. 100
+1 .. 92 93 94 95 96 97 98 99 100
+
+For IndexCount of 12
+1 2 3 4 5 6 7 8 9 10 .. 100
+1 .. 4 5 6 *7* 8 9 10 11 .. 100
+1 .. 90 91 92 *93* 94 95 96 97 .. 100
+1 .. 91 92 93 94 95 96 97 98 99 100
+
+For IndexCount of 13
+1 2 3 4 5 6 7 8 9 11 .. 100
+1 .. 4 5 6 7 *8* 9 10 11 12 .. 100
+1 .. 89 90 91 92 *93* 94 95 96 97 .. 100
+1 .. 90 91 92 93 94 95 96 97 98 99 100
 
 Note: there are likely better ways to do this. Some innovative ones are to have groups of 10s, and then 100s etc.
 Or, use the ellipsis as a dropdown menu for more selections
 */
-
 func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 
 	pageCount := d.paginatedControl.CalcPageCount()
@@ -294,6 +311,7 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 	}
 }
 
+// PreRender is called by the framework to load data into the paginated control just before drawing.
 func (d *DataPager) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
 	err = d.Control.PreRender(ctx, buf)
 
@@ -308,6 +326,7 @@ func (d *DataPager) PreRender(ctx context.Context, buf *bytes.Buffer) (err error
 	return
 }
 
+// DrawInnerHtml is called by the framework to draw the control's inner html.
 func (d *DataPager) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := d.Self.(DataPagerI).PreviousButtonsHtml()
 	pageStart, pageEnd := d.CalcBunch()
@@ -320,6 +339,8 @@ func (d *DataPager) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err e
 	return
 }
 
+// PreviousButtonsHtml returns the html to draw the previous buttons. Subclasses can override this to
+// change how the Previous buttons are drawn.
 func (d *DataPager) PreviousButtonsHtml() string {
 	var prev string
 	var actionValue string
@@ -348,6 +369,8 @@ func (d *DataPager) PreviousButtonsHtml() string {
 	return h
 }
 
+// NextButtonsHtml returns the html for the next buttons. Subclasses can override this to change how the
+// next buttons are drawn.
 func (d *DataPager) NextButtonsHtml() string {
 	var next string
 	var actionValue string
@@ -378,6 +401,8 @@ func (d *DataPager) NextButtonsHtml() string {
 	return h
 }
 
+// PageButtonsHtml returns the html for the page buttons. Subclasses can override this to change how
+// the page buttons are drawn.
 func (d *DataPager) PageButtonsHtml(i int) string {
 	actionValue := strconv.Itoa(i)
 	attr := html.NewAttributes().Set("id", d.ID()+"_page_"+actionValue).Set("role", "tab").AddClass("override")

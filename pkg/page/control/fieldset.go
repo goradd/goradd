@@ -15,12 +15,14 @@ type Fieldset struct {
 	Panel
 }
 
+// NewFieldset creates a new Fieldset.
 func NewFieldset(parent page.ControlI, id string) *Fieldset {
 	p := &Fieldset{}
 	p.Init(p, parent, id)
 	return p
 }
 
+// Init is called by subclasses of Fieldset.
 func (c *Fieldset) Init (self FieldsetI, parent page.ControlI, id string) {
 	c.Panel.Init(self, parent, id)
 	c.Tag = "fieldset"
@@ -30,12 +32,14 @@ func (c *Fieldset) this() FieldsetI {
 	return c.Self.(FieldsetI)
 }
 
+// DrawingAttributes is called by the framework.
 func (c *Fieldset) DrawingAttributes() *html.Attributes {
 	a := c.Control.DrawingAttributes()
 	a.SetDataAttribute("grctl", "fieldset")
 	return a
 }
 
+// DrawTag is called by the framework.
 func (c *Fieldset) DrawTag(ctx context.Context) string {
 	var ctrl string
 

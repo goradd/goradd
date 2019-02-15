@@ -19,27 +19,28 @@ type Button struct {
 	isPrimary bool
 }
 
-// Creates a new standard html button
+// NewButton creates a new standard html button
 func NewButton(parent page.ControlI, id string) *Button {
 	b := &Button{}
 	b.Init(b, parent, id)
 	return b
 }
 
-
+// Init is called by subclasses of Button to initialize the button control structure.
 func (b *Button) Init(self page.ControlI, parent page.ControlI, id string) {
 	b.Control.Init(self, parent, id)
 	b.Tag = "button"
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
 
-// SetLabel is an alias for SetText on buttons. Buttons do not normally have separate labels.
+// SetLabel is an alias for SetText on buttons. Standard buttons do not normally have separate labels.
+// Subclasses can redefine this if they use separate labels.
 func (b *Button) SetLabel(label string) page.ControlI {
 	b.SetText(label)
 	return b
 }
 
-
+// On causes the given actions to execute when the given event is triggered.
 func (b *Button) On(e page.EventI, actions ...action.ActionI) page.EventI {
 	e.Terminating() // prevent default action (override submit)
 	b.Control.On(e, actions...)
@@ -62,15 +63,20 @@ func (b *Button) DrawingAttributes() *html.Attributes {
 	return a
 }
 
+// SetIsPrimary will make this button fire when a return is pressed. It may also style the button
+// to show that it is the primary button.
 func (b *Button) SetIsPrimary(isPrimary bool) {
 	b.isPrimary = isPrimary
 	b.Refresh() // redraw
 }
 
+// IsPrimary indicates this is the primary button in the form, and will fire when a return is pressed
+// on the keyboard.
 func (b *Button) IsPrimary() bool {
 	return b.isPrimary
 }
 
+// Serialize is called by the page serializer. You do not normally need to call this.
 func (b *Button) Serialize(e page.Encoder) (err error) {
 	if err = b.Control.Serialize(e); err != nil {
 		return
@@ -88,7 +94,7 @@ func (b *Button) ΩisSerializer(i page.ControlI) bool {
 	return reflect.TypeOf(b) == reflect.TypeOf(i)
 }
 
-
+// Deserialize is called by the page serializer. You do not normally need to call this.
 func (b *Button) Deserialize(d page.Decoder, p *page.Page) (err error) {
 	if err = b.Control.Deserialize(d, p); err != nil {
 		return
