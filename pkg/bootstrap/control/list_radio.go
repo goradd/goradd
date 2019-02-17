@@ -102,7 +102,7 @@ func (l *RadioList) SetSelectedID(id string) {
 }
 
 
-func (l *RadioList) UpdateFormValues(ctx *page.Context) {
+func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()
 
 	if ctx.RequestMode() == page.Ajax {

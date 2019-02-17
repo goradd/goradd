@@ -39,10 +39,10 @@ func (c *CheckboxBase) this() CheckboxI {
 	return c.Self.(CheckboxI)
 }
 
-// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (c *CheckboxBase) DrawingAttributes() *html.Attributes {
-	a := c.Control.DrawingAttributes()
+func (c *CheckboxBase) ΩDrawingAttributes() *html.Attributes {
+	a := c.Control.ΩDrawingAttributes()
 	if c.Text() != "" && (c.LabelMode == html.LabelBefore || c.LabelMode == html.LabelAfter) {
 		// Treat the closer text label as more important than the wrapper label
 		a.Set("aria-labeledby", c.ID()+"_ilbl")
@@ -58,8 +58,8 @@ func (c *CheckboxBase) SetLabelDrawingMode(m html.LabelDrawingMode) {
 // Draw the checkbox tag. This can be quite tricky. Some CSS frameworks are very particular about how checkboxes get
 // associated with labels. The Text value of the control will become the text directly associated with the checkbox,
 // while the Label value is only shown when drawing a checkbox with a wrapper.
-func (c *CheckboxBase) DrawTag(ctx context.Context) (ctrl string) {
-	attributes := c.this().DrawingAttributes()
+func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
+	attributes := c.this().ΩDrawingAttributes()
 	if c.checked {
 		attributes.Set("checked", "")
 	}
@@ -168,7 +168,7 @@ func (c *CheckboxBase) Value() interface{} {
 /**
  * Puts the current state of the control to be able to restore it later.
  */
-func (c *CheckboxBase) MarshalState(m maps.Setter) {
+func (c *CheckboxBase) ΩMarshalState(m maps.Setter) {
 	m.Set("checked", c.checked)
 }
 
@@ -176,7 +176,7 @@ func (c *CheckboxBase) MarshalState(m maps.Setter) {
  * Restore the state of the control.
  * @param mixed $state Previously saved state as returned by GetState above.
  */
-func (c *CheckboxBase) UnmarshalState(m maps.Loader) {
+func (c *CheckboxBase) ΩUnmarshalState(m maps.Loader) {
 	if v,ok := m.Load("checked"); ok {
 		if v2,ok := v.(bool); ok {
 			c.checked = v2

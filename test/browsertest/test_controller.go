@@ -60,7 +60,7 @@ func (p *TestController) Init(self control.PanelI, parent page.ControlI, id stri
 	p.stepTimeout = 3
 }
 
-func (p *TestController) PutCustomScript(ctx context.Context, response *page.Response) {
+func (p *TestController) ΩPutCustomScript(ctx context.Context, response *page.Response) {
 
 	script := fmt.Sprintf (`$j("#%s").testController();`, p.ID())
 	response.ExecuteJavaScript(script, page.PriorityHigh) // Make sure the plugin gets initialized before being called
@@ -89,7 +89,7 @@ func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
 	}
 }
 
-func (p *TestController) UpdateFormValues(ctx *page.Context) {
+func (p *TestController) ΩUpdateFormValues(ctx *page.Context) {
 	id := p.ID()
 
 	if v := ctx.CustomControlValue(id, "pagestate"); v != nil {

@@ -18,8 +18,8 @@ func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
 }
 
 
-func (t *FloatTextbox) DrawingAttributes() *html.Attributes {
-	a := t.FloatTextbox.DrawingAttributes()
+func (t *FloatTextbox) ΩDrawingAttributes() *html.Attributes {
+	a := t.FloatTextbox.ΩDrawingAttributes()
 	a.AddClass("form-control")
 	return a
 }

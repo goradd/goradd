@@ -59,8 +59,8 @@ func (t *EmailTextbox) Validate(ctx context.Context) bool {
 	return true
 }
 
-func (t *EmailTextbox) UpdateFormValues(ctx *page.Context) {
-	t.Textbox.UpdateFormValues(ctx)
+func (t *EmailTextbox) ΩUpdateFormValues(ctx *page.Context) {
+	t.Textbox.ΩUpdateFormValues(ctx)
 	if t.Text() == "" {
 		t.items = nil
 		t.parseErr = nil

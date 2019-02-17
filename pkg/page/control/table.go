@@ -90,16 +90,16 @@ func (t *Table) SetFooterRowCount(count int) TableI {
 	return t.this()
 }
 
-func (t *Table) DrawTag(ctx context.Context) string {
+func (t *Table) ΩDrawTag(ctx context.Context) string {
 	if t.HasDataProvider() {
 		t.GetData(ctx, t)
 		defer t.ResetData()
 	}
-	return t.Control.DrawTag(ctx)
+	return t.Control.ΩDrawTag(ctx)
 }
 
-func (t *Table) DrawingAttributes() *html.Attributes {
-	a := t.Control.DrawingAttributes()
+func (t *Table) ΩDrawingAttributes() *html.Attributes {
+	a := t.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "table")
 	if t.Data == nil {
 		a.SetStyle("display", "none")
@@ -107,7 +107,7 @@ func (t *Table) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
 
 	buf1 := page.GetBuffer()
@@ -366,10 +366,10 @@ func (t *Table) SetFooterRowStyler(a html.Attributer) {
 	t.rowStyler = a
 }
 
-// UpdateFormValues is called by the system whenever values are sent by client controls. We forward that to the columns.
-func (t *Table) UpdateFormValues(ctx *page.Context) {
+// ΩUpdateFormValues is called by the system whenever values are sent by client controls. We forward that to the columns.
+func (t *Table) ΩUpdateFormValues(ctx *page.Context) {
 	for _, col := range t.columns {
-		col.UpdateFormValues(ctx)
+		col.ΩUpdateFormValues(ctx)
 	}
 }
 

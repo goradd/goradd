@@ -13,7 +13,7 @@
 {{e $1.With(page.NewErrorWrapper()).Draw(ctx, buf) }}
 {{end}}
 
-{{define renderTemplate}}
+{{define renderFormTemplate}}
 package {{package }}
 
 import (
@@ -38,6 +38,23 @@ func (form *{{form}}) AddHeadTags()  {
 
 
 func (form *{{form}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+{{
+{{template}}
+}}
+	return
+}
+{{end}}
+
+{{define renderControlTemplate}}
+package {{package }}
+
+import (
+    "context"
+    "bytes"
+    {{imports}}
+)
+
+func (control *{{control}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 {{
 {{template}}
 }}

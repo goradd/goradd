@@ -120,8 +120,8 @@ func (c *CheckboxColumn) Changes() map[string]bool {
 	return c.changes
 }
 
-// UpdateFormValues will look for changes to our checkboxes and record those changes.
-func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
+// ΩUpdateFormValues will look for changes to our checkboxes and record those changes.
+func (c *CheckboxColumn) ΩUpdateFormValues(ctx *page.Context) {
 	for k, v := range ctx.CheckableValues() {
 		index := strings.LastIndexAny(k, "_")
 		if index > 0 {

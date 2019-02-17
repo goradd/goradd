@@ -28,8 +28,8 @@ func (c *Panel) Init(self PanelI, parent page.ControlI, id string) {
 }
 
 
-func (c *Panel) DrawingAttributes() *html.Attributes {
-	a := c.Control.DrawingAttributes()
+func (c *Panel) ΩDrawingAttributes() *html.Attributes {
+	a := c.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "panel")
 	return a
 }

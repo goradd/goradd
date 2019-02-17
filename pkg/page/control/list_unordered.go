@@ -61,21 +61,21 @@ func (l *UnorderedList) SetBulletStyle(s string) {
 	l.Control.SetStyle("list-style-type", s)
 }
 
-func (l *UnorderedList) DrawTag(ctx context.Context) string {
+func (l *UnorderedList) ΩDrawTag(ctx context.Context) string {
 	l.GetData(ctx, l)
 	defer l.Clear()
-	return l.Control.DrawTag(ctx)
+	return l.Control.ΩDrawTag(ctx)
 }
 
-// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *UnorderedList) DrawingAttributes() *html.Attributes {
-	a := l.Control.DrawingAttributes()
+func (l *UnorderedList) ΩDrawingAttributes() *html.Attributes {
+	a := l.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "hlist")
 	return a
 }
 
-func (l *UnorderedList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *UnorderedList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.this().GetItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil

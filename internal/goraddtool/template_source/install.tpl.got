@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/goradd/goradd/html"
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
 

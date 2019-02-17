@@ -106,9 +106,9 @@ func (i *Image) SetHeight(height int) {
 	i.Refresh()
 }
 
-// DrawingAttributes is called by the framework.
-func (i *Image) DrawingAttributes() *html.Attributes {
-	a := i.Control.DrawingAttributes()
+// ΩDrawingAttributes is called by the framework.
+func (i *Image) ΩDrawingAttributes() *html.Attributes {
+	a := i.Control.ΩDrawingAttributes()
 	if i.data != nil {
 		// Turn the data into a source attribute
 		d := base64.StdEncoding.EncodeToString(i.data)

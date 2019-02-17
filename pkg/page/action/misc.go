@@ -205,7 +205,7 @@ type ΩsetControlValueAction struct {
 }
 
 // SetControlValue is primarily used by custom controls to set a value that eventually can get picked
-// up by the control in the UpdateFormValues function. It is an aid to tying javascript powered widgets together
+// up by the control in the ΩUpdateFormValues function. It is an aid to tying javascript powered widgets together
 // with the go version of the control. Value gets converted to a javascript value, so use the javascript.* helpers
 // if you want to interpret a javascript value and pass it on. For example:
 //  action.SetControlValue(myControl.ID(), "myKey", javascript.JsCode("event.target.id"))

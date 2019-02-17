@@ -13,4 +13,4 @@
 
 {{end}}
 
-{{renderTemplate}}
+{{renderFormTemplate}}

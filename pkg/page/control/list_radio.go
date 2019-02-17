@@ -18,12 +18,14 @@ type RadioList struct {
 	CheckboxList
 }
 
+// NewRadioList creates a new RadioList control.
 func NewRadioList(parent page.ControlI, id string) *RadioList {
 	l := &RadioList{}
 	l.Init(l, parent, id)
 	return l
 }
 
+// Init is called by subclasses.
 func (l *RadioList) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.CheckboxList.Init(self, parent, id)
 }
@@ -32,15 +34,16 @@ func (l *RadioList) this() RadioListI {
 	return l.Self.(RadioListI)
 }
 
-// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *RadioList) DrawingAttributes() *html.Attributes {
-	a := l.CheckboxList.DrawingAttributes()
+func (l *RadioList) ΩDrawingAttributes() *html.Attributes {
+	a := l.CheckboxList.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "radiolist")
 	return a
 }
 
-func (l *RadioList) RenderItem(tag string, item ListItemI) (h string) {
+// ΩRenderItem is called by the framework to render a single item in the list.
+func (l *RadioList) ΩRenderItem(tag string, item ListItemI) (h string) {
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", l.ID())
@@ -58,6 +61,8 @@ func (l *RadioList) RenderItem(tag string, item ListItemI) (h string) {
 	return
 }
 
+// Value returns the single selected value of the list and satisfies the Valuer interface.
+// It returns nil if no item is selected.
 func (l *RadioList) Value() interface{} {
 	a := l.SelectedValues()
 	if len(a) == 0 {
@@ -67,10 +72,12 @@ func (l *RadioList) Value() interface{} {
 	}
 }
 
+// SelectedValue returns the single selected value of the list as a string.
 func (l *RadioList) SelectedValue() string {
 	return l.Value().(string)
 }
 
+// SelectedLabel returns the label of the currently selected item, or an empty string of no item is selected.
 func (l *RadioList) SelectedLabel() string {
 	a := l.SelectedLabels()
 	if len(a) == 0 {
@@ -80,10 +87,12 @@ func (l *RadioList) SelectedLabel() string {
 	}
 }
 
+// SetValue sets the selection to the item corresponding to the given value, and satisfies the Valuer interface.
 func (l *RadioList) SetValue(v interface{}) {
 	l.SetSelectedValue(v)
 }
 
+// SetSelectedValue sets the selection to the item corresponding to the given value.
 func (l *RadioList) SetSelectedValue(v interface{}) {
 	if v == nil {
 		l.SetSelectedID("")
@@ -96,6 +105,7 @@ func (l *RadioList) SetSelectedValue(v interface{}) {
 	}
 }
 
+// SetSelectedID sets selection to the item whose id corresponds to the given value.
 func (l *RadioList) SetSelectedID(id string) {
 	if id == "" {
 		l.selectedIds = map[string]bool{}
@@ -106,7 +116,7 @@ func (l *RadioList) SetSelectedID(id string) {
 }
 
 
-func (l *RadioList) UpdateFormValues(ctx *page.Context) {
+func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()
 
 	if ctx.RequestMode() == page.Ajax {

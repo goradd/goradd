@@ -49,10 +49,10 @@ func (l *CheckboxList) SetIsInline(i bool) {
 	l.isInline = i
 }
 
-// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *CheckboxList) DrawingAttributes() *html.Attributes {
-	a := l.Control.DrawingAttributes()	// skip default checkbox list attributes
+func (l *CheckboxList) ΩDrawingAttributes() *html.Attributes {
+	a := l.Control.ΩDrawingAttributes()	// skip default checkbox list attributes
 	a.SetDataAttribute("grctl", "bs-checkboxlist")
 	/*
 	a.AddClass("gr-cbl")
@@ -65,7 +65,7 @@ func (l *CheckboxList) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (l *CheckboxList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *CheckboxList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml()
 	buf.WriteString(h)
 	return nil

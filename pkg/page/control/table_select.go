@@ -83,8 +83,8 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attri
 	return a
 }
 
-func (t *SelectTable) DrawingAttributes() *html.Attributes {
-	a := t.Table.DrawingAttributes()
+func (t *SelectTable) ΩDrawingAttributes() *html.Attributes {
+	a := t.Table.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "selecttable")
 	a.Set("role", "grid")
 	a.Set("aria-readonly", "true")
@@ -92,7 +92,7 @@ func (t *SelectTable) DrawingAttributes() *html.Attributes {
 }
 
 
-func (t *SelectTable) UpdateFormValues(ctx *page.Context) {
+func (t *SelectTable) ΩUpdateFormValues(ctx *page.Context) {
 	if data := ctx.CustomControlValue(t.ID(), "selectedId"); data != nil {
 		t.selectedID = fmt.Sprintf("%v", data)
 	}
@@ -107,11 +107,11 @@ func (t *SelectTable) SetSelectedID(id string) {
 	t.ParentForm().Response().ExecuteControlCommand(t.ID(), "selectTable", "option", "selectedId", id)
 }
 
-func (t *SelectTable) MarshalState(m maps.Setter) {
+func (t *SelectTable) ΩMarshalState(m maps.Setter) {
 	m.Set("selId", t.selectedID)
 }
 
-func (t *SelectTable) UnmarshalState(m maps.Loader) {
+func (t *SelectTable) ΩUnmarshalState(m maps.Loader) {
 	if v,ok := m.Load("selId"); ok {
 		if id, ok := v.(string); ok {
 			t.selectedID = id
@@ -119,7 +119,7 @@ func (t *SelectTable) UnmarshalState(m maps.Loader) {
 	}
 }
 
-func (t *SelectTable) PutCustomScript(ctx context.Context, response *page.Response) {
+func (t *SelectTable) ΩPutCustomScript(ctx context.Context, response *page.Response) {
 	options := map[string]interface{}{}
 	options["selectedId"] = t.selectedID
 

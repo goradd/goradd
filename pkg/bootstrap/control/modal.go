@@ -126,8 +126,8 @@ func (d *Modal) AddTitlebarClass(class string) {
 	d.titleBar.AddClass(class)
 }
 
-func (d *Modal) DrawingAttributes() *html.Attributes {
-	a := d.Panel.DrawingAttributes()
+func (d *Modal) ΩDrawingAttributes() *html.Attributes {
+	a := d.Panel.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "bs-modal")
 	return a
 }
@@ -246,7 +246,7 @@ func (d *Modal) closed() {
 	d.SetVisible(false)
 }
 
-func (d *Modal) PutCustomScript(ctx context.Context, response *page.Response) {
+func (d *Modal) ΩPutCustomScript(ctx context.Context, response *page.Response) {
 	var backdrop interface{}
 
 	switch d.backdrop {

@@ -131,8 +131,8 @@ func (f *ΩFormBase) AddFontAwesome() {
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
 func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = f.this().PreRender(ctx, buf)
-	buf.WriteString(`<form ` + f.this().DrawingAttributes().String() + ">\n")
+	err = f.this().ΩPreRender(ctx, buf)
+	buf.WriteString(`<form ` + f.this().ΩDrawingAttributes().String() + ">\n")
 	if err = f.this().DrawTemplate(ctx, buf); err != nil {
 		return // the template is required
 	}
@@ -170,7 +170,7 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	s = fmt.Sprintf(`<script>jQuery(document).ready(function($j) { %s; });</script>`, s)
 	buf.WriteString(s)
 
-	f.this().PostRender(ctx, buf)
+	f.this().ΩPostRender(ctx, buf)
 	return
 }
 
@@ -216,18 +216,18 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 	return
 }
 
-// DrawingAttributes returns the attributes to add to the form tag.
-func (f *ΩFormBase) DrawingAttributes() *html.Attributes {
-	a := f.Control.DrawingAttributes()
+// ΩDrawingAttributes returns the attributes to add to the form tag.
+func (f *ΩFormBase) ΩDrawingAttributes() *html.Attributes {
+	a := f.Control.ΩDrawingAttributes()
 	a.Set("method", "post")
 	a.Set("action", f.Page().path)
 	a.SetDataAttribute("grctl", "form")
 	return a
 }
 
-// PreRender performs setup operations just before drawing.
-func (f *ΩFormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = f.Control.PreRender(ctx, buf); err != nil {
+// ΩPreRender performs setup operations just before drawing.
+func (f *ΩFormBase) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
+	if err = f.Control.ΩPreRender(ctx, buf); err != nil {
 		return
 	}
 

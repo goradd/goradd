@@ -27,8 +27,8 @@ func (c *RadioButton) this() RadioButtonI {
 	return c.Self.(RadioButtonI)
 }
 
-func (c *RadioButton) DrawingAttributes() *html.Attributes {
-	a := c.CheckboxBase.DrawingAttributes()
+func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
+	a := c.CheckboxBase.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "radio")
 	a.Set("type", "radio")
 	if c.group == "" {
@@ -40,7 +40,7 @@ func (c *RadioButton) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (c *RadioButton) UpdateFormValues(ctx *page.Context) {
+func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
 	id := c.ID()
 
 	if v, ok := ctx.CheckableValue(id); ok {

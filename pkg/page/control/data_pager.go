@@ -166,9 +166,9 @@ func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pa
 	d.paginatedControl.SetPageNum(1)
 }
 
-// DrawingAttributes is called by the framework to add temporary attributes to the html.
-func (d *DataPager) DrawingAttributes() *html.Attributes {
-	a := d.Control.DrawingAttributes()
+// ΩDrawingAttributes is called by the framework to add temporary attributes to the html.
+func (d *DataPager) ΩDrawingAttributes() *html.Attributes {
+	a := d.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "datapager")
 	return a
 }
@@ -311,9 +311,9 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 	}
 }
 
-// PreRender is called by the framework to load data into the paginated control just before drawing.
-func (d *DataPager) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = d.Control.PreRender(ctx, buf)
+// ΩPreRender is called by the framework to load data into the paginated control just before drawing.
+func (d *DataPager) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
+	err = d.Control.ΩPreRender(ctx, buf)
 
 	if err == nil {
 		// If we are being drawn before the paginated control, we must tell the paginated control to load up its
@@ -326,8 +326,8 @@ func (d *DataPager) PreRender(ctx context.Context, buf *bytes.Buffer) (err error
 	return
 }
 
-// DrawInnerHtml is called by the framework to draw the control's inner html.
-func (d *DataPager) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+// ΩDrawInnerHtml is called by the framework to draw the control's inner html.
+func (d *DataPager) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := d.Self.(DataPagerI).PreviousButtonsHtml()
 	pageStart, pageEnd := d.CalcBunch()
 	for i := pageStart; i <= pageEnd; i++ {
@@ -420,13 +420,13 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 	return d.Proxy.ButtonHtml(actionValue, actionValue, attr, false)
 }
 
-// MarshalState is an internal function to save the state of the control
-func (d *DataPager) MarshalState(m maps.Setter) {
+// ΩMarshalState is an internal function to save the state of the control
+func (d *DataPager) ΩMarshalState(m maps.Setter) {
 	m.Set("pageNum", d.paginatedControl.PageNum())
 }
 
-// UnmarshalState is an internal function to restore the state of the control
-func (d *DataPager) UnmarshalState(m maps.Loader) {
+// ΩUnmarshalState is an internal function to restore the state of the control
+func (d *DataPager) ΩUnmarshalState(m maps.Loader) {
 	if v,ok := m.Load("pageNum"); ok {
 		if i, ok := v.(int); ok {
 			d.paginatedControl.SetPageNum (i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance

@@ -100,8 +100,8 @@ func (i *ImageCapture) SetZoom(zoom int) {
 	i.zoom = zoom
 }
 
-// PutCustomScript is called by the framework.
-func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Response) {
+// ΩPutCustomScript is called by the framework.
+func (i *ImageCapture) ΩPutCustomScript(ctx context.Context, response *page.Response) {
 	options := map[string]interface{}{}
 	d := base64.StdEncoding.EncodeToString(i.data)
 	d = "data:image/" + i.typ + ";base64," + d
@@ -137,9 +137,9 @@ func (i *ImageCapture) SetMaskShape (shape ImageCaptureShape) {
 	i.shape = shape
 }
 
-// DrawingAttributes is called by the framework.
-func (i *ImageCapture) DrawingAttributes() *html.Attributes {
-	a := i.Control.DrawingAttributes()
+// ΩDrawingAttributes is called by the framework.
+func (i *ImageCapture) ΩDrawingAttributes() *html.Attributes {
+	a := i.Control.ΩDrawingAttributes()
 	if i.data != nil {
 		// Turn the data into a source attribute
 		d := base64.StdEncoding.EncodeToString(i.data)
@@ -149,8 +149,8 @@ func (i *ImageCapture) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-// UpdateFormValues is called by the framework.
-func (i *ImageCapture) UpdateFormValues(ctx *page.Context) {
+// ΩUpdateFormValues is called by the framework.
+func (i *ImageCapture) ΩUpdateFormValues(ctx *page.Context) {
 	if data := ctx.CustomControlValue(i.ID(), "data"); data != nil {
 		s := data.(string)
 		index := strings.Index(s, ",")

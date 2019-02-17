@@ -29,10 +29,10 @@ func (c *Canvas) Init(self CanvasI, parent page.ControlI, id string) {
 	c.Tag = "canvas"
 }
 
-// DrawingAttributes is called by the framework to get the temporary attributes that are specifically set by
+// ΩDrawingAttributes is called by the framework to get the temporary attributes that are specifically set by
 // this control just before drawing.
-func (c *Canvas) DrawingAttributes() *html.Attributes {
-	a := c.Control.DrawingAttributes()
+func (c *Canvas) ΩDrawingAttributes() *html.Attributes {
+	a := c.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "canvas")
 	return a
 }

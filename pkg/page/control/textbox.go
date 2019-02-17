@@ -91,10 +91,9 @@ func (t *Textbox) ResetValidators() {
 	t.validators = nil
 }
 
-// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
-// attributes are disposed of after drawing, so they are essentially read-only.
-func (t *Textbox) DrawingAttributes() *html.Attributes {
-	a := t.Control.DrawingAttributes()
+// ΩDrawingAttributes is called by the framework to retrieve the tag's private attributes at draw time.
+func (t *Textbox) ΩDrawingAttributes() *html.Attributes {
+	a := t.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "textbox")
 	a.Set("name", t.ID()) // needed for posts
 	if t.IsRequired() {
@@ -118,9 +117,9 @@ func (t *Textbox) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-// DrawInnerHtml is an internal function that renders the inner html of a tag. In this case, it is rendering the inner
+// ΩDrawInnerHtml is an internal function that renders the inner html of a tag. In this case, it is rendering the inner
 // text of a textarea
-func (t *Textbox) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Textbox) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	_, err = buf.WriteString(html2.EscapeString(t.Text()))
 	return
 }
@@ -253,8 +252,8 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 	return true
 }
 
-// UpdateFormValues is an internal function that lets us reflect the value of the textbox on the web override
-func (t *Textbox) UpdateFormValues(ctx *page.Context) {
+// ΩUpdateFormValues is an internal function that lets us reflect the value of the textbox on the web override
+func (t *Textbox) ΩUpdateFormValues(ctx *page.Context) {
 	id := t.ID()
 
 	if v, ok := ctx.FormValue(id); ok {
@@ -262,13 +261,13 @@ func (t *Textbox) UpdateFormValues(ctx *page.Context) {
 	}
 }
 
-// MarshalState is an internal function to save the state of the control
-func (t *Textbox) MarshalState(m maps.Setter) {
+// ΩMarshalState is an internal function to save the state of the control
+func (t *Textbox) ΩMarshalState(m maps.Setter) {
 	m.Set("text", t.Text())
 }
 
-// UnmarshalState is an internal function to restore the state of the control
-func (t *Textbox) UnmarshalState(m maps.Loader) {
+// ΩUnmarshalState is an internal function to restore the state of the control
+func (t *Textbox) ΩUnmarshalState(m maps.Loader) {
 	if v,ok := m.Load("text"); ok {
 		if s, ok := v.(string); ok {
 			t.value = s

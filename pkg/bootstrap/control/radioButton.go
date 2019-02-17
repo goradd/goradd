@@ -25,8 +25,8 @@ func (c *RadioButton) this() RadioButtonI {
 	return c.Self.(RadioButtonI)
 }
 
-func (c *RadioButton) DrawingAttributes() *html.Attributes {
-	a := c.checkboxBase.DrawingAttributes()
+func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
+	a := c.checkboxBase.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "bs-radio")
 	a.Set("type", "radio")
 	if c.group == "" {
@@ -38,8 +38,8 @@ func (c *RadioButton) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-// UpdateFormValues is an internal call that lets us reflect the value of the checkbox on the web override
-func (c *RadioButton) UpdateFormValues(ctx *page.Context) {
+// ΩUpdateFormValues is an internal call that lets us reflect the value of the checkbox on the web override
+func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
 	id := c.ID()
 
 	if v, ok := ctx.CheckableValue(id); ok {

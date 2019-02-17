@@ -72,8 +72,8 @@ func (l *MultiselectList) Validate(ctx context.Context) bool {
 	return true
 }
 
-// UpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
-func (l *MultiselectList) UpdateFormValues(ctx *page.Context) {
+// ΩUpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
+func (l *MultiselectList) ΩUpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 	if ctx.RequestMode() == page.Ajax {
 		id += "[]" // an odd remnant of jquery processing
@@ -189,8 +189,8 @@ func (l *MultiselectList) SelectedValues() []interface{} {
 	return values
 }
 
-// MarshalState is an internal function to save the state of the control
-func (l *MultiselectList) MarshalState(m maps.Setter) {
+// ΩMarshalState is an internal function to save the state of the control
+func (l *MultiselectList) ΩMarshalState(m maps.Setter) {
 	var ids = []string{}
 	for id := range l.selectedIds {
 		ids = append(ids, id)
@@ -198,8 +198,8 @@ func (l *MultiselectList) MarshalState(m maps.Setter) {
 	m.Set("sel", ids)
 }
 
-// UnmarshalState is an internal function to restore the state of the control
-func (l *MultiselectList) UnmarshalState(m maps.Loader) {
+// ΩUnmarshalState is an internal function to restore the state of the control
+func (l *MultiselectList) ΩUnmarshalState(m maps.Loader) {
 	l.selectedIds = map[string]bool{}
 
 	if s,ok := m.Load("sel"); ok {
@@ -211,10 +211,10 @@ func (l *MultiselectList) UnmarshalState(m maps.Loader) {
 	}
 }
 
-// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *MultiselectList) DrawingAttributes() *html.Attributes {
-	a := l.Control.DrawingAttributes()
+func (l *MultiselectList) ΩDrawingAttributes() *html.Attributes {
+	a := l.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "multilist")
 	a.Set("name", l.ID()) // needed for posts
 	a.Set("multiple", "")
@@ -224,7 +224,7 @@ func (l *MultiselectList) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (l *MultiselectList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *MultiselectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil

@@ -32,18 +32,18 @@ func (c *Fieldset) this() FieldsetI {
 	return c.Self.(FieldsetI)
 }
 
-// DrawingAttributes is called by the framework.
-func (c *Fieldset) DrawingAttributes() *html.Attributes {
-	a := c.Control.DrawingAttributes()
+// ΩDrawingAttributes is called by the framework.
+func (c *Fieldset) ΩDrawingAttributes() *html.Attributes {
+	a := c.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "fieldset")
 	return a
 }
 
-// DrawTag is called by the framework.
-func (c *Fieldset) DrawTag(ctx context.Context) string {
+// ΩDrawTag is called by the framework.
+func (c *Fieldset) ΩDrawTag(ctx context.Context) string {
 	var ctrl string
 
-	attributes := c.this().DrawingAttributes()
+	attributes := c.this().ΩDrawingAttributes()
 	if c.HasWrapper() {
 		panic("Fieldsets cannot have wrappers.")
 	}
@@ -54,7 +54,7 @@ func (c *Fieldset) DrawTag(ctx context.Context) string {
 	if l := c.Label(); l != "" {
 		ctrl = html.RenderTag("legend", nil, l)
 	}
-	if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
+	if err := c.this().ΩDrawInnerHtml(ctx, buf); err != nil {
 		panic(err)
 	}
 	ctrl = html.RenderTag(c.Tag, attributes, ctrl+buf.String())

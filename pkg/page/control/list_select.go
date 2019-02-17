@@ -50,8 +50,8 @@ func (l *SelectList) Validate(ctx context.Context) bool {
 	return true
 }
 
-// UpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
-func (l *SelectList) UpdateFormValues(ctx *page.Context) {
+// ΩUpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
+func (l *SelectList) ΩUpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 
 	if v, ok := ctx.FormValue(id); ok {
@@ -124,13 +124,13 @@ func (l *SelectList) SelectedLabel() string {
 	return ""
 }
 
-// MarshalState is an internal function to save the state of the control
-func (l *SelectList) MarshalState(m maps.Setter) {
+// ΩMarshalState is an internal function to save the state of the control
+func (l *SelectList) ΩMarshalState(m maps.Setter) {
 	m.Set("sel", l.selectedId)
 }
 
-// UnmarshalState is an internal function to restore the state of the control
-func (l *SelectList) UnmarshalState(m maps.Loader) {
+// ΩUnmarshalState is an internal function to restore the state of the control
+func (l *SelectList) ΩUnmarshalState(m maps.Loader) {
 	if v,ok := m.Load("sel"); ok {
 		if s, ok := v.(string); ok {
 			l.selectedId = s
@@ -138,10 +138,10 @@ func (l *SelectList) UnmarshalState(m maps.Loader) {
 	}
 }
 
-// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *SelectList) DrawingAttributes() *html.Attributes {
-	a := l.Control.DrawingAttributes()
+func (l *SelectList) ΩDrawingAttributes() *html.Attributes {
+	a := l.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "selectlist")
 	a.Set("name", l.ID()) // needed for posts
 	if l.IsRequired() {
@@ -150,7 +150,7 @@ func (l *SelectList) DrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (l *SelectList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *SelectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if l.HasDataProvider() {
 		l.GetData(ctx, l)
 	}

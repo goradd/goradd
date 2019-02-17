@@ -27,8 +27,8 @@ func (c *checkboxBase) this() CheckboxI {
 	return c.Self.(CheckboxI)
 }
 
-func (c *checkboxBase) DrawingAttributes() *html.Attributes {
-	a := c.Checkbox.DrawingAttributes()
+func (c *checkboxBase) ΩDrawingAttributes() *html.Attributes {
+	a := c.Checkbox.ΩDrawingAttributes()
 	a.AddClass("form-check-input")
 
 	if c.Text() == "" {
@@ -43,8 +43,8 @@ func (c *checkboxBase) GetDrawingInputLabelAttributes() *html.Attributes {
 	return a
 }
 
-func (c *checkboxBase) DrawTag(ctx context.Context) (ctrl string) {
-	h := c.Checkbox.DrawTag(ctx)
+func (c *checkboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
+	h := c.Checkbox.ΩDrawTag(ctx)
 	return html.RenderTag("div", html.NewAttributes().
 		AddClass("form-check").
 		SetDataAttribute("grel", c.ID()), h)	// make sure the entire control gets removed

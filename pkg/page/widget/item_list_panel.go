@@ -73,8 +73,8 @@ func (p *ItemListPanel) this() ItemListPanelI {
 	return p.Self.(ItemListPanelI)
 }
 
-func (c *ItemListPanel) DrawingAttributes() *html.Attributes {
-	a := c.Panel.DrawingAttributes()
+func (c *ItemListPanel) ΩDrawingAttributes() *html.Attributes {
+	a := c.Panel.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "itemlistpnl")
 	return a
 }

@@ -17,6 +17,7 @@ type IDSetter interface {
 	SetID(id string)
 }
 
+// ItemListI is the interface for all controls that display a list of ListItems.
 type ItemListI interface {
 	AddItem(label string, value ...interface{}) ListItemI
 	AddItemAt(index int, label string, value ...interface{})

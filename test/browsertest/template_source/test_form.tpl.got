@@ -18,4 +18,4 @@ Currently running:
 </div>
 {{end}}
 
-{{renderTemplate}}
+{{renderFormTemplate}}
