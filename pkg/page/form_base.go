@@ -60,7 +60,7 @@ type ΩFormBase struct {
 // Init initializes the form control. Note that ctx might be nil if we are unit testing.
 func (f *ΩFormBase) Init(ctx context.Context, self FormI, path string, id string) {
 	var p = &Page{}
-	p.Init(path)
+	p.Init()
 
 	f.page = p
 	if id == "" {
@@ -219,8 +219,6 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 // ΩDrawingAttributes returns the attributes to add to the form tag.
 func (f *ΩFormBase) ΩDrawingAttributes() *html.Attributes {
 	a := f.Control.ΩDrawingAttributes()
-	a.Set("method", "post")
-	a.Set("action", f.Page().path)
 	a.SetDataAttribute("grctl", "form")
 	return a
 }
@@ -232,7 +230,7 @@ func (f *ΩFormBase) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err er
 	}
 
 	f.SetAttribute("method", "post")
-	f.SetAttribute("action", f.page.Path())
+	f.SetAttribute("action", GetContext(ctx).HttpContext.URL.RequestURI()) // This only works because we never ajax draw the form, only server render
 
 	return
 }

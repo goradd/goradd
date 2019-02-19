@@ -5,6 +5,8 @@ package controls
 import (
 	"bytes"
 	"context"
+
+	"github.com/goradd/goradd/pkg/page"
 )
 
 func (form *ControlsForm) AddHeadTags() {
@@ -21,17 +23,20 @@ func (form *ControlsForm) AddHeadTags() {
 func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
+`)
+	path := page.GetContext(ctx).HttpContext.URL.Path
+	buf.WriteString(`
 <h1>Control Examples</h1>
 <div class="controlList_scroll">
   <ul>
     <li><a href="`)
 
-	buf.WriteString(form.Page().Path())
+	buf.WriteString(path)
 
 	buf.WriteString(`">Home</a></li>
     <li><a href="`)
 
-	buf.WriteString(form.Page().Path())
+	buf.WriteString(path)
 
 	buf.WriteString(`?control=textbox">Textboxes: Textbox, IntegerTextbox, FloatTextbox</a></li>
   </ul>

@@ -1,2 +1,25 @@
-package panels
+{{< package }}panels{{end}}
+{{< imports }}
+{{end}}
+{{< control }}TextboxPanel{{end}}
 
+{{define template }}
+<h1>Textboxes</h1>
+<p>
+Built-in Textboxes come in three flavors:
+</p>
+<ul>
+<li>Plain</li>
+<li>Integer: Validating that the input is an integer in a specific range.</li>
+<li>Float: Validating that the input is a floating-point number in a specific range.</li>
+</ul>
+<h2>Demos</h2>
+<p>Click on one of the Submit buttons to cause the controls to validate.</p>
+{{drawWithLabel control.PlainText }}
+{{drawWithLabel control.IntegerText }}
+{{drawWithLabel control.FloatText }}
+{{draw control.SubmitAjax}}
+{{draw control.SubmitServer}}
+{{end}}
+
+{{renderControlTemplate}}

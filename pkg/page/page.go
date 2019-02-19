@@ -49,7 +49,6 @@ type Page struct {
 	BodyAttributes  string
 
 	stateId      string // Id in cache of the pagestate. Needs to be output by form.
-	path         string // The path to the page. FormBase needs to know this so it can make the action tag.
 	renderStatus PageRenderStatus
 	idPrefix     string // For creating unique ids for the app
 
@@ -65,8 +64,7 @@ type Page struct {
 }
 
 // Init initializes the page. Should be called by a form just after creating Page.
-func (p *Page) Init(path string) {
-	p.path = path
+func (p *Page) Init() {
 }
 
 // Restore is called immediately after the page has been unserialized, to restore data that did not get serialized.
@@ -107,6 +105,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		err = p.DrawAjax(ctx, buf)
 		p.SetResponseHeader("Content-Type", "application/json")
 	} else if grCtx.RequestMode() == Server || grCtx.RequestMode() == Http {
+		//p.url = grCtx.HttpContext.URL. We might want a record of the original URL to be used during ajax calls someday. Until we have a reason, this will remain commented out.
 		err = p.Draw(ctx, buf)
 	} else {
 		// TODO: Implement a hook for the CustomAjax call and/or Rest API calls?
@@ -257,12 +256,6 @@ func (p *Page) SetTitle(title string) {
 	p.title = title
 }
 
-// Path returns the URL path that corresponds to this page. This is what is output in the form's action tag
-// so that the form calls back onto itself.
-func (p *Page) Path() string {
-	return p.path
-}
-
 func (p *Page) setStateID(stateId string) {
 	p.stateId = stateId
 }
@@ -316,7 +309,6 @@ type pageEncoded struct {
 func (p *Page) Encode(e Encoder) (err error) {
 	s := pageEncoded{
 		StateId:           p.stateId,
-		Path:              p.path,
 		IdPrefix:          p.idPrefix,
 		Title:             p.title,
 		HtmlHeaderTags:    p.htmlHeaderTags,
@@ -365,7 +357,6 @@ func (p *Page) Decode(d Decoder) (err error) {
 	}
 	p.controlRegistry = maps.NewSliceMap()
 	p.stateId = s.StateId
-	p.path = s.Path
 	p.idPrefix = s.IdPrefix
 	p.title = s.Title
 	p.htmlHeaderTags = s.HtmlHeaderTags

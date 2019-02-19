@@ -63,5 +63,5 @@ func TestPlain(t *browsertest.TestForm)  {
 func init() {
 	page.RegisterPage(TestTextboxPath, NewTestTextboxForm, TestTextboxId)
 
-	browsertest.RegisterTestFunction("Plain Textbox", TestPlain)
+	//browsertest.RegisterTestFunction("Plain Textbox", TestPlain)
 }

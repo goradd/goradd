@@ -208,12 +208,23 @@ func (f *TestForm) Click(id string) {
 	f.Controller.click(id, desc);
 }
 
-//CallJqueryFunction will call the given function with the given parameters on the jQuery object
+// CallJqueryFunction will call the given function with the given parameters on the jQuery object
 // specified by the id. It will return the javascript result of the function call.
-func (f *TestForm) CallJqueryFunction(id string, funcName string, params []string) string {
+func (f *TestForm) CallJqueryFunction(id string, funcName string, params ...string) string {
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d CallJqueryFunction(%q, %q, %q)`, file, line, id, funcName, params)
 	return f.Controller.callJqueryFunction(id, funcName, params, desc)
+}
+
+// Value will call the jquery .val() function on the given html object and return the result.
+func (f *TestForm) JqueryValue(id string) string {
+	return f.CallJqueryFunction(id, "val")
+}
+
+// Attribute will call the jquery .attr("attribute") function on the given html object looking for the given
+// attribute name and will return the value.
+func (f *TestForm) JqueryAttribute(id string, attribute string) string {
+	return f.CallJqueryFunction(id, "attr", attribute)
 }
 
 /*

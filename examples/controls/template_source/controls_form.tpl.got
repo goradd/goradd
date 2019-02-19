@@ -8,12 +8,15 @@
 {{< bodyAttributes }}
 {{end}}
 
+
 {{define template }}
+{{g path := page.GetContext(ctx).HttpContext.URL.Path }}
+
 <h1>Control Examples</h1>
 <div class="controlList_scroll">
   <ul>
-    <li><a href="{{= form.Page().Path() }}">Home</a></li>
-    <li><a href="{{= form.Page().Path() }}?control=textbox">Textboxes: Textbox, IntegerTextbox, FloatTextbox</a></li>
+    <li><a href="{{= path }}">Home</a></li>
+    <li><a href="{{= path }}?control=textbox">Textboxes: Textbox, IntegerTextbox, FloatTextbox</a></li>
   </ul>
 </div>
 <div class="detail_container">
