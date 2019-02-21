@@ -76,7 +76,7 @@ func (h *WebSocketHub) run() {
 					client.send <- msg.message
 				}
 			} else {
-				log.FrameworkDebugf("Could not find channel %s", msg.channel)
+				log.Errorf("Could not find channel %s", msg.channel)
 			}
 
 
@@ -105,6 +105,11 @@ func (h *WebSocketHub) unregisterClient(channel string, pagestate string) {
 			}
 		}
 	}
+}
+
+func HasChannel(channel string) bool {
+	_, ok := hub.clients[channel]
+	return ok
 }
 
 func SendMessage(channel string, message map[string]interface{}) {

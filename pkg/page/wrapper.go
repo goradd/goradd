@@ -99,20 +99,19 @@ func (w *ErrorWrapperType) ΩModifyDrawingAttributes(c ControlI, a *html.Attribu
 		a.Set("aria-describedby", describedBy)
 	}
 
-	// has the side effect of resetting the validation state since we know the control is being completely redrawn
+	// Reset the validation state since we know the control is being completely redrawn
 	// instead of ajax drawn
+
+	switch state {
+	case ValidationWaiting:fallthrough
+	case ValidationValid:
+		c.WrapperAttributes().RemoveClass("error")
+	case ValidationInvalid:
+		c.WrapperAttributes().AddClass("error")
+	}
+
 	w.ValidationMessageChanged = false
 	w.ValidationStateChanged = false
-
-	if w.ValidationStateChanged {
-		switch c.control().validationState {
-		case ValidationWaiting:fallthrough
-		case ValidationValid:
-			c.WrapperAttributes().RemoveClass("error")
-		case ValidationInvalid:
-			c.WrapperAttributes().AddClass("error")
-		}
-	}
 }
 
 // The following functions enable wrappers to only send changes during the refresh of a control, rather than drawing the

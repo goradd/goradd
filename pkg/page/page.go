@@ -408,7 +408,10 @@ func (p *Page) ClearResponseHeaders() {
 // using the javascript event mechanism to synchronize us. We might get an unnecessary redraw, but
 // that is not a big deal.
 func (p *Page) PushRedraw() {
-	messageServer.SendMessage("form-" + p.stateId, map[string]interface{}{"grup":true})
+	channel := "form-" + p.stateId
+	if messageServer.HasChannel(channel) {	// If we call this while launching a page, the channel isn't created yet, but the page is going to be drawn, so its ok.
+		messageServer.SendMessage(channel, map[string]interface{}{"grup":true})
+	}
 }
 
 // LanguageCode returns the language code that will be put in the lang attribute of the html tag.
