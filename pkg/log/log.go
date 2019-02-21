@@ -54,6 +54,14 @@ func HasLogger(id int) bool {
 	return ok
 }
 
+func SetLogger(id int, l LoggerI) {
+	if l == nil {
+		delete (Loggers, id)
+	} else {
+		Loggers[id] = l
+	}
+}
+
 // Info prints information to the Info logger.
 func Info(v ...interface{}) {
 	_print(InfoLog, v...)

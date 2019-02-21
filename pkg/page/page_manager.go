@@ -99,7 +99,7 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 		page = f(ctx).Page() // call the page create function and get the page
 		pageStateId = pageCache.NewPageID()
 		page.stateId = pageStateId
-		log.Debugf("Created page %s", pageStateId)
+		log.FrameworkDebugf("Created page %s", pageStateId)
 		//pageCache.Set(pageStateId, page)
 		isNew = true
 	} else {
