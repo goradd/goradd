@@ -74,9 +74,10 @@ func (f *TestForm) createControls(ctx context.Context) {
 }
 
 func (f *TestForm) LoadControls(ctx context.Context) {
-	for name,_ := range tests {
-		f.TestList.AddItem(name, name)
-	}
+	tests.Range(func(k string,v interface{}) bool {
+		f.TestList.AddItem(k, k)
+		return true
+	})
 }
 
 func (f *TestForm) Action(ctx context.Context, a page.ActionParams) {
@@ -94,13 +95,14 @@ func (f *TestForm) runSelectedTest() {
 
 func (f *TestForm) runTest(name string) (result string) {
 	var testF testRunnerFunction
-	var ok bool
 	var done = make(chan string)
 
 	f.currentLog = ""
 
-	if testF, ok = tests[name]; !ok {
+	if i := tests.Get(name); testF == nil {
 		return fmt.Sprintf("Test %s does not exist", name)
+	} else {
+		testF = i.(testRunnerFunction)
 	}
 
 	go func() {
@@ -164,14 +166,22 @@ func (f *TestForm) GetForm() page.FormI {
 // AssertEqual will test that the two values are equal, and will error if they are not equal.
 // The test will continue after this.
 func (f *TestForm) AssertEqual(expected, actual interface{}) {
+	_, file, line, _ := runtime.Caller(1)
+
 	if expected != actual {
-		f.Error(fmt.Sprintf("AssertEqual failed. %v != %v.", expected, actual))
+		f.error(fmt.Sprintf("*** AssertEqual failed. %v != %v. File: %s, Line: %d", expected, actual, file, line))
 	}
 }
 
 // Error will cause the test to error, but will continue performing the test.
 func (f *TestForm) Error(message string) {
-	f.Log(fmt.Sprintf("*** Test %s erred: %s", f.currentTestName, message))
+	_, file, line, _ := runtime.Caller(1)
+	f.error(fmt.Sprintf("*** Test %s erred: %s, File: %s, Line: %s", f.currentTestName, message, file, line))
+}
+
+
+func (f *TestForm) error(message string) {
+	f.Log(message)
 	f.failed = true
 	f.currentFailed = true
 }
@@ -210,21 +220,26 @@ func (f *TestForm) Click(id string) {
 
 // CallJqueryFunction will call the given function with the given parameters on the jQuery object
 // specified by the id. It will return the javascript result of the function call.
-func (f *TestForm) CallJqueryFunction(id string, funcName string, params ...string) string {
+func (f *TestForm) CallJqueryFunction(id string, funcName string, params ...string) interface{} {
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d CallJqueryFunction(%q, %q, %q)`, file, line, id, funcName, params)
 	return f.Controller.callJqueryFunction(id, funcName, params, desc)
 }
 
 // Value will call the jquery .val() function on the given html object and return the result.
-func (f *TestForm) JqueryValue(id string) string {
+func (f *TestForm) JqueryValue(id string) interface{} {
 	return f.CallJqueryFunction(id, "val")
 }
 
 // Attribute will call the jquery .attr("attribute") function on the given html object looking for the given
 // attribute name and will return the value.
-func (f *TestForm) JqueryAttribute(id string, attribute string) string {
+func (f *TestForm) JqueryAttribute(id string, attribute string) interface{} {
 	return f.CallJqueryFunction(id, "attr", attribute)
+}
+
+func (f *TestForm) HasClass(id string, needle string) bool {
+	res := f.CallJqueryFunction(id, "hasClass", needle)
+	return res.(bool)
 }
 
 /*
@@ -262,7 +277,8 @@ func (f *TestForm) testAllAndExit() {
 	f.currentLog = ""
 
 	go func() {
-		for testName,testF := range tests {
+		tests.Range(func(testName string, v interface{}) bool {
+			testF := v.(testRunnerFunction)
 			go func() {
 				defer func() {
 					f.CloseWindow()
@@ -288,7 +304,8 @@ func (f *TestForm) testAllAndExit() {
 			}()
 
 			<- done
-		}
+			return true;
+		})
 		close(done)
 		if f.failed {
 			f.Log("Failed.")

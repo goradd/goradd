@@ -3,8 +3,8 @@
 package main
 
 import (
-
 	_ "goradd-project/gen"	// Code-generated forms
+	_ "github.com/goradd/goradd/examples/controls"
 	_ "github.com/goradd/goradd/pkg/bootstrap/examples"	// Bootstrap examples
 	_ "github.com/goradd/goradd/test/browsertest"
 )

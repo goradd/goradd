@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const StepTimeoutSeconds = 5
+
 const (
 	TestStepAction = iota + 100
 )
@@ -40,7 +42,7 @@ type  TestController struct {
 	pagestate         string
 	stepTimeout       time.Duration	// number of seconds before a step should timeout
 	stepChannel chan stepItemType	// probably will leak memory TODO: Close this before it is removed from page cache
-	latestJsValue string // A valure returned for the jsValue function
+	latestJsValue interface{} // A value returned for the jsValue function
 	stepDescriptions []string
 }
 
@@ -57,7 +59,7 @@ func (p *TestController) Init(self control.PanelI, parent page.ControlI, id stri
 	p.ParentForm().AddJQueryUI()
 	p.ParentForm().AddJavaScriptFile(filepath.Join(TestAssets(), "js", "test_controller.js"), false, nil)
 	p.On(TestStepEvent(), action.Ajax(p.ID(), TestStepAction))
-	p.stepTimeout = 3
+	p.stepTimeout = StepTimeoutSeconds
 }
 
 func (p *TestController) ΩPutCustomScript(ctx context.Context, response *page.Response) {
@@ -96,7 +98,7 @@ func (p *TestController) ΩUpdateFormValues(ctx *page.Context) {
 		p.pagestate = v.(string)
 	}
 	if v := ctx.CustomControlValue(id, "jsvalue"); v != nil {
-		p.latestJsValue = v.(string)
+		p.latestJsValue = v
 	}
 
 }
@@ -134,7 +136,7 @@ func (p *TestController) click(id string, description string) {
 	p.waitStep()
 }
 
-func (p *TestController) callJqueryFunction(id string, funcName string, params []string, description string) string {
+func (p *TestController) callJqueryFunction(id string, funcName string, params []string, description string) interface{} {
 	p.stepDescriptions = append(p.stepDescriptions, description)
 	p.ExecuteJqueryFunction("testController", "callJqueryFunction", len(p.stepDescriptions), id, funcName, params)
 	p.waitStep()

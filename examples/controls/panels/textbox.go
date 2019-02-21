@@ -53,6 +53,7 @@ func NewTextboxPanel(parent page.ControlI, id string) *TextboxPanel {
 
 func init() {
 	browsertest.RegisterTestFunction("Plain Textbox", testPlain)
+	browsertest.RegisterTestFunction("Integer Textbox", testInt)
 }
 
 // testPlain exercises the plain text box
@@ -70,3 +71,20 @@ func testPlain(t *browsertest.TestForm)  {
 	/*
 		t.AssertEquals("A value is required", t.SelectorInnerText("#user-name_err"))*/
 }
+
+func testInt(t *browsertest.TestForm)  {
+	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
+	t.LoadUrl(myUrl)
+
+	t.ChangeVal("intText", "me")
+	t.Click("ajaxButton")
+	t.AssertEqual(true, t.HasClass("intText_ctl", "error"))
+
+	t.Click("serverButton")
+	t.AssertEqual(true, t.HasClass("intText_ctl", "error"))
+
+	t.Done("Complete")
+	/*
+		t.AssertEquals("A value is required", t.SelectorInnerText("#user-name_err"))*/
+}
+

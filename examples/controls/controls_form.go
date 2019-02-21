@@ -16,7 +16,6 @@ const (
 
 type ControlsForm struct {
 	FormBase
-	controlList   *SelectTable
 	detail 		  *Panel
 }
 
@@ -25,7 +24,6 @@ func NewControlsForm(ctx context.Context) page.FormI {
 	f.Init(ctx, f, ControlsFormPath, ControlsFormId)
 	f.AddRelatedFiles()
 
-	f.controlList = NewSelectTable(f, "controlList")
 	f.detail = NewPanel(f, "detailPanel")
 
 	return f

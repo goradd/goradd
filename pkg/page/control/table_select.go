@@ -32,6 +32,7 @@ func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 
 func (t *SelectTable) Init(self page.ControlI, parent page.ControlI, id string) {
 	t.Table.Init(self, parent, id)
+	t.ParentForm().AddJQueryUI()
 	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
 	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/select-table.js", false, nil)
 }

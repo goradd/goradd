@@ -1,16 +1,19 @@
 package browsertest
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/goradd/gengen/pkg/maps"
+)
 
 type testRunnerFunction func(*TestForm)
 
-var tests = make(map[string]testRunnerFunction)
+var tests = maps.NewSliceMap()
 
 // RegisterTestFunction registers the test and presents it in the list of tests that can be performed.
 func RegisterTestFunction (name string, f testRunnerFunction) {
-	if _,ok := tests[name]; ok {
+	if ok := tests.Has(name); ok {
 		panic(fmt.Sprintf("Test %s has already been registered.", name))
 	}
-	tests[name] = f
+	tests.Set(name,f)
 }
 
