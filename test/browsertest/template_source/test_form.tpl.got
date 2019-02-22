@@ -2,7 +2,7 @@
 {{end}}
 {{< headTags }}
 {{end}}
-{{< package }}test{{end}}
+{{< package }}browsertest{{end}}
 {{< title }}Tests{{end}}
 {{< form }}TestForm{{end}}
 {{< bodyAttributes }}{{end}}

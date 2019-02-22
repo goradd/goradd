@@ -17,7 +17,6 @@ import (
 	"log"
 	"os"
 	"runtime"
-	"time"
 )
 
 
@@ -28,10 +27,11 @@ const TestFormId = "TestForm"
 
 const (
 	TestButtonAction = iota + 1
+	TestAllAction
 )
 
 type TestForm struct {
-	page.ΩFormBase
+	FormBase
 	TestList     *SelectList
 	RunningLabel *Span
 	RunButton    *Button
@@ -53,150 +53,118 @@ func NewTestForm(ctx context.Context) page.FormI {
 	grctx := page.GetContext(ctx)
 
 	if _,ok := grctx.FormValue("all"); ok {
-		f.testAllAndExit()
+		f.ExecuteJqueryFunction("trigger", "testall", page.PriorityLow)
+		f.On(event.Event("testall"), action.Ajax(f.ID(), TestAllAction))
 	}
 	return f
 }
 
-func (f *TestForm) createControls(ctx context.Context) {
-	f.Controller = NewTestController(f, "controller")
+func (form *TestForm) createControls(ctx context.Context) {
+	form.Controller = NewTestController(form, "controller")
 
 
-	f.TestList = NewSelectList(f, "test-list")
-	f.TestList.SetLabel("Tests")
-	f.TestList.SetAttribute("size", 10)
+	form.TestList = NewSelectList(form, "test-list")
+	form.TestList.SetLabel("Tests")
+	form.TestList.SetAttribute("size", 10)
 
-	f.RunningLabel = NewSpan(f, "running-label")
+	form.RunningLabel = NewSpan(form, "running-label")
 
-	f.RunButton = NewButton(f, "run-button")
-	f.RunButton.SetText("Run Test")
-	f.RunButton.On(event.Click(), action.Ajax(f.ID(), TestButtonAction))
-	f.RunButton.SetValidationType(page.ValidateNone)
+	form.RunButton = NewButton(form, "run-button")
+	form.RunButton.SetText("Run Test")
+	form.RunButton.On(event.Click(), action.Ajax(form.ID(), TestButtonAction))
+	form.RunButton.SetValidationType(page.ValidateNone)
 }
 
-func (f *TestForm) LoadControls(ctx context.Context) {
+func (form *TestForm) LoadControls(ctx context.Context) {
 	tests.Range(func(k string,v interface{}) bool {
-		f.TestList.AddItem(k, k)
+		form.TestList.AddItem(k, k)
 		return true
 	})
 }
 
-func (f *TestForm) Action(ctx context.Context, a page.ActionParams) {
+func (form *TestForm) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case TestButtonAction:
-		f.runSelectedTest()
+		form.runSelectedTest()
+	case TestAllAction:
+		form.testAllAndExit()
 	}
 }
 
-func (f *TestForm) runSelectedTest() {
-	f.RunningLabel.SetText(f.TestList.SelectedItem().Label())
-	name := f.TestList.SelectedItem().Value().(string)
-	f.runTest(name)
+func (form *TestForm) runSelectedTest() {
+	form.RunningLabel.SetText(form.TestList.SelectedItem().Label())
+	name := form.TestList.SelectedItem().Value().(string)
+	form.testOne(name)
 }
 
-func (f *TestForm) runTest(name string) (result string) {
-	var testF testRunnerFunction
-	var done = make(chan string)
-
-	f.currentLog = ""
-
-	if i := tests.Get(name); testF == nil {
-		return fmt.Sprintf("Test %s does not exist", name)
-	} else {
-		testF = i.(testRunnerFunction)
-	}
-
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				switch v := r.(type) {
-				case error:
-					f.Done(v.Error())
-				case string:
-					f.Done(v)
-				default:
-					f.Done("Unknown error")
-				}
-			}
-			done <- f.currentLog
-			close(done)
-		}()
-		testF(f)
-		done <- f.currentLog
-		close(done)
-	} ()
-
-
-	return <- done
-}
 
 // Log will send a message to the log. The message might not draw right away.
-func (f *TestForm) Log(s string) {
+func (form *TestForm) Log(s string) {
 	d := datetime.Now()
 	s = d.Format(datetime.StampMicro) + ": " + s
-	f.currentLog += s + "\n"
-	f.Controller.logLine(s)
+	form.currentLog += s + "\n"
+	form.Controller.logLine(s)
 	//log.Debugf("Log line %s", s)
 }
 
 // Mark the successful end of testing with a message.
-func (f *TestForm) Done(s string) {
-	f.Log(s)
-	f.Page().PushRedraw()
+func (form *TestForm) Done(s string) {
+	form.Log(s)
+	form.Page().PushRedraw()
 }
 
 
 // loadUrl will launch a new window controlled by the test form. It will wait for the
 // new url to be loaded in the window, and if the new url contains a goradd form, it will prepare
 // to return the form if you call GetForm.
-func (f *TestForm) LoadUrl(url string) {
-	f.Log("Loading url: " + url)
+func (form *TestForm) LoadUrl(url string) {
+	form.Log("Loading url: " + url)
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d LoadUrl(%q)`, file, line, url)
-	f.Controller.loadUrl(url, desc)
+	form.Controller.loadUrl(url, desc)
 }
 
 // GetForm returns the currently loaded form.
-func (f *TestForm) GetForm() page.FormI {
-	if page.GetPageCache().Has(f.Controller.pagestate) {
-		return page.GetPageCache().Get(f.Controller.pagestate).Form()
+func (form *TestForm) GetForm() page.FormI {
+	if page.GetPageCache().Has(form.Controller.pagestate) {
+		return page.GetPageCache().Get(form.Controller.pagestate).Form()
 	}
 	return nil
 }
 
 // AssertEqual will test that the two values are equal, and will error if they are not equal.
 // The test will continue after this.
-func (f *TestForm) AssertEqual(expected, actual interface{}) {
+func (form *TestForm) AssertEqual(expected, actual interface{}) {
 	_, file, line, _ := runtime.Caller(1)
 
 	if expected != actual {
-		f.error(fmt.Sprintf("*** AssertEqual failed. %v != %v. File: %s, Line: %d", expected, actual, file, line))
+		form.error(fmt.Sprintf("*** AssertEqual failed. %v != %v. File: %s, Line: %d", expected, actual, file, line))
 	}
 }
 
 // Error will cause the test to error, but will continue performing the test.
-func (f *TestForm) Error(message string) {
+func (form *TestForm) Error(message string) {
 	_, file, line, _ := runtime.Caller(1)
-	f.error(fmt.Sprintf("*** Test %s erred: %s, File: %s, Line: %s", f.currentTestName, message, file, line))
+	form.error(fmt.Sprintf("*** Test %s erred: %s, File: %s, Line: %s", form.currentTestName, message, file, line))
 }
 
 
-func (f *TestForm) error(message string) {
-	f.Log(message)
-	f.failed = true
-	f.currentFailed = true
+func (form *TestForm) error(message string) {
+	form.Log(message)
+	form.failed = true
+	form.currentFailed = true
 }
 
 // Fail will cause a test to stop with the given messages.
-func (f *TestForm) Fatal(message string) {
+func (form *TestForm) Fatal(message string) {
 	panic(fmt.Sprint(message))
 }
 
-func (f *TestForm) fail(message string, testName string) {
-	f.Log(fmt.Sprintf("*** Test %s failed: %s", testName, message))
-	f.Page().PushRedraw()
-	f.failed = true
-	f.currentFailed = true
+func (form *TestForm) fail(message string, testName string) {
+	form.Log(fmt.Sprintf("*** Test %s failed: %s", testName, message))
+	form.Page().PushRedraw()
+	form.failed = true
+	form.currentFailed = true
 }
 
 // ChangeVal will change the value of a form object. It essentially calls the jQuery .val() function on
@@ -204,42 +172,42 @@ func (f *TestForm) fail(message string, testName string) {
 // the same thing as what happens when a user changes a value, as text boxes may send input events, and change
 // is fired on some objects only when losing focus. However, this will simulate changing a value adequately for most
 // situations.
-func (f *TestForm) ChangeVal(id string, val interface{}) {
+func (form *TestForm) ChangeVal(id string, val interface{}) {
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d ChangeVal(%q, %q)`, file, line, id, val)
-	f.Controller.changeVal(id, val, desc);
+	form.Controller.changeVal(id, val, desc)
 }
 
 // Click sends a click event to the html object with the given id. Note that this is not the same as simulating a click
 // but for buttons, it will essentially be the same thing. More complex web objects will need a different mechanism
 // for clicking, likely a chromium driver or something similar.
-func (f *TestForm) Click(id string) {
+func (form *TestForm) Click(id string) {
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d Click(%q)`, file, line, id)
-	f.Controller.click(id, desc);
+	form.Controller.click(id, desc)
 }
 
 // CallJqueryFunction will call the given function with the given parameters on the jQuery object
 // specified by the id. It will return the javascript result of the function call.
-func (f *TestForm) CallJqueryFunction(id string, funcName string, params ...string) interface{} {
+func (form *TestForm) CallJqueryFunction(id string, funcName string, params ...string) interface{} {
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d CallJqueryFunction(%q, %q, %q)`, file, line, id, funcName, params)
-	return f.Controller.callJqueryFunction(id, funcName, params, desc)
+	return form.Controller.callJqueryFunction(id, funcName, params, desc)
 }
 
 // Value will call the jquery .val() function on the given html object and return the result.
-func (f *TestForm) JqueryValue(id string) interface{} {
-	return f.CallJqueryFunction(id, "val")
+func (form *TestForm) JqueryValue(id string) interface{} {
+	return form.CallJqueryFunction(id, "val")
 }
 
 // Attribute will call the jquery .attr("attribute") function on the given html object looking for the given
 // attribute name and will return the value.
-func (f *TestForm) JqueryAttribute(id string, attribute string) interface{} {
-	return f.CallJqueryFunction(id, "attr", attribute)
+func (form *TestForm) JqueryAttribute(id string, attribute string) interface{} {
+	return form.CallJqueryFunction(id, "attr", attribute)
 }
 
-func (f *TestForm) HasClass(id string, needle string) bool {
-	res := f.CallJqueryFunction(id, "hasClass", needle)
+func (form *TestForm) HasClass(id string, needle string) bool {
+	res := form.CallJqueryFunction(id, "hasClass", needle)
 	return res.(bool)
 }
 
@@ -250,16 +218,16 @@ func (f *TestForm) TypeValue(id string, chars string) {
 	f.Controller.typeChars(id, chars)
 }*/
 
-func (f *TestForm) Focus(id string) {
+func (form *TestForm) Focus(id string) {
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d Focus(%q)`, file, line, id)
-	f.Controller.focus(id, desc)
+	form.Controller.focus(id, desc)
 }
 
-func (f *TestForm) CloseWindow() {
+func (form *TestForm) CloseWindow() {
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d CloseWindow()`, file, line)
-	f.Controller.closeWindow(desc)
+	form.Controller.closeWindow(desc)
 }
 
 
@@ -272,59 +240,100 @@ func GetTestForm() page.FormI {
 	return nil
 }
 
-func (f *TestForm) testAllAndExit() {
-	// If the testform was just launched, we need to wait until the messageServer is connected before proceeding.
-	time.Sleep(time.Second)
-
+func (form *TestForm) testAllAndExit() {
 	var done = make(chan int)
 
-	f.currentLog = ""
+	form.currentLog = ""
 
 	go func() {
 		tests.Range(func(testName string, v interface{}) bool {
 			testF := v.(testRunnerFunction)
 			go func() {
 				defer func() {
-					f.CloseWindow()
+					form.CloseWindow()
 					if r := recover(); r != nil {
 						switch v := r.(type) {
 						case error:
-							f.fail(v.Error(), testName)
+							form.fail(v.Error(), testName)
 						case string:
-							f.fail(v, testName)
+							form.fail(v, testName)
 						default:
-							f.fail("Unknown error", testName)
+							form.fail("Unknown error", testName)
 						}
 					}
 					done <- 1
 				}()
-				f.Log("Starting test: " + testName)
-				f.currentTestName = testName
-				f.currentFailed = true
-				testF(f)
-				if !f.currentFailed {
-					f.Log(fmt.Sprintf("Test %s completed successfully.", testName))
+				form.Log("Starting test: " + testName)
+				form.currentTestName = testName
+				form.currentFailed = true
+				testF(form)
+				if !form.currentFailed {
+					form.Log(fmt.Sprintf("Test %s completed successfully.", testName))
 				}
 			}()
 
 			<- done
-			return true;
+			return true
 		})
 		close(done)
-		if f.failed {
-			f.Log("Failed.")
+		if form.failed {
+			form.Log("Failed.")
 		} else {
-			f.Log("All tests passed.")
+			form.Log("All tests passed.")
 		}
-		log.Print(f.currentLog)
+		log.Print(form.currentLog)
 
-		if f.failed {
+		if form.failed {
 			log.Fatal("Test failed.")
 		} else {
 			os.Exit(0)
 		}
 	} ()
 }
+
+func (form *TestForm) testOne(testName string) {
+	var done = make(chan int)
+
+	form.currentLog = ""
+
+	go func() {
+		if i := tests.Get(testName); i != nil {
+			testF := i.(testRunnerFunction)
+			go func() {
+				defer func() {
+					form.CloseWindow()
+					if r := recover(); r != nil {
+						switch v := r.(type) {
+						case error:
+							form.fail(v.Error(), testName)
+						case string:
+							form.fail(v, testName)
+						default:
+							form.fail("Unknown error", testName)
+						}
+					}
+					done <- 1
+				}()
+				form.Log("Starting test: " + testName)
+				form.currentTestName = testName
+				form.currentFailed = true
+				testF(form)
+			}()
+		}
+
+		<- done
+
+		close(done)
+		if form.failed {
+			form.Log("Failed.")
+		} else {
+			form.Log("Succeeded.")
+		}
+		log.Print(form.currentLog)
+
+	} ()
+}
+
 
 func init() {
 	page.RegisterPage(TestFormPath, NewTestForm, TestFormId)
