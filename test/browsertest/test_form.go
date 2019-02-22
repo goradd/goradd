@@ -17,6 +17,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"time"
 )
 
 
@@ -272,6 +273,9 @@ func GetTestForm() page.FormI {
 }
 
 func (f *TestForm) testAllAndExit() {
+	// If the testform was just launched, we need to wait until the messageServer is connected before proceeding.
+	time.Sleep(time.Second)
+
 	var done = make(chan int)
 
 	f.currentLog = ""
