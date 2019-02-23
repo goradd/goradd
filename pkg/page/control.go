@@ -1033,6 +1033,14 @@ func (c *Control) SetHasFor(v bool) ControlI {
 	return c.this()
 }
 
+// SetHasNoSpace tells the control to draw its inner html with no space around it.
+// This should generally only be called by control implementations. If this is not set, spaces
+// might be added to make the HTML more readable, which can affect some html control types.
+func (c *Control) SetHasNoSpace(v bool) ControlI {
+	c.hasNoSpace = v
+	return c
+}
+
 // SetShouldAutoRender sets whether this control will automatically render. AutoRendered controls are drawn
 // by the form automatically, after all other controls are drawn, if the control was not drawn in
 // some other way. An example of an auto-rendered control would be a dialog box that starts out hidden,

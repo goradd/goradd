@@ -76,6 +76,7 @@ func (t *Textbox) Init(self TextboxI, parent page.ControlI, id string) {
 	t.IsVoidTag = true
 	t.typ = "text" // default
 	t.SetHasFor(true)
+	t.SetHasNoSpace(true)
 }
 
 func (t *Textbox) this() TextboxI {

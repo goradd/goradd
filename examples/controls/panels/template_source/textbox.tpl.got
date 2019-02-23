@@ -48,6 +48,13 @@ useful for mobile browsers, as they sometimes change the keyboard to make it eas
 or provide a shortcut key to enter ".com".
 {{drawWithLabel control.EmailText }}
 </p>
+<h2>Textbox Types</h2>
+<p>HTML offers a number of different types to give browsers a hint of what kind of data the server
+is expecting in a particular textbox. Not all are supported on all browsers, but below are some examples
+of ones that are commonly supported.
+{{drawWithLabel control.PasswordText}}
+{{drawWithLabel control.SearchText}}
+</p>
 
 
 {{draw control.SubmitAjax}}

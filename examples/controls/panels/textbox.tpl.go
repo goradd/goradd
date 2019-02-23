@@ -120,6 +120,37 @@ or provide a shortcut key to enter ".com".
 
 	buf.WriteString(`
 </p>
+<h2>Textbox Types</h2>
+<p>HTML offers a number of different types to give browsers a hint of what kind of data the server
+is expecting in a particular textbox. Not all are supported on all browsers, but below are some examples
+of ones that are commonly supported.
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := control.PasswordText.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := control.SearchText.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
+</p>
 
 
 `)

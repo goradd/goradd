@@ -23,6 +23,8 @@ type TextboxPanel struct {
 	IntegerText *IntegerTextbox
 	FloatText   *FloatTextbox
 	EmailText 	*EmailTextbox
+	PasswordText *Textbox
+	SearchText *Textbox
 
 	SubmitAjax      *Button
 	SubmitServer    *Button
@@ -47,6 +49,14 @@ func NewTextboxPanel(parent page.ControlI) *TextboxPanel {
 
 	p.EmailText = NewEmailTextbox(p, "emailText")
 	p.EmailText.SetLabel("Email Text")
+
+	p.PasswordText = NewTextbox(p, "passwordText")
+	p.PasswordText.SetLabel("Password")
+	p.PasswordText.SetType(TextboxTypePassword)
+
+	p.SearchText = NewTextbox(p, "searchText")
+	p.SearchText.SetLabel("Search")
+	p.SearchText.SetType(TextboxTypeSearch)
 
 	p.SubmitAjax = NewButton(p, "ajaxButton")
 	p.SubmitAjax.SetText("Submit Ajax")
