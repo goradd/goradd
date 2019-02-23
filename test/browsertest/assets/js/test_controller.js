@@ -50,7 +50,6 @@ jQuery.widget( "goradd.testController",  {
         this._window.addEventListener("error", function(event) {
             self._windowErrorEvent(event, step)
         });
-
     },
     _formLoadEvent: function(pagestate) {
         goradd.setControlValue(this.element.attr("id"), "pagestate", pagestate);

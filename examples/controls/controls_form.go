@@ -33,7 +33,7 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 	if id, ok := page.GetContext(ctx).FormValue("control"); ok {
 		switch id {
 		case "textbox":
-			panels.NewTextboxPanel(f.detail, "")
+			panels.NewTextboxPanel(f.detail)
 		default:
 			panels.NewDefaultPanel(f.detail, "")
 		}

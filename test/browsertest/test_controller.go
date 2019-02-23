@@ -73,6 +73,7 @@ func (p *TestController) logLine(line string) {
 	p.ParentForm().Response().ExecuteJavaScript(script, page.PriorityStandard)
 }
 
+// loadUrl loads the url and returns the pagestate of the new form, if a goradd form get loaded.
 func (p *TestController) loadUrl(url string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
 	p.ExecuteJqueryFunction("testController", "loadUrl", len(p.stepDescriptions), url)

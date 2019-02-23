@@ -114,14 +114,15 @@ func (form *TestForm) Done(s string) {
 }
 
 
-// loadUrl will launch a new window controlled by the test form. It will wait for the
-// new url to be loaded in the window, and if the new url contains a goradd form, it will prepare
-// to return the form if you call GetForm.
-func (form *TestForm) LoadUrl(url string) {
+// LoadUrl will launch a new window controlled by the test form. It will wait for the
+// new url to be loaded in the window, and if the new url contains a goradd form, it will return
+// the form.
+func (form *TestForm) LoadUrl(url string) page.FormI {
 	form.Log("Loading url: " + url)
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d LoadUrl(%q)`, file, line, url)
 	form.Controller.loadUrl(url, desc)
+	return form.GetForm()
 }
 
 // GetForm returns the currently loaded form.
@@ -131,6 +132,15 @@ func (form *TestForm) GetForm() page.FormI {
 	}
 	return nil
 }
+
+func (form *TestForm) AssertNotNil(v interface{}) {
+	_, file, line, _ := runtime.Caller(1)
+
+	if v == nil { // TODO: Check for a nil in the value
+		form.error(fmt.Sprintf("*** AssertNotNil failed. File: %s, Line: %d", file, line))
+	}
+}
+
 
 // AssertEqual will test that the two values are equal, and will error if they are not equal.
 // The test will continue after this.
@@ -210,6 +220,12 @@ func (form *TestForm) HasClass(id string, needle string) bool {
 	res := form.CallJqueryFunction(id, "hasClass", needle)
 	return res.(bool)
 }
+
+func (form *TestForm) InnerHtml(id string) string {
+	res := form.CallJqueryFunction(id, "html")
+	return res.(string)
+}
+
 
 /*
 func (f *TestForm) TypeValue(id string, chars string) {

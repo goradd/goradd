@@ -68,7 +68,7 @@ func (m *PageManager) IsPage(path string) bool {
 	return ok
 }
 
-// HasPage returns true if the given page state is currently in the page cache. This is indicates that a user
+// HasPage returns true if the given page state is currently in the page cache. This indicates that a user
 // has recently accessed a page with the given state id. You can use this to validate client interactions.
 func (m *PageManager) HasPage(pageStateId string) bool {
 	return pageCache.Has(pageStateId)

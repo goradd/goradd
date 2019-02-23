@@ -25,12 +25,13 @@ type TextboxPanel struct {
 	SubmitServer    *Button
 }
 
-func NewTextboxPanel(parent page.ControlI, id string) *TextboxPanel {
+func NewTextboxPanel(parent page.ControlI) *TextboxPanel {
 	p := &TextboxPanel{}
-	p.Panel.Init(p, parent, id)
+	p.Panel.Init(p, parent, "textboxPanel")
 
 	p.PlainText = NewTextbox(p, "plainText")
 	p.PlainText.SetLabel("Plain Text")
+
 	p.IntegerText = NewIntegerTextbox(p, "intText")
 	p.IntegerText.SetLabel("Integer Text")
 	p.IntegerText.SetMinValue(5, "")
@@ -52,39 +53,59 @@ func NewTextboxPanel(parent page.ControlI, id string) *TextboxPanel {
 
 
 func init() {
-	browsertest.RegisterTestFunction("Plain Textbox", testPlain)
-	browsertest.RegisterTestFunction("Integer Textbox", testInt)
+	browsertest.RegisterTestFunction("Textbox Ajax Submit", testAjaxSubmit)
+	browsertest.RegisterTestFunction("Textbox Server Submit", testServerSubmit)
 }
 
 // testPlain exercises the plain text box
-func testPlain(t *browsertest.TestForm)  {
+func testAjaxSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
-	t.LoadUrl(myUrl)
-	t.AssertEqual("plainText", t.JqueryAttribute("plainText", "id")) // a sanity check
+	f := t.LoadUrl(myUrl)
 
-
-	t.ChangeVal("plainText", "me")
-	t.Click("ajaxButton")
-	t.AssertEqual("me", t.JqueryValue("plainText"))
+	testSubmit(t, f, "ajaxButton")
 
 	t.Done("Complete")
-	/*
-		t.AssertEquals("A value is required", t.SelectorInnerText("#user-name_err"))*/
 }
 
-func testInt(t *browsertest.TestForm)  {
+func testServerSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
-	t.LoadUrl(myUrl)
+	f := t.LoadUrl(myUrl)
 
-	t.ChangeVal("intText", "me")
-	t.Click("ajaxButton")
-	t.AssertEqual(true, t.HasClass("intText_ctl", "error"))
-
-	t.Click("serverButton")
-	t.AssertEqual(true, t.HasClass("intText_ctl", "error"))
+	testSubmit(t, f, "serverButton")
 
 	t.Done("Complete")
-	/*
-		t.AssertEquals("A value is required", t.SelectorInnerText("#user-name_err"))*/
+}
+
+// testSubmit does a variety of submits using the given button. We use this to double check the various
+// results we might get after a submission, as well as nsure that the ajax and server submits produce
+// the same results.
+func testSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
+	t.ChangeVal("plainText", "me")
+	t.ChangeVal("intText", "me")
+	t.ChangeVal("floatText", "me")
+	t.Click(btn)
+
+	t.AssertEqual("me", t.JqueryValue("plainText"))
+	t.AssertEqual("me", t.JqueryValue("intText"))
+	t.AssertEqual("me", t.JqueryValue("floatText"))
+
+	t.AssertEqual(true, t.HasClass("intText_ctl", "error"))
+	t.AssertEqual(true, t.HasClass("floatText_ctl", "error"))
+
+	plainText := f.Page().GetControl("plainText").(*Textbox)
+	intText := f.Page().GetControl("intText").(*IntegerTextbox)
+	floatText := f.Page().GetControl("floatText").(*FloatTextbox)
+
+	plainText.SetInstructions("Sample instructions")
+	t.ChangeVal("intText", 5)
+	t.ChangeVal("floatText", 6.7)
+	t.Click(btn)
+
+	t.AssertEqual(5, intText.Int())
+	t.AssertEqual(6.7, floatText.Float64())
+	t.AssertEqual(false, t.HasClass("intText_ctl", "error"))
+	t.AssertEqual(false, t.HasClass("floatText_ctl", "error"))
+	t.AssertEqual("Sample instructions", t.InnerHtml("plainText_inst"))
+
 }
 
