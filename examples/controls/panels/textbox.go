@@ -19,8 +19,11 @@ const (
 type TextboxPanel struct {
 	Panel
 	PlainText   *Textbox
+	MultiText   *Textbox
 	IntegerText *IntegerTextbox
 	FloatText   *FloatTextbox
+	EmailText 	*EmailTextbox
+
 	SubmitAjax      *Button
 	SubmitServer    *Button
 }
@@ -32,13 +35,18 @@ func NewTextboxPanel(parent page.ControlI) *TextboxPanel {
 	p.PlainText = NewTextbox(p, "plainText")
 	p.PlainText.SetLabel("Plain Text")
 
+	p.MultiText = NewTextbox(p, "multiText")
+	p.MultiText.SetLabel("Multi Text")
+	p.MultiText.SetRowCount(2)
+
 	p.IntegerText = NewIntegerTextbox(p, "intText")
 	p.IntegerText.SetLabel("Integer Text")
-	p.IntegerText.SetMinValue(5, "")
 
 	p.FloatText = NewFloatTextbox(p, "floatText")
 	p.FloatText.SetLabel("Float Text")
-	p.FloatText.SetMaxValue(6, "Hey this must be less than 6")
+
+	p.EmailText = NewEmailTextbox(p, "emailText")
+	p.EmailText.SetLabel("Email Text")
 
 	p.SubmitAjax = NewButton(p, "ajaxButton")
 	p.SubmitAjax.SetText("Submit Ajax")
@@ -81,30 +89,39 @@ func testServerSubmit(t *browsertest.TestForm)  {
 // the same results.
 func testSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
 	t.ChangeVal("plainText", "me")
+	t.ChangeVal("multiText", "me")
 	t.ChangeVal("intText", "me")
 	t.ChangeVal("floatText", "me")
+	t.ChangeVal("emailText", "me")
 	t.Click(btn)
 
 	t.AssertEqual("me", t.JqueryValue("plainText"))
+	t.AssertEqual("me", t.JqueryValue("multiText"))
 	t.AssertEqual("me", t.JqueryValue("intText"))
 	t.AssertEqual("me", t.JqueryValue("floatText"))
+	t.AssertEqual("me", t.JqueryValue("emailText"))
 
 	t.AssertEqual(true, t.HasClass("intText_ctl", "error"))
 	t.AssertEqual(true, t.HasClass("floatText_ctl", "error"))
+	t.AssertEqual(true, t.HasClass("emailText_ctl", "error"))
 
 	plainText := f.Page().GetControl("plainText").(*Textbox)
 	intText := f.Page().GetControl("intText").(*IntegerTextbox)
 	floatText := f.Page().GetControl("floatText").(*FloatTextbox)
+	emailText := f.Page().GetControl("emailText").(*EmailTextbox)
 
 	plainText.SetInstructions("Sample instructions")
 	t.ChangeVal("intText", 5)
 	t.ChangeVal("floatText", 6.7)
+	t.ChangeVal("emailText", "me@you.com")
 	t.Click(btn)
 
 	t.AssertEqual(5, intText.Int())
 	t.AssertEqual(6.7, floatText.Float64())
+	t.AssertEqual("me@you.com", emailText.Text())
 	t.AssertEqual(false, t.HasClass("intText_ctl", "error"))
 	t.AssertEqual(false, t.HasClass("floatText_ctl", "error"))
+	t.AssertEqual(false, t.HasClass("emailText_ctl", "error"))
 	t.AssertEqual("Sample instructions", t.InnerHtml("plainText_inst"))
 
 }

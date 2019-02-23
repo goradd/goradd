@@ -6,18 +6,50 @@
 {{define template }}
 <h1>Textboxes</h1>
 <p>
-Built-in Textboxes come in three flavors:
+Textboxes create html input tags, or textarea tags. Some textbox flavors are for entering certain
+kinds of data that would be found in a database, like strings, integers and floats. Others are for
+validating certain kinds of text input, like URLs or email addresses.
 </p>
-<ul>
-<li>Plain</li>
-<li>Integer: Validating that the input is an integer in a specific range.</li>
-<li>Float: Validating that the input is a floating-point number in a specific range.</li>
-</ul>
-<h2>Demos</h2>
-<p>Click on one of the Submit buttons to cause the controls to validate.</p>
+<p>
+Textboxes may be assigned a validator to validate their input. The simplest kind of validator tests
+to see if a value has been entered, and can be added by using <i>SetRequired(true)</i>. Other validators
+can be added using functions for specific types of controls, or you can create a custom validator.
+To see the results of validation in the samples below, scroll to the bottom of this page and click
+one of the submit buttons.
+</p>
+<h2>Database Related Textboxes</h2>
+<h3>Plain Textbox</h3>
+<p>
+By default, the code generator will generate a *Textbox for standard text items in a database, like a VARCHAR in
+a sql database. To make a <i>textarea</i> instead of an <i>input</i> tag, set the RowCount to a value that is not zero.
 {{drawWithLabel control.PlainText }}
+{{drawWithLabel control.MultiText }}
+</p>
+<h3>IntegerTextbox</h3>
+<p>
+An *IntegerTextbox corresponds to an integer item in a database, like an INT in
+a sql database. Integer textboxes are validated to make sure they contain an integer.
 {{drawWithLabel control.IntegerText }}
+</p>
+<h3>FloatTextbox</h3>
+<p>
+A *FloatTextbox corresponds to a floating point number item in a database, like a FLOAT in
+a sql database. Float textboxes are validated to make sure they contain a numeric value.
+Click on one of the Submit buttons below to cause the controls to validate.
 {{drawWithLabel control.FloatText }}
+</p>
+<h2>Validating Textboxes</h2>
+<h3>Email Textbox</h3>
+<p>
+The EmailTextbox accepts email addresses only. It is capable of accepting multiple email addresses separated
+by commas. If it is set up to only accept one email address, it will also set its "type" attribute to "email"
+so that the browser can potential help with entering and validating an email address. This is particularly
+useful for mobile browsers, as they sometimes change the keyboard to make it easier to enter an {{! @ }} symbol
+or provide a shortcut key to enter ".com".
+{{drawWithLabel control.EmailText }}
+</p>
+
+
 {{draw control.SubmitAjax}}
 {{draw control.SubmitServer}}
 {{end}}

@@ -179,16 +179,18 @@ func (t *Textbox) Placeholder() string {
 	return t.Attribute("placeholder")
 }
 
-// SetType sets the type of textbox this is. Pass it a TEXTBOX_TYPE... constant normally, thought you can pass
-// any string and it will become the input type
+// SetType sets the type of textbox this is. Pass it a TEXTBOX_TYPE... constant normally,
+// though you can pass any string and it will become the input type
 func (t *Textbox) SetType(typ string) TextboxI {
 	t.typ = typ
 	t.Refresh() // can't change this without completely redrawing the control
 	return t.this()
 }
 
-// SetColumnCount sets the visible width of the text control. Each table is an approximate with of a character, and is browser
-// dependent, so its not a very good way of setting the width. The css width property is more accurate. Also, this is
+// SetColumnCount sets the visible width of the text control. Each table is an approximate with of
+// a character, and is browser
+// dependent, so its not a very good way of setting the width.
+// The css width property is more accurate. Also, this is
 // only the visible width, not the maximum number of characters.
 func (t *Textbox) SetColumnCount(columns int) {
 	t.columnCount = columns
@@ -198,7 +200,8 @@ func (t *Textbox) SetColumnCount(columns int) {
 	t.Refresh()
 }
 
-// SetRowCount sets the number of rowCount the Textbox will have. A value of 0 produces an input tag, and a value of 1 or greater produces a textarea tag.
+// SetRowCount sets the number of rowCount the Textbox will have.
+// A value of 0 produces an input tag, and a value of 1 or greater produces a textarea tag.
 func (t *Textbox) SetRowCount(rows int) {
 	if rows < 0 {
 		panic("Invalid row value.")
