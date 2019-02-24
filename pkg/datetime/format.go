@@ -31,6 +31,9 @@ func Parse(layout, value string) (DateTime, error) {
 	if layout == Stamp || layout == StampMilli || layout == StampMicro || layout == StampNano {
 		ts = true
 	}
+
+	layout, value = strings.ToUpper(layout), strings.ToUpper(value) // standardize Pm, PM or pm
+
 	t, err := time.Parse(layout, value)
 	return DateTime{t, ts}, err
 }

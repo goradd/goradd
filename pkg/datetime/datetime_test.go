@@ -66,3 +66,16 @@ func TestTZ(t *testing.T) {
 	assert.Equal(t, z, "EDT")
 }
 
+func TestFormattedRead(t *testing.T) {
+	d := NewDateTime("19/2/2018", EuroDate)
+	assert.Equal(t, February, d.Month())
+	assert.Equal(t, 19, d.Day())
+	d = NewDateTime("3:04 PM", UsTime)
+	assert.Equal(t, 15, d.Hour())
+	assert.Equal(t, 4, d.Minute())
+	d = NewDateTime("2/19/2019 3:04 pm", UsDateTime)
+	assert.Equal(t, February, d.Month())
+	assert.Equal(t, 19, d.Day())
+	assert.Equal(t, 15, d.Hour())
+	assert.Equal(t, 4, d.Minute())
+}

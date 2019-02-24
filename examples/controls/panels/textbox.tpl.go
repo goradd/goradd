@@ -75,6 +75,52 @@ a sql database. Integer textboxes are validated to make sure they contain an int
 
 	buf.WriteString(`
 </p>
+<h3>DateTextbox</h3>
+<p>
+A *DateTextbox corresponds to a Date, Time or DateTime in a database.
+Timestamps generally are not editable, so they usually generate a DateTimeSpan (as in html span).
+These textboxes validate to make sure they match a particular format.
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := control.DateTimeText.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := control.DateText.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := control.TimeText.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
+</p>
+
 <h3>FloatTextbox</h3>
 <p>
 A *FloatTextbox corresponds to a floating point number item in a database, like a FLOAT in
@@ -100,7 +146,7 @@ Click on one of the Submit buttons below to cause the controls to validate.
 The EmailTextbox accepts email addresses only. It is capable of accepting multiple email addresses separated
 by commas. If it is set up to only accept one email address, it will also set its "type" attribute to "email"
 so that the browser can potential help with entering and validating an email address. This is particularly
-useful for mobile browsers, as they sometimes change the keyboard to make it easier to enter an `)
+useful for mobile browsers, as they sometimes change the virtual keyboard to make it easier to enter an `)
 
 	buf.WriteString(`@`)
 

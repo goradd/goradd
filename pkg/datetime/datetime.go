@@ -4,11 +4,11 @@
 package datetime
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"github.com/goradd/goradd/pkg/javascript"
 	"time"
-	"encoding/gob"
 )
 
 const (
@@ -17,6 +17,9 @@ const (
 	UsDate      = "1/2/2006"
 	EuroDate    = "2/1/2006"
 	UsDateTime  = "1/2/2006 3:04 PM"
+	EuroDateTime = "1/2/2006 15:04"
+	UsTime =       "3:04 PM"
+	EuroTime = 		"15:04"
 	UsDateTimeSeconds  = "1/2/2006 3:04:05 PM"
 	LongDateDOW = "Monday, January 2, 2006"
 	LongDate    = "January 2, 2006"
@@ -128,7 +131,7 @@ func NewDateTime(args ...interface{}) DateTime {
 			// do nothing, we are already zero'd
 		} else {
 			if len(args) == 2 {
-				d.Time, _ = time.Parse(args[1].(string), c)
+				d, _ = Parse(args[1].(string), c)
 			} else {
 				_ = d.UnmarshalText([]byte(c))
 			}

@@ -19,6 +19,14 @@ type FormBase struct {
 	page.ΩFormBase
 }
 
+// NewMockForm creates a form that should be used as a parent of a control when unit testing the control.
+func NewMockForm() *FormBase {
+	f := &FormBase{}
+	f.ΩFormBase.Init(nil, f, "", "MockFormId")
+	return f
+}
+
+
 // Init initializes the FormBase. Call this before adding other controls.
 func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
 	// Most of the FormBase code is in page.ΩFormBase. The code below specifically adds popup windows and controls
