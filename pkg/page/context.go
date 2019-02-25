@@ -10,6 +10,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	"mime/multipart"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 )
@@ -327,4 +328,12 @@ func ConvertToBool(v interface{}) bool {
 	}
 
 	return val
+}
+
+// NewMockContext creates a context for testing.
+func NewMockContext() (ctx context.Context) {
+	r := httptest.NewRequest("", "/", nil)
+	r = PutContext(r, nil)
+	ctx = r.Context()
+	return
 }

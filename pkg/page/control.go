@@ -927,17 +927,25 @@ func (c *Control) ValidationMessage() string {
 // SetValidationError sets the validation error to the given string. It will also handle setting the wrapper class
 // to indicate an error. Override if you have a different way of handling errors.
 func (c *Control) SetValidationError(e string) {
+/*
+	Keeping this here to show that these have been considered and rejected.
+	We can still set the aria state in validation situations, even if we are not showing a message
+	and subclasses might have a special need for validation without a wrapper.
+
 	if !c.HasWrapper() {
-		panic(fmt.Errorf("control %s does not have a wrapper and so you cannot set a validation error message for it", c.ID()))
+		return // Validation only applies if you have a wrapper to show the message
 	}
 	if c.validationState == ValidationNever {
 		panic(fmt.Errorf("control %s has been set to never validate, so you cannot set a validation error message for it", c.ID()))
 	}
+*/
 
 	if c.validationMessage != e {
 		c.validationMessage = e
-		c.wrapper.ΩSetValidationMessageChanged()
-		c.wrapper.ΩSetValidationStateChanged()
+		if c.wrapper != nil {
+			c.wrapper.ΩSetValidationMessageChanged()
+			c.wrapper.ΩSetValidationStateChanged()
+		}
 
 		if e == "" {
 			c.validationState = ValidationWaiting
@@ -1158,15 +1166,17 @@ func (c *Control) resetDrawingFlags() {
 
 // Recursively reset the validation state
 func (c *Control) resetValidation() {
-	if c.HasWrapper() {
-		if c.validationMessage != "" {
+	if c.validationMessage != "" {
+		if c.wrapper != nil {
 			c.wrapper.ΩSetValidationMessageChanged()
-			c.validationMessage = ""
 		}
-		if c.validationState != ValidationWaiting {
+		c.validationMessage = ""
+	}
+	if c.validationState != ValidationWaiting {
+		if c.wrapper != nil {
 			c.wrapper.ΩSetValidationStateChanged()
-			c.validationState = ValidationWaiting
 		}
+		c.validationState = ValidationWaiting
 	}
 
 	if children := c.this().Children(); children != nil {
@@ -1374,16 +1384,19 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 // It is designed to be overridden by Control implementations.
 // Overriding controls should call the parent version before doing their own validation.
 func (c *Control) Validate(ctx context.Context) bool {
-	if c.HasWrapper() &&
-		c.validationState != ValidationNever {
+	if c.validationState != ValidationNever {
 
 		if c.validationMessage != c.ValidMessage {
 			c.validationMessage = c.ValidMessage
-			c.wrapper.ΩSetValidationMessageChanged()
+			if c.wrapper != nil {
+				c.wrapper.ΩSetValidationMessageChanged()
+			}
 		}
 		if c.validationState != ValidationValid {
 			c.validationState = ValidationValid
-			c.wrapper.ΩSetValidationStateChanged()
+			if c.wrapper != nil {
+				c.wrapper.ΩSetValidationStateChanged()
+			}
 		}
 	}
 	return true
@@ -1695,6 +1708,18 @@ func (c *Control) SetWillBeValidated(v bool) {
 	} else {
 		c.validationState = ValidationNever
 	}
+}
+
+// MockFormValue will mock the process of getting a form value from an http response for
+// testing purposes. This includes calling ΩUpdateFormValues and Validate on the control.
+// It returns the result of the Validate function.
+func (c *Control) MockFormValue(value string) bool {
+	ctx := NewMockContext()
+
+	grctx := GetContext(ctx)
+	grctx.formVars.Set(c.ID(), value)
+	c.this().ΩUpdateFormValues(grctx)
+	return c.this().Validate(ctx)
 }
 
 

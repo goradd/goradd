@@ -22,4 +22,9 @@ func TestDateTextbox(t *testing.T) {
 	d.SetText("asdf")
 	assert.True(t, d.Date().IsZero())
 	assert.Equal(t, "", d.Text())
+
+	valid := d.MockFormValue("asdf")
+	assert.Equal(t, "asdf", d.Text())
+	assert.False(t, valid)
+	assert.True(t, d.ValidationMessage() != "")
 }
