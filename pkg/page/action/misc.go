@@ -1,4 +1,4 @@
-// The action package defines actions that you can trigger using events.
+// Package action defines actions that you can trigger using events.
 // Normally you would do this with the .On() function that all goradd controls have.
 //
 // Defining Your Own Actions
@@ -75,11 +75,11 @@ func (a ΩblurAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.blur('%s');`, a.ControlID)
 }
 
-// Focus will focus the html object specified by the id.
 type ΩfocusAction struct {
 	ControlID string
 }
 
+// Focus will focus the html object specified by the id.
 func Focus(controlID string) ΩfocusAction {
 	return ΩfocusAction{ControlID: controlID}
 }
@@ -208,7 +208,7 @@ type ΩsetControlValueAction struct {
 // up by the control in the ΩUpdateFormValues function. It is an aid to tying javascript powered widgets together
 // with the go version of the control. Value gets converted to a javascript value, so use the javascript.* helpers
 // if you want to interpret a javascript value and pass it on. For example:
-//  action.SetControlValue(myControl.ID(), "myKey", javascript.JsCode("event.target.id"))
+//   action.SetControlValue(myControl.ID(), "myKey", javascript.JsCode("event.target.id"))
 // will pass the id of the target of an event to the receiver of the action.
 func SetControlValue(id string, key string, value interface{}) ΩsetControlValueAction {
 	return ΩsetControlValueAction{ID: id, Key:key, Value:value}

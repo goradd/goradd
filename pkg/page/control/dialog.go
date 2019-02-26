@@ -75,9 +75,7 @@ type Dialog struct {
 type DialogButtonOptions struct {
 	// Validates indicates that this button will validate the dialog
 	Validates bool
-	// IsPrimary indicates that this is a submit button so the user can press enter to activate it
-	IsPrimary bool
-	// The ConfirmationMessage string will appear with a yes/no box making sure the user wants the action. 
+	// The ConfirmationMessage string will appear with a yes/no box making sure the user wants the action.
 	// This is usually used when the action could be destructive, like a Delete button.
 	ConfirmationMessage string
 	// PushLeft pushes this button to the left side of the dialog. Buttons are typically aligned right. 
@@ -141,7 +139,8 @@ func (d *Dialog) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-// AddButton adds the given button to the dialog.
+// AddButton adds the given button to the dialog. The first button added is the
+// default button that gets submitted when an enter key is pressed in a textbox.
 func (d *Dialog) AddButton(
 	label string,
 	id string,
@@ -154,10 +153,6 @@ func (d *Dialog) AddButton(
 	btn.SetLabel(label)
 
 	if options != nil {
-		if options.IsPrimary {
-			btn.SetIsPrimary(true)
-		}
-
 		if options.Validates {
 			//d.validators[id] = true
 			btn.SetValidationType(page.ValidateContainer)
@@ -165,6 +160,9 @@ func (d *Dialog) AddButton(
 
 		if options.PushLeft {
 			btn.AddClass("push-left")
+			btn.SetAttribute("tabindex", 10000)
+		} else {
+			btn.SetAttribute("tabindex", 10001) // make sure right buttons tab after left buttons
 		}
 
 		if options.ConfirmationMessage == "" {
@@ -297,8 +295,7 @@ func defaultAlert(form page.FormI, message string, buttons interface{}) DialogI 
 			if len(b) == 1 {
 				dlg.AddCloseButton(b[0],"")
 			} else {
-				dlg.AddButton(b[0], "", &DialogButtonOptions{IsPrimary: true})
-				for _, l := range b[1:] {
+				for _, l := range b {
 					dlg.AddButton(l, "", nil)
 				}
 			}

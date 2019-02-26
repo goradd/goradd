@@ -32,6 +32,11 @@ const (
 	Cli
 )
 
+const HtmlVarAction = "Goradd_Action"
+const htmlVarPagestate = "Goradd__PageState"
+const htmlVarParams  = "Goradd__Params"
+
+
 // MultipartFormMax is the maximum size of a mult-part form that we will allow.
 var MultipartFormMax int64 = 10000000 // 10MB max in memory file
 
@@ -96,6 +101,7 @@ type HttpContext struct {
 type AppContext struct {
 	err                 error // An error that occurred during the unpacking of the context. We save this for later so we can let the override manager display it if we get that far.
 	requestMode         RequestMode
+	noJavaScript		bool	// Javascript is turned off
 	cliArgs             []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId         string
 	customControlValues map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
@@ -237,8 +243,16 @@ func (ctx *Context) fillApp(cliArgs []string) {
 	if ctx.URL != nil {
 		if v, ok = ctx.FormValue(htmlVarParams); ok  {
 			if v == "" {
-				// This is a javascript error. We unsuccessfully tried to gather form parameters
-				ctx.err = fmt.Errorf("Javascript was not able to gather the goradd parameters.")
+				// javascript is turned off, meaning we are forced to use server submits
+				// we are in a minimalist environment, where only buttons submit forms
+				ctx.noJavaScript = true
+				ctx.requestMode = Server
+				ctx.actionControlID, _ = ctx.FormValue(HtmlVarAction)
+				if ctx.pageStateId, ok = ctx.FormValue(htmlVarPagestate); !ok {
+					ctx.err = fmt.Errorf("No pagestate found in response")
+					return
+				}
+				return
 			}
 			if h := ctx.Header.Get("X-Requested-With"); strings.ToLower(h) == "xmlhttprequest" {
 				ctx.requestMode = Ajax
@@ -265,7 +279,7 @@ func (ctx *Context) fillApp(cliArgs []string) {
 				}
 				ctx.actionValues = params.Values
 
-				if ctx.pageStateId, ok = ctx.FormValue("Goradd__PageState"); !ok {
+				if ctx.pageStateId, ok = ctx.FormValue(htmlVarPagestate); !ok {
 					ctx.err = fmt.Errorf("No pagestate found in response")
 					return
 				}

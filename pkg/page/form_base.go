@@ -17,9 +17,6 @@ import (
 	"strings"
 )
 
-const htmlVarFormstate  = "Goradd__PageState"
-const htmlVarParams  = "Goradd__Params"
-
 type FormI interface {
 	ControlI
 	// Init initializes the base structures of the form. Do this before adding controls to the form.
@@ -150,7 +147,7 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	buf.WriteString(`<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n")
 
 	// Serialize and write out the pagestate
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlVarFormstate+`" id="`+htmlVarFormstate+`" value="%s" />`, pagestate))
+	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlVarPagestate+`" id="`+htmlVarPagestate+`" value="%s" />`, pagestate))
 
 	f.drawBodyScriptFiles(ctx, buf) // Fixing a bug?
 
@@ -231,7 +228,9 @@ func (f *ΩFormBase) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err er
 	}
 
 	f.SetAttribute("method", "post")
-	f.SetAttribute("action", GetContext(ctx).HttpContext.URL.RequestURI()) // This only works because we never ajax draw the form, only server render
+	// Setting the "action" attribute prevents iFrame clickjacking.
+	// This only works because we never ajax draw the form, only server render
+	f.SetAttribute("action", GetContext(ctx).HttpContext.URL.RequestURI())
 
 	return
 }

@@ -5,18 +5,27 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
-	"reflect"
 )
 
 type ButtonI interface {
 	page.ControlI
 }
 
-// Button is a standard html button. It derives from the button in the override class, allowing you to customize the
-// behavior of all buttons in your application.
+// Button is a standard html form submit button. It corresponds to a <button> tag in html.
+//
+// The default behavior of a submit button is to submit a form. If you have text boxes on your
+// form, pressing enter will submit the FIRST button in the form, and so this essentially becomes
+// your default button. If you have more than one button, and you want the default button to
+// NOT be the first button on the screen, you can handle this in one of two ways:
+// - Make sure your default button comes out first in the html, but then use css to change
+// the visible order of the buttons. Be sure to also set the tab order if you do this to reflect
+// the visible arrangement of the buttons. Or,
+// - Create another button as the first button, and give it a display attribute
+// of none so that it is not visible. Set its action to be the default action you want.
+//
+// If you want the button to display an image, simple create an Image control as a child of the button.
 type Button struct {
 	page.Control
-	isPrimary bool
 }
 
 // NewButton creates a new standard html button
@@ -53,57 +62,11 @@ func (b *Button) ΩDrawingAttributes() *html.Attributes {
 	a := b.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "button")
 
-	a.Set("name", b.ID()) // needed for posts
-	if b.isPrimary {
-		a.Set("type", "submit")
-	} else {
-		a.Set("type", "button")
-	}
+	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts
+	a.Set("value", b.ID())
+	a.Set("type", "submit")
 
 	return a
-}
-
-// SetIsPrimary will make this button fire when a return is pressed. It may also style the button
-// to show that it is the primary button.
-func (b *Button) SetIsPrimary(isPrimary bool) {
-	b.isPrimary = isPrimary
-	b.Refresh() // redraw
-}
-
-// IsPrimary indicates this is the primary button in the form, and will fire when a return is pressed
-// on the keyboard.
-func (b *Button) IsPrimary() bool {
-	return b.isPrimary
-}
-
-// Serialize is called by the page serializer. You do not normally need to call this.
-func (b *Button) Serialize(e page.Encoder) (err error) {
-	if err = b.Control.Serialize(e); err != nil {
-		return
-	}
-
-	if err = e.Encode(b.isPrimary); err != nil {
-		return err
-	}
-	return
-}
-
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
-func (b *Button) ΩisSerializer(i page.ControlI) bool {
-	return reflect.TypeOf(b) == reflect.TypeOf(i)
-}
-
-// Deserialize is called by the page serializer. You do not normally need to call this.
-func (b *Button) Deserialize(d page.Decoder, p *page.Page) (err error) {
-	if err = b.Control.Deserialize(d, p); err != nil {
-		return
-	}
-
-	if err = d.Decode(&b.isPrimary); err != nil {
-		return
-	}
-	return
 }
 
 

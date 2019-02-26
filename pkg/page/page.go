@@ -1,4 +1,4 @@
-// The page package is the user-interface layer of goradd, and implements state management and rendering
+// Package page is the user-interface layer of goradd, and implements state management and rendering
 // of an html page, as well as the framework for rendering controls.
 //
 // To use the page package, you start by creating a form object, and then adding controls to that form.

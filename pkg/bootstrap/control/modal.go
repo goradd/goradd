@@ -148,10 +148,6 @@ func (d *Modal) AddButton(
 	btn.SetLabel(label)
 
 	if options != nil {
-		if options.IsPrimary {
-			btn.SetIsPrimary(true)
-		}
-
 		if options.Validates {
 			btn.SetValidationType(page.ValidateContainer)
 		}
@@ -286,7 +282,7 @@ func BootstrapAlert(form page.FormI, message string, buttons interface{}) contro
 			if len(b) == 1 {
 				dlg.AddCloseButton(b[0])
 			} else {
-				dlg.AddButton(b[0], "", &control.DialogButtonOptions{IsPrimary: true})
+				dlg.AddButton(b[0], "", &control.DialogButtonOptions{Options: map[string]interface{}{"style": ButtonStylePrimary}})
 				for _, l := range b[1:] {
 					dlg.AddButton(l, "", nil)
 				}

@@ -33,10 +33,12 @@ type callbackAction struct {
 	CallAsync          bool
 }
 
+// ID returns the action id that was defined when the action was created.
 func (a *callbackAction) ID() int {
 	return a.ActionID
 }
 
+// GetActionValue returns the action value given to the action when it was created.
 func (a *callbackAction) GetActionValue() interface{} {
 	return a.Value
 }
@@ -54,10 +56,13 @@ func (a *callbackAction) setDestinationControlID(id string) {
 	}
 }
 
+// GetDestinationControlID returns the control that the action will operate on.
 func (a *callbackAction) GetDestinationControlID() string {
 	return a.DestControlID
 }
 
+// GetDestinationControlSubID returns the sub id so that a composite control can send the
+// action to a sub control.
 func (a *callbackAction) GetDestinationControlSubID() string {
 	return a.SubID
 }

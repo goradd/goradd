@@ -179,7 +179,7 @@ goradd = {
      *
      * Checkable controls (checkboxes and radio buttons) can be problematic. We have the following issues to work around:
      * - On a submit, only the values of the checked items are submitted. Non-checked items are not submitted.
-     * - QCubed may have checkboxes that are part of the form object, but not visible on the html override. In particular,
+     * - Goradd may have checkboxes that are part of the form object, but not visible on the html form. In particular,
      *   this can happen when a grid is creating objects at render time, and then scrolls or pages so those objects
      *   are no longer "visible".
      * - Controls can be part of a group, and the group gets the value of the checked control(s), rather than individual
@@ -198,7 +198,7 @@ goradd = {
      * be updated with a true or false, but the browser will automatically make sure only one is checked.
      *
      * Any time an id has an underscore in it, that control is considered part of a group. The value after the underscore
-     * will be the value returned, and before the last underscore will be id that will be used as the key for the value.
+     * will be the value returned, and before the last underscore will be the id that will be used as the key for the value.
      *
      * @param {string} strForm   Form Id
      * @param {Array} controls  Array of checkable controls. These must be checkable controls, it will not validate this.

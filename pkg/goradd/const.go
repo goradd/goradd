@@ -17,3 +17,4 @@ const (
 const (
 	SessionLanguage = "goradd.lang"
 )
+

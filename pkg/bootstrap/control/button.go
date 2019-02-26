@@ -91,7 +91,6 @@ func (b *Button) ΩDrawingAttributes() *html.Attributes {
 }
 
 func (b *Button) SetIsPrimary(isPrimary bool) ButtonI {
-	b.Button.SetIsPrimary(isPrimary)
 	if isPrimary {
 		b.style = ButtonStylePrimary
 	} else {

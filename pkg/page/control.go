@@ -1220,13 +1220,22 @@ func (c *Control) doAction(ctx context.Context) {
 	var grCtx = GetContext(ctx)
 
 	if e, ok = c.events[grCtx.eventID]; !ok {
-		e, ok = c.privateEvents[grCtx.eventID]
-		isPrivate = true
+		if e, ok = c.privateEvents[grCtx.eventID]; ok {
+			isPrivate = true
+		}
 	}
 
 	if !ok {
-		log.FrameworkDebug("doAction - event not found: ", grCtx.eventID)
-		return
+		// This is the situation where we are submitting a form using a button in a browser
+		// where javascript has been turned off. We assume we only have a click event on the button
+		// and so just grab it.
+		var id EventID
+		for id,e = range c.events {
+			break
+		}
+		if id == 0 {
+			return
+		}
 	}
 
 	if (e.event().validationOverride != ValidateNone && e.event().validationOverride != ValidateDefault) ||
