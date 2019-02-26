@@ -18,7 +18,8 @@ var GlobalSanitizer Sanitizer
 // coming from a WYSIWYG editor, so it has the annoying extra step of escaping HTML entities. We wrap the
 // BlueMonday sanitizer in this structure so that we can unescape html entities before sending them to the textbox.
 // We will still get all the stripping of javascript that the sanitizer normally does.
-// If you want a different global sanitizer, change it here. Or, override the Sanitize function in the textbox object.
+// If you want a different global sanitizer, change it here.
+// Or, override the Sanitize function in the textbox object.
 type BlueMondaySanitizer struct {
 	policy *bluemonday.Policy
 }

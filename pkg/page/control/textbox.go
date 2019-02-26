@@ -26,7 +26,8 @@ const (
 
 
 
-// A Validater can be added to a textbox to validate its input on the server side. A textbox can have more than one validater.
+// A Validater can be added to a textbox to validate its input on the server side.
+// A textbox can have more than one validater.
 // A number of built-in validators are provided.
 type Validater interface {
 	// Validate evaluates the input, and returns an empty string if the input is valid, and an error string to display
@@ -37,9 +38,11 @@ type Validater interface {
 type TextboxI interface {
 	page.ControlI
 	SetType(typ string) TextboxI
-	Sanitize(string) string
+	ΩSanitize(string) string
 }
 
+// Textbox is a goradd control that outputs an "input" html tag with a "type" attribute
+// of "text", or one of the text-like types, like "password", "search", etc.
 type Textbox struct {
 	page.Control
 
@@ -58,17 +61,14 @@ type Textbox struct {
 	readonly bool
 }
 
+// NewTextbox creates a new goradd textbox html widget.
 func NewTextbox(parent page.ControlI, id string) *Textbox {
 	t := &Textbox{}
 	t.Init(t, parent, id)
 	return t
 }
 
-// Initializes a textbox. Normally you will not call this directly. However, sub controls should call this after
-// creation to get the enclosed control initialized. Self is the newly created class. Like so:
-// t := &MyTextBox{}
-// t.Textbox.Init(t, parent, id)
-// A parent control is isRequired. Leave id blank to have the system assign an id to the control.
+// Initializes a textbox. Normally you will not call this directly.
 func (t *Textbox) Init(self TextboxI, parent page.ControlI, id string) {
 	t.Control.Init(self, parent, id)
 
@@ -83,11 +83,12 @@ func (t *Textbox) this() TextboxI {
 	return t.Self.(TextboxI)
 }
 
-// ValidateWith adds a TextboxValidator to the validator list
+// ValidateWith adds a Validater to the validator list.
 func (t *Textbox) ValidateWith(v Validater) {
 	t.validators = append(t.validators, v)
 }
 
+// ResetValidators removes all validators
 func (t *Textbox) ResetValidators() {
 	t.validators = nil
 }
@@ -125,27 +126,32 @@ func (t *Textbox) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err e
 	return
 }
 
-// Set the value of the text. Returns itself for chaining
+// Set the value of the text. Returns itself for chaining.
 func (t *Textbox) SetText(s string) page.ControlI {
 	t.value = s
 	t.SetAttribute("value", s)
 	return t.this()
 }
 
+// Text returns the text entered by the user.
 func (t *Textbox) Text() string {
 	return t.value
 }
 
+// SetValue sets the text in the textbox. This satisfies the Valuer interface.
 func (t *Textbox) SetValue(v interface{}) page.ControlI {
 	s := fmt.Sprintf("%v", v)
 	t.this().SetText(s)
 	return t.this()
 }
 
+// Value returns the user entered text in the textbox.
 func (t *Textbox) Value() interface{} {
 	return t.this().Text()
 }
 
+// SetMaxLength sets the maximum length allowed in the textbox. The text will be limited by the
+// browser, but the server side will also make sure that the text is not too big.
 func (t *Textbox) SetMaxLength(len int) *MaxLengthValidator {
 	t.maxLength = len
 	v := MaxLengthValidator{Length: len}
@@ -153,13 +159,16 @@ func (t *Textbox) SetMaxLength(len int) *MaxLengthValidator {
 	return &v
 }
 
+// MaxLength returns the current maximum length setting.
 func (t *Textbox) MaxLength() int {
 	return t.maxLength
 }
 
+// SetMinLength will set the minimum length permitted. If the user does not enter enough text,
+// an error message will be displayed upon submission of the form.
 func (t *Textbox) SetMinLength(len int) *MinLengthValidator {
-	if len <= 0 {
-		panic("Cannot set minimum length to zero or less.")
+	if len < 0 {
+		panic("Cannot set minimum length to less than zero.")
 	}
 	t.minLength = len
 	v := MinLengthValidator{Length: len}
@@ -167,15 +176,19 @@ func (t *Textbox) SetMinLength(len int) *MinLengthValidator {
 	return &v
 }
 
+// MinLength returns the minimum length setting.
 func (t *Textbox) MinLength() int {
 	return t.minLength
 }
 
+// SetPlaceholder will set the html placeholder attribute, which puts text in the textbox
+// when the textbox is empty as a hint to the user of what to enter.
 func (t *Textbox) SetPlaceholder(s string) TextboxI {
 	t.SetAttribute("placeholder", s)
 	return t.this()
 }
 
+// Placeholder returns the value of the placeholder.
 func (t *Textbox) Placeholder() string {
 	return t.Attribute("placeholder")
 }
@@ -218,14 +231,17 @@ func (t *Textbox) SetRowCount(rows int) {
 	t.Refresh()
 }
 
+// SetReadOnly will disable editing by setting a browser attribute.
 func (t *Textbox) SetReadOnly(r bool) {
 	t.readonly = r
 	t.AddRenderScript("attr", "readonly", "")
 }
 
-// Sanitize takes user input and strips it of potential malicious XSS scripts.
-// The default uses a global sanitizer creating a bootup. Override Sanitize in a subclass if you want a per-textbox sanitizer.
-func (t *Textbox) Sanitize(s string) string {
+// Sanitize is called by the framework when taking in user input and strips it of potential
+// malicious XSS scripts.
+// The default uses a global sanitizer created at bootup.
+// Override Sanitize in a subclass if you want a per-textbox sanitizer.
+func (t *Textbox) ΩSanitize(s string) string {
 	return config.GlobalSanitizer.Sanitize(s)
 }
 
@@ -258,10 +274,15 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 
 // ΩUpdateFormValues is an internal function that lets us reflect the value of the textbox on the web override
 func (t *Textbox) ΩUpdateFormValues(ctx *page.Context) {
+	if t.readonly {
+		// This would happen if someone was attempting to hack the browser.
+		return
+	}
+
 	id := t.ID()
 
 	if v, ok := ctx.FormValue(id); ok {
-		t.value = t.this().Sanitize(v)
+		t.value = t.this().ΩSanitize(v)
 	}
 }
 
@@ -290,6 +311,8 @@ type encodedTextbox struct {
 	RowCount    int
 	Readonly bool
 }
+
+// Serialize is used by the framework to serialize the textbox into the pagestate.
 func (t *Textbox) Serialize(e page.Encoder) (err error) {
 	if err = t.Control.Serialize(e); err != nil {
 		return
@@ -313,12 +336,12 @@ func (t *Textbox) Serialize(e page.Encoder) (err error) {
 }
 
 // ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
+// has to go before just calling serialize and deserialize.
 func (t *Textbox) ΩisSerializer(i page.ControlI) bool {
 	return reflect.TypeOf(t) == reflect.TypeOf(i)
 }
 
-
+// Deserialize is used by the pagestate serializer.
 func (t *Textbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
 	if err = t.Control.Deserialize(d, p); err != nil {
 		return
@@ -341,11 +364,14 @@ func (t *Textbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
 	return
 }
 
+// MinLenghtValidator is a validator that checks that the user has entered a minimum length.
+// It is set up automatically by calling SetMinValue.
 type MinLengthValidator struct {
 	Length  int
 	Message string
 }
 
+// Validate runs the Validate logic to validate the control value.
 func (v MinLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
@@ -360,11 +386,13 @@ func (v MinLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 	return
 }
 
+// MaxLengthValidator is a Validater to test that the user did not enter too many characters.
 type MaxLengthValidator struct {
 	Length  int
 	Message string
 }
 
+// Validate runs the Validate logic to validate the control value.
 func (v MaxLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
