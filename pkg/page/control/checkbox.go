@@ -21,7 +21,7 @@ func NewCheckbox(parent page.ControlI, id string) *Checkbox {
 // needs. Checkboxes set the grctl, name, type and value attributes automatically.
 // You do not normally need to call this function.
 func (c *Checkbox) ΩDrawingAttributes() *html.Attributes {
-	a := c.Control.ΩDrawingAttributes()
+	a := c.CheckboxBase.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "checkbox")
 	a.Set("name", c.ID()) // needed for posts
 	a.Set("type", "checkbox")

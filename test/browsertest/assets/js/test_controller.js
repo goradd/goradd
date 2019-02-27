@@ -79,6 +79,24 @@ jQuery.widget( "goradd.testController",  {
         event = new CustomEvent('teststep', { bubbles: true, detail: step });
         control.dispatchEvent(event);
     },
+    checkControl: function(step, id, val) {
+        goradd.log ("checkControl", step, id, val);
+        var control = this._findElement(id);
+
+        if (!control) {
+            this._fireStepEvent(step,  "Could not find element " + id);
+            return;
+        }
+
+        $(control).prop("checked", val);
+
+        // Note that jQuery is very quirky about calling events in another window, because it attaches its own events to the current window.
+        // So, we instead use native javascript to fire off these events.
+        var event = new Event('change', { 'bubbles': true });
+        control.dispatchEvent(event);
+        event = new CustomEvent('teststep', { bubbles: true, detail: step });
+        control.dispatchEvent(event);
+    },
     _findElement: function(id) {
         return this._window.document.getElementById(id);
     },

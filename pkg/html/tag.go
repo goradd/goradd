@@ -9,14 +9,24 @@ import (
 
 type LabelDrawingMode int
 
-// The label drawing mode describes how to draw a label when it is drawn. Various CSS frameworks expect it a certain way. Many
-// are not very forgiving when you don't do it the way they expect.
+// The label drawing mode describes how to draw a label when it is drawn.
+// Various CSS frameworks expect it a certain way. Many are not very forgiving when
+// you don't do it the way they expect.
 const (
-	LabelDefault    LabelDrawingMode = iota // Label mode is defined elsewhere, like in a config setting
-	LabelBefore                             // Label tag is before the control's tag, and terminates before the control
-	LabelAfter                              // Label tag is after the control's tag, and starts after the control
-	LabelWrapBefore                         // Label tag is before the control's tag, and wraps the control tag
-	LabelWrapAfter                          // Label tag is after the control's tag, and wraps the control tag
+	// LabelDefault means the mode is defined elsewhere, like in a config setting
+	LabelDefault    LabelDrawingMode = iota
+	// LabelBefore indicates the label is in front of the control.
+	// Example: <label>MyLabel</label><input ... />
+	LabelBefore
+	// LabelAfter indicates the label is after the control.
+	// Example: <input ... /><label>MyLabel</label>
+	LabelAfter
+	// LabelWrapBefore indicates the label is before the control's tag, and wraps the control tag.
+	// Example: <label>MyLabel<input ... /></label>
+	LabelWrapBefore
+	// LabelWrapAfter indicates the label is after the control's tag, and wraps the control tag.
+	// Example: <label><input ... />MyLabel</label>
+	LabelWrapAfter
 )
 
 // VoidTag represents a void tag, which is a tag that does not need a matching closing tag.
@@ -43,10 +53,12 @@ func RenderVoidTag(tag string, attr *Attributes) (s string) {
 	return s
 }
 
-// RenderTag renders a standard html tag with a closing tag
-// innerHtml is html, and must already be escaped if needed
-// The tag will be surrounded with newlines to force general formatting consistency. This will cause the tag to be rendered
-// with a space between it and its neighbors if the tag is not a block tag. In the few situations where you would want to
+// RenderTag renders a standard html tag with a closing tag.
+// innerHtml is html, and must already be escaped if needed.
+// The tag will be surrounded with newlines to force general formatting consistency.
+// This will cause the tag to be rendered with a space between it and its neighbors if the tag is
+// not a block tag.
+// In the few situations where you would want to
 // get rid of this space, call RenderTagNoSpace()
 func RenderTag(tag string, attr *Attributes, innerHtml string) string {
 	var attrString string
@@ -73,8 +85,8 @@ func RenderTag(tag string, attr *Attributes, innerHtml string) string {
 	return ret
 }
 
-// RenderTagNoSpace is similar to RenderTag, but should be used in situations where the tag is an inline tag that you want
-// to visually be right next to its neighbors with no space.
+// RenderTagNoSpace is similar to RenderTag, but should be used in situations where the tag is an
+// inline tag that you want to visually be right next to its neighbors with no space.
 func RenderTagNoSpace(tag string, attr *Attributes, innerHtml string) string {
 	innerHtml = strings.TrimSpace(innerHtml)
 	var attrString string

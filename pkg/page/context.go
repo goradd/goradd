@@ -101,7 +101,6 @@ type HttpContext struct {
 type AppContext struct {
 	err                 error // An error that occurred during the unpacking of the context. We save this for later so we can let the override manager display it if we get that far.
 	requestMode         RequestMode
-	noJavaScript		bool	// Javascript is turned off
 	cliArgs             []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId         string
 	customControlValues map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
@@ -111,6 +110,8 @@ type AppContext struct {
 	actionValues        actionValues
 	// OutBuf is the output buffer being used to respond to the request. At the end of processing, it will be written to the response.
 	OutBuf              *bytes.Buffer
+	// NoJavaScript indicates javascript is turned off by the browser
+	NoJavaScript        bool
 }
 
 
@@ -207,6 +208,16 @@ func (ctx *Context) FormValues(key string) (value []string, ok bool) {
 // CheckableValue returns the value of the named checkable value. This would be something coming from a
 // checkbox or radio button. You do not normally call this unless you are implementing a checkable control widget.
 func (ctx *Context) CheckableValue(key string) (value interface{}, ok bool) {
+	if ctx.NoJavaScript {
+		// checkable values do not exist, and we are POSTing, so we have to trust that everything is on screen.
+		value,ok = ctx.FormValue(key)
+		if !ok {
+			// In a POST, checkable values only exist if they are checked.
+			// This requires great care when using a parent control that is paging a lot of child controls.
+			value = false
+		}
+		return
+	}
 	if ctx.checkableValues == nil {
 		return
 	}
@@ -245,7 +256,7 @@ func (ctx *Context) fillApp(cliArgs []string) {
 			if v == "" {
 				// javascript is turned off, meaning we are forced to use server submits
 				// we are in a minimalist environment, where only buttons submit forms
-				ctx.noJavaScript = true
+				ctx.NoJavaScript = true
 				ctx.requestMode = Server
 				ctx.actionControlID, _ = ctx.FormValue(HtmlVarAction)
 				if ctx.pageStateId, ok = ctx.FormValue(htmlVarPagestate); !ok {
@@ -321,10 +332,10 @@ func ConvertToBool(v interface{}) bool {
 	var val bool
 	switch s := v.(type) {
 	case string:
-		slower := strings.ToLower(s)
-		if slower == "true" || slower == "on" || slower == "1" {
+		sLower := strings.ToLower(s)
+		if sLower == "true" || sLower == "on" || sLower == "1" {
 			val = true
-		} else if slower == "false" || slower == "off" || slower == "" || slower == "0" {
+		} else if sLower == "false" || sLower == "off" || sLower == "" || sLower == "0" {
 			val = false
 		} else {
 			panic(fmt.Errorf("unknown checkbox string value: %s", s))

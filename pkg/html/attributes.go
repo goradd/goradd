@@ -201,6 +201,7 @@ func (a *Attributes) ID() string {
 	return a.Get("id")
 }
 
+
 // SetClass sets the class attribute to the value given.
 // If you prefix the value with "+ " the given value will be appended to the end of the current class list.
 // If you prefix the value with "- " the given value will be removed from an class list.
@@ -231,7 +232,7 @@ func (a *Attributes) SetClass(v string) *Attributes {
 // Use RemoveClass to remove the named class from the list of classes in the class attribute.
 func (a *Attributes) RemoveClass(v string) bool {
 	if a.Has("class") {
-		newClass, changed := RemoveClass(a.Get("class"), v)
+		newClass, changed := RemoveAttributeValue(a.Get("class"), v)
 		if changed {
 			a.StringSliceMap.Set("class", newClass)
 		}
@@ -257,26 +258,42 @@ func (a *Attributes) RemoveClassesWithPrefix(v string) bool {
 	return false
 }
 
-// AddClassChanged is similar to AddClass, but will return true if the class changed at all.
-func (a *Attributes) AddClassChanged(v string) bool {
-	if v == "" {
+// AddAttributeValueChanged adds the given space separated values to the end of the values in the
+// given attribute, removing duplicates and returning true if the attribute was changed at all.
+// An example of a place to use this is the aria-labelledby attribute, which can take multiple
+// space-separated id numbers.
+func (a *Attributes) AddAttributeValueChanged(attr string, values string) bool {
+	if values == "" {
 		return false // nothing to add
 	}
-	if a.Has("class") {
-		newClass, changed := AddClass(a.Get("class"), v)
+	if a.Has(attr) {
+		newValues, changed := AddAttributeValue(a.Get(attr), values)
 		if changed {
-			a.StringSliceMap.Set("class", newClass)
+			a.StringSliceMap.Set(attr, newValues)
 		}
 		return changed
 	} else {
-		a.StringSliceMap.Set("class", v)
+		a.StringSliceMap.Set(attr, values)
 		return true
 	}
 }
 
+// AddAttributeValue adds space separated values to the end of an attribute value.
+// If a value is not present, the value will be added to the end of the value list.
+// If a value is present, it will not be added, and the position of the current value in the list will not change.
+func (a *Attributes) AddAttributeValue(attr string, value string) *Attributes {
+	a.AddAttributeValueChanged(attr, value)
+	return a
+}
+
+// AddClassChanged is similar to AddClass, but will return true if the class changed at all.
+func (a *Attributes) AddClassChanged(v string) bool {
+	return a.AddAttributeValueChanged("class", v)
+}
+
 // AddClass adds a class or classes. Multiple classes can be separated by spaces.
-// If a class is not present, the class will be added to the end of the class list
-// If a class is present, it will not be added, and the position of the current class in the list will not change
+// If a class is not present, the class will be added to the end of the class list.
+// If a class is present, it will not be added, and the position of the current class in the list will not change.
 func (a *Attributes) AddClass(v string) *Attributes {
 	a.AddClassChanged(v)
 	return a
@@ -287,40 +304,43 @@ func (a *Attributes) Class() string {
 	return a.Get("class")
 }
 
-// HasClass return true if the given class is in the class list in the class attribute.
-func (a *Attributes) HasClass(c string) bool {
-	var curClass string
-	if curClass = a.Get("class"); curClass == "" {
+// HasAttributeValue returns true if the given value exists in the space-separated attribute value.
+func (a *Attributes) HasAttributeValue(attr string, value string) bool {
+	var curValue string
+	if curValue = a.Get(attr); curValue == "" {
 		return false
 	}
-	f := strings.Fields(curClass)
+	f := strings.Fields(curValue)
 	for _, s := range f {
-		if s == c {
+		if s == value {
 			return true
 		}
 	}
 	return false
 }
 
-/*
-SetDataAttribute sets the given value as an html "data-*" attribute. The named value will be retrievable in jQuery by using
+// HasClass returns true if the given class is in the class list in the class attribute.
+func (a *Attributes) HasClass(c string) bool {
+	return a.HasAttributeValue("class", c)
+}
 
-	$obj.data("name");
-
-Note: Data name cases are handled specially in jQuery. data-* attribute names are supposed to be online lower case. jQuery
-converts dashed notation to camelCase. In other words, we give it a camelCase name here, it shows up in the html as
-a dashed name, and then you retrieve it using javascript as camelCase again.
-
-For example, if your html looks like this:
-
-	<div id='test1' data-test-case="my test"></div>
-
-You would get that value in jQuery by doing:
-	$j('#test1').data('testCase');
-
-Conversion to special html data-* name formatting is handled here automatically. So if you SetDataAttribute('testCase') here,
-you can get it using .data('testCase') in jQuery
-*/
+//SetDataAttribute sets the given value as an html "data-*" attribute. The named value will be retrievable in jQuery by using
+//
+//	$obj.data("name");
+//
+//Note: Data name cases are handled specially in jQuery. data-* attribute names are supposed to be online lower case. jQuery
+//converts dashed notation to camelCase. In other words, we give it a camelCase name here, it shows up in the html as
+//a dashed name, and then you retrieve it using javascript as camelCase again.
+//
+//For example, if your html looks like this:
+//
+//	<div id='test1' data-test-case="my test"></div>
+//
+//You would get that value in jQuery by doing:
+//	$j('#test1').data('testCase');
+//
+//Conversion to special html data-* name formatting is handled here automatically. So if you SetDataAttribute('testCase') here,
+//you can get it using .data('testCase') in jQuery
 func (a *Attributes) SetDataAttributeChanged(name string, v string) (changed bool, err error) {
 	// validate the name
 	if strings.ContainsAny(name, " !$") {

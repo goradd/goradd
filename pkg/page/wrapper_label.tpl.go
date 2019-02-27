@@ -23,48 +23,29 @@ func LabelTmpl(ctx context.Context, w *LabelWrapperType, ctrl ControlI, h string
 	buf.WriteString(` >
 `)
 	if ctrl.Label() != "" {
-		buf.WriteString(`    `)
-		if ctrl.TextIsLabel() {
-			buf.WriteString(`  <span id="`)
+		buf.WriteString(`  <label id="`)
+
+		buf.WriteString(ctrl.ID())
+
+		buf.WriteString(`_lbl" class="goradd-lbl"`)
+		if ctrl.HasFor() {
+			buf.WriteString(` for="`)
 
 			buf.WriteString(ctrl.ID())
 
-			buf.WriteString(`_lbl" class="goradd-lbl" `)
-
-			buf.WriteString(labelAttr)
-
-			buf.WriteString(`>`)
-
-			buf.WriteString(ctrl.Label())
-
-			buf.WriteString(`</span>
-    `)
-		} else {
-
-			buf.WriteString(`  <label id="`)
-
-			buf.WriteString(ctrl.ID())
-
-			buf.WriteString(`_lbl" class="goradd-lbl"`)
-			if ctrl.HasFor() {
-				buf.WriteString(` for="`)
-
-				buf.WriteString(ctrl.ID())
-
-				buf.WriteString(`" `)
-			}
-
-			buf.WriteString(` `)
-
-			buf.WriteString(labelAttr)
-
-			buf.WriteString(`>`)
-
-			buf.WriteString(ctrl.Label())
-
-			buf.WriteString(`</label>
-    `)
+			buf.WriteString(`" `)
 		}
+
+		buf.WriteString(` `)
+
+		buf.WriteString(labelAttr)
+
+		buf.WriteString(`>`)
+
+		buf.WriteString(ctrl.Label())
+
+		buf.WriteString(`</label>
+`)
 	}
 
 	buf.WriteString(html.Indent(h))

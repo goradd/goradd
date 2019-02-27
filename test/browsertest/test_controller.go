@@ -131,13 +131,19 @@ func (p *TestController) changeVal(id string, val interface{}, description strin
 	p.waitStep()
 }
 
+func (p *TestController) checkControl(id string, val bool, description string) {
+	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.ExecuteJqueryFunction("testController", "checkControl", len(p.stepDescriptions), id, val)
+	p.waitStep()
+}
+
 func (p *TestController) click(id string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
 	p.ExecuteJqueryFunction("testController", "click", len(p.stepDescriptions), id)
 	p.waitStep()
 }
 
-func (p *TestController) callJqueryFunction(id string, funcName string, params []string, description string) interface{} {
+func (p *TestController) callJqueryFunction(id string, funcName string, params []interface{}, description string) interface{} {
 	p.stepDescriptions = append(p.stepDescriptions, description)
 	p.ExecuteJqueryFunction("testController", "callJqueryFunction", len(p.stepDescriptions), id, funcName, params)
 	p.waitStep()

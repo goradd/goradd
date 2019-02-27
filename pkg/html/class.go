@@ -6,37 +6,41 @@ import (
 
 // Utilities to manage class strings
 
-// AddClass is a utility function that appends the given class name(s) to the end of the given string, if the names are not
-// already in the string. Returns the new string, and a value indicating whether it changed or not.
-// newClasses can have multiple space separated strings to add multiple classes. The final string returned will have no duplicates.
-// Since the order of a class list in html may make a difference, you should take care in the order of the classes you add
-// if this matters in your situation.
-func AddClass(classes string, newClasses string) (string, bool) {
+// AddAttributeValue is a utility function that appends the given space separated words to the end
+// of the given string, if the words are not already in the string. This is primarily used for
+// adding classes to a class attribute, but other attributes use this structure as well, like
+// aria-labelledby and aria-describedby attributes.
+//
+// Returns the new string, and a value indicating whether it changed or not.
+// The final string returned will have no duplicates.
+// Since the order of a class list in html makes a difference, you should take care in the
+// order of the classes you add if this matters in your situation.
+func AddAttributeValue(originalValues string, newValues string) (string, bool) {
 	var changed bool
 	var found bool
 
-	classArray := strings.Fields(classes)
-	newClassArray := strings.Fields(newClasses)
-	for _, s := range newClassArray {
+	wordArray := strings.Fields(originalValues)
+	newWordArray := strings.Fields(newValues)
+	for _, s := range newWordArray {
 		found = false
-		for _, s2 := range classArray {
+		for _, s2 := range wordArray {
 			if s2 == s {
 				found = true
 			}
 		}
 		if !found {
-			classArray = append(classArray, s)
+			wordArray = append(wordArray, s)
 			changed = true
 		}
 	}
-	return strings.Join(classArray, " "), changed
+	return strings.Join(wordArray, " "), changed
 }
 
-// HasClass searches the list of strings for the given class name. testClass can only be a single class.
-func HasClass(classes string, testClass string) (found bool) {
-	classArray := strings.Fields(classes)
+// HasWord searches the list of strings for the given word.
+func HasWord(words string, testWord string) (found bool) {
+	classArray := strings.Fields(words)
 	for _, s := range classArray {
-		if s == testClass {
+		if s == testWord {
 			found = true
 			break
 		}
@@ -44,11 +48,13 @@ func HasClass(classes string, testClass string) (found bool) {
 	return
 }
 
-// Use RemoveClass to remove a class from the list of classes given. You can give it more than one class to remove by
-// separating the classes with spaces in the removeClass string.
-func RemoveClass(class string, removeClass string) (string, bool) {
-	classes := strings.Fields(class)
-	removeClasses := strings.Fields(removeClass)
+// Use RemoveAttributeValue to remove a value from the list of space-separated values given.
+// You can give it more than one value to remove by
+// separating the values with spaces in the removeValue string. This is particularly useful
+// for removing a class from a class list in a class attribute.
+func RemoveAttributeValue(originalValues string, removeValue string) (string, bool) {
+	classes := strings.Fields(originalValues)
+	removeClasses := strings.Fields(removeValue)
 	ret := ""
 	var removed, found bool
 
@@ -95,3 +101,5 @@ func RemoveClassesWithPrefix(class string, prefix string) (string, bool) {
 
 	return ret, removed
 }
+
+

@@ -17,6 +17,7 @@ type RadioButton struct {
 	group string
 }
 
+// NewRadioButton creates a new radio button
 func NewRadioButton(parent page.ControlI, id string) *RadioButton {
 	c := &RadioButton{}
 	c.Init(c, parent, id)
@@ -27,6 +28,7 @@ func (c *RadioButton) this() RadioButtonI {
 	return c.Self.(RadioButtonI)
 }
 
+// ΩDrawingAttributes is called by the framework to create temporary attributes for the input tag.
 func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
 	a := c.CheckboxBase.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "radio")
@@ -40,24 +42,36 @@ func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
+// ΩUpdateFormValues is called by the framework to update the value of the control based on
+// values sent by the browser.
 func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
 	id := c.ID()
 
-	if v, ok := ctx.CheckableValue(id); ok {
-		c.SetCheckedNoRefresh(v)
+	if ctx.NoJavaScript && c.group != "" {
+		if val, ok := ctx.FormValue(c.group); ok {
+			c.SetCheckedNoRefresh(val == c.ID())
+		}
+	} else {
+		if v, ok := ctx.CheckableValue(id); ok {
+			c.SetCheckedNoRefresh(v)
+		}
 	}
 }
 
+// SetGroup sets the name of the group that the control will belong to. Set all the radio buttons
+// that represent a selection from a group to this same group name.
 func (c *RadioButton) SetGroup(g string) RadioButtonI {
 	c.group = g
 	c.Refresh()
 	return c.this()
 }
 
+// Group returns the name of the group that the control belongs to.
 func (c *RadioButton) Group() string {
 	return c.group
 }
 
+// SetChecked will set the checked status of this radio button to the given value.
 func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 	if c.group != "" && v {
 		if c.Checked() != v {

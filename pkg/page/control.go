@@ -635,7 +635,7 @@ func (c *Control) Wrapper() WrapperI {
 
 // SetAttribute sets an html attribute of the control. You can manually set most any attribute, but be careful
 // not to set the id attribute, or any attribute that is managed by the control itself. If you are setting
-// a data-* attribute, use SetDataAttribute instead. If you are adding a class to the control, use AddClass.
+// a data-* attribute, use SetDataAttribute instead. If you are adding a class to the control, use AddAttributeValue.
 func (c *Control) SetAttribute(name string, val interface{}) ControlI {
 	if name == "id" {
 		panic("You can only set the 'id' attribute of a control when it is created")
@@ -735,7 +735,7 @@ func (c *Control) SetDataAttribute(name string, val interface{}) {
 	}
 }
 
-// AddClass will add a class or classes to the control. If adding multiple classes at once, separate them with
+// AddAttributeValue will add a class or classes to the control. If adding multiple classes at once, separate them with
 // a space.
 func (c *Control) AddClass(class string) ControlI {
 	if changed := c.attributes.AddClassChanged(class); changed {
@@ -1197,13 +1197,16 @@ func (c *Control) WrapEvent(eventName string, selector string, eventJs string) s
 
 // updateValues is called by the form during event handling. It reflexively updates the values in each of its child controls
 func (c *Control) updateValues(ctx *Context) {
-	c.this().ΩUpdateFormValues(ctx)
 	children := c.Children()
 	if children != nil {
 		for _, child := range children {
 			child.control().updateValues(ctx)
 		}
 	}
+	// Parent is updated after children so that parent can read the state of the children
+	// to update any internal caching of the state. Parent can then delete or recreate children
+	// as needed.
+	c.this().ΩUpdateFormValues(ctx)
 }
 
 // ΩUpdateFormValues should be implemented by Control implementations to get their values from the context.

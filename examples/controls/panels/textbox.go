@@ -84,33 +84,32 @@ func NewTextboxPanel(parent page.ControlI) *TextboxPanel {
 
 
 func init() {
-	browsertest.RegisterTestFunction("Textbox Ajax Submit", testAjaxSubmit)
-	browsertest.RegisterTestFunction("Textbox Server Submit", testServerSubmit)
+	browsertest.RegisterTestFunction("Textbox Ajax Submit", testTextboxAjaxSubmit)
+	browsertest.RegisterTestFunction("Textbox Server Submit", testTextboxServerSubmit)
 }
 
-// testPlain exercises the plain text box
-func testAjaxSubmit(t *browsertest.TestForm)  {
+func testTextboxAjaxSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
 	f := t.LoadUrl(myUrl)
 
-	testSubmit(t, f, "ajaxButton")
+	testTextboxSubmit(t, f, "ajaxButton")
 
 	t.Done("Complete")
 }
 
-func testServerSubmit(t *browsertest.TestForm)  {
+func testTextboxServerSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
 	f := t.LoadUrl(myUrl)
 
-	testSubmit(t, f, "serverButton")
+	testTextboxSubmit(t, f, "serverButton")
 
 	t.Done("Complete")
 }
 
-// testSubmit does a variety of submits using the given button. We use this to double check the various
+// testTextboxSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
+func testTextboxSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
 	t.ChangeVal("plainText", "me")
 	t.ChangeVal("multiText", "me")
 	t.ChangeVal("intText", "me")
@@ -171,5 +170,6 @@ func testSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
 	t.AssertEqual(false, t.HasClass("dateTimeText_ctl", "error"))
 	t.AssertEqual("Sample instructions", t.InnerHtml("plainText_inst"))
 
+	t.AssertEqual("plainText_lbl plainText", t.JqueryAttribute("plainText", "aria-labelledby"))
 }
 

@@ -37,8 +37,8 @@ func (c *checkboxBase) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (c *checkboxBase) GetDrawingInputLabelAttributes() *html.Attributes {
-	a := c.Checkbox.GetDrawingInputLabelAttributes()
+func (c *checkboxBase) ΩGetDrawingLabelAttributes() *html.Attributes {
+	a := c.Checkbox.ΩGetDrawingLabelAttributes()
 	a.AddClass("form-check-label")
 	return a
 }

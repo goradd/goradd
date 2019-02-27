@@ -205,8 +205,8 @@ func (w *LabelWrapperType) TypeName() string {
 // Label wrappers will set the aria-labeledby attribute in the control if needed.
 func (w *LabelWrapperType) ΩModifyDrawingAttributes(c ControlI, a *html.Attributes) {
 	w.ErrorWrapperType.ΩModifyDrawingAttributes(c, a)
-	if c.control().label != "" && !c.control().hasFor { // if it has a for, then screen readers already know about the label
-		a.Set("aria-labeledby", c.ID() + "_lbl")
+	if c.control().label != "" {
+		a.AddAttributeValue("aria-labelledby", c.ID() + "_lbl")
 	}
 }
 

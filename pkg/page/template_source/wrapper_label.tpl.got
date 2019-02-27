@@ -12,11 +12,7 @@ func LabelTmpl(ctx context.Context, w *LabelWrapperType, ctrl ControlI, h string
 {{
 <div id="{{= ctrl.ID() }}_ctl" {{= ctrl.WrapperAttributes().String() }} >
 {{if ctrl.Label() != "" }}
-    {{if ctrl.TextIsLabel() }}
-  <span id="{{= ctrl.ID() }}_lbl" class="goradd-lbl" {{= labelAttr }}>{{= ctrl.Label() }}</span>
-    {{else}}
   <label id="{{= ctrl.ID() }}_lbl" class="goradd-lbl"{{if ctrl.HasFor() }} for="{{= ctrl.ID() }}" {{if}} {{= labelAttr }}>{{= ctrl.Label() }}</label>
-    {{if}}
 {{if}}
 {{= html.Indent(h) }}
   <div id="{{= ctrl.ID() }}_err" class="goradd-error">{{= ctrl.ValidationMessage() }}</div>

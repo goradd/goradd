@@ -34,6 +34,8 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 		switch id {
 		case "textbox":
 			panels.NewTextboxPanel(f.detail)
+		case "checkbox":
+			panels.NewCheckboxPanel(f.detail)
 		default:
 			panels.NewDefaultPanel(f.detail, "")
 		}

@@ -55,12 +55,12 @@ func (l *CheckboxList) ΩDrawingAttributes() *html.Attributes {
 	a := l.Control.ΩDrawingAttributes()	// skip default checkbox list attributes
 	a.SetDataAttribute("grctl", "bs-checkboxlist")
 	/*
-	a.AddClass("gr-cbl")
+	a.AddAttributeValue("gr-cbl")
 
 	if l.isScrolling {
-		a.AddClass("gr-cbl-scroller")
+		a.AddAttributeValue("gr-cbl-scroller")
 	} else {
-		a.AddClass("gr-cbl-table")
+		a.AddAttributeValue("gr-cbl-table")
 	}*/
 	return a
 }

@@ -116,6 +116,7 @@ func (t *Textbox) ΩDrawingAttributes() *html.Attributes {
 			a.Set("cols", strconv.Itoa(t.columnCount))
 		}
 	}
+	a.AddAttributeValue("aria-labelledby", t.ID()) // spec says inputs should label themselves so screen reader will read out content of the input
 	return a
 }
 

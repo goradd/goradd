@@ -188,6 +188,13 @@ func (form *TestForm) ChangeVal(id string, val interface{}) {
 	form.Controller.changeVal(id, val, desc)
 }
 
+func (form *TestForm) CheckControl(id string, val bool) {
+	_, file, line, _ := runtime.Caller(1)
+	desc := fmt.Sprintf(`%s:%d CheckControl(%q, %q)`, file, line, id, val)
+	form.Controller.checkControl(id, val, desc)
+}
+
+
 // Click sends a click event to the html object with the given id. Note that this is not the same as simulating a click
 // but for buttons, it will essentially be the same thing. More complex web objects will need a different mechanism
 // for clicking, likely a chromium driver or something similar.
@@ -199,7 +206,7 @@ func (form *TestForm) Click(id string) {
 
 // CallJqueryFunction will call the given function with the given parameters on the jQuery object
 // specified by the id. It will return the javascript result of the function call.
-func (form *TestForm) CallJqueryFunction(id string, funcName string, params ...string) interface{} {
+func (form *TestForm) CallJqueryFunction(id string, funcName string, params ...interface{}) interface{} {
 	_, file, line, _ := runtime.Caller(1)
 	desc := fmt.Sprintf(`%s:%d CallJqueryFunction(%q, %q, %q)`, file, line, id, funcName, params)
 	return form.Controller.callJqueryFunction(id, funcName, params, desc)
