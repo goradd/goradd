@@ -36,5 +36,9 @@ func (c *Checkbox) ΩUpdateFormValues(ctx *page.Context) {
 
 	if v, ok := ctx.CheckableValue(id); ok {
 		c.SetCheckedNoRefresh(v)
+	} else if ctx.NoJavaScript && c.IsOnPage() {
+		// We will not get a value if an item is not checked. But since this is a POST, all values on page
+		// should send something if its checked, therefore we know its not checked.
+		c.SetCheckedNoRefresh(false)
 	}
 }

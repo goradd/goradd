@@ -153,6 +153,7 @@ type ControlI interface {
 	IsRendering() bool
 	IsVisible() bool
 	SetVisible(bool)
+	IsOnPage() bool
 
 	Refresh()
 
@@ -388,7 +389,8 @@ func (c *Control) ΩPreRender(ctx context.Context, buf *bytes.Buffer) error {
 		return NewError(ctx, "This control has already been drawn.")
 	}
 
-	// Because we may be rerendering a parent control, we need to make sure all "child" controls are marked as NOT being on the override.
+	// Because we may be rerendering a parent control, we need to make sure all "child" controls are marked as NOT being on the form
+	// before rendering it again.
 	if c.children != nil {
 		for _, child := range c.children {
 			child.control().markOnPage(false)
@@ -490,7 +492,7 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 	return
 }
 
-// ΩPostRender is called by the framwork at the end of drawing, and is the place where controls
+// ΩPostRender is called by the framework at the end of drawing, and is the place where controls
 // do any post-drawing cleanup needed.
 func (c *Control) ΩPostRender(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Update watcher
@@ -1015,6 +1017,11 @@ func (c *Control) Instructions() string {
 func (c *Control) markOnPage(v bool) {
 	c.isOnPage = v
 }
+
+func (c *Control) IsOnPage() bool {
+	return c.isOnPage
+}
+
 
 // WasRendered returns true if the control has been rendered.
 func (c *Control) WasRendered() bool {

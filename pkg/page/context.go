@@ -209,13 +209,11 @@ func (ctx *Context) FormValues(key string) (value []string, ok bool) {
 // checkbox or radio button. You do not normally call this unless you are implementing a checkable control widget.
 func (ctx *Context) CheckableValue(key string) (value interface{}, ok bool) {
 	if ctx.NoJavaScript {
-		// checkable values do not exist, and we are POSTing, so we have to trust that everything is on screen.
+		// checkable values do not exist, and we are POSTing.
 		value,ok = ctx.FormValue(key)
-		if !ok {
-			// In a POST, checkable values only exist if they are checked.
-			// This requires great care when using a parent control that is paging a lot of child controls.
-			value = false
-		}
+		// In a POST, checkable values only exist if they are checked.
+		// This requires great care when using a parent control that is paging a lot of child controls. It must
+		// mark any controls not on screen correctly.
 		return
 	}
 	if ctx.checkableValues == nil {
