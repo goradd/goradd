@@ -1,8 +1,8 @@
 # goradd
-A rapid Web application development framework for Go, based on PHP QCubed.
+A rapid Web application and REST service development framework for Go.
 
 Goradd is a monolithic web development framework for rapidly creating a web application from a concept
-in your mind, and then allowing you to as easily as possible maintain that application through
+in your mind and then allowing you to as easily as possible maintain that application through
 all the twists and turns of the change process. It is ideal for prototyping, intranet websites,
 websites that are very data intensive with many forms to gather information from users,
 websites that require the security and speed of a compiled language, websites with thousands of
@@ -10,11 +10,10 @@ simultaneous users, and websites being maintain by one or a small group of devel
 particularly good for developers new to GO and/or new to web development.
 
 ## Goals
-Goradd trys to achieve the following goals:
-1) 80-20 rule, where out of the box it will do most of the hard work of building a website, and
-will quickly get you a working website, but not necessarily one that you will want to ship. Speed is
-not always the goal in goradd, but rather the ability for you to incorporate changes that fix bottlenecks
-you find along the way. 
+1) 80-20 rule, where out of the box Goradd will do most of the hard work of building a website, and
+will quickly get you a working website, but not necessarily one that you will want to ship.
+Goradd is architected to allow you to make changes and plug in other open-source 
+software as you need.
 1) Fail fast. Most development processes go through a lengthy requirement analysis process,
 follow by a design process, and a lengthy build process, only to find out that what you built wasn't 
 really what was needed. Instead, Goradd gets you a working website quickly, and then lets you build out
@@ -27,16 +26,23 @@ interface that changes over time. Goradd uses code generation to create this int
 delineates the code that you can change to modify the interface, vs. code that it will generate as you
 change your data model. The result is a product that is easy to change as your world and
 requirements change.
-1) Most development happens in GO. What is happening at the user in the client is mirrored on the
-server, which allows you to work in a way that feels like you are building desktop application. This
-makes your developers more productive and it allows you to build your app using common go tools like
+1) Most development happens in GO. What the user does in the browser is mirrored on the
+server, which allows you to work in a way that feels like you are building a desktop application. This
+makes your developers more productive and it allows you to build your app using common GO tools like
 the built-in unit test environment and documentation server. You can still work in javascript if you
 want to or need to do custom UI work, but often you don't have to.
 1) Stability. We want to build applications that real people use, and that means reliance on tried
 and true technologies that work on a broad range of browsers and servers, rather than technologies
 that require lots of Polyfills for emerging standards. JQuery is currently heavily relied on, and partly because we want
 to make it easy to create Bootstrap based applications (Bootstrap is not required though)
-
+1) Progressivive enhancement. Using the supported widgets, you can create a website
+that works even if the client turns off Javascript, and that also works with 
+Opera Mini.
+1) Rich libraries of widgets. Goradd provides standard widgets corresponding to 
+basic html controls, and also provides Bootstrap widgets. If you have a particular
+css or javascript widget library you want to support, building the Goradd
+interface is fairly easy to do, and the Bootstrap library included gives you a 
+model to follow.
 
 ### Future Goals
 * Scalability. Goradd is architected for scalability, but the specific features required for
@@ -60,14 +66,17 @@ scalability have not been built and are not scheduled for version 1. Some of tho
 * WebComponents. WebComponent architecture fits particularly well with goradd's architecture. However,
 WebComponents are not fully supported by all the browsers. As WebComponents gain traction, we hope
 to use them for future browser widgets. In the mean-time, we support many JQuery based widgets.
+* Matching REST service. Goradd will auto-generate a flexible REST service
+to use with mobile app development. 
 
 ### Anti-patterns
-Go purists will be particularly unhappy with the following:
-1) No microservices. While you can create microservices that serve parts of your application, at its
+1) Goradd's html server is not microservice based. 
+While you can create microservices that serve parts of your application, at its
 core goradd is a monolithic framework that includes an ORM, an MVC architecture, and a basic control
 and form management library. If you are trying to build an application for millions of users, goradd is not
 for you at this time. However, it is architected to eventually allow parts of it to be handled off-line by
-other servers, so it is (or will be soon) scalable.
+other servers, so it is (or will be soon) scalable. Also, it will feature the
+ability to quickly build an http REST service to integrate with mobile apps.
 2) Object-oriented. Some of goradd uses a code pattern that mirrors traditional object-oriented
 inheritance and gets around some of GO's limitations in this area, including implementing 
 virtual functions. If you hate inheritance, goradd is not for you. If you don't mind it, but you still
@@ -76,18 +85,12 @@ like object composition too, this is your place.
 related github.com/goradd/got template engine to generate code.
 
 ## Installation
-### For Go 1.10 and below:
-1. Create a new directory and set your GOPATH environment variable to it, if needed.
-1. Make sure the GOPATH/bin directory is in your execution path, or execute commands from there.
-1. Execute ```go get github.com/goradd/goradd```
-1. Execute ```goradd install```
+See the [Quick Start](doc/quickstart.md) guide to get started.
 
-### For Go 1.11 and above using modules:
-1. If you just installed go, make sure your GOPATH/bin directory is in your execution path.
-1. Create a new directory *outside* of your GOPATH and cd to that new directory.
-1. Execute ```go get github.com/goradd/goradd```
-1. Execute ```goradd install```
+## Requirements
+- A supported database up and running on your local development computer. 
+Current supported databases are:
+    - Mysql
 
-##Requirements
-### For Development
+### For Developing Goradd itself
 - Sass (to build the css files from the scss source)

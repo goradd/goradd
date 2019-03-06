@@ -29,7 +29,7 @@ textarea[data-grctl] {
 }
 .gr-cbl-scroller {
   overflow-x: scroll;
-  height: 200px; // default height that you should set pro
+  height: 200px; // default height. Change if needed.
   padding-right: 10px; // make room for popup scrollbars
 }
 .gr-cbl-table {
@@ -41,7 +41,7 @@ textarea[data-grctl] {
 .gr-cbl-row {
   display: table-row;
 }
-.gr-cbl-item{
+.gr-cbl-cell {
   display:table-cell;
   padding-left: 3px;
   padding-right: 8px;

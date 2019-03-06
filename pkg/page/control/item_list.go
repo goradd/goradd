@@ -8,11 +8,12 @@ import (
 	"reflect"
 )
 
-// IDer is an object that can embed a list
+// IDer is an object that can embed a list.
 type IDer interface {
 	ID() string
 }
 
+// IDSetter is an interface for an item that sets an id.
 type IDSetter interface {
 	SetID(id string)
 }
@@ -26,7 +27,7 @@ type ItemListI interface {
 	GetItemAt(index int) ListItemI
 	ListItems() []ListItemI
 	Clear()
-	RemoveAt(index int)
+	RemoveItemAt(index int)
 	Len() int
 	GetItem(id string) (foundItem ListItemI)
 	GetItemByValue(value interface{}) (id string, foundItem ListItemI)
@@ -41,7 +42,7 @@ type ItemList struct {
 	items []ListItemI
 }
 
-// NewItemList creates a new item list. "owner" is the object that has the PatientList embedded in it, and must be
+// NewItemList creates a new item list. "owner" is the object that has the list embedded in it, and must be
 // an IDer.
 func NewItemList(owner IDer) ItemList {
 	return ItemList{owner: owner}
@@ -152,8 +153,8 @@ func (l *ItemList) Clear() {
 	l.items = nil
 }
 
-// RemoveAt removes an item at the given index.
-func (l *ItemList) RemoveAt(index int) {
+// RemoveItemAt removes an item at the given index.
+func (l *ItemList) RemoveItemAt(index int) {
 	if index < 0 || index >= len(l.items) {
 		panic("Index out of range.")
 	}
@@ -220,13 +221,16 @@ func (l *ItemList) GetItemByValue(value interface{}) (id string, foundItem ListI
 	return "", nil
 }
 
-// SortIds sorts a list of auto-generated ids in numerical and hierarchical order
+// SortIds sorts a list of auto-generated ids in numerical and hierarchical order.
+// This is normally just called by the framework.
 func SortIds(ids []string) {
 	if len(ids) > 1 {
 		sort.Sort(IdSlice(ids))
 	}
 }
 
+// IdSlice is a slice of string ids, and is used to sort a list of ids
+// that the item list uses.
 type IdSlice []string
 
 func (p IdSlice) Len() int { return len(p) }

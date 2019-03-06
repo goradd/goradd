@@ -23,7 +23,7 @@ type CheckboxListI interface {
 // CheckboxList is a multi-select control that presents its choices as a list of checkboxes.
 // Styling is provided by divs and spans that you can provide css for in your style sheets. The
 // goradd.css file has default styling to handle the basics. It wraps the whole thing in a div that can be set
-// to scroll as well, so that the final structure can be styled like a multi-table table, or a single-table
+// to scroll as well, so that the final structure can be styled like a multi-column table, or a single-column
 // scrolling list much like a standard html select list.
 type CheckboxList struct {
 	MultiselectList
@@ -116,7 +116,7 @@ func (l *CheckboxList) ΩDrawingAttributes() *html.Attributes {
 func (l *CheckboxList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml(l.items)
 	if l.isScrolling {
-		h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table"), h)
+		h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID() + "_cbl"), h)
 	}
 	buf.WriteString(h)
 	return nil

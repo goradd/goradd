@@ -6,6 +6,8 @@ import (
 	html2 "html"
 )
 
+// ListItemI is the interface for list items in one of the various list controls that embed
+// the ItemList structure. It is generally used by implementations of list controls.
 type ListItemI interface {
 	ItemListI
 	Value() interface{}
@@ -38,8 +40,6 @@ type ItemIDer interface {
 	String() string
 }
 
-
-
 type Labeler interface {
 	Label() string
 }
@@ -66,7 +66,7 @@ type ListItem struct {
 
 // NewListItem creates a new item for a list. Specify an empty value for an item that represents no selection.
 func NewListItem(label string, value ...interface{}) *ListItem {
-	l := &ListItem{attributes: html.NewAttributes(), label: label}
+	l := &ListItem{label: label}
 	if c := len(value); c == 1 {
 		l.value = value[0]
 	} else if c > 1 {
@@ -79,21 +79,21 @@ func NewListItem(label string, value ...interface{}) *ListItem {
 
 // NewItemFromItemLister creates a new item from any object that has a Value and Label method.
 func NewItemFromItemLister(i ItemLister) *ListItem {
-	l := &ListItem{attributes: html.NewAttributes(), value: i.Value(), label: i.Label()}
+	l := &ListItem{value: i.Value(), label: i.Label()}
 	l.ItemList = NewItemList(l)
 	return l
 }
 
 // NewItemFromLabeler creates a new item from any object that has just a Label method.
 func NewItemFromLabeler(i Labeler) *ListItem {
-	l := &ListItem{attributes: html.NewAttributes(), label: i.Label()}
+	l := &ListItem{label: i.Label()}
 	l.ItemList = NewItemList(l)
 	return l
 }
 
 // NewItemFromStringer creates a new item from any object that has just a String method.
 func NewItemFromStringer(i fmt.Stringer) *ListItem {
-	l := &ListItem{attributes: html.NewAttributes(), label: i.String()}
+	l := &ListItem{label: i.String()}
 	l.ItemList = NewItemList(l)
 	return l
 }
@@ -103,7 +103,7 @@ func NewItemFromStringer(i fmt.Stringer) *ListItem {
 // Note that the ID() of the ItemIDer will become the value of the select item, and the String()
 // will become the label
 func NewItemFromItemIDer(i ItemIDer) *ListItem {
-	l := &ListItem{attributes: html.NewAttributes(), value: i.ID(), label: i.String()}
+	l := &ListItem{value: i.ID(), label: i.String()}
 	l.ItemList = NewItemList(l)
 	return l
 }
@@ -138,7 +138,7 @@ func (i *ListItem) ID() string {
 // item list are completely managed by the list, you cannot have custom ids.
 func (i *ListItem) SetID(id string) {
 	i.id = id
-	i.attributes.SetID(id)
+	i.Attributes().SetID(id)
 	i.ItemList.reindex(0)
 }
 
@@ -213,4 +213,22 @@ func (i *ListItem) Attributes() *html.Attributes {
 		i.attributes = html.NewAttributes()
 	}
 	return i.attributes
+}
+
+// ListValue is a helper for initializing a control based on ItemList.
+// It satisfies the ItemLister interface. To use it, create a slice of ListValue's and
+// pass the list to AddListItems or SetData.
+type ListValue struct {
+	// L is the label
+	L string
+	// V is the value
+	V interface{}
+}
+
+func (l ListValue) Value() interface{} {
+	return l.V
+}
+
+func (l ListValue) Label() string {
+	return l.L
 }

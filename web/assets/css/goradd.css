@@ -44,7 +44,7 @@ textarea[data-grctl] {
   display: table-row;
 }
 
-.gr-cbl-item {
+.gr-cbl-cell {
   display: table-cell;
   padding-left: 3px;
   padding-right: 8px;

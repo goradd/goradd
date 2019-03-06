@@ -36,6 +36,8 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 			panels.NewTextboxPanel(f.detail)
 		case "checkbox":
 			panels.NewCheckboxPanel(f.detail)
+		case "selectlist":
+			panels.NewSelectListPanel(f.detail)
 		default:
 			panels.NewDefaultPanel(f.detail, "")
 		}

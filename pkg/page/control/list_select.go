@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
@@ -22,18 +21,22 @@ type SelectList struct {
 	selectedId string
 }
 
+// NewSelectList creates a new select list
 func NewSelectList(parent page.ControlI, id string) *SelectList {
 	t := &SelectList{}
 	t.Init(t, parent, id)
 	return t
 }
 
+// Init is called by subclasses.
 func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.Control.Init(self, parent, id)
 	l.ItemList = NewItemList(l)
 	l.Tag = "select"
 }
 
+// Validate is called by the framework to validate the contents of the control. For a SelectList,
+// this is typically just checking to see if something was selected if a selection is required.
 func (l *SelectList) Validate(ctx context.Context) bool {
 	if v := l.Control.Validate(ctx); !v {
 		return false
@@ -92,14 +95,11 @@ func (l *SelectList) Value() interface{} {
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
 func (l *SelectList) SetValue(v interface{}) {
-	var s string
-	if v != nil {
-		s = fmt.Sprintf("%v", v)
-	}
-	id, _ := l.GetItemByValue(s)
+	id, _ := l.GetItemByValue(v)
 	l.SetSelectedID(id)
 }
 
+// IntValue returns the select value as an integer.
 func (l *SelectList) IntValue() int {
 	if i := l.SelectedItem(); i == nil {
 		return 0
@@ -108,6 +108,7 @@ func (l *SelectList) IntValue() int {
 	}
 }
 
+// StringValue returns the selected value as a string
 func (l *SelectList) StringValue() string {
 	if i := l.SelectedItem(); i == nil {
 		return ""
@@ -116,6 +117,7 @@ func (l *SelectList) StringValue() string {
 	}
 }
 
+// SelectedLabel returns the label of the selected item
 func (l *SelectList) SelectedLabel() string {
 	item := l.SelectedItem()
 	if item != nil {
@@ -150,6 +152,7 @@ func (l *SelectList) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
+// ΩDrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
 func (l *SelectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if l.HasDataProvider() {
 		l.GetData(ctx, l)
@@ -182,11 +185,14 @@ func (l *SelectList) getItemsHtml(items []ListItemI) string {
 	return h
 }
 
-// SetData overrides the default data setter to add objects to the item list. The result is kept in memory currently.
+// SetData overrides the default data setter to add objects to the item list.
+// The result is kept in memory currently.
+// ItemLister, ItemIDer, Labeler or Stringer types. This function can accept one or more lists of items, or
+// single items.
 func (l *SelectList) SetData(data interface{}) {
 	kind := reflect.TypeOf(data).Kind()
-	if kind != reflect.Slice {
-		panic("you must call SetData with a slice")
+	if !(kind == reflect.Slice || kind == reflect.Array) {
+		panic("you must call SetData with a slice or array")
 	}
 
 	l.ItemList.Clear()

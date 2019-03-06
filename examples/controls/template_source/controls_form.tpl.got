@@ -18,6 +18,8 @@
     <li><a href="{{= path }}">Home</a></li>
     <li><a href="{{= path }}?control=textbox">Textboxes</a></li>
     <li><a href="{{= path }}?control=checkbox">Checkboxes and Radio Buttons</a></li>
+    <li><a href="{{= path }}?control=selectlist">Selection Lists</a></li>
+    <li><a href="{{= path }}?control=orderedlist">Hierarchical Lists</a></li>
   </ul>
 </div>
 <div class="detail_container">

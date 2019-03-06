@@ -1,5 +1,3 @@
-// The main package runs a web server that works as an aid to installation, updating and building your application.
-// Most of the code is in the buildtools directory
 package main
 
 import (

@@ -1,8 +1,11 @@
 package control
 
 import (
+	"bytes"
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"strings"
 )
 
 type RadioListI interface {
@@ -15,7 +18,19 @@ type RadioListI interface {
 // to scroll as well, so that the final structure can be styled like a multi-table table, or a single-table
 // scrolling list much like a standard html select list.
 type RadioList struct {
-	CheckboxList
+	SelectList
+	// ColumnCount is the number of columns to force the list to display. It specifies the maximum number
+	// of objects placed in each row wrapper. Keeping this at zero (the default)
+	// will result in no row wrappers.
+	ColumnCount int
+	// NextItem controls how items are placed when there are columns.
+	Placement   NextItemPlacement
+	// LabelDrawingMode determines how labels are drawn. The default is to use the global setting.
+	LabelDrawingMode html.LabelDrawingMode
+	// IsScrolling determines if we are going to let the list scroll. You will need to limit the size of the
+	// control for scrolling to happen.
+	IsScrolling bool
+
 }
 
 // NewRadioList creates a new RadioList control.
@@ -27,107 +42,95 @@ func NewRadioList(parent page.ControlI, id string) *RadioList {
 
 // Init is called by subclasses.
 func (l *RadioList) Init(self page.ControlI, parent page.ControlI, id string) {
-	l.CheckboxList.Init(self, parent, id)
+	l.SelectList.Init(self, parent, id)
+	l.Tag = "div";
 }
 
 func (l *RadioList) this() RadioListI {
 	return l.Self.(RadioListI)
 }
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// ΩDrawingAttributes retrieves the tag's attributes at draw time.
+// You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *RadioList) ΩDrawingAttributes() *html.Attributes {
-	a := l.CheckboxList.ΩDrawingAttributes()
+	a := l.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "radiolist")
+	a.AddClass("gr-cbl")
+
+	if l.IsScrolling {
+		a.AddClass("gr-cbl-scroller")
+	}
+
 	return a
 }
 
+// ΩDrawInnerHtml is called by the framework to draw the contents of the list.
+func (l *RadioList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+	h := l.ΩRenderItems(l.items)
+	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID() + "_cbl"), h)
+	buf.WriteString(h)
+	return nil
+}
+
+func (l *RadioList) ΩRenderItems(items []ListItemI) string {
+	var hItems []string
+	for _,item := range items {
+		hItems = append(hItems, l.ΩRenderItem(item))
+	}
+	if l.ColumnCount == 0 {
+		return strings.Join(hItems, "")
+	}
+	b := GridLayoutBuilder{}
+	return b.Items(hItems).
+		ColumnCount(l.ColumnCount).
+		Direction(l.Placement).
+		RowClass("gr-cbl-row").
+		Build()
+}
+
+
 // ΩRenderItem is called by the framework to render a single item in the list.
-func (l *RadioList) ΩRenderItem(tag string, item ListItemI) (h string) {
+func (l *RadioList) ΩRenderItem(item ListItemI) (h string) {
+	h = l.ΩRenderItemControl(item, "radio")
+	h = l.ΩRenderCell(item, h)
+	return
+}
+
+func (l *RadioList) ΩRenderItemControl(item ListItemI, typ string) string {
+	labelMode := l.LabelDrawingMode
+	if labelMode == html.LabelDefault {
+		labelMode = page.DefaultCheckboxLabelDrawingMode
+	}
+
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", l.ID())
 	attributes.Set("value", item.ID())
-	attributes.Set("type", "radio")
-	if l.selectedIds[item.ID()] {
+	attributes.Set("type", typ)
+	if l.selectedId == item.ID() {
 		attributes.Set("checked", "")
 	}
 	ctrl := html.RenderVoidTag("input", attributes)
-	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, l.labelDrawingMode)
-	attributes = item.Attributes().Copy()
-	attributes.SetID(item.ID() + "_cell")
-	attributes.AddClass("gr-cbl-item")
-	h = html.RenderTag(tag, attributes, h)
-	return
+	return html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, labelMode)
 }
 
-// Value returns the single selected value of the list and satisfies the Valuer interface.
-// It returns nil if no item is selected.
-func (l *RadioList) Value() interface{} {
-	a := l.SelectedValues()
-	if len(a) == 0 {
-		return nil
+func (l *RadioList) ΩRenderCell(item ListItemI, controlHtml string) string {
+	var cellClass string
+	var itemId string
+	if l.ColumnCount == 0 {
+		cellClass = "gr-cbl-item"
+		itemId = item.ID() + "_item"
+
 	} else {
-		return a[0]
+		cellClass = "gr-cbl-cell"
+		itemId = item.ID() + "_cell"
 	}
-}
-
-// SelectedValue returns the single selected value of the list as a string.
-func (l *RadioList) SelectedValue() string {
-	return l.Value().(string)
-}
-
-// SelectedLabel returns the label of the currently selected item, or an empty string of no item is selected.
-func (l *RadioList) SelectedLabel() string {
-	a := l.SelectedLabels()
-	if len(a) == 0 {
-		return ""
-	} else {
-		return a[0]
-	}
-}
-
-// SetValue sets the selection to the item corresponding to the given value, and satisfies the Valuer interface.
-func (l *RadioList) SetValue(v interface{}) {
-	l.SetSelectedValue(v)
-}
-
-// SetSelectedValue sets the selection to the item corresponding to the given value.
-func (l *RadioList) SetSelectedValue(v interface{}) {
-	if v == nil {
-		l.SetSelectedID("")
-		return
-	}
-
-	id, item := l.GetItemByValue(v)
-	if item != nil {
-		l.SetSelectedID(id)
-	}
-}
-
-// SetSelectedID sets selection to the item whose id corresponds to the given value.
-func (l *RadioList) SetSelectedID(id string) {
-	if id == "" {
-		l.selectedIds = map[string]bool{}
-	} else {
-		l.selectedIds = map[string]bool{id:true}
-	}
-	l.Refresh()
+	attributes := item.Attributes().Copy()
+	attributes.SetID(itemId)
+	attributes.AddClass(cellClass)
+	return html.RenderTag("div", attributes, controlHtml)
 }
 
 
-func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
-	controlID := l.ID()
 
-	if ctx.RequestMode() == page.Ajax {
-		if v, ok := ctx.CheckableValue(controlID); ok {
-			if s, ok := v.(string); ok {
-				l.selectedIds = map[string]bool{l.ID() + "_" + s: true}
-			}
-		}
-	} else {
-		if v, ok := ctx.FormValue(controlID); ok {
-			l.selectedIds = map[string]bool{v:true}
-		}
-	}
-}

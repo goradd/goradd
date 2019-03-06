@@ -188,9 +188,9 @@ func (form *TestForm) ChangeVal(id string, val interface{}) {
 	form.Controller.changeVal(id, val, desc)
 }
 
-func (form *TestForm) CheckControl(id string, val bool) {
+func (form *TestForm) SetCheckbox(id string, val bool) {
 	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d CheckControl(%q, %q)`, file, line, id, val)
+	desc := fmt.Sprintf(`%s:%d SetCheckbox(%q, %q)`, file, line, id, val)
 	form.Controller.checkControl(id, val, desc)
 }
 

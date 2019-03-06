@@ -44,6 +44,16 @@ func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (
 	buf.WriteString(path)
 
 	buf.WriteString(`?control=checkbox">Checkboxes and Radio Buttons</a></li>
+    <li><a href="`)
+
+	buf.WriteString(path)
+
+	buf.WriteString(`?control=selectlist">Selection Lists</a></li>
+    <li><a href="`)
+
+	buf.WriteString(path)
+
+	buf.WriteString(`?control=orderedlist">Hierarchical Lists</a></li>
   </ul>
 </div>
 <div class="detail_container">

@@ -23,6 +23,10 @@ They are used for setting true/false values, or for selecting from a group of it
 	buf.WriteString(` code generation uses checkboxes to set binary values in a database, and
 uses a checkbox list to setup relationships between records in a one-to-many relationship.
 </p>
+<p>
+See also the CheckboxList and RadioList controls for working with groups of these controls,
+and the CheckboxColumn for working with a column of checkboxes in an html table.
+</p>
 <h2>Labels</h2>
 <p>
 Dealing with labels and checkboxes can be tricky. Html uses a `)
@@ -80,6 +84,7 @@ checkboxes.
 	}
 
 	buf.WriteString(`
+
 
 <h2>Radio Buttons</h2>
 Radio buttons are generally part of a group of buttons with the purpose of allowing the user

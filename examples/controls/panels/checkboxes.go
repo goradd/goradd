@@ -28,13 +28,13 @@ func NewCheckboxPanel(parent page.ControlI) *CheckboxPanel {
 
 	p.Checkbox1 = NewCheckbox(p, "checkbox1")
 	p.Checkbox1.SetLabel("Checkbox 1:")
-	p.Checkbox1.SetText("My label is before")
+	p.Checkbox1.SetText("My text is before")
 	p.Checkbox1.SetLabelDrawingMode(html.LabelBefore)
 
 	p.Checkbox2 = NewCheckbox(p, "checkbox2")
 	p.Checkbox2.SetLabel("Checkbox 2:")
 	p.Checkbox2.SetLabelDrawingMode(html.LabelWrapAfter)
-	p.Checkbox2.SetText("My label is after, and is wrapping the control")
+	p.Checkbox2.SetText("My text is after, and is wrapping the control")
 
 	p.Radio1 = NewRadioButton(p, "radio1")
 	p.Radio1.SetGroup("mygroup")
@@ -88,8 +88,8 @@ func testCheckboxServerSubmit(t *browsertest.TestForm)  {
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
 func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
-	t.CheckControl("checkbox1", true)
-	t.CheckControl("radio2", true)
+	t.SetCheckbox("checkbox1", true)
+	t.SetCheckbox("radio2", true)
 
 	t.Click(btn)
 
