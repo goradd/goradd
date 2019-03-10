@@ -105,23 +105,31 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 // the same results.
 func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
 
-	t.ChangeVal("selectListWithSize", 2)
-
-	t.Click(btn)
-
-	t.AssertEqual(true, t.HasClass("selectlist_ctl", "error"))
-
+	// For testing purposes, we need to use the id of the list item, rather than the value of the list item,
+	// since that is what is presented in the html.
 	select1 := f.Page().GetControl("singleSelectList").(*SelectList)
 	select2 := f.Page().GetControl("selectListWithSize").(*SelectList)
 	radio1 := f.Page().GetControl("radioList1").(*RadioList)
 	radio2 := f.Page().GetControl("radioList2").(*RadioList)
 
+	id,_ := select2.GetItemByValue(2)
+	t.ChangeVal("selectListWithSize", id)
+
+	t.Click(btn)
+
+	t.AssertEqual(true, t.HasClass("singleSelectList_ctl", "error"))
+
+
 	t.AssertEqual(2, select2.IntValue())
 
-	t.ChangeVal("selectList", 1)
-	t.ChangeVal("selectListWithSize", 2)
-	t.ChangeVal("radioList1", 3)
-	t.ChangeVal("radioList2", 4)
+	id,_ = select1.GetItemByValue(1)
+	t.ChangeVal("singleSelectList", id)
+	id,_ = select2.GetItemByValue(2)
+	t.ChangeVal("selectListWithSize", id)
+	id,_ = radio1.GetItemByValue(3)
+	t.CheckGroup("radioList1", id)
+	id,_ = radio2.GetItemByValue(4)
+	t.CheckGroup("radioList2", id)
 
 	t.Click(btn)
 

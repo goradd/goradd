@@ -97,6 +97,42 @@ jQuery.widget( "goradd.testController",  {
         event = new CustomEvent('teststep', { bubbles: true, detail: step });
         control.dispatchEvent(event);
     },
+    checkGroup: function(step, id, values) {
+        // checks a group of checkbox or radio controls. The id of the control is also the name of each of the individual controls.
+        goradd.log ("checkGroup", step, id, values);
+        var control = this._findElement(id);
+        var jq = this._window.jQuery;
+
+        if (!control) {
+            this._fireStepEvent(step,  "Could not find element " + id);
+            return;
+        }
+
+        var changeEvent = new Event('change', { 'bubbles': true });
+
+        // uncheck whatever is checked
+        jq("input[name=" + id +"]:checked").each(function() {
+            $(this).prop("checked", false);
+            this.dispatchEvent(changeEvent);
+        });
+
+        /*if (!values) {
+            values = [];
+        }*/
+
+        // check whatever needs to be checked
+        $j.each(values, function() {
+            var val = this;
+            jq("input[name=" + id + "][value=" + val + "]").each(function() {
+                $(this).prop("checked", true);
+                this.dispatchEvent(changeEvent);
+            });
+        });
+
+        // Here we fire off events
+        event = new CustomEvent('teststep', { bubbles: true, detail: step });
+        control.dispatchEvent(event);
+    },
     _findElement: function(id) {
         return this._window.document.getElementById(id);
     },

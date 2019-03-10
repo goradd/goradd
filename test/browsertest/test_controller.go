@@ -137,6 +137,13 @@ func (p *TestController) checkControl(id string, val bool, description string) {
 	p.waitStep()
 }
 
+// checks a control or controls from a control group, specifically for checkbox and radio groups
+func (p *TestController) checkGroup(name string, vals []string, description string) {
+	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.ExecuteJqueryFunction("testController", "checkGroup", len(p.stepDescriptions), name, vals)
+	p.waitStep()
+}
+
 func (p *TestController) click(id string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
 	p.ExecuteJqueryFunction("testController", "click", len(p.stepDescriptions), id)

@@ -40,6 +40,7 @@ type TestForm struct {
 	failed		 bool
 	currentFailed bool
 	currentTestName string
+	callerInfo string
 }
 
 func NewTestForm(ctx context.Context) page.FormI {
@@ -145,17 +146,16 @@ func (form *TestForm) AssertNotNil(v interface{}) {
 // AssertEqual will test that the two values are equal, and will error if they are not equal.
 // The test will continue after this.
 func (form *TestForm) AssertEqual(expected, actual interface{}) {
-	_, file, line, _ := runtime.Caller(1)
-
+	form.captureCaller()
 	if expected != actual {
-		form.error(fmt.Sprintf("*** AssertEqual failed. %v != %v. File: %s, Line: %d", expected, actual, file, line))
+		form.error(fmt.Sprintf("*** AssertEqual failed. %v != %v. (%s)", expected, actual, form.callerInfo))
 	}
 }
 
 // Error will cause the test to error, but will continue performing the test.
 func (form *TestForm) Error(message string) {
-	_, file, line, _ := runtime.Caller(1)
-	form.error(fmt.Sprintf("*** Test %s erred: %s, File: %s, Line: %s", form.currentTestName, message, file, line))
+	form.captureCaller()
+	form.error(fmt.Sprintf("*** Test %s erred: %s, (%s)", form.currentTestName, message, form.callerInfo))
 }
 
 
@@ -170,12 +170,17 @@ func (form *TestForm) Fatal(message string) {
 	panic(fmt.Sprint(message))
 }
 
-func (form *TestForm) fail(message string, testName string) {
-	form.Log(fmt.Sprintf("*** Test %s failed: %s", testName, message))
+func (form *TestForm) panicked(message string, testName string) {
+	var panickingLine string
+	if _, file, line, ok := runtime.Caller(5); ok {
+		panickingLine = fmt.Sprintf("%s:%d", file, line)
+	}
+	form.Log(fmt.Sprintf("\n*** Test %s panicked: %s\n*** Last test step: %s\n*** Panicking line: %s", testName, message, form.callerInfo, panickingLine))
 	form.Page().PushRedraw()
 	form.failed = true
 	form.currentFailed = true
 }
+
 
 // ChangeVal will change the value of a form object. It essentially calls the jQuery .val() function on
 // the html object with the given id, followed by sending a change event to the object. This is not quite
@@ -183,15 +188,19 @@ func (form *TestForm) fail(message string, testName string) {
 // is fired on some objects only when losing focus. However, this will simulate changing a value adequately for most
 // situations.
 func (form *TestForm) ChangeVal(id string, val interface{}) {
-	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d ChangeVal(%q, %q)`, file, line, id, val)
-	form.Controller.changeVal(id, val, desc)
+	form.Controller.changeVal(id, val, form.captureCaller())
 }
 
+// SetCheckbox sets the given checkbox control to the given value. Use this instead of ChangeVal on checkboxes.
 func (form *TestForm) SetCheckbox(id string, val bool) {
-	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d SetCheckbox(%q, %q)`, file, line, id, val)
-	form.Controller.checkControl(id, val, desc)
+	form.Controller.checkControl(id, val, form.captureCaller())
+}
+
+// CheckGroup sets the a checkbox group to a list of values. Radio groups should only be given one value
+// to check. Will uncheck anything checked in the group before checking the given values. Specify nil
+// to uncheck everything.
+func (form *TestForm) CheckGroup(id string, values ...string) {
+	form.Controller.checkGroup(id, values, form.captureCaller())
 }
 
 
@@ -199,37 +208,34 @@ func (form *TestForm) SetCheckbox(id string, val bool) {
 // but for buttons, it will essentially be the same thing. More complex web objects will need a different mechanism
 // for clicking, likely a chromium driver or something similar.
 func (form *TestForm) Click(id string) {
-	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d Click(%q)`, file, line, id)
-	form.Controller.click(id, desc)
+	form.Controller.click(id, form.captureCaller())
 }
 
 // CallJqueryFunction will call the given function with the given parameters on the jQuery object
 // specified by the id. It will return the javascript result of the function call.
 func (form *TestForm) CallJqueryFunction(id string, funcName string, params ...interface{}) interface{} {
-	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d CallJqueryFunction(%q, %q, %q)`, file, line, id, funcName, params)
-	return form.Controller.callJqueryFunction(id, funcName, params, desc)
+	return form.Controller.callJqueryFunction(id, funcName, params, form.captureCaller())
 }
 
 // Value will call the jquery .val() function on the given html object and return the result.
 func (form *TestForm) JqueryValue(id string) interface{} {
-	return form.CallJqueryFunction(id, "val")
+	return form.Controller.callJqueryFunction(id, "val", nil, form.captureCaller())
+
 }
 
 // Attribute will call the jquery .attr("attribute") function on the given html object looking for the given
 // attribute name and will return the value.
 func (form *TestForm) JqueryAttribute(id string, attribute string) interface{} {
-	return form.CallJqueryFunction(id, "attr", attribute)
+	return form.Controller.callJqueryFunction(id, "attr", []interface{}{attribute}, form.captureCaller())
 }
 
 func (form *TestForm) HasClass(id string, needle string) bool {
-	res := form.CallJqueryFunction(id, "hasClass", needle)
+	res :=  form.Controller.callJqueryFunction(id, "hasClass", []interface{}{needle}, form.captureCaller())
 	return res.(bool)
 }
 
 func (form *TestForm) InnerHtml(id string) string {
-	res := form.CallJqueryFunction(id, "html")
+	res :=  form.Controller.callJqueryFunction(id, "html", nil, form.captureCaller())
 	return res.(string)
 }
 
@@ -242,17 +248,21 @@ func (f *TestForm) TypeValue(id string, chars string) {
 }*/
 
 func (form *TestForm) Focus(id string) {
-	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d Focus(%q)`, file, line, id)
-	form.Controller.focus(id, desc)
+	form.Controller.focus(id, form.captureCaller())
 }
 
 func (form *TestForm) CloseWindow() {
-	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d CloseWindow()`, file, line)
-	form.Controller.closeWindow(desc)
+	form.Controller.closeWindow(form.captureCaller())
 }
 
+func (form *TestForm) captureCaller() string {
+	if _, file, line, ok := runtime.Caller(2); ok {
+		form.callerInfo = fmt.Sprintf(`%s:%d`, file, line)
+	} else {
+		form.callerInfo = "Unknown caller"
+	}
+	return form.callerInfo
+}
 
 
 // GetTestForm returns the test form itself, if its loaded
@@ -273,17 +283,17 @@ func (form *TestForm) testAllAndExit() {
 			testF := v.(testRunnerFunction)
 			go func() {
 				defer func() {
-					form.CloseWindow()
 					if r := recover(); r != nil {
 						switch v := r.(type) {
 						case error:
-							form.fail(v.Error(), testName)
+							form.panicked(v.Error(), testName)
 						case string:
-							form.fail(v, testName)
+							form.panicked(v, testName)
 						default:
-							form.fail("Unknown error", testName)
+							form.panicked("Unknown error", testName)
 						}
 					}
+					form.CloseWindow()
 					done <- 1
 				}()
 				form.Log("Starting test: " + testName)
@@ -324,17 +334,17 @@ func (form *TestForm) testOne(testName string) {
 			testF := i.(testRunnerFunction)
 			go func() {
 				defer func() {
-					form.CloseWindow()
 					if r := recover(); r != nil {
 						switch v := r.(type) {
 						case error:
-							form.fail(v.Error(), testName)
+							form.panicked(v.Error(), testName)
 						case string:
-							form.fail(v, testName)
+							form.panicked(v, testName)
 						default:
-							form.fail("Unknown error", testName)
+							form.panicked("Unknown error", testName)
 						}
 					}
+					form.CloseWindow()
 					done <- 1
 				}()
 				form.Log("Starting test: " + testName)

@@ -132,5 +132,14 @@ func (l *RadioList) ΩRenderCell(item ListItemI, controlHtml string) string {
 	return html.RenderTag("div", attributes, controlHtml)
 }
 
+// ΩUpdateFormValues is called by the framework to tell the control to update its internal values
+// based on the form values sent by the browser.
+func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
+	controlID := l.ID()
+
+	if v, ok := ctx.CheckableValue(controlID); ok {
+		l.selectedId = controlID + "_" + v.(string)
+	}
+}
 
 

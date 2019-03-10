@@ -53,7 +53,7 @@ func (l *SelectList) Validate(ctx context.Context) bool {
 	return true
 }
 
-// ΩUpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
+// ΩUpdateFormValues is an internal function that lets us reflect the value of the selection that is currently on the browser
 func (l *SelectList) ΩUpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 
