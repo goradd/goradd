@@ -28,38 +28,6 @@ func (c *RadioButton) this() RadioButtonI {
 	return c.Self.(RadioButtonI)
 }
 
-// ΩDrawingAttributes is called by the framework to create temporary attributes for the input tag.
-func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
-	a := c.CheckboxBase.ΩDrawingAttributes()
-	a.SetDataAttribute("grctl", "radio")
-	a.Set("type", "radio")
-	if c.group == "" {
-		a.Set("name", c.ID()) // treat it like a checkbox if no group is specified
-	} else {
-		a.Set("name", c.group)
-		a.Set("value", c.ID())
-	}
-	return a
-}
-
-// ΩUpdateFormValues is called by the framework to update the value of the control based on
-// values sent by the browser.
-func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
-	id := c.ID()
-
-	if c.group != "" {
-		if val, ok := ctx.FormValue(c.group); ok {
-			c.SetCheckedNoRefresh(val == c.ID())
-		}
-	} else {
-		if v, ok := ctx.CheckableValue(id); ok {
-			c.SetCheckedNoRefresh(v)
-		} else if ctx.RequestMode() == page.Server && c.IsOnPage() {
-			c.SetCheckedNoRefresh(false)
-		}
-	}
-}
-
 // SetGroup sets the name of the group that the control will belong to. Set all the radio buttons
 // that represent a selection from a group to this same group name.
 func (c *RadioButton) SetGroup(g string) RadioButtonI {
@@ -86,3 +54,24 @@ func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 	}
 	return c.this()
 }
+
+// ΩDrawingAttributes is called by the framework to create temporary attributes for the input tag.
+func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
+	a := c.CheckboxBase.ΩDrawingAttributes()
+	a.SetDataAttribute("grctl", "radio")
+	a.Set("type", "radio")
+	if c.group == "" {
+		a.Set("name", c.ID()) // treat it like a checkbox if no group is specified
+	} else {
+		a.Set("name", c.group)
+		a.Set("value", c.ID())
+	}
+	return a
+}
+
+// ΩUpdateFormValues is called by the framework to update the value of the control based on
+// values sent by the browser.
+func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
+	c.UpdateRadioFormValues(ctx, c.Group())
+}
+

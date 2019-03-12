@@ -5,10 +5,18 @@
 {{g $1.With(bootstrap.NewFormGroupWrapper()).AddWrapperClass("row") }}
 {{end}}
 
+{{define drawAsFormGroupRow}}
+{{e $1.With(bootstrap.NewFormGroupWrapper()).AddWrapperClass("row").Draw(ctx, buf) }}
+{{end}}
+
+
 {{define withFormGroup}}
 {{g $1.With(bootstrap.NewFormGroupWrapper()) }}
 {{end}}
 
+{{define drawAsFormGroup}}
+{{e $1.With(bootstrap.NewFormGroupWrapper()).Draw(ctx, buf) }}
+{{end}}
 
 {{define setGroupClass}}
 {{g $1.WrapperAttributes().SetClass("$2") }}

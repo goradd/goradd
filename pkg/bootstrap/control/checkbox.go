@@ -1,42 +1,62 @@
 package control
 
 import (
+	"context"
 	"encoding/gob"
+	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
 	"reflect"
 )
 
 type Checkbox struct {
-	checkboxBase
+	control.Checkbox
+	inline bool
 }
 
 func NewCheckbox(parent page.ControlI, id string) *Checkbox {
 	c := &Checkbox{}
 	c.Init(c, parent, id)
+	config.LoadBootstrap(c.ParentForm())
+	return c
+}
+
+func (c *Checkbox) SetInline(v bool) *Checkbox {
+	c.inline = v
 	return c
 }
 
 func (c *Checkbox) ΩDrawingAttributes() *html.Attributes {
-	a := c.checkboxBase.ΩDrawingAttributes()
+	a := c.Checkbox.ΩDrawingAttributes()
+	a.AddClass("form-check-input")
 	a.SetDataAttribute("grctl", "bs-checkbox")
-	a.Set("name", c.ID()) // needed for posts
-	a.Set("type", "checkbox")
-	a.Set("value", "1") // required for html validity
+	if c.Text() == "" {
+		a.AddClass("position-static")
+	}
 	return a
 }
 
-// ΩUpdateFormValues is an internal call that lets us reflect the value of the checkbox on the web override
-func (c *Checkbox) ΩUpdateFormValues(ctx *page.Context) {
-	id := c.ID()
-
-	if v, ok := ctx.CheckableValue(id); ok {
-		c.SetCheckedNoRefresh(v)
-	}
+func (c *Checkbox) ΩGetDrawingLabelAttributes() *html.Attributes {
+	a := c.Checkbox.ΩGetDrawingLabelAttributes()
+	a.AddClass("form-check-label")
+	return a
 }
 
+func (c *Checkbox) ΩDrawTag(ctx context.Context) (ctrl string) {
+	h := c.Checkbox.ΩDrawTag(ctx)
+	checkWrapperAttributes := html.NewAttributes().
+		AddClass("form-check").
+		SetDataAttribute("grel", c.ID()) // make sure the entire control gets removed
+	if c.inline {
+		checkWrapperAttributes.AddClass("form-check-inline")
+	}
+	return html.RenderTag("div", checkWrapperAttributes, h)	// make sure the entire control gets removed
+}
+
+
 func (c *Checkbox) Serialize(e page.Encoder) (err error) {
-	if err = c.checkboxBase.Serialize(e); err != nil {
+	if err = c.Checkbox.Serialize(e); err != nil {
 		return
 	}
 
@@ -51,7 +71,7 @@ func (c *Checkbox) ΩisSerializer(i page.ControlI) bool {
 
 
 func (c *Checkbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
-	if err = c.checkboxBase.Deserialize(d, p); err != nil {
+	if err = c.Checkbox.Deserialize(d, p); err != nil {
 		return
 	}
 

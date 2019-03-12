@@ -1,0 +1,27 @@
+{{< package }}panels{{end}}
+{{< imports }}
+	bootstrap "github.com/goradd/goradd/pkg/bootstrap/control"
+{{end}}
+{{< control }}Forms1Panel{{end}}
+
+{{define template }}
+<h2>Standard Form Layout</h2>
+<p>
+This is an example of a very generic form layout in Bootstrap.
+</p>
+{{drawAsFormGroup control.Name }}
+{{drawAsFormGroup control.ChildrenCount }}
+
+<div>
+{{draw control.MStatusSingle.SetInline(true) }}
+{{draw control.MStatusMarried.SetInline(true) }}
+{{draw control.MStatusDivorced.SetInline(true) }}
+</div>
+{{drawAsFormGroup control.Dog }}
+
+
+{{draw control.SubmitAjax}}
+{{draw control.SubmitServer}}
+{{end}}
+
+{{renderControlTemplate}}

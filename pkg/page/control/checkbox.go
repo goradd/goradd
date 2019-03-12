@@ -32,13 +32,5 @@ func (c *Checkbox) ΩDrawingAttributes() *html.Attributes {
 // ΩUpdateFormValues is an internal call that lets us reflect the value of the checkbox on the form.
 // You do not normally need to call this function.
 func (c *Checkbox) ΩUpdateFormValues(ctx *page.Context) {
-	id := c.ID()
-
-	if v, ok := ctx.FormValue(id); ok {
-		c.SetCheckedNoRefresh(v)
-	} else if ctx.RequestMode() == page.Server && c.IsOnPage() {
-		// We will not get a value if an item is not checked. But since this is a POST, all values on page
-		// should send something if its checked, therefore we know its not checked.
-		c.SetCheckedNoRefresh(false)
-	}
+	c.UpdateCheckboxFormValues(ctx)
 }

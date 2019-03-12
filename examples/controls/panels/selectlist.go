@@ -52,18 +52,18 @@ func NewSelectListPanel(parent page.ControlI) *SelectListPanel {
 	p.RadioList1 = NewRadioList(p, "radioList1")
 	p.RadioList1.SetLabel("Rows Radio List")
 	p.RadioList1.AddListItems(itemList)
-	p.RadioList1.ColumnCount = 2
+	p.RadioList1.SetColumnCount(2)
 
 	p.RadioList2 = NewRadioList(p, "radioList2")
 	p.RadioList2.SetLabel("Columns Radio List")
 	p.RadioList2.AddListItems(itemList)
-	p.RadioList2.ColumnCount = 2
-	p.RadioList2.Placement = NextItemCrossAxis
+	p.RadioList2.SetColumnCount(2)
+	p.RadioList2.SetDirection(LayoutColumn)
 
 	p.RadioList3 = NewRadioList(p, "radioList3")
 	p.RadioList3.SetLabel("Scrolling Radio List")
 	p.RadioList3.AddListItems(itemList)
-	p.RadioList3.IsScrolling = true
+	p.RadioList3.SetIsScrolling(true)
 	p.RadioList3.SetHeightStyle(80) // Limit the height to see the scrolling effect
 
 	p.MultiSelect = NewMultiselectList(p, "multiselectList")
