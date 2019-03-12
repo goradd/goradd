@@ -146,7 +146,6 @@ each button. The browser will then make sure only one gets selected.
 	buf.WriteString(`
 </fieldset>
 
-
 `)
 
 	buf.WriteString(`

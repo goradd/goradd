@@ -54,7 +54,6 @@ each button. The browser will then make sure only one gets selected.
 {{draw control.Info }}
 </fieldset>
 
-
 {{draw control.SubmitAjax}}
 {{draw control.SubmitServer}}
 {{end}}
