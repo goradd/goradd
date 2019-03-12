@@ -164,6 +164,7 @@ type ControlI interface {
 	On(e EventI, a ...action2.ActionI) EventI
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string) string
+	HasServerAction(eventName string) bool
 
 	ΩUpdateFormValues(*Context)
 
@@ -1115,6 +1116,17 @@ func (c *Control) On(e EventI, actions ...action2.ActionI) EventI {
 func (c *Control) Off() {
 	c.events = nil
 }
+
+// HasServerAction returns true if one of the actions attached to the given event is a Server action.
+func (c *Control) HasServerAction(eventName string) bool {
+	for _,e := range c.events {
+		if e.Name() == eventName && e.HasServerAction() {
+			return true
+		}
+	}
+	return false
+}
+
 
 // SetActionValue sets a value that is provided to actions when they are triggered. The value can be a static value
 // or one of the javascript.* objects that can dynamically generate values. The value is then sent back to the action

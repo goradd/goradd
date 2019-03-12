@@ -242,7 +242,12 @@ func (t *Textbox) SetReadOnly(r bool) {
 // malicious XSS scripts.
 // The default uses a global sanitizer created at bootup.
 // Override Sanitize in a subclass if you want a per-textbox sanitizer.
+// This is a very difficult thing to get right, and depends a bit on your application on just
+// how much you want to remove.
 func (t *Textbox) ΩSanitize(s string) string {
+	if config.GlobalSanitizer == nil {
+		return s
+	}
 	return config.GlobalSanitizer.Sanitize(s)
 }
 

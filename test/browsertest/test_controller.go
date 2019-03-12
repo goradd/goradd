@@ -110,11 +110,12 @@ func (p *TestController) waitStep() {
 	for {
 		select {
 		case stepItem := <-p.stepChannel:
-			if stepItem.Step < len(p.stepDescriptions) {
+			if stepItem.Step == -1 {
+				log.FrameworkDebugf("Received form open")
+			} else if stepItem.Step < len(p.stepDescriptions) {
 				log.FrameworkDebugf("Received old step: %d, wanted %d", stepItem.Step, len(p.stepDescriptions))
 				continue // this is a return from a previous step that timed out. We want to ignore it.
-			}
-			if stepItem.Err != "" {
+			} else if stepItem.Err != "" {
 				panic (stepItem.Err)
 			}
 		case <-time.After(p.stepTimeout * time.Second):
@@ -149,6 +150,12 @@ func (p *TestController) click(id string, description string) {
 	p.ExecuteJqueryFunction("testController", "click", len(p.stepDescriptions), id)
 	p.waitStep()
 }
+
+func (p *TestController) waitSubmit(desc string) {
+	p.stepDescriptions = append(p.stepDescriptions, desc)
+	p.waitStep()
+}
+
 
 func (p *TestController) callJqueryFunction(id string, funcName string, params []interface{}, description string) interface{} {
 	p.stepDescriptions = append(p.stepDescriptions, description)

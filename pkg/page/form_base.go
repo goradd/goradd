@@ -158,12 +158,12 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Write out the control scripts gathered above
 	s := `goradd.initForm();` + "\n"
 	s += fmt.Sprintf("goradd.initMessagingClient(%d, %d);\n", config.WebSocketPort, config.WebSocketTLSPort)
+	f.GetActionScripts(&f.response) // actions assigned to form during form creation
+	s += f.response.JavaScript()
 	if !config.Release {
 		// This code registers the form with the test harness. We do not want to do this in release mode since it is a security risk.
 		s += "goradd.initFormTest();\n"
 	}
-	f.GetActionScripts(&f.response) // actions assigned to form during form creation
-	s += f.response.JavaScript()
 	f.response = NewResponse() // Reset
 	s = fmt.Sprintf(`<script>jQuery(document).ready(function($j) { %s; });</script>`, s)
 	buf.WriteString(s)

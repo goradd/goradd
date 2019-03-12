@@ -131,6 +131,19 @@ each button. The browser will then make sure only one gets selected.
 	}
 
 	buf.WriteString(`
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := control.Info.Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
 </fieldset>
 
 

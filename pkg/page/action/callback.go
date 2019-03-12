@@ -21,6 +21,7 @@ type CallbackActionI interface {
 	GetDestinationControlSubID() string
 	// GetActionValue returns the action value that was assigned to the action when the action was fired.
 	GetActionValue() interface{}
+	IsServerAction() bool
 }
 
 // CallbackAction is a kind of superclass for Ajax and Server actions
@@ -156,6 +157,11 @@ func (a *ΩserverAction) DestinationControlID(id string) *ΩserverAction {
 	return a
 }
 
+func (a *ΩserverAction) IsServerAction() bool {
+	return true
+}
+
+
 type ΩajaxAction struct {
 	callbackAction
 }
@@ -232,6 +238,10 @@ func (a *ΩajaxAction) Async() *ΩajaxAction {
 func (a *ΩajaxAction) DestinationControlID(id string) *ΩajaxAction {
 	a.setDestinationControlID(id)
 	return a
+}
+
+func (a *ΩajaxAction) IsServerAction() bool {
+	return false
 }
 
 func init() {

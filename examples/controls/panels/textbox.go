@@ -15,6 +15,7 @@ const controlsFormPath = "/goradd/examples/controls.g"
 const (
 	AjaxSubmit int = iota + 1
 	ServerSubmit
+	ButtonSubmit
 )
 
 type TextboxPanel struct {
@@ -92,7 +93,7 @@ func testTextboxAjaxSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
 	f := t.LoadUrl(myUrl)
 
-	testTextboxSubmit(t, f, "ajaxButton")
+	testTextboxSubmit(t, f, f.Page().GetControl("ajaxButton"))
 
 	t.Done("Complete")
 }
@@ -101,7 +102,7 @@ func testTextboxServerSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
 	f := t.LoadUrl(myUrl)
 
-	testTextboxSubmit(t, f, "serverButton")
+	testTextboxSubmit(t, f, f.Page().GetControl("serverButton"))
 
 	t.Done("Complete")
 }
@@ -109,9 +110,9 @@ func testTextboxServerSubmit(t *browsertest.TestForm)  {
 // testTextboxSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testTextboxSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
+func testTextboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {
 	t.ChangeVal("plainText", "me")
-	t.ChangeVal("multiText", "me")
+	t.ChangeVal("multiText", "me\nyou")
 	t.ChangeVal("intText", "me")
 	t.ChangeVal("floatText", "me")
 	t.ChangeVal("emailText", "me")
@@ -122,7 +123,7 @@ func testTextboxSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
 	t.Click(btn)
 
 	t.AssertEqual("me", t.JqueryValue("plainText"))
-	t.AssertEqual("me", t.JqueryValue("multiText"))
+	t.AssertEqual("me\nyou", t.JqueryValue("multiText"))
 	t.AssertEqual("me", t.JqueryValue("intText"))
 	t.AssertEqual("me", t.JqueryValue("floatText"))
 	t.AssertEqual("me", t.JqueryValue("emailText"))

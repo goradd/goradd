@@ -143,7 +143,7 @@ func (l *ItemList) GetItemAt(index int) ListItemI {
 	return l.items[index]
 }
 
-// Items returns a slice of the ListItemI items, in the order they were added or arranged.
+// ListItems returns a slice of the ListItemI items, in the order they were added or arranged.
 func (l *ItemList) ListItems() []ListItemI {
 	return l.items
 }

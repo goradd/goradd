@@ -120,9 +120,7 @@ func (form *TestForm) Done(s string) {
 // the form.
 func (form *TestForm) LoadUrl(url string) page.FormI {
 	form.Log("Loading url: " + url)
-	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d LoadUrl(%q)`, file, line, url)
-	form.Controller.loadUrl(url, desc)
+	form.Controller.loadUrl(url, form.captureCaller())
 	return form.GetForm()
 }
 
@@ -134,11 +132,15 @@ func (form *TestForm) GetForm() page.FormI {
 	return nil
 }
 
-func (form *TestForm) AssertNotNil(v interface{}) {
-	_, file, line, _ := runtime.Caller(1)
+func (form *TestForm) AssertNil(v interface{}) {
+	if v != nil { // TODO: Check for a nil in the value
+		form.error(fmt.Sprintf("*** AssertNotNil failed. (%s)", form.captureCaller()))
+	}
+}
 
+func (form *TestForm) AssertNotNil(v interface{}) {
 	if v == nil { // TODO: Check for a nil in the value
-		form.error(fmt.Sprintf("*** AssertNotNil failed. File: %s, Line: %d", file, line))
+		form.error(fmt.Sprintf("*** AssertNotNil failed. (%s)", form.captureCaller()))
 	}
 }
 
@@ -146,16 +148,14 @@ func (form *TestForm) AssertNotNil(v interface{}) {
 // AssertEqual will test that the two values are equal, and will error if they are not equal.
 // The test will continue after this.
 func (form *TestForm) AssertEqual(expected, actual interface{}) {
-	form.captureCaller()
 	if expected != actual {
-		form.error(fmt.Sprintf("*** AssertEqual failed. %v != %v. (%s)", expected, actual, form.callerInfo))
+		form.error(fmt.Sprintf("*** AssertEqual failed. %v != %v. (%s)", expected, actual, form.captureCaller()))
 	}
 }
 
 // Error will cause the test to error, but will continue performing the test.
 func (form *TestForm) Error(message string) {
-	form.captureCaller()
-	form.error(fmt.Sprintf("*** Test %s erred: %s, (%s)", form.currentTestName, message, form.callerInfo))
+	form.error(fmt.Sprintf("*** Test %s erred: %s, (%s)", form.currentTestName, message, form.captureCaller()))
 }
 
 
@@ -207,9 +207,18 @@ func (form *TestForm) CheckGroup(id string, values ...string) {
 // Click sends a click event to the html object with the given id. Note that this is not the same as simulating a click
 // but for buttons, it will essentially be the same thing. More complex web objects will need a different mechanism
 // for clicking, likely a chromium driver or something similar.
-func (form *TestForm) Click(id string) {
-	form.Controller.click(id, form.captureCaller())
+func (form *TestForm) Click(c page.ControlI) {
+	form.Controller.click(c.ID(), form.captureCaller())
+	if c.HasServerAction("click") {
+		// wait for the new page to load
+		form.Controller.waitSubmit(form.callerInfo)
+	}
 }
+
+func (form *TestForm) WaitSubmit() {
+	form.Controller.waitSubmit(form.captureCaller())
+}
+
 
 // CallJqueryFunction will call the given function with the given parameters on the jQuery object
 // specified by the id. It will return the javascript result of the function call.

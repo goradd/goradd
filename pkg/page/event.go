@@ -36,6 +36,10 @@ type EventI interface {
 
 	// String returns a description of the event, primarily for debugging
 	String() string
+	// HasServerAction returns true if one of the actions attached to the event is a Server action
+	HasServerAction() bool
+	// Name returns the event name the event responds to, like 'click' or 'change'
+	Name() string
 
 
 	addActions(a ...action2.ActionI)
@@ -169,6 +173,22 @@ func (e *Event) ValidationTargets(targets ...string) EventI {
 	e.validationTargetsOverride = targets
 	return e
 }
+
+// HasServerAction returns true if at least one of the event's actions is a server action.
+func (e *Event) HasServerAction() bool {
+	for _,action := range e.actions {
+		if a,ok := action.(action2.CallbackActionI); ok {
+			return a.IsServerAction()
+		}
+	}
+	return false
+}
+
+func (e *Event) Name() string {
+	return e.JsEvent
+}
+
+
 
 func (e *Event) addActions(actions ...action2.ActionI) {
 	var foundCallback bool

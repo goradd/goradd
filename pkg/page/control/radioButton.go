@@ -47,13 +47,15 @@ func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
 func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
 	id := c.ID()
 
-	if ctx.NoJavaScript && c.group != "" {
+	if c.group != "" {
 		if val, ok := ctx.FormValue(c.group); ok {
 			c.SetCheckedNoRefresh(val == c.ID())
 		}
 	} else {
 		if v, ok := ctx.CheckableValue(id); ok {
 			c.SetCheckedNoRefresh(v)
+		} else if ctx.RequestMode() == page.Server && c.IsOnPage() {
+			c.SetCheckedNoRefresh(false)
 		}
 	}
 }

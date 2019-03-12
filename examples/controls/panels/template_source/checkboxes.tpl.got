@@ -51,6 +51,7 @@ each button. The browser will then make sure only one gets selected.
 {{drawWithError control.Radio1 }}
 {{drawWithError control.Radio2 }}
 {{drawWithError control.Radio3 }}
+{{draw control.Info }}
 </fieldset>
 
 

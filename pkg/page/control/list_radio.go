@@ -137,8 +137,8 @@ func (l *RadioList) ΩRenderCell(item ListItemI, controlHtml string) string {
 func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()
 
-	if v, ok := ctx.CheckableValue(controlID); ok {
-		l.selectedId = controlID + "_" + v.(string)
+	if v, ok := ctx.FormValue(controlID); ok {
+		l.selectedId = v
 	}
 }
 

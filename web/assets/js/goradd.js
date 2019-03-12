@@ -62,65 +62,13 @@ goradd = {
         goradd.controlValues[strControlId][strProperty] = strNewValue;
     },
     /**
-     * Given a control, returns the correct index to use in the formObjsModified array.
-     * @param {Object} ctl      A jQuery or html reference to a goradd control
-     * @private
-     */
-    _formObjChangeIndex: function (ctl) {
-        var $element = $(ctl),
-            id = $element.attr('id'),
-            strType = $element.prop("type"),
-            ctrlname = $element.attr("name"),
-            indexOffset;
-
-        if (((strType === 'checkbox') || (strType === 'radio')) &&
-           id && ((indexOffset = id.lastIndexOf('_')) >= 0)) { // a member of a control list
-            if ($element.data('grTrackchanges')) {
-                return id;
-            } else {
-                return id.substr(0, indexOffset); // use the id of the group
-            }
-        }
-        else if (id && strType === 'radio' && name !== id) { // a radio button with a group name
-            return id; // these buttons are changed individually
-        }
-        else if (id && strType === 'hidden') { // a hidden field, possibly associated with a different widget
-            if ((indexOffset = id.lastIndexOf('_')) >= 0) {
-                return id.substr(0, indexOffset); // use the id of the parent control
-            }
-            return ctrlname;
-        }
-        else if (ctrlname && !id) {
-            ctrlname = ctrlname.replace('[]', ''); // remove brackets if they are there for array
-            return ctrlname;
-        }
-        return id;
-    },
-    /**
      * Records that a control has changed in order to synchronize the control with
-     * the php version on the next request.
+     * the php version on the next request. Send the formObjChanged event to the control
+     * that changed, and it will bubble up to the form and be caught here.
      * @param event
      */
     formObjChanged: function (event) {
-        var ctl = event.target,
-            id = goradd._formObjChangeIndex(ctl),
-            $element = $(ctl),
-            strType = $element.prop("type"),
-            name = $element.attr("name");
-
-        if (strType === 'radio' && name !== id && !$element.data('grTrackchanges')) { // a radio button with a group name
-            // since html does not submit a changed event on the deselected radio, we are going to invalidate all the controls in the group
-            var group = $('input[name=' + name + ']');
-            if (group) {
-                group.each(function () {
-                    id = $(this).attr('id');
-                    goradd.formObjsModified[id] = true;
-                });
-            }
-        }
-        else if (id) {
-            goradd.formObjsModified[id] = true;
-        }
+        goradd.formObjsModified[event.target.id] = true;
     },
     /**
      * Initializes form related scripts. This is called by injected code on a goradd form.
@@ -158,14 +106,12 @@ goradd = {
         var $objForm = $(goradd.getForm());
         var formId = $objForm.attr("id");
 
-        var checkableControls = $objForm.find('input[type="checkbox"], input[type="radio"]');
-        params.checkableValues = goradd._checkableControlValues(formId, $.makeArray(checkableControls));
-
         params.callType = "Server";
 
         // Notify custom controls that we are about to post
         $objForm.trigger("posting", "Server");
 
+        // Post custom javascript control values
         if (!$.isEmptyObject(goradd.controlValues)) {
             params.controlValues = goradd.controlValues;
         }
@@ -174,100 +120,7 @@ goradd = {
         // have $ trigger the submit event (so it can catch all submit events)
         $objForm.trigger("submit");
     },
-    /**
-     * This function resolves the state of checkable controls into postable values.
-     *
-     * Checkable controls (checkboxes and radio buttons) can be problematic. We have the following issues to work around:
-     * - On a submit, only the values of the checked items are submitted. Non-checked items are not submitted.
-     * - Goradd may have checkboxes that are part of the form object, but not visible on the html form. In particular,
-     *   this can happen when a grid is creating objects at render time, and then scrolls or pages so those objects
-     *   are no longer "visible".
-     * - Controls can be part of a group, and the group gets the value of the checked control(s), rather than individual
-     *   items getting a true or false.
-     *
-     * To solve all of these issues, we post a value that has all the values of all visible checked items, either
-     * true or false for individual items, or an array of values, single value, or null for groups. Goradd controls that
-     * deal with checkable controls must look for this special posted variable to know how to update their internal state.
-     *
-     * Checkboxes that are part of a group will return an array of values, keyed by the group id.
-     * Radio buttons that are part of a group will return a single value keyed by group id.
-     * Checkboxes and radio buttons that are not part of a group will return a true or false keyed by the control id.
-     * Note that for radio buttons, a group is defined by a common identifier in the id. Radio buttons with the same
-     * name, but different ids, are not considered part of a group for purposes here, even though visually they will
-     * act like they are part of a group. This allows you to create individual QRadioButton objects that each will
-     * be updated with a true or false, but the browser will automatically make sure only one is checked.
-     *
-     * Any time an id has an underscore in it, that control is considered part of a group. The value after the underscore
-     * will be the value returned, and before the last underscore will be the id that will be used as the key for the value.
-     *
-     * @param {string} strForm   Form Id
-     * @param {Array} controls  Array of checkable controls. These must be checkable controls, it will not validate this.
-     * @returns {object}  A hash of values keyed by control id
-     * @private
-     */
-    _checkableControlValues: function(strForm, controls) {
-        var values = {};
 
-        if (!controls || controls.length === 0) {
-            return {};
-        }
-        $.each(controls, function() {
-            var $element = $(this),
-                id = $element.attr("id"),
-                groupId,
-                strType = $element.prop("type"),
-                index = null,
-                offset;
-
-            if (id &&
-                (offset = id.lastIndexOf('_')) !== -1) {
-                // A control group
-                index = id.substr(offset + 1);
-                groupId = id.substr(0, offset);
-            }
-            switch (strType) {
-                case "checkbox":
-                    if (index !== null) {   // this is a group of checkboxes
-                        if ($element.data('grTrackchanges')) {
-                            // We are only interested in seeing what has changed since the last time we posted
-                            if (goradd.formObjsModified[id]) {
-                                values[id] = $element.is(":checked")
-                            }
-                        } else {
-                            var a = values[groupId];
-                            if ($element.is(":checked")) {
-                                if (a) {
-                                    a.push(index);
-                                } else {
-                                    a = [index];
-                                }
-                                values[groupId] = a;
-                            }
-                            else {
-                                if (!a) {
-                                    values[groupId] = null; // empty array to notify that the group has a null value, if nothing gets checked
-                                }
-                            }
-                        }
-                    } else {
-                        values[id] = $element.is(":checked");
-                    }
-                    break;
-
-                case "radio":
-                    if (index !== null) {
-                        if ($element.is(":checked")) {
-                            values[groupId] = index;
-                        }
-                    } else {
-                        // control name MIGHT be a group name, which we don't want here, so we use control id instead
-                        values[id] = $element.is(":checked");
-                    }
-                    break;
-            }
-        });
-        return values;
-    },
 
     /**
      * Gets the data to be sent to an ajax call as post data. This will be called from the ajax queueing function, and
@@ -287,77 +140,58 @@ goradd = {
      */
     _getAjaxData: function(params) {
         var $form = $('#' + params.formId),
-            $formElements = $form.find('input,select,textarea'),
-            checkables = [],
-            controls = [],
+            controls = $form.find('input,select,textarea'),
             postData = {};
 
         // Notify controls we are about to post.
         $form.trigger("posting", "Ajax");
 
-        // Filter and separate controls into checkable and non-checkable controls
-        // We ignore controls that have not changed to reduce the amount of data sent in an ajax post.
-        $formElements.each(function() {
-            var $element = $(this),
-                id = $element.attr("id"),
-                blnForm = (id && (id.substr(0, 8) === 'Goradd__')),
-                strType = $element.prop("type"),
-                objChangeIndex = goradd._formObjChangeIndex($element);
+        // We try to ignore controls that have not changed to reduce the amount of data sent in an ajax post.
+        controls.each(function() {
+            var id = this.id,
+                blnForm = (id && (id.substr(0, 8) === 'Goradd__'));
 
 
-                if (!goradd.inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones
-                goradd.ajaxError || // Ajax error would mean that formObjsModified is invalid. We need to submit everything.
-                (objChangeIndex && goradd.formObjsModified[objChangeIndex]) ||
-                blnForm) {  // all controls with Goradd__ at the beginning of the id are always posted.
+            if (!goradd.inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones, because we might have missed something
+            goradd.ajaxError || // Ajax error would mean that formObjsModified is invalid. We need to submit everything.
+            (id && goradd.formObjsModified[id]) ||
+             blnForm) {  // all controls with Goradd__ at the beginning of the id are always posted.
+                var $ctrl = $(this),
+                    strType = $ctrl.prop("type");
 
                 switch (strType) {
-                    case "checkbox":
                     case "radio":
-                        checkables.push(this);
+                        // Radio buttons listen to their name.
+                        var n = $ctrl.attr("name");
+                        var $sel = $('input:radio[name=' + n + ']:checked');
+                        var val = null;
+                        if ($sel.length) {
+                            val = $sel.val();
+                        }
+                        postData[n] = val;
                         break;
-
+                    case "checkbox":
+                        postData[id] = $ctrl.prop("checked");
+                        break;
                     default:
-                        controls.push(this);
+                        // All goradd controls and subcontrols MUST have an id for this to work.
+                        // There is a special case for checkbox groups, but they get handled on the server
+                        // side differently between ajax and server posts.
+                        // Also, the .val() will gather an array for multi-select lists automatically.
+                        postData[id] = $ctrl.val();
+                        break;
                 }
+
             }
         });
 
 
-        $.each(controls, function() {
-            var $element = $(this),
-                strType = $element.prop("type"),
-                strControlId = $element.attr("id"),
-                strControlName = $element.attr("name"),
-                strPostValue = $element.val();
-            var strPostName = (strControlName ? strControlName: strControlId);
-
-            switch (strType) {
-                case "select-multiple":
-                    var items = $element.find(':selected'),
-                        values = [];
-                    if (items.length) {
-                        values = $.map($.makeArray(items), function(item) {
-                            return $(item).val();
-                        });
-                        postData[strPostName] = values;
-                    }
-                    else {
-                        postData[strPostName] = null;    // mark it as set to nothing
-                    }
-                    break;
-
-                default:
-                    postData[strPostName] = strPostValue;
-                    break;
-            }
-        });
 
         // Update most of the Goradd__ parameters explicitly here. Others, like the state and form id will have been handled above.
         params.callType = "Ajax";
         if (!$.isEmptyObject(goradd.controlValues)) {
             params.controlValues = goradd.controlValues;
         }
-        params.checkableValues = goradd._checkableControlValues(params.formId, checkables);
         postData.Goradd__Params = JSON.stringify(params);
 
         goradd.ajaxError = false;
@@ -407,12 +241,11 @@ goradd = {
 
                     if (XMLHttpRequest.status !== 0 || (result && result.length > 0)) {
                         goradd._displayAjaxError(result, textStatus, errorThrown);
-                        return false;
                     } else {
                         goradd._displayAjaxError("Unknown ajax error", '', '');
-                        return false;
                     }
                     goradd.testStep();
+                    return false;
                 },
                 success: function (json) {
                     if ($.type(json) === 'string') {

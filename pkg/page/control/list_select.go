@@ -42,7 +42,7 @@ func (l *SelectList) Validate(ctx context.Context) bool {
 		return false
 	}
 
-	if l.IsRequired() && l.selectedId == "" {
+	if l.IsRequired() && l.SelectedItem().IsEmptyValue() {
 		if l.ErrorForRequired == "" {
 			l.SetValidationError(l.ΩT("A selection is required"))
 		} else {

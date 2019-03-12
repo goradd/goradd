@@ -147,11 +147,34 @@ func RenderImage(src string, alt string, attributes *Attributes) string {
 
 // Indent will add space to the front of every line in the string. Since indent is used to format code for reading
 // while we are in development mode, we do not need it to be particularly efficient.
-func Indent(s string) string {
+// It will not do this for textarea tags, since that would change the text in the tag.
+func Indent(s string) (out string) {
 	if config.Minify {
 		return s
 	}
+	var taOffset int
+	for {
+		taOffset = strings.Index(s, "<textarea")
+		if taOffset == -1 {
+			out += indent(s)
+			return
+		}
+		if taOffset > 0 {
+			out += indent(s[:taOffset])
+			s = s[taOffset:]
+		}
+		taOffset = strings.Index(s, "</textarea>")
+		if taOffset == -1 {
+			// This is an error in the html, so just return
+			return
+		}
+		out += s[:taOffset+11]  // skip textarea close tag
+		s = s[taOffset+11:]
+	}
+}
 
+// indents the string unsafely, in that it does not check for allowable tags to indent
+func indent(s string) string {
 	in := "  "
 	r := strings.NewReplacer("\n", "\n"+in)
 	s = r.Replace(s)

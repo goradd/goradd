@@ -16,6 +16,9 @@ type SelectListPanel struct {
 	RadioList2   *RadioList
 	RadioList3   *RadioList
 
+	MultiSelect   *MultiselectList
+	CheckboxList1   *CheckboxList
+
 	SubmitAjax      *Button
 	SubmitServer    *Button
 }
@@ -63,7 +66,18 @@ func NewSelectListPanel(parent page.ControlI) *SelectListPanel {
 	p.RadioList3.IsScrolling = true
 	p.RadioList3.SetHeightStyle(80) // Limit the height to see the scrolling effect
 
+	p.MultiSelect = NewMultiselectList(p, "multiselectList")
+	p.MultiSelect.SetLabel("Multiselect List")
+	p.MultiSelect.AddListItems(itemList)
+	p.MultiSelect.SetIsRequired(true)
 
+	p.CheckboxList1 = NewCheckboxList(p, "checklist1")
+	p.CheckboxList1.SetLabel("Checkbox List")
+	p.CheckboxList1.AddListItems(itemList)
+	p.CheckboxList1.SetColumnCount(2)
+
+	// TODO: Make radio list settings into functions
+	// TODO: Test dynamic data setting
 	p.SubmitAjax = NewButton(p, "ajaxButton")
 	p.SubmitAjax.SetText("Submit Ajax")
 	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), AjaxSubmit))
@@ -86,7 +100,7 @@ func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "selectlist").String()
 	f := t.LoadUrl(myUrl)
 
-	testSelectListSubmit(t, f, "ajaxButton")
+	testSelectListSubmit(t, f, f.Page().GetControl("ajaxButton"))
 
 	t.Done("Complete")
 }
@@ -95,7 +109,7 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "selectlist").String()
 	f := t.LoadUrl(myUrl)
 
-	testSelectListSubmit(t, f, "serverButton")
+	testSelectListSubmit(t, f, f.Page().GetControl("serverButton"))
 
 	t.Done("Complete")
 }
@@ -103,7 +117,7 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 // testCheckboxSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
+func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {
 
 	// For testing purposes, we need to use the id of the list item, rather than the value of the list item,
 	// since that is what is presented in the html.
@@ -139,3 +153,24 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn string) {
 	t.AssertEqual(4, radio2.IntValue())
 }
 
+/*
+	select1 := f.Page().GetControl("multiselectList").(*MultiselectList)
+	checklist1 := f.Page().GetControl("checklist1").(*CheckboxList)
+
+	t.Click(btn)
+
+	t.AssertEqual(true, t.HasClass("multiselectList_ctl", "error"))
+
+	t.AssertNotNil(select1.Value())
+
+	id1,_ := select1.GetItemByValue(1)
+	id2,_ := select1.GetItemByValue(3)
+
+	t.ChangeVal("multiselectList", []string{id1, id2})
+	id1,_ = select1.GetItemByValue(2)
+	id2,_ = select1.GetItemByValue(3)
+	t.CheckGroup("checklist1", id1, id2)
+
+	t.Click(btn)
+
+ */

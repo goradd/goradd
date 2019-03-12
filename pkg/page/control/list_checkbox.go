@@ -165,7 +165,8 @@ func (l *CheckboxList) verticalHtmlItems(items []ListItemI) (h []string) {
 func (l *CheckboxList) ΩRenderItem(tag string, item ListItemI) (h string) {
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
-	attributes.Set("name", item.ID())
+	attributes.Set("name", l.ID())
+	attributes.Set("value", item.ID())
 	attributes.Set("type", "checkbox")
 	if l.IsIdSelected(item.ID()) {
 		attributes.Set("checked", "")
@@ -218,11 +219,16 @@ func (l *CheckboxList) horizontalHtml(items []ListItemI) (h string) {
 func (l *CheckboxList) ΩUpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()
 
-	if v, ok := ctx.CheckableValue(controlID); ok {
-		l.selectedIds = map[string]bool{}
-		if a, ok := v.([]interface{}); ok {
-			for _, id := range a {
-				l.selectedIds[controlID+"_"+id.(string)] = true
+	if ctx.RequestMode() == page.Server {
+		// Using name attribute to return rendered checkboxes that are turned on.
+		if v, ok := ctx.FormValues(controlID); ok {
+			l.SetSelectedIdsNoRefresh(v)
+		}
+	} else {
+		// Ajax will only send changed items based on their ids
+		for _,item := range l.ListItems() {
+			if v, ok := ctx.FormValue(item.ID()); ok {
+				l.SetSelectedIdNoRefresh(item.ID(), page.ConvertToBool(v))
 			}
 		}
 	}

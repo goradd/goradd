@@ -120,6 +120,13 @@ func (l *MultiselectList) SetSelectedIdsNoRefresh(ids []string) {
 	}
 }
 
+func (l *MultiselectList) SetSelectedIdNoRefresh(id string, value bool) {
+	if value {
+		l.selectedIds[id] = true
+	} else {
+		delete(l.selectedIds, id)
+	}
+}
 
 // Value implements the Valuer interface for general purpose value getting and setting
 func (l *MultiselectList) Value() interface{} {

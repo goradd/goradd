@@ -27,6 +27,7 @@ type ListItemI interface {
 	SetAnchor(string)
 	AnchorAttributes() *html.Attributes
 	RenderLabel() string
+	IsEmptyValue() bool
 }
 
 type ItemLister interface {
@@ -214,6 +215,28 @@ func (i *ListItem) Attributes() *html.Attributes {
 	}
 	return i.attributes
 }
+
+// IsEmptyValue returns true if the value is empty, meaning it does not satisfy a selection being made
+// if the list has IsRequired turned on.
+func (i *ListItem) IsEmptyValue() bool {
+	if i == nil {
+		return true
+	}
+	switch v := i.value.(type) {
+	case nil:
+		return true
+	case int:
+		return v == 0
+	case float64:
+		return v == 0
+	case float32:
+		return v == 0
+	case string:
+		return v == ""
+	}
+	return false
+}
+
 
 // ListValue is a helper for initializing a control based on ItemList.
 // It satisfies the ItemLister interface. To use it, create a slice of ListValue's and
