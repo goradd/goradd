@@ -49,6 +49,7 @@ var DefaultMaxPagintorButtons = 10
 
 // SetTotalItems sets the total number of items that the paginator keeps track of. This will be divided by
 // the PageSize to determine the number of pages presented.
+// You must call this each time the data size might change.
 func (c *PaginatedControl) SetTotalItems(count uint) {
 	c.totalItems = int(count)
 	c.limitPageNumber()
@@ -386,7 +387,7 @@ func (d *DataPager) NextButtonsHtml() string {
 	_, pageEnd := d.CalcBunch()
 	pageCount := d.paginatedControl.CalcPageCount()
 
-	if pageNum >= pageCount-1 {
+	if pageNum >= pageCount {
 		attr.SetDisabled(true)
 		attr.SetStyle("cursor", "not-allowed")
 	}
@@ -405,7 +406,8 @@ func (d *DataPager) NextButtonsHtml() string {
 // the page buttons are drawn.
 func (d *DataPager) PageButtonsHtml(i int) string {
 	actionValue := strconv.Itoa(i)
-	attr := html.NewAttributes().Set("id", d.ID()+"_page_"+actionValue).Set("role", "tab").AddClass("override")
+	buttonId := d.ID() + "_page_" + actionValue
+	attr := html.NewAttributes().Set("id", buttonId).Set("role", "tab").AddClass("page")
 	pageNum := d.paginatedControl.PageNum()
 
 	if pageNum == i {

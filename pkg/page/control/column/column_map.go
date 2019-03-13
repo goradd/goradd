@@ -6,36 +6,28 @@ import (
 	"reflect"
 )
 
-// MapColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into
-// a string, either by normal string conversion symantecs, or using the supplied format string. The format string will
+// MapColumn is a table that works with data that is in the form of a slice. The data item itself must be convertible into
+// a string, either by normal string conversion semantics, or using the supplied format string. The format string will
 // be applied to a date if the data is a date, or to the string using fmt.Sprintf
 type MapColumn struct {
 	control.ColumnBase
 }
 
-func NewMapColumn(index interface{}, format ...string) *MapColumn {
+func NewMapColumn(index interface{}) *MapColumn {
 	i := MapColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(index, f, "")
+	i.Init(index, "")
 	return &i
 }
 
-func NewTimeMapColumn(index interface{}, timeFormat string, format ...string) *MapColumn {
+func NewTimeMapColumn(index interface{}, timeFormat string) *MapColumn {
 	i := MapColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(index, f, timeFormat)
+	i.Init(index, timeFormat)
 	return &i
 }
 
-func (c *MapColumn) Init(index interface{}, format string, timeFormat string) {
+func (c *MapColumn) Init(index interface{}, timeFormat string) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(MapTexter{Index: index, Format: format, TimeFormat: timeFormat})
+	c.SetCellTexter(MapTexter{Index: index, TimeFormat: timeFormat})
 }
 
 func (c *MapColumn) SetFormat(format string) *MapColumn {

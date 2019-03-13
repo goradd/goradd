@@ -1,14 +1,14 @@
 package control
 
 import (
+	"bytes"
+	"context"
+	"fmt"
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
-	"bytes"
-	"github.com/goradd/goradd/pkg/html"
-	"fmt"
-	"context"
 	html2 "html"
 )
 
@@ -64,6 +64,16 @@ func (p *Proxy) OnSubmit(actions ...action.ActionI) page.EventI {
 func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	response := p.ParentForm().Response()
 	// p.this().ΩPutCustomScript(ctx, response) // Proxies should not have custom scripts?
+
+	// TODO: could limit this event further by keeping around a a flag that detects if the scripts
+	// have changed and only do this if so
+	//if p.IsOnPage() {
+		// Remove prior scripts since we are replacing them. Need to do this because the script
+		// is attached to the form, and so does not get deleted when the proxy gets replaced.
+		script := fmt.Sprintf(`$j('#%s').off('.grproxy', '[data-gr-proxy="%s"]');`, p.ParentForm().ID(), p.ID())
+		response.ExecuteJavaScript(script, page.PriorityHigh)
+	//}
+
 	p.GetActionScripts(response)
 	p.ΩPostRender(ctx, buf)
 	return
@@ -110,22 +120,28 @@ func (p *Proxy) TagHtml(label string,
 }
 
 // ButtonHtml outputs the proxy as a button tag.
-// eventActionValue becomes the event's value parameter
+// eventActionValue becomes the event's ControlValue parameter
 func (p *Proxy) ButtonHtml(label string,
 	eventActionValue string,
 	attributes *html.Attributes,
 	rawHtml bool,
 ) string {
 	a := html.NewAttributes()
-	a.Set("onclick", "return false")
-	a.Set("type", "button")
+	a.Set("onclick", "return false") // To prevent a return from activating the button
+	a.Set("type", "submit") // To support non-javascript situations
+	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts
+	buttonValue := p.ID() + "_" + eventActionValue
+	a.Set("value", buttonValue) // needed for non-javascript posts
+
 	if attributes != nil {
 		a.Merge(attributes)
 	}
+
+	// TODO: We can possibly do actionValue differently now since its already in the value above
 	return p.TagHtml(label, eventActionValue, a, "button", rawHtml)
 }
 
-// Attributes returns attributes that can be included in any tag to attach a proxy to the tag.
+// ActionAttributes returns attributes that can be included in any tag to attach a proxy to the tag.
 func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
 	a := html.NewAttributes()
 	a.SetDataAttribute("grProxy", p.ID())
@@ -139,5 +155,6 @@ func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
 
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string) string {
-	return fmt.Sprintf(`$j('#%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.ParentForm().ID(), eventName, p.ID(), eventJs)
+	// This attaches the event to the form
+	return fmt.Sprintf(`$j('#%s').on('%s.grproxy', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.ParentForm().ID(), eventName, p.ID(), eventJs)
 }

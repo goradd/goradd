@@ -421,7 +421,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		h = c.this().ΩDrawTag(ctx)
 	}
 
-	if !config.Minify {
+	if !config.Minify && GetContext(ctx).RequestMode() != Ajax {
 		s := html.Comment(fmt.Sprintf("Control Type:%s, Id:%s", c.Type(), c.ID())) + "\n"
 		buf.WriteString(s)
 	}
@@ -1109,6 +1109,7 @@ func (c *Control) On(e EventI, actions ...action2.ActionI) EventI {
 		}
 		c.events[c.eventCounter] = e
 	}
+	e.event().eventID = c.eventCounter
 	return e
 }
 
@@ -1126,6 +1127,18 @@ func (c *Control) HasServerAction(eventName string) bool {
 	}
 	return false
 }
+
+// GetEvent returns the event associated with the eventName, which corresponds to the javascript
+// trigger name.
+func (c *Control) GetEvent(eventName string) EventI {
+	for _,e := range c.events {
+		if e.Name() == eventName {
+			return e
+		}
+	}
+	return nil
+}
+
 
 
 // SetActionValue sets a value that is provided to actions when they are triggered. The value can be a static value
@@ -1258,6 +1271,7 @@ func (c *Control) doAction(ctx context.Context) {
 		if id == 0 {
 			return
 		}
+
 	}
 
 	if (e.event().validationOverride != ValidateNone && e.event().validationOverride != ValidateDefault) ||

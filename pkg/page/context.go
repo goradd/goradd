@@ -256,7 +256,12 @@ func (ctx *Context) fillApp(cliArgs []string) {
 				// we are in a minimalist environment, where only buttons submit forms
 				ctx.NoJavaScript = true
 				ctx.requestMode = Server
-				ctx.actionControlID, _ = ctx.FormValue(HtmlVarAction)
+				aId, _ := ctx.FormValue(HtmlVarAction)
+				parts := strings.Split(aId, "_")
+				ctx.actionControlID = parts[0]
+				if len(parts) > 0 {
+					ctx.actionValues.Control = []byte(parts[1])
+				}
 				if ctx.pageStateId, ok = ctx.FormValue(htmlVarPagestate); !ok {
 					ctx.err = fmt.Errorf("No pagestate found in response")
 					return

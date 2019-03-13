@@ -29,8 +29,8 @@ type CheckboxColumn struct {
 	changes      map[string]bool // records changes
 }
 
-// NewChecboxColumn creates a new table table that contains a checkbox. You must provide the id of the parent table,
-// add a CheckboxProvider which will connect checkbox states to data states
+// NewChecboxColumn creates a new table column that contains a checkbox. You must provide
+// a CheckboxProvider which will connect checkbox states to data states
 //
 // The table will keep track of what checkboxes have been clicked and the new values. Call Changes() to get those
 // changes. Or, if you are recording your changes in real time, attach a CheckboxColumnClick event to the table.
@@ -63,11 +63,14 @@ func (c *CheckboxColumn) HeaderCellHtml(ctx context.Context, row int, col int) (
 	if c.showCheckAll {
 		a := c.this().CheckboxAttributes(nil)
 		a.Set("type", "checkbox")
-		h = html.RenderVoidTag("input", a)
+		h += html.RenderVoidTag("input", a)
 	}
 	if c.IsSortable() {
-		h += c.RenderSortButton("")
+		h += c.RenderSortButton(c.Title())
+	} else if c.Title() != "" {
+		h = c.Title()
 	}
+
 	return
 }
 
@@ -185,14 +188,34 @@ type CheckboxProvider interface {
 	ID(data interface{}) string
 	// IsChecked should return true if the checkbox corresponding to the row data should initially be checked. After the
 	// initial draw, the table will keep track of the state of the checkbox, meaning you do not need to live update your data.
-	// If you are using the table just as a selction of items to act on, just return false here.
+	// If you are using the table just as a selection of items to act on, just return false here.
 	IsChecked(data interface{}) bool
 	// Attributes returns the attributes that will be applied to the checkbox corresponding to the data row.
 	// Use this primarily for providing custom attributes. Return nil if you have no custom attributes.
 	Attributes(data interface{}) *html.Attributes
 	// If you enable the checkAll box, you can use this to return a map of all the ids and their inital values here. This is
 	// mostly helpful if your table is not showing all the rows at once (i.e. you are using a paginator or scroller and
-	// only showing a subset of data at one time). If your table is show a checkAll box, and you return nil here, the
+	// only showing a subset of data at one time). If your table is showing a checkAll box, and you return nil here, the
 	// checkAll will only perform a javascript checkAll, and thus only check the visible items.
 	All() map[string]bool
 }
+
+type DefaultCheckboxProvider struct {}
+
+func (c DefaultCheckboxProvider) ID(data interface{}) string {
+	return ""
+}
+
+func (c DefaultCheckboxProvider) IsChecked(data interface{}) bool {
+	return false
+}
+
+func (c DefaultCheckboxProvider) Attributes(data interface{}) *html.Attributes {
+	return nil
+}
+
+func (c DefaultCheckboxProvider) All() map[string]bool {
+	return nil
+}
+
+

@@ -40,6 +40,7 @@ type EventI interface {
 	HasServerAction() bool
 	// Name returns the event name the event responds to, like 'click' or 'change'
 	Name() string
+	GetID() EventID
 
 
 	addActions(a ...action2.ActionI)
@@ -82,6 +83,8 @@ type Event struct {
 	validationOverride        ValidationType
 	// validationTargetsOverride allows the event to specify custom targets for validation.
 	validationTargetsOverride []string
+	// internally assigned event id
+	eventID EventID
 }
 
 // NewEvent creates an event that triggers on the given event type. Use the builder pattern functions from EventI to
@@ -187,6 +190,13 @@ func (e *Event) HasServerAction() bool {
 func (e *Event) Name() string {
 	return e.JsEvent
 }
+
+// EventId returns the private event id generated when the event was assigned a control
+// Useful in special situations when drawing a control
+func (e *Event) GetID() EventID {
+	return e.eventID
+}
+
 
 
 

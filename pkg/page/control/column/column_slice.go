@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// SliceColumn is a table that works with data that is in the form of a slice. The data item itself must be convertable into
-// a string, either by normal string conversion symantecs, or using the supplied format string.
+// SliceColumn is a table that works with data that is in the form of a slice. The data item itself must be convertible into
+// a string, either by normal string conversion semantics, or using the supplied format string.
 type SliceColumn struct {
 	control.ColumnBase
 }

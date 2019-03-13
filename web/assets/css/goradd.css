@@ -260,6 +260,19 @@ div[data-grctl=dialog] .gr-dialog-buttons {
   border-top: solid black 1px;
 }
 
+div[data-grctl=datapager] button {
+  border-radius: 20px;
+  background: white;
+  border: 1px solid lightgray;
+}
+div[data-grctl=datapager] button:not(.selected, [disabled]):hover {
+  background: #eeeeee;
+  border-color: gray;
+}
+div[data-grctl=datapager] button.selected {
+  border-color: black;
+}
+
 #grProfilePanel {
   position: fixed;
   left: 0;

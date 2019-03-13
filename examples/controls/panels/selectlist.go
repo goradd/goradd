@@ -114,7 +114,7 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 	t.Done("Complete")
 }
 
-// testCheckboxSubmit does a variety of submits using the given button. We use this to double check the various
+// testSelectListSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
 func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {

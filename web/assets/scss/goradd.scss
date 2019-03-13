@@ -257,6 +257,25 @@ div[data-grctl=dialog] {
   }
 }
 
+div[data-grctl=datapager] {
+  button {
+    border-radius: 20px;
+    background: white;
+    border:1px solid lightgray;
+
+    &:not(.selected,[disabled]) {
+      &:hover {
+        background: #eeeeee;
+        border-color:gray;
+      }
+    }
+
+    &.selected {
+      border-color:black;
+    }
+  }
+}
+
 // This pane is a debugging tool for showing SQL queries
 #grProfilePanel {
   position:fixed;
