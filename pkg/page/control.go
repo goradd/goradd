@@ -176,8 +176,6 @@ type ControlI interface {
 	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
 	// contents of another control.
 	SaveState(context.Context, bool)
-	// ResetSavedState recursively removes the saved state so that the next time you return to the form, no state is restored.
-	ResetSavedState(ctx context.Context)
 	ΩMarshalState(m maps.Setter)
 	ΩUnmarshalState(m maps.Loader)
 
@@ -1536,6 +1534,7 @@ func (c *Control) writeState(ctx context.Context) {
 	if c.shouldSaveState {
 		state = maps.NewMap()
 		c.this().ΩMarshalState(state)
+		stateKey := c.ParentForm().ID() + ":" + c.ID()
 		if state.Len() > 0 {
 			state.Set(sessionControlTypeState, c.Type()) // so we can make sure the type is the same when we read, in situations where control Ids are dynamic
 			i := session.Get(ctx, sessionControlStates)
@@ -1548,8 +1547,7 @@ func (c *Control) writeState(ctx context.Context) {
 			} else {
 				stateStore = i.(*maps.Map)
 			}
-			key := c.ParentForm().ID() + ":" + c.ID()
-			stateStore.Set(key, state)
+			stateStore.Set(stateKey, state)
 		}
 	}
 
@@ -1599,6 +1597,8 @@ func (c *Control) readState(ctx context.Context) {
 	}
 }
 
+/* I think to do this you would just reset the control itself.
+
 func (c *Control) ResetSavedState(ctx context.Context) {
 	c.resetState(ctx)
 }
@@ -1611,7 +1611,7 @@ func (c *Control) resetState(ctx context.Context) {
 		i := session.Get(ctx, sessionControlStates)
 		if stateStore, ok = i.(*maps.Map); ok {
 			key := c.ParentForm().ID() + ":" + c.ID()
-			stateStore.Delete(key)
+			stateStore.Set(key, nil) // we need to notify writeState to remove it, or writeState will just stomp on it
 		}
 	}
 
@@ -1623,7 +1623,7 @@ func (c *Control) resetState(ctx context.Context) {
 		child.control().resetState(ctx)
 	}
 }
-
+ */
 
 // ΩMarshalState is a helper function for controls to save their basic state, so that if the form is reloaded, the
 // value that the user entered will not be lost. Implementing controls should add items to the given map.

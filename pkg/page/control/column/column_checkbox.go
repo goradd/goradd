@@ -57,11 +57,14 @@ func (col *CheckboxColumn) this() CheckboxColumnI {
 	return col.Self.(CheckboxColumnI)
 }
 
+// SetShowCheckAll will cause the CheckAll checkbox to appear in the header. You must show at least one header
+// row to see the checkboxes too.
 func (col *CheckboxColumn) SetShowCheckAll(s bool) *CheckboxColumn {
 	col.showCheckAll = s
 	return col
 }
 
+// HeaderCellHtml is called by the Table drawing system to draw the HeaderCellHtml.
 func (col *CheckboxColumn) HeaderCellHtml(ctx context.Context, rowNum int, colNum int) (h string) {
 	if col.showCheckAll {
 		a := col.this().CheckboxAttributes(nil)
@@ -92,7 +95,7 @@ func (col *CheckboxColumn) CheckboxAttributes(data interface{}) *html.Attributes
 		pubid = col.ParentTable().ID() + "_" + col.ID() + "_all"
 		a.Set("id", pubid)
 		a.SetDataAttribute("grAll", "1")
-	} else if id = p.ID(data); id != "" {
+	} else if id = p.RowID(data); id != "" {
 		// TODO: optionally encrypt the id in case its a database id. Difficult since database ids might themselves be large hashes (aka Google data store)
 		// Perhaps use the checkbox provider to do that?
 		pubid = col.ParentTable().ID() + "_" + col.ID() + "_" + id
@@ -115,6 +118,8 @@ func (col *CheckboxColumn) CheckboxAttributes(data interface{}) *html.Attributes
 	return a
 }
 
+// CellText is called by the Table drawing mechanism to draw the content of a cell, which in this case will be
+// a checkbox.
 func (col *CheckboxColumn) CellText(ctx context.Context, rowNum int, colNum int, data interface{}) string {
 	a := col.this().CheckboxAttributes(data)
 	a.Set("type", "checkbox")
@@ -127,6 +132,13 @@ func (col *CheckboxColumn) CellText(ctx context.Context, rowNum int, colNum int,
 func (col *CheckboxColumn) Changes() map[string]bool {
 	return col.changes
 }
+
+// ResetChanges resets the column so it is ready to accept new data. You might need to call this if you have previously
+// called SaveState. Or, change DataID in the CheckboxProvider to cause the changes to reset.
+func (col *CheckboxColumn) ResetChanges() {
+	col.changes = make(map[string]bool)
+}
+
 
 // UpdateFormValues will look for changes to our checkboxes and record those changes.
 func (col *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
@@ -179,6 +191,7 @@ func (col *CheckboxColumn) AddActions(t page.ControlI) {
 	t.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(col.ID(), control.ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
 }
 
+// Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.
 func (col *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
 	switch params.ActionValueInt() {
 	case AllClickAction:
@@ -219,6 +232,9 @@ func (col *CheckboxColumn) allClick(id string, checked bool, rowNum int, colNum 
 
 }
 
+// PreRender is called by the Table to tell the column that it is about to draw. Here we are resetting the list of
+// currently showing checkboxes so that we can keep track of what is displayed. This is required to keep track of
+// which boxes are checked in the event that Javascript is off.
 func (col *CheckboxColumn) PreRender() {
 	col.current = make(map[string]bool)
 }
@@ -226,21 +242,30 @@ func (col *CheckboxColumn) PreRender() {
 // MarshalState is an internal function to save the state of the control
 func (t *CheckboxColumn) MarshalState(m maps.Setter) {
 	m.Set(t.ID() + "_changes", t.changes)
+	m.Set(t.ID() + "_dataid", t.checkboxer.DataID())
 }
 
 // UnmarshalState is an internal function to restore the state of the control
 func (t *CheckboxColumn) UnmarshalState(m maps.Loader) {
-	if v,ok := m.Load(t.ID() + "_changes"); ok {
-		if s, ok := v.(map[string]bool); ok {
-			t.changes = s
+	if v,ok := m.Load(t.ID() + "_dataid"); ok {
+		if dataid, ok := v.(string); ok {
+			if dataid == t.checkboxer.DataID() { // only restore checkboxes if the data itself has not changed
+				if v,ok := m.Load(t.ID() + "_changes"); ok {
+					if s, ok := v.(map[string]bool); ok {
+						t.changes = s
+					}
+				}
+			}
 		}
 	}
 }
 
-
+// The CheckboxProvider interface defines a set of functions that you implement to provide for the initial display
+// of a checkbox. You can descend your own CheckboxProvider from the DefaultCheckboxProvider to get the default
+// behavior, and then add whatever functions you need to impelment.
 type CheckboxProvider interface {
-	// Id should return a unique id corresponding to the data. It is used to track the checked state of the checkbox.
-	ID(data interface{}) string
+	// RowID should return a unique id corresponding to the given data item. It is used to track the checked state of an individual checkbox.
+	RowID(data interface{}) string
 	// IsChecked should return true if the checkbox corresponding to the row data should initially be checked. After the
 	// initial draw, the table will keep track of the state of the checkbox, meaning you do not need to live update your data.
 	// If you are using the table just as a selection of items to act on, just return false here.
@@ -248,16 +273,27 @@ type CheckboxProvider interface {
 	// Attributes returns the attributes that will be applied to the checkbox corresponding to the data row.
 	// Use this primarily for providing custom attributes. Return nil if you have no custom attributes.
 	Attributes(data interface{}) *html.Attributes
-	// If you enable the checkAll box, you can use this to return a map of all the ids and their inital values here. This is
+	// If you enable the checkAll box, you can use this to return a map of all the ids and their initial values here. This is
 	// mostly helpful if your table is not showing all the rows at once (i.e. you are using a paginator or scroller and
 	// only showing a subset of data at one time). If your table is showing a checkAll box, and you return nil here, the
 	// checkAll will only perform a javascript checkAll, and thus only check the visible items.
 	All() map[string]bool
+	// DataID should return an id that identifies the overall data. This could be a database record id.
+	// It is used to determine if the checkboxes in the column should be reset if SaveState is on.
+	// If the DataID changes, and SaveState is on, it will reset the changes.
+	DataID() string
+
 }
 
+// The DefaultCheckboxProvider is a mixin you can use to base your CheckboxProvider, and that will provide default
+// functionality for the methods you don't want to implement.
 type DefaultCheckboxProvider struct {}
 
-func (c DefaultCheckboxProvider) ID(data interface{}) string {
+func (c DefaultCheckboxProvider) DataID() string {
+	return ""
+}
+
+func (c DefaultCheckboxProvider) RowID(data interface{}) string {
 	return ""
 }
 
@@ -275,5 +311,6 @@ func (c DefaultCheckboxProvider) All() map[string]bool {
 
 
 func init() {
-	gob.Register(map[string]bool(nil))
+	gob.Register(map[string]bool(nil)) // We must register this here because we are putting the changes map into the session,
+							           // and the session uses GOB to encode.
 }

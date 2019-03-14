@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"strconv"
 )
 
 type TablePanel struct {
@@ -16,6 +17,7 @@ type TablePanel struct {
 
 	Table1	*PaginatedTable
 	Pager1 *DataPager
+	CheckboxColumn1 *column.CheckboxColumn
 	SelectCol *column.CheckboxColumn
 
 	SubmitAjax      *Button
@@ -54,7 +56,7 @@ type SelectedProvider struct{
 	column.DefaultCheckboxProvider
 }
 
-func (c SelectedProvider) ID(data interface{}) string {
+func (c SelectedProvider) RowID(data interface{}) string {
 	return data.(Table1Data)["id"]
 }
 
@@ -70,7 +72,11 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) *TablePanel {
 	p.Table1.SetHeaderRowCount(1)
 	p.Table1.SetDataProvider(p)
 	p.Table1.AddColumn(column.NewMapColumn("name").SetTitle("Name"))
-	p.Table1.AddColumn(column.NewCheckboxColumn(SelectedProvider{}).SetTitle("Selected"))
+
+	// get a copy of the column since we have to refer to it later
+	p.CheckboxColumn1 = column.NewCheckboxColumn(SelectedProvider{})
+	p.CheckboxColumn1.SetTitle("Selected")
+	p.Table1.AddColumn(p.CheckboxColumn1)
 	//p.Table1.AddColumn(column.NewCheckboxColumn(p).SetTitle("Completed"))
 
 	p.Pager1 = NewDataPager(p, "", p.Table1)
@@ -100,6 +106,14 @@ func (f *TablePanel) BindData(ctx context.Context, s data.DataManagerI) {
 func (p *TablePanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case ButtonSubmit:
+		for k,v := range p.CheckboxColumn1.Changes() {
+			i,_ := strconv.Atoi(k)
+			var s string
+			if v {
+				s = "1"
+			}
+			table1Data[i - 1]["s"] = s
+		}
 	}
 }
 

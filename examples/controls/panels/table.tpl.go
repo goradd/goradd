@@ -46,8 +46,11 @@ to allow the user to page through data when it is too much to display all at onc
 <h2>Checkbox Columns</h2>
 <p>
 A CheckboxColumn displays a single checkbox in a column. When you create it, you designate a
-CheckboxProvider, which will determine whether a particular checkbox should be checked, and
-what to do when the user checks a box.
+CheckboxProvider, which will determine what the initial state of the checkboxes will be. Once set up,
+the column will keep track of changes, and when you are ready to save the changes, you can call
+Changes() on the column to get the state of the changed checkboxes. This is useful if you have a
+Save button to finally record the changes, but you can also use the CheckboxColumnClick event to
+record changes in real time through Javascript and Ajax.
 </p>
 `)
 
@@ -75,7 +78,6 @@ what to do when the user checks a box.
 	}
 
 	buf.WriteString(`
-
 
 `)
 

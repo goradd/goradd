@@ -26,6 +26,8 @@ const (
 // into the web page. You can change what html is loaded by setting this function.
 var SortButtonHtmlGetter func(SortDirection) string
 
+// ColumnI defines the interface that all columns must support. Most of these functions are provided by the
+// default behavior of the ColumnBase class.
 type ColumnI interface {
 	ID() string
 	SetID(string) ColumnI
@@ -63,10 +65,12 @@ type ColumnI interface {
 	UnmarshalState(m maps.Loader)
 }
 
+// CellTexter defines the interface for a structure that provides the content of a table cell.
 type CellTexter interface {
 	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string
 }
 
+// ColumnBase is the base implementation of all table columns
 type ColumnBase struct {
 	base.Base
 	id               string
@@ -97,12 +101,13 @@ func (c *ColumnBase) this() ColumnI {
 	return c.Self.(ColumnI)
 }
 
+// ID returns the id of the column
 func (c *ColumnBase) ID() string {
 	return c.id
 }
 
-// SetId sets the id of the column. If you are going to provide your own id, do this as the first thing after you create
-// a table, or the new id might not propogate through the system correctly. Note that the id in html will have the table
+// SetID sets the id of the column. If you are going to provide your own id, do this as the first thing after you create
+// a table, or the new id might not propagate through the system correctly. Note that the id in html will have the table
 // id prepended to it. This is required so that actions can be routed to a column.
 func (c *ColumnBase) SetID(id string) ColumnI {
 	c.id = id
@@ -113,66 +118,79 @@ func (c *ColumnBase) setParentTable(t TableI) {
 	c.parentTable = t
 }
 
+// ParentTable returns the table that is the parent of the column
 func (c *ColumnBase) ParentTable() TableI {
 	return c.parentTable
 }
 
-
+// Title returns the title text that will appear in the header of the column
 func (c *ColumnBase) Title() string {
 	return c.title
 }
 
+// SetTitle sets the title of the column. It returns a column reference for chaining.
 func (c *ColumnBase) SetTitle(title string) ColumnI {
 	c.title = title
 	return c.this()
 }
 
+// Span returns the number of columns this column will span.
 func (c *ColumnBase) Span() int {
 	return c.span
 }
 
+// SetSpan sets the span indicated in the column tag of the column. This is used to create colgroup tags.
 func (c *ColumnBase) SetSpan(span int) ColumnI {
 	c.span = span
 	return c.this()
 }
 
+// SetRenderAsHeader will cause the entire column to be output with th instead of td cells.
 func (c *ColumnBase) SetRenderAsHeader(r bool) {
 	c.renderAsHeader = r
 }
 
+// SetIsHtml will cause the cell to treat the text it receives as html rather than raw text it should escape.
 func (c *ColumnBase) SetIsHtml(columnIsHtml bool) {
 	c.isHtml = columnIsHtml
 }
 
+// SetCellStyler sets the CellStyler for the body cells.
 func (c *ColumnBase) SetCellStyler(s html.Attributer) {
 	c.cellStyler = s
 }
 
+// SetCellTexter sets the CellTexter for getting the content of each body cell.
 func (c *ColumnBase) SetCellTexter(s CellTexter) {
 	c.cellTexter = s
 }
 
+// CellTexter returns the cell texter.
 func (c *ColumnBase) CellTexter() CellTexter {
 	return c.cellTexter
 }
 
-
+// SetHeaderTexter sets the CellTexter that gets the text for header cells.
 func (c *ColumnBase) SetHeaderTexter(s CellTexter) {
 	c.headerTexter = s
 }
 
+// SetFooterTexter sets the CellTexter that gets the text for footer cells.
 func (c *ColumnBase) SetFooterTexter(s CellTexter) {
 	c.footerTexter = s
 }
 
+// IsHidden returns true if the column is hidden.
 func (c *ColumnBase) IsHidden() bool {
 	return c.isHidden
 }
 
+// SetHidden hides the column without removing it completely from the table.
 func (c *ColumnBase) SetHidden(h bool) {
 	c.isHidden = h
 }
 
+// HeaderAttributes returns the attributes to use on the header cell.
 func (c *ColumnBase) HeaderAttributes(row int, col int) *html.Attributes {
 	if c.headerAttributes == nil {
 		c.headerAttributes = html.NewAttributes()
@@ -181,6 +199,7 @@ func (c *ColumnBase) HeaderAttributes(row int, col int) *html.Attributes {
 	return c.headerAttributes
 }
 
+// FooterAttributes returns the attributes to use for the footer cell.
 func (c *ColumnBase) FooterAttributes(row int, col int) *html.Attributes {
 	if c.footerAttributes == nil {
 		c.footerAttributes = html.NewAttributes()
@@ -197,6 +216,7 @@ func (c *ColumnBase) ColTagAttributes() *html.Attributes {
 	return c.colTagAttributes
 }
 
+// DrawColumnTag draws the column tag if one was requested.
 func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 	if c.isHidden {
 		return
@@ -227,6 +247,7 @@ func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h st
 	return
 }
 
+// DrawFooterCell will draw the footer cells html into the given buffer.
 func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer) {
 	if c.isHidden {
 		return
@@ -237,6 +258,7 @@ func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count
 	buf.WriteString(html.RenderTag("td", a, cellHtml))
 }
 
+// FooterCellHtml returns the html to use in the given footer cell.
 func (c *ColumnBase) FooterCellHtml(ctx context.Context, row int, col int) string {
 	if c.footerTexter != nil {
 		return c.footerTexter.CellText(ctx, c.this(), row, col, nil) // careful, this does not get escaped
@@ -245,6 +267,7 @@ func (c *ColumnBase) FooterCellHtml(ctx context.Context, row int, col int) strin
 	return ""
 }
 
+// DrawCell is the default cell drawing function.
 func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interface{}, buf *bytes.Buffer) {
 	if c.isHidden {
 		return
@@ -256,13 +279,10 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 	}
 	a := c.CellAttributes(ctx, row, col, data)
 
-	// TODO: Do not directly render a table, but rather provide the data in a data manager structure to javascript,
-	// and then render from javascript. This will allow us to refresh a table's contents without having to draw
-	// the entire table. Important for multi-user environments where underlying table data may be constantly changing.
-	// Then implement a DataChanged function that is similar to a refresh, but only redraws the internals from the data itself.
 	buf.WriteString(html.RenderTag("td", a, cellHtml))
 }
 
+// CellText returns the text in the cell. It will use the CellTexter if one was provided.
 func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interface{}) string {
 	if c.cellTexter != nil {
 		return c.cellTexter.CellText(ctx, c.this(), row, col, data)
@@ -270,6 +290,8 @@ func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interf
 	return ""
 }
 
+// CellAttributes returns the attributes of the cell. Column implementations should call this base version first before
+// customizing more. It will use the CellStyler if one was provided.
 func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) *html.Attributes {
 	if c.cellStyler != nil {
 		return c.cellStyler.Attributes(ctx, row, col, data)
@@ -283,6 +305,7 @@ func (c *ColumnBase) Sortable() ColumnI {
 	return c.this()
 }
 
+// IsSortable indicates whether the column is sortable, and has a sort indicator in the head.
 func (c *ColumnBase) IsSortable() bool {
 	return c.sortDirection != NotSortable
 }
@@ -314,21 +337,22 @@ func (c *ColumnBase) RenderSortButton(labelHtml string) string {
 	return fmt.Sprintf(`<button onclick="$j('#%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
 }
 
+// SortDirection returns the current sort direction.
 func (c *ColumnBase) SortDirection() SortDirection {
 	return c.sortDirection
 }
 
-// SetSortDirection is used internally to set the sort direction indicator
+// SetSortDirection is used internally to set the sort direction indicator.
 func (c *ColumnBase) SetSortDirection(d SortDirection) {
 	c.sortDirection = d
 }
 
-// We are about to draw the table
+// PreRender is called just before the table is redrawn.
 func (c *ColumnBase) PreRender() {}
 
-// MarshalState is an internal function to save the state of the control
-func (t *ColumnBase) MarshalState(m maps.Setter) {}
+// MarshalState is an internal function to save the state of the control.
+func (c *ColumnBase) MarshalState(m maps.Setter) {}
 
-// UnmarshalState is an internal function to restore the state of the control
-func (t *ColumnBase) UnmarshalState(m maps.Loader) {}
+// UnmarshalState is an internal function to restore the state of the control.
+func (c *ColumnBase) UnmarshalState(m maps.Loader) {}
 

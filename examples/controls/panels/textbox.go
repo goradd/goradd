@@ -17,6 +17,7 @@ const (
 	AjaxSubmit int = iota + 1
 	ServerSubmit
 	ButtonSubmit
+	ResetStateSubmit
 )
 
 type TextboxPanel struct {
@@ -89,7 +90,6 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) *TextboxPanel {
 func (p *TextboxPanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case ButtonSubmit:
-		p.MultiText.ResetSavedState(ctx)
 	}
 }
 
@@ -183,8 +183,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	// Test SaveState
 	f = t.LoadUrl(myUrl)
 	plainText = f.Page().GetControl("plainText").(*Textbox)
-	multiText := f.Page().GetControl("multiText").(*Textbox)
+	//multiText := f.Page().GetControl("multiText").(*Textbox)
 	t.AssertEqual("me", plainText.Text())
-	t.AssertEqual("", multiText.Text())
 }
 
