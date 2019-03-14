@@ -62,7 +62,7 @@ func (c SelectedProvider) IsChecked(data interface{}) bool {
 	return data.(Table1Data)["s"] == "1"
 }
 
-func NewTablePanel(parent page.ControlI) *TablePanel {
+func NewTablePanel(ctx context.Context, parent page.ControlI) *TablePanel {
 	p := &TablePanel{}
 	p.Panel.Init(p, parent, "checkboxPanel")
 
@@ -75,6 +75,7 @@ func NewTablePanel(parent page.ControlI) *TablePanel {
 
 	p.Pager1 = NewDataPager(p, "", p.Table1)
 	p.Table1.SetPageSize(5)
+	p.Table1.SaveState(ctx, true)
 
 	p.SubmitAjax = NewButton(p, "ajaxButton")
 	p.SubmitAjax.SetText("Submit Ajax")

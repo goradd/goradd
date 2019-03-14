@@ -176,6 +176,8 @@ type ControlI interface {
 	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
 	// contents of another control.
 	SaveState(context.Context, bool)
+	// ResetSavedState recursively removes the saved state so that the next time you return to the form, no state is restored.
+	ResetSavedState(ctx context.Context)
 	ΩMarshalState(m maps.Setter)
 	ΩUnmarshalState(m maps.Loader)
 
@@ -1596,6 +1598,32 @@ func (c *Control) readState(ctx context.Context) {
 		child.control().readState(ctx)
 	}
 }
+
+func (c *Control) ResetSavedState(ctx context.Context) {
+	c.resetState(ctx)
+}
+
+func (c *Control) resetState(ctx context.Context) {
+	var stateStore *maps.Map
+	var ok bool
+
+	if c.shouldSaveState {
+		i := session.Get(ctx, sessionControlStates)
+		if stateStore, ok = i.(*maps.Map); ok {
+			key := c.ParentForm().ID() + ":" + c.ID()
+			stateStore.Delete(key)
+		}
+	}
+
+	if c.children == nil || len(c.children) == 0 {
+		return
+	}
+
+	for _, child := range c.children {
+		child.control().resetState(ctx)
+	}
+}
+
 
 // ΩMarshalState is a helper function for controls to save their basic state, so that if the form is reloaded, the
 // value that the user entered will not be lost. Implementing controls should add items to the given map.

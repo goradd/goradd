@@ -25,7 +25,7 @@ type CheckboxPanel struct {
 	SubmitServer    *Button
 }
 
-func NewCheckboxPanel(parent page.ControlI) *CheckboxPanel {
+func NewCheckboxPanel(ctx context.Context, parent page.ControlI) *CheckboxPanel {
 	p := &CheckboxPanel{}
 	p.Panel.Init(p, parent, "checkboxPanel")
 

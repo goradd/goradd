@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
@@ -45,7 +46,7 @@ type ColumnI interface {
 	HeaderAttributes(row int, col int) *html.Attributes
 	FooterAttributes(row int, col int) *html.Attributes
 	ColTagAttributes() *html.Attributes
-	ΩUpdateFormValues(ctx *page.Context)
+	UpdateFormValues(ctx *page.Context)
 	AddActions(ctrl page.ControlI)
 	Action(ctx context.Context, params page.ActionParams)
 	SetHeaderTexter(s CellTexter)
@@ -57,6 +58,9 @@ type ColumnI interface {
 	SetSortDirection(SortDirection)
 	Sortable() ColumnI
 	SetIsHtml(columnIsHtml bool)
+	PreRender()
+	MarshalState(m maps.Setter)
+	UnmarshalState(m maps.Loader)
 }
 
 type CellTexter interface {
@@ -97,7 +101,7 @@ func (c *ColumnBase) ID() string {
 	return c.id
 }
 
-// SetId sets the id of the table. If you are going to provide your own id, do this as the first thing after you create
+// SetId sets the id of the column. If you are going to provide your own id, do this as the first thing after you create
 // a table, or the new id might not propogate through the system correctly. Note that the id in html will have the table
 // id prepended to it. This is required so that actions can be routed to a column.
 func (c *ColumnBase) SetID(id string) ColumnI {
@@ -283,10 +287,10 @@ func (c *ColumnBase) IsSortable() bool {
 	return c.sortDirection != NotSortable
 }
 
-// ΩUpdateFormValues is called by the system whenever values are sent by client controls.
+// UpdateFormValues is called by the system whenever values are sent by client controls.
 // This default version does nothing. Columns that need to record information (checkbox columns for example), should
 // implement this.
-func (c *ColumnBase) ΩUpdateFormValues(ctx *page.Context) {}
+func (c *ColumnBase) UpdateFormValues(ctx *page.Context) {}
 
 func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 
@@ -318,3 +322,13 @@ func (c *ColumnBase) SortDirection() SortDirection {
 func (c *ColumnBase) SetSortDirection(d SortDirection) {
 	c.sortDirection = d
 }
+
+// We are about to draw the table
+func (c *ColumnBase) PreRender() {}
+
+// MarshalState is an internal function to save the state of the control
+func (t *ColumnBase) MarshalState(m maps.Setter) {}
+
+// UnmarshalState is an internal function to restore the state of the control
+func (t *ColumnBase) UnmarshalState(m maps.Loader) {}
+

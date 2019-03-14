@@ -1,6 +1,7 @@
 package panels
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -23,7 +24,7 @@ type SelectListPanel struct {
 	SubmitServer    *Button
 }
 
-func NewSelectListPanel(parent page.ControlI) *SelectListPanel {
+func NewSelectListPanel(ctx context.Context, parent page.ControlI) *SelectListPanel {
 	itemList := []ListValue{
 		{"First", 1},
 		{"Second", 2},

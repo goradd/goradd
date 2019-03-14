@@ -181,7 +181,7 @@ func (c *CheckboxBase) Value() interface{} {
 }
 
 // ΩMarshalState is called by the framework to save the state of the checkbox between form
-// views. Call .SetState(true) to enable state saving.
+// views. Call SetState(true) to enable state saving.
 func (c *CheckboxBase) ΩMarshalState(m maps.Setter) {
 	m.Set("checked", c.checked)
 }

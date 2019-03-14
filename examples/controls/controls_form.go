@@ -33,18 +33,18 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 	if id, ok := page.GetContext(ctx).FormValue("control"); ok {
 		switch id {
 		case "textbox":
-			panels.NewTextboxPanel(f.detail)
+			panels.NewTextboxPanel(ctx, f.detail)
 		case "checkbox":
-			panels.NewCheckboxPanel(f.detail)
+			panels.NewCheckboxPanel(ctx, f.detail)
 		case "selectlist":
-			panels.NewSelectListPanel(f.detail)
+			panels.NewSelectListPanel(ctx, f.detail)
 		case "table":
-			panels.NewTablePanel(f.detail)
+			panels.NewTablePanel(ctx, f.detail)
 		default:
-			panels.NewDefaultPanel(f.detail, "")
+			panels.NewDefaultPanel(ctx, f.detail)
 		}
 	} else {
-		panels.NewDefaultPanel(f.detail, "")
+		panels.NewDefaultPanel(ctx, f.detail)
 	}
 }
 

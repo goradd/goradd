@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -94,6 +95,9 @@ func (t *Table) ΩDrawTag(ctx context.Context) string {
 	if t.HasDataProvider() {
 		t.GetData(ctx, t)
 		defer t.ResetData()
+	}
+	for _,c := range t.columns {
+		c.PreRender()
 	}
 	return t.Control.ΩDrawTag(ctx)
 }
@@ -196,7 +200,7 @@ func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err erro
 		for colNum, col := range t.columns {
 			if !col.IsHidden() {
 				cellHtml, attr := t2.HeaderCellDrawingInfo(ctx, col, rowNum, colNum)
-				buf.WriteString(html.RenderTag("th", attr, cellHtml))
+				buf1.WriteString(html.RenderTag("th", attr, cellHtml))
 			}
 		}
 		buf.WriteString(html.RenderTag("tr", t.GetHeaderRowAttributes(rowNum), buf1.String()))
@@ -369,7 +373,7 @@ func (t *Table) SetFooterRowStyler(a html.Attributer) {
 // ΩUpdateFormValues is called by the system whenever values are sent by client controls. We forward that to the columns.
 func (t *Table) ΩUpdateFormValues(ctx *page.Context) {
 	for _, col := range t.columns {
-		col.ΩUpdateFormValues(ctx)
+		col.UpdateFormValues(ctx)
 	}
 }
 
@@ -458,3 +462,25 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 	}
 	return ret
 }
+
+
+// ΩMarshalState is an internal function to save the state of the control
+func (t *Table) ΩMarshalState(m maps.Setter) {
+	m.Set("sortColumns", t.sortColumns)
+	for _,col := range t.columns {
+		col.MarshalState(m)
+	}
+}
+
+// ΩUnmarshalState is an internal function to restore the state of the control
+func (t *Table) ΩUnmarshalState(m maps.Loader) {
+	if v,ok := m.Load("sortColumns"); ok {
+		if s, ok := v.([]string); ok {
+			t.sortColumns = s
+		}
+	}
+	for _,col := range t.columns {
+		col.UnmarshalState(m)
+	}
+}
+

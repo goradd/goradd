@@ -1,6 +1,7 @@
 package panels
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -35,16 +36,18 @@ type TextboxPanel struct {
 	SubmitServer    *Button
 }
 
-func NewTextboxPanel(parent page.ControlI) *TextboxPanel {
+func NewTextboxPanel(ctx context.Context, parent page.ControlI) *TextboxPanel {
 	p := &TextboxPanel{}
 	p.Panel.Init(p, parent, "textboxPanel")
 
 	p.PlainText = NewTextbox(p, "plainText")
 	p.PlainText.SetLabel("Plain Text")
+	p.PlainText.SaveState(ctx, true)
 
 	p.MultiText = NewTextbox(p, "multiText")
 	p.MultiText.SetLabel("Multi Text")
 	p.MultiText.SetRowCount(2)
+	p.PlainText.SaveState(ctx, true)
 
 	p.IntegerText = NewIntegerTextbox(p, "intText")
 	p.IntegerText.SetLabel("Integer Text")
@@ -74,15 +77,21 @@ func NewTextboxPanel(parent page.ControlI) *TextboxPanel {
 
 	p.SubmitAjax = NewButton(p, "ajaxButton")
 	p.SubmitAjax.SetText("Submit Ajax")
-	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), AjaxSubmit))
+	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), ButtonSubmit))
 
 	p.SubmitServer = NewButton(p, "serverButton")
 	p.SubmitServer.SetText("Submit Server")
-	p.SubmitServer.OnSubmit(action.Server(p.ID(), ServerSubmit))
+	p.SubmitServer.OnSubmit(action.Server(p.ID(), ButtonSubmit))
 
 	return p
 }
 
+func (p *TextboxPanel) Action(ctx context.Context, a page.ActionParams) {
+	switch a.ID {
+	case ButtonSubmit:
+		p.MultiText.ResetSavedState(ctx)
+	}
+}
 
 func init() {
 	browsertest.RegisterTestFunction("Textbox Ajax Submit", testTextboxAjaxSubmit)
@@ -90,19 +99,13 @@ func init() {
 }
 
 func testTextboxAjaxSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
-	f := t.LoadUrl(myUrl)
-
-	testTextboxSubmit(t, f, f.Page().GetControl("ajaxButton"))
+	testTextboxSubmit(t, "ajaxButton")
 
 	t.Done("Complete")
 }
 
 func testTextboxServerSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
-	f := t.LoadUrl(myUrl)
-
-	testTextboxSubmit(t, f, f.Page().GetControl("serverButton"))
+	testTextboxSubmit(t, "serverButton")
 
 	t.Done("Complete")
 }
@@ -110,7 +113,11 @@ func testTextboxServerSubmit(t *browsertest.TestForm)  {
 // testTextboxSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testTextboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {
+func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
+	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
+	f := t.LoadUrl(myUrl)
+	btn := f.Page().GetControl(btnName)
+
 	t.ChangeVal("plainText", "me")
 	t.ChangeVal("multiText", "me\nyou")
 	t.ChangeVal("intText", "me")
@@ -172,5 +179,12 @@ func testTextboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI)
 	t.AssertEqual("Sample instructions", t.InnerHtml("plainText_inst"))
 
 	t.AssertEqual("plainText_lbl plainText", t.JqueryAttribute("plainText", "aria-labelledby"))
+
+	// Test SaveState
+	f = t.LoadUrl(myUrl)
+	plainText = f.Page().GetControl("plainText").(*Textbox)
+	multiText := f.Page().GetControl("multiText").(*Textbox)
+	t.AssertEqual("me", plainText.Text())
+	t.AssertEqual("", multiText.Text())
 }
 
