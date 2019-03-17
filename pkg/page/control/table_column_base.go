@@ -38,7 +38,7 @@ type ColumnI interface {
 	Span() int
 	SetSpan(int) ColumnI
 	IsHidden() bool
-	SetHidden(bool)
+	SetHidden(bool) ColumnI
 	DrawColumnTag(ctx context.Context, buf *bytes.Buffer)
 	DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer)
 	DrawCell(ctx context.Context, row int, col int, data interface{}, buf *bytes.Buffer)
@@ -51,15 +51,15 @@ type ColumnI interface {
 	UpdateFormValues(ctx *page.Context)
 	AddActions(ctrl page.ControlI)
 	Action(ctx context.Context, params page.ActionParams)
-	SetHeaderTexter(s CellTexter)
-	SetCellTexter(s CellTexter)
-	SetFooterTexter(s CellTexter)
+	SetHeaderTexter(s CellTexter) ColumnI
+	SetCellTexter(s CellTexter) ColumnI
+	SetFooterTexter(s CellTexter) ColumnI
 	SetCellStyler(s html.Attributer)
 	IsSortable() bool
 	SortDirection() SortDirection
-	SetSortDirection(SortDirection)
+	SetSortDirection(SortDirection) ColumnI
 	Sortable() ColumnI
-	SetIsHtml(columnIsHtml bool)
+	SetIsHtml(columnIsHtml bool) ColumnI
 	PreRender()
 	MarshalState(m maps.Setter)
 	UnmarshalState(m maps.Loader)
@@ -153,8 +153,9 @@ func (c *ColumnBase) SetRenderAsHeader(r bool) {
 // SetIsHtml will cause the cell to treat the text it receives as html rather than raw text it should escape.
 // Use this with extreme caution. Do not display unescaped text that might come from user input, as it could
 // open you up to XSS attacks.
-func (c *ColumnBase) SetIsHtml(columnIsHtml bool) {
+func (c *ColumnBase) SetIsHtml(columnIsHtml bool) ColumnI {
 	c.isHtml = columnIsHtml
+	return c.this()
 }
 
 // SetCellStyler sets the CellStyler for the body cells.
@@ -163,8 +164,9 @@ func (c *ColumnBase) SetCellStyler(s html.Attributer) {
 }
 
 // SetCellTexter sets the CellTexter for getting the content of each body cell.
-func (c *ColumnBase) SetCellTexter(s CellTexter) {
+func (c *ColumnBase) SetCellTexter(s CellTexter) ColumnI {
 	c.cellTexter = s
+	return c.this()
 }
 
 // CellTexter returns the cell texter.
@@ -173,13 +175,15 @@ func (c *ColumnBase) CellTexter() CellTexter {
 }
 
 // SetHeaderTexter sets the CellTexter that gets the text for header cells.
-func (c *ColumnBase) SetHeaderTexter(s CellTexter) {
+func (c *ColumnBase) SetHeaderTexter(s CellTexter) ColumnI {
 	c.headerTexter = s
+	return c.this()
 }
 
 // SetFooterTexter sets the CellTexter that gets the text for footer cells.
-func (c *ColumnBase) SetFooterTexter(s CellTexter) {
+func (c *ColumnBase) SetFooterTexter(s CellTexter) ColumnI {
 	c.footerTexter = s
+	return c.this()
 }
 
 // IsHidden returns true if the column is hidden.
@@ -188,8 +192,9 @@ func (c *ColumnBase) IsHidden() bool {
 }
 
 // SetHidden hides the column without removing it completely from the table.
-func (c *ColumnBase) SetHidden(h bool) {
+func (c *ColumnBase) SetHidden(h bool) ColumnI {
 	c.isHidden = h
+	return c.this()
 }
 
 // HeaderAttributes returns the attributes to use on the header cell.
@@ -345,8 +350,9 @@ func (c *ColumnBase) SortDirection() SortDirection {
 }
 
 // SetSortDirection is used internally to set the sort direction indicator.
-func (c *ColumnBase) SetSortDirection(d SortDirection) {
+func (c *ColumnBase) SetSortDirection(d SortDirection) ColumnI {
 	c.sortDirection = d
+	return c.this()
 }
 
 // PreRender is called just before the table is redrawn.

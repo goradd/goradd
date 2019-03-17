@@ -28,29 +28,7 @@ type Table1Data map[string]string
 
 // This sample data is in the form of a slice of maps. Typically you would not do this, but
 // some special situations may find this approach useful.
-var table1Data = []Table1Data {
-	{"id":"1", "name":"This","s":"","c":"1"},
-	{"id":"2", "name":"That","s":"1","c":""},
-	{"id":"3", "name":"Other","s":"","c":""},
-	{"id":"4", "name":"Here","s":"","c":""},
-	{"id":"5", "name":"There","s":"","c":""},
-	{"id":"6", "name":"Everywhere","s":"","c":""},
-	{"id":"7", "name":"Over","s":"","c":""},
-	{"id":"8", "name":"Under","s":"","c":""},
-	{"id":"9", "name":"Near","s":"","c":""},
-	{"id":"10", "name":"Far","s":"","c":""},
-	{"id":"11", "name":"Who","s":"","c":""},
-	{"id":"12", "name":"What","s":"","c":""},
-	{"id":"13", "name":"Why","s":"","c":""},
-	{"id":"14", "name":"When","s":"","c":""},
-	{"id":"15", "name":"How","s":"","c":""},
-	{"id":"16", "name":"Which","s":"","c":""},
-	{"id":"17", "name":"If","s":"","c":""},
-	{"id":"18", "name":"Then","s":"","c":""},
-	{"id":"19", "name":"Or","s":"","c":""},
-	{"id":"20", "name":"And","s":"","c":"1"},
-	{"id":"21", "name":"But","s":"1","c":""},
-}
+var table1Data = getCheckTestData()
 
 type SelectedProvider struct{
 	column.DefaultCheckboxProvider
@@ -82,6 +60,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) *TableChec
 
 	p.Pager1 = NewDataPager(p, "pager", p.Table1)
 	p.Table1.SetPageSize(5)
+
 	p.Table1.SaveState(ctx, true)
 
 	p.SubmitAjax = NewButton(p, "ajaxButton")
@@ -167,6 +146,7 @@ func testTableCheckboxServerSubmit(t *browsertest.TestForm)  {
 }
 
 func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
+	table1Data = getCheckTestData()
 	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "tablecheckbox").String()
 	f := t.LoadUrl(myUrl)
 	btn := f.Page().GetControl(btnName)
@@ -187,4 +167,30 @@ func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
 	t.SetCheckbox("table1_check1_1", false)
 	t.Click(btn)
 
+}
+
+func getCheckTestData() []Table1Data {
+	return []Table1Data {
+		{"id":"1", "name":"This","s":"","c":"1"},
+		{"id":"2", "name":"That","s":"1","c":""},
+		{"id":"3", "name":"Other","s":"","c":""},
+		{"id":"4", "name":"Here","s":"","c":""},
+		{"id":"5", "name":"There","s":"","c":""},
+		{"id":"6", "name":"Everywhere","s":"","c":""},
+		{"id":"7", "name":"Over","s":"","c":""},
+		{"id":"8", "name":"Under","s":"","c":""},
+		{"id":"9", "name":"Near","s":"","c":""},
+		{"id":"10", "name":"Far","s":"","c":""},
+		{"id":"11", "name":"Who","s":"","c":""},
+		{"id":"12", "name":"What","s":"","c":""},
+		{"id":"13", "name":"Why","s":"","c":""},
+		{"id":"14", "name":"When","s":"","c":""},
+		{"id":"15", "name":"How","s":"","c":""},
+		{"id":"16", "name":"Which","s":"","c":""},
+		{"id":"17", "name":"If","s":"","c":""},
+		{"id":"18", "name":"Then","s":"","c":""},
+		{"id":"19", "name":"Or","s":"","c":""},
+		{"id":"20", "name":"And","s":"","c":"1"},
+		{"id":"21", "name":"But","s":"1","c":""},
+	}
 }
