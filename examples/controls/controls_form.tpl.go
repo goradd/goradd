@@ -53,12 +53,22 @@ func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (
 
 	buf.WriteString(path)
 
-	buf.WriteString(`?control=orderedlist">Hierarchical Lists</a></li>
+	buf.WriteString(`?control=hlist">Hierarchical Lists</a></li>
     <li><a href="`)
 
 	buf.WriteString(path)
 
 	buf.WriteString(`?control=table">Tables</a></li>
+    <li><a href="`)
+
+	buf.WriteString(path)
+
+	buf.WriteString(`?control=tabledb">Tables - Database Columns</a></li>
+    <li><a href="`)
+
+	buf.WriteString(path)
+
+	buf.WriteString(`?control=tablecheckbox">Tables - Checkbox Columns</a></li>
   </ul>
 </div>
 <div class="detail_container">

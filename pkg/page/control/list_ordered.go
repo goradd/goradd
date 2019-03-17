@@ -9,9 +9,9 @@ import (
 	"strconv"
 )
 
-// UnorderedList is a dynamically generated html unordered list (ul). Such lists are often used as the basis for
+// OrderedList is a dynamically generated html ordered list (ol). Such lists are often used as the basis for
 // javascript and css widgets. If you use a data provider to set the data, you should call AddItems to the list
-// in your GetData function. After drawing, the items will be removed.
+// in your GetData function.
 type OrderedList struct {
 	UnorderedList
 }
@@ -24,6 +24,7 @@ const (
 	OrderedListNumberTypeLowerRoman  = "i"
 )
 
+// NewOrderedList creates a new ordered list (ol tag).
 func NewOrderedList(parent page.ControlI, id string) *OrderedList {
 	t := &OrderedList{}
 	t.Init(t, parent, id)
@@ -49,6 +50,7 @@ func (l *OrderedList) SetStart(start int) *OrderedList {
 	return l
 }
 
+// NumberType returns the string used for the type attribute.
 func (l *OrderedList) NumberType() string {
 	if a := l.Attribute("type"); a == "" {
 		return OrderedListNumberTypeNumber
@@ -84,9 +86,9 @@ func (l *OrderedList) getItemsHtml(items []ListItemI) string {
 			}
 
 			innerhtml = html.RenderTag(l.Tag, a2, innerhtml)
-			h += html.RenderTag(l.subItemTag, a, item.Label()+" "+innerhtml)
+			h += html.RenderTag(l.itemTag, a, item.Label()+" "+innerhtml)
 		} else {
-			h += html.RenderTag(l.subItemTag, item.Attributes(), html2.EscapeString(item.Label()))
+			h += html.RenderTag(l.itemTag, item.Attributes(), html2.EscapeString(item.Label()))
 		}
 	}
 	return h

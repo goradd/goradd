@@ -151,6 +151,8 @@ func (c *ColumnBase) SetRenderAsHeader(r bool) {
 }
 
 // SetIsHtml will cause the cell to treat the text it receives as html rather than raw text it should escape.
+// Use this with extreme caution. Do not display unescaped text that might come from user input, as it could
+// open you up to XSS attacks.
 func (c *ColumnBase) SetIsHtml(columnIsHtml bool) {
 	c.isHtml = columnIsHtml
 }

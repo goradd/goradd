@@ -5,23 +5,21 @@ import (
 )
 
 // CustomColumn is a table column that you can customize any way you want. You simply give it a CellTexter, and return
-// the text or html from the cell texter. One convenient way to use this is to define a CellText function on your
-// form object and make it the cell texter.
+// the text from the cell texter. One convenient way to use this is to define a CellText function on the
+// parent object and pass it as the CellTexter. If your CellTexter is going to output html instead of raw text, call
+// SetIsHtml() on the column after creating it.
 type CustomColumn struct {
 	control.ColumnBase
 }
 
 // NewCustomColumn creates a new column with a custom cell texter.
-//
-// Set isHtml to true to indicate that the cell texter is returning html and not plain text.
-func NewCustomColumn(texter CellTexter, isHtml bool) *CustomColumn {
+func NewCustomColumn(texter CellTexter) *CustomColumn {
 	i := CustomColumn{}
-	i.Init(texter, isHtml)
+	i.Init(texter)
 	return &i
 }
 
-func (c *CustomColumn) Init(texter CellTexter, isHtml bool) {
+func (c *CustomColumn) Init(texter CellTexter) {
 	c.ColumnBase.Init(c)
-	c.ColumnBase.SetIsHtml(isHtml)
 	c.SetCellTexter(texter)
 }

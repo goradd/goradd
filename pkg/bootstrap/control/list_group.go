@@ -27,7 +27,7 @@ func NewListGroup(parent page.ControlI, id string) *ListGroup {
 func (l *ListGroup) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.UnorderedList.Init(self, parent, id)
 	l.Tag = "div"
-	l.SetSubTag("a") // default to anchor tags. Change it to something else if needed.
+	l.SetItemTag("a") // default to anchor tags. Change it to something else if needed.
 	l.AddClass("list-group")
 }
 

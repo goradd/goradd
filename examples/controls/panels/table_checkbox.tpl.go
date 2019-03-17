@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func (control *TablePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (control *TableCheckboxPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 `)
@@ -37,11 +37,14 @@ table th {
   color: white;
 }
 </style>
-<h1>Tables</h1>
+<h1>Tables - Checkbox Columns</h1>
 <p>
-The Table control creates html tables from various forms of data. After creating a table, you
-add TableColumns to the table, which link the data to the display. Tables can also have pagers
-to allow the user to page through data when it is too much to display all at once.
+A CheckboxColumn displays a single checkbox in a column. When you create it, you designate a
+CheckboxProvider, which will determine what the initial state of the checkboxes will be. Once set up,
+the column will keep track of changes, and when you are ready to save the changes, you can call
+Changes() on the column to get the state of the changed checkboxes. This is useful if you have a
+Save button to finally record the changes, but you can also use the CheckboxColumnClick event to
+record changes in real time through Javascript and Ajax.
 </p>
 `)
 
@@ -76,7 +79,20 @@ to allow the user to page through data when it is too much to display all at onc
 `)
 
 	{
-		err := control.Table2.Draw(ctx, buf)
+		err := control.SubmitAjax.Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := control.SubmitServer.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

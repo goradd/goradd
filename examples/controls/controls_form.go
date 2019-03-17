@@ -40,6 +40,12 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 			panels.NewSelectListPanel(ctx, f.detail)
 		case "table":
 			panels.NewTablePanel(ctx, f.detail)
+		case "tabledb":
+			panels.NewTableDbPanel(ctx, f.detail)
+		case "tablecheckbox":
+			panels.NewTableCheckboxPanel(ctx, f.detail)
+		case "hlist":
+			panels.NewHListPanel(ctx, f.detail)
 		default:
 			panels.NewDefaultPanel(ctx, f.detail)
 		}

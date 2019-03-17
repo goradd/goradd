@@ -204,7 +204,7 @@ func (form *TestForm) CheckGroup(id string, values ...string) {
 }
 
 
-// Click sends a click event to the html object with the given id. Note that this is not the same as simulating a click
+// Click sends a click event to the goradd control. Note that this is not the same as simulating a click
 // but for buttons, it will essentially be the same thing. More complex web objects will need a different mechanism
 // for clicking, likely a chromium driver or something similar.
 func (form *TestForm) Click(c page.ControlI) {
@@ -214,6 +214,17 @@ func (form *TestForm) Click(c page.ControlI) {
 		form.Controller.waitSubmit(form.callerInfo)
 	}
 }
+
+// ClickSubItem sends a click event to the html object with the given sub-id inside the given control.
+// Note that this is not the same as simulating a click
+func (form *TestForm) ClickSubItem(c page.ControlI, subId string) {
+	form.Controller.click(c.ID() + "_" + subId, form.captureCaller())
+	if c.HasServerAction("click") {
+		// wait for the new page to load
+		form.Controller.waitSubmit(form.callerInfo)
+	}
+}
+
 
 func (form *TestForm) WaitSubmit() {
 	form.Controller.waitSubmit(form.captureCaller())

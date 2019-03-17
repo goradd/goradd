@@ -19,8 +19,10 @@
     <li><a href="{{= path }}?control=textbox">Textboxes</a></li>
     <li><a href="{{= path }}?control=checkbox">Checkboxes and Radio Buttons</a></li>
     <li><a href="{{= path }}?control=selectlist">Selection Lists</a></li>
-    <li><a href="{{= path }}?control=orderedlist">Hierarchical Lists</a></li>
+    <li><a href="{{= path }}?control=hlist">Hierarchical Lists</a></li>
     <li><a href="{{= path }}?control=table">Tables</a></li>
+    <li><a href="{{= path }}?control=tabledb">Tables - Database Columns</a></li>
+    <li><a href="{{= path }}?control=tablecheckbox">Tables - Checkbox Columns</a></li>
   </ul>
 </div>
 <div class="detail_container">

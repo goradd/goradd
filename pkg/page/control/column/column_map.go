@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-// MapColumn is a table that works with data that is in the form of a slice. The data item itself must be convertible into
+// MapColumn is a table that works with data that is in the form of a map. The data item itself must be convertible into
 // a string, either by normal string conversion semantics, or using the supplied format string. The format string will
 // be applied to a date if the data is a date, or to the string using fmt.Sprintf
 type MapColumn struct {
