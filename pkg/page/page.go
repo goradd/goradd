@@ -12,6 +12,7 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
+	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
 	"strconv"
 	"strings"
@@ -411,6 +412,8 @@ func (p *Page) PushRedraw() {
 	channel := "form-" + p.stateId
 	if messageServer.HasChannel(channel) {	// If we call this while launching a page, the channel isn't created yet, but the page is going to be drawn, so its ok.
 		messageServer.SendMessage(channel, map[string]interface{}{"grup":true})
+	} else {
+		log.FrameworkDebug("Pushing redraw with no channel.")
 	}
 }
 

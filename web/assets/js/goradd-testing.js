@@ -14,7 +14,6 @@ This file attaches some code used by the test harness to drive browser-based tes
             goradd.getForm().addEventListener ('teststep', goradd.testStep);
             event = new CustomEvent('teststep', { bubbles: true, detail: -1 });
             goradd.getForm().dispatchEvent(event);
-
         }
     };
 

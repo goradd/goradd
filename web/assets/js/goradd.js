@@ -830,7 +830,7 @@ goradd.updateForm = function() {
     var newTime = new Date().getTime();
 
     // the following code prevents too many updates from happening in a short amount of time.
-    // the default will update no faster than once per second.
+    // the default will update no faster than once per minUpdateInterval.
     if (newTime - goradd._prevUpdateTime > goradd.minUpdateInterval) {
         //refresh immediately
         goradd.log("Immediate update");
@@ -842,6 +842,7 @@ goradd.updateForm = function() {
         goradd.log("Delayed update");
         goradd.setTimer ('goradd.update', goradd.updateForm, goradd.minUpdateInterval);
     }
+    // else we already have a queued update, so no need to queue another one
 };
 
 

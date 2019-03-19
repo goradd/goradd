@@ -313,12 +313,11 @@ func (form *TestForm) testAllAndExit() {
 							form.panicked("Unknown error", testName)
 						}
 					}
-					form.CloseWindow()
 					done <- 1
 				}()
 				form.Log("Starting test: " + testName)
 				form.currentTestName = testName
-				form.currentFailed = true
+				form.currentFailed = false
 				testF(form)
 				if !form.currentFailed {
 					form.Log(fmt.Sprintf("Test %s completed successfully.", testName))
@@ -364,20 +363,20 @@ func (form *TestForm) testOne(testName string) {
 							form.panicked("Unknown error", testName)
 						}
 					}
-					form.CloseWindow()
 					done <- 1
 				}()
 				form.Log("Starting test: " + testName)
 				form.currentTestName = testName
-				form.currentFailed = true
+				form.currentFailed = false
 				testF(form)
+				form.CloseWindow()
 			}()
 		}
 
 		<- done
 
 		close(done)
-		if form.failed {
+		if form.currentFailed {
 			form.Log("Failed.")
 		} else {
 			form.Log("Succeeded.")

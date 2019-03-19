@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"encoding/json"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
@@ -207,8 +206,7 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 	//f.response.SetControlValue(htmlVarFormstate, pagestate)
 	// TODO: render imported style sheets and java scripts
 	f.resetDrawingFlags()
-	buf2, err = json.Marshal(&f.response)
-	f.response = NewResponse() // Reset
+	buf2, err = f.response.GetAjaxResponse()
 	buf.Write(buf2)
 	log.FrameworkDebug("renderAjax - ", string(buf2))
 	return
