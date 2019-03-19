@@ -3,6 +3,9 @@ language: go
 go:
   - "1.12.x"
 
+env:
+  - GO111MODULE=on
+
 services:
   - mysql
 
@@ -10,14 +13,14 @@ addons:
   chrome: stable
 
 install:
-  - env GO111MODULE=on go get ./cmd/...  # install the goradd tool
+  - go get ./cmd/...  # install the goradd tool
   - cd ${TRAVIS_HOME}
   - cp -r ${TRAVIS_BUILD_DIR}/internal/install/goradd-project .
   - cp -r ${TRAVIS_BUILD_DIR}/internal/install/goradd-tmp .
   - cp -r ${TRAVIS_BUILD_DIR}/test/goradd-test .
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-project/go.mod
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-test/go.mod
-  - env GO111MODULE=on goradd install -s2  # use the goradd tool to complete the install
+  - goradd install -s2  # use the goradd tool to complete the install
 
 before_script:
   - google-chrome-stable http://localhost:8000?all=1 &
@@ -25,7 +28,9 @@ before_script:
 #  - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('12345') where User='root'; FLUSH PRIVILEGES;"
 
 script:
-  - cd ${TRAVIS_HOME}/goradd-test/codegen && env GO111MODULE=on go generate build.go  # Codegen
-  - cd ${TRAVIS_HOME}/goradd-project && env GO111MODULE=on go test github.com/goradd/goradd/pkg/...  # Pkg unit tests
-  - cd ${TRAVIS_HOME}/goradd-project && env GO111MODULE=on go test github.com/goradd/goradd/test/dbtest  # Db unit tests
-  - cd ${TRAVIS_HOME}/goradd-test && env GO111MODULE=on ${TRAVIS_BUILD_DIR}/test/ci/test.sh  # Browser based tests
+  - cd ${TRAVIS_HOME}/goradd-test/codegen && go generate build.go  # Codegen
+  - cd ${TRAVIS_HOME}/goradd-project && go test github.com/goradd/goradd/pkg/...  # Pkg unit tests
+  - cd ${TRAVIS_HOME}/goradd-project && go test github.com/goradd/goradd/test/dbtest  # Db unit tests
+  - cd ${TRAVIS_HOME}/goradd-test
+  - go run main.go # this is a sanity check to make sure we can run the browser test. It exits, then starts again inside test.sh.
+  - ${TRAVIS_BUILD_DIR}/test/ci/test.sh  # Browser based tests
