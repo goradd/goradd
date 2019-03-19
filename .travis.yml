@@ -32,5 +32,4 @@ script:
   - cd ${TRAVIS_HOME}/goradd-project && go test github.com/goradd/goradd/pkg/...  # Pkg unit tests
   - cd ${TRAVIS_HOME}/goradd-project && go test github.com/goradd/goradd/test/dbtest  # Db unit tests
   - cd ${TRAVIS_HOME}/goradd-test
-  - go run main.go # this is a sanity check to make sure we can run the browser test. It exits, then starts again inside test.sh.
   - ${TRAVIS_BUILD_DIR}/test/ci/test.sh  # Browser based tests
