@@ -10,15 +10,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
-	"log"
+	log2 "log"
 	"os"
 	"runtime"
 )
-
 
 var testFormPageState string
 
@@ -32,15 +32,15 @@ const (
 
 type TestForm struct {
 	FormBase
-	TestList     *SelectList
-	RunningLabel *Span
-	RunButton    *Button
-	Controller   *TestController
-	currentLog   string
-	failed		 bool
-	currentFailed bool
+	TestList        *SelectList
+	RunningLabel    *Span
+	RunButton       *Button
+	Controller      *TestController
+	currentLog      string
+	failed          bool
+	currentFailed   bool
 	currentTestName string
-	callerInfo string
+	callerInfo      string
 }
 
 func NewTestForm(ctx context.Context) page.FormI {
@@ -53,7 +53,7 @@ func NewTestForm(ctx context.Context) page.FormI {
 
 	grctx := page.GetContext(ctx)
 
-	if _,ok := grctx.FormValue("all"); ok {
+	if _, ok := grctx.FormValue("all"); ok {
 		f.ExecuteJqueryFunction("trigger", "testall", page.PriorityLow)
 		f.On(event.Event("testall"), action.Ajax(f.ID(), TestAllAction))
 	}
@@ -62,7 +62,6 @@ func NewTestForm(ctx context.Context) page.FormI {
 
 func (form *TestForm) createControls(ctx context.Context) {
 	form.Controller = NewTestController(form, "controller")
-
 
 	form.TestList = NewSelectList(form, "test-list")
 	form.TestList.SetLabel("Tests")
@@ -77,7 +76,7 @@ func (form *TestForm) createControls(ctx context.Context) {
 }
 
 func (form *TestForm) LoadControls(ctx context.Context) {
-	tests.Range(func(k string,v interface{}) bool {
+	tests.Range(func(k string, v interface{}) bool {
 		form.TestList.AddItem(k, k)
 		return true
 	})
@@ -98,7 +97,6 @@ func (form *TestForm) runSelectedTest() {
 	form.testOne(name)
 }
 
-
 // Log will send a message to the log. The message might not draw right away.
 func (form *TestForm) Log(s string) {
 	d := datetime.Now()
@@ -113,7 +111,6 @@ func (form *TestForm) Done(s string) {
 	form.Log(s)
 	form.Page().PushRedraw()
 }
-
 
 // LoadUrl will launch a new window controlled by the test form. It will wait for the
 // new url to be loaded in the window, and if the new url contains a goradd form, it will return
@@ -144,7 +141,6 @@ func (form *TestForm) AssertNotNil(v interface{}) {
 	}
 }
 
-
 // AssertEqual will test that the two values are equal, and will error if they are not equal.
 // The test will continue after this.
 func (form *TestForm) AssertEqual(expected, actual interface{}) {
@@ -158,14 +154,13 @@ func (form *TestForm) Error(message string) {
 	form.error(fmt.Sprintf("*** Test %s erred: %s, (%s)", form.currentTestName, message, form.captureCaller()))
 }
 
-
 func (form *TestForm) error(message string) {
 	form.Log(message)
 	form.failed = true
 	form.currentFailed = true
 }
 
-// Fail will cause a test to stop with the given messages.
+// Fatal will cause a test to stop with the given messages.
 func (form *TestForm) Fatal(message string) {
 	panic(fmt.Sprint(message))
 }
@@ -175,12 +170,13 @@ func (form *TestForm) panicked(message string, testName string) {
 	if _, file, line, ok := runtime.Caller(5); ok {
 		panickingLine = fmt.Sprintf("%s:%d", file, line)
 	}
-	form.Log(fmt.Sprintf("\n*** Test %s panicked: %s\n*** Last test step: %s\n*** Panicking line: %s", testName, message, form.callerInfo, panickingLine))
+	msg := fmt.Sprintf("\n*** Test %s panicked: %s\n*** Last test step: %s\n*** Panicking line: %s", testName, message, form.callerInfo, panickingLine)
+	log.Debug(msg)
+	form.Log(msg)
 	form.Page().PushRedraw()
 	form.failed = true
 	form.currentFailed = true
 }
-
 
 // ChangeVal will change the value of a form object. It essentially calls the jQuery .val() function on
 // the html object with the given id, followed by sending a change event to the object. This is not quite
@@ -203,7 +199,6 @@ func (form *TestForm) CheckGroup(id string, values ...string) {
 	form.Controller.checkGroup(id, values, form.captureCaller())
 }
 
-
 // Click sends a click event to the goradd control. Note that this is not the same as simulating a click
 // but for buttons, it will essentially be the same thing. More complex web objects will need a different mechanism
 // for clicking, likely a chromium driver or something similar.
@@ -218,18 +213,16 @@ func (form *TestForm) Click(c page.ControlI) {
 // ClickSubItem sends a click event to the html object with the given sub-id inside the given control.
 // Note that this is not the same as simulating a click
 func (form *TestForm) ClickSubItem(c page.ControlI, subId string) {
-	form.Controller.click(c.ID() + "_" + subId, form.captureCaller())
+	form.Controller.click(c.ID()+"_"+subId, form.captureCaller())
 	if c.HasServerAction("click") {
 		// wait for the new page to load
 		form.Controller.waitSubmit(form.callerInfo)
 	}
 }
 
-
 func (form *TestForm) WaitSubmit() {
 	form.Controller.waitSubmit(form.captureCaller())
 }
-
 
 // CallJqueryFunction will call the given function with the given parameters on the jQuery object
 // specified by the id. It will return the javascript result of the function call.
@@ -250,15 +243,14 @@ func (form *TestForm) JqueryAttribute(id string, attribute string) interface{} {
 }
 
 func (form *TestForm) HasClass(id string, needle string) bool {
-	res :=  form.Controller.callJqueryFunction(id, "hasClass", []interface{}{needle}, form.captureCaller())
+	res := form.Controller.callJqueryFunction(id, "hasClass", []interface{}{needle}, form.captureCaller())
 	return res.(bool)
 }
 
 func (form *TestForm) InnerHtml(id string) string {
-	res :=  form.Controller.callJqueryFunction(id, "html", nil, form.captureCaller())
+	res := form.Controller.callJqueryFunction(id, "html", nil, form.captureCaller())
 	return res.(string)
 }
-
 
 /*
 func (f *TestForm) TypeValue(id string, chars string) {
@@ -283,7 +275,6 @@ func (form *TestForm) captureCaller() string {
 	}
 	return form.callerInfo
 }
-
 
 // GetTestForm returns the test form itself, if its loaded
 func GetTestForm() page.FormI {
@@ -324,7 +315,7 @@ func (form *TestForm) testAllAndExit() {
 				}
 			}()
 
-			<- done
+			<-done
 			return true
 		})
 		close(done)
@@ -333,14 +324,13 @@ func (form *TestForm) testAllAndExit() {
 		} else {
 			form.Log("All tests passed.")
 		}
-		log.Print(form.currentLog)
+		log.Debug(form.currentLog)
 
 		if form.failed {
-			log.Fatal("Test failed.")
-		} else {
-			os.Exit(0)
+			log2.Fatal("Test failed.")
 		}
-	} ()
+		os.Exit(0)
+	}()
 }
 
 func (form *TestForm) testOne(testName string) {
@@ -373,7 +363,7 @@ func (form *TestForm) testOne(testName string) {
 			}()
 		}
 
-		<- done
+		<-done
 
 		close(done)
 		if form.currentFailed {
@@ -381,11 +371,10 @@ func (form *TestForm) testOne(testName string) {
 		} else {
 			form.Log("Succeeded.")
 		}
-		log.Print(form.currentLog)
+		log.Debug(form.currentLog)
 
-	} ()
+	}()
 }
-
 
 func init() {
 	page.RegisterPage(TestFormPath, NewTestForm, TestFormId)

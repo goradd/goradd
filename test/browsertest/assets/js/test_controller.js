@@ -31,6 +31,10 @@ jQuery.widget( "goradd.testController",  {
         goradd.log("loadUrl", step, url);
         var self = this;
 
+        if (this._window && this._window.goradd && this._window.goradd._closeWebSocket) {
+            this._window.goradd._closeWebSocket(1001);
+        }
+
         this._step = step;
 
         if (this._window && !this._window.closed) {
@@ -53,7 +57,7 @@ jQuery.widget( "goradd.testController",  {
     },
     _formLoadEvent: function(pagestate) {
         goradd.setControlValue(this.element.attr("id"), "pagestate", pagestate);
-        this._fireStepEvent(this._step);
+        //this._fireStepEvent(this._step);
     },
     _windowErrorEvent: function(event, step) {
         this._fireStepEvent(step,  "Browser load error:" + event.error.message);

@@ -450,7 +450,7 @@ goradd = {
         }
         if (json.loc) {
             if (goradd._closeWebSocket) {
-                goradd._closeWebSocket();
+                goradd._closeWebSocket(1001);
             }
             if (json.loc === 'reload') {
                 window.location.reload(true);

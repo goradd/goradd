@@ -16,7 +16,7 @@ the update message. Just replace the initMessageClient function with your own.
 You can piggyback on this and add your own websocket messages by simply adding event listeners
 to the goradd._ws object.
 
- */
+*/
 
 goradd.initMessagingClient = function(wsPort, wssPort) {
     if (window.WebSocket) {
@@ -61,10 +61,11 @@ goradd._handleWsMessage = function(e) {
 
 /*
 Close the websocket connection.
+See https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/close for status codes
 */
-goradd._closeWebSocket = function() {
+goradd._closeWebSocket = function(status) {
     if (goradd._ws) {
-        goradd._ws.close();
+        goradd._ws.close(); // Not all browsers support a status code, and attempting one breaks javascript.
     }
 };
 

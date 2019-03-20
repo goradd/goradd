@@ -32,10 +32,25 @@ type ProxyI interface {
 	OnSubmit(actions ...action.ActionI) page.EventI
 }
 
+// Proxy is a control that attaches events to controls. It is useful for attaching
+// similar events to a series of controls, like all the links in a table, or all the buttons in button bar.
+// You can also use it to draw a series of links or buttons. The proxy differentiates between the different objects
+// that are sending it events by the ActionValue that you given the proxy when it draws.
+//
+// To use a Proxy, create it in the control that wraps the controls the proxy will manage.
+// Attach an event to the proxy control, and in the action handler, look for the ControlValue in the Action Value
+// to know which of the controls sent the event. Draw the proxy with one of the following:
+//   LinkHtml() - Output the proxy as a link
+//   ButtonHtml() - Output the proxy as a button
+//   TagHtml() - Output the proxy in any tag
+//   ActionAttributes() - Returns attributes you can use in any custom control to attach a proxy
+//
+// The ProxyColumn of the Table object will use a proxy to draw items in a table column.
 type Proxy struct {
 	page.Control
 }
 
+// NewProxy creates a new proxy. The parent should be the wrapping control of the objects that the proxy will manage.
 func NewProxy(parent page.ControlI) *Proxy {
 	p := Proxy{}
 	p.Init(parent)
@@ -64,15 +79,6 @@ func (p *Proxy) OnSubmit(actions ...action.ActionI) page.EventI {
 func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	response := p.ParentForm().Response()
 	// p.this().ΩPutCustomScript(ctx, response) // Proxies should not have custom scripts?
-
-	// TODO: could limit this event further by keeping around a a flag that detects if the scripts
-	// have changed and only do this if so
-	//if p.IsOnPage() {
-		// Remove prior scripts since we are replacing them. Need to do this because the script
-		// is attached to the form, and so does not get deleted when the proxy gets replaced.
-		script := fmt.Sprintf(`$j('#%s').off('.grproxy', '[data-gr-proxy="%s"]');`, p.ParentForm().ID(), p.ID())
-		response.ExecuteJavaScript(script, page.PriorityHigh)
-	//}
 
 	p.GetActionScripts(response)
 	p.ΩPostRender(ctx, buf)
@@ -155,6 +161,6 @@ func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
 
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string) string {
-	// This attaches the event to the form
-	return fmt.Sprintf(`$j('#%s').on('%s.grproxy', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.ParentForm().ID(), eventName, p.ID(), eventJs)
+	// This attaches the event to the parent control.
+	return fmt.Sprintf(`$j('#%s').on('%s.grproxy', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.Parent().ID(), eventName, p.ID(), eventJs)
 }
