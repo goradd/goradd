@@ -14,11 +14,13 @@ var tests1 = []struct{
 } {
 	{[]byte(nil), "", 0, 0.0, false},
 	{[]byte(""), "", 0, 0.0, false},
+	{[]byte(`"a"`), "a", 0, 0.0, true},
 	{[]byte("a"), "a", 0, 0.0, true},
 	{[]byte("0"), "0", 0, 0.0, false},
 	{[]byte("1"), "1", 1, 1.0, true},
 	{[]byte("15"), "15", 15, 15.0, true},
 	{[]byte("true"), "true", 0, 0.0, true},
+	{[]byte(`"true"`), "true", 0, 0.0, true},
 	{[]byte("false"), "false", 0, 0.0, false},
 	{[]byte("-1"), "-1", -1, -1.0, true},
 	{[]byte(".1"), ".1", 0, 0.1, true},

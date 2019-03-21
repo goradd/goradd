@@ -76,7 +76,7 @@ func (a *ActionParams) ControlValue(i interface{}) (ok bool, err error) {
 // is not a string.
 func (a *ActionParams) EventValueString() string {
 	v := string(a.values.Event)
-	if v[0] == '"' {
+	if len(v) > 1 && v[0] == '"' && v[len(v) - 1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
 		v = v[1:len(v)-1]
 	}
@@ -91,7 +91,7 @@ func (a *ActionParams) EventValueInt() int {
 
 // EventValueFloat returns the event value as a float64. If the value was not numeric, it will return 0.
 func (a *ActionParams) EventValueFloat() float64 {
-	f,_ := strconv.ParseFloat(string(a.values.Event), 64)
+	f,_ := strconv.ParseFloat(a.EventValueString(), 64)
 	return f
 }
 
@@ -105,7 +105,7 @@ func (a *ActionParams) EventValueBool() bool {
 // is not a string.
 func (a *ActionParams) ActionValueString() string {
 	v := string(a.values.Action)
-	if v[0] == '"' {
+	if len(v) > 1 && v[0] == '"' && v[len(v) - 1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
 		v = v[1:len(v)-1]
 	}
@@ -132,7 +132,7 @@ func (a *ActionParams) ActionValueBool() bool {
 // is not a string.
 func (a *ActionParams) ControlValueString() string {
 	v := string(a.values.Control)
-	if v[0] == '"' {
+	if len(v) > 1 && v[0] == '"' && v[len(v) - 1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
 		v = v[1:len(v)-1]
 	}
