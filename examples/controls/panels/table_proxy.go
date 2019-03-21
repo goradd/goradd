@@ -5,6 +5,7 @@ import (
 	"github.com/goradd/goradd/examples/model"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -27,7 +28,7 @@ type TableProxyPanel struct {
 
 func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableProxyPanel{}
-	p.Panel.Init(p, parent, "TableProxyPanel")
+	p.Panel.Init(p, parent, "tableProxyPanel")
 
 	p.Pxy = NewProxy(p)
 	p.Pxy.On(event.Click(), action.Ajax(p.ID(), ProxyClick))
@@ -39,6 +40,9 @@ func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 	p.Table1.SetPageSize(5)
 
 	p.ProjectPanel = NewProjectPanel(p)
+
+	log.Debug("Proxy Table Created")
+
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table
@@ -50,6 +54,9 @@ func (p *TableProxyPanel) BindData(ctx context.Context, s data.DataManagerI) {
 		Limit(p.Pager1.SqlLimits()).
 		Load(ctx)
 	p.Table1.SetData(projects)
+
+	log.Debug("Binding Data - ", projects)
+
 }
 
 func (f *TableProxyPanel) 	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
@@ -61,9 +68,10 @@ func (f *TableProxyPanel) 	CellText(ctx context.Context, col ColumnI, rowNum int
 	attr := html.NewAttributes()
 	attr.SetID("pxy" + project.ID())
 
-	return f.Pxy.LinkHtml(ctx, project.Name(),
+	v := f.Pxy.LinkHtml(ctx, project.Name(),
 		id,
 		attr)
+	return v
 }
 
 func (p *TableProxyPanel) Action(ctx context.Context, a page.ActionParams) {

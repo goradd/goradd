@@ -1,7 +1,7 @@
 module goradd-project
 
 require (
-	github.com/goradd/goradd v0.0.1
+	github.com/goradd/goradd latest
 	goradd-tmp v0.0.0
 )
 

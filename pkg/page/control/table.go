@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	html2 "html"
@@ -92,7 +93,9 @@ func (t *Table) SetFooterRowCount(count int) TableI {
 }
 
 func (t *Table) ΩDrawTag(ctx context.Context) string {
+	log.FrameworkDebug("Drawing table tag")
 	if t.HasDataProvider() {
+		log.FrameworkDebug("Getting table data")
 		t.GetData(ctx, t)
 		defer t.ResetData()
 	}

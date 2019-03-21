@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"reflect"
 )
@@ -54,6 +55,7 @@ func (d *DataManager) ResetData() {
 // the embedder of the DataManager
 func (d *DataManager) GetData(ctx context.Context, owner DataManagerI) {
 	if d.dataProvider != nil && d.Data == nil {
+		log.FrameworkDebug("Calling BindData")
 		d.dataProvider.BindData(ctx, owner) // tell the data binder to call SetData on the given object, or load data some other way
 	}
 }

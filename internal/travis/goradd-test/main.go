@@ -4,7 +4,6 @@
 package main
 
 import (
-	log2 "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
 	_ "goradd-project/config" // Initialize required variables
 	"goradd-project/web/app"
@@ -24,7 +23,7 @@ func main() {
 	var err error
 
 	a := app.MakeApplication()
-	log2.SetLogger(log2.FrameworkDebugLog, nil) // get rid of framework log for now
+	//log2.SetLogger(log2.FrameworkDebugLog, nil) // get rid of framework log for now
 	messageServer.Start(a.MakeWebsocketMux())
 	mux := a.MakeServerMux()
 
