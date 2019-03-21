@@ -1,0 +1,24 @@
+package panels
+
+import (
+	"bytes"
+	"context"
+	bootstrap "github.com/goradd/goradd/bootstrap/control"
+)
+
+// DrawTemplate draws the contents of the TargetEditPanel panel.
+func (p *ProjectPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+{{
+    <h3>Project Details</h3>
+{{if p.project != nil}}
+    <div id="nameItem"><label>Name</label>{{= p.project.Name()}}</div>
+    <div><label>Description</label>{{= p.project.Description()}}</div>
+    <div><label>Budget</label>{{= p.project.Budget()}}</div>
+    <div><label>Spent</label>{{= p.project.Spent()}}</div>
+    <div><label>Manager</label>{{= p.project.LoadManager(ctx).FirstName() + " " + p.project.LoadManager(ctx).LastName()}}</div>
+{{if}}
+}}
+
+    return
+}
+

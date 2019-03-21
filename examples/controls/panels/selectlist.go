@@ -24,7 +24,7 @@ type SelectListPanel struct {
 	SubmitServer    *Button
 }
 
-func NewSelectListPanel(ctx context.Context, parent page.ControlI) *SelectListPanel {
+func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 	itemList := []ListValue{
 		{"First", 1},
 		{"Second", 2},
@@ -87,7 +87,6 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) *SelectListPa
 	p.SubmitServer.SetText("Submit Server")
 	p.SubmitServer.OnSubmit(action.Server(p.ID(), ServerSubmit))
 
-	return p
 }
 
 

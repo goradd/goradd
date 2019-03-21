@@ -23,6 +23,7 @@
     <li><a href="{{= path }}?control=table">Tables</a></li>
     <li><a href="{{= path }}?control=tabledb">Tables - Database Columns</a></li>
     <li><a href="{{= path }}?control=tablecheckbox">Tables - Checkbox Columns</a></li>
+    <li><a href="{{= path }}?control=tableproxy">Tables - Proxy Columns</a></li>
   </ul>
 </div>
 <div class="detail_container">

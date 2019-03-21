@@ -42,7 +42,7 @@ func (c SelectedProvider) IsChecked(data interface{}) bool {
 	return data.(Table1Data)["s"] == "1"
 }
 
-func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) *TableCheckboxPanel {
+func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableCheckboxPanel{}
 	p.Panel.Init(p, parent, "checkboxPanel")
 
@@ -71,7 +71,6 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) *TableChec
 	p.SubmitServer.SetText("Submit Server")
 	p.SubmitServer.OnSubmit(action.Server(p.ID(), ButtonSubmit))
 
-	return p
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table

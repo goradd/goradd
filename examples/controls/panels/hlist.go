@@ -38,7 +38,7 @@ type HListPanel struct {
 	SubmitServer    *Button
 }
 
-func NewHListPanel(ctx context.Context, parent page.ControlI) *HListPanel {
+func NewHListPanel(ctx context.Context, parent page.ControlI)  {
 	itemList := []ListValue{
 		{"First", 1},
 		{"Second", 2},
@@ -64,7 +64,6 @@ func NewHListPanel(ctx context.Context, parent page.ControlI) *HListPanel {
 	p.SubmitServer.SetText("Submit Server")
 	p.SubmitServer.OnSubmit(action.Server(p.ID(), ServerSubmit))
 
-	return p
 }
 
 func (p *HListPanel) BindData(ctx context.Context, s data.DataManagerI) {

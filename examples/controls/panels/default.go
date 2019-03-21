@@ -11,11 +11,9 @@ type DefaultPanel struct {
 	Panel
 }
 
-func NewDefaultPanel(ctx context.Context, parent page.ControlI) *DefaultPanel {
+func NewDefaultPanel(ctx context.Context, parent page.ControlI)  {
 	p := &DefaultPanel{}
 	p.Panel.Init(p, parent, "defaultPanel")
-
-	return p
 }
 
 

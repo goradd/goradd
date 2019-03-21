@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/orm/db"
@@ -33,7 +34,7 @@ const (
 )
 
 const HtmlVarAction = "Goradd_Action"
-const htmlVarPagestate = "Goradd__PageState"
+const HtmlVarPagestate = "Goradd__PageState"
 const htmlVarParams  = "Goradd__Params"
 
 
@@ -108,8 +109,6 @@ type AppContext struct {
 	actionControlID     string                            // If an action, the control sending the action
 	eventID             EventID                           // The event to send to the control
 	actionValues        actionValues
-	// OutBuf is the output buffer being used to respond to the request. At the end of processing, it will be written to the response.
-	OutBuf              *bytes.Buffer
 	// NoJavaScript indicates javascript is turned off by the browser
 	NoJavaScript        bool
 }
@@ -137,7 +136,7 @@ func PutContext(r *http.Request, cliArgs []string) *http.Request {
 	if err != nil {
 		log.Error("Error creating http context: " + err.Error())
 	}
-	grctx.fillApp(cliArgs)
+	grctx.fillApp(ctx, cliArgs)
 	ctx = context.WithValue(ctx, goradd.PageContext, grctx)
 
 	// Create a context that the orm can use
@@ -243,17 +242,23 @@ func (ctx *Context) CustomControlValue(id string, key string) interface{} {
 
 // fillApp fills the app structure with app specific information from the request
 // Do not panic here!
-func (ctx *Context) fillApp(cliArgs []string) {
+func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 	var ok bool
 	var v string = ""
 	//var i interface{}
 	var err error
 
 	if ctx.URL != nil {
-		if v, ok = ctx.FormValue(htmlVarParams); ok  {
+		if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); ok  {
+			v,_ = ctx.FormValue(htmlVarParams)
 			if v == "" {
-				// javascript is turned off, meaning we are forced to use server submits
+				// javascript is turned off
 				// we are in a minimalist environment, where only buttons submit forms
+
+				// If the pagestate is coming from a GET, it is encoded and encrypted
+				if _,ok := ctx.Req.PostForm[HtmlVarPagestate]; !ok {
+					ctx.pageStateId = crypt.SessionDecryptUrlValue(mainContext, ctx.pageStateId)
+				}
 				ctx.NoJavaScript = true
 				ctx.requestMode = Server
 				aId, _ := ctx.FormValue(HtmlVarAction)
@@ -261,10 +266,6 @@ func (ctx *Context) fillApp(cliArgs []string) {
 				ctx.actionControlID = parts[0]
 				if len(parts) > 0 {
 					ctx.actionValues.Control = []byte(parts[1])
-				}
-				if ctx.pageStateId, ok = ctx.FormValue(htmlVarPagestate); !ok {
-					ctx.err = fmt.Errorf("No pagestate found in response")
-					return
 				}
 				return
 			}
@@ -293,7 +294,7 @@ func (ctx *Context) fillApp(cliArgs []string) {
 				}
 				ctx.actionValues = params.Values
 
-				if ctx.pageStateId, ok = ctx.FormValue(htmlVarPagestate); !ok {
+				if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); !ok {
 					ctx.err = fmt.Errorf("No pagestate found in response")
 					return
 				}
@@ -309,7 +310,7 @@ func (ctx *Context) fillApp(cliArgs []string) {
 				// A custom ajax call
 				ctx.requestMode = CustomAjax
 			} else {
-				// A new call to our web override
+				// A new call to our web page
 				ctx.requestMode = Http
 			}
 		}
@@ -364,4 +365,8 @@ func NewMockContext() (ctx context.Context) {
 	r = PutContext(r, nil)
 	ctx = r.Context()
 	return
+}
+
+func OutputBuffer(ctx context.Context) *bytes.Buffer {
+	return ctx.Value(goradd.BufferContext).(*bytes.Buffer)
 }

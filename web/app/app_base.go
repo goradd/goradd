@@ -2,10 +2,12 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/stores/memstore"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	grlog "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/session"
@@ -133,8 +135,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	grctx := page.GetContext(ctx)
-	buf := grctx.AppContext.OutBuf
+	buf := page.OutputBuffer(ctx)
 	if pm.IsPage(r.URL.Path) {
 		headers, errCode := pm.RunPage(ctx, buf)
 		if headers != nil {
@@ -191,8 +192,9 @@ func (a *Application) MakeAppServer() http.Handler {
 	h := a.ServeRequestHandler(buf)
 	h = a.ServeStaticFileHandler(buf, h)	// TODO: Speed this handler up by checking to see if the url is a goradd form before deciding to get context and session
 	h = a.ServeAppHandler(buf, h)
-	h = a.this().SessionHandler(h)
 	h = a.PutContextHandler(h)
+	h = a.this().SessionHandler(h)
+	h = a.BufferOutputHandler(h)
 
 	return h
 }
@@ -206,10 +208,7 @@ func (a *Application) SessionHandler(next http.Handler) http.Handler {
 // ServeRequestHandler is the last handler on the default call chain. It calls ServeRequest so the sub-class can handle it.
 func (a *Application) ServeRequestHandler(buf *bytes.Buffer) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-
-		grctx := page.GetContext(r.Context())
-
-		if grctx.AppContext.OutBuf.Len() == 0 {
+		if page.OutputBuffer(r.Context()).Len() == 0 {
 			a.this().ServeRequest(w,r)
 		}
 	}
@@ -233,9 +232,7 @@ func (a *Application) ServeAppHandler(buf *bytes.Buffer, next http.Handler) http
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		a.ServeHTTP(w, r)
 
-		grctx := page.GetContext(r.Context())
-
-		if next != nil && grctx.AppContext.OutBuf.Len() == 0 {
+		if next != nil && page.OutputBuffer(r.Context()).Len() == 0 {
 			next.ServeHTTP(w, r)
 		}
 	}
@@ -246,17 +243,26 @@ func (a *Application) ServeAppHandler(buf *bytes.Buffer, next http.Handler) http
 func (a *Application) PutContextHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		r = a.this().PutContext(r)
-
-		// Setup the output buffer
-		grctx := page.GetContext(r.Context())
-		grctx.AppContext.OutBuf = page.GetBuffer()
-		defer page.PutBuffer(grctx.AppContext.OutBuf)
 		next.ServeHTTP(w, r)
-		_,_ = w.Write(grctx.AppContext.OutBuf.Bytes())
 	}
 	return http.HandlerFunc(fn)
 }
 
+// BufferOutputHandler manages the buffering of http output. It must be the last item in the handler list.
+func (a *Application) BufferOutputHandler(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		// Setup the output buffer
+		outBuf := page.GetBuffer()
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, goradd.BufferContext, outBuf)
+		r = r.WithContext(ctx)
+
+		defer page.PutBuffer(outBuf)
+		next.ServeHTTP(w, r)
+		_,_ = w.Write(outBuf.Bytes())
+	}
+	return http.HandlerFunc(fn)
+}
 
 // ServeStaticFile serves up static html and other files. The default will serve up the generated form index
 // and any files you put in the HTML directory. It is overridable by creating a ServeStaticFile in your local

@@ -19,10 +19,28 @@ type ControlsForm struct {
 	detail 		  *Panel
 }
 
+type createFunction func(ctx context.Context, parent page.ControlI)
+var controls = []struct {
+		key string
+		name string
+		f createFunction
+	}{
+	{"", "Home", panels.NewDefaultPanel},
+	{"textbox", "Textboxes", panels.NewTextboxPanel},
+	{"checkbox", "Checkboxes and Radio Buttons", panels.NewCheckboxPanel},
+	{"selectlist", "Selection Lists", panels.NewSelectListPanel},
+	{"table", "Tables", panels.NewTablePanel},
+	{"tabledb", "Tables - Checkbox Column", panels.NewTableCheckboxPanel},
+	{"tablecheckbox", "Tables - Database Columns", panels.NewTableDbPanel},
+	{"hlist", "Nested Lists", panels.NewHListPanel},
+}
+
 func NewControlsForm(ctx context.Context) page.FormI {
 	f := &ControlsForm{}
 	f.Init(ctx, f, ControlsFormPath, ControlsFormId)
 	f.AddRelatedFiles()
+
+
 
 	f.detail = NewPanel(f, "detailPanel")
 
@@ -44,6 +62,8 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 			panels.NewTableDbPanel(ctx, f.detail)
 		case "tablecheckbox":
 			panels.NewTableCheckboxPanel(ctx, f.detail)
+		case "tableproxy":
+			panels.NewTableProxyPanel(ctx, f.detail)
 		case "hlist":
 			panels.NewHListPanel(ctx, f.detail)
 		default:

@@ -11,10 +11,12 @@ const (
 	PageContext    = ContextKey("goradd.page")
 	SessionContext = ContextKey("goradd.session")
 	SqlContext     = ContextKey("goradd.sql")
+	BufferContext  = ContextKey("goradd.buf")
 )
 
 // Default session values
 const (
 	SessionLanguage = "goradd.lang"
+	SessionSalt = "goradd.salt"
 )
 

@@ -73,12 +73,12 @@ func (l *NavbarList) ΩDrawingAttributes() *html.Attributes {
 }
 
 func (l *NavbarList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	h := l.getItemsHtml(l.ListItems(), false)
+	h := l.getItemsHtml(ctx, l.ListItems(), false)
 	buf.WriteString(h)
 	return nil
 }
 
-func (l *NavbarList) getItemsHtml(items []control.ListItemI, hasParent bool) string {
+func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI, hasParent bool) string {
 	var h = ""
 
 	for i, item := range items {
@@ -90,7 +90,7 @@ func (l *NavbarList) getItemsHtml(items []control.ListItemI, hasParent bool) str
         %s
     </a>
     <div class="dropdown-menu" aria-labelledby="%s_menu">`, item.ID(), item.RenderLabel(), item.ID())
-				h += l.getItemsHtml(item.ListItems(), true)
+				h += l.getItemsHtml(ctx, item.ListItems(), true)
 				h += "</div>"
 			} else {
 				// top level menu
@@ -108,7 +108,7 @@ func (l *NavbarList) getItemsHtml(items []control.ListItemI, hasParent bool) str
         %s
     </a>
     <div class="dropdown-menu %s" aria-labelledby="%s_menu">`, l.subItemTag, item.ID(), item.RenderLabel(), lastClass, item.ID())
-				h += l.getItemsHtml(item.ListItems(), true)
+				h += l.getItemsHtml(ctx, item.ListItems(), true)
 				h += fmt.Sprintf("</div></%s>", l.subItemTag)
 			}
 		} else {
@@ -139,7 +139,7 @@ func (l *NavbarList) getItemsHtml(items []control.ListItemI, hasParent bool) str
 				}
 
 				if item.Anchor() == "" {
-					itemH = l.Proxy.LinkHtml(itemH, item.ID(), linkAttributes)
+					itemH = l.Proxy.LinkHtml(ctx, itemH, item.ID(), linkAttributes)
 				}
 				if !hasParent {
 					itemH = html.RenderTag(l.subItemTag, itemAttributes, itemH)

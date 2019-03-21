@@ -75,7 +75,12 @@ func (a *ActionParams) ControlValue(i interface{}) (ok bool, err error) {
 // EventValueString returns the event value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *ActionParams) EventValueString() string {
-	return string(a.values.Event)
+	v := string(a.values.Event)
+	if v[0] == '"' {
+		// It is surrounded by quotes, so remove the quotes
+		v = v[1:len(v)-1]
+	}
+	return string(v)
 }
 
 // EventValueInt returns the event value as an integer. If the value was a floating point value at the client,
@@ -86,7 +91,7 @@ func (a *ActionParams) EventValueInt() int {
 
 // EventValueFloat returns the event value as a float64. If the value was not numeric, it will return 0.
 func (a *ActionParams) EventValueFloat() float64 {
-	f,_ := strconv.ParseFloat(a.EventValueString(), 64)
+	f,_ := strconv.ParseFloat(string(a.values.Event), 64)
 	return f
 }
 
@@ -99,7 +104,12 @@ func (a *ActionParams) EventValueBool() bool {
 // ActionValueString returns the action value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *ActionParams) ActionValueString() string {
-	return string(a.values.Action)
+	v := string(a.values.Action)
+	if v[0] == '"' {
+		// It is surrounded by quotes, so remove the quotes
+		v = v[1:len(v)-1]
+	}
+	return string(v)
 }
 
 // ActionValueInt returns the action value as an integer.
@@ -121,7 +131,12 @@ func (a *ActionParams) ActionValueBool() bool {
 // ControlValueString returns the control value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *ActionParams) ControlValueString() string {
-	return string(a.values.Control)
+	v := string(a.values.Control)
+	if v[0] == '"' {
+		// It is surrounded by quotes, so remove the quotes
+		v = v[1:len(v)-1]
+	}
+	return string(v)
 }
 
 // ControlValueInt returns the control value as an int.

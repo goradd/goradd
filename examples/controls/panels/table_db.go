@@ -16,18 +16,13 @@ type TableDbPanel struct {
 
 	Table1	*PaginatedTable
 	Pager1 *DataPager
-	Column1 *column.NodeColumn
-	Column2 *column.NodeColumn
-	Column3 *column.AliasColumn
 }
 
 
-func NewTableDbPanel(ctx context.Context, parent page.ControlI) *TableDbPanel {
+func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableDbPanel{}
 	p.Panel.Init(p, parent, "tableDbPanel")
 
-	// The two tables here just demonstrate a variety of columns available to use in a data table.
-	// Be sure to consider the Node column and Alias column which are not listed below, as they work directly with databases.
 	p.Table1 = NewPaginatedTable(p, "table1")
 	p.Table1.SetHeaderRowCount(1)
 	p.Table1.SetDataProvider(p)
@@ -37,8 +32,6 @@ func NewTableDbPanel(ctx context.Context, parent page.ControlI) *TableDbPanel {
 	p.Table1.AddColumn(column.NewAliasColumn("manager_count").SetTitle("Project Count"))
 	p.Pager1 = NewDataPager(p, "pager1", p.Table1)
 	p.Table1.SetPageSize(5)
-
-	return p
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table

@@ -80,7 +80,7 @@ var tableSliceData = []TableSliceData {
 }
 
 
-func NewTablePanel(ctx context.Context, parent page.ControlI) *TablePanel {
+func NewTablePanel(ctx context.Context, parent page.ControlI) {
 	p := &TablePanel{}
 	p.Panel.Init(p, parent, "tablePanel")
 
@@ -108,7 +108,6 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) *TablePanel {
 	p.Table2.SetCaption(p.Pager2)
 	p.Table2.SetPageSize(5)
 
-	return p
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table

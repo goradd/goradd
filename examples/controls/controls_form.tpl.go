@@ -69,6 +69,11 @@ func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (
 	buf.WriteString(path)
 
 	buf.WriteString(`?control=tablecheckbox">Tables - Checkbox Columns</a></li>
+    <li><a href="`)
+
+	buf.WriteString(path)
+
+	buf.WriteString(`?control=tableproxy">Tables - Proxy Columns</a></li>
   </ul>
 </div>
 <div class="detail_container">

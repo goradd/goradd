@@ -146,7 +146,7 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	buf.WriteString(`<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n")
 
 	// Serialize and write out the pagestate
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlVarPagestate+`" id="`+htmlVarPagestate+`" value="%s" />`, pagestate))
+	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, pagestate))
 
 	f.drawBodyScriptFiles(ctx, buf) // Fixing a bug?
 

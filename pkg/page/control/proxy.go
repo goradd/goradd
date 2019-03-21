@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	html2 "html"
+	"strings"
 )
 
 type ProxyI interface {
@@ -85,18 +87,38 @@ func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return
 }
 
-// LinkHtml renders the proxy as a link. Generally, only do this if you are actually linking to a page. If not, use
-// a button.
-func (p *Proxy) LinkHtml(label string,
+// LinkHtml renders the proxy as a link. To conform to the html standard and accessibility guidelines,
+// links should only be used to navigate away from the page, so the action of your proxy should lead to
+// that kind of behavior. Otherwise, use ButtonHtml.
+func (p *Proxy) LinkHtml(ctx context.Context,
+	label string,
 	actionValue string,
 	attributes *html.Attributes,
 ) string {
 	if attributes == nil {
 		attributes = html.NewAttributes()
 	}
-	if !attributes.Has("href") {
-		attributes.Set("href", "javascript:;")
+	attributes.Set("onclick", "return false;") // make sure we do not follow the link if javascript is on.
+	var href string
+	if attributes.Has("href") {
+		href = attributes.Get("href")
+	} else {
+		href = page.GetContext(ctx).HttpContext.URL.RequestURI() // for non-javascript compatibility
+		if offset := strings.Index(href, page.HtmlVarAction); offset >= 0 {
+			href = href[:offset-1] // remove the variables we placed here ourselves
+		}
 	}
+
+	// These next two lines allow the proxy to work even when javascript is off.
+	av := page.HtmlVarAction + "=" + p.ID() + "_" + actionValue
+	av += "&" + page.HtmlVarPagestate + "=" + crypt.SessionEncryptUrlValue(ctx, p.Page().StateID())
+
+	if !strings.ContainsRune(href, '?') {
+		href += "?" + av
+	} else {
+		href += "&" + av
+	}
+	attributes.Set("href", href)
 	return p.TagHtml(label, actionValue, attributes, "a", false)
 }
 
@@ -126,9 +148,9 @@ func (p *Proxy) TagHtml(label string,
 }
 
 // ButtonHtml outputs the proxy as a button tag.
-// eventActionValue becomes the event's ControlValue parameter
+// actionValue becomes the event's ControlValue parameter
 func (p *Proxy) ButtonHtml(label string,
-	eventActionValue string,
+	actionValue string,
 	attributes *html.Attributes,
 	rawHtml bool,
 ) string {
@@ -136,7 +158,7 @@ func (p *Proxy) ButtonHtml(label string,
 	a.Set("onclick", "return false") // To prevent a return from activating the button
 	a.Set("type", "submit") // To support non-javascript situations
 	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts
-	buttonValue := p.ID() + "_" + eventActionValue
+	buttonValue := p.ID() + "_" + actionValue
 	a.Set("value", buttonValue) // needed for non-javascript posts
 
 	if attributes != nil {
@@ -144,7 +166,7 @@ func (p *Proxy) ButtonHtml(label string,
 	}
 
 	// TODO: We can possibly do actionValue differently now since its already in the value above
-	return p.TagHtml(label, eventActionValue, a, "button", rawHtml)
+	return p.TagHtml(label, actionValue, a, "button", rawHtml)
 }
 
 // ActionAttributes returns attributes that can be included in any tag to attach a proxy to the tag.

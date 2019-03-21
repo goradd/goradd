@@ -18,6 +18,7 @@ const (
 	ServerSubmit
 	ButtonSubmit
 	ResetStateSubmit
+	ProxyClick
 )
 
 type TextboxPanel struct {
@@ -37,7 +38,7 @@ type TextboxPanel struct {
 	SubmitServer    *Button
 }
 
-func NewTextboxPanel(ctx context.Context, parent page.ControlI) *TextboxPanel {
+func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &TextboxPanel{}
 	p.Panel.Init(p, parent, "textboxPanel")
 
@@ -84,7 +85,6 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) *TextboxPanel {
 	p.SubmitServer.SetText("Submit Server")
 	p.SubmitServer.OnSubmit(action.Server(p.ID(), ButtonSubmit))
 
-	return p
 }
 
 func (p *TextboxPanel) Action(ctx context.Context, a page.ActionParams) {
