@@ -67,6 +67,10 @@ func copyInstall(overwrite bool) {
 		if err != nil {
 			log.Fatal("could not copy directory: " + err.Error())
 		}
+
+		dest2 := filepath.Join(dest, "gomod.txt")
+		dest3 := filepath.Join(dest, "go.mod")
+		os.Rename(dest2, dest3)
 	}
 }
 

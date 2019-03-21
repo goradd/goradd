@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 
+	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
@@ -49,6 +50,7 @@ that allow you to click on a record to see detail of the record.
 		buf.WriteString(`<h2 style="color:red">Error</h2>
 <p>You have not installed the goradd example database. See the examples/readme.txt file for instructions.<p>
 `)
+		log.Error("goradd database not installed.")
 	} else {
 
 		buf.WriteString(`

@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const StepTimeoutSeconds = 5
+const StepTimeoutSeconds = 10
 
 const (
 	TestStepAction = iota + 100
