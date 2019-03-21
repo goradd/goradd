@@ -17,7 +17,9 @@ install:
   - go get ./cmd/...  # install the goradd tool
   - cd ${TRAVIS_HOME}
   - cp -r ${TRAVIS_BUILD_DIR}/internal/install/goradd-project .
+  - mv ${TRAVIS_HOME}/goradd-project/gomod.txt ${TRAVIS_HOME}/goradd-project/go.mod
   - cp -r ${TRAVIS_BUILD_DIR}/internal/install/goradd-tmp .
+  - mv ${TRAVIS_HOME}/goradd-tmp/gomod.txt ${TRAVIS_HOME}/goradd-tmp/go.mod
   - cp -r ${TRAVIS_BUILD_DIR}/internal/travis/goradd-test .
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-project/go.mod
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-test/go.mod

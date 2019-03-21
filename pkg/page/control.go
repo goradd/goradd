@@ -517,6 +517,8 @@ func (c *Control) ΩDrawTag(ctx context.Context) string {
 	// TODO: Implement this with a buffer to reduce string allocations
 	var ctrl string
 
+	log.FrameworkDebug("Drawing control: " + c.ID())
+
 	attributes := c.this().ΩDrawingAttributes()
 	if c.wrapper == nil {
 		if a := c.this().WrapperAttributes(); a != nil {
