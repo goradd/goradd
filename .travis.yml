@@ -18,7 +18,7 @@ install:
   - cd ${TRAVIS_HOME}
   - cp -r ${TRAVIS_BUILD_DIR}/internal/install/goradd-project .
   - cp -r ${TRAVIS_BUILD_DIR}/internal/install/goradd-tmp .
-  - cp -r ${TRAVIS_BUILD_DIR}/test/goradd-test .
+  - cp -r ${TRAVIS_BUILD_DIR}/internal/travis/goradd-test .
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-project/go.mod
   - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-test/go.mod
   - goradd install -s2  # use the goradd tool to complete the install
@@ -33,4 +33,4 @@ script:
   - cd ${TRAVIS_HOME}/goradd-project && go test github.com/goradd/goradd/pkg/...  # Pkg unit tests
   - cd ${TRAVIS_HOME}/goradd-project && go test github.com/goradd/goradd/test/dbtest  # Db unit tests
   - cd ${TRAVIS_HOME}/goradd-test
-  - ${TRAVIS_BUILD_DIR}/test/ci/test.sh  # Browser based tests
+  - ${TRAVIS_BUILD_DIR}/internal/travis/ci/test.sh  # Browser based tests

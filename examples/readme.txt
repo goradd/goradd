@@ -2,7 +2,7 @@
 model
 
 The model package here has been copied from the model package that gets generated for the
-goradd sample database. It is here so that the examples code will compile even if the database
+goradd sample database. It has been modified so that the examples code will compile even if the database
 is not loaded. Normally you would refer directly to the model package in your goradd-project
 directory.
 

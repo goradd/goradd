@@ -1,4 +1,4 @@
-package test
+package travis
 
 import (
 	"path/filepath"

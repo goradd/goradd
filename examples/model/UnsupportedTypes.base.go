@@ -5,7 +5,7 @@ package model
 import (
 	"context"
 	"fmt"
-	"goradd-project/gen/goradd/model/node"
+	"github.com/goradd/goradd/examples/model/node"
 
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
