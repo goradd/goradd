@@ -45,7 +45,7 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attri
 	var id string
 
 	if t.RowStyler() != nil {
-		a = t.RowStyler().Attributes(row, data)
+		a = t.RowStyler().TableRowAttributes(row, data)
 		id = a.Get("id") // styler might be giving us an id
 	} else {
 		a = html.NewAttributes()
