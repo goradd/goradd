@@ -47,7 +47,7 @@ type NodeSorter interface {
 	sortDesc() bool
 }
 
-// Expander is the interface a node must satisfy to be able to be expanded upon, making a many-* relationship create multiple versions of the original object.
+// Expander is the interface a node must satisfy to be able to be expanded upon, making a many-* relationship creates multiple versions of the original object.
 type Expander interface {
 	Expand()
 	isExpanded() bool
@@ -56,12 +56,13 @@ type Expander interface {
 // NodeI is the interface that all nodes must satisfy
 type NodeI interface {
 	nodeLinkI
-	// Equals returns true if the given node is equal to this node
+	// Equals returns true if the given node is equal to this node.
 	Equals(NodeI) bool
-	// SetAlias sets a unique name for the node as used in a database query
+	// SetAlias sets a unique name for the node as used in a database query.
 	SetAlias(string)
-	// GetAlias returns the alias that was used in a database query
+	// GetAlias returns the alias that was used in a database query.
 	GetAlias() string
+
 	nodeType() NodeType
 	tableName() string
 	log(level int)
@@ -81,6 +82,7 @@ type conditioner interface {
 	setCondition(condition NodeI)
 	getCondition() NodeI
 }
+
 
 // SetAlias sets an alias which is an alternate name to use for the node in the result of a query.
 func (n *Node) SetAlias(a string) {
@@ -211,3 +213,4 @@ func NodeGoName(n NodeI) string {
 func NodeSorterSortDesc(n NodeSorter) bool {
 	return n.sortDesc()
 }
+

@@ -24,7 +24,7 @@ const (
 // The functions defined here are hooks that you can implement in your subclass.
 type TableI interface {
 	page.ControlI
-	SetCaption(interface{})
+	SetCaption(interface{}) TableI
 	DrawCaption(context.Context, *bytes.Buffer) error
 	GetHeaderRowAttributes(row int) *html.Attributes
 	GetFooterRowAttributes(row int) *html.Attributes
@@ -58,7 +58,7 @@ type TableFooterRowAttributer interface {
 // as well as custom functions you define. See the examples directory for examples of using a Table object.
 // See also the PaginatedTable for a table that works with a Pager object to page through a large data set.
 //
-// Call Sortable() to make a table sortable, in which case the user can click in the header of a column to sort
+// Call SetSortable() to make a table sortable, in which case the user can click in the header of a column to sort
 // by that column. The Table maintains a history of what columns have been sorted by what row, so that you can
 // implement multi-level sorting if you so desire. This is particularly helpful when some columns have duplicate
 // data, that then get further identified by another column.
@@ -113,8 +113,8 @@ func (t *Table) this() TableI {
 	return t.Self.(TableI)
 }
 
-// Sortable makes a table sortable. It will attach sortable events and show the header if its not shown.
-func (t *Table) Sortable() TableI {
+// SetSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
+func (t *Table) SetSortable() TableI {
 	t.On(event.TableSort(), action.Ajax(t.ID(), SortClick), action.PrivateAction{})
 	if t.headerRowCount == 0 {
 		t.headerRowCount = 1
@@ -124,8 +124,9 @@ func (t *Table) Sortable() TableI {
 
 // SetCaption sets the caption of the table. The default Table permits a caption to be either a string, or
 // a goradd control.
-func (t *Table) SetCaption(caption interface{}) {
+func (t *Table) SetCaption(caption interface{}) TableI {
 	t.caption = caption
+	return t.this()
 }
 
 // SetHeaderRowCount sets the number of header rows shown. Each column will be asked to draw this number of header rows.

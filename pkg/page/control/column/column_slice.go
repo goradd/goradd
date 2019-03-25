@@ -15,36 +15,30 @@ type SliceColumn struct {
 	control.ColumnBase
 }
 
-func NewSliceColumn(index int, format ...string) *SliceColumn {
+// NewSliceColumn creates a new column that treats the supplied row data as a slice. It will use the given numeric
+// index to get the data. It will then attempt to convert the data into a string, or you can explicitly tell it
+// how to do this by calling SetFormat. If the data is a Date, Time or DateTime type, you MUST call SetTimeFormat
+// to describe how to format the date or time.
+func NewSliceColumn(index int) *SliceColumn {
 	i := SliceColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(index, f, "")
+	i.Init(index)
 	return &i
 }
 
-func NewTimeSliceColumn(index int, timeFormat string, format ...string) *SliceColumn {
-	i := SliceColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(index, f, timeFormat)
-	return &i
-}
-
-func (c *SliceColumn) Init(index int, format string, timeFormat string) {
+func (c *SliceColumn) Init(index int) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(SliceTexter{Index: index, Format: format, TimeFormat: timeFormat})
+	c.SetCellTexter(SliceTexter{Index: index})
 }
 
+// SetFormat sets an optional format string for the column, which will be passed to fmt.Sprintf
+// to format the data.
 func (c *SliceColumn) SetFormat(format string) *SliceColumn {
 	c.CellTexter().(*SliceTexter).Format = format
 	return c
 }
 
+// SetTimeFormat sets the format for Date, Time or DateTime type data. The format will be passed to time.Format
+// to produce the text to print for the column.
 func (c *SliceColumn) SetTimeFormat(format string) *SliceColumn {
 	c.CellTexter().(*SliceTexter).TimeFormat = format
 	return c
@@ -73,6 +67,8 @@ func (t SliceTexter) CellText(ctx context.Context, col 	control.ColumnI, rowNum 
 
 }
 
+// ApplyFormat is used by table columns to apply the given fmt.Sprintf and time.Format strings to the data.
+// It is exported to allow custom cell texters to use it.
 func ApplyFormat(data interface{}, format string, timeFormat string) string {
 	var out string
 

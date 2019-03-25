@@ -19,37 +19,30 @@ type StringGetter interface {
 	Get(string) string
 }
 
-func NewGetterColumn(index string, format ...string) *GetterColumn {
+// NewGetterColumn creates a new column that will call Get on the column to figure out what data to display.
+// If the data is a Date, Time or DateTime type, you MUST also call SetTimeFormat.
+// You can also optionally call SetFormat to pass it a fmt.Sprintf string to further format the data before printing.
+func NewGetterColumn(index string) *GetterColumn {
 	i := GetterColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(index, f, "")
+	i.Init(index)
 	return &i
 }
 
-func NewDateGetterColumn(index string, timeFormat string, format ...string) *GetterColumn {
-	i := GetterColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(index, f, timeFormat)
-	return &i
-}
-
-func (c *GetterColumn) Init(index string, format string, timeFormat string) {
+func (c *GetterColumn) Init(index string) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(GetterTexter{Key: index, Format: format, TimeFormat: timeFormat})
+	c.SetCellTexter(GetterTexter{Key: index})
 	c.SetTitle(index)
 }
 
+// SetFormat sets an optional format string for the column, which will be passed to fmt.Sprintf
+// to format the data.
 func (c *GetterColumn) SetFormat(format string) *GetterColumn {
 	c.CellTexter().(*GetterTexter).Format = format
 	return c
 }
 
+// SetTimeFormat sets the format for Date, Time or DateTime type data. The format will be passed to time.Format
+// to produce the text to print for the column.
 func (c *GetterColumn) SetTimeFormat(format string) *GetterColumn {
 	c.CellTexter().(*GetterTexter).TimeFormat = format
 	return c

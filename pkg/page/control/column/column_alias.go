@@ -12,48 +12,39 @@ type AliasGetter interface {
 
 // AliasColumn is a column that uses the AliasGetter interface to get the alias text out of a database object.
 // The data therefore should be a slice of objects that implement the AliasGetter interface. All ORM objects
-// are AliasGetters (or should be).
+// are AliasGetters (or should be). Call NewAliasColumn to create the column.
 type AliasColumn struct {
 	control.ColumnBase
 	alias string
 }
 
 // NewAliasColumn creates a new table column that gets its text from an alias attached to an ORM object.
-func NewAliasColumn(alias string, format ...string) *AliasColumn {
+// If the alias has a Date type, you MUST call SetTimeFormat to set the format of the printed string.
+func NewAliasColumn(alias string) *AliasColumn {
 	i := AliasColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(alias, f, "")
+	i.Init(alias)
 	return &i
 }
 
-// NewAliasColumn creates a new table column that gets its text from an alias attached to an ORM object.
-// The alias should get a DateTime type of data.
-func NewDateAliasColumn(alias string, timeFormat string, format ...string) *AliasColumn {
-	i := AliasColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(alias, f, timeFormat)
-	return &i
-}
 
-func (c *AliasColumn) Init(alias string, format string, timeFormat string) {
+func (c *AliasColumn) Init(alias string) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(&AliasTexter{Alias: alias, Format: format, TimeFormat: timeFormat})
+	c.SetCellTexter(&AliasTexter{Alias: alias})
 	c.SetTitle(alias)
 }
 
-// SetFormat sets the format string of the node column.
+func GetNode(c *AliasColumn) query.NodeI {
+	return query.Alias(c.alias)
+}
+
+// SetFormat sets an optional format string for the column. The format string will be passed to fmt.Sprintf
+// to further format the printed data.
 func (c *AliasColumn) SetFormat(format string) *AliasColumn {
 	c.CellTexter().(*AliasTexter).Format = format
 	return c
 }
 
-// SetTimeFormat sets the time format of the string, specifically for a DateTime column.
+// SetTimeFormat sets the time format of the string, specifically for a DateTime type.
 func (c *AliasColumn) SetTimeFormat(format string) *AliasColumn {
 	c.CellTexter().(*AliasTexter).TimeFormat = format
 	return c

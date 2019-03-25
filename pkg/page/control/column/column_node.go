@@ -8,42 +8,32 @@ import (
 )
 
 // NodeColumn is a column that uses a query.NodeI to get its text out of data that is coming from the ORM.
+// Create it with NewNodeColumn
 type NodeColumn struct {
 	control.ColumnBase
-	node query.NodeI
 }
 
 // NewNodeColumn creates a table column that uses a query.NodeI object to get its text out of an ORM object.
-// node should point to data that is preloaded in the ORM object. format is optional and if specified, should
-// be a format string suitable for the fmt package.
-func NewNodeColumn(node query.NodeI, format ...string) *NodeColumn {
+// node should point to data that is preloaded in the ORM object. If the node points to a Date, Time or DateTime type
+// of column, you MUST specify a time format by calling SetTimeFormat.
+func NewNodeColumn(node query.NodeI) *NodeColumn {
 	i := NodeColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(node, f, "")
+	i.Init(node)
 	return &i
 }
 
-// NewDateNodeColumn creates a table column that uses a query.NodeI object to get a date out of an ORM object.
-// node should point to data that is preloaded in the ORM object.
-// timeFormat is a time format string for formatting the date.
-// format is optional and if specified, should be a format string suitable for the fmt package.
-func NewDateNodeColumn(node query.NodeI, timeFormat string, format ...string) *NodeColumn {
-	i := NodeColumn{}
-	var f string
-	if len(format) > 0 {
-		f = format[0]
-	}
-	i.Init(node, f, timeFormat)
-	return &i
-}
 
-func (c *NodeColumn) Init(node query.NodeI, format string, timeFormat string) {
+func (c *NodeColumn) Init(node query.NodeI) {
+	if node == nil {
+		panic("node is required")
+	}
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(&NodeTexter{Node: node, Format: format, TimeFormat: timeFormat})
+	c.SetCellTexter(&NodeTexter{Node: node})
 	c.SetTitle(query.NodeGoName(node))
+}
+
+func (c *NodeColumn) GetNode() query.NodeI {
+	return c.CellTexter().(*NodeTexter).Node
 }
 
 // SetFormat sets the format string of the node column.
@@ -107,4 +97,33 @@ func (t NodeTexter) CellText(ctx context.Context, col control.ColumnI, rowNum in
 		s := v2.Get(names[0]) // This should be a column node
 		return ApplyFormat(s, t.Format, t.TimeFormat)
 	}
+}
+
+type NodeGetter interface {
+	GetNode() query.NodeI
+}
+
+// MakeNodeSlice is a convenience method to convert a slice of columns into a slice of nodes derived from
+// those columns. The column slice would typically come from the table's SortColumns method, and the returned
+// slice would be passed to the database's OrderBy clause when building a query. Since this is a common use, it
+// will also add sort info to the nodes.
+func MakeNodeSlice(columns []control.ColumnI) []query.NodeI {
+	var nodes []query.NodeI
+	for _,c := range columns {
+		if getter,ok := c.(NodeGetter); ok {
+			node := getter.GetNode()
+			if nodeSorter, ok := node.(query.NodeSorter); ok {
+				switch c.SortDirection() {
+				case control.SortAscending:
+					nodeSorter.Ascending()
+				case control.SortDescending:
+					nodeSorter.Descending()
+				}
+			}
+			nodes = append(nodes, node)
+		} else {
+			panic("Column is not a NodeGetter.")
+		}
+	}
+	return nodes
 }

@@ -12,6 +12,8 @@ import (
 )
 
 const countAlias = "_count"
+const columnAliasPrefix = "c_"
+const tableAliasPrefix = "t_"
 
 // Copier implements the copy interface, that returns a deep copy of an object.
 type Copier interface {
@@ -27,7 +29,7 @@ type limitInfo struct {
 // It builds the join tree and creates the aliases that will eventually be used to generate
 // the sql and then unpack it into fields and objects. It implements the QueryBuilderI interface.
 type sqlBuilder struct {
-	db                SqlDbI
+	db                SqlDbI			// The sql database object
 	command           string
 	columnAliases     *maps.SliceMap
 	columnAliasNumber int
@@ -287,8 +289,9 @@ func (b *sqlBuilder) addNode(n NodeI, addColumn bool) {
 	var np NodeI
 	var hasSubquery bool // Turns off the check to make sure all nodes come from the same table, since subqueries might have different tables
 	var cn []NodeI
-
 	var nodes []NodeI
+
+	// Gather all the nodes below this node that will be referred to at some point in the query
 	if sn, ok := n.(*SubqueryNode); ok {
 		nodes = append(nodes, n) // Return the subquery node itself, because we need to do some work on it
 
@@ -357,7 +360,7 @@ func (b *sqlBuilder) logNode(node NodeI, level int) {
 
 }
 
-// assuming that both nodes point to a same location, merges the source node into the destination node tree
+// assuming that both nodes point to the same location, merges the source node and its children into the destination node tree
 func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 	var a = srcNode.GetAlias()
 	if !srcNode.Equals(destNode) {
@@ -388,7 +391,7 @@ func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
 		b.assignAliases(destNode, addColumn) // potentially was added by SelectNodes_, and so did not get aliases
 		if srcNode.GetAlias() == "" {
 			srcNode.SetAlias(destNode.GetAlias()) // If src node does not get added, it still needs to know what its alias is
-		} else { // alias was manually assigned, so use that one
+		} else { // alias was manually or previously assigned, so use that one
 			destNode.SetAlias(srcNode.GetAlias())
 		}
 		if p := ParentNode(srcNode); p != nil && p.GetAlias() == "" {
@@ -446,11 +449,11 @@ func (b *sqlBuilder) assignAliases(n NodeI, addColumn bool) {
 	if n.GetAlias() == "" {
 		// if it doesn't have a pre-assigned alias, give it an automated one
 		if _, ok := n.(*ColumnNode); ok {
-			key := "c" + b.subPrefix + strconv.Itoa(b.columnAliasNumber)
+			key := columnAliasPrefix + b.subPrefix + strconv.Itoa(b.columnAliasNumber)
 			b.columnAliasNumber++
 			n.SetAlias(key)
 		} else {
-			key := "t" + b.subPrefix + strconv.Itoa(b.tableAliases.Len())
+			key := tableAliasPrefix + b.subPrefix + strconv.Itoa(b.tableAliases.Len())
 			n.SetAlias(key)
 		}
 	}

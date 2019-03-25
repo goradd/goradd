@@ -66,6 +66,8 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 			panels.NewTableProxyPanel(ctx, f.detail)
 		case "hlist":
 			panels.NewHListPanel(ctx, f.detail)
+
+			// TODO: TableSelect, TableSort, TableStyler
 		default:
 			panels.NewDefaultPanel(ctx, f.detail)
 		}

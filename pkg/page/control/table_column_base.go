@@ -58,7 +58,7 @@ type ColumnI interface {
 	IsSortable() bool
 	SortDirection() SortDirection
 	SetSortDirection(SortDirection) ColumnI
-	Sortable() ColumnI
+	SetSortable() ColumnI
 	SetIsHtml(columnIsHtml bool) ColumnI
 	PreRender()
 	MarshalState(m maps.Setter)
@@ -306,8 +306,8 @@ func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data 
 	return nil
 }
 
-// Sortable indicates that the column should be drawn with sort indicators.
-func (c *ColumnBase) Sortable() ColumnI {
+// SetSortable indicates that the column should be drawn with sort indicators.
+func (c *ColumnBase) SetSortable() ColumnI {
 	c.sortDirection = NotSorted
 	return c.this()
 }
