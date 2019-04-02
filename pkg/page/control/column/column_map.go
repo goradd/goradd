@@ -24,7 +24,7 @@ func NewMapColumn(index interface{}) *MapColumn {
 
 func (c *MapColumn) Init(index interface{}) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(MapTexter{Index: index})
+	c.SetCellTexter(&MapTexter{Index: index})
 }
 
 // SetFormat sets an optional format string for the column, which will be passed to fmt.Sprintf

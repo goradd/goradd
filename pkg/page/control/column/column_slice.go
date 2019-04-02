@@ -27,7 +27,7 @@ func NewSliceColumn(index int) *SliceColumn {
 
 func (c *SliceColumn) Init(index int) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(SliceTexter{Index: index})
+	c.SetCellTexter(&SliceTexter{Index: index})
 }
 
 // SetFormat sets an optional format string for the column, which will be passed to fmt.Sprintf

@@ -411,10 +411,7 @@ func (b *sqlBuilder) makeColumnAliases() {
 				b.assignPrimaryKeyAliases(b.rootJoinTreeItem)
 			}
 		} else {
-			b.assignPrimaryKeyAliases(b.rootJoinTreeItem)
-			for _, n := range b.joins {
-				b.assignAllColumnAliases(b.getItemFromNode(n))
-			}
+			b.assignAllColumnAliases(b.rootJoinTreeItem)
 		}
 	}
 }
@@ -455,6 +452,9 @@ func (b *sqlBuilder) assignAllColumnAliases(item *joinTreeItem) {
 			b.addNodeToJoinTree(sn)
 			b.assignAlias(b.getItemFromNode(sn))
 		}
+	}
+	for _,item2 := range item.childReferences {
+		b.assignAllColumnAliases(item2)
 	}
 }
 

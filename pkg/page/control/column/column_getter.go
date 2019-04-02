@@ -30,7 +30,7 @@ func NewGetterColumn(index string) *GetterColumn {
 
 func (c *GetterColumn) Init(index string) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(GetterTexter{Key: index})
+	c.SetCellTexter(&GetterTexter{Key: index})
 	c.SetTitle(index)
 }
 
