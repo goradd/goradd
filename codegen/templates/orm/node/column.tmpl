@@ -11,6 +11,7 @@ func (n *{{privateName}}Node) {{= col.GoName }}() *query.ColumnNode {
 		"{{= col.DbName }}",
 		"{{= col.GoName }}",
 		query.{{= col.ColumnType.String() }},
+		{{if col.IsPk}}true{{else}}false{{if}},
 	)
 	query.SetParentNode(cn, n)
 	return cn

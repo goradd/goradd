@@ -7,7 +7,7 @@ import (
 )
 
 type tmpNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func Tmp() *tmpNode {
@@ -27,7 +27,10 @@ func (n *tmpNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.D()
 }
 func (n *tmpNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+func (n *tmpNode) Copy_() query.NodeI {
+	return &tmpNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *tmpNode) D() *query.ColumnNode {
@@ -37,6 +40,7 @@ func (n *tmpNode) D() *query.ColumnNode {
 		"d",
 		"D",
 		query.ColTypeString,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -49,6 +53,7 @@ func (n *tmpNode) I() *query.ColumnNode {
 		"i",
 		"I",
 		query.ColTypeInteger,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn

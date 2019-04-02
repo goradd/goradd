@@ -35,3 +35,24 @@ func TestNodeEquality(t *testing.T) {
 	}
 
 }
+
+func BenchmarkNodeType1(b *testing.B) {
+	n := node.Project().Manager()
+
+	for i := 0; i < b.N; i++ {
+		t := query.NodeGetType(n)
+		if t == query.ReferenceNodeType {
+			_ = n
+		}
+	}
+}
+
+func BenchmarkNodeType2(b *testing.B) {
+	n := node.Project().Manager()
+
+	for i := 0; i < b.N; i++ {
+		if r,ok := n.EmbeddedNode_().(*query.ReferenceNode); ok {
+			_=r
+		}
+	}
+}

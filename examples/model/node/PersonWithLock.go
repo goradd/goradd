@@ -7,7 +7,7 @@ import (
 )
 
 type personWithLockNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func PersonWithLock() *personWithLockNode {
@@ -29,7 +29,10 @@ func (n *personWithLockNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.ID()
 }
 func (n *personWithLockNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+func (n *personWithLockNode) Copy_() query.NodeI {
+	return &personWithLockNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *personWithLockNode) ID() *query.ColumnNode {
@@ -39,6 +42,7 @@ func (n *personWithLockNode) ID() *query.ColumnNode {
 		"id",
 		"ID",
 		query.ColTypeString,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -51,6 +55,7 @@ func (n *personWithLockNode) FirstName() *query.ColumnNode {
 		"first_name",
 		"FirstName",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -63,6 +68,7 @@ func (n *personWithLockNode) LastName() *query.ColumnNode {
 		"last_name",
 		"LastName",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -75,6 +81,7 @@ func (n *personWithLockNode) SysTimestamp() *query.ColumnNode {
 		"sys_timestamp",
 		"SysTimestamp",
 		query.ColTypeDateTime,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn

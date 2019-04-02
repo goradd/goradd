@@ -31,3 +31,4 @@ type QueryBuilderI interface {
 	Count(ctx context.Context, distinct bool, nodes ...NodeI) uint
 	Subquery() *SubqueryNode
 }
+

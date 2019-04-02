@@ -7,7 +7,7 @@ import (
 )
 
 type projectNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func Project() *projectNode {
@@ -35,7 +35,10 @@ func (n *projectNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.ID()
 }
 func (n *projectNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+func (n *projectNode) Copy_() query.NodeI {
+	return &projectNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *projectNode) ID() *query.ColumnNode {
@@ -45,6 +48,7 @@ func (n *projectNode) ID() *query.ColumnNode {
 		"id",
 		"ID",
 		query.ColTypeString,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -57,6 +61,7 @@ func (n *projectNode) Num() *query.ColumnNode {
 		"num",
 		"Num",
 		query.ColTypeInteger,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -69,6 +74,7 @@ func (n *projectNode) ProjectStatusTypeID() *query.ColumnNode {
 		"project_status_type_id",
 		"ProjectStatusTypeID",
 		query.ColTypeUnsigned,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -98,6 +104,7 @@ func (n *projectNode) ManagerID() *query.ColumnNode {
 		"manager_id",
 		"ManagerID",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -127,6 +134,7 @@ func (n *projectNode) Name() *query.ColumnNode {
 		"name",
 		"Name",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -139,6 +147,7 @@ func (n *projectNode) Description() *query.ColumnNode {
 		"description",
 		"Description",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -151,6 +160,7 @@ func (n *projectNode) StartDate() *query.ColumnNode {
 		"start_date",
 		"StartDate",
 		query.ColTypeDateTime,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -163,6 +173,7 @@ func (n *projectNode) EndDate() *query.ColumnNode {
 		"end_date",
 		"EndDate",
 		query.ColTypeDateTime,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -175,6 +186,7 @@ func (n *projectNode) Budget() *query.ColumnNode {
 		"budget",
 		"Budget",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -187,26 +199,10 @@ func (n *projectNode) Spent() *query.ColumnNode {
 		"spent",
 		"Spent",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
-}
-
-func (n *projectNode) TeamMembers() *personNode {
-	cn := &personNode{
-		query.NewManyManyNode(
-			"goradd",
-			"team_member_project_assn",
-			"project_id",
-			"TeamMembers",
-			"person",
-			"team_member_id",
-			false,
-		),
-	}
-	query.SetParentNode(cn, n)
-	return cn
-
 }
 
 func (n *projectNode) ChildrenAsParent() *projectNode {
@@ -235,6 +231,23 @@ func (n *projectNode) ParentsAsChild() *projectNode {
 			"ParentsAsChild",
 			"project",
 			"parent_id",
+			false,
+		),
+	}
+	query.SetParentNode(cn, n)
+	return cn
+
+}
+
+func (n *projectNode) TeamMembers() *personNode {
+	cn := &personNode{
+		query.NewManyManyNode(
+			"goradd",
+			"team_member_project_assn",
+			"project_id",
+			"TeamMembers",
+			"person",
+			"team_member_id",
 			false,
 		),
 	}

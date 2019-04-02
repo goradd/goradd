@@ -7,7 +7,7 @@ import (
 )
 
 type loginNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func Login() *loginNode {
@@ -30,7 +30,10 @@ func (n *loginNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.ID()
 }
 func (n *loginNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+func (n *loginNode) Copy_() query.NodeI {
+	return &loginNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *loginNode) ID() *query.ColumnNode {
@@ -40,6 +43,7 @@ func (n *loginNode) ID() *query.ColumnNode {
 		"id",
 		"ID",
 		query.ColTypeString,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -52,6 +56,7 @@ func (n *loginNode) PersonID() *query.ColumnNode {
 		"person_id",
 		"PersonID",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -81,6 +86,7 @@ func (n *loginNode) Username() *query.ColumnNode {
 		"username",
 		"Username",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -93,6 +99,7 @@ func (n *loginNode) Password() *query.ColumnNode {
 		"password",
 		"Password",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -105,6 +112,7 @@ func (n *loginNode) IsEnabled() *query.ColumnNode {
 		"is_enabled",
 		"IsEnabled",
 		query.ColTypeBool,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn

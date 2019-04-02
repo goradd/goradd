@@ -11,8 +11,6 @@ import (
 
 // ValueNode represents a value for a built-in type that is to be used in a query.
 type ValueNode struct {
-	Node
-
 	value interface{}
 }
 
@@ -73,7 +71,7 @@ func NewValueNode(i interface{}) NodeI {
 			n.value = val.Float()
 		case reflect.Slice:fallthrough
 		case reflect.Array:
-			ary := []NodeI{}
+			var ary []NodeI
 			for i := 0; i < val.Len(); i++ {
 				// TODO: Handle NodeI's here too? Prevent more than one level deep?
 				ary = append(ary, NewValueNode(val.Index(i).Interface()))
@@ -86,10 +84,6 @@ func NewValueNode(i interface{}) NodeI {
 		}
 	}
 	return n
-}
-
-func (n *ValueNode) nodeType() NodeType {
-	return ValueNodeType
 }
 
 func (n *ValueNode) Equals(n2 NodeI) bool {
@@ -119,14 +113,14 @@ func (n *ValueNode) tableName() string {
 
 func (n *ValueNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	var alias string
-	if n.alias != "" {
-		alias = " as " + n.alias
-	}
-	log.Print(tabs + "Val: " + fmt.Sprint(n.value) + alias)
+	log.Print(tabs + "Val: " + fmt.Sprint(n.value))
 }
 
 // ValueNodeGetValue is used internally by the framework to get the node's internal value.
 func ValueNodeGetValue(n *ValueNode) interface{} {
 	return n.value
+}
+
+func (n *ValueNode) nodeType() NodeType {
+	return ValueNodeType
 }

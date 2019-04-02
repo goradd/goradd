@@ -46,6 +46,15 @@ func TestSort(t *testing.T) {
 	if people[0].FirstName() != "Alex" {
 		t.Error("Person found not Alex, found " + people[0].FirstName())
 	}
+
+
+	// Testing for regression bug with multiple sorts
+	people = model.QueryPeople().
+		OrderBy(node.Person().LastName().Descending(), node.Person().FirstName().Ascending()).
+		Load(ctx)
+	if people[0].FirstName() != "Karen" || people[0].LastName() != "Wolfe" {
+		t.Error("Person found not Karen Wolfe, found " + people[0].FirstName() + " " + people[0].LastName())
+	}
 }
 
 func TestWhere(t *testing.T) {
@@ -380,16 +389,37 @@ func TestDeleteQuery(t *testing.T) {
 }
 
 func TestHaving(t *testing.T) {
+	// This particular test shows a quirk of SQL that requires:
+	// 1) If you have an aggregate clause (like COUNT), you MUST have a GROUPBY clause, and
+	// 2) If you have a GROUPBY, you MUST SELECT and only select the things you are grouping by.
+	//
+	// Sooo, when we see a GroupBy, we automatically also select the same nodes.
 	ctx := context.Background()
 	projects := model.QueryProjects().
-		Select(node.Project().ID(), node.Project().Name()).
-		GroupBy(node.Project().ID()).
+		GroupBy(node.Project().ID(), node.Project().Name()).
 		OrderBy(node.Project().ID()).
-		Alias("team_member_count", Count(node.Project().TeamMembers().ID())).
+		Alias("team_member_count", Count(node.Project().TeamMembers())).
 		Having(GreaterThan(Count(query.Alias("team_member_count")), 5)).
 		Load(ctx)
 
 	assert.Len(t, projects, 2)
 	assert.Equal(t, "State College HR System", projects[0].Name())
 	assert.Equal(t, 6, projects[0].GetAlias("team_member_count").Int())
+}
+
+func TestFailedJoins(t *testing.T) {
+	assert.Panics(t, func(){model.QueryProjects().Join(node.Person())})
+	assert.Panics(t, func(){model.QueryProjects().Join(node.Project().ManagerID())})
+}
+
+func TestFailedExpand(t *testing.T) {
+	assert.Panics(t, func(){model.QueryProjects().Expand(node.Person())})
+	assert.Panics(t, func(){model.QueryProjects().Expand(node.Project().Manager())})
+}
+
+func TestFailedGroupBy(t *testing.T) {
+	assert.Panics(t, func(){model.
+		QueryProjects().
+		GroupBy(node.Project().Name()).
+			Select(node.Project().Name())})
 }

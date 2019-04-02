@@ -5,10 +5,18 @@ import (
 	"strings"
 )
 
+type ColumnNodeI interface {
+	NodeI
+	NodeSorter
+	Aliaser
+	nodeLinkI
+}
+
+
 // A Column represents a table or field in a database structure, and is the leaf of a node tree or chain.
 type ColumnNode struct {
-	Node
-
+	nodeAlias
+	nodeLink
 	// Which database in the global list of databases does the node belong to
 	dbKey string
 	// Name of table in the database we point to
@@ -21,19 +29,40 @@ type ColumnNode struct {
 	goType GoColumnType
 	// Used by OrderBy clauses
 	sortDescending bool
-	// When in an update or insert operation, stores the value we are attempting to update or insert
-	//value interface{}
+	// True if this is the private key of its parent table
+	isPK bool
 }
 
-func NewColumnNode(dbKey string, dbTable string, dbName string, goName string, goType GoColumnType) *ColumnNode {
+// NewColumnNode is used by the code generator to create a new column node.
+func NewColumnNode(dbKey string, dbTable string, dbName string, goName string, goType GoColumnType, isPK bool) *ColumnNode {
 	n := &ColumnNode{
 		dbKey:    dbKey,
 		dbTable:  dbTable,
 		dbColumn: dbName,
-		gName:   goName,
+		gName:    goName,
 		goType:   goType,
+		isPK: 	  isPK,
 	}
 	return n
+}
+
+// Returns a copy of the node, satisfying the copy interface
+func (n *ColumnNode) copy() NodeI {
+	ret := &ColumnNode{
+		dbKey:    n.dbKey,
+		dbTable:  n.dbTable,
+		dbColumn: n.dbColumn,
+		gName:    n.gName,
+		goType:   n.goType,
+		isPK: 	  n.isPK,
+		nodeAlias: nodeAlias{n.alias},
+		// don't copy links!
+	}
+	return ret
+}
+
+func (n *ColumnNode) nodeType() NodeType {
+	return ColumnNodeType
 }
 
 // Ascending is used in an OrderBy query builder function to sort the column in ascending order.
@@ -60,22 +89,15 @@ func (n *ColumnNode) SetValue(v interface{}) error {
 }
 */
 
-
-func (n *ColumnNode) nodeType() NodeType {
-	return ColumnNodeType
-}
-
 // Equals is used internally by the framework to determine if two nodes are equal.
 func (n *ColumnNode) Equals(n2 NodeI) bool {
 	if cn, ok := n2.(*ColumnNode); ok {
 		if cn.dbTable == n.dbTable && cn.dbColumn == n.dbColumn {
-			// Special code to allow new nodes to be evaluated as equal, but manual aliased nodes are not equal.
-			if n.GetAlias() == "" || n2.GetAlias() == "" {
+			// Allow new nodes to be evaluated as equal, but manual aliased nodes are not equal.
+			if n.alias == "" || cn.alias == "" {
 				return true
 			}
-			if n.GetAlias() == n2.GetAlias() {
-				return true
-			}
+			return n.alias == cn.alias
 		}
 	}
 	return false
@@ -111,4 +133,16 @@ func ColumnNodeGoType(n *ColumnNode) GoColumnType {
 // ColumnNodeDbName is used internally by the framework to return the name of the column in the database.
 func ColumnNodeDbName(n *ColumnNode) string {
 	return n.dbColumn
+}
+
+func ColumnNodeIsPK(n *ColumnNode) bool {
+	return n.isPK
+}
+
+func NodeIsPK(n NodeI) bool {
+	if cn, ok := n.(*ColumnNode); !ok {
+		return false
+	} else {
+		return cn.isPK
+	}
 }

@@ -10,7 +10,7 @@ import (
 )
 
 type {{nodeName}} struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 
@@ -35,7 +35,11 @@ func (n *{{nodeName}}) PrimaryKeyNode_() (*query.ColumnNode) {
 }
 
 func (n *{{nodeName}}) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+
+func (n *{{nodeName}}) Copy_() query.NodeI {
+	return &{{nodeName}}{query.CopyNode(n.ReferenceNodeI)}
 }
 
 }}
@@ -54,6 +58,7 @@ func (n *{{nodeName}}) {{= fn }}() *query.ColumnNode {
 		"{{= tt.FieldNames[i] }}",
 		"{{= fn }}",
 		query.{{= ft }},
+		{{if tt.PkField == fn }}true{{else}}false{{if}},
 	)
 	query.SetParentNode(cn, n)
 	return cn

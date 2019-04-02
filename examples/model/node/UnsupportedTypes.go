@@ -7,7 +7,7 @@ import (
 )
 
 type unsupportedTypesNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func UnsupportedTypes() *unsupportedTypesNode {
@@ -43,7 +43,10 @@ func (n *unsupportedTypesNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.TypeSerial()
 }
 func (n *unsupportedTypesNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+func (n *unsupportedTypesNode) Copy_() query.NodeI {
+	return &unsupportedTypesNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *unsupportedTypesNode) TypeSet() *query.ColumnNode {
@@ -53,6 +56,7 @@ func (n *unsupportedTypesNode) TypeSet() *query.ColumnNode {
 		"type_set",
 		"TypeSet",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -65,6 +69,7 @@ func (n *unsupportedTypesNode) TypeEnum() *query.ColumnNode {
 		"type_enum",
 		"TypeEnum",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -77,6 +82,7 @@ func (n *unsupportedTypesNode) TypeDecimal() *query.ColumnNode {
 		"type_decimal",
 		"TypeDecimal",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -89,6 +95,7 @@ func (n *unsupportedTypesNode) TypeDouble() *query.ColumnNode {
 		"type_double",
 		"TypeDouble",
 		query.ColTypeFloat,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -101,6 +108,7 @@ func (n *unsupportedTypesNode) TypeGeo() *query.ColumnNode {
 		"type_geo",
 		"TypeGeo",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -113,6 +121,7 @@ func (n *unsupportedTypesNode) TypeTinyBlob() *query.ColumnNode {
 		"type_tiny_blob",
 		"TypeTinyBlob",
 		query.ColTypeBytes,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -125,6 +134,7 @@ func (n *unsupportedTypesNode) TypeMediumBlob() *query.ColumnNode {
 		"type_medium_blob",
 		"TypeMediumBlob",
 		query.ColTypeBytes,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -137,6 +147,7 @@ func (n *unsupportedTypesNode) TypeVarbinary() *query.ColumnNode {
 		"type_varbinary",
 		"TypeVarbinary",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -149,6 +160,7 @@ func (n *unsupportedTypesNode) TypeLongtext() *query.ColumnNode {
 		"type_longtext",
 		"TypeLongtext",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -161,6 +173,7 @@ func (n *unsupportedTypesNode) TypeBinary() *query.ColumnNode {
 		"type_binary",
 		"TypeBinary",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -173,6 +186,7 @@ func (n *unsupportedTypesNode) TypeSmall() *query.ColumnNode {
 		"type_small",
 		"TypeSmall",
 		query.ColTypeInteger,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -185,6 +199,7 @@ func (n *unsupportedTypesNode) TypeMedium() *query.ColumnNode {
 		"type_medium",
 		"TypeMedium",
 		query.ColTypeInteger,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -197,6 +212,7 @@ func (n *unsupportedTypesNode) TypeBig() *query.ColumnNode {
 		"type_big",
 		"TypeBig",
 		query.ColTypeInteger64,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -209,6 +225,7 @@ func (n *unsupportedTypesNode) TypePolygon() *query.ColumnNode {
 		"type_polygon",
 		"TypePolygon",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -221,6 +238,7 @@ func (n *unsupportedTypesNode) TypeSerial() *query.ColumnNode {
 		"type_serial",
 		"TypeSerial",
 		query.ColTypeString,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -233,6 +251,7 @@ func (n *unsupportedTypesNode) TypeUnsigned() *query.ColumnNode {
 		"type_unsigned",
 		"TypeUnsigned",
 		query.ColTypeUnsigned,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -245,6 +264,7 @@ func (n *unsupportedTypesNode) TypeMultfk1() *query.ColumnNode {
 		"type_multFk1",
 		"TypeMultfk1",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -257,6 +277,7 @@ func (n *unsupportedTypesNode) TypeMultifk2() *query.ColumnNode {
 		"type_multiFk2",
 		"TypeMultifk2",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn

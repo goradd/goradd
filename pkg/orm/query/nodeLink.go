@@ -1,85 +1,76 @@
 package query
 
-// The nodeLinkI interface provides an interface to allow nodes to be linked in a parent multi-child chain
+// The nodeLinkI interface provides an interface to allow nodes to be linked in a parent child chain
 type nodeLinkI interface {
-	addChildNode(NodeI)
-	setSelf(NodeI)
+	setChild(NodeI)
 	setParent(NodeI)
-	getParentNode() NodeI
-	rootNode() NodeI
-	getChildNodes() []NodeI
+	getParent() NodeI
+	getChild() NodeI
+	copy() NodeI // all linkable nodes must be copyable
 }
 
-// The nodeLink is designed to be a mixin for the basic node structure. It encapsulates the chaining of nodes.
-// In particular, the SetParentNode method gets exported for codegen purposes
+// The nodeLink is designed to be a mixin for the basic node structure. It encapsulates the joining of nodes.
+// In particular, the SetParentNode method gets exported for codegen purposes.
 type nodeLink struct {
-	// We need to be able to get to the surrounding class. This is our aid to doing that. It must be set up correctly though.
-	self NodeI
-	// Parent in the chain, so its doubly linked
+	// Parent of the join, so its doubly linked
 	parentNode NodeI
-	// Child nodes. Multiple child nodes are used to indicate where in the chain of a query we are expanding.
-	childNodes []NodeI
+	// child of the join.
+	childNode NodeI
 }
 
-func (n *nodeLink) addChildNode(cn NodeI) {
-	if n.childNodes == nil {
-		n.childNodes = []NodeI{cn}
+func (n *nodeLink) setChild(cn NodeI) {
+	if n.childNode == nil {
+		n.childNode = cn
 	} else {
-		var found = false
-		for _, n2 := range n.childNodes {
-			if n2.Equals(cn) {
-				found = true
-			}
-		}
-		if !found {
-			n.childNodes = append(n.childNodes, cn)
-		}
+		panic ("node already has a child node")
 	}
 }
 
-func (n *nodeLink) setSelf(self NodeI) {
-	if n.self == nil {
-		n.self = self
-	}
-}
 
-func (n *nodeLink) setParent(p NodeI) {
-	n.parentNode = p
+func (n *nodeLink) setParent(pn NodeI) {
+	n.parentNode = pn
 }
 
 // SetParentNode is used internally by the framework.
-// It is used by the query builder to build a join tree, and by the codegenerator to initialize nodes
+// It is used by the codegenerator to create linked nodes.
 func SetParentNode(child NodeI, parent NodeI) {
 	if parent != nil {
-		child.setParent(parent)
-		parent.addChildNode(child)
+		if parent.(nodeLinkI).getChild() != nil {
+			// Create a copy of the parent chain, since the parent already has a child
+			parent = copyUp(parent)
+		}
+		child.(nodeLinkI).setParent(parent)
+		parent.(nodeLinkI).setChild(child)
 	}
-	child.setSelf(child)
 }
+
+// copyUp creates a copy of the given node and copies all of its parent nodes too, putting the copies in its parent chain.
+func copyUp(n NodeI) NodeI {
+	nl := n.(TableNodeI)
+	cp := nl.Copy_()
+	if p := nl.getParent(); p != nil {
+		parent := copyUp(p)
+		cp.(nodeLinkI).setParent(parent)
+		parent.(nodeLinkI).setChild(cp)
+	}
+	return cp
+}
+
 
 // ParentNode is used internally by the framework to return a node's parent.
 func ParentNode(n NodeI) NodeI {
-	return n.getParentNode()
+	return n.(nodeLinkI).getParent()
 }
 
-// rootNode returns the top node in the node chain
-func (n *nodeLink) rootNode() NodeI {
-	if n.self == nil {
-		return nil // value or operation node
+func (n *nodeLink) getParent() NodeI {
+	if n.parentNode == nil {
+		return nil
 	}
-	var n1 NodeI = n.self
-	for pn := n1.getParentNode(); pn != nil; pn = n1.getParentNode() {
-		n1 = pn
-	}
-	return n1
+	return n.parentNode.(NodeI)
 }
 
-func (n *nodeLink) getParentNode() NodeI {
-	return n.parentNode
-}
-
-func (n *nodeLink) getChildNodes() []NodeI {
-	return n.childNodes
+func (n *nodeLink) getChild() NodeI {
+	return n.childNode
 }
 
 /**
@@ -93,12 +84,30 @@ functions for the db package without broadcasting them to the world.
 
 */
 
-// ChildNodes is used internally by the framework to get the child nodes of a ndoe
-func ChildNodes(n nodeLinkI) []NodeI {
-	return n.getChildNodes()
+// ChildNode is used internally by the framework to get the child node of a node
+func ChildNode(n NodeI) NodeI {
+	return n.(nodeLinkI).getChild()
 }
 
 // RootNode is used internally by the framework to get the root node, which is the top parent in the node tree.
-func RootNode(n nodeLinkI) NodeI {
-	return n.rootNode()
+func RootNode(n NodeI) NodeI {
+	if self,ok := n.(nodeLinkI); !ok {
+		return nil
+	} else if self.getParent() == nil {
+		return self.(NodeI)
+	} else {
+		var n1 = self
+		for pn := n1.getParent(); pn != nil; pn = n1.getParent() {
+			n1 = pn.(nodeLinkI)
+		}
+		return n1.(NodeI)
+	}
+}
+
+func CopyNode(n NodeI) ReferenceNodeI {
+	if self,ok := n.(ReferenceNodeI); !ok {
+		panic ("cannot copy this kind of node")
+	} else {
+		return self.copy().(ReferenceNodeI)
+	}
 }

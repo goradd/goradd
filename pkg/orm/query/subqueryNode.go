@@ -11,7 +11,7 @@ import (
 // query on a table, and then end the query with "Subquery()" which will turn the query into a usable subquery node
 // that you can embed in other queries.
 type SubqueryNode struct {
-	Node
+	nodeAlias
 	b QueryBuilderI
 }
 
@@ -59,6 +59,7 @@ func (n *SubqueryNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Subquery: ")
 }
+
 
 // SubqueryBuilder is used internally by the framework to return the internal query builder of the subquery
 func SubqueryBuilder(n *SubqueryNode) QueryBuilderI {

@@ -6,9 +6,9 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"strings"
 	//"goradd/orm/query"
-	"github.com/knq/snaker"
 	"context"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	"github.com/knq/snaker"
 	"strconv"
 )
 
@@ -141,9 +141,9 @@ func (m *Mysql5) generateDeleteSql(qb QueryBuilderI) (sql string, args []interfa
 	var s string
 	var a []interface{}
 
-	n := b.rootNode
+	j := b.rootJoinTreeItem
 
-	sql = "DELETE " + n.GetAlias() + " "
+	sql = "DELETE " + j.alias + " "
 
 	s, a = m.generateFromSql(b)
 	sql += s
@@ -163,16 +163,16 @@ func (m *Mysql5) generateDeleteSql(qb QueryBuilderI) (sql string, args []interfa
 }
 
 func (m *Mysql5) generateColumnListWithAliases(b *sqlBuilder) (sql string, args []interface{}) {
-	b.columnAliases.Range(func(key string, v interface{}) bool {
-		node := v.(*ColumnNode)
-		sql += m.generateColumnNodeSql(node, false) + " AS `" + node.GetAlias() + "`,\n"
+	b.columnAliases.Range(func(key string, j *joinTreeItem) bool {
+		sql += m.generateColumnNodeSql(j.parent.alias, j.node) + " AS `" + key + "`,\n"
 		return true
 	})
 
 	b.aliasNodes.Range(func(key string, v interface{}) bool {
 		node := v.(NodeI)
-		s, a := m.generateNodeSql(node, false)
-		sql += s + " AS `" + node.GetAlias() + "`,\n"
+		aliaser := v.(Aliaser)
+		s, a := m.generateNodeSql(b, node, false)
+		sql += s + " AS `" + aliaser.GetAlias() + "`,\n"
 		args = append(args, a...)
 		return true
 	})
@@ -188,26 +188,22 @@ func (m *Mysql5) generateFromSql(b *sqlBuilder) (sql string, args []interface{})
 
 	sql = "FROM\n"
 
-	n := b.rootNode
-	sql += "`" + NodeTableName(n) + "` AS `" + n.GetAlias() + "`\n"
+	j := b.rootJoinTreeItem
+	sql += "`" + NodeTableName(j.node) + "` AS `" + j.alias + "`\n"
 
-	var childNodes []NodeI
-	var cn NodeI
-	if childNodes = ChildNodes(n); childNodes != nil {
-		for _, cn = range childNodes {
-			s, a = m.generateJoinSql(b, cn)
-			sql += s
-			args = append(args, a...)
-		}
+	for _, cj := range j.childReferences {
+		s, a = m.generateJoinSql(b, cj)
+		sql += s
+		args = append(args, a...)
 	}
 	return
 }
 
-func (m *Mysql5) generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []interface{}) {
+func (m *Mysql5) generateJoinSql(b *sqlBuilder, j *joinTreeItem) (sql string, args []interface{}) {
 	var tn TableNodeI
 	var ok bool
 
-	if tn, ok = n.(TableNodeI); !ok {
+	if tn, ok = j.node.(TableNodeI); !ok {
 		return
 	}
 
@@ -215,10 +211,10 @@ func (m *Mysql5) generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []int
 	case *ReferenceNode:
 		sql = "LEFT JOIN "
 		sql += "`" + ReferenceNodeRefTable(node) + "` AS `" +
-			node.GetAlias() + "` ON `" + ParentNode(node).GetAlias() + "`.`" +
-			ReferenceNodeDbColumnName(node) + "` = `" + node.GetAlias() + "`.`" + ReferenceNodeRefColumn(node) + "`"
-		if condition := NodeCondition(node); condition != nil {
-			s, a := m.generateNodeSql(condition, false)
+			j.alias + "` ON `" + j.parent.alias + "`.`" +
+			ReferenceNodeDbColumnName(node) + "` = `" + j.alias + "`.`" + ReferenceNodeRefColumn(node) + "`"
+		if j.joinCondition != nil {
+			s, a := m.generateNodeSql(b, j.joinCondition, false)
 			sql += " AND " + s
 			args = append(args, a...)
 		}
@@ -229,10 +225,10 @@ func (m *Mysql5) generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []int
 
 		sql = "LEFT JOIN "
 		sql += "`" + ReverseReferenceNodeRefTable(node) + "` AS `" +
-			node.GetAlias() + "` ON `" + ParentNode(node).GetAlias() + "`.`" +
-			ReverseReferenceNodeDbColumnName(node) + "` = `" + node.GetAlias() + "`.`" + ReverseReferenceNodeRefColumn(node) + "`"
-		if condition := NodeCondition(node); condition != nil {
-			s, a := m.generateNodeSql(condition, false)
+			j.alias + "` ON `" + j.parent.alias + "`.`" +
+			ReverseReferenceNodeDbColumnName(node) + "` = `" + j.alias + "`.`" + ReverseReferenceNodeRefColumn(node) + "`"
+		if j.joinCondition != nil {
+			s, a := m.generateNodeSql(b, j.joinCondition, false)
 			sql += " AND " + s
 			args = append(args, a...)
 		}
@@ -250,15 +246,15 @@ func (m *Mysql5) generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []int
 			pk = m.Describe().TableDescription(ManyManyNodeRefTable(node)).PrimaryKeyColumn.DbName
 		}
 
-		sql += "`" + ManyManyNodeDbTable(node) + "` AS `" + node.GetAlias() + "a` ON `" +
-			ParentNode(node).GetAlias() + "`.`" +
+		sql += "`" + ManyManyNodeDbTable(node) + "` AS `" + j.alias + "a` ON `" +
+			j.parent.alias + "`.`" +
 			ColumnNodeDbName(ParentNode(node).(TableNodeI).PrimaryKeyNode_()) +
-			"` = `" + node.GetAlias() + "a`.`" + ManyManyNodeDbColumn(node) + "`\n"
-		sql += "LEFT JOIN `" + ManyManyNodeRefTable(node) + "` AS `" + node.GetAlias() + "` ON `" + node.GetAlias() + "a`.`" + ManyManyNodeRefColumn(node) +
-			"` = `" + node.GetAlias() + "`.`" + pk + "`"
+			"` = `" + j.alias + "a`.`" + ManyManyNodeDbColumn(node) + "`\n"
+		sql += "LEFT JOIN `" + ManyManyNodeRefTable(node) + "` AS `" + j.alias + "` ON `" + j.alias + "a`.`" + ManyManyNodeRefColumn(node) +
+			"` = `" + j.alias + "`.`" + pk + "`"
 
-		if condition := NodeCondition(node); condition != nil {
-			s, a := m.generateNodeSql(condition, false)
+		if j.joinCondition != nil {
+			s, a := m.generateNodeSql(b, j.joinCondition, false)
 			sql += " AND " + s
 			args = append(args, a...)
 		}
@@ -266,37 +262,38 @@ func (m *Mysql5) generateJoinSql(b *sqlBuilder, n NodeI) (sql string, args []int
 		return
 	}
 	sql += "\n"
-	if childNodes := ChildNodes(n); childNodes != nil {
-		for _, cn := range childNodes {
-			s, a := m.generateJoinSql(b, cn)
-			sql += s
-			args = append(args, a...)
+	for _, cj := range j.childReferences {
+		s, a := m.generateJoinSql(b, cj)
+		sql += s
+		args = append(args, a...)
 
-		}
 	}
 	return
 }
 
-func (m *Mysql5) generateNodeSql(n NodeI, useAlias bool) (sql string, args []interface{}) {
+func (m *Mysql5) generateNodeSql(b *sqlBuilder, n NodeI, useAlias bool) (sql string, args []interface{}) {
 	switch node := n.(type) {
 	case *ValueNode:
 		sql = "?"
 		args = append(args, ValueNodeGetValue(node))
 	case *OperationNode:
-		sql, args = m.generateOperationSql(node, useAlias)
+		sql, args = m.generateOperationSql(b, node, useAlias)
 	case *ColumnNode:
-		sql = m.generateColumnNodeSql(node, useAlias)
+		item := b.getItemFromNode(node)
+		if useAlias {
+			sql = m.generateAlias(item.alias)
+		} else {
+			sql = m.generateColumnNodeSql(item.parent.alias, node)
+		}
 	case *AliasNode:
 		sql = "`" + node.GetAlias() + "`"
 	case *SubqueryNode:
 		sql, args = m.generateSubquerySql(node)
+	case TableNodeI:
+		tj := b.getItemFromNode(node)
+		sql = m.generateColumnNodeSql(tj.alias, node.PrimaryKeyNode_())
 	default:
-		if tn, ok := n.(TableNodeI); ok {
-			sql = m.generateColumnNodeSql(tn.PrimaryKeyNode_(), false)
-		} else {
-			panic("Can't generate sql from node type.")
-		}
-
+		panic("Can't generate sql from node type.")
 	}
 	return
 }
@@ -307,7 +304,7 @@ func (m *Mysql5) generateSubquerySql(node *SubqueryNode) (sql string, args []int
 	return
 }
 
-func (m *Mysql5) generateOperationSql(n *OperationNode, useAlias bool) (sql string, args []interface{}) {
+func (m *Mysql5) generateOperationSql(b *sqlBuilder, n *OperationNode, useAlias bool) (sql string, args []interface{}) {
 	if useAlias && n.GetAlias() != "" {
 		sql = n.GetAlias()
 		return
@@ -316,7 +313,7 @@ func (m *Mysql5) generateOperationSql(n *OperationNode, useAlias bool) (sql stri
 	case OpFunc:
 		if len(OperationNodeOperands(n)) > 0 {
 			for _, o := range OperationNodeOperands(n) {
-				s, a := m.generateNodeSql(o, useAlias)
+				s, a := m.generateNodeSql(b, o, useAlias)
 				sql += s + ","
 				args = append(args, a...)
 			}
@@ -335,13 +332,13 @@ func (m *Mysql5) generateOperationSql(n *OperationNode, useAlias bool) (sql stri
 	case OpNull:
 		fallthrough
 	case OpNotNull:
-		s, a := m.generateNodeSql(OperationNodeOperands(n)[0], useAlias)
+		s, a := m.generateNodeSql(b, OperationNodeOperands(n)[0], useAlias)
 		sql = s + " IS " + OperationNodeOperator(n).String()
 		args = append(args, a...)
 		sql = "(" + sql + ") "
 
 	case OpNot:
-		s, a := m.generateNodeSql(OperationNodeOperands(n)[0], useAlias)
+		s, a := m.generateNodeSql(b, OperationNodeOperands(n)[0], useAlias)
 		sql = OperationNodeOperator(n).String() + " " + s
 		args = append(args, a...)
 		sql = "(" + sql + ") "
@@ -349,12 +346,12 @@ func (m *Mysql5) generateOperationSql(n *OperationNode, useAlias bool) (sql stri
 	case OpIn:
 		fallthrough
 	case OpNotIn:
-		s, a := m.generateNodeSql(OperationNodeOperands(n)[0], useAlias)
+		s, a := m.generateNodeSql(b, OperationNodeOperands(n)[0], useAlias)
 		sql = s + " " + OperationNodeOperator(n).String() + " ("
 		args = append(args, a...)
 
 		for _, o := range ValueNodeGetValue(OperationNodeOperands(n)[1].(*ValueNode)).([]NodeI) {
-			s, a = m.generateNodeSql(o, useAlias)
+			s, a = m.generateNodeSql(b, o, useAlias)
 			sql += s + ","
 			args = append(args, a...)
 		}
@@ -367,7 +364,7 @@ func (m *Mysql5) generateOperationSql(n *OperationNode, useAlias bool) (sql stri
 
 	default:
 		for _, o := range OperationNodeOperands(n) {
-			s, a := m.generateNodeSql(o, useAlias)
+			s, a := m.generateNodeSql(b, o, useAlias)
 			sql += s + " " + OperationNodeOperator(n).String() + " "
 			args = append(args, a...)
 		}
@@ -379,18 +376,19 @@ func (m *Mysql5) generateOperationSql(n *OperationNode, useAlias bool) (sql stri
 	return
 }
 
-func (m *Mysql5) generateColumnNodeSql(n *ColumnNode, useAlias bool) (sql string) {
-	if useAlias {
-		sql = "`" + n.GetAlias() + "`"
-	} else {
-		sql = "`" + ParentNode(n).GetAlias() + "`.`" + ColumnNodeDbName(n) + "`"
-	}
-	return
+// Generate the column node sql.
+func (m *Mysql5) generateColumnNodeSql(parentAlias string, node NodeI) (sql string) {
+	return "`" + parentAlias + "`.`" + ColumnNodeDbName(node.(*ColumnNode)) + "`"
 }
 
-func (m *Mysql5) generateNodeListSql(nodes []NodeI, useAlias bool) (sql string, args []interface{}) {
+func (m *Mysql5) generateAlias(alias string) (sql string) {
+	return "`" + alias + "`"
+}
+
+
+func (m *Mysql5) generateNodeListSql(b *sqlBuilder, nodes []NodeI, useAlias bool) (sql string, args []interface{}) {
 	for _, node := range nodes {
-		s, a := m.generateNodeSql(node, useAlias)
+		s, a := m.generateNodeSql(b, node, useAlias)
 		sql += s + ","
 		args = append(args, a...)
 	}
@@ -402,7 +400,7 @@ func (m *Mysql5) generateOrderBySql(b *sqlBuilder) (sql string, args []interface
 	if b.orderBys != nil && len(b.orderBys) > 0 {
 		sql = "ORDER BY "
 		for _, n := range b.orderBys {
-			s, a := m.generateNodeSql(n, true)
+			s, a := m.generateNodeSql(b, n, true)
 			if sorter, ok := n.(NodeSorter); ok {
 				if NodeSorterSortDesc(sorter) {
 					s += " DESC"
@@ -421,7 +419,7 @@ func (m *Mysql5) generateGroupBySql(b *sqlBuilder) (sql string, args []interface
 	if b.groupBys != nil && len(b.groupBys) > 0 {
 		sql = "GROUP BY "
 		for _, n := range b.groupBys {
-			s, a := m.generateNodeSql(n, true)
+			s, a := m.generateNodeSql(b, n, true)
 			sql += s + ","
 			args = append(args, a...)
 		}
@@ -435,7 +433,7 @@ func (m *Mysql5) generateWhereSql(b *sqlBuilder) (sql string, args []interface{}
 	if b.condition != nil {
 		sql = "WHERE "
 		var s string
-		s, args = m.generateNodeSql(b.condition, false)
+		s, args = m.generateNodeSql(b, b.condition, false)
 		sql += s + "\n"
 	}
 	return
@@ -445,7 +443,7 @@ func (m *Mysql5) generateHaving(b *sqlBuilder) (sql string, args []interface{}) 
 	if b.having != nil {
 		sql = "HAVING "
 		var s string
-		s, args = m.generateNodeSql(b.having, false)
+		s, args = m.generateNodeSql(b, b.having, false)
 		sql += s + "\n"
 	}
 	return

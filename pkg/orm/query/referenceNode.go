@@ -5,12 +5,21 @@ import (
 	"strings"
 )
 
+type ReferenceNodeI interface {
+	NodeI
+	Aliaser
+	conditioner
+	nodeLinkI
+	Expander
+}
+
 // A ReferenceNode is a forward-pointing foreign key relationship, and can define a one-to-one or
 // one-to-many relationship, depending on whether it is unique. If the other side of the relationship is
 // not a type table, then the other table will have a matching ReverseReferenceNode.
 type ReferenceNode struct {
-	Node
-
+	nodeAlias
+	nodeCondition
+	nodeLink
 	// Which database in the global list of databases does the node belong to
 	dbKey string
 	// Name of table in the database we point to
@@ -57,32 +66,41 @@ func NewReferenceNode(
 	return n
 }
 
-func (n *ReferenceNode) nodeType() NodeType {
-	return ReferenceNodeType
+func (n *ReferenceNode) copy() NodeI {
+	ret := &ReferenceNode{
+		dbKey:        n.dbKey,
+		dbTable:      n.dbTable,
+		dbColumn:     n.dbColumn,
+		goColumnName: n.goColumnName,
+		goPropName:   n.goPropName,
+		refTable:     n.refTable,
+		refColumn:    n.refColumn,
+		isTypeTable:  n.isTypeTable,
+		nodeAlias: nodeAlias{n.alias},
+		nodeCondition: nodeCondition{n.condition},
+	}
+	return ret
 }
 
 // Equals is used internally by the framework to determine if two nodes are equal.
 func (n *ReferenceNode) Equals(n2 NodeI) bool {
-	if n2.nodeType() == ReferenceNodeType {
-		cn := n2.(TableNodeI).EmbeddedNode_().(*ReferenceNode)
+	if tn, ok := n2.(TableNodeI); !ok {
+		return false
+	} else if cn, ok := tn.EmbeddedNode_().(*ReferenceNode); !ok {
+		return false
+	} else {
 		return cn.dbTable == n.dbTable &&
 			cn.goPropName == n.goPropName &&
 			(cn.alias == "" || n.alias == "" || cn.alias == n.alias)
-
 	}
-	return false
+}
+
+func (n *ReferenceNode) nodeType() NodeType {
+	return ReferenceNodeType
 }
 
 func (n *ReferenceNode) tableName() string {
 	return n.refTable
-}
-
-func (n *ReferenceNode) setCondition(condition NodeI) {
-	n.condition = condition
-}
-
-func (n *ReferenceNode) getCondition() NodeI {
-	return n.condition
 }
 
 func (n *ReferenceNode) log(level int) {
@@ -95,12 +113,22 @@ func (n *ReferenceNode) goName() string {
 	return n.goPropName
 }
 
-// Return a node for the table that is the foreign key
+// Return a column node for the foreign key that represents the reference to the other table
 func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
-	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, ColTypeString)
-	SetParentNode(n2, n.parentNode)
+	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, ColTypeString, false)
+	SetParentNode(n2, n.getParent())
 	return n2
 }
+
+func (n *ReferenceNode) Expand() {
+	panic("you cannot expand on a reference node, only reverse reference and many-many reference")
+}
+
+func (n *ReferenceNode) isExpanded() bool {
+	return false
+}
+
+
 
 // RelatedColumnNode is used internally by the framework to create a new node for the other side of the relationship.
 func RelatedColumnNode(n NodeI) NodeI {

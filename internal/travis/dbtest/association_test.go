@@ -73,7 +73,9 @@ func TestManySelect(t *testing.T) {
 		Select(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsTeamMember().Name()).
 		Load(ctx)
 
-	name := people[0].ProjectsAsTeamMember()[0].Name()
+	person := people[0]
+	projects := person.ProjectsAsTeamMember()
+	name := projects[0].Name()
 
 	assert.Equal(t, "ACME Payment System", name)
 }
@@ -106,8 +108,7 @@ func Test2Nodes(t *testing.T) {
 
 	assert.True(t, milestones[0].NameIsValid(), "Milestone 1 has a name")
 	assert.Equal(t, "Milestone A", milestones[0].Name(), "Milestone 1 has name of Milestone A")
-	assert.True(t, milestones[0].Project().NameIsValid(), "Project 1 has a name")
-	assert.Equal(t, "ACME Website Redesign", milestones[0].Project().Name(), "Project 1 has name of ACME Website Redesign")
+	assert.False(t, milestones[0].Project().NameIsValid(), "Project 1 should not have a name since it was not joined")
 	assert.True(t, milestones[0].Project().Manager().FirstNameIsValid(), "Person 7 has a name")
 	assert.Equal(t, "Karen", milestones[0].Project().Manager().FirstName(), "Person 7 has first name of Karen")
 }
@@ -163,15 +164,25 @@ func TestReverseMany(t *testing.T) {
 		}
 	}
 	assert.Len(t, names, 12) // Includes duplicates. If we ever get Distinct to manually remove duplicates, we should fix this.
+}
 
+func TestReverseManyExpansion(t *testing.T) {
+	ctx := context.Background()
 	// Test an intermediate expansion
-	people = model.QueryPeople().
+	people := model.QueryPeople().
 		Join(node.Person().ProjectsAsManager().TeamMembers()).
 		OrderBy(node.Person().ID(), node.Person().ProjectsAsManager().TeamMembers().LastName(), node.Person().ProjectsAsManager().TeamMembers().FirstName()).
 		Expand(node.Person().ProjectsAsManager()).
 		Load(ctx)
 
-	names = []string{}
+	names2 := []string{
+		"John Doe",
+		"Mike Ho",
+		"Samantha Jones",
+		"Jennifer Smith",
+		"Wendy Smith",
+	}
+	names := []string{}
 	for _, p := range people[0].ProjectsAsManager()[0].TeamMembers() {
 		names = append(names, p.FirstName()+" "+p.LastName())
 	}
@@ -245,16 +256,6 @@ func TestReverseReferences(t *testing.T) {
 	person2 := projects[0].Manager()
 	assert.Equal(t, "test", person2.FirstName())
 
-	// Test forward reference looking back
-	project := model.QueryProjects().
-		Join(node.Project().Manager().ProjectsAsManager()).
-		Load(ctx)[0]
-
-	project.SetName("test")
-	person = project.Manager()
-	project2 := person.ProjectsAsManager()[0]
-	assert.Equal(t, "test", project2.Name())
-
 	// Test unique reverse reference
 	person = model.QueryPeople().
 		Join(node.Person().Login()).
@@ -265,25 +266,41 @@ func TestReverseReferences(t *testing.T) {
 	person2 = login.Person()
 	assert.Equal(t, "test", person2.FirstName())
 
-	// Test single expansion
-	person = model.QueryPeople().
-		Join(node.Person().ProjectsAsManager().Manager()).
-		Expand(node.Person().ProjectsAsManager()).
-		Load(ctx)[0]
-	person.SetFirstName("test")
-	projects = person.ProjectsAsManager()
-	person2 = projects[0].Manager()
-	assert.Equal(t, "test", person2.FirstName())
-
 	// Test ManyMany
-	project = model.QueryProjects().
+	project := model.QueryProjects().
 		Join(node.Project().TeamMembers().ProjectsAsTeamMember()).
 		Load(ctx)[0]
 
 	project.SetName("test")
 	people = project.TeamMembers()
-	project2 = people[0].ProjectAsTeamMember()
+	project2 := people[0].ProjectAsTeamMember()
 	assert.Equal(t, "test", project2.Name())
+}
+
+func TestForwardReferenceLookingBack(t *testing.T) {
+	ctx := context.Background()
+	// Test forward reference looking back
+	project := model.QueryProjects().
+		Join(node.Project().Manager().ProjectsAsManager()).
+		Load(ctx)[0]
+
+	project.SetName("test")
+	person := project.Manager()
+	project2 := person.ProjectsAsManager()[0]
+	assert.Equal(t, "test", project2.Name())
+}
+
+func TestSingleExpansion(t *testing.T) {
+	ctx := context.Background()
+	person := model.QueryPeople().
+		Join(node.Person().ProjectsAsManager().Manager()).
+		Expand(node.Person().ProjectsAsManager()).
+		Load(ctx)[0]
+	person.SetFirstName("test")
+	projects := person.ProjectsAsManager()
+	person2 := projects[0].Manager()
+	assert.Equal(t, "test", person2.FirstName())
+
 }
 
 func TestConditionalJoin(t *testing.T) {

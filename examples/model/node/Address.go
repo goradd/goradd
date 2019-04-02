@@ -7,7 +7,7 @@ import (
 )
 
 type addressNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func Address() *addressNode {
@@ -29,7 +29,10 @@ func (n *addressNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.ID()
 }
 func (n *addressNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+func (n *addressNode) Copy_() query.NodeI {
+	return &addressNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *addressNode) ID() *query.ColumnNode {
@@ -39,6 +42,7 @@ func (n *addressNode) ID() *query.ColumnNode {
 		"id",
 		"ID",
 		query.ColTypeString,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -51,6 +55,7 @@ func (n *addressNode) PersonID() *query.ColumnNode {
 		"person_id",
 		"PersonID",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -80,6 +85,7 @@ func (n *addressNode) Street() *query.ColumnNode {
 		"street",
 		"Street",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -92,6 +98,7 @@ func (n *addressNode) City() *query.ColumnNode {
 		"city",
 		"City",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn

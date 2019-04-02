@@ -5,6 +5,11 @@ import (
 	"strings"
 )
 
+type OperationNodeI interface {
+	nodeContainer
+	Aliaser
+}
+
 // Operator is used internally by the framework to specify an operation to be performed by the database.
 // Not all databases can perform all the operations. It will be up to the database driver to sort this out.
 type Operator string
@@ -71,7 +76,7 @@ func (o Operator) String() string {
 // An OperationNode is a general purpose structure that specifies an operation on a node or group of nodes.
 // The operation could be arithmetic, boolean, or a function.
 type OperationNode struct {
-	Node
+	nodeAlias
 	op             Operator
 	operands       []NodeI
 	functionName   string // for function operations specific to the db driver
@@ -113,6 +118,10 @@ func NewCountNode(operands ...NodeI) *OperationNode {
 	return n
 }
 
+func (n *OperationNode) nodeType() NodeType {
+	return OperationNodeType
+}
+
 // assignOperands processes the list of operands at run time, making sure all static values are escaped
 func (n *OperationNode) assignOperands(operands ...interface{}) {
 	var op interface{}
@@ -151,10 +160,6 @@ func (n *OperationNode) sortDesc() bool {
 	return n.sortDescending
 }
 */
-
-func (n *OperationNode) nodeType() NodeType {
-	return OperationNodeType
-}
 
 // Equals is used internally by the framework to tell if two nodes are equal
 func (n *OperationNode) Equals(n2 NodeI) bool {

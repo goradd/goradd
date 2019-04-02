@@ -7,7 +7,7 @@ import (
 )
 
 type milestoneNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func Milestone() *milestoneNode {
@@ -28,7 +28,10 @@ func (n *milestoneNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.ID()
 }
 func (n *milestoneNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+func (n *milestoneNode) Copy_() query.NodeI {
+	return &milestoneNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *milestoneNode) ID() *query.ColumnNode {
@@ -38,6 +41,7 @@ func (n *milestoneNode) ID() *query.ColumnNode {
 		"id",
 		"ID",
 		query.ColTypeString,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -50,6 +54,7 @@ func (n *milestoneNode) ProjectID() *query.ColumnNode {
 		"project_id",
 		"ProjectID",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -79,6 +84,7 @@ func (n *milestoneNode) Name() *query.ColumnNode {
 		"name",
 		"Name",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn

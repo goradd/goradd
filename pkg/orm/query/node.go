@@ -47,35 +47,36 @@ type NodeSorter interface {
 	sortDesc() bool
 }
 
-// Expander is the interface a node must satisfy to be able to be expanded upon, making a many-* relationship creates multiple versions of the original object.
+// Expander is the interface a node must satisfy to be able to be expanded upon,
+// making a many-* relationship that creates multiple versions of the original object.
 type Expander interface {
 	Expand()
 	isExpanded() bool
 }
 
-// NodeI is the interface that all nodes must satisfy
-type NodeI interface {
-	nodeLinkI
-	// Equals returns true if the given node is equal to this node.
-	Equals(NodeI) bool
+type Aliaser interface {
 	// SetAlias sets a unique name for the node as used in a database query.
 	SetAlias(string)
 	// GetAlias returns the alias that was used in a database query.
 	GetAlias() string
-
-	nodeType() NodeType
-	tableName() string
-	log(level int)
 }
 
-// Node is the base mixin for all node structures. A node is a representation of an object or a relationship
-// between objects in a database that we use to create a query. It lets us abstract the structure of a database
-// to be able to query any kind of database. Obviously, this doesn't work for all possible database structures, but
-// it generally works well enough to solve most, if not all, of the situations that you will come across.
-type Node struct {
-	nodeLink
-	condition NodeI // Used only by expansion nodes
-	alias     string
+// Nodes that can have an alias can mix this in
+type nodeAlias struct {
+	alias string
+}
+
+// SetAlias sets an alias which is an alternate name to use for the node in the result of a query.
+// Aliases will generally be assigned during the query build process. You only need to assign a manual
+// alias if
+func (n *nodeAlias) SetAlias(a string) {
+	n.alias = a
+
+}
+
+// GetAlias returns the alias name for the node.
+func (n *nodeAlias) GetAlias() string {
+	return n.alias
 }
 
 type conditioner interface {
@@ -83,15 +84,30 @@ type conditioner interface {
 	getCondition() NodeI
 }
 
-
-// SetAlias sets an alias which is an alternate name to use for the node in the result of a query.
-func (n *Node) SetAlias(a string) {
-	n.alias = a
+// Nodes that can have a condition can mix this in
+type nodeCondition struct {
+	condition NodeI
 }
 
-// GetAlias returns the alias name for the node.
-func (n *Node) GetAlias() string {
-	return n.alias
+func (c *nodeCondition) setCondition(cond NodeI) {
+	c.condition = cond
+}
+
+func (c *nodeCondition) getCondition() NodeI {
+	return c.condition
+}
+
+
+// NodeI is the interface that all nodes must satisfy. A node is a representation of an object or a relationship
+// between objects in a database that we use to create a query. It lets us abstract the structure of a database
+// to be able to query any kind of database. Obviously, this doesn't work for all possible database structures, but
+// it generally works well enough to solve most of the situations that you will come across.
+type NodeI interface {
+	// Equals returns true if the given node is equal to this node.
+	Equals(NodeI) bool
+	tableName() string
+	log(level int)
+	nodeType() NodeType
 }
 
 /**
@@ -110,7 +126,7 @@ func NodeTableName(n NodeI) string {
 	return n.tableName()
 }
 
-// NodeIsConditioner is used internally by the framework to determine if the node has a condition.
+// NodeIsConditioner is used internally by the framework to determine if the node has a join condition.
 func NodeIsConditioner(n NodeI) bool {
 	if tn, _ := n.(TableNodeI); tn != nil {
 		if c, _ := tn.EmbeddedNode_().(conditioner); c != nil {
@@ -123,14 +139,10 @@ func NodeIsConditioner(n NodeI) bool {
 // NodeSetCondition is used internally by the framework to set a condition on a node.
 func NodeSetCondition(n NodeI, condition NodeI) {
 	if condition != nil {
-		if tn, ok := n.(TableNodeI); ok {
-			if c, ok := tn.EmbeddedNode_().(conditioner); !ok {
-				panic("Cannot set condition on this type of node")
-			} else {
-				c.setCondition(condition)
-			}
+		if c, ok := n.(conditioner); !ok {
+			panic("cannot set condition on this type of node")
 		} else {
-			panic("Cannot set condition on this type of node")
+			c.setCondition(condition)
 		}
 	}
 }
@@ -159,11 +171,6 @@ func ContainedNodes(n NodeI) (nodes []NodeI) {
 // LogNode is used internally by the framework to debug node issues.
 func LogNode(n NodeI, level int) {
 	n.log(level)
-}
-
-// GetNodeType is used internally by the framework to get the type of node without using reflection.
-func GetNodeType(n NodeI) NodeType {
-	return n.nodeType()
 }
 
 // NodeIsExpanded is used internally by the framework to detect if the node is an expanded many-many relationship.
@@ -212,5 +219,39 @@ func NodeGoName(n NodeI) string {
 // NodeSorterSortDesc is used internally by the framework to determine if the NodeSorter is descending.
 func NodeSorterSortDesc(n NodeSorter) bool {
 	return n.sortDesc()
+}
+
+// NodeGetType is an internal function used to get the node type without casting. This is particularly useful when
+// dealing with TableNodeI types, because they are embedded in different concrete types by the code
+// generator, so to get the specific node type involves extracting the embedded type and then doing a type select.
+func NodeGetType(n NodeI) NodeType {
+	return n.nodeType()
+}
+
+// Convenience method to see if a node is a table type of node, or a leaf node
+func NodeIsTableNodeI(n NodeI) bool {
+	t := NodeGetType(n)
+	return t == ReferenceNodeType ||
+		t == ReverseReferenceNodeType ||
+		t == TableNodeType ||
+		t == ManyManyNodeType
+}
+
+
+// Convenience method to see if a node is a reference type node. This is essentially table type nodes
+// excluding an actual TableNode, since table nodes always start at the top level.
+func NodeIsReferenceI(n NodeI) bool {
+	t := NodeGetType(n)
+	return t == ReferenceNodeType ||
+		t == ReverseReferenceNodeType ||
+		t == ManyManyNodeType
+}
+
+// Return the primary key of a node, if it has a primary key. Otherwise return nil.
+func NodePrimaryKey(n NodeI) NodeI {
+	if tn,ok := n.(TableNodeI); ok {
+		return tn.PrimaryKeyNode_()
+	}
+	return nil
 }
 

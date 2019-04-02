@@ -7,7 +7,7 @@ import (
 )
 
 type typeTestNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func TypeTest() *typeTestNode {
@@ -35,7 +35,10 @@ func (n *typeTestNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.ID()
 }
 func (n *typeTestNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+func (n *typeTestNode) Copy_() query.NodeI {
+	return &typeTestNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *typeTestNode) ID() *query.ColumnNode {
@@ -45,6 +48,7 @@ func (n *typeTestNode) ID() *query.ColumnNode {
 		"id",
 		"ID",
 		query.ColTypeString,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -57,6 +61,7 @@ func (n *typeTestNode) Date() *query.ColumnNode {
 		"date",
 		"Date",
 		query.ColTypeDateTime,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -69,6 +74,7 @@ func (n *typeTestNode) Time() *query.ColumnNode {
 		"time",
 		"Time",
 		query.ColTypeDateTime,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -81,6 +87,7 @@ func (n *typeTestNode) DateTime() *query.ColumnNode {
 		"date_time",
 		"DateTime",
 		query.ColTypeDateTime,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -93,6 +100,7 @@ func (n *typeTestNode) Ts() *query.ColumnNode {
 		"ts",
 		"Ts",
 		query.ColTypeDateTime,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -105,6 +113,7 @@ func (n *typeTestNode) TestInt() *query.ColumnNode {
 		"test_int",
 		"TestInt",
 		query.ColTypeInteger,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -117,6 +126,7 @@ func (n *typeTestNode) TestFloat() *query.ColumnNode {
 		"test_float",
 		"TestFloat",
 		query.ColTypeFloat,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -129,6 +139,7 @@ func (n *typeTestNode) TestText() *query.ColumnNode {
 		"test_text",
 		"TestText",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -141,6 +152,7 @@ func (n *typeTestNode) TestBit() *query.ColumnNode {
 		"test_bit",
 		"TestBit",
 		query.ColTypeBool,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -153,6 +165,7 @@ func (n *typeTestNode) TestVarchar() *query.ColumnNode {
 		"test_varchar",
 		"TestVarchar",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn

@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"encoding/gob"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
@@ -20,151 +19,56 @@ type Copier interface {
 	Copy() interface{}
 }
 
-type limitInfo struct {
-	maxRowCount int
-	offset      int
-}
-
 // A sql builder is a helper object to organize a Query object eventually into a SQL string.
 // It builds the join tree and creates the aliases that will eventually be used to generate
 // the sql and then unpack it into fields and objects. It implements the QueryBuilderI interface.
+// It is used both as the overriding controller of a query, and the controller of a subquery, so its recursive.
+// The approach is to gather up the parameters of the query first, build the nodes into a node tree without
+// changing the nodes themselves, build the query, execute the query, and finally return the results.
 type sqlBuilder struct {
-	db                SqlDbI			// The sql database object
-	command           string
-	columnAliases     *maps.SliceMap
-	columnAliasNumber int
-	tableAliases      *maps.SliceMap
-	joins             []NodeI
-	orderBys          []NodeI
-	condition         NodeI
-	rootDbTable       string
-	rootNode          NodeI
-	distinct          bool
-	aliasNodes        *maps.SliceMap
-	// Adds a COUNT(*) to the select list
-	isCount         bool
-	groupBys        []NodeI
-	selects         []NodeI
-	limitInfo       *limitInfo
-	having          NodeI
-	distinctId      int // Counter for creating fake ids when doing distinct selects
-	isSubquery      bool
-	subqueryCounter int
-	subPrefix       string
+	db SqlDbI // The sql database object
+
+	/* The variables below are populated while defining the query */
+
+	QueryBuilder
+
+	/* The variables below are populated during the sql build process */
+
+	isCount bool
+	isDelete bool
+	rootDbTable       string                  // The database name for the table that is the root of the query
+	rootJoinTreeItem  *joinTreeItem           // The top of the join tree
+	subPrefix         string                  // The prefix for sub items. If this is a sub query, this gets updated
+	subqueryCounter   int                     // Helper to make unique prefixes for subqueries
+	columnAliases     *joinTreeItemSliceMap   // Map to go from an alias to a joinTreeItem for columns, which can also get us to a node
+	columnAliasNumber int                     // Helper to make unique generated aliases
+	tableAliases      *joinTreeItemSliceMap   // Map to go from an alias to a joinTreeItem for tables
+	nodeMap           map[NodeI]*joinTreeItem // A map that gets us to a joinTreeItem from a node.
+	rowId             int                     // Counter for creating fake ids when doing distinct or orderby selects
+	parentBuilder     *sqlBuilder             // The parent builder of a subquery
 }
 
 // NewSqlBuilder creates a new sqlBuilder object.
 func NewSqlBuilder(db SqlDbI) *sqlBuilder {
-	return &sqlBuilder{
+	b := &sqlBuilder{
 		db:            db,
-		columnAliases: maps.NewSliceMap(),
-		tableAliases:  maps.NewSliceMap(),
-		orderBys:      []NodeI{},
-		groupBys:      []NodeI{},
-		selects:       []NodeI{},
-		aliasNodes:    maps.NewSliceMap(),
-		joins:         []NodeI{},
+		columnAliases: NewjoinTreeItemSliceMap(),
+		tableAliases:  NewjoinTreeItemSliceMap(),
+		nodeMap:       make(map[NodeI]*joinTreeItem),
 	}
-}
-
-func (b *sqlBuilder) Join(n NodeI, condition NodeI) QueryBuilderI {
-	if NodeIsConditioner(n) {
-		NodeSetCondition(n, condition)
-	}
-	b.joins = append(b.joins, n)
-
-	if b.limitInfo != nil {
-
-	}
+	b.QueryBuilder.Init(b)
 	return b
 }
 
-// Add a node that is given a manual alias name. This is usually some kind of operation.
-// We can recover this using the GetAlias() function of the result.
-func (b *sqlBuilder) Alias(name string, n NodeI) QueryBuilderI {
-	n.SetAlias(name)
-	b.aliasNodes.Set(name, n)
-	return b
-}
-
-// Expands an array type node so that it will produce individual rows instead of an array of items
-func (b *sqlBuilder) Expand(n NodeI) QueryBuilderI {
-	if tn, ok := n.(TableNodeI); !ok {
-		panic("You can only expand a node that is a ReverseReference or ManyMany node.")
-	} else {
-		if en, ok := tn.EmbeddedNode_().(Expander); !ok {
-			panic("You can only expand a node that is a ReverseReference or ManyMany node.")
-		} else {
-			en.Expand()
-			b.Join(n, nil)
-		}
-	}
-
-	return b
-}
-
-func (b *sqlBuilder) Condition(c NodeI) QueryBuilderI {
-	b.condition = c
-	return b
-}
-
-func (b *sqlBuilder) OrderBy(nodes ...NodeI) QueryBuilderI {
-	b.orderBys = append(b.orderBys, nodes...)
-	return b
-}
-
-func (b *sqlBuilder) Limit(maxRowCount int, offset int) QueryBuilderI {
-	if b.limitInfo != nil {
-		panic("Query already has a limit")
-	}
-	b.limitInfo = &limitInfo{maxRowCount, offset}
-
-	return b
-}
-
-func (b *sqlBuilder) Select(nodes ...NodeI) QueryBuilderI {
-	b.selects = append(b.selects, nodes...)
-	return b
-}
-
-func (b *sqlBuilder) Distinct() QueryBuilderI {
-	b.distinct = true
-	return b
-}
-
-func (b *sqlBuilder) GroupBy(nodes ...NodeI) QueryBuilderI {
-	b.groupBys = append(b.groupBys, nodes...)
-	return b
-}
-
-func (b *sqlBuilder) Having(node NodeI) QueryBuilderI {
-	b.having = node
-	return b
-}
-
-func (b *sqlBuilder) Subquery() *SubqueryNode {
-	n := NewSubqueryNode(b)
-	b.isSubquery = true
-	return n
-}
 
 // Load terminates the builder, queries the database, and returns the results as an array of interfaces similar in structure to a json structure
 func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{}) {
-	b.buildNodeTree()
+	b.buildJoinTree()
 
 	b.makeColumnAliases()
 
-	//log.Debug("Tree:")
-	//b.logNode(b.rootNode, 0)
-
-	// So debugging will work, we declare variables
-	var sql string
-	var args []interface{}
-
 	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
-	sql, args = b.db.generateSelectSql(b)
-
-	//log.Debug(sql)
+	sql, args := b.db.generateSelectSql(b)
 
 	rows, err := b.db.Query(ctx, sql, args...)
 
@@ -185,7 +89,7 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 	columnTypes := make([]GoColumnType, len(names))
 	colCount := b.columnAliases.Len()
 	for i := 0; i < colCount; i++ {
-		columnTypes[i] = ColumnNodeGoType(b.columnAliases.Get(names[i]).(*ColumnNode))
+		columnTypes[i] = ColumnNodeGoType(b.columnAliases.Get(names[i]).node.(*ColumnNode))
 	}
 	// add special aliases
 	for i := colCount; i < len(names); i++ {
@@ -196,28 +100,15 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 
 	var result2 = b.unpackResult(result)
 
-	json.MarshalIndent(result2, "", "  ")
-	//p, err := json.MarshalIndent(result2, "", "  ")
-
-	//log.Debug(string(p))
-
 	return result2
 }
 
 func (b *sqlBuilder) Delete(ctx context.Context) {
-	b.buildNodeTree()
-
-	//log.Debug("Tree:")
-	//b.logNode(b.rootNode, 0)
-
-	// So debugging will work, we declare variables
-	var sql string
-	var args []interface{}
+	b.isDelete = true
+	b.buildJoinTree()
 
 	// Hand off the generation of sql statements to the database, since different databases generate sql differently
-	sql, args = b.db.generateDeleteSql(b)
-
-	//log.Debug(sql)
+	sql, args := b.db.generateDeleteSql(b)
 
 	_, err := b.db.Exec(ctx, sql, args...)
 
@@ -235,14 +126,12 @@ func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) u
 	b.isCount = true
 
 	if len(b.selects) > 0 {
-		panic("Cannot count a query that also has items selected. Use an alias for a Count node instead.")
+		panic("cannot count a query that also has items selected. Use an alias for a Count node instead")
 	}
 
 	if len(b.groupBys) > 0 {
-		panic("Cannot count a query that also has group by items. Use an alias for a Count node instead.")
+		panic("cannot count a query that also has group by items. Use an alias for a Count node instead")
 	}
-
-	b.buildNodeTree()
 
 	n := NewCountNode(nodes...)
 	if distinct {
@@ -251,10 +140,10 @@ func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) u
 
 	b.Alias(countAlias, n)
 
+	b.buildJoinTree()
+
 	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
 	sql, args := b.db.generateSelectSql(b)
-
-	//log.Debug(sql)
 
 	rows, err := b.db.Query(ctx, sql, args...)
 
@@ -276,260 +165,13 @@ func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) u
 
 }
 
-// Adds the node to the node tree, which is what determines how we do joins. If parts of the node are not in the tree, the node
-// will be added and assigned an alias. If the node already exists in the tree, the previously assigned alias will be copied to the
-// node so that it can refer to the table or table by alias.
-//
-// If addColumn is true, and the node refers to a table node, the node will be also added to the list of nodes that are
-// selected on. If addColumn is false, the node will be assigned an alias in case a future similar node is added to the table list,
-// but the node will not be added to the table list.
-func (b *sqlBuilder) addNode(n NodeI, addColumn bool) {
-	var node, treeNode NodeI
-	var tableName string
-	var np NodeI
-	var hasSubquery bool // Turns off the check to make sure all nodes come from the same table, since subqueries might have different tables
-	var cn []NodeI
-	var nodes []NodeI
-
-	// Gather all the nodes below this node that will be referred to at some point in the query
-	if sn, ok := n.(*SubqueryNode); ok {
-		nodes = append(nodes, n) // Return the subquery node itself, because we need to do some work on it
-
-		// must expand the returned nodes one more time
-		for _, n2 := range SubqueryBuilder(sn).(*sqlBuilder).nodes() {
-			if cn := ContainedNodes(n2); cn != nil {
-				nodes = append(nodes, cn...)
-			} else {
-				nodes = append(nodes, n2)
-			}
-		}
-	} else if cn = ContainedNodes(n); cn != nil {
-		if !b.isCount { // Adding contained nodes in this situation will impact how the count is calculated in some cases???
-			nodes = append(nodes, cn...)
-		}
-	} else {
-		nodes = append(nodes, n)
-	}
-
-	for _, node = range nodes {
-		if sq, ok := node.(*SubqueryNode); ok {
-			hasSubquery = true
-			b.subqueryCounter++
-			SubqueryBuilder(sq).(*sqlBuilder).subPrefix = strconv.Itoa(b.subqueryCounter) + "_"
-			SubqueryBuilder(sq).(*sqlBuilder).buildNodeTree()
-			continue
-		}
-		treeNode = RootNode(node)
-		if treeNode == nil {
-			continue
-		} // could be value node or operation node. Aliased operation nodes are handled elsewhere.
-		tableName = NodeTableName(treeNode)
-
-		if b.rootDbTable == "" {
-			b.rootDbTable = tableName
-		} else if b.rootDbTable != tableName {
-			if !hasSubquery && !b.isSubquery {
-				panic("Attempting to add a node that is not starting at the table being queried.")
-			} else {
-				continue
-			}
-		}
-
-		// walk the current node tree and find an insertion point
-		if b.rootNode == nil {
-			b.rootNode = treeNode
-			b.assignAliases(b.rootNode, addColumn)
-		} else {
-			np = RootNode(node)
-			if np == nil {
-				np = node // This is the case when we are adding an operation node that is going to be aliased
-			}
-			b.mergeNode(np, b.rootNode, addColumn)
-		}
-	}
-
-}
-
-func (b *sqlBuilder) logNode(node NodeI, level int) {
-	LogNode(node, level)
-	if childNodes := ChildNodes(node); childNodes != nil {
-		for _, cn := range childNodes {
-			b.logNode(cn, level+1)
-		}
-	}
-
-}
-
-// assuming that both nodes point to the same location, merges the source node and its children into the destination node tree
-func (b *sqlBuilder) mergeNode(srcNode, destNode NodeI, addColumn bool) {
-	var a = srcNode.GetAlias()
-	if !srcNode.Equals(destNode) {
-		panic("mergeNode must start with equal nodes")
-	}
-	if srcNode.GetAlias() != "" &&
-		srcNode.GetAlias() != destNode.GetAlias() &&
-		GetNodeType(srcNode) != ColumnNodeType {
-		// Adding a pre-aliased node that is at the same level as this node, so just add it.
-		b.insertNode(srcNode, ParentNode(destNode), addColumn)
-		return
-	}
-	_ = a
-
-	var childNodes = ChildNodes(srcNode)
-	if childNodes == nil {
-		// The node already exists in the tree
-		// Update information as needed.
-		prevCond := NodeCondition(srcNode)
-
-		if prevCond != nil {
-			if destCond := NodeCondition(destNode); destCond == nil {
-				NodeSetCondition(destNode, prevCond)
-			} else if !destCond.Equals(prevCond) {
-				panic("Error, attempting to Join with conditions on a node which already has conditions.")
-			}
-		}
-		b.assignAliases(destNode, addColumn) // potentially was added by SelectNodes_, and so did not get aliases
-		if srcNode.GetAlias() == "" {
-			srcNode.SetAlias(destNode.GetAlias()) // If src node does not get added, it still needs to know what its alias is
-		} else { // alias was manually or previously assigned, so use that one
-			destNode.SetAlias(srcNode.GetAlias())
-		}
-		if p := ParentNode(srcNode); p != nil && p.GetAlias() == "" {
-			p.SetAlias(ParentNode(destNode).GetAlias()) // parent node generation for src node alias in case src node is not added to tree, but is still used in sql generation
-		}
-
-		if NodeIsExpander(destNode) {
-			if NodeIsExpanded(srcNode) {
-				ExpandNode(destNode)
-			}
-		}
-		return
-	}
-
-	var srcChild NodeI
-
-	if ChildNodes(destNode) == nil {
-		// We have found the end of a chain, but we want to extend it
-		for _, srcChild = range childNodes {
-			b.insertNode(srcChild, destNode, addColumn)
-		}
-	} else {
-		for _, srcChild = range childNodes {
-			// TODO: Potentially improve speed by skipping table nodes. I suspect we will have already added those.
-			// try to find the child node in the next level of the tree
-			found := false
-			for _, destChild := range ChildNodes(destNode) {
-				if destChild.Equals(srcChild) {
-					// found a matching child node, recurse
-					b.mergeNode(srcChild, destChild, addColumn)
-					found = true
-					break
-				}
-			}
-			if !found {
-				// Add the child node and stop
-				b.insertNode(srcChild, destNode, addColumn)
-				break
-			}
-		}
-	}
-}
-
-func (b *sqlBuilder) insertNode(srcNode, parentNode NodeI, addColumn bool) {
-	SetParentNode(srcNode, parentNode)
-	b.assignAliases(srcNode, addColumn)
-	if rn := RelatedColumnNode(srcNode); rn != nil {
-		b.addNode(rn, addColumn)
-	}
-}
-
-// Walk DOWN the chain and assign aliases to the nodes found.
-func (b *sqlBuilder) assignAliases(n NodeI, addColumn bool) {
-
-	if n.GetAlias() == "" {
-		// if it doesn't have a pre-assigned alias, give it an automated one
-		if _, ok := n.(*ColumnNode); ok {
-			key := columnAliasPrefix + b.subPrefix + strconv.Itoa(b.columnAliasNumber)
-			b.columnAliasNumber++
-			n.SetAlias(key)
-		} else {
-			key := tableAliasPrefix + b.subPrefix + strconv.Itoa(b.tableAliases.Len())
-			n.SetAlias(key)
-		}
-	}
-
-	if _, ok := n.(*ColumnNode); ok {
-		if addColumn {
-			b.columnAliases.Set(n.GetAlias(), n)
-		}
-	} else {
-		b.tableAliases.Set(n.GetAlias(), n)
-		if childNodes := ChildNodes(n); childNodes != nil {
-			for _, cn := range childNodes {
-				b.assignAliases(cn, addColumn)
-			}
-		}
-	}
-}
-
-// Add the columns that we will be selecting on to the node tree. Generally, we will add columns that are PKs along
-// the chain of nodes so that we know how to unpack the objects.
-// Specific situations that we do not automatically add the PK columns are: If its a distinct query, a count query,
-// or we are a subquery.
-func (b *sqlBuilder) makeColumnAliases() {
-	if len(b.selects) > 0 {
-		for _, n := range b.selects {
-			b.addNode(n, true)
-		}
-		if !(b.distinct || b.isSubquery || b.isCount) {
-			// Have some selects, so go through and make sure the ids are selected
-			b.tableAliases.Range(func(key string, v interface{}) bool {
-				node := v.(NodeI)
-				n := node.(TableNodeI).PrimaryKeyNode_()
-				b.addNode(n, true)
-				return true
-			})
-		}
-	} else {
-		if b.isSubquery {
-			// Subqueries must have specific columns called out. They might be as alias columns, so we do not panic here.
-			if !(b.distinct || b.isCount) {
-				// Still add id numbers so we can unpack this
-				b.tableAliases.Range(func(key string, v interface{}) bool {
-					node := v.(NodeI)
-					n := node.(TableNodeI).PrimaryKeyNode_()
-					b.addNode(n, true)
-					return true
-				})
-			}
-		} else {
-			b.tableAliases.Range(func(key string, v interface{}) bool {
-				node := v.(NodeI)
-				selectNodes := node.(TableNodeI).SelectNodes_() // will add child nodes to node
-				if selectNodes != nil {
-					b.addNode(node, true) // will add the node and all child nodes
-				}
-				return true
-			})
-
-		}
-	}
-
-	if len(b.groupBys) > 0 {
-		// SQL in general has a problem with group by items that are not selected, so we always select group by columns by implication
-		// Some SQL forms have gotten aorund the problem by just choosing a random result, but modern SQL engines now consider this an error
-		for _, n := range b.groupBys {
-			b.addNode(n, true)
-		}
-	}
-}
-
-// After the intention of the query is gathered, this will add various nodes to the node tree to establish
-// where the joins are. This process also adds aliases to the nodes.
-func (b *sqlBuilder) buildNodeTree() {
+// After the intention of the query is gathered, this will add the various nodes from the query
+// to the node tree to establish the joins.
+func (b *sqlBuilder) buildJoinTree() {
 	for _, n := range b.nodes() {
-		b.addNode(n, false)
+		b.addNodeToJoinTree(n)
 	}
+	b.assignTableAliases(b.rootJoinTreeItem)
 }
 
 // Returns the nodes referred to in the query. Some nodes will be container nodes, and so will have nodes
@@ -547,7 +189,13 @@ func (b *sqlBuilder) nodes() []NodeI {
 	if b.condition != nil {
 		nodes = append(nodes, b.condition)
 	}
-	nodes = append(nodes, b.groupBys...)
+
+	for _, n := range b.groupBys {
+		if NodeIsTableNodeI(n) {
+			n = NodePrimaryKey(n) // Allow table nodes, but then actually have them be the pk in this context
+		}
+		nodes = append(nodes, n)
+	}
 
 	if b.having != nil {
 		nodes = append(nodes, b.having)
@@ -560,6 +208,278 @@ func (b *sqlBuilder) nodes() []NodeI {
 	})
 
 	return nodes
+}
+
+// Adds the node to the join tree.
+func (b *sqlBuilder) addNodeToJoinTree(n NodeI) {
+	var node NodeI
+	var tableName string
+	var hasSubquery bool // Turns off the check to make sure all nodes come from the same table, since subqueries might have different tables
+
+	nodes := b.gatherContainedNodes(n)
+
+	for _, node = range nodes {
+		if sq, ok := node.(*SubqueryNode); ok {
+			hasSubquery = true
+			b.subqueryCounter++
+			b2 := SubqueryBuilder(sq).(*sqlBuilder)
+			b2.subPrefix = strconv.Itoa(b.subqueryCounter) + "_"
+			b2.parentBuilder = b
+			b2.buildJoinTree()
+			continue
+		}
+
+		rootNode := RootNode(node)
+		if rootNode == nil {
+			continue // An operation or value node perhaps
+		}
+		tableName = NodeTableName(rootNode)
+
+		if b.rootDbTable == "" {
+			b.rootDbTable = tableName
+		} else if b.rootDbTable != tableName {
+			if !hasSubquery && !b.isSubquery {
+				panic("Attempting to add a node that is not starting at the table being queried.")
+			} else {
+				continue
+			}
+		}
+
+		// walk the current node tree and find an insertion point
+		if b.rootJoinTreeItem == nil {
+			b.rootJoinTreeItem = &joinTreeItem{node: rootNode}
+			b.mapNode(rootNode, b.rootJoinTreeItem)
+		}
+
+		b.mergeNode(rootNode, b.rootJoinTreeItem)
+	}
+}
+
+// gatherContainedNodes will return all of the nodes "contained" by the given node, including the given
+// node if it make sense. Contained nodes are nodes that need to become part of the join tree, but that
+// are embedded inside operations, subqueries, etc.
+func (b *sqlBuilder) gatherContainedNodes(n NodeI) (nodes []NodeI) {
+	if sn, ok := n.(*SubqueryNode); ok {
+		nodes = append(nodes, n) // Return the subquery node itself, because we need to do some work on it
+
+		// must expand the returned nodes one more time
+		for _, n2 := range SubqueryBuilder(sn).(*sqlBuilder).nodes() {
+			nodes = append(nodes, b.gatherContainedNodes(n2)...)
+		}
+	} else if cn := ContainedNodes(n); cn != nil {
+		nodes = append(nodes, cn...)
+	} else {
+		nodes = append(nodes, n)
+	}
+	return
+}
+
+/*
+func (b *sqlBuilder) logNode(node NodeI, level int) {
+	LogNode(node, level)
+	if childNodes := ChildNodes(node); childNodes != nil {
+		for _, cn := range childNodes {
+			b.logNode(cn, level+1)
+		}
+	}
+
+}
+*/
+
+// Assuming that both nodes point to the same location, merges the source node and its children into the destination node tree
+func (b *sqlBuilder) mergeNode(srcNode NodeI, destJoinItem *joinTreeItem) {
+	if !srcNode.Equals(destJoinItem.node) {
+		panic("mergeNode must start with equal nodes")
+	}
+	// make sure node is mapped
+	b.mapNode(srcNode, destJoinItem)
+
+	srcAliaser, ok := srcNode.(Aliaser)
+	if ok &&
+		srcAliaser.GetAlias() != "" &&
+		srcAliaser.GetAlias() != destJoinItem.alias {
+		_, isColumnNode := srcNode.(*ColumnNode)
+		if !isColumnNode {
+			// Adding a pre-aliased node that is at the same level as this node, so just add it.
+			b.insertNode(srcNode, destJoinItem.parent)
+			return
+		}
+	}
+
+	var childNode = ChildNode(srcNode)
+	if childNode == nil {
+		// The srcNode already exists in the tree. Since there is nothing below it, we might have additional information
+		// in this version of the node, so we add any new information to our join tree.
+		if prevCond := NodeCondition(srcNode); prevCond != nil {
+			if destJoinItem.joinCondition == nil {
+				destJoinItem.joinCondition = prevCond
+			} else if !destJoinItem.joinCondition.Equals(prevCond) {
+				// TODO: We need a mechanism to allow different kinds of conditional joins, perhaps through aliases so that
+				// items further down the chain can be identified as to which conditional join they belong to.
+				panic("Error, attempting to Join with conditions on a node which already has different conditions.")
+			}
+		}
+
+		if NodeIsExpander(destJoinItem.node) {
+			if NodeIsExpanded(srcNode) {
+				destJoinItem.expanded = true
+			}
+		}
+
+		return
+	}
+
+	if destJoinItem.childReferences == nil {
+		// We have found the end of the table chain, so insert what is left
+		b.insertNode(childNode, destJoinItem)
+	} else {
+		found := false
+		for _, destChild := range destJoinItem.childReferences {
+			if destChild.node.Equals(childNode) {
+				// found a matching child node, recurse
+				b.mergeNode(childNode, destChild)
+				found = true
+				break
+			}
+		}
+		if !found {
+			b.insertNode(childNode, destJoinItem)
+		}
+	}
+	return
+}
+
+// insertNode inserts the node into the join tree, adding an item into the join tree.
+// If the node is already in the joinTree, it will not add it, but it WILL map the node
+// to the joinTreeItem found that matches the node.
+func (b *sqlBuilder) insertNode(srcNode NodeI, parentItem *joinTreeItem) {
+	j := &joinTreeItem{
+		node:          srcNode,
+		isPK:          NodeIsPK(srcNode),
+		expanded:      NodeIsExpanded(srcNode),
+		joinCondition: NodeCondition(srcNode),
+	}
+
+	added, matchingItem := parentItem.addChildItem(j)
+	b.mapNode(srcNode, matchingItem)
+	if !added {
+		return
+	}
+
+	if rn := RelatedColumnNode(srcNode); rn != nil {
+		b.addNodeToJoinTree(rn)
+	}
+	if cn := ChildNode(srcNode); cn != nil {
+		b.insertNode(cn, j)
+	}
+}
+
+// makeColumnAliases will build the column and table maps as it assigns aliases to the join tree. These maps determine
+// what columns will appear in the select clause, and how they will be aliased.
+// Generally, we will always add columns that are PKs along the chain of nodes so that we know how to unpack the objects.
+// Specific situations that we do not automatically add the PK columns are: If its a distinct query, a count query,
+// or we are a subquery.
+// We will automatically add columns for all tables when a query does not specifically have Select statements.
+// We will treat GroupBy clauses as Select statements, since most SQL drivers require that only they be selected on, and
+// some even require aliases.
+func (b *sqlBuilder) makeColumnAliases() {
+
+	if len(b.groupBys) > 0 {
+		// SQL in general has a problem with group by items that are not selected, so we always select group by columns by implication
+		// Some SQL forms have gotten aorund the problem by just choosing a random result, but modern SQL engines now consider this an error
+		for _, n := range b.groupBys {
+			b.assignAlias(b.getItemFromNode(n))
+		}
+	} else if len(b.selects) > 0 {
+		for _, n := range b.selects {
+			b.assignAlias(b.getItemFromNode(n))
+		}
+		// We must also select on orderby's, or we cannot actually order by them
+		for _, n := range b.orderBys {
+			b.assignAlias(b.getItemFromNode(n))
+		}
+
+		if !(b.distinct || b.isSubquery || b.isCount) {
+			// Have some selects, so go through and make sure all primary keys in the chain are selected on
+			b.assignPrimaryKeyAliases(b.rootJoinTreeItem)
+		}
+	} else {
+		if b.isSubquery {
+			// Subqueries must have specific columns selected. They might be as alias columns, so we do not panic here.
+			if !(b.distinct || b.isCount) {
+				// Still add pks so we can unpack this
+				b.assignPrimaryKeyAliases(b.rootJoinTreeItem)
+			}
+		} else {
+			b.assignPrimaryKeyAliases(b.rootJoinTreeItem)
+			for _, n := range b.joins {
+				b.assignAllColumnAliases(b.getItemFromNode(n))
+			}
+		}
+	}
+}
+
+// assignTableAliases will assign aliases to the item and all children that are tables. Call this with the
+// root to assign all the table aliases.
+func (b *sqlBuilder) assignTableAliases(item *joinTreeItem) {
+	b.assignAlias(item)
+	for _, item2 := range item.childReferences {
+		b.assignTableAliases(item2)
+	}
+}
+
+// assign aliases to all primary keys in join tree. We do this to make sure we can unpack the linked records even
+// when specific tables are not called out in selects.
+func (b *sqlBuilder) assignPrimaryKeyAliases(item *joinTreeItem) {
+	if item.leafs == nil || !item.leafs[0].isPK {
+		b.addNodeToJoinTree(item.node.(TableNodeI).PrimaryKeyNode_())
+	}
+
+	if !item.leafs[0].isPK {
+		panic("pk was not added")
+	}
+
+	b.assignAlias(item.leafs[0])
+
+	for _, item2 := range item.childReferences {
+		b.assignPrimaryKeyAliases(item2)
+	}
+}
+
+// assignAllColumnAliases will add every column in the given table.
+// This is the default on queries that have no Select clauses just to make it easier to build queries during
+// development. After a product matures, Select statements can be added to streamline the database accesses.
+func (b *sqlBuilder) assignAllColumnAliases(item *joinTreeItem) {
+	if tn, ok := item.node.(TableNodeI); ok {
+		for _, sn := range tn.SelectNodes_() {
+			b.addNodeToJoinTree(sn)
+			b.assignAlias(b.getItemFromNode(sn))
+		}
+	}
+}
+
+// assignAlias assigns an alias to the item given.
+func (b *sqlBuilder) assignAlias(item *joinTreeItem) {
+	_, isColumnNode := item.node.(*ColumnNode)
+
+	if item.alias == "" {
+		// if it doesn't have a pre-assigned alias, give it an automated one
+		if a, ok := item.node.(Aliaser); ok && a.GetAlias() != "" {
+			// This node has been assigned an alias by the developer, so use it
+			item.alias = a.GetAlias()
+		} else if isColumnNode {
+			item.alias = columnAliasPrefix + b.subPrefix + strconv.Itoa(b.columnAliasNumber)
+			b.columnAliasNumber++
+		} else {
+			item.alias = tableAliasPrefix + b.subPrefix + strconv.Itoa(b.tableAliases.Len())
+		}
+	}
+
+	if isColumnNode {
+		b.columnAliases.Set(item.alias, item)
+	} else {
+		b.tableAliases.Set(item.alias, item)
+	}
 }
 
 /*
@@ -591,14 +511,14 @@ func (b *sqlBuilder) unpackResult(rows []map[string]interface{}) (out []map[stri
 
 	// First we create a tree structure of the data that will mirror the node structure
 	for _, row := range rows {
-		b.unpackObject(b.rootNode, row, oMap)
-		b.unpackSpecialAliases(b.rootNode, row, aliasMap)
+		rowId := b.unpackObject(b.rootJoinTreeItem, row, oMap)
+		b.unpackSpecialAliases(b.rootJoinTreeItem, rowId, row, aliasMap)
 	}
 
 	// We then walk the tree and create the final data structure as arrays
 	oMap.Range(func(key string, value interface{}) bool {
 		// Duplicate rows that are part of a join that is not an array join
-		out2 := b.expandNode(b.rootNode, value.(ValueMap))
+		out2 := b.expandNode(b.rootJoinTreeItem, value.(ValueMap))
 		// Add the Alias calculations specifically requested by the caller
 		for _, o2 = range out2 {
 			if m := aliasMap.Get(key); m != nil {
@@ -611,63 +531,67 @@ func (b *sqlBuilder) unpackResult(rows []map[string]interface{}) (out []map[stri
 	return out
 }
 
-// unpackObject finds the object that corresponds to parent in the row, and either adds it to the oMap, or it its
+// unpackObject finds the object that corresponds to parent in the row, and either adds it to the oMap, or if its
 // already in the oMap, reuses the old one and adds more data to it. oMap should only contain objects of parent type.
-func (b *sqlBuilder) unpackObject(parent NodeI, row ValueMap, oMap *maps.SliceMap) {
+// Returns the row id to use to refer to the row later.
+func (b *sqlBuilder) unpackObject(parent *joinTreeItem, row ValueMap, oMap *maps.SliceMap) (rowId string) {
 	var obj ValueMap
 	var arrayKey string
 	var currentArray *maps.SliceMap
-	var iface interface{}
-	var childNode NodeI
-	var childTableNode TableNodeI
-	var ok bool
 
-	pk := b.makeObjectKey(parent, row)
-	if pk == "" {
-		// pk of object was not found in the row. This would happen for two reasons: 1) Object was not created because of a conditional expansion that failed, or
-		// 2) This is a distinct select, and we are not selecting pks to avoid affecting the results of the query, in which case we will likely need to make up some ids
-		if !b.distinct {
+	if b.distinct || b.groupBys != nil {
+		// We are not identifying the row by a PK because of one of the following:
+		// 1) This is a distinct select, and we are not selecting pks to avoid affecting the results of the query, in which case we will likely need to make up some ids
+		// 2) This is a groupby clause, which forces us to select only the groupby items and we cannot add a PK to the row
+		// We will therefore make up a unique key to identify the row
+		b.rowId++
+		rowId = strconv.Itoa(b.rowId)
+	} else {
+		rowId = b.makeObjectKey(parent, row)
+		if rowId == "" {
+			// Object was not created because of a conditional expansion that failed
 			return
-		} else {
-			b.distinctId++
-			pk = strconv.Itoa(b.distinctId)
 		}
 	}
 
-	if curObj := oMap.Get(pk); curObj != nil {
+	if curObj := oMap.Get(rowId); curObj != nil {
 		obj = curObj.(ValueMap)
 	} else {
 		obj = NewValueMap()
-		oMap.Set(pk, obj)
+		oMap.Set(rowId, obj)
 	}
 
-	for _, childNode = range ChildNodes(parent) {
-		if childTableNode, ok = childNode.(TableNodeI); ok {
-			// if this is an embedded object, collect a group of objects
-			arrayKey = NodeGoName(childTableNode)
-			if iface, ok = obj[arrayKey]; !ok {
-				// If this is the first time, create the group
-				newArray := maps.NewSliceMap()
-				obj[arrayKey] = newArray
-				b.unpackObject(childNode, row, newArray)
-			} else {
-				// Already have a group, so add to the group
-				currentArray = iface.(*maps.SliceMap)
-				b.unpackObject(childNode, row, currentArray)
-			}
+	for _, childItem := range parent.childReferences {
+		if !NodeIsTableNodeI(childItem.node) {
+			panic("leaf node put in the table nodes")
 		} else {
-			b.unpackLeaf(childNode, row, obj)
+			arrayKey = NodeGoName(childItem.node)
+		}
+		// if this is an embedded object, collect a group of objects
+		if i, ok := obj[arrayKey]; !ok {
+			// If this is the first time, create the group
+			newArray := maps.NewSliceMap()
+			obj[arrayKey] = newArray
+			b.unpackObject(childItem, row, newArray)
+		} else {
+			// Already have a group, so add to the group
+			currentArray = i.(*maps.SliceMap)
+			b.unpackObject(childItem, row, currentArray)
 		}
 	}
+	for _, leafItem := range parent.leafs {
+		b.unpackLeaf(leafItem, row, obj)
+	}
+	return
 }
 
-func (b *sqlBuilder) unpackLeaf(n NodeI, row ValueMap, obj ValueMap) {
+func (b *sqlBuilder) unpackLeaf(j *joinTreeItem, row ValueMap, obj ValueMap) {
 	var key string
 	var fieldName string
 
-	switch node := n.(type) {
+	switch node := j.node.(type) {
 	case *ColumnNode:
-		key = node.GetAlias()
+		key = j.alias
 		if b.columnAliases.Has(key) && !b.aliasNodes.Has(key) { // could be a special alias, which we should unpack differently
 			fieldName = ColumnNodeDbName(node)
 			obj[fieldName] = row[key]
@@ -677,45 +601,96 @@ func (b *sqlBuilder) unpackLeaf(n NodeI, row ValueMap, obj ValueMap) {
 	}
 }
 
-func (b *sqlBuilder) makeObjectKey(n NodeI, row ValueMap) string {
+// makeObjectKey makes the key for the object of the row. This should be called only once per row.
+// the key is used in subsequent calls to determine what row joined data belongs to.
+func (b *sqlBuilder) makeObjectKey(j *joinTreeItem, row ValueMap) string {
 	var alias interface{}
 
-	pkNode := b.getPkNode(n)
-	if alias, _ = row[pkNode.GetAlias()]; alias == nil {
+	pkItem := b.getPkJoinTreeItem(j)
+	if pkItem == nil {
+		return "" // Primary key was not selected on, which could happen if this is distinct, count, failed expansion, etc.
+	}
+	if alias, _ = row[pkItem.alias]; alias == nil {
 		return ""
 	}
-	pk := fmt.Sprint(alias)
-	return pkNode.GetAlias() + "." + pk
+	pk := fmt.Sprint(alias) // primary keys are usually either integers or strings in most databases. We standardize on strings.
+	return pkItem.alias + "." + pk
 }
 
-// Returns the primary key value corresponding to the
-func (b *sqlBuilder) getPkNode(n NodeI) NodeI {
-	tn, ok := n.(TableNodeI)
-
-	if !ok {
-		return nil
+// getPkJoinTreeItem returns the join item corresponding to the primary key contained in the given node,
+// meaning the node given should be a table node.
+func (b *sqlBuilder) getPkJoinTreeItem(j *joinTreeItem) *joinTreeItem {
+	if j.leafs != nil && j.leafs[0].isPK {
+		return j.leafs[0]
 	}
-	pk := b.findMatchingChildNode(tn.PrimaryKeyNode_(), n)
-	return pk
+	return nil
 }
 
-//
-func (b *sqlBuilder) findMatchingChildNode(n NodeI, parent NodeI) (match NodeI) {
-	var childNodes []NodeI
-
-	if childNodes = ChildNodes(parent); childNodes != nil {
-		for _, cn := range childNodes {
-			if cn.Equals(n) {
-				return cn
+// findChildJoinItem returns the joinTreeItem matching the given node
+func (b *sqlBuilder) findChildJoinItem(childNode NodeI, parent *joinTreeItem) (match *joinTreeItem) {
+	if _, ok := childNode.(TableNodeI); ok {
+		for _, cj := range parent.childReferences {
+			if cj.node.Equals(childNode) {
+				return cj
+			}
+		}
+	} else {
+		for _, cj := range parent.leafs {
+			if cj.node.Equals(childNode) {
+				return cj
 			}
 		}
 	}
 	return nil
 }
 
+// findChildJoinItemRecursive recursively finds a join item
+func (b *sqlBuilder) findChildJoinItemRecursive(n NodeI, joinItem *joinTreeItem) (match *joinTreeItem) {
+	childNode := ChildNode(n)
+
+	if childNode == nil {
+		return joinItem
+	} else {
+		match := b.findChildJoinItem(childNode, joinItem)
+
+		if match != nil {
+			return b.findChildJoinItemRecursive(childNode, match)
+		}
+	}
+
+	return nil
+}
+
+// findJoinItem starts the process of finding a joinTreeItem corresponding to a particular node
+func (b *sqlBuilder) findJoinItem(n NodeI) *joinTreeItem {
+	return b.findChildJoinItemRecursive(RootNode(n), b.rootJoinTreeItem)
+}
+
+func (b *sqlBuilder) mapNode(node NodeI, item *joinTreeItem) {
+	if item == nil {
+		panic("linking nil item")
+	}
+	if item.node == nil {
+		panic("linking nil node in item")
+	}
+	b.nodeMap[node] = item
+}
+
+func (b *sqlBuilder) getItemFromNode(node NodeI) *joinTreeItem {
+	j := b.nodeMap[node]
+	if j == nil && b.parentBuilder != nil { // if we are in a subquery, ask the parent query for the item
+		j = b.parentBuilder.getItemFromNode(node)
+	}
+	if j == nil {
+		// For some reason, saving in the nodeMap does not always work. Lets double-check and walk the tree to find it.
+		j = b.findJoinItem(node)
+	}
+
+	return j
+}
+
 // Craziness of handling situation where an array node wants to be individually expanded.
-func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueMap) {
-	var childNode NodeI
+func (b *sqlBuilder) expandNode(j *joinTreeItem, nodeObject ValueMap) (outArray []ValueMap) {
 	var item ValueMap
 	var innerNodeObject ValueMap
 	var copies []ValueMap
@@ -723,113 +698,115 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 	var newArray []ValueMap
 	var nodeCopy ValueMap
 
-	childNodes := ChildNodes(n)
-	if childNodes == nil || len(childNodes) == 0 {
-		return
-	}
-
 	outArray = append(outArray, NewValueMap())
 
-	for _, childNode = range childNodes {
-		copies = []ValueMap{}
+	// order of reference or leaf processing is not important
+	for _, childItem := range j.leafs {
 		for _, item = range outArray {
-			switch node := childNode.(type) {
-			case *ColumnNode:
-				item[ColumnNodeDbName(node)] = nodeObject[ColumnNodeDbName(node)]
-			case TableNodeI:
-				switch tableNode := node.EmbeddedNode_().(type) {
-				case *ReferenceNode:
-					// Should be a one or zero item array here
-					om := nodeObject[NodeGoName(tableNode)].(*maps.SliceMap)
-					if om.Len() > 1 {
-						panic("Cannot have an array with more than one item here.")
-					} else if om.Len() == 1 {
-						innerNodeObject = nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).GetAt(0).(ValueMap)
-						innerCopies = b.expandNode(childNode, innerNodeObject)
-						if len(innerCopies) > 1 {
-							for _, cp2 := range innerCopies {
-								nodeCopy := item.Copy().(ValueMap)
-								nodeCopy[NodeGoName(tableNode)] = cp2
-								copies = append(copies, nodeCopy)
-							}
-						} else {
-							item[NodeGoName(tableNode)] = map[string]interface{}(innerCopies[0])
-						}
-					}
-					// else we likely were not included because of a conditional join
-				case *ReverseReferenceNode:
-					if !ReverseReferenceNodeIsArray(tableNode) { // unique reverse or single expansion many
-						newArray = []ValueMap{}
-						nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
-							innerNodeObject = value.(ValueMap)
-							innerCopies = b.expandNode(childNode, innerNodeObject)
-							for _, ic := range innerCopies {
-								newArray = append(newArray, ic)
-							}
-							return true
-						})
-						for _, cp2 := range newArray {
-							nodeCopy = item.Copy().(ValueMap)
-							nodeCopy[NodeGoName(tableNode)] = cp2
+			if cn, ok := childItem.node.(*ColumnNode); ok {
+				dbName := ColumnNodeDbName(cn)
+				item[dbName] = nodeObject[dbName]
+			}
+		}
+	}
+
+	for _, childItem := range append(j.childReferences) {
+		copies = []ValueMap{}
+		tableGoName := NodeGoName(childItem.node)
+
+		for _, item = range outArray {
+			switch NodeGetType(childItem.node) {
+			case ReferenceNodeType:
+				// Should be a one or zero item array here
+				om := nodeObject[tableGoName].(*maps.SliceMap)
+				if om.Len() > 1 {
+					panic("Cannot have an array with more than one item here.")
+				} else if om.Len() == 1 {
+					innerNodeObject = nodeObject[tableGoName].(*maps.SliceMap).GetAt(0).(ValueMap)
+					innerCopies = b.expandNode(childItem, innerNodeObject)
+					if len(innerCopies) > 1 {
+						for _, cp2 := range innerCopies {
+							nodeCopy := item.Copy().(ValueMap)
+							nodeCopy[tableGoName] = cp2
 							copies = append(copies, nodeCopy)
 						}
 					} else {
-						// From this point up, we should not be creating additional copies, since from this point down, we
-						// are gathering an array
-						newArray = []ValueMap{}
-						nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
-							innerNodeObject = value.(ValueMap)
-							innerCopies = b.expandNode(childNode, innerNodeObject)
-							for _, ic := range innerCopies {
-								newArray = append(newArray, ic)
-							}
-							return true
-						})
-						item[NodeGoName(tableNode)] = newArray
+						item[tableGoName] = map[string]interface{}(innerCopies[0])
+					}
+				}
+				// else we likely were not included because of a conditional join
+			case ReverseReferenceNodeType:
+				if childItem.expanded { // unique reverse or single expansion many
+					newArray = []ValueMap{}
+					nodeObject[tableGoName].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
+						innerNodeObject = value.(ValueMap)
+						innerCopies = b.expandNode(childItem, innerNodeObject)
+						for _, ic := range innerCopies {
+							newArray = append(newArray, ic)
+						}
+						return true
+					})
+					for _, cp2 := range newArray {
+						nodeCopy = item.Copy().(ValueMap)
+						nodeCopy[tableGoName] = cp2
+						copies = append(copies, nodeCopy)
+					}
+				} else {
+					// From this point up, we should not be creating additional copies, since from this point down, we
+					// are gathering an array
+					newArray = []ValueMap{}
+					nodeObject[tableGoName].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
+						innerNodeObject = value.(ValueMap)
+						innerCopies = b.expandNode(childItem, innerNodeObject)
+						for _, ic := range innerCopies {
+							newArray = append(newArray, ic)
+						}
+						return true
+					})
+					item[tableGoName] = newArray
+				}
+
+			case ManyManyNodeType:
+				if ManyManyNodeIsTypeTable(childItem.node.(TableNodeI).EmbeddedNode_().(*ManyManyNode)) {
+					var intArray []uint
+					nodeObject[tableGoName].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
+						innerNodeObject = value.(ValueMap)
+						typeKey := innerNodeObject[ColumnNodeDbName(childItem.node.(TableNodeI).PrimaryKeyNode_())]
+						switch v := typeKey.(type) {
+						case uint:
+							intArray = append(intArray, v)
+						case int:
+							intArray = append(intArray, uint(v))
+						}
+						return true
+					})
+					if !childItem.expanded { // single expansion many
+						item[tableGoName] = intArray
+					} else {
+						for _, cp2 := range intArray {
+							nodeCopy = item.Copy().(ValueMap)
+							nodeCopy[tableGoName] = []uint{cp2}
+							copies = append(copies, nodeCopy)
+						}
 					}
 
-				case *ManyManyNode:
-					if ManyManyNodeIsTypeTable(tableNode) {
-						var intArray []uint
-						nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
-							innerNodeObject = value.(ValueMap)
-							typeKey := innerNodeObject[ColumnNodeDbName(node.PrimaryKeyNode_())]
-							switch v := typeKey.(type) {
-							case uint:
-								intArray = append(intArray, v)
-							case int:
-								intArray = append(intArray, uint(v))
-							}
-							return true
-						})
-						if ManyManyNodeIsArray(tableNode) { // single expansion many
-							item[NodeGoName(tableNode)] = intArray
-						} else {
-							for _, cp2 := range intArray {
-								nodeCopy = item.Copy().(ValueMap)
-								nodeCopy[NodeGoName(tableNode)] = []uint{cp2}
-								copies = append(copies, nodeCopy)
-							}
+				} else {
+					newArray = []ValueMap{}
+					nodeObject[tableGoName].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
+						innerNodeObject = value.(ValueMap)
+						innerCopies = b.expandNode(childItem, innerNodeObject)
+						for _, ic := range innerCopies {
+							newArray = append(newArray, ic)
 						}
-
+						return true
+					})
+					if !childItem.expanded {
+						item[tableGoName] = newArray
 					} else {
-						newArray = []ValueMap{}
-						nodeObject[NodeGoName(tableNode)].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
-							innerNodeObject = value.(ValueMap)
-							innerCopies = b.expandNode(childNode, innerNodeObject)
-							for _, ic := range innerCopies {
-								newArray = append(newArray, ic)
-							}
-							return true
-						})
-						if ManyManyNodeIsArray(tableNode) {
-							item[NodeGoName(tableNode)] = newArray
-						} else {
-							for _, cp2 := range newArray {
-								nodeCopy = item.Copy().(ValueMap)
-								nodeCopy[NodeGoName(tableNode)] = []ValueMap{cp2}
-								copies = append(copies, nodeCopy)
-							}
+						for _, cp2 := range newArray {
+							nodeCopy = item.Copy().(ValueMap)
+							nodeCopy[tableGoName] = []ValueMap{cp2}
+							copies = append(copies, nodeCopy)
 						}
 					}
 				}
@@ -844,15 +821,11 @@ func (b *sqlBuilder) expandNode(n NodeI, nodeObject ValueMap) (outArray []ValueM
 	return
 }
 
-func (b *sqlBuilder) unpackSpecialAliases(rootNode NodeI, row ValueMap, aliasMap *maps.SliceMap) {
+// unpack the manually aliased items from the result
+func (b *sqlBuilder) unpackSpecialAliases(rootItem *joinTreeItem, rowId string, row ValueMap, aliasMap *maps.SliceMap) {
 	var obj ValueMap
 
-	pk := b.makeObjectKey(rootNode, row)
-	if pk == "" {
-		return // object was not found in the row
-	}
-
-	if curObj := aliasMap.Get(pk); curObj != nil {
+	if curObj := aliasMap.Get(rowId); curObj != nil {
 		return // already added these to the row
 	} else {
 		obj = NewValueMap()
@@ -864,7 +837,7 @@ func (b *sqlBuilder) unpackSpecialAliases(rootNode NodeI, row ValueMap, aliasMap
 	})
 
 	if len(obj) > 0 {
-		aliasMap.Set(pk, obj)
+		aliasMap.Set(rowId, obj)
 	}
 }
 
@@ -888,4 +861,58 @@ func (m ValueMap) Copy() interface{} {
 
 func init() {
 	gob.Register(&ValueMap{})
+}
+
+// joinTreeItem is used to build the join tree. The join tree creates a hierarchy of joined nodes that let us
+// generate aliases, serialize the query, and afterwards unpack the results.
+type joinTreeItem struct {
+	node            NodeI
+	parent          *joinTreeItem
+	childReferences []*joinTreeItem // TableNodeI objects
+	leafs           []*joinTreeItem
+	joinCondition   NodeI
+	alias           string
+	expanded        bool
+	isPK            bool
+}
+
+// addChildItem attempts to add the given child item. If the item was previously found, it will NOT be
+// added, but the found item will be returned.
+func (j *joinTreeItem) addChildItem(child *joinTreeItem) (added bool, match *joinTreeItem) {
+	if _, ok := child.node.(TableNodeI); ok {
+		for _, j2 := range j.childReferences {
+			if j2.node.Equals(child.node) {
+				// The node was already here
+				return false, j2
+			}
+		}
+		child.parent = j
+		j.childReferences = append(j.childReferences, child)
+	} else {
+		for _, j2 := range j.leafs {
+			if j2.node.Equals(child.node) {
+				// Leaf item was found, just skip it, but save node reference
+				return false, j2
+			}
+		}
+		child.parent = j
+		if child.isPK {
+			// PKs go to the front
+			j.leafs = append([]*joinTreeItem{child}, j.leafs...)
+		} else {
+			j.leafs = append(j.leafs, child)
+		}
+
+	}
+	return true, child
+}
+
+// pk will return the primary key join tree item attached to this item, or nil if none exists
+func (j *joinTreeItem) pk() *joinTreeItem {
+	if j.leafs != nil &&
+		j.leafs[0].isPK {
+		return j.leafs[0]
+	} else {
+		return nil
+	}
 }

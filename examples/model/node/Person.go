@@ -7,7 +7,7 @@ import (
 )
 
 type personNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func Person() *personNode {
@@ -28,7 +28,10 @@ func (n *personNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.ID()
 }
 func (n *personNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+func (n *personNode) Copy_() query.NodeI {
+	return &personNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *personNode) ID() *query.ColumnNode {
@@ -38,6 +41,7 @@ func (n *personNode) ID() *query.ColumnNode {
 		"id",
 		"ID",
 		query.ColTypeString,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -50,6 +54,7 @@ func (n *personNode) FirstName() *query.ColumnNode {
 		"first_name",
 		"FirstName",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -62,6 +67,7 @@ func (n *personNode) LastName() *query.ColumnNode {
 		"last_name",
 		"LastName",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -101,6 +107,24 @@ func (n *personNode) PersonTypes() *personTypeNode {
 
 }
 
+func (n *personNode) Login() *loginNode {
+
+	cn := &loginNode{
+		query.NewReverseReferenceNode(
+			"goradd",
+			"person",
+			"id",
+			"Login",
+			"login",
+			"person_id",
+			false,
+		),
+	}
+	query.SetParentNode(cn, n)
+	return cn
+
+}
+
 func (n *personNode) ProjectsAsManager() *projectNode {
 
 	cn := &projectNode{
@@ -130,24 +154,6 @@ func (n *personNode) Addresses() *addressNode {
 			"address",
 			"person_id",
 			true,
-		),
-	}
-	query.SetParentNode(cn, n)
-	return cn
-
-}
-
-func (n *personNode) Login() *loginNode {
-
-	cn := &loginNode{
-		query.NewReverseReferenceNode(
-			"goradd",
-			"person",
-			"id",
-			"Login",
-			"login",
-			"person_id",
-			false,
 		),
 	}
 	query.SetParentNode(cn, n)

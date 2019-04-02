@@ -17,7 +17,7 @@ import (
 
 {{
 type {{privateName}}Node struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 func {{= t.GoName }}() *{{privateName}}Node {
@@ -66,9 +66,14 @@ for _,col := range t.Columns {
 
 {{
 func (n *{{privateName}}Node) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
 }
 }}
 
+{{
+func (n *{{privateName}}Node) Copy_() query.NodeI {
+	return &{{privateName}}Node{query.CopyNode(n.ReferenceNodeI)}
+}
+}}
 
 {{: column.tmpl }}

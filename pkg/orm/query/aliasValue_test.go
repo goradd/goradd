@@ -8,9 +8,6 @@ import (
 )
 
 func TestNewAliasValue(t *testing.T) {
-	type args struct {
-		a interface{}
-	}
 	tests := []struct {
 		name interface{}
 		value interface{}

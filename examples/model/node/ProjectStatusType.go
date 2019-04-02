@@ -7,7 +7,7 @@ import (
 )
 
 type projectStatusTypeNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 
@@ -25,7 +25,11 @@ func (n *projectStatusTypeNode) PrimaryKeyNode_() (*query.ColumnNode) {
 }
 
 func (n *projectStatusTypeNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+
+func (n *projectStatusTypeNode) Copy_() query.NodeI {
+	return &projectStatusTypeNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *projectStatusTypeNode) ID() *query.ColumnNode {
@@ -36,6 +40,7 @@ func (n *projectStatusTypeNode) ID() *query.ColumnNode {
 		"id",
 		"ID",
 		query.ColTypeUnsigned,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -48,6 +53,7 @@ func (n *projectStatusTypeNode) Name() *query.ColumnNode {
 		"name",
 		"Name",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -60,6 +66,7 @@ func (n *projectStatusTypeNode) Description() *query.ColumnNode {
 		"description",
 		"Description",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -72,6 +79,7 @@ func (n *projectStatusTypeNode) Guidelines() *query.ColumnNode {
 		"guidelines",
 		"Guidelines",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -84,6 +92,7 @@ func (n *projectStatusTypeNode) IsActive() *query.ColumnNode {
 		"is_active",
 		"IsActive",
 		query.ColTypeBool,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn

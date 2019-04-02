@@ -5,11 +5,13 @@ import (
 	"strings"
 )
 
+
 // A ManyManyNode is an association node that links one table to another table with a many-to-many relationship.
 // Some of the columns have overloaded meanings depending on SQL or NoSQL mode.
 type ManyManyNode struct {
-	Node
-
+	nodeAlias
+	nodeCondition
+	nodeLink
 	// Which database in the global list of databases does the node belong to
 	dbKey string
 	// NoSQL: The originating table. SQL: The association table
@@ -58,9 +60,26 @@ func NewManyManyNode(
 	return n
 }
 
+func (n *ManyManyNode) copy() NodeI {
+	ret := &ManyManyNode{
+		dbKey:       n.dbKey,
+		dbTable:     n.dbTable,
+		dbColumn:    n.dbColumn,
+		goPropName:  n.goPropName,
+		refTable:    n.refTable,
+		refColumn:   n.refColumn,
+		isArray:     n.isArray,
+		isTypeTable: n.isTypeTable,
+		nodeAlias: nodeAlias{n.alias},
+		nodeCondition: nodeCondition{n.condition}, // shouldn't need to duplicate condition
+	}
+	return ret
+}
+
 func (n *ManyManyNode) nodeType() NodeType {
 	return ManyManyNodeType
 }
+
 
 // Expand tells this node to create multiple original objects with a single link for each joined item, rather than to create one original with an array of joined items
 func (n *ManyManyNode) Expand() {
@@ -75,22 +94,16 @@ func (n *ManyManyNode) isExpanded() bool {
 
 // Equals is used internally by the framework to test if the node is the same as another node.
 func (n *ManyManyNode) Equals(n2 NodeI) bool {
-	if n2.nodeType() == ManyManyNodeType {
-		cn := n2.(TableNodeI).EmbeddedNode_().(*ManyManyNode)
+	if tn, ok := n2.(TableNodeI); !ok {
+		return false
+	} else if cn, ok := tn.EmbeddedNode_().(*ManyManyNode); !ok {
+		return false
+	} else {
 		return cn.dbTable == n.dbTable &&
 			cn.goPropName == n.goPropName &&
 			(cn.alias == "" || n.alias == "" || cn.alias == n.alias)
 
 	}
-	return false
-}
-
-func (n *ManyManyNode) setCondition(condition NodeI) {
-	n.condition = condition
-}
-
-func (n *ManyManyNode) getCondition() NodeI {
-	return n.condition
 }
 
 func (n *ManyManyNode) tableName() string {

@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+
 // ReverseReferenceNode creates a reverse reference node representing a one to many relationship or one-to-one
 // relationship, depending on whether the foreign key is unique. The other side of the relationship will have
 // a matching forward ReferenceNode.
@@ -13,8 +14,9 @@ import (
 // table to indicate the relationship. It is a kind of virtual placeholder to indicate that a foreign key in
 // another table is pointing to this table, and therefore that relationship can be used to build a query.
 type ReverseReferenceNode struct {
-	Node
-
+	nodeAlias
+	nodeCondition
+	nodeLink
 	// Which database in the global list of databases does the node belong to
 	dbKey string
 	// table which has the reverse reference
@@ -62,12 +64,25 @@ func NewReverseReferenceNode(
 	return n
 }
 
-func (n *ReverseReferenceNode) nodeType() NodeType {
-	return ReverseReferenceNodeType
+func (n *ReverseReferenceNode) copy() NodeI {
+	ret := &ReverseReferenceNode{
+		dbKey:      n.dbKey,
+		dbTable:    n.dbTable,
+		dbColumn:   n.dbColumn,
+		goPropName: n.goPropName,
+		refTable:   n.refTable,
+		refColumn:  n.refColumn,
+		isArray:    n.isArray,
+		nodeAlias: nodeAlias{n.alias},
+		nodeCondition: nodeCondition{n.condition},
+	}
+	return ret
 }
+
 
 // Expand tells the node to expand its results into multiple records, one for each item found in this relationship,
 // rather than have this relationship create an array of items within an individual record.
+// Unique reverse relationships create one-to-one relationships, and so they are always expanded.
 func (n *ReverseReferenceNode) Expand() {
 	n.isArray = false
 }
@@ -78,27 +93,19 @@ func (n *ReverseReferenceNode) isExpanded() bool {
 
 // Equals is used internally by the framework to determine if two nodes are equal.
 func (n *ReverseReferenceNode) Equals(n2 NodeI) bool {
-	if n2.nodeType() == ReverseReferenceNodeType {
-		cn := n2.(TableNodeI).EmbeddedNode_().(*ReverseReferenceNode)
+	if tn, ok := n2.(TableNodeI); !ok {
+		return false
+	} else if cn, ok := tn.EmbeddedNode_().(*ReverseReferenceNode); !ok {
+		return false
+	} else {
 		return cn.dbTable == n.dbTable &&
-			cn.refTable == n.refTable &&
-			cn.refColumn == n.refColumn &&
+			cn.goPropName == n.goPropName &&
 			(cn.alias == "" || n.alias == "" || cn.alias == n.alias)
 	}
-
-	return false
 }
 
 func (n *ReverseReferenceNode) tableName() string {
 	return n.refTable
-}
-
-func (n *ReverseReferenceNode) setCondition(condition NodeI) {
-	n.condition = condition
-}
-
-func (n *ReverseReferenceNode) getCondition() NodeI {
-	return n.condition
 }
 
 func (n *ReverseReferenceNode) log(level int) {
@@ -110,6 +117,11 @@ func (n *ReverseReferenceNode) log(level int) {
 func (n *ReverseReferenceNode) goName() string {
 	return n.goPropName
 }
+
+func (n *ReverseReferenceNode) nodeType() NodeType {
+	return ReverseReferenceNodeType
+}
+
 
 // ReverseReferenceNodeIsArray is used internally by the framework to determine if a node should create an array
 func ReverseReferenceNodeIsArray(n *ReverseReferenceNode) bool {
@@ -131,3 +143,4 @@ func ReverseReferenceNodeRefColumn(n *ReverseReferenceNode) string {
 func ReverseReferenceNodeDbColumnName(n *ReverseReferenceNode) string {
 	return n.dbColumn
 }
+

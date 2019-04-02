@@ -7,7 +7,7 @@ import (
 )
 
 type personTypeNode struct {
-	query.NodeI
+	query.ReferenceNodeI
 }
 
 
@@ -22,7 +22,11 @@ func (n *personTypeNode) PrimaryKeyNode_() (*query.ColumnNode) {
 }
 
 func (n *personTypeNode) EmbeddedNode_() query.NodeI {
-	return n.NodeI
+	return n.ReferenceNodeI
+}
+
+func (n *personTypeNode) Copy_() query.NodeI {
+	return &personTypeNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 func (n *personTypeNode) ID() *query.ColumnNode {
@@ -33,6 +37,7 @@ func (n *personTypeNode) ID() *query.ColumnNode {
 		"id",
 		"ID",
 		query.ColTypeUnsigned,
+		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
@@ -45,6 +50,7 @@ func (n *personTypeNode) Name() *query.ColumnNode {
 		"name",
 		"Name",
 		query.ColTypeString,
+		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
