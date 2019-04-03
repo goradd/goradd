@@ -108,7 +108,7 @@ func Test2Nodes(t *testing.T) {
 
 	assert.True(t, milestones[0].NameIsValid(), "Milestone 1 has a name")
 	assert.Equal(t, "Milestone A", milestones[0].Name(), "Milestone 1 has name of Milestone A")
-	assert.False(t, milestones[0].Project().NameIsValid(), "Project 1 should not have a name since it was not joined")
+	assert.True(t, milestones[0].Project().NameIsValid(), "Project 1 should have a name")
 	assert.True(t, milestones[0].Project().Manager().FirstNameIsValid(), "Person 7 has a name")
 	assert.Equal(t, "Karen", milestones[0].Project().Manager().FirstName(), "Person 7 has first name of Karen")
 }
@@ -388,4 +388,15 @@ func TestSelectByID(t *testing.T) {
 	m := p.ProjectAsManager(id)
 	require.NotNil(t, m, "Could not fine project as manager: " + id)
 	assert.Equal(t, m.Name(), "ACME Payment System")
+}
+
+func Test2ndLoad(t *testing.T) {
+	ctx := context.Background()
+	projects := model.QueryProjects().
+		OrderBy(node.Project().Manager().FirstName()).
+		Load(ctx)
+
+	mgr := projects[0].LoadManager(ctx)
+	assert.Equal(t, "Doe", mgr.LastName())
+
 }
