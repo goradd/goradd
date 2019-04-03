@@ -72,6 +72,7 @@ func GetDatabases() map[string]DatabaseI {
 }
 
 // GetTableDescription returns a table description given a database key and the struct name corresponding to the table.
+// You must call AnalyzeDatabases first to use this.
 func GetTableDescription(key string, goTypeName string) *TableDescription {
 	td, ok := datastore.tables[key][goTypeName]
 	if !ok {
@@ -81,6 +82,7 @@ func GetTableDescription(key string, goTypeName string) *TableDescription {
 }
 
 // GetTypeTableDescription returns a type table description given a database key and the struct name corresponding to the table.
+// You must call AnalyzeDatabases first to use this.
 func GetTypeTableDescription(key string, goTypeName string) *TypeTableDescription {
 	td, ok := datastore.typeTables[key][goTypeName]
 	if !ok {
@@ -89,8 +91,9 @@ func GetTypeTableDescription(key string, goTypeName string) *TypeTableDescriptio
 	return td
 }
 
-// AnalyzeDatabases should be called at application startup after all the databases have been added to the
-// datastore. It will prepare the datastore for use by the ORM.
+// AnalyzeDatabases will open all the databases and extra the table information found there. Its primary use
+// is to extract the schema out of SQL databases so that it can be exported into a database neutral format,
+// perhaps a json or yaml representation.
 func AnalyzeDatabases() {
 	var dd *DatabaseDescription
 	datastore.tables = make(map[string]map[string]*TableDescription)
