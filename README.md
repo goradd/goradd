@@ -15,7 +15,7 @@ will quickly get you a working website, but not necessarily one that you will wa
 Goradd is architected to allow you to make changes and plug in other open-source 
 software as you need.
 1) Fail fast. Most development processes go through a lengthy requirement analysis process,
-follow by a design process, and a lengthy build process, only to find out that what you built wasn't 
+followed by a design process, and a lengthy build process, only to find out that what you built wasn't 
 really what was needed. Instead, Goradd gets you a working website quickly, and then lets you build out
 your application incrementally. It
 tries to make it easy to restructure your website, even
@@ -36,8 +36,7 @@ and true technologies that work on a broad range of browsers and servers, rather
 that require lots of Polyfills for emerging standards. JQuery is currently heavily relied on, and partly because we want
 to make it easy to create Bootstrap based applications (Bootstrap is not required though)
 1) Progressivive enhancement. Using the supported widgets, you can create a website
-that works even if the client turns off Javascript, and that also works with 
-Opera Mini.
+that works even if the client turns off Javascript.
 1) Rich libraries of widgets. Goradd provides standard widgets corresponding to 
 basic html controls, and also provides Bootstrap widgets. If you have a particular
 css or javascript widget library you want to support, building the Goradd
