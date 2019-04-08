@@ -17,7 +17,5 @@ func init() {
 	db1 := db.NewMysql5(key, "", cfg)
 
 	db.AddDatabase(db1, key)
-
-	db.AnalyzeDatabases()
 }
 

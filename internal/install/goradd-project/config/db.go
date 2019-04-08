@@ -15,9 +15,6 @@ func initDatabases() {
 
 	// add your own development databases
 
-	// do this last
-	db.AnalyzeDatabases()
-
 }
 
 // addGoraddDatabase adds the goradd sample database to the database list. You will need this to run some of the
