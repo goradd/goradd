@@ -2,13 +2,13 @@ package panels
 
 import (
 	"context"
-	"github.com/goradd/goradd/examples/model"
-	"github.com/goradd/goradd/examples/model/node"
 	"github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/control/data"
+	"github.com/goradd/goradd/web/examples/model"
+	"github.com/goradd/goradd/web/examples/model/node"
 )
 
 type TableDbPanel struct {

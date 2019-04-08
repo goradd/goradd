@@ -5,11 +5,10 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/examples/model/node"
-
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/web/examples/model/node"
 
 	//"./node"
 	"bytes"
@@ -689,6 +688,22 @@ func (b *unsupportedTypesBuilder) Expand(n query.NodeI) *unsupportedTypesBuilder
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *unsupportedTypesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *unsupportedTypesBuilder {
+	var condition query.NodeI
+	if len(conditions) > 1 {
+		condition = And(conditions)
+	} else if len(conditions) == 1 {
+		condition = conditions[0]
+	}
+	b.base.Join(n, condition)
+	if condition != nil {
+		b.hasConditionalJoins = true
+	}
+	return b
+}
+
+// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
+// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
+func (b *unsupportedTypesBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *unsupportedTypesBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)

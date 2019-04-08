@@ -27,7 +27,7 @@ install:
 
 before_script:
   - google-chrome-stable http://localhost:8000?all=1 &
-  - mysql -e 'create database goradd;'; mysql -u root goradd < ${TRAVIS_BUILD_DIR}/examples/db/mysql.sql
+  - mysql -e 'create database goradd;'; mysql -u root goradd < ${TRAVIS_BUILD_DIR}/web/examples/db/mysql.sql
 #  - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('12345') where User='root'; FLUSH PRIVILEGES;"
 
 script:

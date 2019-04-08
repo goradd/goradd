@@ -118,7 +118,8 @@ func (a *Application) RunWebServer() (err error) {
 	// The  "Serve" functions below will launch go routines for each request, so that multiple requests can be
 	// processed in parallel.
 	if config.UseFCGI { // Run as FCGI via standard I/O
-		// FCGI requires a serialized pagestate server, outside session server and care with the websocket server
+		// FCGI requires a serialized pagestate server (which is not yet implemented),
+		// outside session server and care with the websocket server if you serve more than one instance
 		err = fcgi.Serve(nil, mux)
 	} else {
 		// TODO: Make a way so that we will automatically redirect to https if specified to do so
@@ -148,13 +149,11 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 	// serve up static application asset files
 	mux.Handle(config.AssetPrefix, http.HandlerFunc(page.ServeAsset))
 
-	// serve up registered paths
-	for path,dir := range a.StaticDirectoryPaths {
-		mux.Handle(path, http.StripPrefix(path, http.FileServer(http.Dir(dir))))
-	}
+	// serve up REST endpoints. Comment this out if you are not providing a rest interface.
+	mux.Handle(config.ApiPrefix, a.MakeRESTServer())
 
-	// send anything you don't explicitly handle above to the goradd page server
-	// note that the app server can serve up static html. See ServeStaticFile.
+	// send anything you don't explicitly handle above to the goradd app server
+	// note that the app server can serve up static html too. See ServeStaticFile.
 	mux.Handle("/", a.MakeAppServer())
 
 	return mux

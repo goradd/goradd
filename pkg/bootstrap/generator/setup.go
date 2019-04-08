@@ -8,6 +8,8 @@ import (
 
 // Setup sets up the default code generator to generate bootstrap controls when possible.
 func BootstrapCodegenSetup() {
+	generator.DefaultWrapper = "bootstrap.FormGroup"
+
 	generator.DefaultControlTypeFunc = func(col *db.ColumnDescription) (info generator.ControlCreationInfo) {
 		info = generator.DefaultControlType(col)
 

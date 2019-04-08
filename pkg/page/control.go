@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
+	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
@@ -463,8 +464,8 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 
 		func() {
 			// wrap in a function to get deferred PutBuffer to execute immediately after drawing
-			buf := GetBuffer()
-			defer PutBuffer(buf)
+			buf := buf2.GetBuffer()
+			defer buf2.PutBuffer(buf)
 
 			err = c.this().Draw(ctx, buf)
 			response.SetControlHtml(c.ID(), buf.String())
@@ -529,8 +530,8 @@ func (c *Control) ΩDrawTag(ctx context.Context) string {
 	if c.IsVoidTag {
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
 	} else {
-		buf := GetBuffer()
-		defer PutBuffer(buf)
+		buf := buf2.GetBuffer()
+		defer buf2.PutBuffer(buf)
 		if err := c.this().ΩDrawInnerHtml(ctx, buf); err != nil {
 			panic(err)
 		}

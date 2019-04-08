@@ -2,13 +2,13 @@ package panels
 
 import (
 	"context"
-	"github.com/goradd/goradd/examples/model"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/web/examples/model"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
@@ -48,9 +48,9 @@ func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (p *TableProxyPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	p.Table1.SetTotalItems(model.QueryProjects().Count(ctx, false))
+	p.Table1.SetTotalItems(QueryProjects().Count(ctx, false))
 
-	projects := model.QueryProjects().
+	projects := QueryProjects().
 		Limit(p.Pager1.SqlLimits()).
 		Load(ctx)
 	p.Table1.SetData(projects)
@@ -61,7 +61,7 @@ func (p *TableProxyPanel) BindData(ctx context.Context, s data.DataManagerI) {
 
 func (f *TableProxyPanel) 	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	// Since we only have one custom column, we know what we are getting.
-	project := data.(*model.Project)
+	project := data.(*Project)
 	id := crypt.SessionEncryptUrlValue(ctx, project.ID()) // Since this is a database id, lets encrypt it for extra security
 
 	// This is just to assign an id for click testing. You don't normally need to assign an id.
@@ -80,7 +80,7 @@ func (p *TableProxyPanel) Action(ctx context.Context, a page.ActionParams) {
 		id := a.ControlValueString()
 		id = crypt.SessionDecryptUrlValue(ctx, id)
 		if id != "" {
-			project := model.LoadProject(ctx, id)
+			project := LoadProject(ctx, id)
 			p.ProjectPanel.SetProject(project)
 		}
 	}
@@ -89,7 +89,7 @@ func (p *TableProxyPanel) Action(ctx context.Context, a page.ActionParams) {
 
 type ProjectPanel struct {
 	Panel
-	project *model.Project
+	project *Project
 }
 
 func NewProjectPanel(parent page.ControlI) *ProjectPanel {
@@ -99,7 +99,7 @@ func NewProjectPanel(parent page.ControlI) *ProjectPanel {
 	return p
 }
 
-func (p *ProjectPanel) SetProject(project *model.Project) {
+func (p *ProjectPanel) SetProject(project *Project) {
 	p.project = project
 	p.Refresh()
 }

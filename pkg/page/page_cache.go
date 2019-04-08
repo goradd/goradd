@@ -2,8 +2,9 @@ package page
 
 import (
 	"bytes"
-	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/ideas/types"
+	"github.com/goradd/goradd/pkg/pool"
+	"github.com/goradd/goradd/pkg/html"
 )
 
 // PageCacheI is the page cache interface. The PageCache saves and restores pages in between page
@@ -102,8 +103,8 @@ func NewSerializedPageCache(maxEntries int, TTL int64) *SerializedPageCache {
 // Set puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
 func (o *SerializedPageCache) Set(pageId string, page *Page) {
-	b := GetBuffer()
-	defer PutBuffer(b)
+	b := pool.GetBuffer()
+	defer pool.PutBuffer(b)
 	enc := pageEncoder.NewEncoder(b)
 	_ = enc.Encode(PageCacheVersion)
 	_ = enc.Encode(page.Form().ID())

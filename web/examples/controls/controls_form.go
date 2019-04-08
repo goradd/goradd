@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/examples/controls/panels"
+	"github.com/goradd/goradd/web/examples/controls/panels"
 )
 
 const ControlsFormPath = "/goradd/examples/controls.g"

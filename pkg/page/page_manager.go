@@ -39,7 +39,7 @@ func newPageManager() *PageManager {
 	return &PageManager{pathRegistry: make(map[string]FormCreationFunction), formIdRegistry: make(map[string]FormCreationFunction)}
 }
 
-// RegisterPath associates the given URL path with the given form creation function and form id and registers it with page manager.
+// RegisterPage associates the given URL path with the given form creation function and form id and registers it with page manager.
 // Call this from an init() function. Afterwards, whenever a user navigates to the given path, the form will be
 // created and presented to the user.
 func RegisterPage(path string, creationFunction FormCreationFunction, formId string) {

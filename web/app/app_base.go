@@ -5,15 +5,22 @@ import (
 	"context"
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/stores/memstore"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
+	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	grlog "github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/resource"
+	"github.com/goradd/goradd/pkg/rest"
 	"github.com/goradd/goradd/pkg/session"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
 	"log"
 	"path/filepath"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/goradd/goradd/pkg/messageServer"
@@ -21,6 +28,15 @@ import (
 	"net/http"
 	"os"
 )
+
+// StaticDirectoryPaths is a map of patterns to directory locations to serve statically.
+// These can be registered at the command line or in the application
+var StaticDirectoryPaths *maps.StringSliceMap
+
+// StaticBlacklist is the list of file terminators that specify what files we always want to hide from view
+// when a static file directory is searched. The default will always hide .go files. Add to it if you have
+// other kinds of files in your static directories that you do not want to show.
+var StaticBlacklist = []string{".go"}
 
 // The application interface. A minimal set of commands that the main routine will ask the application to do.
 // The main routine offers a way of creating mock applications, and alternate versions of the application from the default
@@ -37,21 +53,16 @@ type ApplicationI interface {
 	SessionHandler(next http.Handler) http.Handler
 	ServeRequest (w http.ResponseWriter, r *http.Request)
 	ServeStaticFile (w http.ResponseWriter, r *http.Request) bool
+	ServeApiRequest (w http.ResponseWriter, r *http.Request) bool
 }
 
 // The application base, to be embedded in your application
 type Application struct {
 	base.Base
-
-	// StaticDirectoryPaths is a map of patterns to directory locations to serve statically.
-	// These can be registered at the command line or in the application
-	StaticDirectoryPaths map[string]string
 }
 
 func (a *Application) Init(self ApplicationI) {
 	a.Base.Init(self)
-
-	a.StaticDirectoryPaths = make(map[string]string)
 
 	self.SetupErrorPageTemplate()
 	self.SetupPageCaching()
@@ -107,6 +118,11 @@ func (a *Application) InitializeLoggers() {
 func (a *Application) SetupAssetDirectories() {
 	page.RegisterAssetDirectory(config.GoraddAssets(), config.AssetPrefix + "goradd")
 	page.RegisterAssetDirectory(config.ProjectAssets(), config.AssetPrefix + "project")
+
+	// If serving static html out of the root path, this will point it to the HtmlDirectory
+	if dir := config.HtmlDirectory(); dir != "" {
+		RegisterStaticPath("/", dir)
+	}
 }
 
 
@@ -185,8 +201,8 @@ func (a *Application) WebSocketAuthHandler(next http.Handler) http.Handler {
 // PutContextHandler is called before ServeAppHandler in the chain.
 func (a *Application) MakeAppServer() http.Handler {
 	// the handler chain gets built in the reverse order of getting called
-	buf := page.GetBuffer()
-	defer page.PutBuffer(buf)
+	buf := buf2.GetBuffer()
+	defer buf2.PutBuffer(buf)
 
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler(buf)
@@ -252,67 +268,127 @@ func (a *Application) PutContextHandler(next http.Handler) http.Handler {
 func (a *Application) BufferOutputHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		// Setup the output buffer
-		outBuf := page.GetBuffer()
+		outBuf := buf2.GetBuffer()
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, goradd.BufferContext, outBuf)
 		r = r.WithContext(ctx)
 
-		defer page.PutBuffer(outBuf)
+		defer buf2.PutBuffer(outBuf)
 		next.ServeHTTP(w, r)
 		_,_ = w.Write(outBuf.Bytes())
 	}
 	return http.HandlerFunc(fn)
 }
 
-// ServeStaticFile serves up static html and other files. The default will serve up the generated form index
-// and any files you put in the HTML directory. It is overridable by creating a ServeStaticFile in your local
-// app.go file.
+// ServeStaticFile serves up static html and other files found in registered directories.
+// If the file is not found, it will return false.
 func (a *Application) ServeStaticFile (w http.ResponseWriter, r *http.Request) bool {
 	url := r.URL.Path
+	var path string
 
-	if !config.Release {
-		// serve up the /form/index.html file in development mode so that we can get to the code-generated forms.
-		if url == "/form/index.html" || url == "/form" || url == "/form/" {
-			http.ServeFile(w, r, filepath.Join(config.ProjectDir(), "gen", "index.html"))
-			return true
+	// StaticDirectoryPaths should be sorted longest to shortest at this point
+	StaticDirectoryPaths.Range(func(pattern string, dir string) bool {
+		if strings2.StartsWith(url, pattern) {
+			fPath := strings.TrimPrefix(url, pattern)
+			if fPath != "" && fPath[0:1] != "/" {
+				// We only matched part of a directory, so not a match
+				return true // go to next iteration
+			}
+			cleaned := strings.TrimPrefix(fPath, "..")  // This prevents someone from hacking by using .. to refer to files outside of the directory
+			cleaned = filepath.Clean(cleaned)
+			path = filepath.Join(dir, cleaned)
+			return false // stop iterating
+		}
+		return true
+	})
+
+	if path == "" {
+		return false // not found
+	}
+
+	for _, bl := range StaticBlacklist {
+		if strings2.EndsWith(path, bl) {
+			return false // cannot show this kind of file
 		}
 	}
 
-	// Attempt to serve the file out of the html directory
-	if dir := config.HtmlDirectory(); dir != "" {
-		if url[len(url)-1:] == "/" {
-			url += "index.html"
-		}
+	if sys.IsDir(path) {
+		path = filepath.Join(path, "index.html")
+	}
 
-		// This prevents someone from hacking by using .. to refer to files outside of the html directory
-		fp := filepath.Clean(url)
-
-		file := filepath.Join(dir, fp)
-		if sys.PathExists(file) {
-			http.ServeFile(w, r, file)
-			return true
-		}
+	if sys.PathExists(path) {
+		// TODO: Run it through a pre-processor if specified
+		http.ServeFile(w, r, path)
+		return true
 	}
 
 	return false	// indicates no static file was found
 }
 
-
 // ServeRequest is the place to serve up any files that have not been handled in any other way, either by a previously
-// declared handler, or by the goradd app server, or the static file server. ServeRequest is only called when all
-// the other methods have failed. The default serves up a 404 not found error. Override it to handle other files,
+// declared handler, or by the goradd app server. ServeRequest is only called when all
+// the other methods have failed. Override it to handle other files,
 // or to change the messaging when a bad url is attempted.
 func (a *Application) ServeRequest (w http.ResponseWriter, r *http.Request) {
-	http.NotFound(w, r)
+	if !resource.HandleRequest(w, r) {
+		http.NotFound(w, r)
+	}
 }
 
 // RegisterStaticPath registers the given url path such that it points to the given directory. For example, passing
 // "/test", "/my/test/dir" will statically serve everything out of /my/test/dir whenever a url has /test in front of it.
 // You can only call this during application startup. These directory paths take precedence over other similar paths that
 // you have registered through goradd forms or through the html directory.
-func (a *Application) RegisterStaticPath(path string, directory string) {
+func RegisterStaticPath(path string, directory string) {
 	if path[0:1] != "/" {
 		log.Fatal("path must begin with a slash (must be a rooted path)")
 	}
-	a.StaticDirectoryPaths[path] = directory
+
+	if path[len(path)-1:] == "/" {
+		// Strip ending slash so that we can handle both /a/b/ and /a/b urls as directories and treat them the same.
+		path = path[:len(path)-1]
+	}
+
+	if StaticDirectoryPaths == nil {
+		StaticDirectoryPaths = maps.NewStringSliceMap()
+	}
+	StaticDirectoryPaths.Set(path, directory)
+
+	// sort the directory paths longest to shortest so that when we iterate them, we won't short circuit
+	// longer paths with shorter versions of the same path.
+	sort.Sort(OrderDirectoryPaths(StaticDirectoryPaths))
+}
+
+// MakeRESTServer creates the handler chain that will handle REST api requests.
+// There are a ton of ways to do this, 3rd party
+// libraries to help with this, and middlewares you can use. This is a working example, and not a declaration of any
+// "right" way to do this, since it can be very application specific. To do this differently, simply
+// create a different version and put it in your Application structure in your project directory.
+func (a *Application) MakeRESTServer() http.Handler {
+	// the handler chain gets built in the reverse order of getting called
+	// These handlers are called in reverse order
+	h := http.NotFoundHandler()
+	h = a.ServeApiHandler(h)
+	h = a.this().SessionHandler(h) // TODO: Likely replace this with auth handler
+
+	return h
+}
+
+// ServeApiHandler serves up the REST api.
+func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		if !a.this().ServeApiRequest(w,r) {
+			next.ServeHTTP(w,r)
+		}
+	}
+	return http.StripPrefix(config.ApiPrefix, http.HandlerFunc(fn))
+}
+
+// ServeApiRequest serves up a potential REST api call. The REST prefix has been removed, so
+// we just process the URL as if it were the command itself.
+// The default will send the request to the generated ORM for processing. However, you can override this
+// and make your own API, or do both by calling this default function from your override of your override
+// does not handle it.
+func (a *Application) ServeApiRequest (w http.ResponseWriter, r *http.Request) bool {
+	return rest.HandleRequest(w, r)	// indicates no static file was found
 }

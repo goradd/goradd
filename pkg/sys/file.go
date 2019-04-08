@@ -3,42 +3,11 @@ package sys
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"time"
 )
-
-/* FileCopy has been replaced by the code in gofile
-func FileCopy(src, dst string) (err error) {
-	var count int64
-
-	srcInfo, srcErr := os.Stat(src)
-	if srcErr != nil {
-		return srcErr
-	}
-	perm := srcInfo.Mode() & os.ModePerm
-
-	from, err := os.Open(src)
-	if err != nil {
-		return
-	}
-	defer from.Close()
-
-	to, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, perm) // copy source permissions
-	if err != nil {
-		return
-	}
-
-	defer to.Close()
-
-	count, err = io.Copy(to, from)
-	if err != nil {
-		to.Close()
-		return err
-	}
-	to.Truncate(count) // chop end of file in case file gets smaller
-
-	return to.Close()
-}
-*/
 
 // FileModDateCompare compares the modification date of two files, and returns -1 if the first is older than the second,
 // 0 if they are the same, and 1 if the 2nd is older than the first. Returns an error if either is not a file.
@@ -76,6 +45,17 @@ func FileModDateCompare(file1, file2 string) (diff int, err error) {
 	return
 }
 
+// IsDir returns true if the given path exists and is a directory
+func IsDir(path string) bool {
+	dstInfo, err := os.Stat(path)
+	if err == nil { // file exists
+		if dstInfo.Mode().IsDir() {
+			return true
+		}
+	}
+	return false
+}
+
 /* FileCopyIfNewer has been replaced by code in gofile
 func FileCopyIfNewer(src, dst string) (err error) {
 	var diff int
@@ -104,6 +84,30 @@ func PathExists(path string) bool {
 	return err == nil || !os.IsNotExist(err)
 }
 
+
+
+// SourcePath is a utility function that returns the path to the file that called it.
+func SourcePath() (file string) {
+	_, file, _, _ = runtime.Caller(1)
+	return
+}
+
+// SourceDirectory is a utility function that returns the path to the directory  of the file that called it.
+func SourceDirectory() (dir string) {
+	var file string
+	_, file, _, _ = runtime.Caller(1)
+	return filepath.Dir(file)
+}
+
+// FileRoot returns the name of a file without any extensions.
+func FileRoot(filename string) string {
+	offset := strings.Index(filename, ".")
+	if offset < 0 {
+		return filename
+	} else {
+		return filename[0:offset]
+	}
+}
 
 /* DirectoryCopy has been replaced by code in gofile
 func DirectoryCopy(src, dst string) (err error) {
@@ -188,3 +192,39 @@ func DirectoryClear(dir string) error {
 	return nil
 }
 */
+
+
+/* FileCopy has been replaced by the code in gofile
+func FileCopy(src, dst string) (err error) {
+	var count int64
+
+	srcInfo, srcErr := os.Stat(src)
+	if srcErr != nil {
+		return srcErr
+	}
+	perm := srcInfo.Mode() & os.ModePerm
+
+	from, err := os.Open(src)
+	if err != nil {
+		return
+	}
+	defer from.Close()
+
+	to, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, perm) // copy source permissions
+	if err != nil {
+		return
+	}
+
+	defer to.Close()
+
+	count, err = io.Copy(to, from)
+	if err != nil {
+		to.Close()
+		return err
+	}
+	to.Truncate(count) // chop end of file in case file gets smaller
+
+	return to.Close()
+}
+*/
+

@@ -23,7 +23,3 @@ The base controls are foundations on which more elaborate controls can be built.
 provide enough support that a basic data-driven website can be built with only these controls.
 A website built with just the base controls will function even with javascript turned off
 at the browser.
-
-tutorial
-
-This is the tutorial website.

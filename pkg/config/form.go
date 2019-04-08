@@ -4,6 +4,7 @@ package config
 // which in development mode is wherever the file is on the disk, and in release mode, the central asset directory where
 // all assets get copied
 var AssetPrefix = "/assets/"
+var ApiPrefix = "/api/"
 
 // Minify controls whether we try to strip out unnecessary whitespace from our HTML output
 var Minify bool = !Debug

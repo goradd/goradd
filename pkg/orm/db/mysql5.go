@@ -485,6 +485,7 @@ func (m *Mysql5) Update(ctx context.Context, table string, fields map[string]int
 }
 
 // Insert inserts the given data as a new record in the database.
+// It returns the record id of the new record.
 func (m *Mysql5) Insert(ctx context.Context, table string, fields map[string]interface{}) string {
 	var sql = "INSERT " + table + "\n"
 	var args []interface{}

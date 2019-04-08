@@ -5,11 +5,10 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/examples/model/node"
-
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/web/examples/model/node"
 
 	//"./node"
 	"bytes"

@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -48,8 +49,8 @@ func (c *Fieldset) ΩDrawTag(ctx context.Context) string {
 		panic("Fieldsets cannot have wrappers.")
 	}
 
-	buf := page.GetBuffer()
-	defer page.PutBuffer(buf)
+	buf := buf2.GetBuffer()
+	defer buf2.PutBuffer(buf)
 
 	if l := c.Label(); l != "" {
 		ctrl = html.RenderTag("legend", nil, l)

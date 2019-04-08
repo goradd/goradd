@@ -61,3 +61,32 @@ func (control *{{control}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 	return
 }
 {{end}}
+
+{{define renderHtmlTemplate}}
+package {{package }}
+
+import (
+    "context"
+    "bytes"
+    {{imports}}
+)
+
+func init() {
+    resource.RegisterPath("{{filename}}.html",
+        func(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, err error) {
+{{
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8"/>
+<title>{{title}}</title>
+</head>
+<body>
+{{template}}
+</body>
+</html>
+}}
+        return
+
+        })
+}
+{{end}}
