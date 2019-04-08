@@ -2,10 +2,13 @@ package main
 
 import (
 	_ "goradd-project/config" // Initialize required variables
+	"log"
+	"strings"
 
 	"flag"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
+	app2 "github.com/goradd/goradd/web/app"
 	"goradd-project/web/app"
 	// Below is where you import packages that register forms
 	_ "goradd-project/web/form" // Your  forms.
@@ -26,6 +29,7 @@ var wsCertFile = flag.String("wsCertFile", "", "Path to cert file for websocket.
 var useFcgi = flag.Bool("fcgi", false, "Serve as fcgi.")
 var assetDir = flag.String("assetDir", "", "The centralized asset directory. Required to run the release version of the app.")
 var htmlDir = flag.String("htmlDir", "", "The centralized html directory. Required to run the release version of the app if you are serving static files.")
+var staticPaths arrayFlags // See below. Holds the static paths to be registered with the app.
 // Create other flags you might care about here
 
 func main() {
@@ -82,8 +86,30 @@ func useFlags() {
 	if *wsCertFile != "" {
 		config.WebSocketTLSCertFile = *wsCertFile
 	}
+
+	for _,s := range staticPaths {
+		i := strings.IndexAny(s, ":;")
+		if i == -1 {
+			log.Fatal("map must specify a path and directory, separated by a colon or semicolon")
+		}
+		app2.RegisterStaticPath(s[:i], s[i+1:])
+	}
+
+}
+
+// Setup the ability to add multiple static paths
+type arrayFlags []string
+
+func (i *arrayFlags) String() string {
+	return fmt.Sprintf("%v", *i)
+}
+
+func (i *arrayFlags) Set(value string) error {
+	*i = append(*i, value)
+	return nil
 }
 
 func init() {
+	flag.Var(&staticPaths, "map", "Map a physical directory or file to a url path. The path comes first, followed by the directory or file, separated by a comma or semicolon. Directory paths should end with a forward slash (/). You can specify this flag multiple times.")
 	flag.Parse() // Parse the command line flags
 }
