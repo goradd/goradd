@@ -29,6 +29,7 @@ type PaginatedControlI interface {
 	SetPageNum(n int)
 	AddDataPager(DataPagerI)
 	CalcPageCount() int
+	HasDataPagers() bool
 	getDataPagers() []DataPagerI
 }
 
@@ -117,6 +118,24 @@ func (c *PaginatedControl) getDataPagers() []DataPagerI{
 	return c.dataPagers
 }
 
+func (c *PaginatedControl) HasDataPagers() bool {
+	return len(c.dataPagers) > 0
+}
+
+// SliceOffsets returns the start and end values to use to specify a portion of a slice corresponding to the
+// data the pager refers to
+func (c *PaginatedControl) SliceOffsets() (start, end int) {
+	start = (c.PageNum() - 1) * c.PageSize()
+	_,end = math.MinInt(start+ c.PageSize(),  c.TotalItems())
+	return
+}
+
+// SqlLimits returns the limits you would use in a sql database limit clause
+func (c *PaginatedControl) SqlLimits() (maxRowCount, offset int) {
+	offset = (c.PageNum() - 1) * c.PageSize()
+	maxRowCount = c.PageSize()
+	return
+}
 
 
 // DataPagerI is the data pager interface that allows this object to call into subclasses.
@@ -203,20 +222,6 @@ func (d *DataPager) SetObjectNames(singular string, plural string) {
 	d.ObjectPluralName = plural
 }
 
-// SliceOffsets returns the start and end values to use to specify a portion of a slice corresponding to the
-// data the pager refers to
-func (d *DataPager) SliceOffsets() (start, end int) {
-	start = (d.paginatedControl.PageNum() - 1) * d.paginatedControl.PageSize()
-	_,end = math.MinInt(start+ d.paginatedControl.PageSize(),  d.paginatedControl.TotalItems())
-	return
-}
-
-// SqlLimits returns the limits you would use in a sql database limit clause
-func (d *DataPager) SqlLimits() (maxRowCount, offset int) {
-	offset = (d.paginatedControl.PageNum() - 1) * d.paginatedControl.PageSize()
-	maxRowCount = d.paginatedControl.PageSize()
-	return
-}
 
 // SetLabels sets the previous and next labels. Translate these first.
 func (d *DataPager) SetLabels(previous string, next string) {

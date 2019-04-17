@@ -194,7 +194,7 @@ func (t *Textbox) Placeholder() string {
 	return t.Attribute("placeholder")
 }
 
-// SetType sets the type of textbox this is. Pass it a TEXTBOX_TYPE... constant normally,
+// SetType sets the type of textbox this is. Pass it a TextboxType* constant normally,
 // though you can pass any string and it will become the input type
 func (t *Textbox) SetType(typ string) TextboxI {
 	t.typ = typ

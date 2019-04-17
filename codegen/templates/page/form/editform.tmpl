@@ -125,18 +125,17 @@ func (f *{{= formName }}) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case {{= t.GoName }}SaveAction:
 	    f.EditPanel.Save(ctx)
-	    f.returnToPrevious()
+	    f.returnToPrevious(ctx)
     case {{= t.GoName }}CancelAction:
-        f.returnToPrevious()
+        f.returnToPrevious(ctx)
     case {{= t.GoName }}DeleteAction:
         f.EditPanel.Delete(ctx)
-        f.returnToPrevious()
+        f.returnToPrevious(ctx)
     }
 }
 
-func (f *{{= formName }}) returnToPrevious() {
-{{# TODO: Use PopLocation instead? }}
-	f.ChangeLocation("/form/{{= t.GoName }}List")
+func (f *{{= formName }}) returnToPrevious(ctx context.Context) {
+	f.PopLocation(ctx, "/form/{{= t.GoName }}List")
 }
 
 // init functions are called once when the web server first starts up.

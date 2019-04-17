@@ -25,6 +25,11 @@ const (
 // The functions defined here are hooks that you can implement in your subclass.
 type TableI interface {
 	page.ControlI
+	tableDupI
+}
+
+// tableDupI is a workaround for a problem in GO interfaces. See https://github.com/golang/go/issues/6977
+type tableDupI interface {
 	SetCaption(interface{}) TableI
 	DrawCaption(context.Context, *bytes.Buffer) error
 	GetHeaderRowAttributes(row int) *html.Attributes

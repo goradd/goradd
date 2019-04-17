@@ -56,7 +56,7 @@ func (p *TableDbPanel) BindData(ctx context.Context, s data.DataManagerI) {
 				Alias("", op.Count(node.Project().ManagerID())).
 				Where(op.Equal(node.Project().ManagerID(), node.Person().ID())).
 				Subquery()).
-		Limit(p.Pager1.SqlLimits()).
+		Limit(p.Table1.SqlLimits()).
 		OrderBy(sortNodes...).
 		Load(ctx)
 	p.Table1.SetData(people)

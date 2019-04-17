@@ -31,6 +31,9 @@ type FormI interface {
 	AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
 	AddJQueryUI()
+	ChangeLocation(url string)
+	PushLocation(ctx context.Context)
+	PopLocation(ctx context.Context, fallback string)
 
 	// Lifecycle calls
 	Run(ctx context.Context) error
@@ -441,9 +444,12 @@ func (f *ΩFormBase) PushLocation(ctx context.Context) {
 }
 
 // PopLocation pops the most recent location off of the location stack and goes to that location.
-func (f *ΩFormBase) PopLocation(ctx context.Context) {
+// It will go to the fallback url if there is nothing on the stack
+func (f *ΩFormBase) PopLocation(ctx context.Context, fallback string) {
 	if loc := location.Pop(ctx); loc != "" {
 		f.ChangeLocation(loc)
+	} else {
+		f.ChangeLocation(fallback)
 	}
 }
 

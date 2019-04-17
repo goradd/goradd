@@ -58,13 +58,18 @@ const (
 	OpFunc = "func"
 
 	// SQL functions that act like operators in that the operator is put in between the operands
-	OpLike  = "LIKE"
+	OpLike  = "LIKE" // This is very SQL specific and may not be supported in NoSql
 	OpIn    = "IN"
 	OpNotIn = "NOT IN"
 
 	// Special NULL tests
 	OpNull    = "NULL"
 	OpNotNull = "NOT NULL"
+
+	// Our own custom operators for universal support
+	OpStartsWith = "StartsWith"
+	OpEndsWith = "EndsWith"
+	OpContains = "Contains"
 )
 
 // String returns a string representation of the Operator type. For convenience, this also corresponds to the SQL

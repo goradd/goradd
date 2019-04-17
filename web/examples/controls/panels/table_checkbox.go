@@ -77,7 +77,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 // is the one that is providing the table.
 func (f *TableCheckboxPanel) BindData(ctx context.Context, s data.DataManagerI) {
 	f.Table1.SetTotalItems(uint(len(table1Data)))
-	start, end := f.Pager1.SliceOffsets()
+	start, end := f.Table1.SliceOffsets()
 	s.SetData(table1Data[start:end])
 }
 

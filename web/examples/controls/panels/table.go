@@ -116,11 +116,11 @@ func (f *TablePanel) BindData(ctx context.Context, s data.DataManagerI) {
 	switch s.ID() {
 	case "table1":
 		f.Table1.SetTotalItems(uint(len(tableSliceData)))
-		start, end := f.Pager1.SliceOffsets()
+		start, end := f.Table1.SliceOffsets()
 		s.SetData(tableSliceData[start:end])
 	case "table2":
 		f.Table2.SetTotalItems(uint(len(tableMapData)))
-		start, end := f.Pager2.SliceOffsets()
+		start, end := f.Table2.SliceOffsets()
 		s.SetData(tableMapData[start:end])
 
 	}

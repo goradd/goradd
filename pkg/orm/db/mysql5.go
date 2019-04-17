@@ -361,6 +361,39 @@ func (m *Mysql5) generateOperationSql(b *sqlBuilder, n *OperationNode, useAlias 
 		fallthrough
 	case OpNone:
 		sql = "(" + OperationNodeOperator(n).String() + ") "
+	case OpStartsWith:
+		// SQL supports this with a LIKE operation
+		operands := OperationNodeOperands(n)
+		s, a := m.generateNodeSql(b, operands[0], useAlias)
+		v := ValueNodeGetValue(operands[1].(*ValueNode)).(string)
+		v += "%"
+
+		args = append(args, a...)
+		args = append(args, v)
+
+		sql = fmt.Sprintf(`(%s LIKE ?)`, s)
+	case OpEndsWith:
+		// SQL supports this with a LIKE operation
+		operands := OperationNodeOperands(n)
+		s, a := m.generateNodeSql(b, operands[0], useAlias)
+		v := ValueNodeGetValue(operands[1].(*ValueNode)).(string)
+		v = "%" + v
+
+		args = append(args, a...)
+		args = append(args, v)
+
+		sql = fmt.Sprintf(`(%s LIKE ?)`, s)
+	case OpContains:
+		// SQL supports this with a LIKE operation
+		operands := OperationNodeOperands(n)
+		s, a := m.generateNodeSql(b, operands[0], useAlias)
+		v := ValueNodeGetValue(operands[1].(*ValueNode)).(string)
+		v = "%" + v + "%"
+
+		args = append(args, a...)
+		args = append(args, v)
+
+		sql = fmt.Sprintf(`(%s LIKE ?)`, s)
 
 	default:
 		for _, o := range OperationNodeOperands(n) {

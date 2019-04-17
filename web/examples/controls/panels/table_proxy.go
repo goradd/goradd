@@ -51,7 +51,7 @@ func (p *TableProxyPanel) BindData(ctx context.Context, s data.DataManagerI) {
 	p.Table1.SetTotalItems(QueryProjects().Count(ctx, false))
 
 	projects := QueryProjects().
-		Limit(p.Pager1.SqlLimits()).
+		Limit(p.Table1.SqlLimits()).
 		Load(ctx)
 	p.Table1.SetData(projects)
 

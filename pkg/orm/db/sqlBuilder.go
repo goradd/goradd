@@ -119,7 +119,8 @@ func (b *sqlBuilder) Delete(ctx context.Context) {
 
 // Count creates a query that selects one thing, a count. If distinct is specified, only distinct items will be selected.
 // If no columns are specified, the count will include NULL items. Otherwise, it will not include NULL results in the count.
-// You cannot include any other select items in a count. If you want to do that, you should do a normal query and add a COUNT table.
+// You cannot include any other select items in a count. If you want to do that, you should do a normal query and add a
+// COUNT operation node.
 func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) uint {
 	var result []map[string]interface{}
 

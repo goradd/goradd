@@ -4,6 +4,11 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 )
 
+type PaginatedTableI interface {
+	tableDupI
+	PaginatedControlI
+}
+
 type PaginatedTable struct {
 	Table
 	PaginatedControl
