@@ -1,0 +1,104 @@
+//list.tmpl
+
+// The master template for the ListPanel classes
+
+var objectType = "List" // Eventually we might make it possible to generate multiple object types
+var panelName = t.GoName + objectType + "Panel"
+var lcPanelName = t.LcGoName + objectType + "Panel"
+
+var editFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Edit")
+
+{{
+
+package panel
+
+// This implementation file is not modified during code generation. Changes to this file will be preserved.
+
+import(
+	"context"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
+	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/url"
+	"goradd-project/gen/{{= dd.DbKey }}/model"
+)
+
+const (
+	{{= lcPanelName }}RowClick = iota + 1000
+	{{= lcPanelName }}NewClick
+	{{= lcPanelName }}Search
+)
+
+type {{= panelName }} struct {
+	{{= panelName }}Base
+
+    FilterPanel *Panel
+    FilterText *Textbox
+    ButtonPanel *Panel
+    NewButton *Button
+}
+
+func New{{= panelName }}(parent page.ControlI, id string) *{{= panelName}} {
+    p := new({{= panelName }})
+	p.Init(p, parent, id)
+	return p
+}
+
+func (p *{{= panelName }}) Init(self page.ControlI, parent page.ControlI, id string) {
+	p.{{= panelName }}Base.Init(self, parent, id)
+	p.createControls()
+}
+
+func (p *{{= panelName }}) createControls() {
+	p.FilterPanel = control.NewPanel(p, p.ID() + "-filter")
+	p.FilterText = control.NewTextbox(p, p.ID() + "-filterText")
+	p.FilterText.SetPlaceholder(p.ΩT("Search..."))
+	p.FilterText.SetType(control.TextboxTypeSearch)
+
+	p.FilterText.On(event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search))
+	p.FilterText.On(event.EnterKey().Terminating(), action.Ajax(p.ID(), {{= lcPanelName }}Search))
+
+    p.ButtonPanel = control.NewPanel(p, p.ID() + "-buttons")
+
+    p.NewButton = control.NewButton(p.ButtonPanel, p.ID() + "-newButton")
+    p.NewButton.SetLabel("New")
+    p.NewButton.On(event.Click(), action.Ajax(p.ID(), {{= lcPanelName }}NewClick))
+
+    p.Create{{= objectType }}({{= lcPanelName }}RowClick)	// Call into base to create the list control
+}
+
+// Load is called when the form controls are loaded with data. Use it to initialize the controls created above.
+func (p *{{= panelName }}) Load(ctx context.Context) error {
+    return nil
+}
+
+func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
+	switch a.ID {
+	case {{= lcPanelName }}Search:
+		p.Refresh()
+	case {{= lcPanelName }}RowClick: // edit
+		p.EditItem(p.GetClickedRowID(a))
+	case {{= lcPanelName }}NewClick: // new
+		p.EditItem("")
+	}
+}
+
+// EditItem responds to an action to edit an item in the list. The id of the item will be given.
+func (p *{{= panelName }}) EditItem(id string) {
+    // This points to the default edit form path created by the templates. If you change the URL there, also change this.
+    // Another option is to popup an edit dialog here.
+	p.ParentForm().ChangeLocation(url.NewBuilder("{{= editFormPath }}").AddValue("id", id).String())
+}
+
+// BuildQuery begins the query builder process, returning a partially built query to be completed by the
+// base object.
+func (p *{{= panelName }}) BuildQuery() *model.{{= t.GoPlural }}Builder {
+    // The default here simply filters based on the text in the FiterText.
+    // Feel free to add additional requirements.
+	filter := p.MakeFilter(p.FilterText.Text())
+	return model.Query{{= t.GoPlural }}().Where(filter)
+}
+
+
+}}

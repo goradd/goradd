@@ -6,3 +6,6 @@ package templates
 
 //go:generate gengen -c string_joinTreeItem.json  -o ../strslicejointreemap.go github.com/goradd/gengen/templates/map_src/slice_map.tmpl
 //go:generate gengen -c string_joinTreeItem.json  -o ../strslicejointreemapi.go github.com/goradd/gengen/templates/map_src/mapi.tmpl
+
+//go:generate gengen -c string_DatabaseI.json  -o ../strsliceDatabaseI.go github.com/goradd/gengen/templates/map_src/slice_map.tmpl
+//go:generate gengen -c string_DatabaseI.json  -o ../strsliceDatabaseIi.go github.com/goradd/gengen/templates/map_src/mapi.tmpl

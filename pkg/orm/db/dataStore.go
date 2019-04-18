@@ -9,7 +9,7 @@ import (
 // The dataStore is the central database collection used in codegeneration and the orm.
 var datastore struct {
 	// TODO: Change these to OrderedMaps. Since they are used for code generation, we want them to be iterated consistently
-	databases  map[string]DatabaseI
+	databases  *DatabaseISliceMap
 	tables     map[string]map[string]*TableDescription
 	typeTables map[string]map[string]*TypeTableDescription
 }
@@ -54,21 +54,20 @@ type DatabaseI interface {
 // AddDatabase adds a database to the global database store. Only call this during app startup.
 func AddDatabase(d DatabaseI, key string) {
 	if datastore.databases == nil {
-		datastore.databases = make(map[string]DatabaseI)
+		datastore.databases = NewDatabaseISliceMap()
 	}
 
-	datastore.databases[key] = d
+	datastore.databases.Set(key, d)
 }
 
 // GetDatabase returns the database given the database's key.
 func GetDatabase(key string) DatabaseI {
-	d := datastore.databases[key]
-	return d
+	return datastore.databases.Get(key)
 }
 
 // GetDatabases returns all databases in the datastore
-func GetDatabases() map[string]DatabaseI {
-	return datastore.databases
+func GetDatabases() []DatabaseI {
+	return datastore.databases.Values()
 }
 
 // GetTableDescription returns a table description given a database key and the struct name corresponding to the table.
@@ -98,7 +97,7 @@ func AnalyzeDatabases() {
 	var dd *DatabaseDescription
 	datastore.tables = make(map[string]map[string]*TableDescription)
 	datastore.typeTables = make(map[string]map[string]*TypeTableDescription)
-	for key, database := range datastore.databases {
+	datastore.databases.Range(func(key string, database DatabaseI) bool {
 		dd = database.Describe()
 		datastore.tables[key] = make(map[string]*TableDescription)
 		datastore.typeTables[key] = make(map[string]*TypeTableDescription)
@@ -116,6 +115,7 @@ func AnalyzeDatabases() {
 			}
 			datastore.typeTables[key][td.GoName] = td
 		}
-	}
+		return true
+	})
 
 }

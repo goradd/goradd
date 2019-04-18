@@ -8,6 +8,7 @@ import (
 	"github.com/knq/snaker"
 	"log"
 	"math"
+	"sort"
 	"strings"
 )
 
@@ -575,12 +576,20 @@ tableLoop:
 		td.Indexes = m.getIndexDescriptions(tableName, table.indexes)
 
 		if td.IsType {
-
 			dd.TypeTables = append(dd.TypeTables, m.getTypeTableDescription(td))
 		} else {
 			dd.Tables = append(dd.Tables, td)
 		}
 	}
+
+	// sort for consistent looping
+	sort.Slice(dd.Tables, func(i,j int) bool {
+		return dd.Tables[i].DbName < dd.Tables[j].DbName
+	})
+	sort.Slice(dd.TypeTables, func(i,j int) bool {
+		return dd.TypeTables[i].DbName < dd.TypeTables[j].DbName
+	})
+
 	return dd
 }
 

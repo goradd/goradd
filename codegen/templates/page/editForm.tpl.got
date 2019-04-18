@@ -7,10 +7,11 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
     "strings"
     "fmt"
+    "path"
 )
 
 func init() {
-	t := EditFormTemplate {
+	t := ListFormTemplate {
 		generator.Template {
 			Overwrite: true,
 			TargetDir: config.ProjectDir() + "/gen",
@@ -19,19 +20,19 @@ func init() {
 	generator.AddTableTemplate(&t)
 }
 
-type EditFormTemplate struct {
+type ListFormTemplate struct {
 	generator.Template
 }
 
-func (n *EditFormTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "EditForm.go"
+func (n *ListFormTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "ListForm.go"
 }
 
-func (n *EditFormTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
-	{{: "form/editform.tmpl" }}
+func (n *ListFormTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+	{{: "form/listform.tmpl" }}
 }
 
-func (n *EditFormTemplate) Overwrite() bool {
+func (n *ListFormTemplate) Overwrite() bool {
 	return n.Template.Overwrite
 }
 

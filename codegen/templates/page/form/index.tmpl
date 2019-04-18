@@ -16,11 +16,12 @@ for _, db := range db.GetDatabases() {
 }}
     for _, t := range dd.Tables {
         if !t.IsAssociation && !t.Skip {
-            var key string = strings.Title(dd.DbKey)
-            var formName = key + t.GoName + "Edit"
-            var formLoc = t.GoName + "Edit"
+            var editLoc = path.Join("/goradd/form/", dd.DbKey, t.GoName + "Edit")
+            var listLoc = path.Join("/goradd/form/", dd.DbKey, t.GoName + "List")
 {{
-<li><a href="/form/{{= dd.DbKey }}/{{= formLoc }}">{{= formName }}</a></li>
+<li>
+{{= t.GoName }}: <a href="{{= listLoc }}">List</a> | <a href="{{= editLoc }}">Edit</a>
+</li>
 }}
         }
     }

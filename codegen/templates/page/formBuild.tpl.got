@@ -7,7 +7,7 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"bytes"
 	"github.com/goradd/goradd/pkg/orm/db"
-	"strings"
+	"path"
 )
 
 func init() {

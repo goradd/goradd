@@ -1,0 +1,37 @@
+package template
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"bytes"
+	"github.com/goradd/goradd/pkg/orm/db"
+    //"strings"
+    //"github.com/knq/snaker"
+)
+
+func init() {
+	t := ListPanelBaseTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.ProjectDir() + "/gen",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type ListPanelBaseTemplate struct {
+	generator.Template
+}
+
+func (n *ListPanelBaseTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/panel/" + t.GoName + "ListPanel.base.go"
+}
+
+func (n *ListPanelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+	{{: "panel/listBase.tmpl" }}
+}
+
+func (n *ListPanelBaseTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+
