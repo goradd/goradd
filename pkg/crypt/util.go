@@ -23,7 +23,8 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 }
 
 // GenerateRandomString returns a base64 encoded
-// securely generated random string.
+// securely generated random string. The given value is the length of the initial random bytes represented by
+// the base64 string. The actual length of the string will be bigger.
 func GenerateRandomString(s int) (string, error) {
 	b, err := GenerateRandomBytes(s)
 	return base64.StdEncoding.EncodeToString(b), err

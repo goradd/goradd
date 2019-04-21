@@ -153,11 +153,16 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	// CSRF prevention
 	var csrf string
-	csrf, err = crypt.GenerateRandomString(16)
-	if err != nil {
-		return err
+
+	csrf,_ = session.GetString(ctx, goradd.SessionCsrf)
+	if csrf == "" {
+		// first time
+		csrf, err = crypt.GenerateRandomString(16)
+		if err != nil {
+			return err
+		}
+		session.Set(ctx, goradd.SessionCsrf, csrf)
 	}
-	session.Set(ctx, goradd.SessionCsrf, csrf)
 	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="` + htmlCsrfToken + `" id="` + htmlCsrfToken + `" value="%s" />` + "\n", csrf))
 
 	// Serialize and write out the pagestate
