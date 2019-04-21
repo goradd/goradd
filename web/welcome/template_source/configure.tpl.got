@@ -13,7 +13,7 @@
 </p>
 <p>
 	Using its knowledge of the structure of your database, the goradd code generator will
-	create data models, data nodes, forms, and more to get your a working application to start customizing.
+	create data models, data nodes, forms, and more to get you a working application to start customizing.
 </p>
 
 <p>
@@ -24,7 +24,7 @@
 <p>
 	To configure your database, edit the goradd-project/config/db.go file. You will see directions there.
 	If you want to run the examples code and tutorial, you should create a local copy of the goradd
-	examples database. To do that, import the sql code found in the goradd/web/examples/db directory,
+	examples database. To do that, create a "goradd" database and import the sql code found in the goradd/web/examples/db directory,
 	which is reprinted below for your convenience.
 </p>
 <code>

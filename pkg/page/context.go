@@ -36,6 +36,7 @@ const (
 const HtmlVarAction = "Goradd_Action"
 const HtmlVarPagestate = "Goradd__PageState"
 const htmlVarParams  = "Goradd__Params"
+const htmlCsrfToken  = "Goradd__Csrf"
 
 
 // MultipartFormMax is the maximum size of a mult-part form that we will allow.

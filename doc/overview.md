@@ -4,19 +4,42 @@
 
 GoRADD is a monolithic web development framework designed to quickly get you
 from idea to working web application, and then to let you change the
-application over time with as little pain as possible.
+application over time with as little rewrite as possible.
+
+Instead of having to build separate server and client applications, and having 
+to stitch together a bunch of different technologies just to get something 
+running, GoRADD lets you start with your data model, gets you a working app
+quickly, and then build from there. As you learn more about your app, your
+audience, and your requirements, you can build and branch out to include them
+as your needs grow. You grow in incremental steps, and GoRADD helps you on the way.
+
+GoRADD is great for beginners and experienced developers alike.
 
 This guide will walk you through the steps of building and maintaining your
 application.
 
+## Install
+
+If you have not yet installed your application, see the [Quickstart] document.
+
 ## Database Configuration
 
-The main thing to configure is your database. Edit the goradd-project/config/db.go
-file and enter your database credentials.
+Start your application by modeling your data in a SQL database like MySQL.
+SQL databases are great for modeling relationships, they are easy to restructure,
+and they have some built-in integrity checks. When your application grows to the
+point of needing the kind of benefits that NoSQL databases provide, and your 
+data model is more firmly established, you can transition to using a NoSQL
+database.
 
-See the article [Structuring the Database](#) for details, but the basic idea is to create tables with
+To start, create a SQL database and then edit the goradd-project/config/db.go
+file and enter the database credentials that will allow the application to
+access the database.
+
+See the article [Structuring the Database](#) for details, but the basic idea is 
+to create tables with
 foreign keys that link to other tables. These form relationships that will be
-reflected by the code generated object-relational model (ORM) data access code, and the generated forms.
+reflected by the code generated object-relational model (ORM) data access code, 
+and the generated forms.
 The ORM is go code that lets you query the database, update and delete records
 in a way that is independent of the underlying database. If you are using a SQL
 database, you likely will not need to write any SQL code to interact with the 
@@ -98,6 +121,7 @@ you will notice that you have the ability to list the records in the
 database and perform Create, Update, and Delete operations on each record 
 (also known a (CrUD)) using the generated forms.
 
+The generated list forms list all the records 
 TODO: Talk about list forms and edit forms
 
 The form object represents the html `<form>` tag object in the page. It 

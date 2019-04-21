@@ -18,5 +18,6 @@ const (
 const (
 	SessionLanguage = "goradd.lang"
 	SessionSalt = "goradd.salt"
+	SessionCsrf = "goradd.csrf"
 )
 

@@ -7,9 +7,12 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/crypt"
+	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
 	"path/filepath"
 	"reflect"
@@ -147,6 +150,15 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	// Place holder for postBack and postAjax functions to place their data
 	buf.WriteString(`<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n")
+
+	// CSRF prevention
+	var csrf string
+	csrf, err = crypt.GenerateRandomString(16)
+	if err != nil {
+		return err
+	}
+	session.Set(ctx, goradd.SessionCsrf, csrf)
+	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="` + htmlCsrfToken + `" id="` + htmlCsrfToken + `" value="%s" />` + "\n", csrf))
 
 	// Serialize and write out the pagestate
 	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, pagestate))

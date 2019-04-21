@@ -10,10 +10,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
+	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
+	"github.com/goradd/goradd/pkg/session"
 	"strconv"
 	"strings"
 )
@@ -94,6 +96,13 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		p.Form().LoadControls(ctx)
 
 	} else {
+		// Test for a CSRF attack
+		csrf := session.Get(ctx, goradd.SessionCsrf)
+		csrf2, found := grCtx.FormValue(htmlCsrfToken)
+		if !found || csrf != csrf2 {
+			return fmt.Errorf("CSRF error: %s", p.stateId)
+		}
+
 		p.Form().control().updateValues(grCtx) // Tell all the controls to update their values.
 		// if this is an event response, do the actions associated with the event
 		if c := p.GetControl(grCtx.actionControlID); c != nil {
