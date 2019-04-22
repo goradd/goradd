@@ -14,13 +14,13 @@ you would do that by editing your .bash_profile directory or .profile
 directory and on Windows you would use the System utility. Note that you will need to
 do this for every new project.
 
-### For Go 1.11 and 1.12 using modules:
+#### For Go 1.11 and 1.12 using modules:
 1. Make sure your GOPATH/bin directory is in your execution path. With go modules, you
 only need to do this once and it will work for all of your projects.
 1. Create a new project directory *outside* of your GOPATH and change your working directory 
 to the new directory.
 
-## Install Goradd
+### Install Goradd
 1. Execute ```go get github.com/goradd/goradd```
 1. Execute ```goradd install```
 
@@ -34,7 +34,7 @@ will not check this in to your source control.
 You will also notice a number of executables that were installed in your GOPATH/bin directory
 that will be used by goradd to build your application.
 
-## Run the app
+### Run the app
 1. Change your working directory to the goradd-project directory. 
 2. From the command line, run:
 ```go run goradd-project/main```

@@ -32,3 +32,9 @@ func ProjectDir() string {
 	panic("Don't call ProjectDir in Release build")
 	return ""
 }
+
+// This is here just to allow things to build, but should not be called
+func GoraddDir() string {
+	panic("Don't call GoraddDir in Release build")
+	return ""
+}

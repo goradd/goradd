@@ -7,11 +7,11 @@ import (
 	"github.com/alexedwards/scs/stores/memstore"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
-	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	grlog "github.com/goradd/goradd/pkg/log"
+	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/resource"
 	"github.com/goradd/goradd/pkg/rest"
 	"github.com/goradd/goradd/pkg/session"
@@ -35,8 +35,19 @@ var StaticDirectoryPaths *maps.StringSliceMap
 
 // StaticBlacklist is the list of file terminators that specify what files we always want to hide from view
 // when a static file directory is searched. The default will always hide .go files. Add to it if you have
-// other kinds of files in your static directories that you do not want to show.
+// other kinds of files in your static directories that you do not want to show. Do this only at startup.
 var StaticBlacklist = []string{".go"}
+
+type staticFileProcessor struct {
+	ending string
+	processor StaticFileProcessorFunc
+}
+
+type StaticFileProcessorFunc func(file string, w http.ResponseWriter, r *http.Request)
+
+// StaticFileProcessors is a map that connects file endings to processors that will process the content and return it
+// to the output stream, bypassing other means of prcessing static files.
+var staticFileProcessors []staticFileProcessor
 
 // The application interface. A minimal set of commands that the main routine will ask the application to do.
 // The main routine offers a way of creating mock applications, and alternate versions of the application from the default
@@ -317,7 +328,13 @@ func (a *Application) ServeStaticFile (w http.ResponseWriter, r *http.Request) b
 	}
 
 	if sys.PathExists(path) {
-		// TODO: Run it through a pre-processor if specified
+		for _,p := range staticFileProcessors {
+			if strings2.EndsWith(path, p.ending) {
+				p.processor(path, w, r)
+				return true
+			}
+		}
+
 		http.ServeFile(w, r, path)
 		return true
 	}
@@ -391,4 +408,9 @@ func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
 // does not handle it.
 func (a *Application) ServeApiRequest (w http.ResponseWriter, r *http.Request) bool {
 	return rest.HandleRequest(w, r)	// indicates no static file was found
+}
+
+
+func RegisterStaticFileProcessor(ending string, processorFunc StaticFileProcessorFunc) {
+	staticFileProcessors = append (staticFileProcessors, staticFileProcessor{ending, processorFunc})
 }

@@ -3,8 +3,8 @@
 package config
 
 import (
+	"github.com/goradd/goradd/pkg/sys"
 	"path/filepath"
-	"runtime"
 )
 
 // The Release constant is used throughout the framework to determine if we are running the development version
@@ -31,10 +31,10 @@ func ProjectAssets() string {
 	return filepath.Join(projectDir, "web", "assets")
 }
 
-/*
+
 func GoraddDir() string {
 	return goraddDir
-}*/
+}
 
 func ProjectDir() string {
 	return projectDir
@@ -46,6 +46,6 @@ func SetProjectDir(path string) {
 
 func init() {
 	// Initialize the directory path for the goradd source
-	_, filename, _, _ := runtime.Caller(0)
-	goraddDir = filepath.Dir(filepath.Dir(filepath.Dir(filename)))
+	filename := sys.SourceDirectory()
+	goraddDir = filepath.Dir(filepath.Dir(filename))
 }
