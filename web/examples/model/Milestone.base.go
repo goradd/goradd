@@ -5,10 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/web/examples/model/node"
+
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	//"./node"
 	"bytes"
@@ -111,7 +112,7 @@ func (o *milestoneBase) LoadProject(ctx context.Context) *Project {
 
 	if o.oProject == nil {
 		// Load and cache
-		o.oProject = LoadProject(ctx, o.ProjectID())
+		o.oProject = loadProject(ctx, o.ProjectID())
 	}
 	return o.oProject
 }
@@ -171,28 +172,27 @@ func (o *milestoneBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// LoadMilestone queries for a single Milestone object by primary key.
+// loadMilestone queries for a single Milestone object by primary key.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryMilestones() to start a query builder.
-func LoadMilestone(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Milestone {
-	return QueryMilestones().Where(Equal(node.Milestone().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func loadMilestone(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Milestone {
+	return queryMilestones().Where(Equal(node.Milestone().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-func QueryMilestones() *milestoneBuilder {
+func queryMilestones() *MilestonesBuilder {
 	return newMilestoneBuilder()
 }
 
-// The milestoneBuilder is a private object using the QueryBuilderI interface from the database to build a query.
+// The MilestonesBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
-type milestoneBuilder struct {
+type MilestonesBuilder struct {
 	base                query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
-func newMilestoneBuilder() *milestoneBuilder {
-	b := &milestoneBuilder{
+func newMilestoneBuilder() *MilestonesBuilder {
+	b := &MilestonesBuilder{
 		base: db.GetDatabase("goradd").
 			NewBuilder(),
 	}
@@ -202,7 +202,7 @@ func newMilestoneBuilder() *milestoneBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of Milestone objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *milestoneBuilder) Load(ctx context.Context) (milestoneSlice []*Milestone) {
+func (b *MilestonesBuilder) Load(ctx context.Context) (milestoneSlice []*Milestone) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -218,7 +218,7 @@ func (b *milestoneBuilder) Load(ctx context.Context) (milestoneSlice []*Mileston
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *milestoneBuilder) LoadI(ctx context.Context) (milestoneSlice []interface{}) {
+func (b *MilestonesBuilder) LoadI(ctx context.Context) (milestoneSlice []interface{}) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -235,7 +235,7 @@ func (b *milestoneBuilder) LoadI(ctx context.Context) (milestoneSlice []interfac
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
 // TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
-func (b *milestoneBuilder) Get(ctx context.Context) *Milestone {
+func (b *MilestonesBuilder) Get(ctx context.Context) *Milestone {
 	results := b.Limit(1, 0).Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
@@ -246,14 +246,30 @@ func (b *milestoneBuilder) Get(ctx context.Context) *Milestone {
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
-func (b *milestoneBuilder) Expand(n query.NodeI) *milestoneBuilder {
+func (b *MilestonesBuilder) Expand(n query.NodeI) *MilestonesBuilder {
 	b.base.Expand(n)
 	return b
 }
 
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *milestoneBuilder) Join(n query.NodeI, conditions ...query.NodeI) *milestoneBuilder {
+func (b *MilestonesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *MilestonesBuilder {
+	var condition query.NodeI
+	if len(conditions) > 1 {
+		condition = And(conditions)
+	} else if len(conditions) == 1 {
+		condition = conditions[0]
+	}
+	b.base.Join(n, condition)
+	if condition != nil {
+		b.hasConditionalJoins = true
+	}
+	return b
+}
+
+// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
+// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
+func (b *MilestonesBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *MilestonesBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -268,19 +284,19 @@ func (b *milestoneBuilder) Join(n query.NodeI, conditions ...query.NodeI) *miles
 }
 
 // Where adds a condition to filter what gets selected.
-func (b *milestoneBuilder) Where(c query.NodeI) *milestoneBuilder {
+func (b *MilestonesBuilder) Where(c query.NodeI) *MilestonesBuilder {
 	b.base.Condition(c)
 	return b
 }
 
 // OrderBy  spedifies how the resulting data should be sorted.
-func (b *milestoneBuilder) OrderBy(nodes ...query.NodeI) *milestoneBuilder {
+func (b *MilestonesBuilder) OrderBy(nodes ...query.NodeI) *MilestonesBuilder {
 	b.base.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
-func (b *milestoneBuilder) Limit(maxRowCount int, offset int) *milestoneBuilder {
+func (b *MilestonesBuilder) Limit(maxRowCount int, offset int) *MilestonesBuilder {
 	b.base.Limit(maxRowCount, offset)
 	return b
 }
@@ -289,14 +305,14 @@ func (b *milestoneBuilder) Limit(maxRowCount int, offset int) *milestoneBuilder 
 // specify all the fields that you will eventually read out. Be careful when selecting fields in joined tables, as joined
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
-func (b *milestoneBuilder) Select(nodes ...query.NodeI) *milestoneBuilder {
+func (b *MilestonesBuilder) Select(nodes ...query.NodeI) *MilestonesBuilder {
 	b.base.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
-func (b *milestoneBuilder) Alias(name string, n query.NodeI) *milestoneBuilder {
+func (b *MilestonesBuilder) Alias(name string, n query.NodeI) *MilestonesBuilder {
 	b.base.Alias(name, n)
 	return b
 }
@@ -304,42 +320,42 @@ func (b *milestoneBuilder) Alias(name string, n query.NodeI) *milestoneBuilder {
 // Distinct removes duplicates from the results of the query. Adding a Select() may help you get to the data you want, although
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
-func (b *milestoneBuilder) Distinct() *milestoneBuilder {
+func (b *MilestonesBuilder) Distinct() *MilestonesBuilder {
 	b.base.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
-func (b *milestoneBuilder) GroupBy(nodes ...query.NodeI) *milestoneBuilder {
+func (b *MilestonesBuilder) GroupBy(nodes ...query.NodeI) *MilestonesBuilder {
 	b.base.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
-func (b *milestoneBuilder) Having(node query.NodeI) *milestoneBuilder {
+func (b *MilestonesBuilder) Having(node query.NodeI) *MilestonesBuilder {
 	b.base.Having(node)
 	return b
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *milestoneBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
+func (b *MilestonesBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *milestoneBuilder) Delete(ctx context.Context) {
+func (b *MilestonesBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
-func (b *milestoneBuilder) Subquery() *query.SubqueryNode {
+func (b *MilestonesBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
 // joinOrSelect us a private helper function for the Load* functions
-func (b *milestoneBuilder) joinOrSelect(nodes ...query.NodeI) *milestoneBuilder {
+func (b *MilestonesBuilder) joinOrSelect(nodes ...query.NodeI) *MilestonesBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
@@ -352,15 +368,15 @@ func (b *milestoneBuilder) joinOrSelect(nodes ...query.NodeI) *milestoneBuilder 
 }
 
 func CountMilestoneByID(ctx context.Context, id string) uint {
-	return QueryMilestones().Where(Equal(node.Milestone().ID(), id)).Count(ctx, false)
+	return queryMilestones().Where(Equal(node.Milestone().ID(), id)).Count(ctx, false)
 }
 
 func CountMilestoneByProjectID(ctx context.Context, projectID string) uint {
-	return QueryMilestones().Where(Equal(node.Milestone().ProjectID(), projectID)).Count(ctx, false)
+	return queryMilestones().Where(Equal(node.Milestone().ProjectID(), projectID)).Count(ctx, false)
 }
 
 func CountMilestoneByName(ctx context.Context, name string) uint {
-	return QueryMilestones().Where(Equal(node.Milestone().Name(), name)).Count(ctx, false)
+	return queryMilestones().Where(Equal(node.Milestone().Name(), name)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -498,8 +514,8 @@ func (o *milestoneBase) Delete(ctx context.Context) {
 	d.Delete(ctx, "milestone", "id", o.id)
 }
 
-// DeleteMilestone deletes the associated record from the database.
-func DeleteMilestone(ctx context.Context, pk string) {
+// deleteMilestone deletes the associated record from the database.
+func deleteMilestone(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "milestone", "id", pk)
 }

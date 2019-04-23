@@ -5,10 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/web/examples/model/node"
+
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	//"./node"
 	"bytes"
@@ -516,28 +517,27 @@ func (o *typeTestBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// LoadTypeTest queries for a single TypeTest object by primary key.
+// loadTypeTest queries for a single TypeTest object by primary key.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryTypeTests() to start a query builder.
-func LoadTypeTest(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *TypeTest {
-	return QueryTypeTests().Where(Equal(node.TypeTest().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func loadTypeTest(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *TypeTest {
+	return queryTypeTests().Where(Equal(node.TypeTest().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-func QueryTypeTests() *typeTestBuilder {
+func queryTypeTests() *TypeTestsBuilder {
 	return newTypeTestBuilder()
 }
 
-// The typeTestBuilder is a private object using the QueryBuilderI interface from the database to build a query.
+// The TypeTestsBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
-type typeTestBuilder struct {
+type TypeTestsBuilder struct {
 	base                query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
-func newTypeTestBuilder() *typeTestBuilder {
-	b := &typeTestBuilder{
+func newTypeTestBuilder() *TypeTestsBuilder {
+	b := &TypeTestsBuilder{
 		base: db.GetDatabase("goradd").
 			NewBuilder(),
 	}
@@ -547,7 +547,7 @@ func newTypeTestBuilder() *typeTestBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of TypeTest objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *typeTestBuilder) Load(ctx context.Context) (typeTestSlice []*TypeTest) {
+func (b *TypeTestsBuilder) Load(ctx context.Context) (typeTestSlice []*TypeTest) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -563,7 +563,7 @@ func (b *typeTestBuilder) Load(ctx context.Context) (typeTestSlice []*TypeTest) 
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *typeTestBuilder) LoadI(ctx context.Context) (typeTestSlice []interface{}) {
+func (b *TypeTestsBuilder) LoadI(ctx context.Context) (typeTestSlice []interface{}) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -580,7 +580,7 @@ func (b *typeTestBuilder) LoadI(ctx context.Context) (typeTestSlice []interface{
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
 // TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
-func (b *typeTestBuilder) Get(ctx context.Context) *TypeTest {
+func (b *TypeTestsBuilder) Get(ctx context.Context) *TypeTest {
 	results := b.Limit(1, 0).Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
@@ -591,14 +591,30 @@ func (b *typeTestBuilder) Get(ctx context.Context) *TypeTest {
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
-func (b *typeTestBuilder) Expand(n query.NodeI) *typeTestBuilder {
+func (b *TypeTestsBuilder) Expand(n query.NodeI) *TypeTestsBuilder {
 	b.base.Expand(n)
 	return b
 }
 
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *typeTestBuilder) Join(n query.NodeI, conditions ...query.NodeI) *typeTestBuilder {
+func (b *TypeTestsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *TypeTestsBuilder {
+	var condition query.NodeI
+	if len(conditions) > 1 {
+		condition = And(conditions)
+	} else if len(conditions) == 1 {
+		condition = conditions[0]
+	}
+	b.base.Join(n, condition)
+	if condition != nil {
+		b.hasConditionalJoins = true
+	}
+	return b
+}
+
+// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
+// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
+func (b *TypeTestsBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *TypeTestsBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -613,19 +629,19 @@ func (b *typeTestBuilder) Join(n query.NodeI, conditions ...query.NodeI) *typeTe
 }
 
 // Where adds a condition to filter what gets selected.
-func (b *typeTestBuilder) Where(c query.NodeI) *typeTestBuilder {
+func (b *TypeTestsBuilder) Where(c query.NodeI) *TypeTestsBuilder {
 	b.base.Condition(c)
 	return b
 }
 
 // OrderBy  spedifies how the resulting data should be sorted.
-func (b *typeTestBuilder) OrderBy(nodes ...query.NodeI) *typeTestBuilder {
+func (b *TypeTestsBuilder) OrderBy(nodes ...query.NodeI) *TypeTestsBuilder {
 	b.base.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
-func (b *typeTestBuilder) Limit(maxRowCount int, offset int) *typeTestBuilder {
+func (b *TypeTestsBuilder) Limit(maxRowCount int, offset int) *TypeTestsBuilder {
 	b.base.Limit(maxRowCount, offset)
 	return b
 }
@@ -634,14 +650,14 @@ func (b *typeTestBuilder) Limit(maxRowCount int, offset int) *typeTestBuilder {
 // specify all the fields that you will eventually read out. Be careful when selecting fields in joined tables, as joined
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
-func (b *typeTestBuilder) Select(nodes ...query.NodeI) *typeTestBuilder {
+func (b *TypeTestsBuilder) Select(nodes ...query.NodeI) *TypeTestsBuilder {
 	b.base.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
-func (b *typeTestBuilder) Alias(name string, n query.NodeI) *typeTestBuilder {
+func (b *TypeTestsBuilder) Alias(name string, n query.NodeI) *TypeTestsBuilder {
 	b.base.Alias(name, n)
 	return b
 }
@@ -649,42 +665,42 @@ func (b *typeTestBuilder) Alias(name string, n query.NodeI) *typeTestBuilder {
 // Distinct removes duplicates from the results of the query. Adding a Select() may help you get to the data you want, although
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
-func (b *typeTestBuilder) Distinct() *typeTestBuilder {
+func (b *TypeTestsBuilder) Distinct() *TypeTestsBuilder {
 	b.base.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
-func (b *typeTestBuilder) GroupBy(nodes ...query.NodeI) *typeTestBuilder {
+func (b *TypeTestsBuilder) GroupBy(nodes ...query.NodeI) *TypeTestsBuilder {
 	b.base.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
-func (b *typeTestBuilder) Having(node query.NodeI) *typeTestBuilder {
+func (b *TypeTestsBuilder) Having(node query.NodeI) *TypeTestsBuilder {
 	b.base.Having(node)
 	return b
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *typeTestBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
+func (b *TypeTestsBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *typeTestBuilder) Delete(ctx context.Context) {
+func (b *TypeTestsBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
-func (b *typeTestBuilder) Subquery() *query.SubqueryNode {
+func (b *TypeTestsBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
 // joinOrSelect us a private helper function for the Load* functions
-func (b *typeTestBuilder) joinOrSelect(nodes ...query.NodeI) *typeTestBuilder {
+func (b *TypeTestsBuilder) joinOrSelect(nodes ...query.NodeI) *TypeTestsBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
@@ -697,43 +713,43 @@ func (b *typeTestBuilder) joinOrSelect(nodes ...query.NodeI) *typeTestBuilder {
 }
 
 func CountTypeTestByID(ctx context.Context, id string) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().ID(), id)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().ID(), id)).Count(ctx, false)
 }
 
 func CountTypeTestByDate(ctx context.Context, date datetime.DateTime) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().Date(), date)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().Date(), date)).Count(ctx, false)
 }
 
 func CountTypeTestByTime(ctx context.Context, time datetime.DateTime) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().Time(), time)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().Time(), time)).Count(ctx, false)
 }
 
 func CountTypeTestByDateTime(ctx context.Context, dateTime datetime.DateTime) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().DateTime(), dateTime)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().DateTime(), dateTime)).Count(ctx, false)
 }
 
 func CountTypeTestByTs(ctx context.Context, ts datetime.DateTime) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().Ts(), ts)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().Ts(), ts)).Count(ctx, false)
 }
 
 func CountTypeTestByTestInt(ctx context.Context, testInt int) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().TestInt(), testInt)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().TestInt(), testInt)).Count(ctx, false)
 }
 
 func CountTypeTestByTestFloat(ctx context.Context, testFloat float32) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().TestFloat(), testFloat)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().TestFloat(), testFloat)).Count(ctx, false)
 }
 
 func CountTypeTestByTestText(ctx context.Context, testText string) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().TestText(), testText)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().TestText(), testText)).Count(ctx, false)
 }
 
 func CountTypeTestByTestBit(ctx context.Context, testBit bool) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().TestBit(), testBit)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().TestBit(), testBit)).Count(ctx, false)
 }
 
 func CountTypeTestByTestVarchar(ctx context.Context, testVarchar string) uint {
-	return QueryTypeTests().Where(Equal(node.TypeTest().TestVarchar(), testVarchar)).Count(ctx, false)
+	return queryTypeTests().Where(Equal(node.TypeTest().TestVarchar(), testVarchar)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -1065,8 +1081,8 @@ func (o *typeTestBase) Delete(ctx context.Context) {
 	d.Delete(ctx, "type_test", "id", o.id)
 }
 
-// DeleteTypeTest deletes the associated record from the database.
-func DeleteTypeTest(ctx context.Context, pk string) {
+// deleteTypeTest deletes the associated record from the database.
+func deleteTypeTest(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "type_test", "id", pk)
 }

@@ -69,7 +69,7 @@ func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Conte
 
 	if o.{{oName}} == nil {
 		// Load and cache
-		o.{{oName}} = Load{{col.ForeignKey.GoType}}(ctx, o.{{col.GoName}}())
+		o.{{oName}} = load{{col.ForeignKey.GoType}}(ctx, o.{{col.GoName}}())
 	}
 	return o.{{oName}}
 }

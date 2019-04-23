@@ -5,10 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/web/examples/model/node"
+
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	//"./node"
 	"bytes"
@@ -186,28 +187,27 @@ func (o *personWithLockBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// LoadPersonWithLock queries for a single PersonWithLock object by primary key.
+// loadPersonWithLock queries for a single PersonWithLock object by primary key.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryPersonWithLocks() to start a query builder.
-func LoadPersonWithLock(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
-	return QueryPersonWithLocks().Where(Equal(node.PersonWithLock().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func loadPersonWithLock(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
+	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-func QueryPersonWithLocks() *personWithLockBuilder {
+func queryPersonWithLocks() *PersonWithLocksBuilder {
 	return newPersonWithLockBuilder()
 }
 
-// The personWithLockBuilder is a private object using the QueryBuilderI interface from the database to build a query.
+// The PersonWithLocksBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
-type personWithLockBuilder struct {
+type PersonWithLocksBuilder struct {
 	base                query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
-func newPersonWithLockBuilder() *personWithLockBuilder {
-	b := &personWithLockBuilder{
+func newPersonWithLockBuilder() *PersonWithLocksBuilder {
+	b := &PersonWithLocksBuilder{
 		base: db.GetDatabase("goradd").
 			NewBuilder(),
 	}
@@ -217,7 +217,7 @@ func newPersonWithLockBuilder() *personWithLockBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of PersonWithLock objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *personWithLockBuilder) Load(ctx context.Context) (personWithLockSlice []*PersonWithLock) {
+func (b *PersonWithLocksBuilder) Load(ctx context.Context) (personWithLockSlice []*PersonWithLock) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -233,7 +233,7 @@ func (b *personWithLockBuilder) Load(ctx context.Context) (personWithLockSlice [
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *personWithLockBuilder) LoadI(ctx context.Context) (personWithLockSlice []interface{}) {
+func (b *PersonWithLocksBuilder) LoadI(ctx context.Context) (personWithLockSlice []interface{}) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -250,7 +250,7 @@ func (b *personWithLockBuilder) LoadI(ctx context.Context) (personWithLockSlice 
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
 // TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
-func (b *personWithLockBuilder) Get(ctx context.Context) *PersonWithLock {
+func (b *PersonWithLocksBuilder) Get(ctx context.Context) *PersonWithLock {
 	results := b.Limit(1, 0).Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
@@ -261,14 +261,30 @@ func (b *personWithLockBuilder) Get(ctx context.Context) *PersonWithLock {
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
-func (b *personWithLockBuilder) Expand(n query.NodeI) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) Expand(n query.NodeI) *PersonWithLocksBuilder {
 	b.base.Expand(n)
 	return b
 }
 
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *personWithLockBuilder) Join(n query.NodeI, conditions ...query.NodeI) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) Join(n query.NodeI, conditions ...query.NodeI) *PersonWithLocksBuilder {
+	var condition query.NodeI
+	if len(conditions) > 1 {
+		condition = And(conditions)
+	} else if len(conditions) == 1 {
+		condition = conditions[0]
+	}
+	b.base.Join(n, condition)
+	if condition != nil {
+		b.hasConditionalJoins = true
+	}
+	return b
+}
+
+// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
+// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
+func (b *PersonWithLocksBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *PersonWithLocksBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -283,19 +299,19 @@ func (b *personWithLockBuilder) Join(n query.NodeI, conditions ...query.NodeI) *
 }
 
 // Where adds a condition to filter what gets selected.
-func (b *personWithLockBuilder) Where(c query.NodeI) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) Where(c query.NodeI) *PersonWithLocksBuilder {
 	b.base.Condition(c)
 	return b
 }
 
 // OrderBy  spedifies how the resulting data should be sorted.
-func (b *personWithLockBuilder) OrderBy(nodes ...query.NodeI) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) OrderBy(nodes ...query.NodeI) *PersonWithLocksBuilder {
 	b.base.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
-func (b *personWithLockBuilder) Limit(maxRowCount int, offset int) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) Limit(maxRowCount int, offset int) *PersonWithLocksBuilder {
 	b.base.Limit(maxRowCount, offset)
 	return b
 }
@@ -304,14 +320,14 @@ func (b *personWithLockBuilder) Limit(maxRowCount int, offset int) *personWithLo
 // specify all the fields that you will eventually read out. Be careful when selecting fields in joined tables, as joined
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
-func (b *personWithLockBuilder) Select(nodes ...query.NodeI) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) Select(nodes ...query.NodeI) *PersonWithLocksBuilder {
 	b.base.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
-func (b *personWithLockBuilder) Alias(name string, n query.NodeI) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) Alias(name string, n query.NodeI) *PersonWithLocksBuilder {
 	b.base.Alias(name, n)
 	return b
 }
@@ -319,42 +335,42 @@ func (b *personWithLockBuilder) Alias(name string, n query.NodeI) *personWithLoc
 // Distinct removes duplicates from the results of the query. Adding a Select() may help you get to the data you want, although
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
-func (b *personWithLockBuilder) Distinct() *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) Distinct() *PersonWithLocksBuilder {
 	b.base.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
-func (b *personWithLockBuilder) GroupBy(nodes ...query.NodeI) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) GroupBy(nodes ...query.NodeI) *PersonWithLocksBuilder {
 	b.base.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
-func (b *personWithLockBuilder) Having(node query.NodeI) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) Having(node query.NodeI) *PersonWithLocksBuilder {
 	b.base.Having(node)
 	return b
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *personWithLockBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
+func (b *PersonWithLocksBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *personWithLockBuilder) Delete(ctx context.Context) {
+func (b *PersonWithLocksBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
-func (b *personWithLockBuilder) Subquery() *query.SubqueryNode {
+func (b *PersonWithLocksBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
 // joinOrSelect us a private helper function for the Load* functions
-func (b *personWithLockBuilder) joinOrSelect(nodes ...query.NodeI) *personWithLockBuilder {
+func (b *PersonWithLocksBuilder) joinOrSelect(nodes ...query.NodeI) *PersonWithLocksBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
@@ -367,19 +383,19 @@ func (b *personWithLockBuilder) joinOrSelect(nodes ...query.NodeI) *personWithLo
 }
 
 func CountPersonWithLockByID(ctx context.Context, id string) uint {
-	return QueryPersonWithLocks().Where(Equal(node.PersonWithLock().ID(), id)).Count(ctx, false)
+	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().ID(), id)).Count(ctx, false)
 }
 
 func CountPersonWithLockByFirstName(ctx context.Context, firstName string) uint {
-	return QueryPersonWithLocks().Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(ctx, false)
+	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(ctx, false)
 }
 
 func CountPersonWithLockByLastName(ctx context.Context, lastName string) uint {
-	return QueryPersonWithLocks().Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(ctx, false)
+	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(ctx, false)
 }
 
 func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp datetime.DateTime) uint {
-	return QueryPersonWithLocks().Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(ctx, false)
+	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -529,8 +545,8 @@ func (o *personWithLockBase) Delete(ctx context.Context) {
 	d.Delete(ctx, "person_with_lock", "id", o.id)
 }
 
-// DeletePersonWithLock deletes the associated record from the database.
-func DeletePersonWithLock(ctx context.Context, pk string) {
+// deletePersonWithLock deletes the associated record from the database.
+func deletePersonWithLock(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person_with_lock", "id", pk)
 }

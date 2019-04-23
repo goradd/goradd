@@ -5,10 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/web/examples/model/node"
+
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	//"./node"
 	"bytes"
@@ -594,39 +595,38 @@ func (o *unsupportedTypesBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// LoadUnsupportedTypes queries for a single UnsupportedTypes object by primary key.
+// loadUnsupportedTypes queries for a single UnsupportedTypes object by primary key.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryUnsupportedTypes() to start a query builder.
-func LoadUnsupportedTypes(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *UnsupportedTypes {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSerial(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func loadUnsupportedTypes(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *UnsupportedTypes {
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSerial(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-// LoadUnsupportedTypesByTypeSerial queries for a single UnsupportedTypes object by the given unique index values.
+// loadUnsupportedTypesByTypeSerial queries for a single UnsupportedTypes object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryUnsupportedTypes() to start a query builder.
-func LoadUnsupportedTypesByTypeSerial(ctx context.Context, type_serial string, joinOrSelectNodes ...query.NodeI) *UnsupportedTypes {
-	return QueryUnsupportedTypes().
+func loadUnsupportedTypesByTypeSerial(ctx context.Context, type_serial string, joinOrSelectNodes ...query.NodeI) *UnsupportedTypes {
+	return queryUnsupportedTypes().
 		Where(Equal(node.UnsupportedTypes().TypeSerial(), type_serial)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get(ctx)
 }
 
-func QueryUnsupportedTypes() *unsupportedTypesBuilder {
+func queryUnsupportedTypes() *UnsupportedTypesBuilder {
 	return newUnsupportedTypesBuilder()
 }
 
-// The unsupportedTypesBuilder is a private object using the QueryBuilderI interface from the database to build a query.
+// The UnsupportedTypesBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
-type unsupportedTypesBuilder struct {
+type UnsupportedTypesBuilder struct {
 	base                query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
-func newUnsupportedTypesBuilder() *unsupportedTypesBuilder {
-	b := &unsupportedTypesBuilder{
+func newUnsupportedTypesBuilder() *UnsupportedTypesBuilder {
+	b := &UnsupportedTypesBuilder{
 		base: db.GetDatabase("goradd").
 			NewBuilder(),
 	}
@@ -636,7 +636,7 @@ func newUnsupportedTypesBuilder() *unsupportedTypesBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of UnsupportedTypes objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *unsupportedTypesBuilder) Load(ctx context.Context) (unsupportedTypesSlice []*UnsupportedTypes) {
+func (b *UnsupportedTypesBuilder) Load(ctx context.Context) (unsupportedTypesSlice []*UnsupportedTypes) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -652,7 +652,7 @@ func (b *unsupportedTypesBuilder) Load(ctx context.Context) (unsupportedTypesSli
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *unsupportedTypesBuilder) LoadI(ctx context.Context) (unsupportedTypesSlice []interface{}) {
+func (b *UnsupportedTypesBuilder) LoadI(ctx context.Context) (unsupportedTypesSlice []interface{}) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -669,7 +669,7 @@ func (b *unsupportedTypesBuilder) LoadI(ctx context.Context) (unsupportedTypesSl
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
 // TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
-func (b *unsupportedTypesBuilder) Get(ctx context.Context) *UnsupportedTypes {
+func (b *UnsupportedTypesBuilder) Get(ctx context.Context) *UnsupportedTypes {
 	results := b.Limit(1, 0).Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
@@ -680,14 +680,14 @@ func (b *unsupportedTypesBuilder) Get(ctx context.Context) *UnsupportedTypes {
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
-func (b *unsupportedTypesBuilder) Expand(n query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) Expand(n query.NodeI) *UnsupportedTypesBuilder {
 	b.base.Expand(n)
 	return b
 }
 
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *unsupportedTypesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *UnsupportedTypesBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -703,7 +703,7 @@ func (b *unsupportedTypesBuilder) Join(n query.NodeI, conditions ...query.NodeI)
 
 // JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *unsupportedTypesBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *UnsupportedTypesBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -718,19 +718,19 @@ func (b *unsupportedTypesBuilder) JoinOn(n query.NodeI, conditions ...query.Node
 }
 
 // Where adds a condition to filter what gets selected.
-func (b *unsupportedTypesBuilder) Where(c query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) Where(c query.NodeI) *UnsupportedTypesBuilder {
 	b.base.Condition(c)
 	return b
 }
 
 // OrderBy  spedifies how the resulting data should be sorted.
-func (b *unsupportedTypesBuilder) OrderBy(nodes ...query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) OrderBy(nodes ...query.NodeI) *UnsupportedTypesBuilder {
 	b.base.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
-func (b *unsupportedTypesBuilder) Limit(maxRowCount int, offset int) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) Limit(maxRowCount int, offset int) *UnsupportedTypesBuilder {
 	b.base.Limit(maxRowCount, offset)
 	return b
 }
@@ -739,14 +739,14 @@ func (b *unsupportedTypesBuilder) Limit(maxRowCount int, offset int) *unsupporte
 // specify all the fields that you will eventually read out. Be careful when selecting fields in joined tables, as joined
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
-func (b *unsupportedTypesBuilder) Select(nodes ...query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) Select(nodes ...query.NodeI) *UnsupportedTypesBuilder {
 	b.base.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
-func (b *unsupportedTypesBuilder) Alias(name string, n query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) Alias(name string, n query.NodeI) *UnsupportedTypesBuilder {
 	b.base.Alias(name, n)
 	return b
 }
@@ -754,42 +754,42 @@ func (b *unsupportedTypesBuilder) Alias(name string, n query.NodeI) *unsupported
 // Distinct removes duplicates from the results of the query. Adding a Select() may help you get to the data you want, although
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
-func (b *unsupportedTypesBuilder) Distinct() *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) Distinct() *UnsupportedTypesBuilder {
 	b.base.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
-func (b *unsupportedTypesBuilder) GroupBy(nodes ...query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) GroupBy(nodes ...query.NodeI) *UnsupportedTypesBuilder {
 	b.base.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
-func (b *unsupportedTypesBuilder) Having(node query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) Having(node query.NodeI) *UnsupportedTypesBuilder {
 	b.base.Having(node)
 	return b
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *unsupportedTypesBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
+func (b *UnsupportedTypesBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *unsupportedTypesBuilder) Delete(ctx context.Context) {
+func (b *UnsupportedTypesBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
-func (b *unsupportedTypesBuilder) Subquery() *query.SubqueryNode {
+func (b *UnsupportedTypesBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
 // joinOrSelect us a private helper function for the Load* functions
-func (b *unsupportedTypesBuilder) joinOrSelect(nodes ...query.NodeI) *unsupportedTypesBuilder {
+func (b *UnsupportedTypesBuilder) joinOrSelect(nodes ...query.NodeI) *UnsupportedTypesBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
@@ -802,75 +802,75 @@ func (b *unsupportedTypesBuilder) joinOrSelect(nodes ...query.NodeI) *unsupporte
 }
 
 func CountUnsupportedTypesByTypeSet(ctx context.Context, typeSet string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSet(), typeSet)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSet(), typeSet)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeEnum(ctx context.Context, typeEnum string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeEnum(), typeEnum)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeEnum(), typeEnum)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeDecimal(ctx context.Context, typeDecimal string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeDecimal(), typeDecimal)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeDecimal(), typeDecimal)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeDouble(ctx context.Context, typeDouble float32) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeDouble(), typeDouble)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeDouble(), typeDouble)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeGeo(ctx context.Context, typeGeo string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeGeo(), typeGeo)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeGeo(), typeGeo)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeTinyBlob(ctx context.Context, typeTinyBlob []byte) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeTinyBlob(), typeTinyBlob)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeTinyBlob(), typeTinyBlob)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeMediumBlob(ctx context.Context, typeMediumBlob []byte) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMediumBlob(), typeMediumBlob)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMediumBlob(), typeMediumBlob)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeVarbinary(ctx context.Context, typeVarbinary string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeVarbinary(), typeVarbinary)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeVarbinary(), typeVarbinary)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeLongtext(ctx context.Context, typeLongtext string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeLongtext(), typeLongtext)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeLongtext(), typeLongtext)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeBinary(ctx context.Context, typeBinary string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeBinary(), typeBinary)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeBinary(), typeBinary)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeSmall(ctx context.Context, typeSmall int) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSmall(), typeSmall)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSmall(), typeSmall)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeMedium(ctx context.Context, typeMedium int) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMedium(), typeMedium)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMedium(), typeMedium)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeBig(ctx context.Context, typeBig int64) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeBig(), typeBig)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeBig(), typeBig)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypePolygon(ctx context.Context, typePolygon string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypePolygon(), typePolygon)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypePolygon(), typePolygon)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeSerial(ctx context.Context, typeSerial string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSerial(), typeSerial)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSerial(), typeSerial)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeUnsigned(ctx context.Context, typeUnsigned uint) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeUnsigned(), typeUnsigned)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeUnsigned(), typeUnsigned)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeMultfk1(ctx context.Context, typeMultfk1 string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMultfk1(), typeMultfk1)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMultfk1(), typeMultfk1)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeMultifk2(ctx context.Context, typeMultifk2 string) uint {
-	return QueryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMultifk2(), typeMultifk2)).Count(ctx, false)
+	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMultifk2(), typeMultifk2)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -1246,8 +1246,8 @@ func (o *unsupportedTypesBase) Delete(ctx context.Context) {
 	d.Delete(ctx, "unsupported_types", "type_serial", o.typeSerial)
 }
 
-// DeleteUnsupportedTypes deletes the associated record from the database.
-func DeleteUnsupportedTypes(ctx context.Context, pk string) {
+// deleteUnsupportedTypes deletes the associated record from the database.
+func deleteUnsupportedTypes(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "unsupported_types", "type_serial", pk)
 }

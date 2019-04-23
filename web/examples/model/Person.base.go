@@ -5,10 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/web/examples/model/node"
+
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	//"./node"
 	"bytes"
@@ -33,16 +34,16 @@ type personBase struct {
 	lastNameIsDirty bool
 
 	// Reverse reference objects.
-	oProjectsAsManager []*Project          // Objects in the order they were queried
-	mProjectsAsManager map[string]*Project // Objects by PK
 	oAddresses         []*Address          // Objects in the order they were queried
 	mAddresses         map[string]*Address // Objects by PK
+	oProjectsAsManager []*Project          // Objects in the order they were queried
+	mProjectsAsManager map[string]*Project // Objects by PK
 	oLogin             *Login
 
 	// Many-Many reference objects.
+	oPersonTypes          []PersonType
 	oProjectsAsTeamMember []*Project
 	mProjectsAsTeamMember map[string]*Project // Objects by PK
-	oPersonTypes          []PersonType
 
 	// Custom aliases, if specified
 	_aliases map[string]interface{}
@@ -61,14 +62,14 @@ const (
 	PersonID                = `ID`
 	PersonFirstName         = `FirstName`
 	PersonLastName          = `LastName`
-	PersonProjectsAsManager = `ProjectsAsManager`
 	PersonAddresses         = `Addresses`
+	PersonProjectsAsManager = `ProjectsAsManager`
 
 	PersonLogin                = `Login`
-	PersonProjectAsTeamMember  = `ProjectAsTeamMember`
-	PersonProjectsAsTeamMember = `ProjectsAsTeamMember`
 	PersonPersonType           = `PersonType`
 	PersonPersonTypes          = `PersonTypes`
+	PersonProjectAsTeamMember  = `ProjectAsTeamMember`
+	PersonProjectsAsTeamMember = `ProjectsAsTeamMember`
 )
 
 // Initialize or re-initialize a Person database object to default values.
@@ -155,23 +156,6 @@ func (o *personBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// ProjectAsTeamMember returns a single Project object, if one was loaded
-// otherwise, it will return nil.
-func (o *personBase) ProjectAsTeamMember() *Project {
-	if o.oProjectsAsTeamMember == nil {
-		return nil
-	}
-	return o.oProjectsAsTeamMember[0]
-}
-
-// ProjectsAsTeamMember returns a slice of Project objects if loaded. If not loaded, will return nil.
-func (o *personBase) ProjectsAsTeamMember() []*Project {
-	if o.oProjectsAsTeamMember == nil {
-		return nil
-	}
-	return o.oProjectsAsTeamMember
-}
-
 // PersonTypes returns a slice of PersonType objects if loaded.
 func (o *personBase) PersonTypes() []PersonType {
 	if o.oPersonTypes == nil {
@@ -189,22 +173,21 @@ func (o *personBase) PersonType() PersonType {
 	return o.oPersonTypes[0]
 }
 
-// ProjectAsManager returns a single Project object by primary key, if one was loaded.
-// Otherwise, it will return nil.
-func (o *personBase) ProjectAsManager(pk string) *Project {
-	if o.oProjectsAsManager == nil || len(o.oProjectsAsManager) == 0 {
+// ProjectAsTeamMember returns a single Project object, if one was loaded
+// otherwise, it will return nil.
+func (o *personBase) ProjectAsTeamMember() *Project {
+	if o.oProjectsAsTeamMember == nil {
 		return nil
 	}
-	v, _ := o.mProjectsAsManager[pk]
-	return v
+	return o.oProjectsAsTeamMember[0]
 }
 
-// ProjectsAsManager returns a slice of Project objects if loaded.
-func (o *personBase) ProjectsAsManager() []*Project {
-	if o.oProjectsAsManager == nil {
+// ProjectsAsTeamMember returns a slice of Project objects if loaded. If not loaded, will return nil.
+func (o *personBase) ProjectsAsTeamMember() []*Project {
+	if o.oProjectsAsTeamMember == nil {
 		return nil
 	}
-	return o.oProjectsAsManager
+	return o.oProjectsAsTeamMember
 }
 
 // Address returns a single Address object by primary key, if one was loaded.
@@ -225,6 +208,50 @@ func (o *personBase) Addresses() []*Address {
 	return o.oAddresses
 }
 
+// LoadAddresses loads a new slice of Address objects and returns it.
+func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{}) []*Address {
+	qb := queryAddresses()
+	cond := Equal(node.Address().PersonID(), o.PrimaryKey())
+	if conditions != nil {
+		conditions = append(conditions, cond)
+		cond = And(conditions...)
+	}
+
+	o.oAddresses = qb.Where(cond).Load(ctx)
+	return o.oAddresses
+}
+
+// ProjectAsManager returns a single Project object by primary key, if one was loaded.
+// Otherwise, it will return nil.
+func (o *personBase) ProjectAsManager(pk string) *Project {
+	if o.oProjectsAsManager == nil || len(o.oProjectsAsManager) == 0 {
+		return nil
+	}
+	v, _ := o.mProjectsAsManager[pk]
+	return v
+}
+
+// ProjectsAsManager returns a slice of Project objects if loaded.
+func (o *personBase) ProjectsAsManager() []*Project {
+	if o.oProjectsAsManager == nil {
+		return nil
+	}
+	return o.oProjectsAsManager
+}
+
+// LoadProjectsAsManager loads a new slice of Project objects and returns it.
+func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...interface{}) []*Project {
+	qb := queryProjects()
+	cond := Equal(node.Project().ManagerID(), o.PrimaryKey())
+	if conditions != nil {
+		conditions = append(conditions, cond)
+		cond = And(conditions...)
+	}
+
+	o.oProjectsAsManager = qb.Where(cond).Load(ctx)
+	return o.oProjectsAsManager
+}
+
 // Login returns the connected Login object, if one was loaded
 // otherwise, it will return nil.
 func (o *personBase) Login() *Login {
@@ -238,33 +265,32 @@ func (o *personBase) Login() *Login {
 // otherwise, it will return nil.
 func (o *personBase) LoadLogin(ctx context.Context) *Login {
 	if o.oLogin == nil {
-		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
+		o.oLogin = loadLoginByPersonID(ctx, o.ID())
 	}
 	return o.oLogin
 }
 
-// LoadPerson queries for a single Person object by primary key.
+// loadPerson queries for a single Person object by primary key.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryPeople() to start a query builder.
-func LoadPerson(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Person {
-	return QueryPeople().Where(Equal(node.Person().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func loadPerson(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Person {
+	return queryPeople().Where(Equal(node.Person().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-func QueryPeople() *personBuilder {
+func queryPeople() *PeopleBuilder {
 	return newPersonBuilder()
 }
 
-// The personBuilder is a private object using the QueryBuilderI interface from the database to build a query.
+// The PeopleBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
-type personBuilder struct {
+type PeopleBuilder struct {
 	base                query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
-func newPersonBuilder() *personBuilder {
-	b := &personBuilder{
+func newPersonBuilder() *PeopleBuilder {
+	b := &PeopleBuilder{
 		base: db.GetDatabase("goradd").
 			NewBuilder(),
 	}
@@ -274,7 +300,7 @@ func newPersonBuilder() *personBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of Person objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *personBuilder) Load(ctx context.Context) (personSlice []*Person) {
+func (b *PeopleBuilder) Load(ctx context.Context) (personSlice []*Person) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -290,7 +316,7 @@ func (b *personBuilder) Load(ctx context.Context) (personSlice []*Person) {
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *personBuilder) LoadI(ctx context.Context) (personSlice []interface{}) {
+func (b *PeopleBuilder) LoadI(ctx context.Context) (personSlice []interface{}) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -307,7 +333,7 @@ func (b *personBuilder) LoadI(ctx context.Context) (personSlice []interface{}) {
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
 // TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
-func (b *personBuilder) Get(ctx context.Context) *Person {
+func (b *PeopleBuilder) Get(ctx context.Context) *Person {
 	results := b.Limit(1, 0).Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
@@ -318,14 +344,30 @@ func (b *personBuilder) Get(ctx context.Context) *Person {
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
-func (b *personBuilder) Expand(n query.NodeI) *personBuilder {
+func (b *PeopleBuilder) Expand(n query.NodeI) *PeopleBuilder {
 	b.base.Expand(n)
 	return b
 }
 
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *personBuilder) Join(n query.NodeI, conditions ...query.NodeI) *personBuilder {
+func (b *PeopleBuilder) Join(n query.NodeI, conditions ...query.NodeI) *PeopleBuilder {
+	var condition query.NodeI
+	if len(conditions) > 1 {
+		condition = And(conditions)
+	} else if len(conditions) == 1 {
+		condition = conditions[0]
+	}
+	b.base.Join(n, condition)
+	if condition != nil {
+		b.hasConditionalJoins = true
+	}
+	return b
+}
+
+// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
+// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
+func (b *PeopleBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *PeopleBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -340,19 +382,19 @@ func (b *personBuilder) Join(n query.NodeI, conditions ...query.NodeI) *personBu
 }
 
 // Where adds a condition to filter what gets selected.
-func (b *personBuilder) Where(c query.NodeI) *personBuilder {
+func (b *PeopleBuilder) Where(c query.NodeI) *PeopleBuilder {
 	b.base.Condition(c)
 	return b
 }
 
 // OrderBy  spedifies how the resulting data should be sorted.
-func (b *personBuilder) OrderBy(nodes ...query.NodeI) *personBuilder {
+func (b *PeopleBuilder) OrderBy(nodes ...query.NodeI) *PeopleBuilder {
 	b.base.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
-func (b *personBuilder) Limit(maxRowCount int, offset int) *personBuilder {
+func (b *PeopleBuilder) Limit(maxRowCount int, offset int) *PeopleBuilder {
 	b.base.Limit(maxRowCount, offset)
 	return b
 }
@@ -361,14 +403,14 @@ func (b *personBuilder) Limit(maxRowCount int, offset int) *personBuilder {
 // specify all the fields that you will eventually read out. Be careful when selecting fields in joined tables, as joined
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
-func (b *personBuilder) Select(nodes ...query.NodeI) *personBuilder {
+func (b *PeopleBuilder) Select(nodes ...query.NodeI) *PeopleBuilder {
 	b.base.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
-func (b *personBuilder) Alias(name string, n query.NodeI) *personBuilder {
+func (b *PeopleBuilder) Alias(name string, n query.NodeI) *PeopleBuilder {
 	b.base.Alias(name, n)
 	return b
 }
@@ -376,42 +418,42 @@ func (b *personBuilder) Alias(name string, n query.NodeI) *personBuilder {
 // Distinct removes duplicates from the results of the query. Adding a Select() may help you get to the data you want, although
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
-func (b *personBuilder) Distinct() *personBuilder {
+func (b *PeopleBuilder) Distinct() *PeopleBuilder {
 	b.base.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
-func (b *personBuilder) GroupBy(nodes ...query.NodeI) *personBuilder {
+func (b *PeopleBuilder) GroupBy(nodes ...query.NodeI) *PeopleBuilder {
 	b.base.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
-func (b *personBuilder) Having(node query.NodeI) *personBuilder {
+func (b *PeopleBuilder) Having(node query.NodeI) *PeopleBuilder {
 	b.base.Having(node)
 	return b
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *personBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
+func (b *PeopleBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *personBuilder) Delete(ctx context.Context) {
+func (b *PeopleBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
-func (b *personBuilder) Subquery() *query.SubqueryNode {
+func (b *PeopleBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
 // joinOrSelect us a private helper function for the Load* functions
-func (b *personBuilder) joinOrSelect(nodes ...query.NodeI) *personBuilder {
+func (b *PeopleBuilder) joinOrSelect(nodes ...query.NodeI) *PeopleBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
@@ -424,15 +466,15 @@ func (b *personBuilder) joinOrSelect(nodes ...query.NodeI) *personBuilder {
 }
 
 func CountPersonByID(ctx context.Context, id string) uint {
-	return QueryPeople().Where(Equal(node.Person().ID(), id)).Count(ctx, false)
+	return queryPeople().Where(Equal(node.Person().ID(), id)).Count(ctx, false)
 }
 
 func CountPersonByFirstName(ctx context.Context, firstName string) uint {
-	return QueryPeople().Where(Equal(node.Person().FirstName(), firstName)).Count(ctx, false)
+	return queryPeople().Where(Equal(node.Person().FirstName(), firstName)).Count(ctx, false)
 }
 
 func CountPersonByLastName(ctx context.Context, lastName string) uint {
-	return QueryPeople().Where(Equal(node.Person().LastName(), lastName)).Count(ctx, false)
+	return queryPeople().Where(Equal(node.Person().LastName(), lastName)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -477,6 +519,19 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		o.lastName = ""
 	}
 
+	if v, ok := m["PersonTypes"]; ok {
+		if oPersonTypes, ok2 := v.([]uint); ok2 {
+			o.oPersonTypes = []PersonType{}
+			for _, m := range oPersonTypes {
+				o.oPersonTypes = append(o.oPersonTypes, PersonType(m))
+			}
+		} else {
+			panic("Wrong type found for oPersonTypes object.")
+		}
+	} else {
+		o.oPersonTypes = nil
+	}
+
 	if v, ok := m["ProjectsAsTeamMember"]; ok {
 		if oProjectsAsTeamMember, ok2 := v.([]db.ValueMap); ok2 {
 			o.oProjectsAsTeamMember = []*Project{}
@@ -496,47 +551,6 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		}
 	} else {
 		o.oProjectsAsTeamMember = nil
-	}
-
-	if v, ok := m["PersonTypes"]; ok {
-		if oPersonTypes, ok2 := v.([]uint); ok2 {
-			o.oPersonTypes = []PersonType{}
-			for _, m := range oPersonTypes {
-				o.oPersonTypes = append(o.oPersonTypes, PersonType(m))
-			}
-		} else {
-			panic("Wrong type found for oPersonTypes object.")
-		}
-	} else {
-		o.oPersonTypes = nil
-	}
-
-	if v, ok := m["ProjectsAsManager"]; ok {
-		switch oProjectsAsManager := v.(type) {
-		case []db.ValueMap:
-			o.oProjectsAsManager = []*Project{}
-			o.mProjectsAsManager = map[string]*Project{}
-			for _, v2 := range oProjectsAsManager {
-				obj := new(Project)
-				obj.load(v2, linkParent, obj, objThis, "Manager")
-				if linkParent && parentKey == "ProjectsAsManager" && obj.managerID == objParent.(*Project).managerID {
-					obj = objParent.(*Project)
-				}
-				o.oProjectsAsManager = append(o.oProjectsAsManager, obj)
-				o.mProjectsAsManager[obj.PrimaryKey()] = obj
-			}
-		case db.ValueMap: // single expansion
-			obj := new(Project)
-			obj.load(oProjectsAsManager, linkParent, obj, objThis, "Manager")
-			if linkParent && parentKey == "ProjectsAsManager" && obj.managerID == objParent.(*Project).managerID {
-				obj = objParent.(*Project)
-			}
-			o.oProjectsAsManager = []*Project{obj}
-		default:
-			panic("Wrong type found for oProjectsAsManager object.")
-		}
-	} else {
-		o.oProjectsAsManager = nil
 	}
 
 	if v, ok := m["Addresses"]; ok {
@@ -565,6 +579,34 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		}
 	} else {
 		o.oAddresses = nil
+	}
+
+	if v, ok := m["ProjectsAsManager"]; ok {
+		switch oProjectsAsManager := v.(type) {
+		case []db.ValueMap:
+			o.oProjectsAsManager = []*Project{}
+			o.mProjectsAsManager = map[string]*Project{}
+			for _, v2 := range oProjectsAsManager {
+				obj := new(Project)
+				obj.load(v2, linkParent, obj, objThis, "Manager")
+				if linkParent && parentKey == "ProjectsAsManager" && obj.managerID == objParent.(*Project).managerID {
+					obj = objParent.(*Project)
+				}
+				o.oProjectsAsManager = append(o.oProjectsAsManager, obj)
+				o.mProjectsAsManager[obj.PrimaryKey()] = obj
+			}
+		case db.ValueMap: // single expansion
+			obj := new(Project)
+			obj.load(oProjectsAsManager, linkParent, obj, objThis, "Manager")
+			if linkParent && parentKey == "ProjectsAsManager" && obj.managerID == objParent.(*Project).managerID {
+				obj = objParent.(*Project)
+			}
+			o.oProjectsAsManager = []*Project{obj}
+		default:
+			panic("Wrong type found for oProjectsAsManager object.")
+		}
+	} else {
+		o.oProjectsAsManager = nil
 	}
 
 	if v, ok := m["Login"]; ok {
@@ -654,8 +696,8 @@ func (o *personBase) Delete(ctx context.Context) {
 	d.Delete(ctx, "person", "id", o.id)
 }
 
-// DeletePerson deletes the associated record from the database.
-func DeletePerson(ctx context.Context, pk string) {
+// deletePerson deletes the associated record from the database.
+func deletePerson(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person", "id", pk)
 }
@@ -684,24 +726,24 @@ func (o *personBase) Get(key string) interface{} {
 		}
 		return o.lastName
 
-	case "ProjectsAsManager":
-		return o.ProjectsAsManager()
-
 	case "Addresses":
 		return o.Addresses()
 
+	case "ProjectsAsManager":
+		return o.ProjectsAsManager()
+
 	case "Login":
 		return o.Login()
-
-	case "ProjectAsTeamMember":
-		return o.ProjectAsTeamMember()
-	case "ProjectsAsTeamMember":
-		return o.ProjectsAsTeamMember()
 
 	case "PersonType":
 		return o.PersonType()
 	case "PersonTypes":
 		return o.PersonTypes()
+
+	case "ProjectAsTeamMember":
+		return o.ProjectAsTeamMember()
+	case "ProjectsAsTeamMember":
+		return o.ProjectsAsTeamMember()
 
 	}
 	return nil
@@ -745,11 +787,11 @@ func (o *personBase) MarshalBinary() (data []byte, err error) {
 		return
 	}
 
-	if err = encoder.Encode(o.oProjectsAsManager); err != nil {
+	if err = encoder.Encode(o.oAddresses); err != nil {
 		return
 	}
 
-	if err = encoder.Encode(o.oAddresses); err != nil {
+	if err = encoder.Encode(o.oProjectsAsManager); err != nil {
 		return
 	}
 
@@ -757,11 +799,11 @@ func (o *personBase) MarshalBinary() (data []byte, err error) {
 		return
 	}
 
-	if err = encoder.Encode(o.oProjectsAsTeamMember); err != nil {
+	if err = encoder.Encode(o.oPersonTypes); err != nil {
 		return
 	}
 
-	if err = encoder.Encode(o.oPersonTypes); err != nil {
+	if err = encoder.Encode(o.oProjectsAsTeamMember); err != nil {
 		return
 	}
 
@@ -820,15 +862,6 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.oProjectsAsManager); err != nil {
-		return
-	}
-	if len(o.oProjectsAsManager) > 0 {
-		o.mProjectsAsManager = make(map[string]*Project)
-		for _, p := range o.oProjectsAsManager {
-			o.mProjectsAsManager[p.PrimaryKey()] = p
-		}
-	}
 	if err = dec.Decode(&o.oAddresses); err != nil {
 		return
 	}
@@ -838,10 +871,22 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 			o.mAddresses[p.PrimaryKey()] = p
 		}
 	}
+	if err = dec.Decode(&o.oProjectsAsManager); err != nil {
+		return
+	}
+	if len(o.oProjectsAsManager) > 0 {
+		o.mProjectsAsManager = make(map[string]*Project)
+		for _, p := range o.oProjectsAsManager {
+			o.mProjectsAsManager[p.PrimaryKey()] = p
+		}
+	}
 	if err = dec.Decode(&o.oLogin); err != nil {
 		return
 	}
 
+	if err = dec.Decode(&o.oPersonTypes); err != nil {
+		return
+	}
 	if err = dec.Decode(&o.oProjectsAsTeamMember); err != nil {
 		return
 	}
@@ -851,9 +896,6 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		for _, p := range o.oProjectsAsTeamMember {
 			o.mProjectsAsTeamMember[p.PrimaryKey()] = p
 		}
-	}
-	if err = dec.Decode(&o.oPersonTypes); err != nil {
-		return
 	}
 
 	var hasAliases bool

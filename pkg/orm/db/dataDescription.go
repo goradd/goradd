@@ -249,6 +249,8 @@ type ReverseReference struct {
 	GoPlural             string
 	// GoType is the type of object in the collection of "many" objects, which corresponds to the name of the struct corresponding to the table
 	GoType               string
+	// GoTypePlural is the plural of the type of object in the collection of "many" objects
+	GoTypePlural               string
 	// IsUnique is true if the ReverseReference is unique. A unique reference creates a one-to-one relationship rather than one-to-many
 	IsUnique             bool
 	//Options maps.SliceMap
@@ -497,6 +499,7 @@ func (dd *DatabaseDescription) analyzeReverseReferences(td *TableDescription) {
 					goPlural = snaker.SnakeToCamel(goPlural)
 				}
 				goType := td.GoName
+				goTypePlural := td.GoPlural
 				ref := ReverseReference{
 					DbTable:              td2.DbName,
 					DbColumn:             td2.PrimaryKeyColumn.DbName, // NoSQL only
@@ -505,6 +508,7 @@ func (dd *DatabaseDescription) analyzeReverseReferences(td *TableDescription) {
 					GoName:               goName,
 					GoPlural:             goPlural,
 					GoType:               goType,
+					GoTypePlural:		  goTypePlural,
 					IsUnique:             cd.IsUnique,
 				}
 

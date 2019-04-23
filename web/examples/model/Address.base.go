@@ -5,10 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/web/examples/model/node"
+
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	//"./node"
 	"bytes"
@@ -130,7 +131,7 @@ func (o *addressBase) LoadPerson(ctx context.Context) *Person {
 
 	if o.oPerson == nil {
 		// Load and cache
-		o.oPerson = LoadPerson(ctx, o.PersonID())
+		o.oPerson = loadPerson(ctx, o.PersonID())
 	}
 	return o.oPerson
 }
@@ -245,28 +246,27 @@ func (o *addressBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// LoadAddress queries for a single Address object by primary key.
+// loadAddress queries for a single Address object by primary key.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryAddresses() to start a query builder.
-func LoadAddress(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Address {
-	return QueryAddresses().Where(Equal(node.Address().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func loadAddress(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Address {
+	return queryAddresses().Where(Equal(node.Address().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-func QueryAddresses() *addressBuilder {
+func queryAddresses() *AddressesBuilder {
 	return newAddressBuilder()
 }
 
-// The addressBuilder is a private object using the QueryBuilderI interface from the database to build a query.
+// The AddressesBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
-type addressBuilder struct {
+type AddressesBuilder struct {
 	base                query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
-func newAddressBuilder() *addressBuilder {
-	b := &addressBuilder{
+func newAddressBuilder() *AddressesBuilder {
+	b := &AddressesBuilder{
 		base: db.GetDatabase("goradd").
 			NewBuilder(),
 	}
@@ -276,7 +276,7 @@ func newAddressBuilder() *addressBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of Address objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *addressBuilder) Load(ctx context.Context) (addressSlice []*Address) {
+func (b *AddressesBuilder) Load(ctx context.Context) (addressSlice []*Address) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -292,7 +292,7 @@ func (b *addressBuilder) Load(ctx context.Context) (addressSlice []*Address) {
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *addressBuilder) LoadI(ctx context.Context) (addressSlice []interface{}) {
+func (b *AddressesBuilder) LoadI(ctx context.Context) (addressSlice []interface{}) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -309,7 +309,7 @@ func (b *addressBuilder) LoadI(ctx context.Context) (addressSlice []interface{})
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
 // TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
-func (b *addressBuilder) Get(ctx context.Context) *Address {
+func (b *AddressesBuilder) Get(ctx context.Context) *Address {
 	results := b.Limit(1, 0).Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
@@ -320,14 +320,30 @@ func (b *addressBuilder) Get(ctx context.Context) *Address {
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
-func (b *addressBuilder) Expand(n query.NodeI) *addressBuilder {
+func (b *AddressesBuilder) Expand(n query.NodeI) *AddressesBuilder {
 	b.base.Expand(n)
 	return b
 }
 
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *addressBuilder) Join(n query.NodeI, conditions ...query.NodeI) *addressBuilder {
+func (b *AddressesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *AddressesBuilder {
+	var condition query.NodeI
+	if len(conditions) > 1 {
+		condition = And(conditions)
+	} else if len(conditions) == 1 {
+		condition = conditions[0]
+	}
+	b.base.Join(n, condition)
+	if condition != nil {
+		b.hasConditionalJoins = true
+	}
+	return b
+}
+
+// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
+// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
+func (b *AddressesBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *AddressesBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -342,19 +358,19 @@ func (b *addressBuilder) Join(n query.NodeI, conditions ...query.NodeI) *address
 }
 
 // Where adds a condition to filter what gets selected.
-func (b *addressBuilder) Where(c query.NodeI) *addressBuilder {
+func (b *AddressesBuilder) Where(c query.NodeI) *AddressesBuilder {
 	b.base.Condition(c)
 	return b
 }
 
 // OrderBy  spedifies how the resulting data should be sorted.
-func (b *addressBuilder) OrderBy(nodes ...query.NodeI) *addressBuilder {
+func (b *AddressesBuilder) OrderBy(nodes ...query.NodeI) *AddressesBuilder {
 	b.base.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
-func (b *addressBuilder) Limit(maxRowCount int, offset int) *addressBuilder {
+func (b *AddressesBuilder) Limit(maxRowCount int, offset int) *AddressesBuilder {
 	b.base.Limit(maxRowCount, offset)
 	return b
 }
@@ -363,14 +379,14 @@ func (b *addressBuilder) Limit(maxRowCount int, offset int) *addressBuilder {
 // specify all the fields that you will eventually read out. Be careful when selecting fields in joined tables, as joined
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
-func (b *addressBuilder) Select(nodes ...query.NodeI) *addressBuilder {
+func (b *AddressesBuilder) Select(nodes ...query.NodeI) *AddressesBuilder {
 	b.base.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
-func (b *addressBuilder) Alias(name string, n query.NodeI) *addressBuilder {
+func (b *AddressesBuilder) Alias(name string, n query.NodeI) *AddressesBuilder {
 	b.base.Alias(name, n)
 	return b
 }
@@ -378,42 +394,42 @@ func (b *addressBuilder) Alias(name string, n query.NodeI) *addressBuilder {
 // Distinct removes duplicates from the results of the query. Adding a Select() may help you get to the data you want, although
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
-func (b *addressBuilder) Distinct() *addressBuilder {
+func (b *AddressesBuilder) Distinct() *AddressesBuilder {
 	b.base.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
-func (b *addressBuilder) GroupBy(nodes ...query.NodeI) *addressBuilder {
+func (b *AddressesBuilder) GroupBy(nodes ...query.NodeI) *AddressesBuilder {
 	b.base.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
-func (b *addressBuilder) Having(node query.NodeI) *addressBuilder {
+func (b *AddressesBuilder) Having(node query.NodeI) *AddressesBuilder {
 	b.base.Having(node)
 	return b
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *addressBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
+func (b *AddressesBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *addressBuilder) Delete(ctx context.Context) {
+func (b *AddressesBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
-func (b *addressBuilder) Subquery() *query.SubqueryNode {
+func (b *AddressesBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
 // joinOrSelect us a private helper function for the Load* functions
-func (b *addressBuilder) joinOrSelect(nodes ...query.NodeI) *addressBuilder {
+func (b *AddressesBuilder) joinOrSelect(nodes ...query.NodeI) *AddressesBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
@@ -426,19 +442,19 @@ func (b *addressBuilder) joinOrSelect(nodes ...query.NodeI) *addressBuilder {
 }
 
 func CountAddressByID(ctx context.Context, id string) uint {
-	return QueryAddresses().Where(Equal(node.Address().ID(), id)).Count(ctx, false)
+	return queryAddresses().Where(Equal(node.Address().ID(), id)).Count(ctx, false)
 }
 
 func CountAddressByPersonID(ctx context.Context, personID string) uint {
-	return QueryAddresses().Where(Equal(node.Address().PersonID(), personID)).Count(ctx, false)
+	return queryAddresses().Where(Equal(node.Address().PersonID(), personID)).Count(ctx, false)
 }
 
 func CountAddressByStreet(ctx context.Context, street string) uint {
-	return QueryAddresses().Where(Equal(node.Address().Street(), street)).Count(ctx, false)
+	return queryAddresses().Where(Equal(node.Address().Street(), street)).Count(ctx, false)
 }
 
 func CountAddressByCity(ctx context.Context, city string) uint {
-	return QueryAddresses().Where(Equal(node.Address().City(), city)).Count(ctx, false)
+	return queryAddresses().Where(Equal(node.Address().City(), city)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -614,8 +630,8 @@ func (o *addressBase) Delete(ctx context.Context) {
 	d.Delete(ctx, "address", "id", o.id)
 }
 
-// DeleteAddress deletes the associated record from the database.
-func DeleteAddress(ctx context.Context, pk string) {
+// deleteAddress deletes the associated record from the database.
+func deleteAddress(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "address", "id", pk)
 }

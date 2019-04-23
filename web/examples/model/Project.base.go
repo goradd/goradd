@@ -5,10 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/web/examples/model/node"
+
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	//"./node"
 	"bytes"
@@ -74,12 +75,12 @@ type projectBase struct {
 	mMilestones map[string]*Milestone // Objects by PK
 
 	// Many-Many reference objects.
-	oTeamMembers      []*Person
-	mTeamMembers      map[string]*Person // Objects by PK
 	oChildrenAsParent []*Project
 	mChildrenAsParent map[string]*Project // Objects by PK
 	oParentsAsChild   []*Project
 	mParentsAsChild   map[string]*Project // Objects by PK
+	oTeamMembers      []*Person
+	mTeamMembers      map[string]*Person // Objects by PK
 
 	// Custom aliases, if specified
 	_aliases map[string]interface{}
@@ -115,12 +116,12 @@ const (
 	ProjectBudget              = `Budget`
 	ProjectSpent               = `Spent`
 	ProjectMilestones          = `Milestones`
-	ProjectTeamMember          = `TeamMember`
-	ProjectTeamMembers         = `TeamMembers`
 	ProjectChildAsParent       = `ChildAsParent`
 	ProjectChildrenAsParent    = `ChildrenAsParent`
 	ProjectParentAsChild       = `ParentAsChild`
 	ProjectParentsAsChild      = `ParentsAsChild`
+	ProjectTeamMember          = `TeamMember`
+	ProjectTeamMembers         = `TeamMembers`
 )
 
 // Initialize or re-initialize a Project database object to default values.
@@ -241,7 +242,7 @@ func (o *projectBase) LoadManager(ctx context.Context) *Person {
 
 	if o.oManager == nil {
 		// Load and cache
-		o.oManager = LoadPerson(ctx, o.ManagerID())
+		o.oManager = loadPerson(ctx, o.ManagerID())
 	}
 	return o.oManager
 }
@@ -519,23 +520,6 @@ func (o *projectBase) SetProjectStatusType(v ProjectStatusType) {
 	}
 }
 
-// TeamMember returns a single Person object, if one was loaded
-// otherwise, it will return nil.
-func (o *projectBase) TeamMember() *Person {
-	if o.oTeamMembers == nil {
-		return nil
-	}
-	return o.oTeamMembers[0]
-}
-
-// TeamMembers returns a slice of Person objects if loaded. If not loaded, will return nil.
-func (o *projectBase) TeamMembers() []*Person {
-	if o.oTeamMembers == nil {
-		return nil
-	}
-	return o.oTeamMembers
-}
-
 // ChildAsParent returns a single Project object, if one was loaded
 // otherwise, it will return nil.
 func (o *projectBase) ChildAsParent() *Project {
@@ -570,6 +554,23 @@ func (o *projectBase) ParentsAsChild() []*Project {
 	return o.oParentsAsChild
 }
 
+// TeamMember returns a single Person object, if one was loaded
+// otherwise, it will return nil.
+func (o *projectBase) TeamMember() *Person {
+	if o.oTeamMembers == nil {
+		return nil
+	}
+	return o.oTeamMembers[0]
+}
+
+// TeamMembers returns a slice of Person objects if loaded. If not loaded, will return nil.
+func (o *projectBase) TeamMembers() []*Person {
+	if o.oTeamMembers == nil {
+		return nil
+	}
+	return o.oTeamMembers
+}
+
 // Milestone returns a single Milestone object by primary key, if one was loaded.
 // Otherwise, it will return nil.
 func (o *projectBase) Milestone(pk string) *Milestone {
@@ -588,39 +589,51 @@ func (o *projectBase) Milestones() []*Milestone {
 	return o.oMilestones
 }
 
-// LoadProject queries for a single Project object by primary key.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryProjects() to start a query builder.
-func LoadProject(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Project {
-	return QueryProjects().Where(Equal(node.Project().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+// LoadMilestones loads a new slice of Milestone objects and returns it.
+func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interface{}) []*Milestone {
+	qb := queryMilestones()
+	cond := Equal(node.Milestone().ProjectID(), o.PrimaryKey())
+	if conditions != nil {
+		conditions = append(conditions, cond)
+		cond = And(conditions...)
+	}
+
+	o.oMilestones = qb.Where(cond).Load(ctx)
+	return o.oMilestones
 }
 
-// LoadProjectByNum queries for a single Project object by the given unique index values.
+// loadProject queries for a single Project object by primary key.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+func loadProject(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Project {
+	return queryProjects().Where(Equal(node.Project().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+}
+
+// loadProjectByNum queries for a single Project object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryProjects() to start a query builder.
-func LoadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.NodeI) *Project {
-	return QueryProjects().
+func loadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.NodeI) *Project {
+	return queryProjects().
 		Where(Equal(node.Project().Num(), num)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get(ctx)
 }
 
-func QueryProjects() *projectBuilder {
+func queryProjects() *ProjectsBuilder {
 	return newProjectBuilder()
 }
 
-// The projectBuilder is a private object using the QueryBuilderI interface from the database to build a query.
+// The ProjectsBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
-type projectBuilder struct {
+type ProjectsBuilder struct {
 	base                query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
-func newProjectBuilder() *projectBuilder {
-	b := &projectBuilder{
+func newProjectBuilder() *ProjectsBuilder {
+	b := &ProjectsBuilder{
 		base: db.GetDatabase("goradd").
 			NewBuilder(),
 	}
@@ -630,7 +643,7 @@ func newProjectBuilder() *projectBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of Project objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *projectBuilder) Load(ctx context.Context) (projectSlice []*Project) {
+func (b *ProjectsBuilder) Load(ctx context.Context) (projectSlice []*Project) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -646,7 +659,7 @@ func (b *projectBuilder) Load(ctx context.Context) (projectSlice []*Project) {
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *projectBuilder) LoadI(ctx context.Context) (projectSlice []interface{}) {
+func (b *ProjectsBuilder) LoadI(ctx context.Context) (projectSlice []interface{}) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
@@ -663,7 +676,7 @@ func (b *projectBuilder) LoadI(ctx context.Context) (projectSlice []interface{})
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
 // TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
-func (b *projectBuilder) Get(ctx context.Context) *Project {
+func (b *ProjectsBuilder) Get(ctx context.Context) *Project {
 	results := b.Limit(1, 0).Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
@@ -674,14 +687,30 @@ func (b *projectBuilder) Get(ctx context.Context) *Project {
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
-func (b *projectBuilder) Expand(n query.NodeI) *projectBuilder {
+func (b *ProjectsBuilder) Expand(n query.NodeI) *ProjectsBuilder {
 	b.base.Expand(n)
 	return b
 }
 
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *projectBuilder) Join(n query.NodeI, conditions ...query.NodeI) *projectBuilder {
+func (b *ProjectsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *ProjectsBuilder {
+	var condition query.NodeI
+	if len(conditions) > 1 {
+		condition = And(conditions)
+	} else if len(conditions) == 1 {
+		condition = conditions[0]
+	}
+	b.base.Join(n, condition)
+	if condition != nil {
+		b.hasConditionalJoins = true
+	}
+	return b
+}
+
+// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
+// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
+func (b *ProjectsBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *ProjectsBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -696,19 +725,19 @@ func (b *projectBuilder) Join(n query.NodeI, conditions ...query.NodeI) *project
 }
 
 // Where adds a condition to filter what gets selected.
-func (b *projectBuilder) Where(c query.NodeI) *projectBuilder {
+func (b *ProjectsBuilder) Where(c query.NodeI) *ProjectsBuilder {
 	b.base.Condition(c)
 	return b
 }
 
 // OrderBy  spedifies how the resulting data should be sorted.
-func (b *projectBuilder) OrderBy(nodes ...query.NodeI) *projectBuilder {
+func (b *ProjectsBuilder) OrderBy(nodes ...query.NodeI) *ProjectsBuilder {
 	b.base.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
-func (b *projectBuilder) Limit(maxRowCount int, offset int) *projectBuilder {
+func (b *ProjectsBuilder) Limit(maxRowCount int, offset int) *ProjectsBuilder {
 	b.base.Limit(maxRowCount, offset)
 	return b
 }
@@ -717,14 +746,14 @@ func (b *projectBuilder) Limit(maxRowCount int, offset int) *projectBuilder {
 // specify all the fields that you will eventually read out. Be careful when selecting fields in joined tables, as joined
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
-func (b *projectBuilder) Select(nodes ...query.NodeI) *projectBuilder {
+func (b *ProjectsBuilder) Select(nodes ...query.NodeI) *ProjectsBuilder {
 	b.base.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
-func (b *projectBuilder) Alias(name string, n query.NodeI) *projectBuilder {
+func (b *ProjectsBuilder) Alias(name string, n query.NodeI) *ProjectsBuilder {
 	b.base.Alias(name, n)
 	return b
 }
@@ -732,42 +761,42 @@ func (b *projectBuilder) Alias(name string, n query.NodeI) *projectBuilder {
 // Distinct removes duplicates from the results of the query. Adding a Select() may help you get to the data you want, although
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
-func (b *projectBuilder) Distinct() *projectBuilder {
+func (b *ProjectsBuilder) Distinct() *ProjectsBuilder {
 	b.base.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
-func (b *projectBuilder) GroupBy(nodes ...query.NodeI) *projectBuilder {
+func (b *ProjectsBuilder) GroupBy(nodes ...query.NodeI) *ProjectsBuilder {
 	b.base.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
-func (b *projectBuilder) Having(node query.NodeI) *projectBuilder {
+func (b *ProjectsBuilder) Having(node query.NodeI) *ProjectsBuilder {
 	b.base.Having(node)
 	return b
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *projectBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
+func (b *ProjectsBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *projectBuilder) Delete(ctx context.Context) {
+func (b *ProjectsBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
-func (b *projectBuilder) Subquery() *query.SubqueryNode {
+func (b *ProjectsBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
 // joinOrSelect us a private helper function for the Load* functions
-func (b *projectBuilder) joinOrSelect(nodes ...query.NodeI) *projectBuilder {
+func (b *ProjectsBuilder) joinOrSelect(nodes ...query.NodeI) *ProjectsBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
@@ -780,43 +809,43 @@ func (b *projectBuilder) joinOrSelect(nodes ...query.NodeI) *projectBuilder {
 }
 
 func CountProjectByID(ctx context.Context, id string) uint {
-	return QueryProjects().Where(Equal(node.Project().ID(), id)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().ID(), id)).Count(ctx, false)
 }
 
 func CountProjectByNum(ctx context.Context, num int) uint {
-	return QueryProjects().Where(Equal(node.Project().Num(), num)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().Num(), num)).Count(ctx, false)
 }
 
 func CountProjectByProjectStatusTypeID(ctx context.Context, projectStatusTypeID uint) uint {
-	return QueryProjects().Where(Equal(node.Project().ProjectStatusTypeID(), projectStatusTypeID)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().ProjectStatusTypeID(), projectStatusTypeID)).Count(ctx, false)
 }
 
 func CountProjectByManagerID(ctx context.Context, managerID string) uint {
-	return QueryProjects().Where(Equal(node.Project().ManagerID(), managerID)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().ManagerID(), managerID)).Count(ctx, false)
 }
 
 func CountProjectByName(ctx context.Context, name string) uint {
-	return QueryProjects().Where(Equal(node.Project().Name(), name)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().Name(), name)).Count(ctx, false)
 }
 
 func CountProjectByDescription(ctx context.Context, description string) uint {
-	return QueryProjects().Where(Equal(node.Project().Description(), description)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().Description(), description)).Count(ctx, false)
 }
 
 func CountProjectByStartDate(ctx context.Context, startDate datetime.DateTime) uint {
-	return QueryProjects().Where(Equal(node.Project().StartDate(), startDate)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().StartDate(), startDate)).Count(ctx, false)
 }
 
 func CountProjectByEndDate(ctx context.Context, endDate datetime.DateTime) uint {
-	return QueryProjects().Where(Equal(node.Project().EndDate(), endDate)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().EndDate(), endDate)).Count(ctx, false)
 }
 
 func CountProjectByBudget(ctx context.Context, budget string) uint {
-	return QueryProjects().Where(Equal(node.Project().Budget(), budget)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().Budget(), budget)).Count(ctx, false)
 }
 
 func CountProjectBySpent(ctx context.Context, spent string) uint {
-	return QueryProjects().Where(Equal(node.Project().Spent(), spent)).Count(ctx, false)
+	return queryProjects().Where(Equal(node.Project().Spent(), spent)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -998,27 +1027,6 @@ func (o *projectBase) load(m map[string]interface{}, linkParent bool, objThis *P
 		o.spentIsNull = true
 		o.spent = ""
 	}
-	if v, ok := m["TeamMembers"]; ok {
-		if oTeamMembers, ok2 := v.([]db.ValueMap); ok2 {
-			o.oTeamMembers = []*Person{}
-			o.mTeamMembers = map[string]*Person{}
-
-			for _, v2 := range oTeamMembers {
-				obj := new(Person)
-				obj.load(v2, linkParent, obj, objThis, "ProjectsAsTeamMember")
-				if linkParent && parentKey == "TeamMembers" && obj.id == objParent.(*Person).id {
-					obj = objParent.(*Person)
-				}
-				o.oTeamMembers = append(o.oTeamMembers, obj)
-				o.mTeamMembers[obj.PrimaryKey()] = obj
-			}
-		} else {
-			panic("Wrong type found for oTeamMembers object.")
-		}
-	} else {
-		o.oTeamMembers = nil
-	}
-
 	if v, ok := m["ChildrenAsParent"]; ok {
 		if oChildrenAsParent, ok2 := v.([]db.ValueMap); ok2 {
 			o.oChildrenAsParent = []*Project{}
@@ -1059,6 +1067,27 @@ func (o *projectBase) load(m map[string]interface{}, linkParent bool, objThis *P
 		}
 	} else {
 		o.oParentsAsChild = nil
+	}
+
+	if v, ok := m["TeamMembers"]; ok {
+		if oTeamMembers, ok2 := v.([]db.ValueMap); ok2 {
+			o.oTeamMembers = []*Person{}
+			o.mTeamMembers = map[string]*Person{}
+
+			for _, v2 := range oTeamMembers {
+				obj := new(Person)
+				obj.load(v2, linkParent, obj, objThis, "ProjectsAsTeamMember")
+				if linkParent && parentKey == "TeamMembers" && obj.id == objParent.(*Person).id {
+					obj = objParent.(*Person)
+				}
+				o.oTeamMembers = append(o.oTeamMembers, obj)
+				o.mTeamMembers[obj.PrimaryKey()] = obj
+			}
+		} else {
+			panic("Wrong type found for oTeamMembers object.")
+		}
+	} else {
+		o.oTeamMembers = nil
 	}
 
 	if v, ok := m["Milestones"]; ok {
@@ -1224,8 +1253,8 @@ func (o *projectBase) Delete(ctx context.Context) {
 	d.Delete(ctx, "project", "id", o.id)
 }
 
-// DeleteProject deletes the associated record from the database.
-func DeleteProject(ctx context.Context, pk string) {
+// deleteProject deletes the associated record from the database.
+func deleteProject(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "project", "id", pk)
 }
@@ -1305,11 +1334,6 @@ func (o *projectBase) Get(key string) interface{} {
 	case "Milestones":
 		return o.Milestones()
 
-	case "TeamMember":
-		return o.TeamMember()
-	case "TeamMembers":
-		return o.TeamMembers()
-
 	case "ChildAsParent":
 		return o.ChildAsParent()
 	case "ChildrenAsParent":
@@ -1319,6 +1343,11 @@ func (o *projectBase) Get(key string) interface{} {
 		return o.ParentAsChild()
 	case "ParentsAsChild":
 		return o.ParentsAsChild()
+
+	case "TeamMember":
+		return o.TeamMember()
+	case "TeamMembers":
+		return o.TeamMembers()
 
 	}
 	return nil
@@ -1457,15 +1486,15 @@ func (o *projectBase) MarshalBinary() (data []byte, err error) {
 		return
 	}
 
-	if err = encoder.Encode(o.oTeamMembers); err != nil {
-		return
-	}
-
 	if err = encoder.Encode(o.oChildrenAsParent); err != nil {
 		return
 	}
 
 	if err = encoder.Encode(o.oParentsAsChild); err != nil {
+		return
+	}
+
+	if err = encoder.Encode(o.oTeamMembers); err != nil {
 		return
 	}
 
@@ -1625,16 +1654,6 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		}
 	}
 
-	if err = dec.Decode(&o.oTeamMembers); err != nil {
-		return
-	}
-	if len(o.oTeamMembers) > 0 {
-		o.mTeamMembers = make(map[string]*Person)
-
-		for _, p := range o.oTeamMembers {
-			o.mTeamMembers[p.PrimaryKey()] = p
-		}
-	}
 	if err = dec.Decode(&o.oChildrenAsParent); err != nil {
 		return
 	}
@@ -1653,6 +1672,16 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 
 		for _, p := range o.oParentsAsChild {
 			o.mParentsAsChild[p.PrimaryKey()] = p
+		}
+	}
+	if err = dec.Decode(&o.oTeamMembers); err != nil {
+		return
+	}
+	if len(o.oTeamMembers) > 0 {
+		o.mTeamMembers = make(map[string]*Person)
+
+		for _, p := range o.oTeamMembers {
+			o.mTeamMembers[p.PrimaryKey()] = p
 		}
 	}
 
