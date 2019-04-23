@@ -72,16 +72,3 @@ for _,col := range t.Columns {
 
 }}
 
-{{
-func (o *{{privateName}}Base) resetDirtyStatus() {
-}}
-
-for _,col := range t.Columns {
-{{
-	o.{{= col.ModelName }}IsDirty = false
-}}
-}
-
-{{
-}
-}}

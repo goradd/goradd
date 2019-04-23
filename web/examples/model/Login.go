@@ -7,8 +7,6 @@ package model
 import (
 	"context"
 	"fmt"
-
-	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 type Login struct {
@@ -38,37 +36,19 @@ func (o *Login) String() string {
 }
 
 // QueryLogins returns a new builder that gives you general purpose access to the Login records
-// in the database. This is useful for quick queries of the database during development, but eventually you
-// should remove this function and move those queries to more specific calls in this file.
-func QueryLogins() *LoginsBuilder {
-	return queryLogins()
+// in the database. Its here to give public access to the query builder, but you can remove it if you do not need it.
+func QueryLogins(ctx context.Context) *LoginsBuilder {
+	return queryLogins(ctx)
 }
 
-// LoadLogin queries for a single Login object by primary key.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLogin(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Login {
-	return loadLogin(ctx, pk, joinOrSelectNodes...)
+// queryLogins creates a new builder and is the central spot where all queries are directed.
+// You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
+// access the data.
+func queryLogins(ctx context.Context) *LoginsBuilder {
+	return newLoginBuilder()
 }
 
-// LoadLoginByUsername queries for a single Login object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
-	return loadLoginByUsername(ctx, username, joinOrSelectNodes...)
-}
-
-// LoadLoginByPersonID queries for a single Login object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
-	return loadLoginByPersonID(ctx, person_id, joinOrSelectNodes...)
-}
-
-// DeleteLogin deletes the give record from the database. Note that you can also delete
+// DeleteLogin deletes the given record from the database. Note that you can also delete
 // loaded Login objects by calling Delete on them.
 func DeleteLogin(ctx context.Context, pk string) {
 	deleteLogin(ctx, pk)

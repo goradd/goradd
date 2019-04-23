@@ -141,7 +141,7 @@ func (o *loginBase) LoadPerson(ctx context.Context) *Person {
 
 	if o.oPerson == nil {
 		// Load and cache
-		o.oPerson = loadPerson(ctx, o.PersonID())
+		o.oPerson = LoadPerson(ctx, o.PersonID())
 	}
 	return o.oPerson
 }
@@ -277,37 +277,33 @@ func (o *loginBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// loadLogin queries for a single Login object by primary key.
+// Load returns a Login from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-func loadLogin(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins().Where(Equal(node.Login().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Login {
+	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-// loadLoginByUsername queries for a single Login object by the given unique index values.
+// LoadLoginByUsername queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryLogins() to start a query builder.
-func loadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins().
+func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
+	return queryLogins(ctx).
 		Where(Equal(node.Login().Username(), username)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get(ctx)
 }
 
-// loadLoginByPersonID queries for a single Login object by the given unique index values.
+// LoadLoginByPersonID queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryLogins() to start a query builder.
-func loadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins().
+func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
+	return queryLogins(ctx).
 		Where(Equal(node.Login().PersonID(), person_id)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get(ctx)
-}
-
-func queryLogins() *LoginsBuilder {
-	return newLoginBuilder()
 }
 
 // The LoginsBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -416,7 +412,7 @@ func (b *LoginsBuilder) Where(c query.NodeI) *LoginsBuilder {
 	return b
 }
 
-// OrderBy  spedifies how the resulting data should be sorted.
+// OrderBy specifies how the resulting data should be sorted.
 func (b *LoginsBuilder) OrderBy(nodes ...query.NodeI) *LoginsBuilder {
 	b.base.OrderBy(nodes...)
 	return b
@@ -495,23 +491,23 @@ func (b *LoginsBuilder) joinOrSelect(nodes ...query.NodeI) *LoginsBuilder {
 }
 
 func CountLoginByID(ctx context.Context, id string) uint {
-	return queryLogins().Where(Equal(node.Login().ID(), id)).Count(ctx, false)
+	return queryLogins(ctx).Where(Equal(node.Login().ID(), id)).Count(ctx, false)
 }
 
 func CountLoginByPersonID(ctx context.Context, personID string) uint {
-	return queryLogins().Where(Equal(node.Login().PersonID(), personID)).Count(ctx, false)
+	return queryLogins(ctx).Where(Equal(node.Login().PersonID(), personID)).Count(ctx, false)
 }
 
 func CountLoginByUsername(ctx context.Context, username string) uint {
-	return queryLogins().Where(Equal(node.Login().Username(), username)).Count(ctx, false)
+	return queryLogins(ctx).Where(Equal(node.Login().Username(), username)).Count(ctx, false)
 }
 
 func CountLoginByPassword(ctx context.Context, password string) uint {
-	return queryLogins().Where(Equal(node.Login().Password(), password)).Count(ctx, false)
+	return queryLogins(ctx).Where(Equal(node.Login().Password(), password)).Count(ctx, false)
 }
 
 func CountLoginByIsEnabled(ctx context.Context, isEnabled bool) uint {
-	return queryLogins().Where(Equal(node.Login().IsEnabled(), isEnabled)).Count(ctx, false)
+	return queryLogins(ctx).Where(Equal(node.Login().IsEnabled(), isEnabled)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -686,14 +682,6 @@ func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
 	return
 }
 
-func (o *loginBase) resetDirtyStatus() {
-	o.idIsDirty = false
-	o.personIDIsDirty = false
-	o.usernameIsDirty = false
-	o.passwordIsDirty = false
-	o.isEnabledIsDirty = false
-}
-
 // Delete deletes the associated record from the database.
 func (o *loginBase) Delete(ctx context.Context) {
 	if !o._restored {
@@ -707,6 +695,22 @@ func (o *loginBase) Delete(ctx context.Context) {
 func deleteLogin(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "login", "id", pk)
+}
+
+func (o *loginBase) resetDirtyStatus() {
+	o.idIsDirty = false
+	o.personIDIsDirty = false
+	o.usernameIsDirty = false
+	o.passwordIsDirty = false
+	o.isEnabledIsDirty = false
+}
+
+func (o *loginBase) IsDirty() bool {
+	return o.idIsDirty ||
+		o.personIDIsDirty ||
+		o.usernameIsDirty ||
+		o.passwordIsDirty ||
+		o.isEnabledIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.

@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"github.com/goradd/gengen/pkg/maps"
+	"github.com/goradd/goradd/pkg/orm/op"
 	. "github.com/goradd/goradd/pkg/orm/query"
 )
 
@@ -77,9 +78,13 @@ func (b *QueryBuilder) Expand(n NodeI) QueryBuilderI {
 	return b.self
 }
 
-// Condition adds the condition of the Where clause.
+// Condition adds the condition of the Where clause. If a condition already exists, it will be anded to the previous condition.
 func (b *QueryBuilder) Condition(c NodeI) QueryBuilderI {
-	b.condition = c
+	if b.condition == nil {
+		b.condition = c
+	} else {
+		b.condition = op.And(b.condition, c)
+	}
 	return b.self
 }
 

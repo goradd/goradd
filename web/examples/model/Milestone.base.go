@@ -112,7 +112,7 @@ func (o *milestoneBase) LoadProject(ctx context.Context) *Project {
 
 	if o.oProject == nil {
 		// Load and cache
-		o.oProject = loadProject(ctx, o.ProjectID())
+		o.oProject = LoadProject(ctx, o.ProjectID())
 	}
 	return o.oProject
 }
@@ -172,15 +172,11 @@ func (o *milestoneBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// loadMilestone queries for a single Milestone object by primary key.
+// Load returns a Milestone from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-func loadMilestone(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Milestone {
-	return queryMilestones().Where(Equal(node.Milestone().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
-}
-
-func queryMilestones() *MilestonesBuilder {
-	return newMilestoneBuilder()
+func LoadMilestone(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Milestone {
+	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
 // The MilestonesBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -289,7 +285,7 @@ func (b *MilestonesBuilder) Where(c query.NodeI) *MilestonesBuilder {
 	return b
 }
 
-// OrderBy  spedifies how the resulting data should be sorted.
+// OrderBy specifies how the resulting data should be sorted.
 func (b *MilestonesBuilder) OrderBy(nodes ...query.NodeI) *MilestonesBuilder {
 	b.base.OrderBy(nodes...)
 	return b
@@ -368,15 +364,15 @@ func (b *MilestonesBuilder) joinOrSelect(nodes ...query.NodeI) *MilestonesBuilde
 }
 
 func CountMilestoneByID(ctx context.Context, id string) uint {
-	return queryMilestones().Where(Equal(node.Milestone().ID(), id)).Count(ctx, false)
+	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), id)).Count(ctx, false)
 }
 
 func CountMilestoneByProjectID(ctx context.Context, projectID string) uint {
-	return queryMilestones().Where(Equal(node.Milestone().ProjectID(), projectID)).Count(ctx, false)
+	return queryMilestones(ctx).Where(Equal(node.Milestone().ProjectID(), projectID)).Count(ctx, false)
 }
 
 func CountMilestoneByName(ctx context.Context, name string) uint {
-	return queryMilestones().Where(Equal(node.Milestone().Name(), name)).Count(ctx, false)
+	return queryMilestones(ctx).Where(Equal(node.Milestone().Name(), name)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -499,12 +495,6 @@ func (o *milestoneBase) getModifiedFields() (fields map[string]interface{}) {
 	return
 }
 
-func (o *milestoneBase) resetDirtyStatus() {
-	o.idIsDirty = false
-	o.projectIDIsDirty = false
-	o.nameIsDirty = false
-}
-
 // Delete deletes the associated record from the database.
 func (o *milestoneBase) Delete(ctx context.Context) {
 	if !o._restored {
@@ -518,6 +508,18 @@ func (o *milestoneBase) Delete(ctx context.Context) {
 func deleteMilestone(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "milestone", "id", pk)
+}
+
+func (o *milestoneBase) resetDirtyStatus() {
+	o.idIsDirty = false
+	o.projectIDIsDirty = false
+	o.nameIsDirty = false
+}
+
+func (o *milestoneBase) IsDirty() bool {
+	return o.idIsDirty ||
+		o.projectIDIsDirty ||
+		o.nameIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.

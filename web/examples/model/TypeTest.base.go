@@ -517,15 +517,11 @@ func (o *typeTestBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// loadTypeTest queries for a single TypeTest object by primary key.
+// Load returns a TypeTest from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-func loadTypeTest(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *TypeTest {
-	return queryTypeTests().Where(Equal(node.TypeTest().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
-}
-
-func queryTypeTests() *TypeTestsBuilder {
-	return newTypeTestBuilder()
+func LoadTypeTest(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *TypeTest {
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
 // The TypeTestsBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -634,7 +630,7 @@ func (b *TypeTestsBuilder) Where(c query.NodeI) *TypeTestsBuilder {
 	return b
 }
 
-// OrderBy  spedifies how the resulting data should be sorted.
+// OrderBy specifies how the resulting data should be sorted.
 func (b *TypeTestsBuilder) OrderBy(nodes ...query.NodeI) *TypeTestsBuilder {
 	b.base.OrderBy(nodes...)
 	return b
@@ -713,43 +709,43 @@ func (b *TypeTestsBuilder) joinOrSelect(nodes ...query.NodeI) *TypeTestsBuilder 
 }
 
 func CountTypeTestByID(ctx context.Context, id string) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().ID(), id)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().ID(), id)).Count(ctx, false)
 }
 
 func CountTypeTestByDate(ctx context.Context, date datetime.DateTime) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().Date(), date)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().Date(), date)).Count(ctx, false)
 }
 
 func CountTypeTestByTime(ctx context.Context, time datetime.DateTime) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().Time(), time)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().Time(), time)).Count(ctx, false)
 }
 
 func CountTypeTestByDateTime(ctx context.Context, dateTime datetime.DateTime) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().DateTime(), dateTime)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().DateTime(), dateTime)).Count(ctx, false)
 }
 
 func CountTypeTestByTs(ctx context.Context, ts datetime.DateTime) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().Ts(), ts)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().Ts(), ts)).Count(ctx, false)
 }
 
 func CountTypeTestByTestInt(ctx context.Context, testInt int) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().TestInt(), testInt)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().TestInt(), testInt)).Count(ctx, false)
 }
 
 func CountTypeTestByTestFloat(ctx context.Context, testFloat float32) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().TestFloat(), testFloat)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().TestFloat(), testFloat)).Count(ctx, false)
 }
 
 func CountTypeTestByTestText(ctx context.Context, testText string) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().TestText(), testText)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().TestText(), testText)).Count(ctx, false)
 }
 
 func CountTypeTestByTestBit(ctx context.Context, testBit bool) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().TestBit(), testBit)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().TestBit(), testBit)).Count(ctx, false)
 }
 
 func CountTypeTestByTestVarchar(ctx context.Context, testVarchar string) uint {
-	return queryTypeTests().Where(Equal(node.TypeTest().TestVarchar(), testVarchar)).Count(ctx, false)
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().TestVarchar(), testVarchar)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -1059,19 +1055,6 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 	return
 }
 
-func (o *typeTestBase) resetDirtyStatus() {
-	o.idIsDirty = false
-	o.dateIsDirty = false
-	o.timeIsDirty = false
-	o.dateTimeIsDirty = false
-	o.tsIsDirty = false
-	o.testIntIsDirty = false
-	o.testFloatIsDirty = false
-	o.testTextIsDirty = false
-	o.testBitIsDirty = false
-	o.testVarcharIsDirty = false
-}
-
 // Delete deletes the associated record from the database.
 func (o *typeTestBase) Delete(ctx context.Context) {
 	if !o._restored {
@@ -1085,6 +1068,32 @@ func (o *typeTestBase) Delete(ctx context.Context) {
 func deleteTypeTest(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "type_test", "id", pk)
+}
+
+func (o *typeTestBase) resetDirtyStatus() {
+	o.idIsDirty = false
+	o.dateIsDirty = false
+	o.timeIsDirty = false
+	o.dateTimeIsDirty = false
+	o.tsIsDirty = false
+	o.testIntIsDirty = false
+	o.testFloatIsDirty = false
+	o.testTextIsDirty = false
+	o.testBitIsDirty = false
+	o.testVarcharIsDirty = false
+}
+
+func (o *typeTestBase) IsDirty() bool {
+	return o.idIsDirty ||
+		o.dateIsDirty ||
+		o.timeIsDirty ||
+		o.dateTimeIsDirty ||
+		o.tsIsDirty ||
+		o.testIntIsDirty ||
+		o.testFloatIsDirty ||
+		o.testTextIsDirty ||
+		o.testBitIsDirty ||
+		o.testVarcharIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.

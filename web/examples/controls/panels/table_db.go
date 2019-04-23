@@ -43,16 +43,16 @@ func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (p *TableDbPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	p.Table1.SetTotalItems(model.QueryPeople().Count(ctx, false))
+	p.Table1.SetTotalItems(model.QueryPeople(ctx).Count(ctx, false))
 
 	// figure out how to sort the columns. This could be a simple process, or complex, depending on your data
 
 	// Since we are asking the database to do the sort, we have to make a slice of nodes
 	sortNodes := column.MakeNodeSlice(p.Table1.SortColumns())
 
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		Alias("manager_count",
-			model.QueryProjects().
+			model.QueryProjects(ctx).
 				Alias("", op.Count(node.Project().ManagerID())).
 				Where(op.Equal(node.Project().ManagerID(), node.Person().ID())).
 				Subquery()).

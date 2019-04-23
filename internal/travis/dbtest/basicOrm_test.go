@@ -19,7 +19,7 @@ func TestBasic(t *testing.T) {
 
 	ctx := context.Background()
 
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID()).
 		Load(ctx)
 	if len(people) != 12 {
@@ -32,7 +32,7 @@ func TestBasic(t *testing.T) {
 
 func TestSort(t *testing.T) {
 	ctx := context.Background()
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().LastName()).
 		Load(ctx)
 
@@ -40,7 +40,7 @@ func TestSort(t *testing.T) {
 		t.Error("Person found not Brady, found " + people[0].LastName())
 	}
 
-	people = model.QueryPeople().
+	people = model.QueryPeople(ctx).
 		OrderBy(node.Person().FirstName()).
 		Load(ctx)
 	if people[0].FirstName() != "Alex" {
@@ -49,7 +49,7 @@ func TestSort(t *testing.T) {
 
 
 	// Testing for regression bug with multiple sorts
-	people = model.QueryPeople().
+	people = model.QueryPeople(ctx).
 		OrderBy(node.Person().LastName().Descending(), node.Person().FirstName().Ascending()).
 		Load(ctx)
 	if people[0].FirstName() != "Karen" || people[0].LastName() != "Wolfe" {
@@ -60,7 +60,7 @@ func TestSort(t *testing.T) {
 func TestWhere(t *testing.T) {
 	ctx := context.Background()
 	_ = query.Value("Smith").(query.NodeI)
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		Where(Equal(node.Person().LastName(), "Smith")).
 		OrderBy(node.Person().FirstName().Descending(), node.Person().LastName()).
 		Load(ctx)
@@ -72,7 +72,7 @@ func TestWhere(t *testing.T) {
 
 func TestReference(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Join(node.Project().Manager()).
 		OrderBy(node.Project().ID()).
 		Load(ctx)
@@ -85,7 +85,7 @@ func TestReference(t *testing.T) {
 
 func TestManyMany(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Join(node.Project().TeamMembers()).
 		OrderBy(node.Project().ID()).
 		Load(ctx)
@@ -98,7 +98,7 @@ func TestManyMany(t *testing.T) {
 
 func TestReverseReference(t *testing.T) {
 	ctx := context.Background()
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		Join(node.Person().ProjectsAsManager()).
 		OrderBy(node.Person().ID()).
 		Load(ctx)
@@ -115,7 +115,7 @@ func TestReverseReference(t *testing.T) {
 
 func TestBasicType(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		OrderBy(node.Project().ID()).
 		Load(ctx)
 
@@ -126,7 +126,7 @@ func TestBasicType(t *testing.T) {
 
 func TestManyType(t *testing.T) {
 	ctx := context.Background()
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID(), node.Person().PersonTypes().ID().Descending()).
 		Join(node.Person().PersonTypes()).
 		Load(ctx)
@@ -143,7 +143,7 @@ func TestManyType(t *testing.T) {
 
 func TestManyManySingles(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Expand(node.Project().TeamMembers()).
 		OrderBy(node.Project().ID(), node.Project().TeamMembers().FirstName()).
 		Load(ctx)
@@ -164,7 +164,7 @@ func TestManyManySingles(t *testing.T) {
 
 func TestReverseReferenceSingles(t *testing.T) {
 	ctx := context.Background()
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		Expand(node.Person().ProjectsAsManager()).
 		OrderBy(node.Person().ID()).
 		Load(ctx)
@@ -181,7 +181,7 @@ func TestReverseReferenceSingles(t *testing.T) {
 
 func TestManyTypeSingles(t *testing.T) {
 	ctx := context.Background()
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID(), node.Person().PersonTypes().ID().Descending()).
 		Expand(node.Person().PersonTypes()).
 		Load(ctx)
@@ -194,7 +194,7 @@ func TestManyTypeSingles(t *testing.T) {
 
 func TestAlias(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Where(Equal(node.Project().ID(), 1)).
 		Alias("Difference", Subtract(node.Project().Budget(), node.Project().Spent())).
 		Load(ctx)
@@ -205,7 +205,7 @@ func TestAlias(t *testing.T) {
 
 func TestAlias2(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Alias("a", node.Project().Num()).
 		Alias("b", node.Project().Name()).
 		Alias("c", node.Project().Spent()).
@@ -226,7 +226,7 @@ func TestAlias2(t *testing.T) {
 
 func TestCount(t *testing.T) {
 	ctx := context.Background()
-	count := model.QueryProjects().
+	count := model.QueryProjects(ctx).
 		Count(ctx, false)
 
 	assert.EqualValues(t, 4, count)
@@ -234,7 +234,7 @@ func TestCount(t *testing.T) {
 
 func TestGroupBy(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Alias("teamMemberCount", Count(node.Project().TeamMembers())).
 		GroupBy(node.Project()).
 		Load(ctx)
@@ -245,7 +245,7 @@ func TestGroupBy(t *testing.T) {
 
 func TestSelect(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Select(node.Project().Name()).
 		Load(ctx)
 
@@ -257,7 +257,7 @@ func TestSelect(t *testing.T) {
 
 func TestLimit(t *testing.T) {
 	ctx := context.Background()
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID()).
 		Limit(2, 3).
 		Load(ctx)
@@ -274,7 +274,7 @@ func TestSaveAndDelete(t *testing.T) {
 	person.SetLastName("Last1")
 	person.Save(ctx)
 
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		Where(
 			And(
 				Equal(
@@ -287,7 +287,7 @@ func TestSaveAndDelete(t *testing.T) {
 
 	people[0].Delete(ctx)
 
-	people = model.QueryPeople().
+	people = model.QueryPeople(ctx).
 		Where(
 			And(
 				Equal(
@@ -310,7 +310,7 @@ func TestUpdate(t *testing.T) {
 	person.SetFirstName("Test2")
 	person.Update(ctx)
 
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		Where(
 			And(
 				Equal(
@@ -322,7 +322,7 @@ func TestUpdate(t *testing.T) {
 
 	person.Delete(ctx)
 
-	people = model.QueryPeople().
+	people = model.QueryPeople(ctx).
 		Where(
 			And(
 				Equal(
@@ -337,7 +337,7 @@ func TestUpdate(t *testing.T) {
 func TestSingleEmpty(t *testing.T) {
 	ctx := context.Background()
 
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		Where(Equal(node.Person().ID(), 12345)).
 		Load(ctx)
 
@@ -348,7 +348,7 @@ func TestSingleEmpty(t *testing.T) {
 func TestLazyLoad(t *testing.T) {
 	ctx := context.Background()
 
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Where(Equal(node.Project().ID(), 1)).
 		Load(ctx)
 
@@ -367,7 +367,7 @@ func TestDeleteQuery(t *testing.T) {
 	person.SetLastName("Last1")
 	person.Save(ctx)
 
-	model.QueryPeople().
+	model.QueryPeople(ctx).
 		Where(
 			And(
 				Equal(
@@ -376,7 +376,7 @@ func TestDeleteQuery(t *testing.T) {
 					node.Person().LastName(), "Last1"))).
 		Delete(ctx)
 
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		Where(
 			And(
 				Equal(
@@ -395,7 +395,7 @@ func TestHaving(t *testing.T) {
 	//
 	// Sooo, when we see a GroupBy, we automatically also select the same nodes.
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		GroupBy(node.Project().ID(), node.Project().Name()).
 		OrderBy(node.Project().ID()).
 		Alias("team_member_count", Count(node.Project().TeamMembers())).
@@ -408,18 +408,21 @@ func TestHaving(t *testing.T) {
 }
 
 func TestFailedJoins(t *testing.T) {
-	assert.Panics(t, func(){model.QueryProjects().Join(node.Person())})
-	assert.Panics(t, func(){model.QueryProjects().Join(node.Project().ManagerID())})
+	ctx := context.Background()
+	assert.Panics(t, func(){model.QueryProjects(ctx).Join(node.Person())})
+	assert.Panics(t, func(){model.QueryProjects(ctx).Join(node.Project().ManagerID())})
 }
 
 func TestFailedExpand(t *testing.T) {
-	assert.Panics(t, func(){model.QueryProjects().Expand(node.Person())})
-	assert.Panics(t, func(){model.QueryProjects().Expand(node.Project().Manager())})
+	ctx := context.Background()
+	assert.Panics(t, func(){model.QueryProjects(ctx).Expand(node.Person())})
+	assert.Panics(t, func(){model.QueryProjects(ctx).Expand(node.Project().Manager())})
 }
 
 func TestFailedGroupBy(t *testing.T) {
+	ctx := context.Background()
 	assert.Panics(t, func(){model.
-		QueryProjects().
+		QueryProjects(ctx).
 		GroupBy(node.Project().Name()).
 			Select(node.Project().Name())})
 }

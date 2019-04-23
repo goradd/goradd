@@ -41,40 +41,20 @@ func (o *{{= t.GoName }}) String() string  {
 {{g builderName := t.GoPlural + "Builder" }}
 
 // Query{{t.GoPlural}} returns a new builder that gives you general purpose access to the {{= t.GoName }} records
-// in the database. This is useful for quick queries of the database during development, but eventually you
-// should remove this function and move those queries to more specific calls in this file.
-func Query{{t.GoPlural}}() *{{builderName}} {
-	return query{{t.GoPlural}}()
+// in the database. Its here to give public access to the query builder, but you can remove it if you do not need it.
+func Query{{t.GoPlural}}(ctx context.Context) *{{builderName}} {
+	return query{{t.GoPlural}}(ctx)
 }
 
-// Load{{t.GoName}} queries for a single {{t.GoName}} object by primary key.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use Query{{t.GoPlural}}() to start a query builder.
-func Load{{t.GoName}}(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {
-	return load{{t.GoName}}(ctx, pk, joinOrSelectNodes...)
+// query{{t.GoPlural}} creates a new builder and is the central spot where all queries are directed.
+// You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
+// access the data.
+func query{{t.GoPlural}}(ctx context.Context) *{{builderName}} {
+	return new{{t.GoName}}Builder()
 }
 
-{{g
-    if t.Indexes != nil {
-        for _,idx := range t.Indexes {
-            if !idx.IsPrimary && idx.IsUnique {
-{{
-// Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} queries for a single {{t.GoName}} object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use Query{{t.GoPlural}}() to start a query builder.
-func Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} (ctx context.Context{{for _,name := range idx.ColumnNames}}, {{= name }} {{= t.GetColumn(name).ColumnType.GoType() }} {{for}}, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {
-    return load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} (ctx{{for _,name := range idx.ColumnNames}}, {{= name }}{{for}}, joinOrSelectNodes...)
-}
-}}
 
-            }
-        }
-    }
-}}
-
-// Delete{{= t.GoName }} deletes the give record from the database. Note that you can also delete
+// Delete{{= t.GoName }} deletes the given record from the database. Note that you can also delete
 // loaded {{= t.GoName }} objects by calling Delete on them.
 func Delete{{= t.GoName }}(ctx context.Context, pk string) {
 	delete{{= t.GoName }}(ctx, pk)

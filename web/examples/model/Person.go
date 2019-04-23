@@ -7,8 +7,6 @@ package model
 import (
 	"context"
 	"fmt"
-
-	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 type Person struct {
@@ -38,21 +36,19 @@ func (o *Person) String() string {
 }
 
 // QueryPeople returns a new builder that gives you general purpose access to the Person records
-// in the database. This is useful for quick queries of the database during development, but eventually you
-// should remove this function and move those queries to more specific calls in this file.
-func QueryPeople() *PeopleBuilder {
-	return queryPeople()
+// in the database. Its here to give public access to the query builder, but you can remove it if you do not need it.
+func QueryPeople(ctx context.Context) *PeopleBuilder {
+	return queryPeople(ctx)
 }
 
-// LoadPerson queries for a single Person object by primary key.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryPeople() to start a query builder.
-func LoadPerson(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Person {
-	return loadPerson(ctx, pk, joinOrSelectNodes...)
+// queryPeople creates a new builder and is the central spot where all queries are directed.
+// You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
+// access the data.
+func queryPeople(ctx context.Context) *PeopleBuilder {
+	return newPersonBuilder()
 }
 
-// DeletePerson deletes the give record from the database. Note that you can also delete
+// DeletePerson deletes the given record from the database. Note that you can also delete
 // loaded Person objects by calling Delete on them.
 func DeletePerson(ctx context.Context, pk string) {
 	deletePerson(ctx, pk)

@@ -131,7 +131,7 @@ func (o *addressBase) LoadPerson(ctx context.Context) *Person {
 
 	if o.oPerson == nil {
 		// Load and cache
-		o.oPerson = loadPerson(ctx, o.PersonID())
+		o.oPerson = LoadPerson(ctx, o.PersonID())
 	}
 	return o.oPerson
 }
@@ -246,15 +246,11 @@ func (o *addressBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// loadAddress queries for a single Address object by primary key.
+// Load returns a Address from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-func loadAddress(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Address {
-	return queryAddresses().Where(Equal(node.Address().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
-}
-
-func queryAddresses() *AddressesBuilder {
-	return newAddressBuilder()
+func LoadAddress(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Address {
+	return queryAddresses(ctx).Where(Equal(node.Address().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
 // The AddressesBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -363,7 +359,7 @@ func (b *AddressesBuilder) Where(c query.NodeI) *AddressesBuilder {
 	return b
 }
 
-// OrderBy  spedifies how the resulting data should be sorted.
+// OrderBy specifies how the resulting data should be sorted.
 func (b *AddressesBuilder) OrderBy(nodes ...query.NodeI) *AddressesBuilder {
 	b.base.OrderBy(nodes...)
 	return b
@@ -442,19 +438,19 @@ func (b *AddressesBuilder) joinOrSelect(nodes ...query.NodeI) *AddressesBuilder 
 }
 
 func CountAddressByID(ctx context.Context, id string) uint {
-	return queryAddresses().Where(Equal(node.Address().ID(), id)).Count(ctx, false)
+	return queryAddresses(ctx).Where(Equal(node.Address().ID(), id)).Count(ctx, false)
 }
 
 func CountAddressByPersonID(ctx context.Context, personID string) uint {
-	return queryAddresses().Where(Equal(node.Address().PersonID(), personID)).Count(ctx, false)
+	return queryAddresses(ctx).Where(Equal(node.Address().PersonID(), personID)).Count(ctx, false)
 }
 
 func CountAddressByStreet(ctx context.Context, street string) uint {
-	return queryAddresses().Where(Equal(node.Address().Street(), street)).Count(ctx, false)
+	return queryAddresses(ctx).Where(Equal(node.Address().Street(), street)).Count(ctx, false)
 }
 
 func CountAddressByCity(ctx context.Context, city string) uint {
-	return queryAddresses().Where(Equal(node.Address().City(), city)).Count(ctx, false)
+	return queryAddresses(ctx).Where(Equal(node.Address().City(), city)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -614,13 +610,6 @@ func (o *addressBase) getModifiedFields() (fields map[string]interface{}) {
 	return
 }
 
-func (o *addressBase) resetDirtyStatus() {
-	o.idIsDirty = false
-	o.personIDIsDirty = false
-	o.streetIsDirty = false
-	o.cityIsDirty = false
-}
-
 // Delete deletes the associated record from the database.
 func (o *addressBase) Delete(ctx context.Context) {
 	if !o._restored {
@@ -634,6 +623,20 @@ func (o *addressBase) Delete(ctx context.Context) {
 func deleteAddress(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "address", "id", pk)
+}
+
+func (o *addressBase) resetDirtyStatus() {
+	o.idIsDirty = false
+	o.personIDIsDirty = false
+	o.streetIsDirty = false
+	o.cityIsDirty = false
+}
+
+func (o *addressBase) IsDirty() bool {
+	return o.idIsDirty ||
+		o.personIDIsDirty ||
+		o.streetIsDirty ||
+		o.cityIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.

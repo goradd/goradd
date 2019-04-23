@@ -93,11 +93,11 @@ func (p *{{= panelName }}) EditItem(id string) {
 
 // BuildQuery begins the query builder process, returning a partially built query to be completed by the
 // base object.
-func (p *{{= panelName }}) BuildQuery() *model.{{= t.GoPlural }}Builder {
+func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
     // The default here simply filters based on the text in the FiterText.
     // Feel free to add additional requirements.
 	filter := p.MakeFilter(p.FilterText.Text())
-	return model.Query{{= t.GoPlural }}().Where(filter)
+	return model.Query{{= t.GoPlural }}(ctx).Where(filter)
 }
 
 

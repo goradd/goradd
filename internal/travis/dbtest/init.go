@@ -6,7 +6,6 @@ import (
 )
 
 func init() {
-	//
 	cfg := mysql.NewConfig()
 
 	cfg.DBName = "goradd"
@@ -16,6 +15,7 @@ func init() {
 	key := "goradd"
 
 	db1 := db.NewMysql5(key, "", cfg)
+	//db1 := db.NewJsonLink(key, "")
 
 	db.AddDatabase(db1, key)
 }

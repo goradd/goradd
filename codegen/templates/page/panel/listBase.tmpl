@@ -36,7 +36,7 @@ type {{= panelName }} struct {
 type {{= panelName }}I interface {
 	PanelI
 	CreateColumns()
-	BuildQuery() *model.{{= t.GoPlural }}Builder
+	BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder
 }
 
 
@@ -81,10 +81,10 @@ func (p *{{= panelName }}) CreateColumns() {
 // Override to change what records get displayed.
 func (p *{{= panelName }}) BindData(ctx context.Context, s data.DataManagerI) {
 	if p.List.HasDataPagers() {
-		p.List.SetTotalItems(p.this().BuildQuery().Count(ctx, false))
+		p.List.SetTotalItems(p.this().BuildQuery(ctx).Count(ctx, false))
 	}
 
-	builder := p.this().BuildQuery()
+	builder := p.this().BuildQuery(ctx)
 
 	// Since we are asking the database to do the sort, we have to make a slice of nodes
 	sortNodes := column.MakeNodeSlice(p.List.SortColumns())
@@ -96,8 +96,8 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s data.DataManagerI) {
 	s.SetData(d)
 }
 
-func (p *{{= panelName }}) BuildQuery() *model.{{= t.GoPlural }}Builder {
-	return model.Query{{= t.GoPlural }}()
+func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
+	return model.Query{{= t.GoPlural }}(ctx)
 }
 
 func (p *{{= panelName }}) MakeFilter(filterText string) query.NodeI {

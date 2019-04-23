@@ -48,9 +48,9 @@ func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (p *TableProxyPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	p.Table1.SetTotalItems(QueryProjects().Count(ctx, false))
+	p.Table1.SetTotalItems(QueryProjects(ctx).Count(ctx, false))
 
-	projects := QueryProjects().
+	projects := QueryProjects(ctx).
 		Limit(p.Table1.SqlLimits()).
 		Load(ctx)
 	p.Table1.SetData(projects)

@@ -187,15 +187,11 @@ func (o *personWithLockBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// loadPersonWithLock queries for a single PersonWithLock object by primary key.
+// Load returns a PersonWithLock from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-func loadPersonWithLock(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
-	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().ID(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
-}
-
-func queryPersonWithLocks() *PersonWithLocksBuilder {
-	return newPersonWithLockBuilder()
+func LoadPersonWithLock(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
 // The PersonWithLocksBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -304,7 +300,7 @@ func (b *PersonWithLocksBuilder) Where(c query.NodeI) *PersonWithLocksBuilder {
 	return b
 }
 
-// OrderBy  spedifies how the resulting data should be sorted.
+// OrderBy specifies how the resulting data should be sorted.
 func (b *PersonWithLocksBuilder) OrderBy(nodes ...query.NodeI) *PersonWithLocksBuilder {
 	b.base.OrderBy(nodes...)
 	return b
@@ -383,19 +379,19 @@ func (b *PersonWithLocksBuilder) joinOrSelect(nodes ...query.NodeI) *PersonWithL
 }
 
 func CountPersonWithLockByID(ctx context.Context, id string) uint {
-	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().ID(), id)).Count(ctx, false)
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), id)).Count(ctx, false)
 }
 
 func CountPersonWithLockByFirstName(ctx context.Context, firstName string) uint {
-	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(ctx, false)
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(ctx, false)
 }
 
 func CountPersonWithLockByLastName(ctx context.Context, lastName string) uint {
-	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(ctx, false)
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(ctx, false)
 }
 
 func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp datetime.DateTime) uint {
-	return queryPersonWithLocks().Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(ctx, false)
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -529,13 +525,6 @@ func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{})
 	return
 }
 
-func (o *personWithLockBase) resetDirtyStatus() {
-	o.idIsDirty = false
-	o.firstNameIsDirty = false
-	o.lastNameIsDirty = false
-	o.sysTimestampIsDirty = false
-}
-
 // Delete deletes the associated record from the database.
 func (o *personWithLockBase) Delete(ctx context.Context) {
 	if !o._restored {
@@ -549,6 +538,20 @@ func (o *personWithLockBase) Delete(ctx context.Context) {
 func deletePersonWithLock(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person_with_lock", "id", pk)
+}
+
+func (o *personWithLockBase) resetDirtyStatus() {
+	o.idIsDirty = false
+	o.firstNameIsDirty = false
+	o.lastNameIsDirty = false
+	o.sysTimestampIsDirty = false
+}
+
+func (o *personWithLockBase) IsDirty() bool {
+	return o.idIsDirty ||
+		o.firstNameIsDirty ||
+		o.lastNameIsDirty ||
+		o.sysTimestampIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.

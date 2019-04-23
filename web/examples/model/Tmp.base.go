@@ -116,26 +116,22 @@ func (o *tmpBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// loadTmp queries for a single Tmp object by primary key.
+// Load returns a Tmp from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-func loadTmp(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Tmp {
-	return queryTmps().Where(Equal(node.Tmp().D(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func LoadTmp(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Tmp {
+	return queryTmps(ctx).Where(Equal(node.Tmp().D(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-// loadTmpByD queries for a single Tmp object by the given unique index values.
+// LoadTmpByD queries for a single Tmp object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryTmps() to start a query builder.
-func loadTmpByD(ctx context.Context, d string, joinOrSelectNodes ...query.NodeI) *Tmp {
-	return queryTmps().
+func LoadTmpByD(ctx context.Context, d string, joinOrSelectNodes ...query.NodeI) *Tmp {
+	return queryTmps(ctx).
 		Where(Equal(node.Tmp().D(), d)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get(ctx)
-}
-
-func queryTmps() *TmpsBuilder {
-	return newTmpBuilder()
 }
 
 // The TmpsBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -244,7 +240,7 @@ func (b *TmpsBuilder) Where(c query.NodeI) *TmpsBuilder {
 	return b
 }
 
-// OrderBy  spedifies how the resulting data should be sorted.
+// OrderBy specifies how the resulting data should be sorted.
 func (b *TmpsBuilder) OrderBy(nodes ...query.NodeI) *TmpsBuilder {
 	b.base.OrderBy(nodes...)
 	return b
@@ -323,11 +319,11 @@ func (b *TmpsBuilder) joinOrSelect(nodes ...query.NodeI) *TmpsBuilder {
 }
 
 func CountTmpByD(ctx context.Context, d string) uint {
-	return queryTmps().Where(Equal(node.Tmp().D(), d)).Count(ctx, false)
+	return queryTmps(ctx).Where(Equal(node.Tmp().D(), d)).Count(ctx, false)
 }
 
 func CountTmpByI(ctx context.Context, i int) uint {
-	return queryTmps().Where(Equal(node.Tmp().I(), i)).Count(ctx, false)
+	return queryTmps(ctx).Where(Equal(node.Tmp().I(), i)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -416,11 +412,6 @@ func (o *tmpBase) getModifiedFields() (fields map[string]interface{}) {
 	return
 }
 
-func (o *tmpBase) resetDirtyStatus() {
-	o.dIsDirty = false
-	o.iIsDirty = false
-}
-
 // Delete deletes the associated record from the database.
 func (o *tmpBase) Delete(ctx context.Context) {
 	if !o._restored {
@@ -434,6 +425,16 @@ func (o *tmpBase) Delete(ctx context.Context) {
 func deleteTmp(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "tmp", "d", pk)
+}
+
+func (o *tmpBase) resetDirtyStatus() {
+	o.dIsDirty = false
+	o.iIsDirty = false
+}
+
+func (o *tmpBase) IsDirty() bool {
+	return o.dIsDirty ||
+		o.iIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.

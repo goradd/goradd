@@ -7,8 +7,6 @@ package model
 import (
 	"context"
 	"fmt"
-
-	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 type Project struct {
@@ -38,29 +36,19 @@ func (o *Project) String() string {
 }
 
 // QueryProjects returns a new builder that gives you general purpose access to the Project records
-// in the database. This is useful for quick queries of the database during development, but eventually you
-// should remove this function and move those queries to more specific calls in this file.
-func QueryProjects() *ProjectsBuilder {
-	return queryProjects()
+// in the database. Its here to give public access to the query builder, but you can remove it if you do not need it.
+func QueryProjects(ctx context.Context) *ProjectsBuilder {
+	return queryProjects(ctx)
 }
 
-// LoadProject queries for a single Project object by primary key.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryProjects() to start a query builder.
-func LoadProject(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *Project {
-	return loadProject(ctx, pk, joinOrSelectNodes...)
+// queryProjects creates a new builder and is the central spot where all queries are directed.
+// You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
+// access the data.
+func queryProjects(ctx context.Context) *ProjectsBuilder {
+	return newProjectBuilder()
 }
 
-// LoadProjectByNum queries for a single Project object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryProjects() to start a query builder.
-func LoadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.NodeI) *Project {
-	return loadProjectByNum(ctx, num, joinOrSelectNodes...)
-}
-
-// DeleteProject deletes the give record from the database. Note that you can also delete
+// DeleteProject deletes the given record from the database. Note that you can also delete
 // loaded Project objects by calling Delete on them.
 func DeleteProject(ctx context.Context, pk string) {
 	deleteProject(ctx, pk)

@@ -13,7 +13,7 @@ import (
 
 func TestEqualBasic(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Where(Equal(node.Project().Num(), 2)).
 		OrderBy(node.Project().Num()).
 		Load(ctx)
@@ -21,6 +21,17 @@ func TestEqualBasic(t *testing.T) {
 	assert.EqualValues(t, 2, projects[0].Num(), "Did not find correct project.")
 
 }
+
+func TestMultiWhere(t *testing.T) {
+	ctx := context.Background()
+	projects := model.QueryPeople(ctx).
+		Where(Equal(node.Person().LastName(), "Smith")).
+		Where(Equal(node.Person().FirstName(), "Alex")).
+		Load(ctx)
+
+	assert.Len(t, projects, 1)
+}
+
 
 func TestLogical(t *testing.T) {
 	type testCase struct {
@@ -51,7 +62,7 @@ func TestLogical(t *testing.T) {
 
 	var projects []*model.Project
 	for i, c := range tests {
-		projects = model.QueryProjects().
+		projects = model.QueryProjects(ctx).
 			Where(c.testNode).
 			OrderBy(node.Project().Num()).
 			Load(ctx)
@@ -67,7 +78,7 @@ func TestLogical(t *testing.T) {
 
 func TestCount2(t *testing.T) {
 	ctx := context.Background()
-	count := model.QueryPeople().
+	count := model.QueryPeople(ctx).
 		Count(ctx, true, node.Person().LastName())
 
 	assert.EqualValues(t, 10, count)
@@ -93,7 +104,7 @@ func TestCalculations(t *testing.T) {
 
 	var projects []*model.Project
 	for _, c := range tests {
-		projects = model.QueryProjects().
+		projects = model.QueryProjects(ctx).
 			Alias("Value", c.testNode).
 			OrderBy(node.Project().Num()).
 			Load(ctx)
@@ -104,7 +115,7 @@ func TestCalculations(t *testing.T) {
 
 func TestAggregates(t *testing.T) {
 	ctx := context.Background()
-	projects := model.QueryProjects().
+	projects := model.QueryProjects(ctx).
 		Alias("sum", Sum(node.Project().Spent())).
 		OrderBy(node.Project().ProjectStatusTypeID()).
 		GroupBy(node.Project().ProjectStatusTypeID()).
@@ -112,7 +123,7 @@ func TestAggregates(t *testing.T) {
 
 	assert.EqualValues(t, 77400.5, projects[0].GetAlias("sum").Float())
 
-	projects2 := model.QueryProjects().
+	projects2 := model.QueryProjects(ctx).
 		Alias("min", Min(node.Project().Spent())).
 		OrderBy(node.Project().ProjectStatusTypeID()).
 		//GroupBy(node.Project().ProjectStatusTypeID()).
@@ -128,7 +139,7 @@ func TestAliases(t *testing.T) {
 	nConson := node.Person().ProjectsAsManager().Milestones()
 	nConson.SetAlias("conson")
 
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().LastName(), node.Person().FirstName()).
 		Where(IsNotNull(nConson)).
 		Join(nVoyel, In(nVoyel.Name(), "Milestone A", "Milestone E", "Milestone I")).

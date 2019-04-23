@@ -595,26 +595,22 @@ func (o *unsupportedTypesBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// loadUnsupportedTypes queries for a single UnsupportedTypes object by primary key.
+// Load returns a UnsupportedTypes from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-func loadUnsupportedTypes(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *UnsupportedTypes {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSerial(), pk)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func LoadUnsupportedTypes(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *UnsupportedTypes {
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeSerial(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-// loadUnsupportedTypesByTypeSerial queries for a single UnsupportedTypes object by the given unique index values.
+// LoadUnsupportedTypesByTypeSerial queries for a single UnsupportedTypes object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryUnsupportedTypes() to start a query builder.
-func loadUnsupportedTypesByTypeSerial(ctx context.Context, type_serial string, joinOrSelectNodes ...query.NodeI) *UnsupportedTypes {
-	return queryUnsupportedTypes().
+func LoadUnsupportedTypesByTypeSerial(ctx context.Context, type_serial string, joinOrSelectNodes ...query.NodeI) *UnsupportedTypes {
+	return queryUnsupportedTypes(ctx).
 		Where(Equal(node.UnsupportedTypes().TypeSerial(), type_serial)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get(ctx)
-}
-
-func queryUnsupportedTypes() *UnsupportedTypesBuilder {
-	return newUnsupportedTypesBuilder()
 }
 
 // The UnsupportedTypesBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -723,7 +719,7 @@ func (b *UnsupportedTypesBuilder) Where(c query.NodeI) *UnsupportedTypesBuilder 
 	return b
 }
 
-// OrderBy  spedifies how the resulting data should be sorted.
+// OrderBy specifies how the resulting data should be sorted.
 func (b *UnsupportedTypesBuilder) OrderBy(nodes ...query.NodeI) *UnsupportedTypesBuilder {
 	b.base.OrderBy(nodes...)
 	return b
@@ -802,75 +798,75 @@ func (b *UnsupportedTypesBuilder) joinOrSelect(nodes ...query.NodeI) *Unsupporte
 }
 
 func CountUnsupportedTypesByTypeSet(ctx context.Context, typeSet string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSet(), typeSet)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeSet(), typeSet)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeEnum(ctx context.Context, typeEnum string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeEnum(), typeEnum)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeEnum(), typeEnum)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeDecimal(ctx context.Context, typeDecimal string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeDecimal(), typeDecimal)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeDecimal(), typeDecimal)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeDouble(ctx context.Context, typeDouble float32) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeDouble(), typeDouble)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeDouble(), typeDouble)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeGeo(ctx context.Context, typeGeo string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeGeo(), typeGeo)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeGeo(), typeGeo)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeTinyBlob(ctx context.Context, typeTinyBlob []byte) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeTinyBlob(), typeTinyBlob)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeTinyBlob(), typeTinyBlob)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeMediumBlob(ctx context.Context, typeMediumBlob []byte) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMediumBlob(), typeMediumBlob)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeMediumBlob(), typeMediumBlob)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeVarbinary(ctx context.Context, typeVarbinary string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeVarbinary(), typeVarbinary)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeVarbinary(), typeVarbinary)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeLongtext(ctx context.Context, typeLongtext string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeLongtext(), typeLongtext)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeLongtext(), typeLongtext)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeBinary(ctx context.Context, typeBinary string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeBinary(), typeBinary)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeBinary(), typeBinary)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeSmall(ctx context.Context, typeSmall int) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSmall(), typeSmall)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeSmall(), typeSmall)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeMedium(ctx context.Context, typeMedium int) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMedium(), typeMedium)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeMedium(), typeMedium)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeBig(ctx context.Context, typeBig int64) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeBig(), typeBig)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeBig(), typeBig)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypePolygon(ctx context.Context, typePolygon string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypePolygon(), typePolygon)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypePolygon(), typePolygon)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeSerial(ctx context.Context, typeSerial string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeSerial(), typeSerial)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeSerial(), typeSerial)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeUnsigned(ctx context.Context, typeUnsigned uint) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeUnsigned(), typeUnsigned)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeUnsigned(), typeUnsigned)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeMultfk1(ctx context.Context, typeMultfk1 string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMultfk1(), typeMultfk1)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeMultfk1(), typeMultfk1)).Count(ctx, false)
 }
 
 func CountUnsupportedTypesByTypeMultifk2(ctx context.Context, typeMultifk2 string) uint {
-	return queryUnsupportedTypes().Where(Equal(node.UnsupportedTypes().TypeMultifk2(), typeMultifk2)).Count(ctx, false)
+	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeMultifk2(), typeMultifk2)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -1216,6 +1212,21 @@ func (o *unsupportedTypesBase) getModifiedFields() (fields map[string]interface{
 	return
 }
 
+// Delete deletes the associated record from the database.
+func (o *unsupportedTypesBase) Delete(ctx context.Context) {
+	if !o._restored {
+		panic("Cannot delete a record that has no primary key value.")
+	}
+	d := db.GetDatabase("goradd")
+	d.Delete(ctx, "unsupported_types", "type_serial", o.typeSerial)
+}
+
+// deleteUnsupportedTypes deletes the associated record from the database.
+func deleteUnsupportedTypes(ctx context.Context, pk string) {
+	d := db.GetDatabase("goradd")
+	d.Delete(ctx, "unsupported_types", "type_serial", pk)
+}
+
 func (o *unsupportedTypesBase) resetDirtyStatus() {
 	o.typeSetIsDirty = false
 	o.typeEnumIsDirty = false
@@ -1237,19 +1248,25 @@ func (o *unsupportedTypesBase) resetDirtyStatus() {
 	o.typeMultifk2IsDirty = false
 }
 
-// Delete deletes the associated record from the database.
-func (o *unsupportedTypesBase) Delete(ctx context.Context) {
-	if !o._restored {
-		panic("Cannot delete a record that has no primary key value.")
-	}
-	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "unsupported_types", "type_serial", o.typeSerial)
-}
-
-// deleteUnsupportedTypes deletes the associated record from the database.
-func deleteUnsupportedTypes(ctx context.Context, pk string) {
-	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "unsupported_types", "type_serial", pk)
+func (o *unsupportedTypesBase) IsDirty() bool {
+	return o.typeSetIsDirty ||
+		o.typeEnumIsDirty ||
+		o.typeDecimalIsDirty ||
+		o.typeDoubleIsDirty ||
+		o.typeGeoIsDirty ||
+		o.typeTinyBlobIsDirty ||
+		o.typeMediumBlobIsDirty ||
+		o.typeVarbinaryIsDirty ||
+		o.typeLongtextIsDirty ||
+		o.typeBinaryIsDirty ||
+		o.typeSmallIsDirty ||
+		o.typeMediumIsDirty ||
+		o.typeBigIsDirty ||
+		o.typePolygonIsDirty ||
+		o.typeSerialIsDirty ||
+		o.typeUnsignedIsDirty ||
+		o.typeMultfk1IsDirty ||
+		o.typeMultifk2IsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.

@@ -28,7 +28,7 @@ func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.GoType}} {
 // otherwise, it will return nil.
 func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.GoType}} {
 	if o.{{oName}} == nil {
-		o.{{oName}} = load{{ref.GoType}}By{{= associatedGoName }}(ctx, o.{{= t.PrimaryKeyColumn.GoName }}())
+		o.{{oName}} = Load{{ref.GoType}}By{{= associatedGoName }}(ctx, o.{{= t.PrimaryKeyColumn.GoName }}())
 	}
 	return o.{{oName}}
 }
@@ -63,7 +63,7 @@ func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.GoType}} {
 
 // Load{{ref.GoPlural}} loads a new slice of {{ref.GoType}} objects and returns it.
 func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, conditions ...interface{}) []*{{ref.GoType}} {
-	qb := query{{ref.GoTypePlural}}()
+	qb := query{{ref.GoTypePlural}}(ctx)
 	cond := Equal(node.{{= ref.GoType }}().{{= associatedGoName }}(), o.PrimaryKey())
 	if conditions != nil {
 		conditions = append(conditions, cond)

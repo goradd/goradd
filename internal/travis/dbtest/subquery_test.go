@@ -11,9 +11,9 @@ import (
 
 func TestSubquery(t *testing.T) {
 	ctx := context.Background()
-	people := model.QueryPeople().
+	people := model.QueryPeople(ctx).
 		Alias("manager_count",
-			model.QueryProjects().
+			model.QueryProjects(ctx).
 				Alias("", Count(node.Project().ManagerID())).
 				Where(Equal(node.Project().ManagerID(), node.Person().ID())).
 				Subquery()).
