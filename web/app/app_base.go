@@ -254,7 +254,7 @@ func (a *Application) ServeStaticFileHandler(buf *bytes.Buffer, next http.Handle
 }
 
 
-// ServeAppHandler is the main handler that processes the current request
+// ServeAppHandler processes requests for goradd forms
 func (a *Application) ServeAppHandler(buf *bytes.Buffer, next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		a.ServeHTTP(w, r)

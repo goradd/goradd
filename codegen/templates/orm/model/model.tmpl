@@ -3,7 +3,9 @@
 {{
 package model
 
-// This is the implementation file for the {{= t.GoName }} ORM object. Your edits to this file will be preserved.
+// This is the implementation file for the {{= t.GoName }} ORM object.
+// This is where you build the api to your data model for you web application and potentially mobile apps.
+// Your edits to this file will be preserved.
 
 import (
     "fmt"
@@ -16,9 +18,9 @@ type {{= t.GoName }} struct {
 
 // Create a new {{= t.GoName }} object and initialize to default values.
 func New{{= t.GoName }}(ctx context.Context) *{{= t.GoName }} {
-	o := {{= t.GoName }}{}
+	o := new({{= t.GoName }})
 	o.Initialize(ctx)
-	return &o
+	return o
 }
 
 // Initialize or re-initialize a {{= t.GoName }} database object to default values.
@@ -35,5 +37,48 @@ func (o *{{= t.GoName }}) String() string  {
     }
     return fmt.Sprintf("Object id %v", o.PrimaryKey())
 }
+
+{{g builderName := t.GoPlural + "Builder" }}
+
+// Query{{t.GoPlural}} returns a new builder that gives you general purpose access to the {{= t.GoName }} records
+// in the database. This is useful for quick queries of the database during development, but eventually you
+// should remove this function and move those queries to more specific calls in this file.
+func Query{{t.GoPlural}}() *{{builderName}} {
+	return query{{t.GoPlural}}()
+}
+
+// Load{{t.GoName}} queries for a single {{t.GoName}} object by primary key.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use Query{{t.GoPlural}}() to start a query builder.
+func Load{{t.GoName}}(ctx context.Context, pk string, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {
+	return load{{t.GoName}}(ctx, pk, joinOrSelectNodes...)
+}
+
+{{g
+    if t.Indexes != nil {
+        for _,idx := range t.Indexes {
+            if !idx.IsPrimary && idx.IsUnique {
+{{
+// Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} queries for a single {{t.GoName}} object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use Query{{t.GoPlural}}() to start a query builder.
+func Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} (ctx context.Context{{for _,name := range idx.ColumnNames}}, {{= name }} {{= t.GetColumn(name).ColumnType.GoType() }} {{for}}, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {
+    return load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} (ctx{{for _,name := range idx.ColumnNames}}, {{= name }}{{for}}, joinOrSelectNodes...)
+}
+}}
+
+            }
+        }
+    }
+}}
+
+// Delete{{= t.GoName }} deletes the give record from the database. Note that you can also delete
+// loaded {{= t.GoName }} objects by calling Delete on them.
+func Delete{{= t.GoName }}(ctx context.Context, pk string) {
+	delete{{= t.GoName }}(ctx, pk)
+}
+
 
 }}

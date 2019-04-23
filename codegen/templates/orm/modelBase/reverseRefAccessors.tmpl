@@ -36,6 +36,8 @@ func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.
 
 }}
 	} else {
+		associatedGoName := snaker.SnakeToCamel(ref.AssociatedColumnName)
+
 {{
 // {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.
 // Otherwise, it will return nil.
@@ -56,6 +58,19 @@ func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.GoType}} {
 	if o.{{oName}} == nil {
 		return nil
 	}
+	return o.{{oName}}
+}
+
+// Load{{ref.GoPlural}} loads a new slice of {{ref.GoType}} objects and returns it.
+func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, conditions ...interface{}) []*{{ref.GoType}} {
+	qb := query{{ref.GoPlural}}()
+	cond := Equal(node.{{= ref.GoName }}().{{= associatedGoName }}(), o.PrimaryKey())
+	if conditions != nil {
+		conditions = append(conditions, cond)
+	    cond = And(conditions...)
+	}
+
+	o.{{oName}} = qb.Where(cond).Load(ctx)
 	return o.{{oName}}
 }
 
