@@ -48,9 +48,10 @@ func copyInstall(overwrite bool) {
 			continue
 		}
 		dest := filepath.Join(cwd, fInfo.Name())
+		fmt.Println("Copying " + fInfo.Name() + " ...")
 		if sys.PathExists(dest) {
 			if !overwrite {
-				fmt.Printf("The %s directory already exists. Replace it? [y,n] ", dest)
+				fmt.Printf("\n*** The %s directory already exists. Replace it? [y,n] ", dest)
 				scanner := bufio.NewScanner(os.Stdin)
 				scanner.Scan()
 				in := scanner.Text()
@@ -86,6 +87,7 @@ func depInstall() {
 
 	for _,dep := range dependencies {
 		var res []byte
+		fmt.Print("Installing " + dep + " ")
 		res, err = sys2.ExecuteShellCommand("go get " + dep)
 		if err != nil {
 			fmt.Print(string(res))
@@ -93,7 +95,7 @@ func depInstall() {
 			// the error message that was generated
 			log.Fatal("could not get " + dep + " " + err.Error())
 		}
-		fmt.Print(res)
+		fmt.Println(string(res))
 	}
 }
 
