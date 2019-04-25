@@ -96,3 +96,26 @@ like object composition too, this is your place.
 3) Code generation. GoRADD relies heavily on code generation, and in particular uses the
 related github.com/goradd/got template engine to generate code.
 
+## Acknowledgements
+GoRADD is a port of the PHP framework [QCubed](https://github.com/qcubed/qcubed). QCubed itself was a 
+fork of the PHP framework written by Mike Ho called [QCodo](https://github.com/qcodo/qcodo).
+Mike is the original mastermind of many of the concepts in GoRADD, like:
+- A code-generated ORM
+- The use of "nodes" to describe database entities AND the relationships between them.
+- Code-generated CRUD forms to get you started.
+- Scaffolding that separates code-generated code from developer code so that code-generation
+can continue throughout the life of the project.
+- A lightweight javascript layer for processing events and actions through ajax.
+- The formstate engine to mirror the state of html and javascript widgets on the server-side
+so that the server-side engineer has complete control over what is happening in the html without
+needing to write javascript.
+
+GoRADD relies on a number of other open-source projects, including:
+- The [Shurcool Github Markdown Library](https://github.com/shurcooL/github_flavored_markdown)
+- Alex Edward's [SCS Session Manager Library](https://github.com/alexedwards/scs)
+- Akeda Bagus' [Inflector Library](https://github.com/gedex/inflector)
+- Gorilla's [Websocket Library](https://github.com/gorilla/websocket)
+- Kenneth Shaw's [Snaker Library](https://github.com/knq/snaker)
+- Stretchr's [Testify Testing Library](https://github.com/stretchr/testify)
+
+GoRADD was created and is maintained by [Shannon Pekary](https://github.com/spekary)
