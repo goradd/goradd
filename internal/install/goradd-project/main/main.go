@@ -37,6 +37,7 @@ func main() {
 
 	useFlags()
 	a := app.MakeApplication()
+	fmt.Println("\nLaunching Server...")
 	err = a.RunWebServer()
 
 	if err != nil {

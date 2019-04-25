@@ -9,7 +9,8 @@ For more information, see [More On Modules](#more-on-modules) further below.
 #### For Go 1.10 and below, or Go 1.11 and 1.12 not using modules:
 1. Create a new directory for your project, set the GOPATH environment variable to it and 
 then change your working directory to the new directory.
-1. Make sure your GOPATH/bin directory is in your execution path. On Mac OS or Linux 
+1. The following steps will create a `bin` directory in your new directory. Before doing this
+though, make sure the `GOPATH/bin` directory is in your execution path. On Mac OS or Linux 
 you would do that by editing your .bash_profile directory or .profile 
 directory and on Windows you would use the System utility. Note that you will need to
 do this for every new project.
@@ -39,11 +40,11 @@ that will be used by goradd to build your application.
 2. From the command line, run:
 ```go run goradd-project/main```
 You will see a number of messages about additional go packages being installed.
-3. Point your browser to the following URL. 
+3. Once you see "Launching Server...", point your browser to the following URL. 
 `http://localhost:8000/goradd/`
 
 If everything is working fine, you should see the Goradd startup screen. It will lead 
-you through some additional configuration steps and get your started building your
+you through some additional configuration steps and get you started building your
 application. 
 
 
