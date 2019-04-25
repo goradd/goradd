@@ -15,7 +15,7 @@ func TestSetGet(t *testing.T) {
 	session.SetSessionManager(session.NewScsManager(scs.NewManager(memstore.New(interval))))
 
 	// run the session tests
-	runTest(t, setRequestHandler(), testRequestHandler(t))
-	runTest(t, setupStackRequestHandler(), testStackRequestHandler(t))
+	runRequestTest(t, setRequestHandler(), testRequestHandler(t))
+	runRequestTest(t, setupStackRequestHandler(), testStackRequestHandler(t))
 }
 
