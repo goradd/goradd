@@ -38,8 +38,8 @@ that will be used by goradd to build your application.
 1. Change your working directory to the goradd-project directory. 
 2. From the command line, run:
 ```go run goradd-project/main```
-
-Now point your browser to the following URL. 
+You will see a number of messages about additional go packages being installed.
+3. Point your browser to the following URL. 
 `http://localhost:8000/goradd/`
 
 If everything is working fine, you should see the Goradd startup screen. It will lead 
@@ -85,7 +85,7 @@ this is compounded by the go team's insistence that they are going to make go mo
 required in version 1.13 (they said this would happen in 1.12, and then didn't)
 before they have worked out the kinks.
 
-That said, go modules bring a couple of nice features to the go build environment:
+That said, go modules brings a couple of nice features to the go build environment:
 1) Only one GOPATH directory. You don't need to change your environment variables 
 every time you change projects.
 2) Reproducible builds. This is the primary goal of modules, and generally has been

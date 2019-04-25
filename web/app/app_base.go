@@ -13,7 +13,6 @@ import (
 	grlog "github.com/goradd/goradd/pkg/log"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/resource"
-	"github.com/goradd/goradd/pkg/rest"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
@@ -376,22 +375,8 @@ func RegisterStaticPath(path string, directory string) {
 	sort.Sort(OrderDirectoryPaths(StaticDirectoryPaths))
 }
 
-// MakeRESTServer creates the handler chain that will handle REST api requests.
-// There are a ton of ways to do this, 3rd party
-// libraries to help with this, and middlewares you can use. This is a working example, and not a declaration of any
-// "right" way to do this, since it can be very application specific. To do this differently, simply
-// create a different version and put it in your Application structure in your project directory.
-func (a *Application) MakeRESTServer() http.Handler {
-	// the handler chain gets built in the reverse order of getting called
-	// These handlers are called in reverse order
-	h := http.NotFoundHandler()
-	h = a.ServeApiHandler(h)
-	h = a.this().SessionHandler(h) // TODO: Likely replace this with auth handler
 
-	return h
-}
-
-// ServeApiHandler serves up the REST api.
+// ServeApiHandler serves up an http API. This could be a REST api or something else.
 func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		if !a.this().ServeApiRequest(w,r) {
@@ -401,13 +386,14 @@ func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
 	return http.StripPrefix(config.ApiPrefix, http.HandlerFunc(fn))
 }
 
-// ServeApiRequest serves up a potential REST api call. The REST prefix has been removed, so
+// ServeApiRequest serves up an http api call. The prefix has been removed, so
 // we just process the URL as if it were the command itself.
-// The default will send the request to the generated ORM for processing. However, you can override this
-// and make your own API, or do both by calling this default function from your override of your override
-// does not handle it.
+// This is currently just a stub to allow you to implement your own API. Eventually we hope this
+// could be an auto-generated REST api or GraphQL api.
 func (a *Application) ServeApiRequest (w http.ResponseWriter, r *http.Request) bool {
-	return rest.HandleRequest(w, r)	// indicates no static file was found
+	// TODO
+	//return rest.HandleRequest(w, r)	// indicates no static file was found
+	return false
 }
 
 

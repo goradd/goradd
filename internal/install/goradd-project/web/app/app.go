@@ -149,9 +149,6 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 	// serve up static application asset files
 	mux.Handle(config.AssetPrefix, http.HandlerFunc(page.ServeAsset))
 
-	// serve up REST endpoints. Comment this out if you are not providing a rest interface.
-	mux.Handle(config.ApiPrefix, a.MakeRESTServer())
-
 	// send anything you don't explicitly handle above to the goradd app server
 	// note that the app server can serve up static html too. See ServeStaticFile.
 	mux.Handle("/", a.MakeAppServer())
