@@ -1,0 +1,57 @@
+{{#
+This is a template file that defines how the IntroPanel will be drawn. You will learn more about panels
+in the tutorials on controls. Just know that there are a variety of ways to customize controls, and
+a template like this one is just one of the many ways. The template program used is called "got" and
+its language is very easy to learn.
+}}
+{{< package }}orm{{end}}
+{{< imports }}
+{{end}}
+{{< control }}ObjectsPanel{{end}}
+
+{{define template }}
+<h1>The Code-generated GO Objects</h1>
+
+<p>The Code Generator will create a GO object for most of the tables in your database in groups of two files.
+One file is a base file, and contains code that is regenerated every time you run the code generator. This file
+contains accessors to the various fields of the table, and functions to do queries, updates and deletes.
+The other file is a companion object that embeds the base file, and that lets you override the functions
+in the base file, as well as define your own functions to access the database. The companion file only gets
+generated one time, and so you may edit it and change it as you like and your changes will be preserved.</p>
+
+<p>You will see this idea of a base file that gets recreated every time the code generator runs, and an enclosing
+object that embeds the base object, throughout GoRADD. We call this scaffolding...a way of layering the code
+so that when you change the database, or when GoRADD itself is updated, you do not have to rewrite your program
+to take advantage of the changes.</p>
+
+<p>The example below shows how we can use the <strong>Load*()</strong> methods and the
+    properties to view some of the data.  Be sure to click on the source links to view some of the code
+    that made this page.</p>
+
+{{g
+    // This "g" tag lets us drop in to go code whenever we want. Normally you would not write a lot of go code
+    // inside a template, but rather you would put your go code in an object, and refer to variables or functions
+    // from here. However, for purposes of simplifying this tutorial, we will access the database straight from here.
+
+    // This loads the person that has an id, or primary key, of "1". Note that even though SQL can use integers as
+    // primary keys, we always use strings to identify primary keys. Many other types of databases only use strings,
+    // and this makes our code portable.
+    person := model.LoadPerson(ctx, "1")
+    project := model.LoadProject(ctx, "1")
+}}
+<div>Person 1</div>
+<div>{{= person.FirstName() }} {{= person.LastName() }}</div>
+<div>Project 1</div>
+<div>{{= project.Name() }}</div>
+<div>{{= project.Description() }}</div>
+<div>{{= project.ProjectStatusType().String() }}</div>
+
+
+{{end}}
+
+{{#
+The code above this line mostly defines got fragments. The tag below uses the renderControlTemplate fragment,
+defined in the macros.inc.got file, to compose the actual template. Its a pattern that lets you separate got
+template code from the go code that uses the template to draw.
+}}
+{{renderControlTemplate}}
