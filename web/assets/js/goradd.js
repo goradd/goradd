@@ -7,7 +7,7 @@ if (!function () {
 }
 
 
-var $j; // Universal shorcut for jQuery so that you can execute jQuery code outside in a no-conflict mode.
+var $j; // Universal shortcut for jQuery so that you can execute jQuery code outside in a no-conflict mode.
 var goradd;
 
 (function( $ ) {
@@ -19,33 +19,6 @@ $j = $;
  * @namespace goradd
  */
 goradd = {
-    /**
-     * Queues an ajax request.
-     * A new Ajax request won't be started until the previous queued
-     * request has finished.
-     * @param {function} o function that returns ajax options.
-     * @param {boolean} blnAsync true to launch right away.
-     */
-    _ajaxQueue: function(o, blnAsync) {
-        if (typeof $.ajaxq === "undefined" || blnAsync) {
-            $.ajax(o()); // fallback in case ajaxq is not here
-        } else {
-            $.ajaxq("goradd", o);
-        }
-    },
-    /**
-     * Returns true if there is something in the ajax queue. This would happen if we have just queued an item,
-     * or if we are waiting for an item to return a result.
-     *
-     * @returns {boolean} true if the goradd ajax queue has an item in it.
-     */
-    ajaxQueueIsRunning: function() {
-        if ($.ajaxq) {
-            return $.ajaxq.isRunning("goradd");
-        }
-        return false;
-    },
-
     /**
      * Adds a value to the next ajax or server post for the specified control. You can either call this ongoing, or
      * call it in response to the "posting" event. This is the preferred way for custom javascript controls to send data
@@ -229,17 +202,16 @@ goradd = {
         goradd.log("postAjax", params);
 
         // Use an ajax queue so ajax requests happen synchronously
-        goradd._ajaxQueue(function() {
+        goradd._queueAjaxRequest(function() {
             var data = goradd._getAjaxData(params);
 
             return {
                 url: formAction,
-                type: "POST",
                 data: data,
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     var result = XMLHttpRequest.responseText;
 
-                    if (XMLHttpRequest.status !== 0 || (result && result.length > 0)) {
+                    if (XMLHttpRequest .status !== 0 || (result && result.length > 0)) {
                         goradd._displayAjaxError(result, textStatus, errorThrown);
                     } else {
                         goradd._displayAjaxError("Unknown ajax error", '', '');
@@ -767,7 +739,86 @@ goradd = {
             }
             goradd._objTimers[strTimerId] = null;
         }
+    },
+    /**
+     * Ajax Queue
+     * 
+     * This used to be handled with a jquery plugin, but since we are trying to get away from jquery, and working
+     * towards an OperaMini compatible version, we are rolling our own.
+     */
+    _ajaxQueue: [],
+    _currentAjaxRequests: {},
+    _ajaxIdCounter: 0,
+    /**
+     * Queues an ajax request.
+     * A new Ajax request won't be started until the previous queued
+     * request has finished.
+     * @param {function} f function that returns ajax options.
+     * @param {boolean} blnAsync true to launch right away.
+     */
+    _queueAjaxRequest: function(f, blnAsync) {
+        if (!blnAsync) {
+            var wasRunning = this.ajaxQueueIsRunning();
+            this._ajaxQueue.push(f);
+            if (!wasRunning) {
+                this._ajaxDequeue();
+            }
+        } else {
+            this._processAjaxRequest(f);
+        }
+        $.ajax()
+    },
+    /**
+     * Returns true if there is something in the ajax queue. This would happen if we have just queued an item,
+     * or if we are waiting for an item to return a result.
+     *
+     * @returns {boolean} true if the goradd ajax queue has an item in it.
+     */
+    ajaxQueueIsRunning: function() {
+        return goradd._currentAjaxRequests.length == 0;
+    },
+    _ajaxDequeue: function() {
+        var f = this._ajaxQueue.shift();
+        if (f) {
+            this._processAjaxRequest(f);
+        }
+    },
+    _processAjaxRequest(f) {
+        var opts = f();
+        this._ajaxIdCounter++;
+        var ajaxID = this._ajaxIdCounter;
+
+        var objRequest;
+        if (window.XMLHttpRequest) {
+            objRequest = new XMLHttpRequest();
+        } else if (typeof ActiveXObject != "undefined") {
+            objRequest = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        if (objRequest) {
+            this._currentAjaxRequests[ajaxID] = objRequest;
+            objRequest.open("POST", opts.url, true);
+            objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
+            objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            objRequest.onreadystatechange = function() {
+                if (objRequest.readystate === 4) {
+                    if (objRequest.status === 200) {
+                        // success
+
+                    } else {
+
+                    }
+
+                    delete goradd._currentAjaxRequests[ajaxID];
+                }
+            };
+            qcodo.ajaxRequest = objRequest;
+            objRequest.send(opts.data);
+        }
     }
+
+
 
 };
 
