@@ -9,12 +9,12 @@ import (
 	"path/filepath"
 )
 
-type ObjectsPanel struct {
+type LoadPanel struct {
 	Panel
 }
 
-func NewObjectsPanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &ObjectsPanel{}
+func NewLoadPanel(ctx context.Context, parent page.ControlI) page.ControlI {
+	p := &LoadPanel{}
 	p.Panel.Init(p, parent, "")
 	return p
 }
@@ -22,10 +22,10 @@ func NewObjectsPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 
 func init() {
 	dir := sys.SourceDirectory()
-	tutorial.RegisterTutorialPage("orm", 1, "objects", "Code-generated objects", NewObjectsPanel,
+	tutorial.RegisterTutorialPage("orm", 2, "load", "Loading Individual Records", NewLoadPanel,
 		[]string {
 			sys.SourcePath(),
-			filepath.Join(dir, "template_source", "1-objects.tpl.got"),
+			filepath.Join(dir, "template_source", "2-load.tpl.got"),
 		})
 }
 

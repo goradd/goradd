@@ -5,7 +5,6 @@ package tutorial
 import (
 	"bytes"
 	"context"
-	"strconv"
 
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -28,6 +27,19 @@ func (form *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 	path := page.GetContext(ctx).HttpContext.URL.Path
 	buf.WriteString(`
 <h1>Control Examples</h1>
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := form.viewSourceButton.Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
 <div class="sidebar">
 <h2>ORM</h2>
   <ul>
@@ -39,7 +51,7 @@ func (form *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 
 		buf.WriteString(`?pageID=orm-`)
 
-		buf.WriteString(strconv.Itoa(pr.i))
+		buf.WriteString(pr.id)
 
 		buf.WriteString(`">`)
 
@@ -58,7 +70,7 @@ func (form *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 `)
 
 	{
-		err := form.detail.Draw(ctx, buf)
+		err := form.detailPanel.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -66,6 +78,22 @@ func (form *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 
 	buf.WriteString(`
 </div>
+<div class="source_container">
+	`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := form.sourcePanel.Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
+</div>
+
 `)
 
 	buf.WriteString(`

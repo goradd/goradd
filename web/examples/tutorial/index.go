@@ -2,7 +2,8 @@ package tutorial
 
 import (
 	"context"
-	"strconv"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
 	"strings"
 
 	"github.com/goradd/goradd/pkg/page"
@@ -13,26 +14,32 @@ const IndexFormPath = "/goradd/tutorial.g"
 const IndexFormId = "IndexForm"
 
 const (
-	TestButtonAction = iota + 1
+	ViewSourceAction = iota + 1
 )
 
 type IndexForm struct {
 	FormBase
-	detail *Panel
+	detailPanel      *Panel
+	viewSourceButton *Button
+	sourcePanel		 *SourcePanel
+
+	currentPageRecord pageRecord
 }
 
 type createFunction func(ctx context.Context, parent page.ControlI) page.ControlI
 type pageRecord struct {
-	i     int
+	order     int
+	id 	  string
 	title string
 	f     createFunction
+	files []string
 }
 type pageRecordList []pageRecord
 
 var pages = make(map[string]pageRecordList)
 
 func (p pageRecordList) Less(i, j int) bool {
-	return p[i].i < p[j].i
+	return p[i].order < p[j].order
 }
 
 func NewIndexForm(ctx context.Context) page.FormI {
@@ -40,8 +47,12 @@ func NewIndexForm(ctx context.Context) page.FormI {
 	f.Init(ctx, f, IndexFormPath, IndexFormId)
 	f.AddRelatedFiles()
 
-	f.detail = NewPanel(f, "detailPanel")
+	f.detailPanel = NewPanel(f, "detailPanel")
+	f.viewSourceButton = NewButton(f, "viewSourceButton")
+	f.viewSourceButton.SetLabel("View Source")
+	f.viewSourceButton.On(event.Click(), action.Ajax(f.ID(), ViewSourceAction))
 
+	f.sourcePanel = NewSourcePanel(f)
 	return f
 }
 
@@ -58,33 +69,39 @@ func (f *IndexForm) LoadControls(ctx context.Context) {
 			return
 		}
 
-		i, err := strconv.Atoi(parts[1])
-		if err != nil {
-			return
+		id := parts[1]
+
+		for _,pr := range pl {
+			if pr.id == id {
+				pr.f(ctx, f.detailPanel)
+				f.currentPageRecord = pr
+				break
+			}
 		}
-
-		if len(pl) <= i {
-			return
-		}
-
-		pr := pl[i]
-		pr.f(ctx, f.detail)
-
 	} else {
-		NewDefaultPanel(ctx, f.detail)
+		NewDefaultPanel(ctx, f.detailPanel)
 	}
 }
 
-func RegisterTutorialPage(category string, i int, title string, f createFunction) {
-	v, ok := pages[category]
-	if !ok {
-		pages[category] = pageRecordList{pageRecord{i, title, f}}
-	} else {
-		v = append(v, pageRecord{i, title, f})
-		pages[category] = v
+
+func (f *IndexForm) Action(ctx context.Context, a page.ActionParams) {
+	switch a.ID {
+	case ViewSourceAction:
+		f.sourcePanel.show(f.currentPageRecord.files)
 	}
 }
+
 
 func init() {
 	page.RegisterPage(IndexFormPath, NewIndexForm, IndexFormId)
+}
+
+func RegisterTutorialPage(category string, order int, id string, title string, f createFunction, files []string) {
+	v, ok := pages[category]
+	if !ok {
+		pages[category] = pageRecordList{pageRecord{order, id, title, f, files}}
+	} else {
+		v = append(v, pageRecord{order, id, title, f, files})
+		pages[category] = v
+	}
 }

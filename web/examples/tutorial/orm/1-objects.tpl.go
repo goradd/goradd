@@ -41,7 +41,8 @@ to take advantage of the changes.</p>
 	person := model.LoadPerson(ctx, "1")
 	project := model.LoadProject(ctx, "1")
 
-	buf.WriteString(`<div>Person 1</div>
+	buf.WriteString(`<p>
+<div>Person 1</div>
 <div>`)
 
 	buf.WriteString(person.FirstName())
@@ -51,6 +52,8 @@ to take advantage of the changes.</p>
 	buf.WriteString(person.LastName())
 
 	buf.WriteString(`</div>
+</p>
+<p>
 <div>Project 1</div>
 <div>`)
 
@@ -67,7 +70,7 @@ to take advantage of the changes.</p>
 	buf.WriteString(project.ProjectStatusType().String())
 
 	buf.WriteString(`</div>
-
+</p>
 
 `)
 
