@@ -1,3 +1,5 @@
+"use strict";
+
 goradd.ajaxq = {
     /**
      * Ajax Queue
@@ -25,7 +27,6 @@ goradd.ajaxq = {
         } else {
             this._do1(f);
         }
-        $.ajax()
     },
     /**
      * Returns true if there is something in the ajax queue. This would happen if we have just queued an item,
@@ -43,6 +44,7 @@ goradd.ajaxq = {
         }
     },
     _do1(f) {
+        var self = this;
         var opts = f();
         this._idCounter++;
         var ajaxID = this._idCounter;
@@ -58,29 +60,42 @@ goradd.ajaxq = {
             objRequest.open("POST", opts.url, true);
             objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
             objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            objRequest.setRequestHeader("X-Requested-With", "xmlhttprequest");
 
             objRequest.onreadystatechange = function() {
-                if (objRequest.readystate === 4) {
+                if (objRequest.readyState === 4) {
                     if (objRequest.status === 200) {
-                        // success, but still might be error
-                        if (objRequest.type === "json") {
-                            objRequest.success(objRequest.response);
-                        } else {
-                            // A controlled error sent by goradd
-                            objRequest.error(objRequest.response);
+                        try {
+                            opts.success(JSON.parse(objRequest.response));
+                        } catch(err) {
+                            // Goradd returns ajax errors as text
+                            opts.error(objRequest.response);
                         }
                     } else {
+                        // This would be a problem with the server or client
                         objRequest.error("An ajax error occurred: " + objRequest.statusText);
                     }
 
-                    delete this._currentRequests[ajaxID];
+                    delete self._currentRequests[ajaxID];
                 }
             };
-            this._currentRequests[ajaxID] = objRequest;
-            objRequest.send(opts.data);
+            self._currentRequests[ajaxID] = objRequest;
+            var encoded = self._encodeData(opts.data);
+            objRequest.send(encoded);
         }
+    },
+    _encodeData(data) {
+        var a = [];
+        var key;
+        for (key in data) {
+            var value = data[key];
+            var s = encodeURIComponent(key) + "=" +
+            encodeURIComponent( value == null ? "" : value );
+            a.push(s);
+        }
+        return a.join("&");
     }
 
 
 
-}
+};
