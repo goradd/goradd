@@ -34,7 +34,7 @@ goradd.ajaxq = {
      * @returns {boolean} true if the goradd ajax queue has an item in it.
      */
     isRunning: function() {
-        return goradd._currentRequests.length == 0;
+        return this._currentRequests.length === 0;
     },
     _dequeue: function() {
         var f = this._q.shift();
@@ -55,7 +55,6 @@ goradd.ajaxq = {
         }
 
         if (objRequest) {
-            this._currentRequests[ajaxID] = objRequest;
             objRequest.open("POST", opts.url, true);
             objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
             objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -63,16 +62,21 @@ goradd.ajaxq = {
             objRequest.onreadystatechange = function() {
                 if (objRequest.readystate === 4) {
                     if (objRequest.status === 200) {
-                        // success
-
+                        // success, but still might be error
+                        if (objRequest.type === "json") {
+                            objRequest.success(objRequest.response);
+                        } else {
+                            // A controlled error sent by goradd
+                            objRequest.error(objRequest.response);
+                        }
                     } else {
-
+                        objRequest.error("An ajax error occurred: " + objRequest.statusText);
                     }
 
-                    delete goradd._currentRequests[ajaxID];
+                    delete this._currentRequests[ajaxID];
                 }
             };
-            qcodo.ajaxRequest = objRequest;
+            this._currentRequests[ajaxID] = objRequest;
             objRequest.send(opts.data);
         }
     }

@@ -208,23 +208,12 @@ goradd = {
             return {
                 url: formAction,
                 data: data,
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    var result = XMLHttpRequest.responseText;
-
-                    if (XMLHttpRequest .status !== 0 || (result && result.length > 0)) {
-                        goradd._displayAjaxError(result, textStatus, errorThrown);
-                    } else {
-                        goradd._displayAjaxError("Unknown ajax error", '', '');
-                    }
+                error: function (result) {
+                    goradd._displayAjaxError(result);
                     goradd.testStep();
                     return false;
                 },
                 success: function (json) {
-                    if ($.type(json) === 'string') {
-                        // If server has a problem sending any ajax response, like when headers are already sent, we will get that error as a string here
-                        goradd._displayAjaxError(json, '', '');
-                        return false;
-                    }
                     goradd.log("Ajax success ", json);
 
                     if (json.js) {
@@ -260,7 +249,7 @@ goradd = {
      * @param errorThrown
      * @private
      */
-    _displayAjaxError: function(resultText, textStatus, errorThrown) {
+    _displayAjaxError: function(resultText) {
         var objErrorWindow;
 
         goradd.ajaxError = true;
@@ -274,8 +263,6 @@ goradd = {
         } else {
             resultText = $('<div>').html(resultText);
             $('<div id="Goradd_AJAX_Error" />')
-                .append('<h1 style="text-transform:capitalize">' + textStatus + '</h1>')
-                .append('<p>' + errorThrown + '</p>')
                 .append(resultText)
                 .append('<button onclick="$(this).parent().hide()">OK</button>')
                 .appendTo('form');
