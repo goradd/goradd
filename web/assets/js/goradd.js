@@ -202,7 +202,7 @@ goradd = {
         goradd.log("postAjax", params);
 
         // Use an ajax queue so ajax requests happen synchronously
-        goradd._queueAjaxRequest(function() {
+        goradd.ajaxq.enqueue(function() {
             var data = goradd._getAjaxData(params);
 
             return {
@@ -320,7 +320,7 @@ goradd = {
         // I think the only major browser that does not support oninput is Opera mobile.
 
         $( document ).ajaxComplete(function( event, request, settings ) {
-            if (!goradd.ajaxQueueIsRunning()) {
+            if (!goradd.ajaxq.isRunning()) {
                 goradd._processFinalCommands();  // If there was no ajax queue, we would have already processed final commands
             }
         });
@@ -409,7 +409,7 @@ goradd = {
         if (json.commands) { // commands
             $.each(json.commands, function (index, command) {
                 if (command.final &&
-                    goradd.ajaxQueueIsRunning()) {
+                    goradd.ajaxq.isRunning()) {
 
                     goradd._enqueueFinalCommand(command);
                 } else {
@@ -740,85 +740,6 @@ goradd = {
             goradd._objTimers[strTimerId] = null;
         }
     },
-    /**
-     * Ajax Queue
-     * 
-     * This used to be handled with a jquery plugin, but since we are trying to get away from jquery, and working
-     * towards an OperaMini compatible version, we are rolling our own.
-     */
-    _ajaxQueue: [],
-    _currentAjaxRequests: {},
-    _ajaxIdCounter: 0,
-    /**
-     * Queues an ajax request.
-     * A new Ajax request won't be started until the previous queued
-     * request has finished.
-     * @param {function} f function that returns ajax options.
-     * @param {boolean} blnAsync true to launch right away.
-     */
-    _queueAjaxRequest: function(f, blnAsync) {
-        if (!blnAsync) {
-            var wasRunning = this.ajaxQueueIsRunning();
-            this._ajaxQueue.push(f);
-            if (!wasRunning) {
-                this._ajaxDequeue();
-            }
-        } else {
-            this._processAjaxRequest(f);
-        }
-        $.ajax()
-    },
-    /**
-     * Returns true if there is something in the ajax queue. This would happen if we have just queued an item,
-     * or if we are waiting for an item to return a result.
-     *
-     * @returns {boolean} true if the goradd ajax queue has an item in it.
-     */
-    ajaxQueueIsRunning: function() {
-        return goradd._currentAjaxRequests.length == 0;
-    },
-    _ajaxDequeue: function() {
-        var f = this._ajaxQueue.shift();
-        if (f) {
-            this._processAjaxRequest(f);
-        }
-    },
-    _processAjaxRequest(f) {
-        var opts = f();
-        this._ajaxIdCounter++;
-        var ajaxID = this._ajaxIdCounter;
-
-        var objRequest;
-        if (window.XMLHttpRequest) {
-            objRequest = new XMLHttpRequest();
-        } else if (typeof ActiveXObject != "undefined") {
-            objRequest = new ActiveXObject("Microsoft.XMLHTTP");
-        }
-
-        if (objRequest) {
-            this._currentAjaxRequests[ajaxID] = objRequest;
-            objRequest.open("POST", opts.url, true);
-            objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
-            objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-            objRequest.onreadystatechange = function() {
-                if (objRequest.readystate === 4) {
-                    if (objRequest.status === 200) {
-                        // success
-
-                    } else {
-
-                    }
-
-                    delete goradd._currentAjaxRequests[ajaxID];
-                }
-            };
-            qcodo.ajaxRequest = objRequest;
-            objRequest.send(opts.data);
-        }
-    }
-
-
 
 };
 

@@ -32,7 +32,7 @@ This file attaches some code used by the test harness to drive browser-based tes
 
     goradd._postTestStep = function(event) {
         if (event) {
-            if (!goradd.ajaxQueueIsRunning()) {
+            if (!goradd.ajaxq.isRunning()) {
                 goradd.log("Posting message: Ajax complete", event.detail);
                 window.opener.postMessage({ajaxComplete: event.detail}, "*");
             } else {
