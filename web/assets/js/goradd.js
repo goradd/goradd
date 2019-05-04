@@ -23,6 +23,8 @@ goradd = {
     _formObjsModified: {},
     _ajaxError: false,
     _blockEvents: false,
+    _inputSupport: true,
+
 
     /**
      * Adds a value to the next ajax or server post for the specified control. You can either call this ongoing, or
@@ -60,7 +62,7 @@ goradd = {
                 event.preventDefault();
             }
         });
-        goradd.registerControls();
+        goradd._registerControls();
     },
 
     /**
@@ -130,7 +132,7 @@ goradd = {
                 blnForm = (id && (id.substr(0, 8) === 'Goradd__'));
 
 
-            if (!goradd.inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones, because we might have missed something
+            if (!goradd._inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones, because we might have missed something
             goradd._ajaxError || // Ajax error would mean that _formObjsModified is invalid. We need to submit everything.
             (id && goradd._formObjsModified[id]) ||
              blnForm) {  // all controls with Goradd__ at the beginning of the id are always posted.
@@ -307,7 +309,7 @@ goradd = {
             }
         });*/
 
-        goradd.inputSupport = 'oninput' in document;
+        goradd._inputSupport = 'oninput' in document;
         // IE 9 has a major bug in oninput, but we are requiring IE 10+, so no problem.
         // I think the only major browser that does not support oninput is Opera mobile.
 
@@ -375,7 +377,7 @@ goradd = {
             });
         }
 
-        goradd.registerControls();
+        goradd._registerControls();
 
         if (json.watcher && params.controlId) {
             goradd.broadcastChange();
@@ -610,6 +612,12 @@ goradd = {
         }
         return obj; // no change
     },
+    _registerControls: function() {
+        $('[data-grctl]').not('[data-grctl="form"]').each(function() {
+            goradd.registerControl(this);
+        });
+    },
+
 
     /***********************
      * Javascriptable Actions
@@ -852,7 +860,6 @@ goradd.setRadioInGroup = function(strControlId) {
     }
 };
 
-goradd.inputSupport = true;
 goradd.finalCommands = [];
 goradd.currentStep = 0;
 goradd.stepFunction = null;
@@ -885,12 +892,6 @@ goradd.registerControl = function(objControl) {
         objWrapper.control = objControl;
     }
     $control.data('gr-reg', 'reg') // mark the control as registered so we don't attach events twice
-};
-
-goradd.registerControls = function() {
-    $('[data-grctl]').not('[data-grctl="form"]').each(function() {
-        goradd.registerControl(this);
-    });
 };
 
 goradd.redirect = function(newLocation) {
