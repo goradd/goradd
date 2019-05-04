@@ -10,7 +10,7 @@ import (
 )
 
 // shared
-const controlsFormPath = "/goradd/examples/controls.g"
+const controlsFormPath = "/goradd/examples/bootstrap.g"
 
 const (
 	AjaxSubmit int = iota + 1
