@@ -76,9 +76,6 @@ func (l *MultiselectList) Validate(ctx context.Context) bool {
 // ΩUpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
 func (l *MultiselectList) ΩUpdateFormValues(ctx *page.Context) {
 	id := l.ID()
-	if ctx.RequestMode() == page.Ajax {
-		id += "[]" // an odd remnant of jquery processing
-	}
 
 	if a, ok := ctx.FormValues(id); ok {
 		l.selectedIds = map[string]bool{}
@@ -131,8 +128,7 @@ func (l *MultiselectList) SetSelectedIdNoRefresh(id string, value bool) {
 
 // Value implements the Valuer interface for general purpose value getting and setting
 func (l *MultiselectList) Value() interface{} {
-	// TODO: Not sure this is the right thing to return here. Perhaps array of selected values?
-	return l.selectedIds
+	return l.SelectedIds()
 }
 
 // SetValue implements the Valuer interface for general purpose value getting and setting

@@ -1,7 +1,7 @@
 
 if (!function () {
     "use strict";
-    return Function.prototype.bind && !this;
+    return Function.prototype.bind && XMLHttpRequest && !this;
 }()) {
     window.location = "/Unsupported.g";
 }
@@ -19,6 +19,11 @@ $j = $;
  * @namespace goradd
  */
 goradd = {
+    _controlValues: {},
+    _formObjsModified: {},
+    _ajaxError: false,
+    _blockEvents: false,
+
     /**
      * Adds a value to the next ajax or server post for the specified control. You can either call this ongoing, or
      * call it in response to the "posting" event. This is the preferred way for custom javascript controls to send data
@@ -29,19 +34,19 @@ goradd = {
      * @param strNewValue               The new value of the property. Can be any type, including string, number, object or array
      */
     setControlValue: function(strControlId, strProperty, strNewValue) {
-        if (!goradd.controlValues[strControlId]) {
-            goradd.controlValues[strControlId] = {};
+        if (!goradd._controlValues[strControlId]) {
+            goradd._controlValues[strControlId] = {};
         }
-        goradd.controlValues[strControlId][strProperty] = strNewValue;
+        goradd._controlValues[strControlId][strProperty] = strNewValue;
     },
     /**
      * Records that a control has changed in order to synchronize the control with
-     * the php version on the next request. Send the formObjChanged event to the control
+     * the go version on the next request. Send the formObjChanged event to the control
      * that changed, and it will bubble up to the form and be caught here.
      * @param event
      */
     formObjChanged: function (event) {
-        goradd.formObjsModified[event.target.id] = true;
+        goradd._formObjsModified[event.target.id] = true;
     },
     /**
      * Initializes form related scripts. This is called by injected code on a goradd form.
@@ -72,7 +77,7 @@ goradd = {
      *
      */
     postBack: function(params) {
-        if (goradd.blockEvents) {
+        if (goradd._blockEvents) {
             return;  // We are waiting for a response from the server
         }
 
@@ -85,8 +90,8 @@ goradd = {
         $objForm.trigger("posting", "Server");
 
         // Post custom javascript control values
-        if (!$.isEmptyObject(goradd.controlValues)) {
-            params.controlValues = goradd.controlValues;
+        if (!$.isEmptyObject(goradd._controlValues)) {
+            params.controlValues = goradd._controlValues;
         }
         $('#Goradd__Params').val(JSON.stringify(params));
 
@@ -126,8 +131,8 @@ goradd = {
 
 
             if (!goradd.inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones, because we might have missed something
-            goradd.ajaxError || // Ajax error would mean that formObjsModified is invalid. We need to submit everything.
-            (id && goradd.formObjsModified[id]) ||
+            goradd._ajaxError || // Ajax error would mean that _formObjsModified is invalid. We need to submit everything.
+            (id && goradd._formObjsModified[id]) ||
              blnForm) {  // all controls with Goradd__ at the beginning of the id are always posted.
                 var $ctrl = $(this),
                     strType = $ctrl.prop("type");
@@ -162,14 +167,14 @@ goradd = {
 
         // Update most of the Goradd__ parameters explicitly here. Others, like the state and form id will have been handled above.
         params.callType = "Ajax";
-        if (!$.isEmptyObject(goradd.controlValues)) {
-            params.controlValues = goradd.controlValues;
+        if (!$.isEmptyObject(goradd._controlValues)) {
+            params.controlValues = goradd._controlValues;
         }
         postData.Goradd__Params = JSON.stringify(params);
 
-        goradd.ajaxError = false;
-        goradd.formObjsModified = {};
-        goradd.controlValues = {};
+        goradd._ajaxError = false;
+        goradd._formObjsModified = {};
+        goradd._controlValues = {};
 
         return postData;
     },
@@ -193,7 +198,7 @@ goradd = {
             formAction = $objForm.attr("action"),
             async = params.hasOwnProperty("async");
 
-        if (goradd.blockEvents) {
+        if (goradd._blockEvents) {
             return;
         }
 
@@ -226,17 +231,17 @@ goradd = {
                         $.when.apply($, deferreds).then(
                             function () {
                                 goradd._processDeferredAjaxResponse(json);
-                                goradd.blockEvents = false;
+                                goradd._blockEvents = false;
                             }, // success
                             function () {
                                 goradd.log('Failed to load a file');
-                                goradd.blockEvents = false;
+                                goradd._blockEvents = false;
                             } // failed to load a file. What to do?
                         );
                     } else {
                         goradd._processImmediateAjaxResponse(json, params);
                         goradd._processDeferredAjaxResponse(json);
-                        goradd.blockEvents = false;
+                        goradd._blockEvents = false;
                     }
                 }
             };
@@ -252,8 +257,8 @@ goradd = {
     _displayAjaxError: function(resultText) {
         var objErrorWindow;
 
-        goradd.ajaxError = true;
-        goradd.blockEvents = false;
+        goradd._ajaxError = true;
+        goradd._blockEvents = false;
 
         if (resultText.substr(0, 15) === '<!DOCTYPE html>') {
             window.alert("An error occurred.\r\n\r\nThe error response will appear in a new popup.");
@@ -847,11 +852,7 @@ goradd.setRadioInGroup = function(strControlId) {
     }
 };
 
-goradd.controlValues = {};
-goradd.formObjsModified = {};
-goradd.ajaxError = false;
 goradd.inputSupport = true;
-goradd.blockEvents = false;
 goradd.finalCommands = [];
 goradd.currentStep = 0;
 goradd.stepFunction = null;
@@ -893,7 +894,7 @@ goradd.registerControls = function() {
 };
 
 goradd.redirect = function(newLocation) {
-    location = newLocation
+    window.location = newLocation
 };
 
 })( jQuery );

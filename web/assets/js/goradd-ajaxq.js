@@ -49,40 +49,33 @@ goradd.ajaxq = {
         this._idCounter++;
         var ajaxID = this._idCounter;
 
-        var objRequest;
-        if (window.XMLHttpRequest) {
-            objRequest = new XMLHttpRequest();
-        } else if (typeof ActiveXObject != "undefined") {
-            objRequest = new ActiveXObject("Microsoft.XMLHTTP");
-        }
+        var objRequest = new XMLHttpRequest();
 
-        if (objRequest) {
-            objRequest.open("POST", opts.url, true);
-            objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
-            objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            objRequest.setRequestHeader("X-Requested-With", "xmlhttprequest");
+        objRequest.open("POST", opts.url, true);
+        objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
+        objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        objRequest.setRequestHeader("X-Requested-With", "xmlhttprequest");
 
-            objRequest.onreadystatechange = function() {
-                if (objRequest.readyState === 4) {
-                    if (objRequest.status === 200) {
-                        try {
-                            opts.success(JSON.parse(objRequest.response));
-                        } catch(err) {
-                            // Goradd returns ajax errors as text
-                            opts.error(objRequest.response);
-                        }
-                    } else {
-                        // This would be a problem with the server or client
-                        objRequest.error("An ajax error occurred: " + objRequest.statusText);
+        objRequest.onreadystatechange = function() {
+            if (objRequest.readyState === 4) {
+                if (objRequest.status === 200) {
+                    try {
+                        opts.success(JSON.parse(objRequest.response));
+                    } catch(err) {
+                        // Goradd returns ajax errors as text
+                        opts.error(objRequest.response);
                     }
-
-                    delete self._currentRequests[ajaxID];
+                } else {
+                    // This would be a problem with the server or client
+                    objRequest.error("An ajax error occurred: " + objRequest.statusText);
                 }
-            };
-            self._currentRequests[ajaxID] = objRequest;
-            var encoded = self._encodeData(opts.data);
-            objRequest.send(encoded);
-        }
+
+                delete self._currentRequests[ajaxID];
+            }
+        };
+        self._currentRequests[ajaxID] = objRequest;
+        var encoded = self._encodeData(opts.data);
+        objRequest.send(encoded);
     },
     _encodeData(data) {
         var a = [];

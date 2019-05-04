@@ -106,7 +106,6 @@ type AppContext struct {
 	cliArgs             []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId         string
 	customControlValues map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
-	checkableValues     map[string]interface{}            // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
 	actionControlID     string                            // If an action, the control sending the action
 	eventID             EventID                           // The event to send to the control
 	actionValues        actionValues
@@ -205,30 +204,6 @@ func (ctx *Context) FormValues(key string) (value []string, ok bool) {
 	return
 }
 
-// CheckableValue returns the value of the named checkable value. This would be something coming from a
-// checkbox or radio button. You do not normally call this unless you are implementing a checkable control widget.
-func (ctx *Context) CheckableValue(key string) (value interface{}, ok bool) {
-	if ctx.NoJavaScript {
-		// checkable values do not exist, and we are POSTing.
-		value,ok = ctx.FormValue(key)
-		// In a POST, checkable values only exist if they are checked.
-		// This requires great care when using a parent control that is paging a lot of child controls. It must
-		// mark any controls not on screen correctly.
-		return
-	}
-	if ctx.checkableValues == nil {
-		return
-	}
-	value, ok = ctx.checkableValues[key]
-	return
-}
-
-// CheckableValues returns multiple checkable values. You do not normally call this unless you are implementing
-// a widget that would have multiple checkable values, like a checklist.
-func (ctx *Context) CheckableValues() map[string]interface{} {
-	return ctx.checkableValues
-}
-
 // CustomControlValue returns the value of a control that is using the custom control mechanism to report
 // its values. You would only call this if your are implementing a control that has custom javascript to
 // operate its UI.
@@ -288,7 +263,6 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 			dec.UseNumber()
 			if err = dec.Decode(&params); err == nil {
 				ctx.customControlValues = params.ControlValues
-				ctx.checkableValues = params.CheckableValues
 				ctx.actionControlID = params.ControlID
 				if params.EventID != 0 {
 					ctx.eventID = EventID(params.EventID)

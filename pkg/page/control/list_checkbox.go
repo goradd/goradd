@@ -11,6 +11,7 @@ import (
 type CheckboxListI interface {
 	MultiselectListI
 	ΩRenderItems(items []ListItemI) string
+	ΩRenderItem(item ListItemI) string
 }
 
 // CheckboxList is a multi-select control that presents its choices as a list of checkboxes.
@@ -31,6 +32,8 @@ type CheckboxList struct {
 	// isScrolling determines if we are going to let the list scroll. You will need to limit the size of the
 	// control for scrolling to happen.
 	isScrolling bool
+	// rowClass is the class assigned to the div wrapper around each row.
+	rowClass string
 }
 
 // NewCheckboxList creates a new CheckboxList
@@ -95,6 +98,15 @@ func (l *CheckboxList) SetIsScrolling(s bool) *CheckboxList {
 	return l
 }
 
+// SetRowClass sets the class to the div wrapper around each row. If blank, will be given
+// a default.
+func (l *CheckboxList) SetRowClass(c string) *CheckboxList {
+	l.rowClass = c
+	l.Refresh()
+	return l
+}
+
+
 // ΩDrawingAttributes retrieves the tag's attributes at draw time.
 // You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
@@ -121,16 +133,20 @@ func (l *CheckboxList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (
 func (l *CheckboxList) ΩRenderItems(items []ListItemI) string {
 	var hItems []string
 	for _,item := range items {
-		hItems = append(hItems, l.ΩRenderItem(item))
+		hItems = append(hItems, l.this().ΩRenderItem(item))
 	}
 	if l.columnCount == 0 {
 		return strings.Join(hItems, "")
 	}
 	b := GridLayoutBuilder{}
+	var rowClass string
+	if l.rowClass != "" {
+		rowClass = l.rowClass
+	}
 	return b.Items(hItems).
 		ColumnCount(l.columnCount).
 		Direction(l.direction).
-		RowClass("gr-cbl-row").
+		RowClass(rowClass).
 		Build()
 }
 

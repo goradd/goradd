@@ -34,6 +34,9 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 		switch id {
 		case "forms1":
 			panels.NewForms1Panel(f.detail)
+		case "selectlist":
+			panels.NewSelectListPanel(ctx, f.detail)
+
 		default:
 			panels.NewDefaultPanel(f.detail, "")
 		}

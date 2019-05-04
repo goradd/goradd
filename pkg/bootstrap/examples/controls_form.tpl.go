@@ -43,6 +43,11 @@ func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (
 	buf.WriteString(path)
 
 	buf.WriteString(`?control=forms1">Standard Forms</a></li>
+        <li class="nav-item"><a class="nav-link" href="`)
+
+	buf.WriteString(path)
+
+	buf.WriteString(`?control=selectlist">Selection Lists</a></li>
     </ul>
   </div>
 </nav>

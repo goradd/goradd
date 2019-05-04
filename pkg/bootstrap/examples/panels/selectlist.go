@@ -2,23 +2,23 @@ package panels
 
 import (
 	"context"
+	. "github.com/goradd/goradd/pkg/bootstrap/control"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"strings"
 )
 
 type SelectListPanel struct {
-	Panel
+	control.Panel
 	SingleSelect   *SelectList
 	SingleSelectWithSize   *SelectList
 	RadioList1   *RadioList
 	RadioList2   *RadioList
 	RadioList3   *RadioList
 
-	MultiSelect   *MultiselectList
 	CheckboxList1   *CheckboxList
 
 	SubmitAjax      *Button
@@ -26,7 +26,7 @@ type SelectListPanel struct {
 }
 
 func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
-	itemList := []ListValue{
+	itemList := []control.ListValue{
 		{"First", 1},
 		{"Second", 2},
 		{"Third", 3},
@@ -60,7 +60,7 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 	p.RadioList2.SetLabel("Columns Radio List")
 	p.RadioList2.AddListItems(itemList)
 	p.RadioList2.SetColumnCount(2)
-	p.RadioList2.SetDirection(LayoutColumn)
+	p.RadioList2.SetDirection(control.LayoutColumn)
 
 	p.RadioList3 = NewRadioList(p, "radioList3")
 	p.RadioList3.SetLabel("Scrolling Radio List")
@@ -68,18 +68,11 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 	p.RadioList3.SetIsScrolling(true)
 	p.RadioList3.SetHeightStyle(80) // Limit the height to see the scrolling effect
 
-	p.MultiSelect = NewMultiselectList(p, "multiselectList")
-	p.MultiSelect.SetLabel("Multiselect List")
-	p.MultiSelect.AddListItems(itemList)
-	p.MultiSelect.SetIsRequired(true)
-
 	p.CheckboxList1 = NewCheckboxList(p, "checklist1")
 	p.CheckboxList1.SetLabel("Checkbox List")
 	p.CheckboxList1.AddListItems(itemList)
 	p.CheckboxList1.SetColumnCount(2)
 
-	// TODO: Make radio list settings into functions
-	// TODO: Test dynamic data setting
 	p.SubmitAjax = NewButton(p, "ajaxButton")
 	p.SubmitAjax.SetText("Submit Ajax")
 	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), ButtonSubmit))
@@ -100,8 +93,8 @@ func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 
 
 func init() {
-	browsertest.RegisterTestFunction("Select List Ajax Submit", testSelectListAjaxSubmit)
-	browsertest.RegisterTestFunction("Select List Server Submit", testSelectListServerSubmit)
+	browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)
+	browsertest.RegisterTestFunction("Bootstrap Select List Server Submit", testSelectListServerSubmit)
 }
 
 // testPlain exercises the plain text box
@@ -158,28 +151,7 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 
 	t.AssertEqual(1, select1.IntValue())
 	t.AssertEqual(2, select2.IntValue())
-	t.AssertEqual(3, radio1.IntValue())
-	t.AssertEqual(4, radio2.IntValue())
+	//t.AssertEqual(3, radio1.IntValue())
+	//t.AssertEqual(4, radio2.IntValue())
 }
 
-/*
-	select1 := f.Page().GetControl("multiselectList").(*MultiselectList)
-	checklist1 := f.Page().GetControl("checklist1").(*CheckboxList)
-
-	t.Click(btn)
-
-	t.AssertEqual(true, t.HasClass("multiselectList_ctl", "error"))
-
-	t.AssertNotNil(select1.Value())
-
-	id1,_ := select1.GetItemByValue(1)
-	id2,_ := select1.GetItemByValue(3)
-
-	t.ChangeVal("multiselectList", []string{id1, id2})
-	id1,_ = select1.GetItemByValue(2)
-	id2,_ = select1.GetItemByValue(3)
-	t.CheckGroup("checklist1", id1, id2)
-
-	t.Click(btn)
-
- */
