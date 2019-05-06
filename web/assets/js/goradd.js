@@ -19,6 +19,80 @@ $j = $;
  * @namespace goradd
  */
 goradd = {
+    /**
+     * General support library. Here we recreate a few useful functions from jquery.
+     */
+
+    /**
+     *
+     * @param id
+     * @returns {*}
+     */
+    el: function(id) {
+        return document.getElementById(id);
+    },
+    qs: function(sel) {
+        return document.querySelector(sel);
+    },
+    qa: function(sel) {
+        return document.querySelectorAll(sel);
+    },
+    form: function() {
+        return goradd.qs('form[data-grctl="form"]');
+    },
+
+
+    /**
+     * matches returns true if the given element matches the css selector.
+     * @param el
+     * @param sel
+     * @returns {boolean}
+     */
+    matches: function(el, sel) {
+        if (Element.prototype.matches) {
+            return el.matches(filter);
+        } else {
+            var matches = goradd.qa(sel),
+                i = matches.length;
+            while (--i >= 0 && matches.item(i) !== el) {}
+            return i > -1;
+        }
+    },
+
+    /**
+     * on attaches an event handler to the given html object.
+     * Filtering and potentially supplying data to the event are also included.
+     * If data is a function, the function will be called when the event fires and the
+     * result of the function will be provided as data to the event. The "this" parameter
+     * will be the element with the given targetId, and the function will be provided the event object.
+     *
+     * @param target {string|object} Either a string id of an html object, or the object itself
+     * @param eventName
+     * @param eventHandler
+     * @param filter
+     * @param data
+     */
+    on: function(target, eventName, eventHandler, filter, data) {
+        if (typeof target != "object") {
+            target = goradd.el(target);
+        }
+        target.addEventListener(eventName, function(event) {
+            if (filter && !goradd.matches(event.target, filter)) {
+                return
+            }
+            if (data) {
+                if (typeof data === "function") {
+                    data = data.call(target, event);
+                }
+                event.grdata = data;
+            }
+            eventHandler.call(target, event);
+        });
+    },
+
+    /**
+     * Private members
+     */
     _controlValues: {},
     _formObjsModified: {},
     _ajaxError: false,
@@ -54,10 +128,10 @@ goradd = {
      * Initializes form related scripts. This is called by injected code on a goradd form.
      */
     initForm: function () {
-        var $form =  $(goradd.getForm());
-        $form.on ('formObjChanged', goradd.formObjChanged); // Allow any control, including hidden inputs, to trigger a change and post of its data.
-        $form.submit(function(event) {
-            if (!$('#Goradd__Params').val()) { // did postBack initiate the submit?
+        var form =  goradd.form();
+        goradd.on(form, 'formObjChanged', goradd.formObjChanged); // Allow any control, including hidden inputs, to trigger a change and post of its data.
+        goradd.on(form, 'submit', function(event) {
+            if (!goradd.el('Goradd__Params').value) { // did postBack initiate the submit?
                 // if not, prevent implicit form submission. This can happen in the rare case we have a single field and no submit button.
                 event.preventDefault();
             }
