@@ -87,7 +87,7 @@ func init() {
 
 // testPlain exercises the plain text box
 func testHListAjaxSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "HList").String()
+	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "HList").AddValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 
 	testHListSubmit(t, f, f.Page().GetControl("ajaxButton"))
@@ -96,7 +96,7 @@ func testHListAjaxSubmit(t *browsertest.TestForm)  {
 }
 
 func testHListServerSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "HList").String()
+	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "HList").AddValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 
 	testHListSubmit(t, f, f.Page().GetControl("serverButton"))

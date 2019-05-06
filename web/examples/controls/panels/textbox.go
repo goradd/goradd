@@ -114,7 +114,7 @@ func testTextboxServerSubmit(t *browsertest.TestForm)  {
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
 func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
+	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").AddValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 	btn := f.Page().GetControl(btnName)
 

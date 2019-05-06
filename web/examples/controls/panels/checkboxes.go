@@ -70,7 +70,7 @@ func init() {
 
 // testPlain exercises the plain text box
 func testCheckboxAjaxSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "checkbox").String()
+	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "checkbox").AddValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 
 	testCheckboxSubmit(t, f, f.Page().GetControl("ajaxButton"))
@@ -79,7 +79,7 @@ func testCheckboxAjaxSubmit(t *browsertest.TestForm)  {
 }
 
 func testCheckboxServerSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "checkbox").String()
+	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "checkbox").AddValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 
 	testCheckboxSubmit(t, f, f.Page().GetControl("serverButton"))

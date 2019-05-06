@@ -24,12 +24,16 @@ goradd = {
      */
 
     /**
-     *
-     * @param id
+     * el returns the html element t. t can be an id, or an element, and if an element, it will just return the element
+     * back. This is used below so that all the functions can pass either an element, or the id of an element.
+     * @param t {string|object}
      * @returns {*}
      */
-    el: function(id) {
-        return document.getElementById(id);
+    el: function(t) {
+        if (typeof t == "object") {
+            return t;
+        }
+        return document.getElementById(t);
     },
     qs: function(sel) {
         return document.querySelector(sel);
@@ -56,6 +60,7 @@ goradd = {
      * @returns {boolean}
      */
     matches: function(el, sel) {
+        el = goradd.el(el);
         if (Element.prototype.matches) {
             return el.matches(filter);
         } else {
@@ -64,6 +69,14 @@ goradd = {
             while (--i >= 0 && matches.item(i) !== el) {}
             return i > -1;
         }
+    },
+    attr: function(t, a) {
+        t = goradd.el(t);
+        var v = t.hasAttribute(a);
+        if (!v) {
+            return null;
+        }
+        return t.getAttribute(a);
     },
 
     /**
@@ -80,9 +93,7 @@ goradd = {
      * @param data
      */
     on: function(target, eventName, eventHandler, filter, data) {
-        if (typeof target != "object") {
-            target = goradd.el(target);
-        }
+        target = goradd.el(target);
         target.addEventListener(eventName, function(event) {
             if (filter && !goradd.matches(event.target, filter)) {
                 return
@@ -101,9 +112,7 @@ goradd = {
         });
     },
     trigger: function(target, eventName, extra) {
-        if (typeof target != "object") {
-            target = goradd.el(target);
-        }
+        target = goradd.el(target);
         var event;
 
         if (typeof window.CustomEvent === "object") {
@@ -162,7 +171,10 @@ goradd = {
                 event.preventDefault();
             } else {
                 // Check html5 validity in case it is being used.
-                if ((typeof form.reportValidity !== "function") || form.reportValidity()) {
+                if (typeof form.reportValidity !== "function" ||
+                    form.hasAttribute("novalidate") ||
+                    form.reportValidity()) {
+
                     form.submit();
                 }
             }

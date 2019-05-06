@@ -40,14 +40,16 @@ func NewControlsForm(ctx context.Context) page.FormI {
 	f.Init(ctx, f, ControlsFormPath, ControlsFormId)
 	f.AddRelatedFiles()
 
-
-
 	f.detail = NewPanel(f, "detailPanel")
 
 	return f
 }
 
 func (f *ControlsForm) LoadControls(ctx context.Context) {
+	if _, ok := page.GetContext(ctx).FormValue("testing"); ok {
+		f.SetAttribute("novalidate", true); // bypass html validation for testing
+	}
+
 	if id, ok := page.GetContext(ctx).FormValue("control"); ok {
 		switch id {
 		case "textbox":

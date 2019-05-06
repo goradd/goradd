@@ -146,7 +146,7 @@ func testTableCheckboxServerSubmit(t *browsertest.TestForm)  {
 
 func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
 	table1Data = getCheckTestData()
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "tablecheckbox").String()
+	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "tablecheckbox").AddValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 	btn := f.Page().GetControl(btnName)
 

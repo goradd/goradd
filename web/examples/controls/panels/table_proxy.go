@@ -109,7 +109,7 @@ func init() {
 }
 
 func testTableProxyCol(t *browsertest.TestForm) {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "tableproxy").String()
+	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "tableproxy").AddValue("testing", 1).String()
 	t.LoadUrl(myUrl)
 
 	t.ClickHtmlItem("pxy1")
