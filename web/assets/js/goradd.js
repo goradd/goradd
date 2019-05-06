@@ -37,6 +37,13 @@ goradd = {
     qa: function(sel) {
         return document.querySelectorAll(sel);
     },
+    isEmptyObj: function(o) {
+        if (!o) return false;
+        for (var name in o ) {
+            return false;
+        }
+        return true;
+    },
     form: function() {
         return goradd.qs('form[data-grctl="form"]');
     },
@@ -86,8 +93,27 @@ goradd = {
                 }
                 event.grdata = data;
             }
-            eventHandler.call(target, event);
+            if (event.detail) {
+                eventHandler.call(target, event, event.detail); // simulate adding extra items to event handler
+            } else {
+                eventHandler.call(target, event);
+            }
         });
+    },
+    trigger: function(target, eventName, extra) {
+        if (typeof target != "object") {
+            target = goradd.el(target);
+        }
+        var event;
+
+        if (typeof window.CustomEvent === "object") {
+            // CustomEvent for browsers which don't natively support the Constructor method
+            event = document.createEvent('CustomEvent');
+            event.initCustomEvent(eventName, true, true, extra);
+        } else {
+            event = new CustomEvent(eventName, {bubbles: true, cancelable: true, composed: true, detail: extra})
+        }
+        target.dispatchEvent(event);
     },
 
     /**
@@ -134,6 +160,11 @@ goradd = {
             if (!goradd.el('Goradd__Params').value) { // did postBack initiate the submit?
                 // if not, prevent implicit form submission. This can happen in the rare case we have a single field and no submit button.
                 event.preventDefault();
+            } else {
+                // Check html5 validity in case it is being used.
+                if ((typeof form.reportValidity !== "function") || form.reportValidity()) {
+                    form.submit();
+                }
             }
         });
         goradd._registerControls();
@@ -157,22 +188,22 @@ goradd = {
             return;  // We are waiting for a response from the server
         }
 
-        var $objForm = $(goradd.getForm());
-        var formId = $objForm.attr("id");
+        var form = goradd.form();
 
         params.callType = "Server";
 
         // Notify custom controls that we are about to post
-        $objForm.trigger("posting", "Server");
+
+        goradd.trigger(form, "posting", "Server");
 
         // Post custom javascript control values
-        if (!$.isEmptyObject(goradd._controlValues)) {
+        if (goradd.isEmptyObj(goradd._controlValues)) {
             params.controlValues = goradd._controlValues;
         }
-        $('#Goradd__Params').val(JSON.stringify(params));
+        goradd.el('Goradd__Params').value = JSON.stringify(params);
 
-        // have $ trigger the submit event (so it can catch all submit events)
-        $objForm.trigger("submit");
+        // trigger our own form submission so we can catch it
+        goradd.trigger(form, "submit");
     },
 
 
