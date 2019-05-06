@@ -67,7 +67,7 @@ goradd.ajaxq = {
                     }
                 } else {
                     // This would be a problem with the server or client
-                    objRequest.error("An ajax error occurred: " + objRequest.statusText);
+                    opts.error("An ajax error occurred: " + objRequest.statusText);
                 }
 
                 delete self._currentRequests[ajaxID];

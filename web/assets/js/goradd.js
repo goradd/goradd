@@ -70,13 +70,40 @@ goradd = {
             return i > -1;
         }
     },
+    /**
+     * attr gets an attribute from a dom object. Generally, though, just access it as a key on the dom object, in
+     * which case you will be accessing the property, which usually is what you want. Returns null if the attribute
+     * does not exist (instead of failing which is normally what would happen when you directly access the attribute).
+     * @param t
+     * @param a
+     * @returns {null|boolean|*}
+     */
     attr: function(t, a) {
         t = goradd.el(t);
         var v = t.hasAttribute(a);
         if (!v) {
             return null;
         }
-        return t.getAttribute(a);
+        v = t.getAttribute(a);
+        if (v === null) {
+            return true; // A boolean attribute, it just exists with no value
+        } else {
+            return v;
+        }
+    },
+    /**
+     * Prop returns the given property, or null if it does not exist.
+     * @param t
+     * @param a
+     * @returns {null|*}
+     */
+    prop: function(t,a) {
+        t = goradd.el(t);
+        if (a in t) {
+            return t[a];
+        } else {
+            return null;
+        }
     },
 
     /**
@@ -236,46 +263,53 @@ goradd = {
      * @private
      */
     _getAjaxData: function(params) {
-        var $form = $('#' + params.formId),
-            controls = $form.find('input,select,textarea'),
+        var form = goradd.form(),
+            controls = form.querySelectorAll('input,select,textarea'),
             postData = {};
 
         // Notify controls we are about to post.
-        $form.trigger("posting", "Ajax");
+        goradd.trigger(form, "posting", "Ajax");
 
         // We try to ignore controls that have not changed to reduce the amount of data sent in an ajax post.
-        controls.each(function() {
-            var id = this.id,
-                blnForm = (id && (id.substr(0, 8) === 'Goradd__'));
-
+        controls.forEach(function(c) {
+            var id = goradd.prop(c, "id");
+            var blnForm = (id && (id.substr(0, 8) === 'Goradd__'));
 
             if (!goradd._inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones, because we might have missed something
             goradd._ajaxError || // Ajax error would mean that _formObjsModified is invalid. We need to submit everything.
             (id && goradd._formObjsModified[id]) ||
              blnForm) {  // all controls with Goradd__ at the beginning of the id are always posted.
-                var $ctrl = $(this),
-                    strType = $ctrl.prop("type");
+                var strType = goradd.prop(c, "type");
 
                 switch (strType) {
                     case "radio":
                         // Radio buttons listen to their name.
-                        var n = $ctrl.attr("name");
-                        var $sel = $('input:radio[name=' + n + ']:checked');
+                        var n = c.name;
+                        var radio = form.querySelector('input:radio[name=' + n + ']:checked');
                         var val = null;
-                        if ($sel.length) {
-                            val = $sel.val();
+                        if (radio) {
+                            val = radio.value;
                         }
                         postData[n] = val;
                         break;
                     case "checkbox":
-                        postData[id] = $ctrl.prop("checked");
+                        postData[id] = c.checked;
                         break;
                     default:
+                        if (c.nodeName.toLowerCase() === 'select' && c.multiple) {
+                            var sels = c.querySelectorAll(':checked');
+                            var v = [];
+                            sels.forEach(function(s) {
+                                v.push(s.value);
+                            });
+                            postData[id] = v;
+                            break;
+                        }
+
                         // All goradd controls and subcontrols MUST have an id for this to work.
                         // There is a special case for checkbox groups, but they get handled on the server
                         // side differently between ajax and server posts.
-                        // Also, the .val() will gather an array for multi-select lists automatically.
-                        postData[id] = $ctrl.val();
+                        postData[id] = c.value;
                         break;
                 }
 
@@ -286,7 +320,7 @@ goradd = {
 
         // Update most of the Goradd__ parameters explicitly here. Others, like the state and form id will have been handled above.
         params.callType = "Ajax";
-        if (!$.isEmptyObject(goradd._controlValues)) {
+        if (!goradd.isEmptyObj(goradd._controlValues)) {
             params.controlValues = goradd._controlValues;
         }
         postData.Goradd__Params = JSON.stringify(params);
