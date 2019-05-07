@@ -1,3 +1,18 @@
+/**
+ * goradd.js
+ *
+ * This is the shim between the goradd go code and the browser. It enables ajax and other kinds of
+ * communication between the server and the client.
+ *
+ * Goals:
+ *  - Compatible with all current browsers, IE 10+ and Opera Mobile (ES5).
+ *  - Small. We want to be compatible in situations with limited bandwidth.
+ *    The minimized version should be as small as possible.
+ *  - Provide utility code to javascript widgets and plugins.
+ *  - Do not use jQuery or other frameworks, but be compatible if its used by the devoloper.
+ */
+
+
 
 if (!function () {
     "use strict";
@@ -89,19 +104,26 @@ goradd = {
      * does not exist (instead of failing which is normally what would happen when you directly access the attribute).
      * @param t
      * @param a
+     * @param val (optional) {string} If present, the value to set the attribute to.
      * @returns {null|boolean|*}
      */
-    attr: function(t, a) {
+    attr: function(t, a, val) {
         t = goradd.el(t);
-        var v = t.hasAttribute(a);
-        if (!v) {
-            return null;
-        }
-        v = t.getAttribute(a);
-        if (v === null) {
-            return true; // A boolean attribute, it just exists with no value
+        if (arguments.length <= 2) {
+            // get value
+            var v = t.hasAttribute(a);
+            if (!v) {
+                return null;
+            }
+            v = t.getAttribute(a);
+            if (v === null) {
+                return true; // A boolean attribute, it just exists with no value
+            } else {
+                return v;
+            }
         } else {
-            return v;
+            // set value
+            t.setAttribute(a, val);
         }
     },
     /**
@@ -163,6 +185,41 @@ goradd = {
             event = new CustomEvent(eventName, {bubbles: true, cancelable: true, composed: true, detail: extra})
         }
         target.dispatchEvent(event);
+    },
+    /**
+     * loadJavaScriptFile will dynamically load a javascript file. It is designed to be called during ajax calls or
+     * other times when a dynamically loaded javascript file is required.
+     * @param strScript
+     * @param attributes
+     */
+    loadJavaScriptFile: function(strScript, attributes) {
+        var script = document.createElement("script");
+        script.src = strScript;
+        script.type = 'text/javascript';
+        if (attributes) {
+            for (var key in attributes) {
+                if (attributes.hasOwnProperty(key)) {
+                    script[key] = attributes[key];
+                }
+            }
+        }
+
+        var head = document.getElementsByTagName('head')[0];
+        head.appendChild(script);
+    },
+    loadStyleSheetFile: function(strStyleSheetFile, attributes) {
+        var link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = strStyleSheetFile;
+        if (attributes) {
+            for (var key in attributes) {
+                if (attributes.hasOwnProperty(key)) {
+                    link[key] = attributes[key];
+                }
+            }
+        }
+        var head = document.getElementsByTagName('head')[0];
+        head.appendChild(link);
     },
 
     /**
@@ -350,15 +407,15 @@ goradd = {
      * @return {void}
      */
     postAjax: function(params) {
-        var $objForm = $(goradd.getForm()),
-            formAction = $objForm.attr("action"),
+        var form = goradd.form(),
+            formAction = goradd.attr(form, "action"),
             async = params.hasOwnProperty("async");
 
         if (goradd._blockEvents) {
             return;
         }
 
-        params.formId = $objForm.attr('id');
+        params.formId = goradd.attr(form, "id");
 
         goradd.log("postAjax", params);
 
@@ -378,11 +435,13 @@ goradd = {
                     goradd.log("Ajax success ", json);
 
                     if (json.js) {
+                        // TODO: Change js to be an array of objects. Each object specifies cross-site tags, async and defer options, etc.
+                        // Just inject a tag. Only use promises when available and when javascript indicates an immediate load.
                         var deferreds = [];
                         // Load all javascript files before attempting to process the rest of the response, in case some things depend on the injected files
-                        $.each(json.js, function (i, v) {
-                            deferreds.push(goradd.loadJavaScriptFile(v));
-                        });
+                        for (var k in json.js) {
+                            goradd.loadJavaScriptFile(k, json.js[k]);
+                        }
                         goradd._processImmediateAjaxResponse(json, params); // go ahead and begin processing things that will not depend on the javascript files to allow parallel processing
                         $.when.apply($, deferreds).then(
                             function () {
@@ -433,29 +492,6 @@ goradd = {
      * Start me up.
      */
     initialize: function() {
-        ////////////////////////////////
-        // Browser-related functionality
-        ////////////////////////////////
-
-        goradd.loadJavaScriptFile = function(strScript, objCallback) {
-            return $.ajax({
-                url: strScript,
-                success: objCallback,
-                dataType: "script",
-                cache: true
-            });
-        };
-
-        goradd.loadStyleSheetFile = function(strStyleSheetFile, strMediaType) {
-            if (strMediaType){
-                strMediaType = " media="+strMediaType;
-            }
-            $('head').append('<link rel="stylesheet"'+strMediaType+' href="' + strStyleSheetFile + '" type="text/css" />');
-        };
-
-        /////////////////////////////
-        // Form-related functionality
-        /////////////////////////////
         /*
         $(window).on ("storage", function (o) {
             if (o.originalEvent.key === "goradd.broadcast") {

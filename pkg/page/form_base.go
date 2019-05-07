@@ -224,7 +224,24 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 		panic("page state changed")
 	}
 	//f.response.SetControlValue(htmlVarFormstate, pagestate)
-	// TODO: render imported style sheets and java scripts
+
+	// Inject any added style sheets and script files
+	if f.importedStyleSheets != nil {
+		f.importedStyleSheets.Range(func(k string,v interface{}) bool {
+			f.response.addStyleSheet(k,v.(*html.Attributes))
+			return true
+		})
+	}
+
+	if f.importedJavaScripts != nil {
+		f.importedJavaScripts.Range(func(k string,v interface{}) bool {
+			f.response.addJavaScriptFile(k,v.(*html.Attributes))
+			return true
+		})
+	}
+
+	f.mergeInjectedFiles()
+
 	f.resetDrawingFlags()
 	buf2, err = f.response.GetAjaxResponse()
 	buf.Write(buf2)
@@ -270,10 +287,12 @@ func (f *ΩFormBase) saveState() string {
 
 // AddJavaScriptFile registers a JavaScript file such that it will get loaded on the page.
 // If forceHeader is true, the file will be listed in the header, which you should only do if the file has some
-// preliminary javascript that needs to be executed before the dom loads. Otherwise, the file will be loaded after
+// preliminary javascript that needs to be executed before the dom loads.
+// You can specify forceHeader and a "defer" attribute to get the effect of loading the javascript in the background.
+// With forceHeader false, the file will be loaded after
 // the dom is loaded, allowing the browser to show the page and then load the javascript in the background, giving the
 // appearance of a more responsive website. If you add the file during an ajax operation, the file will be loaded
-// dynamically by the goradd javascript. Controls generally should call This during the initial creation of the control if the control
+// dynamically by the goradd javascript. Controls generally should call this during the initial creation of the control if the control
 // requires additional javascript to function.
 //
 // The path is either a url, or an internal path to the location of the file
@@ -350,13 +369,7 @@ func (f *ΩFormBase) AddStyleSheetFile(path string, attributes *html.Attributes)
 // DrawHeaderTags is called by the page drawing routine to draw its header tags
 // If you override this, be sure to call this version too
 func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
-	if f.importedStyleSheets != nil {
-		if f.headerStyleSheets == nil {
-			f.headerStyleSheets = maps.NewSliceMap()
-		}
-		f.headerStyleSheets.Merge(f.importedStyleSheets)
-		f.importedStyleSheets = nil
-	}
+	f.mergeInjectedFiles()
 
 	if f.headerStyleSheets != nil {
 		f.headerStyleSheets.Range(func(path string, attr interface{}) bool {
@@ -371,14 +384,6 @@ func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 		})
 	}
 
-	if f.importedJavaScripts != nil {
-		if f.headerJavaScripts == nil {
-			f.headerJavaScripts = maps.NewSliceMap()
-		}
-		f.headerJavaScripts.Merge(f.importedJavaScripts)
-		f.importedJavaScripts = nil
-	}
-
 	if f.headerJavaScripts != nil {
 		f.headerJavaScripts.Range(func(path string, attr interface{}) bool {
 			var attributes = attr.(*html.Attributes)
@@ -389,6 +394,24 @@ func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 			buf.WriteString(html.RenderTag("script", attributes, ""))
 			return true
 		})
+	}
+}
+
+func (f *ΩFormBase) mergeInjectedFiles() {
+	if f.importedStyleSheets != nil {
+		if f.headerStyleSheets == nil {
+			f.headerStyleSheets = maps.NewSliceMap()
+		}
+		f.headerStyleSheets.Merge(f.importedStyleSheets)
+		f.importedStyleSheets = nil
+	}
+
+	if f.importedJavaScripts != nil {
+		if f.headerJavaScripts == nil {
+			f.headerJavaScripts = maps.NewSliceMap()
+		}
+		f.headerJavaScripts.Merge(f.importedJavaScripts)
+		f.importedJavaScripts = nil
 	}
 }
 

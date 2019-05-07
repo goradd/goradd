@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/javascript"
-	"strings"
 	"sync"
 )
 
@@ -115,9 +115,9 @@ type Response struct {
 	// jsFiles are JavaScript files that should be inserted into the page. This should rarely be used,
 	// but is needed in case the programmer inserts a control widget in response to an Ajax event,
 	// and that control depends on javascript that has not yet been sent to the client.
-	jsFiles                *maps.StringSliceMap
+	jsFiles                *maps.SliceMap
 	// styleSheets are css files that should be inserted into the page.
-	styleSheets            *maps.StringSliceMap
+	styleSheets            *maps.SliceMap
 	// alerts are strings that should be shown to the user in a javascript aler
 	alerts                 []string
 	// newLocation is a URL that the client should be redirected to.
@@ -234,23 +234,19 @@ func (r *Response) extractPriority (args ...interface{}) (args2 []interface{}, p
 }
 
 // One time add of style sheets, to be used by FormBase only for last minute style sheet injection.
-func (r *Response) addStyleSheets(styleSheets ...string) {
+func (r *Response) addStyleSheet(path string, attributes *html.Attributes) {
 	if r.styleSheets == nil {
-		r.styleSheets = maps.NewStringSliceMap()
+		r.styleSheets = maps.NewSliceMap()
 	}
-	for _, s := range styleSheets {
-		r.styleSheets.Set(s, s)
-	}
+	r.styleSheets.Set(path, attributes)
 }
 
 // Add javascript files to the response.
-func (r *Response) addJavaScriptFiles(files ...string) {
+func (r *Response) addJavaScriptFile(path string, attributes *html.Attributes) {
 	if r.jsFiles == nil {
-		r.jsFiles = maps.NewStringSliceMap()
+		r.jsFiles = maps.NewSliceMap()
 	}
-	for _, f := range files {
-		r.jsFiles.Set(f, f)
-	}
+	r.jsFiles.Set(path, attributes)
 }
 
 // JavaScript renders the Response object as JavaScript that will be inserted into the page sent back to the
@@ -369,12 +365,12 @@ func (r *Response) GetAjaxResponse() (buf []byte, err error) {
 		}
 
 		if r.jsFiles != nil {
-			reply[ResponseJavaScripts] = strings.Join(r.jsFiles.Values(), ",")
+			reply[ResponseJavaScripts] = r.jsFiles
 			r.jsFiles = nil
 		}
 
 		if r.styleSheets != nil {
-			reply[ResponseStyleSheets] = strings.Join(r.styleSheets.Values(), ",")
+			reply[ResponseStyleSheets] = r.styleSheets
 			r.styleSheets = nil
 		}
 
