@@ -285,7 +285,7 @@ goradd = {
                     case "radio":
                         // Radio buttons listen to their name.
                         var n = c.name;
-                        var radio = form.querySelector('input:radio[name=' + n + ']:checked');
+                        var radio = form.querySelector('input[name=' + n + ']:checked');
                         var val = null;
                         if (radio) {
                             val = radio.value;
