@@ -295,20 +295,19 @@ goradd = {
                     case "checkbox":
                         postData[id] = c.checked;
                         break;
+                    case "select-multiple":
+                        var sels = c.querySelectorAll(':checked');
+                        var v = [];
+                        sels.forEach(function(s) {
+                            v.push(s.value);
+                        });
+                        postData[id] = v;
+                        break;
                     default:
-                        if (c.nodeName.toLowerCase() === 'select' && c.multiple) {
-                            var sels = c.querySelectorAll(':checked');
-                            var v = [];
-                            sels.forEach(function(s) {
-                                v.push(s.value);
-                            });
-                            postData[id] = v;
-                        } else {
-                            // All goradd controls and subcontrols MUST have an id for this to work.
-                            // There is a special case for checkbox groups, but they get handled on the server
-                            // side differently between ajax and server posts.
-                            postData[id] = c.value;
-                        }
+                        // All goradd controls and subcontrols MUST have an id for this to work.
+                        // There is a special case for checkbox groups, but they get handled on the server
+                        // side differently between ajax and server posts.
+                        postData[id] = c.value;
                         break;
                 }
 
