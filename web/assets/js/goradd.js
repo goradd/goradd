@@ -38,8 +38,21 @@ goradd = {
     qs: function(sel) {
         return document.querySelector(sel);
     },
-    qa: function(sel) {
-        return document.querySelectorAll(sel);
+    /**
+     * qa is a querySelectorAll call that returns an actual array, and not a NodeList. If you only give it a selector (sel)
+     * it will use the document as the parent. Returns empty array if selector has no results.
+     * @param el (optional) {object|string} The element to use as a parent, or id of element to use as parent
+     * @param sel {string} The css selector to find
+     * @returns {HTMLObject[]}
+     */
+    qa: function(el, sel) {
+        if (arguments.length === 1) {
+            sel = el;
+            el = document;
+        } else {
+            el = goradd.el(el);
+        }
+        return Array.prototype.slice.call(el.querySelectorAll(sel));
     },
     isEmptyObj: function(o) {
         if (!o) return false;
@@ -66,7 +79,7 @@ goradd = {
         } else {
             var matches = goradd.qa(sel),
                 i = matches.length;
-            while (--i >= 0 && matches.item(i) !== el) {}
+            while (--i >= 0 && matches[i] !== el) {}
             return i > -1;
         }
     },
@@ -264,23 +277,22 @@ goradd = {
      */
     _getAjaxData: function(params) {
         var form = goradd.form(),
-            controls = form.querySelectorAll('input,select,textarea'),
+            controls = goradd.qa(form, 'input,select,textarea'),
             postData = {};
 
         // Notify controls we are about to post.
         goradd.trigger(form, "posting", "Ajax");
 
-        // We try to ignore controls that have not changed to reduce the amount of data sent in an ajax post.
         controls.forEach(function(c) {
             var id = goradd.prop(c, "id");
             var blnForm = (id && (id.substr(0, 8) === 'Goradd__'));
 
             if (!goradd._inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones, because we might have missed something
-            goradd._ajaxError || // Ajax error would mean that _formObjsModified is invalid. We need to submit everything.
-            (id && goradd._formObjsModified[id]) ||
-             blnForm) {  // all controls with Goradd__ at the beginning of the id are always posted.
-                var strType = goradd.prop(c, "type");
+                goradd._ajaxError || // Ajax error would mean that _formObjsModified is invalid. We need to submit everything.
+                (id && goradd._formObjsModified[id]) ||  // We try to ignore controls that have not changed to reduce the amount of data sent in an ajax post.
+                blnForm) {  // all controls with Goradd__ at the beginning of the id are always posted.
 
+                var strType = goradd.prop(c, "type");
                 switch (strType) {
                     case "radio":
                         // Radio buttons listen to their name.
@@ -296,12 +308,8 @@ goradd = {
                         postData[id] = c.checked;
                         break;
                     case "select-multiple":
-                        var sels = c.querySelectorAll(':checked');
-                        var v = [];
-                        sels.forEach(function(s) {
-                            v.push(s.value);
-                        });
-                        postData[id] = v;
+                        var sels = goradd.qa(c,':checked');
+                        postData[id] = sels.map(function(s){return s.value});
                         break;
                     default:
                         // All goradd controls and subcontrols MUST have an id for this to work.
@@ -310,11 +318,8 @@ goradd = {
                         postData[id] = c.value;
                         break;
                 }
-
             }
         });
-
-
 
         // Update most of the Goradd__ parameters explicitly here. Others, like the state and form id will have been handled above.
         params.callType = "Ajax";
