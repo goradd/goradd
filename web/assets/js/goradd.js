@@ -303,13 +303,12 @@ goradd = {
                                 v.push(s.value);
                             });
                             postData[id] = v;
-                            break;
+                        } else {
+                            // All goradd controls and subcontrols MUST have an id for this to work.
+                            // There is a special case for checkbox groups, but they get handled on the server
+                            // side differently between ajax and server posts.
+                            postData[id] = c.value;
                         }
-
-                        // All goradd controls and subcontrols MUST have an id for this to work.
-                        // There is a special case for checkbox groups, but they get handled on the server
-                        // side differently between ajax and server posts.
-                        postData[id] = c.value;
                         break;
                 }
 

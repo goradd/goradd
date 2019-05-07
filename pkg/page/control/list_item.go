@@ -120,7 +120,10 @@ func (i *ListItem) Value() interface{} {
 }
 
 func (i *ListItem) IntValue() int {
-	return i.value.(int)
+	if v,ok := i.value.(int); ok {
+		return v
+	}
+	return -1
 }
 
 func (i *ListItem) StringValue() string {
