@@ -221,7 +221,27 @@ goradd = {
         var head = document.getElementsByTagName('head')[0];
         head.appendChild(link);
     },
-
+    htmlAfter: function(el, html) {
+        el = goradd.el(el);
+        el.insertAdjacentHtml("afterend", html);
+    },
+    htmlBefore: function(el, html) {
+        el = goradd.el(el);
+        el.insertAdjacentHtml("beforebegin", html);
+    },
+    insertHtml: function(el, html) {
+        el = goradd.el(el);
+        el.insertAdjacentHtml("afterbegin", html);
+    },
+    appendHtml: function(el, html) {
+        el = goradd.el(el);
+        el.insertAdjacentHtml("beforeend", html);
+    },
+    remove: function(el) {
+        el = goradd.el(el);
+        el.parent.removeChild(el);
+        return el;
+    },
     /**
      * Private members
      */
@@ -435,29 +455,14 @@ goradd = {
                     goradd.log("Ajax success ", json);
 
                     if (json.js) {
-                        // TODO: Change js to be an array of objects. Each object specifies cross-site tags, async and defer options, etc.
-                        // Just inject a tag. Only use promises when available and when javascript indicates an immediate load.
-                        var deferreds = [];
-                        // Load all javascript files before attempting to process the rest of the response, in case some things depend on the injected files
                         for (var k in json.js) {
                             goradd.loadJavaScriptFile(k, json.js[k]);
                         }
-                        goradd._processImmediateAjaxResponse(json, params); // go ahead and begin processing things that will not depend on the javascript files to allow parallel processing
-                        $.when.apply($, deferreds).then(
-                            function () {
-                                goradd._processDeferredAjaxResponse(json);
-                                goradd._blockEvents = false;
-                            }, // success
-                            function () {
-                                goradd.log('Failed to load a file');
-                                goradd._blockEvents = false;
-                            } // failed to load a file. What to do?
-                        );
-                    } else {
-                        goradd._processImmediateAjaxResponse(json, params);
-                        goradd._processDeferredAjaxResponse(json);
-                        goradd._blockEvents = false;
                     }
+                    goradd._processImmediateAjaxResponse(json, params);
+                    // TODO: Wait until javascripts above are loaded before proceeding?
+                    goradd._processDeferredAjaxResponse(json);
+                    goradd._blockEvents = false;
                 }
             };
         }, async);
@@ -481,11 +486,12 @@ goradd = {
             objErrorWindow.focus();
             objErrorWindow.document.write(resultText);
         } else {
-            resultText = $('<div>').html(resultText);
-            $('<div id="Goradd_AJAX_Error" />')
-                .append(resultText)
-                .append('<button onclick="$(this).parent().hide()">OK</button>')
-                .appendTo('form');
+            var b = new goradd.TagBuilder("div");
+            var el = b.attr("id", "Goradd_AJAX_Error").
+                html("<button onclick='goradd.remove(\"Goradd_AJAX_Error\")'>OK</button>").
+                appendTo(goradd.form());
+            b = new goradd.TagBuilder("div");
+            b.html(resultText).appendTo(el);
         }
     },
     /**
@@ -591,10 +597,9 @@ goradd = {
      */
     _processDeferredAjaxResponse: function(json) {
         if (json.commands) { // commands
-            $.each(json.commands, function (index, command) {
+            json.commands.forEach(function (command) {
                 if (command.final &&
                     goradd.ajaxq.isRunning()) {
-
                     goradd._enqueueFinalCommand(command);
                 } else {
                     goradd._processCommand(command);
@@ -1086,6 +1091,76 @@ goradd.registerControl = function(objControl) {
 
 goradd.redirect = function(newLocation) {
     window.location = newLocation
+};
+
+/**
+ * TagBuilder uses a builder pattern to create and place html tags.
+ * Use it as follows:
+ * tag = new goradd.TagBuilder("div").attr("class", "myClass").text("I am text").appendTo("objId")
+ * @param tag {string}
+ * @constructor
+ */
+goradd.TagBuilder = function(tag) {
+    this.el = document.createElement(tag);
+};
+goradd.TagBuilder.prototype = {
+    attr: function(a, v) {
+        this.el.setAttribute(a,v);
+        return this;
+    },
+    html: function(h) {
+        this.el.innerHtml = h;
+        return this;
+    },
+    text: function(t) {
+        this.el.innerText = t;
+        return this;
+    },
+    /**
+     * appendTo ends the builder by inserting the tag into the dom as the last child element of the given element.
+     * @param el {object|string}
+     */
+    appendTo: function(el) {
+        el = goradd.el(el);
+        el.appendChild(this.el);
+        return this.el;
+    },
+    /**
+     * insertInto ends the builder by inserting the tag into the dom as the first child element of the given element.
+     * @param el {object|string}
+     */
+    insertInto: function(el) {
+        el = goradd.el(el);
+        el.insertChild(this.el);
+        return this.el;
+    },
+    /**
+     * insertBefore ends the builder by inserting the tag into the dom as a sibling of the given item, and just before it.
+     * @param el {object|string}
+     */
+    insertBefore: function(el) {
+        el = goradd.el(el);
+        el.parentNode.insertBefore(this.el, el);
+        return this.el;
+    },
+    /**
+     * insertAfter ends the builder by inserting the tag into the dom as a sibling of the given item, and just after it.
+     * @param el {object|string}
+     */
+    insertAfter: function(el) {
+        el = goradd.el(el);
+        el.insertAdjacentElement("afterend", this.el);
+        return this.el;
+    },
+    /**
+     * replace ends the builder by replacing the given element.
+     * @param el {object|string}
+     */
+    replace: function(el) {
+        el = goradd.el(el);
+        el.parentNode.replaceChild(this.el, el);
+        return this.el;
+    }
 };
 
 })( jQuery );
