@@ -207,6 +207,11 @@ goradd = {
         var head = document.getElementsByTagName('head')[0];
         head.appendChild(script);
     },
+    /**
+     * loadStyleSheetFile dynamically loads a style sheet file. It is used by the ajax code.
+     * @param strStyleSheetFile
+     * @param attributes
+     */
     loadStyleSheetFile: function(strStyleSheetFile, attributes) {
         var link = document.createElement("link");
         link.rel = "stylesheet";
@@ -221,22 +226,49 @@ goradd = {
         var head = document.getElementsByTagName('head')[0];
         head.appendChild(link);
     },
+    /**
+     * htmlAfter adds the html after the given element.
+     * @param el {object|string}
+     * @param html
+     */
     htmlAfter: function(el, html) {
         el = goradd.el(el);
         el.insertAdjacentHtml("afterend", html);
     },
+    /**
+     * htmlBefore inserts the html before the given element.
+     * @param el {object|string}
+     * @param html
+     */
     htmlBefore: function(el, html) {
         el = goradd.el(el);
         el.insertAdjacentHtml("beforebegin", html);
     },
+    /**
+     * insertHtml inserts the given html in the inner html of the given element, but before any other html that is
+     * already there.
+     * @param el {object|string}
+     * @param html
+     */
     insertHtml: function(el, html) {
         el = goradd.el(el);
         el.insertAdjacentHtml("afterbegin", html);
     },
+    /**
+     * appendHtml inserts the given html into the inner html of the given element, but after any other html that is
+     * already there.
+     * @param el
+     * @param html
+     */
     appendHtml: function(el, html) {
         el = goradd.el(el);
         el.insertAdjacentHtml("beforeend", html);
     },
+    /**
+     * Remove removes the given element from the dom. It returns the removed element.
+     * @param el
+     * @returns {*}
+     */
     remove: function(el) {
         el = goradd.el(el);
         el.parent.removeChild(el);
@@ -268,8 +300,8 @@ goradd = {
         goradd._controlValues[strControlId][strProperty] = strNewValue;
     },
     /**
-     * Records that a control has changed in order to synchronize the control with
-     * the go version on the next request. Send the formObjChanged event to the control
+     * formObjChanged is an event handler that records that a control has changed in order to synchronize the control with
+     * the server on the next request. Send the formObjChanged event to the control
      * that changed, and it will bubble up to the form and be caught here.
      * @param event
      */
@@ -470,8 +502,6 @@ goradd = {
     /**
      * Displays the ajax error in either a popup window, or a new web page.
      * @param resultText
-     * @param textStatus
-     * @param errorThrown
      * @private
      */
     _displayAjaxError: function(resultText) {
