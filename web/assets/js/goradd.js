@@ -38,7 +38,8 @@ goradd = {
 
     /**
      * el returns the html element t. t can be an id, or an element, and if an element, it will just return the element
-     * back. This is used below so that all the functions can pass either an element, or the id of an element.
+     * back. This is used below so that all the functions can pass either an element, or the id of an element. Returns
+     * null if not found.
      * @param t {string|object}
      * @returns {Element}
      */
@@ -97,6 +98,20 @@ goradd = {
         }
     },
     /**
+     * parents returns the parent nodes, not including the window.
+     * @param el
+     * @returns {Array}
+     */
+    parents: function(el) {
+        var a = [];
+        el = goradd.el(el);
+        while (el.parentNode && el.parentNode !== window) {
+            a.push(el.parentNode);
+            el = el.parentNode;
+        }
+        return a;
+    },
+    /**
      * attr gets an attribute from a dom object. Generally, though, just access it as a key on the dom object, in
      * which case you will be accessing the property, which usually is what you want. Returns null if the attribute
      * does not exist (instead of failing which is normally what would happen when you directly access the attribute).
@@ -107,6 +122,13 @@ goradd = {
      */
     attr: function(t, a, val) {
         t = goradd.el(t);
+        if (typeof a === "object") {
+            // Using an object to set multiple attributes at once
+            goradd.each(a, function(k,v) {
+                t.setAttribute(k, v);
+            });
+            return;
+        }
         if (arguments.length <= 2) {
             // get value
             var v = t.hasAttribute(a);
@@ -292,6 +314,81 @@ goradd = {
             }
         }
     },
+    /**
+     * Value sets or gets the value of a goradd control. This is primarily used by the ajax processing code, but
+     * external tools can use this too. See below for what each kind of control will return. Note that the actual "value"
+     * attribute is not always returned.
+     * @param el
+     * @param v
+     * @returns {*}
+     */
+    value: function(el, v) {
+        el = goradd.el(el);
+        var type = goradd.prop(el, "type");
+        if (arguments.length === 2) {
+            switch (type) {
+                case "select-multiple":
+                    // Multi-select selections will attempt to set all items in the given array to the value
+                    var opts = goradd.qa(el,'option');
+                    goradd.each(opts, function(i, opt) {
+                        opt.checked = (opt.value in v);
+                    });
+                    break;
+                case "checkbox":
+                    if (typeof v === "boolean") {
+                        el.checked = v;
+                    } else if (typeof v === "number") {
+                        el.checked = v !== 0;
+                    } else if ("value" in el) {
+                        el.checked = el.value === v;
+                    } else {
+                        el.checked = false;
+                    }
+                    break;
+
+                case "radio":
+                    if (typeof v === "boolean") {
+                        el.checked = v;
+                    } else {
+                        el.checked = el.value == v;
+                    }
+                    break;
+                default:
+                    if ("value" in el) {
+                        el.value = v;
+                    }
+                    break;
+            }
+            return el;
+        } else {
+            switch (type) {
+                case "select-multiple":
+                    // Multi-select selections will return an array of selected values
+                    var sels = goradd.qa(el,':checked');
+                    return sels.map(function(s){return s.value});
+                case "checkbox":
+                case "radio":
+                    // Checkboxes and radios will return the value, or true, if checked, and null if not checked.
+                    if (el.checked) {
+                        if (!("value" in el)) { // if the checkbox has no value, just return true;
+                            return true;
+                        } else {
+                            return el.value;
+                        }
+                    }
+                    break;
+                default:
+                    if ("value" in el) {
+                        // This works for textboxes, textarea (possible problem losing newlines though), and single selects.
+                        // Custom controls can add a "value" getter as well and this will pick that up too.
+                        return el.value;
+                    }
+                    break;
+            }
+
+            return null;
+        }
+    },
 
     /**
      * Private members
@@ -435,15 +532,11 @@ goradd = {
                     case "checkbox":
                         postData[id] = c.checked;
                         break;
-                    case "select-multiple":
-                        var sels = goradd.qa(c,':checked');
-                        postData[id] = sels.map(function(s){return s.value});
-                        break;
                     default:
                         // All goradd controls and subcontrols MUST have an id for this to work.
                         // There is a special case for checkbox groups, but they get handled on the server
                         // side differently between ajax and server posts.
-                        postData[id] = c.value;
+                        postData[id] = goradd.value(c);
                         break;
                 }
             }
@@ -574,43 +667,47 @@ goradd = {
         goradd.each(json.controls, function(id) {
             var $control = $(goradd.getControl(id)),
                 $wrapper = $(goradd.getWrapper(id));
+            var control = goradd.el(id),
+                wrapper = goradd.el(id + "_ctl");
 
             if (this.value !== undefined) {
-                $control.val(this.value);
+                goradd.value(control, this.value);
             }
 
             if (this.attributes !== undefined) {
-                $control.attr (this.attributes);
+                goradd.attr(control, this.attributes);
             }
 
             if (this.html !== undefined) {
-                if ($wrapper.length) {
+                if (wrapper !== null) {
                     // Control's wrapper was found, so replace the control and the wrapper
-                    $wrapper.before(this.html).remove();
-                }
-                else if ($control.length) {
+                    goradd.htmlBefore(control, this.html);
+                    goradd.remove(control);
+                } else if (control !== null) {
                     // control was found without a wrapper, replace it in the same position it was in.
                     // remove related controls (error, name ...) for wrapper-less controls
                     var relSelector = "[data-grel='" + id + "']",
-                        relItems = $(relSelector),
-                        $relParent;
+                        relatedItems = goradd.qa(relSelector);
 
-                    if (relItems && relItems.length) {
-                        // if the control is wrapped in a related control, we move the control outside the related controls
-                        // before deleting the related controls
-                        $relParent = $control.parents(relSelector).last();
-                        if ($relParent.length) {
-                            $control.insertBefore($relParent);
-                        }
-                        relItems.remove();
+                    var p = goradd.parents(control);
+                    var relatedParent = p.filter(function(el) {
+                        return goradd.matches(el, relSelector);
+                    }).pop();
+
+                    if (relatedParent) {
+                        relatedParent.insertAdjacentElement("beforebegin", control);
                     }
-
-                    $control.before(this.html).remove();
+                    if (relatedItems && relatedItems.length > 0) {
+                        goradd.each(relatedItems, function(i, el) {
+                            goradd.remove(el);
+                        })
+                    }
+                    goradd.htmlBefore(control, this.html);
+                    goradd.remove(control);
                 }
                 else {
                     // control is being injected at the top level, so put it at the end of the form.
-                    var $objForm = $(goradd.getForm());
-                    $objForm.append(this.html);
+                    goradd.appendHtml(goradd.form(), this.html);
                 }
             }
         });
@@ -621,12 +718,12 @@ goradd = {
             goradd.broadcastChange();
         }
         if (json.ss) {
-            $.each(json.ss, function (i,v) {
+            goradd.each(json.ss, function (i,v) {
                 goradd.loadStyleSheetFile(v, "all");
             });
         }
         if (json.alert) {
-            $.each(json.alert, function (i,v) {
+            goradd.each(json.alert, function (i,v) {
                 window.alert(v);
             });
         }
@@ -850,7 +947,8 @@ goradd = {
         return obj; // no change
     },
     _registerControls: function() {
-        $('[data-grctl]').not('[data-grctl="form"]').each(function() {
+        var els = goradd.qa('[data-grctl]');
+        goradd.each(els, function(el) {
             goradd.registerControl(this);
         });
     },
@@ -1066,8 +1164,7 @@ goradd.getControl = function(controlId) {
 goradd.getWrapper = function(mixControl) {
     if (typeof mixControl === 'string') {
         return document.getElementById(mixControl + "_ctl")
-    }
-    else {
+    } else {
         return document.getElementById($(mixControl).attr('id') + "_ctl")
     }
 };
@@ -1105,6 +1202,10 @@ goradd.registerControl = function(objControl) {
     var objWrapper;
 
     if (!objControl) {
+        return;
+    }
+
+    if (objControl.tagName === "FORM") {
         return;
     }
 
