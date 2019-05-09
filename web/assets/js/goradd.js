@@ -12,8 +12,6 @@
  *  - Do not use jQuery or other frameworks, but be compatible if its used by the devoloper.
  */
 
-
-
 if (!function () {
     "use strict";
     return Function.prototype.bind && XMLHttpRequest && !this;
@@ -42,7 +40,7 @@ goradd = {
      * el returns the html element t. t can be an id, or an element, and if an element, it will just return the element
      * back. This is used below so that all the functions can pass either an element, or the id of an element.
      * @param t {string|object}
-     * @returns {*}
+     * @returns {Element}
      */
     el: function(t) {
         if (typeof t == "object") {
@@ -58,7 +56,7 @@ goradd = {
      * it will use the document as the parent. Returns empty array if selector has no results.
      * @param el (optional) {object|string} The element to use as a parent, or id of element to use as parent
      * @param sel {string} The css selector to find
-     * @returns {HTMLObject[]}
+     * @returns {Element[]}
      */
     qa: function(el, sel) {
         if (arguments.length === 1) {
@@ -196,13 +194,9 @@ goradd = {
         var script = document.createElement("script");
         script.src = strScript;
         script.type = 'text/javascript';
-        if (attributes) {
-            for (var key in attributes) {
-                if (attributes.hasOwnProperty(key)) {
-                    script[key] = attributes[key];
-                }
-            }
-        }
+        goradd.each(attributes, function() {
+            script[key] = this[key];
+        });
 
         var head = document.getElementsByTagName('head')[0];
         head.appendChild(script);
@@ -216,13 +210,9 @@ goradd = {
         var link = document.createElement("link");
         link.rel = "stylesheet";
         link.href = strStyleSheetFile;
-        if (attributes) {
-            for (var key in attributes) {
-                if (attributes.hasOwnProperty(key)) {
-                    link[key] = attributes[key];
-                }
-            }
-        }
+        goradd.each(attributes, function() {
+            link[key] = this[key];
+        });
         var head = document.getElementsByTagName('head')[0];
         head.appendChild(link);
     },
@@ -274,6 +264,35 @@ goradd = {
         el.parent.removeChild(el);
         return el;
     },
+    /**
+     * each is a recreation of the jQuery each function, but for our targeted browsers only. It iterates the given object,
+     * calling the function for each item found. If the object is an array, or something array-like, like a nodelist,
+     * it will pass the index and the item to the function. For a regular object, it will pass the key and the item.
+     * "this" is set to the item each time as well.
+     * @param obj {object}
+     * @param f {function}
+     */
+    each: function(obj, f) {
+        if (!obj) return;
+        if (typeof(obj) !== "object") return;
+        var i;
+
+        // isArrayLike needs to return true for nodelists.
+        var isArrayLike = Array.isArray(obj) || ("length" in obj && typeof(obj.length) === "number" && (obj.length === 0 || ((obj.length - 1) in obj)));
+        if (isArrayLike) {
+            if (obj.length === 0) return;
+            for (i = 0; i < obj.length; i++) {
+                if (f.call( obj[ i ], i, obj[ i ] ) === false) break;
+            }
+        } else {
+            for (i in obj) {
+                if ( f.call( obj[ i ], i, obj[ i ] ) === false ) {
+                    break;
+                }
+            }
+        }
+    },
+
     /**
      * Private members
      */
@@ -392,7 +411,7 @@ goradd = {
         // Notify controls we are about to post.
         goradd.trigger(form, "posting", "Ajax");
 
-        controls.forEach(function(c) {
+        goradd.each(controls, function(i,c) {
             var id = goradd.prop(c, "id");
             var blnForm = (id && (id.substr(0, 8) === 'Goradd__'));
 
@@ -516,12 +535,10 @@ goradd = {
             objErrorWindow.focus();
             objErrorWindow.document.write(resultText);
         } else {
-            var b = new goradd.TagBuilder("div");
-            var el = b.attr("id", "Goradd_AJAX_Error").
+            var el = goradd.tb("div").attr("id", "Goradd_AJAX_Error").
                 html("<button onclick='goradd.remove(\"Goradd_AJAX_Error\")'>OK</button>").
                 appendTo(goradd.form());
-            b = new goradd.TagBuilder("div");
-            b.html(resultText).appendTo(el);
+            goradd.tb("div").html(resultText).appendTo(el);
         }
     },
     /**
@@ -539,10 +556,8 @@ goradd = {
         // IE 9 has a major bug in oninput, but we are requiring IE 10+, so no problem.
         // I think the only major browser that does not support oninput is Opera mobile.
 
-        $( document ).ajaxComplete(function( event, request, settings ) {
-            if (!goradd.ajaxq.isRunning()) {
-                goradd._processFinalCommands();  // If there was no ajax queue, we would have already processed final commands
-            }
+        goradd.on(goradd.form(), "ajaxQueueComplete", function() {
+            goradd._processFinalCommands();
         });
 
         // TODO: Add a detector of the back button. This detector should ping the server to make sure the pagestate exists on the server. If not,
@@ -556,52 +571,49 @@ goradd = {
      * @private
      */
     _processImmediateAjaxResponse: function(json, params) {
-        if (json.controls) {
-            $.each(json.controls, function(id) {
-                var strControlId = id,
-                    $control = $(goradd.getControl(strControlId)),
-                    $wrapper = $(goradd.getWrapper(strControlId));
+        goradd.each(json.controls, function(id) {
+            var $control = $(goradd.getControl(id)),
+                $wrapper = $(goradd.getWrapper(id));
 
-                if (this.value !== undefined) {
-                    $control.val(this.value);
+            if (this.value !== undefined) {
+                $control.val(this.value);
+            }
+
+            if (this.attributes !== undefined) {
+                $control.attr (this.attributes);
+            }
+
+            if (this.html !== undefined) {
+                if ($wrapper.length) {
+                    // Control's wrapper was found, so replace the control and the wrapper
+                    $wrapper.before(this.html).remove();
                 }
+                else if ($control.length) {
+                    // control was found without a wrapper, replace it in the same position it was in.
+                    // remove related controls (error, name ...) for wrapper-less controls
+                    var relSelector = "[data-grel='" + id + "']",
+                        relItems = $(relSelector),
+                        $relParent;
 
-                if (this.attributes !== undefined) {
-                    $control.attr (this.attributes);
-                }
-
-                if (this.html !== undefined) {
-                    if ($wrapper.length) {
-                        // Control's wrapper was found, so replace the control and the wrapper
-                        $wrapper.before(this.html).remove();
-                    }
-                    else if ($control.length) {
-                        // control was found without a wrapper, replace it in the same position it was in.
-                        // remove related controls (error, name ...) for wrapper-less controls
-                        var relSelector = "[data-grel='" + strControlId + "']",
-                            relItems = $(relSelector),
-                            $relParent;
-
-                        if (relItems && relItems.length) {
-                            // if the control is wrapped in a related control, we move the control outside the related controls
-                            // before deleting the related controls
-                            $relParent = $control.parents(relSelector).last();
-                            if ($relParent.length) {
-                                $control.insertBefore($relParent);
-                            }
-                            relItems.remove();
+                    if (relItems && relItems.length) {
+                        // if the control is wrapped in a related control, we move the control outside the related controls
+                        // before deleting the related controls
+                        $relParent = $control.parents(relSelector).last();
+                        if ($relParent.length) {
+                            $control.insertBefore($relParent);
                         }
+                        relItems.remove();
+                    }
 
-                        $control.before(this.html).remove();
-                    }
-                    else {
-                        // control is being injected at the top level, so put it at the end of the form.
-                        var $objForm = $(goradd.getForm());
-                        $objForm.append(this.html);
-                    }
+                    $control.before(this.html).remove();
                 }
-            });
-        }
+                else {
+                    // control is being injected at the top level, so put it at the end of the form.
+                    var $objForm = $(goradd.getForm());
+                    $objForm.append(this.html);
+                }
+            }
+        });
 
         goradd._registerControls();
 
@@ -651,7 +663,7 @@ goradd = {
         }
         if (json.profileHtml) {
             var c = $("#dbProfilePane");
-            if (c.length == 0) {
+            if (c.length === 0) {
                 c = $("<div id = 'dbProfilePane'></div>");
                 $(goradd.getForm()).parent().append(c);
             }
@@ -1123,25 +1135,53 @@ goradd.redirect = function(newLocation) {
     window.location = newLocation
 };
 
+    /**
+     * tb returns a TagBuilder. Use it as follows:
+     * tag = goradd.tb("div").attr("class", "myClass").text("I am text").appendTo("objId");
+     * @param tag {string}
+     * @returns {goradd.TagBuilder}
+     */
+    goradd.tb = function(tag) {
+    return new goradd.TagBuilder(tag);
+};
 /**
  * TagBuilder uses a builder pattern to create and place html tags.
- * Use it as follows:
- * tag = new goradd.TagBuilder("div").attr("class", "myClass").text("I am text").appendTo("objId")
+ *
  * @param tag {string}
  * @constructor
  */
 goradd.TagBuilder = function(tag) {
     this.el = document.createElement(tag);
 };
-goradd.TagBuilder.prototype = {
+    /**
+     *
+     * @type {{appendTo: (function((Object|string)): *), insertInto: (function((Object|string)): *), replace: (function((Object|string)): *), html: (function(string): goradd.TagBuilder), text: (function(string): goradd.TagBuilder), attr: (function(string, string): goradd.TagBuilder), insertAfter: (function((Object|string)): *), insertBefore: (function((Object|string)): *)}}
+     */
+    goradd.TagBuilder.prototype = {
+    /**
+     * attr sets an attribute and returns the tag builder
+     * @param a {string} The name of the attribute
+     * @param v {string} The value to set the attribute to
+     * @returns {goradd.TagBuilder}
+     */
     attr: function(a, v) {
         this.el.setAttribute(a,v);
         return this;
     },
+    /**
+     * html sets the innerHtml to the given value.
+     * @param h {string}
+     * @returns {goradd.TagBuilder}
+     */
     html: function(h) {
         this.el.innerHtml = h;
         return this;
     },
+    /**
+     * text sets the innterText to the given value.
+     * @param t {string}
+     * @returns {goradd.TagBuilder}
+     */
     text: function(t) {
         this.el.innerText = t;
         return this;

@@ -71,6 +71,10 @@ goradd.ajaxq = {
                 }
 
                 delete self._currentRequests[ajaxID];
+                if (self._q.length === 0 && !self.isRunning()) {
+                    goradd.trigger(goradd.form(), "ajaxQueueComplete");
+                }
+                self._dequeue(); // do the next ajax event in the queue
             }
         };
         self._currentRequests[ajaxID] = objRequest;
