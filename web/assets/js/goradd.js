@@ -89,7 +89,7 @@ goradd = {
     matches: function(el, sel) {
         el = goradd.el(el);
         if (Element.prototype.matches) {
-            return el.matches(filter);
+            return el.matches(sel);
         } else {
             var matches = goradd.qa(sel),
                 i = matches.length;
@@ -1269,12 +1269,12 @@ goradd.TagBuilder = function(tag) {
         return this;
     },
     /**
-     * html sets the innerHtml to the given value.
+     * html sets the innerHTML to the given value.
      * @param h {string}
      * @returns {goradd.TagBuilder}
      */
     html: function(h) {
-        this.el.innerHtml = h;
+        this.el.innerHTML = h;
         return this;
     },
     /**

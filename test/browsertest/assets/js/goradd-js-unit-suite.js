@@ -7,4 +7,8 @@ goradd.testsuite = {
        var el = goradd.el("testP");
        t.assert(el.innerText === "I am here");
     },
+    testQs: function(t) {
+        var el = goradd.qs("p[id='testP']");
+        t.assert(el.innerText === "I am here");
+    }
 };
