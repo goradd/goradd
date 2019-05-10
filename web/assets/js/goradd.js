@@ -105,9 +105,9 @@ goradd = {
     parents: function(el) {
         var a = [];
         el = goradd.el(el);
-        while (el.parentNode && el.parentNode !== window) {
-            a.push(el.parentNode);
-            el = el.parentNode;
+        while (el.parentElement && el.parentElement !== window) {
+            a.push(el.parentElement);
+            el = el.parentElement;
         }
         return a;
     },
@@ -245,7 +245,7 @@ goradd = {
      */
     htmlAfter: function(el, html) {
         el = goradd.el(el);
-        el.insertAdjacentHtml("afterend", html);
+        el.insertAdjacentHTML("afterend", html);
     },
     /**
      * htmlBefore inserts the html before the given element.
@@ -254,7 +254,7 @@ goradd = {
      */
     htmlBefore: function(el, html) {
         el = goradd.el(el);
-        el.insertAdjacentHtml("beforebegin", html);
+        el.insertAdjacentHTML("beforebegin", html);
     },
     /**
      * insertHtml inserts the given html in the inner html of the given element, but before any other html that is
@@ -264,7 +264,7 @@ goradd = {
      */
     insertHtml: function(el, html) {
         el = goradd.el(el);
-        el.insertAdjacentHtml("afterbegin", html);
+        el.insertAdjacentHTML("afterbegin", html);
     },
     /**
      * appendHtml inserts the given html into the inner html of the given element, but after any other html that is
@@ -274,7 +274,7 @@ goradd = {
      */
     appendHtml: function(el, html) {
         el = goradd.el(el);
-        el.insertAdjacentHtml("beforeend", html);
+        el.insertAdjacentHTML("beforeend", html);
     },
     /**
      * Remove removes the given element from the dom. It returns the removed element.
@@ -283,7 +283,7 @@ goradd = {
      */
     remove: function(el) {
         el = goradd.el(el);
-        el.parent.removeChild(el);
+        el.parentElement.removeChild(el);
         return el;
     },
     /**
@@ -590,8 +590,8 @@ goradd = {
             return {
                 url: formAction,
                 data: data,
-                error: function (result) {
-                    goradd._displayAjaxError(result);
+                error: function (result, err) {
+                    goradd._displayAjaxError(err + result);
                     goradd.testStep();
                     return false;
                 },
@@ -681,8 +681,8 @@ goradd = {
             if (this.html !== undefined) {
                 if (wrapper !== null) {
                     // Control's wrapper was found, so replace the control and the wrapper
-                    goradd.htmlBefore(control, this.html);
-                    goradd.remove(control);
+                    goradd.htmlBefore(wrapper, this.html);
+                    goradd.remove(wrapper);
                 } else if (control !== null) {
                     // control was found without a wrapper, replace it in the same position it was in.
                     // remove related controls (error, name ...) for wrapper-less controls
@@ -952,7 +952,6 @@ goradd = {
             goradd.registerControl(this);
         });
     },
-
 
     /***********************
      * Javascriptable Actions
@@ -1311,7 +1310,7 @@ goradd.TagBuilder = function(tag) {
      */
     insertBefore: function(el) {
         el = goradd.el(el);
-        el.parentNode.insertBefore(this.el, el);
+        el.parentElement.insertBefore(this.el, el);
         return this.el;
     },
     /**
@@ -1329,7 +1328,7 @@ goradd.TagBuilder = function(tag) {
      */
     replace: function(el) {
         el = goradd.el(el);
-        el.parentNode.replaceChild(this.el, el);
+        el.parentElement.replaceChild(this.el, el);
         return this.el;
     }
 };

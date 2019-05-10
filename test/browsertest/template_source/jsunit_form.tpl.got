@@ -1,0 +1,24 @@
+{{< imports }}
+{{end}}
+{{< headTags }}
+{{end}}
+{{< package }}browsertest{{end}}
+{{< title }}Goradd JavaScript Unit Test{{end}}
+{{< form }}JsUnitForm{{end}}
+{{< bodyAttributes }}{{end}}
+
+{{define template }}
+<h1>JavaScript Unit Tests</h1>
+{{draw form.RunButton }}
+<h3>Results</h3>
+{{draw form.Results }}
+<h3>Sample Objects</h3>
+<p>
+The objects below are used by the unit test code to exercise the code.
+</p>
+<p id="testP">
+I am here
+</p>
+{{end}}
+
+{{renderFormTemplate}}

@@ -63,7 +63,7 @@ goradd.ajaxq = {
                         opts.success(JSON.parse(objRequest.response));
                     } catch(err) {
                         // Goradd returns ajax errors as text
-                        opts.error(objRequest.response);
+                        opts.error(objRequest.response, err);
                     }
                 } else {
                     // This would be a problem with the server or client
