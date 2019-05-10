@@ -22,7 +22,7 @@ goradd.jsUnit = {
                 }
             }
         }
-        goradd.appendHtml(result, "<div>Done</div>");
+        goradd.appendHtml(result, "Done");
     },
     _makeTestRunner(result) {
         return new goradd.JsTest(result);

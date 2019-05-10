@@ -48,6 +48,9 @@ func testJsUnit(t *TestForm)  {
 	btn := f.Page().GetControl("startButton").(*Button)
 	t.Click(btn)
 
+	h := t.InnerHtml("results")
+	t.AssertEqual("Done", h)
+
 	t.Done("Complete")
 }
 
