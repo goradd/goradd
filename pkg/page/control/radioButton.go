@@ -47,6 +47,11 @@ func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 		if c.Checked() != v {
 			c.SetCheckedNoRefresh(v)
 			// make sure any other buttons in the group are unchecked
+			// TODO: This requires a round trip from the client, so doesn't work that great. In other words, eventually
+			// we will get this response, but not right away. Since its more common to make a RadioList rather than
+			// separate radio buttons in a group, we are not going to worry about it for now. It if becomes an issue,
+			// the code would need to change to look through the forms control list for other buttons in the group, and
+			// update those buttons in the go code here.
 			c.ParentForm().Response().ExecuteJsFunction("goradd.setRadioInGroup", page.PriorityStandard, c.ID())
 		}
 	} else {

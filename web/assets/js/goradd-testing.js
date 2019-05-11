@@ -20,7 +20,7 @@ This file attaches some code used by the test harness to drive browser-based tes
     goradd._testStepPending= false;
 
     goradd.testStep = function(event) {
-        if (goradd.actionQueue.length > 0) {
+        if (goradd._actionQueue.length > 0) {
             goradd.queueAction({f: function() {
                     goradd._postTestStep(event);
                 }, last: true, name: "testStep"});

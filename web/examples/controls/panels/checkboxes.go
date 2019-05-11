@@ -101,6 +101,7 @@ func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI
 
 	radio1 := f.Page().GetControl("radio1").(*RadioButton)
 	radio2 := f.Page().GetControl("radio2").(*RadioButton)
+	radio3 := f.Page().GetControl("radio3").(*RadioButton)
 
 	info := f.Page().GetControl("infoPanel").(*Panel)
 
@@ -119,6 +120,14 @@ func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI
 	t.Click(btn)
 	t.AssertEqual(false, checkbox1.Checked())
 	t.AssertEqual("radio3", info.Text())
+
+	radio1.SetChecked(true);
+	t.Click(btn)
+	t.Click(btn) // two clicks are required to get the response back
+	t.AssertEqual("radio1", info.Text())
+	t.AssertEqual(true, radio1.Checked())
+	t.AssertEqual(false, radio2.Checked())
+	t.AssertEqual(false, radio3.Checked())
 
 }
 
