@@ -48,13 +48,18 @@ func (form *JsUnitForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 	}
 
 	buf.WriteString(`
-<h3>Sample Objects</h3>
-<p>
-The objects below are used by the unit test code to exercise the code.
+<h3>Test Space</h3>
+<p id = "intro">
+The area below is used by the unit test code to exercise the code.
 </p>
+<div id="testspace">
 <p id="testP">
 I am here
 </p>
+<div id="testD" data-animal-type="bird" spellcheck>
+a div
+</div>
+</div>
 `)
 
 	buf.WriteString(`

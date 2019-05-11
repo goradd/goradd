@@ -13,8 +13,11 @@ goradd.jsUnit = {
                 var f = suite[t];
                 if (typeof f === "function") {
                     try {
+                        if (suite.pretest) {
+                            suite.pretest(t);
+                        }
                         curTestInfo.testName = t;
-                       f(curTestInfo);
+                        f(curTestInfo);
                     } catch(e) {
                         var s = t + " threw an error. " + e + ". " + e.sourceURL + " " + e.line + ":" + e.column;
                         curTestInfo.displayError(s);
@@ -49,8 +52,27 @@ goradd.JsTest.prototype = {
         goradd.appendHtml(this.result, e);
     },
     assert: function(bVal, msg) {
+        if (!msg) {
+            msg = "";
+        }
         if (!bVal) {
             this.displayError(this._makeError("assert", msg));
+        }
+    },
+    isEqual: function(expected, v, msg) {
+        if (!msg) {
+            msg = "";
+        }
+        if (expected != v) {
+            this.displayError(this._makeError("isEqual", "Expected: " + expected + " got: " + v + ". " + msg));
+        }
+    },
+    isSame: function(expected, v, msg) {
+        if (!msg) {
+            msg = "";
+        }
+        if (expected !== v) {
+            this.displayError(this._makeError("isSame", "Expected: " + expected + " got: " + v + ". " + msg));
         }
     },
     _makeError(title, msg) {

@@ -112,8 +112,9 @@ goradd = {
         return a;
     },
     /**
-     * attr gets an attribute from a dom object. Generally, though, just access it as a key on the dom object, in
-     * which case you will be accessing the property, which usually is what you want. Returns null if the attribute
+     * attr gets or sets attributes on a dom object. Remember that attributes are not the same as properties.
+     * To access properties, just access attributes as a key on the dom object,
+     * which usually is what you want. Returns null if the attribute
      * does not exist (instead of failing which is normally what would happen when you directly access the attribute).
      * @param t
      * @param a
@@ -125,7 +126,11 @@ goradd = {
         if (typeof a === "object") {
             // Using an object to set multiple attributes at once
             goradd.each(a, function(k,v) {
-                t.setAttribute(k, v);
+                if (v === null) {
+                    t.removeAttribute(k);
+                } else {
+                    t.setAttribute(k, v);
+                }
             });
             return;
         }
@@ -136,14 +141,20 @@ goradd = {
                 return null;
             }
             v = t.getAttribute(a);
-            if (v === null) {
-                return true; // A boolean attribute, it just exists with no value
+            if (v === null || v === "true" || v === "") {
+                return true; // A boolean attribute, it just exists with no value or with "true"
+            } else if (v === "false") {
+                return false;
             } else {
                 return v;
             }
         } else {
             // set value
-            t.setAttribute(a, val);
+            if (val === null) {
+                t.removeAttribute(a);
+            } else {
+                t.setAttribute(a, val);
+            }
         }
     },
     /**
@@ -735,16 +746,14 @@ goradd = {
      * @private
      */
     _processDeferredAjaxResponse: function(json) {
-        if (json.commands) { // commands
-            json.commands.forEach(function (command) {
-                if (command.final &&
-                    goradd.ajaxq.isRunning()) {
-                    goradd._enqueueFinalCommand(command);
-                } else {
-                    goradd._processCommand(command);
-                }
-            });
-        }
+        goradd.each(json.commands, function (i,command) {
+            if (command.final &&
+                goradd.ajaxq.isRunning()) {
+                goradd._enqueueFinalCommand(command);
+            } else {
+                goradd._processCommand(command);
+            }
+        });
         if (json.winclose) {
             window.close();
         }
@@ -759,12 +768,12 @@ goradd = {
             }
         }
         if (json.profileHtml) {
-            var c = $("#dbProfilePane");
-            if (c.length === 0) {
-                c = $("<div id = 'dbProfilePane'></div>");
-                $(goradd.getForm()).parent().append(c);
+            var c = goradd.el("dbProfilePane");
+            if (!c) {
+                goradd.htmlAfter(goradd.form(), "<div id = 'dbProfilePane'></div>");
+                c = goradd.el("dbProfilePane");
             }
-            c.html(json.profileHtml);
+            c.innerHTML = json.profileHtml;
         }
         goradd.testStep();
     },
