@@ -89,9 +89,9 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 		// If the session is already established, it means someone is behaving badly.
 		if !session.Has(ctx, goradd.SessionAuthTime) {
 			// Valid first time, so we set up a timestamp for rate limiting new account requests
-			// We add LoginRateLimit here because we expect the user to try to login once immediately after
+			// We subtract LoginRateLimit here because we expect the user to try to login once immediately after
 			// saying hello. We rate limit any subsequent attempts.
-			session.Set(ctx, goradd.SessionAuthTime, time.Now().Unix() + LoginRateLimit)
+			session.Set(ctx, goradd.SessionAuthTime, time.Now().Unix() - LoginRateLimit)
 			// TODO: Prevent a DoS attack here by checking for rapid hellos from the same IP address and rate limiting them
 			// If we do it, one article suggested returning a 200 in order to prevent an attacker from knowing they were being rate limited
 		} else {
@@ -129,8 +129,8 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			lastLogin := session.Get(ctx, goradd.SessionAuthTime).(int64)
 			now := time.Now().Unix()
-			if now - lastLogin > LoginRateLimit {
-				http.Error(w, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425)
+			if now - lastLogin < LoginRateLimit {
+				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425, w)
 			} else {
 				if authLogin(ctx, []byte(msg), w) {
 					// if the user was successfully logged in, we mark that so that the same session cannot create another user or log in
@@ -151,7 +151,7 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			lastLogin := session.Get(ctx, goradd.SessionAuthTime).(int64)
 			now := time.Now().Unix()
-			if now - lastLogin > LoginRateLimit {
+			if now - lastLogin < LoginRateLimit {
 				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425, w)
 			} else {
 				if authTokenLogin(ctx, []byte(msg), w) {
@@ -183,7 +183,7 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 			// rate limit recovery attempts
 			lastLogin := session.Get(ctx, goradd.SessionAuthTime).(int64)
 			now := time.Now().Unix()
-			if now - lastLogin > LoginRateLimit {
+			if now - lastLogin < LoginRateLimit {
 				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425, w)
 			} else {
 				authRecover(ctx, []byte(msg), w)

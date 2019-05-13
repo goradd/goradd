@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "goradd-project/config" // Initialize required variables
+	"goradd-project/web/app"
 	"log"
 	"strings"
 
@@ -9,7 +10,6 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	app2 "github.com/goradd/goradd/web/app"
-	"goradd-project/web/app"
 	// Below is where you import packages that register forms
 	_ "goradd-project/web/form" // Your  forms.
 
