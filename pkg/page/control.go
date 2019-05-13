@@ -448,7 +448,7 @@ func (c *Control) ΩPutCustomScript(ctx context.Context, response *Response) {
 
 }
 
-// DrawAjax will be called by the frameowkr during an Ajax rendering of the Control. Every Control gets called. Each Control
+// DrawAjax will be called by the framework during an Ajax rendering of the Control. Every Control gets called. Each Control
 // is responsible for rendering itself. Some objects automatically render their child objects, and some don't,
 // so we detect whether the parent is being rendered, and assume the parent is taking care of rendering for
 // us if so.

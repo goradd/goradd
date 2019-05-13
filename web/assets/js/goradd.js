@@ -236,12 +236,23 @@ goradd = {
         target = goradd.el(target);
         var event;
 
-        if (typeof window.CustomEvent === "object") {
-            // CustomEvent for browsers which don't natively support the Constructor method
-            event = document.createEvent('CustomEvent');
-            event.initCustomEvent(eventName, true, true, extra);
+        if (eventName === "change") {
+            if (typeof window.Event === "object") {
+                // Change event for browsers which don't natively support the Constructor method
+                event = document.createEvent('HTMLEvents');
+                event.initCustomEvent("change", true, true, extra);
+            } else {
+                event = new Event("change", {bubbles: true, detail: extra})
+            }
         } else {
-            event = new CustomEvent(eventName, {bubbles: true, cancelable: true, composed: true, detail: extra})
+            // assume custom event
+            if (typeof window.CustomEvent === "object") {
+                // CustomEvent for browsers which don't natively support the Constructor method
+                event = document.createEvent('CustomEvent');
+                event.initCustomEvent(eventName, true, true, extra);
+            } else {
+                event = new CustomEvent(eventName, {bubbles: true, cancelable: true, composed: true, detail: extra})
+            }
         }
         target.dispatchEvent(event);
     },
@@ -365,6 +376,7 @@ goradd = {
         el = goradd.el(el);
         var type = goradd.prop(el, "type");
         if (arguments.length === 2) {
+            // Setting the value
             switch (type) {
                 case "select-multiple":
                     // Multi-select selections will attempt to set all items in the given array to the value
@@ -1311,13 +1323,13 @@ goradd.redirect = function(newLocation) {
     window.location = newLocation
 };
 
-    /**
-     * tb returns a TagBuilder. Use it as follows:
-     * tag = goradd.tb("div").attr("class", "myClass").text("I am text").appendTo("objId");
-     * @param tag {string}
-     * @returns {goradd.TagBuilder}
-     */
-    goradd.tb = function(tag) {
+/**
+ * tb returns a TagBuilder. Use it as follows:
+ * tag = goradd.tb("div").attr("class", "myClass").text("I am text").appendTo("objId");
+ * @param tag {string}
+ * @returns {goradd.TagBuilder}
+ */
+goradd.tb = function(tag) {
     return new goradd.TagBuilder(tag);
 };
 /**
@@ -1329,11 +1341,11 @@ goradd.redirect = function(newLocation) {
 goradd.TagBuilder = function(tag) {
     this.el = document.createElement(tag);
 };
-    /**
-     *
-     * @type {{appendTo: (function((Object|string)): *), insertInto: (function((Object|string)): *), replace: (function((Object|string)): *), html: (function(string): goradd.TagBuilder), text: (function(string): goradd.TagBuilder), attr: (function(string, string): goradd.TagBuilder), insertAfter: (function((Object|string)): *), insertBefore: (function((Object|string)): *)}}
-     */
-    goradd.TagBuilder.prototype = {
+/**
+ *
+ * @type {{appendTo: (function((Object|string)): *), insertInto: (function((Object|string)): *), replace: (function((Object|string)): *), html: (function(string): goradd.TagBuilder), text: (function(string): goradd.TagBuilder), attr: (function(string, string): goradd.TagBuilder), insertAfter: (function((Object|string)): *), insertBefore: (function((Object|string)): *)}}
+ */
+goradd.TagBuilder.prototype = {
     /**
      * attr sets an attribute and returns the tag builder
      * @param a {string} The name of the attribute
