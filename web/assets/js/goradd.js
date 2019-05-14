@@ -193,6 +193,22 @@ goradd = {
         }
     },
 
+    class: function(el, c) {
+        el = goradd.el(el);
+
+        if (c.substr(0,1) === "+") {
+            goradd.each(c.substr(1).split(" "), function(i,v) {
+                el.classList.add(v);
+            });
+        } else if (c.substr(0,1) === "-") {
+            goradd.each(c.substr(1).split(" "), function (i, v) {
+                el.classList.remove(v);
+            });
+        } else {
+            el.className = c;
+        }
+    },
+
     /**
      * on attaches an event handler to the given html object.
      * Filtering and potentially supplying data to the event are also included.
@@ -232,17 +248,24 @@ goradd = {
             }, capture);
         });
     },
+    click: function(el) {
+        // use the built-in click to click an item.
+        el = goradd.el(el);
+        el.click();
+    },
     trigger: function(target, eventName, extra) {
         target = goradd.el(target);
         var event;
 
-        if (eventName === "change") {
+        if (eventName === "click") {
+            target.click();
+        } else if (eventName === "change") {
             if (typeof window.Event === "object") {
-                // Change event for browsers which don't natively support the Constructor method
+                // Event for browsers which don't natively support the Constructor method
                 event = document.createEvent('HTMLEvents');
-                event.initCustomEvent("change", true, true, extra);
+                event.initCustomEvent(eventName, true, true, extra);
             } else {
-                event = new Event("change", {bubbles: true, detail: extra})
+                event = new Event(eventName, {bubbles: true, detail: extra})
             }
         } else {
             // assume custom event
@@ -932,17 +955,19 @@ goradd = {
             params = goradd._unpackArray(command.params);
 
             if (typeof command.selector === 'string') {
-                objs = $(command.selector);
+                // general selector
+                objs = goradd.qa(command.selector);
             } else {
-                objs = $(command.selector[0], command.selector[1]);
+                objs = goradd.qa(command.selector[0], command.selector[1]);
             }
 
-            // apply the function on each jQuery object found, using the found jQuery object as the context.
-            objs.each (function () {
-                var $item = $(this);
-                if ($item[command.func]) {
-                    $item[command.func].apply($(this), params);
+            goradd.each (objs, function (i,v) {
+                var s = params.slice();
+                s.unshift(v);
+                if (typeof goradd[command.func] === "function") {
+                    goradd[command.func].apply(v, s);
                 }
+                // else try applying to attached goradd object
             });
         }
         else if (command.func) {
@@ -951,9 +976,12 @@ goradd = {
             // Find the function by name. Walk an object list in the process.
             objs = command.func.split(".");
             var obj = window;
+            if (objs[0] in goradd) {
+                obj = goradd;
+            }
             var ctx = null;
 
-            $.each (objs, function (i, v) {
+            goradd.each (objs, function (i, v) {
                 ctx = obj;
                 obj = obj[v];
             });
@@ -1418,6 +1446,57 @@ goradd.TagBuilder.prototype = {
         el = goradd.el(el);
         el.parentElement.replaceChild(this.el, el);
         return this.el;
+    }
+};
+
+/***
+ * Objects attached to goradd controls. Combines some features of jQuery, jQuery UI Widget Factory, and Polymer but with
+ * compatibility down to IE10+ and OperaMini
+ */
+
+
+// constructor
+goradd.Widget = function (el) {
+    el = goradd.el(el);
+    this.element = el;
+    this._options = {};
+    this._data = {};
+    //this._extractAttributes();
+};
+
+goradd.Widget.prototype = {
+    get: function(key) {
+        var v;
+        return (v = this.data(key)) !== undefined ? v :
+            (v = this.option(key)) !== undefined ? v:
+            (v = this.prop(key))  !== undefined ? v :
+                undefined;
+    },
+    prop: function(key) {
+        return this.element[key];
+    },
+    option: function(key) {
+        return this._options[key];
+    },
+    data: function(key) {
+        return this._data[key];
+    },
+    /**
+     * f calls the named function, with the named parameters, on the goradd widget first, and if not found, will attempt
+     * to call this on the element.
+     * @param name
+     * @param params
+     */
+    f: function(name, params) {
+        var f = this[name];
+        if (typeof f === "function") {
+            return f.apply(params);
+        } else {
+            f = this.element[name];
+            if (typeof f === "function") {
+                return f.apply(params);
+            }
+        }
     }
 };
 

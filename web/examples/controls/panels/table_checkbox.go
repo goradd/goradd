@@ -39,6 +39,9 @@ func (c SelectedProvider) RowID(data interface{}) string {
 }
 
 func (c SelectedProvider) IsChecked(data interface{}) bool {
+	if data == nil {
+		return false // since we aren't keeping track, just assume not everything is checked
+	}
 	return data.(Table1Data)["s"] == "1"
 }
 
@@ -55,6 +58,8 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p.CheckboxColumn1 = column.NewCheckboxColumn(SelectedProvider{})
 	p.CheckboxColumn1.SetID("check1")
 	p.CheckboxColumn1.SetTitle("Selected")
+	p.CheckboxColumn1.SetShowCheckAll(true)
+
 	p.Table1.AddColumn(p.CheckboxColumn1)
 	//p.Table1.AddColumn(column.NewCheckboxColumn(p).SetTitle("Completed"))
 

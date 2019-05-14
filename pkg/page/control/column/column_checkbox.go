@@ -74,7 +74,7 @@ func (col *CheckboxColumn) HeaderCellHtml(ctx context.Context, rowNum int, colNu
 	if col.IsSortable() {
 		h += col.RenderSortButton(col.Title())
 	} else if col.Title() != "" {
-		h = col.Title()
+		h += col.Title()
 	}
 
 	return
@@ -188,7 +188,7 @@ func (col *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 
 // AddActions adds actions to the table that the column can respond to.
 func (col *CheckboxColumn) AddActions(t page.ControlI) {
-	t.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(col.ID(), control.ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
+	t.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(col.ParentTable().ID() + "_" + col.ID(), control.ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
 }
 
 // Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.
@@ -207,6 +207,7 @@ func (col *CheckboxColumn) Action(ctx context.Context, params page.ActionParams)
 func (col *CheckboxColumn) allClick(id string, checked bool, rowNum int, colNum int) {
 	all := col.checkboxer.All()
 
+	// if we have a checkboxer that will help us check all the objects in the table, use it
 	if all != nil {
 		for k, v := range all {
 			if v == checked {
@@ -216,17 +217,15 @@ func (col *CheckboxColumn) allClick(id string, checked bool, rowNum int, colNum 
 			}
 		}
 		// Fire javascript to check all visible
-		//js := fmt.Sprintf(`$j('input[data-gr-checkcol]').prop('checked', %t)`, checked)
-		//c.parentTable.FormBase().Response().ExecuteJavaScript(js, override.PriorityStandard)
 		col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
 
 	} else {
 		// Fire javascript to check all visible and trigger a change
 		if checked {
-			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `trigger`, page.PriorityStandard, `click`)
+			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `click`, page.PriorityStandard)
 
 		} else {
-			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `trigger`, page.PriorityStandard, `click`)
+			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `click`, page.PriorityStandard)
 		}
 	}
 
