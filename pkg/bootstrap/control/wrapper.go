@@ -80,8 +80,8 @@ func (w *DivWrapperType) ΩAjaxRender(ctx context.Context, response *page.Respon
 	if w.ValidationStateChanged {
 		switch c.ValidationState() {
 		case page.ValidationWaiting:
-			response.ExecuteControlCommand(c.ID(), "removeClass", "is-valid")
-			response.ExecuteControlCommand(c.ID(), "removeClass", "is-invalid")
+			response.RemoveClass(c.ID(), "is-valid")
+			response.RemoveClass(c.ID(), "is-invalid")
 			if w.UseTooltips {
 				class = "valid-tooltip"
 			} else {
@@ -89,8 +89,8 @@ func (w *DivWrapperType) ΩAjaxRender(ctx context.Context, response *page.Respon
 			}
 
 		case page.ValidationValid:
-			response.ExecuteControlCommand(c.ID(), "addClass", "is-valid")
-			response.ExecuteControlCommand(c.ID(), "removeClass", "is-invalid")
+			response.AddClass(c.ID(), "is-valid")
+			response.RemoveClass(c.ID(), "is-invalid")
 			if w.UseTooltips {
 				class = "valid-tooltip"
 			} else {
@@ -98,15 +98,15 @@ func (w *DivWrapperType) ΩAjaxRender(ctx context.Context, response *page.Respon
 			}
 
 		case page.ValidationInvalid:
-			response.ExecuteControlCommand(c.ID(), "removeClass", "is-valid")
-			response.ExecuteControlCommand(c.ID(), "addClass", "is-invalid")
+			response.RemoveClass(c.ID(), "is-valid")
+			response.AddClass(c.ID(), "is-invalid")
 			if w.UseTooltips {
 				class = "invalid-tooltip"
 			} else {
 				class = "invalid-feedback"
 			}
 		}
-		response.ExecuteControlCommand(c.ID() + "_err", "attr", "class", class)
+		response.SetClass(c.ID() + "_err", class)
 	}
 	w.LabelWrapperType.ΩAjaxRender(ctx, response, c)
 }

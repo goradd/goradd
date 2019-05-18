@@ -105,7 +105,7 @@ func (t *SelectTable) SelectedID() string {
 
 func (t *SelectTable) SetSelectedID(id string) {
 	t.selectedID = id
-	t.ParentForm().Response().ExecuteControlCommand(t.ID(), "selectTable", "option", "selectedId", id)
+	t.ParentForm().Response().ExecuteJqueryCommand(t.ID(), "selectTable", "option", "selectedId", id)
 }
 
 func (t *SelectTable) ΩMarshalState(m maps.Setter) {
@@ -124,5 +124,5 @@ func (t *SelectTable) ΩPutCustomScript(ctx context.Context, response *page.Resp
 	options := map[string]interface{}{}
 	options["selectedId"] = t.selectedID
 
-	response.ExecuteControlCommand(t.ID(), "selectTable", page.PriorityHigh, options)
+	response.ExecuteJqueryCommand(t.ID(), "selectTable", page.PriorityHigh, options)
 }

@@ -49,30 +49,17 @@ goradd = {
         }
         return document.getElementById(t);
     },
-    qs: function(el, sel) {
-        if (arguments.length === 1) {
-            sel = el;
-            el = document;
-        } else {
-            el = goradd.el(el);
-        }
-        return el.querySelector(sel);
+    qs: function(sel) {
+        return document.querySelector(sel);
     },
     /**
-     * qa is a querySelectorAll call that returns an actual array, and not a NodeList. If you only give it a selector (sel)
-     * it will use the document as the parent. Returns empty array if selector has no results.
-     * @param el (optional) {object|string} The element to use as a parent, or id of element to use as parent
+     * qa is a querySelectorAll call that returns an actual array, and not a NodeList.
+     * Returns empty array if selector has no results.
      * @param sel {string} The css selector to find
-     * @returns {Element[]}
+     * @returns {HTMLElement[]}
      */
-    qa: function(el, sel) {
-        if (arguments.length === 1) {
-            sel = el;
-            el = document;
-        } else {
-            el = goradd.el(el);
-        }
-        return Array.prototype.slice.call(el.querySelectorAll(sel));
+    qa: function(sel) {
+        return Array.prototype.slice.call(document.querySelectorAll(sel));
     },
     isEmptyObj: function(o) {
         if (!o) return false;
@@ -84,8 +71,6 @@ goradd = {
     form: function() {
         return goradd.qs('form[data-grctl="form"]');
     },
-
-
     /**
      * matches returns true if the given element matches the css selector.
      * @param el
@@ -93,191 +78,7 @@ goradd = {
      * @returns {boolean}
      */
     matches: function(el, sel) {
-        el = goradd.el(el);
-        if (Element.prototype.matches) {
-            return el.matches(sel);
-        } else {
-            var matches = goradd.qa(sel),
-                i = matches.length;
-            while (--i >= 0 && matches[i] !== el) {}
-            return i > -1;
-        }
-    },
-    /**
-     * parents returns the parent nodes, not including the window.
-     * @param el
-     * @returns {Array}
-     */
-    parents: function(el) {
-        var a = [];
-        el = goradd.el(el);
-        while (el.parentElement && el.parentElement !== window) {
-            a.push(el.parentElement);
-            el = el.parentElement;
-        }
-        return a;
-    },
-    /**
-     * closest returns the first parent node that matches the given selector, or null
-     * @param el
-     * @param sel
-     */
-    closest: function(el, sel) {
-        el = goradd.el(el);
-        while (el.parentElement && el.parentElement !== window) {
-            if (goradd.matches(el, sel)) {
-                return el;
-            }
-            el = el.parentElement;
-        }
-        return null;
-    },
-    /**
-     * attr gets or sets attributes on a dom object. Remember that attributes are not the same as properties.
-     * To access properties, just access attributes as a key on the dom object,
-     * which usually is what you want. Returns null if the attribute
-     * does not exist (instead of failing which is normally what would happen when you directly access the attribute).
-     * @param t
-     * @param a
-     * @param val (optional) {string} If present, the value to set the attribute to.
-     * @returns {null|boolean|*}
-     */
-    attr: function(t, a, val) {
-        t = goradd.el(t);
-        if (typeof a === "object") {
-            // Using an object to set multiple attributes at once
-            goradd.each(a, function(k,v) {
-                if (v === null) {
-                    t.removeAttribute(k);
-                } else {
-                    t.setAttribute(k, v);
-                }
-            });
-            return;
-        }
-        if (arguments.length <= 2) {
-            // get value
-            var v = t.hasAttribute(a);
-            if (!v) {
-                return null;
-            }
-            v = t.getAttribute(a);
-            if (v === null || v === "true" || v === "") {
-                return true; // A boolean attribute, it just exists with no value or with "true"
-            } else if (v === "false") {
-                return false;
-            } else {
-                return v;
-            }
-        } else {
-            // set value
-            if (val === null) {
-                t.removeAttribute(a);
-            } else {
-                t.setAttribute(a, val);
-            }
-        }
-    },
-    /**
-     * Prop returns the given property, or null if it does not exist.
-     * @param t
-     * @param a
-     * @returns {null|*}
-     */
-    prop: function(t,a) {
-        t = goradd.el(t);
-        if (a in t) {
-            return t[a];
-        } else {
-            return null;
-        }
-    },
-
-    class: function(el, c) {
-        el = goradd.el(el);
-
-        if (c.substr(0,1) === "+") {
-            goradd.each(c.substr(1).split(" "), function(i,v) {
-                el.classList.add(v);
-            });
-        } else if (c.substr(0,1) === "-") {
-            goradd.each(c.substr(1).split(" "), function (i, v) {
-                el.classList.remove(v);
-            });
-        } else {
-            el.className = c;
-        }
-    },
-
-    /**
-     * on attaches an event handler to the given html object.
-     * Filtering and potentially supplying data to the event are also included.
-     * If data is a function, the function will be called when the event fires and the
-     * result of the function will be provided as data to the event. The "this" parameter
-     * will be the element with the given targetId, and the function will be provided the event object.
-     *
-     * @param target {string|object} Either a string id of an html object, or the object itself
-     * @param eventNames {string} One or more event names separated by spaces
-     * @param eventHandler
-     * @param filter
-     * @param data
-     * @param capture True to fire this event during initial capture phase. False to wait until it bubbles.
-     */
-    on: function(target, eventNames, eventHandler, filter, data, capture) {
-        if (!capture) {
-            capture = false;
-        }
-        target = goradd.el(target);
-        var events = eventNames.split(" ");
-        goradd.each(events, function(i,eventName) {
-            target.addEventListener(eventName, function (event) {
-                if (filter && !goradd.matches(event.target, filter)) {
-                    return
-                }
-                if (data) {
-                    if (typeof data === "function") {
-                        data = data.call(target, event);
-                    }
-                    event.grdata = data;
-                }
-                if (event.detail) {
-                    eventHandler.call(target, event, event.detail); // simulate adding extra items to event handler
-                } else {
-                    eventHandler.call(target, event);
-                }
-            }, capture);
-        });
-    },
-    click: function(el) {
-        // use the built-in click to click an item.
-        el = goradd.el(el);
-        el.click();
-    },
-    trigger: function(target, eventName, extra) {
-        target = goradd.el(target);
-        var event;
-
-        if (eventName === "click") {
-            target.click();
-        } else if (eventName === "change") {
-            if (typeof window.Event === "object") {
-                // Event for browsers which don't natively support the Constructor method
-                event = document.createEvent('HTMLEvents');
-                event.initCustomEvent(eventName, true, true, extra);
-            } else {
-                event = new Event(eventName, {bubbles: true, detail: extra})
-            }
-        } else {
-            // assume custom event
-            if (typeof window.CustomEvent === "object") {
-                // CustomEvent for browsers which don't natively support the Constructor method
-                event = document.createEvent('CustomEvent');
-                event.initCustomEvent(eventName, true, true, extra);
-            } else {
-                event = new CustomEvent(eventName, {bubbles: true, cancelable: true, composed: true, detail: extra})
-            }
-        }
-        target.dispatchEvent(event);
+        return goradd.g(el).matches(sel);
     },
     /**
      * loadJavaScriptFile will dynamically load a javascript file. It is designed to be called during ajax calls or
@@ -312,54 +113,6 @@ goradd = {
         head.appendChild(link);
     },
     /**
-     * htmlAfter adds the html after the given element.
-     * @param el {object|string}
-     * @param html
-     */
-    htmlAfter: function(el, html) {
-        el = goradd.el(el);
-        el.insertAdjacentHTML("afterend", html);
-    },
-    /**
-     * htmlBefore inserts the html before the given element.
-     * @param el {object|string}
-     * @param html
-     */
-    htmlBefore: function(el, html) {
-        el = goradd.el(el);
-        el.insertAdjacentHTML("beforebegin", html);
-    },
-    /**
-     * insertHtml inserts the given html in the inner html of the given element, but before any other html that is
-     * already there.
-     * @param el {object|string}
-     * @param html
-     */
-    insertHtml: function(el, html) {
-        el = goradd.el(el);
-        el.insertAdjacentHTML("afterbegin", html);
-    },
-    /**
-     * appendHtml inserts the given html into the inner html of the given element, but after any other html that is
-     * already there.
-     * @param el
-     * @param html
-     */
-    appendHtml: function(el, html) {
-        el = goradd.el(el);
-        el.insertAdjacentHTML("beforeend", html);
-    },
-    /**
-     * Remove removes the given element from the dom. It returns the removed element.
-     * @param el
-     * @returns {*}
-     */
-    remove: function(el) {
-        el = goradd.el(el);
-        el.parentElement.removeChild(el);
-        return el;
-    },
-    /**
      * each is a recreation of the jQuery each function, but for our targeted browsers only. It iterates the given object,
      * calling the function for each item found. If the object is an array, or something array-like, like a nodelist,
      * it will pass the index and the item to the function. For a regular object, it will pass the key and the item.
@@ -387,127 +140,33 @@ goradd = {
             }
         }
     },
-    /**
-     * Value sets or gets the value of a goradd control. This is primarily used by the ajax processing code, but
-     * external tools can use this too. See below for what each kind of control will return. Note that the actual "value"
-     * attribute is not always returned.
-     * @param el
-     * @param v
-     * @returns {*}
-     */
-    value: function(el, v) {
-        el = goradd.el(el);
-        var type = goradd.prop(el, "type");
-        if (arguments.length === 2) {
-            // Setting the value
-            switch (type) {
-                case "select-multiple":
-                    // Multi-select selections will attempt to set all items in the given array to the value
-                    var opts = goradd.qa(el,'option');
-                    goradd.each(opts, function(i, opt) {
-                        opt.checked = (opt.value in v);
-                    });
-                    break;
-                case "checkbox":
-                    if (typeof v === "boolean") {
-                        el.checked = v;
-                    } else if (typeof v === "number") {
-                        el.checked = v !== 0;
-                    } else if ("value" in el) {
-                        el.checked = el.value === v;
-                    } else {
-                        el.checked = false;
-                    }
-                    break;
+    isPlainObject: function( obj ) {
+        var proto, Ctor;
 
-                case "radio":
-                    if (typeof v === "boolean") {
-                        el.checked = v;
-                    } else {
-                        el.checked = el.value == v;
-                    }
-                    break;
-                default:
-                    if ("value" in el) {
-                        el.value = v;
-                    }
-                    break;
-            }
-            return el;
-        } else {
-            switch (type) {
-                case "select-multiple":
-                    // Multi-select selections will return an array of selected values
-                    var sels = goradd.qa(el,':checked');
-                    return sels.map(function(s){return s.value});
-                case "checkbox":
-                case "radio":
-                    // Checkboxes and radios will return the value, or true, if checked, and null if not checked.
-                    if (el.checked) {
-                        if (!("value" in el)) { // if the checkbox has no value, just return true;
-                            return true;
-                        } else {
-                            return el.value;
-                        }
-                    }
-                    break;
-                default:
-                    if ("value" in el) {
-                        // This works for textboxes, textarea (possible problem losing newlines though), and single selects.
-                        // Custom controls can add a "value" getter as well and this will pick that up too.
-                        return el.value;
-                    }
-                    break;
-            }
-
-            return null;
+        // Detect obvious negatives
+        // Use toString instead of jQuery.type to catch host objects
+        if ( !obj || {}.toString.call( obj ) !== "[object Object]" ) {
+            return false;
         }
+
+        proto = Object.getPrototypeOf( obj );
+
+        // Objects with no prototype (e.g., `Object.create( null )`) are plain
+        if ( !proto ) {
+            return true;
+        }
+
+        // Objects with prototype are plain iff they were constructed by a global Object function
+        Ctor = {}.hasOwnProperty.call( proto, "constructor" ) && proto.constructor;
+        return typeof Ctor === "function" && {}.hasOwnProperty.toString.call( Ctor ) === {}.hasOwnProperty.toString.call(Object);
     },
+
     _toKebab: function(s) {
         var s2 =  s.replace(/[A-Z]/g, function(m, offset, s) {
             var n = "-" + m.toLowerCase();
            return n;
         });
         return s2;
-    },
-    /**
-     * data gets or sets custom data that we assign to an element. If getting the data, we will check our private area
-     * first for the data, and then check for an attribute if we have not overridden the attribute with private data.
-     * Private data is stored in a "goradd" property attached to the element.
-     * @param el
-     * @param key
-     * @param v
-     * @returns {*}
-     */
-    data: function(el, key, v) {
-        el = goradd.el(el);
-        if (arguments.length === 2) {
-            if (el.goradd && el.goradd.data && el.goradd.data.hasOwnProperty(key)) {
-                return el.goradd.data[key]; // Use our private data area if its there
-            }
-            // get the data from the attribute on the element
-            if (el.dataset) { // modern browsers
-                // use the key as is
-                return el.dataset[key];
-            } else {
-                // IE 10 or opera mini. Gotta get this from the attribute itself.
-                key = goradd._toKebab(key);
-                return el.getAttribute("data-" + key);
-            }
-        } else {
-            // We are setting data. We do not alter the attribute (use goradd.attr() if you need that). Instead,
-            // we put the data in our private area for later collection.
-            if (!el.goradd) {
-                el.goradd = {};
-            }
-            if (!el.goradd.data) {
-                el.goradd.data = {};
-            }
-            el.goradd.data[key] = v;
-        }
-    },
-    focus: function(el) {
-        goradd.el(el).focus();
     },
     /**
      * setRadioInGroup is a specialized function called from goradd go code.
@@ -528,7 +187,7 @@ goradd = {
         }
         el.checked = true;
         if (prevItem) {
-            goradd.trigger(el, 'formObjChanged');
+            goradd.g(el).trigger('formObjChanged');
         }
     },
 
@@ -571,8 +230,8 @@ goradd = {
      */
     initForm: function () {
         var form =  goradd.form();
-        goradd.on(form, 'formObjChanged', goradd.formObjChanged); // Allow any control, including hidden inputs, to trigger a change and post of its data.
-        goradd.on(form, 'submit', function(event) {
+        goradd.g(form).on('formObjChanged', goradd.formObjChanged); // Allow any control, including hidden inputs, to trigger a change and post of its data.
+        goradd.g(form).on('submit', function(event) {
             if (!goradd.el('Goradd__Params').value) { // did postBack initiate the submit?
                 // if not, prevent implicit form submission. This can happen in the rare case we have a single field and no submit button.
                 event.preventDefault();
@@ -588,34 +247,50 @@ goradd = {
         });
         goradd._registerControls();
     },
-    registerControl: function(ctrl) {
+    _registerControl: function(ctrl) {
         if (!ctrl) {
             return;
+        }
+
+        // get the widget
+        var g = goradd.g(ctrl);
+
+        if (g.data('gr-reg') === 'reg') {
+            return // this control is already registered
         }
 
         if (ctrl.tagName === "FORM") {
             return;
         }
 
-        if (goradd.data(ctrl, 'gr-reg') === 'reg') {
-            return // this control is already registered
-        }
+        g.data('gr-reg', 'reg'); // mark the control as registered so we don't attach events twice. Has the side effect
+                                 // of attaching the widget to the control.
 
         // detect changes to objects before any changes trigger other events
         if (ctrl.type === 'checkbox' || ctrl.type === 'radio') {
             // clicks are equivalent to changes for checkboxes and radio buttons, but some browsers send change way after a click. We need to capture the click first.
-            goradd.on (ctrl, 'click', goradd.formObjChanged);
+            g.on('click', goradd.formObjChanged);
         }
-        goradd.on(ctrl, 'change input', goradd.formObjChanged, null, null, true); // make sure we get these events before later attached events
-        //goradd.on (objControl, 'change input', goradd.formObjChanged, 'input, select, textarea');   // make sure we get to bubbled events before later attached handlers
+        g.on('change input', goradd.formObjChanged, null, null, true); // make sure we get these events before later attached events
 
-        // Link the Wrapper and the Control together
-        /*
-        var wrapper = goradd.el(ctrl.id + "_ctl");
-        if (wrapper) {
-            wrapper.control = ctrl;
-        }*/
-        goradd.data(ctrl, 'gr-reg', 'reg'); // mark the control as registered so we don't attach events twice
+        // widget support, using declarative methods
+        if (goradd.widget.new) {
+            var widget;
+            var options = {};
+            goradd.each(g.attr(), function(k,v) {
+                if (k === "data-gr-widget") {
+                    widget = v;
+                } else if (k.substr(0, 12) === "data-gr-opt-") {
+                    options[k.substr(12)] = v;
+                }
+            });
+            if (widget) {
+                widget = goradd.widget.new(widget, options, ctrl);
+                // Replace the control's widget with the new one. There can be only one goradd widget associated with
+                // a particular control. We will need some other mechanism for mixins if needed.
+                ctrl.goradd.widget = widget;
+            }
+        }
     },
 
     /**
@@ -637,12 +312,13 @@ goradd = {
         }
 
         var form = goradd.form();
+        var gForm = goradd.g(form);
 
         params.callType = "Server";
 
         // Notify custom controls that we are about to post
 
-        goradd.trigger(form, "posting", "Server");
+        gForm.trigger("posting", "Server");
 
         // Post custom javascript control values
         if (goradd.isEmptyObj(goradd._controlValues)) {
@@ -651,7 +327,7 @@ goradd = {
         goradd.el('Goradd__Params').value = JSON.stringify(params);
 
         // trigger our own form submission so we can catch it
-        goradd.trigger(form, "submit");
+        gForm.trigger("submit");
     },
 
 
@@ -673,14 +349,14 @@ goradd = {
      */
     _getAjaxData: function(params) {
         var form = goradd.form(),
-            controls = goradd.qa(form, 'input,select,textarea'),
+            controls = goradd.g(form).qa('input,select,textarea'),
             postData = {};
 
         // Notify controls we are about to post.
-        goradd.trigger(form, "posting", "Ajax");
+        goradd.g(form).trigger("posting", "Ajax");
 
         goradd.each(controls, function(i,c) {
-            var id = goradd.prop(c, "id");
+            var id = c.id;
             var blnForm = (id && (id.substr(0, 8) === 'Goradd__'));
 
             if (!goradd._inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones, because we might have missed something
@@ -688,8 +364,7 @@ goradd = {
                 (id && goradd._formObjsModified[id]) ||  // We try to ignore controls that have not changed to reduce the amount of data sent in an ajax post.
                 blnForm) {  // all controls with Goradd__ at the beginning of the id are always posted.
 
-                var strType = goradd.prop(c, "type");
-                switch (strType) {
+                switch (c.type) {
                     case "radio":
                         // Radio buttons listen to their name.
                         var n = c.name;
@@ -707,7 +382,7 @@ goradd = {
                         // All goradd controls and subcontrols MUST have an id for this to work.
                         // There is a special case for checkbox groups, but they get handled on the server
                         // side differently between ajax and server posts.
-                        postData[id] = goradd.value(c);
+                        postData[id] = goradd.g(c).value();
                         break;
                 }
             }
@@ -743,14 +418,14 @@ goradd = {
      */
     postAjax: function(params) {
         var form = goradd.form(),
-            formAction = goradd.attr(form, "action"),
+            formAction = goradd.g(form).attr("action"),
             async = params.hasOwnProperty("async");
 
         if (goradd._blockEvents) {
             return;
         }
 
-        params.formId = goradd.attr(form, "id");
+        params.formId = form.id;
 
         goradd.log("postAjax", params);
 
@@ -762,7 +437,7 @@ goradd = {
                 url: formAction,
                 data: data,
                 error: function (result, err) {
-                    goradd._displayAjaxError(err + result);
+                    goradd._displayAjaxError(result, err);
                     goradd.testStep();
                     return false;
                 },
@@ -787,7 +462,7 @@ goradd = {
      * @param resultText
      * @private
      */
-    _displayAjaxError: function(resultText) {
+    _displayAjaxError: function(resultText, err) {
         var objErrorWindow;
 
         goradd._ajaxError = true;
@@ -799,6 +474,15 @@ goradd = {
             objErrorWindow.focus();
             objErrorWindow.document.write(resultText);
         } else {
+            if (err) {
+                resultText = err.toString();
+                if (err.sourceURL) {
+                    resultText += " File:" + err.sourceURL
+                }
+                if (err.line) {
+                    resultText += " Line:" + err.line;
+                }
+            }
             var el = goradd.tb("div").attr("id", "Goradd_AJAX_Error").
                 html("<button onclick='goradd.remove(\"Goradd_AJAX_Error\")'>OK</button>").
                 appendTo(goradd.form());
@@ -820,7 +504,7 @@ goradd = {
         // IE 9 has a major bug in oninput, but we are requiring IE 10+, so no problem.
         // I think the only major browser that does not support oninput is Opera mobile.
 
-        goradd.on(goradd.form(), "ajaxQueueComplete", function() {
+        goradd.g(goradd.form()).on("ajaxQueueComplete", function() {
             goradd._processFinalCommands();
         });
 
@@ -836,47 +520,48 @@ goradd = {
      */
     _processImmediateAjaxResponse: function(json, params) {
         goradd.each(json.controls, function(id) {
-            var control = goradd.el(id),
+            var el = goradd.el(id),
+                $ctrl = goradd.g(el),
                 wrapper = goradd.el(id + "_ctl");
 
-            if (this.value !== undefined) {
-                goradd.value(control, this.value);
+            if (this.value !== undefined && $ctrl) {
+                $ctrl.value(this.value);
             }
 
-            if (this.attributes !== undefined) {
-                goradd.attr(control, this.attributes);
+            if (this.attributes !== undefined && $ctrl) {
+                $ctrl.prop(this.attributes);
             }
 
             if (this.html !== undefined) {
                 if (wrapper !== null) {
                     // Control's wrapper was found, so replace the control and the wrapper
-                    goradd.htmlBefore(wrapper, this.html);
-                    goradd.remove(wrapper);
-                } else if (control !== null) {
+                    goradd.g(wrapper).htmlBefore(this.html);
+                    goradd.g(wrapper).remove(wrapper);
+                } else if ($ctrl) {
                     // control was found without a wrapper, replace it in the same position it was in.
                     // remove related controls (error, name ...) for wrapper-less controls
                     var relSelector = "[data-grel='" + id + "']",
                         relatedItems = goradd.qa(relSelector);
 
-                    var p = goradd.parents(control);
+                    var p = $ctrl.parents();
                     var relatedParent = p.filter(function(el) {
-                        return goradd.matches(el, relSelector);
+                        return goradd.g(el).matches(relSelector);
                     }).pop();
 
                     if (relatedParent) {
-                        relatedParent.insertAdjacentElement("beforebegin", control);
+                        relatedParent.insertAdjacentElement("beforebegin", el);
                     }
                     if (relatedItems && relatedItems.length > 0) {
                         goradd.each(relatedItems, function(i, el) {
-                            goradd.remove(el);
+                            goradd.g(el).remove();
                         })
                     }
-                    goradd.htmlBefore(control, this.html);
-                    goradd.remove(control);
+                    $ctrl.htmlBefore(this.html);
+                    $ctrl.remove();
                 }
                 else {
                     // control is being injected at the top level, so put it at the end of the form.
-                    goradd.appendHtml(goradd.form(), this.html);
+                    goradd.f(goradd.form()).appendHtml(this.html);
                 }
             }
         });
@@ -927,8 +612,8 @@ goradd = {
         }
         if (json.profileHtml) {
             var c = goradd.el("dbProfilePane");
-            if (!c) {
-                goradd.htmlAfter(goradd.form(), "<div id = 'dbProfilePane'></div>");
+            if (!$c) {
+                goradd.g(goradd.form()).htmlAfter("<div id = 'dbProfilePane'></div>");
                 c = goradd.el("dbProfilePane");
             }
             c.innerHTML = json.profileHtml;
@@ -958,16 +643,14 @@ goradd = {
                 // general selector
                 objs = goradd.qa(command.selector);
             } else {
-                objs = goradd.qa(command.selector[0], command.selector[1]);
+                objs = goradd.g(command.selector[0]).qa(command.selector[1]);
             }
 
             goradd.each (objs, function (i,v) {
-                var s = params.slice();
-                s.unshift(v);
-                if (typeof goradd[command.func] === "function") {
-                    goradd[command.func].apply(v, s);
+                var $c = goradd.g(v);
+                if (typeof $c[command.func] === "function") {
+                    $c[command.func].apply($c, params);
                 }
-                // else try applying to attached goradd object
             });
         }
         else if (command.func) {
@@ -976,19 +659,26 @@ goradd = {
             // Find the function by name. Walk an object list in the process.
             objs = command.func.split(".");
             var obj = window;
-            if (objs[0] in goradd) {
-                obj = goradd;
+            if (command.id) {
+                obj = goradd.g(command.id);
+            } else if (command.jqueryId) {
+                obj = jQuery(command.jqueryId);
             }
             var ctx = null;
 
             goradd.each (objs, function (i, v) {
                 ctx = obj;
                 obj = obj[v];
+                if (!obj) {
+                    var p = Object.getPrototypeOf(ctx);
+                    if (p && p[v]) {
+                        obj = p[v];
+                    }
+                }
             });
             // obj is now a function object, and ctx is the parent of the function object
             obj.apply(ctx, params);
         }
-
     },
     /**
      * Places the given command in the queue so that it is executed last.
@@ -1122,7 +812,7 @@ goradd = {
     _registerControls: function() {
         var els = goradd.qa('[data-grctl]');
         goradd.each(els, function(el) {
-            goradd.registerControl(this);
+            goradd._registerControl(this);
         });
     },
     updateForm: function() {
@@ -1235,11 +925,11 @@ goradd = {
         goradd.stopTimer(strControlId, blnPeriodic);
         if (blnPeriodic) {
             goradd._objTimers[strTimerId] = setInterval(function() {
-                goradd.trigger(strControlId, 'timerexpiredevent');
+                goradd.g(strControlId).trigger('timerexpiredevent');
             }, intDeltaTime);
         } else {
             goradd._objTimers[strTimerId] = setTimeout(function() {
-                goradd.trigger(strControlId, 'timerexpiredevent');
+                goradd.g(strControlId).trigger('timerexpiredevent');
             }, intDeltaTime);
         }
     },
@@ -1328,19 +1018,13 @@ goradd.getWrapper = function(mixControl) {
     if (typeof mixControl === 'string') {
         return document.getElementById(mixControl + "_ctl")
     } else {
-        return document.getElementById($(mixControl).attr('id') + "_ctl")
+        return document.getElementById(mixControl.id + "_ctl")
     }
-};
-
-goradd.getForm = function() {
-    return $('form[data-grctl="form"]')[0]
 };
 
 goradd.getPageState = function() {
     return document.getElementById("Goradd__PageState").value;
 };
-
-
 
 goradd.finalCommands = [];
 goradd.currentStep = 0;
@@ -1450,21 +1134,38 @@ goradd.TagBuilder.prototype = {
 };
 
 /***
- * Objects attached to goradd controls. Combines some features of jQuery, jQuery UI Widget Factory, and Polymer but with
- * compatibility down to IE10+ and OperaMini
+ * The goradd widget wrapper contains a series of operations that can be performed on an html object.
  */
 
-
-// constructor
-goradd.Widget = function (el) {
+/**
+ * g Wraps an html object in a goradd widget and returns the widget, so you can call functions on it.
+ * It also attaches itself to the object so it doesn't need to recreate itself each time.
+ * @param el
+ */
+goradd.g = function(el) {
     el = goradd.el(el);
+    if (!el) {
+        return undefined;
+    }
+    if (el.goradd && el.goradd.widget) {
+        // Element has an attached goradd widget, so use it. It is either this object or an extension of this object.
+        return el.goradd.widget;
+    }
+    if (!el.goradd) {
+        el.goradd = {};
+    }
+    if (!this._g) {
+        // first time through, allow it to be called without a new
+        return new goradd.g(el);
+    }
+    // this is the actual constructor
     this.element = el;
-    this._options = {};
-    this._data = {};
-    //this._extractAttributes();
+    el.goradd.widget = this;
 };
 
-goradd.Widget.prototype = {
+
+goradd.g.prototype = {
+    _g: 1, // just a marker to help with the constructor
     get: function(key) {
         var v;
         return (v = this.data(key)) !== undefined ? v :
@@ -1472,21 +1173,394 @@ goradd.Widget.prototype = {
             (v = this.prop(key))  !== undefined ? v :
                 undefined;
     },
-    prop: function(key) {
-        return this.element[key];
+    prop: function(key, v) {
+        var self = this;
+        if (arguments.length === 1) {
+            if (typeof key === "object") {
+                // setting group of keys and values
+                goradd.each(key, function(k,v) {
+                    self.element[k] = v;
+                });
+                return
+            }
+            return this.element[key];
+        } else if (arguments.length === 2) {
+            this.element[key] = v;
+        }
     },
     option: function(key) {
         return this._options[key];
     },
-    data: function(key) {
-        return this._data[key];
+    qs: function(sel) {
+        return this.element.querySelector(sel);
     },
+    /**
+     * qa is a querySelectorAll call that returns an actual array of HTML elements, and not a NodeList.
+     * By returning an array, you can call ES5 array functions on it, like forEach.
+     * Returns empty array if selector has no results.
+     * @param sel {string} The css selector to find
+     * @returns {HTMLElement[]}
+     */
+    qa: function(sel) {
+        return Array.prototype.slice.call(this.element.querySelectorAll(sel));
+    },
+    /**
+     * matches returns true if the given element matches the css selector.
+     * @param sel
+     * @returns {boolean}
+     */
+    matches: function(sel) {
+        if (Element.prototype.matches) {
+            return this.element.matches(sel);
+        } else {
+            var matches = document.querySelectorAll(sel),
+                i = matches.length;
+            while (--i >= 0 && matches.item(i) !== this.element) {}
+            return i > -1;
+        }
+    },
+    /**
+     * parents returns the parent nodes, not including the window.
+     * @returns {Array}
+     */
+    parents: function() {
+        var a = [];
+        var el = this.element;
+        while (el.parentElement && el.parentElement !== window) {
+            a.push(el.parentElement);
+            el = el.parentElement;
+        }
+        return a;
+    },
+    /**
+     * closest returns the first parent node that matches the given selector, or null
+     * @param sel
+     */
+    closest: function(sel) {
+        var el = this.element;
+        while (el.parentElement && el.parentElement !== window) {
+            if (this.matches(sel)) {
+                return el;
+            }
+            el = el.parentElement;
+        }
+        return null;
+    },
+    /**
+     * attr gets attributes on a dom object. Remember that attributes are not the same as properties.
+     * To access properties, use prop. These specifically access the attributes defined in html, but not anything set
+     * afterwards.
+     * Returns undefined if the attribute does not exist.
+     * @param a (optional) {string} The attribute name to return. Otherwise returns an object that is a map of all defined attributes.
+     * @returns {null|boolean|*}
+     */
+    attr: function() {
+        var t = this.element;
+        var self = this;
+        if (arguments.length === 0) {
+            // Return an object mapping all the attributes of the html object
+            if (t.hasAttributes()) {
+                var attr = {};
+                // Apparently IE has a quirk where it returns all possible attributes, and not just set attributes.
+                goradd.each(this.element.attributes, function(v,n) {
+                    n = n.nodeName || n.name;
+                    if (t.hasAttribute(n)) {
+                        attr[n] = t.getAttribute(n);
+                    }
+                });
+                return attr;
+            }
+            return undefined; // no attributes are set
+        }
+        if (arguments.length === 1) {
+            var a = arguments[0];
+            // get value
+            if (!t.hasAttribute(a)) {
+                return undefined;
+            }
+            var v = t.getAttribute(a);
+            if (v === null || v === "true" || v === "") {
+                return true; // A boolean attribute, it just exists with no value or with "true"
+            } else if (v === "false") {
+                return false;
+            } else {
+                return v;
+            }
+        }
+    },
+    /**
+     * class returns the value of the class, or sets the class, and returns the new class.
+     * Prefix the class with a "+" to add the class(es). Prefix with "-" to remove the given classes.
+     * Separate class names with a space.
+     * @param c
+     */
+    class: function(c) {
+        var el = this.element;
+        if (arguments.length === 0) {
+            return el.className || el.class;
+        }
+        if (c.substr(0,1) === "+") {
+            goradd.each(c.substr(1).split(" "), function(i,v) {
+                if (v !== "") {
+                    el.classList.add(v);
+                }
+            });
+        } else if (c.substr(0,1) === "-") {
+            goradd.each(c.substr(1).split(" "), function (i, v) {
+                if (v !== "") {
+                    el.classList.remove(v);
+                }
+            });
+        } else {
+            el.className = c;
+        }
+        return el.className || el.class;
+    },
+
+    /**
+     * on attaches an event handler to the given html object.
+     * Filtering and potentially supplying data to the event are also included.
+     * If data is a function, the function will be called when the event fires and the
+     * result of the function will be provided as data to the event. The "this" parameter
+     * will be the element with the given targetId, and the function will be provided the event object.
+     *
+     * @param eventNames {string} One or more event names separated by spaces
+     * @param eventHandler
+     * @param filter
+     * @param data
+     * @param capture True to fire this event during initial capture phase. False to wait until it bubbles.
+     */
+    on: function(eventNames, eventHandler, filter, data, capture) {
+        if (!capture) {
+            capture = false;
+        }
+        var el = this.element;
+        var events = eventNames.split(" ");
+        goradd.each(events, function(i,eventName) {
+            el.addEventListener(eventName, function (event) {
+                if (filter && !goradd.g(event.target).matches(filter)) {
+                    return
+                }
+                if (data) {
+                    if (typeof data === "function") {
+                        data = data.call(el, event);
+                    }
+                    event.grdata = data;
+                }
+                if (event.detail) {
+                    eventHandler.call(el, event, event.detail); // simulate adding extra items to event handler
+                } else if (data) {
+                    eventHandler.call(el, event, data); // simulate adding extra items to event handler
+                } else {
+                    eventHandler.call(el, event);
+                }
+            }, capture);
+        });
+    },
+    click: function() {
+        // use the built-in click to simulate a click on an item.
+        this.element.click();
+    },
+    trigger: function(eventName, extra) {
+        var el = this.element;
+        var event;
+
+        if (eventName === "click") {
+            el.click();
+        } else if (eventName === "change") {
+            if (typeof window.Event === "object") {
+                // Event for browsers which don't natively support the Constructor method
+                event = document.createEvent('HTMLEvents');
+                event.initCustomEvent(eventName, true, true, extra);
+            } else {
+                event = new Event(eventName, {bubbles: true, detail: extra})
+            }
+        } else {
+            // assume custom event
+            if (typeof window.CustomEvent === "object") {
+                // CustomEvent for browsers which don't natively support the Constructor method
+                event = document.createEvent('CustomEvent');
+                event.initCustomEvent(eventName, true, true, extra);
+            } else {
+                event = new CustomEvent(eventName, {bubbles: true, cancelable: true, composed: true, detail: extra})
+            }
+        }
+        el.dispatchEvent(event);
+    },
+    /**
+     * htmlAfter adds the html after the given element.
+     * @param html
+     */
+    htmlAfter: function(html) {
+        this.element.insertAdjacentHTML("afterend", html);
+    },
+    /**
+     * htmlBefore inserts the html before the given element.
+     * @param el {object|string}
+     * @param html
+     */
+    htmlBefore: function(html) {
+        this.element.insertAdjacentHTML("beforebegin", html);
+    },
+    /**
+     * insertHtml inserts the given html in the inner html of the given element, but before any other html that is
+     * already there.
+     * @param html
+     */
+    insertHtml: function(html) {
+        this.element.insertAdjacentHTML("afterbegin", html);
+    },
+    /**
+     * appendHtml inserts the given html into the inner html of the given element, but after any other html that is
+     * already there.
+     * @param html
+     */
+    appendHtml: function(html) {
+        this.element.insertAdjacentHTML("beforeend", html);
+    },
+    /**
+     * Remove removes the given element from the dom. It returns the removed element.
+     * @returns {*}
+     */
+    remove: function() {
+        var el = this.element;
+        el.parentElement.removeChild(el);
+        return el;
+    },
+    /**
+     * Value sets or gets the value of a goradd control. This is primarily used by the ajax processing code, but
+     * external tools can use this too. See below for what each kind of control will return. Note that the actual "value"
+     * attribute is not always returned.
+     * @param v
+     * @returns {*}
+     */
+    value: function(v) {
+        var el = this.element;
+        var type = goradd.g(el).prop("type");
+        if (arguments.length === 1) {
+            // Setting the value
+            switch (type) {
+                case "select-multiple":
+                    // Multi-select selections will attempt to set all items in the given array to the value
+                    var opts = goradd.qa(el,'option');
+                    goradd.each(opts, function(i, opt) {
+                        opt.checked = (opt.value in v);
+                    });
+                    break;
+                case "checkbox":
+                    if (typeof v === "boolean") {
+                        el.checked = v;
+                    } else if (typeof v === "number") {
+                        el.checked = v !== 0;
+                    } else if ("value" in el) {
+                        el.checked = el.value === v;
+                    } else {
+                        el.checked = false;
+                    }
+                    break;
+
+                case "radio":
+                    if (typeof v === "boolean") {
+                        el.checked = v;
+                    } else {
+                        el.checked = el.value == v;
+                    }
+                    break;
+                default:
+                    if ("value" in el) {
+                        el.value = v;
+                    }
+                    break;
+            }
+            return el;
+        } else {
+            switch (type) {
+                case "select-multiple":
+                    // Multi-select selections will return an array of selected values
+                    var sels = goradd.qa(el,':checked');
+                    return sels.map(function(s){return s.value});
+                case "checkbox":
+                case "radio":
+                    // Checkboxes and radios will return the value, or true, if checked, and null if not checked.
+                    if (el.checked) {
+                        if (!("value" in el)) { // if the checkbox has no value, just return true;
+                            return true;
+                        } else {
+                            return el.value;
+                        }
+                    }
+                    break;
+                default:
+                    if ("value" in el) {
+                        // This works for textboxes, textarea (possible problem losing newlines though), and single selects.
+                        // Custom controls can add a "value" getter as well and this will pick that up too.
+                        return el.value;
+                    }
+                    break;
+            }
+
+            return null;
+        }
+    },
+    /**
+     * data gets or sets custom data that we assign to an element. If getting the data, we will check our private area
+     * first for the data, and then check for an attribute if we have not overridden the attribute with private data.
+     * Getting data attached as a "data-*" attribute uses the camelCase version of the name.
+     * Private data is stored in the "goradd.data" object attached to the element.
+     * @param key
+     * @param v
+     * @returns {*}
+     */
+    data: function(key, v) {
+        var el = this.element;
+        if (arguments.length === 1) {
+            // Get the data
+            if (el.goradd.data && el.goradd.data.hasOwnProperty(key)) {
+                return el.goradd.data[key]; // Use our private data area if its there
+            }
+            // Otherwise try to get the data from the attribute on the element
+            if (el.dataset) { // modern browsers
+                // use the key as is
+                return el.dataset[key];
+            } else {
+                // IE 10 or opera mini. Gotta get this from the attribute itself.
+                key = goradd._toKebab(key);
+                return el.getAttribute("data-" + key);
+            }
+        } else {
+            // We are setting data. We do not alter the attribute (use goradd.attr() if you need that). Instead,
+            // we put the data in our private area for later collection.
+            if (!el.goradd.data) {
+                el.goradd.data = {};
+            }
+            el.goradd.data[key] = v;
+        }
+    },
+    focus: function() {
+        this.element.focus();
+    },
+    text: function(t) {
+        if (arguments.length === 0) {
+            return this.element.innerText;
+        } else {
+            this.element.innerText = t;
+        }
+    },
+    html: function(t) {
+        if (arguments.length === 0) {
+            return this.element.innerHtml;
+        } else {
+            this.element.innerHtml = t;
+        }
+    },
+
     /**
      * f calls the named function, with the named parameters, on the goradd widget first, and if not found, will attempt
      * to call this on the element.
      * @param name
      * @param params
      */
+    /*
     f: function(name, params) {
         var f = this[name];
         if (typeof f === "function") {
@@ -1497,8 +1571,205 @@ goradd.Widget.prototype = {
                 return f.apply(params);
             }
         }
-    }
+    }*/
 };
+
+/**
+ * This is a recreation of the jQuery UI widget factory, with fewer features and specifically supporting IE 10+
+ * and Opera Mini.
+ *
+ * It takes the given prototype, makes it an extension of the base object, and then puts it at the given named
+ * spot under the window object. The name can be separated with dots to work down the hierarchy. Start the name
+ * with "goradd." to add it to the goradd hierarchy.
+ *
+ * Note that this name means two things. First, that the prototype will be placed at that location off the goradd global
+ * hierarchy, and that the actual object created will be placed at the location off of the goradd object attached
+ * to the html object.
+ *
+ * @param name  The namespaced name of the prototype.
+ * @param base  The base object. If not included, goradd.Widget will be used as the base object.
+ * @param prototype The prototype to use. Functions will become part of the function prototype, and other objects will
+ *                  become static global objects. Instance methods should be placed in the "options" object, or
+ *                  simply declared and initialized in the "_create" function.
+ */
+goradd.widget = function(name, base, prototype) {
+    // Use goradd.Widget if there is no base
+    if ( !prototype ) {
+        prototype = base;
+        base = goradd.Widget;
+    }
+
+    // make sure we put the prototype on the goradd global object, and the instance on the goradd item attached to the html object.
+    var names = name.split( "." );
+    if (names[0] !== "goradd") {
+        names.unshift("goradd");
+    }
+
+    if (names.length === 1) {
+        goradd.log("You cannot create a widget at 'goradd'");
+        return;
+    }
+
+    if (names[0] === "goradd" && names[1] === "data") {
+        goradd.log("goradd.data is a reserved location");
+        return;
+    }
+
+    var obj = window;
+    var ctx = null;
+
+    for (var i = 0; i < names.length - 1; i++) {
+        var v = names[i];
+        ctx = obj;
+        if (!obj[v]) {
+            obj[v] = {};
+        }
+        obj = obj[v];
+    }
+    var loc = names[names.length -1];
+    if (obj[loc]) {
+        goradd.log(name + " is already defined.");
+        return;
+    }
+
+    var constructor = obj[loc] = function(options, element) {
+        if (this._createWidget) {
+            this._createWidget(options, element);
+        }
+    };
+
+    var basePrototype = new base();
+    // Copy the options object
+    basePrototype.options = goradd.widget.extend( {}, basePrototype.options );
+
+    var proxiedPrototype = {};
+    goradd.each( prototype, function( prop, value ) {
+        if (typeof value !== "function" ||
+            !base.prototype[ prop ]) { // only create override if there is a base function
+            proxiedPrototype[ prop ] = value;
+            return;
+        }
+        proxiedPrototype[ prop ] = ( function() {
+            function _super() {
+                return base.prototype[ prop ].apply( this, arguments );
+            }
+
+            function _superApply( args ) {
+                return base.prototype[ prop ].apply( this, args );
+            }
+
+            return function() {
+                var __super = this._super;
+                var __superApply = this._superApply;
+                var returnValue;
+
+                this._super = _super;
+                this._superApply = _superApply;
+
+                returnValue = value.apply( this, arguments );
+
+                this._super = __super;
+                this._superApply = __superApply;
+
+                return returnValue;
+            };
+        } )();
+    } );
+
+    var namespace = names.slice(0, names.length - 2).join("."),
+        widgetName = names[names.length - 1],
+        widgetFullName = names.join(".");
+
+    constructor.prototype = goradd.widget.extend( basePrototype, proxiedPrototype, {
+        constructor: constructor,
+        namespace: namespace,
+        widgetName: widgetName,
+        widgetFullName: widgetFullName
+    } );
+
+};
+
+goradd.widget.new = function(constructor, options, element) {
+    if (typeof constructor === "string") {
+        var names = constructor.split( "." );
+        var obj = window;
+        var ctx = null;
+        goradd.each (names, function (i, v) {
+            ctx = obj;
+            obj = obj[v];
+        });
+        constructor = obj;
+    }
+    return new constructor(options, element);
+};
+
+goradd.widget.extend = function( target ) {
+    var input = Array.prototype.slice.call( arguments, 1 );
+    var inputIndex = 0;
+    var inputLength = input.length;
+    var key;
+    var value;
+
+    for ( ; inputIndex < inputLength; inputIndex++ ) {
+        for ( key in input[ inputIndex ] ) {
+            value = input[ inputIndex ][ key ];
+            if ( input[ inputIndex ].hasOwnProperty( key ) && value !== undefined ) {
+
+                // Clone objects
+                if ( goradd.isPlainObject( value ) ) {
+                    target[ key ] = goradd.isPlainObject( target[ key ] ) ?
+                        goradd.widget.extend( {}, target[ key ], value ) :
+
+                        // Don't extend strings, arrays, etc. with objects
+                        goradd.widget.extend( {}, value );
+
+                    // Copy everything else by reference
+                } else {
+                    target[ key ] = value;
+                }
+            }
+        }
+    }
+    return target;
+};
+
+/**
+ * This is the definition of the Widget class, which serves as the base class for other widgets. It itself is based
+ * on the "g" class, which is a jQuery like wrapper. In other words, all the functions on the g class are available
+ * to widgets throught the "this" variable, and can be overridden. One important function to override might be the
+ * "value" function, which provides the value that will be used by ajax calls. If your widget only works through Ajax,
+ * then that is sufficient to keep the go side of things updated.
+ */
+goradd.widget("goradd.Widget", goradd.g, {
+    /**
+     * _createWidget acts as the constructor of all widgets. It can be overridden by the widget if needed, but
+     * you normally do not need to. Implement _create() to make a private constructor.
+     * @param options
+     * @param element
+     * @private
+     */
+    _createWidget: function(options, element) {
+        this.element = goradd.el(element);
+
+        this.options = goradd.widget.extend( {},
+            this.options,
+            options );
+
+        if (this.element) { // if no element, this may be created just to get to its prototype
+            this._create();
+            this.trigger("create");
+            this._init();
+        }
+    },
+    /**
+     * _create is the constructor of each individual widget. Call this._super() to call the superclass's constructor too.
+     * @private
+     */
+    _create: function() {
+    },
+    _init: function() {
+    },
+});
 
 })( jQuery );
 

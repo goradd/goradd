@@ -54,7 +54,7 @@ func NewTestForm(ctx context.Context) page.FormI {
 	grctx := page.GetContext(ctx)
 
 	if _, ok := grctx.FormValue("all"); ok {
-		f.ExecuteJqueryFunction("trigger", "testall", page.PriorityLow)
+		f.ExecuteWidgetFunction("trigger", "testall", page.PriorityLow)
 		f.On(event.Event("testall"), action.Ajax(f.ID(), TestAllAction))
 	}
 	return f

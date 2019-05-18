@@ -18,9 +18,15 @@ goradd.testsuite = {
     testQS: function(t) {
         var el = goradd.qs("p[id='testP']");
         t.assert(el.innerText === "I am here");
+
+        el = goradd.g("testspace").qs("p[id='testP']");
+        t.assert(el.innerText === "I am here");
     },
     testQA: function(t) {
         var el = goradd.qa("p[id='testP']");
+        t.assert(el[0].innerText === "I am here");
+
+        el = goradd.g("testspace").qa("p[id='testP']");
         t.assert(el[0].innerText === "I am here");
     },
     testIsEmptyObj: function(t) {
@@ -31,49 +37,56 @@ goradd.testsuite = {
         t.isSame("JsUnitTestForm", goradd.form().id);
     },
     testMatches: function(t) {
-        t.assert(goradd.matches("testP", "p[id='testP']"));
-        t.assert(!goradd.matches("testP", "div"));
+        t.assert(goradd.g("testP").matches("p[id='testP']"));
+        t.assert(!goradd.g("testP").matches("div"));
     },
     testParents: function(t) {
-        var p = goradd.parents("testP");
+        var p = goradd.g("testP").parents();
         t.isSame("JsUnitTestForm", p[1].id);
     },
-    testAttr: function(t) {
-        var a1 = goradd.attr("testD", "spellcheck");
+    testAttrProp: function(t) {
+        var a1 = goradd.g("testD").attr("spellcheck");
         t.isSame(true, a1);
-        goradd.attr("testD", {"spellcheck":null, "class":"a"});
-        t.isSame(null, goradd.attr("testD", "spellcheck"));
-        t.isSame("a", goradd.attr("testD", "class"));
-        goradd.attr("testD", "class", "b");
-        t.isSame("b", goradd.attr("testD", "class"));
+        goradd.g("testD").prop({"spellcheck":false, "class":"a"});
+        t.isSame(false, goradd.g("testD").prop("spellcheck"));
+        t.isSame("a", goradd.g("testD").prop("class"));
+        goradd.g("testD").prop("class", "b");
+        t.isSame("b", goradd.g("testD").prop("class"));
     },
-    testProp: function(t) {
-        t.isSame("testP", goradd.prop("testP", "id"))
+    testClass: function(t) {
+        goradd.g("testD").class("b c");
+        goradd.g("testD").class("-c");
+        t.isSame("b", goradd.g("testD").class());
+
+        goradd.g("testD").class("+a");
+        goradd.g("testD").class("-b");
+        t.isSame("a", goradd.g("testD").class());
     },
     testEvent: function(t) {
-        goradd.on("testD", "et", function() {
+        goradd.g("testD").on("et", function() {
             this.innerText = "tested";
         });
-        goradd.trigger("testD", "et");
+        goradd.g("testD").trigger("et");
         t.isSame("tested", goradd.el("testD").innerText)
     },
     testHtmlInserts: function(t) {
-        goradd.htmlAfter("testP", "<p id='after'>Inserted After</p>");
-        goradd.htmlBefore("testP", "<p id='before'>Inserted Before</p>");
+        var p = goradd.g("testP");
+        p.htmlAfter("<p id='after'>Inserted After</p>");
+        p.htmlBefore("<p id='before'>Inserted Before</p>");
         t.isSame("Inserted After", goradd.el("after").innerText);
         t.isSame("Inserted Before", goradd.el("before").innerText);
         goradd.el("testP").innerText = "There";
-        goradd.insertHtml("testP", "Here");
-        goradd.appendHtml("testP", "Everywhere");
+        p.insertHtml("Here");
+        p.appendHtml("Everywhere");
         t.isSame("HereThereEverywhere", goradd.el("testP").innerText);
     },
     testRemove: function(t) {
-        goradd.remove("testP");
+        goradd.g("testP").remove();
         t.isSame(goradd.el("testP"), null);
     },
     testEach: function(t) {
         var s = "";
-        goradd.each(goradd.qa("testspace", "p,div"), function(i, v) {
+        goradd.each(goradd.g("testspace").qa("p,div"), function(i, v) {
             s += v.innerText;
         });
         t.isSame("I am herea div", s);
@@ -95,8 +108,9 @@ goradd.testsuite = {
         t.isSame("a-b-c", goradd._toKebab("aBC"));
     },
     testData: function(t) {
-        t.isSame("bird", goradd.data("testD", "animalType"));
-        goradd.data("testD", "animalType", "dog");
-        t.isSame("dog", goradd.data("testD", "animalType"));
+        var d = goradd.g("testD");
+        t.isSame("bird", d.data("animalType"));
+        d.data("animalType", "dog");
+        t.isSame("dog", d.data("animalType"));
     }
 };

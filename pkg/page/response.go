@@ -43,14 +43,17 @@ const (
 
 // responseCommand is a response packet that leads to execution of a javascript function
 type responseCommand struct {
-	script   string // if just straight javascript
-	selector string
-	function string
-	args     []interface{}
-	final    bool
+	Script   string        `json:"script,omitempty"` // if just straight javascript
+	Selector string        `json:"selector,omitempty"`
+	Id       string        `json:"id,omitempty"`
+	JqueryId string        `json:"jqueryId,omitempty"`
+	Function string        `json:"func,omitempty"`
+	Args     []interface{} `json:"params,omitempty"`
+	Final    bool          `json:"final,omitempty"`
 }
 
 // MarshalJSON is used to form the Ajax response.
+/*
 func (r responseCommand) MarshalJSON() (buf []byte, err error) {
 	var reply = map[string]interface{}{}
 
@@ -69,9 +72,10 @@ func (r responseCommand) MarshalJSON() (buf []byte, err error) {
 		if r.final {
 			reply["final"] = true
 		}
+		if
 	}
 	return json.Marshal(reply)
-}
+}*/
 
 // responseControl is the response packet that leads to the manipulation or replacement of an html object
 type responseControl struct {
@@ -105,13 +109,13 @@ type Response struct {
 	// exclusiveCommand is a single command that is sent by itself, overriding all other commands
 	exclusiveCommand       *responseCommand
 	// highPriorityCommands are sent first
-	highPriorityCommands   []responseCommand
+	highPriorityCommands   []*responseCommand
 	// mediumPriorityCommands are sent after high priority commands
-	mediumPriorityCommands []responseCommand
+	mediumPriorityCommands []*responseCommand
 	// lowPriorityCommands are sent after medium priority commands
-	lowPriorityCommands    []responseCommand
+	lowPriorityCommands    []*responseCommand
 	// finalCommands are acted on after all other commands have been processed
-	finalCommands          []responseCommand
+	finalCommands          []*responseCommand
 	// jsFiles are JavaScript files that should be inserted into the page. This should rarely be used,
 	// but is needed in case the programmer inserts a control widget in response to an Ajax event,
 	// and that control depends on javascript that has not yet been sent to the client.
@@ -142,6 +146,19 @@ func (r *Response) displayAlert(message string) {
 	r.Unlock()
 }
 
+func (r *Response) AddClass(id string, class string, priorities ...Priority) {
+	r.ExecuteControlCommand(id, "class", "+" + class, priorities)
+}
+
+func (r *Response) RemoveClass(id string, class string, priorities ...Priority) {
+	r.ExecuteControlCommand(id, "class", "-" + class, priorities)
+}
+
+func (r *Response) SetClass(id string, class string, priorities ...Priority) {
+	r.ExecuteControlCommand(id, "class", class, priorities)
+}
+
+
 // ExecuteJavaScript will execute the given code with the given priority. Note that all javascript code is run in
 // strict mode.
 func (r *Response) ExecuteJavaScript(js string, priorities ...Priority) {
@@ -153,47 +170,33 @@ func (r *Response) ExecuteJavaScript(js string, priorities ...Priority) {
 			panic("Don't call ExecuteJavaScript with arguments")
 		}
 	}
-	r.Lock()
-	switch priority {
-	case PriorityExclusive:
-		r.exclusiveCommand = &responseCommand{script: js}
-	case PriorityHigh:
-		r.highPriorityCommands = append(r.highPriorityCommands, responseCommand{script: js})
-	case PriorityStandard:
-		r.mediumPriorityCommands = append(r.mediumPriorityCommands, responseCommand{script: js})
-	case PriorityLow:
-		r.lowPriorityCommands = append(r.lowPriorityCommands, responseCommand{script: js})
-	case PriorityFinal:
-		r.finalCommands = append(r.finalCommands, responseCommand{script: js})
-	}
-	r.Unlock()
+	c := responseCommand{Script: js}
+	r.postCommand(&c, priority)
+
 }
 
-// ExecuteControlCommand executes the named command on the given goradd control.
+// ExecuteControlCommand executes the named command on the given control. Possible commands are defined
+// by the goradd widget class in the javascript file.
 func (r *Response) ExecuteControlCommand(controlID string, functionName string, args ...interface{}) {
-	r.ExecuteSelectorFunction("#"+controlID, functionName, args...)
+	args2,priority := r.extractPriority(args...)
+	c := responseCommand{Id: controlID, Function: functionName, Args: args2}
+	r.postCommand(&c, priority)
 }
 
-// ExecuteSelectorFunction calls a function on a jQuery selector
+// ExecuteJqueryCommand executes the named jquery command on the given jquery control.
+func (r *Response) ExecuteJqueryCommand(controlID string, functionName string, args ...interface{}) {
+	args2,priority := r.extractPriority(args...)
+	c := responseCommand{JqueryId: controlID, Function: functionName, Args: args2}
+	r.postCommand(&c, priority)
+}
+
+
+// ExecuteSelectorFunction calls a goradd function on a group of objects defined by a selector.
 func (r *Response) ExecuteSelectorFunction(selector string, functionName string, args ...interface{}) {
 	args2,priority := r.extractPriority(args...)
-	c := responseCommand{selector: selector, function: functionName, args: args2}
+	c := responseCommand{Selector: selector, Function: functionName, Args: args2}
 
-	r.Lock()
-	switch priority {
-	case PriorityExclusive:
-		r.exclusiveCommand = &c
-	case PriorityHigh:
-		r.highPriorityCommands = append(r.highPriorityCommands, c)
-	case PriorityStandard:
-		r.mediumPriorityCommands = append(r.mediumPriorityCommands, c)
-	case PriorityLow:
-		r.lowPriorityCommands = append(r.lowPriorityCommands, c)
-	case PriorityFinal:
-		c.final = true
-		r.finalCommands = append(r.finalCommands, c)
-	}
-	r.Unlock()
+	r.postCommand(&c, priority)
 }
 
 // ExecuteJsFunction calls the given JavaScript function with the given arguments.
@@ -201,12 +204,15 @@ func (r *Response) ExecuteSelectorFunction(selector string, functionName string,
 // to call the function on. If the named function just a function label, then the function is called on the window object.
 func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
 	args2,priority := r.extractPriority(args...)
-	c := responseCommand{function: functionName, args: args2}
+	c := responseCommand{Function: functionName, Args: args2}
+	r.postCommand(&c, priority)
+}
 
+func (r *Response) postCommand(c *responseCommand, priority Priority) {
 	r.Lock()
 	switch priority {
 	case PriorityExclusive:
-		r.exclusiveCommand = &c
+		r.exclusiveCommand = c
 	case PriorityHigh:
 		r.highPriorityCommands = append(r.highPriorityCommands, c)
 	case PriorityStandard:
@@ -214,11 +220,12 @@ func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
 	case PriorityLow:
 		r.lowPriorityCommands = append(r.lowPriorityCommands, c)
 	case PriorityFinal:
-		c.final = true
+		c.Final = true
 		r.finalCommands = append(r.finalCommands, c)
 	}
 	r.Unlock()
 }
+
 
 func (r *Response) extractPriority (args ...interface{}) (args2 []interface{}, priority Priority) {
 	for i,a := range args {
@@ -303,27 +310,27 @@ func (r *Response) JavaScript() (script string) {
 }
 
 
-func (r *Response) renderCommandArray(commands []responseCommand) string {
+func (r *Response) renderCommandArray(commands []*responseCommand) string {
 	var script string
 	for _, command := range commands {
-		if command.script != "" {
-			script += command.script + ";\n"
-		} else if command.selector != "" {
-			if command.function == "" {
+		if command.Script != "" {
+			script += command.Script + ";\n"
+		} else if command.Selector != "" {
+			if command.Function == "" {
 				panic("Cannot process a selector without a function")
 			}
 			var args string
 
-			if command.args != nil {
-				args = javascript.Arguments(command.args).JavaScript()
+			if command.Args != nil {
+				args = javascript.Arguments(command.Args).JavaScript()
 			}
-			script += fmt.Sprintf("jQuery('%s').%s(%s);\n", command.selector, command.function, args)
-		} else if command.function != "" {
+			script += fmt.Sprintf("jQuery('%s').%s(%s);\n", command.Selector, command.Function, args)
+		} else if command.Function != "" {
 			var args string
-			if command.args != nil {
-				args = javascript.Arguments(command.args).JavaScript()
+			if command.Args != nil {
+				args = javascript.Arguments(command.Args).JavaScript()
 			}
-			script += fmt.Sprintf("%s(%s);\n", command.function, args)
+			script += fmt.Sprintf("%s(%s);\n", command.Function, args)
 		}
 	}
 
@@ -342,7 +349,7 @@ func (r *Response) GetAjaxResponse() (buf []byte, err error) {
 		reply[ResponseCommandsMedium] = []responseCommand{*r.exclusiveCommand}
 		r.exclusiveCommand = nil
 	} else {
-		var commands []responseCommand
+		var commands []*responseCommand
 		if r.highPriorityCommands != nil {
 			commands = append(commands, r.highPriorityCommands...)
 			r.highPriorityCommands = nil

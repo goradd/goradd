@@ -141,9 +141,9 @@ func (w *ErrorWrapperType) ΩAjaxRender(ctx context.Context, response *Response,
 		switch c.control().validationState {
 		case ValidationWaiting:fallthrough
 		case ValidationValid:
-			response.ExecuteControlCommand(c.ID() + "_ctl", "removeClass", "error")
+			response.RemoveClass(c.ID() + "_ctl", "error")
 		case ValidationInvalid:
-			response.ExecuteControlCommand(c.ID() + "_ctl", "addClass", "error")
+			response.AddClass(c.ID() + "_ctl", "error")
 		}
 		w.ValidationStateChanged = false
 	}

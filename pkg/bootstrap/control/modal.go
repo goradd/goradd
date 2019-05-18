@@ -232,7 +232,7 @@ func (d *Modal) Open() {
 }
 
 func (d *Modal) Close() {
-	d.ParentForm().Response().ExecuteControlCommand(d.ID(), "modal", page.PriorityLow, "hide")
+	d.ParentForm().Response().ExecuteJqueryCommand(d.ID(), "modal", page.PriorityLow, "hide")
 }
 
 

@@ -58,25 +58,21 @@ func (p *TestController) Init(self control.PanelI, parent page.ControlI, id stri
 	p.Panel.Init(p, parent, id)
 	p.ParentForm().AddJQueryUI()
 	p.ParentForm().AddJavaScriptFile(filepath.Join(TestAssets(), "js", "test_controller.js"), false, nil)
+	// Use declarative attribute to attach javascript to the control
+	p.SetDataAttribute("grWidget", "goradd.testController")
+
 	p.On(TestStepEvent(), action.Ajax(p.ID(), TestStepAction))
 	p.stepTimeout = StepTimeoutSeconds
 }
 
-func (p *TestController) ΩPutCustomScript(ctx context.Context, response *page.Response) {
-
-	script := fmt.Sprintf (`$j("#%s").testController();`, p.ID())
-	response.ExecuteJavaScript(script, page.PriorityHigh) // Make sure the plugin gets initialized before being called
-}
-
 func (p *TestController) logLine(line string) {
-	script := fmt.Sprintf (`$j("#%s").testController("logLine", %q);`, p.ID(), line)
-	p.ParentForm().Response().ExecuteJavaScript(script, page.PriorityStandard)
+	p.ExecuteWidgetFunction("logLine", line)
 }
 
 // loadUrl loads the url and returns the pagestate of the new form, if a goradd form got loaded.
 func (p *TestController) loadUrl(url string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "loadUrl", len(p.stepDescriptions), url)
+	p.ExecuteWidgetFunction("loadUrl", len(p.stepDescriptions), url)
 	p.waitStep(); // load function will wait until window is loaded before firing
 }
 
@@ -128,26 +124,26 @@ func (p *TestController) waitStep() {
 
 func (p *TestController) changeVal(id string, val interface{}, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "changeVal", len(p.stepDescriptions), id, fmt.Sprintf("%v", val))
+	p.ExecuteWidgetFunction("changeVal", len(p.stepDescriptions), id, fmt.Sprintf("%v", val))
 	p.waitStep()
 }
 
 func (p *TestController) checkControl(id string, val bool, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "checkControl", len(p.stepDescriptions), id, val)
+	p.ExecuteWidgetFunction("checkControl", len(p.stepDescriptions), id, val)
 	p.waitStep()
 }
 
 // checks a control or controls from a control group, specifically for checkbox and radio groups
 func (p *TestController) checkGroup(name string, vals []string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "checkGroup", len(p.stepDescriptions), name, vals)
+	p.ExecuteWidgetFunction("checkGroup", len(p.stepDescriptions), name, vals)
 	p.waitStep()
 }
 
 func (p *TestController) click(id string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "click", len(p.stepDescriptions), id)
+	p.ExecuteWidgetFunction("click", len(p.stepDescriptions), id)
 	p.waitStep()
 }
 
@@ -159,26 +155,26 @@ func (p *TestController) waitSubmit(desc string) {
 
 func (p *TestController) callJqueryFunction(id string, funcName string, params []interface{}, description string) interface{} {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "callJqueryFunction", len(p.stepDescriptions), id, funcName, params)
+	p.ExecuteWidgetFunction("callJqueryFunction", len(p.stepDescriptions), id, funcName, params)
 	p.waitStep()
 	return p.latestJsValue
 }
 
 func (p *TestController) typeChars(id string, chars string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "typeChars", len(p.stepDescriptions), id, chars)
+	p.ExecuteWidgetFunction("typeChars", len(p.stepDescriptions), id, chars)
 	p.waitStep()
 }
 
 func (p *TestController) focus(id string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "focus", len(p.stepDescriptions), id)
+	p.ExecuteWidgetFunction("focus", len(p.stepDescriptions), id)
 	p.waitStep()
 }
 
 func (p *TestController) closeWindow(description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "closeWindow", len(p.stepDescriptions))
+	p.ExecuteWidgetFunction("closeWindow", len(p.stepDescriptions))
 	p.waitStep()
 }
 

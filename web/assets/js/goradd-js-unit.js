@@ -25,7 +25,7 @@ goradd.jsUnit = {
                 }
             }
         }
-        goradd.appendHtml(result, "Done");
+        goradd.g(result).appendHtml("Done");
     },
     _makeTestRunner(result) {
         return new goradd.JsTest(result);
@@ -40,7 +40,6 @@ goradd.jsUnit = {
  */
 goradd.JsTest = function(resultDiv) {
     this.result = goradd.el(resultDiv);
-    ;
 };
 /**
  *
@@ -49,7 +48,7 @@ goradd.JsTest = function(resultDiv) {
 goradd.JsTest.prototype = {
     testName:"",
     displayError: function(e) {
-        goradd.appendHtml(this.result, e);
+        goradd.g(this.result).appendHtml(e);
     },
     assert: function(bVal, msg) {
         if (!msg) {

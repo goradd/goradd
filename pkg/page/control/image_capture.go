@@ -116,12 +116,12 @@ func (i *ImageCapture) ΩPutCustomScript(ctx context.Context, response *page.Res
 	options["mimeType"] = i.typ
 	options["quality"] = i.quality
 
-	response.ExecuteControlCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, options)
+	response.ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, options)
 }
 
 // TurnOff will turn off the camera and the image displayed in the control
 func (i *ImageCapture) TurnOff() {
-	i.ParentForm().Response().ExecuteControlCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
+	i.ParentForm().Response().ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
 }
 
 

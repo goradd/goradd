@@ -737,7 +737,7 @@ func (c *Control) SetDataAttribute(name string, val interface{}) {
 	}
 
 	if changed {
-		c.AddRenderScript("data", name, v) // Use the jQuery data method to set the data during ajax requests
+		c.AddRenderScript("data", name, v) // Use the data method to set the data during ajax requests
 	}
 }
 
@@ -1771,9 +1771,9 @@ func (c *Control) SetEscapeText(e bool) ControlI {
 	return c.this()
 }
 
-// ExecuteJqueryFunction will execute the given JQuery function on the given command, with the given
-// parameters. i.e. jQuery("#id").command(params...); will get executed in javascript.
-func (c *Control) ExecuteJqueryFunction(command string, params ...interface{}) {
+// ExecuteWidgetFunction will execute the given JavaScript function on the matching client object, with the given
+// parameters. The function is a widget function of the goradd widget wrapper or similar type of object.
+func (c *Control) ExecuteWidgetFunction(command string, params ...interface{}) {
 	c.ParentForm().Response().ExecuteControlCommand(c.ID(), command, params...)
 }
 
