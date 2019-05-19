@@ -249,10 +249,12 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 		actionJs += "goradd.blockEvents = true;\n"
 	}
 
+	actionJs += "if (event.detail && event.detail.postFunc) {event.detail.postFunc();}\n"
+
 	if !config.Minify {
 		actionJs = html.Indent(actionJs)
 	}
-	actionJs = fmt.Sprintf("goradd.queueAction({f: $j.proxy(function(){\n%s\n},this), d: %d, name: '%s'});\n", actionJs, e.delay, e.JsEvent)
+	actionJs = fmt.Sprintf("goradd.queueAction({f: (function(){\n%s\n}).bind(this), d: %d, name: '%s'});\n", actionJs, e.delay, e.JsEvent)
 
 	if e.condition != "" {
 		js = fmt.Sprintf("if (%s) {%s%s\n};", e.condition, js, actionJs)

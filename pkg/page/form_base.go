@@ -184,7 +184,9 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		s += "goradd.initFormTest();\n"
 	}
 	f.response = NewResponse() // Reset
-	s = fmt.Sprintf(`<script>jQuery(document).ready(function($j) { %s; });</script>`, s)
+	s = fmt.Sprintf(`<script>
+%s
+</script>`, s)
 	buf.WriteString(s)
 
 	f.this().ΩPostRender(ctx, buf)

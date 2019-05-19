@@ -1,4 +1,4 @@
-package test
+package manualtest
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 
-const AjaxTimingPath = "/page/test/AjaxTiming.g"
+const AjaxTimingPath = "/goradd/test/AjaxTiming.g"
 const AjaxTimingId = "AjaxTimingForm"
 
 const (

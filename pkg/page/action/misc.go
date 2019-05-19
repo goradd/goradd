@@ -169,7 +169,7 @@ func Trigger(controlID string, event string, data interface{}) ΩtriggerAction {
 }
 
 func (a ΩtriggerAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`$j("#%s").trigger("%s", %s);` + "\n", a.ControlID, a.Event, javascript.ToJavaScript(a.Data))
+	return fmt.Sprintf(`goradd.g("%s").trigger("%s", %s);` + "\n", a.ControlID, a.Event, javascript.ToJavaScript(a.Data))
 }
 
 // PrivateAction is used by control implementations to add a private action to a controls action list. Unless you are

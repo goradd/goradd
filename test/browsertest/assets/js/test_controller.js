@@ -62,30 +62,30 @@ goradd.widget("goradd.testController", {
     },
     changeVal: function(step, id, val) {
         goradd.log ("changeVal", step, id, val);
-        var control = this._findElement(id);
+        var g = this._getGoraddObj(id);
 
-        if (!control) {
+        if (!g) {
+            goradd.log("changeVal: element not found", id);
             this._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
 
-        goradd.g(control).value(val);
-
-        goradd.g(control).trigger("change");
+        g.val(val);
+        g.trigger("change");
         this._fireStepEvent(step);
     },
     checkControl: function(step, id, val) {
         goradd.log ("checkControl", step, id, val);
-        var control = this._findElement(id);
+        var g = this._getGoraddObj(id);
 
-        if (!control) {
+        if (!g) {
+            goradd.log("checkControl: element not found", id);
             this._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
 
-        control.checked = val;
-
-        goradd.g(control).trigger("change");
+        g.element.checked = val;
+        g.trigger("change");
         this._fireStepEvent(step);
     },
     checkGroup: function(step, groupName, values) {
@@ -113,57 +113,59 @@ goradd.widget("goradd.testController", {
 
         this._fireStepEvent(step);
     },
-    _findElement: function(id) {
-        return this._window.document.getElementById(id);
+    _getGoraddObj: function(id) {
+        return this._window.goradd.g(id);
     },
     closeWindow: function(step) {
         this._window.close();
         this._fireStepEvent(step);
     },
     click: function (step, id) {
+        var self = this;
         goradd.log("click", step, id);
-        var control = this._findElement(id);
-        if (!control) {
-            this._fireStepEvent(step,  "Could not find element " + id);
+        var g = this._getGoraddObj(id);
+        if (!g) {
+            goradd.log("click: element not found", id);
+            self._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
-        goradd.g(control).click();
-        this._fireStepEvent(step);
+        g.click({postFunc: function() {
+            self._fireStepEvent(step);
+        }});
     },
-    /*
-    callGoraddElementFunction: function (step, id, f, params) {
-        goradd.log("GoraddF", step, id, f, params);
-        var ret;
+    callWidgetFunction: function (step, id, f, params) {
+        goradd.log("WidgetF", step, id, f, params);
 
-        var control = this._findElement(id);
-        if (!control) {
+        var g = this._getGoraddObj(id);
+        if (!g) {
+            goradd.log("callWidgetFunction: element not found", id);
             this._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
-        var func = goradd[f];
-        if (!func) {
-            this._fireStepEvent(step, "Could not find function " + f + " on goradd");
-            return;
-        }
 
-        params.unshift(control);
+        var ret = g.f(f, params);
 
-        ret = func.apply(goradd, params);
         goradd.setControlValue(this.element.id, "jsvalue", ret);
         this._fireStepEvent(step);
-    },*/
+    },
     typeChars: function (step, id, chars) {
-        var control = this._findElement(id);
-        if (!control) {
+        var g = this._getGoraddObj(id);
+        if (!g) {
+            goradd.log("typeChars: element not found", id);
             this._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
-        goradd.g(control).value(chars);
+        g.val(chars);
         this._fireStepEvent(step);
     },
     focus: function (step, id) {
-        goradd.log("focus", step, id);
-        this._findElement(id).focus();
+        var g = this._getGoraddObj(id);
+        if (!g) {
+            goradd.log("focus: element not found", id);
+            this._fireStepEvent(step,  "Could not find element " + id);
+            return;
+        }
+        g.focus();
         this._fireStepEvent(step);
     }
 

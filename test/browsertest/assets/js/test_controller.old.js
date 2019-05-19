@@ -67,7 +67,7 @@ jQuery.widget( "goradd.testController",  {
     },
     changeVal: function(step, id, val) {
         goradd.log ("changeVal", step, id, val);
-        var control = this._findElement(id);
+        var control = this._getGoraddObj(id);
 
         if (!control) {
             this._fireStepEvent(step,  "Could not find element " + id);
@@ -85,7 +85,7 @@ jQuery.widget( "goradd.testController",  {
     },
     checkControl: function(step, id, val) {
         goradd.log ("checkControl", step, id, val);
-        var control = this._findElement(id);
+        var control = this._getGoraddObj(id);
 
         if (!control) {
             this._fireStepEvent(step,  "Could not find element " + id);
@@ -104,7 +104,7 @@ jQuery.widget( "goradd.testController",  {
     checkGroup: function(step, id, values) {
         // checks a group of checkbox or radio controls. The id of the control is also the name of each of the individual controls.
         goradd.log ("checkGroup", step, id, values);
-        var control = this._findElement(id);
+        var control = this._getGoraddObj(id);
         var jq = this._window.jQuery;
 
         if (!control) {
@@ -137,7 +137,7 @@ jQuery.widget( "goradd.testController",  {
         event = new CustomEvent('teststep', { bubbles: true, detail: step });
         control.dispatchEvent(event);
     },
-    _findElement: function(id) {
+    _getGoraddObj: function(id) {
         return this._window.document.getElementById(id);
     },
     closeWindow: function(step) {
@@ -146,7 +146,7 @@ jQuery.widget( "goradd.testController",  {
     },
     click: function (step, id) {
         goradd.log("click", step, id);
-        var control = this._findElement(id);
+        var control = this._getGoraddObj(id);
         if (!control) {
             this._fireStepEvent(step,  "Could not find element " + id);
             return;
@@ -165,7 +165,7 @@ jQuery.widget( "goradd.testController",  {
         goradd.log("jqValue", step, id, f, params);
         var ret;
 
-        var control = this._findElement(id);
+        var control = this._getGoraddObj(id);
         if (!control) {
             this._fireStepEvent(step,  "Could not find element " + id);
             return;
@@ -182,12 +182,12 @@ jQuery.widget( "goradd.testController",  {
         this._fireStepEvent(step);
     },
     typeChars: function (step, id, chars) {
-        //KeyEvent.simulate(chars, [], this._findElement(id));
-        $(this._findElement(id)).val(chars);
+        //KeyEvent.simulate(chars, [], this._getGoraddObj(id));
+        $(this._getGoraddObj(id)).val(chars);
     },
     focus: function (step, id) {
         goradd.log("focus", step, id);
-        this._findElement(id).focus();
+        this._getGoraddObj(id).focus();
     }
 
 

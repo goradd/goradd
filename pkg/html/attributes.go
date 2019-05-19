@@ -336,8 +336,8 @@ func (a *Attributes) HasClass(c string) bool {
 //
 //	<div id='test1' data-test-case="my test"></div>
 //
-//You would get that value in jQuery by doing:
-//	$j('#test1').data('testCase');
+//You would get that value in javascript by doing:
+//	goradd.g('test1').data('testCase');
 //
 //Conversion to special html data-* name formatting is handled here automatically. So if you SetDataAttribute('testCase') here,
 //you can get it using .data('testCase') in jQuery

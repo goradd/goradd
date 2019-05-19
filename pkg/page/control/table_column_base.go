@@ -341,7 +341,7 @@ func (c *ColumnBase) RenderSortButton(labelHtml string) string {
 		labelHtml +=  ` <i class="fa fa-sort-desc fa-lg"></i>`
 	}
 
-	return fmt.Sprintf(`<button onclick="$j('#%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
+	return fmt.Sprintf(`<button onclick="goradd.g('%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
 }
 
 // SortDirection returns the current sort direction.

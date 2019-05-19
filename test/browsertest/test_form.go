@@ -199,9 +199,7 @@ func (form *TestForm) CheckGroup(id string, values ...string) {
 	form.Controller.checkGroup(id, values, form.captureCaller())
 }
 
-// Click sends a click event to the goradd control. Note that this is not the same as simulating a click
-// but for buttons, it will essentially be the same thing. More complex web objects will need a different mechanism
-// for clicking, likely a chromium driver or something similar.
+// Click sends a click to the goradd control.
 func (form *TestForm) Click(c page.ControlI) {
 	form.Controller.click(c.ID(), form.captureCaller())
 	if c.HasServerAction("click") {
@@ -210,8 +208,7 @@ func (form *TestForm) Click(c page.ControlI) {
 	}
 }
 
-// ClickSubItem sends a click event to the html object with the given sub-id inside the given control.
-// Note that this is not the same as simulating a click
+// ClickSubItem sends a click to the html object with the given sub-id inside the given control.
 func (form *TestForm) ClickSubItem(c page.ControlI, subId string) {
 	form.Controller.click(c.ID()+"_"+subId, form.captureCaller())
 	if c.HasServerAction("click") {
@@ -229,38 +226,38 @@ func (form *TestForm) WaitSubmit() {
 	form.Controller.waitSubmit(form.captureCaller())
 }
 
-// CallJqueryFunction will call the given function with the given parameters on the jQuery object
+// CallControlFunction will call the given function with the given parameters on the goradd object
 // specified by the id. It will return the javascript result of the function call.
-func (form *TestForm) CallJqueryFunction(id string, funcName string, params ...interface{}) interface{} {
-	return form.Controller.callJqueryFunction(id, funcName, params, form.captureCaller())
+func (form *TestForm) CallControlFunction(id string, funcName string, params ...interface{}) interface{} {
+	return form.Controller.callWidgetFunction(id, funcName, params, form.captureCaller())
 }
 
-// Value will call the jquery .val() function on the given html object and return the result.
-func (form *TestForm) JqueryValue(id string) interface{} {
-	return form.Controller.callJqueryFunction(id, "val", nil, form.captureCaller())
+// Value will call the .val() function on the given goradd object and return the result.
+func (form *TestForm) ControlValue(id string) interface{} {
+	return form.Controller.callWidgetFunction(id, "val", nil, form.captureCaller())
 
 }
 
 // Attribute will call the jquery .attr("attribute") function on the given html object looking for the given
 // attribute name and will return the value.
-func (form *TestForm) JqueryAttribute(id string, attribute string) interface{} {
-	return form.Controller.callJqueryFunction(id, "attr", []interface{}{attribute}, form.captureCaller())
+func (form *TestForm) ControlAttribute(id string, attribute string) interface{} {
+	return form.Controller.callWidgetFunction(id, "attr", []interface{}{attribute}, form.captureCaller())
 }
 
 func (form *TestForm) HasClass(id string, needle string) bool {
-	res := form.Controller.callJqueryFunction(id, "hasClass", []interface{}{needle}, form.captureCaller())
+	res := form.Controller.callWidgetFunction(id, "hasClass", []interface{}{needle}, form.captureCaller())
 	return res.(bool)
 }
 
 func (form *TestForm) InnerHtml(id string) string {
-	res := form.Controller.callJqueryFunction(id, "html", nil, form.captureCaller())
+	res := form.Controller.callWidgetFunction(id, "html", nil, form.captureCaller())
 	return res.(string)
 }
 
 /*
 func (f *TestForm) TypeValue(id string, chars string) {
 	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d CallJqueryFunction(%q, %q, %q)`, file, line, id, funcName, params)
+	desc := fmt.Sprintf(`%s:%d CallControlFunction(%q, %q, %q)`, file, line, id, funcName, params)
 	f.Controller.typeChars(id, chars)
 }*/
 

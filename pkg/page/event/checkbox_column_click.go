@@ -17,8 +17,8 @@ func CheckboxColumnClick() page.EventI {
 	}
 
 	m := map[string]interface{}{
-		"row":     javascript.JsCode(`$j(this).closest("tr")[0].rowIndex`),
-		"col":     javascript.JsCode(`$j(this).closest("th,td")[0].cellIndex`),
+		"row":     javascript.JsCode(`goradd.g(this).closest("tr").rowIndex`),
+		"col":     javascript.JsCode(`goradd.g(this).closest("th,td").cellIndex`),
 		"checked": javascript.JsCode(`this.checked`),
 		"id":      `this.id`,
 	}

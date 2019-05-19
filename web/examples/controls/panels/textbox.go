@@ -129,14 +129,14 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 
 	t.Click(btn)
 
-	t.AssertEqual("me", t.JqueryValue("plainText"))
-	t.AssertEqual("me\nyou", t.JqueryValue("multiText"))
-	t.AssertEqual("me", t.JqueryValue("intText"))
-	t.AssertEqual("me", t.JqueryValue("floatText"))
-	t.AssertEqual("me", t.JqueryValue("emailText"))
-	t.AssertEqual("me", t.JqueryValue("dateTimeText"))
-	t.AssertEqual("me", t.JqueryValue("dateText"))
-	t.AssertEqual("me", t.JqueryValue("timeText"))
+	t.AssertEqual("me", t.ControlValue("plainText"))
+	t.AssertEqual("me\nyou", t.ControlValue("multiText"))
+	t.AssertEqual("me", t.ControlValue("intText"))
+	t.AssertEqual("me", t.ControlValue("floatText"))
+	t.AssertEqual("me", t.ControlValue("emailText"))
+	t.AssertEqual("me", t.ControlValue("dateTimeText"))
+	t.AssertEqual("me", t.ControlValue("dateText"))
+	t.AssertEqual("me", t.ControlValue("timeText"))
 
 	t.AssertEqual(true, t.HasClass("intText_ctl", "error"))
 	t.AssertEqual(true, t.HasClass("floatText_ctl", "error"))
@@ -178,7 +178,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	t.AssertEqual(false, t.HasClass("dateTimeText_ctl", "error"))
 	t.AssertEqual("Sample instructions", t.InnerHtml("plainText_inst"))
 
-	t.AssertEqual("plainText_lbl plainText", t.JqueryAttribute("plainText", "aria-labelledby"))
+	t.AssertEqual("plainText_lbl plainText", t.ControlAttribute("plainText", "aria-labelledby"))
 
 	// Test SaveState
 	f = t.LoadUrl(myUrl)

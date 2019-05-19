@@ -27,7 +27,7 @@ type testStepEvent struct {
 
 // RowSelected
 func TestStepEvent() *testStepEvent {
-	e := &testStepEvent{page.Event{JsEvent: "goradd.teststep"}}
+	e := &testStepEvent{page.Event{JsEvent: "teststep"}}
 	e.ActionValue(javascript.JsCode("ui")) // the error string and step
 	return e
 }
@@ -153,9 +153,9 @@ func (p *TestController) waitSubmit(desc string) {
 }
 
 
-func (p *TestController) callJqueryFunction(id string, funcName string, params []interface{}, description string) interface{} {
+func (p *TestController) callWidgetFunction(id string, funcName string, params []interface{}, description string) interface{} {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteWidgetFunction("callJqueryFunction", len(p.stepDescriptions), id, funcName, params)
+	p.ExecuteWidgetFunction("callWidgetFunction", len(p.stepDescriptions), id, funcName, params)
 	p.waitStep()
 	return p.latestJsValue
 }

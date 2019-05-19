@@ -10,9 +10,9 @@ const (
 	CellClickRowIndex    = `this.parentElement.rowIndex`
 	CellClickColumnIndex = `this.cellIndex`
 	CellClickCellId      = `this.id`
-	CellClickRowId       = `$j(this).parent().attr("id")`
-	CellClickRowValue    = `$j(this).parent().data("value")`
-	CellClickColId       = `$j(this).parent().closest("table").find("thead").find("th")[this.cellIndex].id`
+	CellClickRowId       = `goradd.g(this).parent().id`
+	CellClickRowValue    = `goradd.g(goradd.g(this).parent()).data("value")`
+	CellClickColId       = `goradd.g(goradd.g(goradd.g(this).closest("table")).qs("thead")).qa("th")[this.cellIndex].id`
 )
 
 // CellClickEvent is a cell click event. Do not create it directly, but rather use CellClick()
@@ -31,13 +31,13 @@ type CellClickEvent struct {
  * 	this.id - the cell id
  *  this.tagName - the tag for the cell (either th or td)
  *  this.cellIndex - the table index that was clicked on, starting on the left with table zero
- *  $j(this).data('value') - the "data-value" attribute of the cell (if you specify one). Use this formula for any kind of "data-" attribute.
- *  $j(this).parent() - the jQuery row object
+ *  goradd.g(this).data('value') - the "data-value" attribute of the cell (if you specify one). Use this formula for any kind of "data-" attribute.
+ *  goradd.g(this).parent() - the jQuery row object
  *  this.parentElement - the html row object
  *  this.parentElement.rowIndex - the index of the row clicked, starting with zero at the top (including any header rows).
- *  $j(this).parent().attr('id') or $j(this).parent()[0].id - the id of the row clicked on
- *  $j(this).parent().data("value") - the "data-value" attribute of the row. Use this formula for any kind of "data-" attribute.
- *  $j(this).parent().closest('table').find('thead').find('th')[this.cellIndex].id - the id of the table clicked in
+ *  goradd.g(this).parent().attr('id') or goradd.g(this).parent()[0].id - the id of the row clicked on
+ *  goradd.g(this).parent().data("value") - the "data-value" attribute of the row. Use this formula for any kind of "data-" attribute.
+ *  goradd.g(this).parent().closest('table').find('thead').find('th')[this.cellIndex].id - the id of the table clicked in
  *  event.target - the html object clicked in. If your table cell had other objects in it, this will return the
  *    object clicked inside the cell. This could be important, for example, if you had form objects inside the cell,
  *    and you wanted to behave differently if a form object was clicked on, verses clicking outside the form object.
@@ -56,7 +56,7 @@ func CellClick() *CellClickEvent {
 // For example:
 //   e := CellClick().RowDataActionValue("rowVal").Delay(100)
 func (e *CellClickEvent) RowDataActionValue(key string) *CellClickEvent {
-	e.ActionValue(javascript.JsCode(`$j(this).parent().data("` + key + `")`))
+	e.ActionValue(javascript.JsCode(`goradd.g(this).parent().data("` + key + `")`))
 	return e
 }
 
@@ -65,6 +65,6 @@ func (e *CellClickEvent) RowDataActionValue(key string) *CellClickEvent {
 // For example:
 //   e := CellClick().CellDataActionValue("cellVal").Delay(100)
 func (e *CellClickEvent) CellDataActionValue(key string) *CellClickEvent {
-	e.ActionValue(javascript.JsCode(`$j(this).data("` + key + `")`))
+	e.ActionValue(javascript.JsCode(`goradd.g(this).data("` + key + `")`))
 	return e
 }

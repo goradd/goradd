@@ -2,7 +2,7 @@
 {{end}}
 {{< headTags }}
 {{end}}
-{{< package }}test{{end}}
+{{< package }}manualtest{{end}}
 {{< title }}Ajax Timing{{end}}
 {{< form }}AjaxTimingForm{{end}}
 

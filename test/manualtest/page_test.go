@@ -1,4 +1,4 @@
-package test
+package manualtest
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-const TestPath = "/test/PageTest"
+const TestPath = "/goradd/test/PageTest.g"
 const TestFormId = "PageTest"
 const TestTxtId = "TxtTest"
 

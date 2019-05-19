@@ -20,13 +20,11 @@ if (!function () {
 }
 
 
-var $j; // Universal shortcut for jQuery so that you can execute jQuery code outside in a no-conflict mode.
+var $j = jQuery; // Universal shortcut for jQuery so that you can execute jQuery code outside in a no-conflict mode.
 var goradd;
 
-(function( $ ) {
+(function( ) {
 "use strict";
-
-$j = $;
 
 /**
  * @namespace goradd
@@ -44,7 +42,7 @@ goradd = {
      * @returns {Element}
      */
     el: function(t) {
-        if (typeof t == "object") {
+        if (typeof t === "object") {
             return t;
         }
         return document.getElementById(t);
@@ -271,7 +269,7 @@ goradd = {
             // clicks are equivalent to changes for checkboxes and radio buttons, but some browsers send change way after a click. We need to capture the click first.
             g.on('click', goradd.formObjChanged);
         }
-        g.on('change input', goradd.formObjChanged, null, null, true); // make sure we get these events before later attached events
+        g.on('change input', goradd.formObjChanged, true); // make sure we get these events before later attached events
 
         // widget support, using declarative methods
         if (goradd.widget.new) {
@@ -382,7 +380,7 @@ goradd = {
                         // All goradd controls and subcontrols MUST have an id for this to work.
                         // There is a special case for checkbox groups, but they get handled on the server
                         // side differently between ajax and server posts.
-                        postData[id] = goradd.g(c).value();
+                        postData[id] = goradd.g(c).val();
                         break;
                 }
             }
@@ -398,7 +396,6 @@ goradd = {
         goradd._ajaxError = false;
         goradd._formObjsModified = {};
         goradd._controlValues = {};
-
         return postData;
     },
 
@@ -432,6 +429,7 @@ goradd = {
         // Use an ajax queue so ajax requests happen synchronously
         goradd.ajaxq.enqueue(function() {
             var data = goradd._getAjaxData(params);
+            goradd.log("Gathered ajax data: " + JSON.stringify(data));
 
             return {
                 url: formAction,
@@ -484,7 +482,7 @@ goradd = {
                 }
             }
             var el = goradd.tb("div").attr("id", "Goradd_AJAX_Error").
-                html("<button onclick='goradd.remove(\"Goradd_AJAX_Error\")'>OK</button>").
+                html("<button onclick=\"window.goradd.g('Goradd_AJAX_Error').remove()\">OK</button>").
                 appendTo(goradd.form());
             goradd.tb("div").html(resultText).appendTo(el);
         }
@@ -525,7 +523,7 @@ goradd = {
                 wrapper = goradd.el(id + "_ctl");
 
             if (this.value !== undefined && $ctrl) {
-                $ctrl.value(this.value);
+                $ctrl.val(this.value);
             }
 
             if (this.attributes !== undefined && $ctrl) {
@@ -544,24 +542,24 @@ goradd = {
                         relatedItems = goradd.qa(relSelector);
 
                     var p = $ctrl.parents();
-                    var relatedParent = p.filter(function(el) {
-                        return goradd.g(el).matches(relSelector);
+                    var relatedParent = p.filter(function(item) {
+                        return goradd.g(item).matches(relSelector);
                     }).pop();
 
                     if (relatedParent) {
                         relatedParent.insertAdjacentElement("beforebegin", el);
                     }
                     if (relatedItems && relatedItems.length > 0) {
-                        goradd.each(relatedItems, function(i, el) {
-                            goradd.g(el).remove();
-                        })
+                        goradd.each(relatedItems, function() {
+                            goradd.g(this).remove();
+                        });
                     }
                     $ctrl.htmlBefore(this.html);
                     $ctrl.remove();
                 }
                 else {
                     // control is being injected at the top level, so put it at the end of the form.
-                    goradd.f(goradd.form()).appendHtml(this.html);
+                    goradd.g(goradd.form()).appendHtml(this.html);
                 }
             }
         });
@@ -954,8 +952,8 @@ goradd = {
     //////////////////////////////
     /* Javascript has a problem when two events happen simultaneously. In particular, a click event might also
     result in a change event, and under certain circumstances this could cause the click event to be dropped. In particular,
-    if the change event moves the focus away from the button, the click event will not record. We therefore delay
-    the processing of all events to try to queue them up before processing.
+    if the change event moves the focus away from the button that was clicked, the click event will not record.
+    We therefore delay the processing of all events to try to queue them up before processing.
     Its very strange. Something to debug at a future date.
     */
 
@@ -1316,6 +1314,14 @@ goradd.g.prototype = {
         }
         return el.className || el.class;
     },
+    /**
+     * Returns true if the give class is on the element.
+     * @param c {string} class to check for
+     * @returns {boolean}
+     */
+    hasClass: function(c) {
+        return this.element.classList.contains(c);
+    },
 
     /**
      * on attaches an event handler to the given html object.
@@ -1323,22 +1329,50 @@ goradd.g.prototype = {
      * If data is a function, the function will be called when the event fires and the
      * result of the function will be provided as data to the event. The "this" parameter
      * will be the element with the given targetId, and the function will be provided the event object.
+     * This argument order mimics jQuery's on function.
      *
      * @param eventNames {string} One or more event names separated by spaces
-     * @param eventHandler
-     * @param filter
-     * @param data
-     * @param capture True to fire this event during initial capture phase. False to wait until it bubbles.
+     * @param {string} [selector]
+     * @param {string|object} [data]
+     * @param {function} handler
+     * @param {boolean} [capture = false] True to fire this event during initial capture phase. False to wait until it bubbles.
      */
-    on: function(eventNames, eventHandler, filter, data, capture) {
-        if (!capture) {
-            capture = false;
+    on: function(eventNames, selector, data, handler, capture) {
+        if (!eventNames) {
+            goradd.log("on must specify an event");
+            return;
         }
+        // Sort out the arguments
+        if (arguments.length < 5) {
+            var args = Array.prototype.slice.call(arguments);
+            if (typeof args[args.length - 1] === "boolean") {
+                capture = args.pop();
+            } else {
+                capture = false;
+            }
+            handler = args.pop();
+            if (typeof handler !== "function") {
+                goradd.log("on must have a handler that is a function");
+                return;
+            }
+            if (args.length === 3) {
+                data = args.pop();
+            } else {
+                data = undefined;
+            }
+            if (args.length === 2) {
+                selector = args.pop();
+            } else {
+                selector = undefined;
+            }
+        }
+
         var el = this.element;
         var events = eventNames.split(" ");
         goradd.each(events, function(i,eventName) {
             el.addEventListener(eventName, function (event) {
-                if (filter && !goradd.g(event.target).matches(filter)) {
+                goradd.log("triggered: " + event.type);
+                if (selector && !goradd.g(event.target).matches(selector)) {
                     return
                 }
                 if (data) {
@@ -1348,18 +1382,28 @@ goradd.g.prototype = {
                     event.grdata = data;
                 }
                 if (event.detail) {
-                    eventHandler.call(el, event, event.detail); // simulate adding extra items to event handler
+                    handler.call(el, event, event.detail); // simulate adding extra items to event handler
                 } else if (data) {
-                    eventHandler.call(el, event, data); // simulate adding extra items to event handler
+                    handler.call(el, event, data); // simulate adding extra items to event handler
                 } else {
-                    eventHandler.call(el, event);
+                    handler.call(el, event);
                 }
             }, capture);
         });
     },
-    click: function() {
-        // use the built-in click to simulate a click on an item.
-        this.element.click();
+    click: function(extra) {
+        var event;
+        // Include extra information as part of the click.
+        if (typeof window.Event === "object") {
+            goradd.log ("init custom ClickEvent");
+            // Event for browsers which don't natively support the Constructor method
+            event = document.createEvent('CustomEvent');
+            event.initCustomEvent("click", true, true, extra);
+        } else {
+            goradd.log("new custom ClickEvent");
+            event = new CustomEvent("click", {view: window, bubbles: true, detail: extra})
+        }
+        this.element.dispatchEvent(event);
     },
     trigger: function(eventName, extra) {
         var el = this.element;
@@ -1371,7 +1415,7 @@ goradd.g.prototype = {
             if (typeof window.Event === "object") {
                 // Event for browsers which don't natively support the Constructor method
                 event = document.createEvent('HTMLEvents');
-                event.initCustomEvent(eventName, true, true, extra);
+                event.initEvent(eventName, true, true, extra);
             } else {
                 event = new Event(eventName, {bubbles: true, detail: extra})
             }
@@ -1434,7 +1478,7 @@ goradd.g.prototype = {
      * @param v
      * @returns {*}
      */
-    value: function(v) {
+    val: function(v) {
         var el = this.element;
         var type = goradd.g(el).prop("type");
         if (arguments.length === 1) {
@@ -1548,30 +1592,23 @@ goradd.g.prototype = {
     },
     html: function(t) {
         if (arguments.length === 0) {
-            return this.element.innerHtml;
+            return this.element.innerHTML;
         } else {
-            this.element.innerHtml = t;
+            this.element.innerHTML = t;
         }
     },
 
     /**
-     * f calls the named function, with the named parameters, on the goradd widget first, and if not found, will attempt
-     * to call this on the element.
+     * f calls the named function, with the given parameters, on the goradd widget.
      * @param name
      * @param params
      */
-    /*
     f: function(name, params) {
         var f = this[name];
         if (typeof f === "function") {
-            return f.apply(params);
-        } else {
-            f = this.element[name];
-            if (typeof f === "function") {
-                return f.apply(params);
-            }
+            return f.apply(this, params);
         }
-    }*/
+    }
 };
 
 /**
@@ -1771,7 +1808,7 @@ goradd.widget("goradd.Widget", goradd.g, {
     },
 });
 
-})( jQuery );
+})(  );
 
 ////////////////////////////////
 // Goradd Shortcuts and Initialize
