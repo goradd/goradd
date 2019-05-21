@@ -97,14 +97,14 @@ func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI
 	t.SetCheckbox("radio2", true)
 	t.Click(btn)
 	t.AssertEqual(true, checkbox1.Checked())
-	/*
-		checkbox2 := f.Page().GetControl("checkbox2").(*Checkbox)
 
-		radio1 := f.Page().GetControl("radio1").(*RadioButton)
-		radio2 := f.Page().GetControl("radio2").(*RadioButton)
-		radio3 := f.Page().GetControl("radio3").(*RadioButton)
+	checkbox2 := f.Page().GetControl("checkbox2").(*Checkbox)
 
-		info := f.Page().GetControl("infoPanel").(*Panel)
+	radio1 := f.Page().GetControl("radio1").(*RadioButton)
+	radio2 := f.Page().GetControl("radio2").(*RadioButton)
+	radio3 := f.Page().GetControl("radio3").(*RadioButton)
+
+	info := f.Page().GetControl("infoPanel").(*Panel)
 
 	t.AssertEqual(false, checkbox2.Checked())
 	t.AssertEqual("checkbox1_lbl checkbox1_ilbl", t.ControlAttribute("checkbox1", "aria-labelledby"))
@@ -127,7 +127,6 @@ func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI
 	t.AssertEqual(true, radio1.Checked())
 	t.AssertEqual(false, radio2.Checked())
 	t.AssertEqual(false, radio3.Checked())
-*/
 }
 
 func (p *CheckboxPanel) Action(ctx context.Context, a page.ActionParams) {

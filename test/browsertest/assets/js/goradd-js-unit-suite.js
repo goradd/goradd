@@ -44,6 +44,11 @@ goradd.testsuite = {
         var p = goradd.g("testP").parents();
         t.isSame("JsUnitTestForm", p[1].id);
     },
+    testClosest: function(t) {
+        var p = goradd.g("testP");
+        var c = p.closest("form");
+        t.isSame("JsUnitTestForm", c.id);
+    },
     testAttrProp: function(t) {
         var a1 = goradd.g("testD").attr("spellcheck");
         t.isSame(true, a1);

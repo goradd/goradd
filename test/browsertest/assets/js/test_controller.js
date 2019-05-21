@@ -75,6 +75,7 @@ goradd.widget("goradd.testController", {
         this._fireStepEvent(step);
     },
     checkControl: function(step, id, val) {
+        var self = this;
         goradd.log ("checkControl", step, id, val);
         var g = this._getGoraddObj(id);
 
@@ -84,31 +85,48 @@ goradd.widget("goradd.testController", {
             return;
         }
 
-        g.element.checked = val;
-        g.trigger("change");
+        var val2 = g.element.checked;
+
+        if (val !== val2) {
+            g.click();
+        }
         this._fireStepEvent(step);
     },
+    /**
+     * checkGroup simulates checking the given values in a group. For checkboxes, it also unchecks whatever is checked
+     * prior to this. This will generate change events on whatever was changed.
+     * @param step
+     * @param groupName
+     * @param values
+     */
     checkGroup: function(step, groupName, values) {
-        // checks a group of checkbox or radio controls.
-        goradd.log ("checkGroup", step, id, values);
+        goradd.log ("checkGroup", step, groupName, values);
+        var form = goradd.g(this._window.goradd.form());
 
-        var changeEvent = new Event('change', { 'bubbles': true });
+        var el = form.qs("input[name=" + groupName + "]");
+        if (!el) {
+            this._fireStepEvent(step,  "Could not find group " + groupName);
+            return;
+        }
 
-        // uncheck whatever is checked
-        var elements = goradd.qa("input[name=" + id +"]:checked");
-        goradd.each(elements, function() {
-            this.checked = false;
-            goradd.g(this).trigger("change");
-        });
+        if (el.type === "radio") {
+            // Check one radio button. The currently checked one should automatically uncheck.
+            el = form.qs("input[name=" + groupName + "][value=" + values[0] + "]");
+            if (el) {
+                goradd.g(el).click();
+            }
+            this._fireStepEvent(step);
+            return;
+        }
 
-        // check whatever needs to be checked
-        goradd.each(values, function() {
-            var val = this;
-            var elements = goradd.qa("input[name=" + id + "][value=" + val + "]");
-            goradd.each(elements, function() {
-                this.checked = true;
-                goradd.g(this).trigger("change");
-            });
+        // Deal with a list of checkboxes
+        goradd.each(form.qa("input[name=" + groupName +"]"), function() {
+            var toCheck = goradd.contains(values, this.value);
+            if (this.checked && !toCheck) {
+                goradd.g(this).click(); // uncheck
+            } else if (!this.checked && toCheck) {
+                goradd.g(this).click(); // check
+            }
         });
 
         this._fireStepEvent(step);
@@ -129,9 +147,9 @@ goradd.widget("goradd.testController", {
             self._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
-        g.click({postFunc: function() {
+        g.click(function() {
             self._fireStepEvent(step);
-        }});
+        });
     },
     callWidgetFunction: function (step, id, f, params) {
         goradd.log("WidgetF", step, id, f, params);

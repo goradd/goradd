@@ -138,6 +138,9 @@ goradd = {
             }
         }
     },
+    contains: function(a, needle) {
+        return (a.indexOf(needle) !== -1);
+    },
     isPlainObject: function( obj ) {
         var proto, Ctor;
 
@@ -1237,7 +1240,7 @@ goradd.g.prototype = {
     closest: function(sel) {
         var el = this.element;
         while (el.parentElement && el.parentElement !== window) {
-            if (this.matches(sel)) {
+            if (goradd.g(el).matches(sel)) {
                 return el;
             }
             el = el.parentElement;
@@ -1382,26 +1385,31 @@ goradd.g.prototype = {
                     event.grdata = data;
                 }
                 if (event.detail) {
-                    handler.call(el, event, event.detail); // simulate adding extra items to event handler
-                } else if (data) {
-                    handler.call(el, event, data); // simulate adding extra items to event handler
+                    data = event.detail;
+                }
+                if (data) {
+                    handler.call(event.target, event, data); // simulate adding extra items to event handler
                 } else {
-                    handler.call(el, event);
+                    handler.call(event.target, event);
                 }
             }, capture);
         });
     },
-    click: function(extra) {
+    click: function(postFunc) {
         var event;
         // Include extra information as part of the click.
         if (typeof window.Event === "object") {
             goradd.log ("init custom ClickEvent");
             // Event for browsers which don't natively support the Constructor method
-            event = document.createEvent('CustomEvent');
-            event.initCustomEvent("click", true, true, extra);
+            event = document.createEvent('MouseEvent');
+            //event.initCustomEvent("click", true, true, extra);
+            event.initEvent("click", true, true);
+            event.grPostFunc = postFunc;
         } else {
-            goradd.log("new custom ClickEvent");
-            event = new CustomEvent("click", {view: window, bubbles: true, detail: extra})
+            goradd.log("new MouseEvent");
+            //event = new CustomEvent("click", {view: window, bubbles: true, detail: extra});
+            event = new MouseEvent("click", {view: window, bubbles: true});
+            event.grPostFunc = postFunc;
         }
         this.element.dispatchEvent(event);
     },

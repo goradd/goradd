@@ -197,7 +197,16 @@ func (d *DataPager) ΩDrawingAttributes() *html.Attributes {
 func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
 	switch params.ID {
 	case PageClick:
-		d.paginatedControl.SetPageNum(params.ControlValueInt())
+		pageNum := params.ControlValueInt();
+		if pageNum < 1 {
+			pageNum = 1
+		} else {
+			c := d.paginatedControl.CalcPageCount()
+			if pageNum > c {
+				pageNum = c
+			}
+		}
+		d.paginatedControl.SetPageNum(pageNum)
 		d.paginatedControl.Refresh()
 		for _,c := range d.paginatedControl.getDataPagers() {
 			c.Refresh()

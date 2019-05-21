@@ -120,6 +120,6 @@ func TestForm(t *browsertest.TestForm)  {
 
 func init() {
 	page.RegisterPage(AjaxTimingPath, NewAjaxTimingForm, AjaxTimingId)
-	browsertest.RegisterTestFunction("AjaxTiming", TestForm)
+	//browsertest.RegisterTestFunction("AjaxTiming", TestForm)
 
 }

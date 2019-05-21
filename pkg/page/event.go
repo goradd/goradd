@@ -249,7 +249,7 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 		actionJs += "goradd.blockEvents = true;\n"
 	}
 
-	actionJs += "if (event.detail && event.detail.postFunc) {event.detail.postFunc();}\n"
+	actionJs += "if (event.grPostFunc) {event.grPostFunc();}\n"
 
 	if !config.Minify {
 		actionJs = html.Indent(actionJs)
