@@ -19,8 +19,6 @@ if (!function () {
     window.location = "/Unsupported.g";
 }
 
-
-var $j = jQuery; // Universal shortcut for jQuery so that you can execute jQuery code outside in a no-conflict mode.
 var goradd;
 
 (function( ) {
@@ -1402,12 +1400,10 @@ goradd.g.prototype = {
             goradd.log ("init custom ClickEvent");
             // Event for browsers which don't natively support the Constructor method
             event = document.createEvent('MouseEvent');
-            //event.initCustomEvent("click", true, true, extra);
             event.initEvent("click", true, true);
             event.grPostFunc = postFunc;
         } else {
             goradd.log("new MouseEvent");
-            //event = new CustomEvent("click", {view: window, bubbles: true, detail: extra});
             event = new MouseEvent("click", {view: window, bubbles: true});
             event.grPostFunc = postFunc;
         }
@@ -1423,10 +1419,12 @@ goradd.g.prototype = {
             if (typeof window.Event === "object") {
                 // Event for browsers which don't natively support the Constructor method
                 event = document.createEvent('HTMLEvents');
-                event.initEvent(eventName, true, true, extra);
+                event.initEvent(eventName, true, true);
             } else {
-                event = new Event(eventName, {bubbles: true, detail: extra})
+                event = new Event(eventName, {bubbles: true})
             }
+            // Note that extra information is not supported for the change event. If needed, we can add it
+            // in a special area on the event, like in grDetail, and then unpack that in the on handler.
         } else {
             // assume custom event
             if (typeof window.CustomEvent === "object") {
@@ -1519,9 +1517,9 @@ goradd.g.prototype = {
                     }
                     break;
                 default:
-                    if ("value" in el) {
+                    //if ("value" in el) {
                         el.value = v;
-                    }
+                    //}
                     break;
             }
             return el;
@@ -1545,7 +1543,7 @@ goradd.g.prototype = {
                 default:
                     if ("value" in el) {
                         // This works for textboxes, textarea (possible problem losing newlines though), and single selects.
-                        // Custom controls can add a "value" getter as well and this will pick that up too.
+                        // Custom controls can add a "value" getter or override the val() mehtod.
                         return el.value;
                     }
                     break;

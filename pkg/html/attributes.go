@@ -328,19 +328,20 @@ func (a *Attributes) HasClass(c string) bool {
 //
 //	$obj.data("name");
 //
-//Note: Data name cases are handled specially in jQuery. data-* attribute names are supposed to be online lower case. jQuery
-//converts dashed notation to camelCase. In other words, we give it a camelCase name here, it shows up in the html as
-//a dashed name, and then you retrieve it using javascript as camelCase again.
+//Note: Data name cases are handled specially. data-* attribute names are supposed to be lower kebab case. Javascript
+//converts dashed notation to camelCase when converting html attributes into object properties.
+// In other words, we give it a camelCase name here, it shows up in the html as
+// a kebab-case name, and then you retrieve it using javascript as camelCase again.
 //
-//For example, if your html looks like this:
+// For example, if your html looks like this:
 //
 //	<div id='test1' data-test-case="my test"></div>
 //
-//You would get that value in javascript by doing:
+// You would get that value in javascript by doing:
 //	goradd.g('test1').data('testCase');
 //
-//Conversion to special html data-* name formatting is handled here automatically. So if you SetDataAttribute('testCase') here,
-//you can get it using .data('testCase') in jQuery
+// Conversion to special html data-* name formatting is handled here automatically. So if you SetDataAttribute('testCase') here,
+// you can get it using .data('testCase') in jQuery
 func (a *Attributes) SetDataAttributeChanged(name string, v string) (changed bool, err error) {
 	// validate the name
 	if strings.ContainsAny(name, " !$") {
@@ -357,7 +358,7 @@ func (a *Attributes) SetDataAttributeChanged(name string, v string) (changed boo
 
 // SetDataAttribute sets the given data attribute. Note that data attribute keys must be in camelCase notation and
 // connot be hyphenated. camelCase will get converted to kebab-case in html, and converted back to camelCase when
-// referring to the data attribute using jQuery.data.
+// referring to the data attribute using .data().
 func (a *Attributes) SetDataAttribute(name string, v string) *Attributes {
 	_, err := a.SetDataAttributeChanged(name, v)
 	if err != nil {
@@ -368,7 +369,7 @@ func (a *Attributes) SetDataAttribute(name string, v string) *Attributes {
 
 /*
 DataAttribute gets the data-* attribute value that was set previously.
-Does NOT call into javascript to return a value that was set on the browser side. You need to use another
+This does NOT call into javascript to return a value that was set on the browser side. You need to use another
 mechanism to retrieve that.
 */
 func (a *Attributes) DataAttribute(name string) string {

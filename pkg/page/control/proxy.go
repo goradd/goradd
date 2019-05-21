@@ -52,7 +52,7 @@ type Proxy struct {
 	page.Control
 }
 
-// NewProxy creates a new proxy. The parent should be the wrapping control of the objects that the proxy will manage.
+// NewProxy creates a new proxy. The parent must be the wrapping control of the objects that the proxy will manage.
 func NewProxy(parent page.ControlI) *Proxy {
 	p := Proxy{}
 	p.Init(parent)
@@ -62,7 +62,7 @@ func NewProxy(parent page.ControlI) *Proxy {
 func (p *Proxy) Init(parent page.ControlI) {
 	p.Control.Init(p, parent, "")
 	p.SetShouldAutoRender(true)
-	p.SetActionValue(javascript.JsCode(`goradd.g(event.target.id).data("grAv")`))
+	p.SetActionValue(javascript.JsCode(`goradd.g(event.target).data("grAv")`))
 }
 
 func (p *Proxy) this() ProxyI {

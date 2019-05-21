@@ -13,7 +13,7 @@ func ExampleToDataAttr() {
 }
 
 func ExampleToDataJqKey() {
-	s, _ := ToDataJqKey("this-is-my-test")
+	s, _ := ToDataKey("this-is-my-test")
 	fmt.Println(s)
 	// Output: thisIsMyTest
 
@@ -73,7 +73,7 @@ func TestToDataJqKey(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		result, err := ToDataJqKey(c.in)
+		result, err := ToDataKey(c.in)
 		if err != nil {
 			if c.err { // expected an error
 				continue
@@ -89,7 +89,7 @@ func TestToDataJqKey(t *testing.T) {
 		}
 
 		if result != c.expected {
-			t.Errorf("ToDataJqKey failed on (%q) expected (%q) got (%q)", c.in, c.expected, result)
+			t.Errorf("ToDataKey failed on (%q) expected (%q) got (%q)", c.in, c.expected, result)
 		}
 	}
 
