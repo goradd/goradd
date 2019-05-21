@@ -20,9 +20,22 @@ if (!function () {
 }
 
 var goradd;
+var g$;
 
 (function( ) {
 "use strict";
+
+/**
+ * g$ is a shortcut for goradd.g(). It wraps an element with additional functions defined here to more easily manipulate
+ * the element. el can be either an actual HTMLElement, or the id of one.
+ * One main difference between jQuery's wrapper and this one is that jQuery wraps an array of elements, and we only
+ * wrap one element. Also, all functions return and HTMLElement or array of elements, not a wrapped element.
+ * @param el {string | HTMLElement}
+ * @returns {Element.goradd.widget}
+ */
+g$ = function(el) {
+    return goradd.g(el);
+};
 
 /**
  * @namespace goradd
@@ -74,7 +87,7 @@ goradd = {
      * @returns {boolean}
      */
     matches: function(el, sel) {
-        return goradd.g(el).matches(sel);
+        return g$(el).matches(sel);
     },
     /**
      * loadJavaScriptFile will dynamically load a javascript file. It is designed to be called during ajax calls or
@@ -186,7 +199,7 @@ goradd = {
         }
         el.checked = true;
         if (prevItem) {
-            goradd.g(el).trigger('formObjChanged');
+            g$(el).trigger('formObjChanged');
         }
     },
 
@@ -229,8 +242,8 @@ goradd = {
      */
     initForm: function () {
         var form =  goradd.form();
-        goradd.g(form).on('formObjChanged', goradd.formObjChanged); // Allow any control, including hidden inputs, to trigger a change and post of its data.
-        goradd.g(form).on('submit', function(event) {
+        g$(form).on('formObjChanged', goradd.formObjChanged); // Allow any control, including hidden inputs, to trigger a change and post of its data.
+        g$(form).on('submit', function(event) {
             if (!goradd.el('Goradd__Params').value) { // did postBack initiate the submit?
                 // if not, prevent implicit form submission. This can happen in the rare case we have a single field and no submit button.
                 event.preventDefault();
@@ -252,7 +265,7 @@ goradd = {
         }
 
         // get the widget
-        var g = goradd.g(ctrl);
+        var g = g$(ctrl);
 
         if (g.data('gr-reg') === 'reg') {
             return // this control is already registered
@@ -311,7 +324,7 @@ goradd = {
         }
 
         var form = goradd.form();
-        var gForm = goradd.g(form);
+        var gForm = g$(form);
 
         params.callType = "Server";
 
@@ -348,11 +361,11 @@ goradd = {
      */
     _getAjaxData: function(params) {
         var form = goradd.form(),
-            controls = goradd.g(form).qa('input,select,textarea'),
+            controls = g$(form).qa('input,select,textarea'),
             postData = {};
 
         // Notify controls we are about to post.
-        goradd.g(form).trigger("posting", "Ajax");
+        g$(form).trigger("posting", "Ajax");
 
         goradd.each(controls, function(i,c) {
             var id = c.id;
@@ -381,7 +394,7 @@ goradd = {
                         // All goradd controls and subcontrols MUST have an id for this to work.
                         // There is a special case for checkbox groups, but they get handled on the server
                         // side differently between ajax and server posts.
-                        postData[id] = goradd.g(c).val();
+                        postData[id] = g$(c).val();
                         break;
                 }
             }
@@ -416,7 +429,7 @@ goradd = {
      */
     postAjax: function(params) {
         var form = goradd.form(),
-            formAction = goradd.g(form).attr("action"),
+            formAction = g$(form).attr("action"),
             async = params.hasOwnProperty("async");
 
         if (goradd._blockEvents) {
@@ -503,7 +516,7 @@ goradd = {
         // IE 9 has a major bug in oninput, but we are requiring IE 10+, so no problem.
         // I think the only major browser that does not support oninput is Opera mobile.
 
-        goradd.g(goradd.form()).on("ajaxQueueComplete", function() {
+        g$(goradd.form()).on("ajaxQueueComplete", function() {
             goradd._processFinalCommands();
         });
 
@@ -520,7 +533,7 @@ goradd = {
     _processImmediateAjaxResponse: function(json, params) {
         goradd.each(json.controls, function(id) {
             var el = goradd.el(id),
-                $ctrl = goradd.g(el),
+                $ctrl = g$(el),
                 wrapper = goradd.el(id + "_ctl");
 
             if (this.value !== undefined && $ctrl) {
@@ -534,8 +547,8 @@ goradd = {
             if (this.html !== undefined) {
                 if (wrapper !== null) {
                     // Control's wrapper was found, so replace the control and the wrapper
-                    goradd.g(wrapper).htmlBefore(this.html);
-                    goradd.g(wrapper).remove(wrapper);
+                    g$(wrapper).htmlBefore(this.html);
+                    g$(wrapper).remove(wrapper);
                 } else if ($ctrl) {
                     // control was found without a wrapper, replace it in the same position it was in.
                     // remove related controls (error, name ...) for wrapper-less controls
@@ -544,7 +557,7 @@ goradd = {
 
                     var p = $ctrl.parents();
                     var relatedParent = p.filter(function(item) {
-                        return goradd.g(item).matches(relSelector);
+                        return g$(item).matches(relSelector);
                     }).pop();
 
                     if (relatedParent) {
@@ -552,7 +565,7 @@ goradd = {
                     }
                     if (relatedItems && relatedItems.length > 0) {
                         goradd.each(relatedItems, function() {
-                            goradd.g(this).remove();
+                            g$(this).remove();
                         });
                     }
                     $ctrl.htmlBefore(this.html);
@@ -560,7 +573,7 @@ goradd = {
                 }
                 else {
                     // control is being injected at the top level, so put it at the end of the form.
-                    goradd.g(goradd.form()).appendHtml(this.html);
+                    g$(goradd.form()).appendHtml(this.html);
                 }
             }
         });
@@ -612,7 +625,7 @@ goradd = {
         if (json.profileHtml) {
             var c = goradd.el("dbProfilePane");
             if (!$c) {
-                goradd.g(goradd.form()).htmlAfter("<div id = 'dbProfilePane'></div>");
+                g$(goradd.form()).htmlAfter("<div id = 'dbProfilePane'></div>");
                 c = goradd.el("dbProfilePane");
             }
             c.innerHTML = json.profileHtml;
@@ -642,11 +655,11 @@ goradd = {
                 // general selector
                 objs = goradd.qa(command.selector);
             } else {
-                objs = goradd.g(command.selector[0]).qa(command.selector[1]);
+                objs = g$(command.selector[0]).qa(command.selector[1]);
             }
 
             goradd.each (objs, function (i,v) {
-                var $c = goradd.g(v);
+                var $c = g$(v);
                 if (typeof $c[command.func] === "function") {
                     $c[command.func].apply($c, params);
                 }
@@ -659,7 +672,7 @@ goradd = {
             objs = command.func.split(".");
             var obj = window;
             if (command.id) {
-                obj = goradd.g(command.id);
+                obj = g$(command.id);
             } else if (command.jqueryId) {
                 obj = jQuery(command.jqueryId);
             }
@@ -924,11 +937,11 @@ goradd = {
         goradd.stopTimer(strControlId, blnPeriodic);
         if (blnPeriodic) {
             goradd._objTimers[strTimerId] = setInterval(function() {
-                goradd.g(strControlId).trigger('timerexpiredevent');
+                g$(strControlId).trigger('timerexpiredevent');
             }, intDeltaTime);
         } else {
             goradd._objTimers[strTimerId] = setTimeout(function() {
-                goradd.g(strControlId).trigger('timerexpiredevent');
+                g$(strControlId).trigger('timerexpiredevent');
             }, intDeltaTime);
         }
     },
@@ -1238,7 +1251,7 @@ goradd.g.prototype = {
     closest: function(sel) {
         var el = this.element;
         while (el.parentElement && el.parentElement !== window) {
-            if (goradd.g(el).matches(sel)) {
+            if (g$(el).matches(sel)) {
                 return el;
             }
             el = el.parentElement;
@@ -1373,7 +1386,7 @@ goradd.g.prototype = {
         goradd.each(events, function(i,eventName) {
             el.addEventListener(eventName, function (event) {
                 goradd.log("triggered: " + event.type);
-                if (selector && !goradd.g(event.target).matches(selector)) {
+                if (selector && !g$(event.target).matches(selector)) {
                     return
                 }
                 if (data) {
@@ -1486,7 +1499,7 @@ goradd.g.prototype = {
      */
     val: function(v) {
         var el = this.element;
-        var type = goradd.g(el).prop("type");
+        var type = g$(el).prop("type");
         if (arguments.length === 1) {
             // Setting the value
             switch (type) {

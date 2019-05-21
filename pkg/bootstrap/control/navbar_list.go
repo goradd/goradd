@@ -48,7 +48,7 @@ func (l *NavbarList) Init(self NavbarListI, parent page.ControlI, id string) {
 	l.Proxy = control.NewProxy(l)
 
 	l.Proxy.On(event.Click(),
-		action.Trigger(l.ID(), "gr-bs-navbarselect", javascript.JsCode("goradd.g(this).data('grAv')")))
+		action.Trigger(l.ID(), "gr-bs-navbarselect", javascript.JsCode("g$(this).data('grAv')")))
 }
 
 func (l *NavbarList) this() NavbarListI {

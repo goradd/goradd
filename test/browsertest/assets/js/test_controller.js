@@ -101,7 +101,7 @@ goradd.widget("goradd.testController", {
      */
     checkGroup: function(step, groupName, values) {
         goradd.log ("checkGroup", step, groupName, values);
-        var form = goradd.g(this._window.goradd.form());
+        var form = g$(this._window.goradd.form());
 
         var el = form.qs("input[name=" + groupName + "]");
         if (!el) {
@@ -113,7 +113,7 @@ goradd.widget("goradd.testController", {
             // Check one radio button. The currently checked one should automatically uncheck.
             el = form.qs("input[name=" + groupName + "][value=" + values[0] + "]");
             if (el) {
-                goradd.g(el).click();
+                g$(el).click();
             }
             this._fireStepEvent(step);
             return;
@@ -123,9 +123,9 @@ goradd.widget("goradd.testController", {
         goradd.each(form.qa("input[name=" + groupName +"]"), function() {
             var toCheck = goradd.contains(values, this.value);
             if (this.checked && !toCheck) {
-                goradd.g(this).click(); // uncheck
+                g$(this).click(); // uncheck
             } else if (!this.checked && toCheck) {
-                goradd.g(this).click(); // check
+                g$(this).click(); // check
             }
         });
 

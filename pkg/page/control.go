@@ -1224,9 +1224,9 @@ func (c *Control) resetValidation() {
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (c *Control) WrapEvent(eventName string, selector string, eventJs string) string {
 	if selector != "" {
-		return fmt.Sprintf("goradd.g('%s').on('%s', '%s', function(event, ui){%s});", c.ID(), eventName, selector, eventJs)
+		return fmt.Sprintf("g$('%s').on('%s', '%s', function(event, ui){%s});", c.ID(), eventName, selector, eventJs)
 	} else {
-		return fmt.Sprintf("goradd.g('%s').on('%s', function(event, ui){%s});", c.ID(), eventName, eventJs)
+		return fmt.Sprintf("g$('%s').on('%s', function(event, ui){%s});", c.ID(), eventName, eventJs)
 	}
 }
 

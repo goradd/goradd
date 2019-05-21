@@ -19,14 +19,14 @@ goradd.testsuite = {
         var el = goradd.qs("p[id='testP']");
         t.assert(el.innerText === "I am here");
 
-        el = goradd.g("testspace").qs("p[id='testP']");
+        el = g$("testspace").qs("p[id='testP']");
         t.assert(el.innerText === "I am here");
     },
     testQA: function(t) {
         var el = goradd.qa("p[id='testP']");
         t.assert(el[0].innerText === "I am here");
 
-        el = goradd.g("testspace").qa("p[id='testP']");
+        el = g$("testspace").qa("p[id='testP']");
         t.assert(el[0].innerText === "I am here");
     },
     testIsEmptyObj: function(t) {
@@ -37,45 +37,45 @@ goradd.testsuite = {
         t.isSame("JsUnitTestForm", goradd.form().id);
     },
     testMatches: function(t) {
-        t.assert(goradd.g("testP").matches("p[id='testP']"));
-        t.assert(!goradd.g("testP").matches("div"));
+        t.assert(g$("testP").matches("p[id='testP']"));
+        t.assert(!g$("testP").matches("div"));
     },
     testParents: function(t) {
-        var p = goradd.g("testP").parents();
+        var p = g$("testP").parents();
         t.isSame("JsUnitTestForm", p[1].id);
     },
     testClosest: function(t) {
-        var p = goradd.g("testP");
+        var p = g$("testP");
         var c = p.closest("form");
         t.isSame("JsUnitTestForm", c.id);
     },
     testAttrProp: function(t) {
-        var a1 = goradd.g("testD").attr("spellcheck");
+        var a1 = g$("testD").attr("spellcheck");
         t.isSame(true, a1);
-        goradd.g("testD").prop({"spellcheck":false, "class":"a"});
-        t.isSame(false, goradd.g("testD").prop("spellcheck"));
-        t.isSame("a", goradd.g("testD").prop("class"));
-        goradd.g("testD").prop("class", "b");
-        t.isSame("b", goradd.g("testD").prop("class"));
+        g$("testD").prop({"spellcheck":false, "class":"a"});
+        t.isSame(false, g$("testD").prop("spellcheck"));
+        t.isSame("a", g$("testD").prop("class"));
+        g$("testD").prop("class", "b");
+        t.isSame("b", g$("testD").prop("class"));
     },
     testClass: function(t) {
-        goradd.g("testD").class("b c");
-        goradd.g("testD").class("-c");
-        t.isSame("b", goradd.g("testD").class());
+        g$("testD").class("b c");
+        g$("testD").class("-c");
+        t.isSame("b", g$("testD").class());
 
-        goradd.g("testD").class("+a");
-        goradd.g("testD").class("-b");
-        t.isSame("a", goradd.g("testD").class());
+        g$("testD").class("+a");
+        g$("testD").class("-b");
+        t.isSame("a", g$("testD").class());
     },
     testEvent: function(t) {
-        goradd.g("testD").on("et", function() {
+        g$("testD").on("et", function() {
             this.innerText = "tested";
         });
-        goradd.g("testD").trigger("et");
+        g$("testD").trigger("et");
         t.isSame("tested", goradd.el("testD").innerText)
     },
     testHtmlInserts: function(t) {
-        var p = goradd.g("testP");
+        var p = g$("testP");
         p.htmlAfter("<p id='after'>Inserted After</p>");
         p.htmlBefore("<p id='before'>Inserted Before</p>");
         t.isSame("Inserted After", goradd.el("after").innerText);
@@ -86,12 +86,12 @@ goradd.testsuite = {
         t.isSame("HereThereEverywhere", goradd.el("testP").innerText);
     },
     testRemove: function(t) {
-        goradd.g("testP").remove();
+        g$("testP").remove();
         t.isSame(goradd.el("testP"), null);
     },
     testEach: function(t) {
         var s = "";
-        goradd.each(goradd.g("testspace").qa("p,div"), function(i, v) {
+        goradd.each(g$("testspace").qa("p,div"), function(i, v) {
             s += v.innerText;
         });
         t.isSame("I am herea div", s);
@@ -113,7 +113,7 @@ goradd.testsuite = {
         t.isSame("a-b-c", goradd._toKebab("aBC"));
     },
     testData: function(t) {
-        var d = goradd.g("testD");
+        var d = g$("testD");
         t.isSame("bird", d.data("animalType"));
         d.data("animalType", "dog");
         t.isSame("dog", d.data("animalType"));
