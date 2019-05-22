@@ -60,6 +60,8 @@ I am here
 a div
 </div>
 </div>
+<ul id="listener"><li id="outer"><span id="inner">a span</span></li></ul>
+
 `)
 
 	buf.WriteString(`

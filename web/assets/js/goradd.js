@@ -283,7 +283,7 @@ goradd = {
             // clicks are equivalent to changes for checkboxes and radio buttons, but some browsers send change way after a click. We need to capture the click first.
             g.on('click', goradd.formObjChanged);
         }
-        g.on('change input', goradd.formObjChanged, true); // make sure we get these events before later attached events
+        g.on('change input', goradd.formObjChanged, {capture: true}); // make sure we get these events before later attached events
 
         // widget support, using declarative methods
         if (goradd.widget.new) {
@@ -516,9 +516,7 @@ goradd = {
         // IE 9 has a major bug in oninput, but we are requiring IE 10+, so no problem.
         // I think the only major browser that does not support oninput is Opera mobile.
 
-        g$(goradd.form()).on("ajaxQueueComplete", function() {
-            goradd._processFinalCommands();
-        });
+        g$(goradd.form()).on("ajaxQueueComplete", goradd._processFinalCommands);
 
         // TODO: Add a detector of the back button. This detector should ping the server to make sure the pagestate exists on the server. If not,
         // it should reload the form.
@@ -1340,68 +1338,123 @@ goradd.g.prototype = {
     /**
      * on attaches an event handler to the given html object.
      * Filtering and potentially supplying data to the event are also included.
-     * If data is a function, the function will be called when the event fires and the
-     * result of the function will be provided as data to the event. The "this" parameter
-     * will be the element with the given targetId, and the function will be provided the event object.
-     * This argument order mimics jQuery's on function.
      *
-     * @param eventNames {string} One or more event names separated by spaces
-     * @param {string} [selector]
-     * @param {string|object} [data]
+     * If data is a function, the function will be called when the event fires and the
+     * result of the function will be provided as data to the event.
+     *
+     * The "this" parameter provided to the handler will be the wrapper object that you are attaching the handler to ...
+     * essentially the same as the "this" for the on function when you call it.
+     *
+     * In the event returned to the handler, "target" is the element receiving the event, and "currentTarget" is the element
+     * listening for the event.
+     *
+     * If using a selector,
+     *
+     * @param {string} eventNames  One or more event names separated by spaces
+     * @param {string} [selector] An optional css selector to filter bubbled events. This is here because jQuery does it this way too.
      * @param {function} handler
-     * @param {boolean} [capture = false] True to fire this event during initial capture phase. False to wait until it bubbles.
+     * @param {object} [options] Optional additional options as follows:
+     *      selector: {string} Same as selector above, just specified in options
+     *      bubbles: {boolean} When used with a selector, determines if selector filters parent elements (true), or just
+     *        the target. If true, and the event passes the filter, the attached goradd.match object will be the element
+     *        that is the first matching selector that the event encountered as it bubbled.
+     *      capture: {boolean} Whether to fire event during the capture phase. See addEventListener doc for how this works
+     *      data: {*} Data to provide into the goradd.data item attached to the event. If this is a function, the function
+     *        will be executed when the event fires, and the result provided to the event. The "this" of the function
+     *        will be the "this" of the on call, unless of course you bind a different "this".
+     *  True to fire this event during initial capture phase. False to wait until it bubbles.
      */
-    on: function(eventNames, selector, data, handler, capture) {
+    on: function(eventNames, selector, handler, options) {
+        // TODO: This code breaks the built-in addEventListener ability to prevent multiple adds of the same handler.
+        // However, that code only works when the handler is not anonymous.
+        //  We could potentially add code here that would prevent this as well if needed.
+        // We could put a "handleEvent" function on ourselves, and then make that the handler. We would then need to do
+        // our own management of the attached handlers. We could implement a mechanism where the handler provides a
+        // unique id, and so we can prevent multiple adds of the same anonymous function too.
+        var self = this;
         if (!eventNames) {
             goradd.log("on must specify an event");
             return;
         }
         // Sort out the arguments
-        if (arguments.length < 5) {
-            var args = Array.prototype.slice.call(arguments);
-            if (typeof args[args.length - 1] === "boolean") {
-                capture = args.pop();
-            } else {
-                capture = false;
-            }
-            handler = args.pop();
-            if (typeof handler !== "function") {
-                goradd.log("on must have a handler that is a function");
-                return;
-            }
-            if (args.length === 3) {
-                data = args.pop();
-            } else {
-                data = undefined;
-            }
-            if (args.length === 2) {
-                selector = args.pop();
-            } else {
-                selector = undefined;
-            }
+        if (typeof selector !== "string") {
+            options = handler;
+            handler = selector;
+            selector = undefined;
+        }
+        if (typeof handler !== "function") {
+            goradd.log("on must have a handler that is a function");
+            return;
         }
 
+        var capture = false;
+        if (options) {
+            if (typeof options !== "object") {
+                goradd.log("options must be an object if it is defined");
+                return;
+            }
+            if (options.capture) {
+                capture = true;
+            }
+            if (!!options.selector) {
+                selector = options.selector;
+            }
+        }
         var el = this.element;
         var events = eventNames.split(" ");
         goradd.each(events, function(i,eventName) {
             el.addEventListener(eventName, function (event) {
                 goradd.log("triggered: " + event.type);
-                if (selector && !g$(event.target).matches(selector)) {
-                    return
-                }
-                if (data) {
-                    if (typeof data === "function") {
-                        data = data.call(el, event);
+                if (!!selector) {
+                    if (!!options && options.bubbles) {
+                        var check = event.target;
+                        var match;
+                        if (g$(check).matches(selector)) {
+                            match = check;
+                        }
+                        while (!match && !!check && check !== event.currentTarget) {
+                            check = check.parentElement;
+                            if (g$(check).matches(selector)) {
+                                match = check;
+                            }
+                        }
+                        if (match) {
+                            if (!event.goradd) {
+                                event.goradd = {};
+                            }
+                            event.goradd.match = match;
+                            event.goradd.selector = selector;
+                        } else {
+                            return;
+                        }
+                    } else {
+                        if (!g$(event.target).matches(selector)) {
+                            return;
+                        }
+                        if (!event.goradd) {
+                            event.goradd = {};
+                        }
+                        event.goradd.selector = selector;
                     }
-                    event.grdata = data;
+                }
+                var data;
+                if (options && options.data) {
+                    data = options.data;
+                    if (typeof options.data === "function") {
+                        data = options.data.call(self, event);
+                    }
+                    if (!event.goradd) {
+                        event.goradd = {};
+                    }
+                    event.goradd.data = data;
                 }
                 if (event.detail) {
                     data = event.detail;
                 }
                 if (data) {
-                    handler.call(event.target, event, data); // simulate adding extra items to event handler
+                    handler.call(self, event, data); // add extra item to event handler
                 } else {
-                    handler.call(event.target, event);
+                    handler.call(self, event);
                 }
             }, capture);
         });
@@ -1414,11 +1467,15 @@ goradd.g.prototype = {
             // Event for browsers which don't natively support the Constructor method
             event = document.createEvent('MouseEvent');
             event.initEvent("click", true, true);
-            event.grPostFunc = postFunc;
+            if (postFunc) {
+                event.goradd = {postFunc: postFunc};
+            }
         } else {
             goradd.log("new MouseEvent");
             event = new MouseEvent("click", {view: window, bubbles: true});
-            event.grPostFunc = postFunc;
+            if (postFunc) {
+                event.goradd = {postFunc: postFunc};
+            }
         }
         this.element.dispatchEvent(event);
     },

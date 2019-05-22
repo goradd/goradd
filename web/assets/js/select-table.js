@@ -1,48 +1,45 @@
 /**
- * Widget script designed to be attached to a select grid. Depends on ScrollIntoView and JQuery UI.
+ * Widget script designed to be attached to a select table. Depends on ScrollIntoView.
  *
  * TODO: Capture focus and improve aria experience
  */
-jQuery(function( $, undefined ) {
 
-    $.widget( "goradd.selectTable", {
-        options: {
-            selectedId: ""
-        },
-        _create: function() {
-            this._on({
-                'click tr': this._handleRowClick
-            });
-        },
-        _handleRowClick: function(event) {
-            var $control = this.element,
-                id = $control.attr('id');
+goradd.widget( "goradd.selectTable", {
+    options: {
+        selectedId: ""
+    },
+    _create: function() {
+        this.on('click', 'tr', this._handleRowClick);
+    },
+    _handleRowClick: function(event) {
+        this._selectRow(event.goradd.match);
+        var $row = g$(event.goradd.match);
+        var selId = $row.data("id");
 
-            var $row = $(event.currentTarget);
-            this._selectRow($row);
-            var selId = $row.data("id");
-            if ($row.hasClass ("selected") && selId != this.selectedId) {
-                this.selectedId = selId;
-                goradd.setControlValue(id, "selectedId", selId);
-                $control.trigger('rowselected', selId);
+        if ($row.hasClass ("selected") && selId !== this.selectedId) {
+            this.selectedId = selId;
+            goradd.setControlValue(this.element.id, "selectedId", selId);
+            this.trigger('rowselected', selId);
+        }
+    },
+    _selectRow: function(row) {
+        if (g$(row).hasClass ("sel")) {
+            var sel = g$(row.parentElement).qs('.selected');
+            if (sel) {
+                g$(sel).removeClass('selected');
             }
-        },
-        _selectRow: function($row) {
-            if ($row.hasClass ("sel")) {
-                $row.parent().find('.selected').toggleClass('selected');
-                $row.toggleClass('selected');
-            }
-        },
-        _setOption: function( key, value ) {
-            this._super( key, value );
-            if ( key === "selectedId" && value) {
-                var $row = this.element.find("tr[data-id=" + value + "]");
-                if ($row.length > 0) {
-                    this._selectRow($row);
-                    $row.scrollintoview();
-                }
+            g$(row).addClass('selected');
+        }
+    },
+    _setOption: function( key, value ) {
+        this._super( key, value );
+        if ( key === "selectedId" && value) {
+            var $row = this.element.find("tr[data-id=" + value + "]");
+            if ($row.length > 0) {
+                this._selectRow($row);
+                $row.scrollintoview();
             }
         }
+    }
 
-    });
 });

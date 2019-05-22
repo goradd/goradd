@@ -9,7 +9,9 @@ goradd.testsuite = {
      */
     pretest: function(t) {
         goradd.el("testspace").innerHTML =  '<p id="testP">I am here</p> \
-        <div id="testD" data-animal-type="bird" spellcheck>a div</div>';
+        <div id="testD" data-animal-type="bird" spellcheck>a div</div> \
+        ';
+        //        <ul id="listener"><li id="outer"><span id="inner">a span</span></li></ul>
     },
     testEl: function(t) {
        var el = goradd.el("testP");
@@ -69,10 +71,18 @@ goradd.testsuite = {
     },
     testEvent: function(t) {
         g$("testD").on("et", function() {
-            this.innerText = "tested";
+            this.element.innerText = "tested";
         });
         g$("testD").trigger("et");
         t.isSame("tested", goradd.el("testD").innerText)
+
+        g$("listener").on("click", "li", function(event) {
+            t.isSame("listener", this.element.id);
+            t.isSame("listener", event.currentTarget.id);
+            t.isSame("inner", event.target.id);
+            t.isSame("outer", event.goradd.match.id);
+        }, {bubbles: true});
+        g$("inner").click();
     },
     testHtmlInserts: function(t) {
         var p = g$("testP");
