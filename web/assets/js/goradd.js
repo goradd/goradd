@@ -1494,7 +1494,7 @@ goradd.g.prototype = {
         var event;
         // Include extra information as part of the click.
         if (typeof window.Event === "object") {
-            goradd.log ("init custom ClickEvent");
+            goradd.log ("init MouseEvent");
             // Event for browsers which don't natively support the Constructor method
             event = document.createEvent('MouseEvent');
             event.initEvent("click", true, true);
@@ -1503,7 +1503,7 @@ goradd.g.prototype = {
             }
         } else {
             goradd.log("new MouseEvent");
-            event = new MouseEvent("click", {view: window, bubbles: true});
+            event = new MouseEvent("click", {bubbles: true, cancelable: true, composed: true});
             if (postFunc) {
                 event.goradd = {postFunc: postFunc};
             }
