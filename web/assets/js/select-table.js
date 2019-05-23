@@ -9,7 +9,18 @@ goradd.widget( "goradd.selectTable", {
         selectedId: ""
     },
     _create: function() {
+        this._super();
         this.on('click', 'tr', this._handleRowClick);
+        if (!!this.options.selectedId) {
+            this._initSelectedId();
+        }
+    },
+    _initSelectedId: function() {
+        var row = this.qs("tr[data-id=" + this.options.selectedId + "]");
+        this._selectRow(row);
+        if (row) {
+            //$g(row)._scrollIntoView();
+        }
     },
     _handleRowClick: function(event) {
         this._selectRow(event.goradd.match);
@@ -23,22 +34,18 @@ goradd.widget( "goradd.selectTable", {
         }
     },
     _selectRow: function(row) {
-        if (g$(row).hasClass ("sel")) {
-            var sel = g$(row.parentElement).qs('.selected');
-            if (sel) {
-                g$(sel).removeClass('selected');
-            }
+        var sel = g$(row.parentElement).qs('.selected');
+        if (sel) {
+            g$(sel).removeClass('selected');
+        }
+        if (!!row && g$(row).hasClass ("sel")) {
             g$(row).addClass('selected');
         }
     },
-    _setOption: function( key, value ) {
-        this._super( key, value );
-        if ( key === "selectedId" && value) {
-            var $row = this.element.find("tr[data-id=" + value + "]");
-            if ($row.length > 0) {
-                this._selectRow($row);
-                $row.scrollintoview();
-            }
+    _setOption: function(key, value) {
+        this._super(key, value);
+        if (key === "selectedId") {
+            this._initSelectedId();
         }
     }
 

@@ -47,6 +47,19 @@ func (form *TestForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err 
 	}
 
 	buf.WriteString(`
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := form.RunAllButton.Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
 <div>
 Currently running:
 `)

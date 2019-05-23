@@ -315,22 +315,27 @@ func (r *Response) renderCommandArray(commands []*responseCommand) string {
 	for _, command := range commands {
 		if command.Script != "" {
 			script += command.Script + ";\n"
-		} else if command.Selector != "" {
-			if command.Function == "" {
-				panic("Cannot process a selector without a function")
+		} else {
+			com := make(map[string]interface{})
+
+			if command.Selector != "" {
+				com["selector"] = command.Selector
 			}
-			var args string
+			if command.Id != "" {
+				com["id"] = command.Id
+			}
+			if command.JqueryId != "" {
+				com["jqueryId"] = command.Id
+			}
+
+			if command.Function != "" {
+				com["func"] = command.Function
+			}
 
 			if command.Args != nil {
-				args = javascript.Arguments(command.Args).JavaScript()
+				com["params"] = command.Args
 			}
-			script += fmt.Sprintf("jQuery('%s').%s(%s);\n", command.Selector, command.Function, args)
-		} else if command.Function != "" {
-			var args string
-			if command.Args != nil {
-				args = javascript.Arguments(command.Args).JavaScript()
-			}
-			script += fmt.Sprintf("%s(%s);\n", command.Function, args)
+			script += fmt.Sprintf("goradd.processCommand(%s);\n", javascript.ToJavaScript(com))
 		}
 	}
 

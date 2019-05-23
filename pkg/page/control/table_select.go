@@ -1,7 +1,6 @@
 package control
 
 import (
-	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
@@ -33,7 +32,7 @@ func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 func (t *SelectTable) Init(self page.ControlI, parent page.ControlI, id string) {
 	t.Table.Init(self, parent, id)
 	t.ParentForm().AddJQueryUI()
-	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
+	//t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
 	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/select-table.js", false, nil)
 }
 
@@ -89,6 +88,10 @@ func (t *SelectTable) ΩDrawingAttributes() *html.Attributes {
 	a.SetDataAttribute("grctl", "selecttable")
 	a.Set("role", "grid")
 	a.Set("aria-readonly", "true")
+	a.Set("data-gr-widget", "goradd.selectTable")
+	if t.selectedID != "" {
+		a.Set("data-gr-opt-selected-id", t.selectedID)
+	}
 	return a
 }
 
@@ -105,7 +108,7 @@ func (t *SelectTable) SelectedID() string {
 
 func (t *SelectTable) SetSelectedID(id string) {
 	t.selectedID = id
-	t.ParentForm().Response().ExecuteJqueryCommand(t.ID(), "selectTable", "option", "selectedId", id)
+	t.ExecuteWidgetFunction("option", "selectedId", id)
 }
 
 func (t *SelectTable) ΩMarshalState(m maps.Setter) {
@@ -118,11 +121,4 @@ func (t *SelectTable) ΩUnmarshalState(m maps.Loader) {
 			t.selectedID = id
 		}
 	}
-}
-
-func (t *SelectTable) ΩPutCustomScript(ctx context.Context, response *page.Response) {
-	options := map[string]interface{}{}
-	options["selectedId"] = t.selectedID
-
-	response.ExecuteJqueryCommand(t.ID(), "selectTable", page.PriorityHigh, options)
 }

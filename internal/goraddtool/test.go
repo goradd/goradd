@@ -128,7 +128,7 @@ func dbTest() {
 
 func browserTest(browser bool) {
 	if browser {
-		if err := sys.LaunchChrome("http://localhost:8000/test?all=1"); err != nil {
+		if err := sys.LaunchChrome("http://localhost:8000/goradd/Test.g?all=1"); err != nil {
 			log.Fatal(err)
 		}
 	}

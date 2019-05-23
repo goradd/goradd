@@ -6,8 +6,8 @@ go build goradd-test
 echo "*** starting server"
 ./goradd-test &
 sleep 5
-google-chrome-stable --headless --remote-debugging-port=9222 http://localhost:8000/test?all=1 &
-#"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --remote-debugging-port=9222 http://localhost:8000/test?all=1 &
+google-chrome-stable --headless --remote-debugging-port=9222 http://localhost:8000/goradd/Test.g?all=1 &
+#"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --remote-debugging-port=9222 http://localhost:8000/goradd/Test.g?all=1 &
 wait %1
 r=$?
 kill %2

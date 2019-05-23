@@ -604,7 +604,7 @@ goradd = {
                 goradd.ajaxq.isRunning()) {
                 goradd._enqueueFinalCommand(command);
             } else {
-                goradd._processCommand(command);
+                goradd.processCommand(command);
             }
         });
         if (json.winclose) {
@@ -631,16 +631,16 @@ goradd = {
         goradd.testStep();
     },
     /**
-     * Process a single command.
+     * Process a single command. This is called both from ajax and javascript.
      * @param {object} command
      * @private
      */
-    _processCommand: function(command) {
+    processCommand: function(command) {
         var params,
             objs;
 
         if (command.script) {
-            // TODO: clean this up a bit by using ids for inserted scripts
+            // TODO: clean this up a bit by using ids for inserted scripts. Might have multiple scripts for the same id though.
             var script   = document.createElement("script");
             script.type  = "text/javascript";
             script.text  = command.script;
@@ -653,6 +653,7 @@ goradd = {
                 // general selector
                 objs = goradd.qa(command.selector);
             } else {
+                // First item is the id to select on
                 objs = g$(command.selector[0]).qa(command.selector[1]);
             }
 
@@ -705,7 +706,7 @@ goradd = {
     _processFinalCommands: function() {
         while(goradd.finalCommands.length) {
             var command = goradd.finalCommands.pop();
-            goradd._processCommand(command);
+            goradd.processCommand(command);
         }
     },
     /**
@@ -997,7 +998,18 @@ goradd = {
                 params.f();
             }
         }
-    }
+    },
+    //////////////////////////////
+    // Goradd Action Support
+    //////////////////////////////
+    /**
+     * These support the various GoraddFunction actions available in the action package.
+     */
+    msg: function(m) {
+        alert(m);
+    },
+
+
 
 };
 
@@ -1310,12 +1322,14 @@ goradd.g.prototype = {
             return el.className || el.class;
         }
         if (c.substr(0,1) === "+") {
+            // Support: Opera Mini does not support multiple classes, so we do them one at a time
             goradd.each(c.substr(1).split(" "), function(i,v) {
                 if (v !== "") {
                     el.classList.add(v);
                 }
             });
         } else if (c.substr(0,1) === "-") {
+            // Support: Opera Mini does not support multiple classes, so we do them one at a time
             goradd.each(c.substr(1).split(" "), function (i, v) {
                 if (v !== "") {
                     el.classList.remove(v);
@@ -1333,6 +1347,23 @@ goradd.g.prototype = {
      */
     hasClass: function(c) {
         return this.element.classList.contains(c);
+    },
+    /**
+     * Toggles the given classes. Returns the final class list.
+     * @param c
+     * @returns {string}
+     */
+    toggleClass: function(c) {
+        var el = this.element;
+        goradd.each(c.split(" "), function(i,v) {
+            if (v !== "") {
+                el.classList.toggle(v);
+            }
+        });
+        return el.className || el.class;
+    },
+    css: function(p, v) {
+        this.element.style[p] = v;
     },
 
     /**
@@ -1659,6 +1690,13 @@ goradd.g.prototype = {
     focus: function() {
         this.element.focus();
     },
+    blur: function() {
+        this.element.blur();
+    },
+    selectAll: function() {
+        this.element.select();
+        // Note, setSelectionRange, etc. appears to NOT be supported in opera mini.
+    },
     text: function(t) {
         if (arguments.length === 0) {
             return this.element.innerText;
@@ -1802,6 +1840,13 @@ goradd.widget = function(name, base, prototype) {
 
 };
 
+/**
+ * widget.new creates and initializes a new widget with the given named constructor.
+ * @param constructor
+ * @param options
+ * @param element
+ * @returns {*}
+ */
 goradd.widget.new = function(constructor, options, element) {
     if (typeof constructor === "string") {
         var names = constructor.split( "." );
@@ -1882,6 +1927,12 @@ goradd.widget("goradd.Widget", goradd.g, {
     },
     _init: function() {
     },
+    option: function(key, value) {
+        this._setOption(key,value);
+    },
+    _setOption: function(key, value) {
+        this.options[key] = value;
+    }
 });
 
 })(  );

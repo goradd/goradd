@@ -22,7 +22,7 @@ import (
 
 var testFormPageState string
 
-const TestFormPath = "/test"
+const TestFormPath = "/goradd/Test.g"
 const TestFormId = "TestForm"
 
 const (
@@ -35,6 +35,7 @@ type TestForm struct {
 	TestList        *SelectList
 	RunningLabel    *Span
 	RunButton       *Button
+	RunAllButton	*Button
 	Controller      *TestController
 	currentLog      string
 	failed          bool
@@ -73,6 +74,11 @@ func (form *TestForm) createControls(ctx context.Context) {
 	form.RunButton.SetText("Run Test")
 	form.RunButton.On(event.Click(), action.Ajax(form.ID(), TestButtonAction))
 	form.RunButton.SetValidationType(page.ValidateNone)
+
+	form.RunAllButton = NewButton(form, "run-all-button")
+	form.RunAllButton.SetText("Run All Tests")
+	form.RunAllButton.On(event.Click(), action.Redirect(TestFormPath + "?all=1"))
+	form.RunAllButton.SetValidationType(page.ValidateNone)
 }
 
 func (form *TestForm) LoadControls(ctx context.Context) {
