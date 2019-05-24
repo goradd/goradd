@@ -118,10 +118,6 @@ goradd.testsuite = {
         });
         t.assert(s.indexOf("aa") !== -1);
     },
-    testToSnake: function(t) {
-        t.isSame("this-is-me", goradd._toKebab("thisIsMe"));
-        t.isSame("a-b-c", goradd._toKebab("aBC"));
-    },
     testData: function(t) {
         var d = g$("testD");
         t.isSame("bird", d.data("animalType"));
