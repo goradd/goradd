@@ -20,7 +20,9 @@ if (!function () {
 var goradd;
 var g$;
 
-(function( ) { // Put everything in a function so we can have private functions and variables.
+(function( ) {
+    // Put everything in a function so we can have private functions and variables.
+    // By convention, things starting with underscore will be private.
 "use strict";
 
 /**
@@ -69,7 +71,7 @@ function _formObjChanged(event) {
  */
 function _getAjaxData(params) {
     var form = goradd.form(),
-        controls = g$(form).qa('input,select,textarea'),
+        controls = g$(form).qa("input,select,textarea"),
         postData = {};
 
     // Notify controls we are about to post.
@@ -77,7 +79,7 @@ function _getAjaxData(params) {
 
     goradd.each(controls, function(i,c) {
         var id = c.id;
-        var blnForm = (id && (id.substr(0, 8) === 'Goradd__'));
+        var blnForm = (id && (id.substr(0, 8) === "Goradd__"));
 
         if (!_inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones, because we might have missed something
             _ajaxError || // Ajax error would mean that _formObjsModified is invalid. We need to submit everything.
@@ -124,6 +126,7 @@ function _getAjaxData(params) {
 /**
  * Displays the ajax error in either a popup window, or a new web page.
  * @param resultText
+ * @param err
  * @private
  */
 function _displayAjaxError(resultText, err) {
@@ -132,9 +135,9 @@ function _displayAjaxError(resultText, err) {
     _ajaxError = true;
     _blockEvents = false;
 
-    if (resultText.substr(0, 15) === '<!DOCTYPE html>') {
+    if (resultText.substr(0, 15) === "<!DOCTYPE html>") {
         window.alert("An error occurred.\r\n\r\nThe error response will appear in a new popup.");
-        objErrorWindow = window.open('about:blank', 'qcubed_error', 'menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes,width=1000,height=700,left=50,top=50');
+        objErrorWindow = window.open("about:blank", "qcubed_error", "menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes,width=1000,height=700,left=50,top=50");
         objErrorWindow.focus();
         objErrorWindow.document.write(resultText);
     } else {
@@ -247,7 +250,7 @@ function _processDeferredAjaxResponse(json) {
         if (goradd._closeWebSocket) {
             goradd._closeWebSocket(1001);
         }
-        if (json.loc === 'reload') {
+        if (json.loc === "reload") {
             window.location.reload(true);
         } else {
             document.location = json.loc;
@@ -255,7 +258,7 @@ function _processDeferredAjaxResponse(json) {
     }
     if (json.profileHtml) {
         var c = goradd.el("dbProfilePane");
-        if (!$c) {
+        if (!c) {
             g$(goradd.form()).htmlAfter("<div id = 'dbProfilePane'></div>");
             c = goradd.el("dbProfilePane");
         }
@@ -450,6 +453,7 @@ function _registerControl(ctrl) {
     }
 }
 
+
 /**
  * g$ is a shortcut for goradd.g(). It wraps an element with additional functions defined here to more easily manipulate
  * the element. el can be either an actual HTMLElement, or the id of one.
@@ -520,7 +524,7 @@ goradd = {
      * back. This is used below so that all the functions can pass either an element, or the id of an element. Returns
      * null if not found.
      * @param t {string|object}
-     * @returns {Element}
+     * @returns {Object}
      */
     el: function(t) {
         if (typeof t === "object") {
@@ -827,7 +831,6 @@ goradd = {
     /**
      * Process a single command. This is called both from ajax and javascript.
      * @param {object} command
-     * @private
      */
     processCommand: function(command) {
         var params,
@@ -1951,6 +1954,108 @@ goradd.widget("goradd.Widget", goradd.g, {
 });
 
 })(  );
+
+
+/**
+ * Ajax Queue
+ *
+ * This used to be handled with a jquery plugin, but since we are trying to get away from jquery, and working
+ * towards an OperaMini compatible version, we are rolling our own.
+ */
+
+
+(function() {
+    var _q = [],
+        _currentRequests= {},
+    _idCounter= 0;
+
+        goradd.ajaxq = {
+
+
+    /**
+     * Queues an ajax request.
+     * A new Ajax request won't be started until the previous queued
+     * request has finished.
+     * @param {function} f function that returns ajax options.
+     * @param {boolean} blnAsync true to launch right away.
+     */
+    enqueue: function(f, blnAsync) {
+        if (!blnAsync) {
+            var wasRunning = this.isRunning();
+            _q.push(f);
+            if (!wasRunning) {
+                this._dequeue();
+            }
+        } else {
+            this._do1(f);
+        }
+    },
+    /**
+     * Returns true if there is something in the ajax queue. This would happen if we have just queued an item,
+     * or if we are waiting for an item to return a result.
+     *
+     * @returns {boolean} true if the goradd ajax queue has an item in it.
+     */
+    isRunning: function() {
+        return _currentRequests.length === 0;
+    },
+    _dequeue: function() {
+        var f = _q.shift();
+        if (f) {
+            this._do1(f);
+        }
+    },
+    _do1(f) {
+        var self = this;
+        var opts = f();
+        _idCounter++;
+        var ajaxID = _idCounter;
+
+        var objRequest = new XMLHttpRequest();
+
+        objRequest.open("POST", opts.url, true);
+        objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
+        objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        objRequest.setRequestHeader("X-Requested-With", "xmlhttprequest");
+
+        objRequest.onreadystatechange = function() {
+            if (objRequest.readyState === 4) {
+                if (objRequest.status === 200) {
+                    try {
+                        opts.success(JSON.parse(objRequest.response));
+                    } catch(err) {
+                        // Goradd returns ajax errors as text
+                        opts.error(objRequest.response, err);
+                    }
+                } else {
+                    // This would be a problem with the server or client
+                    opts.error("An ajax error occurred: " + objRequest.statusText);
+                }
+
+                delete _currentRequests[ajaxID];
+                if (_q.length === 0 && !self.isRunning()) {
+                    g$(goradd.form()).trigger("ajaxQueueComplete");
+                }
+                self._dequeue(); // do the next ajax event in the queue
+            }
+        };
+        _currentRequests[ajaxID] = objRequest;
+        var encoded = self._encodeData(opts.data);
+        objRequest.send(encoded);
+    },
+    _encodeData(data) {
+        var a = [];
+        var key;
+        for (key in data) {
+            var value = data[key];
+            var s = encodeURIComponent(key) + "=" +
+                encodeURIComponent( value == null ? "" : value );
+            a.push(s);
+        }
+        return a.join("&");
+    }
+};
+})();
 
 ////////////////////////////////
 // Goradd Shortcuts and Initialize

@@ -114,7 +114,6 @@ func (f *ΩFormBase) AddJQueryUI() {
 func (f *ΩFormBase) AddGoraddFiles() {
 	gr := config.GoraddAssets()
 	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd.js"), false, nil)
-	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-ajaxq.js"), false, nil)
 	f.AddJavaScriptFile(filepath.Join(gr, "js","goradd-ws.js"), false, nil)
 	if !config.Release {
 		f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-testing.js"), false, nil)
