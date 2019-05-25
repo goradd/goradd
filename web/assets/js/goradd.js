@@ -38,7 +38,7 @@ var _finalCommands = [];
 var _prevUpdateTime = 0;
 
 function _toKebab(s) {
-    return  s.replace(/[A-Z]/g, function(m, offset, s) {
+    return  s.replace(/[A-Z]/g, function(m) {
         return "-" + m.toLowerCase();
     });
 }
@@ -125,7 +125,7 @@ function _getAjaxData(params) {
 
 /**
  * Displays the ajax error in either a popup window, or a new web page.
- * @param resultText
+ * @param resultText {string}
  * @param err
  * @private
  */
@@ -401,7 +401,7 @@ function _unpackObj(obj) {
 
 function _registerControls() {
     var els = goradd.qa('[data-grctl]');
-    goradd.each(els, function(el) {
+    goradd.each(els, function() {
         _registerControl(this);
     });
 }
@@ -466,7 +466,8 @@ g$ = function(el) {
     return goradd.g(el);
 };
 
-/**
+// noinspection JSUnusedGlobalSymbols
+ /**
  * @namespace goradd
  */
 goradd = {
@@ -574,9 +575,7 @@ goradd = {
         var script = document.createElement("script");
         script.src = strScript;
         script.type = 'text/javascript';
-        goradd.each(attributes, function() {
-            script[key] = this[key];
-        });
+        goradd.extend(script, attributes);
 
         var head = document.getElementsByTagName('head')[0];
         head.appendChild(script);
@@ -590,9 +589,7 @@ goradd = {
         var link = document.createElement("link");
         link.rel = "stylesheet";
         link.href = strStyleSheetFile;
-        goradd.each(attributes, function() {
-            link[key] = this[key];
-        });
+        goradd.extend(link, attributes);
         var head = document.getElementsByTagName('head')[0];
         head.appendChild(link);
     },
@@ -787,11 +784,19 @@ goradd = {
             return {
                 url: formAction,
                 data: data,
+                /**
+                 * @param result {string}
+                 * @param err {object}
+                 * @returns {boolean}
+                 */
                 error: function (result, err) {
                     _displayAjaxError(result, err);
                     goradd.testStep();
                     return false;
                 },
+                /**
+                 * @param json {object}
+                 */
                 success: function (json) {
                     goradd.log("Ajax success ", json);
 
@@ -1325,7 +1330,6 @@ goradd.g.prototype = {
      */
     attr: function() {
         var t = this.element;
-        var self = this;
         if (arguments.length === 0) {
             // Return an object mapping all the attributes of the html object
             if (t.hasAttributes()) {
@@ -1409,8 +1413,17 @@ goradd.g.prototype = {
         });
         return el.className || el.class;
     },
+    /**
+     * css sets or gets the given css property.
+     * @param p {string} Property to set or get
+     * @param v [string] Optional value. If ommitted, no setting will happen
+     * @returns {string} The value of the property.
+     */
     css: function(p, v) {
-        this.element.style[p] = v;
+        if (arguments.length >= 2) {
+            this.element.style[p] = v;
+        }
+        return this.element.style[p];
     },
 
     /**
@@ -1594,7 +1607,6 @@ goradd.g.prototype = {
     },
     /**
      * htmlBefore inserts the html before the given element.
-     * @param el {object|string}
      * @param html
      */
     htmlBefore: function(html) {
@@ -1769,7 +1781,22 @@ goradd.g.prototype = {
         if (typeof f === "function") {
             return f.apply(this, params);
         }
-    }
+    },
+    /**
+     * clientWidth returns the bounding width of the client area, which includes content, padding, border, but not margin.
+     * @returns {number}
+     */
+    clientWidth: function() {
+        return this.element.clientWidth;
+    },
+    /**
+     * clientHeight returns the bounding height of the client area, which includes content, padding, border, but not margin.
+     * @returns {number}
+     */
+    clientHeight: function() {
+        return this.element.clientHeight;
+    },
+
 };
 
 /**
@@ -1962,8 +1989,6 @@ goradd.widget("goradd.Widget", goradd.g, {
  * This used to be handled with a jquery plugin, but since we are trying to get away from jquery, and working
  * towards an OperaMini compatible version, we are rolling our own.
  */
-
-
 (function() {
     var _q = [],
         _currentRequests= {},
@@ -2056,6 +2081,7 @@ goradd.widget("goradd.Widget", goradd.g, {
     }
 };
 })();
+
 
 ////////////////////////////////
 // Goradd Shortcuts and Initialize
