@@ -233,6 +233,19 @@ func (d DateTime) In(location *time.Location) DateTime {
 	return DateTime{d.Time.In(location), d.isTimestamp}
 }
 
+// String returns the datetime in string form, suitable for sending to the NewDateTime function.
+func (d DateTime) String() string {
+	b,err := d.MarshalText();
+	_ = err; // would only happen if year was greater than 10000
+	return string(b)
+}
+
+// DebugString returns the datetime in human readable form.
+func (d DateTime) DebugString() string {
+	return d.Time.String()
+}
+
+
 func init() {
 	gob.Register(time.Time{})
 	gob.Register(DateTime{})
