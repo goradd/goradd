@@ -22,6 +22,17 @@ func TestNow(t *testing.T) {
 	assert.False(t, d2.IsTimestamp())
 }
 
+func TestStringConversion(t *testing.T) {
+	d := Now()
+
+	d2 := NewDateTime(d.String())
+	assert.True(t, d.Equal(d2))
+
+	d3 := NewDateTime(d.UTC().String())
+	assert.True(t, d.Equal(d3))
+
+}
+
 func TestZero(t *testing.T) {
 
 	d := NewZeroDate()

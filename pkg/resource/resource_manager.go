@@ -29,7 +29,7 @@ type ResourceManager struct {
 // this is a goradd rest path.
 var ResourcePathPrefix = ""
 
-// GetResourceManager returns the current page manager.
+// GetResourceManager returns the current resource manager.
 func GetResourceManager() *ResourceManager {
 	return resourceManager
 }

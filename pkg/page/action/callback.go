@@ -111,7 +111,7 @@ func (a *ΩserverAction) ΩRenderScript(params ΩrenderParams) string {
 		v.Set("async", true)
 	}
 
-	if eV, aV, cV := params.EventActionValue, a.ActionValue, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
+	if eV, aV, cV := params.EventActionValue, a.Value, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
 		v2 := maps.NewSliceMap()
 		if eV != nil {
 			v2.Set("event", eV)
