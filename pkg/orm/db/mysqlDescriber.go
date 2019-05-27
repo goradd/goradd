@@ -469,7 +469,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 		cd.MinValue, cd.MaxValue = getMinMax(column.options, -math.MaxFloat32, math.MaxFloat32, tableName, column.name)
 	case "double":
 		cd.NativeType = SqlTypeDouble
-		cd.ColumnType = ColTypeFloat
+		cd.ColumnType = ColTypeDouble
 		cd.MinValue, cd.MaxValue = getMinMax(column.options, -math.MaxFloat64, math.MaxFloat64, tableName, column.name)
 
 	case "varchar":

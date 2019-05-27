@@ -92,6 +92,7 @@ func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Conte
 {{
 
 func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
+	o.{{= col.ModelName }}IsValid = true
 	if i == nil {
 		if !o.{{= col.ModelName }}IsNull {
 			o.{{= col.ModelName }}IsNull = true
@@ -129,11 +130,11 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 {{
 
 func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.ForeignKey.GoType }}) {
+	o.{{= col.ModelName }}IsValid = true
 	if v == nil {
 		if !o.{{= col.ModelName }}IsNull || !o._restored {
 			o.{{= col.ModelName }}IsNull = true
 			o.{{= col.ModelName }}IsDirty = true
-			o.{{= col.ModelName }}IsValid = true
 			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
 			o.{{oName}} = nil
 		}
@@ -143,7 +144,6 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 			o.{{= col.ModelName }}IsNull = false
 			o.{{= col.ModelName }} = v.PrimaryKey()
 			o.{{= col.ModelName }}IsDirty = true
-			o.{{= col.ModelName }}IsValid = true
 		}
 	}
 }
@@ -157,6 +157,7 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 {{
 // Set{{= col.GoName }} sets the value of {{= col.GoName }} in the object, to be saved later using the Save() function.
 func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.ColumnType.GoType() }}) {
+	o.{{= col.ModelName }}IsValid = true
 {{g if col.ColumnType == query.ColTypeBytes { }}
 	o.{{= col.ModelName }} = v		// TODO: Copy bytes??
 	o.{{= col.ModelName }}IsDirty = true
@@ -187,10 +188,10 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 		panic("Cannot set {{= col.ForeignKey.GoName }} to a null value.")
 	} else {
 		o.{{oName}} = v
+		o.{{= col.ModelName }}IsValid = true
 		if o.{{= col.ModelName }} != v.PrimaryKey() {
 			o.{{= col.ModelName }} = v.PrimaryKey()
 			o.{{= col.ModelName }}IsDirty = true
-			o.{{= col.ModelName }}IsValid = true
 		}
 	}
 }
