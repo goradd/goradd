@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	. "github.com/goradd/goradd/pkg/orm/query"
-	"github.com/knq/snaker"
 	"log"
 	"math"
 	"sort"
@@ -658,7 +657,7 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 			log.Print("Error in table comment for table " + tableName + ":" + column.name + ": goName is not a string")
 		}
 	} else {
-		cd.GoName = snaker.SnakeToCamel(column.name)
+		cd.GoName = UpperCaseIdentifier(column.name)
 	}
 
 	//cd.DefaultValue, _ = table.defaultValue.Value()

@@ -1,6 +1,6 @@
 //manyManyAccessors.tmpl
 for _,ref := range t.ManyManyReferences {
-	oName := dd.AssociatedObjectPrefix + ref.GoPlural
+	oName := ref.ObjName(dd)
 	if ref.IsTypeAssociation {
 
 {{

@@ -115,7 +115,14 @@ func (n *ReferenceNode) goName() string {
 
 // Return a column node for the foreign key that represents the reference to the other table
 func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
-	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, ColTypeString, false)
+	var colType GoColumnType
+	if n.isTypeTable {
+		colType = ColTypeUnsigned
+	} else {
+		colType = ColTypeString
+	}
+
+	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, colType, false)
 	SetParentNode(n2, n.getParent())
 	return n2
 }

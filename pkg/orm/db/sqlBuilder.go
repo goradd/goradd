@@ -437,7 +437,13 @@ func (b *sqlBuilder) assignPrimaryKeyAliases(item *joinTreeItem) {
 		panic("pk was not added")
 	}
 
-	b.assignAlias(item.leafs[0])
+	b.assignAlias(item.leafs[0]) // Assign the primary key alias
+
+	// If this has a related column node, assign its alias too.
+	if rn := RelatedColumnNode(item.node); rn != nil {
+		i2 := b.findJoinItem(rn)
+		b.assignAlias(i2)
+	}
 
 	for _, item2 := range item.childReferences {
 		b.assignPrimaryKeyAliases(item2)
@@ -644,6 +650,22 @@ func (b *sqlBuilder) findChildJoinItem(childNode NodeI, parent *joinTreeItem) (m
 	}
 	return nil
 }
+
+// findForeignKeyItem will find the matching leaf node for a forward referencing foreignKey.
+/*func (b *sqlBuilder) findForeignKeyItem(item *joinTreeItem) (match *joinTreeItem) {
+	parent := item.parent
+	if parent == nil {
+		panic("Trying to find a foreign key item on a top-level item")
+	}
+	refNode,ok := item.node.(*ReferenceNode)
+	if !ok {
+		panic("Can only find a foreign key item on a reference node")
+	}
+	for _,leaf := range parent.leafs {
+		col := leaf.node.(*ColumnNode).name()
+		if col.
+	}
+}*/
 
 // findChildJoinItemRecursive recursively finds a join item
 func (b *sqlBuilder) findChildJoinItemRecursive(n NodeI, joinItem *joinTreeItem) (match *joinTreeItem) {
