@@ -2,6 +2,7 @@ package dbtest
 
 import (
 	"context"
+	"encoding/json"
 	"goradd-project/gen/goradd/model"
 	"testing"
 
@@ -425,4 +426,20 @@ func TestFailedGroupBy(t *testing.T) {
 		QueryProjects(ctx).
 		GroupBy(node.Project().Name()).
 			Select(node.Project().Name())})
+}
+
+func TestJson(t *testing.T) {
+	ctx := context.Background()
+	p := model.LoadProject(ctx, "1",
+		node.Project().Name(),
+		node.Project().ProjectStatusType(),
+		node.Project().Manager().FirstName())
+	j,err := json.Marshal(p)
+	assert.NoError(t, err)
+	m := make(map[string]interface{})
+	err = json.Unmarshal(j, &m)
+	assert.NoError(t, err)
+	assert.Equal(t, "ACME Website Redesign", m["name"])
+	assert.Equal(t, "Completed", m["projectStatusType"])
+	assert.Equal(t, "Karen", m["manager"].(map[string]interface{})["firstName"])
 }

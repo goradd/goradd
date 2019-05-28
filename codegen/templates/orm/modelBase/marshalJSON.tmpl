@@ -29,8 +29,7 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
 {{if col.ForeignKey.IsType}}
     v["{{key}}"] = o.{{= funcName }}().String()
 {{else}}
-    val := o.{{= funcName }}()
-    if val != nil {
+    if val := o.{{= funcName }}(); val != nil {
         v["{{key}}"] = val
     }
 {{if}}
