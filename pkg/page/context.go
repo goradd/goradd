@@ -148,7 +148,7 @@ func PutContext(r *http.Request, cliArgs []string) *http.Request {
 
 func (ctx *Context) fillHttp(r *http.Request) (err error) {
 	if contentType := r.Header.Get("content-type"); contentType != "" {
-		// Per comments in the ResponseWriter, we need to read and processs the entire request before attempting to write.
+		// Per comments in the ResponseWriter, we need to read and process the entire request before attempting to write.
 		if strings.Contains(contentType, "multipart") {
 			// TODO: The Go doc is vague about how it handles file uploads larger than this value. Some doc suggests it
 			// will return an error, and other doc suggests it will just split it into multiple partial files.

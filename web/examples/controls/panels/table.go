@@ -7,6 +7,7 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/control/data"
+	"github.com/goradd/goradd/web/examples/controls"
 )
 
 type TablePanel struct {
@@ -140,6 +141,8 @@ func (f *TablePanel) 	CellText(ctx context.Context, col ColumnI, rowNum int, col
 }
 
 func init() {
+	controls.RegisterPanel("table", "Tables", NewTablePanel, 5)
+
 }
 
 
