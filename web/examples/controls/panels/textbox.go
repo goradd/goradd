@@ -8,6 +8,7 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"github.com/goradd/goradd/web/examples/controls"
 )
 
 // shared
@@ -96,6 +97,7 @@ func (p *TextboxPanel) Action(ctx context.Context, a page.ActionParams) {
 func init() {
 	browsertest.RegisterTestFunction("Textbox Ajax Submit", testTextboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Textbox Server Submit", testTextboxServerSubmit)
+	controls.RegisterPanel("textbox", "Textboxes", NewTextboxPanel, 2)
 }
 
 func testTextboxAjaxSubmit(t *browsertest.TestForm)  {
@@ -114,7 +116,7 @@ func testTextboxServerSubmit(t *browsertest.TestForm)  {
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
 func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").AddValue("testing", 1).String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").SetValue("testing",1).String()
 	f := t.LoadUrl(myUrl)
 	btn := f.Page().GetControl(btnName)
 

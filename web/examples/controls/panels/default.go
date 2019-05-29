@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/web/examples/controls"
 )
 
 
@@ -18,5 +19,5 @@ func NewDefaultPanel(ctx context.Context, parent page.ControlI)  {
 
 
 func init() {
-	//browsertest.RegisterTestFunction("Plain Textbox", TestPlain)
+	controls.RegisterPanel("", "Home", NewDefaultPanel, 1)
 }

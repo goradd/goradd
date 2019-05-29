@@ -66,7 +66,7 @@ func {{= propPlural }}() (values []{{= propName }}) {
 for i,fieldName := range tt.FieldNames[2:] {
 	typ := tt.FieldGoColumnType(i+2)
 	typeName := typ.GoType()
-	title := snaker.SnakeToCamel(fieldName)
+	title := db.UpperCaseIdentifier(fieldName)
 
 {{
 func ({{= propLetter }} {{= propName }}) {{= title }}() {{= typeName }} {
@@ -88,7 +88,7 @@ for i,fieldName := range tt.FieldNames[1:] {
 	typ := tt.FieldGoColumnType(i+1)
 	typeName := typ.GoType()
 	varName := inflector.Pluralize(fieldName)
-	title := inflector.Pluralize(snaker.SnakeToCamel(fieldName))
+	title := inflector.Pluralize(db.UpperCaseIdentifier(fieldName))
 
 {{
 func {{= propName }}{{= title }}() []{{= typeName }} {

@@ -5,7 +5,6 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"bytes"
 	"github.com/gedex/inflector"
-	"github.com/knq/snaker"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"strings"

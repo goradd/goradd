@@ -7,6 +7,7 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"github.com/goradd/goradd/web/examples/controls"
 	"strings"
 )
 
@@ -102,11 +103,12 @@ func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 func init() {
 	browsertest.RegisterTestFunction("Select List Ajax Submit", testSelectListAjaxSubmit)
 	browsertest.RegisterTestFunction("Select List Server Submit", testSelectListServerSubmit)
+	controls.RegisterPanel("selectlist", "Selection Lists", NewSelectListPanel, 4)
 }
 
 // testPlain exercises the plain text box
 func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "selectlist").AddValue("testing", 1).String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").SetValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 
 	testSelectListSubmit(t, f, f.Page().GetControl("ajaxButton"))
@@ -115,7 +117,7 @@ func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
 }
 
 func testSelectListServerSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "selectlist").AddValue("testing", 1).String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").SetValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 
 	testSelectListSubmit(t, f, f.Page().GetControl("serverButton"))

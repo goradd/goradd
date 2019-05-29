@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"github.com/goradd/goradd/web/examples/controls"
 	"strconv"
 )
 
@@ -107,11 +108,12 @@ func init() {
 	browsertest.RegisterTestFunction("Table - Checkbox Nav", testTableCheckboxNav)
 	browsertest.RegisterTestFunction("Table - Checkbox Ajax Submit", testTableCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Table - Checkbox Server Submit", testTableCheckboxServerSubmit)
+	controls.RegisterPanel("tablecheckbox", "Tables - Checkbox Column", NewTableCheckboxPanel, 6)
 }
 
 
 func testTableCheckboxNav(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "tablecheckbox").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").String()
 	f := t.LoadUrl(myUrl)
 
 	t.SetCheckbox("table1_check1_1", true)
@@ -151,7 +153,7 @@ func testTableCheckboxServerSubmit(t *browsertest.TestForm)  {
 
 func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
 	table1Data = getCheckTestData()
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "tablecheckbox").AddValue("testing", 1).String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").SetValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 	btn := f.Page().GetControl(btnName)
 

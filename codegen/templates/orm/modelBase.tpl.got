@@ -9,7 +9,6 @@ import (
 	//strings2	"github.com/goradd/goradd/pkg/strings"
 	"strings"
 	"fmt"
-	"github.com/knq/snaker"
 )
 
 func init() {
