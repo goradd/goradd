@@ -81,7 +81,7 @@ func init() {
 }
 
 func testForms1AjaxSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").String()
 	f := t.LoadUrl(myUrl)
 
 	testForms1Submit(t, f, f.Page().GetControl("ajaxButton"))
@@ -90,7 +90,7 @@ func testForms1AjaxSubmit(t *browsertest.TestForm)  {
 }
 
 func testForms1ServerSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "textbox").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").String()
 	f := t.LoadUrl(myUrl)
 
 	testForms1Submit(t, f, f.Page().GetControl("serverButton"))

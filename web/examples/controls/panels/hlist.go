@@ -8,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"github.com/goradd/goradd/web/examples/controls"
 )
 
 // Example data
@@ -81,13 +82,15 @@ func (p *HListPanel) BindData(ctx context.Context, s data.DataManagerI) {
 
 
 func init() {
+	controls.RegisterPanel("hlist", "Nested Lists", NewHListPanel, 8)
+
 	//browsertest.RegisterTestFunction("Select List Ajax Submit", testHListAjaxSubmit)
 	//browsertest.RegisterTestFunction("Select List Server Submit", testHListServerSubmit)
 }
 
 // testPlain exercises the plain text box
 func testHListAjaxSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "HList").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "HList").String()
 	f := t.LoadUrl(myUrl)
 
 	testHListSubmit(t, f, f.Page().GetControl("ajaxButton"))
@@ -96,7 +99,7 @@ func testHListAjaxSubmit(t *browsertest.TestForm)  {
 }
 
 func testHListServerSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "HList").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "HList").String()
 	f := t.LoadUrl(myUrl)
 
 	testHListSubmit(t, f, f.Page().GetControl("serverButton"))

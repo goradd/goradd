@@ -7,7 +7,7 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	_ "github.com/goradd/goradd/test/browsertest"
 	"github.com/goradd/goradd/web/app"
-	_ "github.com/goradd/goradd/web/examples/controls"
+	_ "github.com/goradd/goradd/web/examples"
 	_ "github.com/goradd/goradd/web/welcome"
 	"github.com/shurcooL/github_flavored_markdown"
 	_ "goradd-project/gen" // Code-generated forms
