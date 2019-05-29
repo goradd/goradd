@@ -82,7 +82,7 @@ func (p *HListPanel) BindData(ctx context.Context, s data.DataManagerI) {
 
 
 func init() {
-	controls.RegisterPanel("hlist", "Nested Lists", NewHListPanel, 8)
+	controls.RegisterPanel("hlist", "Nested Lists", NewHListPanel, 11)
 
 	//browsertest.RegisterTestFunction("Select List Ajax Submit", testHListAjaxSubmit)
 	//browsertest.RegisterTestFunction("Select List Server Submit", testHListServerSubmit)
