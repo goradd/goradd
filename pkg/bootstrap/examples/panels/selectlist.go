@@ -99,7 +99,7 @@ func init() {
 
 // testPlain exercises the plain text box
 func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "selectlist").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").String()
 	f := t.LoadUrl(myUrl)
 
 	testSelectListSubmit(t, f, f.Page().GetControl("ajaxButton"))
@@ -108,7 +108,7 @@ func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
 }
 
 func testSelectListServerSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).AddValue("control", "selectlist").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").String()
 	f := t.LoadUrl(myUrl)
 
 	testSelectListSubmit(t, f, f.Page().GetControl("serverButton"))
