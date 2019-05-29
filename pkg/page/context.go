@@ -240,7 +240,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				aId, _ := ctx.FormValue(HtmlVarAction)
 				parts := strings.Split(aId, "_")
 				ctx.actionControlID = parts[0]
-				if len(parts) > 0 {
+				if len(parts) > 1 {
 					ctx.actionValues.Control = []byte(parts[1])
 				}
 				return
