@@ -119,3 +119,9 @@ GoRADD relies on a number of other open-source projects, including:
 - Stretchr's [Testify Testing Library](https://github.com/stretchr/testify)
 
 GoRADD was created and is maintained by [Shannon Pekary](https://github.com/spekary)
+
+### Thanks To
+[JetBrains](https://www.jetbrains.com/go) for use of the GoLand Go Editor
+
+![BrowserStack](https://d3but80xmlhqzj.cloudfront.net/production/images/static/header/bstack-logo.svg) 
+[BrowserStack](http://browserstack.com) for automated browser testing tools
