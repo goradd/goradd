@@ -40,6 +40,7 @@ func DefaultControlType(col *db.ColumnDescription) ControlCreationInfo {
 	case query.ColTypeUnsigned64: return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}
 	case query.ColTypeDateTime: return ControlCreationInfo{"DateTimeSpan", "NewDateTimeSpan", "github.com/goradd/goradd/pkg/page/control"}
 	case query.ColTypeFloat: return ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/page/control"}
+	case query.ColTypeDouble: return ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/page/control"}
 	case query.ColTypeBool: return ControlCreationInfo{"Checkbox", "NewCheckbox", "github.com/goradd/goradd/pkg/page/control"}
 	case query.ColTypeUnknown: return ControlCreationInfo{"", "", ""}
 	default: return ControlCreationInfo{"", "", ""}
