@@ -9,7 +9,6 @@
 // greek capital Omega (Ω). We do this to call out that these exported structures and variables are not for general use.
 package action
 
-
 import (
 	"encoding/gob"
 	"fmt"
@@ -169,7 +168,7 @@ func Trigger(controlID string, event string, data interface{}) ΩtriggerAction {
 }
 
 func (a ΩtriggerAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`$j("#%s").trigger("%s", %s);` + "\n", a.ControlID, a.Event, javascript.ToJavaScript(a.Data))
+	return fmt.Sprintf(`$j("#%s").trigger("%s", %s);`+"\n", a.ControlID, a.Event, javascript.ToJavaScript(a.Data))
 }
 
 // PrivateAction is used by control implementations to add a private action to a controls action list. Unless you are
@@ -187,7 +186,7 @@ type ΩjavascriptAction struct {
 // Javascript will execute the given javascript
 func Javascript(js string) ΩjavascriptAction {
 	if js != "" {
-		if js[len(js) - 1: len(js)] != ";" {
+		if js[len(js)-1:len(js)] != ";" {
 			js += ";\n"
 		}
 	}
@@ -211,7 +210,7 @@ type ΩsetControlValueAction struct {
 //   action.SetControlValue(myControl.ID(), "myKey", javascript.JsCode("event.target.id"))
 // will pass the id of the target of an event to the receiver of the action.
 func SetControlValue(id string, key string, value interface{}) ΩsetControlValueAction {
-	return ΩsetControlValueAction{ID: id, Key:key, Value:value}
+	return ΩsetControlValueAction{ID: id, Key: key, Value: value}
 }
 
 func (a ΩsetControlValueAction) ΩRenderScript(params ΩrenderParams) string {

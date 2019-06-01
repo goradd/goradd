@@ -11,7 +11,6 @@ import (
 	"github.com/goradd/goradd/test/browsertest"
 )
 
-
 const AjaxTimingPath = "/page/test/AjaxTiming.g"
 const AjaxTimingId = "AjaxTimingForm"
 
@@ -44,7 +43,7 @@ type AjaxTimingForm struct {
 	Chk             *Checkbox
 	ChkLabel        *Span
 	Txt2            *Textbox
-	Btn 			*Button
+	Btn             *Button
 }
 
 func NewAjaxTimingForm(ctx context.Context) page.FormI {
@@ -102,7 +101,7 @@ func (f *AjaxTimingForm) Action(ctx context.Context, a page.ActionParams) {
 
 }
 
-func TestForm(t *browsertest.TestForm)  {
+func TestForm(t *browsertest.TestForm) {
 	log.Debug("AjaxTiming test")
 
 	t.LoadUrl(AjaxTimingPath)
@@ -115,8 +114,6 @@ func TestForm(t *browsertest.TestForm)  {
 	/*
 		t.AssertEquals("A value is required", t.SelectorInnerText("#user-name_err"))*/
 }
-
-
 
 func init() {
 	page.RegisterPage(AjaxTimingPath, NewAjaxTimingForm, AjaxTimingId)

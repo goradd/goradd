@@ -1,11 +1,9 @@
 package event
 
 import (
-	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/javascript"
+	"github.com/goradd/goradd/pkg/page"
 )
-
-
 
 // rowSelectedEvent indicates that a row was selected from the SelectTable
 type rowSelectedEvent struct {
@@ -18,4 +16,3 @@ func RowSelected() *rowSelectedEvent {
 	e.ActionValue(javascript.JsCode("ui")) // the data id of the row
 	return e
 }
-

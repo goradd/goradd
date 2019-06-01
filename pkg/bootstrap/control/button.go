@@ -1,10 +1,10 @@
 package control
 
 import (
+	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	grctl "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"reflect"
 )
 
@@ -120,7 +120,6 @@ func (b *Button) Serialize(e page.Encoder) (err error) {
 func (b *Button) ΩisSerializer(i page.ControlI) bool {
 	return reflect.TypeOf(b) == reflect.TypeOf(i)
 }
-
 
 func (b *Button) Deserialize(d page.Decoder, p *page.Page) (err error) {
 	if err = b.Button.Deserialize(d, p); err != nil {

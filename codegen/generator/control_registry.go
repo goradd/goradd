@@ -1,8 +1,8 @@
 package generator
 
 import (
-	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/gengen/pkg/maps"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 type ControlType int
@@ -13,11 +13,11 @@ const (
 )
 
 type ConnectorParam struct {
-	Name string
+	Name        string
 	Description string
-	Typ ControlType
-	Template string
-	DoFunc func(c page.ControlI, val interface{})
+	Typ         ControlType
+	Template    string
+	DoFunc      func(c page.ControlI, val interface{})
 }
 
 type ControlGenerator interface {
@@ -51,6 +51,6 @@ func RegisterControlGenerator(c ControlGenerator) {
 func GetControlGenerator(imp string, typ string) ControlGenerator {
 	e := ControlGeneratorRegistryKey{imp, typ}
 
-	d,_ := controlGeneratorRegistry[e]
+	d, _ := controlGeneratorRegistry[e]
 	return d
 }

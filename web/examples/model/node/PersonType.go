@@ -10,14 +10,13 @@ type personTypeNode struct {
 	query.ReferenceNodeI
 }
 
-
 func (n *personTypeNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.Name())
 	return nodes
 }
 
-func (n *personTypeNode) PrimaryKeyNode_() (*query.ColumnNode) {
+func (n *personTypeNode) PrimaryKeyNode_() *query.ColumnNode {
 	return n.ID()
 }
 
@@ -31,7 +30,7 @@ func (n *personTypeNode) Copy_() query.NodeI {
 
 func (n *personTypeNode) ID() *query.ColumnNode {
 
-	cn := query.NewColumnNode (
+	cn := query.NewColumnNode(
 		"goradd",
 		"person_type",
 		"id",
@@ -44,7 +43,7 @@ func (n *personTypeNode) ID() *query.ColumnNode {
 }
 func (n *personTypeNode) Name() *query.ColumnNode {
 
-	cn := query.NewColumnNode (
+	cn := query.NewColumnNode(
 		"goradd",
 		"person_type",
 		"name",

@@ -20,7 +20,6 @@ type ActionParams struct {
 	values actionValues
 }
 
-
 // actionValues is the structure representing the values sent in an ActionParam.
 // Use the helper functions to get to the values.
 type actionValues struct {
@@ -28,7 +27,6 @@ type actionValues struct {
 	Control json.RawMessage `json:"control"`
 	Action  json.RawMessage `json:"action"`
 }
-
 
 // EventValue will attempt to put the Event value into the given object using json.Unmarshal.
 // You should primarily use it to get object or array values out of the Action value. If you are
@@ -76,9 +74,9 @@ func (a *ActionParams) ControlValue(i interface{}) (ok bool, err error) {
 // is not a string.
 func (a *ActionParams) EventValueString() string {
 	v := string(a.values.Event)
-	if len(v) > 1 && v[0] == '"' && v[len(v) - 1] == '"' {
+	if len(v) > 1 && v[0] == '"' && v[len(v)-1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
-		v = v[1:len(v)-1]
+		v = v[1 : len(v)-1]
 	}
 	return string(v)
 }
@@ -86,12 +84,12 @@ func (a *ActionParams) EventValueString() string {
 // EventValueInt returns the event value as an integer. If the value was a floating point value at the client,
 // it will be truncated to an integer. If the value is not numeric, will return 0.
 func (a *ActionParams) EventValueInt() int {
-	return int(a.EventValueFloat())	// json is always sent as float
+	return int(a.EventValueFloat()) // json is always sent as float
 }
 
 // EventValueFloat returns the event value as a float64. If the value was not numeric, it will return 0.
 func (a *ActionParams) EventValueFloat() float64 {
-	f,_ := strconv.ParseFloat(a.EventValueString(), 64)
+	f, _ := strconv.ParseFloat(a.EventValueString(), 64)
 	return f
 }
 
@@ -105,21 +103,21 @@ func (a *ActionParams) EventValueBool() bool {
 // is not a string.
 func (a *ActionParams) ActionValueString() string {
 	v := string(a.values.Action)
-	if len(v) > 1 && v[0] == '"' && v[len(v) - 1] == '"' {
+	if len(v) > 1 && v[0] == '"' && v[len(v)-1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
-		v = v[1:len(v)-1]
+		v = v[1 : len(v)-1]
 	}
 	return string(v)
 }
 
 // ActionValueInt returns the action value as an integer.
 func (a *ActionParams) ActionValueInt() int {
-	return int(a.ActionValueFloat())	// json is always sent as float
+	return int(a.ActionValueFloat()) // json is always sent as float
 }
 
 // ActionValueFloat returns the action value as a float64.
 func (a *ActionParams) ActionValueFloat() float64 {
-	f,_ := strconv.ParseFloat(a.ActionValueString(), 64)
+	f, _ := strconv.ParseFloat(a.ActionValueString(), 64)
 	return f
 }
 
@@ -132,21 +130,21 @@ func (a *ActionParams) ActionValueBool() bool {
 // is not a string.
 func (a *ActionParams) ControlValueString() string {
 	v := string(a.values.Control)
-	if len(v) > 1 && v[0] == '"' && v[len(v) - 1] == '"' {
+	if len(v) > 1 && v[0] == '"' && v[len(v)-1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
-		v = v[1:len(v)-1]
+		v = v[1 : len(v)-1]
 	}
 	return string(v)
 }
 
 // ControlValueInt returns the control value as an int.
 func (a *ActionParams) ControlValueInt() int {
-	return int(a.ControlValueFloat())	// json is always sent as float
+	return int(a.ControlValueFloat()) // json is always sent as float
 }
 
 // ControlValueFloat returns the control value as a float64.
 func (a *ActionParams) ControlValueFloat() float64 {
-	f,_ := strconv.ParseFloat(a.ControlValueString(), 64)
+	f, _ := strconv.ParseFloat(a.ControlValueString(), 64)
 	return f
 }
 
@@ -160,9 +158,8 @@ func actionValueToBool(v string) bool {
 	if v == "" ||
 		v == "0" ||
 		v == "false" {
-			return false
+		return false
 	} else {
 		return true
 	}
 }
-

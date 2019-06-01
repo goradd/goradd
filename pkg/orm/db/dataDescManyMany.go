@@ -17,19 +17,18 @@ type ManyManyReference struct {
 	AssociatedObjectName string
 
 	// GoName is the name used to refer to an object on the other end of the reference.
-	GoName   string
+	GoName string
 	// GoPlural is the name used to refer to the group of objects on the other end of the reference.
 	GoPlural string
 
 	// IsTypeAssociation is true if this is a many-many relationship with a type table
 	IsTypeAssociation bool
 	// Options are the key-value options taken from the Comments in the association table, if there is one.
-	Options           maps.SliceMap
+	Options maps.SliceMap
 
 	// MM is the many-many reference on the other end of the relationship that points back to this one.
 	MM *ManyManyReference
 }
-
 
 func (m *ManyManyReference) ObjName(dd *DatabaseDescription) string {
 	return dd.AssociatedObjectPrefix + m.GoPlural

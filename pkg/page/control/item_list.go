@@ -1,11 +1,11 @@
 package control
 
 import (
+	"fmt"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
-	"fmt"
-	"reflect"
 )
 
 // IDer is an object that can embed a list.
@@ -32,6 +32,7 @@ type ItemListI interface {
 	GetItem(id string) (foundItem ListItemI)
 	GetItemByValue(value interface{}) (id string, foundItem ListItemI)
 	reindex(start int)
+	findItemByValue(value interface{}) (container *ItemList, index int)
 }
 
 // ItemList manages a list of ListItemI list items. ItemList is designed to be embedded in another structure, and will
@@ -55,7 +56,10 @@ func (l *ItemList) AddItem(label string, value ...interface{}) ListItemI {
 	return i
 }
 
-// AddItemAt adds the item at the given index. If the index is negative, it counts from the end. If the index is
+// AddItemAt adds the item at the given index.
+//
+// TODO: This is totally confusing. Fix this
+// If the index is negative, it counts from the end. If the index is
 // -1 or bigger than the number of items, it adds it to the end. If the index is zero, or is negative and smaller than
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
 // hierarchical list, so use sparingly.
@@ -86,11 +90,11 @@ func (l *ItemList) AddListItems(items ...interface{}) {
 	if items == nil {
 		return
 	}
-	for _,item := range items {
+	for _, item := range items {
 		kind := reflect.TypeOf(item).Kind()
 		if kind == reflect.Array || kind == reflect.Slice {
 			listValue := reflect.ValueOf(item)
-			for i := 0;  i < listValue.Len(); i++ {
+			for i := 0; i < listValue.Len(); i++ {
 				itemI := listValue.Index(i).Interface()
 				l.addListItem(itemI)
 			}
@@ -100,7 +104,6 @@ func (l *ItemList) AddListItems(items ...interface{}) {
 	}
 	l.reindex(start)
 }
-
 
 // Private function to add an interface item to the end of the list. Will need to be reindexed eventually.
 func (l *ItemList) addListItem(item interface{}) {
@@ -199,26 +202,41 @@ func (l *ItemList) GetItem(id string) (foundItem ListItemI) {
 // GetItemByValue recursively searches the list to find the item with the given value.
 // It starts with the current list, and if not found, will search in sublists.
 func (l *ItemList) GetItemByValue(value interface{}) (id string, foundItem ListItemI) {
-	if l.items == nil || len(l.items) == 0 {
-		return "", nil
-	}
+	container, index := l.findItemByValue(value)
 
-	for _, foundItem = range l.items {
-		v := foundItem.Value()
-		if v == value {
-			id = foundItem.ID()
-			return
-		}
+	if container != nil {
+		foundItem = container.items[index]
+		id = foundItem.ID()
+		return
 	}
-
-	for _, item := range l.items {
-		id, foundItem = item.GetItemByValue(value)
-		if foundItem != nil {
-			return
-		}
-	}
-
 	return "", nil
+}
+
+// findItemByValue searches for the item by value, and returns the index of the found item,
+// and the ItemList that the item was found in. The returned ItemList could be the current
+// item list, or a sublist.
+func (l *ItemList) findItemByValue(value interface{}) (container *ItemList, index int) {
+	if len(l.items) == 0 {
+		return nil, -1 // no sub items, so its not here
+	}
+	var item ListItemI
+
+	for index, item = range l.items {
+		v := item.Value()
+		if v == value {
+			container = l
+			return
+		}
+	}
+
+	for index, item = range l.items {
+		container, index = item.findItemByValue(value)
+		if container != nil {
+			return
+		}
+	}
+
+	return nil, -1 // not found
 }
 
 // SortIds sorts a list of auto-generated ids in numerical and hierarchical order.

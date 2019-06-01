@@ -20,15 +20,15 @@ const (
 
 type Forms1Panel struct {
 	control.Panel
-	Name   *Textbox
+	Name            *Textbox
 	ChildrenCount   *IntegerTextbox
-	MStatusSingle *RadioButton
-	MStatusMarried *RadioButton
+	MStatusSingle   *RadioButton
+	MStatusMarried  *RadioButton
 	MStatusDivorced *RadioButton
-	Dog *Checkbox
+	Dog             *Checkbox
 
-	SubmitAjax      *Button
-	SubmitServer    *Button
+	SubmitAjax   *Button
+	SubmitServer *Button
 }
 
 func NewForms1Panel(parent page.ControlI) *Forms1Panel {
@@ -74,13 +74,12 @@ func NewForms1Panel(parent page.ControlI) *Forms1Panel {
 	return p
 }
 
-
 func init() {
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Ajax Submit", testForms1AjaxSubmit)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Server Submit", testForms1ServerSubmit)
 }
 
-func testForms1AjaxSubmit(t *browsertest.TestForm)  {
+func testForms1AjaxSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").String()
 	f := t.LoadUrl(myUrl)
 
@@ -89,7 +88,7 @@ func testForms1AjaxSubmit(t *browsertest.TestForm)  {
 	t.Done("Complete")
 }
 
-func testForms1ServerSubmit(t *browsertest.TestForm)  {
+func testForms1ServerSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").String()
 	f := t.LoadUrl(myUrl)
 
@@ -106,4 +105,3 @@ func testForms1Submit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) 
 	t.Click(btn)
 
 }
-

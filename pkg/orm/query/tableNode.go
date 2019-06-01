@@ -43,7 +43,7 @@ func (n *TableNode) copy() NodeI {
 		dbKey:      n.dbKey,
 		dbTable:    n.dbTable,
 		goPropName: n.goPropName,
-		nodeAlias: nodeAlias{n.alias},
+		nodeAlias:  nodeAlias{n.alias},
 	}
 }
 

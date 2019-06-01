@@ -8,24 +8,23 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/web/examples/controls"
-	. "github.com/goradd/goradd/web/examples/model"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"github.com/goradd/goradd/web/examples/controls"
+	. "github.com/goradd/goradd/web/examples/model"
 )
 
 type TableProxyPanel struct {
 	Panel
 
-	Table1	*PaginatedTable
-	Pager1 *DataPager
-	Pxy *Proxy
+	Table1       *PaginatedTable
+	Pager1       *DataPager
+	Pxy          *Proxy
 	ProjectPanel *ProjectPanel
 }
-
 
 func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableProxyPanel{}
@@ -60,7 +59,7 @@ func (p *TableProxyPanel) BindData(ctx context.Context, s data.DataManagerI) {
 
 }
 
-func (f *TableProxyPanel) 	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (f *TableProxyPanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	// Since we only have one custom column, we know what we are getting.
 	project := data.(*Project)
 	id := crypt.SessionEncryptUrlValue(ctx, project.ID()) // Since this is a database id, lets encrypt it for extra security
@@ -86,7 +85,6 @@ func (p *TableProxyPanel) Action(ctx context.Context, a page.ActionParams) {
 		}
 	}
 }
-
 
 type ProjectPanel struct {
 	Panel

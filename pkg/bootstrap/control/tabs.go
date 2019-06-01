@@ -2,11 +2,11 @@ package control
 
 import (
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
-	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/javascript"
 )
 
 // A Tabs pane draws its child controls as a set of tabs. The labels of the children serve as the tab labels.
@@ -34,5 +34,3 @@ func (c *Tabs) ΩDrawingAttributes() *html.Attributes {
 	a.SetDataAttribute("grctl", "bs-tabs")
 	return a
 }
-
-

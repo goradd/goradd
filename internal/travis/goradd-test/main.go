@@ -19,7 +19,6 @@ import (
 	_ "goradd-project/gen" // Code-generated forms
 )
 
-
 func main() {
 	var err error
 
@@ -36,4 +35,3 @@ func main() {
 	// Now launch a browser with this address:  http://localhost:8000/test?all=1
 
 }
-

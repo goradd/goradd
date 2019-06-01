@@ -27,7 +27,6 @@ type OneTimeTemplateI interface {
 	GenerateOnce(codegen Codegen, dd *db.DatabaseDescription, buf *bytes.Buffer)
 	FileName(key string) string
 	Overwrite() bool
-
 }
 
 //type TemplateFunc func(codegen *Codegen, t *TableType, buf *bytes.Buffer)
@@ -50,4 +49,3 @@ var OneTimeTemplates []OneTimeTemplateI
 func AddOneTimeTemplate(t OneTimeTemplateI) {
 	OneTimeTemplates = append(OneTimeTemplates, t)
 }
-

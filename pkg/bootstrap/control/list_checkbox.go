@@ -27,7 +27,7 @@ type CheckboxListI interface {
 // scrolling list much like a standard html select list.
 type CheckboxList struct {
 	control.CheckboxList
-	isInline      bool
+	isInline bool
 }
 
 func NewCheckboxList(parent page.ControlI, id string) *CheckboxList {
@@ -52,16 +52,16 @@ func (l *CheckboxList) SetIsInline(i bool) {
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *CheckboxList) ΩDrawingAttributes() *html.Attributes {
-	a := l.Control.ΩDrawingAttributes()	// skip default checkbox list attributes
+	a := l.Control.ΩDrawingAttributes() // skip default checkbox list attributes
 	a.SetDataAttribute("grctl", "bs-checkboxlist")
 	/*
-	a.AddAttributeValue("gr-cbl")
+		a.AddAttributeValue("gr-cbl")
 
-	if l.isScrolling {
-		a.AddAttributeValue("gr-cbl-scroller")
-	} else {
-		a.AddAttributeValue("gr-cbl-table")
-	}*/
+		if l.isScrolling {
+			a.AddAttributeValue("gr-cbl-scroller")
+		} else {
+			a.AddAttributeValue("gr-cbl-table")
+		}*/
 	return a
 }
 
@@ -76,14 +76,14 @@ func (l *CheckboxList) getItemsHtml() (h string) {
 
 	var order = make([]int, len(items), len(items))
 
-	rowCount := (len(items) - 1) / l.ColumnCount() + 1
+	rowCount := (len(items)-1)/l.ColumnCount() + 1
 	if l.Direction() == VerticalItemDirection {
 
 		for i := 0; i < len(items); i++ {
 			row := i % rowCount
 			col := i / rowCount
 
-			order[i] = row * l.ColumnCount() + col
+			order[i] = row*l.ColumnCount() + col
 		}
 	} else {
 		for i := 0; i < len(items); i++ {
@@ -107,7 +107,6 @@ func (l *CheckboxList) getItemsHtml() (h string) {
 	return
 }
 
-
 func (l *CheckboxList) renderItem(item control.ListItemI) (h string) {
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
@@ -128,4 +127,3 @@ func (l *CheckboxList) renderItem(item control.ListItemI) (h string) {
 	h = html.RenderTag("div", attributes, h)
 	return
 }
-

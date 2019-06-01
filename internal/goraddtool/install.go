@@ -13,11 +13,11 @@ import (
 	"path/filepath"
 )
 
-var dependencies = []string {
-	"github.com/goradd/got/...",				// Template processor
-	"golang.org/x/tools/cmd/goimports",		// For auto-fixing of import declarations
-	"github.com/goradd/gofile/...",				// For deployment
-	"github.com/goradd/gengen/...",				// For creation of generics
+var dependencies = []string{
+	"github.com/goradd/got/...",        // Template processor
+	"golang.org/x/tools/cmd/goimports", // For auto-fixing of import declarations
+	"github.com/goradd/gofile/...",     // For deployment
+	"github.com/goradd/gengen/...",     // For creation of generics
 }
 
 // install will copy the project and tmp directories to the cwd
@@ -85,7 +85,7 @@ func depInstall() {
 		log.Fatal("could not change to the goradd-project directory: " + err.Error())
 	}
 
-	for _,dep := range dependencies {
+	for _, dep := range dependencies {
 		var res []byte
 		fmt.Print("Installing " + dep + " ")
 		res, err = sys2.ExecuteShellCommand("go get " + dep)
@@ -98,4 +98,3 @@ func depInstall() {
 		fmt.Println(string(res))
 	}
 }
-

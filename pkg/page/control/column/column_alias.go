@@ -2,8 +2,8 @@ package column
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/page/control"
 )
 
 type AliasGetter interface {
@@ -25,7 +25,6 @@ func NewAliasColumn(alias string) *AliasColumn {
 	i.Init(alias)
 	return &i
 }
-
 
 func (c *AliasColumn) Init(alias string) {
 	c.ColumnBase.Init(c)
@@ -63,7 +62,7 @@ type AliasTexter struct {
 }
 
 func (t AliasTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
-	if v,ok := data.(AliasGetter); !ok {
+	if v, ok := data.(AliasGetter); !ok {
 		return ""
 	} else {
 		a := v.GetAlias(t.Alias)

@@ -21,7 +21,7 @@ func NewBuilder(path string) *Builder {
 
 func NewBuilderFromUrl(u url2.URL) *Builder {
 	b := &Builder{url: u}
-	b.values,_ = url2.ParseQuery(u.RawQuery)
+	b.values, _ = url2.ParseQuery(u.RawQuery)
 	return b
 }
 
@@ -46,7 +46,6 @@ func (u *Builder) ClearFragment() *Builder {
 	u.url.Fragment = ""
 	return u
 }
-
 
 // String returns the encoded URL.
 func (u *Builder) String() string {

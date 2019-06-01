@@ -159,7 +159,7 @@ func (a *Attributes) String() string {
 func (a *Attributes) Override(i maps.StringMapI) *Attributes {
 	curStyles := a.StyleMap()
 	newStyles := NewStyle()
-	_,_ = newStyles.SetTo(i.Get("style"))
+	_, _ = newStyles.SetTo(i.Get("style"))
 	attr := a.Copy()
 	attr.Merge(i)
 	curStyles.Merge(newStyles)
@@ -200,7 +200,6 @@ func (a *Attributes) SetID(i string) *Attributes {
 func (a *Attributes) ID() string {
 	return a.Get("id")
 }
-
 
 // SetClass sets the class attribute to the value given.
 // If you prefix the value with "+ " the given value will be appended to the end of the current class list.
@@ -440,7 +439,6 @@ func (a *Attributes) SetStylesTo(s string) *Attributes {
 	a.StringSliceMap.Set("style", styles.String())
 	return a
 }
-
 
 // GetStyle gives you the value of a single style attribute value. If you want all the attributes as a style string, use
 // StyleString().

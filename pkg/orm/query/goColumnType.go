@@ -4,7 +4,7 @@ package query
 type GoColumnType int
 
 const (
-	ColTypeUnknown    GoColumnType = iota
+	ColTypeUnknown GoColumnType = iota
 	ColTypeBytes
 	ColTypeString
 	ColTypeInteger
@@ -20,17 +20,28 @@ const (
 // String returns the constant type name as a string
 func (g GoColumnType) String() string {
 	switch g {
-	case ColTypeUnknown: return "ColTypeUnknown"
-	case ColTypeBytes: return "ColTypeBytes"
-	case ColTypeString:return "ColTypeString"
-	case ColTypeInteger: return "ColTypeInteger"
-	case ColTypeUnsigned: return "ColTypeUnsigned"
-	case ColTypeInteger64: return "ColTypeInteger64"
-	case ColTypeUnsigned64: return "ColTypeUnsigned64"
-	case ColTypeDateTime: return "ColTypeDateTime"
-	case ColTypeFloat: return "ColTypeFloat" // always internally represent with max bits
-	case ColTypeDouble: return "ColTypeDouble" // always internally represent with max bits
-	case ColTypeBool: return "ColTypeBool" // always internally represent with max bits
+	case ColTypeUnknown:
+		return "ColTypeUnknown"
+	case ColTypeBytes:
+		return "ColTypeBytes"
+	case ColTypeString:
+		return "ColTypeString"
+	case ColTypeInteger:
+		return "ColTypeInteger"
+	case ColTypeUnsigned:
+		return "ColTypeUnsigned"
+	case ColTypeInteger64:
+		return "ColTypeInteger64"
+	case ColTypeUnsigned64:
+		return "ColTypeUnsigned64"
+	case ColTypeDateTime:
+		return "ColTypeDateTime"
+	case ColTypeFloat:
+		return "ColTypeFloat" // always internally represent with max bits
+	case ColTypeDouble:
+		return "ColTypeDouble" // always internally represent with max bits
+	case ColTypeBool:
+		return "ColTypeBool" // always internally represent with max bits
 	}
 	return ""
 }
@@ -38,17 +49,28 @@ func (g GoColumnType) String() string {
 // GoType returns the actual GO type as go code
 func (g GoColumnType) GoType() string {
 	switch g {
-	case ColTypeUnknown: return "Unknown"
-	case ColTypeBytes: return "[]byte"
-	case ColTypeString:return "string"
-	case ColTypeInteger: return "int"
-	case ColTypeUnsigned: return "uint"
-	case ColTypeInteger64: return "int64"
-	case ColTypeUnsigned64: return "uint64"
-	case ColTypeDateTime: return "datetime.DateTime"
-	case ColTypeFloat: return "float32" // always internally represent with max bits
-	case ColTypeDouble: return "float64" // always internally represent with max bits
-	case ColTypeBool: return "bool" // always internally represent with max bits
+	case ColTypeUnknown:
+		return "Unknown"
+	case ColTypeBytes:
+		return "[]byte"
+	case ColTypeString:
+		return "string"
+	case ColTypeInteger:
+		return "int"
+	case ColTypeUnsigned:
+		return "uint"
+	case ColTypeInteger64:
+		return "int64"
+	case ColTypeUnsigned64:
+		return "uint64"
+	case ColTypeDateTime:
+		return "datetime.DateTime"
+	case ColTypeFloat:
+		return "float32" // always internally represent with max bits
+	case ColTypeDouble:
+		return "float64" // always internally represent with max bits
+	case ColTypeBool:
+		return "bool" // always internally represent with max bits
 	}
 	return ""
 }

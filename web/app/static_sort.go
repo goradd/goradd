@@ -26,4 +26,3 @@ func (r sortStringbykeylen) Less(i, j int) bool {
 	// order longest to shortest
 	return len(o.GetKeyAt(i)) > len(o.GetKeyAt(j))
 }
-

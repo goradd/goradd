@@ -230,7 +230,7 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 	}
 	a := c.this().ColTagAttributes()
 	if c.id != "" {
-		a.Set("id", c.this().ParentTable().ID() + "_" + c.id) // so that actions can get routed to a column
+		a.Set("id", c.this().ParentTable().ID()+"_"+c.id) // so that actions can get routed to a column
 	}
 	if c.span != 1 {
 		a.Set("span", strconv.Itoa(c.span))
@@ -336,9 +336,9 @@ func (c *ColumnBase) RenderSortButton(labelHtml string) string {
 	case NotSorted:
 		labelHtml += ` <i class="fa fa-sort fa-lg"></i>`
 	case SortAscending:
-		labelHtml +=  ` <i class="fa fa-sort-asc fa-lg"></i>`
+		labelHtml += ` <i class="fa fa-sort-asc fa-lg"></i>`
 	case SortDescending:
-		labelHtml +=  ` <i class="fa fa-sort-desc fa-lg"></i>`
+		labelHtml += ` <i class="fa fa-sort-desc fa-lg"></i>`
 	}
 
 	return fmt.Sprintf(`<button onclick="$j('#%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
@@ -363,4 +363,3 @@ func (c *ColumnBase) MarshalState(m maps.Setter) {}
 
 // UnmarshalState is an internal function to restore the state of the control.
 func (c *ColumnBase) UnmarshalState(m maps.Loader) {}
-

@@ -36,7 +36,7 @@ func GenerateRandomString(s int) (string, error) {
 // which is currently considered secure. Note that this is due to our use of GCM. When using CBC,
 // AES-256 is considered secure, but GCM is better and faster.
 // Errors will panic, since they are caused by some kind of system wide failure or a bad key size.
-func Encrypt(data []byte, key []byte) ([]byte) {
+func Encrypt(data []byte, key []byte) []byte {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(err)
@@ -68,4 +68,3 @@ func Decrypt(data []byte, key []byte) (plaintext []byte, err error) {
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	return gcm.Open(nil, nonce, ciphertext, nil)
 }
-

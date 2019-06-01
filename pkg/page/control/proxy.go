@@ -155,8 +155,8 @@ func (p *Proxy) ButtonHtml(label string,
 	rawHtml bool,
 ) string {
 	a := html.NewAttributes()
-	a.Set("onclick", "return false") // To prevent a return from activating the button
-	a.Set("type", "submit") // To support non-javascript situations
+	a.Set("onclick", "return false")  // To prevent a return from activating the button
+	a.Set("type", "submit")           // To support non-javascript situations
 	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts
 	buttonValue := p.ID() + "_" + actionValue
 	a.Set("value", buttonValue) // needed for non-javascript posts

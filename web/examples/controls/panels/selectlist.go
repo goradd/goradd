@@ -12,17 +12,17 @@ import (
 
 type SelectListPanel struct {
 	Panel
-	SingleSelect   *SelectList
-	SingleSelectWithSize   *SelectList
-	RadioList1   *RadioList
-	RadioList2   *RadioList
-	RadioList3   *RadioList
+	SingleSelect         *SelectList
+	SingleSelectWithSize *SelectList
+	RadioList1           *RadioList
+	RadioList2           *RadioList
+	RadioList3           *RadioList
 
 	MultiSelect   *MultiselectList
-	CheckboxList1   *CheckboxList
+	CheckboxList1 *CheckboxList
 
-	SubmitAjax      *Button
-	SubmitServer    *Button
+	SubmitAjax   *Button
+	SubmitServer *Button
 }
 
 func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
@@ -90,7 +90,6 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 
 }
 
-
 func init() {
 	browsertest.RegisterTestFunction("Select List Ajax Submit", testSelectListAjaxSubmit)
 	browsertest.RegisterTestFunction("Select List Server Submit", testSelectListServerSubmit)
@@ -98,7 +97,7 @@ func init() {
 }
 
 // testPlain exercises the plain text box
-func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
+func testSelectListAjaxSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").String()
 	f := t.LoadUrl(myUrl)
 
@@ -107,7 +106,7 @@ func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
 	t.Done("Complete")
 }
 
-func testSelectListServerSubmit(t *browsertest.TestForm)  {
+func testSelectListServerSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").String()
 	f := t.LoadUrl(myUrl)
 
@@ -128,23 +127,22 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 	radio1 := f.Page().GetControl("radioList1").(*RadioList)
 	radio2 := f.Page().GetControl("radioList2").(*RadioList)
 
-	id,_ := select2.GetItemByValue(2)
+	id, _ := select2.GetItemByValue(2)
 	t.ChangeVal("selectListWithSize", id)
 
 	t.Click(btn)
 
 	t.AssertEqual(true, t.HasClass("singleSelectList_ctl", "error"))
 
-
 	t.AssertEqual(2, select2.IntValue())
 
-	id,_ = select1.GetItemByValue(1)
+	id, _ = select1.GetItemByValue(1)
 	t.ChangeVal("singleSelectList", id)
-	id,_ = select2.GetItemByValue(2)
+	id, _ = select2.GetItemByValue(2)
 	t.ChangeVal("selectListWithSize", id)
-	id,_ = radio1.GetItemByValue(3)
+	id, _ = radio1.GetItemByValue(3)
 	t.CheckGroup("radioList1", id)
-	id,_ = radio2.GetItemByValue(4)
+	id, _ = radio2.GetItemByValue(4)
 	t.CheckGroup("radioList2", id)
 
 	t.Click(btn)
@@ -175,4 +173,4 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 
 	t.Click(btn)
 
- */
+*/

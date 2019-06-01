@@ -64,7 +64,6 @@ func (i *IntegerTextbox) SetInt(v int) *IntegerTextbox {
 	return i
 }
 
-
 func (i *IntegerTextbox) Value() interface{} {
 	return i.Int()
 }
@@ -80,7 +79,6 @@ func (i *IntegerTextbox) Int64() int64 {
 	i64, _ := strconv.ParseInt(t, 10, 0)
 	return i64
 }
-
 
 type IntValidator struct {
 	Message string

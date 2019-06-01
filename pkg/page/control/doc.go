@@ -7,4 +7,3 @@
 //
 // Controls in this package should function and be usable even if javascript is turned off.
 package control
-

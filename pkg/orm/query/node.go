@@ -15,7 +15,6 @@ const (
 	Bit
 )*/
 
-
 // NodeType indicates the type of node, which saves us from having to use reflection to determine this
 type NodeType int
 
@@ -23,7 +22,7 @@ const (
 	UnknownNodeType NodeType = iota
 	TableNodeType
 	ColumnNodeType
-	ReferenceNodeType  // forward reference from a foreign key
+	ReferenceNodeType // forward reference from a foreign key
 	ManyManyNodeType
 	ReverseReferenceNodeType
 	ValueNodeType
@@ -96,7 +95,6 @@ func (c *nodeCondition) setCondition(cond NodeI) {
 func (c *nodeCondition) getCondition() NodeI {
 	return c.condition
 }
-
 
 // NodeI is the interface that all nodes must satisfy. A node is a representation of an object or a relationship
 // between objects in a database that we use to create a query. It lets us abstract the structure of a database
@@ -237,7 +235,6 @@ func NodeIsTableNodeI(n NodeI) bool {
 		t == ManyManyNodeType
 }
 
-
 // Convenience method to see if a node is a reference type node. This is essentially table type nodes
 // excluding an actual TableNode, since table nodes always start at the top level.
 func NodeIsReferenceI(n NodeI) bool {
@@ -249,9 +246,8 @@ func NodeIsReferenceI(n NodeI) bool {
 
 // Return the primary key of a node, if it has a primary key. Otherwise return nil.
 func NodePrimaryKey(n NodeI) NodeI {
-	if tn,ok := n.(TableNodeI); ok {
+	if tn, ok := n.(TableNodeI); ok {
 		return tn.PrimaryKeyNode_()
 	}
 	return nil
 }
-

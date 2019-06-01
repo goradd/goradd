@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-
 type MultiselectListI interface {
 	page.ControlI
 	ItemListI
@@ -210,7 +209,7 @@ func (l *MultiselectList) ΩMarshalState(m maps.Setter) {
 func (l *MultiselectList) ΩUnmarshalState(m maps.Loader) {
 	l.selectedIds = map[string]bool{}
 
-	if s,ok := m.Load("sel"); ok {
+	if s, ok := m.Load("sel"); ok {
 		if ids, ok := s.([]string); ok {
 			for _, id := range ids {
 				l.selectedIds[id] = true

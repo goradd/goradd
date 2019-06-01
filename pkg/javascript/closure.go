@@ -7,7 +7,7 @@ import (
 )
 
 // Closure represents a javascript function pointer that can be called by javascript at a later time.
-func Closure(body string, args... string) Ωclosure {
+func Closure(body string, args ...string) Ωclosure {
 	return Ωclosure{body, args}
 }
 
@@ -44,7 +44,7 @@ func (c Ωclosure) MarshalJSON() (buf []byte, err error) {
 
 // ClosureCall represents the result of a javascript closure that is called immediately
 // context will become the "this" variable inside the closure when called.
-func ClosureCall(body string, context string, args... string) ΩclosureCall {
+func ClosureCall(body string, context string, args ...string) ΩclosureCall {
 	return ΩclosureCall{body, context, args}
 }
 

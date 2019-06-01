@@ -9,4 +9,3 @@ package build
 
 // Copy your static files
 //go:generate gofile copy -x scss:less goradd-project/web/html/* goradd-project/../../deploy/html
-

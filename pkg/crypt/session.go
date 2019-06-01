@@ -18,8 +18,8 @@ func SessionEncrypt(ctx context.Context, value []byte) []byte {
 	var salt []byte
 	var err error
 	if i := session.Get(ctx, goradd.SessionSalt); i == nil {
-		if salt,err = GenerateRandomBytes(16); err != nil {
-			panic (err)
+		if salt, err = GenerateRandomBytes(16); err != nil {
+			panic(err)
 		}
 		session.Set(ctx, goradd.SessionSalt, salt)
 	} else {
@@ -64,12 +64,12 @@ func SessionEncryptUrlValue(ctx context.Context, value string) string {
 // SessionDecryptUrlValue decrypts the give value that was encrypted using SessionEncryptUrlValue.
 // If there was a problem, an empty string is returned.
 func SessionDecryptUrlValue(ctx context.Context, encryptedValue string) string {
-	v,err := base64.URLEncoding.DecodeString(encryptedValue)
+	v, err := base64.URLEncoding.DecodeString(encryptedValue)
 	if err != nil {
 		log.Warning("Bad URL Encoding in SessionDecryptUrlValue")
 		return ""
 	}
-	return string( SessionDecrypt(ctx, []byte(v)))
+	return string(SessionDecrypt(ctx, []byte(v)))
 }
 
 // SessionEncryptAttributeValue encrypts a value so that it can be used as a value in an html attribute.
@@ -85,7 +85,7 @@ func SessionEncryptAttributeValue(ctx context.Context, value string) string {
 // If there was a problem, an empty string is returned.
 func SessionDecryptAttributeValue(ctx context.Context, encryptedValue string) string {
 	dst := make([]byte, len(encryptedValue))
-	ndst,_,err := ascii85.Decode(dst, []byte(encryptedValue), true)
+	ndst, _, err := ascii85.Decode(dst, []byte(encryptedValue), true)
 	if err != nil {
 		log.Warning(err)
 		return ""

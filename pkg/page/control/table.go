@@ -5,13 +5,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
-	buf3 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
+	buf3 "github.com/goradd/goradd/pkg/pool"
 	html2 "html"
 	"strconv"
 )
@@ -54,7 +54,6 @@ type TableFooterRowAttributer interface {
 	// TableFooterRowAttributes returns attributes to use for the particular footer row indicated
 	TableFooterRowAttributes(row int) *html.Attributes
 }
-
 
 // Table is a goradd control that outputs a dynamic HTML table object, with table, tr, th and td tags,
 // as well as optional col, thead, and tfoot tags.
@@ -156,7 +155,7 @@ func (t *Table) ΩDrawTag(ctx context.Context) string {
 		t.GetData(ctx, t)
 		defer t.ResetData()
 	}
-	for _,c := range t.columns {
+	for _, c := range t.columns {
 		c.PreRender()
 	}
 	return t.Control.ΩDrawTag(ctx)
@@ -549,24 +548,22 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 	return ret
 }
 
-
 // ΩMarshalState is an internal function to save the state of the control
 func (t *Table) ΩMarshalState(m maps.Setter) {
 	m.Set("sortColumns", t.sortColumns)
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		col.MarshalState(m)
 	}
 }
 
 // ΩUnmarshalState is an internal function to restore the state of the control
 func (t *Table) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("sortColumns"); ok {
+	if v, ok := m.Load("sortColumns"); ok {
 		if s, ok := v.([]string); ok {
 			t.sortColumns = s
 		}
 	}
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		col.UnmarshalState(m)
 	}
 }
-

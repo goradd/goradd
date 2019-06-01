@@ -32,7 +32,7 @@ type Encoder interface {
 // Decoder defines objects that can be decoded from a pagestate. If the object does not implement this, we will look for GobDecode support.
 type Decoder interface {
 	Decode(v interface{}) error
-	DecodeControl(p *Page) (ControlI,error)
+	DecodeControl(p *Page) (ControlI, error)
 }
 
 // Serializable defines the interface that allows an object to be encodable using a pre-set encoder. This saves time
@@ -65,7 +65,6 @@ func (e GobPageEncoder) NewDecoder(b *bytes.Buffer) Decoder {
 	return &GobDeserializer{gob.NewDecoder(b)}
 }
 
-
 // Serialize sends
 func (e GobSerializer) Encode(v interface{}) (err error) {
 	switch v2 := v.(type) {
@@ -74,7 +73,7 @@ func (e GobSerializer) Encode(v interface{}) (err error) {
 	case *Page:
 		return v2.Encode(e)
 	case Serializable:
-		if err = e.Encoder.Encode(&v2); err !=nil { // essentially encodes an empty object
+		if err = e.Encoder.Encode(&v2); err != nil { // essentially encodes an empty object
 			return
 		}
 		return v2.Serialize(e)
@@ -84,8 +83,8 @@ func (e GobSerializer) Encode(v interface{}) (err error) {
 	return nil
 }
 
-
 type ControlLoc int8
+
 const (
 	ControlIsNil ControlLoc = iota
 	ControlIsHere
@@ -122,7 +121,6 @@ func (e GobSerializer) EncodeControl(c ControlI) (err error) {
 		if err = e.Encoder.Encode(&c); err != nil { // essentially encodes an empty control
 			return
 		}
-
 
 		if !c.ΩisSerializer(c) {
 			v := vi.Elem()
@@ -162,13 +160,12 @@ func (e GobSerializer) EncodeControl(c ControlI) (err error) {
 	return nil
 }
 
-
 func (e GobDeserializer) Decode(v interface{}) (err error) {
 	switch v2 := v.(type) {
 	case *ControlI:
-		panic ("call DecodeControl instead")
+		panic("call DecodeControl instead")
 	case ControlI:
-		panic ("call DecodeControl instead with the address of a ControlI var")
+		panic("call DecodeControl instead with the address of a ControlI var")
 	case *Page:
 		if err = v2.Decode(e); err != nil {
 			return
@@ -236,7 +233,7 @@ func (e GobDeserializer) DecodeControl(p *Page) (c ControlI, err error) {
 			}
 			c.control().encoded = true
 		} else {
-			if err = c.Deserialize(e,p); err != nil {
+			if err = c.Deserialize(e, p); err != nil {
 				return
 			}
 		}
@@ -247,4 +244,3 @@ func (e GobDeserializer) DecodeControl(p *Page) (c ControlI, err error) {
 	}
 	return
 }
-

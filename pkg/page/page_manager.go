@@ -10,7 +10,6 @@ import (
 
 var pageManager = newPageManager() // Create a new singleton page manager.
 
-
 type FormCreationFunction func(context.Context) FormI
 
 type PageManagerI interface {
@@ -74,7 +73,6 @@ func (m *PageManager) HasPage(pageStateId string) bool {
 	return pageCache.Has(pageStateId)
 }
 
-
 func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 	var pageStateId string
 
@@ -119,7 +117,7 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 			case string:
 				err := newRunError(ctx, v)
 				m.makeErrorResponse(ctx, err, "", buf)
-			case *HttpError:	// A kind of http panic that just returns a response code and headers
+			case *HttpError: // A kind of http panic that just returns a response code and headers
 				headers = v.headers
 				httpErrCode = v.errCode
 			default:
@@ -166,7 +164,7 @@ func (m *PageManager) makeErrorResponse(ctx context.Context,
 
 // HttpError represents an error response to a http request.
 type HttpError struct {
-	headers map[string] string
+	headers map[string]string
 	errCode int
 }
 

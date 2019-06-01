@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	DivWrapper = "bootstrap.Div"
+	DivWrapper       = "bootstrap.Div"
 	FormGroupWrapper = "bootstrap.FormGroup"
-	FieldsetWrapper = "bootstrap.Fieldset"
+	FieldsetWrapper  = "bootstrap.Fieldset"
 )
 
 // DivWrapperType is a wrapper similar to a form group, but simply without the FormGroup class added. Use this for
@@ -106,7 +106,7 @@ func (w *DivWrapperType) ΩAjaxRender(ctx context.Context, response *page.Respon
 				class = "invalid-feedback"
 			}
 		}
-		response.ExecuteControlCommand(c.ID() + "_err", "attr", "class", class)
+		response.ExecuteControlCommand(c.ID()+"_err", "attr", "class", class)
 	}
 	w.LabelWrapperType.ΩAjaxRender(ctx, response, c)
 }
@@ -120,7 +120,6 @@ func (w *DivWrapperType) ΩModifyDrawingAttributes(c page.ControlI, attr *html.A
 	}
 }
 
-
 type FormGroupWrapperType struct {
 	DivWrapperType
 }
@@ -130,7 +129,7 @@ func NewFormGroupWrapper() *FormGroupWrapperType {
 	return w
 }
 
-func (w *FormGroupWrapperType)ΩNewI() page.WrapperI {
+func (w *FormGroupWrapperType) ΩNewI() page.WrapperI {
 	return NewFormGroupWrapper()
 }
 
@@ -142,7 +141,6 @@ func (w *FormGroupWrapperType) ΩWrap(ctx context.Context, ctrl page.ControlI, h
 func (w FormGroupWrapperType) TypeName() string {
 	return FormGroupWrapper
 }
-
 
 type FieldsetWrapperType struct {
 	page.LabelWrapperType
@@ -171,10 +169,8 @@ func (w *FieldsetWrapperType) TypeName() string {
 	return FieldsetWrapper
 }
 
-
 func init() {
 	page.RegisterControlWrapper(DivWrapper, &DivWrapperType{})
 	page.RegisterControlWrapper(FormGroupWrapper, &FormGroupWrapperType{})
 	page.RegisterControlWrapper(FieldsetWrapper, &FieldsetWrapperType{})
 }
-

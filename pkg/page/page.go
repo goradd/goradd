@@ -49,7 +49,7 @@ type DrawI interface {
 type Page struct {
 	// BodyAttributes contains the attributes that will be output with the body tag. It should be set before the
 	// form draws, like in the AddHeadTags function.
-	BodyAttributes  string
+	BodyAttributes string
 
 	stateId      string // Id in cache of the pagestate. Needs to be output by form.
 	renderStatus PageRenderStatus
@@ -63,7 +63,7 @@ type Page struct {
 	responseHeader  map[string]string // queues up anything to be sent in the response header
 	responseError   int
 
-	language 	    int		// Don't serialize this. This is a cached version of what the session holds.
+	language int // Don't serialize this. This is a cached version of what the session holds.
 }
 
 // Init initializes the page. Should be called by a form just after creating Page.
@@ -79,7 +79,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 	grCtx := GetContext(ctx)
 
 	if grCtx.err != nil {
-		panic(grCtx.err)	// An error occurred during unpacking of the context, so report that now
+		panic(grCtx.err) // An error occurred during unpacking of the context, so report that now
 	}
 
 	if err = p.Form().Run(ctx); err != nil {
@@ -171,15 +171,15 @@ func (p *Page) GenerateControlID(id string) string {
 	if id != "" {
 		if strings.Contains(id, "_") {
 			// underscores are used by the action system to route actions to sub items of the control.
-			panic ("You cannot add a control with an underscore in the name. Use a hyphen instead.")
+			panic("You cannot add a control with an underscore in the name. Use a hyphen instead.")
 		}
 		if p.idPrefix != "" {
-			if !strings.HasPrefix(id, p.idPrefix) {	// subcontrols might already have this prefix
+			if !strings.HasPrefix(id, p.idPrefix) { // subcontrols might already have this prefix
 				id = p.idPrefix + id
 			}
 		}
 		if p.GetControl(id) != nil {
-			panic (fmt.Sprintf(`A control with id "%s" is being added a second time to the page. Ids must be unique on the page.`, id))
+			panic(fmt.Sprintf(`A control with id "%s" is being added a second time to the page. Ids must be unique on the page.`, id))
 		} else {
 			return id
 		}
@@ -302,13 +302,13 @@ func (p *Page) UnmarshalJSON(data []byte) (err error) {
 }
 
 type pageEncoded struct {
-	StateId      string // Id in cache of the pagestate. Needs to be output by form.
-	Path         string // The path to the page. FormBase needs to know this so it can make the action tag
-	IdPrefix     string // For creating unique ids for the app
-	IdCounter       int
-	Title           string // page title to draw in head tag
-	HtmlHeaderTags  []html.VoidTag
-	BodyAttributes  string
+	StateId        string // Id in cache of the pagestate. Needs to be output by form.
+	Path           string // The path to the page. FormBase needs to know this so it can make the action tag
+	IdPrefix       string // For creating unique ids for the app
+	IdCounter      int
+	Title          string // page title to draw in head tag
+	HtmlHeaderTags []html.VoidTag
+	BodyAttributes string
 
 	FormID string // to record the form
 
@@ -318,12 +318,12 @@ type pageEncoded struct {
 // TODO: serialization is not completely implemented yet
 func (p *Page) Encode(e Encoder) (err error) {
 	s := pageEncoded{
-		StateId:           p.stateId,
-		IdPrefix:          p.idPrefix,
-		Title:             p.title,
-		HtmlHeaderTags:    p.htmlHeaderTags,
-		BodyAttributes:    p.BodyAttributes,
-		FormID:			   p.form.ID(),
+		StateId:        p.stateId,
+		IdPrefix:       p.idPrefix,
+		Title:          p.title,
+		HtmlHeaderTags: p.htmlHeaderTags,
+		BodyAttributes: p.BodyAttributes,
+		FormID:         p.form.ID(),
 	}
 
 	if err = e.Encode(s); err != nil {
@@ -373,7 +373,7 @@ func (p *Page) Decode(d Decoder) (err error) {
 	p.BodyAttributes = s.BodyAttributes
 
 	var ci ControlI
-	if ci,err = d.DecodeControl(p); err != nil {
+	if ci, err = d.DecodeControl(p); err != nil {
 		return
 	}
 	p.form = ci.(FormI)
@@ -384,8 +384,8 @@ func (p *Page) Decode(d Decoder) (err error) {
 		return
 	}
 
-	for i:=0; i<count;i++ {
-		if ci,err = d.DecodeControl(p); err != nil { // the process of decoding will automatically add to the control registry, so no need to do anything with the result.
+	for i := 0; i < count; i++ {
+		if ci, err = d.DecodeControl(p); err != nil { // the process of decoding will automatically add to the control registry, so no need to do anything with the result.
 			return
 		}
 	}
@@ -419,8 +419,8 @@ func (p *Page) ClearResponseHeaders() {
 // that is not a big deal.
 func (p *Page) PushRedraw() {
 	channel := "form-" + p.stateId
-	if messageServer.HasChannel(channel) {	// If we call this while launching a page, the channel isn't created yet, but the page is going to be drawn, so its ok.
-		messageServer.SendMessage(channel, map[string]interface{}{"grup":true})
+	if messageServer.HasChannel(channel) { // If we call this while launching a page, the channel isn't created yet, but the page is going to be drawn, so its ok.
+		messageServer.SendMessage(channel, map[string]interface{}{"grup": true})
 	} else {
 		log.FrameworkDebug("Pushing redraw with no channel.")
 	}

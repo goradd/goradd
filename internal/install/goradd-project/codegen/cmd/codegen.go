@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/goradd/goradd/codegen/generator"
-	_ "github.com/goradd/goradd/pkg/page/control/generator"
 	_ "github.com/goradd/goradd/pkg/bootstrap/generator"
+	_ "github.com/goradd/goradd/pkg/page/control/generator"
 	_ "goradd-project/config" // Initialize required variables
 	_ "goradd-tmp/template"
 )

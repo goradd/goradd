@@ -38,7 +38,7 @@ const (
 	PriorityHigh
 	PriorityStandard
 	PriorityLow
-	PriorityFinal	// TODO: Note that this currently requires a preliminary ajax command, or it will not fire. Should fix that, but its tricky.
+	PriorityFinal // TODO: Note that this currently requires a preliminary ajax command, or it will not fire. Should fix that, but its tricky.
 )
 
 // responseCommand is a response packet that leads to execution of a javascript function
@@ -103,32 +103,32 @@ type Response struct {
 	sync.RWMutex // This was inserted here for very rare situations of simultaneous access, like in the test harness.
 
 	// exclusiveCommand is a single command that is sent by itself, overriding all other commands
-	exclusiveCommand       *responseCommand
+	exclusiveCommand *responseCommand
 	// highPriorityCommands are sent first
-	highPriorityCommands   []responseCommand
+	highPriorityCommands []responseCommand
 	// mediumPriorityCommands are sent after high priority commands
 	mediumPriorityCommands []responseCommand
 	// lowPriorityCommands are sent after medium priority commands
-	lowPriorityCommands    []responseCommand
+	lowPriorityCommands []responseCommand
 	// finalCommands are acted on after all other commands have been processed
-	finalCommands          []responseCommand
+	finalCommands []responseCommand
 	// jsFiles are JavaScript files that should be inserted into the page. This should rarely be used,
 	// but is needed in case the programmer inserts a control widget in response to an Ajax event,
 	// and that control depends on javascript that has not yet been sent to the client.
-	jsFiles                *maps.StringSliceMap
+	jsFiles *maps.StringSliceMap
 	// styleSheets are css files that should be inserted into the page.
-	styleSheets            *maps.StringSliceMap
+	styleSheets *maps.StringSliceMap
 	// alerts are strings that should be shown to the user in a javascript aler
-	alerts                 []string
+	alerts []string
 	// newLocation is a URL that the client should be redirected to.
-	newLocation            string
+	newLocation string
 	// winClose directs the browser to close the current window.
-	winClose               bool
+	winClose bool
 	// controls are goraddControls that should be inserted or replaced
-	controls               map[string]responseControl
+	controls map[string]responseControl
 	// profileHtml is the html sent from the database profiling tool to display in a special window
 	// TODO: This is not used currently, and is here for future ajax db profiling
-	profileHtml			   string
+	profileHtml string
 }
 
 // NewResponse creates a new event response.
@@ -176,7 +176,7 @@ func (r *Response) ExecuteControlCommand(controlID string, functionName string, 
 
 // ExecuteSelectorFunction calls a function on a jQuery selector
 func (r *Response) ExecuteSelectorFunction(selector string, functionName string, args ...interface{}) {
-	args2,priority := r.extractPriority(args...)
+	args2, priority := r.extractPriority(args...)
 	c := responseCommand{selector: selector, function: functionName, args: args2}
 
 	r.Lock()
@@ -200,7 +200,7 @@ func (r *Response) ExecuteSelectorFunction(selector string, functionName string,
 // If the function name has a dot(.) in it, the items preceeding the dot will be considered global objects
 // to call the function on. If the named function just a function label, then the function is called on the window object.
 func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
-	args2,priority := r.extractPriority(args...)
+	args2, priority := r.extractPriority(args...)
 	c := responseCommand{function: functionName, args: args2}
 
 	r.Lock()
@@ -220,9 +220,9 @@ func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
 	r.Unlock()
 }
 
-func (r *Response) extractPriority (args ...interface{}) (args2 []interface{}, priority Priority) {
-	for i,a := range args {
-		if p,ok := a.(Priority); ok {
+func (r *Response) extractPriority(args ...interface{}) (args2 []interface{}, priority Priority) {
+	for i, a := range args {
+		if p, ok := a.(Priority); ok {
 			priority = p
 			args2 = append(args[:i], args[i+1:]...)
 			return
@@ -305,7 +305,6 @@ func (r *Response) JavaScript() (script string) {
 	r.Unlock()
 	return script
 }
-
 
 func (r *Response) renderCommandArray(commands []responseCommand) string {
 	var script string
@@ -404,7 +403,6 @@ func (r *Response) GetAjaxResponse() (buf []byte, err error) {
 	return json.Marshal(reply)
 }
 
-
 // Call SetLocation to change the url of the browser.
 func (r *Response) SetLocation(newLocation string) {
 	r.Lock()
@@ -470,10 +468,8 @@ func (r *Response) SetControlValue(id string, value string) {
 	r.Unlock()
 }
 
-
 func (r *Response) setProfileInfo(info string) {
 	r.Lock()
 	r.profileHtml = info
 	r.Unlock()
 }
-

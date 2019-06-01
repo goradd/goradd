@@ -4,45 +4,44 @@ import (
 	html2 "html"
 )
 
-var voidTags  = map[string]bool {
-	"area":true,
-	"base":true,
-	"br": true,
-	"col": true,
-	"command":true,
-	"embed":true,
-	"hr":true,
-	"img":true,
-	"input":true,
-	"keygen":true,
-	"link":true,
-	"meta":true,
-	"param":true,
-	"source":true,
-	"track":true,
-	"wbr":true,
+var voidTags = map[string]bool{
+	"area":    true,
+	"base":    true,
+	"br":      true,
+	"col":     true,
+	"command": true,
+	"embed":   true,
+	"hr":      true,
+	"img":     true,
+	"input":   true,
+	"keygen":  true,
+	"link":    true,
+	"meta":    true,
+	"param":   true,
+	"source":  true,
+	"track":   true,
+	"wbr":     true,
 }
 
 // Use a TagBuilder to create a tag using a builder pattern, starting out with the
 // tag name and slowly adding parts to it, describing it, until you are ready to print
 // out the entire html tag. The zero value is usable.
 type TagBuilder struct {
-	tag string
+	tag        string
 	attributes *Attributes
-	innerHtml string
-	isVoid bool
+	innerHtml  string
+	isVoid     bool
 }
 
 // NewTagBuilder starts a tag build, though you can use a tag builder from its zero value too.
 func NewTagBuilder() *TagBuilder {
-	return &TagBuilder{
-	}
+	return &TagBuilder{}
 }
 
 // Tag sets the tag value
 func (b *TagBuilder) Tag(tag string) *TagBuilder {
 	b.tag = tag
-	b.isVoid,_ = voidTags[tag]
+	b.isVoid, _ = voidTags[tag]
 	return b
 }
 
@@ -111,8 +110,3 @@ func (b *TagBuilder) String() string {
 		return RenderTag(b.tag, b.attributes, b.innerHtml)
 	}
 }
-
-
-
-
-

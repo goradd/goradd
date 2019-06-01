@@ -51,9 +51,8 @@ func (c *Checkbox) ΩDrawTag(ctx context.Context) (ctrl string) {
 	if c.inline {
 		checkWrapperAttributes.AddClass("form-check-inline")
 	}
-	return html.RenderTag("div", checkWrapperAttributes, h)	// make sure the entire control gets removed
+	return html.RenderTag("div", checkWrapperAttributes, h) // make sure the entire control gets removed
 }
-
 
 func (c *Checkbox) Serialize(e page.Encoder) (err error) {
 	if err = c.Checkbox.Serialize(e); err != nil {
@@ -69,7 +68,6 @@ func (c *Checkbox) ΩisSerializer(i page.ControlI) bool {
 	return reflect.TypeOf(c) == reflect.TypeOf(i)
 }
 
-
 func (c *Checkbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
 	if err = c.Checkbox.Deserialize(d, p); err != nil {
 		return
@@ -78,6 +76,6 @@ func (c *Checkbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
 	return
 }
 
-func init () {
+func init() {
 	gob.RegisterName("bootstrap.checkbox", new(Checkbox))
 }

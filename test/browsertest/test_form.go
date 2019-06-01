@@ -224,7 +224,6 @@ func (form *TestForm) ClickHtmlItem(id string) {
 	form.Controller.click(id, form.captureCaller())
 }
 
-
 func (form *TestForm) WaitSubmit() {
 	form.Controller.waitSubmit(form.captureCaller())
 }

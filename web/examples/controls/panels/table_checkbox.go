@@ -16,13 +16,13 @@ import (
 type TableCheckboxPanel struct {
 	Panel
 
-	Table1	*PaginatedTable
-	Pager1 *DataPager
+	Table1          *PaginatedTable
+	Pager1          *DataPager
 	CheckboxColumn1 *column.CheckboxColumn
-	SelectCol *column.CheckboxColumn
+	SelectCol       *column.CheckboxColumn
 
-	SubmitAjax      *Button
-	SubmitServer    *Button
+	SubmitAjax   *Button
+	SubmitServer *Button
 }
 
 type Table1Data map[string]string
@@ -31,7 +31,7 @@ type Table1Data map[string]string
 // some special situations may find this approach useful.
 var table1Data = getCheckTestData()
 
-type SelectedProvider struct{
+type SelectedProvider struct {
 	column.DefaultCheckboxProvider
 }
 
@@ -82,22 +82,19 @@ func (f *TableCheckboxPanel) BindData(ctx context.Context, s data.DataManagerI) 
 	s.SetData(table1Data[start:end])
 }
 
-
 func (p *TableCheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case ButtonSubmit:
-		for k,v := range p.CheckboxColumn1.Changes() {
-			i,_ := strconv.Atoi(k)
+		for k, v := range p.CheckboxColumn1.Changes() {
+			i, _ := strconv.Atoi(k)
 			var s string
 			if v {
 				s = "1"
 			}
-			table1Data[i - 1]["s"] = s
+			table1Data[i-1]["s"] = s
 		}
 	}
 }
-
-
 
 func init() {
 	browsertest.RegisterTestFunction("Table - Checkbox Nav", testTableCheckboxNav)
@@ -106,8 +103,7 @@ func init() {
 	controls.RegisterPanel("tablecheckbox", "Tables - Checkbox Column", NewTableCheckboxPanel, 6)
 }
 
-
-func testTableCheckboxNav(t *browsertest.TestForm)  {
+func testTableCheckboxNav(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").String()
 	f := t.LoadUrl(myUrl)
 
@@ -116,12 +112,12 @@ func testTableCheckboxNav(t *browsertest.TestForm)  {
 	table := f.Page().GetControl("table1").(*PaginatedTable)
 	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
 	changes := col.Changes()
-	_,ok := changes["1"]
+	_, ok := changes["1"]
 	t.AssertEqual(false, ok)
 
 	t.ClickSubItem(pager, "page_2")
 	changes = col.Changes()
-	changed,_ := changes["1"]
+	changed, _ := changes["1"]
 	t.AssertEqual(true, changed)
 
 	// restore state for other tests
@@ -129,18 +125,16 @@ func testTableCheckboxNav(t *browsertest.TestForm)  {
 	t.SetCheckbox("table1_check1_1", false)
 	t.ClickSubItem(pager, "page_1")
 
+	t.Done("Complete")
+}
+
+func testTableCheckboxAjaxSubmit(t *browsertest.TestForm) {
+	testTableCheckboxSubmit(t, "ajaxButton")
 
 	t.Done("Complete")
 }
 
-
-func testTableCheckboxAjaxSubmit(t *browsertest.TestForm)  {
-	testTableCheckboxSubmit(t, "ajaxButton", )
-
-	t.Done("Complete")
-}
-
-func testTableCheckboxServerSubmit(t *browsertest.TestForm)  {
+func testTableCheckboxServerSubmit(t *browsertest.TestForm) {
 	testTableCheckboxSubmit(t, "serverButton")
 
 	t.Done("Complete")
@@ -156,12 +150,12 @@ func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
 	table := f.Page().GetControl("table1").(*PaginatedTable)
 	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
 	changes := col.Changes()
-	_,ok := changes["1"]
+	_, ok := changes["1"]
 	t.AssertEqual(false, ok)
 
 	t.Click(btn)
 	changes = col.Changes()
-	changed,_ := changes["1"]
+	changed, _ := changes["1"]
 	t.AssertEqual(true, changed)
 
 	// restore state for other tests
@@ -171,27 +165,27 @@ func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
 }
 
 func getCheckTestData() []Table1Data {
-	return []Table1Data {
-		{"id":"1", "name":"This","s":"","c":"1"},
-		{"id":"2", "name":"That","s":"1","c":""},
-		{"id":"3", "name":"Other","s":"","c":""},
-		{"id":"4", "name":"Here","s":"","c":""},
-		{"id":"5", "name":"There","s":"","c":""},
-		{"id":"6", "name":"Everywhere","s":"","c":""},
-		{"id":"7", "name":"Over","s":"","c":""},
-		{"id":"8", "name":"Under","s":"","c":""},
-		{"id":"9", "name":"Near","s":"","c":""},
-		{"id":"10", "name":"Far","s":"","c":""},
-		{"id":"11", "name":"Who","s":"","c":""},
-		{"id":"12", "name":"What","s":"","c":""},
-		{"id":"13", "name":"Why","s":"","c":""},
-		{"id":"14", "name":"When","s":"","c":""},
-		{"id":"15", "name":"How","s":"","c":""},
-		{"id":"16", "name":"Which","s":"","c":""},
-		{"id":"17", "name":"If","s":"","c":""},
-		{"id":"18", "name":"Then","s":"","c":""},
-		{"id":"19", "name":"Or","s":"","c":""},
-		{"id":"20", "name":"And","s":"","c":"1"},
-		{"id":"21", "name":"But","s":"1","c":""},
+	return []Table1Data{
+		{"id": "1", "name": "This", "s": "", "c": "1"},
+		{"id": "2", "name": "That", "s": "1", "c": ""},
+		{"id": "3", "name": "Other", "s": "", "c": ""},
+		{"id": "4", "name": "Here", "s": "", "c": ""},
+		{"id": "5", "name": "There", "s": "", "c": ""},
+		{"id": "6", "name": "Everywhere", "s": "", "c": ""},
+		{"id": "7", "name": "Over", "s": "", "c": ""},
+		{"id": "8", "name": "Under", "s": "", "c": ""},
+		{"id": "9", "name": "Near", "s": "", "c": ""},
+		{"id": "10", "name": "Far", "s": "", "c": ""},
+		{"id": "11", "name": "Who", "s": "", "c": ""},
+		{"id": "12", "name": "What", "s": "", "c": ""},
+		{"id": "13", "name": "Why", "s": "", "c": ""},
+		{"id": "14", "name": "When", "s": "", "c": ""},
+		{"id": "15", "name": "How", "s": "", "c": ""},
+		{"id": "16", "name": "Which", "s": "", "c": ""},
+		{"id": "17", "name": "If", "s": "", "c": ""},
+		{"id": "18", "name": "Then", "s": "", "c": ""},
+		{"id": "19", "name": "Or", "s": "", "c": ""},
+		{"id": "20", "name": "And", "s": "", "c": "1"},
+		{"id": "21", "name": "But", "s": "1", "c": ""},
 	}
 }

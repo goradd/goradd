@@ -83,7 +83,6 @@ func TestListSelectData(t *testing.T) {
 	assert.Nil(t, d.GetItemAt(7))
 	assert.Equal(t, 4, d.ListItems()[4].IntValue())
 
-
 	id, _ := d.GetItemByValue(3)
 	valid := d.MockFormValue(id)
 	assert.True(t, valid)
@@ -95,7 +94,7 @@ func TestListSelectData(t *testing.T) {
 	valid = d.MockFormValue("")
 	assert.False(t, valid)
 
-	assert.Panics(t, func() {d.RemoveItemAt(7)})
+	assert.Panics(t, func() { d.RemoveItemAt(7) })
 	d.RemoveItemAt(2)
 	assert.Equal(t, 4, d.Len())
 	assert.Equal(t, 4, d.GetItemAt(3).IntValue())
@@ -106,4 +105,3 @@ func TestListSelectData(t *testing.T) {
 func TestListItem(t *testing.T) {
 
 }
-

@@ -69,9 +69,9 @@ func Has(ctx context.Context, key string) bool {
 // GetInt returns the integer at the given key in the session store. If the key does not exist
 // OR if what does exist at that key is not an integer, ok will be false and a zero will be returned.
 func GetInt(ctx context.Context, key string) (v int, ok bool) {
-	i,ok := getSession(ctx).Load(key)
+	i, ok := getSession(ctx).Load(key)
 	if ok {
-		v,ok = i.(int)
+		v, ok = i.(int)
 	}
 	return
 }
@@ -80,9 +80,9 @@ func GetInt(ctx context.Context, key string) (v int, ok bool) {
 // If the key does not exist OR if what does exist at that key is not a boolean,
 // ok will be false and false will be returned.
 func GetBool(ctx context.Context, key string) (v bool, ok bool) {
-	i,ok := getSession(ctx).Load(key)
+	i, ok := getSession(ctx).Load(key)
 	if ok {
-		v,ok = i.(bool)
+		v, ok = i.(bool)
 	}
 	return
 }
@@ -91,9 +91,9 @@ func GetBool(ctx context.Context, key string) (v bool, ok bool) {
 // If the key does not exist OR if what does exist at that key is not a string,
 // ok will be false and an empty string will be returned.
 func GetString(ctx context.Context, key string) (v string, ok bool) {
-	i,ok := getSession(ctx).Load(key)
+	i, ok := getSession(ctx).Load(key)
 	if ok {
-		v,ok = i.(string)
+		v, ok = i.(string)
 	}
 	return
 }
@@ -102,9 +102,9 @@ func GetString(ctx context.Context, key string) (v string, ok bool) {
 // If the key does not exist OR if what does exist at that key is not a float,
 // ok will be false and 0.0 will be returned.
 func GetFloat(ctx context.Context, key string) (v float64, ok bool) {
-	i,ok := getSession(ctx).Load(key)
+	i, ok := getSession(ctx).Load(key)
 	if ok {
-		v,ok = i.(float64)
+		v, ok = i.(float64)
 	}
 	return
 }

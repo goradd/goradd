@@ -1,11 +1,10 @@
 package i18n
 
-
 type translationBuilder struct {
-	domain string
-	language string
-	id string	// same as msgctxt in .PO files. Disambiguates same text. Usually blank.
-	message string
+	domain    string
+	language  string
+	id        string // same as msgctxt in .PO files. Disambiguates same text. Usually blank.
+	message   string
 	arguments []interface{}
 }
 
@@ -45,7 +44,7 @@ func (b *translationBuilder) T(s string) string {
 }
 
 // Sprintf ends the builder and performs the translation using the given format string.
-func (b *translationBuilder) Sprintf(s string, params... interface{}) string {
+func (b *translationBuilder) Sprintf(s string, params ...interface{}) string {
 	b.arguments = params
 	return b.t(s)
 }
@@ -64,7 +63,6 @@ func (b *translationBuilder) t(s string) string {
 
 	return translators[b.domain].Translate(b)
 }
-
 
 // The following are modifiers to the T() function in page.Control
 type id struct {
@@ -92,10 +90,10 @@ func Comment(c string) interface{} {
 // argmument list, assign those to the builder, and then return what is left of the arguments after the extraction.
 func ExtractBuilderFromArguments(args []interface{}) (b *translationBuilder, args2 []interface{}) {
 	b = Build()
-	for _,a := range args {
-		if i,ok := a.(id); ok {
+	for _, a := range args {
+		if i, ok := a.(id); ok {
 			b.ID(i.id)
-		} else if _,ok := a.(comment); ok {
+		} else if _, ok := a.(comment); ok {
 			// do nothing
 		} else {
 			args2 = append(args2, a)

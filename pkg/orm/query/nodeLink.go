@@ -22,10 +22,9 @@ func (n *nodeLink) setChild(cn NodeI) {
 	if n.childNode == nil {
 		n.childNode = cn
 	} else {
-		panic ("node already has a child node")
+		panic("node already has a child node")
 	}
 }
-
 
 func (n *nodeLink) setParent(pn NodeI) {
 	n.parentNode = pn
@@ -55,7 +54,6 @@ func copyUp(n NodeI) NodeI {
 	}
 	return cp
 }
-
 
 // ParentNode is used internally by the framework to return a node's parent.
 func ParentNode(n NodeI) NodeI {
@@ -91,7 +89,7 @@ func ChildNode(n NodeI) NodeI {
 
 // RootNode is used internally by the framework to get the root node, which is the top parent in the node tree.
 func RootNode(n NodeI) NodeI {
-	if self,ok := n.(nodeLinkI); !ok {
+	if self, ok := n.(nodeLinkI); !ok {
 		return nil
 	} else if self.getParent() == nil {
 		return self.(NodeI)
@@ -105,8 +103,8 @@ func RootNode(n NodeI) NodeI {
 }
 
 func CopyNode(n NodeI) ReferenceNodeI {
-	if self,ok := n.(ReferenceNodeI); !ok {
-		panic ("cannot copy this kind of node")
+	if self, ok := n.(ReferenceNodeI); !ok {
+		panic("cannot copy this kind of node")
 	} else {
 		return self.copy().(ReferenceNodeI)
 	}

@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/goradd/goradd/codegen/generator"
+	_ "github.com/goradd/goradd/pkg/bootstrap/generator"
 	"github.com/goradd/goradd/pkg/orm/db"
 	_ "github.com/goradd/goradd/pkg/page/control/generator"
-	_ "github.com/goradd/goradd/pkg/bootstrap/generator"
 	_ "goradd-project/config" // Initialize required variables
 	_ "goradd-tmp/template"
 )

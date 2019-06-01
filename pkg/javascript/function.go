@@ -11,7 +11,7 @@ import (
 // to a function that is used later.
 // context will become the "this" value inside the closure
 // args will be passed as values, and strings will be quoted. To pass a variable name, wrap the name with a JsCode call.
-func Function(name string, context string, args... interface{}) Ωfunction {
+func Function(name string, context string, args ...interface{}) Ωfunction {
 	return Ωfunction{name, context, args}
 }
 

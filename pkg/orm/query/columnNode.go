@@ -12,7 +12,6 @@ type ColumnNodeI interface {
 	nodeLinkI
 }
 
-
 // A Column represents a table or field in a database structure, and is the leaf of a node tree or chain.
 type ColumnNode struct {
 	nodeAlias
@@ -41,7 +40,7 @@ func NewColumnNode(dbKey string, dbTable string, dbName string, goName string, g
 		dbColumn: dbName,
 		gName:    goName,
 		goType:   goType,
-		isPK: 	  isPK,
+		isPK:     isPK,
 	}
 	return n
 }
@@ -49,12 +48,12 @@ func NewColumnNode(dbKey string, dbTable string, dbName string, goName string, g
 // Returns a copy of the node, satisfying the copy interface
 func (n *ColumnNode) copy() NodeI {
 	ret := &ColumnNode{
-		dbKey:    n.dbKey,
-		dbTable:  n.dbTable,
-		dbColumn: n.dbColumn,
-		gName:    n.gName,
-		goType:   n.goType,
-		isPK: 	  n.isPK,
+		dbKey:     n.dbKey,
+		dbTable:   n.dbTable,
+		dbColumn:  n.dbColumn,
+		gName:     n.gName,
+		goType:    n.goType,
+		isPK:      n.isPK,
 		nodeAlias: nodeAlias{n.alias},
 		// don't copy links!
 	}

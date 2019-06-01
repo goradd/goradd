@@ -5,7 +5,6 @@ import (
 	"strings"
 )
 
-
 // ReverseReferenceNode creates a reverse reference node representing a one to many relationship or one-to-one
 // relationship, depending on whether the foreign key is unique. The other side of the relationship will have
 // a matching forward ReferenceNode.
@@ -66,19 +65,18 @@ func NewReverseReferenceNode(
 
 func (n *ReverseReferenceNode) copy() NodeI {
 	ret := &ReverseReferenceNode{
-		dbKey:      n.dbKey,
-		dbTable:    n.dbTable,
-		dbColumn:   n.dbColumn,
-		goPropName: n.goPropName,
-		refTable:   n.refTable,
-		refColumn:  n.refColumn,
-		isArray:    n.isArray,
-		nodeAlias: nodeAlias{n.alias},
+		dbKey:         n.dbKey,
+		dbTable:       n.dbTable,
+		dbColumn:      n.dbColumn,
+		goPropName:    n.goPropName,
+		refTable:      n.refTable,
+		refColumn:     n.refColumn,
+		isArray:       n.isArray,
+		nodeAlias:     nodeAlias{n.alias},
 		nodeCondition: nodeCondition{n.condition},
 	}
 	return ret
 }
-
 
 // Expand tells the node to expand its results into multiple records, one for each item found in this relationship,
 // rather than have this relationship create an array of items within an individual record.
@@ -122,7 +120,6 @@ func (n *ReverseReferenceNode) nodeType() NodeType {
 	return ReverseReferenceNodeType
 }
 
-
 // ReverseReferenceNodeIsArray is used internally by the framework to determine if a node should create an array
 func ReverseReferenceNodeIsArray(n *ReverseReferenceNode) bool {
 	return n.isArray
@@ -143,4 +140,3 @@ func ReverseReferenceNodeRefColumn(n *ReverseReferenceNode) string {
 func ReverseReferenceNodeDbColumnName(n *ReverseReferenceNode) string {
 	return n.dbColumn
 }
-

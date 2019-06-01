@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-
 func TestMockSetGet(t *testing.T) {
 	// setup the mock session
 	s := session.NewMock()
@@ -17,4 +16,3 @@ func TestMockSetGet(t *testing.T) {
 	setupTest(ctx)
 	runTest(t, ctx)
 }
-

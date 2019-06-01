@@ -1,9 +1,9 @@
 package html
 
 import (
+	html2 "html"
 	"math/rand"
 	"strings"
-	html2 "html"
 	"time"
 )
 

@@ -55,7 +55,6 @@ func DialogClosed() page.EventI {
 	return e
 }
 
-
 // TimerExpired is used in conjunction with a JsTimer control to detect the expiration of the timer
 func TimerExpired() page.EventI {
 	return &page.Event{JsEvent: "goradd.timerexpired"}

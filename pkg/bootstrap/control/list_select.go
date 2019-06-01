@@ -12,11 +12,10 @@ type SelectList struct {
 }
 
 func NewSelectList(parent page.ControlI, id string) *SelectList {
-	t := new (SelectList)
+	t := new(SelectList)
 	t.Init(t, parent, id)
 	return t
 }
-
 
 func (t *SelectList) ΩDrawingAttributes() *html.Attributes {
 	a := t.SelectList.ΩDrawingAttributes()
@@ -24,9 +23,6 @@ func (t *SelectList) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-
-func init () {
+func init() {
 	gob.RegisterName("bootstrap.selectlist", new(SelectList))
 }
-
-

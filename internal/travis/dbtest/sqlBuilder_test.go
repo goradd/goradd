@@ -13,7 +13,6 @@ import (
 	//"github.com/goradd/goradd/datetime"
 )
 
-
 func TestSubquery2(t *testing.T) {
 	ctx := context.Background()
 	people := model.QueryPeople(ctx).

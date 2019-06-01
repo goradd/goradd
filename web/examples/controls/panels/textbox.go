@@ -24,19 +24,19 @@ const (
 
 type TextboxPanel struct {
 	Panel
-	PlainText   *Textbox
-	MultiText   *Textbox
-	IntegerText *IntegerTextbox
-	FloatText   *FloatTextbox
-	EmailText 	*EmailTextbox
+	PlainText    *Textbox
+	MultiText    *Textbox
+	IntegerText  *IntegerTextbox
+	FloatText    *FloatTextbox
+	EmailText    *EmailTextbox
 	PasswordText *Textbox
-	SearchText *Textbox
+	SearchText   *Textbox
 	DateTimeText *DateTextbox
-	DateText 	*DateTextbox
-	TimeText 	*DateTextbox
+	DateText     *DateTextbox
+	TimeText     *DateTextbox
 
-	SubmitAjax      *Button
-	SubmitServer    *Button
+	SubmitAjax   *Button
+	SubmitServer *Button
 }
 
 func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
@@ -100,13 +100,13 @@ func init() {
 	controls.RegisterPanel("textbox", "Textboxes", NewTextboxPanel, 2)
 }
 
-func testTextboxAjaxSubmit(t *browsertest.TestForm)  {
+func testTextboxAjaxSubmit(t *browsertest.TestForm) {
 	testTextboxSubmit(t, "ajaxButton")
 
 	t.Done("Complete")
 }
 
-func testTextboxServerSubmit(t *browsertest.TestForm)  {
+func testTextboxServerSubmit(t *browsertest.TestForm) {
 	testTextboxSubmit(t, "serverButton")
 
 	t.Done("Complete")
@@ -188,4 +188,3 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	//multiText := f.Page().GetControl("multiText").(*Textbox)
 	t.AssertEqual("me", plainText.Text())
 }
-

@@ -29,7 +29,6 @@ const (
 	DialogStyleSuccess
 )
 
-
 // DialogI defines the publicly consumable api that the goradd framework uses to interact with a dialog.
 //
 // More and more CSS and javascript frameworks are coming out with their own forms of dialog, which is usually a
@@ -78,7 +77,7 @@ type DialogButtonOptions struct {
 	// The ConfirmationMessage string will appear with a yes/no box making sure the user wants the action.
 	// This is usually used when the action could be destructive, like a Delete button.
 	ConfirmationMessage string
-	// PushLeft pushes this button to the left side of the dialog. Buttons are typically aligned right. 
+	// PushLeft pushes this button to the left side of the dialog. Buttons are typically aligned right.
 	// This is helpful to separate particular buttons from the main grouping of buttons.
 	PushLeft bool
 	// IsClose will set the button up to automatically close the dialog. Detect closes with the DialogCloseEvent if needed.
@@ -111,10 +110,10 @@ func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
 	d.Panel.Init(self, overlay, id)
 	d.Tag = "div"
 
-	d.titleBar = NewPanel(d, d.ID() + "_title")
+	d.titleBar = NewPanel(d, d.ID()+"_title")
 	d.titleBar.AddClass("gr-dialog-title")
 
-	d.buttonBar = NewPanel(d, d.ID() + "_buttons")
+	d.buttonBar = NewPanel(d, d.ID()+"_buttons")
 	d.buttonBar.AddClass("gr-dialog-buttons")
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
 	d.On(event.DialogClosed(), action.Ajax(d.ID(), DialogClose), action.PrivateAction{})
@@ -193,7 +192,7 @@ func (d *Dialog) RemoveAllButtons() {
 	//delete(d.validators, id)
 }
 
-// SetButtonVisible sets the visible state of the button. Hidden buttons are still rendered, but are 
+// SetButtonVisible sets the visible state of the button. Hidden buttons are still rendered, but are
 // styled so that they are not shown.
 func (d *Dialog) SetButtonVisible(id string, visible bool) {
 	if ctrl := d.buttonBar.Child(id); ctrl != nil {
@@ -220,7 +219,7 @@ func (d *Dialog) SetHasCloseBox(h bool) {
 }
 
 func (d *Dialog) addCloseBox() {
-	d.closeBox = NewButton(d.titleBar, d.ID() + "_closebox")
+	d.closeBox = NewButton(d.titleBar, d.ID()+"_closebox")
 	d.closeBox.AddClass("gr-dialog-close")
 	d.closeBox.SetText(`<i class="fa fa-times"></i>`)
 	d.closeBox.SetEscapeText(false)
@@ -236,7 +235,7 @@ func (d *Dialog) AddCloseButton(label string, id string) {
 	// Note: We will also do the public doAction with a DialogCloseEvent
 }
 
-// Action is called by the framework and will respond to the DialogClose action sent by any close buttons on the 
+// Action is called by the framework and will respond to the DialogClose action sent by any close buttons on the
 // page to close the dialog. You do not normally need to call this.
 func (d *Dialog) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
@@ -290,10 +289,10 @@ func defaultAlert(form page.FormI, message string, buttons interface{}) DialogI 
 	if buttons != nil {
 		switch b := buttons.(type) {
 		case string:
-			dlg.AddCloseButton(b,"")
+			dlg.AddCloseButton(b, "")
 		case []string:
 			if len(b) == 1 {
-				dlg.AddCloseButton(b[0],"")
+				dlg.AddCloseButton(b[0], "")
 			} else {
 				for _, l := range b {
 					dlg.AddButton(l, "", nil)

@@ -1,14 +1,15 @@
 package control
 
 import (
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/html"
 )
 
 type RadioListI interface {
 	CheckboxListI
 }
+
 // RadioList is a multi-select control that presents its choices as a list of checkboxes.
 // Styling is provided by divs and spans that you can provide css for in your style sheets. The
 // goradd.css file has default styling to handle the basics. It wraps the whole thing in a div that can be set
@@ -100,7 +101,6 @@ func (l *RadioList) SetSelectedID(id string) {
 		l.SetSelectedIds([]string{id})
 	}
 }
-
 
 func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()

@@ -12,11 +12,10 @@ type EmailTextbox struct {
 }
 
 func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
-	t := new (EmailTextbox)
+	t := new(EmailTextbox)
 	t.Init(t, parent, id)
 	return t
 }
-
 
 func (t *EmailTextbox) ΩDrawingAttributes() *html.Attributes {
 	a := t.EmailTextbox.ΩDrawingAttributes()
@@ -24,9 +23,6 @@ func (t *EmailTextbox) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-
-func init () {
+func init() {
 	gob.RegisterName("bootstrap.emailtextbox", new(EmailTextbox))
 }
-
-

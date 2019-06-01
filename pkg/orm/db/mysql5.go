@@ -418,7 +418,6 @@ func (m *Mysql5) generateAlias(alias string) (sql string) {
 	return "`" + alias + "`"
 }
 
-
 func (m *Mysql5) generateNodeListSql(b *sqlBuilder, nodes []NodeI, useAlias bool) (sql string, args []interface{}) {
 	for _, node := range nodes {
 		s, a := m.generateNodeSql(b, node, useAlias)

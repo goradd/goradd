@@ -13,13 +13,13 @@ import (
 type TablePanel struct {
 	Panel
 
-	Table1	*PaginatedTable
-	Pager1 *DataPager
+	Table1  *PaginatedTable
+	Pager1  *DataPager
 	Column1 *column.SliceColumn
 	Column2 *column.CustomColumn
 
-	Table2	*PaginatedTable
-	Pager2 *DataPager
+	Table2  *PaginatedTable
+	Pager2  *DataPager
 	Column3 *column.MapColumn
 	Column4 *column.GetterColumn
 }
@@ -32,31 +32,31 @@ func (m TableMapData) Get(i string) string {
 	return m[i]
 }
 
-var tableMapData = []TableMapData {
-	{"id":"1", "name":"This"},
-	{"id":"2", "name":"That"},
-	{"id":"3", "name":"Other"},
-	{"id":"4", "name":"Here"},
-	{"id":"5", "name":"There"},
-	{"id":"6", "name":"Everywhere"},
-	{"id":"7", "name":"Over"},
-	{"id":"8", "name":"Under"},
-	{"id":"9", "name":"Near"},
-	{"id":"10", "name":"Far"},
-	{"id":"11", "name":"Who"},
-	{"id":"12", "name":"What"},
-	{"id":"13", "name":"Why"},
-	{"id":"14", "name":"When"},
-	{"id":"15", "name":"How"},
-	{"id":"16", "name":"Which"},
-	{"id":"17", "name":"If"},
-	{"id":"18", "name":"Then"},
-	{"id":"19", "name":"Or"},
-	{"id":"20", "name":"And"},
-	{"id":"21", "name":"But"},
+var tableMapData = []TableMapData{
+	{"id": "1", "name": "This"},
+	{"id": "2", "name": "That"},
+	{"id": "3", "name": "Other"},
+	{"id": "4", "name": "Here"},
+	{"id": "5", "name": "There"},
+	{"id": "6", "name": "Everywhere"},
+	{"id": "7", "name": "Over"},
+	{"id": "8", "name": "Under"},
+	{"id": "9", "name": "Near"},
+	{"id": "10", "name": "Far"},
+	{"id": "11", "name": "Who"},
+	{"id": "12", "name": "What"},
+	{"id": "13", "name": "Why"},
+	{"id": "14", "name": "When"},
+	{"id": "15", "name": "How"},
+	{"id": "16", "name": "Which"},
+	{"id": "17", "name": "If"},
+	{"id": "18", "name": "Then"},
+	{"id": "19", "name": "Or"},
+	{"id": "20", "name": "And"},
+	{"id": "21", "name": "But"},
 }
 
-var tableSliceData = []TableSliceData {
+var tableSliceData = []TableSliceData{
 	{"1", "This"},
 	{"2", "That"},
 	{"3", "Other"},
@@ -75,11 +75,10 @@ var tableSliceData = []TableSliceData {
 	{"16", "Which"},
 	{"17", "If"},
 	{"18", "Then"},
-	{"19","Or"},
+	{"19", "Or"},
 	{"20", "And"},
 	{"21", "But"},
 }
-
 
 func NewTablePanel(ctx context.Context, parent page.ControlI) {
 	p := &TablePanel{}
@@ -128,7 +127,7 @@ func (f *TablePanel) BindData(ctx context.Context, s data.DataManagerI) {
 }
 
 // CellText here satisfies the CellTexter interface so that the panel can provide the text for a cell.
-func (f *TablePanel) 	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (f *TablePanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	// Here is an example of how to figure out what table we are talking about.
 	tid := col.ParentTable().ID()
 	switch tid {
@@ -137,12 +136,10 @@ func (f *TablePanel) 	CellText(ctx context.Context, col ColumnI, rowNum int, col
 	case "table2":
 		return fmt.Sprintf("Id: %s, Row #%d, Col #%d", data.(TableMapData)["id"], rowNum, colNum)
 	}
-	return""
+	return ""
 }
 
 func init() {
 	controls.RegisterPanel("table", "Tables", NewTablePanel, 5)
 
 }
-
-

@@ -7,8 +7,8 @@ package messageServer
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gorilla/websocket"
 	log2 "github.com/goradd/goradd/pkg/log"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"time"
@@ -36,7 +36,7 @@ var (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin:func(r *http.Request) bool {return true},
+	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
 // Client is a middleman between the websocket connection and the hub.
@@ -124,7 +124,6 @@ func (c *Client) writePump() {
 				log2.FrameworkDebugf("Writepump %s", string(buf))
 			}
 
-
 			if err := w.Close(); err != nil {
 				return
 			}
@@ -147,7 +146,7 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
 	channel := r.FormValue("ch")
 	pagestate := r.FormValue("id")
 
-	client := &Client{hub: hub, conn: conn, send: make(chan map[string]interface{}, 256), channel: channel, pagestate:pagestate}
+	client := &Client{hub: hub, conn: conn, send: make(chan map[string]interface{}, 256), channel: channel, pagestate: pagestate}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

@@ -5,7 +5,7 @@ import "testing"
 func TestRoundInt(t *testing.T) {
 	tests := []struct {
 		name string
-		arg float64
+		arg  float64
 		want int
 	}{
 		{"0.9", 0.9, 1},

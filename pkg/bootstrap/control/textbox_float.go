@@ -12,11 +12,10 @@ type FloatTextbox struct {
 }
 
 func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
-	t := new (FloatTextbox)
+	t := new(FloatTextbox)
 	t.Init(t, parent, id)
 	return t
 }
-
 
 func (t *FloatTextbox) ΩDrawingAttributes() *html.Attributes {
 	a := t.FloatTextbox.ΩDrawingAttributes()
@@ -24,9 +23,6 @@ func (t *FloatTextbox) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-
-func init () {
+func init() {
 	gob.RegisterName("bootstrap.floattextbox", new(FloatTextbox))
 }
-
-

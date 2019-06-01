@@ -10,7 +10,6 @@ import (
 
 var resourceManager = newResourceManager() // Create a new singleton page manager.
 
-
 type ResourcePathHandler func(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, err error)
 
 type ResourceManagerI interface {
@@ -22,7 +21,7 @@ type ResourceManagerI interface {
 // init() functions should be created for each path that associates a function to create a rest path,
 // with the URL that corresponds to the path.
 type ResourceManager struct {
-	pathRegistry   map[string]ResourcePathHandler // maps paths to functions that create forms
+	pathRegistry map[string]ResourcePathHandler // maps paths to functions that create forms
 }
 
 // ResourcePathPrefix is a prefix you can use in front of all goradd rest paths, like a directory path, to indicate that
@@ -48,12 +47,11 @@ func RegisterPath(path string, handler ResourcePathHandler) {
 	resourceManager.pathRegistry[path] = handler
 }
 
-
 func HandleRequest(w http.ResponseWriter, r *http.Request) bool {
 
 	p := r.URL.Path
 
-	handler,ok := resourceManager.getHandler(p)
+	handler, ok := resourceManager.getHandler(p)
 	if !ok {
 		return false
 	}
@@ -71,17 +69,15 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) bool {
 	if errCode != 0 {
 		w.WriteHeader(errCode)
 	} else {
-		_,_ = w.Write(buf.Bytes())
+		_, _ = w.Write(buf.Bytes())
 	}
 	return true
 }
-
 
 func (m *ResourceManager) getHandler(path string) (f ResourcePathHandler, ok bool) {
 	f, ok = m.pathRegistry[path]
 	return
 }
-
 
 // runHandler processes the resource and writes the response into the buffer. Any special response headers are returned.
 func runHandler(ctx context.Context, handler ResourcePathHandler, buf *bytes.Buffer) (headers map[string]string, httpErrCode int) {
@@ -94,7 +90,7 @@ func runHandler(ctx context.Context, handler ResourcePathHandler, buf *bytes.Buf
 			case string:
 				httpErrCode = 500
 				buf.WriteString(v)
-			case *HttpError:	// A kind of http panic that just returns a response code and headers
+			case *HttpError: // A kind of http panic that just returns a response code and headers
 				headers = v.headers
 				httpErrCode = v.errCode
 			default:
@@ -102,7 +98,6 @@ func runHandler(ctx context.Context, handler ResourcePathHandler, buf *bytes.Buf
 			}
 		}
 	}()
-
 
 	headers, err := handler(ctx, buf)
 
@@ -116,7 +111,7 @@ func runHandler(ctx context.Context, handler ResourcePathHandler, buf *bytes.Buf
 
 // HttpError represents an error response to a http request.
 type HttpError struct {
-	headers map[string] string
+	headers map[string]string
 	errCode int
 }
 

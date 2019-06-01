@@ -13,7 +13,7 @@ import (
 // generating and creating queries
 type DatabaseDescription struct {
 	// The database key corresponding to its key in the global database cluster
-	DbKey  string
+	DbKey string
 	// Tables are the tables in the database
 	Tables []*TableDescription
 	// TypeTables contains a description of the enumerated types from the type tables in the database
@@ -27,11 +27,10 @@ type DatabaseDescription struct {
 	// These items are filled in by analysis
 
 	// tableMap is used to get to tables by internal name
-	tableMap     map[string]*TableDescription
+	tableMap map[string]*TableDescription
 	// typeTableMap gets to type tables by internal name
 	typeTableMap map[string]*TypeTableDescription
 }
-
 
 // FKAction indicates how the database handles situations when one side of a relationship is deleted or the key
 // is changed. These generally correspond to the options available in MySQL InnoDB databases.
@@ -43,11 +42,10 @@ const (
 	FKActionNone FKAction = iota // In a typical database, this is the same as Restrict. For OUR purposes, it means we should deal with it ourselves.
 	// This would be the situation when we are emulating foreign key constraints for databases that don't support them.
 	FKActionSetNull
-	FKActionSetDefault  // Not supported in MySQL!
-	FKActionCascade     //
-	FKActionRestrict    // The database is going to choke on this. We will try to error before something like this happens.
+	FKActionSetDefault // Not supported in MySQL!
+	FKActionCascade    //
+	FKActionRestrict   // The database is going to choke on this. We will try to error before something like this happens.
 )
-
 
 /*
 type Option struct {
@@ -128,7 +126,7 @@ func (dd *DatabaseDescription) analyzeTypeTables() {
 
 			r := regexp.MustCompile("[^a-zA-Z0-9_]+")
 			a := r.Split(value, -1)
-			for _,word := range a {
+			for _, word := range a {
 				con += strings.Title(strings.ToLower(word))
 			}
 			tt.Constants[key] = con
@@ -277,7 +275,7 @@ func (dd *DatabaseDescription) analyzeReverseReferences(td *TableDescription) {
 					GoName:               goName,
 					GoPlural:             goPlural,
 					GoType:               goType,
-					GoTypePlural:		  goTypePlural,
+					GoTypePlural:         goTypePlural,
 					IsUnique:             cd.IsUnique,
 				}
 
@@ -447,31 +445,56 @@ func (td *TableDescription) GetColumn(name string) *ColumnDescription {
 
 func isReservedIdentifier(s string) bool {
 	switch s {
-	case "break": return true
-	case "case": return true
-	case "chan": return true
-	case "const": return true
-	case "continue": return true
-	case "default": return true
-	case "defer": return true
-	case "else": return true
-	case "fallthrough": return true
-	case "for": return true
-	case "func": return true
-	case "go": return true
-	case "goto": return true
-	case "if": return true
-	case "import": return true
-	case "interface": return true
-	case "map": return true
-	case "package": return true
-	case "range": return true
-	case "return": return true
-	case "select": return true
-	case "struct": return true
-	case "switch": return true
-	case "type": return true
-	case "var": return true
+	case "break":
+		return true
+	case "case":
+		return true
+	case "chan":
+		return true
+	case "const":
+		return true
+	case "continue":
+		return true
+	case "default":
+		return true
+	case "defer":
+		return true
+	case "else":
+		return true
+	case "fallthrough":
+		return true
+	case "for":
+		return true
+	case "func":
+		return true
+	case "go":
+		return true
+	case "goto":
+		return true
+	case "if":
+		return true
+	case "import":
+		return true
+	case "interface":
+		return true
+	case "map":
+		return true
+	case "package":
+		return true
+	case "range":
+		return true
+	case "return":
+		return true
+	case "select":
+		return true
+	case "struct":
+		return true
+	case "switch":
+		return true
+	case "type":
+		return true
+	case "var":
+		return true
 	}
 	return false
 }
@@ -506,5 +529,3 @@ func UpperCaseIdentifier(s string) (i string) {
 	}
 	return
 }
-
-

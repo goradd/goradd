@@ -15,7 +15,6 @@ type SelectListI interface {
 	ItemListI
 }
 
-
 // SelectList is typically a dropdown list with a single selection. Items are selected by id number, and the SelectList
 // completely controls the ids in the list. Create the list by calling AddItem or AddItems to add ListItemI objects.
 // Or, use the embedded DataManager to load items. Set the size attribute if you want to display it as a
@@ -139,7 +138,7 @@ func (l *SelectList) ΩMarshalState(m maps.Setter) {
 
 // ΩUnmarshalState is an internal function to restore the state of the control
 func (l *SelectList) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("sel"); ok {
+	if v, ok := m.Load("sel"); ok {
 		if s, ok := v.(string); ok {
 			l.selectedId = s
 		}

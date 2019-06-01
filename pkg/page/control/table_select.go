@@ -33,8 +33,8 @@ func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 func (t *SelectTable) Init(self page.ControlI, parent page.ControlI, id string) {
 	t.Table.Init(self, parent, id)
 	t.ParentForm().AddJQueryUI()
-	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
-	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/select-table.js", false, nil)
+	t.ParentForm().AddJavaScriptFile(config.GoraddAssets()+"/js/jquery.scrollIntoView.js", false, nil)
+	t.ParentForm().AddJavaScriptFile(config.GoraddAssets()+"/js/select-table.js", false, nil)
 }
 
 func (t *SelectTable) this() SelectTableI {
@@ -59,7 +59,7 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attri
 		case PrimaryKeyer:
 			id = obj.PrimaryKey()
 		case map[string]string:
-			id,_ = obj["id"]
+			id, _ = obj["id"]
 		case maps.StringGetter:
 			id = obj.Get("id")
 		}
@@ -75,7 +75,7 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attri
 	} else {
 		a.AddClass("nosel")
 	}
-	if row % 2 == 1 {
+	if row%2 == 1 {
 		a.AddClass("odd")
 	} else {
 		a.AddClass("even")
@@ -91,7 +91,6 @@ func (t *SelectTable) ΩDrawingAttributes() *html.Attributes {
 	a.Set("aria-readonly", "true")
 	return a
 }
-
 
 func (t *SelectTable) ΩUpdateFormValues(ctx *page.Context) {
 	if data := ctx.CustomControlValue(t.ID(), "selectedId"); data != nil {
@@ -113,7 +112,7 @@ func (t *SelectTable) ΩMarshalState(m maps.Setter) {
 }
 
 func (t *SelectTable) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("selId"); ok {
+	if v, ok := m.Load("selId"); ok {
 		if id, ok := v.(string); ok {
 			t.selectedID = id
 		}

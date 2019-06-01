@@ -12,7 +12,6 @@ type FormBase struct {
 	control.FormBase
 }
 
-
 func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
 	f.FormBase.Init(ctx, self, path, id)
 

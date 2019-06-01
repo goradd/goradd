@@ -13,17 +13,17 @@ import (
 
 type CheckboxPanel struct {
 	Panel
-	Checkbox1   *Checkbox
-	Checkbox2   *Checkbox
+	Checkbox1 *Checkbox
+	Checkbox2 *Checkbox
 
-	Radio1		*RadioButton
-	Radio2		*RadioButton
-	Radio3		*RadioButton
+	Radio1 *RadioButton
+	Radio2 *RadioButton
+	Radio3 *RadioButton
 
-	Info 		*Panel
+	Info *Panel
 
-	SubmitAjax      *Button
-	SubmitServer    *Button
+	SubmitAjax   *Button
+	SubmitServer *Button
 }
 
 func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
@@ -63,7 +63,6 @@ func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p.SubmitServer.OnSubmit(action.Server(p.ID(), ButtonSubmit))
 }
 
-
 func init() {
 	browsertest.RegisterTestFunction("Checkbox Ajax Submit", testCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Checkbox Server Submit", testCheckboxServerSubmit)
@@ -71,7 +70,7 @@ func init() {
 }
 
 // testPlain exercises the plain text box
-func testCheckboxAjaxSubmit(t *browsertest.TestForm)  {
+func testCheckboxAjaxSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "checkbox").String()
 	f := t.LoadUrl(myUrl)
 
@@ -80,7 +79,7 @@ func testCheckboxAjaxSubmit(t *browsertest.TestForm)  {
 	t.Done("Complete")
 }
 
-func testCheckboxServerSubmit(t *browsertest.TestForm)  {
+func testCheckboxServerSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "checkbox").String()
 	f := t.LoadUrl(myUrl)
 
@@ -106,7 +105,6 @@ func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI
 
 	info := f.Page().GetControl("infoPanel").(*Panel)
 
-
 	t.AssertEqual("checkbox1_lbl checkbox1_ilbl", t.JqueryAttribute("checkbox1", "aria-labelledby"))
 	t.AssertEqual(true, checkbox1.Checked())
 	t.AssertEqual(false, checkbox2.Checked())
@@ -130,9 +128,9 @@ func (p *CheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
 		var sel string
 		if p.Radio1.Checked() {
 			sel = p.Radio1.ID()
-		} else if  p.Radio2.Checked() {
+		} else if p.Radio2.Checked() {
 			sel = p.Radio2.ID()
-		} else if  p.Radio3.Checked() {
+		} else if p.Radio3.Checked() {
 			sel = p.Radio3.ID()
 		}
 		p.Info.SetText(sel)

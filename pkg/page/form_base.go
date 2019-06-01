@@ -93,7 +93,7 @@ func (f *ΩFormBase) AddJQuery() {
 	} else {
 		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.3.1.min.js", false,
 			html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=").
-			Set("crossorigin", "anonymous"))
+				Set("crossorigin", "anonymous"))
 	}
 }
 
@@ -109,13 +109,12 @@ func (f *ΩFormBase) AddJQueryUI() {
 	}
 }
 
-
 // AddGoraddFiles adds the various goradd files to the form
 func (f *ΩFormBase) AddGoraddFiles() {
 	gr := config.GoraddAssets()
-	f.AddJavaScriptFile(filepath.Join(gr, "js", "ajaxq","ajaxq.js"), false, nil) // goradd.js needs this
+	f.AddJavaScriptFile(filepath.Join(gr, "js", "ajaxq", "ajaxq.js"), false, nil) // goradd.js needs this
 	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd.js"), false, nil)
-	f.AddJavaScriptFile(filepath.Join(gr, "js","goradd-ws.js"), false, nil)
+	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-ws.js"), false, nil)
 	if !config.Release {
 		f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-testing.js"), false, nil)
 	}
@@ -127,8 +126,6 @@ func (f *ΩFormBase) AddFontAwesome() {
 	f.AddStyleSheetFile("https://use.fontawesome.com/releases/v5.0.13/css/all.css",
 		html.NewAttributes().Set("integrity", "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp").Set("crossorigin", "anonymous"))
 }
-
-
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
@@ -154,7 +151,7 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// CSRF prevention
 	var csrf string
 
-	csrf,_ = session.GetString(ctx, goradd.SessionCsrf)
+	csrf, _ = session.GetString(ctx, goradd.SessionCsrf)
 	if csrf == "" {
 		// first time
 		csrf, err = crypt.GenerateRandomString(16)
@@ -163,7 +160,7 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		}
 		session.Set(ctx, goradd.SessionCsrf, csrf)
 	}
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="` + htmlCsrfToken + `" id="` + htmlCsrfToken + `" value="%s" />` + "\n", csrf))
+	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf))
 
 	// Serialize and write out the pagestate
 	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, pagestate))
@@ -192,7 +189,7 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 }
 
 // outputSqlProfile looks for sql profiling information and sends it to the browser if found
-func (f *ΩFormBase) getDbProfile(ctx context.Context) (s string)  {
+func (f *ΩFormBase) getDbProfile(ctx context.Context) (s string) {
 	if profiles := db.GetProfiles(ctx); profiles != nil {
 		for _, profile := range profiles {
 			dif := profile.EndTime.Sub(profile.BeginTime)
@@ -253,11 +250,10 @@ func (f *ΩFormBase) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err er
 	return
 }
 
-
 // PageDrawingFunction returns the function used to draw the page object.
 // If you want a custom drawing function for your page, implement this function in your form override.
 func (f *ΩFormBase) PageDrawingFunction() PageDrawFunc {
-	return PageTmpl	// Returns the default
+	return PageTmpl // Returns the default
 }
 
 // saveState saves the state of the form in the page cache.
@@ -471,10 +467,10 @@ func (f *ΩFormBase) PopLocation(ctx context.Context, fallback string) {
 }
 
 type formEncoded struct {
-	HeaderSS *maps.SliceMap
+	HeaderSS   *maps.SliceMap
 	ImportedSS *maps.SliceMap
-	HeaderJS *maps.SliceMap
-	BodyJS *maps.SliceMap
+	HeaderJS   *maps.SliceMap
+	BodyJS     *maps.SliceMap
 	ImportedJS *maps.SliceMap
 }
 
@@ -483,12 +479,12 @@ func (f *ΩFormBase) Serialize(e Encoder) (err error) {
 		return
 	}
 
-	s := formEncoded {
-		HeaderSS: f.headerStyleSheets,
+	s := formEncoded{
+		HeaderSS:   f.headerStyleSheets,
 		ImportedSS: f.importedStyleSheets,
-		HeaderJS: f.headerJavaScripts,
-		BodyJS: f.bodyJavaScripts,
-		ImportedJS:f.importedJavaScripts,
+		HeaderJS:   f.headerJavaScripts,
+		BodyJS:     f.bodyJavaScripts,
+		ImportedJS: f.importedJavaScripts,
 	}
 
 	if err = e.Encode(s); err != nil {

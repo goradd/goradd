@@ -8,13 +8,12 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 )
 
-
 // DateTextbox is a textbox that only permits dates and/or times to be entered into it.
 type DateTextbox struct {
 	Textbox
-	format string			 // same as what time.format expects
+	format string            // same as what time.format expects
 	dt     datetime.DateTime // Converting from text to a datetime is expensive.
-							 // We maintain a copy of the conversion to prevent duplication of effort.
+	// We maintain a copy of the conversion to prevent duplication of effort.
 }
 
 // NewDateTextbox creates a new DateTextbox.
@@ -106,7 +105,6 @@ func (d *DateTextbox) ΩUpdateFormValues(ctx *page.Context) {
 		d.dt = v
 	}
 }
-
 
 type DateValidator struct {
 	ctrl    *DateTextbox

@@ -5,7 +5,6 @@ import (
 	"strings"
 )
 
-
 type AliasNodeI interface {
 	NodeI
 	Aliaser
@@ -20,7 +19,7 @@ type AliasNode struct {
 // Alias returns an AliasNode type, which allows you to refer to a prior created named alias operation.
 func Alias(goName string) *AliasNode {
 	return &AliasNode{
-		nodeAlias {
+		nodeAlias{
 			alias: goName,
 		},
 	}
@@ -36,7 +35,7 @@ func (n *AliasNode) tableName() string {
 
 // Equals returns true if the given node points to the same alias value as receiver.
 func (n *AliasNode) Equals(n2 NodeI) bool {
-	if a,ok := n2.(*AliasNode); ok {
+	if a, ok := n2.(*AliasNode); ok {
 		return a.alias == n.alias
 	}
 	return false

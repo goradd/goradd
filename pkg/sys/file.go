@@ -84,8 +84,6 @@ func PathExists(path string) bool {
 	return err == nil || !os.IsNotExist(err)
 }
 
-
-
 // SourcePath is a utility function that returns the path to the file that called it.
 func SourcePath() (file string) {
 	_, file, _, _ = runtime.Caller(1)
@@ -193,7 +191,6 @@ func DirectoryClear(dir string) error {
 }
 */
 
-
 /* FileCopy has been replaced by the code in gofile
 func FileCopy(src, dst string) (err error) {
 	var count int64
@@ -227,4 +224,3 @@ func FileCopy(src, dst string) (err error) {
 	return to.Close()
 }
 */
-

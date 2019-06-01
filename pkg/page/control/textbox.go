@@ -20,11 +20,9 @@ const (
 	TextboxTypeSearch   = "search"
 	TextboxTypeNumber   = "number" // Puts little arrows in box, will need to widen it.
 	TextboxTypeEmail    = "email"  // see TextEmail. Prevents submission of RFC5322 email addresses (Gogh Fir <gf@example.com>)
-	TextboxTypeTel    = "tel"    // not well supported
-	TextboxTypeUrl    = "url"
+	TextboxTypeTel      = "tel"    // not well supported
+	TextboxTypeUrl      = "url"
 )
-
-
 
 // A Validater can be added to a textbox to validate its input on the server side.
 // A textbox can have more than one validater.
@@ -299,23 +297,22 @@ func (t *Textbox) ΩMarshalState(m maps.Setter) {
 
 // ΩUnmarshalState is an internal function to restore the state of the control
 func (t *Textbox) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("text"); ok {
+	if v, ok := m.Load("text"); ok {
 		if s, ok := v.(string); ok {
 			t.value = s
 		}
 	}
 }
 
-
 type encodedTextbox struct {
-	Typ string
-	Validators []Validater
-	MinLength int
-	MaxLength int
-	Value string
+	Typ         string
+	Validators  []Validater
+	MinLength   int
+	MaxLength   int
+	Value       string
 	ColumnCount int
 	RowCount    int
-	Readonly bool
+	Readonly    bool
 }
 
 // Serialize is used by the framework to serialize the textbox into the pagestate.

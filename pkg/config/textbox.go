@@ -13,7 +13,6 @@ type Sanitizer interface {
 // GlobalSanitizer is used by textboxes to sanitize user input before it is stored
 var GlobalSanitizer Sanitizer
 
-
 // BlueMondaySanitizer is a sanitizer based on microcosm-cc/bluemonday. BlueMonday is designed to sanitize input
 // coming from a WYSIWYG HTML editor, so it has the annoying extra step of escaping HTML entities. We wrap the
 // BlueMonday sanitizer in this structure so that we can unescape html entities before sending them to the textbox.

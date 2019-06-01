@@ -26,7 +26,6 @@ func newTestForm(ctx context.Context) *testPageForm {
 	return f
 }
 
-
 func loadTestFormValues(f *testPageForm) *page.Page {
 	p := f.Page()
 
@@ -34,10 +33,10 @@ func loadTestFormValues(f *testPageForm) *page.Page {
 }
 
 // Focuses on exercising page and form values
-func TestFormPageValues(t *testing.T)  {
+func TestFormPageValues(t *testing.T) {
 	f := newTestForm(nil)
 	loadTestFormValues(f)
-	checkTestFormValues(t,f)
+	checkTestFormValues(t, f)
 }
 
 func checkTestFormValues(t *testing.T, f *testPageForm) {

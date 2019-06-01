@@ -46,7 +46,6 @@ func (i *FloatTextbox) Float32() float32 {
 	return float32(v)
 }
 
-
 func (i *FloatTextbox) SetFloat64(v float64) *FloatTextbox {
 	i.Textbox.SetValue(v)
 	return i

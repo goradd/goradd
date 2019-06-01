@@ -112,15 +112,14 @@ func (l *CheckboxList) ΩDrawingAttributes() *html.Attributes {
 // ΩDrawInnerHtml is called by the framework to draw the contents of the list.
 func (l *CheckboxList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.this().ΩRenderItems(l.items)
-	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID() + "_cbl"), h)
+	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
 	buf.WriteString(h)
 	return nil
 }
 
-
 func (l *CheckboxList) ΩRenderItems(items []ListItemI) string {
 	var hItems []string
-	for _,item := range items {
+	for _, item := range items {
 		hItems = append(hItems, l.ΩRenderItem(item))
 	}
 	if l.columnCount == 0 {
@@ -134,16 +133,13 @@ func (l *CheckboxList) ΩRenderItems(items []ListItemI) string {
 		Build()
 }
 
-
 // ΩRenderItem is called by the framework to render a single item in the list.
 func (l *CheckboxList) ΩRenderItem(item ListItemI) (h string) {
-	_,selected := l.selectedIds[item.ID()]
+	_, selected := l.selectedIds[item.ID()]
 	h = renderItemControl(item, "checkbox", l.labelDrawingMode, selected, l.ID())
 	h = renderCell(item, h, l.columnCount > 0)
 	return
 }
-
-
 
 // ΩUpdateFormValues is called by the framework to tell the control to update its internal values
 // based on the form values sent by the browser.
@@ -157,7 +153,7 @@ func (l *CheckboxList) ΩUpdateFormValues(ctx *page.Context) {
 		}
 	} else {
 		// Ajax will only send changed items based on their ids
-		for _,item := range l.ListItems() {
+		for _, item := range l.ListItems() {
 			if v, ok := ctx.FormValue(item.ID()); ok {
 				l.SetSelectedIdNoRefresh(item.ID(), page.ConvertToBool(v))
 			}

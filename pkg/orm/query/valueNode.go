@@ -50,16 +50,24 @@ func NewValueNode(i interface{}) NodeI {
 		val := reflect.ValueOf(v)
 
 		switch k {
-		case reflect.Int:fallthrough
-		case reflect.Int8:fallthrough
-		case reflect.Int16:fallthrough
-		case reflect.Int32:fallthrough
+		case reflect.Int:
+			fallthrough
+		case reflect.Int8:
+			fallthrough
+		case reflect.Int16:
+			fallthrough
+		case reflect.Int32:
+			fallthrough
 		case reflect.Int64:
 			n.value = int(val.Int())
-		case reflect.Uint:fallthrough
-		case reflect.Uint8:fallthrough
-		case reflect.Uint16:fallthrough
-		case reflect.Uint32:fallthrough
+		case reflect.Uint:
+			fallthrough
+		case reflect.Uint8:
+			fallthrough
+		case reflect.Uint16:
+			fallthrough
+		case reflect.Uint32:
+			fallthrough
 		case reflect.Uint64:
 			n.value = uint(val.Uint())
 		case reflect.Bool:
@@ -69,7 +77,8 @@ func NewValueNode(i interface{}) NodeI {
 			n.value = float32(val.Float())
 		case reflect.Float64:
 			n.value = val.Float()
-		case reflect.Slice:fallthrough
+		case reflect.Slice:
+			fallthrough
 		case reflect.Array:
 			var ary []NodeI
 			for i := 0; i < val.Len(); i++ {
@@ -94,7 +103,7 @@ func (n *ValueNode) Equals(n2 NodeI) bool {
 			} else if len(an2) != len(an1) {
 				return false
 			} else {
-				for i,n := range an1 {
+				for i, n := range an1 {
 					if !n.Equals(an2[i]) {
 						return false
 					}

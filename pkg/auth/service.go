@@ -52,4 +52,3 @@ type AuthI interface {
 func RegisterAuthenticationService(a AuthI) {
 	authService = a
 }
-

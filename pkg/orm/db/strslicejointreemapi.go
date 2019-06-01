@@ -12,7 +12,6 @@ type joinTreeItemSetter interface {
 	Set(string, *joinTreeItem)
 }
 
-
 // The joinTreeItemMapI interface provides a common interface to the many kinds of similar map objects.
 //
 // Most functions that change the map are omitted so that you can wrap the map in additional functionality that might

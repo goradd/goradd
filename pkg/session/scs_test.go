@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-
 func TestSetGet(t *testing.T) {
 	// setup the ScsSession
 	interval, _ := time.ParseDuration("24h")
@@ -18,4 +17,3 @@ func TestSetGet(t *testing.T) {
 	runRequestTest(t, setRequestHandler(), testRequestHandler(t))
 	runRequestTest(t, setupStackRequestHandler(), testStackRequestHandler(t))
 }
-

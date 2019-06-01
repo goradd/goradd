@@ -101,5 +101,3 @@ func RemoveClassesWithPrefix(class string, prefix string) (string, bool) {
 
 	return ret, removed
 }
-
-
