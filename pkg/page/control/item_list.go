@@ -52,7 +52,7 @@ func NewItemList(owner IDer) ItemList {
 // AddItem adds the given item to the end of the list. The value is optional, but should only be one or zero values.
 func (l *ItemList) AddItem(label string, value ...interface{}) ListItemI {
 	i := NewListItem(label, value...)
-	l.AddListItemAt(-1, i)
+	l.AddListItemAt(len(l.items), i)
 	return i
 }
 
