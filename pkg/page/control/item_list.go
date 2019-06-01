@@ -57,10 +57,8 @@ func (l *ItemList) AddItem(label string, value ...interface{}) ListItemI {
 }
 
 // AddItemAt adds the item at the given index.
-//
-// TODO: This is totally confusing. Fix this
-// If the index is negative, it counts from the end. If the index is
-// -1 or bigger than the number of items, it adds it to the end. If the index is zero, or is negative and smaller than
+// If the index is negative, it counts from the end. -1 would therefore put the item before the last item.
+// If the index is bigger or equal to the number of items, it adds it to the end. If the index is zero, or is negative and smaller than
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
 // hierarchical list, so use sparingly.
 func (l *ItemList) AddItemAt(index int, label string, value ...interface{}) {
@@ -72,7 +70,12 @@ func (l *ItemList) AddItemAt(index int, label string, value ...interface{}) {
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
 // hierarchical list, so use sparingly.
 func (l *ItemList) AddListItemAt(index int, item ListItemI) {
-	if index < 0 || index > len(l.items) {
+	if index < 0 {
+		index = len(l.items) + index
+		if index < 0 {
+			index = 0
+		}
+	} else if index > len(l.items) {
 		index = len(l.items)
 	}
 	l.items = append(l.items, nil)
