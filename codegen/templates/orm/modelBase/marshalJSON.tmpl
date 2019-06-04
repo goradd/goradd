@@ -27,7 +27,9 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
     funcName := col.ReferenceFunction(dd)
 }}
 {{if col.ForeignKey.IsType}}
-    v["{{key}}"] = o.{{= funcName }}().String()
+    if o.{{= col.ModelName }}IsValid {
+        v["{{key}}"] = o.{{= funcName }}().String()
+    }
 {{else}}
     if val := o.{{= funcName }}(); val != nil {
         v["{{key}}"] = val
