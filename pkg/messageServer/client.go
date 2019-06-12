@@ -60,7 +60,6 @@ type Client struct {
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
 //
-// Not currently used
 func (c *Client) readPump() {
 	defer func() {
 		c.hub.unregister <- c

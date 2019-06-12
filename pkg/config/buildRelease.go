@@ -14,8 +14,6 @@ import (
 // You might build a release version that keeps the debug features on if you are building for manual testers
 const Release = true
 
-var GoraddDir string // Just for getting stuff to build. Not used.
-
 // This is the asset directory used as a central repository for the assets. The assets must be copied here as
 // part of the deployment process. The variable must be set up as part of the initialization process.
 

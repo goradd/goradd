@@ -125,7 +125,7 @@ func NewDateTime(args ...interface{}) DateTime {
 	case string:
 		if c == Current {
 			d = Now()
-		} else if c == Zero {
+		} else if c == Zero || c == "" {
 			// do nothing, we are already zero'd
 		} else {
 			if len(args) == 2 {
@@ -167,8 +167,19 @@ func (d DateTime) JavaScript() string {
 	}
 }
 
+func (d *DateTime) UnmarshalJSON(data []byte) (err error) {
+	err = d.Time.UnmarshalJSON(data)
+	if err != nil {
+		err = fmt.Errorf("JSON dates and times must be ISO8601 formatted AND in UTC: %s", err.Error());
+	}
+	d.isTimestamp = true // json times are always utc
+	return
+}
+
 // MarshalJSON satisfies the json.Marshaller interface to output the date as a value embedded in JSON and that
 // will be unpacked by our javascript file.
+// TODO: Must change this. The JSON spec has dates and times as always UTC.
+// Maybe use this only when sending ajax data?
 func (d DateTime) MarshalJSON() (buf []byte, err error) {
 	// We specify numbers explicitly to avoid the warnings about browsers parsing date strings inconsistently
 	isTimestamp := d.IsTimestamp()
