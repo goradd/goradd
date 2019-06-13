@@ -18,7 +18,6 @@ import (
 	"github.com/goradd/goradd/pkg/sys"
 	"log"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
@@ -364,12 +363,14 @@ func RegisterStaticPath(path string, directory string) {
 
 	if StaticDirectoryPaths == nil {
 		StaticDirectoryPaths = maps.NewStringSliceMap()
+		// sort the directory paths longest to shortest so that when we iterate them, we won't short circuit
+		// longer paths with shorter versions of the same path.
+		StaticDirectoryPaths.SetSortFunc(func(key1,key2 string, val1, val2 string) bool {
+			// order longest to shortest keys
+			return len(key1) > len(key2)
+		})
 	}
 	StaticDirectoryPaths.Set(path, directory)
-
-	// sort the directory paths longest to shortest so that when we iterate them, we won't short circuit
-	// longer paths with shorter versions of the same path.
-	sort.Sort(OrderDirectoryPaths(StaticDirectoryPaths))
 }
 
 // ServeApiHandler serves up an http API. This could be a REST api or something else.
