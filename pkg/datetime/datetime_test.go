@@ -45,7 +45,7 @@ func ExampleDateTime_MarshalJSON() {
 	d := NewDateTime("2012-11-01T22:08:41+00:00")
 	v, _ := d.MarshalJSON()
 	fmt.Println(string(v))
-	// Output: {"d":1,"goraddObject":"dt","h":22,"m":8,"mo":10,"ms":0,"s":41,"t":false,"y":2012,"z":false}
+	// Output: {"d":1,"goraddObject":"date","h":22,"m":8,"mo":10,"ms":0,"s":41,"t":false,"y":2012,"z":false}
 }
 
 func ExampleDateTime_JavaScript() {
