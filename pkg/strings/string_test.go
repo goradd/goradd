@@ -4,7 +4,6 @@ import (
 	"testing"
 )
 
-
 func TestEndsWithString(t *testing.T) {
 	if !EndsWith(".45", ".45") {
 		t.Fail()
@@ -52,4 +51,3 @@ func TestStartsWithString(t *testing.T) {
 		t.Fail()
 	}
 }
-

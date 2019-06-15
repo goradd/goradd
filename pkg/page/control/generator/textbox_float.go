@@ -18,7 +18,6 @@ func init() {
 
 // This structure describes the FloatTextbox to the connector dialog and code generator
 type FloatTextbox struct {
-
 }
 
 func (d FloatTextbox) Type() string {
@@ -42,7 +41,7 @@ func (d FloatTextbox) SupportsColumn(col *generator.ColumnType) bool {
 
 func (d FloatTextbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-`	ctrl = %s.NewFloatTextbox(c.ParentControl, id)
+		`	ctrl = %s.NewFloatTextbox(c.ParentControl, id)
 	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
@@ -71,20 +70,19 @@ func (d FloatTextbox) GenerateGet(ctrlName string, objName string, col *generato
 
 func (d FloatTextbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	if col.ColumnType == query.ColTypeFloat {
-		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Float32())`, objName,  col.GoName, ctrlName)
+		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Float32())`, objName, col.GoName, ctrlName)
 	} else {
-		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Float64())`, objName,  col.GoName, ctrlName)
+		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Float64())`, objName, col.GoName, ctrlName)
 	}
 	return
 }
-
 
 func (d FloatTextbox) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
 	paramSet := maps.NewSliceMap()
 
 	// TODO: Get the regular Textbox's parameters too
-	paramSet.Set("ColumnCount", generator.ConnectorParam {
+	paramSet.Set("ColumnCount", generator.ConnectorParam{
 		"Column Count",
 		"Width of field by the number of characters.",
 		generator.ControlTypeInteger,
@@ -93,9 +91,7 @@ func (d FloatTextbox) ConnectorParams() *maps.SliceMap {
 			c.(*control.FloatTextbox).SetColumnCount(val.(int))
 		}})
 
-
 	paramControls.Set("FloatTextbox", paramSet)
 
 	return paramControls
 }
-

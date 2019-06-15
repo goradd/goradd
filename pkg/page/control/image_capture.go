@@ -1,19 +1,19 @@
 package control
 
 import (
-	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/page"
 	"context"
 	"encoding/base64"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/page"
 	"strings"
 )
 
 type ImageCaptureShape string
 
 const (
-	ImageCaptureShapeRect ImageCaptureShape = "rect"
+	ImageCaptureShapeRect   ImageCaptureShape = "rect"
 	ImageCaptureShapeCircle ImageCaptureShape = "circle"
 )
 
@@ -30,15 +30,15 @@ type ImageCaptureI interface {
 // It only captures images from devices and browsers that support image capture.
 type ImageCapture struct {
 	Panel
-	Canvas        *Canvas
-	CaptureButton *Button
+	Canvas             *Canvas
+	CaptureButton      *Button
 	SwitchCameraButton *Button
 
 	ErrText *Panel
-	data []byte
-	shape ImageCaptureShape
-	typ string
-	zoom int
+	data    []byte
+	shape   ImageCaptureShape
+	typ     string
+	zoom    int
 	quality float32
 }
 
@@ -53,19 +53,19 @@ func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string) {
 	i.Control.Init(self, parent, id)
 	i.Tag = "div"
-	i.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/image-capture.js", false, nil)
+	i.ParentForm().AddJavaScriptFile(config.GoraddAssets()+"/js/image-capture.js", false, nil)
 	i.typ = "jpeg"
 	i.quality = 0.92
 
-	i.Canvas = NewCanvas(i, i.ID() + "_canvas")
-	i.CaptureButton = NewButton(i, i.ID() + "_capture")
+	i.Canvas = NewCanvas(i, i.ID()+"_canvas")
+	i.CaptureButton = NewButton(i, i.ID()+"_capture")
 	i.CaptureButton.SetText(i.ΩT("New Image"))
 
-	i.SwitchCameraButton = NewButton(i, i.ID() + "_switch")
+	i.SwitchCameraButton = NewButton(i, i.ID()+"_switch")
 	i.SwitchCameraButton.SetText(i.ΩT("Switch Camera"))
 	i.SwitchCameraButton.SetDisplay("none")
 
-	i.ErrText = NewPanel(i, i.ID() + "_err")
+	i.ErrText = NewPanel(i, i.ID()+"_err")
 	i.ErrText.Tag = "p"
 	i.ErrText.SetDisplay("none")
 	i.ErrText.SetText(i.ΩT("This browser or device does not support image capture"))
@@ -93,7 +93,6 @@ func (i *ImageCapture) SetMimeType(typ string) {
 func (i *ImageCapture) SetQuality(quality float32) {
 	i.quality = quality
 }
-
 
 // SetZoom zooms the camera by the given percent, i.e. 50 is 50% closer and 100 would be a 2x zoom.
 func (i *ImageCapture) SetZoom(zoom int) {
@@ -124,7 +123,6 @@ func (i *ImageCapture) TurnOff() {
 	i.ParentForm().Response().ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
 }
 
-
 // SetPixelSize sets the pixel size of the image that will be returned. Control the visible size of the canvas through
 // setting css sizes.
 func (i *ImageCapture) SetPixelSize(width int, height int) {
@@ -133,7 +131,7 @@ func (i *ImageCapture) SetPixelSize(width int, height int) {
 }
 
 // SetMaskShape sets the masking shape for the image
-func (i *ImageCapture) SetMaskShape (shape ImageCaptureShape) {
+func (i *ImageCapture) SetMaskShape(shape ImageCaptureShape) {
 	i.shape = shape
 }
 
@@ -154,7 +152,7 @@ func (i *ImageCapture) ΩUpdateFormValues(ctx *page.Context) {
 	if data := ctx.CustomControlValue(i.ID(), "data"); data != nil {
 		s := data.(string)
 		index := strings.Index(s, ",")
-		if newdata,err := base64.StdEncoding.DecodeString(s[index+1:]); err == nil {
+		if newdata, err := base64.StdEncoding.DecodeString(s[index+1:]); err == nil {
 			i.data = newdata
 		} else {
 			log.Debug(err.Error())

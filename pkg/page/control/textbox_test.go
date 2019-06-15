@@ -45,4 +45,3 @@ func TestTextboxValidation(t *testing.T) {
 	assert.True(t, valid)
 	assert.True(t, d.ValidationMessage() == "")
 }
-

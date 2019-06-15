@@ -21,7 +21,7 @@ type RequestMode int
 
 const (
 	// Server indicates we are calling back to a previously sent form using a standard form post
-	Server     RequestMode = iota
+	Server RequestMode = iota
 	// Http indicates this is a first-time request for a page
 	Http
 	// Ajax indicates we are calling back in to a currently showing form using an ajax request
@@ -35,9 +35,8 @@ const (
 
 const HtmlVarAction = "Goradd_Action"
 const HtmlVarPagestate = "Goradd__PageState"
-const htmlVarParams  = "Goradd__Params"
-const htmlCsrfToken  = "Goradd__Csrf"
-
+const htmlVarParams = "Goradd__Params"
+const htmlCsrfToken = "Goradd__Csrf"
 
 // MultipartFormMax is the maximum size of a mult-part form that we will allow.
 var MultipartFormMax int64 = 10000000 // 10MB max in memory file
@@ -78,25 +77,25 @@ type Context struct {
 // HttpContext contains typical things we can extract from an http request.
 type HttpContext struct {
 	// Req is the original http.Request object
-	Req        *http.Request
+	Req *http.Request
 	// URL is the url being queried
-	URL        *url.URL
+	URL *url.URL
 	// formVars is a private version of the form variables. Use the FormValue and FormValues functions to get these
-	formVars   url.Values
+	formVars url.Values
 	// Host is the host value extracted from the request
-	Host       string
+	Host string
 	// RemoteAddr is the ip address of the client
 	RemoteAddr string
 	// Referrer is the referring url, if there is one and it is included in the request. In other words, if a link was
 	// clicked to get here, it would be the URL of the page that had the link
-	Referrer   string
+	Referrer string
 	// Cookies are the cookies coming from the client, mapped by name
-	Cookies    map[string]*http.Cookie
+	Cookies map[string]*http.Cookie
 	// Files are the files being uploaded, if this is a file upload. This currently only works with Server calls
 	// in response to a file upload control.
-	Files      map[string][]*multipart.FileHeader
+	Files map[string][]*multipart.FileHeader
 	// Header is the http header coming from the client.
-	Header     http.Header
+	Header http.Header
 }
 
 // AppContext has Goradd application specific information.
@@ -110,9 +109,8 @@ type AppContext struct {
 	eventID             EventID                           // The event to send to the control
 	actionValues        actionValues
 	// NoJavaScript indicates javascript is turned off by the browser
-	NoJavaScript        bool
+	NoJavaScript bool
 }
-
 
 // String is a string representation of all the information in the context, and should primarily be used for debugging.
 func (c *Context) String() string {
@@ -208,8 +206,8 @@ func (ctx *Context) FormValues(key string) (value []string, ok bool) {
 // its values. You would only call this if your are implementing a control that has custom javascript to
 // operate its UI.
 func (ctx *Context) CustomControlValue(id string, key string) interface{} {
-	if m,ok := ctx.customControlValues[id]; ok {
-		if v,ok2 := m[key]; ok2 {
+	if m, ok := ctx.customControlValues[id]; ok {
+		if v, ok2 := m[key]; ok2 {
 			return v
 		}
 	}
@@ -225,14 +223,14 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 	var err error
 
 	if ctx.URL != nil {
-		if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); ok  {
-			v,_ = ctx.FormValue(htmlVarParams)
+		if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); ok {
+			v, _ = ctx.FormValue(htmlVarParams)
 			if v == "" {
 				// javascript is turned off
 				// we are in a minimalist environment, where only buttons submit forms
 
 				// If the pagestate is coming from a GET, it is encoded and encrypted
-				if _,ok := ctx.Req.PostForm[HtmlVarPagestate]; !ok {
+				if _, ok := ctx.Req.PostForm[HtmlVarPagestate]; !ok {
 					ctx.pageStateId = crypt.SessionDecryptUrlValue(mainContext, ctx.pageStateId)
 				}
 				ctx.NoJavaScript = true
@@ -253,10 +251,10 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 
 			var params struct {
 				ControlValues   map[string]map[string]interface{} `json:"controlValues"`
-				CheckableValues map[string]interface{} `json:"checkableValues"`
-				ControlID       string                 `json:"controlID"`
-				EventID         int                    `json:"eventID"`
-				Values          actionValues           `json:"actionValues"`
+				CheckableValues map[string]interface{}            `json:"checkableValues"`
+				ControlID       string                            `json:"controlID"`
+				EventID         int                               `json:"eventID"`
+				Values          actionValues                      `json:"actionValues"`
 			}
 
 			dec := json.NewDecoder(strings.NewReader(v))

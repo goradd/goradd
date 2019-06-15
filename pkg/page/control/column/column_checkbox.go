@@ -20,7 +20,6 @@ type CheckboxColumnI interface {
 	CheckboxAttributes(data interface{}) *html.Attributes
 }
 
-
 // CheckboxColumn is a table column that contains a checkbox in each row.
 // You must provide it a CheckboxProvider to connect ids and default data
 // to the checkbox. Use Changes() to get the list of checkbox ids that have changed since the list was initially drawn.
@@ -28,7 +27,7 @@ type CheckboxColumn struct {
 	control.ColumnBase
 	showCheckAll bool
 	checkboxer   CheckboxProvider
-	current 	 map[string]bool // currently displayed items
+	current      map[string]bool // currently displayed items
 	changes      map[string]bool // changes recorded
 }
 
@@ -102,7 +101,7 @@ func (col *CheckboxColumn) CheckboxAttributes(data interface{}) *html.Attributes
 		a.Set("id", pubid)
 		a.SetDataAttribute("grCheckcol", "1")
 		col.current[id] = p.IsChecked(data)
-		a.Set("name", col.ParentTable().ID() + "_" + col.ID())
+		a.Set("name", col.ParentTable().ID()+"_"+col.ID())
 		a.Set("value", id)
 	} else {
 		panic("A checkbox id is required.")
@@ -139,21 +138,20 @@ func (col *CheckboxColumn) ResetChanges() {
 	col.changes = make(map[string]bool)
 }
 
-
 // UpdateFormValues will look for changes to our checkboxes and record those changes.
 func (col *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 	if ctx.RequestMode() == page.Server {
 		// Using standard form submission rules. Only ON checkboxes get sent to us, so we have to figure out what got turned off
 		recent := make(map[string]bool)
-		if values,ok := ctx.FormValues(col.ParentTable().ID() + "_" + col.ID()); ok {
-			for _,value := range values {
+		if values, ok := ctx.FormValues(col.ParentTable().ID() + "_" + col.ID()); ok {
+			for _, value := range values {
 				recent[value] = true
 			}
 		}
 		// otherwise its as if nothing was checked, which might happen if everything got turned off
 
-		for k,v := range col.current {
-			if _,ok := recent[k]; ok {
+		for k, v := range col.current {
+			if _, ok := recent[k]; ok {
 				// set to true
 				if !v {
 					col.changes[k] = true
@@ -172,8 +170,8 @@ func (col *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 		}
 	} else {
 		// We just get notified of the ids of checkboxes that changed since the last time we checked
-		for k,v := range col.current {
-			if v2,ok := ctx.FormValue(col.ParentTable().ID() + "_" + col.ID() + "_" + k); ok {
+		for k, v := range col.current {
+			if v2, ok := ctx.FormValue(col.ParentTable().ID() + "_" + col.ID() + "_" + k); ok {
 				b2 := page.ConvertToBool(v2)
 				if v != b2 {
 					col.changes[k] = b2
@@ -195,8 +193,8 @@ func (col *CheckboxColumn) AddActions(t page.ControlI) {
 func (col *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
 	switch params.ActionValueInt() {
 	case AllClickAction:
-		p := new (event.CheckboxColumnActionValues)
-		ok,err := params.EventValue(p)
+		p := new(event.CheckboxColumnActionValues)
+		ok, err := params.EventValue(p)
 		if ok && err == nil {
 			col.allClick(p.Id, p.Checked, p.Row, p.Column)
 		}
@@ -240,16 +238,16 @@ func (col *CheckboxColumn) PreRender() {
 
 // MarshalState is an internal function to save the state of the control
 func (t *CheckboxColumn) MarshalState(m maps.Setter) {
-	m.Set(t.ID() + "_changes", t.changes)
-	m.Set(t.ID() + "_dataid", t.checkboxer.DataID())
+	m.Set(t.ID()+"_changes", t.changes)
+	m.Set(t.ID()+"_dataid", t.checkboxer.DataID())
 }
 
 // UnmarshalState is an internal function to restore the state of the control
 func (t *CheckboxColumn) UnmarshalState(m maps.Loader) {
-	if v,ok := m.Load(t.ID() + "_dataid"); ok {
+	if v, ok := m.Load(t.ID() + "_dataid"); ok {
 		if dataid, ok := v.(string); ok {
 			if dataid == t.checkboxer.DataID() { // only restore checkboxes if the data itself has not changed
-				if v,ok := m.Load(t.ID() + "_changes"); ok {
+				if v, ok := m.Load(t.ID() + "_changes"); ok {
 					if s, ok := v.(map[string]bool); ok {
 						t.changes = s
 					}
@@ -281,12 +279,11 @@ type CheckboxProvider interface {
 	// It is used to determine if the checkboxes in the column should be reset if SaveState is on.
 	// If the DataID changes, and SaveState is on, it will reset the changes.
 	DataID() string
-
 }
 
 // The DefaultCheckboxProvider is a mixin you can use to base your CheckboxProvider, and that will provide default
 // functionality for the methods you don't want to implement.
-type DefaultCheckboxProvider struct {}
+type DefaultCheckboxProvider struct{}
 
 func (c DefaultCheckboxProvider) DataID() string {
 	return ""
@@ -308,8 +305,7 @@ func (c DefaultCheckboxProvider) All() map[string]bool {
 	return nil
 }
 
-
 func init() {
 	gob.Register(map[string]bool(nil)) // We must register this here because we are putting the changes map into the session,
-							           // and the session uses GOB to encode.
+	// and the session uses GOB to encode.
 }

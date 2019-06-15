@@ -20,7 +20,7 @@ func TestToJavaScript(t *testing.T) {
 
 	tests := []struct {
 		name string
-		arg interface{}
+		arg  interface{}
 		want string
 	}{
 		{"Javascripter", JsCode("Test"), "Test"},
@@ -28,13 +28,13 @@ func TestToJavaScript(t *testing.T) {
 		{"String", `Hal"s /super/ \fine`, `"Hal\"s /super/ \\fine"`},
 		{"String Slice", []string{`a / ' b`, `C & "D"`}, `["a / ' b","C \u0026 \"D\""]`},
 		{"Interface Slice", []interface{}{"Hi", JsCode("There")}, `["Hi",There]`},
-		{"Interface String Map", map[string]interface{}{"a":`Hi "`, "b": NoQuoteKey(JsCode("There")), "c":4}, `{"a":"Hi \"",b:There,"c":4}`},
-		{"Interface Int Map", map[int]interface{}{1:`Hi "`, 2: JsCode("There"), 3:4}, `{1:"Hi \"",2:There,3:4}`},
+		{"Interface String Map", map[string]interface{}{"a": `Hi "`, "b": NoQuoteKey(JsCode("There")), "c": 4}, `{"a":"Hi \"",b:There,"c":4}`},
+		{"Interface Int Map", map[int]interface{}{1: `Hi "`, 2: JsCode("There"), 3: 4}, `{1:"Hi \"",2:There,3:4}`},
 		{"MapI", m1, `{"a":"Hi \"",b:There,"c":4}`},
 		{"StringMapI", m2, `{"a":"Hi \"","b":"There","c":"4"}`},
 		{"Int", 1, `1`},
 		{"Null", nil, `null`},
-		{"Function Arguments", Arguments([]interface{}{3,"me"}), `3,"me"`},
+		{"Function Arguments", Arguments([]interface{}{3, "me"}), `3,"me"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -45,15 +45,14 @@ func TestToJavaScript(t *testing.T) {
 	}
 }
 
-
 func TestNumberInt(t *testing.T) {
 	tests := []struct {
 		name string
-		arg interface{}
+		arg  interface{}
 		want int
 	}{
-		{"json.Number",json.Number("1"), 1},
-		{"String","2", 2},
+		{"json.Number", json.Number("1"), 1},
+		{"String", "2", 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -67,12 +66,12 @@ func TestNumberInt(t *testing.T) {
 func TestNumberFloat(t *testing.T) {
 	tests := []struct {
 		name string
-		arg interface{}
+		arg  interface{}
 		want float64
 	}{
-		{"json.Number",json.Number("1"), 1},
-		{"json.Number2",json.Number("3.33"), 3.33},
-		{"String","2.1", 2.1},
+		{"json.Number", json.Number("1"), 1},
+		{"json.Number2", json.Number("3.33"), 3.33},
+		{"String", "2.1", 2.1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -89,12 +88,12 @@ func TestNumberString(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		arg interface{}
+		arg  interface{}
 		want string
 	}{
-		{"json.Number",json.Number("1"), "1"},
-		{"json.Number2",json.Number("3.33"), "3.33"},
-		{"String","2.1", "2.1"},
+		{"json.Number", json.Number("1"), "1"},
+		{"json.Number2", json.Number("3.33"), "3.33"},
+		{"String", "2.1", "2.1"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -104,4 +103,3 @@ func TestNumberString(t *testing.T) {
 		})
 	}
 }
-

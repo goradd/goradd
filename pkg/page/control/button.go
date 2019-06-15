@@ -69,7 +69,6 @@ func (b *Button) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-
 // OnSubmit is a shortcut for adding a click event handler that is particular to buttons and button like objects.
 // It debounces the click, so that all other events are lost until this event processes. It should generally be used for
 // operations that will eventually redirect to a different page. If coupling this with an ajax response, you should
@@ -78,4 +77,3 @@ func (b *Button) OnSubmit(actions ...action.ActionI) page.EventI {
 	// We delay here to try to make sure any other delayed events are executed first.
 	return b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
 }
-

@@ -18,17 +18,17 @@ type TypeTableDescription struct {
 	// EnglishPlural is the plural english name of the object. Use the "literalPlural" option in the comment to override the default.
 	EnglishPlural string
 	// GoName is the name of the item as a go type name.
-	GoName     string
+	GoName string
 	// GoPlural is the plural of the go type
-	GoPlural   string
+	GoPlural string
 	// LcGoName is the lower case version of the go name
-	LcGoName   string
+	LcGoName string
 	// FieldNames are the names of the fields defined in the table. The first field name MUST be the name of the id field, and 2nd MUST be the name of the name field, the others are optional extra fields.
 	FieldNames []string
 	// FieldTypes are the go column types of the fields, indexed by field name
 	FieldTypes map[string]GoColumnType
 	// Values are the constant values themselves as defined in the table, mapped to field names in each row.
-	Values     []map[string]interface{}
+	Values []map[string]interface{}
 	// PkField is the name of the private key field
 	PkField string
 
@@ -55,6 +55,3 @@ func (tt *TypeTableDescription) FieldGoColumnType(i int) GoColumnType {
 	ft := tt.FieldTypes[fn]
 	return ft
 }
-
-
-

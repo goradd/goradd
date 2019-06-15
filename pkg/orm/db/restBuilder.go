@@ -35,7 +35,6 @@ func NewRestBuilder(db *Rest) *restBuilder {
 	return b
 }
 
-
 func (b *restBuilder) Load(ctx context.Context) (result []map[string]interface{}) {
 	b.op = QueryOperationLoad
 
@@ -43,7 +42,7 @@ func (b *restBuilder) Load(ctx context.Context) (result []map[string]interface{}
 	r := RestBuilderExport{*exp, b.op}
 	js, err := json.Marshal(r)
 	if err != nil {
-		panic (err)
+		panic(err)
 	}
 	// send query to rest point as a GET
 	_ = js

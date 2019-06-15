@@ -11,7 +11,7 @@ import (
 const (
 	ErrorWrapper = "page.Error"
 	LabelWrapper = "page.Label"
-	DivWrapper = "page.Div"
+	DivWrapper   = "page.Div"
 )
 
 // WrapperI defines the control wrapper interface. Generally you will not call any of these functions.
@@ -48,7 +48,7 @@ func NewWrapper(name string) WrapperI {
 	if w, ok := wrapperRegistry[name]; ok {
 		return w.ΩNewI()
 	} else {
-		panic ("Unkown wrapper " + name)
+		panic("Unkown wrapper " + name)
 	}
 	return nil
 }
@@ -103,7 +103,8 @@ func (w *ErrorWrapperType) ΩModifyDrawingAttributes(c ControlI, a *html.Attribu
 	// instead of ajax drawn
 
 	switch state {
-	case ValidationWaiting:fallthrough
+	case ValidationWaiting:
+		fallthrough
 	case ValidationValid:
 		c.WrapperAttributes().RemoveClass("error")
 	case ValidationInvalid:
@@ -127,19 +128,19 @@ func (w *ErrorWrapperType) ΩSetValidationStateChanged() {
 	w.ValidationStateChanged = true
 }
 
-
 // ΩAjaxRender is called by the framework to draw any changes to the wrapper that we have recorded.
 // This has to work closely with the wrapper template so that it would create the same effect as if that
 // entire control had been redrawn
 func (w *ErrorWrapperType) ΩAjaxRender(ctx context.Context, response *Response, c ControlI) {
 	if w.ValidationMessageChanged {
-		response.ExecuteControlCommand(c.ID() + "_err", "text", c.ValidationMessage())
+		response.ExecuteControlCommand(c.ID()+"_err", "text", c.ValidationMessage())
 		w.ValidationMessageChanged = false
 	}
 
 	if w.ValidationStateChanged {
 		switch c.control().validationState {
-		case ValidationWaiting:fallthrough
+		case ValidationWaiting:
+			fallthrough
 		case ValidationValid:
 			response.RemoveClass(c.ID() + "_ctl", "error")
 		case ValidationInvalid:
@@ -206,7 +207,7 @@ func (w *LabelWrapperType) TypeName() string {
 func (w *LabelWrapperType) ΩModifyDrawingAttributes(c ControlI, a *html.Attributes) {
 	w.ErrorWrapperType.ΩModifyDrawingAttributes(c, a)
 	if c.control().label != "" {
-		a.AddAttributeValue("aria-labelledby", c.ID() + "_lbl")
+		a.AddAttributeValue("aria-labelledby", c.ID()+"_lbl")
 	}
 }
 

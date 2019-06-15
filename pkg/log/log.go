@@ -32,13 +32,13 @@ type EmailLogger struct {
 
 func (l StandardLogger) Log(out string) {
 	if err := l.Output(4, out); err != nil {
-		panic ("Logging error: " + err.Error())
+		panic("Logging error: " + err.Error())
 	}
 }
 
 func (l EmailLogger) Log(out string) {
 	if err := l.Output(4, out); err != nil {
-		panic ("Logging error: " + err.Error())
+		panic("Logging error: " + err.Error())
 	}
 
 	// TODO: Create emailer
@@ -56,7 +56,7 @@ func HasLogger(id int) bool {
 
 func SetLogger(id int, l LoggerI) {
 	if l == nil {
-		delete (Loggers, id)
+		delete(Loggers, id)
 	} else {
 		Loggers[id] = l
 	}
@@ -135,7 +135,6 @@ func Printf(logType int, format string, v ...interface{}) {
 	_printf(logType, format, v...)
 }
 
-
 func _print(logType int, v ...interface{}) {
 	if l, ok := Loggers[logType]; ok {
 		l.Log(fmt.Sprint(v...))
@@ -147,7 +146,6 @@ func _printf(logType int, format string, v ...interface{}) {
 		l.Log(fmt.Sprintf(format, v...))
 	}
 }
-
 
 // CreateDefaultLoggers create's default loggers for the application.
 // After calling this, you can replace the loggers with your own, and

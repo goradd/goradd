@@ -1,10 +1,9 @@
 package control
 
 import (
-	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
 )
-
 
 // A ListGroup implements the Bootstrap ListGroup control.
 // Since just a static list isn't all that interesting, this is a dynamic list whose
@@ -34,7 +33,7 @@ func (l *ListGroup) Init(self page.ControlI, parent page.ControlI, id string) {
 func (l *ListGroup) GetItemsHtml(items []control.ListItemI) string {
 	// make sure the list items have the correct classes before drawing them
 
-	for _,item := range items {
+	for _, item := range items {
 		item.Attributes().AddClass("list-group-item list-group-item-action")
 	}
 	return l.UnorderedList.GetItemsHtml(items)

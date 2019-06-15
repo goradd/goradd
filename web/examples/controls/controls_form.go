@@ -18,15 +18,15 @@ const (
 
 type ControlsForm struct {
 	FormBase
-	list 	 		*UnorderedList
-	detail 		  *Panel
+	list   *UnorderedList
+	detail *Panel
 }
 
 type createFunction func(ctx context.Context, parent page.ControlI)
 type controlEntry struct {
-	key string
-	name string
-	f createFunction
+	key   string
+	name  string
+	f     createFunction
 	order int
 }
 
@@ -51,7 +51,7 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 	}
 
 	if id, ok := page.GetContext(ctx).FormValue("control"); ok {
-		for _,c := range controls {
+		for _, c := range controls {
 			if c.key == id {
 				createF = c.f
 			}
@@ -66,11 +66,11 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 }
 
 func (f *ControlsForm) BindData(ctx context.Context, s data.DataManagerI) {
-	sort.Slice(controls, func(i,j int) bool {
+	sort.Slice(controls, func(i, j int) bool {
 		return controls[i].order < controls[j].order
-	});
+	})
 	pageContext := page.GetContext(ctx)
-	for _,c := range controls {
+	for _, c := range controls {
 		item := f.list.AddItem(c.name, c.key)
 		a := url.
 			NewBuilderFromUrl(*pageContext.URL).
@@ -81,13 +81,12 @@ func (f *ControlsForm) BindData(ctx context.Context, s data.DataManagerI) {
 }
 
 func RegisterPanel(key string,
-		name string,
-		f createFunction,
-		order int) {
+	name string,
+	f createFunction,
+	order int) {
 	controls = append(controls, controlEntry{key, name, f, order})
 }
 
 func init() {
 	page.RegisterPage(ControlsFormPath, NewControlsForm, ControlsFormId)
 }
-

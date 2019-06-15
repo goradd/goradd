@@ -1,10 +1,10 @@
 package control
 
 import (
+	"encoding/base64"
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"strconv"
-	"github.com/goradd/goradd/pkg/html"
-	"encoding/base64"
 )
 
 type ImageI interface {
@@ -14,8 +14,8 @@ type ImageI interface {
 // Image is an img tag. You can display either a URL, or direct image information by setting the Src or the Data values.
 type Image struct {
 	page.Control
-	data []byte			// slice of data itself
-	typ string			// the image MIME type (jpeg, gif, etc.) for data. Default is jpeg.
+	data []byte // slice of data itself
+	typ  string // the image MIME type (jpeg, gif, etc.) for data. Default is jpeg.
 }
 
 // NewImage creates a new image.
@@ -77,7 +77,7 @@ func (i *Image) SetAlt(alt string) {
 // Width returns the number that will be used as the width of the image
 func (i *Image) Width() int {
 	w := i.Attribute("width")
-	if i,err := strconv.Atoi(w); err != nil {
+	if i, err := strconv.Atoi(w); err != nil {
 		return 0
 	} else {
 		return i
@@ -93,7 +93,7 @@ func (i *Image) SetWidth(width int) {
 // Height returns the number that will be used in the height attribute.
 func (i *Image) Height() int {
 	w := i.Attribute("height")
-	if i,err := strconv.Atoi(w); err != nil {
+	if i, err := strconv.Atoi(w); err != nil {
 		return 0
 	} else {
 		return i
@@ -117,5 +117,3 @@ func (i *Image) ΩDrawingAttributes() *html.Attributes {
 	}
 	return a
 }
-
-

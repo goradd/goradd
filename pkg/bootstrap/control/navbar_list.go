@@ -1,16 +1,16 @@
 package control
 
 import (
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/html"
 	"bytes"
-	"github.com/goradd/goradd/pkg/page/control"
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/javascript"
-	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/data"
+	"github.com/goradd/goradd/pkg/page/event"
 )
 
 type NavbarListI interface {
@@ -25,10 +25,9 @@ type NavbarList struct {
 	Proxy *control.Proxy
 }
 
-
 func NavbarSelectEvent() page.EventI {
 	e := &page.Event{JsEvent: "gr-bs-navbarselect"}
-	e.ActionValue(javascript.JsCode("ui"))	// This will be the action value sent by the proxy...the id of the item
+	e.ActionValue(javascript.JsCode("ui")) // This will be the action value sent by the proxy...the id of the item
 	return e
 }
 
@@ -96,14 +95,14 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI
 				// top level menu
 				var lastClass = ""
 
-				if i == len(items) - 1 {
+				if i == len(items)-1 {
 					// last item, so modify dropdown menu so it does not go off of screen
 					// If there is only one item in the navbar, and this is the left navbar, this might cause a problem.
 					// We can potentially fix that by asking the parent item if that is the situation.
 					lastClass = "dropdown-menu-right"
 				}
 				h += fmt.Sprintf(
-`<%s class="nav-item dropdown">
+					`<%s class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" id="%s_menu" role="menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         %s
     </a>
@@ -129,7 +128,6 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI
 				itemAttributes := item.Attributes().Copy()
 				itemAttributes.AddClass("nav-item")
 				linkAttributes := html.NewAttributes()
-
 
 				if hasParent {
 					itemAttributes.Set("role", "menuitem")

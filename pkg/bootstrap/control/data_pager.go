@@ -146,7 +146,6 @@ func (d *DataPager) ΩisSerializer(i page.ControlI) bool {
 	return reflect.TypeOf(d) == reflect.TypeOf(i)
 }
 
-
 func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
 	if err = d.DataPager.Deserialize(dec, p); err != nil {
 		return

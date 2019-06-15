@@ -7,7 +7,7 @@ import "context"
 func PushStack(ctx context.Context, stack string, value string) {
 	var a []string
 	if Has(ctx, stack) {
-		a,_ = Get(ctx, stack).([]string)
+		a, _ = Get(ctx, stack).([]string)
 	}
 	a = append(a, value)
 	Set(ctx, stack, a)
@@ -17,7 +17,7 @@ func PushStack(ctx context.Context, stack string, value string) {
 func PopStack(ctx context.Context, stack string) (value string) {
 	var a []string
 	if Has(ctx, stack) {
-		a,_ = Get(ctx, stack).([]string)
+		a, _ = Get(ctx, stack).([]string)
 	}
 	if len(a) > 0 {
 		value = a[len(a)-1]
@@ -36,5 +36,3 @@ func PopStack(ctx context.Context, stack string) (value string) {
 func ClearStack(ctx context.Context, stack string) {
 	Remove(ctx, stack)
 }
-
-

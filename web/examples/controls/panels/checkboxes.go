@@ -13,17 +13,17 @@ import (
 
 type CheckboxPanel struct {
 	Panel
-	Checkbox1   *Checkbox
-	Checkbox2   *Checkbox
+	Checkbox1 *Checkbox
+	Checkbox2 *Checkbox
 
-	Radio1		*RadioButton
-	Radio2		*RadioButton
-	Radio3		*RadioButton
+	Radio1 *RadioButton
+	Radio2 *RadioButton
+	Radio3 *RadioButton
 
-	Info 		*Panel
+	Info *Panel
 
-	SubmitAjax      *Button
-	SubmitServer    *Button
+	SubmitAjax   *Button
+	SubmitServer *Button
 }
 
 func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
@@ -62,7 +62,6 @@ func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p.SubmitServer.SetText("Submit Server")
 	p.SubmitServer.OnSubmit(action.Server(p.ID(), ButtonSubmit))
 }
-
 
 func init() {
 	browsertest.RegisterTestFunction("Checkbox Ajax Submit", testCheckboxAjaxSubmit)
@@ -137,9 +136,9 @@ func (p *CheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
 		var sel string
 		if p.Radio1.Checked() {
 			sel = p.Radio1.ID()
-		} else if  p.Radio2.Checked() {
+		} else if p.Radio2.Checked() {
 			sel = p.Radio2.ID()
-		} else if  p.Radio3.Checked() {
+		} else if p.Radio3.Checked() {
 			sel = p.Radio3.ID()
 		}
 		p.Info.SetText(sel)

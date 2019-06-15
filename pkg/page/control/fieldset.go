@@ -2,14 +2,15 @@ package control
 
 import (
 	"context"
-	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	buf2 "github.com/goradd/goradd/pkg/pool"
 )
 
 type FieldsetI interface {
 	PanelI
 }
+
 // Fieldset is a Panel that is drawn with a fieldset tag. The panel's label is used as the legend tag.
 // Fieldset's cannot have wrappers.
 type Fieldset struct {
@@ -24,7 +25,7 @@ func NewFieldset(parent page.ControlI, id string) *Fieldset {
 }
 
 // Init is called by subclasses of Fieldset.
-func (c *Fieldset) Init (self FieldsetI, parent page.ControlI, id string) {
+func (c *Fieldset) Init(self FieldsetI, parent page.ControlI, id string) {
 	c.Panel.Init(self, parent, id)
 	c.Tag = "fieldset"
 }

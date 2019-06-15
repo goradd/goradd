@@ -3,11 +3,11 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/goradd/goradd/pkg/goradd"
 	. "github.com/goradd/goradd/pkg/orm/query"
-	"time"
-	"fmt"
 	"strings"
+	"time"
 )
 
 // The SqlDbI interface describes the interface that a sql database needs to implement so that
@@ -77,7 +77,7 @@ func NewSqlDb(dbKey string) SqlDb {
 
 // Begin starts a transaction. You should immediately defer a Rollback using the returned transaction id.
 // If you Commit before the Rollback happens, no Rollback will occur.
-func (s *SqlDb) Begin(ctx context.Context) (txid TransactionID){
+func (s *SqlDb) Begin(ctx context.Context) (txid TransactionID) {
 	var c *SqlContext
 
 	i := ctx.Value(goradd.SqlContext)
@@ -173,7 +173,7 @@ func (s *SqlDb) Exec(ctx context.Context, sql string, args ...interface{}) (r sq
 
 	if c != nil && s.profiling {
 		if args != nil {
-			for _,arg := range args {
+			for _, arg := range args {
 				sql = strings.TrimSpace(sql)
 				sql += fmt.Sprintf(",\n%#v", arg)
 			}
@@ -223,7 +223,7 @@ func (s *SqlDb) Query(ctx context.Context, sql string, args ...interface{}) (r *
 	var endTime = time.Now()
 	if c != nil && s.profiling {
 		if args != nil {
-			for _,arg := range args {
+			for _, arg := range args {
 				sql = strings.TrimSpace(sql)
 				sql += fmt.Sprintf(",\n%#v", arg)
 			}
@@ -283,7 +283,7 @@ func (s *SqlDb) StartProfiling() {
 func IsProfiling(ctx context.Context) bool {
 	var c *SqlContext
 
-	if ctx == nil {	// testing
+	if ctx == nil { // testing
 		return false
 	}
 	i := ctx.Value(goradd.SqlContext)

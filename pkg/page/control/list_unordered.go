@@ -9,11 +9,9 @@ import (
 	"reflect"
 )
 
-
 type UnorderedListI interface {
 	page.ControlI
 	GetItemsHtml(items []ListItemI) string
-
 }
 
 // UnorderedList is a dynamically generated html unordered list (ul). Such lists are often used as the basis for
@@ -28,13 +26,13 @@ type UnorderedList struct {
 
 const (
 	// UnoderedListStyleDisc is the default list style for main items and is a bullet
-	UnorderedListStyleDisc   = "disc" // default
+	UnorderedListStyleDisc = "disc" // default
 	// UnorderedListStyleCircle is the default list style for 2nd level items and is an open circle
 	UnorderedListStyleCircle = "circle"
 	// UnorderedListStyleSquare sets a square as the bullet
 	UnorderedListStyleSquare = "square"
 	// UnorderedListStyleNone removes the bullet from the list
-	UnorderedListStyleNone   = "none"
+	UnorderedListStyleNone = "none"
 )
 
 // NewUnorderedList creates a new ul type list.

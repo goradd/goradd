@@ -1,15 +1,14 @@
 package old
 
 import (
-	"net/http"
 	"bytes"
+	"net/http"
 	"path/filepath"
 )
 
-
 func serveBuilder() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		buf := new (bytes.Buffer)
+		buf := new(bytes.Buffer)
 		cmd2 := r.FormValue("cmd")
 		if cmd2 != "" {
 			cmd = cmd2
@@ -20,7 +19,7 @@ func serveBuilder() http.Handler {
 		case "codegen":
 			go startCodegen()
 		case "run":
-			go buildAndRunApp();
+			go buildAndRunApp()
 		}
 		drawBuilder(buf)
 		w.Write(buf.Bytes())

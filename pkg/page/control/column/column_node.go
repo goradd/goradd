@@ -22,7 +22,6 @@ func NewNodeColumn(node query.NodeI) *NodeColumn {
 	return &i
 }
 
-
 func (c *NodeColumn) Init(node query.NodeI) {
 	if node == nil {
 		panic("node is required")
@@ -61,14 +60,14 @@ type NodeTexter struct {
 }
 
 func (t NodeTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
-	if v,ok := data.(Getter); !ok {
+	if v, ok := data.(Getter); !ok {
 		return ""
 	} else {
 		n := t.Node
 		var names []string
 
 		// walk up the chain of nodes to figure out how to walk down the chain of data
-		for  {
+		for {
 			name := query.NodeGoName(n)
 			if name == "" {
 				break
@@ -89,9 +88,9 @@ func (t NodeTexter) CellText(ctx context.Context, col control.ColumnI, rowNum in
 			if obj == nil || reflect.ValueOf(obj).IsNil() {
 				panic("database object has not loaded the items referred to in the node. Make sure you are joining the correct tables")
 			}
-			v2,ok = obj.(Getter)
+			v2, ok = obj.(Getter)
 			if !ok {
-				panic ("node chain does not match a chain of Getters (forward, reverse and manyMany references")
+				panic("node chain does not match a chain of Getters (forward, reverse and manyMany references")
 			}
 		}
 		s := v2.Get(names[0]) // This should be a column node
@@ -109,8 +108,8 @@ type NodeGetter interface {
 // will also add sort info to the nodes.
 func MakeNodeSlice(columns []control.ColumnI) []query.NodeI {
 	var nodes []query.NodeI
-	for _,c := range columns {
-		if getter,ok := c.(NodeGetter); ok {
+	for _, c := range columns {
+		if getter, ok := c.(NodeGetter); ok {
 			node := getter.GetNode()
 			if nodeSorter, ok := node.(query.NodeSorter); ok {
 				switch c.SortDirection() {

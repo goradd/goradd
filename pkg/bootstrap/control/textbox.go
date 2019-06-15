@@ -12,11 +12,10 @@ type Textbox struct {
 }
 
 func NewTextbox(parent page.ControlI, id string) *Textbox {
-	t := new (Textbox)
+	t := new(Textbox)
 	t.Init(t, parent, id)
 	return t
 }
-
 
 func (t *Textbox) ΩDrawingAttributes() *html.Attributes {
 	a := t.Textbox.ΩDrawingAttributes()
@@ -24,9 +23,6 @@ func (t *Textbox) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-
-func init () {
+func init() {
 	gob.RegisterName("bootstrap.textbox", new(Textbox))
 }
-
-

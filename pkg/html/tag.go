@@ -14,7 +14,7 @@ type LabelDrawingMode int
 // you don't do it the way they expect.
 const (
 	// LabelDefault means the mode is defined elsewhere, like in a config setting
-	LabelDefault    LabelDrawingMode = iota
+	LabelDefault LabelDrawingMode = iota
 	// LabelBefore indicates the label is in front of the control.
 	// Example: <label>MyLabel</label><input ... />
 	LabelBefore
@@ -124,9 +124,9 @@ func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mod
 	case LabelAfter:
 		return ctrlHtml + " " + RenderTagNoSpace(tag, labelAttributes, label)
 	case LabelWrapBefore:
-		return RenderTag(tag, labelAttributes, label + " " + ctrlHtml)
+		return RenderTag(tag, labelAttributes, label+" "+ctrlHtml)
 	case LabelWrapAfter:
-		return RenderTag(tag, labelAttributes, ctrlHtml + " " + label)
+		return RenderTag(tag, labelAttributes, ctrlHtml+" "+label)
 	}
 	panic("Unknown label mode")
 }
@@ -168,7 +168,7 @@ func Indent(s string) (out string) {
 			// This is an error in the html, so just return
 			return
 		}
-		out += s[:taOffset+11]  // skip textarea close tag
+		out += s[:taOffset+11] // skip textarea close tag
 		s = s[taOffset+11:]
 	}
 }

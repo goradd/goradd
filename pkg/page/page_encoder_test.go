@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
 /*
 func TestEmptyFormEncoding(t *testing.T) {
 	var form = page.FormBase{}
@@ -35,7 +36,7 @@ func TestEmptyFormEncoding(t *testing.T) {
 type BasicForm struct {
 	page.ΩFormBase
 	EmptyText *control.Textbox
-	Txt1 *control.Textbox
+	Txt1      *control.Textbox
 
 	S string
 }
@@ -100,9 +101,9 @@ func TestBasicFormEncoding(t *testing.T) {
 
 	f2 := p2.Form().(*BasicForm)
 
-	assert.Equal (t, "BasicForm", f2.ID(), "Form id not restored")
+	assert.Equal(t, "BasicForm", f2.ID(), "Form id not restored")
 
-	assert.Equal (t, "Hi", f2.Txt1.Text(), "Textbox content not restored")
+	assert.Equal(t, "Hi", f2.Txt1.Text(), "Textbox content not restored")
 	assert.Equal(t, "test", f2.S)
 	assert.Nil(t, f2.EmptyText, "Nil control not restored")
 }

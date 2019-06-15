@@ -46,7 +46,7 @@ func NewRadioList(parent page.ControlI, id string) *RadioList {
 // Init is called by subclasses.
 func (l *RadioList) Init(self RadioListI, parent page.ControlI, id string) {
 	l.SelectList.Init(self, parent, id)
-	l.Tag = "div";
+	l.Tag = "div"
 	l.labelDrawingMode = page.DefaultCheckboxLabelDrawingMode
 }
 
@@ -124,7 +124,7 @@ func (l *RadioList) ΩDrawingAttributes() *html.Attributes {
 // ΩDrawInnerHtml is called by the framework to draw the contents of the list.
 func (l *RadioList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.this().ΩRenderItems(l.items)
-	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID() + "_cbl"), h)
+	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
 	buf.WriteString(h)
 	return nil
 }
@@ -148,7 +148,6 @@ func (l *RadioList) ΩRenderItems(items []ListItemI) string {
 		RowClass(rowClass).
 		Build()
 }
-
 
 // ΩRenderItem is called by the framework to render a single item in the list.
 func (l *RadioList) ΩRenderItem(item ListItemI) (h string) {
@@ -200,5 +199,3 @@ func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
 		l.selectedId = v
 	}
 }
-
-

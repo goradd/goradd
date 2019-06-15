@@ -5,7 +5,6 @@ import (
 	"strings"
 )
 
-
 // A ManyManyNode is an association node that links one table to another table with a many-to-many relationship.
 // Some of the columns have overloaded meanings depending on SQL or NoSQL mode.
 type ManyManyNode struct {
@@ -62,15 +61,15 @@ func NewManyManyNode(
 
 func (n *ManyManyNode) copy() NodeI {
 	ret := &ManyManyNode{
-		dbKey:       n.dbKey,
-		dbTable:     n.dbTable,
-		dbColumn:    n.dbColumn,
-		goPropName:  n.goPropName,
-		refTable:    n.refTable,
-		refColumn:   n.refColumn,
-		isArray:     n.isArray,
-		isTypeTable: n.isTypeTable,
-		nodeAlias: nodeAlias{n.alias},
+		dbKey:         n.dbKey,
+		dbTable:       n.dbTable,
+		dbColumn:      n.dbColumn,
+		goPropName:    n.goPropName,
+		refTable:      n.refTable,
+		refColumn:     n.refColumn,
+		isArray:       n.isArray,
+		isTypeTable:   n.isTypeTable,
+		nodeAlias:     nodeAlias{n.alias},
 		nodeCondition: nodeCondition{n.condition}, // shouldn't need to duplicate condition
 	}
 	return ret
@@ -79,7 +78,6 @@ func (n *ManyManyNode) copy() NodeI {
 func (n *ManyManyNode) nodeType() NodeType {
 	return ManyManyNodeType
 }
-
 
 // Expand tells this node to create multiple original objects with a single link for each joined item, rather than to create one original with an array of joined items
 func (n *ManyManyNode) Expand() {

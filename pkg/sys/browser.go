@@ -36,4 +36,3 @@ func LaunchChrome(url string) (err error) {
 
 	return
 }
-

@@ -68,15 +68,15 @@ func NewReferenceNode(
 
 func (n *ReferenceNode) copy() NodeI {
 	ret := &ReferenceNode{
-		dbKey:        n.dbKey,
-		dbTable:      n.dbTable,
-		dbColumn:     n.dbColumn,
-		goColumnName: n.goColumnName,
-		goPropName:   n.goPropName,
-		refTable:     n.refTable,
-		refColumn:    n.refColumn,
-		isTypeTable:  n.isTypeTable,
-		nodeAlias: nodeAlias{n.alias},
+		dbKey:         n.dbKey,
+		dbTable:       n.dbTable,
+		dbColumn:      n.dbColumn,
+		goColumnName:  n.goColumnName,
+		goPropName:    n.goPropName,
+		refTable:      n.refTable,
+		refColumn:     n.refColumn,
+		isTypeTable:   n.isTypeTable,
+		nodeAlias:     nodeAlias{n.alias},
 		nodeCondition: nodeCondition{n.condition},
 	}
 	return ret
@@ -134,8 +134,6 @@ func (n *ReferenceNode) Expand() {
 func (n *ReferenceNode) isExpanded() bool {
 	return false
 }
-
-
 
 // RelatedColumnNode is used internally by the framework to create a new node for the other side of the relationship.
 func RelatedColumnNode(n NodeI) NodeI {

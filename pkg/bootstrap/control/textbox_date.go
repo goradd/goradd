@@ -12,11 +12,10 @@ type DateTextbox struct {
 }
 
 func NewDateTextbox(parent page.ControlI, id string) *DateTextbox {
-	t := new (DateTextbox)
+	t := new(DateTextbox)
 	t.Init(t, parent, id)
 	return t
 }
-
 
 func (t *DateTextbox) ΩDrawingAttributes() *html.Attributes {
 	a := t.DateTextbox.ΩDrawingAttributes()
@@ -24,9 +23,6 @@ func (t *DateTextbox) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-
-func init () {
+func init() {
 	gob.RegisterName("bootstrap.datetextbox", new(DateTextbox))
 }
-
-

@@ -15,7 +15,7 @@ var hub *WebSocketHub
 // helper type to synchronize the clients map using a channel
 type messageType struct {
 	channel string
-	message map[string]interface{}	// messages will be converted to json objects. Items in the object must be json serializable.
+	message map[string]interface{} // messages will be converted to json objects. Items in the object must be json serializable.
 }
 
 type WebSocketHub struct {
@@ -41,7 +41,7 @@ func NewWebSocketHub() *WebSocketHub {
 		//Broadcast:  make(chan []byte),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
-		send: make(chan messageType),
+		send:       make(chan messageType),
 		clients:    make(map[string]map[string]*Client),
 	}
 }
@@ -53,11 +53,11 @@ func (h *WebSocketHub) run() {
 			log.FrameworkDebugf("Client registering for channel %s pagestate %s", client.channel, client.pagestate)
 			var clientsByFormstate map[string]*Client
 			var ok bool
-			if clientsByFormstate,ok = h.clients[client.channel]; !ok {
+			if clientsByFormstate, ok = h.clients[client.channel]; !ok {
 				clientsByFormstate = make(map[string]*Client)
 				h.clients[client.channel] = clientsByFormstate
 			}
-			if _,ok := clientsByFormstate[client.pagestate]; !ok {
+			if _, ok := clientsByFormstate[client.pagestate]; !ok {
 				clientsByFormstate[client.pagestate] = client
 			} else {
 				// The user is registering again for a particular channel. Maybe a page refresh? Close the previous channel to prevent a memory leak
@@ -79,18 +79,17 @@ func (h *WebSocketHub) run() {
 				log.Errorf("Could not find channel %s", msg.channel)
 			}
 
-
-		/* not broadcasting currently. This might change
-		case message := <-h.Broadcast:
-			for client := range h.clients {
-				select {
-				case client.send <- message: // echo
-				default:
-					close(client.send)
-					delete(h.clients, client)
+			/* not broadcasting currently. This might change
+			case message := <-h.Broadcast:
+				for client := range h.clients {
+					select {
+					case client.send <- message: // echo
+					default:
+						close(client.send)
+						delete(h.clients, client)
+					}
 				}
-			}
-		*/
+			*/
 		}
 	}
 }
@@ -98,7 +97,7 @@ func (h *WebSocketHub) run() {
 func (h *WebSocketHub) unregisterClient(channel string, pagestate string) {
 	if clientsByFormstate, ok := h.clients[channel]; ok {
 		if client, ok2 := clientsByFormstate[pagestate]; ok2 {
-			close (client.send)
+			close(client.send)
 			delete(clientsByFormstate, pagestate)
 			if len(clientsByFormstate) == 0 {
 				delete(h.clients, channel)

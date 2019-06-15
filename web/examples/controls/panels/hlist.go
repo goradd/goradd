@@ -17,7 +17,7 @@ type person struct {
 }
 
 type project struct {
-	name string
+	name   string
 	people []person
 }
 
@@ -28,18 +28,17 @@ var projects = []project{
 	{"Small Frys", []person{{"April"}, {"Ruben"}, {"Karriyma"}, {"McKenzie"}}},
 }
 
-
 type HListPanel struct {
 	Panel
 
 	OList *OrderedList
 	UList *UnorderedList
 
-	SubmitAjax      *Button
-	SubmitServer    *Button
+	SubmitAjax   *Button
+	SubmitServer *Button
 }
 
-func NewHListPanel(ctx context.Context, parent page.ControlI)  {
+func NewHListPanel(ctx context.Context, parent page.ControlI) {
 	itemList := []ListValue{
 		{"First", 1},
 		{"Second", 2},
@@ -51,10 +50,10 @@ func NewHListPanel(ctx context.Context, parent page.ControlI)  {
 	p := &HListPanel{}
 	p.Panel.Init(p, parent, "HListPanel")
 
-	p.OList = NewOrderedList(p,"orderedList")
+	p.OList = NewOrderedList(p, "orderedList")
 	p.OList.SetData(itemList)
 
-	p.UList = NewUnorderedList(p,"unorderedList")
+	p.UList = NewUnorderedList(p, "unorderedList")
 	p.UList.SetDataProvider(p)
 
 	p.SubmitAjax = NewButton(p, "ajaxButton")
@@ -71,15 +70,14 @@ func (p *HListPanel) BindData(ctx context.Context, s data.DataManagerI) {
 	// This is an example of how to populate a hierarchical list using a data binder.
 	// One use of this is to query the database, and then walk the results.
 	p.UList.Clear()
-	for _,proj := range projects {
+	for _, proj := range projects {
 		listItem := NewListItem(proj.name)
-		for _,per := range proj.people {
+		for _, per := range proj.people {
 			listItem.AddItem(per.name)
 		}
 		p.UList.AddListItems(listItem)
 	}
 }
-
 
 func init() {
 	controls.RegisterPanel("hlist", "Nested Lists", NewHListPanel, 11)

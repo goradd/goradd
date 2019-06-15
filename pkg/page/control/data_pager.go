@@ -35,12 +35,11 @@ type PaginatedControlI interface {
 
 // PaginatedControl is a mixin that makes a Control controllable by a data pager
 type PaginatedControl struct {
-	totalItems       int
-	pageSize         int
-	pageNum          int
-	dataPagers 		 []DataPagerI
+	totalItems int
+	pageSize   int
+	pageNum    int
+	dataPagers []DataPagerI
 }
-
 
 // DefaultPaginatorPageSize is the default number of items that a paginated control will show. You can change this in an individual control, too.
 var DefaultPaginatorPageSize = 10
@@ -114,7 +113,7 @@ func (c *PaginatedControl) CalcPageCount() int {
 	return (c.totalItems-1)/c.pageSize + 1
 }
 
-func (c *PaginatedControl) getDataPagers() []DataPagerI{
+func (c *PaginatedControl) getDataPagers() []DataPagerI {
 	return c.dataPagers
 }
 
@@ -126,7 +125,7 @@ func (c *PaginatedControl) HasDataPagers() bool {
 // data the pager refers to
 func (c *PaginatedControl) SliceOffsets() (start, end int) {
 	start = (c.PageNum() - 1) * c.PageSize()
-	_,end = math.MinInt(start+ c.PageSize(),  c.TotalItems())
+	_, end = math.MinInt(start+c.PageSize(), c.TotalItems())
 	return
 }
 
@@ -136,7 +135,6 @@ func (c *PaginatedControl) SqlLimits() (maxRowCount, offset int) {
 	maxRowCount = c.PageSize()
 	return
 }
-
 
 // DataPagerI is the data pager interface that allows this object to call into subclasses.
 type DataPagerI interface {
@@ -160,7 +158,7 @@ type DataPager struct {
 	LabelForPrevious string
 
 	paginatedControl PaginatedControlI
-	Proxy *Proxy
+	Proxy            *Proxy
 }
 
 // NewDataPager creates a new DataPager
@@ -208,12 +206,11 @@ func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
 		}
 		d.paginatedControl.SetPageNum(pageNum)
 		d.paginatedControl.Refresh()
-		for _,c := range d.paginatedControl.getDataPagers() {
+		for _, c := range d.paginatedControl.getDataPagers() {
 			c.Refresh()
 		}
 	}
 }
-
 
 func (d *DataPager) refreshPaginatedControl() {
 	d.paginatedControl.Refresh()
@@ -231,14 +228,11 @@ func (d *DataPager) SetObjectNames(singular string, plural string) {
 	d.ObjectPluralName = plural
 }
 
-
 // SetLabels sets the previous and next labels. Translate these first.
 func (d *DataPager) SetLabels(previous string, next string) {
 	d.LabelForPrevious = previous
 	d.LabelForNext = next
 }
-
-
 
 /*
 CalcBunch is called by the framework to lay out the data pager based on the number of pages
@@ -302,8 +296,8 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 	if pageCount <= d.maxPageButtons {
 		return 1, pageCount
 	} else {
-		_,minEndOfBunch := math.MinInt(d.maxPageButtons-2, pageCount)
-		_,maxStartOfBunch := math.MaxInt(pageCount-d.maxPageButtons+3, 1)
+		_, minEndOfBunch := math.MinInt(d.maxPageButtons-2, pageCount)
+		_, maxStartOfBunch := math.MaxInt(pageCount-d.maxPageButtons+3, 1)
 
 		leftOfBunchCount := (d.maxPageButtons - 5) / 2
 		rightOfBunchCount := (d.maxPageButtons - 4) / 2
@@ -314,13 +308,13 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 		if pageNum < leftBunchTrigger {
 			pageStart = 1
 		} else {
-			_,pageStart = math.MinInt(maxStartOfBunch, pageNum-leftOfBunchCount)
+			_, pageStart = math.MinInt(maxStartOfBunch, pageNum-leftOfBunchCount)
 		}
 
 		if pageNum > rightBunchTrigger {
 			pageEnd = pageCount
 		} else {
-			_,pageEnd = math.MaxInt(minEndOfBunch, pageNum+rightOfBunchCount)
+			_, pageEnd = math.MaxInt(minEndOfBunch, pageNum+rightOfBunchCount)
 		}
 		return
 	}
@@ -443,9 +437,9 @@ func (d *DataPager) ΩMarshalState(m maps.Setter) {
 
 // ΩUnmarshalState is an internal function to restore the state of the control
 func (d *DataPager) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("pageNum"); ok {
+	if v, ok := m.Load("pageNum"); ok {
 		if i, ok := v.(int); ok {
-			d.paginatedControl.SetPageNum (i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
+			d.paginatedControl.SetPageNum(i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
 		}
 	}
 }
@@ -496,7 +490,6 @@ func (d *DataPager) ΩisSerializer(i page.ControlI) bool {
 	return reflect.TypeOf(d) == reflect.TypeOf(i)
 }
 
-
 func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
 	if err = d.Control.Deserialize(dec, p); err != nil {
 		return
@@ -518,17 +511,17 @@ func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
 		return
 	}
 
-	if ci,err := dec.DecodeControl(p); err != nil {
+	if ci, err := dec.DecodeControl(p); err != nil {
 		return err
 	} else {
 		d.paginatedControl = ci.(PaginatedControlI)
 	}
 
-	if ci,err := dec.DecodeControl(p); err != nil {
+	if ci, err := dec.DecodeControl(p); err != nil {
 		return err
 	} else {
 		d.Proxy = ci.(*Proxy)
 	}
-	
+
 	return
 }

@@ -5,7 +5,7 @@ require (
 	github.com/dlclark/regexp2 v1.1.6 // indirect
 	github.com/gedex/inflector v0.0.0-20170307190818-16278e9db813
 	github.com/go-sql-driver/mysql v1.4.1
-	github.com/goradd/gengen v0.1.5
+	github.com/goradd/gengen v0.2.1
 	github.com/goradd/gofile v0.1.6
 	github.com/goradd/got v0.6.0
 	github.com/gorilla/websocket v1.4.0

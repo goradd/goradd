@@ -22,4 +22,3 @@ func TestWrapperInterface(t *testing.T) {
 	w = d
 	assert.Equal(t, w.ΩNewI().TypeName(), page.DivWrapper)
 }
-

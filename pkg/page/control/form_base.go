@@ -2,12 +2,12 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/orm/db"
-	"github.com/goradd/goradd/pkg/page/event"
-	"github.com/goradd/goradd/pkg/page/action"
-	"strings"
 	"fmt"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
+	"strings"
 )
 
 const (
@@ -25,7 +25,6 @@ func NewMockForm() *FormBase {
 	f.ΩFormBase.Init(nil, f, "", "MockFormId")
 	return f
 }
-
 
 // Init initializes the FormBase. Call this before adding other controls.
 func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
@@ -48,27 +47,25 @@ func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id st
 	}
 
 	/*	TODO: Add a dialog and designer click if in design mode
-					if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
-					// Attach custom event to dialog to handle right click menu items sent by form
+			if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
+			// Attach custom event to dialog to handle right click menu items sent by form
 
-					$dlg = new Q\ModelConnector\EditDlg ($objClass, 'qconnectoreditdlg');
+			$dlg = new Q\ModelConnector\EditDlg ($objClass, 'qconnectoreditdlg');
 
-					$dlg->addAction(
-						new Q\Event\On('qdesignerclick'),
-						new Q\Action\Ajax ('ctlDesigner_Click', null, null, 'ui')
-					);
-				}
+			$dlg->addAction(
+				new Q\Event\On('qdesignerclick'),
+				new Q\Action\Ajax ('ctlDesigner_Click', null, null, 'ui')
+			);
+		}
 
 	*/
-
-
 
 }
 
 func (f *FormBase) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case databaseProfileAction:
-		if c := f.Page().GetControl("grProfilePanel"); c != nil{
+		if c := f.Page().GetControl("grProfilePanel"); c != nil {
 			if c.IsVisible() {
 				c.SetVisible(false)
 			} else {

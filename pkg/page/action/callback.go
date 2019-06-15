@@ -29,7 +29,7 @@ type callbackAction struct {
 	ActionID           int
 	DestControlID      string
 	SubID              string
-	Value        interface{}
+	Value              interface{}
 	ValidationOverride interface{} // overrides the validation setting that is on the control
 	CallAsync          bool
 }
@@ -161,11 +161,9 @@ func (a *ΩserverAction) IsServerAction() bool {
 	return true
 }
 
-
 type ΩajaxAction struct {
 	callbackAction
 }
-
 
 // Ajax creates an ajax action. When the action fires, the Action() function of the Goradd control identified by the
 // destControlId will be called, and the given actionID will be the ID passed in the ActionParams of the call.

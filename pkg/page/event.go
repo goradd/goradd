@@ -42,7 +42,6 @@ type EventI interface {
 	Name() string
 	GetID() EventID
 
-
 	addActions(a ...action2.ActionI)
 	renderActions(control ControlI, eventID EventID) string
 	getActions() []action2.ActionI
@@ -57,30 +56,30 @@ type EventMap map[EventID]EventI
 // predefined events in the event package, like event.Click()
 type Event struct {
 	// JsEvent is the JavaScript event that will be triggered by the event.
-	JsEvent                   string
+	JsEvent string
 	// condtion is a javascript comparison test that if present, must evaluate as true for the event to fire
-	condition                 string
+	condition string
 	// delay is the number of milliseconds to delay firing the action after the event triggers
-	delay                     int
+	delay int
 	// selector is a css selector that will filter the event bubbling up from a sub-item. The event must originate from
 	// an html object that the selector specifies.
-	selector                  string
+	selector string
 	// blocking specifies that once the event fires, all other events will be blocked until the action associated with
 	// the event returns.
-	blocking                  bool
+	blocking bool
 	// actionValue is a static value, or a javascript.* to get a dynamic value when the action returns to us.
 	// this value will become the EventValue returned to the action.
-	actionValue               interface{}
+	actionValue interface{}
 	// actions is the list of actions that the event triggers
-	actions                   []action2.ActionI
+	actions []action2.ActionI
 	// preventDefault will cause the preventDefault jQuery function to be called on the event, which prevents the
 	// default action. In particular, this would prevent a submit button from submitting a form.
-	preventDefault            bool
+	preventDefault bool
 	// stopPropogation will cause the stopPropogation jQuery function to be called on the event, which prevents the event
 	// from bubbling.
-	stopPropagation           bool
+	stopPropagation bool
 	// validationOverride allows the event to override the control's validation mechanism.
-	validationOverride        ValidationType
+	validationOverride ValidationType
 	// validationTargetsOverride allows the event to specify custom targets for validation.
 	validationTargetsOverride []string
 	// internally assigned event id
@@ -131,7 +130,6 @@ func (e *Event) Blocking() EventI {
 	return e
 }
 
-
 // Call Terminating to cause the event not to bubble or do the default action.
 func (e *Event) Terminating() EventI {
 	e.preventDefault = true
@@ -179,8 +177,8 @@ func (e *Event) ValidationTargets(targets ...string) EventI {
 
 // HasServerAction returns true if at least one of the event's actions is a server action.
 func (e *Event) HasServerAction() bool {
-	for _,action := range e.actions {
-		if a,ok := action.(action2.CallbackActionI); ok {
+	for _, action := range e.actions {
+		if a, ok := action.(action2.CallbackActionI); ok {
 			return a.IsServerAction()
 		}
 	}
@@ -196,9 +194,6 @@ func (e *Event) Name() string {
 func (e *Event) GetID() EventID {
 	return e.eventID
 }
-
-
-
 
 func (e *Event) addActions(actions ...action2.ActionI) {
 	var foundCallback bool
@@ -292,17 +287,17 @@ type eventEncoded struct {
 }
 
 func (e *Event) GobEncode() (data []byte, err error) {
-	s := eventEncoded {
-		JsEvent: e.JsEvent,
-		Condition: e.condition,
-		Delay: e.delay,
-		Selector:e.selector,
-		Blocking:e.blocking,
-		ActionValue:e.actionValue,
-		Actions:e.actions,
-		PreventDefault:e.preventDefault,
-		StopPropagation: e.stopPropagation,
-		ValidationOverride: e.validationOverride,
+	s := eventEncoded{
+		JsEvent:                   e.JsEvent,
+		Condition:                 e.condition,
+		Delay:                     e.delay,
+		Selector:                  e.selector,
+		Blocking:                  e.blocking,
+		ActionValue:               e.actionValue,
+		Actions:                   e.actions,
+		PreventDefault:            e.preventDefault,
+		StopPropagation:           e.stopPropagation,
+		ValidationOverride:        e.validationOverride,
 		ValidationTargetsOverride: e.validationTargetsOverride,
 	}
 	var buf bytes.Buffer

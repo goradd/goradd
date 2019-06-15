@@ -21,7 +21,6 @@ import (
 // TODO: Implement Open ID with OAuth mechanisms too. Remember when doing this that you need both. OAuth is
 // only for authorization and NOT authentication!
 
-
 // The approach here:
 // The framework here can be used in a few different ways. You can implement basic authentication, or use a bearer
 // token as a refresh token. You can return these as headers, or in the body of the response. Its up to you.
@@ -50,7 +49,7 @@ func MakeAuthApiServer(a app.ApplicationI) http.Handler {
 // serveAuthHandler serves up the auth api.
 func serveAuthApi() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		authApiHandler(w,r)
+		authApiHandler(w, r)
 	}
 	return http.HandlerFunc(fn)
 }
@@ -65,7 +64,6 @@ const (
 	OpRecover    = "recover" // When passing this one, you will need to specify your own recovery method in the message.
 )
 
-
 // authMessage is the message sent by the server. It comes through as JSON and gets unpacked into
 // this structure. The keys that are reserved and that we use are listed below. You can send other
 // keys in the message as well to meet your needs, and the message will get sent on to the auth service.
@@ -73,8 +71,8 @@ const (
 //type authMessage map[string]interface{}
 
 const (
-	formOperation = "op" // The operation to perform. Possibilities are AuthOp* options above.
-	formMsg = "msg" // This is the message from your client to your service. Use any format you wish.
+	formOperation = "op"  // The operation to perform. Possibilities are AuthOp* options above.
+	formMsg       = "msg" // This is the message from your client to your service. Use any format you wish.
 )
 
 func authApiHandler(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +89,7 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 			// Valid first time, so we set up a timestamp for rate limiting new account requests
 			// We subtract LoginRateLimit here because we expect the user to try to login once immediately after
 			// saying hello. We rate limit any subsequent attempts.
-			session.Set(ctx, goradd.SessionAuthTime, time.Now().Unix() - LoginRateLimit)
+			session.Set(ctx, goradd.SessionAuthTime, time.Now().Unix()-LoginRateLimit)
 			// TODO: Prevent a DoS attack here by checking for rapid hellos from the same IP address and rate limiting them
 			// If we do it, one article suggested returning a 200 in order to prevent an attacker from knowing they were being rate limited
 		} else {
@@ -120,17 +118,17 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 			authWriteError(ctx, "say hello", 404, w)
 
 		} else if session.Has(ctx, goradd.SessionAuthSuccess) {
-				// This client is already logged in. If logging in again, we will assume the client tried to logout
-				// and something failed, like a bad connection at that moment. So, we will logout here and force the
-				// client to reestablish a session first
+			// This client is already logged in. If logging in again, we will assume the client tried to logout
+			// and something failed, like a bad connection at that moment. So, we will logout here and force the
+			// client to reestablish a session first
 			session.Clear(ctx)
 			session.Reset(ctx)
 			authWriteError(ctx, "say hello", 404, w)
 		} else {
 			lastLogin := session.Get(ctx, goradd.SessionAuthTime).(int64)
 			now := time.Now().Unix()
-			if now - lastLogin < LoginRateLimit {
-				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425, w)
+			if now-lastLogin < LoginRateLimit {
+				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit-(now-lastLogin)+1), 425, w)
 			} else {
 				if authLogin(ctx, []byte(msg), w) {
 					// if the user was successfully logged in, we mark that so that the same session cannot create another user or log in
@@ -151,8 +149,8 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			lastLogin := session.Get(ctx, goradd.SessionAuthTime).(int64)
 			now := time.Now().Unix()
-			if now - lastLogin < LoginRateLimit {
-				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425, w)
+			if now-lastLogin < LoginRateLimit {
+				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit-(now-lastLogin)+1), 425, w)
 			} else {
 				if authTokenLogin(ctx, []byte(msg), w) {
 					// if the user was successfully logged in, we mark that so that the same session cannot create another user or log in
@@ -183,8 +181,8 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 			// rate limit recovery attempts
 			lastLogin := session.Get(ctx, goradd.SessionAuthTime).(int64)
 			now := time.Now().Unix()
-			if now - lastLogin < LoginRateLimit {
-				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425, w)
+			if now-lastLogin < LoginRateLimit {
+				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit-(now-lastLogin)+1), 425, w)
 			} else {
 				authRecover(ctx, []byte(msg), w)
 			}
@@ -193,7 +191,7 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 		if op == "" {
 			authWriteError(ctx, "No operation specified", 400, w)
 		} else {
-			authWriteError(ctx, "Invalid operation: " + op, 400, w)
+			authWriteError(ctx, "Invalid operation: "+op, 400, w)
 		}
 	}
 }

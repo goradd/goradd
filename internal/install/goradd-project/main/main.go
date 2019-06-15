@@ -12,7 +12,6 @@ import (
 	app2 "github.com/goradd/goradd/web/app"
 	// Below is where you import packages that register forms
 	_ "goradd-project/web/form" // Your  forms.
-
 	// Custom paths, including additional form directories
 	// _ "mysite"
 )
@@ -66,7 +65,6 @@ func useFlags() {
 		config.TLSPort = *tlsPort
 	}
 
-
 	if *wsPort != 0 {
 		config.WebSocketPort = *wsPort
 	}
@@ -88,7 +86,7 @@ func useFlags() {
 		config.WebSocketTLSCertFile = *wsCertFile
 	}
 
-	for _,s := range staticPaths {
+	for _, s := range staticPaths {
 		i := strings.IndexAny(s, ":;")
 		if i == -1 {
 			log.Fatal("map must specify a path and directory, separated by a colon or semicolon")

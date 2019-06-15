@@ -17,7 +17,6 @@ func init() {
 
 // This structure describes the DateTimeSpan to the connector dialog and code generator
 type DateTimeSpan struct {
-
 }
 
 func (d DateTimeSpan) Type() string {
@@ -59,11 +58,10 @@ func (d DateTimeSpan) GeneratePut(ctrlName string, objName string, col *generato
 	return
 }
 
-
 func (d DateTimeSpan) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
 	paramSet := maps.NewSliceMap()
-	paramSet.Set("Format", generator.ConnectorParam {
+	paramSet.Set("Format", generator.ConnectorParam{
 		"Format",
 		"format string to use to format the DateTime. See time.Time doc for more info.",
 		generator.ControlTypeString,
@@ -74,4 +72,3 @@ func (d DateTimeSpan) ConnectorParams() *maps.SliceMap {
 
 	return paramControls
 }
-

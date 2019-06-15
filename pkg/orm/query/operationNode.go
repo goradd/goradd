@@ -68,8 +68,8 @@ const (
 
 	// Our own custom operators for universal support
 	OpStartsWith = "StartsWith"
-	OpEndsWith = "EndsWith"
-	OpContains = "Contains"
+	OpEndsWith   = "EndsWith"
+	OpContains   = "Contains"
 )
 
 // String returns a string representation of the Operator type. For convenience, this also corresponds to the SQL
@@ -82,12 +82,12 @@ func (o Operator) String() string {
 // The operation could be arithmetic, boolean, or a function.
 type OperationNode struct {
 	nodeAlias
-	op             Operator
-	operands       []NodeI
-	functionName   string // for function operations specific to the db driver
+	op           Operator
+	operands     []NodeI
+	functionName string // for function operations specific to the db driver
 	//isAggregate    bool   // requires that an aggregation clause be present in the query
 	//sortDescending bool
-	distinct       bool // some aggregate queries, particularly count, allow this inside the function
+	distinct bool // some aggregate queries, particularly count, allow this inside the function
 }
 
 // NewOperationNode returns a new operation.
@@ -176,14 +176,14 @@ func (n *OperationNode) Equals(n2 NodeI) bool {
 			return false
 		}
 		/*
-		if cn.isAggregate != n.isAggregate {
-			return false
-		}
+			if cn.isAggregate != n.isAggregate {
+				return false
+			}
 		*/
 		/*
-		if cn.sortDescending != n.sortDescending {
-			return false
-		}*/
+			if cn.sortDescending != n.sortDescending {
+				return false
+			}*/
 		if cn.operands == nil && n.operands == nil {
 			return true // neither side has operands, so no need to check further
 		}

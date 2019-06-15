@@ -14,7 +14,7 @@ import (
 /*
 This file contains the code that parses the data structure found in a MySQL database into
 our own cross-platform internal database description object.
- */
+*/
 
 const (
 	MysqlTypeSet  = "Set"
@@ -582,10 +582,10 @@ tableLoop:
 	}
 
 	// sort for consistent looping
-	sort.Slice(dd.Tables, func(i,j int) bool {
+	sort.Slice(dd.Tables, func(i, j int) bool {
 		return dd.Tables[i].DbName < dd.Tables[j].DbName
 	})
-	sort.Slice(dd.TypeTables, func(i,j int) bool {
+	sort.Slice(dd.TypeTables, func(i, j int) bool {
 		return dd.TypeTables[i].DbName < dd.TypeTables[j].DbName
 	})
 

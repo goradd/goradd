@@ -1,6 +1,5 @@
 package config
 
-
 import (
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
@@ -43,5 +42,5 @@ func BootstrapAssets() string {
 }
 
 func init() {
-	page.RegisterAssetDirectory(BootstrapAssets(), config.AssetPrefix + "bootstrap")
+	page.RegisterAssetDirectory(BootstrapAssets(), config.AssetPrefix+"bootstrap")
 }

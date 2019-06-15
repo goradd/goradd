@@ -18,7 +18,6 @@ func init() {
 
 // This structure describes the textbox to the connector dialog and code generator
 type Textbox struct {
-
 }
 
 func (d Textbox) Type() string {
@@ -43,7 +42,7 @@ func (d Textbox) SupportsColumn(col *generator.ColumnType) bool {
 
 func (d Textbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-`	ctrl = %s.NewTextbox(c.ParentControl, id)
+		`	ctrl = %s.NewTextbox(c.ParentControl, id)
 	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 	if col.MaxCharLength > 0 {
@@ -72,16 +71,15 @@ func (d Textbox) GenerateGet(ctrlName string, objName string, col *generator.Col
 }
 
 func (d Textbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	s = fmt.Sprintf(`c.%s.Set%s(c.%s.Text())`, objName,  col.GoName, ctrlName)
+	s = fmt.Sprintf(`c.%s.Set%s(c.%s.Text())`, objName, col.GoName, ctrlName)
 	return
 }
-
 
 func (d Textbox) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
 	paramSet := maps.NewSliceMap()
 
-	paramSet.Set("ColumnCount", generator.ConnectorParam {
+	paramSet.Set("ColumnCount", generator.ConnectorParam{
 		"Column Count",
 		"Width of field by the number of characters.",
 		generator.ControlTypeInteger,
@@ -90,9 +88,7 @@ func (d Textbox) ConnectorParams() *maps.SliceMap {
 			c.(*control.Textbox).SetColumnCount(val.(int))
 		}})
 
-
 	paramControls.Set("Textbox", paramSet)
 
 	return paramControls
 }
-

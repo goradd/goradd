@@ -11,10 +11,11 @@ func TestListSelectString(t *testing.T) {
 
 	d := NewSelectList(p, "")
 
-	d.AddItem("- Select a Value -", nil)
 	d.AddItem("A", "A")
-	d.AddItem("C", "C")
-	d.AddItemAt(2, "B", "B")
+	d.AddItem("D", "D")
+	d.AddItemAt(1, "B", "B")
+	d.AddItemAt(-1, "C", "C")
+	d.AddItemAt(-10, "- Select a Value -", nil)
 
 	d.SetValue("B")
 
@@ -28,6 +29,9 @@ func TestListSelectString(t *testing.T) {
 	assert.Equal(t, "C", d.SelectedLabel())
 	assert.Equal(t, "C", d.Value())
 	assert.Equal(t, "C", d.StringValue())
+
+	assert.Equal(t, "C", d.GetItemAt(3).Value())
+	assert.Equal(t, "D", d.GetItemAt(4).Value())
 
 	d.SetIsRequired(true)
 	valid = d.MockFormValue("")
@@ -83,7 +87,6 @@ func TestListSelectData(t *testing.T) {
 	assert.Nil(t, d.GetItemAt(7))
 	assert.Equal(t, 4, d.ListItems()[4].IntValue())
 
-
 	id, _ := d.GetItemByValue(3)
 	valid := d.MockFormValue(id)
 	assert.True(t, valid)
@@ -95,7 +98,7 @@ func TestListSelectData(t *testing.T) {
 	valid = d.MockFormValue("")
 	assert.False(t, valid)
 
-	assert.Panics(t, func() {d.RemoveItemAt(7)})
+	assert.Panics(t, func() { d.RemoveItemAt(7) })
 	d.RemoveItemAt(2)
 	assert.Equal(t, 4, d.Len())
 	assert.Equal(t, 4, d.GetItemAt(3).IntValue())
@@ -106,4 +109,3 @@ func TestListSelectData(t *testing.T) {
 func TestListItem(t *testing.T) {
 
 }
-

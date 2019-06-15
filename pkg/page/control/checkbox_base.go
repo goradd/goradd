@@ -14,11 +14,10 @@ type CheckboxI interface {
 	ΩGetDrawingLabelAttributes() *html.Attributes
 }
 
-
 // CheckboxBase is a base class for checkbox-like objects, including html checkboxes and radio buttons.
 type CheckboxBase struct {
 	page.Control
-	checked         bool
+	checked bool
 	// LabelMode describes where to place the label associating the text with the checkbox
 	LabelMode       html.LabelDrawingMode
 	labelAttributes *html.Attributes
@@ -137,7 +136,7 @@ func (c *CheckboxBase) ΩGetDrawingLabelAttributes() *html.Attributes {
 		a.SetStyle("display", "none")
 	}
 
-	a.SetDataAttribute("grel", a.ID())	// make sure label gets replaced when drawing
+	a.SetDataAttribute("grel", a.ID()) // make sure label gets replaced when drawing
 	return a
 }
 
@@ -188,8 +187,8 @@ func (c *CheckboxBase) ΩMarshalState(m maps.Setter) {
 
 // ΩUnmarshalState restores the state of the checkbox if coming back to a form in the same session.
 func (c *CheckboxBase) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("checked"); ok {
-		if v2,ok := v.(bool); ok {
+	if v, ok := m.Load("checked"); ok {
+		if v2, ok := v.(bool); ok {
 			c.checked = v2
 		}
 	}
@@ -284,4 +283,3 @@ func (c *CheckboxBase) UpdateRadioFormValues(ctx *page.Context, group string) {
 		}
 	}
 }
-

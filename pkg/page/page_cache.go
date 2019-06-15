@@ -3,8 +3,8 @@ package page
 import (
 	"bytes"
 	"github.com/goradd/goradd/ideas/types"
-	"github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/pool"
 )
 
 // PageCacheI is the page cache interface. The PageCache saves and restores pages in between page
@@ -74,7 +74,6 @@ func (o *FastPageCache) Get(pageId string) *Page {
 func (o *FastPageCache) Has(pageId string) bool {
 	return o.LruCache.Has(pageId)
 }
-
 
 // NewPageID returns a new page id
 func (o *FastPageCache) NewPageID() string {

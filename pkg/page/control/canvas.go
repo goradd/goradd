@@ -5,7 +5,6 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 )
 
-
 type CanvasI interface {
 	page.ControlI
 }

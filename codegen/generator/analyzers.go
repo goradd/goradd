@@ -3,17 +3,16 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/orm/db"
-	"strings"
 	"strconv"
+	"strings"
 )
-
 
 func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports []*ImportType) {
 	var pathToImport = make(map[string]*ImportType)
 	var namespaceToImport = make(map[string]*ImportType)
 
-	for _,col := range t.Columns {
-		col2 := ColumnType{ColumnDescription:col}
+	for _, col := range t.Columns {
+		col2 := ColumnType{ColumnDescription: col}
 
 		typ, newFunc, importName := controlType(col)
 
@@ -24,21 +23,21 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 			if generator == nil {
 				panic(fmt.Errorf("Generator for control type %s/%s is not defined", importName, typ))
 			}
-			for i,importPath := range generator.Imports() {
+			for i, importPath := range generator.Imports() {
 				var ok bool
 				var imp *ImportType
-				if imp,ok = pathToImport[importPath]; !ok {
+				if imp, ok = pathToImport[importPath]; !ok {
 					var namespace string
 					// add new import path
 					items := strings.Split(importPath, `/`)
 					lastName := items[len(items)-1]
 					var suffix = ""
 					var count = 1
-					for  {
-						if _,ok = namespaceToImport[lastName + suffix]; !ok {
+					for {
+						if _, ok = namespaceToImport[lastName+suffix]; !ok {
 							break
 						}
-						count ++
+						count++
 						suffix = strconv.Itoa(count)
 					}
 					namespace = lastName + suffix
@@ -77,7 +76,7 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 				defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(col.DbName, "_", "-", -1)
 			}
 
-			col2.ControlDescription = ControlDescription {
+			col2.ControlDescription = ControlDescription{
 				mainImport,
 				typ,
 				newFunc,
@@ -93,9 +92,8 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 	return
 }
 
-
 // ControlType returns the default type of control for a column. Control types can be customized in other ways too.
-func  controlType(col *db.ColumnDescription) (typ string, createFunc string, importName string) {
+func controlType(col *db.ColumnDescription) (typ string, createFunc string, importName string) {
 	d := DefaultControlTypeFunc(col)
 	return d.Typ, d.CreateFunc, d.ImportName
 }

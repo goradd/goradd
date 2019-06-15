@@ -62,7 +62,6 @@ func RenderAssetTag(filePath string, tag string, attributes *html.Attributes, co
 }
 */
 
-
 // GetAssetLocation returns the disk location of the asset file indicated by the given url.
 // Asset directories must be registered with the RegisterAssetDirectory function. In debug mode, the
 // file is taken from the registered location, but in release mode, the file will have been copied to

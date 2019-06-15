@@ -1,14 +1,14 @@
 package control
 
 import (
-	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/event"
-	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/html"
-	config2 "github.com/goradd/goradd/pkg/bootstrap/config"
 	"context"
 	"fmt"
+	config2 "github.com/goradd/goradd/pkg/bootstrap/config"
+	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/event"
 )
 
 type ModalBackdropType int
@@ -23,22 +23,21 @@ type ModalI interface {
 	control.DialogI
 }
 
-
 // Modal is a bootstrap modal dialog.
 // To use a custom template in a bootstrap modal, add a Panel child element or subclass of a panel
 // child element. To use the grid system, add the container-fluid class to that embedded panel.
 type Modal struct {
 	control.Panel
-	isOpen      bool
+	isOpen bool
 
 	closeOnEscape bool
-	sizeClass	string
+	sizeClass     string
 
-	titleBar *TitleBar
+	titleBar  *TitleBar
 	buttonBar *control.Panel
-	backdrop ModalBackdropType
+	backdrop  ModalBackdropType
 
-	foundRight bool	// utility for adding buttons. No need to serialize this.
+	foundRight bool // utility for adding buttons. No need to serialize this.
 }
 
 // event codes
@@ -69,10 +68,10 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
 	d.AddClass("modal fade").
 		SetAttribute("tabindex", -1).
 		SetAttribute("role", "dialog").
-		SetAttribute("aria-labelledby", d.ID() + "-title").
+		SetAttribute("aria-labelledby", d.ID()+"-title").
 		SetAttribute("aria-hidden", true)
-	d.titleBar = NewTitleBar(d, d.ID() + "-titlebar")
-	d.buttonBar = control.NewPanel(d, d.ID() + "-btnbar")
+	d.titleBar = NewTitleBar(d, d.ID()+"-titlebar")
+	d.buttonBar = control.NewPanel(d, d.ID()+"-btnbar")
 }
 
 func (d *Modal) this() ModalI {
@@ -97,7 +96,7 @@ func (d *Modal) SetDialogStyle(style control.DialogStyle) {
 	var class string
 	switch style {
 	case control.DialogStyleDefault:
-	class = BackgroundColorNone + " " + TextColorBody
+		class = BackgroundColorNone + " " + TextColorBody
 	case control.DialogStyleWarning:
 		class = BackgroundColorWarning + " " + TextColorBody
 	case control.DialogStyleError:
@@ -111,7 +110,6 @@ func (d *Modal) SetDialogStyle(style control.DialogStyle) {
 	d.titleBar.RemoveClassesWithPrefix("text-")
 	d.titleBar.AddClass(class)
 }
-
 
 func (d *Modal) SetBackdrop(b ModalBackdropType) {
 	d.backdrop = b
@@ -144,7 +142,7 @@ func (d *Modal) AddButton(
 	if id == "" {
 		id = label
 	}
-	btn := NewButton(d.buttonBar, d.ID() + "-btn-" + id)
+	btn := NewButton(d.buttonBar, d.ID()+"-btn-"+id)
 	btn.SetLabel(label)
 
 	if options != nil {
@@ -169,10 +167,10 @@ func (d *Modal) AddButton(
 		}
 
 		if options.Options != nil && len(options.Options) > 0 {
-			if _,ok := options.Options["style"]; ok {
+			if _, ok := options.Options["style"]; ok {
 				btn.SetButtonStyle(options.Options["style"].(ButtonStyle))
 			}
-			if _,ok := options.Options["size"]; ok {
+			if _, ok := options.Options["size"]; ok {
 				btn.SetButtonSize(options.Options["size"].(ButtonSize))
 			}
 		}
@@ -210,7 +208,7 @@ func (d *Modal) SetButtonStyle(id string, a *html.Style) ModalI {
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog (by hiding it).
 func (d *Modal) AddCloseButton(label string) ModalI {
-	d.AddButton(label,"", &control.DialogButtonOptions{IsClose:true})
+	d.AddButton(label, "", &control.DialogButtonOptions{IsClose: true})
 	return d.this()
 }
 
@@ -235,7 +233,6 @@ func (d *Modal) Close() {
 	d.ParentForm().Response().ExecuteJqueryCommand(d.ID(), "modal", page.PriorityLow, "hide")
 }
 
-
 func (d *Modal) closed() {
 	d.isOpen = false
 	//d.Remove()
@@ -249,17 +246,16 @@ func (d *Modal) ΩPutCustomScript(ctx context.Context, response *page.Response) 
 	case ModalBackdrop:
 		backdrop = true
 	case ModalNoBackdrop:
-	backdrop = false
+		backdrop = false
 	case ModalStaticBackdrop:
 		backdrop = "static"
 	}
 
-	script := fmt.Sprintf (
-`$j("#%s").modal({backdrop: %#v, keyboard: %t, focus: true, show: %t});`,
-			d.ID(), backdrop, d.closeOnEscape, d.isOpen)
+	script := fmt.Sprintf(
+		`$j("#%s").modal({backdrop: %#v, keyboard: %t, focus: true, show: %t});`,
+		d.ID(), backdrop, d.closeOnEscape, d.isOpen)
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }
-
 
 /**
 Alert creates a message dialog.
@@ -295,13 +291,10 @@ func BootstrapAlert(form page.FormI, message string, buttons interface{}) contro
 	return dlg
 }
 
-
-
-
 type TitleBar struct {
 	control.Panel
 	hasCloseBox bool
-	title string
+	title       string
 }
 
 func NewTitleBar(parent page.ControlI, id string) *TitleBar {

@@ -12,17 +12,17 @@ import (
 )
 
 const (
-	Current     = "now"
-	Zero        = "zero"
-	UsDate      = "1/2/2006"
-	EuroDate    = "2/1/2006"
-	UsDateTime  = "1/2/2006 3:04 PM"
-	EuroDateTime = "1/2/2006 15:04"
-	UsTime =       "3:04 PM"
-	EuroTime = 		"15:04"
-	UsDateTimeSeconds  = "1/2/2006 3:04:05 PM"
-	LongDateDOW = "Monday, January 2, 2006"
-	LongDate    = "January 2, 2006"
+	Current           = "now"
+	Zero              = "zero"
+	UsDate            = "1/2/2006"
+	EuroDate          = "2/1/2006"
+	UsDateTime        = "1/2/2006 3:04 PM"
+	EuroDateTime      = "1/2/2006 15:04"
+	UsTime            = "3:04 PM"
+	EuroTime          = "15:04"
+	UsDateTimeSeconds = "1/2/2006 3:04:05 PM"
+	LongDateDOW       = "Monday, January 2, 2006"
+	LongDate          = "January 2, 2006"
 )
 
 // DateTime is the default time value for the system (as opposed to the built in time.Time).
@@ -65,7 +65,6 @@ func (d *DateTime) IsTimestamp() bool {
 	return d.isTimestamp
 }
 
-
 // Now returns the current time as a timestamp, but with the time in local time.
 func Now() DateTime {
 	return DateTime{time.Now(), true}
@@ -92,14 +91,13 @@ func Date(year int, month Month, day, hour, min, sec, nsec int, loc *time.Locati
 }
 
 func DateOnly(year int, month Month, day int) DateTime {
-	return Date(year,month,day,0, 0, 0, 0, nil)
+	return Date(year, month, day, 0, 0, 0, 0, nil)
 }
 
 // Time creates a DateTime that only represents a time of day.
 func Time(hour, min, sec, nsec int) DateTime {
-	return Date(0,1,1,hour, min, sec, nsec, nil)
+	return Date(0, 1, 1, hour, min, sec, nsec, nil)
 }
-
 
 // NewDateTime creates a new date time from the given information. You can give it the following:
 // () = zero time
@@ -127,7 +125,7 @@ func NewDateTime(args ...interface{}) DateTime {
 	case string:
 		if c == Current {
 			d = Now()
-		} else if c == Zero {
+		} else if c == Zero || c == "" {
 			// do nothing, we are already zero'd
 		} else {
 			if len(args) == 2 {
@@ -167,6 +165,15 @@ func (d DateTime) JavaScript() string {
 	} else {
 		return fmt.Sprintf("new Date(%d, %d, %d, %d, %d, %d, %d)", d.Year(), d.Month()-1, d.Day(), d.Hour(), d.Minute(), d.Second(), d.Nanosecond()/1000000)
 	}
+}
+
+func (d *DateTime) UnmarshalJSON(data []byte) (err error) {
+	err = d.Time.UnmarshalJSON(data)
+	if err != nil {
+		err = fmt.Errorf("JSON dates and times must be ISO8601 formatted AND in UTC: %s", err.Error());
+	}
+	d.isTimestamp = true // json times are always utc
+	return
 }
 
 // MarshalJSON satisfies the json.Marshaller interface to output the date as a value embedded in JSON and that
@@ -221,7 +228,7 @@ func (d DateTime) GetTime() DateTime {
 
 // GetDate returns a new DateTime object set to only the date portion of the given DateTime object.
 func (d DateTime) GetDate() DateTime {
-	return Date(d.Year(), d.Month(), d.Day(), 0,0,0,0,nil)
+	return Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, nil)
 }
 
 // Month returns the month value of the datetime
@@ -246,8 +253,8 @@ func (d DateTime) In(location *time.Location) DateTime {
 
 // String returns the datetime in string form, suitable for sending to the NewDateTime function.
 func (d DateTime) String() string {
-	b,err := d.MarshalText();
-	_ = err; // would only happen if year was greater than 10000
+	b, err := d.MarshalText()
+	_ = err // would only happen if year was greater than 10000
 	return string(b)
 }
 
@@ -255,7 +262,6 @@ func (d DateTime) String() string {
 func (d DateTime) DebugString() string {
 	return d.Time.String()
 }
-
 
 func init() {
 	gob.Register(time.Time{})

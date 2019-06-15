@@ -16,28 +16,28 @@ type TableDescription struct {
 	// GoPlural is the name of a collection of these objects when referring to them in go code. Use the "goPlural" option in the comment to override the default.
 	GoPlural string
 	// LcGoName is the same as GoName, but with first letter lower case.
-	LcGoName      string
+	LcGoName string
 	// Columns is a list of ColumnDescriptions, one for each column in the table.
-	Columns       []*ColumnDescription
+	Columns []*ColumnDescription
 	// columnMap is an internal map of the columns
-	columnMap     map[string]*ColumnDescription
+	columnMap map[string]*ColumnDescription
 	// Indexes are the indexes defined in the database. Unique indexes will result in LoadBy* functions.
-	Indexes       []IndexDescription
+	Indexes []IndexDescription
 	// Options are key-value pairs of values that can be used to customize how code generation is performed
-	Options       maps.SliceMap
+	Options maps.SliceMap
 	// IsType is true if this is a type table
-	IsType        bool
+	IsType bool
 	// IsAssociation is true if this is an association table, which is used to create a many-to-many relationship between two tables.
 	IsAssociation bool
 	// Comment is the general comment included in the database
-	Comment       string
+	Comment string
 
 	// The following items are filled in by the analyze process
 
 	// ManyManyReferences describe the many-to-many references pointing to this table
 	ManyManyReferences []*ManyManyReference
 	// ReverseReferences describes the many-to-one references pointing to this table
-	ReverseReferences  []*ReverseReference
+	ReverseReferences []*ReverseReference
 	// HasDateTime is true if the table contains a DateTime column.
 	HasDateTime bool
 	// PrimaryKeyColumn points to the column that contains the primary key of the table.
@@ -46,5 +46,3 @@ type TableDescription struct {
 	// Skip will cause the table to be skipped in code generation
 	Skip bool
 }
-
-

@@ -209,7 +209,6 @@ func (a *Application) PutContext(r *http.Request) *http.Request {
 	return a.Application.PutContext(r)
 }
 
-
 // ServeStaticFile serves up static html and other files. The default will serve up the generated form index
 // and any files you put in the HTML directory. If you want to serve up files from other directories, uncomment
 // the line below, but remember you will have to put those files on your release server and point your custom

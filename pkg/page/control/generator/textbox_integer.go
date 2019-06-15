@@ -18,7 +18,6 @@ func init() {
 
 // This structure describes the IntegerTextbox to the connector dialog and code generator
 type IntegerTextbox struct {
-
 }
 
 func (d IntegerTextbox) Type() string {
@@ -44,7 +43,7 @@ func (d IntegerTextbox) SupportsColumn(col *generator.ColumnType) bool {
 
 func (d IntegerTextbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-`	ctrl = %s.NewIntegerTextbox(c.ParentControl, id)
+		`	ctrl = %s.NewIntegerTextbox(c.ParentControl, id)
 	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
@@ -70,25 +69,24 @@ func (d IntegerTextbox) GenerateGet(ctrlName string, objName string, col *genera
 func (d IntegerTextbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	switch col.ColumnType {
 	case query.ColTypeInteger64:
-		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int64())`, objName,  col.GoName, ctrlName)
+		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int64())`, objName, col.GoName, ctrlName)
 	case query.ColTypeInteger:
-		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int())`, objName,  col.GoName, ctrlName)
+		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int())`, objName, col.GoName, ctrlName)
 	case query.ColTypeUnsigned64:
-		s = fmt.Sprintf(`c.%s.Set%s(uint64(c.%s.Int64()))`, objName,  col.GoName, ctrlName)
+		s = fmt.Sprintf(`c.%s.Set%s(uint64(c.%s.Int64()))`, objName, col.GoName, ctrlName)
 	case query.ColTypeUnsigned:
-		s = fmt.Sprintf(`c.%s.Set%s(uint(c.%s.Int()))`, objName,  col.GoName, ctrlName)
+		s = fmt.Sprintf(`c.%s.Set%s(uint(c.%s.Int()))`, objName, col.GoName, ctrlName)
 
 	}
 	return
 }
-
 
 func (d IntegerTextbox) ConnectorParams() *maps.SliceMap {
 	paramControls := page.ControlConnectorParams()
 	paramSet := maps.NewSliceMap()
 
 	// TODO: Get the regular Textbox's parameters too
-	paramSet.Set("ColumnCount", generator.ConnectorParam {
+	paramSet.Set("ColumnCount", generator.ConnectorParam{
 		"Column Count",
 		"Width of field by the number of characters.",
 		generator.ControlTypeInteger,
@@ -97,9 +95,7 @@ func (d IntegerTextbox) ConnectorParams() *maps.SliceMap {
 			c.(*control.IntegerTextbox).SetColumnCount(val.(int))
 		}})
 
-
 	paramControls.Set("IntegerTextbox", paramSet)
 
 	return paramControls
 }
-

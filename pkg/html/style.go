@@ -106,6 +106,7 @@ func (s Style) Set(n string, v string) Style {
 	}
 	return s
 }
+
 // Get returns the given style value, or an empty string if its not set.
 func (s Style) Get(name string) string {
 	return s.StringMap.Get(name)
@@ -197,7 +198,7 @@ func (s Style) encode() (text string) {
 	keys := s.Keys()
 	sort.Strings(keys)
 
-	for i,k := range keys {
+	for i, k := range keys {
 		if i > 0 {
 			text += ";"
 		}

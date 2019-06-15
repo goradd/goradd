@@ -34,6 +34,3 @@ func SetHtmlDirectory(d string) {
 func HtmlDirectory() string {
 	return htmlDirectory
 }
-
-
-

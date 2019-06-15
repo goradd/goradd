@@ -9,7 +9,6 @@
 // greek capital Omega (Ω). We do this to call out that these exported structures and variables are not for general use.
 package action
 
-
 import (
 	"encoding/gob"
 	"fmt"
@@ -151,7 +150,7 @@ type ΩjavascriptAction struct {
 // Javascript will execute the given javascript
 func Javascript(js string) ΩjavascriptAction {
 	if js != "" {
-		if js[len(js) - 1: len(js)] != ";" {
+		if js[len(js)-1:len(js)] != ";" {
 			js += ";\n"
 		}
 	}

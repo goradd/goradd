@@ -23,14 +23,24 @@ func BootstrapCodegenSetup() {
 
 		// default control types for columns
 		switch col.ColumnType {
-		case query.ColTypeString: return generator.ControlCreationInfo{"Textbox", "NewTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
-		case query.ColTypeInteger: fallthrough
-		case query.ColTypeUnsigned: fallthrough
-		case query.ColTypeInteger64: fallthrough
-		case query.ColTypeUnsigned64: return generator.ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
-		case query.ColTypeFloat: return generator.ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
-		case query.ColTypeBool: return generator.ControlCreationInfo{"Checkbox", "NewCheckbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
-		default: return
+		case query.ColTypeString:
+			return generator.ControlCreationInfo{"Textbox", "NewTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+		case query.ColTypeInteger:
+			fallthrough
+		case query.ColTypeUnsigned:
+			fallthrough
+		case query.ColTypeInteger64:
+			fallthrough
+		case query.ColTypeUnsigned64:
+			return generator.ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+		case query.ColTypeFloat:
+			return generator.ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+		case query.ColTypeDouble:
+			return generator.ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+		case query.ColTypeBool:
+			return generator.ControlCreationInfo{"Checkbox", "NewCheckbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+		default:
+			return
 		}
 	}
 }

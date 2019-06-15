@@ -60,6 +60,18 @@ func {{= propPlural }}() (values []{{= propName }}) {
     return
 }
 
+// Label returns the string that will be displayed to a user for this item. Together with
+// the Value function, it satisfies the ItemLister interface that makes it easy
+// to create a dropdown list of items.
+func ({{= propLetter }} {{= propName }}) Label() string {
+	return {{= propLetter }}.String()
+}
+
+// Value satisfies the Valuer interface.
+func ({{= propLetter }} {{= propName }}) Value() interface{} {
+	return {{= propLetter }}
+}
+
 
 }}
 

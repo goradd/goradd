@@ -24,4 +24,3 @@ func RoundFloat(f float64, digits int) float64 {
 	f = float64(v) / math.Pow10(digits)
 	return f
 }
-

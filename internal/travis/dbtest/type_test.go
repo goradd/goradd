@@ -14,8 +14,8 @@ func TestDateTimeType(t *testing.T) {
 
 	rec := model.LoadTypeTest(ctx, "1")
 
-	assert.True(t, rec.Date().Equal(datetime.DateOnly(2019,datetime.January, 2)))
-	assert.True(t, rec.Time().Equal(datetime.Time(6,17,28,0)))
+	assert.True(t, rec.Date().Equal(datetime.DateOnly(2019, datetime.January, 2)))
+	assert.True(t, rec.Time().Equal(datetime.Time(6, 17, 28, 0)))
 
 	dt := rec.DateTime()
 	assert.False(t, dt.IsTimestamp())
@@ -24,11 +24,11 @@ func TestDateTimeType(t *testing.T) {
 	assert.True(t, ts.IsTimestamp())
 
 	// Make sure a timestamp that goes into the database in a different timezone will not change
-	loc,err := time.LoadLocation("America/New_York")
+	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
 		panic("Cannot load location") // might need to turn this off on windows
 	}
-	ts2 := datetime.Date(2002,datetime.July, 2, 10,4,3,0,loc)
+	ts2 := datetime.Date(2002, datetime.July, 2, 10, 4, 3, 0, loc)
 	rec.SetTs(ts2)
 	rec.Save(ctx)
 
@@ -40,4 +40,3 @@ func TestDateTimeType(t *testing.T) {
 	rec2.SetTs(ts)
 	rec2.Save(ctx)
 }
-

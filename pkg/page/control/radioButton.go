@@ -9,7 +9,6 @@ type RadioButtonI interface {
 	CheckboxI
 }
 
-
 // RadioButton is a standard html radio button. You can optionally specify a group name for the radiobutton to belong
 // to and the browser will make sure only one item in the group is selected.
 type RadioButton struct {
@@ -79,4 +78,3 @@ func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
 func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
 	c.UpdateRadioFormValues(ctx, c.Group())
 }
-

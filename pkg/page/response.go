@@ -38,7 +38,7 @@ const (
 	PriorityHigh
 	PriorityStandard
 	PriorityLow
-	PriorityFinal	// TODO: Note that this currently requires a preliminary ajax command, or it will not fire. Should fix that, but its tricky.
+	PriorityFinal // TODO: Note that this currently requires a preliminary ajax command, or it will not fire. Should fix that, but its tricky.
 )
 
 // responseCommand is a response packet that leads to execution of a javascript function
@@ -107,7 +107,7 @@ type Response struct {
 	sync.RWMutex // This was inserted here for very rare situations of simultaneous access, like in the test harness.
 
 	// exclusiveCommand is a single command that is sent by itself, overriding all other commands
-	exclusiveCommand       *responseCommand
+	exclusiveCommand *responseCommand
 	// highPriorityCommands are sent first
 	highPriorityCommands   []*responseCommand
 	// mediumPriorityCommands are sent after high priority commands
@@ -123,16 +123,16 @@ type Response struct {
 	// styleSheets are css files that should be inserted into the page.
 	styleSheets            *maps.SliceMap
 	// alerts are strings that should be shown to the user in a javascript aler
-	alerts                 []string
+	alerts []string
 	// newLocation is a URL that the client should be redirected to.
-	newLocation            string
+	newLocation string
 	// winClose directs the browser to close the current window.
-	winClose               bool
+	winClose bool
 	// controls are goraddControls that should be inserted or replaced
-	controls               map[string]responseControl
+	controls map[string]responseControl
 	// profileHtml is the html sent from the database profiling tool to display in a special window
 	// TODO: This is not used currently, and is here for future ajax db profiling
-	profileHtml			   string
+	profileHtml string
 }
 
 // NewResponse creates a new event response.
@@ -412,7 +412,6 @@ func (r *Response) GetAjaxResponse() (buf []byte, err error) {
 	return json.Marshal(reply)
 }
 
-
 // Call SetLocation to change the url of the browser.
 func (r *Response) SetLocation(newLocation string) {
 	r.Lock()
@@ -478,10 +477,8 @@ func (r *Response) SetControlValue(id string, value string) {
 	r.Unlock()
 }
 
-
 func (r *Response) setProfileInfo(info string) {
 	r.Lock()
 	r.profileHtml = info
 	r.Unlock()
 }
-

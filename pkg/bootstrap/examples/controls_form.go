@@ -2,9 +2,9 @@ package controls
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/bootstrap/examples/panels"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/bootstrap/examples/panels"
 )
 
 const ControlsFormPath = "/goradd/examples/bootstrap.g"
@@ -16,7 +16,7 @@ const (
 
 type ControlsForm struct {
 	FormBase
-	detail 		  *Panel
+	detail *Panel
 }
 
 func NewControlsForm(ctx context.Context) page.FormI {
@@ -48,4 +48,3 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 func init() {
 	page.RegisterPage(ControlsFormPath, NewControlsForm, ControlsFormId)
 }
-

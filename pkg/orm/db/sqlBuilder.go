@@ -34,8 +34,8 @@ type sqlBuilder struct {
 
 	/* The variables below are populated during the sql build process */
 
-	isCount bool
-	isDelete bool
+	isCount           bool
+	isDelete          bool
 	rootDbTable       string                  // The database name for the table that is the root of the query
 	rootJoinTreeItem  *joinTreeItem           // The top of the join tree
 	subPrefix         string                  // The prefix for sub items. If this is a sub query, this gets updated
@@ -59,7 +59,6 @@ func NewSqlBuilder(db SqlDbI) *sqlBuilder {
 	b.QueryBuilder.Init(b)
 	return b
 }
-
 
 // Load terminates the builder, queries the database, and returns the results as an array of interfaces similar in structure to a json structure
 func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{}) {
@@ -460,7 +459,7 @@ func (b *sqlBuilder) assignAllColumnAliases(item *joinTreeItem) {
 			b.assignAlias(b.getItemFromNode(sn))
 		}
 	}
-	for _,item2 := range item.childReferences {
+	for _, item2 := range item.childReferences {
 		b.assignAllColumnAliases(item2)
 	}
 }

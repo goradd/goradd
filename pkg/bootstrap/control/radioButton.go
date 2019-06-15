@@ -61,6 +61,4 @@ func (c *RadioButton) ΩDrawTag(ctx context.Context) (ctrl string) {
 	return html.RenderTag("div", checkWrapperAttributes, h)
 }
 
-
-
 // TODO: Serialize

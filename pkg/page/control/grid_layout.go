@@ -37,19 +37,17 @@ func (g *GridLayoutBuilder) ColumnCount(count int) *GridLayoutBuilder {
 }
 
 // Direction indicates how items are placed, whether they should fill up rows first, or fill up columns.
-func (g *GridLayoutBuilder) Direction (placement LayoutDirection) *GridLayoutBuilder {
+func (g *GridLayoutBuilder) Direction(placement LayoutDirection) *GridLayoutBuilder {
 	g.direction = placement
 	return g
 }
 
-
-
-func (g *GridLayoutBuilder) RowTag (t string) *GridLayoutBuilder {
+func (g *GridLayoutBuilder) RowTag(t string) *GridLayoutBuilder {
 	g.rowTag = t
 	return g
 }
 
-func (g *GridLayoutBuilder) RowClass (t string) *GridLayoutBuilder {
+func (g *GridLayoutBuilder) RowClass(t string) *GridLayoutBuilder {
 	g.getRowAttributes().SetClass(t)
 	return g
 }
@@ -61,8 +59,7 @@ func (g *GridLayoutBuilder) getRowAttributes() *html.Attributes {
 	return g.rowAttributes
 }
 
-
-func (g *GridLayoutBuilder) Build () string {
+func (g *GridLayoutBuilder) Build() string {
 	if len(g.items) == 0 {
 		return ""
 	}
@@ -80,13 +77,12 @@ func (g *GridLayoutBuilder) Build () string {
 	}
 }
 
-
 func (g *GridLayoutBuilder) wrapRows() string {
 	var rows string
 	var row string
 	for i := range g.items {
 		row += g.items[i]
-		if (i + 1) % g.columnCount == 0 {
+		if (i+1)%g.columnCount == 0 {
 			rows += html.RenderTag(g.rowTag, g.rowAttributes, row)
 			row = ""
 		}
@@ -100,14 +96,14 @@ func (g *GridLayoutBuilder) wrapRows() string {
 
 func (g *GridLayoutBuilder) wrapColumns() string {
 	l := len(g.items)
-	rowCount := (l - 1) / g.columnCount + 1
+	rowCount := (l-1)/g.columnCount + 1
 
 	var row string
 	var rows string
 
 	for r := 0; r < rowCount; r++ {
 		for c := 0; c < g.columnCount; c++ {
-			i := c * rowCount + r
+			i := c*rowCount + r
 			if i < l {
 				row += g.items[i]
 			}
@@ -121,9 +117,3 @@ func (g *GridLayoutBuilder) wrapColumns() string {
 	}
 	return rows
 }
-
-
-
-
-
-

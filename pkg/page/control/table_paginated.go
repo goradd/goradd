@@ -14,7 +14,6 @@ type PaginatedTable struct {
 	PaginatedControl
 }
 
-
 func NewPaginatedTable(parent page.ControlI, id string) *PaginatedTable {
 	t := &PaginatedTable{}
 	t.Init(t, parent, id)
@@ -25,5 +24,3 @@ func (t *PaginatedTable) Init(self page.ControlI, parent page.ControlI, id strin
 	t.Table.Init(self, parent, id)
 	t.PaginatedControl.SetPageSize(0) // use the application default
 }
-
-

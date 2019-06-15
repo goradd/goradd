@@ -249,17 +249,17 @@ func (r SqlReceiver) TimeI() interface{} {
 
 	var date datetime.DateTime
 	var err error
-	switch v:=r.R.(type) {
+	switch v := r.R.(type) {
 	case time.Time:
 		date = datetime.NewDateTime(v)
 	case string:
-		date,err = datetime.FromSqlDateTime(v) // Note that this must always include timezone information if coming from a timestamp with timezone column
+		date, err = datetime.FromSqlDateTime(v) // Note that this must always include timezone information if coming from a timestamp with timezone column
 		if err != nil {
-			return nil	// This is likely caused by attempting to read a default value, and getting someting like "CURRENT_TIMESTAMP"
+			return nil // This is likely caused by attempting to read a default value, and getting someting like "CURRENT_TIMESTAMP"
 		}
 	case []byte:
 		s := string(v)
-		date,err = datetime.FromSqlDateTime(s)
+		date, err = datetime.FromSqlDateTime(s)
 		if err != nil {
 			return nil
 		}

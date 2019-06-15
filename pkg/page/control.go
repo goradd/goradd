@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
-	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
 	"github.com/goradd/goradd/pkg/log"
 	action2 "github.com/goradd/goradd/pkg/page/action"
+	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/session"
 	gohtml "html"
 	"reflect"
@@ -42,7 +42,7 @@ const (
 	// ValidateSiblingOnly will validate only the siblings of the current control, but not any child controls.
 	ValidateSiblingsOnly
 	// ValidateChildrenOnly will validate only the children of the current control.
- 	ValidateChildrenOnly
+	ValidateChildrenOnly
 	// ValidateContainer will use the validation setting of a parent control with ValidateSiblingsAndChildren, ValidateSiblingsOnly,
 	// ValidateChildrenOnly, or ValidateTargetsOnly as the stopping point for validation.
 	ValidateContainer
@@ -77,7 +77,6 @@ type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *byt
 
 // ControlWrapperFunc is a template function that specifies how wrappers will draw
 type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string, buffer *bytes.Buffer)
-
 
 // DefaultCheckboxLabelDrawingMode is a setting used by checkboxes and radio buttons to default how they draw labels.
 // Some CSS framworks are very picky about whether checkbox labels wrap the control, or sit next to the control,
@@ -183,8 +182,8 @@ type ControlI interface {
 	// Shortcuts for translation
 
 	ΩT(format string) string
-	T(format string, params... interface{}) string
-	TPrintf(format string, params... interface{}) string
+	T(format string, params ...interface{}) string
+	TPrintf(format string, params ...interface{}) string
 
 	// Serialization helpers
 
@@ -197,13 +196,12 @@ type ControlI interface {
 	Serialize(e Encoder) (err error)
 	Deserialize(d Decoder, p *Page) (err error)
 	ΩisSerializer(i ControlI) bool
-
 }
 
 type attributeScriptEntry struct {
-	id string	// id of the object to execute the command on. This should be the id of the control, or a a related html object.
-	f string	// the jquery function to call
-	commands []interface{}	// parameters to the jquery function
+	id       string        // id of the object to execute the command on. This should be the id of the control, or a a related html object.
+	f        string        // the jquery function to call
+	commands []interface{} // parameters to the jquery function
 }
 
 // A Control is a basic UI widget in goradd. It corresponds to a standard html form object or tag, or a custom javascript
@@ -230,28 +228,28 @@ type Control struct {
 	base.Base
 
 	// id is the id passed to the control when it is created, or assigned automatically if empty.
-	id   string
+	id string
 	// page is a pointer to the page that encloses the entire control tree.
 	page *Page
 
 	// parent is the immediate parent control of this control. Only the form object will not have a parent.
-	parent   ControlI
+	parent ControlI
 	// children are the child controls that belong to this control
 	children []ControlI // Child controls
 
 	// Tag is text of the tag that will enclose the control, like "div" or "input"
-	Tag            string
+	Tag string
 	// IsVoidTag should be true if the tag should not have a closing tag, like "img"
-	IsVoidTag      bool
+	IsVoidTag bool
 	// hasNoSpace is for special situations where we want no space between this and the next tag. Spans in particular may need this.
-	hasNoSpace     bool
+	hasNoSpace bool
 	// attributes are the collection of custom attributes to apply to the control. This does not include all the
 	// attributes that will be drawn, as some are added temporarily just before drawing by GetDrawingAttributes()
-	attributes     *html.Attributes
+	attributes *html.Attributes
 	// test is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
-	text           string
+	text string
 	// textLabelMode describes how to draw the internal label
-	textLabelMode  html.LabelDrawingMode
+	textLabelMode html.LabelDrawingMode
 	// htmlEscapeText tells us whether to escape the text output, or send straight text
 	htmlEscapeText bool
 
@@ -259,33 +257,33 @@ type Control struct {
 	attributeScripts []attributeScriptEntry
 
 	// isRequired indicates that we will require a value during validation
-	isRequired       bool
+	isRequired bool
 	// isHidden indicates that we will not draw the control, but rather an invisible placeholder for the control.
-	isHidden         bool
+	isHidden bool
 	// isOnPage indicates we have drawn the control at some point in the past
-	isOnPage         bool
+	isOnPage bool
 	// shouldAutoRender indicates that we will eventually draw the control even if it is not drawn directly.
 	shouldAutoRender bool
 
 	// internal status functions. Do not serialize.
 
 	// isModified will cause the control to redraw as part of the response.
-	isModified  bool
+	isModified bool
 	// isRendering is true when we are in the middle of rendering the control.
 	isRendering bool
 	// wasRendered indicates that the page was drawn during the current response.
 	wasRendered bool
 
 	// isBlock is true to use a div for the wrapper, false for a span
-	isBlock           bool
+	isBlock bool
 	// wrapper is the wrapper object the control will use to draw the label, instructions and error message for the control.
-	wrapper           WrapperI
+	wrapper WrapperI
 	// wrapperAttributes are the attributes to add to the wrapper tag.
 	wrapperAttributes *html.Attributes
 	// label is the test to use for the label tag. Not drawn by default, but the wrapper drawing function uses it. Can also get controls by label.
-	label             string
+	label string
 	// hasFor tells us if we should draw a for attribute in the label tag. This is helpful for screen readers and navigation on certain kinds of tags.
-	hasFor       bool
+	hasFor bool
 	// instructions is text associated with the control for extra explanation. You could also try adding a tooltip to the wrapper.
 	instructions string
 
@@ -295,27 +293,27 @@ type Control struct {
 	// ValidMessage is the message to display if the control has successfully been validated.
 	// Leave blank if you don't want a message to show when valid.
 	// Can be useful to contrast between invalid and valid controls in a busy form.
-	ValidMessage          string
+	ValidMessage string
 	// validationMessage is the current validation message that will display when drawing the control
 	// This gets copied from ValidMessage at drawing time if the control is in an invalid state
-	validationMessage     string
+	validationMessage string
 	// validationState is the current validation state of the control, and will effect how the control is drawn.
-	validationState       ValidationState
+	validationState ValidationState
 	// validationType indicates how the control will validate itself. See ValidationType for a description.
-	validationType        ValidationType
+	validationType ValidationType
 	// validationTargets is the list of control IDs to target validation
-	validationTargets     []string
+	validationTargets []string
 	// This blocks a parent from validating this control. Useful for dialogs, and other situations where sub-controls should control their own space.
 	blockParentValidation bool
 
 	// actionValue is the value that will be provided as the ControlValue for any actions that are triggered by this control.
 	actionValue interface{}
 	// events are all the events added by the control user that the control might trigger
-	events        EventMap
+	events EventMap
 	// privateEvents are events that are private to the control and that should not be allowed to be canceled by a control's user.
 	privateEvents EventMap
 	// eventCounter is used to generate a unique id for an event to help us route the event through the system.
-	eventCounter  EventID
+	eventCounter EventID
 	// shouldSaveState indicates that we should save parts of our state into a session variable so that if
 	// the client should come back to the form, we will attempt to restore the state of the control. The state
 	// in this situation would be the user's input, so text in a textbox, or the selection from a list.
@@ -344,7 +342,6 @@ func (c *Control) Init(self ControlI, parent ControlI, id string) {
 	self.SetParent(parent)
 	c.htmlEscapeText = true // default to encoding the text portion. Explicitly turn this off if you need something else
 }
-
 
 // this supports object oriented features by giving easy access to the virtual function interface.
 // Subclasses should provide a duplicate. Calls that implement chaining should return the result of this function.
@@ -679,7 +676,7 @@ func (c *Control) SetWrapperAttribute(name string, val interface{}) ControlI {
 	if changed {
 		// The val passed in might be a calculation, so we need to get the ultimate new value
 		v2 := c.wrapperAttributes.Get(name)
-		c.AddRelatedRenderScript(c.ID() + "_ctl", "attr", name, v2)
+		c.AddRelatedRenderScript(c.ID()+"_ctl", "attr", name, v2)
 	}
 	return c.this()
 }
@@ -765,7 +762,7 @@ func (c *Control) RemoveClass(class string) ControlI {
 func (c *Control) AddWrapperClass(class string) ControlI {
 	if changed := c.wrapperAttributes.AddClassChanged(class); changed {
 		v2 := c.wrapperAttributes.Class()
-		c.AddRelatedRenderScript(c.ID() + "_ctl", "attr", "class", v2)
+		c.AddRelatedRenderScript(c.ID()+"_ctl", "attr", "class", v2)
 	}
 	return c.this()
 }
@@ -781,7 +778,6 @@ func (c *Control) AddRenderScript(f string, params ...interface{}) {
 func (c *Control) AddRelatedRenderScript(id string, f string, params ...interface{}) {
 	c.attributeScripts = append(c.attributeScripts, attributeScriptEntry{id: id, f: f, commands: params})
 }
-
 
 // Parent returns the parent control of the control. All controls have a parent, except the Form control.
 func (c *Control) Parent() ControlI {
@@ -810,7 +806,6 @@ func (c *Control) Remove() {
 func (c *Control) RemoveChild(id string) {
 	c.removeChild(id, true)
 }
-
 
 // removeChild is a private function that will remove a child control from the current control
 func (c *Control) removeChild(id string, fromPage bool) {
@@ -933,18 +928,18 @@ func (c *Control) ValidationMessage() string {
 // SetValidationError sets the validation error to the given string. It will also handle setting the wrapper class
 // to indicate an error. Override if you have a different way of handling errors.
 func (c *Control) SetValidationError(e string) {
-/*
-	Keeping this here to show that these have been considered and rejected.
-	We can still set the aria state in validation situations, even if we are not showing a message
-	and subclasses might have a special need for validation without a wrapper.
+	/*
+		Keeping this here to show that these have been considered and rejected.
+		We can still set the aria state in validation situations, even if we are not showing a message
+		and subclasses might have a special need for validation without a wrapper.
 
-	if !c.HasWrapper() {
-		return // Validation only applies if you have a wrapper to show the message
-	}
-	if c.validationState == ValidationNever {
-		panic(fmt.Errorf("control %s has been set to never validate, so you cannot set a validation error message for it", c.ID()))
-	}
-*/
+		if !c.HasWrapper() {
+			return // Validation only applies if you have a wrapper to show the message
+		}
+		if c.validationState == ValidationNever {
+			panic(fmt.Errorf("control %s has been set to never validate, so you cannot set a validation error message for it", c.ID()))
+		}
+	*/
 
 	if c.validationMessage != e {
 		c.validationMessage = e
@@ -1025,7 +1020,6 @@ func (c *Control) markOnPage(v bool) {
 func (c *Control) IsOnPage() bool {
 	return c.isOnPage
 }
-
 
 // WasRendered returns true if the control has been rendered.
 func (c *Control) WasRendered() bool {
@@ -1123,7 +1117,7 @@ func (c *Control) Off() {
 
 // HasServerAction returns true if one of the actions attached to the given event is a Server action.
 func (c *Control) HasServerAction(eventName string) bool {
-	for _,e := range c.events {
+	for _, e := range c.events {
 		if e.Name() == eventName && e.HasServerAction() {
 			return true
 		}
@@ -1134,15 +1128,13 @@ func (c *Control) HasServerAction(eventName string) bool {
 // GetEvent returns the event associated with the eventName, which corresponds to the javascript
 // trigger name.
 func (c *Control) GetEvent(eventName string) EventI {
-	for _,e := range c.events {
+	for _, e := range c.events {
 		if e.Name() == eventName {
 			return e
 		}
 	}
 	return nil
 }
-
-
 
 // SetActionValue sets a value that is provided to actions when they are triggered. The value can be a static value
 // or one of the javascript.* objects that can dynamically generate values. The value is then sent back to the action
@@ -1268,7 +1260,7 @@ func (c *Control) doAction(ctx context.Context) {
 		// where javascript has been turned off. We assume we only have a click event on the button
 		// and so just grab it.
 		var id EventID
-		for id,e = range c.events {
+		for id, e = range c.events {
 			break
 		}
 		if id == 0 {
@@ -1479,7 +1471,7 @@ func (c *Control) validateChildren(ctx context.Context) bool {
 		}
 	}
 	if isValid {
-		isValid = c.this().Validate(ctx)	// validate self after validating all children, because self might want to invalidate child items
+		isValid = c.this().Validate(ctx) // validate self after validating all children, because self might want to invalidate child items
 	}
 
 	return isValid
@@ -1626,7 +1618,7 @@ func (c *Control) resetState(ctx context.Context) {
 		child.control().resetState(ctx)
 	}
 }
- */
+*/
 
 // ΩMarshalState is a helper function for controls to save their basic state, so that if the form is reloaded, the
 // value that the user entered will not be lost. Implementing controls should add items to the given map.
@@ -1654,7 +1646,6 @@ func (c *Control) ΩT(message string) string {
 		T(message)
 }
 
-
 // T sends strings to the translator for translation, and returns the translated string. The language is taken from the
 // session. See the i18n package for more info on that mechanism.
 // Additionally, you can add an i18n.ID() call to add an id to the translation to disambiguate it from similar strings, and
@@ -1665,7 +1656,7 @@ func (c *Control) ΩT(message string) string {
 // Examples
 //   textbox.T("I have %d things", count, i18n.Comment("This will need multiple translations based on the count value"));
 //	 textbox.SetLabel(textbox.T("S", i18n.ID("South")));
-func (c *Control) T(message string, params... interface{}) string {
+func (c *Control) T(message string, params ...interface{}) string {
 	builder, args := i18n.ExtractBuilderFromArguments(params)
 	if len(args) > 0 {
 		panic("T() cannot have arguments")
@@ -1679,7 +1670,7 @@ func (c *Control) T(message string, params... interface{}) string {
 // TPrintf is like T(), but works like Sprintf, returning the translated string, but sending the arguments to the message
 // as if the message was an Sprintf format string. The go/text extractor has code that can do interesting things with
 // this kind of string.
-func (c *Control) TPrintf(message string, params... interface{}) string {
+func (c *Control) TPrintf(message string, params ...interface{}) string {
 	builder, args := i18n.ExtractBuilderFromArguments(params)
 
 	return builder.
@@ -1733,7 +1724,7 @@ func (c *Control) SetStyles(s *html.Style) {
 
 // SetStyle sets a particular property of the style attribute on the control.
 func (c *Control) SetStyle(name string, value string) ControlI {
-	if changed,_ := c.attributes.SetStyleChanged(name, value); changed {
+	if changed, _ := c.attributes.SetStyleChanged(name, value); changed {
 		c.Refresh() // TODO: Do this with javascript
 	}
 	return c.this()
@@ -1763,7 +1754,6 @@ func (c *Control) SetHeightStyle(h interface{}) ControlI {
 	c.AddRenderScript("css", "height", v) // use javascript to set this value
 	return c.this()
 }
-
 
 // SetEscapeText to false to turn off html escaping of the text output. It is on by default.
 func (c *Control) SetEscapeText(e bool) ControlI {
@@ -1797,7 +1787,6 @@ func (c *Control) MockFormValue(value string) bool {
 	c.this().ΩUpdateFormValues(grctx)
 	return c.this().Validate(ctx)
 }
-
 
 // GobEncode here is implemented to intercept the GobSerializer to only encode an empty structure. We use this as part
 // of our overall serialization stratgey for forms. Controls still need to be registered with gob.
@@ -1860,46 +1849,46 @@ func (c *Control) Serialize(e Encoder) (err error) {
 	}
 
 	e.Encode(len(c.children))
-	c.encoded = true	// Make sure circular references in child controls do not encode twice
-	for _,child := range c.children {
+	c.encoded = true // Make sure circular references in child controls do not encode twice
+	for _, child := range c.children {
 		err = e.EncodeControl(child)
 		if err != nil {
 			return
 		}
 	}
 
-	s := controlEncoding {
-		Tag: c.Tag,
-		IsVoidTag: c.IsVoidTag,
-		HasNoSpace: c.hasNoSpace,
-		Attributes: c.attributes,
-		Text: c.text,
-		TextLabelMode: c.textLabelMode,
-		HtmlEscapeText: c.htmlEscapeText,
-		IsRequired: c.isRequired,
-		IsHidden: c.isHidden,
-		IsOnPage: c.isOnPage,
-		ShouldAutoRender: c.shouldAutoRender,
-		IsBlock: c.isBlock,
-		Wrapper: c.wrapper,
-		Label: c.label,
-		HasFor: c.hasFor,
-		Instructions: c.instructions,
-		ErrorForRequired: c.ErrorForRequired,
-		ValidMessage: c.ValidMessage,
-		ValidationMessage: c.validationMessage,
-		ValidationState: c.validationState,
-		ValidationType: c.validationType,
-		ValidationTargets: c.validationTargets,
+	s := controlEncoding{
+		Tag:                   c.Tag,
+		IsVoidTag:             c.IsVoidTag,
+		HasNoSpace:            c.hasNoSpace,
+		Attributes:            c.attributes,
+		Text:                  c.text,
+		TextLabelMode:         c.textLabelMode,
+		HtmlEscapeText:        c.htmlEscapeText,
+		IsRequired:            c.isRequired,
+		IsHidden:              c.isHidden,
+		IsOnPage:              c.isOnPage,
+		ShouldAutoRender:      c.shouldAutoRender,
+		IsBlock:               c.isBlock,
+		Wrapper:               c.wrapper,
+		Label:                 c.label,
+		HasFor:                c.hasFor,
+		Instructions:          c.instructions,
+		ErrorForRequired:      c.ErrorForRequired,
+		ValidMessage:          c.ValidMessage,
+		ValidationMessage:     c.validationMessage,
+		ValidationState:       c.validationState,
+		ValidationType:        c.validationType,
+		ValidationTargets:     c.validationTargets,
 		BlockParentValidation: c.blockParentValidation,
-		ActionValue: c.actionValue,
-		Events: c.events,
-		PrivateEvents: c.privateEvents,
-		EventCounter: c.eventCounter,
-		ShouldSaveState: c.shouldSaveState,
+		ActionValue:           c.actionValue,
+		Events:                c.events,
+		PrivateEvents:         c.privateEvents,
+		EventCounter:          c.eventCounter,
+		ShouldSaveState:       c.shouldSaveState,
 	}
 
-	if c.parent !=  nil {
+	if c.parent != nil {
 		s.ParentID = c.parent.ID()
 	}
 
@@ -1970,7 +1959,6 @@ func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
 
 	return
 }
-
 
 // ControlConnectorParams returns a list of options setable by the connector dialog (not currently implemented)
 func ControlConnectorParams() *maps.SliceMap {

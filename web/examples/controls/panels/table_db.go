@@ -15,10 +15,9 @@ import (
 type TableDbPanel struct {
 	Panel
 
-	Table1	*PaginatedTable
+	Table1 *PaginatedTable
 	Pager1 *DataPager
 }
-
 
 func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableDbPanel{}
@@ -63,7 +62,7 @@ func (p *TableDbPanel) BindData(ctx context.Context, s data.DataManagerI) {
 	p.Table1.SetData(people)
 }
 
-func (f *TableDbPanel) 	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (f *TableDbPanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	// Since we only have one custom column, we know what we are getting.
 	p := data.(*model.Person)
 	return p.FirstName() + " " + p.LastName()
@@ -73,5 +72,3 @@ func init() {
 	controls.RegisterPanel("tabledb", "Tables - Database Columns", NewTableDbPanel, 7)
 
 }
-
-

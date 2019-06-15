@@ -5,7 +5,6 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 )
 
-
 type PanelI interface {
 	page.ControlI
 }
@@ -26,7 +25,6 @@ func (c *Panel) Init(self PanelI, parent page.ControlI, id string) {
 	c.Control.Init(self, parent, id)
 	c.Tag = "div"
 }
-
 
 func (c *Panel) ΩDrawingAttributes() *html.Attributes {
 	a := c.Control.ΩDrawingAttributes()

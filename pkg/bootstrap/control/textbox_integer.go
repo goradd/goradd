@@ -12,11 +12,10 @@ type IntegerTextbox struct {
 }
 
 func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
-	t := new (IntegerTextbox)
+	t := new(IntegerTextbox)
 	t.Init(t, parent, id)
 	return t
 }
-
 
 func (t *IntegerTextbox) ΩDrawingAttributes() *html.Attributes {
 	a := t.IntegerTextbox.ΩDrawingAttributes()
@@ -24,9 +23,6 @@ func (t *IntegerTextbox) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-
-func init () {
+func init() {
 	gob.RegisterName("bootstrap.integertextbox", new(IntegerTextbox))
 }
-
-

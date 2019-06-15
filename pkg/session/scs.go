@@ -27,7 +27,7 @@ func (mgr ScsManager) Use(next http.Handler) http.Handler {
 		var temp string
 		// get the session. All of our session data is stored in only one key in the session manager.
 		session := mgr.Manager.Load(r)
-		if err := session.Touch(w); err != nil {// Make sure to get a cookie in our header if we don't have one
+		if err := session.Touch(w); err != nil { // Make sure to get a cookie in our header if we don't have one
 			log.Errorf("Error loading session: %s", err.Error()) // we can't panic here, because our panic handlers have not been set up
 		}
 		data, _ = session.GetBytes(scsSessionDataKey)
@@ -75,4 +75,3 @@ func (mgr ScsManager) Use(next http.Handler) http.Handler {
 	}
 	return mgr.Manager.Use(http.HandlerFunc(fn))
 }
-

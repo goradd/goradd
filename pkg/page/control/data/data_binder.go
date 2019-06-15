@@ -62,12 +62,12 @@ func (d *DataManager) GetData(ctx context.Context, owner DataManagerI) {
 
 // RangeData will call the given function for each item in the data.
 // The function should return true to continue, and false to end early.
-func (d *DataManager) RangeData(f func( int, interface{}) bool) {
+func (d *DataManager) RangeData(f func(int, interface{}) bool) {
 	if d.Data == nil {
 		return
 	}
 	listValue := reflect.ValueOf(d.Data)
-	for i := 0;  i < listValue.Len(); i++ {
+	for i := 0; i < listValue.Len(); i++ {
 		itemI := listValue.Index(i).Interface()
 		result := f(i, itemI)
 		if !result {
@@ -75,4 +75,3 @@ func (d *DataManager) RangeData(f func( int, interface{}) bool) {
 		}
 	}
 }
-

@@ -42,5 +42,5 @@ a huge variety of libraries available for managing translations with .po files, 
 Translation Toolkit, with databases, static linking, etc. Its up to you.
 
 You can see examples of how the framework itself does it in the source.
- */
+*/
 package i18n

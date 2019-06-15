@@ -67,33 +67,32 @@ func setupTest(ctx context.Context) {
 	session.SetFloat(ctx, floatKey, 7.6)
 }
 
-
 func runTest(t *testing.T, ctx context.Context) {
-	i,ok := session.GetInt(ctx, intKey)
+	i, ok := session.GetInt(ctx, intKey)
 	assert.Equal(t, 5, i)
 	assert.True(t, ok)
 	assert.True(t, session.Has(ctx, intKey))
 	assert.False(t, session.Has(ctx, "randomval"))
 
 	// test that getting the wrong kind of value produces error
-	s,ok := session.GetString(ctx, intKey)
+	s, ok := session.GetString(ctx, intKey)
 	assert.False(t, ok)
 	assert.Equal(t, s, "")
 
-	b,ok := session.GetBool(ctx, boolKey)
+	b, ok := session.GetBool(ctx, boolKey)
 	assert.True(t, ok)
 	assert.True(t, b)
 
-	f,ok := session.GetFloat(ctx, floatKey)
+	f, ok := session.GetFloat(ctx, floatKey)
 	assert.True(t, ok)
 	assert.Equal(t, 7.6, f)
 	// repeat
-	f,ok = session.GetFloat(ctx, floatKey)
+	f, ok = session.GetFloat(ctx, floatKey)
 	assert.True(t, ok)
 	assert.Equal(t, 7.6, f)
 
 	session.Clear(ctx)
-	f,ok = session.GetFloat(ctx, floatKey)
+	f, ok = session.GetFloat(ctx, floatKey)
 	assert.False(t, ok)
 	assert.Equal(t, 0.0, f)
 

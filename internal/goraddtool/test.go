@@ -44,7 +44,7 @@ func copyTestDir() {
 
 	// make sure we have a goradd-project and goradd-tmp directory, or the tests will not work
 	var hasProj, hasTmp bool
-	for _,fInfo := range fInfos {
+	for _, fInfo := range fInfos {
 		if fInfo.Name() == "goradd-project" && fInfo.IsDir() {
 			hasProj = true
 		} else if fInfo.Name() == "goradd-tmp" && fInfo.IsDir() {
@@ -52,11 +52,11 @@ func copyTestDir() {
 		}
 	}
 	if !hasProj {
-		log.Fatal ("Could not find a goradd-project directory in the current working directory")
+		log.Fatal("Could not find a goradd-project directory in the current working directory")
 	}
 
 	if !hasTmp {
-		log.Fatal ("Could not find a goradd-tmp directory in the current working directory")
+		log.Fatal("Could not find a goradd-tmp directory in the current working directory")
 	}
 
 	dest := filepath.Join(cwd, "goradd-test")
@@ -83,8 +83,7 @@ func testCodegen() {
 	var cmd = "go generate build.go"
 	var generateResult []byte
 
-
-	generateResult,err = sys2.ExecuteShellCommand(cmd)
+	generateResult, err = sys2.ExecuteShellCommand(cmd)
 	fmt.Print(string(generateResult))
 	if err != nil {
 		log.Fatal("could not generate code: " + err.Error())
@@ -101,7 +100,7 @@ func pkgTest() {
 
 	cmd := "go test github.com/goradd/goradd/pkg/..."
 	var testResult []byte
-	testResult,err = sys2.ExecuteShellCommand(cmd)
+	testResult, err = sys2.ExecuteShellCommand(cmd)
 	fmt.Print(string(testResult))
 	if err != nil {
 		log.Fatal("pkg unit test failed: " + err.Error())
@@ -118,7 +117,7 @@ func dbTest() {
 
 	cmd := "go test github.com/goradd/goradd/test/dbtest"
 	var testResult []byte
-	testResult,err = sys2.ExecuteShellCommand(cmd)
+	testResult, err = sys2.ExecuteShellCommand(cmd)
 	fmt.Print(string(testResult))
 	if err != nil {
 		log.Fatal("dbtest failed: " + err.Error())
@@ -140,7 +139,7 @@ func browserTest(browser bool) {
 	cmd := "go run main.go"
 	var result []byte
 	var err error
-	result,err = sys2.ExecuteShellCommand(cmd)
+	result, err = sys2.ExecuteShellCommand(cmd)
 	fmt.Print(string(result))
 	if err != nil {
 		log.Fatal("browser test failed: " + err.Error())

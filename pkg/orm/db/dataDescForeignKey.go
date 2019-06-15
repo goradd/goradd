@@ -4,21 +4,21 @@ package db
 type ForeignKeyColumn struct {
 	//DbKey string	// We don't support cross database foreign keys yet. Someday maybe.
 	// TableName is the name of the table on the other end of the foreign key
-	TableName    string
+	TableName string
 	// ColumnName is the database column name in the linked table that matches this column name. Often that is the primary key of the other table.
-	ColumnName   string
+	ColumnName string
 	// UpdateAction indicates how the database will react when the other end of the relationship's value changes.
 	UpdateAction FKAction
 	// DeleteAction indicates how the database will react when the other end of the relationship's record is deleted.
 	DeleteAction FKAction
 	// GoName is the name we should use to refer to the related object
-	GoName       string
+	GoName string
 	// GoType is the type of the related object
-	GoType       string
+	GoType string
 	// IsType is true if this is a related type
-	IsType       bool
+	IsType bool
 	// RR is filled in by the analyzer and represent a reverse reference relationship
-	RR           *ReverseReference
+	RR *ReverseReference
 }
 
 /*
@@ -34,9 +34,7 @@ type ForeignKeyDescription struct {
 }
 */
 
-
 // GoVarName returns the name of the go object used to refer to the kind of object the foreign key points to.
 func (fk *ForeignKeyColumn) GoVarName() string {
 	return "obj" + fk.GoName
 }
-

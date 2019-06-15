@@ -2,9 +2,9 @@ package generator
 
 import (
 	"bytes"
+	"github.com/goradd/gofile/pkg/sys"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/strings"
-	"github.com/goradd/gofile/pkg/sys"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,14 +13,14 @@ import (
 )
 
 type Codegen struct {
-	Tables     map[string]map[string]TableType	// TODO: Change to ordered maps for consistent codegeneration
+	Tables     map[string]map[string]TableType // TODO: Change to ordered maps for consistent codegeneration
 	TypeTables map[string]map[string]TypeTableType
 }
 
 type TableType struct {
 	*db.TableDescription
-	Columns    []ColumnType
-	Imports    []*ImportType
+	Columns []ColumnType
+	Imports []*ImportType
 }
 
 type TypeTableType struct {
@@ -29,22 +29,22 @@ type TypeTableType struct {
 
 // ImportType represents an import path required for a control. This is analyzed per-table.
 type ImportType struct {
-	Path string
+	Path      string
 	Namespace string
-	Alias string // blank if not needing an alias
-	Primary bool
+	Alias     string // blank if not needing an alias
+	Primary   bool
 }
 
 // ControlDescription is matched with a ColumnDescription below and provides additional information regarding
 // how information in a column can be used to generated a default control to edit that information.
 type ControlDescription struct {
-	Import *ImportType
-	ControlType string
+	Import         *ImportType
+	ControlType    string
 	NewControlFunc string
-	ControlName string
-	ControlID string	// default id to generate
-	DefaultLabel string
-	Generator ControlGenerator
+	ControlName    string
+	ControlID      string // default id to generate
+	DefaultLabel   string
+	Generator      ControlGenerator
 }
 
 // ColumnType combines a database ColumnDescription with a ControlDescription
@@ -55,7 +55,7 @@ type ColumnType struct {
 }
 
 func (t *TableType) GetColumnByDbName(name string) *ColumnType {
-	for _,col := range t.Columns {
+	for _, col := range t.Columns {
 		if col.DbName == name {
 			return &col
 		}
@@ -93,7 +93,7 @@ func Generate() {
 				log.Println("Error:  table " + table.GoName + " is defined more than once.")
 			} else if !table.IsAssociation {
 				columns, imports := columnsWithControls(table)
-				t := TableType {
+				t := TableType{
 					table,
 					columns,
 					imports,
@@ -155,9 +155,9 @@ func Generate() {
 
 				// run imports on all generated go files
 				if strings.EndsWith(fileName, ".go") {
-					_,err := sys.ExecuteShellCommand("goimports -w " + fileName)
+					_, err := sys.ExecuteShellCommand("goimports -w " + fileName)
 					if err != nil {
-						panic("error running goimports: " + string(err.(*exec.ExitError).Stderr))	// perhaps goimports is not installed?
+						panic("error running goimports: " + string(err.(*exec.ExitError).Stderr)) // perhaps goimports is not installed?
 					}
 				}
 			}
@@ -182,7 +182,6 @@ func Generate() {
 				log.Print(err)
 			}
 		}
-
 
 	}
 

@@ -34,9 +34,9 @@ func ToJavaScript(v interface{}) string {
 		return s.JavaScript()
 	case string:
 		// Note that we cannot use template literals here (backticks) because not all browsers support them
-		b, _ := json.Marshal(s)                         // This does a good job of handling most escape sequences we might need
+		b, _ := json.Marshal(s) // This does a good job of handling most escape sequences we might need
 		//s1 := strings.Replace(string(b), "/", `\/`, -1) // Replace forward slashes to avoid potential confusion in browser from closing html tags
-		return fmt.Sprintf("%v", string(b))                    // will surround with quotes
+		return fmt.Sprintf("%v", string(b)) // will surround with quotes
 	case []string:
 		var values []string
 		for _, item := range s {
@@ -79,7 +79,7 @@ func ToJavaScript(v interface{}) string {
 			keys = append(keys, k)
 		}
 		sort.Ints(keys)
-		for _,k := range keys {
+		for _, k := range keys {
 			out += fmt.Sprintf("%d:%s,", k, ToJavaScript(s[k]))
 		}
 		if len(out) == 0 {
