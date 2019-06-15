@@ -32,8 +32,9 @@ func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 func (t *SelectTable) Init(self page.ControlI, parent page.ControlI, id string) {
 	t.Table.Init(self, parent, id)
 	t.ParentForm().AddJQueryUI()
-	//t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/jquery.scrollIntoView.js", false, nil)
-	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/select-table.js", false, nil)
+	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/goradd-scrollIntoView.js", false, nil)
+	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/table-select.js", false, nil)
+	t.AddClass("gr-clickable-rows")
 }
 
 func (t *SelectTable) this() SelectTableI {
@@ -66,31 +67,23 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attri
 	if id != "" {
 		// TODO: If configured, encrypt the id so its not publicly showing database ids
 		a.SetDataAttribute("id", id)
-		a.AddClass("sel")
-		if id == t.selectedID {
-			a.AddClass("selected")
-			a.Set("aria-selected", "")
-		}
+		// We need an actual id for aria features
+		a.SetID(t.ID() + "_" + id)
 	} else {
 		a.AddClass("nosel")
 	}
-	if row%2 == 1 {
-		a.AddClass("odd")
-	} else {
-		a.AddClass("even")
-	}
 
+	a.Set("role", "option")
 	return a
 }
 
 func (t *SelectTable) ΩDrawingAttributes() *html.Attributes {
 	a := t.Table.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "selecttable")
-	a.Set("role", "grid")
-	a.Set("aria-readonly", "true")
-	a.Set("data-gr-widget", "goradd.selectTable")
+	a.Set("role", "listbox")
+	a.SetDataAttribute("grWidget", "goradd.selectTable")
 	if t.selectedID != "" {
-		a.Set("data-gr-opt-selected-id", t.selectedID)
+		a.SetDataAttribute("grOptSelectedId", t.selectedID)
 	}
 	return a
 }

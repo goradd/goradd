@@ -43,6 +43,10 @@ function _toKebab(s) {
     });
 }
 
+function _fromKebab(s) {
+    return s.replace( /-([a-z])/gi, function ( o, i ) { return i.toUpperCase(); } );
+}
+
 /**
  * formObjChanged is an event handler that records that a control has changed in order to synchronize the control with
  * the server on the next request. Send the formObjChanged event to the control
@@ -435,7 +439,7 @@ function _registerControl(ctrl) {
             if (k === "data-gr-widget") {
                 widget = v;
             } else if (k.substr(0, 12) === "data-gr-opt-") {
-                options[k.substr(12)] = v;
+                options[_fromKebab(k.substr(12))] = v;
             }
         });
         if (widget) {
@@ -1339,14 +1343,19 @@ goradd.g.prototype = {
         return null;
     },
     /**
-     * attr gets attributes on a dom object. Remember that attributes are not the same as properties.
+     * attr gets and sets attributes on a dom object. Remember that attributes are not the same as properties, but can be related.
      * To access properties, use prop. These specifically access the attributes defined in html, but not anything set
      * afterwards.
-     * Returns undefined if the attribute does not exist.
-     * @param a (optional) {string} The attribute name to return. Otherwise returns an object that is a map of all defined attributes.
+     *
+     * Returns undefined if the attribute does not exist. If no arguments are given, returns an object with all the
+     * elements attributes.
+     * @param k [string] The attribute name.
+     * @param v [string] The attribute value to set. If no value is given, it just returns the value indicated by k.
+     *                   If you pass undefined, null, or false, the attribute will be removed. Passing true here will
+     *                   set the attribute with a blank value, which in html indicates a value of true.
      * @returns {null|boolean|*}
      */
-    attr: function() {
+    attr: function(k,v) {
         var t = this.element;
         if (arguments.length === 0) {
             // Return an object mapping all the attributes of the html object
@@ -1362,21 +1371,28 @@ goradd.g.prototype = {
                 return attr;
             }
             return undefined; // no attributes are set
-        }
-        if (arguments.length === 1) {
-            var a = arguments[0];
+        } else if (arguments.length === 1) {
             // get value
-            if (!t.hasAttribute(a)) {
+            if (!t.hasAttribute(k)) {
                 return undefined;
             }
-            var v = t.getAttribute(a);
-            if (v === null || v === "true" || v === "") {
+            v = t.getAttribute(k);
+            if (v === "true" || v === "") {
                 return true; // A boolean attribute, it just exists with no value or with "true"
             } else if (v === "false") {
                 return false;
             } else {
                 return v;
             }
+        } else {
+            if (v === undefined || v === null || v === false) {
+                t.removeAttribute(k);
+                return;
+            }
+            if (v === true) {
+                v = ""; // per the standard for boolean attributes
+            }
+            t.setAttribute(k,v);
         }
     },
     /**
@@ -1438,10 +1454,19 @@ goradd.g.prototype = {
      * @returns {string} The value of the property.
      */
     css: function(p, v) {
+        var el = this.element;
         if (arguments.length >= 2) {
-            this.element.style[p] = v;
+            el.style[p] = v;
+            return v;
         }
-        return this.element.style[p];
+        var styles = window.getComputedStyle(el); // TODO: since this is live, should we stash this in the object so we don't have the overhead?
+        if (styles.hasOwnProperty(p)) {
+            return styles[p];
+        }
+        if (el.style && el.style.hasOwnProperty(p)) {
+            return el.style[p];
+        }
+        return undefined;
     },
 
     /**

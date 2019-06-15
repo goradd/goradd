@@ -1,0 +1,46 @@
+/**
+ * Dialog styling
+ */
+
+#groverlay {
+  position: fixed; /* Sit on top of the override content */
+  width: 100%; /* Full width (cover the whole override) */
+  height: 100%; /* Full height (cover the whole override) */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
+}
+
+div[data-grctl=dialog] {
+  background-color: white;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+  border:solid black 2px;
+  border-radius: 4px;
+  .gr-dialog-title {
+    margin: -10px -10px 5px;
+    height: 24px;
+    background-color: #B0BBC5;
+    .gr-dialog-close {
+      float: right;
+      margin-right: 5px;
+    }
+
+  }
+
+  .gr-dialog-buttons {
+    margin-top: 5px;
+    margin-left: -10px;
+    margin-right: -10px;
+    margin-bottom: -10px;
+    background-color: #B0BBC5;
+    border-top: solid black 1px;
+  }
+}

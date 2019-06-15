@@ -1,3 +1,7 @@
+/**
+ * scrollIntoView extends the goradd widget to add a scrollIntoView function. This only scrolls vertically at this
+ * point, not horizontally.
+ */
 
 (function() {
     /**
@@ -14,7 +18,7 @@
      */
     function _newScrollTop(viewTop, viewBottom, scrollHeight, itemTop, itemBottom) {
         var viewHeight = viewBottom - viewTop;
-        var itemHeight = itemBottom - itemTop;
+        //var itemHeight = itemBottom - itemTop;
         var topPos = itemTop;
         var bottomPos = itemBottom - viewHeight;
 
@@ -52,33 +56,32 @@
 
     goradd.extend(goradd.g.prototype, {
         scrollIntoView: function () {
-            var self = this;
             var curEl = this.element;
-            var objTop = curEl.offsetTop; // This is the top from the non-static parent, which we will search for below.
-            var ps = this.parents();
-            var found = false;
-            goradd.each(ps, function (i, el) {
-                if (el.position !== "static") {
-                    var o = el.css("overflow-y");
-                    if (o === "auto" || o === "scroll") {
-                        // this is the scrollable parent. It might not be currently scrollable, but for our purposes, its what we want
-                        found = true;
-                        var objBottom = objTop + self.element.clientHeight;
-                        var s = window.getComputedStyle(el, null);
-                        var h = el.clientHeight - s.paddingTop - s.paddingBottom;
-                        var t = el.scrollTop;
-                        el.scrollTop = _newScrollTop(t, t+h, el.scrollHeight, objTop, objBottom);
-                        return false;
-                    } else {
-                        // the non-static parent is not the scrollable parent, so we need to add to the next non-static parent and keep looking
-                        curEl = el;
-                        objTop += curEl.offsetTop;
-                    }
+            var scroller;
+            // Find wrapping scroller
+            goradd.each(this.parents(), function (i, el) {
+                var o = g$(el).css("overflowY");
+                if (o === "auto" || o === "scroll") {
+                    scroller = el;
+                    return false;
                 }
             });
-            if (!found) {
-                // We went all the way up to the window and found no scrollable parent that was not styled
-                // so that it would scroll (non-static). So, we will scroll the entire window.
+
+            if (!!scroller) {
+                var rEl = curEl.getBoundingClientRect();
+                var rScroll = scroller.getBoundingClientRect();
+                var viewTop = scroller.scrollTop;
+                var viewBottom = viewTop + rScroll.bottom - rScroll.top;
+                var scrollHeight = scroller.scrollHeight;
+                var itemTop = rEl.top - rScroll.top + viewTop;
+                var itemBottom = itemTop + rEl.bottom - rEl.top;
+                var newTop = _newScrollTop(viewTop, viewBottom, scrollHeight, itemTop, itemBottom);
+
+                // TODO: Create and use a simple animation library to do the scrolling.
+                scroller.scrollTop = newTop;
+            } else {
+                // We went all the way up to the window and found no scrollable parent.
+                // So, we will scroll the entire window.
 
                 // TODO
             }
