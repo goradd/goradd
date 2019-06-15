@@ -154,10 +154,10 @@ function _displayAjaxError(resultText, err) {
                 resultText += " Line:" + err.line;
             }
         }
-        var el = goradd.tb("div").attr("id", "Goradd_AJAX_Error").
+        var el = goradd.tagBuilder("div").attr("id", "Goradd_AJAX_Error").
         html("<button onclick=\"window.goradd.g('Goradd_AJAX_Error').remove()\">OK</button>").
         appendTo(goradd.form());
-        goradd.tb("div").html(resultText).appendTo(el);
+        goradd.tagBuilder("div").html(resultText).appendTo(el);
     }
 }
 
@@ -431,7 +431,6 @@ function _registerControl(ctrl) {
     g.on('change input', _formObjChanged, {capture: true}); // make sure we get these events before later attached events
 
     // widget support, using declarative methods
-    // we could put this in the widget constructor instead, perhaps
     if (goradd.widget.new) {
         var widget;
         var options = {};
@@ -1132,12 +1131,12 @@ goradd.currentStep = 0;
 /////////////////////////////////
 
 /**
- * tb returns a TagBuilder. Use it as follows:
- * tag = goradd.tb("div").attr("class", "myClass").text("I am text").appendTo("objId");
+ * tagBuilder returns a TagBuilder. Use it as follows:
+ * tag = goradd.tagBuilder("div").attr("class", "myClass").text("I am text").appendTo("objId");
  * @param tag {string}
  * @returns {goradd.TagBuilder}
  */
-goradd.tb = function(tag) {
+goradd.tagBuilder = function(tag) {
     return new goradd.TagBuilder(tag);
 };
 /**
@@ -1226,6 +1225,17 @@ goradd.TagBuilder.prototype = {
         el = goradd.el(el);
         el.parentElement.replaceChild(this.el, el);
         return this.el;
+    },
+    /**
+     * Wrap ends the builder by moving the given tag inside of the builder's tag, and
+     * then replacing the tag
+     * @param el
+     */
+    wrap: function(el) {
+        el = goradd.el(el);
+        el.parentElement.replaceChild(this.el, el);
+        this.el.appendChild(el);
+        return this.el;
     }
 };
 
@@ -1262,6 +1272,9 @@ goradd.g = function(el) {
 
 goradd.g.prototype = {
     _g: 1, // just a marker to help with the constructor
+    id: function() {
+        return this.element.id;
+    },
     get: function(key) {
         var v;
         return (v = this.data(key)) !== undefined ? v :
@@ -1349,6 +1362,13 @@ goradd.g.prototype = {
      *
      * Returns undefined if the attribute does not exist. If no arguments are given, returns an object with all the
      * elements attributes.
+     *
+     * Note that when returning all attributes, attributes set as an empty string will be returned as a "true".
+     * Html has no way of differentiating between an attribute that is an empty string, and an attribute that is
+     * set with no value at all, which is common for boolean attributes. Since setting an attribute with an empty
+     * string is unusual, and setting an attribute with no value to represent true is more common, we will return
+     * the boolean value. If you need an empty string, you will need to look for the boolean value and switch it.
+     *
      * @param k [string] The attribute name.
      * @param v [string] The attribute value to set. If no value is given, it just returns the value indicated by k.
      *                   If you pass undefined, null, or false, the attribute will be removed. Passing true here will
@@ -1365,7 +1385,11 @@ goradd.g.prototype = {
                 goradd.each(this.element.attributes, function(v,n) {
                     n = n.nodeName || n.name;
                     if (t.hasAttribute(n)) {
-                        attr[n] = t.getAttribute(n);
+                        var v2 = t.getAttribute(n);
+                        if (v2 === "") { // empty string. Is it a true, or really an empty string? The world may never know.
+                            v2 = true;
+                        }
+                        attr[n] = v2;
                     }
                 });
                 return attr;
@@ -1522,6 +1546,7 @@ goradd.g.prototype = {
         }
 
         var capture = false;
+        var target = self;
         if (options) {
             if (typeof options !== "object") {
                 goradd.log("options must be an object if it is defined");
@@ -1532,6 +1557,9 @@ goradd.g.prototype = {
             }
             if (!!options.selector) {
                 selector = options.selector;
+            }
+            if (!!options.handlerTarget) {
+                target = options.handlerTarget;
             }
         }
         var el = this.element;
@@ -1585,10 +1613,11 @@ goradd.g.prototype = {
                 if (event.detail) {
                     data = event.detail;
                 }
+
                 if (data) {
-                    handler.call(self, event, data); // add extra item to event handler
+                    handler.call(target, event, data); // add extra item to event handler
                 } else {
-                    handler.call(self, event);
+                    handler.call(target, event);
                 }
             }, capture);
         });
@@ -1982,24 +2011,37 @@ goradd.widget.new = function(constructor, options, element) {
 /**
  * This is the definition of the Widget class, which serves as the base class for other widgets. It itself is based
  * on the "g" class, which is a jQuery like wrapper. In other words, all the functions on the g class are available
- * to widgets throught the "this" variable, and can be overridden. One important function to override might be the
- * "value" function, which provides the value that will be used by ajax calls. If your widget only works through Ajax,
+ * to widgets through the "this" variable, and can be overridden. One important function to override might be the
+ * "val" function, which provides the value that will be used by ajax calls. If your widget only works through Ajax,
  * then that is sufficient to keep the go side of things updated.
  */
 goradd.widget("goradd.Widget", goradd.g, {
     /**
      * _createWidget acts as the constructor of all widgets. It can be overridden by the widget if needed, but
-     * you normally do not need to. Implement _create() to make a private constructor.
+     * you normally do not need to. Instead, implement _create() to make a private constructor for your widget,
+     * which this default constructor will call.
      * @param options
      * @param element
      * @private
      */
     _createWidget: function(options, element) {
+        var self = this;
         this.element = goradd.el(element);
 
-        this.options = goradd.extend( {},
-            this.options,
-            options );
+        // Merge options into default options
+
+        this.options = goradd.extend( {}, this.options); // copy defaults
+        goradd.each(options, function(k,v) {
+            if (self.options.hasOwnProperty(k) &&
+                typeof(self.options[k]) === "string" &&
+                v === true) {
+                // deal with special situation where we are trying to set an option to a blank string, instead of a boolean
+                // html cannot differentiate between the two when the option is coming from an attribute
+                self.options[k] = "";
+            } else {
+                self.options[k] = v;
+            }
+        });
 
         if (this.element) { // if no element, this may be created just to get to its prototype
             this._create();

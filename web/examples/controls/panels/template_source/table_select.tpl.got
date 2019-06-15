@@ -6,7 +6,7 @@
 {{define template }}
 {{# Provide some basic styling  }}
 <style>
-#scroller {
+#table2_scroller {
     border: 1px solid gray;
     overflow-x: hidden;
     overflow-y: scroll;
@@ -23,8 +23,9 @@ The SelectTable is a table that is used to select an item from a list of items. 
 to the user that the table is selectable, and it will remember the selection and report back to the go code
 through a RowSelected event when an item is selected, and what that item was.
 </p>
+{{draw control.Table1}}
 <p>
-The table is wrapped in a box that allows the table to scroll in the box.
+The next example is a select table that is scrollable.
 The SelectTable will show the selected item at startup, and when its javascript <i>showSelectedItem</i> function
 is called, which you can do from a Javascript action.
 Some things to try as a demonstration of its capabilities:
@@ -36,9 +37,7 @@ Some things to try as a demonstration of its capabilities:
 <p>
 In each case, you should see the table scrolled so that the item is visible.
 </p>
-<div id="scroller">
-{{draw control.Table1}}
-</div>
+{{draw control.Table2}}
 
 <div class="boxed" style="width:50%">
 {{draw control.InfoPanel}}

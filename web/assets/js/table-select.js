@@ -1,19 +1,28 @@
 /**
  * Widget script designed to be attached to a select table.
- *
- * TODO: Capture focus and improve aria experience
  */
 
 goradd.widget( "goradd.selectTable", {
     options: {
-        selectedId: ""
+        selectedId: "",
+        scrollable: false
     },
     _create: function() {
         this._super();
         this.on('click', 'tr', this._handleRowClick, {bubbles: true});
         this._initSelectedId();
-        this.on('keydown', 'tr', this._handleKeyDown);
-        this.on('focus', 'tr', this._handleFocus);
+        if (this.options.scrollable) {
+            var scroller = goradd.tagBuilder("div")
+                .attr("id", this.id() + "_scroller")
+                .attr("tabindex", 0)
+                .attr("style", "overflow-y:auto;padding-right:10px")
+                .wrap(this.element);
+            g$(scroller).on('keydown', this._handleKeyDown, {handlerTarget: this});
+            this.attr("tabindex", false);
+
+        } else {
+            this.on('keydown', this._handleKeyDown);
+        }
     },
     _initSelectedId: function() {
         var row;
@@ -32,7 +41,6 @@ goradd.widget( "goradd.selectTable", {
         if (selId !== prevSelId && $row.hasClass ("selected")) {
             goradd.setControlValue(this.element.id, "selectedId", selId);
             this.trigger('rowselected', selId);
-            $row.trigger("focus");
         }
         event.preventDefault();
     },
@@ -74,18 +82,11 @@ goradd.widget( "goradd.selectTable", {
                 this._selectRow(newRow);
                 goradd.setControlValue(this.element.id, "selectedId", this.options.selectedId);
                 this.trigger('rowselected', this.options.selectedId);
-                g$(newRow).trigger("focus");
                 this.showSelectedItem();
+                e.preventDefault();
             }
         }
 
-        e.preventDefault();
-    },
-    _handleFocus: function(event) {
-        if (!this.options.selectedId) {
-            var t = event.target;
-            this._selectRow(t);
-        }
     },
     _selectRow: function(row) {
         var $r = g$(row);
@@ -96,20 +97,17 @@ goradd.widget( "goradd.selectTable", {
         if (sel) { // should we make sure we are not selecting same item?
             g$(sel).class('-selected');
             g$(sel).attr("aria-selected", false);
-            if ($r){$r.attr("tabindex", false);}
             this.attr("aria-activedescendant", false);
         }
         if ($r && !$r.hasClass ("nosel")) {
             $r.class('+selected');
             $r.attr("aria-selected", true);
-            $r.attr("tabindex", 0);
             this.attr("aria-activedescendant", row.id);
             this.options.selectedId = $r.data("id");
         } else {
             // provide for keyboard interaction to select first item
             row = this.qs("tr"); // get first row
             $r = g$(row);
-            if ($r) {$r.attr("tabindex", "0");}
         }
     },
     _setOption: function(key, value) {
