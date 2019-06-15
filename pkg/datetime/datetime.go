@@ -171,6 +171,17 @@ func (d DateTime) JavaScript() string {
 
 // MarshalJSON satisfies the json.Marshaller interface to output the date as a value embedded in JSON and that
 // will be unpacked by our javascript file.
+//
+// The JSON "standard" behavior is to output an ISO8601 string in UTC time. There are a bunch of problems with this.
+// 1) You cannot use this to represent a display date and time in local time. It will get converted to world time.
+//	  even if you try to output a time without timezone information, or with timezone information that is not UTC,
+//    which is what the built-in GO Time object does, most browsers will ignore that part of the string and completely
+//	  botch the time transfer. We would need to create our own interpreter to make that work.
+// 2) Its a string. Unless you know in advance you want a date, or you look for an ISO8601 pattern in every string,
+//    you cannot just tell the other side its a date.
+//
+// So, we have taken the approach of outputting an object that self-identifies as a goradd date, and already
+// breaks apart the time components so its easily reassembled on the other side.
 func (d DateTime) MarshalJSON() (buf []byte, err error) {
 	// We specify numbers explicitly to avoid the warnings about browsers parsing date strings inconsistently
 	isTimestamp := d.IsTimestamp()
@@ -181,7 +192,7 @@ func (d DateTime) MarshalJSON() (buf []byte, err error) {
 		t = d.GoTime()
 	}
 	var obj = map[string]interface{}{
-		javascript.JsonObjectType: "dt",
+		javascript.JsonObjectType: "date",
 		"y":   t.Year(),
 		"mo":  t.Month() - 1, // javascript is zero based
 		"d":    t.Day(),

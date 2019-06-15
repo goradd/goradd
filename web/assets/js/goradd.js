@@ -347,14 +347,8 @@ function _unpackObj(obj) {
                         return new Function(obj.func);
                     }
 
-                case 'dt':
-                    if (obj.z) {
-                        return null;
-                    } else if (obj.t) {
-                        return new Date(Date.UTC(obj.y, obj.mo, obj.d, obj.h, obj.m, obj.s, obj.ms));
-                    } else {
-                        return new Date(obj.y, obj.mo, obj.d, obj.h, obj.m, obj.s, obj.ms);
-                    }
+                case 'date':
+                    return goradd.unpackJsonDate(obj);
 
                 case 'varName':
                     // Find the variable value starting at the window context.
@@ -670,6 +664,30 @@ goradd = {
         el.checked = true;
         if (prevItem) {
             g$(el).trigger('formObjChanged');
+        }
+    },
+    /**
+     * Unpacks a date object that was packed by dateTime.DateTime.MarshalJson. If the date represented a
+     * timestamp on the server side, it will be a timestamp here, but the time will be in local time.
+     * In other words, if the server timezone and browser timezone are different,
+     * then they will show different times, but both will correspond to the same world time.
+     * If on the server side the date represented simply a date and time in local time,
+     * the date will become the same date and time in local time here. If the server timezone and browser
+     * timezone are different, they will both show the same time, meaning they will not be the same world time.
+     * If it was a zero date on the server, it becomes a null here.
+     *
+     * This solves some problems inherent in the traditional JSON date format consisting of an ISO8601 string.
+     *
+     * @param o
+     * @returns {null|Date}
+     */
+    unpackJsonDate(o) {
+        if (o.z) {
+            return null;
+        } else if (o.t) {
+            return new Date(Date.UTC(o.y, o.mo, o.d, o.h, o.m, o.s, o.ms));
+        } else {
+            return new Date(o.y, o.mo, o.d, o.h, o.m, o.s, o.ms);
         }
     },
 
