@@ -41,6 +41,10 @@ type FormI interface {
 	// Lifecycle calls
 	Run(ctx context.Context) error
 	Exit(ctx context.Context, err error)
+
+	resetValidation()
+	updateValues(ctx *Context)
+	writeAllStates(ctx context.Context)
 }
 
 // ΩFormBase is a base for the FormBase struct that is in the control package.
@@ -188,6 +192,55 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	f.this().ΩPostRender(ctx, buf)
 	return
 }
+
+func (f *ΩFormBase) resetDrawingFlags() {
+	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
+		c := ctrl.control()
+		c.wasRendered = false
+		c.isModified = false
+	})
+}
+
+func (f *ΩFormBase) resetValidation() {
+	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
+		c := ctrl.control()
+		if c.validationMessage != "" {
+			if c.wrapper != nil {
+				c.wrapper.ΩSetValidationMessageChanged()
+			}
+			c.validationMessage = ""
+		}
+		if c.validationState != ValidationWaiting {
+			if c.wrapper != nil {
+				c.wrapper.ΩSetValidationStateChanged()
+			}
+			c.validationState = ValidationWaiting
+		}
+	})
+}
+
+func (f *ΩFormBase) updateValues(ctx *Context) {
+	f.RangeAllChildren(func(child ControlI) {
+		// Parent is updated after children so that parent can read the state of the children
+		// to update any internal caching of the state. Parent can then delete or recreate children
+		// as needed.
+		child.ΩUpdateFormValues(ctx)
+	})
+}
+
+// writeAllStates is an internal function that will recursively write out the state of all the controls.
+// This state is used by controls to restore the visual state of the control if the page is returned to. This is helpful
+// in situations where a control is used to filter what is shown on the page, you zoom into an item, and then return to
+// the parent control. In this situation, you want to see things in the same state they were in, and not have to set up
+// the filter all over again.
+func (f *ΩFormBase) writeAllStates(ctx context.Context) {
+	f.RangeAllChildren(func(child ControlI) {
+		c := child.control()
+		c.writeState(ctx)
+	})
+}
+
+
 
 // outputSqlProfile looks for sql profiling information and sends it to the browser if found
 func (f *ΩFormBase) getDbProfile(ctx context.Context) (s string) {

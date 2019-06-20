@@ -1,4 +1,4 @@
-package types
+package cache
 
 import (
 	"sort"
@@ -11,6 +11,9 @@ import (
 // Limits are approximate, as garbage collecting will randomly happen. Also, in order to prevent memory thrashing, strict order is not
 // preserved, but items will fall out more or less in LRU order.
 // Someday we may offer a backing store version to extend the size of the cache to disk or some other kind of storage
+// If the item has a "Removed" function, that function will be called when the item falls out of the cache.
+// If the item has a "Cleanup" function, that function will be called when the item is removed from memory. If
+// the cache has a backing store, it may be removed from memory, but still in the disk-based cache.
 type LruCache struct {
 	sync.RWMutex
 	maxItemCount int
@@ -23,6 +26,15 @@ type lruItem struct {
 	timestamp int64
 	v         interface{}
 }
+
+type Remover interface {
+	Removed()
+}
+
+type Cleanuper interface {
+	Cleanup()
+}
+
 
 // Create and return a new cache.
 // maxItemCount is the maximum number of items the cache can hold
@@ -80,10 +92,18 @@ func (o *LruCache) gc() {
 	// However we do this, we must MAKE SURE that any recent Set does not get garbage collected here
 	o.Lock()
 
+
 	// remove based on TTL
 	for len(o.order) > 0 && o.items[o.order[0]].timestamp < time.Now().UnixNano()-o.ttl {
+		v := o.items[o.order[0]].v
 		delete(o.items, o.order[0])
 		o.order = o.order[1:]
+		if r,ok := v.(Remover); ok {
+			r.Removed()
+		}
+		if r,ok := v.(Cleanuper); ok {
+			r.Cleanup()
+		}
 	}
 
 	// remove based on size
@@ -91,8 +111,15 @@ func (o *LruCache) gc() {
 		// TODO: If this is happening, we are throwing out items before they expire. We should log this, and it means
 		// either allocating more memory, reducing TTL, or implementing a backing store to keep items on disk
 		// a backing store will require serialization of the v objects
+		v := o.items[o.order[0]].v
 		delete(o.items, o.order[0])
 		o.order = o.order[1:]
+		if r,ok := v.(Remover); ok {
+			r.Removed()
+		}
+		if r,ok := v.(Cleanuper); ok {
+			r.Cleanup()
+		}
 	}
 	o.Unlock()
 }

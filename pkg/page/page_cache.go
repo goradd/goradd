@@ -2,7 +2,7 @@ package page
 
 import (
 	"bytes"
-	"github.com/goradd/goradd/ideas/types"
+	"github.com/goradd/goradd/pkg/cache"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/pool"
 )
@@ -41,12 +41,12 @@ func GetPageCache() PageCacheI {
 // we could potentially garbage collect. This cache is only appropriate when the pagecache itself is operating on a
 // single machine.
 type FastPageCache struct {
-	types.LruCache
+	cache.LruCache
 }
 
 // NewFastPageCache creates a new FastPageCache cache
 func NewFastPageCache(maxEntries int, TTL int64) *FastPageCache {
-	return &FastPageCache{*types.NewLruCache(maxEntries, TTL)}
+	return &FastPageCache{*cache.NewLruCache(maxEntries, TTL)}
 }
 
 // Set puts the page into the page cache and updates its access time, pushing it to the end of the removal queue.
@@ -91,12 +91,12 @@ func (o *FastPageCache) NewPageID() string {
 // the oldest item(s) will be removed. Pages that are set multiple times will be pushed to the top. Whenever an item is set,
 // we could potentially garbage collect.
 type SerializedPageCache struct {
-	types.LruCache
+	cache.LruCache
 }
 
 func NewSerializedPageCache(maxEntries int, TTL int64) *SerializedPageCache {
 	panic("Serialized pages are not ready for prime time yet")
-	return &SerializedPageCache{*types.NewLruCache(maxEntries, TTL)}
+	return &SerializedPageCache{*cache.NewLruCache(maxEntries, TTL)}
 }
 
 // Set puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue

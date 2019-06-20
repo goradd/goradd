@@ -117,6 +117,8 @@ type ControlI interface {
 	Page() *Page
 	ParentForm() FormI
 	Child(string) ControlI
+	RangeAllChildren(func(ControlI))
+	RangeSelfAndAllChildren(func(ControlI))
 
 	// hmtl and css
 
@@ -188,6 +190,7 @@ type ControlI interface {
 	// Serialization helpers
 
 	Restore(self ControlI)
+	Cleanup()
 
 	// API
 
@@ -232,9 +235,10 @@ type Control struct {
 	// page is a pointer to the page that encloses the entire control tree.
 	page *Page
 
-	// parent is the immediate parent control of this control. Only the form object will not have a parent.
-	parent ControlI
-	// children are the child controls that belong to this control
+	// parentId is the id of the immediate parent control of this control. Only the form object will not have a parent.
+	// We use the id here to prevent a memory leak if we remove the control from the form.
+	parentId string
+	// children are the child controls that belong to this control. These are cached for speed.
 	children []ControlI // Child controls
 
 	// Tag is text of the tag that will enclose the control, like "div" or "input"
@@ -248,7 +252,7 @@ type Control struct {
 	attributes *html.Attributes
 	// test is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
 	text string
-	// textLabelMode describes how to draw the internal label
+	// textLabelMode describes how to draw the internal label !!!
 	textLabelMode html.LabelDrawingMode
 	// htmlEscapeText tells us whether to escape the text output, or send straight text
 	htmlEscapeText bool
@@ -390,10 +394,8 @@ func (c *Control) ΩPreRender(ctx context.Context, buf *bytes.Buffer) error {
 
 	// Because we may be rerendering a parent control, we need to make sure all "child" controls are marked as NOT being on the form
 	// before rendering it again.
-	if c.children != nil {
-		for _, child := range c.children {
-			child.control().markOnPage(false)
-		}
+	for _, child := range c.children {
+		child.control().markOnPage(false)
 	}
 
 	// Finally, let's specify that we have begun rendering this control
@@ -781,7 +783,7 @@ func (c *Control) AddRelatedRenderScript(id string, f string, params ...interfac
 
 // Parent returns the parent control of the control. All controls have a parent, except the Form control.
 func (c *Control) Parent() ControlI {
-	return c.parent
+	return c.Page().GetControl(c.parentId)
 }
 
 // Children returns the child controls of the control.
@@ -789,11 +791,27 @@ func (c *Control) Children() []ControlI {
 	return c.children
 }
 
+// RangeAllChildren recursively calls the given function on every child control and subcontrol.
+// It calls the function on the child controls of each control first, and then on the control itself.
+func (c *Control) RangeAllChildren(f func(child ControlI)) {
+	for _, child := range c.children {
+		child.RangeAllChildren(f)
+		f(child)
+	}
+}
+
+// RangeSelfAndAllChildren recursively calls the given function on this control and every child control and subcontrol.
+// It calls the function on the child controls of each control first, and then on the control itself.
+func (c *Control) RangeSelfAndAllChildren(f func(ctrl ControlI)) {
+	c.RangeAllChildren(f)
+	f(c)
+}
+
 // Remove removes the current control from its parent. After this is done, the control and all its child items will
 // not be part of the drawn form, but the child items will still be accessible through the control itself.
 func (c *Control) Remove() {
-	if c.parent != nil {
-		c.parent.control().removeChild(c.this().ID(), true)
+	if c.parentId != "" {
+		c.Parent().control().removeChild(c.this().ID(), true)
 		if !c.shouldAutoRender {
 			//c.Refresh() // TODO: Do this through ajax
 		}
@@ -816,25 +834,24 @@ func (c *Control) removeChild(id string, fromPage bool) {
 				v.control().removeChildrenFromPage()
 				c.page.removeControl(id)
 			}
-			v.control().parent = nil
+			v.control().parentId = ""
 			break
 		}
 	}
 }
 
 func (c *Control) removeChildrenFromPage() {
-	for _, v := range c.children {
-		v.control().removeChildrenFromPage()
-		c.page.removeControl(v.ID())
-	}
+	c.RangeAllChildren(func(child ControlI) {
+		c.page.removeControl(child.ID())
+	})
 }
 
-// RemoveChildren removes all the child controls from this control and the form
+// RemoveChildren removes all the child controls from this control and the form so that the memory manager can delete them.
 func (c *Control) RemoveChildren() {
 	for _, child := range c.children {
 		child.control().removeChildrenFromPage()
 		c.page.removeControl(child.ID())
-		child.control().parent = nil
+		child.control().parentId = ""
 	}
 	c.children = nil
 }
@@ -842,20 +859,22 @@ func (c *Control) RemoveChildren() {
 // SetParent sets the parent of the control. Use this primarily if you are responding to some kind of user
 // interface that will move a child Control from one parent Control to another.
 func (c *Control) SetParent(newParent ControlI) {
-	if c.parent == nil {
+	if c.parentId == "" {
 		c.control().addChildControlsToPage()
 	} else {
-		c.parent.control().removeChild(c.ID(), newParent == nil)
+		c.Parent().control().removeChild(c.ID(), newParent == nil)
 		if !c.shouldAutoRender {
 			//c.parent.Refresh()
 		}
 	}
-	c.parent = newParent
-	if c.parent != nil {
-		c.parent.control().addChildControl(c.this())
+	if newParent != nil {
+		c.parentId = newParent.ID()
+		c.Parent().control().addChildControl(c.this())
 		if !c.shouldAutoRender {
 			// TODO: insert into DOM  instead of c.parent.Refresh()
 		}
+	} else {
+		c.parentId = ""
 	}
 	c.page.addControl(c.this())
 
@@ -867,6 +886,7 @@ func (c *Control) SetParent(newParent ControlI) {
 }
 
 // Child returns the child control with the given id.
+// TODO: This should be a map, both to speed it up, and add the ability to sort it
 func (c *Control) Child(id string) ControlI {
 	for _, c := range c.children {
 		if c.ID() == id {
@@ -1160,7 +1180,7 @@ func (c *Control) Action(ctx context.Context, a ActionParams) {
 func (c *Control) PrivateAction(ctx context.Context, a ActionParams) {
 }
 
-// GetActionScripts is an internal function called during drawing to recursively gather up all the event related
+// GetActionScripts is an internal function called during drawing to gather up all the event related
 // scripts attached to the control and send them to the response.
 func (c *Control) GetActionScripts(r *Response) {
 	// Render actions
@@ -1179,40 +1199,6 @@ func (c *Control) GetActionScripts(r *Response) {
 	}
 }
 
-// Recursively reset the drawing flags
-func (c *Control) resetDrawingFlags() {
-	c.wasRendered = false
-	c.isModified = false
-
-	if children := c.this().Children(); children != nil {
-		for _, child := range children {
-			child.control().resetDrawingFlags()
-		}
-	}
-}
-
-// Recursively reset the validation state
-func (c *Control) resetValidation() {
-	if c.validationMessage != "" {
-		if c.wrapper != nil {
-			c.wrapper.ΩSetValidationMessageChanged()
-		}
-		c.validationMessage = ""
-	}
-	if c.validationState != ValidationWaiting {
-		if c.wrapper != nil {
-			c.wrapper.ΩSetValidationStateChanged()
-		}
-		c.validationState = ValidationWaiting
-	}
-
-	if children := c.this().Children(); children != nil {
-		for _, child := range children {
-			child.control().resetValidation()
-		}
-	}
-}
-
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (c *Control) WrapEvent(eventName string, selector string, eventJs string) string {
 	if selector != "" {
@@ -1222,19 +1208,6 @@ func (c *Control) WrapEvent(eventName string, selector string, eventJs string) s
 	}
 }
 
-// updateValues is called by the form during event handling. It reflexively updates the values in each of its child controls
-func (c *Control) updateValues(ctx *Context) {
-	children := c.Children()
-	if children != nil {
-		for _, child := range children {
-			child.control().updateValues(ctx)
-		}
-	}
-	// Parent is updated after children so that parent can read the state of the children
-	// to update any internal caching of the state. Parent can then delete or recreate children
-	// as needed.
-	c.this().ΩUpdateFormValues(ctx)
-}
 
 // ΩUpdateFormValues should be implemented by Control implementations to get their values from the context.
 // This is where a Control updates its internal state based on actions by the client.
@@ -1271,7 +1244,7 @@ func (c *Control) doAction(ctx context.Context) {
 
 	if (e.event().validationOverride != ValidateNone && e.event().validationOverride != ValidateDefault) ||
 		(e.event().validationOverride == ValidateDefault && c.this().ValidationType(e) != ValidateNone) {
-		c.ParentForm().control().resetValidation()
+		c.ParentForm().resetValidation()
 	}
 
 	if c.passesValidation(ctx, e) {
@@ -1444,11 +1417,11 @@ func (c *Control) Validate(ctx context.Context) bool {
 
 func (c *Control) validateSiblings(ctx context.Context) bool {
 
-	if c.parent == nil {
+	if c.parentId == "" {
 		return true
 	}
 
-	p := c.parent.control()
+	p := c.Parent().control()
 	siblings := p.children
 
 	var valid = true
@@ -1479,11 +1452,11 @@ func (c *Control) validateChildren(ctx context.Context) bool {
 
 func (c *Control) validateSiblingsAndChildren(ctx context.Context) bool {
 
-	if c.parent == nil {
+	if c.parentId == "" {
 		return true
 	}
 
-	p := c.parent.control()
+	p := c.Parent().control()
 	siblings := p.children
 
 	var isValid = true
@@ -1520,7 +1493,11 @@ func (c *Control) SaveState(ctx context.Context, saveIt bool) {
 	c.readState(ctx)
 }
 
-// writeState is an internal function that will recursively write out the state of itself and its subcontrols
+// writeState is an internal function that will write out the state of itself
+// This state is used by controls to restore the visual state of the control if the page is returned to. This is helpful
+// in situations where a control is used to filter what is shown on the page, you zoom into an item, and then return to
+// the parent control. In this situation, you want to see things in the same state they were in, and not have to set up
+// the filter all over again.
 func (c *Control) writeState(ctx context.Context) {
 	var stateStore *maps.Map
 	var state *maps.Map
@@ -1545,17 +1522,9 @@ func (c *Control) writeState(ctx context.Context) {
 			stateStore.Set(stateKey, state)
 		}
 	}
-
-	if c.children == nil || len(c.children) == 0 {
-		return
-	}
-
-	for _, child := range c.children {
-		child.control().writeState(ctx)
-	}
 }
 
-// readState is an internal function that will recursively read the state of itself and its subcontrols
+// readState is an internal function that will read the state of itself
 func (c *Control) readState(ctx context.Context) {
 	var stateStore *maps.Map
 	var state *maps.Map
@@ -1581,14 +1550,6 @@ func (c *Control) readState(ctx context.Context) {
 
 			c.this().ΩUnmarshalState(state)
 		}
-	}
-
-	if c.children == nil || len(c.children) == 0 {
-		return
-	}
-
-	for _, child := range c.children {
-		child.control().readState(ctx)
 	}
 }
 
@@ -1788,6 +1749,13 @@ func (c *Control) MockFormValue(value string) bool {
 	return c.this().Validate(ctx)
 }
 
+// Cleanup is called by the framework when a control is being removed from the page cache. It is an opportunity to remove
+// any potential circular references in your controls that would prevent the garbage collector from removing the
+// control from memory. In particular, references to parent objects would be a problem.
+func (c *Control) Cleanup() {
+	c.page = nil
+}
+
 // GobEncode here is implemented to intercept the GobSerializer to only encode an empty structure. We use this as part
 // of our overall serialization stratgey for forms. Controls still need to be registered with gob.
 func (c *Control) GobEncode() (data []byte, err error) {
@@ -1886,10 +1854,7 @@ func (c *Control) Serialize(e Encoder) (err error) {
 		PrivateEvents:         c.privateEvents,
 		EventCounter:          c.eventCounter,
 		ShouldSaveState:       c.shouldSaveState,
-	}
-
-	if c.parent != nil {
-		s.ParentID = c.parent.ID()
+		ParentID:			   c.parentId,
 	}
 
 	err = e.Encode(&s)
@@ -1928,7 +1893,7 @@ func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
 		return
 	}
 
-	c.parent = p.GetControl(s.ParentID)
+	c.parentId = s.ParentID
 	c.Tag = s.Tag
 	c.IsVoidTag = s.IsVoidTag
 	c.hasNoSpace = s.HasNoSpace

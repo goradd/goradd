@@ -1,4 +1,4 @@
-package types
+package cache
 
 import (
 	"testing"
@@ -6,15 +6,15 @@ import (
 )
 
 func TestBasicLruCache(t *testing.T) {
-	cache := NewLruCache(100, 60*60)
+	c := NewLruCache(100, 60*60)
 
 	p1 := "1"
 	p2 := "2"
 
-	cache.Set("1", p1)
-	cache.Set("2", p2)
+	c.Set("1", p1)
+	c.Set("2", p2)
 
-	p3 := cache.Get("1")
+	p3 := c.Get("1")
 	if p3 != p1 {
 		t.Error("Could not retrieve item")
 	}
@@ -22,43 +22,43 @@ func TestBasicLruCache(t *testing.T) {
 }
 
 func TestLruCacheExit(t *testing.T) {
-	cache := NewLruCache(1, 60*60)
+	c := NewLruCache(1, 60*60)
 	p1 := "1"
 	p2 := "2"
 
-	cache.Set("1", p1)
-	cache.Set("2", p2)
-	cache.gc()
+	c.Set("1", p1)
+	c.Set("2", p2)
+	c.gc()
 
-	p3 := cache.Get("1")
+	p3 := c.Get("1")
 
 	if p3 != nil {
 		t.Error("Item did not fall off end")
 	}
 
-	p3 = cache.Get("2")
+	p3 = c.Get("2")
 	if p3 != p2 {
 		t.Error("Item was lost")
 	}
 }
 
 func TestLruCacheTtl(t *testing.T) {
-	cache := NewLruCache(10, 1)
+	c := NewLruCache(10, 1)
 	p1 := "1"
 	p2 := "2"
 
-	cache.Set("1", p1)
-	cache.Set("2", p2)
+	c.Set("1", p1)
+	c.Set("2", p2)
 	time.Sleep(time.Second)
-	cache.gc()
+	c.gc()
 
-	p3 := cache.Get("1")
+	p3 := c.Get("1")
 
 	if p3 != nil {
 		t.Error("Item did not expire")
 	}
 
-	p3 = cache.Get("2")
+	p3 = c.Get("2")
 	if p3 != nil {
 		t.Error("Item did not expire")
 	}
@@ -66,25 +66,25 @@ func TestLruCacheTtl(t *testing.T) {
 }
 
 func TestLruReset(t *testing.T) {
-	cache := NewLruCache(2, 60*60)
+	c := NewLruCache(2, 60*60)
 	p1 := "1"
 	p2 := "2"
 	p3 := "3"
 
-	cache.Set("1", p1)
-	cache.Set("2", p2)
-	cache.Set("1", p1)
-	cache.Set("3", p3)
-	cache.Set("1", p1)
-	cache.gc()
+	c.Set("1", p1)
+	c.Set("2", p2)
+	c.Set("1", p1)
+	c.Set("3", p3)
+	c.Set("1", p1)
+	c.gc()
 
-	p4 := cache.Get("2")
+	p4 := c.Get("2")
 
 	if p4 != nil {
 		t.Error("Item did not fall off end")
 	}
 
-	p4 = cache.Get("1").(string)
+	p4 = c.Get("1").(string)
 	if p4 != p1 {
 		t.Error("Item was lost")
 	}
