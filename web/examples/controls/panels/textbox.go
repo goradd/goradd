@@ -24,7 +24,6 @@ const (
 
 type TextboxPanel struct {
 	Panel
-	PlainText    *Textbox
 	MultiText    *Textbox
 	IntegerText  *IntegerTextbox
 	FloatText    *FloatTextbox
@@ -43,14 +42,25 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &TextboxPanel{}
 	p.Panel.Init(p, parent, "textboxPanel")
 
-	p.PlainText = NewTextbox(p, "plainText")
-	p.PlainText.SetLabel("Plain Text")
-	p.PlainText.SaveState(ctx, true)
-
-	p.MultiText = NewTextbox(p, "multiText")
-	p.MultiText.SetLabel("Multi Text")
-	p.MultiText.SetRowCount(2)
-	p.PlainText.SaveState(ctx, true)
+	p.Panel.AddControls(ctx,
+		FormFieldCreator{
+			ID:    "plainText_ff",
+			Label: "Plain Text",
+			Child: TextboxCreator{
+				ID:        "plainText",
+				SaveState: true,
+			},
+		},
+		FormFieldCreator{
+			ID:    "multiText",
+			Label: "Multi Text",
+			Child: TextboxCreator{
+				ID:        "plainText",
+				SaveState: true,
+				RowCount:  2,
+			},
+		},
+	)
 
 	p.IntegerText = NewIntegerTextbox(p, "intText")
 	p.IntegerText.SetLabel("Integer Text")
@@ -116,7 +126,7 @@ func testTextboxServerSubmit(t *browsertest.TestForm) {
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
 func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
-	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").SetValue("testing",1).String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").SetValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 	btn := f.Page().GetControl(btnName)
 

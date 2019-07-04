@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -26,6 +27,11 @@ func (c *Panel) Init(self PanelI, parent page.ControlI, id string) {
 	c.Tag = "div"
 }
 
+func (c *Panel) this() PanelI {
+	return c.Self.(PanelI)
+}
+
+
 func (c *Panel) ΩDrawingAttributes() *html.Attributes {
 	a := c.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "panel")
@@ -34,4 +40,16 @@ func (c *Panel) ΩDrawingAttributes() *html.Attributes {
 
 func (c *Panel) Value() interface{} {
 	return c.Text()
+}
+
+type PanelCreator struct {
+	ID string
+	Children []page.Creator
+	page.ControlOptions
+}
+
+func (c PanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewPanel(parent, c.ID)
+	ctrl.ApplyOptions(c.ControlOptions)
+	return ctrl
 }

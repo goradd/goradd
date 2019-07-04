@@ -52,9 +52,9 @@ RadioLists can be scrolling lists if you wish. To see the scrolling effect, you 
 size of the control itself using CSS.
 </p>
 
-{{drawWithLabel control.RadioList1 }}
-{{drawWithLabel control.RadioList2 }}
-{{drawWithLabel control.RadioList3 }}
+{{draw control.RadioList1 }}
+{{draw control.RadioList2 }}
+{{draw control.RadioList3 }}
 
 <h2>Multiple Selection Lists</h2>
 <p>

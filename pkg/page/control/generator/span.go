@@ -10,7 +10,7 @@ import (
 
 func init() {
 	if !config.Release {
-		generator.RegisterControlGenerator(Span{})
+		//generator.RegisterControlGenerator(Span{})
 	}
 }
 
@@ -40,10 +40,6 @@ func (d Span) GenerateCreate(namespace string, col *generator.ColumnType) (s str
 	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
 
 	return
 }

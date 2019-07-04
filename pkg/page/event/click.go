@@ -2,6 +2,8 @@ package event
 
 import "github.com/goradd/goradd/pkg/page"
 
+const ClickEvent = "click"
+
 func Click() page.EventI {
 	return &page.Event{JsEvent: "click"}
 }

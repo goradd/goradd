@@ -1,14 +1,38 @@
 // createControls.tmpl
 {{
 
-func (p *{{= panelName }}) CreateControls() {
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+    p.AddControls(ctx,
 {{for _,col := range t.Columns }}
 {{if col.Generator != nil && !col.IsPk}}
-    p.{{= col.ControlName }} = p.Connector.New{{= col.ControlName }}("{{= col.ControlID }}")
+        p.this().{{= col.GoName }}Creator(),
 {{if}}
 {{for}}
+    )
 }
 
 }}
 
+{{g
 
+
+for _,col := range t.Columns {
+    if col.Generator != nil && !col.IsPk {
+
+        // This works with the ExportCreator function to put in a placeholder that we can fill in later using fmt.Sprintf
+        creator := col.Generator.GenerateCreator(&col, connectorPlaceHolder{})
+        creatorString := generator.ExportCreator(creator) // This will have a %s instead of a data connector value
+        if creatorString != "" {
+            creatorString = fmt.Sprintf(creatorString, col.Connector + `{}`) // And here we put in the value we want for the data connector
+            creatorString = generator.WrapFormField(col.DefaultLabel, col.ControlID, creatorString)
+
+{{
+func (p *{{= panelName }}) {{= col.GoName }}Creator() page.Creator {
+	return {{= creatorString }}
+}
+}}
+        }
+    }
+}
+
+}}

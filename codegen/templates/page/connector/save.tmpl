@@ -1,9 +1,0 @@
-{{
-
-// Save takes the data from the controls and saves it in the database.
-func (c *{{t.GoName}}) Save(ctx context.Context) {
-    c.Update()
-    c.{{= t.GoName}}.Save(ctx)
-}
-
-}}

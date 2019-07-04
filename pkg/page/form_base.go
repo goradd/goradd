@@ -205,15 +205,9 @@ func (f *ΩFormBase) resetValidation() {
 	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
 		c := ctrl.control()
 		if c.validationMessage != "" {
-			if c.wrapper != nil {
-				c.wrapper.ΩSetValidationMessageChanged()
-			}
 			c.validationMessage = ""
 		}
 		if c.validationState != ValidationWaiting {
-			if c.wrapper != nil {
-				c.wrapper.ΩSetValidationStateChanged()
-			}
 			c.validationState = ValidationWaiting
 		}
 	})

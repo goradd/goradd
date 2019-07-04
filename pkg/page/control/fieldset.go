@@ -5,6 +5,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	buf2 "github.com/goradd/goradd/pkg/pool"
+	html2 "html"
 )
 
 type FieldsetI interface {
@@ -46,15 +47,12 @@ func (c *Fieldset) ΩDrawTag(ctx context.Context) string {
 	var ctrl string
 
 	attributes := c.this().ΩDrawingAttributes()
-	if c.HasWrapper() {
-		panic("Fieldsets cannot have wrappers.")
-	}
 
 	buf := buf2.GetBuffer()
 	defer buf2.PutBuffer(buf)
 
-	if l := c.Label(); l != "" {
-		ctrl = html.RenderTag("legend", nil, l)
+	if l := c.Text(); l != "" {
+		ctrl = html.RenderTag("legend", nil, html2.EscapeString(l))
 	}
 	if err := c.this().ΩDrawInnerHtml(ctx, buf); err != nil {
 		panic(err)

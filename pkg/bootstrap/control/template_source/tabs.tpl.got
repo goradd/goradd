@@ -13,7 +13,7 @@ func (t *Tabs) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) 
 <ul class="nav nav-tabs" id="myTab" role="tablist">
 {{for _, child := range children }}
   <li class="nav-item">
-    <a class="nav-link {{if child.ID() == t.selectedID}}active{{if}}" id="{{child.ID()}}_tab" data-toggle="tab" href="#{{child.ID()}}" role="tab" aria-controls="{{child.ID()}}" aria-selected="true">{{child.Label()}}</a>
+    <a class="nav-link {{if child.ID() == t.selectedID}}active{{if}}" id="{{child.ID()}}_tab" data-toggle="tab" href="#{{child.ID()}}" role="tab" aria-controls="{{child.ID()}}" aria-selected="true">{{child.Text()}}</a>
   </li>
 {{for}}
 </ul>

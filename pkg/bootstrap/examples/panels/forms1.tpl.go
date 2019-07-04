@@ -16,6 +16,7 @@ func (control *Forms1Panel) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 <p>
 This is an example of a very generic form layout in Bootstrap.
 </p>
+{# TODO: Use form-row class as wrapper}
 `)
 
 	buf.WriteString(`

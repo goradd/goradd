@@ -28,37 +28,15 @@ import(
 
 )
 
-const (
-)
-
 {{: struct.tmpl }}
 
 {{: createControls.tmpl }}
 
 {{: load.tmpl }}
 
-{{: validate.tmpl }}
-
-
-// Refresh loads the controls with data from the cached {{= panelName }} object.
-func (p *{{= panelName }}) Refresh() {
-    p.Connector.Refresh()
-}
-
-// Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
-func (p *{{= panelName }}) Reload(ctx context.Context) {
-    p.Load(ctx, p.Connector.{{= t.GoName }}.PrimaryKey())
-}
-
-// Save writes out the data that is currently in the controls
-func (p *{{= panelName }}) Save(ctx context.Context) {
-    p.Connector.Save(ctx)
-}
-
-// Delete deletes the object currently being edited
-func (p *{{= panelName }}) Delete(ctx context.Context) {
-    p.Connector.Delete(ctx)
-}
+{{# validate.tmpl }}
 
 
 }}
+
+{{: connector.tmpl }}

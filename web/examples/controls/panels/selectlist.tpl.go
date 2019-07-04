@@ -90,7 +90,7 @@ size of the control itself using CSS.
 `)
 
 	{
-		err := control.RadioList1.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := control.RadioList1.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -103,7 +103,7 @@ size of the control itself using CSS.
 `)
 
 	{
-		err := control.RadioList2.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := control.RadioList2.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -116,7 +116,7 @@ size of the control itself using CSS.
 `)
 
 	{
-		err := control.RadioList3.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := control.RadioList3.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

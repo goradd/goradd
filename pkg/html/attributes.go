@@ -155,19 +155,25 @@ func (a *Attributes) String() string {
 }
 
 // Override returns a new Attributes structure with the current attributes merged with the given attributes.
-// Conflicts are won by the given overrides
+// Conflicts are won by the given overrides. Styles will be merged as well.
 func (a *Attributes) Override(i maps.StringMapI) *Attributes {
-	curStyles := a.StyleMap()
-	newStyles := NewStyle()
-	_, _ = newStyles.SetTo(i.Get("style"))
 	attr := a.Copy()
 	attr.Merge(i)
-	curStyles.Merge(newStyles)
-	if curStyles.Len() > 0 {
-		attr.StringSliceMap.Set("style", curStyles.String())
-	}
 	return attr
 }
+
+// Merge merges the given styles into the current style
+func (a *Attributes) Merge(i maps.StringMapI) {
+	curStyles := a.StyleMap()
+	newStyles := NewStyle()
+	newStyles.SetTo(i.Get("style"))
+	curStyles.Merge(newStyles)
+	a.StringSliceMap.Merge(i)
+	if curStyles.Len() > 0 {
+		a.StringSliceMap.Set("style", curStyles.String())
+	}
+}
+
 
 // SetIDChanged sets the id to the given value and returns true if something changed.
 // In other words, if you set the id to the same value that it currently is, it will return false.
@@ -510,4 +516,10 @@ func AttributeString(i interface{}) string {
 	default:
 		return fmt.Sprintf("%v", i)
 	}
+}
+
+type AttributeCreator map[string]string
+
+func (c AttributeCreator) Create() *Attributes {
+	return NewAttributesFromMap(c)
 }

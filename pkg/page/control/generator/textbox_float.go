@@ -12,7 +12,7 @@ import (
 
 func init() {
 	if !config.Release {
-		generator.RegisterControlGenerator(FloatTextbox{})
+		//generator.RegisterControlGenerator(FloatTextbox{})
 	}
 }
 
@@ -22,10 +22,6 @@ type FloatTextbox struct {
 
 func (d FloatTextbox) Type() string {
 	return "FloatTextbox"
-}
-
-func (d FloatTextbox) NewFunc() string {
-	return "NewFloatTextbox"
 }
 
 func (d FloatTextbox) Imports() []string {
@@ -47,10 +43,6 @@ func (d FloatTextbox) GenerateCreate(namespace string, col *generator.ColumnType
 
 	// TODO: Set a maximum value based on database limit
 
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
 	if !col.IsNullable {
 		s += `	ctrl.SetIsRequired(true)
 `

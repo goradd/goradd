@@ -1,0 +1,40 @@
+//connector.tmpl
+
+// The template for the connector classes
+
+for _,col := range t.Columns {
+    if col.Generator != nil {
+        if col.Generator != nil {
+            sRefresh := col.Generator.GenerateRefresh(&col)
+            sUpdate := col.Generator.GenerateUpdate(&col)
+
+{{
+type {{= col.Connector }}  struct {
+}
+
+func (c {{= col.Connector }}) Refresh(i page.ControlI, data interface{}) {
+    if ctrl, ok := i.(*{{= col.Import.Namespace}}.{{= col.ControlType}}); ok {
+        val := data.(*model.{{= t.GoName }}).{{= col.GoName}} ()
+        {{= sRefresh }}
+    }
+}
+
+func (c {{= col.Connector }}) Update(i page.ControlI, data interface{}) {
+    if ctrl, ok := i.(*{{= col.Import.Namespace}}.{{= col.ControlType}}); ok {
+        {{= sUpdate }}
+        data.(*model.{{= t.GoName }}).Set{{= col.GoName}}(val)
+    }
+}
+
+func init() {
+	gob.Register(&{{= col.Connector }}{})
+}
+
+}}
+
+        }
+
+    }
+}
+
+

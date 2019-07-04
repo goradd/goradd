@@ -12,6 +12,9 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
 
                 for _,name := range idx.ColumnNames {
                     col := t.GetColumnByDbName(name)
+                    if col == nil {
+                        panic("Cannot find column " + name + " of table " + t.DbName)
+                    }
                     columns = append(columns, col)
                     names += col.GoName
                 }

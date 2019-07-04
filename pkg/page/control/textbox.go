@@ -73,7 +73,6 @@ func (t *Textbox) Init(self TextboxI, parent page.ControlI, id string) {
 	t.Tag = "input"
 	t.IsVoidTag = true
 	t.typ = "text" // default
-	t.SetHasFor(true)
 	t.SetHasNoSpace(true)
 }
 
@@ -408,6 +407,40 @@ func (v MaxLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 		}
 	}
 	return
+}
+
+type TextboxCreator struct {
+	ID string
+	Placeholder string
+	Type string
+	MinLength int
+	MaxLength int
+	ColumnCount int
+	RowCount int
+	ReadOnly bool
+	SaveState bool
+
+	page.ControlOptions
+}
+
+func (t TextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewTextbox(parent, t.ID)
+	if t.Placeholder != "" {
+		ctrl.SetPlaceholder(t.Placeholder)
+	}
+	if t.Type != "" {
+		ctrl.typ = t.Type
+	}
+	ctrl.minLength = t.MinLength
+	ctrl.maxLength = t.MaxLength
+	ctrl.rowCount = t.RowCount
+	ctrl.columnCount = t.ColumnCount
+	ctrl.readonly = t.ReadOnly
+	ctrl.ApplyOptions(t.ControlOptions)
+	if t.SaveState {
+		ctrl.SaveState(ctx, t.SaveState)
+	}
+	return ctrl
 }
 
 func init() {

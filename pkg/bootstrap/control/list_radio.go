@@ -46,6 +46,9 @@ func (l *RadioList) SetCellClass(c string) {
 	l.cellClass = c
 }
 
+// TODO: Use bootstrap styling for the columns rather than table styling
+// Also coordinate with FormFieldset
+
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.

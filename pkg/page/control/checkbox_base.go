@@ -30,7 +30,7 @@ func (c *CheckboxBase) Init(self page.ControlI, parent page.ControlI, id string)
 	c.Tag = "input"
 	c.IsVoidTag = true
 	c.LabelMode = page.DefaultCheckboxLabelDrawingMode
-	c.SetHasFor(true)
+	//c.SetHasFor(true)
 	c.SetAttribute("autocomplete", "off") // fixes an html quirk
 }
 
@@ -66,22 +66,12 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 
 	if text := c.Text(); text == "" {
 		// there is no label to draw, just draw the input
-		if !c.HasWrapper() {
-			if a := c.this().WrapperAttributes(); a != nil {
-				attributes.Merge(a)
-			}
-		}
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
 	} else if c.LabelMode == html.LabelWrapAfter || c.LabelMode == html.LabelWrapBefore {
 		// Use the text as a label wrapper
 		text = html2.EscapeString(text)
 		labelAttributes := c.this().ΩGetDrawingLabelAttributes()
 
-		if !c.HasWrapper() {
-			if a := c.this().WrapperAttributes(); a != nil {
-				labelAttributes.Merge(a)
-			}
-		}
 		labelAttributes.Set("id", c.ID()+"_ilbl")
 
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
@@ -90,12 +80,6 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 		// label does not wrap. We will put one after the other
 		text = html2.EscapeString(text)
 		labelAttributes := c.this().ΩGetDrawingLabelAttributes()
-
-		if !c.HasWrapper() {
-			if a := c.this().WrapperAttributes(); a != nil {
-				labelAttributes.Merge(a)
-			}
-		}
 
 		labelAttributes.Set("for", c.ID())
 		labelAttributes.Set("id", c.ID()+"_ilbl")

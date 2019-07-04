@@ -5,7 +5,6 @@ type ContainerClass string
 const (
 	Container      ContainerClass = "container"
 	ContainerFluid                = "container-fluid"
-	FormGroup                     = "form-group"
 )
 
 type TextColorClass string

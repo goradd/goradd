@@ -9,6 +9,7 @@
 <p>
 This is an example of a very generic form layout in Bootstrap.
 </p>
+{# TODO: Use form-row class as wrapper}
 {{drawAsFormGroup control.Name }}
 {{drawAsFormGroup control.ChildrenCount }}
 

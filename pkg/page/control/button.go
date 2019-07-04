@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -77,3 +78,17 @@ func (b *Button) OnSubmit(actions ...action.ActionI) page.EventI {
 	// We delay here to try to make sure any other delayed events are executed first.
 	return b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
 }
+
+// ButtonC is the initialization structure for declarative creation of buttons
+type ButtonCreator struct {
+	ID string
+	Text string
+	page.ControlOptions
+}
+
+func (b ButtonCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewButton(parent, b.ID).SetLabel(b.Text)
+	ctrl.ApplyOptions(b.ControlOptions)
+	return ctrl
+}
+

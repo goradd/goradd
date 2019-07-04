@@ -1,18 +1,29 @@
-// {{= panelName }} is the code generated edit panel.
+
 {{
-type {{= panelName }} struct {
-	control.Panel
-	Connector *connector.{{= t.GoName }}
-{{for _,col := range t.Columns }}
-{{if col.Generator != nil}}
-    {{= col.ControlName }} *{{= col.Import.Namespace }}.{{= col.ControlType }}
+
+type {{= panelName }}I interface {
+{{for _,col := range t.Columns}}
+{{if col.Generator != nil && !col.IsPk}}
+    {{= col.GoName }}Creator() page.Creator
 {{if}}
 {{for}}
+    Update()
+    Load(ctx context.Context, pk string)
+}
+
+
+// {{= panelName }} is the code generated edit panel.
+type {{= panelName }} struct {
+	control.Panel
+    {{= t.GoName }} *model.{{= t.GoName }}
 }
 
 func (p *{{= panelName }}) Init(self page.ControlI, parent page.ControlI, id string) {
 	p.Panel.Init(self, parent, id)
-	p.Connector = connector.New{{= t.GoName }}Connector(p)
+}
+
+func (p *{{= panelName }}) this() {{= panelName }}I {
+	return p.Self.({{= panelName }}I)
 }
 
 }}

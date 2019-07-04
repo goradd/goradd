@@ -12,7 +12,7 @@ import (
 
 func init() {
 	if !config.Release {
-		generator.RegisterControlGenerator(IntegerTextbox{})
+		//generator.RegisterControlGenerator(IntegerTextbox{})
 	}
 }
 
@@ -49,10 +49,6 @@ func (d IntegerTextbox) GenerateCreate(namespace string, col *generator.ColumnTy
 
 	// TODO: Set a maximum value based on database limit
 
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
 	if !col.IsNullable {
 		s += `	ctrl.SetIsRequired(true)
 `

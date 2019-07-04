@@ -11,7 +11,7 @@ import (
 
 func init() {
 	if !config.Release {
-		generator.RegisterControlGenerator(Checkbox{})
+		//generator.RegisterControlGenerator(Checkbox{})
 	}
 }
 
@@ -44,10 +44,6 @@ func (d Checkbox) GenerateCreate(namespace string, col *generator.ColumnType) (s
 	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
 
 	return
 }

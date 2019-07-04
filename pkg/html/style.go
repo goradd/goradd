@@ -30,12 +30,20 @@ var nonLengthNumerics = map[string]bool{
 // Its main use is for generating a style attribute in an HTML tag
 // It implements the String interface to get the style properties as an HTML embeddable string
 type Style struct {
-	*maps.StringMap
+	*maps.StringSliceMap
 }
 
 // NewStyle initializes an empty Style object
 func NewStyle() *Style {
-	return &Style{maps.NewStringMap()}
+	m := maps.NewStringSliceMap()
+	m.SortByKeys()
+	return &Style{m}
+}
+
+func NewStyleFromMap(m map[string]string) *Style {
+	m2 := maps.NewStringSliceMapFromMap(m)
+	m2.SortByKeys()
+	return &Style{m2}
 }
 
 // SetTo receives a style encoded "style" attribute into the Style structure (e.g. "width: 4px; border: 1px solid black")
@@ -109,7 +117,7 @@ func (s Style) Set(n string, v string) Style {
 
 // Get returns the given style value, or an empty string if its not set.
 func (s Style) Get(name string) string {
-	return s.StringMap.Get(name)
+	return s.Get(name)
 }
 
 // opReplacer is used in the regular expression replacement function below
@@ -166,7 +174,7 @@ func (s Style) mathOp(attribute string, op string, val string) (changed bool, er
 
 // RemoveAll resets the style to contain no styles
 func (s *Style) RemoveAll() {
-	s.StringMap = maps.NewStringMap()
+	s.Clear()
 }
 
 // String returns the string version of the style attribute, suitable for inclusion in an HTML style tag
@@ -177,7 +185,7 @@ func (s Style) String() string {
 
 // set is a raw set and return true if changed
 func (s Style) set(n string, v string) bool {
-	changed := s.StringMap.SetChanged(n, v)
+	changed := s.StringSliceMap.SetChanged(n, v)
 	return changed
 }
 
@@ -226,4 +234,10 @@ func StyleString(i interface{}) string {
 		sValue = fmt.Sprintf("%v", v)
 	}
 	return sValue
+}
+
+type StyleCreator map[string]string
+
+func (c StyleCreator) Create() *Style {
+	return NewStyleFromMap(c)
 }

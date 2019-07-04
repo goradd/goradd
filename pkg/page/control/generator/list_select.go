@@ -11,7 +11,7 @@ import (
 
 func init() {
 	if !config.Release {
-		generator.RegisterControlGenerator(SelectList{})
+		//generator.RegisterControlGenerator(SelectList{})
 	}
 }
 
@@ -45,10 +45,6 @@ func (d SelectList) GenerateCreate(namespace string, col *generator.ColumnType) 
 	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
 
 	return
 }

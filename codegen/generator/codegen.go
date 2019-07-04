@@ -36,7 +36,7 @@ type ImportType struct {
 }
 
 // ControlDescription is matched with a ColumnDescription below and provides additional information regarding
-// how information in a column can be used to generated a default control to edit that information.
+// how information in a column can be used to generate a default control to edit that information.
 type ControlDescription struct {
 	Import         *ImportType
 	ControlType    string
@@ -45,6 +45,7 @@ type ControlDescription struct {
 	ControlID      string // default id to generate
 	DefaultLabel   string
 	Generator      ControlGenerator
+	Connector	   string
 }
 
 // ColumnType combines a database ColumnDescription with a ControlDescription

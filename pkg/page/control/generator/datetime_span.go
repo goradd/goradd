@@ -11,7 +11,7 @@ import (
 
 func init() {
 	if !config.Release {
-		generator.RegisterControlGenerator(DateTimeSpan{})
+		//generator.RegisterControlGenerator(DateTimeSpan{})
 	}
 }
 
@@ -41,10 +41,6 @@ func (d DateTimeSpan) GenerateCreate(namespace string, col *generator.ColumnType
 	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
 
 	return
 }

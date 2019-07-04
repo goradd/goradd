@@ -5,8 +5,6 @@ package panels
 import (
 	"bytes"
 	"context"
-
-	"github.com/goradd/goradd/pkg/page"
 )
 
 func (control *CheckboxPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
@@ -63,8 +61,11 @@ checkboxes.
 	buf.WriteString(`
 `)
 
+	buf.WriteString(`
+`)
+
 	{
-		err := control.Checkbox1.SetInstructions("Sample instructions").With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := control.Checkbox1.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -77,7 +78,7 @@ checkboxes.
 `)
 
 	{
-		err := control.Checkbox2.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := control.Checkbox2.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -98,7 +99,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Radio1.With(page.NewErrorWrapper()).Draw(ctx, buf)
+		err := control.Radio1.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -111,7 +112,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Radio2.With(page.NewErrorWrapper()).Draw(ctx, buf)
+		err := control.Radio2.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -124,7 +125,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Radio3.With(page.NewErrorWrapper()).Draw(ctx, buf)
+		err := control.Radio3.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
