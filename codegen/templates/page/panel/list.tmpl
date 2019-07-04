@@ -51,17 +51,17 @@ func (p *{{= panelName }}) Init(self page.ControlI, parent page.ControlI, id str
 }
 
 func (p *{{= panelName }}) createControls() {
-	p.FilterPanel = control.NewPanel(p, p.ID() + "-filter")
-	p.FilterText = control.NewTextbox(p, p.ID() + "-filterText")
+	p.FilterPanel = NewPanel(p, p.ID() + "-filter")
+	p.FilterText = NewTextbox(p, p.ID() + "-filterText")
 	p.FilterText.SetPlaceholder(p.ΩT("Search..."))
-	p.FilterText.SetType(control.TextboxTypeSearch)
+	p.FilterText.SetType(TextboxTypeSearch)
 
 	p.FilterText.On(event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search))
 	p.FilterText.On(event.EnterKey().Terminating(), action.Ajax(p.ID(), {{= lcPanelName }}Search))
 
-    p.ButtonPanel = control.NewPanel(p, p.ID() + "-buttons")
+    p.ButtonPanel = NewPanel(p, p.ID() + "-buttons")
 
-    p.NewButton = control.NewButton(p.ButtonPanel, p.ID() + "-newButton")
+    p.NewButton = NewButton(p.ButtonPanel, p.ID() + "-newButton")
     p.NewButton.SetLabel("New")
     p.NewButton.On(event.Click(), action.Ajax(p.ID(), {{= lcPanelName }}NewClick))
 

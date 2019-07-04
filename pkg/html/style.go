@@ -115,11 +115,6 @@ func (s Style) Set(n string, v string) Style {
 	return s
 }
 
-// Get returns the given style value, or an empty string if its not set.
-func (s Style) Get(name string) string {
-	return s.Get(name)
-}
-
 // opReplacer is used in the regular expression replacement function below
 func opReplacer(op string, v float64) func(string) string {
 	return func(cur string) string {
@@ -174,7 +169,7 @@ func (s Style) mathOp(attribute string, op string, val string) (changed bool, er
 
 // RemoveAll resets the style to contain no styles
 func (s *Style) RemoveAll() {
-	s.Clear()
+	s.StringSliceMap.Clear()
 }
 
 // String returns the string version of the style attribute, suitable for inclusion in an HTML style tag

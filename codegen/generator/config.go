@@ -71,6 +71,6 @@ func WrapFormField(label string, forId string, child string) string {
 	Label: "%s",
 	Child: %s,
 }
-`, DefaultFormFieldCreator, forId + "_ff", forId, label, child)
+`, DefaultFormFieldCreator, forId + "-ff", forId, label, child)
 
 }

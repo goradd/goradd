@@ -87,7 +87,7 @@ func (f *{{= formName }}) AddRelatedFiles() {
 }
 
 func (f *{{= formName }}) createControls(ctx context.Context) {
-	f.EditPanel = panel.New{{= t.GoName }}EditPanel(f, "edit-panel")
+	f.EditPanel = panel.New{{= t.GoName }}EditPanel(ctx, f, "edit-panel")
 	f.SaveButton = NewButton(f, "save-button")
     f.SaveButton.SetText(f.ΩT("Save"))
 	f.SaveButton.OnSubmit(action.Ajax(f.ID(), {{= t.GoName }}SaveAction))
