@@ -44,12 +44,19 @@ func (c *Panel) Value() interface{} {
 
 type PanelCreator struct {
 	ID string
+	Text string
+	TextIsHtml bool
 	Children []page.Creator
 	page.ControlOptions
 }
 
 func (c PanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewPanel(parent, c.ID)
+	if c.Text != "" {
+		ctrl.SetText(c.Text)
+	}
+	ctrl.SetTextIsHtml(c.TextIsHtml)
 	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.AddControls(ctx, c.Children...)
 	return ctrl
 }

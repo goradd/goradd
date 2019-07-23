@@ -10,7 +10,7 @@ import (
 )
 
 // This sets up a special connector that satisfies the DataConnector interface, but also
-// provides and Export method so that the ExportCreator function can use that during export.
+// provides an Export method so that the ExportCreator function can use that during export.
 // The export function will output a "%s" instead of a value for the connector so that we can fill
 // that in later.
 // The end result is that it makes it easier for us to make control generators.

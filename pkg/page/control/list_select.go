@@ -203,3 +203,49 @@ func (l *SelectList) SetData(data interface{}) {
 	l.ItemList.Clear()
 	l.AddListItems(data)
 }
+
+type ItemCreator struct {
+	Value string
+	Label string
+}
+type SelectListCreator struct {
+	ID string
+	SaveState bool
+	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Value string
+	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
+	Items []ItemCreator
+	// DataProvider is the id of a control that will dynamically provide the data for the list and that implements the DataProvider interface.
+	// Often this is the parent of the control.
+	DataProvider string
+
+	page.ControlOptions
+}
+
+func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewSelectList(parent, c.ID)
+
+	if c.Items != nil {
+		for _,item := range c.Items {
+			ctrl.AddItem(item.Label, item.Value)
+		}
+	}
+
+	if c.DataProvider != "" {
+		provider := parent.Page().GetControl(c.DataProvider)
+		if provider == nil {
+			// You cannot provide a data provider id for a control that is not yet created. Create the control first.
+			panic("the data provider must be created before being used")
+		}
+		ctrl.SetDataProvider(provider.(data.DataBinder))
+	}
+
+	if c.Value != "" {
+		ctrl.SetValue(c.Value)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+	if c.SaveState {
+		ctrl.SaveState(ctx, c.SaveState)
+	}
+	return ctrl
+}

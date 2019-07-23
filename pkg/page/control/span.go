@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -30,4 +31,23 @@ func (c *Span) ΩDrawingAttributes() *html.Attributes {
 	a := c.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "span")
 	return a
+}
+
+type SpanCreator struct {
+	ID string
+	Text string
+	TextIsHtml bool
+	Children []page.Creator
+	page.ControlOptions
+}
+
+func (c SpanCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewSpan(parent, c.ID)
+	if c.Text != "" {
+		ctrl.SetText(c.Text)
+	}
+	ctrl.SetTextIsHtml(c.TextIsHtml)
+	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.AddControls(ctx, c.Children...)
+	return ctrl
 }

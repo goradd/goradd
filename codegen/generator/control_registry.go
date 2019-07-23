@@ -23,10 +23,13 @@ type ControlGenerator interface {
 	Type() string
 	Imports() []string
 	SupportsColumn(col *ColumnType) bool
-	GenerateCreator(col *ColumnType, connector page.DataConnector) page.Creator
+	GenerateCreator(col *ColumnType) string
 	GenerateRefresh(col *ColumnType) string
 	GenerateUpdate(col *ColumnType) string
+}
 
+type ProviderGenerator interface {
+	GenerateProvider(col *ColumnType) string
 }
 
 type ControlGeneratorRegistryKey struct {

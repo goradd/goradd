@@ -5,8 +5,6 @@ import (
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
 )
 
 func init() {
@@ -35,38 +33,19 @@ func (d Textbox) SupportsColumn(col *generator.ColumnType) bool {
 	return false
 }
 
-func (d Textbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
+func (d Textbox) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-		`	ctrl = %s.NewTextbox(c.ParentControl, id)
-	ctrl.SetLabel(ctrl.T("%s"))
-`, namespace, col.DefaultLabel)
-	if col.MaxCharLength > 0 {
-		s += fmt.Sprintf(`	ctrl.SetMaxLength(%d)	
-`, col.MaxCharLength)
-	}
-
-	if col.IsPk {
-		s += `	ctrl.SetDisabled(true)
-`
-	} else if !col.IsNullable {
-		s += `	ctrl.SetIsRequired(true)
-`
-	}
-
+		`control.IntegerTextboxCreator{
+			ID:        %#v,
+			MaxLength: %#v,
+			ControlOptions: page.ControlOptions{
+				Required:      %#v,
+				DataConnector: %s{},
+			},
+		}`, col.ControlID, col.MaxCharLength, !col.IsNullable, col.Connector)
 	return
 }
 
-func (d Textbox) GenerateCreator(col *generator.ColumnType, connector page.DataConnector) page.Creator {
-	creator := control.TextboxCreator{
-		ID: col.ControlID,
-		MaxLength: int(col.MaxCharLength),
-	}
-
-	creator.ControlOptions.Disabled = col.IsPk
-	creator.ControlOptions.Required = !col.IsNullable
-	creator.ControlOptions.DataConnector = connector
-	return creator
-}
 
 
 func (d Textbox) GenerateRefresh(col *generator.ColumnType) (s string) {

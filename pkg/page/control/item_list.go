@@ -2,6 +2,7 @@ package control
 
 import (
 	"fmt"
+	"github.com/goradd/goradd/pkg/config"
 	"reflect"
 	"sort"
 	"strconv"
@@ -279,4 +280,16 @@ func (p IdSlice) Less(i, j int) bool {
 		}
 	}
 }
+
 func (p IdSlice) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+
+
+// NoSelectionItemList returns a default item list to start a selection list that allows no selection
+func NoSelectionItemList() []interface{} {
+	return []interface{}{NewListItem(config.NoSelectionString, nil)}
+}
+
+// SelectOneItemList returns a default item list to start a selection list that asks the user to select an item
+func SelectOneItemList() []interface{} {
+	return []interface{}{NewListItem(config.SelectOneString, nil)}
+}

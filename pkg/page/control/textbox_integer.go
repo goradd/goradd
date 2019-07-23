@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	"strconv"
@@ -134,4 +135,58 @@ func (v MaxIntValidator) Validate(c page.ControlI, s string) (msg string) {
 		}
 	}
 	return
+}
+
+type IntegerLimit struct {
+	Value int
+	InvalidMessage string
+}
+
+
+type IntegerTextboxCreator struct {
+	ID string
+	Placeholder string
+	Type string
+	MinLength int
+	MaxLength int
+	ColumnCount int
+	RowCount int
+	ReadOnly bool
+	SaveState bool
+	MinValue *IntegerLimit
+	MaxValue *IntegerLimit
+	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Value interface{}
+
+	page.ControlOptions
+}
+
+func (t IntegerTextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewIntegerTextbox(parent, t.ID)
+	if t.Placeholder != "" {
+		ctrl.SetPlaceholder(t.Placeholder)
+	}
+	if t.Type != "" {
+		ctrl.typ = t.Type
+	}
+	ctrl.minLength = t.MinLength
+	ctrl.maxLength = t.MaxLength
+	ctrl.rowCount = t.RowCount
+	ctrl.columnCount = t.ColumnCount
+	ctrl.readonly = t.ReadOnly
+	if t.MinValue != nil {
+		ctrl.SetMinValue(t.MinValue.Value, t.MinValue.InvalidMessage)
+	}
+	if t.MaxValue != nil {
+		ctrl.SetMinValue(t.MaxValue.Value, t.MaxValue.InvalidMessage)
+	}
+	if t.Value != nil {
+		ctrl.SetValue(t.Value)
+	}
+
+	ctrl.ApplyOptions(t.ControlOptions)
+	if t.SaveState {
+		ctrl.SaveState(ctx, t.SaveState)
+	}
+	return ctrl
 }

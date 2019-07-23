@@ -162,7 +162,9 @@ func (a *Attributes) Override(i maps.StringMapI) *Attributes {
 	return attr
 }
 
-// Merge merges the given styles into the current style
+// Merge merges the given attributes into the current attributes. Conflicts are won by the passed in map.
+// Styles are merged as well, so that if both the passed in map and the current map have a styles attribute, the
+// actual style properties will get merged together.
 func (a *Attributes) Merge(i maps.StringMapI) {
 	curStyles := a.StyleMap()
 	newStyles := NewStyle()
@@ -173,6 +175,26 @@ func (a *Attributes) Merge(i maps.StringMapI) {
 		a.StringSliceMap.Set("style", curStyles.String())
 	}
 }
+
+// MergeMap merges the given attributes into the current attributes. Conflicts are won by the passed in map.
+// Styles are merged as well, so that if both the passed in map and the current map have a styles attribute, the
+// actual style properties will get merged together.
+func (a *Attributes) MergeMap(m map[string]string) {
+	curStyles := a.StyleMap()
+	if styles,ok := m["style"]; ok {
+		newStyles := NewStyle()
+		newStyles.SetTo(styles)
+		curStyles.Merge(newStyles)
+	}
+	for k,v := range m {
+		a.StringSliceMap.Set(k, v)
+	}
+
+	if curStyles.Len() > 0 {
+		a.StringSliceMap.Set("style", curStyles.String())
+	}
+}
+
 
 
 // SetIDChanged sets the id to the given value and returns true if something changed.
@@ -460,7 +482,7 @@ func (a *Attributes) HasStyle(name string) bool {
 	return s.Has(name)
 }
 
-// RemoveStyle removes the style from the style list. Returns true if there was a changed.
+// RemoveStyle removes the style from the style list. Returns true if there was a change.
 func (a *Attributes) RemoveStyle(name string) (changed bool) {
 	s := a.StyleMap()
 	if s.Has(name) {

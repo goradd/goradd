@@ -15,6 +15,8 @@ type ForeignKeyColumn struct {
 	GoName string
 	// GoType is the type of the related object
 	GoType string
+	// GoTypePlural is the plural version of the type when referring to groups of related objects
+	GoTypePlural string
 	// IsType is true if this is a related type
 	IsType bool
 	// RR is filled in by the analyzer and represent a reverse reference relationship

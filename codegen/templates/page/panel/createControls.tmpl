@@ -18,12 +18,8 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 
 for _,col := range t.Columns {
     if col.Generator != nil && !col.IsPk {
-
-        // This works with the ExportCreator function to put in a placeholder that we can fill in later using fmt.Sprintf
-        creator := col.Generator.GenerateCreator(&col, connectorPlaceHolder{})
-        creatorString := generator.ExportCreator(creator) // This will have a %s instead of a data connector value
+        creatorString := col.Generator.GenerateCreator(&col)
         if creatorString != "" {
-            creatorString = fmt.Sprintf(creatorString, col.Connector + `{}`) // And here we put in the value we want for the data connector
             creatorString = generator.WrapFormField(col.DefaultLabel, col.ControlID, creatorString)
 
 {{

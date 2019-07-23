@@ -18,7 +18,9 @@ type CheckboxI interface {
 type CheckboxBase struct {
 	page.Control
 	checked bool
-	// LabelMode describes where to place the label associating the text with the checkbox
+	// LabelMode describes where to place the label associating the text with the checkbox. The default is the
+	// global page.DefaultCheckboxLabelDrawingMode, and you would normally set that instead so that all your checkboxes draw
+	// the same way.
 	LabelMode       html.LabelDrawingMode
 	labelAttributes *html.Attributes
 }
@@ -90,12 +92,12 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 	return ctrl
 }
 
-// InputLabelAttributes returns a pointer to the input label attributes.
+// LabelAttributes returns a pointer to the input label attributes.
 // Feel free to set the attributes directly on the returned object.
 // The input label attributes are the attributes for the label tag that associates the Text with the checkbox.
-// This is specific to checkbox style controls and is not the same as the label tag that appears when using a name wrapper.
+// This is specific to checkbox style controls and is not the same as the label tag that appears when using a FormField wrapper.
 // After setting attributes, be sure to call Refresh on the control if you do this during an Ajax response.
-func (c *CheckboxBase) InputLabelAttributes() *html.Attributes {
+func (c *CheckboxBase) LabelAttributes() *html.Attributes {
 	if c.labelAttributes == nil {
 		c.labelAttributes = html.NewAttributes()
 	}
@@ -105,7 +107,7 @@ func (c *CheckboxBase) InputLabelAttributes() *html.Attributes {
 // ΩGetDrawingLabelAttributes is called by the framework to temporarily set the
 // attributes of the label associated with the checkbox.
 func (c *CheckboxBase) ΩGetDrawingLabelAttributes() *html.Attributes {
-	a := c.InputLabelAttributes().Copy()
+	a := c.LabelAttributes().Copy()
 
 	// copy tooltip to wrapping label
 	if title := c.Attribute("title"); title != "" {

@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -33,4 +34,26 @@ func (c *Checkbox) ΩDrawingAttributes() *html.Attributes {
 // You do not normally need to call this function.
 func (c *Checkbox) ΩUpdateFormValues(ctx *page.Context) {
 	c.UpdateCheckboxFormValues(ctx)
+}
+
+
+type CheckboxCreator struct {
+	ID string
+	Checked bool
+	LabelAttributes html.AttributeCreator
+	SaveState bool
+	page.ControlOptions
+}
+
+func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewCheckbox(parent, c.ID)
+	if c.LabelAttributes != nil {
+		ctrl.LabelAttributes().MergeMap(c.LabelAttributes)
+	}
+
+	ctrl.ApplyOptions(c.ControlOptions)
+	if c.SaveState {
+		ctrl.SaveState(ctx, c.SaveState)
+	}
+	return ctrl
 }

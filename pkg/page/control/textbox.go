@@ -419,6 +419,8 @@ type TextboxCreator struct {
 	RowCount int
 	ReadOnly bool
 	SaveState bool
+	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Value string
 
 	page.ControlOptions
 }
@@ -436,6 +438,10 @@ func (t TextboxCreator) Create(ctx context.Context, parent page.ControlI) page.C
 	ctrl.rowCount = t.RowCount
 	ctrl.columnCount = t.ColumnCount
 	ctrl.readonly = t.ReadOnly
+	if t.Value != "" {
+		ctrl.SetText(t.Value)
+	}
+
 	ctrl.ApplyOptions(t.ControlOptions)
 	if t.SaveState {
 		ctrl.SaveState(ctx, t.SaveState)

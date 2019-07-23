@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	"github.com/goradd/gofile/pkg/sys"
+	"github.com/goradd/goradd/pkg/maps"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/strings"
 	"io/ioutil"
@@ -13,7 +14,7 @@ import (
 )
 
 type Codegen struct {
-	Tables     map[string]map[string]TableType // TODO: Change to ordered maps for consistent codegeneration
+	Tables     map[string]map[string]TableType
 	TypeTables map[string]map[string]TypeTableType
 }
 
@@ -109,13 +110,15 @@ func Generate() {
 	// Generate the templates.
 	for _, database := range db.GetDatabases() {
 		dd := database.Describe()
-		key := dd.DbKey
-		for _, typeTable := range codegen.TypeTables[key] {
+		dbKey := dd.DbKey
+
+		for _, tableKey := range maps.SortedKeys(codegen.TypeTables[dbKey]) {
+			typeTable := codegen.TypeTables[dbKey][tableKey]
 			for _, typeTableTemplate := range TypeTableTemplates {
 				buf.Reset()
 				// the template generator function in each template, by convention
 				typeTableTemplate.GenerateTypeTable(codegen, dd, typeTable, buf)
-				fileName := typeTableTemplate.FileName(key, typeTable)
+				fileName := typeTableTemplate.FileName(dbKey, typeTable)
 				path := filepath.Dir(fileName)
 
 				if _, err := os.Stat(fileName); err == nil {
@@ -132,14 +135,15 @@ func Generate() {
 			}
 		}
 
-		for _, table := range codegen.Tables[key] {
+		for _, tableKey := range maps.SortedKeys(codegen.Tables[dbKey]) {
+			table := codegen.Tables[dbKey][tableKey]
 			if table.IsAssociation || table.Skip {
 				continue
 			}
 			for _, tableTemplate := range TableTemplates {
 				buf.Reset()
 				tableTemplate.GenerateTable(codegen, dd, table, buf)
-				fileName := tableTemplate.FileName(key, table)
+				fileName := tableTemplate.FileName(dbKey, table)
 				path := filepath.Dir(fileName)
 
 				if _, err := os.Stat(fileName); err == nil {
@@ -168,7 +172,7 @@ func Generate() {
 			buf.Reset()
 			// the template generator function in each template, by convention
 			oneTimeTemplate.GenerateOnce(codegen, dd, buf)
-			fileName := oneTimeTemplate.FileName(key)
+			fileName := oneTimeTemplate.FileName(dbKey)
 			path := filepath.Dir(fileName)
 
 			if _, err := os.Stat(fileName); err == nil {

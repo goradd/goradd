@@ -68,7 +68,14 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 					}
 				}
 			}
-			defaultLabel := strings.Title(strings.Replace(col.DbName, "_", " ", -1))
+
+			var defaultLabel string
+
+			if col.ForeignKey != nil {
+				defaultLabel = strings2.Title(col.ForeignKey.GoName)
+			} else {
+				defaultLabel = strings2.Title(col.DbName)
+			}
 
 			var defaultID string
 			if GenerateControlIDs {

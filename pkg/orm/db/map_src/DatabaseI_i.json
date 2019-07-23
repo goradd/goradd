@@ -1,6 +1,4 @@
-/*
-This config file is for interfaces that return a string value.
-*/
+
 {
   "package": "db",
   "Type": "DatabaseI",

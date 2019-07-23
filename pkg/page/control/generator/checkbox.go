@@ -11,7 +11,7 @@ import (
 
 func init() {
 	if !config.Release {
-		//generator.RegisterControlGenerator(Checkbox{})
+		generator.RegisterControlGenerator(Checkbox{})
 	}
 }
 
@@ -63,3 +63,25 @@ func (d Checkbox) ConnectorParams() *maps.SliceMap {
 
 	return paramControls
 }
+
+func (d Checkbox) GenerateCreator(col *generator.ColumnType) (s string) {
+	s = fmt.Sprintf(
+		`control.CheckboxCreator{
+			ID:        %#v,
+			ControlOptions: page.ControlOptions{
+				Required:      %#v,
+				DataConnector: %s{},
+			},
+		}`, col.ControlID, !col.IsNullable, col.Connector)
+	return
+}
+
+func (d Checkbox) GenerateRefresh(col *generator.ColumnType) (s string) {
+	return `ctrl.SetChecked(val)`
+}
+
+func (d Checkbox) GenerateUpdate(col *generator.ColumnType) (s string) {
+	return `val := ctrl.Checked()`
+}
+
+

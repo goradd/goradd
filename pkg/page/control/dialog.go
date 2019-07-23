@@ -222,7 +222,7 @@ func (d *Dialog) addCloseBox() {
 	d.closeBox = NewButton(d.titleBar, d.ID()+"_closebox")
 	d.closeBox.AddClass("gr-dialog-close")
 	d.closeBox.SetText(`<i class="fa fa-times"></i>`)
-	d.closeBox.SetEscapeText(false)
+	d.closeBox.SetTextIsHtml(true)
 	d.closeBox.On(event.Click(), action.Ajax(d.ID(), DialogClose))
 }
 

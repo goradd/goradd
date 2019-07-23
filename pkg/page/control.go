@@ -92,6 +92,13 @@ type DataConnector interface {
 	Update(i ControlI, model interface{})
 }
 
+// DataLoader is an optional interface that DataConnectors can use if they need to load data from the database
+// to present a choice of items to the user to select from. The Load method will be called whenever the entire control
+// gets redrawn.
+type DataLoader interface {
+	Load(ctx context.Context) []interface{}
+}
+
 // ControlI is the interface that all controls must support. The functions are implemented by the
 // Control methods. See the Control method implementation for a description of each method.
 type ControlI interface {
@@ -201,7 +208,8 @@ type ControlI interface {
 	ApplyOptions(o ControlOptions)
 	AddControls(ctx context.Context, creators ...Creator)
 
-	SetDataConnector(d DataConnector)
+	DataConnector() DataConnector
+	SetDataConnector(d DataConnector) ControlI
 	RefreshData(data interface{})
 	UpdateData(data interface{})
 }
@@ -259,8 +267,8 @@ type Control struct {
 	text string
 	// textLabelMode describes how to draw the internal label
 	textLabelMode html.LabelDrawingMode
-	// htmlEscapeText tells us whether to escape the text output, or send straight text
-	htmlEscapeText bool
+	// textIsHtml will prevent the text output from being escaped
+	textIsHtml bool
 
 	// attributeScripts are commands to send to our javascript to redraw portions of the control via ajax.
 	attributeScripts []attributeScriptEntry
@@ -340,7 +348,6 @@ func (c *Control) Init(self ControlI, parent ControlI, id string) {
 		c.id = c.page.GenerateControlID(id)
 	}
 	self.SetParent(parent)
-	c.htmlEscapeText = true // default to encoding the text portion. Explicitly turn this off if you need something else
 }
 
 // this supports object oriented features by giving easy access to the virtual function interface.
@@ -593,7 +600,7 @@ func (c *Control) DrawText(ctx context.Context, buf *bytes.Buffer) {
 	if c.text != "" {
 		text := c.text
 
-		if c.htmlEscapeText {
+		if !c.textIsHtml {
 			text = gohtml.EscapeString(text)
 		}
 		buf.WriteString(text)
@@ -1609,9 +1616,9 @@ func (c *Control) SetHeightStyle(h interface{}) ControlI {
 	return c.this()
 }
 
-// SetEscapeText to false to turn off html escaping of the text output. It is on by default.
-func (c *Control) SetEscapeText(e bool) ControlI {
-	c.htmlEscapeText = e
+// SetTextIsHtml to true to turn off html escaping of the text output.
+func (c *Control) SetTextIsHtml(h bool) ControlI {
+	c.textIsHtml = h
 	return c.this()
 }
 
@@ -1630,9 +1637,15 @@ func (c *Control) SetWillBeValidated(v bool) {
 	}
 }
 
+// DataConnector returns the data connector.
+func (c *Control) DataConnector() DataConnector {
+	return c.dataConnector
+}
+
 // SetDataConnector sets the data connector. The connector must be registered with Gob to be serializable.
-func (c *Control) SetDataConnector(d DataConnector) {
+func (c *Control) SetDataConnector(d DataConnector) ControlI {
 	c.dataConnector = d
+	return c.this()
 }
 
 func (c *Control) RefreshData(data interface{}) {
@@ -1695,7 +1708,7 @@ type controlEncoding struct {
 	Attributes            *html.Attributes
 	Text                  string
 	TextLabelMode         html.LabelDrawingMode
-	HtmlEscapeText        bool
+	TextIsHtml        bool
 	IsRequired            bool
 	IsHidden              bool
 	IsOnPage              bool
@@ -1741,7 +1754,7 @@ func (c *Control) Serialize(e Encoder) (err error) {
 		Attributes:            c.attributes,
 		Text:                  c.text,
 		TextLabelMode:         c.textLabelMode,
-		HtmlEscapeText:        c.htmlEscapeText,
+		TextIsHtml:        	   c.textIsHtml,
 		IsRequired:            c.isRequired,
 		IsHidden:              c.isHidden,
 		IsOnPage:              c.isOnPage,
@@ -1805,7 +1818,7 @@ func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
 	c.attributes = s.Attributes
 	c.text = s.Text
 	c.textLabelMode = s.TextLabelMode
-	c.htmlEscapeText = s.HtmlEscapeText
+	c.textIsHtml = s.TextIsHtml
 	c.isRequired = s.IsRequired
 	c.isHidden = s.IsHidden
 	c.isOnPage = s.IsOnPage

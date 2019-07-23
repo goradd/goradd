@@ -49,7 +49,7 @@ type NavbarI interface {
 }
 
 // Navbar is a bootstrap navbar object. Use SetText() to set the logo text of the navbar, and
-// SetEscapeText() to false to turn off encoding if needed. Add child controls to populate it.
+// SetTextIsHtml() to true to turn off encoding if needed. Add child controls to populate it.
 type Navbar struct {
 	page.Control
 	headerAnchor string

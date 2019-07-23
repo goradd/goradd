@@ -105,7 +105,7 @@ func (g GoColumnType) DefaultValue() string {
 	case ColTypeDouble:
 		return "0.0" // always internally represent with max bits
 	case ColTypeBool:
-		return "false" // always internally represent with max bits
+		return "false"
 	}
 	return ""
 }
