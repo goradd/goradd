@@ -149,7 +149,6 @@ type ControlI interface {
 
 	ΩPutCustomScript(ctx context.Context, response *Response)
 
-	SetLabel(n string) ControlI
 	TextIsLabel() bool
 	Text() string
 	SetText(t string) ControlI
@@ -893,19 +892,6 @@ func (c *Control) ValidationMessage() string {
 // SetValidationError sets the validation error to the given string. It will also handle setting the wrapper class
 // to indicate an error. Override if you have a different way of handling errors.
 func (c *Control) SetValidationError(e string) {
-	/*
-		Keeping this here to show that these have been considered and rejected.
-		We can still set the aria state in validation situations, even if we are not showing a message
-		and subclasses might have a special need for validation without a wrapper.
-
-		if !c.HasWrapper() {
-			return // Validation only applies if you have a wrapper to show the message
-		}
-		if c.validationState == ValidationNever {
-			panic(fmt.Errorf("control %s has been set to never validate, so you cannot set a validation error message for it", c.ID()))
-		}
-	*/
-
 	if c.validationMessage != e {
 		c.validationMessage = e
 
@@ -938,23 +924,10 @@ func (c *Control) Text() string {
 	return c.text
 }
 
-// SetLabel sets the text of the label that will be associated with the control. Labels only get rendered by
-// wrappers, so if there is no wrapper with the control, no label will be printed.
-func (c *Control) SetLabel(n string) ControlI {
-	return c
-}
-
-
 // TextIsLabel is used by the drawing routines to determine if the control's text should be wrapped with a label tag.
 // This is normally used by checkboxes and radio buttons that use the label tag in a special way.
 func (c *Control) TextIsLabel() bool {
 	return false
-}
-
-// SetInstructions sets the instructions that will be printed with the control. Instructions only get rendered
-// by wrappers, so if there is no wrapper, or the wrapper does not render  the instructions, this will not appear.
-func (c *Control) SetInstructions(i string) ControlI {
-	return c.this()
 }
 
 func (c *Control) markOnPage(v bool) {
@@ -1346,9 +1319,9 @@ func (c *Control) validateChildren(ctx context.Context) bool {
 			isValid = child.control().validateChildren(ctx) && isValid
 		}
 	}
-	if isValid {
-		isValid = c.this().Validate(ctx) // validate self after validating all children, because self might want to invalidate child items
-	}
+	// validate self after validating all children, because self might want to invalidate child items
+	// also make sure we validate the parent even if the children are invalid in case the parent is looking at the validation state of the children
+	isValid = c.this().Validate(ctx) && isValid
 
 	return isValid
 }
@@ -1376,11 +1349,7 @@ func (c *Control) validateSiblingsAndChildren(ctx context.Context) bool {
 					}
 				}
 			}
-			if childrenValid {
-				isValid = c.this().Validate(ctx) // only validate self if children validate
-			} else {
-				isValid = false
-			}
+			isValid = c.this().Validate(ctx) && childrenValid
 		}
 	}
 	return isValid
@@ -1519,7 +1488,7 @@ func (c *Control) ΩT(message string) string {
 //
 // Examples
 //   textbox.T("I have %d things", count, i18n.Comment("This will need multiple translations based on the count value"));
-//	 textbox.SetLabel(textbox.T("S", i18n.ID("South")));
+//	 textbox.SetText(textbox.T("S", i18n.ID("South")));
 func (c *Control) T(message string, params ...interface{}) string {
 	builder, args := i18n.ExtractBuilderFromArguments(params)
 	if len(args) > 0 {

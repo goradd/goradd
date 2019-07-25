@@ -172,7 +172,6 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	t.AssertEqual(true, t.HasClass("timeText-ff", "error"))
 	t.AssertEqual(true, t.HasClass("dateTimeText-ff", "error"))
 
-	plainText := GetTextbox(f,"plainText")
 	intText := GetIntegerTextbox(f, "intText")
 	floatText := GetFloatTextbox(f, "floatText")
 	emailText := GetEmailTextbox(f, "emailText")
@@ -180,7 +179,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	timeText := GetDateTextbox(f, "timeText")
 	dateTimeText := GetDateTextbox(f, "dateTimeText")
 
-	plainText.SetInstructions("Sample instructions")
+	GetFormField(f, "plainText-ff").SetInstructions("Sample instructions")
 	t.ChangeVal("intText", 5)
 	t.ChangeVal("floatText", 6.7)
 	t.ChangeVal("emailText", "me@you.com")
@@ -209,6 +208,5 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 
 	// Test SaveState
 	f = t.LoadUrl(myUrl)
-	plainText = GetTextbox(f, "plainText")
-	t.AssertEqual("me", plainText.Text())
+	t.AssertEqual("me", GetTextbox(f, "plainText").Text())
 }

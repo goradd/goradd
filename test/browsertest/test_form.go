@@ -17,6 +17,7 @@ import (
 	log2 "log"
 	"os"
 	"runtime"
+	"strings"
 )
 
 var testFormPageState string
@@ -64,7 +65,6 @@ func (form *TestForm) createControls(ctx context.Context) {
 	form.Controller = NewTestController(form, "controller")
 
 	form.TestList = NewSelectList(form, "test-list")
-	form.TestList.SetLabel("Tests")
 	form.TestList.SetAttribute("size", 10)
 
 	form.RunningLabel = NewSpan(form, "running-label")
@@ -255,7 +255,7 @@ func (form *TestForm) HasClass(id string, needle string) bool {
 
 func (form *TestForm) InnerHtml(id string) string {
 	res := form.Controller.callWidgetFunction(id, "html", nil, form.captureCaller())
-	return res.(string)
+	return strings.TrimSpace(res.(string)) // html can have a variety of inconsequential spaces
 }
 
 /*

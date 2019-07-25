@@ -34,6 +34,8 @@ type FormField struct {
 	errorAttributes *html.Attributes
 	instructionAttributes *html.Attributes
 	forID string
+	// savedMessage is what we use to determine if the subcontrol changed validation state. This needs to be serialized.
+	savedMessage string
 }
 
 func NewFormField(parent page.ControlI, id string) *FormField {
@@ -185,6 +187,17 @@ func (c *FormField) SetInstructionAttributes(a *html.Attributes) FormFieldI {
 	return c.this()
 }
 
+func (c *FormField) Validate(ctx context.Context) bool {
+	child := c.Page().GetControl(c.forID)
+	m := child.ValidationMessage()
+	if m != c.savedMessage {
+		c.savedMessage = m // store the message to see if it changes between validations
+		c.Refresh()
+	}
+	return true
+}
+
+
 type FormFieldCreator struct {
 	ID string
 
@@ -236,4 +249,9 @@ func (f FormFieldCreator) Init(ctx context.Context, c FormFieldI) {
 		childId := c.Children()[0].ID()
 		c.SetFor(childId)
 	}
+}
+
+// GetFormField is a convenience method to return the form field with the given id from the page.
+func GetFormField(c page.ControlI, id string) *FormField {
+	return c.Page().GetControl(id).(*FormField);
 }
