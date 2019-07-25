@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -126,4 +127,47 @@ func (v DateValidator) Validate(c page.ControlI, s string) (msg string) {
 		}
 	}
 	return
+}
+
+type DateTextboxCreator struct {
+	ID string
+	Placeholder string
+	MinLength int
+	MaxLength int
+	RowCount int
+	ReadOnly bool
+	SaveState bool
+	Format string
+	// Text is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Text string
+
+	page.ControlOptions
+}
+
+func (t DateTextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewDateTextbox(parent, t.ID)
+	if t.Placeholder != "" {
+		ctrl.SetPlaceholder(t.Placeholder)
+	}
+	ctrl.minLength = t.MinLength
+	ctrl.maxLength = t.MaxLength
+	ctrl.rowCount = t.RowCount
+	ctrl.readonly = t.ReadOnly
+	if t.Text != "" {
+		ctrl.SetText(t.Text)
+	}
+	if t.Format != "" {
+		ctrl.format = t.Format
+	}
+
+	ctrl.ApplyOptions(t.ControlOptions)
+	if t.SaveState {
+		ctrl.SaveState(ctx, t.SaveState)
+	}
+	return ctrl
+}
+
+// GetEmailTextbox is a convenience method to return the control with the given id from the page.
+func GetDateTextbox(c page.ControlI, id string) *DateTextbox {
+	return c.Page().GetControl(id).(*DateTextbox);
 }

@@ -101,17 +101,22 @@ func (c *FormField) ΩDrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing FormField: " + c.ID())
 
 	attributes := c.this().ΩDrawingAttributes()
-	subControl := c.Page().GetControl(c.forID)
-	errorMessage := subControl.ValidationMessage()
-	if errorMessage != "" {
-		attributes.AddClass("error")
+	var subControl page.ControlI
+	var errorMessage string
+
+	if c.Page().HasControl(c.forID) {
+		subControl = c.Page().GetControl(c.forID)
+		errorMessage = subControl.ValidationMessage()
+		if errorMessage != "" {
+			attributes.AddClass("error")
+		}
 	}
 
 	buf := pool.GetBuffer()
 	defer pool.PutBuffer(buf)
 
 	text := c.Text()
-	if text == "" {
+	if text == "" && subControl != nil {
 		text = subControl.Attribute("placeholder")
 		if text != "" {
 			c.labelAttributes.SetStyle("display", "none") // make a hidden label for screen readers
@@ -119,8 +124,13 @@ func (c *FormField) ΩDrawTag(ctx context.Context) string {
 	}
 
 	if text != "" {
-		c.labelAttributes.Set("for", c.forID)
+		if c.forID != "" {
+			c.labelAttributes.Set("for", c.forID)
+		}
 		buf.WriteString(html.RenderTag("label", c.labelAttributes, html2.EscapeString(text)))
+		if subControl != nil {
+			subControl.SetAttribute("aria-labelledby", c.ID() + "_lbl")
+		}
 	}
 
 	var describedBy string
@@ -133,13 +143,13 @@ func (c *FormField) ΩDrawTag(ctx context.Context) string {
 	}
 	describedBy = strings.TrimSpace(describedBy)
 
-	if describedBy != "" {
+	if describedBy != "" && subControl != nil {
 		subControl.SetAttribute("aria-describedby", describedBy)
 	}
 	if err := c.this().ΩDrawInnerHtml(ctx, buf); err != nil {
 		panic(err)
 	}
-	if subControl.ValidationState() != page.ValidationNever {
+	if subControl != nil && subControl.ValidationState() != page.ValidationNever {
 		buf.WriteString(html.RenderTag("div", c.errorAttributes, html2.EscapeString(errorMessage)))
 	}
 	if c.instructions != "" {
@@ -177,8 +187,12 @@ func (c *FormField) SetInstructionAttributes(a *html.Attributes) FormFieldI {
 
 type FormFieldCreator struct {
 	ID string
-	Label string
+
+	// For specifies the id of the control that the label is for, and that is the control that we are wrapping.
+	// You normally do not need this, as it will simply look at the first child control, but if for some reason
+	// that control is wrapped, you should explicitly sepecify the For control id here.
 	For string
+	Label string
 	IsInline bool
 	Instructions string
 	LabelAttributes html.AttributeCreator
@@ -202,7 +216,6 @@ func (f FormFieldCreator) Init(ctx context.Context, c FormFieldI) {
 	c.ApplyOptions(f.ControlOptions)
 	c.SetText(f.Label)
 	c.SetInstructions(f.Instructions)
-	c.SetFor(f.For)
 	if f.LabelAttributes != nil {
 		c.LabelAttributes().Merge(html.NewAttributesFromMap(f.LabelAttributes))
 	}
@@ -213,5 +226,14 @@ func (f FormFieldCreator) Init(ctx context.Context, c FormFieldI) {
 		c.InstructionAttributes().Merge(html.NewAttributesFromMap(f.InstructionAttributes))
 	}
 
+	if f.Child == nil {
+		panic("FormField controls require a child control")
+	}
 	c.AddControls(ctx, f.Child)
+	if f.For != "" {
+		c.SetFor(f.For)
+	} else {
+		childId := c.Children()[0].ID()
+		c.SetFor(childId)
+	}
 }

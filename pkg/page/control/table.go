@@ -152,7 +152,7 @@ func (t *Table) ΩDrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing table tag")
 	if t.HasDataProvider() {
 		log.FrameworkDebug("Getting table data")
-		t.GetData(ctx, t)
+		t.LoadData(ctx, t)
 		defer t.ResetData()
 	}
 	for _, c := range t.columns {
@@ -167,7 +167,7 @@ func (t *Table) ΩDrawTag(ctx context.Context) string {
 func (t *Table) ΩDrawingAttributes() *html.Attributes {
 	a := t.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "table")
-	if t.Data == nil {
+	if t.HasData() {
 		a.SetStyle("display", "none")
 	}
 	return a

@@ -56,7 +56,7 @@ func (l *NavbarList) this() NavbarListI {
 
 func (l *NavbarList) ΩDrawTag(ctx context.Context) string {
 	if l.DataManager.HasDataProvider() {
-		l.GetData(ctx, l)
+		l.LoadData(ctx, l)
 		defer l.Clear()
 	}
 	return l.Control.ΩDrawTag(ctx)

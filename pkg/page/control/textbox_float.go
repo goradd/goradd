@@ -165,3 +165,8 @@ func (t FloatTextboxCreator) Create(ctx context.Context, parent page.ControlI) p
 	}
 	return ctrl
 }
+
+// GetFloatTextbox is a convenience method to return the control with the given id from the page.
+func GetFloatTextbox(c page.ControlI, id string) *FloatTextbox {
+	return c.Page().GetControl(id).(*FloatTextbox);
+}

@@ -28,7 +28,7 @@ hierarchical checklists, and more.
 `)
 
 	{
-		err := control.OList.Draw(ctx, buf)
+		err := control.Page().GetControl("control.OList").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -43,7 +43,7 @@ hierarchical checklists, and more.
 `)
 
 	{
-		err := control.UList.Draw(ctx, buf)
+		err := control.Page().GetControl("control.UList").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

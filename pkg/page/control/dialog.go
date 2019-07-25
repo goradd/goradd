@@ -98,12 +98,13 @@ func NewDialog(parent page.ControlI, id string) *Dialog {
 // Init is called by subclasses of the dialog.
 func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
 	// We add the dialog to the form. The form acts as a dialog controller/container too.
-	overlay := parent.Page().GetControl("groverlay")
+	var overlay page.ControlI
 
-	if overlay == nil {
+	if !parent.Page().HasControl("groverlay") {
 		overlay = NewPanel(parent.ParentForm(), "groverlay")
 		overlay.SetShouldAutoRender(true)
 	} else {
+		overlay = parent.Page().GetControl("groverlay")
 		overlay.SetVisible(true)
 	}
 

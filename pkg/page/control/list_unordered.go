@@ -16,7 +16,7 @@ type UnorderedListI interface {
 
 // UnorderedList is a dynamically generated html unordered list (ul). Such lists are often used as the basis for
 // javascript and css widgets. If you use a data provider to set the data, you should call AddItems to the list
-// in your GetData function.
+// in your LoadData function.
 type UnorderedList struct {
 	page.Control
 	ItemList
@@ -65,7 +65,7 @@ func (l *UnorderedList) SetBulletStyle(s string) {
 }
 
 func (l *UnorderedList) ΩDrawTag(ctx context.Context) string {
-	l.GetData(ctx, l)
+	l.LoadData(ctx, l)
 	defer l.Clear()
 	return l.Control.ΩDrawTag(ctx)
 }

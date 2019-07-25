@@ -105,8 +105,8 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 
 		p.Form().updateValues(grCtx) // Tell all the controls to update their values.
 		// if this is an event response, do the actions associated with the event
-		if c := p.GetControl(grCtx.actionControlID); c != nil {
-			c.control().doAction(ctx)
+		if p.HasControl(grCtx.actionControlID) {
+			p.GetControl(grCtx.actionControlID).control().doAction(ctx)
 		}
 	}
 
@@ -178,14 +178,14 @@ func (p *Page) GenerateControlID(id string) string {
 				id = p.idPrefix + id
 			}
 		}
-		if p.GetControl(id) != nil {
+		if p.HasControl(id) {
 			panic(fmt.Sprintf(`A control with id "%s" is being added a second time to the page. Ids must be unique on the page.`, id))
 		} else {
 			return id
 		}
 	} else {
 		var trialid string
-		for trialid == "" || p.GetControl(trialid) != nil { // checks to make sure user did not previously add a control that might match our generation pattern
+		for trialid == "" || p.HasControl(trialid) { // checks to make sure user did not previously add a control that might match our generation pattern
 			p.idCounter++
 			trialid = p.idPrefix + "c" + strconv.Itoa(p.idCounter)
 		}
@@ -193,17 +193,30 @@ func (p *Page) GenerateControlID(id string) string {
 	}
 }
 
-// GetControl returns the control with the given id. If not found, it returns nil.
+// GetControl returns the control with the given id. If not found, it panics. Use HasControl to check for existence.
 func (p *Page) GetControl(id string) ControlI {
-	if id == "" || p.controlRegistry == nil {
-		return nil
+	if id == "" {
+		panic("attempting to get a control with a blank id")
+	}
+	if p.controlRegistry == nil {
+		panic("control registry is not initialized")
 	}
 	i := p.controlRegistry.Get(id)
+	if i == nil {
+		panic("control with id " + id + " was not found")
+	}
 	if c, ok := i.(ControlI); ok {
 		return c
 	} else {
-		return nil
+		panic(id + " is not a control")
 	}
+}
+
+func (p *Page) HasControl(id string) bool {
+	if id == "" {
+		return false
+	}
+	return p.controlRegistry.Has(id)
 }
 
 // addControl adds the given control to the controlRegistry. It is called by the control code whenever a control is created.

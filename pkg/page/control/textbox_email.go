@@ -78,3 +78,46 @@ func (t *EmailTextbox) Addresses() []string {
 	}
 	return ret
 }
+
+type EmailTextboxCreator struct {
+	ID string
+	Placeholder string
+	Type string
+	MinLength int
+	MaxLength int
+	RowCount int
+	ReadOnly bool
+	SaveState bool
+	// Text is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Text string
+
+	page.ControlOptions
+}
+
+func (t EmailTextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewEmailTextbox(parent, t.ID)
+	if t.Placeholder != "" {
+		ctrl.SetPlaceholder(t.Placeholder)
+	}
+	if t.Type != "" {
+		ctrl.typ = t.Type
+	}
+	ctrl.minLength = t.MinLength
+	ctrl.maxLength = t.MaxLength
+	ctrl.rowCount = t.RowCount
+	ctrl.readonly = t.ReadOnly
+	if t.Text != "" {
+		ctrl.SetText(t.Text)
+	}
+
+	ctrl.ApplyOptions(t.ControlOptions)
+	if t.SaveState {
+		ctrl.SaveState(ctx, t.SaveState)
+	}
+	return ctrl
+}
+
+// GetEmailTextbox is a convenience method to return the control with the given id from the page.
+func GetEmailTextbox(c page.ControlI, id string) *EmailTextbox {
+	return c.Page().GetControl(id).(*EmailTextbox);
+}

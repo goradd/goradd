@@ -11,7 +11,7 @@ import (
 
 // OrderedList is a dynamically generated html ordered list (ol). Such lists are often used as the basis for
 // javascript and css widgets. If you use a data provider to set the data, you should call AddItems to the list
-// in your GetData function.
+// in your LoadData function.
 type OrderedList struct {
 	UnorderedList
 }

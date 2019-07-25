@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -77,4 +78,42 @@ func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
 // values sent by the browser.
 func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
 	c.UpdateRadioFormValues(ctx, c.Group())
+}
+
+type RadioButtonCreator struct {
+	ID string
+	Text string
+	Checked bool
+	LabelMode html.LabelDrawingMode
+	LabelAttributes html.AttributeCreator
+	SaveState bool
+	Group string
+	page.ControlOptions
+}
+
+func (c RadioButtonCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewRadioButton(parent, c.ID)
+	if c.Text != "" {
+		ctrl.SetText(c.Text)
+	}
+	if c.LabelMode != html.LabelDefault {
+		ctrl.LabelMode = c.LabelMode
+	}
+	if c.LabelAttributes != nil {
+		ctrl.LabelAttributes().MergeMap(c.LabelAttributes)
+	}
+	if c.Group != "" {
+		ctrl.group = c.Group
+	}
+
+	ctrl.ApplyOptions(c.ControlOptions)
+	if c.SaveState {
+		ctrl.SaveState(ctx, c.SaveState)
+	}
+	return ctrl
+}
+
+// GetRadioButton is a convenience method to return the radio button with the given id from the page.
+func GetRadioButton(c page.ControlI, id string) *RadioButton {
+	return c.Page().GetControl(id).(*RadioButton);
 }

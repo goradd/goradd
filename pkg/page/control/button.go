@@ -79,16 +79,29 @@ func (b *Button) OnSubmit(actions ...action.ActionI) page.EventI {
 	return b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
 }
 
-// ButtonC is the initialization structure for declarative creation of buttons
+// ButtonCreator is the initialization structure for declarative creation of buttons
 type ButtonCreator struct {
 	ID string
 	Text string
+	SubmitAction action.ActionI
+	ClickAction action.ActionI
 	page.ControlOptions
 }
 
-func (b ButtonCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	ctrl := NewButton(parent, b.ID).SetLabel(b.Text)
-	ctrl.ApplyOptions(b.ControlOptions)
+func (c ButtonCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewButton(parent, c.ID)
+	ctrl.SetLabel(c.Text)
+	if c.SubmitAction != nil {
+		ctrl.OnSubmit(c.SubmitAction)
+	}
+	if c.ClickAction != nil {
+		ctrl.On(event.Click(), c.ClickAction)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
 	return ctrl
 }
 
+// GetButton is a convenience method to return the button with the given id from the page.
+func GetButton(c page.ControlI, id string) *Button {
+	return c.Page().GetControl(id).(*Button);
+}

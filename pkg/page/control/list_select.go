@@ -160,7 +160,7 @@ func (l *SelectList) ΩDrawingAttributes() *html.Attributes {
 // ΩDrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
 func (l *SelectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if l.HasDataProvider() {
-		l.GetData(ctx, l)
+		l.LoadData(ctx, l)
 	}
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
@@ -232,11 +232,8 @@ func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) pag
 	}
 
 	if c.DataProvider != "" {
+		// If this fails, then perhaps you are giving a data provider id for a control that is not yet created. Create the control first.
 		provider := parent.Page().GetControl(c.DataProvider)
-		if provider == nil {
-			// You cannot provide a data provider id for a control that is not yet created. Create the control first.
-			panic("the data provider must be created before being used")
-		}
 		ctrl.SetDataProvider(provider.(data.DataBinder))
 	}
 

@@ -5,6 +5,8 @@ package panels
 import (
 	"bytes"
 	"context"
+
+	"github.com/goradd/goradd/pkg/page"
 )
 
 func (control *TextboxPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
@@ -34,7 +36,7 @@ a sql database. To make a <i>textarea</i> instead of an <i>input</i> tag, set th
 `)
 
 	{
-		err := control.Page().GetControl("plainText-ff").Draw(ctx, buf)
+		err := control.PlainText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -47,7 +49,7 @@ a sql database. To make a <i>textarea</i> instead of an <i>input</i> tag, set th
 `)
 
 	{
-		err := control.Page().GetControl("multiText-ff").Draw(ctx, buf)
+		err := control.MultiText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -65,7 +67,7 @@ a sql database. Integer textboxes are validated to make sure they contain an int
 `)
 
 	{
-		err := control.Page().GetControl("intText-ff").Draw(ctx, buf)
+		err := control.IntegerText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -84,7 +86,7 @@ These textboxes validate to make sure they match a particular format.
 `)
 
 	{
-		err := control.Page().GetControl("dateTimeText-ff").Draw(ctx, buf)
+		err := control.DateTimeText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -97,7 +99,7 @@ These textboxes validate to make sure they match a particular format.
 `)
 
 	{
-		err := control.Page().GetControl("dateText-ff").Draw(ctx, buf)
+		err := control.DateText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -110,7 +112,7 @@ These textboxes validate to make sure they match a particular format.
 `)
 
 	{
-		err := control.Page().GetControl("timeText-ff").Draw(ctx, buf)
+		err := control.TimeText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -130,7 +132,7 @@ Click on one of the Submit buttons below to cause the controls to validate.
 `)
 
 	{
-		err := control.Page().GetControl("floatText-ff").Draw(ctx, buf)
+		err := control.FloatText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -156,7 +158,7 @@ or provide a shortcut key to enter ".com".
 `)
 
 	{
-		err := control.Page().GetControl("emailText-ff").Draw(ctx, buf)
+		err := control.EmailText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -174,7 +176,7 @@ of ones that are commonly supported.
 `)
 
 	{
-		err := control.Page().GetControl("passwordText-ff").Draw(ctx, buf)
+		err := control.PasswordText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -187,7 +189,7 @@ of ones that are commonly supported.
 `)
 
 	{
-		err := control.Page().GetControl("searchText-ff").Draw(ctx, buf)
+		err := control.SearchText.With(page.NewLabelWrapper()).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -203,7 +205,7 @@ of ones that are commonly supported.
 `)
 
 	{
-		err := control.Page().GetControl("ajaxButton").Draw(ctx, buf)
+		err := control.SubmitAjax.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -216,7 +218,7 @@ of ones that are commonly supported.
 `)
 
 	{
-		err := control.Page().GetControl("serverButton").Draw(ctx, buf)
+		err := control.SubmitServer.Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

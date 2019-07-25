@@ -6,6 +6,12 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 )
 
+// Children is just a helper function for doing declarative control creation for child control creators
+func Children(creators ...page.Creator) []page.Creator {
+	return creators
+}
+
+
 type PanelI interface {
 	page.ControlI
 }
@@ -59,4 +65,9 @@ func (c PanelCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 	ctrl.ApplyOptions(c.ControlOptions)
 	ctrl.AddControls(ctx, c.Children...)
 	return ctrl
+}
+
+// GetPanel is a convenience method to return the panel with the given id from the page.
+func GetPanel(c page.ControlI, id string) *Panel {
+	return c.Page().GetControl(id).(*Panel);
 }

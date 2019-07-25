@@ -416,11 +416,12 @@ type TextboxCreator struct {
 	MinLength int
 	MaxLength int
 	ColumnCount int
+	// RowCount creates a multi-line textarea with the given number of rows
 	RowCount int
 	ReadOnly bool
 	SaveState bool
-	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
-	Value string
+	// Text is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Text string
 
 	page.ControlOptions
 }
@@ -435,11 +436,13 @@ func (t TextboxCreator) Create(ctx context.Context, parent page.ControlI) page.C
 	}
 	ctrl.minLength = t.MinLength
 	ctrl.maxLength = t.MaxLength
-	ctrl.rowCount = t.RowCount
+	if t.RowCount > 0 {
+		ctrl.SetRowCount(t.RowCount)
+	}
 	ctrl.columnCount = t.ColumnCount
 	ctrl.readonly = t.ReadOnly
-	if t.Value != "" {
-		ctrl.SetText(t.Value)
+	if t.Text != "" {
+		ctrl.SetText(t.Text)
 	}
 
 	ctrl.ApplyOptions(t.ControlOptions)
@@ -447,6 +450,11 @@ func (t TextboxCreator) Create(ctx context.Context, parent page.ControlI) page.C
 		ctrl.SaveState(ctx, t.SaveState)
 	}
 	return ctrl
+}
+
+// GetTextbox is a convenience method to return the control with the given id from the page.
+func GetTextbox(c page.ControlI, id string) *Textbox {
+	return c.Page().GetControl(id).(*Textbox);
 }
 
 func init() {

@@ -61,11 +61,8 @@ checkboxes.
 	buf.WriteString(`
 `)
 
-	buf.WriteString(`
-`)
-
 	{
-		err := control.Checkbox1.Draw(ctx, buf)
+		err := control.Page().GetControl("checkbox1-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -78,7 +75,7 @@ checkboxes.
 `)
 
 	{
-		err := control.Checkbox2.Draw(ctx, buf)
+		err := control.Page().GetControl("checkbox2-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -99,7 +96,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Radio1.Draw(ctx, buf)
+		err := control.Page().GetControl("radio1").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -112,7 +109,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Radio2.Draw(ctx, buf)
+		err := control.Page().GetControl("radio2").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -125,7 +122,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Radio3.Draw(ctx, buf)
+		err := control.Page().GetControl("radio3").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -138,7 +135,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Info.Draw(ctx, buf)
+		err := control.Page().GetControl("infoPanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -153,7 +150,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.SubmitAjax.Draw(ctx, buf)
+		err := control.Page().GetControl("ajaxButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -166,7 +163,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.SubmitServer.Draw(ctx, buf)
+		err := control.Page().GetControl("serverButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

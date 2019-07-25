@@ -190,3 +190,8 @@ func (t IntegerTextboxCreator) Create(ctx context.Context, parent page.ControlI)
 	}
 	return ctrl
 }
+
+// GetIntegerTextbox is a convenience method to return the control with the given id from the page.
+func GetIntegerTextbox(c page.ControlI, id string) *IntegerTextbox {
+	return c.Page().GetControl(id).(*IntegerTextbox);
+}

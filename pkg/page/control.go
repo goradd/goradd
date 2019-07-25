@@ -725,7 +725,10 @@ func (c *Control) AddRelatedRenderScript(id string, f string, params ...interfac
 
 // Parent returns the parent control of the control. All controls have a parent, except the Form control.
 func (c *Control) Parent() ControlI {
-	return c.Page().GetControl(c.parentId)
+	if c.Page().HasControl(c.parentId) {
+		return c.Page().GetControl(c.parentId)
+	}
+	return nil
 }
 
 // Children returns the child controls of the control.
@@ -1167,9 +1170,9 @@ func (c *Control) doAction(ctx context.Context) {
 			// not differentiate between float and int, we will leave all numbers as json.Number types so we can extract later.
 			// use javascript.NumberInt() to easily convert numbers in interfaces to int values.
 			p.values = grCtx.actionValues
-			dest := c.Page().GetControl(callbackAction.GetDestinationControlID())
 
-			if dest != nil {
+			if c.Page().HasControl(callbackAction.GetDestinationControlID()) {
+				dest := c.Page().GetControl(callbackAction.GetDestinationControlID())
 				if isPrivate {
 					if log.HasLogger(log.FrameworkDebugLog) {
 						log.FrameworkDebugf("doAction - PrivateAction, DestId: %s, action2.ActionId: %d, Action: %s, TriggerId: %s",
@@ -1266,8 +1269,8 @@ func (c *Control) passesValidation(ctx context.Context, event EventI) (valid boo
 			panic("Unsupported validation type and target combo.")
 		}
 		for _, id := range c.validationTargets {
-			if c2 := c.Page().GetControl(id); c2 != nil {
-				targets = append(targets, c2)
+			if c.Page().HasControl(id) {
+				targets = append(targets, c.Page().GetControl(id))
 			}
 		}
 	}

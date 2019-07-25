@@ -13,54 +13,80 @@ import (
 
 type CheckboxPanel struct {
 	Panel
-	Checkbox1 *Checkbox
-	Checkbox2 *Checkbox
-
-	Radio1 *RadioButton
-	Radio2 *RadioButton
-	Radio3 *RadioButton
-
-	Info *Panel
-
-	SubmitAjax   *Button
-	SubmitServer *Button
 }
+
+func (p *CheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
+	switch a.ID {
+	case ButtonSubmit:
+		var sel string
+		if GetRadioButton(p,"radio1").Checked() {
+			sel = "radio1"
+		} else if GetRadioButton(p,"radio2").Checked() {
+			sel = "radio2"
+		} else if GetRadioButton(p,"radio3").Checked() {
+			sel = "radio3"
+		}
+		GetPanel(p,"infoPanel").SetText(sel)
+	}
+}
+
 
 func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &CheckboxPanel{}
 	p.Panel.Init(p, parent, "checkboxPanel")
+	p.AddControls(ctx,
+		FormFieldCreator{
+			ID:"checkbox1-ff",
+			Label:"Checkbox 1:",
+			For:"checkbox1",
+			Instructions:"These are instructions for checkbox 1",
+			Child:CheckboxCreator{
+				ID:"checkbox1",
+				Text:"My text is before",
+				LabelMode:html.LabelBefore,
+			},
+		},
+		FormFieldCreator{
+			ID:"checkbox2-ff",
+			Label:"Checkbox 2:",
+			For:"checkbox2",
+			Instructions:"These are instructions for checkbox 2",
+			Child:CheckboxCreator{
+				ID:"checkbox2",
+				Text:"My text is after, and is wrapping the control",
+				LabelMode:html.LabelWrapAfter,
+			},
+		},
+		RadioButtonCreator{
+			ID:"radio1",
+			Group:"mygroup",
+			Text:"Here",
+		},
+		RadioButtonCreator{
+			ID:"radio2",
+			Group:"mygroup",
+			Text:"There",
+		},
+		RadioButtonCreator{
+			ID:"radio3",
+			Group:"mygroup",
+			Text:"Everywhere",
+		},
+		PanelCreator{
+			ID:"infoPanel",
+		},
+		ButtonCreator{
+			ID: "ajaxButton",
+			Text: "Submit Ajax",
+			SubmitAction:action.Ajax("checkboxPanel", ButtonSubmit),
+		},
+		ButtonCreator{
+			ID: "serverButton",
+			Text: "Submit Server",
+			SubmitAction:action.Ajax("checkboxPanel", ButtonSubmit),
+		},
 
-	p.Checkbox1 = NewCheckbox(p, "checkbox1")
-	p.Checkbox1.SetLabel("Checkbox 1:")
-	p.Checkbox1.SetText("My text is before")
-	p.Checkbox1.SetLabelDrawingMode(html.LabelBefore)
-
-	p.Checkbox2 = NewCheckbox(p, "checkbox2")
-	p.Checkbox2.SetLabel("Checkbox 2:")
-	p.Checkbox2.SetLabelDrawingMode(html.LabelWrapAfter)
-	p.Checkbox2.SetText("My text is after, and is wrapping the control")
-
-	p.Radio1 = NewRadioButton(p, "radio1")
-	p.Radio1.SetGroup("mygroup")
-	p.Radio1.SetText("Here")
-
-	p.Radio2 = NewRadioButton(p, "radio2")
-	p.Radio2.SetGroup("mygroup")
-	p.Radio2.SetText("There")
-
-	p.Radio3 = NewRadioButton(p, "radio3")
-	p.Radio3.SetGroup("mygroup")
-	p.Radio3.SetText("Everywhere")
-
-	p.Info = NewPanel(p, "infoPanel")
-
-	p.SubmitAjax = NewButton(p, "ajaxButton")
-	p.SubmitAjax.SetText("Submit Ajax")
-	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), ButtonSubmit))
-
-	p.SubmitServer = NewButton(p, "serverButton")
-	p.SubmitServer.SetText("Submit Server")
-	p.SubmitServer.OnSubmit(action.Server(p.ID(), ButtonSubmit))
+	)
 }
 
 func init() {
@@ -99,16 +125,14 @@ func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI
 	t.Click(btn)
 	t.AssertEqual(true, checkbox1.Checked())
 
-	checkbox2 := f.Page().GetControl("checkbox2").(*Checkbox)
-
-	radio1 := f.Page().GetControl("radio1").(*RadioButton)
-	radio2 := f.Page().GetControl("radio2").(*RadioButton)
-	radio3 := f.Page().GetControl("radio3").(*RadioButton)
-
-	info := f.Page().GetControl("infoPanel").(*Panel)
+	checkbox2 := GetCheckbox(f, "checkbox2")
+	radio1 := GetRadioButton(f,"radio1")
+	radio2 := GetRadioButton(f,"radio2")
+	radio3 := GetRadioButton(f,"radio3")
+	info := GetPanel(f,"infoPanel")
 
 	t.AssertEqual(false, checkbox2.Checked())
-	t.AssertEqual("checkbox1_lbl checkbox1_ilbl", t.ControlAttribute("checkbox1", "aria-labelledby"))
+	t.AssertEqual("checkbox1-ff checkbox1_ilbl", t.ControlAttribute("checkbox1", "aria-labelledby"))
 
 	t.AssertEqual(false, radio1.Checked())
 	t.AssertEqual(true, radio2.Checked())
@@ -130,17 +154,3 @@ func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI
 	t.AssertEqual(false, radio3.Checked())
 }
 
-func (p *CheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
-	switch a.ID {
-	case ButtonSubmit:
-		var sel string
-		if p.Radio1.Checked() {
-			sel = p.Radio1.ID()
-		} else if p.Radio2.Checked() {
-			sel = p.Radio2.ID()
-		} else if p.Radio3.Checked() {
-			sel = p.Radio3.ID()
-		}
-		p.Info.SetText(sel)
-	}
-}

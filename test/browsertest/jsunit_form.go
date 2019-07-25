@@ -45,7 +45,7 @@ func init() {
 
 func testJsUnit(t *TestForm)  {
 	f := t.LoadUrl(JsUnitTestFormPath)
-	btn := f.Page().GetControl("startButton").(*Button)
+	btn := GetButton(f, "startButton")
 	t.Click(btn)
 
 	h := t.InnerHtml("results")

@@ -39,7 +39,9 @@ func (c *Checkbox) ΩUpdateFormValues(ctx *page.Context) {
 
 type CheckboxCreator struct {
 	ID string
+	Text string
 	Checked bool
+	LabelMode html.LabelDrawingMode
 	LabelAttributes html.AttributeCreator
 	SaveState bool
 	page.ControlOptions
@@ -47,6 +49,12 @@ type CheckboxCreator struct {
 
 func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewCheckbox(parent, c.ID)
+	if c.Text != "" {
+		ctrl.SetText(c.Text)
+	}
+	if c.LabelMode != html.LabelDefault {
+		ctrl.LabelMode = c.LabelMode
+	}
 	if c.LabelAttributes != nil {
 		ctrl.LabelAttributes().MergeMap(c.LabelAttributes)
 	}
@@ -56,4 +64,9 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 		ctrl.SaveState(ctx, c.SaveState)
 	}
 	return ctrl
+}
+
+// GetCheckbox is a convenience method to return the checkbox with the given id from the page.
+func GetCheckbox(c page.ControlI, id string) *Checkbox {
+	return c.Page().GetControl(id).(*Checkbox);
 }

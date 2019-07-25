@@ -67,6 +67,9 @@ func (c *FormGroup) ΩDrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing FormField: " + c.ID())
 
 	attributes := c.this().ΩDrawingAttributes()
+	if c.For() == "" {
+		panic("a FormGroup MUST have a sub control")
+	}
 	subControl := c.Page().GetControl(c.For())
 	errorMessage := subControl.ValidationMessage()
 	if errorMessage != "" {
@@ -153,9 +156,12 @@ func (c *FormGroup) InnerDivAttributes() *html.Attributes {
 }
 
 type FormGroupCreator struct {
-	ControlOptions page.ControlOptions
 	ID string
 	Label string
+
+	// For specifies the id of the control that the label is for, and that is the control that we are wrapping.
+	// You normally do not need this, as it will simply look at the first child control, but if for some reason
+	// that control is wrapped, you should explicitly sepecify the For control id here.
 	For string
 	Instructions string
 	LabelAttributes html.AttributeCreator
@@ -165,6 +171,7 @@ type FormGroupCreator struct {
 
 	InnerDivAttributes html.AttributeCreator
 	UseTooltips   bool // uses tooltips for the error class
+	ControlOptions page.ControlOptions
 }
 
 func (f FormGroupCreator) Create(ctx context.Context, parent page.ControlI) FormGroupI {

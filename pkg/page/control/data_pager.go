@@ -329,7 +329,7 @@ func (d *DataPager) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err err
 		// data so that we can figure out what to do
 		if !d.paginatedControl.WasRendered() &&
 			!d.paginatedControl.IsRendering() { // not a child control
-			d.paginatedControl.GetData(ctx, d.paginatedControl)
+			d.paginatedControl.LoadData(ctx, d.paginatedControl)
 		}
 	}
 	return

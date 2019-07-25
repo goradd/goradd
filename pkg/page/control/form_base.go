@@ -65,7 +65,8 @@ func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id st
 func (f *FormBase) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case databaseProfileAction:
-		if c := f.Page().GetControl("grProfilePanel"); c != nil {
+		if f.Page().HasControl("grProfilePanel") {
+			c := f.Page().GetControl("grProfilePanel")
 			if c.IsVisible() {
 				c.SetVisible(false)
 			} else {
