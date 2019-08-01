@@ -85,6 +85,7 @@ func RenderTag(tag string, attr *Attributes, innerHtml string) string {
 	return ret
 }
 
+
 // RenderTagNoSpace is similar to RenderTag, but should be used in situations where the tag is an
 // inline tag that you want to visually be right next to its neighbors with no space.
 func RenderTagNoSpace(tag string, attr *Attributes, innerHtml string) string {

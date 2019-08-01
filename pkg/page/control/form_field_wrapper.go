@@ -287,7 +287,7 @@ func GetCreatorID(c page.Creator) string {
 }
 
 // CalcWrapperID returns the computed id of a control that wraps another control
-// This would be the id of the child control followed by "-wrap"
+// This would be the id of the child control followed by the postfix
 func CalcWrapperID(wrapperId string, childCreator page.Creator, postfix string) string {
 	id := wrapperId
 	if id == ""  &&

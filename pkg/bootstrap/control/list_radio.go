@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -64,4 +65,59 @@ func (l *RadioList) ΩRenderItem(item control.ListItemI) (h string) {
 	h = renderItemControl(item, "radio", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)
 	return
+}
+
+type RadioListCreator struct {
+	ID string
+	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
+	Items []control.ListValue
+	// DataProvider is the id of a control that will dynamically provide the data for the list and that implements the DataProvider interface.
+	// Often this is the parent of the control.
+	DataProvider string
+	// ColumnCount specifies how many columns to show
+	ColumnCount int
+	// LayoutDirection determines how the items are arranged in the columns
+	LayoutDirection control.LayoutDirection
+	// LabelDrawingMode specifies how the labels on the radio buttons will be associated with the buttons
+	LabelDrawingMode html.LabelDrawingMode
+	// IsScrolling will give the inner div a vertical scroll style. You will need to style the height of the outer control to have a fixed style as well.
+	IsScrolling bool
+	// RowClass is the class assigned to each row
+	RowClass string
+	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Value string
+	// SaveState saves the selected value so that it is restored if the form is returned to.
+	SaveState bool
+	page.ControlOptions
+}
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c RadioListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewRadioList(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
+	sub := control.RadioListCreator{
+		ID: c.ID,
+		Items: c.Items,
+		DataProvider: c.DataProvider,
+		ColumnCount: c.ColumnCount,
+		LayoutDirection: c.LayoutDirection,
+		LabelDrawingMode: c.LabelDrawingMode,
+		IsScrolling: c.IsScrolling,
+		RowClass: c.RowClass,
+		Value: c.Value,
+		SaveState: c.SaveState,
+		ControlOptions: c.ControlOptions,
+
+	}
+	sub.Init(ctx, ctrl)
+}
+
+// GetRadioList is a convenience method to return the control with the given id from the page.
+func GetRadioList(c page.ControlI, id string) *RadioList {
+	return c.Page().GetControl(id).(*RadioList)
 }

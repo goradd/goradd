@@ -14,6 +14,7 @@ type SelectListI interface {
 	page.ControlI
 	ItemListI
 	data.DataManagerEmbedder
+	SetValue(v interface{})
 }
 
 // SelectList is typically a dropdown list with a single selection. Items are selected by id number, and the SelectList
@@ -226,6 +227,11 @@ type SelectListCreator struct {
 
 func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewSelectList(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 
 	if c.NilItem != "" {
 		ctrl.AddItem(c.NilItem, nil)
@@ -237,7 +243,7 @@ func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) pag
 
 	if c.DataProvider != "" {
 		// If this fails, then perhaps you are giving a data provider id for a control that is not yet created. Create the control first.
-		provider := parent.Page().GetControl(c.DataProvider)
+		provider := ctrl.Page().GetControl(c.DataProvider)
 		ctrl.SetDataProvider(provider.(data.DataBinder))
 	}
 
@@ -251,7 +257,6 @@ func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) pag
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
 	}
-	return ctrl
 }
 
 

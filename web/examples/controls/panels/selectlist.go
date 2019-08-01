@@ -104,12 +104,12 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 		ButtonCreator{
 			ID:       "ajaxButton",
 			Text:     "Submit Ajax",
-			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+			OnSubmit: action.Ajax("selectListPanel", ButtonSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Server",
-			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+			OnSubmit: action.Ajax("selectListPanel", ButtonSubmit),
 		},
 
 	)

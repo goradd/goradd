@@ -27,7 +27,7 @@ func LcFirst(s string) string {
 
 // Indent will indent very line of the string with a tab
 func Indent(s string) string {
-	s = "\t" + strings.ReplaceAll(s, "\n", "\n\t")
+	s = "\t" + strings.Replace(s, "\n", "\n\t", -1)
 	return strings.TrimRight(s, "\t")
 }
 

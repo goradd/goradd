@@ -1,9 +1,9 @@
-package boneyard
+package panels
 
 import (
 	"context"
 	. "github.com/goradd/goradd/pkg/bootstrap/control"
-	"github.com/goradd/goradd/pkg/bootstrap/examples/panels"
+	"github.com/goradd/goradd/pkg/bootstrap/examples"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -14,16 +14,6 @@ import (
 
 type SelectListPanel struct {
 	control.Panel
-	SingleSelect   *SelectList
-	SingleSelectWithSize   *SelectList
-	RadioList1   *RadioList
-	RadioList2   *RadioList
-	RadioList3   *RadioList
-
-	CheckboxList1   *CheckboxList
-
-	SubmitAjax      *Button
-	SubmitServer    *Button
 }
 
 func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
@@ -41,62 +31,67 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 	p := &SelectListPanel{}
 	p.Panel.Init(p, parent, "selectListPanel")
 
-	p.SingleSelect = NewSelectList(p, "singleSelectList")
-	p.SingleSelect.SetLabel("Standard SelectList")
-	p.SingleSelect.SetData(itemList)
-	p.SingleSelect.AddItemAt(0, "- Select One -", nil)
-	p.SingleSelect.SetIsRequired(true)
+	p.AddControls(ctx,
+		FormGroupCreator{
+			Label: "Standard SelectList",
+			Child: SelectListCreator{
+				ID: "singleSelectList",
+				NilItem: "- Select One -",
+				Items: itemList,
+				ControlOptions:page.ControlOptions{
+					IsRequired: true,
+				},
+			},
+		},
+		FormGroupCreator{
+			Label: "SelectList With Size",
+			Child: SelectListCreator{
+				ID: "selectListWithSize",
+				Items: itemList,
+				Size: 4,
+				ControlOptions:page.ControlOptions{
+					IsRequired: true,
+				},
+			},
+		},
+		FormFieldsetCreator{
+			Legend: "Radio List",
+			Instructions: "A radio list",
+			Child: RadioListCreator{
+				ID: "radioList1",
+				Items: itemList,
+			},
+		},
+		FormFieldsetCreator{
+			Legend: "Checkbox List",
+			Child: CheckboxListCreator{
+				ID: "checklist1",
+				Items: itemList,
+			},
+		},
+		ButtonCreator{
+			ID:       "ajaxButton",
+			Text:     "Submit Ajax",
+			OnSubmit: action.Ajax("selectListPanel", ButtonSubmit),
+		},
+		ButtonCreator{
+			ID:       "serverButton",
+			Text:     "Submit Server",
+			OnSubmit: action.Ajax("selectListPanel", ButtonSubmit),
+		},
 
-	p.SingleSelectWithSize = NewSelectList(p, "selectListWithSize")
-	p.SingleSelectWithSize.SetLabel("SelectList With Size")
-	p.SingleSelectWithSize.SetAttribute("size", 4)
-	p.SingleSelectWithSize.AddListItems(itemList)
-
-	p.RadioList1 = NewRadioList(p, "radioList1")
-	p.RadioList1.SetLabel("Rows Radio List")
-	p.RadioList1.AddListItems(itemList)
-	p.RadioList1.SetColumnCount(2)
-
-	p.RadioList2 = NewRadioList(p, "radioList2")
-	p.RadioList2.SetLabel("Columns Radio List")
-	p.RadioList2.AddListItems(itemList)
-	p.RadioList2.SetColumnCount(2)
-	p.RadioList2.SetLayoutDirection(control.LayoutColumn)
-
-	p.RadioList3 = NewRadioList(p, "radioList3")
-	p.RadioList3.SetLabel("Scrolling Radio List")
-	p.RadioList3.AddListItems(itemList)
-	p.RadioList3.SetIsScrolling(true)
-	p.RadioList3.SetHeightStyle(80) // Limit the height to see the scrolling effect
-
-	p.CheckboxList1 = NewCheckboxList(p, "checklist1")
-	p.CheckboxList1.SetLabel("Checkbox List")
-	p.CheckboxList1.AddListItems(itemList)
-	p.CheckboxList1.SetColumnCount(2)
-
-	p.SubmitAjax = NewButton(p, "ajaxButton")
-	p.SubmitAjax.SetText("Submit Ajax")
-	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), panels.ButtonSubmit))
-
-	p.SubmitServer = NewButton(p, "serverButton")
-	p.SubmitServer.SetText("Submit Server")
-	p.SubmitServer.OnSubmit(action.Server(p.ID(), panels.ButtonSubmit))
+	)
 
 }
 
 func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
-	case panels.ButtonSubmit:
-		p.CheckboxList1.SetInstructions(strings.Join(p.CheckboxList1.SelectedIds(), ","))
-		p.CheckboxList1.Refresh()
+	case ButtonSubmit:
+		GetFormFieldset(p, "checklist1-fs").SetInstructions(
+			strings.Join(GetCheckboxList(p, "checklist1").SelectedIds(), ","))
 	}
 }
 
-
-func init() {
-	browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)
-	browsertest.RegisterTestFunction("Bootstrap Select List Server Submit", testSelectListServerSubmit)
-}
 
 // testPlain exercises the plain text box
 func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
@@ -127,14 +122,13 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 	select1 := f.Page().GetControl("singleSelectList").(*SelectList)
 	select2 := f.Page().GetControl("selectListWithSize").(*SelectList)
 	radio1 := f.Page().GetControl("radioList1").(*RadioList)
-	radio2 := f.Page().GetControl("radioList2").(*RadioList)
 
 	id,_ := select2.GetItemByValue(2)
 	t.ChangeVal("selectListWithSize", id)
 
 	t.Click(btn)
 
-	t.AssertEqual(true, t.HasClass("singleSelectList_ctl", "error"))
+	t.AssertEqual(true, t.HasClass("singleSelectList-fg", "error"))
 
 
 	t.AssertEqual(2, select2.IntValue())
@@ -145,14 +139,18 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 	t.ChangeVal("selectListWithSize", id)
 	id,_ = radio1.GetItemByValue(3)
 	t.CheckGroup("radioList1", id)
-	id,_ = radio2.GetItemByValue(4)
-	t.CheckGroup("radioList2", id)
 
 	t.Click(btn)
 
 	t.AssertEqual(1, select1.IntValue())
 	t.AssertEqual(2, select2.IntValue())
-	//t.AssertEqual(3, radio1.IntValue())
+	t.AssertEqual(3, radio1.IntValue())
 	//t.AssertEqual(4, radio2.IntValue())
 }
 
+func init() {
+	examples.RegisterPanel("lists", "Lists", NewSelectListPanel, 3)
+
+	browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)
+	browsertest.RegisterTestFunction("Bootstrap Select List Server Submit", testSelectListServerSubmit)
+}
