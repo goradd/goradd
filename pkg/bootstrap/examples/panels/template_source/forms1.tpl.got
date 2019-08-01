@@ -1,6 +1,6 @@
 {{< package }}panels{{end}}
 {{< imports }}
-	bootstrap "github.com/goradd/goradd/pkg/bootstrap/control"
+	. "github.com/goradd/goradd/pkg/bootstrap/control"
 {{end}}
 {{< control }}Forms1Panel{{end}}
 
@@ -9,20 +9,25 @@
 <p>
 This is an example of a very generic form layout in Bootstrap.
 </p>
-{# TODO: Use form-row class as wrapper}
-{{drawAsFormGroup control.Name }}
-{{drawAsFormGroup control.ChildrenCount }}
+{{draw nameText-fg }}
+{{draw childrenText-fg }}
 
 <div>
-{{draw control.MStatusSingle.SetInline(true) }}
-{{draw control.MStatusMarried.SetInline(true) }}
-{{draw control.MStatusDivorced.SetInline(true) }}
+{{# Demonstrate how to set control options from the template }}
+{{g
+    GetRadioButton(ctrl, "singleRadio").SetInline(true)
+    GetRadioButton(ctrl, "marriedRadio").SetInline(true)
+    GetRadioButton(ctrl, "divorcedRadio").SetInline(true)
+}}
+{{draw singleRadio }}
+{{draw marriedRadio }}
+{{draw divorcedRadio }}
 </div>
-{{drawAsFormGroup control.Dog }}
+{{draw dogCheck-fg }}
 
 
-{{draw control.SubmitAjax}}
-{{draw control.SubmitServer}}
+{{draw ajaxButton}}
+{{draw serverButton}}
 {{end}}
 
 {{renderControlTemplate}}

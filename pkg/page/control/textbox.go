@@ -37,6 +37,13 @@ type TextboxI interface {
 	page.ControlI
 	SetType(typ string) TextboxI
 	ΩSanitize(string) string
+	SetPlaceholder(s string) TextboxI
+	SetMaxLength(len int) *MaxLengthValidator
+	SetMinLength(len int) *MinLengthValidator
+	SetRowCount(rows int) TextboxI
+	SetColumnCount(columns int) TextboxI
+	SetReadOnly(r bool) TextboxI
+	SetValue(interface{}) page.ControlI
 }
 
 // Textbox is a goradd control that outputs an "input" html tag with a "type" attribute
@@ -204,17 +211,18 @@ func (t *Textbox) SetType(typ string) TextboxI {
 // dependent, so its not a very good way of setting the width.
 // The css width property is more accurate. Also, this is
 // only the visible width, not the maximum number of characters.
-func (t *Textbox) SetColumnCount(columns int) {
+func (t *Textbox) SetColumnCount(columns int) TextboxI {
 	t.columnCount = columns
 	if columns <= 0 {
 		panic("Invalid table value.")
 	}
 	t.Refresh()
+	return t.this()
 }
 
 // SetRowCount sets the number of rowCount the Textbox will have.
 // A value of 0 produces an input tag, and a value of 1 or greater produces a textarea tag.
-func (t *Textbox) SetRowCount(rows int) {
+func (t *Textbox) SetRowCount(rows int) TextboxI {
 	if rows < 0 {
 		panic("Invalid row value.")
 	}
@@ -227,12 +235,14 @@ func (t *Textbox) SetRowCount(rows int) {
 	}
 	t.rowCount = rows
 	t.Refresh()
+	return t.this()
 }
 
 // SetReadOnly will disable editing by setting a browser attribute.
-func (t *Textbox) SetReadOnly(r bool) {
+func (t *Textbox) SetReadOnly(r bool) TextboxI {
 	t.readonly = r
 	t.AddRenderScript("attr", "readonly", "")
+	return t.this()
 }
 
 // Sanitize is called by the framework when taking in user input and strips it of potential
@@ -409,52 +419,88 @@ func (v MaxLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 	return
 }
 
+// Use TextboxCreator to create a textbox. Pass it to AddControls of a control, or as a Child of
+// a FormFieldWrapper.
 type TextboxCreator struct {
+	// ID is the control id of the html widget and must be unique to the page
 	ID string
+	// Placeholder is the placeholder attribute of the textbox and shows as help text inside the field
 	Placeholder string
+	// Type is the type attribute of the textbox
 	Type string
+	// MinLength is the minimum number of characters that the user is required to enter. If the
+	// length is less than this number, a validation error will be shown.
 	MinLength int
+	// MaxLength is the maximum number of characters that the user is required to enter. If the
+	// length is more than this number, a validation error will be shown.
 	MaxLength int
+	// ColumnCount is the number of characters wide the textbox will be, and becomes the width attribute in the tag.
+	// The actual width is browser dependent. For better control, use a width style property.
 	ColumnCount int
-	// RowCount creates a multi-line textarea with the given number of rows
+	// RowCount creates a multi-line textarea with the given number of rows. By default the
+	// textbox will expand vertically by this number of lines. Use a height style property for
+	// better control of the height of a textbox.
 	RowCount int
+	// ReadOnly sets the readonly attribute of the textbox, which prevents it from being changed by the user.
 	ReadOnly bool
+	// SaveState will save the text in the textbox, to be restored if the user comes back to the page.
+	// It is particularly helpful when the textbox is being used to filter the results of a query, so that
+	// when the user comes back to the page, he does not have to type the filter text again.
 	SaveState bool
-	// Text is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	// Text is the initial value of the textbox. Generally you would not use this, but rather load the value in a separate Load step after creating the control.
 	Text string
 
 	page.ControlOptions
 }
 
-func (t TextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	ctrl := NewTextbox(parent, t.ID)
-	if t.Placeholder != "" {
-		ctrl.SetPlaceholder(t.Placeholder)
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c TextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewTextbox(parent, c.ID)
+
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+// Init is called by implementations of Textboxes to initialize a control with the
+// creator. You do not normally need to call this.
+func (c TextboxCreator) Init(ctx context.Context, ctrl TextboxI) {
+	if c.Placeholder != "" {
+		ctrl.SetPlaceholder(c.Placeholder)
 	}
-	if t.Type != "" {
-		ctrl.typ = t.Type
-	}
-	ctrl.minLength = t.MinLength
-	ctrl.maxLength = t.MaxLength
-	if t.RowCount > 0 {
-		ctrl.SetRowCount(t.RowCount)
-	}
-	ctrl.columnCount = t.ColumnCount
-	ctrl.readonly = t.ReadOnly
-	if t.Text != "" {
-		ctrl.SetText(t.Text)
+	if c.Type != "" {
+		ctrl.SetType(c.Type)
 	}
 
-	ctrl.ApplyOptions(t.ControlOptions)
-	if t.SaveState {
-		ctrl.SaveState(ctx, t.SaveState)
+	if c.MinLength != 0 {
+		ctrl.SetMinLength(c.MinLength)
 	}
-	return ctrl
+
+	if c.MaxLength != 0 {
+		ctrl.SetMaxLength(c.MaxLength)
+	}
+	if c.RowCount > 0 {
+		ctrl.SetRowCount(c.RowCount)
+	}
+	if c.ColumnCount > 0 {
+		ctrl.SetColumnCount(c.ColumnCount)
+	}
+	if c.ReadOnly {
+		ctrl.SetReadOnly(true)
+	}
+	if c.Text != "" {
+		ctrl.SetText(c.Text)
+	}
+
+	ctrl.ApplyOptions(c.ControlOptions)
+	if c.SaveState {
+		ctrl.SaveState(ctx, c.SaveState)
+	}
 }
 
 // GetTextbox is a convenience method to return the control with the given id from the page.
 func GetTextbox(c page.ControlI, id string) *Textbox {
-	return c.Page().GetControl(id).(*Textbox);
+	return c.Page().GetControl(id).(*Textbox)
 }
 
 func init() {

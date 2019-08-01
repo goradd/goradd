@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func (control *TablePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (control *panels.TablePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 `)

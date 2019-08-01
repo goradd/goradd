@@ -242,7 +242,6 @@ func (i *ListItem) IsEmptyValue() bool {
 // It satisfies the ItemLister interface. To use it, create a slice of ListValue's and
 // pass the list to AddListItems or SetData.
 type ListValue struct {
-	// L is the label
 	L string
 	// V is the value
 	V interface{}

@@ -95,7 +95,7 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 // LabelAttributes returns a pointer to the input label attributes.
 // Feel free to set the attributes directly on the returned object.
 // The input label attributes are the attributes for the label tag that associates the Text with the checkbox.
-// This is specific to checkbox style controls and is not the same as the label tag that appears when using a FormField wrapper.
+// This is specific to checkbox style controls and is not the same as the label tag that appears when using a FormFieldWrapper wrapper.
 // After setting attributes, be sure to call Refresh on the control if you do this during an Ajax response.
 func (c *CheckboxBase) LabelAttributes() *html.Attributes {
 	if c.labelAttributes == nil {

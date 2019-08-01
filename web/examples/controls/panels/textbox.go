@@ -22,7 +22,7 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 	p.Panel.Init(p, parent, "textboxPanel")
 
 	p.Panel.AddControls(ctx,
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "plainText-ff",
 			Label: "Plain Text",
 			Child: TextboxCreator{
@@ -30,7 +30,7 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 				SaveState: true,
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "multiText-ff",
 			Label: "Multi Text",
 			Child: TextboxCreator{
@@ -39,28 +39,28 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 				RowCount:  2,
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "intText-ff",
 			Label: "Integer Text",
 			Child: IntegerTextboxCreator{
 				ID:        "intText",
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "floatText-ff",
 			Label: "Float Text",
 			Child: FloatTextboxCreator{
 				ID:        "floatText",
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "emailText-ff",
 			Label: "Email Text",
 			Child: EmailTextboxCreator{
 				ID:        "emailText",
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "passwordText-ff",
 			Label: "Password",
 			Child: TextboxCreator{
@@ -68,7 +68,7 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 				Type:TextboxTypePassword,
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "searchText-ff",
 			Label: "Search",
 			Child: TextboxCreator{
@@ -76,14 +76,14 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 				Type:TextboxTypeSearch,
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "dateTimeText-ff",
 			Label: "U.S. Date-time",
 			Child: DateTextboxCreator{
 				ID:        "dateTimeText",
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "dateText-ff",
 			Label: "Euro Date",
 			Child: DateTextboxCreator{
@@ -91,7 +91,7 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 				Format: datetime.EuroDate,
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "timeText-ff",
 			Label: "U.S. Time",
 			Child: DateTextboxCreator{
@@ -100,14 +100,14 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 			},
 		},
 		ButtonCreator{
-			ID: "ajaxButton",
-			Text: "Submit Ajax",
-			SubmitAction:action.Ajax("textboxPanel", ButtonSubmit),
+			ID:       "ajaxButton",
+			Text:     "Submit Ajax",
+			OnSubmit: action.Ajax("textboxPanel", ButtonSubmit),
 		},
 		ButtonCreator{
-			ID: "serverButton",
-			Text: "Submit Server",
-			SubmitAction:action.Server("textboxPanel", ButtonSubmit),
+			ID:       "serverButton",
+			Text:     "Submit Server",
+			OnSubmit: action.Server("textboxPanel", ButtonSubmit),
 		},
 
 	)
@@ -179,7 +179,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	timeText := GetDateTextbox(f, "timeText")
 	dateTimeText := GetDateTextbox(f, "dateTimeText")
 
-	GetFormField(f, "plainText-ff").SetInstructions("Sample instructions")
+	GetFormFieldWrapper(f, "plainText-ff").SetInstructions("Sample instructions")
 	t.ChangeVal("intText", 5)
 	t.ChangeVal("floatText", 6.7)
 	t.ChangeVal("emailText", "me@you.com")

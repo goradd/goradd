@@ -37,7 +37,7 @@ func NewControlsForm(ctx context.Context) page.FormI {
 	f.Init(ctx, f, ControlsFormPath, ControlsFormId)
 	f.AddRelatedFiles()
 
-	f.list = NewUnorderedList(f, "panelList")
+	f.list = NewUnorderedList(f, "listPanel")
 	f.list.SetDataProvider(f)
 	f.detail = NewPanel(f, "detailPanel")
 

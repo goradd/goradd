@@ -13,6 +13,7 @@ import (
 type SelectListI interface {
 	page.ControlI
 	ItemListI
+	data.DataManagerEmbedder
 }
 
 // SelectList is typically a dropdown list with a single selection. Items are selected by id number, and the SelectList
@@ -204,31 +205,34 @@ func (l *SelectList) SetData(data interface{}) {
 	l.AddListItems(data)
 }
 
-type ItemCreator struct {
-	Value string
-	Label string
-}
 type SelectListCreator struct {
 	ID string
-	SaveState bool
-	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
-	Value string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
-	Items []ItemCreator
+	Items []ListValue
+	// NilItem is a helper to add an item at the top of the list with a nil value. This is often
+	// used to specify no selection, or a message that a selection is required.
+	NilItem string
 	// DataProvider is the id of a control that will dynamically provide the data for the list and that implements the DataProvider interface.
 	// Often this is the parent of the control.
 	DataProvider string
-
+	// Size specifies how many items to show, and turns the list into a scrolling list
+	Size int
+	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Value string
+	// SaveState saves the selected value so that it is restored if the form is returned to.
+	SaveState bool
 	page.ControlOptions
 }
 
 func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewSelectList(parent, c.ID)
 
+	if c.NilItem != "" {
+		ctrl.AddItem(c.NilItem, nil)
+	}
+
 	if c.Items != nil {
-		for _,item := range c.Items {
-			ctrl.AddItem(item.Label, item.Value)
-		}
+		ctrl.AddListItems(c.Items)
 	}
 
 	if c.DataProvider != "" {
@@ -240,9 +244,18 @@ func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) pag
 	if c.Value != "" {
 		ctrl.SetValue(c.Value)
 	}
+	if c.Size != 0 {
+		ctrl.SetAttribute("size", c.Size)
+	}
 	ctrl.ApplyOptions(c.ControlOptions)
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
 	}
 	return ctrl
+}
+
+
+// GetSelectList is a convenience method to return the control with the given id from the page.
+func GetSelectList(c page.ControlI, id string) *SelectList {
+	return c.Page().GetControl(id).(*SelectList)
 }

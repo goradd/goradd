@@ -7,18 +7,18 @@ import (
 	"context"
 )
 
-func (form *ControlsForm) AddHeadTags() {
-	form.FormBase.AddHeadTags()
+func (ctrl *ControlsForm) AddHeadTags() {
+	ctrl.FormBase.AddHeadTags()
 	if "Control Examples" != "" {
-		form.Page().SetTitle("Control Examples")
+		ctrl.Page().SetTitle("Control Examples")
 	}
 
 	// double up to deal with body attributes if they exist
-	form.Page().BodyAttributes = `
+	ctrl.Page().BodyAttributes = `
 `
 }
 
-func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>Control Examples</h1>
@@ -29,7 +29,7 @@ func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (
 `)
 
 	{
-		err := form.list.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("listPanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (
 `)
 
 	{
-		err := form.detail.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("detailPanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

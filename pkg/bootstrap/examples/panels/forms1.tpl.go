@@ -6,24 +6,23 @@ import (
 	"bytes"
 	"context"
 
-	bootstrap "github.com/goradd/goradd/pkg/bootstrap/control"
+	. "github.com/goradd/goradd/pkg/bootstrap/control"
 )
 
-func (control *Forms1Panel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *Forms1Panel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h2>Standard Form Layout</h2>
 <p>
 This is an example of a very generic form layout in Bootstrap.
 </p>
-{# TODO: Use form-row class as wrapper}
 `)
 
 	buf.WriteString(`
 `)
 
 	{
-		err := control.Name.With(bootstrap.NewFormGroupWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("nameText-fg").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -36,7 +35,7 @@ This is an example of a very generic form layout in Bootstrap.
 `)
 
 	{
-		err := control.ChildrenCount.With(bootstrap.NewFormGroupWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("childrenText-fg").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -49,9 +48,15 @@ This is an example of a very generic form layout in Bootstrap.
 
 	buf.WriteString(`
 `)
+	GetRadioButton(ctrl, "singleRadio").SetInline(true)
+	GetRadioButton(ctrl, "marriedRadio").SetInline(true)
+	GetRadioButton(ctrl, "divorcedRadio").SetInline(true)
+
+	buf.WriteString(`
+`)
 
 	{
-		err := control.MStatusSingle.SetInline(true).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("singleRadio").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -64,7 +69,7 @@ This is an example of a very generic form layout in Bootstrap.
 `)
 
 	{
-		err := control.MStatusMarried.SetInline(true).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("marriedRadio").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -77,7 +82,7 @@ This is an example of a very generic form layout in Bootstrap.
 `)
 
 	{
-		err := control.MStatusDivorced.SetInline(true).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("divorcedRadio").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -91,7 +96,7 @@ This is an example of a very generic form layout in Bootstrap.
 `)
 
 	{
-		err := control.Dog.With(bootstrap.NewFormGroupWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("dogCheck-fg").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -106,7 +111,7 @@ This is an example of a very generic form layout in Bootstrap.
 `)
 
 	{
-		err := control.SubmitAjax.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("ajaxButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -119,7 +124,7 @@ This is an example of a very generic form layout in Bootstrap.
 `)
 
 	{
-		err := control.SubmitServer.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("serverButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

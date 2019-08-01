@@ -1,8 +1,9 @@
-package panels
+package boneyard
 
 import (
 	"context"
 	. "github.com/goradd/goradd/pkg/bootstrap/control"
+	"github.com/goradd/goradd/pkg/bootstrap/examples/panels"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -60,7 +61,7 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 	p.RadioList2.SetLabel("Columns Radio List")
 	p.RadioList2.AddListItems(itemList)
 	p.RadioList2.SetColumnCount(2)
-	p.RadioList2.SetDirection(control.LayoutColumn)
+	p.RadioList2.SetLayoutDirection(control.LayoutColumn)
 
 	p.RadioList3 = NewRadioList(p, "radioList3")
 	p.RadioList3.SetLabel("Scrolling Radio List")
@@ -75,17 +76,17 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 
 	p.SubmitAjax = NewButton(p, "ajaxButton")
 	p.SubmitAjax.SetText("Submit Ajax")
-	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), ButtonSubmit))
+	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), panels.ButtonSubmit))
 
 	p.SubmitServer = NewButton(p, "serverButton")
 	p.SubmitServer.SetText("Submit Server")
-	p.SubmitServer.OnSubmit(action.Server(p.ID(), ButtonSubmit))
+	p.SubmitServer.OnSubmit(action.Server(p.ID(), panels.ButtonSubmit))
 
 }
 
 func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
-	case ButtonSubmit:
+	case panels.ButtonSubmit:
 		p.CheckboxList1.SetInstructions(strings.Join(p.CheckboxList1.SelectedIds(), ","))
 		p.CheckboxList1.Refresh()
 	}

@@ -1,7 +1,9 @@
 package panels
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
+	"github.com/goradd/goradd/pkg/bootstrap/examples"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
 )
@@ -10,14 +12,14 @@ type DefaultPanel struct {
 	Panel
 }
 
-func NewDefaultPanel(parent page.ControlI, id string) *DefaultPanel {
+func NewDefaultPanel(ctx context.Context, parent page.ControlI) {
 	p := &DefaultPanel{}
-	p.Panel.Init(p, parent, id)
+	p.Panel.Init(p, parent, "defaultPanel")
 	config.LoadBootstrap(p.ParentForm())
-
-	return p
 }
 
 func init() {
+	examples.RegisterPanel("", "Home", NewDefaultPanel, 1)
+
 	//browsertest.RegisterTestFunction("Plain Textbox", TestPlain)
 }

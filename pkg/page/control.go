@@ -1828,7 +1828,7 @@ type EventList []struct {
 
 type StyleMap map[string]string
 
-// ControlOptions are common to all controls
+// ControlOptions are options common to all controls
 type ControlOptions struct {
 	// Attributes will set the attributes of the control. Use Styles to set styles, and Class to set the class
 	Attributes html.AttributeCreator
@@ -1836,12 +1836,12 @@ type ControlOptions struct {
 	Styles html.StyleCreator
 	// Class sets the class of the control's tag. Prefix a class with "+" to add a class, or "-" to remove a class.
 	Class string
-	// Disabled initializes the control in the disabled state, with a "disabled" attribute
-	Disabled bool
-	// Required is used by the validator. If a value is required, and the control is empty, it will not pass validation.
-	Required bool
-	// Hidden initializes this control as hidden. A place holder will be sent in the html so that when the control is shown through ajax, we will know where to put it.
-	Hidden bool
+	// IsDisabled initializes the control in the disabled state, with a "disabled" attribute
+	IsDisabled bool
+	// IsRequired is used by the validator. If a value is required, and the control is empty, it will not pass validation.
+	IsRequired bool
+	// IsHidden initializes this control as hidden. A place holder will be sent in the html so that when the control is shown through ajax, we will know where to put it.
+	IsHidden bool
 	// Actions adds events with actions to the control
 	Events EventList
 	// DataConnector is the ViewModel layer that moves data between the control and an attached model.
@@ -1870,13 +1870,13 @@ func (c *Control) ApplyOptions (o ControlOptions) {
 	if o.Class != "" {
 		c.attributes.SetClass(o.Class) // Responds to add and remove class commands
 	}
-	if o.Disabled {
-		c.attributes.SetDisabled(o.Disabled)
+	if o.IsDisabled {
+		c.attributes.SetDisabled(o.IsDisabled)
 	}
-	if o.Required {
+	if o.IsRequired {
 		c.isRequired = true
 	}
-	if o.Hidden {
+	if o.IsHidden {
 		c.isHidden = true
 	}
 	c.dataConnector = o.DataConnector

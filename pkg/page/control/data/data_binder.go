@@ -17,12 +17,19 @@ type DataBinder interface {
 // A DataManagerI is the interface for the owner (the embedder) of the DataManager
 type DataManagerI interface {
 	page.ControlI
+	DataManagerEmbedder
+}
+
+// DataManagerEmbedder is the interface to include in embedded control interfaces
+// Currently go does not allow interface conflicts, but that is scheduled to change
+type DataManagerEmbedder interface {
 	SetDataProvider(b DataBinder)
 	// SetData should be passed a slice of data items
 	SetData(interface{})
 	LoadData(ctx context.Context, owner DataManagerI)
 	ResetData()
 }
+
 
 // DataManager is an object designed to be embedded in a control that will help manage the data binding process.
 type DataManager struct {

@@ -11,7 +11,10 @@ import (
 
 type UnorderedListI interface {
 	page.ControlI
+	ItemListI
 	GetItemsHtml(items []ListItemI) string
+	data.DataManagerEmbedder
+	SetBulletStyle(s string) UnorderedListI
 }
 
 // UnorderedList is a dynamically generated html unordered list (ul). Such lists are often used as the basis for
@@ -60,8 +63,9 @@ func (l *UnorderedList) SetItemTag(s string) {
 }
 
 // SetBulletType sets the list-style-type attribute of the list. Choose from the UnorderedListStyle* constants.
-func (l *UnorderedList) SetBulletStyle(s string) {
+func (l *UnorderedList) SetBulletStyle(s string) UnorderedListI {
 	l.Control.SetStyle("list-style-type", s)
+	return l.this()
 }
 
 func (l *UnorderedList) ΩDrawTag(ctx context.Context) string {
@@ -114,4 +118,45 @@ func (l *UnorderedList) SetData(data interface{}) {
 
 	l.ItemList.Clear()
 	l.AddListItems(data)
+}
+
+
+type UnorderedListCreator struct {
+	ID string
+	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
+	Items []ListValue
+	// DataProvider is the id of a control that will dynamically provide the data for the list and that implements the DataProvider interface.
+	// Often this is the parent of the control.
+	DataProvider string
+	// BulletStyle is the list-style-type property.
+	BulletStyle string
+	page.ControlOptions
+}
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c UnorderedListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewUnorderedList(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+func (c UnorderedListCreator) Init(ctx context.Context, ctrl UnorderedListI) {
+	if c.Items != nil {
+		ctrl.AddListItems(c.Items)
+	}
+	if c.DataProvider != "" {
+		// If this fails, then perhaps you are giving a data provider id for a control that is not yet created. Create the control first.
+		provider := ctrl.Page().GetControl(c.DataProvider)
+		ctrl.SetDataProvider(provider.(data.DataBinder))
+	}
+	if c.BulletStyle != "" {
+		ctrl.SetBulletStyle(c.BulletStyle)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+}
+
+// GetUnorderedList is a convenience method to return the control with the given id from the page.
+func GetUnorderedList(c page.ControlI, id string) *UnorderedList {
+	return c.Page().GetControl(id).(*UnorderedList)
 }

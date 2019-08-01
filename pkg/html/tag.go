@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-type LabelDrawingMode int
-
 // The label drawing mode describes how to draw a label when it is drawn.
 // Various CSS frameworks expect it a certain way. Many are not very forgiving when
 // you don't do it the way they expect.
+type LabelDrawingMode int
+
 const (
 	// LabelDefault means the mode is defined elsewhere, like in a config setting
 	LabelDefault LabelDrawingMode = iota

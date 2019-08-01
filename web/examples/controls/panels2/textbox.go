@@ -34,7 +34,7 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 	p.Panel.Init(p, parent, "textboxPanel")
 
 	p.Panel.AddControls(ctx,
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "plainText_ff",
 			Label: "Plain Text",
 			Child: TextboxCreator{
@@ -42,7 +42,7 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 				SaveState: true,
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:    "multiText",
 			Label: "Multi Text",
 			Child: TextboxCreator{

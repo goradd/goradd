@@ -35,7 +35,7 @@ func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &CheckboxPanel{}
 	p.Panel.Init(p, parent, "checkboxPanel")
 	p.AddControls(ctx,
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:"checkbox1-ff",
 			Label:"Checkbox 1:",
 			For:"checkbox1",
@@ -46,7 +46,7 @@ func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 				LabelMode:html.LabelBefore,
 			},
 		},
-		FormFieldCreator{
+		FormFieldWrapperCreator{
 			ID:"checkbox2-ff",
 			Label:"Checkbox 2:",
 			For:"checkbox2",
@@ -76,14 +76,14 @@ func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 			ID:"infoPanel",
 		},
 		ButtonCreator{
-			ID: "ajaxButton",
-			Text: "Submit Ajax",
-			SubmitAction:action.Ajax("checkboxPanel", ButtonSubmit),
+			ID:       "ajaxButton",
+			Text:     "Submit Ajax",
+			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
 		},
 		ButtonCreator{
-			ID: "serverButton",
-			Text: "Submit Server",
-			SubmitAction:action.Ajax("checkboxPanel", ButtonSubmit),
+			ID:       "serverButton",
+			Text:     "Submit Server",
+			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
 		},
 
 	)

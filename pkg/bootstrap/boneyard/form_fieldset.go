@@ -1,8 +1,9 @@
-package control
+package boneyard
 
 import (
 "context"
-"github.com/goradd/goradd/pkg/html"
+	control2 "github.com/goradd/goradd/pkg/bootstrap/control"
+	"github.com/goradd/goradd/pkg/html"
 "github.com/goradd/goradd/pkg/log"
 "github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -12,14 +13,14 @@ html2 "html"
 )
 
 type FormFieldsetI interface {
-	FormGroupI
+	control2.FormGroupI
 }
 
-// FormFieldset is FormGroup kind of wrapper that is specific to using a fieldset as
+// FormFieldset is a FormGroup kind of wrapper that is specific to using a fieldset as
 // a wrapper. See https://getbootstrap.com/docs/4.3/components/forms/#horizontal-form.
 // You will need to coordinate with whatever you are drawing internally to get the formatting right.
 type FormFieldset struct {
-	FormGroup
+	control2.FormGroup
 }
 
 func NewFormFieldset(parent page.ControlI, id string) *FormFieldset {
@@ -28,8 +29,8 @@ func NewFormFieldset(parent page.ControlI, id string) *FormFieldset {
 	return p
 }
 
-func (c *FormFieldset) Init(self control.FormFieldI, parent page.ControlI, id string) {
-	c.FormGroup.Init(self, parent, id)
+func (c *FormFieldset) Init(self control.FormFieldWrapperI, parent page.ControlI, id string) {
+	control2.Init(self, parent, id)
 	c.Tag = "fieldset"
 	c.LabelAttributes().AddClass("col-form-label").AddClass("pt-0") // helps with alignment
 }
@@ -39,13 +40,13 @@ func (c *FormFieldset) this() FormFieldsetI {
 }
 
 func (c *FormFieldset) ΩDrawingAttributes() *html.Attributes {
-	a := c.FormGroup.ΩDrawingAttributes()
+	a := control2.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "formFieldset")
 	return a
 }
 
 func (c *FormFieldset) ΩDrawTag(ctx context.Context) string {
-	log.FrameworkDebug("Drawing FormField: " + c.ID())
+	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
 	attributes := c.this().ΩDrawingAttributes()
 	subControl := c.Page().GetControl(c.For())
@@ -93,7 +94,7 @@ func (c *FormFieldset) ΩDrawTag(ctx context.Context) string {
 		panic(err)
 	}
 	if subControl.ValidationState() != page.ValidationNever {
-		c.ErrorAttributes().SetClass(c.getValidationClass(subControl))
+		c.ErrorAttributes().SetClass(control2.getValidationClass(subControl))
 		buf.WriteString(html.RenderTag("div", c.ErrorAttributes(), errorMessage))
 	}
 	if c.Instructions() != "" {
@@ -105,46 +106,58 @@ func (c *FormFieldset) ΩDrawTag(ctx context.Context) string {
 	return html.RenderTag(c.Tag, attributes, buf.String())
 }
 
-
+// Use FormFieldsetCreator to create a FormFieldset,
+// which wraps a group of controls with a fieldset, validation error
+// text and optional instructions. Pass the creator of the control you
+// are wrapping as the Child item.
 type FormFieldsetCreator struct {
-	ControlOptions page.ControlOptions
+	// ID is the control id on the html form.
 	ID string
+	// Label is the text that will be in the html label tag associated with the Child control.
 	Label string
-	For string
+	// Children are the child creators declaring the controls wrapped by the fieldset
+	Children []page.Creator
+	// Instructions is help text that will follow the control and that further describes its purpose or use.
 	Instructions string
+	// LabelAttributes are additional attributes to add to the label tag.
 	LabelAttributes html.AttributeCreator
+	// ErrorAttributes are additional attributes to add to the tag that displays the error.
 	ErrorAttributes html.AttributeCreator
+	// InstructionAttributes are additional attributes to add to the tag that displays the instructions.
 	InstructionAttributes html.AttributeCreator
-	Child page.Creator
-
+	// Set IsInline to true to use a "span" instead of a "div" in the wrapping tag.
+	IsInline bool
+	// ControlOptions are additional options for the wrapper tag
+	ControlOptions page.ControlOptions
+	// UseTooltips will cause validation errors to be displayed with tooltips, a specific
+	// feature of Bootstrap
+	UseTooltips   bool
 	// Set InnerRow to true to add the inner row for the fieldset
 	InnerRow bool
-	UseTooltips   bool // uses tooltips for the error class
 }
 
 func (f FormFieldsetCreator) Create(ctx context.Context, parent page.ControlI) FormFieldsetI {
-	c := NewFormFieldset(parent, f.ID)
+	c := NewFormFieldset(parent,f.ID)
 	f.Init(ctx, c)
 	return c
 }
 
 func (f FormFieldsetCreator) Init(ctx context.Context, c FormFieldsetI) {
 	// Reuse parent creator
-	fg := FormGroupCreator {
-		ControlOptions: f.ControlOptions,
-		Label: f.Label,
-		For: f.For,
-		Instructions: f.Instructions,
-		LabelAttributes: f.LabelAttributes,
-		ErrorAttributes: f.ErrorAttributes,
-		InstructionAttributes: f.InstructionAttributes,
-		Child: f.Child,
-		UseTooltips: f.UseTooltips,
+	fg := control2.FormGroupCreator{
+		control2.ControlOptions:        f.ControlOptions,
+		control2.Label:                 f.Label,
+		control2.Instructions:          f.Instructions,
+		control2.LabelAttributes:       f.LabelAttributes,
+		control2.ErrorAttributes:       f.ErrorAttributes,
+		control2.InstructionAttributes: f.InstructionAttributes,
+		control2.Child:                 f.Child,
+		control2.UseTooltips:           f.UseTooltips,
 	}
 
 	if f.InnerRow {
-		fg.InnerDivAttributes = html.AttributeCreator{"class":"row"}
+		control2.InnerDivAttributes = html.AttributeCreator{"class": "row"}
 	}
 
-	fg.Init(ctx, c)
+	control2.Init(ctx, c)
 }

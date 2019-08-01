@@ -5,13 +5,21 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control/data"
 	"strings"
 )
 
 type RadioListI interface {
 	SelectListI
+	SetColumnCount(int) RadioListI
+	SetLayoutDirection(direction LayoutDirection) RadioListI
+	SetLabelDrawingMode(mode html.LabelDrawingMode) RadioListI
+	SetIsScrolling(s bool) RadioListI
+	SetRowClass(c string) RadioListI
+
 	ΩRenderItems(items []ListItemI) string
 	ΩRenderItem(item ListItemI) string
+
 }
 
 // RadioList is a multi-select control that presents its choices as a list of checkboxes.
@@ -47,6 +55,7 @@ func NewRadioList(parent page.ControlI, id string) *RadioList {
 func (l *RadioList) Init(self RadioListI, parent page.ControlI, id string) {
 	l.SelectList.Init(self, parent, id)
 	l.Tag = "div"
+	l.rowClass = "gr-cbl-row"
 	l.labelDrawingMode = page.DefaultCheckboxLabelDrawingMode
 }
 
@@ -56,13 +65,13 @@ func (l *RadioList) this() RadioListI {
 
 // SetColumnCount sets the number of columns to use to display the list. Items will be evenly distributed
 // across the columns.
-func (l *RadioList) SetColumnCount(columns int) *RadioList {
+func (l *RadioList) SetColumnCount(columns int) RadioListI {
 	if l.columnCount < 0 {
 		panic("Columns must be at least 0.")
 	}
 	l.columnCount = columns
 	l.Refresh()
-	return l
+	return l.this()
 }
 
 // ColumnCount returns the current column count.
@@ -70,40 +79,40 @@ func (l *RadioList) ColumnCount() int {
 	return l.columnCount
 }
 
-// SetDirection specifies how items are distributed across the columns.
-func (l *RadioList) SetDirection(direction LayoutDirection) *RadioList {
+// SetLayoutDirection specifies how items are distributed across the columns.
+func (l *RadioList) SetLayoutDirection(direction LayoutDirection) RadioListI {
 	l.direction = direction
 	l.Refresh()
-	return l
+	return l.this()
 }
 
-// Direction returns the direction of how items are spread across the columns.
-func (l *RadioList) Direction() LayoutDirection {
+// LayoutDirection returns the direction of how items are spread across the columns.
+func (l *RadioList) LayoutDirection() LayoutDirection {
 	return l.direction
 }
 
 // SetLabelDrawingMode indicates how labels for each of the checkboxes are drawn.
-func (l *RadioList) SetLabelDrawingMode(mode html.LabelDrawingMode) *RadioList {
+func (l *RadioList) SetLabelDrawingMode(mode html.LabelDrawingMode) RadioListI {
 	l.labelDrawingMode = mode
 	l.Refresh()
-	return l
+	return l.this()
 }
 
 // SetIsScrolling sets whether the list will scroll if it gets bigger than its bounding box.
 // You will need to style the bounding box to give it limits, or else it will simply grow as
 // big as the list.
-func (l *RadioList) SetIsScrolling(s bool) *RadioList {
+func (l *RadioList) SetIsScrolling(s bool) RadioListI {
 	l.isScrolling = s
 	l.Refresh()
-	return l
+	return l.this()
 }
 
 // SetRowClass sets the class to the div wrapper around each row. If blank, will be given
 // a default.
-func (l *RadioList) SetRowClass(c string) *RadioList {
+func (l *RadioList) SetRowClass(c string) RadioListI {
 	l.rowClass = c
 	l.Refresh()
-	return l
+	return l.this()
 }
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time.
@@ -138,14 +147,10 @@ func (l *RadioList) ΩRenderItems(items []ListItemI) string {
 		return strings.Join(hItems, "")
 	}
 	b := GridLayoutBuilder{}
-	var rowClass string
-	if l.rowClass != "" {
-		rowClass = l.rowClass
-	}
 	return b.Items(hItems).
 		ColumnCount(l.columnCount).
 		Direction(l.direction).
-		RowClass(rowClass).
+		RowClass(l.rowClass).
 		Build()
 }
 
@@ -198,4 +203,69 @@ func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
 	if v, ok := ctx.FormValue(controlID); ok {
 		l.selectedId = v
 	}
+}
+
+type RadioListCreator struct {
+	ID string
+	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
+	Items []ListValue
+	// DataProvider is the id of a control that will dynamically provide the data for the list and that implements the DataProvider interface.
+	// Often this is the parent of the control.
+	DataProvider string
+	// ColumnCount specifies how many columns to show
+	ColumnCount int
+	// LayoutDirection determines how the items are arranged in the columns
+	LayoutDirection LayoutDirection
+	// LabelDrawingMode specifies how the labels on the radio buttons will be associated with the buttons
+	LabelDrawingMode html.LabelDrawingMode
+	// IsScrolling will give the inner div a vertical scroll style. You will need to style the height of the outer control to have a fixed style as well.
+	IsScrolling bool
+	// RowClass is the class assigned to each row
+	RowClass string
+	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Value string
+	// SaveState saves the selected value so that it is restored if the form is returned to.
+	SaveState bool
+	page.ControlOptions
+}
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c RadioListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewRadioList(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
+	if c.Items != nil {
+		ctrl.AddListItems(c.Items)
+	}
+	if c.DataProvider != "" {
+		// If this fails, then perhaps you are giving a data provider id for a control that is not yet created. Create the control first.
+		provider := ctrl.Page().GetControl(c.DataProvider)
+		ctrl.SetDataProvider(provider.(data.DataBinder))
+	}
+	if c.ColumnCount != 0 {
+		ctrl.SetColumnCount(c.ColumnCount)
+	}
+	ctrl.SetLayoutDirection(c.LayoutDirection)
+	if c.LabelDrawingMode != html.LabelDefault {
+		ctrl.SetLabelDrawingMode(c.LabelDrawingMode)
+	}
+	if c.IsScrolling {
+		ctrl.SetIsScrolling(true)
+	}
+	if c.RowClass != "" {
+		ctrl.SetRowClass(c.RowClass)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+	if c.SaveState {
+		ctrl.SaveState(ctx, c.SaveState)
+	}
+}
+
+// GetRadioList is a convenience method to return the control with the given id from the page.
+func GetRadioList(c page.ControlI, id string) *RadioList {
+	return c.Page().GetControl(id).(*RadioList)
 }

@@ -36,7 +36,7 @@ func (g *GridLayoutBuilder) ColumnCount(count int) *GridLayoutBuilder {
 	return g
 }
 
-// Direction indicates how items are placed, whether they should fill up rows first, or fill up columns.
+// LayoutDirection indicates how items are placed, whether they should fill up rows first, or fill up columns.
 func (g *GridLayoutBuilder) Direction(placement LayoutDirection) *GridLayoutBuilder {
 	g.direction = placement
 	return g

@@ -19,7 +19,7 @@ var DefaultControlTypeFunc = DefaultControlType
 
 // DefaultWrapper defines what wrapper will be used for generated controls. It should correspond to the string the wrapper was registered with.
 var DefaultWrapper = "page.Label" // TODO: Delete
-var DefaultFormFieldCreator = "control.FormFieldCreator"
+var DefaultFormFieldCreator = "control.FormFieldWrapperCreator"
 
 // GenerateControlIDs will determine if the code generator will assign ids to the controls based on table and column names
 var GenerateControlIDs = true

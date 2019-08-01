@@ -31,8 +31,6 @@ func NavbarSelectEvent() page.EventI {
 	return e
 }
 
-// TODO: Create a mechanism to post-process this event and have it automatically be loaded with the selected item
-
 func NewNavbarList(parent page.ControlI, id string) *NavbarList {
 	t := &NavbarList{}
 	t.ItemList = control.NewItemList(t)
@@ -147,4 +145,18 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI
 		}
 	}
 	return h
+}
+
+func (l *NavbarList) OnSelect (actions ...action.ActionI) page.EventI {
+	return l.On(NavbarSelectEvent(), actions...)
+}
+
+type NavbarListCreator struct {
+	// ID is the control id of the html widget and must be unique to the page
+	ID string
+	// Tag is the tag to use for the list. The default is "ul".
+	Tag string
+	// Subtag is the tag to use for the items in the list. The default is "li".
+	Subtag string
+
 }

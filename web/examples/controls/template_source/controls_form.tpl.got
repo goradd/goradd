@@ -12,10 +12,10 @@
 {{define template }}
 <h1>Control Examples</h1>
 <div class="controlList_scroll">
-	{{draw form.list }}
+	{{draw listPanel }}
 </div>
 <div class="detail_container">
-	{{draw form.detail }}
+	{{draw detailPanel }}
 </div>
 {{end}}
 

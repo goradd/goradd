@@ -1,9 +1,11 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	grctl "github.com/goradd/goradd/pkg/page/control"
 	"reflect"
 )
@@ -135,4 +137,42 @@ func (b *Button) Deserialize(d page.Decoder, p *page.Page) (err error) {
 	}
 
 	return
+}
+
+// ButtonCreator is the initialization structure for declarative creation of buttons
+type ButtonCreator struct {
+	// ID is the control id
+	ID string
+	// Text is the text displayed in the button
+	Text string
+	// OnSubmit is the action to take when the button is submitted. Use this specifically
+	// for buttons that move to other pages or processes transactions, as it debounces the button
+	// and waits until all other actions complete
+	OnSubmit action.ActionI
+	// OnClick is an action to take when the button is pressed. Do not specify both
+	// a OnSubmit and OnClick.
+	OnClick action.ActionI
+	page.ControlOptions
+}
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c ButtonCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewButton(parent, c.ID)
+
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+// Init is called by implementations of Buttons to initialize a control with the
+// creator. You do not normally need to call this.
+func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI)  {
+	sub := grctl.ButtonCreator{
+		ID:             c.ID,
+		Text:           c.Text,
+		OnSubmit:       c.OnSubmit,
+		OnClick:        c.OnClick,
+		ControlOptions: c.ControlOptions,
+	}
+	sub.Init(ctx, ctrl)
 }
