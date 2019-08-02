@@ -51,8 +51,8 @@ func BenchmarkNodeType2(b *testing.B) {
 	n := node.Project().Manager()
 
 	for i := 0; i < b.N; i++ {
-		if r, ok := n.EmbeddedNode_().(*query.ReferenceNode); ok {
-			_ = r
+		if r,ok := n.EmbeddedNode_().(*query.ReferenceNode); ok {
+			_=r
 		}
 	}
 }

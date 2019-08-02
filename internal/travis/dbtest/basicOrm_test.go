@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+
 func TestBasic(t *testing.T) {
 
 	ctx := context.Background()
@@ -46,6 +47,7 @@ func TestSort(t *testing.T) {
 	if people[0].FirstName() != "Alex" {
 		t.Error("Person found not Alex, found " + people[0].FirstName())
 	}
+
 
 	// Testing for regression bug with multiple sorts
 	people = model.QueryPeople(ctx).
@@ -217,7 +219,7 @@ func TestAlias2(t *testing.T) {
 	assert.Equal(t, 1, project.GetAlias("a").Int())
 	assert.Equal(t, "ACME Website Redesign", project.GetAlias("b").String())
 	assert.Equal(t, 10250.75, project.GetAlias("c").Float())
-	d, _ := datetime.FromSqlDateTime("2004-03-01")
+	d,_ := datetime.FromSqlDateTime("2004-03-01")
 	assert.EqualValues(t, d, project.GetAlias("d").DateTime())
 	assert.Equal(t, false, project.GetAlias("e").Bool())
 
@@ -395,10 +397,10 @@ func TestHaving(t *testing.T) {
 	// Sooo, when we see a GroupBy, we automatically also select the same nodes.
 	ctx := context.Background()
 	projects := model.QueryProjects(ctx).
+		Alias("team_member_count", Count(node.Project().TeamMembers())).
 		GroupBy(node.Project().ID(), node.Project().Name()).
 		OrderBy(node.Project().ID()).
-		Alias("team_member_count", Count(node.Project().TeamMembers())).
-		Having(GreaterThan(Count(query.Alias("team_member_count")), 5)).
+		Having(GreaterThan(Count(node.Project().TeamMembers()), 5)).
 		Load(ctx)
 
 	assert.Len(t, projects, 2)
@@ -408,24 +410,22 @@ func TestHaving(t *testing.T) {
 
 func TestFailedJoins(t *testing.T) {
 	ctx := context.Background()
-	assert.Panics(t, func() { model.QueryProjects(ctx).Join(node.Person()) })
-	assert.Panics(t, func() { model.QueryProjects(ctx).Join(node.Project().ManagerID()) })
+	assert.Panics(t, func(){model.QueryProjects(ctx).Join(node.Person())})
+	assert.Panics(t, func(){model.QueryProjects(ctx).Join(node.Project().ManagerID())})
 }
 
 func TestFailedExpand(t *testing.T) {
 	ctx := context.Background()
-	assert.Panics(t, func() { model.QueryProjects(ctx).Expand(node.Person()) })
-	assert.Panics(t, func() { model.QueryProjects(ctx).Expand(node.Project().Manager()) })
+	assert.Panics(t, func(){model.QueryProjects(ctx).Expand(node.Person())})
+	assert.Panics(t, func(){model.QueryProjects(ctx).Expand(node.Project().Manager())})
 }
 
 func TestFailedGroupBy(t *testing.T) {
 	ctx := context.Background()
-	assert.Panics(t, func() {
-		model.
-			QueryProjects(ctx).
-			GroupBy(node.Project().Name()).
-			Select(node.Project().Name())
-	})
+	assert.Panics(t, func(){model.
+		QueryProjects(ctx).
+		GroupBy(node.Project().Name()).
+			Select(node.Project().Name())})
 }
 
 func TestJson(t *testing.T) {
@@ -434,7 +434,7 @@ func TestJson(t *testing.T) {
 		node.Project().Name(),
 		node.Project().ProjectStatusType(),
 		node.Project().Manager().FirstName())
-	j, err := json.Marshal(p)
+	j,err := json.Marshal(p)
 	assert.NoError(t, err)
 	m := make(map[string]interface{})
 	err = json.Unmarshal(j, &m)

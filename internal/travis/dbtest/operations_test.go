@@ -32,6 +32,7 @@ func TestMultiWhere(t *testing.T) {
 	assert.Len(t, projects, 1)
 }
 
+
 func TestLogical(t *testing.T) {
 	type testCase struct {
 		testNode   query.NodeI
@@ -70,7 +71,7 @@ func TestLogical(t *testing.T) {
 			t.Errorf("Test case produced out of range error. Test case #: %d", i)
 		} else {
 			assert.EqualValues(t, c.expectedId, projects[c.objectNum].Num(), c.desc)
-			assert.EqualValues(t, c.count, len(projects), c.desc+" - count")
+			assert.EqualValues(t, c.count, len(projects), c.desc + " - count")
 		}
 	}
 }
@@ -125,7 +126,7 @@ func TestAggregates(t *testing.T) {
 	projects2 := model.QueryProjects(ctx).
 		Alias("min", Min(node.Project().Spent())).
 		OrderBy(node.Project().ProjectStatusTypeID()).
-		//GroupBy(node.Project().ProjectStatusTypeID()).
+		GroupBy(node.Project().ProjectStatusTypeID()).
 		Load(ctx)
 
 	assert.EqualValues(t, 4200.50, projects2[0].GetAlias("min").Float())
@@ -143,7 +144,7 @@ func TestAliases(t *testing.T) {
 		Where(IsNotNull(nConson)).
 		Join(nVoyel, In(nVoyel.Name(), "Milestone A", "Milestone E", "Milestone I")).
 		Join(nConson, NotIn(nConson.Name(), "Milestone A", "Milestone E", "Milestone I")).
-		GroupBy(node.Person().ID(), node.Person().FirstName(), node.Person().LastName()).
+		GroupBy(node.Person().ID(),node.Person().FirstName(), node.Person().LastName()).
 		Alias("min_voyel", Min(nVoyel.Name())).
 		Alias("min_conson", Min(nConson.Name())).
 		Load(ctx)
