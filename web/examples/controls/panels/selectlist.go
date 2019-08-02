@@ -157,10 +157,11 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 
 	// For testing purposes, we need to use the id of the list item, rather than the value of the list item,
 	// since that is what is presented in the html.
-	select1 := f.Page().GetControl("singleSelectList").(*SelectList)
-	select2 := f.Page().GetControl("selectListWithSize").(*SelectList)
-	radio1 := f.Page().GetControl("radioList1").(*RadioList)
-	radio2 := f.Page().GetControl("radioList2").(*RadioList)
+	select1 := GetSelectList(f, "singleSelectList")
+	select2 := GetSelectList(f, "selectListWithSize")
+	radio1 := GetRadioList(f, "radioList1")
+	radio2 := GetRadioList(f, "radioList2")
+	multi := GetMultiselectList(f, "multiselectList")
 
 	id, _ := select2.GetItemByValue(2)
 	t.ChangeVal("selectListWithSize", id)
@@ -168,6 +169,7 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 	t.Click(btn)
 
 	t.AssertEqual(true, t.HasClass("singleSelectList-ff", "error"))
+	t.AssertEqual(true, t.HasClass("multiselectList-ff", "error"))
 
 	t.AssertEqual(2, select2.IntValue())
 
@@ -179,6 +181,8 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 	t.CheckGroup("radioList1", id)
 	id, _ = radio2.GetItemByValue(4)
 	t.CheckGroup("radioList2", id)
+	id, _ = multi.GetItemByValue(5)
+	t.ChangeVal("multiselectList", []string{id})
 
 	t.Click(btn)
 
@@ -186,6 +190,8 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 	t.AssertEqual(2, select2.IntValue())
 	t.AssertEqual(3, radio1.IntValue())
 	t.AssertEqual(4, radio2.IntValue())
+	v := multi.Value().([]interface{})
+	t.AssertEqual(5, v[0])
 }
 
 /*

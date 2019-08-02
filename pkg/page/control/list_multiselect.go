@@ -131,7 +131,7 @@ func (l *MultiselectList) SetSelectedIdNoRefresh(id string, value bool) {
 
 // Value implements the Valuer interface for general purpose value getting and setting
 func (l *MultiselectList) Value() interface{} {
-	return l.SelectedIds()
+	return l.SelectedValues()
 }
 
 // SetValue implements the Valuer interface for general purpose value getting and setting

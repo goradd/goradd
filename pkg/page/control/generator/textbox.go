@@ -39,7 +39,7 @@ func (d Textbox) GenerateCreator(col *generator.ColumnType) (s string) {
 			ID:        %#v,
 			MaxLength: %#v,
 			ControlOptions: page.ControlOptions{
-				Required:      %#v,
+				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
 		}`, col.ControlID, col.MaxCharLength, !col.IsNullable, col.Connector)

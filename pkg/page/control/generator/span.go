@@ -38,7 +38,7 @@ func (d Span) GenerateCreator(col *generator.ColumnType) (s string) {
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
 		Disabled:	   %#v,
-		Required:      %#v,
+		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
 }`, col.ControlID, col.IsPk, !col.IsNullable, col.Connector)

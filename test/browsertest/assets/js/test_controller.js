@@ -33,8 +33,9 @@ goradd.widget("goradd.testController", {
         this._step = step;
 
         if (this._window && !this._window.closed) {
-            if (this._window.location.pathname == url) {
-                this._window.location.reload(true);
+            var localpath = this._window.location.href.substr(this._window.location.origin.length)
+            if (localpath === url) {
+                this._window.location.reload();
             } else {
                 this._window.location.assign(url);
             }

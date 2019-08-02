@@ -1724,9 +1724,9 @@ goradd.g.prototype = {
             switch (type) {
                 case "select-multiple":
                     // Multi-select selections will attempt to set all items in the given array to the value
-                    var opts = goradd.qa(el,'option');
+                    var opts = g$(el).qa('option');
                     goradd.each(opts, function(i, opt) {
-                        opt.checked = (opt.value in v);
+                        opt.selected = v.includes(opt.value);
                     });
                     break;
                 case "checkbox":
@@ -1759,7 +1759,7 @@ goradd.g.prototype = {
             switch (type) {
                 case "select-multiple":
                     // Multi-select selections will return an array of selected values
-                    var sels = goradd.qa(el,':checked');
+                    var sels = g$(el).qa(':checked');
                     return sels.map(function(s){return s.value});
                 case "checkbox":
                 case "radio":

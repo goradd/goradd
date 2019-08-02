@@ -365,7 +365,7 @@ func (form *TestForm) testOne(testName string) {
 				form.currentTestName = testName
 				form.currentFailed = false
 				testF(form)
-				form.CloseWindow()
+				//form.CloseWindow()
 			}()
 		}
 

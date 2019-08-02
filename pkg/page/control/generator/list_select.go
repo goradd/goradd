@@ -42,7 +42,7 @@ func (d SelectList) GenerateCreator(col *generator.ColumnType) (s string) {
 	ID:           %#v,
 	DataProvider: p.ID(),
 	ControlOptions: page.ControlOptions{
-		Required:      %#v,
+		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
 }`, col.ControlID, !col.IsNullable, col.Connector)

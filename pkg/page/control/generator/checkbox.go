@@ -69,7 +69,7 @@ func (d Checkbox) GenerateCreator(col *generator.ColumnType) (s string) {
 		`control.CheckboxCreator{
 			ID:        %#v,
 			ControlOptions: page.ControlOptions{
-				Required:      %#v,
+				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
 		}`, col.ControlID, !col.IsNullable, col.Connector)
