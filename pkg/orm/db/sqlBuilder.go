@@ -386,9 +386,13 @@ func (b *sqlBuilder) makeColumnAliases() {
 
 	if len(b.groupBys) > 0 {
 		// SQL in general has a problem with group by items that are not selected, so we always select group by columns by implication
-		// Some SQL forms have gotten aorund the problem by just choosing a random result, but modern SQL engines now consider this an error
+		// Some SQL forms have gotten around the problem by just choosing a random result, but modern SQL engines now consider this an error
 		for _, n := range b.groupBys {
-			b.assignAlias(b.getItemFromNode(n))
+			_,isAlias := n.(*AliasNode)
+
+			if !isAlias {
+				b.assignAlias(b.getItemFromNode(n))
+			}
 		}
 	} else if len(b.selects) > 0 {
 		for _, n := range b.selects {
