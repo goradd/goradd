@@ -65,3 +65,15 @@ func (t MapTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int
 	}
 	return ""
 }
+
+type MapColumnCreator struct {
+	Index interface{}
+	control.ColumnOptions
+}
+
+func (c MapColumnCreator) Create(parent control.TableI) control.ColumnI {
+	col := NewMapColumn(c.Index)
+	col.ApplyOptions(parent, c.ColumnOptions)
+	return col
+}
+

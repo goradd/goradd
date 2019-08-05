@@ -363,3 +363,65 @@ func (c *ColumnBase) MarshalState(m maps.Setter) {}
 
 // UnmarshalState is an internal function to restore the state of the control.
 func (c *ColumnBase) UnmarshalState(m maps.Loader) {}
+
+type ColumnCreator interface {
+	Create(TableI) ColumnI
+}
+
+type ColumnOptions struct {
+	Title            string
+	CellAttributes   html.AttributeCreator
+	HeaderAttributes html.AttributeCreator
+	FooterAttributes html.AttributeCreator
+	ColTagAttributes html.AttributeCreator
+	Span             int
+	RenderAsHeader   bool
+	IsHtml           bool
+	CellTexterID     string
+	HeaderTexterID   string
+	FooterTexterID   string
+	IsHidden         bool
+	SortDirection    SortDirection
+}
+
+func (c *ColumnBase) ApplyOptions(parent TableI, opt ColumnOptions) {
+	if opt.Title != "" {
+		c.SetTitle(opt.Title)
+	}
+	c.Attributes.MergeMap(opt.CellAttributes)
+	if opt.HeaderAttributes != nil {
+		if c.headerAttributes == nil {
+			c.headerAttributes = html.NewAttributes()
+		}
+		c.headerAttributes.MergeMap(opt.HeaderAttributes)
+	}
+	if opt.FooterAttributes != nil {
+		if c.footerAttributes == nil {
+			c.footerAttributes = html.NewAttributes()
+		}
+		c.footerAttributes.MergeMap(opt.FooterAttributes)
+	}
+	if opt.ColTagAttributes != nil {
+		if c.colTagAttributes == nil {
+			c.colTagAttributes = html.NewAttributes()
+		}
+		c.colTagAttributes.MergeMap(opt.ColTagAttributes)
+	}
+
+	c.isHidden = opt.IsHidden
+	c.sortDirection = opt.SortDirection
+	if opt.Span != 0 {
+		c.SetSpan(opt.Span)
+	}
+	c.renderAsHeader = opt.RenderAsHeader
+	c.isHtml = opt.IsHtml
+	if opt.CellTexterID != "" {
+		c.SetCellTexter(parent.Page().GetControl(opt.CellTexterID).(CellTexter))
+	}
+	if opt.HeaderTexterID != "" {
+		c.SetCellTexter(parent.Page().GetControl(opt.HeaderTexterID).(CellTexter))
+	}
+	if opt.FooterTexterID != "" {
+		c.SetCellTexter(parent.Page().GetControl(opt.FooterTexterID).(CellTexter))
+	}
+}

@@ -12,16 +12,6 @@ import (
 
 type TablePanel struct {
 	Panel
-
-	Table1  *PaginatedTable
-	Pager1  *DataPager
-	Column1 *column.SliceColumn
-	Column2 *column.CustomColumn
-
-	Table2  *PaginatedTable
-	Pager2  *DataPager
-	Column3 *column.MapColumn
-	Column4 *column.GetterColumn
 }
 
 type TableMapData map[string]string
@@ -83,31 +73,62 @@ var tableSliceData = []TableSliceData{
 func NewTablePanel(ctx context.Context, parent page.ControlI) {
 	p := &TablePanel{}
 	p.Panel.Init(p, parent, "tablePanel")
+	p.AddControls(ctx,
+		PaginatedTableCreator{
+			ID: "table1",
+			HeaderRowCount: 1,
+			DataProvider: "tablePanel",
+			Columns:[]ColumnCreator {
+				column.CustomColumnCreator {
+					CellTexterID: "tablePanel",
+					Title:"Custom",
+				},
+				column.SliceColumnCreator{
+					Index:1,
+					ColumnOptions: ColumnOptions {
+						Title:"Slice",
+					},
+				},
+			},
+			PageSize:5,
+		},
+		// A DataPager can be a standalone control, which you draw manually
+		DataPagerCreator{
+			ID: "pager1",
+			PaginatedControl:"table1",
+		},
+		PaginatedTableCreator{
+			ID: "table2",
+			HeaderRowCount: 1,
+			DataProvider: "tablePanel",
+			Columns:[]ColumnCreator {
+				column.CustomColumnCreator {
+					CellTexterID: "tablePanel",
+					Title:"Custom",
+				},
+				column.MapColumnCreator{
+					Index:"id",
+					ColumnOptions: ColumnOptions {
+						Title:"Map",
+					},
+				},
+				column.GetterColumnCreator{
+					Index:"name",
+					ColumnOptions: ColumnOptions {
+						Title:"Getter",
+					},
+				},
 
-	// The two tables here just demonstrate a variety of columns available to use in a data table.
-	// Be sure to consider the Node column and Alias column which are not listed below, as they work directly with databases.
-	p.Table1 = NewPaginatedTable(p, "table1")
-	p.Table1.SetHeaderRowCount(1)
-	p.Table1.SetDataProvider(p)
-	p.Table1.AddColumn(column.NewCustomColumn(p).SetTitle("Custom"))
-	p.Table1.AddColumn(column.NewSliceColumn(1).SetTitle("Slice"))
-	p.Pager1 = NewDataPager(p, "pager1", p.Table1)
-	p.Table1.SetPageSize(5)
+			},
+			PageSize:5,
+			// A DataPager can also be a caption, and will get drawn for you as part of the table
+			Caption:DataPagerCreator{
+				ID:"pager2",
+				PaginatedControl:"table2",
+			},
+		},
 
-	p.Table2 = NewPaginatedTable(p, "table2")
-	p.Table2.SetHeaderRowCount(1)
-	p.Table2.SetDataProvider(p)
-	p.Table2.AddColumn(column.NewCustomColumn(p).SetTitle("Custom"))
-	p.Table2.AddColumn(column.NewMapColumn("id").SetTitle("Map"))
-	p.Table2.AddColumn(column.NewGetterColumn("name").SetTitle("Getter"))
-
-	// The lines below put the pager into the caption of the table. The caption of a table can accept text or
-	// a data pager type object. Note that the parent of the DataPager is the table, NOT the form, and the form
-	// template does NOT draw the pager.
-	p.Pager2 = NewDataPager(p.Table2, "pager2", p.Table2)
-	p.Table2.SetCaption(p.Pager2)
-	p.Table2.SetPageSize(5)
-
+	)
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table
@@ -115,12 +136,14 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 func (f *TablePanel) BindData(ctx context.Context, s data.DataManagerI) {
 	switch s.ID() {
 	case "table1":
-		f.Table1.SetTotalItems(uint(len(tableSliceData)))
-		start, end := f.Table1.SliceOffsets()
+		t := s.(PaginatedControlI)
+		t.SetTotalItems(uint(len(tableSliceData)))
+		start, end := t.SliceOffsets()
 		s.SetData(tableSliceData[start:end])
 	case "table2":
-		f.Table2.SetTotalItems(uint(len(tableMapData)))
-		start, end := f.Table2.SliceOffsets()
+		t := s.(PaginatedControlI)
+		t.SetTotalItems(uint(len(tableMapData)))
+		start, end := t.SliceOffsets()
 		s.SetData(tableMapData[start:end])
 
 	}
@@ -141,5 +164,4 @@ func (f *TablePanel) CellText(ctx context.Context, col ColumnI, rowNum int, colN
 
 func init() {
 	controls.RegisterPanel("table", "Tables", NewTablePanel, 5)
-
 }

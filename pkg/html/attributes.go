@@ -99,6 +99,9 @@ func (a *Attributes) SetChanged(name string, v string) (changed bool, err error)
 // Set is similar to SetChanged, but instead returns an attribute pointer so it can be chained. Will panic on errors.
 // Use this when you are setting attributes using implicit strings. Set v to an empty string to create a boolean attribute.
 func (a *Attributes) Set(name string, v string) *Attributes {
+	if a == nil {
+		a = NewAttributes()
+	}
 	_, err := a.SetChanged(name, v)
 	if err != nil {
 		panic(err)
@@ -166,6 +169,12 @@ func (a *Attributes) Override(i maps.StringMapI) *Attributes {
 // Styles are merged as well, so that if both the passed in map and the current map have a styles attribute, the
 // actual style properties will get merged together.
 func (a *Attributes) Merge(i maps.StringMapI) {
+	if i == nil || i.Len() == 0 {
+		return
+	}
+	if a == nil {
+		a = NewAttributes()
+	}
 	curStyles := a.StyleMap()
 	newStyles := NewStyle()
 	newStyles.SetTo(i.Get("style"))
@@ -180,6 +189,12 @@ func (a *Attributes) Merge(i maps.StringMapI) {
 // Styles are merged as well, so that if both the passed in map and the current map have a styles attribute, the
 // actual style properties will get merged together.
 func (a *Attributes) MergeMap(m map[string]string) {
+	if m == nil || len(m) == 0 {
+		return
+	}
+	if a == nil {
+		a = NewAttributes()
+	}
 	curStyles := a.StyleMap()
 	if styles,ok := m["style"]; ok {
 		newStyles := NewStyle()
@@ -226,6 +241,9 @@ func (a *Attributes) SetID(i string) *Attributes {
 
 // ID returns the value of the id attribute.
 func (a *Attributes) ID() string {
+	if a == nil {
+		return ""
+	}
 	return a.Get("id")
 }
 

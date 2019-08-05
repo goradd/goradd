@@ -120,3 +120,15 @@ func ApplyFormat(data interface{}, format string, timeFormat string) string {
 	}
 	return out
 }
+
+type SliceColumnCreator struct {
+	Index int
+	control.ColumnOptions
+}
+
+func (c SliceColumnCreator) Create(parent control.TableI) control.ColumnI {
+	col := NewSliceColumn(c.Index)
+	col.ApplyOptions(parent, c.ColumnOptions)
+	return col
+}
+

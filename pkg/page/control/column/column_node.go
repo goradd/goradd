@@ -126,3 +126,16 @@ func MakeNodeSlice(columns []control.ColumnI) []query.NodeI {
 	}
 	return nodes
 }
+
+
+type NodeColumnCreator struct {
+	Node query.NodeI
+	control.ColumnOptions
+}
+
+func (c NodeColumnCreator) Create(parent control.TableI) control.ColumnI {
+	col := NewNodeColumn(c.Node)
+	col.ApplyOptions(parent, c.ColumnOptions)
+	return col
+}
+

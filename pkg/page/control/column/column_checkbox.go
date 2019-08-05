@@ -309,3 +309,21 @@ func init() {
 	gob.Register(map[string]bool(nil)) // We must register this here because we are putting the changes map into the session,
 	// and the session uses GOB to encode.
 }
+type CheckboxColumnCreator struct {
+	Attributes html.AttributeCreator
+	ShowCheckAll bool
+	Checkboxer   CheckboxProvider
+	control.ColumnOptions
+}
+
+func (c CheckboxColumnCreator) Create(parent control.TableI) control.ColumnI {
+	col := NewCheckboxColumn(c.Checkboxer)
+	if c.ShowCheckAll {
+		col.SetShowCheckAll(true)
+	}
+	if c.Attributes != nil {
+		col.Attributes.MergeMap(c.Attributes)
+	}
+	col.ApplyOptions(parent, c.ColumnOptions)
+	return col
+}

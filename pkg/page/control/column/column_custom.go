@@ -23,3 +23,12 @@ func (c *CustomColumn) Init(texter CellTexter) {
 	c.ColumnBase.Init(c)
 	c.SetCellTexter(texter)
 }
+
+// Just make ColumnOptions completely available
+type CustomColumnCreator control.ColumnOptions
+
+func (c CustomColumnCreator) Create(parent control.TableI) control.ColumnI {
+	col := NewCustomColumn(GetCellTexter(parent, c.CellTexterID))
+	col.ApplyOptions(parent, control.ColumnOptions(c))
+	return col
+}

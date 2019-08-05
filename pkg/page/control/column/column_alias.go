@@ -78,3 +78,14 @@ func (t AliasTexter) CellText(ctx context.Context, col control.ColumnI, rowNum i
 		return ApplyFormat(s, t.Format, t.TimeFormat)
 	}
 }
+
+type AliasColumnCreator struct {
+	Alias string
+	control.ColumnOptions
+}
+
+func (c AliasColumnCreator) Create(parent control.TableI) control.ColumnI {
+	col := NewAliasColumn(c.Alias)
+	col.ApplyOptions(parent, c.ColumnOptions)
+	return col
+}

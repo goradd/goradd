@@ -71,3 +71,14 @@ func (t GetterTexter) CellText(ctx context.Context, col control.ColumnI, rowNum 
 	}
 	return ""
 }
+
+type GetterColumnCreator struct {
+	Index string
+	control.ColumnOptions
+}
+
+func (c GetterColumnCreator) Create(parent control.TableI) control.ColumnI {
+	col := NewGetterColumn(c.Index)
+	col.ApplyOptions(parent, c.ColumnOptions)
+	return col
+}

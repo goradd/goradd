@@ -37,7 +37,7 @@ func (d DateTimeSpan) GenerateCreator(col *generator.ColumnType) (s string) {
 `control.DateTimeSpanCreator{
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
-		Disabled:	   %#v,
+		IsDisabled:	   %#v,
 		DataConnector: %s{},
 	},
 }`, col.ControlID, col.IsPk, col.Connector)
