@@ -41,6 +41,7 @@ type PaginatedTableCreator struct {
 	Columns []ColumnCreator
 	PageSize int
 	DataProvider string
+	SaveState bool
 	page.ControlOptions
 }
 
@@ -74,6 +75,9 @@ func (c PaginatedTableCreator) Init(ctx context.Context, ctrl PaginatedTableI) {
 	sub.Init(ctx, ctrl)
 	if c.PageSize != 0 {
 		ctrl.SetPageSize(c.PageSize)
+	}
+	if c.SaveState {
+		ctrl.SaveState(ctx, true)
 	}
 }
 

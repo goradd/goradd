@@ -82,6 +82,8 @@ func (t AliasTexter) CellText(ctx context.Context, col control.ColumnI, rowNum i
 // AliasColumnCreator creates a column that displays the content of a database alias. Each row must be
 // an AliasGetter, which by default all the output from database queries provide that.
 type AliasColumnCreator struct {
+	// ID will assign the given id to the column. If you do not specify it, an id will be given it by the framework.
+	ID string
 	// Alias is the name of the alias to use when getting data out of the provided database row
 	Alias string
 	// Title is the static title string to use in the header row
@@ -95,6 +97,9 @@ type AliasColumnCreator struct {
 
 func (c AliasColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
 	col := NewAliasColumn(c.Alias)
+	if c.ID != "" {
+		col.SetID(c.ID)
+	}
 	col.SetTitle(c.Title)
 	if c.Format != "" {
 		col.SetFormat(c.Format)

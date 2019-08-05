@@ -38,7 +38,7 @@ type CheckboxColumn struct {
 // changes. Or, if you are recording your changes in real time, attach a CheckboxColumnClick event to the table.
 func NewCheckboxColumn(p CheckboxProvider) *CheckboxColumn {
 	if p == nil {
-		panic("A checkbox attribute provider is required.")
+		panic("a checkbox attribute provider is required")
 	}
 
 	i := CheckboxColumn{checkboxer: p}
@@ -308,22 +308,32 @@ func (c DefaultCheckboxProvider) All() map[string]bool {
 
 func init() {
 	gob.Register(map[string]bool(nil)) // We must register this here because we are putting the changes map into the session,
-	// and the session uses GOB to encode.
+	gob.Register(DefaultCheckboxProvider{}) // We must register this here because we are putting the changes map into the session,
 }
 
 // CheckboxColumnCreator creates a column of checkboxes.
 type CheckboxColumnCreator struct {
+	// ID will assign the given id to the column. If you do not specify it, an id will be given it by the framework.
+	ID string
 	// ShowCheckAll will show a checkbox in the header that the user can use to check all the boxes in the column.
 	ShowCheckAll bool
 	// CheckboxProvider tells us which checkboxes are on or off, and how the checkboxes are styled.
 	CheckboxProvider   CheckboxProvider
+	// Title is the title of the column that appears in the header
+	Title string
 	control.ColumnOptions
 }
 
 func (c CheckboxColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
 	col := NewCheckboxColumn(c.CheckboxProvider)
+	if c.ID != "" {
+		col.SetID(c.ID)
+	}
 	if c.ShowCheckAll {
 		col.SetShowCheckAll(true)
+	}
+	if c.Title != "" {
+		col.SetTitle(c.Title)
 	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col

@@ -70,6 +70,8 @@ func (t MapTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int
 // The index can be any valid map index, and the value must be a standard kind of value that
 // can be converted to a string.
 type MapColumnCreator struct {
+	// ID will assign the given id to the column. If you do not specify it, an id will be given it by the framework.
+	ID string
 	// Index is the key to use to get to the map data
 	Index interface{}
 	// Title is the title of the column that appears in the header
@@ -83,6 +85,9 @@ type MapColumnCreator struct {
 
 func (c MapColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
 	col := NewMapColumn(c.Index)
+	if c.ID != "" {
+		col.SetID(c.ID)
+	}
 	col.SetTitle(c.Title)
 	if c.Format != "" {
 		col.SetFormat(c.Format)

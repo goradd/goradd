@@ -27,6 +27,8 @@ func (c *TexterColumn) Init(texter CellTexter) {
 
 // TexterColumnCreator creates a column that uses a CellTexter to get the content of each cell.
 type TexterColumnCreator struct {
+	// ID will assign the given id to the column. If you do not specify it, an id will be given it by the framework.
+	ID string
 	// Texter returns the text that should go in each cell. Pass a string control id, or a CellTexter.
 	Texter interface{}
 	// Title is the title at the top of the column
@@ -46,6 +48,9 @@ func (c TexterColumnCreator) Create(ctx context.Context, parent control.TableI) 
 	}
 
 	col := NewTexterColumn(texter)
+	if c.ID != "" {
+		col.SetID(c.ID)
+	}
 	col.SetTitle(c.Title)
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col

@@ -2,6 +2,7 @@ package panels
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -10,7 +11,6 @@ import (
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"github.com/goradd/goradd/web/examples/controls"
-	"github.com/goradd/goradd/web/examples/controls/panels"
 	"strconv"
 )
 
@@ -49,99 +49,52 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 			HeaderRowCount: 1,
 			DataProvider: "checkboxTablePanel",
 			Columns:[]ColumnCreator {
-				column.TexterColumnCreator{
-					CellTexterID: "tablePanel",
-					Title:"Custom",
+				column.MapColumnCreator{
+					Index: "name",
+					Title:"Name",
 				},
-				column.SliceColumnCreator{
-					Index:1,
-					ColumnOptions: ColumnOptions {
-						Title:"Slice",
-					},
+				column.CheckboxColumnCreator{
+					ID:"check1",
+					Title:"Selected",
+					ShowCheckAll:true,
+					CheckboxProvider:SelectedProvider{},
 				},
 			},
 			PageSize:5,
+			SaveState: true,
 		},
 		// A DataPager can be a standalone control, which you draw manually
 		DataPagerCreator{
-			ID: "pager1",
+			ID: "pager",
 			PaginatedControl:"table1",
 		},
-		PaginatedTableCreator{
-			ID: "table2",
-			HeaderRowCount: 1,
-			DataProvider: "tablePanel",
-			Columns:[]ColumnCreator {
-				column.MapColumnCreator {
-					Index: "name",
-					ColumnOptions: ColumnOptions {
-						Title:"Name",
-					},
-				},
-				column.MapColumnCreator{
-					Index:"id",
-					ColumnOptions: ColumnOptions {
-						Title:"Map",
-					},
-				},
-				column.GetterColumnCreator{
-					Index:"name",
-					ColumnOptions: ColumnOptions {
-						Title:"Getter",
-					},
-				},
-
-			},
-			PageSize:5,
-			// A DataPager can also be a caption, and will get drawn for you as part of the table
-			Caption:DataPagerCreator{
-				ID:"pager2",
-				PaginatedControl:"table2",
-			},
+		ButtonCreator{
+			ID:       "ajaxButton",
+			Text:     "Submit Ajax",
+			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
 		},
-
+		ButtonCreator{
+			ID:       "serverButton",
+			Text:     "Submit Server",
+			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+		},
 	)
-	p.Table1 = NewPaginatedTable(p, "table1")
-	p.Table1.SetHeaderRowCount(1)
-	p.Table1.SetDataProvider(p)
-	p.Table1.AddColumn(column.NewMapColumn("name").SetTitle("Name"))
-
-	// get a copy of the column since we have to refer to it later
-	p.CheckboxColumn1 = column.NewCheckboxColumn(SelectedProvider{})
-	p.CheckboxColumn1.SetID("check1")
-	p.CheckboxColumn1.SetTitle("Selected")
-	p.CheckboxColumn1.SetShowCheckAll(true)
-
-	p.Table1.AddColumn(p.CheckboxColumn1)
-	//p.Table1.AddColumn(column.NewCheckboxColumn(p).SetTitle("Completed"))
-
-	p.Pager1 = NewDataPager(p, "pager", p.Table1)
-	p.Table1.SetPageSize(5)
-
-	p.Table1.SaveState(ctx, true)
-
-	p.SubmitAjax = NewButton(p, "ajaxButton")
-	p.SubmitAjax.SetText("Submit Ajax")
-	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), panels.ButtonSubmit))
-
-	p.SubmitServer = NewButton(p, "serverButton")
-	p.SubmitServer.SetText("Submit Server")
-	p.SubmitServer.OnSubmit(action.Server(p.ID(), panels.ButtonSubmit))
-
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (f *TableCheckboxPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	f.Table1.SetTotalItems(uint(len(table1Data)))
-	start, end := f.Table1.SliceOffsets()
+	t := s.(PaginatedControlI)
+	t.SetTotalItems(uint(len(table1Data)))
+	start, end := t.SliceOffsets()
 	s.SetData(table1Data[start:end])
 }
 
 func (p *TableCheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
-	case panels.ButtonSubmit:
-		for k, v := range p.CheckboxColumn1.Changes() {
+	case ButtonSubmit:
+		col := GetPaginatedTable(p, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		for k, v := range col.Changes() {
 			i, _ := strconv.Atoi(k)
 			var s string
 			if v {
@@ -157,6 +110,9 @@ func init() {
 	browsertest.RegisterTestFunction("Table - Checkbox Ajax Submit", testTableCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Table - Checkbox Server Submit", testTableCheckboxServerSubmit)
 	controls.RegisterPanel("tablecheckbox", "Tables - Checkbox Column", NewTableCheckboxPanel, 6)
+
+	gob.Register(SelectedProvider{}) // We must register this here because we are putting the changes map into the session,
+
 }
 
 func testTableCheckboxNav(t *browsertest.TestForm) {

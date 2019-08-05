@@ -463,7 +463,9 @@ func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt Column
 		c.SetSpan(opt.Span)
 	}
 	c.asHeader = opt.AsHeader
-	c.isHtml = opt.IsHtml
+	if opt.IsHtml {
+		c.isHtml = true
+	}
 	if opt.HeaderTexter != nil {
 		if s,ok := opt.HeaderTexter.(string); ok {
 			c.SetHeaderTexter(parent.Page().GetControl(s).(CellTexter))

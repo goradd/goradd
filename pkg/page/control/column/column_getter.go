@@ -74,6 +74,8 @@ func (t GetterTexter) CellText(ctx context.Context, col control.ColumnI, rowNum 
 
 // GetterColumnCreator creates a column that uses a Getter to get the text of each cell.
 type GetterColumnCreator struct {
+	// ID will assign the given id to the column. If you do not specify it, an id will be given it by the framework.
+	ID string
 	// Index is the value passed to the Get function of each row of the data to get the data for the cell.
 	Index string
 	// Title is the title that appears in the header of the column
@@ -87,6 +89,9 @@ type GetterColumnCreator struct {
 
 func (c GetterColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
 	col := NewGetterColumn(c.Index)
+	if c.ID != "" {
+		col.SetID(c.ID)
+	}
 	col.SetTitle(c.Title)
 	if c.Format != "" {
 		col.SetFormat(c.Format)
