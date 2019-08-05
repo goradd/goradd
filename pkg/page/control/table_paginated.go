@@ -29,20 +29,21 @@ func (t *PaginatedTable) Init(self page.ControlI, parent page.ControlI, id strin
 // PaginatedTableCreator is the initialization structure for declarative creation of tables
 type PaginatedTableCreator struct {
 	// ID is the control id
-	ID string
-	RenderColumnTags bool
-	Caption interface{} // string or paginator
-	HideIfEmpty bool
-	HeaderRowCount int
-	FooterRowCount int
-	RowStyler string
-	HeaderRowStyler string
-	FooterRowStyler string
-	Columns []ColumnCreator
-	PageSize int
-	DataProvider interface{}
-	SaveState bool
-	Sortable bool
+	ID               string
+	HasColumnTags    bool
+	Caption          interface{} // string or paginator
+	HideIfEmpty      bool
+	HeaderRowCount   int
+	FooterRowCount   int
+	RowStyler        string
+	HeaderRowStyler  string
+	FooterRowStyler  string
+	Columns          []ColumnCreator
+	PageSize         int
+	DataProvider     interface{}
+	Data interface{}
+	SaveState        bool
+	Sortable         bool
 	SortHistoryLimit int
 	page.ControlOptions
 }
@@ -61,20 +62,21 @@ func (c PaginatedTableCreator) Create(ctx context.Context, parent page.ControlI)
 // creator. You do not normally need to call this.
 func (c PaginatedTableCreator) Init(ctx context.Context, ctrl PaginatedTableI) {
 	sub := TableCreator {
-		ID: c.ID,
-		RenderColumnTags: c.RenderColumnTags,
-		Caption: c.Caption,
-		HideIfEmpty: c.HideIfEmpty,
-		HeaderRowCount: c.HeaderRowCount,
-		FooterRowCount: c.FooterRowCount,
-		RowStyler: c.RowStyler,
-		HeaderRowStyler: c.HeaderRowStyler,
-		FooterRowStyler: c.FooterRowStyler,
-		Columns: c.Columns,
-		DataProvider: c.DataProvider,
-		Sortable: c.Sortable,
+		ID:               c.ID,
+		HasColumnTags:    c.HasColumnTags,
+		Caption:          c.Caption,
+		HideIfEmpty:      c.HideIfEmpty,
+		HeaderRowCount:   c.HeaderRowCount,
+		FooterRowCount:   c.FooterRowCount,
+		RowStyler:        c.RowStyler,
+		HeaderRowStyler:  c.HeaderRowStyler,
+		FooterRowStyler:  c.FooterRowStyler,
+		Columns:          c.Columns,
+		DataProvider:     c.DataProvider,
+		Data: c.Data,
+		Sortable:         c.Sortable,
 		SortHistoryLimit: c.SortHistoryLimit,
-		ControlOptions: c.ControlOptions,
+		ControlOptions:   c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)
 	if c.PageSize != 0 {

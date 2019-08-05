@@ -636,18 +636,19 @@ func (t *Table) ΩUnmarshalState(m maps.Loader) {
 // TableCreator is the initialization structure for declarative creation of tables
 type TableCreator struct {
 	// ID is the control id
-	ID string
-	RenderColumnTags bool
-	Caption interface{} // string or paginator
-	HideIfEmpty bool
-	HeaderRowCount int
-	FooterRowCount int
-	RowStyler string
-	HeaderRowStyler string
-	FooterRowStyler string
-	Columns []ColumnCreator
-	DataProvider interface{}
-	Sortable bool
+	ID               string
+	HasColumnTags    bool
+	Caption          interface{} // string or paginator
+	HideIfEmpty      bool
+	HeaderRowCount   int
+	FooterRowCount   int
+	RowStyler        string
+	HeaderRowStyler  string
+	FooterRowStyler  string
+	Columns          []ColumnCreator
+	DataProvider     interface{}
+	Data 			 interface{}
+	Sortable         bool
 	SortHistoryLimit int
 	page.ControlOptions
 }
@@ -665,7 +666,7 @@ func (c TableCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 // Init is called by implementations of Buttons to initialize a control with the
 // creator. You do not normally need to call this.
 func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
-	ctrl.SetRenderColumnTags(c.RenderColumnTags)
+	ctrl.SetRenderColumnTags(c.HasColumnTags)
 	ctrl.SetHideIfEmpty(c.HideIfEmpty)
 	if c.Caption != nil {
 		if ctrl2, ok := c.Caption.(page.Creator); ok {
@@ -699,6 +700,9 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 			provider = c.DataProvider.(data.DataBinder)
 		}
 		ctrl.SetDataProvider(provider)
+	}
+	if c.Data != nil {
+		ctrl.SetData(c.Data)
 	}
 	if c.Columns != nil {
 		for _,colCreator := range c.Columns {

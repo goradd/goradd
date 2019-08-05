@@ -1827,13 +1827,19 @@ type EventList []struct {
 }
 
 type StyleMap map[string]string
+type AttributeMap map[string]string
+type DataAttributeMap map[string]interface{}
+
+
 
 // ControlOptions are options common to all controls
 type ControlOptions struct {
-	// Attributes will set the attributes of the control. Use Styles to set styles, and Class to set the class
-	Attributes html.AttributeCreator
+	// Attributes will set the attributes of the control. Use DataAttributes to set data attributes, Styles to set styles, and Class to set the class
+	Attributes AttributeMap
+	// Attributes will set the attributes of the control. Use DataAttributes to set data attributes, Styles to set styles, and Class to set the class
+	DataAttributes DataAttributeMap
 	// Styles sets the styles of the control's tag
-	Styles html.StyleCreator
+	Styles StyleMap
 	// Class sets the class of the control's tag. Prefix a class with "+" to add a class, or "-" to remove a class.
 	Class string
 	// IsDisabled initializes the control in the disabled state, with a "disabled" attribute
@@ -1853,6 +1859,9 @@ func (c *Control) ApplyOptions (o ControlOptions) {
 	for k,v := range o.Attributes {
 		c.SetAttribute(k, v)
 	}
+	for k,v := range o.DataAttributes {
+		c.SetDataAttribute(k, v)
+	}
 	for k,v := range o.Styles {
 		c.SetStyle(k, v)
 	}
@@ -1868,7 +1877,7 @@ func (c *Control) ApplyOptions (o ControlOptions) {
 		}
 	}
 	if o.Class != "" {
-		c.attributes.SetClass(o.Class) // Responds to add and remove class commands
+		c.attributes.AddClass(o.Class) // Responds to add and remove class commands
 	}
 	if o.IsDisabled {
 		c.attributes.SetDisabled(o.IsDisabled)

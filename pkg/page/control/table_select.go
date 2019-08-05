@@ -1,11 +1,14 @@
 package control
 
 import (
+	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
 )
 
 // PrimaryKeyer is an interface that is often implemented by model objects.
@@ -15,6 +18,7 @@ type PrimaryKeyer interface {
 
 type SelectTableI interface {
 	TableI
+	SetSelectedID(id string) SelectTableI
 }
 
 // SelectTable is a table that is row selectable. To detect a row selection, trigger on event.RowSelected
@@ -99,9 +103,10 @@ func (t *SelectTable) SelectedID() string {
 	return t.selectedID
 }
 
-func (t *SelectTable) SetSelectedID(id string) {
+func (t *SelectTable) SetSelectedID(id string) SelectTableI {
 	t.selectedID = id
 	t.ExecuteWidgetFunction("option", "selectedId", id)
+	return t.this()
 }
 
 func (t *SelectTable) ΩMarshalState(m maps.Setter) {
@@ -114,4 +119,75 @@ func (t *SelectTable) ΩUnmarshalState(m maps.Loader) {
 			t.selectedID = id
 		}
 	}
+}
+
+
+// SelectTableCreator is the initialization structure for declarative creation of tables
+type SelectTableCreator struct {
+	// ID is the control id
+	ID               string
+	SelectedID       string
+	HasColumnTags    bool
+	Caption          interface{} // string or paginator
+	HideIfEmpty      bool
+	HeaderRowCount   int
+	FooterRowCount   int
+	RowStyler        string
+	HeaderRowStyler  string
+	FooterRowStyler  string
+	Columns          []ColumnCreator
+	DataProvider     interface{}
+	Data interface{}
+	SaveState        bool
+	Sortable         bool
+	SortHistoryLimit int
+	OnRowSelected    action.ActionI
+	page.ControlOptions
+}
+
+
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c SelectTableCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewSelectTable(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+// Init is called by implementations of Buttons to initialize a control with the
+// creator. You do not normally need to call this.
+func (c SelectTableCreator) Init(ctx context.Context, ctrl SelectTableI) {
+	sub := TableCreator {
+		ID:               c.ID,
+		HasColumnTags:    c.HasColumnTags,
+		Caption:          c.Caption,
+		HideIfEmpty:      c.HideIfEmpty,
+		HeaderRowCount:   c.HeaderRowCount,
+		FooterRowCount:   c.FooterRowCount,
+		RowStyler:        c.RowStyler,
+		HeaderRowStyler:  c.HeaderRowStyler,
+		FooterRowStyler:  c.FooterRowStyler,
+		Columns:          c.Columns,
+		DataProvider:     c.DataProvider,
+		Data: c.Data,
+		Sortable:         c.Sortable,
+		SortHistoryLimit: c.SortHistoryLimit,
+		ControlOptions:   c.ControlOptions,
+	}
+	sub.Init(ctx, ctrl)
+	if c.SelectedID != "" {
+		ctrl.SetSelectedID(c.SelectedID)
+	}
+	if c.SaveState { // will override the initial SelectedID setting if true
+		ctrl.SaveState(ctx, true)
+	}
+	if c.OnRowSelected != nil {
+		ctrl.On(event.RowSelected(), c.OnRowSelected)
+	}
+}
+
+// GetSelectTable is a convenience method to return the button with the given id from the page.
+func GetSelectTable(c page.ControlI, id string) *SelectTable {
+	return c.Page().GetControl(id).(*SelectTable)
 }
