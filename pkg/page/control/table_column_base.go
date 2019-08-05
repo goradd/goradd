@@ -337,7 +337,7 @@ func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data 
 	return nil
 }
 
-// SetSortable indicates that the column should be drawn with sort indicators.
+// MakeSortable indicates that the column should be drawn with sort indicators.
 func (c *ColumnBase) SetSortable() ColumnI {
 	c.sortDirection = NotSorted
 	return c.this()
@@ -427,10 +427,6 @@ type ColumnOptions struct {
 	FooterTexter   	 interface{}
 	// IsHidden will start the column out in a hidden state so that it will not initially be drawn
 	IsHidden         bool
-	// Sortable specifies whether the column is sortable. This will just present the UI to allow the user to
-	// click the column header to sort the column. This must be used in conjunction with the
-	// DataProviders to actually do the sorting, and be part of a table that is showing header rows.
-	Sortable    bool
 }
 
 func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt ColumnOptions) {
@@ -455,9 +451,6 @@ func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt Column
 	}
 
 	c.isHidden = opt.IsHidden
-	if opt.Sortable {
-		c.SetSortDirection(NotSorted)
-	}
 
 	if opt.Span != 0 {
 		c.SetSpan(opt.Span)

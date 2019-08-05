@@ -56,6 +56,8 @@ type TableEmbedder interface {
 	ClearColumns()
 	HideColumns()
 	ShowColumns()
+	MakeSortable() TableI
+	SetSortHistoryLimit(n int) TableI
 }
 
 // TableRowAttributer is used to style particular table rows.
@@ -83,7 +85,7 @@ type TableFooterRowAttributer interface {
 // as well as custom functions you define. See the examples directory for examples of using a Table object.
 // See also the PaginatedTable for a table that works with a Pager object to page through a large data set.
 //
-// Call SetSortable() to make a table sortable, in which case the user can click in the header of a column to sort
+// Call MakeSortable() to make a table sortable, in which case the user can click in the header of a column to sort
 // by that column. The Table maintains a history of what columns have been sorted by what row, so that you can
 // implement multi-level sorting if you so desire. This is particularly helpful when some columns have duplicate
 // data, that then get further identified by another column.
@@ -155,8 +157,8 @@ func (t *Table) SetHideIfEmpty(h bool) TableI {
 }
 
 
-// SetSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
-func (t *Table) SetSortable() TableI {
+// MakeSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
+func (t *Table) MakeSortable() TableI {
 	t.On(event.TableSort(), action.Ajax(t.ID(), SortClick), action.PrivateAction{})
 	if t.headerRowCount == 0 {
 		t.headerRowCount = 1
@@ -550,9 +552,10 @@ func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
 // meaning it will remember only the current column. Setting it more than 1 will let the system report back on secondary
 // sort columns that the user chose. For example, if the user clicks to sort a first name column, and then a last name column,
 // it will let you know to sort by last name, and then first name.
-func (t *Table) SetSortHistoryLimit(n int) {
+func (t *Table) SetSortHistoryLimit(n int) TableI {
 	t.sortHistoryLimit = n
 	t.Refresh()
+	return t.this()
 }
 
 func (t *Table) sortClick(id string) {
@@ -643,7 +646,9 @@ type TableCreator struct {
 	HeaderRowStyler string
 	FooterRowStyler string
 	Columns []ColumnCreator
-	DataProvider string
+	DataProvider interface{}
+	Sortable bool
+	SortHistoryLimit int
 	page.ControlOptions
 }
 
@@ -685,15 +690,26 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	if c.FooterRowStyler != "" {
 		ctrl.SetFooterRowStyler(ctrl.Page().GetControl(c.FooterRowStyler).(TableFooterRowAttributer))
 	}
-	if c.DataProvider != "" {
+	if c.DataProvider != nil {
 		// If this fails, then perhaps you are giving a data provider id for a control that is not yet created. Create the control first.
-		provider := ctrl.Page().GetControl(c.DataProvider)
-		ctrl.SetDataProvider(provider.(data.DataBinder))
+		var provider data.DataBinder
+		if s,ok := c.DataProvider.(string); ok {
+			provider = ctrl.Page().GetControl(s).(data.DataBinder)
+		} else {
+			provider = c.DataProvider.(data.DataBinder)
+		}
+		ctrl.SetDataProvider(provider)
 	}
 	if c.Columns != nil {
 		for _,colCreator := range c.Columns {
 			ctrl.AddColumn(colCreator.Create(ctx, ctrl))
 		}
+	}
+	if c.Sortable {
+		ctrl.MakeSortable()
+	}
+	if c.SortHistoryLimit > 0 {
+		ctrl.SetSortHistoryLimit(c.SortHistoryLimit)
 	}
 
 	ctrl.ApplyOptions(c.ControlOptions)

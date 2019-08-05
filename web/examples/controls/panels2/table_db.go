@@ -26,7 +26,7 @@ func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 	p.Table1 = NewPaginatedTable(p, "table1")
 	p.Table1.SetHeaderRowCount(1)
 	p.Table1.SetDataProvider(p)
-	p.Table1.SetSortable()
+	p.Table1.MakeSortable()
 	p.Table1.AddColumn(column.NewNodeColumn(node.Person().FirstName()).
 		SetTitle("First Name").
 		SetSortable())

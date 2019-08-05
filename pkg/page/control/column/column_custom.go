@@ -33,6 +33,8 @@ type TexterColumnCreator struct {
 	Texter interface{}
 	// Title is the title at the top of the column
 	Title string
+	// Sortable makes the column display sort arrows in the header
+	Sortable bool
 	control.ColumnOptions
 }
 
@@ -52,6 +54,9 @@ func (c TexterColumnCreator) Create(ctx context.Context, parent control.TableI) 
 		col.SetID(c.ID)
 	}
 	col.SetTitle(c.Title)
+	if c.Sortable {
+		col.SetSortable()
+	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
 }

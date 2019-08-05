@@ -140,6 +140,8 @@ type NodeColumnCreator struct {
 	Format string
 	// TimeFormat is a format string applied specifically to time data using time.Format
 	TimeFormat string
+	// Sortable makes the column display sort arrows in the header
+	Sortable bool
 	control.ColumnOptions
 }
 
@@ -154,6 +156,9 @@ func (c NodeColumnCreator) Create(ctx context.Context, parent control.TableI) co
 	}
 	if c.TimeFormat != "" {
 		col.SetTimeFormat(c.TimeFormat)
+	}
+	if c.Sortable {
+		col.SetSortable()
 	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col

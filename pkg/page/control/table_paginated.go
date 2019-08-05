@@ -40,8 +40,10 @@ type PaginatedTableCreator struct {
 	FooterRowStyler string
 	Columns []ColumnCreator
 	PageSize int
-	DataProvider string
+	DataProvider interface{}
 	SaveState bool
+	Sortable bool
+	SortHistoryLimit int
 	page.ControlOptions
 }
 
@@ -70,6 +72,8 @@ func (c PaginatedTableCreator) Init(ctx context.Context, ctrl PaginatedTableI) {
 		FooterRowStyler: c.FooterRowStyler,
 		Columns: c.Columns,
 		DataProvider: c.DataProvider,
+		Sortable: c.Sortable,
+		SortHistoryLimit: c.SortHistoryLimit,
 		ControlOptions: c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)

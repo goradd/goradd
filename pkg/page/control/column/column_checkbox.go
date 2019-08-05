@@ -321,6 +321,8 @@ type CheckboxColumnCreator struct {
 	CheckboxProvider   CheckboxProvider
 	// Title is the title of the column that appears in the header
 	Title string
+	// Sortable makes the column display sort arrows in the header
+	Sortable bool
 	control.ColumnOptions
 }
 
@@ -334,6 +336,9 @@ func (c CheckboxColumnCreator) Create(ctx context.Context, parent control.TableI
 	}
 	if c.Title != "" {
 		col.SetTitle(c.Title)
+	}
+	if c.Sortable {
+		col.SetSortable()
 	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
