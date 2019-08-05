@@ -66,14 +66,31 @@ func (t MapTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int
 	return ""
 }
 
+// MapColumnCreator creates a column that treats each row of data as a map of data.
+// The index can be any valid map index, and the value must be a standard kind of value that
+// can be converted to a string.
 type MapColumnCreator struct {
+	// Index is the key to use to get to the map data
 	Index interface{}
+	// Title is the title of the column that appears in the header
+	Title string
+	// Format is a format string applied to the data using fmt.Sprintf
+	Format string
+	// TimeFormat is a format string applied specifically to time data using time.Format
+	TimeFormat string
 	control.ColumnOptions
 }
 
-func (c MapColumnCreator) Create(parent control.TableI) control.ColumnI {
+func (c MapColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
 	col := NewMapColumn(c.Index)
-	col.ApplyOptions(parent, c.ColumnOptions)
+	col.SetTitle(c.Title)
+	if c.Format != "" {
+		col.SetFormat(c.Format)
+	}
+	if c.TimeFormat != "" {
+		col.SetTimeFormat(c.TimeFormat)
+	}
+	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
 }
 

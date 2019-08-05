@@ -259,7 +259,8 @@ func (t *CheckboxColumn) UnmarshalState(m maps.Loader) {
 
 // The CheckboxProvider interface defines a set of functions that you implement to provide for the initial display
 // of a checkbox. You can descend your own CheckboxProvider from the DefaultCheckboxProvider to get the default
-// behavior, and then add whatever functions you need to impelment.
+// behavior, and then add whatever functions you need to implement. Be sure to register your custom provider
+// with gob.
 type CheckboxProvider interface {
 	// RowID should return a unique id corresponding to the given data item. It is used to track the checked state of an individual checkbox.
 	RowID(data interface{}) string
@@ -309,21 +310,21 @@ func init() {
 	gob.Register(map[string]bool(nil)) // We must register this here because we are putting the changes map into the session,
 	// and the session uses GOB to encode.
 }
+
+// CheckboxColumnCreator creates a column of checkboxes.
 type CheckboxColumnCreator struct {
-	Attributes html.AttributeCreator
+	// ShowCheckAll will show a checkbox in the header that the user can use to check all the boxes in the column.
 	ShowCheckAll bool
-	Checkboxer   CheckboxProvider
+	// CheckboxProvider tells us which checkboxes are on or off, and how the checkboxes are styled.
+	CheckboxProvider   CheckboxProvider
 	control.ColumnOptions
 }
 
-func (c CheckboxColumnCreator) Create(parent control.TableI) control.ColumnI {
-	col := NewCheckboxColumn(c.Checkboxer)
+func (c CheckboxColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
+	col := NewCheckboxColumn(c.CheckboxProvider)
 	if c.ShowCheckAll {
 		col.SetShowCheckAll(true)
 	}
-	if c.Attributes != nil {
-		col.Attributes.MergeMap(c.Attributes)
-	}
-	col.ApplyOptions(parent, c.ColumnOptions)
+	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
 }

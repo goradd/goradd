@@ -33,7 +33,7 @@ func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 	p.Table1.AddColumn(column.NewNodeColumn(node.Person().LastName()).
 		SetTitle("Last Name").
 		SetSortable())
-	p.Table1.AddColumn(column.NewCustomColumn(p).SetTitle("Combined"))
+	p.Table1.AddColumn(column.NewTexterColumn(p).SetTitle("Combined"))
 	p.Table1.AddColumn(column.NewAliasColumn("manager_count").SetTitle("Project Count"))
 	p.Pager1 = NewDataPager(p, "pager1", p.Table1)
 	p.Table1.SetPageSize(5)

@@ -35,7 +35,7 @@ func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 
 	p.Table1 = NewPaginatedTable(p, "table1")
 	p.Table1.SetDataProvider(p)
-	p.Table1.AddColumn(column.NewCustomColumn(p).SetIsHtml(true))
+	p.Table1.AddColumn(column.NewTexterColumn(p).SetIsHtml(true))
 	p.Pager1 = NewDataPager(p, "pager1", p.Table1)
 	p.Table1.SetPageSize(5)
 

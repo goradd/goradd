@@ -79,15 +79,13 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 			HeaderRowCount: 1,
 			DataProvider: "tablePanel",
 			Columns:[]ColumnCreator {
-				column.CustomColumnCreator {
-					CellTexterID: "tablePanel",
+				column.TexterColumnCreator{
+					Texter: "tablePanel",
 					Title:"Custom",
 				},
 				column.SliceColumnCreator{
 					Index:1,
-					ColumnOptions: ColumnOptions {
-						Title:"Slice",
-					},
+					Title:"Slice",
 				},
 			},
 			PageSize:5,
@@ -102,21 +100,17 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 			HeaderRowCount: 1,
 			DataProvider: "tablePanel",
 			Columns:[]ColumnCreator {
-				column.CustomColumnCreator {
-					CellTexterID: "tablePanel",
+				column.TexterColumnCreator{
+					Texter: "tablePanel",
 					Title:"Custom",
 				},
 				column.MapColumnCreator{
 					Index:"id",
-					ColumnOptions: ColumnOptions {
-						Title:"Map",
-					},
+					Title:"Map",
 				},
 				column.GetterColumnCreator{
 					Index:"name",
-					ColumnOptions: ColumnOptions {
-						Title:"Getter",
-					},
+					Title:"Getter",
 				},
 
 			},

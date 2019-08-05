@@ -121,14 +121,29 @@ func ApplyFormat(data interface{}, format string, timeFormat string) string {
 	return out
 }
 
+// SliceColumnCreator creates a column that treats each row as a slice of data.
 type SliceColumnCreator struct {
+	// Index is the slice index that will be used to get to the data in the column
 	Index int
+	// Title is the title of the column and will appear in the header
+	Title string
+	// Format is a format string applied to the data using fmt.Sprintf
+	Format string
+	// TimeFormat is a format string applied specifically to time data using time.Format
+	TimeFormat string
 	control.ColumnOptions
 }
 
-func (c SliceColumnCreator) Create(parent control.TableI) control.ColumnI {
+func (c SliceColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
 	col := NewSliceColumn(c.Index)
-	col.ApplyOptions(parent, c.ColumnOptions)
+	col.SetTitle(c.Title)
+	if c.Format != "" {
+		col.SetFormat(c.Format)
+	}
+	if c.TimeFormat != "" {
+		col.SetTimeFormat(c.TimeFormat)
+	}
+	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
 }
 

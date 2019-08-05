@@ -72,13 +72,28 @@ func (t GetterTexter) CellText(ctx context.Context, col control.ColumnI, rowNum 
 	return ""
 }
 
+// GetterColumnCreator creates a column that uses a Getter to get the text of each cell.
 type GetterColumnCreator struct {
+	// Index is the value passed to the Get function of each row of the data to get the data for the cell.
 	Index string
+	// Title is the title that appears in the header of the column
+	Title string
+	// Format is a format string applied to the data using fmt.Sprintf
+	Format string
+	// TimeFormat is a format string applied specifically to time data using time.Format
+	TimeFormat string
 	control.ColumnOptions
 }
 
-func (c GetterColumnCreator) Create(parent control.TableI) control.ColumnI {
+func (c GetterColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
 	col := NewGetterColumn(c.Index)
-	col.ApplyOptions(parent, c.ColumnOptions)
+	col.SetTitle(c.Title)
+	if c.Format != "" {
+		col.SetFormat(c.Format)
+	}
+	if c.TimeFormat != "" {
+		col.SetTimeFormat(c.TimeFormat)
+	}
+	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
 }

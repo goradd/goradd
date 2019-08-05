@@ -37,6 +37,7 @@ type TableEmbedder interface {
 	GetFooterRowAttributes(row int) *html.Attributes
 	GetRowAttributes(row int, data interface{}) *html.Attributes
 	HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes *html.Attributes)
+	FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes *html.Attributes)
 	SetRenderColumnTags(r bool) TableI
 	SetHideIfEmpty(h bool) TableI
 	SetHeaderRowCount(count int) TableI
@@ -316,9 +317,18 @@ func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err erro
 // override this.
 func (t *Table) HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes *html.Attributes) {
 	cellHtml = col.HeaderCellHtml(ctx, rowNum, colNum)
-	cellAttributes = col.HeaderAttributes(rowNum, colNum)
+	cellAttributes = col.HeaderAttributes(ctx, rowNum, colNum)
 	return
 }
+
+// FooterCellDrawingInfo is called internally to provide the info for each header cell drawn. Subclasses can
+// override this.
+func (t *Table) FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes *html.Attributes) {
+	cellHtml = col.FooterCellHtml(ctx, rowNum, colNum)
+	cellAttributes = col.FooterAttributes(ctx, rowNum, colNum)
+	return
+}
+
 
 // GetHeaderRowAttributes is called internally to get the attributes for the tr tags in header rows.
 func (t *Table) GetHeaderRowAttributes(row int) *html.Attributes {
@@ -329,13 +339,22 @@ func (t *Table) GetHeaderRowAttributes(row int) *html.Attributes {
 }
 
 func (t *Table) drawFooterRows(ctx context.Context, buf *bytes.Buffer) (err error) {
+	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
+
 	buf1 := buf3.GetBuffer()
 	defer buf3.PutBuffer(buf1)
-	for j := 0; j < t.footerRowCount; j++ {
-		for i, col := range t.columns {
-			col.DrawFooterCell(ctx, j, i, t.footerRowCount, buf1)
+	for rowNum := 0; rowNum < t.footerRowCount; rowNum++ {
+		for colNum, col := range t.columns {
+			if !col.IsHidden() {
+				cellHtml, attr := t2.FooterCellDrawingInfo(ctx, col, rowNum, colNum)
+				tag := "td"
+				if col.AsHeader() {
+					tag = "th"
+				}
+				buf1.WriteString(html.RenderTag(tag, attr, cellHtml))
+			}
 		}
-		buf.WriteString(html.RenderTag("tr", t.GetFooterRowAttributes(j), buf1.String()))
+		buf.WriteString(html.RenderTag("tr", t.GetFooterRowAttributes(rowNum), buf1.String()))
 		buf1.Reset()
 	}
 	return
@@ -673,7 +692,7 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	}
 	if c.Columns != nil {
 		for _,colCreator := range c.Columns {
-			ctrl.AddColumn(colCreator.Create(ctrl))
+			ctrl.AddColumn(colCreator.Create(ctx, ctrl))
 		}
 	}
 

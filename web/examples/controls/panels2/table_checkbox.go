@@ -10,19 +10,13 @@ import (
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"github.com/goradd/goradd/web/examples/controls"
+	"github.com/goradd/goradd/web/examples/controls/panels"
 	"strconv"
 )
 
 type TableCheckboxPanel struct {
 	Panel
 
-	Table1          *PaginatedTable
-	Pager1          *DataPager
-	CheckboxColumn1 *column.CheckboxColumn
-	SelectCol       *column.CheckboxColumn
-
-	SubmitAjax   *Button
-	SubmitServer *Button
 }
 
 type Table1Data map[string]string
@@ -48,8 +42,65 @@ func (c SelectedProvider) IsChecked(data interface{}) bool {
 
 func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableCheckboxPanel{}
-	p.Panel.Init(p, parent, "checkboxPanel")
+	p.Panel.Init(p, parent, "checkboxTablePanel")
+	p.AddControls(ctx,
+		PaginatedTableCreator{
+			ID: "table1",
+			HeaderRowCount: 1,
+			DataProvider: "checkboxTablePanel",
+			Columns:[]ColumnCreator {
+				column.TexterColumnCreator{
+					CellTexterID: "tablePanel",
+					Title:"Custom",
+				},
+				column.SliceColumnCreator{
+					Index:1,
+					ColumnOptions: ColumnOptions {
+						Title:"Slice",
+					},
+				},
+			},
+			PageSize:5,
+		},
+		// A DataPager can be a standalone control, which you draw manually
+		DataPagerCreator{
+			ID: "pager1",
+			PaginatedControl:"table1",
+		},
+		PaginatedTableCreator{
+			ID: "table2",
+			HeaderRowCount: 1,
+			DataProvider: "tablePanel",
+			Columns:[]ColumnCreator {
+				column.MapColumnCreator {
+					Index: "name",
+					ColumnOptions: ColumnOptions {
+						Title:"Name",
+					},
+				},
+				column.MapColumnCreator{
+					Index:"id",
+					ColumnOptions: ColumnOptions {
+						Title:"Map",
+					},
+				},
+				column.GetterColumnCreator{
+					Index:"name",
+					ColumnOptions: ColumnOptions {
+						Title:"Getter",
+					},
+				},
 
+			},
+			PageSize:5,
+			// A DataPager can also be a caption, and will get drawn for you as part of the table
+			Caption:DataPagerCreator{
+				ID:"pager2",
+				PaginatedControl:"table2",
+			},
+		},
+
+	)
 	p.Table1 = NewPaginatedTable(p, "table1")
 	p.Table1.SetHeaderRowCount(1)
 	p.Table1.SetDataProvider(p)
@@ -71,11 +122,11 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 
 	p.SubmitAjax = NewButton(p, "ajaxButton")
 	p.SubmitAjax.SetText("Submit Ajax")
-	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), ButtonSubmit))
+	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), panels.ButtonSubmit))
 
 	p.SubmitServer = NewButton(p, "serverButton")
 	p.SubmitServer.SetText("Submit Server")
-	p.SubmitServer.OnSubmit(action.Server(p.ID(), ButtonSubmit))
+	p.SubmitServer.OnSubmit(action.Server(p.ID(), panels.ButtonSubmit))
 
 }
 
@@ -89,7 +140,7 @@ func (f *TableCheckboxPanel) BindData(ctx context.Context, s data.DataManagerI) 
 
 func (p *TableCheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
-	case ButtonSubmit:
+	case panels.ButtonSubmit:
 		for k, v := range p.CheckboxColumn1.Changes() {
 			i, _ := strconv.Atoi(k)
 			var s string
