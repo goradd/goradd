@@ -83,7 +83,7 @@ type TableFooterRowAttributer interface {
 // To use a Table, call NewTable and then add column objects to it. The columns use a CellTexter to draw the contents of
 // a cell in the table. There are a number of predefined columns to draw text coming from slices of maps, slices, database objects,
 // as well as custom functions you define. See the examples directory for examples of using a Table object.
-// See also the PaginatedTable for a table that works with a Pager object to page through a large data set.
+// See also the PagedTable for a table that works with a Pager object to page through a large data set.
 //
 // Call MakeSortable() to make a table sortable, in which case the user can click in the header of a column to sort
 // by that column. The Table maintains a history of what columns have been sorted by what row, so that you can
@@ -637,18 +637,31 @@ func (t *Table) ΩUnmarshalState(m maps.Loader) {
 type TableCreator struct {
 	// ID is the control id
 	ID               string
-	HasColumnTags    bool
-	Caption          interface{} // string or paginator
+	// HasColTags will make the table render <col> tags
+	HasColTags       bool
+	// Caption is the content of the caption tag, and can either be a string, or a data pager
+	Caption          interface{}
+	// HideIfEmpty will hide the table completely if it has no data. Otherwise, the table and headers will be shown, but no data rows
 	HideIfEmpty      bool
+	// HeaderRowCount is the number of header rows. You must set this to at least 1 to show header rows.
 	HeaderRowCount   int
+	// FooterRowCount is the number of footer rows.
 	FooterRowCount   int
-	RowStyler        string
-	HeaderRowStyler  string
-	FooterRowStyler  string
+	// RowStyler returns the attributes to be used in a cell. It can be either a control id or a TableRowAttributer.
+	RowStyler        interface{}
+	// HeaderRowStyler returns the attributes to be used in a header cell. It can be either a control id or a TableHeaderRowAttributer.
+	HeaderRowStyler  interface{}
+	// FooterRowStyler returns the attributes to be used in a footer cell. It can be either a control id or a TableFooterRowAttributer.
+	FooterRowStyler  interface{}
+	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
+	// DataProvider is the data binder for the table. It can be either a control id or a DataBinder
 	DataProvider     interface{}
-	Data 			 interface{}
+	// Data is the actual data for the table, and should be a slice of objects
+	Data             interface{}
+	// Sortable will make the table sortable
 	Sortable         bool
+	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
 	SortHistoryLimit int
 	page.ControlOptions
 }
@@ -666,7 +679,7 @@ func (c TableCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 // Init is called by implementations of Buttons to initialize a control with the
 // creator. You do not normally need to call this.
 func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
-	ctrl.SetRenderColumnTags(c.HasColumnTags)
+	ctrl.SetRenderColumnTags(c.HasColTags)
 	ctrl.SetHideIfEmpty(c.HideIfEmpty)
 	if c.Caption != nil {
 		if ctrl2, ok := c.Caption.(page.Creator); ok {
@@ -682,15 +695,29 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 		ctrl.SetFooterRowCount(c.FooterRowCount)
 	}
 
-	if c.RowStyler != "" {
-		ctrl.SetRowStyler(ctrl.Page().GetControl(c.RowStyler).(TableRowAttributer))
+	if c.RowStyler != nil {
+		if s,ok := c.RowStyler.(string); ok {
+			ctrl.SetRowStyler(ctrl.Page().GetControl(s).(TableRowAttributer))
+		} else {
+			ctrl.SetRowStyler(c.RowStyler.(TableRowAttributer))
+		}
 	}
-	if c.HeaderRowStyler != "" {
-		ctrl.SetHeaderRowStyler(ctrl.Page().GetControl(c.HeaderRowStyler).(TableHeaderRowAttributer))
+	if c.HeaderRowStyler != nil {
+		if s,ok := c.HeaderRowStyler.(string); ok {
+			ctrl.SetHeaderRowStyler(ctrl.Page().GetControl(s).(TableHeaderRowAttributer))
+		} else {
+			ctrl.SetHeaderRowStyler(c.HeaderRowStyler.(TableHeaderRowAttributer))
+		}
 	}
-	if c.FooterRowStyler != "" {
-		ctrl.SetFooterRowStyler(ctrl.Page().GetControl(c.FooterRowStyler).(TableFooterRowAttributer))
+
+	if c.FooterRowStyler != nil {
+		if s,ok := c.FooterRowStyler.(string); ok {
+			ctrl.SetFooterRowStyler(ctrl.Page().GetControl(s).(TableFooterRowAttributer))
+		} else {
+			ctrl.SetFooterRowStyler(c.FooterRowStyler.(TableFooterRowAttributer))
+		}
 	}
+
 	if c.DataProvider != nil {
 		// If this fails, then perhaps you are giving a data provider id for a control that is not yet created. Create the control first.
 		var provider data.DataBinder

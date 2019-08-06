@@ -44,7 +44,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableCheckboxPanel{}
 	p.Panel.Init(p, parent, "checkboxTablePanel")
 	p.AddControls(ctx,
-		PaginatedTableCreator{
+		PagedTableCreator{
 			ID: "table1",
 			HeaderRowCount: 1,
 			DataProvider: "checkboxTablePanel",
@@ -65,8 +65,8 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 		},
 		// A DataPager can be a standalone control, which you draw manually
 		DataPagerCreator{
-			ID: "pager",
-			PaginatedControl:"table1",
+			ID:           "pager",
+			PagedControl: "table1",
 		},
 		ButtonCreator{
 			ID:       "ajaxButton",
@@ -84,7 +84,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (f *TableCheckboxPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	t := s.(PaginatedControlI)
+	t := s.(PagedControlI)
 	t.SetTotalItems(uint(len(table1Data)))
 	start, end := t.SliceOffsets()
 	s.SetData(table1Data[start:end])
@@ -121,7 +121,7 @@ func testTableCheckboxNav(t *browsertest.TestForm) {
 
 	t.SetCheckbox("table1_check1_1", true)
 	pager := f.Page().GetControl("pager").(*DataPager)
-	table := f.Page().GetControl("table1").(*PaginatedTable)
+	table := f.Page().GetControl("table1").(*PagedTable)
 	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
 	changes := col.Changes()
 	_, ok := changes["1"]
@@ -159,7 +159,7 @@ func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
 	btn := f.Page().GetControl(btnName)
 
 	t.SetCheckbox("table1_check1_1", true)
-	table := f.Page().GetControl("table1").(*PaginatedTable)
+	table := f.Page().GetControl("table1").(*PagedTable)
 	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
 	changes := col.Changes()
 	_, ok := changes["1"]

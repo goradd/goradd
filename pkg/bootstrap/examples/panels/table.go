@@ -3,15 +3,16 @@ package panels
 import (
 	"context"
 	"fmt"
+	. "github.com/goradd/goradd/pkg/bootstrap/control"
+	"github.com/goradd/goradd/pkg/bootstrap/examples"
 	"github.com/goradd/goradd/pkg/page"
-	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/control/data"
-	"github.com/goradd/goradd/web/examples/controls"
 )
 
 type TablePanel struct {
-	Panel
+	control.Panel
 }
 
 type TableMapData map[string]string
@@ -74,32 +75,11 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 	p := &TablePanel{}
 	p.Panel.Init(p, parent, "tablePanel")
 	p.AddControls(ctx,
-		PagedTableCreator{
+		control.PagedTableCreator{
 			ID: "table1",
 			HeaderRowCount: 1,
-			DataProvider: "tablePanel",
-			Columns:[]ColumnCreator {
-				column.TexterColumnCreator{
-					Texter: "tablePanel",
-					Title:"Custom",
-				},
-				column.SliceColumnCreator{
-					Index:1,
-					Title:"Slice",
-				},
-			},
-			PageSize:5,
-		},
-		// A DataPager can be a standalone control, which you draw manually
-		DataPagerCreator{
-			ID:           "pager1",
-			PagedControl: "table1",
-		},
-		PagedTableCreator{
-			ID: "table2",
-			HeaderRowCount: 1,
-			DataProvider: "tablePanel",
-			Columns:[]ColumnCreator {
+			DataProvider: p,
+			Columns:[]control.ColumnCreator {
 				column.TexterColumnCreator{
 					Texter: "tablePanel",
 					Title:"Custom",
@@ -116,12 +96,14 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 			},
 			PageSize:5,
 			// A DataPager can also be a caption, and will get drawn for you as part of the table
-			Caption:DataPagerCreator{
-				ID:           "pager2",
-				PagedControl: "table2",
+			ControlOptions: page.ControlOptions{
+				Class: "table", // this makes the table bootstrap style
 			},
 		},
-
+		DataPagerCreator{ // bootstrap puts its caption at the bottom of a table, so its not a good place for a pager
+			ID: "pager",
+			PagedControl: "table1",
+		},
 	)
 }
 
@@ -130,12 +112,7 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 func (f *TablePanel) BindData(ctx context.Context, s data.DataManagerI) {
 	switch s.ID() {
 	case "table1":
-		t := s.(PagedControlI)
-		t.SetTotalItems(uint(len(tableSliceData)))
-		start, end := t.SliceOffsets()
-		s.SetData(tableSliceData[start:end])
-	case "table2":
-		t := s.(PagedControlI)
+		t := s.(control.PagedControlI)
 		t.SetTotalItems(uint(len(tableMapData)))
 		start, end := t.SliceOffsets()
 		s.SetData(tableMapData[start:end])
@@ -144,18 +121,16 @@ func (f *TablePanel) BindData(ctx context.Context, s data.DataManagerI) {
 }
 
 // CellText here satisfies the CellTexter interface so that the panel can provide the text for a cell.
-func (f *TablePanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (f *TablePanel) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
 	// Here is an example of how to figure out what table we are talking about.
 	tid := col.ParentTable().ID()
 	switch tid {
 	case "table1":
-		return fmt.Sprintf("Id: %s, Row #%d, Col #%d", data.(TableSliceData)[0], rowNum, colNum)
-	case "table2":
 		return fmt.Sprintf("Id: %s, Row #%d, Col #%d", data.(TableMapData)["id"], rowNum, colNum)
 	}
 	return ""
 }
 
 func init() {
-	controls.RegisterPanel("table", "Tables", NewTablePanel, 5)
+	examples.RegisterPanel("table", "Tables", NewTablePanel, 5)
 }

@@ -32,7 +32,7 @@ func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 				Action: action.Ajax(p.ID(), ProxyClick),
 			},
 		},
-		PaginatedTableCreator{
+		PagedTableCreator{
 			ID: "table1",
 			DataProvider:p,
 			Columns:[]ColumnCreator {
@@ -45,7 +45,7 @@ func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 			},
 			SaveState: true,
 			Caption:DataPagerCreator{
-				PaginatedControl:"table1",
+				PagedControl: "table1",
 			},
 			PageSize:5,
 		},

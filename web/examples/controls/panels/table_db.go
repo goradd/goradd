@@ -21,7 +21,7 @@ func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableDbPanel{}
 	p.Panel.Init(p, parent, "tableDbPanel")
 	p.AddControls(ctx,
-		PaginatedTableCreator{
+		PagedTableCreator{
 			ID: "table1",
 			HeaderRowCount: 1,
 			DataProvider: p, // The data provider can be a predefined control, including the parent of the table.
@@ -50,8 +50,8 @@ func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 			PageSize:5,
 			SaveState: true,
 			Caption:DataPagerCreator{
-				ID: "pager",
-				PaginatedControl:"table1",
+				ID:           "pager",
+				PagedControl: "table1",
 			},
 			SortHistoryLimit: 3,
 		},
@@ -71,7 +71,7 @@ func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (p *TableDbPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	t := s.(*PaginatedTable)
+	t := s.(*PagedTable)
 	t.SetTotalItems(model.QueryPeople(ctx).Count(ctx, false))
 
 	// figure out how to sort the columns. This could be a simple process, or complex, depending on your data
