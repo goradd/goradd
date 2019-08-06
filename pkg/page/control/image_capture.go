@@ -30,9 +30,6 @@ type ImageCaptureI interface {
 // It only captures images from devices and browsers that support image capture.
 type ImageCapture struct {
 	Panel
-	CanvasID           string
-	CaptureImageCaptureID      string
-	SwitchCameraImageCaptureID string
 
 	ErrTextID string
 	data    []byte
@@ -57,15 +54,12 @@ func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string)
 	i.typ = "jpeg"
 	i.quality = 0.92
 
-	i.CanvasID = i.ID()+"_canvas"
-	NewCanvas(i, i.CanvasID)
+	NewCanvas(i, i.canvasID())
 	
-	i.CaptureImageCaptureID = i.ID()+"_capture"
-	NewImageCapture(i, i.CaptureImageCaptureID).
+	NewImageCapture(i, i.captureID()).
 		SetText(i.ΩT("New Image"))
 
-	i.SwitchCameraImageCaptureID = i.ID()+"_switch"
-	NewImageCapture(i, i.SwitchCameraImageCaptureID).
+	NewImageCapture(i, i.switchID()).
 		SetDisplay("none").
 		SetText(i.ΩT("Switch Camera"))
 
@@ -79,6 +73,21 @@ func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string)
 func (i *ImageCapture) this() ImageCaptureI {
 	return i.Self.(ImageCaptureI)
 }
+
+func (i *ImageCapture) canvasID() string {
+	return i.ID() + "_canvas"
+}
+
+func (i *ImageCapture) captureID() string {
+	return i.ID() + "_capture"
+}
+
+func (i *ImageCapture) switchID() string {
+	return i.ID() + "_switch"
+}
+
+
+
 
 func (i *ImageCapture) Data() []byte {
 	return i.data // clone?
@@ -131,7 +140,7 @@ func (i *ImageCapture) TurnOff() {
 // SetPixelSize sets the pixel size of the image that will be returned. Control the visible size of the canvas through
 // setting css sizes.
 func (i *ImageCapture) SetPixelSize(width int, height int) {
-	canvas := GetCanvas(i, i.CanvasID)
+	canvas := GetCanvas(i, i.canvasID())
 	canvas.SetAttribute("width", width)
 	canvas.SetAttribute("height", height)
 }
