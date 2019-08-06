@@ -25,6 +25,12 @@ type EventI interface {
 	Blocking() EventI
 	// Terminating creates an event that does not bubble, nor will it do the browser default for the event.
 	Terminating() EventI
+	// Bubbles is used with a Selector to determine if the event should bubble up from items contained by the selector,
+	// or should only come from the item specified by the selector
+	Bubbles() EventI
+	// Capture indicates an event should fire during the capture phase and not the bubbling phase.
+	// This is used in very special situations when you want to not allow a bubbled event to be blocked by a sub-object as it bubbles.
+	Capture() EventI
 	// Validate overrides the default validation specified by the control.
 	Validate(v ValidationType) EventI
 	// ValidationTargets overrides the validation targets specified by the control.
@@ -84,6 +90,12 @@ type Event struct {
 	validationTargetsOverride []string
 	// internally assigned event id
 	eventID EventID
+	// bubbles is used with a selector to determine if the event should bubble up from items contained by the selector,
+	// or should only come from the item specified by the selector
+	bubbles bool
+	// capture indicates an event should fire during the capture phase and not the bubbling phase.
+	// This is used in very special situations when you want to not allow a bubbled event to be blocked by a sub-object as it bubbles.
+	capture bool
 }
 
 // NewEvent creates an event that triggers on the given event type. Use the builder pattern functions from EventI to
@@ -117,11 +129,30 @@ func (e *Event) Delay(d int) EventI {
 }
 
 // Selector specifies a CSS filter that is used to check for bubbled events. This allows the event to be fired from
-// child controls.
+// child controls. By default, the event will not come from sub-controls of the
+// specified child controls. Use Bubbles or Capture to change that.
 func (e *Event) Selector(s string) EventI {
 	e.selector = s
 	return e
 }
+
+// Bubbles works with a Selector to allow events to come from sub-control
+// of the selected control. The event could be blocked by the sub-control if
+// the subcontrol issues a preventPropagation on the event.
+func (e *Event) Bubbles() EventI {
+	e.bubbles = true
+	return e
+}
+
+// Capture works with a Selector to allow events to come from a sub-control
+// of the selected control. The event never actually reaches the sub-control
+// for processing, and instead is captured and handled by the selected control.
+func (e *Event) Capture() EventI {
+	e.capture = true
+	return e
+}
+
+
 
 // Call Blocking to cause this event to prevent other events from firing after this fires, but before it processes.
 // If another event fires between the time when this event fires and when a response is received, it will be lost.
@@ -225,6 +256,17 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 	}
 
 	var js string
+	var options map[string]interface{}
+
+	if e.capture || e.bubbles {
+		options = make(map[string]interface{})
+		if e.bubbles {
+			options["bubbles"] = true
+		}
+		if e.capture {
+			options["capture"] = true
+		}
+	}
 
 	if e.preventDefault {
 		js += "event.preventDefault();\n"
@@ -257,7 +299,7 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 		js = js + actionJs
 	}
 
-	js = control.WrapEvent(e.JsEvent, e.selector, js)
+	js = control.WrapEvent(e.JsEvent, e.selector, js, options)
 
 	if !config.Minify {
 		// Render a comment
@@ -278,6 +320,8 @@ type eventEncoded struct {
 	Delay                     int
 	Selector                  string
 	Blocking                  bool
+	Bubbles bool
+	Capture bool
 	ActionValue               interface{} // A static value, or js to get a dynamic value when the action returns to us.
 	Actions                   []action2.ActionI
 	PreventDefault            bool
@@ -293,6 +337,8 @@ func (e *Event) GobEncode() (data []byte, err error) {
 		Delay:                     e.delay,
 		Selector:                  e.selector,
 		Blocking:                  e.blocking,
+		Bubbles: e.bubbles,
+		Capture: e.capture,
 		ActionValue:               e.actionValue,
 		Actions:                   e.actions,
 		PreventDefault:            e.preventDefault,
@@ -320,6 +366,8 @@ func (e *Event) GobDecode(data []byte) (err error) {
 	e.delay = s.Delay
 	e.selector = s.Selector
 	e.blocking = s.Blocking
+	e.bubbles = s.Bubbles
+	e.capture = s.Capture
 	e.actionValue = s.ActionValue
 	e.actions = s.Actions
 	e.preventDefault = s.PreventDefault

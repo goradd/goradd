@@ -1028,6 +1028,13 @@ goradd = {
     redirect: function(newLocation) {
         window.location = newLocation
     },
+    proxyVal: function(event) {
+        var target = event.target;
+        if (!!event.goradd && !!event.goradd.match) {
+            target = event.goradd.match;
+        }
+        return g$(target).data("grAv");
+    }
 
 };
 
@@ -1520,7 +1527,6 @@ goradd.g.prototype = {
      *      data: {*} Data to provide into the goradd.data item attached to the event. If this is a function, the function
      *        will be executed when the event fires, and the result provided to the event. The "this" of the function
      *        will be the "this" of the on call, unless of course you bind a different "this".
-     *  True to fire this event during initial capture phase. False to wait until it bubbles.
      */
     on: function(eventNames, selector, handler, options) {
         // TODO: This code breaks the built-in addEventListener ability to prevent multiple adds of the same handler.
@@ -1547,7 +1553,7 @@ goradd.g.prototype = {
 
         var capture = false;
         var target = self;
-        if (options) {
+        if (!!options) {
             if (typeof options !== "object") {
                 goradd.log("options must be an object if it is defined");
                 return;
@@ -1597,6 +1603,7 @@ goradd.g.prototype = {
                             event.goradd = {};
                         }
                         event.goradd.selector = selector;
+                        event.goradd.match = event.target;
                     }
                 }
                 var data;

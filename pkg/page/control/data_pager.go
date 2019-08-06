@@ -161,8 +161,7 @@ type DataPager struct {
 	LabelForNext     string
 	LabelForPrevious string
 
-	pagedControl string
-	proxyID      string
+	pagedControlID string
 }
 
 // NewDataPager creates a new DataPager
@@ -181,16 +180,19 @@ func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pa
 	d.LabelForPrevious = d.ΩT("Previous")
 	d.maxPageButtons = DefaultMaxPagerButtons
 	pagedControl.AddDataPager(self.(DataPagerI))
-	d.pagedControl = pagedControl.ID()
-	d.proxyID = d.ID() + "-pxy"
-	pxy := NewProxy(d, d.proxyID)
-	pxy.On(event.Click(), action.Ajax(d.ID(), PageClick))
+	d.pagedControlID = pagedControl.ID()
+	pxy := NewProxy(d, d.proxyID())
+	pxy.On(event.Click().Bubbles(), action.Ajax(d.ID(), PageClick))
 	d.SetAttribute("role", "tablist")
 	d.PagedControl().SetPageNum(1)
 }
 
+func (d *DataPager) proxyID() string {
+	return d.ID() + "-pxy"
+}
+
 func (d *DataPager) ButtonProxy() *Proxy {
-	return GetProxy(d, d.proxyID)
+	return GetProxy(d, d.proxyID())
 }
 
 
@@ -398,12 +400,11 @@ func (d *DataPager) NextButtonsHtml() string {
 
 	p := d.PagedControl()
 	pageNum := p.PageNum()
+	actionValue = strconv.Itoa(pageNum + 1)
 
 	attr := html.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("arrow next")
-
-	actionValue = strconv.Itoa(pageNum + 1)
 
 	_, pageEnd := d.CalcBunch()
 	pageCount := p.CalcPageCount()
@@ -459,7 +460,7 @@ func (d *DataPager) ΩUnmarshalState(m maps.Loader) {
 }
 
 func (d *DataPager) PagedControl() PagedControlI {
-	return d.Page().GetControl(d.pagedControl).(PagedControlI)
+	return d.Page().GetControl(d.pagedControlID).(PagedControlI)
 }
 
 func (d *DataPager) Serialize(e page.Encoder) (err error) {
@@ -487,11 +488,7 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 		return
 	}
 
-	if err = e.Encode(d.pagedControl); err != nil {
-		return
-	}
-
-	if err = e.Encode(d.proxyID); err != nil {
+	if err = e.Encode(d.pagedControlID); err != nil {
 		return
 	}
 
@@ -525,11 +522,7 @@ func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&d.pagedControl); err != nil {
-		return
-	}
-
-	if err = dec.Decode(&d.proxyID); err != nil {
+	if err = dec.Decode(&d.pagedControlID); err != nil {
 		return
 	}
 

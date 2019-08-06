@@ -62,7 +62,7 @@ func NewProxy(parent page.ControlI, id string) *Proxy {
 func (p *Proxy) Init(parent page.ControlI, id string) {
 	p.Control.Init(p, parent, id)
 	p.SetShouldAutoRender(true)
-	p.SetActionValue(javascript.JsCode(`g$(event.target).data("grAv")`))
+	p.SetActionValue(javascript.JsCode(`goradd.proxyVal(event)`))
 }
 
 func (p *Proxy) this() ProxyI {
@@ -182,9 +182,9 @@ func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
 }
 
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
-func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string) string {
+func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string {
 	// This attaches the event to the parent control.
-	return fmt.Sprintf(`g$('%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.Parent().ID(), eventName, p.ID(), eventJs)
+	return fmt.Sprintf(`g$('%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s}, %s);`, p.Parent().ID(), eventName, p.ID(), eventJs, javascript.ToJavaScript(options))
 }
 
 type On struct {

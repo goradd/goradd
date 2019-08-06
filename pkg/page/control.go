@@ -10,6 +10,7 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
+	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/log"
 	action2 "github.com/goradd/goradd/pkg/page/action"
 	buf2 "github.com/goradd/goradd/pkg/pool"
@@ -170,7 +171,7 @@ type ControlI interface {
 	ActionValue() interface{}
 	On(e EventI, a ...action2.ActionI) EventI
 	Off()
-	WrapEvent(eventName string, selector string, eventJs string) string
+	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
 	HasServerAction(eventName string) bool
 
 	ΩUpdateFormValues(*Context)
@@ -1083,11 +1084,11 @@ func (c *Control) GetActionScripts(r *Response) {
 }
 
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
-func (c *Control) WrapEvent(eventName string, selector string, eventJs string) string {
+func (c *Control) WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string {
 	if selector != "" {
-		return fmt.Sprintf("g$('%s').on('%s', '%s', function(event, ui){%s});", c.ID(), eventName, selector, eventJs)
+		return fmt.Sprintf("g$('%s').on('%s', '%s', function(event, ui){%s}, %s);", c.ID(), eventName, selector, eventJs, javascript.ToJavaScript(options))
 	} else {
-		return fmt.Sprintf("g$('%s').on('%s', function(event, ui){%s});", c.ID(), eventName, eventJs)
+		return fmt.Sprintf("g$('%s').on('%s', function(event, ui){%s}, %s);", c.ID(), eventName, eventJs, javascript.ToJavaScript(options))
 	}
 }
 

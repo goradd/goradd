@@ -81,16 +81,16 @@ func (d *DataPager) NextButtonsHtml() string {
 	var actionValue string
 	pageNum := d.PagedControl().PageNum()
 
+	actionValue = strconv.Itoa(pageNum + 1)
+
 	attr := html.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("btn " + string(d.ButtonStyle))
 
-	actionValue = strconv.Itoa(pageNum + 1)
-
 	_, pageEnd := d.CalcBunch()
 	pageCount := d.PagedControl().CalcPageCount()
 
-	if pageNum >= pageCount-1 {
+	if pageNum >= pageCount {
 		attr.SetDisabled(true)
 		attr.SetStyle("cursor", "not-allowed")
 	}
