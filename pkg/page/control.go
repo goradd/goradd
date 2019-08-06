@@ -146,6 +146,7 @@ type ControlI interface {
 	SetWidthStyle(w interface{}) ControlI
 	SetHeightStyle(w interface{}) ControlI
 	Attributes() *html.Attributes
+	SetDisplay(d string) ControlI
 
 	ΩPutCustomScript(ctx context.Context, response *Response)
 
@@ -1525,9 +1526,10 @@ func (c *Control) IsDisabled() bool {
 // SetDisplay sets the "display" property of the style attribute of the html control to the given value.
 // Also consider using SetVisible. If you use SetDisplay to hide a control, the control will still be
 // rendered in html, but the browser will not show it.
-func (c *Control) SetDisplay(d string) {
+func (c *Control) SetDisplay(d string) ControlI {
 	c.attributes.SetDisplay(d)
 	c.Refresh()
+	return c.this()
 }
 
 // IsDisplayed returns true if the control will be displayed.

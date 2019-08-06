@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -34,4 +35,24 @@ func (c *Canvas) ΩDrawingAttributes() *html.Attributes {
 	a := c.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "canvas")
 	return a
+}
+
+// CanvasCreator is the initialization structure for declarative creation of buttons
+type CanvasCreator struct {
+	// ID is the control id
+	ID string
+	page.ControlOptions
+}
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c CanvasCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewCanvas(parent, c.ID)
+	ctrl.ApplyOptions(c.ControlOptions)
+	return ctrl
+}
+
+// GetCanvas is a convenience method to return the canvas with the given id from the page.
+func GetCanvas(c page.ControlI, id string) *Canvas {
+	return c.Page().GetControl(id).(*Canvas)
 }
