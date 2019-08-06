@@ -64,7 +64,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 		attr.SetStyle("cursor", "not-allowed")
 	}
 
-	prev = d.Proxy.ButtonHtml(d.LabelForPrevious, actionValue, attr, true)
+	prev = d.ButtonProxy().ButtonHtml(d.LabelForPrevious, actionValue, attr, true)
 
 	h := prev
 	pageStart, _ := d.CalcBunch()
@@ -94,7 +94,7 @@ func (d *DataPager) NextButtonsHtml() string {
 		attr.SetStyle("cursor", "not-allowed")
 	}
 
-	next = d.Proxy.ButtonHtml(d.LabelForNext, actionValue, attr, true)
+	next = d.ButtonProxy().ButtonHtml(d.LabelForNext, actionValue, attr, true)
 
 	h := next
 	if pageEnd != pageCount {
@@ -121,7 +121,7 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 		attr.Set("tabindex", "-1")
 		// TODO: We need javascript to respond to arrow keys to set the focus on the buttons. User could then press space to click on button.
 	}
-	return d.Proxy.ButtonHtml(actionValue, actionValue, attr, false)
+	return d.ButtonProxy().ButtonHtml(actionValue, actionValue, attr, false)
 }
 
 func (d *DataPager) Serialize(e page.Encoder) (err error) {

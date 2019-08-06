@@ -162,7 +162,7 @@ type DataPager struct {
 	LabelForPrevious string
 
 	paginatedControl string
-	Proxy            *Proxy
+	proxyID          string
 }
 
 // NewDataPager creates a new DataPager
@@ -182,11 +182,17 @@ func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pa
 	d.maxPageButtons = DefaultMaxPagintorButtons
 	paginatedControl.AddDataPager(self.(DataPagerI))
 	d.paginatedControl = paginatedControl.ID()
-	d.Proxy = NewProxy(d)
-	d.Proxy.On(event.Click(), action.Ajax(d.ID(), PageClick))
+	d.proxyID = d.ID() + "-pxy"
+	pxy := NewProxy(d, d.proxyID)
+	pxy.On(event.Click(), action.Ajax(d.ID(), PageClick))
 	d.SetAttribute("role", "tablist")
 	d.PaginatedControl().SetPageNum(1)
 }
+
+func (d *DataPager) ButtonProxy() *Proxy {
+	return GetProxy(d, d.proxyID)
+}
+
 
 // ΩDrawingAttributes is called by the framework to add temporary attributes to the html.
 func (d *DataPager) ΩDrawingAttributes() *html.Attributes {
@@ -373,7 +379,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 		attr.SetStyle("cursor", "not-allowed")
 	}
 
-	prev = d.Proxy.ButtonHtml(d.LabelForPrevious, actionValue, attr, false)
+	prev = d.ButtonProxy().ButtonHtml(d.LabelForPrevious, actionValue, attr, false)
 
 	h := prev
 	pageStart, _ := d.CalcBunch()
@@ -407,7 +413,7 @@ func (d *DataPager) NextButtonsHtml() string {
 		attr.SetStyle("cursor", "not-allowed")
 	}
 
-	next = d.Proxy.ButtonHtml(d.LabelForNext, actionValue, attr, false)
+	next = d.ButtonProxy().ButtonHtml(d.LabelForNext, actionValue, attr, false)
 
 	h := next
 	if pageEnd != pageCount {
@@ -435,7 +441,7 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 		attr.Set("tabindex", "-1")
 		// TODO: We need javascript to respond to arrow keys to set the focus on the buttons. User could then press space to click on button.
 	}
-	return d.Proxy.ButtonHtml(actionValue, actionValue, attr, false)
+	return d.ButtonProxy().ButtonHtml(actionValue, actionValue, attr, false)
 }
 
 // ΩMarshalState is an internal function to save the state of the control
@@ -485,7 +491,7 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 		return
 	}
 
-	if err = e.EncodeControl(d.Proxy); err != nil {
+	if err = e.Encode(d.proxyID); err != nil {
 		return
 	}
 
@@ -523,10 +529,8 @@ func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
 		return
 	}
 
-	if ci, err := dec.DecodeControl(p); err != nil {
-		return err
-	} else {
-		d.Proxy = ci.(*Proxy)
+	if err = dec.Decode(&d.proxyID); err != nil {
+		return
 	}
 
 	return

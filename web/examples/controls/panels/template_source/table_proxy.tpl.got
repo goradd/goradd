@@ -40,9 +40,8 @@ that allow you to click on a record to see detail of the record.
 <p>You have not installed the goradd example database. See the examples/readme.txt file for instructions.<p>
 {{g log.Error("goradd database not installed.") }}
 {{else}}
-{{draw control.Pager1}}
-{{draw control.Table1}}
-{{draw control.ProjectPanel}}
+{{draw table1 }}
+{{draw personPanel }}
 
 {{if}}
 

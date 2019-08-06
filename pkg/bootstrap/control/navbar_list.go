@@ -22,7 +22,7 @@ type NavbarList struct {
 	control.ItemList
 	subItemTag string
 	data.DataManager
-	Proxy *control.Proxy
+	ProxyID string
 }
 
 func NavbarSelectEvent() page.EventI {
@@ -42,10 +42,16 @@ func (l *NavbarList) Init(self NavbarListI, parent page.ControlI, id string) {
 	l.Control.Init(self, parent, id)
 	l.Tag = "ul"
 	l.subItemTag = "li"
-	l.Proxy = control.NewProxy(l)
+	l.ProxyID = l.ID() + "-pxy"
 
-	l.Proxy.On(event.Click(),
+	pxy := control.NewProxy(l, "")
+
+	pxy.On(event.Click(),
 		action.Trigger(l.ID(), "gr-bs-navbarselect", javascript.JsCode("g$(this).data('grAv')")))
+}
+
+func (l *NavbarList) ItemProxy() *control.Proxy {
+	return control.GetProxy(l, l.ProxyID)
 }
 
 func (l *NavbarList) this() NavbarListI {
@@ -135,7 +141,7 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI
 				}
 
 				if item.Anchor() == "" {
-					itemH = l.Proxy.LinkHtml(ctx, itemH, item.ID(), linkAttributes)
+					itemH = l.ItemProxy().LinkHtml(ctx, itemH, item.ID(), linkAttributes)
 				}
 				if !hasParent {
 					itemH = html.RenderTag(l.subItemTag, itemAttributes, itemH)

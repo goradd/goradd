@@ -1848,8 +1848,8 @@ type ControlOptions struct {
 	IsRequired bool
 	// IsHidden initializes this control as hidden. A place holder will be sent in the html so that when the control is shown through ajax, we will know where to put it.
 	IsHidden bool
-	// Actions adds events with actions to the control
-	Events EventList
+	// On adds events with actions to the control
+	On EventList
 	// DataConnector is the ViewModel layer that moves data between the control and an attached model.
 	DataConnector DataConnector
 }
@@ -1865,7 +1865,7 @@ func (c *Control) ApplyOptions (o ControlOptions) {
 	for k,v := range o.Styles {
 		c.SetStyle(k, v)
 	}
-	for _,a := range o.Events {
+	for _,a := range o.On {
 		if action,ok := a.Actions.(action2.ActionI); ok {
 			c.On(a.Event, action)
 		} else if actions,ok := a.Actions.([]action2.ActionI); ok {

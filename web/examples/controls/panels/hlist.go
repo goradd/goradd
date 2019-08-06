@@ -15,12 +15,12 @@ type person struct {
 	name string
 }
 
-type project struct {
+type hlistProject struct {
 	name   string
 	people []person
 }
 
-var projects = []project{
+var hlistProjects = []hlistProject{
 	{"Acme Widget", []person{{"Isaiah"}, {"Alaina"}, {"Gabriel"}}},
 	{"Ace Thingers", []person{{"Agustin"}, {"Abby"}, {"Josiah"}, {"Anthony"}}},
 	{"Big Business", []person{{"Shannon"}}},
@@ -60,7 +60,7 @@ func (p *HListPanel) BindData(ctx context.Context, s data.DataManagerI) {
 	// One use of this is to query the database, and then walk the results.
 	ulist := s.(*UnorderedList)
 	ulist.Clear()
-	for _, proj := range projects {
+	for _, proj := range hlistProjects {
 		listItem := NewListItem(proj.name)
 		for _, per := range proj.people {
 			listItem.AddItem(per.name)

@@ -53,14 +53,14 @@ type Proxy struct {
 }
 
 // NewProxy creates a new proxy. The parent must be the wrapping control of the objects that the proxy will manage.
-func NewProxy(parent page.ControlI) *Proxy {
+func NewProxy(parent page.ControlI, id string) *Proxy {
 	p := Proxy{}
-	p.Init(parent)
+	p.Init(parent, id)
 	return &p
 }
 
-func (p *Proxy) Init(parent page.ControlI) {
-	p.Control.Init(p, parent, "")
+func (p *Proxy) Init(parent page.ControlI, id string) {
+	p.Control.Init(p, parent, id)
 	p.SetShouldAutoRender(true)
 	p.SetActionValue(javascript.JsCode(`g$(event.target).data("grAv")`))
 }
@@ -185,4 +185,33 @@ func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
 func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string) string {
 	// This attaches the event to the parent control.
 	return fmt.Sprintf(`g$('%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.Parent().ID(), eventName, p.ID(), eventJs)
+}
+
+type On struct {
+	Event page.EventI
+	Action action.ActionI
+}
+
+type ProxyCreator struct {
+	// ID is the id of the proxy. Proxies do not draw, so this id will not show up in the html, but you can
+	// use it to get the proxy from the page.
+	ID string
+	// On is a shortcut to assign a single action to an event. If you want a proxy that responds to more than
+	// one event or action, use On in the ControlOptions struct
+	On On
+	page.ControlOptions
+}
+
+func (c ProxyCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewProxy(parent, c.ID)
+	if c.On.Event != nil {
+		ctrl.On(c.On.Event, c.On.Action)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+	return ctrl
+}
+
+// GetProxy is a convenience method to return the button with the given id from the page.
+func GetProxy(c page.ControlI, id string) *Proxy {
+	return c.Page().GetControl(id).(*Proxy)
 }

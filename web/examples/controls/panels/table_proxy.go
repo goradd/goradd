@@ -19,27 +19,38 @@ import (
 
 type TableProxyPanel struct {
 	Panel
-
-	Table1       *PaginatedTable
-	Pager1       *DataPager
-	Pxy          *Proxy
-	ProjectPanel *ProjectPanel
 }
 
 func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableProxyPanel{}
 	p.Panel.Init(p, parent, "tableProxyPanel")
-
-	p.Pxy = NewProxy(p)
-	p.Pxy.On(event.Click(), action.Ajax(p.ID(), ProxyClick))
-
-	p.Table1 = NewPaginatedTable(p, "table1")
-	p.Table1.SetDataProvider(p)
-	p.Table1.AddColumn(column.NewTexterColumn(p).SetIsHtml(true))
-	p.Pager1 = NewDataPager(p, "pager1", p.Table1)
-	p.Table1.SetPageSize(5)
-
-	p.ProjectPanel = NewProjectPanel(p)
+	p.AddControls(ctx,
+		ProxyCreator{
+			ID: "pxy",
+			On: On {
+				Event:  event.Click(),
+				Action: action.Ajax(p.ID(), ProxyClick),
+			},
+		},
+		PaginatedTableCreator{
+			ID: "table1",
+			DataProvider:p,
+			Columns:[]ColumnCreator {
+				column.TexterColumnCreator{
+					Texter: p,
+					ColumnOptions: ColumnOptions{
+						IsHtml:true,
+					},
+				},
+			},
+			SaveState: true,
+			Caption:DataPagerCreator{
+				PaginatedControl:"table1",
+			},
+			PageSize:5,
+		},
+		ProjectPanelCreator{},
+	)
 
 	log.Debug("Proxy Table Created")
 
@@ -48,18 +59,19 @@ func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (p *TableProxyPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	p.Table1.SetTotalItems(QueryProjects(ctx).Count(ctx, false))
+	t := GetPaginatedTable(p, "table1")
+	t.SetTotalItems(QueryProjects(ctx).Count(ctx, false))
 
 	projects := QueryProjects(ctx).
-		Limit(p.Table1.SqlLimits()).
+		Limit(t.SqlLimits()).
 		Load(ctx)
-	p.Table1.SetData(projects)
+	t.SetData(projects)
 
 	log.Debug("Binding Data - ", projects)
 
 }
 
-func (f *TableProxyPanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (p *TableProxyPanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	// Since we only have one custom column, we know what we are getting.
 	project := data.(*Project)
 	id := crypt.SessionEncryptUrlValue(ctx, project.ID()) // Since this is a database id, lets encrypt it for extra security
@@ -68,7 +80,8 @@ func (f *TableProxyPanel) CellText(ctx context.Context, col ColumnI, rowNum int,
 	attr := html.NewAttributes()
 	attr.SetID("pxy" + project.ID())
 
-	v := f.Pxy.LinkHtml(ctx, project.Name(),
+	pxy := GetProxy(p, "pxy")
+	v := pxy.LinkHtml(ctx, project.Name(),
 		id,
 		attr)
 	return v
@@ -81,7 +94,7 @@ func (p *TableProxyPanel) Action(ctx context.Context, a page.ActionParams) {
 		id = crypt.SessionDecryptUrlValue(ctx, id)
 		if id != "" {
 			project := LoadProject(ctx, id)
-			p.ProjectPanel.SetProject(project)
+			GetProjectPanel(p).SetProject(project)
 		}
 	}
 }
@@ -117,4 +130,20 @@ func testTableProxyCol(t *browsertest.TestForm) {
 	t.AssertEqual("<label>Name</label>ACME Website Redesign", h)
 */	t.Done("Complete")
 
+}
+
+// PanelCreator creates a div control with child controls.
+// Pass it to AddControls or as a child of a parent control.
+type ProjectPanelCreator struct {
+}
+
+// Create is called by the framework to create the panel. You do not normally need to call this.
+func (c ProjectPanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewProjectPanel(parent)
+	return ctrl
+}
+
+// GetProjectPanel is a convenience method to return the panel with the given id from the page.
+func GetProjectPanel(c page.ControlI) *ProjectPanel {
+	return c.Page().GetControl("personPanel").(*ProjectPanel)
 }
