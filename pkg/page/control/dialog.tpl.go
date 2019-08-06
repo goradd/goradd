@@ -9,7 +9,7 @@ import (
 )
 
 func (d *Dialog) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
-	d.titleBar.Draw(ctx, buf)
+	d.TitleBar().Draw(ctx, buf)
 
 	l := len(d.Children())
 	if l > 2 {
@@ -21,6 +21,6 @@ func (d *Dialog) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error
 		buf.WriteString(html.EscapeString(d.Text()))
 
 	}
-	d.buttonBar.Draw(ctx, buf)
+	d.ButtonBar().Draw(ctx, buf)
 	return
 }
