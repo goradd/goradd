@@ -59,7 +59,7 @@ func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (p *TableProxyPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	t := GetPaginatedTable(p, "table1")
+	t := GetPagedTable(p, "table1")
 	t.SetTotalItems(QueryProjects(ctx).Count(ctx, false))
 
 	projects := QueryProjects(ctx).

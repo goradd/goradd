@@ -18,7 +18,7 @@ const (
 	PageClick = iota + 1000
 )
 
-// PagedControlI is the interface that paginated controls must implement
+// PagedControlI is the interface that paged controls must implement
 type PagedControlI interface {
 	data.DataManagerI
 	SetTotalItems(uint)
@@ -161,32 +161,32 @@ type DataPager struct {
 	LabelForNext     string
 	LabelForPrevious string
 
-	paginatedControl string
-	proxyID          string
+	pagedControl string
+	proxyID      string
 }
 
 // NewDataPager creates a new DataPager
-func NewDataPager(parent page.ControlI, id string, paginatedControl PagedControlI) *DataPager {
+func NewDataPager(parent page.ControlI, id string, pagedControl PagedControlI) *DataPager {
 	d := DataPager{}
-	d.Init(&d, parent, id, paginatedControl)
+	d.Init(&d, parent, id, pagedControl)
 	return &d
 }
 
 // Init is called by subclasses of a DataPager to initialize the data pager. You do not normally need
 // to call this.
-func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, paginatedControl PagedControlI) {
+func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pagedControl PagedControlI) {
 	d.Control.Init(self, parent, id)
 	d.Tag = "div"
 	d.LabelForNext = d.ΩT("Next")
 	d.LabelForPrevious = d.ΩT("Previous")
 	d.maxPageButtons = DefaultMaxPagerButtons
-	paginatedControl.AddDataPager(self.(DataPagerI))
-	d.paginatedControl = paginatedControl.ID()
+	pagedControl.AddDataPager(self.(DataPagerI))
+	d.pagedControl = pagedControl.ID()
 	d.proxyID = d.ID() + "-pxy"
 	pxy := NewProxy(d, d.proxyID)
 	pxy.On(event.Click(), action.Ajax(d.ID(), PageClick))
 	d.SetAttribute("role", "tablist")
-	d.PaginatedControl().SetPageNum(1)
+	d.PagedControl().SetPageNum(1)
 }
 
 func (d *DataPager) ButtonProxy() *Proxy {
@@ -206,7 +206,7 @@ func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
 	switch params.ID {
 	case PageClick:
 		pageNum := params.ControlValueInt();
-		p := d.PaginatedControl()
+		p := d.PagedControl()
 		if pageNum < 1 {
 			pageNum = 1
 		} else {
@@ -223,8 +223,8 @@ func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
 	}
 }
 
-func (d *DataPager) refreshPaginatedControl() {
-	d.PaginatedControl().Refresh()
+func (d *DataPager) refreshPagedControl() {
+	d.PagedControl().Refresh()
 }
 
 // SetMaxPageButtons sets the maximum number of buttons that will be displayed in the paginator.
@@ -300,7 +300,7 @@ Note: there are likely better ways to do this. Some innovative ones are to have 
 Or, use the ellipsis as a dropdown menu for more selections
 */
 func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
-	p := d.PaginatedControl()
+	p := d.PagedControl()
 	pageCount := p.CalcPageCount()
 	pageNum := p.PageNum()
 
@@ -331,13 +331,13 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 	}
 }
 
-// ΩPreRender is called by the framework to load data into the paginated control just before drawing.
+// ΩPreRender is called by the framework to load data into the paged control just before drawing.
 func (d *DataPager) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
 	err = d.Control.ΩPreRender(ctx, buf)
-	p := d.PaginatedControl()
+	p := d.PagedControl()
 
 	if err == nil {
-		// If we are being drawn before the paginated control, we must tell the paginated control to load up its
+		// If we are being drawn before the paged control, we must tell the paged control to load up its
 		// data so that we can figure out what to do
 		if !p.WasRendered() &&
 			!p.IsRendering() { // not a child control
@@ -366,7 +366,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 	var prev string
 	var actionValue string
 
-	pageNum := d.PaginatedControl().PageNum()
+	pageNum := d.PagedControl().PageNum()
 
 	actionValue = strconv.Itoa(pageNum - 1)
 
@@ -396,7 +396,7 @@ func (d *DataPager) NextButtonsHtml() string {
 	var next string
 	var actionValue string
 
-	p := d.PaginatedControl()
+	p := d.PagedControl()
 	pageNum := p.PageNum()
 
 	attr := html.NewAttributes().
@@ -429,7 +429,7 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 	actionValue := strconv.Itoa(i)
 	buttonId := d.ID() + "_page_" + actionValue
 	attr := html.NewAttributes().Set("id", buttonId).Set("role", "tab").AddClass("page")
-	p := d.PaginatedControl()
+	p := d.PagedControl()
 	pageNum := p.PageNum()
 
 	if pageNum == i {
@@ -446,20 +446,20 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 
 // ΩMarshalState is an internal function to save the state of the control
 func (d *DataPager) ΩMarshalState(m maps.Setter) {
-	m.Set("pageNum", d.PaginatedControl().PageNum())
+	m.Set("pageNum", d.PagedControl().PageNum())
 }
 
 // ΩUnmarshalState is an internal function to restore the state of the control
 func (d *DataPager) ΩUnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("pageNum"); ok {
 		if i, ok := v.(int); ok {
-			d.PaginatedControl().SetPageNum(i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
+			d.PagedControl().SetPageNum(i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
 		}
 	}
 }
 
-func (d *DataPager) PaginatedControl() PagedControlI {
-	return d.Page().GetControl(d.paginatedControl).(PagedControlI)
+func (d *DataPager) PagedControl() PagedControlI {
+	return d.Page().GetControl(d.pagedControl).(PagedControlI)
 }
 
 func (d *DataPager) Serialize(e page.Encoder) (err error) {
@@ -487,7 +487,7 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 		return
 	}
 
-	if err = e.Encode(d.paginatedControl); err != nil {
+	if err = e.Encode(d.pagedControl); err != nil {
 		return
 	}
 
@@ -525,7 +525,7 @@ func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&d.paginatedControl); err != nil {
+	if err = dec.Decode(&d.pagedControl); err != nil {
 		return
 	}
 
@@ -564,7 +564,7 @@ type DataPagerCreator struct {
 // do not normally need to call this.
 func (c DataPagerCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	if !parent.Page().HasControl(c.PagedControl) {
-		panic ("you must declare the paginated control before the data pager")
+		panic ("you must declare the paged control before the data pager")
 	}
 	p := parent.Page().GetControl(c.PagedControl).(PagedControlI)
 	ctrl := NewDataPager(parent, c.ID, p)

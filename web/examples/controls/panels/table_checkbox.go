@@ -93,7 +93,7 @@ func (f *TableCheckboxPanel) BindData(ctx context.Context, s data.DataManagerI) 
 func (p *TableCheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case ButtonSubmit:
-		col := GetPaginatedTable(p, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		col := GetPagedTable(p, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
 		for k, v := range col.Changes() {
 			i, _ := strconv.Atoi(k)
 			var s string

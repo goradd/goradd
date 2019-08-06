@@ -30,8 +30,8 @@ func NewDataPager(parent page.ControlI, id string, pagedControl control.PagedCon
 	return &d
 }
 
-func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, paginatedControl control.PagedControlI) {
-	d.DataPager.Init(self, parent, id, paginatedControl)
+func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pagedControl control.PagedControlI) {
+	d.DataPager.Init(self, parent, id, pagedControl)
 	d.SetLabels(`<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>`,
 		`<span aria-hidden="true">&raquo;</span> <span class="sr-only">Next</span>`)
 	d.ButtonStyle = ButtonStyleOutlineSecondary
@@ -53,7 +53,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 	var prev string
 	var actionValue string
 
-	pageNum := d.PaginatedControl().PageNum()
+	pageNum := d.PagedControl().PageNum()
 	actionValue = strconv.Itoa(pageNum - 1)
 
 	attr := html.NewAttributes().
@@ -79,7 +79,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 func (d *DataPager) NextButtonsHtml() string {
 	var next string
 	var actionValue string
-	pageNum := d.PaginatedControl().PageNum()
+	pageNum := d.PagedControl().PageNum()
 
 	attr := html.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
@@ -88,7 +88,7 @@ func (d *DataPager) NextButtonsHtml() string {
 	actionValue = strconv.Itoa(pageNum + 1)
 
 	_, pageEnd := d.CalcBunch()
-	pageCount := d.PaginatedControl().CalcPageCount()
+	pageCount := d.PagedControl().CalcPageCount()
 
 	if pageNum >= pageCount-1 {
 		attr.SetDisabled(true)
@@ -106,7 +106,7 @@ func (d *DataPager) NextButtonsHtml() string {
 }
 
 func (d *DataPager) PageButtonsHtml(i int) string {
-	pageNum := d.PaginatedControl().PageNum()
+	pageNum := d.PagedControl().PageNum()
 
 	actionValue := strconv.Itoa(i)
 	attr := html.NewAttributes().Set("id", d.ID()+"_page_"+actionValue).
@@ -192,7 +192,7 @@ type DataPagerCreator struct {
 // do not normally need to call this.
 func (c DataPagerCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	if !parent.Page().HasControl(c.PagedControl) {
-		panic ("you must declare the paginated control before the data pager")
+		panic ("you must declare the paged control before the data pager")
 	}
 	p := parent.Page().GetControl(c.PagedControl).(control.PagedControlI)
 	ctrl := NewDataPager(parent, c.ID, p)

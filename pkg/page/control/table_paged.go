@@ -103,7 +103,7 @@ func (c PagedTableCreator) Init(ctx context.Context, ctrl PagedTableI) {
 	}
 }
 
-// GetPaginatedTable is a convenience method to return the button with the given id from the page.
-func GetPaginatedTable(c page.ControlI, id string) *PagedTable {
+// GetPagedTable is a convenience method to return the table with the given id from the page.
+func GetPagedTable(c page.ControlI, id string) *PagedTable {
 	return c.Page().GetControl(id).(*PagedTable)
 }

@@ -29,7 +29,7 @@ import(
 
 type {{= panelName }} struct {
 	Panel
-	List *PaginatedTable
+	List *PagedTable
 	Paginator *DataPager
 }
 
@@ -48,7 +48,7 @@ func (p *{{= panelName }}) this() {{= panelName }}I {
 
 // CreateLister creates the object that lists the data
 func (p *{{= panelName }}) CreateList(rowClickActionID int) {
-	p.List = NewPaginatedTable(p, p.ID() + "-list")
+	p.List = NewPagedTable(p, p.ID() + "-list")
 
 	p.Paginator = NewDataPager(p.List, p.ID() + "-pager", p.List)
 	p.List.AddDataPager(p.Paginator)
