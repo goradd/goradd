@@ -19,19 +19,29 @@ const (
 
 type ControlsForm struct {
 	FormBase
-	list   *bootstrap.NavbarList
 }
 
 func NewControlsForm(ctx context.Context) page.FormI {
 	f := &ControlsForm{}
 	f.Init(ctx, f, ControlsFormPath, ControlsFormId)
 	f.AddRelatedFiles()
-
-	nav := bootstrap.NewNavbar(f, "nav")
-	f.list = bootstrap.NewNavbarList(nav, "navList")
-
-	f.list.SetDataProvider(f)
-	NewPanel(f, "detailPanel").AddClass("container")
+	f.AddControls(ctx,
+		bootstrap.NavbarCreator{
+			ID: "nav",
+			Children:Children(
+				bootstrap.NavbarListCreator{
+					ID: "navList",
+					DataProvider:f,
+				},
+			),
+		},
+		PanelCreator{
+			ID: "detailPanel",
+			ControlOptions: page.ControlOptions{
+				Class: "container",
+			},
+		},
+	)
 
 	return f
 }
@@ -63,7 +73,7 @@ func (f *ControlsForm) BindData(ctx context.Context, s data.DataManagerI) {
 	})
 	pageContext := page.GetContext(ctx)
 	for _, c := range controls {
-		item := f.list.AddItem(c.name, c.key)
+		item := bootstrap.GetNavbarList(f, "navList").AddItem(c.name, c.key)
 		a := url.
 			NewBuilderFromUrl(*pageContext.URL).
 			SetValue("control", c.key).

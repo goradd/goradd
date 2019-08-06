@@ -209,9 +209,9 @@ type RadioListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []ListValue
-	// DataProvider is the id of a control that will dynamically provide the data for the list and that implements the DataProvider interface.
-	// Often this is the parent of the control.
-	DataProvider string
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	// This can be either an id of a control, or the control itself.
+	DataProvider interface{}
 	// ColumnCount specifies how many columns to show
 	ColumnCount int
 	// LayoutDirection determines how the items are arranged in the columns
@@ -241,10 +241,15 @@ func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
 	if c.Items != nil {
 		ctrl.AddListItems(c.Items)
 	}
-	if c.DataProvider != "" {
+	if c.DataProvider != nil {
 		// If this fails, then perhaps you are giving a data provider id for a control that is not yet created. Create the control first.
-		provider := ctrl.Page().GetControl(c.DataProvider)
-		ctrl.SetDataProvider(provider.(data.DataBinder))
+		var provider data.DataBinder
+		if s,ok := c.DataProvider.(string); ok {
+			provider = ctrl.Page().GetControl(s).(data.DataBinder)
+		} else {
+			provider = c.DataProvider.(data.DataBinder)
+		}
+		ctrl.SetDataProvider(provider)
 	}
 	if c.ColumnCount != 0 {
 		ctrl.SetColumnCount(c.ColumnCount)

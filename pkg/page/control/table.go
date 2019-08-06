@@ -655,7 +655,8 @@ type TableCreator struct {
 	FooterRowStyler  interface{}
 	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
-	// DataProvider is the data binder for the table. It can be either a control id or a DataBinder
+	// DataProvider is the control that will dynamically provide the data for the table and that implements the DataBinder interface.
+	// This can be either an id of a control, or the control itself.
 	DataProvider     interface{}
 	// Data is the actual data for the table, and should be a slice of objects
 	Data             interface{}
@@ -728,6 +729,7 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 		}
 		ctrl.SetDataProvider(provider)
 	}
+
 	if c.Data != nil {
 		ctrl.SetData(c.Data)
 	}

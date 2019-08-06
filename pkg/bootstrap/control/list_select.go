@@ -38,9 +38,9 @@ type SelectListCreator struct {
 	// NilItem is a helper to add an item at the top of the list with a nil value. This is often
 	// used to specify no selection, or a message that a selection is required.
 	NilItem string
-	// DataProvider is the id of a control that will dynamically provide the data for the list and that implements the DataProvider interface.
-	// Often this is the parent of the control.
-	DataProvider string
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataProvider interface.
+	// Provide either a string id of a control, or the provider itself
+	DataProvider interface{}
 	// Size specifies how many items to show, and turns the list into a scrolling list
 	Size int
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
