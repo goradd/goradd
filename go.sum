@@ -19,6 +19,7 @@ github.com/goradd/gengen v0.1.5 h1:9UmBg4QAEeElS/ww8rBm7HYvkaqfe9vLuhiFjCuVZro=
 github.com/goradd/gengen v0.1.5/go.mod h1:35hoePmgDfiH2wBr26ABvqmGnl/laPeJYJ5Sw1DQkkg=
 github.com/goradd/gengen v0.2.1 h1:gHuB4S4pMJubOtxCseuUScYr4kzlP3LwGEvdEZhucvs=
 github.com/goradd/gengen v0.2.1/go.mod h1:35hoePmgDfiH2wBr26ABvqmGnl/laPeJYJ5Sw1DQkkg=
+github.com/goradd/gengen v0.3.0/go.mod h1:35hoePmgDfiH2wBr26ABvqmGnl/laPeJYJ5Sw1DQkkg=
 github.com/goradd/gofile v0.1.2/go.mod h1:Il/+n/haoU0ZJJjwJ6t9f+fFtxrUuEfCG/vEkV1n9is=
 github.com/goradd/gofile v0.1.4 h1:d76muTCpPWyujRbdmj4+QOaMjwtFc91X6XpraY+3e4M=
 github.com/goradd/gofile v0.1.4/go.mod h1:FZVfQmXDUNgS7nKPMOsuIxf1VaC1vxYFeP0bmL8fcDU=
