@@ -223,7 +223,7 @@ func (d *Dialog) SetButtonVisible(id string, visible bool) {
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (d *Dialog) SetButtonStyles(id string, a *html.Style) {
+func (d *Dialog) SetButtonStyles(id string, a html.Style) {
 	bb := d.ButtonBar()
 	if ctrl := bb.Child(id); ctrl != nil {
 		ctrl.SetStyles(a)

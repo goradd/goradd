@@ -3,10 +3,9 @@ package html
 import (
 	"errors"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
+	maps2 "github.com/goradd/goradd/pkg/maps"
 	"math"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -29,25 +28,52 @@ var nonLengthNumerics = map[string]bool{
 // Style makes it easy to add and manipulate individual properties in a generated style sheet
 // Its main use is for generating a style attribute in an HTML tag
 // It implements the String interface to get the style properties as an HTML embeddable string
-type Style struct {
-	*maps.StringSliceMap
-}
+type Style map[string]string
 
 // NewStyle initializes an empty Style object
-func NewStyle() *Style {
-	m := maps.NewStringSliceMap()
-	m.SortByKeys()
-	return &Style{m}
+func NewStyle() Style {
+	return make(map[string]string)
 }
 
-func NewStyleFromMap(m map[string]string) *Style {
-	m2 := maps.NewStringSliceMapFromMap(m)
-	m2.SortByKeys()
-	return &Style{m2}
+func NewStyleFromMap(m map[string]string) Style {
+	s := NewStyle()
+	for k,v := range m {
+		s[k] = v
+	}
+	return s
+}
+
+func (s Style) Merge(m Style) {
+	for k,v := range m {
+		s[k] = v
+	}
+}
+
+func (s Style) Len() int {
+	if s == nil {
+		return 0
+	}
+	return len(s)
+}
+
+func (s Style) Has(prop string) bool {
+	if s == nil {
+		return false
+	}
+	_,ok := s[prop]
+	return ok
+}
+
+func (s Style) Get(prop string) string {
+	return s[prop]
+}
+
+func (s Style) Delete(prop string) {
+	delete(s, prop)
 }
 
 // SetTo receives a style encoded "style" attribute into the Style structure (e.g. "width: 4px; border: 1px solid black")
-func (s *Style) SetTo(text string) (changed bool, err error) {
+func (s Style) SetTo(text string) (changed bool, err error) {
 	s.RemoveAll()
 	a := strings.Split(string(text), ";") // break apart into pairs
 	changed = false
@@ -107,7 +133,11 @@ func (s Style) SetChanged(n string, v string) (changed bool, err error) {
 }
 
 // Set is like SetChanged, but returns the Style for chaining.
+// It will also allocate a style if passed a nil style, and return it
 func (s Style) Set(n string, v string) Style {
+	if s == nil {
+		s = NewStyle()
+	}
 	_, err := s.SetChanged(n, v)
 	if err != nil {
 		panic(err)
@@ -168,20 +198,22 @@ func (s Style) mathOp(attribute string, op string, val string) (changed bool, er
 }
 
 // RemoveAll resets the style to contain no styles
-func (s *Style) RemoveAll() {
-	s.StringSliceMap.Clear()
+func (s Style) RemoveAll() {
+	for k := range s {
+		delete(s, k)
+	}
 }
 
 // String returns the string version of the style attribute, suitable for inclusion in an HTML style tag
-// Will sort the
 func (s Style) String() string {
 	return s.encode()
 }
 
 // set is a raw set and return true if changed
-func (s Style) set(n string, v string) bool {
-	changed := s.StringSliceMap.SetChanged(n, v)
-	return changed
+func (s Style) set(k string, v string) bool {
+	oldVal, existed := s[k]
+	s[k] = v
+	return !existed || oldVal != v
 }
 
 // roundFloat takes out rounding errors when doing length math
@@ -198,8 +230,7 @@ func roundFloat(f float64, digits int) float64 {
 // encode will output a text version of the style, suitable for inclusion in an html "style" attribute.
 // it will sort the keys so that they are presented in a consistent and testable way.
 func (s Style) encode() (text string) {
-	keys := s.Keys()
-	sort.Strings(keys)
+	keys := maps2.SortedKeys(s)
 
 	for i, k := range keys {
 		if i > 0 {
@@ -233,6 +264,6 @@ func StyleString(i interface{}) string {
 
 type StyleCreator map[string]string
 
-func (c StyleCreator) Create() *Style {
+func (c StyleCreator) Create() Style {
 	return NewStyleFromMap(c)
 }

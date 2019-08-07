@@ -198,7 +198,7 @@ func (d *Modal) SetButtonVisible(id string, visible bool) ModalI {
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (d *Modal) SetButtonStyle(id string, a *html.Style) ModalI {
+func (d *Modal) SetButtonStyle(id string, a html.Style) ModalI {
 	if ctrl := d.buttonBar.Child(d.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetStyles(a)
 	}

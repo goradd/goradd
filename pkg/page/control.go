@@ -142,7 +142,7 @@ type ControlI interface {
 	ΩDrawingAttributes() *html.Attributes
 	AddClass(class string) ControlI
 	RemoveClass(class string) ControlI
-	SetStyles(*html.Style)
+	SetStyles(html.Style)
 	SetStyle(name string, value string) ControlI
 	SetWidthStyle(w interface{}) ControlI
 	SetHeightStyle(w interface{}) ControlI
@@ -1553,7 +1553,7 @@ func (c *Control) SetVisible(v bool) {
 }
 
 // SetStyles sets the style attribute of the control to the given values.
-func (c *Control) SetStyles(s *html.Style) {
+func (c *Control) SetStyles(s html.Style) {
 	c.attributes.SetStyles(s)
 	c.Refresh() // TODO: Do this with javascript
 }

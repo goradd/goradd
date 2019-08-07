@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	gohtml "html"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -72,11 +73,14 @@ func (a *Attributes) SetChanged(name string, v string) (changed bool, err error)
 
 	if name == "style" {
 		styles := NewStyle()
-		styles.SetTo(v)
+		_, err = styles.SetTo(v)
+		if err != nil {
+			return
+		}
 
 		oldStyles := a.StyleMap()
 
-		if !oldStyles.Equals(styles) { // since maps are not ordered, we must use a special equality test. We can't just compare strings for equality here.
+		if !reflect.DeepEqual(oldStyles, styles) { // since maps are not ordered, we must use a special equality test. We can't just compare strings for equality here.
 			changed = true
 			a.StringSliceMap.Set("style", styles.String())
 		}
@@ -172,12 +176,9 @@ func (a *Attributes) Merge(i maps.StringMapI) {
 	if i == nil || i.Len() == 0 {
 		return
 	}
-	if a == nil {
-		a = NewAttributes()
-	}
 	curStyles := a.StyleMap()
 	newStyles := NewStyle()
-	newStyles.SetTo(i.Get("style"))
+	_,_ = newStyles.SetTo(i.Get("style"))
 	curStyles.Merge(newStyles)
 	a.StringSliceMap.Merge(i)
 	if curStyles.Len() > 0 {
@@ -191,9 +192,6 @@ func (a *Attributes) Merge(i maps.StringMapI) {
 func (a *Attributes) MergeMap(m map[string]string) {
 	if m == nil || len(m) == 0 {
 		return
-	}
-	if a == nil {
-		a = NewAttributes()
 	}
 	curStyles := a.StyleMap()
 	if styles,ok := m["style"]; ok {
@@ -443,7 +441,7 @@ func (a *Attributes) StyleString() string {
 }
 
 // Returns a special Style structure which lets you refer to the styles as a string map
-func (a *Attributes) StyleMap() *Style {
+func (a *Attributes) StyleMap() Style {
 	s := NewStyle()
 	s.SetTo(a.StyleString())
 	return s
@@ -472,7 +470,7 @@ func (a *Attributes) SetStyle(name string, v string) *Attributes {
 }
 
 // SetStyle merges the given styles with the current styles. The given style wins on collision.
-func (a *Attributes) SetStyles(s *Style) *Attributes {
+func (a *Attributes) SetStyles(s Style) *Attributes {
 	styles := a.StyleMap()
 	styles.Merge(s)
 	a.StringSliceMap.Set("style", styles.String())
@@ -482,7 +480,9 @@ func (a *Attributes) SetStyles(s *Style) *Attributes {
 // SetStylesTo sets the styles using a traditional css style string with colon and semicolon separatators
 func (a *Attributes) SetStylesTo(s string) *Attributes {
 	styles := a.StyleMap()
-	styles.SetTo(s)
+	if _,err := styles.SetTo(s); err != nil {
+		return a
+	}
 	a.StringSliceMap.Set("style", styles.String())
 	return a
 }
