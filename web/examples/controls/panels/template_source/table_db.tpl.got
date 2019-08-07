@@ -39,8 +39,7 @@ The table below demonstrates columns that are linked to database queries. For th
 <h2 style="color:red">Error</h2>
 <p>You have not installed the goradd example database. See the examples/readme.txt file for instructions.<p>
 {{else}}
-{{draw control.Pager1}}
-{{draw control.Table1}}
+{{draw table1}}
 {{if}}
 
 {{end}}

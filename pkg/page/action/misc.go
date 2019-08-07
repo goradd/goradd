@@ -28,23 +28,42 @@ type ΩrenderParams struct {
 	EventActionValue    interface{}
 }
 
-type ΩmessageAction struct {
-	Message interface{}
+type ΩwidgetAction struct {
+	ControlID string
+	Op string
+	Args []interface{}
 }
 
-// Note: Some actions currently depend on a javascript eval if they are introduced to a form during an ajax response.
-// One way to fix that would be to register all javascript actions so that they get added to the form at drawing time,
-// so that when an event gets attached during an ajax call, the resulting action is already in the browser.
-// Another way is to use ajax to change a script tag.
+// WidgetFunction calls a goradd widget function in javascript on an html control with the given id.
+// Available functions are defined by the widget object in goradd.js
+func WidgetFunction (controlID string, operation string, arguments ...interface{}) ΩwidgetAction {
+	return ΩwidgetAction{controlID, operation, arguments}
+}
+
+func (a ΩwidgetAction) ΩRenderScript(params ΩrenderParams) string {
+	return fmt.Sprintf(`g$('%s').%s(%s);`, a.ControlID, a.Op, javascript.Arguments(a.Args).JavaScript())
+}
+
+type ΩgoraddAction struct {
+	Op string
+	Args []interface{}
+}
+
+// GoraddFunction calls a goradd function with the given parameters. This is a function defined on the goradd
+// object in goradd.js.
+func GoraddFunction (operation string, arguments ...interface{}) ΩgoraddAction {
+	return ΩgoraddAction{operation, arguments}
+}
+
+func (a ΩgoraddAction) ΩRenderScript(params ΩrenderParams) string {
+	return fmt.Sprintf(`goradd.%s(%s);`, a.Op, javascript.Arguments(a.Args).JavaScript())
+}
+
 
 // Message returns an action that will display a standard browser alert message. Specify a string, or one of the
 // javascript.* types.
-func Message(m interface{}) ΩmessageAction {
-	return ΩmessageAction{Message: m}
-}
-
-func (a ΩmessageAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`goradd.msg(%s)`, javascript.ToJavaScript(a.Message))
+func Message(m interface{}) ΩgoraddAction {
+	return GoraddFunction("msg", m)
 }
 
 type ΩconfirmAction struct {
@@ -61,86 +80,39 @@ func (a ΩconfirmAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf("if (!window.confirm(%s)) return false;\n", javascript.ToJavaScript(a.Message))
 }
 
-type ΩblurAction struct {
-	ControlID string
-}
-
 // Blur will blur the html object specified by the id.
-func Blur(controlID string) ΩblurAction {
-	return ΩblurAction{ControlID: controlID}
-}
-
-func (a ΩblurAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`goradd.blur('%s');`, a.ControlID)
-}
-
-type ΩfocusAction struct {
-	ControlID string
+func Blur(controlID string) ΩwidgetAction {
+	return WidgetFunction(controlID, "blur")
 }
 
 // Focus will focus the html object specified by the id.
-func Focus(controlID string) ΩfocusAction {
-	return ΩfocusAction{ControlID: controlID}
-}
-
-func (a ΩfocusAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`goradd.focus('%s');`, a.ControlID)
-}
-
-type ΩselectAction struct {
-	ControlID string
+func Focus(controlID string) ΩwidgetAction {
+	return WidgetFunction(controlID, "focus")
 }
 
 // Select will set all of the text in the html object specified by the id. The object should be a text box.
-func Select(controlID string) ΩselectAction {
-	return ΩselectAction{ControlID: controlID}
+func Select(controlID string) ΩwidgetAction {
+	return WidgetFunction(controlID, "selectAll")
 }
 
-func (a ΩselectAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`goradd.select('%s');`, a.ControlID)
-}
-
-type ΩcssPropertyAction struct {
-	Property  string
-	Value     interface{}
-	ControlID string
-}
-
-// SetCssProperty will set the css property to the given value on the controlID html object.
-func SetCssProperty(id string, property string, value interface{}) ΩcssPropertyAction {
-	return ΩcssPropertyAction{ControlID: id}
-}
-
-func (a ΩcssPropertyAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`goradd.css('%s', '%s', '%s');`, a.ControlID, a.Property, a.Value)
-}
-
-type ΩcssAddClassAction struct {
-	Classes   string
-	ControlID string
+// Css will set the css property to the given value on the given html object.
+func Css(controlID string, property string, value interface{}) ΩwidgetAction {
+	return WidgetFunction(controlID, "css", property, value)
 }
 
 // AddClass will add the given class, or space separated classes, to the html object specified by the id.
-func AddClass(id string, addClasses string) ΩcssAddClassAction {
-	return ΩcssAddClassAction{ControlID: id, Classes: addClasses}
-}
-
-func (a ΩcssAddClassAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`goradd.addClass('%s', '%s');`, a.ControlID, a.Classes)
-}
-
-type ΩcssToggleClassAction struct {
-	Classes   string
-	ControlID string
+func AddClass(controlID string, classes string) ΩwidgetAction {
+	return WidgetFunction(controlID, "class", "+" + classes)
 }
 
 // ToggleClass will turn on or off the given space separated classes in the html object specified by the id.
-func ToggleClass(id string, classes string) ΩcssToggleClassAction {
-	return ΩcssToggleClassAction{ControlID: id, Classes: classes}
+func ToggleClass(controlID string, classes string) ΩwidgetAction {
+	return WidgetFunction(controlID, "toggleClass", classes)
 }
 
-func (a ΩcssToggleClassAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`goradd.toggleClass('%s', '%s');`, a.ControlID, a.Classes)
+// RemoveClass will turn off the given space separated classes in the html object specified by the id.
+func RemoveClass(controlID string, classes string) ΩwidgetAction {
+	return WidgetFunction(controlID, "class", "-" + classes)
 }
 
 type ΩredirectAction struct {
@@ -148,6 +120,8 @@ type ΩredirectAction struct {
 }
 
 // Redirect will navigate to the given page.
+// TODO: If javascript is turned off, this should still work. We would need to detect the presence of javascript,
+// and then emit a server action instead
 func Redirect(url string) ΩredirectAction {
 	return ΩredirectAction{Location: url}
 }
@@ -156,19 +130,9 @@ func (a ΩredirectAction) ΩRenderScript(params ΩrenderParams) string {
 	return fmt.Sprintf(`goradd.redirect("%s");`, a.Location)
 }
 
-type ΩtriggerAction struct {
-	ControlID string
-	Event     string
-	Data      interface{}
-}
-
 // Trigger will trigger a javascript event on a control
-func Trigger(controlID string, event string, data interface{}) ΩtriggerAction {
-	return ΩtriggerAction{ControlID: controlID, Event: event, Data: data}
-}
-
-func (a ΩtriggerAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`$j("#%s").trigger("%s", %s);`+"\n", a.ControlID, a.Event, javascript.ToJavaScript(a.Data))
+func Trigger(controlID string, event string, data interface{}) ΩwidgetAction {
+	return WidgetFunction(controlID, "trigger", event, data)
 }
 
 // PrivateAction is used by control implementations to add a private action to a controls action list. Unless you are
@@ -197,38 +161,21 @@ func (a ΩjavascriptAction) ΩRenderScript(params ΩrenderParams) string {
 	return a.JavaScript
 }
 
-type ΩsetControlValueAction struct {
-	ID    string
-	Key   string
-	Value interface{}
-}
-
 // SetControlValue is primarily used by custom controls to set a value that eventually can get picked
 // up by the control in the ΩUpdateFormValues function. It is an aid to tying javascript powered widgets together
 // with the go version of the control. Value gets converted to a javascript value, so use the javascript.* helpers
 // if you want to interpret a javascript value and pass it on. For example:
 //   action.SetControlValue(myControl.ID(), "myKey", javascript.JsCode("event.target.id"))
 // will pass the id of the target of an event to the receiver of the action.
-func SetControlValue(id string, key string, value interface{}) ΩsetControlValueAction {
-	return ΩsetControlValueAction{ID: id, Key: key, Value: value}
-}
-
-func (a ΩsetControlValueAction) ΩRenderScript(params ΩrenderParams) string {
-	return fmt.Sprintf(`goradd.setControlValue("%s", "%s", %s)`, a.ID, a.Key, javascript.ToJavaScript(a.Value))
+func SetControlValue(id string, key string, value interface{}) ΩgoraddAction {
+	return GoraddFunction("setControlValue", id, key, value)
 }
 
 func init() {
 	// Register actions so they can be serialized
-	gob.Register(ΩmessageAction{})
+	gob.Register(ΩgoraddAction{})
+	gob.Register(ΩwidgetAction{})
 	gob.Register(ΩconfirmAction{})
-	gob.Register(ΩblurAction{})
-	gob.Register(ΩfocusAction{})
-	gob.Register(ΩselectAction{})
-	gob.Register(ΩcssPropertyAction{})
-	gob.Register(ΩcssAddClassAction{})
-	gob.Register(ΩcssToggleClassAction{})
 	gob.Register(ΩredirectAction{})
-	gob.Register(ΩtriggerAction{})
 	gob.Register(ΩjavascriptAction{})
-	gob.Register(ΩsetControlValueAction{})
 }

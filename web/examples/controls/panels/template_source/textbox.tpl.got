@@ -22,23 +22,23 @@ one of the submit buttons.
 <p>
 By default, the code generator will generate a *Textbox for standard text items in a database, like a VARCHAR in
 a sql database. To make a <i>textarea</i> instead of an <i>input</i> tag, set the RowCount to a value that is not zero.
-{{drawWithLabel control.PlainText }}
-{{drawWithLabel control.MultiText }}
+{{draw plainText-ff}}
+{{draw multiText-ff }}
 </p>
 <h3>IntegerTextbox</h3>
 <p>
 An *IntegerTextbox corresponds to an integer item in a database, like an INT in
 a sql database. Integer textboxes are validated to make sure they contain an integer.
-{{drawWithLabel control.IntegerText }}
+{{draw intText-ff }}
 </p>
 <h3>DateTextbox</h3>
 <p>
 A *DateTextbox corresponds to a Date, Time or DateTime in a database.
 Timestamps generally are not editable, so they usually generate a DateTimeSpan (as in html span).
 These textboxes validate to make sure they match a particular format.
-{{drawWithLabel control.DateTimeText }}
-{{drawWithLabel control.DateText }}
-{{drawWithLabel control.TimeText }}
+{{draw dateTimeText-ff }}
+{{draw dateText-ff }}
+{{draw timeText-ff }}
 </p>
 
 <h3>FloatTextbox</h3>
@@ -46,7 +46,7 @@ These textboxes validate to make sure they match a particular format.
 A *FloatTextbox corresponds to a floating point number item in a database, like a FLOAT in
 a sql database. Float textboxes are validated to make sure they contain a numeric value.
 Click on one of the Submit buttons below to cause the controls to validate.
-{{drawWithLabel control.FloatText }}
+{{draw floatText-ff }}
 </p>
 <h2>Validating Textboxes</h2>
 <h3>Email Textbox</h3>
@@ -56,19 +56,19 @@ by commas. If it is set up to only accept one email address, it will also set it
 so that the browser can potential help with entering and validating an email address. This is particularly
 useful for mobile browsers, as they sometimes change the virtual keyboard to make it easier to enter an {{! @ }} symbol
 or provide a shortcut key to enter ".com".
-{{drawWithLabel control.EmailText }}
+{{draw emailText-ff }}
 </p>
 <h2>Textbox Types</h2>
 <p>HTML offers a number of different types to give browsers a hint of what kind of data the server
 is expecting in a particular textbox. Not all are supported on all browsers, but below are some examples
 of ones that are commonly supported.
-{{drawWithLabel control.PasswordText}}
-{{drawWithLabel control.SearchText}}
+{{draw passwordText-ff }}
+{{draw searchText-ff }}
 </p>
 
 
-{{draw control.SubmitAjax}}
-{{draw control.SubmitServer}}
+{{draw ajaxButton }}
+{{draw serverButton }}
 {{end}}
 
 {{renderControlTemplate}}

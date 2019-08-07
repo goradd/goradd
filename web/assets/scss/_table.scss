@@ -1,0 +1,187 @@
+/**
+ * Styles related to tables and table-like objects.
+ * Includes clickable rows, and the data pager styles
+ */
+
+// A stylish row oriented table that has no left-right borders, only borders separating rows
+// Put this class on a table. Is compatible with gr-clickable-rows
+.gr-table-rows {
+  empty-cells: show;
+  border-collapse: collapse;
+  margin: auto;
+  width: 100%;
+  border-bottom: 1px solid $row-header-border-color;
+  border-top: 1px solid $row-header-border-color;
+  th, td {
+    padding: 5px;
+  }
+  thead, tfoot {
+    tr {
+      background-color: $row-background-color-h1;
+      color: $row-background-color-h1;
+    }
+  }
+  thead {
+    border-bottom: 1px solid $row-header-border-color;
+  }
+  tbody {
+    tr {
+      &:nth-child(odd):not(.nosel):not(.selected) {
+        background-color: $row-background-color-1;
+        color: $row-color-1;
+        th {
+          background-color: $row-background-color-h1;
+          color: $row-background-color-h1;
+        }
+      }
+      &:nth-child(even):not(.nosel):not(.selected) {
+        background-color: $row-background-color-2;
+        color: $row-color-2;
+        th {
+          background-color: $row-background-color-h1;
+          color: $row-background-color-h1;
+        }
+      }
+      &:not(:first-child) { // put line in-between rows
+        border-top: 1px solid $row-border-color;
+      }
+      &.nosel {
+        background-color: $row-background-color-inactive;
+        color: $row-background-color-inactive;
+        &.h2 { // special 2nd level header row. Cells should likely be merged too.
+          background-color: $row-background-color-h2;
+          color: $row-background-color-h2;
+        }
+      }
+    }
+  }
+  caption { // contains paginator, and possibly other things
+    overflow: hidden;
+    padding: 5px;
+    position: relative;
+  }
+  .paginator-control {
+    float: right;
+  }
+  .paginator-results {
+    float: left;
+  }
+}
+
+/**
+ * Styles of individual Control types
+ * TODO: use theme
+ */
+.datagrid {
+  margin: auto;
+  width: 100%;
+  th { // headers of datagrids, filled in with cells and dropdowns for sorting
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    a {
+      color: #f6f6f6;
+      text-decoration: none;
+      //text-transform: uppercase;
+      white-space: nowrap;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    &.sortable {
+      :hover {
+        opacity: 0.95;
+      }
+      div {
+        span { // sortable header title
+          display: table-cell;
+          vertical-align: bottom;
+          padding-right: 4px;
+        }
+        i.fa { // icon showing sort direction
+          display: table-cell;
+          vertical-align: bottom;
+          padding-bottom: 2px;
+        }
+      }
+    }
+  }
+  td {
+    border-bottom: 1px solid #dedede;
+    padding: 5px;
+  }
+  caption { // contains paginator, and possibly other things
+    overflow: hidden;
+    padding: 5px;
+    position: relative;
+  }
+  .paginator-control {
+    float: right;
+  }
+  .paginator-results {
+    float: left;
+  }
+}
+
+/**
+ * clickable-rows
+ *
+ * Use the clickable-rows class to specify that the rows in an object should be clickable. These rules permit
+ * rows to be rows of a table (just the body rows of the table), rows of a ul element, or any object whose
+ * direct descendants are divs. Combine with other styling as well.
+ */
+
+// Prevent being able to select content by dragging
+table.gr-clickable-rows > tbody > tr > td,
+table.gr-clickable-rows > tbody > tr > th,
+ul.gr-clickable-rows > li,
+.gr-clickable-rows > div
+{
+  -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+  -moz-user-select: none; /* mozilla browsers */
+  -khtml-user-select: none; /* webkit (konqueror) browsers */
+  -ms-user-select: none; /* IE10+ */
+  cursor: default;
+  .nosel {
+    cursor: not-allowed;
+  }
+}
+
+// Manage colors
+table.gr-clickable-rows > tbody > tr,
+ul.gr-clickable-rows > li,
+.gr-clickable-rows > div
+{
+  // hovering over a selectable item should give visual feedback
+  &:hover:not(.selected):not(.nosel){
+    background-color: $row-background-color-hover;
+    color: $row-color-hover;
+  }
+  &.selected, &:active { // active makes this work in situations where you are not remembering what was clicked on.
+    background-color: $row-background-color-selected;
+    color: $row-color-selected;
+  }
+}
+
+/**
+ * Data pager styles
+ */
+
+div[data-grctl=datapager] {
+  button {
+    border-radius: 20px;
+    background: white;
+    border:1px solid lightgray;
+
+    &:not(.selected,[disabled]) {
+      &:hover {
+        background: #eeeeee;
+        border-color:gray;
+      }
+    }
+
+    &.selected {
+      border-color:black;
+    }
+  }
+}

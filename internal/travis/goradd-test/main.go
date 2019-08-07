@@ -32,6 +32,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Now launch a browser with this address:  http://localhost:8000/test?all=1
+	// Now launch a browser with this address:  http://localhost:8000/goradd/Test.g?all=1
 
 }

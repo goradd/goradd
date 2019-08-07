@@ -389,9 +389,11 @@ func (dd *DatabaseDescription) analyzeColumn(td *TableDescription, cd *ColumnDes
 		if cd.ForeignKey.IsType {
 			tt := dd.TypeTableDescription(cd.ForeignKey.TableName)
 			cd.ForeignKey.GoType = tt.GoName
+			cd.ForeignKey.GoTypePlural = tt.GoPlural
 		} else {
 			td := dd.TableDescription(cd.ForeignKey.TableName)
 			cd.ForeignKey.GoType = td.GoName
+			cd.ForeignKey.GoTypePlural = td.GoPlural
 			fkc := td.GetColumn(cd.ForeignKey.ColumnName)
 			if fkc.IsId {
 				cd.ColumnType = ColTypeString // Always use strings to refer to auto-generated ids for cross database compatibility

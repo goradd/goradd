@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func (control *HListPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *HListPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>Hierarchical Lists</h1>
@@ -28,7 +28,7 @@ hierarchical checklists, and more.
 `)
 
 	{
-		err := control.OList.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("orderedList").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -43,7 +43,7 @@ hierarchical checklists, and more.
 `)
 
 	{
-		err := control.UList.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("unorderedList").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

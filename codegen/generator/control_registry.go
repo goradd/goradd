@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -22,13 +21,15 @@ type ConnectorParam struct {
 
 type ControlGenerator interface {
 	Type() string
-	NewFunc() string
 	Imports() []string
 	SupportsColumn(col *ColumnType) bool
-	ConnectorParams() *maps.SliceMap
-	GenerateCreate(namespace string, col *ColumnType) string
-	GenerateGet(ctrlName string, objName string, col *ColumnType) string
-	GeneratePut(ctrlName string, objName string, col *ColumnType) string
+	GenerateCreator(col *ColumnType) string
+	GenerateRefresh(col *ColumnType) string
+	GenerateUpdate(col *ColumnType) string
+}
+
+type ProviderGenerator interface {
+	GenerateProvider(col *ColumnType) string
 }
 
 type ControlGeneratorRegistryKey struct {

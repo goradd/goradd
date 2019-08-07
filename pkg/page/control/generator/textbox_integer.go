@@ -2,12 +2,9 @@ package generator
 
 import (
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
 )
 
 func init() {
@@ -41,61 +38,34 @@ func (d IntegerTextbox) SupportsColumn(col *generator.ColumnType) bool {
 	return false
 }
 
-func (d IntegerTextbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
+func (d IntegerTextbox) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-		`	ctrl = %s.NewIntegerTextbox(c.ParentControl, id)
-	ctrl.SetLabel(ctrl.T("%s"))
-`, namespace, col.DefaultLabel)
-
-	// TODO: Set a maximum value based on database limit
-
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
-	if !col.IsNullable {
-		s += `	ctrl.SetIsRequired(true)
-`
-	}
-
+`control.IntegerTextboxCreator{
+	ID:        %#v,
+	MaxLength: %#v,
+	ControlOptions: page.ControlOptions{
+		IsRequired:      %#v,
+		DataConnector: %s{},
+	},
+}`, col.ControlID, col.MaxCharLength, !col.IsNullable, col.Connector)
 	return
 }
 
-func (d IntegerTextbox) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	s = fmt.Sprintf(`c.%s.SetInt(int(c.%s.%s()))`, ctrlName, objName, col.GoName)
-	return
+
+func (d IntegerTextbox) GenerateRefresh(col *generator.ColumnType) (s string) {
+	return `ctrl.SetValue(val)`
 }
 
-func (d IntegerTextbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
+func (d IntegerTextbox) GenerateUpdate(col *generator.ColumnType) (s string) {
 	switch col.ColumnType {
-	case query.ColTypeInteger64:
-		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int64())`, objName, col.GoName, ctrlName)
 	case query.ColTypeInteger:
-		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Int())`, objName, col.GoName, ctrlName)
-	case query.ColTypeUnsigned64:
-		s = fmt.Sprintf(`c.%s.Set%s(uint64(c.%s.Int64()))`, objName, col.GoName, ctrlName)
+		return `val := ctrl.Int()`
+	case query.ColTypeInteger64:
+		return `val := int64(ctrl.Int())`
 	case query.ColTypeUnsigned:
-		s = fmt.Sprintf(`c.%s.Set%s(uint(c.%s.Int()))`, objName, col.GoName, ctrlName)
-
+		return `val := uint(ctrl.Int())`
+	case query.ColTypeUnsigned64:
+		return `val := uint64(ctrl.Int())`
 	}
-	return
-}
-
-func (d IntegerTextbox) ConnectorParams() *maps.SliceMap {
-	paramControls := page.ControlConnectorParams()
-	paramSet := maps.NewSliceMap()
-
-	// TODO: Get the regular Textbox's parameters too
-	paramSet.Set("ColumnCount", generator.ConnectorParam{
-		"Column Count",
-		"Width of field by the number of characters.",
-		generator.ControlTypeInteger,
-		`{{var}}.SetColumnCount{{val}}`,
-		func(c page.ControlI, val interface{}) {
-			c.(*control.IntegerTextbox).SetColumnCount(val.(int))
-		}})
-
-	paramControls.Set("IntegerTextbox", paramSet)
-
-	return paramControls
+	panic("not a compatible column type")
 }

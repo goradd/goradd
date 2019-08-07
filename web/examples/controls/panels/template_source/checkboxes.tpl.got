@@ -38,8 +38,8 @@ support will automatically do the correct thing for Bootstrap.
 In the examples below, view the source html of the page to see how Goradd deals with labels on
 checkboxes.
 </p>
-{{drawWithLabel control.Checkbox1.SetInstructions("Sample instructions") }}
-{{drawWithLabel control.Checkbox2 }}
+{{draw checkbox1-ff }}
+{{draw checkbox2-ff }}
 
 
 <h2>Radio Buttons</h2>
@@ -48,14 +48,14 @@ to select only one item from the group. You choose whatever group name you want 
 each button. The browser will then make sure only one gets selected.
 <fieldset style="width:200px;">
 <legend>Place</legend>
-{{drawWithError control.Radio1 }}
-{{drawWithError control.Radio2 }}
-{{drawWithError control.Radio3 }}
-{{draw control.Info }}
+{{draw radio1 }}
+{{draw radio2 }}
+{{draw radio3 }}
+{{draw infoPanel }}
 </fieldset>
 
-{{draw control.SubmitAjax}}
-{{draw control.SubmitServer}}
+{{draw ajaxButton }}
+{{draw serverButton }}
 {{end}}
 
 {{renderControlTemplate}}

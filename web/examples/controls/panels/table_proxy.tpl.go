@@ -10,7 +10,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
-func (control *TableProxyPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *TableProxyPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 `)
@@ -57,7 +57,7 @@ that allow you to click on a record to see detail of the record.
 `)
 
 		{
-			err := control.Pager1.Draw(ctx, buf)
+			err := ctrl.Page().GetControl("table1").Draw(ctx, buf)
 			if err != nil {
 				return err
 			}
@@ -70,20 +70,7 @@ that allow you to click on a record to see detail of the record.
 `)
 
 		{
-			err := control.Table1.Draw(ctx, buf)
-			if err != nil {
-				return err
-			}
-		}
-
-		buf.WriteString(`
-`)
-
-		buf.WriteString(`
-`)
-
-		{
-			err := control.ProjectPanel.Draw(ctx, buf)
+			err := ctrl.Page().GetControl("personPanel").Draw(ctx, buf)
 			if err != nil {
 				return err
 			}

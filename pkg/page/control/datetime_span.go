@@ -76,3 +76,21 @@ func (s *DateTimeSpan) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) e
 	// However, JavaScript will translate month and weekday names to the local language.
 	return nil
 }
+
+
+type DateTimeSpanCreator struct {
+	ID string
+	Format string
+	Value datetime.DateTime
+	page.ControlOptions
+}
+
+func (c DateTimeSpanCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewDateTimeSpan(parent, c.ID)
+	ctrl.value = c.Value
+	if c.Format != "" {
+		ctrl.format = c.Format
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+	return ctrl
+}

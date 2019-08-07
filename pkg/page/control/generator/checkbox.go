@@ -44,10 +44,6 @@ func (d Checkbox) GenerateCreate(namespace string, col *generator.ColumnType) (s
 	ctrl.SetLabel(ctrl.T("%s"))
 `, namespace, col.DefaultLabel)
 
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
 
 	return
 }
@@ -67,3 +63,25 @@ func (d Checkbox) ConnectorParams() *maps.SliceMap {
 
 	return paramControls
 }
+
+func (d Checkbox) GenerateCreator(col *generator.ColumnType) (s string) {
+	s = fmt.Sprintf(
+		`control.CheckboxCreator{
+			ID:        %#v,
+			ControlOptions: page.ControlOptions{
+				IsRequired:      %#v,
+				DataConnector: %s{},
+			},
+		}`, col.ControlID, !col.IsNullable, col.Connector)
+	return
+}
+
+func (d Checkbox) GenerateRefresh(col *generator.ColumnType) (s string) {
+	return `ctrl.SetChecked(val)`
+}
+
+func (d Checkbox) GenerateUpdate(col *generator.ColumnType) (s string) {
+	return `val := ctrl.Checked()`
+}
+
+

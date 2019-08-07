@@ -6,6 +6,8 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control/data"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -13,14 +15,16 @@ import (
 type MultiselectListI interface {
 	page.ControlI
 	ItemListI
+	data.DataManagerEmbedder
 }
 
 // MultiselectList is a generic list box which allows multiple selections. It is here for completeness, but is not used
 // very often since it doesn't present an intuitive interface and is very browser dependent on what is presented.
-// A Checkboxlist is better.
+// A CheckboxList is better.
 type MultiselectList struct {
 	page.Control
 	ItemList
+	data.DataManager
 	selectedIds map[string]bool
 }
 
@@ -75,9 +79,6 @@ func (l *MultiselectList) Validate(ctx context.Context) bool {
 // ΩUpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
 func (l *MultiselectList) ΩUpdateFormValues(ctx *page.Context) {
 	id := l.ID()
-	if ctx.RequestMode() == page.Ajax {
-		id += "[]" // an odd remnant of jquery processing
-	}
 
 	if a, ok := ctx.FormValues(id); ok {
 		l.selectedIds = map[string]bool{}
@@ -130,8 +131,7 @@ func (l *MultiselectList) SetSelectedIdNoRefresh(id string, value bool) {
 
 // Value implements the Valuer interface for general purpose value getting and setting
 func (l *MultiselectList) Value() interface{} {
-	// TODO: Not sure this is the right thing to return here. Perhaps array of selected values?
-	return l.selectedIds
+	return l.SelectedValues()
 }
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
@@ -196,6 +196,20 @@ func (l *MultiselectList) SelectedValues() []interface{} {
 	return values
 }
 
+// SetData overrides the default data setter to add objects to the item list.
+// The result is kept in memory currently.
+// ItemLister, ItemIDer, Labeler or Stringer types. This function can accept one or more lists of items, or
+// single items.
+func (l *MultiselectList) SetData(data interface{}) {
+	kind := reflect.TypeOf(data).Kind()
+	if !(kind == reflect.Slice || kind == reflect.Array) {
+		panic("you must call SetData with a slice or array")
+	}
+
+	l.ItemList.Clear()
+	l.AddListItems(data)
+}
+
 // ΩMarshalState is an internal function to save the state of the control
 func (l *MultiselectList) ΩMarshalState(m maps.Setter) {
 	var ids = []string{}
@@ -220,7 +234,7 @@ func (l *MultiselectList) ΩUnmarshalState(m maps.Loader) {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *MultiselectList) ΩDrawingAttributes() *html.Attributes {
+func (l *MultiselectList) ΩDrawingAttributes() html.Attributes {
 	a := l.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "multilist")
 	a.Set("name", l.ID()) // needed for posts
@@ -232,6 +246,9 @@ func (l *MultiselectList) ΩDrawingAttributes() *html.Attributes {
 }
 
 func (l *MultiselectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+	if l.HasDataProvider() {
+		l.LoadData(ctx, l)
+	}
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil
@@ -262,4 +279,49 @@ func (l *MultiselectList) getItemsHtml(items []ListItemI) string {
 func (l *MultiselectList) IsIdSelected(id string) bool {
 	v, ok := l.selectedIds[id]
 	return ok && v
+}
+
+type MultiselectListCreator struct {
+	ID string
+	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
+	Items []ListValue
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
+	// Size specifies how many items to show, and turns the list into a scrolling list
+	Size int
+	// SaveState saves the selected value so that it is restored if the form is returned to.
+	SaveState bool
+	page.ControlOptions
+}
+
+func (c MultiselectListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewMultiselectList(parent, c.ID)
+
+	if c.Items != nil {
+		ctrl.AddListItems(c.Items)
+	}
+
+	if c.DataProvider != nil {
+		ctrl.SetDataProvider(c.DataProvider)
+	} else if c.DataProviderID != "" {
+		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		ctrl.SetDataProvider(provider)
+	}
+
+	if c.Size != 0 {
+		ctrl.SetSize(c.Size)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+	if c.SaveState {
+		ctrl.SaveState(ctx, c.SaveState)
+	}
+	return ctrl
+}
+
+
+// GetSelectList is a convenience method to return the control with the given id from the page.
+func GetMultiselectList(c page.ControlI, id string) *MultiselectList {
+	return c.Page().GetControl(id).(*MultiselectList)
 }

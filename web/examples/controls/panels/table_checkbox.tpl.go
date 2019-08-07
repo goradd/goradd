@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func (control *TableCheckboxPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *TableCheckboxPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 `)
@@ -52,7 +52,7 @@ record changes in real time through Javascript and Ajax.
 `)
 
 	{
-		err := control.Pager1.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("pager").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -65,7 +65,7 @@ record changes in real time through Javascript and Ajax.
 `)
 
 	{
-		err := control.Table1.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("table1").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -79,7 +79,7 @@ record changes in real time through Javascript and Ajax.
 `)
 
 	{
-		err := control.SubmitAjax.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("ajaxButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -92,7 +92,7 @@ record changes in real time through Javascript and Ajax.
 `)
 
 	{
-		err := control.SubmitServer.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("serverButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

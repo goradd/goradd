@@ -1,0 +1,12 @@
+{{< package }}panels{{end}}
+{{< imports }}
+{{end}}
+{{< control }}TablePanel{{end}}
+
+{{define template }}
+<h1>Bootstrap Table Examples</h1>
+{{draw pager }}
+{{draw table1 }}
+{{end}}
+
+{{renderControlTemplate}}

@@ -35,10 +35,10 @@ The Table control creates html tables from various forms of data. After creating
 add TableColumns to the table, which link the data to the display. Tables can also have pagers
 to allow the user to page through data when it is too much to display all at once.
 </p>
-{{draw control.Pager1}}
-{{draw control.Table1}}
+{{draw pager1}}
+{{draw table1}}
 
-{{draw control.Table2}}
+{{draw table2}}
 
 {{end}}
 

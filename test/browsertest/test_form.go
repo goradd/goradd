@@ -3,7 +3,6 @@
 // in the test form available at the address "/test", and the user can select a test and execute it.
 // The form is also a repository for operations you can perform on the form being tested. A test generally should
 // start with a call to LoadURL. Follow that with calls to control the form and check for expected results.
-// page/test contains a variety of tests that serve to unit test the form framework.
 package browsertest
 
 import (
@@ -18,11 +17,12 @@ import (
 	log2 "log"
 	"os"
 	"runtime"
+	"strings"
 )
 
 var testFormPageState string
 
-const TestFormPath = "/test"
+const TestFormPath = "/goradd/Test.g"
 const TestFormId = "TestForm"
 
 const (
@@ -35,6 +35,7 @@ type TestForm struct {
 	TestList        *SelectList
 	RunningLabel    *Span
 	RunButton       *Button
+	RunAllButton	*Button
 	Controller      *TestController
 	currentLog      string
 	failed          bool
@@ -54,7 +55,7 @@ func NewTestForm(ctx context.Context) page.FormI {
 	grctx := page.GetContext(ctx)
 
 	if _, ok := grctx.FormValue("all"); ok {
-		f.ExecuteJqueryFunction("trigger", "testall", page.PriorityLow)
+		f.ExecuteWidgetFunction("trigger", "testall", page.PriorityLow)
 		f.On(event.Event("testall"), action.Ajax(f.ID(), TestAllAction))
 	}
 	return f
@@ -64,7 +65,6 @@ func (form *TestForm) createControls(ctx context.Context) {
 	form.Controller = NewTestController(form, "controller")
 
 	form.TestList = NewSelectList(form, "test-list")
-	form.TestList.SetLabel("Tests")
 	form.TestList.SetAttribute("size", 10)
 
 	form.RunningLabel = NewSpan(form, "running-label")
@@ -73,6 +73,11 @@ func (form *TestForm) createControls(ctx context.Context) {
 	form.RunButton.SetText("Run Test")
 	form.RunButton.On(event.Click(), action.Ajax(form.ID(), TestButtonAction))
 	form.RunButton.SetValidationType(page.ValidateNone)
+
+	form.RunAllButton = NewButton(form, "run-all-button")
+	form.RunAllButton.SetText("Run All Tests")
+	form.RunAllButton.On(event.Click(), action.Redirect(TestFormPath + "?all=1"))
+	form.RunAllButton.SetValidationType(page.ValidateNone)
 }
 
 func (form *TestForm) LoadControls(ctx context.Context) {
@@ -199,9 +204,7 @@ func (form *TestForm) CheckGroup(id string, values ...string) {
 	form.Controller.checkGroup(id, values, form.captureCaller())
 }
 
-// Click sends a click event to the goradd control. Note that this is not the same as simulating a click
-// but for buttons, it will essentially be the same thing. More complex web objects will need a different mechanism
-// for clicking, likely a chromium driver or something similar.
+// Click sends a click to the goradd control.
 func (form *TestForm) Click(c page.ControlI) {
 	form.Controller.click(c.ID(), form.captureCaller())
 	if c.HasServerAction("click") {
@@ -210,8 +213,7 @@ func (form *TestForm) Click(c page.ControlI) {
 	}
 }
 
-// ClickSubItem sends a click event to the html object with the given sub-id inside the given control.
-// Note that this is not the same as simulating a click
+// ClickSubItem sends a click to the html object with the given sub-id inside the given control.
 func (form *TestForm) ClickSubItem(c page.ControlI, subId string) {
 	form.Controller.click(c.ID()+"_"+subId, form.captureCaller())
 	if c.HasServerAction("click") {
@@ -228,38 +230,38 @@ func (form *TestForm) WaitSubmit() {
 	form.Controller.waitSubmit(form.captureCaller())
 }
 
-// CallJqueryFunction will call the given function with the given parameters on the jQuery object
+// CallControlFunction will call the given function with the given parameters on the goradd object
 // specified by the id. It will return the javascript result of the function call.
-func (form *TestForm) CallJqueryFunction(id string, funcName string, params ...interface{}) interface{} {
-	return form.Controller.callJqueryFunction(id, funcName, params, form.captureCaller())
+func (form *TestForm) CallControlFunction(id string, funcName string, params ...interface{}) interface{} {
+	return form.Controller.callWidgetFunction(id, funcName, params, form.captureCaller())
 }
 
-// Value will call the jquery .val() function on the given html object and return the result.
-func (form *TestForm) JqueryValue(id string) interface{} {
-	return form.Controller.callJqueryFunction(id, "val", nil, form.captureCaller())
+// Value will call the .val() function on the given goradd object and return the result.
+func (form *TestForm) ControlValue(id string) interface{} {
+	return form.Controller.callWidgetFunction(id, "val", nil, form.captureCaller())
 
 }
 
 // Attribute will call the jquery .attr("attribute") function on the given html object looking for the given
 // attribute name and will return the value.
-func (form *TestForm) JqueryAttribute(id string, attribute string) interface{} {
-	return form.Controller.callJqueryFunction(id, "attr", []interface{}{attribute}, form.captureCaller())
+func (form *TestForm) ControlAttribute(id string, attribute string) interface{} {
+	return form.Controller.callWidgetFunction(id, "attr", []interface{}{attribute}, form.captureCaller())
 }
 
 func (form *TestForm) HasClass(id string, needle string) bool {
-	res := form.Controller.callJqueryFunction(id, "hasClass", []interface{}{needle}, form.captureCaller())
+	res := form.Controller.callWidgetFunction(id, "hasClass", []interface{}{needle}, form.captureCaller())
 	return res.(bool)
 }
 
 func (form *TestForm) InnerHtml(id string) string {
-	res := form.Controller.callJqueryFunction(id, "html", nil, form.captureCaller())
-	return res.(string)
+	res := form.Controller.callWidgetFunction(id, "html", nil, form.captureCaller())
+	return strings.TrimSpace(res.(string)) // html can have a variety of inconsequential spaces
 }
 
 /*
 func (f *TestForm) TypeValue(id string, chars string) {
 	_, file, line, _ := runtime.Caller(1)
-	desc := fmt.Sprintf(`%s:%d CallJqueryFunction(%q, %q, %q)`, file, line, id, funcName, params)
+	desc := fmt.Sprintf(`%s:%d CallControlFunction(%q, %q, %q)`, file, line, id, funcName, params)
 	f.Controller.typeChars(id, chars)
 }*/
 
@@ -363,7 +365,7 @@ func (form *TestForm) testOne(testName string) {
 				form.currentTestName = testName
 				form.currentFailed = false
 				testF(form)
-				form.CloseWindow()
+				//form.CloseWindow()
 			}()
 		}
 

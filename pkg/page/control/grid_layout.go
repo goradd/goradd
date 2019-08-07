@@ -21,7 +21,7 @@ type GridLayoutBuilder struct {
 	columnCount   int
 	direction     LayoutDirection
 	rowTag        string
-	rowAttributes *html.Attributes
+	rowAttributes html.Attributes
 }
 
 // Items sets the html for each item to display.
@@ -36,7 +36,7 @@ func (g *GridLayoutBuilder) ColumnCount(count int) *GridLayoutBuilder {
 	return g
 }
 
-// Direction indicates how items are placed, whether they should fill up rows first, or fill up columns.
+// LayoutDirection indicates how items are placed, whether they should fill up rows first, or fill up columns.
 func (g *GridLayoutBuilder) Direction(placement LayoutDirection) *GridLayoutBuilder {
 	g.direction = placement
 	return g
@@ -52,7 +52,7 @@ func (g *GridLayoutBuilder) RowClass(t string) *GridLayoutBuilder {
 	return g
 }
 
-func (g *GridLayoutBuilder) getRowAttributes() *html.Attributes {
+func (g *GridLayoutBuilder) getRowAttributes() html.Attributes {
 	if g.rowAttributes == nil {
 		g.rowAttributes = html.NewAttributes()
 	}

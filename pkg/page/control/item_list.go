@@ -2,6 +2,7 @@ package control
 
 import (
 	"fmt"
+	"github.com/goradd/goradd/pkg/config"
 	"reflect"
 	"sort"
 	"strconv"
@@ -183,14 +184,15 @@ func (l *ItemList) GetItem(id string) (foundItem ListItemI) {
 	}
 
 	parts := strings.SplitN(id, "_", 3) // first item is our own id, 2nd is id from the list, 3rd is a level beyond the list
-	l1Id, err := strconv.Atoi(parts[1])
-	if err != nil || l1Id < 0 {
-		panic("Bad id")
-	}
 
 	var countParts int
-	if countParts = len(parts); countParts <= 1 || l1Id >= len(l.items) {
+	if countParts = len(parts); countParts <= 1 {
 		return nil
+	}
+
+	l1Id, err := strconv.Atoi(parts[1])
+	if err != nil || l1Id < 0 || l1Id >= len(l.items) {
+		panic("Bad id")
 	}
 
 	item := l.items[l1Id]
@@ -279,4 +281,16 @@ func (p IdSlice) Less(i, j int) bool {
 		}
 	}
 }
+
 func (p IdSlice) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+
+
+// NoSelectionItemList returns a default item list to start a selection list that allows no selection
+func NoSelectionItemList() []interface{} {
+	return []interface{}{NewListItem(config.NoSelectionString, nil)}
+}
+
+// SelectOneItemList returns a default item list to start a selection list that asks the user to select an item
+func SelectOneItemList() []interface{} {
+	return []interface{}{NewListItem(config.SelectOneString, nil)}
+}

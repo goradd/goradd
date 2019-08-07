@@ -16,6 +16,11 @@ var DefaultDateFormat = "January 2, 2006"
 var DefaultTimeFormat = "3:04 am"
 var DefaultDateTimeFormat = "January 2, 2006 3:04am"
 
+// SelectOneString is used in selection lists as the default item to indicate that a selection is required but has not yet been made
+var SelectOneString = "- Select One -"
+// NoSelectionString is used in selection lists as the item that indicates no selection when a selection is not required
+var NoSelectionString = "-"
+
 func SetAssetDirectory(assetDir string) {
 	if Release && assetDir == "" {
 		panic("The -assetDir flag is required when running the release build")

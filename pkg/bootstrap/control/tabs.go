@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
@@ -8,6 +9,10 @@ import (
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
 )
+
+type TabsI interface {
+	control.PanelI
+}
 
 // A Tabs pane draws its child controls as a set of tabs. The labels of the children serve as the tab labels.
 // This currently draws everything at once, with the current panel visible, but everything else has hidden html.
@@ -29,8 +34,29 @@ func (l *Tabs) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.On(event.Event("show.bs.tab"), action.SetControlValue(l.ID(), "selectedId", javascript.JsCode("event.target.id")))
 }
 
-func (c *Tabs) ΩDrawingAttributes() *html.Attributes {
+func (c *Tabs) ΩDrawingAttributes() html.Attributes {
 	a := c.Panel.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "bs-tabs")
 	return a
+}
+
+
+type TabsCreator struct {
+	// ID is the control id of the html widget and must be unique to the page
+	ID string
+	page.ControlOptions
+	Children []page.Creator
+}
+
+func (c TabsCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewTabs(parent, c.ID)
+	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.AddControls(ctx, c.Children...)
+	return ctrl
+}
+
+
+// GetTabs is a convenience method to return the control with the given id from the page.
+func GetTabs(c page.ControlI, id string) *Tabs {
+	return c.Page().GetControl(id).(*Tabs)
 }

@@ -386,7 +386,7 @@ func TestSelectByID(t *testing.T) {
 	p := people[0]
 	require.NotNil(t, p)
 	m := p.ProjectAsManager(id)
-	require.NotNil(t, m, "Could not fine project as manager: "+id)
+	require.NotNil(t, m, "Could not fine project as manager: " + id)
 	assert.Equal(t, m.Name(), "ACME Payment System")
 }
 

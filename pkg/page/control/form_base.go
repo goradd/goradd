@@ -36,13 +36,13 @@ func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id st
 	if db.IsProfiling(ctx) {
 		btn := NewButton(f, "grProfileButton")
 		btn.SetText("SQL Profile <i class='fas fa-arrow-circle-down' ></i>")
-		btn.SetEscapeText(false)
+		btn.SetTextIsHtml(true)
 		btn.On(event.Click(), action.Ajax(f.ID(), databaseProfileAction))
 		btn.SetShouldAutoRender(true)
 
 		panel := NewPanel(f, "grProfilePanel")
 		panel.SetShouldAutoRender(true)
-		panel.SetEscapeText(false)
+		panel.SetTextIsHtml(true)
 		panel.SetVisible(false)
 	}
 
@@ -65,7 +65,8 @@ func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id st
 func (f *FormBase) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case databaseProfileAction:
-		if c := f.Page().GetControl("grProfilePanel"); c != nil {
+		if f.Page().HasControl("grProfilePanel") {
+			c := f.Page().GetControl("grProfilePanel")
 			if c.IsVisible() {
 				c.SetVisible(false)
 			} else {

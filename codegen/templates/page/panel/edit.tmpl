@@ -22,22 +22,20 @@ type {{= panelName }} struct {
 	{{= panelName }}Base
 }
 
-func New{{= panelName }}(parent page.ControlI, id string) *{{= panelName}} {
+func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
     p := new({{= panelName }})
-	p.Init(p, parent, id)
+	p.Init(ctx, p, parent, id)
 	return p
 }
 
-func (p *{{= panelName }}) Init(self page.ControlI, parent page.ControlI, id string) {
+func (p *{{= panelName }}) Init(ctx context.Context, self page.ControlI, parent page.ControlI, id string) {
 	p.{{= panelName }}Base.Init(self, parent, id)
-	p.CreateControls()
+	p.CreateControls(ctx)
 }
 
 /* Override and call base class, or completely replace as you need
-// CreateControls calls the connector to create specific controls as needed, and possibly creates
-// additional controls that are not managed by the connector
-func (p *{{= panelName }}) CreateControls() {
-    p.{{= panelName }}Base.CreateControls()
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+    p.{{= panelName }}Base.CreateControls(ctx)
 }
 */
 
@@ -85,5 +83,14 @@ func (p *{{= panelName }}) Delete(ctx context.Context) {
     p.Connector.Delete(ctx)
 }
 */
+
+type {{t.GoName}}EditPanelCreator struct {
+	ID string
+}
+
+func (c {{t.GoName}}EditPanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	p := New{{panelName}}(ctx, parent, c.ID)
+	return p
+}
 
 }}

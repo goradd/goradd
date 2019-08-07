@@ -11,16 +11,16 @@ This file attaches some code used by the test harness to drive browser-based tes
         if (window.opener) { //
             // This next line is a potential security hole, so its important that this code NOT be loaded by the release version.
             window.opener.postMessage({pagestate: $('#Goradd__PageState').val()}, "*");
-            goradd.getForm().addEventListener ('teststep', goradd.testStep);
+            goradd.form().addEventListener ('teststep', goradd.testStep);
             event = new CustomEvent('teststep', { bubbles: true, detail: -1 });
-            goradd.getForm().dispatchEvent(event);
+            goradd.form().dispatchEvent(event);
         }
     };
 
     goradd._testStepPending= false;
 
     goradd.testStep = function(event) {
-        if (goradd.actionQueue.length > 0) {
+        if (goradd._actionQueue.length > 0) {
             goradd.queueAction({f: function() {
                     goradd._postTestStep(event);
                 }, last: true, name: "testStep"});
@@ -32,7 +32,7 @@ This file attaches some code used by the test harness to drive browser-based tes
 
     goradd._postTestStep = function(event) {
         if (event) {
-            if (!goradd.ajaxQueueIsRunning()) {
+            if (!goradd.ajaxq.isRunning()) {
                 goradd.log("Posting message: Ajax complete", event.detail);
                 window.opener.postMessage({ajaxComplete: event.detail}, "*");
             } else {

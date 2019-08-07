@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func (control *TablePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *TablePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 `)
@@ -49,7 +49,7 @@ to allow the user to page through data when it is too much to display all at onc
 `)
 
 	{
-		err := control.Pager1.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("pager1").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -62,7 +62,7 @@ to allow the user to page through data when it is too much to display all at onc
 `)
 
 	{
-		err := control.Table1.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("table1").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -76,7 +76,7 @@ to allow the user to page through data when it is too much to display all at onc
 `)
 
 	{
-		err := control.Table2.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("table2").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

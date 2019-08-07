@@ -1,20 +1,15 @@
-/**************************************************************************
- * Goradd Test Controller Object
- *
- ****************************************************************************/
 
-jQuery.widget( "goradd.testController",  {
-    options: {
-    },
-    _window:null,
-    _step:1,
-    _create: function() {
-        goradd.log("Creating test controller");
+
+goradd.widget("goradd.testController", {
+    _create: function () {
         var self = this;
-        this._super();
-        window.addEventListener("message", function(event) {
+        goradd.log("Creating test controller");
+        window.addEventListener("message", function (event) {
             self._receiveWindowMessage(event)
-        } , false);
+        }, false);
+        this._window = null;
+        this._step = 1;
+        this._super();
     },
     _receiveWindowMessage: function(event) {
         goradd.log("Message received", event.data);
@@ -25,7 +20,7 @@ jQuery.widget( "goradd.testController",  {
         }
     },
     logLine: function(line) {
-        this.element.text(this.element.text() + line  + "\n");
+        this.text(this.text() + line  + "\n");
     },
     loadUrl: function(step, url) {
         goradd.log("loadUrl", step, url);
@@ -38,8 +33,9 @@ jQuery.widget( "goradd.testController",  {
         this._step = step;
 
         if (this._window && !this._window.closed) {
-            if (this._window.location.pathname == url) {
-                this._window.location.reload(true);
+            var localpath = this._window.location.href.substr(this._window.location.origin.length)
+            if (localpath === url) {
+                this._window.location.reload();
             } else {
                 this._window.location.assign(url);
             }
@@ -56,141 +52,140 @@ jQuery.widget( "goradd.testController",  {
         });
     },
     _formLoadEvent: function(pagestate) {
-        goradd.setControlValue(this.element.attr("id"), "pagestate", pagestate);
+        goradd.setControlValue(this.element.id, "pagestate", pagestate);
         //this._fireStepEvent(this._step);
     },
     _windowErrorEvent: function(event, step) {
         this._fireStepEvent(step,  "Browser load error:" + event.error.message);
     },
     _fireStepEvent(step, err) {
-        this.element.trigger("goradd.teststep", {Step: step, Err: err});
+        this.trigger("teststep", {Step: step, Err: err});
     },
     changeVal: function(step, id, val) {
         goradd.log ("changeVal", step, id, val);
-        var control = this._findElement(id);
+        var g = this._getGoraddObj(id);
 
-        if (!control) {
+        if (!g) {
+            goradd.log("changeVal: element not found", id);
             this._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
 
-        $(control).val(val);
-
-        // Note that jQuery is very quirky about calling events in another window, because it attaches its own events to the current window.
-        // So, we instead use native javascript to fire off these events.
-        var event = new Event('change', { 'bubbles': true });
-        control.dispatchEvent(event);
-        event = new CustomEvent('teststep', { bubbles: true, detail: step });
-        control.dispatchEvent(event);
+        g.val(val);
+        g.trigger("change");
+        this._fireStepEvent(step);
     },
     checkControl: function(step, id, val) {
+        var self = this;
         goradd.log ("checkControl", step, id, val);
-        var control = this._findElement(id);
+        var g = this._getGoraddObj(id);
 
-        if (!control) {
+        if (!g) {
+            goradd.log("checkControl: element not found", id);
             this._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
 
-        $(control).prop("checked", val);
+        var val2 = g.element.checked;
 
-        // Note that jQuery is very quirky about calling events in another window, because it attaches its own events to the current window.
-        // So, we instead use native javascript to fire off these events.
-        var event = new Event('change', { 'bubbles': true });
-        control.dispatchEvent(event);
-        event = new CustomEvent('teststep', { bubbles: true, detail: step });
-        control.dispatchEvent(event);
+        if (val !== val2) {
+            g.click();
+        }
+        this._fireStepEvent(step);
     },
-    checkGroup: function(step, id, values) {
-        // checks a group of checkbox or radio controls. The id of the control is also the name of each of the individual controls.
-        goradd.log ("checkGroup", step, id, values);
-        var control = this._findElement(id);
-        var jq = this._window.jQuery;
+    /**
+     * checkGroup simulates checking the given values in a group. For checkboxes, it also unchecks whatever is checked
+     * prior to this. This will generate change events on whatever was changed.
+     * @param step
+     * @param groupName
+     * @param values
+     */
+    checkGroup: function(step, groupName, values) {
+        goradd.log ("checkGroup", step, groupName, values);
+        var form = g$(this._window.goradd.form());
 
-        if (!control) {
-            this._fireStepEvent(step,  "Could not find element " + id);
+        var el = form.qs("input[name=" + groupName + "]");
+        if (!el) {
+            this._fireStepEvent(step,  "Could not find group " + groupName);
             return;
         }
 
-        var changeEvent = new Event('change', { 'bubbles': true });
+        if (el.type === "radio") {
+            // Check one radio button. The currently checked one should automatically uncheck.
+            el = form.qs("input[name=" + groupName + "][value=" + values[0] + "]");
+            if (el) {
+                g$(el).click();
+            }
+            this._fireStepEvent(step);
+            return;
+        }
 
-        // uncheck whatever is checked
-        jq("input[name=" + id +"]:checked").each(function() {
-            $(this).prop("checked", false);
-            this.dispatchEvent(changeEvent);
+        // Deal with a list of checkboxes
+        goradd.each(form.qa("input[name=" + groupName +"]"), function() {
+            var toCheck = goradd.contains(values, this.value);
+            if (this.checked && !toCheck) {
+                g$(this).click(); // uncheck
+            } else if (!this.checked && toCheck) {
+                g$(this).click(); // check
+            }
         });
 
-        /*if (!values) {
-            values = [];
-        }*/
-
-        // check whatever needs to be checked
-        $j.each(values, function() {
-            var val = this;
-            jq("input[name=" + id + "][value=" + val + "]").each(function() {
-                $(this).prop("checked", true);
-                this.dispatchEvent(changeEvent);
-            });
-        });
-
-        // Here we fire off events
-        event = new CustomEvent('teststep', { bubbles: true, detail: step });
-        control.dispatchEvent(event);
+        this._fireStepEvent(step);
     },
-    _findElement: function(id) {
-        return this._window.document.getElementById(id);
+    _getGoraddObj: function(id) {
+        return this._window.goradd.g(id);
     },
     closeWindow: function(step) {
         this._window.close();
         this._fireStepEvent(step);
     },
     click: function (step, id) {
+        var self = this;
         goradd.log("click", step, id);
-        var control = this._findElement(id);
-        if (!control) {
-            this._fireStepEvent(step,  "Could not find element " + id);
+        var g = this._getGoraddObj(id);
+        if (!g) {
+            goradd.log("click: element not found", id);
+            self._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
-        var event = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: true
+        g.click(function() {
+            self._fireStepEvent(step);
         });
-        control.dispatchEvent(event);
-        event = new CustomEvent('teststep', { bubbles: true, detail: step });
-        control.dispatchEvent(event);
-
     },
-    callJqueryFunction: function (step, id, f, params) {
-        goradd.log("jqValue", step, id, f, params);
-        var ret;
+    callWidgetFunction: function (step, id, f, params) {
+        goradd.log("WidgetF", step, id, f, params);
 
-        var control = this._findElement(id);
-        if (!control) {
+        var g = this._getGoraddObj(id);
+        if (!g) {
+            goradd.log("callWidgetFunction: element not found", id);
             this._fireStepEvent(step,  "Could not find element " + id);
             return;
         }
-        var $control = $(control);
-        var func = $control[f];
-        if (!func) {
-            this._fireStepEvent(step, "Could not find function " + f + " on jQuery element " + id);
-            return;
-        }
 
-        ret = func.apply($control, params);
-        goradd.setControlValue(this.element.attr("id"), "jsvalue", ret);
+        var ret = g.f(f, params);
+
+        goradd.setControlValue(this.element.id, "jsvalue", ret);
         this._fireStepEvent(step);
     },
     typeChars: function (step, id, chars) {
-        //KeyEvent.simulate(chars, [], this._findElement(id));
-        $(this._findElement(id)).val(chars);
+        var g = this._getGoraddObj(id);
+        if (!g) {
+            goradd.log("typeChars: element not found", id);
+            this._fireStepEvent(step,  "Could not find element " + id);
+            return;
+        }
+        g.val(chars);
+        this._fireStepEvent(step);
     },
     focus: function (step, id) {
-        goradd.log("focus", step, id);
-        this._findElement(id).focus();
+        var g = this._getGoraddObj(id);
+        if (!g) {
+            goradd.log("focus: element not found", id);
+            this._fireStepEvent(step,  "Could not find element " + id);
+            return;
+        }
+        g.focus();
+        this._fireStepEvent(step);
     }
 
-
-
 });
-

@@ -22,4 +22,5 @@ func TestSubquery(t *testing.T) {
 	assert.Equal(t, 2, people[0].GetAlias("manager_count").Int(), "Karen Wolfe manages 2 projects.")
 }
 
+
 // TODO: Test multi-level subquery

@@ -123,8 +123,8 @@ func ToJavaScript(v interface{}) string {
 
 // NoQuoteKey is a value wrapper to specify a value in a map whose key should not be quoted when converting to javascript.
 // In some situations, a quoted key has a different meaning from a non-quoted key.
-// For example, when making a list of parameters to pass when calling the jQuery $() command,
-// (i.e. $j(selector, params)), quoted words are turned into parameters, and non-quoted words
+// For example, when making a list of parameters to pass when calling the a javascript command,
+// quoted words are turned into parameters, and non-quoted words
 // are turned into functions. For example, "size" will set the size attribute of the object, and
 // size (no quotes), will call the size() function on the object.
 // i.e. map[string]string {"size":4, "size":NoQuoteKey(JsCode("obj"))}

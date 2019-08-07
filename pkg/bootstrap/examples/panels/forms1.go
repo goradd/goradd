@@ -1,7 +1,9 @@
 package panels
 
 import (
+	"context"
 	. "github.com/goradd/goradd/pkg/bootstrap/control"
+	"github.com/goradd/goradd/pkg/bootstrap/examples"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -10,7 +12,7 @@ import (
 )
 
 // shared
-const controlsFormPath = "/goradd/examples/controls.g"
+const controlsFormPath = "/goradd/examples/bootstrap.g"
 
 const (
 	AjaxSubmit int = iota + 1
@@ -20,61 +22,71 @@ const (
 
 type Forms1Panel struct {
 	control.Panel
-	Name            *Textbox
-	ChildrenCount   *IntegerTextbox
-	MStatusSingle   *RadioButton
-	MStatusMarried  *RadioButton
-	MStatusDivorced *RadioButton
-	Dog             *Checkbox
-
-	SubmitAjax   *Button
-	SubmitServer *Button
 }
 
-func NewForms1Panel(parent page.ControlI) *Forms1Panel {
+
+func NewForms1Panel(ctx context.Context, parent page.ControlI) {
 	p := &Forms1Panel{}
 	p.Panel.Init(p, parent, "textboxPanel")
-
-	p.Name = NewTextbox(p, "nameText")
-	p.Name.SetLabel("Name")
-
-	p.ChildrenCount = NewIntegerTextbox(p, "childrenText")
-	p.ChildrenCount.SetLabel("Child Count")
-	p.ChildrenCount.SetInstructions("How many children do you have?")
-	p.ChildrenCount.SetIsRequired(true)
-	p.ChildrenCount.SetColumnCount(2)
-
-	// Normally you would use a radio list for radio buttons.
-	// This is just a demonstration of how you can do it without a radio list for special situations.
-	p.MStatusSingle = NewRadioButton(p, "singleRadio")
-	p.MStatusSingle.SetGroup("m")
-	p.MStatusSingle.SetText("Single")
-	p.MStatusSingle.SetChecked(true) // default a value
-
-	p.MStatusMarried = NewRadioButton(p, "marriedRadio")
-	p.MStatusMarried.SetGroup("m")
-	p.MStatusMarried.SetText("Married")
-
-	p.MStatusDivorced = NewRadioButton(p, "divorcedRadio")
-	p.MStatusDivorced.SetGroup("m")
-	p.MStatusDivorced.SetText("Divorced")
-
-	p.Dog = NewCheckbox(p, "dogCheck")
-	p.Dog.SetText("I have a dog")
-	p.Dog.SetInstructions("Do you have a dog?")
-
-	p.SubmitAjax = NewButton(p, "ajaxButton")
-	p.SubmitAjax.SetText("Submit Ajax")
-	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), AjaxSubmit))
-
-	p.SubmitServer = NewButton(p, "serverButton")
-	p.SubmitServer.SetText("Submit Server")
-	p.SubmitServer.OnSubmit(action.Server(p.ID(), ServerSubmit))
-
-	return p
+	p.Panel.AddControls(ctx,
+		FormGroupCreator{
+			Label:"Name",
+			Child: TextboxCreator{
+				ID: "nameText",
+			},
+		},
+		FormGroupCreator{
+			Label:"Child Count",
+			Instructions:"How many children do you have?",
+			Child: IntegerTextboxCreator{
+				ID: "childrenText",
+				ColumnCount:2,
+				ControlOptions: page.ControlOptions{
+					IsRequired: true,
+				},
+			},
+		},
+		// Normally you would use a radio list for radio buttons.
+		// This is just a demonstration of how you can do it without a radio list for special situations.
+		RadioButtonCreator{
+			ID: "singleRadio",
+			Group:"m",
+			Text:"Single",
+			Checked:true,
+		},
+		RadioButtonCreator{
+			ID: "marriedRadio",
+			Group:"m",
+			Text:"Married",
+		},
+		RadioButtonCreator{
+			ID: "divorcedRadio",
+			Group:"m",
+			Text:"Divorced",
+		},
+		FormGroupCreator{
+			Label: "Dog",
+			Instructions:"Do you have a dog?",
+			Child: CheckboxCreator {
+				ID:   "dogCheck",
+				Text: "I have a dog",
+			},
+		},
+		ButtonCreator {
+			ID: "ajaxButton",
+			Text: "Submit Ajax",
+			OnSubmit:action.Ajax(p.ID(), AjaxSubmit),
+		},
+		ButtonCreator {
+			ID: "serverButton",
+			Text: "Submit Server",
+			OnSubmit:action.Ajax(p.ID(), ServerSubmit),
+		},
+	)
 }
 
 func init() {
+	examples.RegisterPanel("forms1", "Forms 1", NewForms1Panel, 2)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Ajax Submit", testForms1AjaxSubmit)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Server Submit", testForms1ServerSubmit)
 }

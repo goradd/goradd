@@ -30,11 +30,8 @@ type ImageCaptureI interface {
 // It only captures images from devices and browsers that support image capture.
 type ImageCapture struct {
 	Panel
-	Canvas             *Canvas
-	CaptureButton      *Button
-	SwitchCameraButton *Button
 
-	ErrText *Panel
+	ErrTextID string
 	data    []byte
 	shape   ImageCaptureShape
 	typ     string
@@ -57,23 +54,40 @@ func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string)
 	i.typ = "jpeg"
 	i.quality = 0.92
 
-	i.Canvas = NewCanvas(i, i.ID()+"_canvas")
-	i.CaptureButton = NewButton(i, i.ID()+"_capture")
-	i.CaptureButton.SetText(i.ΩT("New Image"))
+	NewCanvas(i, i.canvasID())
+	
+	NewImageCapture(i, i.captureID()).
+		SetText(i.ΩT("New Image"))
 
-	i.SwitchCameraButton = NewButton(i, i.ID()+"_switch")
-	i.SwitchCameraButton.SetText(i.ΩT("Switch Camera"))
-	i.SwitchCameraButton.SetDisplay("none")
+	NewImageCapture(i, i.switchID()).
+		SetDisplay("none").
+		SetText(i.ΩT("Switch Camera"))
 
-	i.ErrText = NewPanel(i, i.ID()+"_err")
-	i.ErrText.Tag = "p"
-	i.ErrText.SetDisplay("none")
-	i.ErrText.SetText(i.ΩT("This browser or device does not support image capture"))
+	i.ErrTextID = i.ID()+"_err"
+	et := NewPanel(i, i.ErrTextID)
+	et.Tag = "p"
+	et.SetDisplay("none")
+	et.SetText(i.ΩT("This browser or device does not support image capture"))
 }
 
 func (i *ImageCapture) this() ImageCaptureI {
 	return i.Self.(ImageCaptureI)
 }
+
+func (i *ImageCapture) canvasID() string {
+	return i.ID() + "_canvas"
+}
+
+func (i *ImageCapture) captureID() string {
+	return i.ID() + "_capture"
+}
+
+func (i *ImageCapture) switchID() string {
+	return i.ID() + "_switch"
+}
+
+
+
 
 func (i *ImageCapture) Data() []byte {
 	return i.data // clone?
@@ -105,7 +119,7 @@ func (i *ImageCapture) ΩPutCustomScript(ctx context.Context, response *page.Res
 	d := base64.StdEncoding.EncodeToString(i.data)
 	d = "data:image/" + i.typ + ";base64," + d
 	options["data"] = d
-	options["selectButtonName"] = i.ΩT("Capture")
+	options["selectImageCaptureName"] = i.ΩT("Capture")
 	if i.zoom > 0 {
 		options["zoom"] = i.zoom
 	}
@@ -115,19 +129,20 @@ func (i *ImageCapture) ΩPutCustomScript(ctx context.Context, response *page.Res
 	options["mimeType"] = i.typ
 	options["quality"] = i.quality
 
-	response.ExecuteControlCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, options)
+	response.ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, options)
 }
 
 // TurnOff will turn off the camera and the image displayed in the control
 func (i *ImageCapture) TurnOff() {
-	i.ParentForm().Response().ExecuteControlCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
+	i.ParentForm().Response().ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
 }
 
 // SetPixelSize sets the pixel size of the image that will be returned. Control the visible size of the canvas through
 // setting css sizes.
 func (i *ImageCapture) SetPixelSize(width int, height int) {
-	i.Canvas.SetAttribute("width", width)
-	i.Canvas.SetAttribute("height", height)
+	canvas := GetCanvas(i, i.canvasID())
+	canvas.SetAttribute("width", width)
+	canvas.SetAttribute("height", height)
 }
 
 // SetMaskShape sets the masking shape for the image
@@ -136,7 +151,7 @@ func (i *ImageCapture) SetMaskShape(shape ImageCaptureShape) {
 }
 
 // ΩDrawingAttributes is called by the framework.
-func (i *ImageCapture) ΩDrawingAttributes() *html.Attributes {
+func (i *ImageCapture) ΩDrawingAttributes() html.Attributes {
 	a := i.Control.ΩDrawingAttributes()
 	if i.data != nil {
 		// Turn the data into a source attribute
@@ -158,4 +173,40 @@ func (i *ImageCapture) ΩUpdateFormValues(ctx *page.Context) {
 			log.Debug(err.Error())
 		}
 	}
+}
+
+// ImageCaptureCreator is the initialization structure for declarative creation of buttons
+type ImageCaptureCreator struct {
+	// ID is the control id
+	ID string
+	MaskShape   	ImageCaptureShape
+	MimeType    string
+	Zoom    int
+	Quality float32
+	page.ControlOptions
+}
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c ImageCaptureCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewImageCapture(parent, c.ID)
+	if c.MaskShape != "" {
+		ctrl.SetMaskShape(c.MaskShape)
+	}
+	if c.MimeType != "" {
+		ctrl.SetMimeType(c.MimeType)
+	}
+	if c.Zoom != 0 {
+		ctrl.SetZoom(c.Zoom)
+	}
+	if c.Quality != 0 {
+		ctrl.SetQuality(c.Quality)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+	return ctrl
+}
+
+// GetImageCapture is a convenience method to return the button with the given id from the page.
+func GetImageCapture(c page.ControlI, id string) *ImageCapture {
+	return c.Page().GetControl(id).(*ImageCapture)
 }

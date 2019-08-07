@@ -1,0 +1,36 @@
+//dataProvider.tmpl
+
+{{
+func (p *{{= panelName }}) BindData(ctx context.Context, s data.DataManagerI) {
+
+    switch s.ID() {
+
+{{g
+for _,col := range t.Columns {
+    if col.Generator != nil {
+        if _, ok := col.Generator.(generator.ProviderGenerator); ok {
+{{
+    case "{{= col.ControlID }}":
+        var items []interface{}
+{{if col.IsNullable}}
+        items = control.NoSelectionItemList()
+{{else}}
+{{if col.IsReference() && col.ForeignKey.IsType}}
+        if int(p.{{= t.GoName }}.{{= col.ReferenceFunction(dd) }}()) == 0 {
+{{else}}
+        if p.{{= t.GoName }}.{{= col.GoName }}() == {{= col.ColumnType.DefaultValue() }} {
+{{if}}
+            items = control.SelectOneItemList()
+        }
+{{if}}
+        items = append(items, s.DataConnector().(page.DataLoader).Load(ctx)...)
+        s.SetData(items)
+}}
+        }
+    }
+}
+}}
+    }
+}
+
+}}

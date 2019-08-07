@@ -12,10 +12,10 @@ hierarchical checklists, and more.
 </p>
 <h2>Ordered List</h2>
 
-{{draw control.OList }}
+{{draw "orderedList" }}
 
 <h2>Unordered List</h2>
-{{draw control.UList }}
+{{draw "unorderedList" }}
 
 {{end}}
 

@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func (control *DefaultPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *DefaultPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>Bootstrap Control Examples</h1>

@@ -124,7 +124,7 @@ func (d *Modal) AddTitlebarClass(class string) {
 	d.titleBar.AddClass(class)
 }
 
-func (d *Modal) ΩDrawingAttributes() *html.Attributes {
+func (d *Modal) ΩDrawingAttributes() html.Attributes {
 	a := d.Panel.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "bs-modal")
 	return a
@@ -198,7 +198,7 @@ func (d *Modal) SetButtonVisible(id string, visible bool) ModalI {
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (d *Modal) SetButtonStyle(id string, a *html.Style) ModalI {
+func (d *Modal) SetButtonStyle(id string, a html.Style) ModalI {
 	if ctrl := d.buttonBar.Child(d.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetStyles(a)
 	}
@@ -230,7 +230,7 @@ func (d *Modal) Open() {
 }
 
 func (d *Modal) Close() {
-	d.ParentForm().Response().ExecuteControlCommand(d.ID(), "modal", page.PriorityLow, "hide")
+	d.ParentForm().Response().ExecuteJqueryCommand(d.ID(), "modal", page.PriorityLow, "hide")
 }
 
 func (d *Modal) closed() {

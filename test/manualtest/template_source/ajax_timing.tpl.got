@@ -1,0 +1,26 @@
+{{< imports }}
+{{end}}
+{{< headTags }}
+{{end}}
+{{< package }}manualtest{{end}}
+{{< title }}Ajax Timing{{end}}
+{{< form }}AjaxTimingForm{{end}}
+
+{{define template }}
+	<div>
+        {{draw form.Txt1.With(page.NewLabelWrapper()) }}
+        {{draw form.Txt1ChangeLabel.With(page.NewLabelWrapper()) }}
+        {{draw form.Txt1KeyUpLabel.With(page.NewLabelWrapper()) }}
+	</div>
+	<div>
+	    {{draw form.Chk.With(page.NewLabelWrapper()) }}
+	    {{draw form.ChkLabel.With(page.NewLabelWrapper()) }}
+	</div>
+    <div>
+        {{draw form.Txt2.With(page.NewLabelWrapper()) }}
+        {{draw form.Btn }}
+    </div>
+
+{{end}}
+
+{{renderFormTemplate}}

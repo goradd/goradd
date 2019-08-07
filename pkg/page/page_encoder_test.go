@@ -50,7 +50,6 @@ func CreateBasicForm(ctx context.Context) page.FormI {
 
 func (f *BasicForm) createControls(ctx context.Context) {
 	f.Txt1 = control.NewTextbox(f, "txt1")
-	f.Txt1.SetLabel("Txt1")
 	f.Txt1.SetValue("Hi")
 	f.S = "test"
 }

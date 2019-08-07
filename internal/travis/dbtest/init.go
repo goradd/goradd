@@ -19,3 +19,4 @@ func init() {
 
 	db.AddDatabase(db1, key)
 }
+

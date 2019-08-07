@@ -78,3 +78,40 @@ func (t AliasTexter) CellText(ctx context.Context, col control.ColumnI, rowNum i
 		return ApplyFormat(s, t.Format, t.TimeFormat)
 	}
 }
+
+// AliasColumnCreator creates a column that displays the content of a database alias. Each row must be
+// an AliasGetter, which by default all the output from database queries provide that.
+type AliasColumnCreator struct {
+	// ID will assign the given id to the column. If you do not specify it, an id will be given it by the framework.
+	ID string
+	// Alias is the name of the alias to use when getting data out of the provided database row
+	Alias string
+	// Title is the static title string to use in the header row
+	Title string
+	// Format is a format string applied to the data using fmt.Sprintf
+	Format string
+	// TimeFormat is a format string applied specifically to time data using time.Format
+	TimeFormat string
+	// Sortable makes the column display sort arrows in the header
+	Sortable bool
+	control.ColumnOptions
+}
+
+func (c AliasColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
+	col := NewAliasColumn(c.Alias)
+	if c.ID != "" {
+		col.SetID(c.ID)
+	}
+	col.SetTitle(c.Title)
+	if c.Format != "" {
+		col.SetFormat(c.Format)
+	}
+	if c.TimeFormat != "" {
+		col.SetTimeFormat(c.TimeFormat)
+	}
+	if c.Sortable {
+		col.SetSortable()
+	}
+	col.ApplyOptions(ctx, parent, c.ColumnOptions)
+	return col
+}

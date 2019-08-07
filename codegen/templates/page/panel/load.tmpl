@@ -3,23 +3,52 @@
 // of the record.
 func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
 
-    var obj *model.{{= t.GoName }}
-
 	if pk == "" {
-		obj = model.New{{= t.GoName }}(ctx)
+		p.{{= t.GoName }} = model.New{{= t.GoName }}(ctx)
 	} else {
-		obj = model.Load{{= t.GoName }}(ctx, pk)
+		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk)
 
-		if obj == nil {
+		if p.{{= t.GoName }} == nil {
 			d := control.Alert(p.ParentForm(), p.ParentForm().ΩT("The record was not found. Perhaps it was recently deleted by someone else."), "OK")
 			d.SetTitle(p.ParentForm().ΩT("Error"))
 			return page.NewFrameworkError(page.FrameworkErrRecordNotFound)
 		}
 	}
 
-	p.Connector.Load(ctx, obj)
+	p.Refresh()
 
 	return nil
 }
+
+// Refresh loads the controls with data from the cached {{= t.GoName }} object.
+func (p *{{= panelName }}) Refresh() {
+    p.RangeAllChildren(func(ctrl page.ControlI) {
+        ctrl.RefreshData(p.{{= t.GoName }})
+    })
+}
+
+// Update loads the the cached {{= t.GoName }} object with data from the controls.
+func (p *{{= panelName }}) Update() {
+    p.RangeAllChildren(func(ctrl page.ControlI) {
+        ctrl.UpdateData(p.{{= t.GoName }})
+    })
+}
+
+// Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
+func (p *{{= panelName }}) Reload(ctx context.Context) error {
+    return p.this().Load(ctx, p.{{= t.GoName }}.PrimaryKey())
+}
+
+// Save writes out the data that is currently in the controls
+func (p *{{= panelName }}) Save(ctx context.Context) {
+    p.this().Update()
+    p.{{= t.GoName }}.Save(ctx)
+}
+
+// Delete deletes the object currently being edited
+func (p *{{= panelName }}) Delete(ctx context.Context) {
+    p.{{= t.GoName }}.Delete(ctx)
+}
+
 
 }}

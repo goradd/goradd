@@ -40,7 +40,7 @@ func (t *Tabs) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) 
 
 		buf.WriteString(`" aria-selected="true">`)
 
-		buf.WriteString(fmt.Sprintf("%v", child.Label()))
+		buf.WriteString(fmt.Sprintf("%v", child.Text()))
 
 		buf.WriteString(`</a>
   </li>

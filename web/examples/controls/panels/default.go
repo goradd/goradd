@@ -7,6 +7,18 @@ import (
 	"github.com/goradd/goradd/web/examples/controls"
 )
 
+// shared
+const controlsFormPath = "/goradd/examples/controls.g"
+
+const (
+	AjaxSubmit int = iota + 1
+	ServerSubmit
+	ButtonSubmit
+	ResetStateSubmit
+	ProxyClick
+)
+
+
 type DefaultPanel struct {
 	Panel
 }

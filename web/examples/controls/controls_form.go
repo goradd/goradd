@@ -37,7 +37,7 @@ func NewControlsForm(ctx context.Context) page.FormI {
 	f.Init(ctx, f, ControlsFormPath, ControlsFormId)
 	f.AddRelatedFiles()
 
-	f.list = NewUnorderedList(f, "panelList")
+	f.list = NewUnorderedList(f, "listPanel")
 	f.list.SetDataProvider(f)
 	f.detail = NewPanel(f, "detailPanel")
 
@@ -46,6 +46,10 @@ func NewControlsForm(ctx context.Context) page.FormI {
 
 func (f *ControlsForm) LoadControls(ctx context.Context) {
 	var createF createFunction
+	if _, ok := page.GetContext(ctx).FormValue("testing"); ok {
+		f.SetAttribute("novalidate", true) // bypass html validation for testing
+	}
+
 	if id, ok := page.GetContext(ctx).FormValue("control"); ok {
 		for _, c := range controls {
 			if c.key == id {
@@ -80,6 +84,12 @@ func RegisterPanel(key string,
 	name string,
 	f createFunction,
 	order int) {
+
+	for _, c := range controls {
+		if c.key == key {
+			panic("panel " + key + " is already registered")
+		}
+	}
 	controls = append(controls, controlEntry{key, name, f, order})
 }
 

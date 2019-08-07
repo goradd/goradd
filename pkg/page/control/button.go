@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -9,6 +10,8 @@ import (
 
 type ButtonI interface {
 	page.ControlI
+	SetLabel(label string) page.ControlI
+	OnSubmit(actions ...action.ActionI) page.EventI
 }
 
 // Button is a standard html form submit button. It corresponds to a <button> tag in html.
@@ -58,7 +61,7 @@ func (b *Button) On(e page.EventI, actions ...action.ActionI) page.EventI {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (b *Button) ΩDrawingAttributes() *html.Attributes {
+func (b *Button) ΩDrawingAttributes() html.Attributes {
 	a := b.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "button")
 
@@ -76,4 +79,47 @@ func (b *Button) ΩDrawingAttributes() *html.Attributes {
 func (b *Button) OnSubmit(actions ...action.ActionI) page.EventI {
 	// We delay here to try to make sure any other delayed events are executed first.
 	return b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
+}
+
+// ButtonCreator is the initialization structure for declarative creation of buttons
+type ButtonCreator struct {
+	// ID is the control id
+	ID string
+	// Text is the text displayed in the button
+	Text string
+	// OnSubmit is the action to take when the button is submitted. Use this specifically
+	// for buttons that move to other pages or processes transactions, as it debounces the button
+	// and waits until all other actions complete
+	OnSubmit action.ActionI
+	// OnClick is an action to take when the button is pressed. Do not specify both
+	// a OnClick and OnSubmit.
+	OnClick action.ActionI
+	page.ControlOptions
+}
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c ButtonCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewButton(parent, c.ID)
+
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+// Init is called by implementations of Buttons to initialize a control with the
+// creator. You do not normally need to call this.
+func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
+	ctrl.SetLabel(c.Text)
+	if c.OnSubmit != nil {
+		ctrl.OnSubmit(c.OnSubmit)
+	}
+	if c.OnClick != nil {
+		ctrl.On(event.Click(), c.OnClick)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+}
+
+// GetButton is a convenience method to return the button with the given id from the page.
+func GetButton(c page.ControlI, id string) *Button {
+	return c.Page().GetControl(id).(*Button)
 }

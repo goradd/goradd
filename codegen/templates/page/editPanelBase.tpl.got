@@ -5,10 +5,21 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"bytes"
 	"github.com/goradd/goradd/pkg/orm/db"
-    //"strings"
-    //"github.com/knq/snaker"
-    "fmt"
+ 	"github.com/goradd/goradd/pkg/page"
+   "fmt"
 )
+
+// This sets up a special connector that satisfies the DataConnector interface, but also
+// provides an Export method so that the ExportCreator function can use that during export.
+// The export function will output a "%s" instead of a value for the connector so that we can fill
+// that in later.
+// The end result is that it makes it easier for us to make control generators.
+type connectorPlaceHolder struct {}
+func (c connectorPlaceHolder) Refresh(i page.ControlI, model interface{}) {}
+func (c connectorPlaceHolder) Update(i page.ControlI, model interface{}) {}
+func (c connectorPlaceHolder) Export() string {
+    return `%s`
+}
 
 func init() {
 	t := EditPanelBaseTemplate {

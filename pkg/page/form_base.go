@@ -30,8 +30,8 @@ type FormI interface {
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
 	Response() *Response
 	renderAjax(ctx context.Context, buf *bytes.Buffer) error
-	AddStyleSheetFile(path string, attributes *html.Attributes)
-	AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes)
+	AddStyleSheetFile(path string, attributes html.Attributes)
+	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
 	AddJQueryUI()
 	ChangeLocation(url string)
@@ -41,6 +41,10 @@ type FormI interface {
 	// Lifecycle calls
 	Run(ctx context.Context) error
 	Exit(ctx context.Context, err error)
+
+	resetValidation()
+	updateValues(ctx *Context)
+	writeAllStates(ctx context.Context)
 }
 
 // ΩFormBase is a base for the FormBase struct that is in the control package.
@@ -112,7 +116,6 @@ func (f *ΩFormBase) AddJQueryUI() {
 // AddGoraddFiles adds the various goradd files to the form
 func (f *ΩFormBase) AddGoraddFiles() {
 	gr := config.GoraddAssets()
-	f.AddJavaScriptFile(filepath.Join(gr, "js", "ajaxq", "ajaxq.js"), false, nil) // goradd.js needs this
 	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd.js"), false, nil)
 	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-ws.js"), false, nil)
 	if !config.Release {
@@ -181,12 +184,57 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		s += "goradd.initFormTest();\n"
 	}
 	f.response = NewResponse() // Reset
-	s = fmt.Sprintf(`<script>jQuery(document).ready(function($j) { %s; });</script>`, s)
+	s = fmt.Sprintf(`<script>
+%s
+</script>`, s)
 	buf.WriteString(s)
 
 	f.this().ΩPostRender(ctx, buf)
 	return
 }
+
+func (f *ΩFormBase) resetDrawingFlags() {
+	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
+		c := ctrl.control()
+		c.wasRendered = false
+		c.isModified = false
+	})
+}
+
+func (f *ΩFormBase) resetValidation() {
+	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
+		c := ctrl.control()
+		if c.validationMessage != "" {
+			c.validationMessage = ""
+		}
+		if c.validationState != ValidationWaiting {
+			c.validationState = ValidationWaiting
+		}
+	})
+}
+
+func (f *ΩFormBase) updateValues(ctx *Context) {
+	f.RangeAllChildren(func(child ControlI) {
+		// Parent is updated after children so that parent can read the state of the children
+		// to update any internal caching of the state. Parent can then delete or recreate children
+		// as needed.
+		child.ΩUpdateFormValues(ctx)
+	})
+}
+
+// writeAllStates is an internal function that will recursively write out the state of all the controls.
+// This state is used by controls to restore the visual state of the control if the page is returned to. This is helpful
+// in situations where a control is used to filter what is shown on the page, you zoom into an item, and then return to
+// the parent control. In this situation, you want to see things in the same state they were in, and not have to set up
+// the filter all over again.
+func (f *ΩFormBase) writeAllStates(ctx context.Context) {
+	f.RangeAllChildren(func(child ControlI) {
+		c := child.control()
+		c.writeState(ctx)
+	})
+}
+
+
 
 // outputSqlProfile looks for sql profiling information and sends it to the browser if found
 func (f *ΩFormBase) getDbProfile(ctx context.Context) (s string) {
@@ -221,7 +269,24 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 		panic("page state changed")
 	}
 	//f.response.SetControlValue(htmlVarFormstate, pagestate)
-	// TODO: render imported style sheets and java scripts
+
+	// Inject any added style sheets and script files
+	if f.importedStyleSheets != nil {
+		f.importedStyleSheets.Range(func(k string,v interface{}) bool {
+			f.response.addStyleSheet(k,v.(html.Attributes))
+			return true
+		})
+	}
+
+	if f.importedJavaScripts != nil {
+		f.importedJavaScripts.Range(func(k string,v interface{}) bool {
+			f.response.addJavaScriptFile(k,v.(html.Attributes))
+			return true
+		})
+	}
+
+	f.mergeInjectedFiles()
+
 	f.resetDrawingFlags()
 	buf2, err = f.response.GetAjaxResponse()
 	buf.Write(buf2)
@@ -230,7 +295,7 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 }
 
 // ΩDrawingAttributes returns the attributes to add to the form tag.
-func (f *ΩFormBase) ΩDrawingAttributes() *html.Attributes {
+func (f *ΩFormBase) ΩDrawingAttributes() html.Attributes {
 	a := f.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "form")
 	return a
@@ -266,15 +331,17 @@ func (f *ΩFormBase) saveState() string {
 
 // AddJavaScriptFile registers a JavaScript file such that it will get loaded on the page.
 // If forceHeader is true, the file will be listed in the header, which you should only do if the file has some
-// preliminary javascript that needs to be executed before the dom loads. Otherwise, the file will be loaded after
+// preliminary javascript that needs to be executed before the dom loads.
+// You can specify forceHeader and a "defer" attribute to get the effect of loading the javascript in the background.
+// With forceHeader false, the file will be loaded after
 // the dom is loaded, allowing the browser to show the page and then load the javascript in the background, giving the
 // appearance of a more responsive website. If you add the file during an ajax operation, the file will be loaded
-// dynamically by the goradd javascript. Controls generally should call This during the initial creation of the control if the control
+// dynamically by the goradd javascript. Controls generally should call this during the initial creation of the control if the control
 // requires additional javascript to function.
 //
 // The path is either a url, or an internal path to the location of the file
 // in the development environment.
-func (f *ΩFormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes) {
+func (f *ΩFormBase) AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes) {
 	if forceHeader && f.isOnPage {
 		panic("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
 	}
@@ -320,7 +387,7 @@ func (f *ΩFormBase) AddMasterJavaScriptFile(url string, attributes []string, fi
 // deployment and so that the MUX can find the file and serve it (This happens at draw time).
 // The attributes will be extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
-func (f *ΩFormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
+func (f *ΩFormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 	if path[:4] != "http" {
 		url := GetAssetUrl(path)
 
@@ -346,17 +413,11 @@ func (f *ΩFormBase) AddStyleSheetFile(path string, attributes *html.Attributes)
 // DrawHeaderTags is called by the page drawing routine to draw its header tags
 // If you override this, be sure to call this version too
 func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
-	if f.importedStyleSheets != nil {
-		if f.headerStyleSheets == nil {
-			f.headerStyleSheets = maps.NewSliceMap()
-		}
-		f.headerStyleSheets.Merge(f.importedStyleSheets)
-		f.importedStyleSheets = nil
-	}
+	f.mergeInjectedFiles()
 
 	if f.headerStyleSheets != nil {
 		f.headerStyleSheets.Range(func(path string, attr interface{}) bool {
-			var attributes = attr.(*html.Attributes)
+			var attributes = attr.(html.Attributes)
 			if attributes == nil {
 				attributes = html.NewAttributes()
 			}
@@ -367,17 +428,9 @@ func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 		})
 	}
 
-	if f.importedJavaScripts != nil {
-		if f.headerJavaScripts == nil {
-			f.headerJavaScripts = maps.NewSliceMap()
-		}
-		f.headerJavaScripts.Merge(f.importedJavaScripts)
-		f.importedJavaScripts = nil
-	}
-
 	if f.headerJavaScripts != nil {
 		f.headerJavaScripts.Range(func(path string, attr interface{}) bool {
-			var attributes = attr.(*html.Attributes)
+			var attributes = attr.(html.Attributes)
 			if attributes == nil {
 				attributes = html.NewAttributes()
 			}
@@ -388,9 +441,27 @@ func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	}
 }
 
+func (f *ΩFormBase) mergeInjectedFiles() {
+	if f.importedStyleSheets != nil {
+		if f.headerStyleSheets == nil {
+			f.headerStyleSheets = maps.NewSliceMap()
+		}
+		f.headerStyleSheets.Merge(f.importedStyleSheets)
+		f.importedStyleSheets = nil
+	}
+
+	if f.importedJavaScripts != nil {
+		if f.headerJavaScripts == nil {
+			f.headerJavaScripts = maps.NewSliceMap()
+		}
+		f.headerJavaScripts.Merge(f.importedJavaScripts)
+		f.importedJavaScripts = nil
+	}
+}
+
 func (f *ΩFormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 	f.bodyJavaScripts.Range(func(path string, attr interface{}) bool {
-		var attributes = attr.(*html.Attributes)
+		var attributes = attr.(html.Attributes)
 		if attributes == nil {
 			attributes = html.NewAttributes()
 		}

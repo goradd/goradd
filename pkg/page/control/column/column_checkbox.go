@@ -17,7 +17,7 @@ const (
 
 type CheckboxColumnI interface {
 	control.ColumnI
-	CheckboxAttributes(data interface{}) *html.Attributes
+	CheckboxAttributes(data interface{}) html.Attributes
 }
 
 // CheckboxColumn is a table column that contains a checkbox in each row.
@@ -38,7 +38,7 @@ type CheckboxColumn struct {
 // changes. Or, if you are recording your changes in real time, attach a CheckboxColumnClick event to the table.
 func NewCheckboxColumn(p CheckboxProvider) *CheckboxColumn {
 	if p == nil {
-		panic("A checkbox attribute provider is required.")
+		panic("a checkbox attribute provider is required")
 	}
 
 	i := CheckboxColumn{checkboxer: p}
@@ -73,7 +73,7 @@ func (col *CheckboxColumn) HeaderCellHtml(ctx context.Context, rowNum int, colNu
 	if col.IsSortable() {
 		h += col.RenderSortButton(col.Title())
 	} else if col.Title() != "" {
-		h = col.Title()
+		h += col.Title()
 	}
 
 	return
@@ -81,7 +81,7 @@ func (col *CheckboxColumn) HeaderCellHtml(ctx context.Context, rowNum int, colNu
 
 // CheckboxAttributes returns the attributes for the input tag that will display the checkbox.
 // If data is nil, it indicates a checkAll box.
-func (col *CheckboxColumn) CheckboxAttributes(data interface{}) *html.Attributes {
+func (col *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes {
 	p := col.checkboxer
 	a := p.Attributes(data)
 	if a == nil {
@@ -186,7 +186,7 @@ func (col *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 
 // AddActions adds actions to the table that the column can respond to.
 func (col *CheckboxColumn) AddActions(t page.ControlI) {
-	t.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(col.ID(), control.ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
+	t.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(col.ParentTable().ID() + "_" + col.ID(), control.ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
 }
 
 // Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.
@@ -205,6 +205,7 @@ func (col *CheckboxColumn) Action(ctx context.Context, params page.ActionParams)
 func (col *CheckboxColumn) allClick(id string, checked bool, rowNum int, colNum int) {
 	all := col.checkboxer.All()
 
+	// if we have a checkboxer that will help us check all the objects in the table, use it
 	if all != nil {
 		for k, v := range all {
 			if v == checked {
@@ -214,17 +215,15 @@ func (col *CheckboxColumn) allClick(id string, checked bool, rowNum int, colNum 
 			}
 		}
 		// Fire javascript to check all visible
-		//js := fmt.Sprintf(`$j('input[data-gr-checkcol]').prop('checked', %t)`, checked)
-		//c.parentTable.FormBase().Response().ExecuteJavaScript(js, override.PriorityStandard)
 		col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
 
 	} else {
 		// Fire javascript to check all visible and trigger a change
 		if checked {
-			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `trigger`, page.PriorityStandard, `click`)
+			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `click`, page.PriorityStandard)
 
 		} else {
-			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `trigger`, page.PriorityStandard, `click`)
+			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `click`, page.PriorityStandard)
 		}
 	}
 
@@ -260,7 +259,8 @@ func (t *CheckboxColumn) UnmarshalState(m maps.Loader) {
 
 // The CheckboxProvider interface defines a set of functions that you implement to provide for the initial display
 // of a checkbox. You can descend your own CheckboxProvider from the DefaultCheckboxProvider to get the default
-// behavior, and then add whatever functions you need to impelment.
+// behavior, and then add whatever functions you need to implement. Be sure to register your custom provider
+// with gob.
 type CheckboxProvider interface {
 	// RowID should return a unique id corresponding to the given data item. It is used to track the checked state of an individual checkbox.
 	RowID(data interface{}) string
@@ -270,7 +270,7 @@ type CheckboxProvider interface {
 	IsChecked(data interface{}) bool
 	// Attributes returns the attributes that will be applied to the checkbox corresponding to the data row.
 	// Use this primarily for providing custom attributes. Return nil if you have no custom attributes.
-	Attributes(data interface{}) *html.Attributes
+	Attributes(data interface{}) html.Attributes
 	// If you enable the checkAll box, you can use this to return a map of all the ids and their initial values here. This is
 	// mostly helpful if your table is not showing all the rows at once (i.e. you are using a paginator or scroller and
 	// only showing a subset of data at one time). If your table is showing a checkAll box, and you return nil here, the
@@ -298,7 +298,7 @@ func (c DefaultCheckboxProvider) IsChecked(data interface{}) bool {
 	return false
 }
 
-func (c DefaultCheckboxProvider) Attributes(data interface{}) *html.Attributes {
+func (c DefaultCheckboxProvider) Attributes(data interface{}) html.Attributes {
 	return nil
 }
 
@@ -308,5 +308,38 @@ func (c DefaultCheckboxProvider) All() map[string]bool {
 
 func init() {
 	gob.Register(map[string]bool(nil)) // We must register this here because we are putting the changes map into the session,
-	// and the session uses GOB to encode.
+	gob.Register(DefaultCheckboxProvider{}) // We must register this here because we are putting the changes map into the session,
+}
+
+// CheckboxColumnCreator creates a column of checkboxes.
+type CheckboxColumnCreator struct {
+	// ID will assign the given id to the column. If you do not specify it, an id will be given it by the framework.
+	ID string
+	// ShowCheckAll will show a checkbox in the header that the user can use to check all the boxes in the column.
+	ShowCheckAll bool
+	// CheckboxProvider tells us which checkboxes are on or off, and how the checkboxes are styled.
+	CheckboxProvider   CheckboxProvider
+	// Title is the title of the column that appears in the header
+	Title string
+	// Sortable makes the column display sort arrows in the header
+	Sortable bool
+	control.ColumnOptions
+}
+
+func (c CheckboxColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
+	col := NewCheckboxColumn(c.CheckboxProvider)
+	if c.ID != "" {
+		col.SetID(c.ID)
+	}
+	if c.ShowCheckAll {
+		col.SetShowCheckAll(true)
+	}
+	if c.Title != "" {
+		col.SetTitle(c.Title)
+	}
+	if c.Sortable {
+		col.SetSortable()
+	}
+	col.ApplyOptions(ctx, parent, c.ColumnOptions)
+	return col
 }

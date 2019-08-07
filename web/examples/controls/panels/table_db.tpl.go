@@ -9,7 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
-func (control *TableDbPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *TableDbPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 `)
@@ -55,20 +55,7 @@ The table below demonstrates columns that are linked to database queries. For th
 `)
 
 		{
-			err := control.Pager1.Draw(ctx, buf)
-			if err != nil {
-				return err
-			}
-		}
-
-		buf.WriteString(`
-`)
-
-		buf.WriteString(`
-`)
-
-		{
-			err := control.Table1.Draw(ctx, buf)
+			err := ctrl.Page().GetControl("table1").Draw(ctx, buf)
 			if err != nil {
 				return err
 			}

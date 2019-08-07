@@ -1,13 +1,15 @@
 package control
 
 import (
+	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type RadioListI interface {
-	CheckboxListI
+	control.RadioListI
 }
 
 // RadioList is a multi-select control that presents its choices as a list of checkboxes.
@@ -16,7 +18,9 @@ type RadioListI interface {
 // to scroll as well, so that the final structure can be styled like a multi-table table, or a single-table
 // scrolling list much like a standard html select list.
 type RadioList struct {
-	CheckboxList
+	control.RadioList
+	isInline  bool
+	cellClass string
 }
 
 func NewRadioList(parent page.ControlI, id string) *RadioList {
@@ -26,94 +30,96 @@ func NewRadioList(parent page.ControlI, id string) *RadioList {
 }
 
 func (l *RadioList) Init(self RadioListI, parent page.ControlI, id string) {
-	l.CheckboxList.Init(self, parent, id)
+	l.RadioList.Init(self, parent, id)
+	l.SetLabelDrawingMode(html.LabelAfter)
+	l.SetRowClass("row")
 }
 
 func (l *RadioList) this() RadioListI {
 	return l.Self.(RadioListI)
 }
 
-func (l *RadioList) renderItem(item control.ListItemI) (h string) {
-	attributes := html.NewAttributes()
-	attributes.SetID(item.ID())
-	attributes.Set("name", l.ID())
-	attributes.Set("value", item.ID())
-	attributes.Set("type", "radio")
-	if l.IsIdSelected(item.ID()) {
-		attributes.Set("checked", "")
-	}
-	attributes.AddClass("form-check-input")
-	ctrl := html.RenderVoidTag("input", attributes)
+func (l *RadioList) SetIsInline(i bool) {
+	l.isInline = i
+}
 
-	h = html.RenderLabel(html.NewAttributes().Set("for", item.ID()).AddClass("form-check-label"), item.Label(), ctrl, html.LabelAfter)
-	attributes = item.Attributes().Copy()
-	attributes.AddClass("form-check")
-	if l.isInline {
-		attributes.AddClass("form-check-inline")
-	}
-	h = html.RenderTag("div", attributes, h)
+// SetColumnClass sets a string that is applied to every cell. This is useful for setting responsive breakpoints
+func (l *RadioList) SetCellClass(c string) {
+	l.cellClass = c
+}
+
+// TODO: Use bootstrap styling for the columns rather than table styling
+// Also coordinate with FormFieldset
+
+
+// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// attributes are disposed of after drawing, so they are essentially read-only.
+func (l *RadioList) ΩDrawingAttributes() html.Attributes {
+	a := l.Control.ΩDrawingAttributes()	// skip default checkbox list attributes
+	a.SetDataAttribute("grctl", "bs-RadioList")
+	return a
+}
+
+// ΩRenderItem is called by the framework to render a single item in the list.
+func (l *RadioList) ΩRenderItem(item control.ListItemI) (h string) {
+	selected := l.SelectedItem().ID() != item.ID()
+	h = renderItemControl(item, "radio", selected, l.ID())
+	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)
 	return
 }
 
-func (l *RadioList) Value() interface{} {
-	a := l.SelectedValues()
-	if len(a) == 0 {
-		return nil
-	} else {
-		return a[0]
-	}
+type RadioListCreator struct {
+	ID string
+	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
+	Items []control.ListValue
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
+	// ColumnCount specifies how many columns to show
+	ColumnCount int
+	// LayoutDirection determines how the items are arranged in the columns
+	LayoutDirection control.LayoutDirection
+	// LabelDrawingMode specifies how the labels on the radio buttons will be associated with the buttons
+	LabelDrawingMode html.LabelDrawingMode
+	// IsScrolling will give the inner div a vertical scroll style. You will need to style the height of the outer control to have a fixed style as well.
+	IsScrolling bool
+	// RowClass is the class assigned to each row
+	RowClass string
+	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Value string
+	// SaveState saves the selected value so that it is restored if the form is returned to.
+	SaveState bool
+	page.ControlOptions
 }
 
-func (l *RadioList) SelectedValue() string {
-	return l.Value().(string)
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c RadioListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewRadioList(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
 }
 
-func (l *RadioList) SelectedLabel() string {
-	a := l.SelectedLabels()
-	if len(a) == 0 {
-		return ""
-	} else {
-		return a[0]
+func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
+	sub := control.RadioListCreator{
+		ID: c.ID,
+		Items: c.Items,
+		DataProvider: c.DataProvider,
+		ColumnCount: c.ColumnCount,
+		LayoutDirection: c.LayoutDirection,
+		LabelDrawingMode: c.LabelDrawingMode,
+		IsScrolling: c.IsScrolling,
+		RowClass: c.RowClass,
+		Value: c.Value,
+		SaveState: c.SaveState,
+		ControlOptions: c.ControlOptions,
+
 	}
+	sub.Init(ctx, ctrl)
 }
 
-func (l *RadioList) SetValue(v interface{}) {
-	l.SetSelectedValue(v)
-}
-
-func (l *RadioList) SetSelectedValue(v interface{}) {
-	if v == nil {
-		l.SetSelectedID("")
-		return
-	}
-
-	id, item := l.GetItemByValue(v)
-	if item != nil {
-		l.SetSelectedID(id)
-	}
-}
-
-func (l *RadioList) SetSelectedID(id string) {
-	l.SetSelectedIds([]string{id})
-	if id == "" {
-		l.SetSelectedIds(nil)
-	} else {
-		l.SetSelectedIds([]string{id})
-	}
-}
-
-func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
-	controlID := l.ID()
-
-	if ctx.RequestMode() == page.Ajax {
-		if v, ok := ctx.CheckableValue(controlID); ok {
-			if s, ok := v.(string); ok {
-				l.SetSelectedIdsNoRefresh([]string{l.ID() + "_" + s})
-			}
-		}
-	} else {
-		if v, ok := ctx.FormValue(controlID); ok {
-			l.SetSelectedIdsNoRefresh([]string{v})
-		}
-	}
+// GetRadioList is a convenience method to return the control with the given id from the page.
+func GetRadioList(c page.ControlI, id string) *RadioList {
+	return c.Page().GetControl(id).(*RadioList)
 }

@@ -2,6 +2,7 @@ package panels
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -16,13 +17,6 @@ import (
 type TableCheckboxPanel struct {
 	Panel
 
-	Table1          *PaginatedTable
-	Pager1          *DataPager
-	CheckboxColumn1 *column.CheckboxColumn
-	SelectCol       *column.CheckboxColumn
-
-	SubmitAjax   *Button
-	SubmitServer *Button
 }
 
 type Table1Data map[string]string
@@ -40,52 +34,67 @@ func (c SelectedProvider) RowID(data interface{}) string {
 }
 
 func (c SelectedProvider) IsChecked(data interface{}) bool {
+	if data == nil {
+		return false // since we aren't keeping track, just assume not everything is checked
+	}
 	return data.(Table1Data)["s"] == "1"
 }
 
 func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableCheckboxPanel{}
-	p.Panel.Init(p, parent, "checkboxPanel")
-
-	p.Table1 = NewPaginatedTable(p, "table1")
-	p.Table1.SetHeaderRowCount(1)
-	p.Table1.SetDataProvider(p)
-	p.Table1.AddColumn(column.NewMapColumn("name").SetTitle("Name"))
-
-	// get a copy of the column since we have to refer to it later
-	p.CheckboxColumn1 = column.NewCheckboxColumn(SelectedProvider{})
-	p.CheckboxColumn1.SetID("check1")
-	p.CheckboxColumn1.SetTitle("Selected")
-	p.Table1.AddColumn(p.CheckboxColumn1)
-	//p.Table1.AddColumn(column.NewCheckboxColumn(p).SetTitle("Completed"))
-
-	p.Pager1 = NewDataPager(p, "pager", p.Table1)
-	p.Table1.SetPageSize(5)
-
-	p.Table1.SaveState(ctx, true)
-
-	p.SubmitAjax = NewButton(p, "ajaxButton")
-	p.SubmitAjax.SetText("Submit Ajax")
-	p.SubmitAjax.OnSubmit(action.Ajax(p.ID(), ButtonSubmit))
-
-	p.SubmitServer = NewButton(p, "serverButton")
-	p.SubmitServer.SetText("Submit Server")
-	p.SubmitServer.OnSubmit(action.Server(p.ID(), ButtonSubmit))
-
+	p.Panel.Init(p, parent, "checkboxTablePanel")
+	p.AddControls(ctx,
+		PagedTableCreator{
+			ID: "table1",
+			HeaderRowCount: 1,
+			DataProvider: p,
+			Columns:[]ColumnCreator {
+				column.MapColumnCreator{
+					Index: "name",
+					Title:"Name",
+				},
+				column.CheckboxColumnCreator{
+					ID:"check1",
+					Title:"Selected",
+					ShowCheckAll:true,
+					CheckboxProvider:SelectedProvider{},
+				},
+			},
+			PageSize:5,
+			SaveState: true,
+		},
+		// A DataPager can be a standalone control, which you draw manually
+		DataPagerCreator{
+			ID:           "pager",
+			PagedControl: "table1",
+		},
+		ButtonCreator{
+			ID:       "ajaxButton",
+			Text:     "Submit Ajax",
+			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+		},
+		ButtonCreator{
+			ID:       "serverButton",
+			Text:     "Submit Server",
+			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+		},
+	)
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (f *TableCheckboxPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	f.Table1.SetTotalItems(uint(len(table1Data)))
-	start, end := f.Table1.SliceOffsets()
+	t := s.(PagedControlI)
+	t.SetTotalItems(uint(len(table1Data)))
+	start, end := t.SliceOffsets()
 	s.SetData(table1Data[start:end])
 }
 
 func (p *TableCheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case ButtonSubmit:
-		for k, v := range p.CheckboxColumn1.Changes() {
+		col := GetPagedTable(p, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		for k, v := range col.Changes() {
 			i, _ := strconv.Atoi(k)
 			var s string
 			if v {
@@ -101,6 +110,9 @@ func init() {
 	browsertest.RegisterTestFunction("Table - Checkbox Ajax Submit", testTableCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Table - Checkbox Server Submit", testTableCheckboxServerSubmit)
 	controls.RegisterPanel("tablecheckbox", "Tables - Checkbox Column", NewTableCheckboxPanel, 6)
+
+	gob.Register(SelectedProvider{}) // We must register this here because we are putting the changes map into the session,
+
 }
 
 func testTableCheckboxNav(t *browsertest.TestForm) {
@@ -109,7 +121,7 @@ func testTableCheckboxNav(t *browsertest.TestForm) {
 
 	t.SetCheckbox("table1_check1_1", true)
 	pager := f.Page().GetControl("pager").(*DataPager)
-	table := f.Page().GetControl("table1").(*PaginatedTable)
+	table := f.Page().GetControl("table1").(*PagedTable)
 	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
 	changes := col.Changes()
 	_, ok := changes["1"]
@@ -142,12 +154,12 @@ func testTableCheckboxServerSubmit(t *browsertest.TestForm) {
 
 func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
 	table1Data = getCheckTestData()
-	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").SetValue("testing", 1).String()
 	f := t.LoadUrl(myUrl)
 	btn := f.Page().GetControl(btnName)
 
 	t.SetCheckbox("table1_check1_1", true)
-	table := f.Page().GetControl("table1").(*PaginatedTable)
+	table := f.Page().GetControl("table1").(*PagedTable)
 	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
 	changes := col.Changes()
 	_, ok := changes["1"]
