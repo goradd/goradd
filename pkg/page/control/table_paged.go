@@ -41,12 +41,18 @@ type PagedTableCreator struct {
 	HeaderRowCount   int
 	// FooterRowCount is the number of footer rows.
 	FooterRowCount   int
-	// RowStyler returns the attributes to be used in a cell. It can be either a control id or a TableRowAttributer.
-	RowStyler        interface{}
-	// HeaderRowStyler returns the attributes to be used in a header cell. It can be either a control id or a TableHeaderRowAttributer.
-	HeaderRowStyler  interface{}
+	// RowStyler returns the attributes to be used in a cell.
+	RowStyler        TableRowAttributer
+	// RowStylerID is a control id for the control that will be the RowStyler of the table.
+	RowStylerID      string
+	// HeaderRowStyler returns the attributes to be used in a header cell.
+	HeaderRowStyler  TableHeaderRowAttributer
+	// HeaderRowStylerID is a control id for the control that will be the HeaderRowStyler of the table.
+	HeaderRowStylerID  string
 	// FooterRowStyler returns the attributes to be used in a footer cell. It can be either a control id or a TableFooterRowAttributer.
-	FooterRowStyler  interface{}
+	FooterRowStyler  TableFooterRowAttributer
+	// FooterRowStylerID is a control id for the control that will be the FooterRowStyler of the table.
+	FooterRowStylerID  string
 	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
 	// DataProvider is the data binder for the table. It can be either a control id or a DataBinder

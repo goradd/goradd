@@ -647,12 +647,18 @@ type TableCreator struct {
 	HeaderRowCount   int
 	// FooterRowCount is the number of footer rows.
 	FooterRowCount   int
-	// RowStyler returns the attributes to be used in a cell. It can be either a control id or a TableRowAttributer.
-	RowStyler        interface{}
-	// HeaderRowStyler returns the attributes to be used in a header cell. It can be either a control id or a TableHeaderRowAttributer.
-	HeaderRowStyler  interface{}
+	// RowStyler returns the attributes to be used in a cell.
+	RowStyler        TableRowAttributer
+	// RowStylerID is a control id for the control that will be the RowStyler of the table.
+	RowStylerID      string
+	// HeaderRowStyler returns the attributes to be used in a header cell.
+	HeaderRowStyler  TableHeaderRowAttributer
+	// HeaderRowStylerID is a control id for the control that will be the HeaderRowStyler of the table.
+	HeaderRowStylerID  string
 	// FooterRowStyler returns the attributes to be used in a footer cell. It can be either a control id or a TableFooterRowAttributer.
-	FooterRowStyler  interface{}
+	FooterRowStyler  TableFooterRowAttributer
+	// FooterRowStylerID is a control id for the control that will be the FooterRowStyler of the table.
+	FooterRowStylerID  string
 	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
@@ -698,26 +704,21 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	}
 
 	if c.RowStyler != nil {
-		if s,ok := c.RowStyler.(string); ok {
-			ctrl.SetRowStyler(ctrl.Page().GetControl(s).(TableRowAttributer))
-		} else {
-			ctrl.SetRowStyler(c.RowStyler.(TableRowAttributer))
-		}
+		ctrl.SetRowStyler(c.RowStyler)
+	} else if c.RowStylerID != "" {
+		ctrl.SetRowStyler(ctrl.Page().GetControl(c.RowStylerID).(TableRowAttributer))
 	}
+
 	if c.HeaderRowStyler != nil {
-		if s,ok := c.HeaderRowStyler.(string); ok {
-			ctrl.SetHeaderRowStyler(ctrl.Page().GetControl(s).(TableHeaderRowAttributer))
-		} else {
-			ctrl.SetHeaderRowStyler(c.HeaderRowStyler.(TableHeaderRowAttributer))
-		}
+		ctrl.SetHeaderRowStyler(c.HeaderRowStyler)
+	} else if c.HeaderRowStylerID != "" {
+		ctrl.SetHeaderRowStyler(ctrl.Page().GetControl(c.HeaderRowStylerID).(TableHeaderRowAttributer))
 	}
 
 	if c.FooterRowStyler != nil {
-		if s,ok := c.FooterRowStyler.(string); ok {
-			ctrl.SetFooterRowStyler(ctrl.Page().GetControl(s).(TableFooterRowAttributer))
-		} else {
-			ctrl.SetFooterRowStyler(c.FooterRowStyler.(TableFooterRowAttributer))
-		}
+		ctrl.SetFooterRowStyler(c.FooterRowStyler)
+	} else if c.FooterRowStylerID != "" {
+		ctrl.SetFooterRowStyler(ctrl.Page().GetControl(c.FooterRowStylerID).(TableFooterRowAttributer))
 	}
 
 	if c.DataProvider != nil {
