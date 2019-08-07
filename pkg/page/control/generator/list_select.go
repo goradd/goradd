@@ -40,7 +40,7 @@ func (d SelectList) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
 `control.SelectListCreator{
 	ID:           %#v,
-	DataProvider: p.ID(),
+	DataProvider: p,
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},

@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type ItemDirection int
@@ -106,9 +107,10 @@ type CheckboxListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []control.ListValue
-	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataProvider interface.
-	// Often this is the parent of the control.
-	DataProvider interface{}
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
 	// ColumnCount specifies how many columns to show
 	ColumnCount int
 	// LayoutDirection determines how the items are arranged in the columns

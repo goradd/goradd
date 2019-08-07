@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type PagedTableI interface {
@@ -49,7 +50,9 @@ type PagedTableCreator struct {
 	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
 	// DataProvider is the data binder for the table. It can be either a control id or a DataBinder
-	DataProvider     interface{}
+	DataProvider     data.DataBinder
+	// DataProviderID is the control id of the data binder for the table.
+	DataProviderID	string
 	// Data is the actual data for the table, and should be a slice of objects
 	Data             interface{}
 	// Sortable will make the table sortable

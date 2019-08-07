@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type SelectListI interface {
@@ -38,9 +39,10 @@ type SelectListCreator struct {
 	// NilItem is a helper to add an item at the top of the list with a nil value. This is often
 	// used to specify no selection, or a message that a selection is required.
 	NilItem string
-	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataProvider interface.
-	// Provide either a string id of a control, or the provider itself
-	DataProvider interface{}
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
 	// Size specifies how many items to show, and turns the list into a scrolling list
 	Size int
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.

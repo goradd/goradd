@@ -47,7 +47,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 		PagedTableCreator{
 			ID: "table1",
 			HeaderRowCount: 1,
-			DataProvider: "checkboxTablePanel",
+			DataProvider: p,
 			Columns:[]ColumnCreator {
 				column.MapColumnCreator{
 					Index: "name",

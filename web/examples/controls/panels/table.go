@@ -77,7 +77,7 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 		PagedTableCreator{
 			ID: "table1",
 			HeaderRowCount: 1,
-			DataProvider: "tablePanel",
+			DataProvider: p,
 			Columns:[]ColumnCreator {
 				column.TexterColumnCreator{
 					Texter: "tablePanel",
@@ -98,7 +98,7 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 		PagedTableCreator{
 			ID: "table2",
 			HeaderRowCount: 1,
-			DataProvider: "tablePanel",
+			DataProviderID: "tablePanel", // You can use the id of a provider too
 			Columns:[]ColumnCreator {
 				column.TexterColumnCreator{
 					Texter: "tablePanel",

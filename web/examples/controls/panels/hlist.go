@@ -50,7 +50,7 @@ func NewHListPanel(ctx context.Context, parent page.ControlI) {
 		},
 		UnorderedListCreator{
 			ID: "unorderedList",
-			DataProvider:"HListPanel",
+			DataProviderID:"HListPanel",
 		},
 	)
 }

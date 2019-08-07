@@ -8,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
 )
 
@@ -145,8 +146,10 @@ type SelectTableCreator struct {
 	FooterRowStyler  interface{}
 	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
-	// DataProvider is the data binder for the table. It can be either a control id or a DataBinder
-	DataProvider     interface{}
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
 	// Data is the actual data for the table, and should be a slice of objects
 	Data             interface{}
 	// Sortable will make the table sortable
@@ -187,6 +190,7 @@ func (c SelectTableCreator) Init(ctx context.Context, ctrl SelectTableI) {
 		FooterRowStyler:  c.FooterRowStyler,
 		Columns:          c.Columns,
 		DataProvider:     c.DataProvider,
+		DataProviderID:   c.DataProviderID,
 		Data:             c.Data,
 		Sortable:         c.Sortable,
 		SortHistoryLimit: c.SortHistoryLimit,

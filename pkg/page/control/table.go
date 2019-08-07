@@ -655,9 +655,10 @@ type TableCreator struct {
 	FooterRowStyler  interface{}
 	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
-	// DataProvider is the control that will dynamically provide the data for the table and that implements the DataBinder interface.
-	// This can be either an id of a control, or the control itself.
-	DataProvider     interface{}
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
 	// Data is the actual data for the table, and should be a slice of objects
 	Data             interface{}
 	// Sortable will make the table sortable
@@ -720,13 +721,9 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	}
 
 	if c.DataProvider != nil {
-		// If this fails, then perhaps you are giving a data provider id for a control that is not yet created. Create the control first.
-		var provider data.DataBinder
-		if s,ok := c.DataProvider.(string); ok {
-			provider = ctrl.Page().GetControl(s).(data.DataBinder)
-		} else {
-			provider = c.DataProvider.(data.DataBinder)
-		}
+		ctrl.SetDataProvider(c.DataProvider)
+	} else if c.DataProviderID != "" {
+		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 

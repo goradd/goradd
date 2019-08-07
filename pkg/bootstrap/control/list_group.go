@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type ListGroupI interface {
@@ -48,9 +49,10 @@ type ListGroupCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []control.ListValue
-	// DataProvider is the id of a control that will dynamically provide the data for the list and that implements the DataProvider interface.
-	// Often this is the parent of the control.
-	DataProvider interface{}
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
 	page.ControlOptions
 	// ItemTag is the tag of the items. It defaults to "a" tags.
 	ItemTag string

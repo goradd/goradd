@@ -214,8 +214,9 @@ type SelectListCreator struct {
 	// used to specify no selection, or a message that a selection is required.
 	NilItem string
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	// This can be either an id of a control, or the control itself.
-	DataProvider interface{}
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
 	// Size specifies how many items to show, and turns the list into a scrolling list
 	Size int
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
@@ -242,13 +243,9 @@ func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 	}
 
 	if c.DataProvider != nil {
-		// If this fails, then perhaps you are giving a data provider id for a control that is not yet created. Create the control first.
-		var provider data.DataBinder
-		if s,ok := c.DataProvider.(string); ok {
-			provider = ctrl.Page().GetControl(s).(data.DataBinder)
-		} else {
-			provider = c.DataProvider.(data.DataBinder)
-		}
+		ctrl.SetDataProvider(c.DataProvider)
+	} else if c.DataProviderID != "" {
+		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 
