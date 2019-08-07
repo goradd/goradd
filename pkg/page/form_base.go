@@ -30,8 +30,8 @@ type FormI interface {
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
 	Response() *Response
 	renderAjax(ctx context.Context, buf *bytes.Buffer) error
-	AddStyleSheetFile(path string, attributes *html.Attributes)
-	AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes)
+	AddStyleSheetFile(path string, attributes html.Attributes)
+	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
 	AddJQueryUI()
 	ChangeLocation(url string)
@@ -273,14 +273,14 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 	// Inject any added style sheets and script files
 	if f.importedStyleSheets != nil {
 		f.importedStyleSheets.Range(func(k string,v interface{}) bool {
-			f.response.addStyleSheet(k,v.(*html.Attributes))
+			f.response.addStyleSheet(k,v.(html.Attributes))
 			return true
 		})
 	}
 
 	if f.importedJavaScripts != nil {
 		f.importedJavaScripts.Range(func(k string,v interface{}) bool {
-			f.response.addJavaScriptFile(k,v.(*html.Attributes))
+			f.response.addJavaScriptFile(k,v.(html.Attributes))
 			return true
 		})
 	}
@@ -295,7 +295,7 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 }
 
 // ΩDrawingAttributes returns the attributes to add to the form tag.
-func (f *ΩFormBase) ΩDrawingAttributes() *html.Attributes {
+func (f *ΩFormBase) ΩDrawingAttributes() html.Attributes {
 	a := f.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "form")
 	return a
@@ -341,7 +341,7 @@ func (f *ΩFormBase) saveState() string {
 //
 // The path is either a url, or an internal path to the location of the file
 // in the development environment.
-func (f *ΩFormBase) AddJavaScriptFile(path string, forceHeader bool, attributes *html.Attributes) {
+func (f *ΩFormBase) AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes) {
 	if forceHeader && f.isOnPage {
 		panic("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
 	}
@@ -387,7 +387,7 @@ func (f *ΩFormBase) AddMasterJavaScriptFile(url string, attributes []string, fi
 // deployment and so that the MUX can find the file and serve it (This happens at draw time).
 // The attributes will be extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
-func (f *ΩFormBase) AddStyleSheetFile(path string, attributes *html.Attributes) {
+func (f *ΩFormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 	if path[:4] != "http" {
 		url := GetAssetUrl(path)
 
@@ -417,7 +417,7 @@ func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 
 	if f.headerStyleSheets != nil {
 		f.headerStyleSheets.Range(func(path string, attr interface{}) bool {
-			var attributes = attr.(*html.Attributes)
+			var attributes = attr.(html.Attributes)
 			if attributes == nil {
 				attributes = html.NewAttributes()
 			}
@@ -430,7 +430,7 @@ func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 
 	if f.headerJavaScripts != nil {
 		f.headerJavaScripts.Range(func(path string, attr interface{}) bool {
-			var attributes = attr.(*html.Attributes)
+			var attributes = attr.(html.Attributes)
 			if attributes == nil {
 				attributes = html.NewAttributes()
 			}
@@ -461,7 +461,7 @@ func (f *ΩFormBase) mergeInjectedFiles() {
 
 func (f *ΩFormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 	f.bodyJavaScripts.Range(func(path string, attr interface{}) bool {
-		var attributes = attr.(*html.Attributes)
+		var attributes = attr.(html.Attributes)
 		if attributes == nil {
 			attributes = html.NewAttributes()
 		}

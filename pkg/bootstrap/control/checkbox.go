@@ -27,7 +27,7 @@ func (c *Checkbox) SetInline(v bool) *Checkbox {
 	return c
 }
 
-func (c *Checkbox) ΩDrawingAttributes() *html.Attributes {
+func (c *Checkbox) ΩDrawingAttributes() html.Attributes {
 	a := c.Checkbox.ΩDrawingAttributes()
 	a.AddClass("form-check-input")
 	a.SetDataAttribute("grctl", "bs-checkbox")
@@ -37,7 +37,7 @@ func (c *Checkbox) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (c *Checkbox) ΩGetDrawingLabelAttributes() *html.Attributes {
+func (c *Checkbox) ΩGetDrawingLabelAttributes() html.Attributes {
 	a := c.Checkbox.ΩGetDrawingLabelAttributes()
 	a.AddClass("form-check-label")
 	return a
@@ -105,7 +105,7 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 		ctrl.LabelMode = c.LabelMode
 	}
 	if c.LabelAttributes != nil {
-		ctrl.LabelAttributes().MergeMap(c.LabelAttributes)
+		ctrl.LabelAttributes().Merge(c.LabelAttributes)
 	}
 
 	ctrl.ApplyOptions(c.ControlOptions)

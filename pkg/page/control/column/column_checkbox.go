@@ -17,7 +17,7 @@ const (
 
 type CheckboxColumnI interface {
 	control.ColumnI
-	CheckboxAttributes(data interface{}) *html.Attributes
+	CheckboxAttributes(data interface{}) html.Attributes
 }
 
 // CheckboxColumn is a table column that contains a checkbox in each row.
@@ -81,7 +81,7 @@ func (col *CheckboxColumn) HeaderCellHtml(ctx context.Context, rowNum int, colNu
 
 // CheckboxAttributes returns the attributes for the input tag that will display the checkbox.
 // If data is nil, it indicates a checkAll box.
-func (col *CheckboxColumn) CheckboxAttributes(data interface{}) *html.Attributes {
+func (col *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes {
 	p := col.checkboxer
 	a := p.Attributes(data)
 	if a == nil {
@@ -270,7 +270,7 @@ type CheckboxProvider interface {
 	IsChecked(data interface{}) bool
 	// Attributes returns the attributes that will be applied to the checkbox corresponding to the data row.
 	// Use this primarily for providing custom attributes. Return nil if you have no custom attributes.
-	Attributes(data interface{}) *html.Attributes
+	Attributes(data interface{}) html.Attributes
 	// If you enable the checkAll box, you can use this to return a map of all the ids and their initial values here. This is
 	// mostly helpful if your table is not showing all the rows at once (i.e. you are using a paginator or scroller and
 	// only showing a subset of data at one time). If your table is showing a checkAll box, and you return nil here, the
@@ -298,7 +298,7 @@ func (c DefaultCheckboxProvider) IsChecked(data interface{}) bool {
 	return false
 }
 
-func (c DefaultCheckboxProvider) Attributes(data interface{}) *html.Attributes {
+func (c DefaultCheckboxProvider) Attributes(data interface{}) html.Attributes {
 	return nil
 }
 

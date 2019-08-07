@@ -21,7 +21,7 @@ func NewCheckbox(parent page.ControlI, id string) *Checkbox {
 // ΩDrawingAttributes is called by the framework to set the temporary attributes that the control
 // needs. Checkboxes set the grctl, name, type and value attributes automatically.
 // You do not normally need to call this function.
-func (c *Checkbox) ΩDrawingAttributes() *html.Attributes {
+func (c *Checkbox) ΩDrawingAttributes() html.Attributes {
 	a := c.CheckboxBase.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "checkbox")
 	a.Set("name", c.ID()) // needed for posts
@@ -64,7 +64,7 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 		ctrl.LabelMode = c.LabelMode
 	}
 	if c.LabelAttributes != nil {
-		ctrl.LabelAttributes().MergeMap(c.LabelAttributes)
+		ctrl.LabelAttributes().Merge(c.LabelAttributes)
 	}
 
 	ctrl.ApplyOptions(c.ControlOptions)

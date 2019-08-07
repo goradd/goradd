@@ -267,3 +267,14 @@ type StyleCreator map[string]string
 func (c StyleCreator) Create() Style {
 	return NewStyleFromMap(c)
 }
+
+// MergeStyleStrings merges the styles found in the two style strings.
+// s2 wins conflicts
+func MergeStyleStrings (s1, s2 string) string {
+	style1 := NewStyle()
+	style1.SetTo(s1)
+	style2 := NewStyle()
+	style2.SetTo(s2)
+	style1.Merge(style2)
+	return style1.String()
+}

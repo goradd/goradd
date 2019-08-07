@@ -32,7 +32,7 @@ const (
 // VoidTag represents a void tag, which is a tag that does not need a matching closing tag.
 type VoidTag struct {
 	Tag  string
-	Attr *Attributes
+	Attr Attributes
 }
 
 // Render returns the rendered version of the tag.
@@ -41,7 +41,7 @@ func (t VoidTag) Render() string {
 }
 
 // RenderVoidTag renders a void tag using the given tag name and attributes.
-func RenderVoidTag(tag string, attr *Attributes) (s string) {
+func RenderVoidTag(tag string, attr Attributes) (s string) {
 	if attr == nil {
 		s = "<" + tag + " />"
 	} else {
@@ -60,7 +60,7 @@ func RenderVoidTag(tag string, attr *Attributes) (s string) {
 // not a block tag.
 // In the few situations where you would want to
 // get rid of this space, call RenderTagNoSpace()
-func RenderTag(tag string, attr *Attributes, innerHtml string) string {
+func RenderTag(tag string, attr Attributes, innerHtml string) string {
 	var attrString string
 
 	if attr != nil {
@@ -88,7 +88,7 @@ func RenderTag(tag string, attr *Attributes, innerHtml string) string {
 
 // RenderTagNoSpace is similar to RenderTag, but should be used in situations where the tag is an
 // inline tag that you want to visually be right next to its neighbors with no space.
-func RenderTagNoSpace(tag string, attr *Attributes, innerHtml string) string {
+func RenderTagNoSpace(tag string, attr Attributes, innerHtml string) string {
 	innerHtml = strings.TrimSpace(innerHtml)
 	var attrString string
 
@@ -116,7 +116,7 @@ func RenderTagNoSpace(tag string, attr *Attributes, innerHtml string) string {
 
 // RenderLabel is a utility function to render a label, together with its text.
 // Various CSS frameworks require labels to be rendered a certain way.
-func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mode LabelDrawingMode) string {
+func RenderLabel(labelAttributes Attributes, label string, ctrlHtml string, mode LabelDrawingMode) string {
 	tag := "label"
 	label = html2.EscapeString(label)
 	switch mode {
@@ -133,8 +133,8 @@ func RenderLabel(labelAttributes *Attributes, label string, ctrlHtml string, mod
 }
 
 // RenderImage renders an image tag with the given sourc, alt and attribute values.
-func RenderImage(src string, alt string, attributes *Attributes) string {
-	var a *Attributes
+func RenderImage(src string, alt string, attributes Attributes) string {
+	var a Attributes
 
 	if attributes != nil {
 		a = attributes.Copy()

@@ -15,14 +15,14 @@ type FormGroupI interface {
 	control.FormFieldWrapperI
 	SetUseTooltips(use bool) FormGroupI
 	UseTooltips() bool
-	InnerDivAttributes() *html.Attributes
+	InnerDivAttributes() html.Attributes
 }
 
 // FormGroup is a Goradd control that wraps other controls, and provides common companion
 // functionality like a form label, validation state display, and help text.
 type FormGroup struct {
 	control.FormFieldWrapper
-	innerDivAttr *html.Attributes
+	innerDivAttr html.Attributes
 	useTooltips   bool // uses tooltips for the error class
 }
 
@@ -67,7 +67,7 @@ func (c *FormGroup) UseTooltips() bool {
 	return c.useTooltips
 }
 
-func (c *FormGroup) ΩDrawingAttributes() *html.Attributes {
+func (c *FormGroup) ΩDrawingAttributes() html.Attributes {
 	a := c.FormFieldWrapper.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "formGroup")
 	if c.useTooltips {
@@ -169,7 +169,7 @@ func (c *FormGroup) getValidationClass(subcontrol page.ControlI) (class string) 
 	return
 }
 
-func (c *FormGroup) InnerDivAttributes() *html.Attributes {
+func (c *FormGroup) InnerDivAttributes() html.Attributes {
 	return c.innerDivAttr
 }
 
@@ -237,7 +237,7 @@ func (f FormGroupCreator) Init(ctx context.Context, c FormGroupI) {
 	ff.Init(ctx, c)
 
 	if f.InnerDivAttributes != nil {
-		c.InnerDivAttributes().Merge(html.NewAttributesFromMap(f.InnerDivAttributes))
+		c.InnerDivAttributes().Merge(f.InnerDivAttributes)
 	}
 	c.SetUseTooltips(f.UseTooltips)
 }

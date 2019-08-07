@@ -139,14 +139,14 @@ type ControlI interface {
 	SetAttribute(name string, val interface{}) ControlI
 	Attribute(string) string
 	HasAttribute(string) bool
-	ΩDrawingAttributes() *html.Attributes
+	ΩDrawingAttributes() html.Attributes
 	AddClass(class string) ControlI
 	RemoveClass(class string) ControlI
 	SetStyles(html.Style)
 	SetStyle(name string, value string) ControlI
 	SetWidthStyle(w interface{}) ControlI
 	SetHeightStyle(w interface{}) ControlI
-	Attributes() *html.Attributes
+	Attributes() html.Attributes
 	SetDisplay(d string) ControlI
 
 	ΩPutCustomScript(ctx context.Context, response *Response)
@@ -263,7 +263,7 @@ type Control struct {
 	hasNoSpace bool
 	// attributes are the collection of custom attributes to apply to the control. This does not include all the
 	// attributes that will be drawn, as some are added temporarily just before drawing by GetDrawingAttributes()
-	attributes *html.Attributes
+	attributes html.Attributes
 	// test is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
 	text string
 	// textLabelMode describes how to draw the internal label
@@ -648,7 +648,7 @@ func (c *Control) HasAttribute(name string) bool {
 // return a set of attributes that should override those set by the user. This allows controls to set attributes
 // that should take precedence over other attributes, and that are critical to drawing the
 // tag of the control. This function is designed to only be called by Control implementations.
-func (c *Control) ΩDrawingAttributes() *html.Attributes {
+func (c *Control) ΩDrawingAttributes() html.Attributes {
 	a := html.NewAttributesFrom(c.attributes)
 	a.SetID(c.id)                   // make sure the control id is set at a minimum
 	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
@@ -680,7 +680,7 @@ func (c *Control) SetDataAttribute(name string, val interface{}) {
 	}
 }
 
-func (c *Control) MergeAttributes(a *html.Attributes) ControlI {
+func (c *Control) MergeAttributes(a html.Attributes) ControlI {
 	c.attributes.Merge(a)
 	return c.this()
 }
@@ -708,7 +708,7 @@ func (c *Control) RemoveClass(class string) ControlI {
 // Some controls setup attributes at initialization time, so you could potentially write over those.
 // Also, if you change attributes during an ajax call, the changes will not be reflected unless you redraw
 // the control. The primary use for this function is to allow controls to set up attributes during initialization.
-func (c *Control) Attributes() *html.Attributes {
+func (c *Control) Attributes() html.Attributes {
 	return c.attributes
 }
 
@@ -1680,7 +1680,7 @@ type controlEncoding struct {
 	Tag                   string
 	IsVoidTag             bool
 	HasNoSpace            bool
-	Attributes            *html.Attributes
+	Attributes            html.Attributes
 	Text                  string
 	TextLabelMode         html.LabelDrawingMode
 	TextIsHtml        bool

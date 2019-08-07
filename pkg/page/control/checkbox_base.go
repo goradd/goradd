@@ -11,7 +11,7 @@ import (
 
 type CheckboxI interface {
 	page.ControlI
-	ΩGetDrawingLabelAttributes() *html.Attributes
+	ΩGetDrawingLabelAttributes() html.Attributes
 }
 
 // CheckboxBase is a base class for checkbox-like objects, including html checkboxes and radio buttons.
@@ -22,7 +22,7 @@ type CheckboxBase struct {
 	// global page.DefaultCheckboxLabelDrawingMode, and you would normally set that instead so that all your checkboxes draw
 	// the same way.
 	LabelMode       html.LabelDrawingMode
-	labelAttributes *html.Attributes
+	labelAttributes html.Attributes
 }
 
 // Init initializes a checkbox base class. It is called by checkbox implementations.
@@ -42,7 +42,7 @@ func (c *CheckboxBase) this() CheckboxI {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (c *CheckboxBase) ΩDrawingAttributes() *html.Attributes {
+func (c *CheckboxBase) ΩDrawingAttributes() html.Attributes {
 	a := c.Control.ΩDrawingAttributes()
 	if c.Text() != "" {
 		a.AddAttributeValue("aria-labelledby", c.ID()+"_ilbl")
@@ -97,7 +97,7 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 // The input label attributes are the attributes for the label tag that associates the Text with the checkbox.
 // This is specific to checkbox style controls and is not the same as the label tag that appears when using a FormFieldWrapper wrapper.
 // After setting attributes, be sure to call Refresh on the control if you do this during an Ajax response.
-func (c *CheckboxBase) LabelAttributes() *html.Attributes {
+func (c *CheckboxBase) LabelAttributes() html.Attributes {
 	if c.labelAttributes == nil {
 		c.labelAttributes = html.NewAttributes()
 	}
@@ -106,7 +106,7 @@ func (c *CheckboxBase) LabelAttributes() *html.Attributes {
 
 // ΩGetDrawingLabelAttributes is called by the framework to temporarily set the
 // attributes of the label associated with the checkbox.
-func (c *CheckboxBase) ΩGetDrawingLabelAttributes() *html.Attributes {
+func (c *CheckboxBase) ΩGetDrawingLabelAttributes() html.Attributes {
 	a := c.LabelAttributes().Copy()
 
 	// copy tooltip to wrapping label

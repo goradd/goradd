@@ -46,7 +46,7 @@ func (t *SelectTable) this() SelectTableI {
 	return t.Self.(SelectTableI)
 }
 
-func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attributes) {
+func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a html.Attributes) {
 	var id string
 
 	if t.RowStyler() != nil {
@@ -82,7 +82,7 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a *html.Attri
 	return a
 }
 
-func (t *SelectTable) ΩDrawingAttributes() *html.Attributes {
+func (t *SelectTable) ΩDrawingAttributes() html.Attributes {
 	a := t.Table.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "selecttable")
 	a.Set("role", "listbox")

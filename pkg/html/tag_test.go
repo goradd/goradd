@@ -18,11 +18,11 @@ func TestTag(t *testing.T) {
 }
 
 func ExampleRenderTag() {
-	fmt.Println(RenderTagNoSpace("div", NewAttributesFromMap(map[string]string{"id": "me", "name": "you"}), "Here I am"))
+	fmt.Println(RenderTagNoSpace("div", NewAttributesFrom(map[string]string{"id": "me", "name": "you"}), "Here I am"))
 	// Output: <div id="me" name="you">Here I am</div>
 }
 
 func ExampleRenderVoidTag() {
-	fmt.Println(RenderVoidTag("img", NewAttributesFromMap(map[string]string{"src": "thisFile"})))
+	fmt.Println(RenderVoidTag("img", NewAttributesFrom(map[string]string{"src": "thisFile"})))
 	// Output: <img src="thisFile" />
 }

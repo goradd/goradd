@@ -108,7 +108,7 @@ func (p *{{= panelName }}) MakeFilter(filterText string) query.NodeI {
 	)
 }
 
-func (p *{{= panelName }}) TableRowAttributes(row int, data interface{}) *html2.Attributes {
+func (p *{{= panelName }}) TableRowAttributes(row int, data interface{}) html2.Attributes {
 	return html2.NewAttributes().SetID(data.(*model.{{= t.GoName }}).PrimaryKey())
 }
 

@@ -122,7 +122,7 @@ func (b *Navbar) SetBrandPlacement(p NavbarCollapsedBrandPlacement) NavbarI {
 	return b.this()
 }
 
-func (b *Navbar) ΩDrawingAttributes() *html.Attributes {
+func (b *Navbar) ΩDrawingAttributes() html.Attributes {
 	a := b.Control.ΩDrawingAttributes()
 	a.AddClass("navbar")
 	a.AddClass(string(b.style))

@@ -17,9 +17,9 @@ type FormFieldWrapperI interface {
 	For() string
 	Instructions() string
 	SetInstructions(string) FormFieldWrapperI
-	LabelAttributes() *html.Attributes
-	ErrorAttributes() *html.Attributes
-	InstructionAttributes() *html.Attributes
+	LabelAttributes() html.Attributes
+	ErrorAttributes() html.Attributes
+	InstructionAttributes() html.Attributes
 }
 
 // FormFieldWrapper is a Goradd control that wraps other controls, and provides common companion
@@ -31,9 +31,9 @@ type FormFieldWrapper struct {
 	instructions string
 	// labelAttributes are the attributes that will be directly put on the Label tag. The label tag itself comes
 	// from the "Text" item in the control.
-	labelAttributes *html.Attributes
-	errorAttributes *html.Attributes
-	instructionAttributes *html.Attributes
+	labelAttributes html.Attributes
+	errorAttributes html.Attributes
+	instructionAttributes html.Attributes
 	forID string
 	// savedMessage is what we use to determine if the subcontrol changed validation state. This needs to be serialized.
 	savedMessage string
@@ -96,7 +96,7 @@ func (c *FormFieldWrapper) Instructions() string {
 	return c.instructions
 }
 
-func (c *FormFieldWrapper) ΩDrawingAttributes() *html.Attributes {
+func (c *FormFieldWrapper) ΩDrawingAttributes() html.Attributes {
 	a := c.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "formField")
 	return a
@@ -163,29 +163,29 @@ func (c *FormFieldWrapper) ΩDrawTag(ctx context.Context) string {
 	return html.RenderTag(c.Tag, attributes, buf.String())
 }
 
-func (c *FormFieldWrapper) LabelAttributes() *html.Attributes {
+func (c *FormFieldWrapper) LabelAttributes() html.Attributes {
 	return c.labelAttributes
 }
 
-func (c *FormFieldWrapper) SetLabelAttributes(a *html.Attributes) FormFieldWrapperI {
+func (c *FormFieldWrapper) SetLabelAttributes(a html.Attributes) FormFieldWrapperI {
 	c.labelAttributes = a
 	return c.this()
 }
 
-func (c *FormFieldWrapper) ErrorAttributes() *html.Attributes {
+func (c *FormFieldWrapper) ErrorAttributes() html.Attributes {
 	return c.errorAttributes
 }
 
-func (c *FormFieldWrapper) SetErrorAttributes(a *html.Attributes) FormFieldWrapperI {
+func (c *FormFieldWrapper) SetErrorAttributes(a html.Attributes) FormFieldWrapperI {
 	c.errorAttributes = a
 	return c.this()
 }
 
-func (c *FormFieldWrapper) InstructionAttributes() *html.Attributes {
+func (c *FormFieldWrapper) InstructionAttributes() html.Attributes {
 	return c.instructionAttributes
 }
 
-func (c *FormFieldWrapper) SetInstructionAttributes(a *html.Attributes) FormFieldWrapperI {
+func (c *FormFieldWrapper) SetInstructionAttributes(a html.Attributes) FormFieldWrapperI {
 	c.instructionAttributes = a
 	return c.this()
 }
@@ -253,13 +253,13 @@ func (f FormFieldWrapperCreator) Init(ctx context.Context, c FormFieldWrapperI) 
 	c.SetText(f.Label)
 	c.SetInstructions(f.Instructions)
 	if f.LabelAttributes != nil {
-		c.LabelAttributes().Merge(html.NewAttributesFromMap(f.LabelAttributes))
+		c.LabelAttributes().Merge(f.LabelAttributes)
 	}
 	if f.ErrorAttributes != nil {
-		c.ErrorAttributes().Merge(html.NewAttributesFromMap(f.ErrorAttributes))
+		c.ErrorAttributes().Merge(f.ErrorAttributes)
 	}
 	if f.InstructionAttributes != nil {
-		c.InstructionAttributes().Merge(html.NewAttributesFromMap(f.InstructionAttributes))
+		c.InstructionAttributes().Merge(f.InstructionAttributes)
 	}
 
 	if f.Child == nil {

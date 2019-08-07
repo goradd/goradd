@@ -241,7 +241,7 @@ func (r *Response) extractPriority (args ...interface{}) (args2 []interface{}, p
 }
 
 // One time add of style sheets, to be used by FormBase only for last minute style sheet injection.
-func (r *Response) addStyleSheet(path string, attributes *html.Attributes) {
+func (r *Response) addStyleSheet(path string, attributes html.Attributes) {
 	if r.styleSheets == nil {
 		r.styleSheets = maps.NewSliceMap()
 	}
@@ -249,7 +249,7 @@ func (r *Response) addStyleSheet(path string, attributes *html.Attributes) {
 }
 
 // Add javascript files to the response.
-func (r *Response) addJavaScriptFile(path string, attributes *html.Attributes) {
+func (r *Response) addJavaScriptFile(path string, attributes html.Attributes) {
 	if r.jsFiles == nil {
 		r.jsFiles = maps.NewSliceMap()
 	}

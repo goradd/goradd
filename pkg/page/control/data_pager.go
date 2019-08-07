@@ -197,7 +197,7 @@ func (d *DataPager) ButtonProxy() *Proxy {
 
 
 // ΩDrawingAttributes is called by the framework to add temporary attributes to the html.
-func (d *DataPager) ΩDrawingAttributes() *html.Attributes {
+func (d *DataPager) ΩDrawingAttributes() html.Attributes {
 	a := d.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "datapager")
 	return a

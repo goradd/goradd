@@ -33,7 +33,7 @@ func (c *RadioButton) SetInline(v bool) *RadioButton {
 	return c
 }
 
-func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
+func (c *RadioButton) ΩDrawingAttributes() html.Attributes {
 	a := c.RadioButton.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "bs-radio")
 	a.AddClass("form-check-input")
@@ -44,7 +44,7 @@ func (c *RadioButton) ΩDrawingAttributes() *html.Attributes {
 	return a
 }
 
-func (c *RadioButton) ΩGetDrawingLabelAttributes() *html.Attributes {
+func (c *RadioButton) ΩGetDrawingLabelAttributes() html.Attributes {
 	a := c.RadioButton.ΩGetDrawingLabelAttributes()
 	a.AddClass("form-check-label")
 	return a
@@ -93,7 +93,7 @@ func (c RadioButtonCreator) Create(ctx context.Context, parent page.ControlI) pa
 		ctrl.LabelMode = c.LabelMode
 	}
 	if c.LabelAttributes != nil {
-		ctrl.LabelAttributes().MergeMap(c.LabelAttributes)
+		ctrl.LabelAttributes().Merge(c.LabelAttributes)
 	}
 	if c.Group != "" {
 		ctrl.SetGroup(c.Group)

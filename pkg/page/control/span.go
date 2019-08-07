@@ -27,7 +27,7 @@ func (c *Span) Init(self SpanI, parent page.ControlI, id string) {
 	c.Tag = "span"
 }
 
-func (c *Span) ΩDrawingAttributes() *html.Attributes {
+func (c *Span) ΩDrawingAttributes() html.Attributes {
 	a := c.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "span")
 	return a
