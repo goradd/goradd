@@ -22,7 +22,7 @@ func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 	return t
 }
 
-func (t *IntegerTextbox) ΩDrawingAttributes() *html.Attributes {
+func (t *IntegerTextbox) ΩDrawingAttributes() html.Attributes {
 	a := t.IntegerTextbox.ΩDrawingAttributes()
 	a.AddClass("form-control")
 	return a

@@ -39,7 +39,7 @@ func (c *Panel) this() PanelI {
 }
 
 
-func (c *Panel) ΩDrawingAttributes() *html.Attributes {
+func (c *Panel) ΩDrawingAttributes() html.Attributes {
 	a := c.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "panel")
 	return a

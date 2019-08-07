@@ -120,7 +120,7 @@ func (i *Image) SetHeight(height int) ImageI {
 }
 
 // ΩDrawingAttributes is called by the framework.
-func (i *Image) ΩDrawingAttributes() *html.Attributes {
+func (i *Image) ΩDrawingAttributes() html.Attributes {
 	a := i.Control.ΩDrawingAttributes()
 	if i.data != nil {
 		// Turn the data into a source attribute

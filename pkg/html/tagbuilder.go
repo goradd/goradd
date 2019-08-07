@@ -28,7 +28,7 @@ var voidTags = map[string]bool{
 // out the entire html tag. The zero value is usable.
 type TagBuilder struct {
 	tag        string
-	attributes *Attributes
+	attributes Attributes
 	innerHtml  string
 	isVoid     bool
 }

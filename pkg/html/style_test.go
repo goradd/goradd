@@ -8,8 +8,8 @@ import (
 func ExampleStyle_SetTo() {
 	s := NewStyle()
 	s.SetTo("height: 9em; width: 100%; position:absolute")
-	fmt.Print(s.Get("height"))
-	//Output: 9em
+	fmt.Print(s)
+	//Output: height:9em;position:absolute;width:100%
 }
 
 func ExampleStyle_Set_a() {

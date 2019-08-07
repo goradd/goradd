@@ -18,17 +18,17 @@ type ProxyI interface {
 	page.ControlI
 	LinkHtml(label string,
 		actionValue string,
-		attributes *html.Attributes,
+		attributes html.Attributes,
 	) string
 	TagHtml(label string,
 		actionValue string,
-		attributes *html.Attributes,
+		attributes html.Attributes,
 		tag string,
 		rawHtml bool,
 	) string
 	ButtonHtml(label string,
 		eventActionValue string,
-		attributes *html.Attributes,
+		attributes html.Attributes,
 		rawHtml bool,
 	) string
 	OnSubmit(actions ...action.ActionI) page.EventI
@@ -93,7 +93,7 @@ func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 func (p *Proxy) LinkHtml(ctx context.Context,
 	label string,
 	actionValue string,
-	attributes *html.Attributes,
+	attributes html.Attributes,
 ) string {
 	if attributes == nil {
 		attributes = html.NewAttributes()
@@ -125,7 +125,7 @@ func (p *Proxy) LinkHtml(ctx context.Context,
 // TagHtml lets you customize the tag that will be used to embed the proxy.
 func (p *Proxy) TagHtml(label string,
 	actionValue string,
-	attributes *html.Attributes,
+	attributes html.Attributes,
 	tag string,
 	rawHtml bool,
 ) string {
@@ -151,7 +151,7 @@ func (p *Proxy) TagHtml(label string,
 // actionValue becomes the event's ControlValue parameter
 func (p *Proxy) ButtonHtml(label string,
 	actionValue string,
-	attributes *html.Attributes,
+	attributes html.Attributes,
 	rawHtml bool,
 ) string {
 	a := html.NewAttributes()
@@ -170,7 +170,7 @@ func (p *Proxy) ButtonHtml(label string,
 }
 
 // ActionAttributes returns attributes that can be included in any tag to attach a proxy to the tag.
-func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
+func (p *Proxy) ActionAttributes(actionValue string) html.Attributes {
 	a := html.NewAttributes()
 	a.SetDataAttribute("grProxy", p.ID())
 

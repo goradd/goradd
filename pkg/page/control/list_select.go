@@ -149,7 +149,7 @@ func (l *SelectList) ΩUnmarshalState(m maps.Loader) {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *SelectList) ΩDrawingAttributes() *html.Attributes {
+func (l *SelectList) ΩDrawingAttributes() html.Attributes {
 	a := l.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "selectlist")
 	a.Set("name", l.ID()) // needed for posts

@@ -22,10 +22,10 @@ type ListItemI interface {
 	IntValue() int
 	StringValue() string
 	HasChildItems() bool
-	Attributes() *html.Attributes
+	Attributes() html.Attributes
 	Anchor() string
 	SetAnchor(string)
-	AnchorAttributes() *html.Attributes
+	AnchorAttributes() html.Attributes
 	RenderLabel() string
 	IsEmptyValue() bool
 }
@@ -58,11 +58,11 @@ type ListItem struct {
 	id    string
 	ItemList
 	label             string
-	attributes        *html.Attributes
+	attributes        html.Attributes
 	shouldEscapeLabel bool
 	disabled          bool
 	isDivider         bool
-	anchorAttributes  *html.Attributes
+	anchorAttributes  html.Attributes
 }
 
 // NewListItem creates a new item for a list. Specify an empty value for an item that represents no selection.
@@ -184,7 +184,7 @@ func (i *ListItem) Anchor() string {
 	return i.anchorAttributes.Get("href")
 }
 
-func (i *ListItem) AnchorAttributes() *html.Attributes {
+func (i *ListItem) AnchorAttributes() html.Attributes {
 	if i.anchorAttributes == nil {
 		i.anchorAttributes = html.NewAttributes()
 	}
@@ -210,7 +210,7 @@ func (i *ListItem) RenderLabel() (h string) {
 
 // Attributes returns a pointer to the attributes of the item for customization. You can directly set the attributes
 // on the returned object.
-func (i *ListItem) Attributes() *html.Attributes {
+func (i *ListItem) Attributes() html.Attributes {
 	if i.attributes == nil {
 		i.attributes = html.NewAttributes()
 	}

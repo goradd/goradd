@@ -1,12 +1,9 @@
 package html
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/stretchr/testify/assert"
-	"sort"
 	"strconv"
 	"testing"
 )
@@ -277,7 +274,7 @@ func TestOverride(t *testing.T) {
 // Examples
 
 func ExampleNewAttributesFrom() {
-	a := NewAttributesFromMap(map[string]string{"id": "1", "name": "test"})
+	a := NewAttributesFrom(map[string]string{"id": "1", "name": "test"})
 	fmt.Println(a.Get("id"))
 	//Output: 1
 }
@@ -365,59 +362,4 @@ func ExampleAttributes_RemoveStyle() {
 	fmt.Println(a)
 	// Output: style="width:5px"
 }
-
-func BenchmarkAttributeMap1(b *testing.B) {
-	// Simulate using a stringmap, and the effect of serializing and deserializing it
-
-	// we guess that on average we will have 5 attributes in each tag
-	a := NewAttributesFromMap(map[string]string {
-		"id":"2",
-		"class": "myclass",
-		"type":"input",
-		"label":"mylabel",
-		"something":"else",
-	})
-
-	// serialize and deserialize in sorted order
-	for i := 0; i < b.N; i++ {
-		d,_ := a.MarshalBinary()
-		a.UnmarshalBinary(d)
-	}
-}
-
-func BenchmarkAttributeMap2(b *testing.B) {
-	// Simulate using a stringmap, and the effect of serializing and deserializing it
-
-	// we guess that on average we will have 5 attributes in each tag
-	a := map[string]string {
-		"id":"2",
-		"class": "myclass",
-		"type":"input",
-		"label":"mylabel",
-		"something":"else",
-		"a":"b",
-		"c":"d",
-	}
-
-	var network bytes.Buffer        // Stand-in for a network connection
-	enc := gob.NewEncoder(&network) // Will write to network.
-	dec := gob.NewDecoder(&network) // Will read from network.
-
-	// serialize and deserialize sorting each time, but less memory allocation is needed.
-
-	for i := 0; i < b.N; i++ {
-		enc.Encode(a)
-		dec.Decode(&a)
-
-		keys := make([]string, len(a), len(a))
-		i := 0
-		for k,_ := range a {
-			keys[i] = k
-			i++
-		}
-		sort.Strings(keys)
-
-	}
-}
-
 

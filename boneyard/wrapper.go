@@ -18,7 +18,7 @@ const (
 // https://getbootstrap.com/docs/4.1/components/forms/ as of this writing
 type DivWrapperType struct {
 	page.LabelWrapperType
-	ΩinnerDivAttr *html.Attributes
+	ΩinnerDivAttr html.Attributes
 	UseTooltips   bool // uses tooltips for the error class
 }
 
@@ -51,7 +51,7 @@ func (w DivWrapperType) TypeName() string {
 // control. If you set these, the control
 // itself will be wrapped with a div with these attributes. This is useful for layouts that have the label next to
 // the control.
-func (w *DivWrapperType) InnerDivAttributes() *html.Attributes {
+func (w *DivWrapperType) InnerDivAttributes() html.Attributes {
 	if w.ΩinnerDivAttr == nil {
 		w.ΩinnerDivAttr = html.NewAttributes()
 	}
@@ -111,7 +111,7 @@ func (w *DivWrapperType) ΩAjaxRender(ctx context.Context, response *page.Respon
 	w.LabelWrapperType.ΩAjaxRender(ctx, response, c)
 }
 
-func (w *DivWrapperType) ΩModifyDrawingAttributes(c page.ControlI, attr *html.Attributes) {
+func (w *DivWrapperType) ΩModifyDrawingAttributes(c page.ControlI, attr html.Attributes) {
 	switch c.ValidationState() {
 	case page.ValidationValid:
 		attr.AddClass("is-valid")

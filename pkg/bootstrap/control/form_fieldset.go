@@ -12,7 +12,7 @@ import (
 
 type FormFieldsetI interface {
 	control.PanelI
-	LegendAttributes() *html.Attributes
+	LegendAttributes() html.Attributes
 	SetAsRow(r bool) FormFieldsetI
 	SetInstructions(instructions string) FormFieldsetI
 }
@@ -22,10 +22,10 @@ type FormFieldsetI interface {
 // You will need to coordinate with whatever you are drawing internally to get the formatting right.
 type FormFieldset struct {
 	control.Panel
-	legendAttributes *html.Attributes
+	legendAttributes html.Attributes
 	asRow bool
 	instructions string
-	instructionAttributes *html.Attributes
+	instructionAttributes html.Attributes
 }
 
 func NewFormFieldset(parent page.ControlI, id string) *FormFieldset {
@@ -48,7 +48,7 @@ func (c *FormFieldset) this() FormFieldsetI {
 	return c.Self.(FormFieldsetI)
 }
 
-func (c *FormFieldset) LegendAttributes() *html.Attributes {
+func (c *FormFieldset) LegendAttributes() html.Attributes {
 	return c.legendAttributes
 }
 
@@ -65,12 +65,12 @@ func (c *FormFieldset) SetInstructions(instructions string) FormFieldsetI {
 	return c.this()
 }
 
-func (c *FormFieldset) InstructionAttributes() *html.Attributes {
+func (c *FormFieldset) InstructionAttributes() html.Attributes {
 	return c.instructionAttributes
 }
 
 
-func (c *FormFieldset) ΩDrawingAttributes() *html.Attributes {
+func (c *FormFieldset) ΩDrawingAttributes() html.Attributes {
 	a := c.Panel.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "formFieldset")
 	return a
@@ -136,7 +136,7 @@ func (f FormFieldsetCreator) Init(ctx context.Context, c FormFieldsetI) {
 		c.SetText(f.Legend)
 	}
 	if f.LegendAttributes != nil {
-		c.LegendAttributes().MergeMap(f.LegendAttributes)
+		c.LegendAttributes().Merge(f.LegendAttributes)
 	}
 	if f.AsRow {
 		c.SetAsRow(true)

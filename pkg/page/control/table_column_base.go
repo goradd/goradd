@@ -46,9 +46,9 @@ type ColumnI interface {
 	CellText(ctx context.Context, row int, col int, data interface{}) string
 	HeaderCellHtml(ctx context.Context, row int, col int) string
 	FooterCellHtml(ctx context.Context, row int, col int) string
-	HeaderAttributes(ctx context.Context, row int, col int) *html.Attributes
-	FooterAttributes(ctx context.Context, row int, col int) *html.Attributes
-	ColTagAttributes() *html.Attributes
+	HeaderAttributes(ctx context.Context, row int, col int) html.Attributes
+	FooterAttributes(ctx context.Context, row int, col int) html.Attributes
+	ColTagAttributes() html.Attributes
 	UpdateFormValues(ctx *page.Context)
 	AddActions(ctrl page.ControlI)
 	Action(ctx context.Context, params page.ActionParams)
@@ -73,7 +73,7 @@ type CellTexter interface {
 }
 
 type CellStyler interface {
-	CellAttributes(ctx context.Context, col ColumnI, row int, colNum int, data interface{}) *html.Attributes
+	CellAttributes(ctx context.Context, col ColumnI, row int, colNum int, data interface{}) html.Attributes
 }
 
 
@@ -83,10 +83,10 @@ type ColumnBase struct {
 	id               string
 	parentTable      TableI
 	title            string
-	*html.Attributes // These are static attributes that will appear on each cell
-	headerAttributes []*html.Attributes // static attributes per header row
-	footerAttributes []*html.Attributes
-	colTagAttributes *html.Attributes
+	html.Attributes // These are static attributes that will appear on each cell
+	headerAttributes []html.Attributes // static attributes per header row
+	footerAttributes []html.Attributes
+	colTagAttributes html.Attributes
 	span             int
 	asHeader         bool
 	isHtml           bool
@@ -211,10 +211,10 @@ func (c *ColumnBase) SetHidden(h bool) ColumnI {
 // The default version will return an attribute structure which you can use to directly
 // manipulate the attributes. If you want something more customized, create your own column and
 // implement this function. row and col are zero based.
-func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) *html.Attributes {
+func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) html.Attributes {
 	if len(c.headerAttributes) < row + 1 {
 		// extend the attributes
-		c.headerAttributes = append(c.headerAttributes, make([]*html.Attributes, row-len(c.headerAttributes)+1)...)
+		c.headerAttributes = append(c.headerAttributes, make([]html.Attributes, row-len(c.headerAttributes)+1)...)
 	}
 	if c.headerAttributes[row] == nil {
 		c.headerAttributes[row] = html.NewAttributes()
@@ -226,10 +226,10 @@ func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) *ht
 }
 
 // FooterAttributes returns the attributes to use for the footer cell.
-func (c *ColumnBase) FooterAttributes(ctx context.Context, row int, col int) *html.Attributes {
+func (c *ColumnBase) FooterAttributes(ctx context.Context, row int, col int) html.Attributes {
 	if len(c.footerAttributes) < row + 1 {
 		// extend the attributes
-		c.footerAttributes = append(c.footerAttributes, make([]*html.Attributes, row-len(c.footerAttributes)+1)...)
+		c.footerAttributes = append(c.footerAttributes, make([]html.Attributes, row-len(c.footerAttributes)+1)...)
 	}
 	if c.footerAttributes[row] == nil {
 		c.footerAttributes[row] = html.NewAttributes()
@@ -239,7 +239,7 @@ func (c *ColumnBase) FooterAttributes(ctx context.Context, row int, col int) *ht
 
 // ColTagAttributes specifies attributes that will appear in the table tag. Note that you have to turn on table
 // tags in the table object as well for these to appear.
-func (c *ColumnBase) ColTagAttributes() *html.Attributes {
+func (c *ColumnBase) ColTagAttributes() html.Attributes {
 	if c.colTagAttributes == nil {
 		c.colTagAttributes = html.NewAttributes()
 	}
@@ -330,7 +330,7 @@ func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interf
 
 // CellAttributes returns the attributes of the cell. Column implementations should call this base version first before
 // customizing more. It will use the CellStyler if one was provided.
-func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) *html.Attributes {
+func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) html.Attributes {
 	if c.cellStyler != nil {
 		return c.cellStyler.CellAttributes(ctx, c.this(), row, col, data)
 	}
@@ -430,24 +430,24 @@ type ColumnOptions struct {
 }
 
 func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt ColumnOptions) {
-	c.Attributes.MergeMap(opt.CellAttributes)
+	c.Attributes.Merge(opt.CellAttributes)
 	if opt.HeaderAttributes != nil {
 		for i,row := range opt.HeaderAttributes {
 			attr := c.HeaderAttributes(ctx, i, 0)
-			attr.MergeMap(row)
+			attr.Merge(row)
 		}
 	}
 	if opt.FooterAttributes != nil {
 		for i,row := range opt.FooterAttributes {
 			attr := c.FooterAttributes(ctx, i, 0)
-			attr.MergeMap(row)
+			attr.Merge(row)
 		}
 	}
 	if opt.ColTagAttributes != nil {
 		if c.colTagAttributes == nil {
 			c.colTagAttributes = html.NewAttributes()
 		}
-		c.colTagAttributes.MergeMap(opt.ColTagAttributes)
+		c.colTagAttributes.Merge(opt.ColTagAttributes)
 	}
 
 	c.isHidden = opt.IsHidden
