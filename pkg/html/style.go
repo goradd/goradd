@@ -3,7 +3,7 @@ package html
 import (
 	"errors"
 	"fmt"
-	maps2 "github.com/goradd/goradd/pkg/maps"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"math"
 	"regexp"
 	"strconv"
@@ -230,7 +230,7 @@ func roundFloat(f float64, digits int) float64 {
 // encode will output a text version of the style, suitable for inclusion in an html "style" attribute.
 // it will sort the keys so that they are presented in a consistent and testable way.
 func (s Style) encode() (text string) {
-	keys := maps2.SortedKeys(s)
+	keys := stringmap.SortedKeys(s)
 
 	for i, k := range keys {
 		if i > 0 {

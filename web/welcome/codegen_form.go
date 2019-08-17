@@ -10,7 +10,7 @@ import (
 )
 
 const CodegenPath = "/goradd/build.g"
-const CodegenID = "Codegen"
+const CodegenID = "CodeGenerator"
 
 const (
 	CodegenRefreshAction = iota + 1
@@ -18,8 +18,6 @@ const (
 
 type CodegenForm struct {
 	control.FormBase
-
-	InfoPanel *control.Panel
 }
 
 func NewCodegenForm(ctx context.Context) page.FormI {
@@ -32,7 +30,7 @@ func NewCodegenForm(ctx context.Context) page.FormI {
 }
 
 func (f *CodegenForm) createControls(ctx context.Context) {
-	f.InfoPanel = control.NewPanel(f, "")
+	control.NewPanel(f, "infoPanel")
 }
 
 func (f *CodegenForm) Action(ctx context.Context, a page.ActionParams) {
@@ -47,10 +45,10 @@ func (f *CodegenForm) LoadControls(ctx context.Context) {
 	switch v {
 	case "codegen":
 		result := f.startCodegen()
-		f.InfoPanel.SetText(result)
+		control.GetPanel(f, "infoPanel").SetText(result)
 	case "run":
 		result := f.startApp()
-		f.InfoPanel.SetText(result)
+		control.GetPanel(f, "infoPanel").SetText(result)
 
 	}
 }

@@ -7,28 +7,28 @@ import (
 	"context"
 )
 
-func (form *CodegenForm) AddHeadTags() {
-	form.FormBase.AddHeadTags()
+func (ctrl *CodegenForm) AddHeadTags() {
+	ctrl.FormBase.AddHeadTags()
 	if "Code Generate" != "" {
-		form.Page().SetTitle("Code Generate")
+		ctrl.Page().SetTitle("Code Generate")
 	}
 
 	// double up to deal with body attributes if they exist
-	form.Page().BodyAttributes = `
+	ctrl.Page().BodyAttributes = `
 `
 }
 
-func (form *CodegenForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *CodegenForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Codegen</h1>
+<h1>CodeGenerator</h1>
 `)
 
 	buf.WriteString(`
 `)
 
 	{
-		err := form.InfoPanel.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("infoPanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

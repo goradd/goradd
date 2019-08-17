@@ -57,19 +57,9 @@ func (t *Tabs) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) 
 		}
 		child.SetAttribute("role", "tabpanel")
 		child.SetAttribute("aria-labelledby", child.ID()+"_tab")
-
-		buf.WriteString(`
-`)
-
-		{
-			err := child.Draw(ctx, buf)
-			if err != nil {
-				return err
-			}
+		if err = child.Draw(ctx, buf); err != nil {
+			return
 		}
-
-		buf.WriteString(`
-`)
 	}
 
 	buf.WriteString(`</div>

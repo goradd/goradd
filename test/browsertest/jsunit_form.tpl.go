@@ -7,17 +7,17 @@ import (
 	"context"
 )
 
-func (form *JsUnitForm) AddHeadTags() {
-	form.FormBase.AddHeadTags()
+func (ctrl *JsUnitForm) AddHeadTags() {
+	ctrl.FormBase.AddHeadTags()
 	if "Goradd JavaScript Unit Test" != "" {
-		form.Page().SetTitle("Goradd JavaScript Unit Test")
+		ctrl.Page().SetTitle("Goradd JavaScript Unit Test")
 	}
 
 	// double up to deal with body attributes if they exist
-	form.Page().BodyAttributes = ``
+	ctrl.Page().BodyAttributes = ``
 }
 
-func (form *JsUnitForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *JsUnitForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>JavaScript Unit Tests</h1>
@@ -27,7 +27,7 @@ func (form *JsUnitForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 `)
 
 	{
-		err := form.RunButton.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.RunButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ func (form *JsUnitForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 `)
 
 	{
-		err := form.Results.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.Results").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

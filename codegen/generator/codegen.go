@@ -3,8 +3,8 @@ package generator
 import (
 	"bytes"
 	"github.com/goradd/gofile/pkg/sys"
-	"github.com/goradd/goradd/pkg/maps"
 	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/pkg/strings"
 	"io/ioutil"
 	"log"
@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 )
 
-type Codegen struct {
+type CodeGenerator struct {
 	Tables     map[string]map[string]TableType
 	TypeTables map[string]map[string]TypeTableType
 }
@@ -67,7 +67,7 @@ func (t *TableType) GetColumnByDbName(name string) *ColumnType {
 
 func Generate() {
 
-	codegen := Codegen{
+	codegen := CodeGenerator{
 		Tables:     make(map[string]map[string]TableType),
 		TypeTables: make(map[string]map[string]TypeTableType),
 	}
@@ -112,7 +112,7 @@ func Generate() {
 		dd := database.Describe()
 		dbKey := dd.DbKey
 
-		for _, tableKey := range maps.SortedKeys(codegen.TypeTables[dbKey]) {
+		for _, tableKey := range stringmap.SortedKeys(codegen.TypeTables[dbKey]) {
 			typeTable := codegen.TypeTables[dbKey][tableKey]
 			for _, typeTableTemplate := range TypeTableTemplates {
 				buf.Reset()
@@ -135,7 +135,7 @@ func Generate() {
 			}
 		}
 
-		for _, tableKey := range maps.SortedKeys(codegen.Tables[dbKey]) {
+		for _, tableKey := range stringmap.SortedKeys(codegen.Tables[dbKey]) {
 			table := codegen.Tables[dbKey][tableKey]
 			if table.IsAssociation || table.Skip {
 				continue

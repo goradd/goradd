@@ -27,7 +27,7 @@ func (n *ListPanelBaseTemplate) FileName(key string, t generator.TableType) stri
 	return n.TargetDir + "/" + key + "/panel/" + t.GoName + "ListPanel.base.go"
 }
 
-func (n *ListPanelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+func (n *ListPanelBaseTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
 	{{: "panel/listBase.tmpl" }}
 }
 

@@ -1,4 +1,4 @@
-package maps
+package stringmap
 
 import (
 	"reflect"
@@ -22,4 +22,24 @@ func SortedKeys(i interface{}) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+// Range is a convenience method to range over any map that uses strings as keys in a
+// predictable order from lowest to highest. It uses
+// a similar Range type function to the sync.Map.Range function.
+func Range(m interface{}, f func (key string, val interface {}) bool) {
+	v := reflect.ValueOf(m)
+	keys := v.MapKeys()
+
+	sort.Slice(keys, func(a,b int) bool {
+		return keys[a].String() < keys[b].String()
+	})
+
+	for _,kv := range keys {
+		vv := v.MapIndex(kv)
+		result := f(kv.String(), vv.Interface())
+		if !result {
+			break
+		}
+	}
 }

@@ -18,17 +18,19 @@ func (t *Tabs) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) 
 {{for}}
 </ul>
 <div class="tab-content" id="myTabContent">
-{{for _, child := range children }}
 {{g
-    child.AddClass("tab-pane")
-    if child.ID() == t.selectedID {
-        child.AddClass("active")
+    for _, child := range children {
+        child.AddClass("tab-pane")
+        if child.ID() == t.selectedID {
+            child.AddClass("active")
+        }
+        child.SetAttribute("role", "tabpanel")
+        child.SetAttribute("aria-labelledby", child.ID() + "_tab")
+        if err = child.Draw(ctx, buf); err != nil {
+            return
+        }
     }
-    child.SetAttribute("role", "tabpanel")
-    child.SetAttribute("aria-labelledby", child.ID() + "_tab")
 }}
-{{draw child}}
-{{for}}
 </div>
 
 }}

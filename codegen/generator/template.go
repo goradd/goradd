@@ -12,24 +12,24 @@ type Template struct {
 }
 
 type TableTemplateI interface {
-	GenerateTable(codegen Codegen, dd *db.DatabaseDescription, t TableType, buf *bytes.Buffer)
+	GenerateTable(codegen CodeGenerator, dd *db.DatabaseDescription, t TableType, buf *bytes.Buffer)
 	FileName(key string, t TableType) string
 	Overwrite() bool
 }
 
 type TypeTableTemplateI interface {
-	GenerateTypeTable(codegen Codegen, dd *db.DatabaseDescription, t TypeTableType, buf *bytes.Buffer)
+	GenerateTypeTable(codegen CodeGenerator, dd *db.DatabaseDescription, t TypeTableType, buf *bytes.Buffer)
 	FileName(key string, t TypeTableType) string
 	Overwrite() bool
 }
 
 type OneTimeTemplateI interface {
-	GenerateOnce(codegen Codegen, dd *db.DatabaseDescription, buf *bytes.Buffer)
+	GenerateOnce(codegen CodeGenerator, dd *db.DatabaseDescription, buf *bytes.Buffer)
 	FileName(key string) string
 	Overwrite() bool
 }
 
-//type TemplateFunc func(codegen *Codegen, t *TableType, buf *bytes.Buffer)
+//type TemplateFunc func(codegen *CodeGenerator, t *TableType, buf *bytes.Buffer)
 
 // Will be populated by the individual templates found
 var TableTemplates []TableTemplateI

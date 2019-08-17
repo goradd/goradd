@@ -39,7 +39,7 @@ func (n *EditPanelBaseTemplate) FileName(key string, t generator.TableType) stri
 	return n.TargetDir + "/" + key + "/panel/" + t.GoName + "EditPanel.base.go"
 }
 
-func (n *EditPanelBaseTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+func (n *EditPanelBaseTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
 	{{: "panel/editBase.tmpl" }}
 }
 

@@ -5,23 +5,21 @@ package manualtest
 import (
 	"bytes"
 	"context"
-
-	"github.com/goradd/goradd/pkg/page"
 )
 
-func (form *AjaxTimingForm) AddHeadTags() {
-	form.FormBase.AddHeadTags()
+func (ctrl *AjaxTimingForm) AddHeadTags() {
+	ctrl.FormBase.AddHeadTags()
 	if "Ajax Timing" != "" {
-		form.Page().SetTitle("Ajax Timing")
+		ctrl.Page().SetTitle("Ajax Timing")
 	}
 
 	// double up to deal with body attributes if they exist
-	form.Page().BodyAttributes = `
+	ctrl.Page().BodyAttributes = `
 buf.WriteString(fmt.Sprintf("%v", bodyAttributes))
 `
 }
 
-func (form *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 `)
@@ -34,7 +32,7 @@ func (form *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 `)
 
 	{
-		err := form.Txt1.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.Txt1.With(page.NewLabelWrapper())").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -47,7 +45,7 @@ func (form *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 `)
 
 	{
-		err := form.Txt1ChangeLabel.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.Txt1ChangeLabel.With(page.NewLabelWrapper())").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -60,7 +58,7 @@ func (form *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 `)
 
 	{
-		err := form.Txt1KeyUpLabel.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.Txt1KeyUpLabel.With(page.NewLabelWrapper())").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -75,7 +73,7 @@ func (form *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 `)
 
 	{
-		err := form.Chk.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.Chk.With(page.NewLabelWrapper())").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -88,7 +86,7 @@ func (form *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 `)
 
 	{
-		err := form.ChkLabel.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.ChkLabel.With(page.NewLabelWrapper())").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -103,7 +101,7 @@ func (form *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 `)
 
 	{
-		err := form.Txt2.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.Txt2.With(page.NewLabelWrapper())").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -116,7 +114,7 @@ func (form *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 `)
 
 	{
-		err := form.Btn.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.Btn").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

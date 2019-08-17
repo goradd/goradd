@@ -1,14 +1,14 @@
 // package maps contains utilities to handle common map operations
-package maps
+package stringmap
 
 import (
 	"encoding/json"
 	"strconv"
 )
 
-// IMapGetString gets a string out of a map of interfaces keyed by a string. Returns the string and true
+// GetString gets a string out of a map of interfaces keyed by a string. Returns the string and true
 // if found, or an empty string and false if not, or the found item was not a string.
-func GetIString(m map[string]interface{}, key string) (string, bool) {
+func GetString(m map[string]interface{}, key string) (string, bool) {
 	i, ok := m[key]
 	if !ok {
 		return "", false
@@ -20,7 +20,7 @@ func GetIString(m map[string]interface{}, key string) (string, bool) {
 	return s, true
 }
 
-// IMapGetJsonInt gets an integer out of a map of interfaces that were unmarshalled from json. Json unmarshalling
+// GetJsonInt gets an integer out of a map of interfaces that were unmarshalled from json. Json unmarshalling
 // creates json numbers, and these have to be coerced into integers or floats.
 // Returns an int and true if found, and a zero and false if not, or the found item was not a coercible number.
 func GetJsonInt(m map[string]interface{}, key string) (int, bool) {
@@ -39,7 +39,7 @@ func GetJsonInt(m map[string]interface{}, key string) (int, bool) {
 	return 0, false
 }
 
-// IMapGetJsonFloat gets a float64 out of a map of interfaces that were unmarshalled from json. Json unmarshalling
+// GetJsonFloat gets a float64 out of a map of interfaces that were unmarshalled from json. Json unmarshalling
 // creates json numbers, and these have to be coerced into integers or floats.
 // Returns an int and true if found, and a zero and false if not, or the found item was not a coercible number.
 func GetJsonFloat(m map[string]interface{}, key string) (float64, bool) {

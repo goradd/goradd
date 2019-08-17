@@ -45,7 +45,7 @@ func (n *FormBuildTemplate) FileName(key string) string {
 	return n.TargetDir + "/" + key + "/form/template_source/build.go"
 }
 
-func (n *FormBuildTemplate) GenerateOnce(codegen generator.Codegen, dd *db.DatabaseDescription, buf *bytes.Buffer) {
+func (n *FormBuildTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.DatabaseDescription, buf *bytes.Buffer) {
 	{{: "form/build.tmpl" }}
 }
 
@@ -61,7 +61,7 @@ func (n *FormIndexTemplate) FileName(key string) string {
 	return n.TargetDir + "/index.html"    // This ignores the key, so will overwrite itself for each database. Not a big deal.
 }
 
-func (n *FormIndexTemplate) GenerateOnce(codegen generator.Codegen, dd *db.DatabaseDescription, buf *bytes.Buffer) {
+func (n *FormIndexTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.DatabaseDescription, buf *bytes.Buffer) {
 	{{: "form/index.tmpl" }}
 }
 
@@ -77,7 +77,7 @@ func (n *FormImportTemplate) FileName(key string) string {
 	return n.TargetDir + "/init.go"    // This ignores the key, so will overwrite itself for each database. Not a big deal.
 }
 
-func (n *FormImportTemplate) GenerateOnce(codegen generator.Codegen, dd *db.DatabaseDescription, buf *bytes.Buffer) {
+func (n *FormImportTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.DatabaseDescription, buf *bytes.Buffer) {
 	{{: "form/init.tmpl" }}
 }
 

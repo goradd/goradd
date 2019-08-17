@@ -29,7 +29,7 @@ func (n *TypeTableTemplate) FileName(key string, tt generator.TypeTableType) str
 	return n.TargetDir + "/" + key + "/model/" + tt.GoName + ".base.go"
 }
 
-func (n *TypeTableTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.DatabaseDescription, tt generator.TypeTableType, buf *bytes.Buffer) {
+func (n *TypeTableTemplate) GenerateTypeTable(codegen generator.CodeGenerator, dd *db.DatabaseDescription, tt generator.TypeTableType, buf *bytes.Buffer) {
 	// privateName := strings.ToLower(t.GoName[:1]) + t.GoName[1:]
 
 	{{: "typeTables/typeTable.tmpl" }}
