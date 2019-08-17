@@ -27,7 +27,7 @@ func (ctrl *TestForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err 
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.TestList").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("test-list").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -40,7 +40,7 @@ func (ctrl *TestForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err 
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.RunButton").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("run-button").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -53,7 +53,7 @@ func (ctrl *TestForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err 
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.RunAllButton").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("run-all-button").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -68,7 +68,7 @@ Currently running:
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.RunningLabel").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("running-label").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -81,7 +81,7 @@ Currently running:
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.Controller").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("controller").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

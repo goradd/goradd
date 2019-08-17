@@ -72,7 +72,7 @@ func (p *Proxy) this() ProxyI {
 // OnSubmit is a shortcut for adding a click event handler that is particular to buttons. It debounces the click, to
 // prevent potential accidental multiple form submissions. All events fired after this event fires will be lost. It is
 // intended to be used when the action will result in navigating to a new page.
-func (p *Proxy) OnSubmit(actions ...action.ActionI) page.EventI {
+func (p *Proxy) OnSubmit(actions ...action.ActionI) page.ControlI {
 	return p.On(event.Click().Terminating().Delay(250), actions...)
 }
 

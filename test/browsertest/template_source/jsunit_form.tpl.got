@@ -9,9 +9,9 @@
 
 {{define template }}
 <h1>JavaScript Unit Tests</h1>
-{{draw form.RunButton }}
+{{draw startButton }}
 <h3>Results</h3>
-{{draw form.Results }}
+{{draw results }}
 <h3>Test Space</h3>
 <p id = "intro">
 The area below is used by the unit test code to exercise the code.

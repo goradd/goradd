@@ -27,7 +27,7 @@ func (ctrl *JsUnitForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.RunButton").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("startButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ func (ctrl *JsUnitForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.Results").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("results").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

@@ -32,10 +32,6 @@ const (
 
 type TestForm struct {
 	FormBase
-	TestList        *SelectList
-	RunningLabel    *Span
-	RunButton       *Button
-	RunAllButton	*Button
 	Controller      *TestController
 	currentLog      string
 	failed          bool
@@ -64,25 +60,26 @@ func NewTestForm(ctx context.Context) page.FormI {
 func (form *TestForm) createControls(ctx context.Context) {
 	form.Controller = NewTestController(form, "controller")
 
-	form.TestList = NewSelectList(form, "test-list")
-	form.TestList.SetAttribute("size", 10)
+	NewSelectList(form, "test-list").
+		SetAttribute("size", 10)
 
-	form.RunningLabel = NewSpan(form, "running-label")
+	NewSpan(form, "running-label")
 
-	form.RunButton = NewButton(form, "run-button")
-	form.RunButton.SetText("Run Test")
-	form.RunButton.On(event.Click(), action.Ajax(form.ID(), TestButtonAction))
-	form.RunButton.SetValidationType(page.ValidateNone)
+	NewButton(form, "run-button").
+		SetValidationType(page.ValidateNone).
+		SetText("Run Test").
+		On(event.Click(), action.Ajax(form.ID(), TestButtonAction))
 
-	form.RunAllButton = NewButton(form, "run-all-button")
-	form.RunAllButton.SetText("Run All Tests")
-	form.RunAllButton.On(event.Click(), action.Redirect(TestFormPath + "?all=1"))
-	form.RunAllButton.SetValidationType(page.ValidateNone)
+
+	NewButton(form, "run-all-button").
+		SetText("Run All Tests").
+		SetValidationType(page.ValidateNone).
+		On(event.Click(), action.Redirect(TestFormPath + "?all=1"))
 }
 
 func (form *TestForm) LoadControls(ctx context.Context) {
 	tests.Range(func(k string, v interface{}) bool {
-		form.TestList.AddItem(k, k)
+		GetSelectList(form, "test-list").AddItem(k, k)
 		return true
 	})
 }
@@ -97,8 +94,9 @@ func (form *TestForm) Action(ctx context.Context, a page.ActionParams) {
 }
 
 func (form *TestForm) runSelectedTest() {
-	form.RunningLabel.SetText(form.TestList.SelectedItem().Label())
-	name := form.TestList.SelectedItem().Value().(string)
+	testList := GetSelectList(form, "test-list")
+	GetSpan(form, "running-label").SetText(testList.SelectedItem().Label())
+	name := testList.SelectedItem().Value().(string)
 	form.testOne(name)
 }
 

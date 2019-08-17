@@ -11,7 +11,7 @@ import (
 type ButtonI interface {
 	page.ControlI
 	SetLabel(label string) page.ControlI
-	OnSubmit(actions ...action.ActionI) page.EventI
+	OnSubmit(actions ...action.ActionI) page.ControlI
 }
 
 // Button is a standard html form submit button. It corresponds to a <button> tag in html.
@@ -45,6 +45,11 @@ func (b *Button) Init(self page.ControlI, parent page.ControlI, id string) {
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
 
+func (c *Button) this() ButtonI {
+	return c.Self.(ButtonI)
+}
+
+
 // SetLabel is an alias for SetText on buttons. Standard buttons do not normally have separate labels.
 // Subclasses can redefine this if they use separate labels.
 func (b *Button) SetLabel(label string) page.ControlI {
@@ -53,10 +58,10 @@ func (b *Button) SetLabel(label string) page.ControlI {
 }
 
 // On causes the given actions to execute when the given event is triggered.
-func (b *Button) On(e page.EventI, actions ...action.ActionI) page.EventI {
+func (b *Button) On(e page.EventI, actions ...action.ActionI) page.ControlI {
 	e.Terminating() // prevent default action (override submit)
 	b.Control.On(e, actions...)
-	return e
+	return b.this()
 }
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
@@ -76,7 +81,7 @@ func (b *Button) ΩDrawingAttributes() html.Attributes {
 // It debounces the click, so that all other events are lost until this event processes. It should generally be used for
 // operations that will eventually redirect to a different page. If coupling this with an ajax response, you should
 // probably also make the response priority PriorityFinal.
-func (b *Button) OnSubmit(actions ...action.ActionI) page.EventI {
+func (b *Button) OnSubmit(actions ...action.ActionI) page.ControlI {
 	// We delay here to try to make sure any other delayed events are executed first.
 	return b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
 }

@@ -169,7 +169,7 @@ type ControlI interface {
 	PrivateAction(context.Context, ActionParams)
 	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
-	On(e EventI, a ...action2.ActionI) EventI
+	On(e EventI, a ...action2.ActionI) ControlI
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
 	HasServerAction(eventName string) bool
@@ -179,6 +179,7 @@ type ControlI interface {
 	Validate(ctx context.Context) bool
 	ValidationState() ValidationState
 	ValidationType(EventI) ValidationType
+	SetValidationType(typ ValidationType) ControlI
 
 	// SaveState tells the control whether to save the basic state of the control, so that when the form is reentered, the
 	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
@@ -973,8 +974,7 @@ func (c *Control) ShouldAutoRender() bool {
 }
 
 // On adds an event listener to the control that will trigger the given actions.
-// It returns the event for chaining.
-func (c *Control) On(e EventI, actions ...action2.ActionI) EventI {
+func (c *Control) On(e EventI, actions ...action2.ActionI) ControlI {
 	var isPrivate bool
 	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
@@ -1011,7 +1011,7 @@ func (c *Control) On(e EventI, actions ...action2.ActionI) EventI {
 		c.events[c.eventCounter] = e
 	}
 	e.event().eventID = c.eventCounter
-	return e
+	return c.this()
 }
 
 // Off removes all event handlers from the control
@@ -1180,8 +1180,9 @@ func (c *Control) SetBlockParentValidation(block bool) {
 // ValidateSiblingsAndChildren will validate the immediate siblings of the target controls and their children
 // ValidateSiblingsOnly will validate only the siblings of the target controls
 // ValidateTargetsOnly will validate only the specified target controls
-func (c *Control) SetValidationType(typ ValidationType) {
+func (c *Control) SetValidationType(typ ValidationType) ControlI {
 	c.validationType = typ
+	return c.this()
 }
 
 // ValidationType is an internal function to return the validation type. It allows subclasses to override it.
