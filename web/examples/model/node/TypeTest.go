@@ -26,6 +26,7 @@ func (n *typeTestNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.Ts())
 	nodes = append(nodes, n.TestInt())
 	nodes = append(nodes, n.TestFloat())
+	nodes = append(nodes, n.TestDouble())
 	nodes = append(nodes, n.TestText())
 	nodes = append(nodes, n.TestBit())
 	nodes = append(nodes, n.TestVarchar())
@@ -41,6 +42,7 @@ func (n *typeTestNode) Copy_() query.NodeI {
 	return &typeTestNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
+// ID represents the id column in the database.
 func (n *typeTestNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -54,6 +56,7 @@ func (n *typeTestNode) ID() *query.ColumnNode {
 	return cn
 }
 
+// Date represents the date column in the database.
 func (n *typeTestNode) Date() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -67,6 +70,7 @@ func (n *typeTestNode) Date() *query.ColumnNode {
 	return cn
 }
 
+// Time represents the time column in the database.
 func (n *typeTestNode) Time() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -80,6 +84,7 @@ func (n *typeTestNode) Time() *query.ColumnNode {
 	return cn
 }
 
+// DateTime represents the date_time column in the database.
 func (n *typeTestNode) DateTime() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -93,6 +98,7 @@ func (n *typeTestNode) DateTime() *query.ColumnNode {
 	return cn
 }
 
+// Ts represents the ts column in the database.
 func (n *typeTestNode) Ts() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -106,6 +112,7 @@ func (n *typeTestNode) Ts() *query.ColumnNode {
 	return cn
 }
 
+// TestInt represents the test_int column in the database.
 func (n *typeTestNode) TestInt() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -119,6 +126,7 @@ func (n *typeTestNode) TestInt() *query.ColumnNode {
 	return cn
 }
 
+// TestFloat represents the test_float column in the database.
 func (n *typeTestNode) TestFloat() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -132,6 +140,21 @@ func (n *typeTestNode) TestFloat() *query.ColumnNode {
 	return cn
 }
 
+// TestDouble represents the test_double column in the database.
+func (n *typeTestNode) TestDouble() *query.ColumnNode {
+	cn := query.NewColumnNode(
+		"goradd",
+		"type_test",
+		"test_double",
+		"TestDouble",
+		query.ColTypeDouble,
+		false,
+	)
+	query.SetParentNode(cn, n)
+	return cn
+}
+
+// TestText represents the test_text column in the database.
 func (n *typeTestNode) TestText() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -145,6 +168,7 @@ func (n *typeTestNode) TestText() *query.ColumnNode {
 	return cn
 }
 
+// TestBit represents the test_bit column in the database.
 func (n *typeTestNode) TestBit() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -158,6 +182,7 @@ func (n *typeTestNode) TestBit() *query.ColumnNode {
 	return cn
 }
 
+// TestVarchar represents the test_varchar column in the database.
 func (n *typeTestNode) TestVarchar() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",

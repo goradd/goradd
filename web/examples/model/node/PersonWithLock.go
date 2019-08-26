@@ -35,6 +35,7 @@ func (n *personWithLockNode) Copy_() query.NodeI {
 	return &personWithLockNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
+// ID represents the id column in the database.
 func (n *personWithLockNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -48,6 +49,7 @@ func (n *personWithLockNode) ID() *query.ColumnNode {
 	return cn
 }
 
+// FirstName represents the first_name column in the database.
 func (n *personWithLockNode) FirstName() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -61,6 +63,7 @@ func (n *personWithLockNode) FirstName() *query.ColumnNode {
 	return cn
 }
 
+// LastName represents the last_name column in the database.
 func (n *personWithLockNode) LastName() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -74,6 +77,7 @@ func (n *personWithLockNode) LastName() *query.ColumnNode {
 	return cn
 }
 
+// SysTimestamp represents the sys_timestamp column in the database.
 func (n *personWithLockNode) SysTimestamp() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",

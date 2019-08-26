@@ -14,6 +14,7 @@ import (
 	//"./node"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 
 	"github.com/goradd/goradd/pkg/datetime"
 )
@@ -112,6 +113,7 @@ func (o *personWithLockBase) FirstNameIsValid() bool {
 
 // SetFirstName sets the value of FirstName in the object, to be saved later using the Save() function.
 func (o *personWithLockBase) SetFirstName(v string) {
+	o.firstNameIsValid = true
 	if o.firstName != v || !o._restored {
 		o.firstName = v
 		o.firstNameIsDirty = true
@@ -133,6 +135,7 @@ func (o *personWithLockBase) LastNameIsValid() bool {
 
 // SetLastName sets the value of LastName in the object, to be saved later using the Save() function.
 func (o *personWithLockBase) SetLastName(v string) {
+	o.lastNameIsValid = true
 	if o.lastName != v || !o._restored {
 		o.lastName = v
 		o.lastNameIsDirty = true
@@ -158,6 +161,7 @@ func (o *personWithLockBase) SysTimestampIsNull() bool {
 }
 
 func (o *personWithLockBase) SetSysTimestamp(i interface{}) {
+	o.sysTimestampIsValid = true
 	if i == nil {
 		if !o.sysTimestampIsNull {
 			o.sysTimestampIsNull = true
@@ -265,22 +269,6 @@ func (b *PersonWithLocksBuilder) Expand(n query.NodeI) *PersonWithLocksBuilder {
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *PersonWithLocksBuilder) Join(n query.NodeI, conditions ...query.NodeI) *PersonWithLocksBuilder {
-	var condition query.NodeI
-	if len(conditions) > 1 {
-		condition = And(conditions)
-	} else if len(conditions) == 1 {
-		condition = conditions[0]
-	}
-	b.base.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
-	return b
-}
-
-// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
-// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *PersonWithLocksBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *PersonWithLocksBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -722,4 +710,33 @@ func (o *personWithLockBase) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	return err
+}
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *personWithLockBase) MarshalJSON() (data []byte, err error) {
+	v := make(map[string]interface{})
+
+	if o.idIsValid {
+		v["id"] = o.id
+	}
+
+	if o.firstNameIsValid {
+		v["firstName"] = o.firstName
+	}
+
+	if o.lastNameIsValid {
+		v["lastName"] = o.lastName
+	}
+
+	if o.sysTimestampIsValid {
+		if o.sysTimestampIsNull {
+			v["sysTimestamp"] = nil
+		} else {
+			v["sysTimestamp"] = o.sysTimestamp
+		}
+	}
+
+	return json.Marshal(v)
 }

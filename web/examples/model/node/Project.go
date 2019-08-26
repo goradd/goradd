@@ -41,6 +41,7 @@ func (n *projectNode) Copy_() query.NodeI {
 	return &projectNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
+// ID represents the id column in the database.
 func (n *projectNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -54,6 +55,7 @@ func (n *projectNode) ID() *query.ColumnNode {
 	return cn
 }
 
+// Num represents the num column in the database.
 func (n *projectNode) Num() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -67,6 +69,7 @@ func (n *projectNode) Num() *query.ColumnNode {
 	return cn
 }
 
+// ProjectStatusTypeID represents the project_status_type_id column in the database.
 func (n *projectNode) ProjectStatusTypeID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -80,6 +83,7 @@ func (n *projectNode) ProjectStatusTypeID() *query.ColumnNode {
 	return cn
 }
 
+// ProjectStatusType represents the the link to the ProjectStatusType object.
 func (n *projectNode) ProjectStatusType() *projectStatusTypeNode {
 	cn := &projectStatusTypeNode{
 		query.NewReferenceNode(
@@ -97,6 +101,7 @@ func (n *projectNode) ProjectStatusType() *projectStatusTypeNode {
 	return cn
 }
 
+// ManagerID represents the manager_id column in the database.
 func (n *projectNode) ManagerID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -110,6 +115,7 @@ func (n *projectNode) ManagerID() *query.ColumnNode {
 	return cn
 }
 
+// Manager represents the the link to the Manager object.
 func (n *projectNode) Manager() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(
@@ -127,6 +133,7 @@ func (n *projectNode) Manager() *personNode {
 	return cn
 }
 
+// Name represents the name column in the database.
 func (n *projectNode) Name() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -140,6 +147,7 @@ func (n *projectNode) Name() *query.ColumnNode {
 	return cn
 }
 
+// Description represents the description column in the database.
 func (n *projectNode) Description() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -153,6 +161,7 @@ func (n *projectNode) Description() *query.ColumnNode {
 	return cn
 }
 
+// StartDate represents the start_date column in the database.
 func (n *projectNode) StartDate() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -166,6 +175,7 @@ func (n *projectNode) StartDate() *query.ColumnNode {
 	return cn
 }
 
+// EndDate represents the end_date column in the database.
 func (n *projectNode) EndDate() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -179,6 +189,7 @@ func (n *projectNode) EndDate() *query.ColumnNode {
 	return cn
 }
 
+// Budget represents the budget column in the database.
 func (n *projectNode) Budget() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -192,6 +203,7 @@ func (n *projectNode) Budget() *query.ColumnNode {
 	return cn
 }
 
+// Spent represents the spent column in the database.
 func (n *projectNode) Spent() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -205,6 +217,7 @@ func (n *projectNode) Spent() *query.ColumnNode {
 	return cn
 }
 
+// ChildrenAsParent represents the many-to-many relationship formed by the related_project_assn table.
 func (n *projectNode) ChildrenAsParent() *projectNode {
 	cn := &projectNode{
 		query.NewManyManyNode(
@@ -222,6 +235,7 @@ func (n *projectNode) ChildrenAsParent() *projectNode {
 
 }
 
+// ParentsAsChild represents the many-to-many relationship formed by the related_project_assn table.
 func (n *projectNode) ParentsAsChild() *projectNode {
 	cn := &projectNode{
 		query.NewManyManyNode(
@@ -239,6 +253,7 @@ func (n *projectNode) ParentsAsChild() *projectNode {
 
 }
 
+// TeamMembers represents the many-to-many relationship formed by the team_member_project_assn table.
 func (n *projectNode) TeamMembers() *personNode {
 	cn := &personNode{
 		query.NewManyManyNode(
@@ -256,6 +271,8 @@ func (n *projectNode) TeamMembers() *personNode {
 
 }
 
+// Milestones represents the many-to-one relationship formed by the reverse reference from the
+// id column in the project table.
 func (n *projectNode) Milestones() *milestoneNode {
 
 	cn := &milestoneNode{

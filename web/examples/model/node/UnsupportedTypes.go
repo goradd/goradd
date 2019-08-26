@@ -49,6 +49,7 @@ func (n *unsupportedTypesNode) Copy_() query.NodeI {
 	return &unsupportedTypesNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
+// TypeSet represents the type_set column in the database.
 func (n *unsupportedTypesNode) TypeSet() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -62,6 +63,7 @@ func (n *unsupportedTypesNode) TypeSet() *query.ColumnNode {
 	return cn
 }
 
+// TypeEnum represents the type_enum column in the database.
 func (n *unsupportedTypesNode) TypeEnum() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -75,6 +77,7 @@ func (n *unsupportedTypesNode) TypeEnum() *query.ColumnNode {
 	return cn
 }
 
+// TypeDecimal represents the type_decimal column in the database.
 func (n *unsupportedTypesNode) TypeDecimal() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -88,19 +91,21 @@ func (n *unsupportedTypesNode) TypeDecimal() *query.ColumnNode {
 	return cn
 }
 
+// TypeDouble represents the type_double column in the database.
 func (n *unsupportedTypesNode) TypeDouble() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"unsupported_types",
 		"type_double",
 		"TypeDouble",
-		query.ColTypeFloat,
+		query.ColTypeDouble,
 		false,
 	)
 	query.SetParentNode(cn, n)
 	return cn
 }
 
+// TypeGeo represents the type_geo column in the database.
 func (n *unsupportedTypesNode) TypeGeo() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -114,6 +119,7 @@ func (n *unsupportedTypesNode) TypeGeo() *query.ColumnNode {
 	return cn
 }
 
+// TypeTinyBlob represents the type_tiny_blob column in the database.
 func (n *unsupportedTypesNode) TypeTinyBlob() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -127,6 +133,7 @@ func (n *unsupportedTypesNode) TypeTinyBlob() *query.ColumnNode {
 	return cn
 }
 
+// TypeMediumBlob represents the type_medium_blob column in the database.
 func (n *unsupportedTypesNode) TypeMediumBlob() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -140,6 +147,7 @@ func (n *unsupportedTypesNode) TypeMediumBlob() *query.ColumnNode {
 	return cn
 }
 
+// TypeVarbinary represents the type_varbinary column in the database.
 func (n *unsupportedTypesNode) TypeVarbinary() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -153,6 +161,7 @@ func (n *unsupportedTypesNode) TypeVarbinary() *query.ColumnNode {
 	return cn
 }
 
+// TypeLongtext represents the type_longtext column in the database.
 func (n *unsupportedTypesNode) TypeLongtext() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -166,6 +175,7 @@ func (n *unsupportedTypesNode) TypeLongtext() *query.ColumnNode {
 	return cn
 }
 
+// TypeBinary represents the type_binary column in the database.
 func (n *unsupportedTypesNode) TypeBinary() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -179,6 +189,7 @@ func (n *unsupportedTypesNode) TypeBinary() *query.ColumnNode {
 	return cn
 }
 
+// TypeSmall represents the type_small column in the database.
 func (n *unsupportedTypesNode) TypeSmall() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -192,6 +203,7 @@ func (n *unsupportedTypesNode) TypeSmall() *query.ColumnNode {
 	return cn
 }
 
+// TypeMedium represents the type_medium column in the database.
 func (n *unsupportedTypesNode) TypeMedium() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -205,6 +217,7 @@ func (n *unsupportedTypesNode) TypeMedium() *query.ColumnNode {
 	return cn
 }
 
+// TypeBig represents the type_big column in the database.
 func (n *unsupportedTypesNode) TypeBig() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -218,6 +231,7 @@ func (n *unsupportedTypesNode) TypeBig() *query.ColumnNode {
 	return cn
 }
 
+// TypePolygon represents the type_polygon column in the database.
 func (n *unsupportedTypesNode) TypePolygon() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -231,6 +245,7 @@ func (n *unsupportedTypesNode) TypePolygon() *query.ColumnNode {
 	return cn
 }
 
+// TypeSerial represents the type_serial column in the database.
 func (n *unsupportedTypesNode) TypeSerial() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -244,6 +259,7 @@ func (n *unsupportedTypesNode) TypeSerial() *query.ColumnNode {
 	return cn
 }
 
+// TypeUnsigned represents the type_unsigned column in the database.
 func (n *unsupportedTypesNode) TypeUnsigned() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -257,6 +273,7 @@ func (n *unsupportedTypesNode) TypeUnsigned() *query.ColumnNode {
 	return cn
 }
 
+// TypeMultfk1 represents the type_multFk1 column in the database.
 func (n *unsupportedTypesNode) TypeMultfk1() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -270,6 +287,7 @@ func (n *unsupportedTypesNode) TypeMultfk1() *query.ColumnNode {
 	return cn
 }
 
+// TypeMultifk2 represents the type_multiFk2 column in the database.
 func (n *unsupportedTypesNode) TypeMultifk2() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",

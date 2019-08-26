@@ -1,0 +1,34 @@
+{{< package }}orm{{end}}
+{{< imports }}
+	"github.com/goradd/goradd/web/examples/model"
+{{end}}
+{{< control }}LoadPanel{{end}}
+
+{{define template }}
+<h1>Loading an object</h1>
+<p>
+SQL databases, and some NoSQL databases, let you define indexes on fields. The code generator detects these indexes
+and generates special code to use these indexed fields. If a field is uniquely indexed, meaning no records will ever
+contain duplicate values for that field, the generator will create a "Load*" function for this field. For example,
+if you have a unique index on a field called "Type", you will get a "LoadByType" function.
+</p>
+{{g
+login := model.LoadLoginByUsername(ctx, "jdoe")
+person := model.LoadPerson(ctx, login.PersonID())
+}}
+<p>
+Login: jdoe, Name: {{= person.FirstName() }} {{= person.LastName() }}
+</p>
+
+{{g
+project := model.LoadProjectByNum(ctx, 2)
+}}
+<p>
+Project 2: {{= project.Name() }}
+</p>
+
+
+
+{{end}}
+
+{{renderControlTemplate}}

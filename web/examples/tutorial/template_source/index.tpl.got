@@ -1,0 +1,34 @@
+{{< imports }}
+{{end}}
+{{< headTags }}
+{{end}}
+{{< package }}tutorial{{end}}
+{{< title }}Tutorial{{end}}
+{{< form }}IndexForm{{end}}
+{{< bodyAttributes }}
+{{end}}
+
+
+{{define template }}
+{{g path := page.GetContext(ctx).HttpContext.URL.Path }}
+
+<h1>Control Examples</h1>
+{{draw viewSourceButton }}
+<div class="sidebar">
+<h2>ORM</h2>
+  <ul>
+{{for _,pr := range pages["orm"]}}
+    <li><a href="{{= path }}?pageID=orm-{{= pr.id }}">{{= pr.title }}</a></li>
+{{for}}
+  </ul>
+</div>
+<div class="detail_container">
+	{{draw detailPanel }}
+</div>
+<div class="source_container">
+	{{draw sourcePanel }}
+</div>
+
+{{end}}
+
+{{renderFormTemplate}}

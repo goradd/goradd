@@ -36,6 +36,7 @@ func (n *loginNode) Copy_() query.NodeI {
 	return &loginNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
+// ID represents the id column in the database.
 func (n *loginNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -49,6 +50,7 @@ func (n *loginNode) ID() *query.ColumnNode {
 	return cn
 }
 
+// PersonID represents the person_id column in the database.
 func (n *loginNode) PersonID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -62,6 +64,7 @@ func (n *loginNode) PersonID() *query.ColumnNode {
 	return cn
 }
 
+// Person represents the the link to the Person object.
 func (n *loginNode) Person() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(
@@ -79,6 +82,7 @@ func (n *loginNode) Person() *personNode {
 	return cn
 }
 
+// Username represents the username column in the database.
 func (n *loginNode) Username() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -92,6 +96,7 @@ func (n *loginNode) Username() *query.ColumnNode {
 	return cn
 }
 
+// Password represents the password column in the database.
 func (n *loginNode) Password() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -105,6 +110,7 @@ func (n *loginNode) Password() *query.ColumnNode {
 	return cn
 }
 
+// IsEnabled represents the is_enabled column in the database.
 func (n *loginNode) IsEnabled() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",

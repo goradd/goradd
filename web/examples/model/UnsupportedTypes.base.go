@@ -14,6 +14,7 @@ import (
 	//"./node"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 )
 
 // unsupportedTypesBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
@@ -33,7 +34,7 @@ type unsupportedTypesBase struct {
 	typeDecimalIsValid bool
 	typeDecimalIsDirty bool
 
-	typeDouble        float32
+	typeDouble        float64
 	typeDoubleIsValid bool
 	typeDoubleIsDirty bool
 
@@ -236,6 +237,7 @@ func (o *unsupportedTypesBase) TypeSetIsValid() bool {
 
 // SetTypeSet sets the value of TypeSet in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeSet(v string) {
+	o.typeSetIsValid = true
 	if o.typeSet != v || !o._restored {
 		o.typeSet = v
 		o.typeSetIsDirty = true
@@ -257,6 +259,7 @@ func (o *unsupportedTypesBase) TypeEnumIsValid() bool {
 
 // SetTypeEnum sets the value of TypeEnum in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeEnum(v string) {
+	o.typeEnumIsValid = true
 	if o.typeEnum != v || !o._restored {
 		o.typeEnum = v
 		o.typeEnumIsDirty = true
@@ -278,6 +281,7 @@ func (o *unsupportedTypesBase) TypeDecimalIsValid() bool {
 
 // SetTypeDecimal sets the value of TypeDecimal in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeDecimal(v string) {
+	o.typeDecimalIsValid = true
 	if o.typeDecimal != v || !o._restored {
 		o.typeDecimal = v
 		o.typeDecimalIsDirty = true
@@ -285,7 +289,7 @@ func (o *unsupportedTypesBase) SetTypeDecimal(v string) {
 
 }
 
-func (o *unsupportedTypesBase) TypeDouble() float32 {
+func (o *unsupportedTypesBase) TypeDouble() float64 {
 	if o._restored && !o.typeDoubleIsValid {
 		panic("typeDouble was not selected in the last query and so is not valid")
 	}
@@ -298,7 +302,8 @@ func (o *unsupportedTypesBase) TypeDoubleIsValid() bool {
 }
 
 // SetTypeDouble sets the value of TypeDouble in the object, to be saved later using the Save() function.
-func (o *unsupportedTypesBase) SetTypeDouble(v float32) {
+func (o *unsupportedTypesBase) SetTypeDouble(v float64) {
+	o.typeDoubleIsValid = true
 	if o.typeDouble != v || !o._restored {
 		o.typeDouble = v
 		o.typeDoubleIsDirty = true
@@ -320,6 +325,7 @@ func (o *unsupportedTypesBase) TypeGeoIsValid() bool {
 
 // SetTypeGeo sets the value of TypeGeo in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeGeo(v string) {
+	o.typeGeoIsValid = true
 	if o.typeGeo != v || !o._restored {
 		o.typeGeo = v
 		o.typeGeoIsDirty = true
@@ -341,6 +347,7 @@ func (o *unsupportedTypesBase) TypeTinyBlobIsValid() bool {
 
 // SetTypeTinyBlob sets the value of TypeTinyBlob in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeTinyBlob(v []byte) {
+	o.typeTinyBlobIsValid = true
 	o.typeTinyBlob = v // TODO: Copy bytes??
 	o.typeTinyBlobIsDirty = true
 
@@ -360,6 +367,7 @@ func (o *unsupportedTypesBase) TypeMediumBlobIsValid() bool {
 
 // SetTypeMediumBlob sets the value of TypeMediumBlob in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeMediumBlob(v []byte) {
+	o.typeMediumBlobIsValid = true
 	o.typeMediumBlob = v // TODO: Copy bytes??
 	o.typeMediumBlobIsDirty = true
 
@@ -379,6 +387,7 @@ func (o *unsupportedTypesBase) TypeVarbinaryIsValid() bool {
 
 // SetTypeVarbinary sets the value of TypeVarbinary in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeVarbinary(v string) {
+	o.typeVarbinaryIsValid = true
 	if o.typeVarbinary != v || !o._restored {
 		o.typeVarbinary = v
 		o.typeVarbinaryIsDirty = true
@@ -400,6 +409,7 @@ func (o *unsupportedTypesBase) TypeLongtextIsValid() bool {
 
 // SetTypeLongtext sets the value of TypeLongtext in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeLongtext(v string) {
+	o.typeLongtextIsValid = true
 	if o.typeLongtext != v || !o._restored {
 		o.typeLongtext = v
 		o.typeLongtextIsDirty = true
@@ -421,6 +431,7 @@ func (o *unsupportedTypesBase) TypeBinaryIsValid() bool {
 
 // SetTypeBinary sets the value of TypeBinary in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeBinary(v string) {
+	o.typeBinaryIsValid = true
 	if o.typeBinary != v || !o._restored {
 		o.typeBinary = v
 		o.typeBinaryIsDirty = true
@@ -442,6 +453,7 @@ func (o *unsupportedTypesBase) TypeSmallIsValid() bool {
 
 // SetTypeSmall sets the value of TypeSmall in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeSmall(v int) {
+	o.typeSmallIsValid = true
 	if o.typeSmall != v || !o._restored {
 		o.typeSmall = v
 		o.typeSmallIsDirty = true
@@ -463,6 +475,7 @@ func (o *unsupportedTypesBase) TypeMediumIsValid() bool {
 
 // SetTypeMedium sets the value of TypeMedium in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeMedium(v int) {
+	o.typeMediumIsValid = true
 	if o.typeMedium != v || !o._restored {
 		o.typeMedium = v
 		o.typeMediumIsDirty = true
@@ -484,6 +497,7 @@ func (o *unsupportedTypesBase) TypeBigIsValid() bool {
 
 // SetTypeBig sets the value of TypeBig in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeBig(v int64) {
+	o.typeBigIsValid = true
 	if o.typeBig != v || !o._restored {
 		o.typeBig = v
 		o.typeBigIsDirty = true
@@ -505,6 +519,7 @@ func (o *unsupportedTypesBase) TypePolygonIsValid() bool {
 
 // SetTypePolygon sets the value of TypePolygon in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypePolygon(v string) {
+	o.typePolygonIsValid = true
 	if o.typePolygon != v || !o._restored {
 		o.typePolygon = v
 		o.typePolygonIsDirty = true
@@ -536,6 +551,7 @@ func (o *unsupportedTypesBase) TypeUnsignedIsValid() bool {
 
 // SetTypeUnsigned sets the value of TypeUnsigned in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeUnsigned(v uint) {
+	o.typeUnsignedIsValid = true
 	if o.typeUnsigned != v || !o._restored {
 		o.typeUnsigned = v
 		o.typeUnsignedIsDirty = true
@@ -557,6 +573,7 @@ func (o *unsupportedTypesBase) TypeMultfk1IsValid() bool {
 
 // SetTypeMultfk1 sets the value of TypeMultfk1 in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeMultfk1(v string) {
+	o.typeMultfk1IsValid = true
 	if o.typeMultfk1 != v || !o._restored {
 		o.typeMultfk1 = v
 		o.typeMultfk1IsDirty = true
@@ -578,6 +595,7 @@ func (o *unsupportedTypesBase) TypeMultifk2IsValid() bool {
 
 // SetTypeMultifk2 sets the value of TypeMultifk2 in the object, to be saved later using the Save() function.
 func (o *unsupportedTypesBase) SetTypeMultifk2(v string) {
+	o.typeMultifk2IsValid = true
 	if o.typeMultifk2 != v || !o._restored {
 		o.typeMultifk2 = v
 		o.typeMultifk2IsDirty = true
@@ -697,22 +715,6 @@ func (b *UnsupportedTypesBuilder) Join(n query.NodeI, conditions ...query.NodeI)
 	return b
 }
 
-// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
-// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *UnsupportedTypesBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *UnsupportedTypesBuilder {
-	var condition query.NodeI
-	if len(conditions) > 1 {
-		condition = And(conditions)
-	} else if len(conditions) == 1 {
-		condition = conditions[0]
-	}
-	b.base.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
-	return b
-}
-
 // Where adds a condition to filter what gets selected.
 func (b *UnsupportedTypesBuilder) Where(c query.NodeI) *UnsupportedTypesBuilder {
 	b.base.Condition(c)
@@ -809,7 +811,7 @@ func CountUnsupportedTypesByTypeDecimal(ctx context.Context, typeDecimal string)
 	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeDecimal(), typeDecimal)).Count(ctx, false)
 }
 
-func CountUnsupportedTypesByTypeDouble(ctx context.Context, typeDouble float32) uint {
+func CountUnsupportedTypesByTypeDouble(ctx context.Context, typeDouble float64) uint {
 	return queryUnsupportedTypes(ctx).Where(Equal(node.UnsupportedTypes().TypeDouble(), typeDouble)).Count(ctx, false)
 }
 
@@ -912,7 +914,7 @@ func (o *unsupportedTypesBase) load(m map[string]interface{}, linkParent bool, o
 	}
 
 	if v, ok := m["type_double"]; ok && v != nil {
-		if o.typeDouble, ok = v.(float32); ok {
+		if o.typeDouble, ok = v.(float64); ok {
 			o.typeDoubleIsValid = true
 			o.typeDoubleIsDirty = false
 		} else {
@@ -1795,4 +1797,85 @@ func (o *unsupportedTypesBase) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	return err
+}
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *unsupportedTypesBase) MarshalJSON() (data []byte, err error) {
+	v := make(map[string]interface{})
+
+	if o.typeSetIsValid {
+		v["typeSet"] = o.typeSet
+	}
+
+	if o.typeEnumIsValid {
+		v["typeEnum"] = o.typeEnum
+	}
+
+	if o.typeDecimalIsValid {
+		v["typeDecimal"] = o.typeDecimal
+	}
+
+	if o.typeDoubleIsValid {
+		v["typeDouble"] = o.typeDouble
+	}
+
+	if o.typeGeoIsValid {
+		v["typeGeo"] = o.typeGeo
+	}
+
+	if o.typeTinyBlobIsValid {
+		v["typeTinyBlob"] = o.typeTinyBlob
+	}
+
+	if o.typeMediumBlobIsValid {
+		v["typeMediumBlob"] = o.typeMediumBlob
+	}
+
+	if o.typeVarbinaryIsValid {
+		v["typeVarbinary"] = o.typeVarbinary
+	}
+
+	if o.typeLongtextIsValid {
+		v["typeLongtext"] = o.typeLongtext
+	}
+
+	if o.typeBinaryIsValid {
+		v["typeBinary"] = o.typeBinary
+	}
+
+	if o.typeSmallIsValid {
+		v["typeSmall"] = o.typeSmall
+	}
+
+	if o.typeMediumIsValid {
+		v["typeMedium"] = o.typeMedium
+	}
+
+	if o.typeBigIsValid {
+		v["typeBig"] = o.typeBig
+	}
+
+	if o.typePolygonIsValid {
+		v["typePolygon"] = o.typePolygon
+	}
+
+	if o.typeSerialIsValid {
+		v["typeSerial"] = o.typeSerial
+	}
+
+	if o.typeUnsignedIsValid {
+		v["typeUnsigned"] = o.typeUnsigned
+	}
+
+	if o.typeMultfk1IsValid {
+		v["typeMultfk1"] = o.typeMultfk1
+	}
+
+	if o.typeMultifk2IsValid {
+		v["typeMultifk2"] = o.typeMultifk2
+	}
+
+	return json.Marshal(v)
 }
