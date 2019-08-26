@@ -68,7 +68,7 @@ func TestFileCopy(t *testing.T) {
 }
 */
 func TestFileModDateCompare(t *testing.T) {
-	f1,err := ioutil.TempFile("","test")
+	f1, err := ioutil.TempFile("", "test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +80,7 @@ func TestFileModDateCompare(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	f2,err := ioutil.TempFile("","test")
+	f2, err := ioutil.TempFile("", "test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,11 +89,11 @@ func TestFileModDateCompare(t *testing.T) {
 	f2.WriteString(testContent)
 	f2.Close()
 
-	v,err := FileModDateCompare(name1, name2)
+	v, err := FileModDateCompare(name1, name2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v !=-1 {
+	if v != -1 {
 		t.Error("First file is not earlier than second file.")
 	}
 

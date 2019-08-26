@@ -1,11 +1,11 @@
 package control
 
 import (
-	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/page"
 	"bytes"
 	"context"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/page"
 	"time"
 )
 
@@ -14,7 +14,7 @@ import (
 type DateTimeSpan struct {
 	Span
 	format string
-	value datetime.DateTime
+	value  datetime.DateTime
 }
 
 // NewDateTimeSpan create a new DateTimeSpan.
@@ -39,7 +39,7 @@ func (s *DateTimeSpan) SetValue(v interface{}) {
 	case time.Time:
 		s.SetDateTime(datetime.NewDateTime(v2))
 	case string:
-		d,err := datetime.Parse(s.format, v2)
+		d, err := datetime.Parse(s.format, v2)
 		if err != nil {
 			panic(err)
 		}
@@ -48,7 +48,7 @@ func (s *DateTimeSpan) SetValue(v interface{}) {
 }
 
 // SetDateTime sets the value to a datetime.DateTime.
-func (s *DateTimeSpan) SetDateTime(d datetime.DateTime){
+func (s *DateTimeSpan) SetDateTime(d datetime.DateTime) {
 	s.value = d
 	s.Refresh()
 }
@@ -60,7 +60,7 @@ func (s *DateTimeSpan) Value() datetime.DateTime {
 
 // SetFormat sets the format string. This should be a time.TimeFormat string described at
 // https://golang.org/pkg/time/#Time.Format
-func (s *DateTimeSpan) SetFormat(format string)  *DateTimeSpan {
+func (s *DateTimeSpan) SetFormat(format string) *DateTimeSpan {
 	s.format = format
 	s.Refresh()
 	return s
@@ -75,4 +75,22 @@ func (s *DateTimeSpan) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) e
 	// local time or UTC. JavaScript does not have a means to specify the timezone that is well supported.
 	// However, JavaScript will translate month and weekday names to the local language.
 	return nil
+}
+
+
+type DateTimeSpanCreator struct {
+	ID string
+	Format string
+	Value datetime.DateTime
+	page.ControlOptions
+}
+
+func (c DateTimeSpanCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewDateTimeSpan(parent, c.ID)
+	ctrl.value = c.Value
+	if c.Format != "" {
+		ctrl.format = c.Format
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+	return ctrl
 }

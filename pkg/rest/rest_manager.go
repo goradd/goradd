@@ -10,7 +10,6 @@ import (
 
 var restManager = newRestManager() // Create a new singleton page manager.
 
-
 type RestPathHandler func(ctx context.Context, buf *bytes.Buffer) error
 
 type RestManagerI interface {
@@ -22,7 +21,7 @@ type RestManagerI interface {
 // init() functions should be created for each path that associates a function to create a rest path,
 // with the URL that corresponds to the path.
 type RestManager struct {
-	pathRegistry   map[string]RestPathHandler // maps paths to functions that create forms
+	pathRegistry map[string]RestPathHandler // maps paths to functions that create forms
 }
 
 // RestPathPrefix is a prefix you can use in front of all goradd rest paths, like a directory path, to indicate that
@@ -48,7 +47,6 @@ func RegisterPath(path string, handler RestPathHandler) {
 	restManager.pathRegistry[path] = handler
 }
 
-
 func HandleRequest(w http.ResponseWriter, r *http.Request) bool {
 
 	p := r.URL.Path
@@ -57,7 +55,7 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
-	handler,ok := restManager.getHandler(pathItems[0])
+	handler, ok := restManager.getHandler(pathItems[0])
 	if !ok {
 		return false
 	}
@@ -75,11 +73,10 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) bool {
 	if errCode != 0 {
 		w.WriteHeader(errCode)
 	} else {
-		_,_ = w.Write(buf.Bytes())
+		_, _ = w.Write(buf.Bytes())
 	}
 	return true
 }
-
 
 func (m *RestManager) getHandler(path string) (f RestPathHandler, ok bool) {
 	if RestPathPrefix != "" {
@@ -93,7 +90,6 @@ func (m *RestManager) getHandler(path string) (f RestPathHandler, ok bool) {
 	return
 }
 
-
 // RunPage processes the page and writes the response into the buffer. Any special response headers are returned.
 func runHandler(ctx context.Context, handler RestPathHandler, buf *bytes.Buffer) (headers map[string]string, httpErrCode int) {
 	defer func() {
@@ -105,7 +101,7 @@ func runHandler(ctx context.Context, handler RestPathHandler, buf *bytes.Buffer)
 			case string:
 				httpErrCode = 500
 				buf.WriteString(v)
-			case *HttpError:	// A kind of http panic that just returns a response code and headers
+			case *HttpError: // A kind of http panic that just returns a response code and headers
 				headers = v.headers
 				httpErrCode = v.errCode
 			default:
@@ -113,7 +109,6 @@ func runHandler(ctx context.Context, handler RestPathHandler, buf *bytes.Buffer)
 			}
 		}
 	}()
-
 
 	err := handler(ctx, buf)
 
@@ -127,7 +122,7 @@ func runHandler(ctx context.Context, handler RestPathHandler, buf *bytes.Buffer)
 
 // HttpError represents an error response to a http request.
 type HttpError struct {
-	headers map[string] string
+	headers map[string]string
 	errCode int
 }
 

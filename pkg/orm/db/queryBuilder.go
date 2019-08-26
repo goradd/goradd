@@ -16,7 +16,7 @@ type LimitInfo struct {
 // It primarily gathers up the builder instructions as the query is built. It leaves the implementation
 // of the functions that actually query a database -- Load, Delete, Count -- to the containing structure.
 type QueryBuilder struct {
-	self QueryBuilderI	// the subclass object
+	self       QueryBuilderI // the subclass object
 	joins      []NodeI
 	orderBys   []NodeI
 	condition  NodeI
@@ -161,7 +161,6 @@ func (b *QueryBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI)
 	return 0
 }
 
-
 type QueryExport struct {
 	Joins      []NodeI
 	OrderBys   []NodeI
@@ -178,15 +177,15 @@ type QueryExport struct {
 
 func ExportQuery(b *QueryBuilder) *QueryExport {
 	return &QueryExport{
-		Joins: b.joins,
-		OrderBys: b.orderBys,
-		Condition: b.condition,
-		Distinct: b.distinct,
+		Joins:      b.joins,
+		OrderBys:   b.orderBys,
+		Condition:  b.condition,
+		Distinct:   b.distinct,
 		AliasNodes: b.aliasNodes,
-		GroupBys: b.groupBys,
-		Selects: b.selects,
-		LimitInfo:b.limitInfo,
-		Having:b.having,
-		IsSubquery:b.isSubquery,
+		GroupBys:   b.groupBys,
+		Selects:    b.selects,
+		LimitInfo:  b.limitInfo,
+		Having:     b.having,
+		IsSubquery: b.isSubquery,
 	}
 }

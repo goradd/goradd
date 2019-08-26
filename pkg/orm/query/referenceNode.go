@@ -68,15 +68,15 @@ func NewReferenceNode(
 
 func (n *ReferenceNode) copy() NodeI {
 	ret := &ReferenceNode{
-		dbKey:        n.dbKey,
-		dbTable:      n.dbTable,
-		dbColumn:     n.dbColumn,
-		goColumnName: n.goColumnName,
-		goPropName:   n.goPropName,
-		refTable:     n.refTable,
-		refColumn:    n.refColumn,
-		isTypeTable:  n.isTypeTable,
-		nodeAlias: nodeAlias{n.alias},
+		dbKey:         n.dbKey,
+		dbTable:       n.dbTable,
+		dbColumn:      n.dbColumn,
+		goColumnName:  n.goColumnName,
+		goPropName:    n.goPropName,
+		refTable:      n.refTable,
+		refColumn:     n.refColumn,
+		isTypeTable:   n.isTypeTable,
+		nodeAlias:     nodeAlias{n.alias},
 		nodeCondition: nodeCondition{n.condition},
 	}
 	return ret
@@ -115,7 +115,14 @@ func (n *ReferenceNode) goName() string {
 
 // Return a column node for the foreign key that represents the reference to the other table
 func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
-	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, ColTypeString, false)
+	var colType GoColumnType
+	if n.isTypeTable {
+		colType = ColTypeUnsigned
+	} else {
+		colType = ColTypeString
+	}
+
+	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, colType, false)
 	SetParentNode(n2, n.getParent())
 	return n2
 }
@@ -127,8 +134,6 @@ func (n *ReferenceNode) Expand() {
 func (n *ReferenceNode) isExpanded() bool {
 	return false
 }
-
-
 
 // RelatedColumnNode is used internally by the framework to create a new node for the other side of the relationship.
 func RelatedColumnNode(n NodeI) NodeI {

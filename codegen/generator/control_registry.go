@@ -2,7 +2,6 @@ package generator
 
 import (
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/gengen/pkg/maps"
 )
 
 type ControlType int
@@ -13,22 +12,24 @@ const (
 )
 
 type ConnectorParam struct {
-	Name string
+	Name        string
 	Description string
-	Typ ControlType
-	Template string
-	DoFunc func(c page.ControlI, val interface{})
+	Typ         ControlType
+	Template    string
+	DoFunc      func(c page.ControlI, val interface{})
 }
 
 type ControlGenerator interface {
 	Type() string
-	NewFunc() string
 	Imports() []string
 	SupportsColumn(col *ColumnType) bool
-	ConnectorParams() *maps.SliceMap
-	GenerateCreate(namespace string, col *ColumnType) string
-	GenerateGet(ctrlName string, objName string, col *ColumnType) string
-	GeneratePut(ctrlName string, objName string, col *ColumnType) string
+	GenerateCreator(col *ColumnType) string
+	GenerateRefresh(col *ColumnType) string
+	GenerateUpdate(col *ColumnType) string
+}
+
+type ProviderGenerator interface {
+	GenerateProvider(col *ColumnType) string
 }
 
 type ControlGeneratorRegistryKey struct {
@@ -51,6 +52,6 @@ func RegisterControlGenerator(c ControlGenerator) {
 func GetControlGenerator(imp string, typ string) ControlGenerator {
 	e := ControlGeneratorRegistryKey{imp, typ}
 
-	d,_ := controlGeneratorRegistry[e]
+	d, _ := controlGeneratorRegistry[e]
 	return d
 }

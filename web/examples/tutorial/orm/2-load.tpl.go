@@ -9,7 +9,7 @@ import (
 	"github.com/goradd/goradd/web/examples/model"
 )
 
-func (control *LoadPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *LoadPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>Loading an object</h1>

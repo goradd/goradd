@@ -1,17 +1,10 @@
 {{# Macros added to template files for drawing forms. }}
 
-{{# draw draws a goradd control. It expects one parameter, the control itself. You can get the control from the form. }}
+{{# draw draws a goradd control. It expects one parameter, the id of the control to draw. }}
 {{define draw}}
-{{e $1.Draw(ctx, buf) }}
+{{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
 {{end}}
 
-{{define drawWithLabel}}
-{{e $1.With(page.NewLabelWrapper()).Draw(ctx, buf) }}
-{{end}}
-
-{{define drawWithError}}
-{{e $1.With(page.NewErrorWrapper()).Draw(ctx, buf) }}
-{{end}}
 
 {{define renderFormTemplate}}
 package {{package }}
@@ -24,20 +17,20 @@ import (
 )
 
 
-func (form *{{form}}) AddHeadTags()  {
-    form.FormBase.AddHeadTags()
+func (ctrl *{{form}}) AddHeadTags()  {
+    ctrl.FormBase.AddHeadTags()
     if "{{title}}" != "" {
-        form.Page().SetTitle("{{title}}")
+        ctrl.Page().SetTitle("{{title}}")
     }
 
 	{{headTags}}
 
 	// double up to deal with body attributes if they exist
-    form.Page().BodyAttributes = `{{bodyAttributes}}`
+    ctrl.Page().BodyAttributes = `{{bodyAttributes}}`
 }
 
 
-func (form *{{form}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *{{form}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 {{
 {{template}}
 }}
@@ -54,7 +47,7 @@ import (
     {{imports}}
 )
 
-func (control *{{control}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *{{control}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 {{
 {{template}}
 }}

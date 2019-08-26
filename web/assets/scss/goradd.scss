@@ -2,7 +2,16 @@
  * This is the bare-bones css file needed to use Goradd in your application. If you need to modify an item, simply
  * override it in an additional css class you include after this one. Or you can copy this and completely replace it
  * by overriding the AddRelatedFiles method in your form.
+ *
+ * Another option is to specify a different load directory for the imports and you could then just customize
+ * the theme.
  */
+
+@import "_colors.scss";
+
+@import "_table.scss";
+@import "_dialog.scss";
+@import "_checkboxlist.scss";
 
 button {
   cursor: pointer;
@@ -10,8 +19,8 @@ button {
 
 // The basic layout of all goradd forms, which is the main control container
 form[data-grctl] {
-  margin: 0;    // A reset to make sure form is the same as the override
-  padding: 0;   // A reset to make sure form is the same as the override
+  margin: 0;    // A reset to make sure form is the same as the page
+  padding: 0;   // A reset to make sure form is the same as the page
   position: relative; // Allows sub items to be positioned more easily.
 }
 
@@ -19,190 +28,28 @@ textarea[data-grctl] {
     resize: none;   // Webkit browsers put a resize in a textarea. Since this is not universally supported, we reset this.
 }
 
-/**
- * Default styles for checkbox-type lists
- */
-.gr-cbl { // the frame of the list
-  outline: 1px solid black;
-  margin: 5px;
-  display: inline-block;
-}
-.gr-cbl-scroller {
-  overflow-x: scroll;
-  height: 200px; // default height. Change if needed.
-  padding-right: 10px; // make room for popup scrollbars
-}
-.gr-cbl-table {
-  display:table;
-}
-.gr-cbl-column {
-  display:table-column;
-}
-.gr-cbl-row {
-  display: table-row;
-}
-.gr-cbl-cell {
-  display:table-cell;
-  padding-left: 3px;
-  padding-right: 8px;
-}
-.gr-cbl-heading {
-  font-weight: bold;
-  color:gray;
-}
-
-.gr-table {
-  empty-cells: show;
-  border-collapse: collapse;
-}
-
-/**
- * Styles of individual Control types
- */
-.datagrid {
-  margin: auto;
-  width: 100%;
-  th { // headers of datagrids, filled in with cells and dropdowns for sorting
-    background-color: #333;
-    color: #fff;
-    padding: 5px;
-    a {
-      color: #f6f6f6;
-      text-decoration: none;
-      //text-transform: uppercase;
-      white-space: nowrap;
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-    &.sortable {
-      :hover {
-        opacity: 0.95;
-      }
-      div {
-        span { // sortable header title
-          display: table-cell;
-          vertical-align: bottom;
-          padding-right: 4px;
-        }
-        i.fa { // icon showing sort direction
-          display: table-cell;
-          vertical-align: bottom;
-          padding-bottom: 2px;
-        }
-      }
-    }
-  }
-  td {
-    border-bottom: 1px solid #dedede;
-    padding: 5px;
-  }
-  caption { // contains paginator, and possibly other things
-    overflow: hidden;
-    padding: 5px;
-    position: relative;
-  }
-  .paginator-control {
-    float: right;
-  }
-  .paginator-results {
-    float: left;
-  }
-}
-
-.data-scrollbar {
-  white-space: nowrap;
-  button {
-    border: solid black 1px;
-    display: inline-block;
-    margin:0;
-    padding: 3px 5px;
-    background: white;
-  }
-  .arrow {
-  }
-  .break {
-    padding: 5px;
-  }
-  .page {
-    margin-left: -1px;
-  }
-  .next {
-    margin-left: -1px;
-  }
-  .selected {
-    background: #eeeeee;
-    border: solid darkgray 2px;
-  }
-}
 
 /* Status coloring */
 .warning {
-  color: orange;
+  color: $warning-color;
 }
 
 .error {
-  color: red;
+  color: $error-color;
 }
 
 .success {
-  color: green;
+  color: $success-color;
 }
 
-/* SQL Profiling */
-.qDbProfile {
-  /*position: absolute;*/
-  background-color: white;
+// put a box around something
+.boxed {
+  border: 1px solid $outline-color;
   padding: 5px;
-  top: 0;
-  right: 0;
-  z-index: 5000;
-  border: 1px solid black;
-  a {
-    position: relative;
-  }
 }
 
-/* Modification to jquery ui dialog styling that allows for left/right buttons and other fixes */
-.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
-  float: none !important;
-  text-align: right;
-}
 
-.ui-button-left {
-  float: left;
-}
-
-/* The following is to allow for correct positioning of an alert icon */
-.ui-dialog-title {
-  float: none !important;
-  width: auto !important;
-}
-
-.ui-dialog-titlebar .ui-icon {
-  display: inline-block;
-  margin-right: .3em;
-  vertical-align: middle;
-}
-
-/**
- * For generated list forms that you can click on to edit an item, this styles the cursor so it looks like the
- * row is clickable, and it prevents accidentally selecting text in the row.
- */
-.clickable-rows tr {
-  td, th {
-    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
-    -moz-user-select: none; /* mozilla browsers */
-    -khtml-user-select: none; /* webkit (konqueror) browsers */
-    -ms-user-select: none; /* IE10+ */
-    cursor: default;
-  }
-  &:hover {
-    background-color: #f0f0f0;
-  }
-}
-
-/** Error notice styling */
+/** Debugging error notice styling */
 #Goradd_AJAX_Error {
   position: fixed;
   background-color: white;
@@ -214,69 +61,7 @@ textarea[data-grctl] {
   padding: 20px;
 }
 
-#groverlay {
-  position: fixed; /* Sit on top of the override content */
-  width: 100%; /* Full width (cover the whole override) */
-  height: 100%; /* Full height (cover the whole override) */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.5); /* Black background with opacity */
-  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
-  cursor: pointer; /* Add a pointer on hover */
-}
-
-div[data-grctl=dialog] {
-  background-color: white;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 10px;
-  border:solid black 2px;
-  border-radius: 4px;
-  .gr-dialog-title {
-    margin: -10px -10px 5px;
-    height: 24px;
-    background-color: #B0BBC5;
-    .gr-dialog-close {
-      float: right;
-      margin-right: 5px;
-    }
-
-  }
-
-  .gr-dialog-buttons {
-    margin-top: 5px;
-    margin-left: -10px;
-    margin-right: -10px;
-    margin-bottom: -10px;
-    background-color: #B0BBC5;
-    border-top: solid black 1px;
-  }
-}
-
-div[data-grctl=datapager] {
-  button {
-    border-radius: 20px;
-    background: white;
-    border:1px solid lightgray;
-
-    &:not(.selected,[disabled]) {
-      &:hover {
-        background: #eeeeee;
-        border-color:gray;
-      }
-    }
-
-    &.selected {
-      border-color:black;
-    }
-  }
-}
-
-// This pane is a debugging tool for showing SQL queries
+/* SQL Profiling */
 #grProfilePanel {
   position:fixed;
   left:0;
@@ -292,3 +77,31 @@ div[data-grctl=datapager] {
   bottom:0;
   opacity: 0.5;
 }
+
+
+/* Modification to jquery ui dialog styling that allows for left/right buttons and other fixes */
+/*
+jQuery UI is not actively developed, so we are deprecating this.
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+  float: none !important;
+  text-align: right;
+}
+
+.ui-button-left {
+  float: left;
+}
+
+// The following is to allow for correct positioning of an alert icon
+.ui-dialog-title {
+  float: none !important;
+  width: auto !important;
+}
+
+.ui-dialog-titlebar .ui-icon {
+  display: inline-block;
+  margin-right: .3em;
+  vertical-align: middle;
+}
+*/
+
+

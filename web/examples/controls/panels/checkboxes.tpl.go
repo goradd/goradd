@@ -5,11 +5,9 @@ package panels
 import (
 	"bytes"
 	"context"
-
-	"github.com/goradd/goradd/pkg/page"
 )
 
-func (control *CheckboxPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *CheckboxPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>Checkboxes and Radio Buttons</h1>
@@ -64,7 +62,7 @@ checkboxes.
 `)
 
 	{
-		err := control.Checkbox1.SetInstructions("Sample instructions").With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("checkbox1-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -77,7 +75,7 @@ checkboxes.
 `)
 
 	{
-		err := control.Checkbox2.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("checkbox2-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -98,7 +96,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Radio1.With(page.NewErrorWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("radio1").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -111,7 +109,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Radio2.With(page.NewErrorWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("radio2").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -124,7 +122,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Radio3.With(page.NewErrorWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("radio3").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -137,7 +135,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.Info.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("infoPanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -152,7 +150,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.SubmitAjax.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("ajaxButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -165,7 +163,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := control.SubmitServer.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("serverButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

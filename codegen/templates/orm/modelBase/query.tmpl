@@ -15,16 +15,16 @@ func Load{{t.GoName}}(ctx context.Context, primaryKey string, joinOrSelectNodes 
         for _,idx := range t.Indexes {
             if !idx.IsPrimary && idx.IsUnique {
 {{
-// Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} queries for a single {{t.GoName}} object by the given unique index values.
+// Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= db.UpperCaseIdentifier(name) }}{{for}} queries for a single {{t.GoName}} object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use Query{{t.GoPlural}}() to start a query builder.
-func Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= snaker.SnakeToCamel(name) }}{{for}} (ctx context.Context{{for _,name := range idx.ColumnNames}}, {{= name }} {{= t.GetColumn(name).ColumnType.GoType() }} {{for}}, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {
+func Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= db.UpperCaseIdentifier(name) }}{{for}} (ctx context.Context{{for _,name := range idx.ColumnNames}}, {{= name }} {{= t.GetColumn(name).ColumnType.GoType() }} {{for}}, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {
     return query{{t.GoPlural}}(ctx).
 {{if len(idx.ColumnNames) == 1}}
-        Where(Equal(node.{{t.GoName}}().{{= snaker.SnakeToCamel(idx.ColumnNames[0]) }}(), {{= idx.ColumnNames[0] }})).
+        Where(Equal(node.{{t.GoName}}().{{= db.UpperCaseIdentifier(idx.ColumnNames[0]) }}(), {{= idx.ColumnNames[0] }})).
 {{else}}
-        Where(And({{for _,name := range idx.ColumnNames}}Equal(node.{{t.GoName}}().{{= snaker.SnakeToCamel(name) }}(), {{= name }}), {{for}})).
+        Where(And({{for _,name := range idx.ColumnNames}}Equal(node.{{t.GoName}}().{{= db.UpperCaseIdentifier(name) }}(), {{= name }}), {{for}})).
 {{if}}
         joinOrSelect(joinOrSelectNodes...).
         Get(ctx)

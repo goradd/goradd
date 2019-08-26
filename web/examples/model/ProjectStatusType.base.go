@@ -14,7 +14,6 @@ const (
 	ProjectStatusTypeCancelled ProjectStatusType = 2
 
 	ProjectStatusTypeCompleted ProjectStatusType = 3
-
 )
 
 const ProjectStatusTypeMaxValue = 3
@@ -24,11 +23,16 @@ type ProjectStatusType uint
 // String returns the name value of the type and satisfies the fmt.Stringer interface
 func (p ProjectStatusType) String() string {
 	switch p {
-	case 0: return ""
-	case 1: return "Open"
-	case 2: return "Cancelled"
-	case 3: return "Completed"
-	default: panic("Index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "Open"
+	case 2:
+		return "Cancelled"
+	case 3:
+		return "Completed"
+	default:
+		panic("Index out of range")
 	}
 	return "" // prevent warning
 }
@@ -39,40 +43,54 @@ func (p ProjectStatusType) ID() string {
 }
 
 func ProjectStatusTypes() (values []ProjectStatusType) {
-    values = append(values, 1)
-    values = append(values, 2)
-    values = append(values, 3)
-    return
+	values = append(values, 1)
+	values = append(values, 2)
+	values = append(values, 3)
+	return
 }
-
 
 func (p ProjectStatusType) Description() string {
 	switch p {
-	case 0: return ""
-	case 1: return "The project is currently active"
-	case 2: return "The project has been canned"
-	case 3: return "The project has been completed successfully"
-	default: panic("Index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "The project is currently active"
+	case 2:
+		return "The project has been canned"
+	case 3:
+		return "The project has been completed successfully"
+	default:
+		panic("Index out of range")
 	}
 	return "" // prevent warning
 }
 func (p ProjectStatusType) Guidelines() string {
 	switch p {
-	case 0: return ""
-	case 1: return "All projects that we are working on should be in this state"
-	case 2: return ""
-	case 3: return "Celebrate successes!"
-	default: panic("Index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "All projects that we are working on should be in this state"
+	case 2:
+		return ""
+	case 3:
+		return "Celebrate successes!"
+	default:
+		panic("Index out of range")
 	}
 	return "" // prevent warning
 }
 func (p ProjectStatusType) IsActive() bool {
 	switch p {
-	case 0: return false
-	case 1: return true
-	case 2: return true
-	case 3: return true
-	default: panic("Index out of range")
+	case 0:
+		return false
+	case 1:
+		return true
+	case 2:
+		return true
+	case 3:
+		return true
+	default:
+		panic("Index out of range")
 	}
 	return false // prevent warning
 }
@@ -111,4 +129,3 @@ func ProjectStatusTypeIsActives() []bool {
 	is_actives[3] = true
 	return is_actives
 }
-

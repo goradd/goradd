@@ -13,12 +13,11 @@ import (
 	// Below is where you import packages that register forms
 	_ "goradd-project/web/form" // Your  forms.
 
-	_ "github.com/goradd/goradd/web/examples/controls"
 	_ "github.com/goradd/goradd/pkg/bootstrap/examples" // Bootstrap examples
 	_ "github.com/goradd/goradd/test/browsertest"
+	_ "github.com/goradd/goradd/web/examples/controls"
 	_ "goradd-project/gen" // Code-generated forms
 )
-
 
 func main() {
 	var err error
@@ -33,7 +32,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Now launch a browser with this address:  http://localhost:8000/test?all=1
+	// Now launch a browser with this address:  http://localhost:8000/goradd/Test.g?all=1
 
 }
-

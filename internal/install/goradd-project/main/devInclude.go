@@ -7,7 +7,7 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	_ "github.com/goradd/goradd/test/browsertest"
 	"github.com/goradd/goradd/web/app"
-	_ "github.com/goradd/goradd/web/examples/controls"
+	_ "github.com/goradd/goradd/web/examples"
 	_ "github.com/goradd/goradd/web/welcome"
 	"github.com/shurcooL/github_flavored_markdown"
 	_ "goradd-project/gen" // Code-generated forms
@@ -21,11 +21,11 @@ import (
 
 func init() {
 	// serve up the markdown files in the doc directory
-	app.RegisterStaticPath("/goradd/doc", filepath.Join(config.GoraddDir(),"/doc"))
+	app.RegisterStaticPath("/goradd/doc", filepath.Join(config.GoraddDir(), "/doc"))
 	app.RegisterStaticFileProcessor(".md", serveMarkdown)
 }
 
 func serveMarkdown(file string, w http.ResponseWriter, r *http.Request) {
-	markdown,_ := ioutil.ReadFile(file)
-	_,_ = w.Write(github_flavored_markdown.Markdown(markdown))
+	markdown, _ := ioutil.ReadFile(file)
+	_, _ = w.Write(github_flavored_markdown.Markdown(markdown))
 }

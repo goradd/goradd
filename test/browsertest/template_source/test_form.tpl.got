@@ -9,12 +9,13 @@
 
 {{define template }}
 <h1>Browser Based Tests</h1>
-{{draw form.TestList }}
-{{draw form.RunButton }}
+{{draw test-list }}
+{{draw run-button }}
+{{draw run-all-button }}
 <div>
 Currently running:
-{{draw form.RunningLabel }}
-{{draw form.Controller }}
+{{draw running-label }}
+{{draw controller }}
 </div>
 {{end}}
 

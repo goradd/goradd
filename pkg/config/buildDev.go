@@ -31,7 +31,6 @@ func ProjectAssets() string {
 	return filepath.Join(projectDir, "web", "assets")
 }
 
-
 func GoraddDir() string {
 	return goraddDir
 }

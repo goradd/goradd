@@ -29,7 +29,7 @@ func (n *TypeTableNodeTemplate) FileName(key string, tt generator.TypeTableType)
 	return n.TargetDir + "/" + key + "/model/node/" + tt.GoName + ".go"
 }
 
-func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.Codegen, dd *db.DatabaseDescription, tt generator.TypeTableType, buf *bytes.Buffer) {
+func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.CodeGenerator, dd *db.DatabaseDescription, tt generator.TypeTableType, buf *bytes.Buffer) {
 	{{: "typeTables/typeTableNode.tmpl" }}
 }
 

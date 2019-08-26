@@ -22,10 +22,10 @@ type ListItemI interface {
 	IntValue() int
 	StringValue() string
 	HasChildItems() bool
-	Attributes() *html.Attributes
+	Attributes() html.Attributes
 	Anchor() string
 	SetAnchor(string)
-	AnchorAttributes() *html.Attributes
+	AnchorAttributes() html.Attributes
 	RenderLabel() string
 	IsEmptyValue() bool
 }
@@ -37,7 +37,7 @@ type ItemLister interface {
 
 // ItemIDer is an interface to a listable object that matches orm objects
 type ItemIDer interface {
-	ID() interface{}
+	ID() string
 	String() string
 }
 
@@ -57,12 +57,12 @@ type ListItem struct {
 	value interface{}
 	id    string
 	ItemList
-	label      string
-	attributes *html.Attributes
+	label             string
+	attributes        html.Attributes
 	shouldEscapeLabel bool
-	disabled	bool
-	isDivider bool
-	anchorAttributes *html.Attributes
+	disabled          bool
+	isDivider         bool
+	anchorAttributes  html.Attributes
 }
 
 // NewListItem creates a new item for a list. Specify an empty value for an item that represents no selection.
@@ -93,12 +93,12 @@ func NewItemFromLabeler(i Labeler) *ListItem {
 }
 
 // NewItemFromStringer creates a new item from any object that has just a String method.
+// The label and value will be the same.
 func NewItemFromStringer(i fmt.Stringer) *ListItem {
-	l := &ListItem{label: i.String()}
+	l := &ListItem{label: i.String(), value: i.String()}
 	l.ItemList = NewItemList(l)
 	return l
 }
-
 
 // NewItemFromItemIDer creates a new item from any object that has an ID and String method.
 // Note that the ID() of the ItemIDer will become the value of the select item, and the String()
@@ -108,7 +108,6 @@ func NewItemFromItemIDer(i ItemIDer) *ListItem {
 	l.ItemList = NewItemList(l)
 	return l
 }
-
 
 func (i *ListItem) SetValue(v interface{}) *ListItem {
 	i.value = v
@@ -120,7 +119,10 @@ func (i *ListItem) Value() interface{} {
 }
 
 func (i *ListItem) IntValue() int {
-	return i.value.(int)
+	if v,ok := i.value.(int); ok {
+		return v
+	}
+	return -1
 }
 
 func (i *ListItem) StringValue() string {
@@ -182,7 +184,7 @@ func (i *ListItem) Anchor() string {
 	return i.anchorAttributes.Get("href")
 }
 
-func (i *ListItem) AnchorAttributes() *html.Attributes {
+func (i *ListItem) AnchorAttributes() html.Attributes {
 	if i.anchorAttributes == nil {
 		i.anchorAttributes = html.NewAttributes()
 	}
@@ -198,18 +200,17 @@ func (i *ListItem) RenderLabel() (h string) {
 	if i.shouldEscapeLabel {
 		h = html2.EscapeString(i.label)
 	} else {
-		 h = i.label
+		h = i.label
 	}
-	if i.Anchor() != ""  && !i.disabled {
+	if i.Anchor() != "" && !i.disabled {
 		h = html.RenderTag("a", i.anchorAttributes, h)
 	}
 	return
 }
 
-
 // Attributes returns a pointer to the attributes of the item for customization. You can directly set the attributes
 // on the returned object.
-func (i *ListItem) Attributes() *html.Attributes {
+func (i *ListItem) Attributes() html.Attributes {
 	if i.attributes == nil {
 		i.attributes = html.NewAttributes()
 	}
@@ -237,12 +238,10 @@ func (i *ListItem) IsEmptyValue() bool {
 	return false
 }
 
-
 // ListValue is a helper for initializing a control based on ItemList.
 // It satisfies the ItemLister interface. To use it, create a slice of ListValue's and
 // pass the list to AddListItems or SetData.
 type ListValue struct {
-	// L is the label
 	L string
 	// V is the value
 	V interface{}

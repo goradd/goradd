@@ -1,6 +1,7 @@
 package control
 
 import (
+	"github.com/goradd/goradd/codegen/generator"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -46,3 +47,16 @@ func TestTextboxValidation(t *testing.T) {
 	assert.True(t, d.ValidationMessage() == "")
 }
 
+
+func TestExportCreatorTextbox(t *testing.T) {
+	c := TextboxCreator{
+		ID: "id",
+		Placeholder: "placeholder",
+	}
+	s := generator.ExportCreator(c)
+
+	assert.Equal(t, `control.TextboxCreator{
+	ID:"id",
+	Placeholder:"placeholder",
+}`, s)
+}

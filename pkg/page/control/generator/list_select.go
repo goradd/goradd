@@ -2,11 +2,8 @@ package generator
 
 import (
 	"fmt"
-	"github.com/gedex/inflector"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/page"
 )
 
 func init() {
@@ -17,7 +14,6 @@ func init() {
 
 // This structure describes the SelectList to the connector dialog and code generator
 type SelectList struct {
-
 }
 
 func (d SelectList) Type() string {
@@ -40,49 +36,40 @@ func (d SelectList) SupportsColumn(col *generator.ColumnType) bool {
 	return false
 }
 
-func (d SelectList) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
+func (d SelectList) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-		`	ctrl = %s.NewSelectList(c.ParentControl, id)
-	ctrl.SetLabel(ctrl.T("%s"))
-`, namespace, col.DefaultLabel)
-
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
-
-	if col.ForeignKey != nil {
-		if !col.IsNullable {
-			s += `	ctrl.AddItem(ctrl.ΩT("- Select One -"), 0)
-`
-		}
-		if col.ForeignKey.IsType {
-			s += fmt.Sprintf(`	ctrl.AddListItems(model.%s())
-`, inflector.Pluralize(col.ForeignKey.GoType))
-		}
-	}
-
+`control.SelectListCreator{
+	ID:           %#v,
+	DataProvider: p,
+	ControlOptions: page.ControlOptions{
+		IsRequired:      %#v,
+		DataConnector: %s{},
+	},
+}`, col.ControlID, !col.IsNullable, col.Connector)
 	return
 }
 
-func (d SelectList) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	s = fmt.Sprintf(`c.%s.SetValue(c.%s.%s())`, ctrlName, objName, col.ForeignKey.GoName)
-	return
-}
 
-func (d SelectList) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	if col.ForeignKey != nil && col.ForeignKey.IsType {
-		s = fmt.Sprintf(`c.%s.Set%s(c.%s.Value().(model.%s))`, objName, col.ForeignKey.GoName, ctrlName, col.ForeignKey.GoType)
+func (d SelectList) GenerateRefresh(col *generator.ColumnType) string {
+	if col.ForeignKey.IsType {
+		return `ctrl.SetValue(int(val))`
 	} else {
-		s = fmt.Sprintf(`c.%s.Set%s(c.%s.StringValue())`, objName, col.GoName, ctrlName)
+		return `ctrl.SetValue(string(val))` // should be a string id
 	}
-	return
 }
 
-
-func (d SelectList) ConnectorParams() *maps.SliceMap {
-	paramControls := page.ControlConnectorParams()
-
-	return paramControls
+func (d SelectList) GenerateUpdate(col *generator.ColumnType) string {
+	if col.ForeignKey.IsType {
+		return `val := ctrl.IntValue()`
+	} else {
+		return `val := ctrl.StringValue()`
+	}
 }
 
+func (d SelectList) GenerateProvider(col *generator.ColumnType) string {
+	if col.ForeignKey.IsType {
+		return fmt.Sprintf(`return model.%sI()`, col.ForeignKey.GoTypePlural)
+	} else {
+		return fmt.Sprintf(`return model.Query%s(ctx).LoadI(ctx)`, col.ForeignKey.GoTypePlural)
+	}
+}

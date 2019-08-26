@@ -9,16 +9,18 @@ import (
 	"reflect"
 )
 
-
 type UnorderedListI interface {
 	page.ControlI
+	ItemListI
 	GetItemsHtml(items []ListItemI) string
-
+	data.DataManagerEmbedder
+	SetBulletStyle(s string) UnorderedListI
+	SetItemTag(s string) UnorderedListI
 }
 
 // UnorderedList is a dynamically generated html unordered list (ul). Such lists are often used as the basis for
 // javascript and css widgets. If you use a data provider to set the data, you should call AddItems to the list
-// in your GetData function.
+// in your LoadData function.
 type UnorderedList struct {
 	page.Control
 	ItemList
@@ -28,13 +30,13 @@ type UnorderedList struct {
 
 const (
 	// UnoderedListStyleDisc is the default list style for main items and is a bullet
-	UnorderedListStyleDisc   = "disc" // default
+	UnorderedListStyleDisc = "disc" // default
 	// UnorderedListStyleCircle is the default list style for 2nd level items and is an open circle
 	UnorderedListStyleCircle = "circle"
 	// UnorderedListStyleSquare sets a square as the bullet
 	UnorderedListStyleSquare = "square"
 	// UnorderedListStyleNone removes the bullet from the list
-	UnorderedListStyleNone   = "none"
+	UnorderedListStyleNone = "none"
 )
 
 // NewUnorderedList creates a new ul type list.
@@ -57,24 +59,26 @@ func (l *UnorderedList) this() UnorderedListI {
 }
 
 // SetItemTag sets the tag that will be used for items in the list. By default this is "li".
-func (l *UnorderedList) SetItemTag(s string) {
+func (l *UnorderedList) SetItemTag(s string) UnorderedListI {
 	l.itemTag = s
+	return l.this()
 }
 
 // SetBulletType sets the list-style-type attribute of the list. Choose from the UnorderedListStyle* constants.
-func (l *UnorderedList) SetBulletStyle(s string) {
+func (l *UnorderedList) SetBulletStyle(s string) UnorderedListI {
 	l.Control.SetStyle("list-style-type", s)
+	return l.this()
 }
 
 func (l *UnorderedList) ΩDrawTag(ctx context.Context) string {
-	l.GetData(ctx, l)
+	l.LoadData(ctx, l)
 	defer l.Clear()
 	return l.Control.ΩDrawTag(ctx)
 }
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *UnorderedList) ΩDrawingAttributes() *html.Attributes {
+func (l *UnorderedList) ΩDrawingAttributes() html.Attributes {
 	a := l.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "hlist")
 	return a
@@ -116,4 +120,47 @@ func (l *UnorderedList) SetData(data interface{}) {
 
 	l.ItemList.Clear()
 	l.AddListItems(data)
+}
+
+
+type UnorderedListCreator struct {
+	ID string
+	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
+	Items []ListValue
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
+	// BulletStyle is the list-style-type property.
+	BulletStyle string
+	page.ControlOptions
+}
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c UnorderedListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewUnorderedList(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+func (c UnorderedListCreator) Init(ctx context.Context, ctrl UnorderedListI) {
+	if c.Items != nil {
+		ctrl.AddListItems(c.Items)
+	}
+	if c.DataProvider != nil {
+		ctrl.SetDataProvider(c.DataProvider)
+	} else if c.DataProviderID != "" {
+		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		ctrl.SetDataProvider(provider)
+	}
+	if c.BulletStyle != "" {
+		ctrl.SetBulletStyle(c.BulletStyle)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+}
+
+// GetUnorderedList is a convenience method to return the control with the given id from the page.
+func GetUnorderedList(c page.ControlI, id string) *UnorderedList {
+	return c.Page().GetControl(id).(*UnorderedList)
 }

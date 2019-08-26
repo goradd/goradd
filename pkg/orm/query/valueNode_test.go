@@ -32,8 +32,8 @@ func TestValueSetting(t *testing.T) {
 }
 
 func TestValueArray(t *testing.T) {
-	a := []int{1,2}
-	b := []int{1,3}
+	a := []int{1, 2}
+	b := []int{1, 3}
 	c := []string{"a", "b"}
 	d := 5
 	e := []string{"c"}

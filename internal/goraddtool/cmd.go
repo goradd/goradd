@@ -13,13 +13,13 @@ func MakeRootCommand() *cobra.Command {
 	var rootCmd = &cobra.Command{
 		Use:   "goradd",
 		Short: "goradd is a tool for installing goradd, generating code, and building a web application",
-		Long: `goradd is a web application framework. This command-line tool is a helper for installing the framework, generating code, seeing intermediate results, and ultimately building your web application.`,
+		Long:  `goradd is a web application framework. This command-line tool is a helper for installing the framework, generating code, seeing intermediate results, and ultimately building your web application.`,
 	}
 
 	var cmdInstall = &cobra.Command{
 		Use:   "install",
 		Short: "Install the goradd-project and goradd-tmp directories in the current working directory",
-		Long: `Install the goradd-project and goradd-tmp directories in the current working directory. Use the -r flag to force replacement of those directories.`,
+		Long:  `Install the goradd-project and goradd-tmp directories in the current working directory. Use the -r flag to force replacement of those directories.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			install(step, overwrite)
 		},
@@ -31,7 +31,7 @@ func MakeRootCommand() *cobra.Command {
 	var cmdTest = &cobra.Command{
 		Use:   "test",
 		Short: "Installs the goradd-test directory in the current working directory, and then runs the tests, mimicking the travis-ci test",
-		Long: `Installs the goradd-test directory in the current working directory, and then runs the tests, mimicking the travis-ci test`,
+		Long:  `Installs the goradd-test directory in the current working directory, and then runs the tests, mimicking the travis-ci test`,
 		Run: func(cmd *cobra.Command, args []string) {
 			test(step, browser, headless)
 		},
@@ -45,4 +45,3 @@ func MakeRootCommand() *cobra.Command {
 
 	return rootCmd
 }
-

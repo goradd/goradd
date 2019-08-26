@@ -2,11 +2,8 @@ package generator
 
 import (
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
 )
 
 func init() {
@@ -17,7 +14,6 @@ func init() {
 
 // This structure describes the DateTimeSpan to the connector dialog and code generator
 type DateTimeSpan struct {
-
 }
 
 func (d DateTimeSpan) Type() string {
@@ -36,42 +32,24 @@ func (d DateTimeSpan) SupportsColumn(col *generator.ColumnType) bool {
 	return true
 }
 
-func (d DateTimeSpan) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
+func (d DateTimeSpan) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-		`	ctrl = %s.NewDateTimeSpan(c.ParentControl, id)
-	ctrl.SetLabel(ctrl.T("%s"))
-`, namespace, col.DefaultLabel)
-
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
-
-	return
-}
-
-func (d DateTimeSpan) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	s = fmt.Sprintf(`c.%s.SetDateTime(c.%s.%s())`, ctrlName, objName, col.GoName)
-	return
-}
-
-func (d DateTimeSpan) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
+`control.DateTimeSpanCreator{
+	ID:        %#v,
+	ControlOptions: page.ControlOptions{
+		IsDisabled:	   %#v,
+		DataConnector: %s{},
+	},
+}`, col.ControlID, col.IsPk, col.Connector)
 	return
 }
 
 
-func (d DateTimeSpan) ConnectorParams() *maps.SliceMap {
-	paramControls := page.ControlConnectorParams()
-	paramSet := maps.NewSliceMap()
-	paramSet.Set("Format", generator.ConnectorParam {
-		"Format",
-		"format string to use to format the DateTime. See time.Time doc for more info.",
-		generator.ControlTypeString,
-		`{{var}}.SetFormat{{val}}`,
-		func(c page.ControlI, val interface{}) {
-			c.(*control.DateTimeSpan).SetFormat(val.(string))
-		}})
+func (d DateTimeSpan) GenerateRefresh(col *generator.ColumnType) (s string) {
+	return `ctrl.SetDateTime(val)`
+}
 
-	return paramControls
+func (d DateTimeSpan) GenerateUpdate(col *generator.ColumnType) (s string) {
+	return ""
 }
 

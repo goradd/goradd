@@ -13,8 +13,9 @@ import (
 type SelectListI interface {
 	page.ControlI
 	ItemListI
+	data.DataManagerEmbedder
+	SetValue(v interface{})
 }
-
 
 // SelectList is typically a dropdown list with a single selection. Items are selected by id number, and the SelectList
 // completely controls the ids in the list. Create the list by calling AddItem or AddItems to add ListItemI objects.
@@ -139,7 +140,7 @@ func (l *SelectList) ΩMarshalState(m maps.Setter) {
 
 // ΩUnmarshalState is an internal function to restore the state of the control
 func (l *SelectList) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("sel"); ok {
+	if v, ok := m.Load("sel"); ok {
 		if s, ok := v.(string); ok {
 			l.selectedId = s
 		}
@@ -148,7 +149,7 @@ func (l *SelectList) ΩUnmarshalState(m maps.Loader) {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *SelectList) ΩDrawingAttributes() *html.Attributes {
+func (l *SelectList) ΩDrawingAttributes() html.Attributes {
 	a := l.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "selectlist")
 	a.Set("name", l.ID()) // needed for posts
@@ -161,7 +162,7 @@ func (l *SelectList) ΩDrawingAttributes() *html.Attributes {
 // ΩDrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
 func (l *SelectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if l.HasDataProvider() {
-		l.GetData(ctx, l)
+		l.LoadData(ctx, l)
 	}
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
@@ -203,4 +204,65 @@ func (l *SelectList) SetData(data interface{}) {
 
 	l.ItemList.Clear()
 	l.AddListItems(data)
+}
+
+type SelectListCreator struct {
+	ID string
+	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
+	Items []ListValue
+	// NilItem is a helper to add an item at the top of the list with a nil value. This is often
+	// used to specify no selection, or a message that a selection is required.
+	NilItem string
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
+	// Size specifies how many items to show, and turns the list into a scrolling list
+	Size int
+	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	Value string
+	// SaveState saves the selected value so that it is restored if the form is returned to.
+	SaveState bool
+	page.ControlOptions
+}
+
+func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewSelectList(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
+
+	if c.NilItem != "" {
+		ctrl.AddItem(c.NilItem, nil)
+	}
+
+	if c.Items != nil {
+		ctrl.AddListItems(c.Items)
+	}
+
+	if c.DataProvider != nil {
+		ctrl.SetDataProvider(c.DataProvider)
+	} else if c.DataProviderID != "" {
+		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		ctrl.SetDataProvider(provider)
+	}
+
+	if c.Value != "" {
+		ctrl.SetValue(c.Value)
+	}
+	if c.Size != 0 {
+		ctrl.SetAttribute("size", c.Size)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+	if c.SaveState {
+		ctrl.SaveState(ctx, c.SaveState)
+	}
+}
+
+
+// GetSelectList is a convenience method to return the control with the given id from the page.
+func GetSelectList(c page.ControlI, id string) *SelectList {
+	return c.Page().GetControl(id).(*SelectList)
 }

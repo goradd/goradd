@@ -27,22 +27,22 @@ type testStepEvent struct {
 
 // RowSelected
 func TestStepEvent() *testStepEvent {
-	e := &testStepEvent{page.Event{JsEvent: "goradd.teststep"}}
+	e := &testStepEvent{page.Event{JsEvent: "teststep"}}
 	e.ActionValue(javascript.JsCode("ui")) // the error string and step
 	return e
 }
 
 type stepItemType struct {
 	Step int
-	Err string
+	Err  string
 }
 
-type  TestController struct {
+type TestController struct {
 	control.Panel
-	pagestate         string
-	stepTimeout       time.Duration	// number of seconds before a step should timeout
-	stepChannel chan stepItemType	// probably will leak memory TODO: Close this before it is removed from page cache
-	latestJsValue interface{} // A value returned for the jsValue function
+	pagestate        string
+	stepTimeout      time.Duration     // number of seconds before a step should timeout
+	stepChannel      chan stepItemType // probably will leak memory TODO: Close this before it is removed from page cache
+	latestJsValue    interface{}       // A value returned for the jsValue function
 	stepDescriptions []string
 }
 
@@ -58,25 +58,21 @@ func (p *TestController) Init(self control.PanelI, parent page.ControlI, id stri
 	p.Panel.Init(p, parent, id)
 	p.ParentForm().AddJQueryUI()
 	p.ParentForm().AddJavaScriptFile(filepath.Join(TestAssets(), "js", "test_controller.js"), false, nil)
+	// Use declarative attribute to attach javascript to the control
+	p.SetDataAttribute("grWidget", "goradd.testController")
+
 	p.On(TestStepEvent(), action.Ajax(p.ID(), TestStepAction))
 	p.stepTimeout = StepTimeoutSeconds
 }
 
-func (p *TestController) ΩPutCustomScript(ctx context.Context, response *page.Response) {
-
-	script := fmt.Sprintf (`$j("#%s").testController();`, p.ID())
-	response.ExecuteJavaScript(script, page.PriorityHigh) // Make sure the plugin gets initialized before being called
-}
-
 func (p *TestController) logLine(line string) {
-	script := fmt.Sprintf (`$j("#%s").testController("logLine", %q);`, p.ID(), line)
-	p.ParentForm().Response().ExecuteJavaScript(script, page.PriorityStandard)
+	p.ExecuteWidgetFunction("logLine", line)
 }
 
 // loadUrl loads the url and returns the pagestate of the new form, if a goradd form got loaded.
 func (p *TestController) loadUrl(url string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "loadUrl", len(p.stepDescriptions), url)
+	p.ExecuteWidgetFunction("loadUrl", len(p.stepDescriptions), url)
 	p.waitStep(); // load function will wait until window is loaded before firing
 }
 
@@ -84,11 +80,15 @@ func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case TestStepAction:
 		stepItem := new(stepItemType)
-		ok,err := a.EventValue(stepItem)
-		if err != nil {panic(err)}
-		if !ok {panic("no step data found")}
+		ok, err := a.EventValue(stepItem)
+		if err != nil {
+			panic(err)
+		}
+		if !ok {
+			panic("no step data found")
+		}
 
-		p.stepChannel<-*stepItem
+		p.stepChannel <- *stepItem
 	}
 }
 
@@ -116,10 +116,10 @@ func (p *TestController) waitStep() {
 				log.FrameworkDebugf("Received old step: %d, wanted %d", stepItem.Step, len(p.stepDescriptions))
 				continue // this is a return from a previous step that timed out. We want to ignore it.
 			} else if stepItem.Err != "" {
-				panic (stepItem.Err)
+				panic(stepItem.Err)
 			}
 		case <-time.After(p.stepTimeout * time.Second):
-			panic (fmt.Errorf("test step timed out: %s", p.stepDescriptions[len(p.stepDescriptions) - 1] ))
+			panic(fmt.Errorf("test step timed out: %s", p.stepDescriptions[len(p.stepDescriptions)-1]))
 		}
 		log.FrameworkDebugf("Completed step %d: %s", len(p.stepDescriptions), p.stepDescriptions[len(p.stepDescriptions)-1])
 		break // we successfully returned from the step
@@ -128,26 +128,26 @@ func (p *TestController) waitStep() {
 
 func (p *TestController) changeVal(id string, val interface{}, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "changeVal", len(p.stepDescriptions), id, fmt.Sprintf("%v", val))
+	p.ExecuteWidgetFunction("changeVal", len(p.stepDescriptions), id, fmt.Sprintf("%v", val))
 	p.waitStep()
 }
 
 func (p *TestController) checkControl(id string, val bool, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "checkControl", len(p.stepDescriptions), id, val)
+	p.ExecuteWidgetFunction("checkControl", len(p.stepDescriptions), id, val)
 	p.waitStep()
 }
 
 // checks a control or controls from a control group, specifically for checkbox and radio groups
 func (p *TestController) checkGroup(name string, vals []string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "checkGroup", len(p.stepDescriptions), name, vals)
+	p.ExecuteWidgetFunction("checkGroup", len(p.stepDescriptions), name, vals)
 	p.waitStep()
 }
 
 func (p *TestController) click(id string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "click", len(p.stepDescriptions), id)
+	p.ExecuteWidgetFunction("click", len(p.stepDescriptions), id)
 	p.waitStep()
 }
 
@@ -157,32 +157,30 @@ func (p *TestController) waitSubmit(desc string) {
 }
 
 
-func (p *TestController) callJqueryFunction(id string, funcName string, params []interface{}, description string) interface{} {
+func (p *TestController) callWidgetFunction(id string, funcName string, params []interface{}, description string) interface{} {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "callJqueryFunction", len(p.stepDescriptions), id, funcName, params)
+	p.ExecuteWidgetFunction("callWidgetFunction", len(p.stepDescriptions), id, funcName, params)
 	p.waitStep()
 	return p.latestJsValue
 }
 
 func (p *TestController) typeChars(id string, chars string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "typeChars", len(p.stepDescriptions), id, chars)
+	p.ExecuteWidgetFunction("typeChars", len(p.stepDescriptions), id, chars)
 	p.waitStep()
 }
 
 func (p *TestController) focus(id string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "focus", len(p.stepDescriptions), id)
+	p.ExecuteWidgetFunction("focus", len(p.stepDescriptions), id)
 	p.waitStep()
 }
 
 func (p *TestController) closeWindow(description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteJqueryFunction("testController", "closeWindow", len(p.stepDescriptions))
+	p.ExecuteWidgetFunction("closeWindow", len(p.stepDescriptions))
 	p.waitStep()
 }
-
-
 
 func TestAssets() string {
 	_, filename, _, _ := runtime.Caller(0)
@@ -190,5 +188,5 @@ func TestAssets() string {
 }
 
 func init() {
-	page.RegisterAssetDirectory(TestAssets(), config.AssetPrefix + "test")
+	page.RegisterAssetDirectory(TestAssets(), config.AssetPrefix+"test")
 }

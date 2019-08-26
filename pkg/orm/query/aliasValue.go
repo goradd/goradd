@@ -53,9 +53,9 @@ func (a AliasValue) Int() int {
 
 // DateTime returns the value as a datetime.DateTime value.
 func (a AliasValue) DateTime() datetime.DateTime {
-	t,err:= datetime.FromSqlDateTime(a.String())
+	t, err := datetime.FromSqlDateTime(a.String())
 	if err != nil {
-		panic("Alias DateTime returned unparsable value: " + a.String() + " : "+ err.Error())
+		panic("Alias DateTime returned unparsable value: " + a.String() + " : " + err.Error())
 	}
 	return t
 }

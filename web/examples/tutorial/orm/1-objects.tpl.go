@@ -9,7 +9,7 @@ import (
 	"github.com/goradd/goradd/web/examples/model"
 )
 
-func (control *ObjectsPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *ObjectsPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>The Code-generated GO Objects</h1>

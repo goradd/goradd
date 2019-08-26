@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func (control *IntroPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *IntroPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>Introduction to the ORM</h1>

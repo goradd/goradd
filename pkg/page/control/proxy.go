@@ -18,17 +18,17 @@ type ProxyI interface {
 	page.ControlI
 	LinkHtml(label string,
 		actionValue string,
-		attributes *html.Attributes,
+		attributes html.Attributes,
 	) string
 	TagHtml(label string,
 		actionValue string,
-		attributes *html.Attributes,
+		attributes html.Attributes,
 		tag string,
 		rawHtml bool,
 	) string
 	ButtonHtml(label string,
 		eventActionValue string,
-		attributes *html.Attributes,
+		attributes html.Attributes,
 		rawHtml bool,
 	) string
 	OnSubmit(actions ...action.ActionI) page.EventI
@@ -52,17 +52,17 @@ type Proxy struct {
 	page.Control
 }
 
-// NewProxy creates a new proxy. The parent should be the wrapping control of the objects that the proxy will manage.
-func NewProxy(parent page.ControlI) *Proxy {
+// NewProxy creates a new proxy. The parent must be the wrapping control of the objects that the proxy will manage.
+func NewProxy(parent page.ControlI, id string) *Proxy {
 	p := Proxy{}
-	p.Init(parent)
+	p.Init(parent, id)
 	return &p
 }
 
-func (p *Proxy) Init(parent page.ControlI) {
-	p.Control.Init(p, parent, "")
+func (p *Proxy) Init(parent page.ControlI, id string) {
+	p.Control.Init(p, parent, id)
 	p.SetShouldAutoRender(true)
-	p.SetActionValue(javascript.JsCode(`$j(this).data("grAv")`))
+	p.SetActionValue(javascript.JsCode(`goradd.proxyVal(event)`))
 }
 
 func (p *Proxy) this() ProxyI {
@@ -72,7 +72,7 @@ func (p *Proxy) this() ProxyI {
 // OnSubmit is a shortcut for adding a click event handler that is particular to buttons. It debounces the click, to
 // prevent potential accidental multiple form submissions. All events fired after this event fires will be lost. It is
 // intended to be used when the action will result in navigating to a new page.
-func (p *Proxy) OnSubmit(actions ...action.ActionI) page.EventI {
+func (p *Proxy) OnSubmit(actions ...action.ActionI) page.ControlI {
 	return p.On(event.Click().Terminating().Delay(250), actions...)
 }
 
@@ -93,7 +93,7 @@ func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 func (p *Proxy) LinkHtml(ctx context.Context,
 	label string,
 	actionValue string,
-	attributes *html.Attributes,
+	attributes html.Attributes,
 ) string {
 	if attributes == nil {
 		attributes = html.NewAttributes()
@@ -125,7 +125,7 @@ func (p *Proxy) LinkHtml(ctx context.Context,
 // TagHtml lets you customize the tag that will be used to embed the proxy.
 func (p *Proxy) TagHtml(label string,
 	actionValue string,
-	attributes *html.Attributes,
+	attributes html.Attributes,
 	tag string,
 	rawHtml bool,
 ) string {
@@ -151,12 +151,12 @@ func (p *Proxy) TagHtml(label string,
 // actionValue becomes the event's ControlValue parameter
 func (p *Proxy) ButtonHtml(label string,
 	actionValue string,
-	attributes *html.Attributes,
+	attributes html.Attributes,
 	rawHtml bool,
 ) string {
 	a := html.NewAttributes()
-	a.Set("onclick", "return false") // To prevent a return from activating the button
-	a.Set("type", "submit") // To support non-javascript situations
+	a.Set("onclick", "return false")  // To prevent a return from activating the button
+	a.Set("type", "submit")           // To support non-javascript situations
 	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts
 	buttonValue := p.ID() + "_" + actionValue
 	a.Set("value", buttonValue) // needed for non-javascript posts
@@ -170,7 +170,7 @@ func (p *Proxy) ButtonHtml(label string,
 }
 
 // ActionAttributes returns attributes that can be included in any tag to attach a proxy to the tag.
-func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
+func (p *Proxy) ActionAttributes(actionValue string) html.Attributes {
 	a := html.NewAttributes()
 	a.SetDataAttribute("grProxy", p.ID())
 
@@ -182,7 +182,36 @@ func (p *Proxy) ActionAttributes(actionValue string) *html.Attributes {
 }
 
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
-func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string) string {
+func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string {
 	// This attaches the event to the parent control.
-	return fmt.Sprintf(`$j('#%s').on('%s.grproxy', '[data-gr-proxy="%s"]', function(event, ui){%s});`, p.Parent().ID(), eventName, p.ID(), eventJs)
+	return fmt.Sprintf(`g$('%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s}, %s);`, p.Parent().ID(), eventName, p.ID(), eventJs, javascript.ToJavaScript(options))
+}
+
+type On struct {
+	Event page.EventI
+	Action action.ActionI
+}
+
+type ProxyCreator struct {
+	// ID is the id of the proxy. Proxies do not draw, so this id will not show up in the html, but you can
+	// use it to get the proxy from the page.
+	ID string
+	// On is a shortcut to assign a single action to an event. If you want a proxy that responds to more than
+	// one event or action, use On in the ControlOptions struct
+	On On
+	page.ControlOptions
+}
+
+func (c ProxyCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewProxy(parent, c.ID)
+	if c.On.Event != nil {
+		ctrl.On(c.On.Event, c.On.Action)
+	}
+	ctrl.ApplyOptions(c.ControlOptions)
+	return ctrl
+}
+
+// GetProxy is a convenience method to return the button with the given id from the page.
+func GetProxy(c page.ControlI, id string) *Proxy {
+	return c.Page().GetControl(id).(*Proxy)
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	. "github.com/goradd/goradd/pkg/orm/query"
-	"github.com/knq/snaker"
 	"log"
 	"math"
 	"sort"
@@ -15,7 +14,7 @@ import (
 /*
 This file contains the code that parses the data structure found in a MySQL database into
 our own cross-platform internal database description object.
- */
+*/
 
 const (
 	MysqlTypeSet  = "Set"
@@ -469,7 +468,7 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 		cd.MinValue, cd.MaxValue = getMinMax(column.options, -math.MaxFloat32, math.MaxFloat32, tableName, column.name)
 	case "double":
 		cd.NativeType = SqlTypeDouble
-		cd.ColumnType = ColTypeFloat
+		cd.ColumnType = ColTypeDouble
 		cd.MinValue, cd.MaxValue = getMinMax(column.options, -math.MaxFloat64, math.MaxFloat64, tableName, column.name)
 
 	case "varchar":
@@ -583,10 +582,10 @@ tableLoop:
 	}
 
 	// sort for consistent looping
-	sort.Slice(dd.Tables, func(i,j int) bool {
+	sort.Slice(dd.Tables, func(i, j int) bool {
 		return dd.Tables[i].DbName < dd.Tables[j].DbName
 	})
-	sort.Slice(dd.TypeTables, func(i,j int) bool {
+	sort.Slice(dd.TypeTables, func(i, j int) bool {
 		return dd.TypeTables[i].DbName < dd.TypeTables[j].DbName
 	})
 
@@ -658,7 +657,7 @@ func (m *Mysql5) getColumnDescription(tableName string, column mysqlColumn, tabl
 			log.Print("Error in table comment for table " + tableName + ":" + column.name + ": goName is not a string")
 		}
 	} else {
-		cd.GoName = snaker.SnakeToCamel(column.name)
+		cd.GoName = UpperCaseIdentifier(column.name)
 	}
 
 	//cd.DefaultValue, _ = table.defaultValue.Value()

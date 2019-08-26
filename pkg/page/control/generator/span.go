@@ -2,10 +2,8 @@ package generator
 
 import (
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/page"
 )
 
 func init() {
@@ -16,7 +14,6 @@ func init() {
 
 // This structure describes the Span to the connector dialog and code generator
 type Span struct {
-
 }
 
 func (d Span) Type() string {
@@ -28,40 +25,32 @@ func (d Span) NewFunc() string {
 }
 
 func (d Span) Imports() []string {
-	return []string{"github.com/goradd/goradd/pkg/page/control","fmt"}
+	return []string{"github.com/goradd/goradd/pkg/page/control", "fmt"}
 }
 
 func (d Span) SupportsColumn(col *generator.ColumnType) bool {
 	return true
 }
 
-func (d Span) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
+func (d Span) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-		`	ctrl = %s.NewSpan(c.ParentControl, id)
-	ctrl.SetLabel(ctrl.T("%s"))
-`, namespace, col.DefaultLabel)
-
-	if generator.DefaultWrapper != "" {
-		s += fmt.Sprintf(`	ctrl.With(page.NewWrapper("%s"))
-`, generator.DefaultWrapper)
-	}
-
-	return
-}
-
-func (d Span) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	s = fmt.Sprintf(`c.%s.SetText(fmt.Sprintf("%%v", c.%s.%s()))`, ctrlName, objName, col.GoName)
-	return
-}
-
-func (d Span) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
+`control.SpanCreator{
+	ID:        %#v,
+	ControlOptions: page.ControlOptions{
+		IsDisabled:	   %#v,
+		IsRequired:      %#v,
+		DataConnector: %s{},
+	},
+}`, col.ControlID, col.IsPk, !col.IsNullable, col.Connector)
 	return
 }
 
 
-func (d Span) ConnectorParams() *maps.SliceMap {
-	paramControls := page.ControlConnectorParams()
+func (d Span) GenerateRefresh(col *generator.ColumnType) (s string) {
+	return `ctrl.SetText(val)`
+}
 
-	return paramControls
+func (d Span) GenerateUpdate(col *generator.ColumnType) (s string) {
+	return ""
 }
 

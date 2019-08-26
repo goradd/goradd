@@ -18,8 +18,8 @@ const (
 	PageClick = iota + 1000
 )
 
-// PaginatedControlI is the interface that paginated controls must implement
-type PaginatedControlI interface {
+// PagedControlI is the interface that paged controls must implement
+type PagedControlI interface {
 	data.DataManagerI
 	SetTotalItems(uint)
 	TotalItems() int
@@ -30,71 +30,75 @@ type PaginatedControlI interface {
 	AddDataPager(DataPagerI)
 	CalcPageCount() int
 	HasDataPagers() bool
-	getDataPagers() []DataPagerI
+	GetDataPagerIDs() []string
+	SliceOffsets() (start, end int)
 }
 
-// PaginatedControl is a mixin that makes a Control controllable by a data pager
-type PaginatedControl struct {
-	totalItems       int
-	pageSize         int
-	pageNum          int
-	dataPagers 		 []DataPagerI
+// PagedControl is a mixin that makes a Control controllable by a data pager
+type PagedControl struct {
+	totalItems int
+	pageSize   int
+	pageNum    int
+	dataPagers []string
 }
 
+// DefaultPagerPageSize is the default number of items that a paged control will show. You can change this in an individual control, too.
+var DefaultPagerPageSize = 10
 
-// DefaultPaginatorPageSize is the default number of items that a paginated control will show. You can change this in an individual control, too.
-var DefaultPaginatorPageSize = 10
-
-// DefaultMaxPagintorButtons is the default maximum number of buttons to display on the pager. You can change this in an individual control, too.
-var DefaultMaxPagintorButtons = 10
+// DefaultMaxPagerButtons is the default maximum number of buttons to display on the pager. You can change this in an individual control, too.
+var DefaultMaxPagerButtons = 10
 
 // SetTotalItems sets the total number of items that the paginator keeps track of. This will be divided by
 // the PageSize to determine the number of pages presented.
 // You must call this each time the data size might change.
-func (c *PaginatedControl) SetTotalItems(count uint) {
+func (c *PagedControl) SetTotalItems(count uint) {
 	c.totalItems = int(count)
 	c.limitPageNumber()
 }
 
 // TotalItems returns the number of items that the paginator is aware of in the list it is managing.
-func (c *PaginatedControl) TotalItems() int {
+func (c *PagedControl) TotalItems() int {
 	return c.totalItems
 }
 
 // SetPageSize sets the maximum number of items that will be displayed at one time. If more than this number of items
 // is being displayed, the pager will allow paging to other items.
-func (c *PaginatedControl) SetPageSize(size int) {
+func (c *PagedControl) SetPageSize(size int) {
 	if size == 0 {
-		size = DefaultPaginatorPageSize
+		size = DefaultPagerPageSize
 	}
 	c.pageSize = size
 }
 
 // PageSize returns the maximum number of items that will be allowed in a page.
-func (c *PaginatedControl) PageSize() int {
+func (c *PagedControl) PageSize() int {
 	return c.pageSize
 }
 
 // PageNum returns the current page number.
-func (c *PaginatedControl) PageNum() int {
+func (c *PagedControl) PageNum() int {
 	return c.pageNum
 }
 
 // SetPageNum sets the current page number. It does not redraw anything, nor does it determine if the
 // page is actually visible.
-func (c *PaginatedControl) SetPageNum(n int) {
+func (c *PagedControl) SetPageNum(n int) {
 	if c.pageNum != n {
 		c.pageNum = n
 	}
 }
 
-// AddDataPager adds a data pager to the PaginatedControl. A PaginatedControl can have multiple
-// data pagers.
-func (c *PaginatedControl) AddDataPager(d DataPagerI) {
-	c.dataPagers = append(c.dataPagers, d)
+func (c *PagedControl) GetDataPagerIDs() []string {
+	return c.dataPagers
 }
 
-func (c *PaginatedControl) limitPageNumber() {
+// AddDataPager adds a data pager to the PagedControl. A PagedControl can have multiple
+// data pagers.
+func (c *PagedControl) AddDataPager(d DataPagerI) {
+	c.dataPagers = append(c.dataPagers, d.ID())
+}
+
+func (c *PagedControl) limitPageNumber() {
 	pageCount := c.CalcPageCount()
 
 	if c.pageNum > pageCount {
@@ -107,36 +111,31 @@ func (c *PaginatedControl) limitPageNumber() {
 }
 
 // CalcPageCount will return the number of pages based on the page size and total items.
-func (c *PaginatedControl) CalcPageCount() int {
+func (c *PagedControl) CalcPageCount() int {
 	if c.pageSize == 0 || c.totalItems == 0 {
 		return 0
 	}
 	return (c.totalItems-1)/c.pageSize + 1
 }
 
-func (c *PaginatedControl) getDataPagers() []DataPagerI{
-	return c.dataPagers
-}
-
-func (c *PaginatedControl) HasDataPagers() bool {
+func (c *PagedControl) HasDataPagers() bool {
 	return len(c.dataPagers) > 0
 }
 
 // SliceOffsets returns the start and end values to use to specify a portion of a slice corresponding to the
 // data the pager refers to
-func (c *PaginatedControl) SliceOffsets() (start, end int) {
+func (c *PagedControl) SliceOffsets() (start, end int) {
 	start = (c.PageNum() - 1) * c.PageSize()
-	_,end = math.MinInt(start+ c.PageSize(),  c.TotalItems())
+	_, end = math.MinInt(start+c.PageSize(), c.TotalItems())
 	return
 }
 
 // SqlLimits returns the limits you would use in a sql database limit clause
-func (c *PaginatedControl) SqlLimits() (maxRowCount, offset int) {
+func (c *PagedControl) SqlLimits() (maxRowCount, offset int) {
 	offset = (c.PageNum() - 1) * c.PageSize()
 	maxRowCount = c.PageSize()
 	return
 }
-
 
 // DataPagerI is the data pager interface that allows this object to call into subclasses.
 type DataPagerI interface {
@@ -144,6 +143,9 @@ type DataPagerI interface {
 	PreviousButtonsHtml() string
 	NextButtonsHtml() string
 	PageButtonsHtml(i int) string
+	SetMaxPageButtons(b int)
+	SetObjectNames(singular string, plural string)
+	SetLabels(previous string, next string)
 }
 
 // DataPager is a toolbar designed to aid scrolling a large set of data. It is implemented using Aria design
@@ -159,35 +161,43 @@ type DataPager struct {
 	LabelForNext     string
 	LabelForPrevious string
 
-	paginatedControl PaginatedControlI
-	Proxy *Proxy
+	pagedControlID string
 }
 
 // NewDataPager creates a new DataPager
-func NewDataPager(parent page.ControlI, id string, paginatedControl PaginatedControlI) *DataPager {
+func NewDataPager(parent page.ControlI, id string, pagedControl PagedControlI) *DataPager {
 	d := DataPager{}
-	d.Init(&d, parent, id, paginatedControl)
+	d.Init(&d, parent, id, pagedControl)
 	return &d
 }
 
 // Init is called by subclasses of a DataPager to initialize the data pager. You do not normally need
 // to call this.
-func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, paginatedControl PaginatedControlI) {
+func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pagedControl PagedControlI) {
 	d.Control.Init(self, parent, id)
 	d.Tag = "div"
 	d.LabelForNext = d.ΩT("Next")
 	d.LabelForPrevious = d.ΩT("Previous")
-	d.maxPageButtons = DefaultMaxPagintorButtons
-	paginatedControl.AddDataPager(self.(DataPagerI))
-	d.paginatedControl = paginatedControl
-	d.Proxy = NewProxy(d)
-	d.Proxy.On(event.Click(), action.Ajax(d.ID(), PageClick))
+	d.maxPageButtons = DefaultMaxPagerButtons
+	pagedControl.AddDataPager(self.(DataPagerI))
+	d.pagedControlID = pagedControl.ID()
+	pxy := NewProxy(d, d.proxyID())
+	pxy.On(event.Click().Bubbles(), action.Ajax(d.ID(), PageClick))
 	d.SetAttribute("role", "tablist")
-	d.paginatedControl.SetPageNum(1)
+	d.PagedControl().SetPageNum(1)
 }
 
+func (d *DataPager) proxyID() string {
+	return d.ID() + "-pxy"
+}
+
+func (d *DataPager) ButtonProxy() *Proxy {
+	return GetProxy(d, d.proxyID())
+}
+
+
 // ΩDrawingAttributes is called by the framework to add temporary attributes to the html.
-func (d *DataPager) ΩDrawingAttributes() *html.Attributes {
+func (d *DataPager) ΩDrawingAttributes() html.Attributes {
 	a := d.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "datapager")
 	return a
@@ -197,17 +207,26 @@ func (d *DataPager) ΩDrawingAttributes() *html.Attributes {
 func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
 	switch params.ID {
 	case PageClick:
-		d.paginatedControl.SetPageNum(params.ControlValueInt())
-		d.paginatedControl.Refresh()
-		for _,c := range d.paginatedControl.getDataPagers() {
-			c.Refresh()
+		pageNum := params.ControlValueInt();
+		p := d.PagedControl()
+		if pageNum < 1 {
+			pageNum = 1
+		} else {
+			c := p.CalcPageCount()
+			if pageNum > c {
+				pageNum = c
+			}
+		}
+		p.SetPageNum(pageNum)
+		p.Refresh()
+		for _, c := range p.GetDataPagerIDs() {
+			GetDataPager(d, c).Refresh()
 		}
 	}
 }
 
-
-func (d *DataPager) refreshPaginatedControl() {
-	d.paginatedControl.Refresh()
+func (d *DataPager) refreshPagedControl() {
+	d.PagedControl().Refresh()
 }
 
 // SetMaxPageButtons sets the maximum number of buttons that will be displayed in the paginator.
@@ -222,14 +241,11 @@ func (d *DataPager) SetObjectNames(singular string, plural string) {
 	d.ObjectPluralName = plural
 }
 
-
 // SetLabels sets the previous and next labels. Translate these first.
 func (d *DataPager) SetLabels(previous string, next string) {
 	d.LabelForPrevious = previous
 	d.LabelForNext = next
 }
-
-
 
 /*
 CalcBunch is called by the framework to lay out the data pager based on the number of pages
@@ -286,15 +302,15 @@ Note: there are likely better ways to do this. Some innovative ones are to have 
 Or, use the ellipsis as a dropdown menu for more selections
 */
 func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
-
-	pageCount := d.paginatedControl.CalcPageCount()
-	pageNum := d.paginatedControl.PageNum()
+	p := d.PagedControl()
+	pageCount := p.CalcPageCount()
+	pageNum := p.PageNum()
 
 	if pageCount <= d.maxPageButtons {
 		return 1, pageCount
 	} else {
-		_,minEndOfBunch := math.MinInt(d.maxPageButtons-2, pageCount)
-		_,maxStartOfBunch := math.MaxInt(pageCount-d.maxPageButtons+3, 1)
+		_, minEndOfBunch := math.MinInt(d.maxPageButtons-2, pageCount)
+		_, maxStartOfBunch := math.MaxInt(pageCount-d.maxPageButtons+3, 1)
 
 		leftOfBunchCount := (d.maxPageButtons - 5) / 2
 		rightOfBunchCount := (d.maxPageButtons - 4) / 2
@@ -305,28 +321,29 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 		if pageNum < leftBunchTrigger {
 			pageStart = 1
 		} else {
-			_,pageStart = math.MinInt(maxStartOfBunch, pageNum-leftOfBunchCount)
+			_, pageStart = math.MinInt(maxStartOfBunch, pageNum-leftOfBunchCount)
 		}
 
 		if pageNum > rightBunchTrigger {
 			pageEnd = pageCount
 		} else {
-			_,pageEnd = math.MaxInt(minEndOfBunch, pageNum+rightOfBunchCount)
+			_, pageEnd = math.MaxInt(minEndOfBunch, pageNum+rightOfBunchCount)
 		}
 		return
 	}
 }
 
-// ΩPreRender is called by the framework to load data into the paginated control just before drawing.
+// ΩPreRender is called by the framework to load data into the paged control just before drawing.
 func (d *DataPager) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
 	err = d.Control.ΩPreRender(ctx, buf)
+	p := d.PagedControl()
 
 	if err == nil {
-		// If we are being drawn before the paginated control, we must tell the paginated control to load up its
+		// If we are being drawn before the paged control, we must tell the paged control to load up its
 		// data so that we can figure out what to do
-		if !d.paginatedControl.WasRendered() &&
-			!d.paginatedControl.IsRendering() { // not a child control
-			d.paginatedControl.GetData(ctx, d.paginatedControl)
+		if !p.WasRendered() &&
+			!p.IsRendering() { // not a child control
+			p.LoadData(ctx, p)
 		}
 	}
 	return
@@ -351,7 +368,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 	var prev string
 	var actionValue string
 
-	pageNum := d.paginatedControl.PageNum()
+	pageNum := d.PagedControl().PageNum()
 
 	actionValue = strconv.Itoa(pageNum - 1)
 
@@ -364,7 +381,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 		attr.SetStyle("cursor", "not-allowed")
 	}
 
-	prev = d.Proxy.ButtonHtml(d.LabelForPrevious, actionValue, attr, false)
+	prev = d.ButtonProxy().ButtonHtml(d.LabelForPrevious, actionValue, attr, false)
 
 	h := prev
 	pageStart, _ := d.CalcBunch()
@@ -381,23 +398,23 @@ func (d *DataPager) NextButtonsHtml() string {
 	var next string
 	var actionValue string
 
-	pageNum := d.paginatedControl.PageNum()
+	p := d.PagedControl()
+	pageNum := p.PageNum()
+	actionValue = strconv.Itoa(pageNum + 1)
 
 	attr := html.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("arrow next")
 
-	actionValue = strconv.Itoa(pageNum + 1)
-
 	_, pageEnd := d.CalcBunch()
-	pageCount := d.paginatedControl.CalcPageCount()
+	pageCount := p.CalcPageCount()
 
 	if pageNum >= pageCount {
 		attr.SetDisabled(true)
 		attr.SetStyle("cursor", "not-allowed")
 	}
 
-	next = d.Proxy.ButtonHtml(d.LabelForNext, actionValue, attr, false)
+	next = d.ButtonProxy().ButtonHtml(d.LabelForNext, actionValue, attr, false)
 
 	h := next
 	if pageEnd != pageCount {
@@ -413,7 +430,8 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 	actionValue := strconv.Itoa(i)
 	buttonId := d.ID() + "_page_" + actionValue
 	attr := html.NewAttributes().Set("id", buttonId).Set("role", "tab").AddClass("page")
-	pageNum := d.paginatedControl.PageNum()
+	p := d.PagedControl()
+	pageNum := p.PageNum()
 
 	if pageNum == i {
 		attr.AddClass("selected")
@@ -424,25 +442,25 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 		attr.Set("tabindex", "-1")
 		// TODO: We need javascript to respond to arrow keys to set the focus on the buttons. User could then press space to click on button.
 	}
-	return d.Proxy.ButtonHtml(actionValue, actionValue, attr, false)
+	return d.ButtonProxy().ButtonHtml(actionValue, actionValue, attr, false)
 }
 
 // ΩMarshalState is an internal function to save the state of the control
 func (d *DataPager) ΩMarshalState(m maps.Setter) {
-	m.Set("pageNum", d.paginatedControl.PageNum())
+	m.Set("pageNum", d.PagedControl().PageNum())
 }
 
 // ΩUnmarshalState is an internal function to restore the state of the control
 func (d *DataPager) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("pageNum"); ok {
+	if v, ok := m.Load("pageNum"); ok {
 		if i, ok := v.(int); ok {
-			d.paginatedControl.SetPageNum (i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
+			d.PagedControl().SetPageNum(i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
 		}
 	}
 }
 
-func (d *DataPager) PaginatedControl() PaginatedControlI {
-	return d.paginatedControl
+func (d *DataPager) PagedControl() PagedControlI {
+	return d.Page().GetControl(d.pagedControlID).(PagedControlI)
 }
 
 func (d *DataPager) Serialize(e page.Encoder) (err error) {
@@ -470,11 +488,7 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 		return
 	}
 
-	if err = e.EncodeControl(d.paginatedControl); err != nil {
-		return
-	}
-
-	if err = e.EncodeControl(d.Proxy); err != nil {
+	if err = e.Encode(d.pagedControlID); err != nil {
 		return
 	}
 
@@ -486,7 +500,6 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 func (d *DataPager) ΩisSerializer(i page.ControlI) bool {
 	return reflect.TypeOf(d) == reflect.TypeOf(i)
 }
-
 
 func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
 	if err = d.Control.Deserialize(dec, p); err != nil {
@@ -509,17 +522,59 @@ func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
 		return
 	}
 
-	if ci,err := dec.DecodeControl(p); err != nil {
-		return err
-	} else {
-		d.paginatedControl = ci.(PaginatedControlI)
+	if err = dec.Decode(&d.pagedControlID); err != nil {
+		return
 	}
 
-	if ci,err := dec.DecodeControl(p); err != nil {
-		return err
-	} else {
-		d.Proxy = ci.(*Proxy)
-	}
-	
 	return
+}
+
+func GetDataPager(c page.ControlI, id string) DataPagerI {
+	return c.Page().GetControl(id).(DataPagerI)
+}
+
+// DataPagerCreator is the initialization structure for declarative creation of data pagers
+type DataPagerCreator struct {
+	// ID is the control id
+	ID string
+	// MaxPageButtons is the maximum number of page buttons to display in the pager
+	MaxPageButtons int
+	// ObjectName is the name of the object being displayed in the table
+	ObjectName string
+	// ObjectPluralName is the plural name of the object being displayed
+	ObjectPluralName string
+	// LabelForNext is the text to use in the Next button
+	LabelForNext string
+	// LabelForPrevious is the text to use in the Previous button
+	LabelForPrevious string
+	// PagedControl is the id of the control that will be paged by the pager
+	PagedControl string
+	page.ControlOptions
+}
+
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c DataPagerCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	if !parent.Page().HasControl(c.PagedControl) {
+		panic ("you must declare the paged control before the data pager")
+	}
+	p := parent.Page().GetControl(c.PagedControl).(PagedControlI)
+	ctrl := NewDataPager(parent, c.ID, p)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+// Init is called by implementations of Buttons to initialize a control with the
+// creator. You do not normally need to call this.
+func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
+	if c.MaxPageButtons > 0 {
+		ctrl.SetMaxPageButtons(c.MaxPageButtons)
+	}
+	ctrl.SetObjectNames(c.ObjectName, c.ObjectPluralName)
+	if c.LabelForNext != "" {
+		ctrl.SetLabels(c.LabelForPrevious, c.LabelForNext)
+	}
+
+	ctrl.ApplyOptions(c.ControlOptions)
 }

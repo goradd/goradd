@@ -5,13 +5,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
-	buf3 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
+	buf3 "github.com/goradd/goradd/pkg/pool"
 	html2 "html"
 	"strconv"
 )
@@ -25,36 +25,57 @@ const (
 // The functions defined here are hooks that you can implement in your subclass.
 type TableI interface {
 	page.ControlI
-	tableDupI
+	TableEmbedder
+	data.DataManagerEmbedder
 }
 
-// tableDupI is a workaround for a problem in GO interfaces. See https://github.com/golang/go/issues/6977
-type tableDupI interface {
+// TableEmbedder is a workaround for a problem in GO interfaces. See https://github.com/golang/go/issues/6977
+type TableEmbedder interface {
 	SetCaption(interface{}) TableI
 	DrawCaption(context.Context, *bytes.Buffer) error
-	GetHeaderRowAttributes(row int) *html.Attributes
-	GetFooterRowAttributes(row int) *html.Attributes
-	GetRowAttributes(row int, data interface{}) *html.Attributes
-	HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes *html.Attributes)
+	GetHeaderRowAttributes(row int) html.Attributes
+	GetFooterRowAttributes(row int) html.Attributes
+	GetRowAttributes(row int, data interface{}) html.Attributes
+	HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes)
+	FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes)
+	SetRenderColumnTags(r bool) TableI
+	SetHideIfEmpty(h bool) TableI
+	SetHeaderRowCount(count int) TableI
+	SetFooterRowCount(count int) TableI
+	SetRowStyler(a TableRowAttributer) TableI
+	SetHeaderRowStyler(a TableHeaderRowAttributer) TableI
+	SetFooterRowStyler(a TableFooterRowAttributer) TableI
+	AddColumnAt(column ColumnI, loc int)
+	AddColumn(column ColumnI) ColumnI
+	GetColumn(loc int) ColumnI
+	GetColumnByID(id string) ColumnI
+	GetColumnByTitle(title string) ColumnI
+	RemoveColumn(loc int)
+	RemoveColumnByID(id string)
+	RemoveColumnByTitle(title string)
+	ClearColumns()
+	HideColumns()
+	ShowColumns()
+	MakeSortable() TableI
+	SetSortHistoryLimit(n int) TableI
 }
 
 // TableRowAttributer is used to style particular table rows.
 type TableRowAttributer interface {
 	// TableRowAttributes returns attributes that should be used on the particular row indicated.
 	// Data is the data for that row.
-	TableRowAttributes(row int, data interface{}) *html.Attributes
+	TableRowAttributes(row int, data interface{}) html.Attributes
 }
 
 type TableHeaderRowAttributer interface {
 	// TableHeaderRowAttributes returns attributes to use for the particular header row indicated
-	TableHeaderRowAttributes(row int) *html.Attributes
+	TableHeaderRowAttributes(row int) html.Attributes
 }
 
 type TableFooterRowAttributer interface {
 	// TableFooterRowAttributes returns attributes to use for the particular footer row indicated
-	TableFooterRowAttributes(row int) *html.Attributes
+	TableFooterRowAttributes(row int) html.Attributes
 }
-
 
 // Table is a goradd control that outputs a dynamic HTML table object, with table, tr, th and td tags,
 // as well as optional col, thead, and tfoot tags.
@@ -62,9 +83,9 @@ type TableFooterRowAttributer interface {
 // To use a Table, call NewTable and then add column objects to it. The columns use a CellTexter to draw the contents of
 // a cell in the table. There are a number of predefined columns to draw text coming from slices of maps, slices, database objects,
 // as well as custom functions you define. See the examples directory for examples of using a Table object.
-// See also the PaginatedTable for a table that works with a Pager object to page through a large data set.
+// See also the PagedTable for a table that works with a Pager object to page through a large data set.
 //
-// Call SetSortable() to make a table sortable, in which case the user can click in the header of a column to sort
+// Call MakeSortable() to make a table sortable, in which case the user can click in the header of a column to sort
 // by that column. The Table maintains a history of what columns have been sorted by what row, so that you can
 // implement multi-level sorting if you so desire. This is particularly helpful when some columns have duplicate
 // data, that then get further identified by another column.
@@ -119,8 +140,25 @@ func (t *Table) this() TableI {
 	return t.Self.(TableI)
 }
 
-// SetSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
-func (t *Table) SetSortable() TableI {
+func (t *Table) SetRenderColumnTags(r bool) TableI {
+	if t.renderColumnTags != r {
+		t.renderColumnTags = r
+		t.Refresh()
+	}
+	return t.this()
+}
+
+func (t *Table) SetHideIfEmpty(h bool) TableI {
+	if t.hideIfEmpty != h {
+		t.hideIfEmpty = h
+		t.Refresh()
+	}
+	return t.this()
+}
+
+
+// MakeSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
+func (t *Table) MakeSortable() TableI {
 	t.On(event.TableSort(), action.Ajax(t.ID(), SortClick), action.PrivateAction{})
 	if t.headerRowCount == 0 {
 		t.headerRowCount = 1
@@ -153,10 +191,13 @@ func (t *Table) ΩDrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing table tag")
 	if t.HasDataProvider() {
 		log.FrameworkDebug("Getting table data")
-		t.GetData(ctx, t)
+		t.LoadData(ctx, t.this())
 		defer t.ResetData()
 	}
-	for _,c := range t.columns {
+	if t.hideIfEmpty && !t.HasData() {
+		return ""
+	}
+	for _, c := range t.columns {
 		c.PreRender()
 	}
 	return t.Control.ΩDrawTag(ctx)
@@ -165,10 +206,10 @@ func (t *Table) ΩDrawTag(ctx context.Context) string {
 // ΩDrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
 // is no data to show. This will hide header and footer cells and potentially the outline of the table when there is no
 // data in the table.
-func (t *Table) ΩDrawingAttributes() *html.Attributes {
+func (t *Table) ΩDrawingAttributes() html.Attributes {
 	a := t.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "table")
-	if t.Data == nil {
+	if !t.HasData() && t.hideIfEmpty {
 		a.SetStyle("display", "none")
 	}
 	return a
@@ -276,14 +317,23 @@ func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err erro
 
 // HeaderCellDrawingInfo is called internally to provide the info for each header cell drawn. Subclasses can
 // override this.
-func (t *Table) HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes *html.Attributes) {
+func (t *Table) HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes) {
 	cellHtml = col.HeaderCellHtml(ctx, rowNum, colNum)
-	cellAttributes = col.HeaderAttributes(rowNum, colNum)
+	cellAttributes = col.HeaderAttributes(ctx, rowNum, colNum)
 	return
 }
 
+// FooterCellDrawingInfo is called internally to provide the info for each header cell drawn. Subclasses can
+// override this.
+func (t *Table) FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes) {
+	cellHtml = col.FooterCellHtml(ctx, rowNum, colNum)
+	cellAttributes = col.FooterAttributes(ctx, rowNum, colNum)
+	return
+}
+
+
 // GetHeaderRowAttributes is called internally to get the attributes for the tr tags in header rows.
-func (t *Table) GetHeaderRowAttributes(row int) *html.Attributes {
+func (t *Table) GetHeaderRowAttributes(row int) html.Attributes {
 	if t.headerRowStyler != nil {
 		return t.headerRowStyler.TableHeaderRowAttributes(row)
 	}
@@ -291,20 +341,29 @@ func (t *Table) GetHeaderRowAttributes(row int) *html.Attributes {
 }
 
 func (t *Table) drawFooterRows(ctx context.Context, buf *bytes.Buffer) (err error) {
+	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
+
 	buf1 := buf3.GetBuffer()
 	defer buf3.PutBuffer(buf1)
-	for j := 0; j < t.footerRowCount; j++ {
-		for i, col := range t.columns {
-			col.DrawFooterCell(ctx, j, i, t.footerRowCount, buf1)
+	for rowNum := 0; rowNum < t.footerRowCount; rowNum++ {
+		for colNum, col := range t.columns {
+			if !col.IsHidden() {
+				cellHtml, attr := t2.FooterCellDrawingInfo(ctx, col, rowNum, colNum)
+				tag := "td"
+				if col.AsHeader() {
+					tag = "th"
+				}
+				buf1.WriteString(html.RenderTag(tag, attr, cellHtml))
+			}
 		}
-		buf.WriteString(html.RenderTag("tr", t.GetFooterRowAttributes(j), buf1.String()))
+		buf.WriteString(html.RenderTag("tr", t.GetFooterRowAttributes(rowNum), buf1.String()))
 		buf1.Reset()
 	}
 	return
 }
 
 // GetFooterRowAttributes is called internally to get the attributes for the tr tags in footer rows.
-func (t *Table) GetFooterRowAttributes(row int) *html.Attributes {
+func (t *Table) GetFooterRowAttributes(row int) html.Attributes {
 	if t.footerRowStyler != nil {
 		return t.footerRowStyler.TableFooterRowAttributes(row)
 	}
@@ -323,7 +382,7 @@ func (t *Table) drawRow(ctx context.Context, row int, data interface{}, buf *byt
 }
 
 // GetRowAttributes is used internally to return the attributes for the tr tag of a data row.
-func (t *Table) GetRowAttributes(row int, data interface{}) *html.Attributes {
+func (t *Table) GetRowAttributes(row int, data interface{}) html.Attributes {
 	if t.rowStyler != nil {
 		return t.rowStyler.TableRowAttributes(row, data)
 	}
@@ -437,8 +496,9 @@ func (t *Table) ShowColumns() {
 }
 
 // SetRowStyler sets a styler that returns attributes to be used on a particular row.
-func (t *Table) SetRowStyler(a TableRowAttributer) {
+func (t *Table) SetRowStyler(a TableRowAttributer) TableI {
 	t.rowStyler = a
+	return t.this()
 }
 
 func (t *Table) RowStyler() TableRowAttributer {
@@ -446,13 +506,15 @@ func (t *Table) RowStyler() TableRowAttributer {
 }
 
 // SetHeaderRowStyler sets a styler that returns attributes to be used on a particular header row.
-func (t *Table) SetHeaderRowStyler(a TableHeaderRowAttributer) {
+func (t *Table) SetHeaderRowStyler(a TableHeaderRowAttributer) TableI {
 	t.headerRowStyler = a
+	return t.this()
 }
 
 // SetFooterRowStyler sets a styler that returns attributes to be used on a particular footer row.
-func (t *Table) SetFooterRowStyler(a TableFooterRowAttributer) {
+func (t *Table) SetFooterRowStyler(a TableFooterRowAttributer) TableI {
 	t.footerRowStyler = a
+	return t.this()
 }
 
 // ΩUpdateFormValues is called by the system whenever values are sent by client controls. We forward that to the columns.
@@ -490,9 +552,10 @@ func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
 // meaning it will remember only the current column. Setting it more than 1 will let the system report back on secondary
 // sort columns that the user chose. For example, if the user clicks to sort a first name column, and then a last name column,
 // it will let you know to sort by last name, and then first name.
-func (t *Table) SetSortHistoryLimit(n int) {
+func (t *Table) SetSortHistoryLimit(n int) TableI {
 	t.sortHistoryLimit = n
 	t.Refresh()
+	return t.this()
 }
 
 func (t *Table) sortClick(id string) {
@@ -549,24 +612,141 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 	return ret
 }
 
-
 // ΩMarshalState is an internal function to save the state of the control
 func (t *Table) ΩMarshalState(m maps.Setter) {
 	m.Set("sortColumns", t.sortColumns)
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		col.MarshalState(m)
 	}
 }
 
 // ΩUnmarshalState is an internal function to restore the state of the control
 func (t *Table) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("sortColumns"); ok {
+	if v, ok := m.Load("sortColumns"); ok {
 		if s, ok := v.([]string); ok {
 			t.sortColumns = s
 		}
 	}
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		col.UnmarshalState(m)
 	}
 }
 
+
+// TableCreator is the initialization structure for declarative creation of tables
+type TableCreator struct {
+	// ID is the control id
+	ID               string
+	// HasColTags will make the table render <col> tags
+	HasColTags       bool
+	// Caption is the content of the caption tag, and can either be a string, or a data pager
+	Caption          interface{}
+	// HideIfEmpty will hide the table completely if it has no data. Otherwise, the table and headers will be shown, but no data rows
+	HideIfEmpty      bool
+	// HeaderRowCount is the number of header rows. You must set this to at least 1 to show header rows.
+	HeaderRowCount   int
+	// FooterRowCount is the number of footer rows.
+	FooterRowCount   int
+	// RowStyler returns the attributes to be used in a cell.
+	RowStyler        TableRowAttributer
+	// RowStylerID is a control id for the control that will be the RowStyler of the table.
+	RowStylerID      string
+	// HeaderRowStyler returns the attributes to be used in a header cell.
+	HeaderRowStyler  TableHeaderRowAttributer
+	// HeaderRowStylerID is a control id for the control that will be the HeaderRowStyler of the table.
+	HeaderRowStylerID  string
+	// FooterRowStyler returns the attributes to be used in a footer cell. It can be either a control id or a TableFooterRowAttributer.
+	FooterRowStyler  TableFooterRowAttributer
+	// FooterRowStylerID is a control id for the control that will be the FooterRowStyler of the table.
+	FooterRowStylerID  string
+	// Columns are the column creators that will add columns to the table
+	Columns          []ColumnCreator
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
+	// Data is the actual data for the table, and should be a slice of objects
+	Data             interface{}
+	// Sortable will make the table sortable
+	Sortable         bool
+	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
+	SortHistoryLimit int
+	page.ControlOptions
+}
+
+
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c TableCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewTable(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+// Init is called by implementations of Buttons to initialize a control with the
+// creator. You do not normally need to call this.
+func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
+	ctrl.SetRenderColumnTags(c.HasColTags)
+	ctrl.SetHideIfEmpty(c.HideIfEmpty)
+	if c.Caption != nil {
+		if ctrl2, ok := c.Caption.(page.Creator); ok {
+			ctrl.SetCaption(ctrl2.Create(ctx, ctrl))
+		} else {
+			ctrl.SetCaption(c.Caption)
+		}
+	}
+	if c.HeaderRowCount > 0 {
+		ctrl.SetHeaderRowCount(c.HeaderRowCount)
+	}
+	if c.FooterRowCount > 0 {
+		ctrl.SetFooterRowCount(c.FooterRowCount)
+	}
+
+	if c.RowStyler != nil {
+		ctrl.SetRowStyler(c.RowStyler)
+	} else if c.RowStylerID != "" {
+		ctrl.SetRowStyler(ctrl.Page().GetControl(c.RowStylerID).(TableRowAttributer))
+	}
+
+	if c.HeaderRowStyler != nil {
+		ctrl.SetHeaderRowStyler(c.HeaderRowStyler)
+	} else if c.HeaderRowStylerID != "" {
+		ctrl.SetHeaderRowStyler(ctrl.Page().GetControl(c.HeaderRowStylerID).(TableHeaderRowAttributer))
+	}
+
+	if c.FooterRowStyler != nil {
+		ctrl.SetFooterRowStyler(c.FooterRowStyler)
+	} else if c.FooterRowStylerID != "" {
+		ctrl.SetFooterRowStyler(ctrl.Page().GetControl(c.FooterRowStylerID).(TableFooterRowAttributer))
+	}
+
+	if c.DataProvider != nil {
+		ctrl.SetDataProvider(c.DataProvider)
+	} else if c.DataProviderID != "" {
+		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		ctrl.SetDataProvider(provider)
+	}
+
+	if c.Data != nil {
+		ctrl.SetData(c.Data)
+	}
+	if c.Columns != nil {
+		for _,colCreator := range c.Columns {
+			ctrl.AddColumn(colCreator.Create(ctx, ctrl))
+		}
+	}
+	if c.Sortable {
+		ctrl.MakeSortable()
+	}
+	if c.SortHistoryLimit > 0 {
+		ctrl.SetSortHistoryLimit(c.SortHistoryLimit)
+	}
+
+	ctrl.ApplyOptions(c.ControlOptions)
+}
+
+// GetTable is a convenience method to return the button with the given id from the page.
+func GetTable(c page.ControlI, id string) *Table {
+	return c.Page().GetControl(id).(*Table)
+}

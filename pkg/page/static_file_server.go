@@ -21,7 +21,7 @@ var assetDirectories = map[string]string{}
 // The copied location of the file and structure of the tag will be deduced from the type of tag and the label of the file.
 // The type of tag will also be used to automatically insert the location of the file into the correct tag attribute.
 /*
-func RenderAssetTag(filePath string, tag string, attributes *html.Attributes, content string) string {
+func RenderAssetTag(filePath string, tag string, attributes html.Attributes, content string) string {
 	var typ string
 
 	_,fileName := filepath.Split(filePath)
@@ -61,7 +61,6 @@ func RenderAssetTag(filePath string, tag string, attributes *html.Attributes, co
 	}
 }
 */
-
 
 // GetAssetLocation returns the disk location of the asset file indicated by the given url.
 // Asset directories must be registered with the RegisterAssetDirectory function. In debug mode, the

@@ -2,13 +2,13 @@ package math
 
 // MinInt returns the minimum value from a slice of ints, and the zero-based index of that value.
 // The index will be -1 if there are no values given.
-func MinInt(values  ...int) (index int, value int) {
-	if len (values) == 0 {
-		return -1,0
+func MinInt(values ...int) (index int, value int) {
+	if len(values) == 0 {
+		return -1, 0
 	}
 	value = values[0]
 
-	for i,v := range values[1:] {
+	for i, v := range values[1:] {
 		if v < value {
 			value = v
 			index = i + 1
@@ -19,13 +19,13 @@ func MinInt(values  ...int) (index int, value int) {
 
 // MaxInts returns the maiximum value from a slice of ints, and the index of that value.
 // The index will be -1 if no items are given.
-func MaxInt(values  ...int) (index int, value int) {
-	if len (values) == 0 {
-		return -1,0
+func MaxInt(values ...int) (index int, value int) {
+	if len(values) == 0 {
+		return -1, 0
 	}
 	value = values[0]
 
-	for i,v := range values[1:] {
+	for i, v := range values[1:] {
 		if v > value {
 			value = v
 			index = i + 1
@@ -47,10 +47,10 @@ func DiffInts(values ...int) (diffs []int) {
 		return
 	}
 
-	for i,v := range values[:len(values) - 1] {
-		diffs[i] =  v - values[i + 1]
+	for i, v := range values[:len(values)-1] {
+		diffs[i] = v - values[i+1]
 	}
-	diffs[len(values) - 1] = values[len(values) - 1] - values[0]
+	diffs[len(values)-1] = values[len(values)-1] - values[0]
 	return
 }
 
@@ -66,26 +66,26 @@ func SumInts(values ...int) (sums []int) {
 		return
 	}
 
-	for i,v := range values[:len(values) - 1] {
-		sums[i] = values[i + 1] + v
+	for i, v := range values[:len(values)-1] {
+		sums[i] = values[i+1] + v
 	}
-	sums[len(values) - 1] = values[len(values) - 1] + values[0]
+	sums[len(values)-1] = values[len(values)-1] + values[0]
 	return
 }
 
 // SquareInt returns the square of the given integer
 func SquareInt(a int) int {
-	return a*a
+	return a * a
 }
 
 // CubeInt returns the cube of the given integer
 func CubeInt(a int) int {
-	return a*a*a
+	return a * a * a
 }
 
 // SqSqInt returns the given integer to its fourth power
 func SqSqInt(a int) int {
-	return a*a*a*a
+	return a * a * a * a
 }
 
 // PowerInt returns the given base integer raised to the given power.

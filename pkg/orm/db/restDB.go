@@ -13,7 +13,7 @@ import (
 
 //
 type Rest struct {
-	url string
+	url         string
 	description *DatabaseDescription
 }
 
@@ -21,7 +21,7 @@ type Rest struct {
 func NewRest(dbKey string, url string) *Rest {
 
 	d := Rest{
-		url:url,
+		url: url,
 	}
 
 	return &d
@@ -38,7 +38,6 @@ func (r *Rest) Describe() *DatabaseDescription {
 	return nil
 }
 
-
 // Update sets a record that already exists in the database to the given data, updating only the fields given.
 func (r *Rest) Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue string) {
 	var response *http.Response
@@ -49,8 +48,7 @@ func (r *Rest) Update(ctx context.Context, table string, fields map[string]inter
 	body["n"] = pkName
 	body["v"] = pkValue
 
-
-	j,err := json.Marshal(body)
+	j, err := json.Marshal(body)
 	response, err = http.Post(path.Join(r.url, "upd"), "application/json", bytes.NewBuffer(j))
 	if err == nil {
 		data, _ := ioutil.ReadAll(response.Body)
@@ -70,16 +68,16 @@ func (r *Rest) Insert(ctx context.Context, table string, fields map[string]inter
 	body["t"] = table
 	body["f"] = fields
 
-	j,err := json.Marshal(body)
+	j, err := json.Marshal(body)
 	response, err = http.Post(path.Join(r.url, "ins"), "application/json", bytes.NewBuffer(j))
 	if err == nil {
 		data, _ := ioutil.ReadAll(response.Body)
 		var result map[string]string
 		err = json.Unmarshal(data, &result)
 		if result == nil {
-			if v,ok := result["err"]; ok {
+			if v, ok := result["err"]; ok {
 				err = fmt.Errorf(v)
-			} else if v,ok := result["id"]; ok {
+			} else if v, ok := result["id"]; ok {
 				id = v
 			} else {
 				err = fmt.Errorf("missing return id")
@@ -100,7 +98,7 @@ func (r *Rest) Delete(ctx context.Context, table string, pkName string, pkValue 
 	body["n"] = pkName // Not sure this is needed
 	body["v"] = pkValue
 
-	j,err := json.Marshal(body)
+	j, err := json.Marshal(body)
 	response, err = http.Post(path.Join(r.url, "del"), "application/json", bytes.NewBuffer(j))
 	if err == nil {
 		data, _ := ioutil.ReadAll(response.Body)
@@ -121,8 +119,7 @@ func (r *Rest) Get(ctx context.Context, jsonRequest []byte) (result []map[string
 	return
 }
 
-
-func (r *Rest) Begin(ctx context.Context) (txid TransactionID){
+func (r *Rest) Begin(ctx context.Context) (txid TransactionID) {
 	// TODO: Implement transactions in coordination with the rest server, where the rest server holds
 	// on to the transaction id, and rolls back after a set timeout.
 	return TransactionID(0)

@@ -38,11 +38,11 @@ Changes() on the column to get the state of the changed checkboxes. This is usef
 Save button to finally record the changes, but you can also use the CheckboxColumnClick event to
 record changes in real time through Javascript and Ajax.
 </p>
-{{draw control.Pager1}}
-{{draw control.Table1}}
+{{draw pager }}
+{{draw table1 }}
 
-{{draw control.SubmitAjax}}
-{{draw control.SubmitServer}}
+{{draw ajaxButton }}
+{{draw serverButton }}
 
 {{end}}
 

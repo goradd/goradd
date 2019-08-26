@@ -60,7 +60,6 @@ func (n *SubqueryNode) log(level int) {
 	log.Print(tabs + "Subquery: ")
 }
 
-
 // SubqueryBuilder is used internally by the framework to return the internal query builder of the subquery
 func SubqueryBuilder(n *SubqueryNode) QueryBuilderI {
 	return n.b

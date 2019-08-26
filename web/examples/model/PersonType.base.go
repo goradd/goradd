@@ -18,7 +18,6 @@ const (
 	PersonTypeCompanyCar PersonType = 4
 
 	PersonTypeWorksFromHome PersonType = 5
-
 )
 
 const PersonTypeMaxValue = 5
@@ -28,13 +27,20 @@ type PersonType uint
 // String returns the name value of the type and satisfies the fmt.Stringer interface
 func (p PersonType) String() string {
 	switch p {
-	case 0: return ""
-	case 1: return "Contractor"
-	case 2: return "Manager"
-	case 3: return "Inactive"
-	case 4: return "Company Car"
-	case 5: return "Works From Home"
-	default: panic("Index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "Contractor"
+	case 2:
+		return "Manager"
+	case 3:
+		return "Inactive"
+	case 4:
+		return "Company Car"
+	case 5:
+		return "Works From Home"
+	default:
+		panic("Index out of range")
 	}
 	return "" // prevent warning
 }
@@ -45,14 +51,13 @@ func (p PersonType) ID() string {
 }
 
 func PersonTypes() (values []PersonType) {
-    values = append(values, 1)
-    values = append(values, 2)
-    values = append(values, 3)
-    values = append(values, 4)
-    values = append(values, 5)
-    return
+	values = append(values, 1)
+	values = append(values, 2)
+	values = append(values, 3)
+	values = append(values, 4)
+	values = append(values, 5)
+	return
 }
-
 
 func PersonTypeNames() []string {
 	names := make([]string, 6)
@@ -64,4 +69,3 @@ func PersonTypeNames() []string {
 	names[5] = "Works From Home"
 	return names
 }
-

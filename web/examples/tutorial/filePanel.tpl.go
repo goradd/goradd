@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 )
 
-func (control *FilePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *FilePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <figure>

@@ -9,9 +9,9 @@ import (
 
 func TestNewAliasValue(t *testing.T) {
 	tests := []struct {
-		name interface{}
+		name  interface{}
 		value interface{}
-		want interface{}
+		want  interface{}
 	}{
 		{"abc", NewAliasValue("abc").String(), "abc"},
 		{5, NewAliasValue("5").Int(), 5},

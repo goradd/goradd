@@ -1,20 +1,23 @@
 package control
 
 import (
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/html"
 	"bytes"
-	"github.com/goradd/goradd/pkg/page/control"
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/javascript"
-	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/data"
+	"github.com/goradd/goradd/pkg/page/event"
 )
 
 type NavbarListI interface {
 	page.ControlI
+	control.ItemListI
+	data.DataManagerEmbedder
+	OnSelect (actions ...action.ActionI) page.ControlI
 }
 
 type NavbarList struct {
@@ -22,17 +25,13 @@ type NavbarList struct {
 	control.ItemList
 	subItemTag string
 	data.DataManager
-	Proxy *control.Proxy
 }
-
 
 func NavbarSelectEvent() page.EventI {
 	e := &page.Event{JsEvent: "gr-bs-navbarselect"}
-	e.ActionValue(javascript.JsCode("ui"))	// This will be the action value sent by the proxy...the id of the item
+	e.ActionValue(javascript.JsCode("ui")) // This will be the action value sent by the proxy...the id of the item
 	return e
 }
-
-// TODO: Create a mechanism to post-process this event and have it automatically be loaded with the selected item
 
 func NewNavbarList(parent page.ControlI, id string) *NavbarList {
 	t := &NavbarList{}
@@ -45,10 +44,19 @@ func (l *NavbarList) Init(self NavbarListI, parent page.ControlI, id string) {
 	l.Control.Init(self, parent, id)
 	l.Tag = "ul"
 	l.subItemTag = "li"
-	l.Proxy = control.NewProxy(l)
 
-	l.Proxy.On(event.Click(),
-		action.Trigger(l.ID(), "gr-bs-navbarselect", javascript.JsCode("$j(this).data('grAv')")))
+	pxy := control.NewProxy(l, l.proxyID())
+
+	pxy.On(event.Click(),
+		action.Trigger(l.ID(), "gr-bs-navbarselect", javascript.JsCode("g$(this).data('grAv')")))
+}
+
+func (l *NavbarList) proxyID() string {
+	return l.ID() + "-pxy"
+}
+
+func (l *NavbarList) ItemProxy() *control.Proxy {
+	return control.GetProxy(l, l.proxyID())
 }
 
 func (l *NavbarList) this() NavbarListI {
@@ -57,7 +65,7 @@ func (l *NavbarList) this() NavbarListI {
 
 func (l *NavbarList) ΩDrawTag(ctx context.Context) string {
 	if l.DataManager.HasDataProvider() {
-		l.GetData(ctx, l)
+		l.LoadData(ctx, l)
 		defer l.Clear()
 	}
 	return l.Control.ΩDrawTag(ctx)
@@ -65,7 +73,7 @@ func (l *NavbarList) ΩDrawTag(ctx context.Context) string {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *NavbarList) ΩDrawingAttributes() *html.Attributes {
+func (l *NavbarList) ΩDrawingAttributes() html.Attributes {
 	a := l.Control.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "navbarlist")
 	a.AddClass("navbar-nav")
@@ -96,14 +104,14 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI
 				// top level menu
 				var lastClass = ""
 
-				if i == len(items) - 1 {
+				if i == len(items)-1 {
 					// last item, so modify dropdown menu so it does not go off of screen
 					// If there is only one item in the navbar, and this is the left navbar, this might cause a problem.
 					// We can potentially fix that by asking the parent item if that is the situation.
 					lastClass = "dropdown-menu-right"
 				}
 				h += fmt.Sprintf(
-`<%s class="nav-item dropdown">
+					`<%s class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" id="%s_menu" role="menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         %s
     </a>
@@ -124,29 +132,80 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI
 					h += fmt.Sprintf(`<a class="dropdown-item disabled" href="#">%s</a>
 </li>`, item.RenderLabel())
 				}
-			} else {
+			} else if hasParent {
 				itemH := item.RenderLabel()
 				itemAttributes := item.Attributes().Copy()
 				itemAttributes.AddClass("nav-item")
 				linkAttributes := html.NewAttributes()
-
-
-				if hasParent {
-					itemAttributes.Set("role", "menuitem")
-					linkAttributes.AddClass("dropdown-item")
-				} else {
-					linkAttributes.AddClass("nav-link")
+				itemAttributes.Set("role", "menuitem")
+				linkAttributes.AddClass("dropdown-item")
+				if item.Anchor() == "" {
+					itemH = l.ItemProxy().LinkHtml(ctx, itemH, item.ID(), linkAttributes)
 				}
+				h += itemH
+			} else {
+				item.AnchorAttributes().AddClass("nav-link")
+				itemH := item.RenderLabel()
+				itemAttributes := item.Attributes().Copy()
+				itemAttributes.AddClass("nav-item")
 
 				if item.Anchor() == "" {
-					itemH = l.Proxy.LinkHtml(ctx, itemH, item.ID(), linkAttributes)
+					linkAttributes := html.NewAttributes()
+					linkAttributes.AddClass("nav-link")
+					itemH = l.ItemProxy().LinkHtml(ctx, itemH, item.ID(), linkAttributes)
 				}
-				if !hasParent {
-					itemH = html.RenderTag(l.subItemTag, itemAttributes, itemH)
-				}
+				itemH = html.RenderTag(l.subItemTag, itemAttributes, itemH)
 				h += itemH
 			}
 		}
 	}
 	return h
+}
+
+func (l *NavbarList) OnSelect (actions ...action.ActionI) page.ControlI {
+	return l.On(NavbarSelectEvent(), actions...)
+}
+
+type NavbarListCreator struct {
+	// ID is the control id of the html widget and must be unique to the page
+	ID string
+	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
+	Items []control.ListValue
+	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProvider data.DataBinder
+	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
+	DataProviderID string
+	page.ControlOptions
+	// OnSelect is the action to take when a list item is selected.
+	OnSelect action.ActionI
+}
+
+func (c NavbarListCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewNavbarList(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+func (c NavbarListCreator) Init(ctx context.Context, ctrl NavbarListI) {
+	if c.Items != nil {
+		ctrl.AddListItems(c.Items)
+	}
+
+	if c.DataProvider != nil {
+		ctrl.SetDataProvider(c.DataProvider)
+	} else if c.DataProviderID != "" {
+		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		ctrl.SetDataProvider(provider)
+	}
+
+	ctrl.ApplyOptions(c.ControlOptions)
+	if c.OnSelect != nil {
+		ctrl.OnSelect(c.OnSelect)
+	}
+}
+
+
+// GetNavbarList is a convenience method to return the control with the given id from the page.
+func GetNavbarList(c page.ControlI, id string) *NavbarList {
+	return c.Page().GetControl(id).(*NavbarList)
 }

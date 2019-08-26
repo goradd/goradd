@@ -38,6 +38,7 @@ type ColumnI interface {
 	Span() int
 	SetSpan(int) ColumnI
 	IsHidden() bool
+	AsHeader() bool
 	SetHidden(bool) ColumnI
 	DrawColumnTag(ctx context.Context, buf *bytes.Buffer)
 	DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer)
@@ -45,16 +46,16 @@ type ColumnI interface {
 	CellText(ctx context.Context, row int, col int, data interface{}) string
 	HeaderCellHtml(ctx context.Context, row int, col int) string
 	FooterCellHtml(ctx context.Context, row int, col int) string
-	HeaderAttributes(row int, col int) *html.Attributes
-	FooterAttributes(row int, col int) *html.Attributes
-	ColTagAttributes() *html.Attributes
+	HeaderAttributes(ctx context.Context, row int, col int) html.Attributes
+	FooterAttributes(ctx context.Context, row int, col int) html.Attributes
+	ColTagAttributes() html.Attributes
 	UpdateFormValues(ctx *page.Context)
 	AddActions(ctrl page.ControlI)
 	Action(ctx context.Context, params page.ActionParams)
-	SetHeaderTexter(s CellTexter) ColumnI
 	SetCellTexter(s CellTexter) ColumnI
+	SetHeaderTexter(s CellTexter) ColumnI
 	SetFooterTexter(s CellTexter) ColumnI
-	SetCellStyler(s html.Attributer)
+	SetCellStyler(s CellStyler)
 	IsSortable() bool
 	SortDirection() SortDirection
 	SetSortDirection(SortDirection) ColumnI
@@ -66,9 +67,15 @@ type ColumnI interface {
 }
 
 // CellTexter defines the interface for a structure that provides the content of a table cell.
+// If your CellTexter is not a control, you should register it with gob.
 type CellTexter interface {
 	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string
 }
+
+type CellStyler interface {
+	CellAttributes(ctx context.Context, col ColumnI, row int, colNum int, data interface{}) html.Attributes
+}
+
 
 // ColumnBase is the base implementation of all table columns
 type ColumnBase struct {
@@ -76,24 +83,23 @@ type ColumnBase struct {
 	id               string
 	parentTable      TableI
 	title            string
-	*html.Attributes // These are attributes that will appear on the cell
-	headerAttributes *html.Attributes
-	footerAttributes *html.Attributes
-	colTagAttributes *html.Attributes
+	html.Attributes // These are static attributes that will appear on each cell
+	headerAttributes []html.Attributes // static attributes per header row
+	footerAttributes []html.Attributes
+	colTagAttributes html.Attributes
 	span             int
-	renderAsHeader   bool
+	asHeader         bool
 	isHtml           bool
-	cellTexter       CellTexter
-	cellStyler       html.Attributer // for individually styling cells
-	headerTexter     CellTexter
-	footerTexter     CellTexter
+	cellTexter     CellTexter
+	headerTexter   CellTexter
+	footerTexter   CellTexter
+	cellStyler     CellStyler // for dynamically styling cells
 	isHidden         bool
 	sortDirection    SortDirection
 }
 
 func (c *ColumnBase) Init(self ColumnI) {
 	c.Base.Init(self)
-	c.span = 1
 	c.Attributes = html.NewAttributes()
 }
 
@@ -145,9 +151,13 @@ func (c *ColumnBase) SetSpan(span int) ColumnI {
 	return c.this()
 }
 
-// SetRenderAsHeader will cause the entire column to be output with th instead of td cells.
-func (c *ColumnBase) SetRenderAsHeader(r bool) {
-	c.renderAsHeader = r
+// SetAsHeader will cause the entire column to be output with th instead of td cells.
+func (c *ColumnBase) SetAsHeader(r bool) {
+	c.asHeader = r
+}
+
+func (c *ColumnBase) AsHeader() bool {
+	return c.asHeader
 }
 
 // SetIsHtml will cause the cell to treat the text it receives as html rather than raw text it should escape.
@@ -159,7 +169,7 @@ func (c *ColumnBase) SetIsHtml(columnIsHtml bool) ColumnI {
 }
 
 // SetCellStyler sets the CellStyler for the body cells.
-func (c *ColumnBase) SetCellStyler(s html.Attributer) {
+func (c *ColumnBase) SetCellStyler(s CellStyler) {
 	c.cellStyler = s
 }
 
@@ -198,25 +208,38 @@ func (c *ColumnBase) SetHidden(h bool) ColumnI {
 }
 
 // HeaderAttributes returns the attributes to use on the header cell.
-func (c *ColumnBase) HeaderAttributes(row int, col int) *html.Attributes {
-	if c.headerAttributes == nil {
-		c.headerAttributes = html.NewAttributes()
-		c.headerAttributes.Set("scope", "col")
+// The default version will return an attribute structure which you can use to directly
+// manipulate the attributes. If you want something more customized, create your own column and
+// implement this function. row and col are zero based.
+func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) html.Attributes {
+	if len(c.headerAttributes) < row + 1 {
+		// extend the attributes
+		c.headerAttributes = append(c.headerAttributes, make([]html.Attributes, row-len(c.headerAttributes)+1)...)
 	}
-	return c.headerAttributes
+	if c.headerAttributes[row] == nil {
+		c.headerAttributes[row] = html.NewAttributes()
+		if row == 0 {
+			c.headerAttributes[row].Set("scope", "col") // for screen readers
+		}
+	}
+	return c.headerAttributes[row]
 }
 
 // FooterAttributes returns the attributes to use for the footer cell.
-func (c *ColumnBase) FooterAttributes(row int, col int) *html.Attributes {
-	if c.footerAttributes == nil {
-		c.footerAttributes = html.NewAttributes()
+func (c *ColumnBase) FooterAttributes(ctx context.Context, row int, col int) html.Attributes {
+	if len(c.footerAttributes) < row + 1 {
+		// extend the attributes
+		c.footerAttributes = append(c.footerAttributes, make([]html.Attributes, row-len(c.footerAttributes)+1)...)
 	}
-	return c.footerAttributes
+	if c.footerAttributes[row] == nil {
+		c.footerAttributes[row] = html.NewAttributes()
+	}
+	return c.footerAttributes[row]
 }
 
 // ColTagAttributes specifies attributes that will appear in the table tag. Note that you have to turn on table
 // tags in the table object as well for these to appear.
-func (c *ColumnBase) ColTagAttributes() *html.Attributes {
+func (c *ColumnBase) ColTagAttributes() html.Attributes {
 	if c.colTagAttributes == nil {
 		c.colTagAttributes = html.NewAttributes()
 	}
@@ -230,9 +253,9 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 	}
 	a := c.this().ColTagAttributes()
 	if c.id != "" {
-		a.Set("id", c.this().ParentTable().ID() + "_" + c.id) // so that actions can get routed to a column
+		a.Set("id", c.this().ParentTable().ID()+"_"+c.id) // so that actions can get routed to a column
 	}
-	if c.span != 1 {
+	if c.span > 1 {
 		a.Set("span", strconv.Itoa(c.span))
 	}
 	buf.WriteString(html.RenderTag("col", a, ""))
@@ -261,8 +284,12 @@ func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count
 	}
 	cellHtml := c.this().FooterCellHtml(ctx, row, col)
 
-	a := c.this().FooterAttributes(row, col)
-	buf.WriteString(html.RenderTag("td", a, cellHtml))
+	a := c.this().FooterAttributes(ctx, row, col)
+	tag := "td"
+	if c.asHeader {
+		tag = "th"
+	}
+	buf.WriteString(html.RenderTag(tag, a, cellHtml))
 }
 
 // FooterCellHtml returns the html to use in the given footer cell.
@@ -286,7 +313,11 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 	}
 	a := c.CellAttributes(ctx, row, col, data)
 
-	buf.WriteString(html.RenderTag("td", a, cellHtml))
+	tag := "td"
+	if c.asHeader {
+		tag = "th"
+	}
+	buf.WriteString(html.RenderTag(tag, a, cellHtml))
 }
 
 // CellText returns the text in the cell. It will use the CellTexter if one was provided.
@@ -299,14 +330,14 @@ func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interf
 
 // CellAttributes returns the attributes of the cell. Column implementations should call this base version first before
 // customizing more. It will use the CellStyler if one was provided.
-func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) *html.Attributes {
+func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) html.Attributes {
 	if c.cellStyler != nil {
-		return c.cellStyler.Attributes(ctx, row, col, data)
+		return c.cellStyler.CellAttributes(ctx, c.this(), row, col, data)
 	}
 	return nil
 }
 
-// SetSortable indicates that the column should be drawn with sort indicators.
+// MakeSortable indicates that the column should be drawn with sort indicators.
 func (c *ColumnBase) SetSortable() ColumnI {
 	c.sortDirection = NotSorted
 	return c.this()
@@ -336,12 +367,12 @@ func (c *ColumnBase) RenderSortButton(labelHtml string) string {
 	case NotSorted:
 		labelHtml += ` <i class="fa fa-sort fa-lg"></i>`
 	case SortAscending:
-		labelHtml +=  ` <i class="fa fa-sort-asc fa-lg"></i>`
+		labelHtml += ` <i class="fa fa-sort-asc fa-lg"></i>`
 	case SortDescending:
-		labelHtml +=  ` <i class="fa fa-sort-desc fa-lg"></i>`
+		labelHtml += ` <i class="fa fa-sort-desc fa-lg"></i>`
 	}
 
-	return fmt.Sprintf(`<button onclick="$j('#%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
+	return fmt.Sprintf(`<button onclick="g$('%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
 }
 
 // SortDirection returns the current sort direction.
@@ -364,3 +395,82 @@ func (c *ColumnBase) MarshalState(m maps.Setter) {}
 // UnmarshalState is an internal function to restore the state of the control.
 func (c *ColumnBase) UnmarshalState(m maps.Loader) {}
 
+type ColumnCreator interface {
+	Create(context.Context, TableI) ColumnI
+}
+
+// ColumnOptions are settings you can apply to all types of table columns
+type ColumnOptions struct {
+	// CellAttributes is a static map of attributes to apply to every cell in the column
+	CellAttributes   html.AttributeCreator
+	// HeaderAttributes is a slice of attributes to apply to each row of the header cells in the column.
+	// Each item in the slice corresponds to a row of the header.
+	HeaderAttributes []html.AttributeCreator
+	// FooterAttributes is a slice of attributes to apply to each row of the footer cells in the column.
+	// Each item in the slice corresponds to a row of the footer.
+	FooterAttributes []html.AttributeCreator
+	// ColTagAttributes applies attributes to the col tag if col tags are on in the table. There are limited uses for
+	// this, but in particular, you can style a column and give it an id. Use Span to set the span attribute.
+	ColTagAttributes html.AttributeCreator
+	// Span is specifically for col tags to specify the width of the styling in the col tag.
+	Span             int
+	// AsHeader will cause the entire column to output header tags (th) instead of standard cell tags (td).
+	// This is useful for columns on the left or right that contain labels for the rows.
+	AsHeader   bool
+	// IsHtml will cause the text of the cells to NOT be escaped
+	IsHtml           bool
+	// HeaderTexter is an object that will provide the text of the header cells. This can be either an
+	// object that you have set up prior, or a string id of a control
+	HeaderTexter   	 interface{}
+	// FooterTexter is an object that will provide the text of the footer cells. This can be either an
+	// object that you have set up prior, or a string id of a control
+	FooterTexter   	 interface{}
+	// IsHidden will start the column out in a hidden state so that it will not initially be drawn
+	IsHidden         bool
+}
+
+func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt ColumnOptions) {
+	c.Attributes.Merge(opt.CellAttributes)
+	if opt.HeaderAttributes != nil {
+		for i,row := range opt.HeaderAttributes {
+			attr := c.HeaderAttributes(ctx, i, 0)
+			attr.Merge(row)
+		}
+	}
+	if opt.FooterAttributes != nil {
+		for i,row := range opt.FooterAttributes {
+			attr := c.FooterAttributes(ctx, i, 0)
+			attr.Merge(row)
+		}
+	}
+	if opt.ColTagAttributes != nil {
+		if c.colTagAttributes == nil {
+			c.colTagAttributes = html.NewAttributes()
+		}
+		c.colTagAttributes.Merge(opt.ColTagAttributes)
+	}
+
+	c.isHidden = opt.IsHidden
+
+	if opt.Span != 0 {
+		c.SetSpan(opt.Span)
+	}
+	c.asHeader = opt.AsHeader
+	if opt.IsHtml {
+		c.isHtml = true
+	}
+	if opt.HeaderTexter != nil {
+		if s,ok := opt.HeaderTexter.(string); ok {
+			c.SetHeaderTexter(parent.Page().GetControl(s).(CellTexter))
+		} else {
+			c.SetHeaderTexter(opt.HeaderTexter.(CellTexter))
+		}
+	}
+	if opt.FooterTexter != nil {
+		if s,ok := opt.FooterTexter.(string); ok {
+			c.SetFooterTexter(parent.Page().GetControl(s).(CellTexter))
+		} else {
+			c.SetFooterTexter(opt.FooterTexter.(CellTexter))
+		}
+	}
+}

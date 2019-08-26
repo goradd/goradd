@@ -29,7 +29,6 @@ const (
 	DialogStyleSuccess
 )
 
-
 // DialogI defines the publicly consumable api that the goradd framework uses to interact with a dialog.
 //
 // More and more CSS and javascript frameworks are coming out with their own forms of dialog, which is usually a
@@ -62,9 +61,9 @@ type DialogI interface {
 // implementation of the dialog interface.
 type Dialog struct {
 	Panel
-	buttonBar   *Panel
-	titleBar    *Panel
-	closeBox    *Button
+	buttonBarID string
+	titleBarID  string
+	closeBoxID  string
 	isOpen      bool
 	dialogStyle DialogStyle
 	title       string
@@ -78,7 +77,7 @@ type DialogButtonOptions struct {
 	// The ConfirmationMessage string will appear with a yes/no box making sure the user wants the action.
 	// This is usually used when the action could be destructive, like a Delete button.
 	ConfirmationMessage string
-	// PushLeft pushes this button to the left side of the dialog. Buttons are typically aligned right. 
+	// PushLeft pushes this button to the left side of the dialog. Buttons are typically aligned right.
 	// This is helpful to separate particular buttons from the main grouping of buttons.
 	PushLeft bool
 	// IsClose will set the button up to automatically close the dialog. Detect closes with the DialogCloseEvent if needed.
@@ -99,41 +98,61 @@ func NewDialog(parent page.ControlI, id string) *Dialog {
 // Init is called by subclasses of the dialog.
 func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
 	// We add the dialog to the form. The form acts as a dialog controller/container too.
-	overlay := parent.Page().GetControl("groverlay")
+	var overlay page.ControlI
 
-	if overlay == nil {
+	if !parent.Page().HasControl("groverlay") {
 		overlay = NewPanel(parent.ParentForm(), "groverlay")
 		overlay.SetShouldAutoRender(true)
 	} else {
+		overlay = parent.Page().GetControl("groverlay")
 		overlay.SetVisible(true)
 	}
 
 	d.Panel.Init(self, overlay, id)
 	d.Tag = "div"
 
-	d.titleBar = NewPanel(d, d.ID() + "_title")
-	d.titleBar.AddClass("gr-dialog-title")
+	d.titleBarID = d.ID()+"-title"
+	tb := NewPanel(d, d.titleBarID)
+	tb.AddClass("gr-dialog-title")
 
-	d.buttonBar = NewPanel(d, d.ID() + "_buttons")
-	d.buttonBar.AddClass("gr-dialog-buttons")
+	d.buttonBarID = d.ID()+"_buttons"
+	bb := NewPanel(d, d.buttonBarID)
+	bb.AddClass("gr-dialog-buttons")
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
 	d.On(event.DialogClosed(), action.Ajax(d.ID(), DialogClose), action.PrivateAction{})
 
 	//d.FormBase().AddStyleSheetFile(config.GORADD_FONT_AWESOME_CSS, nil)
 }
 
+func (d *Dialog) TitleBar() *Panel {
+	return GetPanel(d, d.titleBarID)
+}
+
+func (d *Dialog) ButtonBar() *Panel {
+	return GetPanel(d, d.buttonBarID)
+}
+
+func (d *Dialog) CloseBox() *Button {
+	if d.closeBoxID == "" {
+		return nil
+	}
+	return GetButton(d, d.closeBoxID)
+}
+
+
+
 // SetTitle sets the title of the dialog
 func (d *Dialog) SetTitle(t string) {
-	d.titleBar.SetText(t)
+	d.TitleBar().SetText(t)
 }
 
 // Title returns the title of the dialog
 func (d *Dialog) Title() string {
-	return d.titleBar.Text()
+	return d.TitleBar().Text()
 }
 
 // ΩDrawingAttributes is called by the framework to set temporary attributes just before drawing.
-func (d *Dialog) ΩDrawingAttributes() *html.Attributes {
+func (d *Dialog) ΩDrawingAttributes() html.Attributes {
 	a := d.Panel.ΩDrawingAttributes()
 	a.SetDataAttribute("grctl", "dialog")
 	return a
@@ -149,7 +168,7 @@ func (d *Dialog) AddButton(
 	if label == "" {
 		id = label
 	}
-	btn := NewButton(d.buttonBar, id)
+	btn := NewButton(d.ButtonBar(), id)
 	btn.SetLabel(label)
 
 	if options != nil {
@@ -180,7 +199,7 @@ func (d *Dialog) AddButton(
 
 // RemoveButton removes the given button from the dialog
 func (d *Dialog) RemoveButton(id string) {
-	d.buttonBar.RemoveChild(id)
+	d.ButtonBar().RemoveChild(id)
 	d.Refresh()
 	//delete(d.validators, id)
 
@@ -188,22 +207,25 @@ func (d *Dialog) RemoveButton(id string) {
 
 // RemoveAllButtons removes all the buttons from the dialog
 func (d *Dialog) RemoveAllButtons() {
-	d.buttonBar.RemoveChildren()
-	d.buttonBar.Refresh()
+	bb := d.ButtonBar()
+	bb.RemoveChildren()
+	bb.Refresh()
 	//delete(d.validators, id)
 }
 
-// SetButtonVisible sets the visible state of the button. Hidden buttons are still rendered, but are 
+// SetButtonVisible sets the visible state of the button. Hidden buttons are still rendered, but are
 // styled so that they are not shown.
 func (d *Dialog) SetButtonVisible(id string, visible bool) {
-	if ctrl := d.buttonBar.Child(id); ctrl != nil {
+	bb := d.ButtonBar()
+	if ctrl := bb.Child(id); ctrl != nil {
 		ctrl.SetVisible(false)
 	}
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (d *Dialog) SetButtonStyles(id string, a *html.Style) {
-	if ctrl := d.buttonBar.Child(id); ctrl != nil {
+func (d *Dialog) SetButtonStyles(id string, a html.Style) {
+	bb := d.ButtonBar()
+	if ctrl := bb.Child(id); ctrl != nil {
 		ctrl.SetStyles(a)
 	}
 }
@@ -211,32 +233,34 @@ func (d *Dialog) SetButtonStyles(id string, a *html.Style) {
 // SetHasCloseBox adds a close box so that the dialog can be closed in a way that is independent of buttons.
 // Often this is an X button in the upper right corner of the dialog.
 func (d *Dialog) SetHasCloseBox(h bool) {
-	if h && d.closeBox == nil {
+	cb := d.CloseBox()
+	if h && cb == nil {
 		d.addCloseBox()
-	} else if !h && d.closeBox != nil {
-		d.closeBox.Remove()
-		d.closeBox = nil
+	} else if !h && cb != nil {
+		cb.Remove()
+		d.closeBoxID = ""
 	}
 }
 
 func (d *Dialog) addCloseBox() {
-	d.closeBox = NewButton(d.titleBar, d.ID() + "_closebox")
-	d.closeBox.AddClass("gr-dialog-close")
-	d.closeBox.SetText(`<i class="fa fa-times"></i>`)
-	d.closeBox.SetEscapeText(false)
-	d.closeBox.On(event.Click(), action.Ajax(d.ID(), DialogClose))
+	d.closeBoxID = d.ID()+"-cb"
+	cb := NewButton(d.TitleBar(), d.closeBoxID)
+	cb.AddClass("gr-dialog-close")
+	cb.SetText(`<i class="fa fa-times"></i>`)
+	cb.SetTextIsHtml(true)
+	cb.On(event.Click(), action.Ajax(d.ID(), DialogClose))
 }
 
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog.
 func (d *Dialog) AddCloseButton(label string, id string) {
-	btn := NewButton(d.buttonBar, id)
+	btn := NewButton(d.ButtonBar(), id)
 	btn.SetLabel(label)
 	btn.On(event.Click(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 	// Note: We will also do the public doAction with a DialogCloseEvent
 }
 
-// Action is called by the framework and will respond to the DialogClose action sent by any close buttons on the 
+// Action is called by the framework and will respond to the DialogClose action sent by any close buttons on the
 // page to close the dialog. You do not normally need to call this.
 func (d *Dialog) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
@@ -290,10 +314,10 @@ func defaultAlert(form page.FormI, message string, buttons interface{}) DialogI 
 	if buttons != nil {
 		switch b := buttons.(type) {
 		case string:
-			dlg.AddCloseButton(b,"")
+			dlg.AddCloseButton(b, "")
 		case []string:
 			if len(b) == 1 {
-				dlg.AddCloseButton(b[0],"")
+				dlg.AddCloseButton(b[0], "")
 			} else {
 				for _, l := range b {
 					dlg.AddButton(l, "", nil)
@@ -318,3 +342,5 @@ var alertFunc AlertFuncType = defaultAlert // default to our built in one
 func SetAlertFunction(f AlertFuncType) {
 	alertFunc = f
 }
+
+

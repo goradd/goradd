@@ -22,6 +22,17 @@ func TestNow(t *testing.T) {
 	assert.False(t, d2.IsTimestamp())
 }
 
+func TestStringConversion(t *testing.T) {
+	d := Now()
+
+	d2 := NewDateTime(d.String())
+	assert.True(t, d.Equal(d2))
+
+	d3 := NewDateTime(d.UTC().String())
+	assert.True(t, d.Equal(d3))
+
+}
+
 func TestZero(t *testing.T) {
 
 	d := NewZeroDate()
@@ -34,7 +45,7 @@ func ExampleDateTime_MarshalJSON() {
 	d := NewDateTime("2012-11-01T22:08:41+00:00")
 	v, _ := d.MarshalJSON()
 	fmt.Println(string(v))
-	// Output: {"d":1,"goraddObject":"dt","h":22,"m":8,"mo":10,"ms":0,"s":41,"t":false,"y":2012,"z":false}
+	// Output: {"d":1,"goraddObject":"date","h":22,"m":8,"mo":10,"ms":0,"s":41,"t":false,"y":2012,"z":false}
 }
 
 func ExampleDateTime_JavaScript() {

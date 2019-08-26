@@ -16,22 +16,22 @@ type ServerLanguageEntry struct {
 	// Dict is the corresponding language dictionary, helping us to describe the language to users
 	Dict *display.Dictionary
 	// LangString is the string to display in the lang attribute of the html tag. Leave it blank to get the default from the Tag.
-	LangString	string
+	LangString string
 }
 
 // languages is the list of languages that the application supports. By default we just support English, but you can
 // change it to what you want
-var languages = []language.Tag {
+var languages = []language.Tag{
 	language.AmericanEnglish, // first one is the default
 }
 
 // dictionaries are corresponding dictionaries
-var dictionaries = []*display.Dictionary {
+var dictionaries = []*display.Dictionary{
 	display.English, // first one is the default
 }
 
 // langAttributes are the corresponding lang attributes to put in the html tag. This should be the canonical value of the language.
-var langAttributes = []string {
+var langAttributes = []string{
 	"en", // first one is the default
 }
 
@@ -40,15 +40,15 @@ var matcher = language.NewMatcher([]language.Tag{language.AmericanEnglish})
 // SetSupportedLanguages sets up the languages that the application supports. It expects both a list of language
 // tags and a matching list of dictionaries. You should only call this during application startup to inject your
 // list of supported languages into the application.
-func SetSupportedLanguages(l... ServerLanguageEntry) {
+func SetSupportedLanguages(l ...ServerLanguageEntry) {
 	if len(l) < 1 {
-		panic ("you must have at least one language")
+		panic("you must have at least one language")
 	}
 	languages = make([]language.Tag, len(l))
 	dictionaries = make([]*display.Dictionary, len(l))
 	langAttributes = make([]string, len(l))
 
-	for i,e := range l {
+	for i, e := range l {
 		languages[i] = e.Tag
 		dictionaries[i] = e.Dict
 		if e.LangString == "" {
@@ -64,7 +64,7 @@ func SetSupportedLanguages(l... ServerLanguageEntry) {
 
 // SupportedLanguages is returuned by GetSupported
 type SupportedLanguages []struct {
-	LocalName string
+	LocalName  string
 	NativeName string
 }
 
@@ -78,7 +78,7 @@ func GetSupportedLanguages(t language.Tag) SupportedLanguages {
 	l := d.Languages()
 	s := make(SupportedLanguages, len(languages))
 
-	for i,t := range languages {
+	for i, t := range languages {
 		s[i].LocalName = l.Name(t)
 		s[i].NativeName = display.Self.Name(t)
 	}
@@ -89,7 +89,7 @@ func GetSupportedLanguages(t language.Tag) SupportedLanguages {
 // SetDefaultLanguage is called by the framework to set up the session variable with a default language if one has not
 // yet been set. The default language is based on the "accept-language" header value and the list of languages that
 // the application supports.
-func SetDefaultLanguage(ctx context.Context, acceptLanguageValue string) (int){
+func SetDefaultLanguage(ctx context.Context, acceptLanguageValue string) int {
 	if !session.Has(ctx, goradd.SessionLanguage) {
 		tags, _, err := language.ParseAcceptLanguage(acceptLanguageValue)
 		if err != nil {
@@ -104,25 +104,25 @@ func SetDefaultLanguage(ctx context.Context, acceptLanguageValue string) (int){
 // Call SetLanguage to set the user's language to a specific language from the list of supported languages.
 func SetLanguage(ctx context.Context, i int) {
 	if i >= len(languages) || i < 0 {
-		panic ("invalid language setting")
+		panic("invalid language setting")
 	}
 	session.SetInt(ctx, goradd.SessionLanguage, i)
 }
 
 func CurrentLanguageAttribute(ctx context.Context) string {
-	v,_ := session.GetInt(ctx, goradd.SessionLanguage)
+	v, _ := session.GetInt(ctx, goradd.SessionLanguage)
 	return langAttributes[v]
 }
 
 // CurrentLanguage returns the ordinal value of the current language, and the canonical value
 // If the language setting is not yet set, it returns the default language
 func CurrentLanguage(ctx context.Context) (int, string) {
-	v,_ := session.GetInt(ctx, goradd.SessionLanguage)
+	v, _ := session.GetInt(ctx, goradd.SessionLanguage)
 	return v, langAttributes[v]
 }
 
 // CanonicalValue will return the canonical value of the language at the given position
-func CanonicalValue(i int) (string) {
+func CanonicalValue(i int) string {
 	return langAttributes[i]
 }
 

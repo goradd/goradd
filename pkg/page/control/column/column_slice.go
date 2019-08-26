@@ -56,7 +56,7 @@ type SliceTexter struct {
 	TimeFormat string
 }
 
-func (t SliceTexter) CellText(ctx context.Context, col 	control.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (t SliceTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
 	vSlice := reflect.ValueOf(data)
 	if vSlice.Kind() != reflect.Slice {
 		panic("data must be a slice.")
@@ -120,3 +120,40 @@ func ApplyFormat(data interface{}, format string, timeFormat string) string {
 	}
 	return out
 }
+
+// SliceColumnCreator creates a column that treats each row as a slice of data.
+type SliceColumnCreator struct {
+	// ID will assign the given id to the column. If you do not specify it, an id will be given it by the framework.
+	ID string
+	// Index is the slice index that will be used to get to the data in the column
+	Index int
+	// Title is the title of the column and will appear in the header
+	Title string
+	// Format is a format string applied to the data using fmt.Sprintf
+	Format string
+	// TimeFormat is a format string applied specifically to time data using time.Format
+	TimeFormat string
+	// Sortable makes the column display sort arrows in the header
+	Sortable bool
+	control.ColumnOptions
+}
+
+func (c SliceColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
+	col := NewSliceColumn(c.Index)
+	if c.ID != "" {
+		col.SetID(c.ID)
+	}
+	col.SetTitle(c.Title)
+	if c.Format != "" {
+		col.SetFormat(c.Format)
+	}
+	if c.TimeFormat != "" {
+		col.SetTimeFormat(c.TimeFormat)
+	}
+	if c.Sortable {
+		col.SetSortable()
+	}
+	col.ApplyOptions(ctx, parent, c.ColumnOptions)
+	return col
+}
+

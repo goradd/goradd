@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-// DrawTemplate draws the contents of the TargetEditPanel panel.
+// DrawTemplate draws the contents of the ProjectPanel panel.
 func (p *ProjectPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`    <h3>Project Details</h3>

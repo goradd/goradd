@@ -34,8 +34,8 @@ type sqlBuilder struct {
 
 	/* The variables below are populated during the sql build process */
 
-	isCount bool
-	isDelete bool
+	isCount           bool
+	isDelete          bool
 	rootDbTable       string                  // The database name for the table that is the root of the query
 	rootJoinTreeItem  *joinTreeItem           // The top of the join tree
 	subPrefix         string                  // The prefix for sub items. If this is a sub query, this gets updated
@@ -59,7 +59,6 @@ func NewSqlBuilder(db SqlDbI) *sqlBuilder {
 	b.QueryBuilder.Init(b)
 	return b
 }
-
 
 // Load terminates the builder, queries the database, and returns the results as an array of interfaces similar in structure to a json structure
 func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{}) {
@@ -387,9 +386,13 @@ func (b *sqlBuilder) makeColumnAliases() {
 
 	if len(b.groupBys) > 0 {
 		// SQL in general has a problem with group by items that are not selected, so we always select group by columns by implication
-		// Some SQL forms have gotten aorund the problem by just choosing a random result, but modern SQL engines now consider this an error
+		// Some SQL forms have gotten around the problem by just choosing a random result, but modern SQL engines now consider this an error
 		for _, n := range b.groupBys {
-			b.assignAlias(b.getItemFromNode(n))
+			_,isAlias := n.(*AliasNode)
+
+			if !isAlias {
+				b.assignAlias(b.getItemFromNode(n))
+			}
 		}
 	} else if len(b.selects) > 0 {
 		for _, n := range b.selects {
@@ -437,7 +440,13 @@ func (b *sqlBuilder) assignPrimaryKeyAliases(item *joinTreeItem) {
 		panic("pk was not added")
 	}
 
-	b.assignAlias(item.leafs[0])
+	b.assignAlias(item.leafs[0]) // Assign the primary key alias
+
+	// If this has a related column node, assign its alias too.
+	if rn := RelatedColumnNode(item.node); rn != nil {
+		i2 := b.findJoinItem(rn)
+		b.assignAlias(i2)
+	}
 
 	for _, item2 := range item.childReferences {
 		b.assignPrimaryKeyAliases(item2)
@@ -454,7 +463,7 @@ func (b *sqlBuilder) assignAllColumnAliases(item *joinTreeItem) {
 			b.assignAlias(b.getItemFromNode(sn))
 		}
 	}
-	for _,item2 := range item.childReferences {
+	for _, item2 := range item.childReferences {
 		b.assignAllColumnAliases(item2)
 	}
 }
@@ -644,6 +653,22 @@ func (b *sqlBuilder) findChildJoinItem(childNode NodeI, parent *joinTreeItem) (m
 	}
 	return nil
 }
+
+// findForeignKeyItem will find the matching leaf node for a forward referencing foreignKey.
+/*func (b *sqlBuilder) findForeignKeyItem(item *joinTreeItem) (match *joinTreeItem) {
+	parent := item.parent
+	if parent == nil {
+		panic("Trying to find a foreign key item on a top-level item")
+	}
+	refNode,ok := item.node.(*ReferenceNode)
+	if !ok {
+		panic("Can only find a foreign key item on a reference node")
+	}
+	for _,leaf := range parent.leafs {
+		col := leaf.node.(*ColumnNode).name()
+		if col.
+	}
+}*/
 
 // findChildJoinItemRecursive recursively finds a join item
 func (b *sqlBuilder) findChildJoinItemRecursive(n NodeI, joinItem *joinTreeItem) (match *joinTreeItem) {

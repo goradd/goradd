@@ -5,76 +5,37 @@ package controls
 import (
 	"bytes"
 	"context"
-
-	"github.com/goradd/goradd/pkg/page"
 )
 
-func (form *ControlsForm) AddHeadTags() {
-	form.FormBase.AddHeadTags()
+func (ctrl *ControlsForm) AddHeadTags() {
+	ctrl.FormBase.AddHeadTags()
 	if "Control Examples" != "" {
-		form.Page().SetTitle("Control Examples")
+		ctrl.Page().SetTitle("Control Examples")
 	}
 
 	// double up to deal with body attributes if they exist
-	form.Page().BodyAttributes = `
+	ctrl.Page().BodyAttributes = `
 `
 }
 
-func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
-	buf.WriteString(`
-`)
-	path := page.GetContext(ctx).HttpContext.URL.Path
 	buf.WriteString(`
 <h1>Control Examples</h1>
 <div class="controlList_scroll">
-  <ul>
-    <li><a href="`)
+	`)
 
-	buf.WriteString(path)
+	buf.WriteString(`
+`)
 
-	buf.WriteString(`">Home</a></li>
-    <li><a href="`)
+	{
+		err := ctrl.Page().GetControl("listPanel").Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
 
-	buf.WriteString(path)
-
-	buf.WriteString(`?control=textbox">Textboxes</a></li>
-    <li><a href="`)
-
-	buf.WriteString(path)
-
-	buf.WriteString(`?control=checkbox">Checkboxes and Radio Buttons</a></li>
-    <li><a href="`)
-
-	buf.WriteString(path)
-
-	buf.WriteString(`?control=selectlist">Selection Lists</a></li>
-    <li><a href="`)
-
-	buf.WriteString(path)
-
-	buf.WriteString(`?control=hlist">Hierarchical Lists</a></li>
-    <li><a href="`)
-
-	buf.WriteString(path)
-
-	buf.WriteString(`?control=table">Tables</a></li>
-    <li><a href="`)
-
-	buf.WriteString(path)
-
-	buf.WriteString(`?control=tabledb">Tables - Database Columns</a></li>
-    <li><a href="`)
-
-	buf.WriteString(path)
-
-	buf.WriteString(`?control=tablecheckbox">Tables - Checkbox Columns</a></li>
-    <li><a href="`)
-
-	buf.WriteString(path)
-
-	buf.WriteString(`?control=tableproxy">Tables - Proxy Columns</a></li>
-  </ul>
+	buf.WriteString(`
 </div>
 <div class="detail_container">
 	`)
@@ -83,7 +44,7 @@ func (form *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (
 `)
 
 	{
-		err := form.detail.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("detailPanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

@@ -12,7 +12,7 @@ import (
 	"goradd-project/gen/goradd/model/node"
 )
 
-const UserSessionVar = "GoraddUserId"	// Change this to a unique session variable name for your application
+const UserSessionVar = "GoraddUserId" // Change this to a unique session variable name for your application
 
 // auth is a private structure that caches information on the currently authorized user.
 type auth struct {
@@ -94,15 +94,13 @@ func SetCurrentCompanyID(ctx context.Context, id string) {
 	}
 }*/
 
-
-
 // ValidatePassword enforces the rules about what makes up a good enough password for our system
 // We are using a 3rd party library to evaluate password strength. This same library is available in javascript,
 // but this is a server side check.
 func ValidatePassword(password string, userName string) bool {
 	var userInputs = []string{userName}
 	r := zxcvbn.PasswordStrength(password, userInputs)
-	return r.Score >= 1	// Change this to whatever score you are going to require.
+	return r.Score >= 1 // Change this to whatever score you are going to require.
 }
 
 // Logout does the steps required to log out the current user

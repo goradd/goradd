@@ -7,17 +7,17 @@ import (
 	"context"
 )
 
-func (form *TestForm) AddHeadTags() {
-	form.FormBase.AddHeadTags()
+func (ctrl *TestForm) AddHeadTags() {
+	ctrl.FormBase.AddHeadTags()
 	if "Tests" != "" {
-		form.Page().SetTitle("Tests")
+		ctrl.Page().SetTitle("Tests")
 	}
 
 	// double up to deal with body attributes if they exist
-	form.Page().BodyAttributes = ``
+	ctrl.Page().BodyAttributes = ``
 }
 
-func (form *TestForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *TestForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>Browser Based Tests</h1>
@@ -27,7 +27,7 @@ func (form *TestForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err 
 `)
 
 	{
-		err := form.TestList.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("test-list").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -40,7 +40,20 @@ func (form *TestForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err 
 `)
 
 	{
-		err := form.RunButton.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("run-button").Draw(ctx, buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	buf.WriteString(`
+`)
+
+	buf.WriteString(`
+`)
+
+	{
+		err := ctrl.Page().GetControl("run-all-button").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -55,7 +68,7 @@ Currently running:
 `)
 
 	{
-		err := form.RunningLabel.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("running-label").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -68,7 +81,7 @@ Currently running:
 `)
 
 	{
-		err := form.Controller.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("controller").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

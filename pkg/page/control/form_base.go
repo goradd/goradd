@@ -2,12 +2,12 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/orm/db"
-	"github.com/goradd/goradd/pkg/page/event"
-	"github.com/goradd/goradd/pkg/page/action"
-	"strings"
 	"fmt"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
+	"strings"
 )
 
 const (
@@ -26,7 +26,6 @@ func NewMockForm() *FormBase {
 	return f
 }
 
-
 // Init initializes the FormBase. Call this before adding other controls.
 func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
 	// Most of the FormBase code is in page.ΩFormBase. The code below specifically adds popup windows and controls
@@ -37,38 +36,37 @@ func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id st
 	if db.IsProfiling(ctx) {
 		btn := NewButton(f, "grProfileButton")
 		btn.SetText("SQL Profile <i class='fas fa-arrow-circle-down' ></i>")
-		btn.SetEscapeText(false)
+		btn.SetTextIsHtml(true)
 		btn.On(event.Click(), action.Ajax(f.ID(), databaseProfileAction))
 		btn.SetShouldAutoRender(true)
 
 		panel := NewPanel(f, "grProfilePanel")
 		panel.SetShouldAutoRender(true)
-		panel.SetEscapeText(false)
+		panel.SetTextIsHtml(true)
 		panel.SetVisible(false)
 	}
 
 	/*	TODO: Add a dialog and designer click if in design mode
-					if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
-					// Attach custom event to dialog to handle right click menu items sent by form
+			if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
+			// Attach custom event to dialog to handle right click menu items sent by form
 
-					$dlg = new Q\ModelConnector\EditDlg ($objClass, 'qconnectoreditdlg');
+			$dlg = new Q\ModelConnector\EditDlg ($objClass, 'qconnectoreditdlg');
 
-					$dlg->addAction(
-						new Q\Event\On('qdesignerclick'),
-						new Q\Action\Ajax ('ctlDesigner_Click', null, null, 'ui')
-					);
-				}
+			$dlg->addAction(
+				new Q\Event\On('qdesignerclick'),
+				new Q\Action\Ajax ('ctlDesigner_Click', null, null, 'ui')
+			);
+		}
 
 	*/
-
-
 
 }
 
 func (f *FormBase) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case databaseProfileAction:
-		if c := f.Page().GetControl("grProfilePanel"); c != nil{
+		if f.Page().HasControl("grProfilePanel") {
+			c := f.Page().GetControl("grProfilePanel")
 			if c.IsVisible() {
 				c.SetVisible(false)
 			} else {

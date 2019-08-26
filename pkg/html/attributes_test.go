@@ -274,7 +274,7 @@ func TestOverride(t *testing.T) {
 // Examples
 
 func ExampleNewAttributesFrom() {
-	a := NewAttributesFromMap(map[string]string{"id": "1", "name": "test"})
+	a := NewAttributesFrom(map[string]string{"id": "1", "name": "test"})
 	fmt.Println(a.Get("id"))
 	//Output: 1
 }
@@ -362,3 +362,4 @@ func ExampleAttributes_RemoveStyle() {
 	fmt.Println(a)
 	// Output: style="width:5px"
 }
+

@@ -9,8 +9,8 @@
 {{end}}
 
 {{define template }}
-<h1>Codegen</h1>
-{{draw form.InfoPanel }}
+<h1>CodeGenerator</h1>
+{{draw infoPanel }}
 <p>
 If codegen succeeded, exit and restart the app by executing <b>go run goradd-project/main</b>
 </p>

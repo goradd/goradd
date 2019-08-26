@@ -7,8 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
     strings2 "github.com/goradd/goradd/pkg/strings"
     "fmt"
-    //"github.com/knq/snaker"
-
 )
 
 func init() {
@@ -29,7 +27,7 @@ func (n *ModelTemplate) FileName(key string, t generator.TableType) string {
 	return n.TargetDir + "/" + key + "/model/" + t.GoName + ".go"
 }
 
-func (n *ModelTemplate) GenerateTable(codegen generator.Codegen, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+func (n *ModelTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
 	{{: "model/model.tmpl" }}
 }
 

@@ -4,51 +4,80 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/control/data"
+	"github.com/goradd/goradd/web/examples/controls"
 	"github.com/goradd/goradd/web/examples/model"
 	"github.com/goradd/goradd/web/examples/model/node"
 )
 
 type TableDbPanel struct {
 	Panel
-
-	Table1	*PaginatedTable
-	Pager1 *DataPager
 }
-
 
 func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableDbPanel{}
 	p.Panel.Init(p, parent, "tableDbPanel")
+	p.AddControls(ctx,
+		PagedTableCreator{
+			ID: "table1",
+			HeaderRowCount: 1,
+			DataProvider: p, // The data provider can be a predefined control, including the parent of the table.
+			Sortable: true,
+			Columns:[]ColumnCreator {
+				column.NodeColumnCreator{
+					Node: node.Person().FirstName(),
+					Title:"First Name",
+					Sortable:true,
+				},
+				column.NodeColumnCreator{
+					Node: node.Person().LastName(),
+					Title:"Last Name",
+					Sortable:true,
+				},
 
-	p.Table1 = NewPaginatedTable(p, "table1")
-	p.Table1.SetHeaderRowCount(1)
-	p.Table1.SetDataProvider(p)
-	p.Table1.SetSortable()
-	p.Table1.AddColumn(column.NewNodeColumn(node.Person().FirstName()).
-		SetTitle("First Name").
-		SetSortable())
-	p.Table1.AddColumn(column.NewNodeColumn(node.Person().LastName()).
-		SetTitle("Last Name").
-		SetSortable())
-	p.Table1.AddColumn(column.NewCustomColumn(p).SetTitle("Combined"))
-	p.Table1.AddColumn(column.NewAliasColumn("manager_count").SetTitle("Project Count"))
-	p.Pager1 = NewDataPager(p, "pager1", p.Table1)
-	p.Table1.SetPageSize(5)
-	p.Table1.SetSortHistoryLimit(3) // Sets the depth of how many sort columns we will track
+				column.TexterColumnCreator{
+					Texter: p,
+					Title:"Combined",
+				},
+				column.AliasColumnCreator{
+					Alias: "manager_count",
+					Title: "Project Count",
+				},
+			},
+			PageSize:5,
+			SaveState: true,
+			Caption:DataPagerCreator{
+				ID:           "pager",
+				PagedControl: "table1",
+			},
+			SortHistoryLimit: 3,
+		},
+		ButtonCreator{
+			ID:       "ajaxButton",
+			Text:     "Submit Ajax",
+			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+		},
+		ButtonCreator{
+			ID:       "serverButton",
+			Text:     "Submit Server",
+			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+		},
+	)
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (p *TableDbPanel) BindData(ctx context.Context, s data.DataManagerI) {
-	p.Table1.SetTotalItems(model.QueryPeople(ctx).Count(ctx, false))
+	t := s.(*PagedTable)
+	t.SetTotalItems(model.QueryPeople(ctx).Count(ctx, false))
 
 	// figure out how to sort the columns. This could be a simple process, or complex, depending on your data
 
 	// Since we are asking the database to do the sort, we have to make a slice of nodes
-	sortNodes := column.MakeNodeSlice(p.Table1.SortColumns())
+	sortNodes := column.MakeNodeSlice(t.SortColumns())
 
 	people := model.QueryPeople(ctx).
 		Alias("manager_count",
@@ -56,19 +85,19 @@ func (p *TableDbPanel) BindData(ctx context.Context, s data.DataManagerI) {
 				Alias("", op.Count(node.Project().ManagerID())).
 				Where(op.Equal(node.Project().ManagerID(), node.Person().ID())).
 				Subquery()).
-		Limit(p.Table1.SqlLimits()).
+		Limit(t.SqlLimits()).
 		OrderBy(sortNodes...).
 		Load(ctx)
-	p.Table1.SetData(people)
+	t.SetData(people)
 }
 
-func (f *TableDbPanel) 	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (p *TableDbPanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	// Since we only have one custom column, we know what we are getting.
-	p := data.(*model.Person)
-	return p.FirstName() + " " + p.LastName()
+	person := data.(*model.Person)
+	return person.FirstName() + " " + person.LastName()
 }
 
 func init() {
+	controls.RegisterPanel("tabledb", "Tables - Database Columns", NewTableDbPanel, 7)
+
 }
-
-

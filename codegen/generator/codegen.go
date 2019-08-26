@@ -2,9 +2,10 @@ package generator
 
 import (
 	"bytes"
-	"github.com/goradd/goradd/pkg/orm/db"
-	"github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/gofile/pkg/sys"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/stringmap"
+	"github.com/goradd/goradd/pkg/strings"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,15 +13,15 @@ import (
 	"path/filepath"
 )
 
-type Codegen struct {
-	Tables     map[string]map[string]TableType	// TODO: Change to ordered maps for consistent codegeneration
+type CodeGenerator struct {
+	Tables     map[string]map[string]TableType
 	TypeTables map[string]map[string]TypeTableType
 }
 
 type TableType struct {
 	*db.TableDescription
-	Columns    []ColumnType
-	Imports    []*ImportType
+	Columns []ColumnType
+	Imports []*ImportType
 }
 
 type TypeTableType struct {
@@ -29,22 +30,23 @@ type TypeTableType struct {
 
 // ImportType represents an import path required for a control. This is analyzed per-table.
 type ImportType struct {
-	Path string
+	Path      string
 	Namespace string
-	Alias string // blank if not needing an alias
-	Primary bool
+	Alias     string // blank if not needing an alias
+	Primary   bool
 }
 
 // ControlDescription is matched with a ColumnDescription below and provides additional information regarding
-// how information in a column can be used to generated a default control to edit that information.
+// how information in a column can be used to generate a default control to edit that information.
 type ControlDescription struct {
-	Import *ImportType
-	ControlType string
+	Import         *ImportType
+	ControlType    string
 	NewControlFunc string
-	ControlName string
-	ControlID string	// default id to generate
-	DefaultLabel string
-	Generator ControlGenerator
+	ControlName    string
+	ControlID      string // default id to generate
+	DefaultLabel   string
+	Generator      ControlGenerator
+	Connector	   string
 }
 
 // ColumnType combines a database ColumnDescription with a ControlDescription
@@ -55,7 +57,7 @@ type ColumnType struct {
 }
 
 func (t *TableType) GetColumnByDbName(name string) *ColumnType {
-	for _,col := range t.Columns {
+	for _, col := range t.Columns {
 		if col.DbName == name {
 			return &col
 		}
@@ -65,7 +67,7 @@ func (t *TableType) GetColumnByDbName(name string) *ColumnType {
 
 func Generate() {
 
-	codegen := Codegen{
+	codegen := CodeGenerator{
 		Tables:     make(map[string]map[string]TableType),
 		TypeTables: make(map[string]map[string]TypeTableType),
 	}
@@ -93,7 +95,7 @@ func Generate() {
 				log.Println("Error:  table " + table.GoName + " is defined more than once.")
 			} else if !table.IsAssociation {
 				columns, imports := columnsWithControls(table)
-				t := TableType {
+				t := TableType{
 					table,
 					columns,
 					imports,
@@ -108,13 +110,15 @@ func Generate() {
 	// Generate the templates.
 	for _, database := range db.GetDatabases() {
 		dd := database.Describe()
-		key := dd.DbKey
-		for _, typeTable := range codegen.TypeTables[key] {
+		dbKey := dd.DbKey
+
+		for _, tableKey := range stringmap.SortedKeys(codegen.TypeTables[dbKey]) {
+			typeTable := codegen.TypeTables[dbKey][tableKey]
 			for _, typeTableTemplate := range TypeTableTemplates {
 				buf.Reset()
 				// the template generator function in each template, by convention
 				typeTableTemplate.GenerateTypeTable(codegen, dd, typeTable, buf)
-				fileName := typeTableTemplate.FileName(key, typeTable)
+				fileName := typeTableTemplate.FileName(dbKey, typeTable)
 				path := filepath.Dir(fileName)
 
 				if _, err := os.Stat(fileName); err == nil {
@@ -131,14 +135,15 @@ func Generate() {
 			}
 		}
 
-		for _, table := range codegen.Tables[key] {
+		for _, tableKey := range stringmap.SortedKeys(codegen.Tables[dbKey]) {
+			table := codegen.Tables[dbKey][tableKey]
 			if table.IsAssociation || table.Skip {
 				continue
 			}
 			for _, tableTemplate := range TableTemplates {
 				buf.Reset()
 				tableTemplate.GenerateTable(codegen, dd, table, buf)
-				fileName := tableTemplate.FileName(key, table)
+				fileName := tableTemplate.FileName(dbKey, table)
 				path := filepath.Dir(fileName)
 
 				if _, err := os.Stat(fileName); err == nil {
@@ -155,9 +160,9 @@ func Generate() {
 
 				// run imports on all generated go files
 				if strings.EndsWith(fileName, ".go") {
-					_,err := sys.ExecuteShellCommand("goimports -w " + fileName)
+					_, err := sys.ExecuteShellCommand("goimports -w " + fileName)
 					if err != nil {
-						panic("error running goimports: " + string(err.(*exec.ExitError).Stderr))	// perhaps goimports is not installed?
+						panic("error running goimports: " + string(err.(*exec.ExitError).Stderr)) // perhaps goimports is not installed?
 					}
 				}
 			}
@@ -167,7 +172,7 @@ func Generate() {
 			buf.Reset()
 			// the template generator function in each template, by convention
 			oneTimeTemplate.GenerateOnce(codegen, dd, buf)
-			fileName := oneTimeTemplate.FileName(key)
+			fileName := oneTimeTemplate.FileName(dbKey)
 			path := filepath.Dir(fileName)
 
 			if _, err := os.Stat(fileName); err == nil {
@@ -182,7 +187,6 @@ func Generate() {
 				log.Print(err)
 			}
 		}
-
 
 	}
 

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/javascript"
-	"strings"
 	"sync"
 )
 
@@ -38,19 +38,22 @@ const (
 	PriorityHigh
 	PriorityStandard
 	PriorityLow
-	PriorityFinal	// TODO: Note that this currently requires a preliminary ajax command, or it will not fire. Should fix that, but its tricky.
+	PriorityFinal // TODO: Note that this currently requires a preliminary ajax command, or it will not fire. Should fix that, but its tricky.
 )
 
 // responseCommand is a response packet that leads to execution of a javascript function
 type responseCommand struct {
-	script   string // if just straight javascript
-	selector string
-	function string
-	args     []interface{}
-	final    bool
+	Script   string        `json:"script,omitempty"` // if just straight javascript
+	Selector string        `json:"selector,omitempty"`
+	Id       string        `json:"id,omitempty"`
+	JqueryId string        `json:"jqueryId,omitempty"`
+	Function string        `json:"func,omitempty"`
+	Args     []interface{} `json:"params,omitempty"`
+	Final    bool          `json:"final,omitempty"`
 }
 
 // MarshalJSON is used to form the Ajax response.
+/*
 func (r responseCommand) MarshalJSON() (buf []byte, err error) {
 	var reply = map[string]interface{}{}
 
@@ -69,9 +72,10 @@ func (r responseCommand) MarshalJSON() (buf []byte, err error) {
 		if r.final {
 			reply["final"] = true
 		}
+		if
 	}
 	return json.Marshal(reply)
-}
+}*/
 
 // responseControl is the response packet that leads to the manipulation or replacement of an html object
 type responseControl struct {
@@ -103,32 +107,32 @@ type Response struct {
 	sync.RWMutex // This was inserted here for very rare situations of simultaneous access, like in the test harness.
 
 	// exclusiveCommand is a single command that is sent by itself, overriding all other commands
-	exclusiveCommand       *responseCommand
+	exclusiveCommand *responseCommand
 	// highPriorityCommands are sent first
-	highPriorityCommands   []responseCommand
+	highPriorityCommands   []*responseCommand
 	// mediumPriorityCommands are sent after high priority commands
-	mediumPriorityCommands []responseCommand
+	mediumPriorityCommands []*responseCommand
 	// lowPriorityCommands are sent after medium priority commands
-	lowPriorityCommands    []responseCommand
+	lowPriorityCommands    []*responseCommand
 	// finalCommands are acted on after all other commands have been processed
-	finalCommands          []responseCommand
+	finalCommands          []*responseCommand
 	// jsFiles are JavaScript files that should be inserted into the page. This should rarely be used,
 	// but is needed in case the programmer inserts a control widget in response to an Ajax event,
 	// and that control depends on javascript that has not yet been sent to the client.
-	jsFiles                *maps.StringSliceMap
+	jsFiles                *maps.SliceMap
 	// styleSheets are css files that should be inserted into the page.
-	styleSheets            *maps.StringSliceMap
+	styleSheets            *maps.SliceMap
 	// alerts are strings that should be shown to the user in a javascript aler
-	alerts                 []string
+	alerts []string
 	// newLocation is a URL that the client should be redirected to.
-	newLocation            string
+	newLocation string
 	// winClose directs the browser to close the current window.
-	winClose               bool
+	winClose bool
 	// controls are goraddControls that should be inserted or replaced
-	controls               map[string]responseControl
+	controls map[string]responseControl
 	// profileHtml is the html sent from the database profiling tool to display in a special window
 	// TODO: This is not used currently, and is here for future ajax db profiling
-	profileHtml			   string
+	profileHtml string
 }
 
 // NewResponse creates a new event response.
@@ -142,6 +146,19 @@ func (r *Response) displayAlert(message string) {
 	r.Unlock()
 }
 
+func (r *Response) AddClass(id string, class string, priorities ...Priority) {
+	r.ExecuteControlCommand(id, "class", "+" + class, priorities)
+}
+
+func (r *Response) RemoveClass(id string, class string, priorities ...Priority) {
+	r.ExecuteControlCommand(id, "class", "-" + class, priorities)
+}
+
+func (r *Response) SetClass(id string, class string, priorities ...Priority) {
+	r.ExecuteControlCommand(id, "class", class, priorities)
+}
+
+
 // ExecuteJavaScript will execute the given code with the given priority. Note that all javascript code is run in
 // strict mode.
 func (r *Response) ExecuteJavaScript(js string, priorities ...Priority) {
@@ -153,47 +170,33 @@ func (r *Response) ExecuteJavaScript(js string, priorities ...Priority) {
 			panic("Don't call ExecuteJavaScript with arguments")
 		}
 	}
-	r.Lock()
-	switch priority {
-	case PriorityExclusive:
-		r.exclusiveCommand = &responseCommand{script: js}
-	case PriorityHigh:
-		r.highPriorityCommands = append(r.highPriorityCommands, responseCommand{script: js})
-	case PriorityStandard:
-		r.mediumPriorityCommands = append(r.mediumPriorityCommands, responseCommand{script: js})
-	case PriorityLow:
-		r.lowPriorityCommands = append(r.lowPriorityCommands, responseCommand{script: js})
-	case PriorityFinal:
-		r.finalCommands = append(r.finalCommands, responseCommand{script: js})
-	}
-	r.Unlock()
+	c := responseCommand{Script: js}
+	r.postCommand(&c, priority)
+
 }
 
-// ExecuteControlCommand executes the named command on the given goradd control.
+// ExecuteControlCommand executes the named command on the given control. Possible commands are defined
+// by the goradd widget class in the javascript file.
 func (r *Response) ExecuteControlCommand(controlID string, functionName string, args ...interface{}) {
-	r.ExecuteSelectorFunction("#"+controlID, functionName, args...)
+	args2,priority := r.extractPriority(args...)
+	c := responseCommand{Id: controlID, Function: functionName, Args: args2}
+	r.postCommand(&c, priority)
 }
 
-// ExecuteSelectorFunction calls a function on a jQuery selector
+// ExecuteJqueryCommand executes the named jquery command on the given jquery control.
+func (r *Response) ExecuteJqueryCommand(controlID string, functionName string, args ...interface{}) {
+	args2,priority := r.extractPriority(args...)
+	c := responseCommand{JqueryId: controlID, Function: functionName, Args: args2}
+	r.postCommand(&c, priority)
+}
+
+
+// ExecuteSelectorFunction calls a goradd function on a group of objects defined by a selector.
 func (r *Response) ExecuteSelectorFunction(selector string, functionName string, args ...interface{}) {
 	args2,priority := r.extractPriority(args...)
-	c := responseCommand{selector: selector, function: functionName, args: args2}
+	c := responseCommand{Selector: selector, Function: functionName, Args: args2}
 
-	r.Lock()
-	switch priority {
-	case PriorityExclusive:
-		r.exclusiveCommand = &c
-	case PriorityHigh:
-		r.highPriorityCommands = append(r.highPriorityCommands, c)
-	case PriorityStandard:
-		r.mediumPriorityCommands = append(r.mediumPriorityCommands, c)
-	case PriorityLow:
-		r.lowPriorityCommands = append(r.lowPriorityCommands, c)
-	case PriorityFinal:
-		c.final = true
-		r.finalCommands = append(r.finalCommands, c)
-	}
-	r.Unlock()
+	r.postCommand(&c, priority)
 }
 
 // ExecuteJsFunction calls the given JavaScript function with the given arguments.
@@ -201,12 +204,15 @@ func (r *Response) ExecuteSelectorFunction(selector string, functionName string,
 // to call the function on. If the named function just a function label, then the function is called on the window object.
 func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
 	args2,priority := r.extractPriority(args...)
-	c := responseCommand{function: functionName, args: args2}
+	c := responseCommand{Function: functionName, Args: args2}
+	r.postCommand(&c, priority)
+}
 
+func (r *Response) postCommand(c *responseCommand, priority Priority) {
 	r.Lock()
 	switch priority {
 	case PriorityExclusive:
-		r.exclusiveCommand = &c
+		r.exclusiveCommand = c
 	case PriorityHigh:
 		r.highPriorityCommands = append(r.highPriorityCommands, c)
 	case PriorityStandard:
@@ -214,11 +220,12 @@ func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
 	case PriorityLow:
 		r.lowPriorityCommands = append(r.lowPriorityCommands, c)
 	case PriorityFinal:
-		c.final = true
+		c.Final = true
 		r.finalCommands = append(r.finalCommands, c)
 	}
 	r.Unlock()
 }
+
 
 func (r *Response) extractPriority (args ...interface{}) (args2 []interface{}, priority Priority) {
 	for i,a := range args {
@@ -234,23 +241,19 @@ func (r *Response) extractPriority (args ...interface{}) (args2 []interface{}, p
 }
 
 // One time add of style sheets, to be used by FormBase only for last minute style sheet injection.
-func (r *Response) addStyleSheets(styleSheets ...string) {
+func (r *Response) addStyleSheet(path string, attributes html.Attributes) {
 	if r.styleSheets == nil {
-		r.styleSheets = maps.NewStringSliceMap()
+		r.styleSheets = maps.NewSliceMap()
 	}
-	for _, s := range styleSheets {
-		r.styleSheets.Set(s, s)
-	}
+	r.styleSheets.Set(path, attributes)
 }
 
 // Add javascript files to the response.
-func (r *Response) addJavaScriptFiles(files ...string) {
+func (r *Response) addJavaScriptFile(path string, attributes html.Attributes) {
 	if r.jsFiles == nil {
-		r.jsFiles = maps.NewStringSliceMap()
+		r.jsFiles = maps.NewSliceMap()
 	}
-	for _, f := range files {
-		r.jsFiles.Set(f, f)
-	}
+	r.jsFiles.Set(path, attributes)
 }
 
 // JavaScript renders the Response object as JavaScript that will be inserted into the page sent back to the
@@ -307,27 +310,32 @@ func (r *Response) JavaScript() (script string) {
 }
 
 
-func (r *Response) renderCommandArray(commands []responseCommand) string {
+func (r *Response) renderCommandArray(commands []*responseCommand) string {
 	var script string
 	for _, command := range commands {
-		if command.script != "" {
-			script += command.script + ";\n"
-		} else if command.selector != "" {
-			if command.function == "" {
-				panic("Cannot process a selector without a function")
-			}
-			var args string
+		if command.Script != "" {
+			script += command.Script + ";\n"
+		} else {
+			com := make(map[string]interface{})
 
-			if command.args != nil {
-				args = javascript.Arguments(command.args).JavaScript()
+			if command.Selector != "" {
+				com["selector"] = command.Selector
 			}
-			script += fmt.Sprintf("jQuery('%s').%s(%s);\n", command.selector, command.function, args)
-		} else if command.function != "" {
-			var args string
-			if command.args != nil {
-				args = javascript.Arguments(command.args).JavaScript()
+			if command.Id != "" {
+				com["id"] = command.Id
 			}
-			script += fmt.Sprintf("%s(%s);\n", command.function, args)
+			if command.JqueryId != "" {
+				com["jqueryId"] = command.Id
+			}
+
+			if command.Function != "" {
+				com["func"] = command.Function
+			}
+
+			if command.Args != nil {
+				com["params"] = command.Args
+			}
+			script += fmt.Sprintf("goradd.processCommand(%s);\n", javascript.ToJavaScript(com))
 		}
 	}
 
@@ -346,7 +354,7 @@ func (r *Response) GetAjaxResponse() (buf []byte, err error) {
 		reply[ResponseCommandsMedium] = []responseCommand{*r.exclusiveCommand}
 		r.exclusiveCommand = nil
 	} else {
-		var commands []responseCommand
+		var commands []*responseCommand
 		if r.highPriorityCommands != nil {
 			commands = append(commands, r.highPriorityCommands...)
 			r.highPriorityCommands = nil
@@ -369,12 +377,12 @@ func (r *Response) GetAjaxResponse() (buf []byte, err error) {
 		}
 
 		if r.jsFiles != nil {
-			reply[ResponseJavaScripts] = strings.Join(r.jsFiles.Values(), ",")
+			reply[ResponseJavaScripts] = r.jsFiles
 			r.jsFiles = nil
 		}
 
 		if r.styleSheets != nil {
-			reply[ResponseStyleSheets] = strings.Join(r.styleSheets.Values(), ",")
+			reply[ResponseStyleSheets] = r.styleSheets
 			r.styleSheets = nil
 		}
 
@@ -403,7 +411,6 @@ func (r *Response) GetAjaxResponse() (buf []byte, err error) {
 	r.Unlock()
 	return json.Marshal(reply)
 }
-
 
 // Call SetLocation to change the url of the browser.
 func (r *Response) SetLocation(newLocation string) {
@@ -470,10 +477,8 @@ func (r *Response) SetControlValue(id string, value string) {
 	r.Unlock()
 }
 
-
 func (r *Response) setProfileInfo(info string) {
 	r.Lock()
 	r.profileHtml = info
 	r.Unlock()
 }
-

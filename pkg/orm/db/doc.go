@@ -41,5 +41,3 @@ want to do, just some databases are easier to work with. It depends what you wan
 
 */
 package db
-
-

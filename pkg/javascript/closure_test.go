@@ -6,14 +6,13 @@ import (
 )
 
 func ExampleClosure() {
-	c := Closure ("return a == b;", "a", "b")
+	c := Closure("return a == b;", "a", "b")
 	fmt.Println(c.JavaScript())
 	// Output: function(a, b) {return a == b;}
 }
 
-
 func ExampleClosureCall() {
-	c := ClosureCall ("return this == b;", "a", "b")
+	c := ClosureCall("return this == b;", "a", "b")
 	fmt.Println(c.JavaScript())
 	// Output: (function(b) {return this == b;}).call(a)
 }

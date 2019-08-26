@@ -106,11 +106,11 @@ func newRunError(ctx context.Context, msg interface{}) *Error {
 	switch m := msg.(type) {
 	case string: // we panic'd
 		e.Err = errors.New(m)
-		e.fillErr(ctx, 3)
+		e.fillErr(ctx, 2)
 
 	case error: // system generated error
 		e.Err = m
-		e.fillErr(ctx, 4)
+		e.fillErr(ctx, 2)
 
 	default:
 		e.Err = fmt.Errorf("Error of type %T: %v", msg, msg)

@@ -11,17 +11,18 @@ import (
 
 type CheckboxI interface {
 	page.ControlI
-	ΩGetDrawingLabelAttributes() *html.Attributes
+	ΩGetDrawingLabelAttributes() html.Attributes
 }
-
 
 // CheckboxBase is a base class for checkbox-like objects, including html checkboxes and radio buttons.
 type CheckboxBase struct {
 	page.Control
-	checked         bool
-	// LabelMode describes where to place the label associating the text with the checkbox
+	checked bool
+	// LabelMode describes where to place the label associating the text with the checkbox. The default is the
+	// global page.DefaultCheckboxLabelDrawingMode, and you would normally set that instead so that all your checkboxes draw
+	// the same way.
 	LabelMode       html.LabelDrawingMode
-	labelAttributes *html.Attributes
+	labelAttributes html.Attributes
 }
 
 // Init initializes a checkbox base class. It is called by checkbox implementations.
@@ -31,7 +32,7 @@ func (c *CheckboxBase) Init(self page.ControlI, parent page.ControlI, id string)
 	c.Tag = "input"
 	c.IsVoidTag = true
 	c.LabelMode = page.DefaultCheckboxLabelDrawingMode
-	c.SetHasFor(true)
+	//c.SetHasFor(true)
 	c.SetAttribute("autocomplete", "off") // fixes an html quirk
 }
 
@@ -41,7 +42,7 @@ func (c *CheckboxBase) this() CheckboxI {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (c *CheckboxBase) ΩDrawingAttributes() *html.Attributes {
+func (c *CheckboxBase) ΩDrawingAttributes() html.Attributes {
 	a := c.Control.ΩDrawingAttributes()
 	if c.Text() != "" {
 		a.AddAttributeValue("aria-labelledby", c.ID()+"_ilbl")
@@ -67,22 +68,12 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 
 	if text := c.Text(); text == "" {
 		// there is no label to draw, just draw the input
-		if !c.HasWrapper() {
-			if a := c.this().WrapperAttributes(); a != nil {
-				attributes.Merge(a)
-			}
-		}
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
 	} else if c.LabelMode == html.LabelWrapAfter || c.LabelMode == html.LabelWrapBefore {
 		// Use the text as a label wrapper
 		text = html2.EscapeString(text)
 		labelAttributes := c.this().ΩGetDrawingLabelAttributes()
 
-		if !c.HasWrapper() {
-			if a := c.this().WrapperAttributes(); a != nil {
-				labelAttributes.Merge(a)
-			}
-		}
 		labelAttributes.Set("id", c.ID()+"_ilbl")
 
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
@@ -91,12 +82,6 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 		// label does not wrap. We will put one after the other
 		text = html2.EscapeString(text)
 		labelAttributes := c.this().ΩGetDrawingLabelAttributes()
-
-		if !c.HasWrapper() {
-			if a := c.this().WrapperAttributes(); a != nil {
-				labelAttributes.Merge(a)
-			}
-		}
 
 		labelAttributes.Set("for", c.ID())
 		labelAttributes.Set("id", c.ID()+"_ilbl")
@@ -107,12 +92,12 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 	return ctrl
 }
 
-// InputLabelAttributes returns a pointer to the input label attributes.
+// LabelAttributes returns a pointer to the input label attributes.
 // Feel free to set the attributes directly on the returned object.
 // The input label attributes are the attributes for the label tag that associates the Text with the checkbox.
-// This is specific to checkbox style controls and is not the same as the label tag that appears when using a name wrapper.
+// This is specific to checkbox style controls and is not the same as the label tag that appears when using a FormFieldWrapper wrapper.
 // After setting attributes, be sure to call Refresh on the control if you do this during an Ajax response.
-func (c *CheckboxBase) InputLabelAttributes() *html.Attributes {
+func (c *CheckboxBase) LabelAttributes() html.Attributes {
 	if c.labelAttributes == nil {
 		c.labelAttributes = html.NewAttributes()
 	}
@@ -121,8 +106,8 @@ func (c *CheckboxBase) InputLabelAttributes() *html.Attributes {
 
 // ΩGetDrawingLabelAttributes is called by the framework to temporarily set the
 // attributes of the label associated with the checkbox.
-func (c *CheckboxBase) ΩGetDrawingLabelAttributes() *html.Attributes {
-	a := c.InputLabelAttributes().Copy()
+func (c *CheckboxBase) ΩGetDrawingLabelAttributes() html.Attributes {
+	a := c.LabelAttributes().Copy()
 
 	// copy tooltip to wrapping label
 	if title := c.Attribute("title"); title != "" {
@@ -137,7 +122,7 @@ func (c *CheckboxBase) ΩGetDrawingLabelAttributes() *html.Attributes {
 		a.SetStyle("display", "none")
 	}
 
-	a.SetDataAttribute("grel", a.ID())	// make sure label gets replaced when drawing
+	a.SetDataAttribute("grel", a.ID()) // make sure label gets replaced when drawing
 	return a
 }
 
@@ -188,8 +173,8 @@ func (c *CheckboxBase) ΩMarshalState(m maps.Setter) {
 
 // ΩUnmarshalState restores the state of the checkbox if coming back to a form in the same session.
 func (c *CheckboxBase) ΩUnmarshalState(m maps.Loader) {
-	if v,ok := m.Load("checked"); ok {
-		if v2,ok := v.(bool); ok {
+	if v, ok := m.Load("checked"); ok {
+		if v2, ok := v.(bool); ok {
 			c.checked = v2
 		}
 	}
@@ -284,4 +269,3 @@ func (c *CheckboxBase) UpdateRadioFormValues(ctx *page.Context, group string) {
 		}
 	}
 }
-

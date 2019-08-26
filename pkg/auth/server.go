@@ -1,6 +1,15 @@
 // package auth provides a default authentication framework based on user name and password.
 // To use it, call RegisterAuthenticationService and pass it a structure that will handle the various
 // routines for authentication.
+//
+// On the client side, you send an auth operation to the auth endpoint by sending 2 form values:
+// 1) An "op" value, which is the operation to perform. See OpHello, etc. for possible values
+// 2) A "msg" value, which gets passed on the auth service you provide.
+//
+// You coordinate between your client and your service on how encode your messages. A common way would be
+// to use json, but its up to you to do the encoding and decoding on either end.
+//
+// See the AuthI interface for details on what each message type should accomplish.
 package auth
 
 import (
@@ -12,7 +21,6 @@ import (
 // TODO: Implement Open ID with OAuth mechanisms too. Remember when doing this that you need both. OAuth is
 // only for authorization and NOT authentication!
 
-
 // The approach here:
 // The framework here can be used in a few different ways. You can implement basic authentication, or use a bearer
 // token as a refresh token. You can return these as headers, or in the body of the response. Its up to you.
@@ -22,13 +30,10 @@ import (
 // on the session essentially becomes the access token. This way, you do not have to pass an access token
 // every time, but you could choose to do that approach if you wanted.
 
-
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/session"
-	"io/ioutil"
 	"time"
 )
 
@@ -44,55 +49,47 @@ func MakeAuthApiServer(a app.ApplicationI) http.Handler {
 // serveAuthHandler serves up the auth api.
 func serveAuthApi() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		authApiHandler(w,r)
+		authApiHandler(w, r)
 	}
 	return http.HandlerFunc(fn)
 }
 
+// These are the operations accepted in the op form variable
 const (
-	AuthHello string = "hello" // Requires a session in order to create a new user. Helps us rate limit new user requests.
-	AuthNewUser string = "new"
-	AuthOpLogin string = "login"
-	AuthOpTokenLogin string = "token"
-	AuthOpRevoke string = "logout"
-	AuthOpRecover string = "recover"
+	OpHello      = "hello" // Requires a session in order to create a new user. Helps us rate limit new user requests.
+	OpNewUser    = "new"
+	OpLogin      = "login"
+	OpTokenLogin = "token"
+	OpRevoke     = "logout"
+	OpRecover    = "recover" // When passing this one, you will need to specify your own recovery method in the message.
 )
 
-// authMessage is the message sent by the server.
-type authMessage struct {
-	Operation string `json:"op"` // Required. Possibilities are AuthOp* options above
+// authMessage is the message sent by the server. It comes through as JSON and gets unpacked into
+// this structure. The keys that are reserved and that we use are listed below. You can send other
+// keys in the message as well to meet your needs, and the message will get sent on to the auth service.
+// The op keyword is always required. The others are required depending on the operation.
+//type authMessage map[string]interface{}
 
-	UserName string `json:"user"` 	// Only present for login
-	Password string `json:"pw"`		// Only for login
-	Token string `json:"token"`		// Only for token and logout
-	RecoverMethod string `json:"method"`		// Only for recover
-}
+const (
+	formOperation = "op"  // The operation to perform. Possibilities are AuthOp* options above.
+	formMsg       = "msg" // This is the message from your client to your service. Use any format you wish.
+)
 
 func authApiHandler(w http.ResponseWriter, r *http.Request) {
-	b, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	var msg authMessage
-	err = json.Unmarshal(b, &msg)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
+	op := r.FormValue(formOperation)
+	msg := r.FormValue(formMsg)
 	ctx := r.Context()
 
-	switch msg.Operation {
-	case AuthHello:
+	switch op {
+	case OpHello:
 		// Hello is only for the first time connection in order to establish a session. We use it as a kind of authentication
 		// mechanism to frustrate mischief.
 		// If the session is already established, it means someone is behaving badly.
 		if !session.Has(ctx, goradd.SessionAuthTime) {
 			// Valid first time, so we set up a timestamp for rate limiting new account requests
-			session.Set(ctx, goradd.SessionAuthTime, time.Now().Unix())
+			// We subtract LoginRateLimit here because we expect the user to try to login once immediately after
+			// saying hello. We rate limit any subsequent attempts.
+			session.Set(ctx, goradd.SessionAuthTime, time.Now().Unix()-LoginRateLimit)
 			// TODO: Prevent a DoS attack here by checking for rapid hellos from the same IP address and rate limiting them
 			// If we do it, one article suggested returning a 200 in order to prevent an attacker from knowing they were being rate limited
 		} else {
@@ -101,117 +98,125 @@ func authApiHandler(w http.ResponseWriter, r *http.Request) {
 			// delaying.
 			time.Sleep(HackerDelay)
 		}
-	case AuthNewUser:
+	case OpNewUser:
 		// Requesting a new user account.
 		if !session.Has(ctx, goradd.SessionAuthTime) {
 			// Session was not established. Ask them to say hello first.
-			w.WriteHeader(404)
-			w.Write([]byte("say hello"))
+			authWriteError(ctx, "say hello", 404, w)
 		} else if session.Has(ctx, goradd.SessionAuthSuccess) {
 			// This session already has created a new user or has successfully logged in, do not allow this a second time
 			//time.Sleep(HackerDelay)
-			w.WriteHeader(400)
-		} else if authNewUser(ctx, msg.UserName, msg.Password, w) {
+			authWriteError(ctx, "session already established", 400, w)
+		} else if authNewUser(ctx, []byte(msg), w) {
 			// if the user was successfully created, we mark that so that the same session cannot create another user
 			session.Set(ctx, goradd.SessionAuthSuccess, true)
 		}
-	case AuthOpLogin:
+	case OpLogin:
 		// Logging in using a user name and password
 		if !session.Has(ctx, goradd.SessionAuthTime) {
 			// Session was not established. Ask them to say hello first.
-			w.WriteHeader(404)
-			w.Write([]byte("say hello"))
+			authWriteError(ctx, "say hello", 404, w)
+
 		} else if session.Has(ctx, goradd.SessionAuthSuccess) {
-			// This session already has created a new user or has successfully logged in, do not allow this a second time
-			//time.Sleep(HackerDelay)
-			w.WriteHeader(400)
+			// This client is already logged in. If logging in again, we will assume the client tried to logout
+			// and something failed, like a bad connection at that moment. So, we will logout here and force the
+			// client to reestablish a session first
+			session.Clear(ctx)
+			session.Reset(ctx)
+			authWriteError(ctx, "say hello", 404, w)
 		} else {
 			lastLogin := session.Get(ctx, goradd.SessionAuthTime).(int64)
 			now := time.Now().Unix()
-			if now - lastLogin <= LoginRateLimit {
-				http.Error(w, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425)
+			if now-lastLogin < LoginRateLimit {
+				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit-(now-lastLogin)+1), 425, w)
 			} else {
-				if authLogin(ctx, msg.UserName, msg.Password, w) {
+				if authLogin(ctx, []byte(msg), w) {
 					// if the user was successfully logged in, we mark that so that the same session cannot create another user or log in
 					session.Set(ctx, goradd.SessionAuthSuccess, true)
 				}
 				session.Set(ctx, goradd.SessionAuthTime, time.Now().Unix())
 			}
 		}
-	case AuthOpTokenLogin:
+	case OpTokenLogin:
 		// Logging in using a token
 		if !session.Has(ctx, goradd.SessionAuthTime) {
 			// Session was not established. Ask them to say hello first.
-			w.WriteHeader(404)
-			w.Write([]byte("say hello"))
+			authWriteError(ctx, "say hello", 404, w)
 		} else if session.Has(ctx, goradd.SessionAuthSuccess) {
 			// This session already has created a new user or has successfully logged in, do not allow this a second time
 			//time.Sleep(HackerDelay)
-			w.WriteHeader(400)
+			authWriteError(ctx, "session already established", 400, w)
 		} else {
 			lastLogin := session.Get(ctx, goradd.SessionAuthTime).(int64)
 			now := time.Now().Unix()
-			if now - lastLogin <= LoginRateLimit {
-				http.Error(w, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425)
+			if now-lastLogin < LoginRateLimit {
+				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit-(now-lastLogin)+1), 425, w)
 			} else {
-				if authTokenLogin(ctx, msg.Token, w) {
+				if authTokenLogin(ctx, []byte(msg), w) {
 					// if the user was successfully logged in, we mark that so that the same session cannot create another user or log in
 					session.Set(ctx, goradd.SessionAuthSuccess, true)
 				}
 				session.Set(ctx, goradd.SessionAuthTime, time.Now().Unix())
 			}
 		}
-	case AuthOpRevoke:
+	case OpRevoke:
 		if !session.Has(ctx, goradd.SessionAuthTime) {
 			// Session was not established. Ask them to say hello first.
-			w.WriteHeader(404)
-			w.Write([]byte("say hello"))
+			authWriteError(ctx, "say hello", 404, w)
 		} else {
-			authRevoke(ctx, msg.Token)
-			// kill the session
-			session.Clear(ctx)
-			session.Reset(ctx)
+			if authRevoke(ctx, []byte(msg), w) {
+				// kill the session
+				session.Clear(ctx)
+				session.Reset(ctx)
+			}
 		}
-	case AuthOpRecover:
+	case OpRecover:
 		if !session.Has(ctx, goradd.SessionAuthTime) {
 			// Session was not established. Ask them to say hello first.
-			w.WriteHeader(404)
-			w.Write([]byte("say hello"))
+			authWriteError(ctx, "say hello", 404, w)
 		} else if session.Has(ctx, goradd.SessionAuthSuccess) {
 			// Trying to recover when the person is already logged in. This makes no sense.
-			w.WriteHeader(400)
+			authWriteError(ctx, "session already established", 400, w)
 		} else {
 			// rate limit recovery attempts
 			lastLogin := session.Get(ctx, goradd.SessionAuthTime).(int64)
 			now := time.Now().Unix()
-			if now - lastLogin <= LoginRateLimit {
-				http.Error(w, fmt.Sprintf("%d", LoginRateLimit - (now - lastLogin) + 1), 425)
+			if now-lastLogin < LoginRateLimit {
+				authWriteError(ctx, fmt.Sprintf("%d", LoginRateLimit-(now-lastLogin)+1), 425, w)
 			} else {
-				authRecover(ctx, msg.RecoverMethod)
-				session.Set(ctx, goradd.SessionAuthTime, time.Now().Unix())
+				authRecover(ctx, []byte(msg), w)
 			}
 		}
 	default:
-		http.Error(w, "Invalid operation: " + msg.Operation, 500)
+		if op == "" {
+			authWriteError(ctx, "No operation specified", 400, w)
+		} else {
+			authWriteError(ctx, "Invalid operation: "+op, 400, w)
+		}
 	}
 }
 
-func authNewUser(ctx context.Context, user string, password string, w http.ResponseWriter) bool {
-	return authService.NewUser(ctx, user, password, w)
+func authNewUser(ctx context.Context, msg []byte, w http.ResponseWriter) bool {
+	return authService.NewUser(ctx, msg, w)
 }
 
-func authLogin(ctx context.Context, user string, password string, w http.ResponseWriter) bool {
-	return authService.Login(ctx, user, password, w)
+func authLogin(ctx context.Context, msg []byte, w http.ResponseWriter) bool {
+	return authService.Login(ctx, msg, w)
 }
 
-func authTokenLogin(ctx context.Context, token string, w http.ResponseWriter) bool {
-	return authService.TokenLogin(ctx, token, w)
+func authTokenLogin(ctx context.Context, msg []byte, w http.ResponseWriter) bool {
+	return authService.TokenLogin(ctx, msg, w)
 }
 
-func authRevoke(ctx context.Context, token string) {
-	authService.RevokeToken(ctx, token)
+func authRevoke(ctx context.Context, msg []byte, w http.ResponseWriter) bool {
+	// its important the authRevoke not write to the response writer unless there is an error, since we need to control that to close the session
+	return authService.RevokeToken(ctx, msg, w)
 }
 
-func authRecover(ctx context.Context, method string) {
-	authService.Recover(ctx, method)
+func authRecover(ctx context.Context, msg []byte, w http.ResponseWriter) bool {
+	return authService.Recover(ctx, msg, w)
+}
+
+func authWriteError(ctx context.Context, errorMessage string, errorCode int, w http.ResponseWriter) {
+	authService.WriteError(ctx, errorMessage, errorCode, w)
 }

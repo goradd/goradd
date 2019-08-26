@@ -10,24 +10,12 @@
 
 
 {{define template }}
-{{g path := page.GetContext(ctx).HttpContext.URL.Path }}
-
 <h1>Control Examples</h1>
 <div class="controlList_scroll">
-  <ul>
-    <li><a href="{{= path }}">Home</a></li>
-    <li><a href="{{= path }}?control=textbox">Textboxes</a></li>
-    <li><a href="{{= path }}?control=checkbox">Checkboxes and Radio Buttons</a></li>
-    <li><a href="{{= path }}?control=selectlist">Selection Lists</a></li>
-    <li><a href="{{= path }}?control=hlist">Hierarchical Lists</a></li>
-    <li><a href="{{= path }}?control=table">Tables</a></li>
-    <li><a href="{{= path }}?control=tabledb">Tables - Database Columns</a></li>
-    <li><a href="{{= path }}?control=tablecheckbox">Tables - Checkbox Columns</a></li>
-    <li><a href="{{= path }}?control=tableproxy">Tables - Proxy Columns</a></li>
-  </ul>
+	{{draw listPanel }}
 </div>
 <div class="detail_container">
-	{{draw form.detail }}
+	{{draw detailPanel }}
 </div>
 {{end}}
 

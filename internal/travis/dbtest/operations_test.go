@@ -126,7 +126,7 @@ func TestAggregates(t *testing.T) {
 	projects2 := model.QueryProjects(ctx).
 		Alias("min", Min(node.Project().Spent())).
 		OrderBy(node.Project().ProjectStatusTypeID()).
-		//GroupBy(node.Project().ProjectStatusTypeID()).
+		GroupBy(node.Project().ProjectStatusTypeID()).
 		Load(ctx)
 
 	assert.EqualValues(t, 4200.50, projects2[0].GetAlias("min").Float())

@@ -1,18 +1,10 @@
 //reverseRefAccessors.tmpl
 for _,ref := range t.ReverseReferences {
-	var oName string
-	var mName string
+	oName := ref.ObjName(dd)
+	mName := ref.MapName()
+	associatedGoName := ref.AssociatedGoName()
 
 	if ref.IsUnique {
-		oName = dd.AssociatedObjectPrefix + ref.GoName
-	} else {
-		oName = dd.AssociatedObjectPrefix + ref.GoPlural
-		mName = "m" + ref.GoPlural
-	}
-
-
-	if ref.IsUnique {
-	    associatedGoName := snaker.SnakeToCamel(ref.AssociatedColumnName)
 {{
 
 // {{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded
@@ -36,7 +28,6 @@ func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.
 
 }}
 	} else {
-		associatedGoName := snaker.SnakeToCamel(ref.AssociatedColumnName)
 
 {{
 // {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.

@@ -26,4 +26,3 @@ func Pop(ctx context.Context) (loc string) {
 func Clear(ctx context.Context) {
 	session.ClearStack(ctx, key)
 }
-

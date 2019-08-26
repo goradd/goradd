@@ -49,7 +49,7 @@ type DrawI interface {
 type Page struct {
 	// BodyAttributes contains the attributes that will be output with the body tag. It should be set before the
 	// form draws, like in the AddHeadTags function.
-	BodyAttributes  string
+	BodyAttributes string
 
 	stateId      string // Id in cache of the pagestate. Needs to be output by form.
 	renderStatus PageRenderStatus
@@ -63,7 +63,7 @@ type Page struct {
 	responseHeader  map[string]string // queues up anything to be sent in the response header
 	responseError   int
 
-	language 	    int		// Don't serialize this. This is a cached version of what the session holds.
+	language int // Don't serialize this. This is a cached version of what the session holds.
 }
 
 // Init initializes the page. Should be called by a form just after creating Page.
@@ -79,7 +79,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 	grCtx := GetContext(ctx)
 
 	if grCtx.err != nil {
-		panic(grCtx.err)	// An error occurred during unpacking of the context, so report that now
+		panic(grCtx.err) // An error occurred during unpacking of the context, so report that now
 	}
 
 	if err = p.Form().Run(ctx); err != nil {
@@ -103,10 +103,10 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 			return fmt.Errorf("CSRF error: %s", p.stateId)
 		}
 
-		p.Form().control().updateValues(grCtx) // Tell all the controls to update their values.
+		p.Form().updateValues(grCtx) // Tell all the controls to update their values.
 		// if this is an event response, do the actions associated with the event
-		if c := p.GetControl(grCtx.actionControlID); c != nil {
-			c.control().doAction(ctx)
+		if p.HasControl(grCtx.actionControlID) {
+			p.GetControl(grCtx.actionControlID).control().doAction(ctx)
 		}
 	}
 
@@ -121,7 +121,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		// TODO: Implement a hook for the CustomAjax call and/or Rest API calls?
 	}
 
-	p.Form().control().writeState(ctx)
+	p.Form().writeAllStates(ctx)
 	p.Form().Exit(ctx, err)
 	return
 }
@@ -171,21 +171,21 @@ func (p *Page) GenerateControlID(id string) string {
 	if id != "" {
 		if strings.Contains(id, "_") {
 			// underscores are used by the action system to route actions to sub items of the control.
-			panic ("You cannot add a control with an underscore in the name. Use a hyphen instead.")
+			panic("You cannot add a control with an underscore in the name. Use a hyphen instead.")
 		}
 		if p.idPrefix != "" {
-			if !strings.HasPrefix(id, p.idPrefix) {	// subcontrols might already have this prefix
+			if !strings.HasPrefix(id, p.idPrefix) { // subcontrols might already have this prefix
 				id = p.idPrefix + id
 			}
 		}
-		if p.GetControl(id) != nil {
-			panic (fmt.Sprintf(`A control with id "%s" is being added a second time to the page. Ids must be unique on the page.`, id))
+		if p.HasControl(id) {
+			panic(fmt.Sprintf(`A control with id "%s" is being added a second time to the page. Ids must be unique on the page.`, id))
 		} else {
 			return id
 		}
 	} else {
 		var trialid string
-		for trialid == "" || p.GetControl(trialid) != nil { // checks to make sure user did not previously add a control that might match our generation pattern
+		for trialid == "" || p.HasControl(trialid) { // checks to make sure user did not previously add a control that might match our generation pattern
 			p.idCounter++
 			trialid = p.idPrefix + "c" + strconv.Itoa(p.idCounter)
 		}
@@ -193,17 +193,30 @@ func (p *Page) GenerateControlID(id string) string {
 	}
 }
 
-// GetControl returns the control with the given id. If not found, it returns nil.
+// GetControl returns the control with the given id. If not found, it panics. Use HasControl to check for existence.
 func (p *Page) GetControl(id string) ControlI {
-	if id == "" || p.controlRegistry == nil {
-		return nil
+	if id == "" {
+		panic("attempting to get a control with a blank id")
+	}
+	if p.controlRegistry == nil {
+		panic("control registry is not initialized")
 	}
 	i := p.controlRegistry.Get(id)
+	if i == nil {
+		panic("control with id " + id + " was not found")
+	}
 	if c, ok := i.(ControlI); ok {
 		return c
 	} else {
-		return nil
+		panic(id + " is not a control")
 	}
+}
+
+func (p *Page) HasControl(id string) bool {
+	if id == "" {
+		return false
+	}
+	return p.controlRegistry.Has(id)
 }
 
 // addControl adds the given control to the controlRegistry. It is called by the control code whenever a control is created.
@@ -302,13 +315,13 @@ func (p *Page) UnmarshalJSON(data []byte) (err error) {
 }
 
 type pageEncoded struct {
-	StateId      string // Id in cache of the pagestate. Needs to be output by form.
-	Path         string // The path to the page. FormBase needs to know this so it can make the action tag
-	IdPrefix     string // For creating unique ids for the app
-	IdCounter       int
-	Title           string // page title to draw in head tag
-	HtmlHeaderTags  []html.VoidTag
-	BodyAttributes  string
+	StateId        string // Id in cache of the pagestate. Needs to be output by form.
+	Path           string // The path to the page. FormBase needs to know this so it can make the action tag
+	IdPrefix       string // For creating unique ids for the app
+	IdCounter      int
+	Title          string // page title to draw in head tag
+	HtmlHeaderTags []html.VoidTag
+	BodyAttributes string
 
 	FormID string // to record the form
 
@@ -318,12 +331,12 @@ type pageEncoded struct {
 // TODO: serialization is not completely implemented yet
 func (p *Page) Encode(e Encoder) (err error) {
 	s := pageEncoded{
-		StateId:           p.stateId,
-		IdPrefix:          p.idPrefix,
-		Title:             p.title,
-		HtmlHeaderTags:    p.htmlHeaderTags,
-		BodyAttributes:    p.BodyAttributes,
-		FormID:			   p.form.ID(),
+		StateId:        p.stateId,
+		IdPrefix:       p.idPrefix,
+		Title:          p.title,
+		HtmlHeaderTags: p.htmlHeaderTags,
+		BodyAttributes: p.BodyAttributes,
+		FormID:         p.form.ID(),
 	}
 
 	if err = e.Encode(s); err != nil {
@@ -373,7 +386,7 @@ func (p *Page) Decode(d Decoder) (err error) {
 	p.BodyAttributes = s.BodyAttributes
 
 	var ci ControlI
-	if ci,err = d.DecodeControl(p); err != nil {
+	if ci, err = d.DecodeControl(p); err != nil {
 		return
 	}
 	p.form = ci.(FormI)
@@ -384,8 +397,8 @@ func (p *Page) Decode(d Decoder) (err error) {
 		return
 	}
 
-	for i:=0; i<count;i++ {
-		if ci,err = d.DecodeControl(p); err != nil { // the process of decoding will automatically add to the control registry, so no need to do anything with the result.
+	for i := 0; i < count; i++ {
+		if ci, err = d.DecodeControl(p); err != nil { // the process of decoding will automatically add to the control registry, so no need to do anything with the result.
 			return
 		}
 	}
@@ -419,8 +432,8 @@ func (p *Page) ClearResponseHeaders() {
 // that is not a big deal.
 func (p *Page) PushRedraw() {
 	channel := "form-" + p.stateId
-	if messageServer.HasChannel(channel) {	// If we call this while launching a page, the channel isn't created yet, but the page is going to be drawn, so its ok.
-		messageServer.SendMessage(channel, map[string]interface{}{"grup":true})
+	if messageServer.HasChannel(channel) { // If we call this while launching a page, the channel isn't created yet, but the page is going to be drawn, so its ok.
+		messageServer.SendMessage(channel, map[string]interface{}{"grup": true})
 	} else {
 		log.FrameworkDebug("Pushing redraw with no channel.")
 	}
@@ -431,3 +444,11 @@ func (p *Page) PushRedraw() {
 func (p *Page) LanguageCode() string {
 	return i18n.CanonicalValue(p.language)
 }
+
+// Cleanup is called by the page cache when the page is removed from memory.
+func (p *Page) Cleanup() {
+	p.Form().RangeSelfAndAllChildren(func(ctrl ControlI) {
+		ctrl.Cleanup()
+	})
+}
+

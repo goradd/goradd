@@ -21,7 +21,7 @@ type RequestMode int
 
 const (
 	// Server indicates we are calling back to a previously sent form using a standard form post
-	Server     RequestMode = iota
+	Server RequestMode = iota
 	// Http indicates this is a first-time request for a page
 	Http
 	// Ajax indicates we are calling back in to a currently showing form using an ajax request
@@ -35,9 +35,8 @@ const (
 
 const HtmlVarAction = "Goradd_Action"
 const HtmlVarPagestate = "Goradd__PageState"
-const htmlVarParams  = "Goradd__Params"
-const htmlCsrfToken  = "Goradd__Csrf"
-
+const htmlVarParams = "Goradd__Params"
+const htmlCsrfToken = "Goradd__Csrf"
 
 // MultipartFormMax is the maximum size of a mult-part form that we will allow.
 var MultipartFormMax int64 = 10000000 // 10MB max in memory file
@@ -78,25 +77,25 @@ type Context struct {
 // HttpContext contains typical things we can extract from an http request.
 type HttpContext struct {
 	// Req is the original http.Request object
-	Req        *http.Request
+	Req *http.Request
 	// URL is the url being queried
-	URL        *url.URL
+	URL *url.URL
 	// formVars is a private version of the form variables. Use the FormValue and FormValues functions to get these
-	formVars   url.Values
+	formVars url.Values
 	// Host is the host value extracted from the request
-	Host       string
+	Host string
 	// RemoteAddr is the ip address of the client
 	RemoteAddr string
 	// Referrer is the referring url, if there is one and it is included in the request. In other words, if a link was
 	// clicked to get here, it would be the URL of the page that had the link
-	Referrer   string
+	Referrer string
 	// Cookies are the cookies coming from the client, mapped by name
-	Cookies    map[string]*http.Cookie
+	Cookies map[string]*http.Cookie
 	// Files are the files being uploaded, if this is a file upload. This currently only works with Server calls
 	// in response to a file upload control.
-	Files      map[string][]*multipart.FileHeader
+	Files map[string][]*multipart.FileHeader
 	// Header is the http header coming from the client.
-	Header     http.Header
+	Header http.Header
 }
 
 // AppContext has Goradd application specific information.
@@ -106,14 +105,12 @@ type AppContext struct {
 	cliArgs             []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
 	pageStateId         string
 	customControlValues map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
-	checkableValues     map[string]interface{}            // map of checkable control values, keyed by id. Values could be a true/false, an id from a radio group, or an array of ids from a checkbox group
 	actionControlID     string                            // If an action, the control sending the action
 	eventID             EventID                           // The event to send to the control
 	actionValues        actionValues
 	// NoJavaScript indicates javascript is turned off by the browser
-	NoJavaScript        bool
+	NoJavaScript bool
 }
-
 
 // String is a string representation of all the information in the context, and should primarily be used for debugging.
 func (c *Context) String() string {
@@ -148,7 +145,7 @@ func PutContext(r *http.Request, cliArgs []string) *http.Request {
 
 func (ctx *Context) fillHttp(r *http.Request) (err error) {
 	if contentType := r.Header.Get("content-type"); contentType != "" {
-		// Per comments in the ResponseWriter, we need to read and processs the entire request before attempting to write.
+		// Per comments in the ResponseWriter, we need to read and process the entire request before attempting to write.
 		if strings.Contains(contentType, "multipart") {
 			// TODO: The Go doc is vague about how it handles file uploads larger than this value. Some doc suggests it
 			// will return an error, and other doc suggests it will just split it into multiple partial files.
@@ -205,36 +202,12 @@ func (ctx *Context) FormValues(key string) (value []string, ok bool) {
 	return
 }
 
-// CheckableValue returns the value of the named checkable value. This would be something coming from a
-// checkbox or radio button. You do not normally call this unless you are implementing a checkable control widget.
-func (ctx *Context) CheckableValue(key string) (value interface{}, ok bool) {
-	if ctx.NoJavaScript {
-		// checkable values do not exist, and we are POSTing.
-		value,ok = ctx.FormValue(key)
-		// In a POST, checkable values only exist if they are checked.
-		// This requires great care when using a parent control that is paging a lot of child controls. It must
-		// mark any controls not on screen correctly.
-		return
-	}
-	if ctx.checkableValues == nil {
-		return
-	}
-	value, ok = ctx.checkableValues[key]
-	return
-}
-
-// CheckableValues returns multiple checkable values. You do not normally call this unless you are implementing
-// a widget that would have multiple checkable values, like a checklist.
-func (ctx *Context) CheckableValues() map[string]interface{} {
-	return ctx.checkableValues
-}
-
 // CustomControlValue returns the value of a control that is using the custom control mechanism to report
 // its values. You would only call this if your are implementing a control that has custom javascript to
 // operate its UI.
 func (ctx *Context) CustomControlValue(id string, key string) interface{} {
-	if m,ok := ctx.customControlValues[id]; ok {
-		if v,ok2 := m[key]; ok2 {
+	if m, ok := ctx.customControlValues[id]; ok {
+		if v, ok2 := m[key]; ok2 {
 			return v
 		}
 	}
@@ -250,14 +223,14 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 	var err error
 
 	if ctx.URL != nil {
-		if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); ok  {
-			v,_ = ctx.FormValue(htmlVarParams)
+		if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); ok {
+			v, _ = ctx.FormValue(htmlVarParams)
 			if v == "" {
 				// javascript is turned off
 				// we are in a minimalist environment, where only buttons submit forms
 
 				// If the pagestate is coming from a GET, it is encoded and encrypted
-				if _,ok := ctx.Req.PostForm[HtmlVarPagestate]; !ok {
+				if _, ok := ctx.Req.PostForm[HtmlVarPagestate]; !ok {
 					ctx.pageStateId = crypt.SessionDecryptUrlValue(mainContext, ctx.pageStateId)
 				}
 				ctx.NoJavaScript = true
@@ -265,7 +238,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				aId, _ := ctx.FormValue(HtmlVarAction)
 				parts := strings.Split(aId, "_")
 				ctx.actionControlID = parts[0]
-				if len(parts) > 0 {
+				if len(parts) > 1 {
 					ctx.actionValues.Control = []byte(parts[1])
 				}
 				return
@@ -278,17 +251,16 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 
 			var params struct {
 				ControlValues   map[string]map[string]interface{} `json:"controlValues"`
-				CheckableValues map[string]interface{} `json:"checkableValues"`
-				ControlID       string                 `json:"controlID"`
-				EventID         int                    `json:"eventID"`
-				Values          actionValues           `json:"actionValues"`
+				CheckableValues map[string]interface{}            `json:"checkableValues"`
+				ControlID       string                            `json:"controlID"`
+				EventID         int                               `json:"eventID"`
+				Values          actionValues                      `json:"actionValues"`
 			}
 
 			dec := json.NewDecoder(strings.NewReader(v))
 			dec.UseNumber()
 			if err = dec.Decode(&params); err == nil {
 				ctx.customControlValues = params.ControlValues
-				ctx.checkableValues = params.CheckableValues
 				ctx.actionControlID = params.ControlID
 				if params.EventID != 0 {
 					ctx.eventID = EventID(params.EventID)

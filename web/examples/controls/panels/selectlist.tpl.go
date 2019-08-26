@@ -5,11 +5,9 @@ package panels
 import (
 	"bytes"
 	"context"
-
-	"github.com/goradd/goradd/pkg/page"
 )
 
-func (control *SelectListPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *SelectListPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>Selection Lists</h1>
@@ -54,7 +52,7 @@ to display it as a scrolling list rather than a dropdown list.
 `)
 
 	{
-		err := control.SingleSelect.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("singleSelectList-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -67,7 +65,7 @@ to display it as a scrolling list rather than a dropdown list.
 `)
 
 	{
-		err := control.SingleSelectWithSize.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("selectListWithSize-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -90,7 +88,7 @@ size of the control itself using CSS.
 `)
 
 	{
-		err := control.RadioList1.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("radioList1-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -103,7 +101,7 @@ size of the control itself using CSS.
 `)
 
 	{
-		err := control.RadioList2.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("radioList2-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -116,7 +114,7 @@ size of the control itself using CSS.
 `)
 
 	{
-		err := control.RadioList3.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("radioList3-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -142,7 +140,7 @@ also in case a javascript widget can build a better interface on top of it.
 `)
 
 	{
-		err := control.MultiSelect.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("multiselectList-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -162,7 +160,7 @@ data objects.
 `)
 
 	{
-		err := control.CheckboxList1.With(page.NewLabelWrapper()).Draw(ctx, buf)
+		err := ctrl.Page().GetControl("checklist1-ff").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -176,7 +174,7 @@ data objects.
 `)
 
 	{
-		err := control.SubmitAjax.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("ajaxButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -189,7 +187,7 @@ data objects.
 `)
 
 	{
-		err := control.SubmitServer.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("serverButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

@@ -53,11 +53,34 @@ func ({{= propLetter }} {{= propName }}) ID() string {
 	return strconv.Itoa(int({{= propLetter }}))
 }
 
+// {{= propPlural }} returns a slice of all the {{= propName }} items
 func {{= propPlural }}() (values []{{= propName }}) {
 {{for _,value := range tt.Values }}
     values = append(values, {{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }})
 {{for}}
     return
+}
+
+// {{= propPlural }}I returns a slice of interfaces that contains all the {{= propName }} items
+func {{= propPlural }}I() (values []interface{}) {
+    values = make([]interface{}, {{i len(tt.Values) }}, {{i len(tt.Values) }})
+{{for i,value := range tt.Values }}
+    values[{{i i }}] = {{= propName }}({{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }})
+{{for}}
+    return
+}
+
+
+// Label returns the string that will be displayed to a user for this item. Together with
+// the Value function, it satisfies the ItemLister interface that makes it easy
+// to create a dropdown list of items.
+func ({{= propLetter }} {{= propName }}) Label() string {
+	return {{= propLetter }}.String()
+}
+
+// Value satisfies the Valuer interface.
+func ({{= propLetter }} {{= propName }}) Value() interface{} {
+	return {{= propLetter }}
 }
 
 
@@ -66,7 +89,7 @@ func {{= propPlural }}() (values []{{= propName }}) {
 for i,fieldName := range tt.FieldNames[2:] {
 	typ := tt.FieldGoColumnType(i+2)
 	typeName := typ.GoType()
-	title := snaker.SnakeToCamel(fieldName)
+	title := db.UpperCaseIdentifier(fieldName)
 
 {{
 func ({{= propLetter }} {{= propName }}) {{= title }}() {{= typeName }} {
@@ -88,7 +111,7 @@ for i,fieldName := range tt.FieldNames[1:] {
 	typ := tt.FieldGoColumnType(i+1)
 	typeName := typ.GoType()
 	varName := inflector.Pluralize(fieldName)
-	title := inflector.Pluralize(snaker.SnakeToCamel(fieldName))
+	title := inflector.Pluralize(db.UpperCaseIdentifier(fieldName))
 
 {{
 func {{= propName }}{{= title }}() []{{= typeName }} {

@@ -11,7 +11,7 @@ import (
 	"github.com/goradd/goradd/web/examples/model/node"
 )
 
-func (control *QueryPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *QueryPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 <h1>Querying the Database Using a QueryBuilder</h1>

@@ -9,9 +9,8 @@ import (
 	"path/filepath"
 )
 
-
 const CodegenPath = "/goradd/build.g"
-const CodegenID = "Codegen"
+const CodegenID = "CodeGenerator"
 
 const (
 	CodegenRefreshAction = iota + 1
@@ -19,12 +18,10 @@ const (
 
 type CodegenForm struct {
 	control.FormBase
-
-	InfoPanel *control.Panel
 }
 
 func NewCodegenForm(ctx context.Context) page.FormI {
-	f := new (CodegenForm)
+	f := new(CodegenForm)
 	f.Init(ctx, f, CodegenPath, CodegenID)
 	f.AddRelatedFiles()
 	f.createControls(ctx)
@@ -33,7 +30,7 @@ func NewCodegenForm(ctx context.Context) page.FormI {
 }
 
 func (f *CodegenForm) createControls(ctx context.Context) {
-	f.InfoPanel = control.NewPanel(f, "")
+	control.NewPanel(f, "infoPanel")
 }
 
 func (f *CodegenForm) Action(ctx context.Context, a page.ActionParams) {
@@ -43,21 +40,20 @@ func (f *CodegenForm) Action(ctx context.Context, a page.ActionParams) {
 	}
 }
 
-
 func (f *CodegenForm) LoadControls(ctx context.Context) {
-	v,_ := page.GetContext(ctx).FormValue("cmd")
+	v, _ := page.GetContext(ctx).FormValue("cmd")
 	switch v {
 	case "codegen":
 		result := f.startCodegen()
-		f.InfoPanel.SetText(result)
+		control.GetPanel(f, "infoPanel").SetText(result)
 	case "run":
 		result := f.startApp()
-		f.InfoPanel.SetText(result)
+		control.GetPanel(f, "infoPanel").SetText(result)
 
 	}
 }
 
-func (f *CodegenForm)  startCodegen() string {
+func (f *CodegenForm) startCodegen() string {
 	var result = "Running generate goradd-project/codegen/cmd/build.go ...\n"
 
 	codegenLoc := filepath.Join("goradd-project", "codegen", "cmd", "build.go")
@@ -71,7 +67,7 @@ func (f *CodegenForm)  startCodegen() string {
 	return result
 }
 
-func (f *CodegenForm)  startApp() string {
+func (f *CodegenForm) startApp() string {
 	var result = "Running go run goradd-project/main ...\n"
 
 	app := filepath.Join("goradd-project", "main")
@@ -85,9 +81,6 @@ func (f *CodegenForm)  startApp() string {
 	return result
 }
 
-
-
 func init() {
 	page.RegisterPage(CodegenPath, NewCodegenForm, CodegenID)
 }
-

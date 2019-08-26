@@ -4,7 +4,6 @@ import (
 	"testing"
 )
 
-
 func TestEndsWithString(t *testing.T) {
 	if !EndsWith(".45", ".45") {
 		t.Fail()
@@ -53,3 +52,14 @@ func TestStartsWithString(t *testing.T) {
 	}
 }
 
+func TestIndent(t *testing.T) {
+	if Indent("a\nb\nc") != "\ta\n\tb\n\tc" {
+		t.Fail()
+	}
+	if Indent("\na\nb\nc") != "\t\n\ta\n\tb\n\tc" {
+		t.Fail()
+	}
+	if Indent("a\nb\nc\n") != "\ta\n\tb\n\tc\n" {
+		t.Fail()
+	}
+}

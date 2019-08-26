@@ -9,18 +9,18 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 )
 
-func (form *IndexForm) AddHeadTags() {
-	form.FormBase.AddHeadTags()
+func (ctrl *IndexForm) AddHeadTags() {
+	ctrl.FormBase.AddHeadTags()
 	if "Tutorial" != "" {
-		form.Page().SetTitle("Tutorial")
+		ctrl.Page().SetTitle("Tutorial")
 	}
 
 	// double up to deal with body attributes if they exist
-	form.Page().BodyAttributes = `
+	ctrl.Page().BodyAttributes = `
 `
 }
 
-func (form *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
 `)
@@ -33,7 +33,7 @@ func (form *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 `)
 
 	{
-		err := form.viewSourceButton.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.viewSourceButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -70,7 +70,7 @@ func (form *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 `)
 
 	{
-		err := form.detailPanel.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.detailPanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -85,7 +85,7 @@ func (form *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 `)
 
 	{
-		err := form.sourcePanel.Draw(ctx, buf)
+		err := ctrl.Page().GetControl("form.sourcePanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
