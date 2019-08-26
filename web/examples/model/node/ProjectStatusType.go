@@ -10,6 +10,7 @@ type projectStatusTypeNode struct {
 	query.ReferenceNodeI
 }
 
+
 func (n *projectStatusTypeNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.Name())
@@ -19,7 +20,7 @@ func (n *projectStatusTypeNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	return nodes
 }
 
-func (n *projectStatusTypeNode) PrimaryKeyNode_() *query.ColumnNode {
+func (n *projectStatusTypeNode) PrimaryKeyNode_() (*query.ColumnNode) {
 	return n.ID()
 }
 
@@ -33,7 +34,7 @@ func (n *projectStatusTypeNode) Copy_() query.NodeI {
 
 func (n *projectStatusTypeNode) ID() *query.ColumnNode {
 
-	cn := query.NewColumnNode(
+	cn := query.NewColumnNode (
 		"goradd",
 		"project_status_type",
 		"id",
@@ -46,7 +47,7 @@ func (n *projectStatusTypeNode) ID() *query.ColumnNode {
 }
 func (n *projectStatusTypeNode) Name() *query.ColumnNode {
 
-	cn := query.NewColumnNode(
+	cn := query.NewColumnNode (
 		"goradd",
 		"project_status_type",
 		"name",
@@ -59,7 +60,7 @@ func (n *projectStatusTypeNode) Name() *query.ColumnNode {
 }
 func (n *projectStatusTypeNode) Description() *query.ColumnNode {
 
-	cn := query.NewColumnNode(
+	cn := query.NewColumnNode (
 		"goradd",
 		"project_status_type",
 		"description",
@@ -72,7 +73,7 @@ func (n *projectStatusTypeNode) Description() *query.ColumnNode {
 }
 func (n *projectStatusTypeNode) Guidelines() *query.ColumnNode {
 
-	cn := query.NewColumnNode(
+	cn := query.NewColumnNode (
 		"goradd",
 		"project_status_type",
 		"guidelines",
@@ -85,7 +86,7 @@ func (n *projectStatusTypeNode) Guidelines() *query.ColumnNode {
 }
 func (n *projectStatusTypeNode) IsActive() *query.ColumnNode {
 
-	cn := query.NewColumnNode(
+	cn := query.NewColumnNode (
 		"goradd",
 		"project_status_type",
 		"is_active",

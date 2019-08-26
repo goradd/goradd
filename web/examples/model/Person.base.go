@@ -14,6 +14,7 @@ import (
 	//"./node"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 )
 
 // personBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
@@ -34,11 +35,11 @@ type personBase struct {
 	lastNameIsDirty bool
 
 	// Reverse reference objects.
-	oProjectsAsManager []*Project          // Objects in the order they were queried
-	mProjectsAsManager map[string]*Project // Objects by PK
-	oLogin             *Login
 	oAddresses         []*Address          // Objects in the order they were queried
 	mAddresses         map[string]*Address // Objects by PK
+	oLogin             *Login
+	oProjectsAsManager []*Project          // Objects in the order they were queried
+	mProjectsAsManager map[string]*Project // Objects by PK
 
 	// Many-Many reference objects.
 	oPersonTypes          []PersonType
@@ -59,13 +60,13 @@ const (
 )
 
 const (
-	PersonID                = `ID`
-	PersonFirstName         = `FirstName`
-	PersonLastName          = `LastName`
-	PersonProjectsAsManager = `ProjectsAsManager`
+	PersonID        = `ID`
+	PersonFirstName = `FirstName`
+	PersonLastName  = `LastName`
+	PersonAddresses = `Addresses`
 
 	PersonLogin                = `Login`
-	PersonAddresses            = `Addresses`
+	PersonProjectsAsManager    = `ProjectsAsManager`
 	PersonPersonType           = `PersonType`
 	PersonPersonTypes          = `PersonTypes`
 	PersonProjectAsTeamMember  = `ProjectAsTeamMember`
@@ -118,6 +119,7 @@ func (o *personBase) FirstNameIsValid() bool {
 
 // SetFirstName sets the value of FirstName in the object, to be saved later using the Save() function.
 func (o *personBase) SetFirstName(v string) {
+	o.firstNameIsValid = true
 	if o.firstName != v || !o._restored {
 		o.firstName = v
 		o.firstNameIsDirty = true
@@ -139,6 +141,7 @@ func (o *personBase) LastNameIsValid() bool {
 
 // SetLastName sets the value of LastName in the object, to be saved later using the Save() function.
 func (o *personBase) SetLastName(v string) {
+	o.lastNameIsValid = true
 	if o.lastName != v || !o._restored {
 		o.lastName = v
 		o.lastNameIsDirty = true
@@ -190,55 +193,6 @@ func (o *personBase) ProjectsAsTeamMember() []*Project {
 	return o.oProjectsAsTeamMember
 }
 
-// ProjectAsManager returns a single Project object by primary key, if one was loaded.
-// Otherwise, it will return nil.
-func (o *personBase) ProjectAsManager(pk string) *Project {
-	if o.oProjectsAsManager == nil || len(o.oProjectsAsManager) == 0 {
-		return nil
-	}
-	v, _ := o.mProjectsAsManager[pk]
-	return v
-}
-
-// ProjectsAsManager returns a slice of Project objects if loaded.
-func (o *personBase) ProjectsAsManager() []*Project {
-	if o.oProjectsAsManager == nil {
-		return nil
-	}
-	return o.oProjectsAsManager
-}
-
-// LoadProjectsAsManager loads a new slice of Project objects and returns it.
-func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...interface{}) []*Project {
-	qb := queryProjects(ctx)
-	cond := Equal(node.Project().ManagerID(), o.PrimaryKey())
-	if conditions != nil {
-		conditions = append(conditions, cond)
-		cond = And(conditions...)
-	}
-
-	o.oProjectsAsManager = qb.Where(cond).Load(ctx)
-	return o.oProjectsAsManager
-}
-
-// Login returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
-func (o *personBase) Login() *Login {
-	if o.oLogin == nil {
-		return nil
-	}
-	return o.oLogin
-}
-
-// LoadLogin returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
-func (o *personBase) LoadLogin(ctx context.Context) *Login {
-	if o.oLogin == nil {
-		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
-	}
-	return o.oLogin
-}
-
 // Address returns a single Address object by primary key, if one was loaded.
 // Otherwise, it will return nil.
 func (o *personBase) Address(pk string) *Address {
@@ -268,6 +222,55 @@ func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{
 
 	o.oAddresses = qb.Where(cond).Load(ctx)
 	return o.oAddresses
+}
+
+// Login returns the connected Login object, if one was loaded
+// otherwise, it will return nil.
+func (o *personBase) Login() *Login {
+	if o.oLogin == nil {
+		return nil
+	}
+	return o.oLogin
+}
+
+// LoadLogin returns the connected Login object, if one was loaded
+// otherwise, it will return nil.
+func (o *personBase) LoadLogin(ctx context.Context) *Login {
+	if o.oLogin == nil {
+		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
+	}
+	return o.oLogin
+}
+
+// ProjectAsManager returns a single Project object by primary key, if one was loaded.
+// Otherwise, it will return nil.
+func (o *personBase) ProjectAsManager(pk string) *Project {
+	if o.oProjectsAsManager == nil || len(o.oProjectsAsManager) == 0 {
+		return nil
+	}
+	v, _ := o.mProjectsAsManager[pk]
+	return v
+}
+
+// ProjectsAsManager returns a slice of Project objects if loaded.
+func (o *personBase) ProjectsAsManager() []*Project {
+	if o.oProjectsAsManager == nil {
+		return nil
+	}
+	return o.oProjectsAsManager
+}
+
+// LoadProjectsAsManager loads a new slice of Project objects and returns it.
+func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...interface{}) []*Project {
+	qb := queryProjects(ctx)
+	cond := Equal(node.Project().ManagerID(), o.PrimaryKey())
+	if conditions != nil {
+		conditions = append(conditions, cond)
+		cond = And(conditions...)
+	}
+
+	o.oProjectsAsManager = qb.Where(cond).Load(ctx)
+	return o.oProjectsAsManager
 }
 
 // Load returns a Person from the database.
@@ -348,22 +351,6 @@ func (b *PeopleBuilder) Expand(n query.NodeI) *PeopleBuilder {
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *PeopleBuilder) Join(n query.NodeI, conditions ...query.NodeI) *PeopleBuilder {
-	var condition query.NodeI
-	if len(conditions) > 1 {
-		condition = And(conditions)
-	} else if len(conditions) == 1 {
-		condition = conditions[0]
-	}
-	b.base.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
-	return b
-}
-
-// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
-// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *PeopleBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *PeopleBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -549,45 +536,6 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		o.oProjectsAsTeamMember = nil
 	}
 
-	if v, ok := m["ProjectsAsManager"]; ok {
-		switch oProjectsAsManager := v.(type) {
-		case []db.ValueMap:
-			o.oProjectsAsManager = []*Project{}
-			o.mProjectsAsManager = map[string]*Project{}
-			for _, v2 := range oProjectsAsManager {
-				obj := new(Project)
-				obj.load(v2, linkParent, obj, objThis, "Manager")
-				if linkParent && parentKey == "ProjectsAsManager" && obj.managerID == objParent.(*Project).managerID {
-					obj = objParent.(*Project)
-				}
-				o.oProjectsAsManager = append(o.oProjectsAsManager, obj)
-				o.mProjectsAsManager[obj.PrimaryKey()] = obj
-			}
-		case db.ValueMap: // single expansion
-			obj := new(Project)
-			obj.load(oProjectsAsManager, linkParent, obj, objThis, "Manager")
-			if linkParent && parentKey == "ProjectsAsManager" && obj.managerID == objParent.(*Project).managerID {
-				obj = objParent.(*Project)
-			}
-			o.oProjectsAsManager = []*Project{obj}
-		default:
-			panic("Wrong type found for oProjectsAsManager object.")
-		}
-	} else {
-		o.oProjectsAsManager = nil
-	}
-
-	if v, ok := m["Login"]; ok {
-		if oLogin, ok2 := v.(db.ValueMap); ok2 {
-			o.oLogin = new(Login)
-			o.oLogin.load(oLogin, linkParent, o.oLogin, objThis, "Person")
-		} else {
-			panic("Wrong type found for oLogin object.")
-		}
-	} else {
-		o.oLogin = nil
-	}
-
 	if v, ok := m["Addresses"]; ok {
 		switch oAddresses := v.(type) {
 		case []db.ValueMap:
@@ -614,6 +562,45 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		}
 	} else {
 		o.oAddresses = nil
+	}
+
+	if v, ok := m["Login"]; ok {
+		if oLogin, ok2 := v.(db.ValueMap); ok2 {
+			o.oLogin = new(Login)
+			o.oLogin.load(oLogin, linkParent, o.oLogin, objThis, "Person")
+		} else {
+			panic("Wrong type found for oLogin object.")
+		}
+	} else {
+		o.oLogin = nil
+	}
+
+	if v, ok := m["ProjectsAsManager"]; ok {
+		switch oProjectsAsManager := v.(type) {
+		case []db.ValueMap:
+			o.oProjectsAsManager = []*Project{}
+			o.mProjectsAsManager = map[string]*Project{}
+			for _, v2 := range oProjectsAsManager {
+				obj := new(Project)
+				obj.load(v2, linkParent, obj, objThis, "Manager")
+				if linkParent && parentKey == "ProjectsAsManager" && obj.managerID == objParent.(*Project).managerID {
+					obj = objParent.(*Project)
+				}
+				o.oProjectsAsManager = append(o.oProjectsAsManager, obj)
+				o.mProjectsAsManager[obj.PrimaryKey()] = obj
+			}
+		case db.ValueMap: // single expansion
+			obj := new(Project)
+			obj.load(oProjectsAsManager, linkParent, obj, objThis, "Manager")
+			if linkParent && parentKey == "ProjectsAsManager" && obj.managerID == objParent.(*Project).managerID {
+				obj = objParent.(*Project)
+			}
+			o.oProjectsAsManager = []*Project{obj}
+		default:
+			panic("Wrong type found for oProjectsAsManager object.")
+		}
+	} else {
+		o.oProjectsAsManager = nil
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -728,14 +715,14 @@ func (o *personBase) Get(key string) interface{} {
 		}
 		return o.lastName
 
-	case "ProjectsAsManager":
-		return o.ProjectsAsManager()
+	case "Addresses":
+		return o.Addresses()
 
 	case "Login":
 		return o.Login()
 
-	case "Addresses":
-		return o.Addresses()
+	case "ProjectsAsManager":
+		return o.ProjectsAsManager()
 
 	case "PersonType":
 		return o.PersonType()
@@ -789,14 +776,14 @@ func (o *personBase) MarshalBinary() (data []byte, err error) {
 		return
 	}
 
-	if err = encoder.Encode(o.oProjectsAsManager); err != nil {
+	if err = encoder.Encode(o.oAddresses); err != nil {
 		return
 	}
 
 	if err = encoder.Encode(o.oLogin); err != nil {
 		return
 	}
-	if err = encoder.Encode(o.oAddresses); err != nil {
+	if err = encoder.Encode(o.oProjectsAsManager); err != nil {
 		return
 	}
 
@@ -863,18 +850,6 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.oProjectsAsManager); err != nil {
-		return
-	}
-	if len(o.oProjectsAsManager) > 0 {
-		o.mProjectsAsManager = make(map[string]*Project)
-		for _, p := range o.oProjectsAsManager {
-			o.mProjectsAsManager[p.PrimaryKey()] = p
-		}
-	}
-	if err = dec.Decode(&o.oLogin); err != nil {
-		return
-	}
 	if err = dec.Decode(&o.oAddresses); err != nil {
 		return
 	}
@@ -882,6 +857,18 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		o.mAddresses = make(map[string]*Address)
 		for _, p := range o.oAddresses {
 			o.mAddresses[p.PrimaryKey()] = p
+		}
+	}
+	if err = dec.Decode(&o.oLogin); err != nil {
+		return
+	}
+	if err = dec.Decode(&o.oProjectsAsManager); err != nil {
+		return
+	}
+	if len(o.oProjectsAsManager) > 0 {
+		o.mProjectsAsManager = make(map[string]*Project)
+		for _, p := range o.oProjectsAsManager {
+			o.mProjectsAsManager[p.PrimaryKey()] = p
 		}
 	}
 
@@ -914,4 +901,44 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	return err
+}
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *personBase) MarshalJSON() (data []byte, err error) {
+	v := make(map[string]interface{})
+
+	if o.idIsValid {
+		v["id"] = o.id
+	}
+
+	if o.firstNameIsValid {
+		v["firstName"] = o.firstName
+	}
+
+	if o.lastNameIsValid {
+		v["lastName"] = o.lastName
+	}
+
+	if val := o.Addresses(); val != nil {
+		v["person"] = val
+	}
+
+	if val := o.Login(); val != nil {
+		v["person"] = val
+	}
+
+	if val := o.ProjectsAsManager(); val != nil {
+		v["manager"] = val
+	}
+
+	if val := o.PersonTypes(); val != nil {
+		v["personTypes"] = val
+	}
+	if val := o.ProjectsAsTeamMember(); val != nil {
+		v["projectsAsTeamMember"] = val
+	}
+
+	return json.Marshal(v)
 }

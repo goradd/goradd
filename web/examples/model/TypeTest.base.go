@@ -14,6 +14,7 @@ import (
 	//"./node"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 
 	"github.com/goradd/goradd/pkg/datetime"
 )
@@ -57,6 +58,10 @@ type typeTestBase struct {
 	testFloatIsValid bool
 	testFloatIsDirty bool
 
+	testDouble        float64
+	testDoubleIsValid bool
+	testDoubleIsDirty bool
+
 	testText        string
 	testTextIsNull  bool
 	testTextIsValid bool
@@ -87,6 +92,7 @@ const (
 	TypeTestTsDefault          = datetime.Zero
 	TypeTestTestIntDefault     = 5
 	TypeTestTestFloatDefault   = 0.0
+	TypeTestTestDoubleDefault  = 0.0
 	TypeTestTestTextDefault    = ""
 	TypeTestTestBitDefault     = false
 	TypeTestTestVarcharDefault = ""
@@ -100,6 +106,7 @@ const (
 	TypeTestTs          = `Ts`
 	TypeTestTestInt     = `TestInt`
 	TypeTestTestFloat   = `TestFloat`
+	TypeTestTestDouble  = `TestDouble`
 	TypeTestTestText    = `TestText`
 	TypeTestTestBit     = `TestBit`
 	TypeTestTestVarchar = `TestVarchar`
@@ -141,6 +148,10 @@ func (o *typeTestBase) Initialize() {
 	o.testFloatIsNull = true
 	o.testFloatIsValid = true
 	o.testFloatIsDirty = true
+
+	o.testDouble = 0.0
+	o.testDoubleIsValid = false
+	o.testDoubleIsDirty = false
 
 	o.testText = ""
 	o.testTextIsNull = true
@@ -192,6 +203,7 @@ func (o *typeTestBase) DateIsNull() bool {
 }
 
 func (o *typeTestBase) SetDate(i interface{}) {
+	o.dateIsValid = true
 	if i == nil {
 		if !o.dateIsNull {
 			o.dateIsNull = true
@@ -229,6 +241,7 @@ func (o *typeTestBase) TimeIsNull() bool {
 }
 
 func (o *typeTestBase) SetTime(i interface{}) {
+	o.timeIsValid = true
 	if i == nil {
 		if !o.timeIsNull {
 			o.timeIsNull = true
@@ -266,6 +279,7 @@ func (o *typeTestBase) DateTimeIsNull() bool {
 }
 
 func (o *typeTestBase) SetDateTime(i interface{}) {
+	o.dateTimeIsValid = true
 	if i == nil {
 		if !o.dateTimeIsNull {
 			o.dateTimeIsNull = true
@@ -303,6 +317,7 @@ func (o *typeTestBase) TsIsNull() bool {
 }
 
 func (o *typeTestBase) SetTs(i interface{}) {
+	o.tsIsValid = true
 	if i == nil {
 		if !o.tsIsNull {
 			o.tsIsNull = true
@@ -340,6 +355,7 @@ func (o *typeTestBase) TestIntIsNull() bool {
 }
 
 func (o *typeTestBase) SetTestInt(i interface{}) {
+	o.testIntIsValid = true
 	if i == nil {
 		if !o.testIntIsNull {
 			o.testIntIsNull = true
@@ -377,6 +393,7 @@ func (o *typeTestBase) TestFloatIsNull() bool {
 }
 
 func (o *typeTestBase) SetTestFloat(i interface{}) {
+	o.testFloatIsValid = true
 	if i == nil {
 		if !o.testFloatIsNull {
 			o.testFloatIsNull = true
@@ -394,6 +411,28 @@ func (o *typeTestBase) SetTestFloat(i interface{}) {
 			o.testFloatIsDirty = true
 		}
 	}
+}
+
+func (o *typeTestBase) TestDouble() float64 {
+	if o._restored && !o.testDoubleIsValid {
+		panic("testDouble was not selected in the last query and so is not valid")
+	}
+	return o.testDouble
+}
+
+// TestDoubleIsValid returns true if the value was loaded from the database or has been set.
+func (o *typeTestBase) TestDoubleIsValid() bool {
+	return o.testDoubleIsValid
+}
+
+// SetTestDouble sets the value of TestDouble in the object, to be saved later using the Save() function.
+func (o *typeTestBase) SetTestDouble(v float64) {
+	o.testDoubleIsValid = true
+	if o.testDouble != v || !o._restored {
+		o.testDouble = v
+		o.testDoubleIsDirty = true
+	}
+
 }
 
 func (o *typeTestBase) TestText() string {
@@ -414,6 +453,7 @@ func (o *typeTestBase) TestTextIsNull() bool {
 }
 
 func (o *typeTestBase) SetTestText(i interface{}) {
+	o.testTextIsValid = true
 	if i == nil {
 		if !o.testTextIsNull {
 			o.testTextIsNull = true
@@ -451,6 +491,7 @@ func (o *typeTestBase) TestBitIsNull() bool {
 }
 
 func (o *typeTestBase) SetTestBit(i interface{}) {
+	o.testBitIsValid = true
 	if i == nil {
 		if !o.testBitIsNull {
 			o.testBitIsNull = true
@@ -488,6 +529,7 @@ func (o *typeTestBase) TestVarcharIsNull() bool {
 }
 
 func (o *typeTestBase) SetTestVarchar(i interface{}) {
+	o.testVarcharIsValid = true
 	if i == nil {
 		if !o.testVarcharIsNull {
 			o.testVarcharIsNull = true
@@ -595,22 +637,6 @@ func (b *TypeTestsBuilder) Expand(n query.NodeI) *TypeTestsBuilder {
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *TypeTestsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *TypeTestsBuilder {
-	var condition query.NodeI
-	if len(conditions) > 1 {
-		condition = And(conditions)
-	} else if len(conditions) == 1 {
-		condition = conditions[0]
-	}
-	b.base.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
-	return b
-}
-
-// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
-// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *TypeTestsBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *TypeTestsBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -734,6 +760,10 @@ func CountTypeTestByTestInt(ctx context.Context, testInt int) uint {
 
 func CountTypeTestByTestFloat(ctx context.Context, testFloat float32) uint {
 	return queryTypeTests(ctx).Where(Equal(node.TypeTest().TestFloat(), testFloat)).Count(ctx, false)
+}
+
+func CountTypeTestByTestDouble(ctx context.Context, testDouble float64) uint {
+	return queryTypeTests(ctx).Where(Equal(node.TypeTest().TestDouble(), testDouble)).Count(ctx, false)
 }
 
 func CountTypeTestByTestText(ctx context.Context, testText string) uint {
@@ -875,6 +905,18 @@ func (o *typeTestBase) load(m map[string]interface{}, linkParent bool, objThis *
 		o.testFloatIsNull = true
 		o.testFloat = 0.0
 	}
+	if v, ok := m["test_double"]; ok && v != nil {
+		if o.testDouble, ok = v.(float64); ok {
+			o.testDoubleIsValid = true
+			o.testDoubleIsDirty = false
+		} else {
+			panic("Wrong type found for test_double.")
+		}
+	} else {
+		o.testDoubleIsValid = false
+		o.testDouble = 0.0
+	}
+
 	if v, ok := m["test_text"]; ok {
 		if v == nil {
 			o.testText = ""
@@ -1028,6 +1070,10 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 		}
 	}
 
+	if o.testDoubleIsDirty {
+		fields["test_double"] = o.testDouble
+	}
+
 	if o.testTextIsDirty {
 		if o.testTextIsNull {
 			fields["test_text"] = nil
@@ -1078,6 +1124,7 @@ func (o *typeTestBase) resetDirtyStatus() {
 	o.tsIsDirty = false
 	o.testIntIsDirty = false
 	o.testFloatIsDirty = false
+	o.testDoubleIsDirty = false
 	o.testTextIsDirty = false
 	o.testBitIsDirty = false
 	o.testVarcharIsDirty = false
@@ -1091,6 +1138,7 @@ func (o *typeTestBase) IsDirty() bool {
 		o.tsIsDirty ||
 		o.testIntIsDirty ||
 		o.testFloatIsDirty ||
+		o.testDoubleIsDirty ||
 		o.testTextIsDirty ||
 		o.testBitIsDirty ||
 		o.testVarcharIsDirty
@@ -1143,6 +1191,12 @@ func (o *typeTestBase) Get(key string) interface{} {
 			return nil
 		}
 		return o.testFloat
+
+	case "TestDouble":
+		if !o.testDoubleIsValid {
+			return nil
+		}
+		return o.testDouble
 
 	case "TestText":
 		if !o.testTextIsValid {
@@ -1259,6 +1313,16 @@ func (o *typeTestBase) MarshalBinary() (data []byte, err error) {
 		return
 	}
 	if err = encoder.Encode(o.testFloatIsDirty); err != nil {
+		return
+	}
+
+	if err = encoder.Encode(o.testDouble); err != nil {
+		return
+	}
+	if err = encoder.Encode(o.testDoubleIsValid); err != nil {
+		return
+	}
+	if err = encoder.Encode(o.testDoubleIsDirty); err != nil {
 		return
 	}
 
@@ -1414,6 +1478,16 @@ func (o *typeTestBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
+	if err = dec.Decode(&o.testDouble); err != nil {
+		return
+	}
+	if err = dec.Decode(&o.testDoubleIsValid); err != nil {
+		return
+	}
+	if err = dec.Decode(&o.testDoubleIsDirty); err != nil {
+		return
+	}
+
 	if err = dec.Decode(&o.testText); err != nil {
 		return
 	}
@@ -1468,4 +1542,93 @@ func (o *typeTestBase) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	return err
+}
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *typeTestBase) MarshalJSON() (data []byte, err error) {
+	v := make(map[string]interface{})
+
+	if o.idIsValid {
+		v["id"] = o.id
+	}
+
+	if o.dateIsValid {
+		if o.dateIsNull {
+			v["date"] = nil
+		} else {
+			v["date"] = o.date
+		}
+	}
+
+	if o.timeIsValid {
+		if o.timeIsNull {
+			v["time"] = nil
+		} else {
+			v["time"] = o.time
+		}
+	}
+
+	if o.dateTimeIsValid {
+		if o.dateTimeIsNull {
+			v["dateTime"] = nil
+		} else {
+			v["dateTime"] = o.dateTime
+		}
+	}
+
+	if o.tsIsValid {
+		if o.tsIsNull {
+			v["ts"] = nil
+		} else {
+			v["ts"] = o.ts
+		}
+	}
+
+	if o.testIntIsValid {
+		if o.testIntIsNull {
+			v["testInt"] = nil
+		} else {
+			v["testInt"] = o.testInt
+		}
+	}
+
+	if o.testFloatIsValid {
+		if o.testFloatIsNull {
+			v["testFloat"] = nil
+		} else {
+			v["testFloat"] = o.testFloat
+		}
+	}
+
+	if o.testDoubleIsValid {
+		v["testDouble"] = o.testDouble
+	}
+
+	if o.testTextIsValid {
+		if o.testTextIsNull {
+			v["testText"] = nil
+		} else {
+			v["testText"] = o.testText
+		}
+	}
+
+	if o.testBitIsValid {
+		if o.testBitIsNull {
+			v["testBit"] = nil
+		} else {
+			v["testBit"] = o.testBit
+		}
+	}
+
+	if o.testVarcharIsValid {
+		if o.testVarcharIsNull {
+			v["testVarchar"] = nil
+		} else {
+			v["testVarchar"] = o.testVarchar
+		}
+	}
+
+	return json.Marshal(v)
 }

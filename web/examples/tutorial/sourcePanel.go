@@ -21,9 +21,9 @@ type SourcePanel struct {
 	filePanel *FilePanel
 }
 
-func NewSourcePanel(parent page.ControlI) *SourcePanel {
+func NewSourcePanel(parent page.ControlI, id string) *SourcePanel {
 	p := &SourcePanel{}
-	p.Panel.Init(p, parent, "sourcePanel")
+	p.Panel.Init(p, parent, id)
 	p.buttonPanel = NewPanel(p, "buttonPanel")
 	p.SetVisible(false)
 
@@ -63,4 +63,8 @@ func (p *SourcePanel) Action(ctx context.Context, a page.ActionParams) {
 
 
 func init() {
+}
+
+func GetSourcePanel(p page.ControlI) *SourcePanel {
+	return p.Page().GetControl("sourcePanel").(*SourcePanel)
 }

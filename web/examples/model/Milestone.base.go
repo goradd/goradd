@@ -14,6 +14,7 @@ import (
 	//"./node"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 )
 
 // milestoneBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
@@ -119,6 +120,7 @@ func (o *milestoneBase) LoadProject(ctx context.Context) *Project {
 
 // SetProjectID sets the value of ProjectID in the object, to be saved later using the Save() function.
 func (o *milestoneBase) SetProjectID(v string) {
+	o.projectIDIsValid = true
 	if o.projectID != v || !o._restored {
 		o.projectID = v
 		o.projectIDIsDirty = true
@@ -133,10 +135,10 @@ func (o *milestoneBase) SetProject(v *Project) {
 		panic("Cannot set Project to a null value.")
 	} else {
 		o.oProject = v
+		o.projectIDIsValid = true
 		if o.projectID != v.PrimaryKey() {
 			o.projectID = v.PrimaryKey()
 			o.projectIDIsDirty = true
-			o.projectIDIsValid = true
 		}
 	}
 }
@@ -155,6 +157,7 @@ func (o *milestoneBase) NameIsValid() bool {
 
 // SetName sets the value of Name in the object, to be saved later using the Save() function.
 func (o *milestoneBase) SetName(v string) {
+	o.nameIsValid = true
 	if o.name != v || !o._restored {
 		o.name = v
 		o.nameIsDirty = true
@@ -250,22 +253,6 @@ func (b *MilestonesBuilder) Expand(n query.NodeI) *MilestonesBuilder {
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *MilestonesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *MilestonesBuilder {
-	var condition query.NodeI
-	if len(conditions) > 1 {
-		condition = And(conditions)
-	} else if len(conditions) == 1 {
-		condition = conditions[0]
-	}
-	b.base.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
-	return b
-}
-
-// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
-// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *MilestonesBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *MilestonesBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -667,4 +654,28 @@ func (o *milestoneBase) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	return err
+}
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *milestoneBase) MarshalJSON() (data []byte, err error) {
+	v := make(map[string]interface{})
+
+	if o.idIsValid {
+		v["id"] = o.id
+	}
+
+	if o.projectIDIsValid {
+		v["projectID"] = o.projectID
+	}
+
+	if val := o.Project(); val != nil {
+		v["project"] = val
+	}
+	if o.nameIsValid {
+		v["name"] = o.name
+	}
+
+	return json.Marshal(v)
 }

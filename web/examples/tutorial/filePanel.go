@@ -11,7 +11,6 @@ type FilePanel struct {
 	Panel
 	file string
 	base string
-	content string
 }
 
 func NewFilePanel(parent page.ControlI) *FilePanel {
@@ -25,3 +24,6 @@ func (p *FilePanel) SetFile(f string) {
 	p.base = filepath.Base(f)
 	p.Refresh()
 }
+
+
+// TODO: Serialize

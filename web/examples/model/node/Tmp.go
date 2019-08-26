@@ -33,6 +33,7 @@ func (n *tmpNode) Copy_() query.NodeI {
 	return &tmpNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
+// D represents the d column in the database.
 func (n *tmpNode) D() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -46,6 +47,7 @@ func (n *tmpNode) D() *query.ColumnNode {
 	return cn
 }
 
+// I represents the i column in the database.
 func (n *tmpNode) I() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",

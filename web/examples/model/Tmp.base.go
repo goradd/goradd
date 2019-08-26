@@ -14,6 +14,7 @@ import (
 	//"./node"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 )
 
 // tmpBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
@@ -78,6 +79,7 @@ func (o *tmpBase) DIsValid() bool {
 
 // SetD sets the value of D in the object, to be saved later using the Save() function.
 func (o *tmpBase) SetD(v string) {
+	o.dIsValid = true
 	if o.d != v || !o._restored {
 		o.d = v
 		o.dIsDirty = true
@@ -99,6 +101,7 @@ func (o *tmpBase) IIsValid() bool {
 
 // SetI sets the value of I in the object, to be saved later using the Save() function.
 func (o *tmpBase) SetI(v int) {
+	o.iIsValid = true
 	if o.i != v || !o._restored {
 		o.i = v
 		o.iIsDirty = true
@@ -205,22 +208,6 @@ func (b *TmpsBuilder) Expand(n query.NodeI) *TmpsBuilder {
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *TmpsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *TmpsBuilder {
-	var condition query.NodeI
-	if len(conditions) > 1 {
-		condition = And(conditions)
-	} else if len(conditions) == 1 {
-		condition = conditions[0]
-	}
-	b.base.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
-	return b
-}
-
-// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
-// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *TmpsBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *TmpsBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -547,4 +534,21 @@ func (o *tmpBase) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	return err
+}
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *tmpBase) MarshalJSON() (data []byte, err error) {
+	v := make(map[string]interface{})
+
+	if o.dIsValid {
+		v["d"] = o.d
+	}
+
+	if o.iIsValid {
+		v["i"] = o.i
+	}
+
+	return json.Marshal(v)
 }

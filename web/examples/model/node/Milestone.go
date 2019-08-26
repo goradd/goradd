@@ -34,6 +34,7 @@ func (n *milestoneNode) Copy_() query.NodeI {
 	return &milestoneNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
+// ID represents the id column in the database.
 func (n *milestoneNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -47,6 +48,7 @@ func (n *milestoneNode) ID() *query.ColumnNode {
 	return cn
 }
 
+// ProjectID represents the project_id column in the database.
 func (n *milestoneNode) ProjectID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -60,6 +62,7 @@ func (n *milestoneNode) ProjectID() *query.ColumnNode {
 	return cn
 }
 
+// Project represents the the link to the Project object.
 func (n *milestoneNode) Project() *projectNode {
 	cn := &projectNode{
 		query.NewReferenceNode(
@@ -77,6 +80,7 @@ func (n *milestoneNode) Project() *projectNode {
 	return cn
 }
 
+// Name represents the name column in the database.
 func (n *milestoneNode) Name() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",

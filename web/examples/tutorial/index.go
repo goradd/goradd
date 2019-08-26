@@ -3,7 +3,6 @@ package tutorial
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/page/event"
 	"strings"
 
 	"github.com/goradd/goradd/pkg/page"
@@ -19,9 +18,6 @@ const (
 
 type IndexForm struct {
 	FormBase
-	detailPanel      *Panel
-	viewSourceButton *Button
-	sourcePanel		 *SourcePanel
 
 	currentPageRecord pageRecord
 }
@@ -47,12 +43,18 @@ func NewIndexForm(ctx context.Context) page.FormI {
 	f.Init(ctx, f, IndexFormPath, IndexFormId)
 	f.AddRelatedFiles()
 
-	f.detailPanel = NewPanel(f, "detailPanel")
-	f.viewSourceButton = NewButton(f, "viewSourceButton")
-	f.viewSourceButton.SetLabel("View Source")
-	f.viewSourceButton.On(event.Click(), action.Ajax(f.ID(), ViewSourceAction))
+	f.AddControls(ctx,
+		PanelCreator{
+			ID:"detailPanel",
+		},
+		ButtonCreator{
+			ID: "viewSourceButton",
+			Text: "View Source",
+			OnClick: action.Ajax(f.ID(), ViewSourceAction),
+		},
+	)
 
-	f.sourcePanel = NewSourcePanel(f)
+	NewSourcePanel(f, "sourcePanel")
 	return f
 }
 
@@ -73,13 +75,13 @@ func (f *IndexForm) LoadControls(ctx context.Context) {
 
 		for _,pr := range pl {
 			if pr.id == id {
-				pr.f(ctx, f.detailPanel)
+				pr.f(ctx, GetPanel(f, "detailPanel"))
 				f.currentPageRecord = pr
 				break
 			}
 		}
 	} else {
-		NewDefaultPanel(ctx, f.detailPanel)
+		NewDefaultPanel(ctx, GetPanel(f, "detailPanel"))
 	}
 }
 
@@ -87,7 +89,7 @@ func (f *IndexForm) LoadControls(ctx context.Context) {
 func (f *IndexForm) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case ViewSourceAction:
-		f.sourcePanel.show(f.currentPageRecord.files)
+		GetSourcePanel(f).show(f.currentPageRecord.files)
 	}
 }
 

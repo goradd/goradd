@@ -33,7 +33,7 @@ func (ctrl *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.viewSourceButton").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("viewSourceButton").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -70,7 +70,7 @@ func (ctrl *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.detailPanel").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("detailPanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -85,7 +85,7 @@ func (ctrl *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 `)
 
 	{
-		err := ctrl.Page().GetControl("form.sourcePanel").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("sourcePanel").Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

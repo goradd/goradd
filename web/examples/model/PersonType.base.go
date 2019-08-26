@@ -18,6 +18,7 @@ const (
 	PersonTypeCompanyCar PersonType = 4
 
 	PersonTypeWorksFromHome PersonType = 5
+
 )
 
 const PersonTypeMaxValue = 5
@@ -27,20 +28,13 @@ type PersonType uint
 // String returns the name value of the type and satisfies the fmt.Stringer interface
 func (p PersonType) String() string {
 	switch p {
-	case 0:
-		return ""
-	case 1:
-		return "Contractor"
-	case 2:
-		return "Manager"
-	case 3:
-		return "Inactive"
-	case 4:
-		return "Company Car"
-	case 5:
-		return "Works From Home"
-	default:
-		panic("Index out of range")
+	case 0: return ""
+	case 1: return "Contractor"
+	case 2: return "Manager"
+	case 3: return "Inactive"
+	case 4: return "Company Car"
+	case 5: return "Works From Home"
+	default: panic("Index out of range")
 	}
 	return "" // prevent warning
 }
@@ -50,14 +44,40 @@ func (p PersonType) ID() string {
 	return strconv.Itoa(int(p))
 }
 
+// PersonTypes returns a slice of all the PersonType items
 func PersonTypes() (values []PersonType) {
-	values = append(values, 1)
-	values = append(values, 2)
-	values = append(values, 3)
-	values = append(values, 4)
-	values = append(values, 5)
-	return
+    values = append(values, 1)
+    values = append(values, 2)
+    values = append(values, 3)
+    values = append(values, 4)
+    values = append(values, 5)
+    return
 }
+
+// PersonTypesI returns a slice of interfaces that contains all the PersonType items
+func PersonTypesI() (values []interface{}) {
+    values = make([]interface{}, 5, 5)
+    values[0] = PersonType(1)
+    values[1] = PersonType(2)
+    values[2] = PersonType(3)
+    values[3] = PersonType(4)
+    values[4] = PersonType(5)
+    return
+}
+
+
+// Label returns the string that will be displayed to a user for this item. Together with
+// the Value function, it satisfies the ItemLister interface that makes it easy
+// to create a dropdown list of items.
+func (p PersonType) Label() string {
+	return p.String()
+}
+
+// Value satisfies the Valuer interface.
+func (p PersonType) Value() interface{} {
+	return p
+}
+
 
 func PersonTypeNames() []string {
 	names := make([]string, 6)
@@ -69,3 +89,4 @@ func PersonTypeNames() []string {
 	names[5] = "Works From Home"
 	return names
 }
+

@@ -14,6 +14,7 @@ import (
 	//"./node"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 )
 
 // loginBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
@@ -147,6 +148,7 @@ func (o *loginBase) LoadPerson(ctx context.Context) *Person {
 }
 
 func (o *loginBase) SetPersonID(i interface{}) {
+	o.personIDIsValid = true
 	if i == nil {
 		if !o.personIDIsNull {
 			o.personIDIsNull = true
@@ -169,11 +171,11 @@ func (o *loginBase) SetPersonID(i interface{}) {
 }
 
 func (o *loginBase) SetPerson(v *Person) {
+	o.personIDIsValid = true
 	if v == nil {
 		if !o.personIDIsNull || !o._restored {
 			o.personIDIsNull = true
 			o.personIDIsDirty = true
-			o.personIDIsValid = true
 			o.personID = ""
 			o.oPerson = nil
 		}
@@ -183,7 +185,6 @@ func (o *loginBase) SetPerson(v *Person) {
 			o.personIDIsNull = false
 			o.personID = v.PrimaryKey()
 			o.personIDIsDirty = true
-			o.personIDIsValid = true
 		}
 	}
 }
@@ -202,6 +203,7 @@ func (o *loginBase) UsernameIsValid() bool {
 
 // SetUsername sets the value of Username in the object, to be saved later using the Save() function.
 func (o *loginBase) SetUsername(v string) {
+	o.usernameIsValid = true
 	if o.username != v || !o._restored {
 		o.username = v
 		o.usernameIsDirty = true
@@ -227,6 +229,7 @@ func (o *loginBase) PasswordIsNull() bool {
 }
 
 func (o *loginBase) SetPassword(i interface{}) {
+	o.passwordIsValid = true
 	if i == nil {
 		if !o.passwordIsNull {
 			o.passwordIsNull = true
@@ -260,6 +263,7 @@ func (o *loginBase) IsEnabledIsValid() bool {
 
 // SetIsEnabled sets the value of IsEnabled in the object, to be saved later using the Save() function.
 func (o *loginBase) SetIsEnabled(v bool) {
+	o.isEnabledIsValid = true
 	if o.isEnabled != v || !o._restored {
 		o.isEnabled = v
 		o.isEnabledIsDirty = true
@@ -377,22 +381,6 @@ func (b *LoginsBuilder) Expand(n query.NodeI) *LoginsBuilder {
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *LoginsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *LoginsBuilder {
-	var condition query.NodeI
-	if len(conditions) > 1 {
-		condition = And(conditions)
-	} else if len(conditions) == 1 {
-		condition = conditions[0]
-	}
-	b.base.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
-	return b
-}
-
-// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
-// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *LoginsBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *LoginsBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -922,4 +910,44 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	return err
+}
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *loginBase) MarshalJSON() (data []byte, err error) {
+	v := make(map[string]interface{})
+
+	if o.idIsValid {
+		v["id"] = o.id
+	}
+
+	if o.personIDIsValid {
+		if o.personIDIsNull {
+			v["personID"] = nil
+		} else {
+			v["personID"] = o.personID
+		}
+	}
+
+	if val := o.Person(); val != nil {
+		v["person"] = val
+	}
+	if o.usernameIsValid {
+		v["username"] = o.username
+	}
+
+	if o.passwordIsValid {
+		if o.passwordIsNull {
+			v["password"] = nil
+		} else {
+			v["password"] = o.password
+		}
+	}
+
+	if o.isEnabledIsValid {
+		v["isEnabled"] = o.isEnabled
+	}
+
+	return json.Marshal(v)
 }

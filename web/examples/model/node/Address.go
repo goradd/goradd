@@ -35,6 +35,7 @@ func (n *addressNode) Copy_() query.NodeI {
 	return &addressNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
+// ID represents the id column in the database.
 func (n *addressNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -48,6 +49,7 @@ func (n *addressNode) ID() *query.ColumnNode {
 	return cn
 }
 
+// PersonID represents the person_id column in the database.
 func (n *addressNode) PersonID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -61,6 +63,7 @@ func (n *addressNode) PersonID() *query.ColumnNode {
 	return cn
 }
 
+// Person represents the the link to the Person object.
 func (n *addressNode) Person() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(
@@ -78,6 +81,7 @@ func (n *addressNode) Person() *personNode {
 	return cn
 }
 
+// Street represents the street column in the database.
 func (n *addressNode) Street() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
@@ -91,6 +95,7 @@ func (n *addressNode) Street() *query.ColumnNode {
 	return cn
 }
 
+// City represents the city column in the database.
 func (n *addressNode) City() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",

@@ -14,6 +14,7 @@ import (
 	//"./node"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 )
 
 // addressBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
@@ -137,6 +138,7 @@ func (o *addressBase) LoadPerson(ctx context.Context) *Person {
 }
 
 func (o *addressBase) SetPersonID(i interface{}) {
+	o.personIDIsValid = true
 	if i == nil {
 		if !o.personIDIsNull {
 			o.personIDIsNull = true
@@ -159,11 +161,11 @@ func (o *addressBase) SetPersonID(i interface{}) {
 }
 
 func (o *addressBase) SetPerson(v *Person) {
+	o.personIDIsValid = true
 	if v == nil {
 		if !o.personIDIsNull || !o._restored {
 			o.personIDIsNull = true
 			o.personIDIsDirty = true
-			o.personIDIsValid = true
 			o.personID = ""
 			o.oPerson = nil
 		}
@@ -173,7 +175,6 @@ func (o *addressBase) SetPerson(v *Person) {
 			o.personIDIsNull = false
 			o.personID = v.PrimaryKey()
 			o.personIDIsDirty = true
-			o.personIDIsValid = true
 		}
 	}
 }
@@ -192,6 +193,7 @@ func (o *addressBase) StreetIsValid() bool {
 
 // SetStreet sets the value of Street in the object, to be saved later using the Save() function.
 func (o *addressBase) SetStreet(v string) {
+	o.streetIsValid = true
 	if o.street != v || !o._restored {
 		o.street = v
 		o.streetIsDirty = true
@@ -217,6 +219,7 @@ func (o *addressBase) CityIsNull() bool {
 }
 
 func (o *addressBase) SetCity(i interface{}) {
+	o.cityIsValid = true
 	if i == nil {
 		if !o.cityIsNull {
 			o.cityIsNull = true
@@ -324,22 +327,6 @@ func (b *AddressesBuilder) Expand(n query.NodeI) *AddressesBuilder {
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *AddressesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *AddressesBuilder {
-	var condition query.NodeI
-	if len(conditions) > 1 {
-		condition = And(conditions)
-	} else if len(conditions) == 1 {
-		condition = conditions[0]
-	}
-	b.base.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
-	return b
-}
-
-// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
-// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *AddressesBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *AddressesBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -822,4 +809,40 @@ func (o *addressBase) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	return err
+}
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *addressBase) MarshalJSON() (data []byte, err error) {
+	v := make(map[string]interface{})
+
+	if o.idIsValid {
+		v["id"] = o.id
+	}
+
+	if o.personIDIsValid {
+		if o.personIDIsNull {
+			v["personID"] = nil
+		} else {
+			v["personID"] = o.personID
+		}
+	}
+
+	if val := o.Person(); val != nil {
+		v["person"] = val
+	}
+	if o.streetIsValid {
+		v["street"] = o.street
+	}
+
+	if o.cityIsValid {
+		if o.cityIsNull {
+			v["city"] = nil
+		} else {
+			v["city"] = o.city
+		}
+	}
+
+	return json.Marshal(v)
 }

@@ -14,6 +14,7 @@ import (
 	//"./node"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 
 	"github.com/goradd/goradd/pkg/datetime"
 )
@@ -204,6 +205,7 @@ func (o *projectBase) NumIsValid() bool {
 
 // SetNum sets the value of Num in the object, to be saved later using the Save() function.
 func (o *projectBase) SetNum(v int) {
+	o.numIsValid = true
 	if o.num != v || !o._restored {
 		o.num = v
 		o.numIsDirty = true
@@ -248,6 +250,7 @@ func (o *projectBase) LoadManager(ctx context.Context) *Person {
 }
 
 func (o *projectBase) SetManagerID(i interface{}) {
+	o.managerIDIsValid = true
 	if i == nil {
 		if !o.managerIDIsNull {
 			o.managerIDIsNull = true
@@ -270,11 +273,11 @@ func (o *projectBase) SetManagerID(i interface{}) {
 }
 
 func (o *projectBase) SetManager(v *Person) {
+	o.managerIDIsValid = true
 	if v == nil {
 		if !o.managerIDIsNull || !o._restored {
 			o.managerIDIsNull = true
 			o.managerIDIsDirty = true
-			o.managerIDIsValid = true
 			o.managerID = ""
 			o.oManager = nil
 		}
@@ -284,7 +287,6 @@ func (o *projectBase) SetManager(v *Person) {
 			o.managerIDIsNull = false
 			o.managerID = v.PrimaryKey()
 			o.managerIDIsDirty = true
-			o.managerIDIsValid = true
 		}
 	}
 }
@@ -303,6 +305,7 @@ func (o *projectBase) NameIsValid() bool {
 
 // SetName sets the value of Name in the object, to be saved later using the Save() function.
 func (o *projectBase) SetName(v string) {
+	o.nameIsValid = true
 	if o.name != v || !o._restored {
 		o.name = v
 		o.nameIsDirty = true
@@ -328,6 +331,7 @@ func (o *projectBase) DescriptionIsNull() bool {
 }
 
 func (o *projectBase) SetDescription(i interface{}) {
+	o.descriptionIsValid = true
 	if i == nil {
 		if !o.descriptionIsNull {
 			o.descriptionIsNull = true
@@ -365,6 +369,7 @@ func (o *projectBase) StartDateIsNull() bool {
 }
 
 func (o *projectBase) SetStartDate(i interface{}) {
+	o.startDateIsValid = true
 	if i == nil {
 		if !o.startDateIsNull {
 			o.startDateIsNull = true
@@ -402,6 +407,7 @@ func (o *projectBase) EndDateIsNull() bool {
 }
 
 func (o *projectBase) SetEndDate(i interface{}) {
+	o.endDateIsValid = true
 	if i == nil {
 		if !o.endDateIsNull {
 			o.endDateIsNull = true
@@ -439,6 +445,7 @@ func (o *projectBase) BudgetIsNull() bool {
 }
 
 func (o *projectBase) SetBudget(i interface{}) {
+	o.budgetIsValid = true
 	if i == nil {
 		if !o.budgetIsNull {
 			o.budgetIsNull = true
@@ -476,6 +483,7 @@ func (o *projectBase) SpentIsNull() bool {
 }
 
 func (o *projectBase) SetSpent(i interface{}) {
+	o.spentIsValid = true
 	if i == nil {
 		if !o.spentIsNull {
 			o.spentIsNull = true
@@ -691,22 +699,6 @@ func (b *ProjectsBuilder) Expand(n query.NodeI) *ProjectsBuilder {
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
 func (b *ProjectsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *ProjectsBuilder {
-	var condition query.NodeI
-	if len(conditions) > 1 {
-		condition = And(conditions)
-	} else if len(conditions) == 1 {
-		condition = conditions[0]
-	}
-	b.base.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
-	return b
-}
-
-// JoinOn adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
-// what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *ProjectsBuilder) JoinOn(n query.NodeI, conditions ...query.NodeI) *ProjectsBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -1709,4 +1701,97 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	return err
+}
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *projectBase) MarshalJSON() (data []byte, err error) {
+	v := make(map[string]interface{})
+
+	if o.idIsValid {
+		v["id"] = o.id
+	}
+
+	if o.numIsValid {
+		v["num"] = o.num
+	}
+
+	if o.projectStatusTypeIDIsValid {
+		v["projectStatusTypeID"] = o.projectStatusTypeID
+	}
+
+	if o.projectStatusTypeIDIsValid {
+		v["projectStatusType"] = o.ProjectStatusType().String()
+	}
+	if o.managerIDIsValid {
+		if o.managerIDIsNull {
+			v["managerID"] = nil
+		} else {
+			v["managerID"] = o.managerID
+		}
+	}
+
+	if val := o.Manager(); val != nil {
+		v["manager"] = val
+	}
+	if o.nameIsValid {
+		v["name"] = o.name
+	}
+
+	if o.descriptionIsValid {
+		if o.descriptionIsNull {
+			v["description"] = nil
+		} else {
+			v["description"] = o.description
+		}
+	}
+
+	if o.startDateIsValid {
+		if o.startDateIsNull {
+			v["startDate"] = nil
+		} else {
+			v["startDate"] = o.startDate
+		}
+	}
+
+	if o.endDateIsValid {
+		if o.endDateIsNull {
+			v["endDate"] = nil
+		} else {
+			v["endDate"] = o.endDate
+		}
+	}
+
+	if o.budgetIsValid {
+		if o.budgetIsNull {
+			v["budget"] = nil
+		} else {
+			v["budget"] = o.budget
+		}
+	}
+
+	if o.spentIsValid {
+		if o.spentIsNull {
+			v["spent"] = nil
+		} else {
+			v["spent"] = o.spent
+		}
+	}
+
+	if val := o.Milestones(); val != nil {
+		v["project"] = val
+	}
+
+	if val := o.ChildrenAsParent(); val != nil {
+		v["childrenAsParent"] = val
+	}
+	if val := o.ParentsAsChild(); val != nil {
+		v["parentsAsChild"] = val
+	}
+	if val := o.TeamMembers(); val != nil {
+		v["teamMembers"] = val
+	}
+
+	return json.Marshal(v)
 }

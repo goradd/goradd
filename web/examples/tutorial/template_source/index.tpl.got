@@ -13,7 +13,7 @@
 {{g path := page.GetContext(ctx).HttpContext.URL.Path }}
 
 <h1>Control Examples</h1>
-{{draw form.viewSourceButton }}
+{{draw viewSourceButton }}
 <div class="sidebar">
 <h2>ORM</h2>
   <ul>
@@ -23,10 +23,10 @@
   </ul>
 </div>
 <div class="detail_container">
-	{{draw form.detailPanel }}
+	{{draw detailPanel }}
 </div>
 <div class="source_container">
-	{{draw form.sourcePanel }}
+	{{draw sourcePanel }}
 </div>
 
 {{end}}
