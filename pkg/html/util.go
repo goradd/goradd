@@ -8,9 +8,10 @@ import (
 )
 
 // TextToHtml does a variety of transformations to make standard text presentable as HTML.
-// It escapes characters needing to be escaped and turns newlines into breaks.
+// It escapes characters needing to be escaped and turns newlines into breaks and double newlines into paragraphs.
 func TextToHtml(in string) (out string) {
 	in = html2.EscapeString(in)
+	in = strings.Replace(in, "\n\n", "<p>", -1)
 	out = strings.Replace(in, "\n", "<br />", -1)
 	return
 }
