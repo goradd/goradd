@@ -47,3 +47,4 @@ func (n *EditPanelBaseTemplate) Overwrite() bool {
 	return n.Template.Overwrite
 }
 
+

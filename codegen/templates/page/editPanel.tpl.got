@@ -33,4 +33,3 @@ func (n *EditPanelTemplate) GenerateTable(codegen generator.CodeGenerator, dd *d
 func (n *EditPanelTemplate) Overwrite() bool {
 	return n.Template.Overwrite
 }
-

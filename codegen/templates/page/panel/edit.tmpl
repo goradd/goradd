@@ -93,4 +93,8 @@ func (c {{t.GoName}}EditPanelCreator) Create(ctx context.Context, parent page.Co
 	return p
 }
 
+func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
+	return c.Page().GetControl(id).(*{{= panelName }})
+}
+
 }}

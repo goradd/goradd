@@ -32,13 +32,18 @@ import (
 const {{= title }}EditPath = "{{= formPath }}"
 // {{= title }}EditID is the html id to use in the html form object.
 const {{= title }}EditID = "{{= formName }}"
-const {{= t.GoName }}Singular = "{{= t.LiteralName }}"
-const {{= t.GoName }}Plural = "{{= t.LiteralPlural }}"
+const {{= title }}Singular = "{{= t.LiteralName }}"
+const {{= title }}Plural = "{{= t.LiteralPlural }}"
+
+const {{= title }}EditPanelID = "edit-panel"
+const {{= title }}SaveButtonID = "save-button"
+const {{= title }}CancelButtonID = "cancel-button"
+const {{= title }}DeleteButtonID = "delete-button"
 
 const (
-    {{= t.GoName }}SaveAction = iota + 1
-    {{= t.GoName }}CancelAction
-    {{= t.GoName }}DeleteAction
+    {{= title }}SaveAction = iota + 1
+    {{= title }}CancelAction
+    {{= title }}DeleteAction
 )
 
 
@@ -46,10 +51,6 @@ const (
 // To edit it, make a copy and move it out of this package and into another
 type {{= formName }} struct {
     control.FormBase
-    EditPanel *panel.{{= t.GoName }}EditPanel
-    SaveButton *Button
-    CancelButton *Button
-    DeleteButton *Button
 }
 
 func New{{= formName }}(ctx context.Context) page.FormI {
@@ -87,25 +88,30 @@ func (f *{{= formName }}) AddRelatedFiles() {
 }
 
 func (f *{{= formName }}) createControls(ctx context.Context) {
-	f.EditPanel = panel.New{{= t.GoName }}EditPanel(ctx, f, "edit-panel")
-	f.SaveButton = NewButton(f, "save-button")
-    f.SaveButton.SetText(f.ΩT("Save"))
-	f.SaveButton.OnSubmit(action.Ajax(f.ID(), {{= t.GoName }}SaveAction))
-	f.CancelButton = NewButton(f, "cancel-button")
-	f.CancelButton.SetText(f.ΩT("Cancel"))
-	f.CancelButton.OnSubmit(action.Ajax(f.ID(), {{= t.GoName }}CancelAction))
-	f.CancelButton.SetValidationType(page.ValidateNone)
-	f.DeleteButton = NewButton(f, "delete-button")
-	f.DeleteButton.SetText(f.ΩT("Delete"))
-
-	// Two ways to customize the following message:
-	//  1) Specify what singular version to use with a comment in the database.
-	//  2) Remove all the actions on the button and replace with your own actions
-	f.DeleteButton.OnSubmit(
-	    action.Confirm(f.ΩT("Are you sure you want to delete this item?")),
-	    action.Ajax(f.ID(), {{= t.GoName }}DeleteAction),
-	    )
-	f.DeleteButton.SetValidationType(page.ValidateNone)
+    f.AddControls(ctx,
+        panel.{{= t.GoName }}EditPanelCreator {
+            ID: {{= title }}EditPanelID,
+        },
+        ButtonCreator {
+            ID: {{= title }}SaveButtonID,
+            Text: f.ΩT("Save"),
+            OnSubmit: action.Ajax(f.ID(), {{= title }}SaveAction),
+        },
+        ButtonCreator {
+            ID: {{= title }}CancelButtonID,
+            Text: f.ΩT("Cancel"),
+            OnSubmit: action.Ajax(f.ID(), {{= title }}CancelAction),
+        },
+        ButtonCreator {
+            ID: {{= title }}DeleteButtonID,
+            Text: f.ΩT("Delete"),
+ 	        OnSubmit: action.Group (
+                action.Confirm(f.ΩT("Are you sure you want to delete this item?")),
+                action.Ajax(f.ID(), {{= title }}DeleteAction),
+ 	        ),
+ 	        ValidationType: page.ValidateNone,
+       },
+    )
 }
 
 
@@ -113,27 +119,30 @@ func (f *{{= formName }}) createControls(ctx context.Context) {
 // It is the place to load up the form controls with data after the form has been created.
 func (f *{{= formName }}) LoadControls(ctx context.Context) {
     if id, ok := page.GetContext(ctx).FormValue("id"); ok {
-    	f.EditPanel.Load(ctx, id)
-        f.DeleteButton.SetVisible(true)
-        f.Page().SetTitle(f.ΩT("Edit"))
-    } else {
-        f.EditPanel.Load(ctx, "")
-        f.DeleteButton.SetVisible(false)
-        f.Page().SetTitle(f.ΩT("Create"))
+ 	    err := panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, id)
+ 	    if err != nil {
+            GetButton(f, {{= title }}DeleteButtonID).SetVisible(true)
+            f.Page().SetTitle(f.ΩT("Edit"))
+            return
+ 	    }
+ 	    // drop through on failure
     }
+    _ = panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, "")
+    GetButton(f, {{= title }}DeleteButtonID).SetVisible(false)
+    f.Page().SetTitle(f.ΩT("Create"))
 }
 
 // Action is called by the framework to execute any Server or Ajax actions you have assigned to controls
 // and directed here.
 func (f *{{= formName }}) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
-	case {{= t.GoName }}SaveAction:
-	    f.EditPanel.Save(ctx)
+	case {{= title }}SaveAction:
+	    panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Save(ctx)
 	    f.returnToPrevious(ctx)
-    case {{= t.GoName }}CancelAction:
+    case {{= title }}CancelAction:
         f.returnToPrevious(ctx)
-    case {{= t.GoName }}DeleteAction:
-        f.EditPanel.Delete(ctx)
+    case {{= title }}DeleteAction:
+        panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Delete(ctx)
         f.returnToPrevious(ctx)
     }
 }

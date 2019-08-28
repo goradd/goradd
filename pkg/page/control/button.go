@@ -99,6 +99,7 @@ type ButtonCreator struct {
 	// OnClick is an action to take when the button is pressed. Do not specify both
 	// a OnClick and OnSubmit.
 	OnClick action.ActionI
+	ValidationType page.ValidationType
 	page.ControlOptions
 }
 
@@ -120,6 +121,9 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 	}
 	if c.OnClick != nil {
 		ctrl.On(event.Click(), c.OnClick)
+	}
+	if c.ValidationType != page.ValidateDefault {
+		ctrl.SetValidationType(c.ValidationType)
 	}
 	ctrl.ApplyOptions(c.ControlOptions)
 }

@@ -183,6 +183,11 @@ func (dd *DatabaseDescription) analyzeTable(td *TableDescription) {
 		td.LiteralName = dd.dbNameToEnglishName(td.DbName)
 	}
 
+	if td.LiteralPlural == "" {
+		td.LiteralPlural = inflector.Pluralize(td.LiteralName)
+	}
+
+
 	if td.LiteralName == td.LiteralPlural {
 		log.Print("Error: table " + td.DbName + " is a plural name. Change it to a singular name.")
 		td.Skip = true
