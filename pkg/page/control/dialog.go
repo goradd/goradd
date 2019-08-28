@@ -119,7 +119,7 @@ func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
 	bb := NewPanel(d, d.buttonBarID)
 	bb.AddClass("gr-dialog-buttons")
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
-	d.On(event.DialogClosed(), action.Ajax(d.ID(), DialogClose), action.PrivateAction{})
+	d.On(event.DialogClosed().Private(), action.Ajax(d.ID(), DialogClose))
 
 	//d.FormBase().AddStyleSheetFile(config.GORADD_FONT_AWESOME_CSS, nil)
 }
@@ -188,8 +188,10 @@ func (d *Dialog) AddButton(
 			btn.On(event.Click(), action.Trigger(d.ID(), DialogButtonEvent, id))
 		} else {
 			btn.On(event.Click(),
-				action.Confirm(options.ConfirmationMessage),
-				action.Trigger(d.ID(), DialogButtonEvent, id),
+				action.Group(
+					action.Confirm(options.ConfirmationMessage),
+					action.Trigger(d.ID(), DialogButtonEvent, id),
+				),
 			)
 		}
 	}

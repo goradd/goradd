@@ -13,10 +13,10 @@ var formName = key + t.GoName + "EditForm"
 {{< package }}form{{end}}
 {{< form }}{{strict}}{{= formName}}{{begin strict}}{{end}}
 {{define template }}
-{{draw form.EditPanel }}
-{{draw form.SaveButton }}
-{{draw form.CancelButton }}
-{{draw form.DeleteButton }}
+{{draw edit-panel }}
+{{draw save-button }}
+{{draw cancel-button }}
+{{draw delete-button }}
 {{end}}
 
 {{renderFormTemplate}}

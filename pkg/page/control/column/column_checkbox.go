@@ -186,7 +186,11 @@ func (col *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 
 // AddActions adds actions to the table that the column can respond to.
 func (col *CheckboxColumn) AddActions(t page.ControlI) {
-	t.On(event.CheckboxColumnClick().Selector(`input[data-gr-all]`), action.Ajax(col.ParentTable().ID() + "_" + col.ID(), control.ColumnAction).ActionValue(AllClickAction), action.PrivateAction{})
+	t.On(event.
+		CheckboxColumnClick().
+		Selector(`input[data-gr-all]`).
+		Private(),
+		action.Ajax(col.ParentTable().ID() + "_" + col.ID(), control.ColumnAction).ActionValue(AllClickAction))
 }
 
 // Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.

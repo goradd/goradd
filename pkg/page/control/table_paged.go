@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
@@ -65,6 +66,7 @@ type PagedTableCreator struct {
 	Sortable         bool
 	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
 	SortHistoryLimit int
+	OnCellClick action.CallbackActionI
 	page.ControlOptions
 	// PageSize is the number of rows to include in a page
 	PageSize         int
@@ -101,6 +103,7 @@ func (c PagedTableCreator) Init(ctx context.Context, ctrl PagedTableI) {
 		Data:             c.Data,
 		Sortable:         c.Sortable,
 		SortHistoryLimit: c.SortHistoryLimit,
+		OnCellClick: c.OnCellClick,
 		ControlOptions:   c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)

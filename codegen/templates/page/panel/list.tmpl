@@ -32,45 +32,17 @@ const (
 
 type {{= panelName }} struct {
 	{{= panelName }}Base
-
-    FilterPanel *Panel
-    FilterText *Textbox
-    ButtonPanel *Panel
-    NewButton *Button
 }
 
-func New{{= panelName }}(parent page.ControlI, id string) *{{= panelName}} {
+func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
     p := new({{= panelName }})
-	p.Init(p, parent, id)
+	p.Init(ctx, p, parent, id)
 	return p
 }
 
-func (p *{{= panelName }}) Init(self page.ControlI, parent page.ControlI, id string) {
+func (p *{{= panelName }}) Init(ctx context.Context, self page.ControlI, parent page.ControlI, id string) {
 	p.{{= panelName }}Base.Init(self, parent, id)
-	p.createControls()
-}
-
-func (p *{{= panelName }}) createControls() {
-	p.FilterPanel = NewPanel(p, p.ID() + "-filter")
-	p.FilterText = NewTextbox(p, p.ID() + "-filterText")
-	p.FilterText.SetPlaceholder(p.ΩT("Search..."))
-	p.FilterText.SetType(TextboxTypeSearch)
-
-	p.FilterText.On(event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search))
-	p.FilterText.On(event.EnterKey().Terminating(), action.Ajax(p.ID(), {{= lcPanelName }}Search))
-
-    p.ButtonPanel = NewPanel(p, p.ID() + "-buttons")
-
-    p.NewButton = NewButton(p.ButtonPanel, p.ID() + "-newButton")
-    p.NewButton.SetLabel("New")
-    p.NewButton.On(event.Click(), action.Ajax(p.ID(), {{= lcPanelName }}NewClick))
-
-    p.Create{{= objectType }}({{= lcPanelName }}RowClick)	// Call into base to create the list control
-}
-
-// Load is called when the form controls are loaded with data. Use it to initialize the controls created above.
-func (p *{{= panelName }}) Load(ctx context.Context) error {
-    return nil
+	p.createControls(ctx)
 }
 
 func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
@@ -78,7 +50,7 @@ func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
 	case {{= lcPanelName }}Search:
 		p.Refresh()
 	case {{= lcPanelName }}RowClick: // edit
-		p.EditItem(p.GetClickedRowID(a))
+		p.EditItem(p.GetClickedRowValue(a))
 	case {{= lcPanelName }}NewClick: // new
 		p.EditItem("")
 	}
@@ -96,9 +68,12 @@ func (p *{{= panelName }}) EditItem(id string) {
 func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
     // The default here simply filters based on the text in the FiterText.
     // Feel free to add additional requirements.
-	filter := p.MakeFilter(p.FilterText.Text())
+	filter := p.MakeFilter(GetTextbox(p, p.ID() + "-filterText").Text())
 	return model.Query{{= t.GoPlural }}(ctx).Where(filter)
 }
 
+func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
+	return c.Page().GetControl(id).(*{{= panelName }})
+}
 
 }}

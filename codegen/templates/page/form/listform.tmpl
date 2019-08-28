@@ -72,7 +72,7 @@ func (f *{{= formName }}) AddRelatedFiles() {
 }
 
 func (f *{{= formName }}) createControls(ctx context.Context) {
-	f.ListPanel = panel.New{{= t.GoName }}ListPanel(f, "")
+	panel.New{{= t.GoName }}ListPanel(ctx, f, "list-panel")
 }
 
 
@@ -80,7 +80,7 @@ func (f *{{= formName }}) createControls(ctx context.Context) {
 // It is the place to load up the form controls with data after the form has been created.
 func (f *{{= formName }}) LoadControls(ctx context.Context) {
 	f.PushLocation(ctx)
-	f.ListPanel.Load(ctx)
+	panel.Get{{= t.GoName }}ListPanel(f, "list-panel").Load(ctx)
 }
 
 

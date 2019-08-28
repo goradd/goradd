@@ -17,7 +17,7 @@ type NavbarListI interface {
 	page.ControlI
 	control.ItemListI
 	data.DataManagerEmbedder
-	OnSelect (actions ...action.ActionI) page.ControlI
+	OnSelect (action action.ActionI) page.ControlI
 }
 
 type NavbarList struct {
@@ -162,8 +162,8 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI
 	return h
 }
 
-func (l *NavbarList) OnSelect (actions ...action.ActionI) page.ControlI {
-	return l.On(NavbarSelectEvent(), actions...)
+func (l *NavbarList) OnSelect (action action.ActionI) page.ControlI {
+	return l.On(NavbarSelectEvent(), action)
 }
 
 type NavbarListCreator struct {

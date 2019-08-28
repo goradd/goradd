@@ -135,14 +135,6 @@ func Trigger(controlID string, event string, data interface{}) ΩwidgetAction {
 	return WidgetFunction(controlID, "trigger", event, data)
 }
 
-// PrivateAction is used by control implementations to add a private action to a controls action list. Unless you are
-// creating a control, you should not use this.
-type PrivateAction struct{}
-
-func (a PrivateAction) ΩRenderScript(params ΩrenderParams) string {
-	return ""
-}
-
 type ΩjavascriptAction struct {
 	JavaScript string
 }

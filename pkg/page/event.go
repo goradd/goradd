@@ -39,6 +39,9 @@ type EventI interface {
 	// through the EventValue() call on the ActionParams structure in the action handler. This is useful for Ajax and
 	// Server actions primarily. This can be a static value, or a javascript.* type object to get dynamic values from javascript.
 	ActionValue(interface{}) EventI
+	// Private makes the event private to the control and not removable. This should generally only be used by
+	// control implementations to add events that are required by the control and that should not be removed by Off()
+	Private() EventI
 
 	// String returns a description of the event, primarily for debugging
 	String() string
@@ -48,10 +51,11 @@ type EventI interface {
 	Name() string
 	GetID() EventID
 
-	addActions(a ...action2.ActionI)
+	addAction(a action2.ActionI)
 	renderActions(control ControlI, eventID EventID) string
-	getActions() []action2.ActionI
+	getCallbackAction() action2.CallbackActionI
 	event() *Event
+	isPrivate() bool
 }
 
 // EventID is a unique id used to specify which event is triggering.
@@ -77,7 +81,7 @@ type Event struct {
 	// this value will become the EventValue returned to the action.
 	actionValue interface{}
 	// actions is the list of actions that the event triggers
-	actions []action2.ActionI
+	action action2.ActionI
 	// preventDefault will cause the preventDefault jQuery function to be called on the event, which prevents the
 	// default action. In particular, this would prevent a submit button from submitting a form.
 	preventDefault bool
@@ -96,18 +100,19 @@ type Event struct {
 	// capture indicates an event should fire during the capture phase and not the bubbling phase.
 	// This is used in very special situations when you want to not allow a bubbled event to be blocked by a sub-object as it bubbles.
 	capture bool
+	private bool
 }
 
-// NewEvent creates an event that triggers on the given event type. Use the builder pattern functions from EventI to
-// add delays, conditions, etc.
+// NewEvent creates an event that triggers on the given javascript event name.
+// Use the builder pattern functions from EventI to add delays, conditions, etc.
 func NewEvent(name string) EventI {
 	return &Event{JsEvent: name}
 }
 
-// String returns a debug string listing the conents of the event.
+// String returns a debug string listing the contents of the event.
 func (e *Event) String() string {
-	return fmt.Sprintf("Event: %s, Condition: %s, Delay: %d, Selector: %s, Blocking: %t, ActionCount: %d",
-		e.JsEvent, e.condition, e.delay, e.selector, e.blocking, len(e.actions))
+	return fmt.Sprintf("Event: %s, Condition: %s, Delay: %d, Selector: %s, Blocking: %t",
+		e.JsEvent, e.condition, e.delay, e.selector, e.blocking)
 }
 
 // event returns underlying event structure for private access within package
@@ -206,14 +211,24 @@ func (e *Event) ValidationTargets(targets ...string) EventI {
 	return e
 }
 
+// Private makes the event private to the control and not removable. This should generally only be used by
+// control implementations to add events that are required by the control and that should not be removed by Off()
+func (e *Event) Private() EventI {
+	e.private = true
+	return e
+}
+
+
 // HasServerAction returns true if at least one of the event's actions is a server action.
 func (e *Event) HasServerAction() bool {
-	for _, action := range e.actions {
-		if a, ok := action.(action2.CallbackActionI); ok {
-			return a.IsServerAction()
-		}
+	switch a := e.action.(type) {
+	case action2.CallbackActionI:
+		return a.IsServerAction()
+	case action2.ActionGroup:
+		return a.HasServerAction()
+	default:
+		return false
 	}
-	return false
 }
 
 func (e *Event) Name() string {
@@ -226,32 +241,12 @@ func (e *Event) GetID() EventID {
 	return e.eventID
 }
 
-func (e *Event) addActions(actions ...action2.ActionI) {
-	var foundCallback bool
-	for _, action := range actions {
-		if _, ok := action.(action2.PrivateAction); ok {
-			continue
-		}
-		if _, ok := action.(action2.CallbackActionI); ok {
-			if foundCallback {
-				panic("You can only associate one callback action with an event, and it must be the last action.")
-			}
-			foundCallback = true
-		} else {
-			if foundCallback {
-				panic("You can only associate one callback action with an event, and it must be the last action.")
-			}
-		}
-
-		e.actions = append(e.actions, action)
-	}
-
-	// Note, the above could be more robust and allow multiple callback actions, but it would get quite tricky if different
-	// kinds of actions were interleaved. We will wait until someone presents a compelling need for something like that.
+func (e *Event) addAction(a action2.ActionI) {
+	e.action = a
 }
 
 func (e *Event) renderActions(control ControlI, eventID EventID) string {
-	if e.actions == nil {
+	if e.action == nil {
 		return ""
 	}
 
@@ -277,10 +272,7 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 
 	var params = action2.ΩrenderParams{control.ID(), control.ActionValue(), uint16(eventID), e.actionValue}
 
-	var actionJs string
-	for _, a := range e.actions {
-		actionJs += a.ΩRenderScript(params)
-	}
+	var actionJs = e.action.ΩRenderScript(params)
 
 	if e.blocking {
 		actionJs += "goradd.blockEvents = true;\n"
@@ -309,9 +301,20 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 	return js
 }
 
-func (e *Event) getActions() []action2.ActionI {
-	return e.actions
+func (e *Event) getCallbackAction() action2.CallbackActionI {
+	switch a := e.action.(type) {
+	case action2.CallbackActionI:
+		return a
+	case action2.ActionGroup:
+		return a.GetCallbackAction()
+	default:return nil
+	}
 }
+
+func (e *Event) isPrivate() bool {
+	return e.private
+}
+
 
 // eventEncoded contains exported types. We use this to serialize an event for the page serializer.
 type eventEncoded struct {
@@ -323,7 +326,7 @@ type eventEncoded struct {
 	Bubbles bool
 	Capture bool
 	ActionValue               interface{} // A static value, or js to get a dynamic value when the action returns to us.
-	Actions                   []action2.ActionI
+	Action                    action2.ActionI
 	PreventDefault            bool
 	StopPropagation           bool
 	ValidationOverride        ValidationType
@@ -340,7 +343,7 @@ func (e *Event) GobEncode() (data []byte, err error) {
 		Bubbles: e.bubbles,
 		Capture: e.capture,
 		ActionValue:               e.actionValue,
-		Actions:                   e.actions,
+		Action:                    e.action,
 		PreventDefault:            e.preventDefault,
 		StopPropagation:           e.stopPropagation,
 		ValidationOverride:        e.validationOverride,
@@ -369,7 +372,7 @@ func (e *Event) GobDecode(data []byte) (err error) {
 	e.bubbles = s.Bubbles
 	e.capture = s.Capture
 	e.actionValue = s.ActionValue
-	e.actions = s.Actions
+	e.action = s.Action
 	e.preventDefault = s.PreventDefault
 	e.stopPropagation = s.StopPropagation
 	e.validationOverride = s.ValidationOverride

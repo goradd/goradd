@@ -62,7 +62,7 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
 	d.SetBlockParentValidation(true)
 	d.On(event.Event("hide.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosingEvent, nil))
 	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
-	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Ajax(d.ID(), DialogClosed), action.PrivateAction{})
+	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone).Private(), action.Ajax(d.ID(), DialogClosed))
 	config2.LoadBootstrap(d.ParentForm())
 
 	d.AddClass("modal fade").
@@ -161,8 +161,10 @@ func (d *Modal) AddButton(
 			btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
 		} else {
 			btn.On(event.Click(),
-				action.Confirm(options.ConfirmationMessage),
-				action.Trigger(d.ID(), event.DialogButtonEvent, id),
+				action.Group(
+					action.Confirm(options.ConfirmationMessage),
+					action.Trigger(d.ID(), event.DialogButtonEvent, id),
+				),
 			)
 		}
 

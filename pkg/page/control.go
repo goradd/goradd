@@ -12,7 +12,7 @@ import (
 	"github.com/goradd/goradd/pkg/i18n"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/log"
-	action2 "github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/action"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/session"
 	gohtml "html"
@@ -169,7 +169,7 @@ type ControlI interface {
 	PrivateAction(context.Context, ActionParams)
 	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
-	On(e EventI, a ...action2.ActionI) ControlI
+	On(e EventI, a action.ActionI) ControlI
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
 	HasServerAction(eventName string) bool
@@ -319,8 +319,6 @@ type Control struct {
 	actionValue interface{}
 	// events are all the events added by the control user that the control might trigger
 	events EventMap
-	// privateEvents are events that are private to the control and that should not be allowed to be canceled by a control's user.
-	privateEvents EventMap
 	// eventCounter is used to generate a unique id for an event to help us route the event through the system.
 	eventCounter EventID
 	// shouldSaveState indicates that we should save parts of our state into a session variable so that if
@@ -974,49 +972,38 @@ func (c *Control) ShouldAutoRender() bool {
 }
 
 // On adds an event listener to the control that will trigger the given actions.
-func (c *Control) On(e EventI, actions ...action2.ActionI) ControlI {
-	var isPrivate bool
+// To have a single event fire multiple actions, use action.Group() to combine the actions into one.
+func (c *Control) On(e EventI, a action.ActionI) ControlI {
 	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
 	// implement a script block with every control connected by id
-	e.addActions(actions...)
+	e.addAction(a)
 	c.eventCounter++
-	for _, action := range actions {
-		if _, ok := action.(action2.PrivateAction); ok {
-			isPrivate = true
-			break
-		}
-	}
 
 	// Get a new event id
 	for {
 		if _, ok := c.events[c.eventCounter]; ok {
-			c.eventCounter++
-		} else if _, ok := c.privateEvents[c.eventCounter]; ok {
 			c.eventCounter++
 		} else {
 			break
 		}
 	}
 
-	if isPrivate {
-		if c.privateEvents == nil {
-			c.privateEvents = map[EventID]EventI{}
-		}
-		c.privateEvents[c.eventCounter] = e
-	} else {
-		if c.events == nil {
-			c.events = map[EventID]EventI{}
-		}
-		c.events[c.eventCounter] = e
+	if c.events == nil {
+		c.events = map[EventID]EventI{}
 	}
+	c.events[c.eventCounter] = e
 	e.event().eventID = c.eventCounter
 	return c.this()
 }
 
 // Off removes all event handlers from the control
 func (c *Control) Off() {
-	c.events = nil
+	for id,e := range c.events {
+		if !e.isPrivate() {
+			delete(c.events, id)
+		}
+	}
 }
 
 // HasServerAction returns true if one of the actions attached to the given event is a Server action.
@@ -1068,13 +1055,6 @@ func (c *Control) PrivateAction(ctx context.Context, a ActionParams) {
 // scripts attached to the control and send them to the response.
 func (c *Control) GetActionScripts(r *Response) {
 	// Render actions
-	if c.privateEvents != nil {
-		for id, e := range c.privateEvents {
-			s := e.renderActions(c.this(), id)
-			r.ExecuteJavaScript(s, PriorityStandard)
-		}
-	}
-
 	if c.events != nil {
 		for id, e := range c.events {
 			s := e.renderActions(c.this(), id)
@@ -1099,17 +1079,15 @@ func (c *Control) ΩUpdateFormValues(ctx *Context) {
 
 }
 
-// doAction is an internal function that the form manager uses to send actions to controls.
+// doAction is an internal function that the form manager uses to send callback actions to controls.
 func (c *Control) doAction(ctx context.Context) {
 	var e EventI
 	var ok bool
 	var isPrivate bool
 	var grCtx = GetContext(ctx)
 
-	if e, ok = c.events[grCtx.eventID]; !ok {
-		if e, ok = c.privateEvents[grCtx.eventID]; ok {
-			isPrivate = true
-		}
+	if e, ok = c.events[grCtx.eventID]; ok {
+		isPrivate = e.isPrivate()
 	}
 
 	if !ok {
@@ -1123,7 +1101,6 @@ func (c *Control) doAction(ctx context.Context) {
 		if id == 0 {
 			return
 		}
-
 	}
 
 	if (e.event().validationOverride != ValidateNone && e.event().validationOverride != ValidateDefault) ||
@@ -1133,11 +1110,10 @@ func (c *Control) doAction(ctx context.Context) {
 
 	if c.passesValidation(ctx, e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
-		for _, a := range e.getActions() {
-			callbackAction := a.(action2.CallbackActionI)
+		if callbackAction := e.getCallbackAction(); callbackAction != nil {
 			p := ActionParams{
 				ID:        callbackAction.ID(),
-				Action:    a,
+				Action:    callbackAction,
 				ControlId: c.ID(),
 			}
 
@@ -1150,13 +1126,13 @@ func (c *Control) doAction(ctx context.Context) {
 				dest := c.Page().GetControl(callbackAction.GetDestinationControlID())
 				if isPrivate {
 					if log.HasLogger(log.FrameworkDebugLog) {
-						log.FrameworkDebugf("doAction - PrivateAction, DestId: %s, action2.ActionId: %d, Action: %s, TriggerId: %s",
+						log.FrameworkDebugf("doAction - PrivateAction, DestId: %s, ActionId: %d, Action: %s, TriggerId: %s",
 							dest.ID(), p.ID, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
 					dest.PrivateAction(ctx, p)
 				} else {
 					if log.HasLogger(log.FrameworkDebugLog) {
-						log.FrameworkDebugf("doAction - Action, DestId: %s, action2.ActionId: %d, Action: %s, TriggerId: %s",
+						log.FrameworkDebugf("doAction - Action, DestId: %s, ActionId: %d, Action: %s, TriggerId: %s",
 							dest.ID(), p.ID, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
 					dest.Action(ctx, p)
@@ -1702,7 +1678,6 @@ type controlEncoding struct {
 	BlockParentValidation bool
 	ActionValue           interface{}
 	Events                EventMap
-	PrivateEvents         EventMap
 	EventCounter          EventID
 	ShouldSaveState       bool
 }
@@ -1745,7 +1720,6 @@ func (c *Control) Serialize(e Encoder) (err error) {
 		BlockParentValidation: c.blockParentValidation,
 		ActionValue:           c.actionValue,
 		Events:                c.events,
-		PrivateEvents:         c.privateEvents,
 		EventCounter:          c.eventCounter,
 		ShouldSaveState:       c.shouldSaveState,
 		ParentID:			   c.parentId,
@@ -1808,7 +1782,6 @@ func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
 	c.blockParentValidation = s.BlockParentValidation
 	c.actionValue = s.ActionValue
 	c.events = s.Events
-	c.privateEvents = s.PrivateEvents
 	c.eventCounter = s.EventCounter
 	c.shouldSaveState = s.ShouldSaveState
 
@@ -1823,11 +1796,11 @@ func ControlConnectorParams() *maps.SliceMap {
 	return m
 }
 
-type ActionList []action2.ActionI
-
+// EventList is a list of event and action pairs. Use action.Group as the Action to assign multiple actions to
+// an event.
 type EventList []struct {
 	Event EventI
-	Actions interface{}
+	Action action.ActionI
 }
 
 type StyleMap map[string]string
@@ -1870,15 +1843,7 @@ func (c *Control) ApplyOptions (o ControlOptions) {
 		c.SetStyle(k, v)
 	}
 	for _,a := range o.On {
-		if action,ok := a.Actions.(action2.ActionI); ok {
-			c.On(a.Event, action)
-		} else if actions,ok := a.Actions.([]action2.ActionI); ok {
-			c.On(a.Event, actions...)
-		} else if actions,ok := a.Actions.(ActionList); ok {
-			c.On(a.Event, actions...)
-		} else {
-			panic("Not an action")
-		}
+		c.On(a.Event, a.Action)
 	}
 	if o.Class != "" {
 		c.attributes.AddClass(o.Class) // Responds to add and remove class commands

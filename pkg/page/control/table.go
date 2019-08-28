@@ -159,7 +159,7 @@ func (t *Table) SetHideIfEmpty(h bool) TableI {
 
 // MakeSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
 func (t *Table) MakeSortable() TableI {
-	t.On(event.TableSort(), action.Ajax(t.ID(), SortClick), action.PrivateAction{})
+	t.On(event.TableSort().Private(), action.Ajax(t.ID(), SortClick))
 	if t.headerRowCount == 0 {
 		t.headerRowCount = 1
 	}
@@ -671,6 +671,7 @@ type TableCreator struct {
 	Sortable         bool
 	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
 	SortHistoryLimit int
+	OnCellClick		 action.ActionI
 	page.ControlOptions
 }
 
@@ -741,6 +742,9 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	}
 	if c.SortHistoryLimit > 0 {
 		ctrl.SetSortHistoryLimit(c.SortHistoryLimit)
+	}
+	if c.OnCellClick != nil {
+		ctrl.On(event.CellClick(), c.OnCellClick)
 	}
 
 	ctrl.ApplyOptions(c.ControlOptions)

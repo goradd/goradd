@@ -11,7 +11,7 @@ import (
 type ButtonI interface {
 	page.ControlI
 	SetLabel(label string) page.ControlI
-	OnSubmit(actions ...action.ActionI) page.ControlI
+	OnSubmit(action action.ActionI) page.ControlI
 }
 
 // Button is a standard html form submit button. It corresponds to a <button> tag in html.
@@ -58,9 +58,9 @@ func (b *Button) SetLabel(label string) page.ControlI {
 }
 
 // On causes the given actions to execute when the given event is triggered.
-func (b *Button) On(e page.EventI, actions ...action.ActionI) page.ControlI {
+func (b *Button) On(e page.EventI, action action.ActionI) page.ControlI {
 	e.Terminating() // prevent default action (override submit)
-	b.Control.On(e, actions...)
+	b.Control.On(e, action)
 	return b.this()
 }
 
@@ -81,9 +81,9 @@ func (b *Button) ΩDrawingAttributes() html.Attributes {
 // It debounces the click, so that all other events are lost until this event processes. It should generally be used for
 // operations that will eventually redirect to a different page. If coupling this with an ajax response, you should
 // probably also make the response priority PriorityFinal.
-func (b *Button) OnSubmit(actions ...action.ActionI) page.ControlI {
+func (b *Button) OnSubmit(action action.ActionI) page.ControlI {
 	// We delay here to try to make sure any other delayed events are executed first.
-	return b.On(event.Click().Terminating().Delay(200).Blocking(), actions...)
+	return b.On(event.Click().Terminating().Delay(200).Blocking(), action)
 }
 
 // ButtonCreator is the initialization structure for declarative creation of buttons

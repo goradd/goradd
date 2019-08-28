@@ -2,8 +2,9 @@
 
 // The master template for the ListPanelBase classes
 
+var objectType = "List" // Eventually we might make it possible to generate multiple object types
 var panelName = t.GoName + "ListPanelBase"
-var subPanelName = t.GoName + "ListPanel"
+var lcPanelName = t.LcGoName + objectType + "Panel"
 
 {{
 
@@ -46,36 +47,67 @@ func (p *{{= panelName }}) this() {{= panelName }}I {
 	return p.Self.({{= panelName }}I)
 }
 
-// CreateLister creates the object that lists the data
-func (p *{{= panelName }}) CreateList(rowClickActionID int) {
-	p.List = NewPagedTable(p, p.ID() + "-list")
-
-	p.Paginator = NewDataPager(p.List, p.ID() + "-pager", p.List)
-	p.List.AddDataPager(p.Paginator)
-	p.List.SetCaption(p.Paginator)
-
-	p.List.On(event.CellClick().ActionValue(javascript.JsCode(event.CellClickRowId)), action.Ajax(p.ID(), rowClickActionID))
-	p.List.AddClass("clickable-rows") // styles row so it highlights and has a click cursor, and prevents drag selecting items in the row
-
-	p.List.SetRowStyler(p)
-	p.List.SetDataProvider(p)
-
-	p.this().CreateColumns()
-}
-
-// GetClickedRowID returns the id of the row that was clicked, based on the action parameters
-func (p *{{= panelName }}) GetClickedRowID(a page.ActionParams) string {
-	return a.EventValueString()
-}
-
-// CreateColumns creates the columns to display in the list control
-// Override in {{= subPanelName }} to change what columns appear
-func (p *{{= panelName }}) CreateColumns() {
+// createControls creates the controls in the panel.
+// Override this to change what controls get created.
+func (p *{{= panelName }}) createControls(ctx context.Context) {
+	p.AddControls(ctx,
+		PanelCreator{
+			ID: p.ID() + "-filterPanel",
+			Children: Children(
+				TextboxCreator{
+					ID:          p.ID() + "-filterText",
+					Placeholder: p.ΩT("Search..."),
+					Type:        TextboxTypeSearch,
+					ControlOptions: page.ControlOptions{
+						On: page.EventList{
+							{event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
+							{event.EnterKey().Terminating(), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
+						},
+					},
+				},
+			),
+		},
+        PagedTableCreator{
+            ID:  p.ID() + "-list",
+            HeaderRowCount: 0,
+            DataProviderID: p.ID(),
+            RowStylerID: p.ID(),
+            PageSize: DefaultPagerPageSize,
+            Caption: DataPagerCreator{
+                ID:            p.ID()+"-pager",
+                PagedControl:  p.ID() + "-list",
+            },
+            OnCellClick: action.Ajax(p.ID(), addressListPanelRowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
+            ControlOptions: page.ControlOptions{
+                Class:          "clickable-rows",
+            },
+            Columns:[]ColumnCreator {
 {{for _,col := range t.Columns }}
-    p.List.AddColumn(column.NewNodeColumn( node.{{= t.GoName }}().{{= col.GoName }}() ))
+                column.NodeColumnCreator{
+                    Node: node.{{= t.GoName }}().{{= col.GoName }}(),
+                    Title: "{{= col.GoName }}",
+                },
 {{for}}
+           },
+        },
+		PanelCreator{
+			ID: p.ID()+"-buttonPanel",
+			Children:Children(
+				ButtonCreator{
+					ID: p.ID()+"-newButton",
+					Text: p.ΩT("New"),
+					OnClick:action.Ajax(p.ID(), {{= lcPanelName }}NewClick),
+				},
+			),
+		},
+	)
 }
 
+
+// GetClickedRowValue returns the value of the row that was clicked, based on the action parameters
+func (p *{{= panelName }}) GetClickedRowValue(a page.ActionParams) string {
+	return a.ActionValueString()
+}
 
 // BindData determines what records will be displayed in the lister.
 // Override to change what records get displayed.
@@ -109,7 +141,14 @@ func (p *{{= panelName }}) MakeFilter(filterText string) query.NodeI {
 }
 
 func (p *{{= panelName }}) TableRowAttributes(row int, data interface{}) html2.Attributes {
-	return html2.NewAttributes().SetID(data.(*model.{{= t.GoName }}).PrimaryKey())
+	return html2.NewAttributes().SetDataAttribute("value", data.(*model.{{= t.GoName }}).PrimaryKey())
 }
+
+// Load is called when the form controls are loaded with data.
+func (p *{{= panelName }}) Load(ctx context.Context) error {
+    return nil
+}
+
+
 
 }}
