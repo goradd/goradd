@@ -77,7 +77,7 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
                 ID:            p.ID()+"-pager",
                 PagedControl:  p.ID() + "-list",
             },
-            OnCellClick: action.Ajax(p.ID(), addressListPanelRowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
+            OnCellClick: action.Ajax(p.ID(), {{= lcPanelName }}RowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
             ControlOptions: page.ControlOptions{
                 Class:          "clickable-rows",
             },
