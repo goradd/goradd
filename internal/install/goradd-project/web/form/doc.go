@@ -1,4 +1,3 @@
-// The form package contains code-generated forms that give you default functionality for your website.
-// Move these forms to another package to edit them, as the forms here will be written over every time you
-// generate your code.
+// This form package is a place for you to put your application's forms. You can copy and modify code generated forms
+// out of the gen/*/form directory, or make one from scratch.
 package form

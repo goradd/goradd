@@ -29,18 +29,35 @@ func (f *FormBase) AddRelatedFiles() {
 	//f.AddStyleSheetFile(filepath.Join(config2.ProjectAssets(), "css","my.css"), nil)
 }
 
-/*
-Uncomment this to add your favicon to each form
-
+// AddHeadTags adds tags for the header of the page
 func (f *FormBase) AddHeadTags() {
 	f.FormBase.AddHeadTags() // call default first
-	f.Page().AddHtmlHeaderTag(html.VoidTag{"link",
-	html.NewAttributes().
-		Set("rel", "icon").
-		Set("type", "image/x-icon").
-		Set("href", "/favicon.ico")})
+
+	/* Uncomment this to add a favicon
+	f.Page().AddHtmlHeaderTag(
+		html.VoidTag{
+			Tag: "link",
+			Attr: html.Attributes{
+				"rel":    "icon",
+				"type": "image/x-icon",
+				"href": "/favicon.ico",
+			},
+		},
+	)
+	*/
+
+	/* Uncomment this for bootstrap
+	f.Page().AddHtmlHeaderTag(
+		html.VoidTag{
+			Tag: "meta",
+			Attr: html.Attributes{
+				"name":    "viewport",
+				"content": "width=device-width, initial-scale=1, shrink-to-fit=no",
+			},
+		},
+	)
+	 */
 }
-*/
 
 // AddJQuery adds the jquery javascript to the form
 /* Uncomment this to change how JQuery gets loaded
