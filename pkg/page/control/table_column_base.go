@@ -399,6 +399,11 @@ type ColumnCreator interface {
 	Create(context.Context, TableI) ColumnI
 }
 
+// Columns is a helper to return a group of columns
+func Columns(cols ...ColumnCreator) []ColumnCreator {
+	return cols
+}
+
 // ColumnOptions are settings you can apply to all types of table columns
 type ColumnOptions struct {
 	// CellAttributes is a static map of attributes to apply to every cell in the column

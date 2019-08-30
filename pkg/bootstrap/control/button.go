@@ -12,6 +12,9 @@ import (
 
 type ButtonI interface {
 	grctl.ButtonI
+	SetButtonStyle(style ButtonStyle) ButtonI
+	SetButtonSize(size ButtonSize) ButtonI
+	SetIsPrimary(isPrimary bool) ButtonI
 }
 
 type Button struct {
@@ -80,8 +83,9 @@ func (b *Button) SetButtonStyle(style ButtonStyle) ButtonI {
 }
 
 // SetButtonsSize sets the size class of the button.
-func (b *Button) SetButtonSize(size ButtonSize) {
+func (b *Button) SetButtonSize(size ButtonSize) ButtonI {
 	b.size = size
+	return b.this()
 }
 
 func (b *Button) ΩDrawingAttributes() html.Attributes {
@@ -152,6 +156,9 @@ type ButtonCreator struct {
 	// OnClick is an action to take when the button is pressed. Do not specify both
 	// a OnSubmit and OnClick.
 	OnClick action.ActionI
+	Style ButtonStyle
+	Size ButtonSize
+	IsPrimary bool
 	page.ControlOptions
 }
 
@@ -175,4 +182,13 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI)  {
 		ControlOptions: c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)
+	if c.Style != "" {
+		ctrl.SetButtonStyle(c.Style)
+	}
+	if c.Size != "" {
+		ctrl.SetButtonSize(c.Size)
+	}
+	if c.IsPrimary {
+		ctrl.SetIsPrimary(true)
+	}
 }

@@ -6,7 +6,9 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control/data"
+	"github.com/goradd/goradd/pkg/page/event"
 	"reflect"
 )
 
@@ -221,6 +223,8 @@ type SelectListCreator struct {
 	Size int
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Value string
+	// OnChange is an action to take when the user changes what is selected (as in, when the javascript change event fires).
+	OnChange action.ActionI
 	// SaveState saves the selected value so that it is restored if the form is returned to.
 	SaveState bool
 	page.ControlOptions
@@ -254,6 +258,9 @@ func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 	}
 	if c.Size != 0 {
 		ctrl.SetAttribute("size", c.Size)
+	}
+	if c.OnChange != nil {
+		ctrl.On(event.Change(), c.OnChange)
 	}
 	ctrl.ApplyOptions(c.ControlOptions)
 	if c.SaveState {

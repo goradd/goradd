@@ -91,3 +91,8 @@ func (c TextboxCreator) Init(ctx context.Context, ctrl TextboxI) {
 	}
 	sub.Init(ctx, ctrl)
 }
+
+// GetTextbox is a convenience method to return the control with the given id from the page.
+func GetTextbox(c page.ControlI, id string) *Textbox {
+	return c.Page().GetControl(id).(*Textbox)
+}

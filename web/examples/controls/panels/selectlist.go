@@ -2,6 +2,7 @@ package panels
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -76,7 +77,7 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 				Items: itemList,
 				IsScrolling: true,
 				ControlOptions:page.ControlOptions{
-					Styles:page.StyleMap{
+					Styles:html.Style {
 						"height": "80px",
 					},
 				},

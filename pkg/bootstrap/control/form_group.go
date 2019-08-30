@@ -35,7 +35,7 @@ func NewFormGroup(parent page.ControlI, id string) *FormGroup {
 func (c *FormGroup) Init(self control.FormFieldWrapperI, parent page.ControlI, id string) {
 	c.FormFieldWrapper.Init(self, parent, id)
 	c.innerDivAttr = html.NewAttributes()
-	c.AddClass("form-group") // to get a wrapper with out this, just remove it after initialization
+	c.AddClass("form-group") // to get a wrapper without this, just remove it after initialization
 	c.InstructionAttributes().AddClass("form-text")
 }
 
@@ -188,8 +188,8 @@ type FormGroupCreator struct {
 	// Instructions is help text that will follow the control and that further describes its purpose or use.
 	Instructions string
 	// For specifies the id of the control that the label is for, and that is the control that we are wrapping.
-	// You normally do not need this, as it will simply look at the first child control, but if for some reason
-	// that control is wrapped, you should explicitly sepecify the For control id here.
+	// You normally do not need to specify this, as it will default to the first child control, but if for some reason
+	// that control is wrapped, you should explicitly specify the For control id here.
 	For string
 	// LabelAttributes are additional attributes to add to the label tag.
 	LabelAttributes html.AttributeCreator
