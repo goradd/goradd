@@ -263,6 +263,27 @@ func (d DateTime) DebugString() string {
 	return d.Time.String()
 }
 
+// ToJsonString outputs the date in ISO8601, which is the generally excepted representation of a
+// date. The problem with this is that the receiver must know to look for a date instead of a string,
+// so it is not actually the best way of transmitting a date to the other side. This is here for
+// use by the ORM, which will send standard dates in the expected JSON format for potential consumption
+// by REST services.
+func (d DateTime) ToJsonString() string {
+	isTimestamp := d.IsTimestamp()
+	var t time.Time
+	if isTimestamp {
+		t = d.Time.UTC() // should put a trailing Z to indicate a UTC time
+	} else {
+		t = d.GoTime() // TODO: need to change this so it definitely does not transmit timezone info
+	}
+
+	b,err := t.MarshalJSON()
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
 func init() {
 	gob.Register(time.Time{})
 	gob.Register(DateTime{})
