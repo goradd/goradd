@@ -8,7 +8,6 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
-	"github.com/goradd/goradd/web/examples/controls"
 )
 
 
@@ -122,7 +121,6 @@ func (p *TextboxPanel) Action(ctx context.Context, a page.ActionParams) {
 func init() {
 	browsertest.RegisterTestFunction("Textbox Ajax Submit", testTextboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Textbox Server Submit", testTextboxServerSubmit)
-	controls.RegisterPanel("textbox", "Textboxes", NewTextboxPanel, 2)
 }
 
 func testTextboxAjaxSubmit(t *browsertest.TestForm) {

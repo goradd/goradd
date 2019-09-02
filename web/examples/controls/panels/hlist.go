@@ -7,7 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
-	"github.com/goradd/goradd/web/examples/controls"
 )
 
 // Example data
@@ -70,8 +69,6 @@ func (p *HListPanel) BindData(ctx context.Context, s data.DataManagerI) {
 }
 
 func init() {
-	controls.RegisterPanel("hlist", "Nested Lists", NewHListPanel, 11)
-
 	//browsertest.RegisterTestFunction("Select List Ajax Submit", testHListAjaxSubmit)
 	//browsertest.RegisterTestFunction("Select List Server Submit", testHListServerSubmit)
 }

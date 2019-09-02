@@ -11,7 +11,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
-	buf3 "github.com/goradd/goradd/pkg/pool"
+	"github.com/goradd/goradd/pkg/pool"
 	html2 "html"
 	"strconv"
 )
@@ -217,12 +217,12 @@ func (t *Table) ΩDrawingAttributes() html.Attributes {
 
 // ΩDrawInnerHtml is an override to draw the meat of the table.
 func (t *Table) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
+	var t2 = t.this() // Get the sub class so we call into its hooks for drawing
 
-	buf1 := buf3.GetBuffer()
-	defer buf3.PutBuffer(buf1)
-	buf2 := buf3.GetBuffer()
-	defer buf3.PutBuffer(buf2)
+	buf1 := pool.GetBuffer()
+	defer pool.PutBuffer(buf1)
+	buf2 := pool.GetBuffer()
+	defer pool.PutBuffer(buf2)
 	defer func() { buf.WriteString(buf1.String()) }() // Make sure we write out the content of buf 1 even on an error
 
 	if err = t2.DrawCaption(ctx, buf1); err != nil {
@@ -298,14 +298,14 @@ func (t *Table) drawColumnTags(ctx context.Context, buf *bytes.Buffer) (err erro
 }
 
 func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
-	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
+	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
-	buf1 := buf3.GetBuffer()
-	defer buf3.PutBuffer(buf1)
+	buf1 := pool.GetBuffer()
+	defer pool.PutBuffer(buf1)
 	for rowNum := 0; rowNum < t.headerRowCount; rowNum++ {
 		for colNum, col := range t.columns {
 			if !col.IsHidden() {
-				cellHtml, attr := t2.HeaderCellDrawingInfo(ctx, col, rowNum, colNum)
+				cellHtml, attr := this.HeaderCellDrawingInfo(ctx, col, rowNum, colNum)
 				buf1.WriteString(html.RenderTag("th", attr, cellHtml))
 			}
 		}
@@ -341,14 +341,14 @@ func (t *Table) GetHeaderRowAttributes(row int) html.Attributes {
 }
 
 func (t *Table) drawFooterRows(ctx context.Context, buf *bytes.Buffer) (err error) {
-	var t2 = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
+	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
-	buf1 := buf3.GetBuffer()
-	defer buf3.PutBuffer(buf1)
+	buf1 := pool.GetBuffer()
+	defer pool.PutBuffer(buf1)
 	for rowNum := 0; rowNum < t.footerRowCount; rowNum++ {
 		for colNum, col := range t.columns {
 			if !col.IsHidden() {
-				cellHtml, attr := t2.FooterCellDrawingInfo(ctx, col, rowNum, colNum)
+				cellHtml, attr := this.FooterCellDrawingInfo(ctx, col, rowNum, colNum)
 				tag := "td"
 				if col.AsHeader() {
 					tag = "th"
@@ -371,9 +371,9 @@ func (t *Table) GetFooterRowAttributes(row int) html.Attributes {
 }
 
 func (t *Table) drawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error) {
-	var this = t.this().(TableI) // Get the sub class so we call into its hooks for drawing
-	buf1 := buf3.GetBuffer()
-	defer buf3.PutBuffer(buf1)
+	var this = t.this() // Get the sub class so we call into its hooks for drawing
+	buf1 := pool.GetBuffer()
+	defer pool.PutBuffer(buf1)
 	for i, col := range t.columns {
 		col.DrawCell(ctx, row, i, data, buf1)
 	}

@@ -8,7 +8,6 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/control/data"
-	"github.com/goradd/goradd/web/examples/controls"
 	"strconv"
 )
 
@@ -111,5 +110,4 @@ func (p *TableSelectPanel) Action(ctx context.Context, a page.ActionParams) {
 
 
 func init() {
-	controls.RegisterPanel("tableselect", "Tables - Select Row", NewTableSelectPanel, 10)
 }

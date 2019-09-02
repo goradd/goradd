@@ -8,7 +8,6 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
-	"github.com/goradd/goradd/web/examples/controls"
 )
 
 type CheckboxPanel struct {
@@ -92,7 +91,6 @@ func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 func init() {
 	browsertest.RegisterTestFunction("Checkbox Ajax Submit", testCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Checkbox Server Submit", testCheckboxServerSubmit)
-	controls.RegisterPanel("checkbox", "Checkboxes and Radio Buttons", NewCheckboxPanel, 3)
 }
 
 // testPlain exercises the plain text box

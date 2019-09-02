@@ -8,7 +8,6 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
-	"github.com/goradd/goradd/web/examples/controls"
 	"strings"
 )
 
@@ -128,7 +127,6 @@ func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 func init() {
 	browsertest.RegisterTestFunction("Select List Ajax Submit", testSelectListAjaxSubmit)
 	browsertest.RegisterTestFunction("Select List Server Submit", testSelectListServerSubmit)
-	controls.RegisterPanel("selectlist", "Selection Lists", NewSelectListPanel, 4)
 }
 
 // testPlain exercises the plain text box

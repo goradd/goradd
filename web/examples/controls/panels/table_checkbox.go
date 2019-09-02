@@ -10,7 +10,6 @@ import (
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
-	"github.com/goradd/goradd/web/examples/controls"
 	"strconv"
 )
 
@@ -109,7 +108,6 @@ func init() {
 	browsertest.RegisterTestFunction("Table - Checkbox Nav", testTableCheckboxNav)
 	browsertest.RegisterTestFunction("Table - Checkbox Ajax Submit", testTableCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Table - Checkbox Server Submit", testTableCheckboxServerSubmit)
-	controls.RegisterPanel("tablecheckbox", "Tables - Checkbox Column", NewTableCheckboxPanel, 6)
 
 	gob.Register(SelectedProvider{}) // We must register this here because we are putting the changes map into the session,
 

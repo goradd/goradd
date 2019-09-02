@@ -13,7 +13,6 @@ import (
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
-	"github.com/goradd/goradd/web/examples/controls"
 	. "github.com/goradd/goradd/web/examples/model"
 )
 
@@ -118,7 +117,6 @@ func (p *ProjectPanel) SetProject(project *Project) {
 
 func init() {
 	browsertest.RegisterTestFunction("Table - Proxy Column", testTableProxyCol)
-	controls.RegisterPanel("tableproxy", "Tables - Proxy Column", NewTableProxyPanel, 9)
 }
 
 func testTableProxyCol(t *browsertest.TestForm) {

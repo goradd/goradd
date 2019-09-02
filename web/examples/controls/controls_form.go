@@ -6,7 +6,6 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
-	"sort"
 )
 
 const ControlsFormPath = "/goradd/examples/controls.g"
@@ -27,7 +26,6 @@ type controlEntry struct {
 	key   string
 	name  string
 	f     createFunction
-	order int
 }
 
 var controls []controlEntry
@@ -66,9 +64,6 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 }
 
 func (f *ControlsForm) BindData(ctx context.Context, s data.DataManagerI) {
-	sort.Slice(controls, func(i, j int) bool {
-		return controls[i].order < controls[j].order
-	})
 	pageContext := page.GetContext(ctx)
 	for _, c := range controls {
 		item := f.list.AddItem(c.name, c.key)
@@ -82,15 +77,14 @@ func (f *ControlsForm) BindData(ctx context.Context, s data.DataManagerI) {
 
 func RegisterPanel(key string,
 	name string,
-	f createFunction,
-	order int) {
+	f createFunction) {
 
 	for _, c := range controls {
 		if c.key == key {
 			panic("panel " + key + " is already registered")
 		}
 	}
-	controls = append(controls, controlEntry{key, name, f, order})
+	controls = append(controls, controlEntry{key, name, f})
 }
 
 func init() {

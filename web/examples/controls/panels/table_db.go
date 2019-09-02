@@ -8,7 +8,6 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/control/data"
-	"github.com/goradd/goradd/web/examples/controls"
 	"github.com/goradd/goradd/web/examples/model"
 	"github.com/goradd/goradd/web/examples/model/node"
 )
@@ -98,6 +97,5 @@ func (p *TableDbPanel) CellText(ctx context.Context, col ColumnI, rowNum int, co
 }
 
 func init() {
-	controls.RegisterPanel("tabledb", "Tables - Database Columns", NewTableDbPanel, 7)
 
 }
