@@ -1253,6 +1253,8 @@ goradd.TagBuilder.prototype = {
 /**
  * g Wraps an html object in a goradd widget and returns the widget, so you can call functions on it.
  * It also attaches itself to the object so it doesn't need to recreate itself each time.
+ * You can use the shortcut g$(id|el).func() to use these functions, passing either the id of an element,
+ * or the element itself.
  * @param el
  */
 goradd.g = function(el) {
@@ -1275,7 +1277,6 @@ goradd.g = function(el) {
     this.element = el;
     el.goradd.widget = this;
 };
-
 
 goradd.g.prototype = {
     _g: 1, // just a marker to help with the constructor

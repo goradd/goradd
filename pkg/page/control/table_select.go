@@ -36,7 +36,6 @@ func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 
 func (t *SelectTable) Init(self page.ControlI, parent page.ControlI, id string) {
 	t.Table.Init(self, parent, id)
-	t.ParentForm().AddJQueryUI()
 	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/goradd-scrollIntoView.js", false, nil)
 	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/table-select.js", false, nil)
 	t.SetAttribute("tabindex", 0); // Make the entire table focusable and selectable. This can be overridden later if needed.
