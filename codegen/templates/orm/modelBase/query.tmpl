@@ -194,7 +194,7 @@ func (b *{{builderName}})  Subquery() *query.SubqueryNode {
 }
 
 
-// joinOrSelect us a private helper function for the Load* functions
+// joinOrSelect is a private helper function for the Load* functions
 func (b *{{builderName}}) joinOrSelect(nodes ...query.NodeI) *{{builderName}} {
 	for _,n := range nodes {
 		switch n.(type) {

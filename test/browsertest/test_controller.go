@@ -56,7 +56,6 @@ func NewTestController(parent page.ControlI, id string) *TestController {
 
 func (p *TestController) Init(self control.PanelI, parent page.ControlI, id string) {
 	p.Panel.Init(p, parent, id)
-	p.ParentForm().AddJQueryUI()
 	p.ParentForm().AddJavaScriptFile(filepath.Join(TestAssets(), "js", "test_controller.js"), false, nil)
 	// Use declarative attribute to attach javascript to the control
 	p.SetDataAttribute("grWidget", "goradd.testController")

@@ -85,7 +85,6 @@ func (f *ΩFormBase) this() FormI {
 // The order is important, so if you override this, be sure these files get loaded
 // before other files.
 func (f *ΩFormBase) AddRelatedFiles() {
-	f.AddJQuery()
 	f.AddGoraddFiles()
 	f.AddFontAwesome()
 }

@@ -130,7 +130,7 @@ func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI
 	info := GetPanel(f,"infoPanel")
 
 	t.AssertEqual(false, checkbox2.Checked())
-	t.AssertEqual("checkbox1-ff checkbox1_ilbl", t.ControlAttribute("checkbox1", "aria-labelledby"))
+	t.AssertEqual("checkbox1-ff_lbl checkbox1_ilbl", t.ControlAttribute("checkbox1", "aria-labelledby"))
 
 	t.AssertEqual(false, radio1.Checked())
 	t.AssertEqual(true, radio2.Checked())
