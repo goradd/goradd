@@ -169,6 +169,18 @@ function _displayAjaxError(resultText, err) {
  * @private
  */
 function _processImmediateAjaxResponse(json, params) {
+    if (json.ss) {
+        goradd.each(json.ss, function (i,v) {
+            goradd.loadStyleSheetFile(i, v);
+        });
+    }
+
+    if (json.js) {
+        goradd.each(json.ss, function (i,v) {
+            goradd.loadJavaScriptFile(i, v);
+        });
+    }
+
     goradd.each(json.controls, function(id) {
         var el = goradd.el(id),
             $ctrl = g$(el),
@@ -220,11 +232,6 @@ function _processImmediateAjaxResponse(json, params) {
 
     if (json.watcher && params.controlId) {
         goradd.broadcastChange();
-    }
-    if (json.ss) {
-        goradd.each(json.ss, function (i,v) {
-            goradd.loadStyleSheetFile(v, "all");
-        });
     }
     if (json.alert) {
         goradd.each(json.alert, function (i,v) {
@@ -821,11 +828,6 @@ goradd = {
                 success: function (json) {
                     goradd.log("Ajax success ", json);
 
-                    if (json.js) {
-                        for (var k in json.js) {
-                            goradd.loadJavaScriptFile(k, json.js[k]);
-                        }
-                    }
                     _processImmediateAjaxResponse(json, params);
                     // TODO: Wait until javascripts above are loaded before proceeding?
                     _processDeferredAjaxResponse(json);
