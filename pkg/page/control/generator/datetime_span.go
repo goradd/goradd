@@ -24,8 +24,10 @@ func (d DateTimeSpan) NewFunc() string {
 	return "NewDateTimeSpan"
 }
 
-func (d DateTimeSpan) Imports() []string {
-	return []string{"github.com/goradd/goradd/pkg/page/control"}
+func (d DateTimeSpan) Imports() []generator.ImportPath {
+	return []generator.ImportPath{
+		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
+	}
 }
 
 func (d DateTimeSpan) SupportsColumn(col *generator.ColumnType) bool {
@@ -34,7 +36,7 @@ func (d DateTimeSpan) SupportsColumn(col *generator.ColumnType) bool {
 
 func (d DateTimeSpan) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-`control.DateTimeSpanCreator{
+`goraddctrl.DateTimeSpanCreator{
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
 		IsDisabled:	   %#v,

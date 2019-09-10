@@ -35,6 +35,8 @@ type TexterColumnCreator struct {
 	Title string
 	// Sortable makes the column display sort arrows in the header
 	Sortable bool
+	// IsHtml indicates that the texter is producing HTML rather than text that should be escaped.
+	IsHtml bool
 	control.ColumnOptions
 }
 
@@ -56,6 +58,9 @@ func (c TexterColumnCreator) Create(ctx context.Context, parent control.TableI) 
 	col.SetTitle(c.Title)
 	if c.Sortable {
 		col.SetSortable()
+	}
+	if c.IsHtml {
+		col.SetIsHtml(true)
 	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col

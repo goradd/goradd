@@ -60,8 +60,8 @@ func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
 
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
 	d.SetBlockParentValidation(true)
-	d.On(event.Event("hide.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosingEvent, nil))
-	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
+	d.On(event.Event("hide.bs.modal").Validate(page.ValidateNone).Private(), action.Trigger(d.ID(), event.DialogClosingEvent, nil))
+	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone).Private(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone).Private(), action.Ajax(d.ID(), DialogClosed))
 	config2.LoadBootstrap(d.ParentForm())
 
@@ -228,7 +228,7 @@ func (d *Modal) Open() {
 	d.SetVisible(true)
 	d.isOpen = true
 	//d.Refresh()
-	d.AddRenderScript("modal", "show")
+	d.ParentForm().Response().ExecuteJqueryCommand(d.ID(), "modal", page.PriorityLow, "show")
 }
 
 func (d *Modal) Close() {
@@ -254,7 +254,7 @@ func (d *Modal) ΩPutCustomScript(ctx context.Context, response *page.Response) 
 	}
 
 	script := fmt.Sprintf(
-		`$j("#%s").modal({backdrop: %#v, keyboard: %t, focus: true, show: %t});`,
+		`jQuery("#%s").modal({backdrop: %#v, keyboard: %t, focus: true, show: %t});`,
 		d.ID(), backdrop, d.closeOnEscape, d.isOpen)
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }
@@ -307,4 +307,79 @@ func NewTitleBar(parent page.ControlI, id string) *TitleBar {
 
 func init() {
 	control.SetAlertFunction(BootstrapAlert)
+}
+
+type ModalButtonCreator struct {
+	Label string
+	ID string
+	Validates bool
+	ConfirmationMessage string
+	PushLeft bool
+	IsClose bool
+	Options map[string]interface{}
+}
+
+func ModalButtons (buttons ...ModalButtonCreator) []ModalButtonCreator {
+	return buttons
+}
+
+
+type ModalCreator struct {
+	ID string
+	Title string
+	TitlebarClass string
+	HasCloseBox bool
+	Style control.DialogStyle
+	Backdrop ModalBackdropType
+	Buttons []ModalButtonCreator
+	OnButton action.ActionI
+	page.ControlOptions
+	Children []page.Creator
+}
+
+// Create is called by the framework to create a new control from the Creator. You
+// do not normally need to call this.
+func (c ModalCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := NewModal(parent.ParentForm(), c.ID) // modals always use the form as the parent
+
+	if c.Title != "" {
+		ctrl.SetTitle(c.Title)
+	}
+	if c.TitlebarClass != "" {
+		ctrl.AddTitlebarClass(c.TitlebarClass)
+	}
+	if c.HasCloseBox {
+		ctrl.SetHasCloseBox(true)
+	}
+	if c.Style != control.DialogStyleDefault {
+		ctrl.SetDialogStyle(c.Style)
+	}
+	if c.Backdrop != ModalBackdrop {
+		ctrl.SetBackdrop(c.Backdrop)
+	}
+	if c.Buttons != nil {
+		for _, button := range c.Buttons {
+			ctrl.AddButton(button.Label, button.ID, &control.DialogButtonOptions{
+				Validates:           button.Validates,
+				ConfirmationMessage: button.ConfirmationMessage,
+				PushLeft:            button.PushLeft,
+				IsClose:             button.IsClose,
+				Options:             button.Options,
+			})
+		}
+	}
+	if c.OnButton != nil {
+		ctrl.On(event.DialogButton(), c.OnButton)
+	}
+	if c.Children != nil {
+		ctrl.AddControls(ctx, c.Children...)
+	}
+
+	return ctrl
+}
+
+
+// GetListGroup is a convenience method to return the control with the given id from the page.
+func GetModal(c page.ControlI, id string) *Modal {
+	return c.Page().GetControl(id).(*Modal)
 }

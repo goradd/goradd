@@ -21,8 +21,10 @@ func (d Textbox) Type() string {
 	return "Textbox"
 }
 
-func (d Textbox) Imports() []string {
-	return []string{"github.com/goradd/goradd/pkg/page/control"}
+func (d Textbox) Imports() []generator.ImportPath {
+	return []generator.ImportPath{
+		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
+	}
 }
 
 func (d Textbox) SupportsColumn(col *generator.ColumnType) bool {
@@ -35,9 +37,9 @@ func (d Textbox) SupportsColumn(col *generator.ColumnType) bool {
 
 func (d Textbox) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-		`control.IntegerTextboxCreator{
+		`goraddctrl.TextboxCreator{
 			ID:        %#v,
-			MaxLength: %#v,
+			MaxLength: %d,
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,
 				DataConnector: %s{},
