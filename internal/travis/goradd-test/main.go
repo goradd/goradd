@@ -15,7 +15,7 @@ import (
 
 	_ "github.com/goradd/goradd/pkg/bootstrap/examples" // Bootstrap examples
 	_ "github.com/goradd/goradd/test/browsertest"
-	_ "github.com/goradd/goradd/web/examples/controls"
+	_ "github.com/goradd/goradd/web/examples/controls/panels"
 	_ "goradd-project/gen" // Code-generated forms
 )
 
