@@ -93,7 +93,6 @@ func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 }
 
 
-// testPlain exercises the plain text box
 func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").String()
 	f := t.LoadUrl(myUrl)
@@ -151,6 +150,7 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 func init() {
 	examples.RegisterPanel("lists", "Lists", NewSelectListPanel, 3)
 
-	browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)
-	browsertest.RegisterTestFunction("Bootstrap Select List Server Submit", testSelectListServerSubmit)
+	// temporarily removing because bootstrap requires jquery and we want to make sure we are not relying on bootstrap
+	//browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)
+	//browsertest.RegisterTestFunction("Bootstrap Select List Server Submit", testSelectListServerSubmit)
 }
