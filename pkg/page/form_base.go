@@ -355,6 +355,10 @@ func (f *ΩFormBase) AddJavaScriptFile(path string, forceHeader bool, attributes
 	}
 
 	if f.isOnPage {
+		if f.headerJavaScripts != nil && f.headerJavaScripts.Has(path) ||
+			f.bodyJavaScripts != nil && f.bodyJavaScripts.Has(path) {
+			return // file is already on the page
+		}
 		if f.importedJavaScripts == nil {
 			f.importedJavaScripts = maps.NewSliceMap()
 		}
@@ -397,6 +401,9 @@ func (f *ΩFormBase) AddStyleSheetFile(path string, attributes html.Attributes) 
 	}
 
 	if f.isOnPage {
+		if f.headerStyleSheets != nil && f.headerStyleSheets.Has(path) {
+			return // the style sheet was already included when the form was loaded the first time
+		}
 		if f.importedStyleSheets == nil {
 			f.importedStyleSheets = maps.NewSliceMap()
 		}
