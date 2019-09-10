@@ -1,6 +1,8 @@
 package generator
 
 import (
+	"fmt"
+	generator2 "github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
 	generator3 "github.com/goradd/goradd/pkg/page/control/generator"
 )
@@ -16,6 +18,20 @@ type IntegerTextbox struct {
 	generator3.IntegerTextbox // base it on the built-in generator
 }
 
-func (d IntegerTextbox) Imports() []string {
-	return []string{"github.com/goradd/goradd/pkg/bootstrap/control"}
+func (d IntegerTextbox) Imports() []generator2.ImportPath {
+	return []generator2.ImportPath{
+		{"bootstrapctrl", "github.com/goradd/goradd/pkg/bootstrap/control"},
+	}
+}
+
+func (d IntegerTextbox) GenerateCreator(col *generator2.ColumnType) (s string) {
+	s = fmt.Sprintf(
+		`bootstrapctrl.IntegerTextboxCreator{
+	ID:        %#v,
+	ControlOptions: page.ControlOptions{
+		IsRequired:      %#v,
+		DataConnector: %s{},
+	},
+}`, col.ControlID, !col.IsNullable, col.Connector)
+	return
 }

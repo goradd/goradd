@@ -27,8 +27,10 @@ func (d Checkbox) NewFunc() string {
 	return "NewCheckbox"
 }
 
-func (d Checkbox) Imports() []string {
-	return []string{"github.com/goradd/goradd/pkg/page/control"}
+func (d Checkbox) Imports() []generator.ImportPath {
+	return []generator.ImportPath{
+		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
+	}
 }
 
 func (d Checkbox) SupportsColumn(col *generator.ColumnType) bool {
@@ -66,7 +68,7 @@ func (d Checkbox) ConnectorParams() *maps.SliceMap {
 
 func (d Checkbox) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-		`control.CheckboxCreator{
+		`goraddctrl.CheckboxCreator{
 			ID:        %#v,
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,

@@ -672,7 +672,7 @@ type TableCreator struct {
 	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
 	SortHistoryLimit int
 	OnCellClick		 action.ActionI
-	page.ControlOptions
+	ControlOptions page.ControlOptions
 }
 
 

@@ -6,11 +6,6 @@ import (
 
 type ControlType int
 
-const (
-	ControlTypeInteger ControlType = iota + 1
-	ControlTypeString
-)
-
 type ConnectorParam struct {
 	Name        string
 	Description string
@@ -19,9 +14,14 @@ type ConnectorParam struct {
 	DoFunc      func(c page.ControlI, val interface{})
 }
 
+type ImportPath struct {
+	Alias string
+	Path  string
+}
+
 type ControlGenerator interface {
 	Type() string
-	Imports() []string
+	Imports() []ImportPath
 	SupportsColumn(col *ColumnType) bool
 	GenerateCreator(col *ColumnType) string
 	GenerateRefresh(col *ColumnType) string
@@ -45,7 +45,7 @@ func RegisterControlGenerator(c ControlGenerator) {
 	}
 
 	i := c.Imports()
-	e := ControlGeneratorRegistryKey{i[0], c.Type()}
+	e := ControlGeneratorRegistryKey{i[0].Path, c.Type()}
 	controlGeneratorRegistry[e] = c
 }
 

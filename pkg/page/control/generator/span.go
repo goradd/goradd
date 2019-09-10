@@ -24,8 +24,11 @@ func (d Span) NewFunc() string {
 	return "NewSpan"
 }
 
-func (d Span) Imports() []string {
-	return []string{"github.com/goradd/goradd/pkg/page/control", "fmt"}
+func (d Span) Imports() []generator.ImportPath {
+	return []generator.ImportPath{
+		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
+		{Alias: "", Path:"fmt"},
+	}
 }
 
 func (d Span) SupportsColumn(col *generator.ColumnType) bool {
@@ -34,7 +37,7 @@ func (d Span) SupportsColumn(col *generator.ColumnType) bool {
 
 func (d Span) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-`control.SpanCreator{
+`goraddctrl.SpanCreator{
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
 		IsDisabled:	   %#v,

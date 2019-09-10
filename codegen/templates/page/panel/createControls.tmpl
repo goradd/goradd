@@ -23,7 +23,7 @@ for _,col := range t.Columns {
             creatorString = generator.WrapFormField(col.DefaultLabel, col.ControlID, creatorString)
 
 {{
-func (p *{{= panelName }}) {{= col.GoName }}Creator() page.Creator {
+func (p *{{= panelName }}) {{= col.GoName }}Creator() {{= generator.DefaultFormFieldCreator }} {
 	return {{= creatorString }}
 }
 }}

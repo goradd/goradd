@@ -31,7 +31,6 @@ type TypeTableType struct {
 // ImportType represents an import path required for a control. This is analyzed per-table.
 type ImportType struct {
 	Path      string
-	Namespace string
 	Alias     string // blank if not needing an alias
 	Primary   bool
 }

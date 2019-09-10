@@ -896,7 +896,7 @@ goradd = {
             if (command.id) {
                 obj = g$(command.id);
             } else if (command.jqueryId) {
-                obj = jQuery(command.jqueryId);
+                obj = jQuery('#' + command.jqueryId);
             }
             var ctx = null;
 

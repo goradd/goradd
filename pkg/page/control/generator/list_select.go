@@ -24,8 +24,10 @@ func (d SelectList) NewFunc() string {
 	return "NewSelectList"
 }
 
-func (d SelectList) Imports() []string {
-	return []string{"github.com/goradd/goradd/pkg/page/control"}
+func (d SelectList) Imports() []generator.ImportPath {
+	return []generator.ImportPath{
+		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
+	}
 }
 
 // TODO: This has to be changed to support virtual column types like ManyMany and Reverse
@@ -38,7 +40,7 @@ func (d SelectList) SupportsColumn(col *generator.ColumnType) bool {
 
 func (d SelectList) GenerateCreator(col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(
-`control.SelectListCreator{
+`goraddctrl.SelectListCreator{
 	ID:           %#v,
 	DataProvider: p,
 	ControlOptions: page.ControlOptions{
