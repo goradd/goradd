@@ -1,0 +1,17 @@
+module goradd-test
+
+// This is go.mod.txt because we want to preserve "latest" below. Every time we run any go commands
+// go changes the file to have the current version number. Its annoying and we don't want that to
+// accidentally get checked in. So instead, we copy this file to be the go.mod file just before
+// running the test
+
+require (
+	github.com/go-sql-driver/mysql v1.4.1
+	github.com/goradd/goradd latest
+	goradd-project v0.0.0
+	goradd-tmp v0.0.0
+)
+
+replace goradd-project => ../goradd-project // Should be copied to this spot before testing
+
+replace goradd-tmp => ../goradd-tmp
