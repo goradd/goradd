@@ -4,25 +4,26 @@
 
 var panelName = t.GoName + "EditPanel"
 
-{{
-package panel
+{{# Below we are switching back and forth between putting got code in the template, and using got code to create the template }}
+{{begin gotCode}}
+{{< package }}panel{{end}}
+{{< imports }}
+{{end}}
+{{< control }}{{gotCode}}{{= panelName}}{{begin gotCode2}}{{end}}
 
-import (
-	"bytes"
-	"context"
-)
+{{define template }}
 
-// DrawTemplate draws the contents of the {{panelName}} panel.
-func (p *{{panelName}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
-{{begin open}}{{ {{open}}
+{{gotCode2}}
+
 {{for _,col := range t.Columns }}
 {{if col.Generator != nil}}
-{{begin draw}}{{draw p.{{draw}}{{= col.ControlName }}{{begin draw2}} }}{{draw2}}
+{{begin drawCode}}{{draw {{drawCode}}{{= col.ControlID }}{{begin drawCode2}}-ff }}
+{{drawCode2}}
 {{if}}
 {{for}}
-{{begin close}}}} {{close}}
 
-    return
-}
-}}
+{{begin gotCode3}}
+{{end}}
 
+{{renderControlTemplate}}
+{{gotCode3}}

@@ -1,6 +1,6 @@
 // createControls.tmpl
 {{
-
+// CreateControls creates the controls in the edit panel and adds them to the panel.
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     p.AddControls(ctx,
 {{for _,col := range t.Columns }}
@@ -12,6 +12,24 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 }
 
 }}
+
+/**
+
+If you are going to replace the entire CreateControls function in the {{= t.GoName }}EditPanel file,
+copy the code that follows instead, since it will call the functions directly rather than going
+through the interface.
+
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+    p.AddControls(ctx,
+{{for _,col := range t.Columns }}
+{{if col.Generator != nil && !col.IsPk}}
+        p.{{= col.GoName }}Creator(),
+{{if}}
+{{for}}
+    )
+}
+
+**/
 
 {{g
 
