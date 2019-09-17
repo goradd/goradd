@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -67,7 +68,6 @@ type Dialog struct {
 	isOpen      bool
 	dialogStyle DialogStyle
 	title       string
-	//validators map[string]bool
 }
 
 // DialogButtonOptions are optional additional items you can add to a dialog button.
@@ -294,6 +294,71 @@ func (d *Dialog) SetDialogStyle(s DialogStyle) {
 	d.Refresh()
 }
 
+func (d *Dialog) Serialize(e page.Encoder) (err error) {
+	if err = d.Control.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.buttonBarID); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.titleBarID); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.closeBoxID); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.isOpen); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.dialogStyle); err != nil {
+		return
+	}
+
+	if err = e.Encode(d.title); err != nil {
+		return
+	}
+
+	return
+}
+
+func (d *Dialog) Deserialize(dec page.Decoder) (err error) {
+	if err = d.Control.Deserialize(dec); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.buttonBarID); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.titleBarID); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.closeBoxID); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.isOpen); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.dialogStyle); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&d.title); err != nil {
+		return
+	}
+
+	return
+}
+
+
 // Alert is used by the framework to create an alert type message dialog.
 //
 // If you specify no buttons, a close box in the corner will be created that will just close the dialog. If you
@@ -346,3 +411,6 @@ func SetAlertFunction(f AlertFuncType) {
 }
 
 
+func init() {
+	gob.Register(Dialog{})
+}

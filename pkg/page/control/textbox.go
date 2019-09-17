@@ -10,7 +10,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
-	"reflect"
 	"strconv"
 )
 
@@ -347,15 +346,9 @@ func (t *Textbox) Serialize(e page.Encoder) (err error) {
 	return
 }
 
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize.
-func (t *Textbox) ΩisSerializer(i page.ControlI) bool {
-	return reflect.TypeOf(t) == reflect.TypeOf(i)
-}
-
 // Deserialize is used by the pagestate serializer.
-func (t *Textbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
-	if err = t.Control.Deserialize(d, p); err != nil {
+func (t *Textbox) Deserialize(d page.Decoder) (err error) {
+	if err = t.Control.Deserialize(d); err != nil {
 		return
 	}
 

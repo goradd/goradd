@@ -8,8 +8,8 @@ package page
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
@@ -55,7 +55,7 @@ type Page struct {
 	renderStatus PageRenderStatus
 	idPrefix     string // For creating unique ids for the app
 
-	controlRegistry *maps.SliceMap
+	controlRegistry map[string]ControlI
 	form            FormI
 	idCounter       int
 	title           string // page title to draw in head tag
@@ -70,9 +70,14 @@ type Page struct {
 func (p *Page) Init() {
 }
 
-// Restore is called immediately after the page has been unserialized, to restore data that did not get serialized.
+// Restore is called immediately after the page has been unserialized, to fix up decoded controls.
 func (p *Page) Restore() {
-	p.form.Restore(p.form)
+	for _,c := range p.controlRegistry {
+		c.decoded(p, c) // handle internal fixups so the underlying control tree can be relied on.
+	}
+	for _,c := range p.controlRegistry {
+		c.Restore()
+	}
 }
 
 func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
@@ -201,14 +206,10 @@ func (p *Page) GetControl(id string) ControlI {
 	if p.controlRegistry == nil {
 		panic("control registry is not initialized")
 	}
-	i := p.controlRegistry.Get(id)
-	if i == nil {
+	if c,ok := p.controlRegistry[id]; !ok {
 		panic("control with id " + id + " was not found")
-	}
-	if c, ok := i.(ControlI); ok {
-		return c
 	} else {
-		panic(id + " is not a control")
+		return c
 	}
 }
 
@@ -216,7 +217,8 @@ func (p *Page) HasControl(id string) bool {
 	if id == "" {
 		return false
 	}
-	return p.controlRegistry.Has(id)
+	_,ok := p.controlRegistry[id]
+	return ok
 }
 
 // addControl adds the given control to the controlRegistry. It is called by the control code whenever a control is created.
@@ -228,14 +230,14 @@ func (p *Page) addControl(control ControlI) {
 	}
 
 	if p.controlRegistry == nil {
-		p.controlRegistry = maps.NewSliceMap()
+		p.controlRegistry = make (map[string]ControlI)
 	}
 
-	if p.controlRegistry.Has(id) {
+	if p.HasControl(id) {
 		panic("Control id already exists. Control must have a unique id on the page before being added.")
 	}
 
-	p.controlRegistry.Set(id, control)
+	p.controlRegistry[id] = control
 
 	if control.Parent() == nil {
 		if f, ok := control.(FormI); ok {
@@ -266,7 +268,7 @@ func (p *Page) removeControl(id string) {
 	// TODO: Application::ExecuteSelectorFunction('#' . $objControl->getWrapperID(), 'remove');
 	// TODO: Make This a direct command in the ajax renderer
 
-	p.controlRegistry.Delete(id)
+	delete (p.controlRegistry,id)
 }
 
 // Title returns the content of the <title> tag that will be output in the head of the page.
@@ -299,11 +301,17 @@ func (p *Page) DrawAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 // GobEncode here is implemented to intercept the GobSerializer to only encode an empty structure. We use this as part
 // of our overall serialization stratgey for forms. Controls still need to be registered with gob.
 func (p *Page) GobEncode() (data []byte, err error) {
-	return
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err = p.Serialize(enc)
+	return buf.Bytes(), err
 }
 
 func (p *Page) GobDecode(data []byte) (err error) {
-	return
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	err = p.Deserialize(dec)
+	return err
 }
 
 func (p *Page) MarshalJSON() (data []byte, err error) {
@@ -327,9 +335,8 @@ type pageEncoded struct {
 
 }
 
-// Encode is called by the framework to serialize the page state.
-// TODO: serialization is not completely implemented yet
-func (p *Page) Encode(e Encoder) (err error) {
+// Serialize is called by the framework to serialize the page state.
+func (p *Page) Serialize(e Encoder) (err error) {
 	s := pageEncoded{
 		StateId:        p.stateId,
 		IdPrefix:       p.idPrefix,
@@ -343,65 +350,30 @@ func (p *Page) Encode(e Encoder) (err error) {
 		return
 	}
 
-	if err = e.EncodeControl(p.form); err != nil {
+	if err = e.Encode(p.controlRegistry); err != nil {
 		return
 	}
-
-	// Add the items from the control registry that were not serialized as part of serializing the form.
-	// This might happen if the item had no parent, like dialogs or other objects that are automatically drawn.
-	var count int
-	p.controlRegistry.Range(func(key string, value interface{}) bool {
-		if !value.(ControlI).control().encoded {
-			count++
-		}
-		return true
-	})
-	if err = e.Encode(count); err != nil {
-		return
-	}
-	p.controlRegistry.Range(func(key string, value interface{}) bool {
-		c := value.(ControlI)
-		if !c.control().encoded {
-			if err = e.EncodeControl(c); err != nil {
-				return false
-			}
-		}
-		return true
-	})
 
 	return
 }
 
-// Decode is called by the framework to serialize the page state.
-func (p *Page) Decode(d Decoder) (err error) {
+// Deserialize is called by the framework to deserialize the page state.
+func (p *Page) Deserialize(d Decoder) (err error) {
 	s := pageEncoded{}
 	if err = d.Decode(&s); err != nil {
 		return
 	}
-	p.controlRegistry = maps.NewSliceMap()
 	p.stateId = s.StateId
 	p.idPrefix = s.IdPrefix
 	p.title = s.Title
 	p.htmlHeaderTags = s.HtmlHeaderTags
 	p.BodyAttributes = s.BodyAttributes
 
-	var ci ControlI
-	if ci, err = d.DecodeControl(p); err != nil {
-		return
-	}
-	p.form = ci.(FormI)
-
-	// Deserialize the controls that were not part of the form structure, like dialogs
-	var count int
-	if err = d.Decode(&count); err != nil {
+	if err = d.Decode(&p.controlRegistry); err != nil {
 		return
 	}
 
-	for i := 0; i < count; i++ {
-		if ci, err = d.DecodeControl(p); err != nil { // the process of decoding will automatically add to the control registry, so no need to do anything with the result.
-			return
-		}
-	}
+	p.form = p.controlRegistry[s.FormID].(FormI)
 
 	return err
 }

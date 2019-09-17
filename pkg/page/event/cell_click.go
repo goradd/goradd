@@ -40,7 +40,7 @@ const (
  * You can put your items in a javascript array, and an array will be returned as the strParameter in the action.
  * Or you can put it in a javascript object, and a named array(hash) will be returned.
  */
-func CellClick() page.EventI {
+func CellClick() *page.Event {
 	e := &page.Event{JsEvent: "click"}
 	e.Selector("th,td").ActionValue(javascript.JsCode(CellClickDefault))
 	return e

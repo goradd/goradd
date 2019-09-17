@@ -11,7 +11,7 @@ import (
 //  col: the index of the clicked table
 //  checked: the checked state of the checkbox after the click is processed
 //  id: the id of the cell clicked
-func CheckboxColumnClick() page.EventI {
+func CheckboxColumnClick() *page.Event {
 	e := &page.Event{
 		JsEvent: "click",
 	}

@@ -3,6 +3,7 @@ package control
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/page"
 	"reflect"
 	"sort"
 	"strconv"
@@ -39,6 +40,9 @@ type ItemListI interface {
 // ItemList manages a list of ListItemI list items. ItemList is designed to be embedded in another structure, and will
 // turn that object into a manager of list items. ItemList will manage the id's of the items in its list, you do not
 // have control of that, and it needs to manage those ids in order to efficiently manage the selection process.
+//
+// Controls that embed this must implement the Serialize and Deserialize methods to call both the base Control's
+// Serialize and Deserialize methods, and the ones here.
 type ItemList struct {
 	owner IDer
 	items []ListItemI
@@ -243,6 +247,44 @@ func (l *ItemList) findItemByValue(value interface{}) (container *ItemList, inde
 
 	return nil, -1 // not found
 }
+
+// Serialize encodes the PagedControl data for serialization. Note that all control implementations
+// that use a PagedControl MUST create their own Serialize method, call the base Control's version first,
+// and then call this Serialize method.
+func (l *ItemList) Serialize(e page.Encoder) (err error) {
+	if err = e.Encode(l.owner); err != nil {
+		return
+	}
+	var count int = len(l.items)
+	if err = e.Encode(count); err != nil {
+		return
+	}
+
+	// Opt for our own serialization method, rather than using gob
+	for _,i := range l.items {
+		i.Serialize(e)
+	}
+
+	return
+}
+
+func (l *ItemList) Deserialize(dec page.Decoder) (err error) {
+	if err = dec.Decode(&l.owner); err != nil {
+		return
+	}
+
+	var count int
+	if err = dec.Decode(&count); err != nil {
+		return
+	}
+
+	for i := 0; i < count; i++ {
+
+	}
+
+	return
+}
+
 
 // SortIds sorts a list of auto-generated ids in numerical and hierarchical order.
 // This is normally just called by the framework.

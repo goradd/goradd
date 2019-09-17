@@ -6,7 +6,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"reflect"
 	"strconv"
 )
 
@@ -141,14 +140,9 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 	return
 }
 
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
-func (d *DataPager) ΩisSerializer(i page.ControlI) bool {
-	return reflect.TypeOf(d) == reflect.TypeOf(i)
-}
 
-func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
-	if err = d.DataPager.Deserialize(dec, p); err != nil {
+func (d *DataPager) Deserialize(dec page.Decoder) (err error) {
+	if err = d.DataPager.Deserialize(dec); err != nil {
 		return
 	}
 

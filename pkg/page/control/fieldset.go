@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	buf2 "github.com/goradd/goradd/pkg/pool"
@@ -87,4 +88,8 @@ func (c FieldsetCreator) Create(ctx context.Context, parent page.ControlI) page.
 // GetFieldset is a convenience method to return the panel with the given id from the page.
 func GetFieldset(c page.ControlI, id string) *Fieldset {
 	return c.Page().GetControl(id).(*Fieldset)
+}
+
+func init() {
+	gob.Register(Fieldset{})
 }

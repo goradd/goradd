@@ -3,6 +3,7 @@ package control
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/math"
@@ -10,7 +11,6 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
-	"reflect"
 	"strconv"
 )
 
@@ -34,7 +34,9 @@ type PagedControlI interface {
 	SliceOffsets() (start, end int)
 }
 
-// PagedControl is a mixin that makes a Control controllable by a data pager
+// PagedControl is a mixin that makes a Control controllable by a data pager. All embedders of a
+// PagedControl MUST implement the Serialize and Deserialize methods so that the base Control versions
+// of these functions will get called.
 type PagedControl struct {
 	totalItems int
 	pageSize   int
@@ -136,6 +138,47 @@ func (c *PagedControl) SqlLimits() (maxRowCount, offset int) {
 	maxRowCount = c.PageSize()
 	return
 }
+
+// Serialize encodes the PagedControl data for serialization. Note that all control implementations
+// that use a PagedControl MUST create their own Serialize method, call the base Control's version first,
+// and then call this Serialize method.
+func (c *PagedControl) Serialize(e page.Encoder) (err error) {
+	if err = e.Encode(c.totalItems); err != nil {
+		return
+	}
+	if err = e.Encode(c.pageSize); err != nil {
+		return
+	}
+	if err = e.Encode(c.pageNum); err != nil {
+		return
+	}
+	if err = e.Encode(c.dataPagers); err != nil {
+		return
+	}
+
+	return
+}
+
+func (c *PagedControl) Deserialize(dec page.Decoder) (err error) {
+	if err = dec.Decode(&c.totalItems); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.pageSize); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.pageNum); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.dataPagers); err != nil {
+		return
+	}
+
+	return
+}
+
 
 // DataPagerI is the data pager interface that allows this object to call into subclasses.
 type DataPagerI interface {
@@ -495,14 +538,8 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 	return
 }
 
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
-func (d *DataPager) ΩisSerializer(i page.ControlI) bool {
-	return reflect.TypeOf(d) == reflect.TypeOf(i)
-}
-
-func (d *DataPager) Deserialize(dec page.Decoder, p *page.Page) (err error) {
-	if err = d.Control.Deserialize(dec, p); err != nil {
+func (d *DataPager) Deserialize(dec page.Decoder) (err error) {
+	if err = d.Control.Deserialize(dec); err != nil {
 		return
 	}
 
@@ -577,4 +614,8 @@ func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 	}
 
 	ctrl.ApplyOptions(c.ControlOptions)
+}
+
+func init() {
+	gob.Register(DataPager{})
 }

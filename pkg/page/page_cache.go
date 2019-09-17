@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/goradd/goradd/pkg/cache"
 	"github.com/goradd/goradd/pkg/html"
-	"github.com/goradd/goradd/pkg/pool"
 )
 
 // PageCacheI is the page cache interface. The PageCache saves and restores pages in between page
@@ -95,29 +94,31 @@ type SerializedPageCache struct {
 }
 
 func NewSerializedPageCache(maxEntries int, TTL int64) *SerializedPageCache {
-	panic("Serialized pages are not ready for prime time yet")
 	return &SerializedPageCache{*cache.NewLruCache(maxEntries, TTL)}
 }
 
 // Set puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
 func (o *SerializedPageCache) Set(pageId string, page *Page) {
-	b := pool.GetBuffer()
-	defer pool.PutBuffer(b)
-	enc := pageEncoder.NewEncoder(b)
+	var b bytes.Buffer
+	enc := pageEncoder.NewEncoder(&b)
 	_ = enc.Encode(PageCacheVersion)
 	_ = enc.Encode(page.Form().ID())
-	err := page.Encode(enc)
+	err := enc.Encode(page)
 	if err != nil {
-		o.LruCache.Set(pageId, b.Bytes())
+		panic(err) // could be that a control is not registered, so we need to alert the developer
 	}
+	o.LruCache.Set(pageId, b.Bytes())
 }
 
 // Get returns the page based on its page id.
 // If not found, will return null.
 func (o *SerializedPageCache) Get(pageId string) *Page {
-	b := o.LruCache.Get(pageId).([]byte)
-	dec := pageEncoder.NewDecoder(bytes.NewBuffer(b))
+	b := o.LruCache.Get(pageId)
+	if b == nil {
+		return nil
+	}
+	dec := pageEncoder.NewDecoder(bytes.NewBuffer(b.([]byte)))
 	var ver int32
 	if err := dec.Decode(&ver); err != nil {
 		panic(err)
@@ -132,7 +133,7 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 		panic(err)
 	}
 	if _, ok := pageManager.formIdRegistry[formId]; !ok {
-		panic("Form id not found")
+		panic("Form creation function not found for form: " + formId)
 	}
 
 	if err := dec.Decode(&p); err != nil {
@@ -140,9 +141,9 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 	}
 
 	if p.stateId != pageId {
-		panic("pageId does not match")
+		panic("pageId does not match") // or return nil?
 	}
-	//p.Restore()
+	p.Restore()
 	return &p
 }
 

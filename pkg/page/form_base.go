@@ -15,7 +15,6 @@ import (
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
 	"path/filepath"
-	"reflect"
 	"strings"
 )
 
@@ -570,14 +569,8 @@ func (f *ΩFormBase) Serialize(e Encoder) (err error) {
 	return
 }
 
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
-func (f *ΩFormBase) ΩisSerializer(i ControlI) bool {
-	return reflect.TypeOf(f) == reflect.TypeOf(i)
-}
-
-func (f *ΩFormBase) Deserialize(d Decoder, p *Page) (err error) {
-	if err = f.Control.Deserialize(d, p); err != nil {
+func (f *ΩFormBase) Deserialize(d Decoder) (err error) {
+	if err = f.Control.Deserialize(d); err != nil {
 		return
 	}
 	s := formEncoded{}

@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
@@ -200,6 +201,72 @@ func (c *FormFieldWrapper) Validate(ctx context.Context) bool {
 	return true
 }
 
+func (c *FormFieldWrapper) Serialize(e page.Encoder) (err error) {
+	if err = c.Control.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(c.instructions); err != nil {
+		return
+	}
+	if err = e.Encode(c.labelAttributes); err != nil {
+		return
+	}
+	if err = e.Encode(c.errorAttributes); err != nil {
+		return
+	}
+	if err = e.Encode(c.instructionAttributes); err != nil {
+		return
+	}
+	if err = e.Encode(c.forID); err != nil {
+		return
+	}
+	if err = e.Encode(c.savedMessage); err != nil {
+		return
+	}
+	if err = e.Encode(c.Subtag); err != nil {
+		return
+	}
+
+	return
+}
+
+func (c *FormFieldWrapper) Deserialize(dec page.Decoder) (err error) {
+	if err = c.Control.Deserialize(dec); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.instructions); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.labelAttributes); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.errorAttributes); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.instructionAttributes); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.forID); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.savedMessage); err != nil {
+		return
+	}
+	if err = dec.Decode(&c.Subtag); err != nil {
+		return
+	}
+
+	return
+}
+
+
 // Use FormFieldWrapperCreator to create a FormFieldWrapper,
 // which wraps a control with a div or span that also has a label, validation error
 // text and optional instructions. Pass the creator of the control you
@@ -298,4 +365,8 @@ func CalcWrapperID(wrapperId string, childCreator page.Creator, postfix string) 
 		}
 	}
 	return id
+}
+
+func init() {
+	gob.Register(FormFieldWrapper{})
 }

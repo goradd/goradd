@@ -27,7 +27,7 @@ type NavbarList struct {
 	data.DataManager
 }
 
-func NavbarSelectEvent() page.EventI {
+func NavbarSelectEvent() *page.Event {
 	e := &page.Event{JsEvent: "gr-bs-navbarselect"}
 	e.ActionValue(javascript.JsCode("ui")) // This will be the action value sent by the proxy...the id of the item
 	return e

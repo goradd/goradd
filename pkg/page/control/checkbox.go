@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -77,4 +78,8 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 // GetCheckbox is a convenience method to return the checkbox with the given id from the page.
 func GetCheckbox(c page.ControlI, id string) *Checkbox {
 	return c.Page().GetControl(id).(*Checkbox)
+}
+
+func init() {
+	gob.Register(Checkbox{})
 }

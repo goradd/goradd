@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -55,4 +56,8 @@ func (c CanvasCreator) Create(ctx context.Context, parent page.ControlI) page.Co
 // GetCanvas is a convenience method to return the canvas with the given id from the page.
 func GetCanvas(c page.ControlI, id string) *Canvas {
 	return c.Page().GetControl(id).(*Canvas)
+}
+
+func init() {
+	gob.Register(Canvas{})
 }
