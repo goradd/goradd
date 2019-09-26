@@ -34,8 +34,8 @@ func (l *Tabs) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.On(event.Event("show.bs.tab"), action.SetControlValue(l.ID(), "selectedId", javascript.JsCode("event.target.id")))
 }
 
-func (c *Tabs) ΩDrawingAttributes() html.Attributes {
-	a := c.Panel.ΩDrawingAttributes()
+func (c *Tabs) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Panel.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "bs-tabs")
 	return a
 }

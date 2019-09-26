@@ -67,8 +67,8 @@ func (c *FormGroup) UseTooltips() bool {
 	return c.useTooltips
 }
 
-func (c *FormGroup) ΩDrawingAttributes() html.Attributes {
-	a := c.FormFieldWrapper.ΩDrawingAttributes()
+func (c *FormGroup) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.FormFieldWrapper.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "formGroup")
 	if c.useTooltips {
 		// bootstrap requires that parent of a tool-tipped object has position relative
@@ -80,7 +80,7 @@ func (c *FormGroup) ΩDrawingAttributes() html.Attributes {
 func (c *FormGroup) ΩDrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
-	attributes := c.this().ΩDrawingAttributes()
+	attributes := c.this().ΩDrawingAttributes(ctx)
 	if c.For() == "" {
 		panic("a FormGroup MUST have a sub control")
 	}

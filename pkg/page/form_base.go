@@ -133,7 +133,7 @@ func (f *ΩFormBase) AddFontAwesome() {
 // routine for performance reasons and for control.
 func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	err = f.this().ΩPreRender(ctx, buf)
-	buf.WriteString(`<form ` + f.this().ΩDrawingAttributes().String() + ">\n")
+	buf.WriteString(`<form ` + f.this().ΩDrawingAttributes(ctx).String() + ">\n")
 	if err = f.this().DrawTemplate(ctx, buf); err != nil {
 		return // the template is required
 	}
@@ -294,8 +294,8 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 }
 
 // ΩDrawingAttributes returns the attributes to add to the form tag.
-func (f *ΩFormBase) ΩDrawingAttributes() html.Attributes {
-	a := f.Control.ΩDrawingAttributes()
+func (f *ΩFormBase) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := f.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "form")
 	return a
 }

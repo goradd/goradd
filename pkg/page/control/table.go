@@ -206,8 +206,8 @@ func (t *Table) ΩDrawTag(ctx context.Context) string {
 // ΩDrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
 // is no data to show. This will hide header and footer cells and potentially the outline of the table when there is no
 // data in the table.
-func (t *Table) ΩDrawingAttributes() html.Attributes {
-	a := t.Control.ΩDrawingAttributes()
+func (t *Table) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "table")
 	if !t.HasData() && t.hideIfEmpty {
 		a.SetStyle("display", "none")

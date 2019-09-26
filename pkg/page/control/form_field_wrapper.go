@@ -96,8 +96,8 @@ func (c *FormFieldWrapper) Instructions() string {
 	return c.instructions
 }
 
-func (c *FormFieldWrapper) ΩDrawingAttributes() html.Attributes {
-	a := c.Control.ΩDrawingAttributes()
+func (c *FormFieldWrapper) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "formField")
 	return a
 }
@@ -105,7 +105,7 @@ func (c *FormFieldWrapper) ΩDrawingAttributes() html.Attributes {
 func (c *FormFieldWrapper) ΩDrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
-	attributes := c.this().ΩDrawingAttributes()
+	attributes := c.this().ΩDrawingAttributes(ctx)
 	var child page.ControlI
 	var errorMessage string
 

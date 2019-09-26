@@ -33,8 +33,8 @@ func (c *RadioButton) SetInline(v bool) *RadioButton {
 	return c
 }
 
-func (c *RadioButton) ΩDrawingAttributes() html.Attributes {
-	a := c.RadioButton.ΩDrawingAttributes()
+func (c *RadioButton) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.RadioButton.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "bs-radio")
 	a.AddClass("form-check-input")
 
