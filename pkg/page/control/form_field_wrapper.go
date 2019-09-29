@@ -190,14 +190,14 @@ func (c *FormFieldWrapper) SetInstructionAttributes(a html.Attributes) FormField
 	return c.this()
 }
 
-func (c *FormFieldWrapper) Validate(ctx context.Context) bool {
+func (c *FormFieldWrapper) ChildValidationChanged() {
 	child := c.Page().GetControl(c.forID)
 	m := child.ValidationMessage()
 	if m != c.savedMessage {
 		c.savedMessage = m // store the message to see if it changes between validations
 		c.Refresh()
 	}
-	return true
+	c.Control.ChildValidationChanged()
 }
 
 // Use FormFieldWrapperCreator to create a FormFieldWrapper,

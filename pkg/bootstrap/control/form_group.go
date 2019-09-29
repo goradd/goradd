@@ -44,7 +44,18 @@ func (c *FormGroup) this() FormGroupI {
 }
 
 func (c *FormGroup) Validate(ctx context.Context) bool {
+	c.setChildValidation()
 	c.FormFieldWrapper.Validate(ctx)
+
+	return true
+}
+
+func (c *FormGroup) ChildValidationChanged() {
+	c.setChildValidation()
+	c.FormFieldWrapper.ChildValidationChanged()
+}
+
+func (c *FormGroup) setChildValidation() {
 	child := c.Page().GetControl(c.For())
 	if child.ValidationMessage() != "" {
 		child.RemoveClass("is-valid")
@@ -53,9 +64,8 @@ func (c *FormGroup) Validate(ctx context.Context) bool {
 		child.AddClass("is-valid")
 		child.RemoveClass("is-invalid")
 	}
-
-	return true
 }
+
 
 // SetUseTooltips sets whether to use tooltips to display validation messages.
 func (c *FormGroup) SetUseTooltips(use bool) FormGroupI {
