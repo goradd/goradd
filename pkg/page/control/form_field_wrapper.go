@@ -191,13 +191,22 @@ func (c *FormFieldWrapper) SetInstructionAttributes(a html.Attributes) FormField
 }
 
 func (c *FormFieldWrapper) Validate(ctx context.Context) bool {
+	c.checkChildValidation()
+	return true
+}
+
+func (c *FormFieldWrapper) ChildValidationChanged() {
+	c.checkChildValidation()
+	c.Control.ChildValidationChanged()
+}
+
+func (c *FormFieldWrapper) checkChildValidation() {
 	child := c.Page().GetControl(c.forID)
 	m := child.ValidationMessage()
 	if m != c.savedMessage {
 		c.savedMessage = m // store the message to see if it changes between validations
 		c.Refresh()
 	}
-	return true
 }
 
 // Use FormFieldWrapperCreator to create a FormFieldWrapper,
