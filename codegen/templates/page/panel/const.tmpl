@@ -1,0 +1,8 @@
+
+const (
+{{
+{{for _,col := range t.Columns}}
+    {{= col.ControlIDConst() }} = "{{= col.ControlID }}"
+{{for}}
+}}
+)

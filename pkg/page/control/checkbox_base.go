@@ -42,8 +42,8 @@ func (c *CheckboxBase) this() CheckboxI {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (c *CheckboxBase) ΩDrawingAttributes() html.Attributes {
-	a := c.Control.ΩDrawingAttributes()
+func (c *CheckboxBase) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Control.ΩDrawingAttributes(ctx)
 	if c.Text() != "" {
 		a.AddAttributeValue("aria-labelledby", c.ID()+"_ilbl")
 	}
@@ -61,7 +61,7 @@ func (c *CheckboxBase) SetLabelDrawingMode(m html.LabelDrawingMode) {
 // associated with labels. The Text value of the control will become the text directly associated with the checkbox,
 // while the Label value is only shown when drawing a checkbox with a wrapper.
 func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
-	attributes := c.this().ΩDrawingAttributes()
+	attributes := c.this().ΩDrawingAttributes(ctx)
 	if c.checked {
 		attributes.Set("checked", "")
 	}

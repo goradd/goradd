@@ -118,8 +118,8 @@ func (l *RadioList) SetRowClass(c string) RadioListI {
 // ΩDrawingAttributes retrieves the tag's attributes at draw time.
 // You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *RadioList) ΩDrawingAttributes() html.Attributes {
-	a := l.Control.ΩDrawingAttributes()
+func (l *RadioList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "radiolist")
 	a.AddClass("gr-cbl")
 

@@ -139,7 +139,7 @@ type ControlI interface {
 	SetAttribute(name string, val interface{}) ControlI
 	Attribute(string) string
 	HasAttribute(string) bool
-	ΩDrawingAttributes() html.Attributes
+	ΩDrawingAttributes(context.Context) html.Attributes
 	AddClass(class string) ControlI
 	RemoveClass(class string) ControlI
 	SetStyles(html.Style)
@@ -511,7 +511,7 @@ func (c *Control) ΩDrawTag(ctx context.Context) string {
 
 	log.FrameworkDebug("Drawing control: " + c.ID())
 
-	attributes := c.this().ΩDrawingAttributes()
+	attributes := c.this().ΩDrawingAttributes(ctx)
 
 	if c.IsVoidTag {
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
@@ -647,7 +647,7 @@ func (c *Control) HasAttribute(name string) bool {
 // return a set of attributes that should override those set by the user. This allows controls to set attributes
 // that should take precedence over other attributes, and that are critical to drawing the
 // tag of the control. This function is designed to only be called by Control implementations.
-func (c *Control) ΩDrawingAttributes() html.Attributes {
+func (c *Control) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	a := html.NewAttributesFrom(c.attributes)
 	a.SetID(c.id)                   // make sure the control id is set at a minimum
 	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
@@ -1602,13 +1602,13 @@ func (c *Control) SetDataConnector(d DataConnector) ControlI {
 
 func (c *Control) RefreshData(data interface{}) {
 	if c.dataConnector != nil {
-		c.dataConnector.Refresh(c, data)
+		c.dataConnector.Refresh(c.this(), data)
 	}
 }
 
 func (c *Control) UpdateData(data interface{}) {
 	if c.dataConnector != nil {
-		c.dataConnector.Update(c, data)
+		c.dataConnector.Update(c.this(), data)
 	}
 }
 

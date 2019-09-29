@@ -88,8 +88,8 @@ func (b *Button) SetButtonSize(size ButtonSize) ButtonI {
 	return b.this()
 }
 
-func (b *Button) ΩDrawingAttributes() html.Attributes {
-	a := b.Button.ΩDrawingAttributes()
+func (b *Button) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := b.Button.ΩDrawingAttributes(ctx)
 	a.AddClass(ButtonClass)
 	a.AddClass(string(b.style))
 	a.AddClass(string(b.size))
@@ -159,6 +159,7 @@ type ButtonCreator struct {
 	Style ButtonStyle
 	Size ButtonSize
 	IsPrimary bool
+	ValidationType page.ValidationType
 	page.ControlOptions
 }
 
@@ -179,6 +180,7 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI)  {
 		Text:           c.Text,
 		OnSubmit:       c.OnSubmit,
 		OnClick:        c.OnClick,
+		ValidationType: c.ValidationType,
 		ControlOptions: c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)
@@ -191,4 +193,9 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI)  {
 	if c.IsPrimary {
 		ctrl.SetIsPrimary(true)
 	}
+}
+
+// GetButton is a convenience method to return the button with the given id from the page.
+func GetButton(c page.ControlI, id string) *Button {
+	return c.Page().GetControl(id).(*Button)
 }

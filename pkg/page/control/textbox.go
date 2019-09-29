@@ -98,8 +98,8 @@ func (t *Textbox) ResetValidators() {
 }
 
 // ΩDrawingAttributes is called by the framework to retrieve the tag's private attributes at draw time.
-func (t *Textbox) ΩDrawingAttributes() html.Attributes {
-	a := t.Control.ΩDrawingAttributes()
+func (t *Textbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "textbox")
 	a.Set("name", t.ID()) // needed for posts
 	if t.IsRequired() {

@@ -66,8 +66,8 @@ func (b *Button) On(e page.EventI, action action.ActionI) page.ControlI {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (b *Button) ΩDrawingAttributes() html.Attributes {
-	a := b.Control.ΩDrawingAttributes()
+func (b *Button) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := b.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "button")
 
 	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts

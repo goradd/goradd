@@ -73,8 +73,8 @@ func (l *NavbarList) ΩDrawTag(ctx context.Context) string {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *NavbarList) ΩDrawingAttributes() html.Attributes {
-	a := l.Control.ΩDrawingAttributes()
+func (l *NavbarList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "navbarlist")
 	a.AddClass("navbar-nav")
 	return a
