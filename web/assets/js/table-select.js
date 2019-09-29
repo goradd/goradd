@@ -17,7 +17,7 @@ goradd.widget( "goradd.selectTable", {
                 .attr("tabindex", 0)
                 .attr("style", "overflow-y:auto;padding-right:10px")
                 .wrap(this.element);
-            g$(scroller).on('keydown', this._handleKeyDown, {handlerTarget: this});
+            g$(scroller).on('keydown', [this, this._handleKeyDown]);
             this.attr("tabindex", false);
 
         } else {

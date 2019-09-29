@@ -1602,13 +1602,13 @@ func (c *Control) SetDataConnector(d DataConnector) ControlI {
 
 func (c *Control) RefreshData(data interface{}) {
 	if c.dataConnector != nil {
-		c.dataConnector.Refresh(c, data)
+		c.dataConnector.Refresh(c.this(), data)
 	}
 }
 
 func (c *Control) UpdateData(data interface{}) {
 	if c.dataConnector != nil {
-		c.dataConnector.Update(c, data)
+		c.dataConnector.Update(c.this(), data)
 	}
 }
 

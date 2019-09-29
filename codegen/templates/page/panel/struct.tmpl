@@ -4,7 +4,7 @@
 type {{= panelName }}I interface {
 {{for _,col := range t.Columns}}
 {{if col.Generator != nil && !col.IsPk}}
-    {{= col.GoName }}Creator() {{= generator.DefaultFormFieldCreator }}
+    {{= col.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }}
 {{if}}
 {{for}}
     Update()

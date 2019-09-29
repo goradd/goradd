@@ -9,7 +9,7 @@ import (
 
 func init() {
 	if !config.Release {
-		//generator2.RegisterControlGenerator(FloatTextbox{})
+		generator2.RegisterControlGenerator(FloatTextbox{})
 	}
 }
 

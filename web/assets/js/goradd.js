@@ -1543,7 +1543,8 @@ goradd.g.prototype = {
      *
      * @param {string} eventNames  One or more event names separated by spaces
      * @param {string} [selector] An optional css selector to filter bubbled events. This is here because jQuery does it this way too.
-     * @param {function} handler
+     * @param {function|Array} handler The function to execute. If handler is an array, the first item
+     *      will become the "this" of the function.
      * @param {object} [options] Optional additional options as follows:
      *      selector: {string} Same as selector above, just specified in options
      *      bubbles: {boolean} When used with a selector, determines if selector filters parent elements (true), or just
@@ -1553,8 +1554,6 @@ goradd.g.prototype = {
      *      data: {*} Data to provide into the goradd.data item attached to the event. If this is a function, the function
      *        will be executed when the event fires, and the result provided to the event. The "this" of the function
      *        will be the "this" of the on call, unless of course you bind a different "this".
-     *      el: The element to bind to. Jquery UI allows you to bind to other elements, but have
-     *          the "this" in the handler still be the current object.
      */
     on: function(eventNames, selector, handler, options) {
         // TODO: This code breaks the built-in addEventListener ability to prevent multiple adds of the same handler.
@@ -1574,8 +1573,8 @@ goradd.g.prototype = {
             handler = selector;
             selector = undefined;
         }
-        if (typeof handler !== "function") {
-            goradd.log("on must have a handler that is a function");
+        if (typeof handler !== "function" && !(Array.isArray(handler) && handler.length == 2)) {
+            goradd.log("on must have a handler that is a function or a 2 item array");
             return;
         }
 
@@ -1593,13 +1592,13 @@ goradd.g.prototype = {
             if (!!options.selector) {
                 selector = options.selector;
             }
-            if (!!options.handlerTarget) {
-                target = options.handlerTarget;
-            }
-            if (!!options.el) {
-                el = options.el;
-            }
         }
+
+        if (Array.isArray(handler)) {
+            target = handler[0];
+            handler = handler[1];
+        }
+
         var events = eventNames.split(" ");
         goradd.each(events, function(i,eventName) {
             el.addEventListener(eventName, function (event) {
