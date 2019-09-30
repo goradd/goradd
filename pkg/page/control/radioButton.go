@@ -62,8 +62,8 @@ func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 }
 
 // ΩDrawingAttributes is called by the framework to create temporary attributes for the input tag.
-func (c *RadioButton) ΩDrawingAttributes() html.Attributes {
-	a := c.CheckboxBase.ΩDrawingAttributes()
+func (c *RadioButton) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.CheckboxBase.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "radio")
 	a.Set("type", "radio")
 	if c.group == "" {

@@ -44,7 +44,18 @@ func (c *FormGroup) this() FormGroupI {
 }
 
 func (c *FormGroup) Validate(ctx context.Context) bool {
+	c.setChildValidation()
 	c.FormFieldWrapper.Validate(ctx)
+
+	return true
+}
+
+func (c *FormGroup) ChildValidationChanged() {
+	c.setChildValidation()
+	c.FormFieldWrapper.ChildValidationChanged()
+}
+
+func (c *FormGroup) setChildValidation() {
 	child := c.Page().GetControl(c.For())
 	if child.ValidationMessage() != "" {
 		child.RemoveClass("is-valid")
@@ -53,9 +64,8 @@ func (c *FormGroup) Validate(ctx context.Context) bool {
 		child.AddClass("is-valid")
 		child.RemoveClass("is-invalid")
 	}
-
-	return true
 }
+
 
 // SetUseTooltips sets whether to use tooltips to display validation messages.
 func (c *FormGroup) SetUseTooltips(use bool) FormGroupI {
@@ -67,8 +77,8 @@ func (c *FormGroup) UseTooltips() bool {
 	return c.useTooltips
 }
 
-func (c *FormGroup) ΩDrawingAttributes() html.Attributes {
-	a := c.FormFieldWrapper.ΩDrawingAttributes()
+func (c *FormGroup) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.FormFieldWrapper.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "formGroup")
 	if c.useTooltips {
 		// bootstrap requires that parent of a tool-tipped object has position relative
@@ -80,7 +90,7 @@ func (c *FormGroup) ΩDrawingAttributes() html.Attributes {
 func (c *FormGroup) ΩDrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
-	attributes := c.this().ΩDrawingAttributes()
+	attributes := c.this().ΩDrawingAttributes(ctx)
 	if c.For() == "" {
 		panic("a FormGroup MUST have a sub control")
 	}

@@ -47,30 +47,32 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 				}
 			}
 
+			// TODO: Get this from a database comment if provided
 			var defaultLabel string
+			var controlName string
 
 			if col.ForeignKey != nil {
 				defaultLabel = strings2.Title(col.ForeignKey.GoName)
+				controlName = col.ForeignKey.GoName + typ
 			} else {
 				defaultLabel = strings2.Title(col.DbName)
+				controlName = col.GoName + typ
 			}
 
 			var defaultID string
-			if GenerateControlIDs {
-				defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(col.DbName, "_", "-", -1)
-			}
+			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(col.DbName, "_", "-", -1)
 
 			col2.ControlDescription = ControlDescription{
 				Import: mainImport,
 				ControlType: typ,
 				NewControlFunc: newFunc,
-				ControlName: col.GoName + typ,
+				ControlName: controlName,
 				ControlID: defaultID,
 				DefaultLabel: defaultLabel,
 				Generator: generator,
+				Connector:t.GoName + controlName + "Connector",
 			}
 		}
-		col2.ControlDescription.Connector = strings2.LcFirst(t.GoName) + col.GoName + "Connector"
 		columns = append(columns, col2)
 	}
 

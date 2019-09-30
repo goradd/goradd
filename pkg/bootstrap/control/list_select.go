@@ -21,8 +21,8 @@ func NewSelectList(parent page.ControlI, id string) *SelectList {
 	return t
 }
 
-func (t *SelectList) ΩDrawingAttributes() html.Attributes {
-	a := t.SelectList.ΩDrawingAttributes()
+func (t *SelectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.SelectList.ΩDrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }

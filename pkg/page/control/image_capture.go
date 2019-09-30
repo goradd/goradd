@@ -152,8 +152,8 @@ func (i *ImageCapture) SetMaskShape(shape ImageCaptureShape) {
 }
 
 // ΩDrawingAttributes is called by the framework.
-func (i *ImageCapture) ΩDrawingAttributes() html.Attributes {
-	a := i.Control.ΩDrawingAttributes()
+func (i *ImageCapture) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := i.Control.ΩDrawingAttributes(ctx)
 	if i.data != nil {
 		// Turn the data into a source attribute
 		d := base64.StdEncoding.EncodeToString(i.data)

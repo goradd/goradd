@@ -70,8 +70,8 @@ func (c *FormFieldset) InstructionAttributes() html.Attributes {
 }
 
 
-func (c *FormFieldset) ΩDrawingAttributes() html.Attributes {
-	a := c.Panel.ΩDrawingAttributes()
+func (c *FormFieldset) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Panel.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "formFieldset")
 	return a
 }

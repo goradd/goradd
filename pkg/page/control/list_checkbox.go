@@ -118,8 +118,8 @@ func (l *CheckboxList) SetRowClass(c string) CheckboxListI {
 // ΩDrawingAttributes retrieves the tag's attributes at draw time.
 // You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *CheckboxList) ΩDrawingAttributes() html.Attributes {
-	a := l.Control.ΩDrawingAttributes()
+func (l *CheckboxList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "checkboxlist")
 	a.AddClass("gr-cbl")
 

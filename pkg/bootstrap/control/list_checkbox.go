@@ -58,8 +58,8 @@ func (l *CheckboxList) SetCellClass(c string) {
 
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *CheckboxList) ΩDrawingAttributes() html.Attributes {
-	a := l.Control.ΩDrawingAttributes() // skip default checkbox list attributes
+func (l *CheckboxList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.Control.ΩDrawingAttributes(ctx) // skip default checkbox list attributes
 	a.SetDataAttribute("grctl", "bs-checkboxlist")
 	return a
 }

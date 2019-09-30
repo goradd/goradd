@@ -81,8 +81,8 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a html.Attrib
 	return a
 }
 
-func (t *SelectTable) ΩDrawingAttributes() html.Attributes {
-	a := t.Table.ΩDrawingAttributes()
+func (t *SelectTable) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.Table.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "selecttable")
 	a.Set("role", "listbox")
 	a.SetDataAttribute("grWidget", "goradd.selectTable")

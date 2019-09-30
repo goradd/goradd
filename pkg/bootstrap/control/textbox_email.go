@@ -22,8 +22,8 @@ func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
 	return t
 }
 
-func (t *EmailTextbox) ΩDrawingAttributes() html.Attributes {
-	a := t.EmailTextbox.ΩDrawingAttributes()
+func (t *EmailTextbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.EmailTextbox.ΩDrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }

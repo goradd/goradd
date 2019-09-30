@@ -124,8 +124,8 @@ func (d *Modal) AddTitlebarClass(class string) {
 	d.titleBar.AddClass(class)
 }
 
-func (d *Modal) ΩDrawingAttributes() html.Attributes {
-	a := d.Panel.ΩDrawingAttributes()
+func (d *Modal) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := d.Panel.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "bs-modal")
 	return a
 }

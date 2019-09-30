@@ -26,8 +26,8 @@ func (c *Checkbox) SetInline(v bool) *Checkbox {
 	return c
 }
 
-func (c *Checkbox) ΩDrawingAttributes() html.Attributes {
-	a := c.Checkbox.ΩDrawingAttributes()
+func (c *Checkbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Checkbox.ΩDrawingAttributes(ctx)
 	a.AddClass("form-check-input")
 	a.SetDataAttribute("grctl", "bs-checkbox")
 	if c.Text() == "" {

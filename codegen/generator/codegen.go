@@ -48,6 +48,10 @@ type ControlDescription struct {
 	Connector	   string
 }
 
+func (cd *ControlDescription) ControlIDConst() string {
+	return strings.KebabToCamel(cd.ControlID) + "Id"
+}
+
 // ColumnType combines a database ColumnDescription with a ControlDescription
 type ColumnType struct {
 	*db.ColumnDescription

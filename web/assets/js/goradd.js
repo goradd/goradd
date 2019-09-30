@@ -533,6 +533,9 @@ goradd = {
      */
     el: function(t) {
         if (typeof t === "object") {
+            if (!!t.element) {
+                return t.element; // Its a goradd widget, so get the element from the widget
+            }
             return t;
         }
         return document.getElementById(t);
@@ -1173,6 +1176,16 @@ goradd.TagBuilder.prototype = {
         return this;
     },
     /**
+     * css sets the given css inline style property to the given value
+     * @param p {string}
+     * @param v {string}
+     * @returns {goradd.TagBuilder}
+     */
+    css: function(p, v) {
+        this.el.style[p] = v;
+        return this;
+    },
+    /**
      * html sets the innerHTML to the given value.
      * @param h {string}
      * @returns {goradd.TagBuilder}
@@ -1190,6 +1203,11 @@ goradd.TagBuilder.prototype = {
         this.el.innerText = t;
         return this;
     },
+    id: function(i) {
+        this.attr("id", i);
+        return this;
+    },
+
     /**
      * appendTo ends the builder by inserting the tag into the dom as the last child element of the given element.
      * @param el {object|string}
@@ -1484,22 +1502,27 @@ goradd.g.prototype = {
     /**
      * css sets or gets the given css property.
      * @param p {string} Property to set or get
-     * @param v [string] Optional value. If ommitted, no setting will happen
-     * @returns {string} The value of the property.
+     * @param v [string] Optional value. If omitted, no setting will happen
+     * @returns {string} The previous value of the property.
      */
     css: function(p, v) {
         var el = this.element;
-        if (arguments.length >= 2) {
-            el.style[p] = v;
-            return v;
-        }
+        var oldV = undefined;
         var styles = window.getComputedStyle(el); // TODO: since this is live, should we stash this in the object so we don't have the overhead?
         if (styles.hasOwnProperty(p)) {
-            return styles[p];
+            oldV = styles[p];
+        } else if (el.style && el.style.hasOwnProperty(p)) {
+            oldV = el.style[p];
         }
-        if (el.style && el.style.hasOwnProperty(p)) {
-            return el.style[p];
+
+        if (arguments.length >= 2) {
+            if (v === "" || v === null || v === undefined) {
+                el.style.removeProperty(p);
+            } else {
+                el.style.setProperty(p, v);
+            }
         }
+
         return undefined;
     },
 
@@ -1520,7 +1543,8 @@ goradd.g.prototype = {
      *
      * @param {string} eventNames  One or more event names separated by spaces
      * @param {string} [selector] An optional css selector to filter bubbled events. This is here because jQuery does it this way too.
-     * @param {function} handler
+     * @param {function|Array} handler The function to execute. If handler is an array, the first item
+     *      will become the "this" of the function.
      * @param {object} [options] Optional additional options as follows:
      *      selector: {string} Same as selector above, just specified in options
      *      bubbles: {boolean} When used with a selector, determines if selector filters parent elements (true), or just
@@ -1549,13 +1573,14 @@ goradd.g.prototype = {
             handler = selector;
             selector = undefined;
         }
-        if (typeof handler !== "function") {
-            goradd.log("on must have a handler that is a function");
+        if (typeof handler !== "function" && !(Array.isArray(handler) && handler.length == 2)) {
+            goradd.log("on must have a handler that is a function or a 2 item array");
             return;
         }
 
         var capture = false;
         var target = self;
+        var el = this.element;
         if (!!options) {
             if (typeof options !== "object") {
                 goradd.log("options must be an object if it is defined");
@@ -1567,11 +1592,13 @@ goradd.g.prototype = {
             if (!!options.selector) {
                 selector = options.selector;
             }
-            if (!!options.handlerTarget) {
-                target = options.handlerTarget;
-            }
         }
-        var el = this.element;
+
+        if (Array.isArray(handler)) {
+            target = handler[0];
+            handler = handler[1];
+        }
+
         var events = eventNames.split(" ");
         goradd.each(events, function(i,eventName) {
             el.addEventListener(eventName, function (event) {
@@ -1632,6 +1659,7 @@ goradd.g.prototype = {
             }, capture);
         });
     },
+    // click will send a click event to the object
     click: function(postFunc) {
         var event;
         // Include extra information as part of the click.
@@ -1852,7 +1880,26 @@ goradd.g.prototype = {
             this.element.innerHTML = t;
         }
     },
-
+    /**
+     * hide will hide the given element using display:none, and also remember the previous
+     * display value. Restore the state using show.
+     */
+    hide: function() {
+        if (!this.element.goradd.hidden) { // do not hide twice
+            var d = this.css("display");
+            if (!!d) {
+                this.element.goradd.hidden = d;
+            }
+            this.css("display", "none");
+        }
+    },
+    show: function() {
+        if (!!this.element.goradd.hidden) {
+            this.css("display", this.element.goradd.hidden);
+        } else {
+            this.css("display", null);
+        }
+    },
     /**
      * f calls the named function, with the given parameters, on the goradd widget.
      * @param name
@@ -1865,20 +1912,76 @@ goradd.g.prototype = {
         }
     },
     /**
-     * clientWidth returns the bounding width of the client area, which includes content, padding, border, but not margin.
+     * width returns the width of the object. The box model defines different boundaries for an
+     * object, and in the boundary parameter, you can specify one of content, padding, border or margin
+     * to use those various boundaries to measure the width of the object. Note that this is the real
+     * width of the object as drawn.
+     * @param boundary [string]
      * @returns {number}
      */
-    clientWidth: function() {
-        return this.element.clientWidth;
+    width: function(boundary) {
+        var w = this.element.clientWidth; // starting value includes padding but nothing else
+        var styles;
+        switch(boundary) {
+            case undefined:
+            case null:
+            case "":
+            case "content":
+                styles = window.getComputedStyle(this.element);
+                w -= parseFloat(styles.getPropertyValue('padding-left')) + parseFloat(styles.getPropertyValue('padding-right'));
+                break;
+            case "padding":
+                break; // clientHeight includes the border
+            case "border":
+                w = this.element.offsetWidth;
+                break;
+            case "margin":
+                styles = window.getComputedStyle(this.element);
+                w = this.element.offsetHeight + parseFloat(styles.getPropertyValue('margin-left')) + parseFloat(styles.getPropertyValue('margin-right'));
+                break;
+        }
+        return w;
     },
     /**
-     * clientHeight returns the bounding height of the client area, which includes content, padding, border, but not margin.
+     * height returns the height of the object. The box model defines different boundaries for an
+     * object, and in the boundary parameter, you can specify one of content, padding, border or margin
+     * to use those various boundaries to measure the height of the object. Note that this is the real
+     * height of the object as drawn.
+     * @param boundary [string]
      * @returns {number}
      */
-    clientHeight: function() {
-        return this.element.clientHeight;
+    height: function(boundary) {
+        var h = this.element.clientHeight; // starting value includes padding but nothing else
+        var styles;
+        switch(boundary) {
+            case undefined:
+            case null:
+            case "":
+            case "content":
+                styles = window.getComputedStyle(this.element);
+                 h -= parseFloat(styles.getPropertyValue('padding-top')) + parseFloat(styles.getPropertyValue('padding-bottom'));
+                break;
+            case "padding":
+                break; // clientHeight includes the border
+            case "border":
+                h = this.element.offsetHeight;
+                break;
+            case "margin":
+                styles = window.getComputedStyle(this.element);
+                h = this.element.offsetHeight + parseFloat(styles.getPropertyValue('margin-top')) + parseFloat(styles.getPropertyValue('margin-bottom'));
+                break;
+        }
+        return h;
     },
-
+    /**
+     * attachWidget will attach the given widget to the control. After this, calling g$ on the
+     * control will return the widget, which you can directly call your widget functions on.
+     */
+    attachWidget: function(name, options) {
+        if (goradd.widget.new && !!name) {
+            this.element.goradd.widget = goradd.widget.new(name, options, this.element);
+        }
+    }
 };
 
 /**
@@ -1886,7 +1989,7 @@ goradd.g.prototype = {
  * and Opera Mini.
  *
  * It takes the given prototype, makes it an extension of the base object, and then puts it at the given named
- * spot under the window object. The name can be separated with dots to work down the hierarchy. Start the name
+ * spot under goradd.prototypes. The name can be separated with dots to work down the hierarchy. Start the name
  * with "goradd." to add it to the goradd hierarchy.
  *
  * Note that this name means two things. First, that the prototype will be placed at that location off the goradd global
@@ -1900,29 +2003,21 @@ goradd.g.prototype = {
  *                  simply declared and initialized in the "_create" function.
  */
 goradd.widget = function(name, base, prototype) {
-    // Use goradd.Widget if there is no base
+    if (!goradd.prototypes) {
+        goradd.prototypes = {};
+    }
+
+    // Use goradd.Widget if there is no base. The first time through
+    // goradd.Widget will be initialized WITH a prototype, so this will be skipped.
     if ( !prototype ) {
         prototype = base;
-        base = goradd.Widget;
+        base = goradd.prototypes.goradd.Widget;
     }
 
     // make sure we put the prototype on the goradd global object, and the instance on the goradd item attached to the html object.
     var names = name.split( "." );
-    if (names[0] !== "goradd") {
-        names.unshift("goradd");
-    }
 
-    if (names.length === 1) {
-        goradd.log("You cannot create a widget at 'goradd'");
-        return;
-    }
-
-    if (names[0] === "goradd" && names[1] === "data") {
-        goradd.log("goradd.data is a reserved location");
-        return;
-    }
-
-    var obj = window;
+    var obj = goradd.prototypes;
     var ctx = null;
 
     for (var i = 0; i < names.length - 1; i++) {
@@ -2006,7 +2101,7 @@ goradd.widget = function(name, base, prototype) {
 goradd.widget.new = function(constructor, options, element) {
     if (typeof constructor === "string") {
         var names = constructor.split( "." );
-        var obj = window;
+        var obj = goradd.prototypes;
         var ctx = null;
         goradd.each (names, function (i, v) {
             ctx = obj;

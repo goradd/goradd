@@ -37,8 +37,8 @@ func (c *Fieldset) this() FieldsetI {
 }
 
 // ΩDrawingAttributes is called by the framework.
-func (c *Fieldset) ΩDrawingAttributes() html.Attributes {
-	a := c.Control.ΩDrawingAttributes()
+func (c *Fieldset) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "fieldset")
 	return a
 }
@@ -47,7 +47,7 @@ func (c *Fieldset) ΩDrawingAttributes() html.Attributes {
 func (c *Fieldset) ΩDrawTag(ctx context.Context) string {
 	var ctrl string
 
-	attributes := c.this().ΩDrawingAttributes()
+	attributes := c.this().ΩDrawingAttributes(ctx)
 
 	buf := buf2.GetBuffer()
 	defer buf2.PutBuffer(buf)

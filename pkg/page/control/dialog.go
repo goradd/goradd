@@ -152,8 +152,8 @@ func (d *Dialog) Title() string {
 }
 
 // ΩDrawingAttributes is called by the framework to set temporary attributes just before drawing.
-func (d *Dialog) ΩDrawingAttributes() html.Attributes {
-	a := d.Panel.ΩDrawingAttributes()
+func (d *Dialog) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := d.Panel.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "dialog")
 	return a
 }

@@ -63,3 +63,10 @@ func TestIndent(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestKebabToCamel(t *testing.T) {
+	if KebabToCamel("ab-cd-ef") != "AbCdEf" {
+		t.Fail()
+	}
+}
+

@@ -97,8 +97,8 @@ func (c *FormFieldWrapper) Instructions() string {
 	return c.instructions
 }
 
-func (c *FormFieldWrapper) ΩDrawingAttributes() html.Attributes {
-	a := c.Control.ΩDrawingAttributes()
+func (c *FormFieldWrapper) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "formField")
 	return a
 }
@@ -106,7 +106,7 @@ func (c *FormFieldWrapper) ΩDrawingAttributes() html.Attributes {
 func (c *FormFieldWrapper) ΩDrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
-	attributes := c.this().ΩDrawingAttributes()
+	attributes := c.this().ΩDrawingAttributes(ctx)
 	var child page.ControlI
 	var errorMessage string
 
@@ -192,13 +192,22 @@ func (c *FormFieldWrapper) SetInstructionAttributes(a html.Attributes) FormField
 }
 
 func (c *FormFieldWrapper) Validate(ctx context.Context) bool {
+	c.checkChildValidation()
+	return true
+}
+
+func (c *FormFieldWrapper) ChildValidationChanged() {
+	c.checkChildValidation()
+	c.Control.ChildValidationChanged()
+}
+
+func (c *FormFieldWrapper) checkChildValidation() {
 	child := c.Page().GetControl(c.forID)
 	m := child.ValidationMessage()
 	if m != c.savedMessage {
 		c.savedMessage = m // store the message to see if it changes between validations
 		c.Refresh()
 	}
-	return true
 }
 
 func (c *FormFieldWrapper) Serialize(e page.Encoder) (err error) {

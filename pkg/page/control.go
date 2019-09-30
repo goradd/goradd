@@ -139,7 +139,7 @@ type ControlI interface {
 	SetAttribute(name string, val interface{}) ControlI
 	Attribute(string) string
 	HasAttribute(string) bool
-	ΩDrawingAttributes() html.Attributes
+	ΩDrawingAttributes(context.Context) html.Attributes
 	AddClass(class string) ControlI
 	RemoveClass(class string) ControlI
 	SetStyles(html.Style)
@@ -180,6 +180,7 @@ type ControlI interface {
 	ValidationState() ValidationState
 	ValidationType(*Event) ValidationType
 	SetValidationType(typ ValidationType) ControlI
+	ChildValidationChanged()
 
 	// SaveState tells the control whether to save the basic state of the control, so that when the form is reentered, the
 	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
@@ -509,7 +510,7 @@ func (c *Control) ΩDrawTag(ctx context.Context) string {
 
 	log.FrameworkDebug("Drawing control: " + c.ID())
 
-	attributes := c.this().ΩDrawingAttributes()
+	attributes := c.this().ΩDrawingAttributes(ctx)
 
 	if c.IsVoidTag {
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
@@ -645,7 +646,7 @@ func (c *Control) HasAttribute(name string) bool {
 // return a set of attributes that should override those set by the user. This allows controls to set attributes
 // that should take precedence over other attributes, and that are critical to drawing the
 // tag of the control. This function is designed to only be called by Control implementations.
-func (c *Control) ΩDrawingAttributes() html.Attributes {
+func (c *Control) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	a := html.NewAttributesFrom(c.attributes)
 	a.SetID(c.id)                   // make sure the control id is set at a minimum
 	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
@@ -686,8 +687,10 @@ func (c *Control) MergeAttributes(a html.Attributes) ControlI {
 // a space.
 func (c *Control) AddClass(class string) ControlI {
 	if changed := c.attributes.AddClassChanged(class); changed {
-		v2 := c.attributes.Class()
-		c.AddRenderScript("attr", "class", v2)
+		// Note here. We cannot just draw the class, because DrawingAttributes might return
+		// a class, and DrawingAttributes requires a context. So we coordinate with goradd.js
+		// to be able to add and remove a class.
+		c.AddRenderScript("class", "+" + class)
 	}
 	return c.this()
 }
@@ -695,8 +698,7 @@ func (c *Control) AddClass(class string) ControlI {
 // RemoveClass will remove the named class from the control.
 func (c *Control) RemoveClass(class string) ControlI {
 	if changed := c.attributes.RemoveClass(class); changed {
-		v2 := c.attributes.Class()
-		c.AddRenderScript("attr", "class", v2)
+		c.AddRenderScript("class", "-" + class)
 	}
 	return c.this()
 }
@@ -901,6 +903,17 @@ func (c *Control) SetValidationError(e string) {
 			c.validationState = ValidationInvalid
 			c.AddRenderScript("attr", "aria-invalid", "true")
 		}
+		if c.Parent() != nil {
+			c.Parent().ChildValidationChanged() // notify parent wrappers
+		}
+	}
+}
+
+// ChildValidationChanged is sent by the framework when a child control's validation message
+// has changed. Parent controls can use this to change messages or attributes in response.
+func (c *Control) ChildValidationChanged() {
+	if c.Parent() != nil {
+		c.Parent().ChildValidationChanged()
 	}
 }
 
@@ -1600,13 +1613,13 @@ func (c *Control) SetDataConnector(d DataConnector) ControlI {
 
 func (c *Control) RefreshData(data interface{}) {
 	if c.dataConnector != nil {
-		c.dataConnector.Refresh(c, data)
+		c.dataConnector.Refresh(c.this(), data)
 	}
 }
 
 func (c *Control) UpdateData(data interface{}) {
 	if c.dataConnector != nil {
-		c.dataConnector.Update(c, data)
+		c.dataConnector.Update(c.this(), data)
 	}
 }
 

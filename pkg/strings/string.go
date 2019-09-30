@@ -49,3 +49,18 @@ func Title(s string) string {
 	}
 	return newString
 }
+
+func KebabToCamel(s string) string {
+	var r string
+
+	for _, w := range strings.Split(s, "-") {
+		if w == "" {
+			continue
+		}
+
+		u := strings.Title(w)
+		r += u
+	}
+
+	return r
+}

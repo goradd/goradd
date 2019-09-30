@@ -5,7 +5,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     p.AddControls(ctx,
 {{for _,col := range t.Columns }}
 {{if col.Generator != nil && !col.IsPk}}
-        p.this().{{= col.GoName }}Creator(),
+        p.this().{{= col.ControlName }}Creator(),
 {{if}}
 {{for}}
     )
@@ -23,7 +23,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     p.AddControls(ctx,
 {{for _,col := range t.Columns }}
 {{if col.Generator != nil && !col.IsPk}}
-        p.{{= col.GoName }}Creator(),
+        p.{{= col.ControlName }}Creator(),
 {{if}}
 {{for}}
     )
@@ -41,12 +41,18 @@ for _,col := range t.Columns {
             creatorString = generator.WrapFormField(col.DefaultLabel, col.ControlID, creatorString)
 
 {{
-func (p *{{= panelName }}) {{= col.GoName }}Creator() {{= generator.DefaultFormFieldCreator }} {
+func (p *{{= panelName }}) {{= col.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }} {
 	return {{= creatorString }}
 }
+
+func (p *{{= panelName }}) Get{{= col.ControlName }}() *{{= col.Import.Alias }}.{{= col.ControlType }} {
+	return p.Page().GetControl({{= col.ControlIDConst() }}).(*{{= col.Import.Alias }}.{{= col.ControlType }})
+}
+
 }}
         }
     }
 }
 
 }}
+

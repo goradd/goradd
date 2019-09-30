@@ -68,8 +68,8 @@ func (r *Repeater) ΩDrawTag(ctx context.Context) string {
 // ΩDrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
 // is no data to show. This will hide header and footer cells and potentially the outline of the table when there is no
 // data in the table.
-func (r *Repeater) ΩDrawingAttributes() html.Attributes {
-	a := r.Control.ΩDrawingAttributes()
+func (r *Repeater) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+	a := r.Control.ΩDrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "repeater")
 	return a
 }
