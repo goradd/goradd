@@ -8,7 +8,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
 )
 
@@ -115,12 +114,30 @@ func (t *SelectTable) ΩMarshalState(m maps.Setter) {
 
 func (t *SelectTable) ΩUnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("selId"); ok {
-		if id, ok := v.(string); ok {
+		if id, ok2 := v.(string); ok2 {
 			t.selectedID = id
 		}
 	}
 }
 
+func (t *SelectTable) Serialize(e page.Encoder) (err error) {
+	if err = t.Table.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(t.selectedID); err != nil {
+		return
+	}
+	return
+}
+func (t *SelectTable) Deserialize(dec page.Decoder) (err error) {
+	if err = t.Table.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&t.selectedID); err != nil {
+		return
+	}
+	return
+}
 
 // SelectTableCreator is the initialization structure for declarative creation of tables
 type SelectTableCreator struct {
@@ -152,7 +169,7 @@ type SelectTableCreator struct {
 	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// Data is the actual data for the table, and should be a slice of objects

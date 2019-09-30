@@ -9,7 +9,6 @@ import (
 	"github.com/goradd/goradd/pkg/math"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
 	"strconv"
 )
@@ -20,7 +19,7 @@ const (
 
 // PagedControlI is the interface that paged controls must implement
 type PagedControlI interface {
-	data.DataManagerI
+	DataManagerI
 	SetTotalItems(uint)
 	TotalItems() int
 	SetPageSize(size int)

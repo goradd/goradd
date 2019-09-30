@@ -3,13 +3,13 @@ package control
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/pool"
 	html2 "html"
@@ -26,7 +26,7 @@ const (
 type TableI interface {
 	page.ControlI
 	TableEmbedder
-	data.DataManagerEmbedder
+	DataManagerEmbedder
 }
 
 // TableEmbedder is a workaround for a problem in GO interfaces. See https://github.com/golang/go/issues/6977
@@ -97,7 +97,7 @@ type TableFooterRowAttributer interface {
 // after drawing.
 type Table struct {
 	page.Control
-	data.DataManager
+	DataManager
 
 	columns               []ColumnI
 	renderColumnTags      bool
@@ -115,6 +115,12 @@ type Table struct {
 	// Sort info. Sorting is difficult enough, and intertwined with tables enough, that we just make it built in to every column
 	sortColumns      []string // keeps a historical list of columns sorted on
 	sortHistoryLimit int      // how far back to go
+
+	// serialization helpers
+	captionId string
+	rowStylerId string
+	headerRowStylerId string
+	footerRowStylerId string
 }
 
 // NewTable creates a new table
@@ -632,6 +638,131 @@ func (t *Table) ΩUnmarshalState(m maps.Loader) {
 	}
 }
 
+type tableEncoded struct {
+	Columns               []ColumnI
+	RenderColumnTags      bool
+	Caption               interface{}
+	CaptionID			  string
+	HideIfEmpty           bool
+	HeaderRowCount        int
+	FooterRowCount        int
+	CurrentHeaderRowIndex int //??
+	CurrentRowIndex       int //??
+	RowStyler             interface{}
+	HeaderRowStyler       interface{}
+	FooterRowStyler       interface{}
+	ColumnIdCounter       int
+	SortColumns      []string // keeps a historical list of columns sorted on
+	SortHistoryLimit int
+}
+
+func (t *Table) Serialize(e page.Encoder) (err error) {
+	if err = t.Control.Serialize(e); err != nil {
+		return
+	}
+	if err = t.DataManager.Serialize(e); err != nil {
+		return
+	}
+
+	s := tableEncoded{
+		Columns:               t.columns,
+		RenderColumnTags:      t.renderColumnTags,
+		HideIfEmpty:           t.hideIfEmpty,
+		HeaderRowCount:        t.headerRowCount,
+		FooterRowCount:        t.footerRowCount,
+		ColumnIdCounter:       t.columnIdCounter,
+		SortColumns:           t.sortColumns,
+		SortHistoryLimit:      t.sortHistoryLimit,
+		RowStyler:             t.rowStyler,
+		HeaderRowStyler:       t.headerRowStyler,
+		FooterRowStyler:       t.footerRowStyler,
+	}
+
+	// THe caption can be a string, so we can't do the trick we do with objects below
+	if ctrl,ok := t.caption.(page.ControlI); ok {
+		s.CaptionID = ctrl.ID()
+	} else {
+		s.Caption = t.caption
+	}
+
+	if ctrl,ok := t.rowStyler.(page.ControlI); ok {
+		s.RowStyler = ctrl.ID()
+	}
+	if ctrl,ok := t.headerRowStyler.(page.ControlI); ok {
+		s.HeaderRowStyler = ctrl.ID()
+	}
+	if ctrl,ok := t.footerRowStyler.(page.ControlI); ok {
+		s.FooterRowStyler = ctrl.ID()
+	}
+
+	if err = e.Encode(s); err != nil {
+		return err
+	}
+
+	return
+}
+
+
+func (t *Table) Deserialize(dec page.Decoder) (err error) {
+	if err = t.Control.Deserialize(dec); err != nil {
+		return
+	}
+	if err = t.DataManager.Deserialize(dec); err != nil {
+		return
+	}
+
+	var s tableEncoded
+
+	if err = dec.Decode(&s); err != nil {
+		return
+	}
+
+	t.columns = s.Columns
+	t.renderColumnTags = s.RenderColumnTags
+	t.hideIfEmpty = s.HideIfEmpty
+	t.headerRowCount = s.HeaderRowCount
+	t.footerRowCount = s.FooterRowCount
+	t.columnIdCounter = s.ColumnIdCounter
+	t.sortColumns = s.SortColumns
+	t.sortHistoryLimit = s.SortHistoryLimit
+
+	if s.CaptionID != "" {
+		t.captionId = s.CaptionID
+	}
+
+	if v,ok := s.RowStyler.(string); ok {
+		t.rowStylerId = v
+	}
+	if v,ok := s.HeaderRowStyler.(string); ok {
+		t.headerRowStylerId = v
+	}
+	if v,ok := s.FooterRowStyler.(string); ok {
+		t.footerRowStylerId = v
+	}
+	return
+}
+
+func (t *Table) Restore() {
+	t.Control.Restore()
+	if t.captionId != "" {
+		t.caption = t.Page().GetControl(t.captionId)
+	}
+	if t.rowStylerId != "" {
+		t.rowStyler = t.Page().GetControl(t.rowStylerId).(TableRowAttributer)
+	}
+	if t.headerRowStylerId != "" {
+		t.headerRowStyler = t.Page().GetControl(t.headerRowStylerId).(TableHeaderRowAttributer)
+	}
+	if t.footerRowStylerId != "" {
+		t.footerRowStyler = t.Page().GetControl(t.footerRowStylerId).(TableFooterRowAttributer)
+	}
+
+	for _,col := range t.columns {
+		col.Restore(t.this())
+	}
+
+	return
+}
 
 // TableCreator is the initialization structure for declarative creation of tables
 type TableCreator struct {
@@ -662,7 +793,7 @@ type TableCreator struct {
 	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// Data is the actual data for the table, and should be a slice of objects
@@ -685,8 +816,8 @@ func (c TableCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 	return ctrl
 }
 
-// Init is called by implementations of Buttons to initialize a control with the
-// creator. You do not normally need to call this.
+// Init is called by implementations of Tables to initialize a base control.
+// You do not normally need to call this.
 func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	ctrl.SetRenderColumnTags(c.HasColTags)
 	ctrl.SetHideIfEmpty(c.HideIfEmpty)
@@ -725,7 +856,7 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 
@@ -750,7 +881,11 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	ctrl.ApplyOptions(c.ControlOptions)
 }
 
-// GetTable is a convenience method to return the button with the given id from the page.
+// GetTable is a convenience method to return the table with the given id from the page.
 func GetTable(c page.ControlI, id string) *Table {
 	return c.Page().GetControl(id).(*Table)
+}
+
+func init() {
+	gob.Register(Table{})
 }

@@ -3,13 +3,16 @@ package control
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
+	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
 	"strconv"
+	"time"
 )
 
 type SortDirection int
@@ -44,6 +47,7 @@ type ColumnI interface {
 	DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer)
 	DrawCell(ctx context.Context, row int, col int, data interface{}, buf *bytes.Buffer)
 	CellText(ctx context.Context, row int, col int, data interface{}) string
+	CellData(ctx context.Context, row int, col int, data interface{}) interface{}
 	HeaderCellHtml(ctx context.Context, row int, col int) string
 	FooterCellHtml(ctx context.Context, row int, col int) string
 	HeaderAttributes(ctx context.Context, row int, col int) html.Attributes
@@ -64,6 +68,9 @@ type ColumnI interface {
 	PreRender()
 	MarshalState(m maps.Setter)
 	UnmarshalState(m maps.Loader)
+	Serialize(e page.Encoder) (err error)
+	Deserialize(dec page.Decoder) (err error)
+	Restore(parentTable TableI)
 }
 
 // CellTexter defines the interface for a structure that provides the content of a table cell.
@@ -82,6 +89,7 @@ type ColumnBase struct {
 	base.Base
 	id               string
 	parentTable      TableI
+	parentTableID    string // for deserializing
 	title            string
 	html.Attributes // These are static attributes that will appear on each cell
 	headerAttributes []html.Attributes // static attributes per header row
@@ -91,11 +99,21 @@ type ColumnBase struct {
 	asHeader         bool
 	isHtml           bool
 	cellTexter     CellTexter
+	cellTexterID   string // for deserialization
 	headerTexter   CellTexter
+	headerTexterID string  // for deserialization
 	footerTexter   CellTexter
+	footerTexterID string  // for deserialization
 	cellStyler     CellStyler // for dynamically styling cells
+	cellStylerID  string  // for deserialization
 	isHidden         bool
 	sortDirection    SortDirection
+	// Format is a format string. It will be applied using fmt.Sprintf. If you don't provide a Format string, standard
+	// string conversion operations will be used.
+	format string
+	// TimeFormat is applied to the data using time.Format. You can have both a Format and TimeFormat, and the Format
+	// will be applied using fmt.Sprintf after the TimeFormat is applied using time.Format.
+	timeFormat string
 }
 
 func (c *ColumnBase) Init(self ColumnI) {
@@ -158,6 +176,16 @@ func (c *ColumnBase) SetAsHeader(r bool) {
 
 func (c *ColumnBase) AsHeader() bool {
 	return c.asHeader
+}
+
+func (c *ColumnBase) SetFormat(format string) ColumnI {
+	c.format = format
+	return c.this()
+}
+
+func (c *ColumnBase) SetTimeFormat(timeFormat string) ColumnI {
+	c.timeFormat = timeFormat
+	return c.this()
 }
 
 // SetIsHtml will cause the cell to treat the text it receives as html rather than raw text it should escape.
@@ -325,8 +353,14 @@ func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interf
 	if c.cellTexter != nil {
 		return c.cellTexter.CellText(ctx, c.this(), row, col, data)
 	}
+	d := c.this().CellData(ctx, row, col, data)
+	return c.ApplyFormat(d)
+}
+
+func (c *ColumnBase) CellData(ctx context.Context, row int, col int, data interface{}) interface{} {
 	return ""
 }
+
 
 // CellAttributes returns the attributes of the cell. Column implementations should call this base version first before
 // customizing more. It will use the CellStyler if one was provided.
@@ -337,7 +371,7 @@ func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data 
 	return nil
 }
 
-// MakeSortable indicates that the column should be drawn with sort indicators.
+// SetSortable indicates that the column should be drawn with sort indicators.
 func (c *ColumnBase) SetSortable() ColumnI {
 	c.sortDirection = NotSorted
 	return c.this()
@@ -395,6 +429,137 @@ func (c *ColumnBase) MarshalState(m maps.Setter) {}
 // UnmarshalState is an internal function to restore the state of the control.
 func (c *ColumnBase) UnmarshalState(m maps.Loader) {}
 
+func (c *ColumnBase) GobEncode() ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := c.this().Serialize(enc)
+	return buf.Bytes(), err
+}
+
+func (c *ColumnBase) GobDecode(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	err := c.this().Deserialize(dec)
+	return err
+}
+
+type columnBaseEncoded struct {
+	ID string
+	Title string
+	Attributes html.Attributes
+	HeaderAttributes []html.Attributes
+	FooterAttributes []html.Attributes
+	ColTagAttributes html.Attributes
+	Span int
+	AsHeader bool
+	IsHtml bool
+	IsHidden bool
+	SortDirection SortDirection
+	CellTexter interface{}
+	HeaderTexter interface{}
+	FooterTexter interface{}
+	CellStyler interface{}
+}
+
+func (c *ColumnBase) Serialize(e page.Encoder) (err error) {
+	s := columnBaseEncoded{
+		ID:               c.id,
+		Title:            c.title,
+		Attributes:       c.Attributes,
+		HeaderAttributes: c.headerAttributes,
+		FooterAttributes: c.footerAttributes,
+		ColTagAttributes: c.colTagAttributes,
+		Span:             c.span,
+		AsHeader:         c.asHeader,
+		IsHtml:           c.isHtml,
+		IsHidden:         c.isHidden,
+		SortDirection:    c.sortDirection,
+		CellTexter:       c.cellTexter,
+		HeaderTexter:     c.headerTexter,
+		FooterTexter:     c.footerTexter,
+		CellStyler:       c.cellStyler,
+	}
+
+	if ctrl,ok := c.cellTexter.(page.ControlI); ok {
+		s.CellTexter = ctrl.ID()
+	}
+	if ctrl,ok := c.headerTexter.(page.ControlI); ok {
+		s.HeaderTexter = ctrl.ID()
+	}
+	if ctrl,ok := c.footerTexter.(page.ControlI); ok {
+		s.FooterTexter = ctrl.ID()
+	}
+	if ctrl,ok := c.cellStyler.(page.ControlI); ok {
+		s.CellStyler = ctrl.ID()
+	}
+
+	if err = e.Encode(s); err != nil {
+		return err
+	}
+
+	return
+}
+
+func (c *ColumnBase) Deserialize(dec page.Decoder) (err error) {
+	var s columnBaseEncoded
+	if err = dec.Decode(&s); err != nil {
+		return
+	}
+
+	c.id = s.ID
+	c.title = s.Title
+	c.Attributes = s.Attributes
+	c.headerAttributes = s.HeaderAttributes
+	c.footerAttributes = s.FooterAttributes
+	c.colTagAttributes = s.ColTagAttributes
+	c.span = s.Span
+	c.asHeader = s.AsHeader
+	c.isHtml = s.IsHtml
+	c.isHidden = s.IsHidden
+	c.sortDirection = s.SortDirection
+
+	if v,ok := s.CellTexter.(string); ok {
+		c.cellTexterID = v
+	} else {
+		c.cellTexter = s.CellTexter.(CellTexter)
+	}
+	if v,ok := s.HeaderTexter.(string); ok {
+		c.headerTexterID = v
+	} else {
+		c.headerTexter = s.HeaderTexter.(CellTexter)
+	}
+	if v,ok := s.FooterTexter.(string); ok {
+		c.footerTexterID = v
+	} else {
+		c.footerTexter = s.FooterTexter.(CellTexter)
+	}
+	if v,ok := s.CellStyler.(string); ok {
+		c.cellStylerID = v
+	} else {
+		c.cellStyler = s.CellStyler.(CellStyler)
+	}
+
+	return
+}
+
+func (c *ColumnBase) Restore(parentTable TableI) {
+	c.parentTable = parentTable
+	if c.cellTexterID != "" {
+		c.cellTexter = parentTable.Page().GetControl(c.cellTexterID).(CellTexter)
+	}
+	if c.headerTexterID != "" {
+		c.headerTexter = parentTable.Page().GetControl(c.headerTexterID).(CellTexter)
+	}
+	if c.footerTexterID != "" {
+		c.footerTexter = parentTable.Page().GetControl(c.footerTexterID).(CellTexter)
+	}
+	if c.cellStylerID != "" {
+		c.cellStyler = parentTable.Page().GetControl(c.cellStylerID).(CellStyler)
+	}
+
+	return
+}
+
 type ColumnCreator interface {
 	Create(context.Context, TableI) ColumnI
 }
@@ -432,6 +597,10 @@ type ColumnOptions struct {
 	FooterTexter   	 interface{}
 	// IsHidden will start the column out in a hidden state so that it will not initially be drawn
 	IsHidden         bool
+	// Format is a format string applied to the data using fmt.Sprintf
+	Format string
+	// TimeFormat is a format string applied specifically to time data using time.Format
+	TimeFormat string
 }
 
 func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt ColumnOptions) {
@@ -478,4 +647,64 @@ func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt Column
 			c.SetFooterTexter(opt.FooterTexter.(CellTexter))
 		}
 	}
+	if opt.Format != "" {
+		c.SetFormat(opt.Format)
+	}
+	if opt.TimeFormat != "" {
+		c.SetTimeFormat(opt.TimeFormat)
+	}
+}
+
+// ApplyFormat is used by table columns to apply the given fmt.Sprintf and time.Format strings to the data.
+// It is exported to allow custom cell texters to use it.
+func (c *ColumnBase) ApplyFormat(data interface{}) string {
+	var out string
+
+	switch d := data.(type) {
+	case int:
+		if c.format == "" {
+			out = fmt.Sprintf("%d", d)
+		} else {
+			out = fmt.Sprintf(c.format, d)
+		}
+	case float64:
+		if c.format == "" {
+			out = fmt.Sprintf("%f", d)
+		} else {
+			out = fmt.Sprintf(c.format, d)
+		}
+	case float32:
+		if c.format == "" {
+			out = fmt.Sprintf("%f", d)
+		} else {
+			out = fmt.Sprintf(c.format, d)
+		}
+
+	case time.Time:
+		if c.timeFormat == "" {
+			panic("Time format is required for time types")
+		}
+		out = d.Format(c.timeFormat)
+
+		if c.format != "" {
+			out = fmt.Sprintf(c.format)
+		}
+
+	case datetime.DateTime:
+		if c.timeFormat == "" {
+			panic("Time format is required for time types")
+		}
+		out = d.Format(c.timeFormat)
+
+		if c.format != "" {
+			out = fmt.Sprintf(c.format)
+		}
+	default:
+		if c.format == "" {
+			out = fmt.Sprint(d)
+		} else {
+			out = fmt.Sprintf(c.format, d)
+		}
+	}
+	return out
 }

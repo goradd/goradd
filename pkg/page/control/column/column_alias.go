@@ -2,7 +2,9 @@ package column
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )
 
@@ -28,55 +30,44 @@ func NewAliasColumn(alias string) *AliasColumn {
 
 func (c *AliasColumn) Init(alias string) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(&AliasTexter{Alias: alias})
 	c.SetTitle(alias)
+	c.alias = alias
 }
 
 func GetNode(c *AliasColumn) query.NodeI {
 	return query.Alias(c.alias)
 }
 
-// SetFormat sets an optional format string for the column. The format string will be passed to fmt.Sprintf
-// to further format the printed data.
-func (c *AliasColumn) SetFormat(format string) *AliasColumn {
-	c.CellTexter().(*AliasTexter).Format = format
-	return c
-}
-
-// SetTimeFormat sets the time format of the string, specifically for a DateTime type.
-func (c *AliasColumn) SetTimeFormat(format string) *AliasColumn {
-	c.CellTexter().(*AliasTexter).TimeFormat = format
-	return c
-}
-
-// AliasTexter gets text out of an ORM object with an alias. If the alias does not exist, it will panic.
-type AliasTexter struct {
-	// Alias is the alias name in the database object that we are interested in.
-	Alias string
-	// Format is a format string. It will be applied using fmt.Sprintf. If you don't provide a Format string, standard
-	// string conversion operations will be used.
-	Format string
-	// TimeFormat is applied to the data using time.Format. You can have both a Format and TimeFormat, and the Format
-	// will be applied using fmt.Sprintf after the TimeFormat is applied using time.Format.
-	TimeFormat string
-}
-
-func (t AliasTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (c *AliasColumn) CellData(ctx context.Context, row int, col int, data interface{}) interface{} {
 	if v, ok := data.(AliasGetter); !ok {
 		return ""
 	} else {
-		a := v.GetAlias(t.Alias)
+		a := v.GetAlias(c.alias)
 		if a.IsNil() {
 			return ""
 		}
-		if t.TimeFormat != "" {
-			// assume we are trying to get a time
-			d := a.DateTime()
-			return ApplyFormat(d, t.Format, t.TimeFormat)
-		}
-		s := v.GetAlias(t.Alias).String()
-		return ApplyFormat(s, t.Format, t.TimeFormat)
+		return a
 	}
+}
+
+func (c *AliasColumn) Serialize(e page.Encoder) (err error) {
+	if err = c.ColumnBase.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(c.alias); err != nil {
+		return
+	}
+	return
+}
+
+func (c *AliasColumn) Deserialize(dec page.Decoder) (err error) {
+	if err = c.ColumnBase.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&c.alias); err != nil {
+		return
+	}
+	return
 }
 
 // AliasColumnCreator creates a column that displays the content of a database alias. Each row must be
@@ -88,10 +79,6 @@ type AliasColumnCreator struct {
 	Alias string
 	// Title is the static title string to use in the header row
 	Title string
-	// Format is a format string applied to the data using fmt.Sprintf
-	Format string
-	// TimeFormat is a format string applied specifically to time data using time.Format
-	TimeFormat string
 	// Sortable makes the column display sort arrows in the header
 	Sortable bool
 	control.ColumnOptions
@@ -103,15 +90,15 @@ func (c AliasColumnCreator) Create(ctx context.Context, parent control.TableI) c
 		col.SetID(c.ID)
 	}
 	col.SetTitle(c.Title)
-	if c.Format != "" {
-		col.SetFormat(c.Format)
-	}
-	if c.TimeFormat != "" {
-		col.SetTimeFormat(c.TimeFormat)
-	}
 	if c.Sortable {
 		col.SetSortable()
 	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
+}
+
+
+
+func init() {
+	gob.Register(AliasColumn{})
 }

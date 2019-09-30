@@ -6,7 +6,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type SelectListI interface {
@@ -40,7 +39,7 @@ type SelectListCreator struct {
 	// used to specify no selection, or a message that a selection is required.
 	NilItem string
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// Size specifies how many items to show, and turns the list into a scrolling list

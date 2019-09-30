@@ -19,7 +19,7 @@ type EmailTextbox struct {
 	Textbox
 	maxItemCount int
 	items        []*mail.Address
-	parseErr     error
+	parseErr     string
 }
 
 // NewEmailTextbox creates a new textbox that validates its input as an email address.
@@ -53,8 +53,8 @@ func (t *EmailTextbox) Validate(ctx context.Context) bool {
 	ret := t.Textbox.Validate(ctx)
 
 	if ret {
-		if t.parseErr != nil {
-			t.SetValidationError(t.ΩT("Not a valid email address"))
+		if t.parseErr != "" {
+			t.SetValidationError(t.ΩT("Not a valid email address: " + t.parseErr))
 			return false
 		} else if len(t.items) > t.maxItemCount {
 			if t.maxItemCount == 1 {
@@ -73,10 +73,12 @@ func (t *EmailTextbox) ΩUpdateFormValues(ctx *page.Context) {
 	t.Textbox.ΩUpdateFormValues(ctx)
 	if t.Text() == "" {
 		t.items = nil
-		t.parseErr = nil
+		t.parseErr = ""
 		return
 	}
-	t.items, t.parseErr = mail.ParseAddressList(t.Text())
+	var parseErr error
+	t.items, parseErr = mail.ParseAddressList(t.Text())
+	t.parseErr = parseErr.Error()
 }
 
 // Addresses returns a slice of the individual addresses entered, stripped of any extra text entered.
@@ -86,6 +88,41 @@ func (t *EmailTextbox) Addresses() (ret []string) {
 	}
 	return ret
 }
+
+func (t *EmailTextbox) Serialize(e page.Encoder) (err error) {
+	if err = t.Textbox.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(t.maxItemCount); err != nil {
+		return
+	}
+	if err = e.Encode(t.items); err != nil {
+		return
+	}
+	if err = e.Encode(t.parseErr); err != nil {
+		return
+	}
+
+	return
+}
+
+func (t *EmailTextbox) Deserialize(dec page.Decoder) (err error) {
+	if err = t.Textbox.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&t.maxItemCount); err != nil {
+		return
+	}
+	if err = dec.Decode(&t.items); err != nil {
+		return
+	}
+	if err = dec.Decode(&t.parseErr); err != nil {
+		return
+	}
+
+	return
+}
+
 
 // Use EmailTextboxCreator to create an email textbox.
 // Pass it to AddControls of a control, or as a Child of

@@ -46,34 +46,34 @@ func NewCheckboxColumn(p CheckboxProvider) *CheckboxColumn {
 	return &i
 }
 
-func (col *CheckboxColumn) Init() {
-	col.ColumnBase.Init(col)
-	col.SetIsHtml(true)
-	col.changes = make(map[string]bool)
+func (c *CheckboxColumn) Init() {
+	c.ColumnBase.Init(c)
+	c.SetIsHtml(true)
+	c.changes = make(map[string]bool)
 }
 
-func (col *CheckboxColumn) this() CheckboxColumnI {
-	return col.Self.(CheckboxColumnI)
+func (c *CheckboxColumn) this() CheckboxColumnI {
+	return c.Self.(CheckboxColumnI)
 }
 
 // SetShowCheckAll will cause the CheckAll checkbox to appear in the header. You must show at least one header
 // row to see the checkboxes too.
-func (col *CheckboxColumn) SetShowCheckAll(s bool) *CheckboxColumn {
-	col.showCheckAll = s
-	return col
+func (c *CheckboxColumn) SetShowCheckAll(s bool) *CheckboxColumn {
+	c.showCheckAll = s
+	return c
 }
 
 // HeaderCellHtml is called by the Table drawing system to draw the HeaderCellHtml.
-func (col *CheckboxColumn) HeaderCellHtml(ctx context.Context, rowNum int, colNum int) (h string) {
-	if col.showCheckAll {
-		a := col.this().CheckboxAttributes(nil)
+func (c *CheckboxColumn) HeaderCellHtml(ctx context.Context, rowNum int, colNum int) (h string) {
+	if c.showCheckAll {
+		a := c.this().CheckboxAttributes(nil)
 		a.Set("type", "checkbox")
 		h += html.RenderVoidTag("input", a)
 	}
-	if col.IsSortable() {
-		h += col.RenderSortButton(col.Title())
-	} else if col.Title() != "" {
-		h += col.Title()
+	if c.IsSortable() {
+		h += c.RenderSortButton(c.Title())
+	} else if c.Title() != "" {
+		h += c.Title()
 	}
 
 	return
@@ -81,8 +81,8 @@ func (col *CheckboxColumn) HeaderCellHtml(ctx context.Context, rowNum int, colNu
 
 // CheckboxAttributes returns the attributes for the input tag that will display the checkbox.
 // If data is nil, it indicates a checkAll box.
-func (col *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes {
-	p := col.checkboxer
+func (c *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes {
+	p := c.checkboxer
 	a := p.Attributes(data)
 	if a == nil {
 		a = html.NewAttributes()
@@ -91,23 +91,23 @@ func (col *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes 
 	var pubid string
 
 	if data == nil {
-		pubid = col.ParentTable().ID() + "_" + col.ID() + "_all"
+		pubid = c.ParentTable().ID() + "_" + c.ID() + "_all"
 		a.Set("id", pubid)
 		a.SetDataAttribute("grAll", "1")
 	} else if id = p.RowID(data); id != "" {
 		// TODO: optionally encrypt the id in case its a database id. Difficult since database ids might themselves be large hashes (aka Google data store)
 		// Perhaps use the checkbox provider to do that?
-		pubid = col.ParentTable().ID() + "_" + col.ID() + "_" + id
+		pubid = c.ParentTable().ID() + "_" + c.ID() + "_" + id
 		a.Set("id", pubid)
 		a.SetDataAttribute("grCheckcol", "1")
-		col.current[id] = p.IsChecked(data)
-		a.Set("name", col.ParentTable().ID()+"_"+col.ID())
+		c.current[id] = p.IsChecked(data)
+		a.Set("name", c.ParentTable().ID()+"_"+c.ID())
 		a.Set("value", id)
 	} else {
 		panic("A checkbox id is required.")
 	}
 
-	if newVal, ok := col.changes[id]; ok { // If we have recorded a change, use this value on refresh.
+	if newVal, ok := c.changes[id]; ok { // If we have recorded a change, use this value on refresh.
 		if newVal {
 			a.Set("checked", "")
 		}
@@ -119,8 +119,8 @@ func (col *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes 
 
 // CellText is called by the Table drawing mechanism to draw the content of a cell, which in this case will be
 // a checkbox.
-func (col *CheckboxColumn) CellText(ctx context.Context, rowNum int, colNum int, data interface{}) string {
-	a := col.this().CheckboxAttributes(data)
+func (c *CheckboxColumn) CellText(ctx context.Context, rowNum int, colNum int, data interface{}) string {
+	a := c.this().CheckboxAttributes(data)
 	a.Set("type", "checkbox")
 	return html.RenderVoidTag("input", a)
 }
@@ -128,56 +128,56 @@ func (col *CheckboxColumn) CellText(ctx context.Context, rowNum int, colNum int,
 // Changes returns a map of ids corresponding to checkboxes that have changed. Both true and false values indicate the
 // current state of that particular checkbox. Note that if a user checks a box, then checks it again, even though it
 // is back to its original value, it will still show up in the changes list.
-func (col *CheckboxColumn) Changes() map[string]bool {
-	return col.changes
+func (c *CheckboxColumn) Changes() map[string]bool {
+	return c.changes
 }
 
 // ResetChanges resets the column so it is ready to accept new data. You might need to call this if you have previously
 // called SaveState. Or, change DataID in the CheckboxProvider to cause the changes to reset.
-func (col *CheckboxColumn) ResetChanges() {
-	col.changes = make(map[string]bool)
+func (c *CheckboxColumn) ResetChanges() {
+	c.changes = make(map[string]bool)
 }
 
 // UpdateFormValues will look for changes to our checkboxes and record those changes.
-func (col *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
+func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 	if ctx.RequestMode() == page.Server {
 		// Using standard form submission rules. Only ON checkboxes get sent to us, so we have to figure out what got turned off
 		recent := make(map[string]bool)
-		if values, ok := ctx.FormValues(col.ParentTable().ID() + "_" + col.ID()); ok {
+		if values, ok := ctx.FormValues(c.ParentTable().ID() + "_" + c.ID()); ok {
 			for _, value := range values {
 				recent[value] = true
 			}
 		}
 		// otherwise its as if nothing was checked, which might happen if everything got turned off
 
-		for k, v := range col.current {
+		for k, v := range c.current {
 			if _, ok := recent[k]; ok {
 				// set to true
 				if !v {
-					col.changes[k] = true
+					c.changes[k] = true
 				} else {
 					// same value as original
-					delete(col.changes, k)
+					delete(c.changes, k)
 				}
 			} else {
 				// set to false
 				if v {
-					col.changes[k] = false
+					c.changes[k] = false
 				} else {
-					delete(col.changes, k)
+					delete(c.changes, k)
 				}
 			}
 		}
 	} else {
 		// We just get notified of the ids of checkboxes that changed since the last time we checked
-		for k, v := range col.current {
-			if v2, ok := ctx.FormValue(col.ParentTable().ID() + "_" + col.ID() + "_" + k); ok {
+		for k, v := range c.current {
+			if v2, ok := ctx.FormValue(c.ParentTable().ID() + "_" + c.ID() + "_" + k); ok {
 				b2 := page.ConvertToBool(v2)
 				if v != b2 {
-					col.changes[k] = b2
+					c.changes[k] = b2
 				} else {
 					// same value as original
-					delete(col.changes, k)
+					delete(c.changes, k)
 				}
 			}
 		}
@@ -185,49 +185,49 @@ func (col *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 }
 
 // AddActions adds actions to the table that the column can respond to.
-func (col *CheckboxColumn) AddActions(t page.ControlI) {
+func (c *CheckboxColumn) AddActions(t page.ControlI) {
 	t.On(event.
 		CheckboxColumnClick().
 		Selector(`input[data-gr-all]`).
 		Private(),
-		action.Ajax(col.ParentTable().ID() + "_" + col.ID(), control.ColumnAction).ActionValue(AllClickAction))
+		action.Ajax(c.ParentTable().ID() + "_" + c.ID(), control.ColumnAction).ActionValue(AllClickAction))
 }
 
 // Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.
-func (col *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
+func (c *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
 	switch params.ActionValueInt() {
 	case AllClickAction:
 		p := new(event.CheckboxColumnActionValues)
 		ok, err := params.EventValue(p)
 		if ok && err == nil {
-			col.allClick(p.Id, p.Checked, p.Row, p.Column)
+			c.allClick(p.Id, p.Checked, p.Row, p.Column)
 		}
 	}
 }
 
 // The check all checkbox has been checked.
-func (col *CheckboxColumn) allClick(id string, checked bool, rowNum int, colNum int) {
-	all := col.checkboxer.All()
+func (c *CheckboxColumn) allClick(id string, checked bool, rowNum int, colNum int) {
+	all := c.checkboxer.All()
 
 	// if we have a checkboxer that will help us check all the objects in the table, use it
 	if all != nil {
 		for k, v := range all {
 			if v == checked {
-				col.changes[k] = checked
+				c.changes[k] = checked
 			} else {
-				delete(col.changes, k)
+				delete(c.changes, k)
 			}
 		}
 		// Fire javascript to check all visible
-		col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
+		c.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]`, `prop`, page.PriorityStandard, `checked`, checked)
 
 	} else {
 		// Fire javascript to check all visible and trigger a change
 		if checked {
-			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `click`, page.PriorityStandard)
+			c.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:not(:checked)`, `click`, page.PriorityStandard)
 
 		} else {
-			col.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `click`, page.PriorityStandard)
+			c.ParentTable().ParentForm().Response().ExecuteSelectorFunction(`input[data-gr-checkcol]:checked`, `click`, page.PriorityStandard)
 		}
 	}
 
@@ -236,30 +236,70 @@ func (col *CheckboxColumn) allClick(id string, checked bool, rowNum int, colNum 
 // PreRender is called by the Table to tell the column that it is about to draw. Here we are resetting the list of
 // currently showing checkboxes so that we can keep track of what is displayed. This is required to keep track of
 // which boxes are checked in the event that Javascript is off.
-func (col *CheckboxColumn) PreRender() {
-	col.current = make(map[string]bool)
+func (c *CheckboxColumn) PreRender() {
+	c.current = make(map[string]bool)
 }
 
 // MarshalState is an internal function to save the state of the control
-func (t *CheckboxColumn) MarshalState(m maps.Setter) {
-	m.Set(t.ID()+"_changes", t.changes)
-	m.Set(t.ID()+"_dataid", t.checkboxer.DataID())
+func (c *CheckboxColumn) MarshalState(m maps.Setter) {
+	m.Set(c.ID()+"_changes", c.changes)
+	m.Set(c.ID()+"_dataid", c.checkboxer.DataID())
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (t *CheckboxColumn) UnmarshalState(m maps.Loader) {
-	if v, ok := m.Load(t.ID() + "_dataid"); ok {
-		if dataid, ok := v.(string); ok {
-			if dataid == t.checkboxer.DataID() { // only restore checkboxes if the data itself has not changed
-				if v, ok := m.Load(t.ID() + "_changes"); ok {
-					if s, ok := v.(map[string]bool); ok {
-						t.changes = s
+func (c *CheckboxColumn) UnmarshalState(m maps.Loader) {
+	if v, ok := m.Load(c.ID() + "_dataid"); ok {
+		if dataid, ok2 := v.(string); ok2 {
+			if dataid == c.checkboxer.DataID() { // only restore checkboxes if the data itself has not changed
+				if v2, ok3 := m.Load(c.ID() + "_changes"); ok3 {
+					if s, ok4 := v2.(map[string]bool); ok4 {
+						c.changes = s
 					}
 				}
 			}
 		}
 	}
 }
+
+func (c *CheckboxColumn) Serialize(e page.Encoder) (err error) {
+	if err = c.ColumnBase.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(c.showCheckAll); err != nil {
+		return
+	}
+	if err = e.Encode(c.checkboxer); err != nil {
+		return
+	}
+	if err = e.Encode(c.current); err != nil {
+		return
+	}
+	if err = e.Encode(c.changes); err != nil {
+		return
+	}
+
+	return
+}
+
+func (c *CheckboxColumn) Deserialize(dec page.Decoder) (err error) {
+	if err = c.ColumnBase.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&c.showCheckAll); err != nil {
+		return
+	}
+	if err = dec.Decode(&c.checkboxer); err != nil {
+		return
+	}
+	if err = dec.Decode(&c.current); err != nil {
+		return
+	}
+	if err = dec.Decode(&c.changes); err != nil {
+		return
+	}
+	return
+}
+
 
 // The CheckboxProvider interface defines a set of functions that you implement to provide for the initial display
 // of a checkbox. You can descend your own CheckboxProvider from the DefaultCheckboxProvider to get the default

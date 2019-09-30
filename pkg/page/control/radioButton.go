@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -80,6 +81,26 @@ func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
 	c.UpdateRadioFormValues(ctx, c.Group())
 }
 
+func (l *RadioButton) Serialize(e page.Encoder) (err error) {
+	if err = l.CheckboxBase.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(l.group); err != nil {
+		return
+	}
+	return
+}
+
+func (l *RadioButton) Deserialize(dec page.Decoder) (err error) {
+	if err = l.CheckboxBase.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.group); err != nil {
+		return
+	}
+	return
+}
+
 type RadioButtonCreator struct {
 	// ID is the id of the control
 	ID string
@@ -125,4 +146,8 @@ func (c RadioButtonCreator) Create(ctx context.Context, parent page.ControlI) pa
 // GetRadioButton is a convenience method to return the radio button with the given id from the page.
 func GetRadioButton(c page.ControlI, id string) *RadioButton {
 	return c.Page().GetControl(id).(*RadioButton)
+}
+
+func init() {
+	gob.Register(RadioButton{})
 }

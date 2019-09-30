@@ -3,9 +3,9 @@ package control
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"strings"
 )
 
@@ -17,8 +17,8 @@ type CheckboxListI interface {
 	SetIsScrolling(s bool) CheckboxListI
 	SetRowClass(c string) CheckboxListI
 
-	ΩRenderItems(items []ListItemI) string
-	ΩRenderItem(item ListItemI) string
+	ΩRenderItems(items []*ListItem) string
+	ΩRenderItem(item *ListItem) string
 }
 
 // CheckboxList is a multi-select control that presents its choices as a list of checkboxes.
@@ -137,7 +137,7 @@ func (l *CheckboxList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (
 	return nil
 }
 
-func (l *CheckboxList) ΩRenderItems(items []ListItemI) string {
+func (l *CheckboxList) ΩRenderItems(items []*ListItem) string {
 	var hItems []string
 	for _,item := range items {
 		hItems = append(hItems, l.this().ΩRenderItem(item))
@@ -154,7 +154,7 @@ func (l *CheckboxList) ΩRenderItems(items []ListItemI) string {
 }
 
 // ΩRenderItem is called by the framework to render a single item in the list.
-func (l *CheckboxList) ΩRenderItem(item ListItemI) (h string) {
+func (l *CheckboxList) ΩRenderItem(item *ListItem) (h string) {
 	_, selected := l.selectedIds[item.ID()]
 	h = renderItemControl(item, "checkbox", l.labelDrawingMode, selected, l.ID())
 	h = renderCell(item, h, l.columnCount > 0)
@@ -181,12 +181,57 @@ func (l *CheckboxList) ΩUpdateFormValues(ctx *page.Context) {
 	}
 }
 
+func (l *CheckboxList) Serialize(e page.Encoder) (err error) {
+	if err = l.MultiselectList.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(l.columnCount); err != nil {
+		return
+	}
+	if err = e.Encode(l.direction); err != nil {
+		return
+	}
+	if err = e.Encode(l.labelDrawingMode); err != nil {
+		return
+	}
+	if err = e.Encode(l.isScrolling); err != nil {
+		return
+	}
+	if err = e.Encode(l.rowClass); err != nil {
+		return
+	}
+	return
+}
+
+func (l *CheckboxList) Deserialize(dec page.Decoder) (err error) {
+	if err = l.MultiselectList.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.columnCount); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.direction); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.labelDrawingMode); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.isScrolling); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.rowClass); err != nil {
+		return
+	}
+
+	return
+}
+
 type CheckboxListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// ColumnCount specifies how many columns to show
@@ -221,7 +266,7 @@ func (c CheckboxListCreator) Init(ctx context.Context, ctrl CheckboxListI) {
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 	if c.ColumnCount != 0 {
@@ -246,4 +291,8 @@ func (c CheckboxListCreator) Init(ctx context.Context, ctrl CheckboxListI) {
 // GetRadioList is a convenience method to return the control with the given id from the page.
 func GetCheckboxList(c page.ControlI, id string) *CheckboxList {
 	return c.Page().GetControl(id).(*CheckboxList)
+}
+
+func init() {
+	gob.Register(CheckboxList{})
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 )
@@ -54,7 +53,7 @@ func NewHListPanel(ctx context.Context, parent page.ControlI) {
 	)
 }
 
-func (p *HListPanel) BindData(ctx context.Context, s data.DataManagerI) {
+func (p *HListPanel) BindData(ctx context.Context, s DataManagerI) {
 	// This is an example of how to populate a hierarchical list using a data binder.
 	// One use of this is to query the database, and then walk the results.
 	ulist := s.(*UnorderedList)

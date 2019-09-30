@@ -7,7 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/web/examples/model"
 	"github.com/goradd/goradd/web/examples/model/node"
 )
@@ -69,7 +68,7 @@ func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
-func (p *TableDbPanel) BindData(ctx context.Context, s data.DataManagerI) {
+func (p *TableDbPanel) BindData(ctx context.Context, s DataManagerI) {
 	t := s.(*PagedTable)
 	t.SetTotalItems(model.QueryPeople(ctx).Count(ctx, false))
 

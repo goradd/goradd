@@ -1,4 +1,4 @@
-package data
+package control
 
 import (
 	"context"
@@ -33,18 +33,18 @@ type DataManagerEmbedder interface {
 
 // DataManager is an object designed to be embedded in a control that will help manage the data binding process.
 type DataManager struct {
-	dataProvider DataBinder
+	dataProviderID string
 
 	// data is a temporary copy of the drawing data that is intended to only be loaded during drawing, and then unloaded after drawing.
 	data         interface{}
 }
 
 func (d *DataManager) SetDataProvider(b DataBinder) {
-	d.dataProvider = b
+	d.dataProviderID = b.ID()
 }
 
 func (d *DataManager) HasDataProvider() bool {
-	return d.dataProvider != nil
+	return d.dataProviderID != ""
 }
 
 // Call SetData to set the data of a control that uses a data binder. You MUST call it with a slice
@@ -59,7 +59,7 @@ func (d *DataManager) SetData(data interface{}) {
 
 // ResetData is called by controls that use a data binder to unload the data after it is used.
 func (d *DataManager) ResetData() {
-	if d.dataProvider != nil {
+	if d.HasDataProvider() {
 		d.data = nil
 	}
 }
@@ -67,9 +67,10 @@ func (d *DataManager) ResetData() {
 // LoadData tells the data binder to load data by calling SetData on the given object. The object should be
 // the embedder of the DataManager
 func (d *DataManager) LoadData(ctx context.Context, owner DataManagerI) {
-	if d.dataProvider != nil && d.data == nil {
+	if d.HasDataProvider() && d.HasData() {
 		log.FrameworkDebug("Calling BindData")
-		d.dataProvider.BindData(ctx, owner) // tell the data binder to call SetData on the given object, or load data some other way
+		dataProvider := owner.Page().GetControl(d.dataProviderID).(DataBinder)
+		dataProvider.BindData(ctx, owner) // tell the data binder to call SetData on the given object, or load data some other way
 	}
 }
 
@@ -92,3 +93,41 @@ func (d *DataManager) RangeData(f func(int, interface{}) bool) {
 func (d *DataManager) HasData() bool {
 	return d.data != nil
 }
+
+func (d *DataManager) Serialize(e page.Encoder) (err error) {
+	if err = e.Encode(d.dataProviderID); err != nil {
+		return
+	}
+	if d.data == nil {
+		if err = e.Encode("-"); err != nil {
+			return
+		}
+	} else {
+		if err = e.Encode(d.data); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (d *DataManager) Deserialize(dec page.Decoder) (err error) {
+	if err = dec.Decode(&d.dataProviderID); err != nil {
+		return
+	}
+
+	var data interface{}
+
+	if err = dec.Decode(&data); err != nil {
+		return
+	}
+
+	if data == "-" {
+		d.data = nil
+	} else {
+		d.data = data
+	}
+
+	return
+}
+

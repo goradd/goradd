@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 )
 
@@ -63,7 +62,7 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 	createF(ctx, f.detail)
 }
 
-func (f *ControlsForm) BindData(ctx context.Context, s data.DataManagerI) {
+func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
 	pageContext := page.GetContext(ctx)
 	for _, c := range controls {
 		item := f.list.AddItem(c.name, c.key)

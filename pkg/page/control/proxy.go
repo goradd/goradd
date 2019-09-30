@@ -3,6 +3,7 @@ package control
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/html"
@@ -214,4 +215,8 @@ func (c ProxyCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 // GetProxy is a convenience method to return the button with the given id from the page.
 func GetProxy(c page.ControlI, id string) *Proxy {
 	return c.Page().GetControl(id).(*Proxy)
+}
+
+func init() {
+	gob.Register(Proxy{})
 }

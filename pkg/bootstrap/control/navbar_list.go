@@ -9,14 +9,13 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
 )
 
 type NavbarListI interface {
 	page.ControlI
 	control.ItemListI
-	data.DataManagerEmbedder
+	control.DataManagerEmbedder
 	OnSelect (action action.ActionI) page.ControlI
 }
 
@@ -24,7 +23,7 @@ type NavbarList struct {
 	page.Control
 	control.ItemList
 	subItemTag string
-	data.DataManager
+	control.DataManager
 }
 
 func NavbarSelectEvent() *page.Event {
@@ -86,7 +85,7 @@ func (l *NavbarList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (er
 	return nil
 }
 
-func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI, hasParent bool) string {
+func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.*ListItem, hasParent bool) string {
 	var h = ""
 
 	for i, item := range items {
@@ -172,7 +171,7 @@ type NavbarListCreator struct {
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []control.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	page.ControlOptions
@@ -194,7 +193,7 @@ func (c NavbarListCreator) Init(ctx context.Context, ctrl NavbarListI) {
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(control.DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 

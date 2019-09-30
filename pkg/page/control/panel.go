@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
@@ -86,4 +87,8 @@ func (c PanelCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 // GetPanel is a convenience method to return the panel with the given id from the page.
 func GetPanel(c page.ControlI, id string) *Panel {
 	return c.Page().GetControl(id).(*Panel)
+}
+
+func init() {
+	gob.Register(Panel{})
 }

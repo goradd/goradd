@@ -7,7 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"strconv"
@@ -82,7 +81,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
-func (f *TableCheckboxPanel) BindData(ctx context.Context, s data.DataManagerI) {
+func (f *TableCheckboxPanel) BindData(ctx context.Context, s DataManagerI) {
 	t := s.(PagedControlI)
 	t.SetTotalItems(uint(len(table1Data)))
 	start, end := t.SliceOffsets()

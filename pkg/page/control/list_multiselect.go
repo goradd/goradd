@@ -3,10 +3,10 @@ package control
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"reflect"
 	"strconv"
 	"strings"
@@ -15,7 +15,7 @@ import (
 type MultiselectListI interface {
 	page.ControlI
 	ItemListI
-	data.DataManagerEmbedder
+	DataManagerEmbedder
 }
 
 // MultiselectList is a generic list box which allows multiple selections. It is here for completeness, but is not used
@@ -24,7 +24,7 @@ type MultiselectListI interface {
 type MultiselectList struct {
 	page.Control
 	ItemList
-	data.DataManager
+	DataManager
 	selectedIds map[string]bool
 }
 
@@ -88,8 +88,8 @@ func (l *MultiselectList) ΩUpdateFormValues(ctx *page.Context) {
 	}
 }
 
-func (l *MultiselectList) SelectedItems() []ListItemI {
-	items := []ListItemI{}
+func (l *MultiselectList) SelectedItems() []*ListItem {
+	items := []*ListItem{}
 	if len(l.selectedIds) == 0 {
 		return nil
 	}
@@ -149,10 +149,10 @@ func (l *MultiselectList) SetValue(v interface{}) {
 			l.selectedIds[v] = true
 		}
 
-	case ListItemI:
+	case *ListItem:
 		l.selectedIds[ids.ID()] = true
 
-	case []ListItemI:
+	case []*ListItem:
 		for _, v := range ids {
 			l.selectedIds[v.ID()] = true
 		}
@@ -254,7 +254,7 @@ func (l *MultiselectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer
 	return nil
 }
 
-func (l *MultiselectList) getItemsHtml(items []ListItemI) string {
+func (l *MultiselectList) getItemsHtml(items []*ListItem) string {
 	var h = ""
 
 	for _, item := range items {
@@ -281,12 +281,45 @@ func (l *MultiselectList) IsIdSelected(id string) bool {
 	return ok && v
 }
 
+func (l *MultiselectList) Serialize(e page.Encoder) (err error) {
+	if err = l.Control.Serialize(e); err != nil {
+		return
+	}
+	if err = l.ItemList.Serialize(e); err != nil {
+		return
+	}
+	if err = l.DataManager.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(l.selectedIds); err != nil {
+		return
+	}
+	return
+}
+
+func (l *MultiselectList) Deserialize(dec page.Decoder) (err error) {
+	if err = l.Control.Deserialize(dec); err != nil {
+		return
+	}
+	if err = l.ItemList.Deserialize(dec); err != nil {
+		return
+	}
+	if err = l.DataManager.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.selectedIds); err != nil {
+		return
+	}
+	return
+}
+
 type MultiselectListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// Size specifies how many items to show, and turns the list into a scrolling list
@@ -306,7 +339,7 @@ func (c MultiselectListCreator) Create(ctx context.Context, parent page.ControlI
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 
@@ -324,4 +357,8 @@ func (c MultiselectListCreator) Create(ctx context.Context, parent page.ControlI
 // GetSelectList is a convenience method to return the control with the given id from the page.
 func GetMultiselectList(c page.ControlI, id string) *MultiselectList {
 	return c.Page().GetControl(id).(*MultiselectList)
+}
+
+func init() {
+	gob.Register(MultiselectList{})
 }

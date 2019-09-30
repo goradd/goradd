@@ -113,6 +113,34 @@ func (d *DateTextbox) ΩUpdateFormValues(ctx *page.Context) {
 	}
 }
 
+func (d *DateTextbox) Serialize(e page.Encoder) (err error) {
+	if err = d.Textbox.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(d.format); err != nil {
+		return
+	}
+	if err = e.Encode(d.dt); err != nil {
+		return
+	}
+
+	return
+}
+
+func (d *DateTextbox) Deserialize(dec page.Decoder) (err error) {
+	if err = d.Textbox.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&d.format); err != nil {
+		return
+	}
+	if err = dec.Decode(&d.dt); err != nil {
+		return
+	}
+
+	return
+}
+
 type DateValidator struct {
 	ctrl    *DateTextbox
 	Message string

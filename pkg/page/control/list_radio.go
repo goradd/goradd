@@ -3,9 +3,9 @@ package control
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"strings"
 )
 
@@ -17,8 +17,8 @@ type RadioListI interface {
 	SetIsScrolling(s bool) RadioListI
 	SetRowClass(c string) RadioListI
 
-	ΩRenderItems(items []ListItemI) string
-	ΩRenderItem(item ListItemI) string
+	ΩRenderItems(items []*ListItem) string
+	ΩRenderItem(item *ListItem) string
 
 }
 
@@ -138,7 +138,7 @@ func (l *RadioList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err
 	return nil
 }
 
-func (l *RadioList) ΩRenderItems(items []ListItemI) string {
+func (l *RadioList) ΩRenderItems(items []*ListItem) string {
 	var hItems []string
 	for _,item := range items {
 		hItems = append(hItems, l.this().ΩRenderItem(item))
@@ -155,13 +155,13 @@ func (l *RadioList) ΩRenderItems(items []ListItemI) string {
 }
 
 // ΩRenderItem is called by the framework to render a single item in the list.
-func (l *RadioList) ΩRenderItem(item ListItemI) (h string) {
+func (l *RadioList) ΩRenderItem(item *ListItem) (h string) {
 	h = renderItemControl(item, "radio", l.labelDrawingMode, item.ID() == l.selectedId, l.ID())
 	h = renderCell(item, h, l.columnCount > 0)
 	return
 }
 
-func renderItemControl(item ListItemI, typ string, labelMode html.LabelDrawingMode, selected bool, name string) string {
+func renderItemControl(item *ListItem, typ string, labelMode html.LabelDrawingMode, selected bool, name string) string {
 	if labelMode == html.LabelDefault {
 		labelMode = page.DefaultCheckboxLabelDrawingMode
 	}
@@ -178,7 +178,7 @@ func renderItemControl(item ListItemI, typ string, labelMode html.LabelDrawingMo
 	return html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, labelMode)
 }
 
-func renderCell(item ListItemI, controlHtml string, hasColumns bool) string {
+func renderCell(item *ListItem, controlHtml string, hasColumns bool) string {
 	var cellClass string
 	var itemId string
 	if !hasColumns {
@@ -205,12 +205,57 @@ func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
 	}
 }
 
+func (l *RadioList) Serialize(e page.Encoder) (err error) {
+	if err = l.SelectList.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(l.columnCount); err != nil {
+		return
+	}
+	if err = e.Encode(l.direction); err != nil {
+		return
+	}
+	if err = e.Encode(l.labelDrawingMode); err != nil {
+		return
+	}
+	if err = e.Encode(l.isScrolling); err != nil {
+		return
+	}
+	if err = e.Encode(l.rowClass); err != nil {
+		return
+	}
+	return
+}
+
+func (l *RadioList) Deserialize(dec page.Decoder) (err error) {
+	if err = l.SelectList.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.columnCount); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.direction); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.labelDrawingMode); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.isScrolling); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.rowClass); err != nil {
+		return
+	}
+	return
+}
+
+
 type RadioListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// ColumnCount specifies how many columns to show
@@ -245,7 +290,7 @@ func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 	if c.ColumnCount != 0 {
@@ -270,4 +315,8 @@ func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
 // GetRadioList is a convenience method to return the control with the given id from the page.
 func GetRadioList(c page.ControlI, id string) *RadioList {
 	return c.Page().GetControl(id).(*RadioList)
+}
+
+func init() {
+	gob.Register(RadioList{})
 }

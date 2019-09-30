@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -55,4 +56,8 @@ func (c SpanCreator) Create(ctx context.Context, parent page.ControlI) page.Cont
 // GetSpan is a convenience method to return the button with the given id from the page.
 func GetSpan(c page.ControlI, id string) *Span {
 	return c.Page().GetControl(id).(*Span)
+}
+
+func init() {
+	gob.Register(Span{})
 }
