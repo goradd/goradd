@@ -35,7 +35,7 @@ func (l *ListGroup) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.AddClass("list-group")
 }
 
-func (l *ListGroup) GetItemsHtml(items []control.*ListItem) string {
+func (l *ListGroup) GetItemsHtml(items []*control.ListItem) string {
 	// make sure the list items have the correct classes before drawing them
 
 	for _, item := range items {

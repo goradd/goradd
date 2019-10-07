@@ -85,7 +85,7 @@ func (l *NavbarList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (er
 	return nil
 }
 
-func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.*ListItem, hasParent bool) string {
+func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem, hasParent bool) string {
 	var h = ""
 
 	for i, item := range items {
@@ -163,6 +163,39 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.*ListItem
 
 func (l *NavbarList) OnSelect (action action.ActionI) page.ControlI {
 	return l.On(NavbarSelectEvent(), action)
+}
+
+func (l *NavbarList) Serialize(e page.Encoder) (err error) {
+	if err = l.Control.Serialize(e); err != nil {
+		return
+	}
+	if err = l.ItemList.Serialize(e); err != nil {
+		return
+	}
+	if err = l.DataManager.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(l.subItemTag); err != nil {
+		return
+	}
+	return
+}
+
+func (l *NavbarList) Deserialize(dec page.Decoder) (err error) {
+	if err = l.Control.Deserialize(dec); err != nil {
+		return
+	}
+	if err = l.ItemList.Deserialize(dec); err != nil {
+		return
+	}
+	if err = l.DataManager.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.subItemTag); err != nil {
+		return
+	}
+	return
 }
 
 type NavbarListCreator struct {

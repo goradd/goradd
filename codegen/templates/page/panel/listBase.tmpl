@@ -110,7 +110,7 @@ func (p *{{= panelName }}) GetClickedRowValue(a page.ActionParams) string {
 
 // BindData determines what records will be displayed in the lister.
 // Override to change what records get displayed.
-func (p *{{= panelName }}) BindData(ctx context.Context, s data.DataManagerI) {
+func (p *{{= panelName }}) BindData(ctx context.Context, s goraddctrl.DataManagerI) {
 	if p.List.HasDataPagers() {
 		p.List.SetTotalItems(p.this().BuildQuery(ctx).Count(ctx, false))
 	}

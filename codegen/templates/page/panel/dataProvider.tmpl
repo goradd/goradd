@@ -1,7 +1,7 @@
 //dataProvider.tmpl
 
 {{
-func (p *{{= panelName }}) BindData(ctx context.Context, s data.DataManagerI) {
+func (p *{{= panelName }}) BindData(ctx context.Context, s goraddctrl.DataManagerI) {
 
     switch s.ID() {
 

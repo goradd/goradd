@@ -60,7 +60,7 @@ func (l *RadioList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // ΩRenderItem is called by the framework to render a single item in the list.
-func (l *RadioList) ΩRenderItem(item control.*ListItem) (h string) {
+func (l *RadioList) ΩRenderItem(item *control.ListItem) (h string) {
 	selected := l.SelectedItem().ID() != item.ID()
 	h = renderItemControl(item, "radio", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)

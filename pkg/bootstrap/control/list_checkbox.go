@@ -65,14 +65,14 @@ func (l *CheckboxList) ΩDrawingAttributes(ctx context.Context) html.Attributes 
 }
 
 // ΩRenderItem is called by the framework to render a single item in the list.
-func (l *CheckboxList) ΩRenderItem(item control.*ListItem) (h string) {
+func (l *CheckboxList) ΩRenderItem(item *control.ListItem) (h string) {
 	selected := l.IsIdSelected(item.ID())
 	h = renderItemControl(item, "checkbox", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)
 	return
 }
 
-func renderItemControl(item control.*ListItem, typ string, selected bool, name string) string {
+func renderItemControl(item *control.ListItem, typ string, selected bool, name string) string {
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", name)
@@ -86,7 +86,7 @@ func renderItemControl(item control.*ListItem, typ string, selected bool, name s
 	return html.RenderLabel(html.NewAttributes().Set("for", item.ID()).AddClass("form-check-label"), item.Label(), ctrl, html.LabelAfter)
 }
 
-func renderCell(item control.*ListItem, controlHtml string, columnCount int, isInline bool, cellClass string) string {
+func renderCell(item *control.ListItem, controlHtml string, columnCount int, isInline bool, cellClass string) string {
 	attributes := item.Attributes().Copy()
 	attributes.SetID(item.ID() + "_item")
 	attributes.AddClass("form-check")
