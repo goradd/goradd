@@ -24,30 +24,30 @@ type CallbackActionI interface {
 	IsServerAction() bool
 }
 
-// CallbackAction is a kind of superclass for Ajax and Server actions
-type callbackAction struct {
+// CallbackAction is a kind of superclass for Ajax and Server actions. Do not use this class directly.
+type CallbackAction struct {
 	ActionID           int
 	DestControlID      string
 	SubID              string
 	Value              interface{}
-	ValidationOverride interface{} // overrides the validation setting that is on the control
+	ValidationOverride int // overrides the validation setting that is on the control
 	CallAsync          bool
 }
 
 // ID returns the action id that was defined when the action was created.
-func (a *callbackAction) ID() int {
+func (a *CallbackAction) ID() int {
 	return a.ActionID
 }
 
 // GetActionValue returns the action value given to the action when it was created.
-func (a *callbackAction) GetActionValue() interface{} {
+func (a *CallbackAction) GetActionValue() interface{} {
 	return a.Value
 }
 
 // Assign the destination control id. You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the controls id with another id that indicates the internal destination,
 // separated with an underscore.
-func (a *callbackAction) setDestinationControlID(id string) {
+func (a *CallbackAction) setDestinationControlID(id string) {
 	parts := strings.SplitN(id, "_", 2)
 	if len(parts) == 2 {
 		a.DestControlID = parts[0]
@@ -58,23 +58,23 @@ func (a *callbackAction) setDestinationControlID(id string) {
 }
 
 // GetDestinationControlID returns the control that the action will operate on.
-func (a *callbackAction) GetDestinationControlID() string {
+func (a *CallbackAction) GetDestinationControlID() string {
 	return a.DestControlID
 }
 
 // GetDestinationControlSubID returns the sub id so that a composite control can send the
 // action to a sub control.
-func (a *callbackAction) GetDestinationControlSubID() string {
+func (a *CallbackAction) GetDestinationControlSubID() string {
 	return a.SubID
 }
 
-func (a *callbackAction) ΩRenderScript(params ΩrenderParams) string {
+func (a *CallbackAction) ΩRenderScript(params ΩrenderParams) string {
 	panic("You need to embed this action and implement ΩRenderScript")
 	return ""
 }
 
 type ΩserverAction struct {
-	callbackAction
+	CallbackAction
 }
 
 // Server creates a server action, which is an action that will use a POST submission mechanism to trigger the action.
@@ -94,7 +94,7 @@ type ΩserverAction struct {
 //   myControl.On(event.Click(), action.Server("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
 func Server(destControlId string, actionId int) *ΩserverAction {
 	a := &ΩserverAction{
-		callbackAction{
+		CallbackAction{
 			ActionID: actionId,
 		},
 	}
@@ -136,7 +136,7 @@ func (a *ΩserverAction) ActionValue(v interface{}) *ΩserverAction {
 }
 
 // Validator lets you override the validation setting for the control that the action is being sent to.
-func (a *ΩserverAction) Validator(v interface{}) *ΩserverAction {
+func (a *ΩserverAction) Validator(v int) *ΩserverAction {
 	a.ValidationOverride = v
 	return a
 }
@@ -162,7 +162,7 @@ func (a *ΩserverAction) IsServerAction() bool {
 }
 
 type ΩajaxAction struct {
-	callbackAction
+	CallbackAction
 }
 
 // Ajax creates an ajax action. When the action fires, the Action() function of the Goradd control identified by the
@@ -175,7 +175,7 @@ type ΩajaxAction struct {
 //   myControl.On(event.Click(), action.Ajax("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
 func Ajax(destControlId string, actionID int) *ΩajaxAction {
 	a := &ΩajaxAction{
-		callbackAction{
+		CallbackAction{
 			ActionID: actionID,
 		},
 	}
@@ -217,7 +217,7 @@ func (a *ΩajaxAction) ActionValue(v interface{}) *ΩajaxAction {
 }
 
 // Validator lets you override the validation setting for the control that the action is being sent to.
-func (a *ΩajaxAction) Validator(v interface{}) *ΩajaxAction {
+func (a *ΩajaxAction) Validator(v int) *ΩajaxAction {
 	a.ValidationOverride = v
 	return a
 }

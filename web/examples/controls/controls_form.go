@@ -2,6 +2,7 @@ package controls
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
@@ -10,14 +11,15 @@ import (
 const ControlsFormPath = "/goradd/examples/controls.g"
 const ControlsFormId = "ControlsForm"
 
+const ControlsFormListID = "listPanel"
+const ControlsFormDetailID = "detailPanel"
+
 const (
 	TestButtonAction = iota + 1
 )
 
 type ControlsForm struct {
 	FormBase
-	list   *UnorderedList
-	detail *Panel
 }
 
 type createFunction func(ctx context.Context, parent page.ControlI)
@@ -34,9 +36,15 @@ func NewControlsForm(ctx context.Context) page.FormI {
 	f.Init(ctx, f, ControlsFormPath, ControlsFormId)
 	f.AddRelatedFiles()
 
-	f.list = NewUnorderedList(f, "listPanel")
-	f.list.SetDataProvider(f)
-	f.detail = NewPanel(f, "detailPanel")
+	f.AddControls(ctx,
+		UnorderedListCreator{
+			ID:ControlsFormListID,
+			DataProvider:f,
+		},
+		PanelCreator{
+			ID:             ControlsFormDetailID,
+		},
+		)
 
 	return f
 }
@@ -59,13 +67,13 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 		createF = controls[0].f
 	}
 
-	createF(ctx, f.detail)
+	createF(ctx, GetPanel(f, ControlsFormDetailID))
 }
 
 func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
 	pageContext := page.GetContext(ctx)
 	for _, c := range controls {
-		item := f.list.AddItem(c.name, c.key)
+		item := GetUnorderedList(f, ControlsFormListID).AddItem(c.name, c.key)
 		a := url.
 			NewBuilderFromUrl(*pageContext.URL).
 			SetValue("control", c.key).
@@ -87,5 +95,6 @@ func RegisterPanel(key string,
 }
 
 func init() {
+	gob.Register(ControlsForm{})
 	page.RegisterPage(ControlsFormPath, NewControlsForm, ControlsFormId)
 }

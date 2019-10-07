@@ -71,8 +71,10 @@ func (l *UnorderedList) SetBulletStyle(s string) UnorderedListI {
 }
 
 func (l *UnorderedList) ΩDrawTag(ctx context.Context) string {
-	l.LoadData(ctx, l)
-	defer l.Clear()
+	if l.HasDataProvider() {
+		l.LoadData(ctx, l.this())
+		defer l.ResetData()
+	}
 	return l.Control.ΩDrawTag(ctx)
 }
 
@@ -108,8 +110,8 @@ func (l *UnorderedList) GetItemsHtml(items []*ListItem) string {
 }
 
 // SetData replaces the current list with the given data.
-// The result is kept in memory currently.
-// ItemLister, ItemIDer, Labeler or Stringer types. This function can accept one or more lists of items, or
+// ItemLister, ItemIDer, Labeler or Stringer types are accepted.
+// This function can accept one or more lists of items, or
 // single items. They will all get added to the top level of the list. To add sub items, get a list item
 // and add items to it.
 func (l *UnorderedList) SetData(data interface{}) {

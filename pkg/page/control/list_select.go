@@ -44,6 +44,11 @@ func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.Tag = "select"
 }
 
+func (l *SelectList) this() SelectListI {
+	return l.Self.(SelectListI)
+}
+
+
 // Validate is called by the framework to validate the contents of the control. For a SelectList,
 // this is typically just checking to see if something was selected if a selection is required.
 func (l *SelectList) Validate(ctx context.Context) bool {
@@ -161,11 +166,17 @@ func (l *SelectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
+func (l *SelectList) ΩDrawTag(ctx context.Context) string {
+	if l.HasDataProvider() {
+		l.LoadData(ctx, l.this())
+		defer l.ResetData()
+	}
+	return l.Control.ΩDrawTag(ctx)
+}
+
+
 // ΩDrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
 func (l *SelectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if l.HasDataProvider() {
-		l.LoadData(ctx, l)
-	}
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil

@@ -232,6 +232,14 @@ func (l *MultiselectList) ΩUnmarshalState(m maps.Loader) {
 	}
 }
 
+func (l *MultiselectList) ΩDrawTag(ctx context.Context) string {
+	if l.HasDataProvider() {
+		l.LoadData(ctx, l.this())
+		defer l.ResetData()
+	}
+	return l.Control.ΩDrawTag(ctx)
+}
+
 // ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *MultiselectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
@@ -246,9 +254,6 @@ func (l *MultiselectList) ΩDrawingAttributes(ctx context.Context) html.Attribut
 }
 
 func (l *MultiselectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if l.HasDataProvider() {
-		l.LoadData(ctx, l)
-	}
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil

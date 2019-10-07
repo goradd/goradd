@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	"strconv"
@@ -234,4 +235,11 @@ func (c IntegerTextboxCreator) Init(ctx context.Context, ctrl IntegerTextboxI) {
 // GetIntegerTextbox is a convenience method to return the control with the given id from the page.
 func GetIntegerTextbox(c page.ControlI, id string) *IntegerTextbox {
 	return c.Page().GetControl(id).(*IntegerTextbox)
+}
+
+func init() {
+	gob.Register(MaxIntValidator{})
+	gob.Register(MinIntValidator{})
+	gob.Register(IntValidator{})
+	gob.Register(IntegerTextbox{})
 }

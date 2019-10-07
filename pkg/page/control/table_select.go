@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
@@ -233,4 +234,8 @@ func (c SelectTableCreator) Init(ctx context.Context, ctrl SelectTableI) {
 // GetSelectTable is a convenience method to return the button with the given id from the page.
 func GetSelectTable(c page.ControlI, id string) *SelectTable {
 	return c.Page().GetControl(id).(*SelectTable)
+}
+
+func init() {
+	gob.Register(SelectTable{})
 }

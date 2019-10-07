@@ -98,7 +98,6 @@ func (c AliasColumnCreator) Create(ctx context.Context, parent control.TableI) c
 }
 
 
-
 func init() {
 	gob.Register(AliasColumn{})
 }

@@ -2,6 +2,7 @@ package column
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -154,3 +155,6 @@ func (c NodeColumnCreator) Create(ctx context.Context, parent control.TableI) co
 	return col
 }
 
+func init() {
+	gob.Register(NodeColumn{})
+}

@@ -2,6 +2,7 @@ package panels
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -213,3 +214,8 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 	t.Click(btn)
 
 */
+
+func init() {
+	gob.Register(SelectListPanel{})
+}
+

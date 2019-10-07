@@ -44,14 +44,14 @@ type ItemListI interface {
 // Controls that embed this must implement the Serialize and Deserialize methods to call both the base Control's
 // Serialize and Deserialize methods, and the ones here.
 type ItemList struct {
-	owner IDer
+	ownerID string
 	items []*ListItem
 }
 
 // NewItemList creates a new item list. "owner" is the object that has the list embedded in it, and must be
 // an IDer.
 func NewItemList(owner IDer) ItemList {
-	return ItemList{owner: owner}
+	return ItemList{ownerID: owner.ID()}
 }
 
 // AddItem adds the given item to the end of the list. The value is optional, but should only be one or zero values.
@@ -137,11 +137,11 @@ func (l *ItemList) addListItem(item interface{}) {
 
 // reindex is internal and should get called whenever an item gets added to the list out of order or an id changes.
 func (l *ItemList) reindex(start int) {
-	if l.owner.ID() == "" || l.items == nil || len(l.items) == 0 || start >= len(l.items) {
+	if l.ownerID == "" || l.items == nil || len(l.items) == 0 || start >= len(l.items) {
 		return
 	}
 	for i := start; i < len(l.items); i++ {
-		id := l.owner.ID() + "_" + strconv.Itoa(i)
+		id := l.ownerID + "_" + strconv.Itoa(i)
 		l.items[i].SetID(id)
 	}
 }
@@ -249,7 +249,7 @@ func (l *ItemList) findItemByValue(value interface{}) (container *ItemList, inde
 }
 
 func (l *ItemList) Serialize(e page.Encoder) (err error) {
-	if err = e.Encode(l.owner); err != nil {
+	if err = e.Encode(l.ownerID); err != nil {
 		return
 	}
 	var count int = len(l.items)
@@ -266,7 +266,7 @@ func (l *ItemList) Serialize(e page.Encoder) (err error) {
 }
 
 func (l *ItemList) Deserialize(dec page.Decoder) (err error) {
-	if err = dec.Decode(&l.owner); err != nil {
+	if err = dec.Decode(&l.ownerID); err != nil {
 		return
 	}
 

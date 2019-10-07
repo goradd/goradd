@@ -2,6 +2,7 @@ package panels
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -96,5 +97,5 @@ func (p *TableDbPanel) CellText(ctx context.Context, col ColumnI, rowNum int, co
 }
 
 func init() {
-
+	gob.Register(TableDbPanel{})
 }

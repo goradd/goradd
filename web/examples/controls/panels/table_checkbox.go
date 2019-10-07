@@ -109,7 +109,7 @@ func init() {
 	browsertest.RegisterTestFunction("Table - Checkbox Server Submit", testTableCheckboxServerSubmit)
 
 	gob.Register(SelectedProvider{}) // We must register this here because we are putting the changes map into the session,
-
+	gob.Register(TableCheckboxPanel{})
 }
 
 func testTableCheckboxNav(t *browsertest.TestForm) {

@@ -2,6 +2,7 @@ package panels
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
@@ -99,4 +100,8 @@ func testHListSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {
 	// For testing purposes, we need to use the id of the list item, rather than the value of the list item,
 	// since that is what is presented in the html.
 	//select1 := f.Page().GetControl("orderedList").(*OrderedList)
+}
+
+func init() {
+	gob.Register(HListPanel{})
 }

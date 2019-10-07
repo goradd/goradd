@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	"net/mail"
@@ -186,4 +187,8 @@ func (c EmailTextboxCreator) Init(ctx context.Context, ctrl EmailTextboxI) {
 // GetEmailTextbox is a convenience method to return the control with the given id from the page.
 func GetEmailTextbox(c page.ControlI, id string) *EmailTextbox {
 	return c.Page().GetControl(id).(*EmailTextbox)
+}
+
+func init() {
+	gob.Register(EmailTextbox{})
 }

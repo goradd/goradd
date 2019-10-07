@@ -9,6 +9,7 @@ needlessly redrawing html after setting values that had no affect on the attribu
 package html
 
 import (
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
@@ -620,4 +621,8 @@ type AttributeCreator map[string]string
 
 func (c AttributeCreator) Create() Attributes {
 	return Attributes(c)
+}
+
+func init() {
+	gob.Register(Attributes{})
 }

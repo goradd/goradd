@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 )
@@ -136,4 +137,8 @@ func (c PagedTableCreator) Init(ctx context.Context, ctrl PagedTableI) {
 // GetPagedTable is a convenience method to return the table with the given id from the page.
 func GetPagedTable(c page.ControlI, id string) *PagedTable {
 	return c.Page().GetControl(id).(*PagedTable)
+}
+
+func init() {
+	gob.Register(PagedTable{})
 }

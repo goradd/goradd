@@ -2,6 +2,7 @@ package column
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"reflect"
@@ -84,3 +85,6 @@ func (c SliceColumnCreator) Create(ctx context.Context, parent control.TableI) c
 	return col
 }
 
+func init() {
+	gob.Register(SliceColumn{})
+}

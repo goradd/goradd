@@ -2,6 +2,7 @@ package column
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page/control"
 )
 
@@ -64,4 +65,8 @@ func (c TexterColumnCreator) Create(ctx context.Context, parent control.TableI) 
 	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
+}
+
+func init() {
+	gob.Register(TexterColumn{})
 }
