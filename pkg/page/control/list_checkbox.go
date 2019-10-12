@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"strings"
@@ -294,5 +293,5 @@ func GetCheckboxList(c page.ControlI, id string) *CheckboxList {
 }
 
 func init() {
-	gob.Register(CheckboxList{})
+	page.RegisterControl(CheckboxList{})
 }

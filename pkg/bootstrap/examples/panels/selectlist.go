@@ -149,6 +149,7 @@ func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.Contro
 
 func init() {
 	examples.RegisterPanel("lists", "Lists", NewSelectListPanel, 3)
+	page.RegisterControl(SelectListPanel{})
 
 	// temporarily removing because bootstrap requires jquery and we want to make sure we are not relying on bootstrap
 	//browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)

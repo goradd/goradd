@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 )
@@ -140,5 +139,5 @@ func GetPagedTable(c page.ControlI, id string) *PagedTable {
 }
 
 func init() {
-	gob.Register(PagedTable{})
+	page.RegisterControl(PagedTable{})
 }

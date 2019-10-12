@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
@@ -33,6 +32,7 @@ var SortButtonHtmlGetter func(SortDirection) string
 // default behavior of the ColumnBase class.
 type ColumnI interface {
 	ID() string
+	init(self ColumnI)
 	SetID(string) ColumnI
 	setParentTable(TableI)
 	ParentTable() TableI
@@ -119,6 +119,10 @@ type ColumnBase struct {
 func (c *ColumnBase) Init(self ColumnI) {
 	c.Base.Init(self)
 	c.Attributes = html.NewAttributes()
+}
+
+func (c *ColumnBase) init(self ColumnI) {
+	c.Init(self)
 }
 
 func (c *ColumnBase) this() ColumnI {
@@ -429,20 +433,6 @@ func (c *ColumnBase) MarshalState(m maps.Setter) {}
 // UnmarshalState is an internal function to restore the state of the control.
 func (c *ColumnBase) UnmarshalState(m maps.Loader) {}
 
-func (c *ColumnBase) GobEncode() ([]byte, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := c.this().Serialize(enc)
-	return buf.Bytes(), err
-}
-
-func (c *ColumnBase) GobDecode(data []byte) error {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	err := c.this().Deserialize(dec)
-	return err
-}
-
 type columnBaseEncoded struct {
 	ID string
 	Title string
@@ -518,32 +508,39 @@ func (c *ColumnBase) Deserialize(dec page.Decoder) (err error) {
 	c.isHidden = s.IsHidden
 	c.sortDirection = s.SortDirection
 
-	if v,ok := s.CellTexter.(string); ok {
-		c.cellTexterID = v
-	} else {
-		c.cellTexter = s.CellTexter.(CellTexter)
+	if s.CellTexter != nil {
+		if v,ok := s.CellTexter.(string); ok {
+			c.cellTexterID = v
+		} else {
+			c.cellTexter = s.CellTexter.(CellTexter)
+		}
 	}
-	if v,ok := s.HeaderTexter.(string); ok {
-		c.headerTexterID = v
-	} else {
-		c.headerTexter = s.HeaderTexter.(CellTexter)
+	if s.HeaderTexter != nil {
+		if v,ok := s.HeaderTexter.(string); ok {
+			c.headerTexterID = v
+		} else {
+			c.headerTexter = s.HeaderTexter.(CellTexter)
+		}
 	}
-	if v,ok := s.FooterTexter.(string); ok {
-		c.footerTexterID = v
-	} else {
-		c.footerTexter = s.FooterTexter.(CellTexter)
+	if s.FooterTexter != nil {
+		if v,ok := s.FooterTexter.(string); ok {
+			c.footerTexterID = v
+		} else {
+			c.footerTexter = s.FooterTexter.(CellTexter)
+		}
 	}
-	if v,ok := s.CellStyler.(string); ok {
-		c.cellStylerID = v
-	} else {
-		c.cellStyler = s.CellStyler.(CellStyler)
+	if s.CellStyler != nil {
+		if v,ok := s.CellStyler.(string); ok {
+			c.cellStylerID = v
+		} else {
+			c.cellStyler = s.CellStyler.(CellStyler)
+		}
 	}
 
 	return
 }
 
 func (c *ColumnBase) Restore(parentTable TableI) {
-	c.parentTable = parentTable
 	if c.cellTexterID != "" {
 		c.cellTexter = parentTable.Page().GetControl(c.cellTexterID).(CellTexter)
 	}

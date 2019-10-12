@@ -83,3 +83,7 @@ func (c ListGroupCreator) Init(ctx context.Context, ctrl ListGroupI) {
 func GetListGroup(c page.ControlI, id string) *ListGroup {
 	return c.Page().GetControl(id).(*ListGroup)
 }
+
+func init() {
+	page.RegisterControl(ListGroup{})
+}

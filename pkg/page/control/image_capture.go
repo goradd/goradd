@@ -3,7 +3,6 @@ package control
 import (
 	"context"
 	"encoding/base64"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
@@ -270,5 +269,5 @@ func GetImageCapture(c page.ControlI, id string) *ImageCapture {
 }
 
 func init() {
-	gob.Register(ImageCapture{})
+	page.RegisterControl(ImageCapture{})
 }

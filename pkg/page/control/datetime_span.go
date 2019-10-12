@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/page"
@@ -130,5 +129,5 @@ func (c DateTimeSpanCreator) Create(ctx context.Context, parent page.ControlI) p
 }
 
 func init() {
-	gob.Register(DateTimeSpan{})
+	page.RegisterControl(DateTimeSpan{})
 }

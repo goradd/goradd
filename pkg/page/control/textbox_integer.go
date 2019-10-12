@@ -241,5 +241,5 @@ func init() {
 	gob.Register(MaxIntValidator{})
 	gob.Register(MinIntValidator{})
 	gob.Register(IntValidator{})
-	gob.Register(IntegerTextbox{})
+	page.RegisterControl(IntegerTextbox{})
 }

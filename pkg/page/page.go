@@ -16,6 +16,7 @@ import (
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/session"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -73,7 +74,7 @@ func (p *Page) Init() {
 // Restore is called immediately after the page has been unserialized, to fix up decoded controls.
 func (p *Page) Restore() {
 	for _,c := range p.controlRegistry {
-		c.decoded(p, c) // handle internal fixups so the underlying control tree can be relied on.
+		c.decoded() // handle internal fixups so the underlying control tree can be relied on.
 	}
 	for _,c := range p.controlRegistry {
 		c.Restore()
@@ -350,8 +351,22 @@ func (p *Page) Serialize(e Encoder) (err error) {
 		return
 	}
 
-	if err = e.Encode(p.controlRegistry); err != nil {
+	var l int = len(p.controlRegistry)
+
+	if err = e.Encode(l); err != nil {
 		return
+	}
+
+	for id,c := range p.controlRegistry {
+		if err = e.Encode(id); err != nil {
+			return
+		}
+		if err = e.Encode(controlRegistryID(c)); err != nil {
+			return
+		}
+		if err = c.Serialize(e); err != nil {
+			return
+		}
 	}
 
 	return
@@ -369,8 +384,29 @@ func (p *Page) Deserialize(d Decoder) (err error) {
 	p.htmlHeaderTags = s.HtmlHeaderTags
 	p.BodyAttributes = s.BodyAttributes
 
-	if err = d.Decode(&p.controlRegistry); err != nil {
+	p.controlRegistry = make(map[string]ControlI)
+
+	var l int
+
+	if err = d.Decode(&l); err != nil {
 		return
+	}
+
+	for idx := 0; idx < l; idx++ {
+		var id string
+		var registryID int
+		if err = d.Decode(&id); err != nil {
+			return
+		}
+		if err = d.Decode(&registryID); err != nil {
+			return
+		}
+
+		c := createRegisteredControl(registryID, p)
+		p.controlRegistry[id] = c
+		if err = c.Deserialize(d); err != nil {
+			return
+		}
 	}
 
 	p.form = p.controlRegistry[s.FormID].(FormI)
@@ -422,5 +458,38 @@ func (p *Page) Cleanup() {
 	p.Form().RangeSelfAndAllChildren(func(ctrl ControlI) {
 		ctrl.Cleanup()
 	})
+}
+
+var controlRegistry []reflect.Type
+var controlRegistryOffsets = make(map[reflect.Type]int)
+
+// RegisterControl registers the control for the serialize/deserialize process. You should call this
+// for each control in an init() function.
+func RegisterControl(i interface{}) {
+	typ := reflect.TypeOf(i)
+	if _, ok := controlRegistryOffsets[typ]; ok {
+		panic("Registering duplicate control")
+	}
+	controlRegistry = append(controlRegistry, typ)
+	controlRegistryOffsets[typ] = len(controlRegistry) - 1
+}
+
+func controlRegistryID(i ControlI) int {
+	val := reflect.Indirect(reflect.ValueOf(i))
+	typ := val.Type()
+	offset, ok := controlRegistryOffsets[typ]
+	if !ok {
+		panic("Control type is not registered: " + typ.String())
+	}
+	return offset
+}
+
+func createRegisteredControl(registryID int, p *Page) ControlI {
+	typ := controlRegistry[registryID]
+	v := reflect.New(typ)
+	c := v.Interface().(ControlI)
+	c.control().Base.Self = c
+	c.control().page = p
+	return c
 }
 

@@ -353,7 +353,7 @@ func (c DefaultCheckboxProvider) All() map[string]bool {
 func init() {
 	gob.Register(map[string]bool(nil)) // We must register this here because we are putting the changes map into the session,
 	gob.Register(DefaultCheckboxProvider{}) // We must register this here because we are putting the changes map into the session,
-	gob.Register(CheckboxColumn{})
+	control.RegisterColumn(CheckboxColumn{})
 }
 
 // CheckboxColumnCreator creates a column of checkboxes.

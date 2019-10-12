@@ -2,7 +2,6 @@ package panels
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
 )
@@ -29,5 +28,5 @@ func NewDefaultPanel(ctx context.Context, parent page.ControlI) {
 }
 
 func init() {
-	gob.Register(DefaultPanel{})
+	page.RegisterControl(DefaultPanel{})
 }

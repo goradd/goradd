@@ -2,7 +2,6 @@ package panels
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -122,7 +121,7 @@ func (p *TextboxPanel) Action(ctx context.Context, a page.ActionParams) {
 func init() {
 	browsertest.RegisterTestFunction("Textbox Ajax Submit", testTextboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Textbox Server Submit", testTextboxServerSubmit)
-	gob.Register(TextboxPanel{})
+	page.RegisterControl(TextboxPanel{})
 }
 
 func testTextboxAjaxSubmit(t *browsertest.TestForm) {

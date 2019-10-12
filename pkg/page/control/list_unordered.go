@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"reflect"
@@ -146,13 +145,13 @@ func (l *UnorderedList) Deserialize(dec page.Decoder) (err error) {
 		return
 	}
 	if err = l.ItemList.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 	if err = l.DataManager.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&l.itemTag); err != nil {
-		return
+		panic(err)
 	}
 	return
 }
@@ -201,5 +200,5 @@ func GetUnorderedList(c page.ControlI, id string) *UnorderedList {
 }
 
 func init() {
-	gob.Register(UnorderedList{})
+	page.RegisterControl(UnorderedList{})
 }

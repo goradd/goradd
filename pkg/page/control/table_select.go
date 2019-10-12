@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
@@ -237,5 +236,5 @@ func GetSelectTable(c page.ControlI, id string) *SelectTable {
 }
 
 func init() {
-	gob.Register(SelectTable{})
+	page.RegisterControl(SelectTable{})
 }

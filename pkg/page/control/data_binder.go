@@ -98,40 +98,28 @@ func (d *DataManager) HasData() bool {
 	return d.data != nil
 }
 
-func (d *DataManager) Serialize(e page.Encoder) (err error) {
-	if err = e.Encode(d.dataProviderID); err != nil {
-		return
-	}
-	if d.data == nil {
-		if err = e.Encode("-"); err != nil {
-			return
-		}
-	} else {
-		if err = e.Encode(d.data); err != nil {
-			return
-		}
-	}
+type encodedDataManager struct {
+	DataProviderID string
+	Data         interface{}
+}
 
-	return
+func (d *DataManager) Serialize(e page.Encoder) (err error) {
+	enc := encodedDataManager{
+		DataProviderID: d.dataProviderID,
+		Data:           d.data,
+	}
+	return e.Encode(enc)
 }
 
 func (d *DataManager) Deserialize(dec page.Decoder) (err error) {
-	if err = dec.Decode(&d.dataProviderID); err != nil {
-		return
+	var enc encodedDataManager
+
+	if err = dec.Decode(&enc); err != nil {
+		panic(err)
 	}
 
-	var data interface{}
-
-	if err = dec.Decode(&data); err != nil {
-		return
-	}
-
-	if data == "-" {
-		d.data = nil
-	} else {
-		d.data = data
-	}
-
+	d.dataProviderID = enc.DataProviderID
+	d.data = enc.Data
 	return
 }
 

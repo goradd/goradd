@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
@@ -157,5 +156,5 @@ func GetOrderedList(c page.ControlI, id string) *OrderedList {
 }
 
 func init() {
-	gob.Register(OrderedList{})
+	page.RegisterControl(OrderedList{})
 }

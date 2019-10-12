@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
@@ -90,5 +89,5 @@ func GetPanel(c page.ControlI, id string) *Panel {
 }
 
 func init() {
-	gob.Register(Panel{})
+	page.RegisterControl(Panel{})
 }

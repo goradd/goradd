@@ -152,3 +152,7 @@ func (f FormFieldsetCreator) Init(ctx context.Context, c FormFieldsetI) {
 func GetFormFieldset(c page.ControlI, id string) *FormFieldset {
 	return c.Page().GetControl(id).(*FormFieldset)
 }
+
+func init() {
+	page.RegisterControl(FormFieldset{})
+}

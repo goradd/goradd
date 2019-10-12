@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
@@ -13,6 +12,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/pool"
 	html2 "html"
+	"reflect"
 	"strconv"
 )
 
@@ -639,7 +639,6 @@ func (t *Table) ΩUnmarshalState(m maps.Loader) {
 }
 
 type tableEncoded struct {
-	Columns               []ColumnI
 	RenderColumnTags      bool
 	Caption               interface{}
 	CaptionID			  string
@@ -665,7 +664,6 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 	}
 
 	s := tableEncoded{
-		Columns:               t.columns,
 		RenderColumnTags:      t.renderColumnTags,
 		HideIfEmpty:           t.hideIfEmpty,
 		HeaderRowCount:        t.headerRowCount,
@@ -678,7 +676,7 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 		FooterRowStyler:       t.footerRowStyler,
 	}
 
-	// THe caption can be a string, so we can't do the trick we do with objects below
+	// The caption can be a string, so we can't do the trick we do with objects below
 	if ctrl,ok := t.caption.(page.ControlI); ok {
 		s.CaptionID = ctrl.ID()
 	} else {
@@ -699,6 +697,19 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 		return err
 	}
 
+	var l int = len(t.columns)
+	if err = e.Encode(l); err != nil {
+		return err
+	}
+	for _,col := range t.columns {
+		if err = e.Encode(columnRegistryID(col)); err != nil {
+			return
+		}
+		if err = col.Serialize(e); err != nil {
+			return err
+		}
+	}
+
 	return
 }
 
@@ -714,10 +725,9 @@ func (t *Table) Deserialize(dec page.Decoder) (err error) {
 	var s tableEncoded
 
 	if err = dec.Decode(&s); err != nil {
-		return
+		panic(err)
 	}
 
-	t.columns = s.Columns
 	t.renderColumnTags = s.RenderColumnTags
 	t.hideIfEmpty = s.HideIfEmpty
 	t.headerRowCount = s.HeaderRowCount
@@ -739,6 +749,24 @@ func (t *Table) Deserialize(dec page.Decoder) (err error) {
 	if v,ok := s.FooterRowStyler.(string); ok {
 		t.footerRowStylerId = v
 	}
+
+	var l int
+	if err = dec.Decode(&l); err != nil {
+		panic(err)
+	}
+
+	for idx := 0; idx < l; idx++ {
+		var registryID int
+		if err = dec.Decode(&registryID); err != nil {
+			panic(err)
+		}
+		c := createRegisteredColumn(registryID, t)
+		t.columns = append(t.columns, c)
+		if err = c.Deserialize(dec); err != nil {
+			return
+		}
+	}
+
 	return
 }
 
@@ -887,5 +915,43 @@ func GetTable(c page.ControlI, id string) *Table {
 }
 
 func init() {
-	gob.Register(Table{})
+	page.RegisterControl(Table{})
 }
+
+// Similar to the control registry, since columns rely on the "this" variable to deserialize, we
+// must have our own registry. All columns, including user-created columns, must therefore be
+// registered.
+
+var columnRegistry []reflect.Type
+var columnRegistryOffsets = make(map[reflect.Type]int)
+
+// RegisterColumn registers the column for the serialize/deserialize process. You should call this
+// for each column type in an init() function.
+func RegisterColumn(i interface{}) {
+	typ := reflect.TypeOf(i)
+	if _, ok := columnRegistryOffsets[typ]; ok {
+		panic("Registering duplicate column")
+	}
+	columnRegistry = append(columnRegistry, typ)
+	columnRegistryOffsets[typ] = len(columnRegistry) - 1
+}
+
+func columnRegistryID(i ColumnI) int {
+	val := reflect.Indirect(reflect.ValueOf(i))
+	typ := val.Type()
+	offset, ok := columnRegistryOffsets[typ]
+	if !ok {
+		panic("Column type is not registered: " + typ.String())
+	}
+	return offset
+}
+
+func createRegisteredColumn(registryID int, t TableI) ColumnI {
+	typ := columnRegistry[registryID]
+	v := reflect.New(typ)
+	c := v.Interface().(ColumnI)
+	c.init(c)
+	c.setParentTable(t)
+	return c
+}
+

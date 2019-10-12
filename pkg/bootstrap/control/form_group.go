@@ -256,3 +256,7 @@ func (f FormGroupCreator) Init(ctx context.Context, c FormGroupI) {
 func GetFormGroup(c page.ControlI, id string) *FormGroup {
 	return c.Page().GetControl(id).(*FormGroup)
 }
+
+func init() {
+	page.RegisterControl(FormGroup{})
+}

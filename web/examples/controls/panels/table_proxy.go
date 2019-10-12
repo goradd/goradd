@@ -2,7 +2,6 @@ package panels
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
@@ -117,8 +116,8 @@ func (p *ProjectPanel) SetProject(project *Project) {
 
 func init() {
 	browsertest.RegisterTestFunction("Table - Proxy Column", testTableProxyCol)
-	gob.Register(ProjectPanel{})
-	gob.Register(TableProxyPanel{})
+	page.RegisterControl(ProjectPanel{})
+	page.RegisterControl(TableProxyPanel{})
 }
 
 func testTableProxyCol(t *browsertest.TestForm) {

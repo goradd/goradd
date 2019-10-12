@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/math"
@@ -616,5 +615,5 @@ func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 }
 
 func init() {
-	gob.Register(DataPager{})
+	page.RegisterControl(DataPager{})
 }

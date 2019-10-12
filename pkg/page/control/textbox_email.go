@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	"net/mail"
@@ -190,5 +189,5 @@ func GetEmailTextbox(c page.ControlI, id string) *EmailTextbox {
 }
 
 func init() {
-	gob.Register(EmailTextbox{})
+	page.RegisterControl(EmailTextbox{})
 }

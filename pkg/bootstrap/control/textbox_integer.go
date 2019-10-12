@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -105,5 +104,5 @@ func GetIntegerTextbox(c page.ControlI, id string) *IntegerTextbox {
 }
 
 func init() {
-	gob.RegisterName("bootstrap.integertextbox", new(IntegerTextbox))
+	page.RegisterControl(IntegerTextbox{})
 }

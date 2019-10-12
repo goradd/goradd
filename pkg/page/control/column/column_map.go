@@ -2,7 +2,6 @@ package column
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"reflect"
@@ -99,5 +98,5 @@ func (c MapColumnCreator) Create(ctx context.Context, parent control.TableI) con
 }
 
 func init() {
-	gob.Register(MapColumn{})
+	control.RegisterColumn(MapColumn{})
 }

@@ -228,5 +228,5 @@ func GetDateTextbox(c page.ControlI, id string) *DateTextbox {
 
 func init() {
 	gob.Register(DateValidator{})
-	gob.Register(DateTextbox{})
+	page.RegisterControl(DateTextbox{})
 }

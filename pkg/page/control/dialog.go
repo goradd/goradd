@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -412,5 +411,5 @@ func SetAlertFunction(f AlertFuncType) {
 
 
 func init() {
-	gob.Register(Dialog{})
+	page.RegisterControl(Dialog{})
 }

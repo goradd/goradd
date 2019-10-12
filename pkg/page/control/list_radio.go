@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"strings"
@@ -318,5 +317,5 @@ func GetRadioList(c page.ControlI, id string) *RadioList {
 }
 
 func init() {
-	gob.Register(RadioList{})
+	page.RegisterControl(RadioList{})
 }

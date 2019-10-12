@@ -222,5 +222,5 @@ func init() {
 	gob.Register(MaxFloatValidator{})
 	gob.Register(MinFloatValidator{})
 	gob.Register(FloatValidator{})
-	gob.Register(FloatTextbox{})
+	page.RegisterControl(FloatTextbox{})
 }

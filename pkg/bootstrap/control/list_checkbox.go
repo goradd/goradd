@@ -157,3 +157,7 @@ func (c CheckboxListCreator) Init(ctx context.Context, ctrl CheckboxListI) {
 func GetCheckboxList(c page.ControlI, id string) *CheckboxList {
 	return c.Page().GetControl(id).(*CheckboxList)
 }
+
+func init() {
+	page.RegisterControl(CheckboxList{})
+}

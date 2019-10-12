@@ -132,4 +132,5 @@ func (f *TablePanel) CellText(ctx context.Context, col control.ColumnI, rowNum i
 
 func init() {
 	examples.RegisterPanel("table", "Tables", NewTablePanel, 5)
+	page.RegisterControl(TablePanel{})
 }

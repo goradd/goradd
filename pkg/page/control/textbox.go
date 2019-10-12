@@ -498,7 +498,7 @@ func GetTextbox(c page.ControlI, id string) *Textbox {
 
 func init() {
 	// gob.Register(&Textbox{}) register control.Textbox instead
-	gob.Register(&MaxLengthValidator{})
-	gob.Register(&MinLengthValidator{})
-	gob.Register(&Textbox{})
+	gob.Register(MaxLengthValidator{})
+	gob.Register(MinLengthValidator{})
+	page.RegisterControl(Textbox{})
 }

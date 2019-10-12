@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -106,5 +105,5 @@ func GetFloatTextbox(c page.ControlI, id string) *FloatTextbox {
 
 
 func init() {
-	gob.RegisterName("bootstrap.floattextbox", new(FloatTextbox))
+	page.RegisterControl(FloatTextbox{})
 }

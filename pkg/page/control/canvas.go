@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -59,5 +58,5 @@ func GetCanvas(c page.ControlI, id string) *Canvas {
 }
 
 func init() {
-	gob.Register(Canvas{})
+	page.RegisterControl(Canvas{})
 }

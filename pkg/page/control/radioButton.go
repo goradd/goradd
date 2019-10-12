@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -149,5 +148,5 @@ func GetRadioButton(c page.ControlI, id string) *RadioButton {
 }
 
 func init() {
-	gob.Register(RadioButton{})
+	page.RegisterControl(RadioButton{})
 }

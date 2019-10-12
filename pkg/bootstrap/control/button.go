@@ -193,3 +193,7 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI)  {
 func GetButton(c page.ControlI, id string) *Button {
 	return c.Page().GetControl(id).(*Button)
 }
+
+func init() {
+	page.RegisterControl(Button{})
+}

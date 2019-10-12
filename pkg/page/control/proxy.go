@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/html"
@@ -218,5 +217,5 @@ func GetProxy(c page.ControlI, id string) *Proxy {
 }
 
 func init() {
-	gob.Register(Proxy{})
+	page.RegisterControl(Proxy{})
 }

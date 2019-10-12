@@ -114,3 +114,6 @@ func GetRadioButton(c page.ControlI, id string) *RadioButton {
 	return c.Page().GetControl(id).(*RadioButton)
 }
 
+func init() {
+	page.RegisterControl(RadioButton{})
+}

@@ -3,7 +3,6 @@ package page
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
@@ -206,7 +205,7 @@ type ControlI interface {
 
 	Serialize(e Encoder) (err error)
 	Deserialize(d Decoder) (err error)
-	decoded (p *Page, c ControlI)
+	decoded ()
 
 	ApplyOptions(o ControlOptions)
 	AddControls(ctx context.Context, creators ...Creator)
@@ -1643,22 +1642,6 @@ func (c *Control) Cleanup() {
 	c.page = nil
 }
 
-// GobEncode encodes a control specifically for the purpose of serializing the control into the
-// pagestate.
-func (c *Control) GobEncode() ([]byte, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := c.this().Serialize(enc)
-	return buf.Bytes(), err
-}
-
-func (c *Control) GobDecode(data []byte) (error) {
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	err := c.this().Deserialize(dec)
-	return err
-}
-
 func (c *Control) MarshalJSON() (data []byte, err error) {
 	return
 }
@@ -1781,13 +1764,10 @@ func (c *Control) Deserialize(d Decoder) (err error) {
 }
 
 // decoded fixes up the internal pointers in a control
-func (c *Control) decoded(page *Page, this ControlI) () {
-	c.page = page
-	c.Base.Init(this) // Need to initialize so this() works correctly
+func (c *Control) decoded() {
 	for _,childID := range c.childIDs {
-		c.children = append(c.children, page.GetControl(childID))
+		c.children = append(c.children, c.page.GetControl(childID))
 	}
-	return
 }
 
 // EventList is a list of event and action pairs. Use action.Group as the Action to assign multiple actions to
@@ -1862,6 +1842,3 @@ func (c *Control) AddControls(ctx context.Context, creators ...Creator) {
 	}
 }
 
-func init() {
-	gob.Register(&Control{})
-}

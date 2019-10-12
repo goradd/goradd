@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
@@ -320,5 +319,5 @@ func GetSelectList(c page.ControlI, id string) *SelectList {
 }
 
 func init() {
-	gob.Register(SelectList{})
+	page.RegisterControl(SelectList{})
 }

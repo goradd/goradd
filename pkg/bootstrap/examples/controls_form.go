@@ -84,6 +84,7 @@ func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
 
 func init() {
 	page.RegisterPage(ControlsFormPath, NewControlsForm, ControlsFormId)
+	page.RegisterControl(ControlsForm{})
 }
 
 

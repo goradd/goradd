@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	buf2 "github.com/goradd/goradd/pkg/pool"
@@ -91,5 +90,5 @@ func GetFieldset(c page.ControlI, id string) *Fieldset {
 }
 
 func init() {
-	gob.Register(Fieldset{})
+	page.RegisterControl(Fieldset{})
 }

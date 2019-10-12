@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
@@ -215,5 +214,5 @@ func GetRepeater(c page.ControlI, id string) *Repeater {
 }
 
 func init() {
-	gob.Register(Repeater{})
+	page.RegisterControl(Repeater{})
 }

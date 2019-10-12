@@ -3,7 +3,6 @@ package panels
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -51,6 +50,6 @@ func (f *RepeaterPanel) RepeaterHtml(ctx context.Context, r RepeaterI, i int, da
 }
 
 func init() {
-	gob.Register(RepeaterPanel{})
+	page.RegisterControl(RepeaterPanel{})
 }
 

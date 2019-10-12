@@ -77,3 +77,7 @@ func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 func GetSelectList(c page.ControlI, id string) *SelectList {
 	return c.Page().GetControl(id).(*SelectList)
 }
+
+func init() {
+	page.RegisterControl(SelectList{})
+}

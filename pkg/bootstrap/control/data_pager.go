@@ -211,3 +211,7 @@ func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 	}
 	sub.Init(ctx, ctrl)
 }
+
+func init() {
+	page.RegisterControl(DataPager{})
+}

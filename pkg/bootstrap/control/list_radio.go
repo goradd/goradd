@@ -122,3 +122,7 @@ func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
 func GetRadioList(c page.ControlI, id string) *RadioList {
 	return c.Page().GetControl(id).(*RadioList)
 }
+
+func init() {
+	page.RegisterControl(RadioList{})
+}

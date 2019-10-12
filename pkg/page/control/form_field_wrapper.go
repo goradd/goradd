@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
@@ -377,5 +376,5 @@ func CalcWrapperID(wrapperId string, childCreator page.Creator, postfix string) 
 }
 
 func init() {
-	gob.Register(FormFieldWrapper{})
+	page.RegisterControl(FormFieldWrapper{})
 }

@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -93,5 +92,5 @@ func GetDateTextbox(c page.ControlI, id string) *DateTextbox {
 }
 
 func init() {
-	gob.RegisterName("bootstrap.datetextbox", new(DateTextbox))
+	page.RegisterControl(DateTextbox{})
 }

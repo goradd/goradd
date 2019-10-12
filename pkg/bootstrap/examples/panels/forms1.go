@@ -87,6 +87,7 @@ func NewForms1Panel(ctx context.Context, parent page.ControlI) {
 
 func init() {
 	examples.RegisterPanel("forms1", "Forms 1", NewForms1Panel, 2)
+	page.RegisterControl(Forms1Panel{})
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Ajax Submit", testForms1AjaxSubmit)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Server Submit", testForms1ServerSubmit)
 }

@@ -2,7 +2,6 @@ package controls
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
@@ -95,6 +94,6 @@ func RegisterPanel(key string,
 }
 
 func init() {
-	gob.Register(ControlsForm{})
+	page.RegisterControl(ControlsForm{})
 	page.RegisterPage(ControlsFormPath, NewControlsForm, ControlsFormId)
 }

@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -59,5 +58,5 @@ func GetSpan(c page.ControlI, id string) *Span {
 }
 
 func init() {
-	gob.Register(Span{})
+	page.RegisterControl(Span{})
 }
