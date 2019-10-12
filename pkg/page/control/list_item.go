@@ -217,7 +217,7 @@ func (i *ListItem) IsEmptyValue() bool {
 }
 
 func (i *ListItem) Serialize(e page.Encoder) (err error) {
-	if err = e.Encode(i.value); err != nil {
+	if err = e.Encode(&i.value); err != nil {
 		return
 	}
 	if err = e.Encode(i.id); err != nil {
@@ -246,28 +246,28 @@ func (i *ListItem) Serialize(e page.Encoder) (err error) {
 
 func (i *ListItem) Deserialize(dec page.Decoder) (err error) {
 	if err = dec.Decode(&i.value); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&i.id); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&i.label); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&i.attributes); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&i.shouldEscapeLabel); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&i.disabled); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&i.isDivider); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&i.anchorAttributes); err != nil {
-		return
+		panic(err)
 	}
 
 	return i.ItemList.Deserialize(dec)

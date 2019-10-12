@@ -13,6 +13,8 @@ import (
 type DateTextboxI interface {
 	TextboxI
 	SetFormat(format string) DateTextboxI
+	Date() datetime.DateTime
+	Format() string
 }
 
 // DateTextbox is a textbox that only permits dates and/or times to be entered into it.
@@ -32,7 +34,7 @@ func NewDateTextbox(parent page.ControlI, id string) *DateTextbox {
 
 func (d *DateTextbox) Init(self TextboxI, parent page.ControlI, id string) {
 	d.Textbox.Init(self, parent, id)
-	d.ValidateWith(DateValidator{ctrl: d})
+	d.ValidateWith(DateValidator{})
 	d.format = datetime.UsDateTime
 }
 
@@ -42,6 +44,12 @@ func (d *DateTextbox) SetFormat(format string) DateTextboxI {
 	d.format = format
 	return d
 }
+
+// Format returns the format string specified previously
+func (d *DateTextbox) Format() string {
+	return d.format
+}
+
 
 // SetValue will set the DateTextbox to the given value if possible.
 func (d *DateTextbox) SetValue(val interface{}) page.ControlI {
@@ -143,7 +151,6 @@ func (d *DateTextbox) Deserialize(dec page.Decoder) (err error) {
 }
 
 type DateValidator struct {
-	ctrl    *DateTextbox
 	Message string
 }
 
@@ -154,9 +161,10 @@ func (v DateValidator) Validate(c page.ControlI, s string) (msg string) {
 
 	// By the time the validator fires, we will have already parsed and validated the value.
 	// We just need to check to see if we were successful.
-	if v.ctrl.dt.IsZero() {
+	ctrl := c.(DateTextboxI)
+	if ctrl.Date().IsZero() {
 		if v.Message == "" {
-			return c.ΩT("Enter the format ") + v.ctrl.format
+			return c.ΩT("Enter the format ") + ctrl.Format()
 		} else {
 			return v.Message
 		}

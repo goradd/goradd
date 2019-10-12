@@ -275,7 +275,7 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 
 	if t.validators != nil {
 		for _, v := range t.validators {
-			if msg := v.Validate(t, t.value); msg != "" {
+			if msg := v.Validate(t.this(), t.value); msg != "" {
 				t.SetValidationError(msg)
 				return false
 			}
