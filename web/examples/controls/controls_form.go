@@ -71,8 +71,10 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 
 func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
 	pageContext := page.GetContext(ctx)
+	list := GetUnorderedList(f, ControlsFormListID)
+	list.Clear()
 	for _, c := range controls {
-		item := GetUnorderedList(f, ControlsFormListID).AddItem(c.name, c.key)
+		item := list.AddItem(c.name, c.key)
 		a := url.
 			NewBuilderFromUrl(*pageContext.URL).
 			SetValue("control", c.key).

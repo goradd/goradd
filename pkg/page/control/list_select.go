@@ -160,7 +160,8 @@ func (l *SelectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	a.SetDataAttribute("grctl", "selectlist")
 	a.Set("name", l.ID()) // needed for posts
 	if l.IsRequired() {
-		a.Set("required", "")
+		a.Set("required", "") // required for some css frameworks, but browser validation is flaky.
+							  // set the "novalidate" attribute on the form for server-side validation only.
 	}
 	return a
 }

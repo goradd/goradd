@@ -771,7 +771,7 @@ goradd = {
         gForm.trigger("posting", "Server");
 
         // Post custom javascript control values
-        if (goradd.isEmptyObj(_controlValues)) {
+        if (!goradd.isEmptyObj(_controlValues)) {
             params.controlValues = _controlValues;
         }
         goradd.el('Goradd__Params').value = JSON.stringify(params);
