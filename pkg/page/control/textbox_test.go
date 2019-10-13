@@ -1,6 +1,8 @@
 package control
 
 import (
+	"bytes"
+	"encoding/gob"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -60,3 +62,27 @@ func TestExportCreatorTextbox(t *testing.T) {
 	Placeholder:"placeholder",
 }`, s)
 }
+
+func TestTextbox_Serialize(t *testing.T) {
+	p := NewMockForm()
+
+	c := NewTextbox(p, "")
+	c.SetMinLength(2)
+	c.SetMaxLength(5)
+
+	c.MockFormValue("a")
+
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+
+	c.Serialize(enc)
+
+	c2 := Textbox{}
+	dec := gob.NewDecoder(&buf)
+	c2.Deserialize(dec)
+
+	assert.Equal(t, "a", c2.Text())
+	assert.Equal(t, 2, c2.MinLength())
+	assert.Equal(t, 5, c2.MaxLength())
+}
+

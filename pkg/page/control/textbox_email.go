@@ -78,7 +78,11 @@ func (t *EmailTextbox) ΩUpdateFormValues(ctx *page.Context) {
 	}
 	var parseErr error
 	t.items, parseErr = mail.ParseAddressList(t.Text())
-	t.parseErr = parseErr.Error()
+	if parseErr != nil {
+		t.parseErr = parseErr.Error()
+	} else {
+		t.parseErr = ""
+	}
 }
 
 // Addresses returns a slice of the individual addresses entered, stripped of any extra text entered.

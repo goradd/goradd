@@ -738,6 +738,8 @@ func (t *Table) Deserialize(dec page.Decoder) (err error) {
 
 	if s.CaptionID != "" {
 		t.captionId = s.CaptionID
+	} else {
+		t.caption = s.Caption
 	}
 
 	if v,ok := s.RowStyler.(string); ok {

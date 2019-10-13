@@ -617,11 +617,13 @@ func AttributeString(i interface{}) string {
 	}
 }
 
+/*
 type AttributeCreator map[string]string
 
 func (c AttributeCreator) Create() Attributes {
 	return Attributes(c)
 }
+*/
 
 func init() {
 	gob.Register(Attributes{})

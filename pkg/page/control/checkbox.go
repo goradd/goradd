@@ -47,7 +47,7 @@ type CheckboxCreator struct {
 	// LabelMode specifies how the label is drawn with the checkbox.
 	LabelMode html.LabelDrawingMode
 	// LabelAttributes are additional attributes placed on the label tag.
-	LabelAttributes html.AttributeCreator
+	LabelAttributes html.Attributes
 	// SaveState will save the value of the checkbox and restore it when the page is reentered.
 	SaveState bool
 	page.ControlOptions

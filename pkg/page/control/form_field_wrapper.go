@@ -294,11 +294,11 @@ type FormFieldWrapperCreator struct {
 	// that control is wrapped, you should explicitly sepecify the For control id here.
 	For string
 	// LabelAttributes are additional attributes to add to the label tag.
-	LabelAttributes html.AttributeCreator
+	LabelAttributes html.Attributes
 	// ErrorAttributes are additional attributes to add to the tag that displays the error.
-	ErrorAttributes html.AttributeCreator
+	ErrorAttributes html.Attributes
 	// InstructionAttributes are additional attributes to add to the tag that displays the instructions.
-	InstructionAttributes html.AttributeCreator
+	InstructionAttributes html.Attributes
 	// Set IsInline to true to use a "span" instead of a "div" in the wrapping tag.
 	IsInline bool
 	// ControlOptions are additional options for the wrapper tag

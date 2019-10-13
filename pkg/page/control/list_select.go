@@ -266,7 +266,7 @@ type SelectListCreator struct {
 	// Size specifies how many items to show, and turns the list into a scrolling list
 	Size int
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
-	Value string
+	Value interface{}
 	// OnChange is an action to take when the user changes what is selected (as in, when the javascript change event fires).
 	OnChange action.ActionI
 	// SaveState saves the selected value so that it is restored if the form is returned to.

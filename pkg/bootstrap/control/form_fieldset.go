@@ -115,7 +115,7 @@ type FormFieldsetCreator struct {
 	// like a RadioList or CheckboxList
 	Child page.Creator
 	// LegendAttributes are additional attributes to add to the label tag.
-	LegendAttributes html.AttributeCreator
+	LegendAttributes html.Attributes
 	// Instructions is help text that accompanies the control
 	Instructions string
 	// Set AsRow to true to put the legend on the same row as the content

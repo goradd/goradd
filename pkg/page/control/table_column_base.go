@@ -569,16 +569,16 @@ func Columns(cols ...ColumnCreator) []ColumnCreator {
 // ColumnOptions are settings you can apply to all types of table columns
 type ColumnOptions struct {
 	// CellAttributes is a static map of attributes to apply to every cell in the column
-	CellAttributes   html.AttributeCreator
+	CellAttributes   html.Attributes
 	// HeaderAttributes is a slice of attributes to apply to each row of the header cells in the column.
 	// Each item in the slice corresponds to a row of the header.
-	HeaderAttributes []html.AttributeCreator
+	HeaderAttributes []html.Attributes
 	// FooterAttributes is a slice of attributes to apply to each row of the footer cells in the column.
 	// Each item in the slice corresponds to a row of the footer.
-	FooterAttributes []html.AttributeCreator
+	FooterAttributes []html.Attributes
 	// ColTagAttributes applies attributes to the col tag if col tags are on in the table. There are limited uses for
 	// this, but in particular, you can style a column and give it an id. Use Span to set the span attribute.
-	ColTagAttributes html.AttributeCreator
+	ColTagAttributes html.Attributes
 	// Span is specifically for col tags to specify the width of the styling in the col tag.
 	Span             int
 	// AsHeader will cause the entire column to output header tags (th) instead of standard cell tags (td).
