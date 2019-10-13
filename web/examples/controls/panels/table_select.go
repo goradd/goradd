@@ -2,6 +2,7 @@ package panels
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -110,4 +111,5 @@ func (p *TableSelectPanel) Action(ctx context.Context, a page.ActionParams) {
 
 func init() {
 	page.RegisterControl(TableSelectPanel{})
+	gob.Register([]map[string]string{})
 }

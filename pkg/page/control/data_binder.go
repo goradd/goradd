@@ -108,11 +108,14 @@ func (d *DataManager) Serialize(e page.Encoder) (err error) {
 		DataProviderID: d.dataProviderID,
 		Data:           d.data,
 	}
-	return e.Encode(enc)
+	if err = e.Encode(enc); err != nil {
+		panic (err)
+	}
+	return
 }
 
 func (d *DataManager) Deserialize(dec page.Decoder) (err error) {
-	var enc encodedDataManager
+	enc := encodedDataManager{}
 
 	if err = dec.Decode(&enc); err != nil {
 		panic(err)

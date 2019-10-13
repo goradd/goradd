@@ -1523,7 +1523,7 @@ goradd.g.prototype = {
             }
         }
 
-        return undefined;
+        return oldV;
     },
 
     /**
