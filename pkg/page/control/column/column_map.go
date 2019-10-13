@@ -45,7 +45,7 @@ func (c *MapColumn) Serialize(e page.Encoder) (err error) {
 	if err = c.ColumnBase.Serialize(e); err != nil {
 		return
 	}
-	if err = e.Encode(c.key); err != nil {
+	if err = e.Encode(&c.key); err != nil {
 		return
 	}
 	return
@@ -53,10 +53,10 @@ func (c *MapColumn) Serialize(e page.Encoder) (err error) {
 
 func (c *MapColumn) Deserialize(dec page.Decoder) (err error) {
 	if err = c.ColumnBase.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&c.key); err != nil {
-		return
+		panic(err)
 	}
 	return
 }

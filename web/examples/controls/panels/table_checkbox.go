@@ -74,7 +74,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Server",
-			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+			OnSubmit: action.Server("checkboxPanel", ButtonSubmit),
 		},
 	)
 }

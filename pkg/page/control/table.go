@@ -716,10 +716,10 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 
 func (t *Table) Deserialize(dec page.Decoder) (err error) {
 	if err = t.Control.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 	if err = t.DataManager.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 
 	var s tableEncoded

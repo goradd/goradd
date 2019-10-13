@@ -327,3 +327,7 @@ func (e *Event) GobDecode(data []byte) (err error) {
 
 	return nil
 }
+
+func init() {
+	gob.Register(map[string]interface{}{}) // This is so that action values that use this can be serialized
+}

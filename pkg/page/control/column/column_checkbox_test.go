@@ -10,14 +10,14 @@ import (
 	"testing"
 )
 
-func TestAlias_Attributes(t *testing.T) {
-	col := NewAliasColumn("Alias")
+func TestCheckbox_Attributes(t *testing.T) {
+	col := NewCheckboxColumn(DefaultCheckboxProvider{})
 	col.ColTagAttributes().Set("a","b")
 	assert.Equal(t, "b", col.ColTagAttributes().Get("a"))
 }
 
 
-func TestAliasColumn_Serialize(t *testing.T) {
+func TestCheckboxColumn_Serialize(t *testing.T) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 
@@ -27,10 +27,10 @@ func TestAliasColumn_Serialize(t *testing.T) {
 		control.TableCreator{
 			ID:                "table",
 			Columns: control.Columns(
-				AliasColumnCreator{
+				CheckboxColumnCreator{
 					ID:            "a1",
-					Alias:         "DataOption",
-					Title:         "Alias",
+					CheckboxProvider:         DefaultCheckboxProvider{},
+					Title:         "Checkbox",
 					Sortable:      true,
 					ColumnOptions: control.ColumnOptions{
 						CellAttributes:   nil,
@@ -56,7 +56,7 @@ func TestAliasColumn_Serialize(t *testing.T) {
 
 	c := control.GetTable(f, "table")
 	col := c.GetColumnByID("a1")
-	assert.Equal(t, "Alias", col.Title())
+	assert.Equal(t, "Checkbox", col.Title())
 	assert.Equal(t, "b", col.ColTagAttributes().Get("a"))
 
 	c.Serialize(enc)
@@ -68,6 +68,6 @@ func TestAliasColumn_Serialize(t *testing.T) {
 	col = c2.GetColumnByID("a1")
 
 	assert.True(t, col.IsHidden())
-	assert.Equal(t, "Alias", col.Title())
+	assert.Equal(t, "Checkbox", col.Title())
 	assert.Equal(t, "b", col.ColTagAttributes().Get("a"))
 }

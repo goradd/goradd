@@ -261,21 +261,26 @@ func (c *CheckboxColumn) UnmarshalState(m maps.Loader) {
 	}
 }
 
+type checkboxColumnEncoded struct {
+	ShowCheckAll      bool
+	Checkboxer        CheckboxProvider
+	Current			  map[string]bool
+	Changes           map[string]bool
+}
+
 func (c *CheckboxColumn) Serialize(e page.Encoder) (err error) {
 	if err = c.ColumnBase.Serialize(e); err != nil {
 		return
 	}
-	if err = e.Encode(c.showCheckAll); err != nil {
-		return
+
+	s := checkboxColumnEncoded{
+		ShowCheckAll: c.showCheckAll,
+		Checkboxer:   c.checkboxer,
+		Current:      c.current,
+		Changes:      c.changes,
 	}
-	if err = e.Encode(c.checkboxer); err != nil {
-		return
-	}
-	if err = e.Encode(c.current); err != nil {
-		return
-	}
-	if err = e.Encode(c.changes); err != nil {
-		return
+	if err = e.Encode(s); err != nil {
+		panic(err)
 	}
 
 	return
@@ -283,20 +288,19 @@ func (c *CheckboxColumn) Serialize(e page.Encoder) (err error) {
 
 func (c *CheckboxColumn) Deserialize(dec page.Decoder) (err error) {
 	if err = c.ColumnBase.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
-	if err = dec.Decode(&c.showCheckAll); err != nil {
-		return
+
+	s := checkboxColumnEncoded{}
+	if err = dec.Decode(&s); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&c.checkboxer); err != nil {
-		return
-	}
-	if err = dec.Decode(&c.current); err != nil {
-		return
-	}
-	if err = dec.Decode(&c.changes); err != nil {
-		return
-	}
+
+	c.showCheckAll = s.ShowCheckAll
+	c.checkboxer = s.Checkboxer
+	c.current = s.Current
+	c.changes = s.Changes
+
 	return
 }
 

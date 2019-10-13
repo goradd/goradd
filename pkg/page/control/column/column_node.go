@@ -88,10 +88,10 @@ func (c *NodeColumn) Serialize(e page.Encoder) (err error) {
 
 func (c *NodeColumn) Deserialize(dec page.Decoder) (err error) {
 	if err = c.ColumnBase.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&c.node); err != nil {
-		return
+		panic(err)
 	}
 	return
 }

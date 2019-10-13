@@ -39,4 +39,5 @@ func TestDataPager_Serialize(t *testing.T) {
 
 	assert.Equal(t, 11, c2.maxPageButtons)
 	assert.Equal(t, "Thing", c2.ObjectName)
+	assert.Equal(t, "Previous Thing", c2.LabelForPrevious)
 }

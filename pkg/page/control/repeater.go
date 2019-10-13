@@ -113,35 +113,35 @@ func (r *Repeater) Serialize(e page.Encoder) (err error) {
 
 	// If itemHtmler is a control, we will just serialize the control's id, since the control will get
 	// serialized elsewhere. Otherwise, we serialize the itemHtmler itself.
+	var htmler interface{} = r.itemHtmler
 	if ctrl, ok := r.itemHtmler.(page.ControlI); ok {
-		if err = e.Encode(ctrl.ID()); err != nil {
-			return err
-		}
-	} else {
-		if err = e.Encode(r.itemHtmler); err != nil {
-			return err
-		}
+		htmler = ctrl.ID()
+	}
+	if err = e.Encode(&htmler); err != nil {
+		return err
 	}
 	return
 }
 
 func (r *Repeater) Deserialize(dec page.Decoder) (err error) {
 	if err = r.Control.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 	if err = r.PagedControl.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 	if err = r.DataManager.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 
 	var htmler interface{}
 	if err = dec.Decode(&htmler); err != nil {
-		return
+		panic(err)
 	}
 	if id,ok := htmler.(string); ok {
 		r.itemHtmlerId = id
+	} else {
+		r.itemHtmler = htmler.(RepeaterHtmler)
 	}
 	return
 }

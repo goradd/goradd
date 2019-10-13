@@ -493,7 +493,7 @@ func (c *ColumnBase) Serialize(e page.Encoder) (err error) {
 func (c *ColumnBase) Deserialize(dec page.Decoder) (err error) {
 	var s columnBaseEncoded
 	if err = dec.Decode(&s); err != nil {
-		return
+		panic(err)
 	}
 
 	c.id = s.ID

@@ -61,10 +61,10 @@ func (c *AliasColumn) Serialize(e page.Encoder) (err error) {
 
 func (c *AliasColumn) Deserialize(dec page.Decoder) (err error) {
 	if err = c.ColumnBase.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&c.alias); err != nil {
-		return
+		panic(err)
 	}
 	return
 }

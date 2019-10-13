@@ -1718,7 +1718,9 @@ func (c *Control) Serialize(e Encoder) (err error) {
 		s.ChildIDs = append(s.ChildIDs, child.ID())
 	}
 
-	err = e.Encode(s)
+	if err = e.Encode(s); err != nil {
+		panic(err)
+	}
 
 	return
 }
@@ -1731,7 +1733,7 @@ func (c *Control) Deserialize(d Decoder) (err error) {
 	var s controlEncoding
 
 	if err = d.Decode(&s); err != nil {
-		return
+		panic(err)
 	}
 
 	c.id = s.Id

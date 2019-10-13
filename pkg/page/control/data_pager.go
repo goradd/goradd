@@ -159,19 +159,19 @@ func (c *PagedControl) Serialize(e page.Encoder) (err error) {
 
 func (c *PagedControl) Deserialize(dec page.Decoder) (err error) {
 	if err = dec.Decode(&c.totalItems); err != nil {
-		return
+		panic(err)
 	}
 
 	if err = dec.Decode(&c.pageSize); err != nil {
-		return
+		panic(err)
 	}
 
 	if err = dec.Decode(&c.pageNum); err != nil {
-		return
+		panic(err)
 	}
 
 	if err = dec.Decode(&c.dataPagers); err != nil {
-		return
+		panic(err)
 	}
 
 	return
@@ -538,27 +538,31 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 
 func (d *DataPager) Deserialize(dec page.Decoder) (err error) {
 	if err = d.Control.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 
 	if err = dec.Decode(&d.maxPageButtons); err != nil {
-		return
+		panic(err)
 	}
 
 	if err = dec.Decode(&d.ObjectName); err != nil {
-		return
+		panic(err)
 	}
 
 	if err = dec.Decode(&d.ObjectPluralName); err != nil {
-		return
+		panic(err)
 	}
 
 	if err = dec.Decode(&d.LabelForNext); err != nil {
-		return
+		panic(err)
+	}
+
+	if err = dec.Decode(&d.LabelForPrevious); err != nil {
+		panic(err)
 	}
 
 	if err = dec.Decode(&d.pagedControlID); err != nil {
-		return
+		panic(err)
 	}
 
 	return

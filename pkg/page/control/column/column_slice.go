@@ -49,10 +49,10 @@ func (c *SliceColumn) Serialize(e page.Encoder) (err error) {
 
 func (c *SliceColumn) Deserialize(dec page.Decoder) (err error) {
 	if err = c.ColumnBase.Deserialize(dec); err != nil {
-		return
+		panic(err)
 	}
 	if err = dec.Decode(&c.index); err != nil {
-		return
+		panic(err)
 	}
 	return
 }
