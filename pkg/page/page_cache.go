@@ -104,10 +104,8 @@ func (o *SerializedPageCache) Set(pageId string, page *Page) {
 	enc := pageEncoder.NewEncoder(&b)
 	_ = enc.Encode(PageCacheVersion)
 	_ = enc.Encode(page.Form().ID())
-	err := enc.Encode(page)
-	if err != nil {
-		panic(err) // could be that a control is not registered, so we need to alert the developer
-	}
+	//err := enc.Encode(page)
+	_ = page.Serialize(enc)
 	o.LruCache.Set(pageId, b.Bytes())
 }
 
@@ -136,7 +134,7 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 		panic("Form creation function not found for form: " + formId)
 	}
 
-	if err := dec.Decode(&p); err != nil {
+	if err := p.Deserialize(dec); err != nil {
 		panic(err)
 	}
 

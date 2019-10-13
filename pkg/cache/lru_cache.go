@@ -72,6 +72,7 @@ func (o *LruCache) Set(key string, v interface{}) {
 			o.order = append(o.order[:i], o.order[i+1:]...)
 			o.order = append(o.order, key)
 			item.timestamp = t
+			item.v = v
 			o.items[key] = item
 		}
 	} else {

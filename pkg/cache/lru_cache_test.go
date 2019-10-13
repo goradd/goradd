@@ -21,6 +21,28 @@ func TestBasicLruCache(t *testing.T) {
 
 }
 
+func TestLruReplace(t *testing.T) {
+	c := NewLruCache(100, 60*60)
+
+	p1 := "1"
+	p2 := "2"
+
+	c.Set("1", p1)
+	c.Set("2", p2)
+
+	p3 := c.Get("1")
+	if p3 != p1 {
+		t.Error("Could not retrieve item")
+	}
+
+	p4 := "4"
+	c.Set("1", p4)
+
+	if c.Get("1") != "4" {
+		t.Error("Could not replace item")
+	}
+}
+
 func TestLruCacheExit(t *testing.T) {
 	c := NewLruCache(1, 60*60)
 	p1 := "1"

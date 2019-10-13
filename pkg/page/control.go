@@ -1718,7 +1718,7 @@ func (c *Control) Serialize(e Encoder) (err error) {
 		s.ChildIDs = append(s.ChildIDs, child.ID())
 	}
 
-	err = e.Encode(&s)
+	err = e.Encode(s)
 
 	return
 }
@@ -1750,6 +1750,7 @@ func (c *Control) Deserialize(d Decoder) (err error) {
 	c.isBlock = s.IsBlock
 	c.ErrorForRequired = s.ErrorForRequired
 	c.ValidMessage = s.ValidMessage
+	c.validationMessage = s.ValidationMessage
 	c.validationState = s.ValidationState
 	c.validationType = s.ValidationType
 	c.validationTargets = s.ValidationTargets

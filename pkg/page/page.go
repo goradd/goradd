@@ -8,7 +8,6 @@ package page
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
@@ -299,8 +298,9 @@ func (p *Page) DrawAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return
 }
 
+/* Serialize and Deserialize are now called directly
 // GobEncode here is implemented to intercept the GobSerializer to only encode an empty structure. We use this as part
-// of our overall serialization stratgey for forms. Controls still need to be registered with gob.
+// of our overall serialization strategy for forms. Controls still need to be registered with gob.
 func (p *Page) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
@@ -314,6 +314,7 @@ func (p *Page) GobDecode(data []byte) (err error) {
 	err = p.Deserialize(dec)
 	return err
 }
+*/
 
 func (p *Page) MarshalJSON() (data []byte, err error) {
 	return

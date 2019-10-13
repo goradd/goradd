@@ -326,7 +326,7 @@ type encodedTextbox struct {
 // Serialize is used by the framework to serialize the textbox into the pagestate.
 func (t *Textbox) Serialize(e page.Encoder) (err error) {
 	if err = t.Control.Serialize(e); err != nil {
-		return
+		panic(err)
 	}
 
 	s := encodedTextbox{
@@ -341,7 +341,7 @@ func (t *Textbox) Serialize(e page.Encoder) (err error) {
 	}
 
 	if err = e.Encode(s); err != nil {
-		return err
+		panic(err)
 	}
 	return
 }

@@ -95,16 +95,16 @@ func (t *EmailTextbox) Addresses() (ret []string) {
 
 func (t *EmailTextbox) Serialize(e page.Encoder) (err error) {
 	if err = t.Textbox.Serialize(e); err != nil {
-		return
+		panic(err)
 	}
 	if err = e.Encode(t.maxItemCount); err != nil {
-		return
+		panic(err)
 	}
 	if err = e.Encode(t.items); err != nil {
-		return
+		panic(err)
 	}
 	if err = e.Encode(t.parseErr); err != nil {
-		return
+		panic(err)
 	}
 
 	return
