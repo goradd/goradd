@@ -48,7 +48,7 @@ func TestPagedTable_Serialize(t *testing.T) {
 			RowStylerID:       f.ID(),
 			HeaderRowStyler:   f,
 			FooterRowStyler:   f,
-			DataProviderID:    "table",
+			DataProvider:      f,
 			Sortable:          true,
 			SortHistoryLimit:  3,
 			OnCellClick:       nil,

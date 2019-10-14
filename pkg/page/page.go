@@ -14,6 +14,7 @@ import (
 	"github.com/goradd/goradd/pkg/i18n"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
+	reflect2 "github.com/goradd/goradd/pkg/reflect"
 	"github.com/goradd/goradd/pkg/session"
 	"reflect"
 	"strconv"
@@ -365,12 +366,42 @@ func (p *Page) Serialize(e Encoder) (err error) {
 		if err = e.Encode(controlRegistryID(c)); err != nil {
 			return
 		}
-		if err = c.Serialize(e); err != nil {
+
+
+		if err = p.serializeControl(c, e); err != nil {
 			return
 		}
 	}
 
 	return
+}
+
+// Users can create exported items on their objects and they will be serialized and restored automatically
+// Alternatively they can implement their own Serialize method.
+func (p *Page) serializeControl(c ControlI, e Encoder) error {
+	v := reflect.Indirect(reflect.ValueOf(c))
+	fieldCount := v.NumField()
+	_ = fieldCount
+	exportedFields := reflect2.FieldValues(c)
+
+	// convert all embedded controls to the id of the control
+	for _,val := range exportedFields {
+		if _,ok := val.(ControlI); ok {
+			panic("Do not embed controls in other controls. Use Page().GetControl() in real time")
+
+			// TODO: We could potentially support embedded controls by saving and restoring using ids,
+			// but it would mean we should serialize in top-down order so that when we unserialize, child
+			// controls will already be available
+			//exportedFields[name] = ctrl.ID()
+		}
+	}
+	if err := c.Serialize(e); err != nil {
+		return err
+	}
+	if err := e.Encode(exportedFields); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Deserialize is called by the framework to deserialize the page state.
@@ -379,6 +410,7 @@ func (p *Page) Deserialize(d Decoder) (err error) {
 	if err = d.Decode(&s); err != nil {
 		return
 	}
+
 	p.stateId = s.StateId
 	p.idPrefix = s.IdPrefix
 	p.title = s.Title
@@ -405,7 +437,7 @@ func (p *Page) Deserialize(d Decoder) (err error) {
 
 		c := createRegisteredControl(registryID, p)
 		p.controlRegistry[id] = c
-		if err = c.Deserialize(d); err != nil {
+		if err = p.deserializeControl(c, d); err != nil {
 			return
 		}
 	}
@@ -413,6 +445,17 @@ func (p *Page) Deserialize(d Decoder) (err error) {
 	p.form = p.controlRegistry[s.FormID].(FormI)
 
 	return err
+}
+
+func (p *Page) deserializeControl(c ControlI, d Decoder) error {
+	if err := c.Deserialize(d); err != nil {
+		return err
+	}
+	var exportedFields map[string]interface{}
+	if err := d.Decode(&exportedFields); err != nil {
+		return err
+	}
+	return reflect2.SetFieldValues(c, exportedFields)
 }
 
 // AddHtmlHeaderTag adds the given tag to the head section of the page.
