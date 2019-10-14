@@ -118,10 +118,11 @@ func (c PagedTableCreator) Init(ctx context.Context, ctrl PagedTableI) {
 		FooterRowStyler:  c.FooterRowStyler,
 		Columns:          c.Columns,
 		DataProvider:     c.DataProvider,
+		DataProviderID:   c.DataProviderID,
 		Data:             c.Data,
 		Sortable:         c.Sortable,
 		SortHistoryLimit: c.SortHistoryLimit,
-		OnCellClick: c.OnCellClick,
+		OnCellClick: 	  c.OnCellClick,
 		ControlOptions:   c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)

@@ -10,8 +10,8 @@ const (
 	CellClickRowIndex    = `this.parentElement.rowIndex`
 	CellClickColumnIndex = `this.cellIndex`
 	CellClickCellId      = `this.id`
-	CellClickRowId       = `g$(this).parent().id`
-	CellClickRowValue    = `g$(g$(this).parent()).data("value")`
+	CellClickRowId       = `this.parentElement.id`
+	CellClickRowValue    = `g$(this.parentElement).data("value")`
 	CellClickColId       = `g$(g$(g$(this).closest("table")).qs("thead")).qa("th")[this.cellIndex].id`
 )
 

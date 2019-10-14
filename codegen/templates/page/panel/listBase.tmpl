@@ -29,13 +29,10 @@ import(
 
 type {{= panelName }} struct {
 	Panel
-	List *PagedTable
-	Paginator *DataPager
 }
 
 type {{= panelName }}I interface {
 	PanelI
-	CreateColumns()
 	BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder
 }
 
@@ -102,7 +99,6 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
 	)
 }
 
-
 // GetClickedRowValue returns the value of the row that was clicked, based on the action parameters
 func (p *{{= panelName }}) GetClickedRowValue(a page.ActionParams) string {
 	return a.ActionValueString()
@@ -111,16 +107,17 @@ func (p *{{= panelName }}) GetClickedRowValue(a page.ActionParams) string {
 // BindData determines what records will be displayed in the lister.
 // Override to change what records get displayed.
 func (p *{{= panelName }}) BindData(ctx context.Context, s goraddctrl.DataManagerI) {
-	if p.List.HasDataPagers() {
-		p.List.SetTotalItems(p.this().BuildQuery(ctx).Count(ctx, false))
+    list := GetPagedTable(p, p.ID() + "-list")
+	if list.HasDataPagers() {
+		list.SetTotalItems(p.this().BuildQuery(ctx).Count(ctx, false))
 	}
 
 	builder := p.this().BuildQuery(ctx)
 
 	// Since we are asking the database to do the sort, we have to make a slice of nodes
-	sortNodes := column.MakeNodeSlice(p.List.SortColumns())
+	sortNodes := column.MakeNodeSlice(list.SortColumns())
 
-	d := builder.Limit(p.List.SqlLimits()).
+	d := builder.Limit(list.SqlLimits()).
 		OrderBy(sortNodes...).
 		Load(ctx)
 

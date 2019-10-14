@@ -1547,6 +1547,7 @@ goradd.g.prototype = {
      *      will become the "this" of the function.
      * @param {object} [options] Optional additional options as follows:
      *      selector: {string} Same as selector above, just specified in options
+     *      targetElement: {boolean} True to make the "this" be the element rather than the goradd object.
      *      bubbles: {boolean} When used with a selector, determines if selector filters parent elements (true), or just
      *        the target. If true, and the event passes the filter, the attached goradd.match object will be the element
      *        that is the first matching selector that the event encountered as it bubbled.
@@ -1591,6 +1592,9 @@ goradd.g.prototype = {
             }
             if (!!options.selector) {
                 selector = options.selector;
+            }
+            if (options.targetElement) {
+                target = el;
             }
         }
 

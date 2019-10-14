@@ -230,7 +230,7 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 	if !config.Minify {
 		actionJs = html.Indent(actionJs)
 	}
-	actionJs = fmt.Sprintf("goradd.queueAction({f: (function(){\n%s\n}).bind(this), d: %d, name: '%s'});\n", actionJs, e.delay, e.JsEvent)
+	actionJs = fmt.Sprintf("goradd.queueAction({f: (function(){\n%s\n}).bind(this.element), d: %d, name: '%s'});\n", actionJs, e.delay, e.JsEvent)
 
 	if e.condition != "" {
 		js = fmt.Sprintf("if (%s) {%s%s\n};", e.condition, js, actionJs)

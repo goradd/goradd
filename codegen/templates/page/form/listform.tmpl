@@ -87,6 +87,7 @@ func (f *{{= formName }}) LoadControls(ctx context.Context) {
 // init functions are called once when the web server first starts up.
 func init() {
 	page.RegisterPage({{= title }}ListPath,  New{{= formName }}, {{= title }}ListID)
+	page.RegisterControl({{= formName }}{})
 }
 
 
