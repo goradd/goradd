@@ -1,6 +1,6 @@
 {{< package }}orm{{end}}
 {{< imports }}
-	"github.com/goradd/goradd/web/examples/model"
+	"github.com/goradd/goradd/web/examples/genmodel"
 {{end}}
 {{< control }}LoadPanel{{end}}
 

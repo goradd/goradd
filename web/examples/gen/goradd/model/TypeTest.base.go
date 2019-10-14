@@ -5,11 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
 	"bytes"
@@ -721,7 +721,7 @@ func (b *TypeTestsBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
-// joinOrSelect us a private helper function for the Load* functions
+// joinOrSelect is a private helper function for the Load* functions
 func (b *TypeTestsBuilder) joinOrSelect(nodes ...query.NodeI) *TypeTestsBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
@@ -1224,165 +1224,165 @@ func (o *typeTestBase) Get(key string) interface{} {
 // It should be used for transmitting database object over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
-func (o *typeTestBase) MarshalBinary() (data []byte, err error) {
+func (o *typeTestBase) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 
-	if err = encoder.Encode(o.id); err != nil {
-		return
+	if err := encoder.Encode(o.id); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.idIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.date); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.dateIsNull); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.dateIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.dateIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.idIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.time); err != nil {
-		return
+	if err := encoder.Encode(o.date); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.timeIsNull); err != nil {
-		return
+	if err := encoder.Encode(o.dateIsNull); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.timeIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.dateIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.timeIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.dateTime); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.dateTimeIsNull); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.dateTimeIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.dateTimeIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.dateIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.ts); err != nil {
-		return
+	if err := encoder.Encode(o.time); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.tsIsNull); err != nil {
-		return
+	if err := encoder.Encode(o.timeIsNull); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.tsIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.timeIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.tsIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.testInt); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.testIntIsNull); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.testIntIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.testIntIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.timeIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.testFloat); err != nil {
-		return
+	if err := encoder.Encode(o.dateTime); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.testFloatIsNull); err != nil {
-		return
+	if err := encoder.Encode(o.dateTimeIsNull); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.testFloatIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.dateTimeIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.testFloatIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.testDouble); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.testDoubleIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.testDoubleIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.dateTimeIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.testText); err != nil {
-		return
+	if err := encoder.Encode(o.ts); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.testTextIsNull); err != nil {
-		return
+	if err := encoder.Encode(o.tsIsNull); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.testTextIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.tsIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.testTextIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.testBit); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.testBitIsNull); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.testBitIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.testBitIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.tsIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.testVarchar); err != nil {
-		return
+	if err := encoder.Encode(o.testInt); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.testVarcharIsNull); err != nil {
-		return
+	if err := encoder.Encode(o.testIntIsNull); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.testVarcharIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.testIntIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.testVarcharIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.testIntIsDirty); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.testFloat); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testFloatIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testFloatIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testFloatIsDirty); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.testDouble); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testDoubleIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testDoubleIsDirty); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.testText); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testTextIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testTextIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testTextIsDirty); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.testBit); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testBitIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testBitIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testBitIsDirty); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.testVarchar); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testVarcharIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testVarcharIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.testVarcharIsDirty); err != nil {
+		return nil, err
 	}
 
 	if o._aliases == nil {
-		if err = encoder.Encode(false); err != nil {
-			return
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
 		}
 	} else {
-		if err = encoder.Encode(true); err != nil {
-			return
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
 		}
-		if err = encoder.Encode(o._aliases); err != nil {
-			return
+		if err := encoder.Encode(o._aliases); err != nil {
+			return nil, err
 		}
 	}
 
-	if err = encoder.Encode(o._restored); err != nil {
-		return
+	if err := encoder.Encode(o._restored); err != nil {
+		return nil, err
 	}
 
-	return
+	return buf.Bytes(), nil
 }
 
 func (o *typeTestBase) UnmarshalBinary(data []byte) (err error) {
@@ -1541,7 +1541,7 @@ func (o *typeTestBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	return err
+	return
 }
 
 // MarshalJSON serializes the object into a JSON object.

@@ -5,11 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
 	"bytes"
@@ -292,7 +292,7 @@ func (b *TmpsBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
-// joinOrSelect us a private helper function for the Load* functions
+// joinOrSelect is a private helper function for the Load* functions
 func (b *TmpsBuilder) joinOrSelect(nodes ...query.NodeI) *TmpsBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
@@ -450,48 +450,48 @@ func (o *tmpBase) Get(key string) interface{} {
 // It should be used for transmitting database object over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
-func (o *tmpBase) MarshalBinary() (data []byte, err error) {
+func (o *tmpBase) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 
-	if err = encoder.Encode(o.d); err != nil {
-		return
+	if err := encoder.Encode(o.d); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.dIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.dIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.dIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.dIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.i); err != nil {
-		return
+	if err := encoder.Encode(o.i); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.iIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.iIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.iIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.iIsDirty); err != nil {
+		return nil, err
 	}
 
 	if o._aliases == nil {
-		if err = encoder.Encode(false); err != nil {
-			return
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
 		}
 	} else {
-		if err = encoder.Encode(true); err != nil {
-			return
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
 		}
-		if err = encoder.Encode(o._aliases); err != nil {
-			return
+		if err := encoder.Encode(o._aliases); err != nil {
+			return nil, err
 		}
 	}
 
-	if err = encoder.Encode(o._restored); err != nil {
-		return
+	if err := encoder.Encode(o._restored); err != nil {
+		return nil, err
 	}
 
-	return
+	return buf.Bytes(), nil
 }
 
 func (o *tmpBase) UnmarshalBinary(data []byte) (err error) {
@@ -533,7 +533,7 @@ func (o *tmpBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	return err
+	return
 }
 
 // MarshalJSON serializes the object into a JSON object.

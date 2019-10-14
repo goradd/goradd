@@ -5,11 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
 	"bytes"
@@ -17,11 +17,11 @@ import (
 	"encoding/json"
 )
 
-// loginBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
+// addressBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
 // Do not directly access the internal variables, but rather use the accessor functions, since this class maintains internal state
 // related to the variables.
 
-type loginBase struct {
+type addressBase struct {
 	id        string
 	idIsValid bool
 	idIsDirty bool
@@ -32,18 +32,14 @@ type loginBase struct {
 	personIDIsDirty bool
 	oPerson         *Person
 
-	username        string
-	usernameIsValid bool
-	usernameIsDirty bool
+	street        string
+	streetIsValid bool
+	streetIsDirty bool
 
-	password        string
-	passwordIsNull  bool
-	passwordIsValid bool
-	passwordIsDirty bool
-
-	isEnabled        bool
-	isEnabledIsValid bool
-	isEnabledIsDirty bool
+	city        string
+	cityIsNull  bool
+	cityIsValid bool
+	cityIsDirty bool
 
 	// Custom aliases, if specified
 	_aliases map[string]interface{}
@@ -53,24 +49,22 @@ type loginBase struct {
 }
 
 const (
-	LoginIDDefault        = ""
-	LoginPersonIDDefault  = ""
-	LoginUsernameDefault  = ""
-	LoginPasswordDefault  = ""
-	LoginIsEnabledDefault = false
+	AddressIDDefault       = ""
+	AddressPersonIDDefault = ""
+	AddressStreetDefault   = ""
+	AddressCityDefault     = ""
 )
 
 const (
-	LoginID        = `ID`
-	LoginPersonID  = `PersonID`
-	LoginPerson    = `Person`
-	LoginUsername  = `Username`
-	LoginPassword  = `Password`
-	LoginIsEnabled = `IsEnabled`
+	AddressID       = `ID`
+	AddressPersonID = `PersonID`
+	AddressPerson   = `Person`
+	AddressStreet   = `Street`
+	AddressCity     = `City`
 )
 
-// Initialize or re-initialize a Login database object to default values.
-func (o *loginBase) Initialize() {
+// Initialize or re-initialize a Address database object to default values.
+func (o *addressBase) Initialize() {
 
 	o.id = ""
 	o.idIsValid = false
@@ -81,37 +75,33 @@ func (o *loginBase) Initialize() {
 	o.personIDIsValid = true
 	o.personIDIsDirty = true
 
-	o.username = ""
-	o.usernameIsValid = false
-	o.usernameIsDirty = false
+	o.street = ""
+	o.streetIsValid = false
+	o.streetIsDirty = false
 
-	o.password = ""
-	o.passwordIsNull = true
-	o.passwordIsValid = true
-	o.passwordIsDirty = true
-
-	o.isEnabled = false
-	o.isEnabledIsValid = false
-	o.isEnabledIsDirty = false
+	o.city = ""
+	o.cityIsNull = true
+	o.cityIsValid = true
+	o.cityIsDirty = true
 
 	o._restored = false
 }
 
-func (o *loginBase) PrimaryKey() string {
+func (o *addressBase) PrimaryKey() string {
 	return o.id
 }
 
 // ID returns the loaded value of ID.
-func (o *loginBase) ID() string {
+func (o *addressBase) ID() string {
 	return fmt.Sprint(o.id)
 }
 
 // IDIsValid returns true if the value was loaded from the database or has been set.
-func (o *loginBase) IDIsValid() bool {
+func (o *addressBase) IDIsValid() bool {
 	return o._restored && o.idIsValid
 }
 
-func (o *loginBase) PersonID() string {
+func (o *addressBase) PersonID() string {
 	if o._restored && !o.personIDIsValid {
 		panic("personID was not selected in the last query and so is not valid")
 	}
@@ -119,23 +109,23 @@ func (o *loginBase) PersonID() string {
 }
 
 // PersonIDIsValid returns true if the value was loaded from the database or has been set.
-func (o *loginBase) PersonIDIsValid() bool {
+func (o *addressBase) PersonIDIsValid() bool {
 	return o.personIDIsValid
 }
 
 // PersonIDIsNull returns true if the related database value is null.
-func (o *loginBase) PersonIDIsNull() bool {
+func (o *addressBase) PersonIDIsNull() bool {
 	return o.personIDIsNull
 }
 
 // Person returns the current value of the loaded Person, and nil if its not loaded.
-func (o *loginBase) Person() *Person {
+func (o *addressBase) Person() *Person {
 	return o.oPerson
 }
 
 // LoadPerson returns the related Person. If it is not already loaded,
 // it will attempt to load it first.
-func (o *loginBase) LoadPerson(ctx context.Context) *Person {
+func (o *addressBase) LoadPerson(ctx context.Context) *Person {
 	if !o.personIDIsValid {
 		return nil
 	}
@@ -147,7 +137,7 @@ func (o *loginBase) LoadPerson(ctx context.Context) *Person {
 	return o.oPerson
 }
 
-func (o *loginBase) SetPersonID(i interface{}) {
+func (o *addressBase) SetPersonID(i interface{}) {
 	o.personIDIsValid = true
 	if i == nil {
 		if !o.personIDIsNull {
@@ -170,7 +160,7 @@ func (o *loginBase) SetPersonID(i interface{}) {
 	}
 }
 
-func (o *loginBase) SetPerson(v *Person) {
+func (o *addressBase) SetPerson(v *Person) {
 	o.personIDIsValid = true
 	if v == nil {
 		if !o.personIDIsNull || !o._restored {
@@ -189,90 +179,68 @@ func (o *loginBase) SetPerson(v *Person) {
 	}
 }
 
-func (o *loginBase) Username() string {
-	if o._restored && !o.usernameIsValid {
-		panic("username was not selected in the last query and so is not valid")
+func (o *addressBase) Street() string {
+	if o._restored && !o.streetIsValid {
+		panic("street was not selected in the last query and so is not valid")
 	}
-	return o.username
+	return o.street
 }
 
-// UsernameIsValid returns true if the value was loaded from the database or has been set.
-func (o *loginBase) UsernameIsValid() bool {
-	return o.usernameIsValid
+// StreetIsValid returns true if the value was loaded from the database or has been set.
+func (o *addressBase) StreetIsValid() bool {
+	return o.streetIsValid
 }
 
-// SetUsername sets the value of Username in the object, to be saved later using the Save() function.
-func (o *loginBase) SetUsername(v string) {
-	o.usernameIsValid = true
-	if o.username != v || !o._restored {
-		o.username = v
-		o.usernameIsDirty = true
+// SetStreet sets the value of Street in the object, to be saved later using the Save() function.
+func (o *addressBase) SetStreet(v string) {
+	o.streetIsValid = true
+	if o.street != v || !o._restored {
+		o.street = v
+		o.streetIsDirty = true
 	}
 
 }
 
-func (o *loginBase) Password() string {
-	if o._restored && !o.passwordIsValid {
-		panic("password was not selected in the last query and so is not valid")
+func (o *addressBase) City() string {
+	if o._restored && !o.cityIsValid {
+		panic("city was not selected in the last query and so is not valid")
 	}
-	return o.password
+	return o.city
 }
 
-// PasswordIsValid returns true if the value was loaded from the database or has been set.
-func (o *loginBase) PasswordIsValid() bool {
-	return o.passwordIsValid
+// CityIsValid returns true if the value was loaded from the database or has been set.
+func (o *addressBase) CityIsValid() bool {
+	return o.cityIsValid
 }
 
-// PasswordIsNull returns true if the related database value is null.
-func (o *loginBase) PasswordIsNull() bool {
-	return o.passwordIsNull
+// CityIsNull returns true if the related database value is null.
+func (o *addressBase) CityIsNull() bool {
+	return o.cityIsNull
 }
 
-func (o *loginBase) SetPassword(i interface{}) {
-	o.passwordIsValid = true
+func (o *addressBase) SetCity(i interface{}) {
+	o.cityIsValid = true
 	if i == nil {
-		if !o.passwordIsNull {
-			o.passwordIsNull = true
-			o.passwordIsDirty = true
-			o.password = ""
+		if !o.cityIsNull {
+			o.cityIsNull = true
+			o.cityIsDirty = true
+			o.city = ""
 		}
 	} else {
 		v := i.(string)
-		if o.passwordIsNull ||
+		if o.cityIsNull ||
 			!o._restored ||
-			o.password != v {
+			o.city != v {
 
-			o.passwordIsNull = false
-			o.password = v
-			o.passwordIsDirty = true
+			o.cityIsNull = false
+			o.city = v
+			o.cityIsDirty = true
 		}
 	}
 }
 
-func (o *loginBase) IsEnabled() bool {
-	if o._restored && !o.isEnabledIsValid {
-		panic("isEnabled was not selected in the last query and so is not valid")
-	}
-	return o.isEnabled
-}
-
-// IsEnabledIsValid returns true if the value was loaded from the database or has been set.
-func (o *loginBase) IsEnabledIsValid() bool {
-	return o.isEnabledIsValid
-}
-
-// SetIsEnabled sets the value of IsEnabled in the object, to be saved later using the Save() function.
-func (o *loginBase) SetIsEnabled(v bool) {
-	o.isEnabledIsValid = true
-	if o.isEnabled != v || !o._restored {
-		o.isEnabled = v
-		o.isEnabledIsDirty = true
-	}
-
-}
-
 // GetAlias returns the alias for the given key.
-func (o *loginBase) GetAlias(key string) query.AliasValue {
+func (o *addressBase) GetAlias(key string) query.AliasValue {
 	if a, ok := o._aliases[key]; ok {
 		return query.NewAliasValue(a)
 	} else {
@@ -281,88 +249,66 @@ func (o *loginBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// Load returns a Login from the database.
+// Load returns a Address from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+func LoadAddress(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Address {
+	return queryAddresses(ctx).Where(Equal(node.Address().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-// LoadLoginByUsername queries for a single Login object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().Username(), username)).
-		joinOrSelect(joinOrSelectNodes...).
-		Get(ctx)
-}
-
-// LoadLoginByPersonID queries for a single Login object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().PersonID(), person_id)).
-		joinOrSelect(joinOrSelectNodes...).
-		Get(ctx)
-}
-
-// The LoginsBuilder uses the QueryBuilderI interface from the database to build a query.
+// The AddressesBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
-type LoginsBuilder struct {
+type AddressesBuilder struct {
 	base                query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
-func newLoginBuilder() *LoginsBuilder {
-	b := &LoginsBuilder{
+func newAddressBuilder() *AddressesBuilder {
+	b := &AddressesBuilder{
 		base: db.GetDatabase("goradd").
 			NewBuilder(),
 	}
-	return b.Join(node.Login())
+	return b.Join(node.Address())
 }
 
-// Load terminates the query builder, performs the query, and returns a slice of Login objects. If there are
+// Load terminates the query builder, performs the query, and returns a slice of Address objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *LoginsBuilder) Load(ctx context.Context) (loginSlice []*Login) {
+func (b *AddressesBuilder) Load(ctx context.Context) (addressSlice []*Address) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
 	}
 	for _, item := range results {
-		o := new(Login)
+		o := new(Address)
 		o.load(item, !b.hasConditionalJoins, o, nil, "")
-		loginSlice = append(loginSlice, o)
+		addressSlice = append(addressSlice, o)
 	}
-	return loginSlice
+	return addressSlice
 }
 
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *LoginsBuilder) LoadI(ctx context.Context) (loginSlice []interface{}) {
+func (b *AddressesBuilder) LoadI(ctx context.Context) (addressSlice []interface{}) {
 	results := b.base.Load(ctx)
 	if results == nil {
 		return
 	}
 	for _, item := range results {
-		o := new(Login)
+		o := new(Address)
 		o.load(item, !b.hasConditionalJoins, o, nil, "")
-		loginSlice = append(loginSlice, o)
+		addressSlice = append(addressSlice, o)
 	}
-	return loginSlice
+	return addressSlice
 }
 
 // Get is a convenience method to return only the first item found in a query. It is equivalent to adding
 // Limit(1,0) to the query, and then getting the first item from the returned slice.
 // Limits with joins do not currently work, so don't try it if you have a join
 // TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
-func (b *LoginsBuilder) Get(ctx context.Context) *Login {
+func (b *AddressesBuilder) Get(ctx context.Context) *Address {
 	results := b.Limit(1, 0).Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
@@ -373,14 +319,14 @@ func (b *LoginsBuilder) Get(ctx context.Context) *Login {
 }
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
-func (b *LoginsBuilder) Expand(n query.NodeI) *LoginsBuilder {
+func (b *AddressesBuilder) Expand(n query.NodeI) *AddressesBuilder {
 	b.base.Expand(n)
 	return b
 }
 
 // Join adds a node to the node tree so that its fields will appear in the query. Optionally add conditions to filter
 // what gets included. The conditions will be AND'd with the basic condition matching the primary keys of the join.
-func (b *LoginsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *LoginsBuilder {
+func (b *AddressesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *AddressesBuilder {
 	var condition query.NodeI
 	if len(conditions) > 1 {
 		condition = And(conditions)
@@ -395,19 +341,19 @@ func (b *LoginsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *LoginsBu
 }
 
 // Where adds a condition to filter what gets selected.
-func (b *LoginsBuilder) Where(c query.NodeI) *LoginsBuilder {
+func (b *AddressesBuilder) Where(c query.NodeI) *AddressesBuilder {
 	b.base.Condition(c)
 	return b
 }
 
 // OrderBy specifies how the resulting data should be sorted.
-func (b *LoginsBuilder) OrderBy(nodes ...query.NodeI) *LoginsBuilder {
+func (b *AddressesBuilder) OrderBy(nodes ...query.NodeI) *AddressesBuilder {
 	b.base.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
-func (b *LoginsBuilder) Limit(maxRowCount int, offset int) *LoginsBuilder {
+func (b *AddressesBuilder) Limit(maxRowCount int, offset int) *AddressesBuilder {
 	b.base.Limit(maxRowCount, offset)
 	return b
 }
@@ -416,14 +362,14 @@ func (b *LoginsBuilder) Limit(maxRowCount int, offset int) *LoginsBuilder {
 // specify all the fields that you will eventually read out. Be careful when selecting fields in joined tables, as joined
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
-func (b *LoginsBuilder) Select(nodes ...query.NodeI) *LoginsBuilder {
+func (b *AddressesBuilder) Select(nodes ...query.NodeI) *AddressesBuilder {
 	b.base.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
-func (b *LoginsBuilder) Alias(name string, n query.NodeI) *LoginsBuilder {
+func (b *AddressesBuilder) Alias(name string, n query.NodeI) *AddressesBuilder {
 	b.base.Alias(name, n)
 	return b
 }
@@ -431,42 +377,42 @@ func (b *LoginsBuilder) Alias(name string, n query.NodeI) *LoginsBuilder {
 // Distinct removes duplicates from the results of the query. Adding a Select() may help you get to the data you want, although
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
-func (b *LoginsBuilder) Distinct() *LoginsBuilder {
+func (b *AddressesBuilder) Distinct() *AddressesBuilder {
 	b.base.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
-func (b *LoginsBuilder) GroupBy(nodes ...query.NodeI) *LoginsBuilder {
+func (b *AddressesBuilder) GroupBy(nodes ...query.NodeI) *AddressesBuilder {
 	b.base.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
-func (b *LoginsBuilder) Having(node query.NodeI) *LoginsBuilder {
+func (b *AddressesBuilder) Having(node query.NodeI) *AddressesBuilder {
 	b.base.Having(node)
 	return b
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *LoginsBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
+func (b *AddressesBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *LoginsBuilder) Delete(ctx context.Context) {
+func (b *AddressesBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
-func (b *LoginsBuilder) Subquery() *query.SubqueryNode {
+func (b *AddressesBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
-// joinOrSelect us a private helper function for the Load* functions
-func (b *LoginsBuilder) joinOrSelect(nodes ...query.NodeI) *LoginsBuilder {
+// joinOrSelect is a private helper function for the Load* functions
+func (b *AddressesBuilder) joinOrSelect(nodes ...query.NodeI) *AddressesBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
@@ -478,24 +424,20 @@ func (b *LoginsBuilder) joinOrSelect(nodes ...query.NodeI) *LoginsBuilder {
 	return b
 }
 
-func CountLoginByID(ctx context.Context, id string) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().ID(), id)).Count(ctx, false)
+func CountAddressByID(ctx context.Context, id string) uint {
+	return queryAddresses(ctx).Where(Equal(node.Address().ID(), id)).Count(ctx, false)
 }
 
-func CountLoginByPersonID(ctx context.Context, personID string) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().PersonID(), personID)).Count(ctx, false)
+func CountAddressByPersonID(ctx context.Context, personID string) uint {
+	return queryAddresses(ctx).Where(Equal(node.Address().PersonID(), personID)).Count(ctx, false)
 }
 
-func CountLoginByUsername(ctx context.Context, username string) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().Username(), username)).Count(ctx, false)
+func CountAddressByStreet(ctx context.Context, street string) uint {
+	return queryAddresses(ctx).Where(Equal(node.Address().Street(), street)).Count(ctx, false)
 }
 
-func CountLoginByPassword(ctx context.Context, password string) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().Password(), password)).Count(ctx, false)
-}
-
-func CountLoginByIsEnabled(ctx context.Context, isEnabled bool) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().IsEnabled(), isEnabled)).Count(ctx, false)
+func CountAddressByCity(ctx context.Context, city string) uint {
+	return queryAddresses(ctx).Where(Equal(node.Address().City(), city)).Count(ctx, false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -503,7 +445,7 @@ func CountLoginByIsEnabled(ctx context.Context, isEnabled bool) uint {
 // If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
 // Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
-func (o *loginBase) load(m map[string]interface{}, linkParent bool, objThis *Login, objParent interface{}, parentKey string) {
+func (o *addressBase) load(m map[string]interface{}, linkParent bool, objThis *Address, objParent interface{}, parentKey string) {
 	if v, ok := m["id"]; ok && v != nil {
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
@@ -541,7 +483,7 @@ func (o *loginBase) load(m map[string]interface{}, linkParent bool, objThis *Log
 	} else if v, ok := m["Person"]; ok {
 		if oPerson, ok2 := v.(map[string]interface{}); ok2 {
 			o.oPerson = new(Person)
-			o.oPerson.load(oPerson, linkParent, o.oPerson, objThis, "Logins")
+			o.oPerson.load(oPerson, linkParent, o.oPerson, objThis, "Addresses")
 			o.personIDIsValid = true
 			o.personIDIsDirty = false
 		} else {
@@ -551,46 +493,35 @@ func (o *loginBase) load(m map[string]interface{}, linkParent bool, objThis *Log
 		o.oPerson = nil
 	}
 
-	if v, ok := m["username"]; ok && v != nil {
-		if o.username, ok = v.(string); ok {
-			o.usernameIsValid = true
-			o.usernameIsDirty = false
+	if v, ok := m["street"]; ok && v != nil {
+		if o.street, ok = v.(string); ok {
+			o.streetIsValid = true
+			o.streetIsDirty = false
 		} else {
-			panic("Wrong type found for username.")
+			panic("Wrong type found for street.")
 		}
 	} else {
-		o.usernameIsValid = false
-		o.username = ""
+		o.streetIsValid = false
+		o.street = ""
 	}
 
-	if v, ok := m["password"]; ok {
+	if v, ok := m["city"]; ok {
 		if v == nil {
-			o.password = ""
-			o.passwordIsNull = true
-			o.passwordIsValid = true
-			o.passwordIsDirty = false
-		} else if o.password, ok = v.(string); ok {
-			o.passwordIsNull = false
-			o.passwordIsValid = true
-			o.passwordIsDirty = false
+			o.city = ""
+			o.cityIsNull = true
+			o.cityIsValid = true
+			o.cityIsDirty = false
+		} else if o.city, ok = v.(string); ok {
+			o.cityIsNull = false
+			o.cityIsValid = true
+			o.cityIsDirty = false
 		} else {
-			panic("Wrong type found for password.")
+			panic("Wrong type found for city.")
 		}
 	} else {
-		o.passwordIsValid = false
-		o.passwordIsNull = true
-		o.password = ""
-	}
-	if v, ok := m["is_enabled"]; ok && v != nil {
-		if o.isEnabled, ok = v.(bool); ok {
-			o.isEnabledIsValid = true
-			o.isEnabledIsDirty = false
-		} else {
-			panic("Wrong type found for is_enabled.")
-		}
-	} else {
-		o.isEnabledIsValid = false
-		o.isEnabled = false
+		o.cityIsValid = false
+		o.cityIsNull = true
+		o.city = ""
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -601,7 +532,7 @@ func (o *loginBase) load(m map[string]interface{}, linkParent bool, objThis *Log
 
 // Save will update or insert the object, depending on the state of the object.
 // If it has any auto-generated ids, those will be updated.
-func (o *loginBase) Save(ctx context.Context) {
+func (o *addressBase) Save(ctx context.Context) {
 	if o._restored {
 		o.Update(ctx)
 	} else {
@@ -610,7 +541,7 @@ func (o *loginBase) Save(ctx context.Context) {
 }
 
 // Update will update the values in the database, saving any changed values.
-func (o *loginBase) Update(ctx context.Context) {
+func (o *addressBase) Update(ctx context.Context) {
 	if !o._restored {
 		panic("Cannot update a record that was not originally read from the database.")
 	}
@@ -619,25 +550,25 @@ func (o *loginBase) Update(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
-	d.Update(ctx, "login", m, "id", fmt.Sprint(o.id))
+	d.Update(ctx, "address", m, "id", fmt.Sprint(o.id))
 	o.resetDirtyStatus()
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
 // this will create a duplicate in the database.
-func (o *loginBase) Insert(ctx context.Context) {
+func (o *addressBase) Insert(ctx context.Context) {
 	m := o.getModifiedFields()
 	if len(m) == 0 {
 		return
 	}
 	d := db.GetDatabase("goradd")
-	id := d.Insert(ctx, "login", m)
+	id := d.Insert(ctx, "address", m)
 	o.id = id
 	o.resetDirtyStatus()
 	o._restored = true
 }
 
-func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
+func (o *addressBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
 		fields["id"] = o.id
@@ -651,60 +582,54 @@ func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
 		}
 	}
 
-	if o.usernameIsDirty {
-		fields["username"] = o.username
+	if o.streetIsDirty {
+		fields["street"] = o.street
 	}
 
-	if o.passwordIsDirty {
-		if o.passwordIsNull {
-			fields["password"] = nil
+	if o.cityIsDirty {
+		if o.cityIsNull {
+			fields["city"] = nil
 		} else {
-			fields["password"] = o.password
+			fields["city"] = o.city
 		}
-	}
-
-	if o.isEnabledIsDirty {
-		fields["is_enabled"] = o.isEnabled
 	}
 
 	return
 }
 
 // Delete deletes the associated record from the database.
-func (o *loginBase) Delete(ctx context.Context) {
+func (o *addressBase) Delete(ctx context.Context) {
 	if !o._restored {
 		panic("Cannot delete a record that has no primary key value.")
 	}
 	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "login", "id", o.id)
+	d.Delete(ctx, "address", "id", o.id)
 }
 
-// deleteLogin deletes the associated record from the database.
-func deleteLogin(ctx context.Context, pk string) {
+// deleteAddress deletes the associated record from the database.
+func deleteAddress(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "login", "id", pk)
+	d.Delete(ctx, "address", "id", pk)
 }
 
-func (o *loginBase) resetDirtyStatus() {
+func (o *addressBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.personIDIsDirty = false
-	o.usernameIsDirty = false
-	o.passwordIsDirty = false
-	o.isEnabledIsDirty = false
+	o.streetIsDirty = false
+	o.cityIsDirty = false
 }
 
-func (o *loginBase) IsDirty() bool {
+func (o *addressBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.personIDIsDirty ||
-		o.usernameIsDirty ||
-		o.passwordIsDirty ||
-		o.isEnabledIsDirty
+		o.streetIsDirty ||
+		o.cityIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.
 // It will also get related objects if they are loaded.
 // Invalid fields and objects are returned as nil
-func (o *loginBase) Get(key string) interface{} {
+func (o *addressBase) Get(key string) interface{} {
 
 	switch key {
 	case "ID":
@@ -722,23 +647,17 @@ func (o *loginBase) Get(key string) interface{} {
 	case "Person":
 		return o.Person()
 
-	case "Username":
-		if !o.usernameIsValid {
+	case "Street":
+		if !o.streetIsValid {
 			return nil
 		}
-		return o.username
+		return o.street
 
-	case "Password":
-		if !o.passwordIsValid {
+	case "City":
+		if !o.cityIsValid {
 			return nil
 		}
-		return o.password
-
-	case "IsEnabled":
-		if !o.isEnabledIsValid {
-			return nil
-		}
-		return o.isEnabled
+		return o.city
 
 	}
 	return nil
@@ -748,90 +667,80 @@ func (o *loginBase) Get(key string) interface{} {
 // It should be used for transmitting database object over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
-func (o *loginBase) MarshalBinary() (data []byte, err error) {
+func (o *addressBase) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 
-	if err = encoder.Encode(o.id); err != nil {
-		return
+	if err := encoder.Encode(o.id); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.idIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.personID); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.personIDIsNull); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.personIDIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.personIDIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.idIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.oPerson); err != nil {
-		return
+	if err := encoder.Encode(o.personID); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.username); err != nil {
-		return
+	if err := encoder.Encode(o.personIDIsNull); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.usernameIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.personIDIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.usernameIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.password); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.passwordIsNull); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.passwordIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.passwordIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.personIDIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.isEnabled); err != nil {
-		return
+	if err := encoder.Encode(o.oPerson); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.isEnabledIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.street); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.isEnabledIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.streetIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.streetIsDirty); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.city); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.cityIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.cityIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.cityIsDirty); err != nil {
+		return nil, err
 	}
 
 	if o._aliases == nil {
-		if err = encoder.Encode(false); err != nil {
-			return
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
 		}
 	} else {
-		if err = encoder.Encode(true); err != nil {
-			return
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
 		}
-		if err = encoder.Encode(o._aliases); err != nil {
-			return
+		if err := encoder.Encode(o._aliases); err != nil {
+			return nil, err
 		}
 	}
 
-	if err = encoder.Encode(o._restored); err != nil {
-		return
+	if err := encoder.Encode(o._restored); err != nil {
+		return nil, err
 	}
 
-	return
+	return buf.Bytes(), nil
 }
 
-func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
+func (o *addressBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
@@ -862,36 +771,26 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 	if err = dec.Decode(&o.oPerson); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.username); err != nil {
+	if err = dec.Decode(&o.street); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.usernameIsValid); err != nil {
+	if err = dec.Decode(&o.streetIsValid); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.usernameIsDirty); err != nil {
-		return
-	}
-
-	if err = dec.Decode(&o.password); err != nil {
-		return
-	}
-	if err = dec.Decode(&o.passwordIsNull); err != nil {
-		return
-	}
-	if err = dec.Decode(&o.passwordIsValid); err != nil {
-		return
-	}
-	if err = dec.Decode(&o.passwordIsDirty); err != nil {
+	if err = dec.Decode(&o.streetIsDirty); err != nil {
 		return
 	}
 
-	if err = dec.Decode(&o.isEnabled); err != nil {
+	if err = dec.Decode(&o.city); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.isEnabledIsValid); err != nil {
+	if err = dec.Decode(&o.cityIsNull); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.isEnabledIsDirty); err != nil {
+	if err = dec.Decode(&o.cityIsValid); err != nil {
+		return
+	}
+	if err = dec.Decode(&o.cityIsDirty); err != nil {
 		return
 	}
 
@@ -909,13 +808,13 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	return err
+	return
 }
 
 // MarshalJSON serializes the object into a JSON object.
 // Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
 // select only the fields you want when you query for the object.
-func (o *loginBase) MarshalJSON() (data []byte, err error) {
+func (o *addressBase) MarshalJSON() (data []byte, err error) {
 	v := make(map[string]interface{})
 
 	if o.idIsValid {
@@ -933,20 +832,16 @@ func (o *loginBase) MarshalJSON() (data []byte, err error) {
 	if val := o.Person(); val != nil {
 		v["person"] = val
 	}
-	if o.usernameIsValid {
-		v["username"] = o.username
+	if o.streetIsValid {
+		v["street"] = o.street
 	}
 
-	if o.passwordIsValid {
-		if o.passwordIsNull {
-			v["password"] = nil
+	if o.cityIsValid {
+		if o.cityIsNull {
+			v["city"] = nil
 		} else {
-			v["password"] = o.password
+			v["city"] = o.city
 		}
-	}
-
-	if o.isEnabledIsValid {
-		v["isEnabled"] = o.isEnabled
 	}
 
 	return json.Marshal(v)

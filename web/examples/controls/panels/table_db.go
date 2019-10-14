@@ -7,8 +7,8 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
-	"github.com/goradd/goradd/web/examples/model"
-	"github.com/goradd/goradd/web/examples/model/node"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
 type TableDbPanel struct {

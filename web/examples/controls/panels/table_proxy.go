@@ -12,7 +12,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
-	. "github.com/goradd/goradd/web/examples/model"
+	. "github.com/goradd/goradd/web/examples/gen/goradd/model"
 )
 
 type TableProxyPanel struct {
