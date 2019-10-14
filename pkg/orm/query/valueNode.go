@@ -1,6 +1,8 @@
 package query
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/datetime"
 	"log"
@@ -132,4 +134,29 @@ func ValueNodeGetValue(n *ValueNode) interface{} {
 
 func (n *ValueNode) nodeType() NodeType {
 	return ValueNodeType
+}
+
+func (n *ValueNode) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = e.Encode(&n.value); err != nil {
+		panic(err)
+	}
+	data = buf.Bytes()
+	return
+}
+
+
+func (n *ValueNode) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	if err = dec.Decode(&n.value); err != nil {
+		panic(err)
+	}
+	return
+}
+
+func init() {
+	gob.Register(&ValueNode{})
 }

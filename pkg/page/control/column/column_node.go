@@ -80,8 +80,8 @@ func (c *NodeColumn) Serialize(e page.Encoder) (err error) {
 	if err = c.ColumnBase.Serialize(e); err != nil {
 		return
 	}
-	if err = e.Encode(c.node); err != nil {
-		return
+	if err = e.Encode(&c.node); err != nil {
+		panic(err)
 	}
 	return
 }

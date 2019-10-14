@@ -1,6 +1,8 @@
 package query
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"strings"
 )
@@ -52,3 +54,28 @@ func (n *AliasNode) goName() string {
 	return n.alias
 }
 */
+
+func (n *AliasNode) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = e.Encode(&n.alias); err != nil {
+		panic(err)
+	}
+	data = buf.Bytes()
+	return
+}
+
+
+func (n *AliasNode) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	if err = dec.Decode(&n.alias); err != nil {
+		panic(err)
+	}
+	return
+}
+
+func init() {
+	gob.Register(&AliasNode{})
+}

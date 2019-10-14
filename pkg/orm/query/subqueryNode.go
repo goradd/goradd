@@ -1,6 +1,8 @@
 package query
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"strings"
 )
@@ -59,6 +61,39 @@ func (n *SubqueryNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Subquery: ")
 }
+
+func (n *SubqueryNode) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = e.Encode(n.alias); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.b); err != nil {
+		panic(err)
+	}
+	data = buf.Bytes()
+	return
+}
+
+
+func (n *SubqueryNode) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	if err = dec.Decode(&n.alias); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.b); err != nil {
+		panic(err)
+	}
+	return
+}
+
+
+func init() {
+	gob.Register(&SubqueryNode{})
+}
+
 
 // SubqueryBuilder is used internally by the framework to return the internal query builder of the subquery
 func SubqueryBuilder(n *SubqueryNode) QueryBuilderI {

@@ -1,6 +1,8 @@
 package query
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"strings"
 )
@@ -219,6 +221,56 @@ func (n *OperationNode) tableName() string {
 func (n *OperationNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Op: " + n.op.String())
+}
+
+func (n *OperationNode) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = e.Encode(n.alias); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.op); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.operands); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.functionName); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.distinct); err != nil {
+		panic(err)
+	}
+	data = buf.Bytes()
+	return
+}
+
+
+func (n *OperationNode) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	if err = dec.Decode(&n.alias); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.op); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.operands); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.functionName); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.distinct); err != nil {
+		panic(err)
+	}
+	return
+}
+
+
+func init() {
+	gob.Register(&OperationNode{})
 }
 
 // OperationNodeOperator is used internally by the framework to get the operator.
