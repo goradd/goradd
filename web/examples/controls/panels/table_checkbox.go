@@ -149,27 +149,27 @@ func testTableCheckboxServerSubmit(t *browsertest.TestForm) {
 	t.Done("Complete")
 }
 
-func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
+func testTableCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 	table1Data = getCheckTestData()
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").SetValue("testing", 1).String()
-	f := t.LoadUrl(myUrl)
-	btn := f.Page().GetControl(btnName)
+	t.LoadUrl(myUrl)
 
 	t.SetCheckbox("table1_check1_1", true)
-	table := f.Page().GetControl("table1").(*PagedTable)
-	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
+	col := GetPagedTable(t.F(), "table1").GetColumnByID("check1").(*column.CheckboxColumn)
 	changes := col.Changes()
 	_, ok := changes["1"]
 	t.AssertEqual(false, ok)
 
-	t.Click(btn)
+	t.Click(btnID)
+	// click above can cause form to reset
+	col = GetPagedTable(t.F(), "table1").GetColumnByID("check1").(*column.CheckboxColumn)
 	changes = col.Changes()
 	changed, _ := changes["1"]
 	t.AssertEqual(true, changed)
 
 	// restore state for other tests
 	t.SetCheckbox("table1_check1_1", false)
-	t.Click(btn)
+	t.Click(btnID)
 
 }
 

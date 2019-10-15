@@ -91,23 +91,28 @@ func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 func init() {
 	browsertest.RegisterTestFunction("Checkbox Ajax Submit", testCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Checkbox Server Submit", testCheckboxServerSubmit)
+	page.RegisterControl(CheckboxPanel{})
 }
 
 // testPlain exercises the plain text box
 func testCheckboxAjaxSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "checkbox").SetValue("testing", 1).String()
-	f := t.LoadUrl(myUrl)
+	var myUrl = url.
+		NewBuilder(controlsFormPath).
+		SetValue("control", "checkbox").
+		SetValue("testing", 1).
+		String()
+	t.LoadUrl(myUrl)
 
-	testCheckboxSubmit(t, f, f.Page().GetControl("ajaxButton"))
+	testCheckboxSubmit(t, "ajaxButton")
 
 	t.Done("Complete")
 }
 
 func testCheckboxServerSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "checkbox").SetValue("testing", 1).String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
-	testCheckboxSubmit(t, f, f.Page().GetControl("serverButton"))
+	testCheckboxSubmit(t, "serverButton")
 
 	t.Done("Complete")
 }
@@ -115,43 +120,30 @@ func testCheckboxServerSubmit(t *browsertest.TestForm)  {
 // testCheckboxSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testCheckboxSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {
-	checkbox1 := f.Page().GetControl("checkbox1").(*Checkbox)
-
+func testCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.SetCheckbox("checkbox1", true)
 	t.SetCheckbox("radio2", true)
-	t.Click(btn)
-	t.AssertEqual(true, checkbox1.Checked())
+	t.Click(btnID) // click will change form
 
-	checkbox2 := GetCheckbox(f, "checkbox2")
-	radio1 := GetRadioButton(f,"radio1")
-	radio2 := GetRadioButton(f,"radio2")
-	radio3 := GetRadioButton(f,"radio3")
-	info := GetPanel(f,"infoPanel")
-
-	t.AssertEqual(false, checkbox2.Checked())
+	t.AssertEqual(true, GetCheckbox(t.F(),"checkbox1").Checked())
+	t.AssertEqual(false, GetCheckbox(t.F(), "checkbox2").Checked())
 	t.AssertEqual("checkbox1-ff_lbl checkbox1_ilbl", t.ControlAttribute("checkbox1", "aria-labelledby"))
 
-	t.AssertEqual(false, radio1.Checked())
-	t.AssertEqual(true, radio2.Checked())
-
-	t.AssertEqual("radio2", info.Text())
+	t.AssertEqual(false, GetRadioButton(t.F(), "radio1").Checked())
+	t.AssertEqual(true, GetRadioButton(t.F(), "radio2").Checked())
+	t.AssertEqual("radio2", GetPanel(t.F(),"infoPanel").Text())
 
 	t.SetCheckbox("radio3", true)
 	t.SetCheckbox("checkbox1", false)
-	t.Click(btn)
-	t.AssertEqual(false, checkbox1.Checked())
-	t.AssertEqual("radio3", info.Text())
+	t.Click(btnID)
+	t.AssertEqual(false, GetCheckbox(t.F(),"checkbox1").Checked())
+	t.AssertEqual("radio3", GetPanel(t.F(),"infoPanel").Text())
 
-	radio1.SetChecked(true);
-	t.Click(btn)
-	t.Click(btn) // two clicks are required to get the response back
-	t.AssertEqual("radio1", info.Text())
-	t.AssertEqual(true, radio1.Checked())
-	t.AssertEqual(false, radio2.Checked())
-	t.AssertEqual(false, radio3.Checked())
-}
-
-func init() {
-	page.RegisterControl(CheckboxPanel{})
+	GetRadioButton(t.F(), "radio1").SetChecked(true)
+	t.Click(btnID)
+	t.Click(btnID) // two clicks are required to get the response back
+	t.AssertEqual("radio1", GetPanel(t.F(),"infoPanel").Text())
+	t.AssertEqual(true, GetRadioButton(t.F(), "radio1").Checked())
+	t.AssertEqual(false, GetRadioButton(t.F(), "radio2").Checked())
+	t.AssertEqual(false, GetRadioButton(t.F(), "radio3").Checked())
 }

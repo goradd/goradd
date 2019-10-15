@@ -75,18 +75,18 @@ func init() {
 // testPlain exercises the plain text box
 func testHListAjaxSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "HList").SetValue("testing", 1).String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
-	testHListSubmit(t, f, f.Page().GetControl("ajaxButton"))
+	testHListSubmit(t, "ajaxButton")
 
 	t.Done("Complete")
 }
 
 func testHListServerSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "HList").SetValue("testing", 1).String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
-	testHListSubmit(t, f, f.Page().GetControl("serverButton"))
+	testHListSubmit(t, "serverButton")
 
 	t.Done("Complete")
 }
@@ -94,7 +94,7 @@ func testHListServerSubmit(t *browsertest.TestForm)  {
 // testHListSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testHListSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {
+func testHListSubmit(t *browsertest.TestForm, btnID string) {
 
 	// For testing purposes, we need to use the id of the list item, rather than the value of the list item,
 	// since that is what is presented in the html.

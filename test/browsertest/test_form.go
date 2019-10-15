@@ -124,12 +124,25 @@ func (form *TestForm) LoadUrl(url string) page.FormI {
 	return form.GetForm()
 }
 
+type GetLoader interface {
+	GetLoaded(pageId string) *page.Page
+}
+
 // GetForm returns the currently loaded form.
 func (form *TestForm) GetForm() page.FormI {
 	if page.GetPageCache().Has(form.Controller.pagestate) {
-		return page.GetPageCache().Get(form.Controller.pagestate).Form()
+		pc := page.GetPageCache()
+		if loader,ok := pc.(GetLoader); ok {
+			return loader.GetLoaded(form.Controller.pagestate).Form()
+		}
+		return pc.Get(form.Controller.pagestate).Form()
 	}
 	return nil
+}
+
+// Alias for GetForm since its used often
+func (form *TestForm) F() page.FormI {
+	return form.GetForm()
 }
 
 func (form *TestForm) AssertNil(v interface{}) {
@@ -203,12 +216,16 @@ func (form *TestForm) CheckGroup(id string, values ...string) {
 }
 
 // Click sends a click to the goradd control.
-func (form *TestForm) Click(c page.ControlI) {
-	form.Controller.click(c.ID(), form.captureCaller())
+// Note that the act of clicking often causes an action, and an action will change the form
+// so as a convenience we return the new form here
+func (form *TestForm) Click(id string) page.FormI {
+	form.Controller.click(id, form.captureCaller())
+	c := form.GetForm().Page().GetControl(id)
 	if c.HasServerAction("click") {
 		// wait for the new page to load
 		form.Controller.waitSubmit(form.callerInfo)
 	}
+	return form.GetForm()
 }
 
 // ClickSubItem sends a click to the html object with the given sub-id inside the given control.
@@ -378,6 +395,10 @@ func (form *TestForm) testOne(testName string) {
 		log.Debug(form.currentLog)
 
 	}()
+}
+
+func (form *TestForm) NoSerialize() bool {
+	return true
 }
 
 func init() {

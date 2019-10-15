@@ -205,7 +205,6 @@ type ControlI interface {
 
 	Serialize(e Encoder) (err error)
 	Deserialize(d Decoder) (err error)
-	decoded ()
 
 	ApplyOptions(o ControlOptions)
 	AddControls(ctx context.Context, creators ...Creator)
@@ -255,8 +254,6 @@ type Control struct {
 	parentId string
 	// children are the child controls that belong to this control. These are cached for speed.
 	children []ControlI // Child controls
-	// childIds is only used during the page unserialization process to temporarily store the child ids while all the controls are being deserialized
-	childIDs []string
 
 	// Tag is text of the tag that will enclose the control, like "div" or "input"
 	Tag string
@@ -748,7 +745,7 @@ func (c *Control) RangeAllChildren(f func(child ControlI)) {
 // It calls the function on the child controls of each control first, and then on the control itself.
 func (c *Control) RangeSelfAndAllChildren(f func(ctrl ControlI)) {
 	c.RangeAllChildren(f)
-	f(c)
+	f(c.this())
 }
 
 // Remove removes the current control from its parent. After this is done, the control and all its child items will
@@ -1761,16 +1758,12 @@ func (c *Control) Deserialize(d Decoder) (err error) {
 	c.events = s.Events
 	c.eventCounter = s.EventCounter
 	c.shouldSaveState = s.ShouldSaveState
-	c.childIDs = s.ChildIDs // in preparation for later Decoded step
 
-	return
-}
-
-// decoded fixes up the internal pointers in a control
-func (c *Control) decoded() {
-	for _,childID := range c.childIDs {
-		c.children = append(c.children, c.page.GetControl(childID))
+	// This relies on the children being deserialized first, which is taken care of by the page serializer
+	for _,id := range s.ChildIDs {
+		c.children = append(c.children, c.page.GetControl(id))
 	}
+	return
 }
 
 // EventList is a list of event and action pairs. Use action.Group as the Action to assign multiple actions to

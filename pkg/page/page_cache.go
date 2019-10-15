@@ -1,7 +1,6 @@
 package page
 
 import (
-	"bytes"
 	"github.com/goradd/goradd/pkg/cache"
 	"github.com/goradd/goradd/pkg/html"
 )
@@ -17,12 +16,6 @@ type PageCacheI interface {
 
 var pageCache PageCacheI
 
-// PageCacheVersion helps us keep track of when a change to the application changes the pagecache format. It is only needed
-// when serializing the pagecache. Some page cache stores may be difficult to invalidate the whole thing, so this lets
-// lets us invalidate old pagecaches individually. If you implement your own pagecache, you may want to control this
-// independently of goradd, which is why this is exported. Goradd should bump this value whenever the pagecache serialization format
-// changes.
-var PageCacheVersion int32 = 1
 
 // SetPageCache will set the page cache to the given object.
 func SetPageCache(c PageCacheI) {
@@ -37,8 +30,9 @@ func GetPageCache() PageCacheI {
 // FastPageCache is an in memory page cache that does no serialization and uses an LRU cache of page objects.
 // Objects that are too old are removed, and if the cache is full,
 // the oldest item(s) will be removed. When a page is updated, it is moved to the top. Whenever an item is set,
-// we could potentially garbage collect. This cache is only appropriate when the pagecache itself is operating on a
-// single machine.
+// we could potentially garbage collect. This cache can be used in a production environment if the
+// application is guaranteed to only work on a single machine. If you want scalability, use a serializing
+// page cache that serializes directly to a database that is accessible from all instances of the app.
 type FastPageCache struct {
 	cache.LruCache
 }
@@ -86,67 +80,84 @@ func (o *FastPageCache) NewPageID() string {
 // SerializedPageCache is an in memory page cache that does serialization and uses an LRU cache of page objects.
 // Use the serialized page cache during development to ensure that you can eventually move your page cache to a database
 // or a separate machine so that your application is scalable.
-// Objects that are too old are removed, and if the cache is full,
-// the oldest item(s) will be removed. Pages that are set multiple times will be pushed to the top. Whenever an item is set,
-// we could potentially garbage collect.
+//
+// This also uses an in memory, non-serialized map to keep the pages in memory so that the testing harness
+// can perform browser-based tests. Essentially this cache should only be used for development purposes
+// and not production.
 type SerializedPageCache struct {
 	cache.LruCache
+	testPageID string // Used for testing serialization using automated testing. Not for production.
+	testPage   *Page
+
+	// This keeps a record of all current pages so the test harness can use it.
+	// Note that this will grow, and eventually cause the app to run out of memory. For this
+	// reason, this cache is not suitable for production.
+	pages map[string]*Page
+}
+
+// This special interface is used by our test harness to prevent the serialization of the
+// test form.
+type TestFormI interface {
+	NoSerialize() bool
 }
 
 func NewSerializedPageCache(maxEntries int, TTL int64) *SerializedPageCache {
-	return &SerializedPageCache{*cache.NewLruCache(maxEntries, TTL)}
+	return &SerializedPageCache{
+		LruCache:*cache.NewLruCache(maxEntries, TTL),
+		pages: make(map[string]*Page),
+	}
 }
 
 // Set puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
 func (o *SerializedPageCache) Set(pageId string, page *Page) {
-	var b bytes.Buffer
-	enc := pageEncoder.NewEncoder(&b)
-	_ = enc.Encode(PageCacheVersion)
-	_ = enc.Encode(page.Form().ID())
-	//err := enc.Encode(page)
-	_ = page.Serialize(enc)
-	o.LruCache.Set(pageId, b.Bytes())
+	if _,ok := page.Form().(TestFormI); ok {
+		o.testPageID = pageId
+		o.testPage = page
+		return
+	}
+
+	if b, err := page.MarshalBinary(); err == nil {
+		o.LruCache.Set(pageId, b)
+		o.pages[pageId] = page
+	}
 }
 
 // Get returns the page based on its page id.
 // If not found, will return null.
 func (o *SerializedPageCache) Get(pageId string) *Page {
+	if pageId == o.testPageID {
+		return o.testPage
+	}
+
 	b := o.LruCache.Get(pageId)
 	if b == nil {
 		return nil
 	}
-	dec := pageEncoder.NewDecoder(bytes.NewBuffer(b.([]byte)))
-	var ver int32
-	if err := dec.Decode(&ver); err != nil {
-		panic(err)
-	}
-	if ver != PageCacheVersion {
+
+	var p *Page = o.pages[pageId]
+
+	// write over the top of the previous page to reuse the memory
+	if err := p.UnmarshalBinary(b.([]byte)); err != nil {
 		return nil
-	}
-
-	var formId string
-	var p Page
-	if err := dec.Decode(&formId); err != nil {
-		panic(err)
-	}
-	if _, ok := pageManager.formIdRegistry[formId]; !ok {
-		panic("Form creation function not found for form: " + formId)
-	}
-
-	if err := p.Deserialize(dec); err != nil {
-		panic(err)
 	}
 
 	if p.stateId != pageId {
 		panic("pageId does not match") // or return nil?
 	}
 	p.Restore()
-	return &p
+	return p
+}
+
+func (o *SerializedPageCache) GetLoaded(pageId string) *Page {
+	return o.pages[pageId]
 }
 
 // Has returns true if the page with the given pageId is in the cache.
 func (o *SerializedPageCache) Has(pageId string) bool {
+	if pageId == o.testPageID {
+		return true
+	}
 	return o.LruCache.Has(pageId)
 }
 

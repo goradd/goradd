@@ -139,10 +139,9 @@ func testTextboxServerSubmit(t *browsertest.TestForm) {
 // testTextboxSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
+func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").SetValue("testing", 1).String()
-	f := t.LoadUrl(myUrl)
-	btn := f.Page().GetControl(btnName)
+	t.LoadUrl(myUrl)
 
 	t.ChangeVal("plainText", "me")
 	t.ChangeVal("multiText", "me\nyou")
@@ -153,7 +152,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	t.ChangeVal("dateText", "me")
 	t.ChangeVal("timeText", "me")
 
-	t.Click(btn)
+	t.Click(btnID)
 
 	t.AssertEqual("me", t.ControlValue("plainText"))
 	t.AssertEqual("me\nyou", t.ControlValue("multiText"))
@@ -171,14 +170,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	t.AssertEqual(true, t.HasClass("timeText-ff", "error"))
 	t.AssertEqual(true, t.HasClass("dateTimeText-ff", "error"))
 
-	intText := GetIntegerTextbox(f, "intText")
-	floatText := GetFloatTextbox(f, "floatText")
-	emailText := GetEmailTextbox(f, "emailText")
-	dateText := GetDateTextbox(f, "dateText")
-	timeText := GetDateTextbox(f, "timeText")
-	dateTimeText := GetDateTextbox(f, "dateTimeText")
-
-	GetFormFieldWrapper(f, "plainText-ff").SetInstructions("Sample instructions")
+	GetFormFieldWrapper(t.F(), "plainText-ff").SetInstructions("Sample instructions")
 	t.ChangeVal("intText", 5)
 	t.ChangeVal("floatText", 6.7)
 	t.ChangeVal("emailText", "me@you.com")
@@ -186,14 +178,14 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	t.ChangeVal("timeText", "4:59 am")
 	t.ChangeVal("dateTimeText", "2/19/2018 4:23 pm")
 
-	t.Click(btn)
+	t.Click(btnID)
 
-	t.AssertEqual(5, intText.Int())
-	t.AssertEqual(6.7, floatText.Float64())
-	t.AssertEqual("me@you.com", emailText.Text())
-	t.AssertEqual(datetime.NewDateTime("19/2/2018", datetime.EuroDate), dateText.Date())
-	t.AssertEqual(datetime.NewDateTime("4:59 am", datetime.UsTime), timeText.Date())
-	t.AssertEqual(datetime.NewDateTime("2/19/2018 4:23 pm", datetime.UsDateTime), dateTimeText.Date())
+	t.AssertEqual(5, GetIntegerTextbox(t.F(), "intText").Int())
+	t.AssertEqual(6.7, GetFloatTextbox(t.F(), "floatText").Float64())
+	t.AssertEqual("me@you.com", GetEmailTextbox(t.F(), "emailText").Text())
+	t.AssertEqual(datetime.NewDateTime("19/2/2018", datetime.EuroDate), GetDateTextbox(t.F(), "dateText").Date())
+	t.AssertEqual(datetime.NewDateTime("4:59 am", datetime.UsTime), GetDateTextbox(t.F(), "timeText").Date())
+	t.AssertEqual(datetime.NewDateTime("2/19/2018 4:23 pm", datetime.UsDateTime), GetDateTextbox(t.F(), "dateTimeText").Date())
 
 	t.AssertEqual(false, t.HasClass("intText-ff", "error"))
 	t.AssertEqual(false, t.HasClass("floatText-ff", "error"))
@@ -206,6 +198,5 @@ func testTextboxSubmit(t *browsertest.TestForm, btnName string) {
 	t.AssertEqual("plainText-ff_lbl plainText", t.ControlAttribute("plainText", "aria-labelledby"))
 
 	// Test SaveState
-	f = t.LoadUrl(myUrl)
-	t.AssertEqual("me", GetTextbox(f, "plainText").Text())
+	t.AssertEqual("me", GetTextbox(t.F(), "plainText").Text())
 }

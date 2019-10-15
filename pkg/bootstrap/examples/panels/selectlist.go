@@ -95,18 +95,18 @@ func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 
 func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
-	testSelectListSubmit(t, f, f.Page().GetControl("ajaxButton"))
+	testSelectListSubmit(t, "ajaxButton")
 
 	t.Done("Complete")
 }
 
 func testSelectListServerSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
-	testSelectListSubmit(t, f, f.Page().GetControl("serverButton"))
+	testSelectListSubmit(t, "serverButton")
 
 	t.Done("Complete")
 }
@@ -114,36 +114,29 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 // testSelectListSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testSelectListSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {
+func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 
 	// For testing purposes, we need to use the id of the list item, rather than the value of the list item,
-	// since that is what is presented in the html.
-	select1 := f.Page().GetControl("singleSelectList").(*SelectList)
-	select2 := f.Page().GetControl("selectListWithSize").(*SelectList)
-	radio1 := f.Page().GetControl("radioList1").(*RadioList)
 
-	id,_ := select2.GetItemByValue(2)
+	id,_ := GetSelectList(t.F(), "selectListWithSize").GetItemByValue(2)
 	t.ChangeVal("selectListWithSize", id)
-
-	t.Click(btn)
-
+	t.Click(btnID)
 	t.AssertEqual(true, t.HasClass("singleSelectList-fg", "error"))
 
+	t.AssertEqual(2,  GetSelectList(t.F(), "selectListWithSize").IntValue())
 
-	t.AssertEqual(2, select2.IntValue())
-
-	id,_ = select1.GetItemByValue(1)
+	id,_ =  GetSelectList(t.F(), "singleSelectList").GetItemByValue(1)
 	t.ChangeVal("singleSelectList", id)
-	id,_ = select2.GetItemByValue(2)
+	id,_ = GetSelectList(t.F(), "selectListWithSize").GetItemByValue(2)
 	t.ChangeVal("selectListWithSize", id)
-	id,_ = radio1.GetItemByValue(3)
+	id,_ = GetRadioList(t.F(), "radioList1").GetItemByValue(3)
 	t.CheckGroup("radioList1", id)
 
-	t.Click(btn)
+	t.Click(btnID)
 
-	t.AssertEqual(1, select1.IntValue())
-	t.AssertEqual(2, select2.IntValue())
-	t.AssertEqual(3, radio1.IntValue())
+	t.AssertEqual(1, GetSelectList(t.F(), "singleSelectList").IntValue())
+	t.AssertEqual(2, GetSelectList(t.F(), "selectListWithSize").IntValue())
+	t.AssertEqual(3, GetRadioList(t.F(), "radioList1").IntValue())
 	//t.AssertEqual(4, radio2.IntValue())
 }
 
