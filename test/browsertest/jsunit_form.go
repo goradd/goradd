@@ -44,9 +44,8 @@ func init() {
 }
 
 func testJsUnit(t *TestForm)  {
-	f := t.LoadUrl(JsUnitTestFormPath)
-	btn := GetButton(f, "startButton")
-	t.Click(btn)
+	t.LoadUrl(JsUnitTestFormPath)
+	t.Click("startButton")
 
 	h := t.InnerHtml("results")
 	t.AssertEqual("Done", h)
@@ -56,4 +55,5 @@ func testJsUnit(t *TestForm)  {
 
 func init() {
 	page.RegisterPage(JsUnitTestFormPath, NewJsUnitForm, JsUnitTestFormId)
+	page.RegisterControl(JsUnitForm{})
 }

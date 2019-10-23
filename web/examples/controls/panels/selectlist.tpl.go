@@ -129,10 +129,18 @@ the user will be forced to select at least one item.
 </p>
 <h3>HTML Multiple Selection List</h3>
 <p>
-This list allows multiple selections if you hold down the shift key or the command key. While this is
+`)
+
+	buf.WriteString(`This list allows multiple selections if you hold down the shift key or the command key. While this is
 a standard html widget, the look and behavior of this widget often depends on the browser used and
-the operating system, so its not a great widget for multipl selections. It is here for completeness, and
-also in case a javascript widget can build a better interface on top of it.
+the operating system, so its not a great widget for multiple selections. It is here for completeness, and
+also in case a javascript widget can build a better interface on top of it. Also, notice that it
+sets the &#34;required&#34; attribute, which lets the browser check to see if an item is selected. But again,
+the user interface is dependent on the browser, and sometimes it is very confusing to a user. You can
+turn off browser validity checking by setting the &#34;novalidate&#34; attribute on the form.
+`)
+
+	buf.WriteString(`
 </p>
 `)
 

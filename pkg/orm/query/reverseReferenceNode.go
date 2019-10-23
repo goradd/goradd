@@ -1,6 +1,8 @@
 package query
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"strings"
 )
@@ -24,17 +26,14 @@ type ReverseReferenceNode struct {
 	dbColumn string
 	// Property we are using to refer to the many side of the relationship
 	goPropName string
-
-	// Is this pointing to a type table item?
-	isTypeTable bool
-
 	// The table containing the pointer back to us
 	refTable string
 	// The table that is the foreign key pointing back to us.
 	refColumn string
-
 	// True to create new objects for each joined item, or false to create an array of joined objects here.
 	isArray bool
+	// Is this pointing to a type table item?
+	isTypeTable bool
 }
 
 func NewReverseReferenceNode(
@@ -119,6 +118,96 @@ func (n *ReverseReferenceNode) goName() string {
 func (n *ReverseReferenceNode) nodeType() NodeType {
 	return ReverseReferenceNodeType
 }
+
+func (n *ReverseReferenceNode) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = e.Encode(n.alias); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.condition); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbColumn); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.goPropName); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.refTable); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.refColumn); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.isArray); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.isTypeTable); err != nil {
+		panic(err)
+	}
+
+	err = e.Encode(n.nodeLink.parentNode)
+	data = buf.Bytes()
+	return
+}
+
+
+func (n *ReverseReferenceNode) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	if err = dec.Decode(&n.alias); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.condition); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbColumn); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.goPropName); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.refTable); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.refColumn); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.isArray); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.isTypeTable); err != nil {
+		panic(err)
+	}
+
+	var n2 NodeI
+
+	if err = dec.Decode(&n2); err != nil {
+		panic(err)
+	}
+	SetParentNode(n, n2)
+	return
+}
+
+
+func init() {
+	gob.Register(&ReverseReferenceNode{})
+}
+
 
 // ReverseReferenceNodeIsArray is used internally by the framework to determine if a node should create an array
 func ReverseReferenceNodeIsArray(n *ReverseReferenceNode) bool {

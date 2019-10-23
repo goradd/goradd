@@ -2,6 +2,7 @@ package column
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )
 
@@ -9,6 +10,7 @@ import (
 // a slice of objects that implement the Getter interface.
 type GetterColumn struct {
 	control.ColumnBase
+	key string
 }
 
 type Getter interface {
@@ -30,47 +32,40 @@ func NewGetterColumn(index string) *GetterColumn {
 
 func (c *GetterColumn) Init(index string) {
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(&GetterTexter{Key: index})
 	c.SetTitle(index)
+	c.key = index
 }
 
-// SetFormat sets an optional format string for the column, which will be passed to fmt.Sprintf
-// to format the data.
-func (c *GetterColumn) SetFormat(format string) *GetterColumn {
-	c.CellTexter().(*GetterTexter).Format = format
-	return c
-}
-
-// SetTimeFormat sets the format for Date, Time or DateTime type data. The format will be passed to time.Format
-// to produce the text to print for the column.
-func (c *GetterColumn) SetTimeFormat(format string) *GetterColumn {
-	c.CellTexter().(*GetterTexter).TimeFormat = format
-	return c
-}
-
-// GetterTexter lets you get items out of map like objects using the Getter interface.
-type GetterTexter struct {
-	// Key is the key to use when calling the Get function on the object.
-	Key string
-	// Format is a format string. It will be applied using fmt.Sprintf. If you don't provide a Format string, standard
-	// string conversion operations will be used.
-	Format string
-	// TimeFormat is applied to the data using time.Format. You can have both a Format and TimeFormat, and the Format
-	// will be applied using fmt.Sprintf after the TimeFormat is applied using time.Format.
-	TimeFormat string
-}
-
-func (t GetterTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (c *GetterColumn) CellData(ctx context.Context, rowNum int, colNum int, data interface{}) interface{} {
 	switch v := data.(type) {
 	case Getter:
-		d := v.Get(t.Key)
-		return ApplyFormat(d, t.Format, t.TimeFormat)
+		return v.Get(c.key)
 	case StringGetter:
-		d := v.Get(t.Key)
-		return ApplyFormat(d, t.Format, t.TimeFormat)
+		return v.Get(c.key)
 	}
 	return ""
 }
+
+func (c *GetterColumn) Serialize(e page.Encoder) (err error) {
+	if err = c.ColumnBase.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(c.key); err != nil {
+		return
+	}
+	return
+}
+
+func (c *GetterColumn) Deserialize(dec page.Decoder) (err error) {
+	if err = c.ColumnBase.Deserialize(dec); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&c.key); err != nil {
+		panic(err)
+	}
+	return
+}
+
 
 // GetterColumnCreator creates a column that uses a Getter to get the text of each cell.
 type GetterColumnCreator struct {
@@ -106,4 +101,8 @@ func (c GetterColumnCreator) Create(ctx context.Context, parent control.TableI) 
 	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
+}
+
+func init() {
+	control.RegisterColumn(GetterColumn{})
 }

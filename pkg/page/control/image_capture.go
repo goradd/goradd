@@ -175,6 +175,63 @@ func (i *ImageCapture) ΩUpdateFormValues(ctx *page.Context) {
 	}
 }
 
+func (i *ImageCapture) Serialize(e page.Encoder) (err error) {
+	if err = i.Control.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(i.ErrTextID); err != nil {
+		return
+	}
+	if err = e.Encode(i.data); err != nil {
+		return
+	}
+	if err = e.Encode(i.shape); err != nil {
+		return
+	}
+	if err = e.Encode(i.typ); err != nil {
+		return
+	}
+	if err = e.Encode(i.zoom); err != nil {
+		return
+	}
+	if err = e.Encode(i.quality); err != nil {
+		return
+	}
+
+	return
+}
+
+func (i *ImageCapture) Deserialize(dec page.Decoder) (err error) {
+	if err = i.Control.Deserialize(dec); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&i.ErrTextID); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&i.data); err != nil {
+		return
+	}
+	if err = dec.Decode(&i.shape); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&i.typ); err != nil {
+		return
+	}
+	if err = dec.Decode(&i.zoom); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&i.quality); err != nil {
+		return
+	}
+
+	return
+}
+
 // ImageCaptureCreator is the initialization structure for declarative creation of buttons
 type ImageCaptureCreator struct {
 	// ID is the control id
@@ -209,4 +266,8 @@ func (c ImageCaptureCreator) Create(ctx context.Context, parent page.ControlI) p
 // GetImageCapture is a convenience method to return the button with the given id from the page.
 func GetImageCapture(c page.ControlI, id string) *ImageCapture {
 	return c.Page().GetControl(id).(*ImageCapture)
+}
+
+func init() {
+	page.RegisterControl(ImageCapture{})
 }

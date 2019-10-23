@@ -3,6 +3,7 @@ package column
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"reflect"
 )
@@ -11,6 +12,7 @@ import (
 // Create it with NewNodeColumn
 type NodeColumn struct {
 	control.ColumnBase
+	node query.NodeI
 }
 
 // NewNodeColumn creates a table column that uses a query.NodeI object to get its text out of an ORM object.
@@ -19,6 +21,7 @@ type NodeColumn struct {
 func NewNodeColumn(node query.NodeI) *NodeColumn {
 	i := NodeColumn{}
 	i.Init(node)
+	i.node = node
 	return &i
 }
 
@@ -27,43 +30,18 @@ func (c *NodeColumn) Init(node query.NodeI) {
 		panic("node is required")
 	}
 	c.ColumnBase.Init(c)
-	c.SetCellTexter(&NodeTexter{Node: node})
 	c.SetTitle(query.NodeGoName(node))
 }
 
 func (c *NodeColumn) GetNode() query.NodeI {
-	return c.CellTexter().(*NodeTexter).Node
+	return c.node
 }
 
-// SetFormat sets the format string of the node column.
-func (c *NodeColumn) SetFormat(format string) *NodeColumn {
-	c.CellTexter().(*NodeTexter).Format = format
-	return c
-}
-
-// SetTimeFormat sets the time format of the string, specifically for a DateTime column.
-func (c *NodeColumn) SetTimeFormat(format string) *NodeColumn {
-	c.CellTexter().(*NodeTexter).TimeFormat = format
-	return c
-}
-
-// NodeTexter is used by the NodeColumn to get text out of a database column.
-type NodeTexter struct {
-	// Key is the key to use when calling the Get function on the object.
-	Node query.NodeI
-	// Format is a format string. It will be applied using fmt.Sprintf. If you don't provide a Format string, standard
-	// string conversion operations will be used.
-	Format string
-	// TimeFormat is applied to the data using time.Format. You can have both a Format and TimeFormat, and the Format
-	// will be applied using fmt.Sprintf after the TimeFormat is applied using time.Format.
-	TimeFormat string
-}
-
-func (t NodeTexter) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (c *NodeColumn) CellData(ctx context.Context, rowNum int, colNum int, data interface{}) interface{} {
 	if v, ok := data.(Getter); !ok {
 		return ""
 	} else {
-		n := t.Node
+		n := c.node
 		var names []string
 
 		// walk up the chain of nodes to figure out how to walk down the chain of data
@@ -94,9 +72,31 @@ func (t NodeTexter) CellText(ctx context.Context, col control.ColumnI, rowNum in
 			}
 		}
 		s := v2.Get(names[0]) // This should be a column node
-		return ApplyFormat(s, t.Format, t.TimeFormat)
+		return s
 	}
 }
+
+func (c *NodeColumn) Serialize(e page.Encoder) (err error) {
+	if err = c.ColumnBase.Serialize(e); err != nil {
+		return
+	}
+	if err = e.Encode(&c.node); err != nil {
+		panic(err)
+	}
+	return
+}
+
+func (c *NodeColumn) Deserialize(dec page.Decoder) (err error) {
+	if err = c.ColumnBase.Deserialize(dec); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&c.node); err != nil {
+		panic(err)
+	}
+	return
+}
+
+
 
 type NodeGetter interface {
 	GetNode() query.NodeI
@@ -136,10 +136,6 @@ type NodeColumnCreator struct {
 	Node query.NodeI
 	// Title is the title of the column that will appear in the header
 	Title string
-	// Format is a format string applied to the data using fmt.Sprintf
-	Format string
-	// TimeFormat is a format string applied specifically to time data using time.Format
-	TimeFormat string
 	// Sortable makes the column display sort arrows in the header
 	Sortable bool
 	control.ColumnOptions
@@ -151,12 +147,6 @@ func (c NodeColumnCreator) Create(ctx context.Context, parent control.TableI) co
 		col.SetID(c.ID)
 	}
 	col.SetTitle(c.Title)
-	if c.Format != "" {
-		col.SetFormat(c.Format)
-	}
-	if c.TimeFormat != "" {
-		col.SetTimeFormat(c.TimeFormat)
-	}
 	if c.Sortable {
 		col.SetSortable()
 	}
@@ -164,3 +154,6 @@ func (c NodeColumnCreator) Create(ctx context.Context, parent control.TableI) co
 	return col
 }
 
+func init() {
+	control.RegisterColumn(NodeColumn{})
+}

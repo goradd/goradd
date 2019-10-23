@@ -27,3 +27,6 @@ func NewDefaultPanel(ctx context.Context, parent page.ControlI) {
 	p.Panel.Init(p, parent, "defaultPanel")
 }
 
+func init() {
+	page.RegisterControl(DefaultPanel{})
+}

@@ -6,7 +6,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type ItemDirection int
@@ -66,14 +65,14 @@ func (l *CheckboxList) ΩDrawingAttributes(ctx context.Context) html.Attributes 
 }
 
 // ΩRenderItem is called by the framework to render a single item in the list.
-func (l *CheckboxList) ΩRenderItem(item control.ListItemI) (h string) {
+func (l *CheckboxList) ΩRenderItem(item *control.ListItem) (h string) {
 	selected := l.IsIdSelected(item.ID())
 	h = renderItemControl(item, "checkbox", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)
 	return
 }
 
-func renderItemControl(item control.ListItemI, typ string, selected bool, name string) string {
+func renderItemControl(item *control.ListItem, typ string, selected bool, name string) string {
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", name)
@@ -87,7 +86,7 @@ func renderItemControl(item control.ListItemI, typ string, selected bool, name s
 	return html.RenderLabel(html.NewAttributes().Set("for", item.ID()).AddClass("form-check-label"), item.Label(), ctrl, html.LabelAfter)
 }
 
-func renderCell(item control.ListItemI, controlHtml string, columnCount int, isInline bool, cellClass string) string {
+func renderCell(item *control.ListItem, controlHtml string, columnCount int, isInline bool, cellClass string) string {
 	attributes := item.Attributes().Copy()
 	attributes.SetID(item.ID() + "_item")
 	attributes.AddClass("form-check")
@@ -108,7 +107,7 @@ type CheckboxListCreator struct {
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []control.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// ColumnCount specifies how many columns to show
@@ -157,4 +156,8 @@ func (c CheckboxListCreator) Init(ctx context.Context, ctrl CheckboxListI) {
 // GetCheckboxList is a convenience method to return the control with the given id from the page.
 func GetCheckboxList(c page.ControlI, id string) *CheckboxList {
 	return c.Page().GetControl(id).(*CheckboxList)
+}
+
+func init() {
+	page.RegisterControl(CheckboxList{})
 }

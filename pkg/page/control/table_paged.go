@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type PagedTableI interface {
@@ -26,6 +25,25 @@ func NewPagedTable(parent page.ControlI, id string) *PagedTable {
 func (t *PagedTable) Init(self page.ControlI, parent page.ControlI, id string) {
 	t.Table.Init(self, parent, id)
 	t.PagedControl.SetPageSize(0) // use the application default
+}
+
+func (t *PagedTable) Serialize(e page.Encoder) (err error) {
+	if err = t.Table.Serialize(e); err != nil {
+		return
+	}
+	if err = t.PagedControl.Serialize(e); err != nil {
+		return
+	}
+	return
+}
+func (t *PagedTable) Deserialize(dec page.Decoder) (err error) {
+	if err = t.Table.Deserialize(dec); err != nil {
+		return
+	}
+	if err = t.PagedControl.Deserialize(dec); err != nil {
+		return
+	}
+	return
 }
 
 // PagedTableCreator creates a table that can be paged
@@ -57,7 +75,7 @@ type PagedTableCreator struct {
 	// Columns are the column creators that will add columns to the table
 	Columns          []ColumnCreator
 	// DataProvider is the data binder for the table. It can be either a control id or a DataBinder
-	DataProvider     data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the control id of the data binder for the table.
 	DataProviderID	string
 	// Data is the actual data for the table, and should be a slice of objects
@@ -100,10 +118,11 @@ func (c PagedTableCreator) Init(ctx context.Context, ctrl PagedTableI) {
 		FooterRowStyler:  c.FooterRowStyler,
 		Columns:          c.Columns,
 		DataProvider:     c.DataProvider,
+		DataProviderID:   c.DataProviderID,
 		Data:             c.Data,
 		Sortable:         c.Sortable,
 		SortHistoryLimit: c.SortHistoryLimit,
-		OnCellClick: c.OnCellClick,
+		OnCellClick: 	  c.OnCellClick,
 		ControlOptions:   c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)
@@ -118,4 +137,8 @@ func (c PagedTableCreator) Init(ctx context.Context, ctrl PagedTableI) {
 // GetPagedTable is a convenience method to return the table with the given id from the page.
 func GetPagedTable(c page.ControlI, id string) *PagedTable {
 	return c.Page().GetControl(id).(*PagedTable)
+}
+
+func init() {
+	page.RegisterControl(PagedTable{})
 }

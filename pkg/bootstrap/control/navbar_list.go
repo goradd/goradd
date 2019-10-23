@@ -9,14 +9,13 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
 )
 
 type NavbarListI interface {
 	page.ControlI
 	control.ItemListI
-	data.DataManagerEmbedder
+	control.DataManagerEmbedder
 	OnSelect (action action.ActionI) page.ControlI
 }
 
@@ -24,10 +23,10 @@ type NavbarList struct {
 	page.Control
 	control.ItemList
 	subItemTag string
-	data.DataManager
+	control.DataManager
 }
 
-func NavbarSelectEvent() page.EventI {
+func NavbarSelectEvent() *page.Event {
 	e := &page.Event{JsEvent: "gr-bs-navbarselect"}
 	e.ActionValue(javascript.JsCode("ui")) // This will be the action value sent by the proxy...the id of the item
 	return e
@@ -65,8 +64,8 @@ func (l *NavbarList) this() NavbarListI {
 
 func (l *NavbarList) ΩDrawTag(ctx context.Context) string {
 	if l.DataManager.HasDataProvider() {
-		l.LoadData(ctx, l)
-		defer l.Clear()
+		l.LoadData(ctx, l.this())
+		defer l.ResetData() // prevent the data from being serialized and taking up space unnecessarily
 	}
 	return l.Control.ΩDrawTag(ctx)
 }
@@ -86,7 +85,7 @@ func (l *NavbarList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (er
 	return nil
 }
 
-func (l *NavbarList) getItemsHtml(ctx context.Context, items []control.ListItemI, hasParent bool) string {
+func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem, hasParent bool) string {
 	var h = ""
 
 	for i, item := range items {
@@ -166,13 +165,46 @@ func (l *NavbarList) OnSelect (action action.ActionI) page.ControlI {
 	return l.On(NavbarSelectEvent(), action)
 }
 
+func (l *NavbarList) Serialize(e page.Encoder) (err error) {
+	if err = l.Control.Serialize(e); err != nil {
+		return
+	}
+	if err = l.ItemList.Serialize(e); err != nil {
+		return
+	}
+	if err = l.DataManager.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(l.subItemTag); err != nil {
+		return
+	}
+	return
+}
+
+func (l *NavbarList) Deserialize(dec page.Decoder) (err error) {
+	if err = l.Control.Deserialize(dec); err != nil {
+		return
+	}
+	if err = l.ItemList.Deserialize(dec); err != nil {
+		return
+	}
+	if err = l.DataManager.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.subItemTag); err != nil {
+		return
+	}
+	return
+}
+
 type NavbarListCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []control.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	page.ControlOptions
@@ -194,7 +226,7 @@ func (c NavbarListCreator) Init(ctx context.Context, ctrl NavbarListI) {
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(control.DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 
@@ -208,4 +240,8 @@ func (c NavbarListCreator) Init(ctx context.Context, ctrl NavbarListI) {
 // GetNavbarList is a convenience method to return the control with the given id from the page.
 func GetNavbarList(c page.ControlI, id string) *NavbarList {
 	return c.Page().GetControl(id).(*NavbarList)
+}
+
+func init() {
+	page.RegisterControl(NavbarList{})
 }

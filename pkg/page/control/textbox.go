@@ -10,7 +10,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
-	"reflect"
 	"strconv"
 )
 
@@ -276,7 +275,7 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 
 	if t.validators != nil {
 		for _, v := range t.validators {
-			if msg := v.Validate(t, t.value); msg != "" {
+			if msg := v.Validate(t.this(), t.value); msg != "" {
 				t.SetValidationError(msg)
 				return false
 			}
@@ -327,7 +326,7 @@ type encodedTextbox struct {
 // Serialize is used by the framework to serialize the textbox into the pagestate.
 func (t *Textbox) Serialize(e page.Encoder) (err error) {
 	if err = t.Control.Serialize(e); err != nil {
-		return
+		panic(err)
 	}
 
 	s := encodedTextbox{
@@ -342,20 +341,14 @@ func (t *Textbox) Serialize(e page.Encoder) (err error) {
 	}
 
 	if err = e.Encode(s); err != nil {
-		return err
+		panic(err)
 	}
 	return
 }
 
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize.
-func (t *Textbox) ΩisSerializer(i page.ControlI) bool {
-	return reflect.TypeOf(t) == reflect.TypeOf(i)
-}
-
 // Deserialize is used by the pagestate serializer.
-func (t *Textbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
-	if err = t.Control.Deserialize(d, p); err != nil {
+func (t *Textbox) Deserialize(d page.Decoder) (err error) {
+	if err = t.Control.Deserialize(d); err != nil {
 		return
 	}
 
@@ -505,7 +498,7 @@ func GetTextbox(c page.ControlI, id string) *Textbox {
 
 func init() {
 	// gob.Register(&Textbox{}) register control.Textbox instead
-	gob.Register(&MaxLengthValidator{})
-	gob.Register(&MinLengthValidator{})
-	gob.Register(&Textbox{})
+	gob.Register(MaxLengthValidator{})
+	gob.Register(MinLengthValidator{})
+	page.RegisterControl(Textbox{})
 }

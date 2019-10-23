@@ -13,6 +13,11 @@ import (
 	"path/filepath"
 )
 
+
+// This is specific to automating the build of the examples database code. You do not normally need to
+// set this.
+var BuildingExamples bool
+
 type CodeGenerator struct {
 	Tables     map[string]map[string]TableType
 	TypeTables map[string]map[string]TypeTableType

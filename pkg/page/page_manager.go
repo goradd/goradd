@@ -73,6 +73,9 @@ func (m *PageManager) HasPage(pageStateId string) bool {
 	return pageCache.Has(pageStateId)
 }
 
+// getPage returns a page from the cache, whether it is previously allocated, or
+// is a new page. If there is an error creating a new page, it should panic. If this is
+// an ajax call and the previous page could not be found in the cache, then return nil in page.
 func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 	var pageStateId string
 
@@ -88,6 +91,7 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 		if gCtx.requestMode == Ajax {
 			// TODO: If this happens, we need to reload the whole page, because we lost the pagestate completely
 			log.FrameworkDebug("Ajax lost the page state") // generally this should only happen if the page state drops out of the cache, which might happen after a long time
+			return
 		}
 		// page was not found, so make a new one
 		f, _ := m.getNewPageFunc(gCtx.URL.Path)
@@ -128,6 +132,12 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 	}()
 
 	page, isNew := m.getPage(ctx)
+
+	if page == nil {
+		// An ajax call, but we could not deserialize the old page. Refresh the entire page to get a server access.
+		buf.WriteString(`{"loc":"reload"}`) // the refresh will be handled in javascript
+		return map[string]string{"Content-Type": "application/json"}, 0
+	}
 
 	defer m.cleanup(page)
 	page.renderStatus = PageIsRendering

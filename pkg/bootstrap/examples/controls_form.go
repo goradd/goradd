@@ -5,7 +5,6 @@ import (
 	bootstrap "github.com/goradd/goradd/pkg/bootstrap/control"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"sort"
 )
@@ -67,7 +66,7 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 	createF(ctx, GetPanel(f, "detailPanel"))
 }
 
-func (f *ControlsForm) BindData(ctx context.Context, s data.DataManagerI) {
+func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
 	sort.Slice(controls, func(i, j int) bool {
 		return controls[i].order < controls[j].order
 	})
@@ -85,6 +84,7 @@ func (f *ControlsForm) BindData(ctx context.Context, s data.DataManagerI) {
 
 func init() {
 	page.RegisterPage(ControlsFormPath, NewControlsForm, ControlsFormId)
+	page.RegisterControl(ControlsForm{})
 }
 
 

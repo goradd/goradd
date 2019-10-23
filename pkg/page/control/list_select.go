@@ -7,7 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
 	"reflect"
 )
@@ -15,18 +14,18 @@ import (
 type SelectListI interface {
 	page.ControlI
 	ItemListI
-	data.DataManagerEmbedder
+	DataManagerEmbedder
 	SetValue(v interface{})
 }
 
 // SelectList is typically a dropdown list with a single selection. Items are selected by id number, and the SelectList
-// completely controls the ids in the list. Create the list by calling AddItem or AddItems to add ListItemI objects.
+// completely controls the ids in the list. Create the list by calling AddItem or AddItems to add *ListItem objects.
 // Or, use the embedded DataManager to load items. Set the size attribute if you want to display it as a
 // scrolling list rather than a dropdown list.
 type SelectList struct {
 	page.Control
 	ItemList
-	data.DataManager
+	DataManager
 	selectedId string
 }
 
@@ -43,6 +42,11 @@ func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.ItemList = NewItemList(l)
 	l.Tag = "select"
 }
+
+func (l *SelectList) this() SelectListI {
+	return l.Self.(SelectListI)
+}
+
 
 // Validate is called by the framework to validate the contents of the control. For a SelectList,
 // this is typically just checking to see if something was selected if a selection is required.
@@ -74,7 +78,7 @@ func (l *SelectList) ΩUpdateFormValues(ctx *page.Context) {
 // SelectedItem will return the currently selected item. If no item has been selected, it will return the first item
 // in the list, since that is what will be showing in the selection list, and will update its internal pointer to
 // make the first item the current selection.
-func (l *SelectList) SelectedItem() ListItemI {
+func (l *SelectList) SelectedItem() *ListItem {
 	if l.selectedId == "" {
 		if l.Len() == 0 {
 			return nil
@@ -156,22 +160,29 @@ func (l *SelectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	a.SetDataAttribute("grctl", "selectlist")
 	a.Set("name", l.ID()) // needed for posts
 	if l.IsRequired() {
-		a.Set("required", "")
+		a.Set("required", "") // required for some css frameworks, but browser validation is flaky.
+							  // set the "novalidate" attribute on the form for server-side validation only.
 	}
 	return a
 }
 
+func (l *SelectList) ΩDrawTag(ctx context.Context) string {
+	if l.HasDataProvider() {
+		l.LoadData(ctx, l.this())
+		defer l.ResetData()
+	}
+	return l.Control.ΩDrawTag(ctx)
+}
+
+
 // ΩDrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
 func (l *SelectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if l.HasDataProvider() {
-		l.LoadData(ctx, l)
-	}
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil
 }
 
-func (l *SelectList) getItemsHtml(items []ListItemI) string {
+func (l *SelectList) getItemsHtml(items []*ListItem) string {
 	var h = ""
 
 	for _, item := range items {
@@ -208,6 +219,40 @@ func (l *SelectList) SetData(data interface{}) {
 	l.AddListItems(data)
 }
 
+func (l *SelectList) Serialize(e page.Encoder) (err error) {
+	if err = l.Control.Serialize(e); err != nil {
+		return
+	}
+	if err = l.ItemList.Serialize(e); err != nil {
+		return
+	}
+	if err = l.DataManager.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(l.selectedId); err != nil {
+		return
+	}
+	return
+}
+
+func (l *SelectList) Deserialize(dec page.Decoder) (err error) {
+	if err = l.Control.Deserialize(dec); err != nil {
+		return
+	}
+	if err = l.ItemList.Deserialize(dec); err != nil {
+		return
+	}
+	if err = l.DataManager.Deserialize(dec); err != nil {
+		return
+	}
+	if err = dec.Decode(&l.selectedId); err != nil {
+		return
+	}
+	return
+}
+
+
 type SelectListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
@@ -216,13 +261,13 @@ type SelectListCreator struct {
 	// used to specify no selection, or a message that a selection is required.
 	NilItem string
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// Size specifies how many items to show, and turns the list into a scrolling list
 	Size int
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
-	Value string
+	Value interface{}
 	// OnChange is an action to take when the user changes what is selected (as in, when the javascript change event fires).
 	OnChange action.ActionI
 	// SaveState saves the selected value so that it is restored if the form is returned to.
@@ -249,7 +294,7 @@ func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 
@@ -272,4 +317,8 @@ func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 // GetSelectList is a convenience method to return the control with the given id from the page.
 func GetSelectList(c page.ControlI, id string) *SelectList {
 	return c.Page().GetControl(id).(*SelectList)
+}
+
+func init() {
+	page.RegisterControl(SelectList{})
 }

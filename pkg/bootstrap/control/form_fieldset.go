@@ -115,7 +115,7 @@ type FormFieldsetCreator struct {
 	// like a RadioList or CheckboxList
 	Child page.Creator
 	// LegendAttributes are additional attributes to add to the label tag.
-	LegendAttributes html.AttributeCreator
+	LegendAttributes html.Attributes
 	// Instructions is help text that accompanies the control
 	Instructions string
 	// Set AsRow to true to put the legend on the same row as the content
@@ -151,4 +151,8 @@ func (f FormFieldsetCreator) Init(ctx context.Context, c FormFieldsetI) {
 // GetFormFieldset is a convenience method to return the fieldset with the given id from the page.
 func GetFormFieldset(c page.ControlI, id string) *FormFieldset {
 	return c.Page().GetControl(id).(*FormFieldset)
+}
+
+func init() {
+	page.RegisterControl(FormFieldset{})
 }

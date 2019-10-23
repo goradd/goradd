@@ -7,7 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"strconv"
@@ -75,14 +74,14 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Server",
-			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+			OnSubmit: action.Server("checkboxPanel", ButtonSubmit),
 		},
 	)
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
-func (f *TableCheckboxPanel) BindData(ctx context.Context, s data.DataManagerI) {
+func (f *TableCheckboxPanel) BindData(ctx context.Context, s DataManagerI) {
 	t := s.(PagedControlI)
 	t.SetTotalItems(uint(len(table1Data)))
 	start, end := t.SliceOffsets()
@@ -110,30 +109,37 @@ func init() {
 	browsertest.RegisterTestFunction("Table - Checkbox Server Submit", testTableCheckboxServerSubmit)
 
 	gob.Register(SelectedProvider{}) // We must register this here because we are putting the changes map into the session,
-
+	page.RegisterControl(TableCheckboxPanel{})
 }
 
 func testTableCheckboxNav(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
 	t.SetCheckbox("table1_check1_1", true)
-	pager := f.Page().GetControl("pager").(*DataPager)
-	table := f.Page().GetControl("table1").(*PagedTable)
-	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
-	changes := col.Changes()
-	_, ok := changes["1"]
-	t.AssertEqual(false, ok)
+	t.F(func(f page.FormI) {
+		table := f.Page().GetControl("table1").(*PagedTable)
+		col := table.GetColumnByID("check1").(*column.CheckboxColumn)
+		changes := col.Changes()
+		_, ok := changes["1"]
+		t.AssertEqual(false, ok)
 
-	t.ClickSubItem(pager, "page_2")
-	changes = col.Changes()
-	changed, _ := changes["1"]
-	t.AssertEqual(true, changed)
+	})
+
+	t.ClickSubItem("pager", "page_2")
+	t.F(func(f page.FormI) {
+		table := f.Page().GetControl("table1").(*PagedTable)
+		col := table.GetColumnByID("check1").(*column.CheckboxColumn)
+		changes := col.Changes()
+		changed, _ := changes["1"]
+		t.AssertEqual(true, changed)
+
+	})
 
 	// restore state for other tests
-	t.ClickSubItem(pager, "page_1")
+	t.ClickSubItem("pager", "page_1")
 	t.SetCheckbox("table1_check1_1", false)
-	t.ClickSubItem(pager, "page_1")
+	t.ClickSubItem("pager", "page_1")
 
 	t.Done("Complete")
 }
@@ -150,27 +156,32 @@ func testTableCheckboxServerSubmit(t *browsertest.TestForm) {
 	t.Done("Complete")
 }
 
-func testTableCheckboxSubmit(t *browsertest.TestForm, btnName string) {
+func testTableCheckboxSubmit(t *browsertest.TestForm, btnID string) {
+
 	table1Data = getCheckTestData()
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").SetValue("testing", 1).String()
-	f := t.LoadUrl(myUrl)
-	btn := f.Page().GetControl(btnName)
+	t.LoadUrl(myUrl)
 
 	t.SetCheckbox("table1_check1_1", true)
-	table := f.Page().GetControl("table1").(*PagedTable)
-	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
-	changes := col.Changes()
-	_, ok := changes["1"]
-	t.AssertEqual(false, ok)
+	t.F(func(f page.FormI) {
+		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		changes := col.Changes()
+		_, ok := changes["1"]
+		t.AssertEqual(false, ok)
+	})
 
-	t.Click(btn)
-	changes = col.Changes()
-	changed, _ := changes["1"]
-	t.AssertEqual(true, changed)
+	t.Click(btnID)
+	// click above can cause form to reset
+	t.F(func(f page.FormI) {
+		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		changes := col.Changes()
+		changed, _ := changes["1"]
+		t.AssertEqual(true, changed)
+	})
 
 	// restore state for other tests
 	t.SetCheckbox("table1_check1_1", false)
-	t.Click(btn)
+	t.Click(btnID)
 
 }
 

@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -94,5 +93,5 @@ func GetEmailTextbox(c page.ControlI, id string) *EmailTextbox {
 }
 
 func init() {
-	gob.RegisterName("bootstrap.emailtextbox", new(EmailTextbox))
+	page.RegisterControl(EmailTextbox{})
 }

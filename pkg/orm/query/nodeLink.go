@@ -32,6 +32,7 @@ func (n *nodeLink) setParent(pn NodeI) {
 
 // SetParentNode is used internally by the framework.
 // It is used by the codegenerator to create linked nodes.
+// It is used by the serializer to restore linked nodes.
 func SetParentNode(child NodeI, parent NodeI) {
 	if parent != nil {
 		if parent.(nodeLinkI).getChild() != nil {

@@ -7,8 +7,8 @@ import (
 	"context"
 
 	"github.com/goradd/goradd/pkg/orm/op"
-	"github.com/goradd/goradd/web/examples/model"
-	"github.com/goradd/goradd/web/examples/model/node"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
 func (ctrl *QueryPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {

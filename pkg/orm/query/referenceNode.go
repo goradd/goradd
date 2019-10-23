@@ -1,6 +1,8 @@
 package query
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"strings"
 )
@@ -32,14 +34,12 @@ type ReferenceNode struct {
 	goPropName string
 	// The name of the variable in the model structure used to hold the object
 	goVarName string
-
-	// Is this pointing to a type table item?
-	isTypeTable bool
-
 	// The name of the table we are joining to
 	refTable string
 	// If a forward reference and NoSQL, the name of the table that will contain the reference or references backwards to us. If SQL, the Pk of the RefTable
 	refColumn string
+	// Is this pointing to a type table item?
+	isTypeTable bool
 }
 
 // NewReferenceNode creates a forward reference node.
@@ -133,6 +133,102 @@ func (n *ReferenceNode) Expand() {
 
 func (n *ReferenceNode) isExpanded() bool {
 	return false
+}
+
+func (n *ReferenceNode) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = e.Encode(n.alias); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.condition); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbColumn); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.goColumnName); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.goPropName); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.goVarName); err != nil {
+		panic(err)
+	}
+
+	if err = e.Encode(n.refTable); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.refColumn); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.isTypeTable); err != nil {
+		panic(err)
+	}
+
+	err = e.Encode(n.nodeLink.parentNode)
+	data = buf.Bytes()
+	return
+}
+
+
+func (n *ReferenceNode) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	if err = dec.Decode(&n.alias); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.condition); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbColumn); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.goColumnName); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.goPropName); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.goVarName); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.refTable); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.refColumn); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.isTypeTable); err != nil {
+		panic(err)
+	}
+
+	var n2 NodeI
+
+	if err = dec.Decode(&n2); err != nil {
+		panic(err)
+	}
+	SetParentNode(n, n2)
+	return
+}
+
+
+func init() {
+	gob.Register(&ReferenceNode{})
 }
 
 // RelatedColumnNode is used internally by the framework to create a new node for the other side of the relationship.

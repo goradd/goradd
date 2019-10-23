@@ -87,24 +87,25 @@ func NewForms1Panel(ctx context.Context, parent page.ControlI) {
 
 func init() {
 	examples.RegisterPanel("forms1", "Forms 1", NewForms1Panel, 2)
+	page.RegisterControl(Forms1Panel{})
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Ajax Submit", testForms1AjaxSubmit)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Server Submit", testForms1ServerSubmit)
 }
 
 func testForms1AjaxSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
-	testForms1Submit(t, f, f.Page().GetControl("ajaxButton"))
+	testForms1Submit(t, "ajaxButton")
 
 	t.Done("Complete")
 }
 
 func testForms1ServerSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "textbox").String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
-	testForms1Submit(t, f, f.Page().GetControl("serverButton"))
+	testForms1Submit(t, "serverButton")
 
 	t.Done("Complete")
 }
@@ -112,8 +113,6 @@ func testForms1ServerSubmit(t *browsertest.TestForm) {
 // testForms1Submit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testForms1Submit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {
-
-	t.Click(btn)
-
+func testForms1Submit(t *browsertest.TestForm, id string) {
+	t.Click(id)
 }

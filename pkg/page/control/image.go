@@ -131,6 +131,38 @@ func (i *Image) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
+func (i *Image) Serialize(e page.Encoder) (err error) {
+	if err = i.Control.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(i.data); err != nil {
+		return
+	}
+	if err = e.Encode(i.typ); err != nil {
+		return
+	}
+	return
+}
+
+func (i *Image) Deserialize(dec page.Decoder) (err error) {
+	if err = i.Control.Deserialize(dec); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&i.data); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&i.typ); err != nil {
+		return
+	}
+
+	return
+}
+
+
+
 
 // ImageCreator is the initialization structure for declarative creation of buttons
 type ImageCreator struct {
@@ -178,4 +210,8 @@ func (c ImageCreator) Init(ctx context.Context, ctrl ImageI) {
 // GetImage is a convenience method to return the button with the given id from the page.
 func GetImage(c page.ControlI, id string) *Image {
 	return c.Page().GetControl(id).(*Image)
+}
+
+func init() {
+	page.RegisterControl(Image{})
 }

@@ -3,32 +3,10 @@ package control
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
 )
 
-// ListItemI is the interface for list items in one of the various list controls that embed
-// the ItemList structure. It is generally used by implementations of list controls.
-type ListItemI interface {
-	ItemListI
-	Value() interface{}
-	ID() string
-	SetID(string)
-	Label() string
-	SetLabel(string)
-	SetDisabled(bool)
-	Disabled() bool
-	SetIsDivider(bool)
-	IsDivider() bool
-	IntValue() int
-	StringValue() string
-	HasChildItems() bool
-	Attributes() html.Attributes
-	Anchor() string
-	SetAnchor(string)
-	AnchorAttributes() html.Attributes
-	RenderLabel() string
-	IsEmptyValue() bool
-}
 
 type ItemLister interface {
 	Value() interface{}
@@ -236,6 +214,63 @@ func (i *ListItem) IsEmptyValue() bool {
 		return v == ""
 	}
 	return false
+}
+
+func (i *ListItem) Serialize(e page.Encoder) (err error) {
+	if err = e.Encode(&i.value); err != nil {
+		return
+	}
+	if err = e.Encode(i.id); err != nil {
+		return
+	}
+	if err = e.Encode(i.label); err != nil {
+		return
+	}
+	if err = e.Encode(i.attributes); err != nil {
+		return
+	}
+	if err = e.Encode(i.shouldEscapeLabel); err != nil {
+		return
+	}
+	if err = e.Encode(i.disabled); err != nil {
+		return
+	}
+	if err = e.Encode(i.isDivider); err != nil {
+		return
+	}
+	if err = e.Encode(i.anchorAttributes); err != nil {
+		return
+	}
+	return i.ItemList.Serialize(e)
+}
+
+func (i *ListItem) Deserialize(dec page.Decoder) (err error) {
+	if err = dec.Decode(&i.value); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&i.id); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&i.label); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&i.attributes); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&i.shouldEscapeLabel); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&i.disabled); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&i.isDivider); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&i.anchorAttributes); err != nil {
+		panic(err)
+	}
+
+	return i.ItemList.Deserialize(dec)
 }
 
 // ListValue is a helper for initializing a control based on ItemList.

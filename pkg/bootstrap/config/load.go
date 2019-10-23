@@ -8,7 +8,8 @@ import (
 	"runtime"
 )
 
-// Loader is the injected loader. Set it during initialization if you want to load bootstrap differently than below.
+// Loader is the injected loader. Set it during your application's initialization
+// if you want to load bootstrap differently than below.
 var Loader func(page.FormI)
 
 // Configuration options for Bootstrap
@@ -20,20 +21,19 @@ func LoadBootstrap(form page.FormI) {
 	if Loader != nil {
 		Loader(form)
 	} else {
+		form.AddJQuery()
 		if config.Release {
-			form.AddJavaScriptFile("https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js", false,
-				html.NewAttributes().Set("integrity", "sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49").Set("crossorigin", "anonymous"))
-			form.AddJavaScriptFile("https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js", false,
-				html.NewAttributes().Set("integrity", "sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T").Set("crossorigin", "anonymous"))
-			form.AddStyleSheetFile("https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css",
-				html.NewAttributes().Set("integrity", "sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB").Set("crossorigin", "anonymous"))
-
+			form.AddJavaScriptFile("https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js", false,
+				html.NewAttributes().Set("integrity", "sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1").Set("crossorigin", "anonymous"))
+			form.AddJavaScriptFile("https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js", false,
+				html.NewAttributes().Set("integrity", "sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM").Set("crossorigin", "anonymous"))
+			form.AddStyleSheetFile("https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css",
+				html.NewAttributes().Set("integrity", "sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T").Set("crossorigin", "anonymous"))
 		} else {
 			form.AddJavaScriptFile(filepath.Join(BootstrapAssets(), "js", "bootstrap.bundle.js"), false, nil)
 			form.AddStyleSheetFile(filepath.Join(BootstrapAssets(), "css", "bootstrap.min.css"), nil)
 		}
 	}
-
 }
 
 func BootstrapAssets() string {

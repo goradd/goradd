@@ -1,6 +1,8 @@
 package query
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"strings"
 )
@@ -144,4 +146,81 @@ func NodeIsPK(n NodeI) bool {
 	} else {
 		return cn.isPK
 	}
+}
+
+func (n *ColumnNode) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = e.Encode(n.alias); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbColumn); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.gName); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.goType); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.sortDescending); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.isPK); err != nil {
+		panic(err)
+	}
+
+	var n2 NodeI = n.nodeLink.parentNode
+	err = e.Encode(&n2)
+	data = buf.Bytes()
+	return
+}
+
+func (n *ColumnNode) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	if err = dec.Decode(&n.alias); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbColumn); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.gName); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.goType); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.sortDescending); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.isPK); err != nil {
+		panic(err)
+	}
+
+	var n2 NodeI
+
+	if err = dec.Decode(&n2); err != nil {
+		panic(err)
+	}
+	SetParentNode(n, n2)
+	return
+}
+
+
+func init() {
+	gob.Register(&ColumnNode{})
 }

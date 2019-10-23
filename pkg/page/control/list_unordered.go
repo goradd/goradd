@@ -5,15 +5,14 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"reflect"
 )
 
 type UnorderedListI interface {
 	page.ControlI
 	ItemListI
-	GetItemsHtml(items []ListItemI) string
-	data.DataManagerEmbedder
+	GetItemsHtml(items []*ListItem) string
+	DataManagerEmbedder
 	SetBulletStyle(s string) UnorderedListI
 	SetItemTag(s string) UnorderedListI
 }
@@ -24,8 +23,8 @@ type UnorderedListI interface {
 type UnorderedList struct {
 	page.Control
 	ItemList
+	DataManager
 	itemTag string
-	data.DataManager
 }
 
 const (
@@ -71,8 +70,10 @@ func (l *UnorderedList) SetBulletStyle(s string) UnorderedListI {
 }
 
 func (l *UnorderedList) ΩDrawTag(ctx context.Context) string {
-	l.LoadData(ctx, l)
-	defer l.Clear()
+	if l.HasDataProvider() {
+		l.LoadData(ctx, l.this())
+		defer l.ResetData()
+	}
 	return l.Control.ΩDrawTag(ctx)
 }
 
@@ -92,7 +93,7 @@ func (l *UnorderedList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) 
 
 // GetItemsHtml is used by the framework to get the items for the html. It is exported so that
 // it can be overridden by other implementations of an UnorderedList.
-func (l *UnorderedList) GetItemsHtml(items []ListItemI) string {
+func (l *UnorderedList) GetItemsHtml(items []*ListItem) string {
 	var h = ""
 
 	for _, item := range items {
@@ -108,8 +109,8 @@ func (l *UnorderedList) GetItemsHtml(items []ListItemI) string {
 }
 
 // SetData replaces the current list with the given data.
-// The result is kept in memory currently.
-// ItemLister, ItemIDer, Labeler or Stringer types. This function can accept one or more lists of items, or
+// ItemLister, ItemIDer, Labeler or Stringer types are accepted.
+// This function can accept one or more lists of items, or
 // single items. They will all get added to the top level of the list. To add sub items, get a list item
 // and add items to it.
 func (l *UnorderedList) SetData(data interface{}) {
@@ -122,13 +123,46 @@ func (l *UnorderedList) SetData(data interface{}) {
 	l.AddListItems(data)
 }
 
+func (l *UnorderedList) Serialize(e page.Encoder) (err error) {
+	if err = l.Control.Serialize(e); err != nil {
+		return
+	}
+	if err = l.ItemList.Serialize(e); err != nil {
+		return
+	}
+	if err = l.DataManager.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(l.itemTag); err != nil {
+		return
+	}
+	return
+}
+
+func (l *UnorderedList) Deserialize(dec page.Decoder) (err error) {
+	if err = l.Control.Deserialize(dec); err != nil {
+		return
+	}
+	if err = l.ItemList.Deserialize(dec); err != nil {
+		panic(err)
+	}
+	if err = l.DataManager.Deserialize(dec); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&l.itemTag); err != nil {
+		panic(err)
+	}
+	return
+}
+
 
 type UnorderedListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// BulletStyle is the list-style-type property.
@@ -151,7 +185,7 @@ func (c UnorderedListCreator) Init(ctx context.Context, ctrl UnorderedListI) {
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 	if c.BulletStyle != "" {
@@ -163,4 +197,8 @@ func (c UnorderedListCreator) Init(ctx context.Context, ctrl UnorderedListI) {
 // GetUnorderedList is a convenience method to return the control with the given id from the page.
 func GetUnorderedList(c page.ControlI, id string) *UnorderedList {
 	return c.Page().GetControl(id).(*UnorderedList)
+}
+
+func init() {
+	page.RegisterControl(UnorderedList{})
 }

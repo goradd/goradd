@@ -2,11 +2,9 @@ package generator
 
 import (
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/query"
-	"github.com/goradd/goradd/pkg/page"
 )
 
 func init() {
@@ -58,12 +56,6 @@ func (d Checkbox) GenerateGet(ctrlName string, objName string, col *generator.Co
 func (d Checkbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
 	s = fmt.Sprintf(`c.%s.Set%s(c.%s.Checked())`, objName, col.GoName, ctrlName)
 	return
-}
-
-func (d Checkbox) ConnectorParams() *maps.SliceMap {
-	paramControls := page.ControlConnectorParams()
-
-	return paramControls
 }
 
 func (d Checkbox) GenerateCreator(col *generator.ColumnType) (s string) {

@@ -88,3 +88,7 @@ func (c FieldsetCreator) Create(ctx context.Context, parent page.ControlI) page.
 func GetFieldset(c page.ControlI, id string) *Fieldset {
 	return c.Page().GetControl(id).(*Fieldset)
 }
+
+func init() {
+	page.RegisterControl(Fieldset{})
+}

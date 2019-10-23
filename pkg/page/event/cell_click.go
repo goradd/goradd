@@ -10,8 +10,8 @@ const (
 	CellClickRowIndex    = `this.parentElement.rowIndex`
 	CellClickColumnIndex = `this.cellIndex`
 	CellClickCellId      = `this.id`
-	CellClickRowId       = `g$(this).parent().id`
-	CellClickRowValue    = `g$(g$(this).parent()).data("value")`
+	CellClickRowId       = `this.parentElement.id`
+	CellClickRowValue    = `g$(this.parentElement).data("value")`
 	CellClickColId       = `g$(g$(g$(this).closest("table")).qs("thead")).qa("th")[this.cellIndex].id`
 )
 
@@ -40,7 +40,7 @@ const (
  * You can put your items in a javascript array, and an array will be returned as the strParameter in the action.
  * Or you can put it in a javascript object, and a named array(hash) will be returned.
  */
-func CellClick() page.EventI {
+func CellClick() *page.Event {
 	e := &page.Event{JsEvent: "click"}
 	e.Selector("th,td").ActionValue(javascript.JsCode(CellClickDefault))
 	return e

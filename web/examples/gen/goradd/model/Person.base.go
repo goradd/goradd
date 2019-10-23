@@ -5,11 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
 	"bytes"
@@ -37,9 +37,9 @@ type personBase struct {
 	// Reverse reference objects.
 	oAddresses         []*Address          // Objects in the order they were queried
 	mAddresses         map[string]*Address // Objects by PK
-	oLogin             *Login
 	oProjectsAsManager []*Project          // Objects in the order they were queried
 	mProjectsAsManager map[string]*Project // Objects by PK
+	oLogin             *Login
 
 	// Many-Many reference objects.
 	oPersonTypes          []PersonType
@@ -60,13 +60,13 @@ const (
 )
 
 const (
-	PersonID        = `ID`
-	PersonFirstName = `FirstName`
-	PersonLastName  = `LastName`
-	PersonAddresses = `Addresses`
+	PersonID                = `ID`
+	PersonFirstName         = `FirstName`
+	PersonLastName          = `LastName`
+	PersonAddresses         = `Addresses`
+	PersonProjectsAsManager = `ProjectsAsManager`
 
 	PersonLogin                = `Login`
-	PersonProjectsAsManager    = `ProjectsAsManager`
 	PersonPersonType           = `PersonType`
 	PersonPersonTypes          = `PersonTypes`
 	PersonProjectAsTeamMember  = `ProjectAsTeamMember`
@@ -224,24 +224,6 @@ func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{
 	return o.oAddresses
 }
 
-// Login returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
-func (o *personBase) Login() *Login {
-	if o.oLogin == nil {
-		return nil
-	}
-	return o.oLogin
-}
-
-// LoadLogin returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
-func (o *personBase) LoadLogin(ctx context.Context) *Login {
-	if o.oLogin == nil {
-		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
-	}
-	return o.oLogin
-}
-
 // ProjectAsManager returns a single Project object by primary key, if one was loaded.
 // Otherwise, it will return nil.
 func (o *personBase) ProjectAsManager(pk string) *Project {
@@ -271,6 +253,24 @@ func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...in
 
 	o.oProjectsAsManager = qb.Where(cond).Load(ctx)
 	return o.oProjectsAsManager
+}
+
+// Login returns the connected Login object, if one was loaded
+// otherwise, it will return nil.
+func (o *personBase) Login() *Login {
+	if o.oLogin == nil {
+		return nil
+	}
+	return o.oLogin
+}
+
+// LoadLogin returns the connected Login object, if one was loaded
+// otherwise, it will return nil.
+func (o *personBase) LoadLogin(ctx context.Context) *Login {
+	if o.oLogin == nil {
+		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
+	}
+	return o.oLogin
 }
 
 // Load returns a Person from the database.
@@ -435,7 +435,7 @@ func (b *PeopleBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
-// joinOrSelect us a private helper function for the Load* functions
+// joinOrSelect is a private helper function for the Load* functions
 func (b *PeopleBuilder) joinOrSelect(nodes ...query.NodeI) *PeopleBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
@@ -564,17 +564,6 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		o.oAddresses = nil
 	}
 
-	if v, ok := m["Login"]; ok {
-		if oLogin, ok2 := v.(db.ValueMap); ok2 {
-			o.oLogin = new(Login)
-			o.oLogin.load(oLogin, linkParent, o.oLogin, objThis, "Person")
-		} else {
-			panic("Wrong type found for oLogin object.")
-		}
-	} else {
-		o.oLogin = nil
-	}
-
 	if v, ok := m["ProjectsAsManager"]; ok {
 		switch oProjectsAsManager := v.(type) {
 		case []db.ValueMap:
@@ -601,6 +590,17 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		}
 	} else {
 		o.oProjectsAsManager = nil
+	}
+
+	if v, ok := m["Login"]; ok {
+		if oLogin, ok2 := v.(db.ValueMap); ok2 {
+			o.oLogin = new(Login)
+			o.oLogin.load(oLogin, linkParent, o.oLogin, objThis, "Person")
+		} else {
+			panic("Wrong type found for oLogin object.")
+		}
+	} else {
+		o.oLogin = nil
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -718,11 +718,11 @@ func (o *personBase) Get(key string) interface{} {
 	case "Addresses":
 		return o.Addresses()
 
-	case "Login":
-		return o.Login()
-
 	case "ProjectsAsManager":
 		return o.ProjectsAsManager()
+
+	case "Login":
+		return o.Login()
 
 	case "PersonType":
 		return o.PersonType()
@@ -742,77 +742,78 @@ func (o *personBase) Get(key string) interface{} {
 // It should be used for transmitting database object over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
-func (o *personBase) MarshalBinary() (data []byte, err error) {
+func (o *personBase) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 
-	if err = encoder.Encode(o.id); err != nil {
-		return
+	if err := encoder.Encode(o.id); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.idIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.firstName); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.firstNameIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.firstNameIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.idIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.lastName); err != nil {
-		return
+	if err := encoder.Encode(o.firstName); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.lastNameIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.firstNameIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.lastNameIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.oAddresses); err != nil {
-		return
+	if err := encoder.Encode(o.firstNameIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.oLogin); err != nil {
-		return
+	if err := encoder.Encode(o.lastName); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.oProjectsAsManager); err != nil {
-		return
+	if err := encoder.Encode(o.lastNameIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.lastNameIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.oPersonTypes); err != nil {
-		return
+	if err := encoder.Encode(o.oAddresses); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.oProjectsAsTeamMember); err != nil {
-		return
+	if err := encoder.Encode(o.oProjectsAsManager); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oLogin); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oPersonTypes); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oProjectsAsTeamMember); err != nil {
+		return nil, err
 	}
 
 	if o._aliases == nil {
-		if err = encoder.Encode(false); err != nil {
-			return
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
 		}
 	} else {
-		if err = encoder.Encode(true); err != nil {
-			return
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
 		}
-		if err = encoder.Encode(o._aliases); err != nil {
-			return
+		if err := encoder.Encode(o._aliases); err != nil {
+			return nil, err
 		}
 	}
 
-	if err = encoder.Encode(o._restored); err != nil {
-		return
+	if err := encoder.Encode(o._restored); err != nil {
+		return nil, err
 	}
 
-	return
+	return buf.Bytes(), nil
 }
 
 func (o *personBase) UnmarshalBinary(data []byte) (err error) {
@@ -859,9 +860,6 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 			o.mAddresses[p.PrimaryKey()] = p
 		}
 	}
-	if err = dec.Decode(&o.oLogin); err != nil {
-		return
-	}
 	if err = dec.Decode(&o.oProjectsAsManager); err != nil {
 		return
 	}
@@ -870,6 +868,9 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		for _, p := range o.oProjectsAsManager {
 			o.mProjectsAsManager[p.PrimaryKey()] = p
 		}
+	}
+	if err = dec.Decode(&o.oLogin); err != nil {
+		return
 	}
 
 	if err = dec.Decode(&o.oPersonTypes); err != nil {
@@ -900,7 +901,7 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	return err
+	return
 }
 
 // MarshalJSON serializes the object into a JSON object.
@@ -925,12 +926,12 @@ func (o *personBase) MarshalJSON() (data []byte, err error) {
 		v["person"] = val
 	}
 
-	if val := o.Login(); val != nil {
-		v["person"] = val
-	}
-
 	if val := o.ProjectsAsManager(); val != nil {
 		v["manager"] = val
+	}
+
+	if val := o.Login(); val != nil {
+		v["person"] = val
 	}
 
 	if val := o.PersonTypes(); val != nil {

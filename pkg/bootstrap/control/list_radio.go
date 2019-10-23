@@ -5,7 +5,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type RadioListI interface {
@@ -61,7 +60,7 @@ func (l *RadioList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // ΩRenderItem is called by the framework to render a single item in the list.
-func (l *RadioList) ΩRenderItem(item control.ListItemI) (h string) {
+func (l *RadioList) ΩRenderItem(item *control.ListItem) (h string) {
 	selected := l.SelectedItem().ID() != item.ID()
 	h = renderItemControl(item, "radio", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)
@@ -73,7 +72,7 @@ type RadioListCreator struct {
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []control.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// ColumnCount specifies how many columns to show
@@ -122,4 +121,8 @@ func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
 // GetRadioList is a convenience method to return the control with the given id from the page.
 func GetRadioList(c page.ControlI, id string) *RadioList {
 	return c.Page().GetControl(id).(*RadioList)
+}
+
+func init() {
+	page.RegisterControl(RadioList{})
 }

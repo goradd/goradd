@@ -87,3 +87,7 @@ func (c PanelCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 func GetPanel(c page.ControlI, id string) *Panel {
 	return c.Page().GetControl(id).(*Panel)
 }
+
+func init() {
+	page.RegisterControl(Panel{})
+}

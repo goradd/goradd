@@ -13,7 +13,6 @@ func init() {
 	t := ModelTemplate {
 		generator.Template {
 			Overwrite: false,
-			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}
 	generator.AddTableTemplate(&t)
@@ -24,7 +23,13 @@ type ModelTemplate struct {
 }
 
 func (n *ModelTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/model/" + t.GoName + ".go"
+    var targetDir string
+    if generator.BuildingExamples {
+        targetDir = config.GoraddDir() + "/web/examples/gen"
+    } else {
+        targetDir = config.ProjectDir() + "/gen"
+    }
+	return targetDir + "/" + key + "/model/" + t.GoName + ".go"
 }
 
 func (n *ModelTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {

@@ -15,7 +15,6 @@ import (
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
 	"path/filepath"
-	"reflect"
 	"strings"
 )
 
@@ -33,6 +32,7 @@ type FormI interface {
 	AddStyleSheetFile(path string, attributes html.Attributes)
 	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
+	AddJQuery()
 	AddJQueryUI()
 	ChangeLocation(url string)
 	PushLocation(ctx context.Context)
@@ -53,9 +53,7 @@ type FormI interface {
 // <form> tag in the html output.
 type ΩFormBase struct {
 	Control
-	response Response // don't serialize this
-
-	// serialized lists of related files
+	response Response
 	headerStyleSheets   *maps.SliceMap
 	importedStyleSheets *maps.SliceMap // when refreshing, these get moved to the headerStyleSheets
 	headerJavaScripts   *maps.SliceMap
@@ -94,8 +92,8 @@ func (f *ΩFormBase) AddJQuery() {
 	if !config.Release {
 		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery3.js"), false, nil)
 	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.3.1.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=").
+		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.4.1.min.js", false,
+			html.NewAttributes().Set("integrity", "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=").
 				Set("crossorigin", "anonymous"))
 	}
 }
@@ -143,7 +141,6 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	}
 
 	f.resetDrawingFlags()
-	pagestate := f.saveState() // From This point on we should not change any controls, just draw
 
 	// Render hidden controls
 
@@ -165,7 +162,7 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf))
 
 	// Serialize and write out the pagestate
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, pagestate))
+	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()))
 
 	f.drawBodyScriptFiles(ctx, buf) // Fixing a bug?
 
@@ -178,11 +175,11 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	s += fmt.Sprintf("goradd.initMessagingClient(%d, %d);\n", config.WebSocketPort, config.WebSocketTLSPort)
 	f.GetActionScripts(&f.response) // actions assigned to form during form creation
 	s += f.response.JavaScript()
+	f.response = NewResponse() // clear response
 	if !config.Release {
 		// This code registers the form with the test harness. We do not want to do this in release mode since it is a security risk.
 		s += "goradd.initFormTest();\n"
 	}
-	f.response = NewResponse() // Reset
 	s = fmt.Sprintf(`<script>
 %s
 </script>`, s)
@@ -251,23 +248,16 @@ func (f *ΩFormBase) getDbProfile(ctx context.Context) (s string) {
 // renderAjax assembles the ajax response for the entire form and draws it to the return buffer
 func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var buf2 []byte
-	var pagestate string
 
 	if !f.response.hasExclusiveCommand() { // skip drawing if we are in a high priority situation
 		// gather modified controls
 		err = f.DrawAjax(ctx, &f.response)
 		if err != nil {
 			log.Error("renderAjax error - " + err.Error())
+			// savestate ???
 			return
 		}
 	}
-
-	pagestate = f.saveState()
-	var grctx = GetContext(ctx)
-	if pagestate != grctx.pageStateId {
-		panic("page state changed")
-	}
-	//f.response.SetControlValue(htmlVarFormstate, pagestate)
 
 	// Inject any added style sheets and script files
 	if f.importedStyleSheets != nil {
@@ -288,8 +278,10 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 
 	f.resetDrawingFlags()
 	buf2, err = f.response.GetAjaxResponse()
+	f.response = NewResponse()
 	buf.Write(buf2)
 	log.FrameworkDebug("renderAjax - ", string(buf2))
+
 	return
 }
 
@@ -318,14 +310,6 @@ func (f *ΩFormBase) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err er
 // If you want a custom drawing function for your page, implement this function in your form override.
 func (f *ΩFormBase) PageDrawingFunction() PageDrawFunc {
 	return PageTmpl // Returns the default
-}
-
-// saveState saves the state of the form in the page cache.
-// This version keeps the page in memory. Future versions may serialize formstates to store them on disk.
-func (f *ΩFormBase) saveState() string {
-	var s = f.page.StateID()
-	pageCache.Set(s, f.page) // the page should already exist in the cache. This just tells the cache that we used it, so make it current.
-	return f.page.StateID()
 }
 
 // AddJavaScriptFile registers a JavaScript file such that it will get loaded on the page.
@@ -556,6 +540,15 @@ func (f *ΩFormBase) Serialize(e Encoder) (err error) {
 		return
 	}
 
+	if !config.Release {
+		// The response is currently only changed between posts by the testing framework
+		// If we ever need to change forms using some kind of push mechanism, we will need to serialize
+		// the response.
+		if err = f.response.Serialize(e); err != nil {
+			return
+		}
+	}
+
 	s := formEncoded{
 		HeaderSS:   f.headerStyleSheets,
 		ImportedSS: f.importedStyleSheets,
@@ -570,16 +563,21 @@ func (f *ΩFormBase) Serialize(e Encoder) (err error) {
 	return
 }
 
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
-func (f *ΩFormBase) ΩisSerializer(i ControlI) bool {
-	return reflect.TypeOf(f) == reflect.TypeOf(i)
-}
-
-func (f *ΩFormBase) Deserialize(d Decoder, p *Page) (err error) {
-	if err = f.Control.Deserialize(d, p); err != nil {
+func (f *ΩFormBase) Deserialize(d Decoder) (err error) {
+	if err = f.Control.Deserialize(d); err != nil {
 		return
 	}
+
+	if !config.Release {
+		// The response is currently only changed between posts by the testing framework
+		// If we ever need to change forms using some kind of push mechanism, we will need to serialize
+		// the response.
+		if err = f.response.Deserialize(d); err != nil {
+			return
+		}
+	}
+
+
 	s := formEncoded{}
 	if err = d.Decode(&s); err != nil {
 		return

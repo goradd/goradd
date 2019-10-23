@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type RepeaterPanel struct {
@@ -34,7 +33,7 @@ func NewRepeaterPanel(ctx context.Context, parent page.ControlI) {
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
-func (f *RepeaterPanel) BindData(ctx context.Context, s data.DataManagerI) {
+func (f *RepeaterPanel) BindData(ctx context.Context, s DataManagerI) {
 	switch s.ID() {
 	case "repeater1":
 		t := s.(PagedControlI)
@@ -51,5 +50,6 @@ func (f *RepeaterPanel) RepeaterHtml(ctx context.Context, r RepeaterI, i int, da
 }
 
 func init() {
+	page.RegisterControl(RepeaterPanel{})
 }
 

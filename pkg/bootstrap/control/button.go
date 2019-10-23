@@ -7,7 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	grctl "github.com/goradd/goradd/pkg/page/control"
-	"reflect"
 )
 
 type ButtonI interface {
@@ -121,14 +120,9 @@ func (b *Button) Serialize(e page.Encoder) (err error) {
 	return
 }
 
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
-func (b *Button) ΩisSerializer(i page.ControlI) bool {
-	return reflect.TypeOf(b) == reflect.TypeOf(i)
-}
 
-func (b *Button) Deserialize(d page.Decoder, p *page.Page) (err error) {
-	if err = b.Button.Deserialize(d, p); err != nil {
+func (b *Button) Deserialize(d page.Decoder) (err error) {
+	if err = b.Button.Deserialize(d); err != nil {
 		return
 	}
 
@@ -198,4 +192,8 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI)  {
 // GetButton is a convenience method to return the button with the given id from the page.
 func GetButton(c page.ControlI, id string) *Button {
 	return c.Page().GetControl(id).(*Button)
+}
+
+func init() {
+	page.RegisterControl(Button{})
 }

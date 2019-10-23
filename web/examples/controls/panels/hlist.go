@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 )
@@ -54,7 +53,7 @@ func NewHListPanel(ctx context.Context, parent page.ControlI) {
 	)
 }
 
-func (p *HListPanel) BindData(ctx context.Context, s data.DataManagerI) {
+func (p *HListPanel) BindData(ctx context.Context, s DataManagerI) {
 	// This is an example of how to populate a hierarchical list using a data binder.
 	// One use of this is to query the database, and then walk the results.
 	ulist := s.(*UnorderedList)
@@ -76,18 +75,18 @@ func init() {
 // testPlain exercises the plain text box
 func testHListAjaxSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "HList").SetValue("testing", 1).String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
-	testHListSubmit(t, f, f.Page().GetControl("ajaxButton"))
+	testHListSubmit(t, "ajaxButton")
 
 	t.Done("Complete")
 }
 
 func testHListServerSubmit(t *browsertest.TestForm)  {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "HList").SetValue("testing", 1).String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
-	testHListSubmit(t, f, f.Page().GetControl("serverButton"))
+	testHListSubmit(t, "serverButton")
 
 	t.Done("Complete")
 }
@@ -95,9 +94,13 @@ func testHListServerSubmit(t *browsertest.TestForm)  {
 // testHListSubmit does a variety of submits using the given button. We use this to double check the various
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
-func testHListSubmit(t *browsertest.TestForm, f page.FormI, btn page.ControlI) {
+func testHListSubmit(t *browsertest.TestForm, btnID string) {
 
 	// For testing purposes, we need to use the id of the list item, rather than the value of the list item,
 	// since that is what is presented in the html.
 	//select1 := f.Page().GetControl("orderedList").(*OrderedList)
+}
+
+func init() {
+	page.RegisterControl(HListPanel{})
 }

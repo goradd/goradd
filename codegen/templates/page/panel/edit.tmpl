@@ -97,4 +97,7 @@ func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
 	return c.Page().GetControl(id).(*{{= panelName }})
 }
 
+func init() {
+    page.RegisterControl({{= panelName }}{})
+}
 }}

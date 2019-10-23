@@ -2,12 +2,10 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"reflect"
 )
 
 type Checkbox struct {
@@ -59,20 +57,21 @@ func (c *Checkbox) Serialize(e page.Encoder) (err error) {
 		return
 	}
 
-	return
-}
-
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
-func (c *Checkbox) ΩisSerializer(i page.ControlI) bool {
-	return reflect.TypeOf(c) == reflect.TypeOf(i)
-}
-
-func (c *Checkbox) Deserialize(d page.Decoder, p *page.Page) (err error) {
-	if err = c.Checkbox.Deserialize(d, p); err != nil {
+	if err = e.Encode(c.inline); err != nil {
 		return
 	}
 
+	return
+}
+
+func (c *Checkbox) Deserialize(d page.Decoder) (err error) {
+	if err = c.Checkbox.Deserialize(d); err != nil {
+		return
+	}
+
+	if err = d.Decode(&c.inline); err != nil {
+		return
+	}
 	return
 }
 
@@ -86,7 +85,7 @@ type CheckboxCreator struct {
 	// LabelMode specifies how the label is drawn with the checkbox.
 	LabelMode html.LabelDrawingMode
 	// LabelAttributes are additional attributes placed on the label tag.
-	LabelAttributes html.AttributeCreator
+	LabelAttributes html.Attributes
 	// SaveState will save the value of the checkbox and restore it when the page is reentered.
 	SaveState bool
 	// Set inline when drawing this checkbox inline or wrapped by an inline FormGroup
@@ -124,5 +123,5 @@ func GetCheckbox(c page.ControlI, id string) *Checkbox {
 }
 
 func init() {
-	gob.RegisterName("bootstrap.checkbox", new(Checkbox))
+	page.RegisterControl(Checkbox{})
 }

@@ -71,9 +71,8 @@ func (o *LruCache) Set(key string, v interface{}) {
 		if i < o.maxItemCount/2 || item.timestamp < t-o.ttl/8 { // if 1/8th of the ttl has passed, or the item is getting close to getting pushed off the end, bring it to front
 			o.order = append(o.order[:i], o.order[i+1:]...)
 			o.order = append(o.order, key)
-			item.timestamp = t
-			o.items[key] = item
 		}
+		o.items[key] = lruItem{t, v} // the item may have changed, and we certainly want to update the timestamp, so just create a new item
 	} else {
 		// new item
 		o.items[key] = lruItem{t, v}

@@ -1,6 +1,8 @@
 package query
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"strings"
 )
@@ -90,4 +92,51 @@ func (n *TableNode) nodeType() NodeType {
 func (n *TableNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Table: " + n.dbTable)
+}
+
+func (n *TableNode) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = e.Encode(n.alias); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.goPropName); err != nil {
+		panic(err)
+	}
+
+	// table nodes have no parent
+	//err = e.Encode(n.nodeLink.parentNode)
+	data = buf.Bytes()
+	return
+}
+
+
+func (n *TableNode) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	if err = dec.Decode(&n.alias); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.goPropName); err != nil {
+		panic(err)
+	}
+	return
+}
+
+
+func init() {
+	gob.Register(&TableNode{})
 }

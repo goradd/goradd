@@ -1,6 +1,9 @@
 package control
 
 import (
+	"bytes"
+	"context"
+	"encoding/gob"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -109,3 +112,31 @@ func TestListSelectData(t *testing.T) {
 func TestListItem(t *testing.T) {
 
 }
+
+func TestSelectList_Serialize(t *testing.T) {
+	p := NewMockForm()
+
+	p.AddControls(context.Background(),
+		SelectListCreator{
+			ID: "c",
+			Items: []ListValue {
+				{"a", 1},
+				{"b", 2},
+			},
+			Value: 2,
+		},
+	)
+	c := GetSelectList(p, "c")
+
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+
+	c.Serialize(enc)
+
+	c2 := SelectList{}
+	dec := gob.NewDecoder(&buf)
+	c2.Deserialize(dec)
+
+	assert.Equal(t, 2, c2.Value())
+}
+

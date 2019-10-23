@@ -8,7 +8,6 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
-	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type TablePanel struct {
@@ -109,7 +108,7 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
-func (f *TablePanel) BindData(ctx context.Context, s data.DataManagerI) {
+func (f *TablePanel) BindData(ctx context.Context, s control.DataManagerI) {
 	switch s.ID() {
 	case "table1":
 		t := s.(control.PagedControlI)
@@ -133,4 +132,5 @@ func (f *TablePanel) CellText(ctx context.Context, col control.ColumnI, rowNum i
 
 func init() {
 	examples.RegisterPanel("table", "Tables", NewTablePanel, 5)
+	page.RegisterControl(TablePanel{})
 }

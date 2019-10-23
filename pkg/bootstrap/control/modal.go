@@ -307,6 +307,7 @@ func NewTitleBar(parent page.ControlI, id string) *TitleBar {
 
 func init() {
 	control.SetAlertFunction(BootstrapAlert)
+	page.RegisterControl(Modal{})
 }
 
 type ModalButtonCreator struct {

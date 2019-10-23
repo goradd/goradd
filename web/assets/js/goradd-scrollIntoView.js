@@ -58,9 +58,10 @@
         scrollIntoView: function () {
             var curEl = this.element;
             var scroller;
+            var parents = this.parents();
             // Find wrapping scroller
-            goradd.each(this.parents(), function (i, el) {
-                var o = g$(el).css("overflowY");
+            goradd.each(parents, function (i, el) {
+                var o = g$(el).css("overflow-y");
                 if (o === "auto" || o === "scroll") {
                     scroller = el;
                     return false;

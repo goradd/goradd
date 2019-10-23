@@ -5,11 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
 	"bytes"
@@ -337,7 +337,7 @@ func (b *MilestonesBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
-// joinOrSelect us a private helper function for the Load* functions
+// joinOrSelect is a private helper function for the Load* functions
 func (b *MilestonesBuilder) joinOrSelect(nodes ...query.NodeI) *MilestonesBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
@@ -544,61 +544,61 @@ func (o *milestoneBase) Get(key string) interface{} {
 // It should be used for transmitting database object over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
-func (o *milestoneBase) MarshalBinary() (data []byte, err error) {
+func (o *milestoneBase) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 
-	if err = encoder.Encode(o.id); err != nil {
-		return
+	if err := encoder.Encode(o.id); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.idIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.projectID); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.projectIDIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.projectIDIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.idIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.oProject); err != nil {
-		return
+	if err := encoder.Encode(o.projectID); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.name); err != nil {
-		return
+	if err := encoder.Encode(o.projectIDIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.nameIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.projectIDIsDirty); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.nameIsDirty); err != nil {
-		return
+
+	if err := encoder.Encode(o.oProject); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.name); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.nameIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.nameIsDirty); err != nil {
+		return nil, err
 	}
 
 	if o._aliases == nil {
-		if err = encoder.Encode(false); err != nil {
-			return
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
 		}
 	} else {
-		if err = encoder.Encode(true); err != nil {
-			return
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
 		}
-		if err = encoder.Encode(o._aliases); err != nil {
-			return
+		if err := encoder.Encode(o._aliases); err != nil {
+			return nil, err
 		}
 	}
 
-	if err = encoder.Encode(o._restored); err != nil {
-		return
+	if err := encoder.Encode(o._restored); err != nil {
+		return nil, err
 	}
 
-	return
+	return buf.Bytes(), nil
 }
 
 func (o *milestoneBase) UnmarshalBinary(data []byte) (err error) {
@@ -653,7 +653,7 @@ func (o *milestoneBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	return err
+	return
 }
 
 // MarshalJSON serializes the object into a JSON object.

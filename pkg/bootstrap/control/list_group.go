@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type ListGroupI interface {
@@ -36,7 +35,7 @@ func (l *ListGroup) Init(self page.ControlI, parent page.ControlI, id string) {
 	l.AddClass("list-group")
 }
 
-func (l *ListGroup) GetItemsHtml(items []control.ListItemI) string {
+func (l *ListGroup) GetItemsHtml(items []*control.ListItem) string {
 	// make sure the list items have the correct classes before drawing them
 
 	for _, item := range items {
@@ -50,7 +49,7 @@ type ListGroupCreator struct {
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []control.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	page.ControlOptions
@@ -83,4 +82,8 @@ func (c ListGroupCreator) Init(ctx context.Context, ctrl ListGroupI) {
 // GetListGroup is a convenience method to return the control with the given id from the page.
 func GetListGroup(c page.ControlI, id string) *ListGroup {
 	return c.Page().GetControl(id).(*ListGroup)
+}
+
+func init() {
+	page.RegisterControl(ListGroup{})
 }

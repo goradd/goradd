@@ -8,14 +8,18 @@ package page
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
+	reflect2 "github.com/goradd/goradd/pkg/reflect"
 	"github.com/goradd/goradd/pkg/session"
+	strings2 "github.com/goradd/goradd/pkg/strings"
+	"hash/fnv"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -27,21 +31,38 @@ type PageRenderStatus int
 // An architecture using channels to synchronize page changes and drawing would be better.
 // For now, except for testing, we should not get in a situation where multiple copies of a form
 // are being used.
-
 const (
 	PageIsNotRendering PageRenderStatus = iota // FormBase has started rendering but has not finished
 	PageIsRendering
 )
 
+// PageCacheVersion helps us keep track of when a change to the application changes the pagecache format. It is only needed
+// when serializing the pagecache. Some page cache stores may be difficult to invalidate the whole thing, so this lets
+// lets us invalidate old pagecaches individually. Feel free to bump this as needed, though you should use
+// a number after UserPageCacheVersion so there is no conflict with the goradd default.
+var PageCacheVersion int32 = 1
+
+// This value is used to generate unique ids in the control registry. However, if the control registry
+// detects a collision, you will need to change this value and restart your app. If you have a running
+// page cache, you should change the PageCacheVersion above as well to invalidate it.
+var ControlRegistrySalt = "goradd"
+
+// If you want to bump the page cache version yourself, you can use this as a starting point so there is no
+// conflict with goradd itself
+const UserPageCacheVersion = 10000
+
+
 // PageDrawFunc is the type of the page drawing function. This is implemented by the page drawing template.
 type PageDrawFunc func(context.Context, *Page, *bytes.Buffer) error
-
-const EncodingVersion = 1
 
 // DrawI is the interface for items that draw into the draw buffer
 type DrawI interface {
 	Draw(context.Context, *bytes.Buffer) error
 }
+
+// A code we use during serialization to indicate that we just unserialized a control id
+const controlCode = "**grc**"
+
 
 // The Page object is the top level drawing object, and is essentially a wrapper for the form. The Page draws the
 // html, head and body tags, and includes the one Form object on the page. The page also maintains a record of all
@@ -55,7 +76,7 @@ type Page struct {
 	renderStatus PageRenderStatus
 	idPrefix     string // For creating unique ids for the app
 
-	controlRegistry *maps.SliceMap
+	controlRegistry map[string]ControlI
 	form            FormI
 	idCounter       int
 	title           string // page title to draw in head tag
@@ -70,23 +91,25 @@ type Page struct {
 func (p *Page) Init() {
 }
 
-// Restore is called immediately after the page has been unserialized, to restore data that did not get serialized.
+// Restore is called immediately after the page has been unserialized, to fix up decoded controls.
 func (p *Page) Restore() {
-	p.form.Restore(p.form)
+	for _,c := range p.controlRegistry {
+		c.Restore()
+	}
 }
 
 func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
 	grCtx := GetContext(ctx)
+	p.ClearResponseHeaders()
 
 	if grCtx.err != nil {
 		panic(grCtx.err) // An error occurred during unpacking of the context, so report that now
 	}
 
+	// TODO: Lifecycle calls - push them to the form
 	if err = p.Form().Run(ctx); err != nil {
 		return err
 	}
-
-	// TODO: Lifecycle calls - push them to the form
 
 	// cache the language tags so we only need to look them up once for every call
 	p.language = i18n.SetDefaultLanguage(ctx, grCtx.Header.Get("accept-language"))
@@ -110,7 +133,6 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		}
 	}
 
-	p.ClearResponseHeaders()
 	if grCtx.RequestMode() == Ajax {
 		err = p.DrawAjax(ctx, buf)
 		p.SetResponseHeader("Content-Type", "application/json")
@@ -123,6 +145,9 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 
 	p.Form().writeAllStates(ctx)
 	p.Form().Exit(ctx, err)
+
+	pageCache.Set(p.stateId, p)
+
 	return
 }
 
@@ -201,14 +226,10 @@ func (p *Page) GetControl(id string) ControlI {
 	if p.controlRegistry == nil {
 		panic("control registry is not initialized")
 	}
-	i := p.controlRegistry.Get(id)
-	if i == nil {
+	if c,ok := p.controlRegistry[id]; !ok {
 		panic("control with id " + id + " was not found")
-	}
-	if c, ok := i.(ControlI); ok {
-		return c
 	} else {
-		panic(id + " is not a control")
+		return c
 	}
 }
 
@@ -216,7 +237,8 @@ func (p *Page) HasControl(id string) bool {
 	if id == "" {
 		return false
 	}
-	return p.controlRegistry.Has(id)
+	_,ok := p.controlRegistry[id]
+	return ok
 }
 
 // addControl adds the given control to the controlRegistry. It is called by the control code whenever a control is created.
@@ -228,14 +250,14 @@ func (p *Page) addControl(control ControlI) {
 	}
 
 	if p.controlRegistry == nil {
-		p.controlRegistry = maps.NewSliceMap()
+		p.controlRegistry = make (map[string]ControlI)
 	}
 
-	if p.controlRegistry.Has(id) {
+	if p.HasControl(id) {
 		panic("Control id already exists. Control must have a unique id on the page before being added.")
 	}
 
-	p.controlRegistry.Set(id, control)
+	p.controlRegistry[id] = control
 
 	if control.Parent() == nil {
 		if f, ok := control.(FormI); ok {
@@ -266,7 +288,7 @@ func (p *Page) removeControl(id string) {
 	// TODO: Application::ExecuteSelectorFunction('#' . $objControl->getWrapperID(), 'remove');
 	// TODO: Make This a direct command in the ajax renderer
 
-	p.controlRegistry.Delete(id)
+	delete (p.controlRegistry,id)
 }
 
 // Title returns the content of the <title> tag that will be output in the head of the page.
@@ -277,10 +299,6 @@ func (p *Page) Title() string {
 // Call SetTitle to set the content of the <title> tag to be output in the head of the page.
 func (p *Page) SetTitle(title string) {
 	p.title = title
-}
-
-func (p *Page) setStateID(stateId string) {
-	p.stateId = stateId
 }
 
 // StateID returns the page state id. This is output by the form so that we can recover the saved state of the page
@@ -296,15 +314,23 @@ func (p *Page) DrawAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return
 }
 
+/* Serialize and Deserialize are now called directly
 // GobEncode here is implemented to intercept the GobSerializer to only encode an empty structure. We use this as part
-// of our overall serialization stratgey for forms. Controls still need to be registered with gob.
+// of our overall serialization strategy for forms. Controls still need to be registered with gob.
 func (p *Page) GobEncode() (data []byte, err error) {
-	return
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err = p.Serialize(enc)
+	return buf.Bytes(), err
 }
 
 func (p *Page) GobDecode(data []byte) (err error) {
-	return
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	err = p.Deserialize(dec)
+	return err
 }
+*/
 
 func (p *Page) MarshalJSON() (data []byte, err error) {
 	return
@@ -314,96 +340,211 @@ func (p *Page) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
-type pageEncoded struct {
-	StateId        string // Id in cache of the pagestate. Needs to be output by form.
-	Path           string // The path to the page. FormBase needs to know this so it can make the action tag
-	IdPrefix       string // For creating unique ids for the app
-	IdCounter      int
-	Title          string // page title to draw in head tag
-	HtmlHeaderTags []html.VoidTag
-	BodyAttributes string
-
-	FormID string // to record the form
-
-}
-
-// Encode is called by the framework to serialize the page state.
-// TODO: serialization is not completely implemented yet
-func (p *Page) Encode(e Encoder) (err error) {
-	s := pageEncoded{
-		StateId:        p.stateId,
-		IdPrefix:       p.idPrefix,
-		Title:          p.title,
-		HtmlHeaderTags: p.htmlHeaderTags,
-		BodyAttributes: p.BodyAttributes,
-		FormID:         p.form.ID(),
+// MarshalBinary is called by the framework to serialize the page state.
+func (p *Page) MarshalBinary() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+	if err = e.Encode(PageCacheVersion); err != nil {
+		return
 	}
-
-	if err = e.Encode(s); err != nil {
+	if err = e.Encode(p.stateId); err != nil {
+		return
+	}
+	if err = e.Encode(p.idPrefix); err != nil {
+		return
+	}
+	if err = e.Encode(p.title); err != nil {
+		return
+	}
+	if err = e.Encode(p.htmlHeaderTags); err != nil {
+		return
+	}
+	if err = e.Encode(p.BodyAttributes); err != nil {
+		return
+	}
+	if err = e.Encode(p.form.ID()); err != nil {
 		return
 	}
 
-	if err = e.EncodeControl(p.form); err != nil {
+	if err = p.encodeControlRegistry(e); err != nil {
 		return
 	}
-
-	// Add the items from the control registry that were not serialized as part of serializing the form.
-	// This might happen if the item had no parent, like dialogs or other objects that are automatically drawn.
-	var count int
-	p.controlRegistry.Range(func(key string, value interface{}) bool {
-		if !value.(ControlI).control().encoded {
-			count++
-		}
-		return true
-	})
-	if err = e.Encode(count); err != nil {
-		return
-	}
-	p.controlRegistry.Range(func(key string, value interface{}) bool {
-		c := value.(ControlI)
-		if !c.control().encoded {
-			if err = e.EncodeControl(c); err != nil {
-				return false
-			}
-		}
-		return true
-	})
-
+	data = buf.Bytes()
 	return
 }
 
-// Decode is called by the framework to serialize the page state.
-func (p *Page) Decode(d Decoder) (err error) {
-	s := pageEncoded{}
-	if err = d.Decode(&s); err != nil {
-		return
-	}
-	p.controlRegistry = maps.NewSliceMap()
-	p.stateId = s.StateId
-	p.idPrefix = s.IdPrefix
-	p.title = s.Title
-	p.htmlHeaderTags = s.HtmlHeaderTags
-	p.BodyAttributes = s.BodyAttributes
+func (p *Page) encodeControlRegistry(e *gob.Encoder) (err error) {
 
-	var ci ControlI
-	if ci, err = d.DecodeControl(p); err != nil {
-		return
-	}
-	p.form = ci.(FormI)
+	// We encode the control registry bottom up so that there is a high likelihood that child controls
+	// will be available to parent controls when parent controls get deserialized. This make it possible
+	// for us to deserialize forms and custom controls that save a pointer to a control, as long as
+	// that pointer is exported.
 
-	// Deserialize the controls that were not part of the form structure, like dialogs
-	var count int
-	if err = d.Decode(&count); err != nil {
-		return
+	// make a copy of the ids
+	ids := make(map[string]ControlI)
+	for k, v := range p.controlRegistry {
+		ids[k] = v
 	}
 
-	for i := 0; i < count; i++ {
-		if ci, err = d.DecodeControl(p); err != nil { // the process of decoding will automatically add to the control registry, so no need to do anything with the result.
+	var l int = len(p.controlRegistry)
+
+	if err = e.Encode(l); err != nil {
+		return
+	}
+	p.form.RangeSelfAndAllChildren(func(ctrl ControlI) {
+		_ = p.encodeControl(ctrl, e)
+		delete(ids, ctrl.ID())
+	})
+
+	// encode controls not attached to the form, like dialogs
+	for len(ids) != 0 {
+		// process one item out of map at a time
+		// we need to do it this way because these unattached items might have children, and we must
+		// ensure that all children get serialized first
+		for _,c := range ids {
+			c.RangeSelfAndAllChildren(
+				func(ctrl ControlI) {
+					if _,ok := ids[ctrl.ID()]; ok { // we didn't yet process it
+						_ = p.encodeControl(ctrl, e)
+						delete(ids, ctrl.ID())
+					}
+				})
+			break
+		}
+	}
+	return
+}
+
+func (p *Page) encodeControl(ctrl ControlI, e *gob.Encoder) (err error){
+	if err = e.Encode(ctrl.ID()); err != nil {
+		return
+	}
+	if err = e.Encode(controlRegistryID(ctrl)); err != nil {
+		return
+	}
+
+	if err = p.serializeControl(ctrl, e); err != nil {
+		return
+	}
+	return
+}
+
+// Users can create exported items on their objects and they will be serialized and restored automatically
+// Alternatively they can implement their own Serialize method.
+func (p *Page) serializeControl(c ControlI, e Encoder) error {
+	v := reflect.Indirect(reflect.ValueOf(c))
+	fieldCount := v.NumField()
+	_ = fieldCount
+	exportedFields := reflect2.FieldValues(c)
+
+	// convert all embedded controls to the id of the control
+	for name,val := range exportedFields {
+		if ctrl,ok := val.(ControlI); ok {
+			exportedFields[name] = controlCode + ctrl.ID()
+		}
+	}
+	if err := c.Serialize(e); err != nil {
+		return err
+	}
+	if err := e.Encode(exportedFields); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Page) UnmarshalBinary(data []byte) (err error) {
+	b := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(b)
+
+	var pageCacheVersion int32
+	if err = dec.Decode(&pageCacheVersion); err != nil {
+		panic(err)
+	}
+	if pageCacheVersion != PageCacheVersion {
+		return fmt.Errorf("stale data in cache") // This is a soft error indicating that the system should create a new page state
+	}
+
+	if err = dec.Decode(&p.stateId); err != nil {
+		panic(err)
+
+	}
+	if err = dec.Decode(&p.idPrefix); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&p.title); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&p.htmlHeaderTags); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&p.BodyAttributes); err != nil {
+		panic(err)
+	}
+	var formID string
+	if err = dec.Decode(&formID); err != nil {
+		panic(err)
+	}
+
+	if err = p.decodeControlRegistry(dec); err != nil {
+		return
+	}
+
+	p.form = p.controlRegistry[formID].(FormI)
+	return
+}
+
+func (p *Page) decodeControlRegistry(d *gob.Decoder) (err error) {
+	p.controlRegistry = make(map[string]ControlI)
+	var l int
+	if err = d.Decode(&l); err != nil {
+		panic(err)
+	}
+
+	for i := 0; i < l; i++ {
+		if err = p.decodeControl(d); err != nil {
 			return
 		}
 	}
+	return
+}
 
-	return err
+func (p *Page) decodeControl(d *gob.Decoder) (err error) {
+	var id string
+	var registryID uint64
+	if err = d.Decode(&id); err != nil {
+		panic(err)
+	}
+	if err = d.Decode(&registryID); err != nil {
+		return
+	}
+
+	c := createRegisteredControl(registryID, p)
+	p.controlRegistry[id] = c
+	if err = p.deserializeControl(c, d); err != nil {
+		return
+	}
+	return
+}
+
+func (p *Page) deserializeControl(c ControlI, d Decoder) error {
+	if err := c.Deserialize(d); err != nil {
+		return err
+	}
+	var exportedFields map[string]interface{}
+	if err := d.Decode(&exportedFields); err != nil {
+		return err
+	}
+	// Substitute embedded control ids for the actual control
+	for name,val := range exportedFields {
+		if s,ok := val.(string); ok && strings2.StartsWith(s, controlCode) {
+			id := s[len(controlCode):]
+			if ctrl, ok2 := p.controlRegistry[id]; ok2 {
+				exportedFields[name] = ctrl
+			}
+		}
+	}
+
+	return reflect2.SetFieldValues(c, exportedFields)
 }
 
 // AddHtmlHeaderTag adds the given tag to the head section of the page.
@@ -450,5 +591,55 @@ func (p *Page) Cleanup() {
 	p.Form().RangeSelfAndAllChildren(func(ctrl ControlI) {
 		ctrl.Cleanup()
 	})
+}
+
+var controlRegistry = make(map[uint64]reflect.Type)
+var controlRegistryIds = make(map[reflect.Type]uint64)
+
+// RegisterControl registers the control for the serialize/deserialize process. You should call this
+// for each control from an init() function.
+//
+// As a control is added to the registry, it is assigned an id. That id is used to identify a control
+// in the serialization and deserialization process.  We make a significant attempt to prevent the
+// addition of controls to an application from causing a change in these ids, since an id change will
+// also cause the current page cache to be invalidated. We use a hashing function, and a collision detector
+// to do that. If a collision is detected, it will panic, and you should change the hash salt and try again,
+// as well as bump the cache version to invalidate the cache.
+func RegisterControl(i interface{}) {
+	typ := reflect.TypeOf(i)
+	if _, ok := controlRegistryIds[typ]; ok {
+		panic("Registering duplicate control")
+	}
+	hash := fnv.New64()
+	_,_ = hash.Write([]byte(ControlRegistrySalt))
+	_,_ = hash.Write([]byte(typ.PkgPath()))
+	_,_ = hash.Write([]byte(typ.Name()))
+	id := hash.Sum64()
+	if _,ok := controlRegistry[id]; ok {
+		panic("The control registry has detected a collision. This is a very rare situation, but needs " +
+			"to be fixed. To fix it, change the ControlRegistrySalt value, and also change the " +
+			"PageCacheVersionID")
+	}
+	controlRegistry[id] = typ
+	controlRegistryIds[typ] = id
+}
+
+func controlRegistryID(i ControlI) uint64 {
+	val := reflect.Indirect(reflect.ValueOf(i))
+	typ := val.Type()
+	id, ok := controlRegistryIds[typ]
+	if !ok {
+		panic("Control type is not registered: " + typ.String())
+	}
+	return id
+}
+
+func createRegisteredControl(registryID uint64, p *Page) ControlI {
+	typ := controlRegistry[registryID]
+	v := reflect.New(typ)
+	c := v.Interface().(ControlI)
+	c.control().Base.Self = c
+	c.control().page = p
+	return c
 }
 

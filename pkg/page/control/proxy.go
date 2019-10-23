@@ -31,7 +31,7 @@ type ProxyI interface {
 		attributes html.Attributes,
 		rawHtml bool,
 	) string
-	OnSubmit(action action.ActionI) page.EventI
+	OnSubmit(action action.ActionI) *page.Event
 }
 
 // Proxy is a control that attaches events to controls. It is useful for attaching
@@ -188,7 +188,7 @@ func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string, opt
 }
 
 type On struct {
-	Event page.EventI
+	Event *page.Event
 	Action action.ActionI
 }
 
@@ -214,4 +214,8 @@ func (c ProxyCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 // GetProxy is a convenience method to return the button with the given id from the page.
 func GetProxy(c page.ControlI, id string) *Proxy {
 	return c.Page().GetControl(id).(*Proxy)
+}
+
+func init() {
+	page.RegisterControl(Proxy{})
 }

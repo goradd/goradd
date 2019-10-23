@@ -20,6 +20,7 @@ func NewDefaultPanel(ctx context.Context, parent page.ControlI) {
 
 func init() {
 	examples.RegisterPanel("", "Home", NewDefaultPanel, 1)
+	page.RegisterControl(DefaultPanel{})
 
 	//browsertest.RegisterTestFunction("Plain Textbox", TestPlain)
 }

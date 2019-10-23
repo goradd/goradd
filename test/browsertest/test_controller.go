@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const StepTimeoutSeconds = 10
+const StepTimeoutSeconds = 1000
 
 const (
 	TestStepAction = iota + 100
@@ -26,8 +26,8 @@ type testStepEvent struct {
 }
 
 // RowSelected
-func TestStepEvent() *testStepEvent {
-	e := &testStepEvent{page.Event{JsEvent: "teststep"}}
+func TestStepEvent() *page.Event {
+	e := &page.Event{JsEvent: "teststep"}
 	e.ActionValue(javascript.JsCode("ui")) // the error string and step
 	return e
 }

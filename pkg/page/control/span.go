@@ -56,3 +56,7 @@ func (c SpanCreator) Create(ctx context.Context, parent page.ControlI) page.Cont
 func GetSpan(c page.ControlI, id string) *Span {
 	return c.Page().GetControl(id).(*Span)
 }
+
+func init() {
+	page.RegisterControl(Span{})
+}

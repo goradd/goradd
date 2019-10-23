@@ -6,7 +6,7 @@ import (
 )
 
 // RowSelected
-func RowSelected() page.EventI {
+func RowSelected() *page.Event {
 	e := &page.Event{JsEvent: "rowselected"}
 	e.ActionValue(javascript.JsCode("ui")) // the data id of the row
 	return e

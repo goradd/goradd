@@ -60,3 +60,7 @@ func (c TabsCreator) Create(ctx context.Context, parent page.ControlI) page.Cont
 func GetTabs(c page.ControlI, id string) *Tabs {
 	return c.Page().GetControl(id).(*Tabs)
 }
+
+func init() {
+	page.RegisterControl(Tabs{})
+}

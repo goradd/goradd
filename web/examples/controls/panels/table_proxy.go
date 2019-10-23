@@ -9,11 +9,10 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
-	. "github.com/goradd/goradd/web/examples/model"
+	. "github.com/goradd/goradd/web/examples/gen/goradd/model"
 )
 
 type TableProxyPanel struct {
@@ -57,7 +56,7 @@ func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
-func (p *TableProxyPanel) BindData(ctx context.Context, s data.DataManagerI) {
+func (p *TableProxyPanel) BindData(ctx context.Context, s DataManagerI) {
 	t := GetPagedTable(p, "table1")
 	t.SetTotalItems(QueryProjects(ctx).Count(ctx, false))
 
@@ -117,6 +116,8 @@ func (p *ProjectPanel) SetProject(project *Project) {
 
 func init() {
 	browsertest.RegisterTestFunction("Table - Proxy Column", testTableProxyCol)
+	page.RegisterControl(ProjectPanel{})
+	page.RegisterControl(TableProxyPanel{})
 }
 
 func testTableProxyCol(t *browsertest.TestForm) {

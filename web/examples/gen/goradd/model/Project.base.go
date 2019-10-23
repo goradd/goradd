@@ -5,11 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
 	"bytes"
@@ -783,7 +783,7 @@ func (b *ProjectsBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
-// joinOrSelect us a private helper function for the Load* functions
+// joinOrSelect is a private helper function for the Load* functions
 func (b *ProjectsBuilder) joinOrSelect(nodes ...query.NodeI) *ProjectsBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
@@ -1358,165 +1358,165 @@ func (o *projectBase) Get(key string) interface{} {
 // It should be used for transmitting database object over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
-func (o *projectBase) MarshalBinary() (data []byte, err error) {
+func (o *projectBase) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 
-	if err = encoder.Encode(o.id); err != nil {
-		return
+	if err := encoder.Encode(o.id); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.idIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.num); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.numIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.numIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.idIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.projectStatusTypeID); err != nil {
-		return
+	if err := encoder.Encode(o.num); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.projectStatusTypeIDIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.numIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.projectStatusTypeIDIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.managerID); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.managerIDIsNull); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.managerIDIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.managerIDIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.numIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.oManager); err != nil {
-		return
+	if err := encoder.Encode(o.projectStatusTypeID); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.name); err != nil {
-		return
+	if err := encoder.Encode(o.projectStatusTypeIDIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.nameIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.nameIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.projectStatusTypeIDIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.description); err != nil {
-		return
+	if err := encoder.Encode(o.managerID); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.descriptionIsNull); err != nil {
-		return
+	if err := encoder.Encode(o.managerIDIsNull); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.descriptionIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.managerIDIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.descriptionIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.startDate); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.startDateIsNull); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.startDateIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.startDateIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.managerIDIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.endDate); err != nil {
-		return
+	if err := encoder.Encode(o.oManager); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.endDateIsNull); err != nil {
-		return
+	if err := encoder.Encode(o.name); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.endDateIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.nameIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.endDateIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.budget); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.budgetIsNull); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.budgetIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.budgetIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.nameIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.spent); err != nil {
-		return
+	if err := encoder.Encode(o.description); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.spentIsNull); err != nil {
-		return
+	if err := encoder.Encode(o.descriptionIsNull); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.spentIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.descriptionIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.spentIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.oMilestones); err != nil {
-		return
+	if err := encoder.Encode(o.descriptionIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.oChildrenAsParent); err != nil {
-		return
+	if err := encoder.Encode(o.startDate); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.startDateIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.startDateIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.startDateIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.oParentsAsChild); err != nil {
-		return
+	if err := encoder.Encode(o.endDate); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.endDateIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.endDateIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.endDateIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.oTeamMembers); err != nil {
-		return
+	if err := encoder.Encode(o.budget); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.budgetIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.budgetIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.budgetIsDirty); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.spent); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.spentIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.spentIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.spentIsDirty); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oMilestones); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oChildrenAsParent); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oParentsAsChild); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oTeamMembers); err != nil {
+		return nil, err
 	}
 
 	if o._aliases == nil {
-		if err = encoder.Encode(false); err != nil {
-			return
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
 		}
 	} else {
-		if err = encoder.Encode(true); err != nil {
-			return
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
 		}
-		if err = encoder.Encode(o._aliases); err != nil {
-			return
+		if err := encoder.Encode(o._aliases); err != nil {
+			return nil, err
 		}
 	}
 
-	if err = encoder.Encode(o._restored); err != nil {
-		return
+	if err := encoder.Encode(o._restored); err != nil {
+		return nil, err
 	}
 
-	return
+	return buf.Bytes(), nil
 }
 
 func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
@@ -1700,7 +1700,7 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	return err
+	return
 }
 
 // MarshalJSON serializes the object into a JSON object.

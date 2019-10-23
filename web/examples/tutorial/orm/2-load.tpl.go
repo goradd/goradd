@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/goradd/goradd/web/examples/model"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 )
 
 func (ctrl *LoadPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {

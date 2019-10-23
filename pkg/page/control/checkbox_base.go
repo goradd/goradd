@@ -6,7 +6,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
-	"reflect"
 )
 
 type CheckboxI interface {
@@ -208,15 +207,9 @@ func (c *CheckboxBase) Serialize(e page.Encoder) (err error) {
 	return
 }
 
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
-func (c *CheckboxBase) ΩisSerializer(i page.ControlI) bool {
-	return reflect.TypeOf(c) == reflect.TypeOf(i)
-}
-
 // Deserialize is called by the framework during page state serialization.
-func (c *CheckboxBase) Deserialize(d page.Decoder, p *page.Page) (err error) {
-	if err = c.Control.Deserialize(d, p); err != nil {
+func (c *CheckboxBase) Deserialize(d page.Decoder) (err error) {
+	if err = c.Control.Deserialize(d); err != nil {
 		return
 	}
 

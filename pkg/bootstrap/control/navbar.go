@@ -173,3 +173,7 @@ func (c NavbarCreator) Init(ctx context.Context, ctrl NavbarI) {
 func GetNavbar(c page.ControlI, id string) *Navbar {
 	return c.Page().GetControl(id).(*Navbar)
 }
+
+func init() {
+	page.RegisterControl(Navbar{})
+}

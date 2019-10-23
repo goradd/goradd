@@ -5,7 +5,6 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	html2 "html"
 	"strconv"
 )
@@ -78,7 +77,7 @@ func (l *OrderedList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (e
 	return nil
 }
 
-func (l *OrderedList) getItemsHtml(items []ListItemI) string {
+func (l *OrderedList) getItemsHtml(items []*ListItem) string {
 	var h = ""
 
 	for _, item := range items {
@@ -112,7 +111,7 @@ type OrderedListCreator struct {
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
-	DataProvider data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// NumberType is the type attribute and defaults to OrderedListNumberTypeNumber.
@@ -138,7 +137,7 @@ func (c OrderedListCreator) Init(ctx context.Context, ctrl OrderedListI) {
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 
@@ -154,4 +153,8 @@ func (c OrderedListCreator) Init(ctx context.Context, ctrl OrderedListI) {
 // GetOrderedList is a convenience method to return the control with the given id from the page.
 func GetOrderedList(c page.ControlI, id string) *OrderedList {
 	return c.Page().GetControl(id).(*OrderedList)
+}
+
+func init() {
+	page.RegisterControl(OrderedList{})
 }

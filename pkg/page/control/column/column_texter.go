@@ -65,3 +65,7 @@ func (c TexterColumnCreator) Create(ctx context.Context, parent control.TableI) 
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
 }
+
+func init() {
+	control.RegisterColumn(TexterColumn{})
+}

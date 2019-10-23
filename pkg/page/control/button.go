@@ -58,7 +58,7 @@ func (b *Button) SetLabel(label string) page.ControlI {
 }
 
 // On causes the given actions to execute when the given event is triggered.
-func (b *Button) On(e page.EventI, action action.ActionI) page.ControlI {
+func (b *Button) On(e *page.Event, action action.ActionI) page.ControlI {
 	e.Terminating() // prevent default action (override submit)
 	b.Control.On(e, action)
 	return b.this()
@@ -131,4 +131,8 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 // GetButton is a convenience method to return the button with the given id from the page.
 func GetButton(c page.ControlI, id string) *Button {
 	return c.Page().GetControl(id).(*Button)
+}
+
+func init() {
+	page.RegisterControl(Button{})
 }

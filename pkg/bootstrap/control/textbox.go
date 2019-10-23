@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -29,7 +28,7 @@ func (t *Textbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 func init() {
-	gob.RegisterName("bootstrap.textbox", new(Textbox))
+	page.RegisterControl(Textbox{})
 }
 
 // Use TextboxCreator to create a textbox. Pass it to AddControls of a control, or as a Child of

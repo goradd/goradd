@@ -202,11 +202,11 @@ type FormGroupCreator struct {
 	// that control is wrapped, you should explicitly specify the For control id here.
 	For string
 	// LabelAttributes are additional attributes to add to the label tag.
-	LabelAttributes html.AttributeCreator
+	LabelAttributes html.Attributes
 	// ErrorAttributes are additional attributes to add to the tag that displays the error.
-	ErrorAttributes html.AttributeCreator
+	ErrorAttributes html.Attributes
 	// InstructionAttributes are additional attributes to add to the tag that displays the instructions.
-	InstructionAttributes html.AttributeCreator
+	InstructionAttributes html.Attributes
 	// Set IsInline to true to use a "span" instead of a "div" in the wrapping tag.
 	IsInline bool
 	// ControlOptions are additional options for the wrapper tag
@@ -214,7 +214,7 @@ type FormGroupCreator struct {
 	// InnerDivAttributes are the attributes for the additional div wrapper of the control
 	// To achieve certain effects, Bootstrap needs this addition div. To display the div, you
 	// must specify its attributes here. Otherwise no inner div will be displayed.
-	InnerDivAttributes html.AttributeCreator
+	InnerDivAttributes html.Attributes
 	// UseTooltips will cause validation errors to be displayed with tooltips, a specific
 	// feature of Bootstrap
 	UseTooltips   bool
@@ -255,4 +255,8 @@ func (f FormGroupCreator) Init(ctx context.Context, c FormGroupI) {
 // GetFormGroup is a convenience method to return the form group with the given id from the page.
 func GetFormGroup(c page.ControlI, id string) *FormGroup {
 	return c.Page().GetControl(id).(*FormGroup)
+}
+
+func init() {
+	page.RegisterControl(FormGroup{})
 }

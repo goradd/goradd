@@ -56,3 +56,7 @@ func (c CanvasCreator) Create(ctx context.Context, parent page.ControlI) page.Co
 func GetCanvas(c page.ControlI, id string) *Canvas {
 	return c.Page().GetControl(id).(*Canvas)
 }
+
+func init() {
+	page.RegisterControl(Canvas{})
+}

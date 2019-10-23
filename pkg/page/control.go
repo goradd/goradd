@@ -3,7 +3,6 @@ package page
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
@@ -169,16 +168,17 @@ type ControlI interface {
 	PrivateAction(context.Context, ActionParams)
 	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
-	On(e EventI, a action.ActionI) ControlI
+	On(e *Event, a action.ActionI) ControlI
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
 	HasServerAction(eventName string) bool
+	HasCallbackAction(eventName string) bool
 
 	ΩUpdateFormValues(*Context)
 
 	Validate(ctx context.Context) bool
 	ValidationState() ValidationState
-	ValidationType(EventI) ValidationType
+	ValidationType(*Event) ValidationType
 	SetValidationType(typ ValidationType) ControlI
 	ChildValidationChanged()
 
@@ -197,7 +197,7 @@ type ControlI interface {
 
 	// Serialization helpers
 
-	Restore(self ControlI)
+	Restore()
 	Cleanup()
 
 	// API
@@ -205,8 +205,7 @@ type ControlI interface {
 	SetIsRequired(r bool) ControlI
 
 	Serialize(e Encoder) (err error)
-	Deserialize(d Decoder, p *Page) (err error)
-	ΩisSerializer(i ControlI) bool
+	Deserialize(d Decoder) (err error)
 
 	ApplyOptions(o ControlOptions)
 	AddControls(ctx context.Context, creators ...Creator)
@@ -357,14 +356,10 @@ func (c *Control) this() ControlI {
 	return c.Self.(ControlI)
 }
 
-// Restore is called after the control has been deserialized. It creates any required data structures
-// that are not saved in serialization.
+// Restore is called after the control has been deserialized. It notifies the control tree so that it
+// can restore internal pointers.
 // TODO: Serialization is not yet implemented
-func (c *Control) Restore(self ControlI) {
-	c.Base.Init(self)
-	if c.attributes == nil {
-		c.attributes = html.NewAttributes()
-	}
+func (c *Control) Restore() {
 }
 
 // ID returns the id assigned to the control. If you do not provide an ID when the control is created,
@@ -499,7 +494,6 @@ func (c *Control) ΩPostRender(ctx context.Context, buf *bytes.Buffer) (err erro
 	c.isOnPage = true
 	c.isModified = false
 	c.attributeScripts = nil // Entire control was redrawn, so don't need these
-
 	return
 }
 
@@ -751,7 +745,7 @@ func (c *Control) RangeAllChildren(f func(child ControlI)) {
 // It calls the function on the child controls of each control first, and then on the control itself.
 func (c *Control) RangeSelfAndAllChildren(f func(ctrl ControlI)) {
 	c.RangeAllChildren(f)
-	f(c)
+	f(c.this())
 }
 
 // Remove removes the current control from its parent. After this is done, the control and all its child items will
@@ -986,7 +980,7 @@ func (c *Control) ShouldAutoRender() bool {
 
 // On adds an event listener to the control that will trigger the given actions.
 // To have a single event fire multiple actions, use action.Group() to combine the actions into one.
-func (c *Control) On(e EventI, a action.ActionI) ControlI {
+func (c *Control) On(e *Event, a action.ActionI) ControlI {
 	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
 	// implement a script block with every control connected by id
@@ -1003,10 +997,10 @@ func (c *Control) On(e EventI, a action.ActionI) ControlI {
 	}
 
 	if c.events == nil {
-		c.events = map[EventID]EventI{}
+		c.events = map[EventID]*Event{}
 	}
 	c.events[c.eventCounter] = e
-	e.event().eventID = c.eventCounter
+	e.eventID = c.eventCounter
 	return c.this()
 }
 
@@ -1029,9 +1023,20 @@ func (c *Control) HasServerAction(eventName string) bool {
 	return false
 }
 
+// HasCallbackAction returns true if one of the actions attached to the given event is a Server action.
+func (c *Control) HasCallbackAction(eventName string) bool {
+	for _, e := range c.events {
+		if e.Name() == eventName && e.HasCallbackAction() {
+			return true
+		}
+	}
+	return false
+}
+
+
 // GetEvent returns the event associated with the eventName, which corresponds to the javascript
 // trigger name.
-func (c *Control) GetEvent(eventName string) EventI {
+func (c *Control) GetEvent(eventName string) *Event {
 	for _, e := range c.events {
 		if e.Name() == eventName {
 			return e
@@ -1094,7 +1099,7 @@ func (c *Control) ΩUpdateFormValues(ctx *Context) {
 
 // doAction is an internal function that the form manager uses to send callback actions to controls.
 func (c *Control) doAction(ctx context.Context) {
-	var e EventI
+	var e *Event
 	var ok bool
 	var isPrivate bool
 	var grCtx = GetContext(ctx)
@@ -1116,8 +1121,8 @@ func (c *Control) doAction(ctx context.Context) {
 		}
 	}
 
-	if (e.event().validationOverride != ValidateNone && e.event().validationOverride != ValidateDefault) ||
-		(e.event().validationOverride == ValidateDefault && c.this().ValidationType(e) != ValidateNone) {
+	if (e.validationOverride != ValidateNone && e.validationOverride != ValidateDefault) ||
+		(e.validationOverride == ValidateDefault && c.this().ValidationType(e) != ValidateNone) {
 		c.ParentForm().resetValidation()
 	}
 
@@ -1175,7 +1180,7 @@ func (c *Control) SetValidationType(typ ValidationType) ControlI {
 }
 
 // ValidationType is an internal function to return the validation type. It allows subclasses to override it.
-func (c *Control) ValidationType(e EventI) ValidationType {
+func (c *Control) ValidationType(e *Event) ValidationType {
 	if c.validationType == ValidateNone || c.validationType == ValidateDefault {
 		return ValidateNone
 	} else {
@@ -1191,10 +1196,10 @@ func (c *Control) SetValidationTargets(controlIDs ...string) {
 }
 
 // passesValidation checks to see if the event requires validation, and if so, if it passes the required validation
-func (c *Control) passesValidation(ctx context.Context, event EventI) (valid bool) {
+func (c *Control) passesValidation(ctx context.Context, event *Event) (valid bool) {
 	validation := c.this().ValidationType(event)
 
-	if v := event.event().validationOverride; v != ValidateDefault {
+	if v := event.validationOverride; v != ValidateDefault {
 		validation = v
 	}
 
@@ -1645,16 +1650,6 @@ func (c *Control) Cleanup() {
 	c.page = nil
 }
 
-// GobEncode here is implemented to intercept the GobSerializer to only encode an empty structure. We use this as part
-// of our overall serialization stratgey for forms. Controls still need to be registered with gob.
-func (c *Control) GobEncode() (data []byte, err error) {
-	return
-}
-
-func (c *Control) GobDecode(data []byte) (err error) {
-	return
-}
-
 func (c *Control) MarshalJSON() (data []byte, err error) {
 	return
 }
@@ -1666,14 +1661,14 @@ func (c *Control) UnmarshalJSON(data []byte) (err error) {
 type controlEncoding struct {
 	Id                    string
 	ParentID              string
-	Children              []ControlI
+	ChildIDs              []string
 	Tag                   string
 	IsVoidTag             bool
 	HasNoSpace            bool
 	Attributes            html.Attributes
 	Text                  string
 	TextLabelMode         html.LabelDrawingMode
-	TextIsHtml        bool
+	TextIsHtml        	  bool
 	IsRequired            bool
 	IsHidden              bool
 	IsOnPage              bool
@@ -1693,25 +1688,15 @@ type controlEncoding struct {
 	Events                EventMap
 	EventCounter          EventID
 	ShouldSaveState       bool
+	IsModified			  bool		// For testing framework
 }
 
-// Serialize is used by the framework to serialize a control to be saved in the formstate.
+// Serialize is used by the framework to serialize a control to be saved in the pagestate.
+// It is overridable, and control implementations should call this function first before their
+// own serializer.
 func (c *Control) Serialize(e Encoder) (err error) {
-	// TODO: This is in development and not yet used.
-	if err = e.Encode(c.id); err != nil {
-		return
-	}
-
-	e.Encode(len(c.children))
-	c.encoded = true // Make sure circular references in child controls do not encode twice
-	for _, child := range c.children {
-		err = e.EncodeControl(child)
-		if err != nil {
-			return
-		}
-	}
-
 	s := controlEncoding{
+		Id:					   c.id,
 		Tag:                   c.Tag,
 		IsVoidTag:             c.IsVoidTag,
 		HasNoSpace:            c.hasNoSpace,
@@ -1736,44 +1721,32 @@ func (c *Control) Serialize(e Encoder) (err error) {
 		EventCounter:          c.eventCounter,
 		ShouldSaveState:       c.shouldSaveState,
 		ParentID:			   c.parentId,
+		IsModified:				c.isModified,
 	}
 
-	err = e.Encode(&s)
+	for _,child := range c.children {
+		s.ChildIDs = append(s.ChildIDs, child.ID())
+	}
+
+	if err = e.Encode(s); err != nil {
+		panic(err)
+	}
 
 	return
 }
 
-// ΩisSerializer is used by the automated control serializer to determine how far down the control chain the control
-// has to go before just calling serialize and deserialize
-func (c *Control) ΩisSerializer(i ControlI) bool {
-	return reflect.TypeOf(c) == reflect.TypeOf(i)
-}
-
-// Deserialize is called by the page serializer.
-func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
-	if err = d.Decode(&c.id); err != nil {
-		return
-	}
-
-	var count int
-	if err = d.Decode(&count); err != nil {
-		return
-	}
-
-	for i := 0; i < count; i++ {
-		var ci ControlI
-		if ci, err = d.DecodeControl(p); err != nil {
-			return
-		}
-		c.children = append(c.children, ci)
-	}
-
+// Deserialize is called by GobDecode to deserialize the control.  It is overridable, and control implementations
+// should call this first before calling their own version. However, after deserialization, the control will
+// not be ready for use, since its parent, form or child controls still need to be deserialized.
+// The Decoded function should be called to fix up the necessary internal pointers.
+func (c *Control) Deserialize(d Decoder) (err error) {
 	var s controlEncoding
 
 	if err = d.Decode(&s); err != nil {
-		return
+		panic(err)
 	}
 
+	c.id = s.Id
 	c.parentId = s.ParentID
 	c.Tag = s.Tag
 	c.IsVoidTag = s.IsVoidTag
@@ -1789,6 +1762,7 @@ func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
 	c.isBlock = s.IsBlock
 	c.ErrorForRequired = s.ErrorForRequired
 	c.ValidMessage = s.ValidMessage
+	c.validationMessage = s.ValidationMessage
 	c.validationState = s.ValidationState
 	c.validationType = s.ValidationType
 	c.validationTargets = s.ValidationTargets
@@ -1797,22 +1771,19 @@ func (c *Control) Deserialize(d Decoder, p *Page) (err error) {
 	c.events = s.Events
 	c.eventCounter = s.EventCounter
 	c.shouldSaveState = s.ShouldSaveState
+	c.isModified = s.IsModified
 
+	// This relies on the children being deserialized first, which is taken care of by the page serializer
+	for _,id := range s.ChildIDs {
+		c.children = append(c.children, c.page.GetControl(id))
+	}
 	return
-}
-
-// ControlConnectorParams returns a list of options setable by the connector dialog (not currently implemented)
-func ControlConnectorParams() *maps.SliceMap {
-	m := maps.NewSliceMap()
-
-	// TODO: Add setable options for all controls
-	return m
 }
 
 // EventList is a list of event and action pairs. Use action.Group as the Action to assign multiple actions to
 // an event.
 type EventList []struct {
-	Event EventI
+	Event *Event
 	Action action.ActionI
 }
 
@@ -1881,6 +1852,3 @@ func (c *Control) AddControls(ctx context.Context, creators ...Creator) {
 	}
 }
 
-func init() {
-	gob.Register(&Control{})
-}

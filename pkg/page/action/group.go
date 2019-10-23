@@ -1,5 +1,7 @@
 package action
 
+import "encoding/gob"
+
 // ActionGroup groups multiple actions as a single action. To use it, call Group() and pass a list of actions.
 type ActionGroup struct {
 	Actions []ActionI
@@ -44,6 +46,14 @@ func (g ActionGroup) HasServerAction() bool {
 	return false
 }
 
+func (g ActionGroup) HasCallbackAction() bool {
+	if a := g.GetCallbackAction(); a != nil {
+		return true
+	}
+	return false
+}
+
+
 // GetCallbackAction returns the embedded callback action in the group, if one exists. Note that
 // you can only have at most one callback action in a group
 func (g ActionGroup) GetCallbackAction() CallbackActionI {
@@ -55,4 +65,8 @@ func (g ActionGroup) GetCallbackAction() CallbackActionI {
 		return a2
 	}
 	return nil
+}
+
+func init() {
+	gob.Register(ActionGroup{})
 }

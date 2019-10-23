@@ -6,7 +6,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control/data"
 )
 
 type RepeaterI interface {
@@ -16,10 +15,11 @@ type RepeaterI interface {
 }
 
 type Repeater struct {
-	PagedControl
 	page.Control
-	data.DataManager
+	PagedControl
+	DataManager
 	itemHtmler RepeaterHtmler
+	itemHtmlerId string // only used for serialization
 }
 
 type RepeaterHtmler interface {
@@ -100,6 +100,62 @@ func (r *Repeater) DrawItem(ctx context.Context, i int, data interface{}, buf *b
 	return
 }
 
+func (r *Repeater) Serialize(e page.Encoder) (err error) {
+	if err = r.Control.Serialize(e); err != nil {
+		return
+	}
+	if err = r.PagedControl.Serialize(e); err != nil {
+		return
+	}
+	if err = r.DataManager.Serialize(e); err != nil {
+		return
+	}
+
+	// If itemHtmler is a control, we will just serialize the control's id, since the control will get
+	// serialized elsewhere. Otherwise, we serialize the itemHtmler itself.
+	var htmler interface{} = r.itemHtmler
+	if ctrl, ok := r.itemHtmler.(page.ControlI); ok {
+		htmler = ctrl.ID()
+	}
+	if err = e.Encode(&htmler); err != nil {
+		return err
+	}
+	return
+}
+
+func (r *Repeater) Deserialize(dec page.Decoder) (err error) {
+	if err = r.Control.Deserialize(dec); err != nil {
+		panic(err)
+	}
+	if err = r.PagedControl.Deserialize(dec); err != nil {
+		panic(err)
+	}
+	if err = r.DataManager.Deserialize(dec); err != nil {
+		panic(err)
+	}
+
+	var htmler interface{}
+	if err = dec.Decode(&htmler); err != nil {
+		panic(err)
+	}
+	if id,ok := htmler.(string); ok {
+		r.itemHtmlerId = id
+	} else {
+		r.itemHtmler = htmler.(RepeaterHtmler)
+	}
+	return
+}
+
+func (r *Repeater) Restore() {
+	r.Control.Restore()
+	if r.itemHtmlerId != "" {
+		r.itemHtmler = r.Page().GetControl(r.itemHtmlerId).(RepeaterHtmler)
+	}
+	return
+}
+
+
+
 // PagedTableCreator creates a table that can be paged
 type RepeaterCreator struct {
 	// ID is the control id
@@ -107,7 +163,7 @@ type RepeaterCreator struct {
 	// ItemHtmler is the object that provides the html for each item
 	ItemHtmler	RepeaterHtmler
 	// DataProvider is the data binder for the table. It can be either a control id or a DataBinder
-	DataProvider     data.DataBinder
+	DataProvider DataBinder
 	// DataProviderID is the control id of the data binder for the table.
 	DataProviderID	string
 	// Data is the actual data for the table, and should be a slice of objects
@@ -136,7 +192,7 @@ func (c RepeaterCreator) Init(ctx context.Context, ctrl RepeaterI) {
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)
 	} else if c.DataProviderID != "" {
-		provider := ctrl.Page().GetControl(c.DataProviderID).(data.DataBinder)
+		provider := ctrl.Page().GetControl(c.DataProviderID).(DataBinder)
 		ctrl.SetDataProvider(provider)
 	}
 
@@ -155,4 +211,8 @@ func (c RepeaterCreator) Init(ctx context.Context, ctrl RepeaterI) {
 // GetRepeater is a convenience method to return the repeater with the given id from the page.
 func GetRepeater(c page.ControlI, id string) *Repeater {
 	return c.Page().GetControl(id).(*Repeater)
+}
+
+func init() {
+	page.RegisterControl(Repeater{})
 }

@@ -2,18 +2,18 @@ package event
 
 import "github.com/goradd/goradd/pkg/page"
 
-func Blur() page.EventI {
+func Blur() *page.Event {
 	return &page.Event{JsEvent: "blur"}
 }
 
-func Focus() page.EventI {
+func Focus() *page.Event {
 	return &page.Event{JsEvent: "focus"}
 }
 
-func FocusIn() page.EventI {
+func FocusIn() *page.Event {
 	return &page.Event{JsEvent: "focusin"}
 }
 
-func FocusOut() page.EventI {
+func FocusOut() *page.Event {
 	return &page.Event{JsEvent: "focusout"}
 }

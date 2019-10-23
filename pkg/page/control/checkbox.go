@@ -47,7 +47,7 @@ type CheckboxCreator struct {
 	// LabelMode specifies how the label is drawn with the checkbox.
 	LabelMode html.LabelDrawingMode
 	// LabelAttributes are additional attributes placed on the label tag.
-	LabelAttributes html.AttributeCreator
+	LabelAttributes html.Attributes
 	// SaveState will save the value of the checkbox and restore it when the page is reentered.
 	SaveState bool
 	page.ControlOptions
@@ -77,4 +77,8 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 // GetCheckbox is a convenience method to return the checkbox with the given id from the page.
 func GetCheckbox(c page.ControlI, id string) *Checkbox {
 	return c.Page().GetControl(id).(*Checkbox)
+}
+
+func init() {
+	page.RegisterControl(Checkbox{})
 }

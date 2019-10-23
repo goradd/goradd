@@ -77,6 +77,39 @@ func (s *DateTimeSpan) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) e
 	return nil
 }
 
+func (s *DateTimeSpan) Serialize(e page.Encoder) (err error) {
+	if err = s.Control.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(s.format); err != nil {
+		return
+	}
+
+	if err = e.Encode(s.value); err != nil {
+		return
+	}
+
+	return
+}
+
+func (s *DateTimeSpan) Deserialize(dec page.Decoder) (err error) {
+	if err = s.Control.Deserialize(dec); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&s.format); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&s.value); err != nil {
+		return
+	}
+
+	return
+}
+
+
 
 type DateTimeSpanCreator struct {
 	ID string
@@ -93,4 +126,8 @@ func (c DateTimeSpanCreator) Create(ctx context.Context, parent page.ControlI) p
 	}
 	ctrl.ApplyOptions(c.ControlOptions)
 	return ctrl
+}
+
+func init() {
+	page.RegisterControl(DateTimeSpan{})
 }

@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	"strconv"
@@ -215,4 +216,11 @@ func (c FloatTextboxCreator) Init(ctx context.Context, ctrl FloatTextboxI) {
 // GetFloatTextbox is a convenience method to return the control with the given id from the page.
 func GetFloatTextbox(c page.ControlI, id string) *FloatTextbox {
 	return c.Page().GetControl(id).(*FloatTextbox)
+}
+
+func init() {
+	gob.Register(MaxFloatValidator{})
+	gob.Register(MinFloatValidator{})
+	gob.Register(FloatValidator{})
+	page.RegisterControl(FloatTextbox{})
 }

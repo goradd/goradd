@@ -3,7 +3,6 @@ package page_test
 import (
 	"bytes"
 	"context"
-	"encoding/gob"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/stretchr/testify/assert"
@@ -35,8 +34,6 @@ func TestEmptyFormEncoding(t *testing.T) {
 
 type BasicForm struct {
 	page.ΩFormBase
-	EmptyText *control.Textbox
-	Txt1      *control.Textbox
 
 	S string
 }
@@ -49,8 +46,7 @@ func CreateBasicForm(ctx context.Context) page.FormI {
 }
 
 func (f *BasicForm) createControls(ctx context.Context) {
-	f.Txt1 = control.NewTextbox(f, "txt1")
-	f.Txt1.SetValue("Hi")
+	control.NewTextbox(f, "txt1").SetValue("Hi")
 	f.S = "test"
 }
 
@@ -85,12 +81,13 @@ func TestBasicFormEncoding(t *testing.T) {
 	var form = CreateBasicForm(nil)
 	var b bytes.Buffer
 
-	gob.Register(&BasicForm{})
+	page.RegisterControl(BasicForm{})
 
 	pe := page.GobPageEncoder{}
 	e := pe.NewEncoder(&b)
 
-	assert.NoError(t, e.Encode(form.Page()))
+
+	assert.NoError(t,e.Encode(form.Page()))
 
 	d := pe.NewDecoder(bytes.NewBuffer(b.Bytes()))
 
@@ -102,7 +99,6 @@ func TestBasicFormEncoding(t *testing.T) {
 
 	assert.Equal(t, "BasicForm", f2.ID(), "Form id not restored")
 
-	assert.Equal(t, "Hi", f2.Txt1.Text(), "Textbox content not restored")
+	assert.Equal(t, "Hi", control.GetTextbox(f2, "txt1").Text(), "Textbox content not restored")
 	assert.Equal(t, "test", f2.S)
-	assert.Nil(t, f2.EmptyText, "Nil control not restored")
 }

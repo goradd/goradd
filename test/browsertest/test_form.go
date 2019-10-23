@@ -38,6 +38,7 @@ type TestForm struct {
 	currentFailed   bool
 	currentTestName string
 	callerInfo      string
+	usingForm		bool
 }
 
 func NewTestForm(ctx context.Context) page.FormI {
@@ -118,19 +119,39 @@ func (form *TestForm) Done(s string) {
 // LoadUrl will launch a new window controlled by the test form. It will wait for the
 // new url to be loaded in the window, and if the new url contains a goradd form, it will return
 // the form.
-func (form *TestForm) LoadUrl(url string) page.FormI {
+func (form *TestForm) LoadUrl(url string)  {
 	form.Log("Loading url: " + url)
 	form.Controller.loadUrl(url, form.captureCaller())
-	return form.GetForm()
 }
 
-// GetForm returns the currently loaded form.
-func (form *TestForm) GetForm() page.FormI {
+// getForm returns the currently loaded form.
+func (form *TestForm) getForm() page.FormI {
 	if page.GetPageCache().Has(form.Controller.pagestate) {
-		return page.GetPageCache().Get(form.Controller.pagestate).Form()
+		pc := page.GetPageCache()
+		/*if loader,ok := pc.(GetLoader); ok {
+			p := loader.GetLoaded(form.Controller.pagestate)
+			f :=  p.Form()
+			return f
+		}*/
+		return pc.Get(form.Controller.pagestate).Form()
 	}
 	return nil
 }
+
+// F gives you access to the current form so that you can set or get values in the form.
+// Call it with a function that will receive the form.
+// Do not call test functions that might cause an ajax or server call to fire from within the function.
+func (form *TestForm) F(f func(page.FormI) ) {
+	pc := page.GetPageCache()
+	testForm := pc.Get(form.Controller.pagestate).Form()
+	{
+		form.usingForm = true
+		defer func(){form.usingForm = false}()
+		f(testForm)
+	}
+	pc.Set(form.Controller.pagestate, testForm.Page())
+}
+
 
 func (form *TestForm) AssertNil(v interface{}) {
 	if v != nil { // TODO: Check for a nil in the value
@@ -187,24 +208,72 @@ func (form *TestForm) panicked(message string, testName string) {
 // is fired on some objects only when losing focus. However, this will simulate changing a value adequately for most
 // situations.
 func (form *TestForm) ChangeVal(id string, val interface{}) {
+	if form.usingForm {
+		panic("do not call ChangeVal from inside the F() function")
+	}
+
+	// TODO: Make sure that you don't call this from within an F() call if it has a change handler
+	// attached to it.
+
 	form.Controller.changeVal(id, val, form.captureCaller())
 }
 
 // SetCheckbox sets the given checkbox control to the given value. Use this instead of ChangeVal on checkboxes.
 func (form *TestForm) SetCheckbox(id string, val bool) {
+	if form.usingForm {
+		panic("do not call SetCheckbox from inside the F() function")
+	}
+	// TODO: Make sure that you don't call this from within an F() call if there is a click
+	//  or change handler attached to it. We should also see if there is a server click or change handler
+	// attached to the control and wait for a reload if so. See Click() for example.
 	form.Controller.checkControl(id, val, form.captureCaller())
 }
 
-// CheckGroup sets the a checkbox group to a list of values. Radio groups should only be given one value
+func (form *TestForm) ChooseListValue(id string, value interface{}) {
+	if form.usingForm {
+		panic("do not call SetListVal from inside the F() function")
+	}
+
+	f := form.getForm()
+	list := f.Page().GetControl(id).(ItemListI)
+	itemId,_ := list.GetItemByValue(value)
+	form.ChangeVal(id, itemId)
+}
+
+func (form *TestForm) ChooseListValues(id string, values ...interface{}) {
+	if form.usingForm {
+		panic("do not call SetListVal from inside the F() function")
+	}
+
+	var ids []string
+	f := form.getForm()
+	list := f.Page().GetControl(id).(ItemListI)
+	for _,value := range values {
+		itemId,_ := list.GetItemByValue(value)
+		ids = append(ids, itemId)
+	}
+	form.ChangeVal(id, ids)
+}
+
+// CheckGroup sets the checkbox group to a list of values. Radio groups should only be given one value
 // to check. Will uncheck anything checked in the group before checking the given values. Specify nil
 // to uncheck everything.
 func (form *TestForm) CheckGroup(id string, values ...string) {
+	if form.usingForm {
+		panic("do not call CheckGroup from inside the F() function")
+	}
 	form.Controller.checkGroup(id, values, form.captureCaller())
 }
 
 // Click sends a click to the goradd control.
-func (form *TestForm) Click(c page.ControlI) {
-	form.Controller.click(c.ID(), form.captureCaller())
+// Note that the act of clicking often causes an action, and an action will change the form
+func (form *TestForm) Click(id string) {
+	if form.usingForm {
+		panic("do not call Click from inside the F() function")
+	}
+	form.Controller.click(id, form.captureCaller())
+	f := form.getForm()
+	c := f.Page().GetControl(id)
 	if c.HasServerAction("click") {
 		// wait for the new page to load
 		form.Controller.waitSubmit(form.callerInfo)
@@ -212,8 +281,10 @@ func (form *TestForm) Click(c page.ControlI) {
 }
 
 // ClickSubItem sends a click to the html object with the given sub-id inside the given control.
-func (form *TestForm) ClickSubItem(c page.ControlI, subId string) {
-	form.Controller.click(c.ID()+"_"+subId, form.captureCaller())
+func (form *TestForm) ClickSubItem(id string, subId string) {
+	form.Controller.click(id+"_"+subId, form.captureCaller())
+	f := form.getForm()
+	c := f.Page().GetControl(id)
 	if c.HasServerAction("click") {
 		// wait for the new page to load
 		form.Controller.waitSubmit(form.callerInfo)
@@ -221,6 +292,9 @@ func (form *TestForm) ClickSubItem(c page.ControlI, subId string) {
 }
 
 func (form *TestForm) ClickHtmlItem(id string) {
+	if form.usingForm {
+		panic("do not call ClickHtmlItem from inside the F() function")
+	}
 	form.Controller.click(id, form.captureCaller())
 }
 
@@ -378,6 +452,10 @@ func (form *TestForm) testOne(testName string) {
 		log.Debug(form.currentLog)
 
 	}()
+}
+
+func (form *TestForm) NoSerialize() bool {
+	return true
 }
 
 func init() {

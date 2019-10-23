@@ -2,12 +2,12 @@ package panels
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
-	"github.com/goradd/goradd/pkg/page/control/data"
 	"strconv"
 )
 
@@ -89,7 +89,7 @@ func NewTableSelectPanel(ctx context.Context, parent page.ControlI) {
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
-func (p *TableSelectPanel) BindData(ctx context.Context, s data.DataManagerI) {
+func (p *TableSelectPanel) BindData(ctx context.Context, s DataManagerI) {
 	var items []map[string]string
 	for i := 0; i < 50; i++ {
 		item := map[string]string{"id": strconv.Itoa(i), "col1": fmt.Sprintf("Row %d, Col 0", i), "col2":fmt.Sprintf("Row %d, Col 1", i)}
@@ -110,4 +110,6 @@ func (p *TableSelectPanel) Action(ctx context.Context, a page.ActionParams) {
 
 
 func init() {
+	page.RegisterControl(TableSelectPanel{})
+	gob.Register([]map[string]string{})
 }

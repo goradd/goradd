@@ -1,6 +1,8 @@
 package query
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"strings"
 )
@@ -116,6 +118,95 @@ func (n *ManyManyNode) log(level int) {
 // Return the name as a captialized object name
 func (n *ManyManyNode) goName() string {
 	return n.goPropName
+}
+
+func (n *ManyManyNode) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = e.Encode(n.alias); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.condition); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.dbColumn); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.goPropName); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.refTable); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.refColumn); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.isArray); err != nil {
+		panic(err)
+	}
+	if err = e.Encode(n.isTypeTable); err != nil {
+		panic(err)
+	}
+
+	err = e.Encode(n.nodeLink.parentNode)
+	data = buf.Bytes()
+	return
+}
+
+
+func (n *ManyManyNode) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	if err = dec.Decode(&n.alias); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.condition); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbKey); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbTable); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.dbColumn); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.goPropName); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.refTable); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.refColumn); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.isArray); err != nil {
+		panic(err)
+	}
+	if err = dec.Decode(&n.isTypeTable); err != nil {
+		panic(err)
+	}
+
+	var n2 NodeI
+
+	if err = dec.Decode(&n2); err != nil {
+		panic(err)
+	}
+	SetParentNode(n, n2)
+	return
+}
+
+
+func init() {
+	gob.Register(&ManyManyNode{})
 }
 
 // ManyManyNodeIsArray is used internally by the framework to return whether the node creates an array, or just a link to a single item.

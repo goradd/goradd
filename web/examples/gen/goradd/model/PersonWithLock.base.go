@@ -5,11 +5,11 @@ package model
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/web/examples/model/node"
 
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
 	"bytes"
@@ -353,7 +353,7 @@ func (b *PersonWithLocksBuilder) Subquery() *query.SubqueryNode {
 	return b.base.Subquery()
 }
 
-// joinOrSelect us a private helper function for the Load* functions
+// joinOrSelect is a private helper function for the Load* functions
 func (b *PersonWithLocksBuilder) joinOrSelect(nodes ...query.NodeI) *PersonWithLocksBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
@@ -580,71 +580,71 @@ func (o *personWithLockBase) Get(key string) interface{} {
 // It should be used for transmitting database object over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
-func (o *personWithLockBase) MarshalBinary() (data []byte, err error) {
+func (o *personWithLockBase) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 
-	if err = encoder.Encode(o.id); err != nil {
-		return
+	if err := encoder.Encode(o.id); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.idIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.idIsDirty); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(o.firstName); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.firstNameIsValid); err != nil {
-		return
-	}
-	if err = encoder.Encode(o.firstNameIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.idIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.lastName); err != nil {
-		return
+	if err := encoder.Encode(o.firstName); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.lastNameIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.firstNameIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.lastNameIsDirty); err != nil {
-		return
+	if err := encoder.Encode(o.firstNameIsDirty); err != nil {
+		return nil, err
 	}
 
-	if err = encoder.Encode(o.sysTimestamp); err != nil {
-		return
+	if err := encoder.Encode(o.lastName); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.sysTimestampIsNull); err != nil {
-		return
+	if err := encoder.Encode(o.lastNameIsValid); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.sysTimestampIsValid); err != nil {
-		return
+	if err := encoder.Encode(o.lastNameIsDirty); err != nil {
+		return nil, err
 	}
-	if err = encoder.Encode(o.sysTimestampIsDirty); err != nil {
-		return
+
+	if err := encoder.Encode(o.sysTimestamp); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.sysTimestampIsNull); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.sysTimestampIsValid); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.sysTimestampIsDirty); err != nil {
+		return nil, err
 	}
 
 	if o._aliases == nil {
-		if err = encoder.Encode(false); err != nil {
-			return
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
 		}
 	} else {
-		if err = encoder.Encode(true); err != nil {
-			return
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
 		}
-		if err = encoder.Encode(o._aliases); err != nil {
-			return
+		if err := encoder.Encode(o._aliases); err != nil {
+			return nil, err
 		}
 	}
 
-	if err = encoder.Encode(o._restored); err != nil {
-		return
+	if err := encoder.Encode(o._restored); err != nil {
+		return nil, err
 	}
 
-	return
+	return buf.Bytes(), nil
 }
 
 func (o *personWithLockBase) UnmarshalBinary(data []byte) (err error) {
@@ -709,7 +709,7 @@ func (o *personWithLockBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	return err
+	return
 }
 
 // MarshalJSON serializes the object into a JSON object.
