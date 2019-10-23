@@ -94,7 +94,7 @@ func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 
 
 func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "lists").String()
 	t.LoadUrl(myUrl)
 
 	testSelectListSubmit(t, "ajaxButton")
@@ -103,7 +103,7 @@ func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
 }
 
 func testSelectListServerSubmit(t *browsertest.TestForm)  {
-	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").String()
+	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "lists").String()
 	t.LoadUrl(myUrl)
 
 	testSelectListSubmit(t, "serverButton")
@@ -115,37 +115,36 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
 func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
-
-	// For testing purposes, we need to use the id of the list item, rather than the value of the list item,
-/*
-	id,_ := GetSelectList(t.F(), "selectListWithSize").GetItemByValue(2)
-	t.ChangeVal("selectListWithSize", id)
+	t.ChooseListValue("selectListWithSize", 2)
 	t.Click(btnID)
 	t.AssertEqual(true, t.HasClass("singleSelectList-fg", "error"))
 
-	t.AssertEqual(2,  GetSelectList(t.F(), "selectListWithSize").IntValue())
+	t.F(func(f page.FormI) {
+		t.AssertEqual(2,  GetSelectList(f, "selectListWithSize").IntValue())
+	})
 
-	id,_ =  GetSelectList(t.F(), "singleSelectList").GetItemByValue(1)
-	t.ChangeVal("singleSelectList", id)
-	id,_ = GetSelectList(t.F(), "selectListWithSize").GetItemByValue(2)
-	t.ChangeVal("selectListWithSize", id)
-	id,_ = GetRadioList(t.F(), "radioList1").GetItemByValue(3)
-	t.CheckGroup("radioList1", id)
+	t.ChooseListValue("singleSelectList", 1)
+	t.ChooseListValue("selectListWithSize", 2)
+
+	var radioId string
+	t.F(func (f page.FormI) {
+		radioId,_ = GetRadioList(f, "radioList1").GetItemByValue(3)
+	})
+	t.CheckGroup("radioList1", radioId)
 
 	t.Click(btnID)
 
-	t.AssertEqual(1, GetSelectList(t.F(), "singleSelectList").IntValue())
-	t.AssertEqual(2, GetSelectList(t.F(), "selectListWithSize").IntValue())
-	t.AssertEqual(3, GetRadioList(t.F(), "radioList1").IntValue())
-	//t.AssertEqual(4, radio2.IntValue())
-*/
+	t.F(func (f page.FormI) {
+		t.AssertEqual(1, GetSelectList(f, "singleSelectList").IntValue())
+		t.AssertEqual(2, GetSelectList(f, "selectListWithSize").IntValue())
+		t.AssertEqual(3, GetRadioList(f, "radioList1").IntValue())
+	})
 }
 
 func init() {
 	examples.RegisterPanel("lists", "Lists", NewSelectListPanel, 3)
 	page.RegisterControl(SelectListPanel{})
 
-	// temporarily removing because bootstrap requires jquery and we want to make sure we are not relying on bootstrap
-	//browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)
-	//browsertest.RegisterTestFunction("Bootstrap Select List Server Submit", testSelectListServerSubmit)
+	browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)
+	browsertest.RegisterTestFunction("Bootstrap Select List Server Submit", testSelectListServerSubmit)
 }

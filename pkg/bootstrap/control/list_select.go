@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"encoding/gob"
+	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -20,6 +21,12 @@ func NewSelectList(parent page.ControlI, id string) *SelectList {
 	t.Init(t, parent, id)
 	return t
 }
+
+func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
+	l.SelectList.Init(self, parent, id)
+	config.LoadBootstrap(l.ParentForm())
+}
+
 
 func (t *SelectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	a := t.SelectList.ΩDrawingAttributes(ctx)

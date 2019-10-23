@@ -32,6 +32,7 @@ type FormI interface {
 	AddStyleSheetFile(path string, attributes html.Attributes)
 	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
+	AddJQuery()
 	AddJQueryUI()
 	ChangeLocation(url string)
 	PushLocation(ctx context.Context)
@@ -91,8 +92,8 @@ func (f *ΩFormBase) AddJQuery() {
 	if !config.Release {
 		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery3.js"), false, nil)
 	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.3.1.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=").
+		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.4.1.min.js", false,
+			html.NewAttributes().Set("integrity", "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=").
 				Set("crossorigin", "anonymous"))
 	}
 }

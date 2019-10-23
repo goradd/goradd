@@ -135,7 +135,7 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 
 	if page == nil {
 		// An ajax call, but we could not deserialize the old page. Refresh the entire page to get a server access.
-		buf.WriteString(`{"loc":"refresh"}`) // the refresh will be handled in javascript
+		buf.WriteString(`{"loc":"reload"}`) // the refresh will be handled in javascript
 		return map[string]string{"Content-Type": "application/json"}, 0
 	}
 
