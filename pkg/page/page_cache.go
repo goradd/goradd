@@ -89,10 +89,6 @@ type SerializedPageCache struct {
 	testPageID string // Used for testing serialization using automated testing. Not for production.
 	testPage   *Page
 
-	// This keeps a record of all current pages so the test harness can use it.
-	// Note that this will grow, and eventually cause the app to run out of memory. For this
-	// reason, this cache is not suitable for production.
-	pages map[string]*Page
 }
 
 // This special interface is used by our test harness to prevent the serialization of the
@@ -104,7 +100,6 @@ type TestFormI interface {
 func NewSerializedPageCache(maxEntries int, TTL int64) *SerializedPageCache {
 	return &SerializedPageCache{
 		LruCache:*cache.NewLruCache(maxEntries, TTL),
-		pages: make(map[string]*Page),
 	}
 }
 
@@ -119,7 +114,6 @@ func (o *SerializedPageCache) Set(pageId string, page *Page) {
 
 	if b, err := page.MarshalBinary(); err == nil {
 		o.LruCache.Set(pageId, b)
-		o.pages[pageId] = page
 	}
 }
 
@@ -135,7 +129,7 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 		return nil
 	}
 
-	var p *Page = o.pages[pageId]
+	var p Page
 
 	// write over the top of the previous page to reuse the memory
 	if err := p.UnmarshalBinary(b.([]byte)); err != nil {
@@ -146,11 +140,7 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 		panic("pageId does not match") // or return nil?
 	}
 	p.Restore()
-	return p
-}
-
-func (o *SerializedPageCache) GetLoaded(pageId string) *Page {
-	return o.pages[pageId]
+	return &p
 }
 
 // Has returns true if the page with the given pageId is in the cache.

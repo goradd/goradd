@@ -100,16 +100,16 @@ func (p *Page) Restore() {
 
 func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
 	grCtx := GetContext(ctx)
+	p.ClearResponseHeaders()
 
 	if grCtx.err != nil {
 		panic(grCtx.err) // An error occurred during unpacking of the context, so report that now
 	}
 
+	// TODO: Lifecycle calls - push them to the form
 	if err = p.Form().Run(ctx); err != nil {
 		return err
 	}
-
-	// TODO: Lifecycle calls - push them to the form
 
 	// cache the language tags so we only need to look them up once for every call
 	p.language = i18n.SetDefaultLanguage(ctx, grCtx.Header.Get("accept-language"))
@@ -133,7 +133,6 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		}
 	}
 
-	p.ClearResponseHeaders()
 	if grCtx.RequestMode() == Ajax {
 		err = p.DrawAjax(ctx, buf)
 		p.SetResponseHeader("Content-Type", "application/json")
@@ -146,6 +145,9 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 
 	p.Form().writeAllStates(ctx)
 	p.Form().Exit(ctx, err)
+
+	pageCache.Set(p.stateId, p)
+
 	return
 }
 
@@ -297,10 +299,6 @@ func (p *Page) Title() string {
 // Call SetTitle to set the content of the <title> tag to be output in the head of the page.
 func (p *Page) SetTitle(title string) {
 	p.title = title
-}
-
-func (p *Page) setStateID(stateId string) {
-	p.stateId = stateId
 }
 
 // StateID returns the page state id. This is output by the form so that we can recover the saved state of the page

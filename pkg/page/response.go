@@ -52,52 +52,11 @@ type responseCommand struct {
 	Final    bool          `json:"final,omitempty"`
 }
 
-// MarshalJSON is used to form the Ajax response.
-/*
-func (r responseCommand) MarshalJSON() (buf []byte, err error) {
-	var reply = map[string]interface{}{}
-
-	if r.script != "" {
-		reply["script"] = r.script
-	} else if r.selector != "" {
-		reply["selector"] = r.selector
-		reply["func"] = r.function
-		reply["params"] = javascript.Arguments(r.args)
-		if r.final {
-			reply["final"] = true
-		}
-	} else {
-		reply["func"] = r.function
-		reply["params"] = javascript.Arguments(r.args)
-		if r.final {
-			reply["final"] = true
-		}
-		if
-	}
-	return json.Marshal(reply)
-}*/
-
 // responseControl is the response packet that leads to the manipulation or replacement of an html object
 type responseControl struct {
-	id         string
-	html       string            // replaces the entire control's html
-	attributes map[string]string // replace only specific attributes of the control
-	value      string            // call the jQuery .val function with This value
-}
-
-// MarshalJSON is used to form the Ajax response.
-func (r responseControl) MarshalJSON() (buf []byte, err error) {
-	var reply = map[string]interface{}{}
-
-	if r.html != "" {
-		reply["html"] = r.html
-	} else if r.attributes != nil {
-		reply["attributes"] = r.attributes
-	} else {
-		reply["value"] = r.value
-	}
-
-	return json.Marshal(reply)
+	Html       string            `json:"html,omitempty"` // replaces the entire control's html
+	Attributes map[string]string `json:"attributes,omitempty"`// replace only specific attributes of the control
+	Value      string            `json:"value,omitempty"`// call the jQuery .val function with This value
 }
 
 // Response contains the various commands you can send to the client in response to a goradd event.
@@ -119,10 +78,10 @@ type Response struct {
 	// jsFiles are JavaScript files that should be inserted into the page. This should rarely be used,
 	// but is needed in case the programmer inserts a control widget in response to an Ajax event,
 	// and that control depends on javascript that has not yet been sent to the client.
-	jsFiles                *maps.SliceMap
+	jsFiles                *maps.SliceMap // Use slicemap to preserve the order
 	// styleSheets are css files that should be inserted into the page.
 	styleSheets            *maps.SliceMap
-	// alerts are strings that should be shown to the user in a javascript aler
+	// alerts are strings that should be shown to the user in a javascript alert
 	alerts []string
 	// newLocation is a URL that the client should be redirected to.
 	newLocation string
@@ -439,11 +398,11 @@ func (r *Response) SetControlHtml(id string, html string) {
 	if r.controls == nil {
 		r.controls = map[string]responseControl{}
 	}
-	if v, ok := r.controls[id]; ok && v.html != "" {
+	if v, ok := r.controls[id]; ok && v.Html != "" {
 		r.Unlock()
 		panic("Setting ajax html twice on same control: " + id)
 	}
-	r.controls[id] = responseControl{html: html}
+	r.controls[id] = responseControl{Html: html}
 	r.Unlock()
 }
 
@@ -454,15 +413,15 @@ func (r *Response) SetControlAttribute(id string, attribute string, value string
 		r.controls = map[string]responseControl{}
 	}
 	if v, ok := r.controls[id]; ok {
-		if v.html == "" { // only do attributes if whole control is not being redrawn
-			if v.attributes != nil {
-				v.attributes[attribute] = value
+		if v.Html == "" { // only do attributes if whole control is not being redrawn
+			if v.Attributes != nil {
+				v.Attributes[attribute] = value
 			} else {
-				v.attributes = map[string]string{attribute: value}
+				v.Attributes = map[string]string{attribute: value}
 			}
 		}
 	} else {
-		r.controls[id] = responseControl{attributes: map[string]string{attribute: value}}
+		r.controls[id] = responseControl{Attributes: map[string]string{attribute: value}}
 	}
 	r.Unlock()
 }
@@ -473,7 +432,7 @@ func (r *Response) SetControlValue(id string, value string) {
 	if r.controls == nil {
 		r.controls = map[string]responseControl{}
 	}
-	r.controls[id] = responseControl{value: value}
+	r.controls[id] = responseControl{Value: value}
 	r.Unlock()
 }
 
@@ -481,4 +440,62 @@ func (r *Response) setProfileInfo(info string) {
 	r.Lock()
 	r.profileHtml = info
 	r.Unlock()
+}
+
+// use an encoder since some fields could be nil
+type responseEncoded struct {
+	ExclusiveCommand *responseCommand
+	HighPriorityCommands []*responseCommand
+	MediumPriorityCommands []*responseCommand
+	LowPriorityCommands []*responseCommand
+	FinalCommands []*responseCommand
+	JsFiles *maps.SliceMap
+	StyleSheets *maps.SliceMap
+	Alerts []string
+	NewLocation string
+	WinClose bool
+	Controls map[string]responseControl
+	ProfileHtml string
+}
+func (r *Response) Serialize(e Encoder) (err error) {
+	enc := responseEncoded{
+		ExclusiveCommand:       r.exclusiveCommand,
+		HighPriorityCommands:   r.highPriorityCommands,
+		MediumPriorityCommands: r.mediumPriorityCommands,
+		LowPriorityCommands:    r.lowPriorityCommands,
+		FinalCommands:          r.finalCommands,
+		JsFiles:                r.jsFiles,
+		StyleSheets:            r.styleSheets,
+		Alerts:                 r.alerts,
+		NewLocation:            r.newLocation,
+		WinClose:               r.winClose,
+		Controls:               r.controls,
+		ProfileHtml:            r.profileHtml,
+	}
+	if err = e.Encode(enc); err != nil {
+		panic(err)
+	}
+
+	return
+}
+
+func (r *Response) Deserialize(d Decoder) (err error) {
+	enc := responseEncoded{}
+	if err = d.Decode(&enc); err != nil {
+		panic(err)
+	}
+	r.exclusiveCommand = enc.ExclusiveCommand
+	r.highPriorityCommands = enc.HighPriorityCommands
+	r.mediumPriorityCommands = enc.MediumPriorityCommands
+	r.lowPriorityCommands = enc.LowPriorityCommands
+	r.finalCommands = enc.FinalCommands
+	r.jsFiles = enc.JsFiles
+	r.styleSheets = enc.StyleSheets
+	r.alerts = enc.Alerts
+	r.newLocation = enc.NewLocation
+	r.winClose = enc.WinClose
+	r.controls = enc.Controls
+	r.profileHtml = enc.ProfileHtml
+
+	return
 }

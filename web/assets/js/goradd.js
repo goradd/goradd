@@ -829,7 +829,7 @@ goradd = {
                  * @param json {object}
                  */
                 success: function (json) {
-                    goradd.log("Ajax success ", json);
+                    goradd.log("Ajax response received: ", json);
 
                     _processImmediateAjaxResponse(json, params);
                     // TODO: Wait until javascripts above are loaded before proceeding?

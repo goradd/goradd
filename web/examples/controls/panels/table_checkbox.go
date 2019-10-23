@@ -114,25 +114,32 @@ func init() {
 
 func testTableCheckboxNav(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").String()
-	f := t.LoadUrl(myUrl)
+	t.LoadUrl(myUrl)
 
 	t.SetCheckbox("table1_check1_1", true)
-	pager := f.Page().GetControl("pager").(*DataPager)
-	table := f.Page().GetControl("table1").(*PagedTable)
-	col := table.GetColumnByID("check1").(*column.CheckboxColumn)
-	changes := col.Changes()
-	_, ok := changes["1"]
-	t.AssertEqual(false, ok)
+	t.F(func(f page.FormI) {
+		table := f.Page().GetControl("table1").(*PagedTable)
+		col := table.GetColumnByID("check1").(*column.CheckboxColumn)
+		changes := col.Changes()
+		_, ok := changes["1"]
+		t.AssertEqual(false, ok)
 
-	t.ClickSubItem(pager, "page_2")
-	changes = col.Changes()
-	changed, _ := changes["1"]
-	t.AssertEqual(true, changed)
+	})
+
+	t.ClickSubItem("pager", "page_2")
+	t.F(func(f page.FormI) {
+		table := f.Page().GetControl("table1").(*PagedTable)
+		col := table.GetColumnByID("check1").(*column.CheckboxColumn)
+		changes := col.Changes()
+		changed, _ := changes["1"]
+		t.AssertEqual(true, changed)
+
+	})
 
 	// restore state for other tests
-	t.ClickSubItem(pager, "page_1")
+	t.ClickSubItem("pager", "page_1")
 	t.SetCheckbox("table1_check1_1", false)
-	t.ClickSubItem(pager, "page_1")
+	t.ClickSubItem("pager", "page_1")
 
 	t.Done("Complete")
 }
@@ -150,22 +157,27 @@ func testTableCheckboxServerSubmit(t *browsertest.TestForm) {
 }
 
 func testTableCheckboxSubmit(t *browsertest.TestForm, btnID string) {
+
 	table1Data = getCheckTestData()
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "tablecheckbox").SetValue("testing", 1).String()
 	t.LoadUrl(myUrl)
 
 	t.SetCheckbox("table1_check1_1", true)
-	col := GetPagedTable(t.F(), "table1").GetColumnByID("check1").(*column.CheckboxColumn)
-	changes := col.Changes()
-	_, ok := changes["1"]
-	t.AssertEqual(false, ok)
+	t.F(func(f page.FormI) {
+		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		changes := col.Changes()
+		_, ok := changes["1"]
+		t.AssertEqual(false, ok)
+	})
 
 	t.Click(btnID)
 	// click above can cause form to reset
-	col = GetPagedTable(t.F(), "table1").GetColumnByID("check1").(*column.CheckboxColumn)
-	changes = col.Changes()
-	changed, _ := changes["1"]
-	t.AssertEqual(true, changed)
+	t.F(func(f page.FormI) {
+		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		changes := col.Changes()
+		changed, _ := changes["1"]
+		t.AssertEqual(true, changed)
+	})
 
 	// restore state for other tests
 	t.SetCheckbox("table1_check1_1", false)

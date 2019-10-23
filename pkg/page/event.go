@@ -178,6 +178,19 @@ func (e *Event) HasServerAction() bool {
 	}
 }
 
+// HasServerAction returns true if at least one of the event's actions is a server action.
+func (e *Event) HasCallbackAction() bool {
+	switch a := e.action.(type) {
+	case action2.CallbackActionI:
+		return true
+	case action2.ActionGroup:
+		return a.HasCallbackAction()
+	default:
+		return false
+	}
+}
+
+
 func (e *Event) Name() string {
 	return e.JsEvent
 }

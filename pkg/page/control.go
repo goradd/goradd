@@ -172,6 +172,7 @@ type ControlI interface {
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
 	HasServerAction(eventName string) bool
+	HasCallbackAction(eventName string) bool
 
 	ΩUpdateFormValues(*Context)
 
@@ -493,7 +494,6 @@ func (c *Control) ΩPostRender(ctx context.Context, buf *bytes.Buffer) (err erro
 	c.isOnPage = true
 	c.isModified = false
 	c.attributeScripts = nil // Entire control was redrawn, so don't need these
-
 	return
 }
 
@@ -1022,6 +1022,17 @@ func (c *Control) HasServerAction(eventName string) bool {
 	}
 	return false
 }
+
+// HasCallbackAction returns true if one of the actions attached to the given event is a Server action.
+func (c *Control) HasCallbackAction(eventName string) bool {
+	for _, e := range c.events {
+		if e.Name() == eventName && e.HasCallbackAction() {
+			return true
+		}
+	}
+	return false
+}
+
 
 // GetEvent returns the event associated with the eventName, which corresponds to the javascript
 // trigger name.
@@ -1677,6 +1688,7 @@ type controlEncoding struct {
 	Events                EventMap
 	EventCounter          EventID
 	ShouldSaveState       bool
+	IsModified			  bool		// For testing framework
 }
 
 // Serialize is used by the framework to serialize a control to be saved in the pagestate.
@@ -1709,6 +1721,7 @@ func (c *Control) Serialize(e Encoder) (err error) {
 		EventCounter:          c.eventCounter,
 		ShouldSaveState:       c.shouldSaveState,
 		ParentID:			   c.parentId,
+		IsModified:				c.isModified,
 	}
 
 	for _,child := range c.children {
@@ -1758,6 +1771,7 @@ func (c *Control) Deserialize(d Decoder) (err error) {
 	c.events = s.Events
 	c.eventCounter = s.EventCounter
 	c.shouldSaveState = s.ShouldSaveState
+	c.isModified = s.IsModified
 
 	// This relies on the children being deserialized first, which is taken care of by the page serializer
 	for _,id := range s.ChildIDs {

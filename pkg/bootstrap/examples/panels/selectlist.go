@@ -117,7 +117,7 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 
 	// For testing purposes, we need to use the id of the list item, rather than the value of the list item,
-
+/*
 	id,_ := GetSelectList(t.F(), "selectListWithSize").GetItemByValue(2)
 	t.ChangeVal("selectListWithSize", id)
 	t.Click(btnID)
@@ -138,6 +138,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.AssertEqual(2, GetSelectList(t.F(), "selectListWithSize").IntValue())
 	t.AssertEqual(3, GetRadioList(t.F(), "radioList1").IntValue())
 	//t.AssertEqual(4, radio2.IntValue())
+*/
 }
 
 func init() {

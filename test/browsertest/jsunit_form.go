@@ -55,4 +55,5 @@ func testJsUnit(t *TestForm)  {
 
 func init() {
 	page.RegisterPage(JsUnitTestFormPath, NewJsUnitForm, JsUnitTestFormId)
+	page.RegisterControl(JsUnitForm{})
 }

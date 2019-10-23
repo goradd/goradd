@@ -10,7 +10,7 @@ goradd.testsuite = {
     pretest: function(t) {
         goradd.el("testspace").innerHTML =  '<p id="testP">I am here</p> \
         <div id="testD" data-animal-type="bird" spellcheck>a div</div> \
-        ';
+        <input id="testC" type="checkbox">';
         //        <ul id="listener"><li id="outer"><span id="inner">a span</span></li></ul>
     },
     testEl: function(t) {
@@ -123,5 +123,20 @@ goradd.testsuite = {
         t.isSame("bird", d.data("animalType"));
         d.data("animalType", "dog");
         t.isSame("dog", d.data("animalType"));
+    },
+    testClick: function(t) {
+        // Here we are making sure that our generated click function will also trigger subsequent events
+        // that go along with a click
+        var c = g$("testC");
+        var p = goradd.el("testP");
+        p.innerText = "";
+        c.on("click", function(e) {
+            p.innerText = p.innerText + "clicked";
+        });
+        c.on("change", function(e) {
+            p.innerText = p.innerText + "changed";
+        });
+        c.click();
+        t.isSame("clickedchanged", p.innerText);
     }
 };
