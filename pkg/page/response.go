@@ -56,7 +56,7 @@ type responseCommand struct {
 type responseControl struct {
 	Html       string            `json:"html,omitempty"` // replaces the entire control's html
 	Attributes map[string]string `json:"attributes,omitempty"`// replace only specific attributes of the control
-	Value      string            `json:"value,omitempty"`// call the jQuery .val function with This value
+	Value      string            `json:"value,omitempty"`// sets the control's value. See goradd.js val:
 }
 
 // Response contains the various commands you can send to the client in response to a goradd event.
@@ -457,6 +457,9 @@ type responseEncoded struct {
 	Controls map[string]responseControl
 	ProfileHtml string
 }
+
+// Serialize encodes the response for the pagestate. Currently, serialization of the response is only
+// used by the testing framework.
 func (r *Response) Serialize(e Encoder) (err error) {
 	enc := responseEncoded{
 		ExclusiveCommand:       r.exclusiveCommand,
@@ -479,6 +482,8 @@ func (r *Response) Serialize(e Encoder) (err error) {
 	return
 }
 
+// Deserialize unpacks the response from the pagestate. Currently the response is only serialized
+// in the testing framework.
 func (r *Response) Deserialize(d Decoder) (err error) {
 	enc := responseEncoded{}
 	if err = d.Decode(&enc); err != nil {
