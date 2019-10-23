@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -29,13 +30,12 @@ func TestDataPager_Serialize(t *testing.T) {
 		},
 	)
 
-	c := GetDataPager(p, "dp")
+	enc.Encode(p.Page())
 
-	c.Serialize(enc)
-
-	c2 := DataPager{}
+	p2 := page.Page{}
 	dec := gob.NewDecoder(&buf)
-	c2.Deserialize(dec)
+	dec.Decode(&p2)
+	c2 := GetDataPager(p2.Form(), "dp").(*DataPager)
 
 	assert.Equal(t, 11, c2.maxPageButtons)
 	assert.Equal(t, "Thing", c2.ObjectName)

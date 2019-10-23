@@ -86,13 +86,14 @@ func TestBasicFormEncoding(t *testing.T) {
 	pe := page.GobPageEncoder{}
 	e := pe.NewEncoder(&b)
 
-	assert.NoError(t, form.Page().Serialize(e))
+
+	assert.NoError(t,e.Encode(form.Page()))
 
 	d := pe.NewDecoder(bytes.NewBuffer(b.Bytes()))
 
 	var p2 page.Page
 
-	assert.NoError(t, p2.Deserialize(d))
+	assert.NoError(t, d.Decode(&p2))
 
 	f2 := p2.Form().(*BasicForm)
 

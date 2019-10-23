@@ -19,9 +19,17 @@ type FormBase struct {
 	page.ΩFormBase
 }
 
+type MockForm struct {
+	FormBase
+}
+
+func init() {
+	page.RegisterControl(MockForm{})
+}
+
 // NewMockForm creates a form that should be used as a parent of a control when unit testing the control.
-func NewMockForm() *FormBase {
-	f := &FormBase{}
+func NewMockForm() *MockForm {
+	f := &MockForm{}
 	f.ΩFormBase.Init(nil, f, "", "MockFormId")
 	return f
 }
