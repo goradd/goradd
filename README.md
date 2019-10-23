@@ -55,26 +55,27 @@ basic html controls, and also provides Bootstrap widgets. If you have a particul
 css or javascript widget library you want to support, building the GoRADD
 interface is fairly easy to do, and the Bootstrap library included gives you a 
 model to follow.
+1) Scalability. GoRADD is architected for scalability. All user state information is serializable
+to key-value stores. You might need to build the interface to the particular key-value store you
+are interested in, but that is not difficult. Some specific issues to consider:
+    1. GoRADD requires a MySQL database at this point for your main data store. 
+        SQL is great for creating most common data
+           structures, is great when you need to change your structure without destroying data, and
+           is fast enough for most applications. However, all data access is done through a common API,
+           so switching an application that is already written to another SQL database like Postgresql, Oracle, or any
+            other database is very straight-forward
+           and is just a matter of implementing the database layer. In fact, the database layer is generic
+           enough that you could switch to a NoSQL implementation
+           as your product matures and you need scalability at speed.
+    2. GoRADD maintains the state of each user of the website in something we call the *pagestate*.
+       The pagestate is serializable to any key-value store. Currently, only an in-memory store is
+       provided, but writing an interface to any common key-value store is easy.
+    3. Live updates work through a pub/sub mechanism. Goradd provides a single-server in-memory 
+       system out of the box, but its easy to switch to any other pub/sub mechanism, including 
+       distributed systems like pubnub, ally, google cloud messaging, etc. There are no payloads
+       with the messages and traffic is minimal.
 
 ### Future Goals
-* Scalability. GoRADD is architected for scalability, but the specific features required for
-scalability have not been built and are not scheduled for version 1. Some of those things are
-    1. GoRADD requires a MySQL database at this point. SQL is great for creating most common data
-    structures, is great when you need to change your structure without destroying data, and
-    is fast enough for most applications. GoRADD is architected so that you could switch to a NoSQL implementation
-    as your product matures and you need scalability at speed, but the NoSQL drivers are not currently built. 
-    They would not be difficult to do, but they will need to rely on a separate data structure definition. The
-    plan is that a SQL database would be able to generate a schema that would be used by the NoSQL drivers to
-    make it possible to migrate the data from SQL to NoSQL.
-    2. GoRADD maintains the state of each user of the website in internal memory we call the *pagestate*.
-    Since its in memory, each user is currently bound to one server. Go is incredibly fast, so one server should be
-    able to manage thousands of users with a reasonable amount of RAM. But to grow beyond this, some work would
-    need to be done on serializing the pagestate into an off-site database. This effort is in process.
-    3. Live-updates. Live updates in a multi-user environment can be particularly difficult at the data model
-    level. However, browser technologies also make them difficult at the client too. The browser world is in rapid flux
-    around this topic, with different browsers supporting a variety of technologies 
-    (WebSockets, Server-side events, and now fetch streaming), with Microsoft browsers generally 
-    lagging the pack. Hopefully things will settle down and we can implement this in a sane way.
 * WebComponents. WebComponent architecture fits particularly well with goradd's architecture. However,
 WebComponents are not fully supported by all major browsers. As WebComponents gain traction, we hope
 to use them for future browser widgets. In the mean-time, we support many JQuery based widgets.
@@ -86,12 +87,11 @@ a mobile app interface.
 1) GoRADD's html server is not microservice based. 
 While you can create microservices that serve parts of your application, at its
 core goradd is a monolithic framework that includes an ORM, an MVC architecture, and a basic control
-and form management library. If you are trying to build an application for millions of users, goradd is not
-for you at this time. However, it is architected to eventually allow parts of it to be handled off-line by
-other servers, so it is (or will be soon) scalable. 
+and form management library. 
 2) Object-oriented. Some of goradd uses a code pattern that mirrors traditional object-oriented
 inheritance and gets around some of GO's limitations in this area, including implementing 
-virtual functions. If you hate inheritance, goradd is not for you. If you don't mind it, but you still
+virtual functions. We have found this particularly useful in the control library.
+If you hate inheritance, goradd is not for you. If you don't mind it, but you still
 like object composition too, this is your place.
 3) Code generation. GoRADD relies heavily on code generation, and in particular uses the
 related github.com/goradd/got template engine to generate code.
