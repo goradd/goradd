@@ -124,7 +124,9 @@ func SendMessage(channel string, message map[string]interface{}) {
 		message = make(map[string]interface{})
 	}
 	message["channel"] = channel // send the channel we are sending to with the message
-	hub.send <- messageType{channel, message}
+	if hub != nil {
+		hub.send <- messageType{channel, message}
+	}
 }
 
 func MakeHub() {

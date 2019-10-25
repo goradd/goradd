@@ -5,8 +5,8 @@ import (
 	"github.com/goradd/goradd/pkg/messageServer"
 )
 
-// The injected watcher. Change to whatever method works for you.
-var Watcher WatcherI = new (DefaultWatcher)
+// The injected watcher. See the application initialization process for Watcher creation.
+var Watcher WatcherI
 
 type WatcherI interface {
 	MakeKey(ctx context.Context, dbKey string, table string, pk string) string
@@ -54,18 +54,27 @@ func (w *DefaultWatcher) BroadcastDelete(ctx context.Context, dbKey string, tabl
 }
 
 func BroadcastUpdate(ctx context.Context, dbKey string, table string, pk string, fieldKeys []string)  {
-	Watcher.BroadcastUpdate(ctx, dbKey, table, pk, fieldKeys)
+	if Watcher != nil {
+		Watcher.BroadcastUpdate(ctx, dbKey, table, pk, fieldKeys)
+	}
 }
 
 func BroadcastInsert(ctx context.Context, dbKey string, table string, pk string)  {
-	Watcher.BroadcastInsert(ctx, dbKey, table, pk)
+	if Watcher != nil {
+		Watcher.BroadcastInsert(ctx, dbKey, table, pk)
+	}
 }
 
 func BroadcastDelete(ctx context.Context, dbKey string, table string, pk string)  {
-	Watcher.BroadcastDelete(ctx, dbKey, table, pk)
+	if Watcher != nil {
+		Watcher.BroadcastDelete(ctx, dbKey, table, pk)
+	}
 }
 
 func MakeKey(ctx context.Context, dbKey string, table string, pk string) string {
+	if Watcher == nil {
+		return ""
+	}
 	return Watcher.MakeKey(ctx, dbKey, table, pk)
 }
 

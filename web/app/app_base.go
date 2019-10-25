@@ -16,6 +16,7 @@ import (
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
+	"github.com/goradd/goradd/pkg/watcher"
 	"log"
 	"path/filepath"
 	"strings"
@@ -58,6 +59,7 @@ type ApplicationI interface {
 	InitializeLoggers()
 	SetupAssetDirectories()
 	SetupSessionManager()
+	SetupDatabaseWatcher()
 	WebSocketAuthHandler(next http.Handler) http.Handler
 	SessionHandler(next http.Handler) http.Handler
 	ServeRequest(w http.ResponseWriter, r *http.Request)
@@ -78,6 +80,7 @@ func (a *Application) Init(self ApplicationI) {
 	self.InitializeLoggers()
 	self.SetupAssetDirectories()
 	self.SetupSessionManager()
+	self.SetupDatabaseWatcher()
 
 	page.DefaultCheckboxLabelDrawingMode = html.LabelAfter
 }
@@ -145,6 +148,12 @@ func (a *Application) SetupSessionManager() {
 	// create the session manager. The default uses an in-memory storage engine. Change as you see fit.
 	interval, _ := time.ParseDuration("24h")
 	session.SetSessionManager(session.NewScsManager(scs.NewManager(memstore.New(interval))))
+}
+
+// SetupDatabaseWatcher injects the global database watcher which detects database changes and then draws controls that
+// are watching for those
+func (a *Application) SetupDatabaseWatcher() {
+	watcher.Watcher = &watcher.DefaultWatcher{}
 }
 
 func (a *Application) PutContext(r *http.Request) *http.Request {

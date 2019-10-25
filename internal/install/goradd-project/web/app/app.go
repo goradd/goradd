@@ -93,6 +93,18 @@ func (a *Application) SetupAssetDirectories() {
 }
 */
 
+// SetupDatabaseWatcher injects the global database watcher which detects database changes and then draws controls that
+// are watching for those changes.
+//
+// The default uses the provided goradd websocket message server to broadcast changes to the database, which is sufficient
+// for a single-server application. If you need a multi-server scalable version, change the watcher here to something that
+// uses a distributed pub/sub mechanism.
+/*
+func (a *Application) SetupDatabaseWatcher() {
+	watcher.Watcher = &watcher.DefaultWatcher{}
+}
+*/
+
 // RunWebServer launches the main webserver.
 
 func (a *Application) RunWebServer() (err error) {
