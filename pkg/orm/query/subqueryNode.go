@@ -57,6 +57,11 @@ func (n *SubqueryNode) tableName() string {
 	return ""
 }
 
+func (n *SubqueryNode) databaseKey() string {
+	return ""
+}
+
+
 func (n *SubqueryNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Subquery: ")

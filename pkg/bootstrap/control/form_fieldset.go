@@ -145,7 +145,7 @@ func (f FormFieldsetCreator) Init(ctx context.Context, c FormFieldsetI) {
 		c.SetInstructions(f.Instructions)
 	}
 	c.AddControls(ctx, f.Child)
-	c.ApplyOptions(f.ControlOptions)
+	c.ApplyOptions(ctx, f.ControlOptions)
 }
 
 // GetFormFieldset is a convenience method to return the fieldset with the given id from the page.

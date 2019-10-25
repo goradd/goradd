@@ -207,7 +207,7 @@ func (c ProxyCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 	if c.On.Event != nil {
 		ctrl.On(c.On.Event, c.On.Action)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	return ctrl
 }
 

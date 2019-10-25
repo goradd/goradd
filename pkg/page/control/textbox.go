@@ -485,7 +485,7 @@ func (c TextboxCreator) Init(ctx context.Context, ctrl TextboxI) {
 		ctrl.SetText(c.Text)
 	}
 
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
 	}

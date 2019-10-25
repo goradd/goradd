@@ -124,7 +124,7 @@ func (c DateTimeSpanCreator) Create(ctx context.Context, parent page.ControlI) p
 	if c.Format != "" {
 		ctrl.format = c.Format
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	return ctrl
 }
 

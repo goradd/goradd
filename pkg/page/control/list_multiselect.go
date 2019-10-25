@@ -350,7 +350,7 @@ func (c MultiselectListCreator) Create(ctx context.Context, parent page.ControlI
 	if c.Size != 0 {
 		ctrl.SetSize(c.Size)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
 	}

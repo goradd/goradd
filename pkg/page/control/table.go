@@ -908,7 +908,7 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 		ctrl.On(event.CellClick(), c.OnCellClick)
 	}
 
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 }
 
 // GetTable is a convenience method to return the table with the given id from the page.

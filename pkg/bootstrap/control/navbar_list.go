@@ -230,7 +230,7 @@ func (c NavbarListCreator) Init(ctx context.Context, ctrl NavbarListI) {
 		ctrl.SetDataProvider(provider)
 	}
 
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.OnSelect != nil {
 		ctrl.OnSelect(c.OnSelect)
 	}

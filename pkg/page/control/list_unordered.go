@@ -191,7 +191,7 @@ func (c UnorderedListCreator) Init(ctx context.Context, ctrl UnorderedListI) {
 	if c.BulletStyle != "" {
 		ctrl.SetBulletStyle(c.BulletStyle)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 }
 
 // GetUnorderedList is a convenience method to return the control with the given id from the page.

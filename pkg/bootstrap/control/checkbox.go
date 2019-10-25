@@ -107,7 +107,7 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 		ctrl.LabelAttributes().Merge(c.LabelAttributes)
 	}
 
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
 	}

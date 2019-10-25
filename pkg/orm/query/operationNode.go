@@ -218,6 +218,10 @@ func (n *OperationNode) tableName() string {
 	return ""
 }
 
+func (n *OperationNode) databaseKey() string {
+	return ""
+}
+
 func (n *OperationNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Op: " + n.op.String())

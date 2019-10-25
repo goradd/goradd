@@ -49,7 +49,7 @@ type Client struct {
 	// Buffered channel of outbound messages.
 	send chan map[string]interface{}
 
-	channel string
+	channels string
 
 	pagestate string // authenticator
 }
@@ -142,10 +142,10 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	channel := r.FormValue("ch")
+	channels := r.FormValue("ch")
 	pagestate := r.FormValue("id")
 
-	client := &Client{hub: hub, conn: conn, send: make(chan map[string]interface{}, 256), channel: channel, pagestate: pagestate}
+	client := &Client{hub: hub, conn: conn, send: make(chan map[string]interface{}, 256), channels: channels, pagestate: pagestate}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

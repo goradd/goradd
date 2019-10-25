@@ -199,7 +199,7 @@ func (c RepeaterCreator) Init(ctx context.Context, ctrl RepeaterI) {
 	if c.Data != nil {
 		ctrl.SetData(c.Data)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.PageSize != 0 {
 		ctrl.SetPageSize(c.PageSize)
 	}

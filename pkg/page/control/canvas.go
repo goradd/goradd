@@ -48,7 +48,7 @@ type CanvasCreator struct {
 // do not normally need to call this.
 func (c CanvasCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewCanvas(parent, c.ID)
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	return ctrl
 }
 

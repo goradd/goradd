@@ -615,7 +615,7 @@ func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 		ctrl.SetLabels(c.LabelForPrevious, c.LabelForNext)
 	}
 
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 }
 
 func init() {

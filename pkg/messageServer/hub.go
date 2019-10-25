@@ -7,6 +7,7 @@ package messageServer
 import (
 	"github.com/goradd/goradd/pkg/log"
 	"net/http"
+	"strings"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to the clients.
@@ -50,24 +51,28 @@ func (h *WebSocketHub) run() {
 	for {
 		select {
 		case client := <-h.register:
-			log.FrameworkDebugf("Client registering for channel %s pagestate %s", client.channel, client.pagestate)
+			log.FrameworkDebugf("Client registering for channels %s pagestate %s", client.channels, client.pagestate)
 			var clientsByFormstate map[string]*Client
 			var ok bool
-			if clientsByFormstate, ok = h.clients[client.channel]; !ok {
-				clientsByFormstate = make(map[string]*Client)
-				h.clients[client.channel] = clientsByFormstate
-			}
-			if _, ok := clientsByFormstate[client.pagestate]; !ok {
-				clientsByFormstate[client.pagestate] = client
-			} else {
-				// The user is registering again for a particular channel. Maybe a page refresh? Close the previous channel to prevent a memory leak
-				h.unregisterClient(client.channel, client.pagestate)
-				clientsByFormstate[client.pagestate] = client
+
+			channels := strings.Split(client.channels, ",")
+			for _,channel := range channels {
+				if clientsByFormstate, ok = h.clients[channel]; !ok {
+					clientsByFormstate = make(map[string]*Client)
+					h.clients[channel] = clientsByFormstate
+				}
+				if _, ok := clientsByFormstate[client.pagestate]; !ok {
+					clientsByFormstate[client.pagestate] = client
+				} else {
+					// The page is registering again for a particular channel. Maybe a page refresh? Close the previous channel to prevent a memory leak
+					h.unregisterClient(channel, client.pagestate)
+					clientsByFormstate[client.pagestate] = client
+				}
 			}
 
 		case client := <-h.unregister:
-			log.FrameworkDebugf("Client UNregistering for channel %s pagestate %s", client.channel, client.pagestate)
-			h.unregisterClient(client.channel, client.pagestate)
+			log.FrameworkDebugf("Client unregistering for channels %s pagestate %s", client.channels, client.pagestate)
+			h.unregisterClient(client.channels, client.pagestate)
 
 		case msg := <-h.send:
 			if clients, ok := h.clients[msg.channel]; ok {
@@ -94,13 +99,16 @@ func (h *WebSocketHub) run() {
 	}
 }
 
-func (h *WebSocketHub) unregisterClient(channel string, pagestate string) {
-	if clientsByFormstate, ok := h.clients[channel]; ok {
-		if client, ok2 := clientsByFormstate[pagestate]; ok2 {
-			close(client.send)
-			delete(clientsByFormstate, pagestate)
-			if len(clientsByFormstate) == 0 {
-				delete(h.clients, channel)
+func (h *WebSocketHub) unregisterClient(channels string, pagestate string) {
+	sChannels := strings.Split(channels, ",")
+	for _,channel := range sChannels {
+		if clientsByFormstate, ok := h.clients[channel]; ok {
+			if client, ok2 := clientsByFormstate[pagestate]; ok2 {
+				close(client.send)
+				delete(clientsByFormstate, pagestate)
+				if len(clientsByFormstate) == 0 {
+					delete(h.clients, channel)
+				}
 			}
 		}
 	}
@@ -112,6 +120,10 @@ func HasChannel(channel string) bool {
 }
 
 func SendMessage(channel string, message map[string]interface{}) {
+	if message == nil {
+		message = make(map[string]interface{})
+	}
+	message["channel"] = channel // send the channel we are sending to with the message
 	hub.send <- messageType{channel, message}
 }
 

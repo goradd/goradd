@@ -11,9 +11,12 @@ import (
 	"github.com/goradd/goradd/pkg/i18n"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/page/action"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/session"
+	"github.com/goradd/goradd/pkg/stringmap"
+	"github.com/goradd/goradd/pkg/watcher"
 	gohtml "html"
 	"reflect"
 )
@@ -207,13 +210,16 @@ type ControlI interface {
 	Serialize(e Encoder) (err error)
 	Deserialize(d Decoder) (err error)
 
-	ApplyOptions(o ControlOptions)
+	ApplyOptions(ctx context.Context, o ControlOptions)
 	AddControls(ctx context.Context, creators ...Creator)
 
 	DataConnector() DataConnector
 	SetDataConnector(d DataConnector) ControlI
 	RefreshData(data interface{})
 	UpdateData(data interface{})
+
+	WatchDbTables(ctx context.Context, nodes... query.NodeI)
+	WatchDbRecord(ctx context.Context, n query.NodeI, pk string)
 }
 
 type attributeScriptEntry struct {
@@ -330,6 +336,8 @@ type Control struct {
 
 	dataConnector DataConnector
 
+	watchedKeys map[string]string
+
 	// anything added here needs to be also added to the GOB encoder!
 }
 
@@ -439,6 +447,10 @@ func (c *Control) ΩPutCustomScript(ctx context.Context, response *Response) {
 
 }
 
+func (c *Control) needsRefresh() bool {
+	return c.isModified
+}
+
 // DrawAjax will be called by the framework during an Ajax rendering of the Control. Every Control gets called. Each Control
 // is responsible for rendering itself. Some objects automatically render their child objects, and some don't,
 // so we detect whether the parent is being rendered, and assume the parent is taking care of rendering for
@@ -450,7 +462,7 @@ func (c *Control) ΩPutCustomScript(ctx context.Context, response *Response) {
 // by a parent control before drawing here.
 func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) {
 
-	if c.isModified {
+	if c.needsRefresh() {
 		// simply re-render the control and assume rendering will handle rendering its children
 
 		func() {
@@ -649,6 +661,12 @@ func (c *Control) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 
 	if c.isRequired {
 		a.Set("aria-required", "true")
+	}
+
+	channels := stringmap.JoinStrings(c.watchedKeys, "=", ";")
+
+	if channels != "" {
+		a.SetDataAttribute("GrWatch", channels)
 	}
 
 	return a
@@ -1630,6 +1648,35 @@ func (c *Control) UpdateData(data interface{}) {
 	}
 }
 
+// WatchDbTables will add the table nodes to the list of database tables that the control is watching.
+// It also adds all the parents of those nodes.
+// For example, WatchDbTables(ctx, node.Project().Manager()) will watch the project table and the person table.
+func (c *Control) WatchDbTables(ctx context.Context, nodes... query.NodeI) {
+	if c.watchedKeys == nil {
+		c.watchedKeys = make(map[string]string)
+	}
+	for _,n := range nodes {
+		for {
+			c.watchedKeys[watcher.MakeKey(ctx, query.NodeDbKey(n), query.NodeTableName(n), "")] = ""
+			n = query.ParentNode(n)
+			if n == nil {
+				break
+			}
+		}
+	}
+}
+
+// WatchDbRecord will watch a specific record. Specify a table node to watch all fields in the record, or a column node
+// to watch the changes to a particular field of the table.
+func (c *Control) WatchDbRecord(ctx context.Context, n query.NodeI, pk string) {
+	channel := watcher.MakeKey(ctx, query.NodeDbKey(n), query.NodeTableName(n), pk)
+	if cn, ok := n.(*query.ColumnNode); ok {
+		c.watchedKeys[channel] = query.ColumnNodeDbName(cn)
+	} else {
+		c.watchedKeys[channel] = ""
+	}
+}
+
 
 // MockFormValue will mock the process of getting a form value from an http response for
 // testing purposes. This includes calling ΩUpdateFormValues and Validate on the control.
@@ -1689,6 +1736,7 @@ type controlEncoding struct {
 	EventCounter          EventID
 	ShouldSaveState       bool
 	IsModified			  bool		// For testing framework
+	WatchedKeys			  map[string]string
 }
 
 // Serialize is used by the framework to serialize a control to be saved in the pagestate.
@@ -1722,6 +1770,7 @@ func (c *Control) Serialize(e Encoder) (err error) {
 		ShouldSaveState:       c.shouldSaveState,
 		ParentID:			   c.parentId,
 		IsModified:				c.isModified,
+		WatchedKeys:		c.watchedKeys,
 	}
 
 	for _,child := range c.children {
@@ -1772,6 +1821,7 @@ func (c *Control) Deserialize(d Decoder) (err error) {
 	c.eventCounter = s.EventCounter
 	c.shouldSaveState = s.ShouldSaveState
 	c.isModified = s.IsModified
+	c.watchedKeys = s.WatchedKeys
 
 	// This relies on the children being deserialized first, which is taken care of by the page serializer
 	for _,id := range s.ChildIDs {
@@ -1809,10 +1859,13 @@ type ControlOptions struct {
 	On EventList
 	// DataConnector is the ViewModel layer that moves data between the control and an attached model.
 	DataConnector DataConnector
+	// WatchedDbTables lets you specify database nodes to watch for changes. When a record in the table is altered, added or deleted,
+	// this control will automatically redraw. To watch a specific record, call WatchDbRecord when you load the control's data.
+	WatchedDbTables []query.NodeI
 }
 
 
-func (c *Control) ApplyOptions (o ControlOptions) {
+func (c *Control) ApplyOptions(ctx context.Context, o ControlOptions) {
 	if o.Attributes != nil {
 		c.MergeAttributes(o.Attributes)
 	}
@@ -1838,6 +1891,10 @@ func (c *Control) ApplyOptions (o ControlOptions) {
 		c.isHidden = true
 	}
 	c.dataConnector = o.DataConnector
+
+	if o.WatchedDbTables != nil {
+		c.WatchDbTables(ctx, o.WatchedDbTables...)
+	}
 }
 
 // Creator is the interface all declarative helpers need to implement

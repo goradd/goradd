@@ -135,7 +135,7 @@ func (c RadioButtonCreator) Create(ctx context.Context, parent page.ControlI) pa
 		ctrl.group = c.Group
 	}
 
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
 	}

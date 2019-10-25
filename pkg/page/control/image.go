@@ -204,7 +204,7 @@ func (c ImageCreator) Init(ctx context.Context, ctrl ImageI) {
 	if c.Data != nil {
 		ctrl.SetData(c.Data)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 }
 
 // GetImage is a convenience method to return the button with the given id from the page.

@@ -122,6 +122,11 @@ func (n *ValueNode) tableName() string {
 	return ""
 }
 
+func (n *ValueNode) databaseKey() string {
+	return ""
+}
+
+
 func (n *ValueNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "Val: " + fmt.Sprint(n.value))

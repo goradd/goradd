@@ -281,7 +281,7 @@ func (c CheckboxListCreator) Init(ctx context.Context, ctrl CheckboxListI) {
 	if c.RowClass != "" {
 		ctrl.SetRowClass(c.RowClass)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
 	}

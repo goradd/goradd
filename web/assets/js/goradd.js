@@ -36,6 +36,8 @@ var _blockEvents = false;
 var _inputSupport = true;
 var _finalCommands = [];
 var _prevUpdateTime = 0;
+var _watchers = {};
+var _refresh = [];
 
 function _toKebab(s) {
     return  s.replace(/[A-Z]/g, function(m) {
@@ -455,8 +457,40 @@ function _registerControl(ctrl) {
             ctrl.goradd.widget = widget;
         }
     }
+
+    var watches = g.attr("data-gr-watch");
+    if (!!watches) {
+        goradd.each(watches.split(";"), function(watch) {
+           _addWatcher(g.id(), this)
+        });
+    }
 }
 
+function _addWatcher(id, channel) {
+    if (!_watchers[channel]) {
+        _watchers[channel] = [id];
+    } else if (!goradd.contains(_watchers[channel], id)) {
+        _watchers[channel].push(id);
+    }
+}
+
+function _processWatcherMessage(msg) {
+    var channel = msg.channel;
+
+    var watchers = _watchers[channel];
+    if (!!watchers) {
+        goradd.each(watchers, function() {
+            var g = g$(this);
+            if (!!g) { // make sure control was not removed from the form
+                _refresh.push(this); // force a refresh of this control
+            }
+        });
+
+        if (_refresh.length > 0) {
+            goradd.updateForm();
+        }
+    }
+}
 
 /**
  * g$ is a shortcut for goradd.g(). It wraps an element with additional functions defined here to more easily manipulate
@@ -804,6 +838,7 @@ goradd = {
         }
 
         params.formId = form.id;
+        params.refresh = JSON.stringify(_refresh);
 
         goradd.log("postAjax", params);
 
@@ -1039,8 +1074,7 @@ goradd = {
             target = event.goradd.match;
         }
         return g$(target).data("grAv");
-    }
-
+    },
 };
 
 /**
