@@ -105,7 +105,7 @@ func (p *TestController) ΩUpdateFormValues(ctx *page.Context) {
 
 func (p *TestController) waitStep() {
 	log.FrameworkDebugf("Waiting for step %d: %s", len(p.stepDescriptions), p.stepDescriptions[len(p.stepDescriptions)-1])
-	p.Page().PushRedraw()
+	p.ParentForm().(*TestForm).PushRedraw()
 	for {
 		select {
 		case stepItem := <-p.stepChannel:

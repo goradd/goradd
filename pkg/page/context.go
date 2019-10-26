@@ -108,6 +108,7 @@ type AppContext struct {
 	actionControlID     string                            // If an action, the control sending the action
 	eventID             EventID                           // The event to send to the control
 	actionValues        actionValues
+	refreshIDs			[]string
 	// NoJavaScript indicates javascript is turned off by the browser
 	NoJavaScript bool
 }
@@ -255,6 +256,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				ControlID       string                            `json:"controlID"`
 				EventID         int                               `json:"eventID"`
 				Values          actionValues                      `json:"actionValues"`
+				RefreshIDs		[]string						  `json:"refresh"`
 			}
 
 			dec := json.NewDecoder(strings.NewReader(v))
@@ -262,6 +264,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 			if err = dec.Decode(&params); err == nil {
 				ctx.customControlValues = params.ControlValues
 				ctx.actionControlID = params.ControlID
+				ctx.refreshIDs = params.RefreshIDs
 				if params.EventID != 0 {
 					ctx.eventID = EventID(params.EventID)
 				}

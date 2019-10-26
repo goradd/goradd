@@ -33,8 +33,8 @@ func (w *DefaultWatcher) BroadcastUpdate(ctx context.Context, dbKey string, tabl
 	message["pk"] = pk
 	message["fields"] = fieldKeys
 	message["op"] = "upd"
-	messageServer.SendMessage (tableChannel, nil)
-	messageServer.SendMessage(pkChannel, message)
+	messageServer.Send(tableChannel, "*")
+	messageServer.Send(pkChannel, message)
 }
 
 func (w *DefaultWatcher) BroadcastInsert(ctx context.Context, dbKey string, table string, pk string)  {
@@ -42,7 +42,7 @@ func (w *DefaultWatcher) BroadcastInsert(ctx context.Context, dbKey string, tabl
 	message := make(map[string]interface{})
 	message["pk"] = pk
 	message["op"] = "ins"
-	messageServer.SendMessage (tableChannel, nil)
+	messageServer.Send(tableChannel, "*")
 }
 
 func (w *DefaultWatcher) BroadcastDelete(ctx context.Context, dbKey string, table string, pk string)  {
@@ -50,7 +50,7 @@ func (w *DefaultWatcher) BroadcastDelete(ctx context.Context, dbKey string, tabl
 	message := make(map[string]interface{})
 	message["pk"] = pk
 	message["op"] = "del"
-	messageServer.SendMessage (tableChannel, nil)
+	messageServer.Send(tableChannel, "*")
 }
 
 func BroadcastUpdate(ctx context.Context, dbKey string, table string, pk string, fieldKeys []string)  {

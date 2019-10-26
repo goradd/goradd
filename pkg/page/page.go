@@ -13,8 +13,6 @@ import (
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
-	"github.com/goradd/goradd/pkg/log"
-	"github.com/goradd/goradd/pkg/messageServer"
 	reflect2 "github.com/goradd/goradd/pkg/reflect"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
@@ -130,6 +128,13 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		// if this is an event response, do the actions associated with the event
 		if p.HasControl(grCtx.actionControlID) {
 			p.GetControl(grCtx.actionControlID).control().doAction(ctx)
+		}
+
+		// Redraw controls that requested a redraw, probably through the watcher mechanism
+		for _,id := range grCtx.refreshIDs {
+			if p.HasControl(id) {
+				p.GetControl(id).Refresh()
+			}
 		}
 	}
 
@@ -571,15 +576,16 @@ func (p *Page) ClearResponseHeaders() {
 // by sending the message anyways, and allowing the client to send an event back to us, essentially
 // using the javascript event mechanism to synchronize us. We might get an unnecessary redraw, but
 // that is not a big deal.
+/*
 func (p *Page) PushRedraw() {
 	channel := "form-" + p.stateId
-	if messageServer.HasChannel(channel) { // If we call this while launching a page, the channel isn't created yet, but the page is going to be drawn, so its ok.
-		messageServer.SendMessage(channel, map[string]interface{}{"grup": true})
+	if ws.HasChannel(channel) { // If we call this while launching a page, the channel isn't created yet, but the page is going to be drawn, so its ok.
+		ws.SendMessage(channel, map[string]interface{}{"grup": true})
 	} else {
 		log.FrameworkDebug("Pushing redraw with no channel.")
 	}
 }
-
+*/
 // LanguageCode returns the language code that will be put in the lang attribute of the html tag.
 // It is taken from the i18n package.
 func (p *Page) LanguageCode() string {

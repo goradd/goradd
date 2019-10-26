@@ -11,6 +11,7 @@ import (
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
@@ -85,7 +86,15 @@ func (f *ΩFormBase) this() FormI {
 func (f *ΩFormBase) AddRelatedFiles() {
 	f.AddGoraddFiles()
 	f.AddFontAwesome()
+	if messageServer.Messenger != nil {
+		files := messageServer.Messenger.JavascriptFiles()
+		for file,attr := range files {
+			f.AddJavaScriptFile(file, false, attr)
+		}
+	}
 }
+
+
 
 // AddJQuery adds the jquery javascript to the form
 func (f *ΩFormBase) AddJQuery() {
@@ -114,7 +123,6 @@ func (f *ΩFormBase) AddJQueryUI() {
 func (f *ΩFormBase) AddGoraddFiles() {
 	gr := config.GoraddAssets()
 	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd.js"), false, nil)
-	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-ws.js"), false, nil)
 	if !config.Release {
 		f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-testing.js"), false, nil)
 	}
@@ -164,15 +172,19 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Serialize and write out the pagestate
 	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()))
 
-	f.drawBodyScriptFiles(ctx, buf) // Fixing a bug?
+	f.drawBodyScriptFiles(ctx, buf)
 
 	buf.WriteString("\n</form>\n")
 
 	// Draw things that come after the form tag
 
-	// Write out the control scripts gathered above
+	// initialize the form in javascript
 	s := `goradd.initForm();` + "\n"
-	s += fmt.Sprintf("goradd.initMessagingClient(%d, %d);\n", config.WebSocketPort, config.WebSocketTLSPort)
+
+	// start the message server before initializing the form so that the form can subscribe to messages
+	if messageServer.Messenger != nil {
+		s = messageServer.Messenger.JavascriptInit() + s
+	}
 	f.GetActionScripts(&f.response) // actions assigned to form during form creation
 	s += f.response.JavaScript()
 	f.response = NewResponse() // clear response

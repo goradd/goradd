@@ -7,5 +7,9 @@ package build
 //go:generate gofile copy -x scss:less goradd-project/web/assets/* goradd-project/../deploy/assets/project
 //go:generate gofile copy -x scss:less github.com/goradd/goradd/pkg/bootstrap/assets/* goradd-project/../deploy/assets/bootstrap
 
+// Javascript associated with the messenger service. Change this to copy the support files for the messenger you choose.
+//go:generate gofile copy -x scss:less github.com/goradd/goradd/pkg/messageServer/ws/assets/* goradd-project/../../deploy/assets/messenger
+
+
 // Copy your static files
 //go:generate gofile copy -x scss:less goradd-project/web/html/* goradd-project/../deploy/html

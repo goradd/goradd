@@ -232,9 +232,6 @@ function _processImmediateAjaxResponse(json, params) {
 
     _registerControls();
 
-    if (json.watcher && params.controlId) {
-        goradd.broadcastChange();
-    }
     if (json.alert) {
         goradd.each(json.alert, function (i,v) {
             window.alert(v);
@@ -472,6 +469,10 @@ function _addWatcher(id, channel) {
     } else if (!goradd.contains(_watchers[channel], id)) {
         _watchers[channel].push(id);
     }
+}
+
+function _subscribeWatchers() {
+    goradd.subscribe(Object.keys(goradd._watchers), _processWatcherMessage)
 }
 
 function _processWatcherMessage(msg) {
@@ -1148,18 +1149,6 @@ goradd.extend({
         }
     },
 });
-
-///////////////////////////////
-// Watcher support
-///////////////////////////////
-goradd.minUpdateInterval = 500; // milliseconds to limit broadcast updates. Feel free to change this.
-goradd.broadcastChange = function () {
-    if ('localStorage' in window && window.localStorage !== null) {
-        var newTime = new Date().getTime();
-        localStorage.setItem("goradd.broadcast", newTime); // must change value to induce storage event in other windows
-    }
-};
-
 
 
 /////////////////////////////////

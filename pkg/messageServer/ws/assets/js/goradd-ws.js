@@ -18,6 +18,8 @@ to the goradd._ws object.
 
 */
 
+goradd._channels = {};
+
 goradd.initMessagingClient = function(wsPort, wssPort) {
     if (window.WebSocket) {
         var d = new Date();
@@ -31,13 +33,24 @@ goradd.initMessagingClient = function(wsPort, wssPort) {
             con = "ws://";
             port = wsPort;
         }
-        con += window.location.hostname + ":" + port + "/ws?id=" + goradd.getPageState() + "&ch=form-" + goradd.getPageState();
+        con += window.location.hostname + ":" + port + "/ws?id=" + goradd.getPageState();
 
         goradd._ws = new WebSocket(con);
         goradd._ws.addEventListener("message", goradd._handleWsMessage);
         goradd._ws.addEventListener("close", goradd._handleWsClose);
         // we purposefully do not use goradd._ws.onmessage = ... so that we can add multiple event listeners.
     }
+};
+
+// channels is an array of strings indicating the channels to subscribe to
+// f is the function to call when a message comes through on that channel
+goradd.subscribe = function(channels, f) {
+    var msg = {};
+    msg["subscribe"] = channels;
+    gorad._ws.send(msg);
+    goradd.each(channels, function() {
+        goradd._channels[this] = f;
+    });
 };
 
 /*
@@ -50,13 +63,12 @@ goradd._handleWsMessage = function(e) {
     var messages = JSON.parse(e.data);
     console.log("message");
 
-    // messages is an array of individual message objects
-    if (messages.some(function(message) {
-        return (message.grup)
-    })) {
-        console.log("update " + goradd.getPageState());
-        goradd.updateForm();
-    }
+    goradd.each(messages, function(msg) {
+        var f = goradd._channels[msg.channel];
+        if (!!f) {
+            f(msg.channel, msg.message);
+        }
+    });
 };
 
 /*
@@ -70,6 +82,7 @@ goradd._closeWebSocket = function(status) {
 };
 
 goradd._handleWsClose = function(e) {
+    goradd._channels = {};
     goradd._ws = null;
 };
 

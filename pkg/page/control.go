@@ -220,6 +220,7 @@ type ControlI interface {
 
 	WatchDbTables(ctx context.Context, nodes... query.NodeI)
 	WatchDbRecord(ctx context.Context, n query.NodeI, pk string)
+	WatchChannel(ctx context.Context, channel string)
 }
 
 type attributeScriptEntry struct {
@@ -1677,6 +1678,11 @@ func (c *Control) WatchDbRecord(ctx context.Context, n query.NodeI, pk string) {
 	}
 }
 
+
+// WatchChannel allows you to specify any channel to watch that will cause a redraw
+func (c *Control) WatchChannel(ctx context.Context, channel string) {
+	c.watchedKeys[channel] = ""
+}
 
 // MockFormValue will mock the process of getting a form value from an http response for
 // testing purposes. This includes calling ΩUpdateFormValues and Validate on the control.
