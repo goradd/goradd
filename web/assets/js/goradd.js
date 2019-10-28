@@ -418,6 +418,15 @@ function _registerControl(ctrl) {
     // get the widget
     var g = g$(ctrl);
 
+    var watches = g.attr("data-gr-watch");
+    if (!!watches) {
+        goradd.each(watches.split(";"), function(watch) {
+            var s = this.split("=");
+
+            _addWatcher(g.id(), s[0])
+        });
+    }
+
     if (g.data('gr-reg') === 'reg') {
         return // this control is already registered
     }
@@ -454,16 +463,10 @@ function _registerControl(ctrl) {
             ctrl.goradd.widget = widget;
         }
     }
-
-    var watches = g.attr("data-gr-watch");
-    if (!!watches) {
-        goradd.each(watches.split(";"), function(watch) {
-           _addWatcher(g.id(), this)
-        });
-    }
 }
 
-function _addWatcher(id, channel) {
+function _addWatcher(id, channel, val) {
+    // val is ignored for now. This would be for field watching.
     if (!_watchers[channel]) {
         _watchers[channel] = [id];
     } else if (!goradd.contains(_watchers[channel], id)) {
@@ -471,13 +474,15 @@ function _addWatcher(id, channel) {
     }
 }
 
-function _subscribeWatchers() {
-    goradd.subscribe(Object.keys(goradd._watchers), _processWatcherMessage)
-}
-
 function _processWatcherMessage(msg) {
     var channel = msg.channel;
+    var message = msg.message;
 
+    if (message === "U" && channel === "redraw") {
+        // Update the form, no redrawing. Used primarily by the testing framework at this point.
+        goradd.updateForm();
+        return;
+    }
     var watchers = _watchers[channel];
     if (!!watchers) {
         goradd.each(watchers, function() {
@@ -839,7 +844,7 @@ goradd = {
         }
 
         params.formId = form.id;
-        params.refresh = JSON.stringify(_refresh);
+        params.refresh = _refresh;
 
         goradd.log("postAjax", params);
 
@@ -1076,6 +1081,12 @@ goradd = {
         }
         return g$(target).data("grAv");
     },
+
+    // Watcher support
+    subscribeWatchers: function() {
+        goradd.subscribe(Object.keys(_watchers), _processWatcherMessage)
+    }
+
 };
 
 /**

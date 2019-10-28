@@ -154,19 +154,21 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
 }
 
 
+type inMessage struct {
+	Subscribe []string `json:"subscribe"`
+}
+
 func (c *Client) handleMessage(data []byte) {
-	var msg map[string]interface{}
+	var msg inMessage
 	_ = json.Unmarshal(data, &msg)
 
-	if sub,ok := msg["subscribe"]; ok {
-		if channels,ok2 := sub.([]string); ok2 {
-			for _,channel := range channels {
-				s := subscription{
-					pagestate: c.pagestate,
-					channel:   channel,
-				}
-				c.hub.subscribe <- s
+	if msg.Subscribe != nil {
+		for _,channel := range msg.Subscribe {
+			s := subscription{
+				pagestate: c.pagestate,
+				channel:   channel,
 			}
+			c.hub.subscribe <- s
 		}
 	}
 }

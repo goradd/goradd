@@ -121,7 +121,9 @@ func (h *WebSocketHub) subscribeChannel(pagestate string, channel string) {
 
 	client.channels[channel] = true
 	if pagestates, ok := h.channels[channel]; !ok {
-		h.channels[channel] = make(map[string]bool)
+		pagestates := make(map[string]bool)
+		pagestates[pagestate] = true
+		h.channels[channel] = pagestates
 	} else {
 		pagestates[pagestate] = true
 	}

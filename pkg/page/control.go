@@ -667,7 +667,7 @@ func (c *Control) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	channels := stringmap.JoinStrings(c.watchedKeys, "=", ";")
 
 	if channels != "" {
-		a.SetDataAttribute("GrWatch", channels)
+		a.SetDataAttribute("grWatch", channels)
 	}
 
 	return a
@@ -1670,6 +1670,9 @@ func (c *Control) WatchDbTables(ctx context.Context, nodes... query.NodeI) {
 // WatchDbRecord will watch a specific record. Specify a table node to watch all fields in the record, or a column node
 // to watch the changes to a particular field of the table.
 func (c *Control) WatchDbRecord(ctx context.Context, n query.NodeI, pk string) {
+	if c.watchedKeys == nil {
+		c.watchedKeys = make(map[string]string)
+	}
 	channel := watcher.MakeKey(ctx, query.NodeDbKey(n), query.NodeTableName(n), pk)
 	if cn, ok := n.(*query.ColumnNode); ok {
 		c.watchedKeys[channel] = query.ColumnNodeDbName(cn)
@@ -1681,6 +1684,9 @@ func (c *Control) WatchDbRecord(ctx context.Context, n query.NodeI, pk string) {
 
 // WatchChannel allows you to specify any channel to watch that will cause a redraw
 func (c *Control) WatchChannel(ctx context.Context, channel string) {
+	if c.watchedKeys == nil {
+		c.watchedKeys = make(map[string]string)
+	}
 	c.watchedKeys[channel] = ""
 }
 

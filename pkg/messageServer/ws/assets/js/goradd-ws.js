@@ -39,6 +39,7 @@ goradd.initMessagingClient = function(wsPort, wssPort) {
         goradd._ws.addEventListener("message", goradd._handleWsMessage);
         goradd._ws.addEventListener("close", goradd._handleWsClose);
         // we purposefully do not use goradd._ws.onmessage = ... so that we can add multiple event listeners.
+        goradd._ws.onopen = goradd.subscribeWatchers;
     }
 };
 
@@ -47,7 +48,7 @@ goradd.initMessagingClient = function(wsPort, wssPort) {
 goradd.subscribe = function(channels, f) {
     var msg = {};
     msg["subscribe"] = channels;
-    gorad._ws.send(msg);
+    goradd._ws.send(JSON.stringify(msg));
     goradd.each(channels, function() {
         goradd._channels[this] = f;
     });
@@ -63,10 +64,11 @@ goradd._handleWsMessage = function(e) {
     var messages = JSON.parse(e.data);
     console.log("message");
 
-    goradd.each(messages, function(msg) {
+    goradd.each(messages, function() {
+        var msg = this;
         var f = goradd._channels[msg.channel];
         if (!!f) {
-            f(msg.channel, msg.message);
+            f(msg);
         }
     });
 };

@@ -2,6 +2,7 @@ package html
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -17,7 +18,7 @@ import (
 */
 func ToDataAttr(s string) (string, error) {
 	if matched, _ := regexp.MatchString("^[^a-z]|[A-Z][A-Z]|\\W", s); matched {
-		err := errors.New("This is not an acceptable camelCase name.")
+		err := fmt.Errorf("%s is not an acceptable camelCase name.", s)
 		return s, err
 	}
 	re, err := regexp.Compile("[A-Z]")

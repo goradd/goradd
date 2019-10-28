@@ -105,3 +105,13 @@ func (m *WsMessenger) webSocketAuthHandler(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func WsAssets() string {
+	wsAssets := sys.SourceDirectory()
+	wsAssets = path.Join(wsAssets, "assets")
+	return wsAssets
+}
+
+func init() {
+	page.RegisterAssetDirectory(WsAssets(), config.AssetPrefix+"messenger")
+}

@@ -119,7 +119,7 @@ func (form *TestForm) Done(s string) {
 }
 
 func (form *TestForm) PushRedraw() {
-	messageServer.Messenger.Send("redraw", "*")
+	messageServer.Messenger.Send("redraw", "U")
 }
 
 // LoadUrl will launch a new window controlled by the test form. It will wait for the

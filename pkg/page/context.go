@@ -252,7 +252,6 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 
 			var params struct {
 				ControlValues   map[string]map[string]interface{} `json:"controlValues"`
-				CheckableValues map[string]interface{}            `json:"checkableValues"`
 				ControlID       string                            `json:"controlID"`
 				EventID         int                               `json:"eventID"`
 				Values          actionValues                      `json:"actionValues"`
