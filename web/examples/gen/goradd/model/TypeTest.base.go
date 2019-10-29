@@ -6,9 +6,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
@@ -1000,6 +1002,7 @@ func (o *typeTestBase) Update(ctx context.Context) {
 	d := db.GetDatabase("goradd")
 	d.Update(ctx, "type_test", m, "id", fmt.Sprint(o.id))
 	o.resetDirtyStatus()
+	broadcast.Update(ctx, "goradd", "type_test", o.id, stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -1014,6 +1017,7 @@ func (o *typeTestBase) Insert(ctx context.Context) {
 	o.id = id
 	o.resetDirtyStatus()
 	o._restored = true
+	broadcast.Insert(ctx, "goradd", "type_test", o.id)
 }
 
 func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
@@ -1108,12 +1112,14 @@ func (o *typeTestBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "type_test", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "type_test", o.id)
 }
 
 // deleteTypeTest deletes the associated record from the database.
 func deleteTypeTest(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "type_test", "id", pk)
+	broadcast.Delete(ctx, "goradd", "type_test", pk)
 }
 
 func (o *typeTestBase) resetDirtyStatus() {

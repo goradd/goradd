@@ -6,9 +6,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
@@ -35,11 +37,11 @@ type personBase struct {
 	lastNameIsDirty bool
 
 	// Reverse reference objects.
-	oAddresses         []*Address          // Objects in the order they were queried
-	mAddresses         map[string]*Address // Objects by PK
+	oLogin             *Login
 	oProjectsAsManager []*Project          // Objects in the order they were queried
 	mProjectsAsManager map[string]*Project // Objects by PK
-	oLogin             *Login
+	oAddresses         []*Address          // Objects in the order they were queried
+	mAddresses         map[string]*Address // Objects by PK
 
 	// Many-Many reference objects.
 	oPersonTypes          []PersonType
@@ -60,13 +62,13 @@ const (
 )
 
 const (
-	PersonID                = `ID`
-	PersonFirstName         = `FirstName`
-	PersonLastName          = `LastName`
-	PersonAddresses         = `Addresses`
-	PersonProjectsAsManager = `ProjectsAsManager`
+	PersonID        = `ID`
+	PersonFirstName = `FirstName`
+	PersonLastName  = `LastName`
 
 	PersonLogin                = `Login`
+	PersonProjectsAsManager    = `ProjectsAsManager`
+	PersonAddresses            = `Addresses`
 	PersonPersonType           = `PersonType`
 	PersonPersonTypes          = `PersonTypes`
 	PersonProjectAsTeamMember  = `ProjectAsTeamMember`
@@ -193,35 +195,22 @@ func (o *personBase) ProjectsAsTeamMember() []*Project {
 	return o.oProjectsAsTeamMember
 }
 
-// Address returns a single Address object by primary key, if one was loaded.
-// Otherwise, it will return nil.
-func (o *personBase) Address(pk string) *Address {
-	if o.oAddresses == nil || len(o.oAddresses) == 0 {
+// Login returns the connected Login object, if one was loaded
+// otherwise, it will return nil.
+func (o *personBase) Login() *Login {
+	if o.oLogin == nil {
 		return nil
 	}
-	v, _ := o.mAddresses[pk]
-	return v
+	return o.oLogin
 }
 
-// Addresses returns a slice of Address objects if loaded.
-func (o *personBase) Addresses() []*Address {
-	if o.oAddresses == nil {
-		return nil
+// LoadLogin returns the connected Login object, if one was loaded
+// otherwise, it will return nil.
+func (o *personBase) LoadLogin(ctx context.Context) *Login {
+	if o.oLogin == nil {
+		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
 	}
-	return o.oAddresses
-}
-
-// LoadAddresses loads a new slice of Address objects and returns it.
-func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{}) []*Address {
-	qb := queryAddresses(ctx)
-	cond := Equal(node.Address().PersonID(), o.PrimaryKey())
-	if conditions != nil {
-		conditions = append(conditions, cond)
-		cond = And(conditions...)
-	}
-
-	o.oAddresses = qb.Where(cond).Load(ctx)
-	return o.oAddresses
+	return o.oLogin
 }
 
 // ProjectAsManager returns a single Project object by primary key, if one was loaded.
@@ -255,22 +244,35 @@ func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...in
 	return o.oProjectsAsManager
 }
 
-// Login returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
-func (o *personBase) Login() *Login {
-	if o.oLogin == nil {
+// Address returns a single Address object by primary key, if one was loaded.
+// Otherwise, it will return nil.
+func (o *personBase) Address(pk string) *Address {
+	if o.oAddresses == nil || len(o.oAddresses) == 0 {
 		return nil
 	}
-	return o.oLogin
+	v, _ := o.mAddresses[pk]
+	return v
 }
 
-// LoadLogin returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
-func (o *personBase) LoadLogin(ctx context.Context) *Login {
-	if o.oLogin == nil {
-		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
+// Addresses returns a slice of Address objects if loaded.
+func (o *personBase) Addresses() []*Address {
+	if o.oAddresses == nil {
+		return nil
 	}
-	return o.oLogin
+	return o.oAddresses
+}
+
+// LoadAddresses loads a new slice of Address objects and returns it.
+func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{}) []*Address {
+	qb := queryAddresses(ctx)
+	cond := Equal(node.Address().PersonID(), o.PrimaryKey())
+	if conditions != nil {
+		conditions = append(conditions, cond)
+		cond = And(conditions...)
+	}
+
+	o.oAddresses = qb.Where(cond).Load(ctx)
+	return o.oAddresses
 }
 
 // Load returns a Person from the database.
@@ -536,32 +538,15 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		o.oProjectsAsTeamMember = nil
 	}
 
-	if v, ok := m["Addresses"]; ok {
-		switch oAddresses := v.(type) {
-		case []db.ValueMap:
-			o.oAddresses = []*Address{}
-			o.mAddresses = map[string]*Address{}
-			for _, v2 := range oAddresses {
-				obj := new(Address)
-				obj.load(v2, linkParent, obj, objThis, "Person")
-				if linkParent && parentKey == "Addresses" && obj.personID == objParent.(*Address).personID {
-					obj = objParent.(*Address)
-				}
-				o.oAddresses = append(o.oAddresses, obj)
-				o.mAddresses[obj.PrimaryKey()] = obj
-			}
-		case db.ValueMap: // single expansion
-			obj := new(Address)
-			obj.load(oAddresses, linkParent, obj, objThis, "Person")
-			if linkParent && parentKey == "Addresses" && obj.personID == objParent.(*Address).personID {
-				obj = objParent.(*Address)
-			}
-			o.oAddresses = []*Address{obj}
-		default:
-			panic("Wrong type found for oAddresses object.")
+	if v, ok := m["Login"]; ok {
+		if oLogin, ok2 := v.(db.ValueMap); ok2 {
+			o.oLogin = new(Login)
+			o.oLogin.load(oLogin, linkParent, o.oLogin, objThis, "Person")
+		} else {
+			panic("Wrong type found for oLogin object.")
 		}
 	} else {
-		o.oAddresses = nil
+		o.oLogin = nil
 	}
 
 	if v, ok := m["ProjectsAsManager"]; ok {
@@ -592,15 +577,32 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		o.oProjectsAsManager = nil
 	}
 
-	if v, ok := m["Login"]; ok {
-		if oLogin, ok2 := v.(db.ValueMap); ok2 {
-			o.oLogin = new(Login)
-			o.oLogin.load(oLogin, linkParent, o.oLogin, objThis, "Person")
-		} else {
-			panic("Wrong type found for oLogin object.")
+	if v, ok := m["Addresses"]; ok {
+		switch oAddresses := v.(type) {
+		case []db.ValueMap:
+			o.oAddresses = []*Address{}
+			o.mAddresses = map[string]*Address{}
+			for _, v2 := range oAddresses {
+				obj := new(Address)
+				obj.load(v2, linkParent, obj, objThis, "Person")
+				if linkParent && parentKey == "Addresses" && obj.personID == objParent.(*Address).personID {
+					obj = objParent.(*Address)
+				}
+				o.oAddresses = append(o.oAddresses, obj)
+				o.mAddresses[obj.PrimaryKey()] = obj
+			}
+		case db.ValueMap: // single expansion
+			obj := new(Address)
+			obj.load(oAddresses, linkParent, obj, objThis, "Person")
+			if linkParent && parentKey == "Addresses" && obj.personID == objParent.(*Address).personID {
+				obj = objParent.(*Address)
+			}
+			o.oAddresses = []*Address{obj}
+		default:
+			panic("Wrong type found for oAddresses object.")
 		}
 	} else {
-		o.oLogin = nil
+		o.oAddresses = nil
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -631,6 +633,7 @@ func (o *personBase) Update(ctx context.Context) {
 	d := db.GetDatabase("goradd")
 	d.Update(ctx, "person", m, "id", fmt.Sprint(o.id))
 	o.resetDirtyStatus()
+	broadcast.Update(ctx, "goradd", "person", o.id, stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -645,6 +648,7 @@ func (o *personBase) Insert(ctx context.Context) {
 	o.id = id
 	o.resetDirtyStatus()
 	o._restored = true
+	broadcast.Insert(ctx, "goradd", "person", o.id)
 }
 
 func (o *personBase) getModifiedFields() (fields map[string]interface{}) {
@@ -671,12 +675,14 @@ func (o *personBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "person", o.id)
 }
 
 // deletePerson deletes the associated record from the database.
 func deletePerson(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person", "id", pk)
+	broadcast.Delete(ctx, "goradd", "person", pk)
 }
 
 func (o *personBase) resetDirtyStatus() {
@@ -715,14 +721,14 @@ func (o *personBase) Get(key string) interface{} {
 		}
 		return o.lastName
 
-	case "Addresses":
-		return o.Addresses()
+	case "Login":
+		return o.Login()
 
 	case "ProjectsAsManager":
 		return o.ProjectsAsManager()
 
-	case "Login":
-		return o.Login()
+	case "Addresses":
+		return o.Addresses()
 
 	case "PersonType":
 		return o.PersonType()
@@ -776,15 +782,14 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oAddresses); err != nil {
+	if err := encoder.Encode(o.oLogin); err != nil {
 		return nil, err
 	}
-
 	if err := encoder.Encode(o.oProjectsAsManager); err != nil {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oLogin); err != nil {
+	if err := encoder.Encode(o.oAddresses); err != nil {
 		return nil, err
 	}
 
@@ -851,14 +856,8 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.oAddresses); err != nil {
+	if err = dec.Decode(&o.oLogin); err != nil {
 		return
-	}
-	if len(o.oAddresses) > 0 {
-		o.mAddresses = make(map[string]*Address)
-		for _, p := range o.oAddresses {
-			o.mAddresses[p.PrimaryKey()] = p
-		}
 	}
 	if err = dec.Decode(&o.oProjectsAsManager); err != nil {
 		return
@@ -869,8 +868,14 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 			o.mProjectsAsManager[p.PrimaryKey()] = p
 		}
 	}
-	if err = dec.Decode(&o.oLogin); err != nil {
+	if err = dec.Decode(&o.oAddresses); err != nil {
 		return
+	}
+	if len(o.oAddresses) > 0 {
+		o.mAddresses = make(map[string]*Address)
+		for _, p := range o.oAddresses {
+			o.mAddresses[p.PrimaryKey()] = p
+		}
 	}
 
 	if err = dec.Decode(&o.oPersonTypes); err != nil {
@@ -922,7 +927,7 @@ func (o *personBase) MarshalJSON() (data []byte, err error) {
 		v["lastName"] = o.lastName
 	}
 
-	if val := o.Addresses(); val != nil {
+	if val := o.Login(); val != nil {
 		v["person"] = val
 	}
 
@@ -930,7 +935,7 @@ func (o *personBase) MarshalJSON() (data []byte, err error) {
 		v["manager"] = val
 	}
 
-	if val := o.Login(); val != nil {
+	if val := o.Addresses(); val != nil {
 		v["person"] = val
 	}
 

@@ -6,9 +6,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
@@ -371,6 +373,7 @@ func (o *tmpBase) Update(ctx context.Context) {
 	d := db.GetDatabase("goradd")
 	d.Update(ctx, "tmp", m, "d", fmt.Sprint(o.d))
 	o.resetDirtyStatus()
+	broadcast.Update(ctx, "goradd", "tmp", o.d, stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -384,6 +387,7 @@ func (o *tmpBase) Insert(ctx context.Context) {
 	d.Insert(ctx, "tmp", m)
 	o.resetDirtyStatus()
 	o._restored = true
+	broadcast.Insert(ctx, "goradd", "tmp", o.d)
 }
 
 func (o *tmpBase) getModifiedFields() (fields map[string]interface{}) {
@@ -406,12 +410,14 @@ func (o *tmpBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "tmp", "d", o.d)
+	broadcast.Delete(ctx, "goradd", "tmp", o.d)
 }
 
 // deleteTmp deletes the associated record from the database.
 func deleteTmp(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "tmp", "d", pk)
+	broadcast.Delete(ctx, "goradd", "tmp", pk)
 }
 
 func (o *tmpBase) resetDirtyStatus() {

@@ -6,9 +6,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
@@ -552,6 +554,7 @@ func (o *addressBase) Update(ctx context.Context) {
 	d := db.GetDatabase("goradd")
 	d.Update(ctx, "address", m, "id", fmt.Sprint(o.id))
 	o.resetDirtyStatus()
+	broadcast.Update(ctx, "goradd", "address", o.id, stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -566,6 +569,7 @@ func (o *addressBase) Insert(ctx context.Context) {
 	o.id = id
 	o.resetDirtyStatus()
 	o._restored = true
+	broadcast.Insert(ctx, "goradd", "address", o.id)
 }
 
 func (o *addressBase) getModifiedFields() (fields map[string]interface{}) {
@@ -604,12 +608,14 @@ func (o *addressBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "address", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "address", o.id)
 }
 
 // deleteAddress deletes the associated record from the database.
 func deleteAddress(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "address", "id", pk)
+	broadcast.Delete(ctx, "goradd", "address", pk)
 }
 
 func (o *addressBase) resetDirtyStatus() {
