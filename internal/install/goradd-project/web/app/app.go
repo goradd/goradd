@@ -6,8 +6,6 @@ package app
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/messageServer"
-	"github.com/goradd/goradd/pkg/messageServer/ws"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/sys"
 	"github.com/goradd/goradd/web/app"
@@ -106,25 +104,25 @@ func (a *Application) SetupMessenger() {
 }
 */
 
-// SetupDatabaseWatcher injects the global database watcher which detects database changes and then draws controls that
-// are watching for those changes.
+// SetupDatabaseWatcher injects the global database watcher and broadcaster
+// which detects database changes and then draws controls that are watching for those changes.
 //
 // The default uses the provided goradd websocket message server to broadcast changes to the database, which is sufficient
 // for a single-server application. If you need a multi-server scalable version, change the watcher here to something that
 // uses a distributed pub/sub mechanism.
+//
+// Changing the broadcaster will let you do additional things on the server side when specific
+// database items change.
 /*
 func (a *Application) SetupDatabaseWatcher() {
 	watcher.Watcher = &watcher.DefaultWatcher{}
+	broadcast.Broadcaster = &broadcast.DefaultBroadcaster{}
 }
 */
 
 // RunWebServer launches the main webserver.
 
 func (a *Application) RunWebServer() (err error) {
-	// The message server communicates to the browser UI changes caused by database changes. If you are simply redrawing
-	// everything manually, and are not concerned about multi-user scenarios, you can comment it out.
-	ws.Start(a.MakeWebsocketMux())
-
 	mux := a.MakeServerMux()
 
 	// If you are directly responding to encrypted requests, launch a server here. Note that you CAN put the app behind
