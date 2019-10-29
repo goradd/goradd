@@ -25,7 +25,7 @@ func (o *{{privateName}}Base) Update(ctx context.Context) {
 	d := db.GetDatabase("{{t.DbKey}}")
 	d.Update(ctx, "{{t.DbName}}", m, "{{= t.PrimaryKeyColumn.DbName }}", fmt.Sprint(o.{{= t.PrimaryKeyColumn.ModelName }}))
 	o.resetDirtyStatus()
-    watcher.BroadcastUpdate(ctx, "{{t.DbKey}}", "{{t.DbName}}", o.{{= t.PrimaryKeyColumn.ModelName }}, stringmap.SortedKeys(m))
+    broadcast.Update(ctx, "{{t.DbKey}}", "{{t.DbName}}", o.{{= t.PrimaryKeyColumn.ModelName }}, stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -44,7 +44,7 @@ func (o *{{privateName}}Base) Insert(ctx context.Context) {
 {{if}}
 	o.resetDirtyStatus()
 	o._restored = true
-	watcher.BroadcastInsert(ctx, "{{t.DbKey}}", "{{t.DbName}}", o.{{= t.PrimaryKeyColumn.ModelName }})
+	broadcast.Insert(ctx, "{{t.DbKey}}", "{{t.DbName}}", o.{{= t.PrimaryKeyColumn.ModelName }})
 }
 
 func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}) {

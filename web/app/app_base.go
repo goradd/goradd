@@ -13,6 +13,7 @@ import (
 	grlog "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/messageServer/ws"
+	"github.com/goradd/goradd/pkg/orm/broadcast"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/resource"
 	"github.com/goradd/goradd/pkg/session"
@@ -160,10 +161,12 @@ func (a *Application) SetupMessenger() {
 	messageServer.Messenger = messenger
 }
 
-// SetupDatabaseWatcher injects the global database watcher which detects database changes and then draws controls that
-// are watching for those
+// SetupDatabaseWatcher injects the global database watcher
+// and the database broadcaster which together detect database changes and
+// then draws controls that are watching for those
 func (a *Application) SetupDatabaseWatcher() {
 	watcher.Watcher = &watcher.DefaultWatcher{}
+	broadcast.Broadcaster = &broadcast.DefaultBroadcaster{}
 }
 
 func (a *Application) PutContext(r *http.Request) *http.Request {

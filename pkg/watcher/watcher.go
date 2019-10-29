@@ -13,6 +13,7 @@ type WatcherI interface {
 	BroadcastUpdate(ctx context.Context, dbKey string, table string, pk string, fieldKeys []string)
 	BroadcastInsert(ctx context.Context, dbKey string, table string, pk string)
 	BroadcastDelete(ctx context.Context, dbKey string, table string, pk string)
+	BroadcastBulkChange(ctx context.Context, dbKey string, table string)
 }
 
 type DefaultWatcher struct {
@@ -53,6 +54,14 @@ func (w *DefaultWatcher) BroadcastDelete(ctx context.Context, dbKey string, tabl
 	messageServer.Send(tableChannel, "*")
 }
 
+func (w *DefaultWatcher) BroadcastBulkChange(ctx context.Context, dbKey string, table string)  {
+	tableChannel := w.MakeKey(ctx, dbKey, table, "")
+	message := make(map[string]interface{})
+	message["op"] = "chg"
+	messageServer.Send(tableChannel, "*")
+}
+
+
 func BroadcastUpdate(ctx context.Context, dbKey string, table string, pk string, fieldKeys []string)  {
 	if Watcher != nil {
 		Watcher.BroadcastUpdate(ctx, dbKey, table, pk, fieldKeys)
@@ -70,6 +79,13 @@ func BroadcastDelete(ctx context.Context, dbKey string, table string, pk string)
 		Watcher.BroadcastDelete(ctx, dbKey, table, pk)
 	}
 }
+
+func BroadcastBulkChange(ctx context.Context, dbKey string, table string)  {
+	if Watcher != nil {
+		Watcher.BroadcastBulkChange(ctx, dbKey, table)
+	}
+}
+
 
 func MakeKey(ctx context.Context, dbKey string, table string, pk string) string {
 	if Watcher == nil {
