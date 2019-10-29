@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package messageServer
+package ws
 
 import (
 	"bytes"
@@ -47,9 +47,9 @@ type Client struct {
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send chan map[string]interface{}
+	send chan clientMessage
 
-	channel string
+	channels map[string]bool
 
 	pagestate string // authenticator
 }
@@ -103,7 +103,7 @@ func (c *Client) writePump() {
 			}
 
 			// messages are json objects. We gather them up here into an array.
-			var messages = []map[string]interface{}{message}
+			var messages = []clientMessage{message}
 
 			// Add queued messages to the current websocket message.
 			n := len(c.send)
@@ -116,14 +116,14 @@ func (c *Client) writePump() {
 				return
 			}
 
-			if buf, err := json.Marshal(messages); err != nil {
-				panic(err)
+			if buf, err2 := json.Marshal(messages); err2 != nil {
+				panic(err2)
 			} else {
 				w.Write(buf)
 				log2.FrameworkDebugf("Writepump %s", string(buf))
 			}
 
-			if err := w.Close(); err != nil {
+			if err = w.Close(); err != nil {
 				return
 			}
 		case <-ticker.C:
@@ -142,10 +142,9 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	channel := r.FormValue("ch")
 	pagestate := r.FormValue("id")
 
-	client := &Client{hub: hub, conn: conn, send: make(chan map[string]interface{}, 256), channel: channel, pagestate: pagestate}
+	client := &Client{hub: hub, conn: conn, send: make(chan clientMessage, 256), channels:make(map[string]bool), pagestate: pagestate}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in
@@ -154,5 +153,22 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
 	go client.readPump()
 }
 
-func (c *Client) handleMessage(m []byte) {
+
+type inMessage struct {
+	Subscribe []string `json:"subscribe"`
+}
+
+func (c *Client) handleMessage(data []byte) {
+	var msg inMessage
+	_ = json.Unmarshal(data, &msg)
+
+	if msg.Subscribe != nil {
+		for _,channel := range msg.Subscribe {
+			s := subscription{
+				pagestate: c.pagestate,
+				channel:   channel,
+			}
+			c.hub.subscribe <- s
+		}
+	}
 }

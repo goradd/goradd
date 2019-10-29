@@ -53,6 +53,11 @@ func (n *TableNode) tableName() string {
 	return n.dbTable
 }
 
+func (n *TableNode) databaseKey() string {
+	return n.dbKey
+}
+
+
 func (n *TableNode) goName() string {
 	return n.goPropName
 }

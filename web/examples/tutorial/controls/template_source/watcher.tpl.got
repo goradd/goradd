@@ -1,0 +1,36 @@
+{{< package }}watcher{{end}}
+{{< imports }}
+{{end}}
+{{< control }}WatcherPanel{{end}}
+
+{{define template }}
+<h1>Watching Database Changes</h1>
+<p>
+You can tell any control to redraw itself when a portion of the database changes. Usually, you will use this with
+a list of items in the database so that if you or someone else edits an item in the list, you can see the changes in
+real time. You can also
+</p>
+<h2>Terminology</h2>
+{{h
+Different databases refer to data objects using different words, but the concepts are the same. For example,
+in a SQL database a collection of objects corresponds to a "table" and a member variable in an object corresponds to a "field".
+Each object in a table has a member variable which contains a unique key to identify that object, called the "primary key".
+Relationships between two tables are defined using a "foreign key", which is essentially just a member variable in one
+object that contains a copy of the primary key of a different object.
+}}
+<p>
+{{h
+For example, if a "project" object wanted easy access to the "person" object that is the manager of the project,
+the "project" object could have a member called "manager_id", which is the primary key of the "person" object
+that contains information on the project's manager. Note that this sets up a one-to-many relationship, because
+the project points to only one manager, but a manager might be managing multiple projects, and so will have multiple projects
+pointing back to the manager.
+
+This tutorial will teach you how to set up database relationships, and traverse them to create and retrieve the data you want.
+
+If you have not yet set up the example database, do that now using the following steps.
+}}
+
+{{end}}
+
+{{renderControlTemplate}}

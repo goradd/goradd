@@ -110,6 +110,11 @@ func (n *ManyManyNode) tableName() string {
 	return n.refTable
 }
 
+func (n *ManyManyNode) databaseKey() string {
+	return n.dbKey
+}
+
+
 func (n *ManyManyNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "MM: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + "." + n.refColumn + " AS " + n.GetAlias())

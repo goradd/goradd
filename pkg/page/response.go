@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	ResponseWatcher        = "watcher"
 	ResponseControls       = "controls"
 	ResponseCommandsHigh   = "commandsHigh"
 	ResponseCommandsMedium = "commands"

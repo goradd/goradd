@@ -324,7 +324,7 @@ func (f FormFieldWrapperCreator) Create(ctx context.Context, parent page.Control
 // Init is called by implementations of a FormFieldWrapper to initialize
 // the creator. You do not normally need to call this.
 func (f FormFieldWrapperCreator) Init(ctx context.Context, c FormFieldWrapperI) {
-	c.ApplyOptions(f.ControlOptions)
+	c.ApplyOptions(ctx, f.ControlOptions)
 	c.SetText(f.Label)
 	c.SetInstructions(f.Instructions)
 	if f.LabelAttributes != nil {

@@ -6,9 +6,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
@@ -449,6 +451,7 @@ func (o *milestoneBase) Update(ctx context.Context) {
 	d := db.GetDatabase("goradd")
 	d.Update(ctx, "milestone", m, "id", fmt.Sprint(o.id))
 	o.resetDirtyStatus()
+	broadcast.Update(ctx, "goradd", "milestone", o.id, stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -463,6 +466,7 @@ func (o *milestoneBase) Insert(ctx context.Context) {
 	o.id = id
 	o.resetDirtyStatus()
 	o._restored = true
+	broadcast.Insert(ctx, "goradd", "milestone", o.id)
 }
 
 func (o *milestoneBase) getModifiedFields() (fields map[string]interface{}) {
@@ -489,12 +493,14 @@ func (o *milestoneBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "milestone", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "milestone", o.id)
 }
 
 // deleteMilestone deletes the associated record from the database.
 func deleteMilestone(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "milestone", "id", pk)
+	broadcast.Delete(ctx, "goradd", "milestone", pk)
 }
 
 func (o *milestoneBase) resetDirtyStatus() {

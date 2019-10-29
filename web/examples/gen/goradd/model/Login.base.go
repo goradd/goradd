@@ -6,9 +6,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
@@ -621,6 +623,7 @@ func (o *loginBase) Update(ctx context.Context) {
 	d := db.GetDatabase("goradd")
 	d.Update(ctx, "login", m, "id", fmt.Sprint(o.id))
 	o.resetDirtyStatus()
+	broadcast.Update(ctx, "goradd", "login", o.id, stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -635,6 +638,7 @@ func (o *loginBase) Insert(ctx context.Context) {
 	o.id = id
 	o.resetDirtyStatus()
 	o._restored = true
+	broadcast.Insert(ctx, "goradd", "login", o.id)
 }
 
 func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
@@ -677,12 +681,14 @@ func (o *loginBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "login", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "login", o.id)
 }
 
 // deleteLogin deletes the associated record from the database.
 func deleteLogin(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "login", "id", pk)
+	broadcast.Delete(ctx, "goradd", "login", pk)
 }
 
 func (o *loginBase) resetDirtyStatus() {

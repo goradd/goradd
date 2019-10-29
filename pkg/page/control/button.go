@@ -125,7 +125,7 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 	if c.ValidationType != page.ValidateDefault {
 		ctrl.SetValidationType(c.ValidationType)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 }
 
 // GetButton is a convenience method to return the button with the given id from the page.

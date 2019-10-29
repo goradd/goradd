@@ -7,12 +7,14 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("{{t.DbKey}}")
 	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn.DbName }}", o.{{= t.PrimaryKeyColumn.ModelName }})
+	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", o.{{= t.PrimaryKeyColumn.ModelName }})
 }
 
 // delete{{= t.GoName }} deletes the associated record from the database.
 func delete{{= t.GoName }}(ctx context.Context, pk string) {
 	d := db.GetDatabase("{{t.DbKey}}")
 	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn.DbName }}", pk)
+	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", pk)
 }
 
 }}

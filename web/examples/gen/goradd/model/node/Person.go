@@ -114,19 +114,19 @@ func (n *personNode) ProjectsAsTeamMember() *projectNode {
 
 }
 
-// Addresses represents the many-to-one relationship formed by the reverse reference from the
+// Login represents the one-to-one relationship formed by the reverse reference from the
 // id column in the person table.
-func (n *personNode) Addresses() *addressNode {
+func (n *personNode) Login() *loginNode {
 
-	cn := &addressNode{
+	cn := &loginNode{
 		query.NewReverseReferenceNode(
 			"goradd",
 			"person",
 			"id",
-			"Addresses",
-			"address",
+			"Login",
+			"login",
 			"person_id",
-			true,
+			false,
 		),
 	}
 	query.SetParentNode(cn, n)
@@ -154,19 +154,19 @@ func (n *personNode) ProjectsAsManager() *projectNode {
 
 }
 
-// Login represents the one-to-one relationship formed by the reverse reference from the
+// Addresses represents the many-to-one relationship formed by the reverse reference from the
 // id column in the person table.
-func (n *personNode) Login() *loginNode {
+func (n *personNode) Addresses() *addressNode {
 
-	cn := &loginNode{
+	cn := &addressNode{
 		query.NewReverseReferenceNode(
 			"goradd",
 			"person",
 			"id",
-			"Login",
-			"login",
+			"Addresses",
+			"address",
 			"person_id",
-			false,
+			true,
 		),
 	}
 	query.SetParentNode(cn, n)

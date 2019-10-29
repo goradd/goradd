@@ -106,6 +106,7 @@ type NodeI interface {
 	tableName() string
 	log(level int)
 	nodeType() NodeType
+	databaseKey() string
 }
 
 /**
@@ -123,6 +124,11 @@ functions for the db package without broadcasting them to the world.
 func NodeTableName(n NodeI) string {
 	return n.tableName()
 }
+
+func NodeDbKey(n NodeI) string {
+	return n.databaseKey()
+}
+
 
 // NodeIsConditioner is used internally by the framework to determine if the node has a join condition.
 func NodeIsConditioner(n NodeI) bool {

@@ -47,7 +47,7 @@ func (c SpanCreator) Create(ctx context.Context, parent page.ControlI) page.Cont
 		ctrl.SetText(c.Text)
 	}
 	ctrl.SetTextIsHtml(c.TextIsHtml)
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	ctrl.AddControls(ctx, c.Children...)
 	return ctrl
 }

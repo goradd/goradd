@@ -147,7 +147,7 @@ func (c OrderedListCreator) Init(ctx context.Context, ctrl OrderedListI) {
 	if c.StartAt != 0 {
 		ctrl.SetStart(c.StartAt)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 }
 
 // GetOrderedList is a convenience method to return the control with the given id from the page.

@@ -22,4 +22,7 @@ func config() {
 	// Uncomment the line below to generate bootstrap controls
 	//generator2.BootstrapCodegenSetup()
 
+	// Helper for building the database code for the examples. Only for development of goradd itself.
+	//generator.BuildingExamples = true
+
 }

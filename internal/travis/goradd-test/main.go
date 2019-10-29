@@ -5,7 +5,6 @@ package main
 
 import (
 	log2 "github.com/goradd/goradd/pkg/log"
-	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/page"
 	_ "goradd-project/config" // Initialize required variables
 	"goradd-project/web/app"
@@ -25,7 +24,6 @@ func main() {
 
 	a := app.MakeApplication()
 	log2.SetLogger(log2.FrameworkDebugLog, nil) // get rid of framework log for now
-	messageServer.Start(a.MakeWebsocketMux())
 	mux := a.MakeServerMux()
 
 	// Make sure we always test with serialization turned on so that serialization is tested during the travis tests

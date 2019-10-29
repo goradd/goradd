@@ -11,17 +11,20 @@ import (
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	grlog "github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/messageServer"
+	"github.com/goradd/goradd/pkg/messageServer/ws"
+	"github.com/goradd/goradd/pkg/orm/broadcast"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/resource"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
+	"github.com/goradd/goradd/pkg/watcher"
 	"log"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/page"
 	"net/http"
 	"os"
@@ -58,7 +61,8 @@ type ApplicationI interface {
 	InitializeLoggers()
 	SetupAssetDirectories()
 	SetupSessionManager()
-	WebSocketAuthHandler(next http.Handler) http.Handler
+	SetupMessenger()
+	SetupDatabaseWatcher()
 	SessionHandler(next http.Handler) http.Handler
 	ServeRequest(w http.ResponseWriter, r *http.Request)
 	ServeStaticFile(w http.ResponseWriter, r *http.Request) bool
@@ -78,6 +82,8 @@ func (a *Application) Init(self ApplicationI) {
 	self.InitializeLoggers()
 	self.SetupAssetDirectories()
 	self.SetupSessionManager()
+	self.SetupMessenger()
+	self.SetupDatabaseWatcher()
 
 	page.DefaultCheckboxLabelDrawingMode = html.LabelAfter
 }
@@ -147,6 +153,22 @@ func (a *Application) SetupSessionManager() {
 	session.SetSessionManager(session.NewScsManager(scs.NewManager(memstore.New(interval))))
 }
 
+// SetupMessenger injects the global messenger that permits pub/sub communication between the server and client
+func (a *Application) SetupMessenger() {
+	// The default sets up a websocket based messenger appropriate for development and single-server applications
+	messenger := new (ws.WsMessenger)
+	messenger.Start("/ws", config.WebSocketPort, config.WebSocketTLSCertFile, config.WebSocketTLSKeyFile, config.WebSocketTLSPort)
+	messageServer.Messenger = messenger
+}
+
+// SetupDatabaseWatcher injects the global database watcher
+// and the database broadcaster which together detect database changes and
+// then draws controls that are watching for those
+func (a *Application) SetupDatabaseWatcher() {
+	watcher.Watcher = &watcher.DefaultWatcher{}
+	broadcast.Broadcaster = &broadcast.DefaultBroadcaster{}
+}
+
 func (a *Application) PutContext(r *http.Request) *http.Request {
 	return page.PutContext(r, os.Args[1:])
 }
@@ -174,33 +196,6 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// MakeWebsocketMux creates the mux for the default websocket handler. The default handler provides session data to
-// the web socket handler below, since its very common to need to get to session data to authenticate the user before
-// responding to the request.
-func (a *Application) MakeWebsocketMux() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	mux.Handle("/ws", a.this().SessionHandler(a.this().WebSocketAuthHandler(messageServer.WebsocketHandler())))
-
-	return mux
-}
-
-// WebSocketAuthHandler is the default authenticator of the web socket. This version simply makes sure the form
-// has a pagestate, since if it doesn't, we should not be handling a request. If you want to authenticate using
-// information out of the session, like to see whether the user is logged in, you should override this in your
-// application instance.
-func (a *Application) WebSocketAuthHandler(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		pagestate := r.FormValue("id")
-
-		if !page.GetPageManager().HasPage(pagestate) {
-			// The page manager has no record of the pagestate, so either it is expired or never existed
-			return // TODO: return error?
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
 
 // MakeAppServer creates the handler chain that will handle http requests. There are a ton of ways to do this, 3rd party
 // libraries to help with this, and middlewares you can use. This is a working example, and not a declaration of any

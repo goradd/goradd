@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -47,6 +48,7 @@ func NewTestForm(ctx context.Context) page.FormI {
 	//f.Page().SetDrawFunction(LoginPageTmpl)
 	f.AddRelatedFiles()
 	f.createControls(ctx)
+	f.WatchChannel(ctx, "redraw")
 	testFormPageState = f.Page().StateID()
 
 	grctx := page.GetContext(ctx)
@@ -113,7 +115,11 @@ func (form *TestForm) Log(s string) {
 // Mark the successful end of testing with a message.
 func (form *TestForm) Done(s string) {
 	form.Log(s)
-	form.Page().PushRedraw()
+	form.PushRedraw()
+}
+
+func (form *TestForm) PushRedraw() {
+	messageServer.Messenger.Send("redraw", "U")
 }
 
 // LoadUrl will launch a new window controlled by the test form. It will wait for the
@@ -197,7 +203,7 @@ func (form *TestForm) panicked(message string, testName string) {
 	msg := fmt.Sprintf("\n*** Test %s panicked: %s\n*** Last test step: %s\n*** Panicking line: %s", testName, message, form.callerInfo, panickingLine)
 	log.Debug(msg)
 	form.Log(msg)
-	form.Page().PushRedraw()
+	form.PushRedraw()
 	form.failed = true
 	form.currentFailed = true
 }

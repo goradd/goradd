@@ -6,7 +6,6 @@ package app
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/sys"
 	"github.com/goradd/goradd/web/app"
@@ -93,13 +92,37 @@ func (a *Application) SetupAssetDirectories() {
 }
 */
 
+// SetupMessenger injects the global messenger that permits pub/sub communication between the server and client
+// If you don't need this at all, you can uncomment below and simply make it an empty function.
+// Or, you can setup a different pub/sub messaging service here
+/*
+func (a *Application) SetupMessenger() {
+	// The default sets up a websocket based messenger appropriate for development and single-server applications
+	messenger := new (ws.WsMessenger)
+	messenger.Start("/ws", config.WebSocketPort, config.WebSocketTLSCertFile, config.WebSocketTLSKeyFile, config.WebSocketTLSPort)
+	messageServer.Messenger = messenger
+}
+*/
+
+// SetupDatabaseWatcher injects the global database watcher and broadcaster
+// which detects database changes and then draws controls that are watching for those changes.
+//
+// The default uses the provided goradd websocket message server to broadcast changes to the database, which is sufficient
+// for a single-server application. If you need a multi-server scalable version, change the watcher here to something that
+// uses a distributed pub/sub mechanism.
+//
+// Changing the broadcaster will let you do additional things on the server side when specific
+// database items change.
+/*
+func (a *Application) SetupDatabaseWatcher() {
+	watcher.Watcher = &watcher.DefaultWatcher{}
+	broadcast.Broadcaster = &broadcast.DefaultBroadcaster{}
+}
+*/
+
 // RunWebServer launches the main webserver.
 
 func (a *Application) RunWebServer() (err error) {
-	// The message server communicates to the browser UI changes caused by database changes. If you are simply redrawing
-	// everything manually, and are not concerned about multi-user scenarios, you can comment it out.
-	messageServer.Start(a.MakeWebsocketMux())
-
 	mux := a.MakeServerMux()
 
 	// If you are directly responding to encrypted requests, launch a server here. Note that you CAN put the app behind
@@ -124,8 +147,11 @@ func (a *Application) RunWebServer() (err error) {
 	// The  "Serve" functions below will launch go routines for each request, so that multiple requests can be
 	// processed in parallel.
 	if config.UseFCGI { // Run as FCGI via standard I/O
-		// FCGI requires a serialized pagestate server (which is not yet implemented),
-		// outside session server and care with the websocket server if you serve more than one instance
+		// FCGI can run multiple instances of the application. To run as FCGI, you will need to make sure that the application
+		// is running in a semi-scalable mode. This will mean that some of the processes will need to rely external processes
+		// or at least run through a database. This will include a serialized pagestate database or server, session storage, and
+		// the messaging service.
+
 		err = fcgi.Serve(nil, mux)
 	} else {
 		// TODO: Make a way so that we will automatically redirect to https if specified to do so
@@ -166,22 +192,6 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	//http.ServeFile(w, r, page.GetAssetLocation("/assets/project/image/favicon.ico"))
 }
 
-// Uncomment the code below and add your own code if you need additional authentication mechanisms for websockets
-// beyond the default.
-/*
-func (a *Application) WebSocketAuthHandler(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		pagestate := r.FormValue("id")
-
-		if !page.GetPageManager().HasPage(pagestate) {
-			// The page manager has no record of the pagestate, so either it is expired or never existed
-			return // TODO: return error?
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-*/
 
 // ServeRequest is the place to serve up any files that have not been handled in any other way, either by a previously
 // declared handler, or by the goradd app server, or the static file server. ServeRequest is only called when all

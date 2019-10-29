@@ -50,7 +50,7 @@ type TabsCreator struct {
 
 func (c TabsCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewTabs(parent, c.ID)
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	ctrl.AddControls(ctx, c.Children...)
 	return ctrl
 }

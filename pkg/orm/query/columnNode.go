@@ -22,7 +22,7 @@ type ColumnNode struct {
 	dbKey string
 	// Name of table in the database we point to
 	dbTable string
-	// The name of the table in the database
+	// The name of the column in the database
 	dbColumn string
 	// The name of the function used to access the property as a node or ORM item
 	gName string
@@ -115,6 +115,11 @@ func (n *ColumnNode) goName() string {
 func (n *ColumnNode) tableName() string {
 	return n.dbTable
 }
+
+func (n *ColumnNode) databaseKey() string {
+	return n.dbKey
+}
+
 
 func (n *ColumnNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
@@ -219,7 +224,6 @@ func (n *ColumnNode) GobDecode(data []byte) (err error) {
 	SetParentNode(n, n2)
 	return
 }
-
 
 func init() {
 	gob.Register(&ColumnNode{})

@@ -103,6 +103,11 @@ func (n *ReferenceNode) tableName() string {
 	return n.refTable
 }
 
+func (n *ReferenceNode) databaseKey() string {
+	return n.dbKey
+}
+
+
 func (n *ReferenceNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "R: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + " AS " + n.GetAlias())

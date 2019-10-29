@@ -307,7 +307,7 @@ func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 	if c.OnChange != nil {
 		ctrl.On(event.Change(), c.OnChange)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
 	}

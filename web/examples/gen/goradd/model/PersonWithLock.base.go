@@ -6,9 +6,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 
 	//"./node"
@@ -472,6 +474,7 @@ func (o *personWithLockBase) Update(ctx context.Context) {
 	d := db.GetDatabase("goradd")
 	d.Update(ctx, "person_with_lock", m, "id", fmt.Sprint(o.id))
 	o.resetDirtyStatus()
+	broadcast.Update(ctx, "goradd", "person_with_lock", o.id, stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -486,6 +489,7 @@ func (o *personWithLockBase) Insert(ctx context.Context) {
 	o.id = id
 	o.resetDirtyStatus()
 	o._restored = true
+	broadcast.Insert(ctx, "goradd", "person_with_lock", o.id)
 }
 
 func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{}) {
@@ -520,12 +524,14 @@ func (o *personWithLockBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person_with_lock", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "person_with_lock", o.id)
 }
 
 // deletePersonWithLock deletes the associated record from the database.
 func deletePersonWithLock(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person_with_lock", "id", pk)
+	broadcast.Delete(ctx, "goradd", "person_with_lock", pk)
 }
 
 func (o *personWithLockBase) resetDirtyStatus() {

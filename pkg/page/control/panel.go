@@ -78,7 +78,7 @@ func (c PanelCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 		ctrl.SetText(c.Text)
 	}
 	ctrl.SetTextIsHtml(c.TextIsHtml)
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	ctrl.AddControls(ctx, c.Children...)
 	return ctrl
 }

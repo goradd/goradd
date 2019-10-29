@@ -9,7 +9,7 @@ import (
 // You can also copy them and substitute your own types to make custom versions of these
 
 // SortedKeys returns the keys of any map that uses strings as keys, sorted alphabetically.
-// Note that even though we are using reflection here, this process is very fast compared to not
+// Note that even though we are using reflection here, this process is only slightly slower compared to not
 // using reflection, so feel free to use it in all situations.
 func SortedKeys(i interface{}) []string {
 	vMap := reflect.ValueOf(i)

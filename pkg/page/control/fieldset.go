@@ -79,7 +79,7 @@ func (c FieldsetCreator) Create(ctx context.Context, parent page.ControlI) page.
 	if c.Legend != "" {
 		ctrl.SetText(c.Legend)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	ctrl.AddControls(ctx, c.Children...)
 	return ctrl
 }

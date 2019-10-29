@@ -259,7 +259,7 @@ func (c ImageCaptureCreator) Create(ctx context.Context, parent page.ControlI) p
 	if c.Quality != 0 {
 		ctrl.SetQuality(c.Quality)
 	}
-	ctrl.ApplyOptions(c.ControlOptions)
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	return ctrl
 }
 
