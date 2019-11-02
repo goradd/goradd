@@ -82,6 +82,7 @@ func (h *WebSocketHub) run() {
 			}
 
 		case sub := <-h.subscribe:
+			log.FrameworkDebugf("Subscribing to channel %s - %v", sub.pagestate, sub.channel)
 			h.subscribeChannel(sub.pagestate, sub.channel)
 
 			/* not broadcasting currently. This might change
