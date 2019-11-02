@@ -11,6 +11,7 @@ import (
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
+	event2 "github.com/goradd/goradd/pkg/messageServer/event"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -19,7 +20,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"time"
 )
 
 var testFormPageState string
@@ -55,9 +55,7 @@ func NewTestForm(ctx context.Context) page.FormI {
 	grctx := page.GetContext(ctx)
 
 	if _, ok := grctx.FormValue("all"); ok {
-		f.ExecuteWidgetFunction("trigger", "testall", page.PriorityLow)
-		// TODO make the above trigger delay until the form is ready to process actions
-		f.On(event.Event("testall"), action.Ajax(f.ID(), TestAllAction))
+		f.On(event2.MessengerReady(), action.Ajax(f.ID(), TestAllAction))
 	}
 	return f
 }
@@ -94,8 +92,6 @@ func (form *TestForm) Action(ctx context.Context, a page.ActionParams) {
 	case TestButtonAction:
 		form.runSelectedTest()
 	case TestAllAction:
-		time.Sleep(1 * time.Second)	// wait for the form's javascript to completely initialize
-		// TODO move the above delay to javasript, waiting until form is loaded before beginning to process this kinde of immediate javascript action
 		form.testAllAndExit()
 	}
 }
