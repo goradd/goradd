@@ -94,7 +94,7 @@ func (form *TestForm) Action(ctx context.Context, a page.ActionParams) {
 	case TestButtonAction:
 		form.runSelectedTest()
 	case TestAllAction:
-		time.Sleep(3 * time.Second)	// wait for the form's javascript to completely initialize
+		time.Sleep(1 * time.Second)	// wait for the form's javascript to completely initialize
 		// TODO move the above delay to javasript, waiting until form is loaded before beginning to process this kinde of immediate javascript action
 		form.testAllAndExit()
 	}
