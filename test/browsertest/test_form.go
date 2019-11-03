@@ -11,6 +11,7 @@ import (
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
+	event2 "github.com/goradd/goradd/pkg/messageServer/event"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -54,8 +55,7 @@ func NewTestForm(ctx context.Context) page.FormI {
 	grctx := page.GetContext(ctx)
 
 	if _, ok := grctx.FormValue("all"); ok {
-		f.ExecuteWidgetFunction("trigger", "testall", page.PriorityLow)
-		f.On(event.Event("testall"), action.Ajax(f.ID(), TestAllAction))
+		f.On(event2.MessengerReady(), action.Ajax(f.ID(), TestAllAction))
 	}
 	return f
 }

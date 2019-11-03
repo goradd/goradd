@@ -39,7 +39,10 @@ goradd.initMessagingClient = function(wsPort, wssPort) {
         goradd._ws.addEventListener("message", goradd._handleWsMessage);
         goradd._ws.addEventListener("close", goradd._handleWsClose);
         // we purposefully do not use goradd._ws.onmessage = ... so that we can add multiple event listeners.
-        goradd._ws.onopen = goradd.subscribeWatchers;
+        goradd._ws.onopen = function() {
+            goradd.subscribeWatchers();
+            g$(goradd.form()).trigger("messengerReady");
+        }
     }
 };
 
