@@ -16,8 +16,8 @@ type RadioListI interface {
 	SetIsScrolling(s bool) RadioListI
 	SetRowClass(c string) RadioListI
 
-	ΩRenderItems(items []*ListItem) string
-	ΩRenderItem(item *ListItem) string
+	RenderItems(items []*ListItem) string
+	RenderItem(item *ListItem) string
 
 }
 
@@ -114,11 +114,11 @@ func (l *RadioList) SetRowClass(c string) RadioListI {
 	return l.this()
 }
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time.
+// DrawingAttributes retrieves the tag's attributes at draw time.
 // You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *RadioList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.ΩDrawingAttributes(ctx)
+func (l *RadioList) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "radiolist")
 	a.AddClass("gr-cbl")
 
@@ -129,18 +129,18 @@ func (l *RadioList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-// ΩDrawInnerHtml is called by the framework to draw the contents of the list.
-func (l *RadioList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	h := l.this().ΩRenderItems(l.items)
+// DrawInnerHtml is called by the framework to draw the contents of the list.
+func (l *RadioList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+	h := l.this().RenderItems(l.items)
 	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
 	buf.WriteString(h)
 	return nil
 }
 
-func (l *RadioList) ΩRenderItems(items []*ListItem) string {
+func (l *RadioList) RenderItems(items []*ListItem) string {
 	var hItems []string
 	for _,item := range items {
-		hItems = append(hItems, l.this().ΩRenderItem(item))
+		hItems = append(hItems, l.this().RenderItem(item))
 	}
 	if l.columnCount == 0 {
 		return strings.Join(hItems, "")
@@ -153,8 +153,8 @@ func (l *RadioList) ΩRenderItems(items []*ListItem) string {
 		Build()
 }
 
-// ΩRenderItem is called by the framework to render a single item in the list.
-func (l *RadioList) ΩRenderItem(item *ListItem) (h string) {
+// RenderItem is called by the framework to render a single item in the list.
+func (l *RadioList) RenderItem(item *ListItem) (h string) {
 	h = renderItemControl(item, "radio", l.labelDrawingMode, item.ID() == l.selectedId, l.ID())
 	h = renderCell(item, h, l.columnCount > 0)
 	return
@@ -194,9 +194,8 @@ func renderCell(item *ListItem, controlHtml string, hasColumns bool) string {
 	return html.RenderTag("div", attributes, controlHtml)
 }
 
-// ΩUpdateFormValues is called by the framework to tell the control to update its internal values
-// based on the form values sent by the browser.
-func (l *RadioList) ΩUpdateFormValues(ctx *page.Context) {
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+func (l *RadioList) UpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()
 
 	if v, ok := ctx.FormValue(controlID); ok {

@@ -52,29 +52,29 @@ func (r *Repeater) SetItemHtmler(h RepeaterHtmler) RepeaterI {
 	return r.this()
 }
 
-// ΩDrawTag is called by the framework to draw the tag. The Repeater overrides this to call into the DataProvider
+// DrawTag is called by the framework to draw the tag. The Repeater overrides this to call into the DataProvider
 // to load the table's data into memory just before drawing. The data will be unloaded after drawing.
-func (r *Repeater) ΩDrawTag(ctx context.Context) string {
+func (r *Repeater) DrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing repeater tag")
 	if r.HasDataProvider() {
 		log.FrameworkDebug("Getting repeater data")
 		r.LoadData(ctx, r.this())
 		defer r.ResetData()
 	}
-	return r.Control.ΩDrawTag(ctx)
+	return r.Control.DrawTag(ctx)
 }
 
-// ΩDrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
+// DrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
 // is no data to show. This will hide header and footer cells and potentially the outline of the table when there is no
 // data in the table.
-func (r *Repeater) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := r.Control.ΩDrawingAttributes(ctx)
+func (r *Repeater) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := r.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "repeater")
 	return a
 }
 
-// ΩDrawInnerHtml is an override to draw the individual items of the repeater.
-func (r *Repeater) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+// DrawInnerHtml is an override to draw the individual items of the repeater.
+func (r *Repeater) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var this = r.this() // Get the sub class so we call into its hooks for drawing
 
 	r.RangeData(func(index int, value interface{}) bool {

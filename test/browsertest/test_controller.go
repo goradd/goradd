@@ -91,7 +91,7 @@ func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
 	}
 }
 
-func (p *TestController) ΩUpdateFormValues(ctx *page.Context) {
+func (p *TestController) UpdateFormValues(ctx *page.Context) {
 	id := p.ID()
 
 	if v := ctx.CustomControlValue(id, "pagestate"); v != nil {

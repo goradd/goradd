@@ -80,10 +80,10 @@ func (p *Proxy) OnSubmit(action action.ActionI) page.ControlI {
 // proxy get sent to the response. This should get drawn by the auto-drawing routine, since proxies are not rendered in templates.
 func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	response := p.ParentForm().Response()
-	// p.this().ΩPutCustomScript(ctx, response) // Proxies should not have custom scripts?
+	// p.this().PutCustomScript(ctx, response) // Proxies should not have custom scripts?
 
 	p.GetActionScripts(response)
-	err = p.ΩPostRender(ctx, buf)
+	err = p.PostRender(ctx, buf)
 	return
 }
 

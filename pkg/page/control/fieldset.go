@@ -35,18 +35,18 @@ func (c *Fieldset) this() FieldsetI {
 	return c.Self.(FieldsetI)
 }
 
-// ΩDrawingAttributes is called by the framework.
-func (c *Fieldset) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Control.ΩDrawingAttributes(ctx)
+// DrawingAttributes is called by the framework.
+func (c *Fieldset) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "fieldset")
 	return a
 }
 
-// ΩDrawTag is called by the framework.
-func (c *Fieldset) ΩDrawTag(ctx context.Context) string {
+// DrawTag is called by the framework.
+func (c *Fieldset) DrawTag(ctx context.Context) string {
 	var ctrl string
 
-	attributes := c.this().ΩDrawingAttributes(ctx)
+	attributes := c.this().DrawingAttributes(ctx)
 
 	buf := buf2.GetBuffer()
 	defer buf2.PutBuffer(buf)
@@ -54,7 +54,7 @@ func (c *Fieldset) ΩDrawTag(ctx context.Context) string {
 	if l := c.Text(); l != "" {
 		ctrl = html.RenderTag("legend", nil, html2.EscapeString(l))
 	}
-	if err := c.this().ΩDrawInnerHtml(ctx, buf); err != nil {
+	if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
 		panic(err)
 	}
 	ctrl = html.RenderTag(c.Tag, attributes, ctrl+buf.String())

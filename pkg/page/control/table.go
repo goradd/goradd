@@ -191,9 +191,9 @@ func (t *Table) SetFooterRowCount(count int) TableI {
 	return t.this()
 }
 
-// ΩDrawTag is called by the framework to draw the table. The Table overrides this to call into the DataProvider
+// DrawTag is called by the framework to draw the table. The Table overrides this to call into the DataProvider
 // to load the table's data into memory just before drawing. The data will be unloaded after drawing.
-func (t *Table) ΩDrawTag(ctx context.Context) string {
+func (t *Table) DrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing table tag")
 	if t.HasDataProvider() {
 		log.FrameworkDebug("Getting table data")
@@ -206,14 +206,14 @@ func (t *Table) ΩDrawTag(ctx context.Context) string {
 	for _, c := range t.columns {
 		c.PreRender()
 	}
-	return t.Control.ΩDrawTag(ctx)
+	return t.Control.DrawTag(ctx)
 }
 
-// ΩDrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
+// DrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
 // is no data to show. This will hide header and footer cells and potentially the outline of the table when there is no
 // data in the table.
-func (t *Table) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := t.Control.ΩDrawingAttributes(ctx)
+func (t *Table) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "table")
 	if !t.HasData() && t.hideIfEmpty {
 		a.SetStyle("display", "none")
@@ -221,8 +221,8 @@ func (t *Table) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-// ΩDrawInnerHtml is an override to draw the meat of the table.
-func (t *Table) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+// DrawInnerHtml is an override to draw the meat of the table.
+func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var t2 = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -523,8 +523,8 @@ func (t *Table) SetFooterRowStyler(a TableFooterRowAttributer) TableI {
 	return t.this()
 }
 
-// ΩUpdateFormValues is called by the system whenever values are sent by client controls. We forward that to the columns.
-func (t *Table) ΩUpdateFormValues(ctx *page.Context) {
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+func (t *Table) UpdateFormValues(ctx *page.Context) {
 	for _, col := range t.columns {
 		col.UpdateFormValues(ctx)
 	}
@@ -618,16 +618,16 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 	return ret
 }
 
-// ΩMarshalState is an internal function to save the state of the control
-func (t *Table) ΩMarshalState(m maps.Setter) {
+// MarshalState is an internal function to save the state of the control
+func (t *Table) MarshalState(m maps.Setter) {
 	m.Set("sortColumns", t.sortColumns)
 	for _, col := range t.columns {
 		col.MarshalState(m)
 	}
 }
 
-// ΩUnmarshalState is an internal function to restore the state of the control
-func (t *Table) ΩUnmarshalState(m maps.Loader) {
+// UnmarshalState is an internal function to restore the state of the control
+func (t *Table) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("sortColumns"); ok {
 		if s, ok := v.([]string); ok {
 			t.sortColumns = s

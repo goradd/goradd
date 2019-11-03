@@ -33,7 +33,7 @@ func TestEmptyFormEncoding(t *testing.T) {
 }*/
 
 type BasicForm struct {
-	page.ΩFormBase
+	page.FormBase
 
 	S string
 }

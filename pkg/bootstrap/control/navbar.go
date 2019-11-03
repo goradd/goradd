@@ -122,8 +122,8 @@ func (b *Navbar) SetBrandPlacement(p NavbarCollapsedBrandPlacement) NavbarI {
 	return b.this()
 }
 
-func (b *Navbar) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := b.Control.ΩDrawingAttributes(ctx)
+func (b *Navbar) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := b.Control.DrawingAttributes(ctx)
 	a.AddClass("navbar")
 	a.AddClass(string(b.style))
 	a.AddClass(string(b.expand))

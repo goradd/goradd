@@ -7,10 +7,10 @@ type ActionGroup struct {
 	Actions []ActionI
 }
 
-// ΩRenderScript renders the group of actions as a single action.
-func (g ActionGroup) ΩRenderScript(params ΩrenderParams) (s string) {
+// RenderScript renders the group of actions as a single action.
+func (g ActionGroup) RenderScript(params RenderParams) (s string) {
 	for _,a := range g.Actions {
-		s += a.ΩRenderScript(params)
+		s += a.RenderScript(params)
 	}
 	return
 }

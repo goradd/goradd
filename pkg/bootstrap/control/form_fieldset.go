@@ -70,13 +70,13 @@ func (c *FormFieldset) InstructionAttributes() html.Attributes {
 }
 
 
-func (c *FormFieldset) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Panel.ΩDrawingAttributes(ctx)
+func (c *FormFieldset) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Panel.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "formFieldset")
 	return a
 }
 
-func (c *FormFieldset) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (c *FormFieldset) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var s string
 
 	buf2 := pool.GetBuffer()
@@ -85,7 +85,7 @@ func (c *FormFieldset) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (
 	if c.Text() != "" {
 		buf2.WriteString(html.RenderTag("legend", c.legendAttributes, html2.EscapeString(c.Text())))
 	}
-	if err = c.Panel.ΩDrawInnerHtml(ctx, buf2); err != nil {
+	if err = c.Panel.DrawInnerHtml(ctx, buf2); err != nil {
 		return
 	}
 	if c.instructions != "" {

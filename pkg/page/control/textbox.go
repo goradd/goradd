@@ -35,7 +35,7 @@ type Validater interface {
 type TextboxI interface {
 	page.ControlI
 	SetType(typ string) TextboxI
-	ΩSanitize(string) string
+	Sanitize(string) string
 	SetPlaceholder(s string) TextboxI
 	SetMaxLength(len int) *MaxLengthValidator
 	SetMinLength(len int) *MinLengthValidator
@@ -96,9 +96,9 @@ func (t *Textbox) ResetValidators() {
 	t.validators = nil
 }
 
-// ΩDrawingAttributes is called by the framework to retrieve the tag's private attributes at draw time.
-func (t *Textbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := t.Control.ΩDrawingAttributes(ctx)
+// DrawingAttributes is called by the framework to retrieve the tag's private attributes at draw time.
+func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "textbox")
 	a.Set("name", t.ID()) // needed for posts
 	if t.IsRequired() {
@@ -123,9 +123,9 @@ func (t *Textbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-// ΩDrawInnerHtml is an internal function that renders the inner html of a tag. In this case, it is rendering the inner
+// DrawInnerHtml is an internal function that renders the inner html of a tag. In this case, it is rendering the inner
 // text of a textarea
-func (t *Textbox) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Textbox) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	_, err = buf.WriteString(html2.EscapeString(t.Text()))
 	return
 }
@@ -250,7 +250,7 @@ func (t *Textbox) SetReadOnly(r bool) TextboxI {
 // Override Sanitize in a subclass if you want a per-textbox sanitizer.
 // This is a very difficult thing to get right, and depends a bit on your application on just
 // how much you want to remove.
-func (t *Textbox) ΩSanitize(s string) string {
+func (t *Textbox) Sanitize(s string) string {
 	if config.GlobalSanitizer == nil {
 		return s
 	}
@@ -266,7 +266,7 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 	text := t.Text()
 	if t.IsRequired() && text == "" {
 		if t.ErrorForRequired == "" {
-			t.SetValidationError(t.ΩT("A value is required"))
+			t.SetValidationError(t.GT("A value is required"))
 		} else {
 			t.SetValidationError(t.ErrorForRequired)
 		}
@@ -284,8 +284,8 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 	return true
 }
 
-// ΩUpdateFormValues is an internal function that lets us reflect the value of the textbox on the web override
-func (t *Textbox) ΩUpdateFormValues(ctx *page.Context) {
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+func (t *Textbox) UpdateFormValues(ctx *page.Context) {
 	if t.readonly {
 		// This would happen if someone was attempting to hack the browser.
 		return
@@ -294,17 +294,17 @@ func (t *Textbox) ΩUpdateFormValues(ctx *page.Context) {
 	id := t.ID()
 
 	if v, ok := ctx.FormValue(id); ok {
-		t.value = t.this().ΩSanitize(v)
+		t.value = t.this().Sanitize(v)
 	}
 }
 
-// ΩMarshalState is an internal function to save the state of the control
-func (t *Textbox) ΩMarshalState(m maps.Setter) {
+// MarshalState is an internal function to save the state of the control
+func (t *Textbox) MarshalState(m maps.Setter) {
 	m.Set("text", t.Text())
 }
 
-// ΩUnmarshalState is an internal function to restore the state of the control
-func (t *Textbox) ΩUnmarshalState(m maps.Loader) {
+// UnmarshalState is an internal function to restore the state of the control
+func (t *Textbox) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("text"); ok {
 		if s, ok := v.(string); ok {
 			t.value = s
@@ -383,7 +383,7 @@ func (v MinLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 	}
 	if len(s) < v.Length {
 		if v.Message == "" {
-			return fmt.Sprintf(c.ΩT("Enter at least %d characters"), v.Length) // not a great translation, probably should be an Sprintf implementation
+			return fmt.Sprintf(c.GT("Enter at least %d characters"), v.Length) // not a great translation, probably should be an Sprintf implementation
 		} else {
 			return v.Message
 		}
@@ -404,7 +404,7 @@ func (v MaxLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 	}
 	if len(s) > v.Length {
 		if v.Message == "" {
-			return fmt.Sprintf(c.ΩT("Enter at most %d characters"), v.Length)
+			return fmt.Sprintf(c.GT("Enter at most %d characters"), v.Length)
 		} else {
 			return v.Message
 		}

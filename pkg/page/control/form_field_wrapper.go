@@ -96,16 +96,16 @@ func (c *FormFieldWrapper) Instructions() string {
 	return c.instructions
 }
 
-func (c *FormFieldWrapper) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Control.ΩDrawingAttributes(ctx)
+func (c *FormFieldWrapper) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "formField")
 	return a
 }
 
-func (c *FormFieldWrapper) ΩDrawTag(ctx context.Context) string {
+func (c *FormFieldWrapper) DrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
-	attributes := c.this().ΩDrawingAttributes(ctx)
+	attributes := c.this().DrawingAttributes(ctx)
 	var child page.ControlI
 	var errorMessage string
 
@@ -151,7 +151,7 @@ func (c *FormFieldWrapper) ΩDrawTag(ctx context.Context) string {
 	if describedBy != "" && child != nil {
 		child.SetAttribute("aria-describedby", describedBy)
 	}
-	if err := c.this().ΩDrawInnerHtml(ctx, buf); err != nil {
+	if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
 		panic(err)
 	}
 	if child != nil && child.ValidationState() != page.ValidationNever {

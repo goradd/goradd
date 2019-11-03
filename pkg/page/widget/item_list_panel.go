@@ -49,16 +49,16 @@ func (p *ItemListPanel) Init(self ItemListPanelI, parent page.ControlI, id strin
 	p.ButtonPanel.AddClass("buttons")
 
 	p.FilterText = NewTextbox(p.FilterPanel, p.ID()+"-filtertxt")
-	p.FilterText.SetPlaceholder(p.ParentForm().ΩT("Search"))
+	p.FilterText.SetPlaceholder(p.ParentForm().GT("Search"))
 	p.FilterText.SetType(TextboxTypeSearch)
 
 	p.ItemTable = NewSelectTable(p.ScrollPanel, p.ID()+"-table")
 
 	p.NewButton = NewButton(p.ButtonPanel, p.ID()+"-newbtn")
-	p.NewButton.SetText(p.ParentForm().ΩT("New"))
+	p.NewButton.SetText(p.ParentForm().GT("New"))
 
 	p.EditButton = NewButton(p.ButtonPanel, p.ID()+"-editbtn")
-	p.EditButton.SetText(p.ParentForm().ΩT("Edit"))
+	p.EditButton.SetText(p.ParentForm().GT("Edit"))
 
 	p.FilterText.On(event.Input().Delay(300), action.Ajax(p.ID(), filterChanged))
 	p.FilterText.On(event.EnterKey().Terminating(), action.Ajax(p.ID(), filterChanged))
@@ -73,8 +73,8 @@ func (p *ItemListPanel) this() ItemListPanelI {
 	return p.Self.(ItemListPanelI)
 }
 
-func (c *ItemListPanel) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Panel.ΩDrawingAttributes(ctx)
+func (c *ItemListPanel) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Panel.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "itemlistpnl")
 	return a
 }

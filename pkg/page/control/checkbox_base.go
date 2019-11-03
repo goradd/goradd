@@ -10,7 +10,7 @@ import (
 
 type CheckboxI interface {
 	page.ControlI
-	ΩGetDrawingLabelAttributes() html.Attributes
+	GetDrawingLabelAttributes() html.Attributes
 }
 
 // CheckboxBase is a base class for checkbox-like objects, including html checkboxes and radio buttons.
@@ -39,10 +39,10 @@ func (c *CheckboxBase) this() CheckboxI {
 	return c.Self.(CheckboxI)
 }
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (c *CheckboxBase) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Control.ΩDrawingAttributes(ctx)
+func (c *CheckboxBase) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Control.DrawingAttributes(ctx)
 	if c.Text() != "" {
 		a.AddAttributeValue("aria-labelledby", c.ID()+"_ilbl")
 	}
@@ -55,12 +55,12 @@ func (c *CheckboxBase) SetLabelDrawingMode(m html.LabelDrawingMode) {
 	c.Refresh()
 }
 
-// ΩDrawTag draws the checkbox tag. This can be quite tricky.
+// DrawTag draws the checkbox tag. This can be quite tricky.
 // Some CSS frameworks are very particular about how checkboxes get
 // associated with labels. The Text value of the control will become the text directly associated with the checkbox,
 // while the Label value is only shown when drawing a checkbox with a wrapper.
-func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
-	attributes := c.this().ΩDrawingAttributes(ctx)
+func (c *CheckboxBase) DrawTag(ctx context.Context) (ctrl string) {
+	attributes := c.this().DrawingAttributes(ctx)
 	if c.checked {
 		attributes.Set("checked", "")
 	}
@@ -71,7 +71,7 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 	} else if c.LabelMode == html.LabelWrapAfter || c.LabelMode == html.LabelWrapBefore {
 		// Use the text as a label wrapper
 		text = html2.EscapeString(text)
-		labelAttributes := c.this().ΩGetDrawingLabelAttributes()
+		labelAttributes := c.this().GetDrawingLabelAttributes()
 
 		labelAttributes.Set("id", c.ID()+"_ilbl")
 
@@ -80,7 +80,7 @@ func (c *CheckboxBase) ΩDrawTag(ctx context.Context) (ctrl string) {
 	} else {
 		// label does not wrap. We will put one after the other
 		text = html2.EscapeString(text)
-		labelAttributes := c.this().ΩGetDrawingLabelAttributes()
+		labelAttributes := c.this().GetDrawingLabelAttributes()
 
 		labelAttributes.Set("for", c.ID())
 		labelAttributes.Set("id", c.ID()+"_ilbl")
@@ -103,9 +103,9 @@ func (c *CheckboxBase) LabelAttributes() html.Attributes {
 	return c.labelAttributes
 }
 
-// ΩGetDrawingLabelAttributes is called by the framework to temporarily set the
+// GetDrawingLabelAttributes is called by the framework to temporarily set the
 // attributes of the label associated with the checkbox.
-func (c *CheckboxBase) ΩGetDrawingLabelAttributes() html.Attributes {
+func (c *CheckboxBase) GetDrawingLabelAttributes() html.Attributes {
 	a := c.LabelAttributes().Copy()
 
 	// copy tooltip to wrapping label
@@ -164,14 +164,14 @@ func (c *CheckboxBase) Value() interface{} {
 	return c.checked
 }
 
-// ΩMarshalState is called by the framework to save the state of the checkbox between form
+// MarshalState is called by the framework to save the state of the checkbox between form
 // views. Call SetState(true) to enable state saving.
-func (c *CheckboxBase) ΩMarshalState(m maps.Setter) {
+func (c *CheckboxBase) MarshalState(m maps.Setter) {
 	m.Set("checked", c.checked)
 }
 
-// ΩUnmarshalState restores the state of the checkbox if coming back to a form in the same session.
-func (c *CheckboxBase) ΩUnmarshalState(m maps.Loader) {
+// UnmarshalState restores the state of the checkbox if coming back to a form in the same session.
+func (c *CheckboxBase) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("checked"); ok {
 		if v2, ok := v.(bool); ok {
 			c.checked = v2

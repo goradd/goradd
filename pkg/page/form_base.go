@@ -48,11 +48,11 @@ type FormI interface {
 	writeAllStates(ctx context.Context)
 }
 
-// ΩFormBase is a base for the FormBase struct that is in the control package.
+// FormBase is a base for the FormBase struct that is in the control package.
 // Normally, you should not descend your forms from here, but rather from the control.Form struct.
 // It is the basic control structure for the application and also serves as the drawing mechanism for the
 // <form> tag in the html output.
-type ΩFormBase struct {
+type FormBase struct {
 	Control
 	response Response
 	headerStyleSheets   *maps.SliceMap
@@ -63,7 +63,7 @@ type ΩFormBase struct {
 }
 
 // Init initializes the form control. Note that ctx might be nil if we are unit testing.
-func (f *ΩFormBase) Init(ctx context.Context, self FormI, path string, id string) {
+func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string) {
 	var p = &Page{}
 	p.Init()
 
@@ -76,14 +76,14 @@ func (f *ΩFormBase) Init(ctx context.Context, self FormI, path string, id strin
 	f.Tag = "form"
 }
 
-func (f *ΩFormBase) this() FormI {
+func (f *FormBase) this() FormI {
 	return f.Self.(FormI)
 }
 
 // AddRelatedFiles adds related javascript and style sheet files. This is the default to get the minimum goradd installation working.,
 // The order is important, so if you override this, be sure these files get loaded
 // before other files.
-func (f *ΩFormBase) AddRelatedFiles() {
+func (f *FormBase) AddRelatedFiles() {
 	f.AddGoraddFiles()
 	f.AddFontAwesome()
 	if messageServer.Messenger != nil {
@@ -97,7 +97,7 @@ func (f *ΩFormBase) AddRelatedFiles() {
 
 
 // AddJQuery adds the jquery javascript to the form
-func (f *ΩFormBase) AddJQuery() {
+func (f *FormBase) AddJQuery() {
 	if !config.Release {
 		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery3.js"), false, nil)
 	} else {
@@ -109,7 +109,7 @@ func (f *ΩFormBase) AddJQuery() {
 
 // AddJQueryUI adds the JQuery UI javascript to the form. This is not loaded by default, but many add-ons
 // use it, so its here for convenience.
-func (f *ΩFormBase) AddJQueryUI() {
+func (f *FormBase) AddJQueryUI() {
 	if !config.Release {
 		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery-ui.js"), false, nil)
 	} else {
@@ -120,7 +120,7 @@ func (f *ΩFormBase) AddJQueryUI() {
 }
 
 // AddGoraddFiles adds the various goradd files to the form
-func (f *ΩFormBase) AddGoraddFiles() {
+func (f *FormBase) AddGoraddFiles() {
 	gr := config.GoraddAssets()
 	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd.js"), false, nil)
 	if !config.Release {
@@ -130,16 +130,16 @@ func (f *ΩFormBase) AddGoraddFiles() {
 }
 
 // AddFontAwesome adds the font-awesome files fo the form
-func (f *ΩFormBase) AddFontAwesome() {
+func (f *FormBase) AddFontAwesome() {
 	f.AddStyleSheetFile("https://use.fontawesome.com/releases/v5.0.13/css/all.css",
 		html.NewAttributes().Set("integrity", "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp").Set("crossorigin", "anonymous"))
 }
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
-func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = f.this().ΩPreRender(ctx, buf)
-	buf.WriteString(`<form ` + f.this().ΩDrawingAttributes(ctx).String() + ">\n")
+func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
+	err = f.this().PreRender(ctx, buf)
+	buf.WriteString(`<form ` + f.this().DrawingAttributes(ctx).String() + ">\n")
 	if err = f.this().DrawTemplate(ctx, buf); err != nil {
 		return // the template is required
 	}
@@ -197,11 +197,11 @@ func (f *ΩFormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 </script>`, s)
 	buf.WriteString(s)
 
-	f.this().ΩPostRender(ctx, buf)
+	f.this().PostRender(ctx, buf)
 	return
 }
 
-func (f *ΩFormBase) resetDrawingFlags() {
+func (f *FormBase) resetDrawingFlags() {
 	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
 		c := ctrl.control()
 		c.wasRendered = false
@@ -209,7 +209,7 @@ func (f *ΩFormBase) resetDrawingFlags() {
 	})
 }
 
-func (f *ΩFormBase) resetValidation() {
+func (f *FormBase) resetValidation() {
 	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
 		c := ctrl.control()
 		if c.validationMessage != "" {
@@ -221,12 +221,12 @@ func (f *ΩFormBase) resetValidation() {
 	})
 }
 
-func (f *ΩFormBase) updateValues(ctx *Context) {
+func (f *FormBase) updateValues(ctx *Context) {
 	f.RangeAllChildren(func(child ControlI) {
 		// Parent is updated after children so that parent can read the state of the children
 		// to update any internal caching of the state. Parent can then delete or recreate children
 		// as needed.
-		child.ΩUpdateFormValues(ctx)
+		child.UpdateFormValues(ctx)
 	})
 }
 
@@ -235,7 +235,7 @@ func (f *ΩFormBase) updateValues(ctx *Context) {
 // in situations where a control is used to filter what is shown on the page, you zoom into an item, and then return to
 // the parent control. In this situation, you want to see things in the same state they were in, and not have to set up
 // the filter all over again.
-func (f *ΩFormBase) writeAllStates(ctx context.Context) {
+func (f *FormBase) writeAllStates(ctx context.Context) {
 	f.RangeAllChildren(func(child ControlI) {
 		c := child.control()
 		c.writeState(ctx)
@@ -245,7 +245,7 @@ func (f *ΩFormBase) writeAllStates(ctx context.Context) {
 
 
 // outputSqlProfile looks for sql profiling information and sends it to the browser if found
-func (f *ΩFormBase) getDbProfile(ctx context.Context) (s string) {
+func (f *FormBase) getDbProfile(ctx context.Context) (s string) {
 	if profiles := db.GetProfiles(ctx); profiles != nil {
 		for _, profile := range profiles {
 			dif := profile.EndTime.Sub(profile.BeginTime)
@@ -258,7 +258,7 @@ func (f *ΩFormBase) getDbProfile(ctx context.Context) (s string) {
 }
 
 // renderAjax assembles the ajax response for the entire form and draws it to the return buffer
-func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var buf2 []byte
 
 	if !f.response.hasExclusiveCommand() { // skip drawing if we are in a high priority situation
@@ -297,16 +297,16 @@ func (f *ΩFormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err err
 	return
 }
 
-// ΩDrawingAttributes returns the attributes to add to the form tag.
-func (f *ΩFormBase) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := f.Control.ΩDrawingAttributes(ctx)
+// DrawingAttributes returns the attributes to add to the form tag.
+func (f *FormBase) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := f.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "form")
 	return a
 }
 
-// ΩPreRender performs setup operations just before drawing.
-func (f *ΩFormBase) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = f.Control.ΩPreRender(ctx, buf); err != nil {
+// PreRender performs setup operations just before drawing.
+func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
+	if err = f.Control.PreRender(ctx, buf); err != nil {
 		return
 	}
 
@@ -320,7 +320,7 @@ func (f *ΩFormBase) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err er
 
 // PageDrawingFunction returns the function used to draw the page object.
 // If you want a custom drawing function for your page, implement this function in your form override.
-func (f *ΩFormBase) PageDrawingFunction() PageDrawFunc {
+func (f *FormBase) PageDrawingFunction() PageDrawFunc {
 	return PageTmpl // Returns the default
 }
 
@@ -336,7 +336,7 @@ func (f *ΩFormBase) PageDrawingFunction() PageDrawFunc {
 //
 // The path is either a url, or an internal path to the location of the file
 // in the development environment.
-func (f *ΩFormBase) AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes) {
+func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes) {
 	if forceHeader && f.isOnPage {
 		panic("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
 	}
@@ -375,7 +375,7 @@ func (f *ΩFormBase) AddJavaScriptFile(path string, forceHeader bool, attributes
 // AddMasterJavaScriptFile adds a javascript file that is a concatenation of other javascript files the system uses.
 // This allows you to concatenate and minimize all the javascript files you are using without worrying about
 // libraries and controls that are adding the individual files through the AddJavaScriptFile function
-func (f *ΩFormBase) AddMasterJavaScriptFile(url string, attributes []string, files []string) {
+func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, files []string) {
 	// TODO
 }
 
@@ -386,7 +386,7 @@ func (f *ΩFormBase) AddMasterJavaScriptFile(url string, attributes []string, fi
 // deployment and so that the MUX can find the file and serve it (This happens at draw time).
 // The attributes will be extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
-func (f *ΩFormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
+func (f *FormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 	if path[:4] != "http" {
 		url := GetAssetUrl(path)
 
@@ -414,7 +414,7 @@ func (f *ΩFormBase) AddStyleSheetFile(path string, attributes html.Attributes) 
 
 // DrawHeaderTags is called by the page drawing routine to draw its header tags
 // If you override this, be sure to call this version too
-func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
+func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	f.mergeInjectedFiles()
 
 	if f.headerStyleSheets != nil {
@@ -443,7 +443,7 @@ func (f *ΩFormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 	}
 }
 
-func (f *ΩFormBase) mergeInjectedFiles() {
+func (f *FormBase) mergeInjectedFiles() {
 	if f.importedStyleSheets != nil {
 		if f.headerStyleSheets == nil {
 			f.headerStyleSheets = maps.NewSliceMap()
@@ -461,7 +461,7 @@ func (f *ΩFormBase) mergeInjectedFiles() {
 	}
 }
 
-func (f *ΩFormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
+func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 	f.bodyJavaScripts.Range(func(path string, attr interface{}) bool {
 		var attributes = attr.(html.Attributes)
 		if attributes == nil {
@@ -475,7 +475,7 @@ func (f *ΩFormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer)
 }
 
 // DisplayAlert will display a javascript alert with the given message.
-func (f *ΩFormBase) DisplayAlert(ctx context.Context, msg string) {
+func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 	f.response.displayAlert(msg)
 }
 
@@ -484,54 +484,54 @@ func (f *ΩFormBase) DisplayAlert(ctx context.Context, msg string) {
 // have some data that needs to be processed first. The exception is
 // if you are responding to some kind of security concern where you only want to send back an html
 // redirect without revealing any goradd information, in which case you should use the Page
-func (f *ΩFormBase) ChangeLocation(url string) {
+func (f *FormBase) ChangeLocation(url string) {
 	f.response.SetLocation(url)
 }
 
 // Response returns the form's response object that you can use to queue up javascript commands to the browser to be sent on
 // the next ajax or server request
-func (f *ΩFormBase) Response() *Response {
+func (f *FormBase) Response() *Response {
 	return &f.response
 }
 
 // AddHeadTags is a lifecycle call that happens when a new form is created. This is where you should call
 // AddHtmlHeaderTag or SetTitle on the page to set tags that appear in the <head> tag of the page.
 // Head tags cannot be changed after the page is created.
-func (f *ΩFormBase) AddHeadTags() {
+func (f *FormBase) AddHeadTags() {
 
 }
 
 // LoadControls is a lifecycle call that happens after a form is first created. It is the place to initialize the value
 // of the controls in the form based on variables sent to the form.
-func (f *ΩFormBase) LoadControls(ctx context.Context) {
+func (f *FormBase) LoadControls(ctx context.Context) {
 }
 
 // Run is a lifecycle function that gets called whenever a page is run, either by a whole page load, or an ajax call.
 // Its a good place to validate that the current user should have access to the information on the page.
 // Returning an error will result in the error message being displayed.
-func (f *ΩFormBase) Run(ctx context.Context) error {
+func (f *FormBase) Run(ctx context.Context) error {
 	return nil
 }
 
 // Exit is a lifecycle function that gets called after the form is processed, just before control is returned to the client.
 // err will be set if an error response was detected.
-func (f *ΩFormBase) Exit(ctx context.Context, err error) {
+func (f *FormBase) Exit(ctx context.Context, err error) {
 	return
 }
 
-func (f *ΩFormBase) Refresh() {
+func (f *FormBase) Refresh() {
 	panic("Do not refresh the form. It cannot be drawn in ajax.")
 }
 
 // PushLocation pushes the URL that got us to the current page on to the location stack.
-func (f *ΩFormBase) PushLocation(ctx context.Context) {
+func (f *FormBase) PushLocation(ctx context.Context) {
 	grctx := GetContext(ctx)
 	location.Push(ctx, grctx.URL.RequestURI())
 }
 
 // PopLocation pops the most recent location off of the location stack and goes to that location.
 // It will go to the fallback url if there is nothing on the stack
-func (f *ΩFormBase) PopLocation(ctx context.Context, fallback string) {
+func (f *FormBase) PopLocation(ctx context.Context, fallback string) {
 	if loc := location.Pop(ctx); loc != "" {
 		f.ChangeLocation(loc)
 	} else {
@@ -547,7 +547,7 @@ type formEncoded struct {
 	ImportedJS *maps.SliceMap
 }
 
-func (f *ΩFormBase) Serialize(e Encoder) (err error) {
+func (f *FormBase) Serialize(e Encoder) (err error) {
 	if err = f.Control.Serialize(e); err != nil {
 		return
 	}
@@ -575,7 +575,7 @@ func (f *ΩFormBase) Serialize(e Encoder) (err error) {
 	return
 }
 
-func (f *ΩFormBase) Deserialize(d Decoder) (err error) {
+func (f *FormBase) Deserialize(d Decoder) (err error) {
 	if err = f.Control.Deserialize(d); err != nil {
 		return
 	}
@@ -605,5 +605,5 @@ func (f *ΩFormBase) Deserialize(d Decoder) (err error) {
 }
 
 func init() {
-	gob.Register(&ΩFormBase{})
+	gob.Register(&FormBase{})
 }

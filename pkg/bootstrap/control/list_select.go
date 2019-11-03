@@ -28,8 +28,8 @@ func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
 }
 
 
-func (t *SelectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := t.SelectList.ΩDrawingAttributes(ctx)
+func (t *SelectList) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.SelectList.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }

@@ -217,8 +217,8 @@ func NewDataPager(parent page.ControlI, id string, pagedControl PagedControlI) *
 func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pagedControl PagedControlI) {
 	d.Control.Init(self, parent, id)
 	d.Tag = "div"
-	d.LabelForNext = d.ΩT("Next")
-	d.LabelForPrevious = d.ΩT("Previous")
+	d.LabelForNext = d.GT("Next")
+	d.LabelForPrevious = d.GT("Previous")
 	d.maxPageButtons = DefaultMaxPagerButtons
 	pagedControl.AddDataPager(self.(DataPagerI))
 	d.pagedControlID = pagedControl.ID()
@@ -237,9 +237,9 @@ func (d *DataPager) ButtonProxy() *Proxy {
 }
 
 
-// ΩDrawingAttributes is called by the framework to add temporary attributes to the html.
-func (d *DataPager) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := d.Control.ΩDrawingAttributes(ctx)
+// DrawingAttributes is called by the framework to add temporary attributes to the html.
+func (d *DataPager) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := d.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "datapager")
 	return a
 }
@@ -374,9 +374,9 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 	}
 }
 
-// ΩPreRender is called by the framework to load data into the paged control just before drawing.
-func (d *DataPager) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = d.Control.ΩPreRender(ctx, buf)
+// PreRender is called by the framework to load data into the paged control just before drawing.
+func (d *DataPager) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
+	err = d.Control.PreRender(ctx, buf)
 	p := d.PagedControl()
 
 	if err == nil {
@@ -390,8 +390,8 @@ func (d *DataPager) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err err
 	return
 }
 
-// ΩDrawInnerHtml is called by the framework to draw the control's inner html.
-func (d *DataPager) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+// DrawInnerHtml is called by the framework to draw the control's inner html.
+func (d *DataPager) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := d.Self.(DataPagerI).PreviousButtonsHtml()
 	pageStart, pageEnd := d.CalcBunch()
 	for i := pageStart; i <= pageEnd; i++ {
@@ -486,13 +486,13 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 	return d.ButtonProxy().ButtonHtml(actionValue, actionValue, attr, false)
 }
 
-// ΩMarshalState is an internal function to save the state of the control
-func (d *DataPager) ΩMarshalState(m maps.Setter) {
+// MarshalState is an internal function to save the state of the control
+func (d *DataPager) MarshalState(m maps.Setter) {
 	m.Set("pageNum", d.PagedControl().PageNum())
 }
 
-// ΩUnmarshalState is an internal function to restore the state of the control
-func (d *DataPager) ΩUnmarshalState(m maps.Loader) {
+// UnmarshalState is an internal function to restore the state of the control
+func (d *DataPager) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("pageNum"); ok {
 		if i, ok := v.(int); ok {
 			d.PagedControl().SetPageNum(i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance

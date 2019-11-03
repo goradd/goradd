@@ -16,8 +16,8 @@ type CheckboxListI interface {
 	SetIsScrolling(s bool) CheckboxListI
 	SetRowClass(c string) CheckboxListI
 
-	ΩRenderItems(items []*ListItem) string
-	ΩRenderItem(item *ListItem) string
+	RenderItems(items []*ListItem) string
+	RenderItem(item *ListItem) string
 }
 
 // CheckboxList is a multi-select control that presents its choices as a list of checkboxes.
@@ -114,11 +114,11 @@ func (l *CheckboxList) SetRowClass(c string) CheckboxListI {
 }
 
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time.
+// DrawingAttributes retrieves the tag's attributes at draw time.
 // You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *CheckboxList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.ΩDrawingAttributes(ctx)
+func (l *CheckboxList) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "checkboxlist")
 	a.AddClass("gr-cbl")
 
@@ -128,18 +128,18 @@ func (l *CheckboxList) ΩDrawingAttributes(ctx context.Context) html.Attributes 
 	return a
 }
 
-// ΩDrawInnerHtml is called by the framework to draw the contents of the list.
-func (l *CheckboxList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	h := l.this().ΩRenderItems(l.items)
+// DrawInnerHtml is called by the framework to draw the contents of the list.
+func (l *CheckboxList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+	h := l.this().RenderItems(l.items)
 	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
 	buf.WriteString(h)
 	return nil
 }
 
-func (l *CheckboxList) ΩRenderItems(items []*ListItem) string {
+func (l *CheckboxList) RenderItems(items []*ListItem) string {
 	var hItems []string
 	for _,item := range items {
-		hItems = append(hItems, l.this().ΩRenderItem(item))
+		hItems = append(hItems, l.this().RenderItem(item))
 	}
 	if l.columnCount == 0 {
 		return strings.Join(hItems, "")
@@ -152,17 +152,16 @@ func (l *CheckboxList) ΩRenderItems(items []*ListItem) string {
 		Build()
 }
 
-// ΩRenderItem is called by the framework to render a single item in the list.
-func (l *CheckboxList) ΩRenderItem(item *ListItem) (h string) {
+// RenderItem is called by the framework to render a single item in the list.
+func (l *CheckboxList) RenderItem(item *ListItem) (h string) {
 	_, selected := l.selectedIds[item.ID()]
 	h = renderItemControl(item, "checkbox", l.labelDrawingMode, selected, l.ID())
 	h = renderCell(item, h, l.columnCount > 0)
 	return
 }
 
-// ΩUpdateFormValues is called by the framework to tell the control to update its internal values
-// based on the form values sent by the browser.
-func (l *CheckboxList) ΩUpdateFormValues(ctx *page.Context) {
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+func (l *CheckboxList) UpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()
 
 	if ctx.RequestMode() == page.Server {

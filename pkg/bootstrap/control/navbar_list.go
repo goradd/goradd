@@ -62,24 +62,24 @@ func (l *NavbarList) this() NavbarListI {
 	return l.Self.(NavbarListI)
 }
 
-func (l *NavbarList) ΩDrawTag(ctx context.Context) string {
+func (l *NavbarList) DrawTag(ctx context.Context) string {
 	if l.DataManager.HasDataProvider() {
 		l.LoadData(ctx, l.this())
 		defer l.ResetData() // prevent the data from being serialized and taking up space unnecessarily
 	}
-	return l.Control.ΩDrawTag(ctx)
+	return l.Control.DrawTag(ctx)
 }
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *NavbarList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.ΩDrawingAttributes(ctx)
+func (l *NavbarList) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "navbarlist")
 	a.AddClass("navbar-nav")
 	return a
 }
 
-func (l *NavbarList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *NavbarList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml(ctx, l.ListItems(), false)
 	buf.WriteString(h)
 	return nil

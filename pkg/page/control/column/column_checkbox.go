@@ -138,7 +138,7 @@ func (c *CheckboxColumn) ResetChanges() {
 	c.changes = make(map[string]bool)
 }
 
-// UpdateFormValues will look for changes to our checkboxes and record those changes.
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
 func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 	if ctx.RequestMode() == page.Server {
 		// Using standard form submission rules. Only ON checkboxes get sent to us, so we have to figure out what got turned off

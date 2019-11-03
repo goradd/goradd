@@ -16,7 +16,7 @@ const (
 
 // The FormBase is the control that all Form objects should include, and is the master container for all other goradd controls.
 type FormBase struct {
-	page.ΩFormBase
+	page.FormBase
 }
 
 type MockForm struct {
@@ -30,16 +30,16 @@ func init() {
 // NewMockForm creates a form that should be used as a parent of a control when unit testing the control.
 func NewMockForm() *MockForm {
 	f := &MockForm{}
-	f.ΩFormBase.Init(nil, f, "", "MockFormId")
+	f.FormBase.Init(nil, f, "", "MockFormId")
 	return f
 }
 
 // Init initializes the FormBase. Call this before adding other controls.
 func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
-	// Most of the FormBase code is in page.ΩFormBase. The code below specifically adds popup windows and controls
+	// Most of the FormBase code is in page.FormBase. The code below specifically adds popup windows and controls
 	// to all standard forms, mostly for debug and development purposes.
 
-	f.ΩFormBase.Init(ctx, self, path, id)
+	f.FormBase.Init(ctx, self, path, id)
 
 	if db.IsProfiling(ctx) {
 		btn := NewButton(f, "grProfileButton")

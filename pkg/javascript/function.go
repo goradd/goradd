@@ -11,11 +11,11 @@ import (
 // to a function that is used later.
 // context will become the "this" value inside the closure
 // args will be passed as values, and strings will be quoted. To pass a variable name, wrap the name with a JsCode call.
-func Function(name string, context string, args ...interface{}) Ωfunction {
-	return Ωfunction{name, context, args}
+func Function(name string, context string, args ...interface{}) functionCall {
+	return functionCall{name, context, args}
 }
 
-type Ωfunction struct {
+type functionCall struct {
 	// The function name
 	Name string
 	// If given, the object in the window object which contains the function and is the context for the function.
@@ -25,7 +25,7 @@ type Ωfunction struct {
 	Args []interface{}
 }
 
-func (f Ωfunction) JavaScript() string {
+func (f functionCall) JavaScript() string {
 	var args string
 	if f.Args != nil {
 		args = Arguments(f.Args).JavaScript()
@@ -43,7 +43,7 @@ func (f Ωfunction) JavaScript() string {
  * Returns this as a json object to be sent to qcubed.js during ajax drawing.
  * @return mixed
  */
-func (f Ωfunction) MarshalJSON() (buf []byte, err error) {
+func (f functionCall) MarshalJSON() (buf []byte, err error) {
 	var obj = map[string]interface{}{}
 
 	obj[JsonObjectType] = "function"
@@ -61,5 +61,5 @@ func (f Ωfunction) MarshalJSON() (buf []byte, err error) {
 
 func init() {
 	// Register objects so they can be serialized
-	gob.Register(Ωfunction{})
+	gob.Register(functionCall{})
 }

@@ -230,9 +230,9 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 		js += "event.stopPropagation();\n"
 	}
 
-	var params = action2.ΩrenderParams{control.ID(), control.ActionValue(), uint16(eventID), e.actionValue}
+	var params = action2.RenderParams{control.ID(), control.ActionValue(), uint16(eventID), e.actionValue}
 
-	var actionJs = e.action.ΩRenderScript(params)
+	var actionJs = e.action.RenderScript(params)
 
 	if e.blocking {
 		actionJs += "goradd.blockEvents = true;\n"

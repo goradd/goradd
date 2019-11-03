@@ -94,20 +94,20 @@ func (f *{{= formName }}) createControls(ctx context.Context) {
         },
         ButtonCreator {
             ID: {{= title }}SaveButtonID,
-            Text: f.ΩT("Save"),
+            Text: f.GT("Save"),
             OnSubmit: action.Ajax(f.ID(), {{= title }}SaveAction),
         },
         ButtonCreator {
             ID: {{= title }}CancelButtonID,
-            Text: f.ΩT("Cancel"),
+            Text: f.GT("Cancel"),
             OnSubmit: action.Ajax(f.ID(), {{= title }}CancelAction),
   	        ValidationType: page.ValidateNone,
        },
         ButtonCreator {
             ID: {{= title }}DeleteButtonID,
-            Text: f.ΩT("Delete"),
+            Text: f.GT("Delete"),
  	        OnSubmit: action.Group (
-                action.Confirm(f.ΩT("Are you sure you want to delete this item?")),
+                action.Confirm(f.GT("Are you sure you want to delete this item?")),
                 action.Ajax(f.ID(), {{= title }}DeleteAction),
  	        ),
  	        ValidationType: page.ValidateNone,
@@ -123,14 +123,14 @@ func (f *{{= formName }}) LoadControls(ctx context.Context) {
  	    err := panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, id)
  	    if err != nil {
             GetButton(f, {{= title }}DeleteButtonID).SetVisible(true)
-            f.Page().SetTitle(f.ΩT("Edit"))
+            f.Page().SetTitle(f.GT("Edit"))
             return
  	    }
  	    // drop through on failure
     }
     _ = panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, "")
     GetButton(f, {{= title }}DeleteButtonID).SetVisible(false)
-    f.Page().SetTitle(f.ΩT("Create"))
+    f.Page().SetTitle(f.GT("Create"))
 }
 
 // Action is called by the framework to execute any Server or Ajax actions you have assigned to controls

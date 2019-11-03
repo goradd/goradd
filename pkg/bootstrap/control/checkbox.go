@@ -25,8 +25,8 @@ func (c *Checkbox) SetInline(v bool) *Checkbox {
 	return c
 }
 
-func (c *Checkbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Checkbox.ΩDrawingAttributes(ctx)
+func (c *Checkbox) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.Checkbox.DrawingAttributes(ctx)
 	a.AddClass("form-check-input")
 	a.SetDataAttribute("grctl", "bs-checkbox")
 	if c.Text() == "" {
@@ -35,14 +35,14 @@ func (c *Checkbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (c *Checkbox) ΩGetDrawingLabelAttributes() html.Attributes {
-	a := c.Checkbox.ΩGetDrawingLabelAttributes()
+func (c *Checkbox) GetDrawingLabelAttributes() html.Attributes {
+	a := c.Checkbox.GetDrawingLabelAttributes()
 	a.AddClass("form-check-label")
 	return a
 }
 
-func (c *Checkbox) ΩDrawTag(ctx context.Context) (ctrl string) {
-	h := c.Checkbox.ΩDrawTag(ctx)
+func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
+	h := c.Checkbox.DrawTag(ctx)
 	checkWrapperAttributes := html.NewAttributes().
 		AddClass("form-check").
 		SetDataAttribute("grel", c.ID()) // make sure the entire control gets removed

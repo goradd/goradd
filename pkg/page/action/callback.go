@@ -68,12 +68,12 @@ func (a *CallbackAction) GetDestinationControlSubID() string {
 	return a.SubID
 }
 
-func (a *CallbackAction) ΩRenderScript(params ΩrenderParams) string {
-	panic("You need to embed this action and implement ΩRenderScript")
+func (a *CallbackAction) RenderScript(params RenderParams) string {
+	panic("You need to embed this action and implement RenderScript")
 	return ""
 }
 
-type ΩserverAction struct {
+type serverAction struct {
 	CallbackAction
 }
 
@@ -92,8 +92,8 @@ type ΩserverAction struct {
 //
 // The returned action uses a Builder pattern to add options, so for example you might call:
 //   myControl.On(event.Click(), action.Server("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
-func Server(destControlId string, actionId int) *ΩserverAction {
-	a := &ΩserverAction{
+func Server(destControlId string, actionId int) *serverAction {
+	a := &serverAction{
 		CallbackAction{
 			ActionID: actionId,
 		},
@@ -102,8 +102,8 @@ func Server(destControlId string, actionId int) *ΩserverAction {
 	return a
 }
 
-// ΩRenderScript is called by the framework to render the script as javascript.
-func (a *ΩserverAction) ΩRenderScript(params ΩrenderParams) string {
+// RenderScript is called by the framework to render the script as javascript.
+func (a *serverAction) RenderScript(params RenderParams) string {
 	v := maps.NewSliceMap()
 	v.Set("controlID", params.TriggeringControlID)
 	v.Set("eventId", params.EventID)
@@ -130,20 +130,20 @@ func (a *ΩserverAction) ΩRenderScript(params ΩrenderParams) string {
 // ActionValue lets you set a value that will be available to the action handler as the ActionValue() function in the ActionParam structure
 // sent to the event handler. This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
 // javascript.Closures will be called immediately with a (this) parameter.
-func (a *ΩserverAction) ActionValue(v interface{}) *ΩserverAction {
+func (a *serverAction) ActionValue(v interface{}) *serverAction {
 	a.Value = v
 	return a
 }
 
 // Validator lets you override the validation setting for the control that the action is being sent to.
-func (a *ΩserverAction) Validator(v int) *ΩserverAction {
+func (a *serverAction) Validator(v int) *serverAction {
 	a.ValidationOverride = v
 	return a
 }
 
 // Aysnc will cause the action to be handled asynchronously. Use this only in special situations where you know that you
 // do not need information from other actions.
-func (a *ΩserverAction) Async() *ΩserverAction {
+func (a *serverAction) Async() *serverAction {
 	a.CallAsync = true
 	return a
 }
@@ -152,16 +152,16 @@ func (a *ΩserverAction) Async() *ΩserverAction {
 // You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the controls id with another id that indicates the internal destination,
 // separated with an underscore.
-func (a *ΩserverAction) DestinationControlID(id string) *ΩserverAction {
+func (a *serverAction) DestinationControlID(id string) *serverAction {
 	a.setDestinationControlID(id)
 	return a
 }
 
-func (a *ΩserverAction) IsServerAction() bool {
+func (a *serverAction) IsServerAction() bool {
 	return true
 }
 
-type ΩajaxAction struct {
+type ajaxAction struct {
 	CallbackAction
 }
 
@@ -173,8 +173,8 @@ type ΩajaxAction struct {
 //
 // The returned action uses a Builder pattern to add options, so for example you might call:
 //   myControl.On(event.Click(), action.Ajax("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
-func Ajax(destControlId string, actionID int) *ΩajaxAction {
-	a := &ΩajaxAction{
+func Ajax(destControlId string, actionID int) *ajaxAction {
+	a := &ajaxAction{
 		CallbackAction{
 			ActionID: actionID,
 		},
@@ -183,8 +183,8 @@ func Ajax(destControlId string, actionID int) *ΩajaxAction {
 	return a
 }
 
-// ΩRenderScript renders the script as javascript.
-func (a *ΩajaxAction) ΩRenderScript(params ΩrenderParams) string {
+// RenderScript renders the script as javascript.
+func (a *ajaxAction) RenderScript(params RenderParams) string {
 	v := maps.NewSliceMap()
 	v.Set("controlID", params.TriggeringControlID)
 	v.Set("eventId", params.EventID)
@@ -211,20 +211,20 @@ func (a *ΩajaxAction) ΩRenderScript(params ΩrenderParams) string {
 // ActionValue lets you set a value that will be available to the action handler as the ActionValue() function in the ActionParam structure
 // sent to the event handler. This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
 // javascript.Closures will be called immediately with a (this) parameter.
-func (a *ΩajaxAction) ActionValue(v interface{}) *ΩajaxAction {
+func (a *ajaxAction) ActionValue(v interface{}) *ajaxAction {
 	a.Value = v
 	return a
 }
 
 // Validator lets you override the validation setting for the control that the action is being sent to.
-func (a *ΩajaxAction) Validator(v int) *ΩajaxAction {
+func (a *ajaxAction) Validator(v int) *ajaxAction {
 	a.ValidationOverride = v
 	return a
 }
 
 // Aysnc will cause the action to be handled asynchronously. Use this only in special situations where you know that you
 // do not need information from other actions.
-func (a *ΩajaxAction) Async() *ΩajaxAction {
+func (a *ajaxAction) Async() *ajaxAction {
 	a.CallAsync = true
 	return a
 }
@@ -233,17 +233,17 @@ func (a *ΩajaxAction) Async() *ΩajaxAction {
 // You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the controls id with another id that indicates the internal destination,
 // separated with an underscore.
-func (a *ΩajaxAction) DestinationControlID(id string) *ΩajaxAction {
+func (a *ajaxAction) DestinationControlID(id string) *ajaxAction {
 	a.setDestinationControlID(id)
 	return a
 }
 
-func (a *ΩajaxAction) IsServerAction() bool {
+func (a *ajaxAction) IsServerAction() bool {
 	return false
 }
 
 func init() {
 	// Register actions so they can be serialized
-	gob.Register(&ΩajaxAction{})
-	gob.Register(&ΩserverAction{})
+	gob.Register(&ajaxAction{})
+	gob.Register(&serverAction{})
 }

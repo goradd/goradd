@@ -64,10 +64,10 @@ func (b *Button) On(e *page.Event, action action.ActionI) page.ControlI {
 	return b.this()
 }
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (b *Button) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := b.Control.ΩDrawingAttributes(ctx)
+func (b *Button) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := b.Control.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "button")
 
 	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts

@@ -60,9 +60,9 @@ func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 	return c.this()
 }
 
-// ΩDrawingAttributes is called by the framework to create temporary attributes for the input tag.
-func (c *RadioButton) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.CheckboxBase.ΩDrawingAttributes(ctx)
+// DrawingAttributes is called by the framework to create temporary attributes for the input tag.
+func (c *RadioButton) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.CheckboxBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "radio")
 	a.Set("type", "radio")
 	if c.group == "" {
@@ -74,9 +74,8 @@ func (c *RadioButton) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-// ΩUpdateFormValues is called by the framework to update the value of the control based on
-// values sent by the browser.
-func (c *RadioButton) ΩUpdateFormValues(ctx *page.Context) {
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+func (c *RadioButton) UpdateFormValues(ctx *page.Context) {
 	c.UpdateRadioFormValues(ctx, c.Group())
 }
 

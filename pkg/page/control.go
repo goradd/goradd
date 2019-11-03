@@ -111,11 +111,11 @@ type ControlI interface {
 
 	// Drawing support
 
-	ΩDrawTag(context.Context) string
-	ΩDrawInnerHtml(context.Context, *bytes.Buffer) error
+	DrawTag(context.Context) string
+	DrawInnerHtml(context.Context, *bytes.Buffer) error
 	DrawTemplate(context.Context, *bytes.Buffer) error
-	ΩPreRender(context.Context, *bytes.Buffer) error
-	ΩPostRender(context.Context, *bytes.Buffer) error
+	PreRender(context.Context, *bytes.Buffer) error
+	PostRender(context.Context, *bytes.Buffer) error
 	ShouldAutoRender() bool
 	SetShouldAutoRender(bool)
 	DrawAjax(ctx context.Context, response *Response) error
@@ -141,7 +141,7 @@ type ControlI interface {
 	SetAttribute(name string, val interface{}) ControlI
 	Attribute(string) string
 	HasAttribute(string) bool
-	ΩDrawingAttributes(context.Context) html.Attributes
+	DrawingAttributes(context.Context) html.Attributes
 	AddClass(class string) ControlI
 	RemoveClass(class string) ControlI
 	SetStyles(html.Style)
@@ -151,7 +151,7 @@ type ControlI interface {
 	Attributes() html.Attributes
 	SetDisplay(d string) ControlI
 
-	ΩPutCustomScript(ctx context.Context, response *Response)
+	PutCustomScript(ctx context.Context, response *Response)
 
 	TextIsLabel() bool
 	Text() string
@@ -177,7 +177,8 @@ type ControlI interface {
 	HasServerAction(eventName string) bool
 	HasCallbackAction(eventName string) bool
 
-	ΩUpdateFormValues(*Context)
+	// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+	UpdateFormValues(*Context)
 
 	Validate(ctx context.Context) bool
 	ValidationState() ValidationState
@@ -189,13 +190,15 @@ type ControlI interface {
 	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
 	// contents of another control.
 	SaveState(context.Context, bool)
-	ΩMarshalState(m maps.Setter)
-	ΩUnmarshalState(m maps.Loader)
+	MarshalState(m maps.Setter)
+	UnmarshalState(m maps.Loader)
 
 	// Shortcuts for translation
 
-	ΩT(format string) string
-	T(format string, params ...interface{}) string
+	// GT translates strings using the Goradd dictionary.
+	GT(format string) string
+	// T translates strings using the application provided dictionary.
+	T(message string, params ...interface{}) string
 	TPrintf(format string, params ...interface{}) string
 
 	// Serialization helpers
@@ -382,9 +385,9 @@ func (c *Control) control() *Control {
 	return c
 }
 
-// ΩPreRender is called by the framework to notify the control that it is about to be drawn. If you
+// PreRender is called by the framework to notify the control that it is about to be drawn. If you
 // override it, be sure to also call this parent function as well.
-func (c *Control) ΩPreRender(ctx context.Context, buf *bytes.Buffer) error {
+func (c *Control) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 	form := c.ParentForm()
 	if c.Page() == nil ||
 		form == nil ||
@@ -412,7 +415,7 @@ func (c *Control) ΩPreRender(ctx context.Context, buf *bytes.Buffer) error {
 // Draw renders the default control structure into the given buffer. Call this function from your templates
 // to draw the control.
 func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = c.this().ΩPreRender(ctx, buf); err != nil {
+	if err = c.this().PreRender(ctx, buf); err != nil {
 		return err
 	}
 
@@ -423,7 +426,7 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		// To fix this, we create an empty, invisible control in the place where we would normally draw
 		h = "<span id=\"" + c.this().ID() + "\" style=\"display:none;\" data-grctl></span>\n"
 	} else {
-		h = c.this().ΩDrawTag(ctx)
+		h = c.this().DrawTag(ctx)
 	}
 
 	if !config.Minify && GetContext(ctx).RequestMode() != Ajax {
@@ -434,17 +437,17 @@ func (c *Control) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	buf.WriteString(h)
 
 	response := c.ParentForm().Response()
-	c.this().ΩPutCustomScript(ctx, response)
+	c.this().PutCustomScript(ctx, response)
 	c.GetActionScripts(response)
-	c.this().ΩPostRender(ctx, buf)
+	c.this().PostRender(ctx, buf)
 	return
 }
 
-// ΩPutCustomScript is called by the framework to ask the control to inject any javascript it needs into the form.
+// PutCustomScript is called by the framework to ask the control to inject any javascript it needs into the form.
 // In particular, this is the place where Controls add javascript that transforms the html into a custom javascript control.
 // A Control implementation does this by calling functions on the response object.
 // This implementation is a stub.
-func (c *Control) ΩPutCustomScript(ctx context.Context, response *Response) {
+func (c *Control) PutCustomScript(ctx context.Context, response *Response) {
 
 }
 
@@ -494,9 +497,9 @@ func (c *Control) DrawAjax(ctx context.Context, response *Response) (err error) 
 	return
 }
 
-// ΩPostRender is called by the framework at the end of drawing, and is the place where controls
+// PostRender is called by the framework at the end of drawing, and is the place where controls
 // do any post-drawing cleanup needed.
-func (c *Control) ΩPostRender(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (c *Control) PostRender(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Update watcher
 	//if ($This->objWatcher) {
 	//$This->objWatcher->makeCurrent();
@@ -510,23 +513,23 @@ func (c *Control) ΩPostRender(ctx context.Context, buf *bytes.Buffer) (err erro
 	return
 }
 
-// ΩDrawTag is responsible for drawing the Control's tag itself.
+// DrawTag is responsible for drawing the Control's tag itself.
 // Control implementations can override this to draw the tag in a different way, or draw more than one tag if
 // drawing a compound control.
-func (c *Control) ΩDrawTag(ctx context.Context) string {
+func (c *Control) DrawTag(ctx context.Context) string {
 	// TODO: Implement this with a buffer to reduce string allocations
 	var ctrl string
 
 	log.FrameworkDebug("Drawing control: " + c.ID())
 
-	attributes := c.this().ΩDrawingAttributes(ctx)
+	attributes := c.this().DrawingAttributes(ctx)
 
 	if c.IsVoidTag {
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
 	} else {
 		buf := buf2.GetBuffer()
 		defer buf2.PutBuffer(buf)
-		if err := c.this().ΩDrawInnerHtml(ctx, buf); err != nil {
+		if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
 			panic(err)
 		}
 		if err := c.RenderAutoControls(ctx, buf); err != nil {
@@ -571,9 +574,9 @@ func (c *Control) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err erro
 	return NewFrameworkError(FrameworkErrNoTemplate)
 }
 
-// ΩDrawInnerHtml is used by the framework to draw just the inner html of the control, if the control is not a self
+// DrawInnerHtml is used by the framework to draw just the inner html of the control, if the control is not a self
 // terminating (void) control. Sub-controls can override this.
-func (c *Control) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (c *Control) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if err = c.this().DrawTemplate(ctx, buf); err == nil {
 		return
 	} else if appErr, ok := err.(FrameworkError); !ok || appErr.Err != FrameworkErrNoTemplate {
@@ -651,11 +654,11 @@ func (c *Control) HasAttribute(name string) bool {
 	return c.attributes.Has(name)
 }
 
-// ΩDrawingAttributes is called by the framework just before drawing a control, and should
+// DrawingAttributes is called by the framework just before drawing a control, and should
 // return a set of attributes that should override those set by the user. This allows controls to set attributes
 // that should take precedence over other attributes, and that are critical to drawing the
 // tag of the control. This function is designed to only be called by Control implementations.
-func (c *Control) ΩDrawingAttributes(ctx context.Context) html.Attributes {
+func (c *Control) DrawingAttributes(ctx context.Context) html.Attributes {
 	a := html.NewAttributesFrom(c.attributes)
 	a.SetID(c.id)                   // make sure the control id is set at a minimum
 	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
@@ -1109,10 +1112,8 @@ func (c *Control) WrapEvent(eventName string, selector string, eventJs string, o
 	}
 }
 
-
-// ΩUpdateFormValues should be implemented by Control implementations to get their values from the context.
-// This is where a Control updates its internal state based on actions by the client.
-func (c *Control) ΩUpdateFormValues(ctx *Context) {
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+func (c *Control) UpdateFormValues(ctx *Context) {
 
 }
 
@@ -1393,7 +1394,7 @@ func (c *Control) writeState(ctx context.Context) {
 
 	if c.shouldSaveState {
 		state = maps.NewMap()
-		c.this().ΩMarshalState(state)
+		c.this().MarshalState(state)
 		stateKey := c.ParentForm().ID() + ":" + c.ID()
 		if state.Len() > 0 {
 			state.Set(sessionControlTypeState, c.Type()) // so we can make sure the type is the same when we read, in situations where control Ids are dynamic
@@ -1436,7 +1437,7 @@ func (c *Control) readState(ctx context.Context) {
 				return // types are not equal, ids must have changed
 			}
 
-			c.this().ΩUnmarshalState(state)
+			c.this().UnmarshalState(state)
 		}
 	}
 }
@@ -1469,23 +1470,23 @@ func (c *Control) resetState(ctx context.Context) {
 }
 */
 
-// ΩMarshalState is a helper function for controls to save their basic state, so that if the form is reloaded, the
+// MarshalState is a helper function for controls to save their basic state, so that if the form is reloaded, the
 // value that the user entered will not be lost. Implementing controls should add items to the given map.
 // Note that the control id is used as a key for the state,
 // so that if you are dynamically adding controls, you should make sure you give a specific, non-changing control id
 // to the control, or the state may be lost.
-func (c *Control) ΩMarshalState(m maps.Setter) {
+func (c *Control) MarshalState(m maps.Setter) {
 }
 
-// ΩUnmarshalState is a helper function for controls to get their state from the stateStore. To implement it, a control
+// UnmarshalState is a helper function for controls to get their state from the stateStore. To implement it, a control
 // should read the data out of the given map. If needed, implemet your own version checking scheme. The given map will
 // be guaranteed to have been written out by the same kind of control as the one reading it. Be sure to call the super-class
 // version too.
-func (c *Control) ΩUnmarshalState(m maps.Loader) {
+func (c *Control) UnmarshalState(m maps.Loader) {
 }
 
-// ΩT is a shortcut for the translator that uses the internal Goradd domain for translations.
-func (c *Control) ΩT(message string) string {
+// GT translates strings using the Goradd dictionary.
+func (c *Control) GT(message string) string {
 	// at this point, there is no need for comments or disambiguation, so we go right to translation
 
 	return i18n.
@@ -1691,14 +1692,14 @@ func (c *Control) WatchChannel(ctx context.Context, channel string) {
 }
 
 // MockFormValue will mock the process of getting a form value from an http response for
-// testing purposes. This includes calling ΩUpdateFormValues and Validate on the control.
+// testing purposes. This includes calling UpdateFormValues and Validate on the control.
 // It returns the result of the Validate function.
 func (c *Control) MockFormValue(value string) bool {
 	ctx := NewMockContext()
 
 	grctx := GetContext(ctx)
 	grctx.formVars.Set(c.ID(), value)
-	c.this().ΩUpdateFormValues(grctx)
+	c.this().UpdateFormValues(grctx)
 	return c.this().Validate(ctx)
 }
 
