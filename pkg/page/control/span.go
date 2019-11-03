@@ -28,7 +28,7 @@ func (c *Span) Init(self SpanI, parent page.ControlI, id string) {
 }
 
 func (c *Span) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Control.DrawingAttributes(ctx)
+	a := c.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "span")
 	return a
 }

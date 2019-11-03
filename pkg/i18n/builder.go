@@ -64,7 +64,7 @@ func (b *translationBuilder) t(s string) string {
 	return translators[b.domain].Translate(b)
 }
 
-// The following are modifiers to the T() function in page.Control
+// The following are modifiers to the T() function in page.ControlBase
 type id struct {
 	id string
 }

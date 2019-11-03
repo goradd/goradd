@@ -294,7 +294,7 @@ func (d *Dialog) SetDialogStyle(s DialogStyle) {
 }
 
 func (d *Dialog) Serialize(e page.Encoder) (err error) {
-	if err = d.Control.Serialize(e); err != nil {
+	if err = d.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -326,7 +326,7 @@ func (d *Dialog) Serialize(e page.Encoder) (err error) {
 }
 
 func (d *Dialog) Deserialize(dec page.Decoder) (err error) {
-	if err = d.Control.Deserialize(dec); err != nil {
+	if err = d.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 

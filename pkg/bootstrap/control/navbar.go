@@ -57,7 +57,7 @@ type NavbarI interface {
 // Navbar is a bootstrap navbar object. Use SetText() to set the logo text of the navbar, and
 // SetTextIsHtml() to true to turn off encoding if needed. Add child controls to populate it.
 type Navbar struct {
-	page.Control
+	page.ControlBase
 	headerAnchor string
 
 	style NavbarStyle
@@ -82,7 +82,7 @@ func NewNavbar(parent page.ControlI, id string) *Navbar {
 }
 
 func (b *Navbar) Init(self page.ControlI, parent page.ControlI, id string) {
-	b.Control.Init(self, parent, id)
+	b.ControlBase.Init(self, parent, id)
 	b.Tag = "nav"
 	b.style = NavbarDark // default
 	b.background = BackgroundColorDark
@@ -123,7 +123,7 @@ func (b *Navbar) SetBrandPlacement(p NavbarCollapsedBrandPlacement) NavbarI {
 }
 
 func (b *Navbar) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := b.Control.DrawingAttributes(ctx)
+	a := b.ControlBase.DrawingAttributes(ctx)
 	a.AddClass("navbar")
 	a.AddClass(string(b.style))
 	a.AddClass(string(b.expand))

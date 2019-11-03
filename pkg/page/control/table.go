@@ -96,7 +96,7 @@ type TableFooterRowAttributer interface {
 // you are showing a lot of data, the data is only loaded in memory during drawing, and not kept in the pagestate
 // after drawing.
 type Table struct {
-	page.Control
+	page.ControlBase
 	DataManager
 
 	columns               []ColumnI
@@ -134,7 +134,7 @@ func NewTable(parent page.ControlI, id string) *Table {
 // goradd controls. You would only call this if you were implementing a "subclass" of the Table. Call it immediately after
 // creating your Table structure, passing the newly created table as "self".
 func (t *Table) Init(self page.ControlI, parent page.ControlI, id string) {
-	t.Control.Init(self, parent, id)
+	t.ControlBase.Init(self, parent, id)
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1
@@ -206,14 +206,14 @@ func (t *Table) DrawTag(ctx context.Context) string {
 	for _, c := range t.columns {
 		c.PreRender()
 	}
-	return t.Control.DrawTag(ctx)
+	return t.ControlBase.DrawTag(ctx)
 }
 
 // DrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
 // is no data to show. This will hide header and footer cells and potentially the outline of the table when there is no
 // data in the table.
 func (t *Table) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := t.Control.DrawingAttributes(ctx)
+	a := t.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "table")
 	if !t.HasData() && t.hideIfEmpty {
 		a.SetStyle("display", "none")
@@ -656,7 +656,7 @@ type tableEncoded struct {
 }
 
 func (t *Table) Serialize(e page.Encoder) (err error) {
-	if err = t.Control.Serialize(e); err != nil {
+	if err = t.ControlBase.Serialize(e); err != nil {
 		return
 	}
 	if err = t.DataManager.Serialize(e); err != nil {
@@ -715,7 +715,7 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 
 
 func (t *Table) Deserialize(dec page.Decoder) (err error) {
-	if err = t.Control.Deserialize(dec); err != nil {
+	if err = t.ControlBase.Deserialize(dec); err != nil {
 		panic(err)
 	}
 	if err = t.DataManager.Deserialize(dec); err != nil {
@@ -773,7 +773,7 @@ func (t *Table) Deserialize(dec page.Decoder) (err error) {
 }
 
 func (t *Table) Restore() {
-	t.Control.Restore()
+	t.ControlBase.Restore()
 	if t.captionId != "" {
 		t.caption = t.Page().GetControl(t.captionId)
 	}

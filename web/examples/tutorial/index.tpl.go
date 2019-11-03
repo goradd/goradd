@@ -26,7 +26,7 @@ func (ctrl *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 `)
 	path := page.GetContext(ctx).HttpContext.URL.Path
 	buf.WriteString(`
-<h1>Control Examples</h1>
+<h1>ControlBase Examples</h1>
 `)
 
 	buf.WriteString(`

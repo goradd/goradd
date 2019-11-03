@@ -28,7 +28,7 @@ type ButtonI interface {
 //
 // If you want the button to display an image, simple create an Image control as a child of the button.
 type Button struct {
-	page.Control
+	page.ControlBase
 }
 
 // NewButton creates a new standard html button
@@ -40,7 +40,7 @@ func NewButton(parent page.ControlI, id string) *Button {
 
 // Init is called by subclasses of Button to initialize the button control structure.
 func (b *Button) Init(self page.ControlI, parent page.ControlI, id string) {
-	b.Control.Init(self, parent, id)
+	b.ControlBase.Init(self, parent, id)
 	b.Tag = "button"
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
@@ -60,14 +60,14 @@ func (b *Button) SetLabel(label string) page.ControlI {
 // On causes the given actions to execute when the given event is triggered.
 func (b *Button) On(e *page.Event, action action.ActionI) page.ControlI {
 	e.Terminating() // prevent default action (override submit)
-	b.Control.On(e, action)
+	b.ControlBase.On(e, action)
 	return b.this()
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (b *Button) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := b.Control.DrawingAttributes(ctx)
+	a := b.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "button")
 
 	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts

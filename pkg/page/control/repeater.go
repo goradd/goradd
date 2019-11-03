@@ -15,7 +15,7 @@ type RepeaterI interface {
 }
 
 type Repeater struct {
-	page.Control
+	page.ControlBase
 	PagedControl
 	DataManager
 	itemHtmler RepeaterHtmler
@@ -36,7 +36,7 @@ func NewRepeater(parent page.ControlI, id string) *Repeater {
 // Init is an internal function that enables the object-oriented pattern of calling virtual functions used by the
 // goradd controls.
 func (r *Repeater) Init(self page.ControlI, parent page.ControlI, id string) {
-	r.Control.Init(self, parent, id)
+	r.ControlBase.Init(self, parent, id)
 	r.Tag = "div"
 }
 
@@ -61,14 +61,14 @@ func (r *Repeater) DrawTag(ctx context.Context) string {
 		r.LoadData(ctx, r.this())
 		defer r.ResetData()
 	}
-	return r.Control.DrawTag(ctx)
+	return r.ControlBase.DrawTag(ctx)
 }
 
 // DrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
 // is no data to show. This will hide header and footer cells and potentially the outline of the table when there is no
 // data in the table.
 func (r *Repeater) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := r.Control.DrawingAttributes(ctx)
+	a := r.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "repeater")
 	return a
 }
@@ -101,7 +101,7 @@ func (r *Repeater) DrawItem(ctx context.Context, i int, data interface{}, buf *b
 }
 
 func (r *Repeater) Serialize(e page.Encoder) (err error) {
-	if err = r.Control.Serialize(e); err != nil {
+	if err = r.ControlBase.Serialize(e); err != nil {
 		return
 	}
 	if err = r.PagedControl.Serialize(e); err != nil {
@@ -124,7 +124,7 @@ func (r *Repeater) Serialize(e page.Encoder) (err error) {
 }
 
 func (r *Repeater) Deserialize(dec page.Decoder) (err error) {
-	if err = r.Control.Deserialize(dec); err != nil {
+	if err = r.ControlBase.Deserialize(dec); err != nil {
 		panic(err)
 	}
 	if err = r.PagedControl.Deserialize(dec); err != nil {
@@ -147,7 +147,7 @@ func (r *Repeater) Deserialize(dec page.Decoder) (err error) {
 }
 
 func (r *Repeater) Restore() {
-	r.Control.Restore()
+	r.ControlBase.Restore()
 	if r.itemHtmlerId != "" {
 		r.itemHtmler = r.Page().GetControl(r.itemHtmlerId).(RepeaterHtmler)
 	}

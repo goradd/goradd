@@ -48,7 +48,7 @@ func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 
 // Init is called by subclasses.
 func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string) {
-	i.Control.Init(self, parent, id)
+	i.ControlBase.Init(self, parent, id)
 	i.Tag = "div"
 	i.ParentForm().AddJavaScriptFile(config.GoraddAssets()+"/js/image-capture.js", false, nil)
 	i.typ = "jpeg"
@@ -137,7 +137,7 @@ func (i *ImageCapture) TurnOff() {
 	i.ParentForm().Response().ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
 }
 
-// SetPixelSize sets the pixel size of the image that will be returned. Control the visible size of the canvas through
+// SetPixelSize sets the pixel size of the image that will be returned. ControlBase the visible size of the canvas through
 // setting css sizes.
 func (i *ImageCapture) SetPixelSize(width int, height int) {
 	canvas := GetCanvas(i, i.canvasID())
@@ -152,7 +152,7 @@ func (i *ImageCapture) SetMaskShape(shape ImageCaptureShape) {
 
 // DrawingAttributes is called by the framework.
 func (i *ImageCapture) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := i.Control.DrawingAttributes(ctx)
+	a := i.ControlBase.DrawingAttributes(ctx)
 	if i.data != nil {
 		// Turn the data into a source attribute
 		d := base64.StdEncoding.EncodeToString(i.data)
@@ -176,7 +176,7 @@ func (i *ImageCapture) UpdateFormValues(ctx *page.Context) {
 }
 
 func (i *ImageCapture) Serialize(e page.Encoder) (err error) {
-	if err = i.Control.Serialize(e); err != nil {
+	if err = i.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -203,7 +203,7 @@ func (i *ImageCapture) Serialize(e page.Encoder) (err error) {
 }
 
 func (i *ImageCapture) Deserialize(dec page.Decoder) (err error) {
-	if err = i.Control.Deserialize(dec); err != nil {
+	if err = i.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 

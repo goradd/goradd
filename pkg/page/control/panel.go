@@ -20,7 +20,7 @@ type PanelI interface {
 // Panel is a Goradd control that is a basic "div" wrapper. Use it to style and listen to events on a div. It
 // can also be used as the basis for more advanced javascript controls.
 type Panel struct {
-	page.Control
+	page.ControlBase
 }
 
 func NewPanel(parent page.ControlI, id string) *Panel {
@@ -30,7 +30,7 @@ func NewPanel(parent page.ControlI, id string) *Panel {
 }
 
 func (c *Panel) Init(self PanelI, parent page.ControlI, id string) {
-	c.Control.Init(self, parent, id)
+	c.ControlBase.Init(self, parent, id)
 	c.Tag = "div"
 }
 
@@ -40,7 +40,7 @@ func (c *Panel) this() PanelI {
 
 
 func (c *Panel) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Control.DrawingAttributes(ctx)
+	a := c.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "panel")
 	return a
 }

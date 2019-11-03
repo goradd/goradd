@@ -49,7 +49,7 @@ type ProxyI interface {
 //
 // The ProxyColumn of the Table object will use a proxy to draw items in a table column.
 type Proxy struct {
-	page.Control
+	page.ControlBase
 }
 
 // NewProxy creates a new proxy. The parent must be the wrapping control of the objects that the proxy will manage.
@@ -60,7 +60,7 @@ func NewProxy(parent page.ControlI, id string) *Proxy {
 }
 
 func (p *Proxy) Init(parent page.ControlI, id string) {
-	p.Control.Init(p, parent, id)
+	p.ControlBase.Init(p, parent, id)
 	p.SetShouldAutoRender(true)
 	p.SetActionValue(javascript.JsCode(`goradd.proxyVal(event)`))
 }

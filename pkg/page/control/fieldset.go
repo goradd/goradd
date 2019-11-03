@@ -37,7 +37,7 @@ func (c *Fieldset) this() FieldsetI {
 
 // DrawingAttributes is called by the framework.
 func (c *Fieldset) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Control.DrawingAttributes(ctx)
+	a := c.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "fieldset")
 	return a
 }

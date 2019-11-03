@@ -78,7 +78,7 @@ func (s *DateTimeSpan) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) err
 }
 
 func (s *DateTimeSpan) Serialize(e page.Encoder) (err error) {
-	if err = s.Control.Serialize(e); err != nil {
+	if err = s.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -94,7 +94,7 @@ func (s *DateTimeSpan) Serialize(e page.Encoder) (err error) {
 }
 
 func (s *DateTimeSpan) Deserialize(dec page.Decoder) (err error) {
-	if err = s.Control.Deserialize(dec); err != nil {
+	if err = s.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 

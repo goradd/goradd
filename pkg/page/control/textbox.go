@@ -48,7 +48,7 @@ type TextboxI interface {
 // Textbox is a goradd control that outputs an "input" html tag with a "type" attribute
 // of "text", or one of the text-like types, like "password", "search", etc.
 type Textbox struct {
-	page.Control
+	page.ControlBase
 
 	typ string
 
@@ -74,7 +74,7 @@ func NewTextbox(parent page.ControlI, id string) *Textbox {
 
 // Initializes a textbox. Normally you will not call this directly.
 func (t *Textbox) Init(self TextboxI, parent page.ControlI, id string) {
-	t.Control.Init(self, parent, id)
+	t.ControlBase.Init(self, parent, id)
 
 	t.Tag = "input"
 	t.IsVoidTag = true
@@ -98,7 +98,7 @@ func (t *Textbox) ResetValidators() {
 
 // DrawingAttributes is called by the framework to retrieve the tag's private attributes at draw time.
 func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := t.Control.DrawingAttributes(ctx)
+	a := t.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "textbox")
 	a.Set("name", t.ID()) // needed for posts
 	if t.IsRequired() {
@@ -260,7 +260,7 @@ func (t *Textbox) Sanitize(s string) string {
 // Validate will first check for the IsRequired attribute, and if set, will make sure a value is in the text field. It
 // will then check the validators in the order assigned. The first invalid value found will return false.
 func (t *Textbox) Validate(ctx context.Context) bool {
-	if v := t.Control.Validate(ctx); !v {
+	if v := t.ControlBase.Validate(ctx); !v {
 		return false
 	}
 	text := t.Text()
@@ -325,7 +325,7 @@ type encodedTextbox struct {
 
 // Serialize is used by the framework to serialize the textbox into the pagestate.
 func (t *Textbox) Serialize(e page.Encoder) (err error) {
-	if err = t.Control.Serialize(e); err != nil {
+	if err = t.ControlBase.Serialize(e); err != nil {
 		panic(err)
 	}
 
@@ -348,7 +348,7 @@ func (t *Textbox) Serialize(e page.Encoder) (err error) {
 
 // Deserialize is used by the pagestate serializer.
 func (t *Textbox) Deserialize(d page.Decoder) (err error) {
-	if err = t.Control.Deserialize(d); err != nil {
+	if err = t.ControlBase.Deserialize(d); err != nil {
 		return
 	}
 

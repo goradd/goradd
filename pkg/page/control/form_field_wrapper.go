@@ -25,7 +25,7 @@ type FormFieldWrapperI interface {
 // FormFieldWrapper is a Goradd control that wraps other controls, and provides common companion
 // functionality like a form label, validation state display, and help text.
 type FormFieldWrapper struct {
-	page.Control
+	page.ControlBase
 
 	// instructions is text associated with the control for extra explanation. You could also try adding a tooltip to the wrapper.
 	instructions string
@@ -48,7 +48,7 @@ func NewFormField(parent page.ControlI, id string) *FormFieldWrapper {
 }
 
 func (c *FormFieldWrapper) Init(self PanelI, parent page.ControlI, id string) {
-	c.Control.Init(self, parent, id)
+	c.ControlBase.Init(self, parent, id)
 	c.Tag = "div"
 	c.Subtag = "div"
 	c.labelAttributes = html.NewAttributes().
@@ -97,7 +97,7 @@ func (c *FormFieldWrapper) Instructions() string {
 }
 
 func (c *FormFieldWrapper) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Control.DrawingAttributes(ctx)
+	a := c.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "formField")
 	return a
 }
@@ -197,7 +197,7 @@ func (c *FormFieldWrapper) Validate(ctx context.Context) bool {
 
 func (c *FormFieldWrapper) ChildValidationChanged() {
 	c.checkChildValidation()
-	c.Control.ChildValidationChanged()
+	c.ControlBase.ChildValidationChanged()
 }
 
 func (c *FormFieldWrapper) checkChildValidation() {
@@ -210,7 +210,7 @@ func (c *FormFieldWrapper) checkChildValidation() {
 }
 
 func (c *FormFieldWrapper) Serialize(e page.Encoder) (err error) {
-	if err = c.Control.Serialize(e); err != nil {
+	if err = c.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -240,7 +240,7 @@ func (c *FormFieldWrapper) Serialize(e page.Encoder) (err error) {
 }
 
 func (c *FormFieldWrapper) Deserialize(dec page.Decoder) (err error) {
-	if err = c.Control.Deserialize(dec); err != nil {
+	if err = c.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 

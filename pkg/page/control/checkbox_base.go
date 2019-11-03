@@ -15,7 +15,7 @@ type CheckboxI interface {
 
 // CheckboxBase is a base class for checkbox-like objects, including html checkboxes and radio buttons.
 type CheckboxBase struct {
-	page.Control
+	page.ControlBase
 	checked bool
 	// LabelMode describes where to place the label associating the text with the checkbox. The default is the
 	// global page.DefaultCheckboxLabelDrawingMode, and you would normally set that instead so that all your checkboxes draw
@@ -26,7 +26,7 @@ type CheckboxBase struct {
 
 // Init initializes a checkbox base class. It is called by checkbox implementations.
 func (c *CheckboxBase) Init(self page.ControlI, parent page.ControlI, id string) {
-	c.Control.Init(self, parent, id)
+	c.ControlBase.Init(self, parent, id)
 
 	c.Tag = "input"
 	c.IsVoidTag = true
@@ -42,7 +42,7 @@ func (c *CheckboxBase) this() CheckboxI {
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (c *CheckboxBase) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Control.DrawingAttributes(ctx)
+	a := c.ControlBase.DrawingAttributes(ctx)
 	if c.Text() != "" {
 		a.AddAttributeValue("aria-labelledby", c.ID()+"_ilbl")
 	}
@@ -188,7 +188,7 @@ func (c *CheckboxBase) TextIsLabel() bool {
 
 // Serialize is called by the framework during pagestate serialization.
 func (c *CheckboxBase) Serialize(e page.Encoder) (err error) {
-	if err = c.Control.Serialize(e); err != nil {
+	if err = c.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -209,7 +209,7 @@ func (c *CheckboxBase) Serialize(e page.Encoder) (err error) {
 
 // Deserialize is called by the framework during page state serialization.
 func (c *CheckboxBase) Deserialize(d page.Decoder) (err error) {
-	if err = c.Control.Deserialize(d); err != nil {
+	if err = c.ControlBase.Deserialize(d); err != nil {
 		return
 	}
 

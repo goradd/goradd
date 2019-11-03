@@ -23,7 +23,7 @@ type SelectListI interface {
 // Or, use the embedded DataManager to load items. Set the size attribute if you want to display it as a
 // scrolling list rather than a dropdown list.
 type SelectList struct {
-	page.Control
+	page.ControlBase
 	ItemList
 	DataManager
 	selectedId string
@@ -38,7 +38,7 @@ func NewSelectList(parent page.ControlI, id string) *SelectList {
 
 // Init is called by subclasses.
 func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
-	l.Control.Init(self, parent, id)
+	l.ControlBase.Init(self, parent, id)
 	l.ItemList = NewItemList(l)
 	l.Tag = "select"
 }
@@ -51,7 +51,7 @@ func (l *SelectList) this() SelectListI {
 // Validate is called by the framework to validate the contents of the control. For a SelectList,
 // this is typically just checking to see if something was selected if a selection is required.
 func (l *SelectList) Validate(ctx context.Context) bool {
-	if v := l.Control.Validate(ctx); !v {
+	if v := l.ControlBase.Validate(ctx); !v {
 		return false
 	}
 
@@ -156,7 +156,7 @@ func (l *SelectList) UnmarshalState(m maps.Loader) {
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *SelectList) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.DrawingAttributes(ctx)
+	a := l.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "selectlist")
 	a.Set("name", l.ID()) // needed for posts
 	if l.IsRequired() {
@@ -171,7 +171,7 @@ func (l *SelectList) DrawTag(ctx context.Context) string {
 		l.LoadData(ctx, l.this())
 		defer l.ResetData()
 	}
-	return l.Control.DrawTag(ctx)
+	return l.ControlBase.DrawTag(ctx)
 }
 
 
@@ -220,7 +220,7 @@ func (l *SelectList) SetData(data interface{}) {
 }
 
 func (l *SelectList) Serialize(e page.Encoder) (err error) {
-	if err = l.Control.Serialize(e); err != nil {
+	if err = l.ControlBase.Serialize(e); err != nil {
 		return
 	}
 	if err = l.ItemList.Serialize(e); err != nil {
@@ -237,7 +237,7 @@ func (l *SelectList) Serialize(e page.Encoder) (err error) {
 }
 
 func (l *SelectList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.Control.Deserialize(dec); err != nil {
+	if err = l.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 	if err = l.ItemList.Deserialize(dec); err != nil {

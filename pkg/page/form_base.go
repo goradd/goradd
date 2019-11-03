@@ -53,7 +53,7 @@ type FormI interface {
 // It is the basic control structure for the application and also serves as the drawing mechanism for the
 // <form> tag in the html output.
 type FormBase struct {
-	Control
+	ControlBase
 	response Response
 	headerStyleSheets   *maps.SliceMap
 	importedStyleSheets *maps.SliceMap // when refreshing, these get moved to the headerStyleSheets
@@ -71,8 +71,8 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 	if id == "" {
 		panic("Forms must have an id assigned")
 	}
-	f.Control.id = id
-	f.Control.Init(self, nil, id)
+	f.ControlBase.id = id
+	f.ControlBase.Init(self, nil, id)
 	f.Tag = "form"
 }
 
@@ -299,14 +299,14 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 
 // DrawingAttributes returns the attributes to add to the form tag.
 func (f *FormBase) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := f.Control.DrawingAttributes(ctx)
+	a := f.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "form")
 	return a
 }
 
 // PreRender performs setup operations just before drawing.
 func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = f.Control.PreRender(ctx, buf); err != nil {
+	if err = f.ControlBase.PreRender(ctx, buf); err != nil {
 		return
 	}
 
@@ -548,7 +548,7 @@ type formEncoded struct {
 }
 
 func (f *FormBase) Serialize(e Encoder) (err error) {
-	if err = f.Control.Serialize(e); err != nil {
+	if err = f.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -576,7 +576,7 @@ func (f *FormBase) Serialize(e Encoder) (err error) {
 }
 
 func (f *FormBase) Deserialize(d Decoder) (err error) {
-	if err = f.Control.Deserialize(d); err != nil {
+	if err = f.ControlBase.Deserialize(d); err != nil {
 		return
 	}
 

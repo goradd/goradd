@@ -32,8 +32,8 @@ type PagedControlI interface {
 	SliceOffsets() (start, end int)
 }
 
-// PagedControl is a mixin that makes a Control controllable by a data pager. All embedders of a
-// PagedControl MUST implement the Serialize and Deserialize methods so that the base Control versions
+// PagedControl is a mixin that makes a ControlBase controllable by a data pager. All embedders of a
+// PagedControl MUST implement the Serialize and Deserialize methods so that the base ControlBase versions
 // of these functions will get called.
 type PagedControl struct {
 	totalItems int
@@ -138,7 +138,7 @@ func (c *PagedControl) SqlLimits() (maxRowCount, offset int) {
 }
 
 // Serialize encodes the PagedControl data for serialization. Note that all control implementations
-// that use a PagedControl MUST create their own Serialize method, call the base Control's version first,
+// that use a PagedControl MUST create their own Serialize method, call the base ControlBase's version first,
 // and then call this Serialize method.
 func (c *PagedControl) Serialize(e page.Encoder) (err error) {
 	if err = e.Encode(c.totalItems); err != nil {
@@ -194,7 +194,7 @@ type DataPagerI interface {
 // It is similar to a Paginator, but a paginator is for navigating through a series of related web pages and not just for
 // data on one form.
 type DataPager struct {
-	page.Control
+	page.ControlBase
 
 	maxPageButtons   int
 	ObjectName       string
@@ -215,7 +215,7 @@ func NewDataPager(parent page.ControlI, id string, pagedControl PagedControlI) *
 // Init is called by subclasses of a DataPager to initialize the data pager. You do not normally need
 // to call this.
 func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pagedControl PagedControlI) {
-	d.Control.Init(self, parent, id)
+	d.ControlBase.Init(self, parent, id)
 	d.Tag = "div"
 	d.LabelForNext = d.GT("Next")
 	d.LabelForPrevious = d.GT("Previous")
@@ -239,7 +239,7 @@ func (d *DataPager) ButtonProxy() *Proxy {
 
 // DrawingAttributes is called by the framework to add temporary attributes to the html.
 func (d *DataPager) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := d.Control.DrawingAttributes(ctx)
+	a := d.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "datapager")
 	return a
 }
@@ -376,7 +376,7 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 
 // PreRender is called by the framework to load data into the paged control just before drawing.
 func (d *DataPager) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = d.Control.PreRender(ctx, buf)
+	err = d.ControlBase.PreRender(ctx, buf)
 	p := d.PagedControl()
 
 	if err == nil {
@@ -505,7 +505,7 @@ func (d *DataPager) PagedControl() PagedControlI {
 }
 
 func (d *DataPager) Serialize(e page.Encoder) (err error) {
-	if err = d.Control.Serialize(e); err != nil {
+	if err = d.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -537,7 +537,7 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 }
 
 func (d *DataPager) Deserialize(dec page.Decoder) (err error) {
-	if err = d.Control.Deserialize(dec); err != nil {
+	if err = d.ControlBase.Deserialize(dec); err != nil {
 		panic(err)
 	}
 

@@ -21,7 +21,7 @@ type UnorderedListI interface {
 // javascript and css widgets. If you use a data provider to set the data, you should call AddItems to the list
 // in your LoadData function.
 type UnorderedList struct {
-	page.Control
+	page.ControlBase
 	ItemList
 	DataManager
 	itemTag string
@@ -46,7 +46,7 @@ func NewUnorderedList(parent page.ControlI, id string) *UnorderedList {
 }
 
 func (l *UnorderedList) Init(self page.ControlI, parent page.ControlI, id string) {
-	l.Control.Init(self, parent, id)
+	l.ControlBase.Init(self, parent, id)
 	l.ItemList = NewItemList(l)
 	l.Tag = "ul"
 	l.itemTag = "li"
@@ -65,7 +65,7 @@ func (l *UnorderedList) SetItemTag(s string) UnorderedListI {
 
 // SetBulletType sets the list-style-type attribute of the list. Choose from the UnorderedListStyle* constants.
 func (l *UnorderedList) SetBulletStyle(s string) UnorderedListI {
-	l.Control.SetStyle("list-style-type", s)
+	l.ControlBase.SetStyle("list-style-type", s)
 	return l.this()
 }
 
@@ -74,13 +74,13 @@ func (l *UnorderedList) DrawTag(ctx context.Context) string {
 		l.LoadData(ctx, l.this())
 		defer l.ResetData()
 	}
-	return l.Control.DrawTag(ctx)
+	return l.ControlBase.DrawTag(ctx)
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *UnorderedList) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.DrawingAttributes(ctx)
+	a := l.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "hlist")
 	return a
 }
@@ -124,7 +124,7 @@ func (l *UnorderedList) SetData(data interface{}) {
 }
 
 func (l *UnorderedList) Serialize(e page.Encoder) (err error) {
-	if err = l.Control.Serialize(e); err != nil {
+	if err = l.ControlBase.Serialize(e); err != nil {
 		return
 	}
 	if err = l.ItemList.Serialize(e); err != nil {
@@ -141,7 +141,7 @@ func (l *UnorderedList) Serialize(e page.Encoder) (err error) {
 }
 
 func (l *UnorderedList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.Control.Deserialize(dec); err != nil {
+	if err = l.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 	if err = l.ItemList.Deserialize(dec); err != nil {

@@ -251,7 +251,7 @@ func (p *Page) addControl(control ControlI) {
 	id := control.ID()
 
 	if id == "" {
-		panic("Control must have an id before being added.")
+		panic("ControlBase must have an id before being added.")
 	}
 
 	if p.controlRegistry == nil {
@@ -259,7 +259,7 @@ func (p *Page) addControl(control ControlI) {
 	}
 
 	if p.HasControl(id) {
-		panic("Control id already exists. Control must have a unique id on the page before being added.")
+		panic("ControlBase id already exists. ControlBase must have a unique id on the page before being added.")
 	}
 
 	p.controlRegistry[id] = control
@@ -635,7 +635,7 @@ func controlRegistryID(i ControlI) uint64 {
 	typ := val.Type()
 	id, ok := controlRegistryIds[typ]
 	if !ok {
-		panic("Control type is not registered: " + typ.String())
+		panic("ControlBase type is not registered: " + typ.String())
 	}
 	return id
 }

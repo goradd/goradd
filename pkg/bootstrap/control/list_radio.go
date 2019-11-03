@@ -54,7 +54,7 @@ func (l *RadioList) SetCellClass(c string) {
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *RadioList) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.DrawingAttributes(ctx)	// skip default checkbox list attributes
+	a := l.ControlBase.DrawingAttributes(ctx) // skip default checkbox list attributes
 	a.SetDataAttribute("grctl", "bs-RadioList")
 	return a
 }

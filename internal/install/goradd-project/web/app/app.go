@@ -47,7 +47,7 @@ func (a *Application) SetupErrorPageTemplate() {
 // Uncomment and edit to change the page cache. You can call the embedded Application version first, and then alter it too.
 /*
 func (a *Application) SetupPageCaching() {
-	// Control how pages are cached. This will vary depending on whether you are using multiple machines to run your app,
+	// ControlBase how pages are cached. This will vary depending on whether you are using multiple machines to run your app,
 	// and whether you are in development mode, etc.
 
 	// This default is for an in-memory store on one server and only one
@@ -59,7 +59,7 @@ func (a *Application) SetupPageCaching() {
 	// in memory, but can be used to test whether the page cache could be stored in a database instead.
 	//page.SetPageCache(page.NewSerializedPageCache(100, 60*60*24))
 
-	// Control how pages are serialized if a serialization cache is being used. This version uses the gob encoder.
+	// ControlBase how pages are serialized if a serialization cache is being used. This version uses the gob encoder.
 	// You likely will not need to change this, but you might if your database cannot handle binary data.
 	page.SetPageEncoder(page.GobPageEncoder{})
 }

@@ -21,7 +21,7 @@ type MultiselectListI interface {
 // very often since it doesn't present an intuitive interface and is very browser dependent on what is presented.
 // A CheckboxList is better.
 type MultiselectList struct {
-	page.Control
+	page.ControlBase
 	ItemList
 	DataManager
 	selectedIds map[string]bool
@@ -34,7 +34,7 @@ func NewMultiselectList(parent page.ControlI, id string) *MultiselectList {
 }
 
 func (l *MultiselectList) Init(self MultiselectListI, parent page.ControlI, id string) {
-	l.Control.Init(self, parent, id)
+	l.ControlBase.Init(self, parent, id)
 	l.ItemList = NewItemList(l)
 	l.selectedIds = map[string]bool{}
 	l.Tag = "select"
@@ -236,13 +236,13 @@ func (l *MultiselectList) DrawTag(ctx context.Context) string {
 		l.LoadData(ctx, l.this())
 		defer l.ResetData()
 	}
-	return l.Control.DrawTag(ctx)
+	return l.ControlBase.DrawTag(ctx)
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *MultiselectList) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.DrawingAttributes(ctx)
+	a := l.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "multilist")
 	a.Set("name", l.ID()) // needed for posts
 	a.Set("multiple", "")
@@ -286,7 +286,7 @@ func (l *MultiselectList) IsIdSelected(id string) bool {
 }
 
 func (l *MultiselectList) Serialize(e page.Encoder) (err error) {
-	if err = l.Control.Serialize(e); err != nil {
+	if err = l.ControlBase.Serialize(e); err != nil {
 		return
 	}
 	if err = l.ItemList.Serialize(e); err != nil {
@@ -303,7 +303,7 @@ func (l *MultiselectList) Serialize(e page.Encoder) (err error) {
 }
 
 func (l *MultiselectList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.Control.Deserialize(dec); err != nil {
+	if err = l.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 	if err = l.ItemList.Deserialize(dec); err != nil {

@@ -118,7 +118,7 @@ func (l *RadioList) SetRowClass(c string) RadioListI {
 // You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *RadioList) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.DrawingAttributes(ctx)
+	a := l.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "radiolist")
 	a.AddClass("gr-cbl")
 
