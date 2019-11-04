@@ -42,8 +42,8 @@ func (d *DataPager) this() DataPagerI {
 	return d.Self.(DataPagerI)
 }
 
-func (l *DataPager) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.DataPager.ΩDrawingAttributes(ctx)
+func (l *DataPager) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.DataPager.DrawingAttributes(ctx)
 	a.AddClass("btn-group")
 	return a
 }

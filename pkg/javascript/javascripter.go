@@ -60,7 +60,7 @@ func ToJavaScript(v interface{}) string {
 
 		for _, k := range keys {
 			v2 := s[k]
-			if v3, ok := v2.(ΩnoQuoteKey); ok {
+			if v3, ok := v2.(noQuoteKey); ok {
 				out += k + ":" + ToJavaScript(v3.Value) + ","
 			} else {
 				out += ToJavaScript(k) + ":" + ToJavaScript(v2) + ","
@@ -91,7 +91,7 @@ func ToJavaScript(v interface{}) string {
 	case maps.MapI:
 		var out string
 		s.Range(func(k string, v interface{}) bool {
-			if v2, ok := v.(ΩnoQuoteKey); ok {
+			if v2, ok := v.(noQuoteKey); ok {
 				out += k + ":" + ToJavaScript(v2.Value) + ","
 			} else {
 				out += ToJavaScript(k) + ":" + ToJavaScript(v) + ","
@@ -128,31 +128,31 @@ func ToJavaScript(v interface{}) string {
 // are turned into functions. For example, "size" will set the size attribute of the object, and
 // size (no quotes), will call the size() function on the object.
 // i.e. map[string]string {"size":4, "size":NoQuoteKey(JsCode("obj"))}
-func NoQuoteKey(v interface{}) ΩnoQuoteKey {
-	return ΩnoQuoteKey{v}
+func NoQuoteKey(v interface{}) noQuoteKey {
+	return noQuoteKey{v}
 }
 
-type ΩnoQuoteKey struct {
+type noQuoteKey struct {
 	Value interface{}
 }
 
 // Prevent using this as a general value.
-func (n ΩnoQuoteKey) JavaScript() string {
+func (n noQuoteKey) JavaScript() string {
 	panic("NoQuoteKey should only be used as a value in a string map.")
 }
 
-type ΩjsCode struct {
+type jsCode struct {
 	Code  string
 	IsInt bool
 }
 
 // JsCode represents straight javascript code that should not be escaped or quoted.
 // Normally, string values would be quoted. This outputs a string without quoting or escaping.
-func JsCode(s string) ΩjsCode {
-	return ΩjsCode{Code: s}
+func JsCode(s string) jsCode {
+	return jsCode{Code: s}
 }
 
-func (c ΩjsCode) JavaScript() string {
+func (c jsCode) JavaScript() string {
 	return c.Code
 }
 
@@ -216,7 +216,7 @@ func NumberString(i interface{}) string {
 
 func init() {
 	// Register objects so they can be serialized
-	gob.Register(ΩnoQuoteKey{})
-	gob.Register(ΩjsCode{})
+	gob.Register(noQuoteKey{})
+	gob.Register(jsCode{})
 	gob.Register(Undefined{})
 }

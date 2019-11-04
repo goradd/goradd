@@ -21,8 +21,8 @@ func NewDateTextbox(parent page.ControlI, id string) *DateTextbox {
 	return t
 }
 
-func (t *DateTextbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := t.DateTextbox.ΩDrawingAttributes(ctx)
+func (t *DateTextbox) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.DateTextbox.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }

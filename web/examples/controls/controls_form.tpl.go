@@ -9,8 +9,8 @@ import (
 
 func (ctrl *ControlsForm) AddHeadTags() {
 	ctrl.FormBase.AddHeadTags()
-	if "Control Examples" != "" {
-		ctrl.Page().SetTitle("Control Examples")
+	if "ControlBase Examples" != "" {
+		ctrl.Page().SetTitle("ControlBase Examples")
 	}
 
 	// double up to deal with body attributes if they exist
@@ -21,7 +21,7 @@ func (ctrl *ControlsForm) AddHeadTags() {
 func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Control Examples</h1>
+<h1>ControlBase Examples</h1>
 <div class="controlList_scroll">
 	`)
 

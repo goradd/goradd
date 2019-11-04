@@ -32,8 +32,8 @@ type PagedControlI interface {
 	SliceOffsets() (start, end int)
 }
 
-// PagedControl is a mixin that makes a Control controllable by a data pager. All embedders of a
-// PagedControl MUST implement the Serialize and Deserialize methods so that the base Control versions
+// PagedControl is a mixin that makes a ControlBase controllable by a data pager. All embedders of a
+// PagedControl MUST implement the Serialize and Deserialize methods so that the base ControlBase versions
 // of these functions will get called.
 type PagedControl struct {
 	totalItems int
@@ -138,7 +138,7 @@ func (c *PagedControl) SqlLimits() (maxRowCount, offset int) {
 }
 
 // Serialize encodes the PagedControl data for serialization. Note that all control implementations
-// that use a PagedControl MUST create their own Serialize method, call the base Control's version first,
+// that use a PagedControl MUST create their own Serialize method, call the base ControlBase's version first,
 // and then call this Serialize method.
 func (c *PagedControl) Serialize(e page.Encoder) (err error) {
 	if err = e.Encode(c.totalItems); err != nil {
@@ -194,7 +194,7 @@ type DataPagerI interface {
 // It is similar to a Paginator, but a paginator is for navigating through a series of related web pages and not just for
 // data on one form.
 type DataPager struct {
-	page.Control
+	page.ControlBase
 
 	maxPageButtons   int
 	ObjectName       string
@@ -215,10 +215,10 @@ func NewDataPager(parent page.ControlI, id string, pagedControl PagedControlI) *
 // Init is called by subclasses of a DataPager to initialize the data pager. You do not normally need
 // to call this.
 func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pagedControl PagedControlI) {
-	d.Control.Init(self, parent, id)
+	d.ControlBase.Init(self, parent, id)
 	d.Tag = "div"
-	d.LabelForNext = d.ΩT("Next")
-	d.LabelForPrevious = d.ΩT("Previous")
+	d.LabelForNext = d.GT("Next")
+	d.LabelForPrevious = d.GT("Previous")
 	d.maxPageButtons = DefaultMaxPagerButtons
 	pagedControl.AddDataPager(self.(DataPagerI))
 	d.pagedControlID = pagedControl.ID()
@@ -237,9 +237,9 @@ func (d *DataPager) ButtonProxy() *Proxy {
 }
 
 
-// ΩDrawingAttributes is called by the framework to add temporary attributes to the html.
-func (d *DataPager) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := d.Control.ΩDrawingAttributes(ctx)
+// DrawingAttributes is called by the framework to add temporary attributes to the html.
+func (d *DataPager) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := d.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "datapager")
 	return a
 }
@@ -374,9 +374,9 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 	}
 }
 
-// ΩPreRender is called by the framework to load data into the paged control just before drawing.
-func (d *DataPager) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = d.Control.ΩPreRender(ctx, buf)
+// PreRender is called by the framework to load data into the paged control just before drawing.
+func (d *DataPager) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
+	err = d.ControlBase.PreRender(ctx, buf)
 	p := d.PagedControl()
 
 	if err == nil {
@@ -390,8 +390,8 @@ func (d *DataPager) ΩPreRender(ctx context.Context, buf *bytes.Buffer) (err err
 	return
 }
 
-// ΩDrawInnerHtml is called by the framework to draw the control's inner html.
-func (d *DataPager) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+// DrawInnerHtml is called by the framework to draw the control's inner html.
+func (d *DataPager) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := d.Self.(DataPagerI).PreviousButtonsHtml()
 	pageStart, pageEnd := d.CalcBunch()
 	for i := pageStart; i <= pageEnd; i++ {
@@ -486,13 +486,13 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 	return d.ButtonProxy().ButtonHtml(actionValue, actionValue, attr, false)
 }
 
-// ΩMarshalState is an internal function to save the state of the control
-func (d *DataPager) ΩMarshalState(m maps.Setter) {
+// MarshalState is an internal function to save the state of the control
+func (d *DataPager) MarshalState(m maps.Setter) {
 	m.Set("pageNum", d.PagedControl().PageNum())
 }
 
-// ΩUnmarshalState is an internal function to restore the state of the control
-func (d *DataPager) ΩUnmarshalState(m maps.Loader) {
+// UnmarshalState is an internal function to restore the state of the control
+func (d *DataPager) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("pageNum"); ok {
 		if i, ok := v.(int); ok {
 			d.PagedControl().SetPageNum(i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
@@ -505,7 +505,7 @@ func (d *DataPager) PagedControl() PagedControlI {
 }
 
 func (d *DataPager) Serialize(e page.Encoder) (err error) {
-	if err = d.Control.Serialize(e); err != nil {
+	if err = d.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -537,7 +537,7 @@ func (d *DataPager) Serialize(e page.Encoder) (err error) {
 }
 
 func (d *DataPager) Deserialize(dec page.Decoder) (err error) {
-	if err = d.Control.Deserialize(dec); err != nil {
+	if err = d.ControlBase.Deserialize(dec); err != nil {
 		panic(err)
 	}
 

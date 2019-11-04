@@ -109,13 +109,13 @@ func (a *Application) SetupErrorPageTemplate() {
 // for moderate amounts of traffic. Override and replace the page cache with one that serializes the page state and saves
 // it to a database to make it scalable.
 func (a *Application) SetupPageCaching() {
-	// Control how pages are cached. This will vary depending on whether you are using multiple machines to run your app,
+	// ControlBase how pages are cached. This will vary depending on whether you are using multiple machines to run your app,
 	// and whether you are in development mode, etc. This default is for an in-memory store on one server and only one
 	// process on that server. It basically does not serialize anything and leaves the entire formstate intact in memory.
 	// This makes for a very fast server, but one that takes up quite a bit of RAM if you have a lot of simultaneous users.
 	page.SetPageCache(page.NewFastPageCache(1000, 60*60*24))
 
-	// Control how pages are serialized if a serialization cache is being used. This version uses the gob encoder.
+	// ControlBase how pages are serialized if a serialization cache is being used. This version uses the gob encoder.
 	// You likely will not need to change this, but you might if your database cannot handle binary data.
 	page.SetPageEncoder(page.GobPageEncoder{})
 }

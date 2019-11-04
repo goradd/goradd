@@ -54,13 +54,13 @@ func (t *EmailTextbox) Validate(ctx context.Context) bool {
 
 	if ret {
 		if t.parseErr != "" {
-			t.SetValidationError(t.ΩT("Not a valid email address: " + t.parseErr))
+			t.SetValidationError(t.GT("Not a valid email address: " + t.parseErr))
 			return false
 		} else if len(t.items) > t.maxItemCount {
 			if t.maxItemCount == 1 {
-				t.SetValidationError(t.ΩT("Enter only one email address"))
+				t.SetValidationError(t.GT("Enter only one email address"))
 			} else {
-				t.SetValidationError(fmt.Sprintf(t.ΩT("Enter at most %d email addresses separated by commas"), t.maxItemCount))
+				t.SetValidationError(fmt.Sprintf(t.GT("Enter at most %d email addresses separated by commas"), t.maxItemCount))
 			}
 
 			return false
@@ -69,8 +69,9 @@ func (t *EmailTextbox) Validate(ctx context.Context) bool {
 	return true
 }
 
-func (t *EmailTextbox) ΩUpdateFormValues(ctx *page.Context) {
-	t.Textbox.ΩUpdateFormValues(ctx)
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+func (t *EmailTextbox) UpdateFormValues(ctx *page.Context) {
+	t.Textbox.UpdateFormValues(ctx)
 	if t.Text() == "" {
 		t.items = nil
 		t.parseErr = ""

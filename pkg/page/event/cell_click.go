@@ -50,7 +50,7 @@ func CellClick() *page.Event {
 // The code can be used directly, or in a map or array.
 // For example:
 //   e := event.CellClick().ActionValue(event.RowDataActionValue("rowVal")).Delay(100)
-func RowDataActionValue(key string) javascript.ΩjsCode {
+func RowDataActionValue(key string) javascript.JavaScripter {
 	return javascript.JsCode(`g$(this).parent().data("` + key + `")`)
 }
 
@@ -58,6 +58,6 @@ func RowDataActionValue(key string) javascript.ΩjsCode {
 // If you are going to use this, call it immediately after you call CellClick, and before any other calls on the event.
 // For example:
 //   e := event.CellClick().ActionValue(event.CellDataActionValue("cellVal")).Delay(100)
-func CellDataActionValue(key string) javascript.ΩjsCode {
+func CellDataActionValue(key string) javascript.JavaScripter {
 	return javascript.JsCode(`g$(this).data("` + key + `")`)
 }

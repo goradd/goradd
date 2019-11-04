@@ -123,7 +123,7 @@ func (v MinIntValidator) Validate(c page.ControlI, s string) (msg string) {
 	}
 	if val, _ := strconv.Atoi(s); val < v.MinValue {
 		if v.Message == "" {
-			return fmt.Sprintf(c.ΩT("Enter at least %d"), v.MinValue)
+			return fmt.Sprintf(c.GT("Enter at least %d"), v.MinValue)
 		} else {
 			return v.Message
 		}
@@ -142,7 +142,7 @@ func (v MaxIntValidator) Validate(c page.ControlI, s string) (msg string) {
 	}
 	if val, _ := strconv.Atoi(s); val < v.MaxValue {
 		if v.Message == "" {
-			return fmt.Sprintf(c.ΩT("Enter at most %d"), v.MaxValue)
+			return fmt.Sprintf(c.GT("Enter at most %d"), v.MaxValue)
 		} else {
 			return v.Message
 		}

@@ -71,7 +71,7 @@ func (l *OrderedList) NumberType() string {
 	}
 }
 
-func (l *OrderedList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *OrderedList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil

@@ -7,11 +7,11 @@ import (
 )
 
 // Closure represents a javascript function pointer that can be called by javascript at a later time.
-func Closure(body string, args ...string) Ωclosure {
-	return Ωclosure{body, args}
+func Closure(body string, args ...string) closure {
+	return closure{body, args}
 }
 
-type Ωclosure struct {
+type closure struct {
 	// Body is the body javascript of the closure
 	Body string
 	// Args are the names of the arguments in the argument list of the closure
@@ -19,7 +19,7 @@ type Ωclosure struct {
 }
 
 // JavaScript implements the JavsScripter interface and returns the closure as javascript code.
-func (c Ωclosure) JavaScript() string {
+func (c closure) JavaScript() string {
 	var args string
 
 	if c.Args != nil {
@@ -31,7 +31,7 @@ func (c Ωclosure) JavaScript() string {
 
 // MarshalJSON implements the json.Marshaller interface.
 // The output of this is designed to be unpacked by the goradd javascript file during Ajax calls.
-func (c Ωclosure) MarshalJSON() (buf []byte, err error) {
+func (c closure) MarshalJSON() (buf []byte, err error) {
 	var obj = map[string]interface{}{}
 
 	obj[JsonObjectType] = "closure"
@@ -44,11 +44,11 @@ func (c Ωclosure) MarshalJSON() (buf []byte, err error) {
 
 // ClosureCall represents the result of a javascript closure that is called immediately
 // context will become the "this" variable inside the closure when called.
-func ClosureCall(body string, context string, args ...string) ΩclosureCall {
-	return ΩclosureCall{body, context, args}
+func ClosureCall(body string, context string, args ...string) closureCall {
+	return closureCall{body, context, args}
 }
 
-type ΩclosureCall struct {
+type closureCall struct {
 	// Body is the body javascript of the closure
 	Body string
 	// Context is what will become the "this" var inside of the closure when called. Specifying "this" will bring the "this" from the outer context in to the closure.
@@ -58,7 +58,7 @@ type ΩclosureCall struct {
 }
 
 // JavaScript implements the JavsScripter interface and returns the closure as javascript code.
-func (c ΩclosureCall) JavaScript() string {
+func (c closureCall) JavaScript() string {
 	var args string
 
 	if c.Args != nil {
@@ -69,7 +69,7 @@ func (c ΩclosureCall) JavaScript() string {
 }
 
 // Implements the json.Marshaller interface. The output of this is designed to be unpacked by the goradd javascript file.
-func (c ΩclosureCall) MarshalJSON() (buf []byte, err error) {
+func (c closureCall) MarshalJSON() (buf []byte, err error) {
 	var obj = map[string]interface{}{}
 
 	obj[JsonObjectType] = "closure"
@@ -83,6 +83,6 @@ func (c ΩclosureCall) MarshalJSON() (buf []byte, err error) {
 
 func init() {
 	// Register objects so they can be serialized
-	gob.Register(Ωclosure{})
-	gob.Register(ΩclosureCall{})
+	gob.Register(closure{})
+	gob.Register(closureCall{})
 }

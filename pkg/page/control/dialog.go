@@ -150,9 +150,9 @@ func (d *Dialog) Title() string {
 	return d.TitleBar().Text()
 }
 
-// ΩDrawingAttributes is called by the framework to set temporary attributes just before drawing.
-func (d *Dialog) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := d.Panel.ΩDrawingAttributes(ctx)
+// DrawingAttributes is called by the framework to set temporary attributes just before drawing.
+func (d *Dialog) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := d.Panel.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "dialog")
 	return a
 }
@@ -294,7 +294,7 @@ func (d *Dialog) SetDialogStyle(s DialogStyle) {
 }
 
 func (d *Dialog) Serialize(e page.Encoder) (err error) {
-	if err = d.Control.Serialize(e); err != nil {
+	if err = d.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -326,7 +326,7 @@ func (d *Dialog) Serialize(e page.Encoder) (err error) {
 }
 
 func (d *Dialog) Deserialize(dec page.Decoder) (err error) {
-	if err = d.Control.Deserialize(dec); err != nil {
+	if err = d.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 

@@ -41,7 +41,7 @@ type ItemListI interface {
 // turn that object into a manager of list items. ItemList will manage the id's of the items in its list, you do not
 // have control of that, and it needs to manage those ids in order to efficiently manage the selection process.
 //
-// Controls that embed this must implement the Serialize and Deserialize methods to call both the base Control's
+// Controls that embed this must implement the Serialize and Deserialize methods to call both the base ControlBase's
 // Serialize and Deserialize methods, and the ones here.
 type ItemList struct {
 	ownerID string

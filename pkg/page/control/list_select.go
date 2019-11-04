@@ -23,7 +23,7 @@ type SelectListI interface {
 // Or, use the embedded DataManager to load items. Set the size attribute if you want to display it as a
 // scrolling list rather than a dropdown list.
 type SelectList struct {
-	page.Control
+	page.ControlBase
 	ItemList
 	DataManager
 	selectedId string
@@ -38,7 +38,7 @@ func NewSelectList(parent page.ControlI, id string) *SelectList {
 
 // Init is called by subclasses.
 func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
-	l.Control.Init(self, parent, id)
+	l.ControlBase.Init(self, parent, id)
 	l.ItemList = NewItemList(l)
 	l.Tag = "select"
 }
@@ -51,13 +51,13 @@ func (l *SelectList) this() SelectListI {
 // Validate is called by the framework to validate the contents of the control. For a SelectList,
 // this is typically just checking to see if something was selected if a selection is required.
 func (l *SelectList) Validate(ctx context.Context) bool {
-	if v := l.Control.Validate(ctx); !v {
+	if v := l.ControlBase.Validate(ctx); !v {
 		return false
 	}
 
 	if l.IsRequired() && l.SelectedItem().IsEmptyValue() {
 		if l.ErrorForRequired == "" {
-			l.SetValidationError(l.ΩT("A selection is required"))
+			l.SetValidationError(l.GT("A selection is required"))
 		} else {
 			l.SetValidationError(l.ErrorForRequired)
 		}
@@ -66,8 +66,8 @@ func (l *SelectList) Validate(ctx context.Context) bool {
 	return true
 }
 
-// ΩUpdateFormValues is an internal function that lets us reflect the value of the selection that is currently on the browser
-func (l *SelectList) ΩUpdateFormValues(ctx *page.Context) {
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+func (l *SelectList) UpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 
 	if v, ok := ctx.FormValue(id); ok {
@@ -139,13 +139,13 @@ func (l *SelectList) SelectedLabel() string {
 	return ""
 }
 
-// ΩMarshalState is an internal function to save the state of the control
-func (l *SelectList) ΩMarshalState(m maps.Setter) {
+// MarshalState is an internal function to save the state of the control
+func (l *SelectList) MarshalState(m maps.Setter) {
 	m.Set("sel", l.selectedId)
 }
 
-// ΩUnmarshalState is an internal function to restore the state of the control
-func (l *SelectList) ΩUnmarshalState(m maps.Loader) {
+// UnmarshalState is an internal function to restore the state of the control
+func (l *SelectList) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("sel"); ok {
 		if s, ok := v.(string); ok {
 			l.selectedId = s
@@ -153,10 +153,10 @@ func (l *SelectList) ΩUnmarshalState(m maps.Loader) {
 	}
 }
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *SelectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.ΩDrawingAttributes(ctx)
+func (l *SelectList) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "selectlist")
 	a.Set("name", l.ID()) // needed for posts
 	if l.IsRequired() {
@@ -166,17 +166,17 @@ func (l *SelectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (l *SelectList) ΩDrawTag(ctx context.Context) string {
+func (l *SelectList) DrawTag(ctx context.Context) string {
 	if l.HasDataProvider() {
 		l.LoadData(ctx, l.this())
 		defer l.ResetData()
 	}
-	return l.Control.ΩDrawTag(ctx)
+	return l.ControlBase.DrawTag(ctx)
 }
 
 
-// ΩDrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
-func (l *SelectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+// DrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
+func (l *SelectList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil
@@ -220,7 +220,7 @@ func (l *SelectList) SetData(data interface{}) {
 }
 
 func (l *SelectList) Serialize(e page.Encoder) (err error) {
-	if err = l.Control.Serialize(e); err != nil {
+	if err = l.ControlBase.Serialize(e); err != nil {
 		return
 	}
 	if err = l.ItemList.Serialize(e); err != nil {
@@ -237,7 +237,7 @@ func (l *SelectList) Serialize(e page.Encoder) (err error) {
 }
 
 func (l *SelectList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.Control.Deserialize(dec); err != nil {
+	if err = l.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 	if err = l.ItemList.Deserialize(dec); err != nil {

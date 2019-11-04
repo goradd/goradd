@@ -85,7 +85,7 @@ func (v FloatValidator) Validate(c page.ControlI, s string) (msg string) {
 	}
 	if _, err := strconv.ParseFloat(s, 64); err != nil {
 		if msg == "" {
-			return c.ΩT("Please enter a number.")
+			return c.GT("Please enter a number.")
 		} else {
 			return v.Message
 		}
@@ -104,7 +104,7 @@ func (v MinFloatValidator) Validate(c page.ControlI, s string) (msg string) {
 	}
 	if val, _ := strconv.ParseFloat(s, 64); val < v.MinValue {
 		if msg == "" {
-			return fmt.Sprintf(c.ΩT("Enter at least %f"), v.MinValue)
+			return fmt.Sprintf(c.GT("Enter at least %f"), v.MinValue)
 		} else {
 			return v.Message
 		}
@@ -123,7 +123,7 @@ func (v MaxFloatValidator) Validate(c page.ControlI, s string) (msg string) {
 	}
 	if val, _ := strconv.ParseFloat(s, 64); val < v.MaxValue {
 		if msg == "" {
-			return fmt.Sprintf(c.ΩT("Enter at most %f"), v.MaxValue)
+			return fmt.Sprintf(c.GT("Enter at most %f"), v.MaxValue)
 		} else {
 			return v.Message
 		}

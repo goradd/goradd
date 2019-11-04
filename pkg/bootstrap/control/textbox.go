@@ -21,8 +21,8 @@ func NewTextbox(parent page.ControlI, id string) *Textbox {
 	return t
 }
 
-func (t *Textbox) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := t.Textbox.ΩDrawingAttributes(ctx)
+func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.Textbox.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }

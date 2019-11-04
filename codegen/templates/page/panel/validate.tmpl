@@ -24,7 +24,7 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
 		if obj != nil && obj.{{= t.PrimaryKeyColumn.GoName}}() != p.Connector.{{t.GoName}}.{{= t.PrimaryKeyColumn.GoName}}() {
 			isValid = false
 {{for _,col := range columns}}
-			p.{{= col.ControlName }}.SetValidationError(p.ΩT("This value is already in use, please choose a different one."))
+			p.{{= col.ControlName }}.SetValidationError(p.GT("This value is already in use, please choose a different one."))
 {{for}}
 		}
     }

@@ -81,8 +81,8 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a html.Attrib
 	return a
 }
 
-func (t *SelectTable) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := t.Table.ΩDrawingAttributes(ctx)
+func (t *SelectTable) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.Table.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "selecttable")
 	a.Set("role", "listbox")
 	a.SetDataAttribute("grWidget", "goradd.selectTable")
@@ -92,7 +92,7 @@ func (t *SelectTable) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (t *SelectTable) ΩUpdateFormValues(ctx *page.Context) {
+func (t *SelectTable) UpdateFormValues(ctx *page.Context) {
 	if data := ctx.CustomControlValue(t.ID(), "selectedId"); data != nil {
 		t.selectedID = fmt.Sprintf("%v", data)
 	}
@@ -108,11 +108,11 @@ func (t *SelectTable) SetSelectedID(id string) SelectTableI {
 	return t.this()
 }
 
-func (t *SelectTable) ΩMarshalState(m maps.Setter) {
+func (t *SelectTable) MarshalState(m maps.Setter) {
 	m.Set("selId", t.selectedID)
 }
 
-func (t *SelectTable) ΩUnmarshalState(m maps.Loader) {
+func (t *SelectTable) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("selId"); ok {
 		if id, ok2 := v.(string); ok2 {
 			t.selectedID = id

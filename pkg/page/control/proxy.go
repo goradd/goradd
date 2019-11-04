@@ -49,7 +49,7 @@ type ProxyI interface {
 //
 // The ProxyColumn of the Table object will use a proxy to draw items in a table column.
 type Proxy struct {
-	page.Control
+	page.ControlBase
 }
 
 // NewProxy creates a new proxy. The parent must be the wrapping control of the objects that the proxy will manage.
@@ -60,7 +60,7 @@ func NewProxy(parent page.ControlI, id string) *Proxy {
 }
 
 func (p *Proxy) Init(parent page.ControlI, id string) {
-	p.Control.Init(p, parent, id)
+	p.ControlBase.Init(p, parent, id)
 	p.SetShouldAutoRender(true)
 	p.SetActionValue(javascript.JsCode(`goradd.proxyVal(event)`))
 }
@@ -80,10 +80,10 @@ func (p *Proxy) OnSubmit(action action.ActionI) page.ControlI {
 // proxy get sent to the response. This should get drawn by the auto-drawing routine, since proxies are not rendered in templates.
 func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	response := p.ParentForm().Response()
-	// p.this().ΩPutCustomScript(ctx, response) // Proxies should not have custom scripts?
+	// p.this().PutCustomScript(ctx, response) // Proxies should not have custom scripts?
 
 	p.GetActionScripts(response)
-	err = p.ΩPostRender(ctx, buf)
+	err = p.PostRender(ctx, buf)
 	return
 }
 

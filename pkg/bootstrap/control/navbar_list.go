@@ -20,7 +20,7 @@ type NavbarListI interface {
 }
 
 type NavbarList struct {
-	page.Control
+	page.ControlBase
 	control.ItemList
 	subItemTag string
 	control.DataManager
@@ -40,7 +40,7 @@ func NewNavbarList(parent page.ControlI, id string) *NavbarList {
 }
 
 func (l *NavbarList) Init(self NavbarListI, parent page.ControlI, id string) {
-	l.Control.Init(self, parent, id)
+	l.ControlBase.Init(self, parent, id)
 	l.Tag = "ul"
 	l.subItemTag = "li"
 
@@ -62,24 +62,24 @@ func (l *NavbarList) this() NavbarListI {
 	return l.Self.(NavbarListI)
 }
 
-func (l *NavbarList) ΩDrawTag(ctx context.Context) string {
+func (l *NavbarList) DrawTag(ctx context.Context) string {
 	if l.DataManager.HasDataProvider() {
 		l.LoadData(ctx, l.this())
 		defer l.ResetData() // prevent the data from being serialized and taking up space unnecessarily
 	}
-	return l.Control.ΩDrawTag(ctx)
+	return l.ControlBase.DrawTag(ctx)
 }
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *NavbarList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.ΩDrawingAttributes(ctx)
+func (l *NavbarList) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "navbarlist")
 	a.AddClass("navbar-nav")
 	return a
 }
 
-func (l *NavbarList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *NavbarList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml(ctx, l.ListItems(), false)
 	buf.WriteString(h)
 	return nil
@@ -166,7 +166,7 @@ func (l *NavbarList) OnSelect (action action.ActionI) page.ControlI {
 }
 
 func (l *NavbarList) Serialize(e page.Encoder) (err error) {
-	if err = l.Control.Serialize(e); err != nil {
+	if err = l.ControlBase.Serialize(e); err != nil {
 		return
 	}
 	if err = l.ItemList.Serialize(e); err != nil {
@@ -183,7 +183,7 @@ func (l *NavbarList) Serialize(e page.Encoder) (err error) {
 }
 
 func (l *NavbarList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.Control.Deserialize(dec); err != nil {
+	if err = l.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 	if err = l.ItemList.Deserialize(dec); err != nil {

@@ -77,8 +77,8 @@ func (c *FormGroup) UseTooltips() bool {
 	return c.useTooltips
 }
 
-func (c *FormGroup) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.FormFieldWrapper.ΩDrawingAttributes(ctx)
+func (c *FormGroup) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.FormFieldWrapper.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "formGroup")
 	if c.useTooltips {
 		// bootstrap requires that parent of a tool-tipped object has position relative
@@ -87,10 +87,10 @@ func (c *FormGroup) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (c *FormGroup) ΩDrawTag(ctx context.Context) string {
+func (c *FormGroup) DrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
-	attributes := c.this().ΩDrawingAttributes(ctx)
+	attributes := c.this().DrawingAttributes(ctx)
 	if c.For() == "" {
 		panic("a FormGroup MUST have a sub control")
 	}
@@ -141,7 +141,7 @@ func (c *FormGroup) ΩDrawTag(ctx context.Context) string {
 		buf.WriteString(c.innerDivAttr.String())
 		buf.WriteString(">")
 	}
-	if err := c.this().ΩDrawInnerHtml(ctx, buf); err != nil {
+	if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
 		panic(err)
 	}
 	if hasInnerDiv {

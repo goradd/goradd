@@ -230,9 +230,9 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 		js += "event.stopPropagation();\n"
 	}
 
-	var params = action2.ΩrenderParams{control.ID(), control.ActionValue(), uint16(eventID), e.actionValue}
+	var params = action2.RenderParams{control.ID(), control.ActionValue(), uint16(eventID), e.actionValue}
 
-	var actionJs = e.action.ΩRenderScript(params)
+	var actionJs = e.action.RenderScript(params)
 
 	if e.blocking {
 		actionJs += "goradd.blockEvents = true;\n"
@@ -255,7 +255,7 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 
 	if !config.Minify {
 		// Render a comment
-		js = fmt.Sprintf("/*** Event: %s  Control Type: %T, Control Id: %s  ***/\n%s\n", e.JsEvent, control, control.ID(), js)
+		js = fmt.Sprintf("/*** Event: %s  ControlBase Type: %T, ControlBase Id: %s  ***/\n%s\n", e.JsEvent, control, control.ID(), js)
 	}
 
 	return js

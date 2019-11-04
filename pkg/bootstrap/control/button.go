@@ -87,8 +87,8 @@ func (b *Button) SetButtonSize(size ButtonSize) ButtonI {
 	return b.this()
 }
 
-func (b *Button) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := b.Button.ΩDrawingAttributes(ctx)
+func (b *Button) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := b.Button.DrawingAttributes(ctx)
 	a.AddClass(ButtonClass)
 	a.AddClass(string(b.style))
 	a.AddClass(string(b.size))

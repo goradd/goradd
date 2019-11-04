@@ -52,7 +52,7 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
 			Children: Children(
 				TextboxCreator{
 					ID:          p.ID() + "-filterText",
-					Placeholder: p.ΩT("Search..."),
+					Placeholder: p.GT("Search..."),
 					Type:        TextboxTypeSearch,
 					ControlOptions: page.ControlOptions{
 						On: page.EventList{
@@ -91,7 +91,7 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
 			Children:Children(
 				ButtonCreator{
 					ID: p.ID()+"-newButton",
-					Text: p.ΩT("New"),
+					Text: p.GT("New"),
 					OnClick:action.Ajax(p.ID(), {{= lcPanelName }}NewClick),
 				},
 			),

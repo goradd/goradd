@@ -56,16 +56,16 @@ func (l *CheckboxList) SetCellClass(c string) {
 }
 
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *CheckboxList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.ΩDrawingAttributes(ctx) // skip default checkbox list attributes
+func (l *CheckboxList) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.ControlBase.DrawingAttributes(ctx) // skip default checkbox list attributes
 	a.SetDataAttribute("grctl", "bs-checkboxlist")
 	return a
 }
 
-// ΩRenderItem is called by the framework to render a single item in the list.
-func (l *CheckboxList) ΩRenderItem(item *control.ListItem) (h string) {
+// RenderItem is called by the framework to render a single item in the list.
+func (l *CheckboxList) RenderItem(item *control.ListItem) (h string) {
 	selected := l.IsIdSelected(item.ID())
 	h = renderItemControl(item, "checkbox", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)

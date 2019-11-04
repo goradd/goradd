@@ -21,7 +21,7 @@ type MultiselectListI interface {
 // very often since it doesn't present an intuitive interface and is very browser dependent on what is presented.
 // A CheckboxList is better.
 type MultiselectList struct {
-	page.Control
+	page.ControlBase
 	ItemList
 	DataManager
 	selectedIds map[string]bool
@@ -34,7 +34,7 @@ func NewMultiselectList(parent page.ControlI, id string) *MultiselectList {
 }
 
 func (l *MultiselectList) Init(self MultiselectListI, parent page.ControlI, id string) {
-	l.Control.Init(self, parent, id)
+	l.ControlBase.Init(self, parent, id)
 	l.ItemList = NewItemList(l)
 	l.selectedIds = map[string]bool{}
 	l.Tag = "select"
@@ -66,7 +66,7 @@ func (l *MultiselectList) Size() int {
 func (l *MultiselectList) Validate(ctx context.Context) bool {
 	if l.IsRequired() && len(l.selectedIds) == 0 {
 		if l.ErrorForRequired == "" {
-			l.SetValidationError(l.ΩT("A selection is required"))
+			l.SetValidationError(l.GT("A selection is required"))
 		} else {
 			l.SetValidationError(l.ErrorForRequired)
 		}
@@ -75,8 +75,8 @@ func (l *MultiselectList) Validate(ctx context.Context) bool {
 	return true
 }
 
-// ΩUpdateFormValues is an internal function that lets us reflect the value of the selection on the web override
-func (l *MultiselectList) ΩUpdateFormValues(ctx *page.Context) {
+// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
+func (l *MultiselectList) UpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 
 	if a, ok := ctx.FormValues(id); ok {
@@ -209,8 +209,8 @@ func (l *MultiselectList) SetData(data interface{}) {
 	l.AddListItems(data)
 }
 
-// ΩMarshalState is an internal function to save the state of the control
-func (l *MultiselectList) ΩMarshalState(m maps.Setter) {
+// MarshalState is an internal function to save the state of the control
+func (l *MultiselectList) MarshalState(m maps.Setter) {
 	var ids = []string{}
 	for id := range l.selectedIds {
 		ids = append(ids, id)
@@ -218,8 +218,8 @@ func (l *MultiselectList) ΩMarshalState(m maps.Setter) {
 	m.Set("sel", ids)
 }
 
-// ΩUnmarshalState is an internal function to restore the state of the control
-func (l *MultiselectList) ΩUnmarshalState(m maps.Loader) {
+// UnmarshalState is an internal function to restore the state of the control
+func (l *MultiselectList) UnmarshalState(m maps.Loader) {
 	l.selectedIds = map[string]bool{}
 
 	if s, ok := m.Load("sel"); ok {
@@ -231,18 +231,18 @@ func (l *MultiselectList) ΩUnmarshalState(m maps.Loader) {
 	}
 }
 
-func (l *MultiselectList) ΩDrawTag(ctx context.Context) string {
+func (l *MultiselectList) DrawTag(ctx context.Context) string {
 	if l.HasDataProvider() {
 		l.LoadData(ctx, l.this())
 		defer l.ResetData()
 	}
-	return l.Control.ΩDrawTag(ctx)
+	return l.ControlBase.DrawTag(ctx)
 }
 
-// ΩDrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
+// DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *MultiselectList) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := l.Control.ΩDrawingAttributes(ctx)
+func (l *MultiselectList) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := l.ControlBase.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "multilist")
 	a.Set("name", l.ID()) // needed for posts
 	a.Set("multiple", "")
@@ -252,7 +252,7 @@ func (l *MultiselectList) ΩDrawingAttributes(ctx context.Context) html.Attribut
 	return a
 }
 
-func (l *MultiselectList) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *MultiselectList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.getItemsHtml(l.items)
 	buf.WriteString(h)
 	return nil
@@ -286,7 +286,7 @@ func (l *MultiselectList) IsIdSelected(id string) bool {
 }
 
 func (l *MultiselectList) Serialize(e page.Encoder) (err error) {
-	if err = l.Control.Serialize(e); err != nil {
+	if err = l.ControlBase.Serialize(e); err != nil {
 		return
 	}
 	if err = l.ItemList.Serialize(e); err != nil {
@@ -303,7 +303,7 @@ func (l *MultiselectList) Serialize(e page.Encoder) (err error) {
 }
 
 func (l *MultiselectList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.Control.Deserialize(dec); err != nil {
+	if err = l.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 	if err = l.ItemList.Deserialize(dec); err != nil {

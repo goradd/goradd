@@ -10,7 +10,7 @@ import (
 func (ctrl *DefaultPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Control Examples</h1>
+<h1>ControlBase Examples</h1>
 <p>
 These pages demonstrate the various supported controls that are available in goradd. These
 controls fall in to these categories:

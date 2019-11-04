@@ -48,7 +48,7 @@ func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 
 // Init is called by subclasses.
 func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string) {
-	i.Control.Init(self, parent, id)
+	i.ControlBase.Init(self, parent, id)
 	i.Tag = "div"
 	i.ParentForm().AddJavaScriptFile(config.GoraddAssets()+"/js/image-capture.js", false, nil)
 	i.typ = "jpeg"
@@ -57,17 +57,17 @@ func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string)
 	NewCanvas(i, i.canvasID())
 	
 	NewImageCapture(i, i.captureID()).
-		SetText(i.ΩT("New Image"))
+		SetText(i.GT("New Image"))
 
 	NewImageCapture(i, i.switchID()).
 		SetDisplay("none").
-		SetText(i.ΩT("Switch Camera"))
+		SetText(i.GT("Switch Camera"))
 
 	i.ErrTextID = i.ID()+"_err"
 	et := NewPanel(i, i.ErrTextID)
 	et.Tag = "p"
 	et.SetDisplay("none")
-	et.SetText(i.ΩT("This browser or device does not support image capture"))
+	et.SetText(i.GT("This browser or device does not support image capture"))
 }
 
 func (i *ImageCapture) this() ImageCaptureI {
@@ -113,13 +113,13 @@ func (i *ImageCapture) SetZoom(zoom int) {
 	i.zoom = zoom
 }
 
-// ΩPutCustomScript is called by the framework.
-func (i *ImageCapture) ΩPutCustomScript(ctx context.Context, response *page.Response) {
+// PutCustomScript is called by the framework.
+func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Response) {
 	options := map[string]interface{}{}
 	d := base64.StdEncoding.EncodeToString(i.data)
 	d = "data:image/" + i.typ + ";base64," + d
 	options["data"] = d
-	options["selectImageCaptureName"] = i.ΩT("Capture")
+	options["selectImageCaptureName"] = i.GT("Capture")
 	if i.zoom > 0 {
 		options["zoom"] = i.zoom
 	}
@@ -137,7 +137,7 @@ func (i *ImageCapture) TurnOff() {
 	i.ParentForm().Response().ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
 }
 
-// SetPixelSize sets the pixel size of the image that will be returned. Control the visible size of the canvas through
+// SetPixelSize sets the pixel size of the image that will be returned. ControlBase the visible size of the canvas through
 // setting css sizes.
 func (i *ImageCapture) SetPixelSize(width int, height int) {
 	canvas := GetCanvas(i, i.canvasID())
@@ -150,9 +150,9 @@ func (i *ImageCapture) SetMaskShape(shape ImageCaptureShape) {
 	i.shape = shape
 }
 
-// ΩDrawingAttributes is called by the framework.
-func (i *ImageCapture) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := i.Control.ΩDrawingAttributes(ctx)
+// DrawingAttributes is called by the framework.
+func (i *ImageCapture) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := i.ControlBase.DrawingAttributes(ctx)
 	if i.data != nil {
 		// Turn the data into a source attribute
 		d := base64.StdEncoding.EncodeToString(i.data)
@@ -162,8 +162,8 @@ func (i *ImageCapture) ΩDrawingAttributes(ctx context.Context) html.Attributes 
 	return a
 }
 
-// ΩUpdateFormValues is called by the framework.
-func (i *ImageCapture) ΩUpdateFormValues(ctx *page.Context) {
+// UpdateFormValues is called by the framework.
+func (i *ImageCapture) UpdateFormValues(ctx *page.Context) {
 	if data := ctx.CustomControlValue(i.ID(), "data"); data != nil {
 		s := data.(string)
 		index := strings.Index(s, ",")
@@ -176,7 +176,7 @@ func (i *ImageCapture) ΩUpdateFormValues(ctx *page.Context) {
 }
 
 func (i *ImageCapture) Serialize(e page.Encoder) (err error) {
-	if err = i.Control.Serialize(e); err != nil {
+	if err = i.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -203,7 +203,7 @@ func (i *ImageCapture) Serialize(e page.Encoder) (err error) {
 }
 
 func (i *ImageCapture) Deserialize(dec page.Decoder) (err error) {
-	if err = i.Control.Deserialize(dec); err != nil {
+	if err = i.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 

@@ -20,7 +20,7 @@ type ImageI interface {
 
 // Image is an img tag. You can display either a URL, or direct image information by setting the Src or the Data values.
 type Image struct {
-	page.Control
+	page.ControlBase
 	data []byte // slice of data itself
 	typ  string // the image MIME type (jpeg, gif, etc.) for data. Default is jpeg.
 }
@@ -34,7 +34,7 @@ func NewImage(parent page.ControlI, id string) *Image {
 
 // Init is called by subclasses. Normally you will not call this directly.
 func (i *Image) Init(self ImageI, parent page.ControlI, id string) {
-	i.Control.Init(self, parent, id)
+	i.ControlBase.Init(self, parent, id)
 	i.Tag = "img"
 	i.IsVoidTag = true
 	i.typ = "jpeg"
@@ -119,9 +119,9 @@ func (i *Image) SetHeight(height int) ImageI {
 	return i.this()
 }
 
-// ΩDrawingAttributes is called by the framework.
-func (i *Image) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := i.Control.ΩDrawingAttributes(ctx)
+// DrawingAttributes is called by the framework.
+func (i *Image) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := i.ControlBase.DrawingAttributes(ctx)
 	if i.data != nil {
 		// Turn the data into a source attribute
 		d := base64.StdEncoding.EncodeToString(i.data)
@@ -132,7 +132,7 @@ func (i *Image) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 func (i *Image) Serialize(e page.Encoder) (err error) {
-	if err = i.Control.Serialize(e); err != nil {
+	if err = i.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -146,7 +146,7 @@ func (i *Image) Serialize(e page.Encoder) (err error) {
 }
 
 func (i *Image) Deserialize(dec page.Decoder) (err error) {
-	if err = i.Control.Deserialize(dec); err != nil {
+	if err = i.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 

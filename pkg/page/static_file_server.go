@@ -120,7 +120,7 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 
 		// During development, tell the browser not to cache our assets so that if we change an asset, we don't have to deal with
 		// trying to get the browser to refresh
-		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Cache-ControlBase", "no-cache, no-store, must-revalidate")
 		http.ServeFile(w, r, localpath)
 	} else {
 		// TODO: Set up a validating cache control

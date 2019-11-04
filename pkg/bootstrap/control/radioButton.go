@@ -33,8 +33,8 @@ func (c *RadioButton) SetInline(v bool) *RadioButton {
 	return c
 }
 
-func (c *RadioButton) ΩDrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.RadioButton.ΩDrawingAttributes(ctx)
+func (c *RadioButton) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := c.RadioButton.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "bs-radio")
 	a.AddClass("form-check-input")
 
@@ -44,14 +44,14 @@ func (c *RadioButton) ΩDrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (c *RadioButton) ΩGetDrawingLabelAttributes() html.Attributes {
-	a := c.RadioButton.ΩGetDrawingLabelAttributes()
+func (c *RadioButton) GetDrawingLabelAttributes() html.Attributes {
+	a := c.RadioButton.GetDrawingLabelAttributes()
 	a.AddClass("form-check-label")
 	return a
 }
 
-func (c *RadioButton) ΩDrawTag(ctx context.Context) (ctrl string) {
-	h := c.RadioButton.ΩDrawTag(ctx)
+func (c *RadioButton) DrawTag(ctx context.Context) (ctrl string) {
+	h := c.RadioButton.DrawTag(ctx)
 	checkWrapperAttributes := html.NewAttributes().
 		AddClass("form-check").
 		SetDataAttribute("grel", c.ID()) // make sure the entire control gets removed

@@ -103,8 +103,8 @@ func (d *DateTextbox) Date() datetime.DateTime {
 	return d.dt
 }
 
-func (d *DateTextbox) ΩUpdateFormValues(ctx *page.Context) {
-	d.Textbox.ΩUpdateFormValues(ctx)
+func (d *DateTextbox) UpdateFormValues(ctx *page.Context) {
+	d.Textbox.UpdateFormValues(ctx)
 
 	t := d.Text()
 
@@ -164,7 +164,7 @@ func (v DateValidator) Validate(c page.ControlI, s string) (msg string) {
 	ctrl := c.(DateTextboxI)
 	if ctrl.Date().IsZero() {
 		if v.Message == "" {
-			return c.ΩT("Enter the format ") + ctrl.Format()
+			return c.GT("Enter the format ") + ctrl.Format()
 		} else {
 			return v.Message
 		}

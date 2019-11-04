@@ -66,8 +66,8 @@ func (s *DateTimeSpan) SetFormat(format string) *DateTimeSpan {
 	return s
 }
 
-// ΩDrawInnerHtml is called by the framework to draw the inner html of the span.
-func (s *DateTimeSpan) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) error {
+// DrawInnerHtml is called by the framework to draw the inner html of the span.
+func (s *DateTimeSpan) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) error {
 	buf.WriteString(s.value.Format(s.format))
 	// TODO: Internationalize this. Golang does not currently have date/time localization support,
 	// as in translation of month and weekday strings, but it does support arbitrary timezones.
@@ -78,7 +78,7 @@ func (s *DateTimeSpan) ΩDrawInnerHtml(ctx context.Context, buf *bytes.Buffer) e
 }
 
 func (s *DateTimeSpan) Serialize(e page.Encoder) (err error) {
-	if err = s.Control.Serialize(e); err != nil {
+	if err = s.ControlBase.Serialize(e); err != nil {
 		return
 	}
 
@@ -94,7 +94,7 @@ func (s *DateTimeSpan) Serialize(e page.Encoder) (err error) {
 }
 
 func (s *DateTimeSpan) Deserialize(dec page.Decoder) (err error) {
-	if err = s.Control.Deserialize(dec); err != nil {
+	if err = s.ControlBase.Deserialize(dec); err != nil {
 		return
 	}
 

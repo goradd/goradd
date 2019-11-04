@@ -16,7 +16,7 @@ type ActionParams struct {
 	// ControlID is the control that originated the action
 	ControlId string
 
-	// values, to be accessesed with the Event*, Action* and Control* helper functions
+	// values, to be accessesed with the Event*, Action* and ControlBase* helper functions
 	values actionValues
 }
 
@@ -56,8 +56,8 @@ func (a *ActionParams) ActionValue(i interface{}) (ok bool, err error) {
 	return
 }
 
-// ControlValue will attempt to put the Control value into the given object using json.Unmarshal.
-// You should primarily use it to get object or array values out of the Control value. If you are
+// ControlValue will attempt to put the ControlBase value into the given object using json.Unmarshal.
+// You should primarily use it to get object or array values out of the ControlBase value. If you are
 // expecting a basic type, use one of the ControlValue* helper functions instead.
 // The given value should be a pointer to an object or variable that is the expected type for the data.
 // ok will be false if no data was found.
