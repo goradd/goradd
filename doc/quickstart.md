@@ -3,10 +3,10 @@
 ### Setup Your Environment
 The below instructions mention "modules". If you are new to go or you don't know that
 modules are, we recommend installing
-the latest version of go, and following the instructions below for "Go 1.11 and 1.12 using modules."
+the latest version of go, and following the instructions below for go when not using modules.
 For more information, see [More On Modules](#more-on-modules) further below.
 
-#### For Go 1.10 and below, or Go 1.11 and 1.12 not using modules:
+#### For Go 1.10 and below, or Go 1.11+ not using modules:
 1. Create a new directory for your project, set the GOPATH environment variable to it and 
 then change your working directory to the new directory.
 1. The following steps will create a `bin` directory in your new directory. Before doing this
@@ -15,7 +15,7 @@ you would do that by editing your .bash_profile directory or .profile
 directory and on Windows you would use the System utility. Note that you will need to
 do this for every new project.
 
-#### For Go 1.11 and 1.12 using modules:
+#### For Go 1.11+ using modules:
 1. Make sure your GOPATH/bin directory is in your execution path. With go modules, you
 only need to do this once and it will work for all of your projects.
 1. Create a new project directory *outside* of your GOPATH and change your working directory 
@@ -82,8 +82,8 @@ source-level debugger is very easy to use.
 # More on Modules
 Since the introduction of go modules in version 1.10, the go build environment has
 been in flux. The transition to go modules for some has not been very smooth, and
-this is compounded by the go team's insistence that they are going to make go modules
-required in version 1.13 (they said this would happen in 1.12, and then didn't)
+this is compounded by the go team's insistence that they are eventually going to make go modules
+required (they said this would happen in 1.12, and then didn't)
 before they have worked out the kinks.
 
 That said, go modules brings a couple of nice features to the go build environment:
@@ -92,14 +92,14 @@ every time you change projects.
 2) Reproducible builds. This is the primary goal of modules, and generally has been
 successful.
 
-By default, go versions 1.11 and 1.12 try to detect whether to use go modules using
+By default, go tries to detect whether to use go modules using
 the following heuristic:
 1. Is the current working directory inside the GOPATH environment variable? If so,
 we are definitely NOT using go modules.
 2. Else, does the current working directory, or a directory above it, have a go.mod file in
 it. If so, we definitely ARE using go modules.
 3. Otherwise, we are in limbo. Go version 1.11 handled this badly by just complaining.
-Go 1.12 handles it a little better, and allows you to install things with `go get`,
+Go 1.12+ handles it a little better, and allows you to install things with `go get`,
 but you can't really do anything else.
 
 Goradd is module aware, and will work whether you are using modules or not. Because
