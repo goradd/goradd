@@ -263,7 +263,8 @@ type ControlBase struct {
 	// parentId is the id of the immediate parent control of this control. Only the form object will not have a parent.
 	// We use the id here to prevent a memory leak if we remove the control from the form.
 	parentId string
-	// children are the child controls that belong to this control. These are cached for speed.
+	// children are the child controls that belong to this control. They are cached for speed, and to allow
+	// children of controls to be accessed even when the control is not part of the form.
 	children []ControlI // Child controls
 
 	// Tag is text of the tag that will enclose the control, like "div" or "input"
@@ -360,6 +361,7 @@ func (c *ControlBase) Init(self ControlI, parent ControlI, id string) {
 		c.id = c.page.GenerateControlID(id)
 	}
 	self.SetParent(parent)
+	c.isModified = true
 }
 
 // this supports object oriented features by giving easy access to the virtual function interface.
@@ -595,12 +597,14 @@ func (c *ControlBase) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err
 	return
 }
 
-// DrawChildren renders the child controls into the buffer.
+// DrawChildren renders the child controls that have not yet been drawn into the buffer.
 func (c *ControlBase) DrawChildren(ctx context.Context, buf *bytes.Buffer) (err error) {
 	for _, child := range c.children {
-		err = child.Draw(ctx, buf)
-		if err != nil {
-			break
+		if !child.WasRendered() {
+			err = child.Draw(ctx, buf)
+			if err != nil {
+				break
+			}
 		}
 	}
 	return

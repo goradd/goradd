@@ -21,6 +21,8 @@ func NewQueryPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 
 
 func init() {
+	page.RegisterControl(QueryPanel{})
+
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 3, "query", "Querying the Database Using a QueryBuilder", NewQueryPanel,
 		[]string {

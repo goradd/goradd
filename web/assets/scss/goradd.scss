@@ -7,11 +7,12 @@
  * the theme.
  */
 
-@import "_colors.scss";
+@import "./theme/_colors.scss";
 
 @import "_table.scss";
 @import "_dialog.scss";
 @import "_checkboxlist.scss";
+
 
 button {
   cursor: pointer;

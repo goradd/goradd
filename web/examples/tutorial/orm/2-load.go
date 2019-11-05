@@ -21,6 +21,8 @@ func NewLoadPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 
 
 func init() {
+	page.RegisterControl(LoadPanel{})
+
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 2, "load", "Loading Individual Records", NewLoadPanel,
 		[]string {

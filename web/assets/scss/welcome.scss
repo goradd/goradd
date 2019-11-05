@@ -1,0 +1,104 @@
+/**
+
+This is the style sheet for the goradd welcome page that gets built in development mode, and is presented when
+you first start your application.
+
+*/
+
+@import "Nunito";
+
+body {
+  font-family: Nunito, Arial, sans-serif !important;
+  background-color: lightblue;
+}
+
+#sidebar {
+  height: 100%;
+  width: 20px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: white;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+  a {
+    text-decoration: none;
+    color:#5a6268;
+    &:hover {
+      color:black;
+    }
+  }
+  #sidebar_content {
+    transition: 0.5s;
+    visibility: hidden;
+  }
+
+  #togglebtn {
+
+    position: absolute;
+    top: 0;
+    right: 2px;
+    font-size: 24px;
+    margin-left: 50px;
+    #isopen {
+      visibility: hidden;
+    }
+    #isclosed {
+      position: absolute;
+      left:0;
+      visibility: visible;
+    }
+
+  }
+
+  &.open {
+    #sidebar_content {
+      visibility: visible;
+    }
+    width: 250px;
+    #togglebtn {
+      right: 25px;
+
+      #isopen {
+        visibility: visible;
+      }
+      #isclosed {
+        visibility: hidden;
+      }
+    }
+  }
+}
+
+#content {
+  transition: margin-left .5s;
+  padding: 16px;
+  &.open {
+    margin-left: 250px;
+  }
+}
+
+#viewSourceButton {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+}
+
+#sourceDialog {
+  top:10px;
+  left:10px;
+  right:10px;
+  bottom:10px;
+  transform: none;
+}
+
+#sourcePanel {
+  max-height: 100%;
+  display:flex;
+  flex-direction:column;
+  #filePanel {
+    max-height: 100%;
+    overflow-y: scroll;
+  }
+}

@@ -10,9 +10,9 @@ its language is very easy to learn.
 {{< control }}ObjectsPanel{{end}}
 
 {{define template }}
-<h1>The Code-generated GO Objects</h1>
+<h1>The Code-generated Go Objects</h1>
 
-<p>The Code Generator will create a GO object for most of the tables in your database in groups of two files.
+<p>The Code Generator will create a Go object for most of the tables in your database in groups of two files.
 One file is a base file, and contains code that is regenerated every time you run the code generator. This file
 contains accessors to the various fields of the table, and functions to do queries, updates and deletes.
 The other file is a companion object that embeds the base file, and that lets you override the functions

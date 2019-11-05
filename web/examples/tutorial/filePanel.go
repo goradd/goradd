@@ -9,8 +9,8 @@ import (
 
 type FilePanel struct {
 	Panel
-	file string
-	base string
+	File string
+	Base string
 }
 
 func NewFilePanel(parent page.ControlI) *FilePanel {
@@ -20,10 +20,13 @@ func NewFilePanel(parent page.ControlI) *FilePanel {
 }
 
 func (p *FilePanel) SetFile(f string) {
-	p.file = f
-	p.base = filepath.Base(f)
+	p.File = f
+	p.Base = filepath.Base(f)
 	p.Refresh()
 }
 
+func init() {
+	page.RegisterControl(FilePanel{})
+}
 
 // TODO: Serialize

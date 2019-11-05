@@ -115,6 +115,14 @@ func RemoveClass(controlID string, classes string) widgetAction {
 	return WidgetFunction(controlID, "class", "-" + classes)
 }
 
+func Show(controlID string) widgetAction {
+	return WidgetFunction(controlID, "show")
+}
+
+func Hide(controlID string) widgetAction {
+	return WidgetFunction(controlID, "hide")
+}
+
 type redirectAction struct {
 	Location string
 }
