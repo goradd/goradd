@@ -290,7 +290,7 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 
 	f.resetDrawingFlags()
 	buf2, err = f.response.GetAjaxResponse()
-	f.response = NewResponse()
+	//f.response = NewResponse() Do NOT do this here! It messes with testing framework and multi-processing of ajax responses
 	buf.Write(buf2)
 	log.FrameworkDebug("renderAjax - ", string(buf2))
 

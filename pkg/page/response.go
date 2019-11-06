@@ -167,7 +167,7 @@ func (r *Response) ExecuteJsFunction(functionName string, args ...interface{}) {
 }
 
 func (r *Response) postCommand(c *responseCommand, priority Priority) {
-	//r.Lock()
+	r.Lock()
 	switch priority {
 	case PriorityExclusive:
 		r.exclusiveCommand = c
@@ -181,7 +181,7 @@ func (r *Response) postCommand(c *responseCommand, priority Priority) {
 		c.Final = true
 		r.finalCommands = append(r.finalCommands, c)
 	}
-	//r.Unlock()
+	r.Unlock()
 }
 
 
