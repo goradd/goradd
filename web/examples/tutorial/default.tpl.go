@@ -20,7 +20,8 @@ Welcome to the GoRADD tutorial. These pages will help you learn about:
 <li>Additional support libraries</li>
 </ul>
 <p>
-Click on the items on the left to go to the various demonstration pages.
+Click on the items on the left to go to the various demonstration pages. To see the source code that generated a page,
+click on the <strong>View Source</strong> button in the upper right corner of any page.
 </p>
 `)
 

@@ -1,0 +1,22 @@
+{{< package }}orm{{end}}
+{{< imports }}
+	"github.com/goradd/goradd/pkg/orm/op"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
+{{end}}
+{{< control }}RefPanel{{end}}
+
+{{define template }}
+<h1>References</h1>
+<h2>Foreign Keys</h2>
+<p>
+Relational databases let you link records together using record ids, called foreign keys. A foreign key is just a field that
+Goradd will detect these relationships
+in your database and create links to these related objects so that you can get to them easily. If you are not using a SQL database,
+you can still get the same behavior by creating a data description file to tell Goradd about these relationships, and Goradd will
+then manage these links.
+</p>
+
+{{end}}
+
+{{renderControlTemplate}}

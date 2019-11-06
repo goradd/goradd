@@ -2,13 +2,19 @@
 This is a template file that defines how the IntroPanel will be drawn. You will learn more about panels
 in the tutorials on controls. Just know that there are a variety of ways to customize controls, and
 a template like this one is just one of the many ways. The template program used is called "got" and
-its language is very easy to learn.
+its language is very easy to learn. Its similar to the standard Go template language, but more flexible.
 }}
-{{< package }}orm{{end}}
-{{< imports }}
-{{end}}
-{{< control }}ObjectsPanel{{end}}
 
+{{#
+The define statements below create got "fragments", which is just a way to a define a variable. For example,
+the line below creates the "package" fragment and gives it the value "orm".
+}}
+{{define package }}orm{{end}}
+
+{{# This define tells the compiler to attach the template to the ObjectsPanel control. }}
+{{define control }}ObjectsPanel{{end}}
+
+{{# The template fragment here defines the actual html we want to output from the control. }}
 {{define template }}
 <h1>The Code-generated Go Objects</h1>
 
@@ -29,11 +35,11 @@ to take advantage of the changes.</p>
     that made this page.</p>
 
 {{g
-    // This "g" tag lets us drop in to go code whenever we want. Normally you would not write a lot of go code
-    // inside a template, but rather you would put your go code in an object, and refer to variables or functions
-    // from here. However, for purposes of simplifying this tutorial, we will access the database straight from here.
+    // This "g" tag lets us drop in to Go code whenever we want. Normally you would not write a lot of Go code
+    // inside a template, but rather you would put your go code in a separate file, often in a Form or Panel object.
+    // However, for purposes of simplifying this tutorial, we will access the database straight from here.
 
-    // This loads the person that has an id, or primary key, of "1". Note that even though SQL can use integers as
+    // The code here loads the person that has an id, or primary key, of "1". Note that even though SQL can use integers as
     // primary keys, we always use strings to identify primary keys. Many other types of databases only use strings,
     // and this makes our code portable.
     person := model.LoadPerson(ctx, "1")
@@ -53,8 +59,12 @@ to take advantage of the changes.</p>
 {{end}}
 
 {{#
-The code above this line mostly defines got fragments. The tag below uses the renderControlTemplate fragment,
-defined in the macros.inc.got file, to compose the actual template. Its a pattern that lets you separate got
-template code from the go code that uses the template to draw.
+The tag below will output the renderControlTemplate fragment, which is a pre-defined fragment that is part of the
+GoRADD system. If you want to see how this fragment is defined, you will find it in pkg/page/template_source/macros.inc.got.
+The tag will use the fragments defined above to create the drawing function that will eventually get compiled into the
+program. To build the template, run "go generate" on the build.go file in the directory.
+
+This is a common pattern in GoRADD that lets you separate your
+template code from the Go code that uses the template to draw.
 }}
 {{renderControlTemplate}}

@@ -11,6 +11,10 @@ to access a variety of different kinds of databases using a common interface. Th
 objects and member variables of objects, and also traverse relationships between objects.
 </p>
 <h2>Terminology</h2>
+{{#
+The ! mark below tells the template to start a section where we will create html entities for any
+characters that need it. For example, the quote characters in the paragraph below will be escaped.
+}}
 {{!
 Different databases refer to data objects using different words, but the concepts are the same. For example,
 in a SQL database a collection of objects corresponds to a "table" and a member variable in an object corresponds to a "field".

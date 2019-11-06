@@ -125,8 +125,6 @@ func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
 	bb.AddClass("gr-dialog-buttons")
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
 	d.On(event.DialogClosed().Private(), action.Ajax(d.ID(), DialogClose))
-
-	//d.FormBase().AddStyleSheetFile(config.GORADD_FONT_AWESOME_CSS, nil)
 }
 
 func (d *Dialog) TitleBar() *Panel {
@@ -269,7 +267,7 @@ func (d *Dialog) addCloseBox() {
 	d.closeBoxID = d.ID()+"-cb"
 	cb := NewButton(d.TitleBar(), d.closeBoxID)
 	cb.AddClass("gr-dialog-close")
-	cb.SetText(`<i class="fa fa-times"></i>`)
+	cb.SetText(`<span">X</span>`)
 	cb.SetTextIsHtml(true)
 	cb.On(event.Click(), action.Ajax(d.ID(), DialogClose))
 }

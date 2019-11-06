@@ -84,6 +84,7 @@ func (f *IndexForm) ShowSourceDialog() {
 		d := NewDialog(f, "sourceDialog")
 		d.SetTitle("Source")
 		d.AddCloseButton("Close", "close")
+		d.SetHasCloseBox(true)
 		NewSourcePanel(d, "sourcePanel")
 		d.Show()
 	}

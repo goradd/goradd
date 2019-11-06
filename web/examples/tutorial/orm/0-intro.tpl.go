@@ -19,6 +19,9 @@ objects and member variables of objects, and also traverse relationships between
 <h2>Terminology</h2>
 `)
 
+	buf.WriteString(`
+`)
+
 	buf.WriteString(`Different databases refer to data objects using different words, but the concepts are the same. For example,
 in a SQL database a collection of objects corresponds to a &#34;table&#34; and a member variable in an object corresponds to a &#34;field&#34;.
 Each object in a table has a member variable which contains a unique key to identify that object, called the &#34;primary key&#34;.
