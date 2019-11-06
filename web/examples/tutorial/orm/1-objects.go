@@ -21,6 +21,8 @@ func NewObjectsPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 
 
 func init() {
+	page.RegisterControl(ObjectsPanel{})
+
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 1, "objects", "Code-generated objects", NewObjectsPanel,
 		[]string {

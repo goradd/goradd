@@ -54,6 +54,10 @@ func NewModal(parent page.ControlI, id string) *Modal {
 }
 
 func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
+	if id == "" {
+		panic("Modals must have an id")
+	}
+
 	d.Panel.Init(self, parent, id)
 	d.Tag = "div"
 	d.SetShouldAutoRender(true)
@@ -221,7 +225,7 @@ func (d *Modal) PrivateAction(ctx context.Context, a page.ActionParams) {
 	}
 }
 
-func (d *Modal) Open() {
+func (d *Modal) Show() {
 	if d.Parent() == nil {
 		d.SetParent(d.ParentForm()) // This is a saved modal which has previously been created and removed. Insert it back into the form.
 	}
@@ -231,7 +235,7 @@ func (d *Modal) Open() {
 	d.ParentForm().Response().ExecuteJqueryCommand(d.ID(), "modal", page.PriorityLow, "show")
 }
 
-func (d *Modal) Close() {
+func (d *Modal) Hide() {
 	d.ParentForm().Response().ExecuteJqueryCommand(d.ID(), "modal", page.PriorityLow, "hide")
 }
 
@@ -289,7 +293,7 @@ func BootstrapAlert(form page.FormI, message string, buttons interface{}) contro
 	} else {
 		dlg.SetHasCloseBox(true)
 	}
-	dlg.Open()
+	dlg.Show()
 	return dlg
 }
 

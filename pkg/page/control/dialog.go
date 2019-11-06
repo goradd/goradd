@@ -1,6 +1,7 @@
 package control
 
 import (
+	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
@@ -15,6 +16,7 @@ const (
 )
 
 const DialogButtonEvent = "gr-dlgbtn"
+const DialogOverlayID = "gr-dlg-overlay"
 
 // DialogStyle represents the style of the dialog, whether its a plain dialog (the default),
 // or whether it should display additional indicators showing that its indicating an error, warning,
@@ -53,18 +55,17 @@ type DialogI interface {
 
 	SetTitle(string)
 	SetDialogStyle(state DialogStyle)
-	Open()
-	Close()
+	Show()
+	Hide()
 }
 
-// Our own implementation of a dialog. This works cooperatively with javascript in goradd.js to create a minimal
-// implementation of the dialog interface.
+// A Dialog is a control the pops up in front of everything on a page, with an overlay as its background. It usually
+// has a close box or button so that it may be closed. Dialogs start out hidden.
 type Dialog struct {
 	Panel
 	buttonBarID string
 	titleBarID  string
 	closeBoxID  string
-	isOpen      bool
 	dialogStyle DialogStyle
 	title       string
 }
@@ -96,17 +97,22 @@ func NewDialog(parent page.ControlI, id string) *Dialog {
 
 // Init is called by subclasses of the dialog.
 func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
-	// We add the dialog to the form. The form acts as a dialog controller/container too.
+	// Our strategy here is to create a dialog overlay that is a container for the currently shown dialogs. This
+	// container is owned by the form itself, even if sub-controls create the dialog.
 	var overlay page.ControlI
 
-	if !parent.Page().HasControl("groverlay") {
-		overlay = NewPanel(parent.ParentForm(), "groverlay")
-		overlay.SetShouldAutoRender(true)
-	} else {
-		overlay = parent.Page().GetControl("groverlay")
-		overlay.SetVisible(true)
+	if id == "" {
+		panic("Dialogs must have an id.")
 	}
 
+	if !parent.Page().HasControl(DialogOverlayID) {
+		overlay = NewPanel(parent.ParentForm(), DialogOverlayID)
+		overlay.SetShouldAutoRender(true)
+	} else {
+		overlay = parent.Page().GetControl(DialogOverlayID)
+	}
+
+	// Make the overlay our parent
 	d.Panel.Init(self, overlay, id)
 	d.Tag = "div"
 
@@ -114,13 +120,11 @@ func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
 	tb := NewPanel(d, d.titleBarID)
 	tb.AddClass("gr-dialog-title")
 
-	d.buttonBarID = d.ID()+"_buttons"
+	d.buttonBarID = d.ID()+"-buttons"
 	bb := NewPanel(d, d.buttonBarID)
 	bb.AddClass("gr-dialog-buttons")
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
 	d.On(event.DialogClosed().Private(), action.Ajax(d.ID(), DialogClose))
-
-	//d.FormBase().AddStyleSheetFile(config.GORADD_FONT_AWESOME_CSS, nil)
 }
 
 func (d *Dialog) TitleBar() *Panel {
@@ -155,6 +159,22 @@ func (d *Dialog) DrawingAttributes(ctx context.Context) html.Attributes {
 	a := d.Panel.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "dialog")
 	return a
+}
+
+func (d *Dialog) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+	if err = GetPanel(d, d.titleBarID).Draw(ctx, buf); err != nil {
+		return
+	}
+	if err = GetPanel(d, d.buttonBarID).Draw(ctx, buf); err != nil {
+		return
+	}
+	buf.WriteString(`<div class="gr-dlg-content">`)
+	if err = d.Panel.DrawInnerHtml(ctx, buf); err != nil {
+		return
+	}
+	buf.WriteString(`</div>`)
+
+	return
 }
 
 // AddButton adds the given button to the dialog. The first button added is the
@@ -247,7 +267,7 @@ func (d *Dialog) addCloseBox() {
 	d.closeBoxID = d.ID()+"-cb"
 	cb := NewButton(d.TitleBar(), d.closeBoxID)
 	cb.AddClass("gr-dialog-close")
-	cb.SetText(`<i class="fa fa-times"></i>`)
+	cb.SetText(`<span">X</span>`)
 	cb.SetTextIsHtml(true)
 	cb.On(event.Click(), action.Ajax(d.ID(), DialogClose))
 }
@@ -266,25 +286,32 @@ func (d *Dialog) AddCloseButton(label string, id string) {
 func (d *Dialog) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case DialogClose:
-		d.Close()
+		d.Hide()
 	}
 }
 
-// Open will show the dialog.
-func (d *Dialog) Open() {
+// Show will show the dialog.
+func (d *Dialog) Show() {
+	overlay := GetPanel(d, DialogOverlayID)
+	overlay.SetVisible(true)
 	d.SetVisible(true)
-	d.isOpen = true
 }
 
-// Close will hide the dialog.
-func (d *Dialog) Close() {
+// Hide will hide the dialog. The dialog will still be part of the form, just in a hidden state.
+func (d *Dialog) Hide() {
 	d.SetVisible(false)
-	d.isOpen = false
-	parent := d.Parent()
-	if len(parent.Children()) == 1 {
-		parent.SetVisible(false)
+	overlay := GetPanel(d, DialogOverlayID)
+	var vis bool
+	for _,child := range overlay.Children() {
+		if child.IsVisible() {
+			vis = true
+			break
+		}
 	}
-	d.Remove()
+
+	if !vis {
+		overlay.SetVisible(false) // hide the overlay if all of the enclosed dialogs are not visible
+	}
 }
 
 // SetDialogStyle sets the style of the dialog.
@@ -307,10 +334,6 @@ func (d *Dialog) Serialize(e page.Encoder) (err error) {
 	}
 
 	if err = e.Encode(d.closeBoxID); err != nil {
-		return
-	}
-
-	if err = e.Encode(d.isOpen); err != nil {
 		return
 	}
 
@@ -342,10 +365,6 @@ func (d *Dialog) Deserialize(dec page.Decoder) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&d.isOpen); err != nil {
-		return
-	}
-
 	if err = dec.Decode(&d.dialogStyle); err != nil {
 		return
 	}
@@ -355,6 +374,10 @@ func (d *Dialog) Deserialize(dec page.Decoder) (err error) {
 	}
 
 	return
+}
+
+func GetDialog(c page.ControlI, id string) *Dialog {
+	return c.Page().GetControl(id).(*Dialog)
 }
 
 
@@ -393,7 +416,7 @@ func defaultAlert(form page.FormI, message string, buttons interface{}) DialogI 
 	} else {
 		dlg.SetHasCloseBox(true)
 	}
-	dlg.Open()
+	dlg.Show()
 	return dlg
 }
 

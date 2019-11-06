@@ -24,9 +24,48 @@ func (ctrl *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 
 	buf.WriteString(`
 `)
-	path := page.GetContext(ctx).HttpContext.URL.Path
+
+	buf.WriteString(`<script>
+function toggleSidebar() {
+    g$('sidebar').toggleClass('open');
+    g$('content').toggleClass('open');
+}
+</script>
+`)
+
 	buf.WriteString(`
-<h1>ControlBase Examples</h1>
+
+`)
+	path := page.GetContext(ctx).HttpContext.URL.Path
+	buf.WriteString(`<div id="sidebar" class="open">
+<a href="javascript:void(0)" id="togglebtn" onclick="toggleSidebar();"><span id="isopen">&lt;</span><span id="isclosed">&gt;</span></a>
+    <div id="sidebar_content">
+        <h2><a href="/goradd/tutorial.g">Home</a></h2>
+        <h2>ORM</h2>
+          <ul>
+        `)
+	for _, pr := range pages["orm"] {
+		buf.WriteString(`            <li><a href="`)
+
+		buf.WriteString(path)
+
+		buf.WriteString(`?pageID=orm-`)
+
+		buf.WriteString(pr.id)
+
+		buf.WriteString(`">`)
+
+		buf.WriteString(pr.title)
+
+		buf.WriteString(`</a></li>
+        `)
+	}
+
+	buf.WriteString(`          </ul>
+  </div>
+</div>
+<div id="content" class="open">
+<h1>Tutorial</h1>
 `)
 
 	buf.WriteString(`
@@ -40,30 +79,7 @@ func (ctrl *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 	}
 
 	buf.WriteString(`
-<div class="sidebar">
-<h2>ORM</h2>
-  <ul>
-`)
-	for _, pr := range pages["orm"] {
-		buf.WriteString(`    <li><a href="`)
-
-		buf.WriteString(path)
-
-		buf.WriteString(`?pageID=orm-`)
-
-		buf.WriteString(pr.id)
-
-		buf.WriteString(`">`)
-
-		buf.WriteString(pr.title)
-
-		buf.WriteString(`</a></li>
-`)
-	}
-
-	buf.WriteString(`  </ul>
-</div>
-<div class="detail_container">
+<div id="detail_container">
 	`)
 
 	buf.WriteString(`
@@ -78,20 +94,6 @@ func (ctrl *IndexForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 
 	buf.WriteString(`
 </div>
-<div class="source_container">
-	`)
-
-	buf.WriteString(`
-`)
-
-	{
-		err := ctrl.Page().GetControl("sourcePanel").Draw(ctx, buf)
-		if err != nil {
-			return err
-		}
-	}
-
-	buf.WriteString(`
 </div>
 
 `)

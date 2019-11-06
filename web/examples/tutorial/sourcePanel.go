@@ -17,52 +17,44 @@ const (
 
 type SourcePanel struct {
 	Panel
-	buttonPanel *Panel
-	filePanel *FilePanel
+	ButtonPanel *Panel
+	FilePanel *FilePanel
 }
 
 func NewSourcePanel(parent page.ControlI, id string) *SourcePanel {
 	p := &SourcePanel{}
 	p.Panel.Init(p, parent, id)
-	p.buttonPanel = NewPanel(p, "buttonPanel")
-	p.SetVisible(false)
+	p.ButtonPanel = NewPanel(p, "buttonPanel")
 
-	p.filePanel = NewFilePanel(p) // we will be doing our own escaping
+	p.FilePanel = NewFilePanel(p) // we will be doing our own escaping
 
 	return p
 }
 
 // show shows the panel and loads the button bar with buttons
 func (p *SourcePanel) show(files []string) {
-	p.buttonPanel.RemoveChildren()
+	p.ButtonPanel.RemoveChildren()
 
 	for i,path := range files {
 		base := filepath.Base(path)
-		b := NewButton(p.buttonPanel, "")
+		b := NewButton(p.ButtonPanel, "")
 		b.SetLabel(fmt.Sprintf("%d. %s", i, base))
 		b.SetActionValue(path)
 		b.On(event.Click(), action.Ajax(p.ID(), FileAction))
 	}
-
-	b := NewButton(p.buttonPanel, "closeButton")
-	b.SetLabel("Close")
-	b.On(event.Click(), action.Ajax(p.ID(), CloseAction))
-
-	p.SetVisible(true)
 }
 
 func (p *SourcePanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
-	case CloseAction:
-		p.SetVisible(false)
 	case FileAction:
 		file := a.ControlValueString()
-		p.filePanel.SetFile(file)
+		p.FilePanel.SetFile(file)
 	}
 }
 
 
 func init() {
+	page.RegisterControl(SourcePanel{})
 }
 
 func GetSourcePanel(p page.ControlI) *SourcePanel {

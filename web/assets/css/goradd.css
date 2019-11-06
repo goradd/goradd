@@ -187,7 +187,15 @@ div[data-grctl=datapager] button.selected {
 /**
  * Dialog styling
  */
-#groverlay {
+/**
+The colors and themes presented here are not to try to create a massive, all encompasing theme like so many
+other css frameworks, nor is it meant to replace them.
+
+Its only a central place to put various variables that can be used to easily customize the out-of-the-box
+presentation of the controls provided with goradd.
+
+*/
+#gr-dlg-overlay {
   position: fixed;
   /* Sit on top of the override content */
   width: 100%;
@@ -200,7 +208,7 @@ div[data-grctl=datapager] button.selected {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   /* Black background with opacity */
-  z-index: 2;
+  z-index: 10;
   /* Specify a stack order in case you're using a different order for other elements */
   cursor: pointer;
   /* Add a pointer on hover */
@@ -212,26 +220,42 @@ div[data-grctl=dialog] {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
   border: solid black 2px;
   border-radius: 4px;
+  padding-top: 34px;
+  padding-bottom: 34px;
 }
 div[data-grctl=dialog] .gr-dialog-title {
-  margin: -10px -10px 5px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
   height: 24px;
-  background-color: #B0BBC5;
+  padding: 5px;
+  background-color: rgba(74, 86, 124, 0.11);
 }
 div[data-grctl=dialog] .gr-dialog-title .gr-dialog-close {
   float: right;
   margin-right: 5px;
 }
+div[data-grctl=dialog] .gr-dlg-content {
+  position: relative;
+  height: 100%;
+}
 div[data-grctl=dialog] .gr-dialog-buttons {
-  margin-top: 5px;
-  margin-left: -10px;
-  margin-right: -10px;
-  margin-bottom: -10px;
-  background-color: #B0BBC5;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 24px;
+  right: 0;
+  padding: 5px;
+  background-color: rgba(74, 86, 124, 0.11);
   border-top: solid black 1px;
+}
+div[data-grctl=dialog] .gr-dialog-buttons button {
+  float: right;
 }
 
 /**
@@ -363,4 +387,4 @@ jQuery UI is not actively developed, so we are deprecating this.
 }
 */
 
-/*# sourceMappingURL=../css/goradd.css.map */
+/*# sourceMappingURL=goradd.css.map */

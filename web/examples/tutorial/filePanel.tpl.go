@@ -15,7 +15,7 @@ func (ctrl *FilePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 <figure>
 <figcaption>`)
 
-	buf.WriteString(ctrl.base)
+	buf.WriteString(ctrl.Base)
 
 	buf.WriteString(`</figcaption>
 <pre>
@@ -23,8 +23,8 @@ func (ctrl *FilePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err
 `)
 	var content string
 
-	if ctrl.file != "" {
-		data, err := ioutil.ReadFile(ctrl.file)
+	if ctrl.File != "" {
+		data, err := ioutil.ReadFile(ctrl.File)
 		if err == nil {
 			content = html.EscapeString((string(data)))
 		}

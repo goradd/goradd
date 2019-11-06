@@ -5,14 +5,14 @@
 
 {{define template }}
 <figure>
-<figcaption>{{= ctrl.base }}</figcaption>
+<figcaption>{{= ctrl.Base }}</figcaption>
 <pre>
 <code>
 {{g
 var content string
 
-if ctrl.file != "" {
-    data,err := ioutil.ReadFile(ctrl.file)
+if ctrl.File != "" {
+    data,err := ioutil.ReadFile(ctrl.File)
     if err == nil {
         content = html.EscapeString((string(data)))
     }

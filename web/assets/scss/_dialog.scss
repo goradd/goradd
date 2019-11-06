@@ -2,7 +2,9 @@
  * Dialog styling
  */
 
-#groverlay {
+@import "./theme/_colors.scss";
+
+#gr-dlg-overlay {
   position: fixed; /* Sit on top of the override content */
   width: 100%; /* Full width (cover the whole override) */
   height: 100%; /* Full height (cover the whole override) */
@@ -11,7 +13,7 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0,0,0,0.5); /* Black background with opacity */
-  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  z-index: 10; /* Specify a stack order in case you're using a different order for other elements */
   cursor: pointer; /* Add a pointer on hover */
 }
 
@@ -21,13 +23,21 @@ div[data-grctl=dialog] {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
   border:solid black 2px;
   border-radius: 4px;
+  padding-top: 34px;
+  padding-bottom: 34px;
+
   .gr-dialog-title {
-    margin: -10px -10px 5px;
-    height: 24px;
-    background-color: #B0BBC5;
+    position:absolute;
+    left:0;
+    top:0;
+    right:0;
+    height:24px;
+    padding:5px;
+    background-color: $dialog-color;
     .gr-dialog-close {
       float: right;
       margin-right: 5px;
@@ -35,12 +45,22 @@ div[data-grctl=dialog] {
 
   }
 
+  .gr-dlg-content {
+    position:relative;
+    height:100%;
+  }
+
   .gr-dialog-buttons {
-    margin-top: 5px;
-    margin-left: -10px;
-    margin-right: -10px;
-    margin-bottom: -10px;
-    background-color: #B0BBC5;
+    position:absolute;
+    left:0;
+    bottom:0;
+    height:24px;
+    right:0;
+    padding:5px;
+    background-color: $dialog-color;
     border-top: solid black 1px;
+    button{
+      float:right;
+    }
   }
 }

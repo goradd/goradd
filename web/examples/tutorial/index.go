@@ -2,7 +2,9 @@ package tutorial
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/page/action"
+	"path"
 	"strings"
 
 	"github.com/goradd/goradd/pkg/page"
@@ -18,25 +20,10 @@ const (
 
 type IndexForm struct {
 	FormBase
-
-	currentPageRecord pageRecord
+	Cat string
+	Num int
 }
 
-type createFunction func(ctx context.Context, parent page.ControlI) page.ControlI
-type pageRecord struct {
-	order     int
-	id 	  string
-	title string
-	f     createFunction
-	files []string
-}
-type pageRecordList []pageRecord
-
-var pages = make(map[string]pageRecordList)
-
-func (p pageRecordList) Less(i, j int) bool {
-	return p[i].order < p[j].order
-}
 
 func NewIndexForm(ctx context.Context) page.FormI {
 	f := &IndexForm{}
@@ -54,8 +41,12 @@ func NewIndexForm(ctx context.Context) page.FormI {
 		},
 	)
 
-	NewSourcePanel(f, "sourcePanel")
 	return f
+}
+
+func (f *IndexForm) AddRelatedFiles() {
+	f.FormBase.AddRelatedFiles()
+	f.AddStyleSheetFile(path.Join(config.GoraddAssets(), "css", "welcome.css"), nil)
 }
 
 func (f *IndexForm) LoadControls(ctx context.Context) {
@@ -65,18 +56,19 @@ func (f *IndexForm) LoadControls(ctx context.Context) {
 		if len(parts) != 2 {
 			return
 		}
+		cat := parts[0]
+		id := parts[1]
 
-		pl, ok := pages[parts[0]]
+		pl, ok := pages[cat]
 		if !ok {
 			return
 		}
 
-		id := parts[1]
-
-		for _,pr := range pl {
+		for i,pr := range pl {
 			if pr.id == id {
 				pr.f(ctx, GetPanel(f, "detailPanel"))
-				f.currentPageRecord = pr
+				f.Cat = cat
+				f.Num = i
 				break
 			}
 		}
@@ -85,25 +77,34 @@ func (f *IndexForm) LoadControls(ctx context.Context) {
 	}
 }
 
+func (f *IndexForm) ShowSourceDialog() {
+	if f.Page().HasControl("sourceDialog") {
+		GetDialog(f, "sourceDialog").Show()
+	} else {
+		d := NewDialog(f, "sourceDialog")
+		d.SetTitle("Source")
+		d.AddCloseButton("Close", "close")
+		d.SetHasCloseBox(true)
+		NewSourcePanel(d, "sourcePanel")
+		d.Show()
+	}
+}
+
 
 func (f *IndexForm) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case ViewSourceAction:
-		GetSourcePanel(f).show(f.currentPageRecord.files)
+		if l,ok := pages[f.Cat]; ok {
+			pr := l[f.Num]
+			f.ShowSourceDialog()
+			GetSourcePanel(f).show(pr.files)
+		}
 	}
 }
 
 
 func init() {
 	page.RegisterPage(IndexFormPath, NewIndexForm, IndexFormId)
+	page.RegisterControl(IndexForm{})
 }
 
-func RegisterTutorialPage(category string, order int, id string, title string, f createFunction, files []string) {
-	v, ok := pages[category]
-	if !ok {
-		pages[category] = pageRecordList{pageRecord{order, id, title, f, files}}
-	} else {
-		v = append(v, pageRecord{order, id, title, f, files})
-		pages[category] = v
-	}
-}

@@ -19,26 +19,29 @@ objects and member variables of objects, and also traverse relationships between
 <h2>Terminology</h2>
 `)
 
-	buf.WriteString(`<p>Different databases refer to data objects using different words, but the concepts are the same. For example,<br>
-in a SQL database a collection of objects corresponds to a &#34;table&#34; and a member variable in an object corresponds to a &#34;field&#34;.<br>
-Each object in a table has a member variable which contains a unique key to identify that object, called the &#34;primary key&#34;.<br>
-Relationships between two tables are defined using a &#34;foreign key&#34;, which is essentially just a member variable in one<br>
-object that contains a copy of the primary key of a different object.<br>
-</p>
+	buf.WriteString(`
+`)
+
+	buf.WriteString(`Different databases refer to data objects using different words, but the concepts are the same. For example,
+in a SQL database a collection of objects corresponds to a &#34;table&#34; and a member variable in an object corresponds to a &#34;field&#34;.
+Each object in a table has a member variable which contains a unique key to identify that object, called the &#34;primary key&#34;.
+Relationships between two tables are defined using a &#34;foreign key&#34;, which is essentially just a member variable in one
+object that contains a copy of the primary key of a different object.
 `)
 
 	buf.WriteString(`
 <p>
 `)
 
-	buf.WriteString(`<p>For example, if a &#34;project&#34; object wanted easy access to the &#34;person&#34; object that is the manager of the project,<br>
-the &#34;project&#34; object could have a member called &#34;manager_id&#34;, which is the primary key of the &#34;person&#34; object<br>
-that contains information on the project&#39;s manager. Note that this sets up a one-to-many relationship, because<br>
-the project points to only one manager, but a manager might be managing multiple projects, and so will have multiple projects<br>
-pointing back to the manager.</p><br>
-<p>This tutorial will teach you how to set up database relationships, and traverse them to create and retrieve the data you want.</p><br>
-<p>If you have not yet set up the example database, do that now using the following steps.<br>
-</p>
+	buf.WriteString(`For example, if a &#34;project&#34; object wanted easy access to the &#34;person&#34; object that is the manager of the project,
+the &#34;project&#34; object could have a member called &#34;manager_id&#34;, which is the primary key of the &#34;person&#34; object
+that contains information on the project&#39;s manager. Note that this sets up a one-to-many relationship, because
+the project points to only one manager, but a manager might be managing multiple projects, and so will have multiple projects
+pointing back to the manager.
+
+This tutorial will teach you how to set up database relationships, and traverse them to create and retrieve the data you want.
+
+If you have not yet set up the example database, do that now using the following steps.
 `)
 
 	buf.WriteString(`

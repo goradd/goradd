@@ -1,10 +1,14 @@
+{{#
+The left arrow below in the tag is a shortcut for "define". In other words, the line below
+defines a "package" fragment.
+}}
 {{< package }}orm{{end}}
 {{< imports }}
 	"github.com/goradd/goradd/web/examples/genmodel"
 {{end}}
 {{< control }}LoadPanel{{end}}
 
-{{define template }}
+{{< template }}
 <h1>Loading an object</h1>
 <p>
 SQL databases, and some NoSQL databases, let you define indexes on fields. The code generator detects these indexes

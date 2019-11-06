@@ -21,6 +21,8 @@ func NewIntroPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 
 
 func init() {
+	page.RegisterControl(IntroPanel{})
+
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 0, "intro", "Introduction to the ORM", NewIntroPanel,
 		[]string {

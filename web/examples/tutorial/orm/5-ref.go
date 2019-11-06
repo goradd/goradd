@@ -9,25 +9,25 @@ import (
 	"path/filepath"
 )
 
-type QueryPanel struct {
+type RefPanel struct {
 	Panel
 }
 
-func NewQueryPanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &QueryPanel{}
+func NewRefPanel(ctx context.Context, parent page.ControlI) page.ControlI {
+	p := &RefPanel{}
 	p.Panel.Init(p, parent, "")
 	return p
 }
 
 
 func init() {
-	page.RegisterControl(QueryPanel{})
+	page.RegisterControl(RefPanel{})
 
 	dir := sys.SourceDirectory()
-	tutorial.RegisterTutorialPage("orm", 3, "query", "Querying the Database Using a QueryBuilder", NewQueryPanel,
+	tutorial.RegisterTutorialPage("orm", 3, "ref", "References", NewRefPanel,
 		[]string {
 			sys.SourcePath(),
-			filepath.Join(dir, "template_source", "3-query.tpl.got"),
+			filepath.Join(dir, "template_source", "5-ref.tpl.got"),
 		})
 }
 

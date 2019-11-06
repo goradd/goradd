@@ -12,9 +12,9 @@ import (
 func (ctrl *ObjectsPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>The Code-generated GO Objects</h1>
+<h1>The Code-generated Go Objects</h1>
 
-<p>The Code Generator will create a GO object for most of the tables in your database in groups of two files.
+<p>The Code Generator will create a Go object for most of the tables in your database in groups of two files.
 One file is a base file, and contains code that is regenerated every time you run the code generator. This file
 contains accessors to the various fields of the table, and functions to do queries, updates and deletes.
 The other file is a companion object that embeds the base file, and that lets you override the functions
@@ -31,11 +31,11 @@ to take advantage of the changes.</p>
     that made this page.</p>
 
 `)
-	// This "g" tag lets us drop in to go code whenever we want. Normally you would not write a lot of go code
-	// inside a template, but rather you would put your go code in an object, and refer to variables or functions
-	// from here. However, for purposes of simplifying this tutorial, we will access the database straight from here.
+	// This "g" tag lets us drop in to Go code whenever we want. Normally you would not write a lot of Go code
+	// inside a template, but rather you would put your go code in a separate file, often in a Form or Panel object.
+	// However, for purposes of simplifying this tutorial, we will access the database straight from here.
 
-	// This loads the person that has an id, or primary key, of "1". Note that even though SQL can use integers as
+	// The code here loads the person that has an id, or primary key, of "1". Note that even though SQL can use integers as
 	// primary keys, we always use strings to identify primary keys. Many other types of databases only use strings,
 	// and this makes our code portable.
 	person := model.LoadPerson(ctx, "1")

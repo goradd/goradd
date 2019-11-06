@@ -381,10 +381,10 @@ func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 
 // AddStyleSheetFile registers a StyleSheet file such that it will get loaded on the page.
 // The file will be loaded on the page at initial draw in the header, or will be inserted into the file if the page
-// is already drawn. The path is either a url, or an internal path to the location of the file
-// in the development environment. AppModeDevelopment files will automatically get copied to the local assets directory for easy
-// deployment and so that the MUX can find the file and serve it (This happens at draw time).
-// The attributes will be extra attributes included with the tag,
+// is already drawn. The path is either a url to an external resource, or a local directory to a resource on disk.
+// Paths must be registered with RegisterAssetDirectory, and will be served from their local location in a development environment,
+// but from the corresponding registered path when deployed.
+// The attributes are extra attributes included with the tag,
 // which is useful for things like crossorigin and integrity attributes.
 func (f *FormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 	if path[:4] != "http" {

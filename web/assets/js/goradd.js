@@ -185,7 +185,7 @@ function _processImmediateAjaxResponse(json, params) {
 
     goradd.each(json.controls, function(id) {
         var el = goradd.el(id),
-            $ctrl = g$(el),
+            $ctrl = g$(id),
             wrapper = goradd.el(id + "_ctl");
 
         if (this.value !== undefined && $ctrl) {
@@ -2003,6 +2003,10 @@ goradd.g.prototype = {
             this.css("display", "none");
         }
     },
+    /**
+     * show will show the element if it was hidden using hide() above. It uses inline styles, so if
+     * you want to start an item out hidden, you must give it an INLINE style of display:none.
+     */
     show: function() {
         if (!!this.element.goradd.hidden) {
             this.css("display", this.element.goradd.hidden);
