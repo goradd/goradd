@@ -33,12 +33,13 @@ const (
 // NewOrderedList creates a new ordered list (ol tag).
 func NewOrderedList(parent page.ControlI, id string) *OrderedList {
 	t := &OrderedList{}
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
-func (l *OrderedList) Init(self page.ControlI, parent page.ControlI, id string) {
-	l.UnorderedList.Init(self, parent, id)
+func (l *OrderedList) Init(parent page.ControlI, id string) {
+	l.UnorderedList.Init(parent, id)
 	l.Tag = "ol"
 }
 
@@ -156,5 +157,5 @@ func GetOrderedList(c page.ControlI, id string) *OrderedList {
 }
 
 func init() {
-	page.RegisterControl(OrderedList{})
+	page.RegisterControl(&OrderedList{})
 }

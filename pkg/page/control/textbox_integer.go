@@ -22,12 +22,13 @@ type IntegerTextbox struct {
 
 func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 	t := &IntegerTextbox{}
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
-func (t *IntegerTextbox) Init(self TextboxI, parent page.ControlI, id string) {
-	t.Textbox.Init(self, parent, id)
+func (t *IntegerTextbox) Init(parent page.ControlI, id string) {
+	t.Textbox.Init(parent, id)
 	t.ValidateWith(IntValidator{})
 }
 
@@ -241,5 +242,5 @@ func init() {
 	gob.Register(MaxIntValidator{})
 	gob.Register(MinIntValidator{})
 	gob.Register(IntValidator{})
-	page.RegisterControl(IntegerTextbox{})
+	page.RegisterControl(&IntegerTextbox{})
 }

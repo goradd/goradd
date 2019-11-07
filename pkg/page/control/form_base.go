@@ -24,22 +24,23 @@ type MockForm struct {
 }
 
 func init() {
-	page.RegisterControl(MockForm{})
+	page.RegisterControl(&MockForm{})
 }
 
 // NewMockForm creates a form that should be used as a parent of a control when unit testing the control.
 func NewMockForm() *MockForm {
 	f := &MockForm{}
-	f.FormBase.Init(nil, f, "", "MockFormId")
+	f.Self = f
+	f.FormBase.Init(nil, "MockFormId")
 	return f
 }
 
 // Init initializes the FormBase. Call this before adding other controls.
-func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
+func (f *FormBase) Init(ctx context.Context, id string) {
 	// Most of the FormBase code is in page.FormBase. The code below specifically adds popup windows and controls
 	// to all standard forms, mostly for debug and development purposes.
 
-	f.FormBase.Init(ctx, self, path, id)
+	f.FormBase.Init(ctx, id)
 
 	if db.IsProfiling(ctx) {
 		btn := NewButton(f, "grProfileButton")

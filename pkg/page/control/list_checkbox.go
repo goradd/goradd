@@ -45,13 +45,14 @@ type CheckboxList struct {
 // NewCheckboxList creates a new CheckboxList
 func NewCheckboxList(parent page.ControlI, id string) *CheckboxList {
 	l := &CheckboxList{}
-	l.Init(l, parent, id)
+	l.Self = l
+	l.Init(parent, id)
 	return l
 }
 
 // Init is called by subclasses
-func (l *CheckboxList) Init(self CheckboxListI, parent page.ControlI, id string) {
-	l.MultiselectList.Init(self, parent, id)
+func (l *CheckboxList) Init(parent page.ControlI, id string) {
+	l.MultiselectList.Init(parent, id)
 	l.Tag = "div"
 	l.rowClass = "gr-cbl-row"
 	l.labelDrawingMode = page.DefaultCheckboxLabelDrawingMode
@@ -292,5 +293,5 @@ func GetCheckboxList(c page.ControlI, id string) *CheckboxList {
 }
 
 func init() {
-	page.RegisterControl(CheckboxList{})
+	page.RegisterControl(&CheckboxList{})
 }

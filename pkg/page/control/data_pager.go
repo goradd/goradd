@@ -207,20 +207,21 @@ type DataPager struct {
 
 // NewDataPager creates a new DataPager
 func NewDataPager(parent page.ControlI, id string, pagedControl PagedControlI) *DataPager {
-	d := DataPager{}
-	d.Init(&d, parent, id, pagedControl)
-	return &d
+	d := &DataPager{}
+	d.Self = d
+	d.Init(parent, id, pagedControl)
+	return d
 }
 
 // Init is called by subclasses of a DataPager to initialize the data pager. You do not normally need
 // to call this.
-func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pagedControl PagedControlI) {
-	d.ControlBase.Init(self, parent, id)
+func (d *DataPager) Init(parent page.ControlI, id string, pagedControl PagedControlI) {
+	d.ControlBase.Init(parent, id)
 	d.Tag = "div"
 	d.LabelForNext = d.GT("Next")
 	d.LabelForPrevious = d.GT("Previous")
 	d.maxPageButtons = DefaultMaxPagerButtons
-	pagedControl.AddDataPager(self.(DataPagerI))
+	pagedControl.AddDataPager(d.Self.(DataPagerI))
 	d.pagedControlID = pagedControl.ID()
 	pxy := NewProxy(d, d.proxyID())
 	pxy.On(event.Click().Bubbles(), action.Ajax(d.ID(), PageClick))
@@ -619,5 +620,5 @@ func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 }
 
 func init() {
-	page.RegisterControl(DataPager{})
+	page.RegisterControl(&DataPager{})
 }

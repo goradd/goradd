@@ -32,14 +32,14 @@ type ItemListPanel struct {
 
 func NewItemListPanel(parent page.ControlI, id string) *ItemListPanel {
 	p := &ItemListPanel{}
-	p.Init(p, parent, id)
-	p.ParentForm().AddStyleSheetFile(config.GoraddAssets()+"/css/item-list-panel.css", nil)
-
+	p.Self = p
+	p.Init(parent, id)
 	return p
 }
 
-func (p *ItemListPanel) Init(self ItemListPanelI, parent page.ControlI, id string) {
-	p.Panel.Init(self, parent, id)
+func (p *ItemListPanel) Init(parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
+	p.ParentForm().AddStyleSheetFile(config.GoraddAssets()+"/css/item-list-panel.css", nil)
 	p.FilterPanel = NewPanel(p, p.ID()+"-filter")
 	p.ScrollPanel = NewPanel(p, p.ID()+"-scroller")
 	p.ButtonPanel = NewPanel(p, p.ID()+"-btnpnl")

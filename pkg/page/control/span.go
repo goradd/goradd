@@ -18,12 +18,13 @@ type Span struct {
 
 func NewSpan(parent page.ControlI, id string) *Span {
 	p := &Span{}
-	p.Init(p, parent, id)
+	p.Self = p
+	p.Init(parent, id)
 	return p
 }
 
-func (c *Span) Init(self SpanI, parent page.ControlI, id string) {
-	c.Panel.Init(self, parent, id)
+func (c *Span) Init(parent page.ControlI, id string) {
+	c.Panel.Init(parent, id)
 	c.Tag = "span"
 }
 
@@ -58,5 +59,5 @@ func GetSpan(c page.ControlI, id string) *Span {
 }
 
 func init() {
-	page.RegisterControl(Span{})
+	page.RegisterControl(&Span{})
 }

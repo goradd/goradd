@@ -17,7 +17,12 @@ type TableDbPanel struct {
 
 func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableDbPanel{}
-	p.Panel.Init(p, parent, "tableDbPanel")
+	p.Self = p
+	p.Init(ctx, parent, "tableDbPanel")
+}
+
+func (p *TableDbPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
 	p.AddControls(ctx,
 		PagedTableCreator{
 			ID: "table1",
@@ -64,6 +69,7 @@ func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
 			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
 		},
 	)
+
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table
@@ -96,5 +102,5 @@ func (p *TableDbPanel) CellText(ctx context.Context, col ColumnI, rowNum int, co
 }
 
 func init() {
-	page.RegisterControl(TableDbPanel{})
+	page.RegisterControl(&TableDbPanel{})
 }

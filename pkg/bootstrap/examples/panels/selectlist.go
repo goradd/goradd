@@ -17,6 +17,13 @@ type SelectListPanel struct {
 }
 
 func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
+	p := &SelectListPanel{}
+	p.Self = p
+	p.Init(ctx, parent, "selectListPanel")
+
+}
+
+func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id string) {
 	itemList := []control.ListValue{
 		{"First", 1},
 		{"Second", 2},
@@ -27,9 +34,7 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 		{"Seventh", 7},
 		{"Eighth", 8},
 	}
-
-	p := &SelectListPanel{}
-	p.Panel.Init(p, parent, "selectListPanel")
+	p.Panel.Init(parent, id)
 
 	p.AddControls(ctx,
 		FormGroupCreator{
@@ -81,6 +86,7 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 		},
 
 	)
+
 
 }
 
@@ -143,7 +149,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 
 func init() {
 	examples.RegisterPanel("lists", "Lists", NewSelectListPanel, 3)
-	page.RegisterControl(SelectListPanel{})
+	page.RegisterControl(&SelectListPanel{})
 
 	browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)
 	browsertest.RegisterTestFunction("Bootstrap Select List Server Submit", testSelectListServerSubmit)

@@ -30,9 +30,8 @@ type controlEntry struct {
 
 var controls []controlEntry
 
-func NewControlsForm(ctx context.Context) page.FormI {
-	f := &ControlsForm{}
-	f.Init(ctx, f, ControlsFormPath, ControlsFormId)
+func (f *ControlsForm) Init(ctx context.Context, formID string) {
+	f.FormBase.Init(ctx, formID)
 	f.AddRelatedFiles()
 
 	f.AddControls(ctx,
@@ -43,9 +42,7 @@ func NewControlsForm(ctx context.Context) page.FormI {
 		PanelCreator{
 			ID:             ControlsFormDetailID,
 		},
-		)
-
-	return f
+	)
 }
 
 func (f *ControlsForm) LoadControls(ctx context.Context) {
@@ -96,6 +93,5 @@ func RegisterPanel(key string,
 }
 
 func init() {
-	page.RegisterControl(ControlsForm{})
-	page.RegisterPage(ControlsFormPath, NewControlsForm, ControlsFormId)
+	page.RegisterForm(ControlsFormPath, &ControlsForm{}, ControlsFormId)
 }

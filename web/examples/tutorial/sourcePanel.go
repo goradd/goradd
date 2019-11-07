@@ -23,12 +23,15 @@ type SourcePanel struct {
 
 func NewSourcePanel(parent page.ControlI, id string) *SourcePanel {
 	p := &SourcePanel{}
-	p.Panel.Init(p, parent, id)
-	p.ButtonPanel = NewPanel(p, "buttonPanel")
-
-	p.FilePanel = NewFilePanel(p) // we will be doing our own escaping
-
+	p.Self = p
+	p.Init(parent, id)
 	return p
+}
+
+func (p *SourcePanel) Init(parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
+	p.ButtonPanel = NewPanel(p, "buttonPanel")
+	p.FilePanel = NewFilePanel(p) // we will be doing our own escaping
 }
 
 // show shows the panel and loads the button bar with buttons
@@ -54,7 +57,7 @@ func (p *SourcePanel) Action(ctx context.Context, a page.ActionParams) {
 
 
 func init() {
-	page.RegisterControl(SourcePanel{})
+	page.RegisterControl(&SourcePanel{})
 }
 
 func GetSourcePanel(p page.ControlI) *SourcePanel {

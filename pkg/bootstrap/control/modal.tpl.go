@@ -53,7 +53,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
 }
 
 func (d *TitleBar) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if d.title != "" {
+	if d.Title != "" {
 
 		buf.WriteString(`     <h5 id="`)
 
@@ -61,13 +61,13 @@ func (d *TitleBar) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err err
 
 		buf.WriteString(`_title" class="modal-title">`)
 
-		buf.WriteString(d.title)
+		buf.WriteString(d.Title)
 
 		buf.WriteString(`</h5>
 `)
 
 	}
-	if d.hasCloseBox {
+	if d.HasCloseBox {
 
 		buf.WriteString(`    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
       <span aria-hidden="true">&times;</span>

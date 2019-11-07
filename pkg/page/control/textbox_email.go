@@ -26,14 +26,15 @@ type EmailTextbox struct {
 // multi will allow the textbox to accept multiple email addresses separated by a comma.
 func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
 	t := &EmailTextbox{}
-	t.Init(t, parent, id)
-	t.maxItemCount = 1
-	t.SetType(TextboxTypeEmail)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
-func (t *EmailTextbox) Init(self TextboxI, parent page.ControlI, id string) {
-	t.Textbox.Init(self, parent, id)
+func (t *EmailTextbox) Init(parent page.ControlI, id string) {
+	t.Textbox.Init(parent, id)
+	t.maxItemCount = 1
+	t.SetType(TextboxTypeEmail)
 }
 
 func (t *EmailTextbox) this() EmailTextboxI {
@@ -194,5 +195,5 @@ func GetEmailTextbox(c page.ControlI, id string) *EmailTextbox {
 }
 
 func init() {
-	page.RegisterControl(EmailTextbox{})
+	page.RegisterControl(&EmailTextbox{})
 }

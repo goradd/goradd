@@ -42,13 +42,14 @@ type ImageCapture struct {
 // NewImageCapture creates a new image capture panel.
 func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 	i := &ImageCapture{}
-	i.Init(i, parent, id)
+	i.Self = i
+	i.Init(parent, id)
 	return i
 }
 
 // Init is called by subclasses.
-func (i *ImageCapture) Init(self ImageCaptureI, parent page.ControlI, id string) {
-	i.ControlBase.Init(self, parent, id)
+func (i *ImageCapture) Init(parent page.ControlI, id string) {
+	i.ControlBase.Init(parent, id)
 	i.Tag = "div"
 	i.ParentForm().AddJavaScriptFile(config.GoraddAssets()+"/js/image-capture.js", false, nil)
 	i.typ = "jpeg"
@@ -269,5 +270,5 @@ func GetImageCapture(c page.ControlI, id string) *ImageCapture {
 }
 
 func init() {
-	page.RegisterControl(ImageCapture{})
+	page.RegisterControl(&ImageCapture{})
 }

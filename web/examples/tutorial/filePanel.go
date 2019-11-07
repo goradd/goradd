@@ -15,7 +15,8 @@ type FilePanel struct {
 
 func NewFilePanel(parent page.ControlI) *FilePanel {
 	p := &FilePanel{}
-	p.Panel.Init(p, parent, "filePanel")
+	p.Self = p
+	p.Panel.Init(parent, "filePanel")
 	return p
 }
 
@@ -26,7 +27,7 @@ func (p *FilePanel) SetFile(f string) {
 }
 
 func init() {
-	page.RegisterControl(FilePanel{})
+	page.RegisterControl(&FilePanel{})
 }
 
 // TODO: Serialize

@@ -21,13 +21,14 @@ type Fieldset struct {
 // NewFieldset creates a new Fieldset.
 func NewFieldset(parent page.ControlI, id string) *Fieldset {
 	p := &Fieldset{}
-	p.Init(p, parent, id)
+	p.Self = p
+	p.Init(parent, id)
 	return p
 }
 
 // Init is called by subclasses of Fieldset.
-func (c *Fieldset) Init(self FieldsetI, parent page.ControlI, id string) {
-	c.Panel.Init(self, parent, id)
+func (c *Fieldset) Init(parent page.ControlI, id string) {
+	c.Panel.Init(parent, id)
 	c.Tag = "fieldset"
 }
 
@@ -90,5 +91,5 @@ func GetFieldset(c page.ControlI, id string) *Fieldset {
 }
 
 func init() {
-	page.RegisterControl(Fieldset{})
+	page.RegisterControl(&Fieldset{})
 }

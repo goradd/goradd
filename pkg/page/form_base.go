@@ -22,7 +22,8 @@ import (
 type FormI interface {
 	ControlI
 	// Init initializes the base structures of the form. Do this before adding controls to the form.
-	Init(ctx context.Context, self FormI, path string, id string)
+	// Note that this signature is different than that of the Init function in FormBase.
+	Init(ctx context.Context, id string)
 	PageDrawingFunction() PageDrawFunc
 
 	LoadControls(ctx context.Context)
@@ -63,7 +64,7 @@ type FormBase struct {
 }
 
 // Init initializes the form control. Note that ctx might be nil if we are unit testing.
-func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string) {
+func (f *FormBase) Init(ctx context.Context, id string) {
 	var p = &Page{}
 	p.Init()
 
@@ -72,7 +73,9 @@ func (f *FormBase) Init(ctx context.Context, self FormI, path string, id string)
 		panic("Forms must have an id assigned")
 	}
 	f.ControlBase.id = id
-	f.ControlBase.Init(self, nil, id)
+
+	// TODO: remove first param from Init call below
+	f.ControlBase.Init(nil, id)
 	f.Tag = "form"
 }
 

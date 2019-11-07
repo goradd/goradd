@@ -27,6 +27,10 @@ func GetPageCache() PageCacheI {
 	return pageCache
 }
 
+func HasPage(pageStateId string) bool {
+	return pageCache.Has(pageStateId)
+}
+
 // FastPageCache is an in memory page cache that does no serialization and uses an LRU cache of page objects.
 // Objects that are too old are removed, and if the cache is full,
 // the oldest item(s) will be removed. When a page is updated, it is moved to the top. Whenever an item is set,

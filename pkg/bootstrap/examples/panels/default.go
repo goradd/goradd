@@ -14,13 +14,14 @@ type DefaultPanel struct {
 
 func NewDefaultPanel(ctx context.Context, parent page.ControlI) {
 	p := &DefaultPanel{}
-	p.Panel.Init(p, parent, "defaultPanel")
+	p.Self = p
+	p.Panel.Init(parent, "defaultPanel")
 	config.LoadBootstrap(p.ParentForm())
 }
 
 func init() {
 	examples.RegisterPanel("", "Home", NewDefaultPanel, 1)
-	page.RegisterControl(DefaultPanel{})
+	page.RegisterControl(&DefaultPanel{})
 
 	//browsertest.RegisterTestFunction("Plain Textbox", TestPlain)
 }

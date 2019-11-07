@@ -53,14 +53,8 @@ type {{= formName }} struct {
     control.FormBase
 }
 
-func New{{= formName }}(ctx context.Context) page.FormI {
-    f := new({{= formName }})
-    f.Init(ctx, f, {{= title }}EditPath, {{= title }}EditID)
-    return f
-}
-
-func (f *{{= formName }})Init(ctx context.Context, self page.FormI, path string, id string) {
-    f.FormBase.Init(ctx, self, path, id)
+func (f *{{= formName }})Init(ctx context.Context, id string) {
+    f.FormBase.Init(ctx, id)
 
 	f.AddRelatedFiles()
 	f.createControls(ctx)
@@ -154,8 +148,7 @@ func (f *{{= formName }}) returnToPrevious(ctx context.Context) {
 
 // init functions are called once when the web server first starts up.
 func init() {
-	page.RegisterPage({{= title }}EditPath,  New{{= formName }}, {{= title }}EditID)
-	page.RegisterControl({{= formName }}{})
+	page.RegisterForm({{= title }}EditPath,  &{{= formName }}{}, {{= title }}EditID)
 }
 
 

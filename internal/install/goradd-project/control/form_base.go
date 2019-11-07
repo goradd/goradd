@@ -2,7 +2,6 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )
 
@@ -12,8 +11,8 @@ type FormBase struct {
 	control.FormBase
 }
 
-func (f *FormBase) Init(ctx context.Context, self page.FormI, path string, id string) {
-	f.FormBase.Init(ctx, self, path, id)
+func (f *FormBase) Init(ctx context.Context, id string) {
+	f.FormBase.Init(ctx, id)
 
 	// additional initializations. For example, your custom page template.
 	//f.Page().SetDrawFunction()

@@ -46,13 +46,14 @@ type RadioList struct {
 // NewRadioList creates a new RadioList control.
 func NewRadioList(parent page.ControlI, id string) *RadioList {
 	l := &RadioList{}
-	l.Init(l, parent, id)
+	l.Self = l
+	l.Init(parent, id)
 	return l
 }
 
 // Init is called by subclasses.
-func (l *RadioList) Init(self RadioListI, parent page.ControlI, id string) {
-	l.SelectList.Init(self, parent, id)
+func (l *RadioList) Init(parent page.ControlI, id string) {
+	l.SelectList.Init(parent, id)
 	l.Tag = "div"
 	l.rowClass = "gr-cbl-row"
 	l.labelDrawingMode = page.DefaultCheckboxLabelDrawingMode
@@ -316,5 +317,5 @@ func GetRadioList(c page.ControlI, id string) *RadioList {
 }
 
 func init() {
-	page.RegisterControl(RadioList{})
+	page.RegisterControl(&RadioList{})
 }

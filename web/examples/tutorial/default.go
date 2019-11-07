@@ -13,10 +13,11 @@ type DefaultPanel struct {
 
 func NewDefaultPanel(ctx context.Context, parent page.ControlI)  {
 	p := &DefaultPanel{}
-	p.Panel.Init(p, parent, "defaultPanel")
+	p.Self = p
+	p.Panel.Init(parent, "defaultPanel")
 }
 
 
 func init() {
-	page.RegisterControl(DefaultPanel{})
+	page.RegisterControl(&DefaultPanel{})
 }

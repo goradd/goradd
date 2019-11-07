@@ -32,7 +32,12 @@ func (p *CheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
 
 func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &CheckboxPanel{}
-	p.Panel.Init(p, parent, "checkboxPanel")
+	p.Self = p
+	p.Init(ctx, parent, "checkboxPanel")
+}
+
+func (p *CheckboxPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, "checkboxPanel")
 	p.AddControls(ctx,
 		FormFieldWrapperCreator{
 			ID:"checkbox1-ff",
@@ -91,7 +96,7 @@ func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 func init() {
 	browsertest.RegisterTestFunction("Checkbox Ajax Submit", testCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Checkbox Server Submit", testCheckboxServerSubmit)
-	page.RegisterControl(CheckboxPanel{})
+	page.RegisterControl(&CheckboxPanel{})
 }
 
 // testPlain exercises the plain text box

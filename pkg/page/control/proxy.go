@@ -54,13 +54,14 @@ type Proxy struct {
 
 // NewProxy creates a new proxy. The parent must be the wrapping control of the objects that the proxy will manage.
 func NewProxy(parent page.ControlI, id string) *Proxy {
-	p := Proxy{}
+	p := &Proxy{}
+	p.Self = p
 	p.Init(parent, id)
-	return &p
+	return p
 }
 
 func (p *Proxy) Init(parent page.ControlI, id string) {
-	p.ControlBase.Init(p, parent, id)
+	p.ControlBase.Init(parent, id)
 	p.SetShouldAutoRender(true)
 	p.SetActionValue(javascript.JsCode(`goradd.proxyVal(event)`))
 }
@@ -217,5 +218,5 @@ func GetProxy(c page.ControlI, id string) *Proxy {
 }
 
 func init() {
-	page.RegisterControl(Proxy{})
+	page.RegisterControl(&Proxy{})
 }

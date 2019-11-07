@@ -17,7 +17,8 @@ type Textbox struct {
 
 func NewTextbox(parent page.ControlI, id string) *Textbox {
 	t := new(Textbox)
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
@@ -28,7 +29,7 @@ func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 func init() {
-	page.RegisterControl(Textbox{})
+	page.RegisterControl(&Textbox{})
 }
 
 // Use TextboxCreator to create a textbox. Pass it to AddControls of a control, or as a Child of

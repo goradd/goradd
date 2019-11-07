@@ -25,12 +25,13 @@ type Tabs struct {
 
 func NewTabs(parent page.ControlI, id string) *Tabs {
 	t := &Tabs{}
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
-func (l *Tabs) Init(self page.ControlI, parent page.ControlI, id string) {
-	l.Panel.Init(self, parent, id)
+func (l *Tabs) Init(parent page.ControlI, id string) {
+	l.Panel.Init(parent, id)
 	l.On(event.Event("show.bs.tab"), action.SetControlValue(l.ID(), "selectedId", javascript.JsCode("event.target.id")))
 }
 
@@ -62,5 +63,5 @@ func GetTabs(c page.ControlI, id string) *Tabs {
 }
 
 func init() {
-	page.RegisterControl(Tabs{})
+	page.RegisterControl(&Tabs{})
 }

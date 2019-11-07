@@ -29,12 +29,13 @@ type MultiselectList struct {
 
 func NewMultiselectList(parent page.ControlI, id string) *MultiselectList {
 	l := &MultiselectList{}
-	l.Init(l, parent, id)
+	l.Self = l
+	l.Init(parent, id)
 	return l
 }
 
-func (l *MultiselectList) Init(self MultiselectListI, parent page.ControlI, id string) {
-	l.ControlBase.Init(self, parent, id)
+func (l *MultiselectList) Init(parent page.ControlI, id string) {
+	l.ControlBase.Init(parent, id)
 	l.ItemList = NewItemList(l)
 	l.selectedIds = map[string]bool{}
 	l.Tag = "select"
@@ -364,5 +365,5 @@ func GetMultiselectList(c page.ControlI, id string) *MultiselectList {
 }
 
 func init() {
-	page.RegisterControl(MultiselectList{})
+	page.RegisterControl(&MultiselectList{})
 }

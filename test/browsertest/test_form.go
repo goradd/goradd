@@ -43,21 +43,19 @@ type TestForm struct {
 	usingForm		bool
 }
 
-func NewTestForm(ctx context.Context) page.FormI {
-	f := &TestForm{}
-	f.Init(ctx, f, TestFormPath, TestFormId)
+func (form *TestForm) Init(ctx context.Context, formID string) {
+	form.FormBase.Init(ctx, formID)
 	//f.Page().SetDrawFunction(LoginPageTmpl)
-	f.AddRelatedFiles()
-	f.createControls(ctx)
-	f.WatchChannel(ctx, "redraw")
-	testFormPageState = f.Page().StateID()
+	form.AddRelatedFiles()
+	form.createControls(ctx)
+	form.WatchChannel(ctx, "redraw")
+	testFormPageState = form.Page().StateID()
 
 	grctx := page.GetContext(ctx)
 
 	if _, ok := grctx.FormValue("all"); ok {
-		f.On(event2.MessengerReady(), action.Ajax(f.ID(), TestAllAction))
+		form.On(event2.MessengerReady(), action.Ajax(form.ID(), TestAllAction))
 	}
-	return f
 }
 
 func (form *TestForm) createControls(ctx context.Context) {
@@ -152,7 +150,7 @@ func (form *TestForm) F(f func(page.FormI) ) {
 	testForm := pc.Get(form.Controller.pagestate).Form()
 	{
 		form.usingForm = true
-		defer func(){form.usingForm = false}()
+		defer func(){ form.usingForm = false}()
 		f(testForm)
 	}
 	pc.Set(form.Controller.pagestate, testForm.Page())
@@ -465,5 +463,5 @@ func (form *TestForm) NoSerialize() bool {
 }
 
 func init() {
-	page.RegisterPage(TestFormPath, NewTestForm, TestFormId)
+	page.RegisterForm(TestFormPath, &TestForm{}, TestFormId)
 }

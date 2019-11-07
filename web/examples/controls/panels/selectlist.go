@@ -16,6 +16,14 @@ type SelectListPanel struct {
 }
 
 func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
+	p := &SelectListPanel{}
+	p.Self = p
+	p.Init(ctx, parent, "selectListPanel")
+}
+
+func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
+
 	itemList := []ListValue{
 		{"First", 1},
 		{"Second", 2},
@@ -27,8 +35,6 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 		{"Eighth", 8},
 	}
 
-	p := &SelectListPanel{}
-	p.Panel.Init(p, parent, "selectListPanel")
 	p.AddControls(ctx,
 		FormFieldWrapperCreator{
 			Label: "Standard SelectList",
@@ -113,6 +119,8 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 
 	)
 }
+
+
 
 func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
@@ -205,6 +213,6 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 */
 
 func init() {
-	page.RegisterControl(SelectListPanel{})
+	page.RegisterControl(&SelectListPanel{})
 }
 
