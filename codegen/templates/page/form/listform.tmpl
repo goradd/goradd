@@ -34,7 +34,6 @@ const {{= title }}ListID = "{{= formName }}"
 // To edit it, make a copy and move it out of this package and into another
 type {{= formName }} struct {
     control.FormBase
-    ListPanel    *panel.{{= t.GoName }}ListPanel
 }
 
 func (f *{{= formName }})Init(ctx context.Context, id string) {
