@@ -13,7 +13,7 @@ import (
 	// Below is where you import packages that register forms
 	_ "goradd-project/web/form" // Your  forms.
 
-	_ "github.com/goradd/goradd/pkg/bootstrap/examples" // Bootstrap examples
+	_ "github.com/goradd/goradd/pkg/bootstrap/examples/panels" // Bootstrap examples
 	_ "github.com/goradd/goradd/test/browsertest"
 	_ "github.com/goradd/goradd/web/examples/controls/panels"
 	_ "goradd-project/gen" // Code-generated forms
