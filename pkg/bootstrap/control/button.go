@@ -61,12 +61,13 @@ const ButtonBlock = "btn-block"
 // Creates a new standard html button
 func NewButton(parent page.ControlI, id string) *Button {
 	b := &Button{}
-	b.Init(b, parent, id)
+	b.Self = b
+	b.Init(parent, id)
 	return b
 }
 
-func (b *Button) Init(self page.ControlI, parent page.ControlI, id string) {
-	b.Button.Init(self, parent, id)
+func (b *Button) Init(parent page.ControlI, id string) {
+	b.Button.Init(parent, id)
 	b.style = ButtonStyleSecondary // default
 	config.LoadBootstrap(b.ParentForm())
 }
@@ -195,5 +196,5 @@ func GetButton(c page.ControlI, id string) *Button {
 }
 
 func init() {
-	page.RegisterControl(Button{})
+	page.RegisterControl(&Button{})
 }

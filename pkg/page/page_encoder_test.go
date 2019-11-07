@@ -40,7 +40,8 @@ type BasicForm struct {
 
 func CreateBasicForm(ctx context.Context) page.FormI {
 	f := &BasicForm{}
-	f.Init(ctx, f, "/test/BasicForm", "BasicForm")
+	f.Self = f
+	f.FormBase.Init(ctx, "BasicForm")
 	f.createControls(ctx)
 	return f
 }
@@ -81,7 +82,7 @@ func TestBasicFormEncoding(t *testing.T) {
 	var form = CreateBasicForm(nil)
 	var b bytes.Buffer
 
-	page.RegisterControl(BasicForm{})
+	page.RegisterControl(&BasicForm{})
 
 	pe := page.GobPageEncoder{}
 	e := pe.NewEncoder(&b)

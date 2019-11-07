@@ -15,13 +15,18 @@ type QueryPanel struct {
 
 func NewQueryPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 	p := &QueryPanel{}
-	p.Panel.Init(p, parent, "")
+	p.Self = p
+	p.Init(ctx, parent, "")
 	return p
+}
+
+func (p *QueryPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
 }
 
 
 func init() {
-	page.RegisterControl(QueryPanel{})
+	page.RegisterControl(&QueryPanel{})
 
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 3, "query", "Querying the Database Using a QueryBuilder", NewQueryPanel,

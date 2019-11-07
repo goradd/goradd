@@ -97,7 +97,7 @@ func (m *WsMessenger) webSocketAuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		pagestate := r.FormValue("id")
 
-		if !page.GetPageManager().HasPage(pagestate) {
+		if !page.HasPage(pagestate) {
 			// The page manager has no record of the pagestate, so either it is expired or never existed
 			return // TODO: return error?
 		}

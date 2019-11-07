@@ -19,9 +19,8 @@ type JsUnitForm struct {
 	RunButton *Button
 }
 
-func NewJsUnitForm(ctx context.Context) page.FormI {
-	f := &JsUnitForm{}
-	f.Init(ctx, f, JsUnitTestFormPath, JsUnitTestFormId)
+func (f *JsUnitForm)Init(ctx context.Context, formID string) {
+	f.FormBase.Init(ctx, formID)
 	f.AddRelatedFiles()
 
 	f.Results = NewPanel(f, "results")
@@ -29,7 +28,6 @@ func NewJsUnitForm(ctx context.Context) page.FormI {
 	f.RunButton = NewButton(f, "startButton")
 	f.RunButton.SetText("Start Test")
 	f.RunButton.OnSubmit(action.Javascript("goradd.jsUnit.run(goradd.testsuite, 'results')"))
-	return f
 }
 
 func (f *JsUnitForm) AddRelatedFiles() {
@@ -54,6 +52,5 @@ func testJsUnit(t *TestForm)  {
 }
 
 func init() {
-	page.RegisterPage(JsUnitTestFormPath, NewJsUnitForm, JsUnitTestFormId)
-	page.RegisterControl(JsUnitForm{})
+	page.RegisterForm(JsUnitTestFormPath, &JsUnitForm{}, JsUnitTestFormId)
 }

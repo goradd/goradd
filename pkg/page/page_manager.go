@@ -5,15 +5,21 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/log"
-	"strings"
+	"reflect"
 )
 
-var pageManager = newPageManager() // Create a new singleton page manager.
+var pageManager PageManagerI = newPageManager() // Create a new singleton page manager.
 
 type FormCreationFunction func(context.Context) FormI
+type formInfo struct {
+	formID string
+	typ reflect.Type
+}
 
 type PageManagerI interface {
-	RegisterPage(path string, creationFunction FormCreationFunction)
+	RegisterForm(path string, form FormI, formID string)
+	RunPage(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, httpErrCode int)
+	IsPage(path string) bool
 }
 
 // The PageManager is a singleton global that manages the registration and deployment of pages. It acts like
@@ -21,8 +27,7 @@ type PageManagerI interface {
 // created for each page that associate a function to create a page, with the URL that corresponds to the page,
 // and the ID of the page.
 type PageManager struct {
-	pathRegistry   map[string]FormCreationFunction // maps paths to functions that create forms
-	formIdRegistry map[string]FormCreationFunction // maps form ids to functions that create forms
+	forms map[string]formInfo                      // maps paths to form info
 }
 
 // PagePathPrefix is a prefix you can use in front of all goradd pages, like a directory path, to indicate that
@@ -30,47 +35,43 @@ type PageManager struct {
 var PagePathPrefix = ""
 
 // GetPageManager returns the current page manager.
-func GetPageManager() *PageManager {
+func GetPageManager() PageManagerI {
 	return pageManager
 }
 
-func newPageManager() *PageManager {
-	return &PageManager{pathRegistry: make(map[string]FormCreationFunction), formIdRegistry: make(map[string]FormCreationFunction)}
+// SetPageManger injects a new page manager. Call this at init time.
+func SetPageManager(p PageManagerI)  {
+	pageManager = p
 }
 
-// RegisterPage associates the given URL path with the given form creation function and form id and registers it with page manager.
+// newPageManager creates a default page manager that associates url paths with forms.
+func newPageManager() *PageManager {
+	return &PageManager{forms: make(map[string]formInfo)}
+}
+
+// RegisterForm associates the given URL path with the given form and form id and registers it with page manager.
 // Call this from an init() function. Afterwards, whenever a user navigates to the given path, the form will be
 // created and presented to the user.
-func RegisterPage(path string, creationFunction FormCreationFunction, formId string) {
-	if _, ok := pageManager.pathRegistry[path]; ok {
-		panic("Page is already registered: " + path)
-	}
-	pageManager.pathRegistry[path] = creationFunction
-	pageManager.formIdRegistry[formId] = creationFunction
+func RegisterForm(path string, form FormI, id string) {
+	pageManager.RegisterForm(path, form, id)
 }
 
-func (m *PageManager) getNewPageFunc(path string) (f FormCreationFunction, ok bool) {
-	if PagePathPrefix != "" {
-		if strings.Index(path, PagePathPrefix) == 0 { // starts with prefix
-			path = path[len(PagePathPrefix):] // remove prefix from path
-		} else {
-			return // not found in path
-		}
+func (m *PageManager)RegisterForm(path string, f FormI, id string) {
+	if _, ok := m.forms[path]; ok {
+		panic("Form is already registered: " + path)
 	}
-	f, ok = m.pathRegistry[path]
-	return
+	if !controlIsRegistered(f) {
+		RegisterControl(f) // a form is a control, and needs to be registered for the serializer
+	}
+	typ := reflect.Indirect(reflect.ValueOf(f)).Type()
+
+	m.forms[path] = formInfo{typ: typ, formID: id}
 }
 
 // IsPage returns true if the given path has been registered with the page manager.
 func (m *PageManager) IsPage(path string) bool {
-	_, ok := m.getNewPageFunc(path)
+	_, ok := m.forms[path]
 	return ok
-}
-
-// HasPage returns true if the given page state is currently in the page cache. This indicates that a user
-// has recently accessed a page with the given state id. You can use this to validate client interactions.
-func (m *PageManager) HasPage(pageStateId string) bool {
-	return pageCache.Has(pageStateId)
 }
 
 // getPage returns a page from the cache, whether it is previously allocated, or
@@ -94,18 +95,19 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 			return
 		}
 		// page was not found, so make a new one
-		f, _ := m.getNewPageFunc(gCtx.URL.Path)
-		if f == nil {
-			panic("Could not find the page creation function")
+		var form FormI
+		if info, ok := m.forms[gCtx.URL.Path]; !ok {
+			panic("form not found for path: " + gCtx.URL.Path)
+		} else {
+			form = reflect.New(info.typ).Interface().(FormI)
+			form.control().Self = form
+			form.Init(ctx, info.formID)
 		}
-		page = f(ctx).Page() // call the page create function and get the page
+		page = form.Page()
 		pageStateId = pageCache.NewPageID()
 		page.stateId = pageStateId
 		log.FrameworkDebugf("Created page %s", pageStateId)
-		//pageCache.Set(pageStateId, page)
 		isNew = true
-	} else {
-		//page.Restore() // TODO: Only restore if we were deserealized. Tricky to detect.
 	}
 	return
 }

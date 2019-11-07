@@ -15,13 +15,18 @@ type CrudPanel struct {
 
 func NewCrudPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 	p := &CrudPanel{}
-	p.Panel.Init(p, parent, "")
+	p.Self = p
+	p.Init(ctx, parent, "")
 	return p
+}
+
+func (p *CrudPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
 }
 
 
 func init() {
-	page.RegisterControl(CrudPanel{})
+	page.RegisterControl(&CrudPanel{})
 
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 3, "crud", "Creating, Modifying and Deleting Database Objects", NewCrudPanel,

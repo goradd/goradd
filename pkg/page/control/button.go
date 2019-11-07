@@ -34,13 +34,14 @@ type Button struct {
 // NewButton creates a new standard html button
 func NewButton(parent page.ControlI, id string) *Button {
 	b := &Button{}
-	b.Init(b, parent, id)
+	b.Self = b
+	b.Init(parent, id)
 	return b
 }
 
 // Init is called by subclasses of Button to initialize the button control structure.
-func (b *Button) Init(self page.ControlI, parent page.ControlI, id string) {
-	b.ControlBase.Init(self, parent, id)
+func (b *Button) Init(parent page.ControlI, id string) {
+	b.ControlBase.Init(parent, id)
 	b.Tag = "button"
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
@@ -134,5 +135,5 @@ func GetButton(c page.ControlI, id string) *Button {
 }
 
 func init() {
-	page.RegisterControl(Button{})
+	page.RegisterControl(&Button{})
 }

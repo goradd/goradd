@@ -37,14 +37,8 @@ type {{= formName }} struct {
     ListPanel    *panel.{{= t.GoName }}ListPanel
 }
 
-func New{{= formName }}(ctx context.Context) page.FormI {
-    f := new({{= formName }})
-    f.Init(ctx, f, {{= title }}ListPath, {{= title }}ListID)
-    return f
-}
-
-func (f *{{= formName }})Init(ctx context.Context, self page.FormI, path string, id string) {
-    f.FormBase.Init(ctx, self, path, id)
+func (f *{{= formName }})Init(ctx context.Context, id string) {
+    f.FormBase.Init(ctx, id)
 
 	f.AddRelatedFiles()
 	f.createControls(ctx)
@@ -86,8 +80,7 @@ func (f *{{= formName }}) LoadControls(ctx context.Context) {
 
 // init functions are called once when the web server first starts up.
 func init() {
-	page.RegisterPage({{= title }}ListPath,  New{{= formName }}, {{= title }}ListID)
-	page.RegisterControl({{= formName }}{})
+	page.RegisterForm({{= title }}ListPath,  &{{= formName }}{}, {{= title }}ListID)
 }
 
 

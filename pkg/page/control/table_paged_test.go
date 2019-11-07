@@ -35,7 +35,8 @@ func TestPagedTable_Serialize(t *testing.T) {
 	enc := gob.NewEncoder(&buf)
 
 	f := &pagedTableTestForm{}
-	f.FormBase.Init(nil, f, "", "MockFormId")
+	f.Self = f
+	f.FormBase.Init(context.Background(), "MockFormId")
 
 	f.AddControls(context.Background(),
 		PagedTableCreator{

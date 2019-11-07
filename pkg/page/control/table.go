@@ -126,15 +126,16 @@ type Table struct {
 // NewTable creates a new table
 func NewTable(parent page.ControlI, id string) *Table {
 	t := &Table{}
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
 // Init is an internal function that enables the object-oriented pattern of calling virtual functions used by the
 // goradd controls. You would only call this if you were implementing a "subclass" of the Table. Call it immediately after
 // creating your Table structure, passing the newly created table as "self".
-func (t *Table) Init(self page.ControlI, parent page.ControlI, id string) {
-	t.ControlBase.Init(self, parent, id)
+func (t *Table) Init(parent page.ControlI, id string) {
+	t.ControlBase.Init(parent, id)
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1
@@ -917,7 +918,7 @@ func GetTable(c page.ControlI, id string) *Table {
 }
 
 func init() {
-	page.RegisterControl(Table{})
+	page.RegisterControl(&Table{})
 }
 
 // Similar to the control registry, since columns rely on the "this" variable to deserialize, we

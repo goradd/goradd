@@ -18,12 +18,13 @@ type SelectList struct {
 
 func NewSelectList(parent page.ControlI, id string) *SelectList {
 	t := new(SelectList)
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
-func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
-	l.SelectList.Init(self, parent, id)
+func (l *SelectList) Init(parent page.ControlI, id string) {
+	l.SelectList.Init(parent, id)
 	config.LoadBootstrap(l.ParentForm())
 }
 
@@ -86,5 +87,5 @@ func GetSelectList(c page.ControlI, id string) *SelectList {
 }
 
 func init() {
-	page.RegisterControl(SelectList{})
+	page.RegisterControl(&SelectList{})
 }

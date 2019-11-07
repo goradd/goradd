@@ -49,16 +49,17 @@ const (
 
 func NewModal(parent page.ControlI, id string) *Modal {
 	d := &Modal{}
-	d.Init(d, parent, id)
+	d.Self = d
+	d.Init(parent, id)
 	return d
 }
 
-func (d *Modal) Init(self page.ControlI, parent page.ControlI, id string) {
+func (d *Modal) Init(parent page.ControlI, id string) {
 	if id == "" {
 		panic("Modals must have an id")
 	}
 
-	d.Panel.Init(self, parent, id)
+	d.Panel.Init(parent, id)
 	d.Tag = "div"
 	d.SetShouldAutoRender(true)
 
@@ -83,15 +84,15 @@ func (d *Modal) this() ModalI {
 }
 
 func (d *Modal) SetTitle(t string) {
-	if d.titleBar.title != t {
-		d.titleBar.title = t
+	if d.titleBar.Title != t {
+		d.titleBar.Title = t
 		d.titleBar.Refresh()
 	}
 }
 
 func (d *Modal) SetHasCloseBox(h bool) {
-	if d.titleBar.hasCloseBox != h {
-		d.titleBar.hasCloseBox = h
+	if d.titleBar.HasCloseBox != h {
+		d.titleBar.HasCloseBox = h
 		d.titleBar.Refresh()
 	}
 }
@@ -121,7 +122,7 @@ func (d *Modal) SetBackdrop(b ModalBackdropType) {
 }
 
 func (d *Modal) Title() string {
-	return d.titleBar.title
+	return d.titleBar.Title
 }
 
 func (d *Modal) AddTitlebarClass(class string) {
@@ -299,19 +300,21 @@ func BootstrapAlert(form page.FormI, message string, buttons interface{}) contro
 
 type TitleBar struct {
 	control.Panel
-	hasCloseBox bool
-	title       string
+	HasCloseBox bool
+	Title       string
 }
 
 func NewTitleBar(parent page.ControlI, id string) *TitleBar {
 	d := &TitleBar{}
-	d.Panel.Init(d, parent, id)
+	d.Self = d
+	d.Panel.Init(parent, id)
 	return d
 }
 
 func init() {
 	control.SetAlertFunction(BootstrapAlert)
-	page.RegisterControl(Modal{})
+	page.RegisterControl(&Modal{})
+	page.RegisterControl(&TitleBar{})
 }
 
 type ModalButtonCreator struct {

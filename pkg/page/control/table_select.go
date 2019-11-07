@@ -29,12 +29,13 @@ type SelectTable struct {
 
 func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 	t := &SelectTable{}
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
-func (t *SelectTable) Init(self page.ControlI, parent page.ControlI, id string) {
-	t.Table.Init(self, parent, id)
+func (t *SelectTable) Init(parent page.ControlI, id string) {
+	t.Table.Init(parent, id)
 	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/goradd-scrollIntoView.js", false, nil)
 	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/table-select.js", false, nil)
 	t.SetAttribute("tabindex", 0); // Make the entire table focusable and selectable. This can be overridden later if needed.
@@ -236,5 +237,5 @@ func GetSelectTable(c page.ControlI, id string) *SelectTable {
 }
 
 func init() {
-	page.RegisterControl(SelectTable{})
+	page.RegisterControl(&SelectTable{})
 }

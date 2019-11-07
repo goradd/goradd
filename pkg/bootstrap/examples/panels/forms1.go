@@ -27,7 +27,13 @@ type Forms1Panel struct {
 
 func NewForms1Panel(ctx context.Context, parent page.ControlI) {
 	p := &Forms1Panel{}
-	p.Panel.Init(p, parent, "textboxPanel")
+	p.Self = p
+	p.Init(ctx, parent, "textboxPanel")
+
+}
+
+func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
 	p.Panel.AddControls(ctx,
 		FormGroupCreator{
 			Label:"Name",
@@ -85,9 +91,10 @@ func NewForms1Panel(ctx context.Context, parent page.ControlI) {
 	)
 }
 
+
 func init() {
 	examples.RegisterPanel("forms1", "Forms 1", NewForms1Panel, 2)
-	page.RegisterControl(Forms1Panel{})
+	page.RegisterControl(&Forms1Panel{})
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Ajax Submit", testForms1AjaxSubmit)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Server Submit", testForms1ServerSubmit)
 }

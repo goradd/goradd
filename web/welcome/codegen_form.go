@@ -20,13 +20,10 @@ type CodegenForm struct {
 	control.FormBase
 }
 
-func NewCodegenForm(ctx context.Context) page.FormI {
-	f := new(CodegenForm)
-	f.Init(ctx, f, CodegenPath, CodegenID)
+func (f *CodegenForm) Init(ctx context.Context, formID string) {
+	f.FormBase.Init(ctx, formID)
 	f.AddRelatedFiles()
 	f.createControls(ctx)
-
-	return f
 }
 
 func (f *CodegenForm) createControls(ctx context.Context) {
@@ -82,5 +79,5 @@ func (f *CodegenForm) startApp() string {
 }
 
 func init() {
-	page.RegisterPage(CodegenPath, NewCodegenForm, CodegenID)
+	page.RegisterForm(CodegenPath, &CodegenForm{}, CodegenID)
 }

@@ -21,12 +21,13 @@ type FloatTextbox struct {
 
 func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
 	t := &FloatTextbox{}
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
-func (t *FloatTextbox) Init(self TextboxI, parent page.ControlI, id string) {
-	t.Textbox.Init(self, parent, id)
+func (t *FloatTextbox) Init(parent page.ControlI, id string) {
+	t.Textbox.Init(parent, id)
 	t.ValidateWith(FloatValidator{})
 }
 
@@ -222,5 +223,5 @@ func init() {
 	gob.Register(MaxFloatValidator{})
 	gob.Register(MinFloatValidator{})
 	gob.Register(FloatValidator{})
-	page.RegisterControl(FloatTextbox{})
+	page.RegisterControl(&FloatTextbox{})
 }

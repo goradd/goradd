@@ -90,13 +90,13 @@ type DialogButtonOptions struct {
 // NewDialog creates a new dialog.
 func NewDialog(parent page.ControlI, id string) *Dialog {
 	d := &Dialog{}
-
-	d.Init(d, parent, id) // parent is always the form
+	d.Self = d
+	d.Init(parent, id) // parent is always the form
 	return d
 }
 
 // Init is called by subclasses of the dialog.
-func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
+func (d *Dialog) Init(parent page.ControlI, id string) {
 	// Our strategy here is to create a dialog overlay that is a container for the currently shown dialogs. This
 	// container is owned by the form itself, even if sub-controls create the dialog.
 	var overlay page.ControlI
@@ -113,7 +113,7 @@ func (d *Dialog) Init(self DialogI, parent page.ControlI, id string) {
 	}
 
 	// Make the overlay our parent
-	d.Panel.Init(self, overlay, id)
+	d.Panel.Init(overlay, id)
 	d.Tag = "div"
 
 	d.titleBarID = d.ID()+"-title"
@@ -434,5 +434,5 @@ func SetAlertFunction(f AlertFuncType) {
 
 
 func init() {
-	page.RegisterControl(Dialog{})
+	page.RegisterControl(&Dialog{})
 }

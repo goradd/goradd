@@ -25,12 +25,13 @@ type Panel struct {
 
 func NewPanel(parent page.ControlI, id string) *Panel {
 	p := &Panel{}
-	p.Init(p, parent, id)
+	p.Self = p
+	p.Init(parent, id)
 	return p
 }
 
-func (c *Panel) Init(self PanelI, parent page.ControlI, id string) {
-	c.ControlBase.Init(self, parent, id)
+func (c *Panel) Init(parent page.ControlI, id string) {
+	c.ControlBase.Init(parent, id)
 	c.Tag = "div"
 }
 
@@ -89,5 +90,5 @@ func GetPanel(c page.ControlI, id string) *Panel {
 }
 
 func init() {
-	page.RegisterControl(Panel{})
+	page.RegisterControl(&Panel{})
 }

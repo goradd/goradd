@@ -21,15 +21,20 @@ type TableSelectPanel struct {
 
 
 func NewTableSelectPanel(ctx context.Context, parent page.ControlI) {
+	p := &TableSelectPanel{}
+	p.Self = p
+	p.Init(ctx, parent, "tableSelectPanel")
+}
+
+func (p *TableSelectPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, "tableSelectPanel")
+
 	// In this first example, we create a small table pre-filled with data
 	var items = []map[string]string {
 		{"id": "1", "col1": "Row 1, Col 1", "col2": "Row 1, Col 2"},
 		{"id": "2", "col1": "Row 2, Col 1", "col2": "Row 2, Col 2"},
 		{"id": "3", "col1": "Row 3, Col 1", "col2": "Row 3, Col 2"},
 	}
-
-	p := &TableSelectPanel{}
-	p.Panel.Init(p, parent, "tableSelectPanel")
 	p.AddControls(ctx,
 		SelectTableCreator{
 			ID: "table1",
@@ -85,7 +90,9 @@ func NewTableSelectPanel(ctx context.Context, parent page.ControlI) {
 	if t2 := GetSelectTable(p, "table2"); t2.SelectedID() != "" {
 		GetPanel(p, "infoPanel").SetText(fmt.Sprintf("Row %s was selected.", t2.SelectedID()))
 	}
+
 }
+
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
@@ -110,6 +117,6 @@ func (p *TableSelectPanel) Action(ctx context.Context, a page.ActionParams) {
 
 
 func init() {
-	page.RegisterControl(TableSelectPanel{})
+	page.RegisterControl(&TableSelectPanel{})
 	gob.Register([]map[string]string{})
 }

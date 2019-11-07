@@ -15,13 +15,18 @@ type IntroPanel struct {
 
 func NewIntroPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 	p := &IntroPanel{}
-	p.Panel.Init(p, parent, "")
+	p.Self = p
+	p.Init(ctx, parent, "")
 	return p
+}
+
+func (p *IntroPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
 }
 
 
 func init() {
-	page.RegisterControl(IntroPanel{})
+	page.RegisterControl(&IntroPanel{})
 
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 0, "intro", "Introduction to the ORM", NewIntroPanel,

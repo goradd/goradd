@@ -10,15 +10,18 @@ import (
 	"github.com/goradd/goradd/test/browsertest"
 )
 
-
-
 type TextboxPanel struct {
 	Panel
 }
 
 func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &TextboxPanel{}
-	p.Panel.Init(p, parent, "textboxPanel")
+	p.Self = p
+	p.Init(ctx, parent, "textboxPanel")
+}
+
+func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, "textboxPanel")
 
 	p.Panel.AddControls(ctx,
 		FormFieldWrapperCreator{
@@ -42,51 +45,51 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 			ID:    "intText-ff",
 			Label: "Integer Text",
 			Child: IntegerTextboxCreator{
-				ID:        "intText",
+				ID: "intText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "floatText-ff",
 			Label: "Float Text",
 			Child: FloatTextboxCreator{
-				ID:        "floatText",
+				ID: "floatText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "emailText-ff",
 			Label: "Email Text",
 			Child: EmailTextboxCreator{
-				ID:        "emailText",
+				ID: "emailText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "passwordText-ff",
 			Label: "Password",
 			Child: TextboxCreator{
-				ID:        "passwordText",
-				Type:TextboxTypePassword,
+				ID:   "passwordText",
+				Type: TextboxTypePassword,
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "searchText-ff",
 			Label: "Search",
 			Child: TextboxCreator{
-				ID:        "searchText",
-				Type:TextboxTypeSearch,
+				ID:   "searchText",
+				Type: TextboxTypeSearch,
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "dateTimeText-ff",
 			Label: "U.S. Date-time",
 			Child: DateTextboxCreator{
-				ID:        "dateTimeText",
+				ID: "dateTimeText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "dateText-ff",
 			Label: "Euro Date",
 			Child: DateTextboxCreator{
-				ID:        "dateText",
+				ID:     "dateText",
 				Format: datetime.EuroDate,
 			},
 		},
@@ -94,7 +97,7 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 			ID:    "timeText-ff",
 			Label: "U.S. Time",
 			Child: DateTextboxCreator{
-				ID:        "timeText",
+				ID:     "timeText",
 				Format: datetime.UsTime,
 			},
 		},
@@ -108,7 +111,6 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 			Text:     "Submit Server",
 			OnSubmit: action.Server("textboxPanel", ButtonSubmit),
 		},
-
 	)
 }
 
@@ -121,7 +123,7 @@ func (p *TextboxPanel) Action(ctx context.Context, a page.ActionParams) {
 func init() {
 	browsertest.RegisterTestFunction("Textbox Ajax Submit", testTextboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Textbox Server Submit", testTextboxServerSubmit)
-	page.RegisterControl(TextboxPanel{})
+	page.RegisterControl(&TextboxPanel{})
 }
 
 func testTextboxAjaxSubmit(t *browsertest.TestForm) {
@@ -170,7 +172,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.AssertEqual(true, t.HasClass("timeText-ff", "error"))
 	t.AssertEqual(true, t.HasClass("dateTimeText-ff", "error"))
 
-	t.F(func (f page.FormI) {
+	t.F(func(f page.FormI) {
 		GetFormFieldWrapper(f, "plainText-ff").SetInstructions("Sample instructions")
 	})
 	t.ChangeVal("intText", 5)
@@ -182,7 +184,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 
 	t.Click(btnID)
 
-	t.F(func (f page.FormI) {
+	t.F(func(f page.FormI) {
 		t.AssertEqual(5, GetIntegerTextbox(f, "intText").Int())
 		t.AssertEqual(6.7, GetFloatTextbox(f, "floatText").Float64())
 		t.AssertEqual("me@you.com", GetEmailTextbox(f, "emailText").Text())
@@ -190,7 +192,6 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 		t.AssertEqual(datetime.NewDateTime("4:59 am", datetime.UsTime), GetDateTextbox(f, "timeText").Date())
 		t.AssertEqual(datetime.NewDateTime("2/19/2018 4:23 pm", datetime.UsDateTime), GetDateTextbox(f, "dateTimeText").Date())
 	})
-
 
 	t.AssertEqual(false, t.HasClass("intText-ff", "error"))
 	t.AssertEqual(false, t.HasClass("floatText-ff", "error"))
@@ -203,9 +204,8 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.AssertEqual("plainText-ff_lbl plainText", t.ControlAttribute("plainText", "aria-labelledby"))
 
 	// Test SaveState
-	t.F(func (f page.FormI) {
+	t.F(func(f page.FormI) {
 		t.AssertEqual("me", GetTextbox(f, "plainText").Text())
 	})
-
 
 }

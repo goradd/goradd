@@ -68,13 +68,14 @@ type Textbox struct {
 // NewTextbox creates a new goradd textbox html widget.
 func NewTextbox(parent page.ControlI, id string) *Textbox {
 	t := &Textbox{}
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
 // Initializes a textbox. Normally you will not call this directly.
-func (t *Textbox) Init(self TextboxI, parent page.ControlI, id string) {
-	t.ControlBase.Init(self, parent, id)
+func (t *Textbox) Init(parent page.ControlI, id string) {
+	t.ControlBase.Init(parent, id)
 
 	t.Tag = "input"
 	t.IsVoidTag = true
@@ -500,5 +501,5 @@ func init() {
 	// gob.Register(&Textbox{}) register control.Textbox instead
 	gob.Register(MaxLengthValidator{})
 	gob.Register(MinLengthValidator{})
-	page.RegisterControl(Textbox{})
+	page.RegisterControl(&Textbox{})
 }

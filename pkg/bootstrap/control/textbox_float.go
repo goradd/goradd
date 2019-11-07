@@ -17,7 +17,8 @@ type FloatTextbox struct {
 
 func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
 	t := new(FloatTextbox)
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
@@ -105,5 +106,5 @@ func GetFloatTextbox(c page.ControlI, id string) *FloatTextbox {
 
 
 func init() {
-	page.RegisterControl(FloatTextbox{})
+	page.RegisterControl(&FloatTextbox{})
 }

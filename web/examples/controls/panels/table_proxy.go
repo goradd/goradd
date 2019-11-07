@@ -21,7 +21,13 @@ type TableProxyPanel struct {
 
 func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableProxyPanel{}
-	p.Panel.Init(p, parent, "tableProxyPanel")
+	p.Self = p
+	p.Init(ctx, parent, "tableProxyPanel")
+}
+
+func (p *TableProxyPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
+
 	p.AddControls(ctx,
 		ProxyCreator{
 			ID: "pxy",
@@ -104,7 +110,8 @@ type ProjectPanel struct {
 
 func NewProjectPanel(parent page.ControlI) *ProjectPanel {
 	p := &ProjectPanel{}
-	p.Init(p, parent, "personPanel")
+	p.Self = p
+	p.Init(parent, "personPanel")
 
 	return p
 }
@@ -116,8 +123,8 @@ func (p *ProjectPanel) SetProject(project *Project) {
 
 func init() {
 	browsertest.RegisterTestFunction("Table - Proxy Column", testTableProxyCol)
-	page.RegisterControl(ProjectPanel{})
-	page.RegisterControl(TableProxyPanel{})
+	page.RegisterControl(&ProjectPanel{})
+	page.RegisterControl(&TableProxyPanel{})
 }
 
 func testTableProxyCol(t *browsertest.TestForm) {

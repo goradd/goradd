@@ -15,13 +15,18 @@ type ObjectsPanel struct {
 
 func NewObjectsPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 	p := &ObjectsPanel{}
-	p.Panel.Init(p, parent, "")
+	p.Self = p
+	p.Init(ctx, parent, "")
 	return p
+}
+
+func (p *ObjectsPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
 }
 
 
 func init() {
-	page.RegisterControl(ObjectsPanel{})
+	page.RegisterControl(&ObjectsPanel{})
 
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 1, "objects", "Code-generated objects", NewObjectsPanel,

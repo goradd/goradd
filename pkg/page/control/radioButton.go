@@ -20,7 +20,8 @@ type RadioButton struct {
 // NewRadioButton creates a new radio button
 func NewRadioButton(parent page.ControlI, id string) *RadioButton {
 	c := &RadioButton{}
-	c.Init(c, parent, id)
+	c.Self = c
+	c.Init(parent, id)
 	return c
 }
 
@@ -147,5 +148,5 @@ func GetRadioButton(c page.ControlI, id string) *RadioButton {
 }
 
 func init() {
-	page.RegisterControl(RadioButton{})
+	page.RegisterControl(&RadioButton{})
 }

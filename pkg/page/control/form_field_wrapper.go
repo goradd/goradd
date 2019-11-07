@@ -43,12 +43,13 @@ type FormFieldWrapper struct {
 
 func NewFormField(parent page.ControlI, id string) *FormFieldWrapper {
 	p := &FormFieldWrapper{}
-	p.Init(p, parent, id)
+	p.Self = p
+	p.Init(parent, id)
 	return p
 }
 
-func (c *FormFieldWrapper) Init(self PanelI, parent page.ControlI, id string) {
-	c.ControlBase.Init(self, parent, id)
+func (c *FormFieldWrapper) Init(parent page.ControlI, id string) {
+	c.ControlBase.Init(parent, id)
 	c.Tag = "div"
 	c.Subtag = "div"
 	c.labelAttributes = html.NewAttributes().
@@ -376,5 +377,5 @@ func CalcWrapperID(wrapperId string, childCreator page.Creator, postfix string) 
 }
 
 func init() {
-	page.RegisterControl(FormFieldWrapper{})
+	page.RegisterControl(&FormFieldWrapper{})
 }

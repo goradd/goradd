@@ -70,12 +70,18 @@ var tableSliceData = []TableSliceData{
 
 func NewTablePanel(ctx context.Context, parent page.ControlI) {
 	p := &TablePanel{}
-	p.Panel.Init(p, parent, "tablePanel")
+	p.Self = p
+	p.Init(ctx, parent, "tablePanel")
+}
+
+func (p *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent,id)
+
 	p.AddControls(ctx,
 		PagedTableCreator{
-			ID: "table1",
+			ID:             "table1",
 			HeaderRowCount: 1,
-			DataProvider: p,
+			DataProvider:   p,
 			Columns:[]ColumnCreator {
 				column.TexterColumnCreator{
 					Texter: "tablePanel",
@@ -125,7 +131,7 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
-func (f *TablePanel) BindData(ctx context.Context, s DataManagerI) {
+func (p *TablePanel) BindData(ctx context.Context, s DataManagerI) {
 	switch s.ID() {
 	case "table1":
 		t := s.(PagedControlI)
@@ -142,7 +148,7 @@ func (f *TablePanel) BindData(ctx context.Context, s DataManagerI) {
 }
 
 // CellText here satisfies the CellTexter interface so that the panel can provide the text for a cell.
-func (f *TablePanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (p *TablePanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
 	// Here is an example of how to figure out what table we are talking about.
 	tid := col.ParentTable().ID()
 	switch tid {
@@ -155,5 +161,5 @@ func (f *TablePanel) CellText(ctx context.Context, col ColumnI, rowNum int, colN
 }
 
 func init() {
-	page.RegisterControl(TablePanel{})
+	page.RegisterControl(&TablePanel{})
 }

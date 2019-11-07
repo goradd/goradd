@@ -34,13 +34,14 @@ func NavbarSelectEvent() *page.Event {
 
 func NewNavbarList(parent page.ControlI, id string) *NavbarList {
 	t := &NavbarList{}
+	t.Self = t
 	t.ItemList = control.NewItemList(t)
-	t.Init(t, parent, id)
+	t.Init(parent, id)
 	return t
 }
 
-func (l *NavbarList) Init(self NavbarListI, parent page.ControlI, id string) {
-	l.ControlBase.Init(self, parent, id)
+func (l *NavbarList) Init(parent page.ControlI, id string) {
+	l.ControlBase.Init(parent, id)
 	l.Tag = "ul"
 	l.subItemTag = "li"
 
@@ -243,5 +244,5 @@ func GetNavbarList(c page.ControlI, id string) *NavbarList {
 }
 
 func init() {
-	page.RegisterControl(NavbarList{})
+	page.RegisterControl(&NavbarList{})
 }

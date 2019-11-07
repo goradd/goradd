@@ -20,9 +20,9 @@ type ControlsForm struct {
 	FormBase
 }
 
-func NewControlsForm(ctx context.Context) page.FormI {
+func Init(ctx context.Context, formID string) {
 	f := &ControlsForm{}
-	f.Init(ctx, f, ControlsFormPath, ControlsFormId)
+	f.Init(ctx, ControlsFormId)
 	f.AddRelatedFiles()
 	f.AddControls(ctx,
 		bootstrap.NavbarCreator{
@@ -41,8 +41,6 @@ func NewControlsForm(ctx context.Context) page.FormI {
 			},
 		},
 	)
-
-	return f
 }
 
 func (f *ControlsForm) LoadControls(ctx context.Context) {
@@ -83,8 +81,7 @@ func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
 
 
 func init() {
-	page.RegisterPage(ControlsFormPath, NewControlsForm, ControlsFormId)
-	page.RegisterControl(ControlsForm{})
+	page.RegisterForm(ControlsFormPath, &ControlsForm{}, ControlsFormId)
 }
 
 

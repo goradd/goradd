@@ -32,13 +32,14 @@ type SelectList struct {
 // NewSelectList creates a new select list
 func NewSelectList(parent page.ControlI, id string) *SelectList {
 	t := &SelectList{}
-	t.Init(t, parent, id)
+	t.Self = t
+	t.Init(parent, id)
 	return t
 }
 
 // Init is called by subclasses.
-func (l *SelectList) Init(self page.ControlI, parent page.ControlI, id string) {
-	l.ControlBase.Init(self, parent, id)
+func (l *SelectList) Init(parent page.ControlI, id string) {
+	l.ControlBase.Init(parent, id)
 	l.ItemList = NewItemList(l)
 	l.Tag = "select"
 }
@@ -320,5 +321,5 @@ func GetSelectList(c page.ControlI, id string) *SelectList {
 }
 
 func init() {
-	page.RegisterControl(SelectList{})
+	page.RegisterControl(&SelectList{})
 }

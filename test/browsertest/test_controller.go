@@ -48,14 +48,15 @@ type TestController struct {
 
 func NewTestController(parent page.ControlI, id string) *TestController {
 	p := new(TestController)
-	p.Init(p, parent, id)
-	p.Tag = "pre"
-	p.stepChannel = make(chan stepItemType, 1)
+	p.Self = p
+	p.Init(parent, id)
 	return p
 }
 
-func (p *TestController) Init(self control.PanelI, parent page.ControlI, id string) {
-	p.Panel.Init(p, parent, id)
+func (p *TestController) Init(parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
+	p.Tag = "pre"
+	p.stepChannel = make(chan stepItemType, 1)
 	p.ParentForm().AddJavaScriptFile(filepath.Join(TestAssets(), "js", "test_controller.js"), false, nil)
 	// Use declarative attribute to attach javascript to the control
 	p.SetDataAttribute("grWidget", "goradd.testController")

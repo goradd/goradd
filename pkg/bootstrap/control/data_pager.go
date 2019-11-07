@@ -25,12 +25,13 @@ type DataPager struct {
 
 func NewDataPager(parent page.ControlI, id string, pagedControl control.PagedControlI) *DataPager {
 	d := DataPager{}
-	d.Init(&d, parent, id, pagedControl)
+	d.Self = d
+	d.Init(parent, id, pagedControl)
 	return &d
 }
 
-func (d *DataPager) Init(self page.ControlI, parent page.ControlI, id string, pagedControl control.PagedControlI) {
-	d.DataPager.Init(self, parent, id, pagedControl)
+func (d *DataPager) Init(parent page.ControlI, id string, pagedControl control.PagedControlI) {
+	d.DataPager.Init(parent, id, pagedControl)
 	d.SetLabels(`<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>`,
 		`<span aria-hidden="true">&raquo;</span> <span class="sr-only">Next</span>`)
 	d.ButtonStyle = ButtonStyleOutlineSecondary
@@ -213,5 +214,5 @@ func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 }
 
 func init() {
-	page.RegisterControl(DataPager{})
+	page.RegisterControl(&DataPager{})
 }

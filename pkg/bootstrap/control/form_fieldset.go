@@ -30,12 +30,13 @@ type FormFieldset struct {
 
 func NewFormFieldset(parent page.ControlI, id string) *FormFieldset {
 	p := &FormFieldset{}
-	p.Init(p, parent, id)
+	p.Self = p
+	p.Init(parent, id)
 	return p
 }
 
-func (c *FormFieldset) Init(self page.ControlI, parent page.ControlI, id string) {
-	c.Panel.Init(self, parent, id)
+func (c *FormFieldset) Init(parent page.ControlI, id string) {
+	c.Panel.Init(parent, id)
 	c.Tag = "fieldset"
 	c.legendAttributes = html.NewAttributes()
 	c.legendAttributes.AddClass("pt-0") // helps with alignment. Remove if needed
@@ -154,5 +155,5 @@ func GetFormFieldset(c page.ControlI, id string) *FormFieldset {
 }
 
 func init() {
-	page.RegisterControl(FormFieldset{})
+	page.RegisterControl(&FormFieldset{})
 }

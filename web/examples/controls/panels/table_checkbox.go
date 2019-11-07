@@ -40,7 +40,12 @@ func (c SelectedProvider) IsChecked(data interface{}) bool {
 
 func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableCheckboxPanel{}
-	p.Panel.Init(p, parent, "checkboxTablePanel")
+	p.Self = p
+	p.Init(ctx, parent, "checkboxTablePanel")
+}
+
+func (p *TableCheckboxPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, "checkboxTablePanel")
 	p.AddControls(ctx,
 		PagedTableCreator{
 			ID: "table1",
@@ -77,6 +82,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 			OnSubmit: action.Server("checkboxPanel", ButtonSubmit),
 		},
 	)
+
 }
 
 // BindData satisfies the data provider interface so that the parent panel of the table
@@ -109,7 +115,7 @@ func init() {
 	browsertest.RegisterTestFunction("Table - Checkbox Server Submit", testTableCheckboxServerSubmit)
 
 	gob.Register(SelectedProvider{}) // We must register this here because we are putting the changes map into the session,
-	page.RegisterControl(TableCheckboxPanel{})
+	page.RegisterControl(&TableCheckboxPanel{})
 }
 
 func testTableCheckboxNav(t *browsertest.TestForm) {

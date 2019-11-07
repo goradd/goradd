@@ -353,14 +353,13 @@ type ControlBase struct {
 // call this superclass function. This Init function sets up a parent-child relationship with the given parent
 // control, and sets up data structures to use the control in object-oriented ways with virtual functions.
 // The id is the control id that will appear as the id in html. Leave blank for the system to create a unique id for you.
-func (c *ControlBase) Init(self ControlI, parent ControlI, id string) {
-	c.Base.Init(self)
+func (c *ControlBase) Init(parent ControlI, id string) {
 	c.attributes = html.NewAttributes()
 	if parent != nil {
 		c.page = parent.Page()
 		c.id = c.page.GenerateControlID(id)
 	}
-	self.SetParent(parent)
+	c.this().SetParent(parent)
 	c.isModified = true
 }
 

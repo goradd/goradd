@@ -29,14 +29,15 @@ type RepeaterHtmler interface {
 // NewTable creates a new table
 func NewRepeater(parent page.ControlI, id string) *Repeater {
 	r := &Repeater{}
-	r.Init(r, parent, id)
+	r.Self = r
+	r.Init(parent, id)
 	return r
 }
 
 // Init is an internal function that enables the object-oriented pattern of calling virtual functions used by the
 // goradd controls.
-func (r *Repeater) Init(self page.ControlI, parent page.ControlI, id string) {
-	r.ControlBase.Init(self, parent, id)
+func (r *Repeater) Init(parent page.ControlI, id string) {
+	r.ControlBase.Init(parent, id)
 	r.Tag = "div"
 }
 
@@ -214,5 +215,5 @@ func GetRepeater(c page.ControlI, id string) *Repeater {
 }
 
 func init() {
-	page.RegisterControl(Repeater{})
+	page.RegisterControl(&Repeater{})
 }

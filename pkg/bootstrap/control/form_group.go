@@ -28,12 +28,13 @@ type FormGroup struct {
 
 func NewFormGroup(parent page.ControlI, id string) *FormGroup {
 	p := &FormGroup{}
-	p.Init(p, parent, id)
+	p.Self = p
+	p.Init(parent, id)
 	return p
 }
 
-func (c *FormGroup) Init(self control.FormFieldWrapperI, parent page.ControlI, id string) {
-	c.FormFieldWrapper.Init(self, parent, id)
+func (c *FormGroup) Init(parent page.ControlI, id string) {
+	c.FormFieldWrapper.Init(parent, id)
 	c.innerDivAttr = html.NewAttributes()
 	c.AddClass("form-group") // to get a wrapper without this, just remove it after initialization
 	c.InstructionAttributes().AddClass("form-text")
@@ -258,5 +259,5 @@ func GetFormGroup(c page.ControlI, id string) *FormGroup {
 }
 
 func init() {
-	page.RegisterControl(FormGroup{})
+	page.RegisterControl(&FormGroup{})
 }

@@ -18,10 +18,6 @@ type {{= panelName }} struct {
     {{= t.GoName }} *model.{{= t.GoName }}
 }
 
-func (p *{{= panelName }}) Init(self page.ControlI, parent page.ControlI, id string) {
-	p.Panel.Init(self, parent, id)
-}
-
 func (p *{{= panelName }}) this() {{= panelName }}I {
 	return p.Self.({{= panelName }}I)
 }

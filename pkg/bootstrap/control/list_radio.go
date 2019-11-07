@@ -24,12 +24,13 @@ type RadioList struct {
 
 func NewRadioList(parent page.ControlI, id string) *RadioList {
 	l := &RadioList{}
-	l.Init(l, parent, id)
+	l.Self = l
+	l.Init(parent, id)
 	return l
 }
 
-func (l *RadioList) Init(self RadioListI, parent page.ControlI, id string) {
-	l.RadioList.Init(self, parent, id)
+func (l *RadioList) Init(parent page.ControlI, id string) {
+	l.RadioList.Init(parent, id)
 	l.SetLabelDrawingMode(html.LabelAfter)
 	l.SetRowClass("row")
 }
@@ -124,5 +125,5 @@ func GetRadioList(c page.ControlI, id string) *RadioList {
 }
 
 func init() {
-	page.RegisterControl(RadioList{})
+	page.RegisterControl(&RadioList{})
 }

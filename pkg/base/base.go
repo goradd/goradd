@@ -13,7 +13,9 @@ type Base struct {
 }
 
 func (b *Base) Init(self interface{}) {
-	b.Self = self
+	if b.Self == nil {	// has it been setup manually earlier?
+		b.Self = self
+	}
 }
 
 func (b *Base) Type() string {

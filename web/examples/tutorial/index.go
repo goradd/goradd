@@ -25,9 +25,8 @@ type IndexForm struct {
 }
 
 
-func NewIndexForm(ctx context.Context) page.FormI {
-	f := &IndexForm{}
-	f.Init(ctx, f, IndexFormPath, IndexFormId)
+func (f *IndexForm) Init(ctx context.Context, formID string) {
+	f.FormBase.Init(ctx, formID)
 	f.AddRelatedFiles()
 
 	f.AddControls(ctx,
@@ -40,8 +39,6 @@ func NewIndexForm(ctx context.Context) page.FormI {
 			OnClick: action.Ajax(f.ID(), ViewSourceAction),
 		},
 	)
-
-	return f
 }
 
 func (f *IndexForm) AddRelatedFiles() {
@@ -104,7 +101,6 @@ func (f *IndexForm) Action(ctx context.Context, a page.ActionParams) {
 
 
 func init() {
-	page.RegisterPage(IndexFormPath, NewIndexForm, IndexFormId)
-	page.RegisterControl(IndexForm{})
+	page.RegisterForm(IndexFormPath, &IndexForm{}, IndexFormId)
 }
 

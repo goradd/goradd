@@ -72,12 +72,17 @@ var tableSliceData = []TableSliceData{
 
 func NewTablePanel(ctx context.Context, parent page.ControlI) {
 	p := &TablePanel{}
-	p.Panel.Init(p, parent, "tablePanel")
-	p.AddControls(ctx,
+	p.Self = p
+	p.Init(ctx, parent, "tablePanel")
+}
+
+func (f *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	f.Panel.Init(parent, id)
+	f.AddControls(ctx,
 		control.PagedTableCreator{
 			ID: "table1",
 			HeaderRowCount: 1,
-			DataProvider: p,
+			DataProvider: f,
 			Columns:[]control.ColumnCreator {
 				column.TexterColumnCreator{
 					Texter: "tablePanel",
@@ -132,5 +137,5 @@ func (f *TablePanel) CellText(ctx context.Context, col control.ColumnI, rowNum i
 
 func init() {
 	examples.RegisterPanel("table", "Tables", NewTablePanel, 5)
-	page.RegisterControl(TablePanel{})
+	page.RegisterControl(&TablePanel{})
 }

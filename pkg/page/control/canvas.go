@@ -19,13 +19,14 @@ type Canvas struct {
 // NewCanvas creates a Canvas control
 func NewCanvas(parent page.ControlI, id string) *Canvas {
 	p := &Canvas{}
-	p.Init(p, parent, id)
+	p.Self = p
+	p.Init(parent, id)
 	return p
 }
 
 // Init is called by subcontrols. You do not normally need to call it.
-func (c *Canvas) Init(self CanvasI, parent page.ControlI, id string) {
-	c.ControlBase.Init(self, parent, id)
+func (c *Canvas) Init(parent page.ControlI, id string) {
+	c.ControlBase.Init(parent, id)
 	c.Tag = "canvas"
 }
 
@@ -58,5 +59,5 @@ func GetCanvas(c page.ControlI, id string) *Canvas {
 }
 
 func init() {
-	page.RegisterControl(Canvas{})
+	page.RegisterControl(&Canvas{})
 }

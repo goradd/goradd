@@ -41,12 +41,13 @@ const (
 // NewUnorderedList creates a new ul type list.
 func NewUnorderedList(parent page.ControlI, id string) *UnorderedList {
 	l := &UnorderedList{}
-	l.Init(l, parent, id)
+	l.Self = l
+	l.Init(parent, id)
 	return l
 }
 
-func (l *UnorderedList) Init(self page.ControlI, parent page.ControlI, id string) {
-	l.ControlBase.Init(self, parent, id)
+func (l *UnorderedList) Init(parent page.ControlI, id string) {
+	l.ControlBase.Init(parent, id)
 	l.ItemList = NewItemList(l)
 	l.Tag = "ul"
 	l.itemTag = "li"
@@ -200,5 +201,5 @@ func GetUnorderedList(c page.ControlI, id string) *UnorderedList {
 }
 
 func init() {
-	page.RegisterControl(UnorderedList{})
+	page.RegisterControl(&UnorderedList{})
 }

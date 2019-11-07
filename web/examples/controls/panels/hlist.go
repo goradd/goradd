@@ -31,6 +31,13 @@ type HListPanel struct {
 }
 
 func NewHListPanel(ctx context.Context, parent page.ControlI) {
+	p := &HListPanel{}
+	p.Self = p
+	p.Init(ctx, parent, "HListPanel")
+}
+
+func (p *HListPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
 	itemList := []ListValue{
 		{"First", 1},
 		{"Second", 2},
@@ -38,9 +45,6 @@ func NewHListPanel(ctx context.Context, parent page.ControlI) {
 		{"Fourth", 4},
 		{"Fifth", 5},
 	}
-
-	p := &HListPanel{}
-	p.Panel.Init(p, parent, "HListPanel")
 	p.AddControls(ctx,
 		OrderedListCreator{
 			ID: "orderedList",
@@ -102,5 +106,5 @@ func testHListSubmit(t *browsertest.TestForm, btnID string) {
 }
 
 func init() {
-	page.RegisterControl(HListPanel{})
+	page.RegisterControl(&HListPanel{})
 }
