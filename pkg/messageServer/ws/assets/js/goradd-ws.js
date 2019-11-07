@@ -58,14 +58,11 @@ goradd.subscribe = function(channels, f) {
 };
 
 /*
-The default message handler. It treats the message data as an array of JSON objects, looks for a 'grup' item
-there, and then updates the form if found. You can therefore send any other message you want
-to your own handlers. If your message has a grup item, your message will also
-update the form. Otherwise, it will be ignored here.
+The default message handler. Will route the message to the appropriate channel.
  */
 goradd._handleWsMessage = function(e) {
     var messages = JSON.parse(e.data);
-    console.log("message");
+    console.log("messages: " + e.data);
 
     goradd.each(messages, function() {
         var msg = this;
