@@ -40,7 +40,7 @@ func NewSelectList(parent page.ControlI, id string) *SelectList {
 // Init is called by subclasses.
 func (l *SelectList) Init(parent page.ControlI, id string) {
 	l.ControlBase.Init(parent, id)
-	l.ItemList = NewItemList(l)
+	l.ItemList = NewItemList(l.this())
 	l.Tag = "select"
 }
 

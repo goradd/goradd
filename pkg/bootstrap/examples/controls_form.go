@@ -20,9 +20,8 @@ type ControlsForm struct {
 	FormBase
 }
 
-func Init(ctx context.Context, formID string) {
-	f := &ControlsForm{}
-	f.Init(ctx, ControlsFormId)
+func (f *ControlsForm) Init(ctx context.Context, formID string) {
+	f.FormBase.Init(ctx, formID)
 	f.AddRelatedFiles()
 	f.AddControls(ctx,
 		bootstrap.NavbarCreator{
