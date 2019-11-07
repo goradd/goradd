@@ -54,7 +54,7 @@ func (d SelectList) GenerateCreator(col *generator.ColumnType) (s string) {
 
 func (d SelectList) GenerateRefresh(col *generator.ColumnType) string {
 	if col.ForeignKey.IsType {
-		return `ctrl.SetValue(int(val))`
+		return `ctrl.SetValue(val)`
 	} else {
 		return `ctrl.SetValue(string(val))` // should be a string id
 	}
@@ -62,7 +62,7 @@ func (d SelectList) GenerateRefresh(col *generator.ColumnType) string {
 
 func (d SelectList) GenerateUpdate(col *generator.ColumnType) string {
 	if col.ForeignKey.IsType {
-		return `val := ctrl.IntValue()`
+		return `val := ctrl.Value()`
 	} else {
 		return `val := ctrl.StringValue()`
 	}
