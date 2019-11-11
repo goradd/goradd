@@ -166,27 +166,24 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.AssertEqual(true, t.HasClass("singleSelectList-ff", "error"))
 	t.AssertEqual(true, t.HasClass("multiselectList-ff", "error"))
 
-	var radioId1, radioId2 string
 	t.F(func(f page.FormI) {
 		t.AssertEqual(2, GetSelectList(f, "selectListWithSize").IntValue())
-		radioId1,_ = GetRadioList(f, "radioList1").GetItemByValue("3")
-		radioId2,_ = GetRadioList(f, "radioList2").GetItemByValue("4")
 	})
 	t.ChooseListValue("singleSelectList", "1")
 	t.ChooseListValue("selectListWithSize", "2")
-	t.CheckGroup("radioList1", radioId1)
-	t.CheckGroup("radioList2", radioId2)
+	t.CheckGroup("radioList1", "3")
+	t.CheckGroup("radioList2", "4")
 	t.ChooseListValues("multiselectList", "5")
 
 	t.Click(btnID)
 
 	t.F(func(f page.FormI) {
 		t.AssertEqual(1, GetSelectList(f, "singleSelectList").IntValue())
-		t.AssertEqual(2, GetSelectList(f, "selectListWithSize").IntValue())
+		t.AssertEqual("2", GetSelectList(f, "selectListWithSize").Value())
 		t.AssertEqual(3, GetRadioList(f, "radioList1").IntValue())
-		t.AssertEqual(4, GetRadioList(f, "radioList2").IntValue())
-		v := GetMultiselectList(f, "multiselectList").Value().([]interface{})
-		t.AssertEqual(5, v[0])
+		t.AssertEqual("4", GetRadioList(f, "radioList2").Value())
+		v := GetMultiselectList(f, "multiselectList").Value().([]string)
+		t.AssertEqual("5", v[0])
 	})
 }
 

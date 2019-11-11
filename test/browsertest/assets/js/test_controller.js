@@ -62,6 +62,7 @@ goradd.widget("goradd.testController", {
         this.trigger("teststep", {Step: step, Err: err});
     },
     changeVal: function(step, id, val) {
+        val = JSON.parse(val);
         goradd.log ("changeVal", step, id, val);
         var g = this._getGoraddObj(id);
 
@@ -112,7 +113,8 @@ goradd.widget("goradd.testController", {
 
         if (el.type === "radio") {
             // Check one radio button. The currently checked one should automatically uncheck.
-            el = form.qs("input[name=" + groupName + "][value=" + values[0] + "]");
+            var s = "input[name=" + groupName + "][value='" + values[0] + "']";
+            el = form.qs(s);
             if (el) {
                 g$(el).click();
             }

@@ -132,11 +132,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.ChooseListValue("singleSelectList", "1")
 	t.ChooseListValue("selectListWithSize", "2")
 
-	var radioId string
-	t.F(func (f page.FormI) {
-		radioId,_ = GetRadioList(f, "radioList1").GetItemByValue("3")
-	})
-	t.CheckGroup("radioList1", radioId)
+	t.CheckGroup("radioList1", "3")
 
 	t.Click(btnID)
 

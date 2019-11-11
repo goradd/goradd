@@ -269,7 +269,7 @@ func (l *MultiselectList) getItemsHtml(items []*ListItem) string {
 			h += html.RenderTag(tag, attributes, innerhtml) + "\n"
 		} else {
 			attributes := item.Attributes().Copy()
-			attributes.Set("value", item.ID())
+			attributes.Set("value", item.Value())
 			if l.IsValueSelected(item.Value()) {
 				attributes.Set("selected", "")
 			}

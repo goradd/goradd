@@ -77,7 +77,7 @@ func renderItemControl(item *control.ListItem, typ string, selected bool, name s
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", name)
-	attributes.Set("value", item.ID())
+	attributes.Set("value", item.Value())
 	attributes.Set("type", typ)
 	attributes.AddClass("form-check-input")
 	if selected {

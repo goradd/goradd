@@ -2,6 +2,7 @@ package browsertest
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/javascript"
@@ -14,7 +15,7 @@ import (
 	"time"
 )
 
-const StepTimeoutSeconds = 10
+const StepTimeoutSeconds = 100
 
 const (
 	TestStepAction = iota + 100
@@ -128,7 +129,8 @@ func (p *TestController) waitStep() {
 
 func (p *TestController) changeVal(id string, val interface{}, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	p.ExecuteWidgetFunction("changeVal", len(p.stepDescriptions), id, fmt.Sprintf("%v", val))
+	s,_ := json.Marshal(val)
+	p.ExecuteWidgetFunction("changeVal", len(p.stepDescriptions), id, string(s))
 	p.waitStep()
 }
 
