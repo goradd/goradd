@@ -156,12 +156,12 @@ func (l *RadioList) RenderItems(items []*ListItem) string {
 
 // RenderItem is called by the framework to render a single item in the list.
 func (l *RadioList) RenderItem(item *ListItem) (h string) {
-	h = renderItemControl(item, "radio", l.labelDrawingMode, item.ID() == l.selectedId, l.ID())
+	h = renderCheckItemControl(item, "radio", l.labelDrawingMode, item.Value() == l.selectedValue, l.ID())
 	h = renderCell(item, h, l.columnCount > 0)
 	return
 }
 
-func renderItemControl(item *ListItem, typ string, labelMode html.LabelDrawingMode, selected bool, name string) string {
+func renderCheckItemControl(item *ListItem, typ string, labelMode html.LabelDrawingMode, selected bool, name string) string {
 	if labelMode == html.LabelDefault {
 		labelMode = page.DefaultCheckboxLabelDrawingMode
 	}
@@ -169,7 +169,7 @@ func renderItemControl(item *ListItem, typ string, labelMode html.LabelDrawingMo
 	attributes := html.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", name)
-	attributes.Set("value", item.ID())
+	attributes.Set("value", item.Value())
 	attributes.Set("type", typ)
 	if selected {
 		attributes.Set("checked", "")
@@ -200,7 +200,7 @@ func (l *RadioList) UpdateFormValues(ctx *page.Context) {
 	controlID := l.ID()
 
 	if v, ok := ctx.FormValue(controlID); ok {
-		l.selectedId = v
+		l.selectedValue = v
 	}
 }
 

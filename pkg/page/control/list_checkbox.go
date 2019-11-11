@@ -155,8 +155,8 @@ func (l *CheckboxList) RenderItems(items []*ListItem) string {
 
 // RenderItem is called by the framework to render a single item in the list.
 func (l *CheckboxList) RenderItem(item *ListItem) (h string) {
-	_, selected := l.selectedIds[item.ID()]
-	h = renderItemControl(item, "checkbox", l.labelDrawingMode, selected, l.ID())
+	_, selected := l.selectedValues[item.Value()]
+	h = renderCheckItemControl(item, "checkbox", l.labelDrawingMode, selected, l.ID())
 	h = renderCell(item, h, l.columnCount > 0)
 	return
 }
@@ -168,14 +168,7 @@ func (l *CheckboxList) UpdateFormValues(ctx *page.Context) {
 	if ctx.RequestMode() == page.Server {
 		// Using name attribute to return rendered checkboxes that are turned on.
 		if v, ok := ctx.FormValues(controlID); ok {
-			l.SetSelectedIdsNoRefresh(v)
-		}
-	} else {
-		// Ajax will only send changed items based on their ids
-		for _, item := range l.ListItems() {
-			if v, ok := ctx.FormValue(item.ID()); ok {
-				l.SetSelectedIdNoRefresh(item.ID(), page.ConvertToBool(v))
-			}
+			l.SetSelectedValuesNoRefresh(v)
 		}
 	}
 }

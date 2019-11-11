@@ -16,7 +16,7 @@ func (c {{= col.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if sRefresh != ""}}
     if ctrl, ok := i.(*{{= col.Import.Alias}}.{{= col.ControlType}}); ok {
 {{if col.IsReference() && col.ForeignKey.IsType}}
-        val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction(dd) }}()
+        val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction(dd) }}().ID()
 {{else}}
         val := data.(*model.{{= t.GoName }}).{{= col.GoName }}()
 {{if}}
@@ -30,7 +30,7 @@ func (c {{= col.Connector }}) Update(i page.ControlI, data interface{}) {
    if ctrl, ok := i.(*{{= col.Import.Alias}}.{{= col.ControlType}}); ok {
         {{= sUpdate }}
 {{if col.IsReference() && col.ForeignKey.IsType}}
-        data.(*model.{{= t.GoName }}).Set{{= col.ReferenceFunction(dd) }}(val.(model.{{= col.ForeignKey.GoType }}))
+        data.(*model.{{= t.GoName }}).Set{{= col.ReferenceFunction(dd) }}(model.{{= col.ForeignKey.GoType }}(val))
 {{else}}
         data.(*model.{{= t.GoName }}).Set{{= col.GoName }}(val)
 {{if}}

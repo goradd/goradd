@@ -78,9 +78,10 @@ func ({{= propLetter }} {{= propName }}) Label() string {
 	return {{= propLetter }}.String()
 }
 
-// Value satisfies the Valuer interface.
+// Value returns the value that will be used in dropdown lists and satisfies the
+// Valuer and ItemLister interfaces.
 func ({{= propLetter }} {{= propName }}) Value() interface{} {
-	return {{= propLetter }}
+	return {{= propLetter }}.ID()
 }
 
 

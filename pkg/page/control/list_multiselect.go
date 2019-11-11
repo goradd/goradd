@@ -24,7 +24,7 @@ type MultiselectList struct {
 	page.ControlBase
 	ItemList
 	DataManager
-	selectedIds map[string]bool
+	selectedValues map[string]bool
 }
 
 func NewMultiselectList(parent page.ControlI, id string) *MultiselectList {
@@ -37,7 +37,7 @@ func NewMultiselectList(parent page.ControlI, id string) *MultiselectList {
 func (l *MultiselectList) Init(parent page.ControlI, id string) {
 	l.ControlBase.Init(parent, id)
 	l.ItemList = NewItemList(l)
-	l.selectedIds = map[string]bool{}
+	l.selectedValues = map[string]bool{}
 	l.Tag = "select"
 }
 
@@ -65,7 +65,7 @@ func (l *MultiselectList) Size() int {
 }
 
 func (l *MultiselectList) Validate(ctx context.Context) bool {
-	if l.IsRequired() && len(l.selectedIds) == 0 {
+	if l.IsRequired() && len(l.selectedValues) == 0 {
 		if l.ErrorForRequired == "" {
 			l.SetValidationError(l.GT("A selection is required"))
 		} else {
@@ -81,20 +81,21 @@ func (l *MultiselectList) UpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 
 	if a, ok := ctx.FormValues(id); ok {
-		l.selectedIds = map[string]bool{}
+		l.selectedValues = map[string]bool{}
 		for _, v := range a {
-			l.selectedIds[v] = true
+			l.selectedValues[v] = true
 		}
 	}
 }
 
 func (l *MultiselectList) SelectedItems() []*ListItem {
-	items := []*ListItem{}
-	if len(l.selectedIds) == 0 {
+	var items []*ListItem
+
+	if len(l.selectedValues) == 0 {
 		return nil
 	}
-	for id := range l.selectedIds {
-		item := l.GetItem(id)
+	for v := range l.selectedValues {
+		_, item := l.GetItemByValue(v)
 		if item != nil {
 			items = append(items, item)
 		}
@@ -102,30 +103,30 @@ func (l *MultiselectList) SelectedItems() []*ListItem {
 	return items
 }
 
-// SetSelectedIds sets the current selection to the given ids. You must ensure that the items with the ids exist, it will
+// SetSelectedValues sets the current selection to the given ids. You must ensure that the items with the ids exist, it will
 // not attempt to make sure the items exist.
-func (l *MultiselectList) SetSelectedIds(ids []string) {
-	l.SetSelectedIdsNoRefresh(ids)
+func (l *MultiselectList) SetSelectedValues(ids []string) {
+	l.SetSelectedValuesNoRefresh(ids)
 	l.Refresh()
 }
 
-func (l *MultiselectList) SetSelectedIdsNoRefresh(ids []string) {
-	l.selectedIds = map[string]bool{}
+func (l *MultiselectList) SetSelectedValuesNoRefresh(values []string) {
+	l.selectedValues = map[string]bool{}
 
-	if ids == nil {
+	if values == nil {
 		return
 	}
 
-	for _, id := range ids {
-		l.selectedIds[id] = true
+	for _, v := range values {
+		l.selectedValues[v] = true
 	}
 }
 
-func (l *MultiselectList) SetSelectedIdNoRefresh(id string, value bool) {
-	if value {
-		l.selectedIds[id] = true
+func (l *MultiselectList) SetSelectedValueNoRefresh(value string, on bool) {
+	if on {
+		l.selectedValues[value] = true
 	} else {
-		delete(l.selectedIds, id)
+		delete(l.selectedValues, value)
 	}
 }
 
@@ -136,25 +137,25 @@ func (l *MultiselectList) Value() interface{} {
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
 func (l *MultiselectList) SetValue(v interface{}) {
-	l.selectedIds = map[string]bool{}
-	switch ids := v.(type) {
+	l.selectedValues = map[string]bool{}
+	switch values := v.(type) {
 	case string:
-		a := strings.Split(ids, ",")
+		a := strings.Split(values, ",")
 		for _, v := range a {
-			l.selectedIds[v] = true
+			l.selectedValues[v] = true
 		}
 
 	case []string:
-		for _, v := range ids {
-			l.selectedIds[v] = true
+		for _, v := range values {
+			l.selectedValues[v] = true
 		}
 
 	case *ListItem:
-		l.selectedIds[ids.ID()] = true
+		l.selectedValues[values.ID()] = true
 
 	case []*ListItem:
-		for _, v := range ids {
-			l.selectedIds[v.ID()] = true
+		for _, v := range values {
+			l.selectedValues[v.ID()] = true
 		}
 
 	default:
@@ -164,19 +165,22 @@ func (l *MultiselectList) SetValue(v interface{}) {
 
 // SelectedIds returns a list of ids sorted by id number that correspond to the selection
 func (l *MultiselectList) SelectedIds() []string {
-	ids := make([]string, 0, len(l.selectedIds))
-	for id := range l.selectedIds {
-		ids = append(ids, id)
+	ids := make([]string, 0, len(l.selectedValues))
+	for v := range l.selectedValues {
+		id, _ := l.GetItemByValue(v)
+		if id != "" {
+			ids = append(ids, id)
+		}
 	}
 	SortIds(ids)
 	return ids
 }
 
 func (l *MultiselectList) SelectedLabels() []string {
-	labels := []string{}
+	var labels []string
 
-	for _, id := range l.SelectedIds() {
-		item := l.GetItem(id)
+	for v := range l.selectedValues {
+		_, item := l.GetItemByValue(v)
 		if item != nil {
 			labels = append(labels, item.Label())
 		}
@@ -184,14 +188,11 @@ func (l *MultiselectList) SelectedLabels() []string {
 	return labels
 }
 
-func (l *MultiselectList) SelectedValues() []interface{} {
-	values := []interface{}{}
+func (l *MultiselectList) SelectedValues() []string {
+	var values []string
 
-	for _, id := range l.SelectedIds() {
-		item := l.GetItem(id)
-		if item != nil {
-			values = append(values, item.Value())
-		}
+	for v := range l.selectedValues {
+		values = append(values, v)
 	}
 	return values
 }
@@ -212,21 +213,18 @@ func (l *MultiselectList) SetData(data interface{}) {
 
 // MarshalState is an internal function to save the state of the control
 func (l *MultiselectList) MarshalState(m maps.Setter) {
-	var ids = []string{}
-	for id := range l.selectedIds {
-		ids = append(ids, id)
-	}
-	m.Set("sel", ids)
+	values := l.SelectedValues()
+	m.Set("sel", values)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
 func (l *MultiselectList) UnmarshalState(m maps.Loader) {
-	l.selectedIds = map[string]bool{}
+	l.selectedValues = map[string]bool{}
 
 	if s, ok := m.Load("sel"); ok {
-		if ids, ok := s.([]string); ok {
-			for _, id := range ids {
-				l.selectedIds[id] = true
+		if values, ok := s.([]string); ok {
+			for _, v := range values {
+				l.selectedValues[v] = true
 			}
 		}
 	}
@@ -271,8 +269,8 @@ func (l *MultiselectList) getItemsHtml(items []*ListItem) string {
 			h += html.RenderTag(tag, attributes, innerhtml) + "\n"
 		} else {
 			attributes := item.Attributes().Copy()
-			attributes.Set("value", item.ID())
-			if l.IsIdSelected(item.ID()) {
+			attributes.Set("value", item.Value())
+			if l.IsValueSelected(item.Value()) {
 				attributes.Set("selected", "")
 			}
 			h += html.RenderTag("option", attributes, item.Label()) + "\n"
@@ -281,9 +279,9 @@ func (l *MultiselectList) getItemsHtml(items []*ListItem) string {
 	return h
 }
 
-func (l *MultiselectList) IsIdSelected(id string) bool {
-	v, ok := l.selectedIds[id]
-	return ok && v
+func (l *MultiselectList) IsValueSelected(v string) bool {
+	b, ok := l.selectedValues[v]
+	return ok && b
 }
 
 func (l *MultiselectList) Serialize(e page.Encoder) (err error) {
@@ -297,7 +295,7 @@ func (l *MultiselectList) Serialize(e page.Encoder) (err error) {
 		return
 	}
 
-	if err = e.Encode(l.selectedIds); err != nil {
+	if err = e.Encode(l.selectedValues); err != nil {
 		return
 	}
 	return
@@ -313,7 +311,7 @@ func (l *MultiselectList) Deserialize(dec page.Decoder) (err error) {
 	if err = l.DataManager.Deserialize(dec); err != nil {
 		return
 	}
-	if err = dec.Decode(&l.selectedIds); err != nil {
+	if err = dec.Decode(&l.selectedValues); err != nil {
 		return
 	}
 	return

@@ -5,6 +5,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
+	"strconv"
 )
 
 
@@ -32,9 +33,9 @@ type Labeler interface {
 // but the id values are managed by the list manager and generally should not be set by you. In situations where the
 // user selects a list item, you would use the id to retrieve the ListItem selected.
 type ListItem struct {
-	value interface{}
-	id    string
 	ItemList
+	value string // html list item values eventually get expressed as a string in the html
+	id    string
 	label             string
 	attributes        html.Attributes
 	shouldEscapeLabel bool
@@ -43,13 +44,15 @@ type ListItem struct {
 	anchorAttributes  html.Attributes
 }
 
-// NewListItem creates a new item for a list. Specify an empty value for an item that represents no selection.
-func NewListItem(label string, value ...interface{}) *ListItem {
+// NewListItem creates a new item for a list. Specify an empty string for an item that represents no selection.
+func NewListItem(label string, value ...string) *ListItem {
 	l := &ListItem{label: label}
 	if c := len(value); c == 1 {
 		l.value = value[0]
 	} else if c > 1 {
 		panic("Call NewListItem with zero or one value only.")
+	} else {
+		l.value = label
 	}
 
 	l.ItemList = NewItemList(l)
@@ -58,14 +61,20 @@ func NewListItem(label string, value ...interface{}) *ListItem {
 
 // NewItemFromItemLister creates a new item from any object that has a Value and Label method.
 func NewItemFromItemLister(i ItemLister) *ListItem {
-	l := &ListItem{value: i.Value(), label: i.Label()}
+	var l *ListItem
+
+	if i.Value() == nil {
+		l = &ListItem{value: "", label: i.Label()}
+	} else {
+		l = &ListItem{value: fmt.Sprintf("%v", i.Value()), label: i.Label()}
+	}
 	l.ItemList = NewItemList(l)
 	return l
 }
 
 // NewItemFromLabeler creates a new item from any object that has just a Label method.
 func NewItemFromLabeler(i Labeler) *ListItem {
-	l := &ListItem{label: i.Label()}
+	l := &ListItem{label: i.Label(), value: i.Label()}
 	l.ItemList = NewItemList(l)
 	return l
 }
@@ -87,29 +96,20 @@ func NewItemFromItemIDer(i ItemIDer) *ListItem {
 	return l
 }
 
-func (i *ListItem) SetValue(v interface{}) *ListItem {
+func (i *ListItem) SetValue(v string) *ListItem {
 	i.value = v
 	return i
 }
 
-func (i *ListItem) Value() interface{} {
+func (i *ListItem) Value() string {
 	return i.value
 }
 
 func (i *ListItem) IntValue() int {
-	if v,ok := i.value.(int); ok {
-		return v
-	}
-	return -1
+	v,_ := strconv.Atoi(i.value)
+	return v
 }
 
-func (i *ListItem) StringValue() string {
-	if s, ok := i.value.(fmt.Stringer); ok {
-		return s.String()
-	} else {
-		return i.value.(string)
-	}
-}
 
 func (i *ListItem) ID() string {
 	return i.id
@@ -198,22 +198,7 @@ func (i *ListItem) Attributes() html.Attributes {
 // IsEmptyValue returns true if the value is empty, meaning it does not satisfy a selection being made
 // if the list has IsRequired turned on.
 func (i *ListItem) IsEmptyValue() bool {
-	if i == nil {
-		return true
-	}
-	switch v := i.value.(type) {
-	case nil:
-		return true
-	case int:
-		return v == 0
-	case float64:
-		return v == 0
-	case float32:
-		return v == 0
-	case string:
-		return v == ""
-	}
-	return false
+	return i.value == ""
 }
 
 func (i *ListItem) Serialize(e page.Encoder) (err error) {

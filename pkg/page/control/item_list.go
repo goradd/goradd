@@ -22,8 +22,8 @@ type IDSetter interface {
 
 // ItemListI is the interface for all controls that display a list of ListItems.
 type ItemListI interface {
-	AddItem(label string, value ...interface{}) *ListItem
-	AddItemAt(index int, label string, value ...interface{})
+	AddItem(label string, value ...string) *ListItem
+	AddItemAt(index int, label string, value ...string)
 	AddListItemAt(index int, item *ListItem)
 	AddListItems(items ...interface{})
 	GetItemAt(index int) *ListItem
@@ -32,9 +32,9 @@ type ItemListI interface {
 	RemoveItemAt(index int)
 	Len() int
 	GetItem(id string) (foundItem *ListItem)
-	GetItemByValue(value interface{}) (id string, foundItem *ListItem)
+	GetItemByValue(value string) (id string, foundItem *ListItem)
 	reindex(start int)
-	findItemByValue(value interface{}) (container *ItemList, index int)
+	findItemByValue(value string) (container *ItemList, index int)
 }
 
 // ItemList manages a list of *ListItem list items. ItemList is designed to be embedded in another structure, and will
@@ -55,7 +55,7 @@ func NewItemList(owner IDer) ItemList {
 }
 
 // AddItem adds the given item to the end of the list. The value is optional, but should only be one or zero values.
-func (l *ItemList) AddItem(label string, value ...interface{}) *ListItem {
+func (l *ItemList) AddItem(label string, value ...string) *ListItem {
 	i := NewListItem(label, value...)
 	l.AddListItemAt(len(l.items), i)
 	return i
@@ -66,7 +66,7 @@ func (l *ItemList) AddItem(label string, value ...interface{}) *ListItem {
 // If the index is bigger or equal to the number of items, it adds it to the end. If the index is zero, or is negative and smaller than
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
 // hierarchical list, so use sparingly.
-func (l *ItemList) AddItemAt(index int, label string, value ...interface{}) {
+func (l *ItemList) AddItemAt(index int, label string, value ...string) {
 	l.AddListItemAt(index, NewListItem(label, value...))
 }
 
@@ -210,7 +210,7 @@ func (l *ItemList) GetItem(id string) (foundItem *ListItem) {
 
 // GetItemByValue recursively searches the list to find the item with the given value.
 // It starts with the current list, and if not found, will search in sublists.
-func (l *ItemList) GetItemByValue(value interface{}) (id string, foundItem *ListItem) {
+func (l *ItemList) GetItemByValue(value string) (id string, foundItem *ListItem) {
 	container, index := l.findItemByValue(value)
 
 	if container != nil {
@@ -224,7 +224,7 @@ func (l *ItemList) GetItemByValue(value interface{}) (id string, foundItem *List
 // findItemByValue searches for the item by value, and returns the index of the found item,
 // and the ItemList that the item was found in. The returned ItemList could be the current
 // item list, or a sublist.
-func (l *ItemList) findItemByValue(value interface{}) (container *ItemList, index int) {
+func (l *ItemList) findItemByValue(value string) (container *ItemList, index int) {
 	if len(l.items) == 0 {
 		return nil, -1 // no sub items, so its not here
 	}
@@ -328,10 +328,10 @@ func (p IdSlice) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 
 // NoSelectionItemList returns a default item list to start a selection list that allows no selection
 func NoSelectionItemList() []interface{} {
-	return []interface{}{NewListItem(config.NoSelectionString, nil)}
+	return []interface{}{NewListItem(config.NoSelectionString, "")}
 }
 
 // SelectOneItemList returns a default item list to start a selection list that asks the user to select an item
 func SelectOneItemList() []interface{} {
-	return []interface{}{NewListItem(config.SelectOneString, nil)}
+	return []interface{}{NewListItem(config.SelectOneString, "")}
 }

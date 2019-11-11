@@ -3,12 +3,14 @@ package control
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	"reflect"
+	"strconv"
 )
 
 type SelectListI interface {
@@ -26,7 +28,7 @@ type SelectList struct {
 	page.ControlBase
 	ItemList
 	DataManager
-	selectedId string
+	selectedValue string
 }
 
 // NewSelectList creates a new select list
@@ -56,7 +58,8 @@ func (l *SelectList) Validate(ctx context.Context) bool {
 		return false
 	}
 
-	if l.IsRequired() && l.SelectedItem().IsEmptyValue() {
+	sel := l.SelectedItem()
+	if l.IsRequired() && (sel == nil ||  sel.IsEmptyValue()) {
 		if l.ErrorForRequired == "" {
 			l.SetValidationError(l.GT("A selection is required"))
 		} else {
@@ -72,7 +75,7 @@ func (l *SelectList) UpdateFormValues(ctx *page.Context) {
 	id := l.ID()
 
 	if v, ok := ctx.FormValue(id); ok {
-		l.selectedId = v
+		l.selectedValue = v
 	}
 }
 
@@ -80,55 +83,51 @@ func (l *SelectList) UpdateFormValues(ctx *page.Context) {
 // in the list, since that is what will be showing in the selection list, and will update its internal pointer to
 // make the first item the current selection.
 func (l *SelectList) SelectedItem() *ListItem {
-	if l.selectedId == "" {
-		if l.Len() == 0 {
-			return nil
-		} else {
-			l.selectedId = l.items[0].ID()
-			return l.items[0]
-		}
+	if l.Len() == 0 {
+		return nil
 	}
-	return l.GetItem(l.selectedId)
+	if l.selectedValue == "" {
+		l.selectedValue = l.items[0].Value()
+		return l.items[0]
+	}
+	_,i := l.GetItemByValue(l.selectedValue)
+	return i
 }
 
-// SetSelectedId sets the current selection to the given id. You must ensure that the item with the id exists, it will
+// SetSelectedValue sets the current selection to the given id. You must ensure that the item with the id exists, it will
 // not attempt to make sure the item exists.
-func (l *SelectList) SetSelectedID(id string) {
-	l.selectedId = id
-	l.AddRenderScript("val", id)
+func (l *SelectList) SetSelectedValue(v string) {
+	l.selectedValue = v
+	l.AddRenderScript("val", v)
 }
 
 // Value implements the Valuer interface for general purpose value getting and setting
 func (l *SelectList) Value() interface{} {
-	if i := l.SelectedItem(); i == nil {
+	if l.selectedValue == "" {
 		return nil
 	} else {
-		return i.Value()
+		return l.selectedValue
 	}
 }
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
 func (l *SelectList) SetValue(v interface{}) {
-	id, _ := l.GetItemByValue(v)
-	l.SetSelectedID(id)
+	l.SetSelectedValue(fmt.Sprintf("%v", v))
 }
 
 // IntValue returns the select value as an integer.
 func (l *SelectList) IntValue() int {
-	if i := l.SelectedItem(); i == nil {
+	if l.selectedValue == "" {
 		return 0
 	} else {
-		return i.IntValue()
+		i,_ := strconv.Atoi(l.selectedValue)
+		return i
 	}
 }
 
 // StringValue returns the selected value as a string
 func (l *SelectList) StringValue() string {
-	if i := l.SelectedItem(); i == nil {
-		return ""
-	} else {
-		return i.StringValue()
-	}
+	return l.selectedValue
 }
 
 // SelectedLabel returns the label of the selected item
@@ -142,14 +141,14 @@ func (l *SelectList) SelectedLabel() string {
 
 // MarshalState is an internal function to save the state of the control
 func (l *SelectList) MarshalState(m maps.Setter) {
-	m.Set("sel", l.selectedId)
+	m.Set("sel", l.selectedValue)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
 func (l *SelectList) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("sel"); ok {
 		if s, ok := v.(string); ok {
-			l.selectedId = s
+			l.selectedValue = s
 		}
 	}
 }
@@ -195,8 +194,11 @@ func (l *SelectList) getItemsHtml(items []*ListItem) string {
 			h += html.RenderTag(tag, attributes, innerhtml)
 		} else {
 			attributes := item.Attributes().Copy()
-			attributes.Set("value", item.ID())
-			if l.selectedId == item.ID() {
+
+			// TODO: add the option to encrypt values in case values are sensitive
+
+			attributes.Set("value", item.Value())
+			if l.selectedValue == item.Value() {
 				attributes.Set("selected", "")
 			}
 
@@ -231,7 +233,7 @@ func (l *SelectList) Serialize(e page.Encoder) (err error) {
 		return
 	}
 
-	if err = e.Encode(l.selectedId); err != nil {
+	if err = e.Encode(l.selectedValue); err != nil {
 		return
 	}
 	return
@@ -247,7 +249,7 @@ func (l *SelectList) Deserialize(dec page.Decoder) (err error) {
 	if err = l.DataManager.Deserialize(dec); err != nil {
 		return
 	}
-	if err = dec.Decode(&l.selectedId); err != nil {
+	if err = dec.Decode(&l.selectedValue); err != nil {
 		return
 	}
 	return
@@ -267,8 +269,8 @@ type SelectListCreator struct {
 	DataProviderID string
 	// Size specifies how many items to show, and turns the list into a scrolling list
 	Size int
-	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
-	Value interface{}
+	// Value is the initial value of the list. Often its best to load the value in a separate Load step after creating the control.
+	Value string
 	// OnChange is an action to take when the user changes what is selected (as in, when the javascript change event fires).
 	OnChange action.ActionI
 	// SaveState saves the selected value so that it is restored if the form is returned to.
@@ -285,7 +287,7 @@ func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) pag
 func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 
 	if c.NilItem != "" {
-		ctrl.AddItem(c.NilItem, nil)
+		ctrl.AddItem(c.NilItem, "")
 	}
 
 	if c.Items != nil {

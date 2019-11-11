@@ -97,7 +97,7 @@ func (form *TestForm) Action(ctx context.Context, a page.ActionParams) {
 func (form *TestForm) runSelectedTest() {
 	testList := GetSelectList(form, "test-list")
 	GetSpan(form, "running-label").SetText(testList.SelectedItem().Label())
-	name := testList.SelectedItem().Value().(string)
+	name := testList.SelectedItem().Value()
 	form.testOne(name)
 }
 
@@ -195,7 +195,7 @@ func (form *TestForm) Fatal(message string) {
 
 func (form *TestForm) panicked(message string, testName string) {
 	var panickingLine string
-	if _, file, line, ok := runtime.Caller(5); ok {
+	if _, file, line, ok := runtime.Caller(4); ok {
 		panickingLine = fmt.Sprintf("%s:%d", file, line)
 	}
 	msg := fmt.Sprintf("\n*** Test %s panicked: %s\n*** Last test step: %s\n*** Panicking line: %s", testName, message, form.callerInfo, panickingLine)
@@ -233,30 +233,20 @@ func (form *TestForm) SetCheckbox(id string, val bool) {
 	form.Controller.checkControl(id, val, form.captureCaller())
 }
 
-func (form *TestForm) ChooseListValue(id string, value interface{}) {
+func (form *TestForm) ChooseListValue(id string, value string) {
 	if form.usingForm {
 		panic("do not call SetListVal from inside the F() function")
 	}
 
-	f := form.getForm()
-	list := f.Page().GetControl(id).(ItemListI)
-	itemId,_ := list.GetItemByValue(value)
-	form.ChangeVal(id, itemId)
+	form.ChangeVal(id, value)
 }
 
-func (form *TestForm) ChooseListValues(id string, values ...interface{}) {
+func (form *TestForm) ChooseListValues(id string, values ...string) {
 	if form.usingForm {
 		panic("do not call SetListVal from inside the F() function")
 	}
 
-	var ids []string
-	f := form.getForm()
-	list := f.Page().GetControl(id).(ItemListI)
-	for _,value := range values {
-		itemId,_ := list.GetItemByValue(value)
-		ids = append(ids, itemId)
-	}
-	form.ChangeVal(id, ids)
+	form.ChangeVal(id, values)
 }
 
 // CheckGroup sets the checkbox group to a list of values. Radio groups should only be given one value
