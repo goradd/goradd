@@ -121,7 +121,7 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 // results we might get after a submission, as well as nsure that the ajax and server submits produce
 // the same results.
 func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
-	t.ChooseListValue("selectListWithSize", 2)
+	t.ChooseListValue("selectListWithSize", "2")
 	t.Click(btnID)
 	t.AssertEqual(true, t.HasClass("singleSelectList-fg", "error"))
 
@@ -129,12 +129,12 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 		t.AssertEqual(2,  GetSelectList(f, "selectListWithSize").IntValue())
 	})
 
-	t.ChooseListValue("singleSelectList", 1)
-	t.ChooseListValue("selectListWithSize", 2)
+	t.ChooseListValue("singleSelectList", "1")
+	t.ChooseListValue("selectListWithSize", "2")
 
 	var radioId string
 	t.F(func (f page.FormI) {
-		radioId,_ = GetRadioList(f, "radioList1").GetItemByValue(3)
+		radioId,_ = GetRadioList(f, "radioList1").GetItemByValue("3")
 	})
 	t.CheckGroup("radioList1", radioId)
 

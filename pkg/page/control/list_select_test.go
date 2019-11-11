@@ -15,19 +15,22 @@ func TestListSelectString(t *testing.T) {
 	d := NewSelectList(p, "")
 
 	d.AddItem("A", "A")
-	d.AddItem("D", "D")
+	d.AddItem("D")
 	d.AddItemAt(1, "B", "B")
-	d.AddItemAt(-1, "C", "C")
-	d.AddItemAt(-10, "- Select a Value -", nil)
+	d.AddItemAt(-1, "C")
+	d.AddItemAt(-10, "- Select a Value -", "")
 
 	d.SetValue("B")
 
 	assert.Equal(t, "B", d.SelectedLabel())
 	assert.Equal(t, "B", d.Value())
-	assert.Equal(t, "B", d.SelectedItem().StringValue())
+	assert.Equal(t, "B", d.SelectedItem().Value())
 
-	id, _ := d.GetItemByValue("C")
-	valid := d.MockFormValue(id)
+	d.SetValue("D")
+	assert.Equal(t, "D", d.Value())
+	assert.Equal(t, "D", d.SelectedLabel())
+
+	valid := d.MockFormValue("C")
 	assert.True(t, valid)
 	assert.Equal(t, "C", d.SelectedLabel())
 	assert.Equal(t, "C", d.Value())
@@ -46,21 +49,20 @@ func TestListSelectInt(t *testing.T) {
 
 	d := NewSelectList(p, "")
 
-	d.AddItem("- Select a Value -", nil)
-	d.AddItem("A", 1)
-	d.AddItem("C", 3)
-	d.AddItemAt(2, "B", 2)
+	d.AddItem("- Select a Value -", "")
+	d.AddItem("A", "1")
+	d.AddItem("C", "3")
+	d.AddItemAt(2, "B", "2")
 
 	d.SetValue(2)
 	assert.Equal(t, "B", d.SelectedLabel())
-	assert.Equal(t, 2, d.Value())
+	assert.Equal(t, 2, d.IntValue())
 	assert.Equal(t, 2, d.SelectedItem().IntValue())
 
-	id, _ := d.GetItemByValue(3)
-	valid := d.MockFormValue(id)
+	valid := d.MockFormValue("3")
 	assert.True(t, valid)
 	assert.Equal(t, "C", d.SelectedLabel())
-	assert.Equal(t, 3, d.Value())
+	assert.Equal(t, "3", d.Value())
 	assert.Equal(t, 3, d.IntValue())
 
 	d.SetIsRequired(true)
@@ -80,21 +82,20 @@ func TestListSelectData(t *testing.T) {
 		{"B", 2},
 		{"D", 4},
 	})
-	d.AddItemAt(3, "C", 3)
+	d.AddItemAt(3, "C", "3")
 
 	d.SetValue(2)
 	assert.Equal(t, "B", d.SelectedLabel())
-	assert.Equal(t, 2, d.Value())
+	assert.Equal(t, 2, d.IntValue())
 	assert.Equal(t, 2, d.SelectedItem().IntValue())
 	assert.Equal(t, 1, d.GetItemAt(1).IntValue())
 	assert.Nil(t, d.GetItemAt(7))
 	assert.Equal(t, 4, d.ListItems()[4].IntValue())
 
-	id, _ := d.GetItemByValue(3)
-	valid := d.MockFormValue(id)
+	valid := d.MockFormValue("3")
 	assert.True(t, valid)
 	assert.Equal(t, "C", d.SelectedLabel())
-	assert.Equal(t, 3, d.Value())
+	assert.Equal(t, "3", d.Value())
 	assert.Equal(t, 3, d.IntValue())
 
 	d.SetIsRequired(true)
@@ -123,7 +124,7 @@ func TestSelectList_Serialize(t *testing.T) {
 				{"a", 1},
 				{"b", 2},
 			},
-			Value: 2,
+			Value: "2",
 		},
 	)
 	c := GetSelectList(p, "c")
@@ -137,6 +138,6 @@ func TestSelectList_Serialize(t *testing.T) {
 	dec := gob.NewDecoder(&buf)
 	c2.Deserialize(dec)
 
-	assert.Equal(t, 2, c2.Value())
+	assert.Equal(t, "2", c2.Value())
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 func init() {
@@ -53,19 +54,25 @@ func (d SelectList) GenerateCreator(col *generator.ColumnType) (s string) {
 
 
 func (d SelectList) GenerateRefresh(col *generator.ColumnType) string {
-	if col.ForeignKey.IsType {
-		return `ctrl.SetValue(val)`
-	} else {
-		return `ctrl.SetValue(string(val))` // should be a string id
-	}
+	return `ctrl.SetValue(val)`
 }
 
 func (d SelectList) GenerateUpdate(col *generator.ColumnType) string {
-	if col.ForeignKey.IsType {
-		return `val := ctrl.Value()`
-	} else {
-		return `val := ctrl.StringValue()`
+	var s string
+	switch col.ColumnType {
+	case query.ColTypeInteger:
+		s = `val,_ := strconv.Atoi(ctrl.StringValue())`
+	case query.ColTypeUnsigned:
+		s = `val,_ := strconv.ParseUint(ctrl.StringValue(), 10, 0)`
+	case query.ColTypeInteger64:
+		s = `val,_ := strconv.ParseInt(ctrl.StringValue(), 10, 64)`
+	case query.ColTypeUnsigned64:
+		s = `val,_ := strconv.ParseUint(ctrl.StringValue(), 10, 64)`
+	default:
+		s = `val := ctrl.StringValue()`
 	}
+
+	return s
 }
 
 func (d SelectList) GenerateProvider(col *generator.ColumnType) string {

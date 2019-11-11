@@ -67,7 +67,7 @@ func (l *CheckboxList) DrawingAttributes(ctx context.Context) html.Attributes {
 
 // RenderItem is called by the framework to render a single item in the list.
 func (l *CheckboxList) RenderItem(item *control.ListItem) (h string) {
-	selected := l.IsIdSelected(item.ID())
+	selected := l.IsValueSelected(item.Value())
 	h = renderItemControl(item, "checkbox", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)
 	return

@@ -97,7 +97,7 @@ func (form *TestForm) Action(ctx context.Context, a page.ActionParams) {
 func (form *TestForm) runSelectedTest() {
 	testList := GetSelectList(form, "test-list")
 	GetSpan(form, "running-label").SetText(testList.SelectedItem().Label())
-	name := testList.SelectedItem().Value().(string)
+	name := testList.SelectedItem().Value()
 	form.testOne(name)
 }
 
@@ -233,7 +233,7 @@ func (form *TestForm) SetCheckbox(id string, val bool) {
 	form.Controller.checkControl(id, val, form.captureCaller())
 }
 
-func (form *TestForm) ChooseListValue(id string, value interface{}) {
+func (form *TestForm) ChooseListValue(id string, value string) {
 	if form.usingForm {
 		panic("do not call SetListVal from inside the F() function")
 	}
@@ -244,7 +244,7 @@ func (form *TestForm) ChooseListValue(id string, value interface{}) {
 	form.ChangeVal(id, itemId)
 }
 
-func (form *TestForm) ChooseListValues(id string, values ...interface{}) {
+func (form *TestForm) ChooseListValues(id string, values ...string) {
 	if form.usingForm {
 		panic("do not call SetListVal from inside the F() function")
 	}
