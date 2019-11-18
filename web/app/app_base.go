@@ -67,6 +67,7 @@ type ApplicationI interface {
 	ServeRequest(w http.ResponseWriter, r *http.Request)
 	ServeStaticFile(w http.ResponseWriter, r *http.Request) bool
 	ServeApiRequest(w http.ResponseWriter, r *http.Request) bool
+	AccessLogHandler(next http.Handler) http.Handler
 }
 
 // The application base, to be embedded in your application
@@ -213,6 +214,7 @@ func (a *Application) MakeAppServer() http.Handler {
 	h = a.PutContextHandler(h)
 	h = a.this().SessionHandler(h)
 	h = a.BufferOutputHandler(h)
+	h = a.this().AccessLogHandler(h)
 
 	return h
 }
@@ -265,7 +267,8 @@ func (a *Application) PutContextHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// BufferOutputHandler manages the buffering of http output. It must be the last item in the handler list.
+// BufferOutputHandler manages the buffering of http output. It must be after any handlers that actually
+// respond to the request.
 func (a *Application) BufferOutputHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		// Setup the output buffer
@@ -366,6 +369,7 @@ func RegisterStaticPath(path string, directory string) {
 		})
 	}
 	StaticDirectoryPaths.Set(path, directory)
+	log.Printf("Registering static path %s to %s", path, directory)
 }
 
 // ServeApiHandler serves up an http API. This could be a REST api or something else.
@@ -377,6 +381,16 @@ func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
 	}
 	return http.StripPrefix(config.ApiPrefix, http.HandlerFunc(fn))
 }
+
+// AccessLogHandler simply logs requests.
+func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Serving: %s", r.RequestURI)
+		next.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(fn)
+}
+
 
 // ServeApiRequest serves up an http api call. The prefix has been removed, so
 // we just process the URL as if it were the command itself.
