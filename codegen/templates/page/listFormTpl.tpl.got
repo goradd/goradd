@@ -26,7 +26,7 @@ func (n *ListFormTplTemplate) FileName(key string, t generator.TableType) string
 	return n.TargetDir + "/" + key + "/form/template_source/" + strings.Title(key) + t.GoName + "ListForm.tpl.got"
 }
 
-func (n *ListFormTplTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+func (n *ListFormTplTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
 	{{: "form/listformtpl.tmpl" }}
 }
 

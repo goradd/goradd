@@ -21,7 +21,7 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
 {{
     if p.{{= columns[0].ControlName }} != nil {{for _,col := range columns[1:]}} && p.{{= col.ControlName }} != nil {{for}}{
         obj := model.Load{{t.GoName}}By{{= names}}(ctx, p.{{= columns[0].ControlName}}.Value().({{= columns[0].ColumnType.GoType() }}){{for _,col := range columns[1:]}}, p.{{= col.ControlName }}.Value().({{= col.ColumnType.GoType() }}){{for}})
-		if obj != nil && obj.{{= t.PrimaryKeyColumn.GoName}}() != p.Connector.{{t.GoName}}.{{= t.PrimaryKeyColumn.GoName}}() {
+		if obj != nil && obj.{{= t.PrimaryKeyColumn().GoName}}() != p.Connector.{{t.GoName}}.{{= t.PrimaryKeyColumn().GoName}}() {
 			isValid = false
 {{for _,col := range columns}}
 			p.{{= col.ControlName }}.SetValidationError(p.GT("This value is already in use, please choose a different one."))

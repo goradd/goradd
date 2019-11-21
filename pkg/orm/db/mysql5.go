@@ -48,7 +48,7 @@ import (
 // timezone the MYSQL server is set to.
 type Mysql5 struct {
 	SqlDb
-	description *DatabaseDescription
+	goraddDatabase *Database
 	config      *mysql.Config
 }
 
@@ -90,8 +90,8 @@ func (m *Mysql5) NewBuilder() QueryBuilderI {
 }
 
 // Describe returns the database description object
-func (m *Mysql5) Describe() *DatabaseDescription {
-	return m.description
+func (m *Mysql5) Describe() *Database {
+	return m.goraddDatabase
 }
 
 func (m *Mysql5) generateSelectSql(qb QueryBuilderI) (sql string, args []interface{}) {
@@ -241,9 +241,9 @@ func (m *Mysql5) generateJoinSql(b *sqlBuilder, j *joinTreeItem) (sql string, ar
 
 		var pk string
 		if ManyManyNodeIsTypeTable(node) {
-			pk = snaker.CamelToSnake(m.Describe().TypeTableDescription(ManyManyNodeRefTable(node)).PkField)
+			pk = snaker.CamelToSnake(m.Describe().TypeTable(ManyManyNodeRefTable(node)).PkField)
 		} else {
-			pk = m.Describe().TableDescription(ManyManyNodeRefTable(node)).PrimaryKeyColumn.DbName
+			pk = m.Describe().Table(ManyManyNodeRefTable(node)).PrimaryKeyColumn().DbName
 		}
 
 		sql += "`" + ManyManyNodeDbTable(node) + "` AS `" + j.alias + "a` ON `" +

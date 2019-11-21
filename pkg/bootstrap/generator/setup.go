@@ -10,7 +10,7 @@ import (
 func BootstrapCodegenSetup() {
 	generator.DefaultFormFieldCreator = "bootstrapctrl.FormGroupCreator"
 
-	generator.DefaultControlTypeFunc = func(col *db.ColumnDescription) (info generator.ControlCreationInfo) {
+	generator.DefaultControlTypeFunc = func(col *db.Column) (info generator.ControlCreationInfo) {
 		info = generator.DefaultControlType(col)
 
 		if col.IsPk {

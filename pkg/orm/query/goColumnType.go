@@ -109,3 +109,20 @@ func (g GoColumnType) DefaultValue() string {
 	}
 	return ""
 }
+
+func ColTypeFromGoTypeString(name string) GoColumnType {
+	switch name {
+	case "Unknown": return ColTypeUnknown
+	case "[]byte": return ColTypeBytes
+	case "string": return ColTypeString
+	case "int": return ColTypeInteger
+	case "uint": return ColTypeUnsigned
+	case "int64": return ColTypeInteger64
+	case "uint64": return ColTypeUnsigned64
+	case "datetime.DateTime": return ColTypeDateTime
+	case "float32": return ColTypeFloat
+	case "float64": return ColTypeDouble
+	case "bool": return ColTypeBool
+	default: panic("unknown column go type " + name)
+}
+}

@@ -14,7 +14,7 @@ import (
 //
 type Rest struct {
 	url         string
-	description *DatabaseDescription
+	description *Database
 }
 
 // NewRest returns a new Rest goradd database object that you can add to the datastore.
@@ -34,7 +34,7 @@ func (r *Rest) NewBuilder() QueryBuilderI {
 
 // Describe returns the database description object. Rest databases are not describable at this point.
 // Maybe someday.
-func (r *Rest) Describe() *DatabaseDescription {
+func (r *Rest) Describe() *Database {
 	return nil
 }
 

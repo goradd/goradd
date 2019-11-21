@@ -2,7 +2,7 @@ package db
 
 import "github.com/goradd/gengen/pkg/maps"
 
-type TableDescription struct {
+type Table struct {
 	// DbKey is the key used to find the database in the global database cluster
 	DbKey string
 	// DbName is the name of the database table or object in the database.
@@ -18,11 +18,11 @@ type TableDescription struct {
 	// LcGoName is the same as GoName, but with first letter lower case.
 	LcGoName string
 	// Columns is a list of ColumnDescriptions, one for each column in the table.
-	Columns []*ColumnDescription
+	Columns []*Column
 	// columnMap is an internal map of the columns
-	columnMap map[string]*ColumnDescription
+	columnMap map[string]*Column
 	// Indexes are the indexes defined in the database. Unique indexes will result in LoadBy* functions.
-	Indexes []IndexDescription
+	Indexes []Index
 	// Options are key-value pairs of values that can be used to customize how code generation is performed
 	Options maps.SliceMap
 	// IsType is true if this is a type table
@@ -40,9 +40,13 @@ type TableDescription struct {
 	ReverseReferences []*ReverseReference
 	// HasDateTime is true if the table contains a DateTime column.
 	HasDateTime bool
-	// PrimaryKeyColumn points to the column that contains the primary key of the table.
-	PrimaryKeyColumn *ColumnDescription
+}
 
-	// Skip will cause the table to be skipped in code generation
-	Skip bool
+func (t *Table) PrimaryKeyColumn() *Column {
+	return t.Columns[0]
+}
+
+// GetColumn returns a Column given the name of a column
+func (t *Table) GetColumn(name string) *Column {
+	return t.columnMap[name]
 }

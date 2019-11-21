@@ -1,10 +1,10 @@
 //pk.tmpl
-if t.PrimaryKeyColumn != nil {
-	var typ string = t.PrimaryKeyColumn.ColumnType.GoType()
+if t.PrimaryKeyColumn() != nil {
+	var typ string = t.PrimaryKeyColumn().ColumnType.GoType()
 {{
 
 func (o *{{privateName}}Base) PrimaryKey() {{typ}} {
-	return o.{{= t.PrimaryKeyColumn.ModelName }}
+	return o.{{= t.PrimaryKeyColumn().ModelName }}
 }
 }}
 }

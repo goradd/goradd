@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/goradd/gengen/pkg/maps"
-	strings2 "github.com/goradd/goradd/pkg/strings"
 	"log"
 	"strconv"
 	"strings"
@@ -29,60 +28,20 @@ const (
 	SqlTypeDecimal   = "Decimal" // a fixed point type
 )
 
-func getTableDescription(tableName string, tableComment string, db SqlDbI) *TableDescription {
-	var ok bool
-
-	options, err := extractOptions(tableComment)
-
-	if err != nil {
-		log.Print("Error in table comment for table " + tableName + ": " + err.Error())
-	}
-
-	if v, _ := options.LoadBool("NoCodegen"); v {
-		return nil
-	}
-
-	td := NewTableDescription(tableName)
-
-	if td.LiteralName, ok = options.LoadString("literalName"); options.Has("literalName") && !ok {
-		log.Print("Error in table comment for table " + tableName + ": literalName is not a string")
-	}
-
-	if td.LiteralPlural, ok = options.LoadString("literalPlural"); options.Has("literalPlural") && !ok {
-		log.Print("Error in table comment for table " + tableName + ": EnglishPlural is not a string")
-	}
-
-	if td.GoName, ok = options.LoadString("goName"); options.Has("goName") && !ok {
-		log.Print("Error in table comment for table " + tableName + ": goName is not a string")
-	} else {
-		td.GoName = strings.Title(td.GoName)
-	}
-
-	if td.GoPlural, ok = options.LoadString("goPlural"); options.Has("goPlural") && !ok {
-		log.Print("Error in table comment for table " + tableName + ": goPlural is not a string")
-	} else {
-		td.GoPlural = strings.Title(td.GoName)
-	}
-
-	td.IsType = strings2.EndsWith(tableName, db.TypeTableSuffix())
-	td.IsAssociation = strings2.EndsWith(tableName, db.AssociationTableSuffix())
-
-	td.Comment = tableComment
-	return td
-}
 
 // Find the json encoded list of options in the given string
-func extractOptions(comment string) (options *maps.SliceMap, err error) {
+func extractOptions(comment string) (options map[string]interface{}, remainingComment string, err error) {
 	var optionString string
 	firstIndex := strings.Index(comment, "{")
 	lastIndex := strings.LastIndex(comment, "}")
-	options = maps.NewSliceMap()
+	options = make(map[string]interface{})
 
 	if firstIndex != -1 &&
 		lastIndex != -1 &&
 		lastIndex > firstIndex {
 
 		optionString = comment[firstIndex : lastIndex+1]
+		remainingComment = strings.TrimSpace(comment[:firstIndex] + comment[lastIndex+1:])
 
 		err = json.Unmarshal([]byte(optionString), &options)
 	}
@@ -109,8 +68,8 @@ func getDataDefLength(description string) int {
 }
 
 // Retrieves a numeric value from the options, which is always going to return a float64
-func getNumericOption(o *maps.SliceMap, option string, defaultValue float64) (float64, bool) {
-	if v := o.Get(option); v != nil {
+func getNumericOption(o map[string]interface{}, option string, defaultValue float64) (float64, bool) {
+	if v := o[option]; v != nil {
 		if v2, ok := v.(float64); !ok {
 			return defaultValue, false
 		} else {
@@ -129,7 +88,7 @@ func getBooleanOption(o *maps.SliceMap, option string) (val bool, ok bool) {
 
 // Extracts a minimum and maximum value from the option map, returning defaults if none was found, and making sure
 // the boundaries of anything found are not exceeded
-func getMinMax(o *maps.SliceMap, defaultMin float64, defaultMax float64, tableName string, columnName string) (min float64, max float64) {
+func getMinMax(o map[string]interface{}, defaultMin float64, defaultMax float64, tableName string, columnName string) (min float64, max float64) {
 	var errString string
 
 	if columnName == "" {
@@ -150,6 +109,7 @@ func getMinMax(o *maps.SliceMap, defaultMin float64, defaultMax float64, tableNa
 			min = v
 		}
 	}
+	delete(o, "min")
 
 	v, ok = getNumericOption(o, "max", defaultMax)
 	if !ok {
@@ -163,6 +123,7 @@ func getMinMax(o *maps.SliceMap, defaultMin float64, defaultMax float64, tableNa
 			max = v
 		}
 	}
+	delete(o, "max")
 
 	return
 }

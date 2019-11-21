@@ -24,13 +24,13 @@ type CodeGenerator struct {
 }
 
 type TableType struct {
-	*db.TableDescription
+	*db.Table
 	Columns []ColumnType
 	Imports []*ImportType
 }
 
 type TypeTableType struct {
-	*db.TypeTableDescription
+	*db.TypeTable
 }
 
 // ImportType represents an import path required for a control. This is analyzed per-table.
@@ -40,7 +40,7 @@ type ImportType struct {
 	Primary   bool
 }
 
-// ControlDescription is matched with a ColumnDescription below and provides additional information regarding
+// ControlDescription is matched with a Column below and provides additional information regarding
 // how information in a column can be used to generate a default control to edit that information.
 type ControlDescription struct {
 	Import         *ImportType
@@ -57,9 +57,9 @@ func (cd *ControlDescription) ControlIDConst() string {
 	return strings.KebabToCamel(cd.ControlID) + "Id"
 }
 
-// ColumnType combines a database ColumnDescription with a ControlDescription
+// ColumnType combines a database Column with a ControlDescription
 type ColumnType struct {
-	*db.ColumnDescription
+	*db.Column
 	// Related control information
 	ControlDescription
 }
@@ -168,7 +168,10 @@ func Generate() {
 
 				// run imports on all generated go files
 				if strings.EndsWith(fileName, ".go") {
-					_, err := sys.ExecuteShellCommand("goimports -w " + fileName)
+					curDir,_ := os.Getwd()
+					_ = os.Chdir(filepath.Dir(fileName)) // run it from the files directory to pick up the correct go.mod file if there is one
+					_, err = sys.ExecuteShellCommand("goimports -w " + filepath.Base(fileName))
+					_ = os.Chdir(curDir)
 					if err != nil {
 						panic("error running goimports: " + string(err.(*exec.ExitError).Stderr)) // perhaps goimports is not installed?
 					}

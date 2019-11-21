@@ -34,7 +34,7 @@ func (n *ModelBaseTemplate) FileName(key string, t generator.TableType) string {
 	return targetDir + "/" + key + "/model/" + t.GoName + ".base.go"
 }
 
-func (n *ModelBaseTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.DatabaseDescription, t generator.TableType, buf *bytes.Buffer) {
+func (n *ModelBaseTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
 	privateName := strings.ToLower(t.GoName[:1]) + t.GoName[1:]
 	{{: "modelBase/modelBase.tmpl" }}
 }

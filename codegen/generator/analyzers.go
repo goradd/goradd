@@ -11,11 +11,11 @@ import (
 // imports is the list of imports that are associated with all the controls.
 // The first import is the primary one to import the control. The others are ancillary imports
 // needed by the control.
-func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports []*ImportType) {
+func columnsWithControls(t *db.Table) (columns []ColumnType, imports []*ImportType) {
 	var aliasToImport = make(map[string]*ImportType)
 
 	for _, col := range t.Columns {
-		col2 := ColumnType{ColumnDescription: col}
+		col2 := ColumnType{Column: col}
 
 		typ, newFunc, importName := controlType(col)
 
@@ -80,7 +80,7 @@ func columnsWithControls(t *db.TableDescription) (columns []ColumnType, imports 
 }
 
 // ControlType returns the default type of control for a column. ControlBase types can be customized in other ways too.
-func controlType(col *db.ColumnDescription) (typ string, createFunc string, importName string) {
+func controlType(col *db.Column) (typ string, createFunc string, importName string) {
 	d := DefaultControlTypeFunc(col)
 	return d.Typ, d.CreateFunc, d.ImportName
 }
