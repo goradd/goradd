@@ -664,11 +664,11 @@ func (m *Mysql5) getTypeTableDescription(t mysqlTable) TableDescription {
 
 	result, err := m.db.Query(`
 	SELECT ` +
-		strings.Join(columnNames, ",") +
+		"`" + strings.Join(columnNames, "`,`") + "`" +
 		`
 	FROM ` +
-		td.Name +
-		` ORDER BY ` + columnNames[0])
+		"`" + td.Name + "`" +
+		` ORDER BY ` + "`" + columnNames[0] + "`")
 
 	if err != nil {
 		log.Fatal(err)
