@@ -218,6 +218,10 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 			}
 		}
 	}
+
+	for _,idx := range desc.Indexes {
+		t.Indexes = append(t.Indexes, Index{IsUnique:idx.IsUnique, ColumnNames:idx.ColumnNames})
+	}
 	return t
 }
 

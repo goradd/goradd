@@ -13,7 +13,7 @@ func Load{{t.GoName}}(ctx context.Context, primaryKey string, joinOrSelectNodes 
 {{g
     if t.Indexes != nil {
         for _,idx := range t.Indexes {
-            if !idx.IsPrimary && idx.IsUnique {
+            if idx.IsUnique {
 {{
 // Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= db.UpperCaseIdentifier(name) }}{{for}} queries for a single {{t.GoName}} object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will

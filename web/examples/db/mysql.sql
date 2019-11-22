@@ -263,17 +263,6 @@ INSERT INTO `project_status_type` (`id`, `name`, `description`, `guidelines`, `i
 -- --------------------------------------------------------
 
 --
--- Table structure for table `qc_watchers`
---
-
-CREATE TABLE `qc_watchers` (
-  `table_key` varchar(200) NOT NULL,
-  `ts` varchar(40) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='{"NoCodegen":true}';
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `related_project_assn`
 --
 
@@ -496,12 +485,6 @@ ALTER TABLE `project`
 ALTER TABLE `project_status_type`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `IDX_projectstatustype_1` (`name`);
-
---
--- Indexes for table `qc_watchers`
---
-ALTER TABLE `qc_watchers`
-  ADD PRIMARY KEY (`table_key`);
 
 --
 -- Indexes for table `related_project_assn`

@@ -5,8 +5,6 @@ package db
 type Index struct {
 	// IsUnique indicates whether the index is for a unique index
 	IsUnique bool
-	// IsPrimary indicates whether this is the index for the primary key
-	IsPrimary bool
 	// ColumnNames are the columns that are part of the index
 	ColumnNames []string
 }

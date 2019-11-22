@@ -633,6 +633,9 @@ func (m *Mysql5) getTableDescription(t mysqlTable) TableDescription {
 	// Build the indexes
 	indexes := make(map[string]*IndexDescription)
 	for _,idx := range t.indexes {
+		if idx.name == "PRIMARY" {
+			continue // assume primary keys are always indexed, so we don't need to report this
+		}
 		if i,ok := indexes[idx.name]; ok {
 			i.ColumnNames = append(i.ColumnNames, idx.columnName)
 		} else {
