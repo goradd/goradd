@@ -1,7 +1,5 @@
 package db
 
-import "github.com/goradd/gengen/pkg/maps"
-
 type Table struct {
 	// DbKey is the key used to find the database in the global database cluster
 	DbKey string
@@ -24,11 +22,9 @@ type Table struct {
 	// Indexes are the indexes defined in the database. Unique indexes will result in LoadBy* functions.
 	Indexes []Index
 	// Options are key-value pairs of values that can be used to customize how code generation is performed
-	Options maps.SliceMap
+	Options map[string]interface{}
 	// IsType is true if this is a type table
 	IsType bool
-	// IsAssociation is true if this is an association table, which is used to create a many-to-many relationship between two tables.
-	IsAssociation bool
 	// Comment is the general comment included in the database
 	Comment string
 

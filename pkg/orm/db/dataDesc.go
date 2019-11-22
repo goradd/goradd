@@ -174,6 +174,8 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 		LiteralPlural: desc.LiteralPlural,
 		GoName:        desc.GoName,
 		GoPlural:      desc.GoPlural,
+		Comment:	   desc.Comment,
+		Options:	   desc.Options,
 	}
 
 	if t.LiteralName == "" {

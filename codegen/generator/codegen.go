@@ -101,7 +101,7 @@ func Generate() {
 		for _, table := range dd.Tables {
 			if _, ok := codegen.Tables[key][table.GoName]; ok {
 				log.Println("Error:  table " + table.GoName + " is defined more than once.")
-			} else if !table.IsAssociation {
+			} else {
 				columns, imports := columnsWithControls(table)
 				t := TableType{
 					table,
@@ -145,9 +145,6 @@ func Generate() {
 
 		for _, tableKey := range stringmap.SortedKeys(codegen.Tables[dbKey]) {
 			table := codegen.Tables[dbKey][tableKey]
-			if table.IsAssociation || table.Skip {
-				continue
-			}
 			for _, tableTemplate := range TableTemplates {
 				buf.Reset()
 				tableTemplate.GenerateTable(codegen, dd, table, buf)

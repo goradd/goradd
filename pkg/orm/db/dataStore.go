@@ -102,12 +102,10 @@ func AnalyzeDatabases() {
 		datastore.tables[key] = make(map[string]*Table)
 		datastore.typeTables[key] = make(map[string]*TypeTable)
 		for _, td := range dd.Tables {
-			if !td.IsAssociation {
-				if _, ok := datastore.tables[key][td.GoName]; ok {
-					log.Panic("Table " + key + ":" + td.GoName + " already exists.")
-				}
-				datastore.tables[key][td.GoName] = td
+			if _, ok := datastore.tables[key][td.GoName]; ok {
+				log.Panic("Table " + key + ":" + td.GoName + " already exists.")
 			}
+			datastore.tables[key][td.GoName] = td
 		}
 		for _, td := range dd.TypeTables {
 			if _, ok := datastore.typeTables[key][td.GoName]; ok {
