@@ -162,6 +162,8 @@ func (d *Database) analyzeTypeTable(desc TableDescription) *TypeTable {
 		}
 		tt.Constants[key] = con
 	}
+
+	tt.PkField = tt.FieldGoName(0)
 	return tt
 }
 
@@ -176,6 +178,7 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 		GoPlural:      desc.GoPlural,
 		Comment:	   desc.Comment,
 		Options:	   desc.Options,
+		columnMap: make(map[string]*Column),
 	}
 
 	if t.LiteralName == "" {
@@ -377,8 +380,10 @@ func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
 
 func (d *Database) analyzeForeignKeys(desc TableDescription) {
 	t := d.Table(desc.Name)
-	for _,col := range desc.Columns {
-		d.analyzeForeignKey(t, col)
+	if t != nil {
+		for _,col := range desc.Columns {
+			d.analyzeForeignKey(t, col)
+		}
 	}
 }
 
@@ -390,27 +395,22 @@ func (d *Database) analyzeForeignKey(t *Table, cd ColumnDescription) {
 			ReferencedColumn:   cd.ForeignKey.ReferencedColumn,
 			UpdateAction: FKActionFromString(cd.ForeignKey.UpdateAction),
 			DeleteAction: FKActionFromString(cd.ForeignKey.DeleteAction),
-			GoName:       "",
-			GoType:       "",
-			GoTypePlural: "",
-			IsType:       false,
-			RR:           nil,
 		}
 		goName := c.GoName
 		suffix := UpperCaseIdentifier(d.ForeignKeySuffix)
 		goName = strings.TrimSuffix(goName, suffix)
-		c.ForeignKey.GoName = goName
-		c.ForeignKey.IsType = d.IsTypeTable(c.ForeignKey.ReferencedTable)
+		f.GoName = goName
+		f.IsType = d.IsTypeTable(cd.ForeignKey.ReferencedTable)
 
-		if c.ForeignKey.IsType {
-			tt := d.TypeTable(c.ForeignKey.ReferencedTable)
-			c.ForeignKey.GoType = tt.GoName
-			c.ForeignKey.GoTypePlural = tt.GoPlural
+		if f.IsType {
+			tt := d.TypeTable(cd.ForeignKey.ReferencedTable)
+			f.GoType = tt.GoName
+			f.GoTypePlural = tt.GoPlural
 		} else {
-			r := d.Table(c.ForeignKey.ReferencedTable)
-			c.ForeignKey.GoType = r.GoName
-			c.ForeignKey.GoTypePlural = r.GoPlural
-			fkc := r.GetColumn(c.ForeignKey.ReferencedColumn)
+			r := d.Table(cd.ForeignKey.ReferencedTable)
+			f.GoType = r.GoName
+			f.GoTypePlural = r.GoPlural
+			fkc := r.GetColumn(cd.ForeignKey.ReferencedColumn)
 			if fkc.IsId {
 				c.ColumnType = ColTypeString // Always use strings to refer to auto-generated ids for cross database compatibility
 			}

@@ -6,7 +6,7 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
 {{g
     if t.Indexes != nil {
         for _,idx := range t.Indexes {
-            if !idx.IsPrimary && idx.IsUnique {
+            if idx.IsUnique {
                 var columns []*generator.ColumnType
                 var names string
 

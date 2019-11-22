@@ -34,7 +34,6 @@ type mysqlColumn struct {
 	defaultValue    SqlReceiver
 	isNullable      string
 	dataType        string
-	goType          GoColumnType
 	dataLen         int
 	characterMaxLen sql.NullInt64
 	columnType      string
@@ -653,12 +652,11 @@ func (m *Mysql5) getTypeTableDescription(t mysqlTable) TableDescription {
 
 	var columnNames []string
 	var columnTypes []GoColumnType
-	columnTypes2 := map[string]GoColumnType{}
 
-	for _, c := range t.columns {
-		columnNames = append(columnNames, c.name)
-		columnTypes = append(columnTypes, c.goType)
-		columnTypes2[c.name] = c.goType
+	for _, c := range td.Columns {
+		columnNames = append(columnNames, c.Name)
+		colType := ColTypeFromGoTypeString(c.GoType)
+		columnTypes = append(columnTypes, colType)
 	}
 
 	result, err := m.db.Query(`
