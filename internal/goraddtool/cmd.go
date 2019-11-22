@@ -18,8 +18,8 @@ func MakeRootCommand() *cobra.Command {
 
 	var cmdInstall = &cobra.Command{
 		Use:   "install",
-		Short: "Install the goradd-project and goradd-tmp directories in the current working directory",
-		Long:  `Install the goradd-project and goradd-tmp directories in the current working directory. Use the -r flag to force replacement of those directories.`,
+		Short: "Install the goradd-project directory in the current working directory",
+		Long:  `Install the goradd-project directory in the current working directory. Use the -r flag to force replacement of the directory.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			install(step, overwrite)
 		},

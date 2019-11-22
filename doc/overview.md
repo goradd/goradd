@@ -60,7 +60,7 @@ from the goradd-project directory:
 
 This will do the following:
 1. Delete previously generated templates,
-2. Read the templates and generate corresponding go code, placing this code in the goradd-tmp directory,
+2. Read the templates and generate corresponding go code, placing this code in the goradd-project/tmp directory,
 3. Run the resulting go code to generate the forms and ORM and place them in the
 `goradd-project/gen` directory
 

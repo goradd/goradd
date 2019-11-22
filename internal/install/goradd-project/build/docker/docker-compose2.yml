@@ -1,0 +1,29 @@
+# Use this docker compose file to bring up a mysql database to run alongside your app if you do not already
+# have one running
+version: '1'
+services:
+    db:
+        image: mysql:5.7
+        container_name: mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: 12345
+        volumes:
+# This next line exports that actual database data outside of the docker image, so that the data will persist through
+# multiple invocations of the docker image. Change /tmp/mysqldata to whatever location you would like to save this
+# data on the host machine
+            - /tmp/mysqldata:/var/lib/mysql
+        restart: always
+        ports:
+            - "3306:3306"
+    app:
+        container_name: grapp
+        image: grapp
+        ports:
+# Standard html is served out of 8000
+            - "8000:8000"
+# Websockets are served out of 8100 for the default messenger service. You can remove this if you are using a different
+# mechanism for messaging
+            - "8100:8100"
+        depends_on:
+            - db
+        restart: always
