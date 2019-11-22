@@ -42,21 +42,15 @@ func copyTestDir() {
 		log.Fatal(fmt.Errorf("could not read the current directory: %s", err.Error()))
 	}
 
-	// make sure we have a goradd-project and goradd-tmp directory, or the tests will not work
-	var hasProj, hasTmp bool
+	// make sure we have a goradd-project directory, or the tests will not work
+	var hasProj bool
 	for _, fInfo := range fInfos {
 		if fInfo.Name() == "goradd-project" && fInfo.IsDir() {
 			hasProj = true
-		} else if fInfo.Name() == "goradd-tmp" && fInfo.IsDir() {
-			hasTmp = true
 		}
 	}
 	if !hasProj {
 		log.Fatal("Could not find a goradd-project directory in the current working directory")
-	}
-
-	if !hasTmp {
-		log.Fatal("Could not find a goradd-tmp directory in the current working directory")
 	}
 
 	dest := filepath.Join(cwd, "goradd-test")
