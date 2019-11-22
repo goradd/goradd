@@ -20,7 +20,7 @@ var DefaultControlTypeFunc = DefaultControlType
 // DefaultWrapper defines what wrapper will be used for generated controls. It should correspond to the string the wrapper was registered with.
 var DefaultFormFieldCreator = "goraddctrl.FormFieldWrapperCreator"
 
-func DefaultControlType(col *db.ColumnDescription) ControlCreationInfo {
+func DefaultControlType(col *db.Column) ControlCreationInfo {
 	if col.IsPk {
 		return ControlCreationInfo{"Span", "NewSpan", "github.com/goradd/goradd/pkg/page/control"} // primary keys are not editable
 	}

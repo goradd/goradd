@@ -2,17 +2,16 @@ package db
 
 import (
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/datetime"
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"strings"
 )
 
-// ColumnDescription describes a database column. Most of the information is either
+// Column describes a database column. Most of the information is either
 // gleaned from the structure of the database, or is taken from a file that describes the relationships between
 // different record types. Some of the information is filled in after analysis. Some of the information can be
 // provided through information embedded in database comments.
-type ColumnDescription struct {
+type Column struct {
 	// DbName is the name of the column in the database. This is blank if this is a "virtual" table for sql tables like an association or virtual attribute query.
 	DbName string
 	// GoName is the name of the column in go code
@@ -38,8 +37,6 @@ type ColumnDescription struct {
 	IsPk bool
 	// IsNullable is true if the column can be given a NULL value
 	IsNullable bool
-	// IsIndexed is true if the column's table has a single index on the column, which will generate a LoadArrayBy function.
-	IsIndexed bool
 	// IsUnique is true if the column's table has a single unique index on the column.
 	IsUnique bool
 	// IsTimestamp is true if the field is a timestamp. Timestamps represent a specific point in world time.
@@ -51,21 +48,21 @@ type ColumnDescription struct {
 
 	// Filled in by analyzer
 	// Options are the options extracted from the comments string
-	Options *maps.SliceMap
+	Options map[string]interface{}
 	// ForeignKey is additional information describing a foreign key relationship
-	ForeignKey *ForeignKeyColumn
+	ForeignKey *ForeignKeyInfo
 	// ModelName is a cache for the internal model name of this column.
 	ModelName string
 }
 
 // DefaultConstantName returns the name of the default value constant that will be used to refer to the default value
-func (cd *ColumnDescription) DefaultConstantName(tableName string) string {
+func (cd *Column) DefaultConstantName(tableName string) string {
 	title := tableName + cd.GoName + "Default"
 	return title
 }
 
 // DefaultValueAsValue returns the default value of the column as a GO value
-func (cd *ColumnDescription) DefaultValueAsValue() string {
+func (cd *Column) DefaultValueAsValue() string {
 	if cd.DefaultValue == nil {
 		v := cd.ColumnType.DefaultValue()
 		if v == "" {
@@ -91,7 +88,7 @@ func (cd *ColumnDescription) DefaultValueAsValue() string {
 }
 
 // DefaultValueAsConstant returns the default value of the column as a GO constant
-func (cd *ColumnDescription) DefaultValueAsConstant() string {
+func (cd *Column) DefaultValueAsConstant() string {
 	if cd.ColumnType == ColTypeDateTime {
 		if cd.DefaultValue == nil {
 			return "datetime.Zero" // pass this to datetime.NewDateTime()
@@ -111,18 +108,18 @@ func (cd *ColumnDescription) DefaultValueAsConstant() string {
 	}
 }
 
-func (cd *ColumnDescription) JsonKey() string {
+func (cd *Column) JsonKey() string {
 	return cd.ModelName
 }
 
 // IsReference returns true if the column is a foreign key pointing to another table
-func (cd *ColumnDescription) IsReference() bool {
+func (cd *Column) IsReference() bool {
 	return cd.ForeignKey != nil
 }
 
 // ReferenceFunction returns the function name that should be used to refer to the object
 // that is referred to by a forward reference. It is extracted from the name of foreign key.
-func (cd *ColumnDescription) ReferenceFunction(dd *DatabaseDescription) string {
+func (cd *Column) ReferenceFunction(dd *Database) string {
 	if cd.IsReference() {
 		if cd.ForeignKey.IsType {
 			suf := UpperCaseIdentifier(dd.ForeignKeySuffix)
@@ -136,6 +133,6 @@ func (cd *ColumnDescription) ReferenceFunction(dd *DatabaseDescription) string {
 }
 
 // ReferenceJsonKey returns the key that will be used for the referenced object in JSON.
-func (cd *ColumnDescription) ReferenceJsonKey(dd *DatabaseDescription) string {
+func (cd *Column) ReferenceJsonKey(dd *Database) string {
 	return LowerCaseIdentifier(strings.TrimSuffix(cd.DbName, dd.ForeignKeySuffix))
 }

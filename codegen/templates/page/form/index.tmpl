@@ -15,15 +15,13 @@ for _, db := range db.GetDatabases() {
 <ul>
 }}
     for _, t := range dd.Tables {
-        if !t.IsAssociation && !t.Skip {
-            var editLoc = path.Join("/goradd/form/", dd.DbKey, t.GoName + "Edit")
-            var listLoc = path.Join("/goradd/form/", dd.DbKey, t.GoName + "List")
+        var editLoc = path.Join("/goradd/form/", dd.DbKey, t.GoName + "Edit")
+        var listLoc = path.Join("/goradd/form/", dd.DbKey, t.GoName + "List")
 {{
 <li>
 {{= t.GoName }}: <a href="{{= listLoc }}">List</a> | <a href="{{= editLoc }}">Edit</a>
 </li>
 }}
-        }
     }
 }
 

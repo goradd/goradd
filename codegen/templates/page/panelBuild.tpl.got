@@ -28,7 +28,7 @@ func (n *PanelBuildTemplate) FileName(key string) string {
 	return n.TargetDir + "/" + key + "/panel/template_source/build.go"
 }
 
-func (n *PanelBuildTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.DatabaseDescription, buf *bytes.Buffer) {
+func (n *PanelBuildTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.Database, buf *bytes.Buffer) {
 	{{: "panel/build.tmpl" }}
 }
 

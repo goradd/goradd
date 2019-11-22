@@ -267,14 +267,6 @@ SET time_zone = &#34;+00:00&#34;;</p><br>
 (3, &#39;Completed&#39;, &#39;The project has been completed successfully&#39;, &#39;Celebrate successes!&#39;, 1);</p><br>
 <p>-- --------------------------------------------------------</p><br>
 <p>--<br>
--- Table structure for table ` + "`" + `qc_watchers` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `qc_watchers` + "`" + ` (<br>
-  ` + "`" + `table_key` + "`" + ` varchar(200) NOT NULL,<br>
-  ` + "`" + `ts` + "`" + ` varchar(40) NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT=&#39;{&#34;NoCodegen&#34;:true}&#39;;</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
 -- Table structure for table ` + "`" + `related_project_assn` + "`" + `<br>
 --</p><br>
 <p>CREATE TABLE ` + "`" + `related_project_assn` + "`" + ` (<br>
@@ -461,11 +453,6 @@ ALTER TABLE ` + "`" + `project` + "`" + `<br>
 ALTER TABLE ` + "`" + `project_status_type` + "`" + `<br>
   ADD PRIMARY KEY (` + "`" + `id` + "`" + `),<br>
   ADD UNIQUE KEY ` + "`" + `IDX_projectstatustype_1` + "`" + ` (` + "`" + `name` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `qc_watchers` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `qc_watchers` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `table_key` + "`" + `);</p><br>
 <p>--<br>
 -- Indexes for table ` + "`" + `related_project_assn` + "`" + `<br>
 --<br>

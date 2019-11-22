@@ -4,19 +4,19 @@ import (
 	. "github.com/goradd/goradd/pkg/orm/query"
 )
 
-// TypeTableDescription describes a type table, which essentially defines an enumerated type.
+// TypeTable describes a type table, which essentially defines an enumerated type.
 // In the SQL world, they are a table with an integer key (starting index 1) and a "name" value, though
 // they can have other values associated with them too. Goradd will maintain the
 // relationships in SQL, but in a No-SQL situation, it will embed all the ids and values.
-type TypeTableDescription struct {
+type TypeTable struct {
 	// DbKey is the key used to find the database in the global database cluster
 	DbKey string
 	// DbName is the name of the table in the database
 	DbName string
-	// EnglishName is the english name of the object when describing it to the world. Use the "literalName" option in the comment to override the default.
-	EnglishName string
-	// EnglishPlural is the plural english name of the object. Use the "literalPlural" option in the comment to override the default.
-	EnglishPlural string
+	// LiteralName is the english name of the object when describing it to the world. Use the "literalName" option in the comment to override the default.
+	LiteralName string
+	// LiteralPlural is the plural english name of the object. Use the "literalPlural" option in the comment to override the default.
+	LiteralPlural string
 	// GoName is the name of the item as a go type name.
 	GoName string
 	// GoPlural is the plural of the go type
@@ -37,7 +37,7 @@ type TypeTableDescription struct {
 }
 
 // FieldGoName returns the go name corresponding to the given field offset
-func (tt *TypeTableDescription) FieldGoName(i int) string {
+func (tt *TypeTable) FieldGoName(i int) string {
 	if i >= len(tt.FieldNames) {
 		return ""
 	}
@@ -47,7 +47,7 @@ func (tt *TypeTableDescription) FieldGoName(i int) string {
 }
 
 // FieldGoColumnType returns the GoColumnType corresponding to the given field offset
-func (tt *TypeTableDescription) FieldGoColumnType(i int) GoColumnType {
+func (tt *TypeTable) FieldGoColumnType(i int) GoColumnType {
 	if i >= len(tt.FieldNames) {
 		return ColTypeUnknown
 	}

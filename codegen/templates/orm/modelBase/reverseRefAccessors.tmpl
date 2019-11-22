@@ -20,7 +20,7 @@ func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.GoType}} {
 // otherwise, it will return nil.
 func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.GoType}} {
 	if o.{{oName}} == nil {
-		o.{{oName}} = Load{{ref.GoType}}By{{= associatedGoName }}(ctx, o.{{= t.PrimaryKeyColumn.GoName }}())
+		o.{{oName}} = Load{{ref.GoType}}By{{= associatedGoName }}(ctx, o.{{= t.PrimaryKeyColumn().GoName }}())
 	}
 	return o.{{oName}}
 }

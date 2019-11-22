@@ -32,7 +32,7 @@ type ReverseReference struct {
 	//Options maps.SliceMap
 }
 
-func (r *ReverseReference) ObjName(dd *DatabaseDescription) string {
+func (r *ReverseReference) ObjName(dd *Database) string {
 	if r.IsUnique {
 		return dd.AssociatedObjectPrefix + r.GoName
 	} else {
@@ -54,6 +54,6 @@ func (r *ReverseReference) AssociatedGoName() string {
 	return UpperCaseIdentifier(r.AssociatedColumnName)
 }
 
-func (r *ReverseReference) JsonKey(dd *DatabaseDescription) string {
+func (r *ReverseReference) JsonKey(dd *Database) string {
 	return LowerCaseIdentifier(strings.TrimSuffix(r.AssociatedColumnName, dd.ForeignKeySuffix))
 }

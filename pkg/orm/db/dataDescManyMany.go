@@ -1,7 +1,5 @@
 package db
 
-import "github.com/goradd/gengen/pkg/maps"
-
 // The ManyManyReference structure is used by the templates during the codegen process to describe a many-to-many relationship.
 type ManyManyReference struct {
 	// AssnTableName is the database table creating the association. NoSQL: The originating table. SQL: The association table
@@ -23,17 +21,15 @@ type ManyManyReference struct {
 
 	// IsTypeAssociation is true if this is a many-many relationship with a type table
 	IsTypeAssociation bool
-	// Options are the key-value options taken from the Comments in the association table, if there is one.
-	Options maps.SliceMap
 
 	// MM is the many-many reference on the other end of the relationship that points back to this one.
 	MM *ManyManyReference
 }
 
-func (m *ManyManyReference) ObjName(dd *DatabaseDescription) string {
+func (m *ManyManyReference) ObjName(dd *Database) string {
 	return dd.AssociatedObjectPrefix + m.GoPlural
 }
 
-func (m *ManyManyReference) JsonKey(dd *DatabaseDescription) string {
+func (m *ManyManyReference) JsonKey(dd *Database) string {
 	return LowerCaseIdentifier(m.GoPlural)
 }

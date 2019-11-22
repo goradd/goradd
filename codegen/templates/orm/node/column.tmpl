@@ -20,13 +20,13 @@ func (n *{{privateName}}Node) {{= col.GoName }}() *query.ColumnNode {
 }}
 
 	if col.ForeignKey != nil {
-		isType := dd.IsTypeTable(col.ForeignKey.TableName)
+		isType := dd.IsTypeTable(col.ForeignKey.ReferencedTable)
 		var objName string
 
 		if isType {
-			objName = dd.TypeTableDescription(col.ForeignKey.TableName).GoName
+			objName = dd.TypeTable(col.ForeignKey.ReferencedTable).GoName
 		} else {
-			objName = dd.TableDescription(col.ForeignKey.TableName).GoName
+			objName = dd.Table(col.ForeignKey.ReferencedTable).GoName
 		}
 {{
 
@@ -39,8 +39,8 @@ func (n *{{privateName}}Node) {{= col.ForeignKey.GoName }}() *{{= strings2.LcFir
 			"{{= col.DbName }}",
 			"{{= col.GoName }}",
 			"{{= col.ForeignKey.GoName }}",
-			"{{= col.ForeignKey.TableName }}",
-			"{{= col.ForeignKey.ColumnName }}",
+			"{{= col.ForeignKey.ReferencedTable }}",
+			"{{= col.ForeignKey.ReferencedColumn }}",
 			{{b isType }},
 		),
 	}
@@ -57,7 +57,7 @@ func (n *{{privateName}}Node) {{= col.ForeignKey.GoName }}() *{{= strings2.LcFir
 for _,ref := range t.ManyManyReferences {
 
 	if ref.IsTypeAssociation {
-		assnTable := dd.TypeTableDescription(ref.AssociatedTableName)
+		assnTable := dd.TypeTable(ref.AssociatedTableName)
 
 {{
 
@@ -82,7 +82,7 @@ func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTa
 }}
 	} else {
 
-		assnTable := dd.TableDescription(ref.AssociatedTableName)
+		assnTable := dd.Table(ref.AssociatedTableName)
 {{
 // {{= ref.GoPlural }} represents the many-to-many relationship formed by the {{= ref.AssnTableName }} table.
 func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTable.GoName) }}Node  {
@@ -107,7 +107,7 @@ func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTa
 }
 
 for _,ref2 := range t.ReverseReferences {
-	assnTable := dd.TableDescription(ref2.AssociatedTableName)
+	assnTable := dd.Table(ref2.AssociatedTableName)
 
 	if ref2.IsUnique {
 
