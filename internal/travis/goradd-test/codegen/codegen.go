@@ -7,7 +7,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	_ "github.com/goradd/goradd/pkg/page/control/generator"
 	_ "goradd-project/config" // Initialize required variables
-	_ "goradd-tmp/template"
+	_ "goradd-project/tmp/template"
 )
 
 func main() {
