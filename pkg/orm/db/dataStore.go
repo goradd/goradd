@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	. "github.com/goradd/goradd/pkg/orm/query"
-	"log"
 )
 
 // The dataStore is the central database collection used in codegeneration and the orm.
@@ -90,30 +89,3 @@ func GetTypeTableDescription(key string, goTypeName string) *TypeTable {
 	return td
 }
 
-// AnalyzeDatabases will open all the databases and extra the table information found there. Its primary use
-// is to extract the schema out of SQL databases so that it can be exported into a database neutral format,
-// perhaps a json or yaml representation.
-func AnalyzeDatabases() {
-	var dd *Database
-	datastore.tables = make(map[string]map[string]*Table)
-	datastore.typeTables = make(map[string]map[string]*TypeTable)
-	datastore.databases.Range(func(key string, database DatabaseI) bool {
-		dd = database.Describe()
-		datastore.tables[key] = make(map[string]*Table)
-		datastore.typeTables[key] = make(map[string]*TypeTable)
-		for _, td := range dd.Tables {
-			if _, ok := datastore.tables[key][td.GoName]; ok {
-				log.Panic("Table " + key + ":" + td.GoName + " already exists.")
-			}
-			datastore.tables[key][td.GoName] = td
-		}
-		for _, td := range dd.TypeTables {
-			if _, ok := datastore.typeTables[key][td.GoName]; ok {
-				log.Panic("TypeTable " + key + ":" + td.GoName + " already exists.")
-			}
-			datastore.typeTables[key][td.GoName] = td
-		}
-		return true
-	})
-
-}
