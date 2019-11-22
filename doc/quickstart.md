@@ -25,12 +25,10 @@ to the new directory.
 1. Execute ```go get github.com/goradd/goradd```
 1. Execute ```goradd install```
 
-You should now have two directories in you current directory:
+You should now have a new directory in you current directory:
 * goradd-project. This is where you will build out your project. You **can** put some
 files outside of this path, but goradd will be placing its code generated files
 inside of here.
-* goradd-tmp. This is a temporary directory goradd uses for code generation. You
-will not check this in to your source control.
 
 You will also notice a number of executables that were installed in your GOPATH/bin directory
 that will be used by goradd to build your application.
