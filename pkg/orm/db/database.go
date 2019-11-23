@@ -265,11 +265,20 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 			}
 			goType := td.GoName
 			goTypePlural := td.GoPlural
+
+			// Check for name conflicts
+			for _,col2 := range td2.Columns {
+				if goName == col2.GoName {
+					log.Printf ("Error: table %s has a field name %s that is the same as the %s table that is referring to it. Either change these names, or provide an alternate GoName in the options.", td2.GoName, goName, td.GoName)
+				}
+			}
+
 			ref := ReverseReference{
 				DbTable:              td2.DbName,
-				DbColumn:             td2.PrimaryKeyColumn().DbName, // NoSQL only
+				DbColumn:             td2.PrimaryKeyColumn().DbName,
 				AssociatedTableName:  td.DbName,
 				AssociatedColumnName: cd.DbName,
+				AssociatedPkType:     td.PrimaryKeyColumn().ColumnType.GoType(),
 				GoName:               goName,
 				GoPlural:             goPlural,
 				GoType:               goType,

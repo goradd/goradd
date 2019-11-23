@@ -32,7 +32,7 @@ func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.
 {{
 // {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.
 // Otherwise, it will return nil.
-func (o *{{privateName}}Base) {{= ref.GoName }}(pk string) *{{ref.GoType}} {
+func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= ref.AssociatedPkType }}) *{{ref.GoType}} {
 	if o.{{oName}} == nil || len(o.{{oName}}) == 0 {
 		return nil
 	}

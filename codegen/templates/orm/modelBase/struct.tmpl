@@ -46,7 +46,7 @@ for _,ref := range t.ReverseReferences {
 	} else {
 {{
 	{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} []*{{= ref.GoType }} // Objects in the order they were queried
-	m{{= ref.GoPlural }} map[string] *{{= ref.GoType }}					  // Objects by PK
+	m{{= ref.GoPlural }} map[{{= ref.AssociatedPkType }}] *{{= ref.GoType }}					  // Objects by PK
 }}
 	}
 }

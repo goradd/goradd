@@ -7,7 +7,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("{{t.DbKey}}")
 	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn().DbName }}", o.{{= t.PrimaryKeyColumn().ModelName }})
-	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", o.{{= t.PrimaryKeyColumn().ModelName }})
+	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprintf("%v", o.{{= t.PrimaryKeyColumn().ModelName }}))
 }
 
 // delete{{= t.GoName }} deletes the associated record from the database.

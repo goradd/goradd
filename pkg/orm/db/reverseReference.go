@@ -19,6 +19,8 @@ type ReverseReference struct {
 	AssociatedTableName string
 	// AssociatedColumnName is the column on the "many" end that is pointing to the table containing the ReverseReference. It is a foreign-key.
 	AssociatedColumnName string
+	// AssociatedPkType is the go type of the primary key column of the AssociatedColumn
+	AssociatedPkType string
 	// GoName is the name used to represent an object in the reverse relationship
 	GoName string
 	// GoPlural is the name used to represent the group of objects in the reverse relationship
