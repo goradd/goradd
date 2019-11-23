@@ -39,6 +39,8 @@ if len(t.ReverseReferences) > 0 {
 
 
 for _,ref := range t.ReverseReferences {
+	col := t.GetColumn(ref.AssociatedColumnName)
+
 	if ref.IsUnique {
 {{
 	{{dd.AssociatedObjectPrefix}}{{= ref.GoName }} *{{= ref.GoType }}
@@ -46,7 +48,7 @@ for _,ref := range t.ReverseReferences {
 	} else {
 {{
 	{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} []*{{= ref.GoType }} // Objects in the order they were queried
-	m{{= ref.GoPlural }} map[string] *{{= ref.GoType }}					  // Objects by PK
+	m{{= ref.GoPlural }} map[{{= col.ColumnType.GoType() }}] *{{= ref.GoType }}					  // Objects by PK
 }}
 	}
 }
