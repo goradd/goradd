@@ -276,7 +276,7 @@ type ControlBase struct {
 	// attributes are the collection of custom attributes to apply to the control. This does not include all the
 	// attributes that will be drawn, as some are added temporarily just before drawing by GetDrawingAttributes()
 	attributes html.Attributes
-	// test is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
+	// text is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
 	text string
 	// textLabelMode describes how to draw the internal label
 	textLabelMode html.LabelDrawingMode

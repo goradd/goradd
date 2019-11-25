@@ -155,6 +155,10 @@ func (i *ListItem) SetAnchor(a string) {
 	i.AnchorAttributes().Set("href", a)
 }
 
+func (i *ListItem) HasAnchor() bool {
+	return i.AnchorAttributes().Has("href")
+}
+
 func (i *ListItem) Anchor() string {
 	if i.anchorAttributes == nil || !i.anchorAttributes.Has("href") {
 		return ""
