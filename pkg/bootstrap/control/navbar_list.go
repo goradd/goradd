@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
@@ -26,11 +27,6 @@ type NavbarList struct {
 	control.DataManager
 }
 
-func NavbarSelectEvent() *page.Event {
-	e := &page.Event{JsEvent: "gr-bs-navbarselect"}
-	e.ActionValue(javascript.JsCode("ui")) // This will be the action value sent by the proxy...the id of the item
-	return e
-}
 
 func NewNavbarList(parent page.ControlI, id string) *NavbarList {
 	t := &NavbarList{}
@@ -48,7 +44,8 @@ func (l *NavbarList) Init(parent page.ControlI, id string) {
 	pxy := control.NewProxy(l, l.proxyID())
 
 	pxy.On(event.Click(),
-		action.Trigger(l.ID(), "gr-bs-navbarselect", javascript.JsCode("g$(this).data('grAv')")))
+		action.Trigger(l.ID(), NavbarSelect, javascript.JsCode("g$(event.target).data('grAv')")))
+	config.LoadBootstrap(l.ParentForm())
 }
 
 func (l *NavbarList) proxyID() string {
@@ -139,7 +136,7 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem
 				linkAttributes := html.NewAttributes()
 				itemAttributes.Set("role", "menuitem")
 				linkAttributes.AddClass("dropdown-item")
-				if item.Anchor() == "" {
+				if !item.HasAnchor() {
 					itemH = l.ItemProxy().LinkHtml(ctx, itemH, item.ID(), linkAttributes)
 				}
 				h += itemH
@@ -246,3 +243,10 @@ func GetNavbarList(c page.ControlI, id string) *NavbarList {
 func init() {
 	page.RegisterControl(&NavbarList{})
 }
+
+const NavbarSelect = "gr-bs-navbarselect"
+
+func NavbarSelectEvent() *page.Event {
+	return page.NewEvent(NavbarSelect).ActionValue(javascript.JsCode("ui"))
+}
+

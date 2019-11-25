@@ -8,7 +8,7 @@ type {{= panelName }}I interface {
 {{if}}
 {{for}}
     Update()
-    Load(ctx context.Context, pk string) error
+    Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error
 }
 
 

@@ -1,8 +1,17 @@
 
 const (
+
+{{g
+for _,col := range t.Columns {
+    if col.ControlIDConst() == "" {
+        continue
+    }
 {{
-{{for _,col := range t.Columns}}
     {{= col.ControlIDConst() }} = "{{= col.ControlID }}"
-{{for}}
 }}
+}
+}}
+
+{{
 )
+}}

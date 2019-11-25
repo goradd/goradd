@@ -42,6 +42,11 @@ func (t *Table) PrimaryKeyColumn() *Column {
 	return t.Columns[0]
 }
 
+func (t *Table) PrimaryKeyGoType() string {
+	return t.PrimaryKeyColumn().ColumnType.GoType()
+}
+
+
 // GetColumn returns a Column given the name of a column
 func (t *Table) GetColumn(name string) *Column {
 	return t.columnMap[name]

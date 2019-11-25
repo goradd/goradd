@@ -47,9 +47,8 @@ const (
 
 type NavbarI interface {
 	page.ControlI
-	SetHeaderAnchor(a string) NavbarI
 	SetNavbarStyle(style NavbarStyle) NavbarI
-	SetBrandPlacement(p NavbarCollapsedBrandPlacement) NavbarI
+	SetBrand(label string, anchor string, p NavbarCollapsedBrandPlacement) NavbarI
 	SetBackgroundClass(c BackgroundColorClass) NavbarI
 	SetExpand(e NavbarExpandClass) NavbarI
 }
@@ -58,13 +57,14 @@ type NavbarI interface {
 // SetTextIsHtml() to true to turn off encoding if needed. Add child controls to populate it.
 type Navbar struct {
 	page.ControlBase
-	headerAnchor string
+	brand string
+	brandAnchor string
+	brandLocation NavbarCollapsedBrandPlacement
 
 	style NavbarStyle
 	//container ContainerClass ??
 	background    BackgroundColorClass
 	expand        NavbarExpandClass
-	brandLocation NavbarCollapsedBrandPlacement
 }
 
 type NavbarStyle string
@@ -105,21 +105,15 @@ func (b *Navbar) SetBackgroundClass(c BackgroundColorClass) NavbarI {
 	return b.this()
 }
 
-func (b *Navbar) SetHeaderAnchor(a string) NavbarI {
-	b.headerAnchor = a
+func (b *Navbar) SetBrand(label string, anchor string, p NavbarCollapsedBrandPlacement) NavbarI {
+	b.brand = label
+	b.brandAnchor = anchor
+	b.brandLocation = p
 	return b.this()
 }
 
 func (b *Navbar) SetExpand(e NavbarExpandClass) NavbarI {
 	b.expand = e
-	return b.this()
-}
-
-
-// SetBrandPlacement places the brand left, right, or hidden (meaning inside the collapse area).
-// The expand button location will be affected by the placement
-func (b *Navbar) SetBrandPlacement(p NavbarCollapsedBrandPlacement) NavbarI {
-	b.brandLocation = p
 	return b.this()
 }
 
@@ -135,10 +129,16 @@ func (b *Navbar) DrawingAttributes(ctx context.Context) html.Attributes {
 
 type NavbarCreator struct {
 	ID string
-	HeaderAnchor string
+	Brand string
+	// HeaderAnchor is the url to go to when the main logo in the navbar is clicked
+	BrandAnchor string
+	// Style is either NavbarDark or NavbarLight
 	Style NavbarStyle
+	// BackgroundColorClass is one of the background colors that you can assign the navbar
 	BackgroundColorClass    BackgroundColorClass
+	// Expand determines at what screen width the navbar will be expanded.
 	Expand        NavbarExpandClass
+	// BrandLocation controls the placement of the brand item
 	BrandLocation NavbarCollapsedBrandPlacement
 
 	page.ControlOptions
@@ -154,8 +154,8 @@ func (c NavbarCreator) Create(ctx context.Context, parent page.ControlI) page.Co
 }
 
 func (c NavbarCreator) Init(ctx context.Context, ctrl NavbarI) {
-	if c.HeaderAnchor != "" {
-		ctrl.SetHeaderAnchor(c.HeaderAnchor)
+	if c.Brand != "" {
+		ctrl.SetBrand(c.Brand, c.BrandAnchor, c.BrandLocation)
 	}
 	if c.Style != "" {
 		ctrl.SetNavbarStyle(c.Style)
@@ -166,7 +166,6 @@ func (c NavbarCreator) Init(ctx context.Context, ctrl NavbarI) {
 	if c.Expand != "" {
 		ctrl.SetExpand (c.Expand)
 	}
-	ctrl.SetBrandPlacement(c.BrandLocation)
 	ctrl.AddControls(ctx, c.Children...)
 }
 

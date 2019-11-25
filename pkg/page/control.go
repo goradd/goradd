@@ -394,11 +394,11 @@ func (c *ControlBase) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 		form == nil ||
 		c.Page() != form.Page() {
 
-		return NewError(ctx, "The control can not be drawn because it is not a member of a form that is on the override.")
+		return NewError(ctx, fmt.Sprintf("Control %s can not be drawn because it is not a member of a form that is on the override.", c.ID()))
 	}
 
 	if c.wasRendered || c.isRendering {
-		return NewError(ctx, "This control has already been drawn.")
+		return NewError(ctx, fmt.Sprintf("Control %s has already been drawn.", c.ID()))
 	}
 
 	// Because we may be rerendering a parent control, we need to make sure all "child" controls are marked as NOT being on the form

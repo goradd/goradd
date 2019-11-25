@@ -114,7 +114,7 @@ func (f *{{= formName }}) createControls(ctx context.Context) {
 // It is the place to load up the form controls with data after the form has been created.
 func (f *{{= formName }}) LoadControls(ctx context.Context) {
     if id, ok := page.GetContext(ctx).FormValue("id"); ok {
- 	    err := panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, id)
+ 	    err := panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, {{= t.PrimaryKeyColumn().ConvertFromString("id") }})
  	    if err != nil {
             GetButton(f, {{= title }}DeleteButtonID).SetVisible(true)
             f.Page().SetTitle(f.GT("Edit"))
@@ -122,7 +122,7 @@ func (f *{{= formName }}) LoadControls(ctx context.Context) {
  	    }
  	    // drop through on failure
     }
-    _ = panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, "")
+    _ = panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, {{= t.PrimaryKeyColumn().DefaultValueAsConstant() }})
     GetButton(f, {{= title }}DeleteButtonID).SetVisible(false)
     f.Page().SetTitle(f.GT("Create"))
 }

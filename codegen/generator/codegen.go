@@ -54,6 +54,9 @@ type ControlDescription struct {
 }
 
 func (cd *ControlDescription) ControlIDConst() string {
+	if cd.ControlID == "" {
+		return ""
+	}
 	return strings.KebabToCamel(cd.ControlID) + "Id"
 }
 

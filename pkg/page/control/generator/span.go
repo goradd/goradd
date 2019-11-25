@@ -50,7 +50,7 @@ func (d Span) GenerateCreator(col *generator.ColumnType) (s string) {
 
 
 func (d Span) GenerateRefresh(col *generator.ColumnType) (s string) {
-	return `ctrl.SetText(val)`
+	return `ctrl.SetText(fmt.Sprintf("%v", val))`
 }
 
 func (d Span) GenerateUpdate(col *generator.ColumnType) (s string) {
