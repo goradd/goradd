@@ -84,7 +84,7 @@ func (l *MegaMenu) DrawTag(ctx context.Context) string {
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *MegaMenu) DrawingAttributes(ctx context.Context) html.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "menu")
+	a.SetDataAttribute("grctl", "megamenu")
 	return a
 }
 
