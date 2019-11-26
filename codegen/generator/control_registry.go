@@ -22,14 +22,14 @@ type ImportPath struct {
 type ControlGenerator interface {
 	Type() string
 	Imports() []ImportPath
-	SupportsColumn(col *ColumnType) bool
-	GenerateCreator(col *ColumnType) string
-	GenerateRefresh(col *ColumnType) string
-	GenerateUpdate(col *ColumnType) string
+	SupportsColumn(ref interface{}) bool
+	GenerateCreator(ref interface{}, desc *ControlDescription) string
+	GenerateRefresh(ref interface{}, desc *ControlDescription) string
+	GenerateUpdate(ref interface{}, desc *ControlDescription) string
 }
 
 type ProviderGenerator interface {
-	GenerateProvider(col *ColumnType) string
+	GenerateProvider(ref interface{}, desc *ControlDescription) string
 }
 
 type ControlGeneratorRegistryKey struct {

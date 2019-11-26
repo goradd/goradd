@@ -2,16 +2,13 @@
 const (
 
 {{g
-for _,col := range t.Columns {
-    if col.ControlIDConst() == "" {
-        continue
-    }
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd ==  nil {continue}
 {{
-    {{= col.ControlIDConst() }} = "{{= col.ControlID }}"
+    {{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
 }}
-}
+    }
 }}
 
-{{
 )
-}}

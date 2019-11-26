@@ -1,12 +1,17 @@
 
-{{
 
 type {{= panelName }}I interface {
-{{for _,col := range t.Columns}}
-{{if col.Generator != nil && !col.IsPk}}
-    {{= col.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }}
-{{if}}
-{{for}}
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd == nil {continue}
+        if cd.Generator != nil && !col.IsPk {
+{{
+        {{= cd.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }}
+}}
+        }
+    }
+}}
     Update()
     Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error
 }
@@ -22,4 +27,4 @@ func (p *{{= panelName }}) this() {{= panelName }}I {
 	return p.Self.({{= panelName }}I)
 }
 
-}}
+

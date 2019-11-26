@@ -7,10 +7,12 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s goraddctrl.DataManage
 
 {{g
 for _,col := range t.Columns {
-    if col.Generator != nil {
-        if _, ok := col.Generator.(generator.ProviderGenerator); ok {
+    cd := t.ControlDescription(col)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+        if _, ok := cd.Generator.(generator.ProviderGenerator); ok {
 {{
-    case "{{= col.ControlID }}":
+    case "{{= cd.ControlID }}":
         var items []interface{}
 {{if col.IsNullable}}
         items = control.NoSelectionItemList()

@@ -15,12 +15,16 @@ var panelName = t.GoName + "EditPanel"
 
 {{gotCode2}}
 
-{{for _,col := range t.Columns }}
-{{if col.Generator != nil}}
-{{begin drawCode}}{{draw {{drawCode}}{{= col.ControlID }}{{begin drawCode2}}-ff }}
+{{g
+for _,col := range t.Columns {
+    cd := t.ControlDescription(col)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+{{begin drawCode}}{{draw {{drawCode}}{{= cd.ControlID }}{{begin drawCode2}}-ff }}
 {{drawCode2}}
-{{if}}
-{{for}}
+    }
+}
+}}
 
 {{begin gotCode3}}
 {{end}}

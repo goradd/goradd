@@ -1,4 +1,4 @@
-// package maps contains utilities to handle common map operations
+// package stringmap contains utilities to handle common map operations
 package stringmap
 
 import (

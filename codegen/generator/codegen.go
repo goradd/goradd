@@ -25,8 +25,8 @@ type CodeGenerator struct {
 
 type TableType struct {
 	*db.Table
-	Columns []ColumnType
-	Imports []*ImportType
+	controlDescriptions map[interface{}]*ControlDescription
+	Imports             []*ImportType
 }
 
 type TypeTableType struct {
@@ -60,20 +60,17 @@ func (cd *ControlDescription) ControlIDConst() string {
 	return strings.KebabToCamel(cd.ControlID) + "Id"
 }
 
-// ColumnType combines a database Column with a ControlDescription
-type ColumnType struct {
-	*db.Column
-	// Related control information
-	ControlDescription
-}
-
-func (t *TableType) GetColumnByDbName(name string) *ColumnType {
+func (t *TableType) GetColumnByDbName(name string) *db.Column {
 	for _, col := range t.Columns {
 		if col.DbName == name {
-			return &col
+			return col
 		}
 	}
 	return nil
+}
+
+func (t *TableType) ControlDescription(ref interface{}) *ControlDescription {
+	return t.controlDescriptions[ref]
 }
 
 func Generate() {
@@ -105,15 +102,27 @@ func Generate() {
 			if _, ok := codegen.Tables[key][table.GoName]; ok {
 				log.Println("Error:  table " + table.GoName + " is defined more than once.")
 			} else {
-				columns, imports := columnsWithControls(table)
+				descriptions := make(map[interface{}]*ControlDescription)
+				imports := make(map[string]*ImportType)
+				matchColumnsWithControls(table, descriptions, imports)
+				matchReverseReferencesWithControls(table, descriptions, imports)
+
+				var i []*ImportType
+				for _,k := range stringmap.SortedKeys(imports) {
+					i = append(i, imports[k])
+				}
+
 				t := TableType{
 					table,
-					columns,
-					imports,
+					descriptions,
+					i,
 				}
 				codegen.Tables[key][table.GoName] = t
+
+
 			}
 		}
+
 	}
 
 	buf := new(bytes.Buffer)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
@@ -27,15 +28,17 @@ func (d Textbox) Imports() []generator.ImportPath {
 	}
 }
 
-func (d Textbox) SupportsColumn(col *generator.ColumnType) bool {
-	if col.ColumnType == query.ColTypeBytes ||
-		col.ColumnType == query.ColTypeString {
+func (d Textbox) SupportsColumn(ref interface{}) bool {
+	if col,ok := ref.(*db.Column); ok &&
+		(col.ColumnType == query.ColTypeBytes ||
+		col.ColumnType == query.ColTypeString) {
 		return true
 	}
 	return false
 }
 
-func (d Textbox) GenerateCreator(col *generator.ColumnType) (s string) {
+func (d Textbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
+	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 		`goraddctrl.TextboxCreator{
 			ID:        %#v,
@@ -44,17 +47,17 @@ func (d Textbox) GenerateCreator(col *generator.ColumnType) (s string) {
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, col.ControlID, col.MaxCharLength, !col.IsNullable, col.Connector)
+		}`, desc.ControlID, col.MaxCharLength, !col.IsNullable, desc.Connector)
 	return
 }
 
 
 
-func (d Textbox) GenerateRefresh(col *generator.ColumnType) (s string) {
+func (d Textbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetText(val)`
 }
 
-func (d Textbox) GenerateUpdate(col *generator.ColumnType) (s string) {
+func (d Textbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `val := ctrl.Text()`
 }
 

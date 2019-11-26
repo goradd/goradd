@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
@@ -31,8 +32,9 @@ func (d IntegerTextbox) Imports() []generator.ImportPath {
 	}
 }
 
-func (d IntegerTextbox) SupportsColumn(col *generator.ColumnType) bool {
-	if (col.ColumnType == query.ColTypeInteger ||
+func (d IntegerTextbox) SupportsColumn(ref interface{}) bool {
+	if col,ok := ref.(*db.Column); ok &&
+		(col.ColumnType == query.ColTypeInteger ||
 		col.ColumnType == query.ColTypeInteger64) &&
 		!col.IsReference() {
 		return true
@@ -40,7 +42,8 @@ func (d IntegerTextbox) SupportsColumn(col *generator.ColumnType) bool {
 	return false
 }
 
-func (d IntegerTextbox) GenerateCreator(col *generator.ColumnType) (s string) {
+func (d IntegerTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
+	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 `goraddctrl.IntegerTextboxCreator{
 	ID:        %#v,
@@ -48,16 +51,17 @@ func (d IntegerTextbox) GenerateCreator(col *generator.ColumnType) (s string) {
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, col.ControlID, !col.IsNullable, col.Connector)
+}`, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 
 
-func (d IntegerTextbox) GenerateRefresh(col *generator.ColumnType) (s string) {
+func (d IntegerTextbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetValue(val)`
 }
 
-func (d IntegerTextbox) GenerateUpdate(col *generator.ColumnType) (s string) {
+func (d IntegerTextbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
+	col := ref.(*db.Column)
 	switch col.ColumnType {
 	case query.ColTypeInteger:
 		return `val := ctrl.Int()`

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/db"
 )
 
 func init() {
@@ -31,11 +32,12 @@ func (d Span) Imports() []generator.ImportPath {
 	}
 }
 
-func (d Span) SupportsColumn(col *generator.ColumnType) bool {
+func (d Span) SupportsColumn(ref interface{}) bool {
 	return true
 }
 
-func (d Span) GenerateCreator(col *generator.ColumnType) (s string) {
+func (d Span) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
+	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 `goraddctrl.SpanCreator{
 	ID:        %#v,
@@ -44,16 +46,16 @@ func (d Span) GenerateCreator(col *generator.ColumnType) (s string) {
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, col.ControlID, col.IsPk, !col.IsNullable, col.Connector)
+}`, desc.ControlID, col.IsPk, !col.IsNullable, desc.Connector)
 	return
 }
 
 
-func (d Span) GenerateRefresh(col *generator.ColumnType) (s string) {
+func (d Span) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetText(fmt.Sprintf("%v", val))`
 }
 
-func (d Span) GenerateUpdate(col *generator.ColumnType) (s string) {
+func (d Span) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return ""
 }
 

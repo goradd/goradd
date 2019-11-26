@@ -115,7 +115,7 @@ func (f *{{= formName }}) createControls(ctx context.Context) {
 func (f *{{= formName }}) LoadControls(ctx context.Context) {
     if id, ok := page.GetContext(ctx).FormValue("id"); ok {
  	    err := panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, {{= t.PrimaryKeyColumn().ConvertFromString("id") }})
- 	    if err != nil {
+ 	    if err == nil {
             GetButton(f, {{= title }}DeleteButtonID).SetVisible(true)
             f.Page().SetTitle(f.GT("Edit"))
             return

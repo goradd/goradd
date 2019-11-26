@@ -4,6 +4,7 @@ import (
 	"fmt"
 	generator2 "github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/db"
 	generator3 "github.com/goradd/goradd/pkg/page/control/generator"
 )
 
@@ -24,7 +25,8 @@ func (d Checkbox) Imports() []generator2.ImportPath {
 	}
 }
 
-func (d Checkbox) GenerateCreator(col *generator2.ColumnType) (s string) {
+func (d Checkbox) GenerateCreator(ref interface{}, desc *generator2.ControlDescription) (s string) {
+	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 		`bootstrapctrl.CheckboxCreator{
 			ID:        %#v,
@@ -32,6 +34,6 @@ func (d Checkbox) GenerateCreator(col *generator2.ColumnType) (s string) {
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, col.ControlID, !col.IsNullable, col.Connector)
+		}`, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }

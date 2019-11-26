@@ -24,7 +24,9 @@ type Event struct {
 	// delay is the number of milliseconds to delay firing the action after the event triggers
 	delay int
 	// selector is a css selector that will filter the event bubbling up from a sub-item. The event must originate from
-	// an html object that the selector specifies.
+	// an html object that the selector specifies. Inside the event handler, event.goradd.match will contain the
+	// html item that was selected by the selector. Note that by default, if this object has other objects inside of it,
+	// events will not bubble up from those objects. Set "bubbles" to true to have sub objects bubble their events.
 	selector string
 	// blocking specifies that once the event fires, all other events will be blocked until the action associated with
 	// the event returns.

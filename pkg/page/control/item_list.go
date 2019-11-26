@@ -124,6 +124,9 @@ func (l *ItemList) addListItem(item interface{}) {
 	case ItemIDer:
 		item := NewItemFromItemIDer(v)
 		l.items = append(l.items, item)
+	case ItemIntIDer:
+		item := NewItemFromItemIntIDer(v)
+		l.items = append(l.items, item)
 	case Labeler:
 		item := NewItemFromLabeler(v)
 		l.items = append(l.items, item)

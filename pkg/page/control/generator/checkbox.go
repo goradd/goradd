@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
@@ -31,34 +32,15 @@ func (d Checkbox) Imports() []generator.ImportPath {
 	}
 }
 
-func (d Checkbox) SupportsColumn(col *generator.ColumnType) bool {
-	if col.ColumnType == query.ColTypeBool {
+func (d Checkbox) SupportsColumn(ref interface{}) bool {
+	if col,ok := ref.(*db.Column); ok && col.ColumnType == query.ColTypeBool {
 		return true
 	}
 	return false
 }
 
-func (d Checkbox) GenerateCreate(namespace string, col *generator.ColumnType) (s string) {
-	s = fmt.Sprintf(
-		`	ctrl = %s.NewCheckbox(c.ParentControl, id)
-	ctrl.SetLabel(ctrl.T("%s"))
-`, namespace, col.DefaultLabel)
-
-
-	return
-}
-
-func (d Checkbox) GenerateGet(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	s = fmt.Sprintf(`c.%s.SetChecked(c.%s.%s())`, ctrlName, objName, col.GoName)
-	return
-}
-
-func (d Checkbox) GeneratePut(ctrlName string, objName string, col *generator.ColumnType) (s string) {
-	s = fmt.Sprintf(`c.%s.Set%s(c.%s.Checked())`, objName, col.GoName, ctrlName)
-	return
-}
-
-func (d Checkbox) GenerateCreator(col *generator.ColumnType) (s string) {
+func (d Checkbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
+	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 		`goraddctrl.CheckboxCreator{
 			ID:        %#v,
@@ -66,15 +48,15 @@ func (d Checkbox) GenerateCreator(col *generator.ColumnType) (s string) {
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, col.ControlID, !col.IsNullable, col.Connector)
+		}`, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 
-func (d Checkbox) GenerateRefresh(col *generator.ColumnType) (s string) {
+func (d Checkbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetChecked(val)`
 }
 
-func (d Checkbox) GenerateUpdate(col *generator.ColumnType) (s string) {
+func (d Checkbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `val := ctrl.Checked()`
 }
 

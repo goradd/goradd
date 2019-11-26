@@ -14,11 +14,18 @@ type ItemLister interface {
 	Label() string
 }
 
-// ItemIDer is an interface to a listable object that matches orm objects
+// ItemIDer is an interface to a listable object that matches most orm objects
 type ItemIDer interface {
 	ID() string
 	String() string
 }
+
+// ItemIntIDer matches orm objects that use an int type for the id
+type ItemIntIDer interface {
+	ID() int
+	String() string
+}
+
 
 type Labeler interface {
 	Label() string
@@ -95,6 +102,13 @@ func NewItemFromItemIDer(i ItemIDer) *ListItem {
 	l.ItemList = NewItemList(l)
 	return l
 }
+
+func NewItemFromItemIntIDer(i ItemIntIDer) *ListItem {
+	l := &ListItem{value: strconv.Itoa(i.ID()), label: i.String()}
+	l.ItemList = NewItemList(l)
+	return l
+}
+
 
 func (i *ListItem) SetValue(v string) *ListItem {
 	i.value = v
