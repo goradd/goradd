@@ -11,6 +11,29 @@ type {{= panelName }}I interface {
 }}
         }
     }
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        {{= cd.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }}
+}}
+        }
+
+    }
+/*
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        {{= cd.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }}
+}}
+        }
+
+    }
+*/
 }}
     Update()
     Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error

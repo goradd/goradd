@@ -20,39 +20,42 @@ type ReverseReferenceNode struct {
 	nodeLink
 	// Which database in the global list of databases does the node belong to
 	dbKey string
-	// table which has the reverse reference
+	// dbTable is the table which owns the reverse reference
 	dbTable string
-	// NoSQL only. The table containing an array of items we are pointing to.
+	// dbKeyColumn is the primary key of that table
+	dbKeyColumn string
+	// dbColumn is NoSQL only. It is the table containing an array of primary keys for the records pointing back to this one.
 	dbColumn string
-	// Property we are using to refer to the many side of the relationship
+	// goPropName is the property we are using to refer to the many side of the relationship
 	goPropName string
-	// The table containing the pointer back to us
+	// refTable is the table containing the pointer back to us
 	refTable string
-	// The table that is the foreign key pointing back to us.
+	// refColumn is the column that is the foreign key pointing back to us.
 	refColumn string
-	// True to create new objects for each joined item, or false to create an array of joined objects here.
+	// isArray is true to create new objects for each joined item, or false to create an array of joined objects here.
 	isArray bool
-	// Is this pointing to a type table item?
-	isTypeTable bool
 }
 
 func NewReverseReferenceNode(
 	dbKey string,
-	// table which has the reverse reference
+	// dbTable is the name of the database table which owns the reverse reference
 	dbTable string,
-	// NoSQL: the table containing an array of items we are pointing to. SQL: The primary key of this table.
+	// dbKeyColumn is the primary key of that table
+	dbKeyColumn string,
+	// dbColumn is for NoSQL and is the column containing an array of primary keys that point to the items referring back to us.
 	dbColumn string,
 	// Property we are using to refer to the many side of the relationship
 	goName string,
 	// The table containing the pointer back to us
 	refTable string,
-	// The table that is the foreign key pointing back to us.
+	// The column that is the foreign key pointing back to us.
 	refColumn string,
 	isArray bool,
 ) *ReverseReferenceNode {
 	n := &ReverseReferenceNode{
 		dbKey:      dbKey,
 		dbTable:    dbTable,
+		dbKeyColumn: dbKeyColumn,
 		dbColumn:   dbColumn,
 		goPropName: goName,
 		refTable:   refTable,
@@ -140,6 +143,9 @@ func (n *ReverseReferenceNode) GobEncode() (data []byte, err error) {
 	if err = e.Encode(n.dbTable); err != nil {
 		panic(err)
 	}
+	if err = e.Encode(n.dbKeyColumn); err != nil {
+		panic(err)
+	}
 	if err = e.Encode(n.dbColumn); err != nil {
 		panic(err)
 	}
@@ -153,9 +159,6 @@ func (n *ReverseReferenceNode) GobEncode() (data []byte, err error) {
 		panic(err)
 	}
 	if err = e.Encode(n.isArray); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(n.isTypeTable); err != nil {
 		panic(err)
 	}
 
@@ -180,6 +183,9 @@ func (n *ReverseReferenceNode) GobDecode(data []byte) (err error) {
 	if err = dec.Decode(&n.dbTable); err != nil {
 		panic(err)
 	}
+	if err = dec.Decode(&n.dbKeyColumn); err != nil {
+		panic(err)
+	}
 	if err = dec.Decode(&n.dbColumn); err != nil {
 		panic(err)
 	}
@@ -193,9 +199,6 @@ func (n *ReverseReferenceNode) GobDecode(data []byte) (err error) {
 		panic(err)
 	}
 	if err = dec.Decode(&n.isArray); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.isTypeTable); err != nil {
 		panic(err)
 	}
 
@@ -230,7 +233,14 @@ func ReverseReferenceNodeRefColumn(n *ReverseReferenceNode) string {
 }
 
 // ReverseReferenceNodeDbColumnName is used internally by the framework to get the database column on this side of the
-// relationship, which is most likely the primary key.
+// relationship. This is for NoSQL only
 func ReverseReferenceNodeDbColumnName(n *ReverseReferenceNode) string {
 	return n.dbColumn
 }
+
+// ReverseReferenceNodeKeyColumnName is used internally by the framework to get the database column on this side of the
+// relationship, which is most likely the primary key. This is for SQL databases generally.
+func ReverseReferenceNodeKeyColumnName(n *ReverseReferenceNode) string {
+	return n.dbKeyColumn
+}
+

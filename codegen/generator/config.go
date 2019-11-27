@@ -23,8 +23,13 @@ var DefaultFormFieldCreator = "goraddctrl.FormFieldWrapperCreator"
 func DefaultControlType(ref interface{}) ControlCreationInfo {
 	switch col := ref.(type) {
 	case *db.ReverseReference:
-		return ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/page/control"} // primary keys are not editable
-	case *db.ManyManyDescription:
+		if col.IsUnique() {
+			return ControlCreationInfo{"", "", ""} // select list I think instead
+		} else if col.IsNullable() {
+			return ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/page/control"} // primary keys are not editable
+		}
+		return ControlCreationInfo{"", "", ""}
+	case *db.ManyManyReference:
 		return ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/page/control"} // primary keys are not editable
 	case *db.Column:
 		if col.IsPk {

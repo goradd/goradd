@@ -137,8 +137,8 @@ for _,ref := range t.ManyManyReferences {
 
 // Reverse references
 for _,ref := range t.ReverseReferences {
-	parentName := dd.Table(ref.AssociatedTableName).GetColumn(ref.AssociatedColumnName).ForeignKey.GoName
-	if ref.IsUnique {
+	parentName := ref.AssociatedColumn.ForeignKey.GoName
+	if ref.IsUnique() {
 		oName := dd.AssociatedObjectPrefix + ref.GoName
 
 {{
@@ -158,7 +158,7 @@ for _,ref := range t.ReverseReferences {
 	} else {
 		oName := dd.AssociatedObjectPrefix + ref.GoPlural
 		mName := "m" + ref.GoPlural
-		pk := dd.Table(ref.AssociatedTableName).GetColumn(ref.AssociatedColumnName).ModelName
+		pk := ref.AssociatedColumn.ModelName
 
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {

@@ -14,7 +14,12 @@ func BootstrapCodegenSetup() {
 		info = generator.DefaultControlType(ref)
 		switch col := ref.(type) {
 		case *db.ReverseReference:
-			return generator.ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/bootstrap/control"}
+			if col.IsUnique() {
+				return // select list instead
+			} else if col.IsNullable() {
+				return generator.ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/bootstrap/control"}
+			}
+			return
 		case *db.ManyManyReference:
 			return generator.ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/bootstrap/control"}
 		case *db.Column:

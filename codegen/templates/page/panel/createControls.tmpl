@@ -12,6 +12,29 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 }}
         }
     }
+
+        for _,ref := range t.ReverseReferences {
+            cd := t.ControlDescription(ref)
+            if cd == nil {continue}
+            if cd.Generator != nil {
+    {{
+            p.this().{{= cd.ControlName }}Creator(),
+    }}
+            }
+
+        }
+/*
+        for _,ref := range t.ManyManyReferences {
+            cd := t.ControlDescription(ref)
+            if cd == nil {continue}
+            if cd.Generator != nil {
+    {{
+            p.this().{{= cd.ControlName }}Creator(),
+    }}
+            }
+
+        }
+*/
 }}
     )
 }
@@ -36,6 +59,29 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 }}
         }
     }
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        p.{{= cd.ControlName }}Creator(),
+}}
+        }
+
+    }
+/*
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        p.{{= cd.ControlName }}Creator(),
+}}
+        }
+
+    }
+*/
 }}
     )
 }
@@ -66,5 +112,48 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import.Alias }}.{{
         }
     }
 
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil || cd.Generator == nil {continue}
+
+        creatorString := cd.Generator.GenerateCreator(ref, cd)
+        if creatorString != "" {
+            creatorString = generator.WrapFormField(cd.DefaultLabel, cd.ControlID, creatorString)
+
+{{
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }} {
+	return {{= creatorString }}
+}
+
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import.Alias }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import.Alias }}.{{= cd.ControlType }})
+}
+
+}}
+        }
+    }
+/*
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil || cd.Generator == nil {continue}
+
+        creatorString := cd.Generator.GenerateCreator(ref, cd)
+        if creatorString != "" {
+            creatorString = generator.WrapFormField(cd.DefaultLabel, cd.ControlID, creatorString)
+
+{{
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }} {
+	return {{= creatorString }}
+}
+
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import.Alias }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import.Alias }}.{{= cd.ControlType }})
+}
+
+}}
+        }
+    }
+*/
 }}
 

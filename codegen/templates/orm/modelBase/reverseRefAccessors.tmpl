@@ -4,7 +4,7 @@ for _,ref := range t.ReverseReferences {
 	mName := ref.MapName()
 	associatedGoName := ref.AssociatedGoName()
 
-	if ref.IsUnique {
+	if ref.IsUnique() {
 {{
 
 // {{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded
@@ -40,10 +40,6 @@ func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= ref.AssociatedPkType }}) 
 	return v
 }
 
-}}
-
-{{
-
 // {{ref.GoPlural}} returns a slice of {{ref.GoType}} objects if loaded.
 func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.GoType}} {
 	if o.{{oName}} == nil {
@@ -64,6 +60,28 @@ func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, condi
 	o.{{oName}} = qb.Where(cond).Load(ctx)
 	return o.{{oName}}
 }
+
+
+{{if ref.IsNullable() }}
+
+// DisassociateAll{{ref.GoPlural}} removes the association of all of these types of objects.
+func (o *{{privateName}}Base) DisassociateAll{{= ref.GoPlural }}(ctx context.Context) {
+	for _,obj := range o.Load{{= ref.GoPlural }}(ctx) {
+	    obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
+	    obj.Save(ctx)
+	}
+}
+
+// Associate{{ref.GoPlural}} associates the given objects with the {{privateName}}.
+func (o *{{privateName}}Base) Associate{{= ref.GoPlural }}(ctx context.Context, objs []*{{= ref.GoType }}) {
+    for _,obj := range objs {
+	    obj.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
+	    obj.Save(ctx)
+    }
+}
+
+{{if}}
+
 
 
 }}

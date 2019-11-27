@@ -106,6 +106,7 @@ func Generate() {
 				imports := make(map[string]*ImportType)
 				matchColumnsWithControls(table, descriptions, imports)
 				matchReverseReferencesWithControls(table, descriptions, imports)
+				matchManyManyReferencesWithControls(table, descriptions, imports)
 
 				var i []*ImportType
 				for _,k := range stringmap.SortedKeys(imports) {
@@ -118,8 +119,6 @@ func Generate() {
 					i,
 				}
 				codegen.Tables[key][table.GoName] = t
-
-
 			}
 		}
 

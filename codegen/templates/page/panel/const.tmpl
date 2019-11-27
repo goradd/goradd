@@ -9,6 +9,23 @@ const (
     {{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
 }}
     }
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd ==  nil {continue}
+{{
+    {{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
+}}
+    }
+
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd ==  nil {continue}
+{{
+    {{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
+}}
+    }
+
 }}
 
 )

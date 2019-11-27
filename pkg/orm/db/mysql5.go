@@ -226,7 +226,7 @@ func (m *Mysql5) generateJoinSql(b *sqlBuilder, j *joinTreeItem) (sql string, ar
 		sql = "LEFT JOIN "
 		sql += "`" + ReverseReferenceNodeRefTable(node) + "` AS `" +
 			j.alias + "` ON `" + j.parent.alias + "`.`" +
-			ReverseReferenceNodeDbColumnName(node) + "` = `" + j.alias + "`.`" + ReverseReferenceNodeRefColumn(node) + "`"
+			ReverseReferenceNodeKeyColumnName(node) + "` = `" + j.alias + "`.`" + ReverseReferenceNodeRefColumn(node) + "`"
 		if j.joinCondition != nil {
 			s, a := m.generateNodeSql(b, j.joinCondition, false)
 			sql += " AND " + s

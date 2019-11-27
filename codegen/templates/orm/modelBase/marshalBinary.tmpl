@@ -32,7 +32,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
 {{for}}
 
 {{for _,ref := range t.ReverseReferences}}
-{{if ref.IsUnique}}
+{{if ref.IsUnique() }}
 	if err := encoder.Encode(o.{{dd.AssociatedObjectPrefix}}{{= ref.GoName }}); err != nil {
 	    return nil, err
 	}
@@ -100,7 +100,7 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
 {{for}}
 
 {{for _,ref := range t.ReverseReferences}}
-{{if ref.IsUnique}}
+{{if ref.IsUnique() }}
 	if err = dec.Decode(&o.{{dd.AssociatedObjectPrefix}}{{= ref.GoName }}); err != nil {
 	    return
 	}

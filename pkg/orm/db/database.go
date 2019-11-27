@@ -229,10 +229,10 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 func (d *Database) analyzeReverseReferences(td *Table) {
 	var td2 *Table
 
-	var cd *Column
-	for _, cd = range td.Columns {
-		if cd.ForeignKey != nil {
-			td2 = d.Table(cd.ForeignKey.ReferencedTable)
+	var col *Column
+	for _, col = range td.Columns {
+		if col.ForeignKey != nil {
+			td2 = d.Table(col.ForeignKey.ReferencedTable)
 			if td2 == nil  {
 				continue // pointing to a type table
 			}
@@ -242,20 +242,20 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 			// where would you get the word "member". Our strategy will be to first look for something explicit in the
 			// options, and if not found, try to create a name from the table and table names.
 
-			objName := cd.DbName
+			objName := col.DbName
 			objName = strings.TrimSuffix(objName, d.ForeignKeySuffix)
 			objName = strings.Replace(objName, td2.DbName, "", 1)
 			if objName != "" {
 				objName = UpperCaseIdentifier(objName)
 			}
-			goName,_ := cd.Options["GoName"].(string)
+			goName,_ := col.Options["GoName"].(string)
 			if goName == "" {
 				goName = UpperCaseIdentifier(td.DbName)
 				if objName != "" {
 					goName = goName + "As" + objName
 				}
 			}
-			goPlural,_ := cd.Options["GoPlural"].(string)
+			goPlural,_ := col.Options["GoPlural"].(string)
 			if goPlural == "" {
 				goPlural = inflector.Pluralize(td.DbName)
 				goPlural = UpperCaseIdentifier(goPlural)
@@ -273,21 +273,27 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 				}
 			}
 
+			var colName string
+			if col.IsUnique {
+				colName = snaker.CamelToSnake(goName)
+			} else {
+				colName = snaker.CamelToSnake(goPlural)
+			}
+
+
 			ref := ReverseReference{
-				DbTable:              td2.DbName,
-				DbColumn:             td2.PrimaryKeyColumn().DbName,
-				AssociatedTableName:  td.DbName,
-				AssociatedColumnName: cd.DbName,
-				AssociatedPkType:     td.PrimaryKeyColumn().ColumnType.GoType(),
-				GoName:               goName,
-				GoPlural:             goPlural,
-				GoType:               goType,
-				GoTypePlural:         goTypePlural,
-				IsUnique:             cd.IsUnique,
+				DbColumn:            colName,
+				AssociatedTable: 	 td,
+				AssociatedColumn:    col,
+				AssociatedPkType:    td.PrimaryKeyColumn().ColumnType.GoType(),
+				GoName:              goName,
+				GoPlural:            goPlural,
+				GoType:              goType,
+				GoTypePlural:        goTypePlural,
 			}
 
 			td2.ReverseReferences = append(td2.ReverseReferences, &ref)
-			cd.ForeignKey.RR = &ref
+			col.ForeignKey.RR = &ref
 		}
 	}
 }

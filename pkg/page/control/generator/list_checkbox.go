@@ -5,7 +5,6 @@ import (
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
-	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 func init() {
@@ -32,57 +31,82 @@ func (d CheckboxList) Imports() []generator.ImportPath {
 	}
 }
 
-// TODO: This has to be changed to support virtual column types like ManyMany and Reverse
 func (d CheckboxList) SupportsColumn(ref interface{}) bool {
-	if col,ok := ref.(*db.Column); ok && col.ForeignKey != nil {
+	if rr,ok := ref.(*db.ReverseReference); ok {
+		if rr.IsUnique() {
+			return false
+		}
 		return true
 	}
+	if _,ok := ref.(*db.ManyManyReference); ok {
+		return true
+	}
+
 	return false
 }
 
 func (d CheckboxList) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
-	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 `goraddctrl.CheckboxListCreator{
 	ID:           %#v,
 	DataProvider: p,
 	ControlOptions: page.ControlOptions{
-		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.ControlID, desc.Connector)
 	return
 }
 
 
 func (d CheckboxList) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) string {
-	return `ctrl.SetValue(val)`
+	switch col := ref.(type) {
+	case *db.ReverseReference:
+		return `
+			var values []string
+			for _,obj := range objects {
+				values = append(values, fmt.Sprintf("%v", obj.PrimaryKey()))
+			}
+			ctrl.SetSelectedValues(values)`
+	case *db.ManyManyReference:
+		return fmt.Sprintf(`
+			var values []string
+			for _,obj := range objects {
+				values = append(values, obj.PrimaryKey())
+			}
+			ctrl.SetSelectedValues(values)`,
+			col.GoPlural)
+	}
+	return ``
 }
 
 func (d CheckboxList) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) string {
-	col := ref.(*db.Column)
-	var s string
-	switch col.ColumnType {
-	case query.ColTypeInteger:
-		s = `val,_ := strconv.Atoi(ctrl.StringValue())`
-	case query.ColTypeUnsigned:
-		s = `val,_ := strconv.ParseUint(ctrl.StringValue(), 10, 0)`
-	case query.ColTypeInteger64:
-		s = `val,_ := strconv.ParseInt(ctrl.StringValue(), 10, 64)`
-	case query.ColTypeUnsigned64:
-		s = `val,_ := strconv.ParseUint(ctrl.StringValue(), 10, 64)`
-	default:
-		s = `val := ctrl.StringValue()`
+/*	switch col := ref.(type) {
+	case *db.ReverseReference:
+		return fmt.Sprintf(`
+			values := ctrl.SelectedValues()
+			model.Unasso
+			`,
+			col.GoPlural)
+	case *db.ManyManyReference:
+		return fmt.Sprintf(`
+			values := []string
+			for _,obj := range model.Load%s(ctx) {
+				values = append(values, obj.PrimaryKey())
+			}
+			ctrl.SetSelectedValues(values)`,
+			col.GoPlural)
 	}
-
-	return s
+*/
+	return ``
 }
 
+
 func (d CheckboxList) GenerateProvider(ref interface{}, desc *generator.ControlDescription) string {
-	col := ref.(*db.Column)
-	if col.ForeignKey.IsType {
-		return fmt.Sprintf(`return model.%sI()`, col.ForeignKey.GoTypePlural)
-	} else {
-		return fmt.Sprintf(`return model.Query%s(ctx).LoadI(ctx)`, col.ForeignKey.GoTypePlural)
+	switch col := ref.(type) {
+	case *db.ReverseReference:
+		return fmt.Sprintf(`return model.Query%s(ctx).LoadI(ctx)`, col.AssociatedTable.GoPlural)
+	case *db.ManyManyReference:
+		return fmt.Sprintf(`return model.Query%s(ctx).LoadI(ctx)`, col.AssociatedTableName)
 	}
+	return ``
 }

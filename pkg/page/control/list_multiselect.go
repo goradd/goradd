@@ -103,10 +103,10 @@ func (l *MultiselectList) SelectedItems() []*ListItem {
 	return items
 }
 
-// SetSelectedValues sets the current selection to the given ids. You must ensure that the items with the ids exist, it will
+// SetSelectedValues sets the current selection to the given values. You must ensure that the items with the values exist, it will
 // not attempt to make sure the items exist.
-func (l *MultiselectList) SetSelectedValues(ids []string) {
-	l.SetSelectedValuesNoRefresh(ids)
+func (l *MultiselectList) SetSelectedValues(values []string) {
+	l.SetSelectedValuesNoRefresh(values)
 	l.Refresh()
 }
 
