@@ -6,7 +6,7 @@ import (
 )
 
 func TestReverseReferenceNodeInterfaces(t *testing.T) {
-	n := NewReverseReferenceNode("db", "table", "dbCol", "goName", "table2", "col2", false)
+	n := NewReverseReferenceNode("db", "table", "dbKey", "dbCol", "goName", "table2", "col2", false)
 
 	n.SetAlias("alias")
 

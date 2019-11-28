@@ -59,7 +59,7 @@ func (d CheckboxList) GenerateCreator(ref interface{}, desc *generator.ControlDe
 
 
 func (d CheckboxList) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) string {
-	switch col := ref.(type) {
+	switch ref.(type) {
 	case *db.ReverseReference:
 		return `
 			var values []string
@@ -68,13 +68,7 @@ func (d CheckboxList) GenerateRefresh(ref interface{}, desc *generator.ControlDe
 			}
 			ctrl.SetSelectedValues(values)`
 	case *db.ManyManyReference:
-		return fmt.Sprintf(`
-			var values []string
-			for _,obj := range objects {
-				values = append(values, obj.PrimaryKey())
-			}
-			ctrl.SetSelectedValues(values)`,
-			col.GoPlural)
+		return ``
 	}
 	return ``
 }
