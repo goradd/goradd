@@ -1,7 +1,6 @@
 package dbtest
 
 import (
-	"context"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -12,7 +11,7 @@ import (
 
 func TestMany2(t *testing.T) {
 
-	ctx := context.Background()
+	ctx := getContext()
 
 	// All People Who Are on a Project Managed by Karen Wolfe (Person ID #7)
 	people := model.QueryPeople(ctx).
@@ -42,7 +41,7 @@ func TestMany2(t *testing.T) {
 }
 
 func TestManyTypes(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 
 	// All people who are inactive
 	people := model.QueryPeople(ctx).
@@ -65,7 +64,7 @@ func TestManyTypes(t *testing.T) {
 }
 
 func TestManySelect(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsTeamMember().Name()).
@@ -81,7 +80,7 @@ func TestManySelect(t *testing.T) {
 }
 
 func TestReverse2(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	people := model.QueryPeople(ctx).
 		Join(node.Person().ProjectsAsManager()).
 		OrderBy(node.Person().ID(), node.Person().ProjectsAsManager().Name()).
@@ -100,7 +99,7 @@ func TestReverse2(t *testing.T) {
 }
 
 func Test2Nodes(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	milestones := model.QueryMilestones(ctx).
 		Join(node.Milestone().Project().Manager()).
 		Where(Equal(node.Milestone().ID(), 1)). // Filter out people who are not managers
@@ -114,7 +113,7 @@ func Test2Nodes(t *testing.T) {
 }
 
 func TestForwardMany(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	milestones := model.QueryMilestones(ctx).
 		Join(node.Milestone().Project().TeamMembers()).
 		OrderBy(node.Milestone().Project().TeamMembers().LastName(), node.Milestone().Project().TeamMembers().FirstName()).
@@ -138,7 +137,7 @@ func TestForwardMany(t *testing.T) {
 
 // Complex test finding all the team members of all the projects a person is managing, ordering by last name
 func TestReverseMany(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID(), node.Person().ProjectsAsManager().TeamMembers().LastName(), node.Person().ProjectsAsManager().TeamMembers().FirstName()).
 		Select(node.Person().ProjectsAsManager().TeamMembers().FirstName(), node.Person().ProjectsAsManager().TeamMembers().LastName()).
@@ -167,7 +166,7 @@ func TestReverseMany(t *testing.T) {
 }
 
 func TestReverseManyExpansion(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	// Test an intermediate expansion
 	people := model.QueryPeople(ctx).
 		Join(node.Person().ProjectsAsManager().TeamMembers()).
@@ -210,7 +209,7 @@ func TestReverseManyExpansion(t *testing.T) {
 }
 
 func TestManyForward(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID(), node.Person().ProjectsAsTeamMember().Name()).
 		Select(node.Person().ProjectsAsTeamMember().Manager().FirstName(), node.Person().ProjectsAsTeamMember().Manager().LastName()).
@@ -230,7 +229,7 @@ func TestManyForward(t *testing.T) {
 }
 
 func TestUniqueReverse(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	person := model.QueryPeople(ctx).
 		Where(Equal(node.Person().LastName(), "Doe")).
 		Get(ctx)
@@ -245,7 +244,7 @@ func TestUniqueReverse(t *testing.T) {
 
 func TestReverseReferences(t *testing.T) {
 	// Test early binding
-	ctx := context.Background()
+	ctx := getContext()
 	people := model.QueryPeople(ctx).
 		Join(node.Person().ProjectsAsManager()).
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsManager().Name()).
@@ -278,7 +277,7 @@ func TestReverseReferences(t *testing.T) {
 }
 
 func TestForwardReferenceLookingBack(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	// Test forward reference looking back
 	project := model.QueryProjects(ctx).
 		Join(node.Project().Manager().ProjectsAsManager()).
@@ -291,7 +290,7 @@ func TestForwardReferenceLookingBack(t *testing.T) {
 }
 
 func TestSingleExpansion(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	person := model.QueryPeople(ctx).
 		Join(node.Person().ProjectsAsManager().Manager()).
 		Expand(node.Person().ProjectsAsManager()).
@@ -304,7 +303,7 @@ func TestSingleExpansion(t *testing.T) {
 }
 
 func TestConditionalJoin(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 
 	projects := model.QueryProjects(ctx).
 		OrderBy(node.Project().Name()).
@@ -347,7 +346,7 @@ func TestConditionalJoin(t *testing.T) {
 }
 
 func TestConditionalExpand(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 
 	// Reverse references
 	people := model.QueryPeople(ctx).
@@ -368,7 +367,7 @@ func TestConditionalExpand(t *testing.T) {
 }
 
 func TestSelectByID(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 
 	projects := model.QueryProjects(ctx).
 		OrderBy(node.Project().Name().Descending()).
@@ -391,7 +390,7 @@ func TestSelectByID(t *testing.T) {
 }
 
 func Test2ndLoad(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	projects := model.QueryProjects(ctx).
 		OrderBy(node.Project().Manager().FirstName()).
 		Load(ctx)

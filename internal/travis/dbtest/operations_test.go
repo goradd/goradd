@@ -1,7 +1,6 @@
 package dbtest
 
 import (
-	"context"
 	"github.com/goradd/goradd/pkg/datetime"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
@@ -12,7 +11,7 @@ import (
 )
 
 func TestEqualBasic(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	projects := model.QueryProjects(ctx).
 		Where(Equal(node.Project().Num(), 2)).
 		OrderBy(node.Project().Num()).
@@ -23,7 +22,7 @@ func TestEqualBasic(t *testing.T) {
 }
 
 func TestMultiWhere(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	projects := model.QueryPeople(ctx).
 		Where(Equal(node.Person().LastName(), "Smith")).
 		Where(Equal(node.Person().FirstName(), "Alex")).
@@ -58,7 +57,7 @@ func TestLogical(t *testing.T) {
 		{In(node.Project().Num(), 2, 3, 4), 1, 3, 3, "In test"},
 	}
 
-	ctx := context.Background()
+	ctx := getContext()
 
 	var projects []*model.Project
 	for i, c := range tests {
@@ -77,7 +76,7 @@ func TestLogical(t *testing.T) {
 }
 
 func TestCount2(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	count := model.QueryPeople(ctx).
 		Count(ctx, true, node.Person().LastName())
 
@@ -100,7 +99,7 @@ func TestCalculations(t *testing.T) {
 		{Round(Divide(node.Project().Num(), 2)), 3, "2", "Mod test"},
 	}
 
-	ctx := context.Background()
+	ctx := getContext()
 
 	var projects []*model.Project
 	for _, c := range tests {
@@ -114,7 +113,7 @@ func TestCalculations(t *testing.T) {
 }
 
 func TestAggregates(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	projects := model.QueryProjects(ctx).
 		Alias("sum", Sum(node.Project().Spent())).
 		OrderBy(node.Project().ProjectStatusTypeID()).
@@ -126,14 +125,14 @@ func TestAggregates(t *testing.T) {
 	projects2 := model.QueryProjects(ctx).
 		Alias("min", Min(node.Project().Spent())).
 		OrderBy(node.Project().ProjectStatusTypeID()).
-		GroupBy(node.Project().ProjectStatusTypeID()).
+		//GroupBy(node.Project().ProjectStatusTypeID()).
 		Load(ctx)
 
 	assert.EqualValues(t, 4200.50, projects2[0].GetAlias("min").Float())
 }
 
 func TestAliases(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	nVoyel := node.Person().ProjectsAsManager().Milestones()
 	nVoyel.SetAlias("voyel")
 	nConson := node.Person().ProjectsAsManager().Milestones()
