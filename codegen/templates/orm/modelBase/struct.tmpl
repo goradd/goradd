@@ -40,13 +40,18 @@ if len(t.ReverseReferences) > 0 {
 
 for _,ref := range t.ReverseReferences {
 	if ref.IsUnique() {
+        ref.Values["objName"] = dd.AssociatedObjectPrefix + ref.GoName
 {{
-	{{dd.AssociatedObjectPrefix}}{{= ref.GoName }} *{{= ref.GoType }}
+	{{= ref.Values["objName"] }} *{{= ref.GoType }}
+	{{= ref.Values["objName"] }}IsDirty bool
 }}
 	} else {
+        ref.Values["objName"] = dd.AssociatedObjectPrefix + ref.GoPlural
+	    ref.Values["mapName"] = "m" + ref.GoPlural
 {{
-	{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} []*{{= ref.GoType }} // Objects in the order they were queried
-	m{{= ref.GoPlural }} map[{{= ref.AssociatedPkType }}] *{{= ref.GoType }}					  // Objects by PK
+	{{= ref.Values["objName"] }} []*{{= ref.GoType }} // Objects in the order they were queried
+	{{= ref.Values["mapName"] }} map[{{= ref.AssociatedPkType() }}] *{{= ref.GoType }}					  // Objects by PK
+	{{= ref.Values["objName"] }}IsDirty bool
 }}
 	}
 }

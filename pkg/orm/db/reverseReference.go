@@ -17,8 +17,6 @@ type ReverseReference struct {
 	AssociatedTable *Table
 	// AssociatedColumn is the column on the "many" end that is pointing to the table containing the ReverseReference. It is a foreign-key.
 	AssociatedColumn *Column
-	// AssociatedPkType is the go type of the primary key column of the AssociatedTable
-	AssociatedPkType string
 	// GoName is the name used to represent an object in the reverse relationship
 	GoName string
 	// GoPlural is the name used to represent the group of objects in the reverse relationship
@@ -27,22 +25,8 @@ type ReverseReference struct {
 	GoType string
 	// GoTypePlural is the plural of the type of object in the collection of "many" objects
 	GoTypePlural string
-}
-
-func (r *ReverseReference) ObjName(dd *Database) string {
-	if r.IsUnique() {
-		return dd.AssociatedObjectPrefix + r.GoName
-	} else {
-		return dd.AssociatedObjectPrefix + r.GoPlural
-	}
-}
-
-func (r *ReverseReference) MapName() string {
-	if r.IsUnique() {
-		return "" // no map
-	} else {
-		return "m" + r.GoPlural
-	}
+	// Values are freeform values available to the code generation process
+	Values map[string]string
 }
 
 // AssociatedGoName returns the name of the column that is pointing back to us. The name returned
@@ -67,5 +51,9 @@ func (r *ReverseReference) AssociatedTableName() string {
 	return r.AssociatedTable.DbName
 }
 
+func (r *ReverseReference) AssociatedPkType() string {
+	return r.AssociatedTable.PrimaryKeyColumn().ColumnType.GoType()
+
+}
 
 

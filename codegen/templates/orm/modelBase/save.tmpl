@@ -36,15 +36,25 @@ func (o *{{privateName}}Base) Insert(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("{{t.DbKey}}")
+    txid := d.Begin(ctx)
+    defer d.Rollback(ctx, txid)
+
 {{if t.PrimaryKeyColumn().IsId }}
 	id := d.Insert(ctx, "{{t.DbName}}", m)
 	o.{{= t.PrimaryKeyColumn().ModelName }} = id
 {{else}}
 	d.Insert(ctx, "{{t.DbName}}", m)
 {{if}}
+
+{{for _,ref := range t.ReverseReferences }}
+    if o.{{= ref.Values["objName"]}}IsDirty {
+
+    }
+{{for}}
+    d.Commit(ctx, txid)
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprintf("%v", o.{{= t.PrimaryKeyColumn().ModelName }}))
+	broadcast.Insert(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(o.{{= t.PrimaryKeyColumn().ModelName }}))
 }
 
 func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}) {

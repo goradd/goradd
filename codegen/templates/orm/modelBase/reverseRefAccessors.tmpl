@@ -1,7 +1,7 @@
 //reverseRefAccessors.tmpl
 for _,ref := range t.ReverseReferences {
-	oName := ref.ObjName(dd)
-	mName := ref.MapName()
+	oName := ref.Values["objName"]
+	mName := ref.Values["mapName"]
 	associatedGoName := ref.AssociatedGoName()
 
 	if ref.IsUnique() {
@@ -32,7 +32,7 @@ func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.
 {{
 // {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.
 // Otherwise, it will return nil.
-func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= ref.AssociatedPkType }}) *{{ref.GoType}} {
+func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= ref.AssociatedPkType() }}) *{{ref.GoType}} {
 	if o.{{oName}} == nil || len(o.{{oName}}) == 0 {
 		return nil
 	}
@@ -64,20 +64,14 @@ func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, condi
 
 {{if ref.IsNullable() }}
 
-// DisassociateAll{{ref.GoPlural}} removes the association of all of these types of objects.
-func (o *{{privateName}}Base) DisassociateAll{{= ref.GoPlural }}(ctx context.Context) {
-	for _,obj := range o.Load{{= ref.GoPlural }}(ctx) {
-	    obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
-	    obj.Save(ctx)
+// Set{{ref.GoPlural}} associates the given objects with the {{privateName}}.
+func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{= ref.GoType }}) {
+	o.{{oName}} = objs
+	for _,obj := range o.{{oName}} {
+	    pk := o.{{= ref.AssociatedTable.PrimaryKeyColumn().GoName}}()
+	    o.{{mName}}[pk] = obj
 	}
-}
-
-// Associate{{ref.GoPlural}} associates the given objects with the {{privateName}}.
-func (o *{{privateName}}Base) Associate{{= ref.GoPlural }}(ctx context.Context, objs []*{{= ref.GoType }}) {
-    for _,obj := range objs {
-	    obj.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
-	    obj.Save(ctx)
-    }
+	o.{{oName}}IsDirty = true
 }
 
 {{if}}
