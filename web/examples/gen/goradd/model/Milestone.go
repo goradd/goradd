@@ -14,14 +14,14 @@ type Milestone struct {
 }
 
 // Create a new Milestone object and initialize to default values.
-func NewMilestone(ctx context.Context) *Milestone {
+func NewMilestone() *Milestone {
 	o := new(Milestone)
-	o.Initialize(ctx)
+	o.Initialize()
 	return o
 }
 
 // Initialize or re-initialize a Milestone database object to default values.
-func (o *Milestone) Initialize(ctx context.Context) {
+func (o *Milestone) Initialize() {
 	o.milestoneBase.Initialize()
 	// Add your own initializations here
 }

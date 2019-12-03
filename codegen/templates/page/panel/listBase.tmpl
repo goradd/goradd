@@ -82,6 +82,11 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
                 column.NodeColumnCreator{
                     Node: node.{{= t.GoName }}().{{= col.GoName }}(),
                     Title: "{{= col.GoName }}",
+                {{if col.IsDateOnly}}
+                    ColumnOptions: ColumnOptions{TimeFormat: config.DefaultDateFormat},
+                {{else if col.IsTimeOnly}}
+                    ColumnOptions: ColumnOptions{TimeFormat: config.DefaultTimeFormat},
+                {{if}}
                 },
 {{for}}
            },

@@ -14,14 +14,14 @@ type Login struct {
 }
 
 // Create a new Login object and initialize to default values.
-func NewLogin(ctx context.Context) *Login {
+func NewLogin() *Login {
 	o := new(Login)
-	o.Initialize(ctx)
+	o.Initialize()
 	return o
 }
 
 // Initialize or re-initialize a Login database object to default values.
-func (o *Login) Initialize(ctx context.Context) {
+func (o *Login) Initialize() {
 	o.loginBase.Initialize()
 	// Add your own initializations here
 }

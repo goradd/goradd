@@ -379,8 +379,10 @@ func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
 		IsPk:                  desc.IsPk,
 		IsNullable:            desc.IsNullable,
 		IsUnique:              desc.IsUnique,
-		IsTimestamp:           desc.IsTimestamp,
-		IsAutoUpdateTimestamp: desc.IsAutoUpdateTimestamp,
+		IsTimestamp:           desc.SubType == "timestamp" || desc.SubType == "auto timestamp",
+		IsAutoUpdateTimestamp: desc.SubType == "auto timestamp",
+		IsDateOnly:			   desc.SubType == "date",
+		IsTimeOnly:			   desc.SubType == "time",
 		Comment:               desc.Comment,
 		Options:               desc.Options,
 	}

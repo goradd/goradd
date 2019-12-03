@@ -323,16 +323,18 @@ func (m *Mysql5) processTypeInfo(tableName string, column mysqlColumn, cd *Colum
 	case "time":
 		cd.NativeType = SqlTypeTime
 		cd.GoType = ColTypeDateTime.GoType()
+		cd.SubType = "time"
 	case "timestamp":
 		cd.NativeType = SqlTypeTimestamp
 		cd.GoType = ColTypeDateTime.GoType()
-		cd.IsTimestamp = true
+		cd.SubType = "timestamp"
 	case "datetime":
 		cd.NativeType = SqlTypeDatetime
 		cd.GoType = ColTypeDateTime.GoType()
 	case "date":
 		cd.NativeType = SqlTypeDate
 		cd.GoType = ColTypeDateTime.GoType()
+		cd.SubType = "date"
 	case "tinyint":
 		if dataLen == 1 {
 			cd.NativeType = SqlTypeBool
@@ -710,13 +712,11 @@ func (m *Mysql5) getColumnDescription(table mysqlTable, column mysqlColumn) Colu
 
 	// indicates that the database is handling update on modify
 	// In MySQL this is detectable. In other databases, if you can set this up, but its hard to detect, you can create a comment property to spec this
-	cd.IsAutoUpdateTimestamp = strings.Contains(column.extra, "CURRENT_TIMESTAMP")
-
-	if shouldAutoUpdate {
-		cd.IsTimestamp = true
+	if strings.Contains(column.extra, "CURRENT_TIMESTAMP") {
+		cd.SubType = "auto timestamp"
 	}
 
-	if cd.IsAutoUpdateTimestamp && shouldAutoUpdate {
+	if cd.SubType == "auto timestamp" && shouldAutoUpdate {
 		log.Print("Error in table comment for table " + table.name + ":" + column.name + ": shouldAutoUpdate should not be set on a table that the database is automatically updating.")
 	}
 
