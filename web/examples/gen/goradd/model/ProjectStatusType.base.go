@@ -15,9 +15,11 @@ const (
 
 	ProjectStatusTypeCompleted ProjectStatusType = 3
 
+	ProjectStatusTypePlanned ProjectStatusType = 4
+
 )
 
-const ProjectStatusTypeMaxValue = 3
+const ProjectStatusTypeMaxValue = 4
 
 type ProjectStatusType uint
 
@@ -28,6 +30,7 @@ func (p ProjectStatusType) String() string {
 	case 1: return "Open"
 	case 2: return "Cancelled"
 	case 3: return "Completed"
+	case 4: return "Planned"
 	default: panic("Index out of range")
 	}
 	return "" // prevent warning
@@ -43,15 +46,17 @@ func ProjectStatusTypes() (values []ProjectStatusType) {
     values = append(values, 1)
     values = append(values, 2)
     values = append(values, 3)
+    values = append(values, 4)
     return
 }
 
 // ProjectStatusTypesI returns a slice of interfaces that contains all the ProjectStatusType items
 func ProjectStatusTypesI() (values []interface{}) {
-    values = make([]interface{}, 3, 3)
+    values = make([]interface{}, 4, 4)
     values[0] = ProjectStatusType(1)
     values[1] = ProjectStatusType(2)
     values[2] = ProjectStatusType(3)
+    values[3] = ProjectStatusType(4)
     return
 }
 
@@ -63,9 +68,10 @@ func (p ProjectStatusType) Label() string {
 	return p.String()
 }
 
-// Value satisfies the Valuer interface.
+// Value returns the value that will be used in dropdown lists and satisfies the
+// Valuer and ItemLister interfaces.
 func (p ProjectStatusType) Value() interface{} {
-	return p
+	return p.ID()
 }
 
 
@@ -75,6 +81,7 @@ func (p ProjectStatusType) Description() string {
 	case 1: return "The project is currently active"
 	case 2: return "The project has been canned"
 	case 3: return "The project has been completed successfully"
+	case 4: return "Project is in the planning stages and has not been assigned a manager"
 	default: panic("Index out of range")
 	}
 	return "" // prevent warning
@@ -85,6 +92,7 @@ func (p ProjectStatusType) Guidelines() string {
 	case 1: return "All projects that we are working on should be in this state"
 	case 2: return ""
 	case 3: return "Celebrate successes!"
+	case 4: return "Get ready"
 	default: panic("Index out of range")
 	}
 	return "" // prevent warning
@@ -95,43 +103,48 @@ func (p ProjectStatusType) IsActive() bool {
 	case 1: return true
 	case 2: return true
 	case 3: return true
+	case 4: return false
 	default: panic("Index out of range")
 	}
 	return false // prevent warning
 }
 func ProjectStatusTypeNames() []string {
-	names := make([]string, 4)
+	names := make([]string, 5)
 	// 0 item will be a blank
 	names[1] = "Open"
 	names[2] = "Cancelled"
 	names[3] = "Completed"
+	names[4] = "Planned"
 	return names
 }
 
 func ProjectStatusTypeDescriptions() []string {
-	descriptions := make([]string, 4)
+	descriptions := make([]string, 5)
 	// 0 item will be a blank
 	descriptions[1] = "The project is currently active"
 	descriptions[2] = "The project has been canned"
 	descriptions[3] = "The project has been completed successfully"
+	descriptions[4] = "Project is in the planning stages and has not been assigned a manager"
 	return descriptions
 }
 
 func ProjectStatusTypeGuidelines() []string {
-	guidelines := make([]string, 4)
+	guidelines := make([]string, 5)
 	// 0 item will be a blank
 	guidelines[1] = "All projects that we are working on should be in this state"
 	guidelines[2] = ""
 	guidelines[3] = "Celebrate successes!"
+	guidelines[4] = "Get ready"
 	return guidelines
 }
 
 func ProjectStatusTypeIsActives() []bool {
-	is_actives := make([]bool, 4)
+	is_actives := make([]bool, 5)
 	// 0 item will be a blank
 	is_actives[1] = true
 	is_actives[2] = true
 	is_actives[3] = true
+	is_actives[4] = false
 	return is_actives
 }
 

@@ -73,9 +73,10 @@ func (p PersonType) Label() string {
 	return p.String()
 }
 
-// Value satisfies the Valuer interface.
+// Value returns the value that will be used in dropdown lists and satisfies the
+// Valuer and ItemLister interfaces.
 func (p PersonType) Value() interface{} {
-	return p
+	return p.ID()
 }
 
 
