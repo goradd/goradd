@@ -128,7 +128,7 @@ func (p *Proxy) TagHtml(label string,
 	actionValue string,
 	attributes html.Attributes,
 	tag string,
-	rawHtml bool,
+	labelIsHtml bool,
 ) string {
 	a := html.NewAttributes()
 	a.SetDataAttribute("grProxy", p.ID())
@@ -141,7 +141,7 @@ func (p *Proxy) TagHtml(label string,
 		a.Merge(attributes) // will only apply defaults that are not in attributes
 	}
 
-	if !rawHtml {
+	if !labelIsHtml {
 		label = html2.EscapeString(label)
 	}
 
@@ -153,7 +153,7 @@ func (p *Proxy) TagHtml(label string,
 func (p *Proxy) ButtonHtml(label string,
 	actionValue string,
 	attributes html.Attributes,
-	rawHtml bool,
+	labelIsHtml bool,
 ) string {
 	a := html.NewAttributes()
 	a.Set("onclick", "return false")  // To prevent a return from activating the button
@@ -167,7 +167,7 @@ func (p *Proxy) ButtonHtml(label string,
 	}
 
 	// TODO: We can possibly do actionValue differently now since its already in the value above
-	return p.TagHtml(label, actionValue, a, "button", rawHtml)
+	return p.TagHtml(label, actionValue, a, "button", labelIsHtml)
 }
 
 // ActionAttributes returns attributes that can be included in any tag to attach a proxy to the tag.

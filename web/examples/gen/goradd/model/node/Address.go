@@ -27,7 +27,7 @@ func (n *addressNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.City())
 	return nodes
 }
-func (n *addressNode) PrimaryKeyNode_() *query.ColumnNode {
+func (n *addressNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
 func (n *addressNode) EmbeddedNode_() query.NodeI {

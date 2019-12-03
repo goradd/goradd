@@ -41,7 +41,7 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
 {{for _,ref := range t.ReverseReferences }}
 {{g key := ref.JsonKey(dd) }}
 
-{{if ref.IsUnique}}
+{{if ref.IsUnique() }}
     if val := o.{{= ref.GoName }}(); val != nil {
         v["{{key}}"] = val
     }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
@@ -31,15 +32,15 @@ func (d SelectList) Imports() []generator.ImportPath {
 	}
 }
 
-// TODO: This has to be changed to support virtual column types like ManyMany and Reverse
-func (d SelectList) SupportsColumn(col *generator.ColumnType) bool {
-	if col.ForeignKey != nil {
+func (d SelectList) SupportsColumn(ref interface{}) bool {
+	if col,ok := ref.(*db.Column); ok && col.ForeignKey != nil {
 		return true
 	}
 	return false
 }
 
-func (d SelectList) GenerateCreator(col *generator.ColumnType) (s string) {
+func (d SelectList) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
+	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 `goraddctrl.SelectListCreator{
 	ID:           %#v,
@@ -48,16 +49,17 @@ func (d SelectList) GenerateCreator(col *generator.ColumnType) (s string) {
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, col.ControlID, !col.IsNullable, col.Connector)
+}`, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 
 
-func (d SelectList) GenerateRefresh(col *generator.ColumnType) string {
+func (d SelectList) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) string {
 	return `ctrl.SetValue(val)`
 }
 
-func (d SelectList) GenerateUpdate(col *generator.ColumnType) string {
+func (d SelectList) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) string {
+	col := ref.(*db.Column)
 	var s string
 	switch col.ColumnType {
 	case query.ColTypeInteger:
@@ -75,7 +77,8 @@ func (d SelectList) GenerateUpdate(col *generator.ColumnType) string {
 	return s
 }
 
-func (d SelectList) GenerateProvider(col *generator.ColumnType) string {
+func (d SelectList) GenerateProvider(ref interface{}, desc *generator.ControlDescription) string {
+	col := ref.(*db.Column)
 	if col.ForeignKey.IsType {
 		return fmt.Sprintf(`return model.%sI()`, col.ForeignKey.GoTypePlural)
 	} else {

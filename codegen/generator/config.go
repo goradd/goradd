@@ -20,41 +20,55 @@ var DefaultControlTypeFunc = DefaultControlType
 // DefaultWrapper defines what wrapper will be used for generated controls. It should correspond to the string the wrapper was registered with.
 var DefaultFormFieldCreator = "goraddctrl.FormFieldWrapperCreator"
 
-func DefaultControlType(col *db.Column) ControlCreationInfo {
-	if col.IsPk {
-		return ControlCreationInfo{"Span", "NewSpan", "github.com/goradd/goradd/pkg/page/control"} // primary keys are not editable
-	}
-
-	if col.IsReference() {
-		return ControlCreationInfo{"SelectList", "NewSelectList", "github.com/goradd/goradd/pkg/page/control"}
-	}
-
-	// default control types for columns
-	switch col.ColumnType {
-	case query.ColTypeBytes:
+func DefaultControlType(ref interface{}) ControlCreationInfo {
+	switch col := ref.(type) {
+	case *db.ReverseReference:
+		if col.IsUnique() {
+			return ControlCreationInfo{"", "", ""} // select list I think instead
+		} else if col.IsNullable() {
+			return ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/page/control"} // primary keys are not editable
+		}
 		return ControlCreationInfo{"", "", ""}
-	case query.ColTypeString:
-		return ControlCreationInfo{"Textbox", "NewTextbox", "github.com/goradd/goradd/pkg/page/control"}
-	case query.ColTypeInteger:
-		return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}
-	case query.ColTypeUnsigned:
-		return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}
-	case query.ColTypeInteger64:
-		return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}
-	case query.ColTypeUnsigned64:
-		return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}
-	case query.ColTypeDateTime:
-		return ControlCreationInfo{"DateTimeSpan", "NewDateTimeSpan", "github.com/goradd/goradd/pkg/page/control"}
-	case query.ColTypeFloat:
-		return ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/page/control"}
-	case query.ColTypeDouble:
-		return ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/page/control"}
-	case query.ColTypeBool:
-		return ControlCreationInfo{"Checkbox", "NewCheckbox", "github.com/goradd/goradd/pkg/page/control"}
-	case query.ColTypeUnknown:
-		return ControlCreationInfo{"", "", ""}
+	case *db.ManyManyReference:
+		return ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/page/control"} // primary keys are not editable
+	case *db.Column:
+		if col.IsPk {
+			return ControlCreationInfo{"Span", "NewSpan", "github.com/goradd/goradd/pkg/page/control"} // primary keys are not editable
+		}
+
+		if col.IsReference() {
+			return ControlCreationInfo{"SelectList", "NewSelectList", "github.com/goradd/goradd/pkg/page/control"}
+		}
+
+		// default control types for columns
+		switch col.ColumnType {
+		case query.ColTypeBytes:
+			return ControlCreationInfo{"", "", ""}
+		case query.ColTypeString:
+			return ControlCreationInfo{"Textbox", "NewTextbox", "github.com/goradd/goradd/pkg/page/control"}
+		case query.ColTypeInteger:
+			return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}
+		case query.ColTypeUnsigned:
+			return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}
+		case query.ColTypeInteger64:
+			return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}
+		case query.ColTypeUnsigned64:
+			return ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/page/control"}
+		case query.ColTypeDateTime:
+			return ControlCreationInfo{"DateTimeSpan", "NewDateTimeSpan", "github.com/goradd/goradd/pkg/page/control"}
+		case query.ColTypeFloat:
+			return ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/page/control"}
+		case query.ColTypeDouble:
+			return ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/page/control"}
+		case query.ColTypeBool:
+			return ControlCreationInfo{"Checkbox", "NewCheckbox", "github.com/goradd/goradd/pkg/page/control"}
+		case query.ColTypeUnknown:
+			return ControlCreationInfo{"", "", ""}
+		default:
+			return ControlCreationInfo{"", "", ""}
+		}
 	default:
-		return ControlCreationInfo{"", "", ""}
+		panic("Unkown reference type")
 	}
 }
 

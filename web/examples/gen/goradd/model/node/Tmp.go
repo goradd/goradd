@@ -25,7 +25,7 @@ func (n *tmpNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.I())
 	return nodes
 }
-func (n *tmpNode) PrimaryKeyNode_() *query.ColumnNode {
+func (n *tmpNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.D()
 }
 func (n *tmpNode) EmbeddedNode_() query.NodeI {

@@ -1,7 +1,10 @@
 package dbtest
 
 import (
+	"bytes"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/stretchr/testify/assert"
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"
 	"testing"
@@ -55,4 +58,22 @@ func BenchmarkNodeType2(b *testing.B) {
 			_=r
 		}
 	}
+}
+
+func TestNodeSerialize(t *testing.T) {
+	var n query.NodeI = node.Person().FirstName()
+
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+
+	err := enc.Encode(&n)
+	assert.NoError(t, err)
+
+
+	var n2 query.NodeI
+	dec := gob.NewDecoder(&buf)
+	err = dec.Decode(&n2)
+	assert.NoError(t, err)
+
+	assert.True(t, n2.Equals(n))
 }

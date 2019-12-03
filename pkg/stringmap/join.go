@@ -6,7 +6,9 @@ func JoinStrings (m map[string]string, kvSep string, itemSep string) (ret string
 	if m == nil {
 		return ""
 	}
-	for k,v := range m {
+	keys := SortedKeys(m)
+	for _,k := range keys {
+		v := m[k]
 		if ret != "" {
 			ret += itemSep
 		}

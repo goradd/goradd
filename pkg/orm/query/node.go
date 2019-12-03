@@ -253,7 +253,7 @@ func NodeIsReferenceI(n NodeI) bool {
 // Return the primary key of a node, if it has a primary key. Otherwise return nil.
 func NodePrimaryKey(n NodeI) NodeI {
 	if tn, ok := n.(TableNodeI); ok {
-		return tn.PrimaryKeyNode_()
+		return tn.PrimaryKeyNode()
 	}
 	return nil
 }

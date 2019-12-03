@@ -28,7 +28,7 @@ func (n *loginNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.IsEnabled())
 	return nodes
 }
-func (n *loginNode) PrimaryKeyNode_() *query.ColumnNode {
+func (n *loginNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
 func (n *loginNode) EmbeddedNode_() query.NodeI {

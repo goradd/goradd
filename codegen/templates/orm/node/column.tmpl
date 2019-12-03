@@ -107,23 +107,24 @@ func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTa
 }
 
 for _,ref2 := range t.ReverseReferences {
-	assnTable := dd.Table(ref2.AssociatedTableName)
+	assnTable := ref2.AssociatedTable
 
-	if ref2.IsUnique {
+	if ref2.IsUnique() {
 
 {{
 // {{= ref2.GoName }} represents the one-to-one relationship formed by the reverse reference from the
-// {{= ref2.DbColumn }} column in the {{= ref2.DbTable }} table.
+// {{= ref2.DbColumn }} column in the {{= t.DbName }} table.
 func (n *{{privateName}}Node) {{= ref2.GoName }}() *{{= strings2.LcFirst(assnTable.GoName) }}Node  {
 
 	cn := &{{= strings2.LcFirst(assnTable.GoName) }}Node {
 		query.NewReverseReferenceNode (
 			"{{= t.DbKey }}",
-			"{{= ref2.DbTable }}",
+			"{{= t.DbName }}",
+			"{{= t.PrimaryKeyColumn().DbName }}",
 			"{{= ref2.DbColumn }}",
 			"{{= ref2.GoName }}",
-			"{{= ref2.AssociatedTableName }}",
-			"{{= ref2.AssociatedColumnName }}",
+			"{{= ref2.AssociatedTableName() }}",
+			"{{= ref2.AssociatedColumn.DbName }}",
 			false,
 		),
 	}
@@ -138,17 +139,18 @@ func (n *{{privateName}}Node) {{= ref2.GoName }}() *{{= strings2.LcFirst(assnTab
 {{
 
 // {{= ref2.GoPlural }} represents the many-to-one relationship formed by the reverse reference from the
-// {{= ref2.DbColumn }} column in the {{= ref2.DbTable }} table.
+// {{= ref2.DbColumn }} column in the {{= t.DbName }} table.
 func (n *{{privateName}}Node) {{= ref2.GoPlural }}() *{{= strings2.LcFirst(assnTable.GoName) }}Node  {
 
 	cn := &{{= strings2.LcFirst(assnTable.GoName) }}Node {
 		query.NewReverseReferenceNode (
 			"{{= t.DbKey }}",
-			"{{= ref2.DbTable }}",
+			"{{= t.DbName }}",
+			"{{= t.PrimaryKeyColumn().DbName }}",
 			"{{= ref2.DbColumn }}",
 			"{{= ref2.GoPlural }}",
-			"{{= ref2.AssociatedTableName }}",
-			"{{= ref2.AssociatedColumnName }}",
+			"{{= ref2.AssociatedTableName() }}",
+			"{{= ref2.AssociatedColumn.DbName }}",
 			true,
 		),
 	}

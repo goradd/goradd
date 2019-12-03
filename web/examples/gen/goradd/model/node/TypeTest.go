@@ -34,7 +34,7 @@ func (n *typeTestNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.TestVarchar())
 	return nodes
 }
-func (n *typeTestNode) PrimaryKeyNode_() *query.ColumnNode {
+func (n *typeTestNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
 func (n *typeTestNode) EmbeddedNode_() query.NodeI {

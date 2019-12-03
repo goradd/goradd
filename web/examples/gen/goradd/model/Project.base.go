@@ -8,6 +8,7 @@ import (
 
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/op"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/stringmap"
@@ -74,8 +75,9 @@ type projectBase struct {
 	spentIsDirty bool
 
 	// Reverse reference objects.
-	oMilestones []*Milestone          // Objects in the order they were queried
-	mMilestones map[string]*Milestone // Objects by PK
+	oMilestones        []*Milestone          // Objects in the order they were queried
+	mMilestones        map[string]*Milestone // Objects by PK
+	oMilestonesIsDirty bool
 
 	// Many-Many reference objects.
 	oChildrenAsParent []*Project
@@ -106,25 +108,25 @@ const (
 )
 
 const (
-	ProjectID                  = `ID`
-	ProjectNum                 = `Num`
-	ProjectProjectStatusTypeID = `ProjectStatusTypeID`
-	ProjectProjectStatusType   = `ProjectStatusType`
-	ProjectManagerID           = `ManagerID`
-	ProjectManager             = `Manager`
-	ProjectName                = `Name`
-	ProjectDescription         = `Description`
-	ProjectStartDate           = `StartDate`
-	ProjectEndDate             = `EndDate`
-	ProjectBudget              = `Budget`
-	ProjectSpent               = `Spent`
-	ProjectMilestones          = `Milestones`
-	ProjectChildAsParent       = `ChildAsParent`
-	ProjectChildrenAsParent    = `ChildrenAsParent`
-	ProjectParentAsChild       = `ParentAsChild`
-	ProjectParentsAsChild      = `ParentsAsChild`
-	ProjectTeamMember          = `TeamMember`
-	ProjectTeamMembers         = `TeamMembers`
+	Project_ID                  = `ID`
+	Project_Num                 = `Num`
+	Project_ProjectStatusTypeID = `ProjectStatusTypeID`
+	Project_ProjectStatusType   = `ProjectStatusType`
+	Project_ManagerID           = `ManagerID`
+	Project_Manager             = `Manager`
+	Project_Name                = `Name`
+	Project_Description         = `Description`
+	Project_StartDate           = `StartDate`
+	Project_EndDate             = `EndDate`
+	Project_Budget              = `Budget`
+	Project_Spent               = `Spent`
+	ProjectMilestones           = `Milestones`
+	ProjectChildAsParent        = `ChildAsParent`
+	ProjectChildrenAsParent     = `ChildrenAsParent`
+	ProjectParentAsChild        = `ParentAsChild`
+	ProjectParentsAsChild       = `ParentsAsChild`
+	ProjectTeamMember           = `TeamMember`
+	ProjectTeamMembers          = `TeamMembers`
 )
 
 // Initialize or re-initialize a Project database object to default values.
@@ -612,6 +614,27 @@ func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interfac
 	return o.oMilestones
 }
 
+// SetMilestones associates the given objects with the Project.
+// WARNING! If it has items already associated with it that will not be associated after a save,
+// those items will be DELETED since they cannot be null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing items
+// that are not currently attached to this Project.
+func (o *projectBase) SetMilestones(objs []*Milestone) {
+	for _, obj := range o.oMilestones {
+		if obj.IsDirty() {
+			panic("You cannot overwrite items that have changed but have not been saved.")
+		}
+	}
+
+	o.oMilestones = objs
+	for _, obj := range o.oMilestones {
+		pk := o.ID()
+		o.mMilestones[pk] = obj
+	}
+	o.oMilestonesIsDirty = true
+}
+
 // Load returns a Project from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
@@ -678,12 +701,11 @@ func (b *ProjectsBuilder) LoadI(ctx context.Context) (projectSlice []interface{}
 	return projectSlice
 }
 
-// Get is a convenience method to return only the first item found in a query. It is equivalent to adding
-// Limit(1,0) to the query, and then getting the first item from the returned slice.
-// Limits with joins do not currently work, so don't try it if you have a join
-// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
+// Get is a convenience method to return only the first item found in a query.
+// The entire query is performed, so you should generally use this only if you know
+// you are selecting on one or very few items.
 func (b *ProjectsBuilder) Get(ctx context.Context) *Project {
-	results := b.Limit(1, 0).Load(ctx)
+	results := b.Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -1093,6 +1115,7 @@ func (o *projectBase) load(m map[string]interface{}, linkParent bool, objThis *P
 				}
 				o.oMilestones = append(o.oMilestones, obj)
 				o.mMilestones[obj.PrimaryKey()] = obj
+				o.oMilestonesIsDirty = false
 			}
 		case db.ValueMap: // single expansion
 			obj := new(Milestone)
@@ -1101,11 +1124,13 @@ func (o *projectBase) load(m map[string]interface{}, linkParent bool, objThis *P
 				obj = objParent.(*Milestone)
 			}
 			o.oMilestones = []*Milestone{obj}
+			o.oMilestonesIsDirty = false
 		default:
 			panic("Wrong type found for oMilestones object.")
 		}
 	} else {
 		o.oMilestones = nil
+		o.oMilestonesIsDirty = false
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -1118,6 +1143,9 @@ func (o *projectBase) load(m map[string]interface{}, linkParent bool, objThis *P
 // If it has any auto-generated ids, those will be updated.
 func (o *projectBase) Save(ctx context.Context) {
 	if o._restored {
+		if !o.IsDirty() {
+			return
+		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -1134,9 +1162,32 @@ func (o *projectBase) Update(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
 	d.Update(ctx, "project", m, "id", fmt.Sprint(o.id))
+
+	if o.oMilestonesIsDirty {
+
+		// Since the other side of the relationship cannot be null, the objects to be detached must be deleted
+		// We take care to only delete objects that are not being reattached
+		objs := QueryMilestones(ctx).
+			Where(op.Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
+			Load(ctx)
+		// TODO: select only the required fields
+		for _, obj := range objs {
+			if _, ok := o.mMilestones[obj.PrimaryKey()]; !ok {
+				// The old object is not in the group of new objects
+				obj.Delete(ctx)
+			}
+		}
+		for _, obj := range o.oMilestones {
+			obj.SetProjectID(o.PrimaryKey())
+			obj.Save(ctx)
+		}
+	}
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "project", o.id, stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "project", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -1147,11 +1198,22 @@ func (o *projectBase) Insert(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
+
 	id := d.Insert(ctx, "project", m)
 	o.id = id
+	if o.oMilestonesIsDirty {
+
+		for _, obj := range o.oMilestones {
+			obj.SetProjectID(id)
+			obj.Save(ctx)
+		}
+	}
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "project", o.id)
+	broadcast.Insert(ctx, "goradd", "project", fmt.Sprint(o.id))
 }
 
 func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
@@ -1230,7 +1292,7 @@ func (o *projectBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "project", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "project", o.id)
+	broadcast.Delete(ctx, "goradd", "project", fmt.Sprintf("%v", o.id))
 }
 
 // deleteProject deletes the associated record from the database.
@@ -1251,6 +1313,8 @@ func (o *projectBase) resetDirtyStatus() {
 	o.endDateIsDirty = false
 	o.budgetIsDirty = false
 	o.spentIsDirty = false
+	o.oMilestonesIsDirty = false
+
 }
 
 func (o *projectBase) IsDirty() bool {
@@ -1263,7 +1327,8 @@ func (o *projectBase) IsDirty() bool {
 		o.startDateIsDirty ||
 		o.endDateIsDirty ||
 		o.budgetIsDirty ||
-		o.spentIsDirty
+		o.spentIsDirty ||
+		o.oMilestonesIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.

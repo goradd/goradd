@@ -41,12 +41,12 @@ func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
 }
 
 func (d *TitleBar) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
-    if d.title != "" {
+    if d.Title != "" {
 {{
-     <h5 id="{{= d.Parent().ID() }}_title" class="modal-title">{{= d.title }}</h5>
+     <h5 id="{{= d.Parent().ID() }}_title" class="modal-title">{{= d.Title }}</h5>
 }}
     }
-    if d.hasCloseBox {
+    if d.HasCloseBox {
 {{
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
       <span aria-hidden="true">&times;</span>

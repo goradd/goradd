@@ -1,17 +1,45 @@
-// createControls.tmpl
-{{
+
 // CreateControls creates the controls in the edit panel and adds them to the panel.
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     p.AddControls(ctx,
-{{for _,col := range t.Columns }}
-{{if col.Generator != nil && !col.IsPk}}
-        p.this().{{= col.ControlName }}Creator(),
-{{if}}
-{{for}}
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd == nil {continue}
+        if cd.Generator != nil && !col.IsPk {
+{{
+        p.this().{{= cd.ControlName }}Creator(),
+}}
+        }
+    }
+
+        for _,ref := range t.ReverseReferences {
+            cd := t.ControlDescription(ref)
+            if cd == nil {continue}
+            if cd.Generator != nil {
+    {{
+            p.this().{{= cd.ControlName }}Creator(),
+    }}
+            }
+
+        }
+/*
+        for _,ref := range t.ManyManyReferences {
+            cd := t.ControlDescription(ref)
+            if cd == nil {continue}
+            if cd.Generator != nil {
+    {{
+            p.this().{{= cd.ControlName }}Creator(),
+    }}
+            }
+
+        }
+*/
+}}
     )
 }
 
-}}
+
 
 /**
 
@@ -21,11 +49,40 @@ through the interface.
 
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     p.AddControls(ctx,
-{{for _,col := range t.Columns }}
-{{if col.Generator != nil && !col.IsPk}}
-        p.{{= col.ControlName }}Creator(),
-{{if}}
-{{for}}
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd == nil {continue}
+        if cd.Generator != nil && !col.IsPk {
+{{
+        p.{{= cd.ControlName }}Creator(),
+}}
+        }
+    }
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        p.{{= cd.ControlName }}Creator(),
+}}
+        }
+
+    }
+/*
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        p.{{= cd.ControlName }}Creator(),
+}}
+        }
+
+    }
+*/
+}}
     )
 }
 
@@ -33,26 +90,70 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 
 {{g
 
-
-for _,col := range t.Columns {
-    if col.Generator != nil && !col.IsPk {
-        creatorString := col.Generator.GenerateCreator(&col)
-        if creatorString != "" {
-            creatorString = generator.WrapFormField(col.DefaultLabel, col.ControlID, creatorString)
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd == nil {continue}
+        if cd.Generator != nil && !col.IsPk {
+            creatorString := cd.Generator.GenerateCreator(col, cd)
+            if creatorString != "" {
+                creatorString = generator.WrapFormField(cd.DefaultLabel, cd.ControlID, creatorString)
 
 {{
-func (p *{{= panelName }}) {{= col.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }} {
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }} {
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= col.ControlName }}() *{{= col.Import.Alias }}.{{= col.ControlType }} {
-	return p.Page().GetControl({{= col.ControlIDConst() }}).(*{{= col.Import.Alias }}.{{= col.ControlType }})
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import.Alias }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import.Alias }}.{{= cd.ControlType }})
+}
+
+}}
+            }
+        }
+    }
+
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil || cd.Generator == nil {continue}
+
+        creatorString := cd.Generator.GenerateCreator(ref, cd)
+        if creatorString != "" {
+            creatorString = generator.WrapFormField(cd.DefaultLabel, cd.ControlID, creatorString)
+
+{{
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }} {
+	return {{= creatorString }}
+}
+
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import.Alias }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import.Alias }}.{{= cd.ControlType }})
 }
 
 }}
         }
     }
+/*
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil || cd.Generator == nil {continue}
+
+        creatorString := cd.Generator.GenerateCreator(ref, cd)
+        if creatorString != "" {
+            creatorString = generator.WrapFormField(cd.DefaultLabel, cd.ControlID, creatorString)
+
+{{
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= generator.DefaultFormFieldCreator }} {
+	return {{= creatorString }}
 }
 
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import.Alias }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import.Alias }}.{{= cd.ControlType }})
+}
+
+}}
+        }
+    }
+*/
 }}
 

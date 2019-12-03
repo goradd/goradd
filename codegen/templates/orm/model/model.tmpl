@@ -17,14 +17,14 @@ type {{= t.GoName }} struct {
 }
 
 // Create a new {{= t.GoName }} object and initialize to default values.
-func New{{= t.GoName }}(ctx context.Context) *{{= t.GoName }} {
+func New{{= t.GoName }}() *{{= t.GoName }} {
 	o := new({{= t.GoName }})
-	o.Initialize(ctx)
+	o.Initialize()
 	return o
 }
 
 // Initialize or re-initialize a {{= t.GoName }} database object to default values.
-func (o *{{= t.GoName }}) Initialize(ctx context.Context) {
+func (o *{{= t.GoName }}) Initialize() {
 	o.{{= strings2.LcFirst(t.GoName) }}Base.Initialize()
     // Add your own initializations here
 }

@@ -55,20 +55,26 @@ func (b *Navbar) drawToggleButton(ctx context.Context, buf *bytes.Buffer) {
 
 func (b *Navbar) drawBrand(ctx context.Context, buf *bytes.Buffer) {
 	if b.Text() != "" {
+		if b.brandAnchor == "" {
 
-		buf.WriteString(`		<a class="navbar-brand" href="`)
-		if b.headerAnchor == "" {
-			buf.WriteString(`#`)
+			buf.WriteString(`                <span class="navbar-brand">`)
+			b.DrawText(ctx, buf)
+			buf.WriteString(`</span>
+           `)
+
 		} else {
 
-			buf.WriteString(b.headerAnchor)
+			buf.WriteString(`
+                 <a class="navbar-brand" href="`)
+
+			buf.WriteString(b.brandAnchor)
+
+			buf.WriteString(`">`)
+			b.DrawText(ctx, buf)
+			buf.WriteString(`</span>
+            `)
+
 		}
-
-		buf.WriteString(`">`)
-		b.DrawText(ctx, buf)
-		buf.WriteString(`</a>
-   `)
-
 	} else { // draw a blank brand so toggler placement still works
 
 		buf.WriteString(`

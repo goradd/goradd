@@ -108,6 +108,25 @@ func (cd *Column) DefaultValueAsConstant() string {
 	}
 }
 
+// ConvertFromString will return code that will convert the given varName, which should be a string type,
+// to the type of this column.
+//
+// This is incomplete, and can be built out more if needed
+func (cd *Column) ConvertFromString(varName string) string {
+	switch cd.ColumnType {
+	case ColTypeString:
+		return varName
+	case ColTypeInteger:
+		return fmt.Sprintf("func() int {i,_ := strconv.Atoi(%s); return i}()",varName)
+	case ColTypeInteger64:
+		return fmt.Sprintf("func() int64 {i,_ := strconv.Atoi(%s); return int64(i)}()",varName)
+	default:
+		panic("Not yet implemented. Implement this conversion.")
+	}
+	return cd.ModelName
+}
+
+
 func (cd *Column) JsonKey() string {
 	return cd.ModelName
 }

@@ -45,8 +45,8 @@ const (
 )
 
 const (
-	TmpD = `D`
-	TmpI = `I`
+	Tmp_D = `D`
+	Tmp_I = `I`
 )
 
 // Initialize or re-initialize a Tmp database object to default values.
@@ -187,12 +187,11 @@ func (b *TmpsBuilder) LoadI(ctx context.Context) (tmpSlice []interface{}) {
 	return tmpSlice
 }
 
-// Get is a convenience method to return only the first item found in a query. It is equivalent to adding
-// Limit(1,0) to the query, and then getting the first item from the returned slice.
-// Limits with joins do not currently work, so don't try it if you have a join
-// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
+// Get is a convenience method to return only the first item found in a query.
+// The entire query is performed, so you should generally use this only if you know
+// you are selecting on one or very few items.
 func (b *TmpsBuilder) Get(ctx context.Context) *Tmp {
-	results := b.Limit(1, 0).Load(ctx)
+	results := b.Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -355,6 +354,9 @@ func (o *tmpBase) load(m map[string]interface{}, linkParent bool, objThis *Tmp, 
 // If it has any auto-generated ids, those will be updated.
 func (o *tmpBase) Save(ctx context.Context) {
 	if o._restored {
+		if !o.IsDirty() {
+			return
+		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -371,9 +373,13 @@ func (o *tmpBase) Update(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
 	d.Update(ctx, "tmp", m, "d", fmt.Sprint(o.d))
+
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "tmp", o.d, stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "tmp", fmt.Sprintf("%v", o.d), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -384,10 +390,16 @@ func (o *tmpBase) Insert(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
+
 	d.Insert(ctx, "tmp", m)
+	id := o.PrimaryKey()
+	_ = id
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "tmp", o.d)
+	broadcast.Insert(ctx, "goradd", "tmp", fmt.Sprint(o.d))
 }
 
 func (o *tmpBase) getModifiedFields() (fields map[string]interface{}) {
@@ -410,7 +422,7 @@ func (o *tmpBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "tmp", "d", o.d)
-	broadcast.Delete(ctx, "goradd", "tmp", o.d)
+	broadcast.Delete(ctx, "goradd", "tmp", fmt.Sprintf("%v", o.d))
 }
 
 // deleteTmp deletes the associated record from the database.
@@ -423,6 +435,7 @@ func deleteTmp(ctx context.Context, pk string) {
 func (o *tmpBase) resetDirtyStatus() {
 	o.dIsDirty = false
 	o.iIsDirty = false
+
 }
 
 func (o *tmpBase) IsDirty() bool {

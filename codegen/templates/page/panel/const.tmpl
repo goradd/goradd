@@ -1,8 +1,31 @@
 
 const (
+
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd ==  nil {continue}
 {{
-{{for _,col := range t.Columns}}
-    {{= col.ControlIDConst() }} = "{{= col.ControlID }}"
-{{for}}
+    {{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
 }}
+    }
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd ==  nil {continue}
+{{
+    {{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
+}}
+    }
+
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd ==  nil {continue}
+{{
+    {{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
+}}
+    }
+
+}}
+
 )

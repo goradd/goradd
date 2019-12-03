@@ -1,7 +1,6 @@
 package dbtest
 
 import (
-	"context"
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/stretchr/testify/assert"
 	"goradd-project/gen/goradd/model"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestDateTimeType(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 
 	rec := model.LoadTypeTest(ctx, "1")
 

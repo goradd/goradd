@@ -4,6 +4,7 @@ import (
 	"fmt"
 	generator2 "github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/db"
 	generator3 "github.com/goradd/goradd/pkg/page/control/generator"
 )
 
@@ -24,7 +25,8 @@ func (d Textbox) Imports() []generator2.ImportPath {
 	}
 }
 
-func (d Textbox) GenerateCreator(col *generator2.ColumnType) (s string) {
+func (d Textbox) GenerateCreator(ref interface{}, desc *generator2.ControlDescription) (s string) {
+	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 		`bootstrapctrl.TextboxCreator{
 			ID:        %#v,
@@ -33,6 +35,6 @@ func (d Textbox) GenerateCreator(col *generator2.ColumnType) (s string) {
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, col.ControlID, col.MaxCharLength, !col.IsNullable, col.Connector)
+		}`, desc.ControlID, col.MaxCharLength, !col.IsNullable, desc.Connector)
 	return
 }

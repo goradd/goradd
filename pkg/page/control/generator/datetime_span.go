@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 func init() {
@@ -30,11 +32,16 @@ func (d DateTimeSpan) Imports() []generator.ImportPath {
 	}
 }
 
-func (d DateTimeSpan) SupportsColumn(col *generator.ColumnType) bool {
-	return true
+func (d DateTimeSpan) SupportsColumn(ref interface{}) bool {
+	if col,ok := ref.(*db.Column); ok &&
+		col.ColumnType == query.ColTypeDateTime {
+		return true
+	}
+	return false
 }
 
-func (d DateTimeSpan) GenerateCreator(col *generator.ColumnType) (s string) {
+func (d DateTimeSpan) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
+	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 `goraddctrl.DateTimeSpanCreator{
 	ID:        %#v,
@@ -42,16 +49,16 @@ func (d DateTimeSpan) GenerateCreator(col *generator.ColumnType) (s string) {
 		IsDisabled:	   %#v,
 		DataConnector: %s{},
 	},
-}`, col.ControlID, col.IsPk, col.Connector)
+}`, desc.ControlID, col.IsPk, desc.Connector)
 	return
 }
 
 
-func (d DateTimeSpan) GenerateRefresh(col *generator.ColumnType) (s string) {
+func (d DateTimeSpan) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetDateTime(val)`
 }
 
-func (d DateTimeSpan) GenerateUpdate(col *generator.ColumnType) (s string) {
+func (d DateTimeSpan) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return ""
 }
 

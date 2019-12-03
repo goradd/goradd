@@ -51,10 +51,10 @@ const (
 )
 
 const (
-	MilestoneID        = `ID`
-	MilestoneProjectID = `ProjectID`
-	MilestoneProject   = `Project`
-	MilestoneName      = `Name`
+	Milestone_ID        = `ID`
+	Milestone_ProjectID = `ProjectID`
+	Milestone_Project   = `Project`
+	Milestone_Name      = `Name`
 )
 
 // Initialize or re-initialize a Milestone database object to default values.
@@ -232,12 +232,11 @@ func (b *MilestonesBuilder) LoadI(ctx context.Context) (milestoneSlice []interfa
 	return milestoneSlice
 }
 
-// Get is a convenience method to return only the first item found in a query. It is equivalent to adding
-// Limit(1,0) to the query, and then getting the first item from the returned slice.
-// Limits with joins do not currently work, so don't try it if you have a join
-// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
+// Get is a convenience method to return only the first item found in a query.
+// The entire query is performed, so you should generally use this only if you know
+// you are selecting on one or very few items.
 func (b *MilestonesBuilder) Get(ctx context.Context) *Milestone {
-	results := b.Limit(1, 0).Load(ctx)
+	results := b.Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -433,6 +432,9 @@ func (o *milestoneBase) load(m map[string]interface{}, linkParent bool, objThis 
 // If it has any auto-generated ids, those will be updated.
 func (o *milestoneBase) Save(ctx context.Context) {
 	if o._restored {
+		if !o.IsDirty() {
+			return
+		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -449,9 +451,13 @@ func (o *milestoneBase) Update(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
 	d.Update(ctx, "milestone", m, "id", fmt.Sprint(o.id))
+
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "milestone", o.id, stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "milestone", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -462,11 +468,15 @@ func (o *milestoneBase) Insert(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
+
 	id := d.Insert(ctx, "milestone", m)
 	o.id = id
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "milestone", o.id)
+	broadcast.Insert(ctx, "goradd", "milestone", fmt.Sprint(o.id))
 }
 
 func (o *milestoneBase) getModifiedFields() (fields map[string]interface{}) {
@@ -493,7 +503,7 @@ func (o *milestoneBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "milestone", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "milestone", o.id)
+	broadcast.Delete(ctx, "goradd", "milestone", fmt.Sprintf("%v", o.id))
 }
 
 // deleteMilestone deletes the associated record from the database.
@@ -507,6 +517,7 @@ func (o *milestoneBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.projectIDIsDirty = false
 	o.nameIsDirty = false
+
 }
 
 func (o *milestoneBase) IsDirty() bool {

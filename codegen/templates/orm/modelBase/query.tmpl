@@ -86,12 +86,11 @@ func (b *{{builderName}}) LoadI(ctx context.Context) ({{t.LcGoName}}Slice []inte
 }
 
 
-// Get is a convenience method to return only the first item found in a query. It is equivalent to adding
-// Limit(1,0) to the query, and then getting the first item from the returned slice.
-// Limits with joins do not currently work, so don't try it if you have a join
-// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
+// Get is a convenience method to return only the first item found in a query.
+// The entire query is performed, so you should generally use this only if you know
+// you are selecting on one or very few items.
 func (b *{{builderName}}) Get(ctx context.Context) *{{t.GoName}} {
-	results := b.Limit(1,0).Load(ctx)
+	results := b.Load(ctx)
 	if results != nil && len(results) > 0 {
 	    obj := results[0]
 		return obj

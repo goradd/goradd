@@ -33,7 +33,7 @@ func (n *projectNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.Spent())
 	return nodes
 }
-func (n *projectNode) PrimaryKeyNode_() *query.ColumnNode {
+func (n *projectNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
 func (n *projectNode) EmbeddedNode_() query.NodeI {
@@ -274,7 +274,7 @@ func (n *projectNode) TeamMembers() *personNode {
 }
 
 // Milestones represents the many-to-one relationship formed by the reverse reference from the
-// id column in the project table.
+// milestones column in the project table.
 func (n *projectNode) Milestones() *milestoneNode {
 
 	cn := &milestoneNode{
@@ -282,6 +282,7 @@ func (n *projectNode) Milestones() *milestoneNode {
 			"goradd",
 			"project",
 			"id",
+			"milestones",
 			"Milestones",
 			"milestone",
 			"project_id",

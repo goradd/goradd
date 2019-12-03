@@ -226,7 +226,7 @@ func (m *Mysql5) generateJoinSql(b *sqlBuilder, j *joinTreeItem) (sql string, ar
 		sql = "LEFT JOIN "
 		sql += "`" + ReverseReferenceNodeRefTable(node) + "` AS `" +
 			j.alias + "` ON `" + j.parent.alias + "`.`" +
-			ReverseReferenceNodeDbColumnName(node) + "` = `" + j.alias + "`.`" + ReverseReferenceNodeRefColumn(node) + "`"
+			ReverseReferenceNodeKeyColumnName(node) + "` = `" + j.alias + "`.`" + ReverseReferenceNodeRefColumn(node) + "`"
 		if j.joinCondition != nil {
 			s, a := m.generateNodeSql(b, j.joinCondition, false)
 			sql += " AND " + s
@@ -248,7 +248,7 @@ func (m *Mysql5) generateJoinSql(b *sqlBuilder, j *joinTreeItem) (sql string, ar
 
 		sql += "`" + ManyManyNodeDbTable(node) + "` AS `" + j.alias + "a` ON `" +
 			j.parent.alias + "`.`" +
-			ColumnNodeDbName(ParentNode(node).(TableNodeI).PrimaryKeyNode_()) +
+			ColumnNodeDbName(ParentNode(node).(TableNodeI).PrimaryKeyNode()) +
 			"` = `" + j.alias + "a`.`" + ManyManyNodeDbColumn(node) + "`\n"
 		sql += "LEFT JOIN `" + ManyManyNodeRefTable(node) + "` AS `" + j.alias + "` ON `" + j.alias + "a`.`" + ManyManyNodeRefColumn(node) +
 			"` = `" + j.alias + "`.`" + pk + "`"
@@ -291,7 +291,7 @@ func (m *Mysql5) generateNodeSql(b *sqlBuilder, n NodeI, useAlias bool) (sql str
 		sql, args = m.generateSubquerySql(node)
 	case TableNodeI:
 		tj := b.getItemFromNode(node)
-		sql = m.generateColumnNodeSql(tj.alias, node.PrimaryKeyNode_())
+		sql = m.generateColumnNodeSql(tj.alias, node.PrimaryKeyNode())
 	default:
 		panic("Can't generate sql from node type.")
 	}

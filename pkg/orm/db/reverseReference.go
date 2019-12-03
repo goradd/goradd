@@ -11,16 +11,12 @@ import (
 // data in a table indicating the relationship. We create a ReverseReference during data analysis and include
 // it with the table description so that the table can know about the relationship and use it when doing queries.
 type ReverseReference struct {
-	// DbTable is the database table on the "one" end of the relationship. Its the table that the ReverseReference belongs to.
-	DbTable string
-	// DbColumn is the database column that is referred to from the many end. This is most likely the primary key of DbTable.
+	// DbColumn is only used in NoSQL databases, and is the name of a column that will hold the pk(s) of the referring column(s)
 	DbColumn string
 	// AssociatedTableName is the table on the "many" end that is pointing to the table containing the ReverseReference.
-	AssociatedTableName string
-	// AssociatedColumnName is the column on the "many" end that is pointing to the table containing the ReverseReference. It is a foreign-key.
-	AssociatedColumnName string
-	// AssociatedPkType is the go type of the primary key column of the AssociatedColumn
-	AssociatedPkType string
+	AssociatedTable *Table
+	// AssociatedColumn is the column on the "many" end that is pointing to the table containing the ReverseReference. It is a foreign-key.
+	AssociatedColumn *Column
 	// GoName is the name used to represent an object in the reverse relationship
 	GoName string
 	// GoPlural is the name used to represent the group of objects in the reverse relationship
@@ -29,33 +25,35 @@ type ReverseReference struct {
 	GoType string
 	// GoTypePlural is the plural of the type of object in the collection of "many" objects
 	GoTypePlural string
-	// IsUnique is true if the ReverseReference is unique. A unique reference creates a one-to-one relationship rather than one-to-many
-	IsUnique bool
-	//Options maps.SliceMap
-}
-
-func (r *ReverseReference) ObjName(dd *Database) string {
-	if r.IsUnique {
-		return dd.AssociatedObjectPrefix + r.GoName
-	} else {
-		return dd.AssociatedObjectPrefix + r.GoPlural
-	}
-}
-
-func (r *ReverseReference) MapName() string {
-	if r.IsUnique {
-		return "" // no map
-	} else {
-		return "m" + r.GoPlural
-	}
+	// Values are freeform values available to the code generation process
+	Values map[string]string
 }
 
 // AssociatedGoName returns the name of the column that is pointing back to us. The name returned
 // is the Go name that we could use to name the referenced object.
 func (r *ReverseReference) AssociatedGoName() string {
-	return UpperCaseIdentifier(r.AssociatedColumnName)
+	return UpperCaseIdentifier(r.AssociatedColumn.DbName)
 }
 
 func (r *ReverseReference) JsonKey(dd *Database) string {
-	return LowerCaseIdentifier(strings.TrimSuffix(r.AssociatedColumnName, dd.ForeignKeySuffix))
+	return LowerCaseIdentifier(strings.TrimSuffix(r.AssociatedColumn.DbName, dd.ForeignKeySuffix))
 }
+
+func (r *ReverseReference) IsUnique() bool {
+	return r.AssociatedColumn.IsUnique
+}
+
+func (r *ReverseReference) IsNullable() bool {
+	return r.AssociatedColumn.IsNullable
+}
+
+func (r *ReverseReference) AssociatedTableName() string {
+	return r.AssociatedTable.DbName
+}
+
+func (r *ReverseReference) AssociatedPkType() string {
+	return r.AssociatedTable.PrimaryKeyColumn().ColumnType.GoType()
+
+}
+
+

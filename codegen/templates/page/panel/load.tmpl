@@ -1,12 +1,20 @@
 {{
 // Load reads a new record from the database and loads the edit controls with the information found. pk is the primary key
 // of the record.
-func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
+func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error {
 
-	if pk == "" {
-		p.{{= t.GoName }} = model.New{{= t.GoName }}(ctx)
+	if pk == {{= t.PrimaryKeyColumn().DefaultValueAsConstant() }} {
+		p.{{= t.GoName }} = model.New{{= t.GoName }}()
 	} else {
-		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk)
+		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk,
+{{for _,rr := range t.ReverseReferences}}
+    {{if rr.IsUnique() }}
+            node.{{= t.GoName}}().{{= rr.GoName}}(),
+    {{else}}
+            node.{{= t.GoName}}().{{= rr.GoPlural}}(),
+    {{if}}
+{{for}}
+		)
 
 		if p.{{= t.GoName }} == nil {
 			d := control.Alert(p.ParentForm(), p.ParentForm().GT("The record was not found. Perhaps it was recently deleted by someone else."), "OK")
@@ -27,7 +35,7 @@ func (p *{{= panelName }}) Refresh() {
     })
 }
 
-// Update loads the the cached {{= t.GoName }} object with data from the controls.
+// Update loads the cached {{= t.GoName }} object with data from the controls.
 func (p *{{= panelName }}) Update() {
     p.RangeAllChildren(func(ctrl page.ControlI) {
         ctrl.UpdateData(p.{{= t.GoName }})

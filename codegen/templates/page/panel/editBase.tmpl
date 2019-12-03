@@ -13,8 +13,14 @@ package panel
 import(
 	"github.com/goradd/goradd/pkg/page"
 	"context"
+    "encoding/gob"
 	"goradd-project/gen/{{dd.DbKey}}/connector"
 	"goradd-project/gen/{{dd.DbKey}}/model"
+
+{{if len(t.ReverseReferences) > 0}}
+	"goradd-project/gen/{{dd.DbKey}}/model/node"
+{{if}}
+
 {{for _,imp := range t.Imports}}
 {{if imp.Primary }}
 {{if imp.Alias == ""}}

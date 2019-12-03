@@ -3,18 +3,20 @@
 // The template for the connector classes
 
 for _,col := range t.Columns {
-    if col.Generator != nil {
-        sRefresh := col.Generator.GenerateRefresh(&col)
-        sUpdate := col.Generator.GenerateUpdate(&col)
+    cd := t.ControlDescription(col)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+        sRefresh := cd.Generator.GenerateRefresh(col, cd)
+        sUpdate := cd.Generator.GenerateUpdate(col, cd)
 
 
 {{
-type {{= col.Connector }}  struct {
+type {{= cd.Connector }}  struct {
 }
 
-func (c {{= col.Connector }}) Refresh(i page.ControlI, data interface{}) {
+func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if sRefresh != ""}}
-    if ctrl, ok := i.(*{{= col.Import.Alias}}.{{= col.ControlType}}); ok {
+    if ctrl, ok := i.(*{{= cd.Import.Alias}}.{{= cd.ControlType}}); ok {
 {{if col.IsReference() && col.ForeignKey.IsType}}
         val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction(dd) }}().ID()
 {{else}}
@@ -25,9 +27,9 @@ func (c {{= col.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if}}
 }
 
-func (c {{= col.Connector }}) Update(i page.ControlI, data interface{}) {
+func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
-   if ctrl, ok := i.(*{{= col.Import.Alias}}.{{= col.ControlType}}); ok {
+   if ctrl, ok := i.(*{{= cd.Import.Alias}}.{{= cd.ControlType}}); ok {
         {{= sUpdate }}
 {{if col.IsReference() && col.ForeignKey.IsType}}
         data.(*model.{{= t.GoName }}).Set{{= col.ReferenceFunction(dd) }}(model.{{= col.ForeignKey.GoType }}(val))
@@ -40,10 +42,10 @@ func (c {{= col.Connector }}) Update(i page.ControlI, data interface{}) {
 
 }}
 
-        if provider,ok := col.Generator.(generator.ProviderGenerator); ok {
+        if provider,ok := cd.Generator.(generator.ProviderGenerator); ok {
 {{
-func (c {{= col.Connector }}) Load(ctx context.Context) []interface{} {
-{{= provider.GenerateProvider(&col) }}
+func (c {{= cd.Connector }}) Load(ctx context.Context) []interface{} {
+{{= provider.GenerateProvider(col, cd) }}
 }
 
 }}
@@ -51,7 +53,7 @@ func (c {{= col.Connector }}) Load(ctx context.Context) []interface{} {
 
 {{
 func init() {
-	gob.Register(&{{= col.Connector }}{})
+	gob.Register(&{{= cd.Connector }}{})
 }
 
 }}
@@ -61,4 +63,60 @@ func init() {
 
 }
 
+// Reverse References
 
+for _,rr := range t.ReverseReferences {
+    cd := t.ControlDescription(rr)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+        sRefresh := cd.Generator.GenerateRefresh(rr, cd)
+        sUpdate := cd.Generator.GenerateUpdate(rr, cd)
+
+
+{{
+type {{= cd.Connector }}  struct {
+}
+
+func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
+{{if sRefresh != ""}}
+    if ctrl, ok := i.(*{{= cd.Import.Alias}}.{{= cd.ControlType}}); ok {
+        {{if rr.IsUnique() }}
+            object := data.(*model.{{= t.GoName }}).{{= rr.GoName }}()
+        {{else}}
+            objects := data.(*model.{{= t.GoName }}).{{= rr.GoPlural }}()
+        {{if}}
+        {{= sRefresh }}
+    }
+{{if}}
+}
+
+func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
+{{if sUpdate != ""}}
+   if ctrl, ok := i.(*{{= cd.Import.Alias}}.{{= cd.ControlType}}); ok {
+        {{= sUpdate }}
+   }
+{{if}}
+}
+
+}}
+
+    if provider,ok := cd.Generator.(generator.ProviderGenerator); ok {
+{{
+func (c {{= cd.Connector }}) Load(ctx context.Context) []interface{} {
+{{= provider.GenerateProvider(rr, cd) }}
+}
+
+}}
+    }
+
+{{
+func init() {
+	gob.Register(&{{= cd.Connector }}{})
+}
+
+}}
+
+    }
+
+
+}

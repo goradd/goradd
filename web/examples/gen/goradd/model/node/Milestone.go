@@ -26,7 +26,7 @@ func (n *milestoneNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.Name())
 	return nodes
 }
-func (n *milestoneNode) PrimaryKeyNode_() *query.ColumnNode {
+func (n *milestoneNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
 func (n *milestoneNode) EmbeddedNode_() query.NodeI {

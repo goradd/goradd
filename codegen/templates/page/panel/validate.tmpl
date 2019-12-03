@@ -5,6 +5,8 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
 
 {{g
     if t.Indexes != nil {
+        pkcol := t.PrimaryKeyColumn()
+        pkdesc := t.ControlDescription(pkcol)
         for _,idx := range t.Indexes {
             if idx.IsUnique {
                 var columns []*generator.ColumnType
@@ -18,13 +20,14 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
                     columns = append(columns, col)
                     names += col.GoName
                 }
+
 {{
-    if p.{{= columns[0].ControlName }} != nil {{for _,col := range columns[1:]}} && p.{{= col.ControlName }} != nil {{for}}{
-        obj := model.Load{{t.GoName}}By{{= names}}(ctx, p.{{= columns[0].ControlName}}.Value().({{= columns[0].ColumnType.GoType() }}){{for _,col := range columns[1:]}}, p.{{= col.ControlName }}.Value().({{= col.ColumnType.GoType() }}){{for}})
-		if obj != nil && obj.{{= t.PrimaryKeyColumn().GoName}}() != p.Connector.{{t.GoName}}.{{= t.PrimaryKeyColumn().GoName}}() {
+    if p.{{= pkdesc.ControlName }} != nil {{for _,col := range columns[1:]}} && p.{{= t.ControlDescription(col).ControlName }} != nil {{for}}{
+        obj := model.Load{{t.GoName}}By{{= names}}(ctx, p.{{= pkdesc.ControlName}}.Value().({{= pkcol.ColumnType.GoType() }}){{for _,col := range columns[1:]}}, p.{{= t.ControlDescription(col).ControlName }}.Value().({{= col.ColumnType.GoType() }}){{for}})
+		if obj != nil && obj.{{= pkcol.GoName}}() != p.Connector.{{t.GoName}}.{{= t.PrimaryKeyColumn().GoName}}() {
 			isValid = false
 {{for _,col := range columns}}
-			p.{{= col.ControlName }}.SetValidationError(p.GT("This value is already in use, please choose a different one."))
+			p.{{= t.ControlDescription(col).ControlName }}.SetValidationError(p.GT("This value is already in use, please choose a different one."))
 {{for}}
 		}
     }

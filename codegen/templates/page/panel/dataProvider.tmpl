@@ -7,19 +7,21 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s goraddctrl.DataManage
 
 {{g
 for _,col := range t.Columns {
-    if col.Generator != nil {
-        if _, ok := col.Generator.(generator.ProviderGenerator); ok {
+    cd := t.ControlDescription(col)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+        if _, ok := cd.Generator.(generator.ProviderGenerator); ok {
 {{
-    case "{{= col.ControlID }}":
+    case "{{= cd.ControlID }}":
         var items []interface{}
 {{if col.IsNullable}}
         items = control.NoSelectionItemList()
 {{else}}
-{{if col.IsReference() && col.ForeignKey.IsType}}
+    {{if col.IsReference() && col.ForeignKey.IsType}}
         if int(p.{{= t.GoName }}.{{= col.ReferenceFunction(dd) }}()) == 0 {
-{{else}}
+    {{else}}
         if p.{{= t.GoName }}.{{= col.GoName }}() == {{= col.ColumnType.DefaultValue() }} {
-{{if}}
+    {{if}}
             items = control.SelectOneItemList()
         }
 {{if}}
@@ -29,6 +31,21 @@ for _,col := range t.Columns {
         }
     }
 }
+
+for _,rr := range t.ReverseReferences {
+    cd := t.ControlDescription(rr)
+    if cd == nil || cd.Generator == nil {continue}
+    if _, ok := cd.Generator.(generator.ProviderGenerator); ok {
+{{
+    case "{{= cd.ControlID }}":
+        var items []interface{}
+        items = append(items, s.DataConnector().(page.DataLoader).Load(ctx)...)
+        s.SetData(items)
+}}
+    }
+}
+
+
 }}
     }
 }

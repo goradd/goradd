@@ -1,7 +1,6 @@
 package dbtest
 
 import (
-	"context"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/stretchr/testify/assert"
 	"goradd-project/gen/goradd/model"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestSubquery(t *testing.T) {
-	ctx := context.Background()
+	ctx := getContext()
 	people := model.QueryPeople(ctx).
 		Alias("manager_count",
 			model.QueryProjects(ctx).

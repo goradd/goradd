@@ -276,7 +276,7 @@ type ControlBase struct {
 	// attributes are the collection of custom attributes to apply to the control. This does not include all the
 	// attributes that will be drawn, as some are added temporarily just before drawing by GetDrawingAttributes()
 	attributes html.Attributes
-	// test is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
+	// text is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
 	text string
 	// textLabelMode describes how to draw the internal label
 	textLabelMode html.LabelDrawingMode
@@ -394,11 +394,11 @@ func (c *ControlBase) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 		form == nil ||
 		c.Page() != form.Page() {
 
-		return NewError(ctx, "The control can not be drawn because it is not a member of a form that is on the override.")
+		return NewError(ctx, fmt.Sprintf("Control %s can not be drawn because it is not a member of a form that is on the override.", c.ID()))
 	}
 
 	if c.wasRendered || c.isRendering {
-		return NewError(ctx, "This control has already been drawn.")
+		return NewError(ctx, fmt.Sprintf("Control %s has already been drawn.", c.ID()))
 	}
 
 	// Because we may be rerendering a parent control, we need to make sure all "child" controls are marked as NOT being on the form

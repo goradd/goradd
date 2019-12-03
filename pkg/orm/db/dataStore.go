@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/strings"
 )
 
 // The dataStore is the central database collection used in codegeneration and the orm.
@@ -52,6 +53,9 @@ type DatabaseI interface {
 
 // AddDatabase adds a database to the global database store. Only call this during app startup.
 func AddDatabase(d DatabaseI, key string) {
+	if !strings.HasOnlyLetters(key) {
+		panic("data keys can only have letters in them. They are used in titles of variables. Please change " + key)
+	}
 	if datastore.databases == nil {
 		datastore.databases = NewDatabaseISliceMap()
 	}

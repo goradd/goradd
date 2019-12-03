@@ -101,17 +101,17 @@ const (
 )
 
 const (
-	TypeTestID          = `ID`
-	TypeTestDate        = `Date`
-	TypeTestTime        = `Time`
-	TypeTestDateTime    = `DateTime`
-	TypeTestTs          = `Ts`
-	TypeTestTestInt     = `TestInt`
-	TypeTestTestFloat   = `TestFloat`
-	TypeTestTestDouble  = `TestDouble`
-	TypeTestTestText    = `TestText`
-	TypeTestTestBit     = `TestBit`
-	TypeTestTestVarchar = `TestVarchar`
+	TypeTest_ID          = `ID`
+	TypeTest_Date        = `Date`
+	TypeTest_Time        = `Time`
+	TypeTest_DateTime    = `DateTime`
+	TypeTest_Ts          = `Ts`
+	TypeTest_TestInt     = `TestInt`
+	TypeTest_TestFloat   = `TestFloat`
+	TypeTest_TestDouble  = `TestDouble`
+	TypeTest_TestText    = `TestText`
+	TypeTest_TestBit     = `TestBit`
+	TypeTest_TestVarchar = `TestVarchar`
 )
 
 // Initialize or re-initialize a TypeTest database object to default values.
@@ -616,12 +616,11 @@ func (b *TypeTestsBuilder) LoadI(ctx context.Context) (typeTestSlice []interface
 	return typeTestSlice
 }
 
-// Get is a convenience method to return only the first item found in a query. It is equivalent to adding
-// Limit(1,0) to the query, and then getting the first item from the returned slice.
-// Limits with joins do not currently work, so don't try it if you have a join
-// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
+// Get is a convenience method to return only the first item found in a query.
+// The entire query is performed, so you should generally use this only if you know
+// you are selecting on one or very few items.
 func (b *TypeTestsBuilder) Get(ctx context.Context) *TypeTest {
-	results := b.Limit(1, 0).Load(ctx)
+	results := b.Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -984,6 +983,9 @@ func (o *typeTestBase) load(m map[string]interface{}, linkParent bool, objThis *
 // If it has any auto-generated ids, those will be updated.
 func (o *typeTestBase) Save(ctx context.Context) {
 	if o._restored {
+		if !o.IsDirty() {
+			return
+		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -1000,9 +1002,13 @@ func (o *typeTestBase) Update(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
 	d.Update(ctx, "type_test", m, "id", fmt.Sprint(o.id))
+
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "type_test", o.id, stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "type_test", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -1013,11 +1019,15 @@ func (o *typeTestBase) Insert(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
+
 	id := d.Insert(ctx, "type_test", m)
 	o.id = id
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "type_test", o.id)
+	broadcast.Insert(ctx, "goradd", "type_test", fmt.Sprint(o.id))
 }
 
 func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
@@ -1112,7 +1122,7 @@ func (o *typeTestBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "type_test", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "type_test", o.id)
+	broadcast.Delete(ctx, "goradd", "type_test", fmt.Sprintf("%v", o.id))
 }
 
 // deleteTypeTest deletes the associated record from the database.
@@ -1134,6 +1144,7 @@ func (o *typeTestBase) resetDirtyStatus() {
 	o.testTextIsDirty = false
 	o.testBitIsDirty = false
 	o.testVarcharIsDirty = false
+
 }
 
 func (o *typeTestBase) IsDirty() bool {
