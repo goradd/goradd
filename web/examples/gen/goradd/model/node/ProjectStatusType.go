@@ -21,7 +21,7 @@ func (n *projectStatusTypeNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	return nodes
 }
 
-func (n *projectStatusTypeNode) PrimaryKeyNode_() (*query.ColumnNode) {
+func (n *projectStatusTypeNode) PrimaryKeyNode() (*query.ColumnNode) {
 	return n.ID()
 }
 

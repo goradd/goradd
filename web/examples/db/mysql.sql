@@ -1,16 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 4.7.6
+-- version 4.9.0.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Jan 24, 2019 at 11:47 AM
--- Server version: 5.6.34
--- PHP Version: 7.1.9
+-- Generation Time: Dec 03, 2019 at 08:03 PM
+-- Server version: 5.7.28
+-- PHP Version: 7.2.19
 
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
 SET time_zone = "+00:00";
 
 --
@@ -24,10 +22,10 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `address` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `person_id` int(10) UNSIGNED DEFAULT NULL,
-  `street` varchar(100) NOT NULL,
-  `city` varchar(100) DEFAULT NULL
+                           `id` int(11) UNSIGNED NOT NULL,
+                           `person_id` int(11) UNSIGNED NOT NULL,
+                           `street` varchar(100) NOT NULL,
+                           `city` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -46,15 +44,27 @@ INSERT INTO `address` (`id`, `person_id`, `street`, `city`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `employee_info`
+--
+
+CREATE TABLE `employee_info` (
+                                 `id` int(11) NOT NULL,
+                                 `person_id` int(11) UNSIGNED NOT NULL,
+                                 `employee_number` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `login`
 --
 
 CREATE TABLE `login` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `person_id` int(10) UNSIGNED DEFAULT NULL,
-  `username` varchar(20) NOT NULL,
-  `password` varchar(20) DEFAULT NULL,
-  `is_enabled` tinyint(1) NOT NULL
+                         `id` int(11) UNSIGNED NOT NULL,
+                         `person_id` int(11) UNSIGNED DEFAULT NULL,
+                         `username` varchar(20) NOT NULL,
+                         `password` varchar(20) DEFAULT NULL,
+                         `is_enabled` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -75,9 +85,9 @@ INSERT INTO `login` (`id`, `person_id`, `username`, `password`, `is_enabled`) VA
 --
 
 CREATE TABLE `milestone` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `project_id` int(10) UNSIGNED NOT NULL,
-  `name` varchar(50) NOT NULL
+                             `id` int(10) UNSIGNED NOT NULL,
+                             `project_id` int(10) UNSIGNED NOT NULL,
+                             `name` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -103,9 +113,9 @@ INSERT INTO `milestone` (`id`, `project_id`, `name`) VALUES
 --
 
 CREATE TABLE `person` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `first_name` varchar(50) NOT NULL,
-  `last_name` varchar(50) NOT NULL
+                          `id` int(11) UNSIGNED NOT NULL,
+                          `first_name` varchar(50) NOT NULL,
+                          `last_name` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -133,8 +143,8 @@ INSERT INTO `person` (`id`, `first_name`, `last_name`) VALUES
 --
 
 CREATE TABLE `person_persontype_assn` (
-  `person_id` int(10) UNSIGNED NOT NULL,
-  `person_type_id` int(10) UNSIGNED NOT NULL
+                                          `person_id` int(11) UNSIGNED NOT NULL,
+                                          `person_type_id` int(11) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -162,8 +172,8 @@ INSERT INTO `person_persontype_assn` (`person_id`, `person_type_id`) VALUES
 --
 
 CREATE TABLE `person_type` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `name` varchar(50) NOT NULL
+                               `id` int(11) UNSIGNED NOT NULL,
+                               `name` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -184,10 +194,10 @@ INSERT INTO `person_type` (`id`, `name`) VALUES
 --
 
 CREATE TABLE `person_with_lock` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `first_name` varchar(50) NOT NULL,
-  `last_name` varchar(50) NOT NULL,
-  `sys_timestamp` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+                                    `id` int(11) UNSIGNED NOT NULL,
+                                    `first_name` varchar(50) NOT NULL,
+                                    `last_name` varchar(50) NOT NULL,
+                                    `sys_timestamp` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -215,16 +225,16 @@ INSERT INTO `person_with_lock` (`id`, `first_name`, `last_name`, `sys_timestamp`
 --
 
 CREATE TABLE `project` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `num` int(11) NOT NULL COMMENT 'To simplify checking test results and as a non pk id test',
-  `project_status_type_id` int(10) UNSIGNED NOT NULL,
-  `manager_id` int(10) UNSIGNED DEFAULT NULL,
-  `name` varchar(100) NOT NULL,
-  `description` text,
-  `start_date` date DEFAULT NULL,
-  `end_date` date DEFAULT NULL,
-  `budget` decimal(12,2) DEFAULT NULL,
-  `spent` decimal(12,2) DEFAULT NULL
+                           `id` int(11) UNSIGNED NOT NULL,
+                           `num` int(11) NOT NULL COMMENT 'To simplify checking test results and as a non pk id test',
+                           `project_status_type_id` int(11) UNSIGNED NOT NULL,
+                           `manager_id` int(11) UNSIGNED DEFAULT NULL,
+                           `name` varchar(100) NOT NULL,
+                           `description` text,
+                           `start_date` date DEFAULT NULL,
+                           `end_date` date DEFAULT NULL,
+                           `budget` decimal(12,2) DEFAULT NULL,
+                           `spent` decimal(12,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -244,11 +254,11 @@ INSERT INTO `project` (`id`, `num`, `project_status_type_id`, `manager_id`, `nam
 --
 
 CREATE TABLE `project_status_type` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `description` text,
-  `guidelines` text,
-  `is_active` tinyint(1) NOT NULL
+                                       `id` int(11) UNSIGNED NOT NULL,
+                                       `name` varchar(50) NOT NULL,
+                                       `description` text,
+                                       `guidelines` text,
+                                       `is_active` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -258,7 +268,8 @@ CREATE TABLE `project_status_type` (
 INSERT INTO `project_status_type` (`id`, `name`, `description`, `guidelines`, `is_active`) VALUES
 (1, 'Open', 'The project is currently active', 'All projects that we are working on should be in this state', 1),
 (2, 'Cancelled', 'The project has been canned', NULL, 1),
-(3, 'Completed', 'The project has been completed successfully', 'Celebrate successes!', 1);
+(3, 'Completed', 'The project has been completed successfully', 'Celebrate successes!', 1),
+(4, 'Planned', 'Project is in the planning stages and has not been assigned a manager', 'Get ready', 0);
 
 -- --------------------------------------------------------
 
@@ -267,8 +278,8 @@ INSERT INTO `project_status_type` (`id`, `name`, `description`, `guidelines`, `i
 --
 
 CREATE TABLE `related_project_assn` (
-  `parent_id` int(10) UNSIGNED NOT NULL,
-  `child_id` int(10) UNSIGNED NOT NULL
+                                        `parent_id` int(11) UNSIGNED NOT NULL,
+                                        `child_id` int(11) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -287,8 +298,8 @@ INSERT INTO `related_project_assn` (`parent_id`, `child_id`) VALUES
 --
 
 CREATE TABLE `team_member_project_assn` (
-  `team_member_id` int(10) UNSIGNED NOT NULL,
-  `project_id` int(10) UNSIGNED NOT NULL
+                                            `team_member_id` int(11) UNSIGNED NOT NULL,
+                                            `project_id` int(11) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -327,8 +338,8 @@ INSERT INTO `team_member_project_assn` (`team_member_id`, `project_id`) VALUES
 --
 
 CREATE TABLE `tmp` (
-  `d` decimal(5,2) NOT NULL,
-  `i` smallint(5) NOT NULL
+                       `d` decimal(5,2) NOT NULL,
+                       `i` smallint(5) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -345,11 +356,11 @@ INSERT INTO `tmp` (`d`, `i`) VALUES
 --
 
 CREATE TABLE `two_key` (
-  `server` varchar(50) NOT NULL,
-  `directory` varchar(50) NOT NULL,
-  `file_name` varchar(50) NOT NULL,
-  `person_id` int(11) UNSIGNED NOT NULL,
-  `project_id` int(11) UNSIGNED DEFAULT NULL
+                           `server` varchar(50) NOT NULL,
+                           `directory` varchar(50) NOT NULL,
+                           `file_name` varchar(50) NOT NULL,
+                           `person_id` int(11) UNSIGNED NOT NULL,
+                           `project_id` int(11) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -371,24 +382,25 @@ INSERT INTO `two_key` (`server`, `directory`, `file_name`, `person_id`, `project
 --
 
 CREATE TABLE `type_test` (
-  `id` int(11) NOT NULL,
-  `date` date DEFAULT NULL,
-  `time` time DEFAULT NULL,
-  `date_time` datetime DEFAULT NULL,
-  `ts` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `test_int` int(11) DEFAULT '5',
-  `test_float` float DEFAULT NULL,
-  `test_text` text,
-  `test_bit` tinyint(1) DEFAULT NULL,
-  `test_varchar` varchar(10) DEFAULT NULL
+                             `id` int(11) NOT NULL,
+                             `date` date DEFAULT NULL,
+                             `time` time DEFAULT NULL,
+                             `date_time` datetime DEFAULT NULL,
+                             `ts` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                             `test_int` int(11) DEFAULT '5',
+                             `test_float` float DEFAULT NULL,
+                             `test_double` double NOT NULL,
+                             `test_text` text,
+                             `test_bit` tinyint(1) DEFAULT NULL,
+                             `test_varchar` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `type_test`
 --
 
-INSERT INTO `type_test` (`id`, `date`, `time`, `date_time`, `ts`, `test_int`, `test_float`, `test_text`, `test_bit`, `test_varchar`) VALUES
-(1, '2019-01-02', '06:17:28', '2019-01-02 06:17:28', '2019-01-23 08:52:06', 5, 1.2, 'Sample', 1, 'Sample');
+INSERT INTO `type_test` (`id`, `date`, `time`, `date_time`, `ts`, `test_int`, `test_float`, `test_double`, `test_text`, `test_bit`, `test_varchar`) VALUES
+(1, '2019-01-02', '06:17:28', '2019-01-02 06:17:28', '2019-01-23 08:52:06', 5, 1.2, 3.33, 'Sample', 1, 'Sample');
 
 -- --------------------------------------------------------
 
@@ -397,24 +409,24 @@ INSERT INTO `type_test` (`id`, `date`, `time`, `date_time`, `ts`, `test_int`, `t
 --
 
 CREATE TABLE `unsupported_types` (
-  `type_set` set('a','b','c') NOT NULL,
-  `type_enum` enum('a','b','c') NOT NULL,
-  `type_decimal` decimal(10,4) NOT NULL,
-  `type_double` double NOT NULL,
-  `type_geo` geometry NOT NULL,
-  `type_tiny_blob` tinyblob NOT NULL,
-  `type_medium_blob` mediumblob NOT NULL,
-  `type_varbinary` varbinary(10) NOT NULL,
-  `type_longtext` longtext NOT NULL,
-  `type_binary` binary(10) NOT NULL,
-  `type_small` smallint(6) NOT NULL,
-  `type_medium` mediumint(9) NOT NULL,
-  `type_big` bigint(20) NOT NULL,
-  `type_polygon` polygon NOT NULL,
-  `type_serial` bigint(20) UNSIGNED NOT NULL,
-  `type_unsigned` int(10) UNSIGNED NOT NULL,
-  `type_multFk1` varchar(50) NOT NULL,
-  `type_multiFk2` varchar(50) NOT NULL
+                                     `type_set` set('a','b','c') NOT NULL,
+                                     `type_enum` enum('a','b','c') NOT NULL,
+                                     `type_decimal` decimal(10,4) NOT NULL,
+                                     `type_double` double NOT NULL,
+                                     `type_geo` geometry NOT NULL,
+                                     `type_tiny_blob` tinyblob NOT NULL,
+                                     `type_medium_blob` mediumblob NOT NULL,
+                                     `type_varbinary` varbinary(10) NOT NULL,
+                                     `type_longtext` longtext NOT NULL,
+                                     `type_binary` binary(10) NOT NULL,
+                                     `type_small` smallint(6) NOT NULL,
+                                     `type_medium` mediumint(9) NOT NULL,
+                                     `type_big` bigint(20) NOT NULL,
+                                     `type_polygon` polygon NOT NULL,
+                                     `type_serial` bigint(20) UNSIGNED NOT NULL,
+                                     `type_unsigned` int(10) UNSIGNED NOT NULL,
+                                     `type_multFk1` varchar(50) NOT NULL,
+                                     `type_multiFk2` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -425,107 +437,114 @@ CREATE TABLE `unsupported_types` (
 -- Indexes for table `address`
 --
 ALTER TABLE `address`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `IDX_address_1` (`person_id`);
+    ADD PRIMARY KEY (`id`),
+    ADD KEY `IDX_address_1` (`person_id`);
+
+--
+-- Indexes for table `employee_info`
+--
+ALTER TABLE `employee_info`
+    ADD PRIMARY KEY (`id`),
+    ADD UNIQUE KEY `person_id` (`person_id`);
 
 --
 -- Indexes for table `login`
 --
 ALTER TABLE `login`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `IDX_login_2` (`username`),
-  ADD UNIQUE KEY `IDX_login_1` (`person_id`);
+    ADD PRIMARY KEY (`id`),
+    ADD UNIQUE KEY `IDX_login_2` (`username`),
+    ADD UNIQUE KEY `IDX_login_1` (`person_id`);
 
 --
 -- Indexes for table `milestone`
 --
 ALTER TABLE `milestone`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `IDX_milestoneproj_1` (`project_id`);
+    ADD PRIMARY KEY (`id`),
+    ADD KEY `IDX_milestoneproj_1` (`project_id`);
 
 --
 -- Indexes for table `person`
 --
 ALTER TABLE `person`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `IDX_person_1` (`last_name`);
+    ADD PRIMARY KEY (`id`),
+    ADD KEY `IDX_person_1` (`last_name`);
 
 --
 -- Indexes for table `person_persontype_assn`
 --
 ALTER TABLE `person_persontype_assn`
-  ADD PRIMARY KEY (`person_id`,`person_type_id`),
-  ADD KEY `person_type_id` (`person_type_id`);
+    ADD PRIMARY KEY (`person_id`,`person_type_id`),
+    ADD KEY `person_type_id` (`person_type_id`);
 
 --
 -- Indexes for table `person_type`
 --
 ALTER TABLE `person_type`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `name` (`name`);
+    ADD PRIMARY KEY (`id`),
+    ADD UNIQUE KEY `name` (`name`);
 
 --
 -- Indexes for table `person_with_lock`
 --
 ALTER TABLE `person_with_lock`
-  ADD PRIMARY KEY (`id`);
+    ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `project`
 --
 ALTER TABLE `project`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `num` (`num`),
-  ADD KEY `IDX_project_1` (`project_status_type_id`),
-  ADD KEY `IDX_project_2` (`manager_id`);
+    ADD PRIMARY KEY (`id`),
+    ADD UNIQUE KEY `num` (`num`),
+    ADD KEY `IDX_project_1` (`project_status_type_id`),
+    ADD KEY `IDX_project_2` (`manager_id`);
 
 --
 -- Indexes for table `project_status_type`
 --
 ALTER TABLE `project_status_type`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `IDX_projectstatustype_1` (`name`);
+    ADD PRIMARY KEY (`id`),
+    ADD UNIQUE KEY `IDX_projectstatustype_1` (`name`);
 
 --
 -- Indexes for table `related_project_assn`
 --
 ALTER TABLE `related_project_assn`
-  ADD PRIMARY KEY (`parent_id`,`child_id`),
-  ADD KEY `IDX_relatedprojectassn_2` (`child_id`);
+    ADD PRIMARY KEY (`parent_id`,`child_id`),
+    ADD KEY `IDX_relatedprojectassn_2` (`child_id`);
 
 --
 -- Indexes for table `team_member_project_assn`
 --
 ALTER TABLE `team_member_project_assn`
-  ADD PRIMARY KEY (`team_member_id`,`project_id`) USING BTREE,
-  ADD KEY `IDX_teammemberprojectassn_2` (`project_id`);
+    ADD PRIMARY KEY (`team_member_id`,`project_id`) USING BTREE,
+    ADD KEY `IDX_teammemberprojectassn_2` (`project_id`);
 
 --
 -- Indexes for table `tmp`
 --
 ALTER TABLE `tmp`
-  ADD UNIQUE KEY `d` (`d`);
+    ADD UNIQUE KEY `d` (`d`);
 
 --
 -- Indexes for table `two_key`
 --
 ALTER TABLE `two_key`
-  ADD PRIMARY KEY (`server`,`directory`),
-  ADD KEY `person_id` (`person_id`),
-  ADD KEY `project_id` (`project_id`);
+    ADD PRIMARY KEY (`server`,`directory`),
+    ADD KEY `person_id` (`person_id`),
+    ADD KEY `project_id` (`project_id`);
 
 --
 -- Indexes for table `type_test`
 --
 ALTER TABLE `type_test`
-  ADD PRIMARY KEY (`id`);
+    ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `unsupported_types`
 --
 ALTER TABLE `unsupported_types`
-  ADD UNIQUE KEY `type_serial` (`type_serial`),
-  ADD KEY `type_multFk1` (`type_multFk1`,`type_multiFk2`);
+    ADD UNIQUE KEY `type_serial` (`type_serial`),
+    ADD KEY `type_multFk1` (`type_multFk1`,`type_multiFk2`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -535,61 +554,67 @@ ALTER TABLE `unsupported_types`
 -- AUTO_INCREMENT for table `address`
 --
 ALTER TABLE `address`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+
+--
+-- AUTO_INCREMENT for table `employee_info`
+--
+ALTER TABLE `employee_info`
+    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `login`
 --
 ALTER TABLE `login`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `milestone`
 --
 ALTER TABLE `milestone`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+    MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `person`
 --
 ALTER TABLE `person`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `person_type`
 --
 ALTER TABLE `person_type`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `person_with_lock`
 --
 ALTER TABLE `person_with_lock`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `project`
 --
 ALTER TABLE `project`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `project_status_type`
 --
 ALTER TABLE `project_status_type`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `type_test`
 --
 ALTER TABLE `type_test`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `unsupported_types`
 --
 ALTER TABLE `unsupported_types`
-  MODIFY `type_serial` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+    MODIFY `type_serial` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -599,53 +624,58 @@ ALTER TABLE `unsupported_types`
 -- Constraints for table `address`
 --
 ALTER TABLE `address`
-  ADD CONSTRAINT `person_address` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`);
+    ADD CONSTRAINT `person_address` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `employee_info`
+--
+ALTER TABLE `employee_info`
+    ADD CONSTRAINT `employee_info_ibfk_1` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `login`
 --
 ALTER TABLE `login`
-  ADD CONSTRAINT `person_login` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`);
+    ADD CONSTRAINT `person_login` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`);
 
 --
 -- Constraints for table `milestone`
 --
 ALTER TABLE `milestone`
-  ADD CONSTRAINT `project_milestone` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`);
+    ADD CONSTRAINT `project_milestone` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `person_persontype_assn`
 --
 ALTER TABLE `person_persontype_assn`
-  ADD CONSTRAINT `person_persontype_assn_1` FOREIGN KEY (`person_type_id`) REFERENCES `person_type` (`id`),
-  ADD CONSTRAINT `person_persontype_assn_2` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`);
+    ADD CONSTRAINT `person_persontype_assn_1` FOREIGN KEY (`person_type_id`) REFERENCES `person_type` (`id`),
+    ADD CONSTRAINT `person_persontype_assn_2` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`);
 
 --
 -- Constraints for table `project`
 --
 ALTER TABLE `project`
-  ADD CONSTRAINT `person_project` FOREIGN KEY (`manager_id`) REFERENCES `person` (`id`),
-  ADD CONSTRAINT `project_status_type_project` FOREIGN KEY (`project_status_type_id`) REFERENCES `project_status_type` (`id`);
+    ADD CONSTRAINT `person_project` FOREIGN KEY (`manager_id`) REFERENCES `person` (`id`),
+    ADD CONSTRAINT `project_status_type_project` FOREIGN KEY (`project_status_type_id`) REFERENCES `project_status_type` (`id`);
 
 --
 -- Constraints for table `related_project_assn`
 --
 ALTER TABLE `related_project_assn`
-  ADD CONSTRAINT `related_project_assn_1` FOREIGN KEY (`parent_id`) REFERENCES `project` (`id`),
-  ADD CONSTRAINT `related_project_assn_2` FOREIGN KEY (`child_id`) REFERENCES `project` (`id`);
+    ADD CONSTRAINT `related_project_assn_1` FOREIGN KEY (`parent_id`) REFERENCES `project` (`id`),
+    ADD CONSTRAINT `related_project_assn_2` FOREIGN KEY (`child_id`) REFERENCES `project` (`id`);
 
 --
 -- Constraints for table `team_member_project_assn`
 --
 ALTER TABLE `team_member_project_assn`
-  ADD CONSTRAINT `person_team_member_project_assn` FOREIGN KEY (`team_member_id`) REFERENCES `person` (`id`),
-  ADD CONSTRAINT `project_team_member_project_assn` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`);
+    ADD CONSTRAINT `person_team_member_project_assn` FOREIGN KEY (`team_member_id`) REFERENCES `person` (`id`),
+    ADD CONSTRAINT `project_team_member_project_assn` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`);
 
 --
 -- Constraints for table `two_key`
 --
 ALTER TABLE `two_key`
-  ADD CONSTRAINT `two_key_person` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`),
-  ADD CONSTRAINT `two_key_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`);
+    ADD CONSTRAINT `two_key_person` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`),
+    ADD CONSTRAINT `two_key_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`);
 SET FOREIGN_KEY_CHECKS=1;
-COMMIT;

@@ -58,11 +58,11 @@ const (
 )
 
 const (
-	AddressID       = `ID`
-	AddressPersonID = `PersonID`
-	AddressPerson   = `Person`
-	AddressStreet   = `Street`
-	AddressCity     = `City`
+	Address_ID       = `ID`
+	Address_PersonID = `PersonID`
+	Address_Person   = `Person`
+	Address_Street   = `Street`
+	Address_City     = `City`
 )
 
 // Initialize or re-initialize a Address database object to default values.
@@ -306,12 +306,11 @@ func (b *AddressesBuilder) LoadI(ctx context.Context) (addressSlice []interface{
 	return addressSlice
 }
 
-// Get is a convenience method to return only the first item found in a query. It is equivalent to adding
-// Limit(1,0) to the query, and then getting the first item from the returned slice.
-// Limits with joins do not currently work, so don't try it if you have a join
-// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
+// Get is a convenience method to return only the first item found in a query.
+// The entire query is performed, so you should generally use this only if you know
+// you are selecting on one or very few items.
 func (b *AddressesBuilder) Get(ctx context.Context) *Address {
-	results := b.Limit(1, 0).Load(ctx)
+	results := b.Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -536,6 +535,9 @@ func (o *addressBase) load(m map[string]interface{}, linkParent bool, objThis *A
 // If it has any auto-generated ids, those will be updated.
 func (o *addressBase) Save(ctx context.Context) {
 	if o._restored {
+		if !o.IsDirty() {
+			return
+		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -552,9 +554,13 @@ func (o *addressBase) Update(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
 	d.Update(ctx, "address", m, "id", fmt.Sprint(o.id))
+
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "address", o.id, stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "address", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -565,11 +571,15 @@ func (o *addressBase) Insert(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
+
 	id := d.Insert(ctx, "address", m)
 	o.id = id
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "address", o.id)
+	broadcast.Insert(ctx, "goradd", "address", fmt.Sprint(o.id))
 }
 
 func (o *addressBase) getModifiedFields() (fields map[string]interface{}) {
@@ -608,7 +618,7 @@ func (o *addressBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "address", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "address", o.id)
+	broadcast.Delete(ctx, "goradd", "address", fmt.Sprintf("%v", o.id))
 }
 
 // deleteAddress deletes the associated record from the database.
@@ -623,6 +633,7 @@ func (o *addressBase) resetDirtyStatus() {
 	o.personIDIsDirty = false
 	o.streetIsDirty = false
 	o.cityIsDirty = false
+
 }
 
 func (o *addressBase) IsDirty() bool {

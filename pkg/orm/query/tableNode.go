@@ -12,7 +12,7 @@ import (
 type TableNodeI interface {
 	ReferenceNodeI
 	SelectNodes_() []*ColumnNode
-	PrimaryKeyNode_() *ColumnNode
+	PrimaryKeyNode() *ColumnNode
 	EmbeddedNode_() NodeI
 	Copy_() NodeI
 }

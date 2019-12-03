@@ -8,6 +8,7 @@ import (
 
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/op"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/stringmap"
@@ -37,16 +38,19 @@ type personBase struct {
 	lastNameIsDirty bool
 
 	// Reverse reference objects.
-	oLogin             *Login
-	oProjectsAsManager []*Project          // Objects in the order they were queried
-	mProjectsAsManager map[string]*Project // Objects by PK
-	oAddresses         []*Address          // Objects in the order they were queried
-	mAddresses         map[string]*Address // Objects by PK
+	oProjectsAsManager        []*Project          // Objects in the order they were queried
+	mProjectsAsManager        map[string]*Project // Objects by PK
+	oProjectsAsManagerIsDirty bool
+	oAddresses                []*Address          // Objects in the order they were queried
+	mAddresses                map[string]*Address // Objects by PK
+	oAddressesIsDirty         bool
+	oLogin                    *Login
+	oLoginIsDirty             bool
 
 	// Many-Many reference objects.
-	oPersonTypes          []PersonType
 	oProjectsAsTeamMember []*Project
 	mProjectsAsTeamMember map[string]*Project // Objects by PK
+	oPersonTypes          []PersonType
 
 	// Custom aliases, if specified
 	_aliases map[string]interface{}
@@ -62,17 +66,17 @@ const (
 )
 
 const (
-	PersonID        = `ID`
-	PersonFirstName = `FirstName`
-	PersonLastName  = `LastName`
+	Person_ID               = `ID`
+	Person_FirstName        = `FirstName`
+	Person_LastName         = `LastName`
+	PersonProjectsAsManager = `ProjectsAsManager`
+	PersonAddresses         = `Addresses`
 
 	PersonLogin                = `Login`
-	PersonProjectsAsManager    = `ProjectsAsManager`
-	PersonAddresses            = `Addresses`
-	PersonPersonType           = `PersonType`
-	PersonPersonTypes          = `PersonTypes`
 	PersonProjectAsTeamMember  = `ProjectAsTeamMember`
 	PersonProjectsAsTeamMember = `ProjectsAsTeamMember`
+	PersonPersonType           = `PersonType`
+	PersonPersonTypes          = `PersonTypes`
 )
 
 // Initialize or re-initialize a Person database object to default values.
@@ -161,23 +165,6 @@ func (o *personBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// PersonTypes returns a slice of PersonType objects if loaded.
-func (o *personBase) PersonTypes() []PersonType {
-	if o.oPersonTypes == nil {
-		return nil
-	}
-	return o.oPersonTypes
-}
-
-// PersonType returns a single PersonType object, if one was loaded
-// otherwise, it will return zero.
-func (o *personBase) PersonType() PersonType {
-	if o.oPersonTypes == nil {
-		return 0
-	}
-	return o.oPersonTypes[0]
-}
-
 // ProjectAsTeamMember returns a single Project object, if one was loaded
 // otherwise, it will return nil.
 func (o *personBase) ProjectAsTeamMember() *Project {
@@ -195,22 +182,21 @@ func (o *personBase) ProjectsAsTeamMember() []*Project {
 	return o.oProjectsAsTeamMember
 }
 
-// Login returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
-func (o *personBase) Login() *Login {
-	if o.oLogin == nil {
+// PersonTypes returns a slice of PersonType objects if loaded.
+func (o *personBase) PersonTypes() []PersonType {
+	if o.oPersonTypes == nil {
 		return nil
 	}
-	return o.oLogin
+	return o.oPersonTypes
 }
 
-// LoadLogin returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
-func (o *personBase) LoadLogin(ctx context.Context) *Login {
-	if o.oLogin == nil {
-		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
+// PersonType returns a single PersonType object, if one was loaded
+// otherwise, it will return zero.
+func (o *personBase) PersonType() PersonType {
+	if o.oPersonTypes == nil {
+		return 0
 	}
-	return o.oLogin
+	return o.oPersonTypes[0]
 }
 
 // ProjectAsManager returns a single Project object by primary key, if one was loaded.
@@ -244,6 +230,27 @@ func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...in
 	return o.oProjectsAsManager
 }
 
+// SetProjectsAsManager associates the given objects with the Person.
+// If it has items already associated with it that will not be associated after a save,
+// the foreign keys for those will be set to null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing items
+// that are not currently attached to this Person.
+func (o *personBase) SetProjectsAsManager(objs []*Project) {
+	for _, obj := range o.oProjectsAsManager {
+		if obj.IsDirty() {
+			panic("You cannot overwrite items that have changed but have not been saved.")
+		}
+	}
+
+	o.oProjectsAsManager = objs
+	for _, obj := range o.oProjectsAsManager {
+		pk := o.ID()
+		o.mProjectsAsManager[pk] = obj
+	}
+	o.oProjectsAsManagerIsDirty = true
+}
+
 // Address returns a single Address object by primary key, if one was loaded.
 // Otherwise, it will return nil.
 func (o *personBase) Address(pk string) *Address {
@@ -273,6 +280,59 @@ func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{
 
 	o.oAddresses = qb.Where(cond).Load(ctx)
 	return o.oAddresses
+}
+
+// SetAddresses associates the given objects with the Person.
+// If it has items already associated with it that will not be associated after a save,
+// the foreign keys for those will be set to null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing items
+// that are not currently attached to this Person.
+func (o *personBase) SetAddresses(objs []*Address) {
+	for _, obj := range o.oAddresses {
+		if obj.IsDirty() {
+			panic("You cannot overwrite items that have changed but have not been saved.")
+		}
+	}
+
+	o.oAddresses = objs
+	for _, obj := range o.oAddresses {
+		pk := o.ID()
+		o.mAddresses[pk] = obj
+	}
+	o.oAddressesIsDirty = true
+}
+
+// Login returns the connected Login object, if one was loaded
+// otherwise, it will return nil.
+func (o *personBase) Login() *Login {
+	if o.oLogin == nil {
+		return nil
+	}
+	return o.oLogin
+}
+
+// LoadLogin returns the connected Login object, if one was loaded
+// otherwise, it will return nil.
+func (o *personBase) LoadLogin(ctx context.Context) *Login {
+	if o.oLogin == nil {
+		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
+	}
+	return o.oLogin
+}
+
+// SetLogin associates the given object with the Person.
+// If it has an item already associated with it,
+// the foreign key for that item will be set to null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing an item
+// that is not currently attached to this Person.
+func (o *personBase) SetLogin(obj *Login) {
+	if o.oLogin != nil && o.oLogin.IsDirty() {
+		panic("The Login has changed. You must save it first before changing to a different one.")
+	}
+	o.oLogin = obj
+	o.oLoginIsDirty = true
 }
 
 // Load returns a Person from the database.
@@ -330,12 +390,11 @@ func (b *PeopleBuilder) LoadI(ctx context.Context) (personSlice []interface{}) {
 	return personSlice
 }
 
-// Get is a convenience method to return only the first item found in a query. It is equivalent to adding
-// Limit(1,0) to the query, and then getting the first item from the returned slice.
-// Limits with joins do not currently work, so don't try it if you have a join
-// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
+// Get is a convenience method to return only the first item found in a query.
+// The entire query is performed, so you should generally use this only if you know
+// you are selecting on one or very few items.
 func (b *PeopleBuilder) Get(ctx context.Context) *Person {
-	results := b.Limit(1, 0).Load(ctx)
+	results := b.Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -504,19 +563,6 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		o.lastName = ""
 	}
 
-	if v, ok := m["PersonTypes"]; ok {
-		if oPersonTypes, ok2 := v.([]uint); ok2 {
-			o.oPersonTypes = []PersonType{}
-			for _, m := range oPersonTypes {
-				o.oPersonTypes = append(o.oPersonTypes, PersonType(m))
-			}
-		} else {
-			panic("Wrong type found for oPersonTypes object.")
-		}
-	} else {
-		o.oPersonTypes = nil
-	}
-
 	if v, ok := m["ProjectsAsTeamMember"]; ok {
 		if oProjectsAsTeamMember, ok2 := v.([]db.ValueMap); ok2 {
 			o.oProjectsAsTeamMember = []*Project{}
@@ -538,15 +584,17 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 		o.oProjectsAsTeamMember = nil
 	}
 
-	if v, ok := m["Login"]; ok {
-		if oLogin, ok2 := v.(db.ValueMap); ok2 {
-			o.oLogin = new(Login)
-			o.oLogin.load(oLogin, linkParent, o.oLogin, objThis, "Person")
+	if v, ok := m["PersonTypes"]; ok {
+		if oPersonTypes, ok2 := v.([]uint); ok2 {
+			o.oPersonTypes = []PersonType{}
+			for _, m := range oPersonTypes {
+				o.oPersonTypes = append(o.oPersonTypes, PersonType(m))
+			}
 		} else {
-			panic("Wrong type found for oLogin object.")
+			panic("Wrong type found for oPersonTypes object.")
 		}
 	} else {
-		o.oLogin = nil
+		o.oPersonTypes = nil
 	}
 
 	if v, ok := m["ProjectsAsManager"]; ok {
@@ -562,6 +610,7 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 				}
 				o.oProjectsAsManager = append(o.oProjectsAsManager, obj)
 				o.mProjectsAsManager[obj.PrimaryKey()] = obj
+				o.oProjectsAsManagerIsDirty = false
 			}
 		case db.ValueMap: // single expansion
 			obj := new(Project)
@@ -570,11 +619,13 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 				obj = objParent.(*Project)
 			}
 			o.oProjectsAsManager = []*Project{obj}
+			o.oProjectsAsManagerIsDirty = false
 		default:
 			panic("Wrong type found for oProjectsAsManager object.")
 		}
 	} else {
 		o.oProjectsAsManager = nil
+		o.oProjectsAsManagerIsDirty = false
 	}
 
 	if v, ok := m["Addresses"]; ok {
@@ -590,6 +641,7 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 				}
 				o.oAddresses = append(o.oAddresses, obj)
 				o.mAddresses[obj.PrimaryKey()] = obj
+				o.oAddressesIsDirty = false
 			}
 		case db.ValueMap: // single expansion
 			obj := new(Address)
@@ -598,11 +650,26 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 				obj = objParent.(*Address)
 			}
 			o.oAddresses = []*Address{obj}
+			o.oAddressesIsDirty = false
 		default:
 			panic("Wrong type found for oAddresses object.")
 		}
 	} else {
 		o.oAddresses = nil
+		o.oAddressesIsDirty = false
+	}
+
+	if v, ok := m["Login"]; ok {
+		if oLogin, ok2 := v.(db.ValueMap); ok2 {
+			o.oLogin = new(Login)
+			o.oLogin.load(oLogin, linkParent, o.oLogin, objThis, "Person")
+			o.oLoginIsDirty = false
+		} else {
+			panic("Wrong type found for oLogin object.")
+		}
+	} else {
+		o.oLogin = nil
+		o.oLoginIsDirty = false
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -615,6 +682,9 @@ func (o *personBase) load(m map[string]interface{}, linkParent bool, objThis *Pe
 // If it has any auto-generated ids, those will be updated.
 func (o *personBase) Save(ctx context.Context) {
 	if o._restored {
+		if !o.IsDirty() {
+			return
+		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -631,9 +701,60 @@ func (o *personBase) Update(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
 	d.Update(ctx, "person", m, "id", fmt.Sprint(o.id))
+
+	if o.oProjectsAsManagerIsDirty {
+		objs := QueryProjects(ctx).
+			Where(op.Equal(node.Project().ManagerID(), o.PrimaryKey())).
+			Load(ctx)
+		// TODO:select only the required fields
+		for _, obj := range objs {
+			if _, ok := o.mProjectsAsManager[obj.PrimaryKey()]; !ok {
+				// The old object is not in the group of new objects
+				obj.SetManagerID(nil)
+				obj.Save(ctx)
+			}
+		}
+		for _, obj := range o.oProjectsAsManager {
+			obj.SetManagerID(o.PrimaryKey())
+			obj.Save(ctx)
+		}
+
+	}
+	if o.oAddressesIsDirty {
+		objs := QueryAddresses(ctx).
+			Where(op.Equal(node.Address().PersonID(), o.PrimaryKey())).
+			Load(ctx)
+		// TODO:select only the required fields
+		for _, obj := range objs {
+			if _, ok := o.mAddresses[obj.PrimaryKey()]; !ok {
+				// The old object is not in the group of new objects
+				obj.SetPersonID(nil)
+				obj.Save(ctx)
+			}
+		}
+		for _, obj := range o.oAddresses {
+			obj.SetPersonID(o.PrimaryKey())
+			obj.Save(ctx)
+		}
+
+	}
+	if o.oLoginIsDirty {
+		obj := QueryLogins(ctx).
+			Where(op.Equal(node.Login().PersonID(), o.PrimaryKey())).
+			Get(ctx)
+		if obj != nil && obj.PrimaryKey() != o.oLogin.PrimaryKey() {
+			obj.SetPersonID(nil)
+			obj.Save(ctx)
+		}
+		o.oLogin.SetPersonID(o.PrimaryKey())
+		o.oLogin.Save(ctx)
+	}
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "person", o.id, stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "person", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -644,11 +765,34 @@ func (o *personBase) Insert(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
+
 	id := d.Insert(ctx, "person", m)
 	o.id = id
+	if o.oProjectsAsManagerIsDirty {
+
+		for _, obj := range o.oProjectsAsManager {
+			obj.SetManagerID(id)
+			obj.Save(ctx)
+		}
+	}
+	if o.oAddressesIsDirty {
+
+		for _, obj := range o.oAddresses {
+			obj.SetPersonID(id)
+			obj.Save(ctx)
+		}
+	}
+	if o.oLoginIsDirty {
+
+		o.oLogin.SetPersonID(id)
+		o.oLogin.Save(ctx)
+	}
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "person", o.id)
+	broadcast.Insert(ctx, "goradd", "person", fmt.Sprint(o.id))
 }
 
 func (o *personBase) getModifiedFields() (fields map[string]interface{}) {
@@ -675,7 +819,7 @@ func (o *personBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "person", o.id)
+	broadcast.Delete(ctx, "goradd", "person", fmt.Sprintf("%v", o.id))
 }
 
 // deletePerson deletes the associated record from the database.
@@ -689,12 +833,19 @@ func (o *personBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.firstNameIsDirty = false
 	o.lastNameIsDirty = false
+	o.oProjectsAsManagerIsDirty = false
+	o.oAddressesIsDirty = false
+	o.oLoginIsDirty = false
+
 }
 
 func (o *personBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.firstNameIsDirty ||
-		o.lastNameIsDirty
+		o.lastNameIsDirty ||
+		o.oProjectsAsManagerIsDirty ||
+		o.oAddressesIsDirty ||
+		o.oLoginIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -721,24 +872,24 @@ func (o *personBase) Get(key string) interface{} {
 		}
 		return o.lastName
 
-	case "Login":
-		return o.Login()
-
 	case "ProjectsAsManager":
 		return o.ProjectsAsManager()
 
 	case "Addresses":
 		return o.Addresses()
 
-	case "PersonType":
-		return o.PersonType()
-	case "PersonTypes":
-		return o.PersonTypes()
+	case "Login":
+		return o.Login()
 
 	case "ProjectAsTeamMember":
 		return o.ProjectAsTeamMember()
 	case "ProjectsAsTeamMember":
 		return o.ProjectsAsTeamMember()
+
+	case "PersonType":
+		return o.PersonType()
+	case "PersonTypes":
+		return o.PersonTypes()
 
 	}
 	return nil
@@ -782,9 +933,6 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oLogin); err != nil {
-		return nil, err
-	}
 	if err := encoder.Encode(o.oProjectsAsManager); err != nil {
 		return nil, err
 	}
@@ -793,11 +941,15 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oPersonTypes); err != nil {
+	if err := encoder.Encode(o.oLogin); err != nil {
 		return nil, err
 	}
 
 	if err := encoder.Encode(o.oProjectsAsTeamMember); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oPersonTypes); err != nil {
 		return nil, err
 	}
 
@@ -856,9 +1008,6 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.oLogin); err != nil {
-		return
-	}
 	if err = dec.Decode(&o.oProjectsAsManager); err != nil {
 		return
 	}
@@ -877,10 +1026,10 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 			o.mAddresses[p.PrimaryKey()] = p
 		}
 	}
-
-	if err = dec.Decode(&o.oPersonTypes); err != nil {
+	if err = dec.Decode(&o.oLogin); err != nil {
 		return
 	}
+
 	if err = dec.Decode(&o.oProjectsAsTeamMember); err != nil {
 		return
 	}
@@ -890,6 +1039,9 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		for _, p := range o.oProjectsAsTeamMember {
 			o.mProjectsAsTeamMember[p.PrimaryKey()] = p
 		}
+	}
+	if err = dec.Decode(&o.oPersonTypes); err != nil {
+		return
 	}
 
 	var hasAliases bool
@@ -927,10 +1079,6 @@ func (o *personBase) MarshalJSON() (data []byte, err error) {
 		v["lastName"] = o.lastName
 	}
 
-	if val := o.Login(); val != nil {
-		v["person"] = val
-	}
-
 	if val := o.ProjectsAsManager(); val != nil {
 		v["manager"] = val
 	}
@@ -939,11 +1087,15 @@ func (o *personBase) MarshalJSON() (data []byte, err error) {
 		v["person"] = val
 	}
 
-	if val := o.PersonTypes(); val != nil {
-		v["personTypes"] = val
+	if val := o.Login(); val != nil {
+		v["person"] = val
 	}
+
 	if val := o.ProjectsAsTeamMember(); val != nil {
 		v["projectsAsTeamMember"] = val
+	}
+	if val := o.PersonTypes(); val != nil {
+		v["personTypes"] = val
 	}
 
 	return json.Marshal(v)

@@ -27,7 +27,7 @@ func (n *personWithLockNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.SysTimestamp())
 	return nodes
 }
-func (n *personWithLockNode) PrimaryKeyNode_() *query.ColumnNode {
+func (n *personWithLockNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
 func (n *personWithLockNode) EmbeddedNode_() query.NodeI {

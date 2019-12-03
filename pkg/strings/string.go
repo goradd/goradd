@@ -2,6 +2,7 @@ package strings
 
 import (
 	"strings"
+	"unicode"
 )
 
 // StartsWith returns true if the string begins with the beginning string.
@@ -45,7 +46,7 @@ func Title(s string) string {
 		if l[i] != s[i] && s[i-1:i] != " " {
 			newString += " "
 		}
-		newString += s[i:i+1]
+		newString += s[i : i+1]
 	}
 	return newString
 }
@@ -63,4 +64,14 @@ func KebabToCamel(s string) string {
 	}
 
 	return r
+}
+
+// HasOnlyLetters will return false if any of the characters in the string do not pass the unicode.IsLetter test.
+func HasOnlyLetters(s string) bool {
+	for _, r := range s {
+		if !unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
 }

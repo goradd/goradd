@@ -69,6 +69,7 @@ func (n *ReverseReferenceNode) copy() NodeI {
 	ret := &ReverseReferenceNode{
 		dbKey:         n.dbKey,
 		dbTable:       n.dbTable,
+		dbKeyColumn:   n.dbKeyColumn,
 		dbColumn:      n.dbColumn,
 		goPropName:    n.goPropName,
 		refTable:      n.refTable,

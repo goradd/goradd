@@ -63,12 +63,12 @@ const (
 )
 
 const (
-	LoginID        = `ID`
-	LoginPersonID  = `PersonID`
-	LoginPerson    = `Person`
-	LoginUsername  = `Username`
-	LoginPassword  = `Password`
-	LoginIsEnabled = `IsEnabled`
+	Login_ID        = `ID`
+	Login_PersonID  = `PersonID`
+	Login_Person    = `Person`
+	Login_Username  = `Username`
+	Login_Password  = `Password`
+	Login_IsEnabled = `IsEnabled`
 )
 
 // Initialize or re-initialize a Login database object to default values.
@@ -360,12 +360,11 @@ func (b *LoginsBuilder) LoadI(ctx context.Context) (loginSlice []interface{}) {
 	return loginSlice
 }
 
-// Get is a convenience method to return only the first item found in a query. It is equivalent to adding
-// Limit(1,0) to the query, and then getting the first item from the returned slice.
-// Limits with joins do not currently work, so don't try it if you have a join
-// TODO: Change this to Load1 to be more descriptive and avoid confusion with other Getters
+// Get is a convenience method to return only the first item found in a query.
+// The entire query is performed, so you should generally use this only if you know
+// you are selecting on one or very few items.
 func (b *LoginsBuilder) Get(ctx context.Context) *Login {
-	results := b.Limit(1, 0).Load(ctx)
+	results := b.Load(ctx)
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -605,6 +604,9 @@ func (o *loginBase) load(m map[string]interface{}, linkParent bool, objThis *Log
 // If it has any auto-generated ids, those will be updated.
 func (o *loginBase) Save(ctx context.Context) {
 	if o._restored {
+		if !o.IsDirty() {
+			return
+		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -621,9 +623,13 @@ func (o *loginBase) Update(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
 	d.Update(ctx, "login", m, "id", fmt.Sprint(o.id))
+
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "login", o.id, stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "login", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
@@ -634,11 +640,15 @@ func (o *loginBase) Insert(ctx context.Context) {
 		return
 	}
 	d := db.GetDatabase("goradd")
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
+
 	id := d.Insert(ctx, "login", m)
 	o.id = id
+	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "login", o.id)
+	broadcast.Insert(ctx, "goradd", "login", fmt.Sprint(o.id))
 }
 
 func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
@@ -681,7 +691,7 @@ func (o *loginBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "login", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "login", o.id)
+	broadcast.Delete(ctx, "goradd", "login", fmt.Sprintf("%v", o.id))
 }
 
 // deleteLogin deletes the associated record from the database.
@@ -697,6 +707,7 @@ func (o *loginBase) resetDirtyStatus() {
 	o.usernameIsDirty = false
 	o.passwordIsDirty = false
 	o.isEnabledIsDirty = false
+
 }
 
 func (o *loginBase) IsDirty() bool {

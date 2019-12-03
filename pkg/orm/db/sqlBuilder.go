@@ -433,7 +433,7 @@ func (b *sqlBuilder) assignTableAliases(item *joinTreeItem) {
 // when specific tables are not called out in selects.
 func (b *sqlBuilder) assignPrimaryKeyAliases(item *joinTreeItem) {
 	if item.leafs == nil || !item.leafs[0].isPK {
-		b.addNodeToJoinTree(item.node.(TableNodeI).PrimaryKeyNode_())
+		b.addNodeToJoinTree(item.node.(TableNodeI).PrimaryKeyNode())
 	}
 
 	if !item.leafs[0].isPK {
@@ -797,7 +797,7 @@ func (b *sqlBuilder) expandNode(j *joinTreeItem, nodeObject ValueMap) (outArray 
 					var intArray []uint
 					nodeObject[tableGoName].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
 						innerNodeObject = value.(ValueMap)
-						typeKey := innerNodeObject[ColumnNodeDbName(childItem.node.(TableNodeI).PrimaryKeyNode_())]
+						typeKey := innerNodeObject[ColumnNodeDbName(childItem.node.(TableNodeI).PrimaryKeyNode())]
 						switch v := typeKey.(type) {
 						case uint:
 							intArray = append(intArray, v)

@@ -4,7 +4,7 @@
 func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error {
 
 	if pk == {{= t.PrimaryKeyColumn().DefaultValueAsConstant() }} {
-		p.{{= t.GoName }} = model.New{{= t.GoName }}(ctx)
+		p.{{= t.GoName }} = model.New{{= t.GoName }}()
 	} else {
 		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk,
 {{for _,rr := range t.ReverseReferences}}

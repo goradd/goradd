@@ -70,3 +70,15 @@ func TestKebabToCamel(t *testing.T) {
 	}
 }
 
+func TestHasOnlyLetters(t *testing.T) {
+	if HasOnlyLetters("a-b") {
+		t.Fail()
+	}
+	if !HasOnlyLetters("abc") {
+		t.Fail()
+	}
+	if HasOnlyLetters("123") {
+		t.Fail()
+	}
+}
+

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"github.com/gedex/inflector"
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"github.com/knq/snaker"
@@ -415,6 +416,12 @@ func (d *Database) analyzeForeignKey(t *Table, cd ColumnDescription) {
 			UpdateAction: FKActionFromString(cd.ForeignKey.UpdateAction),
 			DeleteAction: FKActionFromString(cd.ForeignKey.DeleteAction),
 		}
+
+		if (f.UpdateAction == FKActionSetNull || f.DeleteAction == FKActionSetNull) &&
+			!cd.IsNullable {
+			panic(fmt.Sprintf("a foreign key cannot have an action of Null if the column is not nullable. Table: %s, Col: %s", t.DbName, cd.Name))
+		}
+
 		goName := c.GoName
 		suffix := UpperCaseIdentifier(d.ForeignKeySuffix)
 		goName = strings.TrimSuffix(goName, suffix)

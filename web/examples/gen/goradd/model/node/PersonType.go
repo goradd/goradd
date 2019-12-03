@@ -18,7 +18,7 @@ func (n *personTypeNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	return nodes
 }
 
-func (n *personTypeNode) PrimaryKeyNode_() (*query.ColumnNode) {
+func (n *personTypeNode) PrimaryKeyNode() (*query.ColumnNode) {
 	return n.ID()
 }
 
