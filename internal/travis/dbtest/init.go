@@ -24,6 +24,6 @@ func init() {
 
 func getContext() context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, goradd.SqlContext, &db.SqlContext{})
+	ctx = context.WithValue(ctx, goradd.SqlContext, &db.SqlContext{}) // needed for transactions
 	return ctx
 }

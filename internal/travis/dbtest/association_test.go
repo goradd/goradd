@@ -79,24 +79,6 @@ func TestManySelect(t *testing.T) {
 	assert.Equal(t, "ACME Payment System", name)
 }
 
-func TestReverse2(t *testing.T) {
-	ctx := getContext()
-	people := model.QueryPeople(ctx).
-		Join(node.Person().ProjectsAsManager()).
-		OrderBy(node.Person().ID(), node.Person().ProjectsAsManager().Name()).
-		Where(IsNotNull(node.Person().ProjectsAsManager().ID())). // Filter out people who are not managers
-		Select(node.Person().ProjectsAsManager().Name()).
-		Load(ctx)
-
-	if len(people[2].ProjectsAsManager()) != 2 {
-		t.Error("Did not find 2 ProjectsAsManagers.")
-	}
-
-	assert.Len(t, people[2].ProjectsAsManager(), 2)
-	assert.Equal(t, people[2].ProjectsAsManager()[0].Name(), "ACME Payment System")
-	assert.True(t, people[2].ProjectsAsManager()[0].IDIsValid())
-	assert.False(t, people[2].ProjectsAsManager()[0].NumIsValid())
-}
 
 func Test2Nodes(t *testing.T) {
 	ctx := getContext()
@@ -135,78 +117,6 @@ func TestForwardMany(t *testing.T) {
 
 }
 
-// Complex test finding all the team members of all the projects a person is managing, ordering by last name
-func TestReverseMany(t *testing.T) {
-	ctx := getContext()
-	people := model.QueryPeople(ctx).
-		OrderBy(node.Person().ID(), node.Person().ProjectsAsManager().TeamMembers().LastName(), node.Person().ProjectsAsManager().TeamMembers().FirstName()).
-		Select(node.Person().ProjectsAsManager().TeamMembers().FirstName(), node.Person().ProjectsAsManager().TeamMembers().LastName()).
-		Load(ctx)
-
-	names := []string{}
-	for _, p := range people[0].ProjectsAsManager()[0].TeamMembers() {
-		names = append(names, p.FirstName()+" "+p.LastName())
-	}
-	names2 := []string{
-		"John Doe",
-		"Mike Ho",
-		"Samantha Jones",
-		"Jennifer Smith",
-		"Wendy Smith",
-	}
-	assert.Equal(t, names2, names)
-
-	names = []string{}
-	for _, pr := range people[6].ProjectsAsManager() {
-		for _, p := range pr.TeamMembers() {
-			names = append(names, p.FirstName()+" "+p.LastName())
-		}
-	}
-	assert.Len(t, names, 12) // Includes duplicates. If we ever get Distinct to manually remove duplicates, we should fix this.
-}
-
-func TestReverseManyExpansion(t *testing.T) {
-	ctx := getContext()
-	// Test an intermediate expansion
-	people := model.QueryPeople(ctx).
-		Join(node.Person().ProjectsAsManager().TeamMembers()).
-		OrderBy(node.Person().ID(), node.Person().ProjectsAsManager().TeamMembers().LastName(), node.Person().ProjectsAsManager().TeamMembers().FirstName()).
-		Expand(node.Person().ProjectsAsManager()).
-		Load(ctx)
-
-	names2 := []string{
-		"John Doe",
-		"Mike Ho",
-		"Samantha Jones",
-		"Jennifer Smith",
-		"Wendy Smith",
-	}
-	names := []string{}
-	for _, p := range people[0].ProjectsAsManager()[0].TeamMembers() {
-		names = append(names, p.FirstName()+" "+p.LastName())
-	}
-	assert.Equal(t, names2, names)
-
-	names = []string{}
-	for _, pr := range people[6].ProjectsAsManager() {
-		for _, p := range pr.TeamMembers() {
-			names = append(names, p.FirstName()+" "+p.LastName())
-		}
-	}
-
-	// Should only select first group
-	names4 := []string{
-		"Brett Carlisle",
-		"John Doe",
-		"Samantha Jones",
-		"Jacob Pratt",
-		"Kendall Public",
-		"Ben Robinson",
-		"Alex Smith",
-	}
-	assert.Equal(t, names4, names)
-
-}
 
 func TestManyForward(t *testing.T) {
 	ctx := getContext()
@@ -228,53 +138,6 @@ func TestManyForward(t *testing.T) {
 
 }
 
-func TestUniqueReverse(t *testing.T) {
-	ctx := getContext()
-	person := model.QueryPeople(ctx).
-		Where(Equal(node.Person().LastName(), "Doe")).
-		Get(ctx)
-	assert.Nil(t, person.Login())
-
-	person = model.QueryPeople(ctx).
-		Where(Equal(node.Person().LastName(), "Doe")).
-		Join(node.Person().Login()).
-		Load(ctx)[0]
-	assert.Equal(t, "jdoe", person.Login().Username())
-}
-
-func TestReverseReferences(t *testing.T) {
-	// Test early binding
-	ctx := getContext()
-	people := model.QueryPeople(ctx).
-		Join(node.Person().ProjectsAsManager()).
-		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsManager().Name()).
-		Load(ctx)
-	person := people[2]
-	person.SetFirstName("test")
-	projects := person.ProjectsAsManager()
-	person2 := projects[0].Manager()
-	assert.Equal(t, "test", person2.FirstName())
-
-	// Test unique reverse reference
-	person = model.QueryPeople(ctx).
-		Join(node.Person().Login()).
-		Load(ctx)[0]
-
-	person.SetFirstName("test")
-	login := person.Login()
-	person2 = login.Person()
-	assert.Equal(t, "test", person2.FirstName())
-
-	// Test ManyMany
-	project := model.QueryProjects(ctx).
-		Join(node.Project().TeamMembers().ProjectsAsTeamMember()).
-		Load(ctx)[0]
-
-	project.SetName("test")
-	people = project.TeamMembers()
-	project2 := people[0].ProjectAsTeamMember()
-	assert.Equal(t, "test", project2.Name())
-}
 
 func TestForwardReferenceLookingBack(t *testing.T) {
 	ctx := getContext()

@@ -269,7 +269,7 @@ func TestLimit(t *testing.T) {
 func TestSaveAndDelete(t *testing.T) {
 	ctx := getContext()
 
-	person := model.NewPerson(ctx)
+	person := model.NewPerson()
 	person.SetFirstName("Test1")
 	person.SetLastName("Last1")
 	person.Save(ctx)
@@ -302,7 +302,7 @@ func TestSaveAndDelete(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	ctx := getContext()
 
-	person := model.NewPerson(ctx)
+	person := model.NewPerson()
 	person.SetFirstName("Test1")
 	person.SetLastName("Last1")
 	person.Save(ctx)
@@ -362,7 +362,7 @@ func TestLazyLoad(t *testing.T) {
 func TestDeleteQuery(t *testing.T) {
 	ctx := getContext()
 
-	person := model.NewPerson(ctx)
+	person := model.NewPerson()
 	person.SetFirstName("Test1")
 	person.SetLastName("Last1")
 	person.Save(ctx)
