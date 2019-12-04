@@ -43,6 +43,10 @@ type Column struct {
 	IsTimestamp bool
 	// IsAutoUpdateTimestamp is true if the database is updating the timestamp. Otherwise we will do it manually.
 	IsAutoUpdateTimestamp bool
+	// IsDateOnly indicates that we have a datetime type of column that should only be concerned about the date
+	IsDateOnly bool
+	// IsTimeOnly indicates that we have a datetime type of column that should only be concerned about the time
+	IsTimeOnly bool
 	// Comment is the contents of the comment associated with this field
 	Comment string
 

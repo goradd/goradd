@@ -14,14 +14,14 @@ type Tmp struct {
 }
 
 // Create a new Tmp object and initialize to default values.
-func NewTmp(ctx context.Context) *Tmp {
+func NewTmp() *Tmp {
 	o := new(Tmp)
-	o.Initialize(ctx)
+	o.Initialize()
 	return o
 }
 
 // Initialize or re-initialize a Tmp database object to default values.
-func (o *Tmp) Initialize(ctx context.Context) {
+func (o *Tmp) Initialize() {
 	o.tmpBase.Initialize()
 	// Add your own initializations here
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
@@ -678,8 +679,9 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 		}
 
 	case time.Time:
-		if c.timeFormat == "" {
-			panic("Time format is required for time types")
+		timeFormat := c.timeFormat
+		if timeFormat == "" {
+			timeFormat = config.DefaultDateTimeFormat
 		}
 		out = d.Format(c.timeFormat)
 
@@ -688,8 +690,9 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 		}
 
 	case datetime.DateTime:
-		if c.timeFormat == "" {
-			panic("Time format is required for time types")
+		timeFormat := c.timeFormat
+		if timeFormat == "" {
+			timeFormat = config.DefaultDateTimeFormat
 		}
 		out = d.Format(c.timeFormat)
 

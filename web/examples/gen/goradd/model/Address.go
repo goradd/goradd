@@ -14,14 +14,14 @@ type Address struct {
 }
 
 // Create a new Address object and initialize to default values.
-func NewAddress(ctx context.Context) *Address {
+func NewAddress() *Address {
 	o := new(Address)
-	o.Initialize(ctx)
+	o.Initialize()
 	return o
 }
 
 // Initialize or re-initialize a Address database object to default values.
-func (o *Address) Initialize(ctx context.Context) {
+func (o *Address) Initialize() {
 	o.addressBase.Initialize()
 	// Add your own initializations here
 }

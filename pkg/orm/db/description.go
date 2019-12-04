@@ -53,6 +53,13 @@ type ColumnDescription struct {
 	NativeType string
 	//  GoType is the goradd defined column type
 	GoType string
+	// SubType has additional information to the type of column that can help control code generation
+	// When column type is "datetime.DateTime", the column will default to both a date and time format. You can also make it:
+	//   date (which means date only)
+	//   time (time only)
+	//   timestamp (we will track the modification time of the table here)
+	//   auto timestamp (the database is automatically updating this timestamp for us)
+	SubType string
 	// MaxCharLength is the maximum length of characters to allow in the column if a string type column.
 	// If the database has the ability to specify this, this will correspond to what is specified.
 	// In any case, we will generate code to prevent fields from getting bigger than this. Zero indicates there is
@@ -73,10 +80,6 @@ type ColumnDescription struct {
 	IsNullable bool
 	// IsUnique indicates that the field holds unique values
 	IsUnique bool
-	// IsTimestamp is true if the field is a timestamp. Timestamps represent a specific point in world time.
-	IsTimestamp bool
-	// IsAutoUpdateTimestamp is true if the database is updating the timestamp. Otherwise we will do it manually.
-	IsAutoUpdateTimestamp bool
 	// ForeignKey is additional information describing a foreign key relationship
 	ForeignKey *ForeignKeyDescription
 	// Comment is the contents of the comment associated with this column

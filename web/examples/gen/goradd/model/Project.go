@@ -14,14 +14,14 @@ type Project struct {
 }
 
 // Create a new Project object and initialize to default values.
-func NewProject(ctx context.Context) *Project {
+func NewProject() *Project {
 	o := new(Project)
-	o.Initialize(ctx)
+	o.Initialize()
 	return o
 }
 
 // Initialize or re-initialize a Project database object to default values.
-func (o *Project) Initialize(ctx context.Context) {
+func (o *Project) Initialize() {
 	o.projectBase.Initialize()
 	// Add your own initializations here
 }

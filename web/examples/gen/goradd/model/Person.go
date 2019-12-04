@@ -14,14 +14,14 @@ type Person struct {
 }
 
 // Create a new Person object and initialize to default values.
-func NewPerson(ctx context.Context) *Person {
+func NewPerson() *Person {
 	o := new(Person)
-	o.Initialize(ctx)
+	o.Initialize()
 	return o
 }
 
 // Initialize or re-initialize a Person database object to default values.
-func (o *Person) Initialize(ctx context.Context) {
+func (o *Person) Initialize() {
 	o.personBase.Initialize()
 	// Add your own initializations here
 }

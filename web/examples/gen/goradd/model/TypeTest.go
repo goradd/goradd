@@ -14,14 +14,14 @@ type TypeTest struct {
 }
 
 // Create a new TypeTest object and initialize to default values.
-func NewTypeTest(ctx context.Context) *TypeTest {
+func NewTypeTest() *TypeTest {
 	o := new(TypeTest)
-	o.Initialize(ctx)
+	o.Initialize()
 	return o
 }
 
 // Initialize or re-initialize a TypeTest database object to default values.
-func (o *TypeTest) Initialize(ctx context.Context) {
+func (o *TypeTest) Initialize() {
 	o.typeTestBase.Initialize()
 	// Add your own initializations here
 }

@@ -14,14 +14,14 @@ type PersonWithLock struct {
 }
 
 // Create a new PersonWithLock object and initialize to default values.
-func NewPersonWithLock(ctx context.Context) *PersonWithLock {
+func NewPersonWithLock() *PersonWithLock {
 	o := new(PersonWithLock)
-	o.Initialize(ctx)
+	o.Initialize()
 	return o
 }
 
 // Initialize or re-initialize a PersonWithLock database object to default values.
-func (o *PersonWithLock) Initialize(ctx context.Context) {
+func (o *PersonWithLock) Initialize() {
 	o.personWithLockBase.Initialize()
 	// Add your own initializations here
 }
