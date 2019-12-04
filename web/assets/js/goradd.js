@@ -572,6 +572,9 @@ goradd = {
      * @returns {object}
      */
     el: function(t) {
+        if (!t) {
+            return null;
+        }
         if (typeof t === "object") {
             if (!!t.element) {
                 return t.element; // Its a goradd widget, so get the element from the widget

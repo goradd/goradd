@@ -12,6 +12,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
     txid := d.Begin(ctx)
     defer d.Rollback(ctx, txid)
 	{{for _,ref := range t.ReverseReferences }}
+	{
         {{if ref.IsUnique() }}
             {{if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionCascade}}
                 obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
@@ -55,6 +56,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 o.{{= ref.Values["objName"] }} = nil
             {{if}}
         {{if}}
+    }
     {{for}}
 
 	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn().DbName }}", o.{{= t.PrimaryKeyColumn().ModelName }})
