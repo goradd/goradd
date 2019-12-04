@@ -85,3 +85,10 @@ func FromSqlDateTime(s string) (t DateTime, err error) {
 
 	return
 }
+
+func (d DateTime) Format(layout string) string {
+	if d.IsZero() {
+		return ""
+	}
+	return d.Time.Format(layout)
+}
