@@ -57,6 +57,9 @@ func RegisterForm(path string, form FormI, id string) {
 }
 
 func (m *PageManager)RegisterForm(path string, f FormI, id string) {
+	if path == "" {
+		panic(`you cannot register the empty path. If you want a default, register just a slash. ("/")`)
+	}
 	if _, ok := m.forms[path]; ok {
 		panic("Form is already registered: " + path)
 	}
@@ -70,6 +73,9 @@ func (m *PageManager)RegisterForm(path string, f FormI, id string) {
 
 // IsPage returns true if the given path has been registered with the page manager.
 func (m *PageManager) IsPage(path string) bool {
+	if path == "" {
+		path = "/"
+	}
 	_, ok := m.forms[path]
 	return ok
 }
@@ -96,7 +102,11 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 		}
 		// page was not found, so make a new one
 		var form FormI
-		if info, ok := m.forms[gCtx.URL.Path]; !ok {
+		path := gCtx.URL.Path
+		if path == "" {
+			path = "/"
+		}
+		if info, ok := m.forms[path]; !ok {
 			panic("form not found for path: " + gCtx.URL.Path)
 		} else {
 			form = reflect.New(info.typ).Interface().(FormI)

@@ -55,6 +55,7 @@ func NewModal(parent page.ControlI, id string) *Modal {
 }
 
 func (d *Modal) Init(parent page.ControlI, id string) {
+
 	if id == "" {
 		panic("Modals must have an id")
 	}
@@ -274,8 +275,8 @@ If you specify more than one button, the first button will be the default button
 this case, you will need to detect the button by adding a On(event.DialogButton(), action) to the dialog returned.
 You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
 */
-func BootstrapAlert(form page.FormI, message string, buttons interface{}) control.DialogI {
-	dlg := NewModal(form, "")
+func BootstrapAlert(form page.FormI, id string, message string, buttons interface{}) control.DialogI {
+	dlg := NewModal(form, id)
 	dlg.SetText(message)
 	if buttons != nil {
 		switch b := buttons.(type) {

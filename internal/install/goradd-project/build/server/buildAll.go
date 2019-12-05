@@ -5,5 +5,5 @@ package server
 //go:generate gofile mkdir goradd-project/../deploy/server
 //go:generate go generate ./makeAssets.go
 //go:generate go generate ./buildLinux.go
-//go:generate ./zipAssets.sh
+//go:generate go generate ./zipAssets.go
 

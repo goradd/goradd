@@ -57,7 +57,6 @@ type NavbarI interface {
 // SetTextIsHtml() to true to turn off encoding if needed. Add child controls to populate it.
 type Navbar struct {
 	page.ControlBase
-	brand string
 	brandAnchor string
 	brandLocation NavbarCollapsedBrandPlacement
 
@@ -106,7 +105,7 @@ func (b *Navbar) SetBackgroundClass(c BackgroundColorClass) NavbarI {
 }
 
 func (b *Navbar) SetBrand(label string, anchor string, p NavbarCollapsedBrandPlacement) NavbarI {
-	b.brand = label
+	b.SetText(label)
 	b.brandAnchor = anchor
 	b.brandLocation = p
 	return b.this()

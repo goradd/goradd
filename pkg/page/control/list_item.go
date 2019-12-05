@@ -165,8 +165,9 @@ func (i *ListItem) IsDivider() bool {
 	return i.isDivider
 }
 
-func (i *ListItem) SetAnchor(a string) {
+func (i *ListItem) SetAnchor(a string) *ListItem {
 	i.AnchorAttributes().Set("href", a)
+	return i
 }
 
 func (i *ListItem) HasAnchor() bool {

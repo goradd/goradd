@@ -71,7 +71,7 @@ func (b *Navbar) drawBrand(ctx context.Context, buf *bytes.Buffer) {
 
 			buf.WriteString(`">`)
 			b.DrawText(ctx, buf)
-			buf.WriteString(`</span>
+			buf.WriteString(`</a>
             `)
 
 		}

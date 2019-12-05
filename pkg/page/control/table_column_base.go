@@ -683,7 +683,7 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 		if timeFormat == "" {
 			timeFormat = config.DefaultDateTimeFormat
 		}
-		out = d.Format(c.timeFormat)
+		out = d.Format(timeFormat)
 
 		if c.format != "" {
 			out = fmt.Sprintf(c.format)
@@ -694,7 +694,7 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 		if timeFormat == "" {
 			timeFormat = config.DefaultDateTimeFormat
 		}
-		out = d.Format(c.timeFormat)
+		out = d.Format(timeFormat)
 
 		if c.format != "" {
 			out = fmt.Sprintf(c.format)
