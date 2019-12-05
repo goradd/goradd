@@ -13,7 +13,7 @@ import (
     "context"
     "github.com/goradd/goradd/pkg/page"
     "bytes"
-    {{imports}}
+    {{> imports}}
 )
 
 

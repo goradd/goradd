@@ -28,6 +28,7 @@ var wsCertFile = flag.String("wsCertFile", "", "Path to cert file for websocket.
 var useFcgi = flag.Bool("fcgi", false, "Serve as fcgi.")
 var assetDir = flag.String("assetDir", "", "The centralized asset directory. Required to run the release version of the app.")
 var htmlDir = flag.String("htmlDir", "", "The centralized html directory. Required to run the release version of the app if you are serving static files.")
+var proxyPath = flag.String("proxyPath", "", "The url path to the application.")
 var staticPaths arrayFlags // See below. Holds the static paths to be registered with the app.
 // Create other flags you might care about here
 
@@ -51,6 +52,10 @@ func useFlags() {
 
 	if *htmlDir != "" {
 		config.SetHtmlDirectory(*htmlDir)
+	}
+
+	if *proxyPath != "" {
+		config.ProxyPath = *proxyPath
 	}
 
 	if *useFcgi {

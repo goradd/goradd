@@ -12,5 +12,6 @@ package server
 //go:generate gofile copy -x scss:less github.com/goradd/goradd/pkg/messageServer/ws/assets/* goradd-project/../deploy/server/assets/messenger
 
 // Copy your static files
-//go:generate gofile copy -x scss:less goradd-project/web/html/* goradd-project/../deploy/server/html
+//go:generate gofile mkdir goradd-project/../deploy/server/html
+//go:generate gofile copy -x scss:less goradd-project/web/html/* goradd-project/../deploy/server/html/
 

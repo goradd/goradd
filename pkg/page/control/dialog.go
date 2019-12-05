@@ -101,9 +101,11 @@ func (d *Dialog) Init(parent page.ControlI, id string) {
 	// container is owned by the form itself, even if sub-controls create the dialog.
 	var overlay page.ControlI
 
+
 	if id == "" {
 		panic("Dialogs must have an id.")
 	}
+
 
 	if !parent.Page().HasControl(DialogOverlayID) {
 		overlay = NewPanel(parent.ParentForm(), DialogOverlayID)
@@ -393,12 +395,12 @@ func GetDialog(c page.ControlI, id string) *Dialog {
 // You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
 //
 // Call SetAlertFunction to register a different alert function for the framework to use.
-func Alert(form page.FormI, message string, buttons interface{}) DialogI {
-	return alertFunc(form, message, buttons)
+func Alert(form page.FormI, id string, message string, buttons interface{}) DialogI {
+	return alertFunc(form, id, message, buttons)
 }
 
-func defaultAlert(form page.FormI, message string, buttons interface{}) DialogI {
-	dlg := NewDialog(form, "")
+func defaultAlert(form page.FormI, id string, message string, buttons interface{}) DialogI {
+	dlg := NewDialog(form, id)
 	dlg.SetText(message)
 	if buttons != nil {
 		switch b := buttons.(type) {
@@ -420,7 +422,7 @@ func defaultAlert(form page.FormI, message string, buttons interface{}) DialogI 
 	return dlg
 }
 
-type AlertFuncType func(form page.FormI, message string, buttons interface{}) DialogI
+type AlertFuncType func(form page.FormI, id string,  message string, buttons interface{}) DialogI
 
 var alertFunc AlertFuncType = defaultAlert // default to our built in one
 

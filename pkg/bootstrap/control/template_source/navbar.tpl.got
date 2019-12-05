@@ -29,7 +29,7 @@ func (b *Navbar) drawBrand(ctx context.Context, buf *bytes.Buffer)  {
             }}
         } else {
              {{
-                 <a class="navbar-brand" href="{{= b.brandAnchor}}">{{g b.DrawText(ctx, buf) }}</span>
+                 <a class="navbar-brand" href="{{= b.brandAnchor}}">{{g b.DrawText(ctx, buf) }}</a>
              }}
         }
     } else {    // draw a blank brand so toggler placement still works

@@ -316,7 +316,8 @@ func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error)
 	f.SetAttribute("method", "post")
 	// Setting the "action" attribute prevents iFrame clickjacking.
 	// This only works because we never ajax draw the form, only server render
-	f.SetAttribute("action", GetContext(ctx).HttpContext.URL.RequestURI())
+	grctx := GetContext(ctx)
+	f.SetAttribute("action", config.MakeLocalPath(grctx.HttpContext.URL.RequestURI()))
 
 	return
 }
@@ -536,9 +537,9 @@ func (f *FormBase) PushLocation(ctx context.Context) {
 // It will go to the fallback url if there is nothing on the stack
 func (f *FormBase) PopLocation(ctx context.Context, fallback string) {
 	if loc := location.Pop(ctx); loc != "" {
-		f.ChangeLocation(loc)
+		f.ChangeLocation(config.MakeLocalPath(loc))
 	} else {
-		f.ChangeLocation(fallback)
+		f.ChangeLocation(config.MakeLocalPath(fallback))
 	}
 }
 

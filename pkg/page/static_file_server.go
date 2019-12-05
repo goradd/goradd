@@ -87,19 +87,25 @@ func GetAssetLocation(url string) string {
 // GetAssetUrl returns the url that corresponds to the asset at the given location. Its the reverse of
 // GetAssetLocation.
 func GetAssetUrl(location string) string {
+	var outPath string
 	if config.Release {
 		if !strings2.StartsWith(location, config.AssetPrefix) {
 			panic("In the release build, asset locations should be the same as asset paths.")
 		}
-		return location
-	}
-	for url, dir := range assetDirectories {
-		if strings2.StartsWith(location, dir) {
-			fPath := strings.TrimPrefix(location, dir)
-			return path.Join(url, filepath.ToSlash(fPath))
+		outPath = location
+	} else {
+		for url, dir := range assetDirectories {
+			if strings2.StartsWith(location, dir) {
+				fPath := strings.TrimPrefix(location, dir)
+				outPath = path.Join(url, filepath.ToSlash(fPath))
+				break
+			}
 		}
 	}
-	return ""
+	if outPath == "" {
+		return ""
+	}
+	return config.ProxyPath + outPath
 }
 
 // ServeAsset is the default server for files in asset directories.

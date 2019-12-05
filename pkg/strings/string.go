@@ -75,3 +75,14 @@ func HasOnlyLetters(s string) bool {
 	}
 	return true
 }
+
+// JoinContent joins strings together with the separator sep. Only strings that are not empty strings are joined.
+func JoinContent(sep string, items... string) string {
+	var l []string
+	for _,i := range items {
+		if i != "" {
+			l = append(l, i)
+		}
+	}
+	return strings.Join(l, sep)
+}

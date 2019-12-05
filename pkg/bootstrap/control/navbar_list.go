@@ -200,7 +200,7 @@ type NavbarListCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
-	Items []control.ListValue
+	Items []interface{}
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
