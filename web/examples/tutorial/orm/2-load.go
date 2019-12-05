@@ -32,7 +32,7 @@ func init() {
 	tutorial.RegisterTutorialPage("orm", 2, "load", "Loading Individual Records", NewLoadPanel,
 		[]string {
 			sys.SourcePath(),
-			filepath.Join(dir, "template_source", "2-load.tpl.got"),
+			filepath.Join(dir, "2-load.tpl.got"),
 		})
 }
 

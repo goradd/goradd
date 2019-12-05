@@ -10,7 +10,7 @@ import (
 func (ctrl *DefaultPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Bootstrap ControlBase Examples</h1>
+<h1>Bootstrap Control Examples</h1>
 <p>
 These pages demonstrate some of the supported <a href="http://getbootstrap.com">Bootstrap</a> controls that are
 available in goradd. It is not an exhaustive recreation of the Bootstrap documentation, so you

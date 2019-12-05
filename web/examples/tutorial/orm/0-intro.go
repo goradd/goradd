@@ -32,7 +32,7 @@ func init() {
 	tutorial.RegisterTutorialPage("orm", 0, "intro", "Introduction to the ORM", NewIntroPanel,
 		[]string {
 			sys.SourcePath(),
-			filepath.Join(dir, "template_source", "0-intro.tpl.got"),
+			filepath.Join(dir, "0-intro.tpl.got"),
 		})
 }
 

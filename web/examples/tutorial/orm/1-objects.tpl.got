@@ -60,7 +60,7 @@ to take advantage of the changes.</p>
 
 {{#
 The tag below will output the renderControlTemplate fragment, which is a pre-defined fragment that is part of the
-GoRADD system. If you want to see how this fragment is defined, you will find it in pkg/page/template_source/macros.inc.got.
+GoRADD system. If you want to see how this fragment is defined, you will find it in pkg/page/macros.inc.got.
 The tag will use the fragments defined above to create the drawing function that will eventually get compiled into the
 program. To build the template, run "go generate" on the build.go file in the directory.
 

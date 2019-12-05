@@ -32,7 +32,7 @@ func init() {
 	tutorial.RegisterTutorialPage("orm", 1, "objects", "Code-generated objects", NewObjectsPanel,
 		[]string {
 			sys.SourcePath(),
-			filepath.Join(dir, "template_source", "1-objects.tpl.got"),
+			filepath.Join(dir, "1-objects.tpl.got"),
 		})
 }
 

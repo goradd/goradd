@@ -31,7 +31,7 @@ func init() {
 	tutorial.RegisterTutorialPage("orm", 3, "ref", "References", NewRefPanel,
 		[]string {
 			sys.SourcePath(),
-			filepath.Join(dir, "template_source", "5-ref.tpl.got"),
+			filepath.Join(dir, "5-ref.tpl.got"),
 		})
 }
 
