@@ -25,7 +25,7 @@ func init() {
 	tutorial.RegisterTutorialPage("controls", 0, "watcher", "Watching Database Changes", NewWatcherPanel,
 		[]string {
 			sys.SourcePath(),
-			filepath.Join(dir, "template_source", "watcher.tpl.got"),
+			filepath.Join(dir, "watcher.tpl.got"),
 		})
 }
 

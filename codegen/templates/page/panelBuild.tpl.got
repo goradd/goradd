@@ -7,7 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"bytes"
 	"github.com/goradd/goradd/pkg/orm/db"
-    //"strings"
 )
 
 func init() {
@@ -25,7 +24,7 @@ type PanelBuildTemplate struct {
 }
 
 func (n *PanelBuildTemplate) FileName(key string) string {
-	return n.TargetDir + "/" + key + "/panel/template_source/build.go"
+	return n.TargetDir + "/" + key + "/panel/build.go"
 }
 
 func (n *PanelBuildTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.Database, buf *bytes.Buffer) {

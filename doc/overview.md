@@ -82,12 +82,10 @@ The gen directory is organized as follows:
   * (database name)
     * connector
     * form
-      * template_source
     * model
       * node
     * panel
-      * template_source
-        * inactive
+      * inactive_templates
 
 <dl>
   <dt>model</dt>
@@ -96,10 +94,8 @@ The gen directory is organized as follows:
   <dd>Forms represent the top level object in a page and the enclosure for the rest of the controls on the page.</dd>
   <dt>panel</dt>
   <dd>Panels are div objects that encapsulate most of the generated controls in a form.</dd>
-  <dt>template_source</dt>
-  <dd>Contains got templates that control how controls and forms are drawn.</dd>
-  <dt>inactive</dt>
-  <dd>Contains default templates that you can activate by moving them to the template_source directory one level above them.</dd>
+  <dt>inactive_templates</dt>
+  <dd>Contains default templates that you can activate by moving them to the directory one level above them.</dd>
 </dl>
 
 See [Anatomy of the Generated Framework](#) for more details on the roles of the generated
@@ -134,18 +130,18 @@ To make permanent changes to a form file, you should move the file to
 a different directory, and then make sure that directory gets imported
 into your project. A good location for the form file is the 
 goradd-project/web/form directory, though any imported directory will work.
-Be sure to also move the matching template file located in the `template_source`
-directory to a `template_source` directory in the new location.
+Be sure to also move the matching template file (ending in .got)
+to the new location.
 
 After moving the file, you should change the *Path* const at the top of
 the file to the path you would like the user to use to get to the form.
 At any point you can restart your application and test your changes to 
 make sure they worked.
 
-If you change the template file in the template_source directory, (perhaps
+If you change the .got template file, (perhaps
 to add additional html), you will need to rebuild the template to reflect
 the changes. To rebuild the template, run `go generate` on the build.go
-file in the template_source directory.
+file.
 
 You do not have to use the code generated forms. You can start with an
 empty form, add controls and initialize them with data from the database
@@ -200,14 +196,13 @@ this works fine, but often you will want to add additional html to
 the controls and their surroundings.
 
 To customize the output of a panel, you need to give it a template.
-In the panel/template_source/inactive directory you will find *got* templates
+In the panel/inactive_templates directory you will find *got* templates
 that contain the controls that will be printed by each panel. To activate
-the template and prepare it for editing, move it from the inactive directory
-to the template_source above it. After you edit it, you also need
-to run `go generate build.go` on the build.go file in the template_source
-directory.
+the template and prepare it for editing, move it from the inactive_templates directory
+to the directory above it. After you edit it, you also need
+to run `go generate build.go` on the build.go file to generate the template.
 
-The templates in the panel/template_source directory are not touched by
+The templates that you move to the panel directory are not touched by
 the code generator. This means that if you add a field to a database, and
 then run the code generator, you will not see that field automatically
 appear in the form in the browser. You will need to add code to the

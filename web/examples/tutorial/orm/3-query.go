@@ -32,7 +32,7 @@ func init() {
 	tutorial.RegisterTutorialPage("orm", 3, "query", "Querying the Database Using a QueryBuilder", NewQueryPanel,
 		[]string {
 			sys.SourcePath(),
-			filepath.Join(dir, "template_source", "3-query.tpl.got"),
+			filepath.Join(dir, "3-query.tpl.got"),
 		})
 }
 

@@ -14,8 +14,8 @@ package main
 //go:generate go run codegen.go
 
 // Build the resulting templates
-//go:generate gofile generate goradd-project/gen/*/form/template_source/build.go
-//go:generate gofile generate goradd-project/gen/*/panel/template_source/build.go
+//go:generate gofile generate goradd-project/gen/*/form/build.go
+//go:generate gofile generate goradd-project/gen/*/panel/build.go
 
 // Build the templates that were moved to the form directory
-//go:generate gofile generate goradd-project/web/form/template_source/build.go
+//go:generate gofile generate goradd-project/web/form/build.go

@@ -24,7 +24,7 @@ type EditPanelTplTemplate struct {
 }
 
 func (n *EditPanelTplTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/panel/template_source/inactive/" + t.GoName + "EditPanel.tpl.got"
+	return n.TargetDir + "/" + key + "/panel/inactive_templates/" + t.GoName + "EditPanel.tpl.got"
 }
 
 func (n *EditPanelTplTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {

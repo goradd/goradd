@@ -32,7 +32,7 @@ func init() {
 	tutorial.RegisterTutorialPage("orm", 3, "crud", "Creating, Modifying and Deleting Database Objects", NewCrudPanel,
 		[]string {
 			sys.SourcePath(),
-			filepath.Join(dir, "template_source", "4-crud.tpl.got"),
+			filepath.Join(dir, "4-crud.tpl.got"),
 		})
 }
 

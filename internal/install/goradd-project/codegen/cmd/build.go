@@ -9,11 +9,11 @@ package main
 //go:generate gofile remove goradd-project/tmp/template/*.tpl.go
 //go:generate gofile remove goradd-project/gen/*/connector/*.base.go
 //go:generate gofile remove goradd-project/gen/*/form/*.go
-//go:generate gofile remove goradd-project/gen/*/form/template_source/*.tpl.got
+//go:generate gofile remove goradd-project/gen/*/form/*.tpl.got
 //go:generate gofile remove goradd-project/gen/*/model/*.base.go
 //go:generate gofile remove goradd-project/gen/*/model/node/*.go
 //go:generate gofile remove goradd-project/gen/*/panel/*.base.go
-//go:generate gofile remove goradd-project/gen/*/panel/template_source/inactive/*
+//go:generate gofile remove goradd-project/gen/*/panel/inactive_templates/*
 
 // Generate the templates
 //go:generate got -t got -o goradd-project/tmp/template -I goradd-project/codegen/templates/orm -d github.com/goradd/goradd/codegen/templates/orm
@@ -23,8 +23,8 @@ package main
 //go:generate go run codegen.go
 
 // Build the resulting templates
-//go:generate gofile generate goradd-project/gen/*/form/template_source/build.go
-//go:generate gofile generate goradd-project/gen/*/panel/template_source/build.go
+//go:generate gofile generate goradd-project/gen/*/form/build.go
+//go:generate gofile generate goradd-project/gen/*/panel/build.go
 
 // Build the templates that were moved to the form directory
-//go:generate gofile generate goradd-project/web/form/template_source/build.go
+//go:generate gofile generate goradd-project/web/form/build.go
