@@ -6,7 +6,7 @@ require (
 	github.com/gedex/inflector v0.0.0-20170307190818-16278e9db813
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/goradd/gengen v0.3.0
-	github.com/goradd/gofile v0.1.7
+	github.com/goradd/gofile v0.1.8
 	github.com/goradd/got v0.7.0
 	github.com/gorilla/websocket v1.4.0
 	github.com/knq/snaker v0.0.0-20181215144011-2bc8a4db4687
