@@ -28,7 +28,7 @@
 	which is reprinted below for your convenience.
 </p>
 <code>
-{{:h ../../examples/db/mysql.sql }}
+{{:h ../examples/db/mysql.sql }}
 </code>
 {{end}}
 

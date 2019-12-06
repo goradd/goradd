@@ -51,546 +51,570 @@ func init() {
 <code>
 `)
 
-			buf.WriteString(`<p>-- phpMyAdmin SQL Dump<br>
--- version 4.7.6<br>
--- https://www.phpmyadmin.net/<br>
---<br>
--- Host: db<br>
--- Generation Time: Jan 24, 2019 at 11:47 AM<br>
--- Server version: 5.6.34<br>
--- PHP Version: 7.1.9</p><br>
-<p>SET FOREIGN_KEY_CHECKS=0;<br>
-SET SQL_MODE = &#34;NO_AUTO_VALUE_ON_ZERO&#34;;<br>
-SET AUTOCOMMIT = 0;<br>
-START TRANSACTION;<br>
-SET time_zone = &#34;+00:00&#34;;</p><br>
-<p>--<br>
--- Database: ` + "`" + `goradd` + "`" + `<br>
---</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `address` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `address` + "`" + ` (<br>
-  ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `person_id` + "`" + ` int(10) UNSIGNED DEFAULT NULL,<br>
-  ` + "`" + `street` + "`" + ` varchar(100) NOT NULL,<br>
-  ` + "`" + `city` + "`" + ` varchar(100) DEFAULT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `address` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `address` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `person_id` + "`" + `, ` + "`" + `street` + "`" + `, ` + "`" + `city` + "`" + `) VALUES<br>
-(1, 1, &#39;1 Love Drive&#39;, &#39;Phoenix&#39;),<br>
-(2, 2, &#39;2 Doves and a Pine Cone Dr.&#39;, &#39;Dallas&#39;),<br>
-(3, 3, &#39;3 Gold Fish Pl.&#39;, &#39;New York&#39;),<br>
-(4, 3, &#39;323 W QCubed&#39;, &#39;New York&#39;),<br>
-(5, 5, &#39;22 Elm St&#39;, &#39;Palo Alto&#39;),<br>
-(6, 7, &#39;1 Pine St&#39;, &#39;San Jose&#39;),<br>
-(7, 7, &#39;421 Central Expw&#39;, &#39;Mountain View&#39;);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `login` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `login` + "`" + ` (<br>
-  ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `person_id` + "`" + ` int(10) UNSIGNED DEFAULT NULL,<br>
-  ` + "`" + `username` + "`" + ` varchar(20) NOT NULL,<br>
-  ` + "`" + `password` + "`" + ` varchar(20) DEFAULT NULL,<br>
-  ` + "`" + `is_enabled` + "`" + ` tinyint(1) NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `login` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `login` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `person_id` + "`" + `, ` + "`" + `username` + "`" + `, ` + "`" + `password` + "`" + `, ` + "`" + `is_enabled` + "`" + `) VALUES<br>
-(1, 1, &#39;jdoe&#39;, &#39;p@$$.w0rd&#39;, 0),<br>
-(2, 3, &#39;brobinson&#39;, &#39;p@$$.w0rd&#39;, 1),<br>
-(3, 4, &#39;mho&#39;, &#39;p@$$.w0rd&#39;, 1),<br>
-(4, 7, &#39;kwolfe&#39;, &#39;p@$$.w0rd&#39;, 0),<br>
-(5, NULL, &#39;system&#39;, &#39;p@$$.w0rd&#39;, 1);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `milestone` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `milestone` + "`" + ` (<br>
-  ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `project_id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `name` + "`" + ` varchar(50) NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `milestone` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `milestone` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `project_id` + "`" + `, ` + "`" + `name` + "`" + `) VALUES<br>
-(1, 1, &#39;Milestone A&#39;),<br>
-(2, 1, &#39;Milestone B&#39;),<br>
-(3, 1, &#39;Milestone C&#39;),<br>
-(4, 2, &#39;Milestone D&#39;),<br>
-(5, 2, &#39;Milestone E&#39;),<br>
-(6, 3, &#39;Milestone F&#39;),<br>
-(7, 4, &#39;Milestone G&#39;),<br>
-(8, 4, &#39;Milestone H&#39;),<br>
-(9, 4, &#39;Milestone I&#39;),<br>
-(10, 4, &#39;Milestone J&#39;);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `person` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `person` + "`" + ` (<br>
-  ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `first_name` + "`" + ` varchar(50) NOT NULL,<br>
-  ` + "`" + `last_name` + "`" + ` varchar(50) NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `person` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `first_name` + "`" + `, ` + "`" + `last_name` + "`" + `) VALUES<br>
-(1, &#39;John&#39;, &#39;Doe&#39;),<br>
-(2, &#39;Kendall&#39;, &#39;Public&#39;),<br>
-(3, &#39;Ben&#39;, &#39;Robinson&#39;),<br>
-(4, &#39;Mike&#39;, &#39;Ho&#39;),<br>
-(5, &#39;Alex&#39;, &#39;Smith&#39;),<br>
-(6, &#39;Wendy&#39;, &#39;Smith&#39;),<br>
-(7, &#39;Karen&#39;, &#39;Wolfe&#39;),<br>
-(8, &#39;Samantha&#39;, &#39;Jones&#39;),<br>
-(9, &#39;Linda&#39;, &#39;Brady&#39;),<br>
-(10, &#39;Jennifer&#39;, &#39;Smith&#39;),<br>
-(11, &#39;Brett&#39;, &#39;Carlisle&#39;),<br>
-(12, &#39;Jacob&#39;, &#39;Pratt&#39;);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `person_persontype_assn` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `person_persontype_assn` + "`" + ` (<br>
-  ` + "`" + `person_id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `person_type_id` + "`" + ` int(10) UNSIGNED NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `person_persontype_assn` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `person_persontype_assn` + "`" + ` (` + "`" + `person_id` + "`" + `, ` + "`" + `person_type_id` + "`" + `) VALUES<br>
-(3, 1),<br>
-(10, 1),<br>
-(1, 2),<br>
-(3, 2),<br>
-(7, 2),<br>
-(1, 3),<br>
-(3, 3),<br>
-(9, 3),<br>
-(2, 4),<br>
-(7, 4),<br>
-(2, 5),<br>
-(5, 5);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `person_type` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `person_type` + "`" + ` (<br>
-  ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `name` + "`" + ` varchar(50) NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `person_type` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `person_type` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `name` + "`" + `) VALUES<br>
-(4, &#39;Company Car&#39;),<br>
-(1, &#39;Contractor&#39;),<br>
-(3, &#39;Inactive&#39;),<br>
-(2, &#39;Manager&#39;),<br>
-(5, &#39;Works From Home&#39;);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `person_with_lock` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `person_with_lock` + "`" + ` (<br>
-  ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `first_name` + "`" + ` varchar(50) NOT NULL,<br>
-  ` + "`" + `last_name` + "`" + ` varchar(50) NOT NULL,<br>
-  ` + "`" + `sys_timestamp` + "`" + ` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `person_with_lock` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `person_with_lock` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `first_name` + "`" + `, ` + "`" + `last_name` + "`" + `, ` + "`" + `sys_timestamp` + "`" + `) VALUES<br>
-(1, &#39;John&#39;, &#39;Doe&#39;, NULL),<br>
-(2, &#39;Kendall&#39;, &#39;Public&#39;, NULL),<br>
-(3, &#39;Ben&#39;, &#39;Robinson&#39;, NULL),<br>
-(4, &#39;Mike&#39;, &#39;Ho&#39;, NULL),<br>
-(5, &#39;Alfred&#39;, &#39;Newman&#39;, NULL),<br>
-(6, &#39;Wendy&#39;, &#39;Johnson&#39;, NULL),<br>
-(7, &#39;Karen&#39;, &#39;Wolfe&#39;, NULL),<br>
-(8, &#39;Samantha&#39;, &#39;Jones&#39;, NULL),<br>
-(9, &#39;Linda&#39;, &#39;Brady&#39;, NULL),<br>
-(10, &#39;Jennifer&#39;, &#39;Smith&#39;, NULL),<br>
-(11, &#39;Brett&#39;, &#39;Carlisle&#39;, NULL),<br>
-(12, &#39;Jacob&#39;, &#39;Pratt&#39;, NULL);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `project` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `project` + "`" + ` (<br>
-  ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `num` + "`" + ` int(11) NOT NULL COMMENT &#39;To simplify checking test results and as a non pk id test&#39;,<br>
-  ` + "`" + `project_status_type_id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `manager_id` + "`" + ` int(10) UNSIGNED DEFAULT NULL,<br>
-  ` + "`" + `name` + "`" + ` varchar(100) NOT NULL,<br>
-  ` + "`" + `description` + "`" + ` text,<br>
-  ` + "`" + `start_date` + "`" + ` date DEFAULT NULL,<br>
-  ` + "`" + `end_date` + "`" + ` date DEFAULT NULL,<br>
-  ` + "`" + `budget` + "`" + ` decimal(12,2) DEFAULT NULL,<br>
-  ` + "`" + `spent` + "`" + ` decimal(12,2) DEFAULT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `project` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `num` + "`" + `, ` + "`" + `project_status_type_id` + "`" + `, ` + "`" + `manager_id` + "`" + `, ` + "`" + `name` + "`" + `, ` + "`" + `description` + "`" + `, ` + "`" + `start_date` + "`" + `, ` + "`" + `end_date` + "`" + `, ` + "`" + `budget` + "`" + `, ` + "`" + `spent` + "`" + `) VALUES<br>
-(1, 1, 3, 7, &#39;ACME Website Redesign&#39;, &#39;The redesign of the main website for ACME Incorporated&#39;, &#39;2004-03-01&#39;, &#39;2004-07-01&#39;, &#39;9560.25&#39;, &#39;10250.75&#39;),<br>
-(2, 2, 1, 4, &#39;State College HR System&#39;, &#39;Implementation of a back-office Human Resources system for State College&#39;, &#39;2006-02-15&#39;, NULL, &#39;80500.00&#39;, &#39;73200.00&#39;),<br>
-(3, 3, 1, 1, &#39;Blueman Industrial Site Architecture&#39;, &#39;Main website architecture for the Blueman Industrial Group&#39;, &#39;2006-03-01&#39;, &#39;2006-04-15&#39;, &#39;2500.00&#39;, &#39;4200.50&#39;),<br>
-(4, 4, 2, 7, &#39;ACME Payment System&#39;, &#39;Accounts Payable payment system for ACME Incorporated&#39;, &#39;2005-08-15&#39;, &#39;2005-10-20&#39;, &#39;5124.67&#39;, &#39;5175.30&#39;);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `project_status_type` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `project_status_type` + "`" + ` (<br>
-  ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `name` + "`" + ` varchar(50) NOT NULL,<br>
-  ` + "`" + `description` + "`" + ` text,<br>
-  ` + "`" + `guidelines` + "`" + ` text,<br>
-  ` + "`" + `is_active` + "`" + ` tinyint(1) NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `project_status_type` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `project_status_type` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `name` + "`" + `, ` + "`" + `description` + "`" + `, ` + "`" + `guidelines` + "`" + `, ` + "`" + `is_active` + "`" + `) VALUES<br>
-(1, &#39;Open&#39;, &#39;The project is currently active&#39;, &#39;All projects that we are working on should be in this state&#39;, 1),<br>
-(2, &#39;Cancelled&#39;, &#39;The project has been canned&#39;, NULL, 1),<br>
-(3, &#39;Completed&#39;, &#39;The project has been completed successfully&#39;, &#39;Celebrate successes!&#39;, 1);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `related_project_assn` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `related_project_assn` + "`" + ` (<br>
-  ` + "`" + `parent_id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `child_id` + "`" + ` int(10) UNSIGNED NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `related_project_assn` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `related_project_assn` + "`" + ` (` + "`" + `parent_id` + "`" + `, ` + "`" + `child_id` + "`" + `) VALUES<br>
-(4, 1),<br>
-(1, 3),<br>
-(1, 4);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `team_member_project_assn` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `team_member_project_assn` + "`" + ` (<br>
-  ` + "`" + `team_member_id` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `project_id` + "`" + ` int(10) UNSIGNED NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `team_member_project_assn` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `team_member_project_assn` + "`" + ` (` + "`" + `team_member_id` + "`" + `, ` + "`" + `project_id` + "`" + `) VALUES<br>
-(2, 1),<br>
-(5, 1),<br>
-(6, 1),<br>
-(7, 1),<br>
-(8, 1),<br>
-(2, 2),<br>
-(4, 2),<br>
-(5, 2),<br>
-(7, 2),<br>
-(9, 2),<br>
-(10, 2),<br>
-(1, 3),<br>
-(4, 3),<br>
-(6, 3),<br>
-(8, 3),<br>
-(10, 3),<br>
-(1, 4),<br>
-(2, 4),<br>
-(3, 4),<br>
-(5, 4),<br>
-(8, 4),<br>
-(11, 4),<br>
-(12, 4);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `tmp` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `tmp` + "`" + ` (<br>
-  ` + "`" + `d` + "`" + ` decimal(5,2) NOT NULL,<br>
-  ` + "`" + `i` + "`" + ` smallint(5) NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `tmp` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `tmp` + "`" + ` (` + "`" + `d` + "`" + `, ` + "`" + `i` + "`" + `) VALUES<br>
-(&#39;-123.46&#39;, 12345);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `two_key` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `two_key` + "`" + ` (<br>
-  ` + "`" + `server` + "`" + ` varchar(50) NOT NULL,<br>
-  ` + "`" + `directory` + "`" + ` varchar(50) NOT NULL,<br>
-  ` + "`" + `file_name` + "`" + ` varchar(50) NOT NULL,<br>
-  ` + "`" + `person_id` + "`" + ` int(11) UNSIGNED NOT NULL,<br>
-  ` + "`" + `project_id` + "`" + ` int(11) UNSIGNED DEFAULT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `two_key` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `two_key` + "`" + ` (` + "`" + `server` + "`" + `, ` + "`" + `directory` + "`" + `, ` + "`" + `file_name` + "`" + `, ` + "`" + `person_id` + "`" + `, ` + "`" + `project_id` + "`" + `) VALUES<br>
-(&#39;cnn.com&#39;, &#39;us&#39;, &#39;news&#39;, 1, 1),<br>
-(&#39;google.com&#39;, &#39;drive&#39;, &#39;&#39;, 2, 2),<br>
-(&#39;google.com&#39;, &#39;mail&#39;, &#39;mail.html&#39;, 3, 2),<br>
-(&#39;google.com&#39;, &#39;news&#39;, &#39;news.php&#39;, 4, 3),<br>
-(&#39;mail.google.com&#39;, &#39;mail&#39;, &#39;inbox&#39;, 5, NULL),<br>
-(&#39;yahoo.com&#39;, &#39;&#39;, &#39;&#39;, 6, NULL);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `type_test` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `type_test` + "`" + ` (<br>
-  ` + "`" + `id` + "`" + ` int(11) NOT NULL,<br>
-  ` + "`" + `date` + "`" + ` date DEFAULT NULL,<br>
-  ` + "`" + `time` + "`" + ` time DEFAULT NULL,<br>
-  ` + "`" + `date_time` + "`" + ` datetime DEFAULT NULL,<br>
-  ` + "`" + `ts` + "`" + ` timestamp NULL DEFAULT CURRENT_TIMESTAMP,<br>
-  ` + "`" + `test_int` + "`" + ` int(11) DEFAULT &#39;5&#39;,<br>
-  ` + "`" + `test_float` + "`" + ` float DEFAULT NULL,<br>
-  ` + "`" + `test_text` + "`" + ` text,<br>
-  ` + "`" + `test_bit` + "`" + ` tinyint(1) DEFAULT NULL,<br>
-  ` + "`" + `test_varchar` + "`" + ` varchar(10) DEFAULT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Dumping data for table ` + "`" + `type_test` + "`" + `<br>
---</p><br>
-<p>INSERT INTO ` + "`" + `type_test` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `date` + "`" + `, ` + "`" + `time` + "`" + `, ` + "`" + `date_time` + "`" + `, ` + "`" + `ts` + "`" + `, ` + "`" + `test_int` + "`" + `, ` + "`" + `test_float` + "`" + `, ` + "`" + `test_text` + "`" + `, ` + "`" + `test_bit` + "`" + `, ` + "`" + `test_varchar` + "`" + `) VALUES<br>
-(1, &#39;2019-01-02&#39;, &#39;06:17:28&#39;, &#39;2019-01-02 06:17:28&#39;, &#39;2019-01-23 08:52:06&#39;, 5, 1.2, &#39;Sample&#39;, 1, &#39;Sample&#39;);</p><br>
-<p>-- --------------------------------------------------------</p><br>
-<p>--<br>
--- Table structure for table ` + "`" + `unsupported_types` + "`" + `<br>
---</p><br>
-<p>CREATE TABLE ` + "`" + `unsupported_types` + "`" + ` (<br>
-  ` + "`" + `type_set` + "`" + ` set(&#39;a&#39;,&#39;b&#39;,&#39;c&#39;) NOT NULL,<br>
-  ` + "`" + `type_enum` + "`" + ` enum(&#39;a&#39;,&#39;b&#39;,&#39;c&#39;) NOT NULL,<br>
-  ` + "`" + `type_decimal` + "`" + ` decimal(10,4) NOT NULL,<br>
-  ` + "`" + `type_double` + "`" + ` double NOT NULL,<br>
-  ` + "`" + `type_geo` + "`" + ` geometry NOT NULL,<br>
-  ` + "`" + `type_tiny_blob` + "`" + ` tinyblob NOT NULL,<br>
-  ` + "`" + `type_medium_blob` + "`" + ` mediumblob NOT NULL,<br>
-  ` + "`" + `type_varbinary` + "`" + ` varbinary(10) NOT NULL,<br>
-  ` + "`" + `type_longtext` + "`" + ` longtext NOT NULL,<br>
-  ` + "`" + `type_binary` + "`" + ` binary(10) NOT NULL,<br>
-  ` + "`" + `type_small` + "`" + ` smallint(6) NOT NULL,<br>
-  ` + "`" + `type_medium` + "`" + ` mediumint(9) NOT NULL,<br>
-  ` + "`" + `type_big` + "`" + ` bigint(20) NOT NULL,<br>
-  ` + "`" + `type_polygon` + "`" + ` polygon NOT NULL,<br>
-  ` + "`" + `type_serial` + "`" + ` bigint(20) UNSIGNED NOT NULL,<br>
-  ` + "`" + `type_unsigned` + "`" + ` int(10) UNSIGNED NOT NULL,<br>
-  ` + "`" + `type_multFk1` + "`" + ` varchar(50) NOT NULL,<br>
-  ` + "`" + `type_multiFk2` + "`" + ` varchar(50) NOT NULL<br>
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p><br>
-<p>--<br>
--- Indexes for dumped tables<br>
---</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `address` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `address` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `id` + "`" + `),<br>
-  ADD KEY ` + "`" + `IDX_address_1` + "`" + ` (` + "`" + `person_id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `login` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `login` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `id` + "`" + `),<br>
-  ADD UNIQUE KEY ` + "`" + `IDX_login_2` + "`" + ` (` + "`" + `username` + "`" + `),<br>
-  ADD UNIQUE KEY ` + "`" + `IDX_login_1` + "`" + ` (` + "`" + `person_id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `milestone` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `milestone` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `id` + "`" + `),<br>
-  ADD KEY ` + "`" + `IDX_milestoneproj_1` + "`" + ` (` + "`" + `project_id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `person` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `person` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `id` + "`" + `),<br>
-  ADD KEY ` + "`" + `IDX_person_1` + "`" + ` (` + "`" + `last_name` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `person_persontype_assn` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `person_persontype_assn` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `person_id` + "`" + `,` + "`" + `person_type_id` + "`" + `),<br>
-  ADD KEY ` + "`" + `person_type_id` + "`" + ` (` + "`" + `person_type_id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `person_type` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `person_type` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `id` + "`" + `),<br>
-  ADD UNIQUE KEY ` + "`" + `name` + "`" + ` (` + "`" + `name` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `person_with_lock` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `person_with_lock` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `project` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `project` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `id` + "`" + `),<br>
-  ADD UNIQUE KEY ` + "`" + `num` + "`" + ` (` + "`" + `num` + "`" + `),<br>
-  ADD KEY ` + "`" + `IDX_project_1` + "`" + ` (` + "`" + `project_status_type_id` + "`" + `),<br>
-  ADD KEY ` + "`" + `IDX_project_2` + "`" + ` (` + "`" + `manager_id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `project_status_type` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `project_status_type` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `id` + "`" + `),<br>
-  ADD UNIQUE KEY ` + "`" + `IDX_projectstatustype_1` + "`" + ` (` + "`" + `name` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `related_project_assn` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `related_project_assn` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `parent_id` + "`" + `,` + "`" + `child_id` + "`" + `),<br>
-  ADD KEY ` + "`" + `IDX_relatedprojectassn_2` + "`" + ` (` + "`" + `child_id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `team_member_project_assn` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `team_member_project_assn` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `team_member_id` + "`" + `,` + "`" + `project_id` + "`" + `) USING BTREE,<br>
-  ADD KEY ` + "`" + `IDX_teammemberprojectassn_2` + "`" + ` (` + "`" + `project_id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `tmp` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `tmp` + "`" + `<br>
-  ADD UNIQUE KEY ` + "`" + `d` + "`" + ` (` + "`" + `d` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `two_key` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `two_key` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `server` + "`" + `,` + "`" + `directory` + "`" + `),<br>
-  ADD KEY ` + "`" + `person_id` + "`" + ` (` + "`" + `person_id` + "`" + `),<br>
-  ADD KEY ` + "`" + `project_id` + "`" + ` (` + "`" + `project_id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `type_test` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `type_test` + "`" + `<br>
-  ADD PRIMARY KEY (` + "`" + `id` + "`" + `);</p><br>
-<p>--<br>
--- Indexes for table ` + "`" + `unsupported_types` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `unsupported_types` + "`" + `<br>
-  ADD UNIQUE KEY ` + "`" + `type_serial` + "`" + ` (` + "`" + `type_serial` + "`" + `),<br>
-  ADD KEY ` + "`" + `type_multFk1` + "`" + ` (` + "`" + `type_multFk1` + "`" + `,` + "`" + `type_multiFk2` + "`" + `);</p><br>
-<p>--<br>
--- AUTO_INCREMENT for dumped tables<br>
---</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `address` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `address` + "`" + `<br>
-  MODIFY ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `login` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `login` + "`" + `<br>
-  MODIFY ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `milestone` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `milestone` + "`" + `<br>
-  MODIFY ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `person` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `person` + "`" + `<br>
-  MODIFY ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `person_type` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `person_type` + "`" + `<br>
-  MODIFY ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `person_with_lock` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `person_with_lock` + "`" + `<br>
-  MODIFY ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `project` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `project` + "`" + `<br>
-  MODIFY ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `project_status_type` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `project_status_type` + "`" + `<br>
-  MODIFY ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `type_test` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `type_test` + "`" + `<br>
-  MODIFY ` + "`" + `id` + "`" + ` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;</p><br>
-<p>--<br>
--- AUTO_INCREMENT for table ` + "`" + `unsupported_types` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `unsupported_types` + "`" + `<br>
-  MODIFY ` + "`" + `type_serial` + "`" + ` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;</p><br>
-<p>--<br>
--- Constraints for dumped tables<br>
---</p><br>
-<p>--<br>
--- Constraints for table ` + "`" + `address` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `address` + "`" + `<br>
-  ADD CONSTRAINT ` + "`" + `person_address` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `);</p><br>
-<p>--<br>
--- Constraints for table ` + "`" + `login` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `login` + "`" + `<br>
-  ADD CONSTRAINT ` + "`" + `person_login` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `);</p><br>
-<p>--<br>
--- Constraints for table ` + "`" + `milestone` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `milestone` + "`" + `<br>
-  ADD CONSTRAINT ` + "`" + `project_milestone` + "`" + ` FOREIGN KEY (` + "`" + `project_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `);</p><br>
-<p>--<br>
--- Constraints for table ` + "`" + `person_persontype_assn` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `person_persontype_assn` + "`" + `<br>
-  ADD CONSTRAINT ` + "`" + `person_persontype_assn_1` + "`" + ` FOREIGN KEY (` + "`" + `person_type_id` + "`" + `) REFERENCES ` + "`" + `person_type` + "`" + ` (` + "`" + `id` + "`" + `),<br>
-  ADD CONSTRAINT ` + "`" + `person_persontype_assn_2` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `);</p><br>
-<p>--<br>
--- Constraints for table ` + "`" + `project` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `project` + "`" + `<br>
-  ADD CONSTRAINT ` + "`" + `person_project` + "`" + ` FOREIGN KEY (` + "`" + `manager_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `),<br>
-  ADD CONSTRAINT ` + "`" + `project_status_type_project` + "`" + ` FOREIGN KEY (` + "`" + `project_status_type_id` + "`" + `) REFERENCES ` + "`" + `project_status_type` + "`" + ` (` + "`" + `id` + "`" + `);</p><br>
-<p>--<br>
--- Constraints for table ` + "`" + `related_project_assn` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `related_project_assn` + "`" + `<br>
-  ADD CONSTRAINT ` + "`" + `related_project_assn_1` + "`" + ` FOREIGN KEY (` + "`" + `parent_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `),<br>
-  ADD CONSTRAINT ` + "`" + `related_project_assn_2` + "`" + ` FOREIGN KEY (` + "`" + `child_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `);</p><br>
-<p>--<br>
--- Constraints for table ` + "`" + `team_member_project_assn` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `team_member_project_assn` + "`" + `<br>
-  ADD CONSTRAINT ` + "`" + `person_team_member_project_assn` + "`" + ` FOREIGN KEY (` + "`" + `team_member_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `),<br>
-  ADD CONSTRAINT ` + "`" + `project_team_member_project_assn` + "`" + ` FOREIGN KEY (` + "`" + `project_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `);</p><br>
-<p>--<br>
--- Constraints for table ` + "`" + `two_key` + "`" + `<br>
---<br>
-ALTER TABLE ` + "`" + `two_key` + "`" + `<br>
-  ADD CONSTRAINT ` + "`" + `two_key_person` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `),<br>
-  ADD CONSTRAINT ` + "`" + `two_key_project` + "`" + ` FOREIGN KEY (` + "`" + `project_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `);<br>
-SET FOREIGN_KEY_CHECKS=1;<br>
-COMMIT;<br>
+			buf.WriteString(`<p>-- phpMyAdmin SQL Dump
+-- version 4.9.0.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: db
+-- Generation Time: Dec 03, 2019 at 08:03 PM
+-- Server version: 5.7.28
+-- PHP Version: 7.2.19</p>
+<p>SET FOREIGN_KEY_CHECKS=0;
+SET SQL_MODE = &#34;NO_AUTO_VALUE_ON_ZERO&#34;;
+SET time_zone = &#34;+00:00&#34;;</p>
+<p>--
+-- Database: ` + "`" + `goradd` + "`" + `
+--</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `address` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `address` + "`" + ` (
+                           ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                           ` + "`" + `person_id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                           ` + "`" + `street` + "`" + ` varchar(100) NOT NULL,
+                           ` + "`" + `city` + "`" + ` varchar(100) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `address` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `address` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `person_id` + "`" + `, ` + "`" + `street` + "`" + `, ` + "`" + `city` + "`" + `) VALUES
+(1, 1, &#39;1 Love Drive&#39;, &#39;Phoenix&#39;),
+(2, 2, &#39;2 Doves and a Pine Cone Dr.&#39;, &#39;Dallas&#39;),
+(3, 3, &#39;3 Gold Fish Pl.&#39;, &#39;New York&#39;),
+(4, 3, &#39;323 W QCubed&#39;, &#39;New York&#39;),
+(5, 5, &#39;22 Elm St&#39;, &#39;Palo Alto&#39;),
+(6, 7, &#39;1 Pine St&#39;, &#39;San Jose&#39;),
+(7, 7, &#39;421 Central Expw&#39;, &#39;Mountain View&#39;);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `employee_info` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `employee_info` + "`" + ` (
+                                 ` + "`" + `id` + "`" + ` int(11) NOT NULL,
+                                 ` + "`" + `person_id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                                 ` + "`" + `employee_number` + "`" + ` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `login` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `login` + "`" + ` (
+                         ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                         ` + "`" + `person_id` + "`" + ` int(11) UNSIGNED DEFAULT NULL,
+                         ` + "`" + `username` + "`" + ` varchar(20) NOT NULL,
+                         ` + "`" + `password` + "`" + ` varchar(20) DEFAULT NULL,
+                         ` + "`" + `is_enabled` + "`" + ` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `login` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `login` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `person_id` + "`" + `, ` + "`" + `username` + "`" + `, ` + "`" + `password` + "`" + `, ` + "`" + `is_enabled` + "`" + `) VALUES
+(1, 1, &#39;jdoe&#39;, &#39;p@$$.w0rd&#39;, 0),
+(2, 3, &#39;brobinson&#39;, &#39;p@$$.w0rd&#39;, 1),
+(3, 4, &#39;mho&#39;, &#39;p@$$.w0rd&#39;, 1),
+(4, 7, &#39;kwolfe&#39;, &#39;p@$$.w0rd&#39;, 0),
+(5, NULL, &#39;system&#39;, &#39;p@$$.w0rd&#39;, 1);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `milestone` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `milestone` + "`" + ` (
+                             ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL,
+                             ` + "`" + `project_id` + "`" + ` int(10) UNSIGNED NOT NULL,
+                             ` + "`" + `name` + "`" + ` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `milestone` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `milestone` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `project_id` + "`" + `, ` + "`" + `name` + "`" + `) VALUES
+(1, 1, &#39;Milestone A&#39;),
+(2, 1, &#39;Milestone B&#39;),
+(3, 1, &#39;Milestone C&#39;),
+(4, 2, &#39;Milestone D&#39;),
+(5, 2, &#39;Milestone E&#39;),
+(6, 3, &#39;Milestone F&#39;),
+(7, 4, &#39;Milestone G&#39;),
+(8, 4, &#39;Milestone H&#39;),
+(9, 4, &#39;Milestone I&#39;),
+(10, 4, &#39;Milestone J&#39;);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `person` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `person` + "`" + ` (
+                          ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                          ` + "`" + `first_name` + "`" + ` varchar(50) NOT NULL,
+                          ` + "`" + `last_name` + "`" + ` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `person` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `first_name` + "`" + `, ` + "`" + `last_name` + "`" + `) VALUES
+(1, &#39;John&#39;, &#39;Doe&#39;),
+(2, &#39;Kendall&#39;, &#39;Public&#39;),
+(3, &#39;Ben&#39;, &#39;Robinson&#39;),
+(4, &#39;Mike&#39;, &#39;Ho&#39;),
+(5, &#39;Alex&#39;, &#39;Smith&#39;),
+(6, &#39;Wendy&#39;, &#39;Smith&#39;),
+(7, &#39;Karen&#39;, &#39;Wolfe&#39;),
+(8, &#39;Samantha&#39;, &#39;Jones&#39;),
+(9, &#39;Linda&#39;, &#39;Brady&#39;),
+(10, &#39;Jennifer&#39;, &#39;Smith&#39;),
+(11, &#39;Brett&#39;, &#39;Carlisle&#39;),
+(12, &#39;Jacob&#39;, &#39;Pratt&#39;);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `person_persontype_assn` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `person_persontype_assn` + "`" + ` (
+                                          ` + "`" + `person_id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                                          ` + "`" + `person_type_id` + "`" + ` int(11) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `person_persontype_assn` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `person_persontype_assn` + "`" + ` (` + "`" + `person_id` + "`" + `, ` + "`" + `person_type_id` + "`" + `) VALUES
+(3, 1),
+(10, 1),
+(1, 2),
+(3, 2),
+(7, 2),
+(1, 3),
+(3, 3),
+(9, 3),
+(2, 4),
+(7, 4),
+(2, 5),
+(5, 5);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `person_type` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `person_type` + "`" + ` (
+                               ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                               ` + "`" + `name` + "`" + ` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `person_type` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `person_type` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `name` + "`" + `) VALUES
+(4, &#39;Company Car&#39;),
+(1, &#39;Contractor&#39;),
+(3, &#39;Inactive&#39;),
+(2, &#39;Manager&#39;),
+(5, &#39;Works From Home&#39;);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `person_with_lock` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `person_with_lock` + "`" + ` (
+                                    ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                                    ` + "`" + `first_name` + "`" + ` varchar(50) NOT NULL,
+                                    ` + "`" + `last_name` + "`" + ` varchar(50) NOT NULL,
+                                    ` + "`" + `sys_timestamp` + "`" + ` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `person_with_lock` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `person_with_lock` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `first_name` + "`" + `, ` + "`" + `last_name` + "`" + `, ` + "`" + `sys_timestamp` + "`" + `) VALUES
+(1, &#39;John&#39;, &#39;Doe&#39;, NULL),
+(2, &#39;Kendall&#39;, &#39;Public&#39;, NULL),
+(3, &#39;Ben&#39;, &#39;Robinson&#39;, NULL),
+(4, &#39;Mike&#39;, &#39;Ho&#39;, NULL),
+(5, &#39;Alfred&#39;, &#39;Newman&#39;, NULL),
+(6, &#39;Wendy&#39;, &#39;Johnson&#39;, NULL),
+(7, &#39;Karen&#39;, &#39;Wolfe&#39;, NULL),
+(8, &#39;Samantha&#39;, &#39;Jones&#39;, NULL),
+(9, &#39;Linda&#39;, &#39;Brady&#39;, NULL),
+(10, &#39;Jennifer&#39;, &#39;Smith&#39;, NULL),
+(11, &#39;Brett&#39;, &#39;Carlisle&#39;, NULL),
+(12, &#39;Jacob&#39;, &#39;Pratt&#39;, NULL);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `project` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `project` + "`" + ` (
+                           ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                           ` + "`" + `num` + "`" + ` int(11) NOT NULL COMMENT &#39;To simplify checking test results and as a non pk id test&#39;,
+                           ` + "`" + `project_status_type_id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                           ` + "`" + `manager_id` + "`" + ` int(11) UNSIGNED DEFAULT NULL,
+                           ` + "`" + `name` + "`" + ` varchar(100) NOT NULL,
+                           ` + "`" + `description` + "`" + ` text,
+                           ` + "`" + `start_date` + "`" + ` date DEFAULT NULL,
+                           ` + "`" + `end_date` + "`" + ` date DEFAULT NULL,
+                           ` + "`" + `budget` + "`" + ` decimal(12,2) DEFAULT NULL,
+                           ` + "`" + `spent` + "`" + ` decimal(12,2) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `project` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `num` + "`" + `, ` + "`" + `project_status_type_id` + "`" + `, ` + "`" + `manager_id` + "`" + `, ` + "`" + `name` + "`" + `, ` + "`" + `description` + "`" + `, ` + "`" + `start_date` + "`" + `, ` + "`" + `end_date` + "`" + `, ` + "`" + `budget` + "`" + `, ` + "`" + `spent` + "`" + `) VALUES
+(1, 1, 3, 7, &#39;ACME Website Redesign&#39;, &#39;The redesign of the main website for ACME Incorporated&#39;, &#39;2004-03-01&#39;, &#39;2004-07-01&#39;, &#39;9560.25&#39;, &#39;10250.75&#39;),
+(2, 2, 1, 4, &#39;State College HR System&#39;, &#39;Implementation of a back-office Human Resources system for State College&#39;, &#39;2006-02-15&#39;, NULL, &#39;80500.00&#39;, &#39;73200.00&#39;),
+(3, 3, 1, 1, &#39;Blueman Industrial Site Architecture&#39;, &#39;Main website architecture for the Blueman Industrial Group&#39;, &#39;2006-03-01&#39;, &#39;2006-04-15&#39;, &#39;2500.00&#39;, &#39;4200.50&#39;),
+(4, 4, 2, 7, &#39;ACME Payment System&#39;, &#39;Accounts Payable payment system for ACME Incorporated&#39;, &#39;2005-08-15&#39;, &#39;2005-10-20&#39;, &#39;5124.67&#39;, &#39;5175.30&#39;);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `project_status_type` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `project_status_type` + "`" + ` (
+                                       ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                                       ` + "`" + `name` + "`" + ` varchar(50) NOT NULL,
+                                       ` + "`" + `description` + "`" + ` text,
+                                       ` + "`" + `guidelines` + "`" + ` text,
+                                       ` + "`" + `is_active` + "`" + ` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `project_status_type` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `project_status_type` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `name` + "`" + `, ` + "`" + `description` + "`" + `, ` + "`" + `guidelines` + "`" + `, ` + "`" + `is_active` + "`" + `) VALUES
+(1, &#39;Open&#39;, &#39;The project is currently active&#39;, &#39;All projects that we are working on should be in this state&#39;, 1),
+(2, &#39;Cancelled&#39;, &#39;The project has been canned&#39;, NULL, 1),
+(3, &#39;Completed&#39;, &#39;The project has been completed successfully&#39;, &#39;Celebrate successes!&#39;, 1),
+(4, &#39;Planned&#39;, &#39;Project is in the planning stages and has not been assigned a manager&#39;, &#39;Get ready&#39;, 0);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `related_project_assn` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `related_project_assn` + "`" + ` (
+                                        ` + "`" + `parent_id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                                        ` + "`" + `child_id` + "`" + ` int(11) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `related_project_assn` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `related_project_assn` + "`" + ` (` + "`" + `parent_id` + "`" + `, ` + "`" + `child_id` + "`" + `) VALUES
+(4, 1),
+(1, 3),
+(1, 4);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `team_member_project_assn` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `team_member_project_assn` + "`" + ` (
+                                            ` + "`" + `team_member_id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                                            ` + "`" + `project_id` + "`" + ` int(11) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `team_member_project_assn` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `team_member_project_assn` + "`" + ` (` + "`" + `team_member_id` + "`" + `, ` + "`" + `project_id` + "`" + `) VALUES
+(2, 1),
+(5, 1),
+(6, 1),
+(7, 1),
+(8, 1),
+(2, 2),
+(4, 2),
+(5, 2),
+(7, 2),
+(9, 2),
+(10, 2),
+(1, 3),
+(4, 3),
+(6, 3),
+(8, 3),
+(10, 3),
+(1, 4),
+(2, 4),
+(3, 4),
+(5, 4),
+(8, 4),
+(11, 4),
+(12, 4);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `tmp` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `tmp` + "`" + ` (
+                       ` + "`" + `d` + "`" + ` decimal(5,2) NOT NULL,
+                       ` + "`" + `i` + "`" + ` smallint(5) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `tmp` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `tmp` + "`" + ` (` + "`" + `d` + "`" + `, ` + "`" + `i` + "`" + `) VALUES
+(&#39;-123.46&#39;, 12345);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `two_key` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `two_key` + "`" + ` (
+                           ` + "`" + `server` + "`" + ` varchar(50) NOT NULL,
+                           ` + "`" + `directory` + "`" + ` varchar(50) NOT NULL,
+                           ` + "`" + `file_name` + "`" + ` varchar(50) NOT NULL,
+                           ` + "`" + `person_id` + "`" + ` int(11) UNSIGNED NOT NULL,
+                           ` + "`" + `project_id` + "`" + ` int(11) UNSIGNED DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `two_key` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `two_key` + "`" + ` (` + "`" + `server` + "`" + `, ` + "`" + `directory` + "`" + `, ` + "`" + `file_name` + "`" + `, ` + "`" + `person_id` + "`" + `, ` + "`" + `project_id` + "`" + `) VALUES
+(&#39;cnn.com&#39;, &#39;us&#39;, &#39;news&#39;, 1, 1),
+(&#39;google.com&#39;, &#39;drive&#39;, &#39;&#39;, 2, 2),
+(&#39;google.com&#39;, &#39;mail&#39;, &#39;mail.html&#39;, 3, 2),
+(&#39;google.com&#39;, &#39;news&#39;, &#39;news.php&#39;, 4, 3),
+(&#39;mail.google.com&#39;, &#39;mail&#39;, &#39;inbox&#39;, 5, NULL),
+(&#39;yahoo.com&#39;, &#39;&#39;, &#39;&#39;, 6, NULL);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `type_test` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `type_test` + "`" + ` (
+                             ` + "`" + `id` + "`" + ` int(11) NOT NULL,
+                             ` + "`" + `date` + "`" + ` date DEFAULT NULL,
+                             ` + "`" + `time` + "`" + ` time DEFAULT NULL,
+                             ` + "`" + `date_time` + "`" + ` datetime DEFAULT NULL,
+                             ` + "`" + `ts` + "`" + ` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+                             ` + "`" + `test_int` + "`" + ` int(11) DEFAULT &#39;5&#39;,
+                             ` + "`" + `test_float` + "`" + ` float DEFAULT NULL,
+                             ` + "`" + `test_double` + "`" + ` double NOT NULL,
+                             ` + "`" + `test_text` + "`" + ` text,
+                             ` + "`" + `test_bit` + "`" + ` tinyint(1) DEFAULT NULL,
+                             ` + "`" + `test_varchar` + "`" + ` varchar(10) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Dumping data for table ` + "`" + `type_test` + "`" + `
+--</p>
+<p>INSERT INTO ` + "`" + `type_test` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `date` + "`" + `, ` + "`" + `time` + "`" + `, ` + "`" + `date_time` + "`" + `, ` + "`" + `ts` + "`" + `, ` + "`" + `test_int` + "`" + `, ` + "`" + `test_float` + "`" + `, ` + "`" + `test_double` + "`" + `, ` + "`" + `test_text` + "`" + `, ` + "`" + `test_bit` + "`" + `, ` + "`" + `test_varchar` + "`" + `) VALUES
+(1, &#39;2019-01-02&#39;, &#39;06:17:28&#39;, &#39;2019-01-02 06:17:28&#39;, &#39;2019-01-23 08:52:06&#39;, 5, 1.2, 3.33, &#39;Sample&#39;, 1, &#39;Sample&#39;);</p>
+<p>-- --------------------------------------------------------</p>
+<p>--
+-- Table structure for table ` + "`" + `unsupported_types` + "`" + `
+--</p>
+<p>CREATE TABLE ` + "`" + `unsupported_types` + "`" + ` (
+                                     ` + "`" + `type_set` + "`" + ` set(&#39;a&#39;,&#39;b&#39;,&#39;c&#39;) NOT NULL,
+                                     ` + "`" + `type_enum` + "`" + ` enum(&#39;a&#39;,&#39;b&#39;,&#39;c&#39;) NOT NULL,
+                                     ` + "`" + `type_decimal` + "`" + ` decimal(10,4) NOT NULL,
+                                     ` + "`" + `type_double` + "`" + ` double NOT NULL,
+                                     ` + "`" + `type_geo` + "`" + ` geometry NOT NULL,
+                                     ` + "`" + `type_tiny_blob` + "`" + ` tinyblob NOT NULL,
+                                     ` + "`" + `type_medium_blob` + "`" + ` mediumblob NOT NULL,
+                                     ` + "`" + `type_varbinary` + "`" + ` varbinary(10) NOT NULL,
+                                     ` + "`" + `type_longtext` + "`" + ` longtext NOT NULL,
+                                     ` + "`" + `type_binary` + "`" + ` binary(10) NOT NULL,
+                                     ` + "`" + `type_small` + "`" + ` smallint(6) NOT NULL,
+                                     ` + "`" + `type_medium` + "`" + ` mediumint(9) NOT NULL,
+                                     ` + "`" + `type_big` + "`" + ` bigint(20) NOT NULL,
+                                     ` + "`" + `type_polygon` + "`" + ` polygon NOT NULL,
+                                     ` + "`" + `type_serial` + "`" + ` bigint(20) UNSIGNED NOT NULL,
+                                     ` + "`" + `type_unsigned` + "`" + ` int(10) UNSIGNED NOT NULL,
+                                     ` + "`" + `type_multFk1` + "`" + ` varchar(50) NOT NULL,
+                                     ` + "`" + `type_multiFk2` + "`" + ` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
+<p>--
+-- Indexes for dumped tables
+--</p>
+<p>--
+-- Indexes for table ` + "`" + `address` + "`" + `
+--
+ALTER TABLE ` + "`" + `address` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `),
+    ADD KEY ` + "`" + `IDX_address_1` + "`" + ` (` + "`" + `person_id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `employee_info` + "`" + `
+--
+ALTER TABLE ` + "`" + `employee_info` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `),
+    ADD UNIQUE KEY ` + "`" + `person_id` + "`" + ` (` + "`" + `person_id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `login` + "`" + `
+--
+ALTER TABLE ` + "`" + `login` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `),
+    ADD UNIQUE KEY ` + "`" + `IDX_login_2` + "`" + ` (` + "`" + `username` + "`" + `),
+    ADD UNIQUE KEY ` + "`" + `IDX_login_1` + "`" + ` (` + "`" + `person_id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `milestone` + "`" + `
+--
+ALTER TABLE ` + "`" + `milestone` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `),
+    ADD KEY ` + "`" + `IDX_milestoneproj_1` + "`" + ` (` + "`" + `project_id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `person` + "`" + `
+--
+ALTER TABLE ` + "`" + `person` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `),
+    ADD KEY ` + "`" + `IDX_person_1` + "`" + ` (` + "`" + `last_name` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `person_persontype_assn` + "`" + `
+--
+ALTER TABLE ` + "`" + `person_persontype_assn` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `person_id` + "`" + `,` + "`" + `person_type_id` + "`" + `),
+    ADD KEY ` + "`" + `person_type_id` + "`" + ` (` + "`" + `person_type_id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `person_type` + "`" + `
+--
+ALTER TABLE ` + "`" + `person_type` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `),
+    ADD UNIQUE KEY ` + "`" + `name` + "`" + ` (` + "`" + `name` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `person_with_lock` + "`" + `
+--
+ALTER TABLE ` + "`" + `person_with_lock` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `project` + "`" + `
+--
+ALTER TABLE ` + "`" + `project` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `),
+    ADD UNIQUE KEY ` + "`" + `num` + "`" + ` (` + "`" + `num` + "`" + `),
+    ADD KEY ` + "`" + `IDX_project_1` + "`" + ` (` + "`" + `project_status_type_id` + "`" + `),
+    ADD KEY ` + "`" + `IDX_project_2` + "`" + ` (` + "`" + `manager_id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `project_status_type` + "`" + `
+--
+ALTER TABLE ` + "`" + `project_status_type` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `),
+    ADD UNIQUE KEY ` + "`" + `IDX_projectstatustype_1` + "`" + ` (` + "`" + `name` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `related_project_assn` + "`" + `
+--
+ALTER TABLE ` + "`" + `related_project_assn` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `parent_id` + "`" + `,` + "`" + `child_id` + "`" + `),
+    ADD KEY ` + "`" + `IDX_relatedprojectassn_2` + "`" + ` (` + "`" + `child_id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `team_member_project_assn` + "`" + `
+--
+ALTER TABLE ` + "`" + `team_member_project_assn` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `team_member_id` + "`" + `,` + "`" + `project_id` + "`" + `) USING BTREE,
+    ADD KEY ` + "`" + `IDX_teammemberprojectassn_2` + "`" + ` (` + "`" + `project_id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `tmp` + "`" + `
+--
+ALTER TABLE ` + "`" + `tmp` + "`" + `
+    ADD UNIQUE KEY ` + "`" + `d` + "`" + ` (` + "`" + `d` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `two_key` + "`" + `
+--
+ALTER TABLE ` + "`" + `two_key` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `server` + "`" + `,` + "`" + `directory` + "`" + `),
+    ADD KEY ` + "`" + `person_id` + "`" + ` (` + "`" + `person_id` + "`" + `),
+    ADD KEY ` + "`" + `project_id` + "`" + ` (` + "`" + `project_id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `type_test` + "`" + `
+--
+ALTER TABLE ` + "`" + `type_test` + "`" + `
+    ADD PRIMARY KEY (` + "`" + `id` + "`" + `);</p>
+<p>--
+-- Indexes for table ` + "`" + `unsupported_types` + "`" + `
+--
+ALTER TABLE ` + "`" + `unsupported_types` + "`" + `
+    ADD UNIQUE KEY ` + "`" + `type_serial` + "`" + ` (` + "`" + `type_serial` + "`" + `),
+    ADD KEY ` + "`" + `type_multFk1` + "`" + ` (` + "`" + `type_multFk1` + "`" + `,` + "`" + `type_multiFk2` + "`" + `);</p>
+<p>--
+-- AUTO_INCREMENT for dumped tables
+--</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `address` + "`" + `
+--
+ALTER TABLE ` + "`" + `address` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `employee_info` + "`" + `
+--
+ALTER TABLE ` + "`" + `employee_info` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(11) NOT NULL AUTO_INCREMENT;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `login` + "`" + `
+--
+ALTER TABLE ` + "`" + `login` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `milestone` + "`" + `
+--
+ALTER TABLE ` + "`" + `milestone` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `person` + "`" + `
+--
+ALTER TABLE ` + "`" + `person` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `person_type` + "`" + `
+--
+ALTER TABLE ` + "`" + `person_type` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `person_with_lock` + "`" + `
+--
+ALTER TABLE ` + "`" + `person_with_lock` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `project` + "`" + `
+--
+ALTER TABLE ` + "`" + `project` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `project_status_type` + "`" + `
+--
+ALTER TABLE ` + "`" + `project_status_type` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `type_test` + "`" + `
+--
+ALTER TABLE ` + "`" + `type_test` + "`" + `
+    MODIFY ` + "`" + `id` + "`" + ` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;</p>
+<p>--
+-- AUTO_INCREMENT for table ` + "`" + `unsupported_types` + "`" + `
+--
+ALTER TABLE ` + "`" + `unsupported_types` + "`" + `
+    MODIFY ` + "`" + `type_serial` + "`" + ` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;</p>
+<p>--
+-- Constraints for dumped tables
+--</p>
+<p>--
+-- Constraints for table ` + "`" + `address` + "`" + `
+--
+ALTER TABLE ` + "`" + `address` + "`" + `
+    ADD CONSTRAINT ` + "`" + `person_address` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `) ON DELETE CASCADE ON UPDATE CASCADE;</p>
+<p>--
+-- Constraints for table ` + "`" + `employee_info` + "`" + `
+--
+ALTER TABLE ` + "`" + `employee_info` + "`" + `
+    ADD CONSTRAINT ` + "`" + `employee_info_ibfk_1` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `) ON DELETE CASCADE ON UPDATE CASCADE;</p>
+<p>--
+-- Constraints for table ` + "`" + `login` + "`" + `
+--
+ALTER TABLE ` + "`" + `login` + "`" + `
+    ADD CONSTRAINT ` + "`" + `person_login` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `);</p>
+<p>--
+-- Constraints for table ` + "`" + `milestone` + "`" + `
+--
+ALTER TABLE ` + "`" + `milestone` + "`" + `
+    ADD CONSTRAINT ` + "`" + `project_milestone` + "`" + ` FOREIGN KEY (` + "`" + `project_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `) ON DELETE CASCADE;</p>
+<p>--
+-- Constraints for table ` + "`" + `person_persontype_assn` + "`" + `
+--
+ALTER TABLE ` + "`" + `person_persontype_assn` + "`" + `
+    ADD CONSTRAINT ` + "`" + `person_persontype_assn_1` + "`" + ` FOREIGN KEY (` + "`" + `person_type_id` + "`" + `) REFERENCES ` + "`" + `person_type` + "`" + ` (` + "`" + `id` + "`" + `),
+    ADD CONSTRAINT ` + "`" + `person_persontype_assn_2` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `);</p>
+<p>--
+-- Constraints for table ` + "`" + `project` + "`" + `
+--
+ALTER TABLE ` + "`" + `project` + "`" + `
+    ADD CONSTRAINT ` + "`" + `person_project` + "`" + ` FOREIGN KEY (` + "`" + `manager_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `),
+    ADD CONSTRAINT ` + "`" + `project_status_type_project` + "`" + ` FOREIGN KEY (` + "`" + `project_status_type_id` + "`" + `) REFERENCES ` + "`" + `project_status_type` + "`" + ` (` + "`" + `id` + "`" + `);</p>
+<p>--
+-- Constraints for table ` + "`" + `related_project_assn` + "`" + `
+--
+ALTER TABLE ` + "`" + `related_project_assn` + "`" + `
+    ADD CONSTRAINT ` + "`" + `related_project_assn_1` + "`" + ` FOREIGN KEY (` + "`" + `parent_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `),
+    ADD CONSTRAINT ` + "`" + `related_project_assn_2` + "`" + ` FOREIGN KEY (` + "`" + `child_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `);</p>
+<p>--
+-- Constraints for table ` + "`" + `team_member_project_assn` + "`" + `
+--
+ALTER TABLE ` + "`" + `team_member_project_assn` + "`" + `
+    ADD CONSTRAINT ` + "`" + `person_team_member_project_assn` + "`" + ` FOREIGN KEY (` + "`" + `team_member_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `),
+    ADD CONSTRAINT ` + "`" + `project_team_member_project_assn` + "`" + ` FOREIGN KEY (` + "`" + `project_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `);</p>
+<p>--
+-- Constraints for table ` + "`" + `two_key` + "`" + `
+--
+ALTER TABLE ` + "`" + `two_key` + "`" + `
+    ADD CONSTRAINT ` + "`" + `two_key_person` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `),
+    ADD CONSTRAINT ` + "`" + `two_key_project` + "`" + ` FOREIGN KEY (` + "`" + `project_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `);
+SET FOREIGN_KEY_CHECKS=1;
 </p>
 `)
 
