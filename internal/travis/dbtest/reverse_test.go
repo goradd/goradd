@@ -148,6 +148,7 @@ func TestReverseReferenceQueries(t *testing.T) {
 	assert.Equal(t, "test", project2.Name())
 }
 
+// TestReverseReferenceManySave is testing save and delete for a reverse reference that cannot be null.
 func TestReverseReferenceManySave(t *testing.T) {
 	ctx := getContext()
 	// Test insert
@@ -190,3 +191,41 @@ func TestReverseReferenceManySave(t *testing.T) {
 	assert.Nil(t, addr4, "Successfully deleted the address attached to the person")
 
 }
+
+// Testing a reverse reference with a unique index, which will cause a one-to-one relationship.
+// This tests save and delete
+func TestReverseReferenceUniqueSave(t *testing.T) {
+	ctx := getContext()
+
+	person := model.NewPerson()
+	person.SetFirstName("Sam")
+	person.SetLastName("I Am")
+
+	e1 := model.NewEmployeeInfo()
+	e1.SetEmployeeNumber(12345)
+	person.SetEmployeeInfo(e1)
+
+	person.Save(ctx)
+	id := person.ID()
+
+	e1Id := e1.ID()
+	assert.NotEmpty(t, e1Id)
+
+	e2 := person.EmployeeInfo()
+	assert.Equal(t, e1Id, e2.ID(), "Successfully attached the new employee info object onto the person object.")
+
+	person2 := model.LoadPerson(ctx, id, node.Person().EmployeeInfo())
+
+	assert.Equal(t, "Sam", person2.FirstName(), "Retrieved the correct person")
+	assert.Equal(t, e1Id, person2.EmployeeInfo().ID(), "Retrieved the employee info attached to the person")
+
+	person2.Delete(ctx)
+
+	person3 := model.LoadPerson(ctx, id, node.Person().EmployeeInfo())
+	assert.Nil(t, person3, "Successfully deleted the new person")
+
+	e4 := model.LoadEmployeeInfo(ctx, e1Id)
+	assert.Nil(t, e4, "Successfully deleted the employee info attached to the person")
+
+}
+
