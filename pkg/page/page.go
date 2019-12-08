@@ -556,6 +556,16 @@ func (p *Page) AddHtmlHeaderTag(t html.VoidTag) {
 	p.htmlHeaderTags = append(p.htmlHeaderTags, t)
 }
 
+func (p *Page) HasMetaTag(name string) bool {
+	for _,t := range p.htmlHeaderTags {
+		if t.Tag == "meta" &&
+			t.Attr["name"] == name {
+			return true
+		}
+	}
+	return false
+}
+
 // SetResponseHeader sets a value in the html response header. You generally would only need to do this if your are outputting
 // custom content, like a pdf file.
 func (p *Page) SetResponseHeader(key, value string) {

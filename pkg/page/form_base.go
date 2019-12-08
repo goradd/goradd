@@ -44,7 +44,6 @@ type FormI interface {
 	Run(ctx context.Context) error
 	Exit(ctx context.Context, err error)
 
-	resetValidation()
 	updateValues(ctx *Context)
 	writeAllStates(ctx context.Context)
 }
@@ -54,6 +53,7 @@ type FormI interface {
 // It is the basic control structure for the application and also serves as the drawing mechanism for the
 // <form> tag in the html output.
 type FormBase struct {
+	drawing bool
 	ControlBase
 	response Response
 	headerStyleSheets   *maps.SliceMap
@@ -141,6 +141,11 @@ func (f *FormBase) AddFontAwesome() {
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
 func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
+	if f.drawing {
+		panic("draw collission")
+	}
+	f.drawing = true
+	defer f.notDrawing()
 	err = f.this().PreRender(ctx, buf)
 	buf.WriteString(`<form ` + f.this().DrawingAttributes(ctx).String() + ">\n")
 	if err = f.this().DrawTemplate(ctx, buf); err != nil {
@@ -204,6 +209,10 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	return
 }
 
+func (f *FormBase) notDrawing() {
+	f.drawing = false
+}
+
 func (f *FormBase) resetDrawingFlags() {
 	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
 		c := ctrl.control()
@@ -212,17 +221,6 @@ func (f *FormBase) resetDrawingFlags() {
 	})
 }
 
-func (f *FormBase) resetValidation() {
-	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
-		c := ctrl.control()
-		if c.validationMessage != "" {
-			c.validationMessage = ""
-		}
-		if c.validationState != ValidationWaiting {
-			c.validationState = ValidationWaiting
-		}
-	})
-}
 
 func (f *FormBase) updateValues(ctx *Context) {
 	f.RangeAllChildren(func(child ControlI) {
@@ -263,6 +261,11 @@ func (f *FormBase) getDbProfile(ctx context.Context) (s string) {
 // renderAjax assembles the ajax response for the entire form and draws it to the return buffer
 func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var buf2 []byte
+	if f.drawing {
+		panic("draw collission")
+	}
+	f.drawing = true
+	defer f.notDrawing()
 
 	if !f.response.hasExclusiveCommand() { // skip drawing if we are in a high priority situation
 		// gather modified controls

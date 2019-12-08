@@ -214,6 +214,17 @@ func (i *ListItem) Attributes() html.Attributes {
 	return i.attributes
 }
 
+func (i *ListItem) SetAttribute(key, value string) *ListItem {
+	i.Attributes().Set(key, value)
+	return i
+}
+
+func (i *ListItem) AddClass(class string) *ListItem {
+	i.Attributes().AddClass(class)
+	return i
+}
+
+
 // IsEmptyValue returns true if the value is empty, meaning it does not satisfy a selection being made
 // if the list has IsRequired turned on.
 func (i *ListItem) IsEmptyValue() bool {

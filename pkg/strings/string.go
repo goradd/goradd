@@ -86,3 +86,12 @@ func JoinContent(sep string, items... string) string {
 	}
 	return strings.Join(l, sep)
 }
+
+// Choose is like the ternary operator ?. It returns the first string on true, and the second on false.
+func Choose(cond bool, opt1, opt2 string) string {
+	if cond {
+		return opt1
+	} else {
+		return opt2
+	}
+}

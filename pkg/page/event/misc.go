@@ -38,14 +38,6 @@ func DialogButton() *page.Event {
 	return e
 }
 
-const DialogClosingEvent = "grdlgclosing"
-
-// DialogClosing indicates that a dialog is about to close. This is a good time to gather up any information that
-// you might need.
-func DialogClosing() *page.Event {
-	e := &page.Event{JsEvent: DialogClosingEvent}
-	return e
-}
 
 const DialogClosedEvent = "grdlgclosed"
 

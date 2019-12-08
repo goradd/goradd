@@ -25,14 +25,18 @@ func ProjectAssets() string {
 	return path.Join(AssetPrefix, "project")
 }
 
+func SetProjectDir(path string) {
+	panic("do not call SetProjectDir in the Release build")
+}
+
 // This is here just to allow things to build, but should not be called
 func ProjectDir() string {
-	panic("Don't call ProjectDir in Release build")
+	panic("do not call ProjectDir in the Release build")
 	return ""
 }
 
 // This is here just to allow things to build, but should not be called
 func GoraddDir() string {
-	panic("Don't call GoraddDir in Release build")
+	panic("do not call GoraddDir in Release build")
 	return ""
 }

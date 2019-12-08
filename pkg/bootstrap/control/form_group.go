@@ -58,7 +58,10 @@ func (c *FormGroup) ChildValidationChanged() {
 
 func (c *FormGroup) setChildValidation() {
 	child := c.Page().GetControl(c.For())
-	if child.ValidationMessage() != "" {
+	if child.ValidationState() == page.ValidationWaiting {
+		child.RemoveClass("is-valid")
+		child.RemoveClass("is-invalid")
+	} else if child.ValidationMessage() != "" {
 		child.RemoveClass("is-valid")
 		child.AddClass("is-invalid")
 	} else {
@@ -162,7 +165,7 @@ func (c *FormGroup) DrawTag(ctx context.Context) string {
 
 func (c *FormGroup) getValidationClass(subcontrol page.ControlI) (class string) {
 	switch subcontrol.ValidationState() {
-	case page.ValidationWaiting: fallthrough // we need to correctly style
+	case page.ValidationWaiting:fallthrough
 	case page.ValidationValid:
 		if c.UseTooltips() {
 			class = "valid-tooltip"

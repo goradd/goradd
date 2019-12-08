@@ -12,7 +12,7 @@ import (
 // event codes
 const (
 	ButtonClick = iota + 3000
-	DialogClose
+	DialogClosed
 )
 
 const DialogButtonEvent = "gr-dlgbtn"
@@ -78,7 +78,8 @@ type DialogButtonOptions struct {
 	// This is usually used when the action could be destructive, like a Delete button.
 	ConfirmationMessage string
 	// PushLeft pushes this button to the left side of the dialog. Buttons are typically aligned right.
-	// This is helpful to separate particular buttons from the main grouping of buttons.
+	// This is helpful to separate particular buttons from the main grouping of buttons. Be sure to insert
+	// all the PushLeft buttons before the other buttons.
 	PushLeft bool
 	// IsClose will set the button up to automatically close the dialog. Detect closes with the DialogCloseEvent if needed.
 	// The button will not send a DialogButton event.
@@ -126,7 +127,7 @@ func (d *Dialog) Init(parent page.ControlI, id string) {
 	bb := NewPanel(d, d.buttonBarID)
 	bb.AddClass("gr-dialog-buttons")
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
-	d.On(event.DialogClosed().Private(), action.Ajax(d.ID(), DialogClose))
+	d.On(event.DialogClosed().Private(), action.Ajax(d.ID(), DialogClosed))
 }
 
 func (d *Dialog) TitleBar() *Panel {
@@ -271,7 +272,7 @@ func (d *Dialog) addCloseBox() {
 	cb.AddClass("gr-dialog-close")
 	cb.SetText(`<span">X</span>`)
 	cb.SetTextIsHtml(true)
-	cb.On(event.Click(), action.Ajax(d.ID(), DialogClose))
+	cb.On(event.Click(),  action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 }
 
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
@@ -280,14 +281,13 @@ func (d *Dialog) AddCloseButton(label string, id string) {
 	btn := NewButton(d.ButtonBar(), id)
 	btn.SetLabel(label)
 	btn.On(event.Click(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
-	// Note: We will also do the public doAction with a DialogCloseEvent
 }
 
 // Action is called by the framework and will respond to the DialogClose action sent by any close buttons on the
 // page to close the dialog. You do not normally need to call this.
 func (d *Dialog) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
-	case DialogClose:
+	case DialogClosed:
 		d.Hide()
 	}
 }

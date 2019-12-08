@@ -353,6 +353,10 @@ func RegisterStaticPath(path string, directory string) {
 	if path[0:1] != "/" {
 		log.Fatal("path must begin with a slash (must be a rooted path)")
 	}
+	if directory[0:1] != "/" {
+		log.Fatal("directory must begin with a slash (must be a rooted path)")
+	}
+
 
 	if path[len(path)-1:] == "/" {
 		// Strip ending slash so that we can handle both /a/b/ and /a/b urls as directories and treat them the same.

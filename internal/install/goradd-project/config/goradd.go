@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/goradd/goradd/pkg/config"
 	"path/filepath"
+	"runtime"
 )
 
 func initGoradd() {
@@ -19,6 +20,15 @@ func initGoradd() {
 		//if you want to hardcode the html directory location, do that here. Otherwise specify it on the command line.
 		//config.SetHtmlDirectory("htmlDirLocation")
 	} else {
+		_, filename, _, _ := runtime.Caller(0)
+
+		// The projectDir points to files in the goradd-project directory. The development version would have all of these
+		// files moved to a deployment location, so it is not available in the release version of the app. Doing the setup
+		// this way ensures that when we build the release version, we will get a compile time failure if we accidentally try
+		// to access the projectDir without making sure we are in the dev version of the app.
+		projectDir := filepath.Dir(filepath.Dir(filename))
+		config.SetProjectDir(projectDir)
+
 		// This initializes the location of the static html directory for development. You can change it, but be sure to upload the files
 		// to the server when you release and then point to them using the htmlDir flag when launching the application in server mode.
 		// You can also comment it out if you are not using an html directory.
