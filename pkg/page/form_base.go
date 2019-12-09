@@ -141,7 +141,7 @@ func (f *FormBase) AddFontAwesome() {
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
 func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if f.drawing {
+	if f.drawing && !config.Release {
 		panic("draw collission")
 	}
 	f.drawing = true
@@ -261,7 +261,7 @@ func (f *FormBase) getDbProfile(ctx context.Context) (s string) {
 // renderAjax assembles the ajax response for the entire form and draws it to the return buffer
 func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var buf2 []byte
-	if f.drawing {
+	if f.drawing && !config.Release {
 		panic("draw collission")
 	}
 	f.drawing = true
