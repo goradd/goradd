@@ -42,8 +42,7 @@ type Modal struct {
 
 // event codes
 const (
-	ButtonClick = iota + 3000
-	DialogClosing
+	ButtonClick = iota + 10000
 	DialogClosed
 )
 
@@ -66,9 +65,6 @@ func (d *Modal) Init(parent page.ControlI, id string) {
 
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
 	d.SetBlockParentValidation(true)
-	d.On(event.Event("hide.bs.modal").Validate(page.ValidateNone).Private(), action.Trigger(d.ID(), event.DialogClosingEvent, nil))
-	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone).Private(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
-	d.On(event.Event("hidden.bs.modal").Validate(page.ValidateNone).Private(), action.Ajax(d.ID(), DialogClosed))
 	config2.LoadBootstrap(d.ParentForm())
 
 	d.AddClass("modal fade").
@@ -78,6 +74,8 @@ func (d *Modal) Init(parent page.ControlI, id string) {
 		SetAttribute("aria-hidden", true)
 	d.titleBar = NewTitleBar(d, d.ID()+"-titlebar")
 	d.buttonBar = control.NewPanel(d, d.ID()+"-btnbar")
+
+	d.On(event.DialogClosed().Validate(page.ValidateNone).Private(), action.Ajax(d.ID(), DialogClosed))
 }
 
 func (d *Modal) this() ModalI {
@@ -151,27 +149,28 @@ func (d *Modal) AddButton(
 	btn := NewButton(d.buttonBar, d.ID()+"-btn-"+id)
 	btn.SetLabel(label)
 
+	if options != nil && options.IsClose {
+		btn.SetAttribute("data-dismiss", "modal") // make it a close button
+	} else if options != nil && options.ConfirmationMessage != ""{
+		btn.On(event.Click(),
+			action.Group(
+				action.Confirm(options.ConfirmationMessage),
+				action.Trigger(d.ID(), event.DialogButtonEvent, id),
+			),
+		)
+	} else {
+		btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
+	}
+
+	if (options == nil || !options.PushLeft) && !d.foundRight {
+		btn.AddClass("ml-auto")
+		d.foundRight = true
+	}
+
+
 	if options != nil {
 		if options.Validates {
 			btn.SetValidationType(page.ValidateContainer)
-		}
-
-		if !options.PushLeft && !d.foundRight {
-			btn.AddClass("ml-auto")
-			d.foundRight = true
-		}
-
-		if options.IsClose {
-			btn.SetAttribute("data-dismiss", "modal") // make it a close button
-		} else if options.ConfirmationMessage == "" {
-			btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
-		} else {
-			btn.On(event.Click(),
-				action.Group(
-					action.Confirm(options.ConfirmationMessage),
-					action.Trigger(d.ID(), event.DialogButtonEvent, id),
-				),
-			)
 		}
 
 		if options.Options != nil && len(options.Options) > 0 {
@@ -243,6 +242,7 @@ func (d *Modal) Hide() {
 
 func (d *Modal) closed() {
 	d.isOpen = false
+	d.ResetValidation()
 	//d.Remove()
 	d.SetVisible(false)
 }
@@ -262,6 +262,9 @@ func (d *Modal) PutCustomScript(ctx context.Context, response *page.Response) {
 	script := fmt.Sprintf(
 		`jQuery("#%s").modal({backdrop: %#v, keyboard: %t, focus: true, show: %t});`,
 		d.ID(), backdrop, d.closeOnEscape, d.isOpen)
+	script += fmt.Sprintf(
+		`jQuery("#%s").on("hidden.bs.modal", function(){g$("%[1]s").trigger("grdlgclosed")});`, d.ID())
+
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }
 

@@ -87,6 +87,7 @@ func (l *ItemList) AddListItemAt(index int, item *ListItem) {
 	copy(l.items[index+1:], l.items[index:])
 	l.items[index] = item
 	l.reindex(index)
+	return
 }
 
 // AddListItems adds one or more objects to the end of the list. items should be a list of *ListItem,
@@ -111,6 +112,7 @@ func (l *ItemList) AddListItems(items ...interface{}) {
 		}
 	}
 	l.reindex(start)
+	return
 }
 
 // Private function to add an interface item to the end of the list. Will need to be reindexed eventually.

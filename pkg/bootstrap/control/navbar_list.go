@@ -137,7 +137,7 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem
 				itemAttributes.Set("role", "menuitem")
 				linkAttributes.AddClass("dropdown-item")
 				if !item.HasAnchor() {
-					itemH = l.ItemProxy().LinkHtml(ctx, itemH, item.ID(), linkAttributes)
+					itemH = l.ItemProxy().LinkHtml(ctx, itemH, item.Value(), linkAttributes)
 				}
 				h += itemH
 			} else {
@@ -149,7 +149,7 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem
 				if item.Anchor() == "" {
 					linkAttributes := html.NewAttributes()
 					linkAttributes.AddClass("nav-link")
-					itemH = l.ItemProxy().LinkHtml(ctx, itemH, item.ID(), linkAttributes)
+					itemH = l.ItemProxy().LinkHtml(ctx, itemH, item.Value(), linkAttributes)
 				}
 				itemH = html.RenderTag(l.subItemTag, itemAttributes, itemH)
 				h += itemH
@@ -218,7 +218,7 @@ func (c NavbarListCreator) Create(ctx context.Context, parent page.ControlI) pag
 
 func (c NavbarListCreator) Init(ctx context.Context, ctrl NavbarListI) {
 	if c.Items != nil {
-		ctrl.AddListItems(c.Items)
+		ctrl.AddListItems(c.Items...)
 	}
 
 	if c.DataProvider != nil {

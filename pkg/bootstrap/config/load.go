@@ -18,9 +18,19 @@ var Loader func(page.FormI)
 // by the bootstrap components, but this gives you an opportunity to customize where the client
 // gets the files.
 func LoadBootstrap(form page.FormI) {
+	if form.Page().HasMetaTag("viewport") {
+		// already loaded
+		return
+	}
 	if Loader != nil {
 		Loader(form)
 	} else {
+		form.Page().AddHtmlHeaderTag(html.VoidTag{
+			Tag:  "meta",
+			Attr: html.NewAttributes().
+				AddAttributeValue("name", "viewport").
+				AddAttributeValue("content","width=device-width, initial-scale=1, shrink-to-fit=no"),
+			})
 		form.AddJQuery()
 		if config.Release {
 			form.AddJavaScriptFile("https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js", false,

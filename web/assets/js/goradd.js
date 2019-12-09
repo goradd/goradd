@@ -964,8 +964,16 @@ goradd = {
             var obj = window;
             if (command.id) {
                 obj = g$(command.id);
+                if (!obj) {
+                    goradd.log("object for command not found - " + command.id);
+                    return;
+                }
             } else if (command.jqueryId) {
                 obj = jQuery('#' + command.jqueryId);
+                if (!obj || obj.length === 0) {
+                    goradd.log("object for command not found - " + command.jqueryId);
+                    return;
+                }
             }
             var ctx = null;
 
@@ -1683,7 +1691,7 @@ goradd.g.prototype = {
         var capture = false;
         var target = self;
         var el = this.element;
-        if (!!options) {
+        if (options) {
             if (typeof options !== "object") {
                 goradd.log("options must be an object if it is defined");
                 return;
@@ -2329,7 +2337,7 @@ goradd.widget("goradd.Widget", goradd.g, {
      * @returns {boolean} true if the goradd ajax queue has an item in it.
      */
     isRunning: function() {
-        return _currentRequests.length === 0;
+        return Object.keys(_currentRequests).length !== 0;
     },
     _dequeue: function() {
         var f = _q.shift();
@@ -2365,6 +2373,7 @@ goradd.widget("goradd.Widget", goradd.g, {
                 }
 
                 delete _currentRequests[ajaxID];
+
                 if (_q.length === 0 && !self.isRunning()) {
                     g$(goradd.form()).trigger("ajaxQueueComplete");
                 }

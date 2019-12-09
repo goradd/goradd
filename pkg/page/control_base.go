@@ -158,6 +158,8 @@ type ControlI interface {
 	SetText(t string) ControlI
 	ValidationMessage() string
 	SetValidationError(e string)
+	ResetValidation()
+
 
 	WasRendered() bool
 	IsRendering() bool
@@ -930,6 +932,27 @@ func (c *ControlBase) SetValidationError(e string) {
 	}
 }
 
+func (f *ControlBase) ResetValidation() {
+	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
+		c := ctrl.control()
+		var changed bool
+		if c.validationMessage != "" {
+			c.validationMessage = ""
+			changed = true
+		}
+		if c.validationState != ValidationWaiting {
+			c.validationState = ValidationWaiting
+			changed = true
+		}
+		if changed {
+			if p := c.Parent(); p != nil {
+				p.ChildValidationChanged()
+			}
+		}
+	})
+}
+
+
 // ChildValidationChanged is sent by the framework when a child control's validation message
 // has changed. Parent controls can use this to change messages or attributes in response.
 func (c *ControlBase) ChildValidationChanged() {
@@ -1120,6 +1143,8 @@ func (c *ControlBase) UpdateFormValues(ctx *Context) {
 
 }
 
+
+
 // doAction is an internal function that the form manager uses to send callback actions to controls.
 func (c *ControlBase) doAction(ctx context.Context) {
 	var e *Event
@@ -1146,7 +1171,7 @@ func (c *ControlBase) doAction(ctx context.Context) {
 
 	if (e.validationOverride != ValidateNone && e.validationOverride != ValidateDefault) ||
 		(e.validationOverride == ValidateDefault && c.this().ValidationType(e) != ValidateNone) {
-		c.ParentForm().resetValidation()
+		c.ParentForm().ResetValidation()
 	}
 
 	if c.passesValidation(ctx, e) {
