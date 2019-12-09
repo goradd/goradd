@@ -945,7 +945,9 @@ func (f *ControlBase) ResetValidation() {
 			changed = true
 		}
 		if changed {
-			c.Parent().ChildValidationChanged()
+			if p := c.Parent(); p != nil {
+				p.ChildValidationChanged()
+			}
 		}
 	})
 }
