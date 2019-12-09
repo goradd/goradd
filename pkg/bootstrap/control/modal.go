@@ -243,7 +243,6 @@ func (d *Modal) Hide() {
 func (d *Modal) closed() {
 	d.isOpen = false
 	d.ResetValidation()
-	//d.Remove()
 	d.SetVisible(false)
 }
 

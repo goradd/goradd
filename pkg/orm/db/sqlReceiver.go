@@ -261,6 +261,9 @@ func (r SqlReceiver) TimeI() interface{} {
 		s := string(v)
 		date, err = datetime.FromSqlDateTime(s)
 		if err != nil {
+			if (s == "CURRENT_TIMESTAMP") { // Mysql version of now
+				return datetime.Current
+			}
 			return nil
 		}
 		// TODO: SQL Lite, may return an int or float. Not sure we can support these.

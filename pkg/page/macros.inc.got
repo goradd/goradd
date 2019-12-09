@@ -1,11 +1,16 @@
 {{# Macros added to template files for drawing forms. }}
 
-{{# draw draws a goradd control. It expects one parameter, the id of the control to draw. }}
+{{# draw draws a goradd control.
+    parameter 1 is the id of the control 2 draw,
+    optional parameter 2 is attributes to set on the control before drawing.
+        Each attribute is a key and value separated by an = sign.
+        key/value groups should be space separated.
+        values should be surrounded by quotes.}}
 {{define draw}}
-{{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
+{{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
 {{end}}
 
-
+{{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}
 {{define renderFormTemplate}}
 package {{package }}
 

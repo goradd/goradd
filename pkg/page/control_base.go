@@ -141,6 +141,7 @@ type ControlI interface {
 	SetAttribute(name string, val interface{}) ControlI
 	Attribute(string) string
 	HasAttribute(string) bool
+	ProcessAttributeString(s string) ControlI
 	DrawingAttributes(context.Context) html.Attributes
 	AddClass(class string) ControlI
 	RemoveClass(class string) ControlI
@@ -491,7 +492,9 @@ func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) (err err
 
 		// ask the child controls to potentially render, since this control doesn't need to
 		for _, child := range c.children {
-			err = child.DrawAjax(ctx, response)
+			if child.IsOnPage() || child.ShouldAutoRender() {
+				err = child.DrawAjax(ctx, response)
+			}
 			if err != nil {
 				return
 			}
@@ -703,6 +706,14 @@ func (c *ControlBase) SetDataAttribute(name string, val interface{}) {
 
 func (c *ControlBase) MergeAttributes(a html.Attributes) ControlI {
 	c.attributes.Merge(a)
+	return c.this()
+}
+
+// ProcessAttributeString is used by the drawing template to let you set attributes in the draw tag
+func (c *ControlBase) ProcessAttributeString(s string) ControlI {
+	if s != "" {
+		c.attributes.Merge(s)
+	}
 	return c.this()
 }
 
@@ -1297,18 +1308,18 @@ func (c *ControlBase) passesValidation(ctx context.Context, event *Event) (valid
 
 	switch validation {
 	case ValidateForm:
-		valid = c.ParentForm().control().validateChildren(ctx)
+		valid = c.ParentForm().control().validateSelfAndChildren(ctx)
 	case ValidateSiblingsAndChildren:
 		for _, t := range targets {
 			valid = t.control().validateSiblingsAndChildren(ctx) && valid
 		}
 	case ValidateSiblingsOnly:
 		for _, t := range targets {
-			valid = t.control().validateSiblings(ctx) && valid
+			valid = t.control().validateSelfAndSiblings(ctx) && valid
 		}
 	case ValidateChildrenOnly:
 		for _, t := range targets {
-			valid = t.control().validateChildren(ctx) && valid
+			valid = t.control().validateSelfAndChildren(ctx) && valid
 		}
 
 	case ValidateTargetsOnly:
@@ -1336,9 +1347,11 @@ func (c *ControlBase) Validate(ctx context.Context) bool {
 	return true
 }
 
-func (c *ControlBase) validateSiblings(ctx context.Context) bool {
+// validateSelfAndSiblings will validate self and siblings
+func (c *ControlBase) validateSelfAndSiblings(ctx context.Context) bool {
 
 	if c.parentId == "" {
+		// the one and only form
 		return true
 	}
 
@@ -1346,13 +1359,18 @@ func (c *ControlBase) validateSiblings(ctx context.Context) bool {
 	siblings := p.children
 
 	var valid = true
-	for _, child := range siblings {
-		valid = child.Validate(ctx) && valid
+	for _, sibling := range siblings {
+		if sibling.IsOnPage() {
+			valid = sibling.Validate(ctx) && valid
+		}
 	}
 	return valid
 }
 
-func (c *ControlBase) validateChildren(ctx context.Context) bool {
+func (c *ControlBase) validateSelfAndChildren(ctx context.Context) bool {
+	if !c.IsOnPage() {
+		return true
+	}
 
 	if c.children == nil || len(c.children) == 0 {
 		return c.this().Validate(ctx)
@@ -1360,8 +1378,8 @@ func (c *ControlBase) validateChildren(ctx context.Context) bool {
 
 	var isValid = true
 	for _, child := range c.children {
-		if !child.control().blockParentValidation {
-			isValid = child.control().validateChildren(ctx) && isValid
+		if !child.control().blockParentValidation && child.IsOnPage() {
+			isValid = child.control().validateSelfAndChildren(ctx) && isValid
 		}
 	}
 	// validate self after validating all children, because self might want to invalidate child items
@@ -1381,22 +1399,13 @@ func (c *ControlBase) validateSiblingsAndChildren(ctx context.Context) bool {
 	siblings := p.children
 
 	var isValid = true
-	for _, child := range siblings {
-		if child.ID() != c.ID() {
-			isValid = child.control().validateChildren(ctx) && isValid
-		} else {
-			// validate self and children
-			var childrenValid = true
-			if c.children != nil {
-				for _, child := range c.children {
-					if !child.control().blockParentValidation {
-						childrenValid = child.Validate(ctx) && childrenValid
-					}
-				}
-			}
-			isValid = c.this().Validate(ctx) && childrenValid
+	for _, sibling := range siblings {
+		if !sibling.IsOnPage() {
+			continue
 		}
+		isValid = sibling.control().validateSelfAndChildren(ctx) && isValid
 	}
+
 	return isValid
 }
 
@@ -1673,7 +1682,7 @@ func (c *ControlBase) RefreshData(data interface{}) {
 }
 
 func (c *ControlBase) UpdateData(data interface{}) {
-	if c.dataConnector != nil {
+	if c.dataConnector != nil && c.IsOnPage() {
 		c.dataConnector.Update(c.this(), data)
 	}
 }

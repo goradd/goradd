@@ -115,7 +115,7 @@ func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
 			a.Set("size", strconv.Itoa(t.columnCount))
 		}
 	} else {
-		a.Set("rowCount", strconv.Itoa(t.rowCount))
+		a.Set("rows", strconv.Itoa(t.rowCount))
 		if t.columnCount != 0 {
 			a.Set("cols", strconv.Itoa(t.columnCount))
 		}

@@ -25,7 +25,7 @@ type Column struct {
 	// In any case, we will generate code to prevent fields from getting bigger than this.
 	MaxCharLength uint64
 	// DefaultValue is the default value as specified by the database. We will initialize new ORM objects
-	// with this value. It will be case to the corresponding GO type.
+	// with this value. Call DefaultValueAsValue
 	DefaultValue interface{}
 	// MaxValue is the maximum value allowed for numeric values. This can be used by UI objects to tell the user what the limits are.
 	MaxValue interface{}
@@ -75,7 +75,9 @@ func (cd *Column) DefaultValueAsValue() string {
 			return v
 		}
 	} else if cd.ColumnType == ColTypeDateTime {
-		if b, _ := cd.DefaultValue.(datetime.DateTime).MarshalText(); b == nil {
+		if cd.DefaultValue == datetime.Current {
+			return "datetime.Now()"
+		} else if b, _ := cd.DefaultValue.(datetime.DateTime).MarshalText(); b == nil {
 			return cd.ColumnType.DefaultValue()
 		} else {
 			s := string(b[:])
@@ -94,7 +96,9 @@ func (cd *Column) DefaultValueAsValue() string {
 // DefaultValueAsConstant returns the default value of the column as a GO constant
 func (cd *Column) DefaultValueAsConstant() string {
 	if cd.ColumnType == ColTypeDateTime {
-		if cd.DefaultValue == nil {
+		if cd.DefaultValue == datetime.Current {
+			return "datetime.Current" // pass this to datetime.NewDateTime()
+		} else if cd.DefaultValue == nil {
 			return "datetime.Zero" // pass this to datetime.NewDateTime()
 		} else {
 			d := cd.DefaultValue.(datetime.DateTime)
