@@ -363,3 +363,21 @@ func ExampleAttributes_RemoveStyle() {
 	// Output: style="width:5px"
 }
 
+func TestStringMerge(t *testing.T) {
+	a := NewAttributes()
+	a.Merge(`class="here"`)
+	c := a.Class()
+	if c != "here" {
+		t.Error("Attribute string failed")
+	}
+
+	a.Merge(`class="there" m="g"`)
+	c = a.Class()
+	if c != "here there" {
+		t.Error("Attribute string failed")
+	}
+	d := a.Get("m")
+	if d != "g" {
+		t.Error("Attribute string failed")
+	}
+}

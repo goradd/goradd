@@ -15,6 +15,7 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	gohtml "html"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -266,6 +267,14 @@ func (a Attributes) Merge(i interface{}) {
 			a[k] = v
 			return true
 		})
+	case string:
+		a2 := getAttributesFromTemplate(m)
+		// Merge class instead of over-write in this case
+		if a2.Has("class") {
+			a.AddClass(a2.Class())
+			a2.RemoveAttribute("class")
+		}
+		a.Merge(a2)
 	}
 }
 
@@ -617,6 +626,20 @@ func AttributeString(i interface{}) string {
 	}
 }
 
+func getAttributesFromTemplate(s string)  Attributes {
+	pairs := templateMatcher.FindAllString(s, -1)
+	if len(pairs) == 0 {
+		return nil
+	}
+	a := NewAttributes()
+	for _,pair := range pairs {
+		kv := strings.Split(pair, "=")
+		val := kv[1][1:len(kv[1])-1] // remove quotes
+		a.Set(kv[0], val)
+	}
+	return a
+}
+
 /*
 type AttributeCreator map[string]string
 
@@ -624,7 +647,8 @@ func (c AttributeCreator) Create() Attributes {
 	return Attributes(c)
 }
 */
-
+var templateMatcher *regexp.Regexp
 func init() {
 	gob.Register(Attributes{})
+	templateMatcher = regexp.MustCompile(`\w+=".*?"`)
 }
