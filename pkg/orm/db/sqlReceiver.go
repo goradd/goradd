@@ -272,7 +272,7 @@ func (r SqlReceiver) TimeI() interface{} {
 		return nil
 	}
 
-	return date.Local()
+	return date
 }
 
 // Unpack converts a SqlReceiver to a type corresponding to the given GoColumnType

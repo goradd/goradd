@@ -25,6 +25,10 @@ var DefaultDateFormat = "January 2, 2006"
 var DefaultTimeFormat = "3:04 am"
 var DefaultDateTimeFormat = "January 2, 2006 3:04am"
 
+var DefaultDateEntryFormat = "1/2/06"
+var DefaultTimeEntryFormat = "3:04 am"
+var DefaultDateTimeEntryFormat = "1/2/06 3:04am"
+
 // SelectOneString is used in selection lists as the default item to indicate that a selection is required but has not yet been made
 var SelectOneString = "- Select One -"
 // NoSelectionString is used in selection lists as the item that indicates no selection when a selection is not required
