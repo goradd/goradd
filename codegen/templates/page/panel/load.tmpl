@@ -33,6 +33,7 @@ func (p *{{= panelName }}) Refresh() {
     p.RangeAllChildren(func(ctrl page.ControlI) {
         ctrl.RefreshData(p.{{= t.GoName }})
     })
+    p.Panel.Refresh()
 }
 
 // Update loads the cached {{= t.GoName }} object with data from the controls.
