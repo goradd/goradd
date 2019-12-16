@@ -49,6 +49,12 @@ func BootstrapCodegenSetup() {
 				return generator.ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
 			case query.ColTypeBool:
 				return generator.ControlCreationInfo{"Checkbox", "NewCheckbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+			case query.ColTypeDateTime:
+				if col.IsTimestamp {
+					return generator.ControlCreationInfo{"DateTimeSpan", "NewDateTimeSpan", "github.com/goradd/goradd/pkg/page/control"}
+				} else {
+					return generator.ControlCreationInfo{"DateTextbox", "NewDateTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+				}
 			default:
 				return
 			}

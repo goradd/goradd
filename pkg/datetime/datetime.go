@@ -153,6 +153,18 @@ func (d DateTime) Equal(d2 DateTime) bool {
 	return d.Time.Equal(d2.Time)
 }
 
+// After reports whether the time instant d is after u.
+func (d DateTime) After(u DateTime) bool {
+	return d.Time.After(u.Time)
+}
+
+// Before reports whether the time instant d is before u.
+func (d DateTime) Before(u DateTime) bool {
+	return d.Time.Before(u.Time)
+}
+
+
+
 // Satisfies the javacript.JavaScripter interface to output the date as a javascript value.
 // TIMESTAMPS are converted to the local time corresponding to the given world time.
 // Non-timestamps are transmitted as if they were in the browser's local time.

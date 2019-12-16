@@ -107,8 +107,14 @@ func (d *DateTextbox) Date() datetime.DateTime {
 func (d *DateTextbox) UpdateFormValues(ctx *page.Context) {
 	d.Textbox.UpdateFormValues(ctx)
 
+	if d.readonly {
+		// This would happen if someone was attempting to hack the browser.
+		return
+	}
+	if _, ok := ctx.FormValue(d.ID()); !ok {
+		return
+	}
 	t := d.Text()
-
 	if t == "" {
 		d.dt = datetime.NewZeroDate()
 		return
@@ -200,7 +206,7 @@ type DateTextboxCreator struct {
 	SaveState bool
 	// Text is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Text string
-	// Format is the time.format string to use to decode the text into a date.
+	// Format is the time.format string to use to decode the text into a date or to display the date.
 	Format string
 
 	page.ControlOptions

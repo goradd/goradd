@@ -5,6 +5,7 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"time"
 )
@@ -76,6 +77,9 @@ func (s *DateTimeSpan) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) err
 	// local time or UTC. JavaScript does not have a means to specify the timezone that is well supported.
 	// However, JavaScript will translate month and weekday names to the local language.
 	return nil
+}
+func (s *DateTimeSpan) DrawingAttributes(ctx context.Context) html.Attributes {
+	return s.ControlBase.DrawingAttributes(ctx)
 }
 
 func (s *DateTimeSpan) Serialize(e page.Encoder) (err error) {
