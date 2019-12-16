@@ -5,7 +5,8 @@
 goradd.widget( "goradd.selectTable", {
     options: {
         selectedId: "",
-        scrollable: false
+        scrollable: false,
+        reselect: false,
     },
     _create: function() {
         this._super();
@@ -38,7 +39,7 @@ goradd.widget( "goradd.selectTable", {
         var $row = g$(event.goradd.match);
         var selId = this.options.selectedId;
 
-        if (selId !== prevSelId && $row.hasClass ("selected")) {
+        if ((this.options.reselect || selId !== prevSelId) && $row.hasClass ("selected")) {
             goradd.setControlValue(this.element.id, "selectedId", selId);
             this.trigger('rowselected', selId);
         }

@@ -10,6 +10,13 @@
 {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
 {{end}}
 
+{{define drawIf}}
+{{if ctrl.Page().HasControl("$1")}}
+{{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+{{if}}
+{{end}}
+
+
 {{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}
 {{define renderFormTemplate}}
 package {{package }}
