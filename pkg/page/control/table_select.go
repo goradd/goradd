@@ -19,12 +19,14 @@ type PrimaryKeyer interface {
 type SelectTableI interface {
 	TableI
 	SetSelectedID(id string) SelectTableI
+	SetReselectable(r bool) SelectTableI
 }
 
 // SelectTable is a table that is row selectable. To detect a row selection, trigger on event.RowSelected
 type SelectTable struct {
 	Table
 	selectedID string
+	reselectable bool
 }
 
 func NewSelectTable(parent page.ControlI, id string) *SelectTable {
@@ -90,6 +92,10 @@ func (t *SelectTable) DrawingAttributes(ctx context.Context) html.Attributes {
 	if t.selectedID != "" {
 		a.SetDataAttribute("grOptSelectedId", t.selectedID)
 	}
+	if t.reselectable {
+		a.SetDataAttribute("grOptReselect", "1")
+	}
+
 	return a
 }
 
@@ -108,6 +114,13 @@ func (t *SelectTable) SetSelectedID(id string) SelectTableI {
 	t.ExecuteWidgetFunction("option", "selectedId", id)
 	return t.this()
 }
+
+// SetReselectable determines if the user can send a select command when tapping the currently selected item.
+func (t *SelectTable) SetReselectable(r bool) SelectTableI {
+	t.reselectable = r
+	return t.this()
+}
+
 
 func (t *SelectTable) MarshalState(m maps.Setter) {
 	m.Set("selId", t.selectedID)
@@ -128,6 +141,9 @@ func (t *SelectTable) Serialize(e page.Encoder) (err error) {
 	if err = e.Encode(t.selectedID); err != nil {
 		return
 	}
+	if err = e.Encode(t.reselectable); err != nil {
+		return
+	}
 	return
 }
 func (t *SelectTable) Deserialize(dec page.Decoder) (err error) {
@@ -135,6 +151,9 @@ func (t *SelectTable) Deserialize(dec page.Decoder) (err error) {
 		return
 	}
 	if err = dec.Decode(&t.selectedID); err != nil {
+		return
+	}
+	if err = dec.Decode(&t.reselectable); err != nil {
 		return
 	}
 	return
@@ -184,6 +203,8 @@ type SelectTableCreator struct {
 	OnRowSelected    action.ActionI
 	// SelectedID is the row id that will start as the selection
 	SelectedID string
+	// Reselectable determines if you will get a select command when the user taps the item that is already selected.
+	Reselectable bool
 	// SaveState will cause the table to remember the selection
 	SaveState bool
 }
@@ -223,11 +244,12 @@ func (c SelectTableCreator) Init(ctx context.Context, ctrl SelectTableI) {
 	if c.SelectedID != "" {
 		ctrl.SetSelectedID(c.SelectedID)
 	}
-	if c.SaveState { // will override the initial SelectedID setting if true
-		ctrl.SaveState(ctx, true)
-	}
 	if c.OnRowSelected != nil {
 		ctrl.On(event.RowSelected(), c.OnRowSelected)
+	}
+	ctrl.SetReselectable(c.Reselectable)
+	if c.SaveState { // will override the initial SelectedID setting if true
+		ctrl.SaveState(ctx, true)
 	}
 }
 
