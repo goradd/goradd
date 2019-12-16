@@ -4,6 +4,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/knq/snaker"
+	"path"
 	"strings"
 )
 
@@ -11,7 +12,7 @@ import (
 // control descriptions
 func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, aliasToImport map[string]*ImportType) {
 	for _, col := range t.Columns {
-		typ, newFunc, importName := defaultControlType(col)
+		typ, importName := defaultControlType(col)
 
 		if typ != "" {
 			var mainImport *ImportType
@@ -58,7 +59,6 @@ func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*Control
 			cd := ControlDescription{
 				Import: mainImport,
 				ControlType: typ,
-				NewControlFunc: newFunc,
 				ControlName: controlName,
 				ControlID: defaultID,
 				DefaultLabel: defaultLabel,
@@ -72,15 +72,35 @@ func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*Control
 	return
 }
 
-// defaultControlType returns the default type of control for a column. ControlBase types can be customized in other ways too.
-func defaultControlType(ref interface{}) (typ string, createFunc string, importName string) {
+// defaultControlType returns the default type of control for a column. Control types can be customized in other ways too.
+func defaultControlType(ref interface{}) (typ string, importName string) {
+	// See if the description has a specific control, which should be a path to the control
+	var controlPath string
+	switch col := ref.(type) {
+	case *db.ReverseReference:
+		// need to set this up, getting default from the reverse column
+	case *db.ManyManyReference:
+		// need to set this up, getting default from the many-many table if it exists
+	case *db.Column:
+		if i,ok := col.Options["controlPath"]; ok { // a module based control path
+			controlPath,ok = i.(string)
+			if !ok {
+				panic("controlPath must be a string")
+			}
+			p,c := path.Split(controlPath)
+			p = path.Clean(p)
+
+			return c,p
+		}
+	}
+
 	d := DefaultControlTypeFunc(ref)
-	return d.Typ, d.CreateFunc, d.ImportName
+	return d.Typ, d.ImportName
 }
 
 func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, aliasToImport map[string]*ImportType) {
 	for _, rr := range t.ReverseReferences {
-		typ, newFunc, importName := defaultControlType(rr)
+		typ, importName := defaultControlType(rr)
 
 		if typ != "" {
 			var mainImport *ImportType
@@ -123,7 +143,6 @@ func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{
 			cd := ControlDescription{
 				Import: mainImport,
 				ControlType: typ,
-				NewControlFunc: newFunc,
 				ControlName: controlName,
 				ControlID: defaultID,
 				DefaultLabel: defaultLabel,
@@ -139,7 +158,7 @@ func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{
 
 func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, aliasToImport map[string]*ImportType) {
 	for _, mm := range t.ManyManyReferences {
-		typ, newFunc, importName := defaultControlType(mm)
+		typ, importName := defaultControlType(mm)
 
 		if typ != "" {
 			var mainImport *ImportType
@@ -182,7 +201,6 @@ func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface
 			cd := ControlDescription{
 				Import: mainImport,
 				ControlType: typ,
-				NewControlFunc: newFunc,
 				ControlName: controlName,
 				ControlID: defaultID,
 				DefaultLabel: defaultLabel,

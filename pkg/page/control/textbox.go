@@ -19,7 +19,7 @@ const (
 	TextboxTypeSearch   = "search"
 	TextboxTypeNumber   = "number" // Puts little arrows in box, will need to widen it.
 	TextboxTypeEmail    = "email"  // see TextEmail. Prevents submission of RFC5322 email addresses (Gogh Fir <gf@example.com>)
-	TextboxTypeTel      = "tel"    // not well supported
+	TextboxTypeTel      = "tel"
 	TextboxTypeUrl      = "url"
 )
 

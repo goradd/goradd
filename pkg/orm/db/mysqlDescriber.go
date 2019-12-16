@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"log"
 	"math"
@@ -552,7 +553,9 @@ func (m *Mysql5) descriptionFromRawTables(rawTables map[string]mysqlTable) Datab
 
 	dd := DatabaseDescription{Key: m.dbKey, AssociatedObjectPrefix: m.associatedObjectPrefix}
 
-	for tableName, table := range rawTables {
+	keys := stringmap.SortedKeys(rawTables)
+	for _,tableName := range keys {
+		table := rawTables[tableName]
 		if table.options["skip"] != nil {
 			continue
 		}
