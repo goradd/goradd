@@ -6,6 +6,8 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
+// TODO: Remove this. We just need a module path to the control I think.
+// Also, explore making a default generator so that you don't need one for all controls, just ones that are different than normal.
 type ControlCreationInfo struct {
 	Typ        string
 	CreateFunc string

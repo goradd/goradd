@@ -45,7 +45,6 @@ type ImportType struct {
 type ControlDescription struct {
 	Import         *ImportType
 	ControlType    string
-	NewControlFunc string
 	ControlName    string
 	ControlID      string // default id to generate
 	DefaultLabel   string
