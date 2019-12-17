@@ -15,16 +15,15 @@ import (
 // If the item has a "Cleanup" function, that function will be called when the item is removed from memory. If
 // the cache has a backing store, it may be removed from memory, but still in the disk-based cache.
 type LruCache struct {
-	sync.RWMutex
+	sync.Mutex
 	maxItemCount int
 	ttl          int64
 	items        map[string]lruItem
-	order        []string
 }
 
 type lruItem struct {
 	timestamp int64
-	v         interface{}
+	value interface{}
 }
 
 type Remover interface {
@@ -43,15 +42,13 @@ func NewLruCache(maxItemCount int, ttl int64) *LruCache {
 	return &LruCache{
 		maxItemCount: maxItemCount,
 		ttl:          ttl * (1000 * 1000 * 1000), // we compare against nanos
-		items:        make(map[string]lruItem, maxItemCount),
-		order:        make([]string, 0, maxItemCount),
+		items: make(map[string]lruItem),
 	}
 }
 
-// Puts the item into the cache, and updates its access time, pushing it to the end of the removal queue
+// Puts the item into the cache, and updates its access time
 func (o *LruCache) Set(key string, v interface{}) {
 	o.Lock()
-
 	if v == nil {
 		panic("Cannot put a nil pointer into the lru cache")
 	}
@@ -60,88 +57,74 @@ func (o *LruCache) Set(key string, v interface{}) {
 	}
 
 	t := time.Now().UnixNano()
-
-	if item, ok := o.items[key]; ok {
-		// already exists in the cache
-		i := sort.Search(len(o.order), func(i int) bool { return o.items[o.order[i]].timestamp >= item.timestamp })
-		if o.items[o.order[i]].timestamp != item.timestamp {
-			panic("Lru cache is not in sync") // this would be a bug in the cache if this happens
-		}
-		// To prevent some memory thrashing with an active cache, we only update the order if the item is slightly stale
-		if i < o.maxItemCount/2 || item.timestamp < t-o.ttl/8 { // if 1/8th of the ttl has passed, or the item is getting close to getting pushed off the end, bring it to front
-			o.order = append(o.order[:i], o.order[i+1:]...)
-			o.order = append(o.order, key)
-		}
-		o.items[key] = lruItem{t, v} // the item may have changed, and we certainly want to update the timestamp, so just create a new item
-	} else {
-		// new item
-		o.items[key] = lruItem{t, v}
-		o.order = append(o.order, key)
-	}
+	i := lruItem{t, v}
+	o.items[key] = i
 	o.Unlock()
-
 	// garbage collect
+
 	if t%((int64(o.maxItemCount)/8)+1) == 1 {
 		go o.gc()
 	}
 }
 
-// Garbage collect
+// Garbage collect. Garbage collection requires significant time, so it is done in a go routine.
 func (o *LruCache) gc() {
-	// However we do this, we must MAKE SURE that any recent Set does not get garbage collected here
 	o.Lock()
-
-
-	// remove based on TTL
-	for len(o.order) > 0 && o.items[o.order[0]].timestamp < time.Now().UnixNano()-o.ttl {
-		v := o.items[o.order[0]].v
-		delete(o.items, o.order[0])
-		o.order = o.order[1:]
-		if r,ok := v.(Remover); ok {
-			r.Removed()
-		}
-		if r,ok := v.(Cleanuper); ok {
-			r.Cleanup()
+	var keys []string
+	for k,_ := range o.items {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i,j int) bool {
+		return o.items[keys[i]].timestamp < o.items[keys[j]].timestamp
+	})
+	now := time.Now().UnixNano()
+	var itemNum int
+	var k string
+	for itemNum,k = range keys {
+		if o.items[k].timestamp + o.ttl < now {
+			delete(o.items, k)
+			if c,ok := o.items[k].value.(Remover); ok {
+				c.Removed()
+			}
+		} else {
+			break
 		}
 	}
 
-	// remove based on size
-	for len(o.order) > o.maxItemCount {
-		// TODO: If this is happening, we are throwing out items before they expire. We should log this, and it means
-		// either allocating more memory, reducing TTL, or implementing a backing store to keep items on disk
-		// a backing store will require serialization of the v objects
-		v := o.items[o.order[0]].v
-		delete(o.items, o.order[0])
-		o.order = o.order[1:]
-		if r,ok := v.(Remover); ok {
-			r.Removed()
-		}
-		if r,ok := v.(Cleanuper); ok {
-			r.Cleanup()
+	if len(o.items) > o.maxItemCount {
+		// TODO: log that the cache is filling up
+		for _,k := range keys[itemNum:] {
+			delete(o.items, k)
+			if c,ok := o.items[k].value.(Remover); ok {
+				c.Removed()
+			}
+			if len(o.items) <= o.maxItemCount {
+				break
+			}
 		}
 	}
 	o.Unlock()
 }
 
-// Get returns the item based on its id.
+// Get returns the item based on its id, and updates its access time.
 // If not found, it will return nil.
 func (o *LruCache) Get(key string) interface{} {
-	var i lruItem
-	var ok bool
-
-	o.RLock()
-	i, ok = o.items[key]
-	o.RUnlock()
+	o.Lock()
+	i, ok := o.items[key]
 	if !ok {
+		o.Unlock()
 		return nil
 	}
-	return i.v
+	i.timestamp = time.Now().UnixNano()
+	o.items[key] = i
+	o.Unlock()
+	return i.value
 }
 
-// Has tests for the existence of the key
+// Has tests for the existence of the key. It does not update the access time though.
 func (o *LruCache) Has(key string) (exists bool) {
-	o.RLock()
-	_, exists = o.items[key]
-	o.RUnlock()
-	return
+	o.Lock()
+	_, ok := o.items[key]
+	o.Unlock()
+	return ok
 }

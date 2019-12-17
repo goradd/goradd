@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"github.com/goradd/goradd/pkg/html"
+	"sync"
 	"testing"
 	"time"
 )
@@ -68,21 +70,30 @@ func TestLruCacheTtl(t *testing.T) {
 	c := NewLruCache(10, 1)
 	p1 := "1"
 	p2 := "2"
+	p3 := "3"
 
 	c.Set("1", p1)
 	c.Set("2", p2)
+	c.Set("3", p3)
 	time.Sleep(time.Second)
+	c.Get("2")
+
 	c.gc()
 
-	p3 := c.Get("1")
+	p4 := c.Get("1")
 
-	if p3 != nil {
+	if p4 != nil {
 		t.Error("Item did not expire")
 	}
 
-	p3 = c.Get("2")
-	if p3 != nil {
+	p4 = c.Get("3")
+	if p4 != nil {
 		t.Error("Item did not expire")
+	}
+
+	p4 = c.Get("2")
+	if p4 != "2" {
+		t.Error("Lost item 2")
 	}
 
 }
@@ -95,9 +106,9 @@ func TestLruReset(t *testing.T) {
 
 	c.Set("1", p1)
 	c.Set("2", p2)
-	c.Set("1", p1)
+	c.Get("1")
 	c.Set("3", p3)
-	c.Set("1", p1)
+	c.Get("1")
 	c.gc()
 
 	p4 := c.Get("2")
@@ -111,3 +122,48 @@ func TestLruReset(t *testing.T) {
 		t.Error("Item was lost")
 	}
 }
+
+func TestLruStress(t *testing.T) {
+	c := NewLruCache(1000, 1)
+	var wg sync.WaitGroup
+	wg.Add(3)
+	go func() {
+		addN(c,1000)
+		wg.Done()
+	}()
+	go func() {
+		addN(c,1000)
+		wg.Done()
+	}()
+	go func() {
+		addN(c,1000)
+		wg.Done()
+	}()
+
+	wg.Wait()
+}
+
+func TestLruStress2(t *testing.T) {
+	c := NewLruCache(1000, 1)
+	addN(c,1000)
+
+}
+
+func addN(c *LruCache, n int) {
+	var keys []string
+	for i := 0; i < n; i++ {
+		s := html.RandomString(10)
+		s2 := html.RandomString(5)
+		c.Set(s,s2)
+		keys = append(keys, s)
+	}
+
+	// stress re-adding the same items
+	for i := 0; i < n; i++ {
+		s := keys[i]
+		s2 := html.RandomString(5)
+		c.Set(s,s2)
+	}
+
+}
+
