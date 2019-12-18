@@ -19,22 +19,21 @@ type FloatTextbox struct {
 	generator3.FloatTextbox // base it on the built-in generator
 }
 
-func (d FloatTextbox) Imports() []generator2.ImportPath {
-	return []generator2.ImportPath{
-		{"bootstrapctrl", "github.com/goradd/goradd/pkg/bootstrap/control"},
-	}
+func (d FloatTextbox) Type() string {
+	return "github.com/goradd/goradd/pkg/bootstrap/control/FloatTextbox"
 }
+
 
 func (d FloatTextbox) GenerateCreator(ref interface{}, desc *generator2.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 
 	s = fmt.Sprintf(
-		`bootstrapctrl.FloatTextboxCreator{
+		`%s.FloatTextboxCreator{
 			ID:        %#v,
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, desc.ControlID, !col.IsNullable, desc.Connector)
+		}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }

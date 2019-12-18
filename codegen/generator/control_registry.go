@@ -2,7 +2,6 @@ package generator
 
 import (
 	"github.com/goradd/goradd/pkg/page"
-	"path"
 )
 
 type ControlType int
@@ -22,7 +21,6 @@ type ImportPath struct {
 
 type ControlGenerator interface {
 	Type() string
-	Imports() []ImportPath
 	SupportsColumn(ref interface{}) bool
 	GenerateCreator(ref interface{}, desc *ControlDescription) string
 	GenerateRefresh(ref interface{}, desc *ControlDescription) string
@@ -40,9 +38,7 @@ func RegisterControlGenerator(c ControlGenerator) {
 		controlGeneratorRegistry = make(map[string]ControlGenerator)
 	}
 
-	i := c.Imports()
-	e := path.Join(i[0].Path, c.Type())
-	controlGeneratorRegistry[e] = c
+	controlGeneratorRegistry[c.Type()] = c
 }
 
 /*
@@ -58,9 +54,7 @@ func RegisterControl(c page.ControlI) {
 }
 */
 
-func GetControlGenerator(imp string, typ string) ControlGenerator {
-	e := path.Join(imp, typ)
-
-	d, _ := controlGeneratorRegistry[e]
+func GetControlGenerator(controlPath string) ControlGenerator {
+	d, _ := controlGeneratorRegistry[controlPath]
 	return d
 }

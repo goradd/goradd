@@ -19,21 +19,20 @@ type IntegerTextbox struct {
 	generator3.IntegerTextbox // base it on the built-in generator
 }
 
-func (d IntegerTextbox) Imports() []generator2.ImportPath {
-	return []generator2.ImportPath{
-		{"bootstrapctrl", "github.com/goradd/goradd/pkg/bootstrap/control"},
-	}
+func (d IntegerTextbox) Type() string {
+	return "github.com/goradd/goradd/pkg/bootstrap/control/IntegerTextbox"
 }
+
 
 func (d IntegerTextbox) GenerateCreator(ref interface{}, desc *generator2.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-		`bootstrapctrl.IntegerTextboxCreator{
+		`%s.IntegerTextboxCreator{
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }

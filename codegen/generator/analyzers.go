@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"github.com/goradd/goradd/pkg/orm/db"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/knq/snaker"
@@ -8,35 +9,26 @@ import (
 	"strings"
 )
 
+type Importer interface {
+	Imports() []string
+}
+
 // matchColumnsWithControls maps controls to control descriptions, and returns the imports required by the
 // control descriptions
-func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, aliasToImport map[string]*ImportType) {
+func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, importAliases map[string]string) {
 	for _, col := range t.Columns {
-		typ, importName := controlType(col)
+		controlPath := controlType(col)
 
-		if typ != "" {
-			var mainImport *ImportType
+		if controlPath != "" {
+			importPath, typ := path.Split(controlPath)
+			importPath = path.Clean(importPath)
+			addImport(importAliases, importPath)
 
-			generator := GetControlGenerator(importName, typ)
+			generator := GetControlGenerator(controlPath)
 			if generator != nil {
-				for i, importPath := range generator.Imports() {
-					var ok bool
-					var imp *ImportType
-					if imp, ok = aliasToImport[importPath.Alias]; ok {
-						if imp.Path != importPath.Path {
-							panic("found the same alias with different import path")
-						}
-					} else {
-						imp = &ImportType {
-							importPath.Path,
-							importPath.Alias,
-							i == 0,
-						}
-
-						aliasToImport[importPath.Alias] = imp
-					}
-					if mainImport == nil {
-						mainImport = imp
+				if imp,ok := generator.(Importer); ok {
+					for _, addedImportPath := range imp.Imports() {
+						addImport(importAliases, addedImportPath)
 					}
 				}
 			}
@@ -57,7 +49,7 @@ func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*Control
 			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(col.DbName, "_", "-", -1)
 
 			cd := ControlDescription{
-				Import: mainImport,
+				Import: strings2.Choose(importAliases[importPath] == "", path.Base(importPath), importAliases[importPath]),
 				ControlType: typ,
 				ControlName: controlName,
 				ControlID: defaultID,
@@ -74,7 +66,7 @@ func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*Control
 
 // controlType returns the type of control for a column. It gets this first from the database description, and
 // if there is no controlType indicated, then from the registered DefaultControlTypeFunc function.
-func controlType(ref interface{}) (typ string, importName string) {
+func controlType(ref interface{}) string {
 	// See if the description has a specific control, which should be a path to the control
 	var controlPath string
 	switch col := ref.(type) {
@@ -94,39 +86,24 @@ func controlType(ref interface{}) (typ string, importName string) {
 	if controlPath == "" {
 		controlPath = DefaultControlTypeFunc(ref)
 	}
-	p,c := path.Split(controlPath)
-	p = path.Clean(p)
 
-	return c,p
+	return controlPath
 }
 
-func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, aliasToImport map[string]*ImportType) {
+func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, importAliases map[string]string) {
 	for _, rr := range t.ReverseReferences {
-		typ, importName := controlType(rr)
+		controlPath := controlType(rr)
 
-		if typ != "" {
-			var mainImport *ImportType
+		if controlPath != "" {
+			importPath, typ := path.Split(controlPath)
+			importPath = path.Clean(importPath)
+			addImport(importAliases, importPath)
 
-			generator := GetControlGenerator(importName, typ)
+			generator := GetControlGenerator(controlPath)
 			if generator != nil {
-				for i, importPath := range generator.Imports() {
-					var ok bool
-					var imp *ImportType
-					if imp, ok = aliasToImport[importPath.Alias]; ok {
-						if imp.Path != importPath.Path {
-							panic("found the same alias with different import path")
-						}
-					} else {
-						imp = &ImportType {
-							importPath.Path,
-							importPath.Alias,
-							i == 0,
-						}
-
-						aliasToImport[importPath.Alias] = imp
-					}
-					if mainImport == nil {
-						mainImport = imp
+				if imp,ok := generator.(Importer); ok {
+					for _, addedImportPath := range imp.Imports() {
+						addImport(importAliases, addedImportPath)
 					}
 				}
 			}
@@ -142,8 +119,9 @@ func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{
 			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" +
 				strings.Replace(snaker.CamelToSnake(rr.GoPlural), "_", "-", -1)
 
+
 			cd := ControlDescription{
-				Import: mainImport,
+				Import: strings2.Choose(importAliases[importPath] == "", path.Base(importPath), importAliases[importPath]),
 				ControlType: typ,
 				ControlName: controlName,
 				ControlID: defaultID,
@@ -158,33 +136,19 @@ func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{
 	return
 }
 
-func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, aliasToImport map[string]*ImportType) {
+func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, importAliases map[string]string) {
 	for _, mm := range t.ManyManyReferences {
-		typ, importName := controlType(mm)
+		controlPath := controlType(mm)
+		if controlPath != "" {
+			importPath, typ := path.Split(controlPath)
+			importPath = path.Clean(importPath)
+			addImport(importAliases, importPath)
 
-		if typ != "" {
-			var mainImport *ImportType
-
-			generator := GetControlGenerator(importName, typ)
+			generator := GetControlGenerator(importPath)
 			if generator != nil {
-				for i, importPath := range generator.Imports() {
-					var ok bool
-					var imp *ImportType
-					if imp, ok = aliasToImport[importPath.Alias]; ok {
-						if imp.Path != importPath.Path {
-							panic("found the same alias with different import path")
-						}
-					} else {
-						imp = &ImportType {
-							importPath.Path,
-							importPath.Alias,
-							i == 0,
-						}
-
-						aliasToImport[importPath.Alias] = imp
-					}
-					if mainImport == nil {
-						mainImport = imp
+				if imp,ok := generator.(Importer); ok {
+					for _, addedImportPath := range imp.Imports() {
+						addImport(importAliases, addedImportPath)
 					}
 				}
 			}
@@ -201,7 +165,7 @@ func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface
 				strings.Replace(snaker.CamelToSnake(mm.GoPlural), "_", "-", -1)
 
 			cd := ControlDescription{
-				Import: mainImport,
+				Import: strings2.Choose(importAliases[importPath] == "", path.Base(importPath), importAliases[importPath]),
 				ControlType: typ,
 				ControlName: controlName,
 				ControlID: defaultID,
@@ -214,4 +178,33 @@ func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface
 	}
 
 	return
+}
+
+func addImport(importAliases map[string]string, p string) {
+	if p == "" {
+		return
+	}
+	if _,ok := importAliases[p]; ok {
+		return
+	}
+	alias := path.Base(p)
+	count := 2
+	newAlias := alias
+Found:
+	for  {
+		for p2,a := range importAliases {
+			base := path.Base(p2)
+			if (a == "" && base == newAlias) || a == newAlias {
+				newAlias = fmt.Sprint( alias, count)
+				count++
+				continue Found
+			}
+		}
+		break Found
+	}
+	if alias == newAlias {
+		importAliases[p] = ""
+	} else {
+		importAliases[p] = newAlias
+	}
 }

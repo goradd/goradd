@@ -19,14 +19,9 @@ type FloatTextbox struct {
 }
 
 func (d FloatTextbox) Type() string {
-	return "FloatTextbox"
+	return "github.com/goradd/goradd/pkg/page/control/FloatTextbox"
 }
 
-func (d FloatTextbox) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-	}
-}
 
 func (d FloatTextbox) SupportsColumn(ref interface{}) bool {
 	if col,ok := ref.(*db.Column); ok && (col.ColumnType == query.ColTypeFloat || col.ColumnType == query.ColTypeDouble) {
@@ -38,13 +33,13 @@ func (d FloatTextbox) SupportsColumn(ref interface{}) bool {
 func (d FloatTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-		`goraddctrl.FloatTextboxCreator{
+		`%s.FloatTextboxCreator{
 			ID:        %#v,
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, desc.ControlID, !col.IsNullable, desc.Connector)
+		}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 

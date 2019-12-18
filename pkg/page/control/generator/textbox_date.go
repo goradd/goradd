@@ -19,14 +19,9 @@ type DateTextbox struct {
 }
 
 func (d DateTextbox) Type() string {
-	return "DateTextbox"
+	return "github.com/goradd/goradd/pkg/page/control/DateTextbox"
 }
 
-func (d DateTextbox) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-	}
-}
 
 func (d DateTextbox) SupportsColumn(ref interface{}) bool {
 	if col,ok := ref.(*db.Column); ok &&
@@ -39,13 +34,13 @@ func (d DateTextbox) SupportsColumn(ref interface{}) bool {
 func (d DateTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`goraddctrl.DateTextboxCreator{
+`%s.DateTextboxCreator{
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 

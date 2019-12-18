@@ -19,13 +19,7 @@ type Textbox struct {
 }
 
 func (d Textbox) Type() string {
-	return "Textbox"
-}
-
-func (d Textbox) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-	}
+	return "github.com/goradd/goradd/pkg/page/control/Textbox"
 }
 
 func (d Textbox) SupportsColumn(ref interface{}) bool {
@@ -40,14 +34,14 @@ func (d Textbox) SupportsColumn(ref interface{}) bool {
 func (d Textbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-		`goraddctrl.TextboxCreator{
+		`%s.TextboxCreator{
 			ID:        %#v,
 			MaxLength: %d,
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, desc.ControlID, col.MaxCharLength, !col.IsNullable, desc.Connector)
+		}`, desc.Import, desc.ControlID, col.MaxCharLength, !col.IsNullable, desc.Connector)
 	return
 }
 

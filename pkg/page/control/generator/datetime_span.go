@@ -19,18 +19,13 @@ type DateTimeSpan struct {
 }
 
 func (d DateTimeSpan) Type() string {
-	return "DateTimeSpan"
+	return "github.com/goradd/goradd/pkg/page/control/DateTimeSpan"
 }
 
 func (d DateTimeSpan) NewFunc() string {
 	return "NewDateTimeSpan"
 }
 
-func (d DateTimeSpan) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-	}
-}
 
 func (d DateTimeSpan) SupportsColumn(ref interface{}) bool {
 	if col,ok := ref.(*db.Column); ok &&
@@ -43,13 +38,13 @@ func (d DateTimeSpan) SupportsColumn(ref interface{}) bool {
 func (d DateTimeSpan) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`goraddctrl.DateTimeSpanCreator{
+`%s.DateTimeSpanCreator{
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
 		IsDisabled:	   %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, col.IsPk, desc.Connector)
+}`, desc.Import, desc.ControlID, col.IsPk, desc.Connector)
 	return
 }
 

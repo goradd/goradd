@@ -19,13 +19,7 @@ type PhoneTextbox struct {
 }
 
 func (d PhoneTextbox) Type() string {
-	return "PhoneTextbox"
-}
-
-func (d PhoneTextbox) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-	}
+	return "github.com/goradd/goradd/pkg/page/control/PhoneTextbox"
 }
 
 func (d PhoneTextbox) SupportsColumn(ref interface{}) bool {
@@ -41,13 +35,13 @@ func (d PhoneTextbox) SupportsColumn(ref interface{}) bool {
 func (d PhoneTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`goraddctrl.PhoneTextboxCreator{
+`%s.PhoneTextboxCreator{
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 

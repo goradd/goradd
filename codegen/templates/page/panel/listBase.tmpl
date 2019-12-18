@@ -20,7 +20,7 @@ import(
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	. "github.com/goradd/goradd/pkg/page/control"
+	goraddctrl "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/event"
 	"goradd-project/gen/{{= dd.DbKey }}/model"
@@ -28,11 +28,11 @@ import(
 )
 
 type {{= panelName }} struct {
-	Panel
+	goraddctrl.Panel
 }
 
 type {{= panelName }}I interface {
-	PanelI
+	goraddctrl.PanelI
 	BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder
 }
 
@@ -47,13 +47,13 @@ func (p *{{= panelName }}) this() {{= panelName }}I {
 // Override this to change what controls get created.
 func (p *{{= panelName }}) createControls(ctx context.Context) {
 	p.AddControls(ctx,
-		PanelCreator{
+		goraddctrl.PanelCreator{
 			ID: p.ID() + "-filterPanel",
-			Children: Children(
-				TextboxCreator{
+			Children: goraddctrl.Children(
+				goraddctrl.TextboxCreator{
 					ID:          p.ID() + "-filterText",
 					Placeholder: p.GT("Search..."),
-					Type:        TextboxTypeSearch,
+					Type:        goraddctrl.TextboxTypeSearch,
 					ControlOptions: page.ControlOptions{
 						On: page.EventList{
 							{event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
@@ -63,13 +63,13 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
 				},
 			),
 		},
-        PagedTableCreator{
+        goraddctrl.PagedTableCreator{
             ID:  p.ID() + "-list",
             HeaderRowCount: 0,
             DataProviderID: p.ID(),
             RowStylerID: p.ID(),
-            PageSize: DefaultPagerPageSize,
-            Caption: DataPagerCreator{
+            PageSize: goraddctrl.DefaultPagerPageSize,
+            Caption: goraddctrl.DataPagerCreator{
                 ID:            p.ID()+"-pager",
                 PagedControl:  p.ID() + "-list",
             },
@@ -77,24 +77,24 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
             ControlOptions: page.ControlOptions{
                 Class:          "clickable-rows",
             },
-            Columns:[]ColumnCreator {
+            Columns:[]goraddctrl.ColumnCreator {
 {{for _,col := range t.Columns }}
                 column.NodeColumnCreator{
                     Node: node.{{= t.GoName }}().{{= col.GoName }}(),
                     Title: "{{= col.GoName }}",
                 {{if col.IsDateOnly}}
-                    ColumnOptions: ColumnOptions{TimeFormat: config.DefaultDateFormat},
+                    ColumnOptions: goraddctrl.ColumnOptions{TimeFormat: config.DefaultDateFormat},
                 {{else if col.IsTimeOnly}}
-                    ColumnOptions: ColumnOptions{TimeFormat: config.DefaultTimeFormat},
+                    ColumnOptions: goraddctrl.ColumnOptions{TimeFormat: config.DefaultTimeFormat},
                 {{if}}
                 },
 {{for}}
            },
         },
-		PanelCreator{
+		goraddctrl.PanelCreator{
 			ID: p.ID()+"-buttonPanel",
-			Children:Children(
-				ButtonCreator{
+			Children:goraddctrl.Children(
+				goraddctrl.ButtonCreator{
 					ID: p.ID()+"-newButton",
 					Text: p.GT("New"),
 					OnClick:action.Ajax(p.ID(), {{= lcPanelName }}NewClick),
@@ -112,7 +112,7 @@ func (p *{{= panelName }}) GetClickedRowValue(a page.ActionParams) string {
 // BindData determines what records will be displayed in the lister.
 // Override to change what records get displayed.
 func (p *{{= panelName }}) BindData(ctx context.Context, s goraddctrl.DataManagerI) {
-    list := GetPagedTable(p, p.ID() + "-list")
+    list := goraddctrl.GetPagedTable(p, p.ID() + "-list")
 	if list.HasDataPagers() {
 		list.SetTotalItems(p.this().BuildQuery(ctx).Count(ctx, false))
 	}

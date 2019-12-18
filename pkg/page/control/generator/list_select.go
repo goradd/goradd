@@ -19,14 +19,9 @@ type SelectList struct {
 }
 
 func (d SelectList) Type() string {
-	return "SelectList"
+	return "github.com/goradd/goradd/pkg/page/control/SelectList"
 }
 
-func (d SelectList) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-	}
-}
 
 func (d SelectList) SupportsColumn(ref interface{}) bool {
 	if col,ok := ref.(*db.Column); ok && col.ForeignKey != nil {
@@ -38,14 +33,14 @@ func (d SelectList) SupportsColumn(ref interface{}) bool {
 func (d SelectList) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`goraddctrl.SelectListCreator{
+`%s.SelectListCreator{
 	ID:           %#v,
 	DataProvider: p,
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 

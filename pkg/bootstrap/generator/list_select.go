@@ -19,22 +19,20 @@ type SelectList struct {
 	generator3.SelectList // base it on the built-in generator
 }
 
-func (d SelectList) Imports() []generator2.ImportPath {
-	return []generator2.ImportPath{
-		{"bootstrapctrl", "github.com/goradd/goradd/pkg/bootstrap/control"},
-	}
+func (d SelectList) Type() string {
+	return "github.com/goradd/goradd/pkg/bootstrap/control/SelectList"
 }
 
 func (d SelectList) GenerateCreator(ref interface{}, desc *generator2.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-		`bootstrapctrl.SelectListCreator{
+		`%s.SelectListCreator{
 	ID:           %#v,
 	DataProvider: p,
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }

@@ -18,22 +18,19 @@ func init() {
 type Checkbox struct {
 	generator3.Checkbox // base it on the built-in generator
 }
-
-func (d Checkbox) Imports() []generator2.ImportPath {
-	return []generator2.ImportPath{
-		{"bootstrapctrl", "github.com/goradd/goradd/pkg/bootstrap/control"},
-	}
+func (d Checkbox) Type() string {
+	return "github.com/goradd/goradd/pkg/bootstrap/control/Checkbox"
 }
 
 func (d Checkbox) GenerateCreator(ref interface{}, desc *generator2.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-		`bootstrapctrl.CheckboxCreator{
+		`%s.CheckboxCreator{
 			ID:        %#v,
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, desc.ControlID, !col.IsNullable, desc.Connector)
+		}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }

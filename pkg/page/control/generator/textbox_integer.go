@@ -19,7 +19,7 @@ type IntegerTextbox struct {
 }
 
 func (d IntegerTextbox) Type() string {
-	return "IntegerTextbox"
+	return "github.com/goradd/goradd/pkg/page/control/IntegerTextbox"
 }
 
 func (d IntegerTextbox) Imports() []generator.ImportPath {
@@ -41,13 +41,13 @@ func (d IntegerTextbox) SupportsColumn(ref interface{}) bool {
 func (d IntegerTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`goraddctrl.IntegerTextboxCreator{
+`%s.IntegerTextboxCreator{
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 

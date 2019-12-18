@@ -18,14 +18,11 @@ type Span struct {
 }
 
 func (d Span) Type() string {
-	return "Span"
+	return "github.com/goradd/goradd/pkg/page/control/Span"
 }
 
-func (d Span) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-		{Alias: "", Path:"fmt"},
-	}
+func (d Span) Imports() []string {
+	return []string{"fmt"}
 }
 
 func (d Span) SupportsColumn(ref interface{}) bool {
@@ -48,7 +45,7 @@ func (d Span) GenerateCreator(ref interface{}, desc *generator.ControlDescriptio
 
 
 func (d Span) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
-	return `ctrl.SetText(fmt.Sprintf("%v", val))`
+	return `ctrl.SetText(fmt.Sprint(val))`
 }
 
 func (d Span) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {

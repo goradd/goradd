@@ -19,21 +19,19 @@ type EmailTextbox struct {
 	generator3.EmailTextbox // base it on the built-in generator
 }
 
-func (d EmailTextbox) Imports() []generator2.ImportPath {
-	return []generator2.ImportPath{
-		{"bootstrapctrl", "github.com/goradd/goradd/pkg/bootstrap/control"},
-	}
+func (d EmailTextbox) Type() string {
+	return "github.com/goradd/goradd/pkg/bootstrap/control/EmailTextbox"
 }
 
 func (d EmailTextbox) GenerateCreator(ref interface{}, desc *generator2.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-		`bootstrapctrl.EmailTextboxCreator{
+		`%s.EmailTextboxCreator{
 			ID:        %#v,
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, desc.ControlID, !col.IsNullable, desc.Connector)
+		}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
