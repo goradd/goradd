@@ -12,7 +12,7 @@ import (
 // control descriptions
 func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, aliasToImport map[string]*ImportType) {
 	for _, col := range t.Columns {
-		typ, importName := defaultControlType(col)
+		typ, importName := controlType(col)
 
 		if typ != "" {
 			var mainImport *ImportType
@@ -72,8 +72,9 @@ func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*Control
 	return
 }
 
-// defaultControlType returns the default type of control for a column. Control types can be customized in other ways too.
-func defaultControlType(ref interface{}) (typ string, importName string) {
+// controlType returns the type of control for a column. It gets this first from the database description, and
+// if there is no controlType indicated, then from the registered DefaultControlTypeFunc function.
+func controlType(ref interface{}) (typ string, importName string) {
 	// See if the description has a specific control, which should be a path to the control
 	var controlPath string
 	switch col := ref.(type) {
@@ -87,20 +88,21 @@ func defaultControlType(ref interface{}) (typ string, importName string) {
 			if !ok {
 				panic("controlPath must be a string")
 			}
-			p,c := path.Split(controlPath)
-			p = path.Clean(p)
-
-			return c,p
 		}
 	}
 
-	d := DefaultControlTypeFunc(ref)
-	return d.Typ, d.ImportName
+	if controlPath == "" {
+		controlPath = DefaultControlTypeFunc(ref)
+	}
+	p,c := path.Split(controlPath)
+	p = path.Clean(p)
+
+	return c,p
 }
 
 func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, aliasToImport map[string]*ImportType) {
 	for _, rr := range t.ReverseReferences {
-		typ, importName := defaultControlType(rr)
+		typ, importName := controlType(rr)
 
 		if typ != "" {
 			var mainImport *ImportType
@@ -158,7 +160,7 @@ func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{
 
 func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, aliasToImport map[string]*ImportType) {
 	for _, mm := range t.ManyManyReferences {
-		typ, importName := defaultControlType(mm)
+		typ, importName := controlType(mm)
 
 		if typ != "" {
 			var mainImport *ImportType
