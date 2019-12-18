@@ -22,10 +22,6 @@ func (d IntegerTextbox) Type() string {
 	return "IntegerTextbox"
 }
 
-func (d IntegerTextbox) NewFunc() string {
-	return "NewIntegerTextbox"
-}
-
 func (d IntegerTextbox) Imports() []generator.ImportPath {
 	return []generator.ImportPath{
 		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},

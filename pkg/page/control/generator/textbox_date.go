@@ -22,10 +22,6 @@ func (d DateTextbox) Type() string {
 	return "DateTextbox"
 }
 
-func (d DateTextbox) NewFunc() string {
-	return "NewDateTextbox"
-}
-
 func (d DateTextbox) Imports() []generator.ImportPath {
 	return []generator.ImportPath{
 		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},

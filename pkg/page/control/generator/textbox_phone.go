@@ -22,10 +22,6 @@ func (d PhoneTextbox) Type() string {
 	return "PhoneTextbox"
 }
 
-func (d PhoneTextbox) NewFunc() string {
-	return "NewPhoneTextbox"
-}
-
 func (d PhoneTextbox) Imports() []generator.ImportPath {
 	return []generator.ImportPath{
 		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},

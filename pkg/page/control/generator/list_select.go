@@ -22,10 +22,6 @@ func (d SelectList) Type() string {
 	return "SelectList"
 }
 
-func (d SelectList) NewFunc() string {
-	return "NewSelectList"
-}
-
 func (d SelectList) Imports() []generator.ImportPath {
 	return []generator.ImportPath{
 		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},

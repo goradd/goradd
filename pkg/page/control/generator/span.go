@@ -21,10 +21,6 @@ func (d Span) Type() string {
 	return "Span"
 }
 
-func (d Span) NewFunc() string {
-	return "NewSpan"
-}
-
 func (d Span) Imports() []generator.ImportPath {
 	return []generator.ImportPath{
 		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
