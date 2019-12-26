@@ -15,6 +15,7 @@ const (
 	Current           = "now"
 	Zero              = "zero"
 	UsDate            = "1/2/2006"
+	ShortUsDate       = "1/2/06"
 	EuroDate          = "2/1/2006"
 	UsDateTime        = "1/2/2006 3:04 PM"
 	EuroDateTime      = "1/2/2006 15:04"
