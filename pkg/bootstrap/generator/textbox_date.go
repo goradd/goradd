@@ -9,20 +9,12 @@ import (
 )
 
 func init() {
-	if !config.Release {
-		generator2.RegisterControlGenerator(DateTextbox{})
-	}
+	generator2.RegisterControlGenerator(DateTextbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/DateTextbox")
 }
 
 // This structure describes the textbox to the connector dialog and code generator
 type DateTextbox struct {
 	generator3.DateTextbox // base it on the built-in generator
-}
-
-func (d DateTextbox) Imports() []generator2.ImportPath {
-	return []generator2.ImportPath{
-		{"bootstrapctrl", "github.com/goradd/goradd/pkg/bootstrap/control"},
-	}
 }
 
 func (d DateTextbox) GenerateCreator(ref interface{}, desc *generator2.ControlDescription) (s string) {
@@ -36,13 +28,13 @@ func (d DateTextbox) GenerateCreator(ref interface{}, desc *generator2.ControlDe
 		format = config.DefaultDateTimeEntryFormat
 	}
 	s = fmt.Sprintf(
-		`bootstrapctrl.DateTextboxCreator{
+		`%s.DateTextboxCreator{
 	ID:        %#v,
 	Format:    %#v,
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, format, !col.IsNullable, desc.Connector)
+}`, desc.Import, desc.ControlID, format, !col.IsNullable, desc.Connector)
 	return
 }

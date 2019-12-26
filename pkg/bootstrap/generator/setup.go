@@ -6,35 +6,35 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-// Setup sets up the default code generator to generate bootstrap controls when possible.
+// BootstrapCodegenSetup sets up the default code generator to generate bootstrap controls when possible.
 func BootstrapCodegenSetup() {
 	generator.DefaultFormFieldCreator = "bootstrapctrl.FormGroupCreator"
 
-	generator.DefaultControlTypeFunc = func(ref interface{}) (info generator.ControlCreationInfo) {
-		info = generator.DefaultControlType(ref)
+	generator.DefaultControlTypeFunc = func(ref interface{}) (path string) {
+		path = generator.DefaultControlType(ref)
 		switch col := ref.(type) {
 		case *db.ReverseReference:
 			if col.IsUnique() {
 				return // select list instead
 			} else if col.IsNullable() {
-				return generator.ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/bootstrap/control"}
+				return "github.com/goradd/goradd/pkg/bootstrap/control/CheckboxList"
 			}
 			return
 		case *db.ManyManyReference:
-			return generator.ControlCreationInfo{"CheckboxList", "NewCheckboxList", "github.com/goradd/goradd/pkg/bootstrap/control"}
+			return "github.com/goradd/goradd/pkg/bootstrap/control/CheckboxList"
 		case *db.Column:
 			if col.IsPk {
 				return
 			}
 
 			if col.IsReference() {
-				return generator.ControlCreationInfo{"SelectList", "NewSelectList", "github.com/goradd/goradd/pkg/bootstrap/control"}
+				return "github.com/goradd/goradd/pkg/bootstrap/control/SelectList"
 			}
 
 			// default control types for columns
 			switch col.ColumnType {
 			case query.ColTypeString:
-				return generator.ControlCreationInfo{"Textbox", "NewTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+				return "github.com/goradd/goradd/pkg/bootstrap/control/Textbox"
 			case query.ColTypeInteger:
 				fallthrough
 			case query.ColTypeUnsigned:
@@ -42,18 +42,18 @@ func BootstrapCodegenSetup() {
 			case query.ColTypeInteger64:
 				fallthrough
 			case query.ColTypeUnsigned64:
-				return generator.ControlCreationInfo{"IntegerTextbox", "NewIntegerTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+				return "github.com/goradd/goradd/pkg/bootstrap/control/IntegerTextbox"
 			case query.ColTypeFloat:
-				return generator.ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+				return "github.com/goradd/goradd/pkg/bootstrap/control/FloatTextbox"
 			case query.ColTypeDouble:
-				return generator.ControlCreationInfo{"FloatTextbox", "NewFloatTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+				return "github.com/goradd/goradd/pkg/bootstrap/control/FloatTextbox"
 			case query.ColTypeBool:
-				return generator.ControlCreationInfo{"Checkbox", "NewCheckbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+				return "github.com/goradd/goradd/pkg/bootstrap/control/Checkbox"
 			case query.ColTypeDateTime:
 				if col.IsTimestamp {
-					return generator.ControlCreationInfo{"DateTimeSpan", "NewDateTimeSpan", "github.com/goradd/goradd/pkg/page/control"}
+					return "github.com/goradd/goradd/pkg/page/control/DateTimeSpan"
 				} else {
-					return generator.ControlCreationInfo{"DateTextbox", "NewDateTextbox", "github.com/goradd/goradd/pkg/bootstrap/control"}
+					return "github.com/goradd/goradd/pkg/bootstrap/control/DateTextbox"
 				}
 			default:
 				return

@@ -3,33 +3,19 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
 func init() {
-	if !config.Release {
-		generator.RegisterControlGenerator(Span{})
-	}
+	generator.RegisterControlGenerator(Span{}, "github.com/goradd/goradd/pkg/page/control/Span")
 }
 
 // This structure describes the Span to the connector dialog and code generator
 type Span struct {
 }
 
-func (d Span) Type() string {
-	return "Span"
-}
-
-func (d Span) NewFunc() string {
-	return "NewSpan"
-}
-
-func (d Span) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-		{Alias: "", Path:"fmt"},
-	}
+func (d Span) Imports() []string {
+	return []string{"fmt"}
 }
 
 func (d Span) SupportsColumn(ref interface{}) bool {
@@ -52,7 +38,7 @@ func (d Span) GenerateCreator(ref interface{}, desc *generator.ControlDescriptio
 
 
 func (d Span) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
-	return `ctrl.SetText(fmt.Sprintf("%v", val))`
+	return `ctrl.SetText(fmt.Sprint(val))`
 }
 
 func (d Span) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {

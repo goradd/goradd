@@ -3,32 +3,19 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
 func init() {
-	if !config.Release {
-		generator.RegisterControlGenerator(CheckboxList{})
-	}
+	generator.RegisterControlGenerator(CheckboxList{}, "github.com/goradd/goradd/pkg/page/control/CheckboxList")
 }
 
 // This structure describes the CheckboxList to the connector dialog and code generator
 type CheckboxList struct {
 }
 
-func (d CheckboxList) Type() string {
-	return "CheckboxList"
-}
-
 func (d CheckboxList) NewFunc() string {
 	return "NewCheckboxList"
-}
-
-func (d CheckboxList) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-	}
 }
 
 func (d CheckboxList) SupportsColumn(ref interface{}) bool {
@@ -47,13 +34,13 @@ func (d CheckboxList) SupportsColumn(ref interface{}) bool {
 
 func (d CheckboxList) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	s = fmt.Sprintf(
-`goraddctrl.CheckboxListCreator{
+`%s.CheckboxListCreator{
 	ID:           %#v,
 	DataProvider: p,
 	ControlOptions: page.ControlOptions{
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, desc.Connector)
+}`, desc.Import, desc.ControlID, desc.Connector)
 	return
 }
 

@@ -103,8 +103,8 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= generator.DefaultF
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import.Alias }}.{{= cd.ControlType }} {
-	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import.Alias }}.{{= cd.ControlType }})
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import }}.{{= cd.ControlType }})
 }
 
 }}
@@ -126,8 +126,8 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= generator.DefaultF
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import.Alias }}.{{= cd.ControlType }} {
-	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import.Alias }}.{{= cd.ControlType }})
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import }}.{{= cd.ControlType }})
 }
 
 }}
@@ -147,8 +147,8 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= generator.DefaultF
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import.Alias }}.{{= cd.ControlType }} {
-	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import.Alias }}.{{= cd.ControlType }})
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import }}.{{= cd.ControlType }})
 }
 
 }}

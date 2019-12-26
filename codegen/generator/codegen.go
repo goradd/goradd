@@ -26,7 +26,7 @@ type CodeGenerator struct {
 type TableType struct {
 	*db.Table
 	controlDescriptions map[interface{}]*ControlDescription
-	Imports             []*ImportType
+	Imports             []ImportType
 }
 
 type TypeTableType struct {
@@ -37,13 +37,12 @@ type TypeTableType struct {
 type ImportType struct {
 	Path      string
 	Alias     string // blank if not needing an alias
-	Primary   bool
 }
 
 // ControlDescription is matched with a Column below and provides additional information regarding
 // how information in a column can be used to generate a default control to edit that information.
 type ControlDescription struct {
-	Import         *ImportType
+	Import         string
 	ControlType    string
 	ControlName    string
 	ControlID      string // default id to generate
@@ -102,14 +101,14 @@ func Generate() {
 				log.Println("Error:  table " + table.GoName + " is defined more than once.")
 			} else {
 				descriptions := make(map[interface{}]*ControlDescription)
-				imports := make(map[string]*ImportType)
-				matchColumnsWithControls(table, descriptions, imports)
-				matchReverseReferencesWithControls(table, descriptions, imports)
-				matchManyManyReferencesWithControls(table, descriptions, imports)
+				importAliases := make(map[string]string)
+				matchColumnsWithControls(table, descriptions, importAliases)
+				matchReverseReferencesWithControls(table, descriptions, importAliases)
+				matchManyManyReferencesWithControls(table, descriptions, importAliases)
 
-				var i []*ImportType
-				for _,k := range stringmap.SortedKeys(imports) {
-					i = append(i, imports[k])
+				var i []ImportType
+				for _,k := range stringmap.SortedKeys(importAliases) {
+					i = append(i, ImportType{k,importAliases[k]})
 				}
 
 				t := TableType{

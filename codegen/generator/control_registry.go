@@ -20,8 +20,6 @@ type ImportPath struct {
 }
 
 type ControlGenerator interface {
-	Type() string
-	Imports() []ImportPath
 	SupportsColumn(ref interface{}) bool
 	GenerateCreator(ref interface{}, desc *ControlDescription) string
 	GenerateRefresh(ref interface{}, desc *ControlDescription) string
@@ -32,26 +30,30 @@ type ProviderGenerator interface {
 	GenerateProvider(ref interface{}, desc *ControlDescription) string
 }
 
-type ControlGeneratorRegistryKey struct {
-	imp string
-	typ string
+var controlGeneratorRegistry map[string]ControlGenerator
+
+func RegisterControlGenerator(c ControlGenerator, path string) {
+	if controlGeneratorRegistry == nil {
+		controlGeneratorRegistry = make(map[string]ControlGenerator)
+	}
+
+	controlGeneratorRegistry[path] = c
 }
 
-var controlGeneratorRegistry map[ControlGeneratorRegistryKey]ControlGenerator
-
-func RegisterControlGenerator(c ControlGenerator) {
+/*
+func RegisterControl(c page.ControlI) {
 	if controlGeneratorRegistry == nil {
 		controlGeneratorRegistry = make(map[ControlGeneratorRegistryKey]ControlGenerator)
 	}
+
 
 	i := c.Imports()
 	e := ControlGeneratorRegistryKey{i[0].Path, c.Type()}
 	controlGeneratorRegistry[e] = c
 }
+*/
 
-func GetControlGenerator(imp string, typ string) ControlGenerator {
-	e := ControlGeneratorRegistryKey{imp, typ}
-
-	d, _ := controlGeneratorRegistry[e]
+func GetControlGenerator(controlPath string) ControlGenerator {
+	d, _ := controlGeneratorRegistry[controlPath]
 	return d
 }
