@@ -3,23 +3,16 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 func init() {
-	if !config.Release {
-		generator.RegisterControlGenerator(IntegerTextbox{})
-	}
+	generator.RegisterControlGenerator(IntegerTextbox{}, "github.com/goradd/goradd/pkg/page/control/IntegerTextbox")
 }
 
 // This structure describes the IntegerTextbox to the connector dialog and code generator
 type IntegerTextbox struct {
-}
-
-func (d IntegerTextbox) Type() string {
-	return "github.com/goradd/goradd/pkg/page/control/IntegerTextbox"
 }
 
 func (d IntegerTextbox) Imports() []generator.ImportPath {

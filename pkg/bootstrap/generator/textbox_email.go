@@ -3,24 +3,17 @@ package generator
 import (
 	"fmt"
 	generator2 "github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 	generator3 "github.com/goradd/goradd/pkg/page/control/generator"
 )
 
 func init() {
-	if !config.Release {
-		generator2.RegisterControlGenerator(EmailTextbox{})
-	}
+	generator2.RegisterControlGenerator(EmailTextbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/EmailTextbox")
 }
 
 // This structure describes the EmailTextbox to the connector dialog and code generator
 type EmailTextbox struct {
 	generator3.EmailTextbox // base it on the built-in generator
-}
-
-func (d EmailTextbox) Type() string {
-	return "github.com/goradd/goradd/pkg/bootstrap/control/EmailTextbox"
 }
 
 func (d EmailTextbox) GenerateCreator(ref interface{}, desc *generator2.ControlDescription) (s string) {

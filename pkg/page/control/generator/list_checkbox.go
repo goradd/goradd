@@ -3,22 +3,15 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
 func init() {
-	if !config.Release {
-		generator.RegisterControlGenerator(CheckboxList{})
-	}
+	generator.RegisterControlGenerator(CheckboxList{}, "github.com/goradd/goradd/pkg/page/control/CheckboxList")
 }
 
 // This structure describes the CheckboxList to the connector dialog and code generator
 type CheckboxList struct {
-}
-
-func (d CheckboxList) Type() string {
-	return "github.com/goradd/goradd/pkg/page/control/CheckboxList"
 }
 
 func (d CheckboxList) NewFunc() string {

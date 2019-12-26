@@ -3,23 +3,16 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 func init() {
-	if !config.Release {
-		generator.RegisterControlGenerator(PhoneTextbox{})
-	}
+	generator.RegisterControlGenerator(PhoneTextbox{}, "github.com/goradd/goradd/pkg/page/control/PhoneTextbox")
 }
 
 // This structure describes the PhoneTextbox to the connector dialog and code generator
 type PhoneTextbox struct {
-}
-
-func (d PhoneTextbox) Type() string {
-	return "github.com/goradd/goradd/pkg/page/control/PhoneTextbox"
 }
 
 func (d PhoneTextbox) SupportsColumn(ref interface{}) bool {

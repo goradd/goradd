@@ -3,23 +3,16 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 func init() {
-	if !config.Release {
-		generator.RegisterControlGenerator(SelectList{})
-	}
+	generator.RegisterControlGenerator(SelectList{}, "github.com/goradd/goradd/pkg/page/control/SelectList")
 }
 
 // This structure describes the SelectList to the connector dialog and code generator
 type SelectList struct {
-}
-
-func (d SelectList) Type() string {
-	return "github.com/goradd/goradd/pkg/page/control/SelectList"
 }
 
 

@@ -3,23 +3,16 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 func init() {
-	if !config.Release {
-		generator.RegisterControlGenerator(DateTimeSpan{})
-	}
+	generator.RegisterControlGenerator(DateTimeSpan{}, "github.com/goradd/goradd/pkg/page/control/DateTimeSpan")
 }
 
 // This structure describes the DateTimeSpan to the connector dialog and code generator
 type DateTimeSpan struct {
-}
-
-func (d DateTimeSpan) Type() string {
-	return "github.com/goradd/goradd/pkg/page/control/DateTimeSpan"
 }
 
 func (d DateTimeSpan) NewFunc() string {

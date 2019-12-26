@@ -3,25 +3,17 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
 func init() {
-	if !config.Release {
-		generator.RegisterControlGenerator(FloatTextbox{})
-	}
+	generator.RegisterControlGenerator(FloatTextbox{}, "github.com/goradd/goradd/pkg/page/control/FloatTextbox")
 }
 
 // This structure describes the FloatTextbox to the connector dialog and code generator
 type FloatTextbox struct {
 }
-
-func (d FloatTextbox) Type() string {
-	return "github.com/goradd/goradd/pkg/page/control/FloatTextbox"
-}
-
 
 func (d FloatTextbox) SupportsColumn(ref interface{}) bool {
 	if col,ok := ref.(*db.Column); ok && (col.ColumnType == query.ColTypeFloat || col.ColumnType == query.ColTypeDouble) {

@@ -3,22 +3,15 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
 func init() {
-	if !config.Release {
-		generator.RegisterControlGenerator(Span{})
-	}
+	generator.RegisterControlGenerator(Span{}, "github.com/goradd/goradd/pkg/page/control/Span")
 }
 
 // This structure describes the Span to the connector dialog and code generator
 type Span struct {
-}
-
-func (d Span) Type() string {
-	return "github.com/goradd/goradd/pkg/page/control/Span"
 }
 
 func (d Span) Imports() []string {
