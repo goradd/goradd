@@ -80,6 +80,7 @@ func controlType(ref interface{}) string {
 			if !ok {
 				panic("controlPath must be a string")
 			}
+			return controlPath // if empty, we want to return empty, because that turns off a control
 		}
 	}
 
