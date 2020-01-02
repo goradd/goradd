@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/sys"
 	"github.com/goradd/goradd/web/app"
 	"log"
 	"net/http"
@@ -129,18 +128,8 @@ func (a *Application) RunWebServer() (err error) {
 	// a web server, like Nginx or Apache and let the web server handle the certificate issues.
 
 	if config.TLSPort != 0 {
-		// Here we confirm that the CertFile and KeyFile exist. If they don't, ListenAndServer just exits with an open error
-		// and you will not know why.
-		if !sys.PathExists(config.TLSCertFile) {
-			log.Fatalf("TLSCertFile does not exist: %s", config.TLSCertFile)
-		}
-
-		if !sys.PathExists(config.TLSKeyFile) {
-			log.Fatalf("TLSKeyFile does not exist: %s", config.TLSKeyFile)
-		}
-
 		go func() {
-			log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", config.TLSPort), config.TLSCertFile, config.TLSKeyFile, mux))
+			log.Fatal(app.ListenAndServeTLSWithTimeouts(fmt.Sprint(":", config.TLSPort), config.TLSCertFile, config.TLSKeyFile, mux))
 		}()
 	}
 
@@ -156,8 +145,7 @@ func (a *Application) RunWebServer() (err error) {
 	} else {
 		// TODO: Make a way so that we will automatically redirect to https if specified to do so
 		// I think its a simple matter of providing a mux just for this purpose
-		addr := fmt.Sprintf(":%d", config.Port)
-		err = http.ListenAndServe(addr, mux)
+		err = app.ListenAndServeWithTimeouts(fmt.Sprint(":", config.Port), mux)
 	}
 
 	return

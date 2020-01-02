@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/stores/memstore"
 	"github.com/goradd/gengen/pkg/maps"
@@ -64,6 +65,7 @@ type ApplicationI interface {
 	SetupMessenger()
 	SetupDatabaseWatcher()
 	SessionHandler(next http.Handler) http.Handler
+	HSTSHandler(next http.Handler) http.Handler
 	ServeRequest(w http.ResponseWriter, r *http.Request)
 	ServeStaticFile(w http.ResponseWriter, r *http.Request) bool
 	ServeApiRequest(w http.ResponseWriter, r *http.Request) bool
@@ -213,6 +215,7 @@ func (a *Application) MakeAppServer() http.Handler {
 	h = a.ServeAppHandler(buf, h)
 	h = a.PutContextHandler(h)
 	h = a.this().SessionHandler(h)
+	h = a.this().HSTSHandler(h)
 	h = a.BufferOutputHandler(h)
 	h = a.this().AccessLogHandler(h)
 
@@ -224,6 +227,28 @@ func (a *Application) MakeAppServer() http.Handler {
 func (a *Application) SessionHandler(next http.Handler) http.Handler {
 	return session.Use(next)
 }
+
+// HSTSHandler sets the browser to HSTS mode using the given timeout. HSTS will force a browser to accept only
+// HTTPS connections for everything coming from your domain, if the initial page was served over HTTPS. Many browsers
+// already do this. What this additionally does is prevent the user from overriding this. Also, if your
+// certificate is bad or expired, it will NOT allow the user the option of using your website anyways.
+// This should be safe to send in development mode if your are local server is not using HTTPS, since the header
+// is ignored if a page is served over HTTP.
+//
+// Once the HSTS policy has been sent to the browser, it will remember it for the amount of time
+// specified, even if the header is not sent again. However, you can override it by sending another header, and
+// clear it by setting the timeout to 0. Set the timeout to -1 to turn it off. You can also completely override this by
+// implementing this function in your app.go file.
+func (a *Application) HSTSHandler(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		if config.HSTSTimeout >= 0 {
+			w.Header().Set("Strict-Transport-Security", fmt.Sprintf("max-age=%d; includeSubDomains", config.HSTSTimeout))
+		}
+		next.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(fn)
+}
+
 
 // ServeRequestHandler is the last handler on the default call chain. It calls ServeRequest so the sub-class can handle it.
 func (a *Application) ServeRequestHandler(buf *bytes.Buffer) http.Handler {
@@ -406,6 +431,58 @@ func (a *Application) ServeApiRequest(w http.ResponseWriter, r *http.Request) bo
 	return false
 }
 
+// RegisterStaticFileProcessor registers a processor function for static files that have a particular suffix.
+// Do this at init time.
 func RegisterStaticFileProcessor(ending string, processorFunc StaticFileProcessorFunc) {
 	staticFileProcessors = append(staticFileProcessors, staticFileProcessor{ending, processorFunc})
+}
+
+// ListenAndServeTLSWithTimeouts starts a secure web server with timeouts. The default http server does
+// not have timeouts by default, which leaves the server open to certain attacks that would start
+// a connection, but then very slowly read or write. Timeout values are taken from global variables
+// defined in config, which you can set at init time.
+func ListenAndServeTLSWithTimeouts(addr, certFile, keyFile string, handler http.Handler) error {
+	// Here we confirm that the CertFile and KeyFile exist. If they don't, ListenAndServeTLS just exit with an open error
+	// and you will not know why.
+	if !sys.PathExists(certFile) {
+		log.Fatalf("TLSCertFile does not exist: %s", config.TLSCertFile)
+	}
+
+	if !sys.PathExists(keyFile) {
+		log.Fatalf("TLSKeyFile does not exist: %s", config.TLSKeyFile)
+	}
+
+	// TODO: https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/ recommends keeping track
+	// of open connections using the ConnState hook for debugging purposes.
+
+	srv := &http.Server{
+		Addr: addr,
+		ReadTimeout:  config.ReadTimeout,
+		ReadHeaderTimeout: config.ReadHeaderTimeout,
+		WriteTimeout: config.WriteTimeout,
+		IdleTimeout:  config.IdleTimeout,
+		Handler:      handler,
+	}
+	return srv.ListenAndServeTLS(certFile, keyFile)
+}
+
+// ListenAndServeWithTimeouts starts a web server with timeouts. The default http server does
+// not have timeouts by default, which leaves the server open to certain attacks that would start
+// a connection, but then very slowly read or write. Timeout values are taken from global variables
+// defined in config, which you can set at init time. This non-secure version is appropriate
+// if you are serving behind another server, like apache or nginx.
+func ListenAndServeWithTimeouts(addr string, handler http.Handler) error {
+
+	// TODO: https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/ recommends keeping track
+	// of open connections using the ConnState hook for debugging purposes.
+
+	srv := &http.Server{
+		Addr: addr,
+		ReadTimeout:  config.ReadTimeout,
+		ReadHeaderTimeout: config.ReadHeaderTimeout,
+		WriteTimeout: config.WriteTimeout,
+		IdleTimeout:  config.IdleTimeout,
+		Handler:      handler,
+	}
+	return srv.ListenAndServe()
 }
