@@ -189,7 +189,7 @@ func (o *typeTestBase) IDIsValid() bool {
 
 func (o *typeTestBase) Date() datetime.DateTime {
 	if o._restored && !o.dateIsValid {
-		panic("date was not selected in the last query and so is not valid")
+		panic("date was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.date
 }
@@ -227,7 +227,7 @@ func (o *typeTestBase) SetDate(i interface{}) {
 
 func (o *typeTestBase) Time() datetime.DateTime {
 	if o._restored && !o.timeIsValid {
-		panic("time was not selected in the last query and so is not valid")
+		panic("time was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.time
 }
@@ -265,7 +265,7 @@ func (o *typeTestBase) SetTime(i interface{}) {
 
 func (o *typeTestBase) DateTime() datetime.DateTime {
 	if o._restored && !o.dateTimeIsValid {
-		panic("dateTime was not selected in the last query and so is not valid")
+		panic("dateTime was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.dateTime
 }
@@ -303,7 +303,7 @@ func (o *typeTestBase) SetDateTime(i interface{}) {
 
 func (o *typeTestBase) Ts() datetime.DateTime {
 	if o._restored && !o.tsIsValid {
-		panic("ts was not selected in the last query and so is not valid")
+		panic("ts was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.ts
 }
@@ -341,7 +341,7 @@ func (o *typeTestBase) SetTs(i interface{}) {
 
 func (o *typeTestBase) TestInt() int {
 	if o._restored && !o.testIntIsValid {
-		panic("testInt was not selected in the last query and so is not valid")
+		panic("testInt was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.testInt
 }
@@ -379,7 +379,7 @@ func (o *typeTestBase) SetTestInt(i interface{}) {
 
 func (o *typeTestBase) TestFloat() float32 {
 	if o._restored && !o.testFloatIsValid {
-		panic("testFloat was not selected in the last query and so is not valid")
+		panic("testFloat was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.testFloat
 }
@@ -417,7 +417,7 @@ func (o *typeTestBase) SetTestFloat(i interface{}) {
 
 func (o *typeTestBase) TestDouble() float64 {
 	if o._restored && !o.testDoubleIsValid {
-		panic("testDouble was not selected in the last query and so is not valid")
+		panic("testDouble was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.testDouble
 }
@@ -439,7 +439,7 @@ func (o *typeTestBase) SetTestDouble(v float64) {
 
 func (o *typeTestBase) TestText() string {
 	if o._restored && !o.testTextIsValid {
-		panic("testText was not selected in the last query and so is not valid")
+		panic("testText was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.testText
 }
@@ -477,7 +477,7 @@ func (o *typeTestBase) SetTestText(i interface{}) {
 
 func (o *typeTestBase) TestBit() bool {
 	if o._restored && !o.testBitIsValid {
-		panic("testBit was not selected in the last query and so is not valid")
+		panic("testBit was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.testBit
 }
@@ -515,7 +515,7 @@ func (o *typeTestBase) SetTestBit(i interface{}) {
 
 func (o *typeTestBase) TestVarchar() string {
 	if o._restored && !o.testVarcharIsValid {
-		panic("testVarchar was not selected in the last query and so is not valid")
+		panic("testVarchar was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.testVarchar
 }
@@ -594,7 +594,7 @@ func (b *TypeTestsBuilder) Load(ctx context.Context) (typeTestSlice []*TypeTest)
 	}
 	for _, item := range results {
 		o := new(TypeTest)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		typeTestSlice = append(typeTestSlice, o)
 	}
 	return typeTestSlice
@@ -610,7 +610,7 @@ func (b *TypeTestsBuilder) LoadI(ctx context.Context) (typeTestSlice []interface
 	}
 	for _, item := range results {
 		o := new(TypeTest)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		typeTestSlice = append(typeTestSlice, o)
 	}
 	return typeTestSlice
@@ -781,10 +781,8 @@ func CountTypeTestByTestVarchar(ctx context.Context, testVarchar string) uint {
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
 // between the object chain requested by the user in the query.
-// If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
-// Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
-func (o *typeTestBase) load(m map[string]interface{}, linkParent bool, objThis *TypeTest, objParent interface{}, parentKey string) {
+func (o *typeTestBase) load(m map[string]interface{}, objThis *TypeTest, objParent interface{}, parentKey string) {
 	if v, ok := m["id"]; ok && v != nil {
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
@@ -983,45 +981,47 @@ func (o *typeTestBase) load(m map[string]interface{}, linkParent bool, objThis *
 // If it has any auto-generated ids, those will be updated.
 func (o *typeTestBase) Save(ctx context.Context) {
 	if o._restored {
-		o.Update(ctx)
+		o.update(ctx)
 	} else {
-		o.Insert(ctx)
+		o.insert(ctx)
 	}
 }
 
-// Update will update the values in the database, saving any changed values.
-func (o *typeTestBase) Update(ctx context.Context) {
-
-	if !o._restored {
-		panic("Cannot update a record that was not originally read from the database.")
-	}
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
-	d.Update(ctx, "type_test", m, "id", fmt.Sprint(o.id))
-
-	d.Commit(ctx, txid)
-	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "type_test", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
-}
-
-// Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
-// this will create a duplicate in the database.
-func (o *typeTestBase) Insert(ctx context.Context) {
+// update will update the values in the database, saving any changed values.
+func (o *typeTestBase) update(ctx context.Context) {
+	var modifiedFields map[string]interface{}
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		m := o.getModifiedFields()
-		if len(m) == 0 {
-			return
+		if !o._restored {
+			panic("Cannot update a record that was not originally read from the database.")
 		}
+
+		modifiedFields = o.getModifiedFields()
+		if len(modifiedFields) != 0 {
+			d.Update(ctx, "type_test", modifiedFields, "id", fmt.Sprint(o.id))
+		}
+
+	}) // transaction
+	o.resetDirtyStatus()
+	if len(modifiedFields) != 0 {
+		broadcast.Update(ctx, "goradd", "type_test", fmt.Sprint(o.id), stringmap.SortedKeys(modifiedFields)...)
+	}
+}
+
+// insert will insert the item into the database. Related items will be saved.
+func (o *typeTestBase) insert(ctx context.Context) {
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+
+		if !o.testDoubleIsValid {
+			panic("a value for TestDouble is required, and there is no default value. Call SetTestDouble() before inserting the record.")
+		}
+		m := o.getValidFields()
 
 		id := d.Insert(ctx, "type_test", m)
 		o.id = id
+
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
@@ -1033,7 +1033,6 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 	if o.idIsDirty {
 		fields["id"] = o.id
 	}
-
 	if o.dateIsDirty {
 		if o.dateIsNull {
 			fields["date"] = nil
@@ -1041,7 +1040,6 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["date"] = o.date.GoTime()
 		}
 	}
-
 	if o.timeIsDirty {
 		if o.timeIsNull {
 			fields["time"] = nil
@@ -1049,7 +1047,6 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["time"] = o.time.GoTime()
 		}
 	}
-
 	if o.dateTimeIsDirty {
 		if o.dateTimeIsNull {
 			fields["date_time"] = nil
@@ -1057,7 +1054,6 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["date_time"] = o.dateTime.GoTime()
 		}
 	}
-
 	if o.tsIsDirty {
 		if o.tsIsNull {
 			fields["ts"] = nil
@@ -1065,7 +1061,6 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["ts"] = o.ts.GoTime()
 		}
 	}
-
 	if o.testIntIsDirty {
 		if o.testIntIsNull {
 			fields["test_int"] = nil
@@ -1073,7 +1068,6 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["test_int"] = o.testInt
 		}
 	}
-
 	if o.testFloatIsDirty {
 		if o.testFloatIsNull {
 			fields["test_float"] = nil
@@ -1081,11 +1075,9 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["test_float"] = o.testFloat
 		}
 	}
-
 	if o.testDoubleIsDirty {
 		fields["test_double"] = o.testDouble
 	}
-
 	if o.testTextIsDirty {
 		if o.testTextIsNull {
 			fields["test_text"] = nil
@@ -1093,7 +1085,6 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["test_text"] = o.testText
 		}
 	}
-
 	if o.testBitIsDirty {
 		if o.testBitIsNull {
 			fields["test_bit"] = nil
@@ -1101,7 +1092,6 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["test_bit"] = o.testBit
 		}
 	}
-
 	if o.testVarcharIsDirty {
 		if o.testVarcharIsNull {
 			fields["test_varchar"] = nil
@@ -1109,7 +1099,77 @@ func (o *typeTestBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["test_varchar"] = o.testVarchar
 		}
 	}
+	return
+}
 
+func (o *typeTestBase) getValidFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+	if o.dateIsValid {
+		if o.dateIsNull {
+			fields["date"] = nil
+		} else {
+			fields["date"] = o.date.GoTime()
+		}
+	}
+	if o.timeIsValid {
+		if o.timeIsNull {
+			fields["time"] = nil
+		} else {
+			fields["time"] = o.time.GoTime()
+		}
+	}
+	if o.dateTimeIsValid {
+		if o.dateTimeIsNull {
+			fields["date_time"] = nil
+		} else {
+			fields["date_time"] = o.dateTime.GoTime()
+		}
+	}
+	if o.tsIsValid {
+		if o.tsIsNull {
+			fields["ts"] = nil
+		} else {
+			fields["ts"] = o.ts.GoTime()
+		}
+	}
+	if o.testIntIsValid {
+		if o.testIntIsNull {
+			fields["test_int"] = nil
+		} else {
+			fields["test_int"] = o.testInt
+		}
+	}
+	if o.testFloatIsValid {
+		if o.testFloatIsNull {
+			fields["test_float"] = nil
+		} else {
+			fields["test_float"] = o.testFloat
+		}
+	}
+	if o.testDoubleIsValid {
+		fields["test_double"] = o.testDouble
+	}
+	if o.testTextIsValid {
+		if o.testTextIsNull {
+			fields["test_text"] = nil
+		} else {
+			fields["test_text"] = o.testText
+		}
+	}
+	if o.testBitIsValid {
+		if o.testBitIsNull {
+			fields["test_bit"] = nil
+		} else {
+			fields["test_bit"] = o.testBit
+		}
+	}
+	if o.testVarcharIsValid {
+		if o.testVarcharIsNull {
+			fields["test_varchar"] = nil
+		} else {
+			fields["test_varchar"] = o.testVarchar
+		}
+	}
 	return
 }
 
@@ -1118,7 +1178,7 @@ func (o *typeTestBase) Delete(ctx context.Context) {
 	if !o._restored {
 		panic("Cannot delete a record that has no primary key value.")
 	}
-	d := db.GetDatabase("goradd")
+	d := Database()
 	d.Delete(ctx, "type_test", "id", o.id)
 	broadcast.Delete(ctx, "goradd", "type_test", fmt.Sprint(o.id))
 }
@@ -1236,7 +1296,7 @@ func (o *typeTestBase) Get(key string) interface{} {
 }
 
 // MarshalBinary serializes the object into a buffer that is deserializable using UnmarshalBinary.
-// It should be used for transmitting database object over the wire, or for temporary storage. It does not send
+// It should be used for transmitting database objects over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
 func (o *typeTestBase) MarshalBinary() ([]byte, error) {

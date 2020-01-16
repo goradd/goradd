@@ -91,7 +91,7 @@ func (o *employeeInfoBase) IDIsValid() bool {
 
 func (o *employeeInfoBase) PersonID() string {
 	if o._restored && !o.personIDIsValid {
-		panic("personID was not selected in the last query and so is not valid")
+		panic("personID was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.personID
 }
@@ -147,7 +147,7 @@ func (o *employeeInfoBase) SetPerson(v *Person) {
 
 func (o *employeeInfoBase) EmployeeNumber() int {
 	if o._restored && !o.employeeNumberIsValid {
-		panic("employeeNumber was not selected in the last query and so is not valid")
+		panic("employeeNumber was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.employeeNumber
 }
@@ -221,7 +221,7 @@ func (b *EmployeeInfosBuilder) Load(ctx context.Context) (employeeInfoSlice []*E
 	}
 	for _, item := range results {
 		o := new(EmployeeInfo)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		employeeInfoSlice = append(employeeInfoSlice, o)
 	}
 	return employeeInfoSlice
@@ -237,7 +237,7 @@ func (b *EmployeeInfosBuilder) LoadI(ctx context.Context) (employeeInfoSlice []i
 	}
 	for _, item := range results {
 		o := new(EmployeeInfo)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		employeeInfoSlice = append(employeeInfoSlice, o)
 	}
 	return employeeInfoSlice
@@ -376,10 +376,8 @@ func CountEmployeeInfoByEmployeeNumber(ctx context.Context, employeeNumber int) 
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
 // between the object chain requested by the user in the query.
-// If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
-// Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
-func (o *employeeInfoBase) load(m map[string]interface{}, linkParent bool, objThis *EmployeeInfo, objParent interface{}, parentKey string) {
+func (o *employeeInfoBase) load(m map[string]interface{}, objThis *EmployeeInfo, objParent interface{}, parentKey string) {
 	if v, ok := m["id"]; ok && v != nil {
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
@@ -404,14 +402,10 @@ func (o *employeeInfoBase) load(m map[string]interface{}, linkParent bool, objTh
 		o.personID = ""
 	}
 
-	if linkParent && parentKey == "Person" {
-		o.oPerson = objParent.(*Person)
-		o.personIDIsValid = true
-		o.personIDIsDirty = false
-	} else if v, ok := m["Person"]; ok {
+	if v, ok := m["Person"]; ok {
 		if oPerson, ok2 := v.(map[string]interface{}); ok2 {
 			o.oPerson = new(Person)
-			o.oPerson.load(oPerson, linkParent, o.oPerson, objThis, "EmployeeInfos")
+			o.oPerson.load(oPerson, o.oPerson, objThis, "EmployeeInfos")
 			o.personIDIsValid = true
 			o.personIDIsDirty = false
 		} else {
@@ -443,55 +437,61 @@ func (o *employeeInfoBase) load(m map[string]interface{}, linkParent bool, objTh
 // If it has any auto-generated ids, those will be updated.
 func (o *employeeInfoBase) Save(ctx context.Context) {
 	if o._restored {
-		o.Update(ctx)
+		o.update(ctx)
 	} else {
-		o.Insert(ctx)
+		o.insert(ctx)
 	}
 }
 
-// Update will update the values in the database, saving any changed values.
-func (o *employeeInfoBase) Update(ctx context.Context) {
-	if o.oPerson != nil {
-		o.oPerson.Save(ctx)
-		id := o.oPerson.PrimaryKey()
-		o.SetPersonID(id)
-	}
-
-	if !o._restored {
-		panic("Cannot update a record that was not originally read from the database.")
-	}
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
-	d.Update(ctx, "employee_info", m, "id", fmt.Sprint(o.id))
-
-	d.Commit(ctx, txid)
-	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "employee_info", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
-}
-
-// Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
-// this will create a duplicate in the database.
-func (o *employeeInfoBase) Insert(ctx context.Context) {
+// update will update the values in the database, saving any changed values.
+func (o *employeeInfoBase) update(ctx context.Context) {
+	var modifiedFields map[string]interface{}
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
+
 		if o.oPerson != nil {
 			o.oPerson.Save(ctx)
 			id := o.oPerson.PrimaryKey()
 			o.SetPersonID(id)
 		}
 
-		m := o.getModifiedFields()
-		if len(m) == 0 {
-			return
+		if !o._restored {
+			panic("Cannot update a record that was not originally read from the database.")
 		}
+
+		modifiedFields = o.getModifiedFields()
+		if len(modifiedFields) != 0 {
+			d.Update(ctx, "employee_info", modifiedFields, "id", fmt.Sprint(o.id))
+		}
+
+	}) // transaction
+	o.resetDirtyStatus()
+	if len(modifiedFields) != 0 {
+		broadcast.Update(ctx, "goradd", "employee_info", fmt.Sprint(o.id), stringmap.SortedKeys(modifiedFields)...)
+	}
+}
+
+// insert will insert the item into the database. Related items will be saved.
+func (o *employeeInfoBase) insert(ctx context.Context) {
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+		if o.oPerson != nil {
+			o.oPerson.Save(ctx)
+			o.SetPerson(o.oPerson)
+		}
+
+		if !o.personIDIsValid {
+			panic("a value for PersonID is required, and there is no default value. Call SetPersonID() before inserting the record.")
+		}
+
+		if !o.employeeNumberIsValid {
+			panic("a value for EmployeeNumber is required, and there is no default value. Call SetEmployeeNumber() before inserting the record.")
+		}
+		m := o.getValidFields()
 
 		id := d.Insert(ctx, "employee_info", m)
 		o.id = id
+
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
@@ -503,15 +503,23 @@ func (o *employeeInfoBase) getModifiedFields() (fields map[string]interface{}) {
 	if o.idIsDirty {
 		fields["id"] = o.id
 	}
-
 	if o.personIDIsDirty {
 		fields["person_id"] = o.personID
 	}
-
 	if o.employeeNumberIsDirty {
 		fields["employee_number"] = o.employeeNumber
 	}
+	return
+}
 
+func (o *employeeInfoBase) getValidFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+	if o.personIDIsValid {
+		fields["person_id"] = o.personID
+	}
+	if o.employeeNumberIsValid {
+		fields["employee_number"] = o.employeeNumber
+	}
 	return
 }
 
@@ -520,7 +528,7 @@ func (o *employeeInfoBase) Delete(ctx context.Context) {
 	if !o._restored {
 		panic("Cannot delete a record that has no primary key value.")
 	}
-	d := db.GetDatabase("goradd")
+	d := Database()
 	d.Delete(ctx, "employee_info", "id", o.id)
 	broadcast.Delete(ctx, "goradd", "employee_info", fmt.Sprint(o.id))
 }
@@ -577,7 +585,7 @@ func (o *employeeInfoBase) Get(key string) interface{} {
 }
 
 // MarshalBinary serializes the object into a buffer that is deserializable using UnmarshalBinary.
-// It should be used for transmitting database object over the wire, or for temporary storage. It does not send
+// It should be used for transmitting database objects over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
 func (o *employeeInfoBase) MarshalBinary() ([]byte, error) {

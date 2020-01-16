@@ -63,19 +63,19 @@ func (n *reverseNode) Name() *query.ColumnNode {
 	return cn
 }
 
-// ForwardsAsNotNull represents the many-to-one relationship formed by the reverse reference from the
-// forwards_as_not_null column in the reverse table.
-func (n *reverseNode) ForwardsAsNotNull() *forwardNode {
+// ForwardCascades represents the many-to-one relationship formed by the reverse reference from the
+// forward_cascades column in the reverse table.
+func (n *reverseNode) ForwardCascades() *forwardCascadeNode {
 
-	cn := &forwardNode{
+	cn := &forwardCascadeNode{
 		query.NewReverseReferenceNode(
 			"goraddUnit",
 			"reverse",
 			"id",
-			"forwards_as_not_null",
-			"ForwardsAsNotNull",
-			"forward",
-			"reverse_not_null_id",
+			"forward_cascades",
+			"ForwardCascades",
+			"forward_cascade",
+			"reverse_id",
 			true,
 		),
 	}
@@ -84,19 +84,19 @@ func (n *reverseNode) ForwardsAsNotNull() *forwardNode {
 
 }
 
-// ForwardAsUniqueNotNull represents the one-to-one relationship formed by the reverse reference from the
-// forward_as_unique_not_null column in the reverse table.
-func (n *reverseNode) ForwardAsUniqueNotNull() *forwardNode {
+// ForwardCascadeUnique represents the one-to-one relationship formed by the reverse reference from the
+// forward_cascade_unique column in the reverse table.
+func (n *reverseNode) ForwardCascadeUnique() *forwardCascadeUniqueNode {
 
-	cn := &forwardNode{
+	cn := &forwardCascadeUniqueNode{
 		query.NewReverseReferenceNode(
 			"goraddUnit",
 			"reverse",
 			"id",
-			"forward_as_unique_not_null",
-			"ForwardAsUniqueNotNull",
-			"forward",
-			"reverse_unique_not_null_id",
+			"forward_cascade_unique",
+			"ForwardCascadeUnique",
+			"forward_cascade_unique",
+			"reverse_id",
 			false,
 		),
 	}
@@ -105,19 +105,19 @@ func (n *reverseNode) ForwardAsUniqueNotNull() *forwardNode {
 
 }
 
-// ForwardsAsNull represents the many-to-one relationship formed by the reverse reference from the
-// forwards_as_null column in the reverse table.
-func (n *reverseNode) ForwardsAsNull() *forwardNode {
+// ForwardNulls represents the many-to-one relationship formed by the reverse reference from the
+// forward_nulls column in the reverse table.
+func (n *reverseNode) ForwardNulls() *forwardNullNode {
 
-	cn := &forwardNode{
+	cn := &forwardNullNode{
 		query.NewReverseReferenceNode(
 			"goraddUnit",
 			"reverse",
 			"id",
-			"forwards_as_null",
-			"ForwardsAsNull",
-			"forward",
-			"reverse_null_id",
+			"forward_nulls",
+			"ForwardNulls",
+			"forward_null",
+			"reverse_id",
 			true,
 		),
 	}
@@ -126,19 +126,61 @@ func (n *reverseNode) ForwardsAsNull() *forwardNode {
 
 }
 
-// ForwardAsUniqueNull represents the one-to-one relationship formed by the reverse reference from the
-// forward_as_unique_null column in the reverse table.
-func (n *reverseNode) ForwardAsUniqueNull() *forwardNode {
+// ForwardNullUnique represents the one-to-one relationship formed by the reverse reference from the
+// forward_null_unique column in the reverse table.
+func (n *reverseNode) ForwardNullUnique() *forwardNullUniqueNode {
 
-	cn := &forwardNode{
+	cn := &forwardNullUniqueNode{
 		query.NewReverseReferenceNode(
 			"goraddUnit",
 			"reverse",
 			"id",
-			"forward_as_unique_null",
-			"ForwardAsUniqueNull",
-			"forward",
-			"reverse_unique_null_id",
+			"forward_null_unique",
+			"ForwardNullUnique",
+			"forward_null_unique",
+			"reverse_id",
+			false,
+		),
+	}
+	query.SetParentNode(cn, n)
+	return cn
+
+}
+
+// ForwardRestricts represents the many-to-one relationship formed by the reverse reference from the
+// forward_restricts column in the reverse table.
+func (n *reverseNode) ForwardRestricts() *forwardRestrictNode {
+
+	cn := &forwardRestrictNode{
+		query.NewReverseReferenceNode(
+			"goraddUnit",
+			"reverse",
+			"id",
+			"forward_restricts",
+			"ForwardRestricts",
+			"forward_restrict",
+			"reverse_id",
+			true,
+		),
+	}
+	query.SetParentNode(cn, n)
+	return cn
+
+}
+
+// ForwardRestrictUnique represents the one-to-one relationship formed by the reverse reference from the
+// forward_restrict_unique column in the reverse table.
+func (n *reverseNode) ForwardRestrictUnique() *forwardRestrictUniqueNode {
+
+	cn := &forwardRestrictUniqueNode{
+		query.NewReverseReferenceNode(
+			"goraddUnit",
+			"reverse",
+			"id",
+			"forward_restrict_unique",
+			"ForwardRestrictUnique",
+			"forward_restrict_unique",
+			"reverse_id",
 			false,
 		),
 	}

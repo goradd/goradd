@@ -44,8 +44,8 @@ func (p PersonType) ID() string {
 	return strconv.Itoa(int(p))
 }
 
-// PersonTypes returns a slice of all the PersonType items
-func PersonTypes() (values []PersonType) {
+// AllPersonTypes returns a slice of all the PersonType items
+func AllPersonTypes() (values []PersonType) {
     values = append(values, 1)
     values = append(values, 2)
     values = append(values, 3)
@@ -54,8 +54,8 @@ func PersonTypes() (values []PersonType) {
     return
 }
 
-// PersonTypesI returns a slice of interfaces that contains all the PersonType items
-func PersonTypesI() (values []interface{}) {
+// AllPersonTypesI returns a slice of interfaces that contains all the PersonType items
+func AllPersonTypesI() (values []interface{}) {
     values = make([]interface{}, 5, 5)
     values[0] = PersonType(1)
     values[1] = PersonType(2)
@@ -64,7 +64,6 @@ func PersonTypesI() (values []interface{}) {
     values[4] = PersonType(5)
     return
 }
-
 
 // Label returns the string that will be displayed to a user for this item. Together with
 // the Value function, it satisfies the ItemLister interface that makes it easy

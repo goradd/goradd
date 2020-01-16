@@ -103,7 +103,7 @@ func (o *personWithLockBase) IDIsValid() bool {
 
 func (o *personWithLockBase) FirstName() string {
 	if o._restored && !o.firstNameIsValid {
-		panic("firstName was not selected in the last query and so is not valid")
+		panic("firstName was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.firstName
 }
@@ -125,7 +125,7 @@ func (o *personWithLockBase) SetFirstName(v string) {
 
 func (o *personWithLockBase) LastName() string {
 	if o._restored && !o.lastNameIsValid {
-		panic("lastName was not selected in the last query and so is not valid")
+		panic("lastName was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.lastName
 }
@@ -147,7 +147,7 @@ func (o *personWithLockBase) SetLastName(v string) {
 
 func (o *personWithLockBase) SysTimestamp() datetime.DateTime {
 	if o._restored && !o.sysTimestampIsValid {
-		panic("sysTimestamp was not selected in the last query and so is not valid")
+		panic("sysTimestamp was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.sysTimestamp
 }
@@ -226,7 +226,7 @@ func (b *PersonWithLocksBuilder) Load(ctx context.Context) (personWithLockSlice 
 	}
 	for _, item := range results {
 		o := new(PersonWithLock)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		personWithLockSlice = append(personWithLockSlice, o)
 	}
 	return personWithLockSlice
@@ -242,7 +242,7 @@ func (b *PersonWithLocksBuilder) LoadI(ctx context.Context) (personWithLockSlice
 	}
 	for _, item := range results {
 		o := new(PersonWithLock)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		personWithLockSlice = append(personWithLockSlice, o)
 	}
 	return personWithLockSlice
@@ -385,10 +385,8 @@ func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp datetim
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
 // between the object chain requested by the user in the query.
-// If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
-// Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
-func (o *personWithLockBase) load(m map[string]interface{}, linkParent bool, objThis *PersonWithLock, objParent interface{}, parentKey string) {
+func (o *personWithLockBase) load(m map[string]interface{}, objThis *PersonWithLock, objParent interface{}, parentKey string) {
 	if v, ok := m["id"]; ok && v != nil {
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
@@ -455,45 +453,51 @@ func (o *personWithLockBase) load(m map[string]interface{}, linkParent bool, obj
 // If it has any auto-generated ids, those will be updated.
 func (o *personWithLockBase) Save(ctx context.Context) {
 	if o._restored {
-		o.Update(ctx)
+		o.update(ctx)
 	} else {
-		o.Insert(ctx)
+		o.insert(ctx)
 	}
 }
 
-// Update will update the values in the database, saving any changed values.
-func (o *personWithLockBase) Update(ctx context.Context) {
-
-	if !o._restored {
-		panic("Cannot update a record that was not originally read from the database.")
-	}
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
-	d.Update(ctx, "person_with_lock", m, "id", fmt.Sprint(o.id))
-
-	d.Commit(ctx, txid)
-	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "person_with_lock", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
-}
-
-// Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
-// this will create a duplicate in the database.
-func (o *personWithLockBase) Insert(ctx context.Context) {
+// update will update the values in the database, saving any changed values.
+func (o *personWithLockBase) update(ctx context.Context) {
+	var modifiedFields map[string]interface{}
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		m := o.getModifiedFields()
-		if len(m) == 0 {
-			return
+		if !o._restored {
+			panic("Cannot update a record that was not originally read from the database.")
 		}
+
+		modifiedFields = o.getModifiedFields()
+		if len(modifiedFields) != 0 {
+			d.Update(ctx, "person_with_lock", modifiedFields, "id", fmt.Sprint(o.id))
+		}
+
+	}) // transaction
+	o.resetDirtyStatus()
+	if len(modifiedFields) != 0 {
+		broadcast.Update(ctx, "goradd", "person_with_lock", fmt.Sprint(o.id), stringmap.SortedKeys(modifiedFields)...)
+	}
+}
+
+// insert will insert the item into the database. Related items will be saved.
+func (o *personWithLockBase) insert(ctx context.Context) {
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+
+		if !o.firstNameIsValid {
+			panic("a value for FirstName is required, and there is no default value. Call SetFirstName() before inserting the record.")
+		}
+
+		if !o.lastNameIsValid {
+			panic("a value for LastName is required, and there is no default value. Call SetLastName() before inserting the record.")
+		}
+		m := o.getValidFields()
 
 		id := d.Insert(ctx, "person_with_lock", m)
 		o.id = id
+
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
@@ -505,15 +509,12 @@ func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{})
 	if o.idIsDirty {
 		fields["id"] = o.id
 	}
-
 	if o.firstNameIsDirty {
 		fields["first_name"] = o.firstName
 	}
-
 	if o.lastNameIsDirty {
 		fields["last_name"] = o.lastName
 	}
-
 	if o.sysTimestampIsDirty {
 		if o.sysTimestampIsNull {
 			fields["sys_timestamp"] = nil
@@ -521,7 +522,24 @@ func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{})
 			fields["sys_timestamp"] = o.sysTimestamp.GoTime()
 		}
 	}
+	return
+}
 
+func (o *personWithLockBase) getValidFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+	if o.firstNameIsValid {
+		fields["first_name"] = o.firstName
+	}
+	if o.lastNameIsValid {
+		fields["last_name"] = o.lastName
+	}
+	if o.sysTimestampIsValid {
+		if o.sysTimestampIsNull {
+			fields["sys_timestamp"] = nil
+		} else {
+			fields["sys_timestamp"] = o.sysTimestamp.GoTime()
+		}
+	}
 	return
 }
 
@@ -530,7 +548,7 @@ func (o *personWithLockBase) Delete(ctx context.Context) {
 	if !o._restored {
 		panic("Cannot delete a record that has no primary key value.")
 	}
-	d := db.GetDatabase("goradd")
+	d := Database()
 	d.Delete(ctx, "person_with_lock", "id", o.id)
 	broadcast.Delete(ctx, "goradd", "person_with_lock", fmt.Sprint(o.id))
 }
@@ -592,7 +610,7 @@ func (o *personWithLockBase) Get(key string) interface{} {
 }
 
 // MarshalBinary serializes the object into a buffer that is deserializable using UnmarshalBinary.
-// It should be used for transmitting database object over the wire, or for temporary storage. It does not send
+// It should be used for transmitting database objects over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
 func (o *personWithLockBase) MarshalBinary() ([]byte, error) {

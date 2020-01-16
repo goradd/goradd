@@ -34,16 +34,21 @@ type reverseBase struct {
 	nameIsDirty bool
 
 	// Reverse reference objects.
-	oForwardsAsNotNull             []*Forward          // Objects in the order they were queried
-	mForwardsAsNotNull             map[string]*Forward // Objects by PK
-	oForwardsAsNotNullIsDirty      bool
-	oForwardAsUniqueNotNull        *Forward
-	oForwardAsUniqueNotNullIsDirty bool
-	oForwardsAsNull                []*Forward          // Objects in the order they were queried
-	mForwardsAsNull                map[string]*Forward // Objects by PK
-	oForwardsAsNullIsDirty         bool
-	oForwardAsUniqueNull           *Forward
-	oForwardAsUniqueNullIsDirty    bool
+	oForwardCascades              []*ForwardCascade          // Objects in the order they were queried
+	mForwardCascades              map[string]*ForwardCascade // Objects by PK
+	oForwardCascadesIsDirty       bool
+	oForwardCascadeUnique         *ForwardCascadeUnique
+	oForwardCascadeUniqueIsDirty  bool
+	oForwardNulls                 []*ForwardNull          // Objects in the order they were queried
+	mForwardNulls                 map[string]*ForwardNull // Objects by PK
+	oForwardNullsIsDirty          bool
+	oForwardNullUnique            *ForwardNullUnique
+	oForwardNullUniqueIsDirty     bool
+	oForwardRestricts             []*ForwardRestrict          // Objects in the order they were queried
+	mForwardRestricts             map[string]*ForwardRestrict // Objects by PK
+	oForwardRestrictsIsDirty      bool
+	oForwardRestrictUnique        *ForwardRestrictUnique
+	oForwardRestrictUniqueIsDirty bool
 
 	// Custom aliases, if specified
 	_aliases map[string]interface{}
@@ -58,14 +63,17 @@ const (
 )
 
 const (
-	Reverse_ID               = `ID`
-	Reverse_Name             = `Name`
-	ReverseForwardsAsNotNull = `ForwardsAsNotNull`
+	Reverse_ID             = `ID`
+	Reverse_Name           = `Name`
+	ReverseForwardCascades = `ForwardCascades`
 
-	ReverseForwardAsUniqueNotNull = `ForwardAsUniqueNotNull`
-	ReverseForwardsAsNull         = `ForwardsAsNull`
+	ReverseForwardCascadeUnique = `ForwardCascadeUnique`
+	ReverseForwardNulls         = `ForwardNulls`
 
-	ReverseForwardAsUniqueNull = `ForwardAsUniqueNull`
+	ReverseForwardNullUnique = `ForwardNullUnique`
+	ReverseForwardRestricts  = `ForwardRestricts`
+
+	ReverseForwardRestrictUnique = `ForwardRestrictUnique`
 )
 
 // Initialize or re-initialize a Reverse database object to default values.
@@ -98,7 +106,7 @@ func (o *reverseBase) IDIsValid() bool {
 
 func (o *reverseBase) Name() string {
 	if o._restored && !o.nameIsValid {
-		panic("name was not selected in the last query and so is not valid")
+		panic("name was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.name
 }
@@ -128,179 +136,265 @@ func (o *reverseBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-// ForwardAsNotNull returns a single Forward object by primary key, if one was loaded.
-// Otherwise, it will return nil. It will not return Forward objects that are not saved.
-func (o *reverseBase) ForwardAsNotNull(pk string) *Forward {
-	if o.mForwardsAsNotNull == nil {
+// ForwardCascade returns a single ForwardCascade object by primary key, if one was loaded.
+// Otherwise, it will return nil. It will not return ForwardCascade objects that are not saved.
+func (o *reverseBase) ForwardCascade(pk string) *ForwardCascade {
+	if o.mForwardCascades == nil {
 		return nil
 	}
-	v, _ := o.mForwardsAsNotNull[pk]
+	v, _ := o.mForwardCascades[pk]
 	return v
 }
 
-// ForwardsAsNotNull returns a slice of Forward objects if loaded.
-func (o *reverseBase) ForwardsAsNotNull() []*Forward {
-	if o.oForwardsAsNotNull == nil {
+// ForwardCascades returns a slice of ForwardCascade objects if loaded.
+func (o *reverseBase) ForwardCascades() []*ForwardCascade {
+	if o.oForwardCascades == nil {
 		return nil
 	}
-	return o.oForwardsAsNotNull
+	return o.oForwardCascades
 }
 
-// LoadForwardsAsNotNull loads a new slice of Forward objects and returns it.
-func (o *reverseBase) LoadForwardsAsNotNull(ctx context.Context, conditions ...interface{}) []*Forward {
-	qb := queryForwards(ctx)
-	cond := Equal(node.Forward().ReverseNotNullID(), o.PrimaryKey())
+// LoadForwardCascades loads a new slice of ForwardCascade objects and returns it.
+func (o *reverseBase) LoadForwardCascades(ctx context.Context, conditions ...interface{}) []*ForwardCascade {
+	qb := queryForwardCascades(ctx)
+	cond := Equal(node.ForwardCascade().ReverseID(), o.PrimaryKey())
 	if conditions != nil {
 		conditions = append(conditions, cond)
 		cond = And(conditions...)
 	}
 
-	o.oForwardsAsNotNull = qb.Where(cond).Load(ctx)
-	return o.oForwardsAsNotNull
+	o.oForwardCascades = qb.Where(cond).Load(ctx)
+	return o.oForwardCascades
 }
 
-// SetForwardsAsNotNull associates the given objects with the Reverse.
-// WARNING! If it has items already associated with it that will not be associated after a save,
-// those items will be DELETED since they cannot be null.
-// If you did not use a join to query the items in the first place, used a conditional join,
-// or joined with an expansion, be particularly careful, since you may be changing items
-// that are not currently attached to this Reverse.
-func (o *reverseBase) SetForwardsAsNotNull(objs []*Forward) {
-	for _, obj := range o.oForwardsAsNotNull {
-		if obj.IsDirty() {
-			panic("You cannot overwrite items that have changed but have not been saved.")
-		}
-	}
-
-	o.oForwardsAsNotNull = objs
-	for _, obj := range o.oForwardsAsNotNull {
-		pk := obj.ID()
-		if pk != "" {
-			if o.mForwardsAsNotNull == nil {
-				o.mForwardsAsNotNull = make(map[string]*Forward)
-			}
-			o.mForwardsAsNotNull[pk] = obj
-		}
-	}
-	o.oForwardsAsNotNullIsDirty = true
-}
-
-// ForwardAsUniqueNotNull returns the connected Forward object, if one was loaded
-// otherwise, it will return nil.
-func (o *reverseBase) ForwardAsUniqueNotNull() *Forward {
-	if o.oForwardAsUniqueNotNull == nil {
-		return nil
-	}
-	return o.oForwardAsUniqueNotNull
-}
-
-// LoadForwardAsUniqueNotNull returns the connected Forward object, if one was loaded
-// otherwise, it will return nil.
-func (o *reverseBase) LoadForwardAsUniqueNotNull(ctx context.Context) *Forward {
-	if o.oForwardAsUniqueNotNull == nil {
-		o.oForwardAsUniqueNotNull = LoadForwardByReverseUniqueNotNullID(ctx, o.ID())
-	}
-	return o.oForwardAsUniqueNotNull
-}
-
-// SetForwardAsUniqueNotNull associates the given object with the Reverse.
-// WARNING! If it has an item already associated with it,
-// that item will be DELETED since it cannot be null.
-// If you did not use a join to query the items in the first place, used a conditional join,
-// or joined with an expansion, be particularly careful, since you may be changing an item
-// that is not currently attached to this Reverse.
-func (o *reverseBase) SetForwardAsUniqueNotNull(obj *Forward) {
-	o.oForwardAsUniqueNotNull = obj
-	o.oForwardAsUniqueNotNullIsDirty = true
-}
-
-// ForwardAsNull returns a single Forward object by primary key, if one was loaded.
-// Otherwise, it will return nil. It will not return Forward objects that are not saved.
-func (o *reverseBase) ForwardAsNull(pk string) *Forward {
-	if o.mForwardsAsNull == nil {
-		return nil
-	}
-	v, _ := o.mForwardsAsNull[pk]
-	return v
-}
-
-// ForwardsAsNull returns a slice of Forward objects if loaded.
-func (o *reverseBase) ForwardsAsNull() []*Forward {
-	if o.oForwardsAsNull == nil {
-		return nil
-	}
-	return o.oForwardsAsNull
-}
-
-// LoadForwardsAsNull loads a new slice of Forward objects and returns it.
-func (o *reverseBase) LoadForwardsAsNull(ctx context.Context, conditions ...interface{}) []*Forward {
-	qb := queryForwards(ctx)
-	cond := Equal(node.Forward().ReverseNullID(), o.PrimaryKey())
-	if conditions != nil {
-		conditions = append(conditions, cond)
-		cond = And(conditions...)
-	}
-
-	o.oForwardsAsNull = qb.Where(cond).Load(ctx)
-	return o.oForwardsAsNull
-}
-
-// SetForwardsAsNull associates the given objects with the Reverse.
+// SetForwardCascades associates the given objects with the Reverse.
 // If it has items already associated with it that will not be associated after a save,
 // the foreign keys for those will be set to null.
 // If you did not use a join to query the items in the first place, used a conditional join,
 // or joined with an expansion, be particularly careful, since you may be changing items
 // that are not currently attached to this Reverse.
-func (o *reverseBase) SetForwardsAsNull(objs []*Forward) {
-	for _, obj := range o.oForwardsAsNull {
+func (o *reverseBase) SetForwardCascades(objs []*ForwardCascade) {
+	for _, obj := range o.oForwardCascades {
 		if obj.IsDirty() {
 			panic("You cannot overwrite items that have changed but have not been saved.")
 		}
 	}
 
-	o.oForwardsAsNull = objs
-	for _, obj := range o.oForwardsAsNull {
+	o.oForwardCascades = objs
+	o.mForwardCascades = make(map[string]*ForwardCascade)
+	for _, obj := range o.oForwardCascades {
 		pk := obj.ID()
 		if pk != "" {
-			if o.mForwardsAsNull == nil {
-				o.mForwardsAsNull = make(map[string]*Forward)
-			}
-			o.mForwardsAsNull[pk] = obj
+			o.mForwardCascades[pk] = obj
 		}
 	}
-	o.oForwardsAsNullIsDirty = true
+	o.oForwardCascadesIsDirty = true
 }
 
-// ForwardAsUniqueNull returns the connected Forward object, if one was loaded
+// ForwardCascadeUnique returns the connected ForwardCascadeUnique object, if one was loaded
 // otherwise, it will return nil.
-func (o *reverseBase) ForwardAsUniqueNull() *Forward {
-	if o.oForwardAsUniqueNull == nil {
+func (o *reverseBase) ForwardCascadeUnique() *ForwardCascadeUnique {
+	if o.oForwardCascadeUnique == nil {
 		return nil
 	}
-	return o.oForwardAsUniqueNull
+	return o.oForwardCascadeUnique
 }
 
-// LoadForwardAsUniqueNull returns the connected Forward object, if one was loaded
+// LoadForwardCascadeUnique returns the connected ForwardCascadeUnique object, if one was loaded
 // otherwise, it will return nil.
-func (o *reverseBase) LoadForwardAsUniqueNull(ctx context.Context) *Forward {
-	if o.oForwardAsUniqueNull == nil {
-		o.oForwardAsUniqueNull = LoadForwardByReverseUniqueNullID(ctx, o.ID())
+func (o *reverseBase) LoadForwardCascadeUnique(ctx context.Context) *ForwardCascadeUnique {
+	if o.oForwardCascadeUnique == nil {
+		o.oForwardCascadeUnique = LoadForwardCascadeUniqueByReverseID(ctx, o.ID())
 	}
-	return o.oForwardAsUniqueNull
+	return o.oForwardCascadeUnique
 }
 
-// SetForwardAsUniqueNull associates the given object with the Reverse.
+// SetForwardCascadeUnique associates the given object with the Reverse.
 // If it has an item already associated with it,
 // the foreign key for that item will be set to null.
 // If you did not use a join to query the items in the first place, used a conditional join,
 // or joined with an expansion, be particularly careful, since you may be changing an item
 // that is not currently attached to this Reverse.
-func (o *reverseBase) SetForwardAsUniqueNull(obj *Forward) {
-	if o.oForwardAsUniqueNull != nil && o.oForwardAsUniqueNull.IsDirty() {
-		panic("The ForwardAsUniqueNull has changed. You must save it first before changing to a different one.")
+func (o *reverseBase) SetForwardCascadeUnique(obj *ForwardCascadeUnique) {
+	if o.oForwardCascadeUnique != nil && o.oForwardCascadeUnique.IsDirty() {
+		panic("The ForwardCascadeUnique has changed. You must save it first before changing to a different one.")
 	}
-	o.oForwardAsUniqueNull = obj
-	o.oForwardAsUniqueNullIsDirty = true
+	o.oForwardCascadeUnique = obj
+	o.oForwardCascadeUniqueIsDirty = true
+}
+
+// ForwardNull returns a single ForwardNull object by primary key, if one was loaded.
+// Otherwise, it will return nil. It will not return ForwardNull objects that are not saved.
+func (o *reverseBase) ForwardNull(pk string) *ForwardNull {
+	if o.mForwardNulls == nil {
+		return nil
+	}
+	v, _ := o.mForwardNulls[pk]
+	return v
+}
+
+// ForwardNulls returns a slice of ForwardNull objects if loaded.
+func (o *reverseBase) ForwardNulls() []*ForwardNull {
+	if o.oForwardNulls == nil {
+		return nil
+	}
+	return o.oForwardNulls
+}
+
+// LoadForwardNulls loads a new slice of ForwardNull objects and returns it.
+func (o *reverseBase) LoadForwardNulls(ctx context.Context, conditions ...interface{}) []*ForwardNull {
+	qb := queryForwardNulls(ctx)
+	cond := Equal(node.ForwardNull().ReverseID(), o.PrimaryKey())
+	if conditions != nil {
+		conditions = append(conditions, cond)
+		cond = And(conditions...)
+	}
+
+	o.oForwardNulls = qb.Where(cond).Load(ctx)
+	return o.oForwardNulls
+}
+
+// SetForwardNulls associates the given objects with the Reverse.
+// If it has items already associated with it that will not be associated after a save,
+// the foreign keys for those will be set to null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing items
+// that are not currently attached to this Reverse.
+func (o *reverseBase) SetForwardNulls(objs []*ForwardNull) {
+	for _, obj := range o.oForwardNulls {
+		if obj.IsDirty() {
+			panic("You cannot overwrite items that have changed but have not been saved.")
+		}
+	}
+
+	o.oForwardNulls = objs
+	o.mForwardNulls = make(map[string]*ForwardNull)
+	for _, obj := range o.oForwardNulls {
+		pk := obj.ID()
+		if pk != "" {
+			o.mForwardNulls[pk] = obj
+		}
+	}
+	o.oForwardNullsIsDirty = true
+}
+
+// ForwardNullUnique returns the connected ForwardNullUnique object, if one was loaded
+// otherwise, it will return nil.
+func (o *reverseBase) ForwardNullUnique() *ForwardNullUnique {
+	if o.oForwardNullUnique == nil {
+		return nil
+	}
+	return o.oForwardNullUnique
+}
+
+// LoadForwardNullUnique returns the connected ForwardNullUnique object, if one was loaded
+// otherwise, it will return nil.
+func (o *reverseBase) LoadForwardNullUnique(ctx context.Context) *ForwardNullUnique {
+	if o.oForwardNullUnique == nil {
+		o.oForwardNullUnique = LoadForwardNullUniqueByReverseID(ctx, o.ID())
+	}
+	return o.oForwardNullUnique
+}
+
+// SetForwardNullUnique associates the given object with the Reverse.
+// If it has an item already associated with it,
+// the foreign key for that item will be set to null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing an item
+// that is not currently attached to this Reverse.
+func (o *reverseBase) SetForwardNullUnique(obj *ForwardNullUnique) {
+	if o.oForwardNullUnique != nil && o.oForwardNullUnique.IsDirty() {
+		panic("The ForwardNullUnique has changed. You must save it first before changing to a different one.")
+	}
+	o.oForwardNullUnique = obj
+	o.oForwardNullUniqueIsDirty = true
+}
+
+// ForwardRestrict returns a single ForwardRestrict object by primary key, if one was loaded.
+// Otherwise, it will return nil. It will not return ForwardRestrict objects that are not saved.
+func (o *reverseBase) ForwardRestrict(pk string) *ForwardRestrict {
+	if o.mForwardRestricts == nil {
+		return nil
+	}
+	v, _ := o.mForwardRestricts[pk]
+	return v
+}
+
+// ForwardRestricts returns a slice of ForwardRestrict objects if loaded.
+func (o *reverseBase) ForwardRestricts() []*ForwardRestrict {
+	if o.oForwardRestricts == nil {
+		return nil
+	}
+	return o.oForwardRestricts
+}
+
+// LoadForwardRestricts loads a new slice of ForwardRestrict objects and returns it.
+func (o *reverseBase) LoadForwardRestricts(ctx context.Context, conditions ...interface{}) []*ForwardRestrict {
+	qb := queryForwardRestricts(ctx)
+	cond := Equal(node.ForwardRestrict().ReverseID(), o.PrimaryKey())
+	if conditions != nil {
+		conditions = append(conditions, cond)
+		cond = And(conditions...)
+	}
+
+	o.oForwardRestricts = qb.Where(cond).Load(ctx)
+	return o.oForwardRestricts
+}
+
+// SetForwardRestricts associates the given objects with the Reverse.
+// WARNING! If it has items already associated with it that will not be associated after a save,
+// those items will be DELETED since they cannot be null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing items
+// that are not currently attached to this Reverse.
+func (o *reverseBase) SetForwardRestricts(objs []*ForwardRestrict) {
+	for _, obj := range o.oForwardRestricts {
+		if obj.IsDirty() {
+			panic("You cannot overwrite items that have changed but have not been saved.")
+		}
+	}
+
+	o.oForwardRestricts = objs
+	o.mForwardRestricts = make(map[string]*ForwardRestrict)
+	for _, obj := range o.oForwardRestricts {
+		pk := obj.ID()
+		if pk != "" {
+			o.mForwardRestricts[pk] = obj
+		}
+	}
+	o.oForwardRestrictsIsDirty = true
+}
+
+// ForwardRestrictUnique returns the connected ForwardRestrictUnique object, if one was loaded
+// otherwise, it will return nil.
+func (o *reverseBase) ForwardRestrictUnique() *ForwardRestrictUnique {
+	if o.oForwardRestrictUnique == nil {
+		return nil
+	}
+	return o.oForwardRestrictUnique
+}
+
+// LoadForwardRestrictUnique returns the connected ForwardRestrictUnique object, if one was loaded
+// otherwise, it will return nil.
+func (o *reverseBase) LoadForwardRestrictUnique(ctx context.Context) *ForwardRestrictUnique {
+	if o.oForwardRestrictUnique == nil {
+		o.oForwardRestrictUnique = LoadForwardRestrictUniqueByReverseID(ctx, o.ID())
+	}
+	return o.oForwardRestrictUnique
+}
+
+// SetForwardRestrictUnique associates the given object with the Reverse.
+// If it has an item already associated with it,
+// the foreign key for that item will be set to null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing an item
+// that is not currently attached to this Reverse.
+func (o *reverseBase) SetForwardRestrictUnique(obj *ForwardRestrictUnique) {
+	if o.oForwardRestrictUnique != nil && o.oForwardRestrictUnique.IsDirty() {
+		panic("The ForwardRestrictUnique has changed. You must save it first before changing to a different one.")
+	}
+	o.oForwardRestrictUnique = obj
+	o.oForwardRestrictUniqueIsDirty = true
 }
 
 // Load returns a Reverse from the database.
@@ -336,7 +430,7 @@ func (b *ReversesBuilder) Load(ctx context.Context) (reverseSlice []*Reverse) {
 	}
 	for _, item := range results {
 		o := new(Reverse)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		reverseSlice = append(reverseSlice, o)
 	}
 	return reverseSlice
@@ -352,7 +446,7 @@ func (b *ReversesBuilder) LoadI(ctx context.Context) (reverseSlice []interface{}
 	}
 	for _, item := range results {
 		o := new(Reverse)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		reverseSlice = append(reverseSlice, o)
 	}
 	return reverseSlice
@@ -487,10 +581,8 @@ func CountReverseByName(ctx context.Context, name string) uint {
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
 // between the object chain requested by the user in the query.
-// If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
-// Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
-func (o *reverseBase) load(m map[string]interface{}, linkParent bool, objThis *Reverse, objParent interface{}, parentKey string) {
+func (o *reverseBase) load(m map[string]interface{}, objThis *Reverse, objParent interface{}, parentKey string) {
 	if v, ok := m["id"]; ok && v != nil {
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
@@ -515,92 +607,118 @@ func (o *reverseBase) load(m map[string]interface{}, linkParent bool, objThis *R
 		o.name = ""
 	}
 
-	if v, ok := m["ForwardsAsNotNull"]; ok {
-		switch oForwardsAsNotNull := v.(type) {
+	if v, ok := m["ForwardCascades"]; ok {
+		switch oForwardCascades := v.(type) {
 		case []db.ValueMap:
-			o.oForwardsAsNotNull = make([]*Forward, 0, len(oForwardsAsNotNull))
-			o.mForwardsAsNotNull = make(map[string]*Forward, len(oForwardsAsNotNull))
-			for _, v2 := range oForwardsAsNotNull {
-				obj := new(Forward)
-				obj.load(v2, linkParent, obj, objThis, "ReverseNotNull")
-				if linkParent && parentKey == "ForwardsAsNotNull" && obj.reverseNotNullID == objParent.(*Forward).reverseNotNullID {
-					obj = objParent.(*Forward)
-				}
-				o.oForwardsAsNotNull = append(o.oForwardsAsNotNull, obj)
-				o.mForwardsAsNotNull[obj.PrimaryKey()] = obj
-				o.oForwardsAsNotNullIsDirty = false
+			o.oForwardCascades = make([]*ForwardCascade, 0, len(oForwardCascades))
+			o.mForwardCascades = make(map[string]*ForwardCascade, len(oForwardCascades))
+			for _, v2 := range oForwardCascades {
+				obj := new(ForwardCascade)
+				obj.load(v2, obj, objThis, "Reverse")
+				o.oForwardCascades = append(o.oForwardCascades, obj)
+				o.mForwardCascades[obj.PrimaryKey()] = obj
+				o.oForwardCascadesIsDirty = false
 			}
 		case db.ValueMap: // single expansion
-			obj := new(Forward)
-			obj.load(oForwardsAsNotNull, linkParent, obj, objThis, "ReverseNotNull")
-			if linkParent && parentKey == "ForwardsAsNotNull" && obj.reverseNotNullID == objParent.(*Forward).reverseNotNullID {
-				obj = objParent.(*Forward)
-			}
-			o.oForwardsAsNotNull = []*Forward{obj}
-			o.oForwardsAsNotNullIsDirty = false
+			obj := new(ForwardCascade)
+			obj.load(oForwardCascades, obj, objThis, "Reverse")
+			o.oForwardCascades = []*ForwardCascade{obj}
+			o.oForwardCascadesIsDirty = false
 		default:
-			panic("Wrong type found for oForwardsAsNotNull object.")
+			panic("Wrong type found for oForwardCascades object.")
 		}
 	} else {
-		o.oForwardsAsNotNull = nil
-		o.oForwardsAsNotNullIsDirty = false
+		o.oForwardCascades = nil
+		o.oForwardCascadesIsDirty = false
 	}
 
-	if v, ok := m["ForwardAsUniqueNotNull"]; ok {
-		if oForwardAsUniqueNotNull, ok2 := v.(db.ValueMap); ok2 {
-			o.oForwardAsUniqueNotNull = new(Forward)
-			o.oForwardAsUniqueNotNull.load(oForwardAsUniqueNotNull, linkParent, o.oForwardAsUniqueNotNull, objThis, "ReverseUniqueNotNull")
-			o.oForwardAsUniqueNotNullIsDirty = false
+	if v, ok := m["ForwardCascadeUnique"]; ok {
+		if oForwardCascadeUnique, ok2 := v.(db.ValueMap); ok2 {
+			o.oForwardCascadeUnique = new(ForwardCascadeUnique)
+			o.oForwardCascadeUnique.load(oForwardCascadeUnique, o.oForwardCascadeUnique, objThis, "Reverse")
+			o.oForwardCascadeUniqueIsDirty = false
 		} else {
-			panic("Wrong type found for oForwardAsUniqueNotNull object.")
+			panic("Wrong type found for oForwardCascadeUnique object.")
 		}
 	} else {
-		o.oForwardAsUniqueNotNull = nil
-		o.oForwardAsUniqueNotNullIsDirty = false
+		o.oForwardCascadeUnique = nil
+		o.oForwardCascadeUniqueIsDirty = false
 	}
 
-	if v, ok := m["ForwardsAsNull"]; ok {
-		switch oForwardsAsNull := v.(type) {
+	if v, ok := m["ForwardNulls"]; ok {
+		switch oForwardNulls := v.(type) {
 		case []db.ValueMap:
-			o.oForwardsAsNull = make([]*Forward, 0, len(oForwardsAsNull))
-			o.mForwardsAsNull = make(map[string]*Forward, len(oForwardsAsNull))
-			for _, v2 := range oForwardsAsNull {
-				obj := new(Forward)
-				obj.load(v2, linkParent, obj, objThis, "ReverseNull")
-				if linkParent && parentKey == "ForwardsAsNull" && obj.reverseNullID == objParent.(*Forward).reverseNullID {
-					obj = objParent.(*Forward)
-				}
-				o.oForwardsAsNull = append(o.oForwardsAsNull, obj)
-				o.mForwardsAsNull[obj.PrimaryKey()] = obj
-				o.oForwardsAsNullIsDirty = false
+			o.oForwardNulls = make([]*ForwardNull, 0, len(oForwardNulls))
+			o.mForwardNulls = make(map[string]*ForwardNull, len(oForwardNulls))
+			for _, v2 := range oForwardNulls {
+				obj := new(ForwardNull)
+				obj.load(v2, obj, objThis, "Reverse")
+				o.oForwardNulls = append(o.oForwardNulls, obj)
+				o.mForwardNulls[obj.PrimaryKey()] = obj
+				o.oForwardNullsIsDirty = false
 			}
 		case db.ValueMap: // single expansion
-			obj := new(Forward)
-			obj.load(oForwardsAsNull, linkParent, obj, objThis, "ReverseNull")
-			if linkParent && parentKey == "ForwardsAsNull" && obj.reverseNullID == objParent.(*Forward).reverseNullID {
-				obj = objParent.(*Forward)
-			}
-			o.oForwardsAsNull = []*Forward{obj}
-			o.oForwardsAsNullIsDirty = false
+			obj := new(ForwardNull)
+			obj.load(oForwardNulls, obj, objThis, "Reverse")
+			o.oForwardNulls = []*ForwardNull{obj}
+			o.oForwardNullsIsDirty = false
 		default:
-			panic("Wrong type found for oForwardsAsNull object.")
+			panic("Wrong type found for oForwardNulls object.")
 		}
 	} else {
-		o.oForwardsAsNull = nil
-		o.oForwardsAsNullIsDirty = false
+		o.oForwardNulls = nil
+		o.oForwardNullsIsDirty = false
 	}
 
-	if v, ok := m["ForwardAsUniqueNull"]; ok {
-		if oForwardAsUniqueNull, ok2 := v.(db.ValueMap); ok2 {
-			o.oForwardAsUniqueNull = new(Forward)
-			o.oForwardAsUniqueNull.load(oForwardAsUniqueNull, linkParent, o.oForwardAsUniqueNull, objThis, "ReverseUniqueNull")
-			o.oForwardAsUniqueNullIsDirty = false
+	if v, ok := m["ForwardNullUnique"]; ok {
+		if oForwardNullUnique, ok2 := v.(db.ValueMap); ok2 {
+			o.oForwardNullUnique = new(ForwardNullUnique)
+			o.oForwardNullUnique.load(oForwardNullUnique, o.oForwardNullUnique, objThis, "Reverse")
+			o.oForwardNullUniqueIsDirty = false
 		} else {
-			panic("Wrong type found for oForwardAsUniqueNull object.")
+			panic("Wrong type found for oForwardNullUnique object.")
 		}
 	} else {
-		o.oForwardAsUniqueNull = nil
-		o.oForwardAsUniqueNullIsDirty = false
+		o.oForwardNullUnique = nil
+		o.oForwardNullUniqueIsDirty = false
+	}
+
+	if v, ok := m["ForwardRestricts"]; ok {
+		switch oForwardRestricts := v.(type) {
+		case []db.ValueMap:
+			o.oForwardRestricts = make([]*ForwardRestrict, 0, len(oForwardRestricts))
+			o.mForwardRestricts = make(map[string]*ForwardRestrict, len(oForwardRestricts))
+			for _, v2 := range oForwardRestricts {
+				obj := new(ForwardRestrict)
+				obj.load(v2, obj, objThis, "Reverse")
+				o.oForwardRestricts = append(o.oForwardRestricts, obj)
+				o.mForwardRestricts[obj.PrimaryKey()] = obj
+				o.oForwardRestrictsIsDirty = false
+			}
+		case db.ValueMap: // single expansion
+			obj := new(ForwardRestrict)
+			obj.load(oForwardRestricts, obj, objThis, "Reverse")
+			o.oForwardRestricts = []*ForwardRestrict{obj}
+			o.oForwardRestrictsIsDirty = false
+		default:
+			panic("Wrong type found for oForwardRestricts object.")
+		}
+	} else {
+		o.oForwardRestricts = nil
+		o.oForwardRestrictsIsDirty = false
+	}
+
+	if v, ok := m["ForwardRestrictUnique"]; ok {
+		if oForwardRestrictUnique, ok2 := v.(db.ValueMap); ok2 {
+			o.oForwardRestrictUnique = new(ForwardRestrictUnique)
+			o.oForwardRestrictUnique.load(oForwardRestrictUnique, o.oForwardRestrictUnique, objThis, "Reverse")
+			o.oForwardRestrictUniqueIsDirty = false
+		} else {
+			panic("Wrong type found for oForwardRestrictUnique object.")
+		}
+	} else {
+		o.oForwardRestrictUnique = nil
+		o.oForwardRestrictUniqueIsDirty = false
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -613,137 +731,204 @@ func (o *reverseBase) load(m map[string]interface{}, linkParent bool, objThis *R
 // If it has any auto-generated ids, those will be updated.
 func (o *reverseBase) Save(ctx context.Context) {
 	if o._restored {
-		o.Update(ctx)
+		o.update(ctx)
 	} else {
-		o.Insert(ctx)
+		o.insert(ctx)
 	}
 }
 
-// Update will update the values in the database, saving any changed values.
-func (o *reverseBase) Update(ctx context.Context) {
-
-	if !o._restored {
-		panic("Cannot update a record that was not originally read from the database.")
-	}
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goraddUnit")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
-	d.Update(ctx, "reverse", m, "id", fmt.Sprint(o.id))
-
-	if o.oForwardsAsNotNullIsDirty {
-
-		// Since the other side of the relationship cannot be null, the objects to be detached must be deleted
-		// We take care to only delete objects that are not being reattached
-		objs := QueryForwards(ctx).
-			Where(op.Equal(node.Forward().ReverseNotNullID(), o.PrimaryKey())).
-			Load(ctx)
-		// TODO: select only the required fields
-		for _, obj := range objs {
-			if _, ok := o.mForwardsAsNotNull[obj.PrimaryKey()]; !ok {
-				// The old object is not in the group of new objects
-				obj.Delete(ctx)
-			}
-		}
-		for _, obj := range o.oForwardsAsNotNull {
-			obj.SetReverseNotNullID(o.PrimaryKey())
-			obj.Save(ctx)
-		}
-	}
-	if o.oForwardAsUniqueNotNullIsDirty {
-
-		// Since the other side of the relationship cannot be null, the object to be detached must be deleted
-		obj := QueryForwards(ctx).
-			Where(op.Equal(node.Forward().ReverseUniqueNotNullID(), o.PrimaryKey())).
-			Get(ctx)
-		if obj != nil && obj.PrimaryKey() != o.oForwardAsUniqueNotNull.PrimaryKey() {
-			obj.Delete(ctx)
-		}
-		o.oForwardAsUniqueNotNull.SetReverseUniqueNotNullID(o.PrimaryKey())
-		o.oForwardAsUniqueNotNull.Save(ctx)
-	}
-	if o.oForwardsAsNullIsDirty {
-		objs := QueryForwards(ctx).
-			Where(op.Equal(node.Forward().ReverseNullID(), o.PrimaryKey())).
-			Load(ctx)
-		// TODO:select only the required fields
-		for _, obj := range objs {
-			if _, ok := o.mForwardsAsNull[obj.PrimaryKey()]; !ok {
-				// The old object is not in the group of new objects
-				obj.SetReverseNullID(nil)
-				obj.Save(ctx)
-			}
-		}
-		for _, obj := range o.oForwardsAsNull {
-			obj.SetReverseNullID(o.PrimaryKey())
-			obj.Save(ctx)
-		}
-
-	}
-	if o.oForwardAsUniqueNullIsDirty {
-		obj := QueryForwards(ctx).
-			Where(op.Equal(node.Forward().ReverseUniqueNullID(), o.PrimaryKey())).
-			Get(ctx)
-		if obj != nil && obj.PrimaryKey() != o.oForwardAsUniqueNull.PrimaryKey() {
-			obj.SetReverseUniqueNullID(nil)
-			obj.Save(ctx)
-		}
-		o.oForwardAsUniqueNull.SetReverseUniqueNullID(o.PrimaryKey())
-		o.oForwardAsUniqueNull.Save(ctx)
-	}
-	d.Commit(ctx, txid)
-	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goraddUnit", "reverse", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
-}
-
-// Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
-// this will create a duplicate in the database.
-func (o *reverseBase) Insert(ctx context.Context) {
+// update will update the values in the database, saving any changed values.
+func (o *reverseBase) update(ctx context.Context) {
+	var modifiedFields map[string]interface{}
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		m := o.getModifiedFields()
-		if len(m) == 0 {
-			return
+		if !o._restored {
+			panic("Cannot update a record that was not originally read from the database.")
 		}
+
+		modifiedFields = o.getModifiedFields()
+		if len(modifiedFields) != 0 {
+			d.Update(ctx, "reverse", modifiedFields, "id", fmt.Sprint(o.id))
+		}
+
+		if o.oForwardCascadesIsDirty {
+
+			// Since the other side of the relationship cannot be null, the objects to be detached must be deleted
+			// We take care to only delete objects that are not being reattached
+			objs := QueryForwardCascades(ctx).
+				Where(op.Equal(node.ForwardCascade().ReverseID(), o.PrimaryKey())).
+				Load(ctx)
+			// TODO: select only the required fields
+			for _, obj := range objs {
+				if _, ok := o.mForwardCascades[obj.PrimaryKey()]; !ok {
+					// The old object is not in the group of new objects
+					obj.Delete(ctx)
+				}
+			}
+			for _, obj := range o.oForwardCascades {
+				obj.SetReverseID(o.PrimaryKey())
+				obj.Save(ctx)
+			}
+		} else {
+			for _, obj := range o.oForwardCascades {
+				obj.Save(ctx)
+			}
+		}
+		if o.oForwardCascadeUniqueIsDirty {
+
+			// Since the other side of the relationship cannot be null, the object to be detached must be deleted
+			obj := QueryForwardCascadeUniques(ctx).
+				Where(op.Equal(node.ForwardCascadeUnique().ReverseID(), o.PrimaryKey())).
+				Get(ctx)
+			if obj != nil && obj.PrimaryKey() != o.oForwardCascadeUnique.PrimaryKey() {
+				obj.Delete(ctx)
+			}
+			o.oForwardCascadeUnique.SetReverseID(o.PrimaryKey())
+			o.oForwardCascadeUnique.Save(ctx)
+		} else {
+			if o.oForwardCascadeUnique != nil {
+				o.oForwardCascadeUnique.Save(ctx)
+			}
+		}
+		if o.oForwardNullsIsDirty {
+			objs := QueryForwardNulls(ctx).
+				Where(op.Equal(node.ForwardNull().ReverseID(), o.PrimaryKey())).
+				Load(ctx)
+			// TODO:select only the required fields
+			for _, obj := range objs {
+				if _, ok := o.mForwardNulls[obj.PrimaryKey()]; !ok {
+					// The old object is not in the group of new objects
+					obj.SetReverseID(nil)
+					obj.Save(ctx)
+				}
+			}
+			for _, obj := range o.oForwardNulls {
+				obj.SetReverseID(o.PrimaryKey())
+				obj.Save(ctx)
+			}
+
+		} else {
+			for _, obj := range o.oForwardNulls {
+				obj.Save(ctx)
+			}
+		}
+		if o.oForwardNullUniqueIsDirty {
+			obj := QueryForwardNullUniques(ctx).
+				Where(op.Equal(node.ForwardNullUnique().ReverseID(), o.PrimaryKey())).
+				Get(ctx)
+			if obj != nil && obj.PrimaryKey() != o.oForwardNullUnique.PrimaryKey() {
+				obj.SetReverseID(nil)
+				obj.Save(ctx)
+			}
+			o.oForwardNullUnique.SetReverseID(o.PrimaryKey())
+			o.oForwardNullUnique.Save(ctx)
+		} else {
+			if o.oForwardNullUnique != nil {
+				o.oForwardNullUnique.Save(ctx)
+			}
+		}
+		if o.oForwardRestrictsIsDirty {
+
+			// Since the other side of the relationship cannot be null, the objects to be detached must be deleted
+			// We take care to only delete objects that are not being reattached
+			objs := QueryForwardRestricts(ctx).
+				Where(op.Equal(node.ForwardRestrict().ReverseID(), o.PrimaryKey())).
+				Load(ctx)
+			// TODO: select only the required fields
+			for _, obj := range objs {
+				if _, ok := o.mForwardRestricts[obj.PrimaryKey()]; !ok {
+					// The old object is not in the group of new objects
+					obj.Delete(ctx)
+				}
+			}
+			for _, obj := range o.oForwardRestricts {
+				obj.SetReverseID(o.PrimaryKey())
+				obj.Save(ctx)
+			}
+		} else {
+			for _, obj := range o.oForwardRestricts {
+				obj.Save(ctx)
+			}
+		}
+		if o.oForwardRestrictUniqueIsDirty {
+			obj := QueryForwardRestrictUniques(ctx).
+				Where(op.Equal(node.ForwardRestrictUnique().ReverseID(), o.PrimaryKey())).
+				Get(ctx)
+			if obj != nil && obj.PrimaryKey() != o.oForwardRestrictUnique.PrimaryKey() {
+				obj.SetReverseID(nil)
+				obj.Save(ctx)
+			}
+			o.oForwardRestrictUnique.SetReverseID(o.PrimaryKey())
+			o.oForwardRestrictUnique.Save(ctx)
+		} else {
+			if o.oForwardRestrictUnique != nil {
+				o.oForwardRestrictUnique.Save(ctx)
+			}
+		}
+
+	}) // transaction
+	o.resetDirtyStatus()
+	if len(modifiedFields) != 0 {
+		broadcast.Update(ctx, "goraddUnit", "reverse", fmt.Sprint(o.id), stringmap.SortedKeys(modifiedFields)...)
+	}
+}
+
+// insert will insert the item into the database. Related items will be saved.
+func (o *reverseBase) insert(ctx context.Context) {
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+
+		if !o.nameIsValid {
+			panic("a value for Name is required, and there is no default value. Call SetName() before inserting the record.")
+		}
+		m := o.getValidFields()
 
 		id := d.Insert(ctx, "reverse", m)
 		o.id = id
-		if o.oForwardsAsNotNullIsDirty {
 
-			for _, obj := range o.oForwardsAsNotNull {
-				obj.SetReverseNotNullID(id)
+		if o.oForwardCascades != nil {
+			o.mForwardCascades = make(map[string]*ForwardCascade)
+			for _, obj := range o.oForwardCascades {
+				obj.SetReverseID(id)
 				obj.Save(ctx)
-				if o.mForwardsAsNotNull == nil {
-					o.mForwardsAsNotNull = make(map[string]*Forward)
-				}
-				o.mForwardsAsNotNull[obj.PrimaryKey()] = obj
+				o.mForwardCascades[obj.PrimaryKey()] = obj
 			}
 		}
-		if o.oForwardAsUniqueNotNullIsDirty {
 
-			o.oForwardAsUniqueNotNull.SetReverseUniqueNotNullID(id)
-			o.oForwardAsUniqueNotNull.Save(ctx)
+		if o.oForwardCascadeUnique != nil {
+			o.oForwardCascadeUnique.SetReverseID(id)
+			o.oForwardCascadeUnique.Save(ctx)
 		}
-		if o.oForwardsAsNullIsDirty {
 
-			for _, obj := range o.oForwardsAsNull {
-				obj.SetReverseNullID(id)
+		if o.oForwardNulls != nil {
+			o.mForwardNulls = make(map[string]*ForwardNull)
+			for _, obj := range o.oForwardNulls {
+				obj.SetReverseID(id)
 				obj.Save(ctx)
-				if o.mForwardsAsNull == nil {
-					o.mForwardsAsNull = make(map[string]*Forward)
-				}
-				o.mForwardsAsNull[obj.PrimaryKey()] = obj
+				o.mForwardNulls[obj.PrimaryKey()] = obj
 			}
 		}
-		if o.oForwardAsUniqueNullIsDirty {
 
-			o.oForwardAsUniqueNull.SetReverseUniqueNullID(id)
-			o.oForwardAsUniqueNull.Save(ctx)
+		if o.oForwardNullUnique != nil {
+			o.oForwardNullUnique.SetReverseID(id)
+			o.oForwardNullUnique.Save(ctx)
 		}
+
+		if o.oForwardRestricts != nil {
+			o.mForwardRestricts = make(map[string]*ForwardRestrict)
+			for _, obj := range o.oForwardRestricts {
+				obj.SetReverseID(id)
+				obj.Save(ctx)
+				o.mForwardRestricts[obj.PrimaryKey()] = obj
+			}
+		}
+
+		if o.oForwardRestrictUnique != nil {
+			o.oForwardRestrictUnique.SetReverseID(id)
+			o.oForwardRestrictUnique.Save(ctx)
+		}
+
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
@@ -755,11 +940,17 @@ func (o *reverseBase) getModifiedFields() (fields map[string]interface{}) {
 	if o.idIsDirty {
 		fields["id"] = o.id
 	}
-
 	if o.nameIsDirty {
 		fields["name"] = o.name
 	}
+	return
+}
 
+func (o *reverseBase) getValidFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+	if o.nameIsValid {
+		fields["name"] = o.name
+	}
 	return
 }
 
@@ -768,12 +959,69 @@ func (o *reverseBase) Delete(ctx context.Context) {
 	if !o._restored {
 		panic("Cannot delete a record that has no primary key value.")
 	}
-	d := db.GetDatabase("goraddUnit")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+		{
+			objs := QueryForwardCascades(ctx).
+				Where(op.Equal(node.ForwardCascade().ReverseID(), o.PrimaryKey())).
+				Select(node.ForwardCascade().PrimaryKeyNode()).
+				Load(ctx)
+			for _, obj := range objs {
+				obj.Delete(ctx)
+			}
+			o.oForwardCascades = nil
+		}
+		{
+			obj := QueryForwardCascadeUniques(ctx).
+				Where(op.Equal(node.ForwardCascadeUnique().ReverseID(), o.PrimaryKey())).
+				Select(node.ForwardCascadeUnique().PrimaryKeyNode()).
+				Get(ctx)
+			if obj != nil {
+				obj.Delete(ctx)
+			}
+			o.oForwardCascadeUnique = nil
+		}
+		{
+			objs := QueryForwardNulls(ctx).
+				Where(op.Equal(node.ForwardNull().ReverseID(), o.PrimaryKey())).
+				Select(node.ForwardNull().PrimaryKeyNode()).
+				Load(ctx)
+			for _, obj := range objs {
+				obj.SetReverseID(nil)
+				obj.Save(ctx)
+			}
+			o.oForwardNulls = nil
+		}
+		{
+			obj := QueryForwardNullUniques(ctx).
+				Where(op.Equal(node.ForwardNullUnique().ReverseID(), o.PrimaryKey())).
+				Select(node.ForwardNullUnique().PrimaryKeyNode()).
+				Get(ctx)
+			if obj != nil {
+				obj.SetReverseID(nil)
+				obj.Save(ctx)
+			}
+			o.oForwardNullUnique = nil
+		}
+		{
+			c := QueryForwardRestricts(ctx).
+				Where(op.Equal(node.ForwardRestrict().ReverseID(), o.PrimaryKey())).
+				Count(ctx, false)
+			if c > 0 {
+				panic("Cannot delete a record that has restricted foreign keys pointing to it.")
+			}
+		}
+		{
+			c := QueryForwardRestrictUniques(ctx).
+				Where(op.Equal(node.ForwardRestrictUnique().ReverseID(), o.PrimaryKey())).
+				Count(ctx, false)
+			if c > 0 {
+				panic("Cannot delete a record that has a restricted foreign key pointing to it.")
+			}
+		}
 
-	d.Delete(ctx, "reverse", "id", o.id)
-	d.Commit(ctx, txid)
+		d.Delete(ctx, "reverse", "id", o.id)
+	})
 	broadcast.Delete(ctx, "goraddUnit", "reverse", fmt.Sprint(o.id))
 }
 
@@ -787,20 +1035,24 @@ func deleteReverse(ctx context.Context, pk string) {
 func (o *reverseBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.nameIsDirty = false
-	o.oForwardsAsNotNullIsDirty = false
-	o.oForwardAsUniqueNotNullIsDirty = false
-	o.oForwardsAsNullIsDirty = false
-	o.oForwardAsUniqueNullIsDirty = false
+	o.oForwardCascadesIsDirty = false
+	o.oForwardCascadeUniqueIsDirty = false
+	o.oForwardNullsIsDirty = false
+	o.oForwardNullUniqueIsDirty = false
+	o.oForwardRestrictsIsDirty = false
+	o.oForwardRestrictUniqueIsDirty = false
 
 }
 
 func (o *reverseBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.nameIsDirty ||
-		o.oForwardsAsNotNullIsDirty ||
-		o.oForwardAsUniqueNotNullIsDirty ||
-		o.oForwardsAsNullIsDirty ||
-		o.oForwardAsUniqueNullIsDirty
+		o.oForwardCascadesIsDirty ||
+		o.oForwardCascadeUniqueIsDirty ||
+		o.oForwardNullsIsDirty ||
+		o.oForwardNullUniqueIsDirty ||
+		o.oForwardRestrictsIsDirty ||
+		o.oForwardRestrictUniqueIsDirty
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -821,24 +1073,30 @@ func (o *reverseBase) Get(key string) interface{} {
 		}
 		return o.name
 
-	case "ForwardsAsNotNull":
-		return o.ForwardsAsNotNull()
+	case "ForwardCascades":
+		return o.ForwardCascades()
 
-	case "ForwardAsUniqueNotNull":
-		return o.ForwardAsUniqueNotNull()
+	case "ForwardCascadeUnique":
+		return o.ForwardCascadeUnique()
 
-	case "ForwardsAsNull":
-		return o.ForwardsAsNull()
+	case "ForwardNulls":
+		return o.ForwardNulls()
 
-	case "ForwardAsUniqueNull":
-		return o.ForwardAsUniqueNull()
+	case "ForwardNullUnique":
+		return o.ForwardNullUnique()
+
+	case "ForwardRestricts":
+		return o.ForwardRestricts()
+
+	case "ForwardRestrictUnique":
+		return o.ForwardRestrictUnique()
 
 	}
 	return nil
 }
 
 // MarshalBinary serializes the object into a buffer that is deserializable using UnmarshalBinary.
-// It should be used for transmitting database object over the wire, or for temporary storage. It does not send
+// It should be used for transmitting database objects over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
 func (o *reverseBase) MarshalBinary() ([]byte, error) {
@@ -865,18 +1123,25 @@ func (o *reverseBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oForwardsAsNotNull); err != nil {
+	if err := encoder.Encode(o.oForwardCascades); err != nil {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oForwardAsUniqueNotNull); err != nil {
+	if err := encoder.Encode(o.oForwardCascadeUnique); err != nil {
 		return nil, err
 	}
-	if err := encoder.Encode(o.oForwardsAsNull); err != nil {
+	if err := encoder.Encode(o.oForwardNulls); err != nil {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oForwardAsUniqueNull); err != nil {
+	if err := encoder.Encode(o.oForwardNullUnique); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.oForwardRestricts); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oForwardRestrictUnique); err != nil {
 		return nil, err
 	}
 
@@ -925,28 +1190,40 @@ func (o *reverseBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.oForwardsAsNotNull); err != nil {
+	if err = dec.Decode(&o.oForwardCascades); err != nil {
 		return
 	}
-	if len(o.oForwardsAsNotNull) > 0 {
-		o.mForwardsAsNotNull = make(map[string]*Forward)
-		for _, p := range o.oForwardsAsNotNull {
-			o.mForwardsAsNotNull[p.PrimaryKey()] = p
+	if len(o.oForwardCascades) > 0 {
+		o.mForwardCascades = make(map[string]*ForwardCascade)
+		for _, p := range o.oForwardCascades {
+			o.mForwardCascades[p.PrimaryKey()] = p
 		}
 	}
-	if err = dec.Decode(&o.oForwardAsUniqueNotNull); err != nil {
+	if err = dec.Decode(&o.oForwardCascadeUnique); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.oForwardsAsNull); err != nil {
+	if err = dec.Decode(&o.oForwardNulls); err != nil {
 		return
 	}
-	if len(o.oForwardsAsNull) > 0 {
-		o.mForwardsAsNull = make(map[string]*Forward)
-		for _, p := range o.oForwardsAsNull {
-			o.mForwardsAsNull[p.PrimaryKey()] = p
+	if len(o.oForwardNulls) > 0 {
+		o.mForwardNulls = make(map[string]*ForwardNull)
+		for _, p := range o.oForwardNulls {
+			o.mForwardNulls[p.PrimaryKey()] = p
 		}
 	}
-	if err = dec.Decode(&o.oForwardAsUniqueNull); err != nil {
+	if err = dec.Decode(&o.oForwardNullUnique); err != nil {
+		return
+	}
+	if err = dec.Decode(&o.oForwardRestricts); err != nil {
+		return
+	}
+	if len(o.oForwardRestricts) > 0 {
+		o.mForwardRestricts = make(map[string]*ForwardRestrict)
+		for _, p := range o.oForwardRestricts {
+			o.mForwardRestricts[p.PrimaryKey()] = p
+		}
+	}
+	if err = dec.Decode(&o.oForwardRestrictUnique); err != nil {
 		return
 	}
 
@@ -981,20 +1258,28 @@ func (o *reverseBase) MarshalJSON() (data []byte, err error) {
 		v["name"] = o.name
 	}
 
-	if val := o.ForwardsAsNotNull(); val != nil {
-		v["reverseNotNull"] = val
+	if val := o.ForwardCascades(); val != nil {
+		v["reverse"] = val
 	}
 
-	if val := o.ForwardAsUniqueNotNull(); val != nil {
-		v["reverseUniqueNotNull"] = val
+	if val := o.ForwardCascadeUnique(); val != nil {
+		v["reverse"] = val
 	}
 
-	if val := o.ForwardsAsNull(); val != nil {
-		v["reverseNull"] = val
+	if val := o.ForwardNulls(); val != nil {
+		v["reverse"] = val
 	}
 
-	if val := o.ForwardAsUniqueNull(); val != nil {
-		v["reverseUniqueNull"] = val
+	if val := o.ForwardNullUnique(); val != nil {
+		v["reverse"] = val
+	}
+
+	if val := o.ForwardRestricts(); val != nil {
+		v["reverse"] = val
+	}
+
+	if val := o.ForwardRestrictUnique(); val != nil {
+		v["reverse"] = val
 	}
 
 	return json.Marshal(v)

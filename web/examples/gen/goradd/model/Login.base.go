@@ -115,7 +115,7 @@ func (o *loginBase) IDIsValid() bool {
 
 func (o *loginBase) PersonID() string {
 	if o._restored && !o.personIDIsValid {
-		panic("personID was not selected in the last query and so is not valid")
+		panic("personID was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.personID
 }
@@ -193,7 +193,7 @@ func (o *loginBase) SetPerson(v *Person) {
 
 func (o *loginBase) Username() string {
 	if o._restored && !o.usernameIsValid {
-		panic("username was not selected in the last query and so is not valid")
+		panic("username was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.username
 }
@@ -215,7 +215,7 @@ func (o *loginBase) SetUsername(v string) {
 
 func (o *loginBase) Password() string {
 	if o._restored && !o.passwordIsValid {
-		panic("password was not selected in the last query and so is not valid")
+		panic("password was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.password
 }
@@ -253,7 +253,7 @@ func (o *loginBase) SetPassword(i interface{}) {
 
 func (o *loginBase) IsEnabled() bool {
 	if o._restored && !o.isEnabledIsValid {
-		panic("isEnabled was not selected in the last query and so is not valid")
+		panic("isEnabled was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.isEnabled
 }
@@ -290,17 +290,6 @@ func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...quer
 	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-// LoadLoginByUsername queries for a single Login object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().Username(), username)).
-		joinOrSelect(joinOrSelectNodes...).
-		Get(ctx)
-}
-
 // LoadLoginByPersonID queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
@@ -308,6 +297,17 @@ func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes
 func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
 	return queryLogins(ctx).
 		Where(Equal(node.Login().PersonID(), person_id)).
+		joinOrSelect(joinOrSelectNodes...).
+		Get(ctx)
+}
+
+// LoadLoginByUsername queries for a single Login object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use QueryLogins() to start a query builder.
+func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
+	return queryLogins(ctx).
+		Where(Equal(node.Login().Username(), username)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get(ctx)
 }
@@ -338,7 +338,7 @@ func (b *LoginsBuilder) Load(ctx context.Context) (loginSlice []*Login) {
 	}
 	for _, item := range results {
 		o := new(Login)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		loginSlice = append(loginSlice, o)
 	}
 	return loginSlice
@@ -354,7 +354,7 @@ func (b *LoginsBuilder) LoadI(ctx context.Context) (loginSlice []interface{}) {
 	}
 	for _, item := range results {
 		o := new(Login)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		loginSlice = append(loginSlice, o)
 	}
 	return loginSlice
@@ -501,10 +501,8 @@ func CountLoginByIsEnabled(ctx context.Context, isEnabled bool) uint {
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
 // between the object chain requested by the user in the query.
-// If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
-// Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
-func (o *loginBase) load(m map[string]interface{}, linkParent bool, objThis *Login, objParent interface{}, parentKey string) {
+func (o *loginBase) load(m map[string]interface{}, objThis *Login, objParent interface{}, parentKey string) {
 	if v, ok := m["id"]; ok && v != nil {
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
@@ -535,14 +533,10 @@ func (o *loginBase) load(m map[string]interface{}, linkParent bool, objThis *Log
 		o.personIDIsNull = true
 		o.personID = ""
 	}
-	if linkParent && parentKey == "Person" {
-		o.oPerson = objParent.(*Person)
-		o.personIDIsValid = true
-		o.personIDIsDirty = false
-	} else if v, ok := m["Person"]; ok {
+	if v, ok := m["Person"]; ok {
 		if oPerson, ok2 := v.(map[string]interface{}); ok2 {
 			o.oPerson = new(Person)
-			o.oPerson.load(oPerson, linkParent, o.oPerson, objThis, "Logins")
+			o.oPerson.load(oPerson, o.oPerson, objThis, "Logins")
 			o.personIDIsValid = true
 			o.personIDIsDirty = false
 		} else {
@@ -604,55 +598,61 @@ func (o *loginBase) load(m map[string]interface{}, linkParent bool, objThis *Log
 // If it has any auto-generated ids, those will be updated.
 func (o *loginBase) Save(ctx context.Context) {
 	if o._restored {
-		o.Update(ctx)
+		o.update(ctx)
 	} else {
-		o.Insert(ctx)
+		o.insert(ctx)
 	}
 }
 
-// Update will update the values in the database, saving any changed values.
-func (o *loginBase) Update(ctx context.Context) {
-	if o.oPerson != nil {
-		o.oPerson.Save(ctx)
-		id := o.oPerson.PrimaryKey()
-		o.SetPersonID(id)
-	}
-
-	if !o._restored {
-		panic("Cannot update a record that was not originally read from the database.")
-	}
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
-	d.Update(ctx, "login", m, "id", fmt.Sprint(o.id))
-
-	d.Commit(ctx, txid)
-	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "login", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
-}
-
-// Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
-// this will create a duplicate in the database.
-func (o *loginBase) Insert(ctx context.Context) {
+// update will update the values in the database, saving any changed values.
+func (o *loginBase) update(ctx context.Context) {
+	var modifiedFields map[string]interface{}
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
+
 		if o.oPerson != nil {
 			o.oPerson.Save(ctx)
 			id := o.oPerson.PrimaryKey()
 			o.SetPersonID(id)
 		}
 
-		m := o.getModifiedFields()
-		if len(m) == 0 {
-			return
+		if !o._restored {
+			panic("Cannot update a record that was not originally read from the database.")
 		}
+
+		modifiedFields = o.getModifiedFields()
+		if len(modifiedFields) != 0 {
+			d.Update(ctx, "login", modifiedFields, "id", fmt.Sprint(o.id))
+		}
+
+	}) // transaction
+	o.resetDirtyStatus()
+	if len(modifiedFields) != 0 {
+		broadcast.Update(ctx, "goradd", "login", fmt.Sprint(o.id), stringmap.SortedKeys(modifiedFields)...)
+	}
+}
+
+// insert will insert the item into the database. Related items will be saved.
+func (o *loginBase) insert(ctx context.Context) {
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+		if o.oPerson != nil {
+			o.oPerson.Save(ctx)
+			o.SetPerson(o.oPerson)
+		}
+
+		if !o.usernameIsValid {
+			panic("a value for Username is required, and there is no default value. Call SetUsername() before inserting the record.")
+		}
+
+		if !o.isEnabledIsValid {
+			panic("a value for IsEnabled is required, and there is no default value. Call SetIsEnabled() before inserting the record.")
+		}
+		m := o.getValidFields()
 
 		id := d.Insert(ctx, "login", m)
 		o.id = id
+
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
@@ -664,7 +664,6 @@ func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
 	if o.idIsDirty {
 		fields["id"] = o.id
 	}
-
 	if o.personIDIsDirty {
 		if o.personIDIsNull {
 			fields["person_id"] = nil
@@ -672,11 +671,9 @@ func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["person_id"] = o.personID
 		}
 	}
-
 	if o.usernameIsDirty {
 		fields["username"] = o.username
 	}
-
 	if o.passwordIsDirty {
 		if o.passwordIsNull {
 			fields["password"] = nil
@@ -684,11 +681,34 @@ func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
 			fields["password"] = o.password
 		}
 	}
-
 	if o.isEnabledIsDirty {
 		fields["is_enabled"] = o.isEnabled
 	}
+	return
+}
 
+func (o *loginBase) getValidFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+	if o.personIDIsValid {
+		if o.personIDIsNull {
+			fields["person_id"] = nil
+		} else {
+			fields["person_id"] = o.personID
+		}
+	}
+	if o.usernameIsValid {
+		fields["username"] = o.username
+	}
+	if o.passwordIsValid {
+		if o.passwordIsNull {
+			fields["password"] = nil
+		} else {
+			fields["password"] = o.password
+		}
+	}
+	if o.isEnabledIsValid {
+		fields["is_enabled"] = o.isEnabled
+	}
 	return
 }
 
@@ -697,7 +717,7 @@ func (o *loginBase) Delete(ctx context.Context) {
 	if !o._restored {
 		panic("Cannot delete a record that has no primary key value.")
 	}
-	d := db.GetDatabase("goradd")
+	d := Database()
 	d.Delete(ctx, "login", "id", o.id)
 	broadcast.Delete(ctx, "goradd", "login", fmt.Sprint(o.id))
 }
@@ -770,7 +790,7 @@ func (o *loginBase) Get(key string) interface{} {
 }
 
 // MarshalBinary serializes the object into a buffer that is deserializable using UnmarshalBinary.
-// It should be used for transmitting database object over the wire, or for temporary storage. It does not send
+// It should be used for transmitting database objects over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
 func (o *loginBase) MarshalBinary() ([]byte, error) {

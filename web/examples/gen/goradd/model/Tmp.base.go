@@ -69,7 +69,7 @@ func (o *tmpBase) PrimaryKey() string {
 
 func (o *tmpBase) D() string {
 	if o._restored && !o.dIsValid {
-		panic("d was not selected in the last query and so is not valid")
+		panic("d was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.d
 }
@@ -91,7 +91,7 @@ func (o *tmpBase) SetD(v string) {
 
 func (o *tmpBase) I() int {
 	if o._restored && !o.iIsValid {
-		panic("i was not selected in the last query and so is not valid")
+		panic("i was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.i
 }
@@ -165,7 +165,7 @@ func (b *TmpsBuilder) Load(ctx context.Context) (tmpSlice []*Tmp) {
 	}
 	for _, item := range results {
 		o := new(Tmp)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		tmpSlice = append(tmpSlice, o)
 	}
 	return tmpSlice
@@ -181,7 +181,7 @@ func (b *TmpsBuilder) LoadI(ctx context.Context) (tmpSlice []interface{}) {
 	}
 	for _, item := range results {
 		o := new(Tmp)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		tmpSlice = append(tmpSlice, o)
 	}
 	return tmpSlice
@@ -316,10 +316,8 @@ func CountTmpByI(ctx context.Context, i int) uint {
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
 // between the object chain requested by the user in the query.
-// If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
-// Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
-func (o *tmpBase) load(m map[string]interface{}, linkParent bool, objThis *Tmp, objParent interface{}, parentKey string) {
+func (o *tmpBase) load(m map[string]interface{}, objThis *Tmp, objParent interface{}, parentKey string) {
 	if v, ok := m["d"]; ok && v != nil {
 		if o.d, ok = v.(string); ok {
 			o.dIsValid = true
@@ -354,46 +352,48 @@ func (o *tmpBase) load(m map[string]interface{}, linkParent bool, objThis *Tmp, 
 // If it has any auto-generated ids, those will be updated.
 func (o *tmpBase) Save(ctx context.Context) {
 	if o._restored {
-		o.Update(ctx)
+		o.update(ctx)
 	} else {
-		o.Insert(ctx)
+		o.insert(ctx)
 	}
 }
 
-// Update will update the values in the database, saving any changed values.
-func (o *tmpBase) Update(ctx context.Context) {
-
-	if !o._restored {
-		panic("Cannot update a record that was not originally read from the database.")
-	}
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
-	d.Update(ctx, "tmp", m, "d", fmt.Sprint(o.d))
-
-	d.Commit(ctx, txid)
-	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "tmp", fmt.Sprint(o.d), stringmap.SortedKeys(m)...)
-}
-
-// Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
-// this will create a duplicate in the database.
-func (o *tmpBase) Insert(ctx context.Context) {
+// update will update the values in the database, saving any changed values.
+func (o *tmpBase) update(ctx context.Context) {
+	var modifiedFields map[string]interface{}
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		m := o.getModifiedFields()
-		if len(m) == 0 {
-			return
+		if !o._restored {
+			panic("Cannot update a record that was not originally read from the database.")
 		}
+
+		modifiedFields = o.getModifiedFields()
+		if len(modifiedFields) != 0 {
+			d.Update(ctx, "tmp", modifiedFields, "d", fmt.Sprint(o.d))
+		}
+
+	}) // transaction
+	o.resetDirtyStatus()
+	if len(modifiedFields) != 0 {
+		broadcast.Update(ctx, "goradd", "tmp", fmt.Sprint(o.d), stringmap.SortedKeys(modifiedFields)...)
+	}
+}
+
+// insert will insert the item into the database. Related items will be saved.
+func (o *tmpBase) insert(ctx context.Context) {
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+
+		if !o.iIsValid {
+			panic("a value for I is required, and there is no default value. Call SetI() before inserting the record.")
+		}
+		m := o.getValidFields()
 
 		d.Insert(ctx, "tmp", m)
 		id := o.PrimaryKey()
 		_ = id
+
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
@@ -405,11 +405,17 @@ func (o *tmpBase) getModifiedFields() (fields map[string]interface{}) {
 	if o.dIsDirty {
 		fields["d"] = o.d
 	}
-
 	if o.iIsDirty {
 		fields["i"] = o.i
 	}
+	return
+}
 
+func (o *tmpBase) getValidFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+	if o.iIsValid {
+		fields["i"] = o.i
+	}
 	return
 }
 
@@ -418,7 +424,7 @@ func (o *tmpBase) Delete(ctx context.Context) {
 	if !o._restored {
 		panic("Cannot delete a record that has no primary key value.")
 	}
-	d := db.GetDatabase("goradd")
+	d := Database()
 	d.Delete(ctx, "tmp", "d", o.d)
 	broadcast.Delete(ctx, "goradd", "tmp", fmt.Sprint(o.d))
 }
@@ -464,7 +470,7 @@ func (o *tmpBase) Get(key string) interface{} {
 }
 
 // MarshalBinary serializes the object into a buffer that is deserializable using UnmarshalBinary.
-// It should be used for transmitting database object over the wire, or for temporary storage. It does not send
+// It should be used for transmitting database objects over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
 func (o *tmpBase) MarshalBinary() ([]byte, error) {
