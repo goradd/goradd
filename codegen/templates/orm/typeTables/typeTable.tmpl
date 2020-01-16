@@ -53,23 +53,22 @@ func ({{= propLetter }} {{= propName }}) ID() string {
 	return strconv.Itoa(int({{= propLetter }}))
 }
 
-// {{= propPlural }} returns a slice of all the {{= propName }} items
-func {{= propPlural }}() (values []{{= propName }}) {
+// All{{= propPlural }} returns a slice of all the {{= propName }} items
+func All{{= propPlural }}() (values []{{= propName }}) {
 {{for _,value := range tt.Values }}
     values = append(values, {{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }})
 {{for}}
     return
 }
 
-// {{= propPlural }}I returns a slice of interfaces that contains all the {{= propName }} items
-func {{= propPlural }}I() (values []interface{}) {
+// All{{= propPlural }}I returns a slice of interfaces that contains all the {{= propName }} items
+func All{{= propPlural }}I() (values []interface{}) {
     values = make([]interface{}, {{i len(tt.Values) }}, {{i len(tt.Values) }})
 {{for i,value := range tt.Values }}
     values[{{i i }}] = {{= propName }}({{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }})
 {{for}}
     return
 }
-
 
 // Label returns the string that will be displayed to a user for this item. Together with
 // the Value function, it satisfies the ItemLister interface that makes it easy

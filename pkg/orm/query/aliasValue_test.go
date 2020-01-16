@@ -22,7 +22,7 @@ func TestNewAliasValue(t *testing.T) {
 		{"IsNull", NewAliasValue(nil).IsNull(), true},
 	}
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("%v", tt.name), func(t *testing.T) {
+		t.Run(fmt.Sprint(tt.name), func(t *testing.T) {
 			if got := tt.value; got != tt.want {
 				t.Errorf("NewAliasValue(%#v), got %v, want %v", tt.name, got, tt.want)
 			}

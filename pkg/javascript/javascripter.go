@@ -36,7 +36,7 @@ func ToJavaScript(v interface{}) string {
 		// Note that we cannot use template literals here (backticks) because not all browsers support them
 		b, _ := json.Marshal(s) // This does a good job of handling most escape sequences we might need
 		//s1 := strings.Replace(string(b), "/", `\/`, -1) // Replace forward slashes to avoid potential confusion in browser from closing html tags
-		return fmt.Sprintf("%v", string(b)) // will surround with quotes
+		return fmt.Sprint(string(b)) // will surround with quotes
 	case []string:
 		var values []string
 		for _, item := range s {

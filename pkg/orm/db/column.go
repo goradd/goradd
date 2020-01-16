@@ -55,9 +55,24 @@ type Column struct {
 	Options map[string]interface{}
 	// ForeignKey is additional information describing a foreign key relationship
 	ForeignKey *ForeignKeyInfo
-	// ModelName is a cache for the internal model name of this column.
-	ModelName string
+
+	// modelName is a cache for the internal model name of this column.
+	modelName string
+	// referenceName is a cache for the internal referenced object if this is a forward reference (foreign key to non-type table)
+	referenceName string
+	// referenceFunction is a cache for the name of the function to call to get to the referenced object. This will work for referenced types too.
+	referenceFunction string
 }
+
+func (cd *Column) ModelName() string {
+	return cd.modelName
+}
+
+func (cd *Column) ReferenceName() string {
+	return cd.referenceName
+}
+
+
 
 // DefaultConstantName returns the name of the default value constant that will be used to refer to the default value
 func (cd *Column) DefaultConstantName(tableName string) string {
@@ -131,32 +146,29 @@ func (cd *Column) ConvertFromString(varName string) string {
 	default:
 		panic("Not yet implemented. Implement this conversion.")
 	}
-	return cd.ModelName
+	return cd.modelName
 }
 
 
 func (cd *Column) JsonKey() string {
-	return cd.ModelName
+	return cd.modelName
 }
 
-// IsReference returns true if the column is a foreign key pointing to another table
+// IsReference returns true if the column is a reference to an object in another table
 func (cd *Column) IsReference() bool {
-	return cd.ForeignKey != nil
+	return cd.ForeignKey != nil && !cd.ForeignKey.IsType
 }
+
+// IsType returns true if the column contains a type defined by a type table
+func (cd *Column) IsType() bool {
+	return cd.ForeignKey != nil && cd.ForeignKey.IsType
+}
+
 
 // ReferenceFunction returns the function name that should be used to refer to the object
 // that is referred to by a forward reference. It is extracted from the name of foreign key.
-func (cd *Column) ReferenceFunction(dd *Database) string {
-	if cd.IsReference() {
-		if cd.ForeignKey.IsType {
-			suf := UpperCaseIdentifier(dd.ForeignKeySuffix)
-			goName := strings.TrimSuffix(cd.GoName, suf)
-			return goName
-		} else {
-			return cd.ForeignKey.GoName
-		}
-	}
-	return ""
+func (cd *Column) ReferenceFunction() string {
+	return cd.referenceFunction
 }
 
 // ReferenceJsonKey returns the key that will be used for the referenced object in JSON.

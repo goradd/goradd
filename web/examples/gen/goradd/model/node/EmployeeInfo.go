@@ -64,7 +64,7 @@ func (n *employeeInfoNode) PersonID() *query.ColumnNode {
 	return cn
 }
 
-// Person represents the the link to the Person object.
+// Person represents the link to the Person object.
 func (n *employeeInfoNode) Person() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(

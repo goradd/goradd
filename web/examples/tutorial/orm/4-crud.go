@@ -29,7 +29,7 @@ func init() {
 	page.RegisterControl(&CrudPanel{})
 
 	dir := sys.SourceDirectory()
-	tutorial.RegisterTutorialPage("orm", 3, "crud", "Creating, Modifying and Deleting Database Objects", NewCrudPanel,
+	tutorial.RegisterTutorialPage("orm", 4, "crud", "Creating, Modifying and Deleting Database Objects", NewCrudPanel,
 		[]string {
 			sys.SourcePath(),
 			filepath.Join(dir, "4-crud.tpl.got"),

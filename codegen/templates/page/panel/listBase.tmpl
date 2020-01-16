@@ -142,7 +142,7 @@ func (p *{{= panelName }}) MakeFilter(filterText string) query.NodeI {
 }
 
 func (p *{{= panelName }}) TableRowAttributes(row int, data interface{}) html2.Attributes {
-	return html2.NewAttributes().SetDataAttribute("value", {{if t.PrimaryKeyGoType() == "string"}}data.(*model.{{= t.GoName }}).PrimaryKey(){{else}}fmt.Sprintf("%v", data.(*model.{{= t.GoName }}).PrimaryKey()){{if}})
+	return html2.NewAttributes().SetDataAttribute("value", {{if t.PrimaryKeyGoType() == "string"}}data.(*model.{{= t.GoName }}).PrimaryKey(){{else}}fmt.Sprint(data.(*model.{{= t.GoName }}).PrimaryKey()){{if}})
 }
 
 // Load is called when the form controls are loaded with data.

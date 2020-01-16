@@ -91,7 +91,7 @@ const (
 	TypeTestDateDefault        = datetime.Zero
 	TypeTestTimeDefault        = datetime.Zero
 	TypeTestDateTimeDefault    = datetime.Zero
-	TypeTestTsDefault          = datetime.Zero
+	TypeTestTsDefault          = datetime.Current
 	TypeTestTestIntDefault     = 5
 	TypeTestTestFloatDefault   = 0.0
 	TypeTestTestDoubleDefault  = 0.0
@@ -136,8 +136,8 @@ func (o *typeTestBase) Initialize() {
 	o.dateTimeIsValid = true
 	o.dateTimeIsDirty = true
 
-	o.ts = datetime.DateTime{}
-	o.tsIsNull = true
+	o.ts = datetime.Now()
+	o.tsIsNull = false
 	o.tsIsValid = true
 	o.tsIsDirty = true
 
@@ -324,7 +324,7 @@ func (o *typeTestBase) SetTs(i interface{}) {
 		if !o.tsIsNull {
 			o.tsIsNull = true
 			o.tsIsDirty = true
-			o.ts = datetime.DateTime{}
+			o.ts = datetime.Now()
 		}
 	} else {
 		v := i.(datetime.DateTime)
@@ -853,7 +853,7 @@ func (o *typeTestBase) load(m map[string]interface{}, linkParent bool, objThis *
 	}
 	if v, ok := m["ts"]; ok {
 		if v == nil {
-			o.ts = datetime.DateTime{}
+			o.ts = datetime.Now()
 			o.tsIsNull = true
 			o.tsIsValid = true
 			o.tsIsDirty = false
@@ -868,7 +868,7 @@ func (o *typeTestBase) load(m map[string]interface{}, linkParent bool, objThis *
 	} else {
 		o.tsIsValid = false
 		o.tsIsNull = true
-		o.ts = datetime.DateTime{}
+		o.ts = datetime.Now()
 	}
 	if v, ok := m["test_int"]; ok {
 		if v == nil {
@@ -983,9 +983,6 @@ func (o *typeTestBase) load(m map[string]interface{}, linkParent bool, objThis *
 // If it has any auto-generated ids, those will be updated.
 func (o *typeTestBase) Save(ctx context.Context) {
 	if o._restored {
-		if !o.IsDirty() {
-			return
-		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -994,6 +991,7 @@ func (o *typeTestBase) Save(ctx context.Context) {
 
 // Update will update the values in the database, saving any changed values.
 func (o *typeTestBase) Update(ctx context.Context) {
+
 	if !o._restored {
 		panic("Cannot update a record that was not originally read from the database.")
 	}
@@ -1008,23 +1006,23 @@ func (o *typeTestBase) Update(ctx context.Context) {
 
 	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "type_test", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "type_test", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
 // this will create a duplicate in the database.
 func (o *typeTestBase) Insert(ctx context.Context) {
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
 
-	id := d.Insert(ctx, "type_test", m)
-	o.id = id
-	d.Commit(ctx, txid)
+		m := o.getModifiedFields()
+		if len(m) == 0 {
+			return
+		}
+
+		id := d.Insert(ctx, "type_test", m)
+		o.id = id
+	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
 	broadcast.Insert(ctx, "goradd", "type_test", fmt.Sprint(o.id))
@@ -1122,7 +1120,7 @@ func (o *typeTestBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "type_test", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "type_test", fmt.Sprintf("%v", o.id))
+	broadcast.Delete(ctx, "goradd", "type_test", fmt.Sprint(o.id))
 }
 
 // deleteTypeTest deletes the associated record from the database.

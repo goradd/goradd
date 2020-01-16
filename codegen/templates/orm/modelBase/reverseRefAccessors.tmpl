@@ -48,7 +48,7 @@ func (o *{{privateName}}Base) Set{{= ref.GoName }}(obj *{{= ref.GoType }}) {
 
 
 }}
-	} else {
+	} else { // Unique
 
 {{
 // {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.
@@ -101,12 +101,10 @@ func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{= ref.GoType }}) 
     }
 
 	o.{{oName}} = objs
+	o.{{mName}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
 	for _,obj := range o.{{oName}} {
 	    pk := obj.{{= ref.AssociatedTable.PrimaryKeyColumn().GoName}}()
 	    if pk != {{= ref.AssociatedTable.PrimaryKeyColumn().ColumnType.DefaultValue()}} {
-	        if o.{{mName}} == nil {
-			    o.{{mName}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
-	        }
 	        o.{{mName}}[pk] = obj
 	    }
 	}

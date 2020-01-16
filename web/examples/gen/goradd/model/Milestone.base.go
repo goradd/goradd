@@ -432,9 +432,6 @@ func (o *milestoneBase) load(m map[string]interface{}, linkParent bool, objThis 
 // If it has any auto-generated ids, those will be updated.
 func (o *milestoneBase) Save(ctx context.Context) {
 	if o._restored {
-		if !o.IsDirty() {
-			return
-		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -443,6 +440,12 @@ func (o *milestoneBase) Save(ctx context.Context) {
 
 // Update will update the values in the database, saving any changed values.
 func (o *milestoneBase) Update(ctx context.Context) {
+	if o.oProject != nil {
+		o.oProject.Save(ctx)
+		id := o.oProject.PrimaryKey()
+		o.SetProjectID(id)
+	}
+
 	if !o._restored {
 		panic("Cannot update a record that was not originally read from the database.")
 	}
@@ -457,23 +460,28 @@ func (o *milestoneBase) Update(ctx context.Context) {
 
 	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "milestone", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "milestone", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
 // this will create a duplicate in the database.
 func (o *milestoneBase) Insert(ctx context.Context) {
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+		if o.oProject != nil {
+			o.oProject.Save(ctx)
+			id := o.oProject.PrimaryKey()
+			o.SetProjectID(id)
+		}
 
-	id := d.Insert(ctx, "milestone", m)
-	o.id = id
-	d.Commit(ctx, txid)
+		m := o.getModifiedFields()
+		if len(m) == 0 {
+			return
+		}
+
+		id := d.Insert(ctx, "milestone", m)
+		o.id = id
+	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
 	broadcast.Insert(ctx, "goradd", "milestone", fmt.Sprint(o.id))
@@ -503,7 +511,7 @@ func (o *milestoneBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "milestone", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "milestone", fmt.Sprintf("%v", o.id))
+	broadcast.Delete(ctx, "goradd", "milestone", fmt.Sprint(o.id))
 }
 
 // deleteMilestone deletes the associated record from the database.
@@ -522,7 +530,7 @@ func (o *milestoneBase) resetDirtyStatus() {
 
 func (o *milestoneBase) IsDirty() bool {
 	return o.idIsDirty ||
-		o.projectIDIsDirty ||
+		o.projectIDIsDirty || (o.oProject != nil && o.oProject.IsDirty()) ||
 		o.nameIsDirty
 }
 

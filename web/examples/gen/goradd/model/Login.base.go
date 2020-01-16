@@ -290,17 +290,6 @@ func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...quer
 	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-// LoadLoginByPersonID queries for a single Login object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().PersonID(), person_id)).
-		joinOrSelect(joinOrSelectNodes...).
-		Get(ctx)
-}
-
 // LoadLoginByUsername queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
@@ -308,6 +297,17 @@ func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNode
 func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
 	return queryLogins(ctx).
 		Where(Equal(node.Login().Username(), username)).
+		joinOrSelect(joinOrSelectNodes...).
+		Get(ctx)
+}
+
+// LoadLoginByPersonID queries for a single Login object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use QueryLogins() to start a query builder.
+func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
+	return queryLogins(ctx).
+		Where(Equal(node.Login().PersonID(), person_id)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get(ctx)
 }
@@ -604,9 +604,6 @@ func (o *loginBase) load(m map[string]interface{}, linkParent bool, objThis *Log
 // If it has any auto-generated ids, those will be updated.
 func (o *loginBase) Save(ctx context.Context) {
 	if o._restored {
-		if !o.IsDirty() {
-			return
-		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -615,6 +612,12 @@ func (o *loginBase) Save(ctx context.Context) {
 
 // Update will update the values in the database, saving any changed values.
 func (o *loginBase) Update(ctx context.Context) {
+	if o.oPerson != nil {
+		o.oPerson.Save(ctx)
+		id := o.oPerson.PrimaryKey()
+		o.SetPersonID(id)
+	}
+
 	if !o._restored {
 		panic("Cannot update a record that was not originally read from the database.")
 	}
@@ -629,23 +632,28 @@ func (o *loginBase) Update(ctx context.Context) {
 
 	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "login", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "login", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
 // this will create a duplicate in the database.
 func (o *loginBase) Insert(ctx context.Context) {
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+		if o.oPerson != nil {
+			o.oPerson.Save(ctx)
+			id := o.oPerson.PrimaryKey()
+			o.SetPersonID(id)
+		}
 
-	id := d.Insert(ctx, "login", m)
-	o.id = id
-	d.Commit(ctx, txid)
+		m := o.getModifiedFields()
+		if len(m) == 0 {
+			return
+		}
+
+		id := d.Insert(ctx, "login", m)
+		o.id = id
+	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
 	broadcast.Insert(ctx, "goradd", "login", fmt.Sprint(o.id))
@@ -691,7 +699,7 @@ func (o *loginBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "login", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "login", fmt.Sprintf("%v", o.id))
+	broadcast.Delete(ctx, "goradd", "login", fmt.Sprint(o.id))
 }
 
 // deleteLogin deletes the associated record from the database.
@@ -712,7 +720,7 @@ func (o *loginBase) resetDirtyStatus() {
 
 func (o *loginBase) IsDirty() bool {
 	return o.idIsDirty ||
-		o.personIDIsDirty ||
+		o.personIDIsDirty || (o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.usernameIsDirty ||
 		o.passwordIsDirty ||
 		o.isEnabledIsDirty

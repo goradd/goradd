@@ -15,6 +15,6 @@ func AsConstant(i interface{}, typ query.GoColumnType) string {
 	case nil:
 		return typ.DefaultValue()
 	default:
-		return fmt.Sprintf("%v", i)
+		return fmt.Sprint(i)
 	}
 }

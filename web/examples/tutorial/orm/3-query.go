@@ -29,7 +29,7 @@ func init() {
 	page.RegisterControl(&QueryPanel{})
 
 	dir := sys.SourceDirectory()
-	tutorial.RegisterTutorialPage("orm", 3, "query", "Querying the Database Using a QueryBuilder", NewQueryPanel,
+	tutorial.RegisterTutorialPage("orm", 3, "query", "Using a QueryBuilder and Nodes", NewQueryPanel,
 		[]string {
 			sys.SourcePath(),
 			filepath.Join(dir, "3-query.tpl.got"),

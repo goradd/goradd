@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"github.com/gedex/inflector"
 	. "github.com/goradd/goradd/pkg/orm/query"
@@ -60,6 +61,9 @@ func (d *Database) analyze(desc DatabaseDescription) {
 
 	d.typeTableMap = make(map[string]*TypeTable)
 	d.tableMap = make(map[string]*Table)
+	if d.AssociatedObjectPrefix == "" {
+		d.AssociatedObjectPrefix = "o"
+	}
 
 	// deal with type tables first
 	for _,table := range desc.Tables {
@@ -97,11 +101,6 @@ func (d *Database) analyze(desc DatabaseDescription) {
 	for _,assn := range desc.MM {
 		d.analyzeAssociation(assn)
 	}
-
-	if d.AssociatedObjectPrefix == "" {
-		d.AssociatedObjectPrefix = "o"
-	}
-
 }
 
 
@@ -396,7 +395,8 @@ func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
 	}
 
 
-	c.ModelName = LowerCaseIdentifier(c.DbName)
+	c.modelName = LowerCaseIdentifier(c.DbName)
+
 	return c
 }
 
@@ -434,6 +434,8 @@ func (d *Database) analyzeForeignKey(t *Table, cd ColumnDescription) {
 			tt := d.TypeTable(cd.ForeignKey.ReferencedTable)
 			f.GoType = tt.GoName
 			f.GoTypePlural = tt.GoPlural
+			suf := UpperCaseIdentifier(d.ForeignKeySuffix)
+			c.referenceFunction = strings.TrimSuffix(f.GoName, suf)
 		} else {
 			r := d.Table(cd.ForeignKey.ReferencedTable)
 			f.GoType = r.GoName
@@ -442,6 +444,8 @@ func (d *Database) analyzeForeignKey(t *Table, cd ColumnDescription) {
 			if fkc.IsId {
 				c.ColumnType = ColTypeString // Always use strings to refer to auto-generated ids for cross database compatibility
 			}
+			c.referenceName = d.AssociatedObjectPrefix + f.GoName
+			c.referenceFunction = f.GoName
 		}
 		c.ForeignKey = f
 	}
@@ -569,4 +573,12 @@ func UpperCaseIdentifier(s string) (i string) {
 		panic("Cannot use blank as an identifier.")
 	}
 	return
+}
+
+// ExecuteTransaction wraps the function in a database transaction
+func ExecuteTransaction(ctx context.Context, d DatabaseI, f func()) {
+	txid := d.Begin(ctx)
+	defer d.Rollback(ctx, txid)
+	f()
+	d.Commit(ctx, txid)
 }

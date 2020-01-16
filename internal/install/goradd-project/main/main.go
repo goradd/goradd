@@ -105,7 +105,7 @@ func useFlags() {
 type arrayFlags []string
 
 func (i *arrayFlags) String() string {
-	return fmt.Sprintf("%v", *i)
+	return fmt.Sprint(*i)
 }
 
 func (i *arrayFlags) Set(value string) error {

@@ -4,7 +4,7 @@ defines a "package" fragment.
 }}
 {{< package }}orm{{end}}
 {{< imports }}
-	"github.com/goradd/goradd/web/examples/genmodel"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 {{end}}
 {{< control }}LoadPanel{{end}}
 

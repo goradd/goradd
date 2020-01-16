@@ -622,7 +622,7 @@ func AttributeString(i interface{}) string {
 	case int:
 		return strconv.Itoa(v)
 	default:
-		return fmt.Sprintf("%v", i)
+		return fmt.Sprint(i)
 	}
 }
 

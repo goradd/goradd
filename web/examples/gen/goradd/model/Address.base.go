@@ -505,9 +505,6 @@ func (o *addressBase) load(m map[string]interface{}, linkParent bool, objThis *A
 // If it has any auto-generated ids, those will be updated.
 func (o *addressBase) Save(ctx context.Context) {
 	if o._restored {
-		if !o.IsDirty() {
-			return
-		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -516,6 +513,12 @@ func (o *addressBase) Save(ctx context.Context) {
 
 // Update will update the values in the database, saving any changed values.
 func (o *addressBase) Update(ctx context.Context) {
+	if o.oPerson != nil {
+		o.oPerson.Save(ctx)
+		id := o.oPerson.PrimaryKey()
+		o.SetPersonID(id)
+	}
+
 	if !o._restored {
 		panic("Cannot update a record that was not originally read from the database.")
 	}
@@ -530,23 +533,28 @@ func (o *addressBase) Update(ctx context.Context) {
 
 	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "address", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "address", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
 // this will create a duplicate in the database.
 func (o *addressBase) Insert(ctx context.Context) {
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+		if o.oPerson != nil {
+			o.oPerson.Save(ctx)
+			id := o.oPerson.PrimaryKey()
+			o.SetPersonID(id)
+		}
 
-	id := d.Insert(ctx, "address", m)
-	o.id = id
-	d.Commit(ctx, txid)
+		m := o.getModifiedFields()
+		if len(m) == 0 {
+			return
+		}
+
+		id := d.Insert(ctx, "address", m)
+		o.id = id
+	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
 	broadcast.Insert(ctx, "goradd", "address", fmt.Sprint(o.id))
@@ -584,7 +592,7 @@ func (o *addressBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "address", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "address", fmt.Sprintf("%v", o.id))
+	broadcast.Delete(ctx, "goradd", "address", fmt.Sprint(o.id))
 }
 
 // deleteAddress deletes the associated record from the database.
@@ -604,7 +612,7 @@ func (o *addressBase) resetDirtyStatus() {
 
 func (o *addressBase) IsDirty() bool {
 	return o.idIsDirty ||
-		o.personIDIsDirty ||
+		o.personIDIsDirty || (o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.streetIsDirty ||
 		o.cityIsDirty
 }

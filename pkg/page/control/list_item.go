@@ -73,7 +73,7 @@ func NewItemFromItemLister(i ItemLister) *ListItem {
 	if i.Value() == nil {
 		l = &ListItem{value: "", label: i.Label()}
 	} else {
-		l = &ListItem{value: fmt.Sprintf("%v", i.Value()), label: i.Label()}
+		l = &ListItem{value: fmt.Sprint(i.Value()), label: i.Label()}
 	}
 	l.ItemList = NewItemList(l)
 	return l

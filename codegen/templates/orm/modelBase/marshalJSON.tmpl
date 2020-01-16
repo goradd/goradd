@@ -8,33 +8,27 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
 
 {{for _,col := range t.Columns}}
 {{g key := col.JsonKey() }}
-    if o.{{= col.ModelName }}IsValid {
+    if o.{{= col.ModelName() }}IsValid {
 {{if col.IsNullable}}
-        if o.{{= col.ModelName }}IsNull {
+        if o.{{= col.ModelName() }}IsNull {
             v["{{key}}"] = nil
         } else {
-            v["{{key}}"] = o.{{= col.ModelName }}
+            v["{{key}}"] = o.{{= col.ModelName() }}
         }
 {{else}}
-        v["{{key}}"] = o.{{= col.ModelName }}
+        v["{{key}}"] = o.{{= col.ModelName() }}
 {{if}}
     }
 
-
+{{if col.IsType()}}
+    if o.{{= col.ModelName() }}IsValid {
+        v["{{= col.ReferenceJsonKey(dd) }}"] = o.{{= col.ReferenceFunction() }}().String()
+    }
+{{if}}
 {{if col.IsReference()}}
-{{g
-    key := col.ReferenceJsonKey(dd)
-    funcName := col.ReferenceFunction(dd)
-}}
-{{if col.ForeignKey.IsType}}
-    if o.{{= col.ModelName }}IsValid {
-        v["{{key}}"] = o.{{= funcName }}().String()
+    if val := o.{{= col.ReferenceFunction() }}(); val != nil {
+        v["{{= col.ReferenceJsonKey(dd)}}"] = val
     }
-{{else}}
-    if val := o.{{= funcName }}(); val != nil {
-        v["{{key}}"] = val
-    }
-{{if}}
 {{if}}
 {{for}}
 

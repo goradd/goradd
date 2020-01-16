@@ -51,7 +51,7 @@ func (d CheckboxList) GenerateRefresh(ref interface{}, desc *generator.ControlDe
 		return `
 			var values []string
 			for _,obj := range objects {
-				values = append(values, fmt.Sprintf("%v", obj.PrimaryKey()))
+				values = append(values, fmt.Sprint(obj.PrimaryKey()))
 			}
 			ctrl.SetSelectedValues(values)`
 	case *db.ManyManyReference:

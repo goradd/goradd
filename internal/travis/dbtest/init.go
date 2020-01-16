@@ -17,9 +17,21 @@ func init() {
 	key := "goradd"
 
 	db1 := db.NewMysql5(key, "", cfg)
-	//db1 := db.NewJsonLink(key, "")
 
 	db.AddDatabase(db1, key)
+
+	cfg = mysql.NewConfig()
+
+	cfg.DBName = "goraddUnit"
+	cfg.User = "travis"
+	cfg.Passwd = ""
+
+	key = "goraddUnit"
+
+	db2 := db.NewMysql5(key, "", cfg)
+
+	db.AddDatabase(db2, key)
+
 }
 
 func getContext() context.Context {

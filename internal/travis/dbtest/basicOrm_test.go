@@ -156,8 +156,8 @@ func TestManyManySingles(t *testing.T) {
 		t.Error("Did not find expanded project State College HR System.")
 	}
 
-	if projects[3].TeamMember().FirstName() != "Samantha" {
-		t.Error("Did not find Samantha. Found: " + projects[3].TeamMember().FirstName())
+	if projects[3].TeamMembers()[0].FirstName() != "Samantha" {
+		t.Error("Did not find Samantha. Found: " + projects[3].TeamMembers()[0].FirstName())
 	}
 
 }
@@ -186,7 +186,7 @@ func TestManyTypeSingles(t *testing.T) {
 		Expand(node.Person().PersonTypes()).
 		Load(ctx)
 
-	if people[1].PersonType() != model.PersonTypeManager {
+	if people[1].PersonTypes()[0] != model.PersonTypeManager {
 		t.Error("Did not find correct person type.")
 	}
 
@@ -299,40 +299,6 @@ func TestSaveAndDelete(t *testing.T) {
 	assert.Len(t, people, 0, "Deleted the person")
 }
 
-func TestUpdate(t *testing.T) {
-	ctx := getContext()
-
-	person := model.NewPerson()
-	person.SetFirstName("Test1")
-	person.SetLastName("Last1")
-	person.Save(ctx)
-
-	person.SetFirstName("Test2")
-	person.Update(ctx)
-
-	people := model.QueryPeople(ctx).
-		Where(
-			And(
-				Equal(
-					node.Person().FirstName(), "Test2"),
-			)).
-		Load(ctx)
-
-	assert.EqualValues(t, person.ID(), people[0].ID())
-
-	person.Delete(ctx)
-
-	people = model.QueryPeople(ctx).
-		Where(
-			And(
-				Equal(
-					node.Person().FirstName(), "Test2"),
-			)).
-		Load(ctx)
-
-	assert.Len(t, people, 0, "Deleted the person")
-
-}
 
 func TestSingleEmpty(t *testing.T) {
 	ctx := getContext()

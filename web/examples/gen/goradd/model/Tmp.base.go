@@ -354,9 +354,6 @@ func (o *tmpBase) load(m map[string]interface{}, linkParent bool, objThis *Tmp, 
 // If it has any auto-generated ids, those will be updated.
 func (o *tmpBase) Save(ctx context.Context) {
 	if o._restored {
-		if !o.IsDirty() {
-			return
-		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -365,6 +362,7 @@ func (o *tmpBase) Save(ctx context.Context) {
 
 // Update will update the values in the database, saving any changed values.
 func (o *tmpBase) Update(ctx context.Context) {
+
 	if !o._restored {
 		panic("Cannot update a record that was not originally read from the database.")
 	}
@@ -379,24 +377,24 @@ func (o *tmpBase) Update(ctx context.Context) {
 
 	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "tmp", fmt.Sprintf("%v", o.d), stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "tmp", fmt.Sprint(o.d), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
 // this will create a duplicate in the database.
 func (o *tmpBase) Insert(ctx context.Context) {
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
 
-	d.Insert(ctx, "tmp", m)
-	id := o.PrimaryKey()
-	_ = id
-	d.Commit(ctx, txid)
+		m := o.getModifiedFields()
+		if len(m) == 0 {
+			return
+		}
+
+		d.Insert(ctx, "tmp", m)
+		id := o.PrimaryKey()
+		_ = id
+	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
 	broadcast.Insert(ctx, "goradd", "tmp", fmt.Sprint(o.d))
@@ -422,7 +420,7 @@ func (o *tmpBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "tmp", "d", o.d)
-	broadcast.Delete(ctx, "goradd", "tmp", fmt.Sprintf("%v", o.d))
+	broadcast.Delete(ctx, "goradd", "tmp", fmt.Sprint(o.d))
 }
 
 // deleteTmp deletes the associated record from the database.

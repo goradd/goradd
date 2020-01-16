@@ -455,9 +455,6 @@ func (o *personWithLockBase) load(m map[string]interface{}, linkParent bool, obj
 // If it has any auto-generated ids, those will be updated.
 func (o *personWithLockBase) Save(ctx context.Context) {
 	if o._restored {
-		if !o.IsDirty() {
-			return
-		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -466,6 +463,7 @@ func (o *personWithLockBase) Save(ctx context.Context) {
 
 // Update will update the values in the database, saving any changed values.
 func (o *personWithLockBase) Update(ctx context.Context) {
+
 	if !o._restored {
 		panic("Cannot update a record that was not originally read from the database.")
 	}
@@ -480,23 +478,23 @@ func (o *personWithLockBase) Update(ctx context.Context) {
 
 	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "person_with_lock", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "person_with_lock", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
 // this will create a duplicate in the database.
 func (o *personWithLockBase) Insert(ctx context.Context) {
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
 
-	id := d.Insert(ctx, "person_with_lock", m)
-	o.id = id
-	d.Commit(ctx, txid)
+		m := o.getModifiedFields()
+		if len(m) == 0 {
+			return
+		}
+
+		id := d.Insert(ctx, "person_with_lock", m)
+		o.id = id
+	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
 	broadcast.Insert(ctx, "goradd", "person_with_lock", fmt.Sprint(o.id))
@@ -534,7 +532,7 @@ func (o *personWithLockBase) Delete(ctx context.Context) {
 	}
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person_with_lock", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "person_with_lock", fmt.Sprintf("%v", o.id))
+	broadcast.Delete(ctx, "goradd", "person_with_lock", fmt.Sprint(o.id))
 }
 
 // deletePersonWithLock deletes the associated record from the database.

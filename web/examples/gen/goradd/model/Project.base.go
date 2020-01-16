@@ -80,12 +80,12 @@ type projectBase struct {
 	oMilestonesIsDirty bool
 
 	// Many-Many reference objects.
-	oTeamMembers      []*Person
-	mTeamMembers      map[string]*Person // Objects by PK
 	oChildrenAsParent []*Project
 	mChildrenAsParent map[string]*Project // Objects by PK
 	oParentsAsChild   []*Project
 	mParentsAsChild   map[string]*Project // Objects by PK
+	oTeamMembers      []*Person
+	mTeamMembers      map[string]*Person // Objects by PK
 
 	// Custom aliases, if specified
 	_aliases map[string]interface{}
@@ -111,7 +111,6 @@ const (
 	Project_ID                  = `ID`
 	Project_Num                 = `Num`
 	Project_ProjectStatusTypeID = `ProjectStatusTypeID`
-	Project_ProjectStatusType   = `ProjectStatusType`
 	Project_ManagerID           = `ManagerID`
 	Project_Manager             = `Manager`
 	Project_Name                = `Name`
@@ -121,12 +120,12 @@ const (
 	Project_Budget              = `Budget`
 	Project_Spent               = `Spent`
 	ProjectMilestones           = `Milestones`
-	ProjectTeamMember           = `TeamMember`
-	ProjectTeamMembers          = `TeamMembers`
 	ProjectChildAsParent        = `ChildAsParent`
 	ProjectChildrenAsParent     = `ChildrenAsParent`
 	ProjectParentAsChild        = `ParentAsChild`
 	ProjectParentsAsChild       = `ParentsAsChild`
+	ProjectTeamMember           = `TeamMember`
+	ProjectTeamMembers          = `TeamMembers`
 )
 
 // Initialize or re-initialize a Project database object to default values.
@@ -532,23 +531,6 @@ func (o *projectBase) SetProjectStatusType(v ProjectStatusType) {
 	}
 }
 
-// TeamMember returns a single Person object, if one was loaded
-// otherwise, it will return nil.
-func (o *projectBase) TeamMember() *Person {
-	if o.oTeamMembers == nil {
-		return nil
-	}
-	return o.oTeamMembers[0]
-}
-
-// TeamMembers returns a slice of Person objects if loaded. If not loaded, will return nil.
-func (o *projectBase) TeamMembers() []*Person {
-	if o.oTeamMembers == nil {
-		return nil
-	}
-	return o.oTeamMembers
-}
-
 // ChildAsParent returns a single Project object, if one was loaded
 // otherwise, it will return nil.
 func (o *projectBase) ChildAsParent() *Project {
@@ -581,6 +563,23 @@ func (o *projectBase) ParentsAsChild() []*Project {
 		return nil
 	}
 	return o.oParentsAsChild
+}
+
+// TeamMember returns a single Person object, if one was loaded
+// otherwise, it will return nil.
+func (o *projectBase) TeamMember() *Person {
+	if o.oTeamMembers == nil {
+		return nil
+	}
+	return o.oTeamMembers[0]
+}
+
+// TeamMembers returns a slice of Person objects if loaded. If not loaded, will return nil.
+func (o *projectBase) TeamMembers() []*Person {
+	if o.oTeamMembers == nil {
+		return nil
+	}
+	return o.oTeamMembers
 }
 
 // Milestone returns a single Milestone object by primary key, if one was loaded.
@@ -1044,27 +1043,6 @@ func (o *projectBase) load(m map[string]interface{}, linkParent bool, objThis *P
 		o.spentIsNull = true
 		o.spent = ""
 	}
-	if v, ok := m["TeamMembers"]; ok {
-		if oTeamMembers, ok2 := v.([]db.ValueMap); ok2 {
-			o.oTeamMembers = []*Person{}
-			o.mTeamMembers = map[string]*Person{}
-
-			for _, v2 := range oTeamMembers {
-				obj := new(Person)
-				obj.load(v2, linkParent, obj, objThis, "ProjectsAsTeamMember")
-				if linkParent && parentKey == "TeamMembers" && obj.id == objParent.(*Person).id {
-					obj = objParent.(*Person)
-				}
-				o.oTeamMembers = append(o.oTeamMembers, obj)
-				o.mTeamMembers[obj.PrimaryKey()] = obj
-			}
-		} else {
-			panic("Wrong type found for oTeamMembers object.")
-		}
-	} else {
-		o.oTeamMembers = nil
-	}
-
 	if v, ok := m["ChildrenAsParent"]; ok {
 		if oChildrenAsParent, ok2 := v.([]db.ValueMap); ok2 {
 			o.oChildrenAsParent = []*Project{}
@@ -1105,6 +1083,27 @@ func (o *projectBase) load(m map[string]interface{}, linkParent bool, objThis *P
 		}
 	} else {
 		o.oParentsAsChild = nil
+	}
+
+	if v, ok := m["TeamMembers"]; ok {
+		if oTeamMembers, ok2 := v.([]db.ValueMap); ok2 {
+			o.oTeamMembers = []*Person{}
+			o.mTeamMembers = map[string]*Person{}
+
+			for _, v2 := range oTeamMembers {
+				obj := new(Person)
+				obj.load(v2, linkParent, obj, objThis, "ProjectsAsTeamMember")
+				if linkParent && parentKey == "TeamMembers" && obj.id == objParent.(*Person).id {
+					obj = objParent.(*Person)
+				}
+				o.oTeamMembers = append(o.oTeamMembers, obj)
+				o.mTeamMembers[obj.PrimaryKey()] = obj
+			}
+		} else {
+			panic("Wrong type found for oTeamMembers object.")
+		}
+	} else {
+		o.oTeamMembers = nil
 	}
 
 	if v, ok := m["Milestones"]; ok {
@@ -1148,9 +1147,6 @@ func (o *projectBase) load(m map[string]interface{}, linkParent bool, objThis *P
 // If it has any auto-generated ids, those will be updated.
 func (o *projectBase) Save(ctx context.Context) {
 	if o._restored {
-		if !o.IsDirty() {
-			return
-		}
 		o.Update(ctx)
 	} else {
 		o.Insert(ctx)
@@ -1159,6 +1155,12 @@ func (o *projectBase) Save(ctx context.Context) {
 
 // Update will update the values in the database, saving any changed values.
 func (o *projectBase) Update(ctx context.Context) {
+	if o.oManager != nil {
+		o.oManager.Save(ctx)
+		id := o.oManager.PrimaryKey()
+		o.SetManagerID(id)
+	}
+
 	if !o._restored {
 		panic("Cannot update a record that was not originally read from the database.")
 	}
@@ -1192,34 +1194,39 @@ func (o *projectBase) Update(ctx context.Context) {
 	}
 	d.Commit(ctx, txid)
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "project", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
+	broadcast.Update(ctx, "goradd", "project", fmt.Sprint(o.id), stringmap.SortedKeys(m)...)
 }
 
 // Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
 // this will create a duplicate in the database.
 func (o *projectBase) Insert(ctx context.Context) {
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
-
-	id := d.Insert(ctx, "project", m)
-	o.id = id
-	if o.oMilestonesIsDirty {
-
-		for _, obj := range o.oMilestones {
-			obj.SetProjectID(id)
-			obj.Save(ctx)
-			if o.mMilestones == nil {
-				o.mMilestones = make(map[string]*Milestone)
-			}
-			o.mMilestones[obj.PrimaryKey()] = obj
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+		if o.oManager != nil {
+			o.oManager.Save(ctx)
+			id := o.oManager.PrimaryKey()
+			o.SetManagerID(id)
 		}
-	}
-	d.Commit(ctx, txid)
+
+		m := o.getModifiedFields()
+		if len(m) == 0 {
+			return
+		}
+
+		id := d.Insert(ctx, "project", m)
+		o.id = id
+		if o.oMilestonesIsDirty {
+
+			for _, obj := range o.oMilestones {
+				obj.SetProjectID(id)
+				obj.Save(ctx)
+				if o.mMilestones == nil {
+					o.mMilestones = make(map[string]*Milestone)
+				}
+				o.mMilestones[obj.PrimaryKey()] = obj
+			}
+		}
+	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
 	broadcast.Insert(ctx, "goradd", "project", fmt.Sprint(o.id))
@@ -1302,18 +1309,21 @@ func (o *projectBase) Delete(ctx context.Context) {
 	d := db.GetDatabase("goradd")
 	txid := d.Begin(ctx)
 	defer d.Rollback(ctx, txid)
-	objs := QueryMilestones(ctx).
-		Where(op.Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
-		Select(node.Milestone().PrimaryKeyNode()).
-		Load(ctx)
-	for _, obj := range objs {
-		obj.Delete(ctx)
+
+	{
+		objs := QueryMilestones(ctx).
+			Where(op.Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
+			Select(node.Milestone().PrimaryKeyNode()).
+			Load(ctx)
+		for _, obj := range objs {
+			obj.Delete(ctx)
+		}
+		o.oMilestones = nil
 	}
-	o.oMilestones = nil
 
 	d.Delete(ctx, "project", "id", o.id)
 	d.Commit(ctx, txid)
-	broadcast.Delete(ctx, "goradd", "project", fmt.Sprintf("%v", o.id))
+	broadcast.Delete(ctx, "goradd", "project", fmt.Sprint(o.id))
 }
 
 // deleteProject deletes the associated record from the database.
@@ -1342,7 +1352,7 @@ func (o *projectBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.numIsDirty ||
 		o.projectStatusTypeIDIsDirty ||
-		o.managerIDIsDirty ||
+		o.managerIDIsDirty || (o.oManager != nil && o.oManager.IsDirty()) ||
 		o.nameIsDirty ||
 		o.descriptionIsDirty ||
 		o.startDateIsDirty ||
@@ -1427,11 +1437,6 @@ func (o *projectBase) Get(key string) interface{} {
 	case "Milestones":
 		return o.Milestones()
 
-	case "TeamMember":
-		return o.TeamMember()
-	case "TeamMembers":
-		return o.TeamMembers()
-
 	case "ChildAsParent":
 		return o.ChildAsParent()
 	case "ChildrenAsParent":
@@ -1441,6 +1446,11 @@ func (o *projectBase) Get(key string) interface{} {
 		return o.ParentAsChild()
 	case "ParentsAsChild":
 		return o.ParentsAsChild()
+
+	case "TeamMember":
+		return o.TeamMember()
+	case "TeamMembers":
+		return o.TeamMembers()
 
 	}
 	return nil
@@ -1579,15 +1589,15 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oTeamMembers); err != nil {
-		return nil, err
-	}
-
 	if err := encoder.Encode(o.oChildrenAsParent); err != nil {
 		return nil, err
 	}
 
 	if err := encoder.Encode(o.oParentsAsChild); err != nil {
+		return nil, err
+	}
+
+	if err := encoder.Encode(o.oTeamMembers); err != nil {
 		return nil, err
 	}
 
@@ -1747,16 +1757,6 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		}
 	}
 
-	if err = dec.Decode(&o.oTeamMembers); err != nil {
-		return
-	}
-	if len(o.oTeamMembers) > 0 {
-		o.mTeamMembers = make(map[string]*Person)
-
-		for _, p := range o.oTeamMembers {
-			o.mTeamMembers[p.PrimaryKey()] = p
-		}
-	}
 	if err = dec.Decode(&o.oChildrenAsParent); err != nil {
 		return
 	}
@@ -1775,6 +1775,16 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 
 		for _, p := range o.oParentsAsChild {
 			o.mParentsAsChild[p.PrimaryKey()] = p
+		}
+	}
+	if err = dec.Decode(&o.oTeamMembers); err != nil {
+		return
+	}
+	if len(o.oTeamMembers) > 0 {
+		o.mTeamMembers = make(map[string]*Person)
+
+		for _, p := range o.oTeamMembers {
+			o.mTeamMembers[p.PrimaryKey()] = p
 		}
 	}
 
@@ -1875,14 +1885,14 @@ func (o *projectBase) MarshalJSON() (data []byte, err error) {
 		v["project"] = val
 	}
 
-	if val := o.TeamMembers(); val != nil {
-		v["teamMembers"] = val
-	}
 	if val := o.ChildrenAsParent(); val != nil {
 		v["childrenAsParent"] = val
 	}
 	if val := o.ParentsAsChild(); val != nil {
 		v["parentsAsChild"] = val
+	}
+	if val := o.TeamMembers(); val != nil {
+		v["teamMembers"] = val
 	}
 
 	return json.Marshal(v)
