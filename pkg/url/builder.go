@@ -27,7 +27,7 @@ func NewBuilderFromUrl(u url2.URL) *Builder {
 
 // SetValue sets the GET value in the URL
 func (u *Builder) SetValue(k string, v interface{}) *Builder {
-	value := fmt.Sprintf("%v", v)
+	value := fmt.Sprint(v)
 	u.values.Set(k, value)
 	return u
 }

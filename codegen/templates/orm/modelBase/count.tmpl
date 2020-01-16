@@ -1,8 +1,9 @@
+//count.tmpl
 for _,col := range t.Columns {
 {{
 
-func Count{{t.GoName}}By{{col.GoName}}(ctx context.Context, {{col.ModelName}} {{= col.ColumnType.GoType() }}) uint {
-	return query{{t.GoPlural}}(ctx).Where(Equal(node.{{t.GoName}}().{{col.GoName}}(), {{col.ModelName}})).Count(ctx, false)
+func Count{{t.GoName}}By{{col.GoName}}(ctx context.Context, {{= col.ModelName()}} {{= col.ColumnType.GoType() }}) uint {
+	return query{{t.GoPlural}}(ctx).Where(Equal(node.{{t.GoName}}().{{col.GoName}}(), {{= col.ModelName()}})).Count(ctx, false)
 }
 
 }}

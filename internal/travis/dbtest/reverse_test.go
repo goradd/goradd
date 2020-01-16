@@ -114,39 +114,6 @@ func TestUniqueReverse(t *testing.T) {
 	assert.Equal(t, "jdoe", person.Login().Username())
 }
 
-func TestReverseReferenceQueries(t *testing.T) {
-	// Test early binding
-	ctx := getContext()
-	people := model.QueryPeople(ctx).
-		Join(node.Person().ProjectsAsManager()).
-		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsManager().Name()).
-		Load(ctx)
-	person := people[2]
-	person.SetFirstName("test")
-	projects := person.ProjectsAsManager()
-	person2 := projects[0].Manager()
-	assert.Equal(t, "test", person2.FirstName())
-
-	// Test unique reverse reference
-	person = model.QueryPeople(ctx).
-		Join(node.Person().Login()).
-		Load(ctx)[0]
-
-	person.SetFirstName("test")
-	login := person.Login()
-	person2 = login.Person()
-	assert.Equal(t, "test", person2.FirstName())
-
-	// Test ManyMany
-	project := model.QueryProjects(ctx).
-		Join(node.Project().TeamMembers().ProjectsAsTeamMember()).
-		Load(ctx)[0]
-
-	project.SetName("test")
-	people = project.TeamMembers()
-	project2 := people[0].ProjectAsTeamMember()
-	assert.Equal(t, "test", project2.Name())
-}
 
 // TestReverseReferenceManySave is testing save and delete for a reverse reference that cannot be null.
 func TestReverseReferenceManySave(t *testing.T) {

@@ -371,7 +371,7 @@ func (o *DatabaseISliceMap) String() string {
 	s = "{"
 	o.Range(func(k string, v DatabaseI) bool {
 		s += `"` + k + `":"` +
-			fmt.Sprintf("%v", v) + `",`
+			fmt.Sprint(v) + `",`
 		return true
 	})
 	s = strings.TrimRight(s, ",")

@@ -138,33 +138,6 @@ func TestManyForward(t *testing.T) {
 
 }
 
-
-func TestForwardReferenceLookingBack(t *testing.T) {
-	ctx := getContext()
-	// Test forward reference looking back
-	project := model.QueryProjects(ctx).
-		Join(node.Project().Manager().ProjectsAsManager()).
-		Load(ctx)[0]
-
-	project.SetName("test")
-	person := project.Manager()
-	project2 := person.ProjectsAsManager()[0]
-	assert.Equal(t, "test", project2.Name())
-}
-
-func TestSingleExpansion(t *testing.T) {
-	ctx := getContext()
-	person := model.QueryPeople(ctx).
-		Join(node.Person().ProjectsAsManager().Manager()).
-		Expand(node.Person().ProjectsAsManager()).
-		Load(ctx)[0]
-	person.SetFirstName("test")
-	projects := person.ProjectsAsManager()
-	person2 := projects[0].Manager()
-	assert.Equal(t, "test", person2.FirstName())
-
-}
-
 func TestConditionalJoin(t *testing.T) {
 	ctx := getContext()
 
@@ -183,7 +156,7 @@ func TestConditionalJoin(t *testing.T) {
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsManager().Name()).
 		Load(ctx)
 
-	assert.Equal(t, "John", people[2].FirstName(), "John Does is the 3rd Person.")
+	assert.Equal(t, "John", people[2].FirstName(), "John Doe is the 3rd Person.")
 	assert.Len(t, people[2].ProjectsAsManager(), 1, "John Doe manages 1 Project.")
 	assert.Len(t, people[2].ProjectsAsManager()[0].Milestones(), 1, "John Doe has 1 Milestone")
 

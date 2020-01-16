@@ -4,7 +4,7 @@ if t.PrimaryKeyColumn() != nil {
 {{
 
 func (o *{{privateName}}Base) PrimaryKey() {{typ}} {
-	return o.{{= t.PrimaryKeyColumn().ModelName }}
+	return o.{{= t.PrimaryKeyColumn().ModelName() }}
 }
 }}
 }

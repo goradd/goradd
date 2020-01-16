@@ -145,7 +145,7 @@ func (t *Textbox) Text() string {
 
 // SetValue sets the text in the textbox. This satisfies the Valuer interface.
 func (t *Textbox) SetValue(v interface{}) page.ControlI {
-	s := fmt.Sprintf("%v", v)
+	s := fmt.Sprint(v)
 	t.this().SetText(s)
 	return t.this()
 }

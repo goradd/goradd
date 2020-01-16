@@ -2,7 +2,7 @@
 
 The code generator will generate an edit panel to provide a starting place for developing an edit screen.
 It will match the type of data in each database column with a control type that can be used to edit that
-particular type of data, and pouplate the edit panel with those controls. 
+particular type of data, and populate the edit panel with those controls. 
 There are a few ways to customize how this is done.
 
 ## The DefaultControlTypeFunc function

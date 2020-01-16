@@ -37,11 +37,11 @@ func (g GoColumnType) String() string {
 	case ColTypeDateTime:
 		return "ColTypeDateTime"
 	case ColTypeFloat:
-		return "ColTypeFloat" // always internally represent with max bits
+		return "ColTypeFloat"
 	case ColTypeDouble:
-		return "ColTypeDouble" // always internally represent with max bits
+		return "ColTypeDouble"
 	case ColTypeBool:
-		return "ColTypeBool" // always internally represent with max bits
+		return "ColTypeBool"
 	}
 	return ""
 }
@@ -70,7 +70,7 @@ func (g GoColumnType) GoType() string {
 	case ColTypeDouble:
 		return "float64" // always internally represent with max bits
 	case ColTypeBool:
-		return "bool" // always internally represent with max bits
+		return "bool"
 	}
 	return ""
 }

@@ -85,7 +85,7 @@ func (n *projectNode) ProjectStatusTypeID() *query.ColumnNode {
 	return cn
 }
 
-// ProjectStatusType represents the the link to the ProjectStatusType object.
+// ProjectStatusType represents the link to the ProjectStatusType object.
 func (n *projectNode) ProjectStatusType() *projectStatusTypeNode {
 	cn := &projectStatusTypeNode{
 		query.NewReferenceNode(
@@ -117,7 +117,7 @@ func (n *projectNode) ManagerID() *query.ColumnNode {
 	return cn
 }
 
-// Manager represents the the link to the Manager object.
+// Manager represents the link to the Manager object.
 func (n *projectNode) Manager() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(
@@ -219,24 +219,6 @@ func (n *projectNode) Spent() *query.ColumnNode {
 	return cn
 }
 
-// TeamMembers represents the many-to-many relationship formed by the team_member_project_assn table.
-func (n *projectNode) TeamMembers() *personNode {
-	cn := &personNode{
-		query.NewManyManyNode(
-			"goradd",
-			"team_member_project_assn",
-			"project_id",
-			"TeamMembers",
-			"person",
-			"team_member_id",
-			false,
-		),
-	}
-	query.SetParentNode(cn, n)
-	return cn
-
-}
-
 // ChildrenAsParent represents the many-to-many relationship formed by the related_project_assn table.
 func (n *projectNode) ChildrenAsParent() *projectNode {
 	cn := &projectNode{
@@ -265,6 +247,24 @@ func (n *projectNode) ParentsAsChild() *projectNode {
 			"ParentsAsChild",
 			"project",
 			"parent_id",
+			false,
+		),
+	}
+	query.SetParentNode(cn, n)
+	return cn
+
+}
+
+// TeamMembers represents the many-to-many relationship formed by the team_member_project_assn table.
+func (n *projectNode) TeamMembers() *personNode {
+	cn := &personNode{
+		query.NewManyManyNode(
+			"goradd",
+			"team_member_project_assn",
+			"project_id",
+			"TeamMembers",
+			"person",
+			"team_member_id",
 			false,
 		),
 	}

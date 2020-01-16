@@ -1,20 +1,20 @@
 //typeAccessors.tmpl
 
 for _,col := range t.Columns {
-	if !col.IsReference() || !col.ForeignKey.IsType {
+	if !col.IsType() {
 		continue
 	}
 
-	refFunc := col.ReferenceFunction(dd)
+	refFunc := col.ReferenceFunction()
 
 {{
 
 
 func (o *{{privateName}}Base) {{= refFunc }}() {{= col.ForeignKey.GoType }} {
-	if o._restored && !o.{{= col.ModelName }}IsValid {
-		panic ("{{= col.ModelName }} was not selected in the last query and so is not valid")
+	if o._restored && !o.{{= col.ModelName() }}IsValid {
+		panic ("{{= col.ModelName() }} was not selected in the last query and so is not valid")
 	}
-	return {{= col.ForeignKey.GoType }}(o.{{= col.ModelName }})
+	return {{= col.ForeignKey.GoType }}(o.{{= col.ModelName() }})
 }
 
 }}
@@ -23,7 +23,7 @@ func (o *{{privateName}}Base) {{= refFunc }}() {{= col.ForeignKey.GoType }} {
 {{
 
 func (o *{{privateName}}Base) {{= refFunc }}IsNull() bool {
-	return o.{{= col.ModelName }}IsNull
+	return o.{{= col.ModelName() }}IsNull
 }
 
 }}
@@ -35,18 +35,18 @@ func (o *{{privateName}}Base) {{= refFunc }}IsNull() bool {
 
 func (o *{{privateName}}Base) Set{{= refFunc }}(i interface{}) {
 	if i == nil {
-		if !o.{{= col.ModelName }}IsNull {
-			o.{{= col.ModelName }}IsNull = true
-			o.{{= col.ModelName }}IsDirty = true
-			o.{{= col.ModelName }}IsValid = true
-			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
+		if !o.{{= col.ModelName() }}IsNull {
+			o.{{= col.ModelName() }}IsNull = true
+			o.{{= col.ModelName() }}IsDirty = true
+			o.{{= col.ModelName() }}IsValid = true
+			o.{{= col.ModelName() }} = {{= col.DefaultValueAsValue() }}
 		}
 	} else {
 		v := i.({{= col.ColumnType.GoType() }})
-		if o.{{= col.ModelName }}IsNull  {
-			o.{{= col.ModelName }}IsNull = false
-			o.{{= col.ModelName }} = v
-			o.{{= col.ModelName }}IsDirty = true
+		if o.{{= col.ModelName() }}IsNull  {
+			o.{{= col.ModelName() }}IsNull = false
+			o.{{= col.ModelName() }} = v
+			o.{{= col.ModelName() }}IsDirty = true
 		}
 	}
 }
@@ -56,10 +56,10 @@ func (o *{{privateName}}Base) Set{{= refFunc }}(i interface{}) {
 {{
 
 func (o *{{privateName}}Base) Set{{= refFunc }}(v {{= col.ForeignKey.GoType }}) {
-	if o.{{= col.ModelName }} != {{= col.ColumnType.GoType() }}(v) {
-		o.{{= col.ModelName }} = {{= col.ColumnType.GoType() }}(v)
-		o.{{= col.ModelName }}IsDirty = true
-		o.{{= col.ModelName }}IsValid = true
+	if o.{{= col.ModelName() }} != {{= col.ColumnType.GoType() }}(v) {
+		o.{{= col.ModelName() }} = {{= col.ColumnType.GoType() }}(v)
+		o.{{= col.ModelName() }}IsDirty = true
+		o.{{= col.ModelName() }}IsValid = true
 	}
 }
 

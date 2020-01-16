@@ -53,7 +53,7 @@ func (c *Panel) Value() interface{} {
 
 // SetValue satisfies the Valuer interface and sets the text of the panel.
 func (c *Panel) SetValue(v interface{}) page.ControlI {
-	return c.SetText(fmt.Sprintf("%v", v))
+	return c.SetText(fmt.Sprint(v))
 }
 
 

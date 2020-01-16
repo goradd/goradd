@@ -101,7 +101,7 @@ func (t *SelectTable) DrawingAttributes(ctx context.Context) html.Attributes {
 
 func (t *SelectTable) UpdateFormValues(ctx *page.Context) {
 	if data := ctx.CustomControlValue(t.ID(), "selectedId"); data != nil {
-		t.selectedID = fmt.Sprintf("%v", data)
+		t.selectedID = fmt.Sprint(data)
 	}
 }
 

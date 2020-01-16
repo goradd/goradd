@@ -2,10 +2,8 @@
 {{
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
 // between the object chain requested by the user in the query.
-// If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
-// Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
-func (o *{{privateName}}Base) load (m map[string]interface{}, linkParent bool, objThis *{{t.GoName}}, objParent interface{}, parentKey string) {
+func (o *{{privateName}}Base) load (m map[string]interface{}, objThis *{{t.GoName}}, objParent interface{}, parentKey string) {
 }}
 
 for _, col := range t.Columns {
@@ -13,24 +11,24 @@ for _, col := range t.Columns {
 {{
 	if v, ok := m["{{= col.DbName }}"]; ok {
 		if v == nil {
-			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
-			o.{{= col.ModelName }}IsNull = true
-			o.{{= col.ModelName }}IsValid = true
-			o.{{= col.ModelName }}IsDirty = false
-		} else if o.{{= col.ModelName }}, ok = v.({{= col.ColumnType.GoType() }}); ok {
-			o.{{= col.ModelName }}IsNull = false
-			o.{{= col.ModelName }}IsValid = true
-			o.{{= col.ModelName }}IsDirty = false
+			o.{{= col.ModelName() }} = {{= col.DefaultValueAsValue() }}
+			o.{{= col.ModelName() }}IsNull = true
+			o.{{= col.ModelName() }}IsValid = true
+			o.{{= col.ModelName() }}IsDirty = false
+		} else if o.{{= col.ModelName() }}, ok = v.({{= col.ColumnType.GoType() }}); ok {
+			o.{{= col.ModelName() }}IsNull = false
+			o.{{= col.ModelName() }}IsValid = true
+			o.{{= col.ModelName() }}IsDirty = false
 {{if col.IsTimestamp}}
-            o.{{= col.ModelName }}.SetIsTimestamp(true)
+            o.{{= col.ModelName() }}.SetIsTimestamp(true)
 {{if}}
 		} else {
 			panic("Wrong type found for {{= col.DbName }}.")
 		}
 	} else {
-		o.{{= col.ModelName }}IsValid = false
-		o.{{= col.ModelName }}IsNull = true
-		o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
+		o.{{= col.ModelName() }}IsValid = false
+		o.{{= col.ModelName() }}IsNull = true
+		o.{{= col.ModelName() }} = {{= col.DefaultValueAsValue() }}
 	}
 }}
 
@@ -38,15 +36,15 @@ for _, col := range t.Columns {
 
 {{
 	if v, ok := m["{{= col.DbName }}"]; ok && v != nil {
-		if o.{{= col.ModelName }}, ok = v.({{= col.ColumnType.GoType() }}); ok {
-			o.{{= col.ModelName }}IsValid = true
-			o.{{= col.ModelName }}IsDirty = false
+		if o.{{= col.ModelName() }}, ok = v.({{= col.ColumnType.GoType() }}); ok {
+			o.{{= col.ModelName() }}IsValid = true
+			o.{{= col.ModelName() }}IsDirty = false
 		} else {
 			panic("Wrong type found for {{= col.DbName }}.")
 		}
 	} else {
-		o.{{= col.ModelName }}IsValid = false
-		o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
+		o.{{= col.ModelName() }}IsValid = false
+		o.{{= col.ModelName() }} = {{= col.DefaultValueAsValue() }}
 	}
 
 }}
@@ -54,20 +52,16 @@ for _, col := range t.Columns {
 
 	} // else
 
-	if col.IsReference() && !col.ForeignKey.IsType {
-		oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+	if col.IsReference() {
+		oName := col.ReferenceName()
 
 {{
-	if linkParent && parentKey == "{{= col.ForeignKey.GoName }}" {
-		o.{{oName}} = objParent.(*{{= col.ForeignKey.GoType }})
-		o.{{= col.ModelName }}IsValid = true
-		o.{{= col.ModelName }}IsDirty = false
-	} else if v, ok := m["{{= col.ForeignKey.GoName }}"]; ok {
+	if v, ok := m["{{= col.ForeignKey.GoName }}"]; ok {
 		if {{oName}}, ok2 := v.(map[string]interface{}); ok2 {
 			o.{{oName}} = new({{= col.ForeignKey.GoType }})
-			o.{{oName}}.load({{oName}}, linkParent, o.{{oName}}, objThis, "{{col.ForeignKey.RR.GoPlural}}")
-			o.{{= col.ModelName }}IsValid = true
-			o.{{= col.ModelName }}IsDirty = false
+			o.{{oName}}.load({{oName}}, o.{{oName}}, objThis, "{{col.ForeignKey.RR.GoPlural}}")
+			o.{{= col.ModelName() }}IsValid = true
+			o.{{= col.ModelName() }}IsDirty = false
 		} else {
 			panic("Wrong type found for {{oName}} object.")
 		}
@@ -106,7 +100,6 @@ for _,ref := range t.ManyManyReferences {
 }}
 	} else {
 		mName := "m" + ref.GoPlural
-		pk := dd.Table(ref.MM.AssociatedTableName).PrimaryKeyColumn().ModelName
 
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {
@@ -116,10 +109,7 @@ for _,ref := range t.ManyManyReferences {
 
 			for _,v2 := range {{oName}} {
 				obj := new({{= ref.AssociatedObjectName }})
-				obj.load(v2, linkParent, obj, objThis, "{{ref.MM.GoPlural}}")
-				if linkParent && parentKey == "{{= ref.GoPlural }}" && obj.{{pk}} == objParent.(*{{= ref.AssociatedObjectName }}).{{pk}} {
-					obj = objParent.(*{{= ref.AssociatedObjectName }})
-				}
+				obj.load(v2, obj, objThis, "{{ref.MM.GoPlural}}")
 				o.{{oName}} = append(o.{{oName}}, obj)
 				o.{{mName}}[obj.PrimaryKey()] = obj
 			}
@@ -144,7 +134,7 @@ for _,ref := range t.ReverseReferences {
 	if v, ok := m["{{= ref.GoName }}"]; ok {
 		if {{oName}}, ok2 := v.(db.ValueMap); ok2 {
 			o.{{oName}} = new({{= ref.GoType }})
-			o.{{oName}}.load({{oName}}, linkParent, o.{{oName}}, objThis, "{{parentName}}")
+			o.{{oName}}.load({{oName}}, o.{{oName}}, objThis, "{{parentName}}")
 			o.{{oName}}IsDirty = false
 		} else {
 			panic("Wrong type found for {{oName}} object.")
@@ -158,7 +148,6 @@ for _,ref := range t.ReverseReferences {
 
 	} else {
 		mName := ref.Values["mapName"]
-		pk := ref.AssociatedColumn.ModelName
 
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {
@@ -168,20 +157,14 @@ for _,ref := range t.ReverseReferences {
 			o.{{mName}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }},len({{oName}}))
 			for _,v2 := range {{oName}} {
 				obj := new({{= ref.GoType }})
-				obj.load(v2, linkParent, obj, objThis, "{{parentName}}")
-				if linkParent && parentKey == "{{= ref.GoPlural }}" && obj.{{pk}} == objParent.(*{{= ref.GoType }}).{{pk}} {
-					obj = objParent.(*{{= ref.GoType }})
-				}
+				obj.load(v2, obj, objThis, "{{parentName}}")
 				o.{{oName}} = append(o.{{oName}}, obj)
 				o.{{mName}}[obj.PrimaryKey()] = obj
 				o.{{oName}}IsDirty = false
 			}
 		case db.ValueMap:	// single expansion
 			obj := new({{= ref.GoType }})
-			obj.load({{oName}}, linkParent, obj, objThis, "{{parentName}}")
-			if linkParent && parentKey == "{{= ref.GoPlural }}" && obj.{{pk}} == objParent.(*{{= ref.GoType }}).{{pk}} {
-				obj = objParent.(*{{= ref.GoType }})
-			}
+			obj.load({{oName}}, obj, objThis, "{{parentName}}")
 			o.{{oName}} = []*{{= ref.GoType }}{obj}
 			o.{{oName}}IsDirty = false
 		default:

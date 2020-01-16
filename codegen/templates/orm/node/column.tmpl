@@ -30,7 +30,7 @@ func (n *{{privateName}}Node) {{= col.GoName }}() *query.ColumnNode {
 		}
 {{
 
-// {{= col.ForeignKey.GoName }} represents the the link to the {{= col.ForeignKey.GoName }} object.
+// {{= col.ForeignKey.GoName }} represents the link to the {{= col.ForeignKey.GoName }} object.
 func (n *{{privateName}}Node) {{= col.ForeignKey.GoName }}() *{{= strings2.LcFirst(objName) }}Node {
 	cn := &{{= strings2.LcFirst(objName) }}Node {
 		query.NewReferenceNode (

@@ -48,7 +48,7 @@ type SqlContext struct {
 	profiles []ProfileEntry
 }
 
-// SqlDb is a mixin to specific SQL database driver that implements common code needed by all SQL database drivers.
+// SqlDb is a mixin for SQL database drivers. It implements common code needed by all SQL database drivers.
 type SqlDb struct {
 	dbKey string  // key of the database as used in the global database map
 	db    *sql.DB // Internal copy of golang database
@@ -76,7 +76,7 @@ func NewSqlDb(dbKey string) SqlDb {
 }
 
 // Begin starts a transaction. You should immediately defer a Rollback using the returned transaction id.
-// If you Commit before the Rollback happens, no Rollback will occur.
+// If you Commit before the Rollback happens, no Rollback will occur. The Begin-Commit-Rollback pattern is nestable.
 func (s *SqlDb) Begin(ctx context.Context) (txid TransactionID) {
 	var c *SqlContext
 
@@ -131,7 +131,7 @@ func (s *SqlDb) Commit(ctx context.Context, txid TransactionID) {
 // Rollback will rollback the transaction if the transaction is still pointing to the given txid. This gives the effect
 // that if you call Rollback on a transaction that has already been committed, no Rollback will happen. This makes it easier
 // to implement a transaction management scheme, because you simply always defer a Rollback after a Begin. Pass the txid
-// that you got from the Begin to the Rollback
+// that you got from the Begin to the Rollback. To trigger a Rollback, simply panic.
 func (s *SqlDb) Rollback(ctx context.Context, txid TransactionID) {
 	var c *SqlContext
 	i := ctx.Value(goradd.SqlContext)
@@ -142,13 +142,12 @@ func (s *SqlDb) Rollback(ctx context.Context, txid TransactionID) {
 	}
 
 	if c.txCount == int(txid) {
-		c.txCount--
+		c.txCount = 0
+		c.tx = nil
+
 		err := c.tx.Rollback()
 		if err != nil {
 			panic(err.Error())
-		}
-		if c.txCount == 0 {
-			c.tx = nil
 		}
 	}
 }

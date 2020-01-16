@@ -17,8 +17,8 @@ type {{= cd.Connector }}  struct {
 func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if sRefresh != ""}}
     if ctrl, ok := i.(*{{= cd.Import}}.{{= cd.ControlType}}); ok {
-{{if col.IsReference() && col.ForeignKey.IsType}}
-        val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction(dd) }}().ID()
+{{if col.IsType() }}
+        val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction() }}().ID()
 {{else}}
         val := data.(*model.{{= t.GoName }}).{{= col.GoName }}()
 {{if}}
@@ -31,8 +31,8 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
    if ctrl, ok := i.(*{{= cd.Import}}.{{= cd.ControlType}}); ok {
         {{= sUpdate }}
-{{if col.IsReference() && col.ForeignKey.IsType}}
-        data.(*model.{{= t.GoName }}).Set{{= col.ReferenceFunction(dd) }}(model.{{= col.ForeignKey.GoType }}(val))
+{{if col.IsType()}}
+        data.(*model.{{= t.GoName }}).Set{{= col.ReferenceFunction() }}(model.{{= col.ForeignKey.GoType }}(val))
 {{else}}
         data.(*model.{{= t.GoName }}).Set{{= col.GoName }}(val)
 {{if}}

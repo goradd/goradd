@@ -11,20 +11,18 @@ for _,col := range t.Columns {
 
 {{
 {{if col.IsId}}
-	{{= col.ModelName }} string
+	{{= col.ModelName() }} string
 {{else}}
-	{{= col.ModelName }} {{= col.ColumnType.GoType() }}
+	{{= col.ModelName() }} {{= col.ColumnType.GoType() }}
 {{if}}
 {{if col.IsNullable}}
-	{{= col.ModelName }}IsNull bool
+	{{= col.ModelName() }}IsNull bool
 {{if}}
-	{{= col.ModelName }}IsValid bool
-	{{= col.ModelName }}IsDirty bool
-{{g if col.IsReference() && !col.ForeignKey.IsType {
-		oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
-}}
-	{{oName}} *{{= col.ForeignKey.GoType }}
-{{g } }}
+	{{= col.ModelName() }}IsValid bool
+	{{= col.ModelName() }}IsDirty bool
+{{if col.IsReference()}}
+	{{= col.ReferenceName() }} *{{= col.ForeignKey.GoType }}
+{{if}}
 
 }}
 
@@ -70,6 +68,8 @@ for _,ref := range t.ManyManyReferences {
 {{if !ref.IsTypeAssociation }}
 	m{{= ref.GoPlural }} map[string] *{{ref.AssociatedObjectName}}					  // Objects by PK
 {{if}}
+    {{dd.AssociatedObjectPrefix}}{{ref.GoPlural}}IsDirty bool
+
 }}
 } // for
 

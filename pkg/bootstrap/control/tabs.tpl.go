@@ -28,19 +28,19 @@ func (t *Tabs) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) 
 
 		buf.WriteString(`" id="`)
 
-		buf.WriteString(fmt.Sprintf("%v", child.ID()))
+		buf.WriteString(fmt.Sprint(child.ID()))
 
 		buf.WriteString(`_tab" data-toggle="tab" href="#`)
 
-		buf.WriteString(fmt.Sprintf("%v", child.ID()))
+		buf.WriteString(fmt.Sprint(child.ID()))
 
 		buf.WriteString(`" role="tab" aria-controls="`)
 
-		buf.WriteString(fmt.Sprintf("%v", child.ID()))
+		buf.WriteString(fmt.Sprint(child.ID()))
 
 		buf.WriteString(`" aria-selected="true">`)
 
-		buf.WriteString(fmt.Sprintf("%v", child.Text()))
+		buf.WriteString(fmt.Sprint(child.Text()))
 
 		buf.WriteString(`</a>
   </li>

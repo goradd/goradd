@@ -4,6 +4,7 @@ import (
 	sqldb "database/sql"
 	"fmt"
 	"github.com/go-sql-driver/mysql"
+	"github.com/goradd/goradd/pkg/reflect"
 	"strings"
 	//"goradd/orm/query"
 	"context"
@@ -512,7 +513,7 @@ func (m *Mysql5) generateLimitSql(b *sqlBuilder) (sql string) {
 	return
 }
 
-// Update sets a record that already exists in the database to the given data.
+// Update sets specific fields of a record that already exists in the database to the given data.
 func (m *Mysql5) Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue string) {
 	var sql = "UPDATE " + table + "\n"
 	var args []interface{}
@@ -549,8 +550,9 @@ func (m *Mysql5) Insert(ctx context.Context, table string, fields map[string]int
 	}
 }
 
+
 // Delete deletes the indicated record from the database.
-func (m *Mysql5) Delete(ctx context.Context, table string, pkName string, pkValue interface{}) {
+func (m *Mysql5) Delete(ctx context.Context, table string, pkName string, pkValue string) {
 	var sql = "DELETE FROM " + table + "\n"
 	var args []interface{}
 	sql += "WHERE " + pkName + " = ?"
@@ -560,6 +562,45 @@ func (m *Mysql5) Delete(ctx context.Context, table string, pkName string, pkValu
 		panic(e.Error())
 	}
 }
+
+// Associate sets up the many-many association pointing from the given table and column to another table and column.
+// table is the name of the association table.
+// column is the name of the column in the association table that contains the pk for the record we are associating.
+// pk is the value of the primary key.
+// relatedTable is the table the association is pointing to.
+// relatedColumn is the column in the association table that points to the relatedTable's pk.
+// relatedPks are the new primary keys in the relatedTable we are associating.
+func (m *Mysql5) Associate(ctx context.Context,
+	table string,
+	column string,
+	pk string,
+	relatedTable string,
+	relatedColumn string,
+	relatedPks interface{}) { //relatedPks must be a slice of items
+
+	// TODO: Could optimize by separating out what gets deleted, what gets added, and what stays the same.
+
+	// First delete all previous associations
+	var sql = "DELETE FROM " + table +  " WHERE " + column + "=?"
+	_, e := m.Exec(ctx, sql, pk)
+	if e != nil {
+		panic(e.Error())
+	}
+	if relatedPks == nil {
+		return
+	}
+
+	// Add new associations
+	for _,relatedPk := range reflect.InterfaceSlice(relatedPks) {
+		sql = "INSERT " + table +  " SET " + column + "=?, " + relatedColumn + "=?"
+		_, e = m.Exec(ctx, sql, pk, relatedPk)
+		if e != nil {
+			panic(e.Error())
+		}
+	}
+}
+
+
 
 func (m *Mysql5) makeSetSql(fields map[string]interface{}) (sql string, args []interface{}) {
 	if len(fields) == 0 {
