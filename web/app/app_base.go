@@ -376,10 +376,10 @@ func (a *Application) ServeRequest(w http.ResponseWriter, r *http.Request) {
 // you have registered through goradd forms or through the html directory.
 func RegisterStaticPath(path string, directory string) {
 	if path[0:1] != "/" {
-		log.Fatal("path must begin with a slash (must be a rooted path)")
+		log.Fatal("path " + path + " must begin with a slash (must be a rooted path)")
 	}
 	if directory[0:1] != "/" {
-		log.Fatal("directory must begin with a slash (must be a rooted path)")
+		log.Fatal("directory " + directory + " must begin with a slash (must be a rooted path)")
 	}
 
 
