@@ -2,7 +2,7 @@
 
 // Getters
 for _,col := range t.Columns {
-	if col.IsReference() && col.ForeignKey.IsType {
+	if col.IsType() {
 		continue
 	}
 
@@ -11,12 +11,12 @@ for _,col := range t.Columns {
 
 // {{= col.GoName }} returns the loaded value of {{= col.GoName }}.
 func (o *{{privateName}}Base) {{= col.GoName }}() string {
-	return fmt.Sprint(o.{{= col.ModelName }})
+	return fmt.Sprint(o.{{= col.ModelName() }})
 }
 
 // {{= col.GoName }}IsValid returns true if the value was loaded from the database or has been set.
 func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
-	return o._restored && o.{{= col.ModelName }}IsValid
+	return o._restored && o.{{= col.ModelName() }}IsValid
 }
 
 }}
@@ -25,15 +25,15 @@ func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
 {{
 
 func (o *{{privateName}}Base) {{= col.GoName }}() {{= col.ColumnType.GoType() }} {
-	if o._restored && !o.{{= col.ModelName }}IsValid {
-		panic ("{{= col.ModelName }} was not selected in the last query and so is not valid")
+	if o._restored && !o.{{= col.ModelName() }}IsValid {
+		panic ("{{= col.ModelName() }} was not selected in the last query and has not been set, and so is not valid")
 	}
-	return o.{{= col.ModelName }}
+	return o.{{= col.ModelName() }}
 }
 
 // {{= col.GoName }}IsValid returns true if the value was loaded from the database or has been set.
 func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
-	return o.{{= col.ModelName }}IsValid
+	return o.{{= col.ModelName() }}IsValid
 }
 
 }}
@@ -44,14 +44,14 @@ func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
 
 // {{= col.GoName }}IsNull returns true if the related database value is null.
 func (o *{{privateName}}Base) {{= col.GoName }}IsNull() bool {
-	return o.{{= col.ModelName }}IsNull
+	return o.{{= col.ModelName() }}IsNull
 }
 
 }}
 	}
 
 	if col.IsReference() {
-		oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+		oName := col.ReferenceName()
 
 {{
 
@@ -63,7 +63,7 @@ func (o *{{privateName}}Base) {{= col.ForeignKey.GoName }}() *{{= col.ForeignKey
 // Load{{= col.ForeignKey.GoName }} returns the related {{= col.ForeignKey.GoName }}. If it is not already loaded,
 // it will attempt to load it first.
 func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Context) *{{= col.ForeignKey.GoType }} {
-	if !o.{{= col.ModelName }}IsValid  {
+	if !o.{{= col.ModelName() }}IsValid  {
 		return nil
 	}
 
@@ -87,35 +87,35 @@ func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Conte
 	if col.IsNullable {
 		var oName string
 		if col.IsReference() {
-			oName = dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+			oName = col.ReferenceName()
 		}
 {{
 
 func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
-	o.{{= col.ModelName }}IsValid = true
+	o.{{= col.ModelName() }}IsValid = true
 	if i == nil {
-		if !o.{{= col.ModelName }}IsNull {
-			o.{{= col.ModelName }}IsNull = true
-			o.{{= col.ModelName }}IsDirty = true
-			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
-{{if col.IsReference() && !col.ForeignKey.IsType }}
+		if !o.{{= col.ModelName() }}IsNull {
+			o.{{= col.ModelName() }}IsNull = true
+			o.{{= col.ModelName() }}IsDirty = true
+			o.{{= col.ModelName() }} = {{= col.DefaultValueAsValue() }}
+{{if col.IsReference() }}
 			o.{{oName}} = nil
 {{if}}
 		}
 	} else {
 		v := i.({{= col.ColumnType.GoType() }})
-		if o.{{= col.ModelName }}IsNull ||
+		if o.{{= col.ModelName() }}IsNull ||
 		    !o._restored ||
-		    {{if col.ColumnType != query.ColTypeBytes }} o.{{= col.ModelName }} != v {{else}} !bytes.Equal(o.{{= col.ModelName }}, v) {{if}}{
+		    {{if col.ColumnType != query.ColTypeBytes }} o.{{= col.ModelName() }} != v {{else}} !bytes.Equal(o.{{= col.ModelName() }}, v) {{if}}{
 
-			o.{{= col.ModelName }}IsNull = false
+			o.{{= col.ModelName() }}IsNull = false
 {{if col.ColumnType != query.ColTypeBytes }}
-			o.{{= col.ModelName }} = v
+			o.{{= col.ModelName() }} = v
 {{else}}
-            o.{{= col.ModelName }} = append([]byte(nil), v...)
+            o.{{= col.ModelName() }} = append([]byte(nil), v...)
 {{if}}
-			o.{{= col.ModelName }}IsDirty = true
-{{if col.IsReference() && !col.ForeignKey.IsType }}
+			o.{{= col.ModelName() }}IsDirty = true
+{{if col.IsReference() }}
 			o.{{oName}} = nil
 {{if}}
 		}
@@ -124,26 +124,26 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 
 }}
 
-		if col.IsReference() && !col.ForeignKey.IsType {
-			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+		if col.IsReference() {
+			oName := col.ReferenceName()
 
 {{
 
 func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.ForeignKey.GoType }}) {
-	o.{{= col.ModelName }}IsValid = true
+	o.{{= col.ModelName() }}IsValid = true
 	if v == nil {
-		if !o.{{= col.ModelName }}IsNull || !o._restored {
-			o.{{= col.ModelName }}IsNull = true
-			o.{{= col.ModelName }}IsDirty = true
-			o.{{= col.ModelName }} = {{= col.DefaultValueAsValue() }}
+		if !o.{{= col.ModelName() }}IsNull || !o._restored {
+			o.{{= col.ModelName() }}IsNull = true
+			o.{{= col.ModelName() }}IsDirty = true
+			o.{{= col.ModelName() }} = {{= col.DefaultValueAsValue() }}
 			o.{{oName}} = nil
 		}
 	} else {
 		o.{{oName}}  = v
-		if o.{{= col.ModelName }}IsNull || !o._restored || o.{{= col.ModelName }} != v.PrimaryKey() {
-			o.{{= col.ModelName }}IsNull = false
-			o.{{= col.ModelName }} = v.PrimaryKey()
-			o.{{= col.ModelName }}IsDirty = true
+		if o.{{= col.ModelName() }}IsNull || !o._restored || o.{{= col.ModelName() }} != v.PrimaryKey() {
+			o.{{= col.ModelName() }}IsNull = false
+			o.{{= col.ModelName() }} = v.PrimaryKey()
+			o.{{= col.ModelName() }}IsDirty = true
 		}
 	}
 }
@@ -157,19 +157,17 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 {{
 // Set{{= col.GoName }} sets the value of {{= col.GoName }} in the object, to be saved later using the Save() function.
 func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.ColumnType.GoType() }}) {
-	o.{{= col.ModelName }}IsValid = true
+	o.{{= col.ModelName() }}IsValid = true
 {{g if col.ColumnType == query.ColTypeBytes { }}
-	o.{{= col.ModelName }} = v		// TODO: Copy bytes??
-	o.{{= col.ModelName }}IsDirty = true
+	o.{{= col.ModelName() }} = v		// TODO: Copy bytes??
+	o.{{= col.ModelName() }}IsDirty = true
 {{g } else { }}
-	if o.{{= col.ModelName }} != v || !o._restored {
-		o.{{= col.ModelName }} = v
-		o.{{= col.ModelName }}IsDirty = true
-{{g 	if col.IsReference() && !col.ForeignKey.IsType {
-			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
-}}
-		o.{{oName}} = nil
-{{g 	} }}
+	if o.{{= col.ModelName() }} != v || !o._restored {
+		o.{{= col.ModelName() }} = v
+		o.{{= col.ModelName() }}IsDirty = true
+{{if col.IsReference()}}
+		o.{{= col.ReferenceName() }} = nil
+{{if}}
 	}
 {{g } }}
 
@@ -178,8 +176,8 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.ColumnType.GoType()
 
 }}
 
-		if col.IsReference() && !col.ForeignKey.IsType {
-			oName := dd.AssociatedObjectPrefix + col.ForeignKey.GoName
+		if col.IsReference() {
+			oName := col.ReferenceName()
 
 {{
 // Set{{= col.ForeignKey.GoName }} sets the value of {{= col.ForeignKey.GoName }} in the object, to be saved later using the Save() function.
@@ -188,10 +186,10 @@ func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.Foreign
 		panic("Cannot set {{= col.ForeignKey.GoName }} to a null value.")
 	} else {
 		o.{{oName}} = v
-		o.{{= col.ModelName }}IsValid = true
-		if o.{{= col.ModelName }} != v.PrimaryKey() {
-			o.{{= col.ModelName }} = v.PrimaryKey()
-			o.{{= col.ModelName }}IsDirty = true
+		o.{{= col.ModelName() }}IsValid = true
+		if o.{{= col.ModelName() }} != v.PrimaryKey() {
+			o.{{= col.ModelName() }} = v.PrimaryKey()
+			o.{{= col.ModelName() }}IsDirty = true
 		}
 	}
 }

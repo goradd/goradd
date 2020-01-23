@@ -22,7 +22,7 @@ only need to do this once and it will work for all of your projects.
 to the new directory.
 
 ### Install Goradd
-1. Execute ```go get github.com/goradd/goradd```
+1. Execute ```go get -u github.com/goradd/goradd```
 1. Execute ```goradd install```
 
 You should now have a new directory in you current directory:

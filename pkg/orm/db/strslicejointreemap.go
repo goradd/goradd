@@ -371,7 +371,7 @@ func (o *joinTreeItemSliceMap) String() string {
 	s = "{"
 	o.Range(func(k string, v *joinTreeItem) bool {
 		s += `"` + k + `":"` +
-			fmt.Sprintf("%v", v) + `",`
+			fmt.Sprint(v) + `",`
 		return true
 	})
 	s = strings.TrimRight(s, ",")

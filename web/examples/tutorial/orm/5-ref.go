@@ -24,11 +24,12 @@ func (p *RefPanel) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
 }
 
+
 func init() {
 	page.RegisterControl(&RefPanel{})
 
 	dir := sys.SourceDirectory()
-	tutorial.RegisterTutorialPage("orm", 3, "ref", "References", NewRefPanel,
+	tutorial.RegisterTutorialPage("orm", 5, "ref", "References", NewRefPanel,
 		[]string {
 			sys.SourcePath(),
 			filepath.Join(dir, "5-ref.tpl.got"),

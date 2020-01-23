@@ -64,7 +64,7 @@ func (n *milestoneNode) ProjectID() *query.ColumnNode {
 	return cn
 }
 
-// Project represents the the link to the Project object.
+// Project represents the link to the Project object.
 func (n *milestoneNode) Project() *projectNode {
 	cn := &projectNode{
 		query.NewReferenceNode(

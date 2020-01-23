@@ -11,27 +11,17 @@ func (o *{{privateName}}Base) Get(key string) interface{} {
     switch key {
 }}
 for _,col := range t.Columns {
-    var goName string
-
-	if col.IsReference() {
-	    if col.ForeignKey.IsType {
-	        goName = col.GoName
-	    } else {
-	    	goName = col.GoName
-	    }
-	} else {
-	    goName = col.GoName
-	}
+    goName := col.GoName
 
 {{
     case "{{= goName }}":
-        if !o.{{= col.ModelName }}IsValid {
+        if !o.{{= col.ModelName() }}IsValid {
             return nil
         }
-        return o.{{= col.ModelName }}
+        return o.{{= col.ModelName() }}
 
 }}
-	if col.IsReference() {
+	if col.IsReference() || col.IsType() {
 {{
     case "{{= col.ForeignKey.GoName }}":
         return o.{{= col.ForeignKey.GoName }}()
@@ -62,8 +52,6 @@ for _,ref := range t.ReverseReferences {
 
 for _,ref := range t.ManyManyReferences {
 {{
-    case "{{= ref.GoName }}":
-        return o.{{= ref.GoName }}()
     case "{{= ref.GoPlural }}":
         return o.{{= ref.GoPlural }}()
 

@@ -41,8 +41,8 @@ func (p ProjectStatusType) ID() string {
 	return strconv.Itoa(int(p))
 }
 
-// ProjectStatusTypes returns a slice of all the ProjectStatusType items
-func ProjectStatusTypes() (values []ProjectStatusType) {
+// AllProjectStatusTypes returns a slice of all the ProjectStatusType items
+func AllProjectStatusTypes() (values []ProjectStatusType) {
     values = append(values, 1)
     values = append(values, 2)
     values = append(values, 3)
@@ -50,8 +50,8 @@ func ProjectStatusTypes() (values []ProjectStatusType) {
     return
 }
 
-// ProjectStatusTypesI returns a slice of interfaces that contains all the ProjectStatusType items
-func ProjectStatusTypesI() (values []interface{}) {
+// AllProjectStatusTypesI returns a slice of interfaces that contains all the ProjectStatusType items
+func AllProjectStatusTypesI() (values []interface{}) {
     values = make([]interface{}, 4, 4)
     values[0] = ProjectStatusType(1)
     values[1] = ProjectStatusType(2)
@@ -59,7 +59,6 @@ func ProjectStatusTypesI() (values []interface{}) {
     values[3] = ProjectStatusType(4)
     return
 }
-
 
 // Label returns the string that will be displayed to a user for this item. Together with
 // the Value function, it satisfies the ItemLister interface that makes it easy

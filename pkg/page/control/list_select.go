@@ -112,7 +112,7 @@ func (l *SelectList) Value() interface{} {
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
 func (l *SelectList) SetValue(v interface{}) {
-	l.SetSelectedValue(fmt.Sprintf("%v", v))
+	l.SetSelectedValue(fmt.Sprint(v))
 }
 
 // IntValue returns the select value as an integer.

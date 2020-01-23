@@ -171,7 +171,7 @@ func opReplacer(op string, v float64) func(string) string {
 		}
 
 		// floating point operations sometimes are not accurate. This is an attempt to correct epsilons.
-		return fmt.Sprintf("%v", roundFloat(newVal, 6))
+		return fmt.Sprint(roundFloat(newVal, 6))
 
 	}
 }
@@ -257,7 +257,7 @@ func StyleString(i interface{}) string {
 	case fmt.Stringer:
 		sValue = v.String()
 	default:
-		sValue = fmt.Sprintf("%v", v)
+		sValue = fmt.Sprint(v)
 	}
 	return sValue
 }

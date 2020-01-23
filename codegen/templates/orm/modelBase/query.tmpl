@@ -63,7 +63,7 @@ func (b *{{builderName}}) Load(ctx context.Context) ({{t.LcGoName}}Slice []*{{t.
 	}
 	for _,item := range results {
 		o := new({{t.GoName}})
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		{{t.LcGoName}}Slice = append({{t.LcGoName}}Slice, o)
 	}
 	return {{t.LcGoName}}Slice
@@ -79,7 +79,7 @@ func (b *{{builderName}}) LoadI(ctx context.Context) ({{t.LcGoName}}Slice []inte
 	}
 	for _,item := range results {
 		o := new({{t.GoName}})
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		{{t.LcGoName}}Slice = append({{t.LcGoName}}Slice, o)
 	}
 	return {{t.LcGoName}}Slice

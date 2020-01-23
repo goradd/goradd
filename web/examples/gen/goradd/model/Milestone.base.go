@@ -91,7 +91,7 @@ func (o *milestoneBase) IDIsValid() bool {
 
 func (o *milestoneBase) ProjectID() string {
 	if o._restored && !o.projectIDIsValid {
-		panic("projectID was not selected in the last query and so is not valid")
+		panic("projectID was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.projectID
 }
@@ -147,7 +147,7 @@ func (o *milestoneBase) SetProject(v *Project) {
 
 func (o *milestoneBase) Name() string {
 	if o._restored && !o.nameIsValid {
-		panic("name was not selected in the last query and so is not valid")
+		panic("name was not selected in the last query and has not been set, and so is not valid")
 	}
 	return o.name
 }
@@ -210,7 +210,7 @@ func (b *MilestonesBuilder) Load(ctx context.Context) (milestoneSlice []*Milesto
 	}
 	for _, item := range results {
 		o := new(Milestone)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		milestoneSlice = append(milestoneSlice, o)
 	}
 	return milestoneSlice
@@ -226,7 +226,7 @@ func (b *MilestonesBuilder) LoadI(ctx context.Context) (milestoneSlice []interfa
 	}
 	for _, item := range results {
 		o := new(Milestone)
-		o.load(item, !b.hasConditionalJoins, o, nil, "")
+		o.load(item, o, nil, "")
 		milestoneSlice = append(milestoneSlice, o)
 	}
 	return milestoneSlice
@@ -365,10 +365,8 @@ func CountMilestoneByName(ctx context.Context, name string) uint {
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
 // between the object chain requested by the user in the query.
-// If linkParent is true we will have child relationships use a pointer back to the parent object. If false, it will create a separate object.
 // Care must be taken in the query, as Select clauses might not be honored if the child object has fields selected which the parent object does not have.
-// Also, if any joins are conditional, that might affect which child objects are included, so in this situation, linkParent should be false
-func (o *milestoneBase) load(m map[string]interface{}, linkParent bool, objThis *Milestone, objParent interface{}, parentKey string) {
+func (o *milestoneBase) load(m map[string]interface{}, objThis *Milestone, objParent interface{}, parentKey string) {
 	if v, ok := m["id"]; ok && v != nil {
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
@@ -393,14 +391,10 @@ func (o *milestoneBase) load(m map[string]interface{}, linkParent bool, objThis 
 		o.projectID = ""
 	}
 
-	if linkParent && parentKey == "Project" {
-		o.oProject = objParent.(*Project)
-		o.projectIDIsValid = true
-		o.projectIDIsDirty = false
-	} else if v, ok := m["Project"]; ok {
+	if v, ok := m["Project"]; ok {
 		if oProject, ok2 := v.(map[string]interface{}); ok2 {
 			o.oProject = new(Project)
-			o.oProject.load(oProject, linkParent, o.oProject, objThis, "Milestones")
+			o.oProject.load(oProject, o.oProject, objThis, "Milestones")
 			o.projectIDIsValid = true
 			o.projectIDIsDirty = false
 		} else {
@@ -432,48 +426,62 @@ func (o *milestoneBase) load(m map[string]interface{}, linkParent bool, objThis 
 // If it has any auto-generated ids, those will be updated.
 func (o *milestoneBase) Save(ctx context.Context) {
 	if o._restored {
-		if !o.IsDirty() {
-			return
-		}
-		o.Update(ctx)
+		o.update(ctx)
 	} else {
-		o.Insert(ctx)
+		o.insert(ctx)
 	}
 }
 
-// Update will update the values in the database, saving any changed values.
-func (o *milestoneBase) Update(ctx context.Context) {
-	if !o._restored {
-		panic("Cannot update a record that was not originally read from the database.")
-	}
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
-	d.Update(ctx, "milestone", m, "id", fmt.Sprint(o.id))
+// update will update the values in the database, saving any changed values.
+func (o *milestoneBase) update(ctx context.Context) {
+	var modifiedFields map[string]interface{}
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
 
-	d.Commit(ctx, txid)
+		if o.oProject != nil {
+			o.oProject.Save(ctx)
+			id := o.oProject.PrimaryKey()
+			o.SetProjectID(id)
+		}
+
+		if !o._restored {
+			panic("Cannot update a record that was not originally read from the database.")
+		}
+
+		modifiedFields = o.getModifiedFields()
+		if len(modifiedFields) != 0 {
+			d.Update(ctx, "milestone", modifiedFields, "id", fmt.Sprint(o.id))
+		}
+
+	}) // transaction
 	o.resetDirtyStatus()
-	broadcast.Update(ctx, "goradd", "milestone", fmt.Sprintf("%v", o.id), stringmap.SortedKeys(m)...)
+	if len(modifiedFields) != 0 {
+		broadcast.Update(ctx, "goradd", "milestone", fmt.Sprint(o.id), stringmap.SortedKeys(modifiedFields)...)
+	}
 }
 
-// Insert forces the object to be inserted into the database. If the object was loaded from the database originally,
-// this will create a duplicate in the database.
-func (o *milestoneBase) Insert(ctx context.Context) {
-	m := o.getModifiedFields()
-	if len(m) == 0 {
-		return
-	}
-	d := db.GetDatabase("goradd")
-	txid := d.Begin(ctx)
-	defer d.Rollback(ctx, txid)
+// insert will insert the item into the database. Related items will be saved.
+func (o *milestoneBase) insert(ctx context.Context) {
+	d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+		if o.oProject != nil {
+			o.oProject.Save(ctx)
+			o.SetProject(o.oProject)
+		}
 
-	id := d.Insert(ctx, "milestone", m)
-	o.id = id
-	d.Commit(ctx, txid)
+		if !o.projectIDIsValid {
+			panic("a value for ProjectID is required, and there is no default value. Call SetProjectID() before inserting the record.")
+		}
+
+		if !o.nameIsValid {
+			panic("a value for Name is required, and there is no default value. Call SetName() before inserting the record.")
+		}
+		m := o.getValidFields()
+
+		id := d.Insert(ctx, "milestone", m)
+		o.id = id
+
+	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
 	broadcast.Insert(ctx, "goradd", "milestone", fmt.Sprint(o.id))
@@ -484,15 +492,23 @@ func (o *milestoneBase) getModifiedFields() (fields map[string]interface{}) {
 	if o.idIsDirty {
 		fields["id"] = o.id
 	}
-
 	if o.projectIDIsDirty {
 		fields["project_id"] = o.projectID
 	}
-
 	if o.nameIsDirty {
 		fields["name"] = o.name
 	}
+	return
+}
 
+func (o *milestoneBase) getValidFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+	if o.projectIDIsValid {
+		fields["project_id"] = o.projectID
+	}
+	if o.nameIsValid {
+		fields["name"] = o.name
+	}
 	return
 }
 
@@ -501,9 +517,9 @@ func (o *milestoneBase) Delete(ctx context.Context) {
 	if !o._restored {
 		panic("Cannot delete a record that has no primary key value.")
 	}
-	d := db.GetDatabase("goradd")
+	d := Database()
 	d.Delete(ctx, "milestone", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "milestone", fmt.Sprintf("%v", o.id))
+	broadcast.Delete(ctx, "goradd", "milestone", fmt.Sprint(o.id))
 }
 
 // deleteMilestone deletes the associated record from the database.
@@ -522,7 +538,7 @@ func (o *milestoneBase) resetDirtyStatus() {
 
 func (o *milestoneBase) IsDirty() bool {
 	return o.idIsDirty ||
-		o.projectIDIsDirty ||
+		o.projectIDIsDirty || (o.oProject != nil && o.oProject.IsDirty()) ||
 		o.nameIsDirty
 }
 
@@ -558,7 +574,7 @@ func (o *milestoneBase) Get(key string) interface{} {
 }
 
 // MarshalBinary serializes the object into a buffer that is deserializable using UnmarshalBinary.
-// It should be used for transmitting database object over the wire, or for temporary storage. It does not send
+// It should be used for transmitting database objects over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
 func (o *milestoneBase) MarshalBinary() ([]byte, error) {

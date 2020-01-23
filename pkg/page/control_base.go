@@ -693,7 +693,7 @@ func (c *ControlBase) SetDataAttribute(name string, val interface{}) {
 	var ok bool
 
 	if v, ok = val.(string); !ok {
-		v = fmt.Sprintf("%v", v)
+		v = fmt.Sprint(v)
 	}
 
 	changed, err := c.attributes.SetDataAttributeChanged(name, v)

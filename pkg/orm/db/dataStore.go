@@ -39,7 +39,16 @@ type DatabaseI interface {
 	// The fields value should include all the required values in the database.
 	Insert(ctx context.Context, table string, fields map[string]interface{}) string
 	// Delete will delete the given record from the database
-	Delete(ctx context.Context, table string, pkName string, pkValue interface{})
+	Delete(ctx context.Context, table string, pkName string, pkValue string)
+	// Associate sets a many-many relationship to the given values.
+	// The values are taken from the ORM, and are treated differently depending on whether this is a SQL or NoSQL database.
+	Associate(ctx context.Context,
+		table string,
+		column string,
+		pk string,
+		relatedTable string,
+		relatedColumn string,
+		relatedPks interface{})
 
 	// Begin will begin a transaction in the database and return the transaction id
 	Begin(ctx context.Context) TransactionID

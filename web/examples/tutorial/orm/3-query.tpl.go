@@ -14,7 +14,7 @@ import (
 func (ctrl *QueryPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Querying the Database Using a QueryBuilder</h1>
+<h1>Using a QueryBuilder and Nodes</h1>
 
 <p>In the previous example, you saw how to load a single object using model.Load* functions.
  In this example you will learn how to query for an array of objects using a <strong>QueryBuilder</strong>.</p>
@@ -23,6 +23,24 @@ func (ctrl *QueryPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 you would make a call to model.QueryPeople(). If you stop there, you will be selecting all of the People in the
 Person database.</p>
 
+<h3>All People</h3>
+<p>
+`)
+	for _, person := range model.QueryPeople(ctx).Load(ctx) {
+		buf.WriteString(`<div>`)
+
+		buf.WriteString(person.FirstName())
+
+		buf.WriteString(` `)
+
+		buf.WriteString(person.LastName())
+
+		buf.WriteString(`</div>
+`)
+	}
+
+	buf.WriteString(`</p>
+<h2>Refining Queries with Statements and Nodes</h2>
 <p>You can further refine your query by adding the following functions to the QueryBuilder returned by the Query* functions.
 A brief description is given below, and further examples for some of them can be found in later pages.
 </p>

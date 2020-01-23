@@ -17,8 +17,8 @@ for _,col := range t.Columns {
 {{if col.IsNullable}}
         items = control.NoSelectionItemList()
 {{else}}
-    {{if col.IsReference() && col.ForeignKey.IsType}}
-        if int(p.{{= t.GoName }}.{{= col.ReferenceFunction(dd) }}()) == 0 {
+    {{if col.IsType() }}
+        if int(p.{{= t.GoName }}.{{= col.ReferenceFunction() }}()) == 0 {
     {{else}}
         if p.{{= t.GoName }}.{{= col.GoName }}() == {{= col.ColumnType.DefaultValue() }} {
     {{if}}
