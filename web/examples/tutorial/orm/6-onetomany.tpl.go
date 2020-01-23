@@ -21,6 +21,7 @@ you load a single record from the "one" side of the relationship, and a slice of
 </p>
 <p>
 In the example below, we load person 3 from the database, and then examine the addresses associated with that person.
+Be sure to click on the View Source button above to see the source code.
 `)
 	person := model.LoadPerson(ctx, "3")
 	addresses := person.LoadAddresses(ctx)
@@ -54,10 +55,6 @@ In the example below, we load person 3 from the database, and then examine the a
 	buf.WriteString(`</p>
 
 <h2>Creating One-to-Many Linked Records</h2>
-<p>
-When saving linked records, you need to take some care in the order you do things, and also make sure that if you
-are making changes to more than one record in the linked chain, you enclose the save in a transaction.
-</p>
 <p>
 One way to create linked records is to save a record, get its ID, and then set the foreign key in the other record to this value.
 You will need to enclose the process in a transaction so that you know that the multiple steps of the save will be sure to complete.
