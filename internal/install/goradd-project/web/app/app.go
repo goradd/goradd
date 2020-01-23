@@ -145,6 +145,7 @@ func (a *Application) RunWebServer() (err error) {
 	} else {
 		// TODO: Make a way so that we will automatically redirect to https if specified to do so
 		// I think its a simple matter of providing a mux just for this purpose
+		fmt.Printf("\nListening on port %d...\n", config.Port)
 		err = app.ListenAndServeWithTimeouts(fmt.Sprint(":", config.Port), mux)
 	}
 

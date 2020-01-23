@@ -16,10 +16,10 @@ import (
 	// _ "mysite"
 )
 
-var port = flag.Int("port", 0, "Serve as a webserver from the given port. Default = 8000.")
-var tlsPort = flag.Int("tlsPort", 0, "Serve securely from the given port.")
-var wsPort = flag.Int("wsPort", 0, "Serve the websocket from given port.")
-var wsTlsPort = flag.Int("wsTlsPort", 0, "Serve securely the websocket from the given port.")
+var port = flag.Int("port", -1, "Serve as a webserver from the given port. Default = 8000.")
+var tlsPort = flag.Int("tlsPort", -1, "Serve securely from the given port.")
+var wsPort = flag.Int("wsPort", -1, "Serve the websocket from given port.")
+var wsTlsPort = flag.Int("wsTlsPort", -1, "Serve securely the websocket from the given port.")
 var tlsKeyFile = flag.String("keyFile", "", "Path to key file for tls.")
 var tlsCertFile = flag.String("certFile", "", "Path to cert file for tls.")
 var wsKeyFile = flag.String("wsKeyFile", "", "Path to key file for websocket.")
@@ -62,19 +62,19 @@ func useFlags() {
 		config.UseFCGI = true
 	}
 
-	if *port != 0 {
+	if *port != -1 {
 		config.Port = *port
 	}
 
-	if *tlsPort != 0 {
+	if *tlsPort != -1 {
 		config.TLSPort = *tlsPort
 	}
 
-	if *wsPort != 0 {
+	if *wsPort != -1 {
 		config.WebSocketPort = *wsPort
 	}
 
-	if *wsTlsPort != 0 {
+	if *wsTlsPort != -1 {
 		config.WebSocketTLSPort = *wsTlsPort
 	}
 
