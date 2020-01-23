@@ -27,11 +27,13 @@
     is deleted. Usually, you will want one of two behaviors:
     <ol>
     <li>Set the reference to NULL, or</li>
-    <li>Delete this record as well</li>
+    <li>Delete this record</li>
     </ol>
-    Goradd will look at whether the foreign key is allowed to be NULL to determine which to do.
-    If the foreign key can be NULL, then it will be set the foreign key to NULL when the record on the other side of the relationship is deleted.
-    Otherwise, it will also delete the record with the foreign key. You can override this behavior, but that is what happens by default.
+    Goradd will look at what direction you have given in the constraint for the foreign key to determine what to do.
+    If the constraint is specified to Set Null on Delete, then it will set the foreign key to NULL when the record
+    on the other side of the relationship is deleted.
+    If it is directed to Cascade on Delete, it will delete any records pointing to it with a foreign key.
+    You can override this behavior, but that is what happens by default.
 </p>
 
 <h2>Loading Referenced Records</h2>

@@ -149,23 +149,57 @@ built in to the Save() process in this situation.
 	buf.WriteString(`</p>
 <h2>Updating One-to-Many Linked Records</h2>
 <p>
-    To modify a linked record, simply call the appropriate Set* function, and then call Save(). Be aware
-    that if you change the link to point to a new record, the old record may still exist. It will depend on whether
-    you are changing the link from the "one" side or "many" side, and whether a NULL value is allowed in the foreign key field.
+    To modify a linked record, simply call the appropriate Set* function, and then call Save().
 </p>
 `)
-	address1.Person().SetFirstName("Bob")
-	address1.Save(ctx)
+	address1.Person().SetFirstName("Bob") // Here we change a name in the person
+	address1.Save(ctx)                    // Note that even though we are saving the address, it will also call Save on all the linked objects, including the Person.
 
 	linkedPerson := model.LoadPerson(ctx, address1.PersonID())
 
 	buf.WriteString(`<p>
-    Changed linked person name to `)
+`)
+
+	buf.WriteString(`    The linked person&#39;s name was changed to `)
 
 	buf.WriteString(linkedPerson.FirstName())
 
 	buf.WriteString(`
+`)
+
+	buf.WriteString(`
 </p>
+<p>
+    You can also change the link to point to a new record. However, be aware that the old linked record may still exist.
+    This will depend on whether
+        you are changing the link from the "one" side or "many" side, how you set up the foreign key, and whether a NULL value
+        is allowed in the foreign key field.
+</p>
+`)
+	address3 := model.NewAddress()
+	address3.SetStreet("Main Street")
+	address3.SetCity("San Diego")
+	linkedPerson.SetAddresses([]*model.Address{address3})
+	linkedPerson.Save(ctx) // this will save the new address and join it to the linked person in one step.
+	// And, since the address's Person constraint is set to CASCADE on DELETE, the old addresses will be deleted
+
+	buf.WriteString(`<p>
+`)
+
+	buf.WriteString(`    The linked person&#39;s address was changed to `)
+
+	buf.WriteString(linkedPerson.Addresses()[0].Street())
+
+	buf.WriteString(`, `)
+
+	buf.WriteString(linkedPerson.Addresses()[0].City())
+
+	buf.WriteString(`
+`)
+
+	buf.WriteString(`
+</p>
+
 
 `)
 	// Cleanup by deleting whatever we created above
