@@ -196,27 +196,23 @@ func (d *Modal) RemoveAllButtons() {
 	d.Refresh()
 }
 
-func (d *Modal) SetButtonVisible(id string, visible bool) ModalI {
+func (d *Modal) SetButtonVisible(id string, visible bool) {
 	if ctrl := d.buttonBar.Child(d.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetVisible(visible)
 	}
-
-	return d.this()
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (d *Modal) SetButtonStyle(id string, a html.Style) ModalI {
+func (d *Modal) SetButtonStyle(id string, a html.Style) {
 	if ctrl := d.buttonBar.Child(d.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetStyles(a)
 	}
-	return d.this()
 }
 
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog (by hiding it).
-func (d *Modal) AddCloseButton(label string) ModalI {
-	d.AddButton(label, "", &control.DialogButtonOptions{IsClose: true})
-	return d.this()
+func (d *Modal) AddCloseButton(label string, id string) {
+	d.AddButton(label, id, &control.DialogButtonOptions{IsClose: true})
 }
 
 func (d *Modal) PrivateAction(ctx context.Context, a page.ActionParams) {
@@ -283,10 +279,10 @@ func BootstrapAlert(form page.FormI, id string, message string, buttons interfac
 	if buttons != nil {
 		switch b := buttons.(type) {
 		case string:
-			dlg.AddCloseButton(b)
+			dlg.AddCloseButton(b, "")
 		case []string:
 			if len(b) == 1 {
-				dlg.AddCloseButton(b[0])
+				dlg.AddCloseButton(b[0], "")
 			} else {
 				dlg.AddButton(b[0], "", &control.DialogButtonOptions{Options: map[string]interface{}{"style": ButtonStylePrimary}})
 				for _, l := range b[1:] {
@@ -316,6 +312,9 @@ func NewTitleBar(parent page.ControlI, id string) *TitleBar {
 
 func init() {
 	control.SetAlertFunction(BootstrapAlert)
+	control.SetNewDialogFunction(func(form page.FormI, id string) control.DialogI {
+		return NewModal(form, id)
+	})
 	page.RegisterControl(&Modal{})
 	page.RegisterControl(&TitleBar{})
 }
