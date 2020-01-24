@@ -65,7 +65,7 @@ func defaultLocalPathMaker(p string) string {
 	if p[len(p)-1:] == "/" {
 		hasSlash = true
 	}
-	if p[0:1] == "/" {
+	if p[0:1] == "/" && ProxyPath != "" {
 		p = path.Join(ProxyPath, p) // will strip trailing slashes
 		if hasSlash {
 			p = p + "/"

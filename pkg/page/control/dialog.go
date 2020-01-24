@@ -57,6 +57,10 @@ type DialogI interface {
 	SetDialogStyle(state DialogStyle)
 	Show()
 	Hide()
+	AddButton(label string, id string, options *DialogButtonOptions)
+	AddCloseButton(label string, id string)
+	SetButtonVisible(id string, visible bool)
+	SetButtonStyle(id string, a html.Style)
 }
 
 // A Dialog is a control the pops up in front of everything on a page, with an overlay as its background. It usually
@@ -242,12 +246,12 @@ func (d *Dialog) RemoveAllButtons() {
 func (d *Dialog) SetButtonVisible(id string, visible bool) {
 	bb := d.ButtonBar()
 	if ctrl := bb.Child(id); ctrl != nil {
-		ctrl.SetVisible(false)
+		ctrl.SetVisible(visible)
 	}
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (d *Dialog) SetButtonStyles(id string, a html.Style) {
+func (d *Dialog) SetButtonStyle(id string, a html.Style) {
 	bb := d.ButtonBar()
 	if ctrl := bb.Child(id); ctrl != nil {
 		ctrl.SetStyles(a)
@@ -434,6 +438,23 @@ func SetAlertFunction(f AlertFuncType) {
 	alertFunc = f
 }
 
+// NewDialogI creates a new dialog in a css framework independent way, by returning a DialogI interface.
+// Call SetNewDialogFunction() to set the function that controls how dialogs are created throughout the framework.
+func NewDialogI(form page.FormI, id string) DialogI {
+	return newDialogFunc(form, id)
+}
+
+type DialogIFuncType func(form page.FormI, id string) DialogI
+
+var newDialogFunc DialogIFuncType = defaultNewDialogFunc // default to our built in one
+
+func defaultNewDialogFunc(form page.FormI, id string) DialogI {
+	return NewDialog(form, id)
+}
+
+func SetNewDialogFunction(f DialogIFuncType ) {
+	newDialogFunc = f
+}
 
 func init() {
 	page.RegisterControl(&Dialog{})

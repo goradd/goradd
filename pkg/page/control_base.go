@@ -526,7 +526,7 @@ func (c *ControlBase) DrawTag(ctx context.Context) string {
 	// TODO: Implement this with a buffer to reduce string allocations
 	var ctrl string
 
-	log.FrameworkDebug("Drawing control: " + c.ID())
+	log.FrameworkDebug("Drawing tag: " + c.ID())
 
 	attributes := c.this().DrawingAttributes(ctx)
 
@@ -541,7 +541,9 @@ func (c *ControlBase) DrawTag(ctx context.Context) string {
 		if err := c.RenderAutoControls(ctx, buf); err != nil {
 			panic(err)
 		}
-		if c.hasNoSpace {
+		if c.Tag == "" {
+			ctrl = buf.String() // a wrapper with no tag. Just inserts functionality and draws its children.
+		} else if c.hasNoSpace {
 			ctrl = html.RenderTagNoSpace(c.Tag, attributes, buf.String())
 
 		} else {
