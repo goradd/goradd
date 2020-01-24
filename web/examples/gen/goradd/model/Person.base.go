@@ -783,12 +783,13 @@ func (o *personBase) update(ctx context.Context) {
 			}
 		}
 		if o.oLoginIsDirty {
+
+			// Since the other side of the relationship cannot be null, the object to be detached must be deleted
 			obj := QueryLogins(ctx).
 				Where(op.Equal(node.Login().PersonID(), o.PrimaryKey())).
 				Get(ctx)
 			if obj != nil && obj.PrimaryKey() != o.oLogin.PrimaryKey() {
-				obj.SetPersonID(nil)
-				obj.Save(ctx)
+				obj.Delete(ctx)
 			}
 			o.oLogin.SetPersonID(o.PrimaryKey())
 			o.oLogin.Save(ctx)
@@ -987,12 +988,14 @@ func (o *personBase) Delete(ctx context.Context) {
 			o.oEmployeeInfo = nil
 		}
 		{
-			c := QueryLogins(ctx).
+			obj := QueryLogins(ctx).
 				Where(op.Equal(node.Login().PersonID(), o.PrimaryKey())).
-				Count(ctx, false)
-			if c > 0 {
-				panic("Cannot delete a record that has a restricted foreign key pointing to it.")
+				Select(node.Login().PrimaryKeyNode()).
+				Get(ctx)
+			if obj != nil {
+				obj.Delete(ctx)
 			}
+			o.oLogin = nil
 		}
 		{
 			c := QueryProjects(ctx).

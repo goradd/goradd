@@ -64,7 +64,7 @@ CREATE TABLE `login` (
                          `person_id` int(11) UNSIGNED DEFAULT NULL,
                          `username` varchar(20) NOT NULL,
                          `password` varchar(20) DEFAULT NULL,
-                         `is_enabled` tinyint(1) NOT NULL
+                         `is_enabled` tinyint(1) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -636,7 +636,7 @@ ALTER TABLE `employee_info`
 -- Constraints for table `login`
 --
 ALTER TABLE `login`
-    ADD CONSTRAINT `person_login` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`);
+    ADD CONSTRAINT `person_login` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `milestone`

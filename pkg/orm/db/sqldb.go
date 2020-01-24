@@ -142,10 +142,9 @@ func (s *SqlDb) Rollback(ctx context.Context, txid TransactionID) {
 	}
 
 	if c.txCount == int(txid) {
+		err := c.tx.Rollback()
 		c.txCount = 0
 		c.tx = nil
-
-		err := c.tx.Rollback()
 		if err != nil {
 			panic(err.Error())
 		}

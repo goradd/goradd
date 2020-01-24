@@ -1,8 +1,8 @@
 {{< package }}orm{{end}}
 {{< imports }}
 	"github.com/goradd/goradd/pkg/orm/op"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-
 {{end}}
 {{< control }}OneManyPanel{{end}}
 

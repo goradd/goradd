@@ -59,7 +59,7 @@ const (
 	LoginPersonIDDefault  = ""
 	LoginUsernameDefault  = ""
 	LoginPasswordDefault  = ""
-	LoginIsEnabledDefault = false
+	LoginIsEnabledDefault = true
 )
 
 const (
@@ -92,9 +92,9 @@ func (o *loginBase) Initialize() {
 	o.passwordIsValid = true
 	o.passwordIsDirty = true
 
-	o.isEnabled = false
-	o.isEnabledIsValid = false
-	o.isEnabledIsDirty = false
+	o.isEnabled = true
+	o.isEnabledIsValid = true
+	o.isEnabledIsDirty = true
 
 	o._restored = false
 }
@@ -585,7 +585,7 @@ func (o *loginBase) load(m map[string]interface{}, objThis *Login, objParent int
 		}
 	} else {
 		o.isEnabledIsValid = false
-		o.isEnabled = false
+		o.isEnabled = true
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -643,10 +643,6 @@ func (o *loginBase) insert(ctx context.Context) {
 
 		if !o.usernameIsValid {
 			panic("a value for Username is required, and there is no default value. Call SetUsername() before inserting the record.")
-		}
-
-		if !o.isEnabledIsValid {
-			panic("a value for IsEnabled is required, and there is no default value. Call SetIsEnabled() before inserting the record.")
 		}
 		m := o.getValidFields()
 
