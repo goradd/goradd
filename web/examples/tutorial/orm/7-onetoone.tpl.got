@@ -1,8 +1,7 @@
 {{< package }}orm{{end}}
 {{< imports }}
-	"github.com/goradd/goradd/pkg/orm/op"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-
 {{end}}
 {{< control }}OneOnePanel{{end}}
 
@@ -35,7 +34,29 @@ Here, we traverse the relationship in the other direction, loading the person fi
 </p>
 
 <h2>Creating One-to-One Linked Records</h2>
+<p>
+In a similar fashion to how one-to-many relationships work, you can create a link between two records by saving one,
+getting its id, and then setting the foreign key in the other record to that id. However, its easier to use the Set*
+functions for the objects themselves and call Save on the parent object.
+</p>
+{{g
+    newPerson := model.NewPerson()
+    newPerson.SetFirstName("Hu")
+    newPerson.SetLastName("Man")
 
+    newLogin := model.NewLogin()
+    newLogin.SetUsername("human")
+
+    newPerson.SetLogin(newLogin)
+    newPerson.Save(ctx)
+}}
+<p>
+    New person {{= newPerson.FirstName() }} {{= newPerson.LastName() }} has been given a Login ID of {{= newPerson.Login().ID() }}
+</p>
+{{g
+    // Delete records created above
+    newPerson.Delete(ctx) // newLogin will automatically get deleted because its foreign key constraint is set to CASCADE on Delete
+}}
 {{end}}
 
 {{renderControlTemplate}}

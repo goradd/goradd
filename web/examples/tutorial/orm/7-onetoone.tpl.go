@@ -65,8 +65,40 @@ Here, we traverse the relationship in the other direction, loading the person fi
 </p>
 
 <h2>Creating One-to-One Linked Records</h2>
-
+<p>
+In a similar fashion to how one-to-many relationships work, you can create a link between two records by saving one,
+getting its id, and then setting the foreign key in the other record to that id. However, its easier to use the Set*
+functions for the objects themselves and call Save on the parent object.
+</p>
 `)
+	newPerson := model.NewPerson()
+	newPerson.SetFirstName("Hu")
+	newPerson.SetLastName("Man")
+
+	newLogin := model.NewLogin()
+	newLogin.SetUsername("human")
+
+	newPerson.SetLogin(newLogin)
+	newPerson.Save(ctx)
+
+	buf.WriteString(`<p>
+    New person `)
+
+	buf.WriteString(newPerson.FirstName())
+
+	buf.WriteString(` `)
+
+	buf.WriteString(newPerson.LastName())
+
+	buf.WriteString(` has been given a Login ID of `)
+
+	buf.WriteString(newPerson.Login().ID())
+
+	buf.WriteString(`
+</p>
+`)
+	// Delete records created above
+	newPerson.Delete(ctx) // newLogin will automatically get deleted because its foreign key constraint is set to CASCADE on Delete
 
 	buf.WriteString(`
 `)
