@@ -13,12 +13,16 @@ type ControlCreationInfo string
 // DefaultControlTypeFunc is the injected function that determines the default control type for a particular type of database column.
 // It gets initialized here, so that if you want to replace it, you can first call the default function
 var DefaultControlTypeFunc = DefaultControlType
-//var DefaultFormFieldFunc = DefaultFormFieldWrapper
 
-// DefaultWrapper defines what wrapper will be used for generated controls. It should correspond to the string the wrapper was registered with.
-var DefaultFormFieldCreator = "goraddctrl.FormFieldWrapperCreator"
+// DefaultFormFieldCreator defines what form field wrapper will be used for generated controls.
+var DefaultFormFieldCreator = "github.com/goradd/goradd/pkg/page/control/FormFieldWrapperCreator"
+
+// DefaultButtonCreator defines what buttons will be used for generated forms.
+var DefaultButtonCreator = "github.com/goradd/goradd/pkg/page/control/ButtonCreator"
 
 // DefaultControlType returns the default control type for the given database column
+// These types are module paths to the control, and the generator will resolve those to figure out the import paths
+// and package names
 func DefaultControlType(ref interface{}) string {
 	switch col := ref.(type) {
 	case *db.ReverseReference:
@@ -72,7 +76,7 @@ func DefaultControlType(ref interface{}) string {
 }
 
 
-func WrapFormField(label string, forId string, child string) string {
+func WrapFormField(wrapper string, label string, forId string, child string) string {
 	return fmt.Sprintf(
 `%s{
 	ID: "%s",
@@ -80,6 +84,6 @@ func WrapFormField(label string, forId string, child string) string {
 	Label: "%s",
 	Child: %s,
 }
-`, DefaultFormFieldCreator, forId + "-ff", forId, label, child)
+`, wrapper, forId + "-ff", forId, label, child)
 
 }

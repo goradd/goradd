@@ -1,7 +1,7 @@
 //dataProvider.tmpl
 
 {{
-func (p *{{= panelName }}) BindData(ctx context.Context, s goraddctrl.DataManagerI) {
+func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
 
     switch s.ID() {
 
@@ -15,14 +15,14 @@ for _,col := range t.Columns {
     case "{{= cd.ControlID }}":
         var items []interface{}
 {{if col.IsNullable}}
-        items = control.NoSelectionItemList()
+        items = {{= ctrlPkg }}.NoSelectionItemList()
 {{else}}
     {{if col.IsType() }}
         if int(p.{{= t.GoName }}.{{= col.ReferenceFunction() }}()) == 0 {
     {{else}}
         if p.{{= t.GoName }}.{{= col.GoName }}() == {{= col.ColumnType.DefaultValue() }} {
     {{if}}
-            items = control.SelectOneItemList()
+            items = {{= ctrlPkg }}.SelectOneItemList()
         }
 {{if}}
         items = append(items, s.DataConnector().(page.DataLoader).Load(ctx)...)

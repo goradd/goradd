@@ -97,6 +97,7 @@ func (b *Button) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 func (b *Button) SetIsPrimary(isPrimary bool) ButtonI {
+	b.SetSubmit(isPrimary)
 	if isPrimary {
 		b.style = ButtonStylePrimary
 	} else {

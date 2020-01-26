@@ -9,6 +9,12 @@ var formName = title + "EditForm"
 var formPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Edit")
 var listFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "List")
 
+// Prepare the imports
+codegen.ResetImports()
+codegen.AddObjectPath(generator.DefaultButtonCreator)
+codegen.AddImportPaths(
+    "goradd-project/control",
+)
 
 {{
 package form
@@ -19,13 +25,12 @@ package form
 // to a different path.
 
 import (
-    "github.com/goradd/goradd/pkg/page"
-    .  "github.com/goradd/goradd/pkg/page/control"
     "goradd-project/gen/{{dd.DbKey}}/panel"
-    "goradd-project/control"
     "context"
+    "github.com/goradd/goradd/pkg/page"
     "github.com/goradd/goradd/pkg/page/action"
     "fmt"
+    {{= codegen.ImportStrings() }}
 )
 
 // {{= title }}EditPath specifies the URL that will access this form.
@@ -50,7 +55,7 @@ const (
 // The {{= formName }} is a form wrapper for the corresponding edit panel.
 // To edit it, make a copy and move it out of this package and into another
 type {{= formName }} struct {
-    control.FormBase
+    {{= codegen.ImportPackage("goradd-project/control") }}.FormBase
 }
 
 func (f *{{= formName }})Init(ctx context.Context, id string) {
@@ -67,7 +72,7 @@ func (f *{{= formName }})Run(ctx context.Context) (err error) {
 
     // If you are authorizing the current user, do that here
     // if !authorized() {
-    //    return page.FrameworkErrNotAuthorized
+    //   return page.NewFrameworkError(page.FrameworkErrNotAuthorized)
     //}
 
 	return
@@ -86,18 +91,18 @@ func (f *{{= formName }}) createControls(ctx context.Context) {
         panel.{{= t.GoName }}EditPanelCreator {
             ID: {{= title }}EditPanelID,
         },
-        ButtonCreator {
+        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
             ID: {{= title }}SaveButtonID,
             Text: f.GT("Save"),
             OnSubmit: action.Ajax(f.ID(), {{= title }}SaveAction),
         },
-        ButtonCreator {
+        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
             ID: {{= title }}CancelButtonID,
             Text: f.GT("Cancel"),
             OnSubmit: action.Ajax(f.ID(), {{= title }}CancelAction),
   	        ValidationType: page.ValidateNone,
-       },
-        ButtonCreator {
+        },
+        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
             ID: {{= title }}DeleteButtonID,
             Text: f.GT("Delete"),
  	        OnSubmit: action.Group (
@@ -116,14 +121,14 @@ func (f *{{= formName }}) LoadControls(ctx context.Context) {
     if id, ok := page.GetContext(ctx).FormValue("id"); ok {
  	    err := panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, {{= t.PrimaryKeyColumn().ConvertFromString("id") }})
  	    if err == nil {
-            GetButton(f, {{= title }}DeleteButtonID).SetVisible(true)
+            f.Page().GetControl({{= title }}DeleteButtonID).SetVisible(true)
             f.Page().SetTitle(f.GT("Edit"))
             return
  	    }
  	    // drop through on failure
     }
     _ = panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, {{= t.PrimaryKeyColumn().DefaultValueAsConstant() }})
-    GetButton(f, {{= title }}DeleteButtonID).SetVisible(false)
+    f.Page().GetControl({{= title }}DeleteButtonID).SetVisible(false)
     f.Page().SetTitle(f.GT("Create"))
 }
 

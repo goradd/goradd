@@ -6,6 +6,15 @@ var objectType = "List" // Eventually we might make it possible to generate mult
 var panelName = t.GoName + "ListPanelBase"
 var lcPanelName = t.LcGoName + objectType + "Panel"
 
+// Prepare the imports
+codegen.ResetImports()
+codegen.AddObjectPath(generator.DefaultButtonCreator)
+codegen.AddImportPaths(
+    "github.com/goradd/goradd/pkg/page/control",
+)
+
+ctrlPkg := codegen.ImportPackage("github.com/goradd/goradd/pkg/page/control")
+
 {{
 
 package panel
@@ -20,19 +29,20 @@ import(
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	goraddctrl "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/pkg/page/event"
 	"goradd-project/gen/{{= dd.DbKey }}/model"
 	"goradd-project/gen/{{= dd.DbKey }}/model/node"
+
+	{{= codegen.ImportStrings() }}
 )
 
 type {{= panelName }} struct {
-	goraddctrl.Panel
+	{{= ctrlPkg }}.Panel
 }
 
 type {{= panelName }}I interface {
-	goraddctrl.PanelI
+	{{= ctrlPkg }}.PanelI
 	BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder
 }
 
@@ -47,13 +57,13 @@ func (p *{{= panelName }}) this() {{= panelName }}I {
 // Override this to change what controls get created.
 func (p *{{= panelName }}) createControls(ctx context.Context) {
 	p.AddControls(ctx,
-		goraddctrl.PanelCreator{
+		{{= ctrlPkg }}.PanelCreator{
 			ID: p.ID() + "-filterPanel",
-			Children: goraddctrl.Children(
-				goraddctrl.TextboxCreator{
+			Children: {{= ctrlPkg }}.Children(
+				{{= ctrlPkg }}.TextboxCreator{
 					ID:          p.ID() + "-filterText",
 					Placeholder: p.GT("Search..."),
-					Type:        goraddctrl.TextboxTypeSearch,
+					Type:        {{= ctrlPkg }}.TextboxTypeSearch,
 					ControlOptions: page.ControlOptions{
 						On: page.EventList{
 							{event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
@@ -63,13 +73,13 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
 				},
 			),
 		},
-        goraddctrl.PagedTableCreator{
+        {{= ctrlPkg }}.PagedTableCreator{
             ID:  p.ID() + "-list",
             HeaderRowCount: 0,
             DataProviderID: p.ID(),
             RowStylerID: p.ID(),
-            PageSize: goraddctrl.DefaultPagerPageSize,
-            Caption: goraddctrl.DataPagerCreator{
+            PageSize: {{= ctrlPkg }}.DefaultPagerPageSize,
+            Caption: {{= ctrlPkg }}.DataPagerCreator{
                 ID:            p.ID()+"-pager",
                 PagedControl:  p.ID() + "-list",
             },
@@ -77,24 +87,24 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
             ControlOptions: page.ControlOptions{
                 Class:          "clickable-rows",
             },
-            Columns:[]goraddctrl.ColumnCreator {
+            Columns:[]{{= ctrlPkg }}.ColumnCreator {
 {{for _,col := range t.Columns }}
                 column.NodeColumnCreator{
                     Node: node.{{= t.GoName }}().{{= col.GoName }}(),
                     Title: "{{= col.GoName }}",
                 {{if col.IsDateOnly}}
-                    ColumnOptions: goraddctrl.ColumnOptions{TimeFormat: config.DefaultDateFormat},
+                    ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultDateFormat},
                 {{else if col.IsTimeOnly}}
-                    ColumnOptions: goraddctrl.ColumnOptions{TimeFormat: config.DefaultTimeFormat},
+                    ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultTimeFormat},
                 {{if}}
                 },
 {{for}}
            },
         },
-		goraddctrl.PanelCreator{
+		{{= ctrlPkg }}.PanelCreator {
 			ID: p.ID()+"-buttonPanel",
-			Children:goraddctrl.Children(
-				goraddctrl.ButtonCreator{
+			Children:{{= ctrlPkg }}.Children(
+				{{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
 					ID: p.ID()+"-newButton",
 					Text: p.GT("New"),
 					OnClick:action.Ajax(p.ID(), {{= lcPanelName }}NewClick),
@@ -111,8 +121,8 @@ func (p *{{= panelName }}) GetClickedRowValue(a page.ActionParams) string {
 
 // BindData determines what records will be displayed in the lister.
 // Override to change what records get displayed.
-func (p *{{= panelName }}) BindData(ctx context.Context, s goraddctrl.DataManagerI) {
-    list := goraddctrl.GetPagedTable(p, p.ID() + "-list")
+func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
+    list := {{= ctrlPkg }}.GetPagedTable(p, p.ID() + "-list")
 	if list.HasDataPagers() {
 		list.SetTotalItems(p.this().BuildQuery(ctx).Count(ctx, false))
 	}

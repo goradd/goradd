@@ -4,6 +4,41 @@
 
 var panelName = t.GoName + "EditPanelBase"
 
+// Prepare the imports
+codegen.ResetImports()
+codegen.AddObjectPath(generator.DefaultFormFieldCreator)
+codegen.AddImportPaths(
+    "github.com/goradd/goradd/pkg/page/control",
+)
+
+for _,col := range t.Columns {
+    path := generator.ControlPath(col)
+    codegen.AddObjectPath(path)
+    cd := t.ControlDescription(col)
+    if cd != nil && cd.Imports != nil {
+        codegen.AddImportPaths(cd.Imports...)
+    }
+}
+for _,ref := range t.ReverseReferences {
+    path := generator.ControlPath(ref)
+    codegen.AddObjectPath(path)
+    cd := t.ControlDescription(ref)
+    if cd != nil && cd.Imports != nil {
+        codegen.AddImportPaths(cd.Imports...)
+    }
+}
+for _,ref := range t.ManyManyReferences {
+    path := generator.ControlPath(ref)
+    codegen.AddObjectPath(path)
+    cd := t.ControlDescription(ref)
+    if cd != nil && cd.Imports != nil {
+        codegen.AddImportPaths(cd.Imports...)
+    }
+}
+
+defaultWrapper := codegen.ObjectType(generator.DefaultFormFieldCreator)
+ctrlPkg := codegen.ImportPackage("github.com/goradd/goradd/pkg/page/control")
+
 {{
 
 package panel
@@ -14,21 +49,13 @@ import(
 	"github.com/goradd/goradd/pkg/page"
 	"context"
     "encoding/gob"
-	"goradd-project/gen/{{dd.DbKey}}/connector"
 	"goradd-project/gen/{{dd.DbKey}}/model"
-	goraddctrl "github.com/goradd/goradd/pkg/page/control"
 
 {{if len(t.ReverseReferences) > 0}}
 	"goradd-project/gen/{{dd.DbKey}}/model/node"
 {{if}}
 
-{{for _,imp := range t.Imports}}
-{{if imp.Alias == ""}}
-    "{{= imp.Path }}"
-{{else}}
-    {{= imp.Alias }} "{{= imp.Path }}"
-{{if}}
-{{for}}
+{{= codegen.ImportStrings() }}
 
 )
 

@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/goradd/gofile/pkg/sys"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/stringmap"
@@ -10,6 +11,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 )
 
@@ -19,8 +21,12 @@ import (
 var BuildingExamples bool
 
 type CodeGenerator struct {
+	// Tables is a map of the tables by database
 	Tables     map[string]map[string]TableType
+	// TypeTables is a map of the type tables by database
 	TypeTables map[string]map[string]TypeTableType
+
+	importAliasesByPath map[string]string
 }
 
 type TableType struct {
@@ -42,7 +48,9 @@ type ImportType struct {
 // ControlDescription is matched with a Column below and provides additional information regarding
 // how information in a column can be used to generate a default control to edit that information.
 type ControlDescription struct {
-	Import         string
+	Path		   string
+	Import		   string
+	Imports        []string
 	ControlType    string
 	ControlName    string
 	ControlID      string // default id to generate
@@ -208,3 +216,85 @@ func Generate() {
 	}
 
 }
+
+// Reset resets the internal information of the code generator. Call this just before generating a file.
+func (c *CodeGenerator) ResetImports() {
+	c.importAliasesByPath = make(map[string]string)
+}
+
+// AddImportPath adds an import path to the import path list. In particular, it will help manage the package aliases
+// so the path can be referred to using the correct package name or package alias. Call this on all
+// paths used by the file before calling ImportString.
+func (c *CodeGenerator) AddImportPaths(paths ...string) {
+	for _,p := range paths {
+		if p == "" {
+			return
+		}
+		if _, ok := c.importAliasesByPath[p]; ok {
+			return
+		}
+		alias := path.Base(p)
+		count := 2
+		newAlias := alias
+	Found:
+		for _, a := range c.importAliasesByPath {
+			if a == newAlias {
+				newAlias = fmt.Sprint(alias, count)
+				count++
+				continue Found
+			}
+		}
+		c.importAliasesByPath[p] = newAlias
+	}
+}
+
+// AddObjectPath adds an object path to the import path list. In particular, it will help manage the package list
+// so the object can referred to using the correct package name or package alias. Call this on all object
+// paths used by the form before calling ImportString.
+func (c *CodeGenerator) AddObjectPath(p string) {
+	c.AddImportPaths(path.Dir(p))
+}
+
+// ImportStrings returns strings to use in an import statement for all of the objects and imports entered
+func (c *CodeGenerator) ImportStrings() (ret string) {
+	for p,a := range c.importAliasesByPath {
+		pkg := path.Base(p)
+		if a == pkg {
+			ret += fmt.Sprintf("%#v\n", p)
+		} else {
+			ret += fmt.Sprintf("%s %#v\n", a, p)
+		}
+	}
+	return
+}
+
+// ObjectType returns the string that should be used for an object type given its module path
+func (c *CodeGenerator) ObjectType(p string) string {
+	imp,t := path.Split(p)
+	imp = path.Clean(imp)
+	if a := c.importAliasesByPath[imp]; a == "" {
+		panic("unknown object path: " + p)
+	} else {
+		return a + "." + t
+	}
+}
+
+func (c *CodeGenerator) ImportPackage(imp string) string {
+	if a := c.importAliasesByPath[imp]; a == "" {
+		panic("unknown import path: " + imp)
+	} else {
+		return a
+	}
+}
+
+func (c *CodeGenerator) ObjectPackage(imp string) string {
+	imp = path.Dir(imp)
+	if a := c.importAliasesByPath[imp]; a == "" {
+		panic("unknown import path: " + imp)
+	} else {
+		return a
+	}
+}
+
+
+

@@ -50,7 +50,7 @@ func (f *{{= formName }})Run(ctx context.Context) (err error) {
 
     // If you are authorizing the current user, do that here
     // if !authorized() {
-    //    return page.FrameworkErrNotAuthorized
+	//	return page.NewFrameworkError(page.FrameworkErrNotAuthorized)
     //}
 
 	return

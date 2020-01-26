@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	t := ListFormTemplate {
+	t := EditFormTemplate {
 		generator.Template {
 			Overwrite: true,
 			TargetDir: config.ProjectDir() + "/gen",
@@ -20,19 +20,19 @@ func init() {
 	generator.AddTableTemplate(&t)
 }
 
-type ListFormTemplate struct {
+type EditFormTemplate struct {
 	generator.Template
 }
 
-func (n *ListFormTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "ListForm.go"
+func (n *EditFormTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "EditForm.go"
 }
 
-func (n *ListFormTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
-	{{: "form/listform.tmpl" }}
+func (n *EditFormTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
+	{{: "form/editform.tmpl" }}
 }
 
-func (n *ListFormTemplate) Overwrite() bool {
+func (n *EditFormTemplate) Overwrite() bool {
 	return n.Template.Overwrite
 }
 
