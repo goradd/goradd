@@ -65,7 +65,11 @@ func (f *{{= formName }}) AddRelatedFiles() {
 }
 
 func (f *{{= formName }}) createControls(ctx context.Context) {
-	panel.New{{= t.GoName }}ListPanel(ctx, f, "list-panel")
+	f.AddControls(ctx,
+		panel.{{= t.GoName }}ListPanelCreator{
+			ID:             "list-panel",
+		},
+	)
 }
 
 
