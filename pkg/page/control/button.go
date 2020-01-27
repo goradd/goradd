@@ -12,21 +12,22 @@ type ButtonI interface {
 	page.ControlI
 	SetLabel(label string) page.ControlI
 	OnSubmit(action action.ActionI) page.ControlI
+	SetSubmit(s bool) ButtonI
 }
 
-// Button is a standard html form submit button. It corresponds to a <button> tag in html.
+// Button is a standard html form button. It corresponds to a <button> tag in html.
 //
-// The default behavior of a submit button is to submit a form. If you have text boxes on your
-// form, pressing enter will submit the FIRST button in the form, and so this essentially becomes
-// your default button. If you have more than one button, and you want the default button to
-// NOT be the first button on the screen, you can handle this in one of two ways:
-// - Make sure your default button comes out first in the html, but then use css to change
-// the visible order of the buttons. Be sure to also set the tab order if you do this to reflect
-// the visible arrangement of the buttons. Or,
-// - Create another button as the first button, and give it a display attribute
-// of none so that it is not visible. Set its action to be the default action you want.
+// By default, we set the "type" attribute of the button to "button". This will prevent
+// the button from submitting the form when the user presses the return key.
+// To choose which button will submit on a return, call SetSubmit() or set the "type" attribute to "submit".
 //
-// If you want the button to display an image, simple create an Image control as a child of the button.
+// If multiple "submit" buttons are on the page, the default behavior
+// will occur if you there are text boxes on the
+// form, and pressing enter will submit the FIRST button in the form as encountered in the html.
+// Using CSS to alter the placement of the buttons (using float for instance), will not change
+// which button the browser considers to be the first.
+//
+// If you want the button to display an image, create an Image control as a child of the button.
 type Button struct {
 	page.ControlBase
 }
@@ -43,6 +44,7 @@ func NewButton(parent page.ControlI, id string) *Button {
 func (b *Button) Init(parent page.ControlI, id string) {
 	b.ControlBase.Init(parent, id)
 	b.Tag = "button"
+	b.SetAttribute("type", "button")
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
 
@@ -55,8 +57,20 @@ func (c *Button) this() ButtonI {
 // Subclasses can redefine this if they use separate labels.
 func (b *Button) SetLabel(label string) page.ControlI {
 	b.SetText(label)
-	return b
+	return b.this()
 }
+
+// SetSubmit will set this button to be the default button on the form, which is the button clicked when
+// the user presses a return. Some browsers only respond to this when there is a textbox on the screen.
+func (b *Button) SetSubmit(s bool) ButtonI {
+	if s {
+		b.SetAttribute("type", "submit")
+	} else {
+		b.SetAttribute("type", "button")
+	}
+	return b.this()
+}
+
 
 // On causes the given actions to execute when the given event is triggered.
 func (b *Button) On(e *page.Event, action action.ActionI) page.ControlI {
@@ -93,6 +107,8 @@ type ButtonCreator struct {
 	ID string
 	// Text is the text displayed in the button
 	Text string
+	// Set IsPrimary to true to make this the default button on the page
+	IsPrimary bool
 	// OnSubmit is the action to take when the button is submitted. Use this specifically
 	// for buttons that move to other pages or processes transactions, as it debounces the button
 	// and waits until all other actions complete
@@ -125,6 +141,9 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 	}
 	if c.ValidationType != page.ValidateDefault {
 		ctrl.SetValidationType(c.ValidationType)
+	}
+	if c.IsPrimary {
+		ctrl.SetSubmit(true)
 	}
 	ctrl.ApplyOptions(ctx, c.ControlOptions)
 }

@@ -37,7 +37,7 @@ func (d DateTimeSpan) GenerateCreator(ref interface{}, desc *generator.ControlDe
 		IsDisabled:	   %#v,
 		DataConnector: %s{},
 	},
-}`, desc.Import, desc.ControlID, col.IsPk, desc.Connector)
+}`, desc.Package, desc.ControlID, col.IsPk, desc.Connector)
 	return
 }
 

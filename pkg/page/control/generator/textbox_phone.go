@@ -34,7 +34,7 @@ func (d PhoneTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDe
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.Package, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 

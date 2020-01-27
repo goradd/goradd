@@ -16,7 +16,7 @@ type {{= cd.Connector }}  struct {
 
 func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if sRefresh != ""}}
-    if ctrl, ok := i.(*{{= cd.Import}}.{{= cd.ControlType}}); ok {
+    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
 {{if col.IsType() }}
         val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction() }}().ID()
 {{else}}
@@ -29,7 +29,7 @@ func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 
 func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
-   if ctrl, ok := i.(*{{= cd.Import}}.{{= cd.ControlType}}); ok {
+   if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
         {{= sUpdate }}
 {{if col.IsType()}}
         data.(*model.{{= t.GoName }}).Set{{= col.ReferenceFunction() }}(model.{{= col.ForeignKey.GoType }}(val))
@@ -79,7 +79,7 @@ type {{= cd.Connector }}  struct {
 
 func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if sRefresh != ""}}
-    if ctrl, ok := i.(*{{= cd.Import}}.{{= cd.ControlType}}); ok {
+    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
         {{if rr.IsUnique() }}
             object := data.(*model.{{= t.GoName }}).{{= rr.GoName }}()
         {{else}}
@@ -92,7 +92,7 @@ func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 
 func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
-   if ctrl, ok := i.(*{{= cd.Import}}.{{= cd.ControlType}}); ok {
+   if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
         {{= sUpdate }}
    }
 {{if}}

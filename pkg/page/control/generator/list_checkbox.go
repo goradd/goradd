@@ -40,7 +40,7 @@ func (d CheckboxList) GenerateCreator(ref interface{}, desc *generator.ControlDe
 	ControlOptions: page.ControlOptions{
 		DataConnector: %s{},
 	},
-}`, desc.Import, desc.ControlID, desc.Connector)
+}`, desc.Package, desc.ControlID, desc.Connector)
 	return
 }
 

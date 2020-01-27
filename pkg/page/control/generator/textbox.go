@@ -34,7 +34,7 @@ func (d Textbox) GenerateCreator(ref interface{}, desc *generator.ControlDescrip
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, desc.Import, desc.ControlID, col.MaxCharLength, !col.IsNullable, desc.Connector)
+		}`, desc.Package, desc.ControlID, col.MaxCharLength, !col.IsNullable, desc.Connector)
 	return
 }
 

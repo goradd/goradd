@@ -33,7 +33,7 @@ func (d SelectList) GenerateCreator(ref interface{}, desc *generator.ControlDesc
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.Package, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
 

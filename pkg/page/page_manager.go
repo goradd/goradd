@@ -157,6 +157,13 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 
 	err := page.runPage(ctx, buf, isNew)
 
+	if e,ok := err.(FrameworkError); ok {
+		if e.Err == FrameworkErrNotAuthorized {
+			buf.WriteString(page.form.GT(e.Error()))
+			return nil, 401
+		}
+	}
+
 	if err != nil {
 		log.Error(err)
 		var html = buf.String() // copy current html
