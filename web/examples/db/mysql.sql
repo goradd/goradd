@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Dec 03, 2019 at 08:03 PM
+-- Generation Time: Jan 27, 2020 at 01:59 AM
 -- Server version: 5.7.28
 -- PHP Version: 7.2.19
 
@@ -331,104 +331,6 @@ INSERT INTO `team_member_project_assn` (`team_member_id`, `project_id`) VALUES
 (11, 4),
 (12, 4);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `tmp`
---
-
-CREATE TABLE `tmp` (
-                       `d` decimal(5,2) NOT NULL,
-                       `i` smallint(5) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `tmp`
---
-
-INSERT INTO `tmp` (`d`, `i`) VALUES
-('-123.46', 12345);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `two_key`
---
-
-CREATE TABLE `two_key` (
-                           `server` varchar(50) NOT NULL,
-                           `directory` varchar(50) NOT NULL,
-                           `file_name` varchar(50) NOT NULL,
-                           `person_id` int(11) UNSIGNED NOT NULL,
-                           `project_id` int(11) UNSIGNED DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `two_key`
---
-
-INSERT INTO `two_key` (`server`, `directory`, `file_name`, `person_id`, `project_id`) VALUES
-('cnn.com', 'us', 'news', 1, 1),
-('google.com', 'drive', '', 2, 2),
-('google.com', 'mail', 'mail.html', 3, 2),
-('google.com', 'news', 'news.php', 4, 3),
-('mail.google.com', 'mail', 'inbox', 5, NULL),
-('yahoo.com', '', '', 6, NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `type_test`
---
-
-CREATE TABLE `type_test` (
-                             `id` int(11) NOT NULL,
-                             `date` date DEFAULT NULL,
-                             `time` time DEFAULT NULL,
-                             `date_time` datetime DEFAULT NULL,
-                             `ts` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-                             `test_int` int(11) DEFAULT '5',
-                             `test_float` float DEFAULT NULL,
-                             `test_double` double NOT NULL,
-                             `test_text` text,
-                             `test_bit` tinyint(1) DEFAULT NULL,
-                             `test_varchar` varchar(10) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `type_test`
---
-
-INSERT INTO `type_test` (`id`, `date`, `time`, `date_time`, `ts`, `test_int`, `test_float`, `test_double`, `test_text`, `test_bit`, `test_varchar`) VALUES
-(1, '2019-01-02', '06:17:28', '2019-01-02 06:17:28', '2019-01-23 08:52:06', 5, 1.2, 3.33, 'Sample', 1, 'Sample');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `unsupported_types`
---
-
-CREATE TABLE `unsupported_types` (
-                                     `type_set` set('a','b','c') NOT NULL,
-                                     `type_enum` enum('a','b','c') NOT NULL,
-                                     `type_decimal` decimal(10,4) NOT NULL,
-                                     `type_double` double NOT NULL,
-                                     `type_geo` geometry NOT NULL,
-                                     `type_tiny_blob` tinyblob NOT NULL,
-                                     `type_medium_blob` mediumblob NOT NULL,
-                                     `type_varbinary` varbinary(10) NOT NULL,
-                                     `type_longtext` longtext NOT NULL,
-                                     `type_binary` binary(10) NOT NULL,
-                                     `type_small` smallint(6) NOT NULL,
-                                     `type_medium` mediumint(9) NOT NULL,
-                                     `type_big` bigint(20) NOT NULL,
-                                     `type_polygon` polygon NOT NULL,
-                                     `type_serial` bigint(20) UNSIGNED NOT NULL,
-                                     `type_unsigned` int(10) UNSIGNED NOT NULL,
-                                     `type_multFk1` varchar(50) NOT NULL,
-                                     `type_multiFk2` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 --
 -- Indexes for dumped tables
 --
@@ -520,33 +422,6 @@ ALTER TABLE `team_member_project_assn`
     ADD KEY `IDX_teammemberprojectassn_2` (`project_id`);
 
 --
--- Indexes for table `tmp`
---
-ALTER TABLE `tmp`
-    ADD UNIQUE KEY `d` (`d`);
-
---
--- Indexes for table `two_key`
---
-ALTER TABLE `two_key`
-    ADD PRIMARY KEY (`server`,`directory`),
-    ADD KEY `person_id` (`person_id`),
-    ADD KEY `project_id` (`project_id`);
-
---
--- Indexes for table `type_test`
---
-ALTER TABLE `type_test`
-    ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `unsupported_types`
---
-ALTER TABLE `unsupported_types`
-    ADD UNIQUE KEY `type_serial` (`type_serial`),
-    ADD KEY `type_multFk1` (`type_multFk1`,`type_multiFk2`);
-
---
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -554,19 +429,19 @@ ALTER TABLE `unsupported_types`
 -- AUTO_INCREMENT for table `address`
 --
 ALTER TABLE `address`
-    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
 
 --
 -- AUTO_INCREMENT for table `employee_info`
 --
 ALTER TABLE `employee_info`
-    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `login`
 --
 ALTER TABLE `login`
-    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `milestone`
@@ -578,7 +453,7 @@ ALTER TABLE `milestone`
 -- AUTO_INCREMENT for table `person`
 --
 ALTER TABLE `person`
-    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=168;
 
 --
 -- AUTO_INCREMENT for table `person_type`
@@ -596,25 +471,13 @@ ALTER TABLE `person_with_lock`
 -- AUTO_INCREMENT for table `project`
 --
 ALTER TABLE `project`
-    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `project_status_type`
 --
 ALTER TABLE `project_status_type`
     MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `type_test`
---
-ALTER TABLE `type_test`
-    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `unsupported_types`
---
-ALTER TABLE `unsupported_types`
-    MODIFY `type_serial` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -671,11 +534,4 @@ ALTER TABLE `related_project_assn`
 ALTER TABLE `team_member_project_assn`
     ADD CONSTRAINT `person_team_member_project_assn` FOREIGN KEY (`team_member_id`) REFERENCES `person` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     ADD CONSTRAINT `project_team_member_project_assn` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `two_key`
---
-ALTER TABLE `two_key`
-    ADD CONSTRAINT `two_key_person` FOREIGN KEY (`person_id`) REFERENCES `person` (`id`),
-    ADD CONSTRAINT `two_key_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`);
 SET FOREIGN_KEY_CHECKS=1;

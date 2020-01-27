@@ -78,8 +78,13 @@ func Generate() {
 		TypeTables: make(map[string]map[string]TypeTableType),
 	}
 
+	databases := db.GetDatabases()
+	if BuildingExamples {
+		databases = []db.DatabaseI{db.GetDatabase("goradd")}
+	}
+
 	// Map object names to tables, making sure there are no duplicates
-	for _, database := range db.GetDatabases() {
+	for _, database := range databases {
 		key := database.Describe().DbKey
 		codegen.Tables[key] = make(map[string]TableType)
 		codegen.TypeTables[key] = make(map[string]TypeTableType)
@@ -125,7 +130,7 @@ func Generate() {
 	buf := new(bytes.Buffer)
 
 	// Generate the templates.
-	for _, database := range db.GetDatabases() {
+	for _, database := range databases {
 		dd := database.Describe()
 		dbKey := dd.DbKey
 
