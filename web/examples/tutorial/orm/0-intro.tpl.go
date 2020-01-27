@@ -20,6 +20,7 @@ objects and member variables of objects, and also traverse relationships between
 `)
 
 	buf.WriteString(`
+<p>
 `)
 
 	buf.WriteString(`Different databases refer to data objects using different words, but the concepts are the same. For example,
@@ -30,6 +31,7 @@ object that contains a copy of the primary key of a different object.
 `)
 
 	buf.WriteString(`
+</p>
 <p>
 `)
 
@@ -41,10 +43,29 @@ pointing back to the manager.
 
 This tutorial will teach you how to set up database relationships, and traverse them to create and retrieve the data you want.
 
-If you have not yet set up the example database, do that now using the following steps.
+If you have not yet set up the example database, do that now using the steps below.
 `)
 
 	buf.WriteString(`
+</p>
+<h2>Naming Conventions</h2>
+<p>
+When creating your database, name your tables and fields using snake_case, which means use all lower-case letters and
+separate words with underscores. The reason for this is that some databases are not case-sensitive, and so Goradd has
+adopted this convention to provide the maximum compatibility between different kinds of databases.
+</p>
+<p>
+The Goradd ORM will convert snake_case names in the database to CamelCase names, meaning each name will capitalize the
+start of each word.
+</p>
+<p>
+`)
+
+	buf.WriteString(`For example, a field named &#34;team_member&#34; in the database will become &#34;TeamMember&#34; in Go.
+`)
+
+	buf.WriteString(`
+</p>
 
 `)
 

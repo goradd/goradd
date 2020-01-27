@@ -14,7 +14,7 @@ In the Golang ORM, each side of the relationship will see a slice of records on 
 <p>
 Many-to-many relationships are modeled in SQL databases with an intermediate table, called an Association table.
 The association table is a table with just two fields, each field being a foreign key pointing to one side of the
-relationship.
+relationship. To identify a table as being an association table in SQL, append "_assn" to the end of the name of the table.
 </p>
 <p>
 NoSQL databases store Many-to-many relationships in special fields on each side that is an array of record ids that
@@ -36,6 +36,7 @@ and any project can have multiple team members.
 <p>
     Project {{= project.Name() }} has team members:
     {{for _,t := range project.TeamMembers() }}{{= t.FirstName() }} {{= t.LastName() }}, {{for}}{{- 2}}
+    {{# The - 2 tag above backs up two spaces in the output. The purpose here is to remove the comma and space after the final item listed.}}
 </p>
 <p>
     Person {{= person.FirstName() }} {{= person.LastName() }} is a member of these projects:

@@ -21,7 +21,7 @@ In the Golang ORM, each side of the relationship will see a slice of records on 
 <p>
 Many-to-many relationships are modeled in SQL databases with an intermediate table, called an Association table.
 The association table is a table with just two fields, each field being a foreign key pointing to one side of the
-relationship.
+relationship. To identify a table as being an association table in SQL, append "_assn" to the end of the name of the table.
 </p>
 <p>
 NoSQL databases store Many-to-many relationships in special fields on each side that is an array of record ids that
@@ -59,7 +59,10 @@ and any project can have multiple team members.
 
 	buf.Truncate(buf.Len() - 2)
 
-	buf.WriteString(`</p>
+	buf.WriteString(`    `)
+
+	buf.WriteString(`
+</p>
 <p>
     Person `)
 
