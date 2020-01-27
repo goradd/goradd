@@ -94,7 +94,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
         if col.IsPk {continue}
         cd := t.ControlDescription(col)
         if cd == nil || cd.Generator == nil {continue}
-        cd.Import = codegen.ObjectPackage(cd.Path)
+        cd.Package = codegen.ObjectPackage(cd.Path)
         creatorString := cd.Generator.GenerateCreator(col, cd)
         if creatorString != "" {
             creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
@@ -104,8 +104,8 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import }}.{{= cd.ControlType }} {
-	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import }}.{{= cd.ControlType }})
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
 }}
@@ -117,7 +117,7 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import }}.{{= cd.C
         cd := t.ControlDescription(ref)
         if cd == nil || cd.Generator == nil {continue}
 
-        cd.Import = codegen.ObjectPackage(cd.Path)
+        cd.Package = codegen.ObjectPackage(cd.Path)
         creatorString := cd.Generator.GenerateCreator(ref, cd)
         if creatorString != "" {
             creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
@@ -127,8 +127,8 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import }}.{{= cd.ControlType }} {
-	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import }}.{{= cd.ControlType }})
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
 }}
@@ -139,7 +139,7 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import }}.{{= cd.C
         cd := t.ControlDescription(ref)
         if cd == nil || cd.Generator == nil {continue}
 
-        cd.Import = codegen.ObjectPackage(cd.Path)
+        cd.Package = codegen.ObjectPackage(cd.Path)
         creatorString := cd.Generator.GenerateCreator(ref, cd)
         if creatorString != "" {
             creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
@@ -149,8 +149,8 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Import }}.{{= cd.ControlType }} {
-	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Import }}.{{= cd.ControlType }})
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
 }}

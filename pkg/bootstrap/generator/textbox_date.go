@@ -35,6 +35,6 @@ func (d DateTextbox) GenerateCreator(ref interface{}, desc *generator2.ControlDe
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.Import, desc.ControlID, format, !col.IsNullable, desc.Connector)
+}`, desc.Package, desc.ControlID, format, !col.IsNullable, desc.Connector)
 	return
 }

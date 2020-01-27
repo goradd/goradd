@@ -25,6 +25,6 @@ func (d IntegerTextbox) GenerateCreator(ref interface{}, desc *generator2.Contro
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.Import, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, desc.Package, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }

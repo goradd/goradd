@@ -32,7 +32,7 @@ func (d Span) GenerateCreator(ref interface{}, desc *generator.ControlDescriptio
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.Import, desc.ControlID, col.IsPk, !col.IsNullable, desc.Connector)
+}`, desc.Package, desc.ControlID, col.IsPk, !col.IsNullable, desc.Connector)
 	return
 }
 

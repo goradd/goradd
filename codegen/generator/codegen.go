@@ -50,9 +50,9 @@ type ImportType struct {
 // It is specifically for code generation.
 type ControlDescription struct {
 	Path		   string
-	// Import is the package alias to be used when referring to the package the control is in. It is generated on a per-file basis.
-	Import		   string
-	// Imports is the list of imported packages that control uses
+	// Package is the package alias to be used when referring to the package the control is in. It is generated on a per-file basis.
+	Package		   string
+	// Imports is the list of imported packages that the control uses
 	Imports        []string
 	ControlType    string
 	ControlName    string
