@@ -3,7 +3,7 @@ package dbtest
 import (
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/stretchr/testify/assert"
-	"goradd-project/gen/goradd/model"
+	"goradd-project/gen/goraddUnit/model"
 	"testing"
 	"time"
 )
