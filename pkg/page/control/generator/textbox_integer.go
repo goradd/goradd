@@ -15,12 +15,6 @@ func init() {
 type IntegerTextbox struct {
 }
 
-func (d IntegerTextbox) Imports() []generator.ImportPath {
-	return []generator.ImportPath{
-		{Alias: "goraddctrl", Path:"github.com/goradd/goradd/pkg/page/control"},
-	}
-}
-
 func (d IntegerTextbox) SupportsColumn(ref interface{}) bool {
 	if col,ok := ref.(*db.Column); ok &&
 		(col.ColumnType == query.ColTypeInteger ||

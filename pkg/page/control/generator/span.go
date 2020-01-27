@@ -25,14 +25,14 @@ func (d Span) SupportsColumn(ref interface{}) bool {
 func (d Span) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`goraddctrl.SpanCreator{
+`%s.SpanCreator{
 	ID:        %#v,
 	ControlOptions: page.ControlOptions{
 		IsDisabled:	   %#v,
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.ControlID, col.IsPk, !col.IsNullable, desc.Connector)
+}`, desc.Import, desc.ControlID, col.IsPk, !col.IsNullable, desc.Connector)
 	return
 }
 
