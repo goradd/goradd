@@ -1,0 +1,8 @@
+
+// LoadControls is called by the framework after creating the form.
+// It is the place to load up the form controls with data after the form has been created.
+func (f *{{= formName }}) LoadControls(ctx context.Context) {
+	f.PushLocation(ctx)
+	panel.Get{{= t.GoName }}ListPanel(f, "list-panel").Load(ctx)
+}
+

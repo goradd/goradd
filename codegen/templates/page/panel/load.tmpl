@@ -23,7 +23,7 @@ func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType()
 		}
 	}
 
-	p.Refresh()
+	p.this().Refresh()
 
 	return nil
 }

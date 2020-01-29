@@ -44,21 +44,40 @@ func (d SelectList) GenerateRefresh(ref interface{}, desc *generator.ControlDesc
 
 func (d SelectList) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) string {
 	col := ref.(*db.Column)
+	s1 :=  `
+sv := ctrl.StringValue()
+`
 	var s string
 	switch col.ColumnType {
 	case query.ColTypeInteger:
-		s = `val,_ := strconv.Atoi(ctrl.StringValue())`
+		s = `val,_ = strconv.Atoi(sv)`
 	case query.ColTypeUnsigned:
-		s = `val,_ := strconv.ParseUint(ctrl.StringValue(), 10, 0)`
+		s = `val,_ = strconv.ParseUint(sv, 10, 0)`
 	case query.ColTypeInteger64:
-		s = `val,_ := strconv.ParseInt(ctrl.StringValue(), 10, 64)`
+		s = `val,_ = strconv.ParseInt(sv, 10, 64)`
 	case query.ColTypeUnsigned64:
-		s = `val,_ := strconv.ParseUint(ctrl.StringValue(), 10, 64)`
+		s = `val,_ = strconv.ParseUint(sv, 10, 64)`
 	default:
-		s = `val := ctrl.StringValue()`
+		s = `val = sv`
 	}
 
-	return s
+	if col.IsNullable {
+		s = fmt.Sprintf(
+`
+var val interface{}
+if sv == "" {
+	val = nil
+} else {
+	%s
+}`, s)
+	} else {
+	s =	fmt.Sprintf(`
+var val string
+%s
+`, s)
+	}
+
+	return s1 + s
 }
 
 func (d SelectList) GenerateProvider(ref interface{}, desc *generator.ControlDescription) string {

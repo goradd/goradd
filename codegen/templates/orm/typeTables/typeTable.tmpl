@@ -43,7 +43,7 @@ func ({{= propLetter }} {{= propName }}) String() string {
 {{for _,value := range tt.Values }}
 	case {{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }}: return {{= generator.AsConstant(value[tt.FieldNames[1]], query.ColTypeString) }}
 {{for}}
-	default: panic("Index out of range")
+	default: panic("index out of range")
 	}
 	return "" // prevent warning
 }
@@ -51,6 +51,16 @@ func ({{= propLetter }} {{= propName }}) String() string {
 // ID returns a string representation of the id and satisfies the IDer interface
 func ({{= propLetter }} {{= propName }}) ID() string {
 	return strconv.Itoa(int({{= propLetter }}))
+}
+
+// {{= propName }}FromID converts a {{= propName }} ID to a {{= propName }}
+func {{= propName }}FromID (id string) {{= propName }} {
+	switch id {
+{{for _,value := range tt.Values }}
+	case "{{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }}": return {{= propName }}({{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }})
+{{for}}
+	}
+	return {{= propName }}(0)
 }
 
 // All{{= propPlural }} returns a slice of all the {{= propName }} items

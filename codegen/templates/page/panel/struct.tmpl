@@ -36,6 +36,7 @@ type {{= panelName }}I interface {
 */
 }}
     Update()
+    Refresh()
     Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error
 }
 

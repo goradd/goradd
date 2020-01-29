@@ -85,7 +85,7 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
             },
             OnCellClick: action.Ajax(p.ID(), {{= lcPanelName }}RowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
             ControlOptions: page.ControlOptions{
-                Class:          "clickable-rows",
+                Class:          "gr-clickable-rows",
             },
             Columns:[]{{= ctrlPkg }}.ColumnCreator {
 {{for _,col := range t.Columns }}

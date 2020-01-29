@@ -18,6 +18,8 @@ type SelectListI interface {
 	ItemListI
 	DataManagerEmbedder
 	SetValue(v interface{})
+	Value() interface{}
+	IntValue() int
 }
 
 // SelectList is typically a dropdown list with a single selection. Items are selected by id number, and the SelectList
@@ -321,6 +323,11 @@ func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 func GetSelectList(c page.ControlI, id string) *SelectList {
 	return c.Page().GetControl(id).(*SelectList)
 }
+
+func GetSelectListI(c page.ControlI, id string) SelectListI {
+	return c.Page().GetControl(id).(SelectListI)
+}
+
 
 func init() {
 	page.RegisterControl(&SelectList{})
