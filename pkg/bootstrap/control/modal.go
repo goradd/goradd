@@ -42,8 +42,7 @@ type Modal struct {
 
 // event codes
 const (
-	ButtonClick = iota + 10000
-	DialogClosed
+	DialogClosed = iota + 10000
 )
 
 func NewModal(parent page.ControlI, id string) *Modal {
@@ -149,17 +148,32 @@ func (d *Modal) AddButton(
 	btn := NewButton(d.buttonBar, d.ID()+"-btn-"+id)
 	btn.SetLabel(label)
 
-	if options != nil && options.IsClose {
-		btn.SetAttribute("data-dismiss", "modal") // make it a close button
-	} else if options != nil && options.ConfirmationMessage != ""{
-		btn.On(event.Click(),
-			action.Group(
-				action.Confirm(options.ConfirmationMessage),
-				action.Trigger(d.ID(), event.DialogButtonEvent, id),
-			),
-		)
-	} else {
-		btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
+	if options != nil {
+		if options.IsClose {
+			btn.SetAttribute("data-dismiss", "modal") // make it a close button
+		} else if options.ConfirmationMessage == "" {
+			if options.OnClick != nil {
+				btn.On(event.Click(), options.OnClick)
+			} else {
+				btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
+			}
+		} else {
+			if options.OnClick != nil {
+				btn.On(event.Click(),
+					action.Group(
+						action.Confirm(options.ConfirmationMessage),
+						options.OnClick,
+					),
+				)
+			} else {
+				btn.On(event.Click(),
+					action.Group(
+						action.Confirm(options.ConfirmationMessage),
+						action.Trigger(d.ID(), event.DialogButtonEvent, id),
+					),
+				)
+			}
+		}
 	}
 
 	if (options == nil || !options.PushLeft) && !d.foundRight {
@@ -180,6 +194,10 @@ func (d *Modal) AddButton(
 			if _, ok := options.Options["size"]; ok {
 				btn.SetButtonSize(options.Options["size"].(ButtonSize))
 			}
+		}
+
+		if options.IsPrimary {
+			btn.SetIsPrimary(true)
 		}
 	}
 
@@ -215,7 +233,7 @@ func (d *Modal) AddCloseButton(label string, id string) {
 	d.AddButton(label, id, &control.DialogButtonOptions{IsClose: true})
 }
 
-func (d *Modal) PrivateAction(ctx context.Context, a page.ActionParams) {
+func (d *Modal) PrivateAction(_ context.Context, a page.ActionParams) {
 	switch a.ID {
 	case DialogClosed:
 		d.closed()
@@ -242,7 +260,7 @@ func (d *Modal) closed() {
 	d.SetVisible(false)
 }
 
-func (d *Modal) PutCustomScript(ctx context.Context, response *page.Response) {
+func (d *Modal) PutCustomScript(_ context.Context, response *page.Response) {
 	var backdrop interface{}
 
 	switch d.backdrop {
@@ -263,39 +281,6 @@ func (d *Modal) PutCustomScript(ctx context.Context, response *page.Response) {
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }
 
-/**
-Alert creates a message dialog.
-
-If you specify no buttons, a close box in the corner will be created that will just close the dialog. If you
-specify just a string in buttons, or just one string as a slice of strings, one button will be shown that will just close the message.
-
-If you specify more than one button, the first button will be the default button (the one pressed if the user presses the return key). In
-this case, you will need to detect the button by adding a On(event.DialogButton(), action) to the dialog returned.
-You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
-*/
-func BootstrapAlert(form page.FormI, id string, message string, buttons interface{}) control.DialogI {
-	dlg := NewModal(form, id)
-	dlg.SetText(message)
-	if buttons != nil {
-		switch b := buttons.(type) {
-		case string:
-			dlg.AddCloseButton(b, "")
-		case []string:
-			if len(b) == 1 {
-				dlg.AddCloseButton(b[0], "")
-			} else {
-				dlg.AddButton(b[0], "", &control.DialogButtonOptions{Options: map[string]interface{}{"style": ButtonStylePrimary}})
-				for _, l := range b[1:] {
-					dlg.AddButton(l, "", nil)
-				}
-			}
-		}
-	} else {
-		dlg.SetHasCloseBox(true)
-	}
-	dlg.Show()
-	return dlg
-}
 
 type TitleBar struct {
 	control.Panel
@@ -311,7 +296,6 @@ func NewTitleBar(parent page.ControlI, id string) *TitleBar {
 }
 
 func init() {
-	control.SetAlertFunction(BootstrapAlert)
 	control.SetNewDialogFunction(func(form page.FormI, id string) control.DialogI {
 		return NewModal(form, id)
 	})

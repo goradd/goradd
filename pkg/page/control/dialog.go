@@ -11,25 +11,10 @@ import (
 
 // event codes
 const (
-	ButtonClick = iota + 3000
-	DialogClosed
+	DialogClosed = iota + 3000
 )
 
-const DialogButtonEvent = "gr-dlgbtn"
 const DialogOverlayID = "gr-dlg-overlay"
-
-// DialogStyle represents the style of the dialog, whether its a plain dialog (the default),
-// or whether it should display additional indicators showing that its indicating an error, warning,
-// information, or success. Not all css frameworks support all of these styles.
-type DialogStyle int
-
-const (
-	DialogStyleDefault DialogStyle = iota
-	DialogStyleError
-	DialogStyleWarning
-	DialogStyleInfo
-	DialogStyleSuccess
-)
 
 // DialogI defines the publicly consumable api that the goradd framework uses to interact with a dialog.
 //
@@ -55,12 +40,15 @@ type DialogI interface {
 
 	SetTitle(string)
 	SetDialogStyle(state DialogStyle)
+	SetHasCloseBox(bool)
 	Show()
 	Hide()
 	AddButton(label string, id string, options *DialogButtonOptions)
 	AddCloseButton(label string, id string)
 	SetButtonVisible(id string, visible bool)
 	SetButtonStyle(id string, a html.Style)
+	RemoveButton(id string)
+	RemoveAllButtons()
 }
 
 // A Dialog is a control the pops up in front of everything on a page, with an overlay as its background. It usually
@@ -72,24 +60,6 @@ type Dialog struct {
 	closeBoxID  string
 	dialogStyle DialogStyle
 	title       string
-}
-
-// DialogButtonOptions are optional additional items you can add to a dialog button.
-type DialogButtonOptions struct {
-	// Validates indicates that this button will validate the dialog
-	Validates bool
-	// The ConfirmationMessage string will appear with a yes/no box making sure the user wants the action.
-	// This is usually used when the action could be destructive, like a Delete button.
-	ConfirmationMessage string
-	// PushLeft pushes this button to the left side of the dialog. Buttons are typically aligned right.
-	// This is helpful to separate particular buttons from the main grouping of buttons. Be sure to insert
-	// all the PushLeft buttons before the other buttons.
-	PushLeft bool
-	// IsClose will set the button up to automatically close the dialog. Detect closes with the DialogCloseEvent if needed.
-	// The button will not send a DialogButton event.
-	IsClose bool
-	// Options are additional options specific to the dialog implementation you are using.
-	Options map[string]interface{}
 }
 
 // NewDialog creates a new dialog.
@@ -203,6 +173,10 @@ func (d *Dialog) AddButton(
 			btn.SetValidationType(page.ValidateContainer)
 		}
 
+		if options.IsPrimary {
+			btn.SetIsPrimary(true)
+		}
+
 		if options.PushLeft {
 			btn.AddClass("push-left")
 			btn.SetAttribute("tabindex", 10000)
@@ -211,14 +185,27 @@ func (d *Dialog) AddButton(
 		}
 
 		if options.ConfirmationMessage == "" {
-			btn.On(event.Click(), action.Trigger(d.ID(), DialogButtonEvent, id))
+			if options.OnClick != nil {
+				btn.On(event.Click(), options.OnClick)
+			} else {
+				btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
+			}
 		} else {
-			btn.On(event.Click(),
-				action.Group(
-					action.Confirm(options.ConfirmationMessage),
-					action.Trigger(d.ID(), DialogButtonEvent, id),
-				),
-			)
+			if options.OnClick != nil {
+				btn.On(event.Click(),
+					action.Group(
+						action.Confirm(options.ConfirmationMessage),
+						options.OnClick,
+					),
+				)
+			} else {
+				btn.On(event.Click(),
+					action.Group(
+						action.Confirm(options.ConfirmationMessage),
+						action.Trigger(d.ID(), event.DialogButtonEvent, id),
+					),
+				)
+			}
 		}
 	}
 
@@ -289,7 +276,7 @@ func (d *Dialog) AddCloseButton(label string, id string) {
 
 // Action is called by the framework and will respond to the DialogClose action sent by any close buttons on the
 // page to close the dialog. You do not normally need to call this.
-func (d *Dialog) Action(ctx context.Context, a page.ActionParams) {
+func (d *Dialog) Action(_ context.Context, a page.ActionParams) {
 	switch a.ID {
 	case DialogClosed:
 		d.Hide()
@@ -380,62 +367,6 @@ func (d *Dialog) Deserialize(dec page.Decoder) (err error) {
 	}
 
 	return
-}
-
-func GetDialog(c page.ControlI, id string) *Dialog {
-	return c.Page().GetControl(id).(*Dialog)
-}
-
-
-// Alert is used by the framework to create an alert type message dialog.
-//
-// If you specify no buttons, a close box in the corner will be created that will just close the dialog. If you
-// specify just a string in buttons, or just one string as a slice of strings,
-// one button will be shown that will just close the message.
-//
-// If you specify more than one button, the first button will be the default button (the one pressed if the
-// user presses the return key). In this case, you will need to detect the button by adding a
-// On(event.DialogButton(), action) to the dialog returned.
-// You will also be responsible for calling "Close()" on the dialog after detecting a button in this case.
-//
-// Call SetAlertFunction to register a different alert function for the framework to use.
-func Alert(form page.FormI, id string, message string, buttons interface{}) DialogI {
-	return alertFunc(form, id, message, buttons)
-}
-
-func defaultAlert(form page.FormI, id string, message string, buttons interface{}) DialogI {
-	dlg := NewDialog(form, id)
-	dlg.SetText(message)
-	if buttons != nil {
-		switch b := buttons.(type) {
-		case string:
-			dlg.AddCloseButton(b, "")
-		case []string:
-			if len(b) == 1 {
-				dlg.AddCloseButton(b[0], "")
-			} else {
-				for _, l := range b {
-					dlg.AddButton(l, "", nil)
-				}
-			}
-		}
-	} else {
-		dlg.SetHasCloseBox(true)
-	}
-	dlg.Show()
-	return dlg
-}
-
-type AlertFuncType func(form page.FormI, id string,  message string, buttons interface{}) DialogI
-
-var alertFunc AlertFuncType = defaultAlert // default to our built in one
-
-// SetAlertFunction will set the entire framework's alert function to this function. The alert function
-// is called whenever the framework needs to display an alert. Currently, this is done only from the code
-// generated forms. Css/js frameworks that want to work with goradd should call this from an init()
-// function to enable goradd to use it to display its alerts.
-func SetAlertFunction(f AlertFuncType) {
-	alertFunc = f
 }
 
 // NewDialogI creates a new dialog in a css framework independent way, by returning a DialogI interface.

@@ -29,7 +29,7 @@ func TableSort() *page.Event {
 	return e
 }
 
-const DialogButtonEvent = "grdlgbtn"
+const DialogButtonEvent = "gr-dlgbtn"
 
 // DialogButton returns an event that detects clicking on a dialog's button.
 func DialogButton() *page.Event {

@@ -12,14 +12,14 @@ type ButtonI interface {
 	page.ControlI
 	SetLabel(label string) page.ControlI
 	OnSubmit(action action.ActionI) page.ControlI
-	SetSubmit(s bool) ButtonI
+	SetIsPrimary(p bool)
 }
 
 // Button is a standard html form button. It corresponds to a <button> tag in html.
 //
 // By default, we set the "type" attribute of the button to "button". This will prevent
 // the button from submitting the form when the user presses the return key.
-// To choose which button will submit on a return, call SetSubmit() or set the "type" attribute to "submit".
+// To choose which button will submit on a return, call SetIsPrimary() or set the "type" attribute to "submit".
 //
 // If multiple "submit" buttons are on the page, the default behavior
 // will occur if you there are text boxes on the
@@ -34,7 +34,7 @@ type Button struct {
 
 // NewButton creates a new standard html button
 func NewButton(parent page.ControlI, id string) *Button {
-	b := &Button{}
+	b := new(Button)
 	b.Self = b
 	b.Init(parent, id)
 	return b
@@ -60,15 +60,14 @@ func (b *Button) SetLabel(label string) page.ControlI {
 	return b.this()
 }
 
-// SetSubmit will set this button to be the default button on the form, which is the button clicked when
+// SetIsPrimary will set this button to be the default button on the form, which is the button clicked when
 // the user presses a return. Some browsers only respond to this when there is a textbox on the screen.
-func (b *Button) SetSubmit(s bool) ButtonI {
+func (b *Button) SetIsPrimary(s bool) {
 	if s {
 		b.SetAttribute("type", "submit")
 	} else {
 		b.SetAttribute("type", "button")
 	}
-	return b.this()
 }
 
 
@@ -143,7 +142,7 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 		ctrl.SetValidationType(c.ValidationType)
 	}
 	if c.IsPrimary {
-		ctrl.SetSubmit(true)
+		ctrl.SetIsPrimary(true)
 	}
 	ctrl.ApplyOptions(ctx, c.ControlOptions)
 }
