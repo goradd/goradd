@@ -29,7 +29,7 @@ func (n *ListFormTemplate) FileName(key string, t generator.TableType) string {
 }
 
 func (n *ListFormTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
-	{{: "form/listform.tmpl" }}
+	{{: "form/listForm.tmpl" }}
 }
 
 func (n *ListFormTemplate) Overwrite() bool {

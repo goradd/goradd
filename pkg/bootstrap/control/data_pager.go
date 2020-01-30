@@ -24,10 +24,10 @@ type DataPager struct {
 }
 
 func NewDataPager(parent page.ControlI, id string, pagedControl control.PagedControlI) *DataPager {
-	d := DataPager{}
+	d := new (DataPager)
 	d.Self = d
 	d.Init(parent, id, pagedControl)
-	return &d
+	return d
 }
 
 func (d *DataPager) Init(parent page.ControlI, id string, pagedControl control.PagedControlI) {

@@ -25,7 +25,7 @@ Repeaters can use Pagers to control which data items are shown in the repeater.
 `)
 
 	{
-		err := ctrl.Page().GetControl("pager1").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("pager1").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -38,7 +38,7 @@ Repeaters can use Pagers to control which data items are shown in the repeater.
 `)
 
 	{
-		err := ctrl.Page().GetControl("repeater1").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("repeater1").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

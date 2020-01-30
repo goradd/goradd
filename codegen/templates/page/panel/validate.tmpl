@@ -9,7 +9,7 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
         pkdesc := t.ControlDescription(pkcol)
         for _,idx := range t.Indexes {
             if idx.IsUnique {
-                var columns []*generator.ColumnType
+                var columns []*db.Column
                 var names string
 
                 for _,name := range idx.ColumnNames {

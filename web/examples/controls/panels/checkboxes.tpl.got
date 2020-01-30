@@ -19,7 +19,7 @@ and the CheckboxColumn for working with a column of checkboxes in an html table.
 <p>
 Dealing with labels and checkboxes can be tricky. Html uses a {{! <label>}} tag to associate text
 with a checkbox. The problem is that {{! <label>}} tags are also used in html to associate titles
-with input elments like textboxes and select lists. What if you want both a title, and a checkbox
+with input elements like textboxes and select lists. What if you want both a title, and a checkbox
 label? You need two labels!
 </p>
 <p>

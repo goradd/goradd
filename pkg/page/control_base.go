@@ -1891,6 +1891,10 @@ type EventList []struct {
 
 type DataAttributeMap map[string]interface{}
 
+func Nodes(n ...query.NodeI) []query.NodeI {
+	return n
+}
+
 // ControlOptions are options common to all controls
 type ControlOptions struct {
 	// Attributes will set the attributes of the control. Use DataAttributes to set data attributes, Styles to set styles, and Class to set the class

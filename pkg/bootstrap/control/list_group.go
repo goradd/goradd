@@ -54,7 +54,7 @@ type ListGroupCreator struct {
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	page.ControlOptions
-	// ItemTag is the tag of the items. It defaults to "a" tags.
+	// ItemTag is the tag of the items. It defaults to "li".
 	ItemTag string
 }
 

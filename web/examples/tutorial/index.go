@@ -75,16 +75,14 @@ func (f *IndexForm) LoadControls(ctx context.Context) {
 }
 
 func (f *IndexForm) ShowSourceDialog() {
-	if f.Page().HasControl("sourceDialog") {
-		GetDialog(f, "sourceDialog").Show()
-	} else {
-		d := NewDialog(f, "sourceDialog")
+	d, isNew := GetDialogPanel(f,"sourceDialog")
+	if isNew {
 		d.SetTitle("Source")
 		d.AddCloseButton("Close", "close")
 		d.SetHasCloseBox(true)
 		NewSourcePanel(d, "sourcePanel")
-		d.Show()
 	}
+	d.Show()
 }
 
 

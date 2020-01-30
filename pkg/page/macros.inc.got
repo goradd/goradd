@@ -10,11 +10,25 @@
 {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
 {{end}}
 
+{{# drawChild is like draw, but the given id is appended to the parent control's id. }}
+
+{{define drawChild}}
+{{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+{{end}}
+
+
 {{define drawIf}}
 {{if ctrl.Page().HasControl("$1")}}
 {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
 {{if}}
 {{end}}
+
+{{define drawChildIf}}
+{{if ctrl.Page().HasControl(ctrl.ID() + "$1")}}
+{{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+{{if}}
+{{end}}
+
 
 
 {{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}

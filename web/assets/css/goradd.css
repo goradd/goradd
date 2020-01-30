@@ -220,20 +220,17 @@ div[data-grctl=dialog] {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding-left: 10px;
-  padding-right: 10px;
   border: solid black 2px;
   border-radius: 4px;
-  padding-top: 34px;
-  padding-bottom: 34px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
 }
 div[data-grctl=dialog] .gr-dialog-title {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
+  order: 1;
   height: 24px;
   padding: 5px;
+  white-space: nowrap;
   background-color: rgba(74, 86, 124, 0.11);
 }
 div[data-grctl=dialog] .gr-dialog-title .gr-dialog-close {
@@ -241,15 +238,13 @@ div[data-grctl=dialog] .gr-dialog-title .gr-dialog-close {
   margin-right: 5px;
 }
 div[data-grctl=dialog] .gr-dlg-content {
-  position: relative;
+  order: 2;
   height: 100%;
+  padding: 10px;
 }
 div[data-grctl=dialog] .gr-dialog-buttons {
-  position: absolute;
-  left: 0;
-  bottom: 0;
+  order: 3;
   height: 24px;
-  right: 0;
   padding: 5px;
   background-color: rgba(74, 86, 124, 0.11);
   border-top: solid black 1px;

@@ -37,7 +37,7 @@ with a checkbox. The problem is that `)
 	buf.WriteString(`&lt;label&gt;`)
 
 	buf.WriteString(` tags are also used in html to associate titles
-with input elments like textboxes and select lists. What if you want both a title, and a checkbox
+with input elements like textboxes and select lists. What if you want both a title, and a checkbox
 label? You need two labels!
 </p>
 <p>
@@ -62,7 +62,7 @@ checkboxes.
 `)
 
 	{
-		err := ctrl.Page().GetControl("checkbox1-ff").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("checkbox1-ff").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ checkboxes.
 `)
 
 	{
-		err := ctrl.Page().GetControl("checkbox2-ff").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("checkbox2-ff").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := ctrl.Page().GetControl("radio1").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("radio1").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := ctrl.Page().GetControl("radio2").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("radio2").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -122,7 +122,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := ctrl.Page().GetControl("radio3").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("radio3").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -135,7 +135,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := ctrl.Page().GetControl("infoPanel").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("infoPanel").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -150,7 +150,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := ctrl.Page().GetControl("ajaxButton").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("ajaxButton").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}
@@ -163,7 +163,7 @@ each button. The browser will then make sure only one gets selected.
 `)
 
 	{
-		err := ctrl.Page().GetControl("serverButton").Draw(ctx, buf)
+		err := ctrl.Page().GetControl("serverButton").ProcessAttributeString(``).Draw(ctx, buf)
 		if err != nil {
 			return err
 		}

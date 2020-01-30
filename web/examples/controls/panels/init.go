@@ -14,5 +14,6 @@ func init() {
 	controls.RegisterPanel("tableselect", "Tables - Select Row", NewTableSelectPanel)
 	controls.RegisterPanel("hlist", "Nested Lists", NewHListPanel)
 	controls.RegisterPanel("repeater", "Repeaters", NewRepeaterPanel)
+	controls.RegisterPanel("dialogs", "Dialogs", NewDialogsPanel)
 }
 
