@@ -86,7 +86,7 @@ func (b *Button) DrawingAttributes(ctx context.Context) html.Attributes {
 
 	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts
 	a.Set("value", b.ID())
-	a.Set("type", "submit")
+	//a.Set("type", "submit")
 
 	return a
 }

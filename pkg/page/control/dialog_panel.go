@@ -165,3 +165,7 @@ func YesNo(parent page.ControlI, message string, resultAction action.ActionI) *D
 	p.OnButton(resultAction)
 	return p
 }
+
+func init() {
+	page.RegisterControl(&DialogPanel{})
+}

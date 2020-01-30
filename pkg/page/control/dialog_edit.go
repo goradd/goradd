@@ -106,3 +106,7 @@ func (p *DialogEditPanel) EditPanel() EditablePanel {
 	}
 	return nil
 }
+
+func init() {
+	page.RegisterControl(&DialogEditPanel{})
+}

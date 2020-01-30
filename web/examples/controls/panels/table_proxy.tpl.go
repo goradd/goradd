@@ -57,7 +57,7 @@ that allow you to click on a record to see detail of the record.
 `)
 
 		{
-			err := ctrl.Page().GetControl("table1").Draw(ctx, buf)
+			err := ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, buf)
 			if err != nil {
 				return err
 			}
@@ -70,7 +70,7 @@ that allow you to click on a record to see detail of the record.
 `)
 
 		{
-			err := ctrl.Page().GetControl("personPanel").Draw(ctx, buf)
+			err := ctrl.Page().GetControl("personPanel").ProcessAttributeString(``).Draw(ctx, buf)
 			if err != nil {
 				return err
 			}

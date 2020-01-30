@@ -101,7 +101,7 @@ func (d *Dialog) Init(parent page.ControlI, id string) {
 	bb := NewPanel(d, d.buttonBarID)
 	bb.AddClass("gr-dialog-buttons")
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
-	d.On(event.DialogClosed().Private(), action.Ajax(d.ID(), DialogClosed))
+	d.On(event.DialogClosed().Validate(page.ValidateNone).Private(), action.Ajax(d.ID(), DialogClosed))
 }
 
 func (d *Dialog) TitleBar() *Panel {
@@ -271,6 +271,7 @@ func (d *Dialog) addCloseBox() {
 func (d *Dialog) AddCloseButton(label string, id string) {
 	btn := NewButton(d.ButtonBar(), id)
 	btn.SetLabel(label)
+	btn.SetValidationType(page.ValidateNone)
 	btn.On(event.Click(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 }
 
@@ -386,6 +387,11 @@ func defaultNewDialogFunc(form page.FormI, id string) DialogI {
 func SetNewDialogFunction(f DialogIFuncType ) {
 	newDialogFunc = f
 }
+
+func RestoreNewDialogFunction() {
+	newDialogFunc = defaultNewDialogFunc
+}
+
 
 func init() {
 	page.RegisterControl(&Dialog{})
