@@ -51,8 +51,9 @@ type DialogI interface {
 	RemoveAllButtons()
 }
 
-// A Dialog is a control the pops up in front of everything on a page, with an overlay as its background. It usually
-// has a close box or button so that it may be closed. Dialogs start out hidden.
+// Dialog is the default implementation of a dialog in Goradd. You should not normally call this directly, but
+// rather call GetDialogPanel to create a dialog. GetDialogPanel will then call NewDialogI to create a dialog
+// wraps the panel. To change the default dialog style to a different one, call SetNewDialogFunction()
 type Dialog struct {
 	Panel
 	buttonBarID string
@@ -154,8 +155,7 @@ func (d *Dialog) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err erro
 	return
 }
 
-// AddButton adds the given button to the dialog. The first button added is the
-// default button that gets submitted when an enter key is pressed in a textbox.
+// AddButton adds the given button to the dialog.
 func (d *Dialog) AddButton(
 	label string,
 	id string,
@@ -384,10 +384,14 @@ func defaultNewDialogFunc(form page.FormI, id string) DialogI {
 	return NewDialog(form, id)
 }
 
+// SetNewDialogFunction sets the function that will create new dialogs. This is normally called by a CSS dialog implementation
+// to set how dialogs are created in the application.
 func SetNewDialogFunction(f DialogIFuncType ) {
 	newDialogFunc = f
 }
 
+// RestoreNewDialogFunction restores the new dialog function to the default one. This is primarily used by the example
+// code, or in situations where you have multiple styles of dialog to demonstrate.
 func RestoreNewDialogFunction() {
 	newDialogFunc = defaultNewDialogFunc
 }
