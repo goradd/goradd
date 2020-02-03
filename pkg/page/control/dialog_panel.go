@@ -43,10 +43,16 @@ const (
 	DialogStyleSuccess
 )
 
+// A DialogPanel is the interface between the default dialog style, and a panel.
+//To put a dialog on the screen, call GetDialogPanel()
+// and then add child controls to that panel, call AddButton() to add buttons to the dialog, and then call Show().
 type DialogPanel struct {
 	Panel
 }
 
+// GetDialogPanel will return a new dialog panel if the given dialog panel does not already exist on the form,
+// or it returns the dialog panel with the given id that already exists. isNew will indicate whether it
+// created a new dialog, or is returning an existing one.
 func GetDialogPanel(parent page.ControlI, id string) (dialogPanel *DialogPanel, isNew bool) {
 	if parent.Page().HasControl(id)  { // dialog has already been created, but is hidden
 		return parent.Page().GetControl(id).(*DialogPanel), false
@@ -64,63 +70,75 @@ func (p *DialogPanel) Init(parent page.ControlI, id string)  {
 	p.AddClass("gr-dlg-pnl") // Give the ability to provide a consistent style across the app to all panels in a dialog
 }
 
-
-func (p *DialogPanel) GetDialog() DialogI {
+func (p *DialogPanel) getDialog() DialogI {
 	return p.Page().GetControl(p.ID() + "-dlg").(DialogI)
 }
 
+// OnClose attaches an action that will happen when the dialog closes.
 func (p *DialogPanel) OnClose(a action.ActionI) {
-	p.GetDialog().On(event.DialogClosed().Validate(page.ValidateNone), a)
+	p.getDialog().On(event.DialogClosed().Validate(page.ValidateNone), a)
 }
 
+// OnButton attaches an action handler that responds to button presses. The id of the pressed button will
+// be in the event value of the action.
 func (p *DialogPanel) OnButton(a action.ActionI) {
-	p.GetDialog().On(event.DialogButton(), a)
+	p.getDialog().On(event.DialogButton(), a)
 }
 
+// Show will bring a hidden dialog up on the screen.
 func (p *DialogPanel) Show() {
-	p.GetDialog().Show()
+	p.getDialog().Show()
 }
 
+// Hide will make a dialog invisible. The dialog will still be part of the form object.
 func (p *DialogPanel) Hide() {
-	p.GetDialog().Hide()
+	p.getDialog().Hide()
 }
 
+// SetTitle sets the title of the dialog
 func (p *DialogPanel) SetTitle(t string) {
-	p.GetDialog().SetTitle(t)
+	p.getDialog().SetTitle(t)
 }
 
+// SetDialogStyle sets the style of the dialog.
 func (p *DialogPanel) SetDialogStyle(s DialogStyle) {
-	p.GetDialog().SetDialogStyle(s)
+	p.getDialog().SetDialogStyle(s)
 	p.Refresh()
 }
 
+// SetHasCloseBox will put a close box in the upper right corner of the dialog
 func (p *DialogPanel) SetHasCloseBox(h bool) {
-	p.GetDialog().SetHasCloseBox(h)
+	p.getDialog().SetHasCloseBox(h)
 }
 
+// AddButton adds a button to the dialog.
 func (p *DialogPanel) AddButton(label string, id string, options *DialogButtonOptions) {
-	p.GetDialog().AddButton(label, id, options)
+	p.getDialog().AddButton(label, id, options)
 }
 
+// AddCloseButton will add a button to the dialog that just closes the dialog.
 func (p *DialogPanel) AddCloseButton(label string, id string) {
-	p.GetDialog().AddCloseButton(label, id)
+	p.getDialog().AddCloseButton(label, id)
 }
 
+// SetButtonVisible will show or hide a specific button that has already been added to the dialog.
 func (p *DialogPanel) SetButtonVisible(id string, visible bool) {
-	p.GetDialog().SetButtonVisible(id, visible)
+	p.getDialog().SetButtonVisible(id, visible)
 }
+
+// SetButtonStyle sets the style of the given button
 func (p *DialogPanel) SetButtonStyle(id string, a html.Style) {
-	p.GetDialog().SetButtonStyle(id, a)
+	p.getDialog().SetButtonStyle(id, a)
 }
 
 // RemoveButton removes the given button from the dialog
 func (p *DialogPanel) RemoveButton(id string) {
-	p.GetDialog().RemoveButton(id)
+	p.getDialog().RemoveButton(id)
 }
 
 // RemoveAllButtons removes all the buttons from the dialog
 func (p *DialogPanel) RemoveAllButtons() {
-	p.GetDialog().RemoveAllButtons()
+	p.getDialog().RemoveAllButtons()
 }
 
 // Alert is used by the framework to create an alert type message dialog.
@@ -160,6 +178,7 @@ func Alert(parent page.ControlI, message string, buttons interface{}) *DialogPan
 	return dialogPanel
 }
 
+// YesNo is an alert that has just two buttons, a Yes and a No button.
 func YesNo(parent page.ControlI, message string, resultAction action.ActionI) *DialogPanel {
 	p := Alert(parent, message, []string{parent.GT("Yes"), parent.GT("No")})
 	p.OnButton(resultAction)
