@@ -35,6 +35,8 @@ func initGoradd() {
 		config.SetHtmlDirectory(filepath.Join(config.ProjectDir(), "web", "html"))
 	}
 
+	//config.ApiPrefix = "/api/" // turn on the api handler.  Set to whatever prefix you want. Override the ServeApiRequest() to receive requests
+
 }
 
 // setupPorts gives you an opportunity to hardcode the port values and certificate locations in your app.
