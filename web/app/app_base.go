@@ -212,6 +212,9 @@ func (a *Application) MakeAppServer() http.Handler {
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler(buf)
 	h = a.ServeStaticFileHandler(buf, h) // TODO: Speed this handler up by checking to see if the url is a goradd form before deciding to get context and session
+	if config.ApiPrefix != "" {
+		h = a.ServeApiHandler(h)
+	}
 	h = a.ServeAppHandler(buf, h)
 	h = a.PutContextHandler(h)
 	h = a.this().SessionHandler(h)
