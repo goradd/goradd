@@ -1,4 +1,6 @@
+// createControls.tmpl
 
+{{
 // CreateControls creates the controls in the edit panel and adds them to the panel.
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     p.AddControls(ctx,
@@ -70,7 +72,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
         }
 
     }
-/*
+
     for _,ref := range t.ManyManyReferences {
         cd := t.ControlDescription(ref)
         if cd == nil {continue}
@@ -81,7 +83,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
         }
 
     }
-*/
+
 }}
     )
 }
@@ -166,5 +168,7 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.
         }
     }
 */
+}}
+
 }}
 
