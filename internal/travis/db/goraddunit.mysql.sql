@@ -3,17 +3,28 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Jan 27, 2020 at 02:03 AM
+-- Generation Time: Feb 05, 2020 at 03:17 AM
 -- Server version: 5.7.28
 -- PHP Version: 7.2.19
 
-SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
 --
 -- Database: `goraddUnit`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `double_index`
+--
+
+CREATE TABLE `double_index` (
+  `id` int(11) NOT NULL,
+  `fieldInt` int(11) NOT NULL,
+  `fieldString` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -181,6 +192,13 @@ CREATE TABLE `unsupported_types` (
 --
 
 --
+-- Indexes for table `double_index`
+--
+ALTER TABLE `double_index`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `fieldInt` (`fieldInt`,`fieldString`);
+
+--
 -- Indexes for table `forward_cascade`
 --
 ALTER TABLE `forward_cascade`
@@ -261,37 +279,37 @@ ALTER TABLE `forward_cascade`
 -- AUTO_INCREMENT for table `forward_cascade_unique`
 --
 ALTER TABLE `forward_cascade_unique`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `forward_null`
 --
 ALTER TABLE `forward_null`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `forward_null_unique`
 --
 ALTER TABLE `forward_null_unique`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `forward_restrict`
 --
 ALTER TABLE `forward_restrict`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `forward_restrict_unique`
 --
 ALTER TABLE `forward_restrict_unique`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `reverse`
 --
 ALTER TABLE `reverse`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=183;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `type_test`
@@ -344,4 +362,3 @@ ALTER TABLE `forward_restrict`
 --
 ALTER TABLE `forward_restrict_unique`
   ADD CONSTRAINT `forward_restrict_unique_ibfk_1` FOREIGN KEY (`reverse_id`) REFERENCES `reverse` (`id`);
-SET FOREIGN_KEY_CHECKS=1;

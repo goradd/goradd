@@ -408,3 +408,4 @@ func TestJson(t *testing.T) {
 	assert.Equal(t, "Completed", m["projectStatusType"])
 	assert.Equal(t, "Karen", m["manager"].(map[string]interface{})["firstName"])
 }
+

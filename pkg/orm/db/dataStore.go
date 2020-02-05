@@ -34,12 +34,12 @@ type DatabaseI interface {
 
 	// Update will put the given values into a record that already exists in the database. The "fields" value
 	// should include only fields that have changed.
-	Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue string)
+	Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue interface{})
 	// Insert will insert a new record into the database with the given values, and return the new record's primary key value.
 	// The fields value should include all the required values in the database.
 	Insert(ctx context.Context, table string, fields map[string]interface{}) string
 	// Delete will delete the given record from the database
-	Delete(ctx context.Context, table string, pkName string, pkValue string)
+	Delete(ctx context.Context, table string, pkName string, pkValue interface{})
 	// Associate sets a many-many relationship to the given values.
 	// The values are taken from the ORM, and are treated differently depending on whether this is a SQL or NoSQL database.
 	Associate(ctx context.Context,

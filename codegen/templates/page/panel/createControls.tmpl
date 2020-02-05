@@ -105,6 +105,9 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 }
 
 func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+    if !p.Page().HasControl({{= cd.ControlIDConst() }}) {
+        return nil
+    }
 	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
@@ -128,6 +131,9 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 }
 
 func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+    if !p.Page().HasControl({{= cd.ControlIDConst() }}) {
+        return nil
+    }
 	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
@@ -150,6 +156,9 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 }
 
 func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+    if !p.Page().HasControl({{= cd.ControlIDConst() }}) {
+        return nil
+    }
 	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
