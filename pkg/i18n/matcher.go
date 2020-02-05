@@ -110,14 +110,14 @@ func SetLanguage(ctx context.Context, i int) {
 }
 
 func CurrentLanguageAttribute(ctx context.Context) string {
-	v, _ := session.GetInt(ctx, goradd.SessionLanguage)
+	v := session.GetInt(ctx, goradd.SessionLanguage)
 	return langAttributes[v]
 }
 
 // CurrentLanguage returns the ordinal value of the current language, and the canonical value
 // If the language setting is not yet set, it returns the default language
 func CurrentLanguage(ctx context.Context) (int, string) {
-	v, _ := session.GetInt(ctx, goradd.SessionLanguage)
+	v := session.GetInt(ctx, goradd.SessionLanguage)
 	return v, langAttributes[v]
 }
 
