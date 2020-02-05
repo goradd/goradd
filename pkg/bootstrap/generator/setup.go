@@ -29,7 +29,7 @@ func BootstrapCodegenSetup() {
 				return
 			}
 
-			if col.IsReference() {
+			if col.IsReference() || col.IsType() {
 				return "github.com/goradd/goradd/pkg/bootstrap/control/SelectList"
 			}
 

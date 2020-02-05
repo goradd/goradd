@@ -15,14 +15,7 @@ import (
 // that you do not want exposed.
 func DebugErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, buf *bytes.Buffer) {
 
-	buf.WriteString(`<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Error</title>
-</head>
-<body>
-<h1>Error</h1>
+	buf.WriteString(`<h1 id="err-title">Error</h1>
 `)
 	items := strings.Split(err.Error(), "\n")
 	errTitle := items[0]
@@ -65,8 +58,6 @@ func DebugErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, buf
 
 	buf.WriteString(`
 
-</body>
-</html>
 
 `)
 

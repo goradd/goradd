@@ -45,7 +45,7 @@ func testJsUnit(t *TestForm)  {
 	t.LoadUrl(JsUnitTestFormPath)
 	t.Click("startButton")
 
-	h := t.InnerHtml("results")
+	h := t.ControlInnerHtml("results")
 	t.AssertEqual("Done", h)
 
 	t.Done("Complete")

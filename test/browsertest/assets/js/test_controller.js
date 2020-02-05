@@ -169,6 +169,21 @@ goradd.widget("goradd.testController", {
         goradd.setControlValue(this.element.id, "jsvalue", ret);
         this._fireStepEvent(step);
     },
+    // getHtmlElementInfo returns a specific value from an html object identified by the given selector.
+    // TODO: chain values, and respond to functions and array references. "attributes.getNamedItem("width").value" would return the value of the width attribute
+    getHtmlElementInfo: function (step, selector, attr) {
+        goradd.log("GetHtml", step, selector, attr);
+
+        var item = this._window.goradd.qs(selector);
+        var ret = "";
+        if (item) {
+            ret = item[attr];
+        }
+
+        goradd.setControlValue(this.element.id, "jsvalue", ret);
+        this._fireStepEvent(step);
+    },
+
     typeChars: function (step, id, chars) {
         var g = this._getGoraddObj(id);
         if (!g) {

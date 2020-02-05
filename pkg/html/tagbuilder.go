@@ -87,7 +87,7 @@ func (b *TagBuilder) IsVoid() *TagBuilder {
 	return b
 }
 
-// InnerHtml sets the inner html of the tag. Remember this is HTML, and will not be escaped.
+// ControlInnerHtml sets the inner html of the tag. Remember this is HTML, and will not be escaped.
 func (b *TagBuilder) InnerHtml(html string) *TagBuilder {
 	b.innerHtml = html
 	return b

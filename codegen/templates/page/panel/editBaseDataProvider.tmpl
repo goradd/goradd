@@ -18,9 +18,9 @@ for _,col := range t.Columns {
         items = {{= ctrlPkg }}.NoSelectionItemList()
 {{else}}
     {{if col.IsType() }}
-        if int(p.{{= t.GoName }}.{{= col.ReferenceFunction() }}()) == 0 {
+        if p.{{= t.GoName }} == nil || int(p.{{= t.GoName }}.{{= col.ReferenceFunction() }}()) == 0 {
     {{else}}
-        if p.{{= t.GoName }}.{{= col.GoName }}() == {{= col.ColumnType.DefaultValue() }} {
+        if p.{{= t.GoName }} == nil || p.{{= t.GoName }}.{{= col.GoName }}() == {{= col.ColumnType.DefaultValue() }} {
     {{if}}
             items = {{= ctrlPkg }}.SelectOneItemList()
         }

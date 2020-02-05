@@ -302,27 +302,37 @@ func (form *TestForm) CallControlFunction(id string, funcName string, params ...
 	return form.Controller.callWidgetFunction(id, funcName, params, form.captureCaller())
 }
 
-// Value will call the .val() function on the given goradd object and return the result.
+// ControlValue will call the .val() function on the given goradd object and return the result.
 func (form *TestForm) ControlValue(id string) interface{} {
 	return form.Controller.callWidgetFunction(id, "val", nil, form.captureCaller())
 
 }
 
-// Attribute will call the jquery .attr("attribute") function on the given html object looking for the given
+// ControlAttribute will call the jquery .attr("attribute") function on the given html object looking for the given
 // attribute name and will return the value.
 func (form *TestForm) ControlAttribute(id string, attribute string) interface{} {
 	return form.Controller.callWidgetFunction(id, "attr", []interface{}{attribute}, form.captureCaller())
 }
 
-func (form *TestForm) HasClass(id string, needle string) bool {
+// ControlHasClass will return true if the given goradd control has the given class attribute
+func (form *TestForm) ControlHasClass(id string, needle string) bool {
 	res := form.Controller.callWidgetFunction(id, "hasClass", []interface{}{needle}, form.captureCaller())
 	return res.(bool)
 }
 
-func (form *TestForm) InnerHtml(id string) string {
+// ControlInnerHtml will return the inner html drawn by a goradd control
+func (form *TestForm) ControlInnerHtml(id string) string {
 	res := form.Controller.callWidgetFunction(id, "html", nil, form.captureCaller())
 	return strings.TrimSpace(res.(string)) // html can have a variety of inconsequential spaces
 }
+
+// HtmlElementInfo will return the inner html drawn by a goradd control
+func (form *TestForm) HtmlElementInfo(selector string, attribute string) string {
+	res := form.Controller.getHtmlElementInfo(selector, attribute, form.captureCaller())
+	if res == nil {return ""}
+	return strings.TrimSpace(res.(string))
+}
+
 
 /*
 func (f *TestForm) TypeValue(id string, chars string) {

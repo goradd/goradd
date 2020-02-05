@@ -584,7 +584,7 @@ goradd = {
         return document.getElementById(t);
     },
     /**
-     * qs is a shortcut for querySelector
+     * qs is a shortcut for document.querySelector
      * @param {string} sel
      * @returns {*}
      */
