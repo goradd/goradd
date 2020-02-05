@@ -1,3 +1,6 @@
+// listFormInit.tmpl
+
+{{
 
 func (f *{{= formName }})Init(ctx context.Context, id string) {
     f.FormBase.Init(ctx, id)
@@ -10,5 +13,4 @@ func init() {
 	page.RegisterForm({{= title }}ListPath,  &{{= formName }}{}, {{= title }}ListID)
 }
 
-
-
+}}

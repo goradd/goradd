@@ -1,0 +1,33 @@
+// editFormCreateControls.tmpl
+
+{{
+
+func (f *{{= formName }}) createControls(ctx context.Context) {
+    f.AddControls(ctx,
+        panel.{{= t.GoName }}EditPanelCreator {
+            ID: {{= title }}EditPanelID,
+        },
+        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+            ID: {{= title }}SaveButtonID,
+            Text: f.GT("Save"),
+            OnSubmit: action.Ajax(f.ID(), {{= title }}SaveAction),
+        },
+        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+            ID: {{= title }}CancelButtonID,
+            Text: f.GT("Cancel"),
+            OnSubmit: action.Ajax(f.ID(), {{= title }}CancelAction),
+  	        ValidationType: page.ValidateNone,
+        },
+        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+            ID: {{= title }}DeleteButtonID,
+            Text: f.GT("Delete"),
+ 	        OnSubmit: action.Group (
+                action.Confirm(f.GT("Are you sure you want to delete this item?")),
+                action.Ajax(f.ID(), {{= title }}DeleteAction),
+ 	        ),
+ 	        ValidationType: page.ValidateNone,
+       },
+    )
+}
+
+}}

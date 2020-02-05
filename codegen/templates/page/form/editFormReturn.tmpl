@@ -1,0 +1,9 @@
+// editFormReturn.tmpl
+
+{{
+
+func (f *{{= formName }}) returnToPrevious(ctx context.Context) {
+	f.PopLocation(ctx, "{{= listFormPath }}")
+}
+
+}}
