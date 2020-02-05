@@ -163,8 +163,8 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.ChooseListValue("selectListWithSize", "2")
 	t.Click(btnID)
 
-	t.AssertEqual(true, t.HasClass("singleSelectList-ff", "error"))
-	t.AssertEqual(true, t.HasClass("multiselectList-ff", "error"))
+	t.AssertEqual(true, t.ControlHasClass("singleSelectList-ff", "error"))
+	t.AssertEqual(true, t.ControlHasClass("multiselectList-ff", "error"))
 
 	t.F(func(f page.FormI) {
 		t.AssertEqual(2, GetSelectList(f, "selectListWithSize").IntValue())
@@ -193,7 +193,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 
 	t.Click(btn)
 
-	t.AssertEqual(true, t.HasClass("multiselectList_ctl", "error"))
+	t.AssertEqual(true, t.ControlHasClass("multiselectList_ctl", "error"))
 
 	t.AssertNotNil(select1.Value())
 

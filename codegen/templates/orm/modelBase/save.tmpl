@@ -185,7 +185,7 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
 }}
 
 {{for _,col := range t.Columns}}
-    {{if !col.IsPk && !col.IsNullable && col.DefaultValue == nil}}
+    {{if !col.IsId && !col.IsNullable && col.DefaultValue == nil}}
         {{# Note: Most likely the user is inserting a new record, but forgot to set a required value, but there is the
               possibility that this is a retrieved record with missing fields (through the Select statement) and those
               missing fields are required, and the user is forcing an insert. }}
@@ -282,7 +282,7 @@ func (o *{{privateName}}Base) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 {{for _,col := range t.Columns}}
 {{g
-    if col.IsPk {continue}
+    if col.IsId {continue}
 }}
 	if o.{{= col.ModelName() }}IsValid {
     {{if col.IsNullable}}

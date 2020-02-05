@@ -1,0 +1,55 @@
+// validate.tmpl
+
+{{
+
+// Validate validates the user's input. This implementation applies validation rules that can be determined by the database structure.
+func (p *{{= panelName }}) Validate(ctx context.Context) bool {
+	isValid := p.Panel.Validate(ctx)
+
+{{g
+    if t.Indexes != nil {
+        for _,idx := range t.Indexes {
+            if idx.IsUnique {
+                var columns []*db.Column
+                var names string
+
+                updateable := false
+                for _,name := range idx.ColumnNames {
+                    col := t.GetColumnByDbName(name)
+                    if col == nil {
+                        panic("Cannot find column " + name + " of table " + t.DbName)
+                    }
+                    columns = append(columns, col)
+                    names += col.GoName
+                    cd := t.ControlDescription(col)
+                    updateable = updateable || (cd.Generator.GenerateUpdate(col,cd) != "")
+                }
+
+                if !updateable {
+                    continue // the controls for this index are all display only, so nothing to validate
+                }
+
+                // TODO: We are not dealing with the situation where one of the control is editable, and another is not
+                // Fix this if this becomes an issue some day
+
+{{
+    if {{for i,_ := range columns}}ctrl{{i i+1}},{{for}}{{- }} := {{for _,col := range columns}}p.Get{{= t.ControlDescription(col).ControlName }}(),{{for}}{{- }}; {{for i,_ := range columns}}ctrl{{i i+1}} != nil && {{for}}{{- 3}}{
+        exists := model.Has{{t.GoName}}By{{= names}}(ctx, {{for i,col := range columns}}ctrl{{i i+1}}.Value().({{= col.ColumnType.GoType() }}),{{for}}{{- }})
+		if exists {
+			isValid = false
+{{for i,_ := range columns}}
+			ctrl{{i i+1}}.SetValidationError(p.GT("This value is already in use, please choose a different one."))
+{{for}}
+		}
+    }
+}}
+
+            }
+        }
+    }
+}}
+
+    return isValid
+}
+
+}}

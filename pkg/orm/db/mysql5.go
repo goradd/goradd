@@ -514,7 +514,7 @@ func (m *Mysql5) generateLimitSql(b *sqlBuilder) (sql string) {
 }
 
 // Update sets specific fields of a record that already exists in the database to the given data.
-func (m *Mysql5) Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue string) {
+func (m *Mysql5) Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue interface{}) {
 	var sql = "UPDATE " + table + "\n"
 	var args []interface{}
 	s, a := m.makeSetSql(fields)
@@ -552,7 +552,7 @@ func (m *Mysql5) Insert(ctx context.Context, table string, fields map[string]int
 
 
 // Delete deletes the indicated record from the database.
-func (m *Mysql5) Delete(ctx context.Context, table string, pkName string, pkValue string) {
+func (m *Mysql5) Delete(ctx context.Context, table string, pkName string, pkValue interface{}) {
 	var sql = "DELETE FROM " + table + "\n"
 	var args []interface{}
 	sql += "WHERE " + pkName + " = ?"

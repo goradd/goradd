@@ -1,4 +1,6 @@
+// createControls.tmpl
 
+{{
 // CreateControls creates the controls in the edit panel and adds them to the panel.
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     p.AddControls(ctx,
@@ -70,7 +72,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
         }
 
     }
-/*
+
     for _,ref := range t.ManyManyReferences {
         cd := t.ControlDescription(ref)
         if cd == nil {continue}
@@ -81,7 +83,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
         }
 
     }
-*/
+
 }}
     )
 }
@@ -105,6 +107,9 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 }
 
 func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+    if !p.Page().HasControl({{= cd.ControlIDConst() }}) {
+        return nil
+    }
 	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
@@ -128,6 +133,9 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 }
 
 func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+    if !p.Page().HasControl({{= cd.ControlIDConst() }}) {
+        return nil
+    }
 	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
@@ -150,6 +158,9 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 }
 
 func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+    if !p.Page().HasControl({{= cd.ControlIDConst() }}) {
+        return nil
+    }
 	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
@@ -157,5 +168,7 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.
         }
     }
 */
+}}
+
 }}
 

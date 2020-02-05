@@ -39,7 +39,7 @@ func DefaultControlType(ref interface{}) string {
 			return "github.com/goradd/goradd/pkg/page/control/Span" // primary keys are not editable
 		}
 
-		if col.IsReference() {
+		if col.IsReference() || col.IsType() {
 			return "github.com/goradd/goradd/pkg/page/control/SelectList"
 		}
 

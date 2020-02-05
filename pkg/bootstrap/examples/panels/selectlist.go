@@ -123,7 +123,7 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.ChooseListValue("selectListWithSize", "2")
 	t.Click(btnID)
-	t.AssertEqual(true, t.HasClass("singleSelectList-fg", "error"))
+	t.AssertEqual(true, t.ControlHasClass("singleSelectList-fg", "error"))
 
 	t.F(func(f page.FormI) {
 		t.AssertEqual(2,  GetSelectList(f, "selectListWithSize").IntValue())

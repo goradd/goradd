@@ -1,0 +1,38 @@
+// listBaseBindData.tmpl
+
+{{
+
+// BindData determines what records will be displayed in the lister.
+// Override to change what records get displayed.
+func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
+    list := {{= ctrlPkg }}.GetPagedTable(p, p.ID() + "-list")
+	if list.HasDataPagers() {
+		list.SetTotalItems(p.this().BuildQuery(ctx).Count(ctx, false))
+	}
+
+	builder := p.this().BuildQuery(ctx)
+
+	// Since we are asking the database to do the sort, we have to make a slice of nodes
+	sortNodes := column.MakeNodeSlice(list.SortColumns())
+
+	d := builder.Limit(list.SqlLimits()).
+		OrderBy(sortNodes...).
+		Load(ctx)
+
+	s.SetData(d)
+}
+
+func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
+	return model.Query{{= t.GoPlural }}(ctx)
+}
+
+func (p *{{= panelName }}) MakeFilter(filterText string) query.NodeI {
+	return op.Or(
+{{for _,col := range t.Columns }}
+		op.StartsWith(node.{{= t.GoName }}().{{= col.GoName }}(), filterText),
+{{for}}
+	)
+}
+
+
+}}

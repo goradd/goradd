@@ -430,7 +430,7 @@ func (a Attributes) HasAttributeValue(attr string, value string) bool {
 	return false
 }
 
-// HasClass returns true if the given class is in the class list in the class attribute.
+// ControlHasClass returns true if the given class is in the class list in the class attribute.
 func (a Attributes) HasClass(c string) bool {
 	return a.HasAttributeValue("class", c)
 }

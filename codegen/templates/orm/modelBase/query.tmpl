@@ -29,6 +29,19 @@ func Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= db.UpperCaseId
         joinOrSelect(joinOrSelectNodes...).
         Get(ctx)
 }
+
+// Has{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= db.UpperCaseIdentifier(name) }}{{for}} returns true if the
+// given unique index values exist in the database.
+func Has{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= db.UpperCaseIdentifier(name) }}{{for}} (ctx context.Context{{for _,name := range idx.ColumnNames}}, {{= name }} {{= t.GetColumn(name).ColumnType.GoType() }} {{for}}) bool {
+    return query{{t.GoPlural}}(ctx).
+{{if len(idx.ColumnNames) == 1}}
+        Where(Equal(node.{{t.GoName}}().{{= db.UpperCaseIdentifier(idx.ColumnNames[0]) }}(), {{= idx.ColumnNames[0] }})).
+{{else}}
+        Where(And({{for _,name := range idx.ColumnNames}}Equal(node.{{t.GoName}}().{{= db.UpperCaseIdentifier(name) }}(), {{= name }}), {{for}})).
+{{if}}
+        Count(ctx, false) == 1
+}
+
 }}
             }
         }

@@ -66,7 +66,7 @@ func TestAddClass(t *testing.T) {
 	}
 
 	if !HasWord("a b c", "b") {
-		t.Errorf("HasClass failed to find a class")
+		t.Errorf("ControlHasClass failed to find a class")
 	}
 
 }

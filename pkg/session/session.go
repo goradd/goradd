@@ -67,47 +67,60 @@ func Has(ctx context.Context, key string) bool {
 }
 
 // GetInt returns the integer at the given key in the session store. If the key does not exist
-// OR if what does exist at that key is not an integer, ok will be false and a zero will be returned.
-func GetInt(ctx context.Context, key string) (v int, ok bool) {
+// OR if what does exists at that key is not an integer, zero will be returned.
+// Call Has() if the zero value has meaning for you and you want to check for existence.
+func GetInt(ctx context.Context, key string) (v int) {
 	i, ok := getSession(ctx).Load(key)
 	if ok {
-		v, ok = i.(int)
+		v, _ = i.(int)
 	}
 	return
 }
 
 // GetBool returns the boolean at the given key in the session store.
 // If the key does not exist OR if what does exist at that key is not a boolean,
-// ok will be false and false will be returned.
-func GetBool(ctx context.Context, key string) (v bool, ok bool) {
+// false will be returned.
+func GetBool(ctx context.Context, key string) (v bool) {
 	i, ok := getSession(ctx).Load(key)
 	if ok {
-		v, ok = i.(bool)
+		v, _ = i.(bool)
 	}
 	return
 }
 
 // GetString returns the string at the given key in the session store.
 // If the key does not exist OR if what does exist at that key is not a string,
-// ok will be false and an empty string will be returned.
-func GetString(ctx context.Context, key string) (v string, ok bool) {
+// an empty string will be returned.
+func GetString(ctx context.Context, key string) (v string) {
 	i, ok := getSession(ctx).Load(key)
 	if ok {
-		v, ok = i.(string)
+		v, _ = i.(string)
 	}
 	return
 }
 
-// GetFloat returns the float64 at the given key in the session store.
+// GetFloat64 returns the float64 at the given key in the session store.
 // If the key does not exist OR if what does exist at that key is not a float,
-// ok will be false and 0.0 will be returned.
-func GetFloat(ctx context.Context, key string) (v float64, ok bool) {
+// 0 will be returned.
+func GetFloat64(ctx context.Context, key string) (v float64) {
 	i, ok := getSession(ctx).Load(key)
 	if ok {
-		v, ok = i.(float64)
+		v, _ = i.(float64)
 	}
 	return
 }
+
+// GetFloat32 returns the float32 at the given key in the session store.
+// If the key does not exist OR if what does exist at that key is not a float,
+// 0 will be returned.
+func GetFloat32(ctx context.Context, key string) (v float32) {
+	i, ok := getSession(ctx).Load(key)
+	if ok {
+		v, _ = i.(float32)
+	}
+	return
+}
+
 
 // Get returns an interface value stored a the given key. nil is returned if nothing is there.
 func Get(ctx context.Context, key string) (v interface{}) {
@@ -115,6 +128,7 @@ func Get(ctx context.Context, key string) (v interface{}) {
 }
 
 // Set will put the value at the given key in the session store.
+// v must be serializable
 func Set(ctx context.Context, key string, v interface{}) {
 	getSession(ctx).Set(key, v)
 }
@@ -129,10 +143,16 @@ func SetBool(ctx context.Context, key string, v bool) {
 	getSession(ctx).Set(key, v)
 }
 
-// SetFloat will put the float64 value at the given key in the session store.
-func SetFloat(ctx context.Context, key string, v float64) {
+// SetFloat64 will put the float64 value at the given key in the session store.
+func SetFloat64(ctx context.Context, key string, v float64) {
 	getSession(ctx).Set(key, v)
 }
+
+// SetFloat32 will put the float32 value at the given key in the session store.
+func SetFloat32(ctx context.Context, key string, v float32) {
+	getSession(ctx).Set(key, v)
+}
+
 
 // SetString will put the string value at the given key in the session store.
 func SetString(ctx context.Context, key string, v string) {

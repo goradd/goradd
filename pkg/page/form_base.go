@@ -166,7 +166,7 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// CSRF prevention
 	var csrf string
 
-	csrf, _ = session.GetString(ctx, goradd.SessionCsrf)
+	csrf = session.GetString(ctx, goradd.SessionCsrf)
 	if csrf == "" {
 		// first time
 		csrf, err = crypt.GenerateRandomString(16)

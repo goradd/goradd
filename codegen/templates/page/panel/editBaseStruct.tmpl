@@ -1,4 +1,6 @@
+// struct.tmpl
 
+{{
 
 type {{= panelName }}I interface {
 {{g
@@ -51,4 +53,5 @@ func (p *{{= panelName }}) this() {{= panelName }}I {
 	return p.Self.({{= panelName }}I)
 }
 
+}}
 

@@ -132,7 +132,7 @@ func testTableProxyCol(t *browsertest.TestForm) {
 	t.LoadUrl(myUrl)
 
 	t.ClickHtmlItem("pxy1")
-/*	h := t.InnerHtml("nameItem")
+/*	h := t.ControlInnerHtml("nameItem")
 	t.AssertEqual("<label>Name</label>ACME Website Redesign", h)
 */	t.Done("Complete")
 

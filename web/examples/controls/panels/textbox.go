@@ -165,12 +165,12 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.AssertEqual("me", t.ControlValue("dateText"))
 	t.AssertEqual("me", t.ControlValue("timeText"))
 
-	t.AssertEqual(true, t.HasClass("intText-ff", "error"))
-	t.AssertEqual(true, t.HasClass("floatText-ff", "error"))
-	t.AssertEqual(true, t.HasClass("emailText-ff", "error"))
-	t.AssertEqual(true, t.HasClass("dateText-ff", "error"))
-	t.AssertEqual(true, t.HasClass("timeText-ff", "error"))
-	t.AssertEqual(true, t.HasClass("dateTimeText-ff", "error"))
+	t.AssertEqual(true, t.ControlHasClass("intText-ff", "error"))
+	t.AssertEqual(true, t.ControlHasClass("floatText-ff", "error"))
+	t.AssertEqual(true, t.ControlHasClass("emailText-ff", "error"))
+	t.AssertEqual(true, t.ControlHasClass("dateText-ff", "error"))
+	t.AssertEqual(true, t.ControlHasClass("timeText-ff", "error"))
+	t.AssertEqual(true, t.ControlHasClass("dateTimeText-ff", "error"))
 
 	t.F(func(f page.FormI) {
 		GetFormFieldWrapper(f, "plainText-ff").SetInstructions("Sample instructions")
@@ -193,13 +193,13 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 		t.AssertEqual(datetime.NewDateTime("2/19/2018 4:23 pm", datetime.UsDateTime), GetDateTextbox(f, "dateTimeText").Date())
 	})
 
-	t.AssertEqual(false, t.HasClass("intText-ff", "error"))
-	t.AssertEqual(false, t.HasClass("floatText-ff", "error"))
-	t.AssertEqual(false, t.HasClass("emailText-ff", "error"))
-	t.AssertEqual(false, t.HasClass("dateText-ff", "error"))
-	t.AssertEqual(false, t.HasClass("timeText-ff", "error"))
-	t.AssertEqual(false, t.HasClass("dateTimeText-ff", "error"))
-	t.AssertEqual("Sample instructions", t.InnerHtml("plainText-ff_inst"))
+	t.AssertEqual(false, t.ControlHasClass("intText-ff", "error"))
+	t.AssertEqual(false, t.ControlHasClass("floatText-ff", "error"))
+	t.AssertEqual(false, t.ControlHasClass("emailText-ff", "error"))
+	t.AssertEqual(false, t.ControlHasClass("dateText-ff", "error"))
+	t.AssertEqual(false, t.ControlHasClass("timeText-ff", "error"))
+	t.AssertEqual(false, t.ControlHasClass("dateTimeText-ff", "error"))
+	t.AssertEqual("Sample instructions", t.ControlInnerHtml("plainText-ff_inst"))
 
 	t.AssertEqual("plainText-ff_lbl plainText", t.ControlAttribute("plainText", "aria-labelledby"))
 
