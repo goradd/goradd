@@ -20,7 +20,7 @@ func (d IntegerTextbox) GenerateCreator(ref interface{}, desc *generator2.Contro
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 		`%s.IntegerTextboxCreator{
-	ID:        %#v,
+	ID:        p.ID() + "-%s",
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},

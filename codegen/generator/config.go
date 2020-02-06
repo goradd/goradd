@@ -79,11 +79,11 @@ func DefaultControlType(ref interface{}) string {
 func WrapFormField(wrapper string, label string, forId string, child string) string {
 	return fmt.Sprintf(
 `%s{
-	ID: "%s",
-	For: "%s",
+	ID: p.ID() + "-%s-ff",
+	For:  p.ID() + "-%s",
 	Label: "%s",
 	Child: %s,
 }
-`, wrapper, forId + "-ff", forId, label, child)
+`, wrapper, forId, forId, label, child)
 
 }

@@ -51,20 +51,6 @@ func Title(s string) string {
 	return newString
 }
 
-func KebabToCamel(s string) string {
-	var r string
-
-	for _, w := range strings.Split(s, "-") {
-		if w == "" {
-			continue
-		}
-
-		u := strings.Title(w)
-		r += u
-	}
-
-	return r
-}
 
 // HasOnlyLetters will return false if any of the characters in the string do not pass the unicode.IsLetter test.
 func HasOnlyLetters(s string) bool {

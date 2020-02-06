@@ -32,7 +32,7 @@ func (d DateTimeSpan) GenerateCreator(ref interface{}, desc *generator.ControlDe
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 `%s.DateTimeSpanCreator{
-	ID:        %#v,
+	ID:        p.ID() + "-%s",
 	ControlOptions: page.ControlOptions{
 		IsDisabled:	   %#v,
 		DataConnector: %s{},

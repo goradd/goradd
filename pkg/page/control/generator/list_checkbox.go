@@ -35,7 +35,7 @@ func (d CheckboxList) SupportsColumn(ref interface{}) bool {
 func (d CheckboxList) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	s = fmt.Sprintf(
 `%s.CheckboxListCreator{
-	ID:           %#v,
+	ID:           p.ID() + "-%s",
 	DataProvider: p,
 	ControlOptions: page.ControlOptions{
 		DataConnector: %s{},

@@ -41,12 +41,11 @@ func matchColumnsWithControls(database db.DatabaseI, t *db.Table, descriptions m
 				controlName = col.GoName + typ
 			}
 
-			var defaultID string
-			colName := col.DbName
+			defaultID := snaker.CamelToSnake(col.GoName)
 			if col.ForeignKey != nil {
-				colName = strings.TrimSuffix(colName, database.Describe().ForeignKeySuffix)
+				defaultID = strings.TrimSuffix(defaultID, database.Describe().ForeignKeySuffix)
 			}
-			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(colName, "_", "-", -1)
+			defaultID = strings.Replace(defaultID, "_", "-", -1) // snake to kebab
 
 			cd := ControlDescription{
 				Path: controlPath,
@@ -115,8 +114,7 @@ func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{
 			controlName = rr.GoPlural + typ
 
 			var defaultID string
-			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" +
-				strings.Replace(snaker.CamelToSnake(rr.GoPlural), "_", "-", -1)
+			defaultID = strings.Replace(snaker.CamelToSnake(rr.GoPlural), "_", "-", -1)
 
 
 			cd := ControlDescription{
@@ -158,8 +156,7 @@ func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface
 			controlName = mm.GoPlural + typ
 
 			var defaultID string
-			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" +
-				strings.Replace(snaker.CamelToSnake(mm.GoPlural), "_", "-", -1)
+			defaultID = strings.Replace(snaker.CamelToSnake(mm.GoPlural), "_", "-", -1)
 
 			cd := ControlDescription{
 				Path: controlPath,

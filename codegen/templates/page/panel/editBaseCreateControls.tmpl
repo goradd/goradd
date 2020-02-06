@@ -107,10 +107,11 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 }
 
 func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
-    if !p.Page().HasControl({{= cd.ControlIDConst() }}) {
+    id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }}
+    if !p.Page().HasControl(id) {
         return nil
     }
-	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
+	return p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
 }}
@@ -133,10 +134,11 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 }
 
 func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
-    if !p.Page().HasControl({{= cd.ControlIDConst() }}) {
+    id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }}
+    if !p.Page().HasControl(id) {
         return nil
     }
-	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
+	return p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
 }}
@@ -158,10 +160,11 @@ func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} 
 }
 
 func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
-    if !p.Page().HasControl({{= cd.ControlIDConst() }}) {
+    id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }}
+    if !p.Page().HasControl(id) {
         return nil
     }
-	return p.Page().GetControl({{= cd.ControlIDConst() }}).(*{{= cd.Package }}.{{= cd.ControlType }})
+	return p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }})
 }
 
 }}

@@ -28,7 +28,7 @@ func (d DateTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDes
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 `%s.DateTextboxCreator{
-	ID:        %#v,
+	ID:        p.ID() + "-%s",
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
