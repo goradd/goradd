@@ -301,6 +301,14 @@ func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes
 		Get(ctx)
 }
 
+// HasLoginByUsername returns true if the
+// given unique index values exist in the database.
+func HasLoginByUsername(ctx context.Context, username string) bool {
+	return queryLogins(ctx).
+		Where(Equal(node.Login().Username(), username)).
+		Count(ctx, false) == 1
+}
+
 // LoadLoginByPersonID queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
@@ -310,6 +318,14 @@ func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNode
 		Where(Equal(node.Login().PersonID(), person_id)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get(ctx)
+}
+
+// HasLoginByPersonID returns true if the
+// given unique index values exist in the database.
+func HasLoginByPersonID(ctx context.Context, person_id string) bool {
+	return queryLogins(ctx).
+		Where(Equal(node.Login().PersonID(), person_id)).
+		Count(ctx, false) == 1
 }
 
 // The LoginsBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -457,6 +473,7 @@ func (b *LoginsBuilder) Count(ctx context.Context, distinct bool, nodes ...query
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *LoginsBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
+	broadcast.BulkChange(ctx, "goradd", "login")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -992,3 +1009,5 @@ func (o *loginBase) MarshalJSON() (data []byte, err error) {
 
 	return json.Marshal(v)
 }
+
+// Custom functions. See goradd/codegen/templates/orm/modelBase.

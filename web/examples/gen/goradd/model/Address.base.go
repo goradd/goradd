@@ -379,6 +379,7 @@ func (b *AddressesBuilder) Count(ctx context.Context, distinct bool, nodes ...qu
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *AddressesBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
+	broadcast.BulkChange(ctx, "goradd", "address")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -841,3 +842,5 @@ func (o *addressBase) MarshalJSON() (data []byte, err error) {
 
 	return json.Marshal(v)
 }
+
+// Custom functions. See goradd/codegen/templates/orm/modelBase.

@@ -345,6 +345,7 @@ func (b *PersonWithLocksBuilder) Count(ctx context.Context, distinct bool, nodes
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *PersonWithLocksBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
+	broadcast.BulkChange(ctx, "goradd", "person_with_lock")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -773,3 +774,5 @@ func (o *personWithLockBase) MarshalJSON() (data []byte, err error) {
 
 	return json.Marshal(v)
 }
+
+// Custom functions. See goradd/codegen/templates/orm/modelBase.
