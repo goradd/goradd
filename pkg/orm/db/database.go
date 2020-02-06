@@ -488,6 +488,7 @@ func (d *Database) IsTypeTable(name string) bool {
 }
 
 
+
 func isReservedIdentifier(s string) bool {
 	switch s {
 	case "break":

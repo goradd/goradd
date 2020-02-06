@@ -118,7 +118,7 @@ func Generate() {
 			} else {
 				descriptions := make(map[interface{}]*ControlDescription)
 				importAliases := make(map[string]string)
-				matchColumnsWithControls(table, descriptions, importAliases)
+				matchColumnsWithControls(database, table, descriptions, importAliases)
 				matchReverseReferencesWithControls(table, descriptions, importAliases)
 				matchManyManyReferencesWithControls(table, descriptions, importAliases)
 

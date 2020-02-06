@@ -14,7 +14,7 @@ type Importer interface {
 
 // matchColumnsWithControls maps controls to control descriptions, and returns the imports required by the
 // control descriptions
-func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, importAliases map[string]string) {
+func matchColumnsWithControls(database db.DatabaseI, t *db.Table, descriptions map[interface{}]*ControlDescription, importAliases map[string]string) {
 	for _, col := range t.Columns {
 		controlPath := ControlPath(col)
 
@@ -42,7 +42,11 @@ func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*Control
 			}
 
 			var defaultID string
-			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(col.DbName, "_", "-", -1)
+			colName := col.DbName
+			if col.ForeignKey != nil {
+				colName = strings.TrimSuffix(colName, database.Describe().ForeignKeySuffix)
+			}
+			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(colName, "_", "-", -1)
 
 			cd := ControlDescription{
 				Path: controlPath,
