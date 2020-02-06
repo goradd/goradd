@@ -20,7 +20,7 @@ func (d SelectList) GenerateCreator(ref interface{}, desc *generator2.ControlDes
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 		`%s.SelectListCreator{
-	ID:           %#v,
+	ID:           p.ID() + "-%s",
 	DataProvider: p,
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,

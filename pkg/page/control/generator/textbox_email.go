@@ -29,7 +29,7 @@ func (d EmailTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDe
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 		`%s.EmailTextboxCreator{
-			ID:        %#v,
+			ID:        p.ID() + "-%s",
 			MaxLength: %d,
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,

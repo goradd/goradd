@@ -56,9 +56,15 @@ func (s *DateTimeSpan) SetDateTime(d datetime.DateTime) {
 }
 
 // Value returns the value as a datetime.DateTime object.
-func (s *DateTimeSpan) Value() datetime.DateTime {
+// Also satisfies the Valuer interface
+func (s *DateTimeSpan) Value() interface{} {
 	return s.value
 }
+
+func (s *DateTimeSpan) DateTime() datetime.DateTime {
+	return s.value
+}
+
 
 // SetFormat sets the format string. This should be a time.TimeFormat string described at
 // https://golang.org/pkg/time/#Time.Format

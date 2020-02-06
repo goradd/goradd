@@ -195,6 +195,14 @@ func LoadEmployeeInfoByPersonID(ctx context.Context, person_id string, joinOrSel
 		Get(ctx)
 }
 
+// HasEmployeeInfoByPersonID returns true if the
+// given unique index values exist in the database.
+func HasEmployeeInfoByPersonID(ctx context.Context, person_id string) bool {
+	return queryEmployeeInfos(ctx).
+		Where(Equal(node.EmployeeInfo().PersonID(), person_id)).
+		Count(ctx, false) == 1
+}
+
 // The EmployeeInfosBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
@@ -340,6 +348,7 @@ func (b *EmployeeInfosBuilder) Count(ctx context.Context, distinct bool, nodes .
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *EmployeeInfosBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
+	broadcast.BulkChange(ctx, "goradd", "employee_info")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -723,3 +732,5 @@ func (o *employeeInfoBase) MarshalJSON() (data []byte, err error) {
 
 	return json.Marshal(v)
 }
+
+// Custom functions. See goradd/codegen/templates/orm/modelBase.

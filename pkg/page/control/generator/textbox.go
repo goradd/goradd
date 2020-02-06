@@ -28,7 +28,7 @@ func (d Textbox) GenerateCreator(ref interface{}, desc *generator.ControlDescrip
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 		`%s.TextboxCreator{
-			ID:        %#v,
+			ID:        p.ID() + "-%s",
 			MaxLength: %d,
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,

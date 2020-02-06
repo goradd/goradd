@@ -329,6 +329,7 @@ func (b *MilestonesBuilder) Count(ctx context.Context, distinct bool, nodes ...q
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *MilestonesBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
+	broadcast.BulkChange(ctx, "goradd", "milestone")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -712,3 +713,5 @@ func (o *milestoneBase) MarshalJSON() (data []byte, err error) {
 
 	return json.Marshal(v)
 }
+
+// Custom functions. See goradd/codegen/templates/orm/modelBase.

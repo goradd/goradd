@@ -21,7 +21,7 @@ func (d FloatTextbox) GenerateCreator(ref interface{}, desc *generator2.ControlD
 
 	s = fmt.Sprintf(
 		`%s.FloatTextboxCreator{
-			ID:        %#v,
+			ID:        p.ID() + "-%s",
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,
 				DataConnector: %s{},

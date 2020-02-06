@@ -531,6 +531,7 @@ func (b *PeopleBuilder) Count(ctx context.Context, distinct bool, nodes ...query
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *PeopleBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
+	broadcast.BulkChange(ctx, "goradd", "person")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -1314,3 +1315,5 @@ func (o *personBase) MarshalJSON() (data []byte, err error) {
 
 	return json.Marshal(v)
 }
+
+// Custom functions. See goradd/codegen/templates/orm/modelBase.

@@ -26,7 +26,7 @@ func (d Span) GenerateCreator(ref interface{}, desc *generator.ControlDescriptio
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 `%s.SpanCreator{
-	ID:        %#v,
+	ID:        p.ID() + "-%s",
 	ControlOptions: page.ControlOptions{
 		IsDisabled:	   %#v,
 		IsRequired:      %#v,

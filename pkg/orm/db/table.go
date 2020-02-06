@@ -1,5 +1,10 @@
 package db
 
+import (
+	strings2 "github.com/goradd/goradd/pkg/strings"
+	"github.com/knq/snaker"
+)
+
 type Table struct {
 	// DbKey is the key used to find the database in the global database cluster
 	DbKey string
@@ -50,4 +55,10 @@ func (t *Table) PrimaryKeyGoType() string {
 // GetColumn returns a Column given the name of a column
 func (t *Table) GetColumn(name string) *Column {
 	return t.columnMap[name]
+}
+
+func (t *Table) DefaultHtmlID() string {
+	defaultID := snaker.CamelToSnake(t.GoName)
+	defaultID = strings2.SnakeToKebab(defaultID)
+	return defaultID
 }

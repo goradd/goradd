@@ -2,8 +2,9 @@
 
 {{
 func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
+    id := strings.TrimPrefix(s.ID(), p.ID()+"-")
 
-    switch s.ID() {
+    switch id {
 
 {{g
 for _,col := range t.Columns {

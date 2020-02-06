@@ -672,6 +672,14 @@ func LoadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.N
 		Get(ctx)
 }
 
+// HasProjectByNum returns true if the
+// given unique index values exist in the database.
+func HasProjectByNum(ctx context.Context, num int) bool {
+	return queryProjects(ctx).
+		Where(Equal(node.Project().Num(), num)).
+		Count(ctx, false) == 1
+}
+
 // The ProjectsBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
@@ -817,6 +825,7 @@ func (b *ProjectsBuilder) Count(ctx context.Context, distinct bool, nodes ...que
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *ProjectsBuilder) Delete(ctx context.Context) {
 	b.base.Delete(ctx)
+	broadcast.BulkChange(ctx, "goradd", "project")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -2077,3 +2086,5 @@ func (o *projectBase) MarshalJSON() (data []byte, err error) {
 
 	return json.Marshal(v)
 }
+
+// Custom functions. See goradd/codegen/templates/orm/modelBase.

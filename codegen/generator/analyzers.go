@@ -14,7 +14,7 @@ type Importer interface {
 
 // matchColumnsWithControls maps controls to control descriptions, and returns the imports required by the
 // control descriptions
-func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*ControlDescription, importAliases map[string]string) {
+func matchColumnsWithControls(database db.DatabaseI, t *db.Table, descriptions map[interface{}]*ControlDescription, importAliases map[string]string) {
 	for _, col := range t.Columns {
 		controlPath := ControlPath(col)
 
@@ -41,8 +41,11 @@ func matchColumnsWithControls(t *db.Table, descriptions map[interface{}]*Control
 				controlName = col.GoName + typ
 			}
 
-			var defaultID string
-			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" + strings.Replace(col.DbName, "_", "-", -1)
+			defaultID := snaker.CamelToSnake(col.GoName)
+			if col.ForeignKey != nil {
+				defaultID = strings.TrimSuffix(defaultID, database.Describe().ForeignKeySuffix)
+			}
+			defaultID = strings.Replace(defaultID, "_", "-", -1) // snake to kebab
 
 			cd := ControlDescription{
 				Path: controlPath,
@@ -111,8 +114,7 @@ func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{
 			controlName = rr.GoPlural + typ
 
 			var defaultID string
-			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" +
-				strings.Replace(snaker.CamelToSnake(rr.GoPlural), "_", "-", -1)
+			defaultID = strings.Replace(snaker.CamelToSnake(rr.GoPlural), "_", "-", -1)
 
 
 			cd := ControlDescription{
@@ -154,8 +156,7 @@ func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface
 			controlName = mm.GoPlural + typ
 
 			var defaultID string
-			defaultID = strings.Replace(t.DbName, "_", "-", -1) + "-" +
-				strings.Replace(snaker.CamelToSnake(mm.GoPlural), "_", "-", -1)
+			defaultID = strings.Replace(snaker.CamelToSnake(mm.GoPlural), "_", "-", -1)
 
 			cd := ControlDescription{
 				Path: controlPath,

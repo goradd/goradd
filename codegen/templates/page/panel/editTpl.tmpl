@@ -20,7 +20,7 @@ for _,col := range t.Columns {
     cd := t.ControlDescription(col)
     if cd == nil {continue}
     if cd.Generator != nil {
-{{begin drawCode}}{{draw {{drawCode}}{{= cd.ControlID }}{{begin drawCode2}}-ff }}
+{{begin drawCode}}{{drawChild -{{drawCode}}{{= cd.ControlID }}{{begin drawCode2}}-ff }}
 {{drawCode2}}
     }
 }

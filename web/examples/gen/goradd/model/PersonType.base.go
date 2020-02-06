@@ -34,7 +34,7 @@ func (p PersonType) String() string {
 	case 3: return "Inactive"
 	case 4: return "Company Car"
 	case 5: return "Works From Home"
-	default: panic("Index out of range")
+	default: panic("index out of range")
 	}
 	return "" // prevent warning
 }
@@ -42,6 +42,18 @@ func (p PersonType) String() string {
 // ID returns a string representation of the id and satisfies the IDer interface
 func (p PersonType) ID() string {
 	return strconv.Itoa(int(p))
+}
+
+// PersonTypeFromID converts a PersonType ID to a PersonType
+func PersonTypeFromID (id string) PersonType {
+	switch id {
+	case "1": return PersonType(1)
+	case "2": return PersonType(2)
+	case "3": return PersonType(3)
+	case "4": return PersonType(4)
+	case "5": return PersonType(5)
+	}
+	return PersonType(0)
 }
 
 // AllPersonTypes returns a slice of all the PersonType items

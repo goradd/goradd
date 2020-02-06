@@ -20,7 +20,7 @@ func (d Checkbox) GenerateCreator(ref interface{}, desc *generator2.ControlDescr
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 		`%s.CheckboxCreator{
-			ID:        %#v,
+			ID:        p.ID() + "-%s",
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,
 				DataConnector: %s{},

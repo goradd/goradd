@@ -31,7 +31,7 @@ func (p ProjectStatusType) String() string {
 	case 2: return "Cancelled"
 	case 3: return "Completed"
 	case 4: return "Planned"
-	default: panic("Index out of range")
+	default: panic("index out of range")
 	}
 	return "" // prevent warning
 }
@@ -39,6 +39,17 @@ func (p ProjectStatusType) String() string {
 // ID returns a string representation of the id and satisfies the IDer interface
 func (p ProjectStatusType) ID() string {
 	return strconv.Itoa(int(p))
+}
+
+// ProjectStatusTypeFromID converts a ProjectStatusType ID to a ProjectStatusType
+func ProjectStatusTypeFromID (id string) ProjectStatusType {
+	switch id {
+	case "1": return ProjectStatusType(1)
+	case "2": return ProjectStatusType(2)
+	case "3": return ProjectStatusType(3)
+	case "4": return ProjectStatusType(4)
+	}
+	return ProjectStatusType(0)
 }
 
 // AllProjectStatusTypes returns a slice of all the ProjectStatusType items

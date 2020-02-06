@@ -13,7 +13,7 @@ var formName = key + t.GoName + "EditForm"
 {{< package }}form{{end}}
 {{< form }}{{strict}}{{= formName}}{{begin strict}}{{end}}
 {{define template }}
-{{draw edit-panel }}
+{{draw {{strict}}{{= t.DefaultHtmlID()}}{{begin strict}}-edit-panel }}
 {{draw save-button }}
 {{draw cancel-button }}
 {{draw delete-button }}
