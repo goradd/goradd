@@ -2362,6 +2362,9 @@ goradd.widget("goradd.Widget", goradd.g, {
             if (objRequest.readyState === 4) {
                 if (objRequest.status === 200) {
                     try {
+                        if (objRequest.response.charAt(0) !== "{") {
+                            throw "";
+                        }
                         opts.success(JSON.parse(objRequest.response));
                     } catch(err) {
                         // Goradd returns ajax errors as text

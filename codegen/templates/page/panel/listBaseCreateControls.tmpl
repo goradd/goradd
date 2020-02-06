@@ -35,12 +35,13 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
             OnCellClick: action.Ajax(p.ID(), {{= lcPanelName }}RowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
             ControlOptions: page.ControlOptions{
                 Class:          "gr-clickable-rows",
+                WatchedDbTables: page.Nodes(node.{{= t.GoName }}()),
             },
             Columns:[]{{= ctrlPkg }}.ColumnCreator {
 {{for _,col := range t.Columns }}
                 column.NodeColumnCreator{
                     Node: node.{{= t.GoName }}().{{= col.GoName }}(),
-                    Title: "{{= col.GoName }}",
+                    Title: "{{= t.ControlDescription(col).DefaultLabel }}",
                 {{if col.IsDateOnly}}
                     ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultDateFormat},
                 {{else if col.IsTimeOnly}}
