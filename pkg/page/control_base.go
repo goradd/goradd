@@ -719,6 +719,7 @@ func (c *ControlBase) ProcessAttributeString(s string) ControlI {
 	return c.this()
 }
 
+
 // AddAttributeValue will add a class or classes to the control. If adding multiple classes at once, separate them with
 // a space.
 func (c *ControlBase) AddClass(class string) ControlI {

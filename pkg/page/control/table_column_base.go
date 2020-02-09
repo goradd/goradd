@@ -74,14 +74,24 @@ type ColumnI interface {
 	Restore(parentTable TableI)
 }
 
+// CellTextInfo is provided to the cell texter so the cell texter knows how to draw.
+// Its a struct here so that the info can grow without the CellTexter signature having to change.
+type CellInfo struct {
+	RowNum int
+	ColNum int
+	Data interface{}
+	isHeaderCell bool
+	isFooterCell bool
+}
+
 // CellTexter defines the interface for a structure that provides the content of a table cell.
 // If your CellTexter is not a control, you should register it with gob.
 type CellTexter interface {
-	CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string
+	CellText(ctx context.Context, col ColumnI, info CellInfo) string
 }
 
 type CellStyler interface {
-	CellAttributes(ctx context.Context, col ColumnI, row int, colNum int, data interface{}) html.Attributes
+	CellAttributes(ctx context.Context, col ColumnI, info CellInfo) html.Attributes
 }
 
 
@@ -163,9 +173,13 @@ func (c *ColumnBase) SetTitle(title string) ColumnI {
 	return c.this()
 }
 
-// Span returns the number of columns this column will span.
+// Span returns the number of columns this column will span. If the span is not set, it will return 1.
 func (c *ColumnBase) Span() int {
-	return c.span
+	if c.span < 2 {
+		return 1
+	} else {
+		return c.span
+	}
 }
 
 // SetSpan sets the span indicated in the column tag of the column. This is used to create colgroup tags.
@@ -270,7 +284,7 @@ func (c *ColumnBase) FooterAttributes(ctx context.Context, row int, col int) htm
 	return c.footerAttributes[row]
 }
 
-// ColTagAttributes specifies attributes that will appear in the table tag. Note that you have to turn on table
+// ColTagAttributes specifies attributes that will appear in the column tag. Note that you have to turn on column
 // tags in the table object as well for these to appear.
 func (c *ColumnBase) ColTagAttributes() html.Attributes {
 	if c.colTagAttributes == nil {
@@ -299,7 +313,8 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 // into another object.
 func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h string) {
 	if c.headerTexter != nil {
-		h = c.headerTexter.CellText(ctx, c.this(), row, col, nil)
+		info := CellInfo{RowNum: row, ColNum: col, isHeaderCell:true}
+		h = c.headerTexter.CellText(ctx, c.this(), info)
 	} else {
 		h = html2.EscapeString(c.title)
 	}
@@ -328,7 +343,8 @@ func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count
 // FooterCellHtml returns the html to use in the given footer cell.
 func (c *ColumnBase) FooterCellHtml(ctx context.Context, row int, col int) string {
 	if c.footerTexter != nil {
-		return c.footerTexter.CellText(ctx, c.this(), row, col, nil) // careful, this does not get escaped
+		info := CellInfo{RowNum: row, ColNum: col, isFooterCell:true}
+		return c.footerTexter.CellText(ctx, c.this(), info) // careful, this does not get escaped
 	}
 
 	return ""
@@ -356,7 +372,8 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 // CellText returns the text in the cell. It will use the CellTexter if one was provided.
 func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interface{}) string {
 	if c.cellTexter != nil {
-		return c.cellTexter.CellText(ctx, c.this(), row, col, data)
+		info := CellInfo{RowNum: row, ColNum: col, Data:data}
+		return c.cellTexter.CellText(ctx, c.this(), info)
 	}
 	d := c.this().CellData(ctx, row, col, data)
 	return c.ApplyFormat(d)
@@ -371,7 +388,8 @@ func (c *ColumnBase) CellData(ctx context.Context, row int, col int, data interf
 // customizing more. It will use the CellStyler if one was provided.
 func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) html.Attributes {
 	if c.cellStyler != nil {
-		return c.cellStyler.CellAttributes(ctx, c.this(), row, col, data)
+		info := CellInfo{RowNum: row, ColNum: col, Data:data}
+		return c.cellStyler.CellAttributes(ctx, c.this(), info)
 	}
 	return nil
 }

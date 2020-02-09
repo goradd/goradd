@@ -264,6 +264,11 @@ func (d DateTime) In(location *time.Location) DateTime {
 	return DateTime{d.Time.In(location), d.isTimestamp}
 }
 
+func (d DateTime) AddDate(years int, months int, days int) DateTime {
+	return DateTime{d.Time.AddDate(years, months, days), d.isTimestamp}
+}
+
+
 // String returns the datetime in string form, suitable for sending to the NewDateTime function.
 func (d DateTime) String() string {
 	b, err := d.MarshalText()

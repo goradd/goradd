@@ -75,9 +75,9 @@ func (p *TableProxyPanel) BindData(ctx context.Context, s DataManagerI) {
 
 }
 
-func (p *TableProxyPanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (p *TableProxyPanel) CellText(ctx context.Context, col ColumnI, info CellInfo) string {
 	// Since we only have one custom column, we know what we are getting.
-	project := data.(*Project)
+	project := info.Data.(*Project)
 	id := crypt.SessionEncryptUrlValue(ctx, project.ID()) // Since this is a database id, lets encrypt it for extra security
 
 	// This is just to assign an id for click testing. You don't normally need to assign an id.

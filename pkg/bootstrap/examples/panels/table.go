@@ -125,12 +125,12 @@ func (f *TablePanel) BindData(ctx context.Context, s control.DataManagerI) {
 }
 
 // CellText here satisfies the CellTexter interface so that the panel can provide the text for a cell.
-func (f *TablePanel) CellText(ctx context.Context, col control.ColumnI, rowNum int, colNum int, data interface{}) string {
+func (f *TablePanel) CellText(ctx context.Context, col control.ColumnI, info control.CellInfo) string {
 	// Here is an example of how to figure out what table we are talking about.
 	tid := col.ParentTable().ID()
 	switch tid {
 	case "table1":
-		return fmt.Sprintf("Id: %s, Row #%d, Col #%d", data.(TableMapData)["id"], rowNum, colNum)
+		return fmt.Sprintf("Id: %s, Row #%d, Col #%d", info.Data.(TableMapData)["id"], info.RowNum, info.ColNum)
 	}
 	return ""
 }

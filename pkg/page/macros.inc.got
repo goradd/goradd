@@ -29,6 +29,40 @@
 {{if}}
 {{end}}
 
+{{define setAttributes}}
+{{g
+if ctrl.Page().HasControl("$1") {
+    ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`)
+}
+}}
+{{end}}
+
+{{define setChildAttributes}}
+{{g
+if ctrl.Page().HasControl(ctrl.ID() + "$1") {
+    ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`)
+}
+}}
+{{end}}
+
+{{define setLabelAttributes}}
+{{g
+if ctrl.Page().HasControl("$1") {
+    ctrl.Page().GetControl("$1").(control.FormFieldWrapperI).LabelAttributes().Merge(`$2`)
+}
+}}
+{{end}}
+
+{{define setChildLabelAttributes}}
+{{g
+if ctrl.Page().HasControl(ctrl.ID() + "$1") {
+    ctrl.Page().GetControl(ctrl.ID() + "$1").(control.FormFieldWrapperI).LabelAttributes().Merge(`$2`)
+}
+}}
+{{end}}
+
+
+
 
 
 {{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}
