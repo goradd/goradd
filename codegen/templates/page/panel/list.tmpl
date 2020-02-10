@@ -45,7 +45,7 @@ func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *
 func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.{{= panelName }}Base.Init(parent, id)
 	p.createControls(ctx)
-	session.Remove(ctx, "{{= t.LcGoName}}EditID")
+	session.Remove(ctx, "{{= t.LcGoName }}EditID")
 }
 
 func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
@@ -63,8 +63,8 @@ func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
 func (p *{{= panelName }}) EditItem(ctx context.Context, id string) {
     // This points to the default edit form path created by the templates. If you change the URL there, also change this.
     // Another option is to popup an edit dialog here.
-    session.SetString(ctx, "{{= t.LcGoName}}EditID", id)
-	p.ParentForm().ChangeLocation(url.NewBuilder("{{= editFormPath }}")
+    session.SetString(ctx, "{{= t.LcGoName }}EditID", id)
+	p.ParentForm().ChangeLocation(url.NewBuilder("{{= editFormPath }}"))
 }
 
 // BuildQuery begins the query builder process, returning a partially built query to be completed by the
