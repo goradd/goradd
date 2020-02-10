@@ -22,6 +22,7 @@ import(
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/url"
 	"goradd-project/gen/{{= dd.DbKey }}/model"
+	"github.com/goradd/goradd/pkg/session"
 )
 
 const (
@@ -44,6 +45,7 @@ func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *
 func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.{{= panelName }}Base.Init(parent, id)
 	p.createControls(ctx)
+	session.Remove(ctx, "{{= t.LcGoName}}EditID")
 }
 
 func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
@@ -51,17 +53,18 @@ func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
 	case {{= lcPanelName }}Search:
 		p.Refresh()
 	case {{= lcPanelName }}RowClick: // edit
-		p.EditItem(p.GetClickedRowValue(a))
+		p.EditItem(ctx, p.GetClickedRowValue(a))
 	case {{= lcPanelName }}NewClick: // new
-		p.EditItem("")
+		p.EditItem(ctx, "")
 	}
 }
 
 // EditItem responds to an action to edit an item in the list. The id of the item will be given.
-func (p *{{= panelName }}) EditItem(id string) {
+func (p *{{= panelName }}) EditItem(ctx context.Context, id string) {
     // This points to the default edit form path created by the templates. If you change the URL there, also change this.
     // Another option is to popup an edit dialog here.
-	p.ParentForm().ChangeLocation(url.NewBuilder("{{= editFormPath }}").SetValue("id", id).String())
+    session.SetString(ctx, "{{= t.LcGoName}}EditID", id)
+	p.ParentForm().ChangeLocation(url.NewBuilder("{{= editFormPath }}")
 }
 
 // BuildQuery begins the query builder process, returning a partially built query to be completed by the
