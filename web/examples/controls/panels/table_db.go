@@ -95,9 +95,9 @@ func (p *TableDbPanel) BindData(ctx context.Context, s DataManagerI) {
 	t.SetData(people)
 }
 
-func (p *TableDbPanel) CellText(ctx context.Context, col ColumnI, rowNum int, colNum int, data interface{}) string {
+func (p *TableDbPanel) CellText(ctx context.Context, col ColumnI, info CellInfo) string {
 	// Since we only have one custom column, we know what we are getting.
-	person := data.(*model.Person)
+	person := info.Data.(*model.Person)
 	return person.FirstName() + " " + person.LastName()
 }
 

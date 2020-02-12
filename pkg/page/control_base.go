@@ -719,6 +719,7 @@ func (c *ControlBase) ProcessAttributeString(s string) ControlI {
 	return c.this()
 }
 
+
 // AddAttributeValue will add a class or classes to the control. If adding multiple classes at once, separate them with
 // a space.
 func (c *ControlBase) AddClass(class string) ControlI {
@@ -1145,9 +1146,9 @@ func (c *ControlBase) GetActionScripts(r *Response) {
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (c *ControlBase) WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string {
 	if selector != "" {
-		return fmt.Sprintf("g$('%s').on('%s', '%s', function(event, ui){%s}, %s);", c.ID(), eventName, selector, eventJs, javascript.ToJavaScript(options))
+		return fmt.Sprintf("g$('%s').on('%s', '%s', function(event, eventData){%s}, %s);", c.ID(), eventName, selector, eventJs, javascript.ToJavaScript(options))
 	} else {
-		return fmt.Sprintf("g$('%s').on('%s', function(event, ui){%s}, %s);", c.ID(), eventName, eventJs, javascript.ToJavaScript(options))
+		return fmt.Sprintf("g$('%s').on('%s', function(event, eventData){%s}, %s);", c.ID(), eventName, eventJs, javascript.ToJavaScript(options))
 	}
 }
 
