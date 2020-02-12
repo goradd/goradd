@@ -135,7 +135,10 @@ func NewDateTime(args ...interface{}) DateTime {
 				_ = d.UnmarshalText([]byte(c))
 			}
 		}
+	case int64:
+		d.Time = time.Unix(c, 0)
 	}
+
 	return d
 }
 

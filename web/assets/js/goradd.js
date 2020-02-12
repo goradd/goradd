@@ -850,10 +850,10 @@ goradd = {
      * @param {string} params.controlId         The control id to post an action to
      * @param {number} params.eventId           The event id
      * @param {boolean} [params.async = false]  If true, process the event asynchronously without waiting for other events to complete
-     * @param {object} [params.values]          An optional object, that contains values coming to send with the event
-     * @param {*}    [params.values.event]      The event's action value, if one is provided. This can be any type, including an object.
-     * @param {*}    [params.values.action]     The action's action value, if one is provided. Any type.
-     * @param {*}    [params.values.control]    The control's action value, if one is provided. Any type.
+     * @param {object} [params.actionValues]          An optional object, that contains values coming to send with the event
+     * @param {*}    [params.actionValues.event]      The event's action value, if one is provided. This can be any type, including an object.
+     * @param {*}    [params.actionValues.action]     The action's action value, if one is provided. Any type.
+     * @param {*}    [params.actionValues.control]    The control's action value, if one is provided. Any type.
      *
      * @return {void}
      */
@@ -1653,7 +1653,7 @@ goradd.g.prototype = {
      * @param {string} eventNames  One or more event names separated by spaces
      * @param {string} [selector] An optional css selector to filter bubbled events. This is here because jQuery does it this way too.
      * @param {function|Array} handler The function to execute. If handler is an array, the first item
-     *        will become the "this" of the function.
+     *        will become the "this" of the function, and 2nd item is the function itself.
      * @param {object} [options] Optional additional options as follows:
      * @param {string} [options.selector]  Same as selector above, just specified in options
      * @param {boolean} [options.targetElement] True to make the "this" be the element rather than the goradd object.
@@ -1749,22 +1749,28 @@ goradd.g.prototype = {
                         event.goradd.match = event.target;
                     }
                 }
+
+                // This data here is getting set up when "on" is first called.
                 var data;
-                if (options && options.data) {
+                if (options && options.data !== undefined) {
                     data = options.data;
+
+                    // Calls a specified function when the event is fired to get the value of data
                     if (typeof options.data === "function") {
                         data = options.data.call(self, event);
                     }
                     if (!event.goradd) {
                         event.goradd = {};
                     }
-                    event.goradd.data = data;
+                    event.goradd.data = data; // in case it gets overridden below, we can still get to the data through the event
                 }
-                if (event.detail) {
+
+                // This is data sent through the trigger function at trigger time
+                if (event.detail !== undefined) {
                     data = event.detail;
                 }
 
-                if (data) {
+                if (data !== undefined) {
                     handler.call(target, event, data); // add extra item to event handler
                 } else {
                     handler.call(target, event);

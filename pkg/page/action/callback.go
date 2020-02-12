@@ -111,19 +111,20 @@ func (a *serverAction) RenderScript(params RenderParams) string {
 		v.Set("async", true)
 	}
 
-	if eV, aV, cV := params.EventActionValue, a.Value, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
-		v2 := maps.NewSliceMap()
-		if eV != nil {
-			v2.Set("event", eV)
-		}
-		if aV != nil {
-			v2.Set("action", aV)
-		}
-		if cV != nil {
-			v2.Set("control", cV)
-		}
-		v.Set("actionValues", v2)
+	eV, aV, cV := params.EventActionValue, a.Value, params.ControlActionValue
+	v2 := maps.NewSliceMap()
+	if eV != nil {
+		v2.Set("event", eV)
+	} else {
+		v2.Set("event", javascript.JsCode("eventData"))
 	}
+	if aV != nil {
+		v2.Set("action", aV)
+	}
+	if cV != nil {
+		v2.Set("control", cV)
+	}
+	v.Set("actionValues", v2)
 	return fmt.Sprintf("goradd.postBack(%s);\n", javascript.ToJavaScript(v))
 }
 
@@ -192,19 +193,20 @@ func (a *ajaxAction) RenderScript(params RenderParams) string {
 		v.Set("async", true)
 	}
 
-	if eV, aV, cV := params.EventActionValue, a.Value, params.ControlActionValue; eV != nil || aV != nil || cV != nil {
-		v2 := maps.NewSliceMap()
-		if eV != nil {
-			v2.Set("event", eV)
-		}
-		if aV != nil {
-			v2.Set("action", aV)
-		}
-		if cV != nil {
-			v2.Set("control", cV)
-		}
-		v.Set("actionValues", v2)
+	eV, aV, cV := params.EventActionValue, a.Value, params.ControlActionValue
+	v2 := maps.NewSliceMap()
+	if eV != nil {
+		v2.Set("event", eV)
+	} else {
+		v2.Set("event", javascript.JsCode("eventData"))
 	}
+	if aV != nil {
+		v2.Set("action", aV)
+	}
+	if cV != nil {
+		v2.Set("control", cV)
+	}
+	v.Set("actionValues", v2)
 	return fmt.Sprintf("goradd.postAjax(%s);\n", javascript.ToJavaScript(v))
 }
 

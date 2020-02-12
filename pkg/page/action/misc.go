@@ -40,7 +40,7 @@ func WidgetFunction (controlID string, operation string, arguments ...interface{
 	return widgetAction{controlID, operation, arguments}
 }
 
-func (a widgetAction) RenderScript(params RenderParams) string {
+func (a widgetAction) RenderScript(_ RenderParams) string {
 	return fmt.Sprintf(`g$('%s').%s(%s);`, a.ControlID, a.Op, javascript.Arguments(a.Args).JavaScript())
 }
 

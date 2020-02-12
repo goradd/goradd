@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -29,7 +28,6 @@ type testStepEvent struct {
 // RowSelected
 func TestStepEvent() *page.Event {
 	e := &page.Event{JsEvent: "teststep"}
-	e.ActionValue(javascript.JsCode("ui")) // the error string and step
 	return e
 }
 

@@ -224,6 +224,6 @@ func init() {
 const MegaMenuSelectEvent = "megamenuselect"
 
 func MegaMenuSelect() *page.Event {
-	return page.NewEvent(MegaMenuSelectEvent).ActionValue(javascript.JsCode("ui"))
+	return page.NewEvent(MegaMenuSelectEvent)
 }
 

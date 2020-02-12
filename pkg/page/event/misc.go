@@ -1,7 +1,6 @@
 package event
 
 import (
-	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -25,7 +24,6 @@ func Select() *page.Event {
 // TableSort is a custom event for responding to a table sort event
 func TableSort() *page.Event {
 	e := &page.Event{JsEvent: "grsort"}
-	e.ActionValue(javascript.JsCode("ui")) // this will be the column id
 	return e
 }
 
@@ -34,7 +32,6 @@ const DialogButtonEvent = "gr-dlgbtn"
 // DialogButton returns an event that detects clicking on a dialog's button.
 func DialogButton() *page.Event {
 	e := &page.Event{JsEvent: DialogButtonEvent}
-	e.ActionValue(javascript.JsCode("ui"))
 	return e
 }
 

@@ -185,7 +185,7 @@ func (p *Proxy) ActionAttributes(actionValue string) html.Attributes {
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
 func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string {
 	// This attaches the event to the parent control.
-	return fmt.Sprintf(`g$('%s').on('%s', '[data-gr-proxy="%s"]', function(event, ui){%s}, %s);`, p.Parent().ID(), eventName, p.ID(), eventJs, javascript.ToJavaScript(options))
+	return fmt.Sprintf(`g$('%s').on('%s', '[data-gr-proxy="%s"]', function(event, eventData){%s}, %s);`, p.Parent().ID(), eventName, p.ID(), eventJs, javascript.ToJavaScript(options))
 }
 
 type On struct {
