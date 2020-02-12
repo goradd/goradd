@@ -51,7 +51,7 @@ func ToJavaScript(v interface{}) string {
 		return "[" + strings.Join(values, ",") + "]"
 	case map[string]interface{}:
 		var out string
-		// For testing and consistency, we always return maps in order sorted by key
+		// For testing and consistency, we always return maps in order sorted by key if possible
 		keys := make([]string, 0, len(s))
 		for k := range s {
 			keys = append(keys, k)
@@ -117,6 +117,11 @@ func ToJavaScript(v interface{}) string {
 	case nil:
 		return "null"
 	default:
+		/** TBD
+		rv := reflect.ValueOf(v)
+		if rv.Kind() == reflect.Map {
+
+		}*/
 		return fmt.Sprint(s)
 	}
 }

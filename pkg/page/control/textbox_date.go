@@ -206,7 +206,7 @@ type DateTextboxCreator struct {
 	SaveState bool
 	// Text is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Text string
-	// Format is the time.format string to use to decode the text into a date or to display the date.
+	// Format is the time.format string to use to decode the text into a date or to display the date. By default it is datetime.UsDateTime.
 	Format string
 
 	page.ControlOptions
@@ -232,6 +232,7 @@ func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
 		ReadOnly:       c.ReadOnly,
 		ControlOptions: c.ControlOptions,
 		SaveState:      c.SaveState,
+		Text: c.Text,
 	}
 	sub.Init(ctx, ctrl)
 }

@@ -44,6 +44,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 // Load loads up the edit panel with data from the database. pk is the primary key of a model.{{= t.GoName }}
 // database record
 func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
+    return p.{{= panelName }}Base.Load(ctx, pk)
 }
 */
 
@@ -60,7 +61,7 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
 /* Override and call base class, or completely replace as you need
 // Refresh loads the controls with data from the cached model.{{= t.GoName }} object.
 func (p *{{= panelName }}) Refresh() {
-    p.Connector.Refresh()
+    p.{{= panelName }}Base.Refresh()
 }
 */
 
@@ -74,14 +75,14 @@ func (p *{{= panelName }}) Reload(ctx context.Context) {
 /* Override and call base class, or completely replace as you need
 // Save writes out the data that is currently in the controls
 func (p *{{= panelName }}) Save(ctx context.Context) {
-    p.Connector.Save(ctx)
+    p.{{= panelName }}Base.Save(ctx)
 }
 */
 
 /* Override and call base class, or completely replace as you need
 // Delete deletes the object currently being edited
 func (p *{{= panelName }}) Delete(ctx context.Context) {
-    p.Connector.Delete(ctx)
+    p.{{= panelName }}Base.Delete(ctx)
 }
 */
 

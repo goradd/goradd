@@ -11,7 +11,7 @@ goradd.draggable = function (parentId, draggableId) {
 };
 
 goradd.droppable = function (parentId, droppableId) {
-    $j('#' + parentId).on("drop", function (event, ui) {
+    $j('#' + parentId).on("drop", function (event, eventData) {
         goradd.setControlValue(droppableId, "_DroppedId", ui.draggable.attr("id"));
     });
 };
@@ -39,7 +39,7 @@ goradd.dialog = function(controlId) {
             event.preventDefault();
         }
     });
-    $j('#' + controlId).on("tabsactivate", function(event, ui) {
+    $j('#' + controlId).on("tabsactivate", function(event, eventData) {
         var i = $j(this).tabs( "option", "active" );
         var id = ui.newPanel ? ui.newPanel.attr("id") : null;
         goradd.setControlValue(controlId, "_active", [i,id]);
@@ -47,20 +47,20 @@ goradd.dialog = function(controlId) {
 };
 
 goradd.accordion = function(controlId) {
-    $j('#' + controlId).on("accordionactivate", function(event, ui) {
+    $j('#' + controlId).on("accordionactivate", function(event, eventData) {
         goradd.setControlValue(controlId, "_SelectedIndex", $j(this).accordion("option", "active"));
         $j(this).trigger("change");
     });
 };
 
 goradd.progressbar = function(controlId) {
-    $j('#' + controlId).on("progressbarchange", function (event, ui) {
+    $j('#' + controlId).on("progressbarchange", function (event, eventData) {
         goradd.setControlValue(controlId, "_Value", $j(this).progressbar ("value"));
     });
 };
 
 goradd.selectable = function(controlId) {
-    $j('#' + controlId).on("selectablestop", function (event, ui) {
+    $j('#' + controlId).on("selectablestop", function (event, eventData) {
         var strItems;
 
         strItems = "";
@@ -77,7 +77,7 @@ goradd.selectable = function(controlId) {
 };
 
 goradd.slider = function(controlId) {
-    $j('#' + controlId).on("slidechange", function (event, ui) {
+    $j('#' + controlId).on("slidechange", function (event, eventData) {
         if (ui.values && ui.values.length) {
             goradd.setControlValue(controlId, "_Values", ui.values[0] + ',' +  ui.values[1]);
         } else {
@@ -87,7 +87,7 @@ goradd.slider = function(controlId) {
 };
 
 goradd.tabs = function(controlId) {
-    $j('#' + controlId).on("tabsactivate", function(event, ui) {
+    $j('#' + controlId).on("tabsactivate", function(event, eventData) {
         var i = $j(this).tabs( "option", "active" );
         var id = ui.newPanel ? ui.newPanel.attr("id") : null;
         goradd.setControlValue(controlId, "_active", [i,id]);
@@ -95,7 +95,7 @@ goradd.tabs = function(controlId) {
 };
 
 goradd.datagrid2 = function(controlId) {
-    $j('#' + controlId).on("click", "thead tr th a", function(event, ui) {
+    $j('#' + controlId).on("click", "thead tr th a", function(event, eventData) {
         var cellIndex = $j(this).parent()[0].cellIndex;
         $j(this).trigger('qdg2sort', cellIndex); // Triggers the QDataGrid_SortEvent
         event.stopPropagation();

@@ -247,6 +247,6 @@ func init() {
 const NavbarSelect = "gr-bs-navbarselect"
 
 func NavbarSelectEvent() *page.Event {
-	return page.NewEvent(NavbarSelect).ActionValue(javascript.JsCode("ui"))
+	return page.NewEvent(NavbarSelect)
 }
 

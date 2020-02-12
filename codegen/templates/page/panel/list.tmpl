@@ -53,7 +53,10 @@ func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
 	case {{= lcPanelName }}Search:
 		p.Refresh()
 	case {{= lcPanelName }}RowClick: // edit
-		p.EditItem(ctx, p.GetClickedRowValue(a))
+		id := p.GetClickedRowValue(a)
+	    if id != "" {
+			p.EditItem(ctx, id)
+	    }
 	case {{= lcPanelName }}NewClick: // new
 		p.EditItem(ctx, "")
 	}
