@@ -195,7 +195,12 @@ func Generate() {
 					_, err = sys.ExecuteShellCommand("goimports -w " + filepath.Base(fileName))
 					_ = os.Chdir(curDir)
 					if err != nil {
-						panic("error running goimports: " + string(err.(*exec.ExitError).Stderr)) // perhaps goimports is not installed?
+						if e,ok := err.(*exec.Error); ok {
+							panic("error running goimports: " + e.Error()) // perhaps goimports is not installed?
+						} else if e,ok := err.(*exec.ExitError); ok {
+							// Likely a syntax error in the resulting file
+							log.Print(string(e.Stderr))
+						}
 					}
 				}
 			}

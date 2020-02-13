@@ -62,6 +62,30 @@ func (c *RadioButton) DrawTag(ctx context.Context) (ctrl string) {
 	return html.RenderTag("div", checkWrapperAttributes, h)
 }
 
+func (c *RadioButton) Serialize(e page.Encoder) (err error) {
+	if err = c.RadioButton.Serialize(e); err != nil {return}
+
+	if err = e.Encode(c.inline); err != nil {
+		return err
+	}
+
+	return
+}
+
+
+func (c *RadioButton) Deserialize(d page.Decoder) (err error) {
+	if err = c.RadioButton.Deserialize(d); err != nil {
+		return
+	}
+
+	if err = d.Decode(&c.inline); err != nil {
+		return
+	}
+
+	return
+}
+
+
 type RadioButtonCreator struct {
 	// ID is the id of the control
 	ID string

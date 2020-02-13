@@ -1,0 +1,38 @@
+package template
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"bytes"
+	"github.com/goradd/goradd/pkg/orm/db"
+    "strings"
+    "fmt"
+    "path"
+)
+
+func init() {
+	t := DetailFormTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.ProjectDir() + "/gen",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type DetailFormTemplate struct {
+	generator.Template
+}
+
+func (n *DetailFormTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "DetailForm.go"
+}
+
+func (n *DetailFormTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
+	{{: "form/detailform.tmpl" }}
+}
+
+func (n *DetailFormTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+

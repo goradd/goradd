@@ -7,6 +7,7 @@ var panelName = t.GoName + objectType + "Panel"
 var lcPanelName = t.LcGoName + objectType + "Panel"
 
 var editFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Edit")
+var detailFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Detail")
 
 {{
 
@@ -22,12 +23,14 @@ import(
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/url"
 	"goradd-project/gen/{{= dd.DbKey }}/model"
+	"github.com/goradd/goradd/pkg/session"
 )
 
 const (
 	{{= lcPanelName }}RowClick = iota + 1000
 	{{= lcPanelName }}NewClick
 	{{= lcPanelName }}Search
+	{{= lcPanelName }}ButtonClick
 )
 
 type {{= panelName }} struct {
@@ -44,27 +47,68 @@ func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *
 func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.{{= panelName }}Base.Init(parent, id)
 	p.createControls(ctx)
+	session.Remove(ctx, "{{= t.LcGoName }}EditID")
+	session.Remove(ctx, "{{= t.LcGoName }}DetailID")
+}
+
+func (p *{{= panelName }}) ColumnCreators(ctx context.Context) []control.ColumnCreator {
+
+    // Replace this with specific column creators if needed
+    creators := p.{{= panelName }}Base.ColumnCreators(ctx)
+
+
+    // Comment out these lines to remove the edit column
+    creators = append(creators, column.ButtonColumnCreator {
+        Title: p.GT("Edit"),
+    })
+    p.On(column.ButtonColumnClick(), action.Ajax(p.ID(), {{= lcPanelName }}ButtonClick))
+
+    return creators
 }
 
 func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case {{= lcPanelName }}Search:
-		p.Refresh()
+		p.Page().GetControl(p.ID() + "-list").Refresh() // redraw the table
 	case {{= lcPanelName }}RowClick: // edit
-	    id := p.GetClickedRowValue(a)
+		id := p.GetClickedRowValue(a)
 	    if id != "" {
-		    p.EditItem(id)
+			p.ZoomItem(ctx, id)
+			// Change the above to the below to edit on clicking the whole row, rather than the default of clicking the edit column
+			// p.EditItem(ctx, id)
 	    }
 	case {{= lcPanelName }}NewClick: // new
-		p.EditItem("")
+		p.EditItem(ctx, "")
+	case {{= lcPanelName }}ButtonClick: // edit button column was clicked
+		id := p.GetClickedRowValue(a)
+	    if id != "" {
+			p.EditItem(ctx, id)
+	    }
+	default:
+	    p.{{= panelName }}Base.Action(ctx, a)
+
 	}
 }
 
 // EditItem responds to an action to edit an item in the list. The id of the item will be given.
-func (p *{{= panelName }}) EditItem(id string) {
+func (p *{{= panelName }}) EditItem(ctx context.Context, id string) {
     // This points to the default edit form path created by the templates. If you change the URL there, also change this.
     // Another option is to popup an edit dialog here.
-	p.ParentForm().ChangeLocation(url.NewBuilder("{{= editFormPath }}").SetValue("id", id).String())
+    if id == "" {
+        session.Remove(ctx, "{{= t.LcGoName }}EditID")
+    } else {
+        session.SetString(ctx, "{{= t.LcGoName }}EditID", id)
+    }
+	p.ParentForm().ChangeLocation("{{= editFormPath }}")
+}
+
+// ZoomItem responds to an action to zoom into the given item.
+func (p *{{= panelName }}) ZoomItem(ctx context.Context, id string) {
+    // This points to the default detail form path created by the templates. If you change the URL there, also change this.
+    if id != "" {
+        session.SetString(ctx, "{{= t.LcGoName }}DetailID", id)
+    }
+	p.ParentForm().ChangeLocation("{{= detailFormPath }}")
 }
 
 // BuildQuery begins the query builder process, returning a partially built query to be completed by the

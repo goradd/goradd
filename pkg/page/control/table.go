@@ -38,7 +38,6 @@ type TableEmbedder interface {
 	GetRowAttributes(row int, data interface{}) html.Attributes
 	HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes)
 	FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes)
-	SetRenderColumnTags(r bool) TableI
 	SetHideIfEmpty(h bool) TableI
 	SetHeaderRowCount(count int) TableI
 	SetFooterRowCount(count int) TableI
@@ -100,7 +99,6 @@ type Table struct {
 	DataManager
 
 	columns               []ColumnI
-	renderColumnTags      bool
 	caption               interface{}
 	hideIfEmpty           bool
 	headerRowCount        int
@@ -145,14 +143,6 @@ func (t *Table) Init(parent page.ControlI, id string) {
 // by a subclass.
 func (t *Table) this() TableI {
 	return t.Self.(TableI)
-}
-
-func (t *Table) SetRenderColumnTags(r bool) TableI {
-	if t.renderColumnTags != r {
-		t.renderColumnTags = r
-		t.Refresh()
-	}
-	return t.this()
 }
 
 func (t *Table) SetHideIfEmpty(h bool) TableI {
@@ -236,11 +226,9 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 		return
 	}
 
-	if t.renderColumnTags {
-		if err = t.drawColumnTags(ctx, buf1); err != nil {
+	if err = t.drawColumnTags(ctx, buf1); err != nil {
 			return
 		}
-	}
 
 	if t.headerRowCount > 0 {
 		err = t.drawHeaderRows(ctx, buf2)
@@ -640,7 +628,6 @@ func (t *Table) UnmarshalState(m maps.Loader) {
 }
 
 type tableEncoded struct {
-	RenderColumnTags      bool
 	Caption               interface{}
 	CaptionID			  string
 	HideIfEmpty           bool
@@ -665,7 +652,6 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 	}
 
 	s := tableEncoded{
-		RenderColumnTags:      t.renderColumnTags,
 		HideIfEmpty:           t.hideIfEmpty,
 		HeaderRowCount:        t.headerRowCount,
 		FooterRowCount:        t.footerRowCount,
@@ -729,7 +715,6 @@ func (t *Table) Deserialize(dec page.Decoder) (err error) {
 		panic(err)
 	}
 
-	t.renderColumnTags = s.RenderColumnTags
 	t.hideIfEmpty = s.HideIfEmpty
 	t.headerRowCount = s.HeaderRowCount
 	t.footerRowCount = s.FooterRowCount
@@ -850,7 +835,6 @@ func (c TableCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 // Init is called by implementations of Tables to initialize a base control.
 // You do not normally need to call this.
 func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
-	ctrl.SetRenderColumnTags(c.HasColTags)
 	ctrl.SetHideIfEmpty(c.HideIfEmpty)
 	if c.Caption != nil {
 		if ctrl2, ok := c.Caption.(page.Creator); ok {

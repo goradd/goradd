@@ -1696,8 +1696,17 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oManager); err != nil {
-		return nil, err
+	if o.oManager == nil {
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
+		}
+		if err := encoder.Encode(o.oManager); err != nil {
+			return nil, err
+		}
 	}
 	if err := encoder.Encode(o.name); err != nil {
 		return nil, err
@@ -1774,20 +1783,56 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oMilestones); err != nil {
-		return nil, err
+	if o.oMilestones == nil {
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
+		}
+		if err := encoder.Encode(o.oMilestones); err != nil {
+			return nil, err
+		}
 	}
 
-	if err := encoder.Encode(o.oChildrenAsParent); err != nil {
-		return nil, err
+	if o.oChildrenAsParent == nil {
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
+		}
+		if err := encoder.Encode(o.oChildrenAsParent); err != nil {
+			return nil, err
+		}
 	}
 
-	if err := encoder.Encode(o.oParentsAsChild); err != nil {
-		return nil, err
+	if o.oParentsAsChild == nil {
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
+		}
+		if err := encoder.Encode(o.oParentsAsChild); err != nil {
+			return nil, err
+		}
 	}
 
-	if err := encoder.Encode(o.oTeamMembers); err != nil {
-		return nil, err
+	if o.oTeamMembers == nil {
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
+		}
+		if err := encoder.Encode(o.oTeamMembers); err != nil {
+			return nil, err
+		}
 	}
 
 	if o._aliases == nil {
@@ -1814,6 +1859,9 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
+	var isPtr bool
+
+	_ = isPtr
 
 	if err = dec.Decode(&o.id); err != nil {
 		return
@@ -1858,8 +1906,13 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.oManager); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
+	}
+	if isPtr {
+		if err = dec.Decode(&o.oManager); err != nil {
+			return
+		}
 	}
 	if err = dec.Decode(&o.name); err != nil {
 		return
@@ -1936,52 +1989,71 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.oMilestones); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
-	if len(o.oMilestones) > 0 {
-		o.mMilestones = make(map[string]*Milestone)
-		for _, p := range o.oMilestones {
-			o.mMilestones[p.PrimaryKey()] = p
+	if isPtr {
+		if err = dec.Decode(&o.oMilestones); err != nil {
+			return
+		}
+		if len(o.oMilestones) > 0 {
+			o.mMilestones = make(map[string]*Milestone)
+			for _, p := range o.oMilestones {
+				o.mMilestones[p.PrimaryKey()] = p
+			}
 		}
 	}
 
-	if err = dec.Decode(&o.oChildrenAsParent); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
-	if len(o.oChildrenAsParent) > 0 {
-		o.mChildrenAsParent = make(map[string]*Project)
+	if isPtr {
+		if err = dec.Decode(&o.oChildrenAsParent); err != nil {
+			return
+		}
+		if len(o.oChildrenAsParent) > 0 {
+			o.mChildrenAsParent = make(map[string]*Project)
 
-		for _, p := range o.oChildrenAsParent {
-			o.mChildrenAsParent[p.PrimaryKey()] = p
+			for _, p := range o.oChildrenAsParent {
+				o.mChildrenAsParent[p.PrimaryKey()] = p
+			}
 		}
 	}
-	if err = dec.Decode(&o.oParentsAsChild); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
-	if len(o.oParentsAsChild) > 0 {
-		o.mParentsAsChild = make(map[string]*Project)
+	if isPtr {
+		if err = dec.Decode(&o.oParentsAsChild); err != nil {
+			return
+		}
+		if len(o.oParentsAsChild) > 0 {
+			o.mParentsAsChild = make(map[string]*Project)
 
-		for _, p := range o.oParentsAsChild {
-			o.mParentsAsChild[p.PrimaryKey()] = p
+			for _, p := range o.oParentsAsChild {
+				o.mParentsAsChild[p.PrimaryKey()] = p
+			}
 		}
 	}
-	if err = dec.Decode(&o.oTeamMembers); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
-	if len(o.oTeamMembers) > 0 {
-		o.mTeamMembers = make(map[string]*Person)
+	if isPtr {
+		if err = dec.Decode(&o.oTeamMembers); err != nil {
+			return
+		}
+		if len(o.oTeamMembers) > 0 {
+			o.mTeamMembers = make(map[string]*Person)
 
-		for _, p := range o.oTeamMembers {
-			o.mTeamMembers[p.PrimaryKey()] = p
+			for _, p := range o.oTeamMembers {
+				o.mTeamMembers[p.PrimaryKey()] = p
+			}
 		}
 	}
 
-	var hasAliases bool
-	if err = dec.Decode(&hasAliases); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
-	if hasAliases {
+	if isPtr {
 		if err = dec.Decode(&o._aliases); err != nil {
 			return
 		}

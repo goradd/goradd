@@ -140,7 +140,7 @@ func (c *FormGroup) DrawTag(ctx context.Context) string {
 	hasInnerDiv := c.innerDivAttr.Len() > 0
 	if hasInnerDiv {
 		buf.WriteString("<")
-		buf.WriteString(c.Subtag)
+		buf.WriteString(c.SubTag())
 		buf.WriteString(" ")
 		buf.WriteString(c.innerDivAttr.String())
 		buf.WriteString(">")
@@ -150,7 +150,7 @@ func (c *FormGroup) DrawTag(ctx context.Context) string {
 	}
 	if hasInnerDiv {
 		buf.WriteString("</")
-		buf.WriteString(c.Subtag)
+		buf.WriteString(c.SubTag())
 		buf.WriteString(">")
 	}
 	if c.Instructions() != "" {
@@ -158,7 +158,7 @@ func (c *FormGroup) DrawTag(ctx context.Context) string {
 	}
 	if subControl.ValidationState() != page.ValidationNever {
 		c.ErrorAttributes().SetClass(c.getValidationClass(subControl))
-		buf.WriteString(html.RenderTag(c.Subtag, c.ErrorAttributes(), errorMessage))
+		buf.WriteString(html.RenderTag(c.SubTag(), c.ErrorAttributes(), errorMessage))
 	}
 	return html.RenderTag(c.Tag, attributes, buf.String())
 }
@@ -185,6 +185,34 @@ func (c *FormGroup) getValidationClass(subcontrol page.ControlI) (class string) 
 
 func (c *FormGroup) InnerDivAttributes() html.Attributes {
 	return c.innerDivAttr
+}
+
+func (c *FormGroup) Serialize(e page.Encoder) (err error) {
+	if err = c.FormFieldWrapper.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(c.innerDivAttr); err != nil {
+		return
+	}
+	if err = e.Encode(c.useTooltips); err != nil {
+		return
+	}
+	return
+}
+
+func (c *FormGroup) Deserialize(dec page.Decoder) (err error) {
+	if err = c.FormFieldWrapper.Deserialize(dec); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&c.innerDivAttr); err != nil {
+		return
+	}
+	if err = dec.Decode(&c.useTooltips); err != nil {
+		return
+	}
+	return
 }
 
 // Use FormGroupCreator to create a FormGroup,

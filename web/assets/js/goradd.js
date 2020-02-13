@@ -1439,6 +1439,9 @@ goradd.g.prototype = {
     qs: function(sel) {
         return this.element.querySelector(sel);
     },
+    find: function(sel) {
+        return g$(this.qs(sel))
+    },
     /**
      * qa is a querySelectorAll call that returns an actual array of HTML elements, and not a NodeList.
      * By returning an array, you can call ES5 array functions on it, like forEach.
@@ -1478,7 +1481,7 @@ goradd.g.prototype = {
         return a;
     },
     /**
-     * closest returns the first parent node that matches the given selector, or null
+     * closest returns the first parent node that matches the given selector, or null, as an goradd object
      * @param sel
      * @returns HTMLElement
      */
@@ -1486,7 +1489,7 @@ goradd.g.prototype = {
         var el = this.element;
         while (el.parentElement && el.parentElement !== window) {
             if (g$(el).matches(sel)) {
-                return el;
+                return g$(el);
             }
             el = el.parentElement;
         }
@@ -2112,6 +2115,22 @@ goradd.g.prototype = {
         if (goradd.widget.new && !!name) {
             this.element.goradd.widget = goradd.widget.new(name, options, this.element);
         }
+    },
+    /**
+     * columnId is a convenience method to find the column id that the current object resides in.
+     * This is specifically from within a goradd Table object, since it marks header rows with the id of the column.
+     */
+    columnId: function() {
+        var idx;
+        if (this.element.tagName === "TH" || this.element.tagName === "TD") {
+            idx = this.element.cellIndex;
+        } else {
+            idx = this.closest("th,td").element.cellIndex;
+        }
+        var table = this.closest('table');
+        var colgroup = table.find('colgroup');
+        var ths = colgroup.qa('col');
+        return ths[idx].id;
     }
 };
 

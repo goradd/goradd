@@ -35,4 +35,3 @@ func (n *EditFormTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db
 func (n *EditFormTemplate) Overwrite() bool {
 	return n.Template.Overwrite
 }
-

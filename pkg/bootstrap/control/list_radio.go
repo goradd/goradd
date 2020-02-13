@@ -68,6 +68,38 @@ func (l *RadioList) RenderItem(item *control.ListItem) (h string) {
 	return
 }
 
+func (l *RadioList) Serialize(e page.Encoder) (err error) {
+	if err = l.RadioList.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(l.isInline); err != nil {
+		return err
+	}
+	if err = e.Encode(l.cellClass); err != nil {
+		return err
+	}
+
+	return
+}
+
+
+func (l *RadioList) Deserialize(d page.Decoder) (err error) {
+	if err = l.RadioList.Deserialize(d); err != nil {
+		return
+	}
+
+	if err = d.Decode(&l.isInline); err != nil {
+		return
+	}
+	if err = d.Decode(&l.cellClass); err != nil {
+		return
+	}
+
+	return
+}
+
+
 type RadioListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.

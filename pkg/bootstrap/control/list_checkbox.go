@@ -103,6 +103,38 @@ func renderCell(item *control.ListItem, controlHtml string, columnCount int, isI
 	return html.RenderTag("div", attributes, controlHtml)
 }
 
+func (l *CheckboxList) Serialize(e page.Encoder) (err error) {
+	if err = l.CheckboxList.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(l.isInline); err != nil {
+		return err
+	}
+	if err = e.Encode(l.cellClass); err != nil {
+		return err
+	}
+
+	return
+}
+
+
+func (l *CheckboxList) Deserialize(d page.Decoder) (err error) {
+	if err = l.CheckboxList.Deserialize(d); err != nil {
+		return
+	}
+
+	if err = d.Decode(&l.isInline); err != nil {
+		return
+	}
+	if err = d.Decode(&l.cellClass); err != nil {
+		return
+	}
+
+	return
+}
+
+
 type CheckboxListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.

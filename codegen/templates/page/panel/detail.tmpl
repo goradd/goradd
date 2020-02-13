@@ -1,0 +1,91 @@
+// detail.tmpl
+
+// The master template for the DetailPanel classes
+
+var panelName = t.GoName + "DetailPanel"
+
+{{
+
+package panel
+
+// This implementation file is not modified during code generation. Changes to this file will be preserved.
+
+import(
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
+	"context"
+	"goradd-project/gen/{{dd.DbKey}}/connector"
+	"goradd-project/gen/{{dd.DbKey}}/model"
+	"goradd-project/gen/{{dd.DbKey}}/model/node"
+)
+
+type {{= panelName }} struct {
+	control.Panel
+	{{= t.GoName }} *model.{{= t.GoName }}
+}
+
+func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
+    p := new({{= panelName }})
+    p.Self = p
+	p.Init(ctx, parent, id)
+	return p
+}
+
+func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
+	p.CreateControls(ctx)
+}
+
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+}
+
+// Load loads up the edit panel with data from the database. pk is the primary key of a model.{{= t.GoName }}
+// database record
+func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error {
+	p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk,
+{{for _,rr := range t.ReverseReferences}}
+    {{if rr.IsUnique() }}
+            node.{{= t.GoName}}().{{= rr.GoName}}(),
+    {{else}}
+            node.{{= t.GoName}}().{{= rr.GoPlural}}(),
+    {{if}}
+{{for}}
+    )
+    if p.{{= t.GoName }} == nil {
+        d := control.Alert(p, p.ParentForm().GT("The record was not found. Perhaps it was recently deleted by someone else."), "OK")
+        d.SetTitle(p.ParentForm().GT("Error"))
+        return page.NewFrameworkError(page.FrameworkErrRecordNotFound)
+    }
+    p.Refresh()
+    return nil
+}
+
+// Refresh loads the controls with data from the cached model.{{= t.GoName }} object.
+func (p *{{= panelName }}) Refresh() {
+    p.Panel.Refresh()
+}
+
+// Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
+func (p *{{= panelName }}) Reload(ctx context.Context) {
+    p.Load(ctx, p.{{= t.GoName }}.PrimaryKey())
+}
+
+
+type {{t.GoName}}DetailPanelCreator struct {
+	ID string
+}
+
+func (c {{t.GoName}}DetailPanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	p := New{{panelName}}(ctx, parent, c.ID)
+	return p
+}
+
+func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
+	return c.Page().GetControl(id).(*{{= panelName }})
+}
+
+func init() {
+    page.RegisterControl(&{{= panelName }}{})
+}
+
+}}

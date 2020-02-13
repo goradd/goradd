@@ -37,8 +37,8 @@ type FormFieldWrapper struct {
 	forID string
 	// savedMessage is what we use to determine if the subcontrol changed validation state. This needs to be serialized.
 	savedMessage string
-	// subtag is the tag to use for instructions and error
-	Subtag string
+	// subtag is the tag to used for instructions and error
+	subtag string
 }
 
 func NewFormField(parent page.ControlI, id string) *FormFieldWrapper {
@@ -51,7 +51,7 @@ func NewFormField(parent page.ControlI, id string) *FormFieldWrapper {
 func (c *FormFieldWrapper) Init(parent page.ControlI, id string) {
 	c.ControlBase.Init(parent, id)
 	c.Tag = "div"
-	c.Subtag = "div"
+	c.subtag = "div"
 	c.labelAttributes = html.NewAttributes().
 		SetID(c.ID() + "_lbl").
 		SetClass("goradd-lbl")
@@ -156,10 +156,10 @@ func (c *FormFieldWrapper) DrawTag(ctx context.Context) string {
 		panic(err)
 	}
 	if child != nil && child.ValidationState() != page.ValidationNever {
-		buf.WriteString(html.RenderTag(c.Subtag, c.errorAttributes, html2.EscapeString(errorMessage)))
+		buf.WriteString(html.RenderTag(c.subtag, c.errorAttributes, html2.EscapeString(errorMessage)))
 	}
 	if c.instructions != "" {
-		buf.WriteString(html.RenderTag(c.Subtag, c.instructionAttributes, html2.EscapeString(c.instructions)))
+		buf.WriteString(html.RenderTag(c.subtag, c.instructionAttributes, html2.EscapeString(c.instructions)))
 	}
 	return html.RenderTag(c.Tag, attributes, buf.String())
 }
@@ -210,6 +210,10 @@ func (c *FormFieldWrapper) checkChildValidation() {
 	}
 }
 
+func (c *FormFieldWrapper) SubTag() string {
+	return c.subtag
+}
+
 func (c *FormFieldWrapper) Serialize(e page.Encoder) (err error) {
 	if err = c.ControlBase.Serialize(e); err != nil {
 		return
@@ -233,7 +237,7 @@ func (c *FormFieldWrapper) Serialize(e page.Encoder) (err error) {
 	if err = e.Encode(c.savedMessage); err != nil {
 		return
 	}
-	if err = e.Encode(c.Subtag); err != nil {
+	if err = e.Encode(c.subtag); err != nil {
 		return
 	}
 
@@ -268,7 +272,7 @@ func (c *FormFieldWrapper) Deserialize(dec page.Decoder) (err error) {
 	if err = dec.Decode(&c.savedMessage); err != nil {
 		return
 	}
-	if err = dec.Decode(&c.Subtag); err != nil {
+	if err = dec.Decode(&c.subtag); err != nil {
 		return
 	}
 
@@ -316,7 +320,7 @@ func (f FormFieldWrapperCreator) Create(ctx context.Context, parent page.Control
 	f.Init(ctx, c)
 	if f.IsInline { // subclasses might deal with this issue differently
 		c.Tag = "span"
-		c.Subtag = "span"
+		c.subtag = "span"
 	}
 
 	return c

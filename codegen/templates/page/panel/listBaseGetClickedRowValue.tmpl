@@ -4,7 +4,11 @@
 
 // GetClickedRowValue returns the value of the row that was clicked, based on the action parameters
 func (p *{{= panelName }}) GetClickedRowValue(a page.ActionParams) string {
-	return a.ActionValueString()
+	if s := a.ActionValueString(); s != "" {
+	    return s
+	} else {
+	    return a.EventValueString()
+	}
 }
 
 }}

@@ -6,6 +6,7 @@ package model
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 )
 
@@ -52,4 +53,8 @@ func queryLogins(ctx context.Context) *LoginsBuilder {
 // loaded Login objects by calling Delete on them.
 func DeleteLogin(ctx context.Context, pk string) {
 	deleteLogin(ctx, pk)
+}
+
+func init() {
+	gob.RegisterName("ExampleLogin", new(Login))
 }

@@ -1789,6 +1789,7 @@ type controlEncoding struct {
 	EventCounter          EventID
 	ShouldSaveState       bool
 	IsModified			  bool		// For testing framework
+	DataConnector 		  DataConnector
 	WatchedKeys			  map[string]string
 }
 
@@ -1823,7 +1824,8 @@ func (c *ControlBase) Serialize(e Encoder) (err error) {
 		ShouldSaveState:       c.shouldSaveState,
 		ParentID:			   c.parentId,
 		IsModified:				c.isModified,
-		WatchedKeys:		c.watchedKeys,
+		DataConnector:			c.dataConnector,
+		WatchedKeys:			c.watchedKeys,
 	}
 
 	for _,child := range c.children {
@@ -1874,6 +1876,7 @@ func (c *ControlBase) Deserialize(d Decoder) (err error) {
 	c.eventCounter = s.EventCounter
 	c.shouldSaveState = s.ShouldSaveState
 	c.isModified = s.IsModified
+	c.dataConnector = s.DataConnector
 	c.watchedKeys = s.WatchedKeys
 
 	// This relies on the children being deserialized first, which is taken care of by the page serializer

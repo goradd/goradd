@@ -3,6 +3,7 @@
 {{
 
 func (f *{{= formName }}) returnToPrevious(ctx context.Context) {
+    session.Remove(ctx, "{{= t.LcGoName }}EditID")
 	f.PopLocation(ctx, "{{= listFormPath }}")
 }
 

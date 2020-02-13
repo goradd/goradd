@@ -126,6 +126,53 @@ func (b *Navbar) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
+func (b *Navbar) Serialize(e page.Encoder) (err error) {
+	if err = b.ControlBase.Serialize(e); err != nil {return}
+
+	if err = e.Encode(b.brandAnchor); err != nil {
+		return err
+	}
+	if err = e.Encode(b.brandLocation); err != nil {
+		return err
+	}
+	if err = e.Encode(b.style); err != nil {
+		return err
+	}
+	if err = e.Encode(b.background); err != nil {
+		return err
+	}
+	if err = e.Encode(b.expand); err != nil {
+		return err
+	}
+
+	return
+}
+
+
+func (b *Navbar) Deserialize(d page.Decoder) (err error) {
+	if err = b.ControlBase.Deserialize(d); err != nil {
+		return
+	}
+
+	if err = d.Decode(&b.brandAnchor); err != nil {
+		return
+	}
+	if err = d.Decode(&b.brandLocation); err != nil {
+		return
+	}
+	if err = d.Decode(&b.style); err != nil {
+		return
+	}
+	if err = d.Decode(&b.background); err != nil {
+		return
+	}
+	if err = d.Decode(&b.expand); err != nil {
+		return
+	}
+
+	return
+}
+
 type NavbarCreator struct {
 	ID string
 	Brand string

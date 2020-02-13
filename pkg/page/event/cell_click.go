@@ -11,8 +11,8 @@ const (
 	CellClickColumnIndex = `event.goradd.match.cellIndex`
 	CellClickCellId      = `event.goradd.match.id`
 	CellClickRowId       = `event.goradd.match.parentElement.id`
-	CellClickRowValue    = `g$(event.goradd.match.parentElement).data("value")`
-	CellClickColId       = `g$(g$(g$(event.goradd.match).closest("table")).qs("thead")).qa("th")[event.goradd.match.cellIndex].id`
+	CellClickRowValue    = `g$(event.goradd.match).closest("tr").data("value")`
+	CellClickColId       = `g$(event.goradd.match).columnId()`
 )
 
 /**
@@ -36,7 +36,7 @@ const (
  *  event.goradd.match.parentElement.rowIndex - the index of the row clicked, starting with zero at the top (including any header rows).
  *  event.goradd.match.parentElement.id the id of the row clicked on
  *  g$(event.goradd.match).parent().data("value") - the "data-value" attribute of the row.
- *  g$(event.goradd.match).parent().closest('table').find('thead').find('th')[event.goradd.match.cellIndex].id - the id of the column clicked in
+ *  g$(event.goradd.match).columnId() - the id of the column clicked in
  *
  * You can put your items in a javascript array, and an array will be returned as the strParameter in the action.
  * Or you can put it in a javascript object, and a named array(hash) will be returned.

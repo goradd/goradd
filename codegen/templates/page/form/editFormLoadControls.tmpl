@@ -5,7 +5,9 @@
 // LoadControls is called by the framework after creating the form.
 // It is the place to load up the form controls with data after the form has been created.
 func (f *{{= formName }}) LoadControls(ctx context.Context) {
-    if id, ok := page.GetContext(ctx).FormValue("id"); ok {
+    id := session.GetString(ctx, "{{= t.LcGoName }}EditID")
+
+    if id != "" {
  	    err := panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, {{= t.PrimaryKeyColumn().ConvertFromString("id") }})
  	    if err == nil {
             f.Page().GetControl({{= title }}DeleteButtonID).SetVisible(true)

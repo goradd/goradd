@@ -71,7 +71,6 @@ func TestPagedTable_Serialize(t *testing.T) {
 	dec := gob.NewDecoder(&buf)
 	c2.Deserialize(dec)
 
-	assert.True(t, c2.Table.renderColumnTags)
 	assert.Equal(t, "This is a table", c2.caption)
 	assert.Equal(t, 3, c2.sortHistoryLimit)
 }

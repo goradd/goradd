@@ -685,6 +685,9 @@ func (o *personWithLockBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
+	var isPtr bool
+
+	_ = isPtr
 
 	if err = dec.Decode(&o.id); err != nil {
 		return
@@ -729,11 +732,10 @@ func (o *personWithLockBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	var hasAliases bool
-	if err = dec.Decode(&hasAliases); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
-	if hasAliases {
+	if isPtr {
 		if err = dec.Decode(&o._aliases); err != nil {
 			return
 		}

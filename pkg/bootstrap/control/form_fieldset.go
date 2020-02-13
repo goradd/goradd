@@ -103,6 +103,50 @@ func (c *FormFieldset) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (er
 	return
 }
 
+func (c *FormFieldset) Serialize(e page.Encoder) (err error) {
+	if err = c.Panel.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(c.legendAttributes); err != nil {
+		return err
+	}
+	if err = e.Encode(c.asRow); err != nil {
+		return err
+	}
+	if err = e.Encode(c.instructions); err != nil {
+		return err
+	}
+	if err = e.Encode(c.instructionAttributes); err != nil {
+		return err
+	}
+
+	return
+}
+
+
+func (c *FormFieldset) Deserialize(d page.Decoder) (err error) {
+	if err = c.Panel.Deserialize(d); err != nil {
+		return
+	}
+
+	if err = d.Decode(&c.legendAttributes); err != nil {
+		return
+	}
+	if err = d.Decode(&c.asRow); err != nil {
+		return
+	}
+	if err = d.Decode(&c.instructions); err != nil {
+		return
+	}
+	if err = d.Decode(&c.instructionAttributes); err != nil {
+		return
+	}
+
+	return
+}
+
+
 // Use FormFieldsetCreator to create a bootstrap fieldset,
 // which wraps a control group with a fieldset.
 // The Child item should be a panel or a control that groups other controls,

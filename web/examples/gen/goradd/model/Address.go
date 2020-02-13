@@ -6,6 +6,7 @@ package model
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 )
 
@@ -52,4 +53,8 @@ func queryAddresses(ctx context.Context) *AddressesBuilder {
 // loaded Address objects by calling Delete on them.
 func DeleteAddress(ctx context.Context, pk string) {
 	deleteAddress(ctx, pk)
+}
+
+func init() {
+	gob.RegisterName("ExampleAddress", new(Address))
 }

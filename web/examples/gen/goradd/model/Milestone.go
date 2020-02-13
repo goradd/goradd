@@ -6,6 +6,7 @@ package model
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 )
 
@@ -52,4 +53,8 @@ func queryMilestones(ctx context.Context) *MilestonesBuilder {
 // loaded Milestone objects by calling Delete on them.
 func DeleteMilestone(ctx context.Context, pk string) {
 	deleteMilestone(ctx, pk)
+}
+
+func init() {
+	gob.RegisterName("ExampleMilestone", new(Milestone))
 }

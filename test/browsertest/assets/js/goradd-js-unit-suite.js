@@ -49,7 +49,7 @@ goradd.testsuite = {
     testClosest: function(t) {
         var p = g$("testP");
         var c = p.closest("form");
-        t.isSame("JsUnitTestForm", c.id);
+        t.isSame("JsUnitTestForm", c.element.id);
     },
     testAttrProp: function(t) {
         var a1 = g$("testD").attr("spellcheck");

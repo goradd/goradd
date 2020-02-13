@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
@@ -448,9 +449,15 @@ func (p *Page) serializeControl(c ControlI, e Encoder) error {
 		}
 	}
 	if err := c.Serialize(e); err != nil {
+		if config.Debug {
+			panic("Error serializing control " + c.ID() + ": " + err.Error())
+		}
 		return err
 	}
 	if err := e.Encode(exportedFields); err != nil {
+		if config.Debug {
+			panic ("Error serializing exported fields of " + c.ID() + ": " + err.Error())
+		}
 		return err
 	}
 	return nil

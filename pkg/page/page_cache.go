@@ -2,7 +2,9 @@ package page
 
 import (
 	"github.com/goradd/goradd/pkg/cache"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/log"
 )
 
 // PageCacheI is the page cache interface. The PageCache saves and restores pages in between page
@@ -118,6 +120,7 @@ func (o *SerializedPageCache) Set(pageId string, page *Page) {
 
 	if b, err := page.MarshalBinary(); err == nil {
 		o.LruCache.Set(pageId, b)
+		log.FrameworkDebug("Write page to cache: ", pageId)
 	}
 }
 
@@ -129,7 +132,10 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 	}
 
 	b := o.LruCache.Get(pageId)
+	log.FrameworkDebug("Get page from cache: ", pageId)
+
 	if b == nil {
+		log.FrameworkDebug("Page not found: ", pageId)
 		return nil
 	}
 
@@ -137,6 +143,11 @@ func (o *SerializedPageCache) Get(pageId string) *Page {
 
 	// write over the top of the previous page to reuse the memory
 	if err := p.UnmarshalBinary(b.([]byte)); err != nil {
+		if config.Debug {
+			panic("Page unmarshal error: " + err.Error())
+		} else {
+			log.FrameworkDebug("Page unmarshal error: ", err.Error())
+		}
 		return nil
 	}
 

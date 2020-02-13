@@ -1,0 +1,17 @@
+// detailFormInit.tmpl
+
+{{
+
+func (f *{{= formName }})Init(ctx context.Context, id string) {
+    f.FormBase.Init(ctx, id)
+
+	f.AddRelatedFiles()
+	f.createControls(ctx)
+}
+
+// init functions are called once when the web server first starts up.
+func init() {
+	page.RegisterForm({{= title }}DetailPath,  &{{= formName }}{}, {{= title }}DetailID)
+}
+
+}}

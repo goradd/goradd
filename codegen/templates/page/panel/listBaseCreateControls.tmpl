@@ -37,19 +37,7 @@ func (p *{{= panelName }}) createControls(ctx context.Context) {
                 Class:          "gr-clickable-rows",
                 WatchedDbTables: page.Nodes(node.{{= t.GoName }}()),
             },
-            Columns:[]{{= ctrlPkg }}.ColumnCreator {
-{{for _,col := range t.Columns }}
-                column.NodeColumnCreator{
-                    Node: node.{{= t.GoName }}().{{= col.GoName }}(),
-                    Title: "{{= t.ControlDescription(col).DefaultLabel }}",
-                {{if col.IsDateOnly}}
-                    ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultDateFormat},
-                {{else if col.IsTimeOnly}}
-                    ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultTimeFormat},
-                {{if}}
-                },
-{{for}}
-           },
+            Columns: p.this().ColumnCreators(ctx),
         },
 		{{= ctrlPkg }}.PanelCreator {
 			ID: p.ID()+"-buttonPanel",

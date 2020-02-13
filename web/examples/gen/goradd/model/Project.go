@@ -6,6 +6,7 @@ package model
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 )
 
@@ -52,4 +53,8 @@ func queryProjects(ctx context.Context) *ProjectsBuilder {
 // loaded Project objects by calling Delete on them.
 func DeleteProject(ctx context.Context, pk string) {
 	deleteProject(ctx, pk)
+}
+
+func init() {
+	gob.RegisterName("ExampleProject", new(Project))
 }

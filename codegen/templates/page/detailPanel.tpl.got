@@ -1,0 +1,35 @@
+package template
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"bytes"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"fmt"
+)
+
+func init() {
+	t := DetailPanelTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.ProjectDir() + "/gen",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type DetailPanelTemplate struct {
+	generator.Template
+}
+
+func (n *DetailPanelTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/panel/" + t.GoName + "DetailPanel.go"
+}
+
+func (n *DetailPanelTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
+	{{: "panel/detail.tmpl" }}
+}
+
+func (n *DetailPanelTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
