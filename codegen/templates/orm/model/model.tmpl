@@ -60,5 +60,9 @@ func Delete{{= t.GoName }}(ctx context.Context, pk string) {
 	delete{{= t.GoName }}(ctx, pk)
 }
 
+func init() {
+    gob.Register(new({{= t.GoName }}))
+}
+
 
 }}

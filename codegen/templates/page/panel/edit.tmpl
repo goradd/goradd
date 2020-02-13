@@ -86,6 +86,57 @@ func (p *{{= panelName }}) Delete(ctx context.Context) {
 }
 */
 
+/*
+If you add additional members to the struct, you should serialize them and deserialize them below.
+Pointers will need to be checked for nil before serializing
+
+func (p *{{= panelName }}) Serialize(e page.Encoder) (err error) {
+	if err = p.{{= panelName }}Base.Serialize(e); err != nil {
+		return
+	}
+
+    if err = e.Encode(p.myNewMemberVariable); err != nil {
+        return
+    }
+
+
+    if p.mySecondMemberVariablePtr == nil {
+        if err = e.Encode(false); err != nil {
+            return
+        }
+    } else {
+        if err = e.Encode(true); err != nil {
+            return
+        }
+        if err = e.Encode(p.mySecondMemberVariablePtr); err != nil {
+            return
+        }
+    }
+}
+
+func (p *{{= panelName }}) Deserialize(dec page.Decoder) (err error) {
+	if err = c.{{= panelName }}Base.Deserialize(dec); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&p.myNewMemberVariable); err != nil {
+		return
+	}
+
+    var isPtr bool
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
+        if err = dec.Decode(&p.mySecondMemberVariablePtr); err != nil {
+            return
+        }
+	}
+	return
+}
+*/
+
+
 type {{t.GoName}}EditPanelCreator struct {
 	ID string
 }

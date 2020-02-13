@@ -8,22 +8,22 @@ import (
 	"html"
 )
 
-func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (m *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`    <div class="modal-dialog" role="document">
         <div class="modal-content">
 `)
 
-	d.titleBar.AddClass("modal-header")
-	d.titleBar.Draw(ctx, buf)
+	m.titleBar.AddClass("modal-header")
+	m.titleBar.Draw(ctx, buf)
 
 	buf.WriteString(`            <div class="modal-body">
 `)
 
-	l := len(d.Children())
+	l := len(m.Children())
 	if l > 2 {
-		for _, child := range d.Children() {
-			if child.ID() != d.titleBar.ID() && child.ID() != d.buttonBar.ID() {
+		for _, child := range m.Children() {
+			if child.ID() != m.titleBar.ID() && child.ID() != m.buttonBar.ID() {
 				child.Draw(ctx, buf)
 			}
 		}
@@ -31,7 +31,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
 
 		buf.WriteString(`<p>`)
 
-		buf.WriteString(html.EscapeString(d.Text()))
+		buf.WriteString(html.EscapeString(m.Text()))
 
 		buf.WriteString(` </p>`)
 
@@ -41,8 +41,8 @@ func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
             </div>
 `)
 
-	d.buttonBar.AddClass("modal-footer")
-	d.buttonBar.Draw(ctx, buf)
+	m.buttonBar.AddClass("modal-footer")
+	m.buttonBar.Draw(ctx, buf)
 
 	buf.WriteString(`        </div>
     </div>

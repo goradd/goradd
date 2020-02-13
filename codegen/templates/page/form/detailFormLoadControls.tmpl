@@ -1,0 +1,20 @@
+// detailFormLoadControls.tmpl
+
+{{
+
+// LoadControls is called by the framework after creating the form.
+// It is the place to load up the form controls with data after the form has been created.
+func (f *{{= formName }}) LoadControls(ctx context.Context) {
+    id := session.GetString(ctx, "{{= t.LcGoName }}DetailID")
+
+    if id != "" {
+ 	    err := panel.Get{{= t.GoName }}DetailPanel(f, {{= title }}DetailPanelID).Load(ctx, {{= t.PrimaryKeyColumn().ConvertFromString("id") }})
+ 	    if err == nil {
+            f.Page().SetTitle(f.T({{= title }}Singular))
+            return
+ 	    }
+    }
+}
+
+
+}}

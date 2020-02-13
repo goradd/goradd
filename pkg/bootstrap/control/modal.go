@@ -52,50 +52,50 @@ func NewModal(parent page.ControlI, id string) *Modal {
 	return d
 }
 
-func (d *Modal) Init(parent page.ControlI, id string) {
+func (m *Modal) Init(parent page.ControlI, id string) {
 
 	if id == "" {
 		panic("Modals must have an id")
 	}
 
-	d.Panel.Init(parent, id)
-	d.Tag = "div"
-	d.SetShouldAutoRender(true)
+	m.Panel.Init(parent, id)
+	m.Tag = "div"
+	m.SetShouldAutoRender(true)
 
-	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
-	d.SetBlockParentValidation(true)
-	config2.LoadBootstrap(d.ParentForm())
+	m.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
+	m.SetBlockParentValidation(true)
+	config2.LoadBootstrap(m.ParentForm())
 
-	d.AddClass("modal fade").
+	m.AddClass("modal fade").
 		SetAttribute("tabindex", -1).
 		SetAttribute("role", "dialog").
-		SetAttribute("aria-labelledby", d.ID()+"-title").
+		SetAttribute("aria-labelledby", m.ID()+"-title").
 		SetAttribute("aria-hidden", true)
-	d.titleBar = NewTitleBar(d, d.ID()+"-titlebar")
-	d.buttonBar = control.NewPanel(d, d.ID()+"-btnbar")
+	m.titleBar = NewTitleBar(m, m.ID()+"-titlebar")
+	m.buttonBar = control.NewPanel(m, m.ID()+"-btnbar")
 
-	d.On(event.DialogClosed().Validate(page.ValidateNone).Private(), action.Ajax(d.ID(), DialogClosed))
+	m.On(event.DialogClosed().Validate(page.ValidateNone).Private(), action.Ajax(m.ID(), DialogClosed))
 }
 
-func (d *Modal) this() ModalI {
-	return d.Self.(ModalI)
+func (m *Modal) this() ModalI {
+	return m.Self.(ModalI)
 }
 
-func (d *Modal) SetTitle(t string) {
-	if d.titleBar.Title != t {
-		d.titleBar.Title = t
-		d.titleBar.Refresh()
+func (m *Modal) SetTitle(t string) {
+	if m.titleBar.Title != t {
+		m.titleBar.Title = t
+		m.titleBar.Refresh()
 	}
 }
 
-func (d *Modal) SetHasCloseBox(h bool) {
-	if d.titleBar.HasCloseBox != h {
-		d.titleBar.HasCloseBox = h
-		d.titleBar.Refresh()
+func (m *Modal) SetHasCloseBox(h bool) {
+	if m.titleBar.HasCloseBox != h {
+		m.titleBar.HasCloseBox = h
+		m.titleBar.Refresh()
 	}
 }
 
-func (d *Modal) SetDialogStyle(style control.DialogStyle) {
+func (m *Modal) SetDialogStyle(style control.DialogStyle) {
 	var class string
 	switch style {
 	case control.DialogStyleDefault:
@@ -109,26 +109,26 @@ func (d *Modal) SetDialogStyle(style control.DialogStyle) {
 	case control.DialogStyleInfo:
 		class = BackgroundColorInfo + " " + TextColorLight
 	}
-	d.titleBar.RemoveClassesWithPrefix("bg-")
-	d.titleBar.RemoveClassesWithPrefix("text-")
-	d.titleBar.AddClass(class)
+	m.titleBar.RemoveClassesWithPrefix("bg-")
+	m.titleBar.RemoveClassesWithPrefix("text-")
+	m.titleBar.AddClass(class)
 }
 
-func (d *Modal) SetBackdrop(b ModalBackdropType) {
-	d.backdrop = b
-	d.Refresh()
+func (m *Modal) SetBackdrop(b ModalBackdropType) {
+	m.backdrop = b
+	m.Refresh()
 }
 
-func (d *Modal) Title() string {
-	return d.titleBar.Title
+func (m *Modal) Title() string {
+	return m.titleBar.Title
 }
 
-func (d *Modal) AddTitlebarClass(class string) {
-	d.titleBar.AddClass(class)
+func (m *Modal) AddTitlebarClass(class string) {
+	m.titleBar.AddClass(class)
 }
 
-func (d *Modal) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := d.Panel.DrawingAttributes(ctx)
+func (m *Modal) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := m.Panel.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "bs-modal")
 	return a
 }
@@ -137,7 +137,7 @@ func (d *Modal) DrawingAttributes(ctx context.Context) html.Attributes {
 // Styling options you can include in options.Options:
 //  style - ButtonStyle value
 //  size - ButtonSize value
-func (d *Modal) AddButton(
+func (m *Modal) AddButton(
 	label string,
 	id string,
 	options *control.DialogButtonOptions,
@@ -145,7 +145,7 @@ func (d *Modal) AddButton(
 	if id == "" {
 		id = label
 	}
-	btn := NewButton(d.buttonBar, d.ID()+"-btn-"+id)
+	btn := NewButton(m.buttonBar, m.ID()+"-btn-"+id)
 	btn.SetLabel(label)
 
 	if options != nil {
@@ -155,7 +155,7 @@ func (d *Modal) AddButton(
 			if options.OnClick != nil {
 				btn.On(event.Click(), options.OnClick)
 			} else {
-				btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
+				btn.On(event.Click(), action.Trigger(m.ID(), event.DialogButtonEvent, id))
 			}
 		} else {
 			if options.OnClick != nil {
@@ -169,16 +169,16 @@ func (d *Modal) AddButton(
 				btn.On(event.Click(),
 					action.Group(
 						action.Confirm(options.ConfirmationMessage),
-						action.Trigger(d.ID(), event.DialogButtonEvent, id),
+						action.Trigger(m.ID(), event.DialogButtonEvent, id),
 					),
 				)
 			}
 		}
 	}
 
-	if (options == nil || !options.PushLeft) && !d.foundRight {
+	if (options == nil || !options.PushLeft) && !m.foundRight {
 		btn.AddClass("ml-auto")
-		d.foundRight = true
+		m.foundRight = true
 	}
 
 
@@ -201,69 +201,69 @@ func (d *Modal) AddButton(
 		}
 	}
 
-	d.buttonBar.Refresh()
+	m.buttonBar.Refresh()
 }
 
-func (d *Modal) RemoveButton(id string) {
-	d.buttonBar.RemoveChild(d.ID() + "-btn-" + id)
-	d.buttonBar.Refresh()
+func (m *Modal) RemoveButton(id string) {
+	m.buttonBar.RemoveChild(m.ID() + "-btn-" + id)
+	m.buttonBar.Refresh()
 }
 
-func (d *Modal) RemoveAllButtons() {
-	d.buttonBar.RemoveChildren()
-	d.Refresh()
+func (m *Modal) RemoveAllButtons() {
+	m.buttonBar.RemoveChildren()
+	m.Refresh()
 }
 
-func (d *Modal) SetButtonVisible(id string, visible bool) {
-	if ctrl := d.buttonBar.Child(d.ID() + "-btn-" + id); ctrl != nil {
+func (m *Modal) SetButtonVisible(id string, visible bool) {
+	if ctrl := m.buttonBar.Child(m.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetVisible(visible)
 	}
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (d *Modal) SetButtonStyle(id string, a html.Style) {
-	if ctrl := d.buttonBar.Child(d.ID() + "-btn-" + id); ctrl != nil {
+func (m *Modal) SetButtonStyle(id string, a html.Style) {
+	if ctrl := m.buttonBar.Child(m.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetStyles(a)
 	}
 }
 
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog (by hiding it).
-func (d *Modal) AddCloseButton(label string, id string) {
-	d.AddButton(label, id, &control.DialogButtonOptions{IsClose: true})
+func (m *Modal) AddCloseButton(label string, id string) {
+	m.AddButton(label, id, &control.DialogButtonOptions{IsClose: true})
 }
 
-func (d *Modal) PrivateAction(_ context.Context, a page.ActionParams) {
+func (m *Modal) PrivateAction(_ context.Context, a page.ActionParams) {
 	switch a.ID {
 	case DialogClosed:
-		d.closed()
+		m.closed()
 	}
 }
 
-func (d *Modal) Show() {
-	if d.Parent() == nil {
-		d.SetParent(d.ParentForm()) // This is a saved modal which has previously been created and removed. Insert it back into the form.
+func (m *Modal) Show() {
+	if m.Parent() == nil {
+		m.SetParent(m.ParentForm()) // This is a saved modal which has previously been created and removed. Insert it back into the form.
 	}
-	d.SetVisible(true)
-	d.isOpen = true
+	m.SetVisible(true)
+	m.isOpen = true
 	//d.Refresh()
-	d.ParentForm().Response().ExecuteJqueryCommand(d.ID(), "modal", page.PriorityLow, "show")
+	m.ParentForm().Response().ExecuteJqueryCommand(m.ID(), "modal", page.PriorityLow, "show")
 }
 
-func (d *Modal) Hide() {
-	d.ParentForm().Response().ExecuteJqueryCommand(d.ID(), "modal", page.PriorityLow, "hide")
+func (m *Modal) Hide() {
+	m.ParentForm().Response().ExecuteJqueryCommand(m.ID(), "modal", page.PriorityLow, "hide")
 }
 
-func (d *Modal) closed() {
-	d.isOpen = false
-	d.ResetValidation()
-	d.SetVisible(false)
+func (m *Modal) closed() {
+	m.isOpen = false
+	m.ResetValidation()
+	m.SetVisible(false)
 }
 
-func (d *Modal) PutCustomScript(_ context.Context, response *page.Response) {
+func (m *Modal) PutCustomScript(_ context.Context, response *page.Response) {
 	var backdrop interface{}
 
-	switch d.backdrop {
+	switch m.backdrop {
 	case ModalBackdrop:
 		backdrop = true
 	case ModalNoBackdrop:
@@ -274,12 +274,68 @@ func (d *Modal) PutCustomScript(_ context.Context, response *page.Response) {
 
 	script := fmt.Sprintf(
 		`jQuery("#%s").modal({backdrop: %#v, keyboard: %t, focus: true, show: %t});`,
-		d.ID(), backdrop, d.closeOnEscape, d.isOpen)
+		m.ID(), backdrop, m.closeOnEscape, m.isOpen)
 	script += fmt.Sprintf(
-		`jQuery("#%s").on("hidden.bs.modal", function(){g$("%[1]s").trigger("grdlgclosed")});`, d.ID())
+		`jQuery("#%s").on("hidden.bs.modal", function(){g$("%[1]s").trigger("grdlgclosed")});`, m.ID())
 
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }
+
+func (m *Modal) Serialize(e page.Encoder) (err error) {
+	if err = m.Panel.Serialize(e); err != nil {
+		return
+	}
+
+	if err = e.Encode(m.isOpen); err != nil {
+		return err
+	}
+	if err = e.Encode(m.closeOnEscape); err != nil {
+		return err
+	}
+	if err = e.Encode(m.titleBar); err != nil {
+		return err
+	}
+	if err = e.Encode(m.buttonBar); err != nil {
+		return err
+	}
+	if err = e.Encode(m.backdrop); err != nil {
+		return err
+	}
+	if err = e.Encode(m.foundRight); err != nil {
+		return err
+	}
+
+	return
+}
+
+
+func (m *Modal) Deserialize(d page.Decoder) (err error) {
+	if err = m.Panel.Deserialize(d); err != nil {
+		return
+	}
+
+	if err = d.Decode(&m.isOpen); err != nil {
+		return
+	}
+	if err = d.Decode(&m.closeOnEscape); err != nil {
+		return
+	}
+	if err = d.Decode(&m.titleBar); err != nil {
+		return
+	}
+	if err = d.Decode(&m.buttonBar); err != nil {
+		return
+	}
+	if err = d.Decode(&m.backdrop); err != nil {
+		return
+	}
+	if err = d.Decode(&m.foundRight); err != nil {
+		return
+	}
+
+	return
+}
+
 
 
 type TitleBar struct {

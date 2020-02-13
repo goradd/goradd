@@ -8,6 +8,7 @@ type {{= panelName }} struct {
 
 type {{= panelName }}I interface {
 	{{= ctrlPkg }}.PanelI
+	ColumnCreators(ctx context.Context) []control.ColumnCreator
 	BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder
 }
 

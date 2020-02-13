@@ -290,25 +290,6 @@ func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...quer
 	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-// LoadLoginByUsername queries for a single Login object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().Username(), username)).
-		joinOrSelect(joinOrSelectNodes...).
-		Get(ctx)
-}
-
-// HasLoginByUsername returns true if the
-// given unique index values exist in the database.
-func HasLoginByUsername(ctx context.Context, username string) bool {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().Username(), username)).
-		Count(ctx, false) == 1
-}
-
 // LoadLoginByPersonID queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
@@ -325,6 +306,25 @@ func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNode
 func HasLoginByPersonID(ctx context.Context, person_id string) bool {
 	return queryLogins(ctx).
 		Where(Equal(node.Login().PersonID(), person_id)).
+		Count(ctx, false) == 1
+}
+
+// LoadLoginByUsername queries for a single Login object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use QueryLogins() to start a query builder.
+func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
+	return queryLogins(ctx).
+		Where(Equal(node.Login().Username(), username)).
+		joinOrSelect(joinOrSelectNodes...).
+		Get(ctx)
+}
+
+// HasLoginByUsername returns true if the
+// given unique index values exist in the database.
+func HasLoginByUsername(ctx context.Context, username string) bool {
+	return queryLogins(ctx).
+		Where(Equal(node.Login().Username(), username)).
 		Count(ctx, false) == 1
 }
 

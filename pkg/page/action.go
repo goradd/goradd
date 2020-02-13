@@ -99,6 +99,13 @@ func (a *ActionParams) EventValueBool() bool {
 	return actionValueToBool(a.EventValueString())
 }
 
+// EventValueStringMap returns the event value as a map[string]string.
+func (a *ActionParams) EventValueStringMap() (m map[string]string) {
+	_,_ = a.EventValue(&m)
+	return m
+}
+
+
 // ActionValueString returns the action value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *ActionParams) ActionValueString() string {

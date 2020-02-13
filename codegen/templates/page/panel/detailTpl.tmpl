@@ -1,0 +1,39 @@
+//detailTpl.tmpl
+
+// The master template for the Detail panel template file. We are generating a got template.
+
+var panelName = t.GoName + "DetailPanel"
+
+{{# Below we are switching back and forth between putting got code in the template, and using got code to create the template }}
+{{begin gotCode}}
+{{< package }}panel{{end}}
+{{< imports }}
+{{end}}
+{{< control }}{{gotCode}}{{= panelName}}{{begin gotCode2}}{{end}}
+
+{{define template }}
+<h1>{{gotCode2}}{{= t.LiteralName }}{{begin gotCode3}}</h1>
+
+{{gotCode3}}
+
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        var name string
+        if col.IsReference() || col.IsType() {
+            name = col.ReferenceFunction()
+        } else {
+            name = col.GoName
+        }
+{{begin drawCode}}
+<div>{{drawCode}}{{= cd.DefaultLabel }}{{begin drawCode}}: </div>
+<div>{{v ctrl.{{drawCode}}{{= t.GoName }}{{begin drawCode4}}.{{drawCode4}}{{= name }}{{begin drawCode2}}() }}</div>
+{{drawCode2}}
+    }
+}}
+
+{{begin gotCode3}}
+{{end}}
+
+{{renderControlTemplate}}
+{{gotCode3}}

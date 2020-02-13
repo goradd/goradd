@@ -1,0 +1,14 @@
+// detailFormAction.tmpl
+
+{{
+
+// Action is called by the framework to execute any Server or Ajax actions you have assigned to controls
+// and directed here.
+func (f *{{= formName }}) Action(ctx context.Context, a page.ActionParams) {
+	switch a.ID {
+	case {{= title }}OkAction:
+        f.returnToPrevious(ctx)
+    }
+}
+
+}}

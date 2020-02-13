@@ -199,7 +199,7 @@ func Generate() {
 							panic("error running goimports: " + e.Error()) // perhaps goimports is not installed?
 						} else if e,ok := err.(*exec.ExitError); ok {
 							// Likely a syntax error in the resulting file
-							log.Print(e.Stderr)
+							log.Print(string(e.Stderr))
 						}
 					}
 				}

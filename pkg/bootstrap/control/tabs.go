@@ -41,6 +41,30 @@ func (c *Tabs) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
+func (c *Tabs) Serialize(e page.Encoder) (err error) {
+	if err = c.Panel.Serialize(e); err != nil {return}
+
+	if err = e.Encode(c.selectedID); err != nil {
+		return err
+	}
+
+	return
+}
+
+
+func (c *Tabs) Deserialize(d page.Decoder) (err error) {
+	if err = c.Panel.Deserialize(d); err != nil {
+		return
+	}
+
+	if err = d.Decode(&c.selectedID); err != nil {
+		return
+	}
+
+	return
+}
+
+
 
 type TabsCreator struct {
 	// ID is the control id of the html widget and must be unique to the page

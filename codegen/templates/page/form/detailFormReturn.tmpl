@@ -1,9 +1,9 @@
-// editFormReturn.tmpl
+// detailFormReturn.tmpl
 
 {{
 
 func (f *{{= formName }}) returnToPrevious(ctx context.Context) {
-    session.Remove(ctx, "{{= t.LcGoName }}EditID")
+    session.Remove(ctx, "{{= t.LcGoName }}DetailID")
 	f.PopLocation(ctx, "{{= listFormPath }}")
 }
 
