@@ -4,7 +4,7 @@
 
 // createControls creates the controls in the panel.
 // Override this to change what controls get created.
-func (p *{{= panelName }}) ColumnCreators(_ context.Context) []control.ColumnCreator {
+func (p *{{= panelName }}) ColumnCreators(_ context.Context) []{{= ctrlPkg }}.ColumnCreator {
 	return []{{= ctrlPkg }}.ColumnCreator {
 {{for _,col := range t.Columns }}
         column.NodeColumnCreator{
