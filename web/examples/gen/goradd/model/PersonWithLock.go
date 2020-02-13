@@ -6,6 +6,7 @@ package model
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 )
 
@@ -52,4 +53,8 @@ func queryPersonWithLocks(ctx context.Context) *PersonWithLocksBuilder {
 // loaded PersonWithLock objects by calling Delete on them.
 func DeletePersonWithLock(ctx context.Context, pk string) {
 	deletePersonWithLock(ctx, pk)
+}
+
+func init() {
+	gob.RegisterName("ExamplePersonWithLock", new(PersonWithLock))
 }

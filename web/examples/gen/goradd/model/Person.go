@@ -6,6 +6,7 @@ package model
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 )
 
@@ -52,4 +53,8 @@ func queryPeople(ctx context.Context) *PeopleBuilder {
 // loaded Person objects by calling Delete on them.
 func DeletePerson(ctx context.Context, pk string) {
 	deletePerson(ctx, pk)
+}
+
+func init() {
+	gob.RegisterName("ExamplePerson", new(Person))
 }

@@ -6,6 +6,7 @@ package model
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 )
 
@@ -52,4 +53,8 @@ func queryEmployeeInfos(ctx context.Context) *EmployeeInfosBuilder {
 // loaded EmployeeInfo objects by calling Delete on them.
 func DeleteEmployeeInfo(ctx context.Context, pk string) {
 	deleteEmployeeInfo(ctx, pk)
+}
+
+func init() {
+	gob.RegisterName("ExampleEmployeeInfo", new(EmployeeInfo))
 }

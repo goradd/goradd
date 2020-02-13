@@ -290,25 +290,6 @@ func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...quer
 	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
 }
 
-// LoadLoginByPersonID queries for a single Login object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().PersonID(), person_id)).
-		joinOrSelect(joinOrSelectNodes...).
-		Get(ctx)
-}
-
-// HasLoginByPersonID returns true if the
-// given unique index values exist in the database.
-func HasLoginByPersonID(ctx context.Context, person_id string) bool {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().PersonID(), person_id)).
-		Count(ctx, false) == 1
-}
-
 // LoadLoginByUsername queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
@@ -325,6 +306,25 @@ func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes
 func HasLoginByUsername(ctx context.Context, username string) bool {
 	return queryLogins(ctx).
 		Where(Equal(node.Login().Username(), username)).
+		Count(ctx, false) == 1
+}
+
+// LoadLoginByPersonID queries for a single Login object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use QueryLogins() to start a query builder.
+func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
+	return queryLogins(ctx).
+		Where(Equal(node.Login().PersonID(), person_id)).
+		joinOrSelect(joinOrSelectNodes...).
+		Get(ctx)
+}
+
+// HasLoginByPersonID returns true if the
+// given unique index values exist in the database.
+func HasLoginByPersonID(ctx context.Context, person_id string) bool {
+	return queryLogins(ctx).
+		Where(Equal(node.Login().PersonID(), person_id)).
 		Count(ctx, false) == 1
 }
 
@@ -833,8 +833,17 @@ func (o *loginBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oPerson); err != nil {
-		return nil, err
+	if o.oPerson == nil {
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
+		}
+		if err := encoder.Encode(o.oPerson); err != nil {
+			return nil, err
+		}
 	}
 	if err := encoder.Encode(o.username); err != nil {
 		return nil, err
@@ -893,6 +902,9 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
+	var isPtr bool
+
+	_ = isPtr
 
 	if err = dec.Decode(&o.id); err != nil {
 		return
@@ -917,8 +929,13 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.oPerson); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
+	}
+	if isPtr {
+		if err = dec.Decode(&o.oPerson); err != nil {
+			return
+		}
 	}
 	if err = dec.Decode(&o.username); err != nil {
 		return
@@ -953,11 +970,10 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	var hasAliases bool
-	if err = dec.Decode(&hasAliases); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
-	if hasAliases {
+	if isPtr {
 		if err = dec.Decode(&o._aliases); err != nil {
 			return
 		}

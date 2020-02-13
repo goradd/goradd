@@ -697,8 +697,17 @@ func (o *addressBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.oPerson); err != nil {
-		return nil, err
+	if o.oPerson == nil {
+		if err := encoder.Encode(false); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := encoder.Encode(true); err != nil {
+			return nil, err
+		}
+		if err := encoder.Encode(o.oPerson); err != nil {
+			return nil, err
+		}
 	}
 	if err := encoder.Encode(o.street); err != nil {
 		return nil, err
@@ -747,6 +756,9 @@ func (o *addressBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
+	var isPtr bool
+
+	_ = isPtr
 
 	if err = dec.Decode(&o.id); err != nil {
 		return
@@ -768,8 +780,13 @@ func (o *addressBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.oPerson); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
+	}
+	if isPtr {
+		if err = dec.Decode(&o.oPerson); err != nil {
+			return
+		}
 	}
 	if err = dec.Decode(&o.street); err != nil {
 		return
@@ -794,11 +811,10 @@ func (o *addressBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	var hasAliases bool
-	if err = dec.Decode(&hasAliases); err != nil {
+	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
-	if hasAliases {
+	if isPtr {
 		if err = dec.Decode(&o._aliases); err != nil {
 			return
 		}
