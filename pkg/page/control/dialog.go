@@ -275,9 +275,9 @@ func (d *Dialog) AddCloseButton(label string, id string) {
 	btn.On(event.Click(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 }
 
-// Action is called by the framework and will respond to the DialogClose action sent by any close buttons on the
+// PrivateAction is called by the framework and will respond to the DialogClose action sent by any close buttons on the
 // page to close the dialog. You do not normally need to call this.
-func (d *Dialog) Action(_ context.Context, a page.ActionParams) {
+func (d *Dialog) PrivateAction(_ context.Context, a page.ActionParams) {
 	switch a.ID {
 	case DialogClosed:
 		d.Hide()

@@ -287,22 +287,17 @@ func (m *Modal) Serialize(e page.Encoder) (err error) {
 	}
 
 	if err = e.Encode(m.isOpen); err != nil {
-		return err
+		panic(err)
 	}
 	if err = e.Encode(m.closeOnEscape); err != nil {
-		return err
+		panic(err)
 	}
-	if err = e.Encode(m.titleBar); err != nil {
-		return err
-	}
-	if err = e.Encode(m.buttonBar); err != nil {
-		return err
-	}
+
 	if err = e.Encode(m.backdrop); err != nil {
-		return err
+		panic(err)
 	}
 	if err = e.Encode(m.foundRight); err != nil {
-		return err
+		panic(err)
 	}
 
 	return
@@ -320,12 +315,10 @@ func (m *Modal) Deserialize(d page.Decoder) (err error) {
 	if err = d.Decode(&m.closeOnEscape); err != nil {
 		return
 	}
-	if err = d.Decode(&m.titleBar); err != nil {
-		return
-	}
-	if err = d.Decode(&m.buttonBar); err != nil {
-		return
-	}
+
+	m.titleBar = m.Page().GetControl(m.ID()+"-titlebar").(*TitleBar)
+	m.buttonBar = m.Page().GetControl(m.ID()+"-btnbar").(*control.Panel)
+
 	if err = d.Decode(&m.backdrop); err != nil {
 		return
 	}
@@ -352,9 +345,6 @@ func NewTitleBar(parent page.ControlI, id string) *TitleBar {
 }
 
 func init() {
-	control.SetNewDialogFunction(func(form page.FormI, id string) control.DialogI {
-		return NewModal(form, id)
-	})
 	page.RegisterControl(&Modal{})
 	page.RegisterControl(&TitleBar{})
 }

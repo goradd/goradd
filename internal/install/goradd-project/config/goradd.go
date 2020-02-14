@@ -11,7 +11,7 @@ func initGoradd() {
 
 	setupDateFormats()
 	setupTranslator()
-	setupCodegen()
+	//setupBootstrap()
 
 	if config.Release {
 		//if you want to hardcode the asset directory location, do that here. Otherwise specify it on the command line.
@@ -79,7 +79,10 @@ func setupTranslator() {
 	// i18n.SetTranslator(myTranslator)
 }
 
-func setupCodegen() {
-	// Setup codegen customizations here
-	//generator.DefaultWrapper = "bootstrap.FormGroup"
+/*
+func setupBootstrap() {
+	control.SetNewDialogFunction(func(form page.FormI, id string) control.DialogI {
+		return control2.NewModal(form, id)
+	})
 }
+*/
