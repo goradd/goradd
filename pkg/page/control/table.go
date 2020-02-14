@@ -57,6 +57,9 @@ type TableEmbedder interface {
 	ShowColumns()
 	MakeSortable() TableI
 	SetSortHistoryLimit(n int) TableI
+	SortIconHtml(SortDirection) string
+	SetSortIconHtml(sortable string, asc string, desc string)
+
 }
 
 // TableRowAttributer is used to style particular table rows.
@@ -113,6 +116,9 @@ type Table struct {
 	// Sort info. Sorting is difficult enough, and intertwined with tables enough, that we just make it built in to every column
 	sortColumns      []string // keeps a historical list of columns sorted on
 	sortHistoryLimit int      // how far back to go
+	sortableHtml string		  // html to draw sortable icon
+	sortAscHtml string	      // html to draw sorted ascending icon
+	sortDescHtml string		  // html to draw sorted descending icon
 
 	// serialization helpers
 	captionId string
@@ -137,6 +143,9 @@ func (t *Table) Init(parent page.ControlI, id string) {
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1
+	t.sortableHtml = "&varr;"
+	t.sortAscHtml = "&uarr;"
+	t.sortDescHtml = "&darr;"
 }
 
 // this returns the TableI interface for calling into "virtual" functions. This allows us to call functions defined
@@ -607,6 +616,42 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 	return ret
 }
 
+// SetSortIconHtml set the html used to draw the sort icons.
+// If a string is blank, it will not be changed.
+// Use the following for font awesome icons
+// 		`<i class="fa fa-sort fa-lg"></i>`
+//		`<i class="fa fa-sort-asc fa-lg"></i>`
+//		`<i class="fa fa-sort-desc fa-lg"></i>`
+func (t *Table) SetSortIconHtml(sortable string, asc string, desc string) {
+	if sortable != "" {
+		t.sortableHtml = sortable
+	}
+	if asc != "" {
+		t.sortAscHtml = sortable
+	}
+	if desc != "" {
+		t.sortDescHtml = sortable
+	}
+}
+
+// SortIconHtml returns the html used to draw the sort icon
+func (t *Table) SortIconHtml(dir SortDirection) string {
+	if SortButtonHtmlGetter != nil {
+		return SortButtonHtmlGetter(dir)
+	} else {
+		switch dir {
+		case NotSorted:
+			return t.sortableHtml
+		case SortAscending:
+			return t.sortAscHtml
+		case SortDescending:
+			return t.sortDescHtml
+		default:
+			return "" // not sortable
+		}
+	}
+}
+
 // MarshalState is an internal function to save the state of the control
 func (t *Table) MarshalState(m maps.Setter) {
 	m.Set("sortColumns", t.sortColumns)
@@ -639,8 +684,11 @@ type tableEncoded struct {
 	HeaderRowStyler       interface{}
 	FooterRowStyler       interface{}
 	ColumnIdCounter       int
-	SortColumns      []string // keeps a historical list of columns sorted on
-	SortHistoryLimit int
+	SortColumns      	  []string // keeps a historical list of columns sorted on
+	SortHistoryLimit 	  int
+	SortableHtml		  string
+	SortAscHtml			  string
+	SortDescHtml		  string
 }
 
 func (t *Table) Serialize(e page.Encoder) (err error) {
@@ -658,6 +706,9 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 		ColumnIdCounter:       t.columnIdCounter,
 		SortColumns:           t.sortColumns,
 		SortHistoryLimit:      t.sortHistoryLimit,
+		SortableHtml: 	       t.sortableHtml,
+		SortAscHtml: t.sortAscHtml,
+		SortDescHtml: t.sortDescHtml,
 		RowStyler:             t.rowStyler,
 		HeaderRowStyler:       t.headerRowStyler,
 		FooterRowStyler:       t.footerRowStyler,
@@ -721,6 +772,9 @@ func (t *Table) Deserialize(dec page.Decoder) (err error) {
 	t.columnIdCounter = s.ColumnIdCounter
 	t.sortColumns = s.SortColumns
 	t.sortHistoryLimit = s.SortHistoryLimit
+	t.sortableHtml = s.SortableHtml
+	t.sortAscHtml = s.SortAscHtml
+	t.sortDescHtml = s.SortDescHtml
 
 	if s.CaptionID != "" {
 		t.captionId = s.CaptionID
@@ -818,6 +872,13 @@ type TableCreator struct {
 	Sortable         bool
 	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
 	SortHistoryLimit int
+	// SortableIconHtml will set the html used to draw the icon indicating that a column is sortable. Can also be set globally using SortButtonHtmlGetter
+	SortableIconHtml string
+	// SortAscIconHtml will set the html used to draw the icon indicating that a column is sorted in ascending order
+	SortAscIconHtml string
+	// SortDescIconHtml will set the html used to draw the icon indicating that a column is sorted in descending order
+	SortDescIconHtml string
+	// OnCellClick is the action to take when a cell is clicked.
 	OnCellClick		 action.ActionI
 	ControlOptions page.ControlOptions
 }
@@ -889,6 +950,8 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	if c.SortHistoryLimit > 0 {
 		ctrl.SetSortHistoryLimit(c.SortHistoryLimit)
 	}
+	ctrl.SetSortIconHtml(c.SortableIconHtml, c.SortAscIconHtml, c.SortDescIconHtml)
+
 	if c.OnCellClick != nil {
 		ctrl.On(event.CellClick(), c.OnCellClick)
 	}

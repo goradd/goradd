@@ -9,7 +9,6 @@ import (
 	action2 "github.com/goradd/goradd/pkg/page/action"
 )
 
-
 // EventID is a unique id used to specify which event is triggering.
 type EventID uint16
 type EventMap map[EventID]*Event
@@ -54,6 +53,8 @@ type Event struct {
 	// capture indicates an event should fire during the capture phase and not the bubbling phase.
 	// This is used in very special situations when you want to not allow a bubbled event to be blocked by a sub-object as it bubbles.
 	capture bool
+	// private indicates the event is private to the control and cannot be changed or removed. It is responded to in
+	// the PrivateAction function
 	private bool
 }
 
@@ -105,8 +106,6 @@ func (e *Event) Capture() *Event {
 	e.capture = true
 	return e
 }
-
-
 
 // Call Blocking to cause this event to prevent other events from firing after this fires, but before it processes.
 // If another event fires between the time when this event fires and when a response is received, it will be lost.
@@ -168,7 +167,6 @@ func (e *Event) Private() *Event {
 	return e
 }
 
-
 // HasServerAction returns true if at least one of the event's actions is a server action.
 func (e *Event) HasServerAction() bool {
 	switch a := e.action.(type) {
@@ -192,7 +190,6 @@ func (e *Event) HasCallbackAction() bool {
 		return false
 	}
 }
-
 
 func (e *Event) Name() string {
 	return e.JsEvent
@@ -270,14 +267,14 @@ func (e *Event) getCallbackAction() action2.CallbackActionI {
 		return a
 	case action2.ActionGroup:
 		return a.GetCallbackAction()
-	default:return nil
+	default:
+		return nil
 	}
 }
 
 func (e *Event) isPrivate() bool {
 	return e.private
 }
-
 
 // eventEncoded contains exported types. We use this to serialize an event for the page serializer.
 type eventEncoded struct {
@@ -286,8 +283,9 @@ type eventEncoded struct {
 	Delay                     int
 	Selector                  string
 	Blocking                  bool
-	Bubbles bool
-	Capture bool
+	Bubbles                   bool
+	Capture                   bool
+	Private                   bool
 	ActionValue               interface{} // A static value, or js to get a dynamic value when the action returns to us.
 	Action                    action2.ActionI
 	PreventDefault            bool
@@ -303,8 +301,9 @@ func (e *Event) GobEncode() (data []byte, err error) {
 		Delay:                     e.delay,
 		Selector:                  e.selector,
 		Blocking:                  e.blocking,
-		Bubbles: e.bubbles,
-		Capture: e.capture,
+		Bubbles:                   e.bubbles,
+		Capture:                   e.capture,
+		Private:                   e.private,
 		ActionValue:               e.actionValue,
 		Action:                    e.action,
 		PreventDefault:            e.preventDefault,
@@ -334,6 +333,7 @@ func (e *Event) GobDecode(data []byte) (err error) {
 	e.blocking = s.Blocking
 	e.bubbles = s.Bubbles
 	e.capture = s.Capture
+	e.private = s.Private
 	e.actionValue = s.ActionValue
 	e.action = s.Action
 	e.preventDefault = s.PreventDefault

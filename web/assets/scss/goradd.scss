@@ -79,9 +79,11 @@ textarea[data-grctl] {
   opacity: 0.5;
 }
 
-.gr-icon-btn {
+.gr-transparent-btn {
   border:none;
-  background-color: transparent;
+  font: inherit;
+  color: inherit;
+  background-color: inherit;
 }
 
 /* Modification to jquery ui dialog styling that allows for left/right buttons and other fixes */

@@ -97,7 +97,7 @@ func (n *employeeInfoNode) EmployeeNumber() *query.ColumnNode {
 	return cn
 }
 
-type EmployeeInfoNodeEncoded struct {
+type employeeInfoNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
@@ -105,7 +105,7 @@ func (n *employeeInfoNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	s := EmployeeInfoNodeEncoded{
+	s := employeeInfoNodeEncoded{
 		RefNode: n.ReferenceNodeI,
 	}
 
@@ -120,7 +120,7 @@ func (n *employeeInfoNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
-	var s EmployeeInfoNodeEncoded
+	var s employeeInfoNodeEncoded
 	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}

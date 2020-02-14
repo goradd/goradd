@@ -94,7 +94,7 @@ func (n *personWithLockNode) SysTimestamp() *query.ColumnNode {
 	return cn
 }
 
-type PersonWithLockNodeEncoded struct {
+type personWithLockNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
@@ -102,7 +102,7 @@ func (n *personWithLockNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	s := PersonWithLockNodeEncoded{
+	s := personWithLockNodeEncoded{
 		RefNode: n.ReferenceNodeI,
 	}
 
@@ -117,7 +117,7 @@ func (n *personWithLockNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
-	var s PersonWithLockNodeEncoded
+	var s personWithLockNodeEncoded
 	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}

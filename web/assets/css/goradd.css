@@ -104,11 +104,6 @@ presentation of the controls provided with goradd.
   vertical-align: bottom;
   padding-right: 4px;
 }
-.datagrid th.sortable div i.fa {
-  display: table-cell;
-  vertical-align: bottom;
-  padding-bottom: 2px;
-}
 .datagrid td {
   border-bottom: 1px solid #dedede;
   padding: 5px;
@@ -357,9 +352,11 @@ textarea[data-grctl] {
   opacity: 0.5;
 }
 
-.gr-icon-btn {
+.gr-transparent-btn {
   border: none;
-  background-color: transparent;
+  font: inherit;
+  color: inherit;
+  background-color: inherit;
 }
 
 /* Modification to jquery ui dialog styling that allows for left/right buttons and other fixes */

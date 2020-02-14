@@ -23,7 +23,7 @@ func (f *FormBase) AddRelatedFiles() {
 	f.FormBase.AddRelatedFiles() // add default files
 	//f.AddJQueryUI()				// Load JQuery UI if needed
 	//bsconfig.LoadBootstrap(f) 	// Load Bootstrap if needed
-
+	// f.AddFontAwesome()			// Load FontAwesome if needed
 	// Load you own site-wide css and js files below
 	//f.AddStyleSheetFile(filepath.Join(config2.ProjectAssets(), "css","my.css"), nil)
 }

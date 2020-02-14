@@ -40,7 +40,7 @@ func (c *ButtonColumn) Init() {
 	c.ColumnBase.Init(c)
 	c.buttonHtml = `&#9998` // default to a standard pencil icon
 	c.buttonAttributes = html.NewAttributes().
-		AddClass("gr-icon-btn") // style so button part does not show, only the icon
+		AddClass("gr-transparent-btn") // style so button part does not show, only the icon
 	c.SetIsHtml(true)
 }
 
