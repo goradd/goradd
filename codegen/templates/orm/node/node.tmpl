@@ -82,7 +82,7 @@ func (n *{{privateName}}Node) Copy_() query.NodeI {
 
 {{
 
-type {{= t.GoName }}NodeEncoded struct {
+type {{privateName}}NodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
@@ -90,7 +90,7 @@ func (n *{{= privateName }}Node) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	s := {{= t.GoName }}NodeEncoded {
+	s := {{privateName}}NodeEncoded {
 		RefNode: n.ReferenceNodeI,
 	}
 
@@ -106,7 +106,7 @@ func (n *{{= privateName }}Node) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
-	var s {{= t.GoName }}NodeEncoded
+	var s {{privateName}}NodeEncoded
 	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}

@@ -88,7 +88,6 @@ func (f *FormBase) this() FormI {
 // before other files.
 func (f *FormBase) AddRelatedFiles() {
 	f.AddGoraddFiles()
-	f.AddFontAwesome()
 	if messageServer.Messenger != nil {
 		files := messageServer.Messenger.JavascriptFiles()
 		for file,attr := range files {

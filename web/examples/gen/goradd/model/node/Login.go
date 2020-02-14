@@ -127,7 +127,7 @@ func (n *loginNode) IsEnabled() *query.ColumnNode {
 	return cn
 }
 
-type LoginNodeEncoded struct {
+type loginNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
@@ -135,7 +135,7 @@ func (n *loginNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	s := LoginNodeEncoded{
+	s := loginNodeEncoded{
 		RefNode: n.ReferenceNodeI,
 	}
 
@@ -150,7 +150,7 @@ func (n *loginNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
-	var s LoginNodeEncoded
+	var s loginNodeEncoded
 	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}

@@ -128,42 +128,42 @@ func (n *ReverseReferenceNode) nodeType() NodeType {
 	return ReverseReferenceNodeType
 }
 
+type reverseReferenceNodeEncoded struct {
+	Alias string
+	Condition NodeI
+	Parent NodeI
+	DbKey string
+	DbTable string
+	DbKeyColumn string
+	DbColumn string
+	GoPropName string
+	RefTable string
+	RefColumn string
+	IsArray bool
+}
+
 func (n *ReverseReferenceNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	if err = e.Encode(n.alias); err != nil {
-		panic(err)
+	s := reverseReferenceNodeEncoded{
+		Alias: n.alias,
+		Condition: n.condition,
+		Parent: n.parentNode,
+		DbKey: n.dbKey,
+		DbTable: n.dbTable,
+		DbKeyColumn: n.dbKeyColumn,
+		DbColumn: n.dbColumn,
+		GoPropName: n.goPropName,
+		RefTable: n.refTable,
+		RefColumn: n.refColumn,
+		IsArray: n.isArray,
 	}
-	if err = e.Encode(n.condition); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(n.dbKey); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(n.dbTable); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(n.dbKeyColumn); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(n.dbColumn); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(n.goPropName); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(n.refTable); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(n.refColumn); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(n.isArray); err != nil {
+
+	if err = e.Encode(s); err != nil {
 		panic(err)
 	}
 
-	err = e.Encode(n.nodeLink.parentNode)
 	data = buf.Bytes()
 	return
 }
@@ -172,43 +172,24 @@ func (n *ReverseReferenceNode) GobEncode() (data []byte, err error) {
 func (n *ReverseReferenceNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
-	if err = dec.Decode(&n.alias); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.condition); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.dbKey); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.dbTable); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.dbKeyColumn); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.dbColumn); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.goPropName); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.refTable); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.refColumn); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&n.isArray); err != nil {
-		panic(err)
-	}
 
-	var n2 NodeI
-
-	if err = dec.Decode(&n2); err != nil {
+	var s reverseReferenceNodeEncoded
+	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}
-	SetParentNode(n, n2)
+	n.alias = s.Alias
+	n.condition = s.Condition
+	n.dbKey = s.DbKey
+	n.dbTable = s.DbTable
+	n.dbColumn = s.DbColumn
+	n.dbKeyColumn = s.DbKeyColumn
+	n.goPropName = s.GoPropName
+	n.dbColumn = s.DbColumn
+	n.goPropName = s.GoPropName
+	n.refTable = s.RefTable
+	n.refColumn = s.RefColumn
+	n.isArray = s.IsArray
+	SetParentNode(n, s.Parent)
 	return
 }
 

@@ -25,8 +25,6 @@ const (
 )
 
 // SortButtonHtmlGetter is the injected function for getting the html for sort buttons in the column header.
-// The default uses FontAwesome to draw the buttons, which means the css for FontAwesome must be loaded
-// into the web page. You can change what html is loaded by setting this function.
 var SortButtonHtmlGetter func(SortDirection) string
 
 // ColumnI defines the interface that all columns must support. Most of these functions are provided by the
@@ -265,10 +263,22 @@ func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) htm
 	}
 	if c.headerAttributes[row] == nil {
 		c.headerAttributes[row] = html.NewAttributes()
-		if row == 0 {
-			c.headerAttributes[row].Set("scope", "col") // for screen readers
+	}
+	if row == 0 {
+		// for screen readers
+		c.headerAttributes[0].Set("scope", "col")
+		if c.IsSortable() {
+			switch c.SortDirection() {
+			case SortAscending:
+				c.headerAttributes[0].Set("aria-sort", "ascending")
+			case SortDescending:
+				c.headerAttributes[0].Set("aria-sort", "descending")
+			default:
+				c.headerAttributes[0].RemoveAttribute("aria-sort")
+			}
 		}
 	}
+
 	return c.headerAttributes[row]
 }
 
@@ -315,13 +325,13 @@ func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h st
 	if c.headerTexter != nil {
 		info := CellInfo{RowNum: row, ColNum: col, isHeaderCell:true}
 		h = c.headerTexter.CellText(ctx, c.this(), info)
-	} else {
+	} else if row == 0 {
 		h = html2.EscapeString(c.title)
+		if c.IsSortable() {
+			h = c.RenderSortButton(h)
+		}
 	}
 
-	if c.IsSortable() {
-		h = c.RenderSortButton(h)
-	}
 	return
 }
 
@@ -417,19 +427,9 @@ func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 func (c *ColumnBase) Action(ctx context.Context, params page.ActionParams) {}
 
 func (c *ColumnBase) RenderSortButton(labelHtml string) string {
-	if SortButtonHtmlGetter != nil {
-		labelHtml += SortButtonHtmlGetter(c.sortDirection)
-	}
-	switch c.sortDirection {
-	case NotSorted:
-		labelHtml += ` <i class="fa fa-sort fa-lg"></i>`
-	case SortAscending:
-		labelHtml += ` <i class="fa fa-sort-asc fa-lg"></i>`
-	case SortDescending:
-		labelHtml += ` <i class="fa fa-sort-desc fa-lg"></i>`
-	}
+	labelHtml += ` ` + c.ParentTable().SortIconHtml(c.SortDirection())
 
-	return fmt.Sprintf(`<button onclick="g$('%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
+	return fmt.Sprintf(`<button class="gr-transparent-btn" onclick="g$('%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
 }
 
 // SortDirection returns the current sort direction.

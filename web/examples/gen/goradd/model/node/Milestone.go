@@ -97,7 +97,7 @@ func (n *milestoneNode) Name() *query.ColumnNode {
 	return cn
 }
 
-type MilestoneNodeEncoded struct {
+type milestoneNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
@@ -105,7 +105,7 @@ func (n *milestoneNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	s := MilestoneNodeEncoded{
+	s := milestoneNodeEncoded{
 		RefNode: n.ReferenceNodeI,
 	}
 
@@ -120,7 +120,7 @@ func (n *milestoneNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
-	var s MilestoneNodeEncoded
+	var s milestoneNodeEncoded
 	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}

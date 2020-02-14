@@ -112,7 +112,7 @@ func (n *addressNode) City() *query.ColumnNode {
 	return cn
 }
 
-type AddressNodeEncoded struct {
+type addressNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
@@ -120,7 +120,7 @@ func (n *addressNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	s := AddressNodeEncoded{
+	s := addressNodeEncoded{
 		RefNode: n.ReferenceNodeI,
 	}
 
@@ -135,7 +135,7 @@ func (n *addressNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
-	var s AddressNodeEncoded
+	var s addressNodeEncoded
 	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}

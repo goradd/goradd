@@ -199,7 +199,7 @@ func (n *personNode) ProjectsAsManager() *projectNode {
 
 }
 
-type PersonNodeEncoded struct {
+type personNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
@@ -207,7 +207,7 @@ func (n *personNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	s := PersonNodeEncoded{
+	s := personNodeEncoded{
 		RefNode: n.ReferenceNodeI,
 	}
 
@@ -222,7 +222,7 @@ func (n *personNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
-	var s PersonNodeEncoded
+	var s personNodeEncoded
 	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}

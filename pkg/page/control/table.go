@@ -57,6 +57,8 @@ type TableEmbedder interface {
 	ShowColumns()
 	MakeSortable() TableI
 	SetSortHistoryLimit(n int) TableI
+	SortIconHtml(SortDirection) string
+	SetSortIconHtml(sortable string, asc string, desc string)
 }
 
 // TableRowAttributer is used to style particular table rows.
@@ -113,10 +115,13 @@ type Table struct {
 	// Sort info. Sorting is difficult enough, and intertwined with tables enough, that we just make it built in to every column
 	sortColumns      []string // keeps a historical list of columns sorted on
 	sortHistoryLimit int      // how far back to go
+	sortableHtml     string   // html to draw sortable icon
+	sortAscHtml      string   // html to draw sorted ascending icon
+	sortDescHtml     string   // html to draw sorted descending icon
 
 	// serialization helpers
-	captionId string
-	rowStylerId string
+	captionId         string
+	rowStylerId       string
 	headerRowStylerId string
 	footerRowStylerId string
 }
@@ -137,6 +142,9 @@ func (t *Table) Init(parent page.ControlI, id string) {
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1
+	t.sortableHtml = "&varr;"
+	t.sortAscHtml = "&uarr;"
+	t.sortDescHtml = "&darr;"
 }
 
 // this returns the TableI interface for calling into "virtual" functions. This allows us to call functions defined
@@ -152,7 +160,6 @@ func (t *Table) SetHideIfEmpty(h bool) TableI {
 	}
 	return t.this()
 }
-
 
 // MakeSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
 func (t *Table) MakeSortable() TableI {
@@ -227,8 +234,8 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 	}
 
 	if err = t.drawColumnTags(ctx, buf1); err != nil {
-			return
-		}
+		return
+	}
 
 	if t.headerRowCount > 0 {
 		err = t.drawHeaderRows(ctx, buf2)
@@ -325,7 +332,6 @@ func (t *Table) FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum i
 	cellAttributes = col.FooterAttributes(ctx, rowNum, colNum)
 	return
 }
-
 
 // GetHeaderRowAttributes is called internally to get the attributes for the tr tags in header rows.
 func (t *Table) GetHeaderRowAttributes(row int) html.Attributes {
@@ -554,7 +560,6 @@ func (t *Table) SetSortHistoryLimit(n int) TableI {
 }
 
 func (t *Table) sortClick(id string) {
-	var foundLoc = -1
 	var firstCol ColumnI
 
 	if t.sortColumns != nil {
@@ -562,27 +567,20 @@ func (t *Table) sortClick(id string) {
 		if firstCol.SortDirection() == NotSortable {
 			return
 		}
-	}
 
-	if t.sortColumns != nil {
 		// If the column clicked is already the first one in the list, just change direction
 		if t.sortColumns[0] == id {
 			firstCol.SetSortDirection(firstCol.SortDirection() * -1)
 			return
 		}
 
-		firstCol.SetSortDirection(NotSorted) // tell the first one in the list to not be sorted
-
-		// remove the column from the sort list if it is there
-		for i := 0; i < len(t.sortColumns); i++ {
+		// if the column is one further down the list, switch it to the front, but keep the sort direction
+		for i := 1; i < len(t.sortColumns); i++ {
 			if t.sortColumns[i] == id {
-				foundLoc = i
-				break
+				t.sortColumns = append(t.sortColumns[:i], t.sortColumns[i+1:]...)
+				t.sortColumns = append([]string{id}, t.sortColumns...)
+				return
 			}
-		}
-
-		if foundLoc != -1 {
-			t.sortColumns = append(t.sortColumns[:foundLoc], t.sortColumns[foundLoc+1:]...)
 		}
 	}
 
@@ -593,6 +591,8 @@ func (t *Table) sortClick(id string) {
 
 	//remove back
 	if len(t.sortColumns) > t.sortHistoryLimit {
+		col = t.GetColumnByID(t.sortColumns[len(t.sortColumns)-1])
+		col.SetSortDirection(NotSorted)
 		t.sortColumns = t.sortColumns[:len(t.sortColumns)-1]
 	}
 }
@@ -607,6 +607,42 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 	return ret
 }
 
+// SetSortIconHtml set the html used to draw the sort icons.
+// If a string is blank, it will not be changed.
+// Use the following for font awesome icons
+// 		`<i class="fa fa-sort fa-lg"></i>`
+//		`<i class="fa fa-sort-asc fa-lg"></i>`
+//		`<i class="fa fa-sort-desc fa-lg"></i>`
+func (t *Table) SetSortIconHtml(sortable string, asc string, desc string) {
+	if sortable != "" {
+		t.sortableHtml = sortable
+	}
+	if asc != "" {
+		t.sortAscHtml = sortable
+	}
+	if desc != "" {
+		t.sortDescHtml = sortable
+	}
+}
+
+// SortIconHtml returns the html used to draw the sort icon
+func (t *Table) SortIconHtml(dir SortDirection) string {
+	if SortButtonHtmlGetter != nil {
+		return SortButtonHtmlGetter(dir)
+	} else {
+		switch dir {
+		case NotSorted:
+			return t.sortableHtml
+		case SortAscending:
+			return t.sortAscHtml
+		case SortDescending:
+			return t.sortDescHtml
+		default:
+			return "" // not sortable
+		}
+	}
+}
+
 // MarshalState is an internal function to save the state of the control
 func (t *Table) MarshalState(m maps.Setter) {
 	m.Set("sortColumns", t.sortColumns)
@@ -618,7 +654,7 @@ func (t *Table) MarshalState(m maps.Setter) {
 // UnmarshalState is an internal function to restore the state of the control
 func (t *Table) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("sortColumns"); ok {
-		if s, ok := v.([]string); ok {
+		if s, ok2 := v.([]string); ok2 {
 			t.sortColumns = s
 		}
 	}
@@ -629,7 +665,7 @@ func (t *Table) UnmarshalState(m maps.Loader) {
 
 type tableEncoded struct {
 	Caption               interface{}
-	CaptionID			  string
+	CaptionID             string
 	HideIfEmpty           bool
 	HeaderRowCount        int
 	FooterRowCount        int
@@ -639,8 +675,11 @@ type tableEncoded struct {
 	HeaderRowStyler       interface{}
 	FooterRowStyler       interface{}
 	ColumnIdCounter       int
-	SortColumns      []string // keeps a historical list of columns sorted on
-	SortHistoryLimit int
+	SortColumns           []string // keeps a historical list of columns sorted on
+	SortHistoryLimit      int
+	SortableHtml          string
+	SortAscHtml           string
+	SortDescHtml          string
 }
 
 func (t *Table) Serialize(e page.Encoder) (err error) {
@@ -652,31 +691,34 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 	}
 
 	s := tableEncoded{
-		HideIfEmpty:           t.hideIfEmpty,
-		HeaderRowCount:        t.headerRowCount,
-		FooterRowCount:        t.footerRowCount,
-		ColumnIdCounter:       t.columnIdCounter,
-		SortColumns:           t.sortColumns,
-		SortHistoryLimit:      t.sortHistoryLimit,
-		RowStyler:             t.rowStyler,
-		HeaderRowStyler:       t.headerRowStyler,
-		FooterRowStyler:       t.footerRowStyler,
+		HideIfEmpty:      t.hideIfEmpty,
+		HeaderRowCount:   t.headerRowCount,
+		FooterRowCount:   t.footerRowCount,
+		ColumnIdCounter:  t.columnIdCounter,
+		SortColumns:      t.sortColumns,
+		SortHistoryLimit: t.sortHistoryLimit,
+		SortableHtml:     t.sortableHtml,
+		SortAscHtml:      t.sortAscHtml,
+		SortDescHtml:     t.sortDescHtml,
+		RowStyler:        t.rowStyler,
+		HeaderRowStyler:  t.headerRowStyler,
+		FooterRowStyler:  t.footerRowStyler,
 	}
 
 	// The caption can be a string, so we can't do the trick we do with objects below
-	if ctrl,ok := t.caption.(page.ControlI); ok {
+	if ctrl, ok := t.caption.(page.ControlI); ok {
 		s.CaptionID = ctrl.ID()
 	} else {
 		s.Caption = t.caption
 	}
 
-	if ctrl,ok := t.rowStyler.(page.ControlI); ok {
+	if ctrl, ok := t.rowStyler.(page.ControlI); ok {
 		s.RowStyler = ctrl.ID()
 	}
-	if ctrl,ok := t.headerRowStyler.(page.ControlI); ok {
+	if ctrl, ok := t.headerRowStyler.(page.ControlI); ok {
 		s.HeaderRowStyler = ctrl.ID()
 	}
-	if ctrl,ok := t.footerRowStyler.(page.ControlI); ok {
+	if ctrl, ok := t.footerRowStyler.(page.ControlI); ok {
 		s.FooterRowStyler = ctrl.ID()
 	}
 
@@ -684,11 +726,11 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 		return err
 	}
 
-	var l int = len(t.columns)
+	l := len(t.columns)
 	if err = e.Encode(l); err != nil {
 		return err
 	}
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		if err = e.Encode(columnRegistryID(col)); err != nil {
 			return
 		}
@@ -699,7 +741,6 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 
 	return
 }
-
 
 func (t *Table) Deserialize(dec page.Decoder) (err error) {
 	if err = t.ControlBase.Deserialize(dec); err != nil {
@@ -721,6 +762,9 @@ func (t *Table) Deserialize(dec page.Decoder) (err error) {
 	t.columnIdCounter = s.ColumnIdCounter
 	t.sortColumns = s.SortColumns
 	t.sortHistoryLimit = s.SortHistoryLimit
+	t.sortableHtml = s.SortableHtml
+	t.sortAscHtml = s.SortAscHtml
+	t.sortDescHtml = s.SortDescHtml
 
 	if s.CaptionID != "" {
 		t.captionId = s.CaptionID
@@ -728,13 +772,13 @@ func (t *Table) Deserialize(dec page.Decoder) (err error) {
 		t.caption = s.Caption
 	}
 
-	if v,ok := s.RowStyler.(string); ok {
+	if v, ok := s.RowStyler.(string); ok {
 		t.rowStylerId = v
 	}
-	if v,ok := s.HeaderRowStyler.(string); ok {
+	if v, ok := s.HeaderRowStyler.(string); ok {
 		t.headerRowStylerId = v
 	}
-	if v,ok := s.FooterRowStyler.(string); ok {
+	if v, ok := s.FooterRowStyler.(string); ok {
 		t.footerRowStylerId = v
 	}
 
@@ -773,7 +817,7 @@ func (t *Table) Restore() {
 		t.footerRowStyler = t.Page().GetControl(t.footerRowStylerId).(TableFooterRowAttributer)
 	}
 
-	for _,col := range t.columns {
+	for _, col := range t.columns {
 		col.Restore(t.this())
 	}
 
@@ -783,46 +827,51 @@ func (t *Table) Restore() {
 // TableCreator is the initialization structure for declarative creation of tables
 type TableCreator struct {
 	// ID is the control id
-	ID               string
+	ID string
 	// HasColTags will make the table render <col> tags
-	HasColTags       bool
+	HasColTags bool
 	// Caption is the content of the caption tag, and can either be a string, or a data pager
-	Caption          interface{}
+	Caption interface{}
 	// HideIfEmpty will hide the table completely if it has no data. Otherwise, the table and headers will be shown, but no data rows
-	HideIfEmpty      bool
+	HideIfEmpty bool
 	// HeaderRowCount is the number of header rows. You must set this to at least 1 to show header rows.
-	HeaderRowCount   int
+	HeaderRowCount int
 	// FooterRowCount is the number of footer rows.
-	FooterRowCount   int
+	FooterRowCount int
 	// RowStyler returns the attributes to be used in a cell.
-	RowStyler        TableRowAttributer
+	RowStyler TableRowAttributer
 	// RowStylerID is a control id for the control that will be the RowStyler of the table.
-	RowStylerID      string
+	RowStylerID string
 	// HeaderRowStyler returns the attributes to be used in a header cell.
-	HeaderRowStyler  TableHeaderRowAttributer
+	HeaderRowStyler TableHeaderRowAttributer
 	// HeaderRowStylerID is a control id for the control that will be the HeaderRowStyler of the table.
-	HeaderRowStylerID  string
+	HeaderRowStylerID string
 	// FooterRowStyler returns the attributes to be used in a footer cell. It can be either a control id or a TableFooterRowAttributer.
-	FooterRowStyler  TableFooterRowAttributer
+	FooterRowStyler TableFooterRowAttributer
 	// FooterRowStylerID is a control id for the control that will be the FooterRowStyler of the table.
-	FooterRowStylerID  string
+	FooterRowStylerID string
 	// Columns are the column creators that will add columns to the table
-	Columns          []ColumnCreator
+	Columns []ColumnCreator
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// Data is the actual data for the table, and should be a slice of objects
-	Data             interface{}
+	Data interface{}
 	// Sortable will make the table sortable
-	Sortable         bool
+	Sortable bool
 	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
 	SortHistoryLimit int
-	OnCellClick		 action.ActionI
+	// SortableIconHtml will set the html used to draw the icon indicating that a column is sortable. Can also be set globally using SortButtonHtmlGetter
+	SortableIconHtml string
+	// SortAscIconHtml will set the html used to draw the icon indicating that a column is sorted in ascending order
+	SortAscIconHtml string
+	// SortDescIconHtml will set the html used to draw the icon indicating that a column is sorted in descending order
+	SortDescIconHtml string
+	// OnCellClick is the action to take when a cell is clicked.
+	OnCellClick    action.ActionI
 	ControlOptions page.ControlOptions
 }
-
-
 
 // Create is called by the framework to create a new control from the Creator. You
 // do not normally need to call this.
@@ -879,7 +928,7 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 		ctrl.SetData(c.Data)
 	}
 	if c.Columns != nil {
-		for _,colCreator := range c.Columns {
+		for _, colCreator := range c.Columns {
 			ctrl.AddColumn(colCreator.Create(ctx, ctrl))
 		}
 	}
@@ -889,6 +938,8 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	if c.SortHistoryLimit > 0 {
 		ctrl.SetSortHistoryLimit(c.SortHistoryLimit)
 	}
+	ctrl.SetSortIconHtml(c.SortableIconHtml, c.SortAscIconHtml, c.SortDescIconHtml)
+
 	if c.OnCellClick != nil {
 		ctrl.On(event.CellClick(), c.OnCellClick)
 	}
@@ -941,4 +992,3 @@ func createRegisteredColumn(registryID int, t TableI) ColumnI {
 	c.setParentTable(t)
 	return c
 }
-
