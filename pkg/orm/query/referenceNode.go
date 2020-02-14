@@ -140,7 +140,7 @@ func (n *ReferenceNode) isExpanded() bool {
 	return false
 }
 
-type ReferenceNodeEncoded struct {
+type referenceNodeEncoded struct {
 	Alias string
 	Condition NodeI
 	Parent NodeI
@@ -160,7 +160,7 @@ func (n *ReferenceNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	s := ReferenceNodeEncoded {
+	s := referenceNodeEncoded{
 		Alias: n.alias,
 		Condition: n.condition,
 		Parent: n.parentNode,
@@ -188,7 +188,7 @@ func (n *ReferenceNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
-	var s ReferenceNodeEncoded
+	var s referenceNodeEncoded
 	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}
