@@ -63,17 +63,19 @@ const (
 	FrameworkErrRecordNotFound
 	// A standard situation when someone tries to go to a page they are not authorized to view.
 	FrameworkErrNotAuthorized
+	FrameworkErrRedirect
 )
 
 // FrameworkError is an expected error that is part of the framework. Usually you would respond to the error
 // by displaying a message to the user, but not always.
 type FrameworkError struct {
 	Err int
+	Location string
 }
 
 // NewFrameworkError creates a new FrameworkError
 func NewFrameworkError(err int) FrameworkError {
-	return FrameworkError{err}
+	return FrameworkError{Err: err}
 }
 
 // Error returns the error string
@@ -85,9 +87,23 @@ func (e FrameworkError) Error() string {
 		return "Record does not exist. Perhaps it has been deleted by someone else?"
 	case FrameworkErrNotAuthorized:
 		return "You are not authorized to view this information."
+	case FrameworkErrRedirect:
+		return "Redirecting to " + e.Location
 	}
 
 	return ""
+}
+
+func RedirectHtml(loc string) string {
+	return fmt.Sprintf(`<!DOCTYPE html>
+	<html>
+	<head>
+	<meta http-equiv="Refresh" content="0; url=%s" />
+	</head>
+	<body>
+	<p>Redirecting to <a href="%[1]s">%[1]s</a>.</p>
+	</body>
+	</html>`, loc)
 }
 
 func (e *NoErr) Error() string {
