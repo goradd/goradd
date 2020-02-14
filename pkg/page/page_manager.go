@@ -160,7 +160,10 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 	if e,ok := err.(FrameworkError); ok {
 		if e.Err == FrameworkErrNotAuthorized {
 			buf.WriteString(page.form.GT(e.Error()))
-			return nil, 401
+			return nil, 403
+		} else if e.Err == FrameworkErrRedirect {
+			page.SetResponseHeader("Location", e.Location)
+			return page.responseHeader, 303
 		}
 	}
 
@@ -219,5 +222,5 @@ func (e *HttpError) Send(errCode int) {
 func Redirect(url string) {
 	e := HttpError{}
 	e.SetResponseHeader("Location", url)
-	e.Send(307)
+	e.Send(303)
 }

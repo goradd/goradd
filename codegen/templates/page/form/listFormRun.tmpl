@@ -6,11 +6,14 @@
 // like checking if the user is authorized to access the page.
 func (f *{{= formName }})Run(ctx context.Context) (err error) {
 
-    // If you are authorizing the current user, do that here
-    // if !authorized() {
-	//	return page.NewFrameworkError(page.FrameworkErrNotAuthorized)
-    //}
-
+/* If you are authorizing the current user, do that here
+    if !authorized() {
+    //     one option is to just fail with an error page
+	//	   return page.NewFrameworkError(page.FrameworkErrNotAuthorized)
+	//     another is to automatically redirect to a new location
+	//     page.Redirect(config.MakeLocalPath("/login.g"))
+    }
+*/
 	return
 }
 
