@@ -118,6 +118,8 @@ function _getAjaxData(params) {
 
     // Update most of the Goradd__ parameters explicitly here. Others, like the state and form id will have been handled above.
     params.callType = "Ajax";
+    params.timezoneOffset = -(new Date()).getTimezoneOffset();
+
     if (!goradd.isEmptyObj(_controlValues)) {
         params.controlValues = _controlValues;
     }
@@ -828,6 +830,7 @@ goradd = {
         var gForm = g$(form);
 
         params.callType = "Server";
+        params.timezoneOffset = new Date().getTimezoneOffset();
 
         // Notify custom controls that we are about to post
 

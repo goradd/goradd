@@ -638,9 +638,9 @@ func (m *Mysql5) getTableDescription(t mysqlTable) TableDescription {
 	// Build the indexes
 	indexes := make(map[string]*IndexDescription)
 	for _,idx := range t.indexes {
-		if idx.name == "PRIMARY" {
+		/*if idx.name == "PRIMARY" {
 			continue // assume primary keys are always indexed, so we don't need to report this
-		}
+		}*/
 		if i,ok := indexes[idx.name]; ok {
 			i.ColumnNames = append(i.ColumnNames, idx.columnName)
 		} else {
@@ -711,7 +711,7 @@ func (m *Mysql5) getColumnDescription(table mysqlTable, column mysqlColumn) Colu
 	cd.IsId = strings.Contains(column.extra, "auto_increment")
 	cd.IsPk = (column.key == "PRI")
 	cd.IsNullable = (column.isNullable == "YES")
-	cd.IsUnique = (column.key == "UNI")
+	cd.IsUnique = (column.key == "UNI") || cd.IsPk
 
 	// indicates that the database is handling update on modify
 	// In MySQL this is detectable. In other databases, if you can set this up, but its hard to detect, you can create a comment property to spec this

@@ -57,7 +57,7 @@ func ExampleDateTime_JavaScript() {
 
 func TestTimeOnly(t *testing.T) {
 	d := NewDateTime("8 41 PM", "3 04 PM")
-	d2 := Time(20, 41, 0, 0)
+	d2 := TimeOnly(20, 41, 0, 0)
 	assert.True(t, d.Equal(d2), d.String(), d2.String())
 
 }

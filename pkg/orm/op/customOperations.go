@@ -13,3 +13,8 @@ func EndsWith(arg1 interface{}, arg2 string) *OperationNode {
 func Contains(arg1 interface{}, arg2 string) *OperationNode {
 	return NewOperationNode(OpContains, arg1, arg2)
 }
+
+func DateAddSeconds(arg1 interface{}, arg2 interface{}) *OperationNode {
+	return NewOperationNode(OpDateAddSeconds, arg1, arg2)
+}
+

@@ -142,6 +142,10 @@ func (b *{{builderName}})  Having(node query.NodeI)  *{{builderName}} {
 }
 
 // Count terminates a query and returns just the number of items selected.
+//
+// distinct wll count the number of distinct items, ignoring duplicates.
+//
+// nodes will select individual fields, and should be accompanied by a GroupBy.
 func (b *{{builderName}})  Count(ctx context.Context, distinct bool, nodes... query.NodeI) uint {
 	return b.base.Count(ctx, distinct, nodes...)
 }

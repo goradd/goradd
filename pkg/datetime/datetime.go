@@ -95,15 +95,15 @@ func DateOnly(year int, month Month, day int) DateTime {
 	return Date(year, month, day, 0, 0, 0, 0, nil)
 }
 
-// Time creates a DateTime that only represents a time of day.
-func Time(hour, min, sec, nsec int) DateTime {
+// TimeOnly creates a DateTime that only represents a time of day.
+func TimeOnly(hour, min, sec, nsec int) DateTime {
 	return Date(0, 1, 1, hour, min, sec, nsec, nil)
 }
 
 // NewDateTime creates a new date time from the given information. You can give it the following:
 // () = zero time
 // (DateTime) = copy the given datetime
-// (time.Time or *time.Time) = copy the given time
+// (time.TimeOnly or *time.TimeOnly) = copy the given time
 // (string), as follows:
 //   datetime.Current - same as calling datetime.Now()
 //   datetime.Zero - same as calling datetime.NewZeroDate()
@@ -239,7 +239,7 @@ func (d DateTime) GoTime() time.Time {
 
 // GetTime returns a new DateTime object set to only the time portion of the given DateTime object.
 func (d DateTime) GetTime() DateTime {
-	return Time(d.Hour(), d.Minute(), d.Second(), d.Nanosecond())
+	return TimeOnly(d.Hour(), d.Minute(), d.Second(), d.Nanosecond())
 }
 
 // GetDate returns a new DateTime object set to only the date portion of the given DateTime object.
@@ -267,10 +267,13 @@ func (d DateTime) In(location *time.Location) DateTime {
 	return DateTime{d.Time.In(location), d.isTimestamp}
 }
 
+func (d DateTime) Add(dur time.Duration) DateTime {
+	return DateTime{d.Time.Add(dur), d.isTimestamp}
+}
+
 func (d DateTime) AddDate(years int, months int, days int) DateTime {
 	return DateTime{d.Time.AddDate(years, months, days), d.isTimestamp}
 }
-
 
 // String returns the datetime in string form, suitable for sending to the NewDateTime function.
 func (d DateTime) String() string {
@@ -304,6 +307,11 @@ func (d DateTime) ToJsonString() string {
 	}
 	return string(b)
 }
+
+func (t DateTime) Sub(u DateTime) time.Duration {
+	return t.Time.Sub(u.Time)
+}
+
 
 func init() {
 	gob.Register(time.Time{})

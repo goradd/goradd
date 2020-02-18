@@ -408,6 +408,18 @@ func (m *Mysql5) generateOperationSql(b *sqlBuilder, n *OperationNode, useAlias 
 
 		sql = fmt.Sprintf(`(%s LIKE ?)`, s)
 
+	case OpDateAddSeconds:
+		// Modifying a datetime in the query
+		// Only works on date, datetime and timestamps. Not times.
+		operands := OperationNodeOperands(n)
+		s, a := m.generateNodeSql(b, operands[0], useAlias)
+		s2, a2 := m.generateNodeSql(b, operands[1], useAlias)
+
+		args = append(args, a...)
+		args = append(args, a2...)
+
+		sql = fmt.Sprintf(`DATE_ADD(%s, INTERVAL (%s) SECOND)`, s, s2)
+
 	default:
 		for _, o := range OperationNodeOperands(n) {
 			s, a := m.generateNodeSql(b, o, useAlias)

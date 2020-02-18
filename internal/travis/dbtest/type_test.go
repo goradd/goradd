@@ -14,7 +14,7 @@ func TestDateTimeType(t *testing.T) {
 	rec := model.LoadTypeTest(ctx, "1")
 
 	assert.True(t, rec.Date().Equal(datetime.DateOnly(2019,datetime.January, 2)))
-	assert.True(t, rec.Time().Equal(datetime.Time(6,17,28,0)))
+	assert.True(t, rec.Time().Equal(datetime.TimeOnly(6,17,28,0)))
 
 	dt := rec.DateTime()
 	assert.False(t, dt.IsTimestamp())
