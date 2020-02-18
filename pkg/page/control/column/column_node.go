@@ -64,11 +64,11 @@ func (c *NodeColumn) CellData(ctx context.Context, rowNum int, colNum int, data 
 		for i = len(names) - 2; i > 0; i-- {
 			obj := v2.Get(names[i])
 			if obj == nil || reflect.ValueOf(obj).IsNil() {
-				panic("database object has not loaded the items referred to in the node. Make sure you are joining the correct tables")
+				return nil // Either an object was not joined, or the joined object does not exist in the database.
 			}
 			v2, ok = obj.(Getter)
 			if !ok {
-				panic("node chain does not match a chain of Getters (forward, reverse and manyMany references")
+				panic("node chain does not match a chain of Getters")
 			}
 		}
 		s := v2.Get(names[0]) // This should be a column node

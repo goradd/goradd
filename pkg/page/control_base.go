@@ -145,6 +145,7 @@ type ControlI interface {
 	DrawingAttributes(context.Context) html.Attributes
 	AddClass(class string) ControlI
 	RemoveClass(class string) ControlI
+	HasClass(class string) bool
 	SetStyles(html.Style)
 	SetStyle(name string, value string) ControlI
 	SetWidthStyle(w interface{}) ControlI
@@ -739,6 +740,13 @@ func (c *ControlBase) RemoveClass(class string) ControlI {
 	}
 	return c.this()
 }
+
+// HasClass returns true if the class has been assigned to the control from the GO side. We do not currently detect
+// class changes done in javascript.
+func (c *ControlBase)HasClass(class string) bool {
+	return c.attributes.HasClass(class)
+}
+
 
 // Attributes returns a pointer to the attributes of the control. Use this with caution.
 // Some controls setup attributes at initialization time, so you could potentially write over those.

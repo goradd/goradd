@@ -72,6 +72,8 @@ const (
 	OpStartsWith = "StartsWith"
 	OpEndsWith   = "EndsWith"
 	OpContains   = "Contains"
+	OpDateAddSeconds   = "AddSeconds" // Adds the given number of seconds to a datetime
+
 )
 
 // String returns a string representation of the Operator type. For convenience, this also corresponds to the SQL
@@ -87,8 +89,6 @@ type OperationNode struct {
 	op           Operator
 	operands     []NodeI
 	functionName string // for function operations specific to the db driver
-	//isAggregate    bool   // requires that an aggregation clause be present in the query
-	//sortDescending bool
 	distinct bool // some aggregate queries, particularly count, allow this inside the function
 }
 
