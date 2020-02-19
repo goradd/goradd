@@ -26,7 +26,7 @@ Person database.</p>
 <h3>All People</h3>
 <p>
 `)
-	for _, person := range model.QueryPeople(ctx).Load(ctx) {
+	for _, person := range model.QueryPeople(ctx).Load() {
 		buf.WriteString(`<div>`)
 
 		buf.WriteString(person.FirstName())
@@ -91,7 +91,7 @@ Once your QueryBuilder is ready to execute, you have some options on what to do 
 `)
 	for _, person := range model.QueryPeople(ctx).
 		Where(op.Equal(node.Person().LastName(), "Smith")).
-		Load(ctx) {
+		Load() {
 		buf.WriteString(`<div>`)
 
 		buf.WriteString(person.FirstName())
@@ -110,7 +110,7 @@ Once your QueryBuilder is ready to execute, you have some options on what to do 
 `)
 	for _, person := range model.QueryPeople(ctx).
 		OrderBy(node.Person().LastName(), node.Person().FirstName()).
-		Load(ctx) {
+		Load() {
 		buf.WriteString(`<div>`)
 
 		buf.WriteString(person.FirstName())

@@ -72,7 +72,7 @@
 <p>
     {{for _,project := range model.QueryProjects(ctx).
         Join(node.Project().Manager()).
-        Load(ctx) }}
+        Load() }}
             <div>Project: {{= project.Name() }}, Manager: {{= project.Manager().FirstName() }} {{= project.Manager().LastName() }}</div>
     {{for}}
 </p>

@@ -18,7 +18,7 @@ Person database.</p>
 
 <h3>All People</h3>
 <p>
-{{for _,person := range model.QueryPeople(ctx).Load(ctx)}}
+{{for _,person := range model.QueryPeople(ctx).Load()}}
 <div>{{= person.FirstName() }} {{= person.LastName() }}</div>
 {{for}}
 </p>
@@ -72,7 +72,7 @@ Once your QueryBuilder is ready to execute, you have some options on what to do 
 <div>People With Last Name of Smith</div>
 {{for _,person := range model.QueryPeople(ctx).
     Where(op.Equal(node.Person().LastName(), "Smith")).
-    Load(ctx)}}
+    Load()}}
 <div>{{= person.FirstName() }} {{= person.LastName() }}</div>
 {{for}}
 </p>
@@ -80,7 +80,7 @@ Once your QueryBuilder is ready to execute, you have some options on what to do 
 <div>People in Last/First order</div>
 {{for _,person := range model.QueryPeople(ctx).
     OrderBy(node.Person().LastName(), node.Person().FirstName()).
-    Load(ctx)}}
+    Load()}}
 <div>{{= person.FirstName() }} {{= person.LastName() }}</div>
 {{for}}
 </p>

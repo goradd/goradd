@@ -46,7 +46,7 @@ func QueryPeople(ctx context.Context) *PeopleBuilder {
 // You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
 // access the data.
 func queryPeople(ctx context.Context) *PeopleBuilder {
-	return newPersonBuilder()
+	return newPersonBuilder(ctx)
 }
 
 // DeletePerson deletes the given record from the database. Note that you can also delete

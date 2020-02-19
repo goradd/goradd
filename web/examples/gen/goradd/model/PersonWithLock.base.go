@@ -197,7 +197,26 @@ func (o *personWithLockBase) GetAlias(key string) query.AliasValue {
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadPersonWithLock(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// LoadPersonWithLockByID queries for a single PersonWithLock object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use QueryPersonWithLocks() to start a query builder.
+func LoadPersonWithLockByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
+	return queryPersonWithLocks(ctx).
+		Where(Equal(node.PersonWithLock().ID(), id)).
+		joinOrSelect(joinOrSelectNodes...).
+		Get()
+}
+
+// HasPersonWithLockByID returns true if the
+// given unique index values exist in the database.
+func HasPersonWithLockByID(ctx context.Context, id string) bool {
+	return queryPersonWithLocks(ctx).
+		Where(Equal(node.PersonWithLock().ID(), id)).
+		Count(false) == 1
 }
 
 // The PersonWithLocksBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -208,10 +227,9 @@ type PersonWithLocksBuilder struct {
 	hasConditionalJoins bool
 }
 
-func newPersonWithLockBuilder() *PersonWithLocksBuilder {
+func newPersonWithLockBuilder(ctx context.Context) *PersonWithLocksBuilder {
 	b := &PersonWithLocksBuilder{
-		base: db.GetDatabase("goradd").
-			NewBuilder(),
+		base: db.GetDatabase("goradd").NewBuilder(ctx),
 	}
 	return b.Join(node.PersonWithLock())
 }
@@ -219,8 +237,8 @@ func newPersonWithLockBuilder() *PersonWithLocksBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of PersonWithLock objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *PersonWithLocksBuilder) Load(ctx context.Context) (personWithLockSlice []*PersonWithLock) {
-	results := b.base.Load(ctx)
+func (b *PersonWithLocksBuilder) Load() (personWithLockSlice []*PersonWithLock) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -235,8 +253,8 @@ func (b *PersonWithLocksBuilder) Load(ctx context.Context) (personWithLockSlice 
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *PersonWithLocksBuilder) LoadI(ctx context.Context) (personWithLockSlice []interface{}) {
-	results := b.base.Load(ctx)
+func (b *PersonWithLocksBuilder) LoadI() (personWithLockSlice []interface{}) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -251,8 +269,8 @@ func (b *PersonWithLocksBuilder) LoadI(ctx context.Context) (personWithLockSlice
 // Get is a convenience method to return only the first item found in a query.
 // The entire query is performed, so you should generally use this only if you know
 // you are selecting on one or very few items.
-func (b *PersonWithLocksBuilder) Get(ctx context.Context) *PersonWithLock {
-	results := b.Load(ctx)
+func (b *PersonWithLocksBuilder) Get() *PersonWithLock {
+	results := b.Load()
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -338,14 +356,18 @@ func (b *PersonWithLocksBuilder) Having(node query.NodeI) *PersonWithLocksBuilde
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *PersonWithLocksBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
-	return b.base.Count(ctx, distinct, nodes...)
+//
+// distinct wll count the number of distinct items, ignoring duplicates.
+//
+// nodes will select individual fields, and should be accompanied by a GroupBy.
+func (b *PersonWithLocksBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
+	return b.base.Count(distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *PersonWithLocksBuilder) Delete(ctx context.Context) {
-	b.base.Delete(ctx)
-	broadcast.BulkChange(ctx, "goradd", "person_with_lock")
+func (b *PersonWithLocksBuilder) Delete() {
+	b.base.Delete()
+	broadcast.BulkChange(b.base.Context(), "goradd", "person_with_lock")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -369,19 +391,19 @@ func (b *PersonWithLocksBuilder) joinOrSelect(nodes ...query.NodeI) *PersonWithL
 }
 
 func CountPersonWithLockByID(ctx context.Context, id string) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), id)).Count(ctx, false)
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), id)).Count(false)
 }
 
 func CountPersonWithLockByFirstName(ctx context.Context, firstName string) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(ctx, false)
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(false)
 }
 
 func CountPersonWithLockByLastName(ctx context.Context, lastName string) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(ctx, false)
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(false)
 }
 
 func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp datetime.DateTime) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(ctx, false)
+	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships

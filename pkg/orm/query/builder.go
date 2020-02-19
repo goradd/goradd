@@ -1,8 +1,6 @@
 package query
 
-import (
-	"context"
-)
+import "context"
 
 // The special item to use for named aliases in the result set
 const AliasResults = "aliases_"
@@ -26,8 +24,9 @@ type QueryBuilderI interface {
 	Select(nodes ...NodeI) QueryBuilderI
 	Distinct() QueryBuilderI
 	Alias(name string, n NodeI) QueryBuilderI
-	Load(ctx context.Context) []map[string]interface{}
-	Delete(ctx context.Context)
-	Count(ctx context.Context, distinct bool, nodes ...NodeI) uint
+	Load() []map[string]interface{}
+	Delete()
+	Count(distinct bool, nodes ...NodeI) uint
 	Subquery() *SubqueryNode
+	Context() context.Context
 }

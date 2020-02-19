@@ -22,6 +22,6 @@ func TestSubquery2(t *testing.T) {
 				Where(Equal(node.Project().ManagerID(), node.Person().ID())).
 				Subquery()).
 		Where(Equal(node.Person().LastName(), "Wolfe")).
-		Load(ctx)
+		Load()
 	assert.Equal(t, 2, people[0].GetAlias("manager_count").Int(), "Karen Wolfe manages 2 projects.")
 }

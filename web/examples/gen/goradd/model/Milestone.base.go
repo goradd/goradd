@@ -181,7 +181,26 @@ func (o *milestoneBase) GetAlias(key string) query.AliasValue {
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadMilestone(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Milestone {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// LoadMilestoneByID queries for a single Milestone object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use QueryMilestones() to start a query builder.
+func LoadMilestoneByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Milestone {
+	return queryMilestones(ctx).
+		Where(Equal(node.Milestone().ID(), id)).
+		joinOrSelect(joinOrSelectNodes...).
+		Get()
+}
+
+// HasMilestoneByID returns true if the
+// given unique index values exist in the database.
+func HasMilestoneByID(ctx context.Context, id string) bool {
+	return queryMilestones(ctx).
+		Where(Equal(node.Milestone().ID(), id)).
+		Count(false) == 1
 }
 
 // The MilestonesBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -192,10 +211,9 @@ type MilestonesBuilder struct {
 	hasConditionalJoins bool
 }
 
-func newMilestoneBuilder() *MilestonesBuilder {
+func newMilestoneBuilder(ctx context.Context) *MilestonesBuilder {
 	b := &MilestonesBuilder{
-		base: db.GetDatabase("goradd").
-			NewBuilder(),
+		base: db.GetDatabase("goradd").NewBuilder(ctx),
 	}
 	return b.Join(node.Milestone())
 }
@@ -203,8 +221,8 @@ func newMilestoneBuilder() *MilestonesBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of Milestone objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *MilestonesBuilder) Load(ctx context.Context) (milestoneSlice []*Milestone) {
-	results := b.base.Load(ctx)
+func (b *MilestonesBuilder) Load() (milestoneSlice []*Milestone) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -219,8 +237,8 @@ func (b *MilestonesBuilder) Load(ctx context.Context) (milestoneSlice []*Milesto
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *MilestonesBuilder) LoadI(ctx context.Context) (milestoneSlice []interface{}) {
-	results := b.base.Load(ctx)
+func (b *MilestonesBuilder) LoadI() (milestoneSlice []interface{}) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -235,8 +253,8 @@ func (b *MilestonesBuilder) LoadI(ctx context.Context) (milestoneSlice []interfa
 // Get is a convenience method to return only the first item found in a query.
 // The entire query is performed, so you should generally use this only if you know
 // you are selecting on one or very few items.
-func (b *MilestonesBuilder) Get(ctx context.Context) *Milestone {
-	results := b.Load(ctx)
+func (b *MilestonesBuilder) Get() *Milestone {
+	results := b.Load()
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -322,14 +340,18 @@ func (b *MilestonesBuilder) Having(node query.NodeI) *MilestonesBuilder {
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *MilestonesBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
-	return b.base.Count(ctx, distinct, nodes...)
+//
+// distinct wll count the number of distinct items, ignoring duplicates.
+//
+// nodes will select individual fields, and should be accompanied by a GroupBy.
+func (b *MilestonesBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
+	return b.base.Count(distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *MilestonesBuilder) Delete(ctx context.Context) {
-	b.base.Delete(ctx)
-	broadcast.BulkChange(ctx, "goradd", "milestone")
+func (b *MilestonesBuilder) Delete() {
+	b.base.Delete()
+	broadcast.BulkChange(b.base.Context(), "goradd", "milestone")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -353,15 +375,15 @@ func (b *MilestonesBuilder) joinOrSelect(nodes ...query.NodeI) *MilestonesBuilde
 }
 
 func CountMilestoneByID(ctx context.Context, id string) uint {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), id)).Count(ctx, false)
+	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), id)).Count(false)
 }
 
 func CountMilestoneByProjectID(ctx context.Context, projectID string) uint {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().ProjectID(), projectID)).Count(ctx, false)
+	return queryMilestones(ctx).Where(Equal(node.Milestone().ProjectID(), projectID)).Count(false)
 }
 
 func CountMilestoneByName(ctx context.Context, name string) uint {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().Name(), name)).Count(ctx, false)
+	return queryMilestones(ctx).Where(Equal(node.Milestone().Name(), name)).Count(false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships

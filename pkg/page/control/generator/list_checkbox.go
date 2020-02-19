@@ -85,9 +85,9 @@ func (d CheckboxList) GenerateUpdate(ref interface{}, desc *generator.ControlDes
 func (d CheckboxList) GenerateProvider(ref interface{}, desc *generator.ControlDescription) string {
 	switch col := ref.(type) {
 	case *db.ReverseReference:
-		return fmt.Sprintf(`return model.Query%s(ctx).LoadI(ctx)`, col.AssociatedTable.GoPlural)
+		return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.AssociatedTable.GoPlural)
 	case *db.ManyManyReference:
-		return fmt.Sprintf(`return model.Query%s(ctx).LoadI(ctx)`, col.AssociatedTableName)
+		return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.AssociatedTableName)
 	}
 	return ``
 }

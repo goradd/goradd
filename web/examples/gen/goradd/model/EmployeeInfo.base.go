@@ -181,7 +181,26 @@ func (o *employeeInfoBase) GetAlias(key string) query.AliasValue {
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadEmployeeInfo(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *EmployeeInfo {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// LoadEmployeeInfoByID queries for a single EmployeeInfo object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use QueryEmployeeInfos() to start a query builder.
+func LoadEmployeeInfoByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *EmployeeInfo {
+	return queryEmployeeInfos(ctx).
+		Where(Equal(node.EmployeeInfo().ID(), id)).
+		joinOrSelect(joinOrSelectNodes...).
+		Get()
+}
+
+// HasEmployeeInfoByID returns true if the
+// given unique index values exist in the database.
+func HasEmployeeInfoByID(ctx context.Context, id string) bool {
+	return queryEmployeeInfos(ctx).
+		Where(Equal(node.EmployeeInfo().ID(), id)).
+		Count(false) == 1
 }
 
 // LoadEmployeeInfoByPersonID queries for a single EmployeeInfo object by the given unique index values.
@@ -192,7 +211,7 @@ func LoadEmployeeInfoByPersonID(ctx context.Context, person_id string, joinOrSel
 	return queryEmployeeInfos(ctx).
 		Where(Equal(node.EmployeeInfo().PersonID(), person_id)).
 		joinOrSelect(joinOrSelectNodes...).
-		Get(ctx)
+		Get()
 }
 
 // HasEmployeeInfoByPersonID returns true if the
@@ -200,7 +219,7 @@ func LoadEmployeeInfoByPersonID(ctx context.Context, person_id string, joinOrSel
 func HasEmployeeInfoByPersonID(ctx context.Context, person_id string) bool {
 	return queryEmployeeInfos(ctx).
 		Where(Equal(node.EmployeeInfo().PersonID(), person_id)).
-		Count(ctx, false) == 1
+		Count(false) == 1
 }
 
 // The EmployeeInfosBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -211,10 +230,9 @@ type EmployeeInfosBuilder struct {
 	hasConditionalJoins bool
 }
 
-func newEmployeeInfoBuilder() *EmployeeInfosBuilder {
+func newEmployeeInfoBuilder(ctx context.Context) *EmployeeInfosBuilder {
 	b := &EmployeeInfosBuilder{
-		base: db.GetDatabase("goradd").
-			NewBuilder(),
+		base: db.GetDatabase("goradd").NewBuilder(ctx),
 	}
 	return b.Join(node.EmployeeInfo())
 }
@@ -222,8 +240,8 @@ func newEmployeeInfoBuilder() *EmployeeInfosBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of EmployeeInfo objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *EmployeeInfosBuilder) Load(ctx context.Context) (employeeInfoSlice []*EmployeeInfo) {
-	results := b.base.Load(ctx)
+func (b *EmployeeInfosBuilder) Load() (employeeInfoSlice []*EmployeeInfo) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -238,8 +256,8 @@ func (b *EmployeeInfosBuilder) Load(ctx context.Context) (employeeInfoSlice []*E
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *EmployeeInfosBuilder) LoadI(ctx context.Context) (employeeInfoSlice []interface{}) {
-	results := b.base.Load(ctx)
+func (b *EmployeeInfosBuilder) LoadI() (employeeInfoSlice []interface{}) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -254,8 +272,8 @@ func (b *EmployeeInfosBuilder) LoadI(ctx context.Context) (employeeInfoSlice []i
 // Get is a convenience method to return only the first item found in a query.
 // The entire query is performed, so you should generally use this only if you know
 // you are selecting on one or very few items.
-func (b *EmployeeInfosBuilder) Get(ctx context.Context) *EmployeeInfo {
-	results := b.Load(ctx)
+func (b *EmployeeInfosBuilder) Get() *EmployeeInfo {
+	results := b.Load()
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -341,14 +359,18 @@ func (b *EmployeeInfosBuilder) Having(node query.NodeI) *EmployeeInfosBuilder {
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *EmployeeInfosBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
-	return b.base.Count(ctx, distinct, nodes...)
+//
+// distinct wll count the number of distinct items, ignoring duplicates.
+//
+// nodes will select individual fields, and should be accompanied by a GroupBy.
+func (b *EmployeeInfosBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
+	return b.base.Count(distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *EmployeeInfosBuilder) Delete(ctx context.Context) {
-	b.base.Delete(ctx)
-	broadcast.BulkChange(ctx, "goradd", "employee_info")
+func (b *EmployeeInfosBuilder) Delete() {
+	b.base.Delete()
+	broadcast.BulkChange(b.base.Context(), "goradd", "employee_info")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -372,15 +394,15 @@ func (b *EmployeeInfosBuilder) joinOrSelect(nodes ...query.NodeI) *EmployeeInfos
 }
 
 func CountEmployeeInfoByID(ctx context.Context, id string) uint {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), id)).Count(ctx, false)
+	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), id)).Count(false)
 }
 
 func CountEmployeeInfoByPersonID(ctx context.Context, personID string) uint {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().PersonID(), personID)).Count(ctx, false)
+	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().PersonID(), personID)).Count(false)
 }
 
 func CountEmployeeInfoByEmployeeNumber(ctx context.Context, employeeNumber int) uint {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().EmployeeNumber(), employeeNumber)).Count(ctx, false)
+	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().EmployeeNumber(), employeeNumber)).Count(false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships

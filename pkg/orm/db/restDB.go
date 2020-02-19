@@ -28,8 +28,8 @@ func NewRest(dbKey string, url string) *Rest {
 }
 
 // NewBuilder returns a new query builder to build a query that will be processed by the database.
-func (r *Rest) NewBuilder() QueryBuilderI {
-	return NewRestBuilder(r)
+func (r *Rest) NewBuilder(ctx context.Context) QueryBuilderI {
+	return NewRestBuilder(ctx, r)
 }
 
 // Describe returns the database description object. Rest databases are not describable at this point.

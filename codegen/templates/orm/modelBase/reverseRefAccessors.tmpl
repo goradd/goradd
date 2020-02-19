@@ -78,7 +78,7 @@ func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, condi
 	    cond = And(conditions...)
 	}
 
-	o.{{oName}} = qb.Where(cond).Load(ctx)
+	o.{{oName}} = qb.Where(cond).Load()
 	return o.{{oName}}
 }
 

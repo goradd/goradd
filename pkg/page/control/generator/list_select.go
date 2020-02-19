@@ -101,6 +101,6 @@ func (d SelectList) GenerateProvider(ref interface{}, desc *generator.ControlDes
 	if col.ForeignKey.IsType {
 		return fmt.Sprintf(`return model.All%sI()`, col.ForeignKey.GoTypePlural)
 	} else {
-		return fmt.Sprintf(`return model.Query%s(ctx).LoadI(ctx)`, col.ForeignKey.GoTypePlural)
+		return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.ForeignKey.GoTypePlural)
 	}
 }

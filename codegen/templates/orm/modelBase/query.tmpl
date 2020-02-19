@@ -7,7 +7,7 @@
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func Load{{= t.GoName }}(ctx context.Context, primaryKey {{= t.PrimaryKeyColumn().ColumnType.GoType() }}, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {
-	return query{{t.GoPlural}}(ctx).Where(Equal(node.{{t.GoName}}().{{t.PrimaryKeyColumn().GoName}}(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+	return query{{t.GoPlural}}(ctx).Where(Equal(node.{{t.GoName}}().{{t.PrimaryKeyColumn().GoName}}(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
 {{g
@@ -27,7 +27,7 @@ func Load{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= db.UpperCaseId
         Where(And({{for _,name := range idx.ColumnNames}}Equal(node.{{t.GoName}}().{{= db.UpperCaseIdentifier(name) }}(), {{= name }}), {{for}})).
 {{if}}
         joinOrSelect(joinOrSelectNodes...).
-        Get(ctx)
+        Get()
 }
 
 // Has{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= db.UpperCaseIdentifier(name) }}{{for}} returns true if the
@@ -39,7 +39,7 @@ func Has{{t.GoName}}By{{for _,name := range idx.ColumnNames}}{{= db.UpperCaseIde
 {{else}}
         Where(And({{for _,name := range idx.ColumnNames}}Equal(node.{{t.GoName}}().{{= db.UpperCaseIdentifier(name) }}(), {{= name }}), {{for}})).
 {{if}}
-        Count(ctx, false) == 1
+        Count(false) == 1
 }
 
 }}

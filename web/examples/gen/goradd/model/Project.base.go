@@ -626,7 +626,7 @@ func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interfac
 		cond = And(conditions...)
 	}
 
-	o.oMilestones = qb.Where(cond).Load(ctx)
+	o.oMilestones = qb.Where(cond).Load()
 	return o.oMilestones
 }
 
@@ -658,7 +658,26 @@ func (o *projectBase) SetMilestones(objs []*Milestone) {
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadProject(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Project {
-	return queryProjects(ctx).Where(Equal(node.Project().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+	return queryProjects(ctx).Where(Equal(node.Project().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// LoadProjectByID queries for a single Project object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use QueryProjects() to start a query builder.
+func LoadProjectByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Project {
+	return queryProjects(ctx).
+		Where(Equal(node.Project().ID(), id)).
+		joinOrSelect(joinOrSelectNodes...).
+		Get()
+}
+
+// HasProjectByID returns true if the
+// given unique index values exist in the database.
+func HasProjectByID(ctx context.Context, id string) bool {
+	return queryProjects(ctx).
+		Where(Equal(node.Project().ID(), id)).
+		Count(false) == 1
 }
 
 // LoadProjectByNum queries for a single Project object by the given unique index values.
@@ -669,7 +688,7 @@ func LoadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.N
 	return queryProjects(ctx).
 		Where(Equal(node.Project().Num(), num)).
 		joinOrSelect(joinOrSelectNodes...).
-		Get(ctx)
+		Get()
 }
 
 // HasProjectByNum returns true if the
@@ -677,7 +696,7 @@ func LoadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.N
 func HasProjectByNum(ctx context.Context, num int) bool {
 	return queryProjects(ctx).
 		Where(Equal(node.Project().Num(), num)).
-		Count(ctx, false) == 1
+		Count(false) == 1
 }
 
 // The ProjectsBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -688,10 +707,9 @@ type ProjectsBuilder struct {
 	hasConditionalJoins bool
 }
 
-func newProjectBuilder() *ProjectsBuilder {
+func newProjectBuilder(ctx context.Context) *ProjectsBuilder {
 	b := &ProjectsBuilder{
-		base: db.GetDatabase("goradd").
-			NewBuilder(),
+		base: db.GetDatabase("goradd").NewBuilder(ctx),
 	}
 	return b.Join(node.Project())
 }
@@ -699,8 +717,8 @@ func newProjectBuilder() *ProjectsBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of Project objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *ProjectsBuilder) Load(ctx context.Context) (projectSlice []*Project) {
-	results := b.base.Load(ctx)
+func (b *ProjectsBuilder) Load() (projectSlice []*Project) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -715,8 +733,8 @@ func (b *ProjectsBuilder) Load(ctx context.Context) (projectSlice []*Project) {
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *ProjectsBuilder) LoadI(ctx context.Context) (projectSlice []interface{}) {
-	results := b.base.Load(ctx)
+func (b *ProjectsBuilder) LoadI() (projectSlice []interface{}) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -731,8 +749,8 @@ func (b *ProjectsBuilder) LoadI(ctx context.Context) (projectSlice []interface{}
 // Get is a convenience method to return only the first item found in a query.
 // The entire query is performed, so you should generally use this only if you know
 // you are selecting on one or very few items.
-func (b *ProjectsBuilder) Get(ctx context.Context) *Project {
-	results := b.Load(ctx)
+func (b *ProjectsBuilder) Get() *Project {
+	results := b.Load()
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -818,14 +836,18 @@ func (b *ProjectsBuilder) Having(node query.NodeI) *ProjectsBuilder {
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *ProjectsBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
-	return b.base.Count(ctx, distinct, nodes...)
+//
+// distinct wll count the number of distinct items, ignoring duplicates.
+//
+// nodes will select individual fields, and should be accompanied by a GroupBy.
+func (b *ProjectsBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
+	return b.base.Count(distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *ProjectsBuilder) Delete(ctx context.Context) {
-	b.base.Delete(ctx)
-	broadcast.BulkChange(ctx, "goradd", "project")
+func (b *ProjectsBuilder) Delete() {
+	b.base.Delete()
+	broadcast.BulkChange(b.base.Context(), "goradd", "project")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -849,43 +871,43 @@ func (b *ProjectsBuilder) joinOrSelect(nodes ...query.NodeI) *ProjectsBuilder {
 }
 
 func CountProjectByID(ctx context.Context, id string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().ID(), id)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().ID(), id)).Count(false)
 }
 
 func CountProjectByNum(ctx context.Context, num int) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Num(), num)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().Num(), num)).Count(false)
 }
 
 func CountProjectByProjectStatusTypeID(ctx context.Context, projectStatusTypeID uint) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().ProjectStatusTypeID(), projectStatusTypeID)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().ProjectStatusTypeID(), projectStatusTypeID)).Count(false)
 }
 
 func CountProjectByManagerID(ctx context.Context, managerID string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().ManagerID(), managerID)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().ManagerID(), managerID)).Count(false)
 }
 
 func CountProjectByName(ctx context.Context, name string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Name(), name)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().Name(), name)).Count(false)
 }
 
 func CountProjectByDescription(ctx context.Context, description string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Description(), description)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().Description(), description)).Count(false)
 }
 
 func CountProjectByStartDate(ctx context.Context, startDate datetime.DateTime) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().StartDate(), startDate)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().StartDate(), startDate)).Count(false)
 }
 
 func CountProjectByEndDate(ctx context.Context, endDate datetime.DateTime) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().EndDate(), endDate)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().EndDate(), endDate)).Count(false)
 }
 
 func CountProjectByBudget(ctx context.Context, budget string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Budget(), budget)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().Budget(), budget)).Count(false)
 }
 
 func CountProjectBySpent(ctx context.Context, spent string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Spent(), spent)).Count(ctx, false)
+	return queryProjects(ctx).Where(Equal(node.Project().Spent(), spent)).Count(false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -1183,7 +1205,7 @@ func (o *projectBase) update(ctx context.Context) {
 			// We take care to only delete objects that are not being reattached
 			objs := QueryMilestones(ctx).
 				Where(op.Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
-				Load(ctx)
+				Load()
 			// TODO: select only the required fields
 			for _, obj := range objs {
 				if _, ok := o.mMilestones[obj.PrimaryKey()]; !ok {
@@ -1486,7 +1508,7 @@ func (o *projectBase) Delete(ctx context.Context) {
 			objs := QueryMilestones(ctx).
 				Where(op.Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
 				Select(node.Milestone().PrimaryKeyNode()).
-				Load(ctx)
+				Load()
 			for _, obj := range objs {
 				obj.Delete(ctx)
 			}
