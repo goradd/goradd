@@ -17,6 +17,7 @@ type LimitInfo struct {
 // of the functions that actually query a database -- Load, Delete, Count -- to the containing structure.
 type QueryBuilder struct {
 	self       QueryBuilderI // the subclass object
+	ctx		   context.Context // The context that will be used in all the queries
 	joins      []NodeI
 	orderBys   []NodeI
 	condition  NodeI
@@ -32,8 +33,13 @@ type QueryBuilder struct {
 
 // Init initializes the QueryBuilderBase by saving a copy of the subclass to return
 // for each of the calls for chaining
-func (b *QueryBuilder) Init(self QueryBuilderI) {
+func (b *QueryBuilder) Init(ctx context.Context, self QueryBuilderI) {
 	b.self = self
+	b.ctx = ctx
+}
+
+func (b *QueryBuilder) Context() context.Context {
+	return b.ctx
 }
 
 // Join will attach the given reference node to the builder
@@ -151,13 +157,13 @@ func (b *QueryBuilder) Subquery() *SubqueryNode {
 	return n
 }
 
-func (b *QueryBuilder) Load(ctx context.Context) []map[string]interface{} {
+func (b *QueryBuilder) Load() []map[string]interface{} {
 	return nil
 }
-func (b *QueryBuilder) Delete(ctx context.Context) {
+func (b *QueryBuilder) Delete() {
 
 }
-func (b *QueryBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) uint {
+func (b *QueryBuilder) Count(distinct bool, nodes ...NodeI) uint {
 	return 0
 }
 

@@ -76,7 +76,7 @@ func (p *TableDbPanel) Init(ctx context.Context, parent page.ControlI, id string
 // is the one that is providing the table.
 func (p *TableDbPanel) BindData(ctx context.Context, s DataManagerI) {
 	t := s.(*PagedTable)
-	t.SetTotalItems(model.QueryPeople(ctx).Count(ctx, false))
+	t.SetTotalItems(model.QueryPeople(ctx).Count(false))
 
 	// figure out how to sort the columns. This could be a simple process, or complex, depending on your data
 
@@ -91,7 +91,7 @@ func (p *TableDbPanel) BindData(ctx context.Context, s DataManagerI) {
 				Subquery()).
 		Limit(t.SqlLimits()).
 		OrderBy(sortNodes...).
-		Load(ctx)
+		Load()
 	t.SetData(people)
 }
 

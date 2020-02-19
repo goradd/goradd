@@ -19,7 +19,7 @@ func TestMany2(t *testing.T) {
 		Where(Equal(node.Person().ProjectsAsTeamMember().Manager().LastName(), "Wolfe")).
 		Distinct().
 		Select(node.Person().LastName(), node.Person().FirstName()).
-		Load(ctx)
+		Load()
 
 	names := []string{}
 	for _, p := range people {
@@ -49,7 +49,7 @@ func TestManyTypes(t *testing.T) {
 		Where(Equal(node.Person().PersonTypes().ID(), model.PersonTypeInactive)).
 		Distinct().
 		Select(node.Person().LastName(), node.Person().FirstName()).
-		Load(ctx)
+		Load()
 
 	names := []string{}
 	for _, p := range people {
@@ -70,7 +70,7 @@ func TestManySelect(t *testing.T) {
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsTeamMember().Name()).
 		Where(Equal(node.Person().ProjectsAsTeamMember().Manager().LastName(), "Wolfe")).
 		Select(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsTeamMember().Name()).
-		Load(ctx)
+		Load()
 
 	person := people[0]
 	projects := person.ProjectsAsTeamMember()
@@ -85,7 +85,7 @@ func Test2Nodes(t *testing.T) {
 	milestones := model.QueryMilestones(ctx).
 		Join(node.Milestone().Project().Manager()).
 		Where(Equal(node.Milestone().ID(), 1)). // Filter out people who are not managers
-		Load(ctx)
+		Load()
 
 	assert.True(t, milestones[0].NameIsValid(), "Milestone 1 has a name")
 	assert.Equal(t, "Milestone A", milestones[0].Name(), "Milestone 1 has name of Milestone A")
@@ -100,7 +100,7 @@ func TestForwardMany(t *testing.T) {
 		Join(node.Milestone().Project().TeamMembers()).
 		OrderBy(node.Milestone().Project().TeamMembers().LastName(), node.Milestone().Project().TeamMembers().FirstName()).
 		Where(Equal(node.Milestone().ID(), 1)). // Filter out people who are not managers
-		Load(ctx)
+		Load()
 
 	names := []string{}
 	for _, p := range milestones[0].Project().TeamMembers() {
@@ -123,7 +123,7 @@ func TestManyForward(t *testing.T) {
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID(), node.Person().ProjectsAsTeamMember().Name()).
 		Select(node.Person().ProjectsAsTeamMember().Manager().FirstName(), node.Person().ProjectsAsTeamMember().Manager().LastName()).
-		Load(ctx)
+		Load()
 
 	names := []string{}
 	var p *model.Project
@@ -145,7 +145,7 @@ func TestConditionalJoin(t *testing.T) {
 		OrderBy(node.Project().Name()).
 		Join(node.Project().Manager(), Equal(node.Project().Manager().LastName(), "Wolfe")).
 		Join(node.Project().TeamMembers(), Equal(node.Project().TeamMembers().LastName(), "Smith")).
-		Load(ctx)
+		Load()
 
 	// Reverse references
 	people := model.QueryPeople(ctx).
@@ -154,7 +154,7 @@ func TestConditionalJoin(t *testing.T) {
 		Join(node.Person().ProjectsAsManager().Milestones()).
 		Join(node.Person().Login(), Like(node.Person().Login().Username(), "b%")).
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsManager().Name()).
-		Load(ctx)
+		Load()
 
 	assert.Equal(t, "John", people[2].FirstName(), "John Doe is the 3rd Person.")
 	assert.Len(t, people[2].ProjectsAsManager(), 1, "John Doe manages 1 Project.")
@@ -191,7 +191,7 @@ func TestConditionalExpand(t *testing.T) {
 		Join(node.Person().ProjectsAsManager().Milestones()).
 		Expand(node.Person().ProjectsAsManager()).
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsManager().Name()).
-		Load(ctx)
+		Load()
 
 	assert.Equal(t, "Karen", people[11].FirstName(), "Karen is the 12th Person.")
 	assert.Len(t, people[11].ProjectsAsManager(), 1, "Karen Wolfe selected 1 project.")
@@ -207,7 +207,7 @@ func TestSelectByID(t *testing.T) {
 
 	projects := model.QueryProjects(ctx).
 		OrderBy(node.Project().Name().Descending()).
-		Load(ctx)
+		Load()
 
 	require.Len(t, projects, 4)
 	id := projects[3].ID()
@@ -216,7 +216,7 @@ func TestSelectByID(t *testing.T) {
 	people := model.QueryPeople(ctx).
 		Join(node.Person().ProjectsAsManager()).
 		Where(Equal(node.Person().LastName(), "Wolfe")).
-		Load(ctx)
+		Load()
 
 	p := people[0]
 	require.NotNil(t, p)
@@ -229,7 +229,7 @@ func Test2ndLoad(t *testing.T) {
 	ctx := getContext()
 	projects := model.QueryProjects(ctx).
 		OrderBy(node.Project().Manager().FirstName()).
-		Load(ctx)
+		Load()
 
 	mgr := projects[0].LoadManager(ctx)
 	assert.Equal(t, "Doe", mgr.LastName())

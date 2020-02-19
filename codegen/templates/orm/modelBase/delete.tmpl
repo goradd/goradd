@@ -18,7 +18,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                           Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
-                          Get(ctx)
+                          Get()
                 if obj != nil {
                     obj.Delete(ctx)
                 }
@@ -29,7 +29,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                           Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
-                          Get(ctx)
+                          Get()
                 if obj != nil {
                    obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
                    obj.Save(ctx)
@@ -40,7 +40,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
              {
                  c := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                            Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
-                           Count(ctx, false)
+                           Count(false)
                  if c > 0 {
                      panic("Cannot delete a record that has a restricted foreign key pointing to it.")
                  }
@@ -52,7 +52,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                           Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
-                          Load(ctx)
+                          Load()
                 for _,obj := range objs {
                     obj.Delete(ctx)
                 }
@@ -63,7 +63,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                           Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
-                          Load(ctx)
+                          Load()
                 for _,obj := range objs {
                    obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
                    obj.Save(ctx)
@@ -74,7 +74,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
              {
                 c := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                           Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
-                          Count(ctx, false)
+                          Count(false)
                 if c > 0 {
                     panic("Cannot delete a record that has restricted foreign keys pointing to it.")
                 }

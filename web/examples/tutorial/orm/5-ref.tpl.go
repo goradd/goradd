@@ -111,7 +111,7 @@ func (ctrl *RefPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err 
     `)
 	for _, project := range model.QueryProjects(ctx).
 		Join(node.Project().Manager()).
-		Load(ctx) {
+		Load() {
 		buf.WriteString(`            <div>Project: `)
 
 		buf.WriteString(project.Name())

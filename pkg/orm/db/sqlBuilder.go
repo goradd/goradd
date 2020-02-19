@@ -49,19 +49,19 @@ type sqlBuilder struct {
 }
 
 // NewSqlBuilder creates a new sqlBuilder object.
-func NewSqlBuilder(db SqlDbI) *sqlBuilder {
+func NewSqlBuilder(ctx context.Context, db SqlDbI) *sqlBuilder {
 	b := &sqlBuilder{
 		db:            db,
 		columnAliases: NewjoinTreeItemSliceMap(),
 		tableAliases:  NewjoinTreeItemSliceMap(),
 		nodeMap:       make(map[NodeI]*joinTreeItem),
 	}
-	b.QueryBuilder.Init(b)
+	b.QueryBuilder.Init(ctx, b)
 	return b
 }
 
 // Load terminates the builder, queries the database, and returns the results as an array of interfaces similar in structure to a json structure
-func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{}) {
+func (b *sqlBuilder) Load() (result []map[string]interface{}) {
 	b.buildJoinTree()
 
 	b.makeColumnAliases()
@@ -69,7 +69,7 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
 	sql, args := b.db.generateSelectSql(b)
 
-	rows, err := b.db.Query(ctx, sql, args...)
+	rows, err := b.db.Query(b.ctx, sql, args...)
 
 	if err != nil {
 		// This is possibly generating an error related to the sql itself, so put the sql in the error message.
@@ -102,14 +102,14 @@ func (b *sqlBuilder) Load(ctx context.Context) (result []map[string]interface{})
 	return result2
 }
 
-func (b *sqlBuilder) Delete(ctx context.Context) {
+func (b *sqlBuilder) Delete() {
 	b.isDelete = true
 	b.buildJoinTree()
 
 	// Hand off the generation of sql statements to the database, since different databases generate sql differently
 	sql, args := b.db.generateDeleteSql(b)
 
-	_, err := b.db.Exec(ctx, sql, args...)
+	_, err := b.db.Exec(b.ctx, sql, args...)
 
 	if err != nil {
 		panic(err)
@@ -120,7 +120,7 @@ func (b *sqlBuilder) Delete(ctx context.Context) {
 // If no columns are specified, the count will include NULL items. Otherwise, it will not include NULL results in the count.
 // You cannot include any other select items in a count. If you want to do that, you should do a normal query and add a
 // COUNT operation node.
-func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) uint {
+func (b *sqlBuilder) Count(distinct bool, nodes ...NodeI) uint {
 	var result []map[string]interface{}
 
 	b.isCount = true
@@ -145,7 +145,7 @@ func (b *sqlBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) u
 	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
 	sql, args := b.db.generateSelectSql(b)
 
-	rows, err := b.db.Query(ctx, sql, args...)
+	rows, err := b.db.Query(b.ctx, sql, args...)
 
 	if err != nil {
 		panic(err)
@@ -671,7 +671,7 @@ func (b *sqlBuilder) findChildJoinItem(childNode NodeI, parent *joinTreeItem) (m
 }*/
 
 // findChildJoinItemRecursive recursively finds a join item
-func (b *sqlBuilder) findChildJoinItemRecursive(n NodeI, joinItem *joinTreeItem) (match *joinTreeItem) {
+func (b *sqlBuilder) findChildJoinItemRecursive(n NodeI, joinItem *joinTreeItem) *joinTreeItem {
 	childNode := ChildNode(n)
 
 	if childNode == nil {
@@ -722,7 +722,6 @@ func (b *sqlBuilder) expandNode(j *joinTreeItem, nodeObject ValueMap) (outArray 
 	var copies []ValueMap
 	var innerCopies []ValueMap
 	var newArray []ValueMap
-	var nodeCopy ValueMap
 
 	outArray = append(outArray, NewValueMap())
 
@@ -773,7 +772,7 @@ func (b *sqlBuilder) expandNode(j *joinTreeItem, nodeObject ValueMap) (outArray 
 						return true
 					})
 					for _, cp2 := range newArray {
-						nodeCopy = item.Copy().(ValueMap)
+						nodeCopy := item.Copy().(ValueMap)
 						nodeCopy[tableGoName] = cp2
 						copies = append(copies, nodeCopy)
 					}
@@ -810,7 +809,7 @@ func (b *sqlBuilder) expandNode(j *joinTreeItem, nodeObject ValueMap) (outArray 
 						item[tableGoName] = intArray
 					} else {
 						for _, cp2 := range intArray {
-							nodeCopy = item.Copy().(ValueMap)
+							nodeCopy := item.Copy().(ValueMap)
 							nodeCopy[tableGoName] = []uint{cp2}
 							copies = append(copies, nodeCopy)
 						}
@@ -830,7 +829,7 @@ func (b *sqlBuilder) expandNode(j *joinTreeItem, nodeObject ValueMap) (outArray 
 						item[tableGoName] = newArray
 					} else {
 						for _, cp2 := range newArray {
-							nodeCopy = item.Copy().(ValueMap)
+							nodeCopy := item.Copy().(ValueMap)
 							nodeCopy[tableGoName] = []ValueMap{cp2}
 							copies = append(copies, nodeCopy)
 						}

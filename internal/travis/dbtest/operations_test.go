@@ -15,7 +15,7 @@ func TestEqualBasic(t *testing.T) {
 	projects := model.QueryProjects(ctx).
 		Where(Equal(node.Project().Num(), 2)).
 		OrderBy(node.Project().Num()).
-		Load(ctx)
+		Load()
 
 	assert.EqualValues(t, 2, projects[0].Num(), "Did not find correct project.")
 
@@ -26,7 +26,7 @@ func TestMultiWhere(t *testing.T) {
 	projects := model.QueryPeople(ctx).
 		Where(Equal(node.Person().LastName(), "Smith")).
 		Where(Equal(node.Person().FirstName(), "Alex")).
-		Load(ctx)
+		Load()
 
 	assert.Len(t, projects, 1)
 }
@@ -64,7 +64,7 @@ func TestLogical(t *testing.T) {
 		projects = model.QueryProjects(ctx).
 			Where(c.testNode).
 			OrderBy(node.Project().Num()).
-			Load(ctx)
+			Load()
 
 		if len(projects) <= c.objectNum {
 			t.Errorf("Test case produced out of range error. Test case #: %d", i)
@@ -78,7 +78,7 @@ func TestLogical(t *testing.T) {
 func TestCount2(t *testing.T) {
 	ctx := getContext()
 	count := model.QueryPeople(ctx).
-		Count(ctx, true, node.Person().LastName())
+		Count(true, node.Person().LastName())
 
 	assert.EqualValues(t, 10, count)
 
@@ -106,7 +106,7 @@ func TestCalculations(t *testing.T) {
 		projects = model.QueryProjects(ctx).
 			Alias("Value", c.testNode).
 			OrderBy(node.Project().Num()).
-			Load(ctx)
+			Load()
 
 		assert.EqualValues(t, c.expectedValue, projects[c.objectNum].GetAlias("Value").String(), c.desc)
 	}
@@ -118,7 +118,7 @@ func TestAggregates(t *testing.T) {
 		Alias("sum", Sum(node.Project().Spent())).
 		OrderBy(node.Project().ProjectStatusTypeID()).
 		GroupBy(node.Project().ProjectStatusTypeID()).
-		Load(ctx)
+		Load()
 
 	assert.EqualValues(t, 77400.5, projects[0].GetAlias("sum").Float())
 
@@ -126,7 +126,7 @@ func TestAggregates(t *testing.T) {
 		Alias("min", Min(node.Project().Spent())).
 		OrderBy(node.Project().ProjectStatusTypeID()).
 		GroupBy(node.Project().ProjectStatusTypeID()).
-		Load(ctx)
+		Load()
 
 	assert.EqualValues(t, 4200.50, projects2[0].GetAlias("min").Float())
 }
@@ -146,7 +146,7 @@ func TestAliases(t *testing.T) {
 		GroupBy(node.Person().ID(),node.Person().FirstName(), node.Person().LastName()).
 		Alias("min_voyel", Min(nVoyel.Name())).
 		Alias("min_conson", Min(nConson.Name())).
-		Load(ctx)
+		Load()
 
 	assert.EqualValues(t, 3, len(people))
 	assert.Equal(t, "Doe", people[0].LastName())

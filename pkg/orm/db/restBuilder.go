@@ -27,15 +27,15 @@ type restBuilder struct {
 }
 
 // NewrestBuilder creates a new restBuilder object.
-func NewRestBuilder(db *Rest) *restBuilder {
+func NewRestBuilder(ctx context.Context, db *Rest) *restBuilder {
 	b := &restBuilder{
 		db: db,
 	}
-	b.QueryBuilder.Init(b)
+	b.QueryBuilder.Init(ctx, b)
 	return b
 }
 
-func (b *restBuilder) Load(ctx context.Context) (result []map[string]interface{}) {
+func (b *restBuilder) Load() (result []map[string]interface{}) {
 	b.op = QueryOperationLoad
 
 	exp := ExportQuery(&b.QueryBuilder)
@@ -49,11 +49,11 @@ func (b *restBuilder) Load(ctx context.Context) (result []map[string]interface{}
 	return nil
 }
 
-func (b *restBuilder) Delete(ctx context.Context) {
+func (b *restBuilder) Delete() {
 	b.op = QueryOperationDelete
 }
 
-func (b *restBuilder) Count(ctx context.Context, distinct bool, nodes ...NodeI) uint {
+func (b *restBuilder) Count(distinct bool, nodes ...NodeI) uint {
 	b.op = QueryOperationCount
 	return 0
 }

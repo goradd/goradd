@@ -21,7 +21,7 @@ func TestBasic(t *testing.T) {
 
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID()).
-		Load(ctx)
+		Load()
 	if len(people) != 12 {
 		t.Error("12 people not found")
 	}
@@ -34,7 +34,7 @@ func TestSort(t *testing.T) {
 	ctx := getContext()
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().LastName()).
-		Load(ctx)
+		Load()
 
 	if people[0].LastName() != "Brady" {
 		t.Error("Person found not Brady, found " + people[0].LastName())
@@ -42,7 +42,7 @@ func TestSort(t *testing.T) {
 
 	people = model.QueryPeople(ctx).
 		OrderBy(node.Person().FirstName()).
-		Load(ctx)
+		Load()
 	if people[0].FirstName() != "Alex" {
 		t.Error("Person found not Alex, found " + people[0].FirstName())
 	}
@@ -51,7 +51,7 @@ func TestSort(t *testing.T) {
 	// Testing for regression bug with multiple sorts
 	people = model.QueryPeople(ctx).
 		OrderBy(node.Person().LastName().Descending(), node.Person().FirstName().Ascending()).
-		Load(ctx)
+		Load()
 	if people[0].FirstName() != "Karen" || people[0].LastName() != "Wolfe" {
 		t.Error("Person found not Karen Wolfe, found " + people[0].FirstName() + " " + people[0].LastName())
 	}
@@ -63,7 +63,7 @@ func TestWhere(t *testing.T) {
 	people := model.QueryPeople(ctx).
 		Where(Equal(node.Person().LastName(), "Smith")).
 		OrderBy(node.Person().FirstName().Descending(), node.Person().LastName()).
-		Load(ctx)
+		Load()
 
 	if people[0].FirstName() != "Wendy" {
 		t.Error("Person found not Wendy, found " + people[0].FirstName())
@@ -75,7 +75,7 @@ func TestReference(t *testing.T) {
 	projects := model.QueryProjects(ctx).
 		Join(node.Project().Manager()).
 		OrderBy(node.Project().ID()).
-		Load(ctx)
+		Load()
 
 	if projects[0].Manager().FirstName() != "Karen" {
 		t.Error("Person found not Karen, found " + projects[0].Manager().FirstName())
@@ -88,7 +88,7 @@ func TestManyMany(t *testing.T) {
 	projects := model.QueryProjects(ctx).
 		Join(node.Project().TeamMembers()).
 		OrderBy(node.Project().ID()).
-		Load(ctx)
+		Load()
 
 	if len(projects[0].TeamMembers()) != 5 {
 		t.Error("Did not find 5 team members in project 1. Found: " + strconv.Itoa(len(projects[0].TeamMembers())))
@@ -101,7 +101,7 @@ func TestReverseReference(t *testing.T) {
 	people := model.QueryPeople(ctx).
 		Join(node.Person().ProjectsAsManager()).
 		OrderBy(node.Person().ID()).
-		Load(ctx)
+		Load()
 
 	if people[0].FirstName() != "John" {
 		t.Error("Did not find person 0.")
@@ -117,7 +117,7 @@ func TestBasicType(t *testing.T) {
 	ctx := getContext()
 	projects := model.QueryProjects(ctx).
 		OrderBy(node.Project().ID()).
-		Load(ctx)
+		Load()
 
 	if projects[0].ProjectStatusType() != model.ProjectStatusTypeCompleted {
 		t.Error("Did not find correct project type.")
@@ -129,7 +129,7 @@ func TestManyType(t *testing.T) {
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID(), node.Person().PersonTypes().ID().Descending()).
 		Join(node.Person().PersonTypes()).
-		Load(ctx)
+		Load()
 
 	if len(people[0].PersonTypes()) != 2 {
 		t.Error("Did not expand to 2 person types.")
@@ -146,7 +146,7 @@ func TestManyManySingles(t *testing.T) {
 	projects := model.QueryProjects(ctx).
 		Expand(node.Project().TeamMembers()).
 		OrderBy(node.Project().ID(), node.Project().TeamMembers().FirstName()).
-		Load(ctx)
+		Load()
 
 	if projects[4].Name() != "ACME Website Redesign" { // should have 5 lines here that are all project 1
 		t.Error("Did not find expanded project ACME Website Redesign.")
@@ -167,7 +167,7 @@ func TestReverseReferenceSingles(t *testing.T) {
 	people := model.QueryPeople(ctx).
 		Expand(node.Person().ProjectsAsManager()).
 		OrderBy(node.Person().ID()).
-		Load(ctx)
+		Load()
 
 	if people[7].FirstName() != "Karen" {
 		t.Error("Did not find expanded person Karen Wolfe.")
@@ -184,7 +184,7 @@ func TestManyTypeSingles(t *testing.T) {
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID(), node.Person().PersonTypes().ID().Descending()).
 		Expand(node.Person().PersonTypes()).
-		Load(ctx)
+		Load()
 
 	if people[1].PersonTypes()[0] != model.PersonTypeManager {
 		t.Error("Did not find correct person type.")
@@ -197,7 +197,7 @@ func TestAlias(t *testing.T) {
 	projects := model.QueryProjects(ctx).
 		Where(Equal(node.Project().ID(), 1)).
 		Alias("Difference", Subtract(node.Project().Budget(), node.Project().Spent())).
-		Load(ctx)
+		Load()
 
 	v := projects[0].GetAlias("Difference").Float()
 	assert.EqualValues(t, -690.5, v)
@@ -212,7 +212,7 @@ func TestAlias2(t *testing.T) {
 		Alias("d", node.Project().StartDate()).
 		Alias("e", IsNull(node.Project().EndDate())).
 		OrderBy(node.Project().ID()).
-		Load(ctx)
+		Load()
 
 	project := projects[0]
 	assert.Equal(t, 1, project.GetAlias("a").Int())
@@ -227,7 +227,7 @@ func TestAlias2(t *testing.T) {
 func TestCount(t *testing.T) {
 	ctx := getContext()
 	count := model.QueryProjects(ctx).
-		Count(ctx, false)
+		Count(false)
 
 	assert.EqualValues(t, 4, count)
 }
@@ -237,7 +237,7 @@ func TestGroupBy(t *testing.T) {
 	projects := model.QueryProjects(ctx).
 		Alias("teamMemberCount", Count(node.Project().TeamMembers())).
 		GroupBy(node.Project()).
-		Load(ctx)
+		Load()
 
 	assert.EqualValues(t, 5, projects[0].GetAlias("teamMemberCount").Int())
 
@@ -247,7 +247,7 @@ func TestSelect(t *testing.T) {
 	ctx := getContext()
 	projects := model.QueryProjects(ctx).
 		Select(node.Project().Name()).
-		Load(ctx)
+		Load()
 
 	project := projects[0]
 	assert.True(t, project.NameIsValid())
@@ -260,7 +260,7 @@ func TestLimit(t *testing.T) {
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID()).
 		Limit(2, 3).
-		Load(ctx)
+		Load()
 
 	assert.EqualValues(t, "Mike", people[0].FirstName())
 	assert.Len(t, people, 2)
@@ -281,7 +281,7 @@ func TestSaveAndDelete(t *testing.T) {
 					node.Person().FirstName(), "Test1"),
 				Equal(
 					node.Person().LastName(), "Last1"))).
-		Load(ctx)
+		Load()
 
 	assert.EqualValues(t, person.ID(), people[0].ID())
 
@@ -294,7 +294,7 @@ func TestSaveAndDelete(t *testing.T) {
 					node.Person().FirstName(), "Test1"),
 				Equal(
 					node.Person().LastName(), "Last1"))).
-		Load(ctx)
+		Load()
 
 	assert.Len(t, people, 0, "Deleted the person")
 }
@@ -305,7 +305,7 @@ func TestSingleEmpty(t *testing.T) {
 
 	people := model.QueryPeople(ctx).
 		Where(Equal(node.Person().ID(), 12345)).
-		Load(ctx)
+		Load()
 
 	assert.Len(t, people, 0)
 
@@ -316,7 +316,7 @@ func TestLazyLoad(t *testing.T) {
 
 	projects := model.QueryProjects(ctx).
 		Where(Equal(node.Project().ID(), 1)).
-		Load(ctx)
+		Load()
 
 	var mId string = projects[0].ID() // foreign keys are treated as strings for cross-database compatibility
 	assert.Equal(t, "1", mId)
@@ -340,7 +340,7 @@ func TestDeleteQuery(t *testing.T) {
 					node.Person().FirstName(), "Test1"),
 				Equal(
 					node.Person().LastName(), "Last1"))).
-		Delete(ctx)
+		Delete()
 
 	people := model.QueryPeople(ctx).
 		Where(
@@ -349,7 +349,7 @@ func TestDeleteQuery(t *testing.T) {
 					node.Person().FirstName(), "Test1"),
 				Equal(
 					node.Person().LastName(), "Last1"))).
-		Load(ctx)
+		Load()
 
 	assert.Len(t, people, 0, "Deleted the person")
 }
@@ -366,7 +366,7 @@ func TestHaving(t *testing.T) {
 		OrderBy(node.Project().ID()).
 		Alias("team_member_count", Count(node.Project().TeamMembers())).
 		Having(GreaterThan(Count(query.Alias("team_member_count")), 5)).
-		Load(ctx)
+		Load()
 
 	assert.Len(t, projects, 2)
 	assert.Equal(t, "State College HR System", projects[0].Name())

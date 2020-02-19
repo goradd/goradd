@@ -7,7 +7,7 @@
 func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
     list := {{= ctrlPkg }}.GetPagedTable(p, p.ID() + "-list")
 	if list.HasDataPagers() {
-		list.SetTotalItems(p.this().BuildQuery(ctx).Count(ctx, false))
+		list.SetTotalItems(p.this().BuildQuery(ctx).Count(false))
 	}
 
 	builder := p.this().BuildQuery(ctx)
@@ -17,7 +17,7 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataMa
 
 	d := builder.Limit(list.SqlLimits()).
 		OrderBy(sortNodes...).
-		Load(ctx)
+		Load()
 
 	s.SetData(d)
 }

@@ -648,9 +648,10 @@ func (m *Mysql5) getTableDescription(t mysqlTable) TableDescription {
 			indexes[idx.name] = i
 		}
 	}
-	for _,iDesc := range indexes {
-		td.Indexes = append(td.Indexes, *iDesc)
-	}
+	stringmap.Range(indexes, func(key string, val interface {}) bool {
+		td.Indexes = append(td.Indexes, *(val.(*IndexDescription)))
+		return true
+	})
 	return td
 }
 

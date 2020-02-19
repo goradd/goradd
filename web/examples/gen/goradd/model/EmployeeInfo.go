@@ -46,7 +46,7 @@ func QueryEmployeeInfos(ctx context.Context) *EmployeeInfosBuilder {
 // You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
 // access the data.
 func queryEmployeeInfos(ctx context.Context) *EmployeeInfosBuilder {
-	return newEmployeeInfoBuilder()
+	return newEmployeeInfoBuilder(ctx)
 }
 
 // DeleteEmployeeInfo deletes the given record from the database. Note that you can also delete

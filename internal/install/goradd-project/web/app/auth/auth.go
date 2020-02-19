@@ -32,13 +32,13 @@ func CurrentUser(ctx context.Context) *model.Person {
 		// try to populate the user from the session data
 		id, _ := session.GetString(ctx, UserSessionVar)
 		if id != "" {
-			l.auth.user = model.QueryPeople().
+			l.auth.user = model.QueryPeople(ctx).
 				Where(
 					op.And(
 						op.Equal(node.Person().ID(), id),
 						//op.Equal(node.Person().Active(), 1),
 					)).
-				Get(ctx)
+				Get()
 		}
 	}
 

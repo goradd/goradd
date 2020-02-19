@@ -235,7 +235,7 @@ func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{
 		cond = And(conditions...)
 	}
 
-	o.oAddresses = qb.Where(cond).Load(ctx)
+	o.oAddresses = qb.Where(cond).Load()
 	return o.oAddresses
 }
 
@@ -351,7 +351,7 @@ func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...in
 		cond = And(conditions...)
 	}
 
-	o.oProjectsAsManager = qb.Where(cond).Load(ctx)
+	o.oProjectsAsManager = qb.Where(cond).Load()
 	return o.oProjectsAsManager
 }
 
@@ -383,7 +383,26 @@ func (o *personBase) SetProjectsAsManager(objs []*Project) {
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadPerson(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Person {
-	return queryPeople(ctx).Where(Equal(node.Person().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get(ctx)
+	return queryPeople(ctx).Where(Equal(node.Person().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// LoadPersonByID queries for a single Person object by the given unique index values.
+// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
+// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// If you need a more elaborate query, use QueryPeople() to start a query builder.
+func LoadPersonByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Person {
+	return queryPeople(ctx).
+		Where(Equal(node.Person().ID(), id)).
+		joinOrSelect(joinOrSelectNodes...).
+		Get()
+}
+
+// HasPersonByID returns true if the
+// given unique index values exist in the database.
+func HasPersonByID(ctx context.Context, id string) bool {
+	return queryPeople(ctx).
+		Where(Equal(node.Person().ID(), id)).
+		Count(false) == 1
 }
 
 // The PeopleBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -394,10 +413,9 @@ type PeopleBuilder struct {
 	hasConditionalJoins bool
 }
 
-func newPersonBuilder() *PeopleBuilder {
+func newPersonBuilder(ctx context.Context) *PeopleBuilder {
 	b := &PeopleBuilder{
-		base: db.GetDatabase("goradd").
-			NewBuilder(),
+		base: db.GetDatabase("goradd").NewBuilder(ctx),
 	}
 	return b.Join(node.Person())
 }
@@ -405,8 +423,8 @@ func newPersonBuilder() *PeopleBuilder {
 // Load terminates the query builder, performs the query, and returns a slice of Person objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *PeopleBuilder) Load(ctx context.Context) (personSlice []*Person) {
-	results := b.base.Load(ctx)
+func (b *PeopleBuilder) Load() (personSlice []*Person) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -421,8 +439,8 @@ func (b *PeopleBuilder) Load(ctx context.Context) (personSlice []*Person) {
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *PeopleBuilder) LoadI(ctx context.Context) (personSlice []interface{}) {
-	results := b.base.Load(ctx)
+func (b *PeopleBuilder) LoadI() (personSlice []interface{}) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -437,8 +455,8 @@ func (b *PeopleBuilder) LoadI(ctx context.Context) (personSlice []interface{}) {
 // Get is a convenience method to return only the first item found in a query.
 // The entire query is performed, so you should generally use this only if you know
 // you are selecting on one or very few items.
-func (b *PeopleBuilder) Get(ctx context.Context) *Person {
-	results := b.Load(ctx)
+func (b *PeopleBuilder) Get() *Person {
+	results := b.Load()
 	if results != nil && len(results) > 0 {
 		obj := results[0]
 		return obj
@@ -524,14 +542,18 @@ func (b *PeopleBuilder) Having(node query.NodeI) *PeopleBuilder {
 }
 
 // Count terminates a query and returns just the number of items selected.
-func (b *PeopleBuilder) Count(ctx context.Context, distinct bool, nodes ...query.NodeI) uint {
-	return b.base.Count(ctx, distinct, nodes...)
+//
+// distinct wll count the number of distinct items, ignoring duplicates.
+//
+// nodes will select individual fields, and should be accompanied by a GroupBy.
+func (b *PeopleBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
+	return b.base.Count(distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *PeopleBuilder) Delete(ctx context.Context) {
-	b.base.Delete(ctx)
-	broadcast.BulkChange(ctx, "goradd", "person")
+func (b *PeopleBuilder) Delete() {
+	b.base.Delete()
+	broadcast.BulkChange(b.base.Context(), "goradd", "person")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -555,15 +577,15 @@ func (b *PeopleBuilder) joinOrSelect(nodes ...query.NodeI) *PeopleBuilder {
 }
 
 func CountPersonByID(ctx context.Context, id string) uint {
-	return queryPeople(ctx).Where(Equal(node.Person().ID(), id)).Count(ctx, false)
+	return queryPeople(ctx).Where(Equal(node.Person().ID(), id)).Count(false)
 }
 
 func CountPersonByFirstName(ctx context.Context, firstName string) uint {
-	return queryPeople(ctx).Where(Equal(node.Person().FirstName(), firstName)).Count(ctx, false)
+	return queryPeople(ctx).Where(Equal(node.Person().FirstName(), firstName)).Count(false)
 }
 
 func CountPersonByLastName(ctx context.Context, lastName string) uint {
-	return queryPeople(ctx).Where(Equal(node.Person().LastName(), lastName)).Count(ctx, false)
+	return queryPeople(ctx).Where(Equal(node.Person().LastName(), lastName)).Count(false)
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -750,7 +772,7 @@ func (o *personBase) update(ctx context.Context) {
 			// We take care to only delete objects that are not being reattached
 			objs := QueryAddresses(ctx).
 				Where(op.Equal(node.Address().PersonID(), o.PrimaryKey())).
-				Load(ctx)
+				Load()
 			// TODO: select only the required fields
 			for _, obj := range objs {
 				if _, ok := o.mAddresses[obj.PrimaryKey()]; !ok {
@@ -772,7 +794,7 @@ func (o *personBase) update(ctx context.Context) {
 			// Since the other side of the relationship cannot be null, the object to be detached must be deleted
 			obj := QueryEmployeeInfos(ctx).
 				Where(op.Equal(node.EmployeeInfo().PersonID(), o.PrimaryKey())).
-				Get(ctx)
+				Get()
 			if obj != nil && obj.PrimaryKey() != o.oEmployeeInfo.PrimaryKey() {
 				obj.Delete(ctx)
 			}
@@ -788,7 +810,7 @@ func (o *personBase) update(ctx context.Context) {
 			// Since the other side of the relationship cannot be null, the object to be detached must be deleted
 			obj := QueryLogins(ctx).
 				Where(op.Equal(node.Login().PersonID(), o.PrimaryKey())).
-				Get(ctx)
+				Get()
 			if obj != nil && obj.PrimaryKey() != o.oLogin.PrimaryKey() {
 				obj.Delete(ctx)
 			}
@@ -802,7 +824,7 @@ func (o *personBase) update(ctx context.Context) {
 		if o.oProjectsAsManagerIsDirty {
 			objs := QueryProjects(ctx).
 				Where(op.Equal(node.Project().ManagerID(), o.PrimaryKey())).
-				Load(ctx)
+				Load()
 			// TODO:select only the required fields
 			for _, obj := range objs {
 				if _, ok := o.mProjectsAsManager[obj.PrimaryKey()]; !ok {
@@ -972,7 +994,7 @@ func (o *personBase) Delete(ctx context.Context) {
 			objs := QueryAddresses(ctx).
 				Where(op.Equal(node.Address().PersonID(), o.PrimaryKey())).
 				Select(node.Address().PrimaryKeyNode()).
-				Load(ctx)
+				Load()
 			for _, obj := range objs {
 				obj.Delete(ctx)
 			}
@@ -982,7 +1004,7 @@ func (o *personBase) Delete(ctx context.Context) {
 			obj := QueryEmployeeInfos(ctx).
 				Where(op.Equal(node.EmployeeInfo().PersonID(), o.PrimaryKey())).
 				Select(node.EmployeeInfo().PrimaryKeyNode()).
-				Get(ctx)
+				Get()
 			if obj != nil {
 				obj.Delete(ctx)
 			}
@@ -992,7 +1014,7 @@ func (o *personBase) Delete(ctx context.Context) {
 			obj := QueryLogins(ctx).
 				Where(op.Equal(node.Login().PersonID(), o.PrimaryKey())).
 				Select(node.Login().PrimaryKeyNode()).
-				Get(ctx)
+				Get()
 			if obj != nil {
 				obj.Delete(ctx)
 			}
@@ -1001,7 +1023,7 @@ func (o *personBase) Delete(ctx context.Context) {
 		{
 			c := QueryProjects(ctx).
 				Where(op.Equal(node.Project().ManagerID(), o.PrimaryKey())).
-				Count(ctx, false)
+				Count(false)
 			if c > 0 {
 				panic("Cannot delete a record that has restricted foreign keys pointing to it.")
 			}

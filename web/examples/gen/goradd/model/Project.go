@@ -46,7 +46,7 @@ func QueryProjects(ctx context.Context) *ProjectsBuilder {
 // You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
 // access the data.
 func queryProjects(ctx context.Context) *ProjectsBuilder {
-	return newProjectBuilder()
+	return newProjectBuilder(ctx)
 }
 
 // DeleteProject deletes the given record from the database. Note that you can also delete

@@ -15,7 +15,7 @@ func TestReverse2(t *testing.T) {
 		OrderBy(node.Person().ID(), node.Person().ProjectsAsManager().Name()).
 		Where(IsNotNull(node.Person().ProjectsAsManager().ID())). // Filter out people who are not managers
 		Select(node.Person().ProjectsAsManager().Name()).
-		Load(ctx)
+		Load()
 
 	if len(people[2].ProjectsAsManager()) != 2 {
 		t.Error("Did not find 2 ProjectsAsManagers.")
@@ -33,7 +33,7 @@ func TestReverseMany(t *testing.T) {
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().ID(), node.Person().ProjectsAsManager().TeamMembers().LastName(), node.Person().ProjectsAsManager().TeamMembers().FirstName()).
 		Select(node.Person().ProjectsAsManager().TeamMembers().FirstName(), node.Person().ProjectsAsManager().TeamMembers().LastName()).
-		Load(ctx)
+		Load()
 
 	names := []string{}
 	for _, p := range people[0].ProjectsAsManager()[0].TeamMembers() {
@@ -64,7 +64,7 @@ func TestReverseManyExpansion(t *testing.T) {
 		Join(node.Person().ProjectsAsManager().TeamMembers()).
 		OrderBy(node.Person().ID(), node.Person().ProjectsAsManager().TeamMembers().LastName(), node.Person().ProjectsAsManager().TeamMembers().FirstName()).
 		Expand(node.Person().ProjectsAsManager()).
-		Load(ctx)
+		Load()
 
 	names2 := []string{
 		"John Doe",
@@ -104,13 +104,13 @@ func TestUniqueReverse(t *testing.T) {
 	ctx := getContext()
 	person := model.QueryPeople(ctx).
 		Where(Equal(node.Person().LastName(), "Doe")).
-		Get(ctx)
+		Get()
 	assert.Nil(t, person.Login())
 
 	person = model.QueryPeople(ctx).
 		Where(Equal(node.Person().LastName(), "Doe")).
 		Join(node.Person().Login()).
-		Load(ctx)[0]
+		Load()[0]
 	assert.Equal(t, "jdoe", person.Login().Username())
 }
 

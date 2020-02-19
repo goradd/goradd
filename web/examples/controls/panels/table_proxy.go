@@ -64,11 +64,11 @@ func (p *TableProxyPanel) Init(ctx context.Context, parent page.ControlI, id str
 // is the one that is providing the table.
 func (p *TableProxyPanel) BindData(ctx context.Context, s DataManagerI) {
 	t := GetPagedTable(p, "table1")
-	t.SetTotalItems(QueryProjects(ctx).Count(ctx, false))
+	t.SetTotalItems(QueryProjects(ctx).Count(false))
 
 	projects := QueryProjects(ctx).
 		Limit(t.SqlLimits()).
-		Load(ctx)
+		Load()
 	t.SetData(projects)
 
 	log.Debug("Binding Data - ", projects)

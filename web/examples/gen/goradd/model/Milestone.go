@@ -46,7 +46,7 @@ func QueryMilestones(ctx context.Context) *MilestonesBuilder {
 // You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
 // access the data.
 func queryMilestones(ctx context.Context) *MilestonesBuilder {
-	return newMilestoneBuilder()
+	return newMilestoneBuilder(ctx)
 }
 
 // DeleteMilestone deletes the given record from the database. Note that you can also delete

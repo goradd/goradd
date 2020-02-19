@@ -46,7 +46,7 @@ func QueryAddresses(ctx context.Context) *AddressesBuilder {
 // You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
 // access the data.
 func queryAddresses(ctx context.Context) *AddressesBuilder {
-	return newAddressBuilder()
+	return newAddressBuilder(ctx)
 }
 
 // DeleteAddress deletes the given record from the database. Note that you can also delete

@@ -30,7 +30,7 @@ type DatabaseI interface {
 	AssociatedObjectPrefix() string
 
 	// NewBuilder returns a newly created query builder
-	NewBuilder() QueryBuilderI
+	NewBuilder(ctx context.Context) QueryBuilderI
 
 	// Update will put the given values into a record that already exists in the database. The "fields" value
 	// should include only fields that have changed.

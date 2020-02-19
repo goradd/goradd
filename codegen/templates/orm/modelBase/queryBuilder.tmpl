@@ -11,10 +11,9 @@ type {{builderName}} struct {
 	hasConditionalJoins bool
 }
 
-func new{{t.GoName}}Builder() *{{builderName}} {
+func new{{t.GoName}}Builder(ctx context.Context) *{{builderName}} {
 	b := &{{builderName}}{
-		base: db.GetDatabase("{{t.DbKey}}").
-		NewBuilder(),
+		base: db.GetDatabase("{{t.DbKey}}").NewBuilder(ctx),
 	}
 	return b.Join(node.{{t.GoName}}())
 }
@@ -22,8 +21,8 @@ func new{{t.GoName}}Builder() *{{builderName}} {
 // Load terminates the query builder, performs the query, and returns a slice of {{t.GoName}} objects. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
-func (b *{{builderName}}) Load(ctx context.Context) ({{t.LcGoName}}Slice []*{{t.GoName}}) {
-	results := b.base.Load(ctx)
+func (b *{{builderName}}) Load() ({{t.LcGoName}}Slice []*{{t.GoName}}) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -38,8 +37,8 @@ func (b *{{builderName}}) Load(ctx context.Context) ({{t.LcGoName}}Slice []*{{t.
 // LoadI terminates the query builder, performs the query, and returns a slice of interfaces. If there are
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
-func (b *{{builderName}}) LoadI(ctx context.Context) ({{t.LcGoName}}Slice []interface{}) {
-	results := b.base.Load(ctx)
+func (b *{{builderName}}) LoadI() ({{t.LcGoName}}Slice []interface{}) {
+	results := b.base.Load()
 	if results == nil {
 		return
 	}
@@ -55,8 +54,8 @@ func (b *{{builderName}}) LoadI(ctx context.Context) ({{t.LcGoName}}Slice []inte
 // Get is a convenience method to return only the first item found in a query.
 // The entire query is performed, so you should generally use this only if you know
 // you are selecting on one or very few items.
-func (b *{{builderName}}) Get(ctx context.Context) *{{t.GoName}} {
-	results := b.Load(ctx)
+func (b *{{builderName}}) Get() *{{t.GoName}} {
+	results := b.Load()
 	if results != nil && len(results) > 0 {
 	    obj := results[0]
 		return obj
@@ -146,14 +145,14 @@ func (b *{{builderName}})  Having(node query.NodeI)  *{{builderName}} {
 // distinct wll count the number of distinct items, ignoring duplicates.
 //
 // nodes will select individual fields, and should be accompanied by a GroupBy.
-func (b *{{builderName}})  Count(ctx context.Context, distinct bool, nodes... query.NodeI) uint {
-	return b.base.Count(ctx, distinct, nodes...)
+func (b *{{builderName}})  Count(distinct bool, nodes... query.NodeI) uint {
+	return b.base.Count(distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
-func (b *{{builderName}})  Delete(ctx context.Context) {
-	 b.base.Delete(ctx)
-	 broadcast.BulkChange(ctx, "{{t.DbKey}}", "{{t.DbName}}")
+func (b *{{builderName}})  Delete() {
+	 b.base.Delete()
+	 broadcast.BulkChange(b.base.Context(), "{{t.DbKey}}", "{{t.DbName}}")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what

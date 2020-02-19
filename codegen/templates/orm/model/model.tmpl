@@ -50,7 +50,7 @@ func Query{{t.GoPlural}}(ctx context.Context) *{{builderName}} {
 // You can modify this function to enforce restrictions on queries, for example to make sure the user is authorized to
 // access the data.
 func query{{t.GoPlural}}(ctx context.Context) *{{builderName}} {
-	return new{{t.GoName}}Builder()
+	return new{{t.GoName}}Builder(ctx)
 }
 
 

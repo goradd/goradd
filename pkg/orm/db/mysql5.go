@@ -98,8 +98,8 @@ func NewMysql5(dbKey string, params string, config *mysql.Config) *Mysql5 {
 }
 
 // NewBuilder returns a new query builder to build a query that will be processed by the database.
-func (m *Mysql5) NewBuilder() QueryBuilderI {
-	return NewSqlBuilder(m)
+func (m *Mysql5) NewBuilder(ctx context.Context) QueryBuilderI {
+	return NewSqlBuilder(ctx, m)
 }
 
 // Describe returns the database description object
@@ -553,8 +553,8 @@ func (m *Mysql5) Insert(ctx context.Context, table string, fields map[string]int
 	if r, err := m.Exec(ctx, sql, args...); err != nil {
 		panic(err.Error())
 	} else {
-		if id, err := r.LastInsertId(); err != nil {
-			panic(err.Error())
+		if id, err2 := r.LastInsertId(); err2 != nil {
+			panic(err2.Error())
 			return ""
 		} else {
 			return fmt.Sprint(id)
