@@ -202,7 +202,7 @@ func (o *personBase) ProjectsAsTeamMember() []*Project {
 }
 
 // SetProjectsAsTeamMember sets the associated objects to the given slice of Project objects.
-// It will unassociate from all previously associated objects after saving.
+// It will disassociate from all previously associated objects after saving.
 func (o *personBase) SetProjectsAsTeamMember(objs []*Project) {
 	o.oProjectsAsTeamMember = objs
 	o.oProjectsAsTeamMemberIsDirty = true
@@ -239,6 +239,13 @@ func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{
 	return o.oAddresses
 }
 
+// CountAddresses returns the number of Address objects in the database connected to this object.
+func (o *personBase) CountAddresses(ctx context.Context) int {
+	return int(QueryAddresses(ctx).
+		Where(op.Equal(node.Address().PersonID(), o.PrimaryKey())).
+		Count(false))
+}
+
 // SetAddresses associates the given objects with the Person.
 // WARNING! If it has items already associated with it that will not be associated after a save,
 // those items will be DELETED since they cannot be null.
@@ -263,8 +270,8 @@ func (o *personBase) SetAddresses(objs []*Address) {
 	o.oAddressesIsDirty = true
 }
 
-// EmployeeInfo returns the connected EmployeeInfo object, if one was loaded
-// otherwise, it will return nil.
+// EmployeeInfo returns the connected EmployeeInfo object, if one was loaded.
+// Otherwise, it will return nil.
 func (o *personBase) EmployeeInfo() *EmployeeInfo {
 	if o.oEmployeeInfo == nil {
 		return nil
@@ -272,8 +279,8 @@ func (o *personBase) EmployeeInfo() *EmployeeInfo {
 	return o.oEmployeeInfo
 }
 
-// LoadEmployeeInfo returns the connected EmployeeInfo object, if one was loaded
-// otherwise, it will return nil.
+// LoadEmployeeInfo returns the connected EmployeeInfo object, if one was loaded.
+// Otherwise, it will load a new one and return it.
 func (o *personBase) LoadEmployeeInfo(ctx context.Context) *EmployeeInfo {
 	if o.oEmployeeInfo == nil {
 		o.oEmployeeInfo = LoadEmployeeInfoByPersonID(ctx, o.ID())
@@ -292,8 +299,8 @@ func (o *personBase) SetEmployeeInfo(obj *EmployeeInfo) {
 	o.oEmployeeInfoIsDirty = true
 }
 
-// Login returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
+// Login returns the connected Login object, if one was loaded.
+// Otherwise, it will return nil.
 func (o *personBase) Login() *Login {
 	if o.oLogin == nil {
 		return nil
@@ -301,8 +308,8 @@ func (o *personBase) Login() *Login {
 	return o.oLogin
 }
 
-// LoadLogin returns the connected Login object, if one was loaded
-// otherwise, it will return nil.
+// LoadLogin returns the connected Login object, if one was loaded.
+// Otherwise, it will load a new one and return it.
 func (o *personBase) LoadLogin(ctx context.Context) *Login {
 	if o.oLogin == nil {
 		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
@@ -353,6 +360,13 @@ func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...in
 
 	o.oProjectsAsManager = qb.Where(cond).Load()
 	return o.oProjectsAsManager
+}
+
+// CountProjectsAsManager returns the number of Project objects in the database connected to this object.
+func (o *personBase) CountProjectsAsManager(ctx context.Context) int {
+	return int(QueryProjects(ctx).
+		Where(op.Equal(node.Project().ManagerID(), o.PrimaryKey())).
+		Count(false))
 }
 
 // SetProjectsAsManager associates the given objects with the Person.

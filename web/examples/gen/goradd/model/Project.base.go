@@ -551,7 +551,7 @@ func (o *projectBase) ChildrenAsParent() []*Project {
 }
 
 // SetChildrenAsParent sets the associated objects to the given slice of Project objects.
-// It will unassociate from all previously associated objects after saving.
+// It will disassociate from all previously associated objects after saving.
 func (o *projectBase) SetChildrenAsParent(objs []*Project) {
 	o.oChildrenAsParent = objs
 	o.oChildrenAsParentIsDirty = true
@@ -572,7 +572,7 @@ func (o *projectBase) ParentsAsChild() []*Project {
 }
 
 // SetParentsAsChild sets the associated objects to the given slice of Project objects.
-// It will unassociate from all previously associated objects after saving.
+// It will disassociate from all previously associated objects after saving.
 func (o *projectBase) SetParentsAsChild(objs []*Project) {
 	o.oParentsAsChild = objs
 	o.oParentsAsChildIsDirty = true
@@ -593,7 +593,7 @@ func (o *projectBase) TeamMembers() []*Person {
 }
 
 // SetTeamMembers sets the associated objects to the given slice of Person objects.
-// It will unassociate from all previously associated objects after saving.
+// It will disassociate from all previously associated objects after saving.
 func (o *projectBase) SetTeamMembers(objs []*Person) {
 	o.oTeamMembers = objs
 	o.oTeamMembersIsDirty = true
@@ -628,6 +628,13 @@ func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interfac
 
 	o.oMilestones = qb.Where(cond).Load()
 	return o.oMilestones
+}
+
+// CountMilestones returns the number of Milestone objects in the database connected to this object.
+func (o *projectBase) CountMilestones(ctx context.Context) int {
+	return int(QueryMilestones(ctx).
+		Where(op.Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
+		Count(false))
 }
 
 // SetMilestones associates the given objects with the Project.

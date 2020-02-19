@@ -7,8 +7,8 @@ for _,ref := range t.ReverseReferences {
 	if ref.IsUnique() {
 {{
 
-// {{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded
-// otherwise, it will return nil.
+// {{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded.
+// Otherwise, it will return nil.
 func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.GoType}} {
 	if o.{{oName}} == nil {
 		return nil
@@ -16,8 +16,8 @@ func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.GoType}} {
 	return o.{{oName}}
 }
 
-// Load{{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded
-// otherwise, it will return nil.
+// Load{{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded.
+// Otherwise, it will load a new one and return it.
 func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.GoType}} {
 	if o.{{oName}} == nil {
 		o.{{oName}} = Load{{ref.GoType}}By{{= associatedGoName }}(ctx, o.{{= t.PrimaryKeyColumn().GoName }}())
@@ -80,6 +80,13 @@ func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, condi
 
 	o.{{oName}} = qb.Where(cond).Load()
 	return o.{{oName}}
+}
+
+// Count{{ref.GoPlural}} returns the number of {{ref.GoType}} objects in the database connected to this object.
+func (o *{{privateName}}Base) Count{{ref.GoPlural}}(ctx context.Context) int {
+	return int(Query{{= ref.GoTypePlural }}(ctx).
+	    Where(op.Equal(node.{{= ref.GoType }}().{{= ref.AssociatedColumn.GoName }}(), o.PrimaryKey())).
+	    Count(false))
 }
 
 // Set{{ref.GoPlural}} associates the given objects with the {{t.GoName}}.

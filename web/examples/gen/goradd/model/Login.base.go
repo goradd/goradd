@@ -290,22 +290,22 @@ func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...quer
 	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// LoadLoginByID queries for a single Login object by the given unique index values.
+// LoadLoginByPersonID queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Login {
+func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
 	return queryLogins(ctx).
-		Where(Equal(node.Login().ID(), id)).
+		Where(Equal(node.Login().PersonID(), person_id)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
 
-// HasLoginByID returns true if the
+// HasLoginByPersonID returns true if the
 // given unique index values exist in the database.
-func HasLoginByID(ctx context.Context, id string) bool {
+func HasLoginByPersonID(ctx context.Context, person_id string) bool {
 	return queryLogins(ctx).
-		Where(Equal(node.Login().ID(), id)).
+		Where(Equal(node.Login().PersonID(), person_id)).
 		Count(false) == 1
 }
 
@@ -328,22 +328,22 @@ func HasLoginByUsername(ctx context.Context, username string) bool {
 		Count(false) == 1
 }
 
-// LoadLoginByPersonID queries for a single Login object by the given unique index values.
+// LoadLoginByID queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
+func LoadLoginByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Login {
 	return queryLogins(ctx).
-		Where(Equal(node.Login().PersonID(), person_id)).
+		Where(Equal(node.Login().ID(), id)).
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
 
-// HasLoginByPersonID returns true if the
+// HasLoginByID returns true if the
 // given unique index values exist in the database.
-func HasLoginByPersonID(ctx context.Context, person_id string) bool {
+func HasLoginByID(ctx context.Context, id string) bool {
 	return queryLogins(ctx).
-		Where(Equal(node.Login().PersonID(), person_id)).
+		Where(Equal(node.Login().ID(), id)).
 		Count(false) == 1
 }
 
