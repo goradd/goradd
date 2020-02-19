@@ -43,7 +43,7 @@ func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.AssociatedObjectNam
 }
 
 // Set{{= ref.GoPlural }} sets the associated objects to the given slice of {{ref.AssociatedObjectName}} objects.
-// It will unassociate from all previously associated objects after saving.
+// It will disassociate from all previously associated objects after saving.
 func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{ref.AssociatedObjectName}}) {
 	o.{{oName}} = objs
 	o.{{oName}}IsDirty = true

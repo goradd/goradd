@@ -196,3 +196,11 @@ func TestReverseReferenceUniqueSave(t *testing.T) {
 
 }
 
+func TestReverseReferenceCount(t *testing.T) {
+	ctx := getContext()
+
+	person := model.LoadPerson(ctx, "3")
+	ct := person.CountAddresses(ctx)
+	assert.Equal(t, 2, ct)
+
+}
