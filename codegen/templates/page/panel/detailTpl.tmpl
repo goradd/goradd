@@ -19,6 +19,9 @@ var panelName = t.GoName + "DetailPanel"
 {{g
     for _,col := range t.Columns {
         cd := t.ControlDescription(col)
+        if cd == nil {
+            continue
+        }
         var name string
         if col.IsReference() || col.IsType() {
             name = col.ReferenceFunction()

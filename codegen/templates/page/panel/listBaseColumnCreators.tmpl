@@ -9,7 +9,7 @@ func (p *{{= panelName }}) ColumnCreators(_ context.Context) []{{= ctrlPkg }}.Co
 {{for _,col := range t.Columns }}
         column.NodeColumnCreator{
             Node: node.{{= t.GoName }}().{{= col.GoName }}(),
-            Title: "{{= t.ControlDescription(col).DefaultLabel }}",
+            Title: "{{if t.ControlDescription(col) != nil}}{{= t.ControlDescription(col).DefaultLabel }}{{else}}{{col.GoName}}{{if}}",
         {{if col.IsDateOnly}}
             ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultDateFormat},
         {{else if col.IsTimeOnly}}

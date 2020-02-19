@@ -27,6 +27,8 @@ type DialogEditPanel struct {
 	ObjectName string
 }
 
+// GetDialogEditPanel creates a panel that is designed to hold an EditablePanel. It itself will be wrapped with
+// the application's default dialog style, and it will automatically get Save, Cancel and Delete buttons.
 func GetDialogEditPanel(parent page.ControlI, id string, objectName string) (*DialogEditPanel, bool) {
 	if parent.Page().HasControl(id) { // dialog has already been created, but is hidden
 		return parent.Page().GetControl(id).(*DialogEditPanel), false

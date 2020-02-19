@@ -24,6 +24,7 @@ type DataManagerI interface {
 // Currently go does not allow interface conflicts, but that is scheduled to change
 type DataManagerEmbedder interface {
 	SetDataProvider(b DataBinder)
+	HasDataProvider() bool
 	// SetData should be passed a slice of data items
 	SetData(interface{})
 	LoadData(ctx context.Context, owner DataManagerI)

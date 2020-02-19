@@ -1297,9 +1297,11 @@ func (c *ControlBase) passesValidation(ctx context.Context, event *Event) (valid
 					break
 				}
 			}
-			// Target is the form
-			targets = []ControlI{c.ParentForm()}
-			validation = ValidateForm
+			if targets == nil {
+				// Target is the form
+				targets = []ControlI{c.ParentForm()}
+				validation = ValidateForm
+			}
 		} else {
 			targets = []ControlI{c}
 		}

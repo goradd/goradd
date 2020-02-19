@@ -96,9 +96,17 @@ func (l *SelectList) SelectedItem() *ListItem {
 	return i
 }
 
-// SetSelectedValue sets the current selection to the given id. You must ensure that the item with the id exists, it will
-// not attempt to make sure the item exists.
+// SetSelectedValue sets the current selection to the given id.
+//
+// If you are using a DataProvider, you must make sure that the value will exist in the list.
+// Otherwise it will compare against the current item list and panic if the item does not exist.
 func (l *SelectList) SetSelectedValue(v string) {
+	if !l.HasDataProvider() {
+		_,item := l.GetItemByValue(v)
+		if item == nil {
+			panic("Attempting to set the SelectList to a value that does not exist in the list. Value: " + v)
+		}
+	}
 	l.selectedValue = v
 	l.AddRenderScript("val", v)
 }
