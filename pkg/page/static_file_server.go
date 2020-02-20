@@ -197,8 +197,8 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 // go static file process. This must happen during application initialization, as the static file directories
 // are added to the MUX at startup time.
 func RegisterAssetDirectory(dir string, pattern string) {
-	if _, ok := assetDirectories[pattern]; ok {
-		panic(pattern + " is already registered as an asset directory.")
+	if d, ok := assetDirectories[pattern]; ok && d != dir {
+		panic(pattern + " is already registered as an asset directory. ")
 	}
 	assetDirectories[pattern] = dir
 }

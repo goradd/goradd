@@ -828,8 +828,6 @@ func (t *Table) Restore() {
 type TableCreator struct {
 	// ID is the control id
 	ID string
-	// HasColTags will make the table render <col> tags
-	HasColTags bool
 	// Caption is the content of the caption tag, and can either be a string, or a data pager
 	Caption interface{}
 	// HideIfEmpty will hide the table completely if it has no data. Otherwise, the table and headers will be shown, but no data rows

@@ -164,8 +164,6 @@ type SelectTableCreator struct {
 
 	// ID is the control id
 	ID               string
-	// HasColTags will make the table render <col> tags
-	HasColTags       bool
 	// Caption is the content of the caption tag, and can either be a string, or a data pager
 	Caption          interface{}
 	// HideIfEmpty will hide the table completely if it has no data. Otherwise, the table and headers will be shown, but no data rows
@@ -224,7 +222,6 @@ func (c SelectTableCreator) Create(ctx context.Context, parent page.ControlI) pa
 func (c SelectTableCreator) Init(ctx context.Context, ctrl SelectTableI) {
 	sub := TableCreator {
 		ID:               c.ID,
-		HasColTags:       c.HasColTags,
 		Caption:          c.Caption,
 		HideIfEmpty:      c.HideIfEmpty,
 		HeaderRowCount:   c.HeaderRowCount,

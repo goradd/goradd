@@ -51,8 +51,6 @@ func (t *PagedTable) Deserialize(dec page.Decoder) (err error) {
 type PagedTableCreator struct {
 	// ID is the control id
 	ID               string
-	// HasColTags will make the table render <col> tags
-	HasColTags       bool
 	// Caption is the content of the caption tag, and can either be a string, or a data pager
 	Caption          interface{}
 	// HideIfEmpty will hide the table completely if it has no data. Otherwise, the table and headers will be shown, but no data rows
@@ -109,7 +107,6 @@ func (c PagedTableCreator) Create(ctx context.Context, parent page.ControlI) pag
 func (c PagedTableCreator) Init(ctx context.Context, ctrl PagedTableI) {
 	sub := TableCreator {
 		ID:               c.ID,
-		HasColTags:       c.HasColTags,
 		Caption:          c.Caption,
 		HideIfEmpty:      c.HideIfEmpty,
 		HeaderRowCount:   c.HeaderRowCount,

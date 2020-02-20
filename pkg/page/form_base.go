@@ -26,11 +26,11 @@ type FormI interface {
 	Init(ctx context.Context, id string)
 	PageDrawingFunction() PageDrawFunc
 
-	LoadControls(ctx context.Context)
 	AddHeadTags()
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
 	Response() *Response
 	renderAjax(ctx context.Context, buf *bytes.Buffer) error
+	AddRelatedFiles()
 	AddStyleSheetFile(path string, attributes html.Attributes)
 	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
@@ -42,6 +42,8 @@ type FormI interface {
 
 	// Lifecycle calls
 	Run(ctx context.Context) error
+	CreateControls(ctx context.Context)
+	LoadControls(ctx context.Context)
 	Exit(ctx context.Context, err error)
 
 	updateValues(ctx *Context)
@@ -74,9 +76,9 @@ func (f *FormBase) Init(ctx context.Context, id string) {
 	}
 	f.ControlBase.id = id
 
-	// TODO: remove first param from Init call below
 	f.ControlBase.Init(nil, id)
 	f.Tag = "form"
+	f.this().AddRelatedFiles()
 }
 
 func (f *FormBase) this() FormI {
@@ -507,16 +509,21 @@ func (f *FormBase) AddHeadTags() {
 
 }
 
-// LoadControls is a lifecycle call that happens after a form is first created. It is the place to initialize the value
-// of the controls in the form based on variables sent to the form.
-func (f *FormBase) LoadControls(ctx context.Context) {
-}
-
 // Run is a lifecycle function that gets called whenever a page is run, either by a whole page load, or an ajax call.
 // Its a good place to validate that the current user should have access to the information on the page.
 // Returning an error will result in the error message being displayed.
 func (f *FormBase) Run(ctx context.Context) error {
 	return nil
+}
+
+// CreateControls is a lifecycle function that gets called whenever a page is created. It happens after the Run call.
+// This is the place to add controls to the form
+func (f *FormBase) CreateControls(ctx context.Context) {
+}
+
+// LoadControls is a lifecycle call that happens after a form is first created. It is the place to initialize the value
+// of the controls in the form based on variables sent to the form or session variables.
+func (f *FormBase) LoadControls(ctx context.Context) {
 }
 
 // Exit is a lifecycle function that gets called after the form is processed, just before control is returned to the client.

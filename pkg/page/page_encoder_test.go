@@ -33,7 +33,7 @@ func TestEmptyFormEncoding(t *testing.T) {
 }*/
 
 type BasicForm struct {
-	page.FormBase
+	control.MockForm
 
 	S string
 }
@@ -41,12 +41,12 @@ type BasicForm struct {
 func CreateBasicForm(ctx context.Context) page.FormI {
 	f := &BasicForm{}
 	f.Self = f
-	f.FormBase.Init(ctx, "BasicForm")
-	f.createControls(ctx)
+	f.MockForm.Init(ctx, "BasicForm")
+	f.CreateControls(ctx)
 	return f
 }
 
-func (f *BasicForm) createControls(ctx context.Context) {
+func (f *BasicForm) CreateControls(ctx context.Context) {
 	control.NewTextbox(f, "txt1").SetValue("Hi")
 	f.S = "test"
 }

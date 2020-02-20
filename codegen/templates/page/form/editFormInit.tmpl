@@ -2,13 +2,6 @@
 
 {{
 
-func (f *{{= formName }})Init(ctx context.Context, id string) {
-    f.FormBase.Init(ctx, id)
-
-	f.AddRelatedFiles()
-	f.createControls(ctx)
-}
-
 // init functions are called once when the web server first starts up.
 func init() {
 	page.RegisterForm({{= title }}EditPath,  &{{= formName }}{}, {{= title }}EditID)
