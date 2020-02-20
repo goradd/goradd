@@ -99,20 +99,22 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem
 				h += "</div>"
 			} else {
 				// top level menu
-				var lastClass = ""
+				var itemClass string
 
 				if i == len(items)-1 {
 					// last item, so modify dropdown menu so it does not go off of screen
 					// If there is only one item in the navbar, and this is the left navbar, this might cause a problem.
 					// We can potentially fix that by asking the parent item if that is the situation.
-					lastClass = "dropdown-menu-right"
+					itemClass = "dropdown-menu-right "
 				}
+				// Let the item style it further
+				itemClass += item.Attributes().Class()
 				h += fmt.Sprintf(
 					`<%s class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" id="%s_menu" role="menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         %s
     </a>
-    <div class="dropdown-menu %s" aria-labelledby="%s_menu">`, l.subItemTag, item.ID(), item.RenderLabel(), lastClass, item.ID())
+    <div class="dropdown-menu %s" aria-labelledby="%s_menu">`, l.subItemTag, item.ID(), item.RenderLabel(), itemClass, item.ID())
 				h += l.getItemsHtml(ctx, item.ListItems(), true)
 				h += fmt.Sprintf("</div></%s>", l.subItemTag)
 			}

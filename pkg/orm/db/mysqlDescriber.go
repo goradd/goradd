@@ -8,6 +8,7 @@ import (
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"log"
 	"math"
+	"sort"
 	"strings"
 )
 
@@ -643,6 +644,7 @@ func (m *Mysql5) getTableDescription(t mysqlTable) TableDescription {
 		}*/
 		if i,ok := indexes[idx.name]; ok {
 			i.ColumnNames = append(i.ColumnNames, idx.columnName)
+			sort.Strings(i.ColumnNames) // make sure this list stays in a predictable order each time
 		} else {
 			i = &IndexDescription{IsUnique:!idx.nonUnique, ColumnNames: []string{idx.columnName}}
 			indexes[idx.name] = i
