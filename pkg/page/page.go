@@ -104,7 +104,6 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		panic(grCtx.err) // An error occurred during unpacking of the context, so report that now
 	}
 
-	// TODO: Lifecycle calls - push them to the form
 	if err = p.Form().Run(ctx); err != nil {
 		return err
 	}
@@ -114,6 +113,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 
 	if isNew {
 		p.Form().AddHeadTags()
+		p.Form().CreateControls(ctx)
 		p.Form().LoadControls(ctx)
 
 	} else {
