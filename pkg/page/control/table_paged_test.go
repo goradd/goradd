@@ -41,7 +41,6 @@ func TestPagedTable_Serialize(t *testing.T) {
 	f.AddControls(context.Background(),
 		PagedTableCreator{
 			ID:                "table",
-			HasColTags:        true,
 			Caption:           "This is a table",
 			HideIfEmpty:       true,
 			HeaderRowCount:    2,
