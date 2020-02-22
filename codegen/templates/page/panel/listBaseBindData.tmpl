@@ -23,7 +23,23 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataMa
 }
 
 func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
-	return model.Query{{= t.GoPlural }}(ctx)
+	q := model.Query{{= t.GoPlural }}(ctx)
+	{{for _,col := range t.Columns}}
+	{{if col.IsReference() }}
+	 q = q.Join(node.{{= t.GoName}}().{{= col.ReferenceFunction()}}())
+	{{if}}
+	{{for}}
+    {{for _,ref := range t.ReverseReferences}}
+    {{if ref.IsUnique() }}
+    q = q.Join(node.{{= t.GoName}}().{{= ref.GoName}}())
+    {{else}}
+    q = q.Join(node.{{= t.GoName}}().{{= ref.GoPlural}}())
+    {{if}}
+    {{for}}
+    {{for _,ref := range t.ManyManyReferences}}
+    q = q.Join(node.{{= t.GoName}}().{{= ref.GoPlural}}())
+    {{for}}
+	return q
 }
 
 func (p *{{= panelName }}) MakeFilter(filterText string) query.NodeI {

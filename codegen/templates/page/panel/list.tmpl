@@ -46,10 +46,15 @@ func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *
 
 func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.{{= panelName }}Base.Init(parent, id)
-	p.createControls(ctx)
+	p.CreateControls(ctx)
 	session.Remove(ctx, "{{= t.LcGoName }}EditID")
 	session.Remove(ctx, "{{= t.LcGoName }}DetailID")
 }
+
+/*
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+}
+*/
 
 func (p *{{= panelName }}) ColumnCreators(ctx context.Context) []control.ColumnCreator {
 
