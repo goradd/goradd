@@ -2,9 +2,9 @@
 
 {{
 
-// createControls creates the controls in the panel.
+// CreateControls creates the controls in the panel.
 // Override this to change what controls get created.
-func (p *{{= panelName }}) createControls(ctx context.Context) {
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 	p.AddControls(ctx,
 		{{= ctrlPkg }}.PanelCreator{
 			ID: p.ID() + "-filterPanel",

@@ -2,13 +2,16 @@
 
 {{
 
-// createControls creates the controls in the panel.
-// Override this to change what controls get created.
+// ColumnCreators returns just the column creators for the table
 func (p *{{= panelName }}) ColumnCreators(_ context.Context) []{{= ctrlPkg }}.ColumnCreator {
 	return []{{= ctrlPkg }}.ColumnCreator {
 {{for _,col := range t.Columns }}
         column.NodeColumnCreator{
+        {{if col.IsReference() || col.IsType() }}
+            Node: node.{{= t.GoName }}().{{= col.ReferenceFunction() }}(),
+        {{else}}
             Node: node.{{= t.GoName }}().{{= col.GoName }}(),
+        {{if}}
             Title: "{{if t.ControlDescription(col) != nil}}{{= t.ControlDescription(col).DefaultLabel }}{{else}}{{col.GoName}}{{if}}",
         {{if col.IsDateOnly}}
             ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultDateFormat},
