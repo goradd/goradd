@@ -45,7 +45,7 @@ type DatabaseI interface {
 	Associate(ctx context.Context,
 		table string,
 		column string,
-		pk string,
+		pk interface{},
 		relatedTable string,
 		relatedColumn string,
 		relatedPks interface{})

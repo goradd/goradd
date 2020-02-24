@@ -100,11 +100,11 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
 }
 
 // delete{{= t.GoName }} deletes the associated record from the database.
-func delete{{= t.GoName }}(ctx context.Context, pk string) {
+func delete{{= t.GoName }}(ctx context.Context, pk {{= t.PrimaryKeyColumn().GoType() }}) {
 {{if len(t.ReverseReferences) == 0 && len(t.ManyManyReferences) == 0}}
 	d := db.GetDatabase("{{t.DbKey}}")
 	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn().DbName }}", pk)
-	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", pk)
+	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(pk))
 {{else}}
     if obj := Load{{= t.GoName }}(ctx, pk, node.{{= t.GoName}}().PrimaryKeyNode()); obj != nil {
         obj.Delete(ctx)
