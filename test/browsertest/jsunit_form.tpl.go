@@ -25,11 +25,24 @@ func (ctrl *JsUnitForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("startButton").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("startButton").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("startButton").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -39,11 +52,24 @@ func (ctrl *JsUnitForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("results").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("results").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("results").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
