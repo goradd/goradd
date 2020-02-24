@@ -16,7 +16,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
             {{if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionCascade}}
             {
                 obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
-                          Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
                           Get()
                 if obj != nil {
@@ -27,7 +27,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
             {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
             {
                 obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
-                          Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
                           Get()
                 if obj != nil {
@@ -39,7 +39,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
             {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
              {
                  c := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
-                           Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                           Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                            Count(false)
                  if c > 0 {
                      panic("Cannot delete a record that has a restricted foreign key pointing to it.")
@@ -50,7 +50,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
             {{if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionCascade}}
             {
                 objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
-                          Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
                           Load()
                 for _,obj := range objs {
@@ -61,7 +61,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
             {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
             {
                 objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
-                          Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
                           Load()
                 for _,obj := range objs {
@@ -73,7 +73,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
             {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
              {
                 c := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
-                          Where(op.Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Count(false)
                 if c > 0 {
                     panic("Cannot delete a record that has restricted foreign keys pointing to it.")
