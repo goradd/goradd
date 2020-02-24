@@ -8,7 +8,6 @@ import (
 
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
-	"github.com/goradd/goradd/pkg/orm/op"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/stringmap"
@@ -242,7 +241,7 @@ func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{
 // CountAddresses returns the number of Address objects in the database connected to this object.
 func (o *personBase) CountAddresses(ctx context.Context) int {
 	return int(QueryAddresses(ctx).
-		Where(op.Equal(node.Address().PersonID(), o.PrimaryKey())).
+		Where(Equal(node.Address().PersonID(), o.PrimaryKey())).
 		Count(false))
 }
 
@@ -365,7 +364,7 @@ func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...in
 // CountProjectsAsManager returns the number of Project objects in the database connected to this object.
 func (o *personBase) CountProjectsAsManager(ctx context.Context) int {
 	return int(QueryProjects(ctx).
-		Where(op.Equal(node.Project().ManagerID(), o.PrimaryKey())).
+		Where(Equal(node.Project().ManagerID(), o.PrimaryKey())).
 		Count(false))
 }
 
@@ -785,7 +784,7 @@ func (o *personBase) update(ctx context.Context) {
 			// Since the other side of the relationship cannot be null, the objects to be detached must be deleted
 			// We take care to only delete objects that are not being reattached
 			objs := QueryAddresses(ctx).
-				Where(op.Equal(node.Address().PersonID(), o.PrimaryKey())).
+				Where(Equal(node.Address().PersonID(), o.PrimaryKey())).
 				Load()
 			// TODO: select only the required fields
 			for _, obj := range objs {
@@ -807,7 +806,7 @@ func (o *personBase) update(ctx context.Context) {
 
 			// Since the other side of the relationship cannot be null, the object to be detached must be deleted
 			obj := QueryEmployeeInfos(ctx).
-				Where(op.Equal(node.EmployeeInfo().PersonID(), o.PrimaryKey())).
+				Where(Equal(node.EmployeeInfo().PersonID(), o.PrimaryKey())).
 				Get()
 			if obj != nil && obj.PrimaryKey() != o.oEmployeeInfo.PrimaryKey() {
 				obj.Delete(ctx)
@@ -823,7 +822,7 @@ func (o *personBase) update(ctx context.Context) {
 
 			// Since the other side of the relationship cannot be null, the object to be detached must be deleted
 			obj := QueryLogins(ctx).
-				Where(op.Equal(node.Login().PersonID(), o.PrimaryKey())).
+				Where(Equal(node.Login().PersonID(), o.PrimaryKey())).
 				Get()
 			if obj != nil && obj.PrimaryKey() != o.oLogin.PrimaryKey() {
 				obj.Delete(ctx)
@@ -837,7 +836,7 @@ func (o *personBase) update(ctx context.Context) {
 		}
 		if o.oProjectsAsManagerIsDirty {
 			objs := QueryProjects(ctx).
-				Where(op.Equal(node.Project().ManagerID(), o.PrimaryKey())).
+				Where(Equal(node.Project().ManagerID(), o.PrimaryKey())).
 				Load()
 			// TODO:select only the required fields
 			for _, obj := range objs {
@@ -1006,7 +1005,7 @@ func (o *personBase) Delete(ctx context.Context) {
 	db.ExecuteTransaction(ctx, d, func() {
 		{
 			objs := QueryAddresses(ctx).
-				Where(op.Equal(node.Address().PersonID(), o.PrimaryKey())).
+				Where(Equal(node.Address().PersonID(), o.PrimaryKey())).
 				Select(node.Address().PrimaryKeyNode()).
 				Load()
 			for _, obj := range objs {
@@ -1016,7 +1015,7 @@ func (o *personBase) Delete(ctx context.Context) {
 		}
 		{
 			obj := QueryEmployeeInfos(ctx).
-				Where(op.Equal(node.EmployeeInfo().PersonID(), o.PrimaryKey())).
+				Where(Equal(node.EmployeeInfo().PersonID(), o.PrimaryKey())).
 				Select(node.EmployeeInfo().PrimaryKeyNode()).
 				Get()
 			if obj != nil {
@@ -1026,7 +1025,7 @@ func (o *personBase) Delete(ctx context.Context) {
 		}
 		{
 			obj := QueryLogins(ctx).
-				Where(op.Equal(node.Login().PersonID(), o.PrimaryKey())).
+				Where(Equal(node.Login().PersonID(), o.PrimaryKey())).
 				Select(node.Login().PrimaryKeyNode()).
 				Get()
 			if obj != nil {
@@ -1036,7 +1035,7 @@ func (o *personBase) Delete(ctx context.Context) {
 		}
 		{
 			c := QueryProjects(ctx).
-				Where(op.Equal(node.Project().ManagerID(), o.PrimaryKey())).
+				Where(Equal(node.Project().ManagerID(), o.PrimaryKey())).
 				Count(false)
 			if c > 0 {
 				panic("Cannot delete a record that has restricted foreign keys pointing to it.")

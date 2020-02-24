@@ -48,11 +48,13 @@ type mysqlColumn struct {
 type mysqlIndex struct {
 	name       string
 	nonUnique  bool
+	tableName  string
 	columnName string
 }
 
 type mysqlForeignKey struct {
-	name                 string
+	constraintName       string
+	tableName            string
 	columnName           string
 	referencedSchema     sql.NullString
 	referencedTableName  sql.NullString
@@ -86,6 +88,7 @@ func NewMysql2 (dbKey string , options DbOptions, config *mysql.Config) (*Mysql5
 }*/
 
 func (m *Mysql5) loadDescription() {
+
 	rawTables := m.getRawTables()
 	description := m.descriptionFromRawTables(rawTables)
 	m.goraddDatabase = NewDatabase(m.dbKey, m.idSuffix, description)
@@ -94,21 +97,20 @@ func (m *Mysql5) loadDescription() {
 func (m *Mysql5) getRawTables() map[string]mysqlTable {
 	var tableMap = make(map[string]mysqlTable)
 
+	indexes, err := m.getIndexes()
+	if err != nil {
+		return nil
+	}
+
+	foreignKeys, err := m.getForeignKeys()
+	if err != nil {
+		return nil
+	}
+
 	tables := m.getTables()
-
 	for _, table := range tables {
-		indexes, err := m.getIndexes(table.name)
-		if err != nil {
-			return nil
-		}
-
-		foreignKeys, err := m.getForeignKeys(table.name)
-		if err != nil {
-			return nil
-		}
-
 		// Do some processing on the foreign keys
-		for _, fk := range foreignKeys {
+		for _, fk := range foreignKeys[table.name] {
 			if fk.referencedColumnName.Valid && fk.referencedTableName.Valid {
 				if _, ok := table.fkMap[fk.columnName]; ok {
 					log.Printf("Warning: Column %s:%s multi-table foreign keys are not supported.", table.name, fk.columnName)
@@ -124,7 +126,7 @@ func (m *Mysql5) getRawTables() map[string]mysqlTable {
 			return nil
 		}
 
-		table.indexes = indexes
+		table.indexes = indexes[table.name]
 		table.columns = columns
 		tableMap[table.name] = table
 	}
@@ -233,21 +235,22 @@ func (m *Mysql5) getColumns(table string) (columns []mysqlColumn, err error) {
 	return columns, err
 }
 
-func (m *Mysql5) getIndexes(table string) (indexes []mysqlIndex, err error) {
+func (m *Mysql5) getIndexes() (indexes map[string][]mysqlIndex, err error) {
 
 	dbName := m.config.DBName
+	indexes = make(map[string][]mysqlIndex)
 
 	rows, err := m.db.Query(fmt.Sprintf(`
 	SELECT
 	index_name,
 	non_unique,
+	table_name,
 	column_name
 	FROM
 	information_schema.statistics
 	WHERE
-	table_name = '%s' AND
 	table_schema = '%s';
-	`, table, dbName))
+	`, dbName))
 
 	if err != nil {
 		log.Fatal(err)
@@ -257,12 +260,14 @@ func (m *Mysql5) getIndexes(table string) (indexes []mysqlIndex, err error) {
 
 	for rows.Next() {
 		index = mysqlIndex{}
-		err = rows.Scan(&index.name, &index.nonUnique, &index.columnName)
+		err = rows.Scan(&index.name, &index.nonUnique, &index.tableName, &index.columnName)
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
 		}
-		indexes = append(indexes, index)
+		tableIndexes := indexes[index.tableName]
+		tableIndexes =	append(tableIndexes, index)
+		indexes[index.tableName] = tableIndexes
 	}
 	err = rows.Err()
 	if err != nil {
@@ -272,46 +277,85 @@ func (m *Mysql5) getIndexes(table string) (indexes []mysqlIndex, err error) {
 	return indexes, err
 }
 
-func (m *Mysql5) getForeignKeys(table string) (foreignKeys []mysqlForeignKey, err error) {
+// getForeignKeys gets information on the foreign keys.
+//
+// Note that querying the information_schema database is SLOW, so we want to do it as few times as possible.
+func (m *Mysql5) getForeignKeys() (foreignKeys map[string][]mysqlForeignKey, err error) {
 	dbName := m.config.DBName
+	fkMap := make(map[string]mysqlForeignKey)
 
 	rows, err := m.db.Query(fmt.Sprintf(`
 	SELECT
-	k.constraint_name,
-	k.column_name,
-	k.referenced_table_schema,
-	k.referenced_table_name,
-	k.referenced_column_name,
-	r.update_rule,
-	r.delete_rule
+	constraint_name,
+	table_name,
+	column_name,
+	referenced_table_name,
+	referenced_column_name
 	FROM
-	information_schema.key_column_usage as k
-	left join information_schema.referential_constraints as r on r.constraint_schema = k.table_schema AND r.constraint_name = k.constraint_name
+	information_schema.key_column_usage
 	WHERE
-	k.table_name = '%s' AND
-	k.table_schema = '%s';
-	`, table, dbName))
-
+	constraint_schema = '%s';
+	`, dbName))
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer rows.Close()
-	var fk mysqlForeignKey
 
 	for rows.Next() {
-		fk = mysqlForeignKey{}
-		err = rows.Scan(&fk.name, &fk.columnName, &fk.referencedSchema, &fk.referencedTableName, &fk.referencedColumnName, &fk.updateRule, &fk.deleteRule)
+		fk := mysqlForeignKey{}
+		err = rows.Scan(&fk.constraintName, &fk.tableName, &fk.columnName, &fk.referencedTableName, &fk.referencedColumnName)
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
 		}
-		foreignKeys = append(foreignKeys, fk)
+		if fk.referencedColumnName.Valid {
+			fkMap[fk.constraintName] = fk
+		}
+	}
+
+	rows.Close()
+
+	rows, err = m.db.Query(fmt.Sprintf(`
+	SELECT
+	constraint_name,
+	update_rule,
+	delete_rule
+	FROM
+	information_schema.referential_constraints
+	WHERE
+	constraint_schema = '%s';
+	`, dbName))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for rows.Next() {
+		var constraint_name string
+		var updateRule, deleteRule sql.NullString
+		err = rows.Scan(&constraint_name, &updateRule, &deleteRule)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if fk, ok := fkMap[constraint_name]; ok {
+			fk.updateRule = updateRule
+			fk.deleteRule = deleteRule
+			fkMap[constraint_name] = fk
+		}
 	}
 	err = rows.Err()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	foreignKeys = make(map[string][]mysqlForeignKey)
+	stringmap.Range(fkMap, func(_ string, val interface{}) bool {
+		fk := val.(mysqlForeignKey)
+		tableKeys := foreignKeys[fk.tableName]
+		tableKeys = append(tableKeys, fk)
+		foreignKeys[fk.tableName] = tableKeys
+		return true
+	})
 	return foreignKeys, err
 }
 
@@ -628,7 +672,7 @@ func (m *Mysql5) getTableDescription(t mysqlTable) TableDescription {
 		if td.GoPlural, ok = opt.(string); !ok {
 			log.Print("Error in table comment for table " + t.name + ": goPlural is not a string")
 		} else {
-			td.GoName = strings.Title(td.GoPlural)
+			td.GoPlural = strings.Title(td.GoPlural)
 		}
 		delete(t.options, "goPlural")
 	}
