@@ -175,3 +175,8 @@ func (cd *Column) ReferenceFunction() string {
 func (cd *Column) ReferenceJsonKey(dd *Database) string {
 	return LowerCaseIdentifier(strings.TrimSuffix(cd.DbName, dd.ForeignKeySuffix))
 }
+
+func (cd *Column) GoType() string {
+	return cd.ColumnType.GoType()
+}
+

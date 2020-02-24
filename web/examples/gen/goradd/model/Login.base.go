@@ -761,7 +761,7 @@ func (o *loginBase) Delete(ctx context.Context) {
 func deleteLogin(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "login", "id", pk)
-	broadcast.Delete(ctx, "goradd", "login", pk)
+	broadcast.Delete(ctx, "goradd", "login", fmt.Sprint(pk))
 }
 
 func (o *loginBase) resetDirtyStatus() {
