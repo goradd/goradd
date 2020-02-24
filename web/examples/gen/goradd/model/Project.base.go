@@ -8,7 +8,6 @@ import (
 
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
-	"github.com/goradd/goradd/pkg/orm/op"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/stringmap"
@@ -633,7 +632,7 @@ func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interfac
 // CountMilestones returns the number of Milestone objects in the database connected to this object.
 func (o *projectBase) CountMilestones(ctx context.Context) int {
 	return int(QueryMilestones(ctx).
-		Where(op.Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
+		Where(Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
 		Count(false))
 }
 
@@ -1211,7 +1210,7 @@ func (o *projectBase) update(ctx context.Context) {
 			// Since the other side of the relationship cannot be null, the objects to be detached must be deleted
 			// We take care to only delete objects that are not being reattached
 			objs := QueryMilestones(ctx).
-				Where(op.Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
+				Where(Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
 				Load()
 			// TODO: select only the required fields
 			for _, obj := range objs {
@@ -1513,7 +1512,7 @@ func (o *projectBase) Delete(ctx context.Context) {
 	db.ExecuteTransaction(ctx, d, func() {
 		{
 			objs := QueryMilestones(ctx).
-				Where(op.Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
+				Where(Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
 				Select(node.Milestone().PrimaryKeyNode()).
 				Load()
 			for _, obj := range objs {
