@@ -20,11 +20,24 @@ This is an example of a very generic form layout in Bootstrap.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("nameText-fg").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("nameText-fg").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("nameText-fg").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -33,11 +46,24 @@ This is an example of a very generic form layout in Bootstrap.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("childrenText-fg").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("childrenText-fg").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("childrenText-fg").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -54,11 +80,24 @@ This is an example of a very generic form layout in Bootstrap.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("singleRadio").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("singleRadio").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("singleRadio").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -67,11 +106,24 @@ This is an example of a very generic form layout in Bootstrap.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("marriedRadio").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("marriedRadio").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("marriedRadio").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -80,11 +132,24 @@ This is an example of a very generic form layout in Bootstrap.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("divorcedRadio").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("divorcedRadio").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("divorcedRadio").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -94,11 +159,24 @@ This is an example of a very generic form layout in Bootstrap.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("dogCheck-fg").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("dogCheck-fg").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("dogCheck-fg").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -109,11 +187,24 @@ This is an example of a very generic form layout in Bootstrap.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("ajaxButton").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("ajaxButton").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("ajaxButton").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -122,11 +213,24 @@ This is an example of a very generic form layout in Bootstrap.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("serverButton").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("serverButton").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("serverButton").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

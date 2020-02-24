@@ -15,11 +15,24 @@ func (ctrl *TablePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("pager").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("pager").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("pager").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -28,11 +41,24 @@ func (ctrl *TablePanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (er
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("table1").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("table1").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

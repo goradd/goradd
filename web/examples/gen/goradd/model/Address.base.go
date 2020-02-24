@@ -636,7 +636,7 @@ func (o *addressBase) Delete(ctx context.Context) {
 func deleteAddress(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "address", "id", pk)
-	broadcast.Delete(ctx, "goradd", "address", pk)
+	broadcast.Delete(ctx, "goradd", "address", fmt.Sprint(pk))
 }
 
 func (o *addressBase) resetDirtyStatus() {

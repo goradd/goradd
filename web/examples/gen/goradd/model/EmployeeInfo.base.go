@@ -568,7 +568,7 @@ func (o *employeeInfoBase) Delete(ctx context.Context) {
 func deleteEmployeeInfo(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "employee_info", "id", pk)
-	broadcast.Delete(ctx, "goradd", "employee_info", pk)
+	broadcast.Delete(ctx, "goradd", "employee_info", fmt.Sprint(pk))
 }
 
 func (o *employeeInfoBase) resetDirtyStatus() {

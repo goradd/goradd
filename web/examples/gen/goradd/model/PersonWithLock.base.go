@@ -580,7 +580,7 @@ func (o *personWithLockBase) Delete(ctx context.Context) {
 func deletePersonWithLock(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "person_with_lock", "id", pk)
-	broadcast.Delete(ctx, "goradd", "person_with_lock", pk)
+	broadcast.Delete(ctx, "goradd", "person_with_lock", fmt.Sprint(pk))
 }
 
 func (o *personWithLockBase) resetDirtyStatus() {

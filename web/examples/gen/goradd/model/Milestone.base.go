@@ -549,7 +549,7 @@ func (o *milestoneBase) Delete(ctx context.Context) {
 func deleteMilestone(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
 	d.Delete(ctx, "milestone", "id", pk)
-	broadcast.Delete(ctx, "goradd", "milestone", pk)
+	broadcast.Delete(ctx, "goradd", "milestone", fmt.Sprint(pk))
 }
 
 func (o *milestoneBase) resetDirtyStatus() {

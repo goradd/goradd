@@ -56,7 +56,7 @@ func init() {
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Dec 03, 2019 at 08:03 PM
+-- Generation Time: Jan 27, 2020 at 01:59 AM
 -- Server version: 5.7.28
 -- PHP Version: 7.2.19</p>
 <p>SET FOREIGN_KEY_CHECKS=0;
@@ -104,7 +104,7 @@ SET time_zone = &#34;+00:00&#34;;</p>
                          ` + "`" + `person_id` + "`" + ` int(11) UNSIGNED DEFAULT NULL,
                          ` + "`" + `username` + "`" + ` varchar(20) NOT NULL,
                          ` + "`" + `password` + "`" + ` varchar(20) DEFAULT NULL,
-                         ` + "`" + `is_enabled` + "`" + ` tinyint(1) NOT NULL
+                         ` + "`" + `is_enabled` + "`" + ` tinyint(1) NOT NULL DEFAULT &#39;1&#39;
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
 <p>--
 -- Dumping data for table ` + "`" + `login` + "`" + `
@@ -323,86 +323,6 @@ SET time_zone = &#34;+00:00&#34;;</p>
 (8, 4),
 (11, 4),
 (12, 4);</p>
-<p>-- --------------------------------------------------------</p>
-<p>--
--- Table structure for table ` + "`" + `tmp` + "`" + `
---</p>
-<p>CREATE TABLE ` + "`" + `tmp` + "`" + ` (
-                       ` + "`" + `d` + "`" + ` decimal(5,2) NOT NULL,
-                       ` + "`" + `i` + "`" + ` smallint(5) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
-<p>--
--- Dumping data for table ` + "`" + `tmp` + "`" + `
---</p>
-<p>INSERT INTO ` + "`" + `tmp` + "`" + ` (` + "`" + `d` + "`" + `, ` + "`" + `i` + "`" + `) VALUES
-(&#39;-123.46&#39;, 12345);</p>
-<p>-- --------------------------------------------------------</p>
-<p>--
--- Table structure for table ` + "`" + `two_key` + "`" + `
---</p>
-<p>CREATE TABLE ` + "`" + `two_key` + "`" + ` (
-                           ` + "`" + `server` + "`" + ` varchar(50) NOT NULL,
-                           ` + "`" + `directory` + "`" + ` varchar(50) NOT NULL,
-                           ` + "`" + `file_name` + "`" + ` varchar(50) NOT NULL,
-                           ` + "`" + `person_id` + "`" + ` int(11) UNSIGNED NOT NULL,
-                           ` + "`" + `project_id` + "`" + ` int(11) UNSIGNED DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
-<p>--
--- Dumping data for table ` + "`" + `two_key` + "`" + `
---</p>
-<p>INSERT INTO ` + "`" + `two_key` + "`" + ` (` + "`" + `server` + "`" + `, ` + "`" + `directory` + "`" + `, ` + "`" + `file_name` + "`" + `, ` + "`" + `person_id` + "`" + `, ` + "`" + `project_id` + "`" + `) VALUES
-(&#39;cnn.com&#39;, &#39;us&#39;, &#39;news&#39;, 1, 1),
-(&#39;google.com&#39;, &#39;drive&#39;, &#39;&#39;, 2, 2),
-(&#39;google.com&#39;, &#39;mail&#39;, &#39;mail.html&#39;, 3, 2),
-(&#39;google.com&#39;, &#39;news&#39;, &#39;news.php&#39;, 4, 3),
-(&#39;mail.google.com&#39;, &#39;mail&#39;, &#39;inbox&#39;, 5, NULL),
-(&#39;yahoo.com&#39;, &#39;&#39;, &#39;&#39;, 6, NULL);</p>
-<p>-- --------------------------------------------------------</p>
-<p>--
--- Table structure for table ` + "`" + `type_test` + "`" + `
---</p>
-<p>CREATE TABLE ` + "`" + `type_test` + "`" + ` (
-                             ` + "`" + `id` + "`" + ` int(11) NOT NULL,
-                             ` + "`" + `date` + "`" + ` date DEFAULT NULL,
-                             ` + "`" + `time` + "`" + ` time DEFAULT NULL,
-                             ` + "`" + `date_time` + "`" + ` datetime DEFAULT NULL,
-                             ` + "`" + `ts` + "`" + ` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-                             ` + "`" + `test_int` + "`" + ` int(11) DEFAULT &#39;5&#39;,
-                             ` + "`" + `test_float` + "`" + ` float DEFAULT NULL,
-                             ` + "`" + `test_double` + "`" + ` double NOT NULL,
-                             ` + "`" + `test_text` + "`" + ` text,
-                             ` + "`" + `test_bit` + "`" + ` tinyint(1) DEFAULT NULL,
-                             ` + "`" + `test_varchar` + "`" + ` varchar(10) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
-<p>--
--- Dumping data for table ` + "`" + `type_test` + "`" + `
---</p>
-<p>INSERT INTO ` + "`" + `type_test` + "`" + ` (` + "`" + `id` + "`" + `, ` + "`" + `date` + "`" + `, ` + "`" + `time` + "`" + `, ` + "`" + `date_time` + "`" + `, ` + "`" + `ts` + "`" + `, ` + "`" + `test_int` + "`" + `, ` + "`" + `test_float` + "`" + `, ` + "`" + `test_double` + "`" + `, ` + "`" + `test_text` + "`" + `, ` + "`" + `test_bit` + "`" + `, ` + "`" + `test_varchar` + "`" + `) VALUES
-(1, &#39;2019-01-02&#39;, &#39;06:17:28&#39;, &#39;2019-01-02 06:17:28&#39;, &#39;2019-01-23 08:52:06&#39;, 5, 1.2, 3.33, &#39;Sample&#39;, 1, &#39;Sample&#39;);</p>
-<p>-- --------------------------------------------------------</p>
-<p>--
--- Table structure for table ` + "`" + `unsupported_types` + "`" + `
---</p>
-<p>CREATE TABLE ` + "`" + `unsupported_types` + "`" + ` (
-                                     ` + "`" + `type_set` + "`" + ` set(&#39;a&#39;,&#39;b&#39;,&#39;c&#39;) NOT NULL,
-                                     ` + "`" + `type_enum` + "`" + ` enum(&#39;a&#39;,&#39;b&#39;,&#39;c&#39;) NOT NULL,
-                                     ` + "`" + `type_decimal` + "`" + ` decimal(10,4) NOT NULL,
-                                     ` + "`" + `type_double` + "`" + ` double NOT NULL,
-                                     ` + "`" + `type_geo` + "`" + ` geometry NOT NULL,
-                                     ` + "`" + `type_tiny_blob` + "`" + ` tinyblob NOT NULL,
-                                     ` + "`" + `type_medium_blob` + "`" + ` mediumblob NOT NULL,
-                                     ` + "`" + `type_varbinary` + "`" + ` varbinary(10) NOT NULL,
-                                     ` + "`" + `type_longtext` + "`" + ` longtext NOT NULL,
-                                     ` + "`" + `type_binary` + "`" + ` binary(10) NOT NULL,
-                                     ` + "`" + `type_small` + "`" + ` smallint(6) NOT NULL,
-                                     ` + "`" + `type_medium` + "`" + ` mediumint(9) NOT NULL,
-                                     ` + "`" + `type_big` + "`" + ` bigint(20) NOT NULL,
-                                     ` + "`" + `type_polygon` + "`" + ` polygon NOT NULL,
-                                     ` + "`" + `type_serial` + "`" + ` bigint(20) UNSIGNED NOT NULL,
-                                     ` + "`" + `type_unsigned` + "`" + ` int(10) UNSIGNED NOT NULL,
-                                     ` + "`" + `type_multFk1` + "`" + ` varchar(50) NOT NULL,
-                                     ` + "`" + `type_multiFk2` + "`" + ` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;</p>
 <p>--
 -- Indexes for dumped tables
 --</p>
@@ -481,46 +401,23 @@ ALTER TABLE ` + "`" + `team_member_project_assn` + "`" + `
     ADD PRIMARY KEY (` + "`" + `team_member_id` + "`" + `,` + "`" + `project_id` + "`" + `) USING BTREE,
     ADD KEY ` + "`" + `IDX_teammemberprojectassn_2` + "`" + ` (` + "`" + `project_id` + "`" + `);</p>
 <p>--
--- Indexes for table ` + "`" + `tmp` + "`" + `
---
-ALTER TABLE ` + "`" + `tmp` + "`" + `
-    ADD UNIQUE KEY ` + "`" + `d` + "`" + ` (` + "`" + `d` + "`" + `);</p>
-<p>--
--- Indexes for table ` + "`" + `two_key` + "`" + `
---
-ALTER TABLE ` + "`" + `two_key` + "`" + `
-    ADD PRIMARY KEY (` + "`" + `server` + "`" + `,` + "`" + `directory` + "`" + `),
-    ADD KEY ` + "`" + `person_id` + "`" + ` (` + "`" + `person_id` + "`" + `),
-    ADD KEY ` + "`" + `project_id` + "`" + ` (` + "`" + `project_id` + "`" + `);</p>
-<p>--
--- Indexes for table ` + "`" + `type_test` + "`" + `
---
-ALTER TABLE ` + "`" + `type_test` + "`" + `
-    ADD PRIMARY KEY (` + "`" + `id` + "`" + `);</p>
-<p>--
--- Indexes for table ` + "`" + `unsupported_types` + "`" + `
---
-ALTER TABLE ` + "`" + `unsupported_types` + "`" + `
-    ADD UNIQUE KEY ` + "`" + `type_serial` + "`" + ` (` + "`" + `type_serial` + "`" + `),
-    ADD KEY ` + "`" + `type_multFk1` + "`" + ` (` + "`" + `type_multFk1` + "`" + `,` + "`" + `type_multiFk2` + "`" + `);</p>
-<p>--
 -- AUTO_INCREMENT for dumped tables
 --</p>
 <p>--
 -- AUTO_INCREMENT for table ` + "`" + `address` + "`" + `
 --
 ALTER TABLE ` + "`" + `address` + "`" + `
-    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;</p>
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;</p>
 <p>--
 -- AUTO_INCREMENT for table ` + "`" + `employee_info` + "`" + `
 --
 ALTER TABLE ` + "`" + `employee_info` + "`" + `
-    MODIFY ` + "`" + `id` + "`" + ` int(11) NOT NULL AUTO_INCREMENT;</p>
+    MODIFY ` + "`" + `id` + "`" + ` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;</p>
 <p>--
 -- AUTO_INCREMENT for table ` + "`" + `login` + "`" + `
 --
 ALTER TABLE ` + "`" + `login` + "`" + `
-    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;</p>
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;</p>
 <p>--
 -- AUTO_INCREMENT for table ` + "`" + `milestone` + "`" + `
 --
@@ -530,7 +427,7 @@ ALTER TABLE ` + "`" + `milestone` + "`" + `
 -- AUTO_INCREMENT for table ` + "`" + `person` + "`" + `
 --
 ALTER TABLE ` + "`" + `person` + "`" + `
-    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;</p>
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=168;</p>
 <p>--
 -- AUTO_INCREMENT for table ` + "`" + `person_type` + "`" + `
 --
@@ -545,22 +442,12 @@ ALTER TABLE ` + "`" + `person_with_lock` + "`" + `
 -- AUTO_INCREMENT for table ` + "`" + `project` + "`" + `
 --
 ALTER TABLE ` + "`" + `project` + "`" + `
-    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;</p>
+    MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;</p>
 <p>--
 -- AUTO_INCREMENT for table ` + "`" + `project_status_type` + "`" + `
 --
 ALTER TABLE ` + "`" + `project_status_type` + "`" + `
     MODIFY ` + "`" + `id` + "`" + ` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;</p>
-<p>--
--- AUTO_INCREMENT for table ` + "`" + `type_test` + "`" + `
---
-ALTER TABLE ` + "`" + `type_test` + "`" + `
-    MODIFY ` + "`" + `id` + "`" + ` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;</p>
-<p>--
--- AUTO_INCREMENT for table ` + "`" + `unsupported_types` + "`" + `
---
-ALTER TABLE ` + "`" + `unsupported_types` + "`" + `
-    MODIFY ` + "`" + `type_serial` + "`" + ` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;</p>
 <p>--
 -- Constraints for dumped tables
 --</p>
@@ -578,7 +465,7 @@ ALTER TABLE ` + "`" + `employee_info` + "`" + `
 -- Constraints for table ` + "`" + `login` + "`" + `
 --
 ALTER TABLE ` + "`" + `login` + "`" + `
-    ADD CONSTRAINT ` + "`" + `person_login` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `);</p>
+    ADD CONSTRAINT ` + "`" + `person_login` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `) ON DELETE CASCADE ON UPDATE CASCADE;</p>
 <p>--
 -- Constraints for table ` + "`" + `milestone` + "`" + `
 --
@@ -606,14 +493,8 @@ ALTER TABLE ` + "`" + `related_project_assn` + "`" + `
 -- Constraints for table ` + "`" + `team_member_project_assn` + "`" + `
 --
 ALTER TABLE ` + "`" + `team_member_project_assn` + "`" + `
-    ADD CONSTRAINT ` + "`" + `person_team_member_project_assn` + "`" + ` FOREIGN KEY (` + "`" + `team_member_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `),
-    ADD CONSTRAINT ` + "`" + `project_team_member_project_assn` + "`" + ` FOREIGN KEY (` + "`" + `project_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `);</p>
-<p>--
--- Constraints for table ` + "`" + `two_key` + "`" + `
---
-ALTER TABLE ` + "`" + `two_key` + "`" + `
-    ADD CONSTRAINT ` + "`" + `two_key_person` + "`" + ` FOREIGN KEY (` + "`" + `person_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `),
-    ADD CONSTRAINT ` + "`" + `two_key_project` + "`" + ` FOREIGN KEY (` + "`" + `project_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `);
+    ADD CONSTRAINT ` + "`" + `person_team_member_project_assn` + "`" + ` FOREIGN KEY (` + "`" + `team_member_id` + "`" + `) REFERENCES ` + "`" + `person` + "`" + ` (` + "`" + `id` + "`" + `) ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT ` + "`" + `project_team_member_project_assn` + "`" + ` FOREIGN KEY (` + "`" + `project_id` + "`" + `) REFERENCES ` + "`" + `project` + "`" + ` (` + "`" + `id` + "`" + `) ON DELETE CASCADE ON UPDATE CASCADE;
 SET FOREIGN_KEY_CHECKS=1;
 </p>
 `)

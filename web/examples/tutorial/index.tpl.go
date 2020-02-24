@@ -70,11 +70,24 @@ function toggleSidebar() {
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("viewSourceButton").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("viewSourceButton").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("viewSourceButton").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -84,11 +97,24 @@ function toggleSidebar() {
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("detailPanel").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("detailPanel").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("detailPanel").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
