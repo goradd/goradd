@@ -1,0 +1,12 @@
+// update.tmpl
+
+{{
+
+// Update loads the cached {{= t.GoName }} object with data from the controls.
+func (p *{{= panelName }}) Update() {
+    p.RangeAllChildren(func(ctrl page.ControlI) {
+        ctrl.UpdateData(p.{{= t.GoName }})
+    })
+}
+
+}}

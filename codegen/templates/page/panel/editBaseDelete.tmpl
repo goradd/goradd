@@ -1,0 +1,10 @@
+// delete.tmpl
+
+{{
+
+// Delete deletes the object currently being edited
+func (p *{{= panelName }}) Delete(ctx context.Context) {
+    p.{{= t.GoName }}.Delete(ctx)
+}
+
+}}

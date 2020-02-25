@@ -206,13 +206,17 @@ func (a *Application) SessionHandler(next http.Handler) http.Handler {
 // PutContext allocates a blank context object for our application specific context data, to be populated later.
 // Activate it by uncommenting the function below, and then edit the accompanying context.go file to add your
 // application specific context data.
+/*
 func (a *Application) PutContext(r *http.Request) *http.Request {
 	ctx := r.Context()
-	ctx = PutContext(ctx)
+	// ctx = auth.PutContext(ctx) uncomment this to use the auth package for authentication
+	ctx = PutLocalContext(ctx) // puts your local context if you need that
 	r = r.WithContext(ctx)
 	// be sure to call the superclass version so the goradd framework can operate
 	return a.Application.PutContext(r)
 }
+*/
+
 
 // ServeStaticFile serves up static html and other files. The default will serve up the generated form index
 // and any files you put in the HTML directory. If you want to serve up files from other directories, uncomment

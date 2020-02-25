@@ -174,6 +174,8 @@ func (m *Modal) AddButton(
 				)
 			}
 		}
+	} else {
+		btn.On(event.Click(), action.Trigger(m.ID(), event.DialogButtonEvent, id))
 	}
 
 	if (options == nil || !options.PushLeft) && !m.foundRight {

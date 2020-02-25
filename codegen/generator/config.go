@@ -20,6 +20,10 @@ var DefaultFormFieldCreator = "github.com/goradd/goradd/pkg/page/control/FormFie
 // DefaultButtonCreator defines what buttons will be used for generated forms.
 var DefaultButtonCreator = "github.com/goradd/goradd/pkg/page/control/ButtonCreator"
 
+// DefaultButtonCreator defines what buttons will be used for generated forms.
+var DefaultDataPagerCreator = "github.com/goradd/goradd/pkg/page/control/DataPagerCreator"
+
+
 // DefaultControlType returns the default control type for the given database column
 // These types are module paths to the control, and the generator will resolve those to figure out the import paths
 // and package names
