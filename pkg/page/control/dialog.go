@@ -207,6 +207,8 @@ func (d *Dialog) AddButton(
 				)
 			}
 		}
+	} else {
+		btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
 	}
 
 	d.Refresh()
