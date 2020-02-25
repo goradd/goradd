@@ -11,6 +11,7 @@ func BootstrapCodegenSetup() {
 	generator.DefaultFormFieldCreator = "github.com/goradd/goradd/pkg/bootstrap/control/FormGroupCreator"
 
 	generator.DefaultButtonCreator = "github.com/goradd/goradd/pkg/bootstrap/control/ButtonCreator"
+	generator.DefaultDataPagerCreator = "github.com/goradd/goradd/pkg/bootstrap/control/DataPagerCreator"
 
 	generator.DefaultControlTypeFunc = func(ref interface{}) (path string) {
 		path = generator.DefaultControlType(ref)

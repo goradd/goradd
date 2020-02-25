@@ -1,0 +1,10 @@
+// save.tmpl
+
+{{
+// Save writes out the data that is currently in the controls
+func (p *{{= panelName }}) Save(ctx context.Context) {
+    p.this().Update()
+    p.{{= t.GoName }}.Save(ctx)
+}
+
+}}

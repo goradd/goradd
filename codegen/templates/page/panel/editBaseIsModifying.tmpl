@@ -1,0 +1,9 @@
+// editMode.tmpl
+
+{{
+// IsModifying returns true if the panel is editing a pre-existing object, and false if it is creating a new one.
+func (p *{{= panelName }}) IsModifying() bool {
+    return p.{{= t.GoName }}.PrimaryKey() != {{= fmt.Sprintf("%v", t.PrimaryKeyColumn().ColumnType.DefaultValue()) }}
+}
+
+}}

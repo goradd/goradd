@@ -28,8 +28,8 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
             DataProviderID: p.ID(),
             RowStylerID: p.ID(),
             PageSize: {{= ctrlPkg }}.DefaultPagerPageSize,
-            Caption: {{= ctrlPkg }}.DataPagerCreator{
-                ID:            p.ID()+"-pager",
+            Caption: {{= codegen.ObjectType(generator.DefaultDataPagerCreator) }} {
+                ID:            p.ID() + "-pager",
                 PagedControl:  p.ID() + "-list",
             },
             OnCellClick: action.Ajax(p.ID(), {{= lcPanelName }}RowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),

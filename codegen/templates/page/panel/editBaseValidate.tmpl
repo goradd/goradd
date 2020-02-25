@@ -34,13 +34,22 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
 
 {{
     if {{for i,_ := range columns}}ctrl{{i i+1}},{{for}}{{- }} := {{for _,col := range columns}}p.Get{{= t.ControlDescription(col).ControlName }}(),{{for}}{{- }}; {{for i,_ := range columns}}ctrl{{i i+1}} != nil && {{for}}{{- 3}}{
-        exists := model.Has{{t.GoName}}By{{= names}}(ctx, {{for i,col := range columns}}ctrl{{i i+1}}.Value().({{= col.ColumnType.GoType() }}),{{for}}{{- }})
-		if exists {
-			isValid = false
-{{for i,_ := range columns}}
-			ctrl{{i i+1}}.SetValidationError(p.GT("This value is already in use, please choose a different one."))
-{{for}}
-		}
+        {{for i,col := range columns}}
+        val{{i i+1 }} := ctrl{{i i+1}}.Value().({{= col.ColumnType.GoType() }})
+        {{for}}
+        changed := !p.IsModifying()
+        {{for i,col := range columns}}
+        changed = changed || val{{i i+1 }} != p.{{= t.GoName }}.{{= col.GoName}}()
+        {{for}}
+        if changed {
+            exists := model.Has{{t.GoName}}By{{= names}}(ctx, {{for i,_ := range columns}}val{{i i+1}},{{for}}{{- }})
+            if exists {
+                isValid = false
+    {{for i,_ := range columns}}
+                ctrl{{i i+1}}.SetValidationError(p.GT("This value is already in use, please choose a different one."))
+    {{for}}
+            }
+        }
     }
 }}
 

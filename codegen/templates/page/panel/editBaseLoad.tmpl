@@ -28,43 +28,4 @@ func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType()
 
 	return nil
 }
-
-// Refresh loads the controls with data from the cached {{= t.GoName }} object.
-func (p *{{= panelName }}) Refresh() {
-    p.RangeAllChildren(func(ctrl page.ControlI) {
-        ctrl.RefreshData(p.{{= t.GoName }})
-    })
-    p.Panel.Refresh()
-}
-
-// Update loads the cached {{= t.GoName }} object with data from the controls.
-func (p *{{= panelName }}) Update() {
-    p.RangeAllChildren(func(ctrl page.ControlI) {
-        ctrl.UpdateData(p.{{= t.GoName }})
-    })
-}
-
-// Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
-func (p *{{= panelName }}) Reload(ctx context.Context) error {
-    return p.this().Load(ctx, p.{{= t.GoName }}.PrimaryKey())
-}
-
-// Save writes out the data that is currently in the controls
-func (p *{{= panelName }}) Save(ctx context.Context) {
-    p.this().Update()
-    p.{{= t.GoName }}.Save(ctx)
-}
-
-// Delete deletes the object currently being edited
-func (p *{{= panelName }}) Delete(ctx context.Context) {
-    p.{{= t.GoName }}.Delete(ctx)
-}
-
-// Data returns the data object being edited as an interface
-func (p *{{= panelName }}) Data() interface{} {
-   return p.{{= t.GoName }}
-}
-
-
-
 }}
