@@ -717,6 +717,8 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 		if c.format != "" {
 			out = fmt.Sprintf(c.format)
 		}
+	case nil:
+		return ""
 	default:
 		if c.format == "" {
 			out = fmt.Sprint(d)
