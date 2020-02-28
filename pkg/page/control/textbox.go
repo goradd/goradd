@@ -286,7 +286,7 @@ func (t *Textbox) Validate(ctx context.Context) bool {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (t *Textbox) UpdateFormValues(ctx *page.Context) {
+func (t *Textbox) UpdateFormValues(ctx context.Context) {
 	if t.readonly {
 		// This would happen if someone was attempting to hack the browser.
 		return
@@ -294,7 +294,7 @@ func (t *Textbox) UpdateFormValues(ctx *page.Context) {
 
 	id := t.ID()
 
-	if v, ok := ctx.FormValue(id); ok {
+	if v, ok := page.GetContext(ctx).FormValue(id); ok {
 		t.value = t.this().Sanitize(v)
 	}
 }

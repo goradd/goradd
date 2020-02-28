@@ -519,7 +519,7 @@ func (t *Table) SetFooterRowStyler(a TableFooterRowAttributer) TableI {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (t *Table) UpdateFormValues(ctx *page.Context) {
+func (t *Table) UpdateFormValues(ctx context.Context) {
 	for _, col := range t.columns {
 		col.UpdateFormValues(ctx)
 	}

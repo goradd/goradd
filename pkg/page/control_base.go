@@ -170,6 +170,7 @@ type ControlI interface {
 	IsOnPage() bool
 
 	Refresh()
+	NeedsRefresh() bool
 
 	Action(context.Context, ActionParams)
 	PrivateAction(context.Context, ActionParams)
@@ -182,7 +183,7 @@ type ControlI interface {
 	HasCallbackAction(eventName string) bool
 
 	// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-	UpdateFormValues(*Context)
+	UpdateFormValues(context.Context)
 
 	Validate(ctx context.Context) bool
 	ValidationState() ValidationState
@@ -456,7 +457,9 @@ func (c *ControlBase) PutCustomScript(ctx context.Context, response *Response) {
 
 }
 
-func (c *ControlBase) needsRefresh() bool {
+// NeedsRefresh returns true if the control needs to be completely redrawn. Generally you control
+// this by calling Refresh(), but subclasses can implement other ways of detecting this.
+func (c *ControlBase) NeedsRefresh() bool {
 	return c.isModified
 }
 
@@ -471,7 +474,7 @@ func (c *ControlBase) needsRefresh() bool {
 // by a parent control before drawing here.
 func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) (err error) {
 
-	if c.needsRefresh() {
+	if c.this().NeedsRefresh() {
 		// simply re-render the control and assume rendering will handle rendering its children
 
 		func() {
@@ -1161,7 +1164,7 @@ func (c *ControlBase) WrapEvent(eventName string, selector string, eventJs strin
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (c *ControlBase) UpdateFormValues(ctx *Context) {
+func (c *ControlBase) UpdateFormValues(ctx context.Context) {
 
 }
 
@@ -1749,7 +1752,7 @@ func (c *ControlBase) MockFormValue(value string) bool {
 
 	grctx := GetContext(ctx)
 	grctx.formVars.Set(c.ID(), value)
-	c.this().UpdateFormValues(grctx)
+	c.this().UpdateFormValues(ctx)
 	return c.this().Validate(ctx)
 }
 

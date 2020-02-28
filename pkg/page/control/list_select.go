@@ -73,10 +73,10 @@ func (l *SelectList) Validate(ctx context.Context) bool {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (l *SelectList) UpdateFormValues(ctx *page.Context) {
+func (l *SelectList) UpdateFormValues(ctx context.Context) {
 	id := l.ID()
 
-	if v, ok := ctx.FormValue(id); ok {
+	if v, ok := page.GetContext(ctx).FormValue(id); ok {
 		l.selectedValue = v
 	}
 }

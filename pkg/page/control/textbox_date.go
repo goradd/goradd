@@ -104,14 +104,14 @@ func (d *DateTextbox) Date() datetime.DateTime {
 	return d.dt
 }
 
-func (d *DateTextbox) UpdateFormValues(ctx *page.Context) {
+func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
 	d.Textbox.UpdateFormValues(ctx)
 
 	if d.readonly {
 		// This would happen if someone was attempting to hack the browser.
 		return
 	}
-	if _, ok := ctx.FormValue(d.ID()); !ok {
+	if _, ok := page.GetContext(ctx).FormValue(d.ID()); !ok {
 		return
 	}
 	t := d.Text()

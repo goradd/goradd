@@ -99,8 +99,8 @@ func (t *SelectTable) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (t *SelectTable) UpdateFormValues(ctx *page.Context) {
-	if data := ctx.CustomControlValue(t.ID(), "selectedId"); data != nil {
+func (t *SelectTable) UpdateFormValues(ctx context.Context) {
+	if data := page.GetContext(ctx).CustomControlValue(t.ID(), "selectedId"); data != nil {
 		t.selectedID = fmt.Sprint(data)
 	}
 }

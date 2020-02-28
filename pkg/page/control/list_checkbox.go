@@ -162,12 +162,13 @@ func (l *CheckboxList) RenderItem(item *ListItem) (h string) {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (l *CheckboxList) UpdateFormValues(ctx *page.Context) {
+func (l *CheckboxList) UpdateFormValues(ctx context.Context) {
 	controlID := l.ID()
+	grctx := page.GetContext(ctx)
 
-	if ctx.RequestMode() == page.Server {
+	if grctx.RequestMode() == page.Server {
 		// Using name attribute to return rendered checkboxes that are turned on.
-		if v, ok := ctx.FormValues(controlID); ok {
+		if v, ok := grctx.FormValues(controlID); ok {
 			l.SetSelectedValuesNoRefresh(v)
 		}
 	}

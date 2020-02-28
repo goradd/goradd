@@ -91,13 +91,14 @@ func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
 	}
 }
 
-func (p *TestController) UpdateFormValues(ctx *page.Context) {
+func (p *TestController) UpdateFormValues(ctx context.Context) {
 	id := p.ID()
+	grctx := page.GetContext(ctx)
 
-	if v := ctx.CustomControlValue(id, "pagestate"); v != nil {
+	if v := grctx.CustomControlValue(id, "pagestate"); v != nil {
 		p.pagestate = v.(string)
 	}
-	if v := ctx.CustomControlValue(id, "jsvalue"); v != nil {
+	if v := grctx.CustomControlValue(id, "jsvalue"); v != nil {
 		p.latestJsValue = v
 	}
 

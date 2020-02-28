@@ -33,7 +33,7 @@ func (c *Checkbox) DrawingAttributes(ctx context.Context) html.Attributes {
 
 // UpdateFormValues is an internal call that lets us reflect the value of the checkbox on the form.
 // You do not normally need to call this function.
-func (c *Checkbox) UpdateFormValues(ctx *page.Context) {
+func (c *Checkbox) UpdateFormValues(ctx context.Context) {
 	c.UpdateCheckboxFormValues(ctx)
 }
 

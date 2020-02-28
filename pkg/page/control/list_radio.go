@@ -196,10 +196,10 @@ func renderCell(item *ListItem, controlHtml string, hasColumns bool) string {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (l *RadioList) UpdateFormValues(ctx *page.Context) {
+func (l *RadioList) UpdateFormValues(ctx context.Context) {
 	controlID := l.ID()
 
-	if v, ok := ctx.FormValue(controlID); ok {
+	if v, ok := page.GetContext(ctx).FormValue(controlID); ok {
 		l.selectedValue = v
 	}
 }

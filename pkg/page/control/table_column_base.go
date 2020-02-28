@@ -52,7 +52,7 @@ type ColumnI interface {
 	HeaderAttributes(ctx context.Context, row int, col int) html.Attributes
 	FooterAttributes(ctx context.Context, row int, col int) html.Attributes
 	ColTagAttributes() html.Attributes
-	UpdateFormValues(ctx *page.Context)
+	UpdateFormValues(ctx context.Context)
 	AddActions(ctrl page.ControlI)
 	Action(ctx context.Context, params page.ActionParams)
 	SetCellTexter(s CellTexter) ColumnI
@@ -418,7 +418,7 @@ func (c *ColumnBase) IsSortable() bool {
 // UpdateFormValues is called by the system whenever values are sent by client controls.
 // This default version does nothing. Columns that need to record information (checkbox columns for example), should
 // implement this.
-func (c *ColumnBase) UpdateFormValues(ctx *page.Context) {}
+func (c *ColumnBase) UpdateFormValues(ctx context.Context) {}
 
 func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 

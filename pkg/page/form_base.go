@@ -46,7 +46,7 @@ type FormI interface {
 	LoadControls(ctx context.Context)
 	Exit(ctx context.Context, err error)
 
-	updateValues(ctx *Context)
+	updateValues(ctx context.Context)
 	writeAllStates(ctx context.Context)
 }
 
@@ -223,7 +223,7 @@ func (f *FormBase) resetDrawingFlags() {
 }
 
 
-func (f *FormBase) updateValues(ctx *Context) {
+func (f *FormBase) updateValues(ctx context.Context) {
 	f.RangeAllChildren(func(child ControlI) {
 		// Parent is updated after children so that parent can read the state of the children
 		// to update any internal caching of the state. Parent can then delete or recreate children

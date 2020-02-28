@@ -2373,7 +2373,7 @@ goradd.widget("goradd.Widget", goradd.g, {
             this._do1(f);
         }
     },
-    _do1(f) {
+    _do1: function(f) {
         var self = this;
         var opts = f();
         _idCounter++;
@@ -2415,7 +2415,7 @@ goradd.widget("goradd.Widget", goradd.g, {
         var encoded = self._encodeData(opts.data);
         objRequest.send(encoded);
     },
-    _encodeData(data) {
+    _encodeData: function(data) {
         var a = [];
         var key;
         for (key in data) {
