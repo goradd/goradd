@@ -76,7 +76,7 @@ func (c *RadioButton) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (c *RadioButton) UpdateFormValues(ctx *page.Context) {
+func (c *RadioButton) UpdateFormValues(ctx context.Context) {
 	c.UpdateRadioFormValues(ctx, c.Group())
 }
 

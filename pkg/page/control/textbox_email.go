@@ -71,7 +71,7 @@ func (t *EmailTextbox) Validate(ctx context.Context) bool {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (t *EmailTextbox) UpdateFormValues(ctx *page.Context) {
+func (t *EmailTextbox) UpdateFormValues(ctx context.Context) {
 	t.Textbox.UpdateFormValues(ctx)
 	if t.Text() == "" {
 		t.items = nil

@@ -139,11 +139,12 @@ func (c *CheckboxColumn) ResetChanges() {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
-	if ctx.RequestMode() == page.Server {
+func (c *CheckboxColumn) UpdateFormValues(ctx context.Context) {
+	grctx := page.GetContext(ctx)
+	if grctx.RequestMode() == page.Server {
 		// Using standard form submission rules. Only ON checkboxes get sent to us, so we have to figure out what got turned off
 		recent := make(map[string]bool)
-		if values, ok := ctx.FormValues(c.ParentTable().ID() + "_" + c.ID()); ok {
+		if values, ok := grctx.FormValues(c.ParentTable().ID() + "_" + c.ID()); ok {
 			for _, value := range values {
 				recent[value] = true
 			}
@@ -171,7 +172,7 @@ func (c *CheckboxColumn) UpdateFormValues(ctx *page.Context) {
 	} else {
 		// We just get notified of the ids of checkboxes that changed since the last time we checked
 		for k, v := range c.current {
-			if v2, ok := ctx.FormValue(c.ParentTable().ID() + "_" + c.ID() + "_" + k); ok {
+			if v2, ok := grctx.FormValue(c.ParentTable().ID() + "_" + c.ID() + "_" + k); ok {
 				b2 := page.ConvertToBool(v2)
 				if v != b2 {
 					c.changes[k] = b2

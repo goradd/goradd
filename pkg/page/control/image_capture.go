@@ -164,8 +164,8 @@ func (i *ImageCapture) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // UpdateFormValues is called by the framework.
-func (i *ImageCapture) UpdateFormValues(ctx *page.Context) {
-	if data := ctx.CustomControlValue(i.ID(), "data"); data != nil {
+func (i *ImageCapture) UpdateFormValues(ctx context.Context) {
+	if data := page.GetContext(ctx).CustomControlValue(i.ID(), "data"); data != nil {
 		s := data.(string)
 		index := strings.Index(s, ",")
 		if newdata, err := base64.StdEncoding.DecodeString(s[index+1:]); err == nil {

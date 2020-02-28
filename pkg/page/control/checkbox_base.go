@@ -232,12 +232,13 @@ func (c *CheckboxBase) Deserialize(d page.Decoder) (err error) {
 
 // UpdateCheckboxFormValues is used by subclasses of CheckboxBase to update their internal state
 // if they are a checkbox type of control.
-func (c *CheckboxBase) UpdateCheckboxFormValues(ctx *page.Context) {
+func (c *CheckboxBase) UpdateCheckboxFormValues(ctx context.Context) {
 	id := c.ID()
+	grctx := page.GetContext(ctx)
 
-	if v, ok := ctx.FormValue(id); ok {
+	if v, ok := grctx.FormValue(id); ok {
 		c.SetCheckedNoRefresh(v)
-	} else if ctx.RequestMode() == page.Server && c.IsOnPage() {
+	} else if grctx.RequestMode() == page.Server && c.IsOnPage() {
 		// We will not get a value if an item is not checked. But since this is a POST, all values on page
 		// should send something if its checked, therefore we know its not checked.
 		c.SetCheckedNoRefresh(false)
@@ -246,18 +247,19 @@ func (c *CheckboxBase) UpdateCheckboxFormValues(ctx *page.Context) {
 
 // UpdateRadioFormValues is used by subclasses of CheckboxBase to update their internal state
 // if they are a radioButton type of control.
-func (c *CheckboxBase) UpdateRadioFormValues(ctx *page.Context, group string) {
+func (c *CheckboxBase) UpdateRadioFormValues(ctx context.Context, group string) {
 	id := c.ID()
+	grctx := page.GetContext(ctx)
 
 	if group != "" {
-		if v, ok := ctx.FormValue(group); ok {
+		if v, ok := grctx.FormValue(group); ok {
 			c.SetCheckedNoRefresh(v == c.ID())
 		}
 	} else {
 		// a radio button without a group makes little sense. This is here in case this is the basis for some javascript control.
-		if v, ok := ctx.FormValue(id); ok {
+		if v, ok := grctx.FormValue(id); ok {
 			c.SetCheckedNoRefresh(v)
-		} else if ctx.RequestMode() == page.Server && c.IsOnPage() {
+		} else if grctx.RequestMode() == page.Server && c.IsOnPage() {
 			c.SetCheckedNoRefresh(false)
 		}
 	}

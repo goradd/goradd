@@ -124,7 +124,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 			return fmt.Errorf("CSRF error: %s", p.stateId)
 		}
 
-		p.Form().updateValues(grCtx) // Tell all the controls to update their values.
+		p.Form().updateValues(ctx) // Tell all the controls to update their values.
 		// if this is an event response, do the actions associated with the event
 		if p.HasControl(grCtx.actionControlID) {
 			p.GetControl(grCtx.actionControlID).control().doAction(ctx)

@@ -77,10 +77,10 @@ func (l *MultiselectList) Validate(ctx context.Context) bool {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (l *MultiselectList) UpdateFormValues(ctx *page.Context) {
+func (l *MultiselectList) UpdateFormValues(ctx context.Context) {
 	id := l.ID()
 
-	if a, ok := ctx.FormValues(id); ok {
+	if a, ok := page.GetContext(ctx).FormValues(id); ok {
 		l.selectedValues = map[string]bool{}
 		for _, v := range a {
 			l.selectedValues[v] = true
