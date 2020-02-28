@@ -6,7 +6,7 @@
         Each attribute is a key and value separated by an = sign.
         key/value groups should be space separated.
         values should be surrounded by quotes.}}
-{{define draw}}
+{{define draw 2}}
 {{if `$2` == ""}}
     {{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
 {{else}}
@@ -16,7 +16,7 @@
 
 {{# drawChild is like draw, but the given id is appended to the parent control's id. }}
 
-{{define drawChild}}
+{{define drawChild 2}}
 {{if `$2` == ""}}
     {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, buf) }}
 {{else}}
@@ -25,7 +25,7 @@
 {{end}}
 
 
-{{define drawIf}}
+{{define drawIf 2}}
 {{if ctrl.Page().HasControl("$1")}}
     {{if `$2` == ""}}
         {{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
@@ -35,7 +35,7 @@
 {{if}}
 {{end}}
 
-{{define drawChildIf}}
+{{define drawChildIf 2}}
 {{if ctrl.Page().HasControl(ctrl.ID() + "$1")}}
     {{if `$2` == ""}}
         {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, buf) }}
@@ -45,7 +45,7 @@
 {{if}}
 {{end}}
 
-{{define setAttributes}}
+{{define setAttributes 2}}
 {{g
 if ctrl.Page().HasControl("$1") {
     ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`)
@@ -53,7 +53,7 @@ if ctrl.Page().HasControl("$1") {
 }}
 {{end}}
 
-{{define setChildAttributes}}
+{{define setChildAttributes 2}}
 {{g
 if ctrl.Page().HasControl(ctrl.ID() + "$1") {
     ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`)
@@ -61,7 +61,7 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
 }}
 {{end}}
 
-{{define setLabelAttributes}}
+{{define setLabelAttributes 2}}
 {{g
 if ctrl.Page().HasControl("$1") {
     ctrl.Page().GetControl("$1").(control.FormFieldWrapperI).LabelAttributes().Merge(`$2`)
@@ -69,7 +69,7 @@ if ctrl.Page().HasControl("$1") {
 }}
 {{end}}
 
-{{define setChildLabelAttributes}}
+{{define setChildLabelAttributes 2}}
 {{g
 if ctrl.Page().HasControl(ctrl.ID() + "$1") {
     ctrl.Page().GetControl(ctrl.ID() + "$1").(control.FormFieldWrapperI).LabelAttributes().Merge(`$2`)
@@ -77,8 +77,8 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
 }}
 {{end}}
 
-
-
+{{# This defaults the package fragment to the name of the directory of the template. You can redefine it if needed in your individual template}}
+{{define package}}{{templateDir}}{{end}}
 
 
 {{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}
