@@ -39,9 +39,11 @@ func LoadBootstrap(form page.FormI) {
 				html.NewAttributes().Set("integrity", "sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM").Set("crossorigin", "anonymous"))
 			form.AddStyleSheetFile("https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css",
 				html.NewAttributes().Set("integrity", "sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T").Set("crossorigin", "anonymous"))
+			form.AddJavaScriptFile(filepath.Join(BootstrapAssets(), "js", "gr.bs.shim.js"), false, nil)
 		} else {
 			form.AddJavaScriptFile(filepath.Join(BootstrapAssets(), "js", "bootstrap.bundle.js"), false, nil)
 			form.AddStyleSheetFile(filepath.Join(BootstrapAssets(), "css", "bootstrap.min.css"), nil)
+			form.AddJavaScriptFile(filepath.Join(BootstrapAssets(), "js", "gr.bs.shim.js"), false, nil)
 		}
 	}
 }
