@@ -30,7 +30,7 @@ type RadioList struct {
 	SelectList
 	// columnCount is the number of columns to force the list to display. It specifies the maximum number
 	// of objects placed in each row wrapper. Keeping this at zero (the default)
-	// will result in no row wrappers.
+	// will result in no row wrappers and no table wrapper.
 	columnCount int
 	// direction controls how items are placed when there are columns.
 	direction LayoutDirection
@@ -133,7 +133,9 @@ func (l *RadioList) DrawingAttributes(ctx context.Context) html.Attributes {
 // DrawInnerHtml is called by the framework to draw the contents of the list.
 func (l *RadioList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
 	h := l.this().RenderItems(l.items)
-	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
+	if l.columnCount > 0 {
+		h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
+	}
 	buf.WriteString(h)
 	return nil
 }

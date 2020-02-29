@@ -115,12 +115,19 @@ func RemoveClass(controlID string, classes string) widgetAction {
 	return WidgetFunction(controlID, "class", "-" + classes)
 }
 
+// Show will show the given control if it is hidden
 func Show(controlID string) widgetAction {
 	return WidgetFunction(controlID, "show")
 }
 
+// Hide will hide the given control
 func Hide(controlID string) widgetAction {
 	return WidgetFunction(controlID, "hide")
+}
+
+// Refresh will cause the given control to redraw
+func Refresh(id string) goraddAction {
+	return GoraddFunction("refresh", id)
 }
 
 type redirectAction struct {

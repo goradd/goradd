@@ -11,7 +11,7 @@ type RadioListI interface {
 	control.RadioListI
 }
 
-// RadioList is a multi-select control that presents its choices as a list of checkboxes.
+// RadioList is a multi-select control that presents its choices as a list of radio buttons.
 // Styling is provided by divs and spans that you can provide css for in your style sheets. The
 // goradd.css file has default styling to handle the basics. It wraps the whole thing in a div that can be set
 // to scroll as well, so that the final structure can be styled like a multi-table table, or a single-table
@@ -62,7 +62,7 @@ func (l *RadioList) DrawingAttributes(ctx context.Context) html.Attributes {
 
 // RenderItem is called by the framework to render a single item in the list.
 func (l *RadioList) RenderItem(item *control.ListItem) (h string) {
-	selected := l.SelectedItem().ID() != item.ID()
+	selected := l.SelectedItem().ID() == item.ID()
 	h = renderItemControl(item, "radio", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)
 	return

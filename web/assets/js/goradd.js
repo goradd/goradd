@@ -1108,6 +1108,15 @@ goradd = {
         window.location = newLocation
     },
     /**
+     * refresh will cause the given goradd control to refresh
+     * @param {string} id
+     */
+    refresh: function(id) {
+        _refresh.push(id);
+        goradd.updateForm();
+    },
+
+    /**
      * proxyVal returns a value for the Proxy control
      * @param {Event} event
      * @returns {*}
