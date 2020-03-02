@@ -10,16 +10,10 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
     if t.Indexes != nil {
         for _,idx := range t.Indexes {
             if idx.IsUnique {
-                var columns []*db.Column
                 var names string
 
                 updateable := false
-                for _,name := range idx.ColumnNames {
-                    col := t.GetColumnByDbName(name)
-                    if col == nil {
-                        panic("Cannot find column " + name + " of table " + t.DbName)
-                    }
-                    columns = append(columns, col)
+                for _,col := range idx.Columns {
                     names += col.GoName
                     cd := t.ControlDescription(col)
                     updateable = updateable || (cd.Generator.GenerateUpdate(col,cd) != "")
@@ -33,19 +27,19 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
                 // Fix this if this becomes an issue some day
 
 {{
-    if {{for i,_ := range columns}}ctrl{{i i+1}},{{for}}{{- }} := {{for _,col := range columns}}p.Get{{= t.ControlDescription(col).ControlName }}(),{{for}}{{- }}; {{for i,_ := range columns}}ctrl{{i i+1}} != nil && {{for}}{{- 3}}{
-        {{for i,col := range columns}}
+    if {{for i,_ := range idx.Columns}}ctrl{{i i+1}},{{for}}{{- }} := {{for _,col := range idx.Columns}}p.Get{{= t.ControlDescription(col).ControlName }}(),{{for}}{{- }}; {{for i,_ := range idx.Columns}}ctrl{{i i+1}} != nil && {{for}}{{- 3}}{
+        {{for i,col := range idx.Columns}}
         val{{i i+1 }} := ctrl{{i i+1}}.Value().({{= col.ColumnType.GoType() }})
         {{for}}
         changed := !p.IsModifying()
-        {{for i,col := range columns}}
+        {{for i,col := range idx.Columns}}
         changed = changed || val{{i i+1 }} != p.{{= t.GoName }}.{{= col.GoName}}()
         {{for}}
         if changed {
-            exists := model.Has{{t.GoName}}By{{= names}}(ctx, {{for i,_ := range columns}}val{{i i+1}},{{for}}{{- }})
+            exists := model.Has{{t.GoName}}By{{= names}}(ctx, {{for i,_ := range idx.Columns}}val{{i i+1}},{{for}}{{- }})
             if exists {
                 isValid = false
-    {{for i,_ := range columns}}
+    {{for i,_ := range idx.Columns}}
                 ctrl{{i i+1}}.SetValidationError(p.GT("This value is already in use, please choose a different one."))
     {{for}}
             }
