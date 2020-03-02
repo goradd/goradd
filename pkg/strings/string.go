@@ -73,8 +73,8 @@ func JoinContent(sep string, items... string) string {
 	return strings.Join(l, sep)
 }
 
-// Choose is like the ternary operator ?. It returns the first string on true, and the second on false.
-func Choose(cond bool, trueVal, falseVal string) string {
+// If is like the ternary operator ?. It returns the first string on true, and the second on false.
+func If(cond bool, trueVal, falseVal string) string {
 	if cond {
 		return trueVal
 	} else {

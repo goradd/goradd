@@ -23,7 +23,7 @@ func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
 	} else {
 
 {{
-
+// {{= col.GoName }} returns the loaded value of {{= col.GoName }}.
 func (o *{{privateName}}Base) {{= col.GoName }}() {{= col.ColumnType.GoType() }} {
 	if o._restored && !o.{{= col.ModelName() }}IsValid {
 		panic ("{{= col.ModelName() }} was not selected in the last query and has not been set, and so is not valid")
@@ -45,6 +45,17 @@ func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
 // {{= col.GoName }}IsNull returns true if the related database value is null.
 func (o *{{privateName}}Base) {{= col.GoName }}IsNull() bool {
 	return o.{{= col.ModelName() }}IsNull
+}
+
+// {{= col.GoName }}_I returns the loaded value of {{= col.GoName }} as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *{{privateName}}Base) {{= col.GoName }}_I() interface{} {
+	if o._restored && !o.{{= col.ModelName() }}IsValid {
+		panic ("{{= col.ModelName() }} was not selected in the last query and has not been set, and so is not valid")
+	} else if o.{{= col.ModelName() }}IsNull {
+	    return nil
+	}
+	return o.{{= col.ModelName() }}
 }
 
 }}

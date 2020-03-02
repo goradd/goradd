@@ -160,6 +160,7 @@ func (p *TestController) waitSubmit(desc string) {
 
 func (p *TestController) callWidgetFunction(id string, funcName string, params []interface{}, description string) interface{} {
 	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.latestJsValue = nil
 	p.ExecuteWidgetFunction("callWidgetFunction", len(p.stepDescriptions), id, funcName, params)
 	p.waitStep()
 	return p.latestJsValue
@@ -167,6 +168,7 @@ func (p *TestController) callWidgetFunction(id string, funcName string, params [
 
 func (p *TestController) getHtmlElementInfo(selector string, attribute string, description string) interface{} {
 	p.stepDescriptions = append(p.stepDescriptions, description)
+	p.latestJsValue = nil
 	p.ExecuteWidgetFunction("getHtmlElementInfo", len(p.stepDescriptions), selector, attribute)
 	p.waitStep()
 	return p.latestJsValue
