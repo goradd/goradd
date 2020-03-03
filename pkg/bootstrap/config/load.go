@@ -5,7 +5,6 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"path/filepath"
-	"runtime"
 )
 
 // Loader is the injected loader. Set it during your application's initialization
@@ -46,11 +45,6 @@ func LoadBootstrap(form page.FormI) {
 			form.AddJavaScriptFile(filepath.Join(BootstrapAssets(), "js", "gr.bs.shim.js"), false, nil)
 		}
 	}
-}
-
-func BootstrapAssets() string {
-	_, filename, _, _ := runtime.Caller(0)
-	return filepath.Join(filepath.Dir(filepath.Dir(filename)), "assets")
 }
 
 func init() {
