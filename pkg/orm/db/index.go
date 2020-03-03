@@ -5,6 +5,6 @@ package db
 type Index struct {
 	// IsUnique indicates whether the index is for a unique index
 	IsUnique bool
-	// ColumnNames are the columns that are part of the index
-	ColumnNames []string
+	// Columns are the columns that are part of the index
+	Columns []*Column
 }

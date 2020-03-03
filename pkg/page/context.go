@@ -217,6 +217,17 @@ func (ctx *Context) CustomControlValue(id string, key string) interface{} {
 	return nil
 }
 
+// HasCustomControlValue returns true if the given controls has a value for the given key. If you
+// are potentially expecting a nil value, you can use this to know that a value is present.
+func (ctx *Context) HasCustomControlValue(id string, key string) bool {
+	if m, ok := ctx.customControlValues[id]; ok {
+		_, ok2 := m[key]
+		return ok2
+	}
+	return false
+}
+
+
 // fillApp fills the app structure with app specific information from the request
 // Do not panic here!
 func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {

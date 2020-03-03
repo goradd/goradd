@@ -220,7 +220,15 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 	}
 
 	for _,idx := range desc.Indexes {
-		t.Indexes = append(t.Indexes, Index{IsUnique:idx.IsUnique, ColumnNames:idx.ColumnNames})
+		var columns []*Column
+		for _,name := range idx.ColumnNames {
+			col := t.GetColumn(name)
+			if col == nil {
+				panic("Cannot find column " + name + " of table " + t.DbName)
+			}
+			columns = append (columns, col)
+		}
+		t.Indexes = append(t.Indexes, Index{IsUnique:idx.IsUnique, Columns:columns})
 	}
 	return t
 }

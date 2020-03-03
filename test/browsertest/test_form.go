@@ -9,9 +9,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
 	event2 "github.com/goradd/goradd/pkg/messageServer/event"
+	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -460,6 +462,14 @@ func (form *TestForm) testOne(testName string) {
 
 func (form *TestForm) NoSerialize() bool {
 	return true
+}
+
+// Makes a sql context for the purpose of doing database tests
+// TODO: This really needs to be a generalized context so NoSQL can be included
+func MakeSqlContext() context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, goradd.SqlContext, &db.SqlContext{}) // needed for transactions
+	return ctx
 }
 
 func init() {
