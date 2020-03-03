@@ -40,6 +40,8 @@ type ReferenceNode struct {
 	refColumn string
 	// Is this pointing to a type table item?
 	isTypeTable bool
+	// The type of item acting as a pointer. This should be the same on both sides of the reference.
+	goType GoColumnType
 }
 
 // NewReferenceNode creates a forward reference node.
@@ -52,6 +54,7 @@ func NewReferenceNode(
 	refTableName string,
 	refColumn string, // only used in NoSQL situation
 	isType bool,
+	goType GoColumnType,
 ) *ReferenceNode {
 	n := &ReferenceNode{
 		dbKey:        dbKey,
@@ -62,6 +65,7 @@ func NewReferenceNode(
 		refTable:     refTableName,
 		refColumn:    refColumn,
 		isTypeTable:  isType,
+		goType: 	  goType,
 	}
 	return n
 }
@@ -76,6 +80,7 @@ func (n *ReferenceNode) copy() NodeI {
 		refTable:      n.refTable,
 		refColumn:     n.refColumn,
 		isTypeTable:   n.isTypeTable,
+		goType: 	   n.goType,
 		nodeAlias:     nodeAlias{n.alias},
 		nodeCondition: nodeCondition{n.condition},
 	}
@@ -120,14 +125,7 @@ func (n *ReferenceNode) goName() string {
 
 // Return a column node for the foreign key that represents the reference to the other table
 func (n *ReferenceNode) relatedColumnNode() *ColumnNode {
-	var colType GoColumnType
-	if n.isTypeTable {
-		colType = ColTypeUnsigned
-	} else {
-		colType = ColTypeString
-	}
-
-	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, colType, false)
+	n2 := NewColumnNode(n.dbKey, n.dbTable, n.dbColumn, n.goColumnName, n.goType, false)
 	SetParentNode(n2, n.getParent())
 	return n2
 }
@@ -153,6 +151,7 @@ type referenceNodeEncoded struct {
 	RefTable string
 	RefColumn string
 	IsTypeTable bool
+	GoType GoColumnType
 }
 
 
@@ -173,6 +172,7 @@ func (n *ReferenceNode) GobEncode() (data []byte, err error) {
 		RefTable: n.refTable,
 		RefColumn: n.refColumn,
 		IsTypeTable: n.isTypeTable,
+		GoType:n.goType,
 	}
 
 
@@ -203,6 +203,8 @@ func (n *ReferenceNode) GobDecode(data []byte) (err error) {
 	n.refTable = s.RefTable
 	n.refColumn = s.RefColumn
 	n.isTypeTable = s.IsTypeTable
+	n.goType = s.GoType
+
 	SetParentNode(n, s.Parent)
 	return
 }

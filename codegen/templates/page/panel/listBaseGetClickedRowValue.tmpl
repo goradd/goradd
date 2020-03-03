@@ -7,7 +7,7 @@ func (p *{{= panelName }}) GetClickedRowValue(a page.ActionParams) string {
 	if s := a.ActionValueString(); s != "" {
 	    return s
 	} else {
-	    return a.EventValueString()
+	    return ""
 	}
 }
 

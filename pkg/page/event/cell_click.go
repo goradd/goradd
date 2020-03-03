@@ -46,10 +46,19 @@ const (
  */
 func CellClick() *page.Event {
 	e := page.NewEvent("click").
-		Selector("th,td").
+		Selector("td").
 		ActionValue(javascript.JsCode(CellClickDefault))
 	return e
 }
+
+// HeaderCellClick responds to clicks on header cells (th)
+func HeaderCellClick() *page.Event {
+	e := page.NewEvent("click").
+		Selector("th").
+		ActionValue(javascript.JsCode(CellClickDefault))
+	return e
+}
+
 
 // RowDataActionValue returns code to use in the ActionValue to to return the data value of the row clicked on.
 // The code can be used directly, or in a map or array.
