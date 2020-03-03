@@ -1982,3 +1982,14 @@ func (c *ControlBase) AddControls(ctx context.Context, creators ...Creator) {
 	}
 }
 
+// FireTestMarker sends a marker signal to the browser test runner. You would normally send this from some place
+// in your application if you want to wait until your app has gotten to that spot. Call WaitMarker on the test
+// form to wait for the marker.
+func (c *ControlBase) FireTestMarker(marker string) {
+	if config.Debug {
+		log.FrameworkDebug("Firing test marker: ", marker)
+		c.ParentForm().Response().ExecuteJsFunction("goradd.postMarker", marker)
+	}
+}
+
+
