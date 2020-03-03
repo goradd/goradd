@@ -118,7 +118,7 @@ func testSelectListServerSubmit(t *browsertest.TestForm)  {
 }
 
 // testSelectListSubmit does a variety of submits using the given button. We use this to double check the various
-// results we might get after a submission, as well as nsure that the ajax and server submits produce
+// results we might get after a submission, as well as ensure that the ajax and server submits produce
 // the same results.
 func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.ChooseListValue("selectListWithSize", "2")
