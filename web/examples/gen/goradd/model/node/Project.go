@@ -98,6 +98,7 @@ func (n *projectNode) ProjectStatusType() *projectStatusTypeNode {
 			"project_status_type",
 			"id",
 			true,
+			query.ColTypeUnsigned,
 		),
 	}
 	query.SetParentNode(cn, n)
@@ -130,6 +131,7 @@ func (n *projectNode) Manager() *personNode {
 			"person",
 			"id",
 			false,
+			query.ColTypeString,
 		),
 	}
 	query.SetParentNode(cn, n)

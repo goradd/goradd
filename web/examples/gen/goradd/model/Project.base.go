@@ -198,6 +198,7 @@ func (o *projectBase) IDIsValid() bool {
 	return o._restored && o.idIsValid
 }
 
+// Num returns the loaded value of Num.
 func (o *projectBase) Num() int {
 	if o._restored && !o.numIsValid {
 		panic("num was not selected in the last query and has not been set, and so is not valid")
@@ -220,6 +221,7 @@ func (o *projectBase) SetNum(v int) {
 
 }
 
+// ManagerID returns the loaded value of ManagerID.
 func (o *projectBase) ManagerID() string {
 	if o._restored && !o.managerIDIsValid {
 		panic("managerID was not selected in the last query and has not been set, and so is not valid")
@@ -235,6 +237,17 @@ func (o *projectBase) ManagerIDIsValid() bool {
 // ManagerIDIsNull returns true if the related database value is null.
 func (o *projectBase) ManagerIDIsNull() bool {
 	return o.managerIDIsNull
+}
+
+// ManagerID_I returns the loaded value of ManagerID as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *projectBase) ManagerID_I() interface{} {
+	if o._restored && !o.managerIDIsValid {
+		panic("managerID was not selected in the last query and has not been set, and so is not valid")
+	} else if o.managerIDIsNull {
+		return nil
+	}
+	return o.managerID
 }
 
 // Manager returns the current value of the loaded Manager, and nil if its not loaded.
@@ -298,6 +311,7 @@ func (o *projectBase) SetManager(v *Person) {
 	}
 }
 
+// Name returns the loaded value of Name.
 func (o *projectBase) Name() string {
 	if o._restored && !o.nameIsValid {
 		panic("name was not selected in the last query and has not been set, and so is not valid")
@@ -320,6 +334,7 @@ func (o *projectBase) SetName(v string) {
 
 }
 
+// Description returns the loaded value of Description.
 func (o *projectBase) Description() string {
 	if o._restored && !o.descriptionIsValid {
 		panic("description was not selected in the last query and has not been set, and so is not valid")
@@ -335,6 +350,17 @@ func (o *projectBase) DescriptionIsValid() bool {
 // DescriptionIsNull returns true if the related database value is null.
 func (o *projectBase) DescriptionIsNull() bool {
 	return o.descriptionIsNull
+}
+
+// Description_I returns the loaded value of Description as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *projectBase) Description_I() interface{} {
+	if o._restored && !o.descriptionIsValid {
+		panic("description was not selected in the last query and has not been set, and so is not valid")
+	} else if o.descriptionIsNull {
+		return nil
+	}
+	return o.description
 }
 
 func (o *projectBase) SetDescription(i interface{}) {
@@ -358,6 +384,7 @@ func (o *projectBase) SetDescription(i interface{}) {
 	}
 }
 
+// StartDate returns the loaded value of StartDate.
 func (o *projectBase) StartDate() datetime.DateTime {
 	if o._restored && !o.startDateIsValid {
 		panic("startDate was not selected in the last query and has not been set, and so is not valid")
@@ -373,6 +400,17 @@ func (o *projectBase) StartDateIsValid() bool {
 // StartDateIsNull returns true if the related database value is null.
 func (o *projectBase) StartDateIsNull() bool {
 	return o.startDateIsNull
+}
+
+// StartDate_I returns the loaded value of StartDate as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *projectBase) StartDate_I() interface{} {
+	if o._restored && !o.startDateIsValid {
+		panic("startDate was not selected in the last query and has not been set, and so is not valid")
+	} else if o.startDateIsNull {
+		return nil
+	}
+	return o.startDate
 }
 
 func (o *projectBase) SetStartDate(i interface{}) {
@@ -396,6 +434,7 @@ func (o *projectBase) SetStartDate(i interface{}) {
 	}
 }
 
+// EndDate returns the loaded value of EndDate.
 func (o *projectBase) EndDate() datetime.DateTime {
 	if o._restored && !o.endDateIsValid {
 		panic("endDate was not selected in the last query and has not been set, and so is not valid")
@@ -411,6 +450,17 @@ func (o *projectBase) EndDateIsValid() bool {
 // EndDateIsNull returns true if the related database value is null.
 func (o *projectBase) EndDateIsNull() bool {
 	return o.endDateIsNull
+}
+
+// EndDate_I returns the loaded value of EndDate as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *projectBase) EndDate_I() interface{} {
+	if o._restored && !o.endDateIsValid {
+		panic("endDate was not selected in the last query and has not been set, and so is not valid")
+	} else if o.endDateIsNull {
+		return nil
+	}
+	return o.endDate
 }
 
 func (o *projectBase) SetEndDate(i interface{}) {
@@ -434,6 +484,7 @@ func (o *projectBase) SetEndDate(i interface{}) {
 	}
 }
 
+// Budget returns the loaded value of Budget.
 func (o *projectBase) Budget() string {
 	if o._restored && !o.budgetIsValid {
 		panic("budget was not selected in the last query and has not been set, and so is not valid")
@@ -449,6 +500,17 @@ func (o *projectBase) BudgetIsValid() bool {
 // BudgetIsNull returns true if the related database value is null.
 func (o *projectBase) BudgetIsNull() bool {
 	return o.budgetIsNull
+}
+
+// Budget_I returns the loaded value of Budget as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *projectBase) Budget_I() interface{} {
+	if o._restored && !o.budgetIsValid {
+		panic("budget was not selected in the last query and has not been set, and so is not valid")
+	} else if o.budgetIsNull {
+		return nil
+	}
+	return o.budget
 }
 
 func (o *projectBase) SetBudget(i interface{}) {
@@ -472,6 +534,7 @@ func (o *projectBase) SetBudget(i interface{}) {
 	}
 }
 
+// Spent returns the loaded value of Spent.
 func (o *projectBase) Spent() string {
 	if o._restored && !o.spentIsValid {
 		panic("spent was not selected in the last query and has not been set, and so is not valid")
@@ -487,6 +550,17 @@ func (o *projectBase) SpentIsValid() bool {
 // SpentIsNull returns true if the related database value is null.
 func (o *projectBase) SpentIsNull() bool {
 	return o.spentIsNull
+}
+
+// Spent_I returns the loaded value of Spent as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *projectBase) Spent_I() interface{} {
+	if o._restored && !o.spentIsValid {
+		panic("spent was not selected in the last query and has not been set, and so is not valid")
+	} else if o.spentIsNull {
+		return nil
+	}
+	return o.spent
 }
 
 func (o *projectBase) SetSpent(i interface{}) {
@@ -672,8 +746,9 @@ func LoadProject(ctx context.Context, primaryKey string, joinOrSelectNodes ...qu
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryProjects() to start a query builder.
 func LoadProjectByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Project {
-	return queryProjects(ctx).
-		Where(Equal(node.Project().ID(), id)).
+	q := queryProjects(ctx)
+	q = q.Where(Equal(node.Project().ID(), id))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
@@ -681,9 +756,9 @@ func LoadProjectByID(ctx context.Context, id string, joinOrSelectNodes ...query.
 // HasProjectByID returns true if the
 // given unique index values exist in the database.
 func HasProjectByID(ctx context.Context, id string) bool {
-	return queryProjects(ctx).
-		Where(Equal(node.Project().ID(), id)).
-		Count(false) == 1
+	q := queryProjects(ctx)
+	q = q.Where(Equal(node.Project().ID(), id))
+	return q.Count(false) == 1
 }
 
 // LoadProjectByNum queries for a single Project object by the given unique index values.
@@ -691,8 +766,9 @@ func HasProjectByID(ctx context.Context, id string) bool {
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryProjects() to start a query builder.
 func LoadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.NodeI) *Project {
-	return queryProjects(ctx).
-		Where(Equal(node.Project().Num(), num)).
+	q := queryProjects(ctx)
+	q = q.Where(Equal(node.Project().Num(), num))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
@@ -700,9 +776,9 @@ func LoadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.N
 // HasProjectByNum returns true if the
 // given unique index values exist in the database.
 func HasProjectByNum(ctx context.Context, num int) bool {
-	return queryProjects(ctx).
-		Where(Equal(node.Project().Num(), num)).
-		Count(false) == 1
+	q := queryProjects(ctx)
+	q = q.Where(Equal(node.Project().Num(), num))
+	return q.Count(false) == 1
 }
 
 // The ProjectsBuilder uses the QueryBuilderI interface from the database to build a query.

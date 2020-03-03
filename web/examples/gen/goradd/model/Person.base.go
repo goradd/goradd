@@ -117,6 +117,7 @@ func (o *personBase) IDIsValid() bool {
 	return o._restored && o.idIsValid
 }
 
+// FirstName returns the loaded value of FirstName.
 func (o *personBase) FirstName() string {
 	if o._restored && !o.firstNameIsValid {
 		panic("firstName was not selected in the last query and has not been set, and so is not valid")
@@ -139,6 +140,7 @@ func (o *personBase) SetFirstName(v string) {
 
 }
 
+// LastName returns the loaded value of LastName.
 func (o *personBase) LastName() string {
 	if o._restored && !o.lastNameIsValid {
 		panic("lastName was not selected in the last query and has not been set, and so is not valid")
@@ -404,8 +406,9 @@ func LoadPerson(ctx context.Context, primaryKey string, joinOrSelectNodes ...que
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryPeople() to start a query builder.
 func LoadPersonByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Person {
-	return queryPeople(ctx).
-		Where(Equal(node.Person().ID(), id)).
+	q := queryPeople(ctx)
+	q = q.Where(Equal(node.Person().ID(), id))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
@@ -413,9 +416,9 @@ func LoadPersonByID(ctx context.Context, id string, joinOrSelectNodes ...query.N
 // HasPersonByID returns true if the
 // given unique index values exist in the database.
 func HasPersonByID(ctx context.Context, id string) bool {
-	return queryPeople(ctx).
-		Where(Equal(node.Person().ID(), id)).
-		Count(false) == 1
+	q := queryPeople(ctx)
+	q = q.Where(Equal(node.Person().ID(), id))
+	return q.Count(false) == 1
 }
 
 // The PeopleBuilder uses the QueryBuilderI interface from the database to build a query.
