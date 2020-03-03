@@ -101,6 +101,7 @@ func (o *personWithLockBase) IDIsValid() bool {
 	return o._restored && o.idIsValid
 }
 
+// FirstName returns the loaded value of FirstName.
 func (o *personWithLockBase) FirstName() string {
 	if o._restored && !o.firstNameIsValid {
 		panic("firstName was not selected in the last query and has not been set, and so is not valid")
@@ -123,6 +124,7 @@ func (o *personWithLockBase) SetFirstName(v string) {
 
 }
 
+// LastName returns the loaded value of LastName.
 func (o *personWithLockBase) LastName() string {
 	if o._restored && !o.lastNameIsValid {
 		panic("lastName was not selected in the last query and has not been set, and so is not valid")
@@ -145,6 +147,7 @@ func (o *personWithLockBase) SetLastName(v string) {
 
 }
 
+// SysTimestamp returns the loaded value of SysTimestamp.
 func (o *personWithLockBase) SysTimestamp() datetime.DateTime {
 	if o._restored && !o.sysTimestampIsValid {
 		panic("sysTimestamp was not selected in the last query and has not been set, and so is not valid")
@@ -160,6 +163,17 @@ func (o *personWithLockBase) SysTimestampIsValid() bool {
 // SysTimestampIsNull returns true if the related database value is null.
 func (o *personWithLockBase) SysTimestampIsNull() bool {
 	return o.sysTimestampIsNull
+}
+
+// SysTimestamp_I returns the loaded value of SysTimestamp as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *personWithLockBase) SysTimestamp_I() interface{} {
+	if o._restored && !o.sysTimestampIsValid {
+		panic("sysTimestamp was not selected in the last query and has not been set, and so is not valid")
+	} else if o.sysTimestampIsNull {
+		return nil
+	}
+	return o.sysTimestamp
 }
 
 func (o *personWithLockBase) SetSysTimestamp(i interface{}) {
@@ -205,8 +219,9 @@ func LoadPersonWithLock(ctx context.Context, primaryKey string, joinOrSelectNode
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryPersonWithLocks() to start a query builder.
 func LoadPersonWithLockByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
-	return queryPersonWithLocks(ctx).
-		Where(Equal(node.PersonWithLock().ID(), id)).
+	q := queryPersonWithLocks(ctx)
+	q = q.Where(Equal(node.PersonWithLock().ID(), id))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
@@ -214,9 +229,9 @@ func LoadPersonWithLockByID(ctx context.Context, id string, joinOrSelectNodes ..
 // HasPersonWithLockByID returns true if the
 // given unique index values exist in the database.
 func HasPersonWithLockByID(ctx context.Context, id string) bool {
-	return queryPersonWithLocks(ctx).
-		Where(Equal(node.PersonWithLock().ID(), id)).
-		Count(false) == 1
+	q := queryPersonWithLocks(ctx)
+	q = q.Where(Equal(node.PersonWithLock().ID(), id))
+	return q.Count(false) == 1
 }
 
 // The PersonWithLocksBuilder uses the QueryBuilderI interface from the database to build a query.

@@ -125,7 +125,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.Click(btnID)
 	t.AssertEqual(true, t.ControlHasClass("singleSelectList-fg", "error"))
 
-	t.F(func(f page.FormI) {
+	t.WithForm(func(f page.FormI) {
 		t.AssertEqual(2,  GetSelectList(f, "selectListWithSize").IntValue())
 	})
 
@@ -136,7 +136,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 
 	t.Click(btnID)
 
-	t.F(func (f page.FormI) {
+	t.WithForm(func (f page.FormI) {
 		t.AssertEqual(1, GetSelectList(f, "singleSelectList").IntValue())
 		t.AssertEqual(2, GetSelectList(f, "selectListWithSize").IntValue())
 		t.AssertEqual(3, GetRadioList(f, "radioList1").IntValue())

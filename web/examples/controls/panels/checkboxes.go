@@ -129,7 +129,7 @@ func testCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.SetCheckbox("radio2", true)
 	t.Click(btnID) // click will change form
 
-	t.F(func (f page.FormI) {
+	t.WithForm(func (f page.FormI) {
 		t.AssertEqual(true, GetCheckbox(f,"checkbox1").Checked())
 		t.AssertEqual(false, GetCheckbox(f, "checkbox2").Checked())
 		t.AssertEqual(false, GetRadioButton(f, "radio1").Checked())
@@ -143,7 +143,7 @@ func testCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.SetCheckbox("radio3", true)
 	t.SetCheckbox("checkbox1", false)
 	t.Click(btnID)
-	t.F(func (f page.FormI) {
+	t.WithForm(func (f page.FormI) {
 		t.AssertEqual(false, GetCheckbox(f,"checkbox1").Checked())
 		GetRadioButton(f, "radio1").SetChecked(true)
 		t.AssertEqual("radio3", GetPanel(f,"infoPanel").Text())
@@ -152,7 +152,7 @@ func testCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 
 	t.Click(btnID)
 	t.Click(btnID) // two clicks are required to get the response back
-	t.F(func (f page.FormI) {
+	t.WithForm(func (f page.FormI) {
 		t.AssertEqual("radio1", GetPanel(f,"infoPanel").Text())
 		t.AssertEqual(true, GetRadioButton(f, "radio1").Checked())
 		t.AssertEqual(false, GetRadioButton(f, "radio2").Checked())

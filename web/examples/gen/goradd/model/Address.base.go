@@ -101,6 +101,7 @@ func (o *addressBase) IDIsValid() bool {
 	return o._restored && o.idIsValid
 }
 
+// PersonID returns the loaded value of PersonID.
 func (o *addressBase) PersonID() string {
 	if o._restored && !o.personIDIsValid {
 		panic("personID was not selected in the last query and has not been set, and so is not valid")
@@ -157,6 +158,7 @@ func (o *addressBase) SetPerson(v *Person) {
 	}
 }
 
+// Street returns the loaded value of Street.
 func (o *addressBase) Street() string {
 	if o._restored && !o.streetIsValid {
 		panic("street was not selected in the last query and has not been set, and so is not valid")
@@ -179,6 +181,7 @@ func (o *addressBase) SetStreet(v string) {
 
 }
 
+// City returns the loaded value of City.
 func (o *addressBase) City() string {
 	if o._restored && !o.cityIsValid {
 		panic("city was not selected in the last query and has not been set, and so is not valid")
@@ -194,6 +197,17 @@ func (o *addressBase) CityIsValid() bool {
 // CityIsNull returns true if the related database value is null.
 func (o *addressBase) CityIsNull() bool {
 	return o.cityIsNull
+}
+
+// City_I returns the loaded value of City as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *addressBase) City_I() interface{} {
+	if o._restored && !o.cityIsValid {
+		panic("city was not selected in the last query and has not been set, and so is not valid")
+	} else if o.cityIsNull {
+		return nil
+	}
+	return o.city
 }
 
 func (o *addressBase) SetCity(i interface{}) {
@@ -239,8 +253,9 @@ func LoadAddress(ctx context.Context, primaryKey string, joinOrSelectNodes ...qu
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryAddresses() to start a query builder.
 func LoadAddressByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Address {
-	return queryAddresses(ctx).
-		Where(Equal(node.Address().ID(), id)).
+	q := queryAddresses(ctx)
+	q = q.Where(Equal(node.Address().ID(), id))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
@@ -248,9 +263,9 @@ func LoadAddressByID(ctx context.Context, id string, joinOrSelectNodes ...query.
 // HasAddressByID returns true if the
 // given unique index values exist in the database.
 func HasAddressByID(ctx context.Context, id string) bool {
-	return queryAddresses(ctx).
-		Where(Equal(node.Address().ID(), id)).
-		Count(false) == 1
+	q := queryAddresses(ctx)
+	q = q.Where(Equal(node.Address().ID(), id))
+	return q.Count(false) == 1
 }
 
 // The AddressesBuilder uses the QueryBuilderI interface from the database to build a query.

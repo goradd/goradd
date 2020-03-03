@@ -145,10 +145,10 @@ func (form *TestForm) getForm() page.FormI {
 	return nil
 }
 
-// F gives you access to the current form so that you can set or get values in the form.
+// WithForm gives you access to the current form so that you can set or get values in the form.
 // Call it with a function that will receive the form.
 // Do not call test functions that might cause an ajax or server call to fire from within the function.
-func (form *TestForm) F(f func(page.FormI) ) {
+func (form *TestForm) WithForm(f func(page.FormI) ) {
 	pc := page.GetPageCache()
 	testForm := pc.Get(form.Controller.pagestate).Form()
 	{

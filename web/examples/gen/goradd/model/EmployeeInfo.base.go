@@ -89,6 +89,7 @@ func (o *employeeInfoBase) IDIsValid() bool {
 	return o._restored && o.idIsValid
 }
 
+// PersonID returns the loaded value of PersonID.
 func (o *employeeInfoBase) PersonID() string {
 	if o._restored && !o.personIDIsValid {
 		panic("personID was not selected in the last query and has not been set, and so is not valid")
@@ -145,6 +146,7 @@ func (o *employeeInfoBase) SetPerson(v *Person) {
 	}
 }
 
+// EmployeeNumber returns the loaded value of EmployeeNumber.
 func (o *employeeInfoBase) EmployeeNumber() int {
 	if o._restored && !o.employeeNumberIsValid {
 		panic("employeeNumber was not selected in the last query and has not been set, and so is not valid")
@@ -189,8 +191,9 @@ func LoadEmployeeInfo(ctx context.Context, primaryKey string, joinOrSelectNodes 
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryEmployeeInfos() to start a query builder.
 func LoadEmployeeInfoByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *EmployeeInfo {
-	return queryEmployeeInfos(ctx).
-		Where(Equal(node.EmployeeInfo().ID(), id)).
+	q := queryEmployeeInfos(ctx)
+	q = q.Where(Equal(node.EmployeeInfo().ID(), id))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
@@ -198,28 +201,29 @@ func LoadEmployeeInfoByID(ctx context.Context, id string, joinOrSelectNodes ...q
 // HasEmployeeInfoByID returns true if the
 // given unique index values exist in the database.
 func HasEmployeeInfoByID(ctx context.Context, id string) bool {
-	return queryEmployeeInfos(ctx).
-		Where(Equal(node.EmployeeInfo().ID(), id)).
-		Count(false) == 1
+	q := queryEmployeeInfos(ctx)
+	q = q.Where(Equal(node.EmployeeInfo().ID(), id))
+	return q.Count(false) == 1
 }
 
 // LoadEmployeeInfoByPersonID queries for a single EmployeeInfo object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryEmployeeInfos() to start a query builder.
-func LoadEmployeeInfoByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *EmployeeInfo {
-	return queryEmployeeInfos(ctx).
-		Where(Equal(node.EmployeeInfo().PersonID(), person_id)).
+func LoadEmployeeInfoByPersonID(ctx context.Context, personID string, joinOrSelectNodes ...query.NodeI) *EmployeeInfo {
+	q := queryEmployeeInfos(ctx)
+	q = q.Where(Equal(node.EmployeeInfo().PersonID(), personID))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
 
 // HasEmployeeInfoByPersonID returns true if the
 // given unique index values exist in the database.
-func HasEmployeeInfoByPersonID(ctx context.Context, person_id string) bool {
-	return queryEmployeeInfos(ctx).
-		Where(Equal(node.EmployeeInfo().PersonID(), person_id)).
-		Count(false) == 1
+func HasEmployeeInfoByPersonID(ctx context.Context, personID string) bool {
+	q := queryEmployeeInfos(ctx)
+	q = q.Where(Equal(node.EmployeeInfo().PersonID(), personID))
+	return q.Count(false) == 1
 }
 
 // The EmployeeInfosBuilder uses the QueryBuilderI interface from the database to build a query.
