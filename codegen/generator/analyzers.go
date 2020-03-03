@@ -32,13 +32,15 @@ func matchColumnsWithControls(database db.DatabaseI, t *db.Table, descriptions m
 			// TODO: Get this from a database comment if provided
 			var defaultLabel string
 			var controlName string
-
 			if col.ForeignKey != nil {
 				defaultLabel = strings2.Title(col.ForeignKey.GoName)
 				controlName = col.ForeignKey.GoName + typ
 			} else {
 				defaultLabel = strings2.Title(col.DbName)
 				controlName = col.GoName + typ
+			}
+			if lbl, ok := col.Options["label"]; ok {
+				defaultLabel = lbl.(string)
 			}
 
 			defaultID := snaker.CamelToSnake(col.GoName)
