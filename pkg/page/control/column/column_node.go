@@ -2,10 +2,10 @@ package column
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/iface"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"reflect"
 )
 
 // NodeColumn is a column that uses a query.NodeI to get its text out of data that is coming from the ORM.
@@ -63,7 +63,7 @@ func (c *NodeColumn) CellData(ctx context.Context, rowNum int, colNum int, data 
 		v2 := v
 		for i = len(names) - 2; i > 0; i-- {
 			obj := v2.Get(names[i])
-			if obj == nil || reflect.ValueOf(obj).IsNil() {
+			if iface.IsNil(obj) {
 				return nil // Either an object was not joined, or the joined object does not exist in the database.
 			}
 			v2, ok = obj.(Getter)

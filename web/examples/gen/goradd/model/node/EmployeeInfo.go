@@ -77,6 +77,7 @@ func (n *employeeInfoNode) Person() *personNode {
 			"person",
 			"id",
 			false,
+			query.ColTypeString,
 		),
 	}
 	query.SetParentNode(cn, n)

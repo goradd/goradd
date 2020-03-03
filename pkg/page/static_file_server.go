@@ -90,7 +90,7 @@ func GetAssetUrl(location string) string {
 	var outPath string
 	if config.Release {
 		if !strings2.StartsWith(location, config.AssetPrefix) {
-			panic("In the release build, asset locations should be the same as asset paths.")
+			panic("In the release build, asset locations should be the same as asset paths. " + location + " does not start with " + config.AssetPrefix)
 		}
 		outPath = location
 	} else {

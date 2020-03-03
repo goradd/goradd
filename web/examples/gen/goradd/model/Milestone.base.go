@@ -89,6 +89,7 @@ func (o *milestoneBase) IDIsValid() bool {
 	return o._restored && o.idIsValid
 }
 
+// ProjectID returns the loaded value of ProjectID.
 func (o *milestoneBase) ProjectID() string {
 	if o._restored && !o.projectIDIsValid {
 		panic("projectID was not selected in the last query and has not been set, and so is not valid")
@@ -145,6 +146,7 @@ func (o *milestoneBase) SetProject(v *Project) {
 	}
 }
 
+// Name returns the loaded value of Name.
 func (o *milestoneBase) Name() string {
 	if o._restored && !o.nameIsValid {
 		panic("name was not selected in the last query and has not been set, and so is not valid")
@@ -189,8 +191,9 @@ func LoadMilestone(ctx context.Context, primaryKey string, joinOrSelectNodes ...
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryMilestones() to start a query builder.
 func LoadMilestoneByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Milestone {
-	return queryMilestones(ctx).
-		Where(Equal(node.Milestone().ID(), id)).
+	q := queryMilestones(ctx)
+	q = q.Where(Equal(node.Milestone().ID(), id))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
@@ -198,9 +201,9 @@ func LoadMilestoneByID(ctx context.Context, id string, joinOrSelectNodes ...quer
 // HasMilestoneByID returns true if the
 // given unique index values exist in the database.
 func HasMilestoneByID(ctx context.Context, id string) bool {
-	return queryMilestones(ctx).
-		Where(Equal(node.Milestone().ID(), id)).
-		Count(false) == 1
+	q := queryMilestones(ctx)
+	q = q.Where(Equal(node.Milestone().ID(), id))
+	return q.Count(false) == 1
 }
 
 // The MilestonesBuilder uses the QueryBuilderI interface from the database to build a query.

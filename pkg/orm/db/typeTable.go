@@ -33,7 +33,7 @@ type TypeTable struct {
 	PkField string
 
 	// Filled in by analyzer
-	Constants map[uint]string
+	Constants map[int]string
 }
 
 // FieldGoName returns the go name corresponding to the given field offset

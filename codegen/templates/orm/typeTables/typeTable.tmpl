@@ -18,9 +18,9 @@ import (
 const (
 }}
 for _,value := range tt.Values {
-	key,ok := value[keyField].(uint)
+	key,ok := value[keyField].(int)
 	if !ok {
-		key = uint(value[keyField].(int))
+		key = int(value[keyField].(uint))
 	}
 	con := tt.Constants[key]
 {{
@@ -34,14 +34,14 @@ for _,value := range tt.Values {
 
 const {{= propName }}MaxValue = {{i len(tt.Values) }}
 
-type {{= propName }} uint
+type {{= propName }} int
 
 // String returns the name value of the type and satisfies the fmt.Stringer interface
 func ({{= propLetter }} {{= propName }}) String() string {
 	switch {{= propLetter }} {
 	case 0: return ""
 {{for _,value := range tt.Values }}
-	case {{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }}: return {{= generator.AsConstant(value[tt.FieldNames[1]], query.ColTypeString) }}
+	case {{= generator.AsConstant(value[keyField], query.ColTypeInteger) }}: return {{= generator.AsConstant(value[tt.FieldNames[1]], query.ColTypeString) }}
 {{for}}
 	default: panic("index out of range")
 	}
@@ -57,7 +57,7 @@ func ({{= propLetter }} {{= propName }}) ID() string {
 func {{= propName }}FromID (id string) {{= propName }} {
 	switch id {
 {{for _,value := range tt.Values }}
-	case "{{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }}": return {{= propName }}({{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }})
+	case "{{= generator.AsConstant(value[keyField], query.ColTypeInteger) }}": return {{= propName }}({{= generator.AsConstant(value[keyField], query.ColTypeInteger) }})
 {{for}}
 	}
 	return {{= propName }}(0)
@@ -66,7 +66,7 @@ func {{= propName }}FromID (id string) {{= propName }} {
 // All{{= propPlural }} returns a slice of all the {{= propName }} items
 func All{{= propPlural }}() (values []{{= propName }}) {
 {{for _,value := range tt.Values }}
-    values = append(values, {{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }})
+    values = append(values, {{= generator.AsConstant(value[keyField], query.ColTypeInteger) }})
 {{for}}
     return
 }
@@ -75,7 +75,7 @@ func All{{= propPlural }}() (values []{{= propName }}) {
 func All{{= propPlural }}I() (values []interface{}) {
     values = make([]interface{}, {{i len(tt.Values) }}, {{i len(tt.Values) }})
 {{for i,value := range tt.Values }}
-    values[{{i i }}] = {{= propName }}({{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }})
+    values[{{i i }}] = {{= propName }}({{= generator.AsConstant(value[keyField], query.ColTypeInteger) }})
 {{for}}
     return
 }
@@ -96,8 +96,8 @@ func ({{= propLetter }} {{= propName }}) Value() interface{} {
 
 }}
 
-for i,fieldName := range tt.FieldNames[2:] {
-	typ := tt.FieldGoColumnType(i+2)
+for i,fieldName := range tt.FieldNames[1:] {
+	typ := tt.FieldGoColumnType(i+1)
 	typeName := typ.GoType()
 	title := db.UpperCaseIdentifier(fieldName)
 
@@ -106,12 +106,13 @@ func ({{= propLetter }} {{= propName }}) {{= title }}() {{= typeName }} {
 	switch {{= propLetter }} {
 	case 0: return {{= typ.DefaultValue() }}
 {{g for _,value := range tt.Values { }}
-	case {{= generator.AsConstant(value[keyField], query.ColTypeUnsigned) }}: return {{= generator.AsConstant(value[tt.FieldNames[i+2]], typ) }}
+	case {{= generator.AsConstant(value[keyField], query.ColTypeInteger) }}: return {{= generator.AsConstant(value[tt.FieldNames[i+1]], typ) }}
 {{g } }}
 	default: panic("Index out of range")
 	}
 	return {{= typ.DefaultValue() }} // prevent warning
 }
+
 }}
 
 }
@@ -136,3 +137,24 @@ func {{= propName }}{{= title }}() []{{= typeName }} {
 }}
 
 }
+
+{{
+func ({{= propLetter }} {{= propName }}) Get(key string) interface{} {
+
+    switch(key) {
+}}
+
+for _,fieldName := range tt.FieldNames[1:] {
+	title := db.UpperCaseIdentifier(fieldName)
+
+{{
+    case "{{= title }}": return {{= propLetter }}.{{= title }}()
+}}
+
+}
+
+{{
+    default: return nil
+    }
+}
+}}

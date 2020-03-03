@@ -17,30 +17,38 @@ import (
 const StepTimeoutSeconds = 10
 
 const (
-	TestStepAction = iota + 100
+	testStepAction = iota + 100
+	testMarkerAction
 )
 
-// rowSelectedEvent indicates that a row was selected from the SelectTable
-type testStepEvent struct {
-	page.Event
-}
-
-// RowSelected
 func TestStepEvent() *page.Event {
 	e := &page.Event{JsEvent: "teststep"}
 	return e
 }
+
+func TestMarkerEvent() *page.Event {
+	e := &page.Event{JsEvent: "testmarker"}
+	return e
+}
+
 
 type stepItemType struct {
 	Step int
 	Err  string
 }
 
+type markerItemType struct {
+	Marker string
+	Err  string
+}
+
+
 type TestController struct {
 	control.Panel
 	pagestate        string
 	stepTimeout      time.Duration     // number of seconds before a step should timeout
 	stepChannel      chan stepItemType // probably will leak memory TODO: Close this before it is removed from page cache
+	markerChannel    chan string       // probably will leak memory TODO: Close this before it is removed from page cache
 	latestJsValue    interface{}       // A value returned for the jsValue function
 	stepDescriptions []string
 }
@@ -56,11 +64,13 @@ func (p *TestController) Init(parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
 	p.Tag = "pre"
 	p.stepChannel = make(chan stepItemType, 1)
+	p.markerChannel = make(chan string, 1000)
 	p.ParentForm().AddJavaScriptFile(filepath.Join(TestAssets(), "js", "test_controller.js"), false, nil)
 	// Use declarative attribute to attach javascript to the control
 	p.SetDataAttribute("grWidget", "goradd.testController")
 
-	p.On(TestStepEvent(), action.Ajax(p.ID(), TestStepAction))
+	p.On(TestStepEvent(), action.Ajax(p.ID(), testStepAction))
+	p.On(TestMarkerEvent(), action.Ajax(p.ID(), testMarkerAction))
 	p.stepTimeout = StepTimeoutSeconds
 }
 
@@ -77,7 +87,7 @@ func (p *TestController) loadUrl(url string, description string) {
 
 func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
-	case TestStepAction:
+	case testStepAction:
 		stepItem := new(stepItemType)
 		ok, err := a.EventValue(stepItem)
 		if err != nil {
@@ -88,7 +98,15 @@ func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
 		}
 
 		p.stepChannel <- *stepItem
+	case testMarkerAction:
+		marker := a.EventValueString()
+		select {
+			case p.markerChannel <- marker:
+			default: // If we overflow the marker channel, we just move on and assume nobody is listening
+					 // Maybe we should close the channel at this point and stop sending?
+		}
 	}
+
 }
 
 func (p *TestController) UpdateFormValues(ctx context.Context) {
@@ -125,6 +143,26 @@ func (p *TestController) waitStep() {
 		break // we successfully returned from the step
 	}
 }
+
+func (p *TestController) waitMarker(desc string, expectedMarker string) {
+	log.FrameworkDebugf("Waiting for marker %s: %s", expectedMarker, desc)
+	p.ParentForm().(*TestForm).PushRedraw()
+	for {
+		select {
+		case marker := <-p.markerChannel:
+			if marker == expectedMarker {
+				log.FrameworkDebug("Received marker ", marker)
+			} else {
+				log.FrameworkDebugf("Received unexpected marker: %s, wanted %s", marker, expectedMarker)
+				continue
+			}
+		case <-time.After(p.stepTimeout * time.Second):
+			panic(fmt.Errorf("test marker  %s timed out: %s", expectedMarker, desc))
+		}
+		break // we successfully received the marker
+	}
+}
+
 
 func (p *TestController) changeVal(id string, val interface{}, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)

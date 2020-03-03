@@ -77,6 +77,7 @@ func (n *milestoneNode) Project() *projectNode {
 			"project",
 			"id",
 			false,
+			query.ColTypeString,
 		),
 	}
 	query.SetParentNode(cn, n)

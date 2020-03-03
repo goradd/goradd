@@ -113,6 +113,7 @@ func (o *loginBase) IDIsValid() bool {
 	return o._restored && o.idIsValid
 }
 
+// PersonID returns the loaded value of PersonID.
 func (o *loginBase) PersonID() string {
 	if o._restored && !o.personIDIsValid {
 		panic("personID was not selected in the last query and has not been set, and so is not valid")
@@ -128,6 +129,17 @@ func (o *loginBase) PersonIDIsValid() bool {
 // PersonIDIsNull returns true if the related database value is null.
 func (o *loginBase) PersonIDIsNull() bool {
 	return o.personIDIsNull
+}
+
+// PersonID_I returns the loaded value of PersonID as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *loginBase) PersonID_I() interface{} {
+	if o._restored && !o.personIDIsValid {
+		panic("personID was not selected in the last query and has not been set, and so is not valid")
+	} else if o.personIDIsNull {
+		return nil
+	}
+	return o.personID
 }
 
 // Person returns the current value of the loaded Person, and nil if its not loaded.
@@ -191,6 +203,7 @@ func (o *loginBase) SetPerson(v *Person) {
 	}
 }
 
+// Username returns the loaded value of Username.
 func (o *loginBase) Username() string {
 	if o._restored && !o.usernameIsValid {
 		panic("username was not selected in the last query and has not been set, and so is not valid")
@@ -213,6 +226,7 @@ func (o *loginBase) SetUsername(v string) {
 
 }
 
+// Password returns the loaded value of Password.
 func (o *loginBase) Password() string {
 	if o._restored && !o.passwordIsValid {
 		panic("password was not selected in the last query and has not been set, and so is not valid")
@@ -228,6 +242,17 @@ func (o *loginBase) PasswordIsValid() bool {
 // PasswordIsNull returns true if the related database value is null.
 func (o *loginBase) PasswordIsNull() bool {
 	return o.passwordIsNull
+}
+
+// Password_I returns the loaded value of Password as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *loginBase) Password_I() interface{} {
+	if o._restored && !o.passwordIsValid {
+		panic("password was not selected in the last query and has not been set, and so is not valid")
+	} else if o.passwordIsNull {
+		return nil
+	}
+	return o.password
 }
 
 func (o *loginBase) SetPassword(i interface{}) {
@@ -251,6 +276,7 @@ func (o *loginBase) SetPassword(i interface{}) {
 	}
 }
 
+// IsEnabled returns the loaded value of IsEnabled.
 func (o *loginBase) IsEnabled() bool {
 	if o._restored && !o.isEnabledIsValid {
 		panic("isEnabled was not selected in the last query and has not been set, and so is not valid")
@@ -294,19 +320,28 @@ func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...quer
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByPersonID(ctx context.Context, person_id string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().PersonID(), person_id)).
+func LoadLoginByPersonID(ctx context.Context, personID interface{}, joinOrSelectNodes ...query.NodeI) *Login {
+	q := queryLogins(ctx)
+	if personID == nil {
+		q = q.Where(IsNull(node.Login().PersonID()))
+	} else {
+		q = q.Where(Equal(node.Login().PersonID(), personID))
+	}
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
 
 // HasLoginByPersonID returns true if the
 // given unique index values exist in the database.
-func HasLoginByPersonID(ctx context.Context, person_id string) bool {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().PersonID(), person_id)).
-		Count(false) == 1
+func HasLoginByPersonID(ctx context.Context, personID interface{}) bool {
+	q := queryLogins(ctx)
+	if personID == nil {
+		q = q.Where(IsNull(node.Login().PersonID()))
+	} else {
+		q = q.Where(Equal(node.Login().PersonID(), personID))
+	}
+	return q.Count(false) == 1
 }
 
 // LoadLoginByUsername queries for a single Login object by the given unique index values.
@@ -314,8 +349,9 @@ func HasLoginByPersonID(ctx context.Context, person_id string) bool {
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryLogins() to start a query builder.
 func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().Username(), username)).
+	q := queryLogins(ctx)
+	q = q.Where(Equal(node.Login().Username(), username))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
@@ -323,9 +359,9 @@ func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes
 // HasLoginByUsername returns true if the
 // given unique index values exist in the database.
 func HasLoginByUsername(ctx context.Context, username string) bool {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().Username(), username)).
-		Count(false) == 1
+	q := queryLogins(ctx)
+	q = q.Where(Equal(node.Login().Username(), username))
+	return q.Count(false) == 1
 }
 
 // LoadLoginByID queries for a single Login object by the given unique index values.
@@ -333,8 +369,9 @@ func HasLoginByUsername(ctx context.Context, username string) bool {
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 // If you need a more elaborate query, use QueryLogins() to start a query builder.
 func LoadLoginByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Login {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().ID(), id)).
+	q := queryLogins(ctx)
+	q = q.Where(Equal(node.Login().ID(), id))
+	return q.
 		joinOrSelect(joinOrSelectNodes...).
 		Get()
 }
@@ -342,9 +379,9 @@ func LoadLoginByID(ctx context.Context, id string, joinOrSelectNodes ...query.No
 // HasLoginByID returns true if the
 // given unique index values exist in the database.
 func HasLoginByID(ctx context.Context, id string) bool {
-	return queryLogins(ctx).
-		Where(Equal(node.Login().ID(), id)).
-		Count(false) == 1
+	q := queryLogins(ctx)
+	q = q.Where(Equal(node.Login().ID(), id))
+	return q.Count(false) == 1
 }
 
 // The LoginsBuilder uses the QueryBuilderI interface from the database to build a query.

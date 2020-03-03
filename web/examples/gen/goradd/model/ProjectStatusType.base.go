@@ -21,7 +21,7 @@ const (
 
 const ProjectStatusTypeMaxValue = 4
 
-type ProjectStatusType uint
+type ProjectStatusType int
 
 // String returns the name value of the type and satisfies the fmt.Stringer interface
 func (p ProjectStatusType) String() string {
@@ -85,6 +85,18 @@ func (p ProjectStatusType) Value() interface{} {
 }
 
 
+func (p ProjectStatusType) Name() string {
+	switch p {
+	case 0: return ""
+	case 1: return "Open"
+	case 2: return "Cancelled"
+	case 3: return "Completed"
+	case 4: return "Planned"
+	default: panic("Index out of range")
+	}
+	return "" // prevent warning
+}
+
 func (p ProjectStatusType) Description() string {
 	switch p {
 	case 0: return ""
@@ -96,6 +108,7 @@ func (p ProjectStatusType) Description() string {
 	}
 	return "" // prevent warning
 }
+
 func (p ProjectStatusType) Guidelines() string {
 	switch p {
 	case 0: return ""
@@ -107,6 +120,7 @@ func (p ProjectStatusType) Guidelines() string {
 	}
 	return "" // prevent warning
 }
+
 func (p ProjectStatusType) IsActive() bool {
 	switch p {
 	case 0: return false
@@ -118,6 +132,7 @@ func (p ProjectStatusType) IsActive() bool {
 	}
 	return false // prevent warning
 }
+
 func ProjectStatusTypeNames() []string {
 	names := make([]string, 5)
 	// 0 item will be a blank
@@ -158,3 +173,13 @@ func ProjectStatusTypeIsActives() []bool {
 	return is_actives
 }
 
+func (p ProjectStatusType) Get(key string) interface{} {
+
+    switch(key) {
+    case "Name": return p.Name()
+    case "Description": return p.Description()
+    case "Guidelines": return p.Guidelines()
+    case "IsActive": return p.IsActive()
+    default: return nil
+    }
+}

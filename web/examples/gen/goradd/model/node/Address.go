@@ -78,6 +78,7 @@ func (n *addressNode) Person() *personNode {
 			"person",
 			"id",
 			false,
+			query.ColTypeString,
 		),
 	}
 	query.SetParentNode(cn, n)

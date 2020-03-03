@@ -137,9 +137,9 @@ func (d *Database) analyzeTypeTable(desc TableDescription) *TypeTable {
 		tt.FieldTypes[col.Name] = ColTypeFromGoTypeString(col.GoType)
 	}
 
-	tt.Constants = make(map[uint]string, len(tt.FieldNames))
+	tt.Constants = make(map[int]string, len(tt.FieldNames))
 	names := tt.FieldNames
-	var key uint
+	var key int
 	var value string
 	var ok bool
 
@@ -149,9 +149,9 @@ func (d *Database) analyzeTypeTable(desc TableDescription) *TypeTable {
 
 	r := regexp.MustCompile("[^a-zA-Z0-9_]+")
 	for _, m := range tt.Values {
-		key, ok = m[names[0]].(uint)
+		key, ok = m[names[0]].(int)
 		if !ok {
-			key = uint(m[names[0]].(int))
+			key = int(m[names[0]].(uint))
 		}
 		value = m[names[1]].(string)
 		var con string

@@ -42,6 +42,7 @@ func (n *{{privateName}}Node) {{= col.ForeignKey.GoName }}() *{{= strings2.LcFir
 			"{{= col.ForeignKey.ReferencedTable }}",
 			"{{= col.ForeignKey.ReferencedColumn }}",
 			{{b isType }},
+			query.{{= col.ColumnType.String() }},
 		),
 	}
 	query.SetParentNode(cn, n)
