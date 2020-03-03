@@ -172,7 +172,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.AssertEqual(true, t.ControlHasClass("timeText-ff", "error"))
 	t.AssertEqual(true, t.ControlHasClass("dateTimeText-ff", "error"))
 
-	t.F(func(f page.FormI) {
+	t.WithForm(func(f page.FormI) {
 		GetFormFieldWrapper(f, "plainText-ff").SetInstructions("Sample instructions")
 	})
 	t.ChangeVal("intText", 5)
@@ -184,7 +184,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 
 	t.Click(btnID)
 
-	t.F(func(f page.FormI) {
+	t.WithForm(func(f page.FormI) {
 		t.AssertEqual(5, GetIntegerTextbox(f, "intText").Int())
 		t.AssertEqual(6.7, GetFloatTextbox(f, "floatText").Float64())
 		t.AssertEqual("me@you.com", GetEmailTextbox(f, "emailText").Text())
@@ -204,7 +204,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.AssertEqual("plainText-ff_lbl plainText", t.ControlAttribute("plainText", "aria-labelledby"))
 
 	// Test SaveState
-	t.F(func(f page.FormI) {
+	t.WithForm(func(f page.FormI) {
 		t.AssertEqual("me", GetTextbox(f, "plainText").Text())
 	})
 

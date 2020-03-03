@@ -187,16 +187,16 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	// Draw things that come after the form tag
 
-	// initialize the form in javascript
-	s := `goradd.initForm();` + "\n"
+	var s string
 
 	// start the message server before initializing the form so that the form can subscribe to messages
 	if messageServer.Messenger != nil {
-		s = messageServer.Messenger.JavascriptInit() + s
+		s = messageServer.Messenger.JavascriptInit()
 	}
 	f.GetActionScripts(&f.response) // actions assigned to form during form creation
 	s += f.response.JavaScript()
 	f.response = NewResponse() // clear response
+	s += "\n" + `goradd.initForm();` + "\n"
 	if !config.Release {
 		// This code registers the form with the test harness. We do not want to do this in release mode since it is a security risk.
 		s += "goradd.initFormTest();\n"

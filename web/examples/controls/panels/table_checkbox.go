@@ -123,7 +123,7 @@ func testTableCheckboxNav(t *browsertest.TestForm) {
 	t.LoadUrl(myUrl)
 
 	t.SetCheckbox("table1_check1_1", true)
-	t.F(func(f page.FormI) {
+	t.WithForm(func(f page.FormI) {
 		table := f.Page().GetControl("table1").(*PagedTable)
 		col := table.GetColumnByID("check1").(*column.CheckboxColumn)
 		changes := col.Changes()
@@ -133,7 +133,7 @@ func testTableCheckboxNav(t *browsertest.TestForm) {
 	})
 
 	t.ClickSubItem("pager", "page_2")
-	t.F(func(f page.FormI) {
+	t.WithForm(func(f page.FormI) {
 		table := f.Page().GetControl("table1").(*PagedTable)
 		col := table.GetColumnByID("check1").(*column.CheckboxColumn)
 		changes := col.Changes()
@@ -169,7 +169,7 @@ func testTableCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.LoadUrl(myUrl)
 
 	t.SetCheckbox("table1_check1_1", true)
-	t.F(func(f page.FormI) {
+	t.WithForm(func(f page.FormI) {
 		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
 		changes := col.Changes()
 		_, ok := changes["1"]
@@ -178,7 +178,7 @@ func testTableCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 
 	t.Click(btnID)
 	// click above can cause form to reset
-	t.F(func(f page.FormI) {
+	t.WithForm(func(f page.FormI) {
 		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
 		changes := col.Changes()
 		changed, _ := changes["1"]

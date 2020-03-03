@@ -20,6 +20,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/event"
 	log2 "log"
 	"os"
+	"reflect"
 	"runtime"
 	"strings"
 )
@@ -144,10 +145,10 @@ func (form *TestForm) getForm() page.FormI {
 	return nil
 }
 
-// F gives you access to the current form so that you can set or get values in the form.
+// WithForm gives you access to the current form so that you can set or get values in the form.
 // Call it with a function that will receive the form.
 // Do not call test functions that might cause an ajax or server call to fire from within the function.
-func (form *TestForm) F(f func(page.FormI) ) {
+func (form *TestForm) WithForm(f func(page.FormI) ) {
 	pc := page.GetPageCache()
 	testForm := pc.Get(form.Controller.pagestate).Form()
 	{
@@ -160,13 +161,17 @@ func (form *TestForm) F(f func(page.FormI) ) {
 
 
 func (form *TestForm) AssertNil(v interface{}) {
-	if v != nil { // TODO: Check for a nil in the value
-		form.error(fmt.Sprintf("*** AssertNotNil failed. (%s)", form.captureCaller()))
+	isNil := v == nil ||
+		reflect.ValueOf(v).IsNil() // this will panic if value is not nillable, so be careful
+	if !isNil{
+		form.error(fmt.Sprintf("*** AssertNil failed. (%s)", form.captureCaller()))
 	}
 }
 
 func (form *TestForm) AssertNotNil(v interface{}) {
-	if v == nil { // TODO: Check for a nil in the value
+	isNil := v == nil ||
+		reflect.ValueOf(v).IsNil() // this will panic if value is not nillable, so be careful
+	if isNil {
 		form.error(fmt.Sprintf("*** AssertNotNil failed. (%s)", form.captureCaller()))
 	}
 }
@@ -297,6 +302,13 @@ func (form *TestForm) ClickHtmlItem(id string) {
 func (form *TestForm) WaitSubmit() {
 	form.Controller.waitSubmit(form.captureCaller())
 }
+
+// WaitMarker waits for a marker event before proceeding. You can use this to signal that your code has reached a specific
+// place. To signal the marker, call FireTestMarker from a control in your application.
+func (form *TestForm) WaitMarker(expectedMarker string) {
+	form.Controller.waitMarker(form.captureCaller(), expectedMarker)
+}
+
 
 // CallControlFunction will call the given function with the given parameters on the goradd object
 // specified by the id. It will return the javascript result of the function call.

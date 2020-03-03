@@ -17,6 +17,8 @@ goradd.widget("goradd.testController", {
             this._formLoadEvent(event.data.pagestate);
         } else if (event.data.ajaxComplete) {
             this._fireStepEvent(event.data.ajaxComplete);
+        } else if (event.data.testMarker) {
+            this._fireMarker(event.data.testMarker);
         }
     },
     logLine: function(line) {
@@ -61,6 +63,10 @@ goradd.widget("goradd.testController", {
     _fireStepEvent(step, err) {
         this.trigger("teststep", {Step: step, Err: err});
     },
+    _fireMarker(marker) {
+        this.trigger("testmarker", marker);
+    },
+
     changeVal: function(step, id, val) {
         val = JSON.parse(val);
         goradd.log ("changeVal", step, id, val);

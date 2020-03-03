@@ -55,5 +55,9 @@ This file attaches some code used by the test harness to drive browser-based tes
         goradd.log = console.log;
     }
 
+    goradd.postMarker = function(marker) {
+        window.opener.postMessage({testMarker: marker}, "*");
+    };
+
 
 }) ();
