@@ -64,7 +64,7 @@ func (p *DialogSavePanel) Load(ctx context.Context, pk string) (data interface{}
 
 func (p *DialogSavePanel) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
-	case editDlgSaveAction:
+	case saveDlgSaveAction:
 		p.SavePanel().Save(ctx)
 		p.Hide()
 	}
