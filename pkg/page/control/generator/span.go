@@ -3,7 +3,6 @@ package generator
 import (
 	"fmt"
 	"github.com/goradd/goradd/codegen/generator"
-	"github.com/goradd/goradd/pkg/orm/db"
 )
 
 func init() {
@@ -23,16 +22,13 @@ func (d Span) SupportsColumn(ref interface{}) bool {
 }
 
 func (d Span) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
-	col := ref.(*db.Column)
 	s = fmt.Sprintf(
 `%s.SpanCreator{
 	ID:        p.ID() + "-%s",
 	ControlOptions: page.ControlOptions{
-		IsDisabled:	   %#v,
-		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.Package, desc.ControlID, col.IsPk, !col.IsNullable, desc.Connector)
+}`, desc.Package, desc.ControlID, desc.Connector)
 	return
 }
 
