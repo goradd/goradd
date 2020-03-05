@@ -111,7 +111,7 @@ func (c {{= cd.Connector }}) Load(ctx context.Context) []interface{} {
 
 {{
 func init() {
-	gob.Register(&{{= cd.Connector }}{})
+	gob.Register(new({{= cd.Connector }}))
 }
 
 }}
