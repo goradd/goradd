@@ -152,6 +152,8 @@ type ControlI interface {
 	SetHeightStyle(w interface{}) ControlI
 	Attributes() html.Attributes
 	SetDisplay(d string) ControlI
+	SetDisabled(d bool)
+	IsDisabled() bool
 
 	PutCustomScript(ctx context.Context, response *Response)
 
