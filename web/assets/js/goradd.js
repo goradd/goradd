@@ -406,7 +406,11 @@ function _unpackObj(obj) {
 }
 
 function _registerControls() {
-    var els = goradd.qa('[data-grctl]');
+    var els = goradd.qa('[data-grctlhigh]'); // High priority controls that other controls are dependent on
+    goradd.each(els, function() {
+        _registerControl(this);
+    });
+    els = goradd.qa('[data-grctl]');
     goradd.each(els, function() {
         _registerControl(this);
     });
@@ -1095,7 +1099,7 @@ goradd = {
 
     /**
      * msg puts up a javascript alert
-     * @param {strng} m
+     * @param {string} m
      */
     msg: function(m) {
         alert(m);
@@ -1132,8 +1136,33 @@ goradd = {
     // Watcher support
     subscribeWatchers: function() {
         goradd.subscribe(Object.keys(_watchers), _processWatcherMessage)
-    }
+    },
+    /**
+     * findNamedObject will search the through the base hierarchy for object named and return it. The hierarchy
+     * is delimited by periods (.). If no base is given, it uses the window as its starting point. If the value is
+     * not found in the object, undefined is returned.
+     * @param {string} name
+     * @param {object} [base]
+     */
+    findNamedObject: function(name, base) {
+        if (name === "") {
+            return base;
+        }
+        var names = name.split( "." );
 
+        if (!base) {
+            base = window;
+        }
+        var obj = base;
+        for (var i = 0; i < names.length; i++) {
+            var v = names[i];
+            if (obj[v] === undefined) {
+                return undefined;
+            }
+            obj = obj[v];
+        }
+        return obj;
+    }
 };
 
 /**
@@ -2159,7 +2188,7 @@ goradd.g.prototype = {
  * to the html object.
  *
  * @param {string} name  The namespaced name of the prototype.
- * @param {object} base  The base object. If not included, goradd.Widget will be used as the base object.
+ * @param {string|object} base  The base object. If not included, goradd.Widget will be used as the base object.
  * @param {object} prototype The prototype to use. Functions will become part of the function prototype, and other objects will
  *                  become static global objects. Instance methods should be placed in the "options" object, or
  *                  simply declared and initialized in the "_create" function.
@@ -2174,23 +2203,24 @@ goradd.widget = function(name, base, prototype) {
     if ( !prototype ) {
         prototype = base;
         base = goradd.prototypes.goradd.Widget;
+    } else if (typeof(base) == "string") {
+        // search for the base
+        base = goradd.findNamedObject(base, goradd.prototypes);
     }
 
     // make sure we put the prototype on the goradd global object, and the instance on the goradd item attached to the html object.
     var names = name.split( "." );
-
     var obj = goradd.prototypes;
-    var ctx = null;
 
     for (var i = 0; i < names.length - 1; i++) {
         var v = names[i];
-        ctx = obj;
         if (!obj[v]) {
             obj[v] = {};
         }
         obj = obj[v];
     }
     var loc = names[names.length -1];
+
     if (obj[loc]) {
         goradd.log(name + " is already defined.");
         return;
@@ -2262,14 +2292,7 @@ goradd.widget = function(name, base, prototype) {
  */
 goradd.widget.new = function(constructor, options, element) {
     if (typeof constructor === "string") {
-        var names = constructor.split( "." );
-        var obj = goradd.prototypes;
-        var ctx = null;
-        goradd.each (names, function (i, v) {
-            ctx = obj;
-            obj = obj[v];
-        });
-        constructor = obj;
+        constructor = goradd.findNamedObject(constructor, goradd.prototypes);
     }
     return new constructor(options, element);
 };
