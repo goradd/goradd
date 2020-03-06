@@ -111,7 +111,10 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.
     if !p.Page().HasControl(id) {
         return nil
     }
-	return p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }})
+	if c,ok := p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }}); ok {
+	    return c
+	}
+	return nil
 }
 
 }}
@@ -138,7 +141,10 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.
     if !p.Page().HasControl(id) {
         return nil
     }
-	return p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }})
+	if c,ok := p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }}); ok {
+	    return c
+	}
+	return nil
 }
 
 }}
@@ -164,7 +170,10 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.
     if !p.Page().HasControl(id) {
         return nil
     }
-	return p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }})
+	if c,ok := p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }}); ok {
+	    return c
+	}
+	return nil
 }
 
 }}

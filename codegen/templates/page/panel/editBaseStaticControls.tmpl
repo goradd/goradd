@@ -1,0 +1,52 @@
+// editBaseStaticControls.tmpl
+
+if generator.DefaultStaticTextType != "" {
+	codegen.AddObjectPath(generator.DefaultStaticTextType)
+    gen := generator.GetControlGenerator(generator.DefaultStaticTextType)
+    for _,col := range t.Columns {
+        if col.IsPk {continue}
+        cd := t.ControlDescription(col)
+        if cd == nil || cd.Generator == nil {continue}
+        var staticControl string
+        if col.ForeignKey != nil {
+            staticControl = t.GoName + col.ForeignKey.GoName + "Static"
+        } else {
+            staticControl = t.GoName + col.GoName + "Static"
+        }
+        cd.Connector = staticControl + "Connector"
+		cd.Package = codegen.ObjectPackage(generator.DefaultStaticTextType)
+        creatorString := gen.GenerateCreator(col, cd)
+        creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
+        sRefresh := gen.GenerateRefresh(col, cd)
+
+{{
+func (p *{{= panelName }}) {{= staticControl }}Creator() page.Creator {
+	return {{= creatorString }}
+}
+
+type {{= cd.Connector }}  struct {
+}
+
+func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
+{{if sRefresh != ""}}
+    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+{{if col.IsType() }}
+        val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction() }}().ID()
+{{else}}
+        val := data.(*model.{{= t.GoName }}).{{= col.GoName }}()
+{{if}}
+        {{= sRefresh }}
+    }
+{{if}}
+}
+
+func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
+}
+
+func init() {
+	gob.Register(new({{= cd.Connector }}))
+}
+
+}}
+    }
+}
