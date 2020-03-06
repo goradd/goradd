@@ -9,9 +9,9 @@ if generator.DefaultStaticTextType != "" {
         if cd == nil || cd.Generator == nil {continue}
         var staticControl string
         if col.ForeignKey != nil {
-            staticControl = col.ForeignKey.GoName + "Static"
+            staticControl = t.GoName + col.ForeignKey.GoName + "Static"
         } else {
-            staticControl = col.GoName + "Static"
+            staticControl = t.GoName + col.GoName + "Static"
         }
         cd.Connector = staticControl + "Connector"
 		cd.Package = codegen.ObjectPackage(generator.DefaultStaticTextType)
