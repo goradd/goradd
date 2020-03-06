@@ -17,11 +17,13 @@ func IsNil(i interface{}) bool {
 		return true
 	}
 	v := reflect.ValueOf(i)
-	switch v.Kind() {
+	k := v.Kind()
+	switch k {
 	case reflect.Chan:fallthrough
 	case reflect.Func:fallthrough
 	case reflect.Interface:fallthrough
 	case reflect.Map:fallthrough
+	case reflect.Ptr:fallthrough
 	case reflect.Slice:
 		return v.IsNil()
 	}
