@@ -29,9 +29,9 @@ type {{= cd.Connector }}  struct {
 
 func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if sRefresh != ""}}
-    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
-{{if col.IsType() }}
-        val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction() }}().ID()
+    if ctrl, ok := i.(*{{= codegen.ObjectType(generator.DefaultStaticTextType) }}); ok {
+{{if col.IsType() || col.IsReference() }}
+        val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction() }}().String()
 {{else}}
         val := data.(*model.{{= t.GoName }}).{{= col.GoName }}()
 {{if}}

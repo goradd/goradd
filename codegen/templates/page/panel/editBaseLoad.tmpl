@@ -8,6 +8,12 @@ func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType()
 		p.{{= t.GoName }} = model.New{{= t.GoName }}()
 	} else {
 		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk,
+{{for _,col := range t.Columns}}
+    {{if col.IsReference() }}
+            node.{{= t.GoName}}().{{= col.ReferenceFunction()}}(),
+    {{if}}
+{{for}}
+
 {{for _,rr := range t.ReverseReferences}}
     {{if rr.IsUnique() }}
             node.{{= t.GoName}}().{{= rr.GoName}}(),

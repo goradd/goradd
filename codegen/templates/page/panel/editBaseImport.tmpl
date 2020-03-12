@@ -46,10 +46,7 @@ import(
 	"context"
     "encoding/gob"
 	"goradd-project/gen/{{dd.DbKey}}/model"
-
-{{if len(t.ReverseReferences) > 0}}
 	"goradd-project/gen/{{dd.DbKey}}/model/node"
-{{if}}
 
 {{= codegen.ImportStrings() }}
 
