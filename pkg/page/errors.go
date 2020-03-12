@@ -78,6 +78,10 @@ func NewFrameworkError(err int) FrameworkError {
 	return FrameworkError{Err: err}
 }
 
+func NewRedirectError(location string) FrameworkError {
+	return FrameworkError{Err: FrameworkErrRedirect, Location: location}
+}
+
 // Error returns the error string
 func (e FrameworkError) Error() string {
 	switch e.Err {
