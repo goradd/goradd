@@ -194,6 +194,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if errCode != 0 {
+			log.Print(errCode)
 			w.WriteHeader(errCode)
 		}
 	}

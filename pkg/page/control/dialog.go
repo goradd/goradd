@@ -219,7 +219,6 @@ func (d *Dialog) RemoveButton(id string) {
 	d.ButtonBar().RemoveChild(id)
 	d.Refresh()
 	//delete(d.validators, id)
-
 }
 
 // RemoveAllButtons removes all the buttons from the dialog

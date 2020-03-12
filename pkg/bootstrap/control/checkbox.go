@@ -50,7 +50,7 @@ func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
 	if c.inline {
 		checkWrapperAttributes.AddClass("form-check-inline")
 	}
-	return html.RenderTag("div", checkWrapperAttributes, h) // make sure the entire control gets removed
+	return html.RenderTag("div", checkWrapperAttributes, h)
 }
 
 func (c *Checkbox) Serialize(e page.Encoder) (err error) {
