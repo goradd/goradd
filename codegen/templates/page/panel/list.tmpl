@@ -139,14 +139,12 @@ func (p *{{= panelName }}) ZoomItem(ctx context.Context, id string) {
 	p.ParentForm().ChangeLocation(config.MakeLocalPath("{{= detailFormPath }}"))
 }
 
-// BuildQuery begins the query builder process, returning a partially built query to be completed by the
-// base object.
+/* See the base class. Likely you will want to copy it and paste it here to modify how
+queries are performed. The default filters based on the filter text box.
 func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
-    // The default here simply filters based on the text in the FiterText.
-    // Feel free to add additional requirements.
-	filter := p.MakeFilter(GetTextbox(p, p.ID() + "-filterText").Text())
-	return model.Query{{= t.GoPlural }}(ctx).Where(filter)
+   return p.{{= panelName }}Base.BuildQuery(ctx context.Context)
 }
+*/
 
 func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
 	return c.Page().GetControl(id).(*{{= panelName }})

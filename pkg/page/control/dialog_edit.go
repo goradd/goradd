@@ -12,6 +12,12 @@ const (
 	editDlgDeleteAction
 )
 
+const (
+	SaveButtonID = "saveBtn"
+	CancelButtonnID = "cancelBtn"
+	DeleteButtonID = "deleteBtn"
+)
+
 type EditablePanel interface {
 	PanelI
 	Load(ctx context.Context, pk string) error
@@ -44,15 +50,15 @@ func GetDialogEditPanel(parent page.ControlI, id string, objectName string) (*Di
 func (p *DialogEditPanel) Init(dlg page.ControlI, id string, objectName string) {
 	p.DialogPanel.Init(dlg, id)
 	p.AddButton(p.GT("Delete"),
-		"deleteBtn",
+		DeleteButtonID,
 		&DialogButtonOptions{
 			PushLeft:true,
 			ConfirmationMessage:fmt.Sprintf(p.GT("Are you sure you want to delete this %s?"), objectName),
 			OnClick:action.Ajax(p.ID(), editDlgDeleteAction),
 		})
 
-	p.AddCloseButton(p.GT("Cancel"), "cancel")
-	p.AddButton(p.GT("Save"), "saveBtn", &DialogButtonOptions{
+	p.AddCloseButton(p.GT("Cancel"), CancelButtonnID)
+	p.AddButton(p.GT("Save"), SaveButtonID, &DialogButtonOptions{
 		Validates:true,
 		IsPrimary:true,
 		OnClick:action.Ajax(p.ID(), editDlgSaveAction),
@@ -74,10 +80,10 @@ func (p *DialogEditPanel) Load(ctx context.Context, pk string) (data interface{}
 
 	if pk == "" {
 		// Editing a new item
-		p.SetButtonVisible("deleteBtn", false)
+		p.SetButtonVisible(DeleteButtonID, false)
 		p.SetTitle(fmt.Sprintf(p.GT("New %s"), p.ObjectName))
 	} else {
-		p.SetButtonVisible("deleteBtn", true)
+		p.SetButtonVisible(DeleteButtonID, true)
 		p.SetTitle(fmt.Sprintf(p.GT("Edit %s"), p.ObjectName))
 	}
 	data = ep.Data()

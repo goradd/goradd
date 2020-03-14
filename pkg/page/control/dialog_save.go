@@ -39,8 +39,8 @@ func GetDialogSavePanel(parent page.ControlI, id string) (*DialogSavePanel, bool
 
 func (p *DialogSavePanel) Init(dlg page.ControlI, id string) {
 	p.DialogPanel.Init(dlg, id)
-	p.AddCloseButton(p.GT("Cancel"), "cancel")
-	p.AddButton(p.GT("Save"), "saveBtn", &DialogButtonOptions{
+	p.AddCloseButton(p.GT("Cancel"), CancelButtonnID)
+	p.AddButton(p.GT("Save"), SaveButtonID, &DialogButtonOptions{
 		Validates:true,
 		IsPrimary:true,
 		OnClick:action.Ajax(p.ID(), saveDlgSaveAction),

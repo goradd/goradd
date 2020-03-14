@@ -23,7 +23,13 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataMa
 }
 
 func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
+    filterText := {{= ctrlPkg }}.GetTextboxI(p, p.ID() + "-filterText").Text()
 	q := model.Query{{= t.GoPlural }}(ctx)
+	q = q.Where(op.Or(
+    {{for _,col := range t.Columns }}
+    		op.StartsWith(node.{{= t.GoName }}().{{= col.GoName }}(), filterText),
+    {{for}}
+    	))
 	{{for _,col := range t.Columns}}
 	{{if col.IsReference() }}
 	 q = q.Join(node.{{= t.GoName}}().{{= col.ReferenceFunction()}}())
@@ -41,14 +47,5 @@ func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural
     {{for}}
 	return q
 }
-
-func (p *{{= panelName }}) MakeFilter(filterText string) query.NodeI {
-	return op.Or(
-{{for _,col := range t.Columns }}
-		op.StartsWith(node.{{= t.GoName }}().{{= col.GoName }}(), filterText),
-{{for}}
-	)
-}
-
 
 }}
