@@ -450,6 +450,10 @@ function _registerControl(ctrl) {
         g.on('click', _formObjChanged);
     }
     g.on('change input', _formObjChanged, {capture: true}); // make sure we get these events before later attached events
+    if (window.jQuery) {
+        // Some jQuery libraries intercept events, and then fire change using jQuery, which is not interceptable using built in capture methods
+        jQuery(ctrl).on("change", _formObjChanged)
+    }
 
     // widget support, using declarative methods
     if (goradd.widget.new) {

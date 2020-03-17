@@ -115,6 +115,7 @@ type RadioListGroupCreator struct {
 	Value string
 	// SaveState saves the selected value so that it is restored if the form is returned to.
 	ButtonStyle string
+	// OnChange is the action to take when any of the radio buttons in the list change
 	OnChange action.ActionI
 	SaveState bool
 	page.ControlOptions
@@ -142,6 +143,7 @@ func (c RadioListGroupCreator) Init(ctx context.Context, ctrl RadioListGroupI) {
 		ctrl.SetButtonStyle(c.ButtonStyle)
 	}
 	if c.OnChange != nil {
+		// Radio groups require special handling, since the buttons themselves are controlled by jQuery.
 		ctrl.On(event.Change(), c.OnChange)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 )
 
@@ -120,6 +121,8 @@ type RadioListCreator struct {
 	RowClass string
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Value string
+	// OnChange is the action to take when any of the radio buttons in the list change
+	OnChange action.ActionI
 	// SaveState saves the selected value so that it is restored if the form is returned to.
 	SaveState bool
 	page.ControlOptions
@@ -144,6 +147,7 @@ func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
 		IsScrolling: c.IsScrolling,
 		RowClass: c.RowClass,
 		Value: c.Value,
+		OnChange: c.OnChange,
 		SaveState: c.SaveState,
 		ControlOptions: c.ControlOptions,
 
