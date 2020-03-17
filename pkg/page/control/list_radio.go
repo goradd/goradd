@@ -5,6 +5,8 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
 	"strings"
 )
 
@@ -21,10 +23,10 @@ type RadioListI interface {
 
 }
 
-// RadioList is a multi-select control that presents its choices as a list of checkboxes.
+// RadioList is a single-select control that presents its choices as a list of radio buttons.
 // Styling is provided by divs and spans that you can provide css for in your style sheets. The
 // goradd.css file has default styling to handle the basics. It wraps the whole thing in a div that can be set
-// to scroll as well, so that the final structure can be styled like a multi-table table, or a single-table
+// to scroll as well, so that the final structure can be styled like a multi-column table, or a single-table
 // scrolling list much like a standard html select list.
 type RadioList struct {
 	SelectList
@@ -271,8 +273,11 @@ type RadioListCreator struct {
 	RowClass string
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Value string
+	// OnChange is the action to take when any of the radio buttons in the list change
+	OnChange action.ActionI
 	// SaveState saves the selected value so that it is restored if the form is returned to.
 	SaveState bool
+
 	page.ControlOptions
 }
 
@@ -306,6 +311,9 @@ func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
 	}
 	if c.RowClass != "" {
 		ctrl.SetRowClass(c.RowClass)
+	}
+	if c.OnChange != nil {
+		ctrl.On(event.Change().Selector("input"), c.OnChange)
 	}
 	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.SaveState {

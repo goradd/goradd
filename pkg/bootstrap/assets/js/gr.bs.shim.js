@@ -17,11 +17,10 @@
 jQuery.fn.bootstrapButton = jQuery.fn.button.noConflict();
 jQuery.fn.bootstrapTooltip = jQuery.fn.tooltip.noConflict();
 
-// Shorthand for $( document ).ready()
 $(function() {
-    // Bootstrap fires events using jquery, so we have to capture it using jquery to shunt it to us.
+    // Bootstrap fires events using jquery, so we have to capture it using jquery to shunt it to the radio list.
     var ctrls = $('[data-grctl="bs-RadioListGroup"]');
     ctrls.on("change", "input", function(event) {
-        g$(this).trigger("change");
+        g$(event.delegateTarget.id).trigger("change");
     });
 });
