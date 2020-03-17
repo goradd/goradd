@@ -335,6 +335,10 @@ func (f *FormBase) PageDrawingFunction() PageDrawFunc {
 }
 
 // AddJavaScriptFile registers a JavaScript file such that it will get loaded on the page.
+//
+// The path is either a url, or an internal path to the location of the file
+// in the development environment.
+//
 // If forceHeader is true, the file will be listed in the header, which you should only do if the file has some
 // preliminary javascript that needs to be executed before the dom loads.
 // You can specify forceHeader and a "defer" attribute to get the effect of loading the javascript in the background.
@@ -344,8 +348,10 @@ func (f *FormBase) PageDrawingFunction() PageDrawFunc {
 // dynamically by the goradd javascript. Controls generally should call this during the initial creation of the control if the control
 // requires additional javascript to function.
 //
-// The path is either a url, or an internal path to the location of the file
-// in the development environment.
+// attributes are the attributes that will be included with the script tag, which is useful for things like
+// crossorigin and integrity attributes.
+//
+// To control the cache-control settings on the file, you should call SetCacheControl.
 func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes) {
 	if forceHeader && f.isOnPage {
 		panic("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
@@ -394,8 +400,11 @@ func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 // is already drawn. The path is either a url to an external resource, or a local directory to a resource on disk.
 // Paths must be registered with RegisterAssetDirectory, and will be served from their local location in a development environment,
 // but from the corresponding registered path when deployed.
-// The attributes are extra attributes included with the tag,
-// which is useful for things like crossorigin and integrity attributes.
+//
+// attributes are the attributes that will be included with the link tag, which is useful for things like
+// crossorigin and integrity attributes.
+//
+// To control the cache-control settings on the file, you should call SetCacheControl.
 func (f *FormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 	if path[:4] != "http" {
 		url := GetAssetUrl(path)
