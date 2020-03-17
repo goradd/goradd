@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 )
@@ -27,6 +28,17 @@ func (t *PagedTable) Init(parent page.ControlI, id string) {
 	t.Table.Init(parent, id)
 	t.PagedControl.SetPageSize(0) // use the application default
 }
+
+// MarshalState is an internal function to save the state of the control
+func (t *PagedTable) MarshalState(m maps.Setter) {
+	t.PagedControl.MarshalState(m)
+}
+
+// UnmarshalState is an internal function to restore the state of the control
+func (t *PagedTable) UnmarshalState(m maps.Loader) {
+	t.PagedControl.UnmarshalState(m)
+}
+
 
 func (t *PagedTable) Serialize(e page.Encoder) (err error) {
 	if err = t.Table.Serialize(e); err != nil {

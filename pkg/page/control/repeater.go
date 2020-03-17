@@ -3,6 +3,7 @@ package control
 import (
 	"bytes"
 	"context"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
@@ -100,6 +101,17 @@ func (r *Repeater) DrawItem(ctx context.Context, i int, data interface{}, buf *b
 	}
 	return
 }
+
+// MarshalState is an internal function to save the state of the control
+func (r *Repeater) MarshalState(m maps.Setter) {
+	r.PagedControl.MarshalState(m)
+}
+
+// UnmarshalState is an internal function to restore the state of the control
+func (r *Repeater) UnmarshalState(m maps.Loader) {
+	r.PagedControl.UnmarshalState(m)
+}
+
 
 func (r *Repeater) Serialize(e page.Encoder) (err error) {
 	if err = r.ControlBase.Serialize(e); err != nil {
