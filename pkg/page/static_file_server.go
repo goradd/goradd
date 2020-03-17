@@ -14,6 +14,7 @@ import (
 )
 
 var assetDirectories = map[string]string{}
+var cacheControl = map[string]string{}
 
 // RenderAssetTag will render a tag that points to a static file asset that should be served by the MUX. filePath points
 // to the file on the development server, and it will be copied to the appropriate subdirectory in the local assets directory
@@ -109,6 +110,17 @@ func GetAssetUrl(location string) string {
 }
 
 // ServeAsset is the default server for files in asset directories.
+//
+// Some things you get for free are:
+// - It will look for and use zipped versions of assets in the release version if available. See the goradd-project/build directory
+//   for examples on how to do that.
+// - It will use Go's default file server, which automatically gives you Last-Modified support in the header of these assets in
+//   the release version of the application. However, in order to actually get the client to validate, you must specify a
+//   Cache-Control policy of no-cache, or a max-age, etc. with the file. Also, remember that this will check the modification
+//   date of the file on the server, which will change each time you copy the file to the server.
+//
+// Much more complicated servers are possible. You could, for example, package all your static files with the application itself
+// and use an ETag to control caching. But, that is not available here, you would need to implement that yourself.
 func ServeAsset(w http.ResponseWriter, r *http.Request) {
 	localpath := GetAssetLocation(r.URL.Path)
 	if localpath == "" {
@@ -118,8 +130,6 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 	//log.Printf("Served %s", localpath)
 
 	if !config.Release && config.AssetDirectory() == "" {
-		// TODO: Set up per file cache control
-
 		if ext := filepath.Ext(localpath); ext == "" {
 			panic("Asset file does not have an extension: " + localpath)
 		}
@@ -129,7 +139,10 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=1")
 		http.ServeFile(w, r, localpath)
 	} else {
-		// TODO: Set up a validating cache control
+		if cc,ok := cacheControl[r.URL.Path]; ok {
+			w.Header().Set("Cache-Control", cc)
+		}
+
 		var ext = filepath.Ext(localpath)
 
 		var minFileName string
@@ -201,4 +214,14 @@ func RegisterAssetDirectory(dir string, pattern string) {
 		panic(pattern + " is already registered as an asset directory. ")
 	}
 	assetDirectories[pattern] = dir
+}
+
+// SetCacheControl sets the cache control setting for the given asset file.
+//
+// Do this only during application initialization, since we are not using a mutex.
+//
+// path is the directory path to the file on the development server, the same you use to register the file.
+func SetCacheControl(path string, cacheControlSetting string) {
+	url := GetAssetUrl(path)
+	cacheControl[url] = cacheControlSetting
 }
