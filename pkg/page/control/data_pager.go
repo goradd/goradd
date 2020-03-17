@@ -137,6 +137,21 @@ func (c *PagedControl) SqlLimits() (maxRowCount, offset int) {
 	return
 }
 
+// MarshalState is an internal function to save the state of the control
+func (c *PagedControl) MarshalState(m maps.Setter) {
+	m.Set("pn", c.pageNum)
+}
+
+// UnmarshalState is an internal function to restore the state of the control
+func (c *PagedControl) UnmarshalState(m maps.Loader) {
+	if v, ok := m.Load("pn"); ok {
+		if pn, ok := v.(int); ok {
+			c.pageNum = pn
+		}
+	}
+}
+
+
 // Serialize encodes the PagedControl data for serialization. Note that all control implementations
 // that use a PagedControl MUST create their own Serialize method, call the base ControlBase's version first,
 // and then call this Serialize method.
