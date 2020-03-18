@@ -18,7 +18,7 @@ const (
 	ShortUsDate       = "1/2/06"
 	EuroDate          = "2/1/2006"
 	UsDateTime        = "1/2/2006 3:04 PM"
-	EuroDateTime      = "1/2/2006 15:04"
+	EuroDateTime      = "2/1/2006 15:04"
 	UsTime            = "3:04 PM"
 	EuroTime          = "15:04"
 	UsDateTimeSeconds = "1/2/2006 3:04:05 PM"

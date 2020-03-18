@@ -26,6 +26,21 @@ const (
 	StampNano  = "Jan _2 15:04:05.000000000"
 )
 
+// Parse parses the given layout string to turn a string int a DateTime
+// Since the time.Time doc is not that great about really describing the format, here it is:
+//
+// Day of the week		Mon   Monday
+// Day					02   2   _2   (width two, right justified)
+// Month				01   1   Jan   January
+// Year					06   2006
+// Hour					03   3   15
+// Minute				04   4
+// Second				05   5
+// ms μs ns				.000   .000000   .000000000
+// ms μs ns				.999   .999999   .999999999   (trailing zeros removed)
+// am/pm				PM   pm
+// Timezone				MST
+// Offset				-0700   -07   -07:00   Z0700   Z07:00
 func Parse(layout, value string) (DateTime, error) {
 	var ts bool
 	if layout == Stamp || layout == StampMilli || layout == StampMicro || layout == StampNano {

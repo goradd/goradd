@@ -55,8 +55,8 @@ type DateTextboxCreator struct {
 	SaveState bool
 	// Text is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Text string
-	// Format is the time.format string to use to decode the text into a date.
-	Format string
+	// Formats is the time.format strings to use to decode the text into a date.
+	Formats []string
 
 	page.ControlOptions
 }
@@ -68,9 +68,6 @@ func (c DateTextboxCreator) Create(ctx context.Context, parent page.ControlI) pa
 }
 
 func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
-	if c.Format != "" {
-		ctrl.SetFormat(c.Format)
-	}
 	// Reuse subclass
 	sub := control.DateTextboxCreator{
 		Placeholder:    c.Placeholder,
@@ -82,7 +79,7 @@ func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
 		ControlOptions: c.ControlOptions,
 		SaveState:      c.SaveState,
 		Text:           c.Text,
-		Format:         c.Format,
+		Formats:        c.Formats,
 	}
 	sub.Init(ctx, ctrl)
 }

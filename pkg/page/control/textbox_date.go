@@ -12,15 +12,15 @@ import (
 
 type DateTextboxI interface {
 	TextboxI
-	SetFormat(format string) DateTextboxI
+	SetFormats(formats []string) DateTextboxI
 	Date() datetime.DateTime
-	Format() string
+	Formats() []string
 }
 
 // DateTextbox is a textbox that only permits dates and/or times to be entered into it.
 type DateTextbox struct {
 	Textbox
-	format string            // same as what time.format expects
+	formats []string         // Variety of formats it will accept. Same as what time.format expects.
 	dt     datetime.DateTime // Converting from text to a datetime is expensive.
 	// We maintain a copy of the conversion to prevent duplication of effort.
 }
@@ -36,19 +36,19 @@ func NewDateTextbox(parent page.ControlI, id string) *DateTextbox {
 func (d *DateTextbox) Init(parent page.ControlI, id string) {
 	d.Textbox.Init(parent, id)
 	d.ValidateWith(DateValidator{})
-	d.format = datetime.UsDateTime
+	d.formats = []string{datetime.UsDateTime}
 }
 
 // SetFormat sets the format of the text allowed. The format is any allowable format
 // that datetime or time can convert.
-func (d *DateTextbox) SetFormat(format string) DateTextboxI {
-	d.format = format
+func (d *DateTextbox) SetFormats(formats []string) DateTextboxI {
+	d.formats = formats
 	return d
 }
 
 // Format returns the format string specified previously
-func (d *DateTextbox) Format() string {
-	return d.format
+func (d *DateTextbox) Formats() []string {
+	return d.formats
 }
 
 
@@ -66,17 +66,27 @@ func (d *DateTextbox) SetValue(val interface{}) page.ControlI {
 	return d
 }
 
-func (d *DateTextbox) layout() string {
-	return d.format
+func (d *DateTextbox) layouts() []string {
+	return d.formats
+}
+
+func (d *DateTextbox) parseDate(s string) (result datetime.DateTime, layoutUsed string, err error) {
+	for _,layoutUsed = range d.layouts() {
+		result, err = datetime.Parse(layoutUsed, s)
+		if err == nil {
+			break
+		}
+	}
+	return
 }
 
 // SetText sets the DateTime to the given text. If you attempt set the text to something that is not
 // convertible to a date, an empty string will be entered.
 func (d *DateTextbox) SetText(s string) page.ControlI {
-	l := d.layout()
-	v, err := datetime.Parse(l, s)
+	v, layout, err := d.parseDate(s)
+
 	if err == nil {
-		d.Textbox.SetText(v.Format(l))
+		d.Textbox.SetText(v.Format(layout))
 		d.dt = v
 	} else {
 		d.Textbox.SetText("")
@@ -87,7 +97,7 @@ func (d *DateTextbox) SetText(s string) page.ControlI {
 
 // SetDate will set the textbox to the give datetime value
 func (d *DateTextbox) SetDate(dt datetime.DateTime) {
-	s := dt.Format(d.layout())
+	s := dt.Format(d.layouts()[0])
 	d.Textbox.SetText(s)
 	d.dt = dt
 }
@@ -120,10 +130,8 @@ func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
 		return
 	}
 
-	l := d.layout()
-	t = strings.Replace(t, "-", "/", -1) // sometimes dashes are used as a date separator. Allow this.
+	v, _, err := d.parseDate(t)
 
-	v, err := datetime.Parse(l, t)
 	if err == nil {
 		d.dt = v
 	}
@@ -133,7 +141,7 @@ func (d *DateTextbox) Serialize(e page.Encoder) (err error) {
 	if err = d.Textbox.Serialize(e); err != nil {
 		return
 	}
-	if err = e.Encode(d.format); err != nil {
+	if err = e.Encode(d.formats); err != nil {
 		return
 	}
 	if err = e.Encode(d.dt); err != nil {
@@ -147,7 +155,7 @@ func (d *DateTextbox) Deserialize(dec page.Decoder) (err error) {
 	if err = d.Textbox.Deserialize(dec); err != nil {
 		return
 	}
-	if err = dec.Decode(&d.format); err != nil {
+	if err = dec.Decode(&d.formats); err != nil {
 		return
 	}
 	if err = dec.Decode(&d.dt); err != nil {
@@ -171,7 +179,7 @@ func (v DateValidator) Validate(c page.ControlI, s string) (msg string) {
 	ctrl := c.(DateTextboxI)
 	if ctrl.Date().IsZero() {
 		if v.Message == "" {
-			return c.GT("Enter the format ") + ctrl.Format()
+			return c.GT("Enter one of these formats: ") + strings.Join(ctrl.Formats(), ", ")
 		} else {
 			return v.Message
 		}
@@ -206,8 +214,8 @@ type DateTextboxCreator struct {
 	SaveState bool
 	// Text is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Text string
-	// Format is the time.format string to use to decode the text into a date or to display the date. By default it is datetime.UsDateTime.
-	Format string
+	// Formats is the time.format strings to use to decode the text into a date or to display the date. By default it is datetime.UsDateTime.
+	Formats []string
 
 	page.ControlOptions
 }
@@ -219,8 +227,8 @@ func (c DateTextboxCreator) Create(ctx context.Context, parent page.ControlI) pa
 }
 
 func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
-	if c.Format != "" {
-		ctrl.SetFormat(c.Format)
+	if c.Formats != nil {
+		ctrl.SetFormats(c.Formats)
 	}
 	// Reuse subclass
 	sub := TextboxCreator{

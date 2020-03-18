@@ -134,7 +134,7 @@ func (t *Textbox) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err err
 // Set the value of the text. Returns itself for chaining.
 func (t *Textbox) SetText(s string) page.ControlI {
 	t.value = s
-	t.SetAttribute("value", s)
+	t.AddRenderScript("val", s)
 	return t.this()
 }
 

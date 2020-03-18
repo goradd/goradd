@@ -90,7 +90,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 			Label: "Euro Date",
 			Child: DateTextboxCreator{
 				ID:     "dateText",
-				Format: datetime.EuroDate,
+				Formats: []string{datetime.EuroDate},
 			},
 		},
 		FormFieldWrapperCreator{
@@ -98,7 +98,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 			Label: "U.S. Time",
 			Child: DateTextboxCreator{
 				ID:     "timeText",
-				Format: datetime.UsTime,
+				Formats: []string{datetime.UsTime},
 			},
 		},
 		ButtonCreator{
