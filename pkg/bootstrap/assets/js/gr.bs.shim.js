@@ -23,4 +23,5 @@ $(function() {
     ctrls.on("change", "input", function(event) {
         g$(event.delegateTarget.id).trigger("change");
     });
+    $('[data-toggle="tooltip"]').bootstrapTooltip();
 });

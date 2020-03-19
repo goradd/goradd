@@ -53,6 +53,16 @@ func Parse(layout, value string) (DateTime, error) {
 	return DateTime{t, ts}, err
 }
 
+// ParseInOffset is like time.ParseInLocation but uses the given timezone offset in minutes from UTC to
+// be the location of the parsed time.
+func ParseInOffset(layout, value string, tzOffset int) (DateTime, error) {
+	dt, err := Parse(layout, value)
+	if err == nil {
+		dt = dt.As(time.FixedZone("", tzOffset * 60))
+	}
+	return dt, err
+}
+
 // FromSqlDateTime will receive a Date, Time, DateTime or Timestamp type of string that is typically output by SQL and
 // convert it to our own DateTime object. If the SQL date time string does not have timezone information,
 // the resulting value will be in UTC time, will not be a timestamp, and we are assuming that the SQL itself is in UTC.

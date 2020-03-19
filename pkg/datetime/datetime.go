@@ -269,6 +269,21 @@ func (d DateTime) In(location *time.Location) DateTime {
 	return DateTime{d.Time.In(location), d.isTimestamp}
 }
 
+// InOffsetDate converts the datetime to a fixed locale with the given timezone offset.
+// tzOffset is minutes from UTC.
+// See page.GetContext(ctx).ClientTimezoneOffset.
+func (d DateTime) InOffsetDate(tzOffset int) DateTime {
+	return DateTime{d.Time.In(time.FixedZone("", tzOffset * 60)), d.isTimestamp}
+}
+
+// As will express the same date and time, but will change to the given location.
+// In other words, if the date and time is 4:30, it will be 4:30 in the new timezone.
+func (d DateTime) As(location *time.Location) DateTime {
+	return Date(d.Year(), d.Month(), d.Day(), d.Hour(), d.Minute(), d.Second(), d.Nanosecond(), location)
+}
+
+
+
 func (d DateTime) Add(dur time.Duration) DateTime {
 	return DateTime{d.Time.Add(dur), d.isTimestamp}
 }

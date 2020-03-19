@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/session"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -111,8 +112,6 @@ type AppContext struct {
 	refreshIDs			[]string
 	// NoJavaScript indicates javascript is turned off by the browser
 	NoJavaScript bool
-	// ClientTimezoneOffset is the offset in minutes from UTC to the client's timezone.
-	ClientTimezoneOffset int
 }
 
 // String is a string representation of all the information in the context, and should primarily be used for debugging.
@@ -236,8 +235,6 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 	//var i interface{}
 	var err error
 
-	ctx.ClientTimezoneOffset = -1 // initialize to no value. -1 would be invalid, since 0 is a valid timezone offset.
-
 	if ctx.URL != nil {
 		if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); ok {
 			v, _ = ctx.FormValue(htmlVarParams)
@@ -284,7 +281,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 					ctx.eventID = EventID(params.EventID)
 				}
 				ctx.actionValues = params.Values
-				ctx.ClientTimezoneOffset = params.TimezoneOffset
+				session.SetClientTimezoneOffset(mainContext, params.TimezoneOffset)
 				if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); !ok {
 					ctx.err = fmt.Errorf("No pagestate found in response")
 					return

@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"encoding/gob"
+	"github.com/goradd/goradd/pkg/session"
 	"strings"
 	"time"
 
@@ -18,11 +19,13 @@ type DateTextboxI interface {
 }
 
 // DateTextbox is a textbox that only permits dates and/or times to be entered into it.
+//
+// Dates and times will be converted to Browser local time.
 type DateTextbox struct {
 	Textbox
 	formats []string         // Variety of formats it will accept. Same as what time.format expects.
 	dt     datetime.DateTime // Converting from text to a datetime is expensive.
-	// We maintain a copy of the conversion to prevent duplication of effort.
+							 // We maintain a copy of the conversion to prevent duplication of effort.
 }
 
 // NewDateTextbox creates a new DateTextbox.
@@ -70,9 +73,18 @@ func (d *DateTextbox) layouts() []string {
 	return d.formats
 }
 
-func (d *DateTextbox) parseDate(s string) (result datetime.DateTime, layoutUsed string, err error) {
+func (d *DateTextbox) parseDate(ctx context.Context, s string) (result datetime.DateTime, layoutUsed string, err error) {
+	var grctx *page.Context
+
+	if ctx != nil {
+		grctx = page.GetContext(ctx)
+	}
 	for _,layoutUsed = range d.layouts() {
-		result, err = datetime.Parse(layoutUsed, s)
+		if grctx == nil {
+			result, err = datetime.Parse(layoutUsed, s)
+		} else {
+			result, err = datetime.ParseInOffset(layoutUsed, s, session.ClientTimezoneOffset(ctx))
+		}
 		if err == nil {
 			break
 		}
@@ -81,9 +93,10 @@ func (d *DateTextbox) parseDate(s string) (result datetime.DateTime, layoutUsed 
 }
 
 // SetText sets the DateTime to the given text. If you attempt set the text to something that is not
-// convertible to a date, an empty string will be entered.
+// convertible to a date, an empty string will be entered. The resulting datetime will be in UTC time.
+// Use SetDate if you want to make sure the date is in a certain timezone.
 func (d *DateTextbox) SetText(s string) page.ControlI {
-	v, layout, err := d.parseDate(s)
+	v, layout, err := d.parseDate(nil, s)
 
 	if err == nil {
 		d.Textbox.SetText(v.Format(layout))
@@ -130,7 +143,7 @@ func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
 		return
 	}
 
-	v, _, err := d.parseDate(t)
+	v, _, err := d.parseDate(ctx, t)
 
 	if err == nil {
 		d.dt = v
