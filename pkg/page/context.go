@@ -351,7 +351,9 @@ func ConvertToBool(v interface{}) bool {
 func NewMockContext() (ctx context.Context) {
 	r := httptest.NewRequest("", "/", nil)
 	r = PutContext(r, nil)
-	ctx = r.Context()
+	s := session.NewMock()
+	session.SetSessionManager(s)
+	ctx = s.With(r.Context())
 	return
 }
 
