@@ -26,6 +26,21 @@ const (
 	StampNano  = "Jan _2 15:04:05.000000000"
 )
 
+// Parse parses the given layout string to turn a string int a DateTime
+// Since the time.Time doc is not that great about really describing the format, here it is:
+//
+// Day of the week		Mon   Monday
+// Day					02   2   _2   (width two, right justified)
+// Month				01   1   Jan   January
+// Year					06   2006
+// Hour					03   3   15
+// Minute				04   4
+// Second				05   5
+// ms μs ns				.000   .000000   .000000000
+// ms μs ns				.999   .999999   .999999999   (trailing zeros removed)
+// am/pm				PM   pm
+// Timezone				MST
+// Offset				-0700   -07   -07:00   Z0700   Z07:00
 func Parse(layout, value string) (DateTime, error) {
 	var ts bool
 	if layout == Stamp || layout == StampMilli || layout == StampMicro || layout == StampNano {
@@ -36,6 +51,16 @@ func Parse(layout, value string) (DateTime, error) {
 
 	t, err := time.Parse(layout, value)
 	return DateTime{t, ts}, err
+}
+
+// ParseInOffset is like time.ParseInLocation but uses the given timezone offset in minutes from UTC to
+// be the location of the parsed time.
+func ParseInOffset(layout, value string, tzOffset int) (DateTime, error) {
+	dt, err := Parse(layout, value)
+	if err == nil {
+		dt = dt.As(time.FixedZone("", tzOffset * 60))
+	}
+	return dt, err
 }
 
 // FromSqlDateTime will receive a Date, Time, DateTime or Timestamp type of string that is typically output by SQL and

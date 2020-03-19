@@ -8,6 +8,7 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"time"
 )
 
 type TextboxPanel struct {
@@ -90,7 +91,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 			Label: "Euro Date",
 			Child: DateTextboxCreator{
 				ID:     "dateText",
-				Format: datetime.EuroDate,
+				Formats: []string{datetime.EuroDate},
 			},
 		},
 		FormFieldWrapperCreator{
@@ -98,7 +99,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 			Label: "U.S. Time",
 			Child: DateTextboxCreator{
 				ID:     "timeText",
-				Format: datetime.UsTime,
+				Formats: []string{datetime.UsTime},
 			},
 		},
 		ButtonCreator{
@@ -188,9 +189,9 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 		t.AssertEqual(5, GetIntegerTextbox(f, "intText").Int())
 		t.AssertEqual(6.7, GetFloatTextbox(f, "floatText").Float64())
 		t.AssertEqual("me@you.com", GetEmailTextbox(f, "emailText").Text())
-		t.AssertEqual(datetime.NewDateTime("19/2/2018", datetime.EuroDate), GetDateTextbox(f, "dateText").Date())
-		t.AssertEqual(datetime.NewDateTime("4:59 am", datetime.UsTime), GetDateTextbox(f, "timeText").Date())
-		t.AssertEqual(datetime.NewDateTime("2/19/2018 4:23 pm", datetime.UsDateTime), GetDateTextbox(f, "dateTimeText").Date())
+		t.AssertEqual(true, datetime.NewDateTime("19/2/2018", datetime.EuroDate).Equal(GetDateTextbox(f, "dateText").Date().As(time.FixedZone("", 0))))
+		t.AssertEqual(true, datetime.NewDateTime("4:59 am", datetime.UsTime).Equal(GetDateTextbox(f, "timeText").Date().As(time.FixedZone("", 0))))
+		t.AssertEqual(true, datetime.NewDateTime("2/19/2018 4:23 pm", datetime.UsDateTime).Equal(GetDateTextbox(f, "dateTimeText").Date().As(time.FixedZone("", 0))))
 	})
 
 	t.AssertEqual(false, t.ControlHasClass("intText-ff", "error"))
