@@ -47,7 +47,7 @@ and true technologies that work on a broad range of browsers and servers, rather
 that require lots of Polyfills for emerging standards. JQuery is currently required, and partly because we want
 to make it easy to create Bootstrap based applications. However, Bootstrap has announced
 that they are removing reliance on JQuery, and we will attempt to do so as well.
-1) Progressivive enhancement. If you use the provided widgets, you can create a website
+1) Progressive enhancement. If you use the provided widgets, you can create a website
 that works even if the client turns off Javascript. All major browsers are currently supported,
 but we hope to support Opera Mini as well.
 1) Rich libraries of widgets. GoRADD provides standard widgets corresponding to 
