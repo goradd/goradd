@@ -530,6 +530,12 @@ goradd = {
      */
 
     /**
+     * The ajaxTimeout setting controls the number of milliseconds that ajax operations will wait before they
+     * timeout. The default here is to have no timeout for debugging purposes. The release version of the app will set this
+     * to the config.AjaxTimeout value in GO.
+     */
+    ajaxTimeout: 0,
+    /**
      * Extend merges keys and values of objects into the target object.
      * This version of extend is primarily for the purpose of adding
      * capabilities to javascript classes. It does not do deep merging, but it will copy the members of plain objects
@@ -2437,6 +2443,7 @@ goradd.widget("goradd.Widget", goradd.g, {
         objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
         objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         objRequest.setRequestHeader("X-Requested-With", "xmlhttprequest");
+        objRequest.timeout = goradd.ajaxTimeout;
 
         objRequest.onreadystatechange = function() {
             if (objRequest.readyState === 4) {
@@ -2446,10 +2453,12 @@ goradd.widget("goradd.Widget", goradd.g, {
                             throw "";
                         }
                         opts.success(JSON.parse(objRequest.response));
-                    } catch(err) {
+                    } catch (err) {
                         // Goradd returns ajax errors as text
                         opts.error(objRequest.response, err);
                     }
+                } else if (objRequest.status === 0) {
+                    opts.error("The browser has lost the connection to the server. Refresh the page and try again.", 0);
                 } else {
                     // This is a more serious ajax error situation.
                     opts.error(objRequest.response, objRequest.status);

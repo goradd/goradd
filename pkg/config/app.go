@@ -19,3 +19,8 @@ var WriteTimeout = 10 * time.Second
 // IdleTimout is used during keep-alive connections to control how often the client must ping us to keep the connection alive.
 // It helps us detect whether the client has gone away so that we can then close the connection.
 var IdleTimeout = 180 * time.Second
+// AjaxTimeout is the amount of time in milliseconds that we direct the browser to wait until it determines that an ajax
+// call timed out. This would mean that the browser has lost the connection to the server. The goradd.js file put up a
+// dialog on the screen telling the user to refresh the page to re-establish the connection. This only happens in release
+// mode so that you don't have to worry about timeouts when debugging ajax code.
+var AjaxTimeout = 10000;

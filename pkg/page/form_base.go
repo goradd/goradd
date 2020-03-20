@@ -200,6 +200,8 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if !config.Release {
 		// This code registers the form with the test harness. We do not want to do this in release mode since it is a security risk.
 		s += "goradd.initFormTest();\n"
+	} else {
+		s += fmt.Sprintf("goradd.ajaxTimeout = %d;\n", config.AjaxTimeout) // turn on the ajax timeout in release mode
 	}
 	s = fmt.Sprintf(`<script>
 %s
