@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/alexedwards/scs"
 	"github.com/alexedwards/scs/stores/memstore"
@@ -187,15 +188,33 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	buf := page.OutputBuffer(ctx)
 	if pm.IsPage(r.URL.Path) {
 		headers, errCode := pm.RunPage(ctx, buf)
-		if headers != nil {
-			for k, v := range headers {
-				// Multi-value headers can simply be separated with commas I believe
-				w.Header().Set(k, v)
+		if errCode == 0 {
+			if headers != nil {
+				for k, v := range headers {
+					// Multi-value headers can simply be separated with commas I believe
+					w.Header().Set(k, v)
+				}
 			}
-		}
-		if errCode != 0 {
+		} else {
 			log.Print(errCode)
-			w.WriteHeader(errCode)
+			grctx := page.GetContext(ctx)
+			if grctx.RequestMode() == page.Ajax {
+				js := []interface{}{errCode, headers}
+				s,err := json.Marshal(js)
+				if err == nil {
+					buf.Write(s)
+				}
+				w.WriteHeader(400)
+			} else {
+				if headers != nil {
+					for k, v := range headers {
+						// Multi-value headers can simply be separated with commas I believe
+						w.Header().Set(k, v)
+					}
+				}
+				w.WriteHeader(errCode)
+			}
+
 		}
 	}
 }
@@ -279,8 +298,10 @@ func (a *Application) ServeStaticFileHandler(buf *bytes.Buffer, next http.Handle
 func (a *Application) ServeAppHandler(buf *bytes.Buffer, next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		a.ServeHTTP(w, r)
-
-		if next != nil && page.OutputBuffer(r.Context()).Len() == 0 {
+		head := w.Header()
+		if next != nil &&
+			page.OutputBuffer(r.Context()).Len() == 0 &&
+			len(head) <= 1 { // This could be a hack. Not sure of any other way to tell if we have responded.
 			next.ServeHTTP(w, r)
 		}
 	}

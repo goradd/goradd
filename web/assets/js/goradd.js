@@ -896,6 +896,22 @@ goradd = {
                  * @returns {boolean}
                  */
                 error: function (result, err) {
+                    if (err === 400) {
+                        // A serious http error during ajax processing
+                        if (result.length > 2 && result[0] === "[") {
+                            var vals = JSON.parse(result);
+                            if (vals[0] === 303) {
+                                window.location = vals[1]["Location"];
+                                goradd.testStep();
+                                return false;
+                            } else if (vals[1] === 403) {
+                                // not authorized
+                                _displayAjaxError("You are not authorized to do this operation.", 403);
+                                goradd.testStep();
+                                return false;
+                            }
+                        }
+                    }
                     _displayAjaxError(result, err);
                     goradd.testStep();
                     return false;
@@ -2435,8 +2451,8 @@ goradd.widget("goradd.Widget", goradd.g, {
                         opts.error(objRequest.response, err);
                     }
                 } else {
-                    // This would be a problem with the server or client
-                    opts.error("An ajax error occurred: " + objRequest.statusText);
+                    // This is a more serious ajax error situation.
+                    opts.error(objRequest.response, objRequest.status);
                 }
 
                 delete _currentRequests[ajaxID];
