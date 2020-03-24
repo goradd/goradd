@@ -15,7 +15,7 @@ func (ctrl *AjaxTimingForm) AddHeadTags() {
 
 	// double up to deal with body attributes if they exist
 	ctrl.Page().BodyAttributes = `
-buf.WriteString(fmt.Sprintf("%v", bodyAttributes))
+buf.WriteString(fmt.Sprint(bodyAttributes))
 `
 }
 
@@ -30,11 +30,24 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("form.Txt1.With(page.NewLabelWrapper())").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("form.Txt1.With(page.NewLabelWrapper())").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("form.Txt1.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -43,11 +56,24 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("form.Txt1ChangeLabel.With(page.NewLabelWrapper())").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("form.Txt1ChangeLabel.With(page.NewLabelWrapper())").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("form.Txt1ChangeLabel.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -56,11 +82,24 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("form.Txt1KeyUpLabel.With(page.NewLabelWrapper())").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("form.Txt1KeyUpLabel.With(page.NewLabelWrapper())").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("form.Txt1KeyUpLabel.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -71,11 +110,24 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("form.Chk.With(page.NewLabelWrapper())").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("form.Chk.With(page.NewLabelWrapper())").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("form.Chk.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -84,11 +136,24 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("form.ChkLabel.With(page.NewLabelWrapper())").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("form.ChkLabel.With(page.NewLabelWrapper())").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("form.ChkLabel.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -99,11 +164,24 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("form.Txt2.With(page.NewLabelWrapper())").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("form.Txt2.With(page.NewLabelWrapper())").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("form.Txt2.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -112,11 +190,24 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer)
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("form.Btn").Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("form.Btn").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("form.Btn").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
