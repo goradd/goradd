@@ -12,7 +12,7 @@ import (
 func init() {
 	t := PanelBuildTemplate {
 		generator.Template {
-			Overwrite: true,
+			Overwrite: false,
 			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}
