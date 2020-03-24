@@ -1,0 +1,11 @@
+// detailFormStruct.tmpl
+
+{{
+
+// The {{= formName }} is a form wrapper for the corresponding edit panel.
+// To edit it, make a copy and move it out of this package and into another
+type {{= formName }} struct {
+    {{= codegen.ImportPackage("goradd-project/control") }}.FormBase
+}
+
+}}

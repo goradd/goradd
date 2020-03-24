@@ -1,0 +1,41 @@
+[data-grctl=itemlistpnl] {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+[data-grctl=itemlistpnl] .filter {
+  padding: 5px;
+}
+[data-grctl=itemlistpnl] .scroller {
+  flex: 1;
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+[data-grctl=itemlistpnl] .buttons {
+  padding-left: 5px;
+  padding-top: 5px;
+}
+[data-grctl=itemlistpnl] .buttons button {
+  margin: 3px;
+}
+
+/*    .filter {
+        padding: 5px;
+        height: 50px;
+    }
+    .scroller {
+        overflow-x: hidden;
+        overflow-y: scroll;
+    }
+    .buttons {
+        height:50px;
+        padding-left: 5px;
+        padding-top:5px;
+        button {
+            margin:3px;
+        }
+    }
+*/
+
+/*# sourceMappingURL=../css/item-list-panel.css.map */

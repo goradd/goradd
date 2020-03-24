@@ -1,0 +1,65 @@
+//get.tmpl
+// Get Implements the Get function to return a field based on a field name
+// Returns an interface for further processing
+{{
+
+// Get returns the value of a field in the object based on the field's name.
+// It will also get related objects if they are loaded.
+// Invalid fields and objects are returned as nil
+func (o *{{privateName}}Base) Get(key string) interface{} {
+
+    switch key {
+}}
+for _,col := range t.Columns {
+    goName := col.GoName
+
+{{
+    case "{{= goName }}":
+        if !o.{{= col.ModelName() }}IsValid {
+            return nil
+        }
+        return o.{{= col.ModelName() }}
+
+}}
+	if col.IsReference() || col.IsType() {
+{{
+    case "{{= col.ForeignKey.GoName }}":
+        return o.{{= col.ForeignKey.GoName }}()
+
+}}
+
+    } //if
+
+} // for
+
+for _,ref := range t.ReverseReferences {
+
+	if ref.IsUnique() {
+{{
+    case "{{= ref.GoName }}":
+        return o.{{= ref.GoName }}()
+
+}}
+	} else {
+{{
+    case "{{= ref.GoPlural }}":
+        return o.{{= ref.GoPlural }}()
+
+}}
+	} //else
+} // for
+
+
+for _,ref := range t.ManyManyReferences {
+{{
+    case "{{= ref.GoPlural }}":
+        return o.{{= ref.GoPlural }}()
+
+}}
+}
+
+{{
+    }
+    return nil
+}
+}}

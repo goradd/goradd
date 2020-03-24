@@ -1,0 +1,10 @@
+// detailFormInit.tmpl
+
+{{
+
+// init functions are called once when the web server first starts up.
+func init() {
+	page.RegisterForm({{= title }}DetailPath,  &{{= formName }}{}, {{= title }}DetailID)
+}
+
+}}

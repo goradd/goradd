@@ -1,0 +1,210 @@
+{{
+
+// MarshalBinary serializes the object into a buffer that is deserializable using UnmarshalBinary.
+// It should be used for transmitting database objects over the wire, or for temporary storage. It does not send
+// a version number, so if the data format changes, its up to you to invalidate the old stored objects.
+// The framework uses this to serialize the object when it is stored in a control.
+func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	encoder := gob.NewEncoder(buf)
+
+{{for _,col := range t.Columns}}
+    if err := encoder.Encode(o.{{= col.ModelName() }}); err != nil {
+        return nil, err
+    }
+{{if col.IsNullable}}
+    if err := encoder.Encode(o.{{= col.ModelName() }}IsNull); err != nil {
+        return nil, err
+    }
+{{if}}
+    if err := encoder.Encode(o.{{= col.ModelName() }}IsValid); err != nil {
+        return nil, err
+    }
+    if err := encoder.Encode(o.{{= col.ModelName() }}IsDirty); err != nil {
+        return nil, err
+    }
+
+{{if col.IsReference() }}
+    if o.{{= col.ReferenceName()}} == nil {
+        if err := encoder.Encode(false); err != nil {
+            return nil, err
+        }
+    } else {
+        if err := encoder.Encode(true); err != nil {
+            return nil, err
+        }
+        if err := encoder.Encode(o.{{= col.ReferenceName()}}); err != nil {
+            return nil, err
+        }
+    }
+{{if}}
+{{for}}
+
+{{for _,ref := range t.ReverseReferences}}
+{{if ref.IsUnique() }}
+    if o.{{dd.AssociatedObjectPrefix}}{{= ref.GoName }} == nil {
+        if err := encoder.Encode(false); err != nil {
+            return nil, err
+        }
+    } else {
+        if err := encoder.Encode(true); err != nil {
+            return nil, err
+        }
+        if err := encoder.Encode(o.{{= dd.AssociatedObjectPrefix}}{{= ref.GoName }}); err != nil {
+            return nil, err
+        }
+    }
+{{else}}
+    if o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} == nil {
+        if err := encoder.Encode(false); err != nil {
+            return nil, err
+        }
+    } else {
+        if err := encoder.Encode(true); err != nil {
+            return nil, err
+        }
+        if err := encoder.Encode(o.{{= dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}); err != nil {
+            return nil, err
+        }
+    }
+{{# We will need to rebuild the map based on the object decoded, since they are pointers to the same objects}}
+{{if}}
+{{for}}
+
+{{for _,ref := range t.ManyManyReferences}}
+    if o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} == nil {
+        if err := encoder.Encode(false); err != nil {
+            return nil, err
+        }
+    } else {
+        if err := encoder.Encode(true); err != nil {
+            return nil, err
+        }
+        if err := encoder.Encode(o.{{= dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}); err != nil {
+            return nil, err
+        }
+    }
+{{# We will need to rebuild the map (when not a type table association) based on the object decoded, since they are pointers to the same objects}}
+{{for}}
+
+    if o._aliases == nil {
+        if err := encoder.Encode(false); err != nil {
+            return nil, err
+        }
+    } else {
+        if err := encoder.Encode(true); err != nil {
+            return nil, err
+        }
+        if err := encoder.Encode(o._aliases); err != nil {
+            return nil, err
+        }
+    }
+
+    if err := encoder.Encode(o._restored); err != nil {
+        return nil, err
+    }
+
+    return buf.Bytes(), nil
+}
+
+func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
+
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	var isPtr bool
+
+	_ = isPtr
+
+{{for _,col := range t.Columns}}
+    if err = dec.Decode(&o.{{= col.ModelName() }}); err != nil {
+        return
+    }
+{{if col.IsNullable}}
+    if err = dec.Decode(&o.{{= col.ModelName() }}IsNull); err != nil {
+        return
+    }
+{{if}}
+    if err = dec.Decode(&o.{{= col.ModelName() }}IsValid); err != nil {
+        return
+    }
+    if err = dec.Decode(&o.{{= col.ModelName() }}IsDirty); err != nil {
+        return
+    }
+
+{{if col.IsReference()}}
+    if err = dec.Decode(&isPtr); err != nil {
+        return
+    }
+    if isPtr {
+        if err = dec.Decode(&o.{{= col.ReferenceName() }}); err != nil {
+            return
+        }
+    }
+{{if}}
+{{for}}
+
+{{for _,ref := range t.ReverseReferences}}
+{{if ref.IsUnique() }}
+    if err = dec.Decode(&isPtr); err != nil {
+        return
+    }
+    if isPtr {
+        if err = dec.Decode(&o.{{dd.AssociatedObjectPrefix}}{{= ref.GoName }}); err != nil {
+            return
+        }
+    }
+{{else}}
+    if err = dec.Decode(&isPtr); err != nil {
+        return
+    }
+    if isPtr {
+        if err = dec.Decode(&o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}); err != nil {
+            return
+        }
+        if len(o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}) > 0 {
+            o.m{{= ref.GoPlural }} = make(map[{{= ref.AssociatedPkType() }}] *{{= ref.GoType }})
+            for _,p := range o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} {
+                o.m{{= ref.GoPlural }}[p.PrimaryKey()] = p
+            }
+        }
+    }
+{{if}}
+{{for}}
+
+{{for _,ref := range t.ManyManyReferences}}
+    if err = dec.Decode(&isPtr); err != nil {
+        return
+    }
+    if isPtr {
+        if err = dec.Decode(&o.{{dd.AssociatedObjectPrefix}}{{ref.GoPlural}}); err != nil {
+            return
+        }
+{{if !ref.IsTypeAssociation}}
+        if len(o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}) > 0 {
+            o.m{{= ref.GoPlural }} = make(map[string] *{{= ref.AssociatedObjectName }})
+
+            for _,p := range o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} {
+                o.m{{= ref.GoPlural }}[p.PrimaryKey()] = p
+            }
+        }
+{{if}}
+    }
+{{for}}
+
+    if err = dec.Decode(&isPtr); err != nil {
+        return
+    }
+    if isPtr {
+        if err = dec.Decode(&o._aliases); err != nil {
+            return
+        }
+    }
+
+    if err = dec.Decode(&o._restored); err != nil {
+        return
+    }
+
+	return
+}
+
+}}

@@ -1,0 +1,39 @@
+{{# Macros to help with setting bootstrap styling in form groups. }}
+
+{{define row}}
+<div class="row">
+{{end}}
+
+{{define +row}}
+</div>
+<div class="row">
+{{end}}
+
+{{define -row}}
+</div>
+{{end}}
+
+{{define col 1}}
+{{if "$1" == ""}}
+<div class="col">
+{{else}}
+<div class="col-$1">
+{{if}}
+{{end}}
+
+{{define +col 1}}
+</div>
+{{if "$1" == ""}}
+<div class="col">
+{{else}}
+<div class="col-$1">
+{{if}}
+{{end}}
+
+{{define -col}}
+</div>
+{{end}}
+
+
+
+

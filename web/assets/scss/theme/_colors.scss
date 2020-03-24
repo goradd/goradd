@@ -1,0 +1,36 @@
+/**
+The colors and themes presented here are not to try to create a massive, all encompasing theme like so many
+other css frameworks, nor is it meant to replace them.
+
+Its only a central place to put various variables that can be used to easily customize the out-of-the-box
+presentation of the controls provided with goradd.
+
+*/
+
+// Basic colors
+$outline-color: #555555;
+$warning-color: orange;
+$error-color: red;
+$success-color: green;
+
+// Colors for things that occur in rows
+$row-background-color-1: white; // for alternating rows
+$row-color-1: black;
+$row-background-color-2: #f0f0f0; // for alternating rows
+$row-color-2: black;
+$row-background-color-hover: #d0d0d0;
+$row-color-hover: black;
+$row-background-color-inactive: #e0e0e0;
+$row-color-inactive: #888888;
+$row-background-color-selected: #555555;
+$row-color-selected: white;
+$row-background-color-h1: black; // For a row that represents a header or divider
+$row-color-h1: white;
+$row-background-color-h2: #333333; // For a row that represents a 2nd level header or divider
+$row-color-h2: white;
+
+$row-header-border-color: $outline-color;
+$row-border-color: #aaaaaa;
+
+$sidebar-color: rgba(12, 47, 108, 0.39);
+$dialog-color: rgba(74, 86, 124, 0.11); // title and button bar colors

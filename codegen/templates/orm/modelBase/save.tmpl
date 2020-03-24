@@ -1,0 +1,304 @@
+//save.tmpl
+//TODO: Make sure dirty related objects are saved first
+// TODO: Make sure id field cannot be set or updated
+
+{{
+
+// Save will update or insert the object, depending on the state of the object.
+// If it has any auto-generated ids, those will be updated.
+func (o *{{privateName}}Base) Save(ctx context.Context)  {
+	if o._restored {
+		o.update(ctx)
+	} else {
+		o.insert(ctx)
+	}
+}
+
+// update will update the values in the database, saving any changed values.
+func (o *{{privateName}}Base) update(ctx context.Context) {
+    var modifiedFields map[string]interface{}
+    d := Database()
+    db.ExecuteTransaction(ctx, d, func() {
+
+{{g
+    // Here we deal with forward references
+    for _,col := range t.Columns {
+        if col.IsReference() {
+            oName := col.ReferenceName()
+
+}}
+        if o.{{= oName }} != nil {
+            o.{{= oName }}.Save(ctx)
+            id := o.{{= oName }}.PrimaryKey()
+            o.Set{{= col.GoName }}(id)
+        }
+{{g
+        }
+    }
+}}
+
+        if !o._restored {
+            panic ("Cannot update a record that was not originally read from the database.")
+        }
+
+        modifiedFields = o.getModifiedFields()
+        if len(modifiedFields) != 0 {
+            d.Update(ctx, "{{t.DbName}}", modifiedFields, "{{= t.PrimaryKeyColumn().DbName }}", fmt.Sprint(o.{{= t.PrimaryKeyColumn().ModelName() }}))
+        }
+
+    {{for _,ref := range t.ReverseReferences }}
+        if o.{{= ref.Values["objName"]}}IsDirty {
+        {{if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull ||
+                (ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict && ref.IsNullable()) }}
+            {{if ref.IsUnique()}}
+               obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                        Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                        Get()
+               if obj != nil  && obj.PrimaryKey() != o.{{= ref.Values["objName"] }}.PrimaryKey() {
+                   obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
+                   obj.Save(ctx)
+               }
+               o.{{= ref.Values["objName"]}}.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
+               o.{{= ref.Values["objName"]}}.Save(ctx)
+            {{else}}
+               objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Load()
+               // TODO:select only the required fields
+               for _,obj := range objs {
+                  if _,ok := o.{{= ref.Values["mapName"] }}[obj.PrimaryKey()]; !ok {
+                      // The old object is not in the group of new objects
+                      obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
+                      obj.Save(ctx)
+                  }
+               }
+               for _,obj := range o.{{= ref.Values["objName"] }} {
+                  obj.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
+                  obj.Save(ctx)
+               }
+
+            {{if}}
+        {{else}} {{# not nullable}}
+             {{if ref.IsUnique()}}
+                    // Since the other side of the relationship cannot be null, the object to be detached must be deleted
+                    obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                              Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                              Get()
+                    if obj != nil  && obj.PrimaryKey() != o.{{= ref.Values["objName"] }}.PrimaryKey() {
+                        obj.Delete(ctx)
+                    }
+                    o.{{= ref.Values["objName"]}}.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
+                    o.{{= ref.Values["objName"]}}.Save(ctx)
+             {{else}}
+                    // Since the other side of the relationship cannot be null, the objects to be detached must be deleted
+                    // We take care to only delete objects that are not being reattached
+                    objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                               Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                               Load()
+                    // TODO: select only the required fields
+                    for _,obj := range objs {
+                       if _,ok := o.{{= ref.Values["mapName"] }}[obj.PrimaryKey()]; !ok {
+                           // The old object is not in the group of new objects
+                           obj.Delete(ctx)
+                       }
+                    }
+                    for _,obj := range o.{{= ref.Values["objName"] }} {
+                       obj.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
+                       obj.Save(ctx)
+                    }
+             {{if}}
+        {{if}}
+        } else {
+        {{if ref.IsUnique()}}
+            if o.{{= ref.Values["objName"]}} != nil {
+                o.{{= ref.Values["objName"]}}.Save(ctx)
+            }
+        {{else}}
+            for _,obj := range o.{{= ref.Values["objName"]}} {
+                obj.Save(ctx)
+            }
+        {{if}}
+        }
+    {{for}} {{# Reverse References }}
+    {{for _,ref := range t.ManyManyReferences }}
+{{g
+    oName := ref.ObjName(dd)
+}}
+    {{if ref.IsTypeAssociation}}
+        if o.{{= oName }}IsDirty {
+            d.Associate(ctx,
+                "{{= ref.AssnTableName }}",
+                "{{= ref.AssnColumnName }}",
+                o.PrimaryKey(),
+                "{{= ref.AssociatedTableName }}",
+                "{{= ref.AssociatedColumnName }}",
+                o.{{= oName }})
+        }
+    {{else}}
+        {
+            var pks []string
+            o.m{{= ref.GoPlural }} = make(map[string] *{{ref.AssociatedObjectName}})
+
+            for _,obj := range o.{{= oName }} {
+                obj.Save(ctx)
+                o.m{{= ref.GoPlural }}[obj.PrimaryKey()] = obj
+                pks = append(pks, obj.PrimaryKey())
+            }
+            if len(pks) != 0 {
+                d.Associate(ctx,
+                    "{{= ref.AssnTableName }}",
+                    "{{= ref.AssnColumnName }}",
+                    o.PrimaryKey(),
+                    "{{= ref.AssociatedTableName }}",
+                    "{{= ref.AssociatedColumnName }}",
+                    pks)
+            }
+        }
+    {{if}}
+    {{for}}
+
+    }) // transaction
+	o.resetDirtyStatus()
+	if len(modifiedFields) != 0 {
+        broadcast.Update(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(o.{{= t.PrimaryKeyColumn().ModelName() }}), stringmap.SortedKeys(modifiedFields)...)
+	}
+}
+
+// insert will insert the item into the database. Related items will be saved.
+func (o *{{privateName}}Base) insert(ctx context.Context) {
+    d := Database()
+	db.ExecuteTransaction(ctx, d, func() {
+{{g
+    // Here we save forward references, get the id, and then set the corresponding foreign key
+    for _,col := range t.Columns {
+        if col.IsReference() {
+            oName := col.ReferenceName()
+
+}}
+    if o.{{= oName }} != nil {
+        o.{{= oName }}.Save(ctx)
+        o.Set{{= col.ForeignKey.GoName }}(o.{{= oName }})
+    }
+{{g
+        }
+    }
+}}
+
+{{for _,col := range t.Columns}}
+    {{if !col.IsId && !col.IsNullable && col.DefaultValue == nil}}
+        {{# Note: Most likely the user is inserting a new record, but forgot to set a required value, but there is the
+              possibility that this is a retrieved record with missing fields (through the Select statement) and those
+              missing fields are required, and the user is forcing an insert. }}
+    if !o.{{col.ModelName()}}IsValid {panic("a value for {{= col.GoName }} is required, and there is no default value. Call Set{{= col.GoName }}() before inserting the record.")}
+    {{if}}
+{{for}}
+    m := o.getValidFields()
+
+{{if t.PrimaryKeyColumn().IsId }}
+	id := d.Insert(ctx, "{{t.DbName}}", m)
+	o.{{= t.PrimaryKeyColumn().ModelName() }} = id
+{{else}}
+	d.Insert(ctx, "{{t.DbName}}", m)
+	id := o.PrimaryKey()
+	_ = id
+{{if}}
+{{for _,ref := range t.ReverseReferences }}
+    {{# Nullable or not nullable, we do the same thing since there is no need to detach anything since this is new}}
+    if o.{{= ref.Values["objName"]}} != nil {
+    {{if ref.IsUnique()}}
+        o.{{= ref.Values["objName"]}}.Set{{= ref.AssociatedColumn.GoName}}(id)
+        o.{{= ref.Values["objName"]}}.Save(ctx)
+    {{else}}
+        o.{{= ref.Values["mapName"]}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
+        for _,obj := range o.{{= ref.Values["objName"]}} {
+            obj.Set{{= ref.AssociatedColumn.GoName}}(id)
+            obj.Save(ctx)
+            o.{{= ref.Values["mapName"]}}[obj.PrimaryKey()] = obj
+        }
+    {{if}}
+    }
+{{for}}
+{{for _,ref := range t.ManyManyReferences }}
+{{g
+    oName := ref.ObjName(dd)
+}}
+{{if ref.IsTypeAssociation}}
+    if len(o.{{= oName }}) != 0 {
+        d.Associate(ctx,
+            "{{= ref.AssnTableName }}",
+            "{{= ref.AssnColumnName }}",
+            o.PrimaryKey(),
+            "{{= ref.AssociatedTableName }}",
+            "{{= ref.AssociatedColumnName }}",
+            o.{{= oName }})
+    }
+{{else}}
+    {
+        var pks []string
+        o.m{{= ref.GoPlural }} = make(map[string] *{{ref.AssociatedObjectName}})
+        for _,obj := range o.{{= oName }} {
+            obj.Save(ctx)
+            o.m{{= ref.GoPlural }}[obj.PrimaryKey()] = obj
+            pks = append(pks, obj.PrimaryKey())
+        }
+        if len(pks) != 0 {
+            d.Associate(ctx,
+                "{{= ref.AssnTableName }}",
+                "{{= ref.AssnColumnName }}",
+                o.PrimaryKey(),
+                "{{= ref.AssociatedTableName }}",
+                "{{= ref.AssociatedColumnName }}",
+                pks)
+        }
+    }
+{{if}}
+{{for}}
+
+    }) // transaction
+	o.resetDirtyStatus()
+	o._restored = true
+	broadcast.Insert(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(o.{{= t.PrimaryKeyColumn().ModelName() }}))
+}
+
+func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+{{for _,col := range t.Columns}}
+	if o.{{= col.ModelName() }}IsDirty {
+    {{if col.IsNullable}}
+        if 	o.{{= col.ModelName() }}IsNull {
+            fields["{{= col.DbName }}"] = nil
+        } else {
+  		    fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName() }}.GoTime(){{else}}o.{{= col.ModelName() }}{{if}}
+        }
+    {{else}}
+		fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName() }}.GoTime(){{else}}o.{{= col.ModelName() }}{{if}}
+    {{if}}
+	}
+{{for}}
+	return
+}
+
+func (o *{{privateName}}Base) getValidFields() (fields map[string]interface{}) {
+	fields = map[string]interface{}{}
+{{for _,col := range t.Columns}}
+{{g
+    if col.IsId {continue}
+}}
+	if o.{{= col.ModelName() }}IsValid {
+    {{if col.IsNullable}}
+        if 	o.{{= col.ModelName() }}IsNull {
+            fields["{{= col.DbName }}"] = nil
+        } else {
+  		    fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName() }}.GoTime(){{else}}o.{{= col.ModelName() }}{{if}}
+        }
+    {{else}}
+		fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName() }}.GoTime(){{else}}o.{{= col.ModelName() }}{{if}}
+    {{if}}
+	}
+{{for}}
+	return
+}
+
+
+}}
+

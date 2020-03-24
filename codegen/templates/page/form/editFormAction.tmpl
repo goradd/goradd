@@ -1,0 +1,20 @@
+// editFormAction.tmpl
+
+{{
+
+// Action is called by the framework to execute any Server or Ajax actions you have assigned to controls
+// and directed here.
+func (f *{{= formName }}) Action(ctx context.Context, a page.ActionParams) {
+	switch a.ID {
+	case {{= title }}SaveAction:
+	    panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Save(ctx)
+	    f.returnToPrevious(ctx)
+    case {{= title }}CancelAction:
+        f.returnToPrevious(ctx)
+    case {{= title }}DeleteAction:
+        panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Delete(ctx)
+        f.returnToPrevious(ctx)
+    }
+}
+
+}}

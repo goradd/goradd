@@ -1,0 +1,161 @@
+{{# Macros added to template files for drawing forms. }}
+
+{{# draw draws a goradd control.
+    parameter 1 is the id of the control 2 draw,
+    optional parameter 2 is attributes to set on the control before drawing.
+        Each attribute is a key and value separated by an = sign.
+        key/value groups should be space separated.
+        values should be surrounded by quotes.}}
+{{define draw 2}}
+{{if `$2` == ""}}
+    {{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
+{{else}}
+    {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+{{if}}
+{{end}}
+
+{{# drawChild is like draw, but the given id is appended to the parent control's id. }}
+
+{{define drawChild 2}}
+{{if `$2` == ""}}
+    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, buf) }}
+{{else}}
+    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+{{if}}
+{{end}}
+
+
+{{define drawIf 2}}
+{{if ctrl.Page().HasControl("$1")}}
+    {{if `$2` == ""}}
+        {{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
+    {{else}}
+        {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+    {{if}}
+{{if}}
+{{end}}
+
+{{define drawChildIf 2}}
+{{if ctrl.Page().HasControl(ctrl.ID() + "$1")}}
+    {{if `$2` == ""}}
+        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, buf) }}
+    {{else}}
+        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+    {{if}}
+{{if}}
+{{end}}
+
+{{define setAttributes 2}}
+{{g
+if ctrl.Page().HasControl("$1") {
+    ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`)
+}
+}}
+{{end}}
+
+{{define setChildAttributes 2}}
+{{g
+if ctrl.Page().HasControl(ctrl.ID() + "$1") {
+    ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`)
+}
+}}
+{{end}}
+
+{{define setLabelAttributes 2}}
+{{g
+if ctrl.Page().HasControl("$1") {
+    ctrl.Page().GetControl("$1").(control.FormFieldWrapperI).LabelAttributes().Merge(`$2`)
+}
+}}
+{{end}}
+
+{{define setChildLabelAttributes 2}}
+{{g
+if ctrl.Page().HasControl(ctrl.ID() + "$1") {
+    ctrl.Page().GetControl(ctrl.ID() + "$1").(control.FormFieldWrapperI).LabelAttributes().Merge(`$2`)
+}
+}}
+{{end}}
+
+{{# This defaults the package fragment to the name of the directory of the template. You can redefine it if needed in your individual template}}
+{{define package}}{{templateDir}}{{end}}
+
+
+{{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}
+{{define renderFormTemplate}}
+package {{package }}
+
+import (
+    "context"
+    "github.com/goradd/goradd/pkg/page"
+    "bytes"
+    {{> imports}}
+)
+
+
+func (ctrl *{{form}}) AddHeadTags()  {
+    ctrl.FormBase.AddHeadTags()
+    if "{{title}}" != "" {
+        ctrl.Page().SetTitle("{{title}}")
+    }
+
+	{{headTags}}
+
+	// double up to deal with body attributes if they exist
+    ctrl.Page().BodyAttributes = `{{bodyAttributes}}`
+}
+
+
+func (ctrl *{{form}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+{{
+{{template}}
+}}
+	return
+}
+{{end}}
+
+{{define renderControlTemplate}}
+package {{package }}
+
+import (
+    "context"
+    "bytes"
+    {{imports}}
+)
+
+func (ctrl *{{control}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+{{
+{{template}}
+}}
+	return
+}
+{{end}}
+
+{{define renderHtmlTemplate}}
+package {{package }}
+
+import (
+    "context"
+    "bytes"
+    {{imports}}
+)
+
+func init() {
+    resource.RegisterPath("{{filename}}.html",
+        func(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, err error) {
+{{
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8"/>
+<title>{{title}}</title>
+</head>
+<body>
+{{template}}
+</body>
+</html>
+}}
+        return
+
+        })
+}
+{{end}}

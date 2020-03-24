@@ -1,0 +1,23 @@
+{{
+package gen
+
+import (
+    "github.com/goradd/goradd/pkg/sys"
+    "github.com/goradd/goradd/web/app"
+}}
+for _, db := range db.GetDatabases() {
+    dd := db.Describe()
+{{
+    _ "goradd-project/gen/{{= dd.DbKey }}/form"
+}}
+}
+
+{{
+)
+
+func init() {
+    dir := sys.SourceDirectory()
+    app.RegisterStaticPath("/goradd/forms", dir)
+}
+
+}}

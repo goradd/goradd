@@ -1,0 +1,37 @@
+// load.tmpl
+
+{{
+// Load reads a new record from the database and loads the edit controls with the information found. pk is the primary key
+// of the record.
+func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error {
+	if pk == {{= t.PrimaryKeyColumn().DefaultValueAsConstant() }} {
+		p.{{= t.GoName }} = model.New{{= t.GoName }}()
+	} else {
+		p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk,
+{{for _,col := range t.Columns}}
+    {{if col.IsReference() }}
+            node.{{= t.GoName}}().{{= col.ReferenceFunction()}}(),
+    {{if}}
+{{for}}
+
+{{for _,rr := range t.ReverseReferences}}
+    {{if rr.IsUnique() }}
+            node.{{= t.GoName}}().{{= rr.GoName}}(),
+    {{else}}
+            node.{{= t.GoName}}().{{= rr.GoPlural}}(),
+    {{if}}
+{{for}}
+		)
+
+		if p.{{= t.GoName }} == nil {
+			d := {{= ctrlPkg }}.Alert(p, p.ParentForm().GT("The record was not found. Perhaps it was recently deleted by someone else."), "OK")
+			d.SetTitle(p.ParentForm().GT("Error"))
+			return page.NewFrameworkError(page.FrameworkErrRecordNotFound)
+		}
+	}
+
+	p.this().Refresh()
+
+	return nil
+}
+}}

@@ -1,0 +1,33 @@
+{{< package }}panels{{end}}
+{{< imports }}
+	. "github.com/goradd/goradd/pkg/bootstrap/control"
+{{end}}
+{{< control }}Forms1Panel{{end}}
+
+{{define template }}
+<h2>Standard Form Layout</h2>
+<p>
+This is an example of a very generic form layout in Bootstrap.
+</p>
+{{draw nameText-fg }}
+{{draw childrenText-fg }}
+
+<div>
+{{# Demonstrate how to set control options from the template }}
+{{g
+    GetRadioButton(ctrl, "singleRadio").SetInline(true)
+    GetRadioButton(ctrl, "marriedRadio").SetInline(true)
+    GetRadioButton(ctrl, "divorcedRadio").SetInline(true)
+}}
+{{draw singleRadio }}
+{{draw marriedRadio }}
+{{draw divorcedRadio }}
+</div>
+{{draw dogCheck-fg }}
+
+
+{{draw ajaxButton}}
+{{draw serverButton}}
+{{end}}
+
+{{renderControlTemplate}}

@@ -1,0 +1,44 @@
+package template
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"bytes"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"fmt"
+	strings2 "github.com/goradd/goradd/pkg/strings"
+	"strings"
+	"strconv"
+
+)
+
+func init() {
+	t := NodeTemplate {
+		generator.Template {
+			Overwrite: true,
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type NodeTemplate struct {
+	generator.Template
+}
+
+func (n *NodeTemplate) FileName(key string, t generator.TableType) string {
+    var targetDir string
+    if generator.BuildingExamples {
+        targetDir = config.GoraddDir() + "/web/examples/gen"
+    } else {
+        targetDir = config.ProjectDir() + "/gen"
+    }
+	return targetDir + "/" + key + "/model/node/" + t.GoName + ".go"
+}
+
+func (n *NodeTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
+	{{: "node/node.tmpl" }}
+}
+
+func (n *NodeTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}

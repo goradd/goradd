@@ -1,0 +1,13 @@
+// refresh.tmpl
+
+{{
+
+// Refresh loads the controls with data from the cached {{= t.GoName }} object.
+func (p *{{= panelName }}) Refresh() {
+    p.RangeAllChildren(func(ctrl page.ControlI) {
+        ctrl.RefreshData(p.{{= t.GoName }})
+    })
+    p.Panel.Refresh()
+}
+
+}}

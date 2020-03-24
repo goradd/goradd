@@ -1,0 +1,18 @@
+{{< package }}panels{{end}}
+{{< imports }}
+{{end}}
+{{< control }}DefaultPanel{{end}}
+
+{{define template }}
+<h1>Bootstrap Control Examples</h1>
+<p>
+These pages demonstrate some of the supported <a href="http://getbootstrap.com">Bootstrap</a> controls that are
+available in goradd. It is not an exhaustive recreation of the Bootstrap documentation, so you
+can likely do a lot more with Bootstrap than you see here.
+</p>
+<p>
+Click the menu to see the list of examples.
+</p>
+{{end}}
+
+{{renderControlTemplate}}

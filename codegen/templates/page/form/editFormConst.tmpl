@@ -1,0 +1,22 @@
+// editFormConst.tmpl
+
+{{
+// {{= title }}EditPath specifies the URL that will access this form.
+const {{= title }}EditPath = "{{= formPath }}"
+// {{= title }}EditID is the html id to use in the html form object.
+const {{= title }}EditID = "{{= formName }}"
+const {{= title }}Singular = "{{= t.LiteralName }}"
+const {{= title }}Plural = "{{= t.LiteralPlural }}"
+
+const {{= title }}EditPanelID = "{{= t.DefaultHtmlID()}}-edit-panel"
+const {{= title }}SaveButtonID = "save-button"
+const {{= title }}CancelButtonID = "cancel-button"
+const {{= title }}DeleteButtonID = "delete-button"
+
+const (
+    {{= title }}SaveAction = iota + 1
+    {{= title }}CancelAction
+    {{= title }}DeleteAction
+)
+
+}}

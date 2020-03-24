@@ -1,0 +1,5 @@
+module goradd-project
+
+require (
+	github.com/goradd/goradd latest
+)

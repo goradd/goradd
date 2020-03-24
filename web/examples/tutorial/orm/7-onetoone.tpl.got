@@ -1,0 +1,62 @@
+{{< package }}orm{{end}}
+{{< imports }}
+	"github.com/goradd/goradd/web/examples/gen/goradd/model"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
+{{end}}
+{{< control }}OneOnePanel{{end}}
+
+{{define template }}
+<h1>One-to-One Relationships</h1>
+<p>
+By creating a unique index on a foreign key, you will create a one-to-one relationship.
+One-to-one relationships link two records with each record being an extension of the other.
+You can use this to model subclasses, extend a record with optional values, or to improve search results, allowing the database
+to retrieve only the main record on an initial search, and then the extended record if more detail is desired of
+a particular record.
+</p>
+<p>
+In the example below, we load a login, and then examine which person the login belongs to.
+{{g
+	login := model.LoadLogin(ctx, "2", node.Login().Person())
+}}
+</p>
+<p>
+    Person for Login {{= login.Username() }}: {{= login.Person().FirstName() }} {{= login.Person().LastName() }} <br>
+</p>
+<p>
+Here, we traverse the relationship in the other direction, loading the person first, and then getting the login.
+{{g
+	person := model.LoadPerson(ctx, "3", node.Person().Login())
+}}
+</p>
+<p>
+    Login for {{= person.FirstName() }} {{= person.LastName() }}: {{= person.Login().Username() }}  <br>
+</p>
+
+<h2>Creating One-to-One Linked Records</h2>
+<p>
+In a similar fashion to how one-to-many relationships work, you can create a link between two records by saving one,
+getting its id, and then setting the foreign key in the other record to that id. However, its easier to use the Set*
+functions for the objects themselves and call Save on the parent object.
+</p>
+{{g
+    newPerson := model.NewPerson()
+    newPerson.SetFirstName("Hu")
+    newPerson.SetLastName("Man")
+
+    newLogin := model.NewLogin()
+    newLogin.SetUsername("human")
+
+    newPerson.SetLogin(newLogin)
+    newPerson.Save(ctx)
+}}
+<p>
+    New person {{= newPerson.FirstName() }} {{= newPerson.LastName() }} has been given a Login ID of {{= newPerson.Login().ID() }}
+</p>
+{{g
+    // Delete records created above
+    newPerson.Delete(ctx) // newLogin will automatically get deleted because its foreign key constraint is set to CASCADE on Delete
+}}
+{{end}}
+
+{{renderControlTemplate}}

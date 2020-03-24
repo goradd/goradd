@@ -1,0 +1,22 @@
+{{< imports }}
+{{end}}
+{{< headTags }}
+{{end}}
+{{< package }}controls{{end}}
+{{< title }}Control Examples{{end}}
+{{< form }}ControlsForm{{end}}
+{{< bodyAttributes }}
+{{end}}
+
+
+{{define template }}
+<h1>Control Examples</h1>
+<div class="controlList_scroll">
+	{{draw listPanel }}
+</div>
+<div class="detail_container">
+	{{draw detailPanel }}
+</div>
+{{end}}
+
+{{renderFormTemplate}}

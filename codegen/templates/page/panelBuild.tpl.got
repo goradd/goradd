@@ -1,0 +1,37 @@
+package template
+
+// This template generates a got template for the build.go file in the forms directory
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"bytes"
+	"github.com/goradd/goradd/pkg/orm/db"
+)
+
+func init() {
+	t := PanelBuildTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.ProjectDir() + "/gen",
+		},
+	}
+	generator.AddOneTimeTemplate(&t)
+}
+
+type PanelBuildTemplate struct {
+	generator.Template
+}
+
+func (n *PanelBuildTemplate) FileName(key string) string {
+	return n.TargetDir + "/" + key + "/panel/build.go"
+}
+
+func (n *PanelBuildTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.Database, buf *bytes.Buffer) {
+	{{: "panel/build.tmpl" }}
+}
+
+func (n *PanelBuildTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+

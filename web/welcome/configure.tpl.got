@@ -1,0 +1,35 @@
+{{< imports }}
+{{end}}
+{{< package }}welcome{{end}}
+{{< filename }}/goradd/{{templateRoot}}{{end}}
+{{< title }}Configuring the Database{{end}}
+
+{{define template}}
+<h1>Configuring the Database</h1>
+<p>
+	Goradd relies on your database(s) not only to get to data, but to understand its structure. For
+	sql databases, it does this by reading the database schema. When NoSQL databases are supported,
+	the structure will come from a configuration file.
+</p>
+<p>
+	Using its knowledge of the structure of your database, the goradd code generator will
+	create data models, data nodes, forms, and more to get you a working application to start customizing.
+</p>
+
+<p>
+	Goradd currently only supports MySQL databases. Adapters to other databases are easy to write, so
+	if you would like to see another database supported and are willing to help, open an issue
+	at our github site.
+</p>
+<p>
+	To configure your database, edit the goradd-project/config/db.go file. You will see directions there.
+	If you want to run the examples code and tutorial, you should create a local copy of the goradd
+	examples database. To do that, create a "goradd" database and import the sql code found in the goradd/web/examples/db directory,
+	which is reprinted below for your convenience.
+</p>
+<code>
+{{:h ../examples/db/mysql.sql }}
+</code>
+{{end}}
+
+{{> renderHtmlTemplate}}

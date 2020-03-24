@@ -1,0 +1,34 @@
+// const.tmpl
+
+{{
+const (
+
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd ==  nil {continue}
+{{
+    {{= t.GoName }}{{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
+}}
+    }
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd ==  nil {continue}
+{{
+    {{= t.GoName }}{{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
+}}
+    }
+
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd ==  nil {continue}
+{{
+    {{= t.GoName }}{{= cd.ControlIDConst() }} = "{{= cd.ControlID }}"
+}}
+    }
+
+}}
+
+)
+}}

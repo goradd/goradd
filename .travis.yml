@@ -1,0 +1,39 @@
+language: go
+
+go:
+  - "1.11.x"
+  - "1.12.x"
+  - "1.13.x"
+
+env:
+  - GO111MODULE=on
+
+services:
+  - mysql
+
+addons:
+  chrome: stable
+
+install:
+  - go install  # install the goradd tool
+  - cd ${TRAVIS_HOME}
+  - cp -r ${TRAVIS_BUILD_DIR}/internal/install/goradd-project .
+  - mv ${TRAVIS_HOME}/goradd-project/gomod.txt ${TRAVIS_HOME}/goradd-project/go.mod
+  - cp -r ${TRAVIS_BUILD_DIR}/internal/travis/goradd-test .
+  - mv ${TRAVIS_HOME}/goradd-test/gomod.txt ${TRAVIS_HOME}/goradd-test/go.mod
+  - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-project/go.mod
+  - echo "replace github.com/goradd/goradd => ${TRAVIS_BUILD_DIR}" >> ${TRAVIS_HOME}/goradd-test/go.mod
+  - goradd install -s2  # use the goradd tool to complete the install
+
+before_script:
+  - google-chrome-stable http://localhost:8000?all=1 &
+  - mysql -e 'create database goradd;'; mysql -u root goradd < ${TRAVIS_BUILD_DIR}/web/examples/db/mysql.sql
+  - mysql -e 'create database goraddUnit;'; mysql -u root goraddUnit < ${TRAVIS_BUILD_DIR}/internal/travis/db/goraddunit.mysql.sql
+#  - sudo mysql -e "use mysql; update user set authentication_string=PASSWORD('12345') where User='root'; FLUSH PRIVILEGES;"
+
+script:
+  - cd ${TRAVIS_HOME}/goradd-test/codegen && go generate build.go  # CodeGenerator
+  - cd ${TRAVIS_HOME}/goradd-project && go test github.com/goradd/goradd/pkg/...  # Pkg unit tests
+  - cd ${TRAVIS_HOME}/goradd-project && go test github.com/goradd/goradd/internal/travis/dbtest  # Db unit tests
+  - cd ${TRAVIS_HOME}/goradd-test
+  - ${TRAVIS_BUILD_DIR}/internal/travis/ci/test.sh  # Browser based tests

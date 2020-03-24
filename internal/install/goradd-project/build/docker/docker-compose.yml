@@ -1,0 +1,14 @@
+# Use this docker compose file if your database is already running on your host machine.
+# To use it, simply run `docker-compose up`
+version: '1'
+services:
+    app:
+        container_name: grapp
+        image: grapp
+        ports:
+# Standard html is served out of 8000
+            - "8000:8000"
+# Websockets are served out of 8100 for the default messenger service. You can remove this if you are using a different
+# mechanism for messaging
+            - "8100:8100"
+        restart: always

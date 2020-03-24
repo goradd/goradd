@@ -1,0 +1,26 @@
+//editForm.tmpl
+
+// The master template for the EditForm classes
+
+// Variables used below
+var dbkey = strings.Title(dd.DbKey)
+var title  = dbkey + t.GoName
+var formName = title + "EditForm"
+var formPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Edit")
+var listFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "List")
+
+{{: editFormImport.tmpl }}
+{{: editFormConst.tmpl }}
+{{: editFormStruct.tmpl }}
+{{: editFormRun.tmpl }}
+{{: editFormAddFiles.tmpl }}
+{{: editFormCreateControls.tmpl }}
+{{: editFormLoadControls.tmpl }}
+{{: editFormAction.tmpl }}
+{{: editFormReturn.tmpl }}
+{{: editFormInclude.tmpl }}
+{{: editFormInit.tmpl }}
+
+{{: editFormTest.tmpl }}
+
+

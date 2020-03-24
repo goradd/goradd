@@ -1,0 +1,16 @@
+// detailFormConst.tmpl
+
+{{
+// {{= title }}DetailPath specifies the URL that will access this form.
+const {{= title }}DetailPath = "{{= formPath }}"
+// {{= title }}DetailID is the html id to use in the html form object.
+const {{= title }}DetailID = "{{= formName }}"
+
+const {{= title }}DetailPanelID = "{{= t.DefaultHtmlID()}}-detail-panel"
+const {{= title }}OkButtonID = "ok-button"
+
+const (
+    {{= title }}OkAction = iota + 1
+)
+
+}}

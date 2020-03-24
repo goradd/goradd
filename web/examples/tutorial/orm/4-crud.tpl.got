@@ -1,0 +1,54 @@
+{{< package }}orm{{end}}
+{{< imports }}
+	"github.com/goradd/goradd/pkg/orm/op"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model"
+	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
+{{end}}
+{{< control }}CrudPanel{{end}}
+
+{{define template }}
+<h1>Creating, Modifying and Deleting Database Objects</h1>
+
+<h2>Creating a Database Obect</h2>
+
+<p>
+{{!
+Each object generated has a corresponding New function which creates a new, empty database object.
+If you have specified a default value for any of the object's fields in the database, the new object will start with that value.
+}}
+</p>
+<p>
+Modify fields in each object by using the corresponding Set functions, and then call Save() to save the object.
+Once you save the object, it will be assigned a unique ID that you can use to identify the object in the database
+and create links to that particular object.
+</p>
+<p>
+For example, to create a new Person in the database, you could do the following:
+</p>
+<pre><code>
+    person := model.NewPerson()
+    person.SetFirstName('Mike')
+    person.SetLastName('Easter')
+    person.Save()
+</code></pre>
+<h2>Modifying a Database Object</h2>
+<p>Any of the objects you get from the database can be modified by calling Set functions, and then calling Save().
+For example: </p>
+<pre><code>
+    project := model.LoadProjectByNum(1)
+    project.SetName('New Project')
+    project.Save()
+</code></pre>
+<h2>Deleting a Database Object</h2>
+<p>To delete an object from the database, just call Delete on it.</p>
+<pre><code>
+    project := model.LoadProjectByNum(1)
+    project.Delete()
+</code></pre>
+
+
+
+
+{{end}}
+
+{{renderControlTemplate}}

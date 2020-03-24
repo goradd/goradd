@@ -1,0 +1,387 @@
+/**
+ * This is the bare-bones css file needed to use Goradd in your application. If you need to modify an item, simply
+ * override it in an additional css class you include after this one. Or you can copy this and completely replace it
+ * by overriding the AddRelatedFiles method in your form.
+ *
+ * Another option is to specify a different load directory for the imports and you could then just customize
+ * the theme.
+ */
+/**
+The colors and themes presented here are not to try to create a massive, all encompasing theme like so many
+other css frameworks, nor is it meant to replace them.
+
+Its only a central place to put various variables that can be used to easily customize the out-of-the-box
+presentation of the controls provided with goradd.
+
+*/
+/**
+ * Styles related to tables and table-like objects.
+ * Includes clickable rows, and the data pager styles
+ */
+.gr-table-rows {
+  empty-cells: show;
+  border-collapse: collapse;
+  margin: auto;
+  width: 100%;
+  border-bottom: 1px solid #555555;
+  border-top: 1px solid #555555;
+}
+.gr-table-rows th, .gr-table-rows td {
+  padding: 5px;
+}
+.gr-table-rows thead tr, .gr-table-rows tfoot tr {
+  background-color: black;
+  color: black;
+}
+.gr-table-rows thead {
+  border-bottom: 1px solid #555555;
+}
+.gr-table-rows tbody tr:nth-child(odd):not(.nosel):not(.selected) {
+  background-color: white;
+  color: black;
+}
+.gr-table-rows tbody tr:nth-child(odd):not(.nosel):not(.selected) th {
+  background-color: black;
+  color: black;
+}
+.gr-table-rows tbody tr:nth-child(even):not(.nosel):not(.selected) {
+  background-color: #f0f0f0;
+  color: black;
+}
+.gr-table-rows tbody tr:nth-child(even):not(.nosel):not(.selected) th {
+  background-color: black;
+  color: black;
+}
+.gr-table-rows tbody tr:not(:first-child) {
+  border-top: 1px solid #aaaaaa;
+}
+.gr-table-rows tbody tr.nosel {
+  background-color: #e0e0e0;
+  color: #e0e0e0;
+}
+.gr-table-rows tbody tr.nosel.h2 {
+  background-color: #333333;
+  color: #333333;
+}
+.gr-table-rows caption {
+  overflow: hidden;
+  padding: 5px;
+  position: relative;
+}
+.gr-table-rows .paginator-control {
+  float: right;
+}
+.gr-table-rows .paginator-results {
+  float: left;
+}
+
+/**
+ * Styles of individual Control types
+ * TODO: use theme
+ */
+.datagrid {
+  margin: auto;
+  width: 100%;
+}
+.datagrid th {
+  background-color: #333;
+  color: #fff;
+  padding: 5px;
+}
+.datagrid th a {
+  color: #f6f6f6;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.datagrid th a:hover {
+  text-decoration: underline;
+}
+.datagrid th.sortable :hover {
+  opacity: 0.95;
+}
+.datagrid th.sortable div span {
+  display: table-cell;
+  vertical-align: bottom;
+  padding-right: 4px;
+}
+.datagrid td {
+  border-bottom: 1px solid #dedede;
+  padding: 5px;
+}
+.datagrid caption {
+  overflow: hidden;
+  padding: 5px;
+  position: relative;
+}
+.datagrid .paginator-control {
+  float: right;
+}
+.datagrid .paginator-results {
+  float: left;
+}
+
+/**
+ * clickable-rows
+ *
+ * Use the clickable-rows class to specify that the rows in an object should be clickable. These rules permit
+ * rows to be rows of a table (just the body rows of the table), rows of a ul element, or any object whose
+ * direct descendants are divs. Combine with other styling as well.
+ */
+table.gr-clickable-rows > tbody > tr > td,
+table.gr-clickable-rows > tbody > tr > th,
+ul.gr-clickable-rows > li,
+.gr-clickable-rows > div {
+  -webkit-user-select: none;
+  /* webkit (safari, chrome) browsers */
+  -moz-user-select: none;
+  /* mozilla browsers */
+  -khtml-user-select: none;
+  /* webkit (konqueror) browsers */
+  -ms-user-select: none;
+  /* IE10+ */
+  cursor: default;
+}
+table.gr-clickable-rows > tbody > tr > td .nosel,
+table.gr-clickable-rows > tbody > tr > th .nosel,
+ul.gr-clickable-rows > li .nosel,
+.gr-clickable-rows > div .nosel {
+  cursor: not-allowed;
+}
+
+table.gr-clickable-rows > tbody > tr:hover:not(.selected):not(.nosel),
+ul.gr-clickable-rows > li:hover:not(.selected):not(.nosel),
+.gr-clickable-rows > div:hover:not(.selected):not(.nosel) {
+  background-color: #d0d0d0;
+  color: black;
+}
+table.gr-clickable-rows > tbody > tr.selected, table.gr-clickable-rows > tbody > tr:active,
+ul.gr-clickable-rows > li.selected,
+ul.gr-clickable-rows > li:active,
+.gr-clickable-rows > div.selected,
+.gr-clickable-rows > div:active {
+  background-color: #555555;
+  color: white;
+}
+
+/**
+ * Data pager styles
+ */
+div[data-grctl=datapager] button {
+  border-radius: 20px;
+  background: white;
+  border: 1px solid lightgray;
+}
+div[data-grctl=datapager] button:not(.selected, [disabled]):hover {
+  background: #eeeeee;
+  border-color: gray;
+}
+div[data-grctl=datapager] button.selected {
+  border-color: black;
+}
+
+/**
+ * Dialog styling
+ */
+/**
+The colors and themes presented here are not to try to create a massive, all encompasing theme like so many
+other css frameworks, nor is it meant to replace them.
+
+Its only a central place to put various variables that can be used to easily customize the out-of-the-box
+presentation of the controls provided with goradd.
+
+*/
+#gr-dlg-overlay {
+  position: fixed;
+  /* Sit on top of the override content */
+  width: 100%;
+  /* Full width (cover the whole override) */
+  height: 100%;
+  /* Full height (cover the whole override) */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Black background with opacity */
+  z-index: 10;
+  /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer;
+  /* Add a pointer on hover */
+}
+
+div[data-grctl=dialog] {
+  background-color: white;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: solid black 2px;
+  border-radius: 4px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+}
+div[data-grctl=dialog] .gr-dialog-title {
+  order: 1;
+  height: 24px;
+  padding: 5px;
+  white-space: nowrap;
+  background-color: rgba(74, 86, 124, 0.11);
+}
+div[data-grctl=dialog] .gr-dialog-title .gr-dialog-close {
+  float: right;
+  margin-right: 5px;
+}
+div[data-grctl=dialog] .gr-dlg-content {
+  order: 2;
+  height: 100%;
+  padding: 10px;
+}
+div[data-grctl=dialog] .gr-dialog-buttons {
+  order: 3;
+  height: 24px;
+  padding: 5px;
+  background-color: rgba(74, 86, 124, 0.11);
+  border-top: solid black 1px;
+}
+div[data-grctl=dialog] .gr-dialog-buttons button {
+  float: right;
+}
+
+/**
+ * Default styles for checkbox and radio lists
+ */
+.gr-cbl {
+  outline: 1px solid black;
+  margin: 5px;
+  display: inline-block;
+}
+
+.gr-cbl-scroller {
+  overflow-x: scroll;
+  height: 200px;
+  padding-right: 10px;
+}
+
+.gr-cbl-table {
+  display: table;
+}
+
+.gr-cbl-column {
+  display: table-column;
+}
+
+.gr-cbl-row {
+  display: table-row;
+}
+
+.gr-cbl-cell {
+  display: table-cell;
+  padding-left: 3px;
+  padding-right: 8px;
+}
+
+.gr-cbl-heading {
+  font-weight: bold;
+  color: gray;
+}
+
+.gr-table {
+  empty-cells: show;
+  border-collapse: collapse;
+}
+
+button {
+  cursor: pointer;
+}
+
+form[data-grctl] {
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+textarea[data-grctl] {
+  resize: none;
+}
+
+/* Status coloring */
+.warning {
+  color: orange;
+}
+
+.error {
+  color: red;
+}
+
+.success {
+  color: green;
+}
+
+.boxed {
+  border: 1px solid #555555;
+  padding: 5px;
+}
+
+/** Debugging error notice styling */
+#Goradd_AJAX_Error {
+  position: fixed;
+  background-color: white;
+  border: 2px solid black;
+  left: 20px;
+  right: 20px;
+  top: 20px;
+  z-index: 10000;
+  padding: 20px;
+}
+
+/* SQL Profiling */
+#grProfilePanel {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  overflow-y: scroll;
+  background: white;
+}
+
+#grProfileButton {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  opacity: 0.5;
+}
+
+.gr-transparent-btn {
+  border: none;
+  font: inherit;
+  color: inherit;
+  background-color: inherit;
+}
+
+/* Modification to jquery ui dialog styling that allows for left/right buttons and other fixes */
+/*
+jQuery UI is not actively developed, so we are deprecating this.
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+  float: none !important;
+  text-align: right;
+}
+
+.ui-button-left {
+  float: left;
+}
+
+// The following is to allow for correct positioning of an alert icon
+.ui-dialog-title {
+  float: none !important;
+  width: auto !important;
+}
+
+.ui-dialog-titlebar .ui-icon {
+  display: inline-block;
+  margin-right: .3em;
+  vertical-align: middle;
+}
+*/
+
+/*# sourceMappingURL=goradd.css.map */

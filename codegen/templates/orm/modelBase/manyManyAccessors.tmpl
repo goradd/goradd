@@ -1,0 +1,57 @@
+//manyManyAccessors.tmpl
+for _,ref := range t.ManyManyReferences {
+	oName := ref.ObjName(dd)
+	if ref.IsTypeAssociation {
+
+{{
+
+// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectName}} values if loaded.
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []{{ref.AssociatedObjectName}} {
+	if o.{{oName}} == nil {
+		return nil
+	}
+	return o.{{oName}}
+}
+
+// Set{{= ref.GoPlural }} sets the associated values to the given slice of {{ref.AssociatedObjectName}} values.
+// It will also disassociate from all previously associated values.
+func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []{{ref.AssociatedObjectName}}) {
+	o.{{oName}} = objs
+	o.{{oName}}IsDirty = true
+}
+
+
+}}
+
+
+	} else {
+
+
+{{
+// {{ref.GoName}} returns a single {{ref.AssociatedObjectName}} object by primary key, if one was loaded
+// otherwise, it will return nil.
+func (o *{{privateName}}Base) {{= ref.GoName }}(pk string) *{{ref.AssociatedObjectName}} {
+	if o.m{{= ref.GoPlural }} == nil {
+		return nil
+	}
+	return o.m{{= ref.GoPlural }}[pk]
+}
+
+// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectName}} objects if loaded. If not loaded, will return nil.
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.AssociatedObjectName}} {
+	return o.{{oName}}
+}
+
+// Set{{= ref.GoPlural }} sets the associated objects to the given slice of {{ref.AssociatedObjectName}} objects.
+// It will disassociate from all previously associated objects after saving.
+func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{ref.AssociatedObjectName}}) {
+	o.{{oName}} = objs
+	o.{{oName}}IsDirty = true
+}
+
+
+
+}}
+	}
+
+}

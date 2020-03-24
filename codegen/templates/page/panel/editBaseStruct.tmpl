@@ -1,0 +1,57 @@
+// struct.tmpl
+
+{{
+
+type {{= panelName }}I interface {
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd == nil {continue}
+        if cd.Generator != nil && !col.IsPk {
+{{
+        {{= cd.ControlName }}Creator() {{= defaultWrapper }}
+}}
+        }
+    }
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        {{= cd.ControlName }}Creator() {{= defaultWrapper }}
+}}
+        }
+
+    }
+/*
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        {{= cd.ControlName }}Creator() {{= defaultWrapper }}
+}}
+        }
+
+    }
+*/
+}}
+    Update()
+    Refresh()
+    Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error
+}
+
+
+// {{= panelName }} is the code generated edit panel.
+type {{= panelName }} struct {
+	{{= ctrlPkg }}.Panel
+    {{= t.GoName }} *model.{{= t.GoName }}
+}
+
+func (p *{{= panelName }}) this() {{= panelName }}I {
+	return p.Self.({{= panelName }}I)
+}
+
+}}
+

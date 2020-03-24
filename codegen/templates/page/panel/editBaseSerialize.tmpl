@@ -1,0 +1,43 @@
+// editBaseSerialize.tmpl
+
+{{
+// Serialize encodes the control to save it during the page serialization process.
+func (p *{{= panelName }}) Serialize(e page.Encoder) (err error) {
+	if err = p.Panel.Serialize(e); err != nil {
+		return
+	}
+
+    if p.{{= t.GoName }} == nil {
+        if err = e.Encode(false); err != nil {
+            return
+        }
+    } else {
+        if err = e.Encode(true); err != nil {
+            return
+        }
+        if err = e.Encode(p.{{= t.GoName }}); err != nil {
+            return
+        }
+    }
+    return
+}
+
+// Deserialize decodes the panel and prepares it for use.
+func (p *{{= panelName }}) Deserialize(dec page.Decoder) (err error) {
+	if err = p.Panel.Deserialize(dec); err != nil {
+		return
+	}
+
+    var isPtr bool
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
+        if err = dec.Decode(&p.{{= t.GoName }}); err != nil {
+            return
+        }
+	}
+	return
+}
+
+}}

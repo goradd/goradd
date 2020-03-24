@@ -1,0 +1,62 @@
+{{
+
+// MarshalJSON serializes the object into a JSON object.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object.
+func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
+    v := make(map[string]interface{})
+
+{{for _,col := range t.Columns}}
+{{g key := col.JsonKey() }}
+    if o.{{= col.ModelName() }}IsValid {
+{{if col.IsNullable}}
+        if o.{{= col.ModelName() }}IsNull {
+            v["{{key}}"] = nil
+        } else {
+            v["{{key}}"] = o.{{= col.ModelName() }}
+        }
+{{else}}
+        v["{{key}}"] = o.{{= col.ModelName() }}
+{{if}}
+    }
+
+{{if col.IsType()}}
+    if o.{{= col.ModelName() }}IsValid {
+        v["{{= col.ReferenceJsonKey(dd) }}"] = o.{{= col.ReferenceFunction() }}().String()
+    }
+{{if}}
+{{if col.IsReference()}}
+    if val := o.{{= col.ReferenceFunction() }}(); val != nil {
+        v["{{= col.ReferenceJsonKey(dd)}}"] = val
+    }
+{{if}}
+{{for}}
+
+{{for _,ref := range t.ReverseReferences }}
+{{g key := ref.JsonKey(dd) }}
+
+{{if ref.IsUnique() }}
+    if val := o.{{= ref.GoName }}(); val != nil {
+        v["{{key}}"] = val
+    }
+{{else}}
+    if val := o.{{= ref.GoPlural }}(); val != nil {
+        v["{{key}}"] = val
+    }
+{{if}}
+{{for}}
+
+{{for _,ref := range t.ManyManyReferences }}
+{{g
+    key := ref.JsonKey(dd)
+}}
+    if val := o.{{= ref.GoPlural }}(); val != nil {
+        v["{{key}}"] = val
+    }
+{{for}}
+
+{{# TODO: export aliases }}
+    return json.Marshal(v)
+}
+
+}}

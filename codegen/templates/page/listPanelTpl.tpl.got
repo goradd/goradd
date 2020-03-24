@@ -1,0 +1,37 @@
+package template
+
+// This template generates a got template for the corresponding edit form
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"bytes"
+	"github.com/goradd/goradd/pkg/orm/db"
+)
+
+func init() {
+	t := ListPanelTplTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.ProjectDir() + "/gen",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type ListPanelTplTemplate struct {
+	generator.Template
+}
+
+func (n *ListPanelTplTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/panel/inactive_templates/" + t.GoName + "ListPanel.tpl.got"
+}
+
+func (n *ListPanelTplTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
+	{{: "panel/listTpl.tmpl" }}
+}
+
+func (n *ListPanelTplTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+

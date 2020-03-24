@@ -1,0 +1,53 @@
+package control
+
+func (b *Navbar) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+    b.drawToggleAndBrand(ctx, buf)
+
+{{
+	<div class="collapse navbar-collapse" id="{{= b.ID() }}_collapse">
+	    {{if b.brandLocation == NavbarCollapsedBrandHidden}}{{g b.drawBrand(ctx, buf) }}{{if}}
+		{{err b.DrawChildren(ctx, buf) }}
+	</div>
+
+}}
+    return
+}
+
+func (b *Navbar) drawToggleButton(ctx context.Context, buf *bytes.Buffer) {
+{{
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#{{= b.ID() }}_collapse" aria-controls="{{= b.ID() }}_collapse" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+}}
+}
+
+func (b *Navbar) drawBrand(ctx context.Context, buf *bytes.Buffer)  {
+    if b.Text() != "" {
+        if b.brandAnchor == "" {
+            {{
+                <span class="navbar-brand">{{g b.DrawText(ctx, buf) }}</span>
+            }}
+        } else {
+             {{
+                 <a class="navbar-brand" href="{{= b.brandAnchor}}">{{g b.DrawText(ctx, buf) }}</a>
+             }}
+        }
+    } else {    // draw a blank brand so toggler placement still works
+     {{
+ 		<a class="navbar-brand" href="#"> </a>
+     }}
+    }
+}
+
+func (b *Navbar) drawToggleAndBrand(ctx context.Context, buf *bytes.Buffer) {
+    switch b.brandLocation {
+    case NavbarCollapsedBrandLeft:
+        b.drawBrand(ctx, buf)
+        b.drawToggleButton(ctx, buf)
+    case NavbarCollapsedBrandRight:
+        b.drawToggleButton(ctx, buf)
+        b.drawBrand(ctx, buf)
+    case NavbarCollapsedBrandHidden:
+         b.drawToggleButton(ctx, buf)
+    }
+}

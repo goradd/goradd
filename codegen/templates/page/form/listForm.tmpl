@@ -1,0 +1,24 @@
+//listForm.tmpl
+
+// The master template for the ListForm classes
+
+// Variables used below
+var dbkey = strings.Title(dd.DbKey)
+var title  = dbkey + t.GoName
+var formName = title + "ListForm"
+var formPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "List")
+
+{{: listFormImport.tmpl }}
+{{: listFormConst.tmpl }}
+{{: listFormStruct.tmpl }}
+{{: listFormRun.tmpl }}
+
+{{: listFormAddFiles.tmpl }}
+{{: listFormCreateControls.tmpl }}
+{{: listFormLoad.tmpl }}
+{{: listFormInclude.tmpl }}
+{{: listFormInit.tmpl }}
+
+
+
+

@@ -1,0 +1,25 @@
+//dirty.tmpl
+{{
+func (o *{{privateName}}Base) resetDirtyStatus() {
+{{for _,col := range t.Columns }}
+	o.{{= col.ModelName() }}IsDirty = false
+{{for}}
+{{for _,ref := range t.ReverseReferences }}
+	o.{{=  ref.Values["objName"] }}IsDirty = false
+{{for}}
+
+}
+
+func (o *{{privateName}}Base) IsDirty() bool {
+    return {{for _,col := range t.Columns }}
+	    o.{{= col.ModelName() }}IsDirty ||{{if col.ReferenceName() != "" }}
+	    (o.{{= col.ReferenceName() }} != nil && o.{{= col.ReferenceName() }}.IsDirty()) ||{{if}}
+
+{{for}}{{for _,ref := range t.ReverseReferences }}
+        o.{{= ref.Values["objName"]}}IsDirty ||
+{{for}}
+{{- 3}}
+
+}
+
+}}

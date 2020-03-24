@@ -1,0 +1,18 @@
+// detailFormCreateControls.tmpl
+
+{{
+
+func (f *{{= formName }}) CreateControls(ctx context.Context) {
+    f.AddControls(ctx,
+        panel.{{= t.GoName }}DetailPanelCreator {
+            ID: {{= title }}DetailPanelID,
+        },
+        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+            ID: {{= title }}OkButtonID,
+            Text: f.GT("OK"),
+            OnSubmit: action.Ajax(f.ID(), {{= title }}OkAction),
+        },
+    )
+}
+
+}}

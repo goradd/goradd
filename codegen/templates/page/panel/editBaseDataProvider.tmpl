@@ -1,0 +1,54 @@
+//dataProvider.tmpl
+
+{{
+func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
+    id := strings.TrimPrefix(s.ID(), p.ID()+"-")
+
+    switch id {
+
+{{g
+for _,col := range t.Columns {
+    cd := t.ControlDescription(col)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+        if _, ok := cd.Generator.(generator.ProviderGenerator); ok {
+{{
+    case "{{= cd.ControlID }}":
+        var items []interface{}
+{{if col.IsNullable}}
+        items = {{= ctrlPkg }}.NoSelectionItemList()
+{{else}}
+    {{if col.IsType() }}
+        if p.{{= t.GoName }} == nil || int(p.{{= t.GoName }}.{{= col.ReferenceFunction() }}()) == 0 {
+    {{else}}
+        if p.{{= t.GoName }} == nil || p.{{= t.GoName }}.{{= col.GoName }}() == {{= col.ColumnType.DefaultValue() }} {
+    {{if}}
+            items = {{= ctrlPkg }}.SelectOneItemList()
+        }
+{{if}}
+        items = append(items, s.DataConnector().(page.DataLoader).Load(ctx)...)
+        s.SetData(items)
+}}
+        }
+    }
+}
+
+for _,rr := range t.ReverseReferences {
+    cd := t.ControlDescription(rr)
+    if cd == nil || cd.Generator == nil {continue}
+    if _, ok := cd.Generator.(generator.ProviderGenerator); ok {
+{{
+    case "{{= cd.ControlID }}":
+        var items []interface{}
+        items = append(items, s.DataConnector().(page.DataLoader).Load(ctx)...)
+        s.SetData(items)
+}}
+    }
+}
+
+
+}}
+    }
+}
+
+}}

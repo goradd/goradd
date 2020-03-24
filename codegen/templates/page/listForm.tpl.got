@@ -1,0 +1,38 @@
+package template
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"bytes"
+	"github.com/goradd/goradd/pkg/orm/db"
+    "strings"
+    "fmt"
+    "path"
+)
+
+func init() {
+	t := ListFormTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.ProjectDir() + "/gen",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type ListFormTemplate struct {
+	generator.Template
+}
+
+func (n *ListFormTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "ListForm.go"
+}
+
+func (n *ListFormTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
+	{{: "form/listForm.tmpl" }}
+}
+
+func (n *ListFormTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+

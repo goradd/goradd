@@ -1,0 +1,115 @@
+//delete.tmpl
+{{
+
+// Delete deletes the associated record from the database.
+func (o *{{privateName}}Base) Delete(ctx context.Context) {
+	if !o._restored {
+		panic ("Cannot delete a record that has no primary key value.")
+	}
+	d := Database()
+{{if len(t.ReverseReferences) == 0 && len(t.ManyManyReferences) == 0}}
+	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn().DbName }}", o.{{= t.PrimaryKeyColumn().ModelName() }})
+{{else}}
+    db.ExecuteTransaction(ctx, d, func() {
+	{{for _,ref := range t.ReverseReferences }}
+        {{if ref.IsUnique() }}
+            {{if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionCascade}}
+            {
+                obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
+                          Get()
+                if obj != nil {
+                    obj.Delete(ctx)
+                }
+                o.{{= ref.Values["objName"] }} = nil
+            }
+            {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
+            {
+                obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
+                          Get()
+                if obj != nil {
+                   obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
+                   obj.Save(ctx)
+                }
+                o.{{= ref.Values["objName"] }} = nil
+            }
+            {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
+             {
+                 c := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                           Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                           Count(false)
+                 if c > 0 {
+                     panic("Cannot delete a record that has a restricted foreign key pointing to it.")
+                 }
+             }
+            {{if}}
+        {{else}}
+            {{if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionCascade}}
+            {
+                objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
+                          Load()
+                for _,obj := range objs {
+                    obj.Delete(ctx)
+                }
+                o.{{= ref.Values["objName"] }} = nil
+            }
+            {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
+            {
+                objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Select(node.{{= ref.AssociatedTable.GoName}}().PrimaryKeyNode()).
+                          Load()
+                for _,obj := range objs {
+                   obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
+                   obj.Save(ctx)
+                }
+                o.{{= ref.Values["objName"] }} = nil
+            }
+            {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
+             {
+                c := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Count(false)
+                if c > 0 {
+                    panic("Cannot delete a record that has restricted foreign keys pointing to it.")
+                }
+             }
+            {{if}}
+        {{if}}
+    {{for}}
+    {{for _,ref := range t.ManyManyReferences}}
+        d.Associate(ctx,
+            "{{= ref.AssnTableName }}",
+            "{{= ref.AssnColumnName }}",
+            o.PrimaryKey(),
+            "{{= ref.AssociatedTableName }}",
+            "{{= ref.AssociatedColumnName }}",
+            nil)
+
+    {{for}}
+
+	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn().DbName }}", o.{{= t.PrimaryKeyColumn().ModelName() }})
+	})
+{{if}}
+	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(o.{{= t.PrimaryKeyColumn().ModelName() }}))
+}
+
+// delete{{= t.GoName }} deletes the associated record from the database.
+func delete{{= t.GoName }}(ctx context.Context, pk {{= t.PrimaryKeyColumn().GoType() }}) {
+{{if len(t.ReverseReferences) == 0 && len(t.ManyManyReferences) == 0}}
+	d := db.GetDatabase("{{t.DbKey}}")
+	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn().DbName }}", pk)
+	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(pk))
+{{else}}
+    if obj := Load{{= t.GoName }}(ctx, pk, node.{{= t.GoName}}().PrimaryKeyNode()); obj != nil {
+        obj.Delete(ctx)
+    }
+{{if}}
+}
+
+}}

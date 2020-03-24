@@ -1,0 +1,59 @@
+//const.tmpl
+{{
+
+const  (
+}}
+
+for _,col := range t.Columns {
+	v := col.DefaultValueAsConstant()
+	if v == "" {
+		continue // no way to represent this as a constant
+	}
+{{
+    {{= col.DefaultConstantName(t.GoName) }} = {{= v }}
+}}
+
+}
+
+{{ )
+
+const  (
+}}
+
+for _,col := range t.Columns {
+{{
+    {{= t.GoName }}_{{= col.GoName}} = `{{= col.GoName }}`
+    {{if col.IsReference()}}
+    {{= t.GoName }}_{{= col.ForeignKey.GoName }} = `{{= col.ForeignKey.GoName }}`
+    {{if}}
+}}
+}
+
+for _,ref := range t.ReverseReferences {
+
+	if ref.IsUnique() {
+{{
+    {{= t.GoName }}{{= ref.GoName}} = `{{= ref.GoName}}`
+}}
+	} else {
+{{
+    {{= t.GoName }}{{= ref.GoPlural}} = `{{= ref.GoPlural}}`
+}}
+	} //else
+} // for
+
+for _,ref := range t.ManyManyReferences {
+{{
+    {{= t.GoName }}{{= ref.GoName}} = `{{= ref.GoName}}`
+    {{= t.GoName }}{{= ref.GoPlural}} = `{{= ref.GoPlural}}`
+}}
+}
+
+
+
+{{ )
+
+
+}}
+
+

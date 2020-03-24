@@ -1,0 +1,227 @@
+//accessors.tmpl
+
+// Getters
+for _,col := range t.Columns {
+	if col.IsType() {
+		continue
+	}
+
+	if col.IsId {
+{{
+
+// {{= col.GoName }} returns the loaded value of {{= col.GoName }}.
+func (o *{{privateName}}Base) {{= col.GoName }}() string {
+	return fmt.Sprint(o.{{= col.ModelName() }})
+}
+
+// {{= col.GoName }}IsValid returns true if the value was loaded from the database or has been set.
+func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
+	return o._restored && o.{{= col.ModelName() }}IsValid
+}
+
+}}
+	} else {
+
+{{
+// {{= col.GoName }} returns the loaded value of {{= col.GoName }}.
+func (o *{{privateName}}Base) {{= col.GoName }}() {{= col.ColumnType.GoType() }} {
+	if o._restored && !o.{{= col.ModelName() }}IsValid {
+		panic ("{{= col.ModelName() }} was not selected in the last query and has not been set, and so is not valid")
+	}
+	return o.{{= col.ModelName() }}
+}
+
+// {{= col.GoName }}IsValid returns true if the value was loaded from the database or has been set.
+func (o *{{privateName}}Base) {{= col.GoName }}IsValid() bool {
+	return o.{{= col.ModelName() }}IsValid
+}
+
+}}
+	}
+
+	if col.IsNullable {
+{{
+
+// {{= col.GoName }}IsNull returns true if the related database value is null.
+func (o *{{privateName}}Base) {{= col.GoName }}IsNull() bool {
+	return o.{{= col.ModelName() }}IsNull
+}
+
+// {{= col.GoName }}_I returns the loaded value of {{= col.GoName }} as an interface.
+// If the value in the database is NULL, a nil interface is returned.
+func (o *{{privateName}}Base) {{= col.GoName }}_I() interface{} {
+	if o._restored && !o.{{= col.ModelName() }}IsValid {
+		panic ("{{= col.ModelName() }} was not selected in the last query and has not been set, and so is not valid")
+	} else if o.{{= col.ModelName() }}IsNull {
+	    return nil
+	}
+	return o.{{= col.ModelName() }}
+}
+
+}}
+	}
+
+	if col.IsReference() {
+		oName := col.ReferenceName()
+
+{{
+
+// {{= col.ForeignKey.GoName }} returns the current value of the loaded {{= col.ForeignKey.GoName }}, and nil if its not loaded.
+func (o *{{privateName}}Base) {{= col.ForeignKey.GoName }}() *{{= col.ForeignKey.GoType }} {
+	return o.{{oName}}
+}
+
+// Load{{= col.ForeignKey.GoName }} returns the related {{= col.ForeignKey.GoName }}. If it is not already loaded,
+// it will attempt to load it first.
+func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Context) *{{= col.ForeignKey.GoType }} {
+	if !o.{{= col.ModelName() }}IsValid  {
+		return nil
+	}
+
+	if o.{{oName}} == nil {
+		// Load and cache
+		o.{{oName}} = Load{{col.ForeignKey.GoType}}(ctx, o.{{col.GoName}}())
+	}
+	return o.{{oName}}
+}
+
+}}
+
+	}
+
+// Setters
+	if col.IsId {
+		continue	// ID columns are not setable, since the database will automatically set the valid
+	}
+
+	// If the column is nullable, we use an interface to allow a null to be passed in
+	if col.IsNullable {
+		var oName string
+		if col.IsReference() {
+			oName = col.ReferenceName()
+		}
+{{
+
+func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
+	o.{{= col.ModelName() }}IsValid = true
+	if i == nil {
+		if !o.{{= col.ModelName() }}IsNull {
+			o.{{= col.ModelName() }}IsNull = true
+			o.{{= col.ModelName() }}IsDirty = true
+			o.{{= col.ModelName() }} = {{= col.DefaultValueAsValue() }}
+{{if col.IsReference() }}
+			o.{{oName}} = nil
+{{if}}
+		}
+	} else {
+		v := i.({{= col.ColumnType.GoType() }})
+		if o.{{= col.ModelName() }}IsNull ||
+		    !o._restored ||
+		    {{if col.ColumnType != query.ColTypeBytes }} o.{{= col.ModelName() }} != v {{else}} !bytes.Equal(o.{{= col.ModelName() }}, v) {{if}}{
+
+			o.{{= col.ModelName() }}IsNull = false
+{{if col.ColumnType != query.ColTypeBytes }}
+			o.{{= col.ModelName() }} = v
+{{else}}
+            o.{{= col.ModelName() }} = append([]byte(nil), v...)
+{{if}}
+			o.{{= col.ModelName() }}IsDirty = true
+{{if col.IsReference() }}
+			o.{{oName}} = nil
+{{if}}
+		}
+	}
+}
+
+}}
+
+		if col.IsReference() {
+			oName := col.ReferenceName()
+
+{{
+
+func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.ForeignKey.GoType }}) {
+	o.{{= col.ModelName() }}IsValid = true
+	if v == nil {
+		if !o.{{= col.ModelName() }}IsNull || !o._restored {
+			o.{{= col.ModelName() }}IsNull = true
+			o.{{= col.ModelName() }}IsDirty = true
+			o.{{= col.ModelName() }} = {{= col.DefaultValueAsValue() }}
+			o.{{oName}} = nil
+		}
+	} else {
+		o.{{oName}}  = v
+		if o.{{= col.ModelName() }}IsNull || !o._restored || o.{{= col.ModelName() }} != v.PrimaryKey() {
+			o.{{= col.ModelName() }}IsNull = false
+			o.{{= col.ModelName() }} = v.PrimaryKey()
+			o.{{= col.ModelName() }}IsDirty = true
+		}
+	}
+}
+
+}}
+
+		}
+
+	} else {	// Not nullable
+
+{{
+// Set{{= col.GoName }} sets the value of {{= col.GoName }} in the object, to be saved later using the Save() function.
+func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.ColumnType.GoType() }}) {
+	o.{{= col.ModelName() }}IsValid = true
+{{g if col.ColumnType == query.ColTypeBytes { }}
+	o.{{= col.ModelName() }} = v		// TODO: Copy bytes??
+	o.{{= col.ModelName() }}IsDirty = true
+{{g } else { }}
+	if o.{{= col.ModelName() }} != v || !o._restored {
+		o.{{= col.ModelName() }} = v
+		o.{{= col.ModelName() }}IsDirty = true
+{{if col.IsReference()}}
+		o.{{= col.ReferenceName() }} = nil
+{{if}}
+	}
+{{g } }}
+
+
+}
+
+}}
+
+		if col.IsReference() {
+			oName := col.ReferenceName()
+
+{{
+// Set{{= col.ForeignKey.GoName }} sets the value of {{= col.ForeignKey.GoName }} in the object, to be saved later using the Save() function.
+func (o *{{privateName}}Base) Set{{= col.ForeignKey.GoName }}(v *{{= col.ForeignKey.GoType }})  {
+	if v == nil {
+		panic("Cannot set {{= col.ForeignKey.GoName }} to a null value.")
+	} else {
+		o.{{oName}} = v
+		o.{{= col.ModelName() }}IsValid = true
+		if o.{{= col.ModelName() }} != v.PrimaryKey() {
+			o.{{= col.ModelName() }} = v.PrimaryKey()
+			o.{{= col.ModelName() }}IsDirty = true
+		}
+	}
+}
+
+}}
+
+		}
+
+	} // else
+
+}
+
+{{
+
+// GetAlias returns the alias for the given key.
+func (o *{{privateName}}Base) GetAlias(key string) query.AliasValue {
+	if a,ok := o._aliases[key]; ok {
+		return query.NewAliasValue(a)
+	} else {
+		panic ("Alias " + key + " not found.")
+		return query.NewAliasValue([]byte{})
+	}
+}
+}}

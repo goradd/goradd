@@ -1,0 +1,122 @@
+//connector.tmpl
+
+// The template for the connector classes
+
+for _,col := range t.Columns {
+    cd := t.ControlDescription(col)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+        sRefresh := cd.Generator.GenerateRefresh(col, cd)
+        sUpdate := cd.Generator.GenerateUpdate(col, cd)
+
+
+{{
+type {{= cd.Connector }}  struct {
+}
+
+func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
+{{if sRefresh != ""}}
+    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+{{if col.IsType() }}
+        val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction() }}().ID()
+{{else}}
+        val := data.(*model.{{= t.GoName }}).{{= col.GoName }}()
+{{if}}
+        {{= sRefresh }}
+    }
+{{if}}
+}
+
+func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
+{{if sUpdate != ""}}
+   if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+        {{= sUpdate }}
+{{if col.IsType()}}
+        data.(*model.{{= t.GoName }}).Set{{= col.ReferenceFunction() }}(model.{{= col.ForeignKey.GoType }}(val))
+{{else}}
+        data.(*model.{{= t.GoName }}).Set{{= col.GoName }}(val)
+{{if}}
+    }
+{{if}}
+}
+
+}}
+
+        if provider,ok := cd.Generator.(generator.ProviderGenerator); ok {
+{{
+func (c {{= cd.Connector }}) Load(ctx context.Context) []interface{} {
+{{= provider.GenerateProvider(col, cd) }}
+}
+
+}}
+        }
+
+{{
+func init() {
+	gob.Register(&{{= cd.Connector }}{})
+}
+
+}}
+
+    }
+
+
+}
+
+// Reverse References
+
+for _,rr := range t.ReverseReferences {
+    cd := t.ControlDescription(rr)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+        sRefresh := cd.Generator.GenerateRefresh(rr, cd)
+        sUpdate := cd.Generator.GenerateUpdate(rr, cd)
+
+
+{{
+type {{= cd.Connector }}  struct {
+}
+
+func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
+{{if sRefresh != ""}}
+    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+        {{if rr.IsUnique() }}
+            object := data.(*model.{{= t.GoName }}).{{= rr.GoName }}()
+        {{else}}
+            objects := data.(*model.{{= t.GoName }}).{{= rr.GoPlural }}()
+        {{if}}
+        {{= sRefresh }}
+    }
+{{if}}
+}
+
+func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
+{{if sUpdate != ""}}
+   if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+        {{= sUpdate }}
+   }
+{{if}}
+}
+
+}}
+
+    if provider,ok := cd.Generator.(generator.ProviderGenerator); ok {
+{{
+func (c {{= cd.Connector }}) Load(ctx context.Context) []interface{} {
+{{= provider.GenerateProvider(rr, cd) }}
+}
+
+}}
+    }
+
+{{
+func init() {
+	gob.Register(new({{= cd.Connector }}))
+}
+
+}}
+
+    }
+
+
+}

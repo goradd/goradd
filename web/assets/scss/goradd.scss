@@ -1,0 +1,114 @@
+/**
+ * This is the bare-bones css file needed to use Goradd in your application. If you need to modify an item, simply
+ * override it in an additional css class you include after this one. Or you can copy this and completely replace it
+ * by overriding the AddRelatedFiles method in your form.
+ *
+ * Another option is to specify a different load directory for the imports and you could then just customize
+ * the theme.
+ */
+
+@import "./theme/_colors.scss";
+
+@import "_table.scss";
+@import "_dialog.scss";
+@import "_checkboxlist.scss";
+
+
+button {
+  cursor: pointer;
+}
+
+// The basic layout of all goradd forms, which is the main control container
+form[data-grctl] {
+  margin: 0;    // A reset to make sure form is the same as the page
+  padding: 0;   // A reset to make sure form is the same as the page
+  position: relative; // Allows sub items to be positioned more easily.
+}
+
+textarea[data-grctl] {
+    resize: none;   // Webkit browsers put a resize in a textarea. Since this is not universally supported, we reset this.
+}
+
+
+/* Status coloring */
+.warning {
+  color: $warning-color;
+}
+
+.error {
+  color: $error-color;
+}
+
+.success {
+  color: $success-color;
+}
+
+// put a box around something
+.boxed {
+  border: 1px solid $outline-color;
+  padding: 5px;
+}
+
+
+/** Debugging error notice styling */
+#Goradd_AJAX_Error {
+  position: fixed;
+  background-color: white;
+  border: 2px solid black;
+  left: 20px;
+  right: 20px;
+  top: 20px;
+  z-index: 10000;
+  padding: 20px;
+}
+
+/* SQL Profiling */
+#grProfilePanel {
+  position:fixed;
+  left:0;
+  top:0;
+  bottom: 0;
+  overflow-y: scroll;
+  background:white
+}
+
+#grProfileButton {
+  position:fixed;
+  right:0;
+  bottom:0;
+  opacity: 0.5;
+}
+
+.gr-transparent-btn {
+  border:none;
+  font: inherit;
+  color: inherit;
+  background-color: inherit;
+}
+
+/* Modification to jquery ui dialog styling that allows for left/right buttons and other fixes */
+/*
+jQuery UI is not actively developed, so we are deprecating this.
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+  float: none !important;
+  text-align: right;
+}
+
+.ui-button-left {
+  float: left;
+}
+
+// The following is to allow for correct positioning of an alert icon
+.ui-dialog-title {
+  float: none !important;
+  width: auto !important;
+}
+
+.ui-dialog-titlebar .ui-icon {
+  display: inline-block;
+  margin-right: .3em;
+  vertical-align: middle;
+}
+*/
+
+

@@ -1,0 +1,45 @@
+{{< imports }}
+{{end}}
+{{< headTags }}
+{{end}}
+{{< package }}tutorial{{end}}
+{{< title }}Tutorial{{end}}
+{{< form }}IndexForm{{end}}
+{{< bodyAttributes }}
+{{end}}
+
+
+{{define template }}
+{{
+<script>
+function toggleSidebar() {
+    g$('sidebar').toggleClass('open');
+    g$('content').toggleClass('open');
+}
+</script>
+}}
+
+{{g path := page.GetContext(ctx).HttpContext.URL.Path }}
+<div id="sidebar" class="open">
+<a href="javascript:void(0)" id="togglebtn" onclick="toggleSidebar();"><span id="isopen">&lt;</span><span id="isclosed">&gt;</span></a>
+    <div id="sidebar_content">
+        <h2><a href="/goradd/tutorial.g">Home</a></h2>
+        <h2>ORM</h2>
+          <ul>
+        {{for _,pr := range pages["orm"]}}
+            <li><a href="{{= path }}?pageID=orm-{{= pr.id }}">{{= pr.title }}</a></li>
+        {{for}}
+          </ul>
+  </div>
+</div>
+<div id="content" class="open">
+<h1>Tutorial</h1>
+{{draw viewSourceButton }}
+<div id="detail_container">
+	{{draw detailPanel }}
+</div>
+</div>
+
+{{end}}
+
+{{renderFormTemplate}}

@@ -1,0 +1,21 @@
+// listBaseStruct.tmpl
+
+{{
+
+type {{= panelName }} struct {
+	{{= ctrlPkg }}.Panel
+}
+
+type {{= panelName }}I interface {
+	{{= ctrlPkg }}.PanelI
+	ColumnCreators(ctx context.Context) []{{= ctrlPkg }}.ColumnCreator
+	BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder
+}
+
+// this returns the interface for calling into "virtual" functions. This allows us to call functions defined
+// by a subclass.
+func (p *{{= panelName }}) this() {{= panelName }}I {
+	return p.Self.({{= panelName }}I)
+}
+
+}}

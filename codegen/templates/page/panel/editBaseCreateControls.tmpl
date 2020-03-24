@@ -1,0 +1,186 @@
+// createControls.tmpl
+
+{{
+// CreateControls creates the controls in the edit panel and adds them to the panel.
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+    p.AddControls(ctx,
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd == nil {continue}
+        if cd.Generator != nil && !col.IsPk {
+{{
+        p.this().{{= cd.ControlName }}Creator(),
+}}
+        }
+    }
+
+        for _,ref := range t.ReverseReferences {
+            cd := t.ControlDescription(ref)
+            if cd == nil {continue}
+            if cd.Generator != nil {
+    {{
+            p.this().{{= cd.ControlName }}Creator(),
+    }}
+            }
+
+        }
+/*
+        for _,ref := range t.ManyManyReferences {
+            cd := t.ControlDescription(ref)
+            if cd == nil {continue}
+            if cd.Generator != nil {
+    {{
+            p.this().{{= cd.ControlName }}Creator(),
+    }}
+            }
+
+        }
+*/
+}}
+    )
+}
+
+
+
+/**
+
+If you are going to replace the entire CreateControls function in the {{= t.GoName }}EditPanel file,
+copy the code that follows instead, since it will call the functions directly rather than going
+through the interface.
+
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+    p.AddControls(ctx,
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd == nil {continue}
+        if cd.Generator != nil && !col.IsPk {
+{{
+        p.{{= cd.ControlName }}Creator(),
+}}
+        }
+    }
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        p.{{= cd.ControlName }}Creator(),
+}}
+        }
+
+    }
+
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil {continue}
+        if cd.Generator != nil {
+{{
+        p.{{= cd.ControlName }}Creator(),
+}}
+        }
+
+    }
+
+}}
+    )
+}
+
+**/
+
+{{g
+
+    for _,col := range t.Columns {
+        if col.IsPk {continue}
+        cd := t.ControlDescription(col)
+        if cd == nil || cd.Generator == nil {continue}
+        cd.Package = codegen.ObjectPackage(cd.Path)
+        creatorString := cd.Generator.GenerateCreator(col, cd)
+        if creatorString != "" {
+            creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
+
+{{
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} {
+	return {{= creatorString }}
+}
+
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+    id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }}
+    if !p.Page().HasControl(id) {
+        return nil
+    }
+	if c,ok := p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }}); ok {
+	    return c
+	}
+	return nil
+}
+
+}}
+        }
+    }
+
+
+    for _,ref := range t.ReverseReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil || cd.Generator == nil {continue}
+
+        cd.Package = codegen.ObjectPackage(cd.Path)
+        creatorString := cd.Generator.GenerateCreator(ref, cd)
+        if creatorString != "" {
+            creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
+
+{{
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} {
+	return {{= creatorString }}
+}
+
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+    id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }}
+    if !p.Page().HasControl(id) {
+        return nil
+    }
+	if c,ok := p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }}); ok {
+	    return c
+	}
+	return nil
+}
+
+}}
+        }
+    }
+/*
+    for _,ref := range t.ManyManyReferences {
+        cd := t.ControlDescription(ref)
+        if cd == nil || cd.Generator == nil {continue}
+
+        cd.Package = codegen.ObjectPackage(cd.Path)
+        creatorString := cd.Generator.GenerateCreator(ref, cd)
+        if creatorString != "" {
+            creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
+
+{{
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} {
+	return {{= creatorString }}
+}
+
+func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+    id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }}
+    if !p.Page().HasControl(id) {
+        return nil
+    }
+	if c,ok := p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }}); ok {
+	    return c
+	}
+	return nil
+}
+
+}}
+        }
+    }
+*/
+}}
+
+}}
+

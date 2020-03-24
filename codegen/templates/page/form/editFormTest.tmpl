@@ -1,0 +1,18 @@
+// editFormTest.tmpl
+
+{{
+
+func init() {
+	browsertest.RegisterTestFunction("{{= formName }} Tests", test{{= formName }})
+}
+
+func test{{= formName }}(t *browsertest.TestForm)  {
+	t.LoadUrl({{= title }}EditPath)
+
+	v := t.HtmlElementInfo("#err-title", "innerHTML")
+	t.AssertEqual("", v)
+	t.Done("Complete")
+}
+
+
+}}

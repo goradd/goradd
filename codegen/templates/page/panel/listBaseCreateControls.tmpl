@@ -1,0 +1,55 @@
+// listBaseCreateControls.tmpl
+
+{{
+
+// CreateControls creates the controls in the panel.
+// Override this to change what controls get created.
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+	p.AddControls(ctx,
+		{{= ctrlPkg }}.PanelCreator{
+			ID: p.ID() + "-filterPanel",
+			Children: {{= ctrlPkg }}.Children(
+				{{= ctrlPkg }}.TextboxCreator{
+					ID:          p.ID() + "-filterText",
+					Placeholder: p.GT("Search..."),
+					Type:        {{= ctrlPkg }}.TextboxTypeSearch,
+					ControlOptions: page.ControlOptions{
+						On: page.EventList{
+							{event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
+							{event.EnterKey().Terminating(), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
+						},
+					},
+				},
+			),
+		},
+        {{= ctrlPkg }}.PagedTableCreator{
+            ID:  p.ID() + "-list",
+            HeaderRowCount: 0,
+            DataProviderID: p.ID(),
+            RowStylerID: p.ID(),
+            PageSize: {{= ctrlPkg }}.DefaultPagerPageSize,
+            Caption: {{= codegen.ObjectType(generator.DefaultDataPagerCreator) }} {
+                ID:            p.ID() + "-pager",
+                PagedControl:  p.ID() + "-list",
+            },
+            OnCellClick: action.Ajax(p.ID(), {{= lcPanelName }}RowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
+            ControlOptions: page.ControlOptions{
+                Class:          "gr-clickable-rows",
+                WatchedDbTables: page.Nodes(node.{{= t.GoName }}()),
+            },
+            Columns: p.this().ColumnCreators(ctx),
+        },
+		{{= ctrlPkg }}.PanelCreator {
+			ID: p.ID()+"-buttonPanel",
+			Children:{{= ctrlPkg }}.Children(
+				{{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+					ID: p.ID()+"-newButton",
+					Text: p.GT("New"),
+					OnClick:action.Ajax(p.ID(), {{= lcPanelName }}NewClick),
+				},
+			),
+		},
+	)
+}
+
+}}

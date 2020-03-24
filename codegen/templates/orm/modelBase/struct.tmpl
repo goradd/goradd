@@ -1,0 +1,89 @@
+// struct.tmpl
+{{
+// {{privateName}}Base is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
+// Do not directly access the internal variables, but rather use the accessor functions, since this class maintains internal state
+// related to the variables.
+
+type {{privateName}}Base struct {
+}}
+
+for _,col := range t.Columns {
+
+{{
+{{if col.IsId}}
+	{{= col.ModelName() }} string
+{{else}}
+	{{= col.ModelName() }} {{= col.ColumnType.GoType() }}
+{{if}}
+{{if col.IsNullable}}
+	{{= col.ModelName() }}IsNull bool
+{{if}}
+	{{= col.ModelName() }}IsValid bool
+	{{= col.ModelName() }}IsDirty bool
+{{if col.IsReference()}}
+	{{= col.ReferenceName() }} *{{= col.ForeignKey.GoType }}
+{{if}}
+
+}}
+
+} // for
+
+if len(t.ReverseReferences) > 0 {
+{{
+
+// Reverse reference objects.
+}}
+} // if
+
+
+for _,ref := range t.ReverseReferences {
+	if ref.IsUnique() {
+        ref.Values["objName"] = dd.AssociatedObjectPrefix + ref.GoName
+{{
+	{{= ref.Values["objName"] }} *{{= ref.GoType }}
+	{{= ref.Values["objName"] }}IsDirty bool
+}}
+	} else {
+        ref.Values["objName"] = dd.AssociatedObjectPrefix + ref.GoPlural
+	    ref.Values["mapName"] = "m" + ref.GoPlural
+{{
+	{{= ref.Values["objName"] }} []*{{= ref.GoType }} // Objects in the order they were queried
+	{{= ref.Values["mapName"] }} map[{{= ref.AssociatedPkType() }}] *{{= ref.GoType }}					  // Objects by PK
+	{{= ref.Values["objName"] }}IsDirty bool
+}}
+	}
+}
+
+if len(t.ManyManyReferences) > 0 {
+{{
+
+// Many-Many reference objects.
+}}
+} // if
+
+
+for _,ref := range t.ManyManyReferences {
+{{
+	{{dd.AssociatedObjectPrefix}}{{ref.GoPlural}} []{{if !ref.IsTypeAssociation }}*{{if}}{{ref.AssociatedObjectName}}
+{{if !ref.IsTypeAssociation }}
+	m{{= ref.GoPlural }} map[string] *{{ref.AssociatedObjectName}}					  // Objects by PK
+{{if}}
+    {{dd.AssociatedObjectPrefix}}{{ref.GoPlural}}IsDirty bool
+
+}}
+} // for
+
+{{
+
+	// Custom aliases, if specified
+	_aliases map[string]interface{}
+
+	// Indicates whether this is a new object, or one loaded from the database. Used by Save to know whether to Insert or Update
+	_restored bool
+}}
+
+{{ }
+
+}}
+
+

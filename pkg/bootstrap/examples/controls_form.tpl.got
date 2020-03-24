@@ -1,0 +1,18 @@
+{{< imports }}
+{{end}}
+{{< headTags }}
+{{end}}
+{{< package }}examples{{end}}
+{{< title }}Goradd Bootstrap Examples{{end}}
+{{< form }}ControlsForm{{end}}
+{{< bodyAttributes }}
+{{end}}
+
+
+{{define template }}
+{{draw nav }}
+
+{{draw detailPanel }}
+{{end}}
+
+{{renderFormTemplate}}

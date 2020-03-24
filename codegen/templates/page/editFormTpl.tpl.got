@@ -1,0 +1,36 @@
+package template
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"bytes"
+	"github.com/goradd/goradd/pkg/orm/db"
+    "strings"
+)
+
+func init() {
+	t := EditFormTplTemplate {
+		generator.Template {
+			Overwrite: true,
+			TargetDir: config.ProjectDir() + "/gen",
+		},
+	}
+	generator.AddTableTemplate(&t)
+}
+
+type EditFormTplTemplate struct {
+	generator.Template
+}
+
+func (n *EditFormTplTemplate) FileName(key string, t generator.TableType) string {
+	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "EditForm.tpl.got"
+}
+
+func (n *EditFormTplTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
+	{{: "form/editformtpl.tmpl" }}
+}
+
+func (n *EditFormTplTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+
