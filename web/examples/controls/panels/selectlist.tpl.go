@@ -50,11 +50,24 @@ to display it as a scrolling list rather than a dropdown list.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("singleSelectList-ff").ProcessAttributeString(``).Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("singleSelectList-ff").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("singleSelectList-ff").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -63,11 +76,24 @@ to display it as a scrolling list rather than a dropdown list.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("selectListWithSize-ff").ProcessAttributeString(``).Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("selectListWithSize-ff").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("selectListWithSize-ff").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -86,11 +112,24 @@ size of the control itself using CSS.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("radioList1-ff").ProcessAttributeString(``).Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("radioList1-ff").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("radioList1-ff").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -99,11 +138,24 @@ size of the control itself using CSS.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("radioList2-ff").ProcessAttributeString(``).Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("radioList2-ff").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("radioList2-ff").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -112,11 +164,24 @@ size of the control itself using CSS.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("radioList3-ff").ProcessAttributeString(``).Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("radioList3-ff").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("radioList3-ff").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -146,11 +211,24 @@ turn off browser validity checking by setting the &#34;novalidate&#34; attribute
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("multiselectList-ff").ProcessAttributeString(``).Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("multiselectList-ff").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("multiselectList-ff").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -166,11 +244,24 @@ data objects.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("checklist1-ff").ProcessAttributeString(``).Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("checklist1-ff").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("checklist1-ff").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -180,11 +271,24 @@ data objects.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("ajaxButton").ProcessAttributeString(``).Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("ajaxButton").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("ajaxButton").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -193,11 +297,24 @@ data objects.
 
 	buf.WriteString(`
 `)
+	if `` == "" {
+		buf.WriteString(`    `)
 
-	{
-		err := ctrl.Page().GetControl("serverButton").ProcessAttributeString(``).Draw(ctx, buf)
-		if err != nil {
-			return err
+		{
+			err := ctrl.Page().GetControl("serverButton").Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+
+		buf.WriteString(`    `)
+
+		{
+			err := ctrl.Page().GetControl("serverButton").ProcessAttributeString(``).Draw(ctx, buf)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

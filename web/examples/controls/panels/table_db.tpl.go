@@ -53,11 +53,24 @@ The table below demonstrates columns that are linked to database queries. For th
 
 		buf.WriteString(`
 `)
+		if `` == "" {
+			buf.WriteString(`    `)
 
-		{
-			err := ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, buf)
-			if err != nil {
-				return err
+			{
+				err := ctrl.Page().GetControl("table1").Draw(ctx, buf)
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+
+			buf.WriteString(`    `)
+
+			{
+				err := ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, buf)
+				if err != nil {
+					return err
+				}
 			}
 		}
 

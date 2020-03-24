@@ -55,11 +55,24 @@ that allow you to click on a record to see detail of the record.
 
 		buf.WriteString(`
 `)
+		if `` == "" {
+			buf.WriteString(`    `)
 
-		{
-			err := ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, buf)
-			if err != nil {
-				return err
+			{
+				err := ctrl.Page().GetControl("table1").Draw(ctx, buf)
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+
+			buf.WriteString(`    `)
+
+			{
+				err := ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, buf)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -68,11 +81,24 @@ that allow you to click on a record to see detail of the record.
 
 		buf.WriteString(`
 `)
+		if `` == "" {
+			buf.WriteString(`    `)
 
-		{
-			err := ctrl.Page().GetControl("personPanel").ProcessAttributeString(``).Draw(ctx, buf)
-			if err != nil {
-				return err
+			{
+				err := ctrl.Page().GetControl("personPanel").Draw(ctx, buf)
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+
+			buf.WriteString(`    `)
+
+			{
+				err := ctrl.Page().GetControl("personPanel").ProcessAttributeString(``).Draw(ctx, buf)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
