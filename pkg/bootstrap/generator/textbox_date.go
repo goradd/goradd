@@ -30,7 +30,7 @@ func (d DateTextbox) GenerateCreator(ref interface{}, desc *generator2.ControlDe
 	s = fmt.Sprintf(
 		`%s.DateTextboxCreator{
 	ID:        p.ID() + "-%s",
-	Format:    %#v,
+	Formats:    []string{%#v},
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
