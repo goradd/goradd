@@ -14,7 +14,7 @@ var Minify bool = !Debug
 var assetDirectory string
 var htmlDirectory string
 
-// AliasPath is the url path to the application. By default, this is the root, but you can set it
+// ProxyPath is the url path to the application. By default, this is the root, but you can set it
 // to any path. This is particularly useful to making the application appear as if it is running in a subdirectory
 // of the root path. This is great for putting behind an Apache server, and using ProxyPass and ProxyPassReverse to direct
 // traffic from a particular path to the application. This gets stripped off incoming urls automatically by the server,

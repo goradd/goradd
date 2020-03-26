@@ -52,7 +52,7 @@ type staticFileProcessor struct {
 type StaticFileProcessorFunc func(file string, w http.ResponseWriter, r *http.Request)
 
 // StaticFileProcessors is a map that connects file endings to processors that will process the content and return it
-// to the output stream, bypassing other means of prcessing static files.
+// to the output stream, bypassing other means of processing static files.
 var staticFileProcessors []staticFileProcessor
 
 // The application interface. A minimal set of commands that the main routine will ask the application to do.
@@ -401,7 +401,7 @@ func (a *Application) ServeStaticFile(w http.ResponseWriter, r *http.Request) bo
 	})
 
 	if path == "" {
-		return false // not found
+		return false // the directory was not found in our list of static file directories
 	}
 
 	for _, bl := range StaticBlacklist {

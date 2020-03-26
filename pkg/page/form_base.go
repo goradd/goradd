@@ -15,7 +15,6 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
-	path2 "path"
 	"path/filepath"
 	"strings"
 )
@@ -40,7 +39,6 @@ type FormI interface {
 	ChangeLocation(url string)
 	PushLocation(ctx context.Context)
 	PopLocation(ctx context.Context, fallback string)
-	CacheBustedPath(string) string
 
 	// Lifecycle calls
 	Run(ctx context.Context) error
@@ -447,7 +445,6 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 				attributes = html.NewAttributes()
 			}
 			attributes.Set("rel", "stylesheet")
-			path = f.this().CacheBustedPath(path)
 			attributes.Set("href", path)
 			buf.WriteString(html.RenderVoidTag("link", attributes))
 			return true
@@ -460,7 +457,6 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 			if attributes == nil {
 				attributes = html.NewAttributes()
 			}
-			path = f.this().CacheBustedPath(path)
 			attributes.Set("src", path)
 			buf.WriteString(html.RenderTag("script", attributes, ""))
 			return true
@@ -492,7 +488,6 @@ func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 		if attributes == nil {
 			attributes = html.NewAttributes()
 		}
-		path = f.this().CacheBustedPath(path)
 		attributes.Set("src", path)
 		buf.WriteString(html.RenderTag("script", attributes, "") + "\n")
 		return true
@@ -500,14 +495,6 @@ func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 
 }
 
-func (f *FormBase) CacheBustedPath(path string) string {
-	if p,ok := config.CacheBuster[path]; ok {
-		// inject the crc as a part of the path
-		dir,file := path2.Split(path)
-		path = path2.Join(dir, config.CacheBusterPrefix + p, file)
-	}
-	return path
-}
 
 // DisplayAlert will display a javascript alert with the given message.
 func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
