@@ -74,6 +74,15 @@ func GetAssetLocation(url string) string {
 			panic("Assets must start with the asset prefix.")
 		}
 		fPath := strings.TrimPrefix(url, config.AssetPrefix)
+		dir,f := path.Split(fPath)
+		if len(dir) > 1 {
+
+			dir2,f2 := path.Split(dir[:len(dir) - 1])
+			// ignore the cache buster
+			if strings2.StartsWith(f2, config.CacheBusterPrefix) {
+				fPath = path.Join(dir2, f)
+			}
+		}
 		return filepath.Join(config.AssetDirectory(), filepath.Clean(fPath))
 	}
 	for dirUrl, dir := range assetDirectories {

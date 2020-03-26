@@ -22,8 +22,11 @@ import (
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
 	"github.com/goradd/goradd/pkg/watcher"
+	"hash/crc64"
+	"io/ioutil"
 	"log"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -59,12 +62,13 @@ type ApplicationI interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 	PutContext(*http.Request) *http.Request
 	SetupErrorPageTemplate()
-	SetupPageCaching()
+	SetupPagestateCaching()
 	InitializeLoggers()
 	SetupAssetDirectories()
 	SetupSessionManager()
 	SetupMessenger()
 	SetupDatabaseWatcher()
+	SetupCacheBuster()
 	SessionHandler(next http.Handler) http.Handler
 	HSTSHandler(next http.Handler) http.Handler
 	ServeRequest(w http.ResponseWriter, r *http.Request)
@@ -82,12 +86,13 @@ func (a *Application) Init(self ApplicationI) {
 	a.Base.Init(self)
 
 	self.SetupErrorPageTemplate()
-	self.SetupPageCaching()
+	self.SetupPagestateCaching()
 	self.InitializeLoggers()
 	self.SetupAssetDirectories()
 	self.SetupSessionManager()
 	self.SetupMessenger()
 	self.SetupDatabaseWatcher()
+	self.SetupCacheBuster()
 
 	page.DefaultCheckboxLabelDrawingMode = html.LabelAfter
 }
@@ -108,20 +113,59 @@ func (a *Application) SetupErrorPageTemplate() {
 	}
 }
 
-// SetupPageCaching sets up the service that saves pagestate information that reflects the state of a goradd form to
+// SetupPagestateCaching sets up the service that saves pagestate information that reflects the state of a goradd form to
 // our go code. The default sets up a one server-one process cache that does not scale, which works great for development, testing, and
 // for moderate amounts of traffic. Override and replace the page cache with one that serializes the page state and saves
 // it to a database to make it scalable.
-func (a *Application) SetupPageCaching() {
-	// ControlBase how pages are cached. This will vary depending on whether you are using multiple machines to run your app,
+func (a *Application) SetupPagestateCaching() {
+	// Controls how pages are cached. This will vary depending on whether you are using multiple machines to run your app,
 	// and whether you are in development mode, etc. This default is for an in-memory store on one server and only one
-	// process on that server. It basically does not serialize anything and leaves the entire formstate intact in memory.
+	// process on that server. It basically does not serialize anything and leaves the entire pagestate intact in memory.
 	// This makes for a very fast server, but one that takes up quite a bit of RAM if you have a lot of simultaneous users.
-	page.SetPageCache(page.NewFastPageCache(1000, 60*60*24))
+	page.SetPagestateCache(page.NewFastPageCache(1000, 60*60*24))
 
-	// ControlBase how pages are serialized if a serialization cache is being used. This version uses the gob encoder.
+	// Controls how pages are serialized if a serialization cache is being used. This version uses the gob encoder.
 	// You likely will not need to change this, but you might if your database cannot handle binary data.
 	page.SetPageEncoder(page.GobPageEncoder{})
+}
+
+// SetupCacheBuster sets up the cache busting strategy. Cache busting permits the browser to cache files, but notifies
+// the server when a file has changed without requiring the browser to check the server. The default cache busting strategy
+// is to add a CRC value to the path on all the files in the assets directory. That will cause the file to change its name
+// whenever the file changes, forcing the browser to reload the file.
+func (a *Application) SetupCacheBuster() {
+	t := crc64.MakeTable(crc64.ECMA)
+	config.CacheBuster = make (map[string]string)
+	assetDir := config.AssetDirectory()
+	if err := filepath.Walk(assetDir, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			if err != nil {
+				return filepath.SkipDir // don't read this directory
+			}
+			return nil // keep going
+		}
+		if err != nil {
+			return nil // skip this file
+		}
+		if filepath.Ext(path) == ".gz" {
+			// skip encrypted files, since they will be handled automatically
+			return nil
+		}
+		if data,err := ioutil.ReadFile(path); err != nil {
+			return err
+		} else {
+			// CRC it
+			c := crc64.Checksum(data, t)
+			e := strconv.FormatInt(int64(c), 36)
+			s := strings.TrimPrefix(path, assetDir)
+			s = filepath.ToSlash(s)
+			s = filepath.Join(config.AssetPrefix, s)
+			config.CacheBuster[s] = e
+			return nil
+		}
+	}); err != nil {
+		panic("failed walking the asset directory " + err.Error())
+	}
 }
 
 // InitializeLoggers sets up the various types of logs for various types of builds. By default, the DebugLog

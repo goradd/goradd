@@ -27,7 +27,7 @@ func main() {
 	mux := a.MakeServerMux()
 
 	// Make sure we always test with serialization turned on so that serialization is tested during the travis tests
-	page.SetPageCache(page.NewSerializedPageCache(100, 60*60*24))
+	page.SetPagestateCache(page.NewSerializedPageCache(100, 60*60*24))
 
 	err = http.ListenAndServe(":8000", mux)
 	if err != nil {
