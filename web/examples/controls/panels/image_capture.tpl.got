@@ -1,0 +1,15 @@
+{{< package }}panels{{end}}
+{{< imports }}
+{{end}}
+{{< control }}ImageCapturePanel{{end}}
+
+{{define template }}
+<h1>Image Capture Widget</h1>
+<p>
+The ImageCapture widget captures images from devices that have a camera, and is an example of a GoRADD control
+that has additional javascript to help it work.
+</p>
+{{draw ic1-ff }}
+{{end}}
+
+{{renderControlTemplate}}
