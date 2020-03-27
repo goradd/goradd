@@ -15,5 +15,6 @@ func init() {
 	controls.RegisterPanel("hlist", "Nested Lists", NewHListPanel)
 	controls.RegisterPanel("repeater", "Repeaters", NewRepeaterPanel)
 	controls.RegisterPanel("dialogs", "Dialogs", NewDialogsPanel)
+	controls.RegisterPanel("imagecapture", "Image Capture Widget", NewImageCapturePanel)
 }
 

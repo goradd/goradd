@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
@@ -49,22 +50,21 @@ func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 
 // Init is called by subclasses.
 func (i *ImageCapture) Init(parent page.ControlI, id string) {
-	i.ControlBase.Init(parent, id)
-	i.Tag = "div"
+	i.Panel.Init(parent, id)
 	i.ParentForm().AddJavaScriptFile(config.GoraddAssets()+"/js/image-capture.js", false, nil)
-	i.typ = "jpeg"
+	i.typ = "image/jpeg"
 	i.quality = 0.92
 
 	NewCanvas(i, i.canvasID())
 	
-	NewImageCapture(i, i.captureID()).
+	NewButton(i, i.captureID()).
 		SetText(i.GT("New Image"))
 
-	NewImageCapture(i, i.switchID()).
+	NewButton(i, i.switchID()).
 		SetDisplay("none").
 		SetText(i.GT("Switch Camera"))
 
-	i.ErrTextID = i.ID()+"_err"
+	i.ErrTextID = i.ID()+"-err"
 	et := NewPanel(i, i.ErrTextID)
 	et.Tag = "p"
 	et.SetDisplay("none")
@@ -76,15 +76,15 @@ func (i *ImageCapture) this() ImageCaptureI {
 }
 
 func (i *ImageCapture) canvasID() string {
-	return i.ID() + "_canvas"
+	return i.ID() + "-canvas"
 }
 
 func (i *ImageCapture) captureID() string {
-	return i.ID() + "_capture"
+	return i.ID() + "-capture"
 }
 
 func (i *ImageCapture) switchID() string {
-	return i.ID() + "_switch"
+	return i.ID() + "-switch"
 }
 
 
@@ -113,7 +113,7 @@ func (i *ImageCapture) SetQuality(quality float32) {
 func (i *ImageCapture) SetZoom(zoom int) {
 	i.zoom = zoom
 }
-
+/*
 // PutCustomScript is called by the framework.
 func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Response) {
 	options := map[string]interface{}{}
@@ -132,6 +132,7 @@ func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Respo
 
 	response.ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, options)
 }
+*/
 
 // TurnOff will turn off the camera and the image displayed in the control
 func (i *ImageCapture) TurnOff() {
@@ -153,13 +154,29 @@ func (i *ImageCapture) SetMaskShape(shape ImageCaptureShape) {
 
 // DrawingAttributes is called by the framework.
 func (i *ImageCapture) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := i.ControlBase.DrawingAttributes(ctx)
+	a := i.Panel.DrawingAttributes(ctx)
+	a.SetDataAttribute("grctl", "imagecapture")
+	a.SetDataAttribute("grWidget", "goradd.ImageCapture")
+
+	d := base64.StdEncoding.EncodeToString(i.data)
+	d = "data:image/" + i.typ + ";base64," + d
+	a.SetDataAttribute("grOptData", d)
+	a.SetDataAttribute("grOptSelectButtonName", i.GT("Capture"))
+	if i.zoom > 0 {
+		a.SetDataAttribute("grOptZoom", fmt.Sprint(i.zoom))
+	}
+	if i.shape != "" {
+		a.SetDataAttribute("grOptShape", fmt.Sprint(i.shape))
+	}
+	a.SetDataAttribute("grOptMimeType", i.typ)
+	a.SetDataAttribute("grOptQuality", fmt.Sprint(i.quality))
+/*
 	if i.data != nil {
 		// Turn the data into a source attribute
 		d := base64.StdEncoding.EncodeToString(i.data)
 		d = "data:image/" + i.typ + ";base64," + d
 		a.Set("src", d)
-	}
+	}*/
 	return a
 }
 
