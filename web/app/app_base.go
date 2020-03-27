@@ -137,15 +137,13 @@ func (a *Application) SetupCacheBuster() {
 	t := crc64.MakeTable(crc64.ECMA)
 	config.CacheBuster = make (map[string]string)
 	assetDir := config.AssetDirectory()
+	if assetDir == "" {return}
 	if err := filepath.Walk(assetDir, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			if err != nil {
-				return filepath.SkipDir // don't read this directory
-			}
-			return nil // keep going
-		}
 		if err != nil {
-			return nil // skip this file
+			return err // stop
+		}
+		if info.IsDir() {
+			return nil // keep going
 		}
 		if filepath.Ext(path) == ".gz" {
 			// skip encrypted files, since they will be handled automatically
