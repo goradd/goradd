@@ -24,3 +24,7 @@ var IdleTimeout = 180 * time.Second
 // dialog on the screen telling the user to refresh the page to re-establish the connection. This only happens in release
 // mode so that you don't have to worry about timeouts when debugging ajax code.
 var AjaxTimeout = 10000;
+
+// CacheBuster maps paths to checksums that are used to tell the browser when its time to reload a resource
+var CacheBuster map[string]string
+var CacheBusterPrefix = "gr."

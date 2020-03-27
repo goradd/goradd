@@ -495,6 +495,7 @@ func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
 
 }
 
+
 // DisplayAlert will display a javascript alert with the given message.
 func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 	f.response.displayAlert(msg)

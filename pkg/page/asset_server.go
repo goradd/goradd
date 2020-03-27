@@ -14,54 +14,6 @@ import (
 )
 
 var assetDirectories = map[string]string{}
-var cacheControl = map[string]string{}
-
-// RenderAssetTag will render a tag that points to a static file asset that should be served by the MUX. filePath points
-// to the file on the development server, and it will be copied to the appropriate subdirectory in the local assets directory
-// for easy deployment. tag is the tag label to put in the tag, and attributes are additional attributes to include in the tag.
-// The copied location of the file and structure of the tag will be deduced from the type of tag and the label of the file.
-// The type of tag will also be used to automatically insert the location of the file into the correct tag attribute.
-/*
-func RenderAssetTag(filePath string, tag string, attributes html.Attributes, content string) string {
-	var typ string
-
-	_,fileName := filepath.Split(filePath)
-	ext := path.Ext(fileName)
-
-
-	switch ext {
-	case "js": fallthrough
-	case "javascript":
-		typ = "js"
-	case "css":
-		typ = "css"
-	case "jpg": fallthrough
-	case "jpeg":fallthrough
-	case "png": fallthrough
-	case "gif": fallthrough
-	case "bmp": fallthrough
-	case "ico":
-		typ = "img"
-	default:
-		switch tag {
-		case "script":
-			typ = "js"
-		case "a":
-			typ = "file" // a download file type likely, if we haven't already recognized it as something else.
-		default:
-			panic ("Unknown file type")
-		}
-	}
-
-	url := "/" + typ + "/" + fileName
-
-	url = RegisterAssetFile(url, filePath)
-
-	switch tag {
-	case script
-	}
-}
-*/
 
 // GetAssetLocation returns the disk location of the asset file indicated by the given url.
 // Asset directories must be registered with the RegisterAssetDirectory function. In debug mode, the
@@ -73,7 +25,8 @@ func GetAssetLocation(url string) string {
 		if !strings2.StartsWith(url, config.AssetPrefix) {
 			panic("Assets must start with the asset prefix.")
 		}
-		fPath := strings.TrimPrefix(url, config.AssetPrefix)
+		fPath := StripCacheBusterPath(url)
+		fPath = strings.TrimPrefix(fPath, config.AssetPrefix)
 		return filepath.Join(config.AssetDirectory(), filepath.Clean(fPath))
 	}
 	for dirUrl, dir := range assetDirectories {
@@ -89,11 +42,22 @@ func GetAssetLocation(url string) string {
 // GetAssetLocation.
 func GetAssetUrl(location string) string {
 	var outPath string
-	if config.Release {
-		if !strings2.StartsWith(location, config.AssetPrefix) {
-			panic("In the release build, asset locations should be the same as asset paths. " + location + " does not start with " + config.AssetPrefix)
+	if config.AssetDirectory() != "" {
+		if config.Release {
+			if !strings2.StartsWith(location, config.AssetPrefix) {
+				panic("In the release build, asset locations should be the same as asset paths. " + location + " does not start with " + config.AssetPrefix)
+			}
+		} else {
+			// debug build, but a given asset directory.
+			for url, dir := range assetDirectories {
+				if strings2.StartsWith(location, dir) {
+					fPath := strings.TrimPrefix(location, dir)
+					location = path.Join(url, filepath.ToSlash(fPath))
+					break
+				}
+			}
 		}
-		outPath = location
+		outPath = CacheBustedPath(location)
 	} else {
 		for url, dir := range assetDirectories {
 			if strings2.StartsWith(location, dir) {
@@ -139,10 +103,6 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=1")
 		http.ServeFile(w, r, localpath)
 	} else {
-		if cc,ok := cacheControl[r.URL.Path]; ok {
-			w.Header().Set("Cache-Control", cc)
-		}
-
 		var ext = filepath.Ext(localpath)
 
 		var minFileName string
@@ -207,7 +167,7 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 // RegisterAssetDirectory registers the given directory as a static file server. The files are served by the normal
-// go static file process. This must happen during application initialization, as the static file directories
+// go static file process. RegisterAssetDirectory must be called during application initialization, as the static file directories
 // are added to the MUX at startup time.
 func RegisterAssetDirectory(dir string, pattern string) {
 	if d, ok := assetDirectories[pattern]; ok && d != dir {
@@ -216,12 +176,27 @@ func RegisterAssetDirectory(dir string, pattern string) {
 	assetDirectories[pattern] = dir
 }
 
-// SetCacheControl sets the cache control setting for the given asset file.
-//
-// Do this only during application initialization, since we are not using a mutex.
-//
-// path is the directory path to the file on the development server, the same you use to register the file.
-func SetCacheControl(path string, cacheControlSetting string) {
-	url := GetAssetUrl(path)
-	cacheControl[url] = cacheControlSetting
+
+// CacheBustedPath returns a path to an asset that was previously registered with the CacheBuster. The new path
+// will contain a hash of the file that will change whenever the file changes, and cause the browser to reload the file.
+// Since we are in control of serving these files, we will later remove the hash before serving it.
+func CacheBustedPath(url string) string {
+	if p,ok := config.CacheBuster[url]; ok {
+		// inject the crc as a part of the path.
+		dir,file := path.Split(url)
+		url = path.Join(dir, config.CacheBusterPrefix + p, file)
+	}
+	return url
 }
+
+// StripCacheBusterPath removes the hash of the asset file from the path to the asset.
+func StripCacheBusterPath(fPath string) string {
+	dir,f := path.Split(fPath)
+	dir2,f2 := path.Split(dir[:len(dir) - 1]) // ignore trailing slash
+	// ignore the cache buster
+	if strings2.StartsWith(f2, config.CacheBusterPrefix) {
+		fPath = path.Join(dir2, f)
+	}
+	return fPath
+}
+

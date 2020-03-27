@@ -133,8 +133,8 @@ func (form *TestForm) LoadUrl(url string)  {
 
 // getForm returns the currently loaded form.
 func (form *TestForm) getForm() page.FormI {
-	if page.GetPageCache().Has(form.Controller.pagestate) {
-		pc := page.GetPageCache()
+	if page.GetPagestateCache().Has(form.Controller.pagestate) {
+		pc := page.GetPagestateCache()
 		/*if loader,ok := pc.(GetLoader); ok {
 			p := loader.GetLoaded(form.Controller.pagestate)
 			f :=  p.Form()
@@ -149,7 +149,7 @@ func (form *TestForm) getForm() page.FormI {
 // Call it with a function that will receive the form.
 // Do not call test functions that might cause an ajax or server call to fire from within the function.
 func (form *TestForm) WithForm(f func(page.FormI) ) {
-	pc := page.GetPageCache()
+	pc := page.GetPagestateCache()
 	testForm := pc.Get(form.Controller.pagestate).Form()
 	{
 		form.usingForm = true
@@ -374,8 +374,8 @@ func (form *TestForm) captureCaller() string {
 
 // GetTestForm returns the test form itself, if its loaded
 func GetTestForm() page.FormI {
-	if page.GetPageCache().Has(testFormPageState) {
-		return page.GetPageCache().Get(testFormPageState).Form()
+	if page.GetPagestateCache().Has(testFormPageState) {
+		return page.GetPagestateCache().Get(testFormPageState).Form()
 	}
 	return nil
 }

@@ -14,9 +14,9 @@ import (
 type ModalBackdropType int
 
 const (
-	ModalBackdrop ModalBackdropType = iota
-	ModalNoBackdrop
-	ModalStaticBackdrop
+	ModalBackdrop ModalBackdropType = iota		// Standard bootstrap backdrop. Clicking the backdrop closes the modal.
+	ModalNoBackdrop							    // No backdrop
+	ModalStaticBackdrop							// Clicking the backdrop will not close the modal.
 )
 
 type ModalI interface {
