@@ -14,7 +14,6 @@ import (
 )
 
 var assetDirectories = map[string]string{}
-var cacheControl = map[string]string{}
 
 // GetAssetLocation returns the disk location of the asset file indicated by the given url.
 // Asset directories must be registered with the RegisterAssetDirectory function. In debug mode, the
@@ -104,10 +103,6 @@ func ServeAsset(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=1")
 		http.ServeFile(w, r, localpath)
 	} else {
-		if cc,ok := cacheControl[r.URL.Path]; ok {
-			w.Header().Set("Cache-Control", cc)
-		}
-
 		var ext = filepath.Ext(localpath)
 
 		var minFileName string
@@ -181,15 +176,6 @@ func RegisterAssetDirectory(dir string, pattern string) {
 	assetDirectories[pattern] = dir
 }
 
-// SetCacheControl sets the cache control setting for the given asset file.
-//
-// Do this only during application initialization, since we are not using a mutex.
-//
-// path is the directory path to the file on the development server, the same you use to register the file.
-func SetCacheControl(path string, cacheControlSetting string) {
-	url := GetAssetUrl(path)
-	cacheControl[url] = cacheControlSetting
-}
 
 // CacheBustedPath returns a path to an asset that was previously registered with the CacheBuster. The new path
 // will contain a hash of the file that will change whenever the file changes, and cause the browser to reload the file.
