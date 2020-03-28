@@ -4,7 +4,7 @@
 {{< control }}SelectListPanel{{end}}
 
 {{define template }}
-<h1>Selection Lists</h1>
+<h2>Selection Lists</h2>
 <p>
 Selection lists let you select a zero, one, or multiple items from a group of items.
 Below are the supported selection lists
@@ -30,19 +30,19 @@ Also see the types of columns available in the html table control which can serv
 Tables are better at managing a very large list of items to select from, as the items in a
 table can be paged in, and can also be filtered.
 </p>
-<h2>Single Selection Lists</h2>
+<h3>Single Selection Lists</h3>
 <p>
 These lists let the user select zero or one item from a list. If you call SetRequired(true), then
 the user will be forced to select an item.
 </p>
-<h3>SelectList</h3>
+<h4>SelectList</h4>
 <p>
 A SelectList is a typical dropdown list with a single selection. You can also set the size attribute
 to display it as a scrolling list rather than a dropdown list.
 </p>
 {{draw singleSelectList-ff }}
 {{draw selectListWithSize-ff }}
-<h3>RadioList</h3>
+<h4>RadioList</h4>
 <p>
 A radio list presents a list of radio buttons in a table format. The Value of the control is the value
 of the item the user selects.
@@ -56,12 +56,12 @@ size of the control itself using CSS.
 {{draw radioList2-ff }}
 {{draw radioList3-ff }}
 
-<h2>Multiple Selection Lists</h2>
+<h3>Multiple Selection Lists</h3>
 <p>
 These lists let the user select zero or multiple items from a list. If you call SetRequired(true), then
 the user will be forced to select at least one item.
 </p>
-<h3>HTML Multiple Selection List</h3>
+<h4>HTML Multiple Selection List</h4>
 <p>
 {{!
 This list allows multiple selections if you hold down the shift key or the command key. While this is
@@ -74,7 +74,7 @@ turn off browser validity checking by setting the "novalidate" attribute on the 
 }}
 </p>
 {{draw multiselectList-ff }}
-<h3>Checkbox List</h3>
+<h4>Checkbox List</h4>
 <p>
 This list is similar to the radio list above, but uses checkboxes so you can select multiple
 items. It is a much better way to present to the user a selection of multiple items, and is the default

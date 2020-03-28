@@ -40,14 +40,14 @@ table th {
   color: white;
 }
 </style>
-<h1>Tables - Proxy Column</h1>
+<h2>Tables - Proxy Column</h2>
 <p>
 The table below demonstrates how to combine a Proxy, a CustomColumn, and a Panel to display a list of records
 that allow you to click on a record to see detail of the record.
 </p>
 `)
 	if db.GetDatabase("goradd") == nil {
-		buf.WriteString(`<h2 style="color:red">Error</h2>
+		buf.WriteString(`<h3 style="color:red">Error</h3>
 <p>You have not installed the goradd example database. See the examples/readme.txt file for instructions.<p>
 `)
 		log.Error("goradd database not installed.")

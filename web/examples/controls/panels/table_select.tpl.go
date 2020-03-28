@@ -25,7 +25,7 @@ func (ctrl *TableSelectPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffe
 }
 </style>
 
-<h1>Tables - Selectable Rows</h1>
+<h2>Tables - Selectable Rows</h2>
 <p>
 The SelectTable is a table that is used to select an item from a list of items. It uses css and javascript to demonstrate
 to the user that the table is selectable, and it will remember the selection and report back to the go code

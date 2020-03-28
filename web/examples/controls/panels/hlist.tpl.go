@@ -10,7 +10,7 @@ import (
 func (ctrl *HListPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Hierarchical Lists</h1>
+<h2>Hierarchical Lists</h2>
 <p>
 Hierarchical lists dynamically create standard html `)
 
@@ -20,7 +20,7 @@ Hierarchical lists dynamically create standard html `)
 interactive, but many javascript/css libraries use these structures to create interactive dropdown menus,
 hierarchical checklists, and more.
 </p>
-<h2>Ordered List</h2>
+<h3>Ordered List</h3>
 
 `)
 
@@ -49,7 +49,7 @@ hierarchical checklists, and more.
 
 	buf.WriteString(`
 
-<h2>Unordered List</h2>
+<h3>Unordered List</h3>
 `)
 
 	buf.WriteString(`

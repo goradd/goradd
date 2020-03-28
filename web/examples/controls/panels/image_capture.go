@@ -22,11 +22,17 @@ func (p *ImageCapturePanel) Init(ctx context.Context, parent page.ControlI, id s
 	p.AddControls(ctx,
 		FormFieldWrapperCreator{
 			ID:"ic1-ff",
-			Label:"Default ImageCapture",
+			Label:"Circle ImageCapture",
 			For:"ic1",
-			Instructions:"Click to capture",
 			Child:ImageCaptureCreator{
 				ID:"ic1",
+				MaskShape:ImageCaptureShapeCircle,
+				SaveState: true,
+				ControlOptions: page.ControlOptions{
+					On:  page.EventList{
+						{CaptureEvent(), action.Ajax(p.ID(), 0)}, // Just get the data.
+					},
+				},
 			},
 		},
 		ButtonCreator{

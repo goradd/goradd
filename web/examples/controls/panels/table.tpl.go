@@ -37,7 +37,7 @@ table th {
   color: white;
 }
 </style>
-<h1>Tables</h1>
+<h2>Tables</h2>
 <p>
 The Table control creates html tables from various forms of data. After creating a table, you
 add TableColumns to the table, which link the data to the display. Tables can also have pagers

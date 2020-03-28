@@ -2,9 +2,11 @@ package controls
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
+	"path"
 )
 
 const ControlsFormPath = "/goradd/examples/controls.g"
@@ -32,7 +34,6 @@ var controls []controlEntry
 
 func (f *ControlsForm) Init(ctx context.Context, formID string) {
 	f.FormBase.Init(ctx, formID)
-	f.AddRelatedFiles()
 
 	f.AddControls(ctx,
 		UnorderedListCreator{
@@ -44,6 +45,12 @@ func (f *ControlsForm) Init(ctx context.Context, formID string) {
 		},
 	)
 }
+
+func (f *ControlsForm) AddRelatedFiles() {
+	f.FormBase.AddRelatedFiles()
+	f.AddStyleSheetFile(path.Join(config.GoraddAssets(), "css", "welcome.css"), nil)
+}
+
 
 func (f *ControlsForm) LoadControls(ctx context.Context) {
 	var createF createFunction

@@ -10,7 +10,7 @@
                 shape: "rect",             // Mask shape
                 zoom: 0,                  // % of zoom. 100 means 2x zoom. 200 means 3x zoom.
                 data: "data:image/jpeg;base64,",   // Mime typed and base64'd data.
-                mimeType: "image/jpeg",            // desired mime type
+                mimeType: "jpeg",            // desired mime type
                 quality: 0.92               // Quality setting for jpeg and webP
             };
             options = goradd.extendOptions(optionDefaults, options);
@@ -21,7 +21,7 @@
                 this._showErr();
                 return;
             }
-            this._videoElement = goradd.tagBuilder('video').attr('playsinline', "").appendTo(this);
+            this._videoElement = goradd.tagBuilder('video').attr('playsinline', "").element();
             this._canvas = this.find("canvas");
             this._context = this._canvas.element.getContext('2d');
             this._captureButton = g$(this.id + "-capture");
@@ -53,13 +53,17 @@
                 p.text(err);
             }
         }
-        _loadNewData() {
-            var self = this;
-            var base_image = new Image();
-            base_image.src = this.options.data;
-            base_image.onload = function(){
-                self._context.drawImage(base_image, 0, 0);
-            };
+        async _loadNewData() {
+            if (this.options && this.options.data) {
+                let self = this;
+                let p = new Promise((resolve, reject) => {
+                    let image = new Image();
+                    image.onload = () => resolve(image);
+                    image.src = self.options.data;
+                });
+                let img = await p;
+                this._context.drawImage(img, 0, 0);
+            }
         }
         _imageButtonClick() {
             if (this._viewing) {
@@ -79,14 +83,15 @@
             }
         }
         _capture() {
-            this.turnOff();
             this._captureButton.text(this._originalButtonText);
             this.options.data = this._canvas.element.toDataURL("image/" + this.options.mimeType, this.options.quality);
             goradd.setControlValue(this.id, "data", this.options.data);
+            this.turnOff();
+            this.trigger("capture");
         }
         _loadmetadata() {
-            let hCanvas = this._canvas.height;
-            let wCanvas = this._canvas.width;
+            let hCanvas = this._canvas.element.height;
+            let wCanvas = this._canvas.element.width;
             let hScale = this._videoElement.videoHeight / hCanvas;
             let wScale = this._videoElement.videoWidth / wCanvas;
             let scale = this.options.zoom / 100 + 1;
@@ -141,22 +146,10 @@
                 }
 
                 self._videoDevice = mediaStream.getVideoTracks()[0];
-                self._videoElement.play(); // Safari bug
+                self._videoElement.play();
 
-
-                var hCanvas = self._canvas.height;
-                var wCanvas = self._canvas.width;
-
-                self._context.restore();
-                self._context.save();
-
-                // flip image so selfie is easier to take
-                var c = self._videoDevice.getCapabilities();
-
-                if (!c.facingMode || c.facingMode === "user" || c.facingMode.length === 0 || c.facingMode[0] === "user") {
-                    self._context.translate(self._canvas.width, 0);
-                    self._context.scale(-1, 1);
-                }
+                var hCanvas = self._canvas.element.height;
+                var wCanvas = self._canvas.element.width;
 
                 if (self.options.shape === "circle") {
                     self._context.beginPath();
@@ -168,7 +161,6 @@
                     self._context.arc(wCanvas / 2, hCanvas / 2, minDim / 2, 0, 2 * Math.PI, false);
                     self._context.clip();
                 }
-
 
             }).catch(function(err) {
                 self.turnOff();

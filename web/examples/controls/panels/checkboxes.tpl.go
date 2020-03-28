@@ -10,7 +10,7 @@ import (
 func (ctrl *CheckboxPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Checkboxes and Radio Buttons</h1>
+<h2>Checkboxes and Radio Buttons</h2>
 <p>
 Checkboxes and RadioButtons create html input tags with a type of "checkbox" or "radio".
 They are used for setting true/false values, or for selecting from a group of items.
@@ -25,7 +25,7 @@ uses a checkbox list to setup relationships between records in a one-to-many rel
 See also the CheckboxList and RadioList controls for working with groups of these controls,
 and the CheckboxColumn for working with a column of checkboxes in an html table.
 </p>
-<h2>Labels</h2>
+<h3>Labels</h3>
 <p>
 Dealing with labels and checkboxes can be tricky. Html uses a `)
 
@@ -110,7 +110,7 @@ checkboxes.
 	buf.WriteString(`
 
 
-<h2>Radio Buttons</h2>
+<h3>Radio Buttons</h3>
 Radio buttons are generally part of a group of buttons with the purpose of allowing the user
 to select only one item from the group. You choose whatever group name you want and assign it to
 each button. The browser will then make sure only one gets selected.

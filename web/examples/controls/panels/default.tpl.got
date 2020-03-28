@@ -4,7 +4,6 @@
 {{< control }}DefaultPanel{{end}}
 
 {{define template }}
-<h1>Control Examples</h1>
 <p>
 These pages demonstrate the various supported controls that are available in goradd. These
 controls fall in to these categories:
