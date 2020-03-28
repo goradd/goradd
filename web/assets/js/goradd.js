@@ -1438,6 +1438,13 @@ var g$ = function(el) {
             el.parentElement.replaceChild(this.el, el);
             this.el.appendChild(el);
             return this.el;
+        },
+        /**
+         * element ends the builder by simply returning the element without inserting it into the DOM.
+         * @returns {HTMLElement}
+         */
+        element: function() {
+            return this.el;
         }
     };
 

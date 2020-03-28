@@ -39,14 +39,14 @@ table th {
   color: white;
 }
 </style>
-<h1>Tables - Database Columns</h1>
+<h2>Tables - Database Columns</h2>
 <p>
 The table below demonstrates columns that are linked to database queries. For this to work, you must have the
 "goradd" sample database loaded, both in your configuration settings, and in the database itself.
 </p>
 `)
 	if db.GetDatabase("goradd") == nil {
-		buf.WriteString(`<h2 style="color:red">Error</h2>
+		buf.WriteString(`<h3 style="color:red">Error</h3>
 <p>You have not installed the goradd example database. See the examples/readme.txt file for instructions.<p>
 `)
 	} else {

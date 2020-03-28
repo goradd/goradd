@@ -3,6 +3,8 @@ package control
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
+	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
@@ -18,6 +20,11 @@ const (
 )
 
 const imageCaptureScriptCommand = "imageCapture"
+
+// CaptureEvent triggers when the capture button has been pressed, and the image has been captured.
+func CaptureEvent() *page.Event {
+	return &page.Event{JsEvent: "capture"}
+}
 
 type ImageCaptureI interface {
 	page.ControlI
@@ -49,22 +56,21 @@ func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 
 // Init is called by subclasses.
 func (i *ImageCapture) Init(parent page.ControlI, id string) {
-	i.ControlBase.Init(parent, id)
-	i.Tag = "div"
+	i.Panel.Init(parent, id)
 	i.ParentForm().AddJavaScriptFile(config.GoraddAssets()+"/js/image-capture.js", false, nil)
 	i.typ = "jpeg"
 	i.quality = 0.92
 
 	NewCanvas(i, i.canvasID())
 	
-	NewImageCapture(i, i.captureID()).
+	NewButton(i, i.captureID()).
 		SetText(i.GT("New Image"))
 
-	NewImageCapture(i, i.switchID()).
+	NewButton(i, i.switchID()).
 		SetDisplay("none").
 		SetText(i.GT("Switch Camera"))
 
-	i.ErrTextID = i.ID()+"_err"
+	i.ErrTextID = i.ID()+"-err"
 	et := NewPanel(i, i.ErrTextID)
 	et.Tag = "p"
 	et.SetDisplay("none")
@@ -76,18 +82,16 @@ func (i *ImageCapture) this() ImageCaptureI {
 }
 
 func (i *ImageCapture) canvasID() string {
-	return i.ID() + "_canvas"
+	return i.ID() + "-canvas"
 }
 
 func (i *ImageCapture) captureID() string {
-	return i.ID() + "_capture"
+	return i.ID() + "-capture"
 }
 
 func (i *ImageCapture) switchID() string {
-	return i.ID() + "_switch"
+	return i.ID() + "-switch"
 }
-
-
 
 
 func (i *ImageCapture) Data() []byte {
@@ -114,7 +118,30 @@ func (i *ImageCapture) SetZoom(zoom int) {
 	i.zoom = zoom
 }
 
+// TurnOff will turn off the camera and the image displayed in the control
+func (i *ImageCapture) TurnOff() {
+	i.ExecuteWidgetFunction("turnOff")
+}
+
+// SetPixelSize sets the pixel size of the image that will be returned. ControlBase the visible size of the canvas through
+// setting css sizes.
+func (i *ImageCapture) SetPixelSize(width int, height int) {
+	canvas := GetCanvas(i, i.canvasID())
+	canvas.SetAttribute("width", width)
+	canvas.SetAttribute("height", height)
+}
+
+// SetMaskShape sets the masking shape for the image
+func (i *ImageCapture) SetMaskShape(shape ImageCaptureShape) {
+	i.shape = shape
+}
+
+/*
 // PutCustomScript is called by the framework.
+
+// The code below is being preserved to show an example of how you could connect an html object to a different
+// javascript library using javascript functions. This control was initially attached using the JQuery UI Widget library, which is no longer
+// in active development.
 func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Response) {
 	options := map[string]interface{}{}
 	d := base64.StdEncoding.EncodeToString(i.data)
@@ -132,34 +159,33 @@ func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Respo
 
 	response.ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, options)
 }
-
-// TurnOff will turn off the camera and the image displayed in the control
-func (i *ImageCapture) TurnOff() {
-	i.ParentForm().Response().ExecuteJqueryCommand(i.ID(), imageCaptureScriptCommand, page.PriorityHigh, "turnOff")
-}
-
-// SetPixelSize sets the pixel size of the image that will be returned. ControlBase the visible size of the canvas through
-// setting css sizes.
-func (i *ImageCapture) SetPixelSize(width int, height int) {
-	canvas := GetCanvas(i, i.canvasID())
-	canvas.SetAttribute("width", width)
-	canvas.SetAttribute("height", height)
-}
-
-// SetMaskShape sets the masking shape for the image
-func (i *ImageCapture) SetMaskShape(shape ImageCaptureShape) {
-	i.shape = shape
-}
+*/
 
 // DrawingAttributes is called by the framework.
 func (i *ImageCapture) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := i.ControlBase.DrawingAttributes(ctx)
+	a := i.Panel.DrawingAttributes(ctx)
+	a.SetDataAttribute("grctl", "imagecapture")
+	a.SetDataAttribute("grWidget", "goradd.ImageCapture")
+
+	d := base64.StdEncoding.EncodeToString(i.data)
+	d = "data:image/" + i.typ + ";base64," + d
+	a.SetDataAttribute("grOptData", d)
+	a.SetDataAttribute("grOptSelectButtonName", i.GT("Capture"))
+	if i.zoom > 0 {
+		a.SetDataAttribute("grOptZoom", fmt.Sprint(i.zoom))
+	}
+	if i.shape != "" {
+		a.SetDataAttribute("grOptShape", fmt.Sprint(i.shape))
+	}
+	a.SetDataAttribute("grOptMimeType", i.typ)
+	a.SetDataAttribute("grOptQuality", fmt.Sprint(i.quality))
+/*
 	if i.data != nil {
 		// Turn the data into a source attribute
 		d := base64.StdEncoding.EncodeToString(i.data)
 		d = "data:image/" + i.typ + ";base64," + d
 		a.Set("src", d)
-	}
+	}*/
 	return a
 }
 
@@ -172,6 +198,19 @@ func (i *ImageCapture) UpdateFormValues(ctx context.Context) {
 			i.data = newdata
 		} else {
 			log.Debug(err.Error())
+		}
+	}
+}
+// MarshalState is an internal function to save the state of the control
+func (i *ImageCapture) MarshalState(m maps.Setter) {
+	m.Set("data", i.Data())
+}
+
+// UnmarshalState is an internal function to restore the state of the control
+func (i *ImageCapture) UnmarshalState(m maps.Loader) {
+	if v, ok := m.Load("data"); ok {
+		if s, ok := v.([]byte); ok {
+			i.data = s
 		}
 	}
 }
@@ -241,6 +280,7 @@ type ImageCaptureCreator struct {
 	MimeType    string
 	Zoom    int
 	Quality float32
+	SaveState bool
 	page.ControlOptions
 }
 
@@ -259,6 +299,9 @@ func (c ImageCaptureCreator) Create(ctx context.Context, parent page.ControlI) p
 	}
 	if c.Quality != 0 {
 		ctrl.SetQuality(c.Quality)
+	}
+	if c.SaveState {
+		ctrl.SaveState(ctx, true)
 	}
 	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	return ctrl

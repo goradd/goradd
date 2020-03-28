@@ -10,12 +10,29 @@
 
 
 {{define template }}
-<h1>Control Examples</h1>
-<div class="controlList_scroll">
-	{{draw listPanel }}
+{{
+<script>
+function toggleSidebar() {
+    g$('sidebar').toggleClass('open');
+    g$('content').toggleClass('open');
+}
+</script>
+}}
+
+<div id="sidebar" class="open">
+    <a href="javascript:void(0)" id="togglebtn" onclick="toggleSidebar();"><span id="isopen">&larrb;</span><span id="isclosed">&rarrb;</span></a>
+    <div id="sidebar_content">
+        <div class="controlList_scroll">
+            {{draw listPanel }}
+        </div>
+    </div>
 </div>
-<div class="detail_container">
-	{{draw detailPanel }}
+<div id="content" class="open">
+    <h1>Control Examples</h1>
+
+    <div class="detail_container">
+        {{draw detailPanel }}
+    </div>
 </div>
 {{end}}
 

@@ -10,7 +10,7 @@ import (
 func (ctrl *DialogsPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Dialogs and Alerts</h1>
+<h2>Dialogs and Alerts</h2>
 <p>
 Dialogs pop up in front of a page to get an immediate response from a user. Simple dialogs
 give important information to the user, and more complex dialogs gather information from a user.

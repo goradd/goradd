@@ -4,17 +4,17 @@
 {{< control }}HListPanel{{end}}
 
 {{define template }}
-<h1>Hierarchical Lists</h1>
+<h2>Hierarchical Lists</h2>
 <p>
 Hierarchical lists dynamically create standard html {{! <ol> and <ul> }} type of lists. These lists normally are not
 interactive, but many javascript/css libraries use these structures to create interactive dropdown menus,
 hierarchical checklists, and more.
 </p>
-<h2>Ordered List</h2>
+<h3>Ordered List</h3>
 
 {{draw "orderedList" }}
 
-<h2>Unordered List</h2>
+<h3>Unordered List</h3>
 {{draw "unorderedList" }}
 
 {{end}}

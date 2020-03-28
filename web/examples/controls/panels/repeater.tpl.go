@@ -10,7 +10,7 @@ import (
 func (ctrl *RepeaterPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Repeaters</h1>
+<h2>Repeaters</h2>
 <p>
 The Repeater control repeats an HTML snippet of code once for each item of data you provide.
 It is similar to a table, which creates a table row for each item of data, but it lets you repeat

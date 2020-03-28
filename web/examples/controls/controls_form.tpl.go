@@ -21,9 +21,23 @@ func (ctrl *ControlsForm) AddHeadTags() {
 func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	buf.WriteString(`
-<h1>Control Examples</h1>
-<div class="controlList_scroll">
-	`)
+`)
+
+	buf.WriteString(`<script>
+function toggleSidebar() {
+    g$('sidebar').toggleClass('open');
+    g$('content').toggleClass('open');
+}
+</script>
+`)
+
+	buf.WriteString(`
+
+<div id="sidebar" class="open">
+    <a href="javascript:void(0)" id="togglebtn" onclick="toggleSidebar();"><span id="isopen">&larrb;</span><span id="isclosed">&rarrb;</span></a>
+    <div id="sidebar_content">
+        <div class="controlList_scroll">
+            `)
 
 	buf.WriteString(`
 `)
@@ -49,9 +63,14 @@ func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (
 	}
 
 	buf.WriteString(`
+        </div>
+    </div>
 </div>
-<div class="detail_container">
-	`)
+<div id="content" class="open">
+    <h1>Control Examples</h1>
+
+    <div class="detail_container">
+        `)
 
 	buf.WriteString(`
 `)
@@ -77,6 +96,7 @@ func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (
 	}
 
 	buf.WriteString(`
+    </div>
 </div>
 `)
 

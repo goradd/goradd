@@ -9,7 +9,7 @@ import (
 // DrawTemplate draws the contents of the ProjectPanel panel.
 func (p *ProjectPanel) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
 {{
-    <h3>Project Details</h3>
+    <h4>Project Details</h4>
 {{if p.project != nil}}
     <div id="nameItem"><label>Name</label>{{= p.project.Name()}}</div>
     <div><label>Description</label>{{= p.project.Description()}}</div>
