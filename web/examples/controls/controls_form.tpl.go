@@ -34,7 +34,7 @@ function toggleSidebar() {
 	buf.WriteString(`
 
 <div id="sidebar" class="open">
-    <a href="javascript:void(0)" id="togglebtn" onclick="toggleSidebar();"><span id="isopen">&lt;</span><span id="isclosed">&gt;</span></a>
+    <a href="javascript:void(0)" id="togglebtn" onclick="toggleSidebar();"><span id="isopen">&larrb;</span><span id="isclosed">&rarrb;</span></a>
     <div id="sidebar_content">
         <div class="controlList_scroll">
             `)
