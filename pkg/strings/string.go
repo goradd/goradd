@@ -81,3 +81,13 @@ func If(cond bool, trueVal, falseVal string) string {
 		return falseVal
 	}
 }
+
+// ContainsAnyStrings returns true if the needle contains any of the haystacks
+func ContainsAnyStrings(needle string, haystacks... string) bool {
+	for _,h := range haystacks {
+		if strings.Contains(needle, h) {
+			return true
+		}
+	}
+	return false
+}

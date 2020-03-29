@@ -80,10 +80,10 @@ func (d *DateTextbox) parseDate(ctx context.Context, s string) (result datetime.
 		grctx = page.GetContext(ctx)
 	}
 	for _,layoutUsed = range d.layouts() {
-		if grctx == nil {
-			result, err = datetime.Parse(layoutUsed, s)
-		} else {
+		if grctx != nil && datetime.LayoutHasDate(layoutUsed) && datetime.LayoutHasTime(layoutUsed){
 			result, err = datetime.ParseInOffset(layoutUsed, s, session.ClientTimezoneOffset(ctx))
+		} else {
+			result, err = datetime.Parse(layoutUsed, s)
 		}
 		if err == nil {
 			break

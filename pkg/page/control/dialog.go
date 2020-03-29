@@ -45,6 +45,7 @@ type DialogI interface {
 	Hide()
 	AddButton(label string, id string, options *DialogButtonOptions)
 	AddCloseButton(label string, id string)
+	SetButtonText(id string, text string)
 	SetButtonVisible(id string, visible bool)
 	SetButtonStyle(id string, a html.Style)
 	RemoveButton(id string)
@@ -235,6 +236,14 @@ func (d *Dialog) SetButtonVisible(id string, visible bool) {
 	bb := d.ButtonBar()
 	if ctrl := bb.Child(id); ctrl != nil {
 		ctrl.SetVisible(visible)
+	}
+}
+
+// SetButtonText sets the text of a button that was previously created
+func (d *Dialog) SetButtonText(id string, text string) {
+	bb := d.ButtonBar()
+	if ctrl := bb.Child(id); ctrl != nil {
+		ctrl.SetText(text)
 	}
 }
 

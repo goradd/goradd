@@ -1,6 +1,7 @@
 package datetime
 
 import (
+	strings2 "github.com/goradd/goradd/pkg/strings"
 	"strings"
 	"time"
 )
@@ -110,6 +111,15 @@ func FromSqlDateTime(s string) (t DateTime, err error) {
 
 	return
 }
+
+func LayoutHasDate(layout string) bool {
+	return strings2.ContainsAnyStrings(layout, "6", "2", "Jan")
+}
+
+func LayoutHasTime(layout string) bool {
+	return strings2.ContainsAnyStrings(layout, "15", "4", "5", "3")
+}
+
 
 func (d DateTime) Format(layout string) string {
 	if d.IsZero() {

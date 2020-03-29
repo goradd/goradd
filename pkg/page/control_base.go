@@ -420,8 +420,7 @@ func (c *ControlBase) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 	return nil
 }
 
-// Draw renders the default control structure into the given buffer. Call this function from your templates
-// to draw the control.
+// Draw renders the control structure into the given buffer.
 func (c *ControlBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	if err = c.this().PreRender(ctx, buf); err != nil {
 		return err
