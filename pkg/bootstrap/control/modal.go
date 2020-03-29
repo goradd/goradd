@@ -229,6 +229,13 @@ func (m *Modal) SetButtonStyle(id string, a html.Style) {
 	}
 }
 
+// SetButtonText sets the text of a button that is already on the dialog
+func (m *Modal) SetButtonText(id string, text string) {
+	if ctrl := m.buttonBar.Child(m.ID() + "-btn-" + id); ctrl != nil {
+		ctrl.SetText(text)
+	}
+}
+
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog (by hiding it).
 func (m *Modal) AddCloseButton(label string, id string) {

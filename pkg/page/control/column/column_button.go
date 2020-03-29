@@ -32,6 +32,7 @@ type ButtonColumn struct {
 // NewButtonColumn creates a new button column.
 func NewButtonColumn() *ButtonColumn {
 	i := ButtonColumn{}
+	i.Self = &i
 	i.Init()
 	return &i
 }

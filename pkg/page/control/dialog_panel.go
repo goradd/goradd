@@ -131,6 +131,12 @@ func (p *DialogPanel) SetButtonStyle(id string, a html.Style) {
 	p.getDialog().SetButtonStyle(id, a)
 }
 
+// SetButtonText sets the text of the given button
+func (p *DialogPanel) SetButtonText(id string, text string) {
+	p.getDialog().SetButtonText(id, text)
+}
+
+
 // RemoveButton removes the given button from the dialog
 func (p *DialogPanel) RemoveButton(id string) {
 	p.getDialog().RemoveButton(id)
