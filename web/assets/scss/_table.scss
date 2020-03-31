@@ -170,13 +170,28 @@ div[data-grctl=datapager] {
 
     &:not(.selected,[disabled]) {
       &:hover {
-        background: #eeeeee;
+        background-color: $row-background-color-selected;
+        color: $row-color-selected;
         border-color:gray;
       }
     }
 
     &.selected {
       border-color:black;
+      background-color: $row-background-color-selected;
+      color: $row-color-selected;
     }
   }
 }
+
+// general purpose javascript styling support
+.selected {
+  background-color: $row-background-color-selected;
+  color: $row-color-selected;
+}
+
+.highlighted {
+  background-color: $row-background-color-hover;
+  color: $row-color-hover;
+}
+

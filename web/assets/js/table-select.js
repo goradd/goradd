@@ -16,7 +16,7 @@
             this._initSelectedId();
             if (this.options.scrollable) {
                 var scroller = goradd.tagBuilder("div")
-                    .attr("id", this.id() + "_scroller")
+                    .attr("id", this.id + "_scroller")
                     .attr("tabindex", 0)
                     .attr("style", "overflow-y:auto;padding-right:10px")
                     .wrap(this.element);

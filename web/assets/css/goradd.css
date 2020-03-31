@@ -172,11 +172,24 @@ div[data-grctl=datapager] button {
   border: 1px solid lightgray;
 }
 div[data-grctl=datapager] button:not(.selected, [disabled]):hover {
-  background: #eeeeee;
+  background-color: #555555;
+  color: white;
   border-color: gray;
 }
 div[data-grctl=datapager] button.selected {
   border-color: black;
+  background-color: #555555;
+  color: white;
+}
+
+.selected {
+  background-color: #555555;
+  color: white;
+}
+
+.highlighted {
+  background-color: #d0d0d0;
+  color: black;
 }
 
 /**
