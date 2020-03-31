@@ -152,7 +152,7 @@ ul.gr-clickable-rows > li,
     background-color: $row-background-color-hover;
     color: $row-color-hover;
   }
-  &:active { // active makes this work in situations where you are not remembering what was clicked on.
+  &.selected, &:active { // active makes this work in situations where you are not remembering what was clicked on.
     background-color: $row-background-color-selected;
     color: $row-color-selected;
   }
@@ -178,6 +178,8 @@ div[data-grctl=datapager] {
 
     &.selected {
       border-color:black;
+      background-color: $row-background-color-selected;
+      color: $row-color-selected;
     }
   }
 }

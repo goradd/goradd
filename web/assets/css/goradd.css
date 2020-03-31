@@ -154,8 +154,10 @@ ul.gr-clickable-rows > li:hover:not(.selected):not(.nosel),
   background-color: #d0d0d0;
   color: black;
 }
-table.gr-clickable-rows > tbody > tr:active,
+table.gr-clickable-rows > tbody > tr.selected, table.gr-clickable-rows > tbody > tr:active,
+ul.gr-clickable-rows > li.selected,
 ul.gr-clickable-rows > li:active,
+.gr-clickable-rows > div.selected,
 .gr-clickable-rows > div:active {
   background-color: #555555;
   color: white;
@@ -176,6 +178,8 @@ div[data-grctl=datapager] button:not(.selected, [disabled]):hover {
 }
 div[data-grctl=datapager] button.selected {
   border-color: black;
+  background-color: #555555;
+  color: white;
 }
 
 .selected {
