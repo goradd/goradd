@@ -152,7 +152,7 @@ ul.gr-clickable-rows > li,
     background-color: $row-background-color-hover;
     color: $row-color-hover;
   }
-  &.selected, &:active { // active makes this work in situations where you are not remembering what was clicked on.
+  &:active { // active makes this work in situations where you are not remembering what was clicked on.
     background-color: $row-background-color-selected;
     color: $row-color-selected;
   }
@@ -170,7 +170,8 @@ div[data-grctl=datapager] {
 
     &:not(.selected,[disabled]) {
       &:hover {
-        background: #eeeeee;
+        background-color: $row-background-color-selected;
+        color: $row-color-selected;
         border-color:gray;
       }
     }
@@ -180,3 +181,15 @@ div[data-grctl=datapager] {
     }
   }
 }
+
+// general purpose javascript styling support
+.selected {
+  background-color: $row-background-color-selected;
+  color: $row-color-selected;
+}
+
+.highlighted {
+  background-color: $row-background-color-hover;
+  color: $row-color-hover;
+}
+
