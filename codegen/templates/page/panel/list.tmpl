@@ -76,7 +76,7 @@ func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
 	case {{= lcPanelName }}Search:
 		p.Page().GetControl(p.ID() + "-list").Refresh() // redraw the table
 	case {{= lcPanelName }}RowClick: // edit
-		id := p.GetClickedRowValue(a)
+		id := a.ActionValueString()
 	    if id != "" {
 			p.ZoomItem(ctx, id)
 			// Change the above to the below to edit on clicking the whole row, rather than clicking the edit column
@@ -85,7 +85,7 @@ func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
 	case {{= lcPanelName }}NewClick: // new
 		p.EditItem(ctx, "")
 	case {{= lcPanelName }}ButtonClick: // edit button column was clicked
-		id := p.GetClickedRowValue(a)
+		id := a.EventValueString()
 	    if id != "" {
 			p.EditItem(ctx, id)
 	    }

@@ -8,6 +8,8 @@ func (f *{{= formName }}) Action(ctx context.Context, a page.ActionParams) {
 	switch a.ID {
 	case {{= title }}OkAction:
         f.returnToPrevious(ctx)
+    default:
+        f.FormBase.Action(ctx, a)
     }
 }
 

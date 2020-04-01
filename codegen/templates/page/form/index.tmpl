@@ -19,7 +19,7 @@ for _, db := range db.GetDatabases() {
         var listLoc = path.Join("/goradd/form/", dd.DbKey, t.GoName + "List")
 {{
 <li>
-{{= t.GoName }}: <a href="{{= listLoc }}">List</a> | <a href="{{= editLoc }}">Edit</a>
+{{= t.GoName }}: <a href="{{= listLoc }}">List</a> | <a href="{{= editLoc }}">New</a>
 </li>
 }}
     }

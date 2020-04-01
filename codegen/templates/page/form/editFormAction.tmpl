@@ -14,6 +14,8 @@ func (f *{{= formName }}) Action(ctx context.Context, a page.ActionParams) {
     case {{= title }}DeleteAction:
         panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Delete(ctx)
         f.returnToPrevious(ctx)
+    default:
+        f.FormBase.Action(ctx, a)
     }
 }
 
