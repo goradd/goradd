@@ -39,6 +39,13 @@ func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id st
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 }
 
+func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
+    switch a.ID {
+    default:
+        p.Panel.Action(ctx, a)
+    }
+}
+
 // Load loads up the edit panel with data from the database. pk is the primary key of a model.{{= t.GoName }}
 // database record
 func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error {
