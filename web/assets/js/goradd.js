@@ -518,6 +518,26 @@ var g$ = function(el) {
         }
     }
 
+    /**
+     * The internal goradd event handler object.
+     * @param {[string]} events
+     * @param {function} handler
+     * @param {boolean} capture
+     * @private
+     */
+    function _EventHandler(events, handler, capture) {
+        this.events = events;
+        this.handler = handler;
+        this.capture = capture;
+    }
+
+    _EventHandler.prototype = {
+        handleEvent: function(evt) {
+            this.handler(evt);
+        },
+    };
+
+
 // noinspection JSUnusedGlobalSymbols
     /**
      * @namespace goradd
@@ -1382,6 +1402,10 @@ var g$ = function(el) {
             this.attr("id", i);
             return this;
         },
+        class: function(c) {
+            this.attr("class", c);
+            return this;
+        },
 
         /**
          * appendTo ends the builder by inserting the tag into the dom as the last child element of the given element.
@@ -1445,6 +1469,9 @@ var g$ = function(el) {
          */
         element: function() {
             return this.el;
+        },
+        asHtml: function() {
+            return this.el.outerHTML;
         }
     };
 
@@ -1765,8 +1792,6 @@ var g$ = function(el) {
          * In the event returned to the handler, "target" is the element receiving the event, and "currentTarget" is the element
          * listening for the event.
          *
-         * If using a selector,
-         *
          * @param {string} eventNames  One or more event names separated by spaces
          * @param {string} [selector] An optional css selector to filter bubbled events. This is here because jQuery does it this way too.
          * @param {function|Array} handler The function to execute. If handler is an array, the first item
@@ -1781,6 +1806,7 @@ var g$ = function(el) {
          * @param {*} [options.data]  Data to provide into the goradd.data item attached to the event. If this is a function, the function
          *        will be executed when the event fires, and the result provided to the event. The "this" of the function
          *        will be the "this" of the on call, unless of course you bind a different "this".
+         * @return _EventHandler An object you can use when calling off to remove the event.
          */
         on: function (eventNames, selector, handler, options) {
             // TODO: This code breaks the built-in addEventListener ability to prevent multiple adds of the same handler.
@@ -1789,6 +1815,7 @@ var g$ = function(el) {
             // We could put a "handleEvent" function on ourselves, and then make that the handler. We would then need to do
             // our own management of the attached handlers. We could implement a mechanism where the handler provides a
             // unique id, and so we can prevent multiple adds of the same anonymous function too.
+            // also need to think about off.
             var self = this;
             if (!eventNames) {
                 goradd.log("on must specify an event");
@@ -1830,69 +1857,81 @@ var g$ = function(el) {
             }
 
             var events = eventNames.split(" ");
-            goradd.each(events, function (i, eventName) {
-                el.addEventListener(eventName, function (event) {
-                    goradd.log("triggered: " + event.type);
-                    if (!!selector) {
-                        if (!!options && options.bubbles) {
-                            var check = event.target;
-                            var match;
+            var objEvt = new _EventHandler (events, function (event) {
+                goradd.log("triggered: " + event.type);
+                if (!!selector) {
+                    if (!!options && options.bubbles) {
+                        var check = event.target;
+                        var match;
+                        if (g$(check).matches(selector)) {
+                            match = check;
+                        }
+                        while (!match && !!check && check !== event.currentTarget) {
+                            check = check.parentElement;
                             if (g$(check).matches(selector)) {
                                 match = check;
                             }
-                            while (!match && !!check && check !== event.currentTarget) {
-                                check = check.parentElement;
-                                if (g$(check).matches(selector)) {
-                                    match = check;
-                                }
-                            }
-                            if (match) {
-                                if (!event.goradd) {
-                                    event.goradd = {};
-                                }
-                                event.goradd.match = match;
-                                event.goradd.selector = selector;
-                            } else {
-                                return;
-                            }
-                        } else {
-                            if (!g$(event.target).matches(selector)) {
-                                return;
-                            }
+                        }
+                        if (match) {
                             if (!event.goradd) {
                                 event.goradd = {};
                             }
+                            event.goradd.match = match;
                             event.goradd.selector = selector;
-                            event.goradd.match = event.target;
+                        } else {
+                            return;
                         }
-                    }
-
-                    // This data here is getting set up when "on" is first called.
-                    var data;
-                    if (options && options.data !== undefined) {
-                        data = options.data;
-
-                        // Calls a specified function when the event is fired to get the value of data
-                        if (typeof options.data === "function") {
-                            data = options.data.call(self, event);
+                    } else {
+                        if (!g$(event.target).matches(selector)) {
+                            return;
                         }
                         if (!event.goradd) {
                             event.goradd = {};
                         }
-                        event.goradd.data = data; // in case it gets overridden below, we can still get to the data through the event
+                        event.goradd.selector = selector;
+                        event.goradd.match = event.target;
                     }
+                }
 
-                    // This is data sent through the trigger function at trigger time
-                    if (event.detail !== undefined) {
-                        data = event.detail;
-                    }
+                // This data here is getting set up when "on" is first called.
+                var data;
+                if (options && options.data !== undefined) {
+                    data = options.data;
 
-                    if (data !== undefined) {
-                        handler.call(target, event, data); // add extra item to event handler
-                    } else {
-                        handler.call(target, event);
+                    // Calls a specified function when the event is fired to get the value of data
+                    if (typeof options.data === "function") {
+                        data = options.data.call(self, event);
                     }
-                }, capture);
+                    if (!event.goradd) {
+                        event.goradd = {};
+                    }
+                    event.goradd.data = data; // in case it gets overridden below, we can still get to the data through the event
+                }
+
+                // This is data sent through the trigger function at trigger time
+                if (event.detail !== undefined) {
+                    data = event.detail;
+                }
+
+                if (data !== undefined) {
+                    handler.call(target, event, data); // add extra item to event handler
+                } else {
+                    handler.call(target, event);
+                }
+            }, capture);
+            goradd.each(events, function (i, eventName) {
+                el.addEventListener(eventName, objEvt, capture);
+            });
+            return objEvt; // pass this to off
+        },
+        /**
+         * off removes an event that was added by on.
+         * @param {_EventHandler} eventObj
+         */
+        off: function(eventObj) {
+            var el = this.element;
+            goradd.each(eventObj.events, function() {
+                el.removeEventListener(this, eventObj, eventObj.capture)
             });
         },
         /**
