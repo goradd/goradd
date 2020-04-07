@@ -258,7 +258,7 @@ func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
 	sub.Init(ctx, ctrl)
 }
 
-// GetEmailTextbox is a convenience method to return the control with the given id from the page.
+// GetDateTextbox is a convenience method to return the control with the given id from the page.
 func GetDateTextbox(c page.ControlI, id string) *DateTextbox {
 	return c.Page().GetControl(id).(*DateTextbox)
 }
