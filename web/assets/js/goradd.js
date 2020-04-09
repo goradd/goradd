@@ -1521,6 +1521,9 @@ var g$ = function(el) {
         }
         this.element = el;
         el.goradd.widget = this;
+        if (!el.id) {
+            goradd.log("*** Error: Widgets must have an id.");
+        }
         this.id = el.id; // hoist id to the goradd object
     };
 
@@ -1794,7 +1797,7 @@ var g$ = function(el) {
          *
          * @param {string} eventNames  One or more event names separated by spaces
          * @param {string} [selector] An optional css selector to filter bubbled events. This is here because jQuery does it this way too.
-         * @param {function|Array} handler The function to execute. If handler is an array, the first item
+         * @param {function|Array|EventListener} handler The function to execute. If handler is an array, the first item
          *        will become the "this" of the function, and 2nd item is the function itself.
          * @param {object} [options] Optional additional options as follows:
          * @param {string} [options.selector]  Same as selector above, just specified in options
@@ -1827,8 +1830,8 @@ var g$ = function(el) {
                 handler = selector;
                 selector = undefined;
             }
-            if (typeof handler !== "function" && !(Array.isArray(handler) && handler.length == 2)) {
-                goradd.log("on must have a handler that is a function or a 2 item array");
+            if (!(handler instanceof Object ) && typeof handler !== "function" && !(Array.isArray(handler) && handler.length === 2)) {
+                goradd.log("'on' must have a handler that is an EventListener, function or be a 2 item array");
                 return;
             }
 
@@ -1854,6 +1857,9 @@ var g$ = function(el) {
             if (Array.isArray(handler)) {
                 target = handler[0];
                 handler = handler[1];
+            } else if (handler.handleEvent) {
+                target = handler;
+                handler = target.handleEvent;
             }
 
             var events = eventNames.split(" ");
