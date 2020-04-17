@@ -2448,8 +2448,24 @@ var g$ = function(el) {
             }
             this._setOption(key, value);
         },
+        /**
+         * _setOption is the protected function that sets a particular option in a widget. Other setOption type calls
+         * funnel to here, so if you need to detect the setting of a particular option, you can override this function.
+         * @param key
+         * @param value
+         * @protected
+         */
         _setOption: function (key, value) {
             this.options[key] = value;
+        },
+        setOptions: function(values) {
+            if (arguments.length === 0) {
+                return this.options;
+            }
+            var self = this;
+            goradd.each(values, function(k,v) {
+                self._setOption(k,v);
+            });
         }
     });
 })();
