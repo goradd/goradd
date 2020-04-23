@@ -32,8 +32,8 @@ goradd.testsuite = {
         t.assert(el[0].innerText === "I am here");
     },
     testIsEmptyObj: function(t) {
-        t.assert(!goradd.isEmptyObj({a:"b"}));
-        t.assert(goradd.isEmptyObj({}));
+        t.assert(!goradd.isEmptyObject({a:"b"}));
+        t.assert(goradd.isEmptyObject({}));
     },
     testForm: function(t) {
         t.isSame("JsUnitTestForm", goradd.form().id);
@@ -91,8 +91,8 @@ goradd.testsuite = {
         t.isSame("Inserted After", goradd.el("after").innerText);
         t.isSame("Inserted Before", goradd.el("before").innerText);
         goradd.el("testP").innerText = "There";
-        p.insertHtml("Here");
-        p.appendHtml("Everywhere");
+        p.insertChildHtml("Here");
+        p.appendChildHtml("Everywhere");
         t.isSame("HereThereEverywhere", goradd.el("testP").innerText);
     },
     testRemove: function(t) {
