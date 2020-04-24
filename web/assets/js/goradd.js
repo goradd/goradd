@@ -1651,9 +1651,17 @@ var g$ = function(el) {
             }
             return null;
         },
+        /**
+         * prev returns the html item previous sibling to the current item, or null if no item is previous.
+         * @return {goradd.Control}
+         */
         prev: function() {
             return g$(this.element.previousElementSibling);
         },
+        /**
+         * next returns the html item that is the next sibling to the current item, or null if no item is next.
+         * @return {goradd.Control}
+         */
         next: function() {
             return g$(this.element.nextElementSibling);
         },

@@ -95,6 +95,25 @@ goradd.testsuite = {
         p.appendChildHtml("Everywhere");
         t.isSame("HereThereEverywhere", goradd.el("testP").innerText);
     },
+    testMoves: function(t) {
+        var p = g$("testP");
+        p.moveAfter("testD");
+        var d = p.prev();
+        t.isSame("testD", d.id, "moveAfter failed");
+
+        p.moveBefore(d);
+        var n = p.next();
+        t.isSame("testD", n.id, "moveAfter failed");
+
+        p.htmlAfter("<div id='after'><div id='in'>I am in.</div></div>");
+        p.insertInto("after");
+        n = p.next();
+        t.isSame("in", n.id, "insertInto failed");
+
+        p.appendTo("after");
+        d = p.prev();
+        t.isSame("in", d.id, "appendTo failed");
+    },
     testRemove: function(t) {
         g$("testP").remove();
         t.isSame(goradd.el("testP"), null);
