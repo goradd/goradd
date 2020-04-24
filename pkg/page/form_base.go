@@ -128,7 +128,7 @@ func (f *FormBase) AddGoraddFiles() {
 	gr := config.GoraddAssets()
 	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd.js"), false, nil)
 	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-testing.js"), false, nil)
+		f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-debug.js"), false, nil)
 	}
 	f.AddStyleSheetFile(filepath.Join(gr, "css", "goradd.css"), nil)
 }
