@@ -32,8 +32,8 @@ goradd.testsuite = {
         t.assert(el[0].innerText === "I am here");
     },
     testIsEmptyObj: function(t) {
-        t.assert(!goradd.isEmptyObj({a:"b"}));
-        t.assert(goradd.isEmptyObj({}));
+        t.assert(!goradd.isEmptyObject({a:"b"}));
+        t.assert(goradd.isEmptyObject({}));
     },
     testForm: function(t) {
         t.isSame("JsUnitTestForm", goradd.form().id);
@@ -91,9 +91,28 @@ goradd.testsuite = {
         t.isSame("Inserted After", goradd.el("after").innerText);
         t.isSame("Inserted Before", goradd.el("before").innerText);
         goradd.el("testP").innerText = "There";
-        p.insertHtml("Here");
-        p.appendHtml("Everywhere");
+        p.insertChildHtml("Here");
+        p.appendChildHtml("Everywhere");
         t.isSame("HereThereEverywhere", goradd.el("testP").innerText);
+    },
+    testMoves: function(t) {
+        var p = g$("testP");
+        p.moveAfter("testD");
+        var d = p.prev();
+        t.isSame("testD", d.id, "moveAfter failed");
+
+        p.moveBefore(d);
+        var n = p.next();
+        t.isSame("testD", n.id, "moveAfter failed");
+
+        p.htmlAfter("<div id='after'><div id='in'>I am in.</div></div>");
+        p.insertInto("after");
+        n = p.next();
+        t.isSame("in", n.id, "insertInto failed");
+
+        p.appendTo("after");
+        d = p.prev();
+        t.isSame("in", d.id, "appendTo failed");
     },
     testRemove: function(t) {
         g$("testP").remove();
