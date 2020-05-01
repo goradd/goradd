@@ -309,9 +309,6 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 		return
 	}
 	a := c.this().ColTagAttributes()
-	if c.id != "" {
-		a.Set("id", c.this().ParentTable().ID()+"_"+c.id) // so that actions can get routed to a column
-	}
 	if c.span > 1 {
 		a.Set("span", strconv.Itoa(c.span))
 	}

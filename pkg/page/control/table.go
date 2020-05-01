@@ -59,6 +59,8 @@ type TableEmbedder interface {
 	SetSortHistoryLimit(n int) TableI
 	SortIconHtml(SortDirection) string
 	SetSortIconHtml(sortable string, asc string, desc string)
+	DrawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error)
+
 }
 
 // TableRowAttributer is used to style particular table rows.
@@ -161,6 +163,10 @@ func (t *Table) SetHideIfEmpty(h bool) TableI {
 	return t.this()
 }
 
+func (t *Table) HideIfEmpty() bool {
+	return t.hideIfEmpty
+}
+
 // MakeSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
 func (t *Table) MakeSortable() TableI {
 	t.On(event.TableSort().Private(), action.Ajax(t.ID(), SortClick))
@@ -183,10 +189,18 @@ func (t *Table) SetHeaderRowCount(count int) TableI {
 	return t.this()
 }
 
+func (t *Table) HeaderRowCount() int {
+	return t.headerRowCount
+}
+
 // SetFooterRowCount sets the number of footer rows shown. Each column will be asked to draw this number of footer rows.
 func (t *Table) SetFooterRowCount(count int) TableI {
 	t.footerRowCount = count
 	return t.this()
+}
+
+func (t *Table) FooterRowCount() int {
+	return t.footerRowCount
 }
 
 // DrawTag is called by the framework to draw the table. The Table overrides this to call into the DataProvider
@@ -233,12 +247,12 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 		return
 	}
 
-	if err = t.drawColumnTags(ctx, buf1); err != nil {
+	if err = t.DrawColumnTags(ctx, buf1); err != nil {
 		return
 	}
 
 	if t.headerRowCount > 0 {
-		err = t.drawHeaderRows(ctx, buf2)
+		err = t.DrawHeaderRows(ctx, buf2)
 		buf1.WriteString(html.RenderTag("thead", nil, buf2.String()))
 		if err != nil {
 			return
@@ -247,7 +261,7 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 	}
 
 	if t.footerRowCount > 0 {
-		err = t.drawFooterRows(ctx, buf2)
+		err = t.DrawFooterRows(ctx, buf2)
 		buf1.WriteString(html.RenderTag("tfoot", nil, buf2.String()))
 		if err != nil {
 			return
@@ -256,7 +270,7 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 	}
 
 	t.RangeData(func(index int, value interface{}) bool {
-		err = t.drawRow(ctx, index, value, buf2)
+		err = t.this().DrawRow(ctx, index, value, buf2)
 		if err != nil {
 			return false
 		}
@@ -285,7 +299,7 @@ func (t *Table) DrawCaption(ctx context.Context, buf *bytes.Buffer) (err error) 
 	return
 }
 
-func (t *Table) drawColumnTags(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawColumnTags(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var colNum int
 	var colCount = len(t.columns)
 
@@ -299,7 +313,7 @@ func (t *Table) drawColumnTags(ctx context.Context, buf *bytes.Buffer) (err erro
 	return
 }
 
-func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -341,7 +355,7 @@ func (t *Table) GetHeaderRowAttributes(row int) html.Attributes {
 	return nil
 }
 
-func (t *Table) drawFooterRows(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawFooterRows(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -371,14 +385,14 @@ func (t *Table) GetFooterRowAttributes(row int) html.Attributes {
 	return nil
 }
 
-func (t *Table) drawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error) {
-	var this = t.this() // Get the sub class so we call into its hooks for drawing
-	buf1 := pool.GetBuffer()
-	defer pool.PutBuffer(buf1)
+func (t *Table) DrawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error) {
+	buf.WriteString("<tr ")
+	buf.WriteString(t.this().GetRowAttributes(row, data).String())
+	buf.WriteString(">")
 	for i, col := range t.columns {
-		col.DrawCell(ctx, row, i, data, buf1)
+		col.DrawCell(ctx, row, i, data, buf)
 	}
-	buf.WriteString(html.RenderTag("tr", this.GetRowAttributes(row, data), buf1.String()))
+	buf.WriteString("</tr>")
 	return
 }
 
