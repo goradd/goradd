@@ -534,6 +534,14 @@ var g$ = function(el) {
          * to the config.AjaxTimeout value in GO.
          */
         ajaxTimeout: 0,
+        /**
+         * toArray converts array-like objects to arrays
+         * @param a
+         * @return {Array}
+         */
+        toArray: function(a) {
+            return Array.prototype.slice.call(a);
+        },
 
         /**
          * Extend merges keys and values of objects into the target object.
@@ -547,7 +555,7 @@ var g$ = function(el) {
          * @returns {*}
          */
         extend: function (target) {
-            var input = Array.prototype.slice.call(arguments, 1),
+            var input = goradd.toArray(arguments, 1),
                 key,
                 value;
 
@@ -615,7 +623,7 @@ var g$ = function(el) {
          * @returns {HTMLElement[]}
          */
         qa: function (sel) {
-            return Array.prototype.slice.call(document.querySelectorAll(sel));
+            return goradd.toArray(document.querySelectorAll(sel));
         },
         /**
          * isEmptyObject will test whether the object is empty
@@ -1212,6 +1220,7 @@ var g$ = function(el) {
          * @param {boolean} [blnPeriodic=false] True for a repeating timer.
          */
         setTimer: function (id, action, intDelay, blnPeriodic) {
+            blnPeriodic = !!blnPeriodic;
             goradd.clearTimer(id);
             goradd.log("setTimer", id, intDelay, blnPeriodic);
             _timers[id] = {
@@ -1411,7 +1420,7 @@ var g$ = function(el) {
          */
         insertInto: function (el) {
             el = goradd.el(el);
-            el.insertChild(this.el);
+            el.insertAdjacentElement("afterbegin", this.el);
             return this.el;
         },
         /**
@@ -1505,6 +1514,7 @@ var g$ = function(el) {
 
     /**
      * goradd.Control is a basic goradd html object that has extended commands.
+     * @class
      * @param {HTMLElement} el
      * @constructor
      */
@@ -1518,10 +1528,9 @@ var g$ = function(el) {
         }
         this.element = el;
         el.goradd.widget = this;
-        if (!el.id) {
-            goradd.log("*** Error: Widgets must have an id.");
+        if (el.id) {
+            this.id = el.id; // hoist id to the goradd object
         }
-        this.id = el.id; // hoist id to the goradd object
     };
 
     goradd.Control.prototype = {
@@ -1590,7 +1599,7 @@ var g$ = function(el) {
          * @returns {HTMLElement[]}
          */
         qa: function (sel) {
-            return Array.prototype.slice.call(this.element.querySelectorAll(sel));
+            return goradd.toArray(this.element.querySelectorAll(sel));
         },
         /**
          * findAll is like querySelectorAll, but returns an array of goradd.Control objects
@@ -1598,7 +1607,7 @@ var g$ = function(el) {
          * @returns {goradd.Control[]}
          */
         findAll: function (sel) {
-            return this.qa(sel).map(function() {return g$(this)});
+            return this.qa(sel).map(function(o) {return g$(o)});
         },
         /**
          * matches returns true if the given element matches the css selector.
@@ -1634,7 +1643,7 @@ var g$ = function(el) {
          * @return {goradd.Control[]}
          */
         children: function() {
-            return Array.prototype.slice.call(this.element.children).map(function() {g$(this)});
+            return goradd.toArray(this.element.children).map(function(o) {g$(o)});
         },
         /**
          * closest returns the first parent node that matches the given selector, or null, as an goradd object
@@ -1650,6 +1659,13 @@ var g$ = function(el) {
                 el = el.parentElement;
             }
             return null;
+        },
+        /**
+         * firstChild returns the first child element of the object, or nil
+         * @return {goradd.Control}
+         */
+        firstChild: function() {
+            return g$(this.element.firstElementChild);
         },
         /**
          * prev returns the html item previous sibling to the current item, or null if no item is previous.
@@ -2506,6 +2522,8 @@ var g$ = function(el) {
      * by ajax calls. If your widget only works through Ajax, then that is sufficient to keep the GO side of things updated.
      *
      * The widget above can be attached to an html object by setting the data-gr-widget attribute of that object to "MyWidget".
+     * @class
+     * @extends goradd.Control
      */
     goradd.Widget = goradd.extendWidget(goradd.Control, {
         constructor: function (element, options) {

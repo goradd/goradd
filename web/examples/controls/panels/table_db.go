@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/control/column"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
+	"strconv"
 )
 
 type TableDbPanel struct {
@@ -30,6 +31,11 @@ func (p *TableDbPanel) Init(ctx context.Context, parent page.ControlI, id string
 			DataProvider: p, // The data provider can be a predefined control, including the parent of the table.
 			Sortable: true,
 			Columns:[]ColumnCreator {
+				column.TexterColumnCreator{
+					ID: "num",
+					Texter: p,
+					Title:"#",
+				},
 				column.NodeColumnCreator{
 					Node: node.Person().FirstName(),
 					Title:"First Name",
@@ -42,6 +48,7 @@ func (p *TableDbPanel) Init(ctx context.Context, parent page.ControlI, id string
 				},
 
 				column.TexterColumnCreator{
+					ID: "combined",
 					Texter: p,
 					Title:"Combined",
 				},
@@ -82,23 +89,28 @@ func (p *TableDbPanel) BindData(ctx context.Context, s DataManagerI) {
 
 	// Since we are asking the database to do the sort, we have to make a slice of nodes
 	sortNodes := column.MakeNodeSlice(t.SortColumns())
-
+	maxRowCount, offset := t.SqlLimits()
 	people := model.QueryPeople(ctx).
 		Alias("manager_count",
 			model.QueryProjects(ctx).
 				Alias("", op.Count(node.Project().ManagerID())).
 				Where(op.Equal(node.Project().ManagerID(), node.Person().ID())).
 				Subquery()).
-		Limit(t.SqlLimits()).
+		Limit(maxRowCount, offset).
 		OrderBy(sortNodes...).
 		Load()
-	t.SetData(people)
+	t.SetDataWithOffset(people, offset)
 }
 
 func (p *TableDbPanel) CellText(ctx context.Context, col ColumnI, info CellInfo) string {
-	// Since we only have one custom column, we know what we are getting.
-	person := info.Data.(*model.Person)
-	return person.FirstName() + " " + person.LastName()
+	switch col.ID() {
+	case "num":
+		return strconv.Itoa(info.RowNum + 1)
+	case "combined":
+		person := info.Data.(*model.Person)
+		return person.FirstName() + " " + person.LastName()
+	}
+	return ""
 }
 
 func init() {
