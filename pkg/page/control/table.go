@@ -60,7 +60,7 @@ type TableEmbedder interface {
 	SortIconHtml(SortDirection) string
 	SetSortIconHtml(sortable string, asc string, desc string)
 	DrawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error)
-
+	SetSortColumnsByID(ids... string)
 }
 
 // TableRowAttributer is used to style particular table rows.
@@ -209,7 +209,7 @@ func (t *Table) DrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing table tag")
 	if t.HasDataProvider() {
 		log.FrameworkDebug("Getting table data")
-		t.LoadData(ctx, t.this())
+		t.this().LoadData(ctx, t.this())
 		defer t.ResetData()
 	}
 	if t.hideIfEmpty && !t.HasData() {
@@ -621,6 +621,11 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 	return ret
 }
 
+// SetSortColumnsByID sets the order of the sort column list by id.
+func (t *Table) SetSortColumnsByID(ids... string) {
+	t.sortColumns = ids
+}
+
 // SetSortIconHtml set the html used to draw the sort icons.
 // If a string is blank, it will not be changed.
 // Use the following for font awesome icons
@@ -880,6 +885,8 @@ type TableCreator struct {
 	SortAscIconHtml string
 	// SortDescIconHtml will set the html used to draw the icon indicating that a column is sorted in descending order
 	SortDescIconHtml string
+	// SortColumnIDs is a list of column ids that will be used to specify the initial sort order
+	SortColumnIDs []string
 	// OnCellClick is the action to take when a cell is clicked.
 	OnCellClick    action.ActionI
 	ControlOptions page.ControlOptions
@@ -951,6 +958,10 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 		ctrl.SetSortHistoryLimit(c.SortHistoryLimit)
 	}
 	ctrl.SetSortIconHtml(c.SortableIconHtml, c.SortAscIconHtml, c.SortDescIconHtml)
+
+	if c.SortColumnIDs != nil {
+		ctrl.SetSortColumnsByID(c.SortColumnIDs...)
+	}
 
 	if c.OnCellClick != nil {
 		ctrl.On(event.CellClick(), c.OnCellClick)

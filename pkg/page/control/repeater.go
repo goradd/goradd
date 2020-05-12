@@ -60,7 +60,7 @@ func (r *Repeater) DrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing repeater tag")
 	if r.HasDataProvider() {
 		log.FrameworkDebug("Getting repeater data")
-		r.LoadData(ctx, r.this())
+		r.this().LoadData(ctx, r.this())
 		defer r.ResetData()
 	}
 	return r.ControlBase.DrawTag(ctx)
