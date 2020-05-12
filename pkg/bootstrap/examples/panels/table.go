@@ -85,7 +85,7 @@ func (f *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 			DataProvider: f,
 			Columns:[]control.ColumnCreator {
 				column.TexterColumnCreator{
-					Texter: "tablePanel",
+					TexterID: "tablePanel",
 					Title:"Custom",
 				},
 				column.MapColumnCreator{
