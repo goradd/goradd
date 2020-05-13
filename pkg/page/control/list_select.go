@@ -178,7 +178,7 @@ func (l *SelectList) DrawingAttributes(ctx context.Context) html.Attributes {
 
 func (l *SelectList) DrawTag(ctx context.Context) string {
 	if l.HasDataProvider() {
-		l.LoadData(ctx, l.this())
+		l.this().LoadData(ctx, l.this())
 		defer l.ResetData()
 	}
 	return l.ControlBase.DrawTag(ctx)

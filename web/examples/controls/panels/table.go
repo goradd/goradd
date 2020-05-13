@@ -84,7 +84,7 @@ func (p *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 			DataProvider:   p,
 			Columns:[]ColumnCreator {
 				column.TexterColumnCreator{
-					Texter: "tablePanel",
+					TexterID: "tablePanel",
 					Title:"Custom",
 				},
 				column.SliceColumnCreator{
@@ -105,7 +105,7 @@ func (p *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 			DataProviderID: "tablePanel", // You can use the id of a provider too
 			Columns:[]ColumnCreator {
 				column.TexterColumnCreator{
-					Texter: "tablePanel",
+					TexterID: "tablePanel",
 					Title:"Custom",
 				},
 				column.MapColumnCreator{
