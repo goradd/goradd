@@ -63,6 +63,7 @@ type ColumnI interface {
 	SortDirection() SortDirection
 	SetSortDirection(SortDirection) ColumnI
 	SetSortable() ColumnI
+	RenderSortButton(labelHtml string) string
 	SetIsHtml(columnIsHtml bool) ColumnI
 	PreRender()
 	MarshalState(m maps.Setter)
@@ -325,7 +326,7 @@ func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h st
 	} else if row == 0 {
 		h = html2.EscapeString(c.title)
 		if c.IsSortable() {
-			h = c.RenderSortButton(h)
+			h = c.this().RenderSortButton(h)
 		}
 	}
 
@@ -394,11 +395,16 @@ func (c *ColumnBase) CellData(ctx context.Context, row int, col int, data interf
 // CellAttributes returns the attributes of the cell. Column implementations should call this base version first before
 // customizing more. It will use the CellStyler if one was provided.
 func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) html.Attributes {
+	if c.Attributes == nil && c.cellStyler == nil {
+		return nil
+	}
+	a := c.Attributes.Copy()
 	if c.cellStyler != nil {
 		info := CellInfo{RowNum: row, ColNum: col, Data:data}
-		return c.cellStyler.CellAttributes(ctx, c.this(), info)
+		a2 := c.cellStyler.CellAttributes(ctx, c.this(), info)
+		a.Merge(a2)
 	}
-	return nil
+	return a
 }
 
 // SetSortable indicates that the column should be drawn with sort indicators.
@@ -424,7 +430,7 @@ func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 func (c *ColumnBase) Action(ctx context.Context, params page.ActionParams) {}
 
 func (c *ColumnBase) RenderSortButton(labelHtml string) string {
-	labelHtml += ` ` + c.ParentTable().SortIconHtml(c.SortDirection())
+	labelHtml += ` ` + c.ParentTable().SortIconHtml(c)
 
 	return fmt.Sprintf(`<button class="gr-transparent-btn" onclick="g$('%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
 }
