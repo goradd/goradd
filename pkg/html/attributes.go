@@ -242,6 +242,9 @@ func (a Attributes) Merge(i interface{}) {
 	if i == nil {
 		return
 	}
+	if a == nil {
+		a = NewAttributes()
+	}
 	switch m := i.(type) {
 	case map[string]string:
 		for k,v := range m {

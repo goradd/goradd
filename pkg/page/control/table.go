@@ -57,7 +57,7 @@ type TableEmbedder interface {
 	ShowColumns()
 	MakeSortable() TableI
 	SetSortHistoryLimit(n int) TableI
-	SortIconHtml(SortDirection) string
+	SortIconHtml(c ColumnI) string
 	SetSortIconHtml(sortable string, asc string, desc string)
 	DrawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error)
 	SetSortColumnsByID(ids... string)
@@ -144,9 +144,9 @@ func (t *Table) Init(parent page.ControlI, id string) {
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1
-	t.sortableHtml = "&varr;"
-	t.sortAscHtml = "&uarr;"
-	t.sortDescHtml = "&darr;"
+	t.sortableHtml = "&udarr;"
+	t.sortAscHtml = "&darr;"
+	t.sortDescHtml = "&uarr;"
 }
 
 // this returns the TableI interface for calling into "virtual" functions. This allows us to call functions defined
@@ -645,7 +645,18 @@ func (t *Table) SetSortIconHtml(sortable string, asc string, desc string) {
 }
 
 // SortIconHtml returns the html used to draw the sort icon
-func (t *Table) SortIconHtml(dir SortDirection) string {
+func (t *Table) SortIconHtml(c ColumnI) string {
+	dir := c.SortDirection()
+	var sortOrder int
+	if t.sortColumns != nil {
+		for i, sortColID := range t.sortColumns {
+			if c.ID() == sortColID {
+				sortOrder = i + 1
+				break
+			}
+		}
+	}
+
 	if SortButtonHtmlGetter != nil {
 		return SortButtonHtmlGetter(dir)
 	} else {
@@ -653,9 +664,17 @@ func (t *Table) SortIconHtml(dir SortDirection) string {
 		case NotSorted:
 			return t.sortableHtml
 		case SortAscending:
-			return t.sortAscHtml
+			if sortOrder == 1 {
+				return t.sortAscHtml
+			} else {
+				return t.sortableHtml
+			}
 		case SortDescending:
-			return t.sortDescHtml
+			if sortOrder == 1 {
+				return t.sortDescHtml
+			} else {
+				return t.sortableHtml
+			}
 		default:
 			return "" // not sortable
 		}
