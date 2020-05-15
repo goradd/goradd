@@ -622,8 +622,27 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 }
 
 // SetSortColumnsByID sets the order of the sort column list by id.
+//
+// The specified columns will be set to sorting descended, and all other columns
+// will be set to not be sorting at all.
+//
+// The columns specified must be sortable.
 func (t *Table) SetSortColumnsByID(ids... string) {
+	for _,col := range t.columns {
+		sd := col.SortDirection()
+		if sd != NotSortable {
+			col.SetSortDirection(NotSorted)
+		}
+	}
 	t.sortColumns = ids
+	for _,id := range ids {
+		if col := t.GetColumnByID(id); col != nil {
+			if col.SortDirection() == NotSortable {
+				panic ("column " + col.ID() + " is not sortable and so cannot be put in the sort list")
+			}
+			col.SetSortDirection(SortDescending)
+		}
+	}
 }
 
 // SetSortIconHtml set the html used to draw the sort icons.
