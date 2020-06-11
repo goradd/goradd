@@ -46,7 +46,6 @@ var g$ = function(el) {
     var _controlValues = {};
     var _formObjsModified = {};
     var _ajaxError = false;
-    var _blockEvents = false;
     var _inputSupport = true;
     var _finalCommands = [];
     var _prevUpdateTime = 0;
@@ -535,6 +534,11 @@ var g$ = function(el) {
          */
         ajaxTimeout: 0,
         /**
+         * blockEvents is set by event handlers to cause that event to block all other incoming events,
+         * until the event is processed.
+         */
+        blockEvents: false,
+		/**
          * toArray converts array-like objects to arrays
          * @param a
          * @return {Array}
@@ -867,7 +871,7 @@ var g$ = function(el) {
          * @return {void}
          */
         postBack: function (params) {
-            if (_blockEvents) {
+            if (goradd.blockEvents) {
                 return;  // We are waiting for a response from the server
             }
 
@@ -910,7 +914,7 @@ var g$ = function(el) {
                 formAction = g$(form).attr("action"),
                 async = params.hasOwnProperty("async");
 
-            if (_blockEvents) {
+            if (goradd.blockEvents) {
                 return;
             }
 
@@ -943,7 +947,7 @@ var g$ = function(el) {
                     success: function (json) {
                         goradd.log("Ajax response received: ", json);
                         _processAjax(json, params);
-                        _blockEvents = false;
+                        goradd.blockEvents = false;
                     }
                 };
             }, async);
