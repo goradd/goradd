@@ -26,7 +26,7 @@ var goradd;
  * the element. el can be either an actual HTMLElement, or the id of one.
  * One main difference between jQuery's wrapper and this one is that jQuery wraps an array of elements, and we only
  * wrap one element. Also, functions that return an array of elements will return HTMLElements, not an array of wrapped elements.
- * @param {string | HTMLElement | goradd.Control} el
+ * @param {string | Element | goradd.Control} el
  * @returns {goradd.Control}
  */
 var g$ = function(el) {
@@ -138,7 +138,7 @@ var g$ = function(el) {
         params.callType = "Ajax";
         params.timezoneOffset = -(new Date()).getTimezoneOffset();
 
-        if (!goradd.isEmptyObj(_controlValues)) {
+        if (!goradd.isEmptyObject(_controlValues)) {
             params.controlValues = _controlValues;
         }
         postData.Goradd__Params = JSON.stringify(params);
@@ -237,7 +237,7 @@ var g$ = function(el) {
                     $ctrl.remove();
                 } else {
                     // control is being injected at the top level, so put it at the end of the form.
-                    g$(goradd.form()).appendHtml(this.html);
+                    g$(goradd.form()).appendChildHtml(this.html);
                 }
             }
         });
@@ -538,6 +538,14 @@ var g$ = function(el) {
          * until the event is processed.
          */
         blockEvents: false,
+		/**
+         * toArray converts array-like objects to arrays
+         * @param a
+         * @return {Array}
+         */
+        toArray: function(a) {
+            return Array.prototype.slice.call(a);
+        },
 
         /**
          * Extend merges keys and values of objects into the target object.
@@ -551,7 +559,7 @@ var g$ = function(el) {
          * @returns {*}
          */
         extend: function (target) {
-            var input = Array.prototype.slice.call(arguments, 1),
+            var input = goradd.toArray(arguments, 1),
                 key,
                 value;
 
@@ -619,14 +627,14 @@ var g$ = function(el) {
          * @returns {HTMLElement[]}
          */
         qa: function (sel) {
-            return Array.prototype.slice.call(document.querySelectorAll(sel));
+            return goradd.toArray(document.querySelectorAll(sel));
         },
         /**
-         * isEmptyObj will test whether the object is empty
+         * isEmptyObject will test whether the object is empty
          * @param {object} o
          * @returns {boolean}
          */
-        isEmptyObj: function (o) {
+        isEmptyObject: function (o) {
             if (!o) return false;
             for (var name in o) { // this is a js trick
                 return false;
@@ -878,7 +886,7 @@ var g$ = function(el) {
             gForm.trigger("posting", "Server");
 
             // Post custom javascript control values
-            if (!goradd.isEmptyObj(_controlValues)) {
+            if (!goradd.isEmptyObject(_controlValues)) {
                 params.controlValues = _controlValues;
             }
             goradd.el('Goradd__Params').value = JSON.stringify(params);
@@ -1216,6 +1224,7 @@ var g$ = function(el) {
          * @param {boolean} [blnPeriodic=false] True for a repeating timer.
          */
         setTimer: function (id, action, intDelay, blnPeriodic) {
+            blnPeriodic = !!blnPeriodic;
             goradd.clearTimer(id);
             goradd.log("setTimer", id, intDelay, blnPeriodic);
             _timers[id] = {
@@ -1371,7 +1380,7 @@ var g$ = function(el) {
             return this;
         },
         /**
-         * text sets the innterText to the given value.
+         * text sets the innerText to the given value.
          * @param {string} t
          * @returns {goradd.TagBuilder}
          */
@@ -1379,10 +1388,20 @@ var g$ = function(el) {
             this.el.innerText = t;
             return this;
         },
+        /**
+         * id sets the id of the element being built
+         * @param {string} i
+         * @return {goradd.TagBuilder}
+         */
         id: function (i) {
             this.attr("id", i);
             return this;
         },
+        /**
+         * class sets the class of the element being built
+         * @param {string} c
+         * @return {goradd.TagBuilder}
+         */
         class: function(c) {
             this.attr("class", c);
             return this;
@@ -1391,6 +1410,7 @@ var g$ = function(el) {
         /**
          * appendTo ends the builder by inserting the tag into the dom as the last child element of the given element.
          * @param {object|string} el
+         * @return {HTMLElement}
          */
         appendTo: function (el) {
             el = goradd.el(el);
@@ -1400,15 +1420,17 @@ var g$ = function(el) {
         /**
          * insertInto ends the builder by inserting the tag into the dom as the first child element of the given element.
          * @param {object|string} el
+         * @return {HTMLElement}
          */
         insertInto: function (el) {
             el = goradd.el(el);
-            el.insertChild(this.el);
+            el.insertAdjacentElement("afterbegin", this.el);
             return this.el;
         },
         /**
          * insertBefore ends the builder by inserting the tag into the dom as a sibling of the given item, and just before it.
          * @param {object|string} el
+         * @return {HTMLElement}
          */
         insertBefore: function (el) {
             el = goradd.el(el);
@@ -1418,6 +1440,7 @@ var g$ = function(el) {
         /**
          * insertAfter ends the builder by inserting the tag into the dom as a sibling of the given item, and just after it.
          * @param {object|string} el
+         * @return {HTMLElement}
          */
         insertAfter: function (el) {
             el = goradd.el(el);
@@ -1427,6 +1450,7 @@ var g$ = function(el) {
         /**
          * replace ends the builder by replacing the given element.
          * @param {object|string} el
+         * @return {HTMLElement}
          */
         replace: function (el) {
             el = goradd.el(el);
@@ -1437,6 +1461,7 @@ var g$ = function(el) {
          * Wrap ends the builder by moving the given tag inside of the builder's tag, and
          * then replacing the tag
          * @param {object|string} el
+         * @return {HTMLElement}
          */
         wrap: function (el) {
             el = goradd.el(el);
@@ -1451,6 +1476,10 @@ var g$ = function(el) {
         element: function() {
             return this.el;
         },
+        /**
+         * asHtml returns the created tag as html
+         * @return {string}
+         */
         asHtml: function() {
             return this.el.outerHTML;
         }
@@ -1466,7 +1495,7 @@ var g$ = function(el) {
      * It also attaches itself to the object so it doesn't need to recreate itself each time.
      * You can use the shortcut g$(id|element).func() to use these functions, passing either the id of an element,
      * or the element itself.
-     * @param {string|HTMLElement|goradd.Control} el
+     * @param {string|Element|goradd.Control} el
      * @returns {goradd.Control}
      */
     goradd.g = function (el) {
@@ -1489,6 +1518,7 @@ var g$ = function(el) {
 
     /**
      * goradd.Control is a basic goradd html object that has extended commands.
+     * @class
      * @param {HTMLElement} el
      * @constructor
      */
@@ -1502,10 +1532,9 @@ var g$ = function(el) {
         }
         this.element = el;
         el.goradd.widget = this;
-        if (!el.id) {
-            goradd.log("*** Error: Widgets must have an id.");
+        if (el.id) {
+            this.id = el.id; // hoist id to the goradd object
         }
-        this.id = el.id; // hoist id to the goradd object
     };
 
     goradd.Control.prototype = {
@@ -1574,7 +1603,15 @@ var g$ = function(el) {
          * @returns {HTMLElement[]}
          */
         qa: function (sel) {
-            return Array.prototype.slice.call(this.element.querySelectorAll(sel));
+            return goradd.toArray(this.element.querySelectorAll(sel));
+        },
+        /**
+         * findAll is like querySelectorAll, but returns an array of goradd.Control objects
+         * @param {string} sel
+         * @returns {goradd.Control[]}
+         */
+        findAll: function (sel) {
+            return this.qa(sel).map(function(o) {return g$(o)});
         },
         /**
          * matches returns true if the given element matches the css selector.
@@ -1606,9 +1643,16 @@ var g$ = function(el) {
             return a;
         },
         /**
+         * children returns the child elements of the control as an array of goradd.Controls
+         * @return {goradd.Control[]}
+         */
+        children: function() {
+            return goradd.toArray(this.element.children).map(function(o) {g$(o)});
+        },
+        /**
          * closest returns the first parent node that matches the given selector, or null, as an goradd object
          * @param sel
-         * @returns HTMLElement
+         * @returns goradd.Control
          */
         closest: function (sel) {
             var el = this.element;
@@ -1619,6 +1663,35 @@ var g$ = function(el) {
                 el = el.parentElement;
             }
             return null;
+        },
+        /**
+         * firstChild returns the first child element of the object, or nil
+         * @return {goradd.Control}
+         */
+        firstChild: function() {
+            return g$(this.element.firstElementChild);
+        },
+        /**
+         * prev returns the html item previous sibling to the current item, or null if no item is previous.
+         * @return {goradd.Control}
+         */
+        prev: function() {
+            return g$(this.element.previousElementSibling);
+        },
+        /**
+         * next returns the html item that is the next sibling to the current item, or null if no item is next.
+         * @return {goradd.Control}
+         */
+        next: function() {
+            return g$(this.element.nextElementSibling);
+        },
+        /**
+         * clone will clone the element and return a new goradd Control for the element.
+         * The element will not be attached to the DOM.
+         * @return {goradd.Control}
+         */
+        clone: function() {
+            return g$(this.element.cloneNode(true));
         },
         /**
          * attr gets and sets attributes on a dom object. Remember that attributes are not the same as properties, but can be related.
@@ -1979,33 +2052,65 @@ var g$ = function(el) {
             el.dispatchEvent(event);
         },
         /**
+         * moveAfter moves the goradd object to be after the given element.
+         * @param {string|HTMLElement|goradd.Control} el
+         */
+        moveAfter: function(el) {
+            el = goradd.el(el);
+            el.insertAdjacentElement("afterend", this.element);
+        },
+        /**
+         * moveBefore moves the element to be before of the given element.
+         * @param {string|HTMLElement|goradd.Control} el
+         */
+        moveBefore: function(el) {
+            el = goradd.el(el);
+            el.insertAdjacentElement("beforebegin", this.element);
+        },
+        /**
+         * insertInto puts the element inside the given element before all other child elements.
+         * @param {string|HTMLElement|goradd.Control} el
+         */
+        insertInto: function(el) {
+            el = goradd.el(el);
+            el.insertAdjacentElement("afterbegin", this.element);
+        },
+        /**
+         * appendTo puts the element inside the given element after all other child elements.
+         * @param {string|HTMLElement|goradd.Control} el
+         */
+        appendTo: function(el) {
+            el = goradd.el(el);
+            el.insertAdjacentElement("beforeend", this.element);
+        },
+        /**
          * htmlAfter adds the html after the given element.
-         * @param html
+         * @param {string} html
          */
         htmlAfter: function (html) {
             this.element.insertAdjacentHTML("afterend", html);
         },
         /**
          * htmlBefore inserts the html before the given element.
-         * @param html
+         * @param {string} html
          */
         htmlBefore: function (html) {
             this.element.insertAdjacentHTML("beforebegin", html);
         },
         /**
-         * insertHtml inserts the given html in the inner html of the given element, but before any other html that is
+         * insertChildHtml inserts the given html in the inner html of the given element, but before any other html that is
          * already there.
-         * @param html
+         * @param {string} html
          */
-        insertHtml: function (html) {
+        insertChildHtml: function (html) {
             this.element.insertAdjacentHTML("afterbegin", html);
         },
         /**
-         * appendHtml inserts the given html into the inner html of the given element, but after any other html that is
+         * appendChildHtml inserts the given html into the inner html of the given element, but after any other html that is
          * already there.
-         * @param html
+         * @param {string} html
          */
-        appendHtml: function (html) {
+        appendChildHtml: function (html) {
             this.element.insertAdjacentHTML("beforeend", html);
         },
         /**
@@ -2421,6 +2526,8 @@ var g$ = function(el) {
      * by ajax calls. If your widget only works through Ajax, then that is sufficient to keep the GO side of things updated.
      *
      * The widget above can be attached to an html object by setting the data-gr-widget attribute of that object to "MyWidget".
+     * @class
+     * @extends goradd.Control
      */
     goradd.Widget = goradd.extendWidget(goradd.Control, {
         constructor: function (element, options) {

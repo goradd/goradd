@@ -109,6 +109,10 @@ func (t *SelectTable) SelectedID() string {
 	return t.selectedID
 }
 
+func (t *SelectTable) Value() interface{} {
+	return t.selectedID
+}
+
 func (t *SelectTable) SetSelectedID(id string) SelectTableI {
 	t.selectedID = id
 	t.ExecuteWidgetFunction("option", "selectedId", id)

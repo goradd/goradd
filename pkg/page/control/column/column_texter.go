@@ -29,8 +29,10 @@ func (c *TexterColumn) Init(texter CellTexter) {
 type TexterColumnCreator struct {
 	// ID will assign the given id to the column. If you do not specify it, an id will be given it by the framework.
 	ID string
-	// Texter returns the text that should go in each cell. Pass a string control id, or a CellTexter.
-	Texter interface{}
+	// Texter is a CellTexter that returns the text that should go in each cell.
+	Texter CellTexter
+	// TexterID is the control id of a CellTexter.
+	TexterID string
 	// Title is the title at the top of the column
 	Title string
 	// Sortable makes the column display sort arrows in the header
@@ -41,14 +43,14 @@ type TexterColumnCreator struct {
 }
 
 func (c TexterColumnCreator) Create(ctx context.Context, parent control.TableI) control.ColumnI {
-	if c.Texter == nil {
+	if c.Texter == nil && c.TexterID == "" {
 		panic("a Texter is required")
 	}
 	var texter CellTexter
-	if s,ok := c.Texter.(string); ok {
-		texter = GetCellTexter(parent, s)
+	if c.Texter != nil {
+		texter = c.Texter
 	} else {
-		texter = c.Texter.(CellTexter)
+		texter = GetCellTexter(parent, c.TexterID)
 	}
 
 	col := NewTexterColumn(texter)

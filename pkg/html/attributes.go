@@ -193,10 +193,14 @@ func (a Attributes) sortedKeys() []string {
 }
 
 // String returns the attributes escaped and encoded, ready to be placed in an html tag
-// For consistency, it will output the following attributes in the following order if it finds them. Remaining tags will
-// be output in random order: id, name, class
+// For consistency, it will use attrSpecialSort to order the keys. Remaining keys will
+// be output in random order.
 func (a Attributes) String() string {
 	var str string
+
+	if a == nil {
+		return ""
+	}
 
 	for _,k := range a.sortedKeys() {
 		v := a[k]
@@ -237,6 +241,9 @@ func (a Attributes) Override(i interface{}) Attributes {
 func (a Attributes) Merge(i interface{}) {
 	if i == nil {
 		return
+	}
+	if a == nil {
+		a = NewAttributes()
 	}
 	switch m := i.(type) {
 	case map[string]string:

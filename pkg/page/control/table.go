@@ -57,8 +57,10 @@ type TableEmbedder interface {
 	ShowColumns()
 	MakeSortable() TableI
 	SetSortHistoryLimit(n int) TableI
-	SortIconHtml(SortDirection) string
+	SortIconHtml(c ColumnI) string
 	SetSortIconHtml(sortable string, asc string, desc string)
+	DrawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error)
+	SetSortColumnsByID(ids... string)
 }
 
 // TableRowAttributer is used to style particular table rows.
@@ -142,9 +144,9 @@ func (t *Table) Init(parent page.ControlI, id string) {
 	t.Tag = "table"
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1
-	t.sortableHtml = "&varr;"
-	t.sortAscHtml = "&uarr;"
-	t.sortDescHtml = "&darr;"
+	t.sortableHtml = "&udarr;"
+	t.sortAscHtml = "&darr;"
+	t.sortDescHtml = "&uarr;"
 }
 
 // this returns the TableI interface for calling into "virtual" functions. This allows us to call functions defined
@@ -159,6 +161,10 @@ func (t *Table) SetHideIfEmpty(h bool) TableI {
 		t.Refresh()
 	}
 	return t.this()
+}
+
+func (t *Table) HideIfEmpty() bool {
+	return t.hideIfEmpty
 }
 
 // MakeSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
@@ -183,10 +189,18 @@ func (t *Table) SetHeaderRowCount(count int) TableI {
 	return t.this()
 }
 
+func (t *Table) HeaderRowCount() int {
+	return t.headerRowCount
+}
+
 // SetFooterRowCount sets the number of footer rows shown. Each column will be asked to draw this number of footer rows.
 func (t *Table) SetFooterRowCount(count int) TableI {
 	t.footerRowCount = count
 	return t.this()
+}
+
+func (t *Table) FooterRowCount() int {
+	return t.footerRowCount
 }
 
 // DrawTag is called by the framework to draw the table. The Table overrides this to call into the DataProvider
@@ -195,7 +209,7 @@ func (t *Table) DrawTag(ctx context.Context) string {
 	log.FrameworkDebug("Drawing table tag")
 	if t.HasDataProvider() {
 		log.FrameworkDebug("Getting table data")
-		t.LoadData(ctx, t.this())
+		t.this().LoadData(ctx, t.this())
 		defer t.ResetData()
 	}
 	if t.hideIfEmpty && !t.HasData() {
@@ -233,12 +247,12 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 		return
 	}
 
-	if err = t.drawColumnTags(ctx, buf1); err != nil {
+	if err = t.DrawColumnTags(ctx, buf1); err != nil {
 		return
 	}
 
 	if t.headerRowCount > 0 {
-		err = t.drawHeaderRows(ctx, buf2)
+		err = t.DrawHeaderRows(ctx, buf2)
 		buf1.WriteString(html.RenderTag("thead", nil, buf2.String()))
 		if err != nil {
 			return
@@ -247,7 +261,7 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 	}
 
 	if t.footerRowCount > 0 {
-		err = t.drawFooterRows(ctx, buf2)
+		err = t.DrawFooterRows(ctx, buf2)
 		buf1.WriteString(html.RenderTag("tfoot", nil, buf2.String()))
 		if err != nil {
 			return
@@ -256,7 +270,7 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 	}
 
 	t.RangeData(func(index int, value interface{}) bool {
-		err = t.drawRow(ctx, index, value, buf2)
+		err = t.this().DrawRow(ctx, index, value, buf2)
 		if err != nil {
 			return false
 		}
@@ -285,7 +299,7 @@ func (t *Table) DrawCaption(ctx context.Context, buf *bytes.Buffer) (err error) 
 	return
 }
 
-func (t *Table) drawColumnTags(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawColumnTags(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var colNum int
 	var colCount = len(t.columns)
 
@@ -299,7 +313,7 @@ func (t *Table) drawColumnTags(ctx context.Context, buf *bytes.Buffer) (err erro
 	return
 }
 
-func (t *Table) drawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -341,7 +355,7 @@ func (t *Table) GetHeaderRowAttributes(row int) html.Attributes {
 	return nil
 }
 
-func (t *Table) drawFooterRows(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawFooterRows(ctx context.Context, buf *bytes.Buffer) (err error) {
 	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -371,14 +385,14 @@ func (t *Table) GetFooterRowAttributes(row int) html.Attributes {
 	return nil
 }
 
-func (t *Table) drawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error) {
-	var this = t.this() // Get the sub class so we call into its hooks for drawing
-	buf1 := pool.GetBuffer()
-	defer pool.PutBuffer(buf1)
+func (t *Table) DrawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error) {
+	buf.WriteString("<tr ")
+	buf.WriteString(t.this().GetRowAttributes(row, data).String())
+	buf.WriteString(">")
 	for i, col := range t.columns {
-		col.DrawCell(ctx, row, i, data, buf1)
+		col.DrawCell(ctx, row, i, data, buf)
 	}
-	buf.WriteString(html.RenderTag("tr", this.GetRowAttributes(row, data), buf1.String()))
+	buf.WriteString("</tr>")
 	return
 }
 
@@ -607,6 +621,30 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 	return ret
 }
 
+// SetSortColumnsByID sets the order of the sort column list by id.
+//
+// The specified columns will be set to sorting descended, and all other columns
+// will be set to not be sorting at all.
+//
+// The columns specified must be sortable.
+func (t *Table) SetSortColumnsByID(ids... string) {
+	for _,col := range t.columns {
+		sd := col.SortDirection()
+		if sd != NotSortable {
+			col.SetSortDirection(NotSorted)
+		}
+	}
+	t.sortColumns = ids
+	for _,id := range ids {
+		if col := t.GetColumnByID(id); col != nil {
+			if col.SortDirection() == NotSortable {
+				panic ("column " + col.ID() + " is not sortable and so cannot be put in the sort list")
+			}
+			col.SetSortDirection(SortDescending)
+		}
+	}
+}
+
 // SetSortIconHtml set the html used to draw the sort icons.
 // If a string is blank, it will not be changed.
 // Use the following for font awesome icons
@@ -626,7 +664,18 @@ func (t *Table) SetSortIconHtml(sortable string, asc string, desc string) {
 }
 
 // SortIconHtml returns the html used to draw the sort icon
-func (t *Table) SortIconHtml(dir SortDirection) string {
+func (t *Table) SortIconHtml(c ColumnI) string {
+	dir := c.SortDirection()
+	var sortOrder int
+	if t.sortColumns != nil {
+		for i, sortColID := range t.sortColumns {
+			if c.ID() == sortColID {
+				sortOrder = i + 1
+				break
+			}
+		}
+	}
+
 	if SortButtonHtmlGetter != nil {
 		return SortButtonHtmlGetter(dir)
 	} else {
@@ -634,9 +683,17 @@ func (t *Table) SortIconHtml(dir SortDirection) string {
 		case NotSorted:
 			return t.sortableHtml
 		case SortAscending:
-			return t.sortAscHtml
+			if sortOrder == 1 {
+				return t.sortAscHtml
+			} else {
+				return t.sortableHtml
+			}
 		case SortDescending:
-			return t.sortDescHtml
+			if sortOrder == 1 {
+				return t.sortDescHtml
+			} else {
+				return t.sortableHtml
+			}
 		default:
 			return "" // not sortable
 		}
@@ -866,6 +923,8 @@ type TableCreator struct {
 	SortAscIconHtml string
 	// SortDescIconHtml will set the html used to draw the icon indicating that a column is sorted in descending order
 	SortDescIconHtml string
+	// SortColumnIDs is a list of column ids that will be used to specify the initial sort order
+	SortColumnIDs []string
 	// OnCellClick is the action to take when a cell is clicked.
 	OnCellClick    action.ActionI
 	ControlOptions page.ControlOptions
@@ -937,6 +996,10 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 		ctrl.SetSortHistoryLimit(c.SortHistoryLimit)
 	}
 	ctrl.SetSortIconHtml(c.SortableIconHtml, c.SortAscIconHtml, c.SortDescIconHtml)
+
+	if c.SortColumnIDs != nil {
+		ctrl.SetSortColumnsByID(c.SortColumnIDs...)
+	}
 
 	if c.OnCellClick != nil {
 		ctrl.On(event.CellClick(), c.OnCellClick)

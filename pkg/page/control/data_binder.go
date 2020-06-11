@@ -26,7 +26,8 @@ type DataManagerEmbedder interface {
 	SetDataProvider(b DataBinder)
 	HasDataProvider() bool
 	// SetData should be passed a slice of data items
-	SetData(interface{})
+	SetData(data interface{})
+	SetDataWithOffset(data interface{}, offset int)
 	LoadData(ctx context.Context, owner DataManagerI)
 	ResetData()
 }
@@ -38,6 +39,8 @@ type DataManager struct {
 
 	// data is a temporary copy of the drawing data that is intended to only be loaded during drawing, and then unloaded after drawing.
 	data         interface{}
+	// dataOffset is the first row number represented by the data
+	dataOffset   int
 }
 
 func (d *DataManager) SetDataProvider(b DataBinder) {
@@ -56,7 +59,21 @@ func (d *DataManager) SetData(data interface{}) {
 		panic("you must call SetData with a slice")
 	}
 	d.data = data
+	d.dataOffset = 0
 }
+
+// Use SetDataWithOffset with controls that show a window onto a bigger data set.
+//
+// offset is the first row number that is represented by the data.
+func (d *DataManager) SetDataWithOffset(data interface{}, offset int) {
+	kind := reflect.TypeOf(data).Kind()
+	if kind != reflect.Slice {
+		panic("you must call SetData with a slice")
+	}
+	d.data = data
+	d.dataOffset = offset
+}
+
 
 // ResetData is called by controls that use a data binder to unload the data after it is used.
 func (d *DataManager) ResetData() {
@@ -88,7 +105,7 @@ func (d *DataManager) RangeData(f func(int, interface{}) bool) {
 	listValue := reflect.ValueOf(d.data)
 	for i := 0; i < listValue.Len(); i++ {
 		itemI := listValue.Index(i).Interface()
-		result := f(i, itemI)
+		result := f(i + d.dataOffset, itemI)
 		if !result {
 			break
 		}

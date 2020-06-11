@@ -74,7 +74,7 @@ func (l *MegaMenu) SetAriaLabel(s string) MegaMenuI {
 
 func (l *MegaMenu) DrawTag(ctx context.Context) string {
 	if l.HasDataProvider() {
-		l.LoadData(ctx, l.this())
+		l.this().LoadData(ctx, l.this())
 		defer l.ResetData()
 	}
 	return l.ControlBase.DrawTag(ctx)
