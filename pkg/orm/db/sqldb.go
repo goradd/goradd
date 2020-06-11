@@ -159,7 +159,7 @@ func (s *SqlDb) Exec(ctx context.Context, sql string, args ...interface{}) (r sq
 	if i != nil {
 		c = i.(*SqlContext)
 	}
-	log.FrameworkDebug("Exec: ", sql)
+	log.FrameworkDebug("Exec: ", sql, args)
 
 	var beginTime = time.Now()
 
@@ -213,7 +213,7 @@ func (s *SqlDb) Query(ctx context.Context, sql string, args ...interface{}) (r *
 	if i != nil {
 		c = i.(*SqlContext)
 	}
-	log.FrameworkDebug("Query: ", sql)
+	log.FrameworkDebug("Query: ", sql, args)
 
 	var beginTime = time.Now()
 	if c != nil && c.tx != nil {
