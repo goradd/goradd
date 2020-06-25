@@ -3,14 +3,19 @@ package rest
 import (
 	"bytes"
 	"context"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/pool"
 	"net/http"
 	"strings"
 )
 
-var restManager = newRestManager() // Create a new singleton page manager.
+var restManager = newRestManager() // Create a new singleton REST manager.
 
-type RestPathHandler func(ctx context.Context, buf *bytes.Buffer) error
+// RestPathHandler is a function that handles a REST request.
+//
+// It should return the headers that describe the response. For example, if returning JSON,
+// it should set the "Content-Type" to "application/json".
+type RestPathHandler func(ctx context.Context, buf *bytes.Buffer, headers map[string]string) error
 
 type RestManagerI interface {
 	RegisterPath(path string, creationFunction RestPathHandler)
@@ -21,11 +26,13 @@ type RestManagerI interface {
 // init() functions should be created for each path that associates a function to create a rest path,
 // with the URL that corresponds to the path.
 type RestManager struct {
-	pathRegistry map[string]RestPathHandler // maps paths to functions that create forms
+	pathRegistry map[string]RestPathHandler // maps paths to REST functions
 }
 
 // RestPathPrefix is a prefix you can use in front of all goradd rest paths, like a directory path, to indicate that
-// this is a goradd rest path.
+// this is a goradd REST path. You can normally leave this blank if you are only implementing a REST API.
+// If you are implementing different APIs, specify the path here to indicate that the user is making
+// a REST call.
 var RestPathPrefix = ""
 
 // GetRestManager returns the current page manager.
@@ -41,6 +48,9 @@ func newRestManager() *RestManager {
 // Call this from an init() function. Afterwards, whenever a user navigates to the given path, the
 // result of the query will be presented to the user.
 func RegisterPath(path string, handler RestPathHandler) {
+	if path != "" && path[0] == '/' {
+		path = path[1:]
+	}
 	if _, ok := restManager.pathRegistry[path]; ok {
 		panic("Page is already registered: " + path)
 	}
@@ -55,8 +65,8 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
-	handler, ok := restManager.getHandler(pathItems[0])
-	if !ok {
+	handler := restManager.getHandler(pathItems[0])
+	if handler == nil {
 		return false
 	}
 
@@ -64,6 +74,7 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) bool {
 	buf := pool.GetBuffer()
 	defer pool.PutBuffer(buf)
 	headers, errCode := runHandler(ctx, handler, buf)
+
 	if headers != nil {
 		for k, v := range headers {
 			// Multi-value headers can simply be separated with commas I believe
@@ -72,13 +83,14 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) bool {
 	}
 	if errCode != 0 {
 		w.WriteHeader(errCode)
+		_, _ = w.Write(buf.Bytes())
 	} else {
 		_, _ = w.Write(buf.Bytes())
 	}
 	return true
 }
 
-func (m *RestManager) getHandler(path string) (f RestPathHandler, ok bool) {
+func (m *RestManager) getHandler(path string) (f RestPathHandler) {
 	if RestPathPrefix != "" {
 		if strings.Index(path, RestPathPrefix) == 0 { // starts with prefix
 			path = path[len(RestPathPrefix):] // remove prefix from path
@@ -86,31 +98,36 @@ func (m *RestManager) getHandler(path string) (f RestPathHandler, ok bool) {
 			return // not found in path
 		}
 	}
-	f, ok = m.pathRegistry[path]
+
+	f = m.pathRegistry[path]
 	return
 }
 
-// RunPage processes the page and writes the response into the buffer. Any special response headers are returned.
+// RunPage processes the REST handler and writes the response into the buffer. Any special response headers are returned.
 func runHandler(ctx context.Context, handler RestPathHandler, buf *bytes.Buffer) (headers map[string]string, httpErrCode int) {
 	defer func() {
 		if r := recover(); r != nil {
 			switch v := r.(type) {
+			case page.FrameworkError:
+				httpErrCode = v.HttpError()
+				buf.WriteString(v.Error())
+			case *HttpError: // A kind of http panic that just returns a response code and headers
+				headers = v.headers
+				httpErrCode = v.errCode
 			case error:
 				httpErrCode = 500
 				buf.WriteString(v.Error())
 			case string:
 				httpErrCode = 500
 				buf.WriteString(v)
-			case *HttpError: // A kind of http panic that just returns a response code and headers
-				headers = v.headers
-				httpErrCode = v.errCode
 			default:
 				httpErrCode = 500
 			}
 		}
 	}()
 
-	err := handler(ctx, buf)
+	headers = make (map[string] string)
+	err := handler(ctx, buf, headers)
 
 	if err != nil {
 		httpErrCode = 500
@@ -141,9 +158,3 @@ func (e *HttpError) Send(errCode int) {
 	panic(e)
 }
 
-// Redirect aborts the current page load and tells the browser to load a different url.
-func Redirect(url string) {
-	e := HttpError{}
-	e.SetResponseHeader("Location", url)
-	e.Send(307)
-}

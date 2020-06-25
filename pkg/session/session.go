@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/gengen/pkg/maps"
 	"net/http"
 )
@@ -26,6 +27,11 @@ func SetSessionManager(m ManagerI) {
 	sessionManager = m
 }
 
+func SessionManager() ManagerI {
+	return sessionManager
+}
+
+
 // Session is the object that is stored in the context. (Actually a pointer to that object).
 // You normally do not work with the Session object, but instead should call session.GetInt, session.SetInt, etc.
 // Session is exported so that it can be created by custom session managers.
@@ -46,6 +52,9 @@ func (s *Session) MarshalBinary() ([]byte, error) {
 
 // UnmarshallBinary unserializes saved session data
 func (s *Session) UnmarshalBinary(data []byte) error {
+	if s.SafeMap == nil {
+		s.SafeMap = maps.NewSafeMap()
+	}
 	return s.SafeMap.UnmarshalBinary(data)
 }
 
@@ -195,4 +204,8 @@ func ClientTimezoneOffset(ctx context.Context) int {
 		return -1
 	}
 	return GetInt(ctx, timezoneKey)
+}
+
+func init() {
+	gob.Register(&Session{})
 }

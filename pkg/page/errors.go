@@ -61,7 +61,9 @@ const (
 	// record, and actually editing it. If in the time between clicking on a record to see detail, and viewing the detail,
 	// the record was deleted by another user, we would return this error.
 	FrameworkErrRecordNotFound
-	// A standard situation when someone tries to go to a page they are not authorized to view.
+	// FrameworkErrNotAuthenticated indicates that the user needs to log in, but has not done so. This would result in a 401 http error.
+	FrameworkErrNotAuthenticated
+	// FrameworkErrNotAuthorized indicates the logged in user does not have permission to access the resource. This would result in a 403 error.
 	FrameworkErrNotAuthorized
 	FrameworkErrRedirect
 )
@@ -89,13 +91,25 @@ func (e FrameworkError) Error() string {
 		return "FormBase or control does not have a template" // just detected, this is not likely to be used
 	case FrameworkErrRecordNotFound:
 		return "Record does not exist. Perhaps it has been deleted by someone else?"
+	case FrameworkErrNotAuthenticated:
+		return "You must log in."
 	case FrameworkErrNotAuthorized:
-		return "You are not authorized to view this information."
+		return "You are not authorized to access this information."
 	case FrameworkErrRedirect:
 		return "Redirecting to " + e.Location
 	}
 
 	return ""
+}
+
+// HttpError returns the corresponding http error
+func (e FrameworkError) HttpError() int {
+	switch e.Err {
+	case FrameworkErrNotAuthenticated: return 401
+	case FrameworkErrNotAuthorized: return 403
+	case FrameworkErrRecordNotFound: return 404
+	}
+	return 500
 }
 
 func RedirectHtml(loc string) string {

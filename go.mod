@@ -1,7 +1,7 @@
 module github.com/goradd/goradd
 
 require (
-	github.com/alexedwards/scs v1.4.0
+	github.com/alexedwards/scs/v2 v2.3.1
 	github.com/dlclark/regexp2 v1.1.6 // indirect
 	github.com/gedex/inflector v0.0.0-20170307190818-16278e9db813
 	github.com/go-sql-driver/mysql v1.4.1
