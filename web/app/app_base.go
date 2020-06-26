@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/alexedwards/scs"
-	"github.com/alexedwards/scs/stores/memstore"
+	"github.com/alexedwards/scs/v2"
+	"github.com/alexedwards/scs/v2/memstore"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
@@ -18,6 +18,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/resource"
+	"github.com/goradd/goradd/pkg/rest"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
@@ -186,17 +187,21 @@ func (a *Application) SetupAssetDirectories() {
 	}
 }
 
-// SetupSessionManager sets up the session manager. The session can be used to save data that is specific to a user
+// SetupSessionManager sets up the global session manager. The session can be used to save data that is specific to a user
 // and specific to the user's time on a browser. Sessions are often used to save login credentials so that you know
 // the current user is logged in.
 //
-// The default uses a 3rd party session manager, and stores the session in memory, which is useful for development,
-// testing, debugging, and for moderately used websites. The default does not scale, so replace it with a different
-// storage mechanism is you are launching multiple copies of the app.
+// The default uses a 3rd party session manager, stores the session in memory, and tracks sessions using cookies.
+// This setup is useful for development, testing, debugging, and for moderately used websites.
+// However, this default does not scale, so if you are launching multiple copies of the app in production,
+// you should override this with a scalable storage mechanism.
 func (a *Application) SetupSessionManager() {
-	// create the session manager. The default uses an in-memory storage engine. Change as you see fit.
-	interval, _ := time.ParseDuration("24h")
-	session.SetSessionManager(session.NewScsManager(scs.NewManager(memstore.New(interval))))
+	store := memstore.NewWithCleanupInterval(24 * time.Hour) // replace this with a different store if desired
+
+	sm := scs.New()
+	sm.Store = store
+
+	session.SetSessionManager(session.NewScsManager(sm))
 }
 
 // SetupMessenger injects the global messenger that permits pub/sub communication between the server and client
@@ -281,13 +286,13 @@ func (a *Application) MakeAppServer() http.Handler {
 	h = a.PutContextHandler(h)
 	h = a.this().SessionHandler(h)
 	h = a.this().HSTSHandler(h)
-	h = a.BufferOutputHandler(h)
+	h = a.BufferedOutputHandler(h)
 	h = a.this().AccessLogHandler(h)
 
 	return h
 }
 
-// SessionHandler initializes the global session handler. This default version uses the scs session handler. Feel
+// SessionHandler initializes the global session handler. This default version uses the injected global session handler. Feel
 // free to replace it with the session handler of your choice.
 func (a *Application) SessionHandler(next http.Handler) http.Handler {
 	return session.Use(next)
@@ -359,18 +364,38 @@ func (a *Application) PutContextHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// BufferOutputHandler manages the buffering of http output. It must be after any handlers that actually
-// respond to the request.
-func (a *Application) BufferOutputHandler(next http.Handler) http.Handler {
+type bufferedResponseWriter struct {
+	http.ResponseWriter
+	buf  *bytes.Buffer
+	code int
+}
+
+func (bw *bufferedResponseWriter) Write(b []byte) (int, error) {
+	return bw.buf.Write(b)
+}
+
+func (bw *bufferedResponseWriter) WriteHeader(code int) {
+	bw.code = code
+}
+
+// BufferedOutputHandler manages the buffering of http output.
+// It will save all output in a buffer, and make sure any and all Header sets can happen before
+// writing the buffer out to the stream.
+func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
+
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		// Setup the output buffer
 		outBuf := buf2.GetBuffer()
+		bw := &bufferedResponseWriter{w, outBuf, 0}
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, goradd.BufferContext, outBuf)
 		r = r.WithContext(ctx)
 
 		defer buf2.PutBuffer(outBuf)
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(bw, r)
+		if bw.code != 0 {
+			w.WriteHeader(bw.code)
+		}
 		_, _ = w.Write(outBuf.Bytes())
 	}
 	return http.HandlerFunc(fn)
@@ -493,8 +518,7 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 // This is currently just a stub to allow you to implement your own API. Eventually we hope this
 // could be an auto-generated REST api or GraphQL api.
 func (a *Application) ServeApiRequest(w http.ResponseWriter, r *http.Request) bool {
-	// TODO
-	//return rest.HandleRequest(w, r)	// indicates no static file was found
+	return rest.HandleRequest(w, r)	// indicates no static file was found
 	return false
 }
 

@@ -195,8 +195,30 @@ func (a *Application) ServeRequest (w http.ResponseWriter, r *http.Request) {
 }
 */
 
-// SessionHandler initializes the global session handler. The default version uses the scs session handler.
-// To replace it with the session handler of your choice, uncomment the code below and implement your session handler here.
+// SetupSessionManager sets up the global session manager. The session manager can be used to save data that is
+// specific to a user and specific to the user's time on a browser. Sessions are often used to save
+// login credentials so that you know the current user is logged in.
+//
+// The default uses a 3rd party session manager, stores the session in memory, and tracks sessions using cookies.
+// This setup is useful for development, testing, debugging, and for moderately used websites.
+// However, this default does not scale, so if you are launching multiple copies of the app in production,
+// you should override this with a scalable storage mechanism.
+//
+// The code here calls the default, and then gives you the option to further refine how the session works.
+/*
+func (a *Application) SetupSessionManager() {
+	a.Application.SetupSessionManager()
+	sm := session.SessionManager()
+
+	// If you are only serving your application over https, you should do this too for added security.
+	if (config.Release) {
+		sm.(session.ScsManager).SessionManager.Cookie.Secure = true
+	}
+}
+*/
+
+// SessionHandler initializes the global session handler. The default version uses the global session handler, which is
+// highly configurable. However, if you want to use a completely different session handler, you can do so here.
 /*
 func (a *Application) SessionHandler(next http.Handler) http.Handler {
 	return session.Use(next)

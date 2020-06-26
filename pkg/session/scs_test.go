@@ -1,8 +1,8 @@
 package session_test
 
 import (
-	"github.com/alexedwards/scs"
-	"github.com/alexedwards/scs/stores/memstore"
+	"github.com/alexedwards/scs/v2"
+	"github.com/alexedwards/scs/v2/memstore"
 	"github.com/goradd/goradd/pkg/session"
 	"testing"
 	"time"
@@ -10,8 +10,10 @@ import (
 
 func TestSetGet(t *testing.T) {
 	// setup the ScsSession
-	interval, _ := time.ParseDuration("24h")
-	session.SetSessionManager(session.NewScsManager(scs.NewManager(memstore.New(interval))))
+	store := memstore.NewWithCleanupInterval(24 * time.Hour)
+	sm := scs.New()
+	sm.Store = store
+	session.SetSessionManager(session.NewScsManager(sm))
 
 	// run the session tests
 	runRequestTest(t, setRequestHandler(), testRequestHandler(t))

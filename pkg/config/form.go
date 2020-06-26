@@ -6,6 +6,9 @@ import "path"
 // which in development mode is wherever the file is on the disk, and in release mode, the central asset directory where
 // all assets get copied
 var AssetPrefix = "/assets/"
+
+// ApiPrefix is the url prefix that indicates this is an API call, like a REST or GraphQL call.
+// Override this in the goradd_project/config/goradd.go file, and you can change it there if needed.
 var ApiPrefix = ""
 
 // Minify controls whether we try to strip out unnecessary whitespace from our HTML output
