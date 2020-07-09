@@ -55,7 +55,9 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
     }
 {{for}}
 
-{{# TODO: export aliases }}
+    for _k,_v := range o._aliases {
+        v[_k] = _v
+    }
     return json.Marshal(v)
 }
 
