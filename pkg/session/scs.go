@@ -73,6 +73,7 @@ func (mgr ScsManager) Use(next http.Handler) http.Handler {
 				http.Error(w, s, 500)
 				return
 			}
+			log.FrameworkDebug("Writing session cookie")
 			writeSessionCookie(w, mgr.SessionManager.Cookie, token, expiry)
 		} else {
 			if err := mgr.SessionManager.Clear(ctx); err != nil {

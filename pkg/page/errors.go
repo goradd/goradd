@@ -60,12 +60,24 @@ const (
 	// FrameworkErrRecordNotFound is a rare situation that might come up as a race condition error between viewing a
 	// record, and actually editing it. If in the time between clicking on a record to see detail, and viewing the detail,
 	// the record was deleted by another user, we would return this error.
+	// In a REST environment, this is  404 error
 	FrameworkErrRecordNotFound
-	// FrameworkErrNotAuthenticated indicates that the user needs to log in, but has not done so. This would result in a 401 http error.
+	// FrameworkErrNotAuthenticated indicates that the user needs to log in, but has not done so.
+	// This will result in a 401 http error.
 	FrameworkErrNotAuthenticated
-	// FrameworkErrNotAuthorized indicates the logged in user does not have permission to access the resource. This would result in a 403 error.
+	// FrameworkErrNotAuthorized indicates the logged in user does not have permission to access the resource.
+	// This will result in a 403 error.
 	FrameworkErrNotAuthorized
+	// FrameworkErrRedirect indicates the resource is at a different location. This will result in a 303 error
+	// telling the browser to go that resource.
 	FrameworkErrRedirect
+	// FrameworkErrBadRequest is a generic bad request error, but most often it indicates that some FORM or GET
+	// parameter was expected, but was either missing or invalid. This is a 400 error.
+	FrameworkErrBadRequest
+	// FrameworkErrMethodNotAllowed is for REST clients to indicate that the user tried to use a method (i.e. GET or PUT)
+	// that is not allowed at the given endpoint. The HTTP spec says the client should also respond with an Allow
+	// header with a comma separated list of what methods are allowed. This is a 405 error.
+	FrameworkErrMethodNotAllowed
 )
 
 // FrameworkError is an expected error that is part of the framework. Usually you would respond to the error
@@ -73,6 +85,7 @@ const (
 type FrameworkError struct {
 	Err int
 	Location string
+	Message string	// optional message
 }
 
 // NewFrameworkError creates a new FrameworkError
@@ -84,19 +97,31 @@ func NewRedirectError(location string) FrameworkError {
 	return FrameworkError{Err: FrameworkErrRedirect, Location: location}
 }
 
+func (e FrameworkError) SetMessage(msg string) FrameworkError {
+	e.Message = msg
+	return e
+}
+
 // Error returns the error string
 func (e FrameworkError) Error() string {
+	if e.Message != "" {
+		return e.Message
+	}
 	switch e.Err {
 	case FrameworkErrNoTemplate:
 		return "FormBase or control does not have a template" // just detected, this is not likely to be used
 	case FrameworkErrRecordNotFound:
-		return "Record does not exist. Perhaps it has been deleted by someone else?"
+		return "Record does not exist."
 	case FrameworkErrNotAuthenticated:
 		return "You must log in."
 	case FrameworkErrNotAuthorized:
 		return "You are not authorized to access this information."
 	case FrameworkErrRedirect:
 		return "Redirecting to " + e.Location
+	case FrameworkErrBadRequest:
+		return "Your request did not make sense."
+	case FrameworkErrMethodNotAllowed:
+		return "The method of your request is not allowed. See the returned Allow header to know what is expected."
 	}
 
 	return ""
@@ -108,6 +133,8 @@ func (e FrameworkError) HttpError() int {
 	case FrameworkErrNotAuthenticated: return 401
 	case FrameworkErrNotAuthorized: return 403
 	case FrameworkErrRecordNotFound: return 404
+	case FrameworkErrBadRequest: return 400
+	case FrameworkErrMethodNotAllowed: return 405
 	}
 	return 500
 }

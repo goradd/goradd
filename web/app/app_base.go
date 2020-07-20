@@ -26,6 +26,7 @@ import (
 	"hash/crc64"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -302,7 +303,7 @@ func (a *Application) SessionHandler(next http.Handler) http.Handler {
 // HTTPS connections for everything coming from your domain, if the initial page was served over HTTPS. Many browsers
 // already do this. What this additionally does is prevent the user from overriding this. Also, if your
 // certificate is bad or expired, it will NOT allow the user the option of using your website anyways.
-// This should be safe to send in development mode if your are local server is not using HTTPS, since the header
+// This should be safe to send in development mode if your local server is not using HTTPS, since the header
 // is ignored if a page is served over HTTP.
 //
 // Once the HSTS policy has been sent to the browser, it will remember it for the amount of time
@@ -394,9 +395,15 @@ func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
 		defer buf2.PutBuffer(outBuf)
 		next.ServeHTTP(bw, r)
 		if bw.code != 0 {
+			log.Printf("Buffered write error code %d", bw.code)
 			w.WriteHeader(bw.code)
 		}
-		_, _ = w.Write(outBuf.Bytes())
+		i, e := w.Write(outBuf.Bytes())
+		if e != nil {
+			log.Printf("Buffered write error %s", e.Error())
+		}
+		log.Printf("Buffered write %d bytes %v %s", i, w.Header(), outBuf.String())
+
 	}
 	return http.HandlerFunc(fn)
 }
@@ -496,11 +503,21 @@ func RegisterStaticPath(path string, directory string) {
 // ServeApiHandler serves up an http API. This could be a REST api or something else.
 func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		if !a.this().ServeApiRequest(w, r) {
+		if strings.HasPrefix(r.URL.Path, config.ApiPrefix) {
+			p := strings.TrimPrefix(r.URL.Path, config.ApiPrefix)
+			r2 := new(http.Request)
+			*r2 = *r
+			r2.URL = new(url.URL)
+			*r2.URL = *r.URL
+			r2.URL.Path = p
+			if !a.this().ServeApiRequest(w, r2) {
+				http.NotFound(w, r)
+			}
+		} else {
 			next.ServeHTTP(w, r)
 		}
 	}
-	return http.StripPrefix(config.ApiPrefix, http.HandlerFunc(fn))
+	return http.HandlerFunc(fn)
 }
 
 // AccessLogHandler simply logs requests.
@@ -508,6 +525,7 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Serving: %s", r.RequestURI)
 		next.ServeHTTP(w, r)
+		log.Printf("Served: %s", r.RequestURI)
 	}
 	return http.HandlerFunc(fn)
 }
@@ -518,8 +536,7 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 // This is currently just a stub to allow you to implement your own API. Eventually we hope this
 // could be an auto-generated REST api or GraphQL api.
 func (a *Application) ServeApiRequest(w http.ResponseWriter, r *http.Request) bool {
-	return rest.HandleRequest(w, r)	// indicates no static file was found
-	return false
+	return rest.HandleRequest(w, r)
 }
 
 // RegisterStaticFileProcessor registers a processor function for static files that have a particular suffix.

@@ -130,8 +130,7 @@ func runHandler(ctx context.Context, handler RestPathHandler, buf *bytes.Buffer)
 	err := handler(ctx, buf, headers)
 
 	if err != nil {
-		httpErrCode = 500
-		buf.WriteString(err.Error())
+		panic(err)
 		return
 	}
 	return
