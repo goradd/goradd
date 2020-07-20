@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -36,6 +37,7 @@ const (
 
 const HtmlVarAction = "Goradd_Action"
 const HtmlVarPagestate = "Goradd__PageState"
+const HtmlVarApistate = "__ApiState"
 const htmlVarParams = "Goradd__Params"
 const htmlCsrfToken = "Goradd__Csrf"
 
@@ -291,6 +293,12 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				return
 			}
 
+		} else if apistate, ok := ctx.FormValue(HtmlVarApistate); ok {
+			// Allows REST clients to also support the timezone offset in the context
+			// Currently the apistate only holds the timezone offset. We can expand that if needed in the future.
+			if offset,err := strconv.Atoi(apistate); err == nil {
+				session.SetClientTimezoneOffset(mainContext, offset)
+			}
 		} else {
 			// Scenarios where we are not posting the form
 
