@@ -1,11 +1,12 @@
 {{# Macros added to template files for drawing forms. }}
 
 {{# draw draws a goradd control.
-    parameter 1 is the id of the control 2 draw,
-    optional parameter 2 is attributes to set on the control before drawing.
+    parameter 1 is the id of the control to draw,
+    optional parameter 2 is a string containing html attributes to set on the control before drawing.
         Each attribute is a key and value separated by an = sign.
-        key/value groups should be space separated.
-        values should be surrounded by quotes.}}
+        Key/value groups should be space separated.
+        Values should be surrounded by quotes.
+    For example: draw mycontrol, class="myclass" }}
 {{define draw 2}}
 {{if `$2` == ""}}
     {{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
