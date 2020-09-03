@@ -70,7 +70,7 @@ func GetAssetUrl(location string) string {
 	if outPath == "" {
 		return ""
 	}
-	return config.ProxyPath + outPath
+	return config.MakeLocalPath(outPath)
 }
 
 // ServeAsset is the default server for files in asset directories.
