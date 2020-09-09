@@ -122,6 +122,9 @@ func (l *SelectList) Value() interface{} {
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
 func (l *SelectList) SetValue(v interface{}) {
+	if v == nil {
+		v = ""
+	}
 	l.SetSelectedValue(fmt.Sprint(v))
 }
 
