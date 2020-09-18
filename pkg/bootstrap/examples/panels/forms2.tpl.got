@@ -1,0 +1,53 @@
+{{< package }}panels{{end}}
+{{< imports }}
+    "github.com/goradd/goradd/pkg/page/control"
+    . "github.com/goradd/goradd/pkg/bootstrap/control"
+{{end}}
+{{< control }}Forms2Panel{{end}}
+
+{{define template }}
+
+<h2>Inline Form Layout</h2>
+<p>
+This is an example of a typical form with inline labels.
+</p>
+
+{{setLabelAttributes nameText-fg, class="col-form-label col-2"}}
+{{setInnerDivAttributes nameText-fg, class="col-10"}}
+{{draw nameText-fg, class="form-row"}}
+
+{{setLabelAttributes streetText-fg, class="col-form-label col-2"}}
+{{setInnerDivAttributes streetText-fg, class="col-10"}}
+{{draw streetText-fg, class="form-row" }}
+
+{{# This row is quite tricky to put together}}
+{{form-row}} {{# a div of class form-row}}
+<div class="col-6">
+    {{setLabelAttributes cityText-fg, class="col-form-label col-4"}}
+    {{setInnerDivAttributes cityText-fg, class="col-8"}}
+    {{draw cityText-fg, class="form-row" }}
+</div>
+<div class="col-2">
+    {{setLabelAttributes stateText-fg, class="col-form-label col-6"}}
+    {{setInnerDivAttributes stateText-fg, class="col-6"}}
+    {{draw stateText-fg, class="form-row"}}
+</div>
+<div class="col-4">
+    {{setLabelAttributes zipText-fg, class="col-form-label col-4"}}
+    {{setInnerDivAttributes zipText-fg, class="col-8"}}
+    {{draw zipText-fg, class="form-row" }}
+</div>
+
+{{+form-row}} {{# add a form-row and terminate the previous form-row}}
+
+<div class="col-3 offset-2">
+{{draw ajaxButton}}
+{{+col 3}}
+{{draw serverButton}}
+{{-col}}
+
+{{-form-row}} {{# terminate the previous form-row}}
+
+{{end}}
+
+{{renderControlTemplate}}
