@@ -86,7 +86,7 @@ func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string)
 		ButtonCreator {
 			ID: "serverButton",
 			Text: "Submit Server",
-			OnSubmit:action.Ajax(p.ID(), ServerSubmit),
+			OnSubmit:action.Server(p.ID(), ServerSubmit),
 		},
 	)
 }

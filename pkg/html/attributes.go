@@ -633,6 +633,8 @@ func AttributeString(i interface{}) string {
 	}
 }
 
+// getAttributesFromTemplate returns Attributes extracted from a string in the form
+// of name="value"
 func getAttributesFromTemplate(s string)  Attributes {
 	pairs := templateMatcher.FindAllString(s, -1)
 	if len(pairs) == 0 {

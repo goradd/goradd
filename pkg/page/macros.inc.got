@@ -25,6 +25,7 @@
 {{if}}
 {{end}}
 
+{{# drawIf is like draw, but tests to see if the control is on the page before drawing. }}
 
 {{define drawIf 2}}
 {{if ctrl.Page().HasControl("$1")}}
@@ -46,6 +47,9 @@
 {{if}}
 {{end}}
 
+{{# setAttributes sets the attributes of the given control using an attribute setting string. }}
+{{# The string is in the form `name="value` }}
+
 {{define setAttributes 2}}
 {{g
 if ctrl.Page().HasControl("$1") {
@@ -62,10 +66,12 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
 }}
 {{end}}
 
+{{# setLabelAttributes sets the attributes on controls which have a LabelAttributes function. }}
+{{# This is especially useful to set the label attributes on FormFieldWrappers. }}
 {{define setLabelAttributes 2}}
 {{g
 if ctrl.Page().HasControl("$1") {
-    ctrl.Page().GetControl("$1").(control.FormFieldWrapperI).LabelAttributes().Merge(`$2`)
+    ctrl.Page().GetControl("$1").(control.LabelAttributer).LabelAttributes().Merge(`$2`)
 }
 }}
 {{end}}
@@ -73,7 +79,7 @@ if ctrl.Page().HasControl("$1") {
 {{define setChildLabelAttributes 2}}
 {{g
 if ctrl.Page().HasControl(ctrl.ID() + "$1") {
-    ctrl.Page().GetControl(ctrl.ID() + "$1").(control.FormFieldWrapperI).LabelAttributes().Merge(`$2`)
+    ctrl.Page().GetControl(ctrl.ID() + "$1").(control.LabelAttributer).LabelAttributes().Merge(`$2`)
 }
 }}
 {{end}}

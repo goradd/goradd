@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+type LabelAttributer interface {
+	LabelAttributes() html.Attributes
+}
+
 type FormFieldWrapperI interface {
 	page.ControlI
 	SetFor(relatedId string) FormFieldWrapperI

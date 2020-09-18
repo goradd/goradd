@@ -102,6 +102,7 @@ type DataLoader interface {
 	Load(ctx context.Context) []interface{}
 }
 
+
 // ControlI is the interface that all controls must support. The functions are implemented by the
 // ControlBase methods. See the ControlBase method implementation for a description of each method.
 type ControlI interface {
@@ -716,7 +717,8 @@ func (c *ControlBase) MergeAttributes(a html.Attributes) ControlI {
 	return c.this()
 }
 
-// ProcessAttributeString is used by the drawing template to let you set attributes in the draw tag
+// ProcessAttributeString is used by the drawing template to let you set attributes in the draw tag.
+// Attributes are of the form `name="value"`.
 func (c *ControlBase) ProcessAttributeString(s string) ControlI {
 	if s != "" {
 		c.attributes.Merge(s)
