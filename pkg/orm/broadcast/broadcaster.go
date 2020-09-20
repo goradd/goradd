@@ -11,9 +11,9 @@ import (
 var Broadcaster BroadcasterI
 
 type BroadcasterI interface {
-	Insert(ctx context.Context, dbId string, table string, pk string)
-	Update(ctx context.Context, dbId string, table string, pk string, fieldnames ...string)
-	Delete(ctx context.Context, dbId string, table string, pk string)
+	Insert(ctx context.Context, dbId string, table string, pk interface{})
+	Update(ctx context.Context, dbId string, table string, pk interface{}, fieldnames ...string)
+	Delete(ctx context.Context, dbId string, table string, pk interface{})
 	BulkChange(ctx context.Context, dbId string, table string)
 }
 
@@ -22,15 +22,15 @@ type BroadcasterI interface {
 type DefaultBroadcaster struct {
 }
 
-func (b DefaultBroadcaster) Insert(ctx context.Context, dbId string, table string, pk string) {
+func (b DefaultBroadcaster) Insert(ctx context.Context, dbId string, table string, pk interface{}) {
 	watcher.BroadcastInsert(ctx, dbId, table, pk)
 }
 
-func (b DefaultBroadcaster) Update(ctx context.Context, dbId string, table string, pk string, fieldnames ...string) {
+func (b DefaultBroadcaster) Update(ctx context.Context, dbId string, table string, pk interface{}, fieldnames ...string) {
 	watcher.BroadcastUpdate(ctx, dbId, table, pk, fieldnames)
 }
 
-func (b DefaultBroadcaster) Delete(ctx context.Context, dbId string, table string, pk string) {
+func (b DefaultBroadcaster) Delete(ctx context.Context, dbId string, table string, pk interface{}) {
 	watcher.BroadcastDelete(ctx, dbId, table, pk)
 }
 
@@ -38,19 +38,19 @@ func (b DefaultBroadcaster) BulkChange(ctx context.Context, dbId string, table s
 	watcher.BroadcastBulkChange(ctx, dbId, table)
 }
 
-func Insert(ctx context.Context, dbId string, table string, pk string) {
+func Insert(ctx context.Context, dbId string, table string, pk interface{}) {
 	if Broadcaster != nil {
 		Broadcaster.Insert(ctx, dbId, table, pk)
 	}
 }
 
-func Update(ctx context.Context, dbId string, table string, pk string, fieldnames ...string) {
+func Update(ctx context.Context, dbId string, table string, pk interface{}, fieldnames ...string) {
 	if Broadcaster != nil {
 		Broadcaster.Update(ctx, dbId, table, pk, fieldnames...)
 	}
 }
 
-func Delete(ctx context.Context, dbId string, table string, pk string) {
+func Delete(ctx context.Context, dbId string, table string, pk interface{}) {
 	if Broadcaster != nil {
 		Broadcaster.Delete(ctx, dbId, table, pk)
 	}

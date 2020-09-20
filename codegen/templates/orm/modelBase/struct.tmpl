@@ -80,6 +80,9 @@ for _,ref := range t.ManyManyReferences {
 
 	// Indicates whether this is a new object, or one loaded from the database. Used by Save to know whether to Insert or Update
 	_restored bool
+
+	// The original primary key for updates
+	_originalPK {{= t.PrimaryKeyColumn().ColumnType.GoType() }}
 }}
 
 {{ }

@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.0.1
+-- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Jan 27, 2020 at 01:59 AM
--- Server version: 5.7.28
--- PHP Version: 7.2.19
+-- Generation Time: Sep 20, 2020 at 06:50 AM
+-- Server version: 5.7.31
+-- PHP Version: 7.4.6
 
 SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -52,6 +52,26 @@ CREATE TABLE `employee_info` (
                                  `person_id` int(11) UNSIGNED NOT NULL,
                                  `employee_number` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gift`
+--
+
+CREATE TABLE `gift` (
+                        `number` int(11) NOT NULL,
+                        `name` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Table is keyed with an integer, but does not auto-increment';
+
+--
+-- Dumping data for table `gift`
+--
+
+INSERT INTO `gift` (`number`, `name`) VALUES
+(1, 'Partridge in a pear tree'),
+(2, 'Turtle doves'),
+(3, 'French hens');
 
 -- --------------------------------------------------------
 
@@ -350,6 +370,12 @@ ALTER TABLE `employee_info`
     ADD UNIQUE KEY `person_id` (`person_id`);
 
 --
+-- Indexes for table `gift`
+--
+ALTER TABLE `gift`
+    ADD PRIMARY KEY (`number`);
+
+--
 -- Indexes for table `login`
 --
 ALTER TABLE `login`
@@ -429,19 +455,19 @@ ALTER TABLE `team_member_project_assn`
 -- AUTO_INCREMENT for table `address`
 --
 ALTER TABLE `address`
-    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `employee_info`
 --
 ALTER TABLE `employee_info`
-    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `login`
 --
 ALTER TABLE `login`
-    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `milestone`
@@ -453,7 +479,7 @@ ALTER TABLE `milestone`
 -- AUTO_INCREMENT for table `person`
 --
 ALTER TABLE `person`
-    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=168;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT for table `person_type`
@@ -471,7 +497,7 @@ ALTER TABLE `person_with_lock`
 -- AUTO_INCREMENT for table `project`
 --
 ALTER TABLE `project`
-    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+    MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `project_status_type`

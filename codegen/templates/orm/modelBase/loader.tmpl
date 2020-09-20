@@ -39,6 +39,9 @@ for _, col := range t.Columns {
 		if o.{{= col.ModelName() }}, ok = v.({{= col.ColumnType.GoType() }}); ok {
 			o.{{= col.ModelName() }}IsValid = true
 			o.{{= col.ModelName() }}IsDirty = false
+{{if col.IsPk}}
+            o._originalPK = o.{{= col.ModelName() }}
+{{if}}
 		} else {
 			panic("Wrong type found for {{= col.DbName }}.")
 		}

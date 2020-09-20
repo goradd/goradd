@@ -2,6 +2,7 @@ package watcher
 
 import (
 	"context"
+	"fmt"
 	"github.com/goradd/goradd/pkg/messageServer"
 )
 
@@ -9,25 +10,25 @@ import (
 var Watcher WatcherI
 
 type WatcherI interface {
-	MakeKey(ctx context.Context, dbKey string, table string, pk string) string
-	BroadcastUpdate(ctx context.Context, dbKey string, table string, pk string, fieldKeys []string)
-	BroadcastInsert(ctx context.Context, dbKey string, table string, pk string)
-	BroadcastDelete(ctx context.Context, dbKey string, table string, pk string)
+	MakeKey(ctx context.Context, dbKey string, table string, pk interface{}) string
+	BroadcastUpdate(ctx context.Context, dbKey string, table string, pk interface{}, fieldKeys []string)
+	BroadcastInsert(ctx context.Context, dbKey string, table string, pk interface{})
+	BroadcastDelete(ctx context.Context, dbKey string, table string, pk interface{})
 	BroadcastBulkChange(ctx context.Context, dbKey string, table string)
 }
 
 type DefaultWatcher struct {
 }
 
-func (*DefaultWatcher) MakeKey(ctx context.Context, dbKey string, table string, pk string) string {
+func (*DefaultWatcher) MakeKey(ctx context.Context, dbKey string, table string, pk interface{}) string {
 	k := dbKey + "." + table
 	if pk != "" {
-		k += "." + pk
+		k += "." + fmt.Sprint(pk)
 	}
 	return k
 }
 
-func (w *DefaultWatcher) BroadcastUpdate(ctx context.Context, dbKey string, table string, pk string, fieldKeys []string)  {
+func (w *DefaultWatcher) BroadcastUpdate(ctx context.Context, dbKey string, table string, pk interface{}, fieldKeys []string)  {
 	tableChannel := w.MakeKey(ctx, dbKey, table, "")
 	pkChannel := w.MakeKey(ctx, dbKey, table, pk)
 	message := make(map[string]interface{})
@@ -38,7 +39,7 @@ func (w *DefaultWatcher) BroadcastUpdate(ctx context.Context, dbKey string, tabl
 	messageServer.Send(pkChannel, message)
 }
 
-func (w *DefaultWatcher) BroadcastInsert(ctx context.Context, dbKey string, table string, pk string)  {
+func (w *DefaultWatcher) BroadcastInsert(ctx context.Context, dbKey string, table string, pk interface{})  {
 	tableChannel := w.MakeKey(ctx, dbKey, table, "")
 	message := make(map[string]interface{})
 	message["pk"] = pk
@@ -46,7 +47,7 @@ func (w *DefaultWatcher) BroadcastInsert(ctx context.Context, dbKey string, tabl
 	messageServer.Send(tableChannel, "*")
 }
 
-func (w *DefaultWatcher) BroadcastDelete(ctx context.Context, dbKey string, table string, pk string)  {
+func (w *DefaultWatcher) BroadcastDelete(ctx context.Context, dbKey string, table string, pk interface{})  {
 	tableChannel := w.MakeKey(ctx, dbKey, table, "")
 	message := make(map[string]interface{})
 	message["pk"] = pk
@@ -62,19 +63,19 @@ func (w *DefaultWatcher) BroadcastBulkChange(ctx context.Context, dbKey string, 
 }
 
 
-func BroadcastUpdate(ctx context.Context, dbKey string, table string, pk string, fieldKeys []string)  {
+func BroadcastUpdate(ctx context.Context, dbKey string, table string, pk interface{}, fieldKeys []string)  {
 	if Watcher != nil {
 		Watcher.BroadcastUpdate(ctx, dbKey, table, pk, fieldKeys)
 	}
 }
 
-func BroadcastInsert(ctx context.Context, dbKey string, table string, pk string)  {
+func BroadcastInsert(ctx context.Context, dbKey string, table string, pk interface{})  {
 	if Watcher != nil {
 		Watcher.BroadcastInsert(ctx, dbKey, table, pk)
 	}
 }
 
-func BroadcastDelete(ctx context.Context, dbKey string, table string, pk string)  {
+func BroadcastDelete(ctx context.Context, dbKey string, table string, pk interface{})  {
 	if Watcher != nil {
 		Watcher.BroadcastDelete(ctx, dbKey, table, pk)
 	}
@@ -87,7 +88,7 @@ func BroadcastBulkChange(ctx context.Context, dbKey string, table string)  {
 }
 
 
-func MakeKey(ctx context.Context, dbKey string, table string, pk string) string {
+func MakeKey(ctx context.Context, dbKey string, table string, pk interface{}) string {
 	if Watcher == nil {
 		return ""
 	}

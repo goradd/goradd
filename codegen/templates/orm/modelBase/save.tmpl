@@ -43,7 +43,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
 
         modifiedFields = o.getModifiedFields()
         if len(modifiedFields) != 0 {
-            d.Update(ctx, "{{t.DbName}}", modifiedFields, "{{= t.PrimaryKeyColumn().DbName }}", fmt.Sprint(o.{{= t.PrimaryKeyColumn().ModelName() }}))
+            d.Update(ctx, "{{t.DbName}}", modifiedFields, "{{= t.PrimaryKeyColumn().DbName }}", o._originalPK)
         }
 
     {{for _,ref := range t.ReverseReferences }}
@@ -160,7 +160,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
     }) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-        broadcast.Update(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(o.{{= t.PrimaryKeyColumn().ModelName() }}), stringmap.SortedKeys(modifiedFields)...)
+        broadcast.Update(ctx, "{{t.DbKey}}", "{{t.DbName}}", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -197,10 +197,11 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
 {{if t.PrimaryKeyColumn().IsId }}
 	id := d.Insert(ctx, "{{t.DbName}}", m)
 	o.{{= t.PrimaryKeyColumn().ModelName() }} = id
+	o._originalPK = id
 {{else}}
 	d.Insert(ctx, "{{t.DbName}}", m)
 	id := o.PrimaryKey()
-	_ = id
+	o._originalPK = id
 {{if}}
 {{for _,ref := range t.ReverseReferences }}
     {{# Nullable or not nullable, we do the same thing since there is no need to detach anything since this is new}}
@@ -257,7 +258,7 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
     }) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(o.{{= t.PrimaryKeyColumn().ModelName() }}))
+	broadcast.Insert(ctx, "{{t.DbKey}}", "{{t.DbName}}", o.PrimaryKey())
 }
 
 func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}) {

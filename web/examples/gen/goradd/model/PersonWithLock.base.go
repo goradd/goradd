@@ -48,6 +48,9 @@ type personWithLockBase struct {
 
 	// Indicates whether this is a new object, or one loaded from the database. Used by Save to know whether to Insert or Update
 	_restored bool
+
+	// The original primary key for updates
+	_originalPK string
 }
 
 const (
@@ -429,6 +432,7 @@ func (o *personWithLockBase) load(m map[string]interface{}, objThis *PersonWithL
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
 			o.idIsDirty = false
+			o._originalPK = o.id
 		} else {
 			panic("Wrong type found for id.")
 		}
@@ -509,13 +513,13 @@ func (o *personWithLockBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "person_with_lock", modifiedFields, "id", fmt.Sprint(o.id))
+			d.Update(ctx, "person_with_lock", modifiedFields, "id", o._originalPK)
 		}
 
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "person_with_lock", fmt.Sprint(o.id), stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "person_with_lock", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -535,11 +539,12 @@ func (o *personWithLockBase) insert(ctx context.Context) {
 
 		id := d.Insert(ctx, "person_with_lock", m)
 		o.id = id
+		o._originalPK = id
 
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "person_with_lock", fmt.Sprint(o.id))
+	broadcast.Insert(ctx, "goradd", "person_with_lock", o.PrimaryKey())
 }
 
 func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{}) {
@@ -714,6 +719,9 @@ func (o *personWithLockBase) MarshalBinary() ([]byte, error) {
 	if err := encoder.Encode(o._restored); err != nil {
 		return nil, err
 	}
+	if err := encoder.Encode(o._originalPK); err != nil {
+		return nil, err
+	}
 
 	return buf.Bytes(), nil
 }
@@ -781,6 +789,9 @@ func (o *personWithLockBase) UnmarshalBinary(data []byte) (err error) {
 	if err = dec.Decode(&o._restored); err != nil {
 		return
 	}
+	if err = dec.Decode(&o._originalPK); err != nil {
+		return
+	}
 
 	return
 }
@@ -811,6 +822,9 @@ func (o *personWithLockBase) MarshalJSON() (data []byte, err error) {
 		}
 	}
 
+	for _k, _v := range o._aliases {
+		v[_k] = _v
+	}
 	return json.Marshal(v)
 }
 

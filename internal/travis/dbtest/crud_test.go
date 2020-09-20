@@ -602,3 +602,28 @@ func TestUniqueHas(t *testing.T) {
 
 	d.Delete(ctx)
 }
+
+func TestCrudIntKey(t *testing.T) {
+	ctx := getContext()
+	g := model.NewGift()
+
+	g.SetNumber(4)
+	g.SetName("Calling birds")
+	g.Save(ctx)
+
+	g2 := model.LoadGift(ctx, 4)
+	assert.Equal(t, "Calling birds", g2.Name())
+	g2.SetNumber(5)
+	g2.SetName("Gold rings")
+	g2.Save(ctx)
+
+	g3 := model.LoadGift(ctx, 4)
+	assert.Nil(t, g3)
+
+	g3 = model.LoadGift(ctx, 5)
+	assert.Equal(t, "Gold rings", g3.Name())
+
+	g3.Delete(ctx)
+	g3 = model.LoadGift(ctx, 5)
+	assert.Nil(t, g3)
+}
