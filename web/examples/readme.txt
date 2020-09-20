@@ -8,9 +8,11 @@ directory.
 
 db
 
-This directory contains the sample database code in a variety of supported forms. You would install
-one of these databases as the "goradd" database to run the examples. You will also need to add
-this database to the program's database list. See the code in goradd-project/config/db.go.
+This directory contains the sample database code that is used by some of the tutorials and examples.
+To make these work, you will need to:
+
+1) Install the database that is in the examples/db directory, and
+2) Make the database available to the application by configuring it in goradd-project/config/db.go.
 
 controls
 
@@ -21,5 +23,3 @@ part of the Travis continuous-integration tests.
 
 The base controls are foundations on which more elaborate controls can be built. But they also
 provide enough support that a basic data-driven website can be built with only these controls.
-A website built with just the base controls will function even with javascript turned off
-at the browser.
