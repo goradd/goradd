@@ -409,3 +409,9 @@ func TestJson(t *testing.T) {
 	assert.Equal(t, "Karen", m["manager"].(map[string]interface{})["firstName"])
 }
 
+// Test that we can get from an integer keyed database
+func TestIntKey(t *testing.T) {
+	ctx := getContext()
+	g := model.LoadGift(ctx, 2)
+	assert.Equal(t, "Turtle doves", g.Name())
+}

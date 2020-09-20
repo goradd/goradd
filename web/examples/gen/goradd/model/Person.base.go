@@ -61,6 +61,9 @@ type personBase struct {
 
 	// Indicates whether this is a new object, or one loaded from the database. Used by Save to know whether to Insert or Update
 	_restored bool
+
+	// The original primary key for updates
+	_originalPK string
 }
 
 const (
@@ -612,6 +615,7 @@ func (o *personBase) load(m map[string]interface{}, objThis *Person, objParent i
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
 			o.idIsDirty = false
+			o._originalPK = o.id
 		} else {
 			panic("Wrong type found for id.")
 		}
@@ -779,7 +783,7 @@ func (o *personBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "person", modifiedFields, "id", fmt.Sprint(o.id))
+			d.Update(ctx, "person", modifiedFields, "id", o._originalPK)
 		}
 
 		if o.oAddressesIsDirty {
@@ -892,7 +896,7 @@ func (o *personBase) update(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "person", fmt.Sprint(o.id), stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "person", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -912,6 +916,7 @@ func (o *personBase) insert(ctx context.Context) {
 
 		id := d.Insert(ctx, "person", m)
 		o.id = id
+		o._originalPK = id
 
 		if o.oAddresses != nil {
 			o.mAddresses = make(map[string]*Address)
@@ -971,7 +976,7 @@ func (o *personBase) insert(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "person", fmt.Sprint(o.id))
+	broadcast.Insert(ctx, "goradd", "person", o.PrimaryKey())
 }
 
 func (o *personBase) getModifiedFields() (fields map[string]interface{}) {
@@ -1269,6 +1274,9 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 	if err := encoder.Encode(o._restored); err != nil {
 		return nil, err
 	}
+	if err := encoder.Encode(o._originalPK); err != nil {
+		return nil, err
+	}
 
 	return buf.Bytes(), nil
 }
@@ -1392,6 +1400,9 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 	if err = dec.Decode(&o._restored); err != nil {
 		return
 	}
+	if err = dec.Decode(&o._originalPK); err != nil {
+		return
+	}
 
 	return
 }
@@ -1437,6 +1448,9 @@ func (o *personBase) MarshalJSON() (data []byte, err error) {
 		v["projectsAsTeamMember"] = val
 	}
 
+	for _k, _v := range o._aliases {
+		v[_k] = _v
+	}
 	return json.Marshal(v)
 }
 

@@ -103,6 +103,9 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
     if err := encoder.Encode(o._restored); err != nil {
         return nil, err
     }
+    if err := encoder.Encode(o._originalPK); err != nil {
+        return nil, err
+    }
 
     return buf.Bytes(), nil
 }
@@ -203,6 +206,10 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
     if err = dec.Decode(&o._restored); err != nil {
         return
     }
+    if err = dec.Decode(&o._originalPK); err != nil {
+        return
+    }
+
 
 	return
 }

@@ -21,5 +21,19 @@ func TestSubquery(t *testing.T) {
 	assert.Equal(t, 2, people[0].GetAlias("manager_count").Int(), "Karen Wolfe manages 2 projects.")
 }
 
+func TestSubquery2(t *testing.T) {
+	ctx := getContext()
+	people := model.QueryPeople(ctx).
+		Alias("manager_count",
+			model.QueryProjects(ctx).
+				Alias("", Count(node.Project().ManagerID())).
+				Where(Equal(node.Project().ManagerID(), node.Person().ID())).
+				Subquery()).
+		Where(Equal(node.Person().LastName(), "Wolfe")).
+		Get()
+	assert.Equal(t, 2, people.GetAlias("manager_count").Int(), "Karen Wolfe manages 2 projects.")
+}
+
+
 
 // TODO: Test multi-level subquery

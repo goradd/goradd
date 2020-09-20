@@ -52,6 +52,9 @@ type loginBase struct {
 
 	// Indicates whether this is a new object, or one loaded from the database. Used by Save to know whether to Insert or Update
 	_restored bool
+
+	// The original primary key for updates
+	_originalPK string
 }
 
 const (
@@ -583,6 +586,7 @@ func (o *loginBase) load(m map[string]interface{}, objThis *Login, objParent int
 		if o.id, ok = v.(string); ok {
 			o.idIsValid = true
 			o.idIsDirty = false
+			o._originalPK = o.id
 		} else {
 			panic("Wrong type found for id.")
 		}
@@ -698,13 +702,13 @@ func (o *loginBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "login", modifiedFields, "id", fmt.Sprint(o.id))
+			d.Update(ctx, "login", modifiedFields, "id", o._originalPK)
 		}
 
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "login", fmt.Sprint(o.id), stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "login", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -724,11 +728,12 @@ func (o *loginBase) insert(ctx context.Context) {
 
 		id := d.Insert(ctx, "login", m)
 		o.id = id
+		o._originalPK = id
 
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "login", fmt.Sprint(o.id))
+	broadcast.Insert(ctx, "goradd", "login", o.PrimaryKey())
 }
 
 func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
@@ -953,6 +958,9 @@ func (o *loginBase) MarshalBinary() ([]byte, error) {
 	if err := encoder.Encode(o._restored); err != nil {
 		return nil, err
 	}
+	if err := encoder.Encode(o._originalPK); err != nil {
+		return nil, err
+	}
 
 	return buf.Bytes(), nil
 }
@@ -1041,6 +1049,9 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 	if err = dec.Decode(&o._restored); err != nil {
 		return
 	}
+	if err = dec.Decode(&o._originalPK); err != nil {
+		return
+	}
 
 	return
 }
@@ -1082,6 +1093,9 @@ func (o *loginBase) MarshalJSON() (data []byte, err error) {
 		v["isEnabled"] = o.isEnabled
 	}
 
+	for _k, _v := range o._aliases {
+		v[_k] = _v
+	}
 	return json.Marshal(v)
 }
 
