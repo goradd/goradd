@@ -27,9 +27,11 @@
 	examples database. To do that, create a "goradd" database and import the sql code found in the goradd/web/examples/db directory,
 	which is reprinted below for your convenience.
 </p>
+<pre>
 <code>
-{{:h ../examples/db/mysql.sql }}
+{{:! ../examples/db/mysql.sql }}
 </code>
+</pre>
 {{end}}
 
 {{> renderHtmlTemplate}}
