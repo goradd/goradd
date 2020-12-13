@@ -78,7 +78,7 @@ func (h *WebSocketHub) run() {
 					}
 				}
 			} else {
-				log.Errorf("Could not find channel %s", msg.Channel)
+				//log.Errorf("Could not find channel %s", msg.Channel)
 			}
 
 		case sub := <-h.subscribe:
