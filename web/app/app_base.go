@@ -395,15 +395,14 @@ func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
 		defer buf2.PutBuffer(outBuf)
 		next.ServeHTTP(bw, r)
 		if bw.code != 0 {
-			log.Printf("Buffered write error code %d", bw.code)
+			grlog.Error("Buffered write error code %d", bw.code)
 			w.WriteHeader(bw.code)
 		}
-		i, e := w.Write(outBuf.Bytes())
+		_, e := w.Write(outBuf.Bytes())
 		if e != nil {
-			log.Printf("Buffered write error %s", e.Error())
+			grlog.Error("Buffered write error %s", e.Error())
 		}
-		log.Printf("Buffered write %d bytes %v %s", i, w.Header(), outBuf.String())
-
+		//log.Printf("Buffered write %d bytes %v %s", i, w.Header(), outBuf.String())
 	}
 	return http.HandlerFunc(fn)
 }
@@ -497,7 +496,7 @@ func RegisterStaticPath(path string, directory string) {
 		})
 	}
 	StaticDirectoryPaths.Set(path, directory)
-	log.Printf("Registering static path %s to %s", path, directory)
+	grlog.Info("Registering static path %s to %s", path, directory)
 }
 
 // ServeApiHandler serves up an http API. This could be a REST api or something else.
@@ -523,9 +522,9 @@ func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
 // AccessLogHandler simply logs requests.
 func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Serving: %s", r.RequestURI)
+		grlog.Info("Serving: %s", r.RequestURI)
 		next.ServeHTTP(w, r)
-		log.Printf("Served: %s", r.RequestURI)
+		//grlog.Info("Served: %s", r.RequestURI)
 	}
 	return http.HandlerFunc(fn)
 }
