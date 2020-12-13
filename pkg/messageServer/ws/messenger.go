@@ -3,6 +3,7 @@ package ws
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/sys"
@@ -18,10 +19,9 @@ type WsMessenger struct {
 	hub *WebSocketHub
 }
 
-func (m *WsMessenger) Start(pattern string, wsPort int, tlsCertFile string, tlsKeyFile string, tlsPort int) {
+func (m *WsMessenger) Start(mux *http.ServeMux, wsPort int, tlsCertFile string, tlsKeyFile string, tlsPort int) {
 	m.port = wsPort
 	m.tlsPort = tlsPort
-	mux := m.makeWebsocketMux(pattern)
 	m.makeHub()
 
 	if wsPort != 0 {
@@ -78,31 +78,14 @@ func (m *WsMessenger) Send(channel string, message string) {
 	}
 }
 
-func (m *WsMessenger) makeWebsocketMux(pattern string) *http.ServeMux {
-	mux := http.NewServeMux()
-
-	mux.Handle(pattern, m.webSocketAuthHandler(m.webSocketHandler()))
-
-	return mux
-}
-
-
-func (m *WsMessenger) webSocketHandler() http.Handler {
+// WebSocketHandler handles web socket requests to send messages to clients.
+// It gets the client id from the context in the request. You should intercept
+// the request, authorize the client, then insert the client ID into the context of the
+// Request
+func (m *WsMessenger) WebSocketHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		serveWs(m.hub, w, r)
-	})
-}
-
-func (m *WsMessenger) webSocketAuthHandler(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		pagestate := r.FormValue("id")
-
-		if !page.HasPage(pagestate) {
-			// The page manager has no record of the pagestate, so either it is expired or never existed
-			return // TODO: return error?
-		}
-
-		next.ServeHTTP(w, r)
+		clientID := r.Context().Value(goradd.WebSocketContext).(string)
+		serveWs(m.hub, w, r, clientID)
 	})
 }
 

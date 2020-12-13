@@ -8,10 +8,11 @@ package goradd
 type ContextKey string
 
 const (
-	PageContext    = ContextKey("goradd.page")
-	SessionContext = ContextKey("goradd.session")
-	SqlContext     = ContextKey("goradd.sql")
-	BufferContext  = ContextKey("goradd.buf")
+	PageContext      = ContextKey("goradd.page")
+	SessionContext   = ContextKey("goradd.session")
+	SqlContext       = ContextKey("goradd.sql")
+	BufferContext    = ContextKey("goradd.buf")
+	WebSocketContext = ContextKey("goradd.ws")
 )
 
 // Default session values

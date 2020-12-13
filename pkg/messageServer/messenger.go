@@ -18,11 +18,15 @@ import (
 var Messenger MessengerI
 
 type MessengerI interface {
+	// JavascriptInit returns javascript that needs to be called when a page starts to initialize
 	JavascriptInit() string
+	// Send sends a message to the given channel
 	Send(channel string, message string)
+	// JavascriptFiles returns file names and attributes used to embed the need javascript files for your messenger
 	JavascriptFiles() map[string]html.Attributes
 }
 
+// Send sends a message to the given channel via the current messenger
 func Send(channel string, message interface{}) {
 	msg, err := json.Marshal(message)
 	if err != nil {

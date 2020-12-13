@@ -77,6 +77,7 @@ type ApplicationI interface {
 	ServeStaticFile(w http.ResponseWriter, r *http.Request) bool
 	ServeApiRequest(w http.ResponseWriter, r *http.Request) bool
 	AccessLogHandler(next http.Handler) http.Handler
+	MakeWebsocketMux() *http.ServeMux
 }
 
 // The application base, to be embedded in your application
@@ -205,13 +206,49 @@ func (a *Application) SetupSessionManager() {
 	session.SetSessionManager(session.NewScsManager(sm))
 }
 
-// SetupMessenger injects the global messenger that permits pub/sub communication between the server and client
+// SetupMessenger injects the global messenger that permits pub/sub communication between the server and client.
+//
+// You can use this mechanism to setup your own messaging system for application use too.
 func (a *Application) SetupMessenger() {
 	// The default sets up a websocket based messenger appropriate for development and single-server applications
 	messenger := new (ws.WsMessenger)
-	messenger.Start("/ws", config.WebSocketPort, config.WebSocketTLSCertFile, config.WebSocketTLSKeyFile, config.WebSocketTLSPort)
 	messageServer.Messenger = messenger
+	mux := a.this().MakeWebsocketMux()
+
+	messenger.Start(mux, config.WebSocketPort, config.WebSocketTLSCertFile, config.WebSocketTLSKeyFile, config.WebSocketTLSPort)
 }
+
+// MakeWebsocketMux makes the mux used by the WebSocket messenger.
+//
+// The default creates a WebSocket used by the database watcher that tells controls when they need to redraw.
+// To create additional WebSocket based messengers, you should override this function, call the default,
+// then add your handler to the MUX.
+func (a *Application) MakeWebsocketMux() *http.ServeMux {
+	mux := http.NewServeMux()
+
+	// Goradd watcher handler
+	mux.Handle("/grw", a.watcherWebSocketAuthHandler(messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler()))
+
+	return mux
+}
+
+// watcherWebSocketAuthHandler is the authorization handler for watcher requests.
+// It uses the pagestate as the client id, verifying the page state is valid
+func (a *Application) watcherWebSocketAuthHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		pagestate := r.FormValue("id")
+
+		if !page.HasPage(pagestate) {
+			// The page manager has no record of the pagestate, so either it is expired or never existed
+			return // TODO: return error?
+		}
+
+		// Inject the pagestate as the client ID so the next handler down can read it
+		ctx := context.WithValue(r.Context(), goradd.WebSocketContext, pagestate)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 
 // SetupDatabaseWatcher injects the global database watcher
 // and the database broadcaster which together detect database changes and
@@ -496,7 +533,7 @@ func RegisterStaticPath(path string, directory string) {
 		})
 	}
 	StaticDirectoryPaths.Set(path, directory)
-	grlog.Info("Registering static path %s to %s", path, directory)
+	grlog.Infof("Registering static path %s to %s", path, directory)
 }
 
 // ServeApiHandler serves up an http API. This could be a REST api or something else.

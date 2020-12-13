@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 	log2 "github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -51,7 +52,7 @@ type Client struct {
 
 	channels map[string]bool
 
-	pagestate string // authenticator
+	clientID string // authenticator
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -78,6 +79,7 @@ func (c *Client) readPump() {
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		c.handleMessage(message)
+		c.conn.SetReadDeadline(time.Now().Add(pongWait)) // extend pong
 	}
 }
 
@@ -136,15 +138,14 @@ func (c *Client) writePump() {
 }
 
 // serveWs handles new websocket requests from clients.
-func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
+func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request, clientID string) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	pagestate := r.FormValue("id")
 
-	client := &Client{hub: hub, conn: conn, send: make(chan clientMessage, 256), channels:make(map[string]bool), pagestate: pagestate}
+	client := &Client{hub: hub, conn: conn, send: make(chan clientMessage, 256), channels:make(map[string]bool), clientID: clientID}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in
@@ -155,7 +156,11 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
 
 
 type inMessage struct {
+	// Subscribe indicates subscribing to a channel
 	Subscribe []string `json:"subscribe"`
+	// Providing a channel will imply you are sending a message to the channel
+	Channel string `json:"channel"`
+	Message interface{} `json:"message"`
 }
 
 func (c *Client) handleMessage(data []byte) {
@@ -165,10 +170,14 @@ func (c *Client) handleMessage(data []byte) {
 	if msg.Subscribe != nil {
 		for _,channel := range msg.Subscribe {
 			s := subscription{
-				pagestate: c.pagestate,
-				channel:   channel,
+				clientID: c.clientID,
+				channel:  channel,
 			}
 			c.hub.subscribe <- s
 		}
 	}
+	if msg.Channel != "" {
+		messageServer.Send(msg.Channel, msg.Message)
+	}
+
 }

@@ -33,7 +33,7 @@ goradd.initMessagingClient = function(wsPort, wssPort) {
             con = "ws://";
             port = wsPort;
         }
-        con += window.location.hostname + ":" + port + "/ws?id=" + goradd.getPageState();
+        con += window.location.hostname + ":" + port + "/grw?id=" + goradd.getPageState();
 
         goradd._ws = new WebSocket(con);
         goradd._ws.addEventListener("message", goradd._handleWsMessage);

@@ -103,6 +103,42 @@ func (a *Application) SetupMessenger() {
 }
 */
 
+
+
+/*
+This is an example of how you can setup your own custom handler for websockets.
+func (a *Application) MakeWebsocketMux() *http.ServeMux {
+	mux := a.Application.MakeWebsocketMux()
+
+	// Setup your custom endpoint with a custom authorizer. See below.
+	mux.Handle("/myWS", a.myAuthHandler(messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler()))
+
+	return mux
+}
+
+// This is the auth handler that will authorize the user, and set the client ID
+func (a *Application) myAuthHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := r.FormValue("id")
+
+		// confirm that the client is authorized. Substitute your own way of doing this here.
+		parts := strings.Split(id, "-")
+
+		challenge := parts[0] + "mySalt"
+
+		sum := sha256.Sum256([]byte(challenge))
+		pSum := fmt.Sprintf("%x", sum)
+		if pSum != parts[1] {
+			return
+		}
+
+		// Put the client ID in the context so that the websocket handler can used it to identify the client
+		ctx := context.WithValue(r.Context(), goradd.WebSocketContext, parts[0])
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+*/
+
 // SetupDatabaseWatcher injects the global database watcher and broadcaster
 // which detects database changes and then draws controls that are watching for those changes.
 //
