@@ -19,10 +19,12 @@ type WsMessenger struct {
 	hub *WebSocketHub
 }
 
-func (m *WsMessenger) Start(mux *http.ServeMux, wsPort int, tlsCertFile string, tlsKeyFile string, tlsPort int) {
+// Start starts the web socket messenger.
+// It returns the hub so that you can make changes to the hub parameters. Only change those parameters at startup time.
+func (m *WsMessenger) Start(mux *http.ServeMux, wsPort int, tlsCertFile string, tlsKeyFile string, tlsPort int) *WebSocketHub {
 	m.port = wsPort
 	m.tlsPort = tlsPort
-	m.makeHub()
+	hub := m.makeHub()
 
 	if wsPort != 0 {
 		go func() {
@@ -45,11 +47,14 @@ func (m *WsMessenger) Start(mux *http.ServeMux, wsPort int, tlsCertFile string, 
 			log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", tlsPort), tlsCertFile, tlsKeyFile, mux))
 		}()
 	}
+
+	return hub
 }
 
-func (m *WsMessenger) makeHub() {
+func (m *WsMessenger) makeHub() *WebSocketHub {
 	m.hub = NewWebSocketHub()
 	go m.hub.run()
+	return m.hub
 }
 
 func (m *WsMessenger) JavascriptInit() string {

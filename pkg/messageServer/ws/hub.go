@@ -6,6 +6,7 @@ package ws
 
 import (
 	"github.com/goradd/goradd/pkg/log"
+	"time"
 )
 
 // clientMessage is the information that is passed to the client for each message
@@ -18,6 +19,20 @@ type subscription struct {
 	clientID string
 	channel  string
 }
+
+const (
+	// Time allowed to write a message to the peer.
+	writeWaitDefault = 2 * time.Second
+
+	// Time allowed to read the next pong message from the peer.
+	pongWaitDefault = 60 * time.Second
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	pingPeriodDefault = (pongWaitDefault * 9) / 10
+
+	// Maximum message size allowed from peer.
+	maxMessageSizeDefault = 512
+)
 
 type WebSocketHub struct {
 	// Channels that clients have subscribed to. Each channel points to a map of client IDs
@@ -38,6 +53,18 @@ type WebSocketHub struct {
 	send chan clientMessage
 
 	subscribe chan subscription
+
+	// Time to wait for a write to complete
+	WriteWait time.Duration
+
+	// Time allowed to read the next pong message from the peer.
+	PongWait time.Duration
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	PingPeriod time.Duration
+
+	// Maximum message size allowed from peer.
+	MaxMessageSize int64
 }
 
 func NewWebSocketHub() *WebSocketHub {
@@ -49,6 +76,10 @@ func NewWebSocketHub() *WebSocketHub {
 		clients:    make(map[string]*Client),
 		channels:	make(map[string]map[string]bool),
 		subscribe:  make(chan subscription),
+		WriteWait: writeWaitDefault,
+		PongWait: pongWaitDefault,
+		PingPeriod: pingPeriodDefault,
+		MaxMessageSize: maxMessageSizeDefault,
 	}
 }
 
