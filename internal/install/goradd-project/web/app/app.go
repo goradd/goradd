@@ -107,6 +107,22 @@ func (a *Application) SetupMessenger() {
 
 /*
 This is an example of how you can setup your own custom handler for websockets.
+Implement the functions you need.
+
+// SetupMessenger injects the global messenger that permits pub/sub communication between the server and client.
+// You probably only need to override this if you want to make changes to the hub settings.
+func (a *Application) SetupMessenger() {
+	messenger := new (ws.WsMessenger)
+	messageServer.Messenger = messenger
+	mux := a.MakeWebsocketMux()
+
+	hub := messenger.Start(mux, config.WebSocketPort, config.WebSocketTLSCertFile, config.WebSocketTLSKeyFile, config.WebSocketTLSPort)
+
+	hub.WriteWait = 10 * time.Second
+}
+
+// MakeWebsocketMux makes the mux for WebSocket connections.
+// Below is an example of how you can add your own handler to the frameworks mux.
 func (a *Application) MakeWebsocketMux() *http.ServeMux {
 	mux := a.Application.MakeWebsocketMux()
 
@@ -132,7 +148,7 @@ func (a *Application) myAuthHandler(next http.Handler) http.Handler {
 			return
 		}
 
-		// Put the client ID in the context so that the websocket handler can used it to identify the client
+		// Put the client ID in the context so that the framework's websocket handler can be used it to identify the client
 		ctx := context.WithValue(r.Context(), goradd.WebSocketContext, parts[0])
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
