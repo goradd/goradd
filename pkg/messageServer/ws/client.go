@@ -127,7 +127,7 @@ func (c *Client) writePump() {
 func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request, clientID string) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		log2.Error(err)
 		return
 	}
 

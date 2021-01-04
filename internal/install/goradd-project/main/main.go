@@ -18,14 +18,9 @@ import (
 
 var port = flag.Int("port", -1, "Serve as a webserver from the given port. Default = 8000.")
 var tlsPort = flag.Int("tlsPort", -1, "Serve securely from the given port.")
-var wsPort = flag.Int("wsPort", -1, "Serve the websocket from given port.")
-var wsTlsPort = flag.Int("wsTlsPort", -1, "Serve securely the websocket from the given port.")
 var tlsKeyFile = flag.String("keyFile", "", "Path to key file for tls.")
 var tlsCertFile = flag.String("certFile", "", "Path to cert file for tls.")
-var wsKeyFile = flag.String("wsKeyFile", "", "Path to key file for websocket.")
-var wsCertFile = flag.String("wsCertFile", "", "Path to cert file for websocket.")
 
-var useFcgi = flag.Bool("fcgi", false, "Serve as fcgi.")
 var assetDir = flag.String("assetDir", "", "The centralized asset directory. Required to run the release version of the app.")
 var htmlDir = flag.String("htmlDir", "", "The centralized html directory. Required to run the release version of the app if you are serving static files.")
 var proxyPath = flag.String("proxyPath", "", "The url path to the application.")
@@ -58,10 +53,6 @@ func useFlags() {
 		config.ProxyPath = *proxyPath
 	}
 
-	if *useFcgi {
-		config.UseFCGI = true
-	}
-
 	if *port != -1 {
 		config.Port = *port
 	}
@@ -70,25 +61,11 @@ func useFlags() {
 		config.TLSPort = *tlsPort
 	}
 
-	if *wsPort != -1 {
-		config.WebSocketPort = *wsPort
-	}
-
-	if *wsTlsPort != -1 {
-		config.WebSocketTLSPort = *wsTlsPort
-	}
-
 	if *tlsKeyFile != "" {
 		config.TLSKeyFile = *tlsKeyFile
 	}
 	if *tlsCertFile != "" {
 		config.TLSCertFile = *tlsCertFile
-	}
-	if *wsKeyFile != "" {
-		config.WebSocketTLSKeyFile = *wsKeyFile
-	}
-	if *wsCertFile != "" {
-		config.WebSocketTLSCertFile = *wsCertFile
 	}
 
 	for _, s := range staticPaths {

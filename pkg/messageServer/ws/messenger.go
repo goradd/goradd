@@ -7,58 +7,23 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/sys"
-	"log"
 	"net/http"
 	"path"
 	"path/filepath"
 )
 
 type WsMessenger struct {
-	port int
-	tlsPort int
 	hub *WebSocketHub
 }
 
-// Start starts the web socket messenger.
-// It returns the hub so that you can make changes to the hub parameters. Only change those parameters at startup time.
-func (m *WsMessenger) Start(mux *http.ServeMux, wsPort int, tlsCertFile string, tlsKeyFile string, tlsPort int) *WebSocketHub {
-	m.port = wsPort
-	m.tlsPort = tlsPort
-	hub := m.makeHub()
-
-	if wsPort != 0 {
-		go func() {
-			log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", wsPort), mux))
-		}()
-	}
-
-	if tlsPort != 0 {
-		// Here we confirm that the CertFile and KeyFile exist. If they don't, ListenAndServe just exits with an open error
-		// and you will not know why.
-		if !sys.PathExists(tlsCertFile) {
-			log.Fatalf("WebSocketTLSCertFile does not exist: %s", tlsCertFile)
-		}
-
-		if !sys.PathExists(tlsKeyFile) {
-			log.Fatalf("WebSocketTLSKeyFile does not exist: %s", tlsKeyFile)
-		}
-
-		go func() {
-			log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", tlsPort), tlsCertFile, tlsKeyFile, mux))
-		}()
-	}
-
-	return hub
-}
-
-func (m *WsMessenger) makeHub() *WebSocketHub {
+func (m *WsMessenger) Start() *WebSocketHub {
 	m.hub = NewWebSocketHub()
 	go m.hub.run()
 	return m.hub
 }
 
 func (m *WsMessenger) JavascriptInit() string {
-	return fmt.Sprintf("goradd.initMessagingClient(%d, %d);\n", m.port, m.tlsPort)
+	return fmt.Sprintf("goradd.initMessagingClient(%s);\n", config.WebsocketMessengerPrefix)
 }
 
 func (m *WsMessenger) JavascriptFiles() map[string]html.Attributes {

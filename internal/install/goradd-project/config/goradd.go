@@ -52,15 +52,6 @@ func setupPorts() {
 		// The default implementation only uses these for the release build.
 		config.TLSCertFile = ""
 		config.TLSKeyFile = ""
-
-		config.WebSocketPort = 8100
-		config.WebSocketTLSPort = 8101 // This will require ssl certificates.
-
-		// You will need to put in the path to your certfile and keyfile below.
-		// The default implementation only uses these for the release build.
-		// You can use the same ones that you use for normal SSL communication over http.
-		config.WebSocketTLSCertFile = config.TLSCertFile
-		config.WebSocketTLSKeyFile = config.TLSKeyFile
 	*/
 }
 
