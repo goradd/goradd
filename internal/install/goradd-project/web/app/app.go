@@ -197,6 +197,7 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 	// on the framework's websocket messenger.
 	//mux.Handle("/myWS/", a.myWebsocketAuthHandler(messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler()))
 
+	
 	// Serve up the websocket messenger
 	mux.Handle(config.WebsocketMessengerPrefix, http.HandlerFunc(app.WebsocketMessengerHandler))
 
