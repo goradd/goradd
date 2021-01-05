@@ -1,14 +1,16 @@
 # Use this docker compose file if your database is already running on your host machine.
 # To use it, simply run `docker-compose up`
-version: '1'
+version: '3.8'
 services:
     app:
         container_name: grapp
         image: grapp
         ports:
-# Standard html is served out of 8000
-            - "8000:8000"
-# Websockets are served out of 8100 for the default messenger service. You can remove this if you are using a different
-# mechanism for messaging
-            - "8100:8100"
+            # Map the image to port 8000. Change to whatever port you want.
+            - "8000:80"
         restart: always
+
+        # Use a database config file
+        command: -dbConfigFile db.cfg
+        volumes:
+            - ./db.cfg:/app/db.cfg

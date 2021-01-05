@@ -196,13 +196,16 @@ func (a *Application) SetupAssetDirectories() {
 // This setup is useful for development, testing, debugging, and for moderately used websites.
 // However, this default does not scale, so if you are launching multiple copies of the app in production,
 // you should override this with a scalable storage mechanism.
+
 func (a *Application) SetupSessionManager() {
+	s := scs.New()
 	store := memstore.NewWithCleanupInterval(24 * time.Hour) // replace this with a different store if desired
-
-	sm := scs.New()
-	sm.Store = store
-
-	session.SetSessionManager(session.NewScsManager(sm))
+	s.Store = store
+	if config.ProxyPath != "" {
+		s.Cookie.Path = config.ProxyPath
+	}
+	sm := session.NewScsManager(s)
+	session.SetSessionManager(sm)
 }
 
 // SetupMessenger injects the global messenger that permits pub/sub communication between the server and client.
