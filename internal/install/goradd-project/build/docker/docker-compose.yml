@@ -1,4 +1,7 @@
-# Use this docker compose file if your database is already running on your host machine.
+# This docker-compose is designed to be used on a local developer computer to
+# test and refine the docker build.
+#
+# Use this particular compose file if your database is already running on your host machine.
 # To use it, simply run `docker-compose up`
 version: '3.8'
 services:
@@ -11,6 +14,15 @@ services:
         restart: always
 
         # Use a database config file
+        # The default db.cfg is useful in particular on Mac computers because of a limitation
+        # of how the Docker Desktop works on the Mac. It allows the container to contact
+        # the database running on the Mac host. In production, the db.cfg file is a good
+        # place to put database credentials that you do not want to check in to source control.
+
+        # This adds a command line argument when running the app that tells
+        # the app to look for and use the db.cfg file. See config/db.go
         command: -dbConfigFile db.cfg
+        # This maps the db.cfg outside of the container to the same directory inside the container
+        # that holds the goradd app.
         volumes:
             - ./db.cfg:/app/db.cfg

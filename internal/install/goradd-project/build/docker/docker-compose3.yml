@@ -1,0 +1,39 @@
+# This docker-compose file is an example of how you could deploy the app
+# on a linux server where the app is behind an Apache or Nginx web server.
+# This particular example shows the following:
+# 1) The Apache server has been setup with a reverse proxy that maps the
+#    "/myapp" directory to the application, so that whenever a user goes to
+#    /myapp or a subdirectory, they are actually sent to the goradd app.
+#    To do this, you would add the following directorives to the Apache configuration
+#    file for the server or virtual server. Note that you can do this for a secure
+#    https: address too, and internally traffic will be automatically sent to the goradd
+#    app without encryption, so that all your encryption and certificate stuff is handled
+#    by Apache and the goradd app doesn't even need to know.
+#    ProxyPass /myapp/ http://0.0.0.0:8123/
+#    ProxyPassReverse /myapp/ http://0.0.0.0:8123/
+# 2) The docker container maps its internal webserver port to the 8123 port specified in the
+#    Apache config file.
+# 3) The proxyPath option specifies /myapp as the subdirectory for the app. This is important
+#    so that the app can generate html links to its images, css, javascript and other asset
+#    files using a path that will direct these requests through the app.
+# 4) The db.cfg file should include a "net" value of "unix" to tell the app to use
+#    a unix socket to connect to the database. This is generally faster and safer than
+#    connecting over tcp.
+# 5) volumes parameter below maps the host's unix socket to the place internally that is
+#    the default location that GO's mysql driver looks for the socket.
+version: '3.8'
+services:
+  app:
+    container_name: grapp
+    image: grapp
+
+    # This maps the internal webserver port to the hosts 8123 port. You can specify
+    # whatever port you want.
+    ports:
+      - "8123:80"
+    restart: always
+    # Use a database config file and specify "/myapp" is the subdirectory of the app
+    command: -proxyPath /myapp -dbConfigFile db.cfg
+    volumes:
+      - ./db.cfg:/app/db.cfg # map the config file outside the container to the right location inside the container
+      - /var/run/mysqld/mysqld.sock:/tmp/mysql.sock # map the unix socket to GO's default location

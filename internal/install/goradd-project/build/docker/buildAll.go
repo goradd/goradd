@@ -7,3 +7,4 @@ package docker
 //go:generate go generate ./makeAssets.go
 //go:generate go generate ./zipAssets.go
 //go:generate ./buildContainer.sh
+

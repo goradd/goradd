@@ -82,7 +82,6 @@ func NewMysql5(dbKey string, params string, config *mysql.Config) *Mysql5 {
 	}
 	if params == "" {
 		params = config.FormatDSN()
-		fmt.Print("Connecting to database ", params)
 		m.config = config
 	} else {
 		m.config, err = mysql.ParseDSN(params)
@@ -110,7 +109,7 @@ func MysqlOverrideConfigSettings(config *mysql.Config, jsonContent map[string]in
 		case "dbname": config.DBName = v.(string)
 		case "user": config.User = v.(string)
 		case "password": config.Passwd = v.(string)
-		case "net": config.Net = v.(string) 	// Can be tcp or udp.
+		case "net": config.Net = v.(string) 	// Typically tcp or unix (for unix sockets).
 		case "address": config.Addr = v.(string) // Note: if you set address, you MUST set net also.
 		case "params": config.Params = stringmap.ToStringStringMap(v.(map[string]interface{}))
 		case "collation": config.Collation = v.(string)
