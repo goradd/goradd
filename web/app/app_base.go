@@ -196,22 +196,28 @@ func (a *Application) SetupAssetDirectories() {
 // This setup is useful for development, testing, debugging, and for moderately used websites.
 // However, this default does not scale, so if you are launching multiple copies of the app in production,
 // you should override this with a scalable storage mechanism.
+
 func (a *Application) SetupSessionManager() {
+	s := scs.New()
 	store := memstore.NewWithCleanupInterval(24 * time.Hour) // replace this with a different store if desired
-
-	sm := scs.New()
-	sm.Store = store
-
-	session.SetSessionManager(session.NewScsManager(sm))
+	s.Store = store
+	if config.ProxyPath != "" {
+		s.Cookie.Path = config.ProxyPath
+	}
+	sm := session.NewScsManager(s)
+	session.SetSessionManager(sm)
 }
 
-// SetupMessenger injects the global messenger that permits pub/sub communication between the server and client
+// SetupMessenger injects the global messenger that permits pub/sub communication between the server and client.
+//
+// You can use this mechanism to setup your own messaging system for application use too.
 func (a *Application) SetupMessenger() {
 	// The default sets up a websocket based messenger appropriate for development and single-server applications
 	messenger := new (ws.WsMessenger)
-	messenger.Start("/ws", config.WebSocketPort, config.WebSocketTLSCertFile, config.WebSocketTLSKeyFile, config.WebSocketTLSPort)
 	messageServer.Messenger = messenger
+	messenger.Start()
 }
+
 
 // SetupDatabaseWatcher injects the global database watcher
 // and the database broadcaster which together detect database changes and
@@ -281,7 +287,10 @@ func (a *Application) MakeAppServer() http.Handler {
 	h := a.ServeRequestHandler(buf)
 	h = a.ServeStaticFileHandler(buf, h) // TODO: Speed this handler up by checking to see if the url is a goradd form before deciding to get context and session
 	if config.ApiPrefix != "" {
-		h = a.ServeApiHandler(h)
+		h = a.ServeApiHandler(h)	// serve this here so that we have access to the session
+	}
+	if config.WebsocketMessengerPrefix != "" {
+		h = a.ServeWebsocketMessengerHandler(h)
 	}
 	h = a.ServeAppHandler(buf, h)
 	h = a.PutContextHandler(h)
@@ -395,12 +404,12 @@ func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
 		defer buf2.PutBuffer(outBuf)
 		next.ServeHTTP(bw, r)
 		if bw.code != 0 {
-			grlog.Error("Buffered write error code %d", bw.code)
+			grlog.Error("Buffered write error code ", bw.code)
 			w.WriteHeader(bw.code)
 		}
 		_, e := w.Write(outBuf.Bytes())
 		if e != nil {
-			grlog.Error("Buffered write error %s", e.Error())
+			grlog.Error("Buffered write error ", e.Error())
 		}
 		//log.Printf("Buffered write %d bytes %v %s", i, w.Header(), outBuf.String())
 	}
@@ -496,7 +505,7 @@ func RegisterStaticPath(path string, directory string) {
 		})
 	}
 	StaticDirectoryPaths.Set(path, directory)
-	grlog.Info("Registering static path %s to %s", path, directory)
+	grlog.Infof("Registering static path %s to %s", path, directory)
 }
 
 // ServeApiHandler serves up an http API. This could be a REST api or something else.
@@ -519,12 +528,42 @@ func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+// ServeWebsocketMessengerHandler is the authorization handler for watcher requests.
+// It uses the pagestate as the client id, verifying the page state is valid
+func (a *Application) ServeWebsocketMessengerHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			pagestate := r.FormValue("id")
+
+			if !page.HasPage(pagestate) {
+				// The page manager has no record of the pagestate, so either it is expired or never existed
+				return // TODO: return error?
+			}
+
+			// Inject the pagestate as the client ID so the next handler down can read it
+			ctx := context.WithValue(r.Context(), goradd.WebSocketContext, pagestate)
+			messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler().ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func WebsocketMessengerHandler(w http.ResponseWriter, r *http.Request) {
+	pagestate := r.FormValue("id")
+
+	if !page.HasPage(pagestate) {
+		// The page manager has no record of the pagestate, so either it is expired or never existed
+		return // TODO: return error?
+	}
+
+	// Inject the pagestate as the client ID so the next handler down can read it
+	ctx := context.WithValue(r.Context(), goradd.WebSocketContext, pagestate)
+	messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler().ServeHTTP(w, r.WithContext(ctx))
+}
+
 // AccessLogHandler simply logs requests.
 func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		grlog.Info("Serving: %s", r.RequestURI)
+		grlog.Info("Serving: ", r.RequestURI)
 		next.ServeHTTP(w, r)
-		//grlog.Info("Served: %s", r.RequestURI)
+		//grlog.Info("Served: ", r.RequestURI)
 	}
 	return http.HandlerFunc(fn)
 }
@@ -574,7 +613,7 @@ func ListenAndServeTLSWithTimeouts(addr, certFile, keyFile string, handler http.
 }
 
 // ListenAndServeWithTimeouts starts a web server with timeouts. The default http server does
-// not have timeouts by default, which leaves the server open to certain attacks that would start
+// not have timeouts, which leaves the server open to certain attacks that would start
 // a connection, but then very slowly read or write. Timeout values are taken from global variables
 // defined in config, which you can set at init time. This non-secure version is appropriate
 // if you are serving behind another server, like apache or nginx.

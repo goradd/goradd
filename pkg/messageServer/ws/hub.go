@@ -6,6 +6,7 @@ package ws
 
 import (
 	"github.com/goradd/goradd/pkg/log"
+	"time"
 )
 
 // clientMessage is the information that is passed to the client for each message
@@ -15,15 +16,29 @@ type clientMessage struct {
 }
 
 type subscription struct {
-	pagestate string
-	channel string
+	clientID string
+	channel  string
 }
 
+const (
+	// Time allowed to write a message to the peer.
+	writeWaitDefault = 2 * time.Second
+
+	// Time allowed to read the next pong message from the peer.
+	pongWaitDefault = 60 * time.Second
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	pingPeriodDefault = (pongWaitDefault * 9) / 10
+
+	// Maximum message size allowed from peer.
+	maxMessageSizeDefault = 512
+)
+
 type WebSocketHub struct {
-	// Channels that clients have subscribed to. Each channel points to a map of pagestates
+	// Channels that clients have subscribed to. Each channel points to a map of client IDs
 	channels map[string]map[string]bool
 
-	// Registered clients, keyed by pagestate
+	// Registered clients, keyed by client ID
 	clients map[string]*Client
 
 	// Inbound messages from the clients.
@@ -38,6 +53,18 @@ type WebSocketHub struct {
 	send chan clientMessage
 
 	subscribe chan subscription
+
+	// Time to wait for a write to complete
+	WriteWait time.Duration
+
+	// Time allowed to read the next pong message from the peer.
+	PongWait time.Duration
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	PingPeriod time.Duration
+
+	// Maximum message size allowed from peer.
+	MaxMessageSize int64
 }
 
 func NewWebSocketHub() *WebSocketHub {
@@ -49,6 +76,10 @@ func NewWebSocketHub() *WebSocketHub {
 		clients:    make(map[string]*Client),
 		channels:	make(map[string]map[string]bool),
 		subscribe:  make(chan subscription),
+		WriteWait: writeWaitDefault,
+		PongWait: pongWaitDefault,
+		PingPeriod: pingPeriodDefault,
+		MaxMessageSize: maxMessageSizeDefault,
 	}
 }
 
@@ -56,24 +87,24 @@ func (h *WebSocketHub) run() {
 	for {
 		select {
 		case client := <-h.register:
-			log.FrameworkDebugf("New client registering - pagestate: %s", client.pagestate)
+			log.FrameworkDebugf("New client registering - client ID: %s", client.clientID)
 
-			if _,ok := h.clients[client.pagestate]; ok {
+			if _,ok := h.clients[client.clientID]; ok {
 				// The same client is registering again. Unregister first.
-				h.unregisterClient(client.pagestate)
+				h.unregisterClient(client.clientID)
 			}
-			h.clients[client.pagestate] = client
+			h.clients[client.clientID] = client
 
 		case client := <-h.unregister:
-			log.FrameworkDebugf("Client unregistering pagestate: %s", client.pagestate)
-			h.unregisterClient(client.pagestate)
+			log.FrameworkDebugf("Client unregistering clientID: %s", client.clientID)
+			h.unregisterClient(client.clientID)
 
 		case msg := <-h.send:
-			if pagestates, ok := h.channels[msg.Channel]; ok {
+			if clientIDs, ok := h.channels[msg.Channel]; ok {
 				log.FrameworkDebugf("Sending to channel %s - %v", msg.Channel, msg.Message)
 
-				for pagestate := range pagestates {
-					if client,ok2 := h.clients[pagestate]; ok2 {
+				for clientID := range clientIDs {
+					if client,ok2 := h.clients[clientID]; ok2 {
 						client.send <- msg
 					}
 				}
@@ -82,8 +113,8 @@ func (h *WebSocketHub) run() {
 			}
 
 		case sub := <-h.subscribe:
-			log.FrameworkDebugf("Subscribing to channel %s - %v", sub.pagestate, sub.channel)
-			h.subscribeChannel(sub.pagestate, sub.channel)
+			log.FrameworkDebugf("Subscribing to channel %s - %v", sub.clientID, sub.channel)
+			h.subscribeChannel(sub.clientID, sub.channel)
 
 			/* not broadcasting currently. This might change
 			case message := <-h.Broadcast:
@@ -100,46 +131,46 @@ func (h *WebSocketHub) run() {
 	}
 }
 
-func (h *WebSocketHub) unregisterClient(pagestate string) {
-	var client,_ = h.clients[pagestate]
+func (h *WebSocketHub) unregisterClient(clientID string) {
+	var client,_ = h.clients[clientID]
 
 	if client == nil {
 		return
 	}
 
 	for channel := range client.channels {
-		h.unsubscribeChannel(pagestate, channel)
+		h.unsubscribeChannel(clientID, channel)
 	}
-	delete (h.clients, pagestate)
+	delete (h.clients, clientID)
 }
 
-func (h *WebSocketHub) subscribeChannel(pagestate string, channel string) {
-	var client,_ = h.clients[pagestate]
+func (h *WebSocketHub) subscribeChannel(clientID string, channel string) {
+	var client,_ = h.clients[clientID]
 
 	if client == nil {
 		return
 	}
 
 	client.channels[channel] = true
-	if pagestates, ok := h.channels[channel]; !ok {
-		pagestates := make(map[string]bool)
-		pagestates[pagestate] = true
-		h.channels[channel] = pagestates
+	if clientIDs, ok := h.channels[channel]; !ok {
+		clientIDs = make(map[string]bool)
+		clientIDs[clientID] = true
+		h.channels[channel] = clientIDs
 	} else {
-		pagestates[pagestate] = true
+		clientIDs[clientID] = true
 	}
 }
 
-func (h *WebSocketHub) unsubscribeChannel(pagestate string, channel string) {
-	if pagestates, ok := h.channels[channel]; ok {
-		delete(pagestates, pagestate)
-		if len(pagestates) == 0 {
+func (h *WebSocketHub) unsubscribeChannel(clientID string, channel string) {
+	if clientIDs, ok := h.channels[channel]; ok {
+		delete(clientIDs, clientID)
+		if len(clientIDs) == 0 {
 			delete(h.channels, channel)
 		} else {
-			h.channels[channel] = pagestates
+			h.channels[channel] = clientIDs
 		}
 	}
-	if client, ok := h.clients[pagestate]; ok {
+	if client, ok := h.clients[clientID]; ok {
 		delete(client.channels, channel)
 	}
 }

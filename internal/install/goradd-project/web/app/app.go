@@ -10,7 +10,6 @@ import (
 	"github.com/goradd/goradd/web/app"
 	"log"
 	"net/http"
-	"net/http/fcgi"
 	"net/http/pprof"
 )
 
@@ -91,15 +90,46 @@ func (a *Application) SetupAssetDirectories() {
 }
 */
 
-// SetupMessenger injects the global messenger that permits pub/sub communication between the server and client
+// SetupMessenger injects the global messenger that permits pub/sub communication between the server and client.
+// Uncomment the following if you need to change parameters on the hub.
 // If you don't need this at all, you can uncomment below and simply make it an empty function.
-// Or, you can setup a different pub/sub messaging service here
+// Or, you can setup a different pub/sub messaging service here.
 /*
 func (a *Application) SetupMessenger() {
 	// The default sets up a websocket based messenger appropriate for development and single-server applications
 	messenger := new (ws.WsMessenger)
-	messenger.Start("/ws", config.WebSocketPort, config.WebSocketTLSCertFile, config.WebSocketTLSKeyFile, config.WebSocketTLSPort)
 	messageServer.Messenger = messenger
+	hub := messenger.Start()
+	hub.WriteWait = 10 * time.Second // for example
+}
+
+*/
+
+/*
+This is an example of how you can setup your own custom handler for websockets.
+Implement the functions you need.
+
+// This is an example of a websocket auth handler for a custom websocket based messenger.
+// At a minimum you must identify the user and set the client ID so that messages go to that client.
+func (a *Application) myWebsocketAuthHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := r.FormValue("id")
+
+		// confirm that the client is authorized. Substitute your own way of doing this here.
+		parts := strings.Split(id, "-")
+
+		challenge := parts[0] + "mySalt"
+
+		sum := sha256.Sum256([]byte(challenge))
+		pSum := fmt.Sprintf("%x", sum)
+		if pSum != parts[1] {
+			return
+		}
+
+		// Put the client ID in the context so that the framework's websocket handler can be used it to identify the client
+		ctx := context.WithValue(r.Context(), goradd.WebSocketContext, parts[0])
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 */
 
@@ -120,7 +150,6 @@ func (a *Application) SetupDatabaseWatcher() {
 */
 
 // RunWebServer launches the main webserver.
-
 func (a *Application) RunWebServer() (err error) {
 	mux := a.MakeServerMux()
 
@@ -129,25 +158,22 @@ func (a *Application) RunWebServer() (err error) {
 
 	if config.TLSPort != 0 {
 		go func() {
-			log.Fatal(app.ListenAndServeTLSWithTimeouts(fmt.Sprint(":", config.TLSPort), config.TLSCertFile, config.TLSKeyFile, mux))
+			var addr string
+			if config.TLSPort != 0 {
+				addr = fmt.Sprint(":", config.TLSPort)
+			}
+
+			log.Fatal(app.ListenAndServeTLSWithTimeouts(addr, config.TLSCertFile, config.TLSKeyFile, mux))
 		}()
 	}
 
-	// The  "Serve" functions below will launch go routines for each request, so that multiple requests can be
-	// processed in parallel.
-	if config.UseFCGI { // Run as FCGI via standard I/O
-		// FCGI can run multiple instances of the application. To run as FCGI, you will need to make sure that the application
-		// is running in a semi-scalable mode. This will mean that some of the processes will need to rely external processes
-		// or at least run through a database. This will include a serialized pagestate database or server, session storage, and
-		// the messaging service.
-
-		err = fcgi.Serve(nil, mux)
-	} else {
-		// TODO: Make a way so that we will automatically redirect to https if specified to do so
-		// I think its a simple matter of providing a mux just for this purpose
-		fmt.Printf("\nListening on port %d...\n", config.Port)
-		err = app.ListenAndServeWithTimeouts(fmt.Sprint(":", config.Port), mux)
+	// TODO: Make a way so that we will automatically redirect to https if specified to do so
+	// I think its a simple matter of providing a mux just for this purpose
+	var addr string
+	if config.Port != 0 {
+		addr = fmt.Sprint(":", config.Port)
 	}
+	err = app.ListenAndServeWithTimeouts(addr, mux)
 
 	return
 }
@@ -166,6 +192,14 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 
 	// Handle the favicon request.
 	mux.Handle("/favicon.ico", http.HandlerFunc(faviconHandler))
+
+	// Below is an example of how you can add your own handler that piggybacks
+	// on the framework's websocket messenger.
+	//mux.Handle("/myWS/", a.myWebsocketAuthHandler(messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler()))
+
+	
+	// Serve up the websocket messenger
+	mux.Handle(config.WebsocketMessengerPrefix, http.HandlerFunc(app.WebsocketMessengerHandler))
 
 	// serve up static application asset files
 	mux.Handle(config.AssetPrefix, http.HandlerFunc(page.ServeAsset))

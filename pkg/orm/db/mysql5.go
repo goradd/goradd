@@ -4,8 +4,12 @@ import (
 	sqldb "database/sql"
 	"fmt"
 	"github.com/go-sql-driver/mysql"
+	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/reflect"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"strings"
+	"time"
+
 	//"goradd/orm/query"
 	"context"
 	. "github.com/goradd/goradd/pkg/orm/query"
@@ -62,7 +66,7 @@ import (
 type Mysql5 struct {
 	SqlDb
 	goraddDatabase *Database
-	config      *mysql.Config
+	databaseName string
 }
 
 // New Mysql5 returns a new Mysql5 database object that you can add to the datastore.
@@ -78,13 +82,13 @@ func NewMysql5(dbKey string, params string, config *mysql.Config) *Mysql5 {
 	}
 	if params == "" {
 		params = config.FormatDSN()
-		m.config = config
 	} else {
-		m.config, err = mysql.ParseDSN(params)
+		config, err = mysql.ParseDSN(params)
 		if err != nil {
 			panic("Could not parse the connection string.")
 		}
 	}
+	m.databaseName = config.DBName // save off the database name for later use
 	m.db, err = sqldb.Open("mysql", params)
 	if err != nil {
 		panic("Could not open database: " + err.Error())
@@ -95,6 +99,36 @@ func NewMysql5(dbKey string, params string, config *mysql.Config) *Mysql5 {
 	}
 	m.loadDescription()
 	return &m
+}
+
+// MysqlOverrideConfigSettings will use a map read in from a json file to modify
+// the given config settings
+func MysqlOverrideConfigSettings(config *mysql.Config, jsonContent map[string]interface{}) {
+	for k,v := range jsonContent {
+		switch k {
+		case "dbname": config.DBName = v.(string)
+		case "user": config.User = v.(string)
+		case "password": config.Passwd = v.(string)
+		case "net": config.Net = v.(string) 	// Typically tcp or unix (for unix sockets).
+		case "address": config.Addr = v.(string) // Note: if you set address, you MUST set net also.
+		case "params": config.Params = stringmap.ToStringStringMap(v.(map[string]interface{}))
+		case "collation": config.Collation = v.(string)
+		case "maxAllowedPacket": config.MaxAllowedPacket = javascript.NumberInt(v)
+		case "serverPubKey": config.ServerPubKey = v.(string)
+		case "tlsConfig": config.TLSConfig = v.(string)
+		case "timeout": config.Timeout = time.Duration(javascript.NumberInt(v)) * time.Second
+		case "readTimeout": config.ReadTimeout = time.Duration(javascript.NumberInt(v)) * time.Second
+		case "writeTimeout": config.WriteTimeout = time.Duration(javascript.NumberInt(v)) * time.Second
+		case "allowAllFiles": config.AllowAllFiles = v.(bool)
+		case "allowCleartextPasswords": config.AllowCleartextPasswords = v.(bool)
+		case "allowNativePasswords": config.AllowNativePasswords = v.(bool)
+		case "allowOldPasswords": config.AllowOldPasswords = v.(bool)
+		}
+	}
+
+	// The other config options effect how queries work, and so should be set before
+	// calling this function, as they will change how the GO code for these queries will
+	// need to be written.
 }
 
 // NewBuilder returns a new query builder to build a query that will be processed by the database.

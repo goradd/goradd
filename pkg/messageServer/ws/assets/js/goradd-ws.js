@@ -20,7 +20,7 @@ to the goradd._ws object.
 
 goradd._channels = {};
 
-goradd.initMessagingClient = function(wsPort, wssPort) {
+goradd.initMessagingClient = function(loc) {
     if (window.WebSocket) {
         var d = new Date();
         var con;
@@ -28,13 +28,11 @@ goradd.initMessagingClient = function(wsPort, wssPort) {
 
         if (location.protocol === 'https:') {
             con = "wss://";
-            port = wssPort;
         } else {
             con = "ws://";
-            port = wsPort;
         }
-        con += window.location.hostname + ":" + port + "/ws?id=" + goradd.getPageState();
-
+        port = location.port ? ":" + location.port : "";
+        con += window.location.hostname + port + loc + "?id=" + goradd.getPageState();
         goradd._ws = new WebSocket(con);
         goradd._ws.addEventListener("message", goradd._handleWsMessage);
         goradd._ws.addEventListener("close", goradd._handleWsClose);

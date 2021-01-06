@@ -57,3 +57,31 @@ func GetJsonFloat(m map[string]interface{}, key string) (float64, bool) {
 	}
 	return 0, false
 }
+
+// GetBool gets a boolean out of a map of interfaces keyed by a string. Returns the bool and true
+// if found, or false and false if not, or the found item was not a bool.
+func GetBool(m map[string]interface{}, key string) (bool, bool) {
+	i, ok := m[key]
+	if !ok {
+		return false, false
+	}
+	s, ok := i.(bool)
+	if !ok {
+		return false, false
+	}
+	return s, true
+}
+
+
+
+// ToStringStringMap converts a map[string]interface{} to map[string]string. Any
+// items in the incoming map that are not strings are ignored.
+func ToStringStringMap(in map[string]interface{}) map[string]string {
+	out := make(map[string]string, len(in))
+	for k := range in {
+		if s,ok := GetString(in, k); ok {
+			out[k] = s
+		}
+	}
+	return out
+}

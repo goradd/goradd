@@ -28,3 +28,12 @@ var AjaxTimeout = 10000;
 // CacheBuster maps paths to checksums that are used to tell the browser when its time to reload a resource
 var CacheBuster map[string]string
 var CacheBusterPrefix = "gr."
+
+// Port lets you change the port number that the app will run on, vs. the default
+var Port int = 0
+var TLSPort int = 0 // This will require ssl certificates. The default has this turned off.
+
+// You will need to put in the path to your certfile and keyfile below.
+// The default implementation only uses these for the release build.
+var TLSCertFile = ""
+var TLSKeyFile = ""

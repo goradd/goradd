@@ -8,24 +8,11 @@ import (
 	"bytes"
 	"encoding/json"
 	log2 "github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"time"
-)
-
-const (
-	// Time allowed to write a message to the peer.
-	writeWait = 2 * time.Second
-
-	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
-
-	// Send pings to peer with this period. Must be less than pongWait.
-	pingPeriod = (pongWait * 9) / 10
-
-	// Maximum message size allowed from peer.
-	maxMessageSize = 512
 )
 
 var (
@@ -51,7 +38,7 @@ type Client struct {
 
 	channels map[string]bool
 
-	pagestate string // authenticator
+	clientID string // authenticator
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -65,9 +52,9 @@ func (c *Client) readPump() {
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
-	c.conn.SetReadLimit(maxMessageSize)
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))
-	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	c.conn.SetReadLimit(c.hub.MaxMessageSize)
+	c.conn.SetReadDeadline(time.Now().Add(c.hub.PongWait))
+	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(c.hub.PongWait)); return nil })
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
@@ -78,6 +65,7 @@ func (c *Client) readPump() {
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		c.handleMessage(message)
+		c.conn.SetReadDeadline(time.Now().Add(c.hub.PongWait)) // extend pong
 	}
 }
 
@@ -87,7 +75,7 @@ func (c *Client) readPump() {
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
 func (c *Client) writePump() {
-	ticker := time.NewTicker(pingPeriod)
+	ticker := time.NewTicker(c.hub.PingPeriod)
 	defer func() {
 		ticker.Stop()
 		c.conn.Close()
@@ -95,7 +83,7 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			c.conn.SetWriteDeadline(time.Now().Add(c.hub.WriteWait))
 			if !ok {
 				// The hub closed the channel.
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
@@ -127,7 +115,7 @@ func (c *Client) writePump() {
 				return
 			}
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			c.conn.SetWriteDeadline(time.Now().Add(c.hub.WriteWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
@@ -136,15 +124,14 @@ func (c *Client) writePump() {
 }
 
 // serveWs handles new websocket requests from clients.
-func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
+func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request, clientID string) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		log2.Error(err)
 		return
 	}
-	pagestate := r.FormValue("id")
 
-	client := &Client{hub: hub, conn: conn, send: make(chan clientMessage, 256), channels:make(map[string]bool), pagestate: pagestate}
+	client := &Client{hub: hub, conn: conn, send: make(chan clientMessage, 256), channels:make(map[string]bool), clientID: clientID}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in
@@ -155,7 +142,11 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request) {
 
 
 type inMessage struct {
+	// Subscribe indicates subscribing to a channel
 	Subscribe []string `json:"subscribe"`
+	// Providing a channel will imply you are sending a message to the channel
+	Channel string `json:"channel"`
+	Message interface{} `json:"message"`
 }
 
 func (c *Client) handleMessage(data []byte) {
@@ -165,10 +156,14 @@ func (c *Client) handleMessage(data []byte) {
 	if msg.Subscribe != nil {
 		for _,channel := range msg.Subscribe {
 			s := subscription{
-				pagestate: c.pagestate,
-				channel:   channel,
+				clientID: c.clientID,
+				channel:  channel,
 			}
 			c.hub.subscribe <- s
 		}
 	}
+	if msg.Channel != "" {
+		messageServer.Send(msg.Channel, msg.Message)
+	}
+
 }

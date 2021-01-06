@@ -3,57 +3,27 @@ package ws
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/sys"
-	"log"
 	"net/http"
 	"path"
 	"path/filepath"
 )
 
 type WsMessenger struct {
-	port int
-	tlsPort int
 	hub *WebSocketHub
 }
 
-func (m *WsMessenger) Start(pattern string, wsPort int, tlsCertFile string, tlsKeyFile string, tlsPort int) {
-	m.port = wsPort
-	m.tlsPort = tlsPort
-	mux := m.makeWebsocketMux(pattern)
-	m.makeHub()
-
-	if wsPort != 0 {
-		go func() {
-			log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", wsPort), mux))
-		}()
-	}
-
-	if tlsPort != 0 {
-		// Here we confirm that the CertFile and KeyFile exist. If they don't, ListenAndServe just exits with an open error
-		// and you will not know why.
-		if !sys.PathExists(tlsCertFile) {
-			log.Fatalf("WebSocketTLSCertFile does not exist: %s", tlsCertFile)
-		}
-
-		if !sys.PathExists(tlsKeyFile) {
-			log.Fatalf("WebSocketTLSKeyFile does not exist: %s", tlsKeyFile)
-		}
-
-		go func() {
-			log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", tlsPort), tlsCertFile, tlsKeyFile, mux))
-		}()
-	}
-}
-
-func (m *WsMessenger) makeHub() {
+func (m *WsMessenger) Start() *WebSocketHub {
 	m.hub = NewWebSocketHub()
 	go m.hub.run()
+	return m.hub
 }
 
 func (m *WsMessenger) JavascriptInit() string {
-	return fmt.Sprintf("goradd.initMessagingClient(%d, %d);\n", m.port, m.tlsPort)
+	return fmt.Sprintf("goradd.initMessagingClient(%s);\n", config.WebsocketMessengerPrefix)
 }
 
 func (m *WsMessenger) JavascriptFiles() map[string]html.Attributes {
@@ -78,31 +48,14 @@ func (m *WsMessenger) Send(channel string, message string) {
 	}
 }
 
-func (m *WsMessenger) makeWebsocketMux(pattern string) *http.ServeMux {
-	mux := http.NewServeMux()
-
-	mux.Handle(pattern, m.webSocketAuthHandler(m.webSocketHandler()))
-
-	return mux
-}
-
-
-func (m *WsMessenger) webSocketHandler() http.Handler {
+// WebSocketHandler handles web socket requests to send messages to clients.
+// It gets the client id from the context in the request. You should intercept
+// the request, authorize the client, then insert the client ID into the context of the
+// Request
+func (m *WsMessenger) WebSocketHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		serveWs(m.hub, w, r)
-	})
-}
-
-func (m *WsMessenger) webSocketAuthHandler(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		pagestate := r.FormValue("id")
-
-		if !page.HasPage(pagestate) {
-			// The page manager has no record of the pagestate, so either it is expired or never existed
-			return // TODO: return error?
-		}
-
-		next.ServeHTTP(w, r)
+		clientID := r.Context().Value(goradd.WebSocketContext).(string)
+		serveWs(m.hub, w, r, clientID)
 	})
 }
 

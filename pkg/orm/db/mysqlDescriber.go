@@ -142,7 +142,7 @@ func (m *Mysql5) getTables() []mysqlTable {
 
 	// Use the MySQL5 Information Schema to get a list of all the tables in this database
 	// (excluding views, etc.)
-	dbName := m.config.DBName
+	dbName := m.databaseName
 
 	rows, err := m.db.Query(fmt.Sprintf(`
 	SELECT
@@ -188,7 +188,7 @@ func (m *Mysql5) getTables() []mysqlTable {
 
 func (m *Mysql5) getColumns(table string) (columns []mysqlColumn, err error) {
 
-	dbName := m.config.DBName
+	dbName := m.databaseName
 
 	rows, err := m.db.Query(fmt.Sprintf(`
 	SELECT
@@ -237,7 +237,7 @@ func (m *Mysql5) getColumns(table string) (columns []mysqlColumn, err error) {
 
 func (m *Mysql5) getIndexes() (indexes map[string][]mysqlIndex, err error) {
 
-	dbName := m.config.DBName
+	dbName := m.databaseName
 	indexes = make(map[string][]mysqlIndex)
 
 	rows, err := m.db.Query(fmt.Sprintf(`
@@ -281,7 +281,7 @@ func (m *Mysql5) getIndexes() (indexes map[string][]mysqlIndex, err error) {
 //
 // Note that querying the information_schema database is SLOW, so we want to do it as few times as possible.
 func (m *Mysql5) getForeignKeys() (foreignKeys map[string][]mysqlForeignKey, err error) {
-	dbName := m.config.DBName
+	dbName := m.databaseName
 	fkMap := make(map[string]mysqlForeignKey)
 
 	rows, err := m.db.Query(fmt.Sprintf(`

@@ -36,6 +36,8 @@ func initGoradd() {
 	}
 
 	//config.ApiPrefix = "/api/" // turn on the api handler.  Set to whatever prefix you want. Override the ServeApiRequest() to receive requests
+	//config.WebsocketMessengerPrefix = "/grw/" // Sets the websocket messenger prefix. Set to blank to turn off the websocket messenger.
+												// Otherwise, set to whatever prefix will not conflict with the rest of your app.
 
 }
 
@@ -43,8 +45,6 @@ func initGoradd() {
 // you can also put these on the command line
 func setupPorts() {
 	/*
-		//config.UseFCGI = true
-
 		config.Port = 8000
 		config.TLSPort = 8001 // This will require ssl certificates.
 
@@ -52,15 +52,6 @@ func setupPorts() {
 		// The default implementation only uses these for the release build.
 		config.TLSCertFile = ""
 		config.TLSKeyFile = ""
-
-		config.WebSocketPort = 8100
-		config.WebSocketTLSPort = 8101 // This will require ssl certificates.
-
-		// You will need to put in the path to your certfile and keyfile below.
-		// The default implementation only uses these for the release build.
-		// You can use the same ones that you use for normal SSL communication over http.
-		config.WebSocketTLSCertFile = config.TLSCertFile
-		config.WebSocketTLSKeyFile = config.TLSKeyFile
 	*/
 }
 
