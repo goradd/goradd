@@ -66,7 +66,7 @@ import (
 type Mysql5 struct {
 	SqlDb
 	goraddDatabase *Database
-	config      *mysql.Config
+	databaseName string
 }
 
 // New Mysql5 returns a new Mysql5 database object that you can add to the datastore.
@@ -82,13 +82,13 @@ func NewMysql5(dbKey string, params string, config *mysql.Config) *Mysql5 {
 	}
 	if params == "" {
 		params = config.FormatDSN()
-		m.config = config
 	} else {
-		m.config, err = mysql.ParseDSN(params)
+		config, err = mysql.ParseDSN(params)
 		if err != nil {
 			panic("Could not parse the connection string.")
 		}
 	}
+	m.databaseName = config.DBName // save off the database name for later use
 	m.db, err = sqldb.Open("mysql", params)
 	if err != nil {
 		panic("Could not open database: " + err.Error())

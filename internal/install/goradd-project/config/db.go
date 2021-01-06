@@ -41,7 +41,7 @@ func addGoraddDatabase() {
 // app. Modify as needed.
 /*
 func addMyDatabase() {
-	var pwDetails map[string]interface{}
+	var configOverrides map[string]interface{}
 
 	// Use our own flag getter since the flags have not been read yet
 	dbConfigFile, _ := sys.GetFlagString("-dbConfigFile")
@@ -49,12 +49,10 @@ func addMyDatabase() {
 	if dbConfigFile != "" {
 		var err error
 
-		pwDetails, err = stringmap.FromJsonFile(dbConfigFile)
+		configOverrides, err = stringmap.FromJsonFile(dbConfigFile)
 		if err != nil {
 			panic ("Database configuration file error: " + err.Error())
 		}
-
-		fmt.Print(pwDetails)
 	}
 
 	cfg := mysql.NewConfig()
@@ -81,7 +79,7 @@ func addMyDatabase() {
 	//		etc.
 	// 	 See MysqlOverrideConfigSettings for more info.
 	//
-	if i,ok := pwDetails[key]; ok {
+	if i,ok := configOverrides[key]; ok {
 		db.MysqlOverrideConfigSettings(cfg, i.(map[string]interface{}))
 	}
 
