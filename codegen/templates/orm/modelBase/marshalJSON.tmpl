@@ -61,4 +61,177 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
     return json.Marshal(v)
 }
 
+// UnmarshalJSON unmarshalls the given json data into the {{privateName}}. The {{privateName}} can be a
+// newly created object, or one loaded from the database.
+//
+// After unmarshalling, the object is not  saved. You must call Save to insert it into the database
+// or update it.
+//
+// Unmarshalling of sub-objects, as in objects linked via foreign keys, is not supported.
+//
+// The fields it expects are:
+{{for _,col := range t.Columns}}
+//   "{{= col.JsonKey() }}" - {{= col.GoType() }}{{if col.IsNullable}}, nullable{{if}}
+
+{{for}}
+func (o *{{privateName}}Base) UnmarshalJSON (data []byte) (err error) {
+    var v map[string]interface{}
+    if err = json.Unmarshal(data, &v); err != nil { return err}
+    return o.UnmarshalStringMap(v)
+}
+
+// UnmarshalStringMap will load the values from the stringmap into the object.
+//
+// Override this in {{privateName}} to modify the json before sending it here.
+func (o *{{privateName}}Base) UnmarshalStringMap(m map[string]interface{}) (err error) {
+    for k,v := range m {
+        switch k {
+{{for _,col := range t.Columns}}
+{{g
+    if col.IsId {continue}
+    key := col.JsonKey()
+}}
+        case "{{= key}}":
+        {
+{{if !col.IsNullable}}
+            if v == nil {
+                return fmt.Errorf("Json field %s cannot be null", k)
+            }
+{{else}}
+            if v == nil {
+                o.Set{{= col.GoName }}(v)
+                continue
+            }
+{{if}}
+{{g
+switch col.ColumnType {
+
+case query.ColTypeInteger:
+{{
+            if n,ok := v.(json.Number); ok {
+                if i, e := n.Int64(); err == nil {
+                    o.Set{{= col.GoName }}(int(i))
+                } else {
+                    return e
+                }
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeUnsigned:
+{{
+            if n,ok := v.(json.Number); ok {
+                if i, e := n.Int64(); err == nil {
+                    o.Set{{= col.GoName }}(uint(i))
+                } else {
+                    return e
+                }
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeInteger64:
+{{
+            if n,ok := v.(json.Number); ok {
+                if i, e := n.Int64(); err == nil {
+                    o.Set{{= col.GoName }}(i)
+                } else {
+                    return e
+                }
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeUnsigned64:
+{{
+            if n,ok := v.(json.Number); ok {
+                if i, e := n.Int64(); err == nil {
+                    o.Set{{= col.GoName }}(uint64(i))
+                } else {
+                    return e
+                }
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeFloat:
+{{
+            if n,ok := v.(json.Number); ok {
+                if f, e := n.Float64(); err == nil {
+                    o.Set{{= col.GoName }}(float32(f))
+                } else {
+                    return e
+                }
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeDouble:
+{{
+            if n,ok := v.(json.Number); ok {
+                if f, e := n.Float64(); err == nil {
+                    o.Set{{= col.GoName }}(f)
+                } else {
+                    return e
+                }
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeBytes: fallthrough // BASE64 for binary data?
+case query.ColTypeString:
+{{
+            if s,ok := v.(string); !ok {
+                return fmt.Errorf("json field %s must be a string", k)
+            } else {
+                o.Set{{= col.GoName }}(s)
+            }
+}}
+case query.ColTypeBool:
+{{
+            if b,ok := v.(bool); !ok {
+                return fmt.Errorf("json field %s must be a boolean", k)
+            } else {
+                o.Set{{= col.GoName }}(b)
+            }
+}}
+case query.ColTypeDateTime:
+    if col.IsTimestamp {
+{{
+            if n,ok := v.(json.Number); !ok {
+                return fmt.Errorf("json field %s must be a number representing seconds since epoch", k)
+            } else {
+                 if i, e := d.Int64(); err == nil {
+                     o.Set{{= col.GoName }}(int(i))
+                 } else {
+                     return e
+                 }
+            }
+}}
+    } else {
+{{
+             switch d := v.(type) {
+             case json.Number:
+                 if i, e := d.Int64(); err == nil {
+                     o.Set{{= col.GoName }}(int(i))
+                 } else {
+                     return e
+                 }
+             case string:
+                o.Set{{= col.GoName }}(d)
+             default:
+                return fmt.Errorf("json field %s must be a number or a string", k)
+             }
+}}
+    }
+
+}
+}}
+           }
+{{for}}
+        }
+    }
+    return
+}
+
 }}
