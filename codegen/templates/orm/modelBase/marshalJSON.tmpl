@@ -105,12 +105,8 @@ func (o *{{privateName}}Base) UnmarshalStringMap(m map[string]interface{}) (err 
 {{if}}
 {{if col.IsType()}}
 {{# handle type tables specially}}
-            if n,ok := v.(json.Number); ok {
-                if i, e := n.Int64(); err == nil {
-                    o.Set{{= col.ReferenceFunction() }}({{= col.ReferenceFunction() }}(i))
-                } else {
-                    return e
-                }
+            if n,ok := v.(float64); ok {
+                o.Set{{= col.ReferenceFunction() }}({{= col.ReferenceFunction() }}(int(n)))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
             }
@@ -120,72 +116,48 @@ switch col.ColumnType {
 
 case query.ColTypeInteger:
 {{
-            if n,ok := v.(json.Number); ok {
-                if i, e := n.Int64(); err == nil {
-                    o.Set{{= col.GoName }}(int(i))
-                } else {
-                    return e
-                }
+            if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(int(n))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
             }
 }}
 case query.ColTypeUnsigned:
 {{
-            if n,ok := v.(json.Number); ok {
-                if i, e := n.Int64(); err == nil {
-                    o.Set{{= col.GoName }}(uint(i))
-                } else {
-                    return e
-                }
+            if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(uint(n))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
             }
 }}
 case query.ColTypeInteger64:
 {{
-            if n,ok := v.(json.Number); ok {
-                if i, e := n.Int64(); err == nil {
-                    o.Set{{= col.GoName }}(i)
-                } else {
-                    return e
-                }
+            if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(int64(n))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
             }
 }}
 case query.ColTypeUnsigned64:
 {{
-            if n,ok := v.(json.Number); ok {
-                if i, e := n.Int64(); err == nil {
-                    o.Set{{= col.GoName }}(uint64(i))
-                } else {
-                    return e
-                }
+            if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(uint64(n))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
             }
 }}
 case query.ColTypeFloat:
 {{
-            if n,ok := v.(json.Number); ok {
-                if f, e := n.Float64(); err == nil {
-                    o.Set{{= col.GoName }}(float32(f))
-                } else {
-                    return e
-                }
+            if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(float32(n))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
             }
 }}
 case query.ColTypeDouble:
 {{
-            if n,ok := v.(json.Number); ok {
-                if f, e := n.Float64(); err == nil {
-                    o.Set{{= col.GoName }}(f)
-                } else {
-                    return e
-                }
+            if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(n)
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
             }
@@ -208,34 +180,16 @@ case query.ColTypeBool:
             }
 }}
 case query.ColTypeDateTime:
-    if col.IsTimestamp {
-{{
-            if n,ok := v.(json.Number); !ok {
-                return fmt.Errorf("json field %s must be a number representing seconds since epoch", k)
-            } else {
-                 if i, e := n.Int64(); err == nil {
-                     o.Set{{= col.GoName }}(int(i))
-                 } else {
-                     return e
-                 }
-            }
-}}
-    } else {
 {{
              switch d := v.(type) {
-             case json.Number:
-                 if i, e := d.Int64(); err == nil {
-                     o.Set{{= col.GoName }}(int(i))
-                 } else {
-                     return e
-                 }
+             case float64:
+                 o.Set{{= col.GoName }}(datetime.NewDateTime(int(d)))
              case string:
-                o.Set{{= col.GoName }}(d)
+                o.Set{{= col.GoName }}(datetime.NewDateTime(d))
              default:
                 return fmt.Errorf("json field %s must be a number or a string", k)
              }
 }}
-    }
 
 }
 }}

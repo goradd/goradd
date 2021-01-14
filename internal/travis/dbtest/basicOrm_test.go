@@ -393,7 +393,8 @@ func TestFailedGroupBy(t *testing.T) {
 			Select(node.Project().Name())})
 }
 
-func TestJson(t *testing.T) {
+// Quick and dirty test. Not extensive.
+func TestJsonMarshall(t *testing.T) {
 	ctx := getContext()
 	p := model.LoadProject(ctx, "1",
 		node.Project().Name(),
@@ -408,6 +409,25 @@ func TestJson(t *testing.T) {
 	assert.Equal(t, "Completed", m["projectStatusType"])
 	assert.Equal(t, "Karen", m["manager"].(map[string]interface{})["firstName"])
 }
+
+func TestJsonUnmarshall(t *testing.T) {
+	p := model.NewProject()
+	err := json.Unmarshal([]byte(
+		`{
+	"name":"ACME Website Redesign",
+	"projectStatusType":"Completed",
+	"num":14,
+	"startDate":"2020-11-01"
+}
+`),
+		&p)
+	assert.NoError(t, err)
+	assert.Equal(t, "ACME Website Redesign", p.Name())
+	assert.Equal(t, model.ProjectStatusTypeCompleted, p.ProjectStatusType())
+	assert.Equal(t, 14, p.Num())
+	assert.Equal(t, 2020, p.StartDate().Year())
+}
+
 
 // Test that we can get from an integer keyed database
 func TestIntKey(t *testing.T) {
