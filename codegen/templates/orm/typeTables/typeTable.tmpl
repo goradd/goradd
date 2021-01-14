@@ -63,6 +63,17 @@ func {{= propName }}FromID (id string) {{= propName }} {
 	return {{= propName }}(0)
 }
 
+// {{= propName }}FromName converts a {{= propName }} name to a {{= propName }}
+func {{= propName }}FromName (name string) {{= propName }} {
+	switch name {
+{{for _,value := range tt.Values }}
+	case {{= generator.AsConstant(value[tt.FieldNames[1]], query.ColTypeString) }}: return {{= propName }}({{= generator.AsConstant(value[keyField], query.ColTypeInteger) }})
+{{for}}
+	}
+	return {{= propName }}(0)
+}
+
+
 // All{{= propPlural }} returns a slice of all the {{= propName }} items
 func All{{= propPlural }}() (values []{{= propName }}) {
 {{for _,value := range tt.Values }}

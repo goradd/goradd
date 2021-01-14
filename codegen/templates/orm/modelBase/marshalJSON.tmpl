@@ -103,6 +103,18 @@ func (o *{{privateName}}Base) UnmarshalStringMap(m map[string]interface{}) (err 
                 continue
             }
 {{if}}
+{{if col.IsType()}}
+{{# handle type tables specially}}
+            if n,ok := v.(json.Number); ok {
+                if i, e := n.Int64(); err == nil {
+                    o.Set{{= col.ReferenceFunction() }}({{= col.ReferenceFunction() }}(i))
+                } else {
+                    return e
+                }
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+{{else}}
 {{g
 switch col.ColumnType {
 
@@ -201,7 +213,7 @@ case query.ColTypeDateTime:
             if n,ok := v.(json.Number); !ok {
                 return fmt.Errorf("json field %s must be a number representing seconds since epoch", k)
             } else {
-                 if i, e := d.Int64(); err == nil {
+                 if i, e := n.Int64(); err == nil {
                      o.Set{{= col.GoName }}(int(i))
                  } else {
                      return e
@@ -227,7 +239,22 @@ case query.ColTypeDateTime:
 
 }
 }}
+{{if}}
            }
+{{if col.IsType()}}
+{{# Add setting type value by string}}
+        case "{{= col.ReferenceJsonKey(dd) }}":
+            if s,ok := v.(string); !ok {
+                return fmt.Errorf("json field %s must be a string", k)
+            } else {
+                t := {{= col.ReferenceFunction() }}FromName(s)
+                if int(t) == 0 {
+                    return fmt.Errorf("invalid value for field %s", k)
+                }
+                o.Set{{= col.ReferenceFunction() }}(t)
+            }
+
+{{if}}
 {{for}}
         }
     }
