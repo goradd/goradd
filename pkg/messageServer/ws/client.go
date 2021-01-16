@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"time"
 )
 
@@ -128,6 +129,8 @@ func serveWs(hub *WebSocketHub, w http.ResponseWriter, r *http.Request, clientID
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log2.Error(err)
+		dump,_ := httputil.DumpRequest(r, false)
+		log2.Errorf("%q", dump)
 		return
 	}
 

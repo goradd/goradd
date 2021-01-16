@@ -195,7 +195,7 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 
 	// Below is an example of how you can add your own handler that piggybacks
 	// on the framework's websocket messenger.
-	//mux.Handle("/myWS/", a.myWebsocketAuthHandler(messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler()))
+	//mux.Handle("/ws/myws", a.myWebsocketAuthHandler(messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler()))
 
 	
 	// Serve up the websocket messenger

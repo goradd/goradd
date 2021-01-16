@@ -16,7 +16,7 @@ var ApiPrefix = ""
 // The default turns on Websockets and uses this to implement the Watcher and Messenger
 // mechanisms.
 // Override this in the goradd_project/config/goradd.go file and set to blank to turn off handling of websockets.
-var WebsocketMessengerPrefix = "/grw/"
+var WebsocketMessengerPrefix = "/ws/"
 
 // Minify controls whether we try to strip out unnecessary whitespace from our HTML output
 var Minify bool = !Debug

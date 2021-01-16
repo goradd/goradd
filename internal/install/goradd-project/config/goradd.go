@@ -36,7 +36,7 @@ func initGoradd() {
 	}
 
 	//config.ApiPrefix = "/api/" // turn on the api handler.  Set to whatever prefix you want. Override the ServeApiRequest() to receive requests
-	//config.WebsocketMessengerPrefix = "/grw/" // Sets the websocket messenger prefix. Set to blank to turn off the websocket messenger.
+	//config.WebsocketMessengerPrefix = "/ws/" // Sets the websocket messenger prefix. Set to blank to turn off the websocket messenger.
 												// Otherwise, set to whatever prefix will not conflict with the rest of your app.
 
 }

@@ -289,9 +289,6 @@ func (a *Application) MakeAppServer() http.Handler {
 	if config.ApiPrefix != "" {
 		h = a.ServeApiHandler(h)	// serve this here so that we have access to the session
 	}
-	if config.WebsocketMessengerPrefix != "" {
-		h = a.ServeWebsocketMessengerHandler(h)
-	}
 	h = a.ServeAppHandler(buf, h)
 	h = a.PutContextHandler(h)
 	h = a.this().SessionHandler(h)
