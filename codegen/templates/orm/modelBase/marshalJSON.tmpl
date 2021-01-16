@@ -95,7 +95,7 @@ func (o *{{privateName}}Base) UnmarshalStringMap(m map[string]interface{}) (err 
         {
 {{if !col.IsNullable}}
             if v == nil {
-                return fmt.Errorf("Json field %s cannot be null", k)
+                return fmt.Errorf("json field %s cannot be null", k)
             }
 {{else}}
             if v == nil {
