@@ -18,7 +18,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/resource"
-	"github.com/goradd/goradd/pkg/rest"
+	"github.com/goradd/goradd/pkg/rest2"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
@@ -567,11 +567,10 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 
 
 // ServeApiRequest serves up an http api call. The prefix has been removed, so
-// we just process the URL as if it were the command itself.
-// This is currently just a stub to allow you to implement your own API. Eventually we hope this
-// could be an auto-generated REST api or GraphQL api.
+// we just process the URL as if it were the command itself. Returns true if the
+// api request was to a valid resource, or false if not.
 func (a *Application) ServeApiRequest(w http.ResponseWriter, r *http.Request) bool {
-	return rest.HandleRequest(w, r)
+	return rest2.HandleRequest(w, r)
 }
 
 // RegisterStaticFileProcessor registers a processor function for static files that have a particular suffix.
