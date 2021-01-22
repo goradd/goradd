@@ -7,15 +7,11 @@ import "path"
 // all assets get copied
 var AssetPrefix = "/assets/"
 
-// ApiPrefix is the url prefix that indicates this is an API call, like a REST or GraphQL call.
-// The default is blank and does not serve a REST API.
-// Override this in the goradd_project/config/goradd.go file to implement a REST Api
-var ApiPrefix = ""
-
 // WebsocketMessengerPrefix is the url prefix that indicates this is a Websocket call to our messenger service.
-// The default turns on Websockets and uses this to implement the Watcher and Messenger
-// mechanisms.
-// Override this in the goradd_project/config/goradd.go file and set to blank to turn off handling of websockets.
+//
+//The default turns on Websockets and uses this to implement the Watcher and Messenger
+// mechanisms. Override this in the goradd_project/config/goradd.go file to set to the value of your choice,
+// or set to blank to turn off handling of websockets.
 var WebsocketMessengerPrefix = "/ws/"
 
 // Minify controls whether we try to strip out unnecessary whitespace from our HTML output
