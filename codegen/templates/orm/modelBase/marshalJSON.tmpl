@@ -2,8 +2,17 @@
 
 // MarshalJSON serializes the object into a JSON object.
 // Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
-// select only the fields you want when you query for the object.
+// select only the fields you want when you query for the object. Another way to control the output
+// is to call MarshalStringMap, modify the map, then encode the map.
 func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
+    v := o.MarshalStringMap()
+    return json.Marshal(v)
+}
+
+// MarshalStringMap serializes the object into a string map of interfaces.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object. The keys are the same as the json keys.
+func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
     v := make(map[string]interface{})
 
 {{for _,col := range t.Columns}}
@@ -27,7 +36,7 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
 {{if}}
 {{if col.IsReference()}}
     if val := o.{{= col.ReferenceFunction() }}(); val != nil {
-        v["{{= col.ReferenceJsonKey(dd)}}"] = val
+        v["{{= col.ReferenceJsonKey(dd)}}"] = val.MarshalStringMap()
     }
 {{if}}
 {{for}}
@@ -37,11 +46,15 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
 
 {{if ref.IsUnique() }}
     if val := o.{{= ref.GoName }}(); val != nil {
-        v["{{key}}"] = val
+        v["{{key}}"] = val.MarshalStringMap()
     }
 {{else}}
     if val := o.{{= ref.GoPlural }}(); val != nil {
-        v["{{key}}"] = val
+        val2 := make([]map[string]interface{})
+        for _,v2 := range val {
+            val2 = append(val2, val.MarshalStringMap())
+        }
+        v["{{key}}"] = val2
     }
 {{if}}
 {{for}}
@@ -51,7 +64,11 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
     key := ref.JsonKey(dd)
 }}
     if val := o.{{= ref.GoPlural }}(); val != nil {
-        v["{{key}}"] = val
+        val2 := make([]map[string]interface{})
+        for _,v2 := range val {
+            val2 = append(val2, val.MarshalStringMap())
+        }
+        v["{{key}}"] = val2
     }
 {{for}}
 
