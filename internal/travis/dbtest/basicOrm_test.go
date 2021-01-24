@@ -1,7 +1,6 @@
 package dbtest
 
 import (
-	"encoding/json"
 	"goradd-project/gen/goradd/model"
 	"testing"
 
@@ -393,40 +392,6 @@ func TestFailedGroupBy(t *testing.T) {
 			Select(node.Project().Name())})
 }
 
-// Quick and dirty test. Not extensive.
-func TestJsonMarshall(t *testing.T) {
-	ctx := getContext()
-	p := model.LoadProject(ctx, "1",
-		node.Project().Name(),
-		node.Project().ProjectStatusType(),
-		node.Project().Manager().FirstName())
-	j,err := json.Marshal(p)
-	assert.NoError(t, err)
-	m := make(map[string]interface{})
-	err = json.Unmarshal(j, &m)
-	assert.NoError(t, err)
-	assert.Equal(t, "ACME Website Redesign", m["name"])
-	assert.Equal(t, "Completed", m["projectStatusType"])
-	assert.Equal(t, "Karen", m["manager"].(map[string]interface{})["firstName"])
-}
-
-func TestJsonUnmarshall(t *testing.T) {
-	p := model.NewProject()
-	err := json.Unmarshal([]byte(
-		`{
-	"name":"ACME Website Redesign",
-	"projectStatusType":"Completed",
-	"num":14,
-	"startDate":"2020-11-01"
-}
-`),
-		&p)
-	assert.NoError(t, err)
-	assert.Equal(t, "ACME Website Redesign", p.Name())
-	assert.Equal(t, model.ProjectStatusTypeCompleted, p.ProjectStatusType())
-	assert.Equal(t, 14, p.Num())
-	assert.Equal(t, 2020, p.StartDate().Year())
-}
 
 
 // Test that we can get from an integer keyed database

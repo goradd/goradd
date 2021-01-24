@@ -52,6 +52,18 @@ func ProjectStatusTypeFromID (id string) ProjectStatusType {
 	return ProjectStatusType(0)
 }
 
+// ProjectStatusTypeFromName converts a ProjectStatusType name to a ProjectStatusType
+func ProjectStatusTypeFromName (name string) ProjectStatusType {
+	switch name {
+	case "Open": return ProjectStatusType(1)
+	case "Cancelled": return ProjectStatusType(2)
+	case "Completed": return ProjectStatusType(3)
+	case "Planned": return ProjectStatusType(4)
+	}
+	return ProjectStatusType(0)
+}
+
+
 // AllProjectStatusTypes returns a slice of all the ProjectStatusType items
 func AllProjectStatusTypes() (values []ProjectStatusType) {
     values = append(values, 1)

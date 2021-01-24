@@ -31,7 +31,7 @@ func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
 
 {{if col.IsType()}}
     if o.{{= col.ModelName() }}IsValid {
-        v["{{= col.ReferenceJsonKey(dd) }}"] = o.{{= col.ReferenceFunction() }}().String()
+        v["{{= col.ReferenceJsonKey(dd) }}"] = o.{{= col.ReferenceFunction() }}().ID()
     }
 {{if}}
 {{if col.IsReference()}}
@@ -50,9 +50,9 @@ func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
     }
 {{else}}
     if val := o.{{= ref.GoPlural }}(); val != nil {
-        val2 := make([]map[string]interface{})
+        var val2 []map[string]interface{}
         for _,v2 := range val {
-            val2 = append(val2, val.MarshalStringMap())
+            val2 = append(val2, v2.MarshalStringMap())
         }
         v["{{key}}"] = val2
     }
@@ -63,19 +63,29 @@ func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
 {{g
     key := ref.JsonKey(dd)
 }}
+{{if ref.IsTypeAssociation}}
     if val := o.{{= ref.GoPlural }}(); val != nil {
-        val2 := make([]map[string]interface{})
+        var val2 []string
         for _,v2 := range val {
-            val2 = append(val2, val.MarshalStringMap())
+            val2 = append(val2, v2.ID())
         }
         v["{{key}}"] = val2
     }
+{{else}}
+    if val := o.{{= ref.GoPlural }}(); val != nil {
+        var val2 []map[string]interface{}
+        for _,v2 := range val {
+            val2 = append(val2, v2.MarshalStringMap())
+        }
+        v["{{key}}"] = val2
+    }
+{{if}}
 {{for}}
 
     for _k,_v := range o._aliases {
         v[_k] = _v
     }
-    return json.Marshal(v)
+    return v
 }
 
 // UnmarshalJSON unmarshalls the given json data into the {{privateName}}. The {{privateName}} can be a
@@ -84,7 +94,7 @@ func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
 // After unmarshalling, the object is not  saved. You must call Save to insert it into the database
 // or update it.
 //
-// Unmarshalling of sub-objects, as in objects linked via foreign keys, is not supported.
+// Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
 //
 // The fields it expects are:
 {{for _,col := range t.Columns}}
@@ -218,7 +228,7 @@ case query.ColTypeDateTime:
             if s,ok := v.(string); !ok {
                 return fmt.Errorf("json field %s must be a string", k)
             } else {
-                t := {{= col.ReferenceFunction() }}FromName(s)
+                t := {{= col.ReferenceFunction() }}FromID(s)
                 if int(t) == 0 {
                     return fmt.Errorf("invalid value for field %s", k)
                 }
@@ -227,6 +237,29 @@ case query.ColTypeDateTime:
 
 {{if}}
 {{for}}
+
+{{for _,ref := range t.ManyManyReferences }}
+{{g
+    key := ref.JsonKey(dd)
+}}
+{{if ref.IsTypeAssociation}}
+        case "{{= key }}":
+            if vals,ok := v.([]interface{}); !ok {
+                return fmt.Errorf("json field %s must be an array", k)
+            } else {
+                var vals2 []{{= ref.AssociatedObjectName}}
+                for _,i := range vals {
+                    if s,ok := i.(string); !ok {
+                        return fmt.Errorf("json field %s must be a string array", k)
+                    } else {
+                        vals2 = append(vals2, {{= ref.AssociatedObjectName}}FromID(s))
+                    }
+                }
+                o.Set{{= ref.GoPlural }}(vals2)
+            }
+{{if}}
+{{for}}
+
         }
     }
     return
