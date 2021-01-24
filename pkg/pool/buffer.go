@@ -21,8 +21,8 @@ var BufferPool BufferPoolI
 
 // MaxBufferSize is the maximum size that a buffer will be allowed to grow before it is automatically removed
 // from the buffer pool. This prevents large memory allocations from permanently sitting in the buffer pool.
-// You should set MaxBufferSize to a value that is bigger than most http request sizes. The default is 10,000 bytes.
-var MaxBufferSize = 10000
+// You should set MaxBufferSize to a value that is bigger than most http request sizes.
+var MaxBufferSize = 20000
 
 type pool struct {
 	sync.Pool
@@ -61,7 +61,7 @@ func (p pool) PutBuffer(buffer *bytes.Buffer) {
 	} else {
 		// otherwise we will not put the buffer back, allowing the garbage collector to reclaim the memory
 		// Log when our buffer is bigger than MaxBufferSize. If this is happening a lot the value should be increased.
-		log.FrameworkDebug("Buffer size was bigger than MaxBufferSize")
+		log.FrameworkDebugf("Buffer size was bigger than MaxBufferSize. Size = %d", buffer.Cap())
 	}
 }
 

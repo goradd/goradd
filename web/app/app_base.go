@@ -287,11 +287,11 @@ func (a *Application) MakeAppServer() http.Handler {
 	h = a.ServeStaticFileHandler(buf, h) // TODO: Speed this handler up by checking to see if the url is a goradd form before deciding to get context and session
 	h = a.ServeAppHandler(buf, h)
 	h = a.PutAppContextHandler(h)
-	h = a.BufferedOutputHandler(h)
-	h = a.ServeApiHandler(h)	// serve this here so that we have access to the session, but not require buffered output
+	h = a.ServeApiHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
 	h = a.this().HSTSHandler(h)
+	h = a.BufferedOutputHandler(h)
 	h = a.this().AccessLogHandler(h)
 
 	return h
