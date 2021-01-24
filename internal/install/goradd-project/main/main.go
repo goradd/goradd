@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/sys"
 	app2 "github.com/goradd/goradd/web/app"
 	// Below is where you import packages that register forms
 	_ "goradd-project/web/form" // Your  forms.
@@ -32,7 +33,7 @@ func main() {
 
 	useFlags()
 	a := app.MakeApplication()
-	fmt.Println("\nLaunching Server...")
+	fmt.Println("\nLaunching server on " + sys.GetIpAddress())
 	err = a.RunWebServer()
 
 	if err != nil {
