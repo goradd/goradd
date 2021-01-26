@@ -47,10 +47,11 @@ func (a DefaultApiManager) RegisterPattern(pattern string, handler http.Handler)
 	a.Mux.Handle(pattern, handler)
 }
 
-func (a DefaultApiManager) HandleRequest(w http.ResponseWriter, r *http.Request) bool {
+func (a DefaultApiManager) HandleRequest(w http.ResponseWriter, r *http.Request) (isApiCall bool) {
 	// Strip out the api prefix so that handlers don't need to know it,
 	// and we can use it to determine if this is an API request.
 	if strings.HasPrefix(r.URL.Path, config.ApiPrefix) {
+		isApiCall = true
 		p := strings.TrimPrefix(r.URL.Path, config.ApiPrefix)
 		r2 := new(http.Request)
 		*r2 = *r // shallow copy
@@ -78,15 +79,17 @@ func (a DefaultApiManager) HandleRequest(w http.ResponseWriter, r *http.Request)
 				case string:
 					w.WriteHeader(500)
 					w.Write([]byte(v))
+				case int:
+					w.WriteHeader(v)
 				default:
 					w.WriteHeader(500)
 				}
+				isApiCall = true
 			}
 		}()
 		a.Mux.ServeHTTP(w, r2)
-		return true
 	}
-	return false
+	return
 }
 
 // RegisterPattern associates the given URL path with the given handler.

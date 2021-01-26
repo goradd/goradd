@@ -3,15 +3,14 @@ package config
 import "net/http"
 
 // ApiPrefix is the url prefix that indicates this is an API call, like a REST or GraphQL call.
-// The default is blank and will not serve an API.
-// Override this in the goradd_project/config/goradd.go file to turn on the default API handler.
-var ApiPrefix = ""
+// Override this in your goradd_project/config package to change it.
+var ApiPrefix = "/api"
 
 // The ApiManager is a singleton global that manages the deployment of api handlers,
 // like REST or GraphQL handlers.
 //
-// If you specify a value for ApiPrefix, a default ApiManager will be created that uses the ApiPrefix
-// to indicate that a route is for an API handler. You can inject your own ApiManager at any time,
+// If you include the api package in your app, a default ApiManager will be created that uses the
+// ApiPrefix to indicate that a route is for an API handler. You can inject your own ApiManager,
 // but it should be set up before calling RegisterPattern.
 var ApiManager ApiManagerI
 

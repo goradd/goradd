@@ -520,7 +520,8 @@ func RegisterStaticPath(path string, directory string) {
 
 // ServeApiHandler serves up an http API. This could be a REST api or something else.
 //
-// The default sends the request to the injected rest manager if one exists.
+// The default sends the request to the injected api manager if one exists. To turn on the
+// default api manager, uncomment the corresponding import line in your main.c file.
 func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
 	if config.ApiManager == nil {
 		return next
