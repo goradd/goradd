@@ -1459,9 +1459,9 @@ func (o *personBase) MarshalStringMap() map[string]interface{} {
 	}
 
 	if val := o.PersonTypes(); val != nil {
-		var val2 []string
+		var val2 []uint
 		for _, v2 := range val {
-			val2 = append(val2, v2.ID())
+			val2 = append(val2, uint(v2))
 		}
 		v["personTypes"] = val2
 	}
@@ -1534,10 +1534,12 @@ func (o *personBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 			} else {
 				var vals2 []PersonType
 				for _, i := range vals {
-					if s, ok := i.(string); !ok {
-						return fmt.Errorf("json field %s must be a string array", k)
+					if s, ok := i.(int); ok {
+						vals2 = append(vals2, PersonType(s))
+					} else if s, ok := i.(float64); ok {
+						vals2 = append(vals2, PersonType(s))
 					} else {
-						vals2 = append(vals2, PersonTypeFromID(s))
+						return fmt.Errorf("json field %s must be an integer array", k)
 					}
 				}
 				o.SetPersonTypes(vals2)

@@ -2209,7 +2209,7 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 	}
 
 	if o.projectStatusTypeIDIsValid {
-		v["projectStatusType"] = o.ProjectStatusType().ID()
+		v["projectStatusType"] = o.ProjectStatusType().String()
 	}
 	if o.managerIDIsValid {
 		if o.managerIDIsNull {
@@ -2341,7 +2341,9 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
 
-				if n, ok := v.(float64); ok {
+				if n, ok := v.(int); ok {
+					o.SetNum(int(n))
+				} else if n, ok := v.(float64); ok {
 					o.SetNum(int(n))
 				} else {
 					return fmt.Errorf("json field %s must be a number", k)
@@ -2353,7 +2355,9 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
 
-				if n, ok := v.(float64); ok {
+				if n, ok := v.(int); ok {
+					o.SetProjectStatusType(ProjectStatusType(n))
+				} else if n, ok := v.(float64); ok {
 					o.SetProjectStatusType(ProjectStatusType(int(n)))
 				} else {
 					return fmt.Errorf("json field %s must be a number", k)
@@ -2364,7 +2368,7 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 			if s, ok := v.(string); !ok {
 				return fmt.Errorf("json field %s must be a string", k)
 			} else {
-				t := ProjectStatusTypeFromID(s)
+				t := ProjectStatusTypeFromName(s)
 				if int(t) == 0 {
 					return fmt.Errorf("invalid value for field %s", k)
 				}

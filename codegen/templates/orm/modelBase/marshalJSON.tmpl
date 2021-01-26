@@ -31,7 +31,7 @@ func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
 
 {{if col.IsType()}}
     if o.{{= col.ModelName() }}IsValid {
-        v["{{= col.ReferenceJsonKey(dd) }}"] = o.{{= col.ReferenceFunction() }}().ID()
+        v["{{= col.ReferenceJsonKey(dd) }}"] = o.{{= col.ReferenceFunction() }}().String()
     }
 {{if}}
 {{if col.IsReference()}}
@@ -65,9 +65,9 @@ func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
 }}
 {{if ref.IsTypeAssociation}}
     if val := o.{{= ref.GoPlural }}(); val != nil {
-        var val2 []string
+        var val2 []uint
         for _,v2 := range val {
-            val2 = append(val2, v2.ID())
+            val2 = append(val2, uint(v2))
         }
         v["{{key}}"] = val2
     }
@@ -132,18 +132,22 @@ func (o *{{privateName}}Base) UnmarshalStringMap(m map[string]interface{}) (err 
 {{if}}
 {{if col.IsType()}}
 {{# handle type tables specially}}
-            if n,ok := v.(float64); ok {
+           if n,ok := v.(int); ok {
+                o.Set{{= col.ReferenceFunction() }}({{= col.ReferenceFunction() }}(n))
+           } else if n,ok := v.(float64); ok {
                 o.Set{{= col.ReferenceFunction() }}({{= col.ReferenceFunction() }}(int(n)))
-            } else {
+           } else {
                 return fmt.Errorf("json field %s must be a number", k)
-            }
+           }
 {{else}}
 {{g
 switch col.ColumnType {
 
 case query.ColTypeInteger:
 {{
-            if n,ok := v.(float64); ok {
+            if n,ok := v.(int); ok {
+                o.Set{{= col.GoName }}(int(n))
+            } else if n,ok := v.(float64); ok {
                 o.Set{{= col.GoName }}(int(n))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
@@ -151,7 +155,9 @@ case query.ColTypeInteger:
 }}
 case query.ColTypeUnsigned:
 {{
-            if n,ok := v.(float64); ok {
+            if n,ok := v.(int); ok {
+                o.Set{{= col.GoName }}(uint(n))
+            } else if n,ok := v.(float64); ok {
                 o.Set{{= col.GoName }}(uint(n))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
@@ -159,7 +165,9 @@ case query.ColTypeUnsigned:
 }}
 case query.ColTypeInteger64:
 {{
-            if n,ok := v.(float64); ok {
+            if n,ok := v.(int); ok {
+                o.Set{{= col.GoName }}(int64(n))
+            } else if n,ok := v.(float64); ok {
                 o.Set{{= col.GoName }}(int64(n))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
@@ -167,7 +175,9 @@ case query.ColTypeInteger64:
 }}
 case query.ColTypeUnsigned64:
 {{
-            if n,ok := v.(float64); ok {
+            if n,ok := v.(int); ok {
+                o.Set{{= col.GoName }}(uint64(n))
+            } else if n,ok := v.(float64); ok {
                 o.Set{{= col.GoName }}(uint64(n))
             } else {
                 return fmt.Errorf("json field %s must be a number", k)
@@ -228,7 +238,7 @@ case query.ColTypeDateTime:
             if s,ok := v.(string); !ok {
                 return fmt.Errorf("json field %s must be a string", k)
             } else {
-                t := {{= col.ReferenceFunction() }}FromID(s)
+                t := {{= col.ReferenceFunction() }}FromName(s)
                 if int(t) == 0 {
                     return fmt.Errorf("invalid value for field %s", k)
                 }
@@ -249,10 +259,12 @@ case query.ColTypeDateTime:
             } else {
                 var vals2 []{{= ref.AssociatedObjectName}}
                 for _,i := range vals {
-                    if s,ok := i.(string); !ok {
-                        return fmt.Errorf("json field %s must be a string array", k)
+                    if s,ok := i.(int); ok {
+                        vals2 = append(vals2, {{= ref.AssociatedObjectName}}(s))
+                    } else if s,ok := i.(float64); ok {
+                        vals2 = append(vals2, {{= ref.AssociatedObjectName}}(s))
                     } else {
-                        vals2 = append(vals2, {{= ref.AssociatedObjectName}}FromID(s))
+                        return fmt.Errorf("json field %s must be an integer array", k)
                     }
                 }
                 o.Set{{= ref.GoPlural }}(vals2)

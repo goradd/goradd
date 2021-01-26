@@ -653,7 +653,9 @@ func (o *giftBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
 
-				if n, ok := v.(float64); ok {
+				if n, ok := v.(int); ok {
+					o.SetNumber(int(n))
+				} else if n, ok := v.(float64); ok {
 					o.SetNumber(int(n))
 				} else {
 					return fmt.Errorf("json field %s must be a number", k)

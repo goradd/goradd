@@ -19,9 +19,9 @@ func TestJsonMarshall1(t *testing.T) {
 	m := make(map[string]interface{})
 	err = json.Unmarshal(j, &m)
 	assert.NoError(t, err)
-	assert.Equal(t, "ACME Website Redesign", m["name"])
-	assert.Equal(t, "3", m["projectStatusType"])
-	assert.Equal(t, "Karen", m["manager"].(map[string]interface{})["firstName"])
+	assert.Exactly(t, "ACME Website Redesign", m["name"])
+	assert.Exactly(t, "Completed", m["projectStatusType"])
+	assert.Exactly(t, "Karen", m["manager"].(map[string]interface{})["firstName"])
 }
 
 func TestJsonUnmarshall1(t *testing.T) {
@@ -29,17 +29,18 @@ func TestJsonUnmarshall1(t *testing.T) {
 	err := json.Unmarshal([]byte(
 		`{
 	"name":"ACME Website Redesign",
-	"projectStatusType":"3",
+	"projectStatusType":"Completed",
+	"projectStatusTypeID":3,
 	"num":14,
 	"startDate":"2020-11-01"
 }
 `),
 		&p)
 	assert.NoError(t, err)
-	assert.Equal(t, "ACME Website Redesign", p.Name())
-	assert.Equal(t, model.ProjectStatusTypeCompleted, p.ProjectStatusType())
-	assert.Equal(t, 14, p.Num())
-	assert.Equal(t, 2020, p.StartDate().Year())
+	assert.Exactly(t, "ACME Website Redesign", p.Name())
+	assert.Exactly(t, model.ProjectStatusTypeCompleted, p.ProjectStatusType())
+	assert.Exactly(t, 14, p.Num())
+	assert.Exactly(t, 2020, p.StartDate().Year())
 }
 
 func TestJsonMarshall2(t *testing.T) {
@@ -55,7 +56,7 @@ func TestJsonMarshall2(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "John", m["firstName"])
 	assert.Equal(t, "Doe", m["lastName"])
-	assert.ElementsMatch(t, []string{"2","3"}, m["personTypes"])
+	assert.ElementsMatch(t, []float64{2,3}, m["personTypes"])
 }
 
 func TestJsonUnmarshall2(t *testing.T) {
@@ -64,7 +65,7 @@ func TestJsonUnmarshall2(t *testing.T) {
 		`{
 	"firstName":"John",
 	"lastName":"Doe",
-	"personTypes":["2", "3"]
+	"personTypes":[2, 3]
 }
 `),
 		&p)

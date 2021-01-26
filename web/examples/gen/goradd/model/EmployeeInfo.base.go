@@ -841,7 +841,9 @@ func (o *employeeInfoBase) UnmarshalStringMap(m map[string]interface{}) (err err
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
 
-				if n, ok := v.(float64); ok {
+				if n, ok := v.(int); ok {
+					o.SetEmployeeNumber(int(n))
+				} else if n, ok := v.(float64); ok {
 					o.SetEmployeeNumber(int(n))
 				} else {
 					return fmt.Errorf("json field %s must be a number", k)
