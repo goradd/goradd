@@ -413,7 +413,7 @@ func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
 
 		defer buf2.PutBuffer(outBuf)
 		next.ServeHTTP(bw, r)
-		if bw.code != 0 {
+		if bw.code != 0 && bw.code != 200 {
 			grlog.Error("Buffered write error code ", bw.code)
 			w.WriteHeader(bw.code)
 		}
