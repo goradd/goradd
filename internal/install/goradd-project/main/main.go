@@ -1,15 +1,20 @@
 package main
 
+// The spaces in this import block serve to prevent goimports from rearranging the order of the files.
 import (
-	_ "goradd-project/config" // Initialize required variables
-	"goradd-project/web/app"
-	"log"
-	"strings"
+	_ "goradd-project/config" // Initialize required variables. This MUST come first.
+
+	// _ "goradd-project/api" // Uncomment this if you are implementing an API (i.e. REST api).
 
 	"flag"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/sys"
 	app2 "github.com/goradd/goradd/web/app"
+	"goradd-project/web/app"
+	"log"
+	"strings"
+
 	// Below is where you import packages that register forms
 	_ "goradd-project/web/form" // Your  forms.
 	// Custom paths, including additional form directories
@@ -32,7 +37,7 @@ func main() {
 
 	useFlags()
 	a := app.MakeApplication()
-	fmt.Println("\nLaunching Server...")
+	fmt.Println("\nLaunching server on " + sys.GetIpAddress())
 	err = a.RunWebServer()
 
 	if err != nil {

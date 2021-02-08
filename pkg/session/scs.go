@@ -40,8 +40,10 @@ func (mgr ScsManager) Use(next http.Handler) http.Handler {
 		var sessionData *Session
 		if data := mgr.SessionManager.Get(ctx, scsSessionDataKey); data != nil {
 			sessionData = data.(*Session)
+			log.FrameworkDebug("Found session")
 		} else {
 			sessionData = NewSession()
+			log.FrameworkDebug("Creating new session")
 		}
 
 		ctx = context.WithValue(ctx, sessionContext, sessionData)

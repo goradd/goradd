@@ -1058,8 +1058,17 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 
 // MarshalJSON serializes the object into a JSON object.
 // Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
-// select only the fields you want when you query for the object.
+// select only the fields you want when you query for the object. Another way to control the output
+// is to call MarshalStringMap, modify the map, then encode the map.
 func (o *loginBase) MarshalJSON() (data []byte, err error) {
+	v := o.MarshalStringMap()
+	return json.Marshal(v)
+}
+
+// MarshalStringMap serializes the object into a string map of interfaces.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object. The keys are the same as the json keys.
+func (o *loginBase) MarshalStringMap() map[string]interface{} {
 	v := make(map[string]interface{})
 
 	if o.idIsValid {
@@ -1075,7 +1084,7 @@ func (o *loginBase) MarshalJSON() (data []byte, err error) {
 	}
 
 	if val := o.Person(); val != nil {
-		v["person"] = val
+		v["person"] = val.MarshalStringMap()
 	}
 	if o.usernameIsValid {
 		v["username"] = o.username
@@ -1096,7 +1105,87 @@ func (o *loginBase) MarshalJSON() (data []byte, err error) {
 	for _k, _v := range o._aliases {
 		v[_k] = _v
 	}
-	return json.Marshal(v)
+	return v
+}
+
+// UnmarshalJSON unmarshalls the given json data into the login. The login can be a
+// newly created object, or one loaded from the database.
+//
+// After unmarshalling, the object is not  saved. You must call Save to insert it into the database
+// or update it.
+//
+// Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
+//
+// The fields it expects are:
+//   "id" - string
+//   "personID" - string, nullable
+//   "username" - string
+//   "password" - string, nullable
+//   "isEnabled" - bool
+func (o *loginBase) UnmarshalJSON(data []byte) (err error) {
+	var v map[string]interface{}
+	if err = json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	return o.UnmarshalStringMap(v)
+}
+
+// UnmarshalStringMap will load the values from the stringmap into the object.
+//
+// Override this in login to modify the json before sending it here.
+func (o *loginBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
+	for k, v := range m {
+		switch k {
+		case "personID":
+			{
+				if v == nil {
+					o.SetPersonID(v)
+					continue
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetPersonID(s)
+				}
+			}
+		case "username":
+			{
+				if v == nil {
+					return fmt.Errorf("json field %s cannot be null", k)
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetUsername(s)
+				}
+			}
+		case "password":
+			{
+				if v == nil {
+					o.SetPassword(v)
+					continue
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetPassword(s)
+				}
+			}
+		case "isEnabled":
+			{
+				if v == nil {
+					return fmt.Errorf("json field %s cannot be null", k)
+				}
+				if b, ok := v.(bool); !ok {
+					return fmt.Errorf("json field %s must be a boolean", k)
+				} else {
+					o.SetIsEnabled(b)
+				}
+			}
+
+		}
+	}
+	return
 }
 
 // Custom functions. See goradd/codegen/templates/orm/modelBase.

@@ -4,7 +4,6 @@ import (
 	sqldb "database/sql"
 	"fmt"
 	"github.com/go-sql-driver/mysql"
-	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/reflect"
 	"github.com/goradd/goradd/pkg/stringmap"
 	"strings"
@@ -113,12 +112,12 @@ func MysqlOverrideConfigSettings(config *mysql.Config, jsonContent map[string]in
 		case "address": config.Addr = v.(string) // Note: if you set address, you MUST set net also.
 		case "params": config.Params = stringmap.ToStringStringMap(v.(map[string]interface{}))
 		case "collation": config.Collation = v.(string)
-		case "maxAllowedPacket": config.MaxAllowedPacket = javascript.NumberInt(v)
+		case "maxAllowedPacket": config.MaxAllowedPacket = int(v.(float64))
 		case "serverPubKey": config.ServerPubKey = v.(string)
 		case "tlsConfig": config.TLSConfig = v.(string)
-		case "timeout": config.Timeout = time.Duration(javascript.NumberInt(v)) * time.Second
-		case "readTimeout": config.ReadTimeout = time.Duration(javascript.NumberInt(v)) * time.Second
-		case "writeTimeout": config.WriteTimeout = time.Duration(javascript.NumberInt(v)) * time.Second
+		case "timeout": config.Timeout = time.Duration(int(v.(float64))) * time.Second
+		case "readTimeout": config.ReadTimeout = time.Duration(int(v.(float64))) * time.Second
+		case "writeTimeout": config.WriteTimeout = time.Duration(int(v.(float64))) * time.Second
 		case "allowAllFiles": config.AllowAllFiles = v.(bool)
 		case "allowCleartextPasswords": config.AllowCleartextPasswords = v.(bool)
 		case "allowNativePasswords": config.AllowNativePasswords = v.(bool)

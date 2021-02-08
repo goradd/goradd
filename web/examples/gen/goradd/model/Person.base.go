@@ -1409,8 +1409,17 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 
 // MarshalJSON serializes the object into a JSON object.
 // Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
-// select only the fields you want when you query for the object.
+// select only the fields you want when you query for the object. Another way to control the output
+// is to call MarshalStringMap, modify the map, then encode the map.
 func (o *personBase) MarshalJSON() (data []byte, err error) {
+	v := o.MarshalStringMap()
+	return json.Marshal(v)
+}
+
+// MarshalStringMap serializes the object into a string map of interfaces.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object. The keys are the same as the json keys.
+func (o *personBase) MarshalStringMap() map[string]interface{} {
 	v := make(map[string]interface{})
 
 	if o.idIsValid {
@@ -1426,32 +1435,119 @@ func (o *personBase) MarshalJSON() (data []byte, err error) {
 	}
 
 	if val := o.Addresses(); val != nil {
-		v["person"] = val
+		var val2 []map[string]interface{}
+		for _, v2 := range val {
+			val2 = append(val2, v2.MarshalStringMap())
+		}
+		v["person"] = val2
 	}
 
 	if val := o.EmployeeInfo(); val != nil {
-		v["person"] = val
+		v["person"] = val.MarshalStringMap()
 	}
 
 	if val := o.Login(); val != nil {
-		v["person"] = val
+		v["person"] = val.MarshalStringMap()
 	}
 
 	if val := o.ProjectsAsManager(); val != nil {
-		v["manager"] = val
+		var val2 []map[string]interface{}
+		for _, v2 := range val {
+			val2 = append(val2, v2.MarshalStringMap())
+		}
+		v["manager"] = val2
 	}
 
 	if val := o.PersonTypes(); val != nil {
-		v["personTypes"] = val
+		var val2 []uint
+		for _, v2 := range val {
+			val2 = append(val2, uint(v2))
+		}
+		v["personTypes"] = val2
 	}
 	if val := o.ProjectsAsTeamMember(); val != nil {
-		v["projectsAsTeamMember"] = val
+		var val2 []map[string]interface{}
+		for _, v2 := range val {
+			val2 = append(val2, v2.MarshalStringMap())
+		}
+		v["projectsAsTeamMember"] = val2
 	}
 
 	for _k, _v := range o._aliases {
 		v[_k] = _v
 	}
-	return json.Marshal(v)
+	return v
+}
+
+// UnmarshalJSON unmarshalls the given json data into the person. The person can be a
+// newly created object, or one loaded from the database.
+//
+// After unmarshalling, the object is not  saved. You must call Save to insert it into the database
+// or update it.
+//
+// Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
+//
+// The fields it expects are:
+//   "id" - string
+//   "firstName" - string
+//   "lastName" - string
+func (o *personBase) UnmarshalJSON(data []byte) (err error) {
+	var v map[string]interface{}
+	if err = json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	return o.UnmarshalStringMap(v)
+}
+
+// UnmarshalStringMap will load the values from the stringmap into the object.
+//
+// Override this in person to modify the json before sending it here.
+func (o *personBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
+	for k, v := range m {
+		switch k {
+		case "firstName":
+			{
+				if v == nil {
+					return fmt.Errorf("json field %s cannot be null", k)
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetFirstName(s)
+				}
+			}
+		case "lastName":
+			{
+				if v == nil {
+					return fmt.Errorf("json field %s cannot be null", k)
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetLastName(s)
+				}
+			}
+
+		case "personTypes":
+			if vals, ok := v.([]interface{}); !ok {
+				return fmt.Errorf("json field %s must be an array", k)
+			} else {
+				var vals2 []PersonType
+				for _, i := range vals {
+					if s, ok := i.(int); ok {
+						vals2 = append(vals2, PersonType(s))
+					} else if s, ok := i.(float64); ok {
+						vals2 = append(vals2, PersonType(s))
+					} else {
+						return fmt.Errorf("json field %s must be an integer array", k)
+					}
+				}
+				o.SetPersonTypes(vals2)
+			}
+
+		}
+	}
+	return
 }
 
 // Custom functions. See goradd/codegen/templates/orm/modelBase.

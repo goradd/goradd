@@ -2183,8 +2183,17 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 
 // MarshalJSON serializes the object into a JSON object.
 // Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
-// select only the fields you want when you query for the object.
+// select only the fields you want when you query for the object. Another way to control the output
+// is to call MarshalStringMap, modify the map, then encode the map.
 func (o *projectBase) MarshalJSON() (data []byte, err error) {
+	v := o.MarshalStringMap()
+	return json.Marshal(v)
+}
+
+// MarshalStringMap serializes the object into a string map of interfaces.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object. The keys are the same as the json keys.
+func (o *projectBase) MarshalStringMap() map[string]interface{} {
 	v := make(map[string]interface{})
 
 	if o.idIsValid {
@@ -2211,7 +2220,7 @@ func (o *projectBase) MarshalJSON() (data []byte, err error) {
 	}
 
 	if val := o.Manager(); val != nil {
-		v["manager"] = val
+		v["manager"] = val.MarshalStringMap()
 	}
 	if o.nameIsValid {
 		v["name"] = o.name
@@ -2258,23 +2267,207 @@ func (o *projectBase) MarshalJSON() (data []byte, err error) {
 	}
 
 	if val := o.Milestones(); val != nil {
-		v["project"] = val
+		var val2 []map[string]interface{}
+		for _, v2 := range val {
+			val2 = append(val2, v2.MarshalStringMap())
+		}
+		v["project"] = val2
 	}
 
 	if val := o.ChildrenAsParent(); val != nil {
-		v["childrenAsParent"] = val
+		var val2 []map[string]interface{}
+		for _, v2 := range val {
+			val2 = append(val2, v2.MarshalStringMap())
+		}
+		v["childrenAsParent"] = val2
 	}
 	if val := o.ParentsAsChild(); val != nil {
-		v["parentsAsChild"] = val
+		var val2 []map[string]interface{}
+		for _, v2 := range val {
+			val2 = append(val2, v2.MarshalStringMap())
+		}
+		v["parentsAsChild"] = val2
 	}
 	if val := o.TeamMembers(); val != nil {
-		v["teamMembers"] = val
+		var val2 []map[string]interface{}
+		for _, v2 := range val {
+			val2 = append(val2, v2.MarshalStringMap())
+		}
+		v["teamMembers"] = val2
 	}
 
 	for _k, _v := range o._aliases {
 		v[_k] = _v
 	}
-	return json.Marshal(v)
+	return v
+}
+
+// UnmarshalJSON unmarshalls the given json data into the project. The project can be a
+// newly created object, or one loaded from the database.
+//
+// After unmarshalling, the object is not  saved. You must call Save to insert it into the database
+// or update it.
+//
+// Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
+//
+// The fields it expects are:
+//   "id" - string
+//   "num" - int
+//   "projectStatusTypeID" - uint
+//   "managerID" - string, nullable
+//   "name" - string
+//   "description" - string, nullable
+//   "startDate" - datetime.DateTime, nullable
+//   "endDate" - datetime.DateTime, nullable
+//   "budget" - string, nullable
+//   "spent" - string, nullable
+func (o *projectBase) UnmarshalJSON(data []byte) (err error) {
+	var v map[string]interface{}
+	if err = json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	return o.UnmarshalStringMap(v)
+}
+
+// UnmarshalStringMap will load the values from the stringmap into the object.
+//
+// Override this in project to modify the json before sending it here.
+func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
+	for k, v := range m {
+		switch k {
+		case "num":
+			{
+				if v == nil {
+					return fmt.Errorf("json field %s cannot be null", k)
+				}
+
+				if n, ok := v.(int); ok {
+					o.SetNum(int(n))
+				} else if n, ok := v.(float64); ok {
+					o.SetNum(int(n))
+				} else {
+					return fmt.Errorf("json field %s must be a number", k)
+				}
+			}
+		case "projectStatusTypeID":
+			{
+				if v == nil {
+					return fmt.Errorf("json field %s cannot be null", k)
+				}
+
+				if n, ok := v.(int); ok {
+					o.SetProjectStatusType(ProjectStatusType(n))
+				} else if n, ok := v.(float64); ok {
+					o.SetProjectStatusType(ProjectStatusType(int(n)))
+				} else {
+					return fmt.Errorf("json field %s must be a number", k)
+				}
+			}
+
+		case "projectStatusType":
+			if s, ok := v.(string); !ok {
+				return fmt.Errorf("json field %s must be a string", k)
+			} else {
+				t := ProjectStatusTypeFromName(s)
+				if int(t) == 0 {
+					return fmt.Errorf("invalid value for field %s", k)
+				}
+				o.SetProjectStatusType(t)
+			}
+
+		case "managerID":
+			{
+				if v == nil {
+					o.SetManagerID(v)
+					continue
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetManagerID(s)
+				}
+			}
+		case "name":
+			{
+				if v == nil {
+					return fmt.Errorf("json field %s cannot be null", k)
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetName(s)
+				}
+			}
+		case "description":
+			{
+				if v == nil {
+					o.SetDescription(v)
+					continue
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetDescription(s)
+				}
+			}
+		case "startDate":
+			{
+				if v == nil {
+					o.SetStartDate(v)
+					continue
+				}
+				switch d := v.(type) {
+				case float64:
+					o.SetStartDate(datetime.NewDateTime(int(d)))
+				case string:
+					o.SetStartDate(datetime.NewDateTime(d))
+				default:
+					return fmt.Errorf("json field %s must be a number or a string", k)
+				}
+			}
+		case "endDate":
+			{
+				if v == nil {
+					o.SetEndDate(v)
+					continue
+				}
+				switch d := v.(type) {
+				case float64:
+					o.SetEndDate(datetime.NewDateTime(int(d)))
+				case string:
+					o.SetEndDate(datetime.NewDateTime(d))
+				default:
+					return fmt.Errorf("json field %s must be a number or a string", k)
+				}
+			}
+		case "budget":
+			{
+				if v == nil {
+					o.SetBudget(v)
+					continue
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetBudget(s)
+				}
+			}
+		case "spent":
+			{
+				if v == nil {
+					o.SetSpent(v)
+					continue
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetSpent(s)
+				}
+			}
+
+		}
+	}
+	return
 }
 
 // Custom functions. See goradd/codegen/templates/orm/modelBase.

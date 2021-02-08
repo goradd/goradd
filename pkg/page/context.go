@@ -8,7 +8,6 @@ import (
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/log"
-	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
 	"mime/multipart"
 	"net/http"
@@ -140,9 +139,6 @@ func PutContext(r *http.Request, cliArgs []string) *http.Request {
 	}
 	grctx.fillApp(ctx, cliArgs)
 	ctx = context.WithValue(ctx, goradd.PageContext, grctx)
-
-	// Create a context that the orm can use
-	ctx = context.WithValue(ctx, goradd.SqlContext, &db.SqlContext{})
 
 	return r.WithContext(ctx)
 }

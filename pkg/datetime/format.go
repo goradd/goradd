@@ -25,6 +25,9 @@ const (
 	StampMilli = "Jan _2 15:04:05.000"
 	StampMicro = "Jan _2 15:04:05.000000"
 	StampNano  = "Jan _2 15:04:05.000000000"
+
+	DateOnlyFormat = "2006-01-02"
+	TimeOnlyFormat = "15:04:05"
 )
 
 // Parse parses the given layout string to turn a string int a DateTime

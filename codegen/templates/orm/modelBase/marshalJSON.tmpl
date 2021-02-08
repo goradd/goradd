@@ -2,8 +2,17 @@
 
 // MarshalJSON serializes the object into a JSON object.
 // Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
-// select only the fields you want when you query for the object.
+// select only the fields you want when you query for the object. Another way to control the output
+// is to call MarshalStringMap, modify the map, then encode the map.
 func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
+    v := o.MarshalStringMap()
+    return json.Marshal(v)
+}
+
+// MarshalStringMap serializes the object into a string map of interfaces.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object. The keys are the same as the json keys.
+func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
     v := make(map[string]interface{})
 
 {{for _,col := range t.Columns}}
@@ -27,7 +36,7 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
 {{if}}
 {{if col.IsReference()}}
     if val := o.{{= col.ReferenceFunction() }}(); val != nil {
-        v["{{= col.ReferenceJsonKey(dd)}}"] = val
+        v["{{= col.ReferenceJsonKey(dd)}}"] = val.MarshalStringMap()
     }
 {{if}}
 {{for}}
@@ -37,11 +46,15 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
 
 {{if ref.IsUnique() }}
     if val := o.{{= ref.GoName }}(); val != nil {
-        v["{{key}}"] = val
+        v["{{key}}"] = val.MarshalStringMap()
     }
 {{else}}
     if val := o.{{= ref.GoPlural }}(); val != nil {
-        v["{{key}}"] = val
+        var val2 []map[string]interface{}
+        for _,v2 := range val {
+            val2 = append(val2, v2.MarshalStringMap())
+        }
+        v["{{key}}"] = val2
     }
 {{if}}
 {{for}}
@@ -50,15 +63,218 @@ func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
 {{g
     key := ref.JsonKey(dd)
 }}
+{{if ref.IsTypeAssociation}}
     if val := o.{{= ref.GoPlural }}(); val != nil {
-        v["{{key}}"] = val
+        var val2 []uint
+        for _,v2 := range val {
+            val2 = append(val2, uint(v2))
+        }
+        v["{{key}}"] = val2
     }
+{{else}}
+    if val := o.{{= ref.GoPlural }}(); val != nil {
+        var val2 []map[string]interface{}
+        for _,v2 := range val {
+            val2 = append(val2, v2.MarshalStringMap())
+        }
+        v["{{key}}"] = val2
+    }
+{{if}}
 {{for}}
 
     for _k,_v := range o._aliases {
         v[_k] = _v
     }
-    return json.Marshal(v)
+    return v
+}
+
+// UnmarshalJSON unmarshalls the given json data into the {{privateName}}. The {{privateName}} can be a
+// newly created object, or one loaded from the database.
+//
+// After unmarshalling, the object is not  saved. You must call Save to insert it into the database
+// or update it.
+//
+// Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
+//
+// The fields it expects are:
+{{for _,col := range t.Columns}}
+//   "{{= col.JsonKey() }}" - {{= col.GoType() }}{{if col.IsNullable}}, nullable{{if}}
+
+{{for}}
+func (o *{{privateName}}Base) UnmarshalJSON (data []byte) (err error) {
+    var v map[string]interface{}
+    if err = json.Unmarshal(data, &v); err != nil { return err}
+    return o.UnmarshalStringMap(v)
+}
+
+// UnmarshalStringMap will load the values from the stringmap into the object.
+//
+// Override this in {{privateName}} to modify the json before sending it here.
+func (o *{{privateName}}Base) UnmarshalStringMap(m map[string]interface{}) (err error) {
+    for k,v := range m {
+        switch k {
+{{for _,col := range t.Columns}}
+{{g
+    if col.IsId {continue}
+    key := col.JsonKey()
+}}
+        case "{{= key}}":
+        {
+{{if !col.IsNullable}}
+            if v == nil {
+                return fmt.Errorf("json field %s cannot be null", k)
+            }
+{{else}}
+            if v == nil {
+                o.Set{{= col.GoName }}(v)
+                continue
+            }
+{{if}}
+{{if col.IsType()}}
+{{# handle type tables specially}}
+           if n,ok := v.(int); ok {
+                o.Set{{= col.ReferenceFunction() }}({{= col.ReferenceFunction() }}(n))
+           } else if n,ok := v.(float64); ok {
+                o.Set{{= col.ReferenceFunction() }}({{= col.ReferenceFunction() }}(int(n)))
+           } else {
+                return fmt.Errorf("json field %s must be a number", k)
+           }
+{{else}}
+{{g
+switch col.ColumnType {
+
+case query.ColTypeInteger:
+{{
+            if n,ok := v.(int); ok {
+                o.Set{{= col.GoName }}(int(n))
+            } else if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(int(n))
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeUnsigned:
+{{
+            if n,ok := v.(int); ok {
+                o.Set{{= col.GoName }}(uint(n))
+            } else if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(uint(n))
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeInteger64:
+{{
+            if n,ok := v.(int); ok {
+                o.Set{{= col.GoName }}(int64(n))
+            } else if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(int64(n))
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeUnsigned64:
+{{
+            if n,ok := v.(int); ok {
+                o.Set{{= col.GoName }}(uint64(n))
+            } else if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(uint64(n))
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeFloat:
+{{
+            if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(float32(n))
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeDouble:
+{{
+            if n,ok := v.(float64); ok {
+                o.Set{{= col.GoName }}(n)
+            } else {
+                return fmt.Errorf("json field %s must be a number", k)
+            }
+}}
+case query.ColTypeBytes: fallthrough // BASE64 for binary data?
+case query.ColTypeString:
+{{
+            if s,ok := v.(string); !ok {
+                return fmt.Errorf("json field %s must be a string", k)
+            } else {
+                o.Set{{= col.GoName }}(s)
+            }
+}}
+case query.ColTypeBool:
+{{
+            if b,ok := v.(bool); !ok {
+                return fmt.Errorf("json field %s must be a boolean", k)
+            } else {
+                o.Set{{= col.GoName }}(b)
+            }
+}}
+case query.ColTypeDateTime:
+{{
+             switch d := v.(type) {
+             case float64:
+                 o.Set{{= col.GoName }}(datetime.NewDateTime(int(d)))
+             case string:
+                o.Set{{= col.GoName }}(datetime.NewDateTime(d))
+             default:
+                return fmt.Errorf("json field %s must be a number or a string", k)
+             }
+}}
+
+}
+}}
+{{if}}
+           }
+{{if col.IsType()}}
+{{# Add setting type value by string}}
+        case "{{= col.ReferenceJsonKey(dd) }}":
+            if s,ok := v.(string); !ok {
+                return fmt.Errorf("json field %s must be a string", k)
+            } else {
+                t := {{= col.ReferenceFunction() }}FromName(s)
+                if int(t) == 0 {
+                    return fmt.Errorf("invalid value for field %s", k)
+                }
+                o.Set{{= col.ReferenceFunction() }}(t)
+            }
+
+{{if}}
+{{for}}
+
+{{for _,ref := range t.ManyManyReferences }}
+{{g
+    key := ref.JsonKey(dd)
+}}
+{{if ref.IsTypeAssociation}}
+        case "{{= key }}":
+            if vals,ok := v.([]interface{}); !ok {
+                return fmt.Errorf("json field %s must be an array", k)
+            } else {
+                var vals2 []{{= ref.AssociatedObjectName}}
+                for _,i := range vals {
+                    if s,ok := i.(int); ok {
+                        vals2 = append(vals2, {{= ref.AssociatedObjectName}}(s))
+                    } else if s,ok := i.(float64); ok {
+                        vals2 = append(vals2, {{= ref.AssociatedObjectName}}(s))
+                    } else {
+                        return fmt.Errorf("json field %s must be an integer array", k)
+                    }
+                }
+                o.Set{{= ref.GoPlural }}(vals2)
+            }
+{{if}}
+{{for}}
+
+        }
+    }
+    return
 }
 
 }}

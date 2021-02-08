@@ -121,7 +121,7 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 		csrf := session.Get(ctx, goradd.SessionCsrf)
 		csrf2, found := grCtx.FormValue(htmlCsrfToken)
 		if !found || csrf != csrf2 {
-			return fmt.Errorf("CSRF error. PageState: %s, Found: %v, Csrf1: %s, Csrf2: %s", p.stateId, found, csrf, csrf2)
+			return fmt.Errorf("CSRF error. PageState: %s, Found: %v, Csrf1: %v, Csrf2: %s", p.stateId, found, csrf, csrf2)
 		}
 
 		p.Form().updateValues(ctx) // Tell all the controls to update their values.

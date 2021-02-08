@@ -16,9 +16,9 @@ import (
 	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/messageServer/ws"
 	"github.com/goradd/goradd/pkg/orm/broadcast"
+	"github.com/goradd/goradd/pkg/orm/db"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/resource"
-	"github.com/goradd/goradd/pkg/rest"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
@@ -26,7 +26,6 @@ import (
 	"hash/crc64"
 	"io/ioutil"
 	"log"
-	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -75,8 +74,8 @@ type ApplicationI interface {
 	HSTSHandler(next http.Handler) http.Handler
 	ServeRequest(w http.ResponseWriter, r *http.Request)
 	ServeStaticFile(w http.ResponseWriter, r *http.Request) bool
-	ServeApiRequest(w http.ResponseWriter, r *http.Request) bool
 	AccessLogHandler(next http.Handler) http.Handler
+	PutDbContextHandler(next http.Handler) http.Handler
 }
 
 // The application base, to be embedded in your application
@@ -277,7 +276,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // MakeAppServer creates the handler chain that will handle http requests. There are a ton of ways to do this, 3rd party
 // libraries to help with this, and middlewares you can use. This is a working example, and not a declaration of any
 // "right" way to do this, since it can be very application specific. Generally you must make sure that
-// PutContextHandler is called before ServeAppHandler in the chain.
+// PutAppContextHandler is called before ServeAppHandler in the chain.
 func (a *Application) MakeAppServer() http.Handler {
 	// the handler chain gets built in the reverse order of getting called
 	buf := buf2.GetBuffer()
@@ -286,14 +285,10 @@ func (a *Application) MakeAppServer() http.Handler {
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler(buf)
 	h = a.ServeStaticFileHandler(buf, h) // TODO: Speed this handler up by checking to see if the url is a goradd form before deciding to get context and session
-	if config.ApiPrefix != "" {
-		h = a.ServeApiHandler(h)	// serve this here so that we have access to the session
-	}
-	if config.WebsocketMessengerPrefix != "" {
-		h = a.ServeWebsocketMessengerHandler(h)
-	}
 	h = a.ServeAppHandler(buf, h)
-	h = a.PutContextHandler(h)
+	h = a.PutAppContextHandler(h)
+	h = a.ServeApiHandler(h)
+	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
 	h = a.this().HSTSHandler(h)
 	h = a.BufferedOutputHandler(h)
@@ -365,14 +360,29 @@ func (a *Application) ServeAppHandler(buf *bytes.Buffer, next http.Handler) http
 	return http.HandlerFunc(fn)
 }
 
-// PutContextHandler is an http handler that adds the application context to the current context.
-func (a *Application) PutContextHandler(next http.Handler) http.Handler {
+// PutAppContextHandler is an http handler that adds the application context to the current context.
+func (a *Application) PutAppContextHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		r = a.this().PutContext(r)
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
 }
+
+// PutDbContextHandler is an http handler that adds the database context to the current context.
+//
+// This allows the context to be used by various pieces of the app further down the chain. The default
+// assumes a SQL database. Override it to change it.
+func (a *Application) PutDbContextHandler(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		// Create a context that the ORM can use
+		ctx = context.WithValue(ctx, goradd.SqlContext, &db.SqlContext{})
+		next.ServeHTTP(w, r.WithContext(ctx))
+	}
+	return http.HandlerFunc(fn)
+}
+
 
 type bufferedResponseWriter struct {
 	http.ResponseWriter
@@ -403,7 +413,7 @@ func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
 
 		defer buf2.PutBuffer(outBuf)
 		next.ServeHTTP(bw, r)
-		if bw.code != 0 {
+		if bw.code != 0 && bw.code != 200 {
 			grlog.Error("Buffered write error code ", bw.code)
 			w.WriteHeader(bw.code)
 		}
@@ -509,19 +519,16 @@ func RegisterStaticPath(path string, directory string) {
 }
 
 // ServeApiHandler serves up an http API. This could be a REST api or something else.
+//
+// The default sends the request to the injected api manager if one exists. To turn on the
+// default api manager, uncomment the corresponding import line in your main.c file.
 func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
+	if config.ApiManager == nil {
+		return next
+	}
+
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, config.ApiPrefix) {
-			p := strings.TrimPrefix(r.URL.Path, config.ApiPrefix)
-			r2 := new(http.Request)
-			*r2 = *r
-			r2.URL = new(url.URL)
-			*r2.URL = *r.URL
-			r2.URL.Path = p
-			if !a.this().ServeApiRequest(w, r2) {
-				http.NotFound(w, r)
-			}
-		} else {
+		if !config.ApiManager.HandleRequest(w, r) {
 			next.ServeHTTP(w, r)
 		}
 	}
@@ -566,15 +573,6 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 		//grlog.Info("Served: ", r.RequestURI)
 	}
 	return http.HandlerFunc(fn)
-}
-
-
-// ServeApiRequest serves up an http api call. The prefix has been removed, so
-// we just process the URL as if it were the command itself.
-// This is currently just a stub to allow you to implement your own API. Eventually we hope this
-// could be an auto-generated REST api or GraphQL api.
-func (a *Application) ServeApiRequest(w http.ResponseWriter, r *http.Request) bool {
-	return rest.HandleRequest(w, r)
 }
 
 // RegisterStaticFileProcessor registers a processor function for static files that have a particular suffix.

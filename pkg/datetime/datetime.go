@@ -4,11 +4,15 @@
 package datetime
 
 import (
+	"bytes"
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"github.com/goradd/goradd/pkg/javascript"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 	"time"
+	"unicode"
+	"strings"
 )
 
 const (
@@ -131,8 +135,15 @@ func NewDateTime(args ...interface{}) DateTime {
 		} else {
 			if len(args) == 2 {
 				d, _ = Parse(args[1].(string), c)
-			} else {
+			} else if strings.Contains(c, "T") {
+				// A standard RFC 3339 string with both date and time
 				_ = d.UnmarshalText([]byte(c))
+			} else if strings.Contains(c, "-") {
+				// Try a date only string
+				d, _ = Parse(DateOnlyFormat, c)
+			} else if strings.Contains(c, ":"){
+				// Try a time only format
+				d, _ = Parse(TimeOnlyFormat, c)
 			}
 		}
 	case int:
@@ -185,10 +196,21 @@ func (d DateTime) JavaScript() string {
 	}
 }
 
+// UnmarshalJSON will unmarshal the given data into the datetime. If an integer is found,
+// it is treated like a unix timestamp, which is a number of seconds since 1970.
+// If its a string, we read it in as an RFC 3339 string in UTC.
 func (d *DateTime) UnmarshalJSON(data []byte) (err error) {
+	found := bytes.IndexFunc(data, func(r rune) bool {
+		return !unicode.IsDigit(r)
+	})
+	if found == -1 {
+		// all digits
+		time.Unix(int64(strings2.Atoi64(string(data))), 0)
+	}
+
 	err = d.Time.UnmarshalJSON(data)
 	if err != nil {
-		err = fmt.Errorf("JSON dates and times must be ISO8601 formatted AND in UTC: %s", err.Error());
+		err = fmt.Errorf("JSON dates and times must be RFC 3339 formatted AND in UTC, or an integer number of seconds since the epoch: %s", err.Error());
 	}
 	d.isTimestamp = true // json times are always utc
 	return
@@ -197,12 +219,12 @@ func (d *DateTime) UnmarshalJSON(data []byte) (err error) {
 // MarshalJSON satisfies the json.Marshaller interface to output the date as a value embedded in JSON and that
 // will be unpacked by our javascript file.
 //
-// The JSON "standard" behavior is to output an ISO8601 string in UTC time. There are a bunch of problems with this.
+// The JSON "standard" behavior is to output an RFC 3339 string in UTC time. There are a bunch of problems with this.
 // 1) You cannot use this to represent a display date and time in local time. It will get converted to world time.
 //	  even if you try to output a time without timezone information, or with timezone information that is not UTC,
 //    which is what the built-in GO Time object does, most browsers will ignore that part of the string and completely
 //	  botch the time transfer. We would need to create our own interpreter to make that work.
-// 2) Its a string. Unless you know in advance you want a date, or you look for an ISO8601 pattern in every string,
+// 2) Its a string. Unless you know in advance you want a date, or you look for an RFC 3339 pattern in every string,
 //    you cannot just tell the other side its a date.
 //
 // So, we have taken the approach of outputting an object that self-identifies as a goradd date, and already

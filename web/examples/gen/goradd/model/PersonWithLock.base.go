@@ -798,8 +798,17 @@ func (o *personWithLockBase) UnmarshalBinary(data []byte) (err error) {
 
 // MarshalJSON serializes the object into a JSON object.
 // Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
-// select only the fields you want when you query for the object.
+// select only the fields you want when you query for the object. Another way to control the output
+// is to call MarshalStringMap, modify the map, then encode the map.
 func (o *personWithLockBase) MarshalJSON() (data []byte, err error) {
+	v := o.MarshalStringMap()
+	return json.Marshal(v)
+}
+
+// MarshalStringMap serializes the object into a string map of interfaces.
+// Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
+// select only the fields you want when you query for the object. The keys are the same as the json keys.
+func (o *personWithLockBase) MarshalStringMap() map[string]interface{} {
 	v := make(map[string]interface{})
 
 	if o.idIsValid {
@@ -825,7 +834,77 @@ func (o *personWithLockBase) MarshalJSON() (data []byte, err error) {
 	for _k, _v := range o._aliases {
 		v[_k] = _v
 	}
-	return json.Marshal(v)
+	return v
+}
+
+// UnmarshalJSON unmarshalls the given json data into the personWithLock. The personWithLock can be a
+// newly created object, or one loaded from the database.
+//
+// After unmarshalling, the object is not  saved. You must call Save to insert it into the database
+// or update it.
+//
+// Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
+//
+// The fields it expects are:
+//   "id" - string
+//   "firstName" - string
+//   "lastName" - string
+//   "sysTimestamp" - datetime.DateTime, nullable
+func (o *personWithLockBase) UnmarshalJSON(data []byte) (err error) {
+	var v map[string]interface{}
+	if err = json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	return o.UnmarshalStringMap(v)
+}
+
+// UnmarshalStringMap will load the values from the stringmap into the object.
+//
+// Override this in personWithLock to modify the json before sending it here.
+func (o *personWithLockBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
+	for k, v := range m {
+		switch k {
+		case "firstName":
+			{
+				if v == nil {
+					return fmt.Errorf("json field %s cannot be null", k)
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetFirstName(s)
+				}
+			}
+		case "lastName":
+			{
+				if v == nil {
+					return fmt.Errorf("json field %s cannot be null", k)
+				}
+				if s, ok := v.(string); !ok {
+					return fmt.Errorf("json field %s must be a string", k)
+				} else {
+					o.SetLastName(s)
+				}
+			}
+		case "sysTimestamp":
+			{
+				if v == nil {
+					o.SetSysTimestamp(v)
+					continue
+				}
+				switch d := v.(type) {
+				case float64:
+					o.SetSysTimestamp(datetime.NewDateTime(int(d)))
+				case string:
+					o.SetSysTimestamp(datetime.NewDateTime(d))
+				default:
+					return fmt.Errorf("json field %s must be a number or a string", k)
+				}
+			}
+
+		}
+	}
+	return
 }
 
 // Custom functions. See goradd/codegen/templates/orm/modelBase.

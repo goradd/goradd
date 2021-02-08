@@ -56,6 +56,19 @@ func PersonTypeFromID (id string) PersonType {
 	return PersonType(0)
 }
 
+// PersonTypeFromName converts a PersonType name to a PersonType
+func PersonTypeFromName (name string) PersonType {
+	switch name {
+	case "Contractor": return PersonType(1)
+	case "Manager": return PersonType(2)
+	case "Inactive": return PersonType(3)
+	case "Company Car": return PersonType(4)
+	case "Works From Home": return PersonType(5)
+	}
+	return PersonType(0)
+}
+
+
 // AllPersonTypes returns a slice of all the PersonType items
 func AllPersonTypes() (values []PersonType) {
     values = append(values, 1)

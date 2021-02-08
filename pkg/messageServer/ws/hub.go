@@ -87,7 +87,7 @@ func (h *WebSocketHub) run() {
 	for {
 		select {
 		case client := <-h.register:
-			log.FrameworkDebugf("New client registering - client ID: %s", client.clientID)
+			log.Infof("New client registering - client ID: %s", client.clientID)
 
 			if _,ok := h.clients[client.clientID]; ok {
 				// The same client is registering again. Unregister first.
@@ -96,7 +96,7 @@ func (h *WebSocketHub) run() {
 			h.clients[client.clientID] = client
 
 		case client := <-h.unregister:
-			log.FrameworkDebugf("Client unregistering clientID: %s", client.clientID)
+			log.Infof("Client unregistering clientID: %s", client.clientID)
 			h.unregisterClient(client.clientID)
 
 		case msg := <-h.send:
@@ -109,11 +109,12 @@ func (h *WebSocketHub) run() {
 					}
 				}
 			} else {
+				// Sending to a channel that has not been allocated, so ignore it
 				//log.Errorf("Could not find channel %s", msg.Channel)
 			}
 
 		case sub := <-h.subscribe:
-			log.FrameworkDebugf("Subscribing to channel %s - %v", sub.clientID, sub.channel)
+			log.Infof("Subscribing to channel %s - %v", sub.clientID, sub.channel)
 			h.subscribeChannel(sub.clientID, sub.channel)
 
 			/* not broadcasting currently. This might change
