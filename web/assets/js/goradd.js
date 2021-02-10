@@ -14,7 +14,8 @@ if (!function () {
     "use strict";
     return Function.prototype.bind && XMLHttpRequest && !this;
 }()) {
-    window.location = "/Unsupported.g";
+    var body = document.getElementsByTagName("body")[0];
+    body.innerText = "This browser is not supported. Try a different browser.";
 }
 
 /**
@@ -610,7 +611,7 @@ var g$ = function(el) {
                 }
                 return t;
             }
-            return document.getElementById(t);
+                return document.getElementById(t);
         },
         /**
          * qs is a shortcut for document.querySelector

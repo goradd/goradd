@@ -106,10 +106,10 @@ func (ctrl *{{form}}) AddHeadTags()  {
         ctrl.Page().SetTitle("{{title}}")
     }
 
-	{{headTags}}
+	{{> headTags}}
 
-	// double up to deal with body attributes if they exist
-    ctrl.Page().BodyAttributes = `{{bodyAttributes}}`
+	// deal with body attributes too
+    ctrl.Page().BodyAttributes = `{{> bodyAttributes}}`
 }
 
 
