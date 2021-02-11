@@ -23,7 +23,7 @@ func (m *WsMessenger) Start() *WebSocketHub {
 }
 
 func (m *WsMessenger) JavascriptInit() string {
-	return fmt.Sprintf("goradd.initMessagingClient(%s);\n", config.WebsocketMessengerPrefix)
+	return fmt.Sprintf("goradd.initMessagingClient(%q);\n", config.WebsocketMessengerPrefix)
 }
 
 func (m *WsMessenger) JavascriptFiles() map[string]html.Attributes {
