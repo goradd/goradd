@@ -34,7 +34,7 @@ You will also notice a number of executables that were installed in your GOPATH/
 that will be used by goradd to build your application.
 
 ### Run the app
-1. Change your working directory to the goradd-project directory. 
+1. Change your working directory to the goradd-project directory (`cd goradd-project`) and run: `go mod tidy`. This will download all the dependencies of the generated project. 
 2. From the command line, run:
 ```go run goradd-project/main```
 You will see a number of messages about additional go packages being installed.
