@@ -38,8 +38,8 @@ that will be used by goradd to build your application.
 2. From the command line, run:
 ```go run goradd-project/main```
 You will see a number of messages about additional go packages being installed.
-3. Once you see "Launching Server...", point your browser to the following URL. 
-`http://localhost:8000/goradd/`
+3. Once you see "Launching Server...", point your browser to the URL shown in the output. 
+e.g. `http://192.168.29.22/` when the output was `Launching server on 192.168.29.22`.
 
 If everything is working fine, you should see the Goradd startup screen. It will lead 
 you through some additional configuration steps and get you started building your
