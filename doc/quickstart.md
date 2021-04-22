@@ -34,12 +34,13 @@ You will also notice a number of executables that were installed in your GOPATH/
 that will be used by goradd to build your application.
 
 ### Run the app
-1. Change your working directory to the goradd-project directory. 
-2. From the command line, run:
+1. Change your working directory to the goradd-project directory (`cd goradd-project`) 
+and run: `go mod tidy`. This will download all the dependencies of the generated project. 
+3. From the command line, run:
 ```go run goradd-project/main```
 You will see a number of messages about additional go packages being installed.
-3. Once you see "Launching Server...", point your browser to the following URL. 
-`http://localhost:8000/goradd/`
+3. Once you see "Launching Server...", point your browser to the URL shown in the output. 
+e.g. `http://192.168.29.22/` when the output was `Launching server on 192.168.29.22`.
 
 If everything is working fine, you should see the Goradd startup screen. It will lead 
 you through some additional configuration steps and get you started building your
@@ -61,6 +62,16 @@ to input your database credentials for your development computer.
 ## Code Generation
 From the command line, run:
 `go generate goradd-project/codegen/cmd/build.go`
+
+It is possible that when you run the command, nothing happens. This might because the command
+has been silently failing. Usually, that's because go is not able to figure out where the
+`inflector` package is (if you look in `tmp/template/typeTable.tpl.go`, you will find a line
+that includes `github.com/gedex/inflector`). To fix, add this line to the list of requires in
+the `go.mod` file: 
+
+```
+github.com/gedex/inflector v0.0.0-20170307190818-16278e9db813
+```
 
 ## Run Your Application
 Whenever you want to run your application locally, change to the goradd-project directory and run:
