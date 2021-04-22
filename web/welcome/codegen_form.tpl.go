@@ -13,7 +13,7 @@ func (ctrl *CodegenForm) AddHeadTags() {
 		ctrl.Page().SetTitle("Code Generate")
 	}
 
-	// double up to deal with body attributes if they exist
+	// deal with body attributes too
 	ctrl.Page().BodyAttributes = `
 `
 }
