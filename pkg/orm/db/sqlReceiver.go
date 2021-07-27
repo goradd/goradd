@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"github.com/goradd/goradd/pkg/datetime"
 	. "github.com/goradd/goradd/pkg/orm/query"
@@ -17,7 +16,7 @@ import (
 // will return a string if the returned value is bigger than MaxInt64, but smaller than MaxUint64.)
 //
 // Pass the address of the R member to the sql.Scan method when using an object of this type,
-// because there are some idiosyncracies with
+// because there are some idiosyncrasies with
 // how Go treats return values that prevents returning an address of R from a function
 type SqlReceiver struct {
 	R interface{}
@@ -37,13 +36,13 @@ func (r SqlReceiver) IntI() interface{} {
 		if err != nil {
 			log.Panic(err)
 		}
-		return int(i)
+		return i
 	case []byte:
 		i, err := strconv.Atoi(string(r.R.([]byte)[:]))
 		if err != nil {
 			log.Panic(err)
 		}
-		return int(i)
+		return i
 
 	default:
 		log.Panicln("Unknown type returned from sql driver")
@@ -51,8 +50,10 @@ func (r SqlReceiver) IntI() interface{} {
 	}
 }
 
-// Some drivers (like MySQL) return all integers as Int64. This converts a value to a GO uint. Its up to you to make sure
-// you only use this on 32-bit uints or smaller
+// UintI converts the value to an interface to a GO uint.
+//
+// Some drivers (like MySQL) return all integers as Int64. Its up to you to make sure
+// you only use this on 32-bit uints or smaller.
 func (r SqlReceiver) UintI() interface{} {
 	if r.R == nil {
 		return nil
@@ -82,7 +83,7 @@ func (r SqlReceiver) UintI() interface{} {
 	}
 }
 
-// Returns the given value as an interface to an Int64
+// Int64I returns the given value as an interface to an Int64
 func (r SqlReceiver) Int64I() interface{} {
 	if r.R == nil {
 		return nil
@@ -110,6 +111,8 @@ func (r SqlReceiver) Int64I() interface{} {
 	}
 }
 
+// Uint64I returns a value as an interface to a UInt64.
+//
 // Some drivers (like MySQL) return all integers as Int64. This converts to uint64. Its up to you to make sure
 // you only use this on 64-bit uints or smaller.
 func (r SqlReceiver) Uint64I() interface{} {
@@ -148,9 +151,9 @@ func (r SqlReceiver) BoolI() interface{} {
 	case bool:
 		return r.R
 	case int:
-		return (r.R.(int) != 0)
+		return r.R.(int) != 0
 	case int64:
-		return (r.R.(int64) != 0)
+		return r.R.(int64) != 0
 	case string:
 		b, err := strconv.ParseBool(r.R.(string))
 		if err != nil {
@@ -261,7 +264,7 @@ func (r SqlReceiver) TimeI() interface{} {
 		s := string(v)
 		date, err = datetime.FromSqlDateTime(s)
 		if err != nil {
-			if (s == "CURRENT_TIMESTAMP") { // Mysql version of now
+			if s == "CURRENT_TIMESTAMP" { // Mysql version of now
 				return datetime.Current
 			}
 			return nil
@@ -303,45 +306,3 @@ func (r SqlReceiver) Unpack(typ GoColumnType) interface{} {
 	}
 }
 
-// ReceiveRows gets data from a sql result set and returns it as a slice of maps. Each column is mapped to its column name.
-// If you provide column names, those will be used in the map. Otherwise it will get the column names out of the
-// result set provided
-func ReceiveRows(rows *sql.Rows, columnTypes []GoColumnType, columnNames []string) (values []map[string]interface{}) {
-	var err error
-
-	values = []map[string]interface{}{}
-
-	columnReceivers := make([]SqlReceiver, len(columnTypes))
-	columnValueReceivers := make([]interface{}, len(columnTypes))
-
-	if columnNames == nil {
-		columnNames, err = rows.Columns()
-		if err != nil {
-			log.Panic(err)
-		}
-	}
-
-	for i, _ := range columnReceivers {
-		columnValueReceivers[i] = &(columnReceivers[i].R)
-	}
-
-	for rows.Next() {
-		err = rows.Scan(columnValueReceivers...)
-
-		if err != nil {
-			log.Panic(err)
-		}
-
-		v1 := make(map[string]interface{}, len(columnReceivers))
-		for j, vr := range columnReceivers {
-			v1[columnNames[j]] = vr.Unpack(columnTypes[j])
-		}
-		values = append(values, v1)
-
-	}
-	err = rows.Err()
-	if err != nil {
-		log.Panic(err)
-	}
-	return
-}

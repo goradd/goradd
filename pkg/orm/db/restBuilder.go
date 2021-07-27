@@ -26,7 +26,7 @@ type restBuilder struct {
 	op QueryOperation
 }
 
-// NewrestBuilder creates a new restBuilder object.
+// NewRestBuilder creates a new restBuilder object.
 func NewRestBuilder(ctx context.Context, db *Rest) *restBuilder {
 	b := &restBuilder{
 		db: db,
@@ -49,8 +49,8 @@ func (b *restBuilder) Load() (result []map[string]interface{}) {
 	return nil
 }
 
-func (b *restBuilder) Delete() {
-	b.op = QueryOperationDelete
+func (b *restBuilder) LoadCursor() CursorI {
+	return nil
 }
 
 func (b *restBuilder) Count(distinct bool, nodes ...NodeI) uint {

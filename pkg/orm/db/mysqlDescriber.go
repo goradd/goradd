@@ -725,9 +725,8 @@ func (m *Mysql5) getTypeTableDescription(t mysqlTable) TableDescription {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer result.Close()
 
-	values := ReceiveRows(result, columnTypes, columnNames)
+	values := sqlReceiveRows(result, columnTypes, columnNames, nil)
 	td.TypeData = values
 	return td
 }

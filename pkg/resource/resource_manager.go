@@ -1,4 +1,5 @@
-// package resource manages http resources that you serve based on a static path to the resource.
+// Package resource manages http resources that you serve based on a static path to the resource.
+// Example resources include custom generated CSV, PDF and image files.
 package resource
 
 import (
@@ -8,7 +9,7 @@ import (
 	"net/http"
 )
 
-var resourceManager = newResourceManager() // Create a new singleton page manager.
+var resourceManager = newResourceManager() // Create a new singleton resource manager.
 
 type ResourcePathHandler func(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, err error)
 

@@ -24,9 +24,16 @@ type QueryBuilderI interface {
 	Select(nodes ...NodeI) QueryBuilderI
 	Distinct() QueryBuilderI
 	Alias(name string, n NodeI) QueryBuilderI
+	// Load terminates the builder, queries the database, and returns the results as an array of interfaces similar in structure to a json structure
 	Load() []map[string]interface{}
 	Delete()
 	Count(distinct bool, nodes ...NodeI) uint
 	Subquery() *SubqueryNode
 	Context() context.Context
+	LoadCursor() CursorI
+}
+
+type CursorI interface {
+	Next() map[string]interface{}
+	Close() error
 }

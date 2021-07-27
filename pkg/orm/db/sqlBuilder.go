@@ -78,12 +78,8 @@ func (b *sqlBuilder) Load() (result []map[string]interface{}) {
 
 		panic(errors.New(s))
 	}
-	defer rows.Close()
 
-	names, err := rows.Columns()
-	if err != nil {
-		panic(err)
-	}
+	names, _ := rows.Columns()
 
 	columnTypes := make([]GoColumnType, len(names))
 	colCount := b.columnAliases.Len()
@@ -95,11 +91,52 @@ func (b *sqlBuilder) Load() (result []map[string]interface{}) {
 		columnTypes[i] = ColTypeBytes // These will be unpacked when they are retrieved
 	}
 
-	result = ReceiveRows(rows, columnTypes, names)
+	result = sqlReceiveRows(rows, columnTypes, names, b)
 
-	var result2 = b.unpackResult(result)
+	return result
+}
 
-	return result2
+// LoadCursor terminates the builder, queries the database, and returns a cursor that can be used to step through
+// the results.
+//
+// LoadCursor is helpful when loading a large set of data that you want to output in chunks.
+// You cannot use this with Joins that create multiple connections to other objects,
+// like reverse FKs or Multi-multi relationships
+func (b *sqlBuilder) LoadCursor() CursorI {
+	for _, n := range b.nodes() {
+		if NodeIsExpander(n) && !NodeIsExpanded(n){
+			panic("You cannot use a database cursor with a multiple relationship like a reverse relationship or multi-multi relationship.")
+		}
+	}
+
+	b.buildJoinTree()
+
+	b.makeColumnAliases()
+
+	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
+	sql, args := b.db.generateSelectSql(b)
+
+	rows, err := b.db.Query(b.ctx, sql, args...)
+
+	if err != nil {
+		// This is possibly generating an error related to the sql itself, so put the sql in the error message.
+		s := err.Error()
+		s += "\nSql: " + sql
+
+		panic(errors.New(s))
+	}
+
+	names, _ := rows.Columns()
+	columnTypes := make([]GoColumnType, len(names))
+	colCount := b.columnAliases.Len()
+	for i := 0; i < colCount; i++ {
+		columnTypes[i] = ColumnNodeGoType(b.columnAliases.Get(names[i]).node.(*ColumnNode))
+	}
+	// add special aliases
+	for i := colCount; i < len(names); i++ {
+		columnTypes[i] = ColTypeBytes // These will be unpacked when they are retrieved
+	}
+	return 	NewSqlCursor(rows, columnTypes, nil, b)
 }
 
 func (b *sqlBuilder) Delete() {
@@ -150,19 +187,14 @@ func (b *sqlBuilder) Count(distinct bool, nodes ...NodeI) uint {
 	if err != nil {
 		panic(err)
 	}
-	defer rows.Close()
 
-	names, err := rows.Columns()
-	if err != nil {
-		panic(err)
-	}
+	names, _ := rows.Columns()
 
 	columnTypes := []GoColumnType{ColTypeUnsigned}
 
-	result = ReceiveRows(rows, columnTypes, names)
+	result = sqlReceiveRows(rows, columnTypes, names, nil)
 
 	return result[0][countAlias].(uint)
-
 }
 
 // After the intention of the query is gathered, this will add the various nodes from the query
@@ -872,7 +904,7 @@ func NewValueMap() ValueMap {
 	return make(ValueMap)
 }
 
-// Support the deep copy interface
+// Copy does a deep copy and supports the deep copy interface
 func (m ValueMap) Copy() interface{} {
 	vm := ValueMap{}
 	for k, v := range m {

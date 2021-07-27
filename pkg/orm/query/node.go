@@ -51,6 +51,7 @@ type NodeSorter interface {
 type Expander interface {
 	Expand()
 	isExpanded() bool
+	isExpander() bool
 }
 
 type Aliaser interface {
@@ -190,8 +191,9 @@ func NodeIsExpanded(n NodeI) bool {
 // NodeIsExpander is used internally by the framework to detect if the node can be an expanded many-many relationship.
 func NodeIsExpander(n NodeI) bool {
 	if tn, ok := n.(TableNodeI); ok {
-		if _, ok := tn.EmbeddedNode_().(Expander); ok {
-			return true
+		if tn.getParent() == nil {return false}
+		if en, ok := tn.EmbeddedNode_().(Expander); ok {
+			return en.isExpander()
 		}
 	}
 	return false

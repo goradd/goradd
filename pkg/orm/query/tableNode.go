@@ -82,6 +82,10 @@ func (n *TableNode) isExpanded() bool {
 	return false
 }
 
+func (n *TableNode) isExpander() bool {
+	return false
+}
+
 func (n *TableNode) getCondition() NodeI {
 	return nil
 }

@@ -92,6 +92,11 @@ func (n *ReverseReferenceNode) isExpanded() bool {
 	return !n.isArray
 }
 
+func (n *ReverseReferenceNode) isExpander() bool {
+	return true
+}
+
+
 // Equals is used internally by the framework to determine if two nodes are equal.
 func (n *ReverseReferenceNode) Equals(n2 NodeI) bool {
 	if tn, ok := n2.(TableNodeI); !ok {

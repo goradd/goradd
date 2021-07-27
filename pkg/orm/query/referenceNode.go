@@ -138,6 +138,10 @@ func (n *ReferenceNode) isExpanded() bool {
 	return false
 }
 
+func (n *ReferenceNode) isExpander() bool {
+	return false
+}
+
 type referenceNodeEncoded struct {
 	Alias string
 	Condition NodeI
