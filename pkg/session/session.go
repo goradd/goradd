@@ -50,7 +50,7 @@ func (s *Session) MarshalBinary() ([]byte, error) {
 	return s.SafeMap.MarshalBinary()
 }
 
-// UnmarshallBinary unserializes saved session data
+// UnmarshalBinary unserializes saved session data
 func (s *Session) UnmarshalBinary(data []byte) error {
 	if s.SafeMap == nil {
 		s.SafeMap = maps.NewSafeMap()

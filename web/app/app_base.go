@@ -12,6 +12,7 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
+	http2 "github.com/goradd/goradd/pkg/http"
 	grlog "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/messageServer/ws"
@@ -255,7 +256,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				js := []interface{}{errCode, headers}
 				s,err := json.Marshal(js)
 				if err == nil {
-					buf.Write(s)
+					w.Write(s)
 				}
 				w.WriteHeader(400)
 			} else {
@@ -384,46 +385,12 @@ func (a *Application) PutDbContextHandler(next http.Handler) http.Handler {
 }
 
 
-type bufferedResponseWriter struct {
-	http.ResponseWriter
-	buf  *bytes.Buffer
-	code int
-}
-
-func (bw *bufferedResponseWriter) Write(b []byte) (int, error) {
-	return bw.buf.Write(b)
-}
-
-func (bw *bufferedResponseWriter) WriteHeader(code int) {
-	bw.code = code
-}
 
 // BufferedOutputHandler manages the buffering of http output.
 // It will save all output in a buffer, and make sure any and all Header sets can happen before
 // writing the buffer out to the stream.
 func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
-
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		// Setup the output buffer
-		outBuf := buf2.GetBuffer()
-		bw := &bufferedResponseWriter{w, outBuf, 0}
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, goradd.BufferContext, outBuf)
-		r = r.WithContext(ctx)
-
-		defer buf2.PutBuffer(outBuf)
-		next.ServeHTTP(bw, r)
-		if bw.code != 0 && bw.code != 200 {
-			grlog.Error("Buffered write error code ", bw.code)
-			w.WriteHeader(bw.code)
-		}
-		_, e := w.Write(outBuf.Bytes())
-		if e != nil {
-			grlog.Error("Buffered write error ", e.Error())
-		}
-		//log.Printf("Buffered write %d bytes %v %s", i, w.Header(), outBuf.String())
-	}
-	return http.HandlerFunc(fn)
+	return http2.BufferedOutputManager().Use(next)
 }
 
 // ServeStaticFile serves up static html and other files found in registered directories.

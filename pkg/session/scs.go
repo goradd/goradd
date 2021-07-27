@@ -10,7 +10,11 @@ import (
 
 const scsSessionDataKey = "goradd.data"
 
-// ScsManager satisfies the ManagerI interface for the github.com/alexedwards/scs session manager.
+// ScsManager implements the ManagerI interface for the github.com/alexedwards/scs session manager.
+//
+// Note that this manager does post-processing on the response writer, including
+// writing headers. It therefore relies on the buffered output handler to collect the output
+// before writing the headers.
 type ScsManager struct {
 	*scs.SessionManager
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
+	http2 "github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/session"
 	"mime/multipart"
@@ -362,5 +363,5 @@ func NewMockContext() (ctx context.Context) {
 }
 
 func OutputBuffer(ctx context.Context) *bytes.Buffer {
-	return ctx.Value(goradd.BufferContext).(*bytes.Buffer)
+	return http2.OutputBuffer(ctx)
 }
