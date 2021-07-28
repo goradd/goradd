@@ -36,7 +36,7 @@ that will be used by goradd to build your application.
 ### Run the app
 1. Change your working directory to the goradd-project directory. 
 2. From the command line, run:
-```go run goradd-project/main```
+```go run -mod mod goradd-project/main```
 You will see a number of messages about additional go packages being installed.
 3. Once you see "Launching Server...", point your browser to the following URL. 
 `http://localhost:8000/goradd/`
@@ -90,15 +90,8 @@ every time you change projects.
 2) Reproducible builds. This is the primary goal of modules, and generally has been
 successful.
 
-By default, go tries to detect whether to use go modules using
-the following heuristic:
-1. Is the current working directory inside the GOPATH environment variable? If so,
-we are definitely NOT using go modules.
-2. Else, does the current working directory, or a directory above it, have a go.mod file in
-it. If so, we definitely ARE using go modules.
-3. Otherwise, we are in limbo. Go version 1.11 handled this badly by just complaining.
-Go 1.12+ handles it a little better, and allows you to install things with `go get`,
-but you can't really do anything else.
+Depending on your GO version, go tries to detect whether to use go modules. Starting
+with GO 1.14 it is automatically on.
 
 Goradd is module aware, and will work whether you are using modules or not. Because
 of the above behavior, the main thing you should be aware of is that whenever you
@@ -106,6 +99,20 @@ are building your application, or doing anything with the go command line tool,
 you should do it from within the goradd-project directory. That way, the go tool
 will be able to correctly figure out whether its in go module mode, and will be
 able to find all the other parts of your application.
+
+## GO 1.16+
+GO 1.16 adds a new wrinkle to the module problem. Before this version, GO would automatically
+update the go.mod and go.sum files with any missing packages. You could also tell it to 
+automatically update to the latest version of everything.
+
+However, in GO 1.16, they made the go.mod file read-only by default. This is great for people
+who are trying to carefully control their builds, but for most of us, it made life more difficult.
+The good news is that there are many ways to deal with the problem:
+1. Manually update using `go get` for every single dependency (Ugh).
+2. Add the `-mod mod` build flag whenever you are building
+3. Add `-mod=mod` to your GOFLAGS environment variable. As in `GOFLAGS=-mod=mod`
+4. Add `-mod=mod` to the private GOFLAGS environment that is only for Go. To do this, 
+   run `go env -w GOFLAGS=-mod=mod` on your command line. To undo this, run `go env -u GOFLAGS`
 
 See the following for even more:
 * [Go wiki on modules](https://github.com/golang/go/wiki/Modules)
