@@ -19,7 +19,6 @@ import (
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	buf2 "github.com/goradd/goradd/pkg/pool"
-	"github.com/goradd/goradd/pkg/resource"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
@@ -73,10 +72,10 @@ type ApplicationI interface {
 	SetupCacheBuster()
 	SessionHandler(next http.Handler) http.Handler
 	HSTSHandler(next http.Handler) http.Handler
-	ServeRequest(w http.ResponseWriter, r *http.Request)
 	ServeStaticFile(w http.ResponseWriter, r *http.Request) bool
 	AccessLogHandler(next http.Handler) http.Handler
 	PutDbContextHandler(next http.Handler) http.Handler
+	ServeAppMuxHandler(next http.Handler) http.Handler
 }
 
 // The application base, to be embedded in your application
@@ -285,10 +284,10 @@ func (a *Application) MakeAppServer() http.Handler {
 
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler(buf)
+	h = a.this().ServeAppMuxHandler(h)
 	h = a.ServeStaticFileHandler(buf, h) // TODO: Speed this handler up by checking to see if the url is a goradd form before deciding to get context and session
 	h = a.ServeAppHandler(buf, h)
 	h = a.PutAppContextHandler(h)
-	h = a.ServeApiHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
 	h = a.this().HSTSHandler(h)
@@ -326,12 +325,11 @@ func (a *Application) HSTSHandler(next http.Handler) http.Handler {
 }
 
 
-// ServeRequestHandler is the last handler on the default call chain. It calls ServeRequest so the sub-class can handle it.
+// ServeRequestHandler is the last handler on the default call chain.
+// It returns a simple not found error by default.
 func (a *Application) ServeRequestHandler(buf *bytes.Buffer) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		if page.OutputBuffer(r.Context()).Len() == 0 {
-			a.this().ServeRequest(w, r)
-		}
+		http.NotFound(w, r)
 	}
 	return http.HandlerFunc(fn)
 }
@@ -444,15 +442,6 @@ func (a *Application) ServeStaticFile(w http.ResponseWriter, r *http.Request) bo
 	return false // indicates no static file was found
 }
 
-// ServeRequest is the place to serve up any files that have not been handled in any other way, either by a previously
-// declared handler, or by the goradd app server. ServeRequest is only called when all
-// the other methods have failed. Override it to handle other files,
-// or to change the messaging when a bad url is attempted.
-func (a *Application) ServeRequest(w http.ResponseWriter, r *http.Request) {
-	if !resource.HandleRequest(w, r) {
-		http.NotFound(w, r)
-	}
-}
 
 // RegisterStaticPath registers the given url path such that it points to the given directory. For example, passing
 // "/test", "/my/test/dir" will statically serve everything out of /my/test/dir whenever a url has /test in front of it.
@@ -485,21 +474,17 @@ func RegisterStaticPath(path string, directory string) {
 	grlog.Infof("Registering static path %s to %s", path, directory)
 }
 
-// ServeApiHandler serves up an http API. This could be a REST api or something else.
+// ServeAppMuxHandler serves up the AppMuxHandler, which handles REST calls,
+// and dynamically created files.
 //
-// The default sends the request to the injected api manager if one exists. To turn on the
-// default api manager, uncomment the corresponding import line in your main.c file.
-func (a *Application) ServeApiHandler(next http.Handler) http.Handler {
-	if config.ApiManager == nil {
-		return next
+// To use your own AppMuxer, simply set a new http.AppMuxer.
+// To register additional handlers, override this.
+func (a *Application) ServeAppMuxHandler(next http.Handler) http.Handler {
+	if config.ApiManager != nil {
+		config.ApiManager.Use()
 	}
 
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		if !config.ApiManager.HandleRequest(w, r) {
-			next.ServeHTTP(w, r)
-		}
-	}
-	return http.HandlerFunc(fn)
+	return http2.UseAppMuxer(next)
 }
 
 // ServeWebsocketMessengerHandler is the authorization handler for watcher requests.

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"github.com/goradd/gengen/pkg/maps"
+	http2 "github.com/goradd/goradd/pkg/http"
 	"net/http"
 )
 
@@ -17,9 +18,7 @@ var sessionManager ManagerI
 
 // ManagerI is the interface for session managers.
 type ManagerI interface {
-	// Use wraps the given handler in session management stuff. It must decode the session and put it into the sessionContext key in the context
-	// before processing the request, and then encode the session data after the request. See the ScsManager for an example.
-	Use(http.Handler) http.Handler
+	http2.User
 }
 
 // SetSessionManager injects the given session manager as the global session manager
