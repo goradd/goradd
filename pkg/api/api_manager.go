@@ -42,7 +42,7 @@ func (a DefaultApiManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (a DefaultApiManager) Use() {
 	if config.ApiPrefix != "" && config.ApiManager != nil {
-		http2.RegisterAppMuxerHandler(config.ApiPrefix, a)
+		http2.RegisterAppMuxerHandler(config.ApiPrefix, http2.ErrorHandler(a))
 	}
 }
 

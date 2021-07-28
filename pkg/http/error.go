@@ -1,6 +1,9 @@
 package http
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 // Error represents an error response to an http request.
 //
@@ -57,16 +60,20 @@ func SendForbidden() {
 }
 
 // SendMethodNotAllowed will tell the user that the server is not able
-// to perform the http method being asked. allowedMethods is a comma
-// separated string of the allowed methods.
-func SendMethodNotAllowed(allowedMethods string) {
-	e := Error{errCode: http.StatusForbidden}
-	e.SetResponseHeader("Allow", allowedMethods)
+// to perform the http method being asked. allowedMethods is a list of the allowed methods.
+func SendMethodNotAllowed(allowedMethods ...string) {
+	e := Error{errCode: http.StatusMethodNotAllowed}
+	e.SetResponseHeader("Allow", strings.Join(allowedMethods, ","))
 	panic(e)
 }
 
 func SendNotFound() {
 	e := Error{errCode: http.StatusNotFound}
+	panic (e)
+}
+
+func SendNotFoundMessage(message string) {
+	e := Error{errCode: http.StatusNotFound, message: message}
 	panic (e)
 }
 

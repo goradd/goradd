@@ -38,8 +38,11 @@ func UseAppMuxer(next http.Handler) http.Handler {
 
 // RegisterAppMuxerHandler registers a handler for the given directory prefix.
 //
-// The handler will be called with the prefix stripped away. Note that you CAN
-// register a handler for the root directory.
+// The handler will be called with the prefix stripped away. When the prefix is
+// stripped, a rooted path will be passed along. In other words, if the path
+// is /api/file, the called handler will receive /file.
+//
+// Note that you CAN register a handler for the root directory.
 func RegisterAppMuxerHandler(prefix string, handler http.Handler) {
 	if prefix == "" {
 		prefix = "/"
@@ -47,11 +50,14 @@ func RegisterAppMuxerHandler(prefix string, handler http.Handler) {
 		if prefix[0] != '/' {
 			prefix = "/" + prefix
 		}
+		// Make sure the registered prefix ends with a /
 		if prefix[len(prefix) - 1] != '/' {
 			prefix = prefix + "/"
 		}
 	}
-	AppMuxer.Handle(prefix, http.StripPrefix(prefix,handler))
+	// Here we register the handler with a closing / so that similar names will not be confused,
+	// but we do not strip the last / from the file name passed on.
+	AppMuxer.Handle(prefix, http.StripPrefix(prefix[0:len(prefix) - 1],handler))
 }
 
 // ErrorHandler wraps the given handler in a default HTTP error handler that
