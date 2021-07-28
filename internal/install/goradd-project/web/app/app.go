@@ -208,6 +208,10 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 	// note that the app server can serve up static html too. See ServeStaticFile.
 	mux.Handle("/", a.MakeAppServer())
 
+	// Uncomment this and implement ServeData to serve up custom generated
+	// files like PDFs, CSVs, images, etc.
+	//http2.RegisterAppMuxerHandler("/data", http2.ErrorHandler(http.HandlerFunc(a.ServeData)))
+
 	return mux
 }
 
@@ -289,5 +293,18 @@ func (a *Application) ServeStaticFile (w http.ResponseWriter, r *http.Request) b
 	// Serve files from other directories here
 
 	return false	// indicates no static file was found
+}
+*/
+
+// ServeData serves up custom generated files from the /data directory.
+/*
+  This is an example of how to create a custom data server. See above for
+  how this is called.
+func (a *Application) ServeData (w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "data.csv" {
+		serveData(w,r)
+		return
+	}
+	http.NotFound(w, r)
 }
 */

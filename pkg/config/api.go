@@ -15,14 +15,12 @@ var ApiPrefix = "/api"
 var ApiManager ApiManagerI
 
 type ApiManagerI interface {
-	// HandleRequest will route the request to an API handler. It will also
-	// detect that the request was, in fact, an API request and return true
-	// if so, and false if the request was not an API request.
-	HandleRequest(w http.ResponseWriter, r *http.Request) bool
-
 	// RegisterPattern associates the given URL path with the given handler.
 	// Whenever a client navigates to the given pattern, the
 	// handler will be called. Note that the pattern should NOT include the ApiPathPrefix.
 	// If your ApiManager does not need this, just stub it to do nothing.
 	RegisterPattern(pattern string, handler http.Handler)
+
+	// Use registers the api manager with the App Muxer
+	Use()
 }
