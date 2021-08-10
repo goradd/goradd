@@ -115,7 +115,7 @@ GoRADD relies on a number of other open-source projects, including:
 - Alex Edward's [SCS Session Manager Library](https://github.com/alexedwards/scs)
 - Akeda Bagus' [Inflector Library](https://github.com/gedex/inflector)
 - Gorilla's [Websocket Library](https://github.com/gorilla/websocket)
-- Kenneth Shaw's [Snaker Library](https://github.com/knq/snaker)
+- Kenneth Shaw's [Snaker Library](https://github.com/kenshaw/snaker)
 - Stretchr's [Testify Testing Library](https://github.com/stretchr/testify)
 
 GoRADD was created and is maintained by [Shannon Pekary](https://github.com/spekary)

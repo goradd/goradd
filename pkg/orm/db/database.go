@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/gedex/inflector"
 	. "github.com/goradd/goradd/pkg/orm/query"
-	"github.com/knq/snaker"
+	"github.com/kenshaw/snaker"
 	"log"
 	"regexp"
 	"strings"
