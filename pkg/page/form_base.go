@@ -507,7 +507,7 @@ func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 // if you are responding to some kind of security concern where you only want to send back an html
 // redirect without revealing any goradd information, in which case you should use the Page
 func (f *FormBase) ChangeLocation(url string) {
-	f.response.SetLocation(url)
+	f.response.SetLocation(config.MakeLocalPath(url))
 }
 
 // Response returns the form's response object that you can use to queue up javascript commands to the browser to be sent on
@@ -560,9 +560,9 @@ func (f *FormBase) PushLocation(ctx context.Context) {
 // It will go to the fallback url if there is nothing on the stack
 func (f *FormBase) PopLocation(ctx context.Context, fallback string) {
 	if loc := location.Pop(ctx); loc != "" {
-		f.ChangeLocation(config.MakeLocalPath(loc))
+		f.ChangeLocation(loc)
 	} else {
-		f.ChangeLocation(config.MakeLocalPath(fallback))
+		f.ChangeLocation(fallback)
 	}
 }
 

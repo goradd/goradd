@@ -12,7 +12,7 @@ import (
 	//"goradd/orm/query"
 	"context"
 	. "github.com/goradd/goradd/pkg/orm/query"
-	"github.com/knq/snaker"
+	"github.com/kenshaw/snaker"
 	"strconv"
 )
 

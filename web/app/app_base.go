@@ -522,7 +522,6 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		grlog.Info("Serving: ", r.RequestURI)
 		next.ServeHTTP(w, r)
-		//grlog.Info("Served: ", r.RequestURI)
 	}
 	return http.HandlerFunc(fn)
 }

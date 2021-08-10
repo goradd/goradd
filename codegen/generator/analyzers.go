@@ -3,7 +3,7 @@ package generator
 import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	strings2 "github.com/goradd/goradd/pkg/strings"
-	"github.com/knq/snaker"
+	"github.com/kenshaw/snaker"
 	"path"
 	"strings"
 )

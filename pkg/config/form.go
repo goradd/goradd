@@ -1,6 +1,9 @@
 package config
 
-import "path"
+import (
+	"github.com/goradd/goradd/pkg/strings"
+	"path"
+)
 
 // AssetPrefix is the path prefix for all goradd assets. It indicates to the program to look for the given file in the assets collection of files
 // which in development mode is wherever the file is on the disk, and in release mode, the central asset directory where
@@ -68,10 +71,10 @@ func defaultLocalPathMaker(p string) string {
 	if p == "" {
 		panic(`cannot make a local path to an empty path. If you are trying to refer to the root, use '/'.`)
 	}
-	if p[len(p)-1:] == "/" {
+	if p[len(p)-1] == '/' {
 		hasSlash = true
 	}
-	if p[0:1] == "/" && ProxyPath != "" {
+	if p[0] == '/' && ProxyPath != "" && !strings.StartsWith(p, ProxyPath + "/"){
 		p = path.Join(ProxyPath, p) // will strip trailing slashes
 		if hasSlash {
 			p = p + "/"

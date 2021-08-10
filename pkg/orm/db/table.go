@@ -2,7 +2,7 @@ package db
 
 import (
 	strings2 "github.com/goradd/goradd/pkg/strings"
-	"github.com/knq/snaker"
+	"github.com/kenshaw/snaker"
 )
 
 type Table struct {
