@@ -10,6 +10,8 @@ import (
 	_ "goradd-project/tmp/template"
 )
 
+const CiDbUser = "travis"
+
 func main() {
 	config()
 	generator.Generate()
@@ -25,7 +27,7 @@ func initDatabases() {
 	cfg := mysql.NewConfig()
 
 	cfg.DBName = "goradd"
-	cfg.User = "travis"
+	cfg.User = CiDbUser
 	cfg.Passwd = ""
 	cfg.ParseTime = true
 
@@ -38,7 +40,7 @@ func initDatabases() {
 	cfg = mysql.NewConfig()
 
 	cfg.DBName = "goraddUnit"
-	cfg.User = "travis"
+	cfg.User = CiDbUser
 	cfg.Passwd = ""
 
 	key = "goraddUnit"

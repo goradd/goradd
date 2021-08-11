@@ -7,10 +7,16 @@ on:
     branches: [ build ]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
+    env:
+      GOFLAGS: -mod=mod
+      ROOT_DB_USER: root
+      DB_USER: travis
     steps:
+    - name: cwd
+      run: pwd
+
     - uses: actions/checkout@v2
 
     - name: Set up Go
@@ -18,8 +24,55 @@ jobs:
       with:
         go-version: 1.16
 
-    - name: Build
-      run: go build -v ./...
+    - name: Start Chrome
+      run: google-chrome-stable http://localhost:8000?all=1 &
 
-    - name: Test
-      run: go test -v ./...
+    - name: Start Mysql
+      run: sudo /etc/init.d/mysql start
+
+    - name: Setup Databases
+      run: |
+        sudo mysqladmin -proot password ''
+        mysql -u${{ env.ROOT_DB_USER }} -e 'create database goradd;'
+        mysql -u${{ env.ROOT_DB_USER }} goradd < ./web/examples/db/mysql.sql
+        mysql -u${{ env.ROOT_DB_USER }} -e 'create database goraddUnit;'
+        mysql -u${{ env.ROOT_DB_USER }} goraddUnit < ./internal/travis/db/goraddunit.mysql.sql
+        mysql -u${{ env.ROOT_DB_USER }} -e "CREATE USER '${{ env.DB_USER }}'@'localhost' IDENTIFIED BY ''"
+        mysql -u${{ env.ROOT_DB_USER }} -e "GRANT ALL PRIVILEGES ON *.* TO '${{ env.DB_USER }}'@'localhost'"
+        mysql -u${{ env.ROOT_DB_USER }} -e "FLUSH PRIVILEGES"
+
+    - name: Build
+      run: |
+       go install
+       cp -r ./internal/install/goradd-project ${HOME}
+       cp -r ./internal/travis/goradd-test ${HOME}
+
+    - name: Install
+      working-directory: /home/runner
+      run: |
+       mv ./goradd-project/gomod.txt ./goradd-project/go.mod
+       mv ./goradd-test/gomod.txt ./goradd-test/go.mod
+       echo "replace github.com/goradd/goradd => ${RUNNER_WORKSPACE}/goradd" >> ./goradd-project/go.mod
+       echo "replace github.com/goradd/goradd => ${RUNNER_WORKSPACE}/goradd" >> ./goradd-test/go.mod
+       goradd install -s2  # use the goradd tool to complete the install
+
+    - name: Codegen
+      working-directory: /home/runner/goradd-test/codegen
+      run: go generate build.go
+
+    - name: Unit Test Packages
+      working-directory: /home/runner/goradd-project
+      run: go test github.com/goradd/goradd/pkg/...
+
+    - name: Unit Test Database
+      working-directory: /home/runner/goradd-project
+      run: go test github.com/goradd/goradd/internal/travis/dbtest
+
+    - name: Browser Based Tests
+      working-directory: /home/runner/goradd-test
+      run: ${RUNNER_WORKSPACE}/goradd/internal/travis/ci/test.sh
+
+
+
+
+
