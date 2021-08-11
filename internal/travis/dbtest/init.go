@@ -7,11 +7,13 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
+const CiDbUser = "travis"
+
 func init() {
 	cfg := mysql.NewConfig()
 
 	cfg.DBName = "goradd"
-	cfg.User = "travis"
+	cfg.User = CiDbUser
 	cfg.Passwd = ""
 
 	key := "goradd"
@@ -23,7 +25,7 @@ func init() {
 	cfg = mysql.NewConfig()
 
 	cfg.DBName = "goraddUnit"
-	cfg.User = "travis"
+	cfg.User = CiDbUser
 	cfg.Passwd = ""
 
 	key = "goraddUnit"

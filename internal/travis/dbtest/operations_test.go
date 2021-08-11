@@ -91,25 +91,38 @@ func TestCalculations(t *testing.T) {
 		expectedValue interface{}
 		desc          string
 	}
-	var tests = []testCase{
-		{Add(node.Project().Spent(), node.Project().Budget()), 0, "19811.00", "Add test"},
-		{Subtract(node.Project().Spent(), 2000), 0, "8250.75", "Subtract test"},
-		{Multiply(node.Project().Num(), 3), 3, "12", "Multiply test"},
-		{Mod(node.Project().Num(), 2), 2, "1", "Mod test"},
-		{Round(Divide(node.Project().Num(), 2)), 3, "2", "Mod test"},
+	var intTests = []testCase{
+		{Multiply(node.Project().Num(), 3), 3, 12, "Multiply test"},
+		{Mod(node.Project().Num(), 2), 2, 1, "Mod test"},
+		{Round(Divide(node.Project().Num(), 2)), 3, 2, "Mod test"},
+	}
+
+	var floatTests = []testCase{
+		{Add(node.Project().Spent(), node.Project().Budget()), 0, 19811.00, "Add test"},
+		{Subtract(node.Project().Spent(), 2000), 0, 8250.75, "Subtract test"},
 	}
 
 	ctx := getContext()
 
 	var projects []*model.Project
-	for _, c := range tests {
+	for _, c := range intTests {
 		projects = model.QueryProjects(ctx).
 			Alias("Value", c.testNode).
 			OrderBy(node.Project().Num()).
 			Load()
 
-		assert.EqualValues(t, c.expectedValue, projects[c.objectNum].GetAlias("Value").String(), c.desc)
+		assert.EqualValues(t, c.expectedValue, projects[c.objectNum].GetAlias("Value").Int(), c.desc)
 	}
+
+	for _, c := range floatTests {
+		projects = model.QueryProjects(ctx).
+			Alias("Value", c.testNode).
+			OrderBy(node.Project().Num()).
+			Load()
+
+		assert.EqualValues(t, c.expectedValue, projects[c.objectNum].GetAlias("Value").Float(), c.desc)
+	}
+
 }
 
 func TestAggregates(t *testing.T) {
