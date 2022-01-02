@@ -68,10 +68,7 @@ jobs:
 
     - name: Unit Test Database
       working-directory: /home/runner/goradd-test
-      run: |
-        cat go.mod
-        cat ../goradd-project/gen/goradd/model/ProjectStatusType.base.go
-        go test ./dbtest
+      run: go test ./dbtest
 
     - name: Browser Based Tests
       working-directory: /home/runner/goradd-test
