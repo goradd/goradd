@@ -16,7 +16,7 @@ import (
 type NavbarListI interface {
 	page.ControlI
 	control.ItemListI
-	control.DataManagerEmbedder
+	control.DataManagerI
 	OnSelect (action action.ActionI) page.ControlI
 }
 

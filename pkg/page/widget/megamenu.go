@@ -33,7 +33,7 @@ type MegaMenu struct {
 type MegaMenuI interface {
 	page.ControlI
 	control.ItemListI
-	control.DataManagerEmbedder
+	control.DataManagerI
 	GetItemsHtml(items []*control.ListItem, level int) string
 	SetAriaLabel(l string) MegaMenuI
 }

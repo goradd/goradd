@@ -205,7 +205,9 @@ func (m *Mysql5) getColumns(table string) (columns []mysqlColumn, err error) {
 	information_schema.columns
 	WHERE
 	table_name = '%s' AND
-	table_schema = '%s';
+	table_schema = '%s'
+	ORDER BY
+	ordinal_position;
 	`, table, dbName))
 
 	if err != nil {
@@ -294,7 +296,9 @@ func (m *Mysql5) getForeignKeys() (foreignKeys map[string][]mysqlForeignKey, err
 	FROM
 	information_schema.key_column_usage
 	WHERE
-	constraint_schema = '%s';
+	constraint_schema = '%s'
+	ORDER BY
+	ordinal_position;
 	`, dbName))
 	if err != nil {
 		log.Fatal(err)

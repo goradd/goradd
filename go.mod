@@ -9,7 +9,7 @@ require (
 	github.com/goradd/got v0.9.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/kenshaw/snaker v0.1.5
-	github.com/microcosm-cc/bluemonday v1.0.15
+	github.com/microcosm-cc/bluemonday v1.0.17
 	github.com/shurcooL/github_flavored_markdown v0.0.0-20210228213109-c3a9aa474629
 	github.com/spf13/cobra v0.0.3
 	github.com/stretchr/testify v1.4.0
