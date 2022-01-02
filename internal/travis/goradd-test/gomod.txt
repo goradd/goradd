@@ -1,6 +1,6 @@
 module goradd-test
 
-// This is go.mod.txt because we want to preserve "latest" below. Every time we run any go commands
+// This is gomod.txt because we want to preserve "latest" below. Every time we run any go commands
 // go changes the file to have the current version number. Its annoying and we don't want that to
 // accidentally get checked in. So instead, we copy this file to be the go.mod file just before
 // running the test

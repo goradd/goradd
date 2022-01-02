@@ -31,11 +31,11 @@ func GenerateRandomString(s int) (string, error) {
 }
 
 // Encrypt will encrypt the data using AES-GCM and return the encrypted data.
-// Using Decrypt to decrypt the data.
+// Use Decrypt to decrypt the data.
 // key is recommended to be 16 bytes long, and will produce an AES-128 encryption using GCM
 // which is currently considered secure. Note that this is due to our use of GCM. When using CBC,
 // AES-256 is considered secure, but GCM is better and faster.
-// Errors will panic, since they are caused by some kind of system wide failure or a bad key size.
+// Errors will panic, since they are caused by some kind of system-wide failure or a bad key size.
 func Encrypt(data []byte, key []byte) []byte {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -55,7 +55,7 @@ func Encrypt(data []byte, key []byte) []byte {
 
 // Decrypt will decrypt something created by Encrypt. If the data is not decryptable, either because it is corrupt,
 // or the key changed, an error is returned. Otherwise, if there is a system failure, it will panic.
-func Decrypt(data []byte, key []byte) (plaintext []byte, err error) {
+func Decrypt(data []byte, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		panic(err.Error())
@@ -66,5 +66,9 @@ func Decrypt(data []byte, key []byte) (plaintext []byte, err error) {
 	}
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
-	return gcm.Open(nil, nonce, ciphertext, nil)
+	ret,err := gcm.Open(nil, nonce, ciphertext, nil)
+	if ret == nil && err == nil {
+		return []byte{}, nil // encrypted an empty array to begin with
+	}
+	return ret, err
 }

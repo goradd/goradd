@@ -16,8 +16,9 @@ import (
 )
 
 
-// This is specific to automating the build of the examples database code. You do not normally need to
-// set this.
+// BuildingExamples turns on the building of the templates for the examples code.
+// This is specific to automating the build of the examples database code.
+// You do not normally need to set this.
 var BuildingExamples bool
 
 type CodeGenerator struct {
@@ -152,19 +153,24 @@ func Generate() {
 				// the template generator function in each template, by convention
 				typeTableTemplate.GenerateTypeTable(codegen, dd, typeTable, buf)
 				fileName := typeTableTemplate.FileName(dbKey, typeTable)
-				path := filepath.Dir(fileName)
+				fp := filepath.Dir(fileName)
 
+				// If the file already exists, and we are not over-writing, skip it
 				if _, err := os.Stat(fileName); err == nil {
 					if !typeTableTemplate.Overwrite() {
 						continue
 					}
 				}
 
-				os.MkdirAll(path, 0777)
-				err := ioutil.WriteFile(fileName, buf.Bytes(), 0644)
-				if err != nil {
+				if err := os.MkdirAll(fp, 0777); err != nil {
 					log.Print(err)
 				}
+				if err := ioutil.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
+					log.Print(err)
+				} else {
+					log.Printf("Writing %s", fileName)
+				}
+				RunGoImports(fileName)
 			}
 		}
 
@@ -174,36 +180,24 @@ func Generate() {
 				buf.Reset()
 				tableTemplate.GenerateTable(codegen, dd, table, buf)
 				fileName := tableTemplate.FileName(dbKey, table)
-				path := filepath.Dir(fileName)
+				fp := filepath.Dir(fileName)
 
+				// If the file already exists, and we are not over-writing, skip it
 				if _, err := os.Stat(fileName); err == nil {
 					if !tableTemplate.Overwrite() {
 						continue
 					}
 				}
 
-				os.MkdirAll(path, 0777)
-				err := ioutil.WriteFile(fileName, buf.Bytes(), 0644)
-				if err != nil {
+				if err := os.MkdirAll(fp, 0777); err != nil {
 					log.Print(err)
 				}
-
-				// run imports on all generated go files
-				if strings.EndsWith(fileName, ".go") {
-					curDir,_ := os.Getwd()
-					_ = os.Chdir(filepath.Dir(fileName)) // run it from the files directory to pick up the correct go.mod file if there is one
-					_, err = sys.ExecuteShellCommand("goimports -w " + filepath.Base(fileName))
-					_ = os.Chdir(curDir)
-					if err != nil {
-						if e,ok := err.(*exec.Error); ok {
-							panic("error running goimports: " + e.Error()) // perhaps goimports is not installed?
-						} else if e,ok := err.(*exec.ExitError); ok {
-							// Likely a syntax error in the resulting file
-							log.Print(string(e.Stderr))
-						}
-					}
+				if err := ioutil.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
+					log.Print(err)
+				} else {
+					log.Printf("Writing %s", fileName)
 				}
-
+				RunGoImports(fileName)
 			}
 		}
 
@@ -212,31 +206,54 @@ func Generate() {
 			// the template generator function in each template, by convention
 			oneTimeTemplate.GenerateOnce(codegen, dd, buf)
 			fileName := oneTimeTemplate.FileName(dbKey)
-			path := filepath.Dir(fileName)
+			fp := filepath.Dir(fileName)
 
+			// If the file already exists, and we are not over-writing, skip it
 			if _, err := os.Stat(fileName); err == nil {
 				if !oneTimeTemplate.Overwrite() {
 					continue
 				}
 			}
 
-			os.MkdirAll(path, 0777)
-			err := ioutil.WriteFile(fileName, buf.Bytes(), 0644)
-			if err != nil {
+			if err := os.MkdirAll(fp, 0777); err != nil {
 				log.Print(err)
 			}
+			if err := ioutil.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
+				log.Print(err)
+			} else {
+				log.Printf("Writing %s", fileName)
+			}
+			RunGoImports(fileName)
 		}
 
 	}
 
 }
 
-// Reset resets the internal information of the code generator. Call this just before generating a file.
+func RunGoImports(fileName string) {
+	// run imports on all generated go files
+	if strings.EndsWith(fileName, ".go") {
+		curDir,_ := os.Getwd()
+		_ = os.Chdir(filepath.Dir(fileName)) // run it from the file's directory to pick up the correct go.mod file if there is one
+		_, err := sys.ExecuteShellCommand("goimports -w " + filepath.Base(fileName))
+		_ = os.Chdir(curDir)
+		if err != nil {
+			if e,ok := err.(*exec.Error); ok {
+				panic("error running goimports: " + e.Error()) // perhaps goimports is not installed?
+			} else if e2,ok2 := err.(*exec.ExitError); ok2 {
+				// Likely a syntax error in the resulting file
+				log.Print(string(e2.Stderr))
+			}
+		}
+	}
+}
+
+// ResetImports resets the internal information of the code generator. Call this just before generating a file.
 func (c *CodeGenerator) ResetImports() {
 	c.importAliasesByPath = make(map[string]string)
 }
 
-// AddImportPath adds an import path to the import path list. In particular, it will help manage the package aliases
+// AddImportPaths adds an import path to the import path list. In particular, it will help manage the package aliases
 // so the path can be referred to using the correct package name or package alias. Call this on all
 // paths used by the file before calling ImportString.
 func (c *CodeGenerator) AddImportPaths(paths ...string) {

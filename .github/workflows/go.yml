@@ -2,10 +2,12 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
-
+    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,7 +24,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.16
+        go-version: 1.17
 
     - name: Start Chrome
       run: google-chrome-stable http://localhost:8000?all=1 &
@@ -65,8 +67,11 @@ jobs:
       run: go test github.com/goradd/goradd/pkg/...
 
     - name: Unit Test Database
-      working-directory: /home/runner/goradd-project
-      run: go test github.com/goradd/goradd/internal/travis/dbtest
+      working-directory: /home/runner/goradd-test
+      run: |
+        cat go.mod
+        cat ../goradd-project/gen/goradd/model/ProjectStatusType.base.go
+        go test ./dbtest
 
     - name: Browser Based Tests
       working-directory: /home/runner/goradd-test

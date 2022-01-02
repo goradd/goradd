@@ -13,7 +13,7 @@ func (ctrl *ControlsForm) AddHeadTags() {
 		ctrl.Page().SetTitle("Control Examples")
 	}
 
-	// double up to deal with body attributes if they exist
+	// deal with body attributes too
 	ctrl.Page().BodyAttributes = `
 `
 }

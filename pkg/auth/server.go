@@ -1,4 +1,4 @@
-// package auth provides a default authentication framework based on user name and password.
+// Package auth provides a default authentication framework based on user name and password.
 // To use it, call RegisterAuthenticationService and pass it a structure that will handle the various
 // routines for authentication.
 //

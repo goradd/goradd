@@ -15,7 +15,7 @@ func (ctrl *IndexForm) AddHeadTags() {
 		ctrl.Page().SetTitle("Tutorial")
 	}
 
-	// double up to deal with body attributes if they exist
+	// deal with body attributes too
 	ctrl.Page().BodyAttributes = `
 `
 }
