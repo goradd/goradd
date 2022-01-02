@@ -1,40 +1,28 @@
 # Quick Start
 ## Installation
 ### Setup Your Environment
-The below instructions mention "modules". If you are new to go or you don't know that
-modules are, we recommend installing
-the latest version of go, and following the instructions below for go when not using modules.
-For more information, see [More On Modules](#more-on-modules) further below.
 
-#### For Go 1.10 and below, or Go 1.11+ not using modules:
-1. Create a new directory for your project, set the GOPATH environment variable to it and 
-then change your working directory to the new directory.
-1. The following steps will create a `bin` directory in your new directory. Before doing this
-though, make sure the `GOPATH/bin` directory is in your execution path. On Mac OS or Linux 
-you would do that by editing your .bash_profile directory or .profile 
-directory and on Windows you would use the System utility. Note that you will need to
-do this for every new project.
-
-#### For Go 1.11+ using modules:
-1. Make sure your GOPATH/bin directory is in your execution path. With go modules, you
-only need to do this once and it will work for all of your projects.
-1. Create a new project directory *outside* of your GOPATH and change your working directory 
+1. Make sure go is installed and the bin directory of your go installation is in your execution path. 
+To check this, execute ```go version``` on the command line.
+If go is correctly installed, you should see a response with the current
+version of your go executable.
+2. Create a new project directory *outside* of your go installation directory and change your working directory 
 to the new directory.
 
 ### Install Goradd
 1. Execute ```go get -u github.com/goradd/goradd```
 1. Execute ```goradd install```
 
-You should now have a new directory in you current directory:
+You should now have a new directory in your current directory:
 * goradd-project. This is where you will build out your project. You **can** put some
 files outside of this path, but goradd will be placing its code generated files
 inside of here.
 
-You will also notice a number of executables that were installed in your GOPATH/bin directory
+You may also notice a number of executables that were installed in your go /bin directory
 that will be used by goradd to build your application.
 
 ### Run the app
-1. Change your working directory to the goradd-project directory. 
+1. Change your working directory to the goradd-project directory that was created in the prior step. 
 2. From the command line, run:
 ```go run -mod mod goradd-project/main```
 You will see a number of messages about additional go packages being installed.
@@ -77,28 +65,9 @@ source-level debugger is very easy to use.
 * Visual Studio Code
 * Eclipse with GoClipse
 
-# More on Modules
-Since the introduction of go modules in version 1.10, the go build environment has
-been in flux. The transition to go modules for some has not been very smooth, and
-this is compounded by the go team's insistence that they are eventually going to make go modules
-required (they said this would happen in 1.12, and then didn't)
-before they have worked out the kinks.
-
-That said, go modules brings a couple of nice features to the go build environment:
-1) Only one GOPATH directory. You don't need to change your environment variables 
-every time you change projects.
-2) Reproducible builds. This is the primary goal of modules, and generally has been
-successful.
-
-Depending on your GO version, go tries to detect whether to use go modules. Starting
-with GO 1.14 it is automatically on.
-
-Goradd is module aware, and will work whether you are using modules or not. Because
-of the above behavior, the main thing you should be aware of is that whenever you
-are building your application, or doing anything with the go command line tool,
-you should do it from within the goradd-project directory. That way, the go tool
-will be able to correctly figure out whether its in go module mode, and will be
-able to find all the other parts of your application.
+# Modules
+Goradd is module aware. Whenever you run goradd tools, it will look
+in the nearest go.mod file to read the current module environment.
 
 ## GO 1.16+
 GO 1.16 adds a new wrinkle to the module problem. Before this version, GO would automatically
@@ -106,7 +75,7 @@ update the go.mod and go.sum files with any missing packages. You could also tel
 automatically update to the latest version of everything.
 
 However, in GO 1.16, they made the go.mod file read-only by default. This is great for people
-who are trying to carefully control their builds, but for most of us, it made life more difficult.
+who are trying to carefully control their builds, but for most development, it made life more difficult.
 The good news is that there are many ways to deal with the problem:
 1. Manually update using `go get` for every single dependency (Ugh).
 2. Add the `-mod mod` build flag whenever you are building
@@ -114,6 +83,5 @@ The good news is that there are many ways to deal with the problem:
 4. Add `-mod=mod` to the private GOFLAGS environment that is only for Go. To do this, 
    run `go env -w GOFLAGS=-mod=mod` on your command line. To undo this, run `go env -u GOFLAGS`
 
-See the following for even more:
+See the following for more info:
 * [Go wiki on modules](https://github.com/golang/go/wiki/Modules)
-* [Dave Cheney's Go Modules Article](https://dave.cheney.net/2018/07/14/taking-go-modules-for-a-spin)

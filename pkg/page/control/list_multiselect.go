@@ -14,7 +14,7 @@ import (
 type MultiselectListI interface {
 	page.ControlI
 	ItemListI
-	DataManagerEmbedder
+	DataManagerI
 }
 
 // MultiselectList is a generic list box which allows multiple selections. It is here for completeness, but is not used

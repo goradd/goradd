@@ -11,8 +11,8 @@ import (
 type UnorderedListI interface {
 	page.ControlI
 	ItemListI
+	DataManagerI
 	GetItemsHtml(items []*ListItem) string
-	DataManagerEmbedder
 	SetBulletStyle(s string) UnorderedListI
 	SetItemTag(s string) UnorderedListI
 }

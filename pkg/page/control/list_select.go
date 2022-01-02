@@ -16,7 +16,7 @@ import (
 type SelectListI interface {
 	page.ControlI
 	ItemListI
-	DataManagerEmbedder
+	DataManagerI
 	SetValue(v interface{})
 	Value() interface{}
 	IntValue() int

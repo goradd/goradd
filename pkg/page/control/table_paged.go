@@ -8,7 +8,7 @@ import (
 )
 
 type PagedTableI interface {
-	TableEmbedder
+	TableI
 	PagedControlI
 }
 
