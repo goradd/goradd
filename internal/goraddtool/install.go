@@ -89,7 +89,7 @@ func depInstall() {
 	for _, dep := range dependencies {
 		var res []byte
 		fmt.Print("Installing " + dep + " ")
-		res, err = sys2.ExecuteShellCommand("go get " + dep)
+		res, err = sys2.ExecuteShellCommand("go install " + dep + "@latest")
 		if err != nil {
 			fmt.Print(string(res))
 			fmt.Print(string(err.(*exec.ExitError).Stderr))
