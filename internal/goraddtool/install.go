@@ -72,7 +72,10 @@ func copyInstall(overwrite bool) {
 
 		dest2 := filepath.Join(dest, "gomod.txt")
 		dest3 := filepath.Join(dest, "go.mod")
-		os.Rename(dest2, dest3)
+		err = os.Rename(dest2, dest3)
+		if err != nil {
+			log.Fatal("could not rename go.mod: " + err.Error())
+		}
 	}
 }
 
@@ -80,16 +83,22 @@ func depInstall() {
 	var err error
 
 	// install binary dependencies
-	err = os.Chdir(filepath.Join(cwd, "goradd-project")) // For module-aware mode in go v1.11, we have to be in a directory with a go.mod file
-	// Release notes for go v1.12 appear to indicate they have fixed this.
+	err = os.Chdir(filepath.Join(cwd, "goradd-project"))
 	if err != nil {
 		log.Fatal("could not change to the goradd-project directory: " + err.Error())
+	}
+
+	if res, err := sys2.ExecuteShellCommand("go mod tidy"); err != nil {
+		fmt.Print(string(res))
+		fmt.Print(string(err.(*exec.ExitError).Stderr))
+		// the error message that was generated
+		log.Fatal("could not run go mod tidy")
 	}
 
 	for _, dep := range dependencies {
 		var res []byte
 		fmt.Print("Installing " + dep + " ")
-		res, err = sys2.ExecuteShellCommand("go get " + dep)
+		res, err = sys2.ExecuteShellCommand("go install " + dep + "@latest")
 		if err != nil {
 			fmt.Print(string(res))
 			fmt.Print(string(err.(*exec.ExitError).Stderr))
