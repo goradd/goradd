@@ -445,16 +445,21 @@ func (a *Application) ServeStaticFile(w http.ResponseWriter, r *http.Request) bo
 
 // RegisterStaticPath registers the given url path such that it points to the given directory. For example, passing
 // "/test", "/my/test/dir" will statically serve everything out of /my/test/dir whenever a url has /test in front of it.
-// You can only call this during application startup. These directory paths take precedence over other similar paths that
-// you have registered through goradd forms or through the html directory.
+// You can only call this during application startup.
 func RegisterStaticPath(path string, directory string) {
 	if path[0:1] != "/" {
 		log.Fatal("path " + path + " must begin with a slash (must be a rooted path)")
 	}
-	if directory[0:1] != "/" {
-		log.Fatal("directory " + directory + " must begin with a slash (must be a rooted path)")
+
+	if !sys.IsDir(directory) {
+		log.Fatal("path " + directory + " is not a valid directory")
 	}
 
+	var err error
+	directory,err = filepath.Abs(directory)
+	if err != nil {
+		log.Fatal("could not get absolute path of " + directory + ": " + err.Error())
+	}
 
 	if path[len(path)-1:] == "/" {
 		// Strip ending slash so that we can handle both /a/b/ and /a/b urls as directories and treat them the same.
