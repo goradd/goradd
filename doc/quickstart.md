@@ -44,7 +44,7 @@ If you have problems, see [Debugging Installation Problems](#debugging-installat
 ```go run -mod mod goradd-project/main```
 You will see a number of messages about additional go packages being installed.
 3. Once you see "Launching Server...", point your browser to the following URL. 
-`http://localhost:8000/goradd/`
+`http://localhost/goradd/`
 
 If everything is working fine, you should see the Goradd startup screen. It will lead 
 you through some additional configuration steps and get you started building your

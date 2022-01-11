@@ -1,4 +1,5 @@
-package travis
+// Package ci contains the code performed by the continuous-integration tests
+package ci
 
 import (
 	"path/filepath"

@@ -3,7 +3,7 @@ package goraddtool
 import (
 	"fmt"
 	sys2 "github.com/goradd/gofile/pkg/sys"
-	"github.com/goradd/goradd/internal/travis"
+	"github.com/goradd/goradd/internal/ci"
 	"github.com/goradd/goradd/pkg/sys"
 	"io/ioutil"
 	"log"
@@ -59,7 +59,7 @@ func copyTestDir() {
 		log.Fatal("could not remove goradd-test directory: " + err.Error())
 	}
 
-	err = sys2.CopyDirectory(filepath.Join(travis.TestFolderLocation, "goradd-test"), cwd, sys2.CopyDoNotOverwrite)
+	err = sys2.CopyDirectory(filepath.Join(ci.TestFolderLocation, "goradd-test"), cwd, sys2.CopyDoNotOverwrite)
 	if err != nil {
 		log.Fatal("could not copy directory: " + err.Error())
 	}

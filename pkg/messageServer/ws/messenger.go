@@ -27,12 +27,12 @@ func (m *WsMessenger) JavascriptInit() string {
 }
 
 func (m *WsMessenger) JavascriptFiles() map[string]html.Attributes {
-	ret := make (map[string]html.Attributes)
+	ret := make(map[string]html.Attributes)
 	var p string
 	if config.Release {
 		// Note that this is going to get the file out of the location we copied it to for deployment.
 		// This must be coordinated with that copy operation, which is located by default in the goradd-project/build/makeAssets.sh file
-		p = path.Join(config.AssetPrefix, "messenger","js", "goradd-ws.js")
+		p = path.Join(config.AssetPrefix, "messenger", "js", "goradd-ws.js")
 	} else {
 		cur := sys.SourceDirectory()
 		p = filepath.Join(cur, "assets", "js", "goradd-ws.js")
@@ -40,7 +40,6 @@ func (m *WsMessenger) JavascriptFiles() map[string]html.Attributes {
 	ret[p] = nil
 	return ret
 }
-
 
 func (m *WsMessenger) Send(channel string, message string) {
 	if m.hub != nil {
@@ -61,7 +60,7 @@ func (m *WsMessenger) WebSocketHandler() http.Handler {
 
 func WsAssets() string {
 	wsAssets := sys.SourceDirectory()
-	wsAssets = path.Join(wsAssets, "assets")
+	wsAssets = filepath.Join(wsAssets, "assets")
 	return wsAssets
 }
 
