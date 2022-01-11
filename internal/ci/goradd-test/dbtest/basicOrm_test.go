@@ -364,7 +364,7 @@ func TestHaving(t *testing.T) {
 		GroupBy(node.Project().ID(), node.Project().Name()).
 		OrderBy(node.Project().ID()).
 		Alias("team_member_count", Count(node.Project().TeamMembers())).
-		Having(GreaterThan(Count(query.Alias("team_member_count")), 5)).
+		Having(GreaterThan(query.Alias("team_member_count"), 5)).
 		Load()
 
 	assert.Len(t, projects, 2)

@@ -19,7 +19,7 @@ controls
 The controls directory contains usage examples of the supported base controls provided by the goradd package.
 The goal of the package is to be as comprehensive as possible in showing all the different options that
 a control has, and the many different ways to use a control. It also includes brower-based tests that are
-part of the Travis continuous-integration tests.
+part of the continuous-integration tests.
 
 The base controls are foundations on which more elaborate controls can be built. But they also
 provide enough support that a basic data-driven website can be built with only these controls.

@@ -1,6 +1,5 @@
 /*
-
-The db package works with the rest of the orm to interface between a database and the ORM abstraction of
+Package db works with the rest of the orm to interface between a database and the ORM abstraction of
 reading and querying a database. It is architected so that both SQL and NoSQL databases can be used with the
 abstraction. This allows you to potentially write code that is completely agnostic to what kind of database
 you are using. Even if 100% portability is not achievable in your use case, the ORM and database abstraction

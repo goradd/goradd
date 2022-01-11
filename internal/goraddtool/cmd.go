@@ -30,8 +30,8 @@ func MakeRootCommand() *cobra.Command {
 
 	var cmdTest = &cobra.Command{
 		Use:   "test",
-		Short: "Installs the goradd-test directory in the current working directory, and then runs the tests, mimicking the travis-ci test",
-		Long:  `Installs the goradd-test directory in the current working directory, and then runs the tests, mimicking the travis-ci test`,
+		Short: "Installs the goradd-test directory in the current working directory, and then runs the tests, mimicking the continuous integration test",
+		Long:  `Installs the goradd-test directory in the current working directory, and then runs the tests, mimicking the continuous integration test`,
 		Run: func(cmd *cobra.Command, args []string) {
 			test(step, browser, headless)
 		},

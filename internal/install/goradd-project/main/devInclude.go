@@ -1,9 +1,10 @@
+//go:build !release
 // +build !release
 
 package main
 
 import (
-	_ "github.com/goradd/goradd/pkg/bootstrap/examples" // Bootstrap examples
+	_ "github.com/goradd/goradd/pkg/bootstrap/examples/panels" // Bootstrap examples
 	"github.com/goradd/goradd/pkg/config"
 	_ "github.com/goradd/goradd/test/browsertest"
 	"github.com/goradd/goradd/web/app"

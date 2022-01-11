@@ -51,6 +51,7 @@ func TestLruCacheExit(t *testing.T) {
 	p2 := "2"
 
 	c.Set("1", p1)
+	time.Sleep(1 * time.Millisecond)
 	c.Set("2", p2)
 	c.gc()
 
@@ -105,10 +106,15 @@ func TestLruReset(t *testing.T) {
 	p3 := "3"
 
 	c.Set("1", p1)
+	time.Sleep(1 * time.Millisecond)
 	c.Set("2", p2)
+	time.Sleep(1 * time.Millisecond)
 	c.Get("1")
+	time.Sleep(1 * time.Millisecond)
 	c.Set("3", p3)
+	time.Sleep(1 * time.Millisecond)
 	c.Get("1")
+	time.Sleep(1 * time.Millisecond)
 	c.gc()
 
 	p4 := c.Get("2")
@@ -128,15 +134,15 @@ func TestLruStress(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(3)
 	go func() {
-		addN(c,1000)
+		addN(c, 1000)
 		wg.Done()
 	}()
 	go func() {
-		addN(c,1000)
+		addN(c, 1000)
 		wg.Done()
 	}()
 	go func() {
-		addN(c,1000)
+		addN(c, 1000)
 		wg.Done()
 	}()
 
@@ -145,7 +151,7 @@ func TestLruStress(t *testing.T) {
 
 func TestLruStress2(t *testing.T) {
 	c := NewLruCache(1000, 1)
-	addN(c,1000)
+	addN(c, 1000)
 
 }
 
@@ -154,7 +160,7 @@ func addN(c *LruCache, n int) {
 	for i := 0; i < n; i++ {
 		s := html.RandomString(10)
 		s2 := html.RandomString(5)
-		c.Set(s,s2)
+		c.Set(s, s2)
 		keys = append(keys, s)
 	}
 
@@ -162,8 +168,7 @@ func addN(c *LruCache, n int) {
 	for i := 0; i < n; i++ {
 		s := keys[i]
 		s2 := html.RandomString(5)
-		c.Set(s,s2)
+		c.Set(s, s2)
 	}
 
 }
-
