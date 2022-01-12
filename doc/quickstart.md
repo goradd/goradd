@@ -102,7 +102,7 @@ The good news is that there are many ways to deal with the problem:
 See the following for more info:
 * [Go wiki on modules](https://github.com/golang/go/wiki/Modules)
 
-#Debugging Installation Problems
+# Debugging Installation Problems
 Recent versions of the GO install process will create a "go" directory in your home
 directory, and it should put the bin directory inside of that directory
 into your PATH environment variable. This will allow go programs to be executed

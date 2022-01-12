@@ -6,26 +6,23 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/goradd/goradd/pkg/resource"
+	"github.com/goradd/goradd/pkg/http"
 )
 
 func init() {
-	resource.RegisterPath("/goradd/configure.html",
-		func(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, err error) {
+	http.RegisterBufferedOutputHandler("/goradd/configure.html",
+		func(ctx context.Context, buf *bytes.Buffer) (err error) {
 
-			buf.WriteString(`<!DOCTYPE html>
-<head>
-<meta charset="utf-8"/>
-<title>`)
-
-			buf.WriteString(`Configuring the Database`)
-
-			buf.WriteString(`</title>
-</head>
-<body>
+			buf.WriteString(`
 `)
 
 			buf.WriteString(`
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8"/>
+<title>Configuring the Database</title>
+</head>
+<body>
 <h1>Configuring the Database</h1>
 <p>
 	Goradd relies on your database(s) not only to get to data, but to understand its structure. For
@@ -620,11 +617,12 @@ SET FOREIGN_KEY_CHECKS=1;
 			buf.WriteString(`
 </code>
 </pre>
+</body>
+</html>
 `)
 
 			buf.WriteString(`
-</body>
-</html>
+
 `)
 
 			return

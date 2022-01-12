@@ -1,6 +1,8 @@
 package http
 
 import (
+	"bytes"
+	"context"
 	"net/http"
 )
 
@@ -18,7 +20,7 @@ type Muxer interface {
 // from behind the application facilities of session management, output buffering,
 // etc.
 //
-//It is called from the default MakeAppServer implementation.
+// It is called from the default MakeAppServer implementation.
 var AppMuxer = http.NewServeMux()
 
 // UseAppMuxer is called by the framework at application startup to place the
@@ -36,14 +38,14 @@ func UseAppMuxer(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// RegisterAppMuxerHandler registers a handler for the given directory prefix.
+// RegisterPrefixHandler registers a handler for the given directory prefix.
 //
 // The handler will be called with the prefix stripped away. When the prefix is
 // stripped, a rooted path will be passed along. In other words, if the path
 // is /api/file, the called handler will receive /file.
 //
 // Note that you CAN register a handler for the root directory.
-func RegisterAppMuxerHandler(prefix string, handler http.Handler) {
+func RegisterPrefixHandler(prefix string, handler http.Handler) {
 	if prefix == "" {
 		prefix = "/"
 	} else {
@@ -58,6 +60,30 @@ func RegisterAppMuxerHandler(prefix string, handler http.Handler) {
 	// Here we register the handler with a closing / so that similar names will not be confused,
 	// but we do not strip the last / from the file name passed on.
 	AppMuxer.Handle(prefix, http.StripPrefix(prefix[0:len(prefix) - 1],handler))
+}
+
+// RegisterHandler registers a handler for the given path.
+func RegisterHandler(path string, handler http.Handler) {
+	AppMuxer.Handle(path,handler)
+}
+
+type BufferedOutputFunc func(ctx context.Context, buf *bytes.Buffer) (err error)
+
+// RegisterBufferedOutputHandler registers a buffered output function for the given path.
+//
+// This could be used to register template output with a path, for example. See the renderResource
+// template macro and the configure.tpl.got file in the welcome application for an example.
+func RegisterBufferedOutputHandler(path string, f BufferedOutputFunc) {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		buf := OutputBuffer(ctx)
+		err := f(ctx, buf)
+		if err != nil {
+			panic(err)
+		}
+	}
+	h := http.HandlerFunc(fn)
+	RegisterHandler(path, h)
 }
 
 // ErrorHandler wraps the given handler in a default HTTP error handler that

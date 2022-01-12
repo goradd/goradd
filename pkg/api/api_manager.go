@@ -16,7 +16,7 @@ func init() {
 	}
 }
 
-// The DefaultApiManager type represents the default api manager that is created at bootup.
+// The DefaultApiManager type represents the default api manager that is created at startup.
 // The Mux variable can be replaced with the Muxer of your choice.
 type DefaultApiManager struct {
 	Mux http2.Muxer
@@ -42,7 +42,7 @@ func (a DefaultApiManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (a DefaultApiManager) Use() {
 	if config.ApiPrefix != "" && config.ApiManager != nil {
-		http2.RegisterAppMuxerHandler(config.ApiPrefix, http2.ErrorHandler(a))
+		http2.RegisterPrefixHandler(config.ApiPrefix, http2.ErrorHandler(a))
 	}
 }
 

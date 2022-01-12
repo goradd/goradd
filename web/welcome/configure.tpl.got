@@ -1,10 +1,16 @@
 {{< imports }}
+"github.com/goradd/goradd/pkg/http"
 {{end}}
 {{< package }}welcome{{end}}
-{{< filename }}/goradd/{{templateRoot}}{{end}}
-{{< title }}Configuring the Database{{end}}
+{{< filename }}/goradd/{{templateRoot}}.html{{end}}
 
 {{define template}}
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8"/>
+<title>Configuring the Database</title>
+</head>
+<body>
 <h1>Configuring the Database</h1>
 <p>
 	Goradd relies on your database(s) not only to get to data, but to understand its structure. For
@@ -32,6 +38,8 @@
 {{:! ../examples/db/mysql.sql }}
 </code>
 </pre>
+</body>
+</html>
 {{end}}
 
-{{> renderHtmlTemplate}}
+{{> renderResource}}

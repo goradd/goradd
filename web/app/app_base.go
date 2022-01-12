@@ -1,7 +1,6 @@
 package app
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -18,7 +17,6 @@ import (
 	"github.com/goradd/goradd/pkg/messageServer/ws"
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
-	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
@@ -279,14 +277,12 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // PutAppContextHandler is called before ServeAppHandler in the chain.
 func (a *Application) MakeAppServer() http.Handler {
 	// the handler chain gets built in the reverse order of getting called
-	buf := buf2.GetBuffer()
-	defer buf2.PutBuffer(buf)
 
 	// These handlers are called in reverse order
-	h := a.ServeRequestHandler(buf)
+	h := a.ServeRequestHandler()
 	h = a.this().ServeAppMuxHandler(h)
-	h = a.ServeStaticFileHandler(buf, h) // TODO: Speed this handler up by checking to see if the url is a goradd form before deciding to get context and session
-	h = a.ServeAppHandler(buf, h)
+	h = a.ServeStaticFileHandler(h)
+	h = a.ServeAppHandler(h)
 	h = a.PutAppContextHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
@@ -327,7 +323,7 @@ func (a *Application) HSTSHandler(next http.Handler) http.Handler {
 
 // ServeRequestHandler is the last handler on the default call chain.
 // It returns a simple not found error by default.
-func (a *Application) ServeRequestHandler(buf *bytes.Buffer) http.Handler {
+func (a *Application) ServeRequestHandler() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 	}
@@ -335,7 +331,12 @@ func (a *Application) ServeRequestHandler(buf *bytes.Buffer) http.Handler {
 }
 
 // ServeStaticFileHandler serves up static files by calling ServeStaticFile.
-func (a *Application) ServeStaticFileHandler(buf *bytes.Buffer, next http.Handler) http.Handler {
+//
+// The difference between this and registering a handler with a muxer is that a muxer
+// will return a 404 error if the file is not found, whereas the below method will pass
+// control to the next handler if the file is not found.
+// This lets you serve static files and dynamically generated files from the same logical web path.
+func (a *Application) ServeStaticFileHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 
 		if !a.this().ServeStaticFile(w, r) && next != nil {
@@ -346,7 +347,7 @@ func (a *Application) ServeStaticFileHandler(buf *bytes.Buffer, next http.Handle
 }
 
 // ServeAppHandler processes requests for goradd forms
-func (a *Application) ServeAppHandler(buf *bytes.Buffer, next http.Handler) http.Handler {
+func (a *Application) ServeAppHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		a.ServeHTTP(w, r)
 		head := w.Header()
