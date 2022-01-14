@@ -274,7 +274,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // MakeAppServer creates the handler chain that will handle http requests. There are a ton of ways to do this, 3rd party
 // libraries to help with this, and middlewares you can use. This is a working example, and not a declaration of any
 // "right" way to do this, since it can be very application specific. Generally you must make sure that
-// PutAppContextHandler is called before ServeAppHandler in the chain.
+// PutAppContextHandler is called before ServePageHandler in the chain.
 func (a *Application) MakeAppServer() http.Handler {
 	// the handler chain gets built in the reverse order of getting called
 
@@ -282,7 +282,7 @@ func (a *Application) MakeAppServer() http.Handler {
 	h := a.ServeRequestHandler()
 	h = a.this().ServeAppMuxHandler(h)
 	h = a.ServeStaticFileHandler(h)
-	h = a.ServeAppHandler(h)
+	h = a.ServePageHandler(h)
 	h = a.PutAppContextHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
@@ -346,13 +346,13 @@ func (a *Application) ServeStaticFileHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// ServeAppHandler processes requests for goradd forms
-func (a *Application) ServeAppHandler(next http.Handler) http.Handler {
+// ServePageHandler processes requests for automated goradd pages.
+func (a *Application) ServePageHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		a.ServeHTTP(w, r)
 		head := w.Header()
 		if next != nil &&
-			page.OutputBuffer(r.Context()).Len() == 0 &&
+			page.OutputLen(r.Context()) == 0 &&
 			len(head) <= 1 { // This could be a hack. Not sure of any other way to tell if we have responded.
 			next.ServeHTTP(w, r)
 		}
@@ -445,7 +445,7 @@ func (a *Application) ServeStaticFile(w http.ResponseWriter, r *http.Request) bo
 
 
 // RegisterStaticPath registers the given url path such that it points to the given directory. For example, passing
-// "/test", "/my/test/dir" will statically serve everything out of /my/test/dir whenever a url has /test in front of it.
+// "/test", "/my/test/dir" will serve documents out of /my/test/dir whenever a url has /test in front of it.
 // You can only call this during application startup.
 func RegisterStaticPath(path string, directory string) {
 	if path[0:1] != "/" {
@@ -480,17 +480,12 @@ func RegisterStaticPath(path string, directory string) {
 	grlog.Infof("Registering static path %s to %s", path, directory)
 }
 
-// ServeAppMuxHandler serves up the AppMuxHandler, which handles REST calls,
+// ServeAppMuxHandler serves up the http2.AppMuxer, which handles REST calls,
 // and dynamically created files.
 //
-// To use your own AppMuxer, simply set a new http.AppMuxer.
-// To register additional handlers, override this.
+// To use your own AppMuxer, override this function in app.go and create your own.
 func (a *Application) ServeAppMuxHandler(next http.Handler) http.Handler {
-	if config.ApiManager != nil {
-		config.ApiManager.Use()
-	}
-
-	return http2.UseAppMuxer(next)
+	return http2.UseAppMuxer(http.NewServeMux(), next)
 }
 
 // ServeWebsocketMessengerHandler is the authorization handler for watcher requests.

@@ -210,7 +210,7 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 
 	// Uncomment this and implement ServeData to serve up custom generated
 	// files like PDFs, CSVs, images, etc.
-	//http2.RegisterPrefixHandler("/data", http2.ErrorHandler(http.HandlerFunc(a.ServeData)))
+	//http2.RegisterPathHandler("/data", http2.ErrorHandler(http.HandlerFunc(a.ServeData)))
 
 	return mux
 }

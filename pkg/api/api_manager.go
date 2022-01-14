@@ -1,58 +1,33 @@
+// Package api gives you a default pattern for registering an API, like a REST API, to be served
+// by the app.
+//
+// Each file that serves an endpoint of the API should call RegisterPattern or
+// RegisterAppPattern from an init() function in that file. You then simply include that file's
+// package in an import from your app, and everything will get tied together.
+//
+// This is a pretty simple handler. Likely you will want to add your own middleware on top of
+// the handlers, and you can easily do that by copying this file to your own app and have your
+// api files register with that copy. You can then add handlers how you want.
 package api
 
 import (
 	"github.com/goradd/goradd/pkg/config"
 	http2 "github.com/goradd/goradd/pkg/http"
 	"net/http"
+	"path"
 )
 
-
-func init() {
-	// Create a default ApiManager if one does not already exist
-	// The default can be over-ridden in the project's config package, since those
-	// init functions will be called before this one
-	if config.ApiManager == nil && config.ApiPrefix != "" {
-		config.ApiManager = NewDefaultApiManager()
-	}
-}
-
-// The DefaultApiManager type represents the default api manager that is created at startup.
-// The Mux variable can be replaced with the Muxer of your choice.
-type DefaultApiManager struct {
-	Mux http2.Muxer
-}
-
-// NewDefaultApiManager creates a new api manager that uses config.ApiPrefix as a path prefix to determine
-// if the given call is a REST call. It also uses Go's standard ServeMux as a muxer to
-// direct which handler should handle the request. The Mux is public, so you can replace
-// it with your own Muxer if desired.
-func NewDefaultApiManager() DefaultApiManager {
-	return DefaultApiManager{
-		Mux: http.NewServeMux(),
-	}
-}
-
-func (a DefaultApiManager) RegisterPattern(pattern string, handler http.Handler) {
-	a.Mux.Handle(pattern, handler)
-}
-
-func (a DefaultApiManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	a.Mux.ServeHTTP(w, r)
-}
-
-func (a DefaultApiManager) Use() {
-	if config.ApiPrefix != "" && config.ApiManager != nil {
-		http2.RegisterPrefixHandler(config.ApiPrefix, http2.ErrorHandler(a))
-	}
-}
-
 // RegisterPattern associates the given URL path with the given handler.
-// Call this from an init() function. Whenever a user navigates to the given pattern, the
-// handler will be called. Note that the pattern should NOT include the ApiPathPrefix.
+// The pattern will be behind the ApiPrefix path.
 func RegisterPattern(pattern string, handler http.HandlerFunc) {
-	if config.ApiManager == nil {
-		panic ("the ApiManager has not been initialized")
-	}
-	config.ApiManager.RegisterPattern(pattern, handler)
+	http2.RegisterPathHandler(path.Join(config.ApiPrefix, pattern), http.StripPrefix(config.ApiPrefix, handler))
 }
+
+// RegisterAppPattern associates the given URL path with the given handler.
+// The pattern will be behind the ApiPrefix path and so will benefit from Session management and the
+// rest of the handlers.
+func RegisterAppPattern(pattern string, handler http.HandlerFunc) {
+	http2.RegisterAppPathHandler(path.Join(config.ApiPrefix, pattern), http.StripPrefix(config.ApiPrefix, handler))
+}
+
 

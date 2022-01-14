@@ -5,7 +5,7 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/goradd"
 	grlog "github.com/goradd/goradd/pkg/log"
-	buf2 "github.com/goradd/goradd/pkg/pool"
+	"github.com/goradd/goradd/pkg/pool"
 	"net/http"
 )
 
@@ -24,6 +24,7 @@ type BufferedResponseWriterI interface {
 	http.ResponseWriter
 	Disable()
 	OutputBuffer() *bytes.Buffer
+	Len() int
 }
 
 type bufferedResponseWriter struct {
@@ -31,13 +32,17 @@ type bufferedResponseWriter struct {
 	buf  *bytes.Buffer
 	code int
 	disabled bool
+	len int
 }
 
-func (bw *bufferedResponseWriter) Write(b []byte) (int, error) {
+func (bw *bufferedResponseWriter) Write(b []byte) (l int, err error) {
 	if bw.disabled {
-		return bw.ResponseWriter.Write(b)
+		l, err = bw.ResponseWriter.Write(b)
+	} else {
+		l,err = bw.buf.Write(b)
 	}
-	return bw.buf.Write(b)
+	bw.len += l
+	return l,err
 }
 
 func (bw *bufferedResponseWriter) WriteHeader(code int) {
@@ -58,17 +63,28 @@ func (bw *bufferedResponseWriter) Disable()  {
 	bw.disabled = true
 }
 
-// OutputBuffer returns the output buffer
+// OutputBuffer returns the current output buffer.
 func (bw *bufferedResponseWriter) OutputBuffer() *bytes.Buffer {
 	return bw.buf
+}
+
+func (bw *bufferedResponseWriter) Len() int {
+	return bw.len
 }
 
 func DisableOutputBuffering(ctx context.Context) {
 	ctx.Value(goradd.BufferContext).(BufferedResponseWriterI).Disable()
 }
 
+// OutputBuffer returns the current output buffer.
 func OutputBuffer(ctx context.Context) *bytes.Buffer {
 	return ctx.Value(goradd.BufferContext).(BufferedResponseWriterI).OutputBuffer()
+}
+
+// OutputLen returns the number of bytes written to the output, even if
+// output buffering is disabled.
+func OutputLen(ctx context.Context) int {
+	return ctx.Value(goradd.BufferContext).(BufferedResponseWriterI).Len()
 }
 
 type defaultBufferedOutputManager struct {
@@ -79,16 +95,16 @@ func (bw *defaultBufferedOutputManager) Use(next http.Handler) http.Handler {
 
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		// Setup the output buffer
-		outBuf := buf2.GetBuffer()
-		bw := &bufferedResponseWriter{w, outBuf, 0, false}
+		outBuf := pool.GetBuffer()
+		bwriter := &bufferedResponseWriter{w, outBuf, 0, false, 0}
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, goradd.BufferContext, bw)
+		ctx = context.WithValue(ctx, goradd.BufferContext, bwriter)
 		r = r.WithContext(ctx)
-		defer buf2.PutBuffer(outBuf)
-		next.ServeHTTP(bw, r)
-		if bw.code != 0 && bw.code != 200 {
-			grlog.Error("Buffered write error code ", bw.code)
-			w.WriteHeader(bw.code)
+		defer pool.PutBuffer(outBuf)
+		next.ServeHTTP(bwriter, r)
+		if bwriter.code != 0 && bwriter.code != 200 {
+			grlog.Error("Buffered write error code ", bwriter.code)
+			w.WriteHeader(bwriter.code)
 		}
 		_, e := w.Write(outBuf.Bytes())
 		if e != nil {

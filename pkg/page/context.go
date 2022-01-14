@@ -362,6 +362,12 @@ func NewMockContext() (ctx context.Context) {
 	return
 }
 
+// OutputBuffer returns the current output buffer.
 func OutputBuffer(ctx context.Context) *bytes.Buffer {
 	return http2.OutputBuffer(ctx)
+}
+
+// OutputLen returns the number of bytes that have been written to the output.
+func OutputLen(ctx context.Context) int {
+	return http2.OutputLen(ctx)
 }
