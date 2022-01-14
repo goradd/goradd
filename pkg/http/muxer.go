@@ -52,7 +52,7 @@ var AppMuxer Muxer
 // it does not recognize.
 func UsePatternMuxer(mux Muxer, next http.Handler) http.Handler {
 	if patternHandlers == nil {
-		panic("the PathMuxer has already been registered")
+		panic("the PatternMuxer has already been registered")
 	}
 	PatternMuxer = mux
 	return useMuxer(mux, next, &patternHandlers)
@@ -191,31 +191,18 @@ func registerPrefixHandler(prefix string, handler http.Handler, m handlerMap, mu
 }
 
 func useMuxer(mux Muxer, next http.Handler, m *handlerMap) http.Handler {
-	for p,h := range patternHandlers {
+	for p,h := range *m {
 		mux.Handle(p,h)
 	}
 	*m = nil
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		h,p := mux.Handler(r)
-		if p != "" {
-			// handler was found
-			h.ServeHTTP(w,r)
-		} else {
-			next.ServeHTTP(w,r) // skip
-		}
-	}
-	return http.HandlerFunc(fn)
+	return UseMuxer(mux, next)
 }
 
-func serveMuxer(mux Muxer, next http.Handler) http.Handler {
+// UseMuxer serves a muxer such that if a handler cannot be found, control is past to the next handler.
+func UseMuxer(mux Muxer, next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		h,p := mux.Handler(r)
 		if p != "" {
-			// handler was found
-			if mux2, ok := h.(Muxer); ok {
-				// The handler is also a muxer, so recurse
-				h = serveMuxer(mux2, next)
-			}
 			h.ServeHTTP(w,r)
 		} else {
 			next.ServeHTTP(w,r) // skip

@@ -17,6 +17,7 @@ import (
 	reflect2 "github.com/goradd/goradd/pkg/reflect"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
+	"io"
 	"reflect"
 	"strconv"
 	"strings"
@@ -96,7 +97,7 @@ func (p *Page) Restore() {
 	}
 }
 
-func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err error) {
+func (p *Page) runPage(ctx context.Context, w io.Writer, isNew bool) (err error) {
 	grCtx := GetContext(ctx)
 	p.ClearResponseHeaders()
 
@@ -139,11 +140,11 @@ func (p *Page) runPage(ctx context.Context, buf *bytes.Buffer, isNew bool) (err 
 	}
 
 	if grCtx.RequestMode() == Ajax {
-		err = p.DrawAjax(ctx, buf)
+		err = p.DrawAjax(ctx, w)
 		p.SetResponseHeader("Content-Type", "application/json")
 	} else if grCtx.RequestMode() == Server || grCtx.RequestMode() == Http {
 		//p.url = grCtx.HttpContext.URL. We might want a record of the original URL to be used during ajax calls someday. Until we have a reason, this will remain commented out.
-		err = p.Draw(ctx, buf)
+		err = p.Draw(ctx, w)
 	} else {
 		// TODO: Implement a hook for the CustomAjax call and/or Rest API calls?
 	}
@@ -162,9 +163,10 @@ func (p *Page) Form() FormI {
 }
 
 // Draw draws the page.
-func (p *Page) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (p *Page) Draw(ctx context.Context, w io.Writer) (err error) {
 	f := p.form.PageDrawingFunction()
-	return f(ctx, p, buf)
+	// TODO: Change GoT to output to a writer, then change this
+	return f(ctx, p, OutputBuffer(ctx))
 }
 
 // DrawHeaderTags draws all the inner html for the head tag
@@ -314,8 +316,8 @@ func (p *Page) StateID() string {
 
 // DrawAjax renders the page during an ajax call. Since the page itself is already rendered, it simply hands off this
 // responsibility to the form.
-func (p *Page) DrawAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = p.Form().renderAjax(ctx, buf)
+func (p *Page) DrawAjax(ctx context.Context, w io.Writer) (err error) {
+	err = p.Form().renderAjax(ctx, w)
 	return
 }
 

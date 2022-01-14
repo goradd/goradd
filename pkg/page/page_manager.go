@@ -1,11 +1,11 @@
 package page
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/log"
+	"io"
 	"reflect"
 )
 
@@ -19,7 +19,7 @@ type formInfo struct {
 
 type PageManagerI interface {
 	RegisterForm(path string, form FormI, formID string)
-	RunPage(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, httpErrCode int)
+	RunPage(ctx context.Context, w io.Writer) (headers map[string]string, httpErrCode int)
 	IsPage(path string) bool
 }
 
@@ -124,22 +124,22 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 }
 
 // RunPage processes the page and writes the response into the buffer. Any special response headers are returned.
-func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, httpErrCode int) {
+func (m *PageManager) RunPage(ctx context.Context, w io.Writer) (headers map[string]string, httpErrCode int) {
 	defer func() {
 		if r := recover(); r != nil {
 			switch v := r.(type) {
 			case error:
 				err := newRunError(ctx, v)
-				m.makeErrorResponse(ctx, err, "", buf)
+				m.makeErrorResponse(ctx, err, "", w)
 			case string:
 				err := newRunError(ctx, v)
-				m.makeErrorResponse(ctx, err, "", buf)
+				m.makeErrorResponse(ctx, err, "", w)
 			case *HttpError: // A kind of http panic that just returns a response code and headers
 				headers = v.headers
 				httpErrCode = v.errCode
 			default:
 				err := newRunError(ctx, fmt.Errorf("unknown package error: %v", r))
-				m.makeErrorResponse(ctx, err, "", buf)
+				m.makeErrorResponse(ctx, err, "", w)
 			}
 		}
 	}()
@@ -147,8 +147,8 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 	page, isNew := m.getPage(ctx)
 
 	if page == nil {
-		// An ajax call, but we could not deserialize the old page. Refresh the entire page to get a server access.
-		buf.WriteString(`{"loc":"reload"}`) // the refresh will be handled in javascript
+		// An ajax call, but we could not deserialize the old page. Refresh the entire page to get server access.
+		io.WriteString(w, `{"loc":"reload"}`) // the refresh will be handled in javascript
 		return map[string]string{"Content-Type": "application/json"}, 0
 	}
 
@@ -156,11 +156,11 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 	page.renderStatus = PageIsRendering
 	log.FrameworkDebugf("Page started rendering %s, %s", page.stateId, GetContext(ctx))
 
-	err := page.runPage(ctx, buf, isNew)
+	err := page.runPage(ctx, w, isNew)
 
 	if e,ok := err.(FrameworkError); ok {
 		if e.Err == FrameworkErrNotAuthorized {
-			buf.WriteString(page.form.GT(e.Error()))
+			io.WriteString(w, page.form.GT(e.Error()))
 			return nil, 403
 		} else if e.Err == FrameworkErrRedirect {
 			page.SetResponseHeader("Location", e.Location)
@@ -170,9 +170,10 @@ func (m *PageManager) RunPage(ctx context.Context, buf *bytes.Buffer) (headers m
 
 	if err != nil {
 		log.Error(err)
+		buf := OutputBuffer(ctx)
 		var html = buf.String() // copy current html
 		buf.Reset()
-		m.makeErrorResponse(ctx, newRunError(ctx, err), html, buf)
+		m.makeErrorResponse(ctx, newRunError(ctx, err), html, w)
 		return
 	}
 	return page.responseHeader, page.responseError
@@ -186,13 +187,14 @@ func (m *PageManager) cleanup(p *Page) {
 func (m *PageManager) makeErrorResponse(ctx context.Context,
 	err *Error,
 	html string,
-	buf *bytes.Buffer) {
+	w io.Writer) {
 
 	if ErrorPageFunc == nil {
 		panic("No error page template function is defined")
 	}
 
-	ErrorPageFunc(ctx, html, err, buf)
+	// TODO: After GoT changes to writing to io.Writer, change this
+	ErrorPageFunc(ctx, html, err, OutputBuffer(ctx))
 }
 
 // HttpError represents an error response to a http request.

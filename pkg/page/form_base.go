@@ -15,6 +15,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
+	"io"
 	"path/filepath"
 	"strings"
 )
@@ -22,14 +23,14 @@ import (
 type FormI interface {
 	ControlI
 	// Init initializes the base structures of the form. Do this before adding controls to the form.
-	// Note that this signature is different than that of the Init function in FormBase.
+	// Note that this signature is different from that of the Init function in FormBase.
 	Init(ctx context.Context, id string)
 	PageDrawingFunction() PageDrawFunc
 
 	AddHeadTags()
 	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
 	Response() *Response
-	renderAjax(ctx context.Context, buf *bytes.Buffer) error
+	renderAjax(ctx context.Context, w io.Writer) error
 	AddRelatedFiles()
 	AddStyleSheetFile(path string, attributes html.Attributes)
 	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
@@ -264,7 +265,7 @@ func (f *FormBase) getDbProfile(ctx context.Context) (s string) {
 }
 
 // renderAjax assembles the ajax response for the entire form and draws it to the return buffer
-func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) (err error) {
 	var buf2 []byte
 	if f.drawing && !config.Release {
 		panic("draw collission")
@@ -302,7 +303,7 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 	f.resetDrawingFlags()
 	buf2, err = f.response.GetAjaxResponse()
 	//f.response = NewResponse() Do NOT do this here! It messes with testing framework and multi-processing of ajax responses
-	buf.Write(buf2)
+	w.Write(buf2)
 	log.FrameworkDebug("renderAjax - ", string(buf2))
 
 	return

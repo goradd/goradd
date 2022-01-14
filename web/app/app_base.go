@@ -236,9 +236,8 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	buf := page.OutputBuffer(ctx)
 	if pm.IsPage(r.URL.Path) {
-		headers, errCode := pm.RunPage(ctx, buf)
+		headers, errCode := pm.RunPage(ctx, w)
 		if errCode == 0 {
 			if headers != nil {
 				for k, v := range headers {
@@ -253,6 +252,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				js := []interface{}{errCode, headers}
 				s,err := json.Marshal(js)
 				if err == nil {
+					// TODO: Manage error here, most likely out of memory error
 					w.Write(s)
 				}
 				w.WriteHeader(400)
