@@ -69,7 +69,11 @@ func (bw *bufferedResponseWriter) OutputBuffer() *bytes.Buffer {
 }
 
 func (bw *bufferedResponseWriter) Len() int {
-	return bw.len
+	if bw.disabled {
+		return bw.len
+	} else {
+		return bw.buf.Len()
+	}
 }
 
 func DisableOutputBuffering(ctx context.Context) {

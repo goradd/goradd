@@ -157,7 +157,7 @@ func RegisterBufferedOutputHandler(pattern string, f BufferedOutputFunc) {
 		}
 	}
 	h := http.HandlerFunc(fn)
-	RegisterHandler(pattern, h)
+	RegisterAppHandler(pattern, h)
 }
 
 func registerHandler (pattern string, handler http.Handler, m handlerMap, mux Muxer) {
