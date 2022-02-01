@@ -9,33 +9,33 @@
     For example: draw mycontrol, class="myclass" }}
 {{define draw 2}}
 {{if `$2` == ""}}
-    {{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
+    {{e ctrl.Page().GetControl("$1").Draw(ctx, _w) }}
 {{else}}
-    {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+    {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
 {{if}}
-{{end}}
+{{end draw}}
 
 {{# drawChild is like draw, but the given id is appended to the parent control's id. }}
 
 {{define drawChild 2}}
 {{if `$2` == ""}}
-    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, buf) }}
+    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, _w) }}
 {{else}}
-    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
 {{if}}
-{{end}}
+{{end drawChild}}
 
 {{# drawIf is like draw, but tests to see if the control is on the page before drawing. }}
 
 {{define drawIf 2}}
 {{if ctrl.Page().HasControl("$1")}}
     {{if `$2` == ""}}
-        {{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
+        {{e ctrl.Page().GetControl("$1").Draw(ctx, _w) }}
     {{else}}
-        {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+        {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
     {{if}}
 {{if}}
-{{end}}
+{{end drawIf}}
 
 {{define drawChildIf 2}}
 {{if ctrl.Page().HasControl(ctrl.ID() + "$1")}}
@@ -45,7 +45,7 @@
         {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
     {{if}}
 {{if}}
-{{end}}
+{{end drawChildIf}}
 
 {{# setAttributes sets the attributes of the given control using an attribute setting string. }}
 {{# The string is in the form `name="value` }}
@@ -56,7 +56,7 @@ if ctrl.Page().HasControl("$1") {
     ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`)
 }
 }}
-{{end}}
+{{end setAttributes}}
 
 {{define setChildAttributes 2}}
 {{g
@@ -64,7 +64,7 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
     ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`)
 }
 }}
-{{end}}
+{{end setChildAttributes}}
 
 {{# setLabelAttributes sets the attributes on controls which have a LabelAttributes function. }}
 {{# This is especially useful to set the label attributes on FormFieldWrappers. }}
@@ -74,7 +74,7 @@ if ctrl.Page().HasControl("$1") {
     ctrl.Page().GetControl("$1").(control.LabelAttributer).LabelAttributes().Merge(`$2`)
 }
 }}
-{{end}}
+{{end setLabelAttributes}}
 
 {{define setChildLabelAttributes 2}}
 {{g
@@ -82,15 +82,15 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
     ctrl.Page().GetControl(ctrl.ID() + "$1").(control.LabelAttributer).LabelAttributes().Merge(`$2`)
 }
 }}
-{{end}}
+{{end setChildLabelAttributes}}
 
 {{# This defaults the package fragment to the name of the directory of the template. You can redefine it if needed in your individual template}}
-{{define package}}{{templateDir}}{{end}}
+{{define package}}{{templateDir}}{{end package}}
 
 
 {{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}
 {{define renderFormTemplate}}
-package {{package }}
+package {{package}}
 
 import (
     "context"
@@ -113,16 +113,16 @@ func (ctrl *{{form}}) AddHeadTags()  {
 }
 
 
-func (ctrl *{{form}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *{{form}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
 {{template}}
 }}
 	return
 }
-{{end}}
+{{end renderFormTemplate}}
 
 {{define renderControlTemplate}}
-package {{package }}
+package {{package}}
 
 import (
     "context"
@@ -130,16 +130,16 @@ import (
     {{imports}}
 )
 
-func (ctrl *{{control}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *{{control}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
 {{template}}
 }}
 	return
 }
-{{end}}
+{{end renderControlTemplate}}
 
 {{define renderResource}}
-package {{package }}
+package {{package}}
 
 import (
     "context"
@@ -149,7 +149,7 @@ import (
 
 func init() {
     http.RegisterBufferedOutputHandler("{{filename}}",
-        func(ctx context.Context, buf *bytes.Buffer) (err error) {
+        func(ctx context.Context, _w io.Writer) (err error) {
 {{
 {{template}}
 }}
@@ -157,4 +157,4 @@ func init() {
 
         })
 }
-{{end}}
+{{end renderResource}}

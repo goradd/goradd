@@ -1,8 +1,8 @@
 {{< imports }}
 "github.com/goradd/goradd/pkg/http"
-{{end}}
-{{< package }}welcome{{end}}
-{{< filename }}/goradd/{{templateRoot}}.html{{end}}
+{{end imports}}
+{{< package }}welcome{{end package}}
+{{< filename }}/goradd/{{templateRoot}}.html{{end filename}}
 
 {{define template}}<!DOCTYPE html>
 <head>
@@ -39,6 +39,6 @@
 </pre>
 </body>
 </html>
-{{end}}
+{{end template}}
 
 {{> renderResource}}

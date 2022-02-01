@@ -1,7 +1,7 @@
-{{< package }}panels{{end}}
+{{< package }}panels{{end package}}
 {{< imports }}
-{{end}}
-{{< control }}SelectListPanel{{end}}
+{{end imports}}
+{{< control }}SelectListPanel{{end control}}
 
 {{define template }}
 <h2>Selection Lists</h2>
@@ -85,6 +85,6 @@ data objects.
 
 {{draw ajaxButton }}
 {{draw serverButton }}
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

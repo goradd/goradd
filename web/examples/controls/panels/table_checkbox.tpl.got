@@ -1,7 +1,7 @@
-{{< package }}panels{{end}}
+{{< package }}panels{{end package}}
 {{< imports }}
-{{end}}
-{{< control }}TableCheckboxPanel{{end}}
+{{end imports}}
+{{< control }}TableCheckboxPanel{{end control}}
 
 {{define template }}
 {{# Provide some basic styling for tables }}
@@ -44,6 +44,6 @@ record changes in real time through Javascript and Ajax.
 {{draw ajaxButton }}
 {{draw serverButton }}
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

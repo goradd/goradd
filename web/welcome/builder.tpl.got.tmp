@@ -1,7 +1,7 @@
 package welcome
 
 import (
-	"bytes"
+	"io"
 	"context"
 
 	"github.com/goradd/goradd/pkg/html"
@@ -9,7 +9,7 @@ import (
 )
 
 
-func drawBuilder(buf *bytes.Buffer) (err error) {
+func drawBuilder(_w io.Writer) (err error) {
 {{
 <html>
 <head>

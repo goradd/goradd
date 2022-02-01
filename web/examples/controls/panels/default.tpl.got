@@ -1,7 +1,7 @@
-{{< package }}panels{{end}}
+{{< package }}panels{{end package}}
 {{< imports }}
-{{end}}
-{{< control }}DefaultPanel{{end}}
+{{end imports}}
+{{< control }}DefaultPanel{{end control}}
 
 {{define template }}
 <p>
@@ -23,6 +23,6 @@ controls during our unit tests.
 <p>
 Click on the items on the left to go to the various demonstration pages.
 </p>
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

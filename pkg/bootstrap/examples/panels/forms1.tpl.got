@@ -1,8 +1,8 @@
-{{< package }}panels{{end}}
+{{< package }}panels{{end package}}
 {{< imports }}
 	. "github.com/goradd/goradd/pkg/bootstrap/control"
-{{end}}
-{{< control }}Forms1Panel{{end}}
+{{end imports}}
+{{< control }}Forms1Panel{{end control}}
 
 {{define template }}
 <h2>Standard Form Layout</h2>
@@ -28,6 +28,6 @@ This is an example of a very generic form layout in Bootstrap.
 
 {{draw ajaxButton}}
 {{draw serverButton}}
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

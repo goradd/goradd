@@ -1,9 +1,9 @@
-{{< package }}panels{{end}}
+{{< package }}panels{{end package}}
 {{< imports }}
     "github.com/goradd/goradd/pkg/page/control"
     . "github.com/goradd/goradd/pkg/bootstrap/control"
-{{end}}
-{{< control }}Forms2Panel{{end}}
+{{end imports}}
+{{< control }}Forms2Panel{{end control}}
 
 {{define template }}
 
@@ -48,6 +48,6 @@ This is an example of a typical form with inline labels.
 
 {{-form-row}} {{# terminate the previous form-row}}
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}
