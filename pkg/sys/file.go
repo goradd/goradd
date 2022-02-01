@@ -90,7 +90,7 @@ func SourcePath() (file string) {
 	return
 }
 
-// SourceDirectory is a utility function that returns the path to the directory  of the file that called it.
+// SourceDirectory is a utility function that returns the path to the directory of the file that called it.
 func SourceDirectory() (dir string) {
 	var file string
 	_, file, _, _ = runtime.Caller(1)

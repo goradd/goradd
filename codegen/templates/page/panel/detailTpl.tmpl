@@ -5,16 +5,16 @@
 var panelName = t.GoName + "DetailPanel"
 
 {{# Below we are switching back and forth between putting got code in the template, and using got code to create the template }}
-{{begin gotCode}}
-{{< package }}panel{{end}}
+{{begin *gotCode*}}
+{{< package }}panel{{end package}}
 {{< imports }}
-{{end}}
-{{< control }}{{gotCode}}{{= panelName}}{{begin gotCode2}}{{end}}
+{{end imports}}
+{{< control }}{{end *gotCode*}}{{= panelName}}{{begin *gotCode2*}}{{end control}}
 
 {{define template }}
-<h1>{{gotCode2}}{{= t.LiteralName }}{{begin gotCode3}}</h1>
+<h1>{{end *gotCode2*}}{{= t.LiteralName }}{{begin *gotCode3*}}</h1>
 
-{{gotCode3}}
+{{end *gotCode3*}}
 
 {{g
     for _,col := range t.Columns {
@@ -28,15 +28,15 @@ var panelName = t.GoName + "DetailPanel"
         } else {
             name = col.GoName
         }
-{{begin drawCode}}
-<div>{{drawCode}}{{= cd.DefaultLabel }}{{begin drawCode}}: </div>
-<div>{{!v ctrl.{{drawCode}}{{= t.GoName }}{{begin drawCode4}}.{{drawCode4}}{{= name }}{{begin drawCode2}}() }}</div>
-{{drawCode2}}
+{{begin *drawCode*}}
+<div>{{end *drawCode*}}{{= cd.DefaultLabel }}{{begin *drawCode2*}}: </div>
+<div>{{!v ctrl.{{end *drawCode2*}}{{= t.GoName }}{{begin *drawCode3*}}.{{end *drawCode3*}}{{= name }}{{begin *drawCode4*}}() }}</div>
+{{end *drawCode4*}}
     }
 }}
 
-{{begin gotCode3}}
-{{end}}
+{{begin *gotCode3*}}
+{{end template}}
 
 {{renderControlTemplate}}
-{{gotCode3}}
+{{end *gotCode3*}}

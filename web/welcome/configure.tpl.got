@@ -4,8 +4,7 @@
 {{< package }}welcome{{end}}
 {{< filename }}/goradd/{{templateRoot}}.html{{end}}
 
-{{define template}}
-<!DOCTYPE html>
+{{define template}}<!DOCTYPE html>
 <head>
 <meta charset="utf-8"/>
 <title>Configuring the Database</title>

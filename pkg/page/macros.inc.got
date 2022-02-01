@@ -151,9 +151,7 @@ func init() {
     http.RegisterBufferedOutputHandler("{{filename}}",
         func(ctx context.Context, buf *bytes.Buffer) (err error) {
 {{
-
 {{template}}
-
 }}
         return
 

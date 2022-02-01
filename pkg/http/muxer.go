@@ -3,7 +3,10 @@ package http
 import (
 	"bytes"
 	"context"
+	"mime"
 	"net/http"
+	"path"
+	"path/filepath"
 )
 
 // Muxer represents the typical functions available in a mux and allows you to replace the default
@@ -43,9 +46,9 @@ var PatternMuxer Muxer
 var AppMuxer Muxer
 
 // UsePatternMuxer is called by the framework at application startup to place the
-// path muxer in the handler stack.
+// pattern mux in the handler stack.
 //
-// All previously registered path handlers will be put in the given muxer. The muxer will
+// All previously registered pattern handlers will be put in the given muxer. The muxer will
 // be remembered so that future registrations will go to that muxer.
 //
 // next specifies a handler that will be used if the muxer processes a URL that
@@ -155,6 +158,17 @@ func RegisterBufferedOutputHandler(pattern string, f BufferedOutputFunc) {
 		if err != nil {
 			panic(err)
 		}
+
+		// Set the content type if not set
+		name := path.Base(r.URL.Path)
+		_, haveType := w.Header()["Content-Type"]
+		if !haveType {
+			ctype := mime.TypeByExtension(filepath.Ext(name))
+			if ctype == "" {
+				ctype = http.DetectContentType(buf.Bytes())
+			}
+			w.Header().Set("Content-Type", ctype)
+		}
 	}
 	h := http.HandlerFunc(fn)
 	RegisterAppHandler(pattern, h)
@@ -198,12 +212,23 @@ func useMuxer(mux Muxer, next http.Handler, m *handlerMap) http.Handler {
 	return UseMuxer(mux, next)
 }
 
-// UseMuxer serves a muxer such that if a handler cannot be found, control is past to the next handler.
+// UseMuxer serves a muxer such that if a handler cannot be found, or the found handler does not respond,
+// control is past to the next handler.
 func UseMuxer(mux Muxer, next http.Handler) http.Handler {
+	if next == nil {
+		panic("next may not be nil. Pass a http.NotFoundHandler if this is the end of the handler chain")
+	}
+	if mux == nil {
+		panic("mux may not be nil")
+	}
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		h,p := mux.Handler(r)
 		if p != "" {
-			h.ServeHTTP(w,r)
+			d := WriteDetector{w.(ResponseRewinder), false}
+			h.ServeHTTP(&d,r)
+			if !d.HasWritten {
+				next.ServeHTTP(w,r) // skip to next handler
+			}
 		} else {
 			next.ServeHTTP(w,r) // skip
 		}

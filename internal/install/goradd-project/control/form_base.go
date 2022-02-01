@@ -21,7 +21,6 @@ func (f *FormBase) Init(ctx context.Context, id string) {
 // You can put overrides that should apply to all your forms here.
 func (f *FormBase) AddRelatedFiles() {
 	f.FormBase.AddRelatedFiles() // add default files
-	//f.AddJQueryUI()				// Load JQuery UI if needed
 	//bsconfig.LoadBootstrap(f) 	// Load Bootstrap if needed
 	// f.AddFontAwesome()			// Load FontAwesome if needed
 	// Load you own site-wide css and js files below

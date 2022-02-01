@@ -20,6 +20,11 @@ func BufferedOutputManager() User {
 	return bufferedOutputManager
 }
 
+type OutputBufferer interface {
+	OutputBuffer() *bytes.Buffer
+}
+
+
 type BufferedResponseWriterI interface {
 	http.ResponseWriter
 	Disable()
@@ -74,6 +79,10 @@ func (bw *bufferedResponseWriter) Len() int {
 	} else {
 		return bw.buf.Len()
 	}
+}
+
+func (bw *bufferedResponseWriter) Rewind(n int) {
+
 }
 
 func DisableOutputBuffering(ctx context.Context) {

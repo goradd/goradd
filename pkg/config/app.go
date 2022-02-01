@@ -25,8 +25,7 @@ var IdleTimeout = 180 * time.Second
 // mode so that you don't have to worry about timeouts when debugging ajax code.
 var AjaxTimeout = 10000;
 
-// CacheBuster maps paths to checksums that are used to tell the browser when its time to reload a resource
-var CacheBuster map[string]string
+// CacheBusterPrefix is a fragment that is included with cache busted paths.
 var CacheBusterPrefix = "gr."
 
 // Port lets you change the port number that the app will run on, vs. the default

@@ -3,7 +3,7 @@ package template
 import (
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
-	"bytes"
+	"io"
 	"github.com/goradd/goradd/pkg/orm/db"
     "fmt"
 )
@@ -26,8 +26,9 @@ func (n *ListPanelBaseTemplate) FileName(key string, t generator.TableType) stri
 	return n.TargetDir + "/" + key + "/panel/" + t.GoName + "ListPanel.base.go"
 }
 
-func (n *ListPanelBaseTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
+func (n *ListPanelBaseTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType,  _w io.Writer) (err error) {
 	{{: "panel/listBase.tmpl" }}
+	return
 }
 
 func (n *ListPanelBaseTemplate) Overwrite() bool {

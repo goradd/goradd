@@ -79,17 +79,6 @@ func (a *Application) InitializeLoggers() {
 }
 */
 
-// SetupAssetDirectories sets up directories that will serve assets. Its best to put your assets in your project/assets
-// directory, but if you need to serve assets from another directory too, you can uncomment the code below to add
-// whatever assets you need.
-/*
-func (a *Application) SetupAssetDirectories() {
-	a.Application.SetupAssetDirectories()
-	page.RegisterAssetDirectory(location, config.AssetPrefix + name)
-
-}
-*/
-
 // SetupMessenger injects the global messenger that permits pub/sub communication between the server and client.
 // Uncomment the following if you need to change parameters on the hub.
 // If you don't need this at all, you can uncomment below and simply make it an empty function.
@@ -190,9 +179,6 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	}
 
-	// Handle the favicon request.
-	mux.Handle("/favicon.ico", http.HandlerFunc(faviconHandler))
-
 	// Below is an example of how you can add your own handler that piggybacks
 	// on the framework's websocket messenger.
 	//mux.Handle("/ws/myws", a.myWebsocketAuthHandler(messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler()))
@@ -201,11 +187,8 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 	// Serve up the websocket messenger
 	mux.Handle(config.WebsocketMessengerPrefix, http.HandlerFunc(app.WebsocketMessengerHandler))
 
-	// serve up static application asset files
-	mux.Handle(config.AssetPrefix, http.HandlerFunc(page.ServeAsset))
-
 	// send anything you don't explicitly handle above to the goradd app server
-	// note that the app server can serve up static html too. See ServeStaticFile.
+	// note that the app server can serve up static html too. See serveStaticFile.
 	mux.Handle("/", a.MakeAppServer())
 
 	// Uncomment this and implement ServeData to serve up custom generated
@@ -214,11 +197,6 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 
 	return mux
 }
-
-func faviconHandler(w http.ResponseWriter, r *http.Request) {
-	//http.ServeFile(w, r, page.GetAssetLocation("/assets/project/image/favicon.ico"))
-}
-
 
 // ServeRequest is the place to serve up any files that have not been handled in any other way, either by a previously
 // declared handler, or by the goradd app server, or the static file server. ServeRequest is only called when all
@@ -278,15 +256,15 @@ func (a *Application) PutContext(r *http.Request) *http.Request {
 */
 
 
-// ServeStaticFile serves up static html and other files. The default will serve up the generated form index
+// serveStaticFile serves up static html and other files. The default will serve up the generated form index
 // and any files you put in the HTML directory. If you want to serve up files from other directories, uncomment
 // the line below, but remember you will have to put those files on your release server and point your custom
 // static file server there.
 /*
-func (a *Application) ServeStaticFile (w http.ResponseWriter, r *http.Request) bool {
+func (a *Application) serveStaticFile (w http.ResponseWriter, r *http.Request) bool {
 
 	// If you do not want the default behavior, remove the following lines
-	if a.Application.ServeStaticFile(w,r) {
+	if a.Application.serveStaticFile(w,r) {
 		return true
 	}
 

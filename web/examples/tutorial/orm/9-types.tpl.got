@@ -40,7 +40,7 @@ The status of the {{= project.Name() }} project is {{= project.ProjectStatusType
 }}
 <p>
 The types of {{= person.FirstName() }} {{= person.LastName() }} are
-{{for _,s := range person.PersonTypes() }}{{= s.String() }}, {{for}}{{- 2}}
+{{join person.PersonTypes(),", "}}{{= _j.String() }}{{join}}
 </p>
 
 {{end}}

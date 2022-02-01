@@ -3,7 +3,7 @@ package template
 import (
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
-	"bytes"
+	"io"
 	"github.com/goradd/goradd/pkg/orm/db"
     "strings"
     "fmt"
@@ -28,8 +28,9 @@ func (n *EditFormTemplate) FileName(key string, t generator.TableType) string {
 	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "EditForm.go"
 }
 
-func (n *EditFormTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, buf *bytes.Buffer) {
+func (n *EditFormTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType,  _w io.Writer) (err error) {
 	{{: "form/editform.tmpl" }}
+	return
 }
 
 func (n *EditFormTemplate) Overwrite() bool {

@@ -6,17 +6,17 @@ var key string = strings.Title(dd.DbKey)
 var formName = key + t.GoName + "DetailForm"
 
 {{
-{{begin strict}}
-{{< imports }}{{end}}
-{{< headTags }}{{end}}
-{{< title }}{{end}}
-{{< bodyAttributes }}{{end}}
-{{< form }}{{strict}}{{= formName}}{{begin strict}}{{end}}
+{{begin *strict*}}
+{{< imports }}{{end imports}}
+{{< headTags }}{{end headTags}}
+{{< title }}{{end title}}
+{{< bodyAttributes }}{{end bodyAttributes}}
+{{< form }}{{end *strict*}}{{= formName}}{{begin *strict*}}{{end form}}
 {{define template }}
-{{draw {{strict}}{{= t.DefaultHtmlID()}}{{begin strict}}-detail-panel }}
+{{draw {{end *strict*}}{{= t.DefaultHtmlID()}}{{begin *strict*}}-detail-panel }}
 {{draw ok-button }}
-{{end}}
+{{end template}}
 
 {{renderFormTemplate}}
-{{strict}}
+{{end *strict*}}
 }}

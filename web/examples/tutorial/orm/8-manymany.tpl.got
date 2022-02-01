@@ -35,12 +35,12 @@ and any project can have multiple team members.
 </p>
 <p>
     Project {{= project.Name() }} has team members:
-    {{for _,t := range project.TeamMembers() }}{{= t.FirstName() }} {{= t.LastName() }}, {{for}}{{- 2}}
+    {{join project.TeamMembers(), ", "}}{{= _j.FirstName() }} {{= _j.LastName() }}{{join}}
     {{# The - 2 tag above backs up two spaces in the output. The purpose here is to remove the comma and space after the final item listed.}}
 </p>
 <p>
     Person {{= person.FirstName() }} {{= person.LastName() }} is a member of these projects:
-    {{for _,p := range person.ProjectsAsTeamMember() }}{{= p.Name() }}, {{for}}{{- 2}}
+    {{join person.ProjectsAsTeamMember(), ", "}}{{= _j.Name() }}{{join}}
 </p>
 <h2>Creating Many-Many Linked Records</h2>
 <p>
@@ -68,7 +68,7 @@ simply call the appropriate Set* function to set the slice of items, and then ca
 
 <p>
     Project {{= project3.Name() }} has team members:
-    {{for _,t := range project3.TeamMembers() }}{{= t.FirstName() }} {{= t.LastName() }}, {{for}}{{- 2}}
+    {{join project3.TeamMembers(), ", "}}{{= _j.FirstName() }} {{= _j.LastName() }}{{join}}
 </p>
 <h2>Deleting Many-Many Linked Records</h2>
 <p>

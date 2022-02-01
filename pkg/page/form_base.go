@@ -10,13 +10,14 @@ import (
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
 	"io"
-	"path/filepath"
+	"path"
 	"strings"
 )
 
@@ -36,7 +37,6 @@ type FormI interface {
 	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
 	AddJQuery()
-	AddJQueryUI()
 	ChangeLocation(url string)
 	PushLocation(ctx context.Context)
 	PopLocation(ctx context.Context, fallback string)
@@ -99,12 +99,10 @@ func (f *FormBase) AddRelatedFiles() {
 	}
 }
 
-
-
 // AddJQuery adds the jquery javascript to the form
 func (f *FormBase) AddJQuery() {
 	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery3.js"), false, nil)
+		f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "jquery3.js"), false, nil)
 	} else {
 		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.4.1.min.js", false,
 			html.NewAttributes().Set("integrity", "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=").
@@ -112,26 +110,13 @@ func (f *FormBase) AddJQuery() {
 	}
 }
 
-// AddJQueryUI adds the JQuery UI javascript to the form. This is not loaded by default, but many add-ons
-// use it, so its here for convenience.
-func (f *FormBase) AddJQueryUI() {
-	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery-ui.js"), false, nil)
-	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=").
-				Set("crossorigin", "anonymous"))
-	}
-}
-
 // AddGoraddFiles adds the various goradd files to the form
 func (f *FormBase) AddGoraddFiles() {
-	gr := config.GoraddAssets()
-	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd.js"), false, nil)
+	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "goradd.js"), false, nil)
 	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-debug.js"), false, nil)
+		f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "goradd-debug.js"), false, nil)
 	}
-	f.AddStyleSheetFile(filepath.Join(gr, "css", "goradd.css"), nil)
+	f.AddStyleSheetFile(path.Join(config.AssetPrefix, "goradd", "css", "goradd.css"), nil)
 }
 
 // AddFontAwesome adds the font-awesome files fo the form
@@ -326,7 +311,7 @@ func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error)
 	// Setting the "action" attribute prevents iFrame clickjacking.
 	// This only works because we never ajax draw the form, only server render
 	grctx := GetContext(ctx)
-	f.SetAttribute("action", config.MakeLocalPath(grctx.HttpContext.URL.RequestURI()))
+	f.SetAttribute("action", http.MakeLocalPath(grctx.HttpContext.URL.RequestURI()))
 
 	return
 }
@@ -353,15 +338,13 @@ func (f *FormBase) PageDrawingFunction() PageDrawFunc {
 //
 // attributes are the attributes that will be included with the script tag, which is useful for things like
 // crossorigin and integrity attributes.
-//
-// To control the cache-control settings on the file, you should call SetCacheControl.
 func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes) {
 	if forceHeader && f.isOnPage {
 		panic("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
 	}
 
 	if path[:4] != "http" {
-		url := GetAssetUrl(path)
+		url := http.GetAssetUrl(path)
 
 		if url == "" {
 			panic(path + " is not in a registered asset directory")
@@ -410,7 +393,7 @@ func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 // To control the cache-control settings on the file, you should call SetCacheControl.
 func (f *FormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 	if path[:4] != "http" {
-		url := GetAssetUrl(path)
+		url := http.GetAssetUrl(path)
 
 		if url == "" {
 			panic(path + " is not in a registered asset directory")
@@ -502,17 +485,19 @@ func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 	f.response.displayAlert(msg)
 }
 
-// ChangeLocation will redirect the browser to a new URL. It does this AFTER processing the return
+// ChangeLocation will redirect the browser to a new URL.
+//
+// It does this AFTER processing the return
 // values sent to the browser. Generally you should use this to redirect the browser since you may
 // have some data that needs to be processed first. The exception is
 // if you are responding to some kind of security concern where you only want to send back an html
-// redirect without revealing any goradd information, in which case you should use the Page
+// redirect without revealing any goradd information, in which case you should use the page.Redirect function.
 func (f *FormBase) ChangeLocation(url string) {
-	f.response.SetLocation(config.MakeLocalPath(url))
+	f.response.SetLocation(http.MakeLocalPath(url))
 }
 
-// Response returns the form's response object that you can use to queue up javascript commands to the browser to be sent on
-// the next ajax or server request
+// Response returns the form's response object that you can use to queue up javascript commands to the browser to be
+// sent on the next ajax or server request
 func (f *FormBase) Response() *Response {
 	return &f.response
 }

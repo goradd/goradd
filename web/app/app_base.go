@@ -21,17 +21,17 @@ import (
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
 	"github.com/goradd/goradd/pkg/watcher"
-	"hash/crc64"
-	"io/ioutil"
 	"log"
+	"net/http/pprof"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/goradd/goradd/pkg/page"
 	"net/http"
 	"os"
+
+	_ "github.com/goradd/goradd/web/assets"
 )
 
 // StaticDirectoryPaths is a map of patterns to directory locations to serve statically.
@@ -63,17 +63,17 @@ type ApplicationI interface {
 	SetupErrorPageTemplate()
 	SetupPagestateCaching()
 	InitializeLoggers()
-	SetupAssetDirectories()
 	SetupSessionManager()
 	SetupMessenger()
 	SetupDatabaseWatcher()
-	SetupCacheBuster()
+	SetupPaths()
 	SessionHandler(next http.Handler) http.Handler
 	HSTSHandler(next http.Handler) http.Handler
 	ServeStaticFile(w http.ResponseWriter, r *http.Request) bool
 	AccessLogHandler(next http.Handler) http.Handler
 	PutDbContextHandler(next http.Handler) http.Handler
-	ServeAppMuxHandler(next http.Handler) http.Handler
+	ServeAppMux(next http.Handler) http.Handler
+	ServePatternMux(next http.Handler) http.Handler
 }
 
 // The application base, to be embedded in your application
@@ -87,11 +87,9 @@ func (a *Application) Init(self ApplicationI) {
 	self.SetupErrorPageTemplate()
 	self.SetupPagestateCaching()
 	self.InitializeLoggers()
-	self.SetupAssetDirectories()
 	self.SetupSessionManager()
 	self.SetupMessenger()
 	self.SetupDatabaseWatcher()
-	self.SetupCacheBuster()
 
 	page.DefaultCheckboxLabelDrawingMode = html.LabelAfter
 }
@@ -128,61 +126,12 @@ func (a *Application) SetupPagestateCaching() {
 	page.SetPageEncoder(page.GobPageEncoder{})
 }
 
-// SetupCacheBuster sets up the cache busting strategy. Cache busting permits the browser to cache files, but notifies
-// the server when a file has changed without requiring the browser to check the server. The default cache busting strategy
-// is to add a CRC value to the path on all the files in the assets directory. That will cause the file to change its name
-// whenever the file changes, forcing the browser to reload the file.
-func (a *Application) SetupCacheBuster() {
-	t := crc64.MakeTable(crc64.ECMA)
-	config.CacheBuster = make (map[string]string)
-	assetDir := config.AssetDirectory()
-	if assetDir == "" {return}
-	if err := filepath.Walk(assetDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err // stop
-		}
-		if info.IsDir() {
-			return nil // keep going
-		}
-		if filepath.Ext(path) == ".gz" {
-			// skip encrypted files, since they will be handled automatically
-			return nil
-		}
-		if data,err := ioutil.ReadFile(path); err != nil {
-			return err
-		} else {
-			// CRC it
-			c := crc64.Checksum(data, t)
-			e := strconv.FormatInt(int64(c), 36)
-			s := strings.TrimPrefix(path, assetDir)
-			s = filepath.ToSlash(s)
-			s = filepath.Join(config.AssetPrefix, s)
-			config.CacheBuster[s] = e
-			return nil
-		}
-	}); err != nil {
-		panic("failed walking the asset directory " + err.Error())
-	}
-}
 
 // InitializeLoggers sets up the various types of logs for various types of builds. By default, the DebugLog
 // and FrameworkDebugLogs will be deactivated when the config.Debug variables are false. Otherwise, configure how you
 // want, and simply remove a log if you don't want it to log anything.
 func (a *Application) InitializeLoggers() {
 	grlog.CreateDefaultLoggers()
-}
-
-// SetupAssetDirectories registers default directories that will contain web assets. These assets are served up in
-// place in development mode, and served from a specified asset directory in release mode. This means the assets will
-// need to be copied to a central location and moved to the release server. See the build directory for info.
-func (a *Application) SetupAssetDirectories() {
-	page.RegisterAssetDirectory(config.GoraddAssets(), config.AssetPrefix+"goradd")
-	page.RegisterAssetDirectory(config.ProjectAssets(), config.AssetPrefix+"project")
-
-	// If serving static html out of the root path, this will point it to the HtmlDirectory
-	if dir := config.HtmlDirectory(); dir != "" {
-		RegisterStaticPath("/", dir)
-	}
 }
 
 // SetupSessionManager sets up the global session manager. The session can be used to save data that is specific to a user
@@ -213,6 +162,22 @@ func (a *Application) SetupMessenger() {
 	messenger := new (ws.WsMessenger)
 	messageServer.Messenger = messenger
 	messenger.Start()
+}
+
+// SetupPaths sets up default path handlers for the application
+func (a *Application) SetupPaths() {
+	if config.Debug {
+		// standard go profiling support
+		http2.RegisterPathHandler("/debug/pprof/", http.HandlerFunc(pprof.Index))
+		http2.RegisterPathHandler("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
+		http2.RegisterPathHandler("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
+		http2.RegisterPathHandler("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
+		http2.RegisterPathHandler("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+	}
+
+	if config.WebsocketMessengerPrefix != "" {
+		http2.RegisterPathHandler(config.WebsocketMessengerPrefix, http.HandlerFunc(WebsocketMessengerHandler))
+	}
 }
 
 
@@ -280,14 +245,15 @@ func (a *Application) MakeAppServer() http.Handler {
 
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler()
-	h = a.this().ServeAppMuxHandler(h)
+	h = a.this().ServeAppMux(h)
 	h = a.ServeStaticFileHandler(h)
 	h = a.ServePageHandler(h)
 	h = a.PutAppContextHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
-	h = a.this().HSTSHandler(h)
 	h = a.BufferedOutputHandler(h)
+	h = a.this().ServePatternMux(h)
+	h = a.this().HSTSHandler(h)
 	h = a.this().AccessLogHandler(h)
 
 	return h
@@ -444,48 +410,47 @@ func (a *Application) ServeStaticFile(w http.ResponseWriter, r *http.Request) bo
 }
 
 
-// RegisterStaticPath registers the given url path such that it points to the given directory. For example, passing
-// "/test", "/my/test/dir" will serve documents out of /my/test/dir whenever a url has /test in front of it.
-// You can only call this during application startup.
-func RegisterStaticPath(path string, directory string) {
-	if path[0:1] != "/" {
-		log.Fatal("path " + path + " must begin with a slash (must be a rooted path)")
-	}
-
-	if !sys.IsDir(directory) {
-		log.Fatal("path " + directory + " is not a valid directory")
-	}
-
-	var err error
-	directory,err = filepath.Abs(directory)
-	if err != nil {
-		log.Fatal("could not get absolute path of " + directory + ": " + err.Error())
-	}
-
-	if path[len(path)-1:] == "/" {
-		// Strip ending slash so that we can handle both /a/b/ and /a/b urls as directories and treat them the same.
-		path = path[:len(path)-1]
-	}
-
-	if StaticDirectoryPaths == nil {
-		StaticDirectoryPaths = maps.NewStringSliceMap()
-		// sort the directory paths longest to shortest so that when we iterate them, we won't short circuit
-		// longer paths with shorter versions of the same path.
-		StaticDirectoryPaths.SetSortFunc(func(key1,key2 string, val1, val2 string) bool {
-			// order longest to shortest keys
-			return len(key1) > len(key2)
-		})
-	}
-	StaticDirectoryPaths.Set(path, directory)
+// RegisterStaticPath registers the given url path such that it points to the given directory in the host file system.
+//
+// For example, passing "/test", "/my/test/dir" will serve documents out of /my/test/dir whenever a url
+// has /test in front of it. Only call this during application startup.
+//
+// hide is a list of file endings for files that should not be served. If a file is searched for, but is not
+// found, a NotFound error will be sent to the http server.
+func RegisterStaticPath(
+	path string,
+	directory string,
+	useCacheBuster bool,
+	mustRespond bool,
+	hide []string,
+	) {
+	fileSystem := os.DirFS(directory)
+	fs := http2.FileSystemServer{
+		Fsys: fileSystem,
+		SendModTime: !useCacheBuster,
+		UseCacheBuster: useCacheBuster,
+		MustRespond: mustRespond,
+		Hide: hide}
+	http2.RegisterPathHandler(path, fs)
 	grlog.Infof("Registering static path %s to %s", path, directory)
 }
 
-// ServeAppMuxHandler serves up the http2.AppMuxer, which handles REST calls,
+// ServeAppMux serves up the http2.AppMuxer, which handles REST calls,
 // and dynamically created files.
 //
 // To use your own AppMuxer, override this function in app.go and create your own.
-func (a *Application) ServeAppMuxHandler(next http.Handler) http.Handler {
+func (a *Application) ServeAppMux(next http.Handler) http.Handler {
 	return http2.UseAppMuxer(http.NewServeMux(), next)
+}
+
+// ServePatternMux serves up the http2.PatternMuxer.
+//
+// The pattern muxer routes patterns early in the handler stack. It is primarily for handlers that
+// do not need the session manager or buffered output, things like static files.
+//
+// The default version injects a standard http muxer. Override to use your own muxer.
+func (a *Application) ServePatternMux(next http.Handler) http.Handler {
+	return http2.UsePatternMuxer(http.NewServeMux(), next)
 }
 
 // ServeWebsocketMessengerHandler is the authorization handler for watcher requests.
@@ -525,12 +490,6 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
-}
-
-// RegisterStaticFileProcessor registers a processor function for static files that have a particular suffix.
-// Do this at init time.
-func RegisterStaticFileProcessor(ending string, processorFunc StaticFileProcessorFunc) {
-	staticFileProcessors = append(staticFileProcessors, staticFileProcessor{ending, processorFunc})
 }
 
 // ListenAndServeTLSWithTimeouts starts a secure web server with timeouts. The default http server does

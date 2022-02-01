@@ -3,7 +3,7 @@ package page
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"io"
 	"reflect"
@@ -224,6 +224,6 @@ func (e *HttpError) Send(errCode int) {
 // your website, you can use this to redirect to a login page or an error page.
 func Redirect(url string) {
 	e := HttpError{}
-	e.SetResponseHeader("Location", config.MakeLocalPath(url))
+	e.SetResponseHeader("Location", http.MakeLocalPath(url))
 	e.Send(303)
 }

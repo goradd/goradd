@@ -13,11 +13,7 @@ func init() {
 	http.RegisterBufferedOutputHandler("/goradd/configure.html",
 		func(ctx context.Context, buf *bytes.Buffer) (err error) {
 
-			buf.WriteString(`
-`)
-
-			buf.WriteString(`
-<!DOCTYPE html>
+			buf.WriteString(`<!DOCTYPE html>
 <head>
 <meta charset="utf-8"/>
 <title>Configuring the Database</title>
@@ -622,7 +618,6 @@ SET FOREIGN_KEY_CHECKS=1;
 `)
 
 			buf.WriteString(`
-
 `)
 
 			return

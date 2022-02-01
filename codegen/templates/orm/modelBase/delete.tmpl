@@ -24,7 +24,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 }
                 o.{{= ref.Values["objName"] }} = nil
             }
-            {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
+            {{elseif ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
             {
                 obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                           Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
@@ -36,7 +36,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 }
                 o.{{= ref.Values["objName"] }} = nil
             }
-            {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
+            {{elseif ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
              {
                  c := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                            Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
@@ -58,7 +58,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 }
                 o.{{= ref.Values["objName"] }} = nil
             }
-            {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
+            {{elseif ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
             {
                 objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                           Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
@@ -70,7 +70,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 }
                 o.{{= ref.Values["objName"] }} = nil
             }
-            {{else if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
+            {{elseif ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
              {
                 c := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                           Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).

@@ -39,7 +39,7 @@ func SendErrorMessage(message string, errCode int) {
 //
 // This will set the Location header to point to the new location.
 //
-// Be sure to call page.MakeLocalPath() if the resource is pointing to a
+// Be sure to call http.MakeLocalPath() if the resource is pointing to a
 // location on this server
 func Redirect(location string, errCode int) {
 	e := Error{errCode: errCode}

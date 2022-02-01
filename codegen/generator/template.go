@@ -1,8 +1,8 @@
 package generator
 
 import (
-	"bytes"
 	"github.com/goradd/goradd/pkg/orm/db"
+	"io"
 )
 
 type Template struct {
@@ -12,19 +12,19 @@ type Template struct {
 }
 
 type TableTemplateI interface {
-	GenerateTable(codegen CodeGenerator, dd *db.Database, t TableType, buf *bytes.Buffer)
+	GenerateTable(codegen CodeGenerator, dd *db.Database, t TableType, _w io.Writer) (err error)
 	FileName(key string, t TableType) string
 	Overwrite() bool
 }
 
 type TypeTableTemplateI interface {
-	GenerateTypeTable(codegen CodeGenerator, dd *db.Database, t TypeTableType, buf *bytes.Buffer)
+	GenerateTypeTable(codegen CodeGenerator, dd *db.Database, t TypeTableType, _w io.Writer) (err error)
 	FileName(key string, t TypeTableType) string
 	Overwrite() bool
 }
 
 type OneTimeTemplateI interface {
-	GenerateOnce(codegen CodeGenerator, dd *db.Database, buf *bytes.Buffer)
+	GenerateOnce(codegen CodeGenerator, dd *db.Database, _w io.Writer) (err error)
 	FileName(key string) string
 	Overwrite() bool
 }

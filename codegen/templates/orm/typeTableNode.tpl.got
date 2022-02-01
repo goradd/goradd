@@ -3,7 +3,7 @@ package template
 import (
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
-	"bytes"
+	"io"
 	//"github.com/gedex/inflector"
 	//"github.com/knq/snaker"
 	"github.com/goradd/goradd/pkg/orm/db"
@@ -34,8 +34,9 @@ func (n *TypeTableNodeTemplate) FileName(key string, tt generator.TypeTableType)
 	return targetDir + "/" + key + "/model/node/" + tt.GoName + ".go"
 }
 
-func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.CodeGenerator, dd *db.Database, tt generator.TypeTableType, buf *bytes.Buffer) {
+func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.CodeGenerator, dd *db.Database, tt generator.TypeTableType, _w io.Writer) (err error) {
 	{{: "typeTables/typeTableNode.tmpl" }}
+	return
 }
 
 func (n *TypeTableNodeTemplate) Overwrite() bool {

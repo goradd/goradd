@@ -1,27 +1,20 @@
 package config
 
-import (
-	"github.com/goradd/goradd/pkg/strings"
-	"path"
-)
-
-// AssetPrefix is the path prefix for all goradd assets. It indicates to the program to look for the given file in the assets collection of files
+// AssetPrefix is the path prefix for all goradd assets. It indicates to the program to
+// look for the given file in the assets collection of files
 // which in development mode is wherever the file is on the disk, and in release mode, the central asset directory where
-// all assets get copied
+// all assets get copied. set to blank to turn off the default asset management.
 var AssetPrefix = "/assets/"
 
 // WebsocketMessengerPrefix is the url prefix that indicates this is a Websocket call to our messenger service.
 //
-//The default turns on Websockets and uses this to implement the Watcher and Messenger
+// The default turns on Websockets and uses this to implement the Watcher and Messenger
 // mechanisms. Override this in the goradd_project/config/goradd.go file to set to the value of your choice,
 // or set to blank to turn off handling of websockets.
 var WebsocketMessengerPrefix = "/ws/"
 
 // Minify controls whether we try to strip out unnecessary whitespace from our HTML output
 var Minify bool = !Debug
-
-var assetDirectory string
-var htmlDirectory string
 
 // ProxyPath is the url path to the application. By default, this is the root, but you can set it
 // to any path. This is particularly useful to making the application appear as if it is running in a subdirectory
@@ -43,55 +36,3 @@ var SelectOneString = "- Select One -"
 // NoSelectionString is used in selection lists as the item that indicates no selection when a selection is not required
 var NoSelectionString = "-"
 
-func SetAssetDirectory(assetDir string) {
-	if Release && assetDir == "" {
-		panic("The -assetDir flag is required when running the release build")
-	}
-	assetDirectory = assetDir
-}
-
-func AssetDirectory() string {
-	return assetDirectory
-}
-
-func SetHtmlDirectory(d string) {
-	htmlDirectory = d
-}
-
-func HtmlDirectory() string {
-	return htmlDirectory
-}
-
-type LocalPathMaker func(string)string
-
-var localPathMaker LocalPathMaker = defaultLocalPathMaker
-
-func defaultLocalPathMaker(p string) string {
-	var hasSlash bool
-	if p == "" {
-		panic(`cannot make a local path to an empty path. If you are trying to refer to the root, use '/'.`)
-	}
-	if p[len(p)-1] == '/' {
-		hasSlash = true
-	}
-	if p[0] == '/' && ProxyPath != "" && !strings.StartsWith(p, ProxyPath + "/"){
-		p = path.Join(ProxyPath, p) // will strip trailing slashes
-		if hasSlash {
-			p = p + "/"
-		}
-	}
-	return p
-
-}
-
-// MakeLocalPath turns a path that points to a resource on this computer into a path that will reach
-// that resource. It takes into account a variety of settings that may affect the path and that will
-// depend on how the app is deployed.
-// You can inject your own local path maker using SetLocalPathMaker
-func MakeLocalPath(p string) string {
-	return localPathMaker(p)
-}
-
-func SetLocalPathMaker(f LocalPathMaker) {
-	localPathMaker = f
-}
