@@ -22,6 +22,8 @@ func (d *WriteDetector) WriteHeader(code int) {
 	d.ResponseWriter.WriteHeader(code)
 }
 
+// WriteString will cause WriteString to be used on the enclosed ResponseWriter if the ResponseWriter
+// supports it.
 func (d *WriteDetector) WriteString(s string) (l int, err error)  {
 	d.HasWritten = true
 	return io.WriteString(d.ResponseWriter, s)

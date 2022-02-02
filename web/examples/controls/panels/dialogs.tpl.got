@@ -28,10 +28,7 @@ the Bootstrap Modal widget instead.
 </p>
 {{draw alertButton }}
 {{draw messageButton }}
-<p>
-Result:
-{{draw result }}
-</p>
+
 {{end template}}
 
 {{renderControlTemplate}}

@@ -200,8 +200,8 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		panic("No page manager defined")
 	}
 
-	ctx := r.Context()
 	if pm.IsPage(r.URL.Path) {
+		ctx := r.Context()
 		headers, errCode := pm.RunPage(ctx, w)
 		if errCode == 0 {
 			if headers != nil {
@@ -315,11 +315,13 @@ func (a *Application) ServeStaticFileHandler(next http.Handler) http.Handler {
 // ServePageHandler processes requests for automated goradd pages.
 func (a *Application) ServePageHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		a.ServeHTTP(w, r)
-		head := w.Header()
-		if next != nil &&
-			page.OutputLen(r.Context()) == 0 &&
-			len(head) <= 1 { // This could be a hack. Not sure of any other way to tell if we have responded.
+		pm := page.GetPageManager()
+		if pm == nil {
+			panic("No page manager defined")
+		}
+		if pm.IsPage(r.URL.Path) {
+			a.ServeHTTP(w, r)
+		} else {
 			next.ServeHTTP(w, r)
 		}
 	}

@@ -42,7 +42,7 @@ func LoadBootstrap(form page.FormI) {
 			form.AddJavaScriptFile(path.Join(config.AssetPrefix, "bootstrap", "js", "gr.bs.shim.js"), false, nil)
 		} else {
 			form.AddJavaScriptFile(path.Join(config.AssetPrefix, "bootstrap", "js", "bootstrap.bundle.js"), false, nil)
-			form.AddStyleSheetFile(path.Join(config.AssetPrefix, "bootstrap", "css", "bootstrap.min.css"), nil)
+			form.AddStyleSheetFile(path.Join(config.AssetPrefix, "bootstrap", "css", "bootstrap.css"), nil)
 			form.AddJavaScriptFile(path.Join(config.AssetPrefix, "bootstrap", "js", "gr.bs.shim.js"), false, nil)
 		}
 	}

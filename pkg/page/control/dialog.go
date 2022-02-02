@@ -54,7 +54,7 @@ type DialogI interface {
 
 // Dialog is the default implementation of a dialog in Goradd. You should not normally call this directly, but
 // rather call GetDialogPanel to create a dialog. GetDialogPanel will then call NewDialogI to create a dialog
-// wraps the panel. To change the default dialog style to a different one, call SetNewDialogFunction()
+// that wraps the panel. To change the default dialog style to a different one, call SetNewDialogFunction()
 type Dialog struct {
 	Panel
 	buttonBarID string

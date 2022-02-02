@@ -20,11 +20,6 @@ func BufferedOutputManager() User {
 	return bufferedOutputManager
 }
 
-type OutputBufferer interface {
-	OutputBuffer() *bytes.Buffer
-}
-
-
 type BufferedResponseWriterI interface {
 	http.ResponseWriter
 	Disable()
@@ -81,17 +76,8 @@ func (bw *bufferedResponseWriter) Len() int {
 	}
 }
 
-func (bw *bufferedResponseWriter) Rewind(_ int) {
-
-}
-
 func DisableOutputBuffering(ctx context.Context) {
 	ctx.Value(goradd.BufferContext).(BufferedResponseWriterI).Disable()
-}
-
-// OutputBuffer returns the current output buffer.
-func OutputBuffer(ctx context.Context) *bytes.Buffer {
-	return ctx.Value(goradd.BufferContext).(BufferedResponseWriterI).OutputBuffer()
 }
 
 // ResetOutputBuffer returns the current output buffer and resets the output buffer to nothing.

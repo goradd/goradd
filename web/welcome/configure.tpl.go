@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	http.RegisterDrawFunc("/goradd/configure.tpl.html",
+	http.RegisterDrawFunc("/goradd/configure.html",
 		func(ctx context.Context, _w io.Writer) (err error) {
 
 			if _, err = io.WriteString(_w, `<!DOCTYPE html>

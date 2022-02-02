@@ -1,6 +1,9 @@
 package http
 
 import (
+	"bytes"
+	"context"
+	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -12,7 +15,7 @@ import (
 func Test_BufferedOutput(t *testing.T) {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		_,_ = io.WriteString(w, "Hey")
-		b := OutputBuffer(r.Context())
+		b := outputBuffer(r.Context())
 		assert.EqualValues(t,"Hey", b.String(), "Output was not buffered")
 		assert.Equal(t, 3, OutputLen(r.Context()), "Len was not recorded")
 	}
@@ -32,7 +35,7 @@ func Test_UnbufferedOutput(t *testing.T) {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		DisableOutputBuffering(r.Context())
 		_,_ = io.WriteString(w, "Hey")
-		b := OutputBuffer(r.Context())
+		b := outputBuffer(r.Context())
 		assert.NotEqualValues(t,"Hey", b.String(), "Output was buffered but should not be")
 		assert.Equal(t, 3, OutputLen(r.Context()), "Len was not recorded")
 	}
@@ -53,7 +56,7 @@ func Test_BufferedOutputCode(t *testing.T) {
 		_,_ = io.WriteString(w, "Hey")
 		w.WriteHeader(300)
 
-		b := OutputBuffer(r.Context())
+		b := outputBuffer(r.Context())
 		assert.EqualValues(t,"Hey", b.String(), "Output was not buffered")
 		assert.Equal(t, 3, OutputLen(r.Context()), "Len was not recorded")
 	}
@@ -76,7 +79,7 @@ func Test_UnbufferedOutputCode(t *testing.T) {
 		_,_ = io.WriteString(w, "Hey")
 		w.WriteHeader(300)
 
-		b := OutputBuffer(r.Context())
+		b := outputBuffer(r.Context())
 		assert.NotEqualValues(t,"Hey", b.String(), "Output was not buffered")
 		assert.Equal(t, 3, OutputLen(r.Context()), "Len was not recorded")
 	}
@@ -92,4 +95,8 @@ func Test_UnbufferedOutputCode(t *testing.T) {
 	assert.EqualValues(t, "Hey", body, "Output was not forwarded to writer even when header was prior written")
 	assert.Equal(t, 200, resp.StatusCode, "Code was recorded even when sent after first response.")
 
+}
+
+func outputBuffer(ctx context.Context) *bytes.Buffer {
+	return ctx.Value(goradd.BufferContext).(BufferedResponseWriterI).OutputBuffer()
 }

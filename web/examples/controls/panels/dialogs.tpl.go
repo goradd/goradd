@@ -102,45 +102,7 @@ the Bootstrap Modal widget instead.
 
 	}
 
-	if _, err = io.WriteString(_w, `<p>
-Result:
-`); err != nil {
-		return
-	}
-
-	if `` == "" {
-
-		if _, err = io.WriteString(_w, `    `); err != nil {
-			return
-		}
-
-		if err = ctrl.Page().GetControl("result").Draw(ctx, _w); err != nil {
-			return
-		}
-
-		if _, err = io.WriteString(_w, `
-`); err != nil {
-			return
-		}
-
-	} else {
-
-		if _, err = io.WriteString(_w, `    `); err != nil {
-			return
-		}
-
-		if err = ctrl.Page().GetControl("result").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
-		if _, err = io.WriteString(_w, `
-`); err != nil {
-			return
-		}
-
-	}
-
-	if _, err = io.WriteString(_w, `</p>
+	if _, err = io.WriteString(_w, `
 `); err != nil {
 		return
 	}
