@@ -1,12 +1,6 @@
-{{< imports }}
-{{end}}
-{{< headTags }}
-{{end}}
-{{< package }}tutorial{{end}}
-{{< title }}Tutorial{{end}}
-{{< form }}IndexForm{{end}}
-{{< bodyAttributes }}
-{{end}}
+{{< package }}tutorial{{end package}}
+{{< title }}Tutorial{{end title}}
+{{< form }}IndexForm{{end form}}
 
 
 {{define template }}
@@ -40,6 +34,6 @@ function toggleSidebar() {
 </div>
 </div>
 
-{{end}}
+{{end template}}
 
 {{renderFormTemplate}}

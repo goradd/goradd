@@ -1,8 +1,3 @@
-{{< imports }}
-{{end imports}}
-{{< headTags }}
-{{end headTags}}
-{{< package }}welcome{{end package}}
 {{< title }}Code Generate{{end title}}
 {{< form }}CodegenForm{{end form}}
 {{< bodyAttributes }}

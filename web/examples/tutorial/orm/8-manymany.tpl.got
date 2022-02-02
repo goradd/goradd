@@ -1,9 +1,9 @@
-{{< package }}orm{{end}}
+{{< package }}orm{{end package}}
 {{< imports }}
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-{{end}}
-{{< control }}ManyManyPanel{{end}}
+{{end imports}}
+{{< control }}ManyManyPanel{{end control}}
 
 {{define template }}
 <h1>Many-to-Many Relationships</h1>
@@ -83,6 +83,6 @@ the record on the other side of the link.
 	p2.Delete(ctx)
 }}
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

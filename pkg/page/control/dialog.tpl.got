@@ -6,17 +6,17 @@ import (
 	"html"
 )
 
-func (d *Dialog) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
-    d.TitleBar().Draw(ctx, buf)
+func (d *Dialog) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
+   {{err d.TitleBar().Draw(ctx, _w) }}
 
     l := len(d.Children())
     if l > 2 {
         for _,child := range d.Children() {
-            child.Draw(ctx, buf)
+            {{err child.Draw(ctx, _w) }}
         }
     } else {
 {{ {{!= d.Text() }} }}
     }
-    d.ButtonBar().Draw(ctx, buf)
+    {{err d.ButtonBar().Draw(ctx, _w) }}
 	return
 }

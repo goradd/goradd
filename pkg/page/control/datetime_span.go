@@ -1,12 +1,12 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"io"
 	"time"
 )
 
@@ -75,14 +75,14 @@ func (s *DateTimeSpan) SetFormat(format string) *DateTimeSpan {
 }
 
 // DrawInnerHtml is called by the framework to draw the inner html of the span.
-func (s *DateTimeSpan) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) error {
-	buf.WriteString(s.value.Format(s.format))
+func (s *DateTimeSpan) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
+	_,err = io.WriteString(w, s.value.Format(s.format))
 	// TODO: Internationalize this. Golang does not currently have date/time localization support,
 	// as in translation of month and weekday strings, but it does support arbitrary timezones.
 	// The other option is to let JavaScript format it, though that limits you to formatting in
 	// local time or UTC. JavaScript does not have a means to specify the timezone that is well supported.
 	// However, JavaScript will translate month and weekday names to the local language.
-	return nil
+	return
 }
 func (s *DateTimeSpan) DrawingAttributes(ctx context.Context) html.Attributes {
 	return s.ControlBase.DrawingAttributes(ctx)

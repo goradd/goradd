@@ -1,10 +1,5 @@
-{{< imports }}
-{{end}}
-{{< headTags }}
-{{end}}
-{{< package }}manualtest{{end}}
-{{< title }}Ajax Timing{{end}}
-{{< form }}AjaxTimingForm{{end}}
+{{< title }}Ajax Timing{{end title}}
+{{< form }}AjaxTimingForm{{end form}}
 
 {{define template }}
 	<div>
@@ -21,6 +16,6 @@
         {{draw form.Btn }}
     </div>
 
-{{end}}
+{{end template}}
 
 {{renderFormTemplate}}

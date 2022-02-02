@@ -5,6 +5,5 @@ import (
 )
 
 func Database() db.DatabaseI {
-    return db.GetDatabase("goradd")
+	return db.GetDatabase("goradd")
 }
-

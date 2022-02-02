@@ -1,9 +1,9 @@
-{{< package }}orm{{end}}
+{{< package }}orm{{end package}}
 {{< imports }}
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-{{end}}
-{{< control }}TypesPanel{{end}}
+{{end imports}}
+{{< control }}TypesPanel{{end control}}
 
 {{define template }}
 <h1>Type Tables</h1>
@@ -43,6 +43,6 @@ The types of {{= person.FirstName() }} {{= person.LastName() }} are
 {{join person.PersonTypes(),", "}}{{= _j.String() }}{{join}}
 </p>
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

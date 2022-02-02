@@ -1,8 +1,8 @@
 package http
 
 import (
-	"bytes"
 	"context"
+	"io"
 	"mime"
 	"net/http"
 	"path"
@@ -142,19 +142,18 @@ func RegisterAppPathHandler(prefix string, handler http.Handler) {
 	registerPrefixHandler(prefix, handler, appHandlers, AppMuxer)
 }
 
-type BufferedOutputFunc func(ctx context.Context, buf *bytes.Buffer) (err error)
+type DrawFunc func(ctx context.Context, w io.Writer) (err error)
 
-// RegisterBufferedOutputHandler registers a buffered output function for the given pattern.
+// RegisterDrawFunc registers a an output function for the given pattern.
 //
 // This could be used to register template output with a path, for example. See the renderResource
 // template macro and the configure.tpl.got file in the welcome application for an example.
 //
 // Registered handlers are served by the AppMuxer.
-func RegisterBufferedOutputHandler(pattern string, f BufferedOutputFunc) {
+func RegisterDrawFunc(pattern string, f DrawFunc) {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		buf := OutputBuffer(ctx)
-		err := f(ctx, buf)
+		err := f(ctx, w)
 		if err != nil {
 			panic(err)
 		}
@@ -164,10 +163,9 @@ func RegisterBufferedOutputHandler(pattern string, f BufferedOutputFunc) {
 		_, haveType := w.Header()["Content-Type"]
 		if !haveType {
 			ctype := mime.TypeByExtension(filepath.Ext(name))
-			if ctype == "" {
-				ctype = http.DetectContentType(buf.Bytes())
+			if ctype != "" {
+				w.Header().Set("Content-Type", ctype)
 			}
-			w.Header().Set("Content-Type", ctype)
 		}
 	}
 	h := http.HandlerFunc(fn)
@@ -224,7 +222,7 @@ func UseMuxer(mux Muxer, next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		h,p := mux.Handler(r)
 		if p != "" {
-			d := WriteDetector{w.(ResponseRewinder), false}
+			d := WriteDetector{w, false}
 			h.ServeHTTP(&d,r)
 			if !d.HasWritten {
 				next.ServeHTTP(w,r) // skip to next handler

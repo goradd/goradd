@@ -36,7 +36,7 @@ func (c *GetterColumn) Init(index string) {
 	c.key = index
 }
 
-func (c *GetterColumn) CellData(ctx context.Context, rowNum int, colNum int, data interface{}) interface{} {
+func (c *GetterColumn) CellData(_ context.Context, rowNum int, colNum int, data interface{}) interface{} {
 	switch v := data.(type) {
 	case Getter:
 		return v.Get(c.key)

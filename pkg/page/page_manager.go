@@ -130,16 +130,16 @@ func (m *PageManager) RunPage(ctx context.Context, w io.Writer) (headers map[str
 			switch v := r.(type) {
 			case error:
 				err := newRunError(ctx, v)
-				m.makeErrorResponse(ctx, err, "", w)
+				m.makeErrorResponse(ctx, err, nil, w)
 			case string:
 				err := newRunError(ctx, v)
-				m.makeErrorResponse(ctx, err, "", w)
+				m.makeErrorResponse(ctx, err, nil, w)
 			case *HttpError: // A kind of http panic that just returns a response code and headers
 				headers = v.headers
 				httpErrCode = v.errCode
 			default:
 				err := newRunError(ctx, fmt.Errorf("unknown package error: %v", r))
-				m.makeErrorResponse(ctx, err, "", w)
+				m.makeErrorResponse(ctx, err, nil, w)
 			}
 		}
 	}()
@@ -148,7 +148,7 @@ func (m *PageManager) RunPage(ctx context.Context, w io.Writer) (headers map[str
 
 	if page == nil {
 		// An ajax call, but we could not deserialize the old page. Refresh the entire page to get server access.
-		io.WriteString(w, `{"loc":"reload"}`) // the refresh will be handled in javascript
+		_,_ = io.WriteString(w, `{"loc":"reload"}`) // the refresh will be handled in javascript
 		return map[string]string{"Content-Type": "application/json"}, 0
 	}
 
@@ -160,7 +160,7 @@ func (m *PageManager) RunPage(ctx context.Context, w io.Writer) (headers map[str
 
 	if e,ok := err.(FrameworkError); ok {
 		if e.Err == FrameworkErrNotAuthorized {
-			io.WriteString(w, page.form.GT(e.Error()))
+			_,_ = io.WriteString(w, page.form.GT(e.Error()))
 			return nil, 403
 		} else if e.Err == FrameworkErrRedirect {
 			page.SetResponseHeader("Location", e.Location)
@@ -170,10 +170,8 @@ func (m *PageManager) RunPage(ctx context.Context, w io.Writer) (headers map[str
 
 	if err != nil {
 		log.Error(err)
-		buf := OutputBuffer(ctx)
-		var html = buf.String() // copy current html
-		buf.Reset()
-		m.makeErrorResponse(ctx, newRunError(ctx, err), html, w)
+		buf := ResetOutputBuffer(ctx)
+		m.makeErrorResponse(ctx, newRunError(ctx, err), buf, w)
 		return
 	}
 	return page.responseHeader, page.responseError
@@ -186,15 +184,14 @@ func (m *PageManager) cleanup(p *Page) {
 
 func (m *PageManager) makeErrorResponse(ctx context.Context,
 	err *Error,
-	html string,
+	html []byte,
 	w io.Writer) {
 
 	if ErrorPageFunc == nil {
 		panic("No error page template function is defined")
 	}
 
-	// TODO: After GoT changes to writing to io.Writer, change this
-	ErrorPageFunc(ctx, html, err, OutputBuffer(ctx))
+	ErrorPageFunc(ctx, html, err, w)
 }
 
 // HttpError represents an error response to a http request.

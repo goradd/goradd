@@ -1,9 +1,17 @@
 {{
+//go:build !release
+// +build !release
+
 package gen
 
+// This file embeds the static files found here into the application during development.
+//
+// For deployment, these files should be copied to the deployment directory, compressed
+// and embedded from there. See goradd-project/build and goradd-project/deploy.
+
 import (
-    "github.com/goradd/goradd/pkg/sys"
-    "github.com/goradd/goradd/web/app"
+	"embed"
+	"github.com/goradd/goradd/pkg/http"
 }}
 for _, db := range db.GetDatabases() {
     dd := db.Describe()
@@ -15,9 +23,15 @@ for _, db := range db.GetDatabases() {
 {{
 )
 
-func init() {
-    dir := sys.SourceDirectory()
-    app.RegisterStaticPath("/goradd/forms", dir)
-}
+{{begin *strict*}}
 
+
+//go:embed index.html
+var a embed.FS
+
+func init() {
+	fs := http.FileSystemServer{Fsys: a, SendModTime: true, MustRespond: false, Hide: []string{".go", ".got", ".tmp"}}
+	http.RegisterPathHandler("/goradd/forms", fs)
+}
+{{end *strict*}}
 }}

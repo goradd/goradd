@@ -1,10 +1,10 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"io"
 	"reflect"
 )
 
@@ -86,10 +86,10 @@ func (l *UnorderedList) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (l *UnorderedList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *UnorderedList) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
 	h := l.this().GetItemsHtml(l.items)
-	buf.WriteString(h)
-	return nil
+	_,err = io.WriteString(w, h)
+	return
 }
 
 // GetItemsHtml is used by the framework to get the items for the html. It is exported so that

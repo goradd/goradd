@@ -1,7 +1,7 @@
 package page
 
 import (
-	"bytes"
+	"io"
 	"context"
 	"fmt"
 	"strings"
@@ -11,11 +11,11 @@ import (
 // The DebugErrorPageTmpl writes a debug error page to the html output so that it will display the error in the
 // browser, possibly as a popup. Do not use this on the release server, as it may expose details of your application
 // that you do not want exposed.
-func DebugErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, buf *bytes.Buffer) {
+func DebugErrorPageTmpl(ctx context.Context, partialHtml []byte, inErr *Error, _w io.Writer) (err error) {
 {{
 <h1 id="err-title">Error</h1>
 {{g
-    items := strings.Split(err.Error(), "\n")
+    items := strings.Split(inErr.Error(), "\n")
     errTitle := items[0]
     var errDesc string
     if len(items) > 1 {
@@ -26,12 +26,12 @@ func DebugErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, buf
 {{if errDesc != ""}}<p>{{= errDesc }}</p>{{if}}
 <h3>Call Path</h3>
 <p>
-{{for _,stack := range err.Stack}}
+{{for _,stack := range inErr.Stack}}
     {{= fmt.Sprintf("%s line %d in %s", stack.File, stack.Line, stack.Func) }} <br />
 {{for}}
 </p>
 <h3>Generated Html</h3>
-{{!h partialHtml }}
+{{!h string(partialHtml) }}
 
 
 }}

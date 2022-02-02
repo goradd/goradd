@@ -1,35 +1,36 @@
 package control
 
-func (b *Navbar) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
-    b.drawToggleAndBrand(ctx, buf)
+func (b *Navbar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
+    {{e b.drawToggleAndBrand(ctx, _w) }}
 
 {{
 	<div class="collapse navbar-collapse" id="{{= b.ID() }}_collapse">
-	    {{if b.brandLocation == NavbarCollapsedBrandHidden}}{{g b.drawBrand(ctx, buf) }}{{if}}
-		{{err b.DrawChildren(ctx, buf) }}
+	    {{if b.brandLocation == NavbarCollapsedBrandHidden}}{{g b.drawBrand(ctx, _w) }}{{if}}
+		{{err b.DrawChildren(ctx, _w) }}
 	</div>
 
 }}
     return
 }
 
-func (b *Navbar) drawToggleButton(ctx context.Context, buf *bytes.Buffer) {
+func (b *Navbar) drawToggleButton(ctx context.Context, _w io.Writer) (err error) {
 {{
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#{{= b.ID() }}_collapse" aria-controls="{{= b.ID() }}_collapse" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
 }}
+    return
 }
 
-func (b *Navbar) drawBrand(ctx context.Context, buf *bytes.Buffer)  {
+func (b *Navbar) drawBrand(ctx context.Context, _w io.Writer) (err error)  {
     if b.Text() != "" {
         if b.brandAnchor == "" {
             {{
-                <span class="navbar-brand">{{g b.DrawText(ctx, buf) }}</span>
+                <span class="navbar-brand">{{e b.DrawText(ctx, _w) }}</span>
             }}
         } else {
              {{
-                 <a class="navbar-brand" href="{{= b.brandAnchor}}">{{g b.DrawText(ctx, buf) }}</a>
+                 <a class="navbar-brand" href="{{= b.brandAnchor}}">{{e b.DrawText(ctx, _w) }}</a>
              }}
         }
     } else {    // draw a blank brand so toggler placement still works
@@ -37,17 +38,19 @@ func (b *Navbar) drawBrand(ctx context.Context, buf *bytes.Buffer)  {
  		<a class="navbar-brand" href="#"> </a>
      }}
     }
+    return
 }
 
-func (b *Navbar) drawToggleAndBrand(ctx context.Context, buf *bytes.Buffer) {
+func (b *Navbar) drawToggleAndBrand(ctx context.Context, _w io.Writer) (err error) {
     switch b.brandLocation {
     case NavbarCollapsedBrandLeft:
-        b.drawBrand(ctx, buf)
-        b.drawToggleButton(ctx, buf)
+        {{e b.drawBrand(ctx, _w) }}
+        {{e b.drawToggleButton(ctx, _w) }}
     case NavbarCollapsedBrandRight:
-        b.drawToggleButton(ctx, buf)
-        b.drawBrand(ctx, buf)
+        {{e b.drawToggleButton(ctx, _w) }}
+        {{e b.drawBrand(ctx, _w) }}
     case NavbarCollapsedBrandHidden:
-         b.drawToggleButton(ctx, buf)
+         {{e b.drawToggleButton(ctx, _w) }}
     }
+    return
 }

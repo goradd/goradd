@@ -2,21 +2,21 @@ package page
 
 import (
     "context"
-    "bytes"
+    "io"
 )
 
 // PageTmpl is the template used to draw the initial html of a page, including the doctype tag, html tag,
 // head and body tag.
-func PageTmpl(ctx context.Context, page *Page, buf *bytes.Buffer) (err error) {
+func PageTmpl(ctx context.Context, page *Page, _w io.Writer) (err error) {
 {{
 <!DOCTYPE html>
 <html lang="{{= page.LanguageCode() }}">
 <head>
 	<meta charset="utf-8"/>
-{{g page.DrawHeaderTags(ctx, buf) }}
+{{err page.DrawHeaderTags(ctx, _w) }}
 </head>
 <body {{= page.BodyAttributes }}>
-{{err page.Form().Draw(ctx, buf) }}
+{{err page.Form().Draw(ctx, _w) }}
 </body>
 </html>
 

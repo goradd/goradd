@@ -29,7 +29,7 @@ func (c *SliceColumn) Init(index int) {
 	c.index = index
 }
 
-func (c *SliceColumn) CellData(ctx context.Context, rowNum int, colNum int, data interface{}) interface{} {
+func (c *SliceColumn) CellData(_ context.Context, _ int, _ int, data interface{}) interface{} {
 	vSlice := reflect.ValueOf(data)
 	if vSlice.Kind() != reflect.Slice {
 		panic("data must be a slice.")

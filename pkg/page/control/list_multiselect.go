@@ -1,11 +1,11 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"io"
 	"reflect"
 	"strconv"
 	"strings"
@@ -64,7 +64,7 @@ func (l *MultiselectList) Size() int {
 	}
 }
 
-func (l *MultiselectList) Validate(ctx context.Context) bool {
+func (l *MultiselectList) Validate(_ context.Context) bool {
 	if l.IsRequired() && len(l.selectedValues) == 0 {
 		if l.ErrorForRequired == "" {
 			l.SetValidationError(l.GT("A selection is required"))
@@ -141,21 +141,21 @@ func (l *MultiselectList) SetValue(v interface{}) {
 	switch values := v.(type) {
 	case string:
 		a := strings.Split(values, ",")
-		for _, v := range a {
-			l.selectedValues[v] = true
+		for _, v2 := range a {
+			l.selectedValues[v2] = true
 		}
 
 	case []string:
-		for _, v := range values {
-			l.selectedValues[v] = true
+		for _, v2 := range values {
+			l.selectedValues[v2] = true
 		}
 
 	case *ListItem:
 		l.selectedValues[values.ID()] = true
 
 	case []*ListItem:
-		for _, v := range values {
-			l.selectedValues[v.ID()] = true
+		for _, v2 := range values {
+			l.selectedValues[v2.ID()] = true
 		}
 
 	default:
@@ -222,7 +222,7 @@ func (l *MultiselectList) UnmarshalState(m maps.Loader) {
 	l.selectedValues = map[string]bool{}
 
 	if s, ok := m.Load("sel"); ok {
-		if values, ok := s.([]string); ok {
+		if values, ok2 := s.([]string); ok2 {
 			for _, v := range values {
 				l.selectedValues[v] = true
 			}
@@ -251,10 +251,10 @@ func (l *MultiselectList) DrawingAttributes(ctx context.Context) html.Attributes
 	return a
 }
 
-func (l *MultiselectList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *MultiselectList) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
 	h := l.getItemsHtml(l.items)
-	buf.WriteString(h)
-	return nil
+	_,err = io.WriteString(w, h)
+	return
 }
 
 func (l *MultiselectList) getItemsHtml(items []*ListItem) string {
@@ -357,7 +357,7 @@ func (c MultiselectListCreator) Create(ctx context.Context, parent page.ControlI
 }
 
 
-// GetSelectList is a convenience method to return the control with the given id from the page.
+// GetMultiselectList is a convenience method to return the control with the given id from the page.
 func GetMultiselectList(c page.ControlI, id string) *MultiselectList {
 	return c.Page().GetControl(id).(*MultiselectList)
 }

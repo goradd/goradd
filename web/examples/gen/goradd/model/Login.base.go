@@ -66,11 +66,16 @@ const (
 )
 
 const (
-	Login_ID        = `ID`
-	Login_PersonID  = `PersonID`
-	Login_Person    = `Person`
-	Login_Username  = `Username`
-	Login_Password  = `Password`
+	Login_ID = `ID`
+
+	Login_PersonID = `PersonID`
+
+	Login_Person = `Person`
+
+	Login_Username = `Username`
+
+	Login_Password = `Password`
+
 	Login_IsEnabled = `IsEnabled`
 )
 
@@ -724,6 +729,7 @@ func (o *loginBase) insert(ctx context.Context) {
 		if !o.usernameIsValid {
 			panic("a value for Username is required, and there is no default value. Call SetUsername() before inserting the record.")
 		}
+
 		m := o.getValidFields()
 
 		id := d.Insert(ctx, "login", m)
@@ -739,27 +745,37 @@ func (o *loginBase) insert(ctx context.Context) {
 func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
+
 		fields["id"] = o.id
+
 	}
 	if o.personIDIsDirty {
+
 		if o.personIDIsNull {
 			fields["person_id"] = nil
 		} else {
 			fields["person_id"] = o.personID
 		}
+
 	}
 	if o.usernameIsDirty {
+
 		fields["username"] = o.username
+
 	}
 	if o.passwordIsDirty {
+
 		if o.passwordIsNull {
 			fields["password"] = nil
 		} else {
 			fields["password"] = o.password
 		}
+
 	}
 	if o.isEnabledIsDirty {
+
 		fields["is_enabled"] = o.isEnabled
+
 	}
 	return
 }
@@ -767,24 +783,32 @@ func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
 func (o *loginBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.personIDIsValid {
+
 		if o.personIDIsNull {
 			fields["person_id"] = nil
 		} else {
 			fields["person_id"] = o.personID
 		}
+
 	}
 	if o.usernameIsValid {
+
 		fields["username"] = o.username
+
 	}
 	if o.passwordIsValid {
+
 		if o.passwordIsNull {
 			fields["password"] = nil
 		} else {
 			fields["password"] = o.password
 		}
+
 	}
 	if o.isEnabledIsValid {
+
 		fields["is_enabled"] = o.isEnabled
+
 	}
 	return
 }
@@ -817,10 +841,12 @@ func (o *loginBase) resetDirtyStatus() {
 
 func (o *loginBase) IsDirty() bool {
 	return o.idIsDirty ||
-		o.personIDIsDirty || (o.oPerson != nil && o.oPerson.IsDirty()) ||
+		o.personIDIsDirty ||
+		(o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.usernameIsDirty ||
 		o.passwordIsDirty ||
 		o.isEnabledIsDirty
+
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -1118,10 +1144,15 @@ func (o *loginBase) MarshalStringMap() map[string]interface{} {
 //
 // The fields it expects are:
 //   "id" - string
+
 //   "personID" - string, nullable
+
 //   "username" - string
+
 //   "password" - string, nullable
+
 //   "isEnabled" - bool
+
 func (o *loginBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

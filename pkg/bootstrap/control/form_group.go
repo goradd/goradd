@@ -215,7 +215,7 @@ func (c *FormGroup) Deserialize(dec page.Decoder) (err error) {
 	return
 }
 
-// Use FormGroupCreator to create a FormGroup,
+// FormGroupCreator creates a FormGroup,
 // which wraps a control with a div or span that also has a label, validation error
 // text and optional instructions. Pass the creator of the control you
 // are wrapping as the Child item.
@@ -227,7 +227,7 @@ type FormGroupCreator struct {
 	Label string
 	// Child is the creator of the child control you want to wrap
 	Child page.Creator
-	// Instructions is help text that will follow the control and that further describes its purpose or use.
+	// Instructions contains help text that will follow the control and that further describes its purpose or use.
 	Instructions string
 	// For specifies the id of the control that the label is for, and that is the control that we are wrapping.
 	// You normally do not need to specify this, as it will default to the first child control, but if for some reason
@@ -245,7 +245,7 @@ type FormGroupCreator struct {
 	ControlOptions page.ControlOptions
 	// InnerDivAttributes are the attributes for the additional div wrapper of the control
 	// To achieve certain effects, Bootstrap needs this addition div. To display the div, you
-	// must specify its attributes here. Otherwise no inner div will be displayed.
+	// must specify its attributes here. Otherwise, no inner div will be displayed.
 	InnerDivAttributes html.Attributes
 	// UseTooltips will cause validation errors to be displayed with tooltips, a specific
 	// feature of Bootstrap

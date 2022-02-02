@@ -1,6 +1,3 @@
-{{< package }}panels{{end package}}
-{{< imports }}
-{{end imports}}
 {{< control }}TablePanel{{end control}}
 
 {{define template }}

@@ -52,11 +52,11 @@ const UserPageCacheVersion = 10000
 
 
 // PageDrawFunc is the type of the page drawing function. This is implemented by the page drawing template.
-type PageDrawFunc func(context.Context, *Page, *bytes.Buffer) error
+type PageDrawFunc func(context.Context, *Page, io.Writer) error
 
 // DrawI is the interface for items that draw into the draw buffer
 type DrawI interface {
-	Draw(context.Context, *bytes.Buffer) error
+	Draw(context.Context, io.Writer) error
 }
 
 // A code we use during serialization to indicate that we just unserialized a control id
@@ -165,26 +165,26 @@ func (p *Page) Form() FormI {
 // Draw draws the page.
 func (p *Page) Draw(ctx context.Context, w io.Writer) (err error) {
 	f := p.form.PageDrawingFunction()
-	// TODO: Change GoT to output to a writer, then change this
-	return f(ctx, p, OutputBuffer(ctx))
+	return f(ctx, p, w)
 }
 
 // DrawHeaderTags draws all the inner html for the head tag
-func (p *Page) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
+func (p *Page) DrawHeaderTags(ctx context.Context, w io.Writer) (err error) {
 	if p.title != "" {
-		buf.WriteString("  <title>")
-		buf.WriteString(p.title)
-		buf.WriteString("  </title>\n")
+		if _,err = io.WriteString(w, "  <title>"); err != nil {return}
+		if _,err = io.WriteString(w, p.title); err != nil {return}
+		if _,err = io.WriteString(w, "  </title>\n"); err != nil {return}
 	}
 
 	// draw things like additional meta tags, etc
 	if p.htmlHeaderTags != nil {
 		for _, tag := range p.htmlHeaderTags {
-			buf.WriteString(tag.Render())
+			if _,err = io.WriteString(w, tag.Render()); err != nil {return}
 		}
 	}
 
-	p.Form().DrawHeaderTags(ctx, buf)
+	err = p.Form().DrawHeaderTags(ctx, w)
+	return
 }
 
 // SetControlIdPrefix sets the prefix for control ids. Some javascript frameworks (i.e. jQueryMobile) require that control ids

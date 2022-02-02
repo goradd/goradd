@@ -1,7 +1,7 @@
-{{< package }}tutorial{{end}}
+{{< package }}tutorial{{end package}}
 {{< imports }}
-{{end}}
-{{< control }}FilePanel{{end}}
+{{end imports}}
+{{< control }}FilePanel{{end control}}
 
 {{define template }}
 <figure>
@@ -22,6 +22,6 @@ if ctrl.File != "" {
 </code>
 </pre>
 </figure>
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

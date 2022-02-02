@@ -1,7 +1,6 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
@@ -12,6 +11,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/pool"
 	html2 "html"
+	"io"
 	"reflect"
 	"strconv"
 )
@@ -27,7 +27,7 @@ type TableI interface {
 	page.ControlI
 	DataManagerI
 	SetCaption(interface{}) TableI
-	DrawCaption(context.Context, *bytes.Buffer) error
+	DrawCaption(context.Context, io.Writer) error
 	GetHeaderRowAttributes(row int) html.Attributes
 	GetFooterRowAttributes(row int) html.Attributes
 	GetRowAttributes(row int, data interface{}) html.Attributes
@@ -54,7 +54,7 @@ type TableI interface {
 	SetSortHistoryLimit(n int) TableI
 	SortIconHtml(c ColumnI) string
 	SetSortIconHtml(sortable string, asc string, desc string)
-	DrawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error)
+	DrawRow(ctx context.Context, row int, data interface{}, w io.Writer) (err error)
 	SetSortColumnsByID(ids... string)
 }
 
@@ -229,14 +229,14 @@ func (t *Table) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // DrawInnerHtml is an override to draw the meat of the table.
-func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
 	var t2 = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
 	defer pool.PutBuffer(buf1)
 	buf2 := pool.GetBuffer()
 	defer pool.PutBuffer(buf2)
-	defer func() { buf.WriteString(buf1.String()) }() // Make sure we write out the content of buf 1 even on an error
+	defer func() { _,_ = io.WriteString(w, buf1.String()) }() // Make sure we write out the content of buf 1 even on an error
 
 	if err = t2.DrawCaption(ctx, buf1); err != nil {
 		return
@@ -280,35 +280,33 @@ func (t *Table) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error
 }
 
 // DrawCaption is called internally to draw the caption. Subclasses can override this to draw a custom caption.
-func (t *Table) DrawCaption(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawCaption(ctx context.Context, w io.Writer) (err error) {
 	switch obj := t.caption.(type) {
 	case string:
-		buf.WriteString(fmt.Sprintf("<caption>%s</caption>\n", html2.EscapeString(obj)))
+		_,err = io.WriteString(w, fmt.Sprintf("<caption>%s</caption>\n", html2.EscapeString(obj)))
 	case page.ControlI:
-		buf.WriteString("<caption>")
-		err = obj.Draw(ctx, buf)
-		if err != nil {
-			buf.WriteString("</caption>\n")
-		}
+		if _,err = io.WriteString(w, "<caption>"); err != nil {return}
+		if err = obj.Draw(ctx, w); err != nil {return}
+		if _,err = io.WriteString(w, "</caption>\n"); err != nil {return}
 	}
 	return
 }
 
-func (t *Table) DrawColumnTags(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawColumnTags(ctx context.Context, w io.Writer) (err error) {
 	var colNum int
 	var colCount = len(t.columns)
 
 	for colNum < colCount {
 		col := t.columns[colNum]
 		if !col.IsHidden() {
-			col.DrawColumnTag(ctx, buf)
+			if err = col.DrawColumnTag(ctx, w); err != nil {return}
 		}
 		colNum += col.Span()
 	}
 	return
 }
 
-func (t *Table) DrawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer) (err error) {
 	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -320,7 +318,7 @@ func (t *Table) DrawHeaderRows(ctx context.Context, buf *bytes.Buffer) (err erro
 				buf1.WriteString(html.RenderTag("th", attr, cellHtml))
 			}
 		}
-		buf.WriteString(html.RenderTag("tr", t.GetHeaderRowAttributes(rowNum), buf1.String()))
+		if _,err = io.WriteString(w, html.RenderTag("tr", t.GetHeaderRowAttributes(rowNum), buf1.String())); err != nil {return}
 		buf1.Reset()
 	}
 	return
@@ -350,7 +348,7 @@ func (t *Table) GetHeaderRowAttributes(row int) html.Attributes {
 	return nil
 }
 
-func (t *Table) DrawFooterRows(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (t *Table) DrawFooterRows(ctx context.Context, w io.Writer) (err error) {
 	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -366,7 +364,7 @@ func (t *Table) DrawFooterRows(ctx context.Context, buf *bytes.Buffer) (err erro
 				buf1.WriteString(html.RenderTag(tag, attr, cellHtml))
 			}
 		}
-		buf.WriteString(html.RenderTag("tr", t.GetFooterRowAttributes(rowNum), buf1.String()))
+		if _,err = io.WriteString(w, html.RenderTag("tr", t.GetFooterRowAttributes(rowNum), buf1.String())); err != nil {return}
 		buf1.Reset()
 	}
 	return
@@ -380,14 +378,16 @@ func (t *Table) GetFooterRowAttributes(row int) html.Attributes {
 	return nil
 }
 
-func (t *Table) DrawRow(ctx context.Context, row int, data interface{}, buf *bytes.Buffer) (err error) {
-	buf.WriteString("<tr ")
-	buf.WriteString(t.this().GetRowAttributes(row, data).String())
-	buf.WriteString(">")
+func (t *Table) DrawRow(ctx context.Context, row int, data interface{}, w io.Writer) (err error) {
+	if _,err = io.WriteString(w, "<tr "); err != nil {return}
+	if _,err = io.WriteString(w, t.this().GetRowAttributes(row, data).String()); err != nil {return}
+	if _,err = io.WriteString(w, ">"); err != nil {return}
 	for i, col := range t.columns {
-		col.DrawCell(ctx, row, i, data, buf)
+		if err = col.DrawCell(ctx, row, i, data, w); err != nil {
+			return
+		}
 	}
-	buf.WriteString("</tr>")
+	if _,err = io.WriteString(w, "</tr>"); err != nil {return}
 	return
 }
 

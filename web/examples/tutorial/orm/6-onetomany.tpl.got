@@ -1,10 +1,10 @@
-{{< package }}orm{{end}}
+{{< package }}orm{{end package}}
 {{< imports }}
 	"github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-{{end}}
-{{< control }}OneManyPanel{{end}}
+{{end imports}}
+{{< control }}OneManyPanel{{end control}}
 
 {{define template }}
 <h1>One-to-Many Relationships</h1>
@@ -111,6 +111,6 @@ built in to the Save() process in this situation.
     manyPerson.Delete(ctx)
 }}
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

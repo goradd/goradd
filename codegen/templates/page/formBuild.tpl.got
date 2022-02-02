@@ -76,7 +76,7 @@ type FormImportTemplate struct {
 }
 
 func (n *FormImportTemplate) FileName(key string) string {
-	return n.TargetDir + "/init.go"    // This ignores the key, so will overwrite itself for each database. Not a big deal.
+	return n.TargetDir + "/embedder.go"    // This ignores the key, so will overwrite itself for each database. Not a big deal.
 }
 
 func (n *FormImportTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.Database, _w io.Writer) (err error) {

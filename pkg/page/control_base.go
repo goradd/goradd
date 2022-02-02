@@ -1,7 +1,6 @@
 package page
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
@@ -18,6 +17,7 @@ import (
 	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/pkg/watcher"
 	gohtml "html"
+	"io"
 	"reflect"
 )
 
@@ -76,10 +76,10 @@ const (
 )
 
 // ControlTemplateFunc is the type of function control templates should create
-type ControlTemplateFunc func(ctx context.Context, control ControlI, buffer *bytes.Buffer) error
+type ControlTemplateFunc func(ctx context.Context, control ControlI, w io.Writer) error
 
 // ControlWrapperFunc is a template function that specifies how wrappers will draw
-type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string, buffer *bytes.Buffer)
+type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string, w io.Writer) error
 
 // DefaultCheckboxLabelDrawingMode is a setting used by checkboxes and radio buttons to default how they draw labels.
 // Some CSS framworks are very picky about whether checkbox labels wrap the control, or sit next to the control,
@@ -113,15 +113,15 @@ type ControlI interface {
 	// Drawing support
 
 	DrawTag(context.Context) string
-	DrawInnerHtml(context.Context, *bytes.Buffer) error
-	DrawTemplate(context.Context, *bytes.Buffer) error
-	PreRender(context.Context, *bytes.Buffer) error
-	PostRender(context.Context, *bytes.Buffer) error
+	DrawInnerHtml(context.Context, io.Writer) error
+	DrawTemplate(context.Context, io.Writer) error
+	PreRender(context.Context, io.Writer) error
+	PostRender(context.Context, io.Writer) error
 	ShouldAutoRender() bool
 	SetShouldAutoRender(bool)
 	DrawAjax(ctx context.Context, response *Response) error
-	DrawChildren(ctx context.Context, buf *bytes.Buffer) error
-	DrawText(ctx context.Context, buf *bytes.Buffer)
+	DrawChildren(ctx context.Context, w io.Writer) error
+	DrawText(ctx context.Context, w io.Writer) error
 
 	// Hierarchy functions
 
@@ -396,7 +396,7 @@ func (c *ControlBase) control() *ControlBase {
 
 // PreRender is called by the framework to notify the control that it is about to be drawn. If you
 // override it, be sure to also call this parent function as well.
-func (c *ControlBase) PreRender(ctx context.Context, buf *bytes.Buffer) error {
+func (c *ControlBase) PreRender(ctx context.Context, w io.Writer) error {
 	form := c.ParentForm()
 	if c.Page() == nil ||
 		form == nil ||
@@ -422,8 +422,8 @@ func (c *ControlBase) PreRender(ctx context.Context, buf *bytes.Buffer) error {
 }
 
 // Draw renders the control structure into the given buffer.
-func (c *ControlBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = c.this().PreRender(ctx, buf); err != nil {
+func (c *ControlBase) Draw(ctx context.Context, w io.Writer) (err error) {
+	if err = c.this().PreRender(ctx, w); err != nil {
 		return err
 	}
 
@@ -439,15 +439,15 @@ func (c *ControlBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 
 	if !config.Minify && GetContext(ctx).RequestMode() != Ajax {
 		s := html.Comment(fmt.Sprintf("ControlBase Type:%s, Id:%s", c.Type(), c.ID())) + "\n"
-		buf.WriteString(s)
+		if _,err = io.WriteString(w, s); err != nil {return}
 	}
 
-	buf.WriteString(h)
+	if _,err = io.WriteString(w, h); err != nil {return}
 
 	response := c.ParentForm().Response()
 	c.this().PutCustomScript(ctx, response)
 	c.GetActionScripts(response)
-	c.this().PostRender(ctx, buf)
+	err = c.this().PostRender(ctx, w)
 	return
 }
 
@@ -511,7 +511,7 @@ func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) (err err
 
 // PostRender is called by the framework at the end of drawing, and is the place where controls
 // do any post-drawing cleanup needed.
-func (c *ControlBase) PostRender(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (c *ControlBase) PostRender(ctx context.Context, w io.Writer) (err error) {
 	// Update watcher
 	//if ($This->objWatcher) {
 	//$This->objWatcher->makeCurrent();
@@ -562,18 +562,14 @@ func (c *ControlBase) DrawTag(ctx context.Context) string {
 // RenderAutoControls is an internal function to draw controls marked to autoRender. These are generally used for hidden controls
 // that can be shown without impacting layout, or that are scripts only. ControlBase implementations that need to
 // put these controls in particular locations on the form can override this.
-func (c *ControlBase) RenderAutoControls(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (c *ControlBase) RenderAutoControls(ctx context.Context, w io.Writer) (err error) {
 	// Figuring out where to draw these controls can be difficult.
 
 	for _, ctrl := range c.children {
 		if ctrl.ShouldAutoRender() &&
 			!ctrl.WasRendered() {
 
-			err = ctrl.Draw(ctx, buf)
-
-			if err != nil {
-				break
-			}
+			if err = ctrl.Draw(ctx, w);err != nil {return}
 		}
 	}
 	return
@@ -583,15 +579,15 @@ func (c *ControlBase) RenderAutoControls(ctx context.Context, buf *bytes.Buffer)
 // Controls that use templates should use this function signature for the template. That will override this one, and
 // we will then detect that the template was drawn. Otherwise, we detect that no template was defined and it will move
 // on to drawing the controls without a template, or just the text if text is defined.
-func (c *ControlBase) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (c *ControlBase) DrawTemplate(ctx context.Context, w io.Writer) (err error) {
 	// Don't change this to use some kind of function injection, as such things are not serializable
 	return NewFrameworkError(FrameworkErrNoTemplate)
 }
 
 // DrawInnerHtml is used by the framework to draw just the inner html of the control, if the control is not a self
 // terminating (void) control. Sub-controls can override this.
-func (c *ControlBase) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = c.this().DrawTemplate(ctx, buf); err == nil {
+func (c *ControlBase) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
+	if err = c.this().DrawTemplate(ctx, w); err == nil {
 		return
 	} else if appErr, ok := err.(FrameworkError); !ok || appErr.Err != FrameworkErrNoTemplate {
 		return
@@ -600,20 +596,20 @@ func (c *ControlBase) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err
 	err = nil
 
 	if c.children != nil && len(c.children) > 0 {
-		err = c.this().DrawChildren(ctx, buf)
+		err = c.this().DrawChildren(ctx, w)
 		return
 	}
 
-	c.this().DrawText(ctx, buf)
+	err = c.this().DrawText(ctx, w)
 
 	return
 }
 
 // DrawChildren renders the child controls that have not yet been drawn into the buffer.
-func (c *ControlBase) DrawChildren(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (c *ControlBase) DrawChildren(ctx context.Context, w io.Writer) (err error) {
 	for _, child := range c.children {
 		if !child.WasRendered() {
-			err = child.Draw(ctx, buf)
+			err = child.Draw(ctx, w)
 			if err != nil {
 				break
 			}
@@ -623,15 +619,16 @@ func (c *ControlBase) DrawChildren(ctx context.Context, buf *bytes.Buffer) (err 
 }
 
 // DrawText renders the text of the control, escaping if needed.
-func (c *ControlBase) DrawText(ctx context.Context, buf *bytes.Buffer) {
+func (c *ControlBase) DrawText(ctx context.Context, w io.Writer) (err error){
 	if c.text != "" {
 		text := c.text
 
 		if !c.textIsHtml {
 			text = gohtml.EscapeString(text)
 		}
-		buf.WriteString(text)
+		_,err = io.WriteString(w, text)
 	}
+	return
 }
 
 // SetAttribute sets an html attribute of the control. You can manually set most any attribute, but be careful

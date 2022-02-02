@@ -77,8 +77,6 @@
     {{for}}
 </p>
 
-
-
 {{end template}}
 
 {{renderControlTemplate}}

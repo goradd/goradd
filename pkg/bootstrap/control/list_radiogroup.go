@@ -148,7 +148,7 @@ func (c RadioListGroupCreator) Init(ctx context.Context, ctrl RadioListGroupI) {
 	}
 }
 
-// GetRadioList is a convenience method to return the control with the given id from the page.
+// GetRadioListGroup is a convenience method to return the control with the given id from the page.
 func GetRadioListGroup(c page.ControlI, id string) *RadioListGroup {
 	return c.Page().GetControl(id).(*RadioListGroup)
 }

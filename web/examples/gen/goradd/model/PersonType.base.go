@@ -18,7 +18,6 @@ const (
 	PersonTypeCompanyCar PersonType = 4
 
 	PersonTypeWorksFromHome PersonType = 5
-
 )
 
 const PersonTypeMaxValue = 5
@@ -28,13 +27,20 @@ type PersonType int
 // String returns the name value of the type and satisfies the fmt.Stringer interface
 func (p PersonType) String() string {
 	switch p {
-	case 0: return ""
-	case 1: return "Contractor"
-	case 2: return "Manager"
-	case 3: return "Inactive"
-	case 4: return "Company Car"
-	case 5: return "Works From Home"
-	default: panic("index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "Contractor"
+	case 2:
+		return "Manager"
+	case 3:
+		return "Inactive"
+	case 4:
+		return "Company Car"
+	case 5:
+		return "Works From Home"
+	default:
+		panic("index out of range")
 	}
 	return "" // prevent warning
 }
@@ -45,49 +51,58 @@ func (p PersonType) ID() string {
 }
 
 // PersonTypeFromID converts a PersonType ID to a PersonType
-func PersonTypeFromID (id string) PersonType {
+func PersonTypeFromID(id string) PersonType {
 	switch id {
-	case "1": return PersonType(1)
-	case "2": return PersonType(2)
-	case "3": return PersonType(3)
-	case "4": return PersonType(4)
-	case "5": return PersonType(5)
+	case "1":
+		return PersonType(1)
+	case "2":
+		return PersonType(2)
+	case "3":
+		return PersonType(3)
+	case "4":
+		return PersonType(4)
+	case "5":
+		return PersonType(5)
 	}
 	return PersonType(0)
 }
 
 // PersonTypeFromName converts a PersonType name to a PersonType
-func PersonTypeFromName (name string) PersonType {
+func PersonTypeFromName(name string) PersonType {
 	switch name {
-	case "Contractor": return PersonType(1)
-	case "Manager": return PersonType(2)
-	case "Inactive": return PersonType(3)
-	case "Company Car": return PersonType(4)
-	case "Works From Home": return PersonType(5)
+	case "Contractor":
+		return PersonType(1)
+	case "Manager":
+		return PersonType(2)
+	case "Inactive":
+		return PersonType(3)
+	case "Company Car":
+		return PersonType(4)
+	case "Works From Home":
+		return PersonType(5)
 	}
 	return PersonType(0)
 }
 
-
 // AllPersonTypes returns a slice of all the PersonType items
 func AllPersonTypes() (values []PersonType) {
-    values = append(values, 1)
-    values = append(values, 2)
-    values = append(values, 3)
-    values = append(values, 4)
-    values = append(values, 5)
-    return
+	values = append(values, 1)
+	values = append(values, 2)
+	values = append(values, 3)
+	values = append(values, 4)
+	values = append(values, 5)
+	return
 }
 
 // AllPersonTypesI returns a slice of interfaces that contains all the PersonType items
 func AllPersonTypesI() (values []interface{}) {
-    values = make([]interface{}, 5, 5)
-    values[0] = PersonType(1)
-    values[1] = PersonType(2)
-    values[2] = PersonType(3)
-    values[3] = PersonType(4)
-    values[4] = PersonType(5)
-    return
+	values = make([]interface{}, 5, 5)
+	values[0] = PersonType(1)
+	values[1] = PersonType(2)
+	values[2] = PersonType(3)
+	values[3] = PersonType(4)
+	values[4] = PersonType(5)
+	return
 }
 
 // Label returns the string that will be displayed to a user for this item. Together with
@@ -103,16 +118,22 @@ func (p PersonType) Value() interface{} {
 	return p.ID()
 }
 
-
 func (p PersonType) Name() string {
 	switch p {
-	case 0: return ""
-	case 1: return "Contractor"
-	case 2: return "Manager"
-	case 3: return "Inactive"
-	case 4: return "Company Car"
-	case 5: return "Works From Home"
-	default: panic("Index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "Contractor"
+	case 2:
+		return "Manager"
+	case 3:
+		return "Inactive"
+	case 4:
+		return "Company Car"
+	case 5:
+		return "Works From Home"
+	default:
+		panic("Index out of range")
 	}
 	return "" // prevent warning
 }
@@ -130,8 +151,10 @@ func PersonTypeNames() []string {
 
 func (p PersonType) Get(key string) interface{} {
 
-    switch(key) {
-    case "Name": return p.Name()
-    default: return nil
-    }
+	switch key {
+	case "Name":
+		return p.Name()
+	default:
+		return nil
+	}
 }

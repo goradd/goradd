@@ -1,12 +1,12 @@
-{{< package }}orm{{end}}
-{{< imports }}
+{{define package }}orm{{end package}}
+{{define imports }}
 	"github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-{{end}}
-{{< control }}QueryPanel{{end}}
+{{end imports}}
+{{define control }}QueryPanel{{end control}}
 
-{{define template }}
+{{define template}}
 <h1>Using a QueryBuilder and Nodes</h1>
 
 <p>In the previous example, you saw how to load a single object using model.Load* functions.
@@ -86,6 +86,6 @@ Once your QueryBuilder is ready to execute, you have some options on what to do 
 </p>
 
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

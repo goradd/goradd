@@ -1,7 +1,6 @@
 package page
 
 import (
-	"bytes"
 	"context"
 	"encoding/gob"
 	"fmt"
@@ -29,7 +28,7 @@ type FormI interface {
 	PageDrawingFunction() PageDrawFunc
 
 	AddHeadTags()
-	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
+	DrawHeaderTags(ctx context.Context, w io.Writer) error
 	Response() *Response
 	renderAjax(ctx context.Context, w io.Writer) error
 	AddRelatedFiles()
@@ -127,19 +126,19 @@ func (f *FormBase) AddFontAwesome() {
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
-func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (f *FormBase) Draw(ctx context.Context, w io.Writer) (err error) {
 	if f.drawing && !config.Release {
 		panic("draw collission")
 	}
 	f.drawing = true
 	defer f.notDrawing()
-	err = f.this().PreRender(ctx, buf)
-	buf.WriteString(`<form ` + f.this().DrawingAttributes(ctx).String() + ">\n")
-	if err = f.this().DrawTemplate(ctx, buf); err != nil {
+	if err = f.this().PreRender(ctx, w); err != nil {return}
+	if _,err = io.WriteString(w, `<form ` + f.this().DrawingAttributes(ctx).String() + ">\n"); err != nil {return}
+	if err = f.this().DrawTemplate(ctx, w); err != nil {
 		return // the template is required
 	}
 	// Render controls that are marked to auto render if the form did not render them
-	if err = f.RenderAutoControls(ctx, buf); err != nil {
+	if err = f.RenderAutoControls(ctx, w); err != nil {
 		panic(err)
 	}
 
@@ -148,7 +147,7 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	// Render hidden controls
 
 	// Place holder for postBack and postAjax functions to place their data
-	buf.WriteString(`<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n")
+	if _,err = io.WriteString(w, `<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n"); err != nil {return}
 
 	// CSRF prevention
 	var csrf string
@@ -162,14 +161,14 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 		}
 		session.Set(ctx, goradd.SessionCsrf, csrf)
 	}
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf))
+	if _,err = fmt.Fprintf(w, `<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf); err != nil {return}
 
 	// Serialize and write out the pagestate
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()))
+	if _,err = fmt.Fprintf(w, `<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()); err != nil {return}
 
-	f.drawBodyScriptFiles(ctx, buf)
+	if err = f.drawBodyScriptFiles(ctx, w); err != nil {return}
 
-	buf.WriteString("\n</form>\n")
+	if _,err = io.WriteString(w, "\n</form>\n"); err != nil {return}
 
 	// Draw things that come after the form tag
 
@@ -189,12 +188,11 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	} else {
 		s += fmt.Sprintf("goradd.ajaxTimeout = %d;\n", config.AjaxTimeout) // turn on the ajax timeout in release mode
 	}
-	s = fmt.Sprintf(`<script>
+	if _, err = fmt.Fprintf(w, `<script>
 %s
-</script>`, s)
-	buf.WriteString(s)
+</script>`, s); err != nil {return}
 
-	f.this().PostRender(ctx, buf)
+	err = f.this().PostRender(ctx, w)
 	return
 }
 
@@ -288,7 +286,7 @@ func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) (err error) {
 	f.resetDrawingFlags()
 	buf2, err = f.response.GetAjaxResponse()
 	//f.response = NewResponse() Do NOT do this here! It messes with testing framework and multi-processing of ajax responses
-	w.Write(buf2)
+	_,err = w.Write(buf2)
 	log.FrameworkDebug("renderAjax - ", string(buf2))
 
 	return
@@ -302,8 +300,8 @@ func (f *FormBase) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // PreRender performs setup operations just before drawing.
-func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = f.ControlBase.PreRender(ctx, buf); err != nil {
+func (f *FormBase) PreRender(ctx context.Context, w io.Writer) (err error) {
+	if err = f.ControlBase.PreRender(ctx, w); err != nil {
 		return
 	}
 
@@ -419,7 +417,7 @@ func (f *FormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 
 // DrawHeaderTags is called by the page drawing routine to draw its header tags
 // If you override this, be sure to call this version too
-func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
+func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) (err error) {
 	f.mergeInjectedFiles()
 
 	if f.headerStyleSheets != nil {
@@ -430,9 +428,13 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 			}
 			attributes.Set("rel", "stylesheet")
 			attributes.Set("href", path)
-			buf.WriteString(html.RenderVoidTag("link", attributes))
+			if _,err = io.WriteString(w, html.RenderVoidTag("link", attributes)); err != nil {return false}
 			return true
 		})
+	}
+
+	if err != nil {
+		return
 	}
 
 	if f.headerJavaScripts != nil {
@@ -442,10 +444,12 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 				attributes = html.NewAttributes()
 			}
 			attributes.Set("src", path)
-			buf.WriteString(html.RenderTag("script", attributes, ""))
+			if _,err = io.WriteString(w, html.RenderTag("script", attributes, "")); err != nil {return false}
 			return true
 		})
 	}
+
+	return
 }
 
 func (f *FormBase) mergeInjectedFiles() {
@@ -466,17 +470,17 @@ func (f *FormBase) mergeInjectedFiles() {
 	}
 }
 
-func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
+func (f *FormBase) drawBodyScriptFiles(ctx context.Context, w io.Writer) (err error) {
 	f.bodyJavaScripts.Range(func(path string, attr interface{}) bool {
 		var attributes = attr.(html.Attributes)
 		if attributes == nil {
 			attributes = html.NewAttributes()
 		}
 		attributes.Set("src", path)
-		buf.WriteString(html.RenderTag("script", attributes, "") + "\n")
+		if _, err = io.WriteString(w, html.RenderTag("script", attributes, "") + "\n"); err != nil {return false}
 		return true
 	})
-
+	return
 }
 
 

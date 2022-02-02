@@ -1,7 +1,4 @@
-{{< package }}panels{{end}}
-{{< imports }}
-{{end}}
-{{< control }}DialogsPanel{{end}}
+{{< control }}DialogsPanel{{end control}}
 
 {{define template }}
 <h2>Dialogs and Alerts</h2>
@@ -35,6 +32,6 @@ the Bootstrap Modal widget instead.
 Result:
 {{draw result }}
 </p>
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

@@ -54,10 +54,13 @@ const (
 )
 
 const (
-	Milestone_ID        = `ID`
+	Milestone_ID = `ID`
+
 	Milestone_ProjectID = `ProjectID`
-	Milestone_Project   = `Project`
-	Milestone_Name      = `Name`
+
+	Milestone_Project = `Project`
+
+	Milestone_Name = `Name`
 )
 
 // Initialize or re-initialize a Milestone database object to default values.
@@ -506,6 +509,7 @@ func (o *milestoneBase) insert(ctx context.Context) {
 		if !o.nameIsValid {
 			panic("a value for Name is required, and there is no default value. Call SetName() before inserting the record.")
 		}
+
 		m := o.getValidFields()
 
 		id := d.Insert(ctx, "milestone", m)
@@ -521,13 +525,19 @@ func (o *milestoneBase) insert(ctx context.Context) {
 func (o *milestoneBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
+
 		fields["id"] = o.id
+
 	}
 	if o.projectIDIsDirty {
+
 		fields["project_id"] = o.projectID
+
 	}
 	if o.nameIsDirty {
+
 		fields["name"] = o.name
+
 	}
 	return
 }
@@ -535,10 +545,14 @@ func (o *milestoneBase) getModifiedFields() (fields map[string]interface{}) {
 func (o *milestoneBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.projectIDIsValid {
+
 		fields["project_id"] = o.projectID
+
 	}
 	if o.nameIsValid {
+
 		fields["name"] = o.name
+
 	}
 	return
 }
@@ -569,8 +583,10 @@ func (o *milestoneBase) resetDirtyStatus() {
 
 func (o *milestoneBase) IsDirty() bool {
 	return o.idIsDirty ||
-		o.projectIDIsDirty || (o.oProject != nil && o.oProject.IsDirty()) ||
+		o.projectIDIsDirty ||
+		(o.oProject != nil && o.oProject.IsDirty()) ||
 		o.nameIsDirty
+
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -788,8 +804,11 @@ func (o *milestoneBase) MarshalStringMap() map[string]interface{} {
 //
 // The fields it expects are:
 //   "id" - string
+
 //   "projectID" - string
+
 //   "name" - string
+
 func (o *milestoneBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

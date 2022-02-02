@@ -1,10 +1,10 @@
 package page
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"runtime"
 	"time"
 )
@@ -14,7 +14,7 @@ const MaxStackDepth = 50
 // ErrorPageFuncType specifies the signature for the error template function. You can replace the built-in error
 // function with your own function by setting the config.ErrorPage value. html is the html that was able to be generated before
 // the error occurred, which can be helpful in tracking down the source of an error.
-type ErrorPageFuncType func(ctx context.Context, html string, err *Error, buf *bytes.Buffer)
+type ErrorPageFuncType func(ctx context.Context, html []byte, err *Error, w io.Writer) error
 
 var ErrorPageFunc ErrorPageFuncType
 

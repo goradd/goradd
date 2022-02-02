@@ -1,7 +1,6 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/crypt"
@@ -11,6 +10,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	html2 "html"
+	"io"
 	"strings"
 )
 
@@ -79,12 +79,12 @@ func (p *Proxy) OnSubmit(action action.ActionI) page.ControlI {
 
 // Draw is used by the form engine to draw the control. As a proxy, there is no html to draw, but this is where the scripts attached to the
 // proxy get sent to the response. This should get drawn by the auto-drawing routine, since proxies are not rendered in templates.
-func (p *Proxy) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (p *Proxy) Draw(ctx context.Context, w io.Writer) (err error) {
 	response := p.ParentForm().Response()
 	// p.this().PutCustomScript(ctx, response) // Proxies should not have custom scripts?
 
 	p.GetActionScripts(response)
-	err = p.PostRender(ctx, buf)
+	err = p.PostRender(ctx, w)
 	return
 }
 

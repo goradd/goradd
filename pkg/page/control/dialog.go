@@ -1,12 +1,12 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"io"
 )
 
 // event codes
@@ -140,18 +140,18 @@ func (d *Dialog) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (d *Dialog) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = GetPanel(d, d.titleBarID).Draw(ctx, buf); err != nil {
+func (d *Dialog) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
+	if err = GetPanel(d, d.titleBarID).Draw(ctx, w); err != nil {
 		return
 	}
-	if err = GetPanel(d, d.buttonBarID).Draw(ctx, buf); err != nil {
+	if err = GetPanel(d, d.buttonBarID).Draw(ctx, w); err != nil {
 		return
 	}
-	buf.WriteString(`<div class="gr-dlg-content">`)
-	if err = d.Panel.DrawInnerHtml(ctx, buf); err != nil {
+	if _,err = io.WriteString(w, `<div class="gr-dlg-content">`); err != nil {return}
+	if err = d.Panel.DrawInnerHtml(ctx, w); err != nil {
 		return
 	}
-	buf.WriteString(`</div>`)
+	_, err = io.WriteString(w, `</div>`)
 
 	return
 }

@@ -1,12 +1,5 @@
-{{< imports }}
-{{end imports}}
-{{< headTags }}
-{{end headTags}}
-{{< package }}controls{{end package}}
 {{< title }}Control Examples{{end title}}
 {{< form }}ControlsForm{{end form}}
-{{< bodyAttributes }}
-{{end bodyAttributes}}
 
 
 {{define template }}

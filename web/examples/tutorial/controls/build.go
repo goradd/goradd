@@ -1,4 +1,4 @@
-package tutorial
+package controls
 
 // This file will generate the templates and install them in the directory above. Feel free to edit.
 

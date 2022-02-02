@@ -1,7 +1,6 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
@@ -9,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"io"
 	"reflect"
 	"strconv"
 )
@@ -160,7 +160,7 @@ func (l *SelectList) MarshalState(m maps.Setter) {
 // UnmarshalState is an internal function to restore the state of the control
 func (l *SelectList) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("sel"); ok {
-		if s, ok := v.(string); ok {
+		if s, ok2 := v.(string); ok2 {
 			l.selectedValue = s
 		}
 	}
@@ -189,10 +189,10 @@ func (l *SelectList) DrawTag(ctx context.Context) string {
 
 
 // DrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
-func (l *SelectList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *SelectList) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
 	h := l.getItemsHtml(l.items)
-	buf.WriteString(h)
-	return nil
+	_,err = io.WriteString(w, h)
+	return
 }
 
 func (l *SelectList) getItemsHtml(items []*ListItem) string {

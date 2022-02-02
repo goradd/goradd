@@ -1,11 +1,11 @@
 package panels
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
+	"io"
 )
 
 type RepeaterPanel struct {
@@ -48,10 +48,10 @@ func (p *RepeaterPanel) BindData(ctx context.Context, s DataManagerI) {
 	}
 }
 
-func (p *RepeaterPanel) RepeaterHtml(ctx context.Context, r RepeaterI, i int, data interface{}, buf *bytes.Buffer) error {
+func (p *RepeaterPanel) RepeaterHtml(ctx context.Context, r RepeaterI, i int, data interface{}, w io.Writer) (err error) {
 	d := data.(TableMapData)
-	buf.WriteString(fmt.Sprintf(`<div>ID: %s, Name: %s</div>`, d["id"], d["name"]))
-	return nil
+	_,err = fmt.Fprintf(w, `<div>ID: %s, Name: %s</div>`, d["id"], d["name"])
+	return
 }
 
 func init() {

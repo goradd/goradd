@@ -40,9 +40,9 @@
 {{define drawChildIf 2}}
 {{if ctrl.Page().HasControl(ctrl.ID() + "$1")}}
     {{if `$2` == ""}}
-        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, buf) }}
+        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, _w) }}
     {{else}}
-        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
     {{if}}
 {{if}}
 {{end drawChildIf}}
@@ -85,18 +85,18 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
 {{end setChildLabelAttributes}}
 
 {{# This defaults the package fragment to the name of the directory of the template. You can redefine it if needed in your individual template}}
-{{define package}}{{templateDir}}{{end package}}
+{{define package}}{{templateParent}}{{end package}}
 
 
 {{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}
 {{define renderFormTemplate}}
-package {{package}}
+package {{> package}}
 
 import (
     "context"
     "github.com/goradd/goradd/pkg/page"
     "bytes"
-    {{> imports}}
+    {{>? imports}}
 )
 
 
@@ -106,40 +106,40 @@ func (ctrl *{{form}}) AddHeadTags()  {
         ctrl.Page().SetTitle("{{title}}")
     }
 
-	{{> headTags}}
+	{{>? headTags}}
 
 	// deal with body attributes too
-    ctrl.Page().BodyAttributes = `{{> bodyAttributes}}`
+    ctrl.Page().BodyAttributes = `{{>? bodyAttributes}}`
 }
 
 
 func (ctrl *{{form}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
-{{template}}
+{{> template}}
 }}
 	return
 }
 {{end renderFormTemplate}}
 
 {{define renderControlTemplate}}
-package {{package}}
+package {{> package}}
 
 import (
     "context"
-    "bytes"
-    {{imports}}
+    "io"
+    {{>? imports}}
 )
 
 func (ctrl *{{control}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
-{{template}}
+{{> template}}
 }}
 	return
 }
 {{end renderControlTemplate}}
 
 {{define renderResource}}
-package {{package}}
+package {{> package}}
 
 import (
     "context"
@@ -148,10 +148,10 @@ import (
 )
 
 func init() {
-    http.RegisterBufferedOutputHandler("{{filename}}",
+    http.RegisterDrawFunc("{{> filename}}",
         func(ctx context.Context, _w io.Writer) (err error) {
 {{
-{{template}}
+{{> template}}
 }}
         return
 

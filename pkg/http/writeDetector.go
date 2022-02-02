@@ -1,26 +1,29 @@
 package http
 
 import (
+	"io"
 	"net/http"
 )
 
-type ResponseRewinder interface {
-	http.ResponseWriter
-	Rewind(n int)
-}
-// WriteDetector is a utility for Handlers to detect whether a sub-handler has responded to an http request.
+
+// WriteDetector is a utility for Handlers to detect whether a sub-handler has responded to an HTTP request.
 type WriteDetector struct {
-	ResponseRewinder
+	http.ResponseWriter
 	HasWritten bool
 }
 
 func (d *WriteDetector) Write(b []byte) (l int, err error) {
 	d.HasWritten = true
-	return d.ResponseRewinder.Write(b)
+	return d.ResponseWriter.Write(b)
 }
 
 func (d *WriteDetector) WriteHeader(code int) {
 	d.HasWritten = true
-	d.ResponseRewinder.WriteHeader(code)
+	d.ResponseWriter.WriteHeader(code)
+}
+
+func (d *WriteDetector) WriteString(s string) (l int, err error)  {
+	d.HasWritten = true
+	return io.WriteString(d.ResponseWriter, s)
 }
 

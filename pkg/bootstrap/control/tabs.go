@@ -14,7 +14,7 @@ type TabsI interface {
 	control.PanelI
 }
 
-// A Tabs pane draws its child controls as a set of tabs. The labels of the children serve as the tab labels.
+// Tabs draws its child controls as a set of tabs. The labels of the children serve as the tab labels.
 // This currently draws everything at once, with the current panel visible, but everything else has hidden html.
 type Tabs struct {
 	control.Panel
@@ -30,21 +30,21 @@ func NewTabs(parent page.ControlI, id string) *Tabs {
 	return t
 }
 
-func (l *Tabs) Init(parent page.ControlI, id string) {
-	l.Panel.Init(parent, id)
-	l.On(event.Event("show.bs.tab"), action.SetControlValue(l.ID(), "selectedId", javascript.JsCode("event.target.id")))
+func (t *Tabs) Init(parent page.ControlI, id string) {
+	t.Panel.Init(parent, id)
+	t.On(event.Event("show.bs.tab"), action.SetControlValue(t.ID(), "selectedId", javascript.JsCode("event.target.id")))
 }
 
-func (c *Tabs) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := c.Panel.DrawingAttributes(ctx)
+func (t *Tabs) DrawingAttributes(ctx context.Context) html.Attributes {
+	a := t.Panel.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "bs-tabs")
 	return a
 }
 
-func (c *Tabs) Serialize(e page.Encoder) (err error) {
-	if err = c.Panel.Serialize(e); err != nil {return}
+func (t *Tabs) Serialize(e page.Encoder) (err error) {
+	if err = t.Panel.Serialize(e); err != nil {return}
 
-	if err = e.Encode(c.selectedID); err != nil {
+	if err = e.Encode(t.selectedID); err != nil {
 		return err
 	}
 
@@ -52,12 +52,12 @@ func (c *Tabs) Serialize(e page.Encoder) (err error) {
 }
 
 
-func (c *Tabs) Deserialize(d page.Decoder) (err error) {
-	if err = c.Panel.Deserialize(d); err != nil {
+func (t *Tabs) Deserialize(d page.Decoder) (err error) {
+	if err = t.Panel.Deserialize(d); err != nil {
 		return
 	}
 
-	if err = d.Decode(&c.selectedID); err != nil {
+	if err = d.Decode(&t.selectedID); err != nil {
 		return
 	}
 

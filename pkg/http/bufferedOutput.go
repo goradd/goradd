@@ -81,7 +81,7 @@ func (bw *bufferedResponseWriter) Len() int {
 	}
 }
 
-func (bw *bufferedResponseWriter) Rewind(n int) {
+func (bw *bufferedResponseWriter) Rewind(_ int) {
 
 }
 
@@ -94,6 +94,13 @@ func OutputBuffer(ctx context.Context) *bytes.Buffer {
 	return ctx.Value(goradd.BufferContext).(BufferedResponseWriterI).OutputBuffer()
 }
 
+// ResetOutputBuffer returns the current output buffer and resets the output buffer to nothing.
+func ResetOutputBuffer(ctx context.Context) []byte {
+	buf := ctx.Value(goradd.BufferContext).(BufferedResponseWriterI).OutputBuffer()
+	ret := buf.Bytes()
+	buf.Reset()
+	return ret
+}
 // OutputLen returns the number of bytes written to the output, even if
 // output buffering is disabled.
 func OutputLen(ctx context.Context) int {

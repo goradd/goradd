@@ -1,7 +1,6 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
@@ -11,6 +10,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
+	"io"
 	"strconv"
 	"time"
 )
@@ -42,9 +42,9 @@ type ColumnI interface {
 	IsHidden() bool
 	AsHeader() bool
 	SetHidden(bool) ColumnI
-	DrawColumnTag(ctx context.Context, buf *bytes.Buffer)
-	DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer)
-	DrawCell(ctx context.Context, row int, col int, data interface{}, buf *bytes.Buffer)
+	DrawColumnTag(ctx context.Context, w io.Writer) error
+	DrawFooterCell(ctx context.Context, row int, col int, count int, w io.Writer) error
+	DrawCell(ctx context.Context, row int, col int, data interface{}, w io.Writer) error
 	CellText(ctx context.Context, row int, col int, data interface{}) string
 	CellData(ctx context.Context, row int, col int, data interface{}) interface{}
 	HeaderCellHtml(ctx context.Context, row int, col int) string
@@ -73,7 +73,7 @@ type ColumnI interface {
 	Restore(parentTable TableI)
 }
 
-// CellTextInfo is provided to the cell texter so the cell texter knows how to draw.
+// CellInfo is provided to the cell texter so the cell texter knows how to draw.
 // Its a struct here so that the info can grow without the CellTexter signature having to change.
 type CellInfo struct {
 	RowNum int
@@ -305,7 +305,7 @@ func (c *ColumnBase) ColTagAttributes() html.Attributes {
 }
 
 // DrawColumnTag draws the column tag if one was requested.
-func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
+func (c *ColumnBase) DrawColumnTag(ctx context.Context, w io.Writer) (err error) {
 	if c.isHidden {
 		return
 	}
@@ -313,7 +313,8 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, buf *bytes.Buffer) {
 	if c.span > 1 {
 		a.Set("span", strconv.Itoa(c.span))
 	}
-	buf.WriteString(html.RenderTag("col", a, ""))
+	_, err = io.WriteString(w, html.RenderTag("col", a, ""))
+	return
 }
 
 // HeaderCellHtml returns the text of the indicated header cell. The default will call into the headerTexter if it
@@ -334,7 +335,7 @@ func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h st
 }
 
 // DrawFooterCell will draw the footer cells html into the given buffer.
-func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count int, buf *bytes.Buffer) {
+func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count int, w io.Writer) (err error) {
 	if c.isHidden {
 		return
 	}
@@ -345,7 +346,8 @@ func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count
 	if c.asHeader {
 		tag = "th"
 	}
-	buf.WriteString(html.RenderTag(tag, a, cellHtml))
+	_, err = io.WriteString(w, html.RenderTag(tag, a, cellHtml))
+	return
 }
 
 // FooterCellHtml returns the html to use in the given footer cell.
@@ -359,7 +361,7 @@ func (c *ColumnBase) FooterCellHtml(ctx context.Context, row int, col int) strin
 }
 
 // DrawCell is the default cell drawing function.
-func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interface{}, buf *bytes.Buffer) {
+func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interface{}, w io.Writer) (err error) {
 	if c.isHidden {
 		return
 	}
@@ -374,7 +376,8 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 	if c.asHeader {
 		tag = "th"
 	}
-	buf.WriteString(html.RenderTag(tag, a, cellHtml))
+	_, err = io.WriteString(w, html.RenderTag(tag, a, cellHtml))
+	return
 }
 
 // CellText returns the text in the cell. It will use the CellTexter if one was provided.
@@ -425,7 +428,7 @@ func (c *ColumnBase) UpdateFormValues(ctx context.Context) {}
 
 func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 
-// Do a table action that is directed at this table
+// Action does a table action that is directed at this table
 // Column implementations can implement this method to receive private actions that they have added using AddActions
 func (c *ColumnBase) Action(ctx context.Context, params page.ActionParams) {}
 

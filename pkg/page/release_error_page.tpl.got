@@ -9,7 +9,7 @@ import (
 
 // The ReleaseErrorPageTmpl function will output a friendly error message to a user in release mode, and log the
 // error to the Error log.
-func ReleaseErrorPageTmpl(ctx context.Context, partialHtml string, err *Error, buf *bytes.Buffer) {
+func ReleaseErrorPageTmpl(ctx context.Context, partialHtml []byte, inErr *Error, _w io.Writer) (err error) {
 {{
 <h1 id="err-title">Error</h1>
 <p>
@@ -21,10 +21,10 @@ attempt to fix the problem as soon as possible.
 
     // Build the logged error.
     var s string
-    for _,stack := range err.Stack {
+    for _,stack := range inErr.Stack {
         s += fmt.Sprintf("%s line %d in %s\n", stack.File, stack.Line, stack.Func)
     }
-    log.Error(err.Error(), "\n", s, partialHtml)
+    log.Error(inErr.Error(), "\n", s, partialHtml)
 
 	return
 }

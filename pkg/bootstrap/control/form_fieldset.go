@@ -1,13 +1,13 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/pool"
 	html2 "html"
+	"io"
 )
 
 type FormFieldsetI interface {
@@ -77,7 +77,7 @@ func (c *FormFieldset) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (c *FormFieldset) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (c *FormFieldset) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
 	var s string
 
 	buf2 := pool.GetBuffer()
@@ -96,9 +96,9 @@ func (c *FormFieldset) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (er
 
 	if c.asRow {
 		s = html.RenderTag("div", html.NewAttributes().AddClass("row"), buf2.String())
-		buf.WriteString(s)
+		_, err = io.WriteString(w, s)
 	} else {
-		_,err = buf2.WriteTo(buf)
+		_,err = buf2.WriteTo(w)
 	}
 	return
 }
@@ -147,7 +147,7 @@ func (c *FormFieldset) Deserialize(d page.Decoder) (err error) {
 }
 
 
-// Use FormFieldsetCreator to create a bootstrap fieldset,
+// FormFieldsetCreator creates a bootstrap fieldset,
 // which wraps a control group with a fieldset.
 // The Child item should be a panel or a control that groups other controls,
 // like a RadioList or CheckboxList
@@ -156,12 +156,12 @@ type FormFieldsetCreator struct {
 	ID string
 	// Legend is the text that will be in the html label tag associated with the Child control.
 	Legend string
-	// Child is should be a panel, or a control that draws a group of controls,
+	// Child should be a panel, or a control that draws a group of controls,
 	// like a RadioList or CheckboxList
 	Child page.Creator
 	// LegendAttributes are additional attributes to add to the label tag.
 	LegendAttributes html.Attributes
-	// Instructions is help text that accompanies the control
+	// Instructions contains help text that accompanies the control
 	Instructions string
 	// Set AsRow to true to put the legend on the same row as the content
 	AsRow bool

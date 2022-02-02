@@ -1,6 +1,3 @@
-{{< package }}panels{{end package}}
-{{< imports }}
-{{end imports}}
 {{< control }}SelectListPanel{{end control}}
 
 {{define template }}

@@ -1,7 +1,6 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
@@ -9,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"io"
 	"strconv"
 )
 
@@ -391,8 +391,8 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 }
 
 // PreRender is called by the framework to load data into the paged control just before drawing.
-func (d *DataPager) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	err = d.ControlBase.PreRender(ctx, buf)
+func (d *DataPager) PreRender(ctx context.Context, w io.Writer) (err error) {
+	err = d.ControlBase.PreRender(ctx, w)
 	p := d.PagedControl()
 
 	if err == nil {
@@ -407,7 +407,7 @@ func (d *DataPager) PreRender(ctx context.Context, buf *bytes.Buffer) (err error
 }
 
 // DrawInnerHtml is called by the framework to draw the control's inner html.
-func (d *DataPager) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (d *DataPager) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
 	h := d.Self.(DataPagerI).PreviousButtonsHtml()
 	pageStart, pageEnd := d.CalcBunch()
 	for i := pageStart; i <= pageEnd; i++ {
@@ -415,7 +415,7 @@ func (d *DataPager) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err e
 	}
 
 	h += d.Self.(DataPagerI).NextButtonsHtml()
-	_, err = buf.WriteString(h)
+	_, err = io.WriteString(w, h)
 	return
 }
 

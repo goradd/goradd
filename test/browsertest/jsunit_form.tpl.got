@@ -1,11 +1,5 @@
-{{< imports }}
-{{end}}
-{{< headTags }}
-{{end}}
-{{< package }}browsertest{{end}}
-{{< title }}Goradd JavaScript Unit Test{{end}}
-{{< form }}JsUnitForm{{end}}
-{{< bodyAttributes }}{{end}}
+{{< title }}Goradd JavaScript Unit Test{{end title}}
+{{< form }}JsUnitForm{{end form}}
 
 {{define template }}
 <h1>JavaScript Unit Tests</h1>
@@ -26,6 +20,6 @@ a div
 </div>
 <ul id="listener"><li id="outer"><span id="inner">a span</span></li></ul>
 
-{{end}}
+{{end template}}
 
 {{renderFormTemplate}}

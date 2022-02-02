@@ -29,7 +29,7 @@ type OneTimeTemplateI interface {
 	Overwrite() bool
 }
 
-//type TemplateFunc func(codegen *CodeGenerator, t *TableType, buf *bytes.Buffer)
+//type TemplateFunc func(codegen *CodeGenerator, t *TableType, _w io.Writer) (err error)
 
 // Will be populated by the individual templates found
 var TableTemplates []TableTemplateI
