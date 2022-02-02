@@ -35,7 +35,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Txt1.With(page.NewLabelWrapper())").Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("changer").Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -50,7 +50,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Txt1.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("changer").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -76,7 +76,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Txt1ChangeLabel.With(page.NewLabelWrapper())").Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("vc").Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -91,7 +91,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Txt1ChangeLabel.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("vc").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -117,7 +117,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Txt1KeyUpLabel.With(page.NewLabelWrapper())").Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("vu").Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -132,7 +132,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Txt1KeyUpLabel.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("vu").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -160,7 +160,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Chk.With(page.NewLabelWrapper())").Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("cb").Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -175,7 +175,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Chk.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("cb").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -201,7 +201,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.ChkLabel.With(page.NewLabelWrapper())").Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("cbv").Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -216,7 +216,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.ChkLabel.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("cbv").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -244,7 +244,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Txt2.With(page.NewLabelWrapper())").Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("tb").Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -259,7 +259,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Txt2.With(page.NewLabelWrapper())").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("tb").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -285,7 +285,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Btn").Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("submit").Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -300,7 +300,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 			return
 		}
 
-		if err = ctrl.Page().GetControl("form.Btn").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("submit").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
 			return
 		}
 
