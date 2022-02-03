@@ -6,7 +6,7 @@ import (
 	"context"
 	"io"
 
-	. "github.com/goradd/goradd/pkg/bootstrap/control"
+	"github.com/goradd/goradd/pkg/page/control"
 )
 
 func (ctrl *Forms1Panel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
@@ -17,6 +17,10 @@ This is an example of a very generic form layout in Bootstrap.
 </p>
 `); err != nil {
 		return
+	}
+
+	if ctrl.Page().HasControl("nameText-fg") {
+		ctrl.Page().GetControl("nameText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="form-label"`)
 	}
 
 	if `` == "" {
@@ -51,6 +55,10 @@ This is an example of a very generic form layout in Bootstrap.
 
 	}
 
+	if ctrl.Page().HasControl("childrenText-fg") {
+		ctrl.Page().GetControl("childrenText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="form-label"`)
+	}
+
 	if `` == "" {
 
 		if _, err = io.WriteString(_w, `    `); err != nil {
@@ -83,23 +91,19 @@ This is an example of a very generic form layout in Bootstrap.
 
 	}
 
-	if _, err = io.WriteString(_w, `
-<div>
+	if _, err = io.WriteString(_w, `<div>
+
 `); err != nil {
 		return
 	}
 
-	GetRadioButton(ctrl, "singleRadio").SetInline(true)
-	GetRadioButton(ctrl, "marriedRadio").SetInline(true)
-	GetRadioButton(ctrl, "divorcedRadio").SetInline(true)
-
 	if `` == "" {
 
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
 
-		if err = ctrl.Page().GetControl("singleRadio").Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("status").Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -114,7 +118,7 @@ This is an example of a very generic form layout in Bootstrap.
 			return
 		}
 
-		if err = ctrl.Page().GetControl("singleRadio").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("status").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -125,13 +129,30 @@ This is an example of a very generic form layout in Bootstrap.
 
 	}
 
+	if _, err = io.WriteString(_w, ` `); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, `You are: `); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, ` `); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, `
+`); err != nil {
+		return
+	}
+
 	if `` == "" {
 
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
 
-		if err = ctrl.Page().GetControl("marriedRadio").Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("radioResult").Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -146,7 +167,7 @@ This is an example of a very generic form layout in Bootstrap.
 			return
 		}
 
-		if err = ctrl.Page().GetControl("marriedRadio").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("radioResult").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -157,39 +178,7 @@ This is an example of a very generic form layout in Bootstrap.
 
 	}
 
-	if `` == "" {
-
-		if _, err = io.WriteString(_w, `    `); err != nil {
-			return
-		}
-
-		if err = ctrl.Page().GetControl("divorcedRadio").Draw(ctx, _w); err != nil {
-			return
-		}
-
-		if _, err = io.WriteString(_w, `
-`); err != nil {
-			return
-		}
-
-	} else {
-
-		if _, err = io.WriteString(_w, `    `); err != nil {
-			return
-		}
-
-		if err = ctrl.Page().GetControl("divorcedRadio").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
-		if _, err = io.WriteString(_w, `
-`); err != nil {
-			return
-		}
-
-	}
-
-	if _, err = io.WriteString(_w, `</div>
+	if _, err = io.WriteString(_w, `
 `); err != nil {
 		return
 	}

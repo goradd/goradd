@@ -236,8 +236,8 @@ type ControlI interface {
 
 type attributeScriptEntry struct {
 	id       string        // id of the object to execute the command on. This should be the id of the control, or a a related html object.
-	f        string        // the jquery function to call
-	commands []interface{} // parameters to the jquery function
+	f        string        // the  function to call
+	commands []interface{} // parameters to the function
 }
 
 // ControlBase is the basis for UI controls and widgets in goradd. It corresponds to a standard html form object or tag, or a custom javascript
@@ -759,7 +759,7 @@ func (c *ControlBase) Attributes() html.Attributes {
 	return c.attributes
 }
 
-// AddRenderScript adds a jQuery command to be executed on the next ajax draw.
+// AddRenderScript adds a javascript command to be executed on the next ajax draw.
 // These commands allow javascript to change an aspect of the control without
 // having to redraw the entire control. This should be used by ControlBase implementations only.
 func (c *ControlBase) AddRenderScript(f string, params ...interface{}) {

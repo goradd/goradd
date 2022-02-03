@@ -34,19 +34,6 @@
 </div>
 {{end -col}}
 
-{{define form-row}}
-<div class="form-row">
-{{end form-row}}
-
-{{define +form-row}}
-</div>
-<div class="form-row">
-{{end +form-row}}
-
-{{define -form-row}}
-</div>
-{{end -form-row}}
-
 
 {{# setInnerDivAttributes sets the InnerDiv attributes on FormGroups. }}
 {{# This creates a div wrapper around the control that the FormGroup is managing. }}

@@ -111,7 +111,7 @@ type RadioListGroupCreator struct {
 	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
-	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	// Value is the initial value of the radio list. Often its best to load the value in a separate Load step after creating the control.
 	Value string
 	// SaveState saves the selected value so that it is restored if the form is returned to.
 	ButtonStyle string
@@ -143,7 +143,6 @@ func (c RadioListGroupCreator) Init(ctx context.Context, ctrl RadioListGroupI) {
 		ctrl.SetButtonStyle(c.ButtonStyle)
 	}
 	if c.OnChange != nil {
-		// Radio groups require special handling, since the buttons themselves are controlled by jQuery.
 		ctrl.On(event.Change(), c.OnChange)
 	}
 }

@@ -35,7 +35,6 @@ type FormI interface {
 	AddStyleSheetFile(path string, attributes html.Attributes)
 	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
-	AddJQuery()
 	ChangeLocation(url string)
 	PushLocation(ctx context.Context)
 	PopLocation(ctx context.Context, fallback string)
@@ -98,16 +97,6 @@ func (f *FormBase) AddRelatedFiles() {
 	}
 }
 
-// AddJQuery adds the jquery javascript to the form
-func (f *FormBase) AddJQuery() {
-	if !config.Release {
-		f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "jquery3.js"), false, nil)
-	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.4.1.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=").
-				Set("crossorigin", "anonymous"))
-	}
-}
 
 // AddGoraddFiles adds the various goradd files to the form
 func (f *FormBase) AddGoraddFiles() {

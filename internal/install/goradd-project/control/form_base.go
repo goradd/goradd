@@ -58,7 +58,7 @@ func (f *FormBase) AddHeadTags() {
 }
 
 // AddJQuery adds the jquery javascript to the form
-/* Uncomment this to change how JQuery gets loaded
+/* Uncomment this to and call it to add jquery
 func (f *FormBase) AddJQuery() {
 	if !config.Release {
 		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery3.js"), false, nil)
@@ -70,16 +70,4 @@ func (f *FormBase) AddJQuery() {
 }
 */
 
-// AddJQueryUI adds the JQuery UI javascript to the form. This is not loaded by default, but many add-ons
-// use it, so its here for convenience.
-/* Uncomment this to change how JQueryUI gets loaded
-func (f *FormBase) AddJQueryUI() {
-	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery-ui.js"), false, nil)
-	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=").
-				Set("crossorigin", "anonymous"))
-	}
-}
-*/
+

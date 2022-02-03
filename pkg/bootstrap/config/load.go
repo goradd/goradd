@@ -31,19 +31,14 @@ func LoadBootstrap(form page.FormI) {
 				AddAttributeValue("name", "viewport").
 				AddAttributeValue("content","width=device-width, initial-scale=1, shrink-to-fit=no"),
 			})
-		form.AddJQuery()
 		if config.Release {
-			form.AddJavaScriptFile("https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js", false,
+			form.AddJavaScriptFile("https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js", false,
 				html.NewAttributes().Set("integrity", "sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1").Set("crossorigin", "anonymous"))
-			form.AddJavaScriptFile("https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js", false,
-				html.NewAttributes().Set("integrity", "sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM").Set("crossorigin", "anonymous"))
-			form.AddStyleSheetFile("https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css",
-				html.NewAttributes().Set("integrity", "sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T").Set("crossorigin", "anonymous"))
-			form.AddJavaScriptFile(path.Join(config.AssetPrefix, "bootstrap", "js", "gr.bs.shim.js"), false, nil)
+			form.AddStyleSheetFile("https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css",
+				html.NewAttributes().Set("integrity", "sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3").Set("crossorigin", "anonymous"))
 		} else {
 			form.AddJavaScriptFile(path.Join(config.AssetPrefix, "bootstrap", "js", "bootstrap.bundle.js"), false, nil)
 			form.AddStyleSheetFile(path.Join(config.AssetPrefix, "bootstrap", "css", "bootstrap.css"), nil)
-			form.AddJavaScriptFile(path.Join(config.AssetPrefix, "bootstrap", "js", "gr.bs.shim.js"), false, nil)
 		}
 	}
 }

@@ -36,7 +36,6 @@ func NewFormGroup(parent page.ControlI, id string) *FormGroup {
 func (c *FormGroup) Init(parent page.ControlI, id string) {
 	c.FormFieldWrapper.Init(parent, id)
 	c.innerDivAttr = html.NewAttributes()
-	c.AddClass("form-group") // to get a wrapper without this, just remove it after initialization
 	c.InstructionAttributes().AddClass("form-text")
 }
 

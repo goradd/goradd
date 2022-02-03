@@ -35,7 +35,7 @@ type Event struct {
 	actionValue interface{}
 	// action is the action that the event triggers. Multiple actions can be specified using an action group.
 	action action2.ActionI
-	// preventDefault will cause the preventDefault jQuery function to be called on the event, which prevents the
+	// preventDefault will cause the preventDefault function to be called on the event, which prevents the
 	// default action. In particular, this would prevent a submit button from submitting a form.
 	preventDefault bool
 	// stopPropogation will cause the stopPropogation jQuery function to be called on the event, which prevents the event

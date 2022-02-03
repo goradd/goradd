@@ -29,14 +29,12 @@ func ToDataAttr(s string) (string, error) {
 	return strings.TrimSpace(strings.TrimPrefix(s, "-")), err
 }
 
-/*
- ToDataKey is a helper function to convert a name from kabob-case to camelCase.
- data-* html attributes have special conversion rules. Key names should always be lower case. Dashes in the
- name get converted to camel case javascript variable names.
- For example, if you want to pass the value with key name "testVar" to javascript by printing it in
- the html, you would use this function to help convert it to "data-test-var", after which you can retrieve
- in jQuery by calling ".data('testVar')". on the object.
-*/
+// ToDataKey is a helper function to convert a name from kabob-case to camelCase.
+// data-* html attributes have special conversion rules. Key names should always be lower case. Dashes in the
+// name get converted to camel case javascript variable names.
+// For example, if you want to pass the value with key name "testVar" to javascript by printing it in
+//the html, you would use this function to help convert it to "data-test-var", after which you can retrieve
+//in javascript by calling ".dataset.testVar" on the object.
 func ToDataKey(s string) (string, error) {
 	if matched, _ := regexp.MatchString("[A-Z]|[^a-z0-9-]", s); matched {
 		err := errors.New("This is not an acceptable kabob-case name.")

@@ -30,7 +30,7 @@ This is an example of a typical form with inline labels.
 		ctrl.Page().GetControl("nameText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-10"`)
 	}
 
-	if `class="form-row"` == "" {
+	if `class="row mb-3"` == "" {
 
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
@@ -51,7 +51,7 @@ This is an example of a typical form with inline labels.
 			return
 		}
 
-		if err = ctrl.Page().GetControl("nameText-fg").ProcessAttributeString(`class="form-row"`).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("nameText-fg").ProcessAttributeString(`class="row mb-3"`).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -75,7 +75,7 @@ This is an example of a typical form with inline labels.
 		ctrl.Page().GetControl("streetText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-10"`)
 	}
 
-	if `class="form-row"` == "" {
+	if `class="row mb-3"` == "" {
 
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
@@ -96,7 +96,7 @@ This is an example of a typical form with inline labels.
 			return
 		}
 
-		if err = ctrl.Page().GetControl("streetText-fg").ProcessAttributeString(`class="form-row"`).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("streetText-fg").ProcessAttributeString(`class="row mb-3"`).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -112,18 +112,9 @@ This is an example of a typical form with inline labels.
 		return
 	}
 
-	if _, err = io.WriteString(_w, `<div class="form-row">
-`); err != nil {
-		return
-	}
-
-	if _, err = io.WriteString(_w, ` `); err != nil {
-		return
-	}
-
-	if _, err = io.WriteString(_w, `
-<div class="col-6">
-    `); err != nil {
+	if _, err = io.WriteString(_w, `<div class="row align-items-center mb-3">
+    <div class="col-6">
+        `); err != nil {
 		return
 	}
 
@@ -136,7 +127,7 @@ This is an example of a typical form with inline labels.
 		ctrl.Page().GetControl("cityText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="col-form-label col-4"`)
 	}
 
-	if _, err = io.WriteString(_w, `    `); err != nil {
+	if _, err = io.WriteString(_w, `        `); err != nil {
 		return
 	}
 
@@ -149,7 +140,7 @@ This is an example of a typical form with inline labels.
 		ctrl.Page().GetControl("cityText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-8"`)
 	}
 
-	if _, err = io.WriteString(_w, `    `); err != nil {
+	if _, err = io.WriteString(_w, `        `); err != nil {
 		return
 	}
 
@@ -158,7 +149,7 @@ This is an example of a typical form with inline labels.
 		return
 	}
 
-	if `class="form-row"` == "" {
+	if `class="row"` == "" {
 
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
@@ -179,7 +170,7 @@ This is an example of a typical form with inline labels.
 			return
 		}
 
-		if err = ctrl.Page().GetControl("cityText-fg").ProcessAttributeString(`class="form-row"`).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("cityText-fg").ProcessAttributeString(`class="row"`).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -190,9 +181,9 @@ This is an example of a typical form with inline labels.
 
 	}
 
-	if _, err = io.WriteString(_w, `</div>
-<div class="col-2">
-    `); err != nil {
+	if _, err = io.WriteString(_w, `    </div>
+    <div class="col-2">
+        `); err != nil {
 		return
 	}
 
@@ -205,7 +196,7 @@ This is an example of a typical form with inline labels.
 		ctrl.Page().GetControl("stateText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="col-form-label col-6"`)
 	}
 
-	if _, err = io.WriteString(_w, `    `); err != nil {
+	if _, err = io.WriteString(_w, `        `); err != nil {
 		return
 	}
 
@@ -218,7 +209,7 @@ This is an example of a typical form with inline labels.
 		ctrl.Page().GetControl("stateText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-6"`)
 	}
 
-	if _, err = io.WriteString(_w, `    `); err != nil {
+	if _, err = io.WriteString(_w, `        `); err != nil {
 		return
 	}
 
@@ -227,7 +218,7 @@ This is an example of a typical form with inline labels.
 		return
 	}
 
-	if `class="form-row"` == "" {
+	if `class="row"` == "" {
 
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
@@ -248,7 +239,7 @@ This is an example of a typical form with inline labels.
 			return
 		}
 
-		if err = ctrl.Page().GetControl("stateText-fg").ProcessAttributeString(`class="form-row"`).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("stateText-fg").ProcessAttributeString(`class="row"`).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -259,9 +250,9 @@ This is an example of a typical form with inline labels.
 
 	}
 
-	if _, err = io.WriteString(_w, `</div>
-<div class="col-4">
-    `); err != nil {
+	if _, err = io.WriteString(_w, `    </div>
+    <div class="col-4">
+        `); err != nil {
 		return
 	}
 
@@ -274,7 +265,7 @@ This is an example of a typical form with inline labels.
 		ctrl.Page().GetControl("zipText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="col-form-label col-4"`)
 	}
 
-	if _, err = io.WriteString(_w, `    `); err != nil {
+	if _, err = io.WriteString(_w, `        `); err != nil {
 		return
 	}
 
@@ -287,7 +278,7 @@ This is an example of a typical form with inline labels.
 		ctrl.Page().GetControl("zipText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-8"`)
 	}
 
-	if _, err = io.WriteString(_w, `    `); err != nil {
+	if _, err = io.WriteString(_w, `        `); err != nil {
 		return
 	}
 
@@ -296,7 +287,7 @@ This is an example of a typical form with inline labels.
 		return
 	}
 
-	if `class="form-row"` == "" {
+	if `class="row"` == "" {
 
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
@@ -317,7 +308,7 @@ This is an example of a typical form with inline labels.
 			return
 		}
 
-		if err = ctrl.Page().GetControl("zipText-fg").ProcessAttributeString(`class="form-row"`).Draw(ctx, _w); err != nil {
+		if err = ctrl.Page().GetControl("zipText-fg").ProcessAttributeString(`class="row"`).Draw(ctx, _w); err != nil {
 			return
 		}
 
@@ -328,27 +319,53 @@ This is an example of a typical form with inline labels.
 
 	}
 
-	if _, err = io.WriteString(_w, `</div>
+	if _, err = io.WriteString(_w, `    </div>
+</div>
 
 `); err != nil {
 		return
+	}
+
+	if _, err = io.WriteString(_w, `<div class="row">
+`); err != nil {
+		return
+	}
+
+	if "2" == "" {
+
+		if _, err = io.WriteString(_w, `<div class="col">
+`); err != nil {
+			return
+		}
+
+	} else {
+
+		if _, err = io.WriteString(_w, `<div class="col-2">
+`); err != nil {
+			return
+		}
+
 	}
 
 	if _, err = io.WriteString(_w, `</div>
-<div class="form-row">
 `); err != nil {
 		return
 	}
 
-	if _, err = io.WriteString(_w, ` `); err != nil {
-		return
-	}
+	if "10" == "" {
 
-	if _, err = io.WriteString(_w, `
-
-<div class="col-3 offset-2">
+		if _, err = io.WriteString(_w, `<div class="col">
 `); err != nil {
-		return
+			return
+		}
+
+	} else {
+
+		if _, err = io.WriteString(_w, `<div class="col-10">
+`); err != nil {
+			return
+		}
+
 	}
 
 	if `` == "" {
@@ -377,27 +394,6 @@ This is an example of a typical form with inline labels.
 		}
 
 		if _, err = io.WriteString(_w, `
-`); err != nil {
-			return
-		}
-
-	}
-
-	if _, err = io.WriteString(_w, `</div>
-`); err != nil {
-		return
-	}
-
-	if "3" == "" {
-
-		if _, err = io.WriteString(_w, `<div class="col">
-`); err != nil {
-			return
-		}
-
-	} else {
-
-		if _, err = io.WriteString(_w, `<div class="col-3">
 `); err != nil {
 			return
 		}
@@ -451,12 +447,7 @@ This is an example of a typical form with inline labels.
 		return
 	}
 
-	if _, err = io.WriteString(_w, ` `); err != nil {
-		return
-	}
-
 	if _, err = io.WriteString(_w, `
-
 `); err != nil {
 		return
 	}

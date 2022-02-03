@@ -18,6 +18,7 @@ const (
 	AjaxSubmit int = iota + 1
 	ServerSubmit
 	ButtonSubmit
+	RadioChange
 )
 
 type Forms1Panel struct {
@@ -52,23 +53,18 @@ func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string)
 				},
 			},
 		},
-		// Normally you would use a radio list for radio buttons.
-		// This is just a demonstration of how you can do it without a radio list for special situations.
-		RadioButtonCreator{
-			ID: "singleRadio",
-			Group:"m",
-			Text:"Single",
-			Checked:true,
+		RadioListGroupCreator{
+			ID: "status",
+			Items: []control.ListValue{
+				{"Single", "Single"},
+				{"Married", "Married"},
+				{"Divorced", "Divorced"},
+			},
+			Value: "Single",
+			OnChange: action.Ajax(p.ID(), RadioChange),
 		},
-		RadioButtonCreator{
-			ID: "marriedRadio",
-			Group:"m",
-			Text:"Married",
-		},
-		RadioButtonCreator{
-			ID: "divorcedRadio",
-			Group:"m",
-			Text:"Divorced",
+		control.SpanCreator{
+			ID: "radioResult",
 		},
 		FormGroupCreator{
 			Label: "Dog",
@@ -91,6 +87,15 @@ func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string)
 	)
 }
 
+func (p *Forms1Panel)  Action(ctx context.Context, a page.ActionParams) {
+	switch a.ID {
+	case RadioChange:
+		c:=control.GetSpan(p, "radioResult")
+		r := GetRadioListGroup(p, "status")
+		s := r.StringValue()
+		c.SetText(s)
+	}
+}
 
 func init() {
 	examples.RegisterPanel("forms1", "Forms 1", NewForms1Panel, 2)
