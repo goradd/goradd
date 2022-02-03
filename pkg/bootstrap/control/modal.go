@@ -152,7 +152,8 @@ func (m *Modal) AddButton(
 
 	if options != nil {
 		if options.IsClose {
-			btn.SetAttribute("data-dismiss", "modal") // make it a close button
+			btn.SetDataAttribute("bsDismiss", "modal") // make it a close button
+			btn.SetDataAttribute("bsTarget", m.ID()) // make it a close button
 		} else if options.ConfirmationMessage == "" {
 			if options.OnClick != nil {
 				btn.On(event.Click(), options.OnClick)
@@ -258,11 +259,11 @@ func (m *Modal) Show() {
 	m.SetVisible(true)
 	m.isOpen = true
 	//d.Refresh()
-	m.ParentForm().Response().ExecuteJavaScript(fmt.Sprintf("document.getElementById('%s').show();", m.ID()), page.PriorityLow)
+	m.ParentForm().Response().ExecuteJavaScript(fmt.Sprintf("bootstrap.Modal.getInstance(document.getElementById('%s')).show();", m.ID()), page.PriorityLow)
 }
 
 func (m *Modal) Hide() {
-	m.ParentForm().Response().ExecuteControlCommand(m.ID(), "hide", page.PriorityLow)
+	m.ParentForm().Response().ExecuteJavaScript(fmt.Sprintf("bootstrap.Modal.getInstance(document.getElementById('%s')).hide()", m.ID()), page.PriorityLow)
 }
 
 func (m *Modal) closed() {
@@ -273,7 +274,9 @@ func (m *Modal) closed() {
 
 func (m *Modal) PutCustomScript(_ context.Context, response *page.Response) {
 
-	script := fmt.Sprintf(`new bootstrap.Modal(document.getElementById('%s') , {keyboard: %t});`, m.ID(), m.closeOnEscape)
+	script := fmt.Sprintf(`
+var m = new bootstrap.Modal(document.getElementById('%s') , {keyboard: %t});
+`, m.ID(), m.closeOnEscape)
 	script += fmt.Sprintf(
 		`g$("%s").on("hidden.bs.modal", function(){g$("%[1]s").trigger("grdlgclosed")});`, m.ID())
 

@@ -38,6 +38,9 @@ func (p *ModalPanel) Init(ctx context.Context, parent page.ControlI, id string) 
 	m := NewModal(p.ParentForm(), "modal")
 	m.AddCloseButton("Close Me", "close")
 	m.SetTitle("My Modal")
+
+	t := control.NewPanel(m, "modbody")
+	t.SetText("What is in the modal?")
 }
 
 func (p *ModalPanel)  Action(ctx context.Context, a page.ActionParams) {
