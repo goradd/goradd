@@ -239,7 +239,7 @@ func Test_PatternRegistrations(t *testing.T) {
 	RegisterHandler("/test", http.HandlerFunc(fnFound))
 	mux2 := http.NewServeMux()
 	mux2.Handle("/test3", http.HandlerFunc(fnFound))
-	RegisterPathHandler("/test/test2/", mux2)
+	RegisterPrefixHandler("/test/test2/", mux2)
 	mux := http.NewServeMux(); // test using mux in the middle of registration process
 	h := UsePatternMuxer(mux,http.HandlerFunc(fnNotFound ))
 	RegisterHandler("/test4", http.HandlerFunc(fnFound))
@@ -290,7 +290,7 @@ func Test_AppRegistrations(t *testing.T) {
 	RegisterAppHandler("/test", http.HandlerFunc(fnFound))
 	mux2 := http.NewServeMux()
 	mux2.Handle("/test3", http.HandlerFunc(fnFound))
-	RegisterAppPathHandler("/test/test2/", mux2)
+	RegisterAppPrefixHandler("/test/test2/", mux2)
 	mux := http.NewServeMux(); // test using mux in the middle of registration process
 	h := UseAppMuxer(mux,http.HandlerFunc(fnNotFound ))
 	RegisterAppHandler("/test4", http.HandlerFunc(fnFound))
@@ -341,17 +341,17 @@ func Test_PathRegistrations(t *testing.T) {
 		result string
 	}
 
-	RegisterPathHandler("", http.HandlerFunc(fnFoundRoot))
+	RegisterPrefixHandler("", http.HandlerFunc(fnFoundRoot))
 	assert.Panics(t, func() {
-		RegisterPathHandler("/",  http.HandlerFunc(fnFoundRoot)) //
+		RegisterPrefixHandler("/",  http.HandlerFunc(fnFoundRoot)) //
 	},
 	"Blank path and root path should be equal",
 	)
-	RegisterPathHandler("test", http.HandlerFunc(fnFound))
+	RegisterPrefixHandler("test", http.HandlerFunc(fnFound))
 
 	mux2 := http.NewServeMux()
 	mux2.Handle("/test3", http.HandlerFunc(fnFound))
-	RegisterPathHandler("/test/test2/", mux2)
+	RegisterPrefixHandler("/test/test2/", mux2)
 	mux := http.NewServeMux(); // test using mux in the middle of registration process
 	h := UsePatternMuxer(mux,http.HandlerFunc(fnNotFound ))
 

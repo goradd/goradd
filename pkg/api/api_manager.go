@@ -18,16 +18,18 @@ import (
 )
 
 // RegisterPattern associates the given URL path with the given handler.
-// The pattern will be behind the ApiPrefix path.
+// The pattern will be behind the ApiPrefix path. The handler will be processed before
+// the regular app management, and so will not get access to session management. Use this
+// if you are using an authorization scheme like oAuth.
 func RegisterPattern(pattern string, handler http.HandlerFunc) {
-	http2.RegisterPathHandler(path.Join(config.ApiPrefix, pattern), http.StripPrefix(config.ApiPrefix, handler))
+	http2.RegisterPrefixHandler(path.Join(config.ApiPrefix, pattern), http.StripPrefix(config.ApiPrefix, handler))
 }
 
 // RegisterAppPattern associates the given URL path with the given handler.
-// The pattern will be behind the ApiPrefix path and so will benefit from Session management and the
+// The handler will be behind the App handler and so will benefit from Session management and the
 // rest of the handlers.
 func RegisterAppPattern(pattern string, handler http.HandlerFunc) {
-	http2.RegisterAppPathHandler(path.Join(config.ApiPrefix, pattern), http.StripPrefix(config.ApiPrefix, handler))
+	http2.RegisterAppPrefixHandler(path.Join(config.ApiPrefix, pattern), http.StripPrefix(config.ApiPrefix, handler))
 }
 
 

@@ -1,4 +1,4 @@
-// The app package contains your local application object. It uses an object oriented model to implement a default
+// Package app contains your local application object. It uses an object oriented model to implement a default
 // application, and provides hooks for you to customize its behavior. Web applications can grow in complicated ways,
 // and this is the main place you will customize how the server itself behaves.
 package app
@@ -6,7 +6,6 @@ package app
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/web/app"
 	"log"
 	"net/http"
@@ -193,7 +192,7 @@ func (a *Application) MakeServerMux() *http.ServeMux {
 
 	// Uncomment this and implement ServeData to serve up custom generated
 	// files like PDFs, CSVs, images, etc.
-	//http2.RegisterPathHandler("/data", http2.ErrorHandler(http.HandlerFunc(a.ServeData)))
+	//http2.RegisterPrefixHandler("/data", http2.ErrorHandler(http.HandlerFunc(a.ServeData)))
 
 	return mux
 }

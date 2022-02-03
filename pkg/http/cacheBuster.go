@@ -25,7 +25,7 @@ var cacheBuster = make (map[string]string)
 func RegisterAssetDirectory(prefix string, fsys fs.FS) {
 	prefix = path.Clean(prefix)
 	serv := FileSystemServer{Fsys: fsys, SendModTime: false, MustRespond: true, UseCacheBuster: true}
-	RegisterPathHandler(prefix, serv)
+	RegisterPrefixHandler(prefix, serv)
 
 	// Walk the entire file system provided to register each file with the cache buster cache so
 	// that we know what hash to provide for that file.

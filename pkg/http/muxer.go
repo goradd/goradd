@@ -76,7 +76,7 @@ func UseAppMuxer(mux Muxer, next http.Handler) http.Handler {
 
 // RegisterHandler registers a handler for the given pattern.
 //
-// Use this when registering a handler to a specific path. Use RegisterPathHandler if registering
+// Use this when registering a handler to a specific path. Use RegisterPrefixHandler if registering
 // a handler for a whole subdirectory of a path.
 //
 // The given handler is served immediately by the application without going through the application
@@ -90,7 +90,7 @@ func RegisterHandler(pattern string, handler http.Handler) {
 
 // RegisterAppHandler registers a handler for the given pattern.
 //
-// Use this when registering a handler to a specific path. Use RegisterAppPathHandler if registering
+// Use this when registering a handler to a specific path. Use RegisterAppPrefixHandler if registering
 // a handler for a whole subdirectory of a path.
 //
 // The given handler is served near the end of the application handler stack, so
@@ -102,10 +102,10 @@ func RegisterAppHandler(pattern string, handler http.Handler) {
 	registerHandler(pattern, handler, appHandlers, AppMuxer)
 }
 
-// RegisterPathHandler registers a handler for the given directory prefix.
+// RegisterPrefixHandler registers a handler for the given directory prefix.
 //
 // The handler will be called immediately based on the path and will not be sent
-// through the application handler middleware stack. Use RegisterAppPathHandler
+// through the application handler middleware stack. Use RegisterAppPrefixHandler
 // for the equivalent function processed at the end of the application handler stack.
 //
 // The handler will be called with the prefix stripped away. When the prefix is
@@ -119,11 +119,11 @@ func RegisterAppHandler(pattern string, handler http.Handler) {
 // return an http error to the ResponseWriter.
 //
 // You may call this from an init() function.
-func RegisterPathHandler(prefix string, handler http.Handler) {
+func RegisterPrefixHandler(prefix string, handler http.Handler) {
 	registerPrefixHandler(prefix, handler, patternHandlers, PatternMuxer)
 }
 
-// RegisterAppPathHandler registers a handler for the given directory prefix.
+// RegisterAppPrefixHandler registers a handler for the given directory prefix.
 //
 // The handler will be called at the end of the application handler middleware stack.
 //
@@ -138,7 +138,7 @@ func RegisterPathHandler(prefix string, handler http.Handler) {
 // return an http error to the ResponseWriter.
 //
 // You may call this from an init() function.
-func RegisterAppPathHandler(prefix string, handler http.Handler) {
+func RegisterAppPrefixHandler(prefix string, handler http.Handler) {
 	registerPrefixHandler(prefix, handler, appHandlers, AppMuxer)
 }
 

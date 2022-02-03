@@ -168,15 +168,15 @@ func (a *Application) SetupMessenger() {
 func (a *Application) SetupPaths() {
 	if config.Debug {
 		// standard go profiling support
-		http2.RegisterPathHandler("/debug/pprof/", http.HandlerFunc(pprof.Index))
-		http2.RegisterPathHandler("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
-		http2.RegisterPathHandler("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
-		http2.RegisterPathHandler("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
-		http2.RegisterPathHandler("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+		http2.RegisterPrefixHandler("/debug/pprof/", http.HandlerFunc(pprof.Index))
+		http2.RegisterPrefixHandler("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
+		http2.RegisterPrefixHandler("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
+		http2.RegisterPrefixHandler("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
+		http2.RegisterPrefixHandler("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
 	}
 
 	if config.WebsocketMessengerPrefix != "" {
-		http2.RegisterPathHandler(config.WebsocketMessengerPrefix, http.HandlerFunc(WebsocketMessengerHandler))
+		http2.RegisterPrefixHandler(config.WebsocketMessengerPrefix, http.HandlerFunc(WebsocketMessengerHandler))
 	}
 }
 
@@ -433,7 +433,7 @@ func RegisterStaticPath(
 		UseCacheBuster: useCacheBuster,
 		MustRespond: mustRespond,
 		Hide: hide}
-	http2.RegisterPathHandler(path, fs)
+	http2.RegisterPrefixHandler(path, fs)
 	grlog.Infof("Registering static path %s to %s", path, directory)
 }
 

@@ -40,6 +40,8 @@ type FileSystemServer struct {
 	SendModTime bool
 
 	// MustRespond will cause a NotFound error to be written to the response if no file is found in the file system.
+	// Otherwise, no output will be sent, and Goradd's handler system will pass control to the next handler
+	// in the middleware stack.
 	MustRespond bool
 
 	// UseCacheBuster will look for cache buster paths and fix them.
