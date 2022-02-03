@@ -20,7 +20,7 @@ var Minify bool = !Debug
 // to any path. This is particularly useful to making the application appear as if it is running in a subdirectory
 // of the root path. This is great for putting behind an Apache server, and using ProxyPass and ProxyPassReverse to direct
 // traffic from a particular path to the application. This gets stripped off incoming urls automatically by the server,
-// but needs to be added to all links to resources on the server.
+// but needs to be added to all links to resources on the server, and to cookies.
 var ProxyPath string
 
 var DefaultDateFormat = "January 2, 2006"

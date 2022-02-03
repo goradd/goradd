@@ -110,6 +110,7 @@ func (bw *defaultBufferedOutputManager) Use(next http.Handler) http.Handler {
 		next.ServeHTTP(bwriter, r)
 		if bwriter.code != 0 && bwriter.code != 200 {
 			grlog.Error("Buffered write error code ", bwriter.code)
+			grlog.Error(r.URL.Path)
 			w.WriteHeader(bwriter.code)
 		}
 		_, e := w.Write(outBuf.Bytes())
