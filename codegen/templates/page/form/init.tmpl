@@ -31,7 +31,7 @@ var a embed.FS
 
 func init() {
 	fs := http.FileSystemServer{Fsys: a, SendModTime: true, MustRespond: false, Hide: []string{".go", ".got", ".tmp"}}
-	http.RegisterPathHandler("/goradd/forms", fs)
+	http.RegisterPrefixHandler("/goradd/forms", fs)
 }
 {{end *strict*}}
 }}

@@ -196,10 +196,6 @@ func (a *Application) PutContext(r *http.Request) *http.Request {
 func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	pm := page.GetPageManager()
-	if pm == nil {
-		panic("No page manager defined")
-	}
-
 	if pm.IsPage(r.URL.Path) {
 		ctx := r.Context()
 		headers, errCode := pm.RunPage(ctx, w)
@@ -253,6 +249,7 @@ func (a *Application) MakeAppServer() http.Handler {
 	h = a.this().SessionHandler(h)
 	h = a.BufferedOutputHandler(h)
 	h = a.this().ServePatternMux(h)
+	h = http2.ErrorHandler(h) // Default http error handler to intercept panics
 	h = a.this().HSTSHandler(h)
 	h = a.this().AccessLogHandler(h)
 
