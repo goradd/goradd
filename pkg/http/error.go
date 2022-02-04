@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const MaxErrorStackDepth = 50
+var MaxErrorStackDepth = 20
 
 // Error represents an error response to an http request.
 //
@@ -117,51 +117,30 @@ type ServerError struct {
 	// the time the error occurred
 	Time time.Time
 	Request *http.Request
-	// unwound Stack info
-	Stack []StackFrame
 	// Output will replace what gets written to the output
 	Output string
+	// How much additional to unwind the stack trace
+	StackDepth int
 }
 
-// StackFrame holds the file, line and function name in a call chain
-type StackFrame struct {
-	File string
-	Line int
-	Func string
-}
 
 // Error returns the string that is sent to the logger
 func (s ServerError) Error() string {
 	out := s.Err + "\n"
 	out += s.Mode + "  " + s.Request.RequestURI + " " + fmt.Sprintf("%v\n", s.Request.PostForm)
-	for _,f := range s.Stack {
-		out += fmt.Sprintf("%s line %d in %s\n", f.File, f.Line, f.Func)
-	}
 	return out
 }
 
-func NewServerError(err string, mode string, r *http.Request, skipN_Frames int, output string) *ServerError {
+func NewServerError(err string, mode string, r *http.Request, skipFrames int, output string) *ServerError {
 	e := ServerError{
 		Err: err,
 		Mode: mode,
 		Time: time.Now(),
 		Request: r,
 		Output: output,
+		StackDepth: skipFrames,
 	}
 
-	for i := 2 + skipN_Frames; i < MaxErrorStackDepth; i++ {
-		pc, file, line, ok := runtime.Caller(i)
-		if !ok {
-			break
-		}
-		name := ""
-		if f := runtime.FuncForPC(pc); f != nil {
-			name = f.Name()
-		}
-
-		frame := StackFrame{file, line, name}
-		e.Stack = append(e.Stack, frame)
-	}
 	return &e
 }
 
@@ -173,11 +152,12 @@ type  ErrorReporter struct {
 // will respond appropriately to any panics that happen within the given handler.
 //
 // Panic with an http.Error value to get a specific kind of http error to
-// be output.
+// be output. Otherwise, errors will be sent to the log.Error logger.
 func (e ErrorReporter) Use(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		defer func() {
 			if r := recover(); r != nil {
+				stackDepth := 2
 				var newResponse string
 				var errMsg string
 				switch v := r.(type) {
@@ -199,6 +179,7 @@ func (e ErrorReporter) Use(h http.Handler) http.Handler {
 				case *ServerError:
 					newResponse = v.Output
 					errMsg = v.Error()
+					stackDepth += v.StackDepth
 				case error:
 					errMsg = v.Error()
 				case string:
@@ -207,16 +188,30 @@ func (e ErrorReporter) Use(h http.Handler) http.Handler {
 					errMsg = fmt.Sprintf("%v", v)
 				}
 				w.WriteHeader(http.StatusInternalServerError)
-
 				buf := ResetOutputBuffer(req.Context())
 				errMsg += "\nPartial response written:\n" + string(buf)
-				log.Error(errMsg) // use the application logger to output the error so we know about it
-
-				_,_ = io.WriteString(w, newResponse)
+				log.Error(errMsg + stackTrace(stackDepth)) // use the application logger to output the error so we know about it
+				_,_ = io.WriteString(w, newResponse) // Write the alternate response to client
 				return
 			}
 		}()
 		h.ServeHTTP(w, req)
 
 	})
+}
+
+func stackTrace(startingDepth int) (out string ){
+	for i := 1 + startingDepth; i < MaxErrorStackDepth; i++ {
+		pc, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		name := ""
+		if f := runtime.FuncForPC(pc); f != nil {
+			name = f.Name()
+		}
+
+		out += fmt.Sprintf("%s:%d -- %s\n", file, line, name)
+	}
+	return
 }
