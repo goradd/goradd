@@ -17,10 +17,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 	}
 
 	d.titleBar.AddClass("modal-header")
-
-	if err = d.titleBar.Draw(ctx, _w); err != nil {
-		return
-	}
+	d.titleBar.Draw(ctx, _w)
 
 	if _, err = io.WriteString(_w, `            <div class="modal-body">
 `); err != nil {
@@ -31,11 +28,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 	if l > 2 {
 		for _, child := range d.Children() {
 			if child.ID() != d.titleBar.ID() && child.ID() != d.buttonBar.ID() {
-
-				if err = child.Draw(ctx, _w); err != nil {
-					return
-				}
-
+				child.Draw(ctx, _w)
 			}
 		}
 	} else {
@@ -61,10 +54,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 	}
 
 	d.buttonBar.AddClass("modal-footer")
-
-	if err = d.buttonBar.Draw(ctx, _w); err != nil {
-		return
-	}
+	d.buttonBar.Draw(ctx, _w)
 
 	if _, err = io.WriteString(_w, `        </div>
     </div>

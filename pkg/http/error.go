@@ -51,7 +51,14 @@ func SendErrorMessage(message string, errCode int) {
 // This will set the Location header to point to the new location.
 //
 // Be sure to call http.MakeLocalPath() if the resource is pointing to a
-// location on this server
+// location on this server.
+//
+// errCode should be a 3XX error, like one of the following:
+//	StatusMovedPermanently  = 301 // RFC 7231, 6.4.2
+//	StatusFound             = 302 // RFC 7231, 6.4.3
+//	StatusSeeOther          = 303 // RFC 7231, 6.4.4
+//	StatusTemporaryRedirect = 307 // RFC 7231, 6.4.7
+//	StatusPermanentRedirect = 308 // RFC 7538, 3
 func Redirect(location string, errCode int) {
 	e := Error{ErrCode: errCode}
 	e.SetResponseHeader("Location", location)
@@ -60,6 +67,7 @@ func Redirect(location string, errCode int) {
 
 // SendUnauthorized will send an error code indicating that the user is not authenticated (yes,
 // even though the title is "authorized", it really means "authenticated", i.e. not logged in.)
+// If serving HTML, you likely should redirect to the login page instead.
 func SendUnauthorized() {
 	e := Error{ErrCode: http.StatusUnauthorized}
 	panic (e)
@@ -104,6 +112,8 @@ func SendBadRequestMessage(message string) {
 type ServerError struct {
 	// the error string
 	Err string
+	// Mode indicates whether we are serving ajax or not
+	Mode string
 	// the time the error occurred
 	Time time.Time
 	Request *http.Request
@@ -123,16 +133,17 @@ type StackFrame struct {
 // Error returns the string that is sent to the logger
 func (s ServerError) Error() string {
 	out := s.Err + "\n"
-	out += s.Request.RequestURI + " " + fmt.Sprintf("%v", s.Request.PostForm)
+	out += s.Mode + "  " + s.Request.RequestURI + " " + fmt.Sprintf("%v\n", s.Request.PostForm)
 	for _,f := range s.Stack {
 		out += fmt.Sprintf("%s line %d in %s\n", f.File, f.Line, f.Func)
 	}
 	return out
 }
 
-func NewServerError(err string, r *http.Request, skipN_Frames int, output string) *ServerError {
+func NewServerError(err string, mode string, r *http.Request, skipN_Frames int, output string) *ServerError {
 	e := ServerError{
 		Err: err,
+		Mode: mode,
 		Time: time.Now(),
 		Request: r,
 		Output: output,
@@ -176,6 +187,7 @@ func (e ErrorReporter) Use(h http.Handler) http.Handler {
 						header.Set(k,v2)
 					}
 					w.WriteHeader(v.ErrCode)
+					// Write out the message if it is present as the visible response to the error
 					if v.Message != "" {
 						_,_ = w.Write([]byte(v.Message))
 					}

@@ -60,11 +60,7 @@ that allow you to click on a record to see detail of the record.
 			if _, err = io.WriteString(_w, `    `); err != nil {
 				return
 			}
-
-			if err = ctrl.Page().GetControl("table1").Draw(ctx, _w); err != nil {
-				return
-			}
-
+			ctrl.Page().GetControl("table1").Draw(ctx, _w)
 			if _, err = io.WriteString(_w, `
 `); err != nil {
 				return
@@ -75,11 +71,7 @@ that allow you to click on a record to see detail of the record.
 			if _, err = io.WriteString(_w, `    `); err != nil {
 				return
 			}
-
-			if err = ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-				return
-			}
-
+			ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w)
 			if _, err = io.WriteString(_w, `
 `); err != nil {
 				return
@@ -92,11 +84,7 @@ that allow you to click on a record to see detail of the record.
 			if _, err = io.WriteString(_w, `    `); err != nil {
 				return
 			}
-
-			if err = ctrl.Page().GetControl("personPanel").Draw(ctx, _w); err != nil {
-				return
-			}
-
+			ctrl.Page().GetControl("personPanel").Draw(ctx, _w)
 			if _, err = io.WriteString(_w, `
 `); err != nil {
 				return
@@ -107,11 +95,7 @@ that allow you to click on a record to see detail of the record.
 			if _, err = io.WriteString(_w, `    `); err != nil {
 				return
 			}
-
-			if err = ctrl.Page().GetControl("personPanel").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-				return
-			}
-
+			ctrl.Page().GetControl("personPanel").ProcessAttributeString(``).Draw(ctx, _w)
 			if _, err = io.WriteString(_w, `
 `); err != nil {
 				return

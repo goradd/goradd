@@ -1,10 +1,7 @@
 package page
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"runtime"
+	"io"
 	"time"
 )
 
@@ -102,49 +99,7 @@ func (e *NoErr) Error() string {
 	return ""
 }
 
-// NewError return a generic message error
-func NewError(ctx context.Context, msg string) *Error {
-	e := &Error{}
-
-	e.Err = errors.New(msg)
-	e.fillErr(ctx, 1)
-	return e
-}
-
-func (e *Error) fillErr(ctx context.Context, skip int) {
-	e.Time = time.Now()
-	e.Ctx = GetContext(ctx)
-
-	for i := 2 + skip; i < MaxStackDepth; i++ {
-		pc, file, line, ok := runtime.Caller(i)
-		if !ok {
-			break
-		}
-		name := ""
-		if f := runtime.FuncForPC(pc); f != nil {
-			name = f.Name()
-		}
-
-		frame := StackFrame{file, line, name}
-		e.Stack = append(e.Stack, frame)
-	}
-}
-
-func (e *Error) Error() string {
-	return e.Err.Error()
-}
-
-// NewDbErr returns a new database error
-func NewDbErr(ctx context.Context, msg interface{}, dbStatement string) *DbError {
-	e := &DbError{}
-	switch m := msg.(type) {
-	case string:
-		e.Err = errors.New(m)
-	case error:
-		e.Err = m
-	default:
-		e.Err = fmt.Errorf("Error of type %T: %v", msg, msg)
-	}
-	e.fillErr(ctx, 1)
-	return e
+// WriteString is a utility function that will write a string and panic if an error occurs
+func WriteString(w io.Writer, s string) {
+	if _, err := io.WriteString(w, s); err != nil {panic(err)}
 }

@@ -251,9 +251,9 @@ func (l *MultiselectList) DrawingAttributes(ctx context.Context) html.Attributes
 	return a
 }
 
-func (l *MultiselectList) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
+func (l *MultiselectList) DrawInnerHtml(_ context.Context, w io.Writer)  {
 	h := l.getItemsHtml(l.items)
-	_,err = io.WriteString(w, h)
+	page.WriteString(w, h)
 	return
 }
 

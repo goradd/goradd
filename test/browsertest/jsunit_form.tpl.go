@@ -29,11 +29,7 @@ func (ctrl *JsUnitForm) DrawTemplate(ctx context.Context, _w io.Writer) (err err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("startButton").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("startButton").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -44,11 +40,7 @@ func (ctrl *JsUnitForm) DrawTemplate(ctx context.Context, _w io.Writer) (err err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("startButton").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("startButton").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -66,11 +58,7 @@ func (ctrl *JsUnitForm) DrawTemplate(ctx context.Context, _w io.Writer) (err err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("results").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("results").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -81,11 +69,7 @@ func (ctrl *JsUnitForm) DrawTemplate(ctx context.Context, _w io.Writer) (err err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("results").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("results").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

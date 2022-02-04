@@ -18,6 +18,7 @@ import (
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"io"
+	http2 "net/http"
 	"reflect"
 	"strconv"
 	"strings"
@@ -56,7 +57,7 @@ type PageDrawFunc func(context.Context, *Page, io.Writer) error
 
 // DrawI is the interface for items that draw into the draw buffer
 type DrawI interface {
-	Draw(context.Context, io.Writer) error
+	Draw(context.Context, io.Writer)
 }
 
 // A code we use during serialization to indicate that we just unserialized a control id
@@ -80,7 +81,6 @@ type Page struct {
 	idCounter       int
 	title           string // page title to draw in head tag
 	htmlHeaderTags  []html.VoidTag
-	responseHeader  map[string]string // queues up anything to be sent in the response header
 	responseError   int
 
 	language int // Don't serialize this. This is a cached version of what the session holds.
@@ -97,17 +97,13 @@ func (p *Page) Restore() {
 	}
 }
 
-func (p *Page) runPage(ctx context.Context, w io.Writer, isNew bool) (err error) {
+func (p *Page) runPage(ctx context.Context, w http2.ResponseWriter, isNew bool) (err error) {
 	grCtx := GetContext(ctx)
-	p.ClearResponseHeaders()
-
 	if grCtx.err != nil {
 		panic(grCtx.err) // An error occurred during unpacking of the context, so report that now
 	}
 
-	if err = p.Form().Run(ctx); err != nil {
-		return err
-	}
+	p.Form().Run(ctx)
 
 	// cache the language tags so we only need to look them up once for every call
 	p.language = i18n.SetDefaultLanguage(ctx, grCtx.Header.Get("accept-language"))
@@ -140,11 +136,11 @@ func (p *Page) runPage(ctx context.Context, w io.Writer, isNew bool) (err error)
 	}
 
 	if grCtx.RequestMode() == Ajax {
-		err = p.DrawAjax(ctx, w)
-		p.SetResponseHeader("Content-Type", "application/json")
+		p.DrawAjax(ctx, w)
+		w.Header().Add("Content-Type", "application/json")
 	} else if grCtx.RequestMode() == Server || grCtx.RequestMode() == Http {
 		//p.url = grCtx.HttpContext.URL. We might want a record of the original URL to be used during ajax calls someday. Until we have a reason, this will remain commented out.
-		err = p.Draw(ctx, w)
+		p.Draw(ctx, w)
 	} else {
 		// TODO: Implement a hook for the CustomAjax call and/or Rest API calls?
 	}
@@ -163,27 +159,27 @@ func (p *Page) Form() FormI {
 }
 
 // Draw draws the page.
-func (p *Page) Draw(ctx context.Context, w io.Writer) (err error) {
+func (p *Page) Draw(ctx context.Context, w io.Writer) {
 	f := p.form.PageDrawingFunction()
-	return f(ctx, p, w)
+	if err := f(ctx, p, w); err != nil {panic(err)}
 }
 
 // DrawHeaderTags draws all the inner html for the head tag
-func (p *Page) DrawHeaderTags(ctx context.Context, w io.Writer) (err error) {
+func (p *Page) DrawHeaderTags(ctx context.Context, w io.Writer) {
 	if p.title != "" {
-		if _,err = io.WriteString(w, "  <title>"); err != nil {return}
-		if _,err = io.WriteString(w, p.title); err != nil {return}
-		if _,err = io.WriteString(w, "  </title>\n"); err != nil {return}
+		if _,err := io.WriteString(w, "  <title>"); err != nil {panic(err)}
+		if _,err := io.WriteString(w, p.title); err != nil {panic(err)}
+		if _,err := io.WriteString(w, "  </title>\n"); err != nil {panic(err)}
 	}
 
 	// draw things like additional meta tags, etc
 	if p.htmlHeaderTags != nil {
 		for _, tag := range p.htmlHeaderTags {
-			if _,err = io.WriteString(w, tag.Render()); err != nil {return}
+			if _,err := io.WriteString(w, tag.Render()); err != nil {panic(err)}
 		}
 	}
 
-	err = p.Form().DrawHeaderTags(ctx, w)
+	p.Form().DrawHeaderTags(ctx, w)
 	return
 }
 
@@ -316,8 +312,8 @@ func (p *Page) StateID() string {
 
 // DrawAjax renders the page during an ajax call. Since the page itself is already rendered, it simply hands off this
 // responsibility to the form.
-func (p *Page) DrawAjax(ctx context.Context, w io.Writer) (err error) {
-	err = p.Form().renderAjax(ctx, w)
+func (p *Page) DrawAjax(ctx context.Context, w io.Writer) {
+	p.Form().renderAjax(ctx, w)
 	return
 }
 
@@ -575,19 +571,6 @@ func (p *Page) HasMetaTag(name string) bool {
 	return false
 }
 
-// SetResponseHeader sets a value in the html response header. You generally would only need to do this if your are outputting
-// custom content, like a pdf file.
-func (p *Page) SetResponseHeader(key, value string) {
-	if p.responseHeader == nil {
-		p.responseHeader = map[string]string{}
-	}
-	p.responseHeader[key] = value
-}
-
-// ClearResponseHeaders removes all the current response headers.
-func (p *Page) ClearResponseHeaders() {
-	p.responseHeader = nil
-}
 
 // PushRedraw will cause the form to refresh in between events. This will cause the client to pull
 // the ajax response. Its possible that this will happen while drawing. We avoid the race condition

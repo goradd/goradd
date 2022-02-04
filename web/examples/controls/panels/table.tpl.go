@@ -48,11 +48,7 @@ to allow the user to page through data when it is too much to display all at onc
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("pager1").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("pager1").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -63,11 +59,7 @@ to allow the user to page through data when it is too much to display all at onc
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("pager1").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("pager1").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -80,11 +72,7 @@ to allow the user to page through data when it is too much to display all at onc
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table1").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table1").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -95,11 +83,7 @@ to allow the user to page through data when it is too much to display all at onc
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -117,11 +101,7 @@ to allow the user to page through data when it is too much to display all at onc
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table2").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table2").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -132,11 +112,7 @@ to allow the user to page through data when it is too much to display all at onc
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table2").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table2").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

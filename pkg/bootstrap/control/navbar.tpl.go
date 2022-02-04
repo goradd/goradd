@@ -34,11 +34,7 @@ func (b *Navbar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 		`); err != nil {
 		return
 	}
-
-	if err = b.DrawChildren(ctx, _w); err != nil {
-		return
-	}
-
+	b.DrawChildren(ctx, _w)
 	if _, err = io.WriteString(_w, `
 	</div>
 
@@ -84,11 +80,7 @@ func (b *Navbar) drawBrand(ctx context.Context, _w io.Writer) (err error) {
 			if _, err = io.WriteString(_w, `                <span class="navbar-brand">`); err != nil {
 				return
 			}
-
-			if err = b.DrawText(ctx, _w); err != nil {
-				return
-			}
-
+			b.DrawText(ctx, _w)
 			if _, err = io.WriteString(_w, `</span>
             `); err != nil {
 				return
@@ -108,11 +100,7 @@ func (b *Navbar) drawBrand(ctx context.Context, _w io.Writer) (err error) {
 			if _, err = io.WriteString(_w, `">`); err != nil {
 				return
 			}
-
-			if err = b.DrawText(ctx, _w); err != nil {
-				return
-			}
-
+			b.DrawText(ctx, _w)
 			if _, err = io.WriteString(_w, `</a>
              `); err != nil {
 				return

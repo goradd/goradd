@@ -57,17 +57,4 @@ func (f *FormBase) AddHeadTags() {
 	 */
 }
 
-// AddJQuery adds the jquery javascript to the form
-/* Uncomment this to and call it to add jquery
-func (f *FormBase) AddJQuery() {
-	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery3.js"), false, nil)
-	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.3.1.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=").
-				Set("crossorigin", "anonymous"))
-	}
-}
-*/
-
 

@@ -95,11 +95,7 @@ function toggleSidebar() {
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("viewSourceButton").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("viewSourceButton").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -110,11 +106,7 @@ function toggleSidebar() {
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("viewSourceButton").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("viewSourceButton").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -137,11 +129,7 @@ function toggleSidebar() {
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("detailPanel").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("detailPanel").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -152,11 +140,7 @@ function toggleSidebar() {
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("detailPanel").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("detailPanel").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

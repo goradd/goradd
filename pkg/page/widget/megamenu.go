@@ -88,10 +88,10 @@ func (l *MegaMenu) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (l *MegaMenu) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
+func (l *MegaMenu) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	h := l.this().GetItemsHtml(l.ListItems(), 1)
 	h = html.RenderTag("ul", html.Attributes{"style":"list-style:none"}, h)
-	_,err = io.WriteString(w, h)
+	page.WriteString(w, h)
 	return
 }
 

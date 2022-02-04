@@ -25,11 +25,7 @@ func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, _w io.Writer) (err e
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("nav").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("nav").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -40,11 +36,7 @@ func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, _w io.Writer) (err e
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("nav").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("nav").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -62,11 +54,7 @@ func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, _w io.Writer) (err e
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("detailPanel").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("detailPanel").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -77,11 +65,7 @@ func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, _w io.Writer) (err e
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("detailPanel").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("detailPanel").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

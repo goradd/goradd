@@ -72,9 +72,9 @@ func (l *OrderedList) NumberType() string {
 	}
 }
 
-func (l *OrderedList) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
+func (l *OrderedList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.getItemsHtml(l.items)
-	_,err = io.WriteString(w, h)
+	page.WriteString(w, h)
 	return
 }
 

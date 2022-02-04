@@ -27,7 +27,7 @@ type TableI interface {
 	page.ControlI
 	DataManagerI
 	SetCaption(interface{}) TableI
-	DrawCaption(context.Context, io.Writer) error
+	DrawCaption(context.Context, io.Writer)
 	GetHeaderRowAttributes(row int) html.Attributes
 	GetFooterRowAttributes(row int) html.Attributes
 	GetRowAttributes(row int, data interface{}) html.Attributes
@@ -54,7 +54,7 @@ type TableI interface {
 	SetSortHistoryLimit(n int) TableI
 	SortIconHtml(c ColumnI) string
 	SetSortIconHtml(sortable string, asc string, desc string)
-	DrawRow(ctx context.Context, row int, data interface{}, w io.Writer) (err error)
+	DrawRow(ctx context.Context, row int, data interface{}, w io.Writer)
 	SetSortColumnsByID(ids... string)
 }
 
@@ -229,7 +229,7 @@ func (t *Table) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // DrawInnerHtml is an override to draw the meat of the table.
-func (t *Table) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
+func (t *Table) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	var t2 = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -238,75 +238,58 @@ func (t *Table) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
 	defer pool.PutBuffer(buf2)
 	defer func() { _,_ = io.WriteString(w, buf1.String()) }() // Make sure we write out the content of buf 1 even on an error
 
-	if err = t2.DrawCaption(ctx, buf1); err != nil {
-		return
-	}
+	t2.DrawCaption(ctx, buf1)
 
-	if err = t.DrawColumnTags(ctx, buf1); err != nil {
-		return
-	}
+	t.DrawColumnTags(ctx, buf1)
 
 	if t.headerRowCount > 0 {
-		err = t.DrawHeaderRows(ctx, buf2)
-		buf1.WriteString(html.RenderTag("thead", nil, buf2.String()))
-		if err != nil {
-			return
-		}
+		t.DrawHeaderRows(ctx, buf2)
+		page.WriteString(buf1, html.RenderTag("thead", nil, buf2.String()))
 		buf2.Reset()
 	}
 
 	if t.footerRowCount > 0 {
-		err = t.DrawFooterRows(ctx, buf2)
-		buf1.WriteString(html.RenderTag("tfoot", nil, buf2.String()))
-		if err != nil {
-			return
-		}
+		t.DrawFooterRows(ctx, buf2)
+		page.WriteString(buf1, html.RenderTag("tfoot", nil, buf2.String()))
 		buf2.Reset()
 	}
 
 	t.RangeData(func(index int, value interface{}) bool {
-		err = t.this().DrawRow(ctx, index, value, buf2)
-		if err != nil {
-			return false
-		}
+		t.this().DrawRow(ctx, index, value, buf2)
 		return true
 	})
-	if err != nil {
-		return
-	}
 
-	buf1.WriteString(html.RenderTag("tbody", nil, buf2.String()))
-	return nil
+	page.WriteString(buf1, html.RenderTag("tbody", nil, buf2.String()))
 }
 
 // DrawCaption is called internally to draw the caption. Subclasses can override this to draw a custom caption.
-func (t *Table) DrawCaption(ctx context.Context, w io.Writer) (err error) {
+func (t *Table) DrawCaption(ctx context.Context, w io.Writer) {
 	switch obj := t.caption.(type) {
 	case string:
-		_,err = io.WriteString(w, fmt.Sprintf("<caption>%s</caption>\n", html2.EscapeString(obj)))
+		page.WriteString(w, fmt.Sprintf("<caption>%s</caption>\n", html2.EscapeString(obj)))
 	case page.ControlI:
-		if _,err = io.WriteString(w, "<caption>"); err != nil {return}
-		if err = obj.Draw(ctx, w); err != nil {return}
-		if _,err = io.WriteString(w, "</caption>\n"); err != nil {return}
+		page.WriteString(w, "<caption>")
+		obj.Draw(ctx, w)
+		page.WriteString(w, "</caption>\n")
 	}
 	return
 }
 
-func (t *Table) DrawColumnTags(ctx context.Context, w io.Writer) (err error) {
+func (t *Table) DrawColumnTags(ctx context.Context, w io.Writer) {
 	var colNum int
 	var colCount = len(t.columns)
 
 	for colNum < colCount {
 		col := t.columns[colNum]
 		if !col.IsHidden() {
-			if err = col.DrawColumnTag(ctx, w); err != nil {return}
+			col.DrawColumnTag(ctx, w)
 		}
 		colNum += col.Span()
 	}
 	return
 }
 
-func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer) (err error) {
+func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer)  {
 	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -315,10 +298,10 @@ func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer) (err error) {
 		for colNum, col := range t.columns {
 			if !col.IsHidden() {
 				cellHtml, attr := this.HeaderCellDrawingInfo(ctx, col, rowNum, colNum)
-				buf1.WriteString(html.RenderTag("th", attr, cellHtml))
+				page.WriteString(buf1, html.RenderTag("th", attr, cellHtml))
 			}
 		}
-		if _,err = io.WriteString(w, html.RenderTag("tr", t.GetHeaderRowAttributes(rowNum), buf1.String())); err != nil {return}
+		page.WriteString(w, html.RenderTag("tr", t.GetHeaderRowAttributes(rowNum), buf1.String()))
 		buf1.Reset()
 	}
 	return
@@ -348,7 +331,7 @@ func (t *Table) GetHeaderRowAttributes(row int) html.Attributes {
 	return nil
 }
 
-func (t *Table) DrawFooterRows(ctx context.Context, w io.Writer) (err error) {
+func (t *Table) DrawFooterRows(ctx context.Context, w io.Writer) {
 	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -361,10 +344,10 @@ func (t *Table) DrawFooterRows(ctx context.Context, w io.Writer) (err error) {
 				if col.AsHeader() {
 					tag = "th"
 				}
-				buf1.WriteString(html.RenderTag(tag, attr, cellHtml))
+				page.WriteString(buf1, html.RenderTag(tag, attr, cellHtml))
 			}
 		}
-		if _,err = io.WriteString(w, html.RenderTag("tr", t.GetFooterRowAttributes(rowNum), buf1.String())); err != nil {return}
+		page.WriteString(w, html.RenderTag("tr", t.GetFooterRowAttributes(rowNum), buf1.String()))
 		buf1.Reset()
 	}
 	return
@@ -378,16 +361,14 @@ func (t *Table) GetFooterRowAttributes(row int) html.Attributes {
 	return nil
 }
 
-func (t *Table) DrawRow(ctx context.Context, row int, data interface{}, w io.Writer) (err error) {
-	if _,err = io.WriteString(w, "<tr "); err != nil {return}
-	if _,err = io.WriteString(w, t.this().GetRowAttributes(row, data).String()); err != nil {return}
-	if _,err = io.WriteString(w, ">"); err != nil {return}
+func (t *Table) DrawRow(ctx context.Context, row int, data interface{}, w io.Writer) {
+	page.WriteString(w, "<tr ")
+	page.WriteString(w, t.this().GetRowAttributes(row, data).String())
+	page.WriteString(w, ">")
 	for i, col := range t.columns {
-		if err = col.DrawCell(ctx, row, i, data, w); err != nil {
-			return
-		}
+		col.DrawCell(ctx, row, i, data, w)
 	}
-	if _,err = io.WriteString(w, "</tr>"); err != nil {return}
+	page.WriteString(w, "</tr>")
 	return
 }
 

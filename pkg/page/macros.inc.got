@@ -9,9 +9,9 @@
     For example: draw mycontrol, class="myclass" }}
 {{define draw 2}}
 {{if `$2` == ""}}
-    {{e ctrl.Page().GetControl("$1").Draw(ctx, _w) }}
+    {{g ctrl.Page().GetControl("$1").Draw(ctx, _w) }}
 {{else}}
-    {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
+    {{g ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
 {{if}}
 {{end draw}}
 
@@ -19,9 +19,9 @@
 
 {{define drawChild 2}}
 {{if `$2` == ""}}
-    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, _w) }}
+    {{g ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, _w) }}
 {{else}}
-    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
+    {{g ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
 {{if}}
 {{end drawChild}}
 
@@ -30,9 +30,9 @@
 {{define drawIf 2}}
 {{if ctrl.Page().HasControl("$1")}}
     {{if `$2` == ""}}
-        {{e ctrl.Page().GetControl("$1").Draw(ctx, _w) }}
+        {{g ctrl.Page().GetControl("$1").Draw(ctx, _w) }}
     {{else}}
-        {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
+        {{g ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
     {{if}}
 {{if}}
 {{end drawIf}}
@@ -40,9 +40,9 @@
 {{define drawChildIf 2}}
 {{if ctrl.Page().HasControl(ctrl.ID() + "$1")}}
     {{if `$2` == ""}}
-        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, _w) }}
+        {{g ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, _w) }}
     {{else}}
-        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
+        {{g ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
     {{if}}
 {{if}}
 {{end drawChildIf}}

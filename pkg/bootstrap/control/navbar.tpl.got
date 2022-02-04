@@ -6,7 +6,7 @@ func (b *Navbar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
 	<div class="collapse navbar-collapse" id="{{= b.ID() }}_collapse">
 	    {{if b.brandLocation == NavbarCollapsedBrandHidden}}{{g b.drawBrand(ctx, _w) }}{{if}}
-		{{err b.DrawChildren(ctx, _w) }}
+		{{g b.DrawChildren(ctx, _w) }}
 	</div>
 
 }}
@@ -22,15 +22,15 @@ func (b *Navbar) drawToggleButton(ctx context.Context, _w io.Writer) (err error)
     return
 }
 
-func (b *Navbar) drawBrand(ctx context.Context, _w io.Writer) (err error)  {
+func (b *Navbar) drawBrand(ctx context.Context, _w io.Writer) (err error) {
     if b.Text() != "" {
         if b.brandAnchor == "" {
             {{
-                <span class="navbar-brand">{{e b.DrawText(ctx, _w) }}</span>
+                <span class="navbar-brand">{{g b.DrawText(ctx, _w) }}</span>
             }}
         } else {
              {{
-                 <a class="navbar-brand" href="{{= b.brandAnchor}}">{{e b.DrawText(ctx, _w) }}</a>
+                 <a class="navbar-brand" href="{{= b.brandAnchor}}">{{g b.DrawText(ctx, _w) }}</a>
              }}
         }
     } else {    // draw a blank brand so toggler placement still works

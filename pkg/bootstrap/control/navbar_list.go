@@ -77,9 +77,9 @@ func (l *NavbarList) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (l *NavbarList) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
+func (l *NavbarList) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	h := l.getItemsHtml(ctx, l.ListItems(), false)
-	_,err = io.WriteString(w, h)
+	page.WriteString(w, h)
 	return
 }
 

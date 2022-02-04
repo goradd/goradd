@@ -21,9 +21,7 @@ if _,err = io.WriteString(_w, `">
 <head>
 	<meta charset="utf-8"/>
 `); err != nil {return}
-
-if err = page.DrawHeaderTags(ctx, _w); err != nil {return}
-
+page.DrawHeaderTags(ctx, _w) 
 if _,err = io.WriteString(_w, `</head>
 <body `); err != nil {return}
 
@@ -31,9 +29,7 @@ if _,err = io.WriteString(_w, `</head>
 
 if _,err = io.WriteString(_w, `>
 `); err != nil {return}
-
-if err = page.Form().Draw(ctx, _w); err != nil {return}
-
+page.Form().Draw(ctx, _w) 
 if _,err = io.WriteString(_w, `</body>
 </html>
 

@@ -13,10 +13,10 @@ func PageTmpl(ctx context.Context, page *Page, _w io.Writer) (err error) {
 <html lang="{{= page.LanguageCode() }}">
 <head>
 	<meta charset="utf-8"/>
-{{err page.DrawHeaderTags(ctx, _w) }}
+{{g page.DrawHeaderTags(ctx, _w) }}
 </head>
 <body {{= page.BodyAttributes }}>
-{{err page.Form().Draw(ctx, _w) }}
+{{g page.Form().Draw(ctx, _w) }}
 </body>
 </html>
 

@@ -189,9 +189,9 @@ func (l *SelectList) DrawTag(ctx context.Context) string {
 
 
 // DrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
-func (l *SelectList) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
+func (l *SelectList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.getItemsHtml(l.items)
-	_,err = io.WriteString(w, h)
+	page.WriteString(w, h)
 	return
 }
 

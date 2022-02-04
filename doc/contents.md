@@ -10,4 +10,4 @@
 
 ## Deployment
 
-- [Deployment](deplyment.md)
+- [Deployment](deployment.md)

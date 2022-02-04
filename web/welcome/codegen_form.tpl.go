@@ -30,11 +30,7 @@ func (ctrl *CodegenForm) DrawTemplate(ctx context.Context, _w io.Writer) (err er
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("infoPanel").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("infoPanel").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -45,11 +41,7 @@ func (ctrl *CodegenForm) DrawTemplate(ctx context.Context, _w io.Writer) (err er
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("infoPanel").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("infoPanel").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

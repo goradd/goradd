@@ -59,11 +59,7 @@ The table below demonstrates columns that are linked to database queries. For th
 			if _, err = io.WriteString(_w, `    `); err != nil {
 				return
 			}
-
-			if err = ctrl.Page().GetControl("table1").Draw(ctx, _w); err != nil {
-				return
-			}
-
+			ctrl.Page().GetControl("table1").Draw(ctx, _w)
 			if _, err = io.WriteString(_w, `
 `); err != nil {
 				return
@@ -74,11 +70,7 @@ The table below demonstrates columns that are linked to database queries. For th
 			if _, err = io.WriteString(_w, `    `); err != nil {
 				return
 			}
-
-			if err = ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-				return
-			}
-
+			ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w)
 			if _, err = io.WriteString(_w, `
 `); err != nil {
 				return

@@ -113,15 +113,15 @@ type ControlI interface {
 	// Drawing support
 
 	DrawTag(context.Context) string
-	DrawInnerHtml(context.Context, io.Writer) error
+	DrawInnerHtml(context.Context, io.Writer)
 	DrawTemplate(context.Context, io.Writer) error
-	PreRender(context.Context, io.Writer) error
-	PostRender(context.Context, io.Writer) error
+	PreRender(context.Context, io.Writer)
+	PostRender(context.Context, io.Writer)
 	ShouldAutoRender() bool
 	SetShouldAutoRender(bool)
-	DrawAjax(ctx context.Context, response *Response) error
-	DrawChildren(ctx context.Context, w io.Writer) error
-	DrawText(ctx context.Context, w io.Writer) error
+	DrawAjax(ctx context.Context, response *Response)
+	DrawChildren(ctx context.Context, w io.Writer)
+	DrawText(ctx context.Context, w io.Writer)
 
 	// Hierarchy functions
 
@@ -396,7 +396,7 @@ func (c *ControlBase) control() *ControlBase {
 
 // PreRender is called by the framework to notify the control that it is about to be drawn. If you
 // override it, be sure to also call this parent function as well.
-func (c *ControlBase) PreRender(ctx context.Context, w io.Writer) error {
+func (c *ControlBase) PreRender(ctx context.Context, w io.Writer) {
 	form := c.ParentForm()
 	if c.Page() == nil ||
 		form == nil ||
@@ -417,15 +417,11 @@ func (c *ControlBase) PreRender(ctx context.Context, w io.Writer) error {
 
 	// Finally, let's specify that we have begun rendering this control
 	c.isRendering = true
-
-	return nil
 }
 
 // Draw renders the control structure into the given buffer.
-func (c *ControlBase) Draw(ctx context.Context, w io.Writer) (err error) {
-	if err = c.this().PreRender(ctx, w); err != nil {
-		return err
-	}
+func (c *ControlBase) Draw(ctx context.Context, w io.Writer)  {
+	c.this().PreRender(ctx, w)
 
 	var h string
 
@@ -439,15 +435,15 @@ func (c *ControlBase) Draw(ctx context.Context, w io.Writer) (err error) {
 
 	if !config.Minify && GetContext(ctx).RequestMode() != Ajax {
 		s := html.Comment(fmt.Sprintf("ControlBase Type:%s, Id:%s", c.Type(), c.ID())) + "\n"
-		if _,err = io.WriteString(w, s); err != nil {return}
+		if _,err := io.WriteString(w, s); err != nil {panic(err)}
 	}
 
-	if _,err = io.WriteString(w, h); err != nil {return}
+	if _,err := io.WriteString(w, h); err != nil {panic(err)}
 
 	response := c.ParentForm().Response()
 	c.this().PutCustomScript(ctx, response)
 	c.GetActionScripts(response)
-	err = c.this().PostRender(ctx, w)
+	c.this().PostRender(ctx, w)
 	return
 }
 
@@ -474,7 +470,7 @@ func (c *ControlBase) NeedsRefresh() bool {
 // and then want to draw only those parts. This will get called on every control on every ajax draw request.
 // It is up to you to test the blnRendered flag of the control to know whether the control was already rendered
 // by a parent control before drawing here.
-func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) (err error) {
+func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) {
 
 	if c.this().NeedsRefresh() {
 		// simply re-render the control and assume rendering will handle rendering its children
@@ -484,7 +480,7 @@ func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) (err err
 			buf := buf2.GetBuffer()
 			defer buf2.PutBuffer(buf)
 
-			err = c.this().Draw(ctx, buf)
+			c.this().Draw(ctx, buf)
 			response.SetControlHtml(c.ID(), buf.String())
 		}()
 	} else {
@@ -499,10 +495,7 @@ func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) (err err
 		// ask the child controls to potentially render, since this control doesn't need to
 		for _, child := range c.children {
 			if child.IsOnPage() || child.ShouldAutoRender() {
-				err = child.DrawAjax(ctx, response)
-			}
-			if err != nil {
-				return
+				child.DrawAjax(ctx, response)
 			}
 		}
 	}
@@ -511,7 +504,7 @@ func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) (err err
 
 // PostRender is called by the framework at the end of drawing, and is the place where controls
 // do any post-drawing cleanup needed.
-func (c *ControlBase) PostRender(ctx context.Context, w io.Writer) (err error) {
+func (c *ControlBase) PostRender(ctx context.Context, w io.Writer) {
 	// Update watcher
 	//if ($This->objWatcher) {
 	//$This->objWatcher->makeCurrent();
@@ -541,12 +534,8 @@ func (c *ControlBase) DrawTag(ctx context.Context) string {
 	} else {
 		buf := buf2.GetBuffer()
 		defer buf2.PutBuffer(buf)
-		if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
-			panic(err)
-		}
-		if err := c.RenderAutoControls(ctx, buf); err != nil {
-			panic(err)
-		}
+		c.this().DrawInnerHtml(ctx, buf)
+		c.RenderAutoControls(ctx, buf)
 		if c.Tag == "" {
 			ctrl = buf.String() // a wrapper with no tag. Just inserts functionality and draws its children.
 		} else if c.hasNoSpace {
@@ -562,14 +551,14 @@ func (c *ControlBase) DrawTag(ctx context.Context) string {
 // RenderAutoControls is an internal function to draw controls marked to autoRender. These are generally used for hidden controls
 // that can be shown without impacting layout, or that are scripts only. ControlBase implementations that need to
 // put these controls in particular locations on the form can override this.
-func (c *ControlBase) RenderAutoControls(ctx context.Context, w io.Writer) (err error) {
+func (c *ControlBase) RenderAutoControls(ctx context.Context, w io.Writer) {
 	// Figuring out where to draw these controls can be difficult.
 
 	for _, ctrl := range c.children {
 		if ctrl.ShouldAutoRender() &&
 			!ctrl.WasRendered() {
 
-			if err = ctrl.Draw(ctx, w);err != nil {return}
+			ctrl.Draw(ctx, w)
 		}
 	}
 	return
@@ -586,47 +575,43 @@ func (c *ControlBase) DrawTemplate(ctx context.Context, w io.Writer) (err error)
 
 // DrawInnerHtml is used by the framework to draw just the inner html of the control, if the control is not a self
 // terminating (void) control. Sub-controls can override this.
-func (c *ControlBase) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
-	if err = c.this().DrawTemplate(ctx, w); err == nil {
+func (c *ControlBase) DrawInnerHtml(ctx context.Context, w io.Writer) {
+	if err := c.this().DrawTemplate(ctx, w); err == nil {
 		return
 	} else if appErr, ok := err.(FrameworkError); !ok || appErr.Err != FrameworkErrNoTemplate {
-		return
+		panic(err)
 	}
-
-	err = nil
+	// No template found, so draw children instead
 
 	if c.children != nil && len(c.children) > 0 {
-		err = c.this().DrawChildren(ctx, w)
+		c.this().DrawChildren(ctx, w)
 		return
 	}
 
-	err = c.this().DrawText(ctx, w)
+	c.this().DrawText(ctx, w)
 
 	return
 }
 
 // DrawChildren renders the child controls that have not yet been drawn into the buffer.
-func (c *ControlBase) DrawChildren(ctx context.Context, w io.Writer) (err error) {
+func (c *ControlBase) DrawChildren(ctx context.Context, w io.Writer) {
 	for _, child := range c.children {
 		if !child.WasRendered() {
-			err = child.Draw(ctx, w)
-			if err != nil {
-				break
-			}
+			child.Draw(ctx, w)
 		}
 	}
 	return
 }
 
 // DrawText renders the text of the control, escaping if needed.
-func (c *ControlBase) DrawText(ctx context.Context, w io.Writer) (err error){
+func (c *ControlBase) DrawText(ctx context.Context, w io.Writer) {
 	if c.text != "" {
 		text := c.text
 
 		if !c.textIsHtml {
 			text = gohtml.EscapeString(text)
 		}
-		_,err = io.WriteString(w, text)
+		if _,err := io.WriteString(w, text); err != nil {panic(err)}
 	}
 	return
 }

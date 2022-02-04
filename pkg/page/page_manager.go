@@ -137,21 +137,23 @@ func (m *PageManager) RunPage(ctx context.Context, w http2.ResponseWriter, req *
 		if r := recover(); r != nil {
 			var msg string
 			switch v := r.(type) {
-			case error:
-				msg = v.Error()
-			case string:
-				msg = v
 			case http.Error: // A kind of http panic that just returns a response code and headers
 				panic(v) // send it up the panic chain
 			case int: // Just an http error code
 				panic (v)
+			case error:
+				msg = v.Error()
+			case string:
+				msg = v
 			default:
 				msg = fmt.Sprintf("%v", v)
 			}
 			// TODO: Need to translate the error message, but we don't have a page context to do it.
 
+			grCtx := GetContext(ctx)
+			mode := grCtx.requestMode.String()
 			// pass the error on to the error handler above
-			panic (http.NewServerError(msg, req, 2, HtmlErrorMessage))
+			panic (http.NewServerError(msg, mode, req, 2, HtmlErrorMessage))
 		}
 	}()
 

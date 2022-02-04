@@ -37,7 +37,7 @@ type ProxyI interface {
 // Proxy is a control that attaches events to controls. It is useful for attaching
 // similar events to a series of controls, like all the links in a table, or all the buttons in button bar.
 // You can also use it to draw a series of links or buttons. The proxy differentiates between the different objects
-// that are sending it events by the ActionValue that you given the proxy when it draws.
+// that are sending it events by the ActionValue that you gave the proxy.
 //
 // To use a Proxy, create it in the control that wraps the controls the proxy will manage.
 // Attach an event to the proxy control, and in the action handler, look for the ControlValue in the Action Value
@@ -79,12 +79,12 @@ func (p *Proxy) OnSubmit(action action.ActionI) page.ControlI {
 
 // Draw is used by the form engine to draw the control. As a proxy, there is no html to draw, but this is where the scripts attached to the
 // proxy get sent to the response. This should get drawn by the auto-drawing routine, since proxies are not rendered in templates.
-func (p *Proxy) Draw(ctx context.Context, w io.Writer) (err error) {
+func (p *Proxy) Draw(ctx context.Context, w io.Writer) {
 	response := p.ParentForm().Response()
 	// p.this().PutCustomScript(ctx, response) // Proxies should not have custom scripts?
 
 	p.GetActionScripts(response)
-	err = p.PostRender(ctx, w)
+	p.PostRender(ctx, w)
 	return
 }
 
@@ -183,7 +183,7 @@ func (p *Proxy) ActionAttributes(actionValue string) html.Attributes {
 }
 
 // WrapEvent is an internal function to allow the control to customize its treatment of event processing.
-func (p *Proxy) WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string {
+func (p *Proxy) WrapEvent(eventName string, _ string, eventJs string, options map[string]interface{}) string {
 	// This attaches the event to the parent control.
 	return fmt.Sprintf(`g$('%s').on('%s', '[data-gr-proxy="%s"]', function(event, eventData){%s}, %s);`, p.Parent().ID(), eventName, p.ID(), eventJs, javascript.ToJavaScript(options))
 }

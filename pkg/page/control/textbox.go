@@ -129,8 +129,8 @@ func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
 
 // DrawInnerHtml is an internal function that renders the inner html of a tag. In this case, it is rendering the inner
 // text of a textarea
-func (t *Textbox) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
-	_, err = io.WriteString(w, html2.EscapeString(t.Text()))
+func (t *Textbox) DrawInnerHtml(_ context.Context, w io.Writer) {
+	page.WriteString(w, html2.EscapeString(t.Text()))
 	return
 }
 

@@ -29,11 +29,7 @@ from the original capture, to the server, and then when you reload the page, it 
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("ic1-ff").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("ic1-ff").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -44,11 +40,7 @@ from the original capture, to the server, and then when you reload the page, it 
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("ic1-ff").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("ic1-ff").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

@@ -90,11 +90,7 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 		}
 		child.SetAttribute("role", "tabpanel")
 		child.SetAttribute("aria-labelledby", child.ID()+"_tab")
-
-		if err = child.Draw(ctx, _w); err != nil {
-			return
-		}
-
+		child.Draw(ctx, _w)
 	}
 
 	if _, err = io.WriteString(_w, `</div>

@@ -75,8 +75,8 @@ func (s *DateTimeSpan) SetFormat(format string) *DateTimeSpan {
 }
 
 // DrawInnerHtml is called by the framework to draw the inner html of the span.
-func (s *DateTimeSpan) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
-	_,err = io.WriteString(w, s.value.Format(s.format))
+func (s *DateTimeSpan) DrawInnerHtml(_ context.Context, w io.Writer) {
+	page.WriteString(w, s.value.Format(s.format))
 	// TODO: Internationalize this. Golang does not currently have date/time localization support,
 	// as in translation of month and weekday strings, but it does support arbitrary timezones.
 	// The other option is to let JavaScript format it, though that limits you to formatting in

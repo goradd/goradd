@@ -36,11 +36,7 @@ through a RowSelected event when an item is selected, and what that item was.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table1").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table1").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -51,11 +47,7 @@ through a RowSelected event when an item is selected, and what that item was.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -85,11 +77,7 @@ In each case, you should see the table scrolled so that the item is visible.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table2").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table2").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -100,11 +88,7 @@ In each case, you should see the table scrolled so that the item is visible.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table2").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table2").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -123,11 +107,7 @@ In each case, you should see the table scrolled so that the item is visible.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("infoPanel").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("infoPanel").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -138,11 +118,7 @@ In each case, you should see the table scrolled so that the item is visible.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("infoPanel").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("infoPanel").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -160,11 +136,7 @@ In each case, you should see the table scrolled so that the item is visible.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("showButton").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("showButton").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -175,11 +147,7 @@ In each case, you should see the table scrolled so that the item is visible.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("showButton").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("showButton").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

@@ -204,8 +204,8 @@ github.com/goradd/gengen v0.3.0/go.mod h1:35hoePmgDfiH2wBr26ABvqmGnl/laPeJYJ5Sw1
 github.com/goradd/gofile v0.1.6/go.mod h1:FZVfQmXDUNgS7nKPMOsuIxf1VaC1vxYFeP0bmL8fcDU=
 github.com/goradd/gofile v0.4.1 h1:+ZCB9yH88Y6BGYsI4g2QqDzkmNbE6WneC72pHuR4Q5E=
 github.com/goradd/gofile v0.4.1/go.mod h1:QdiRuLT9rTvWPd1pk1nPx5AJSgbGVj+HZg1cj1GkDOw=
-github.com/goradd/got v0.10.2 h1:jDpgfVjAEVCTybBuADzB7Z+1WRe6hu+t8clfuO1w0sY=
-github.com/goradd/got v0.10.2/go.mod h1:DotN1a2sHUNMm/iyA5kbd+wOeRkEQHXCTYXlHEHtztY=
+github.com/goradd/got v0.10.4 h1:rET1ESKgshXFxrFySZmO2h9hze2Tb76k7MkeOJhzdkU=
+github.com/goradd/got v0.10.4/go.mod h1:DotN1a2sHUNMm/iyA5kbd+wOeRkEQHXCTYXlHEHtztY=
 github.com/gorilla/css v1.0.0 h1:BQqNyPTi50JCFMTw/b67hByjMVXZRwGha6wxVGkeihY=
 github.com/gorilla/css v1.0.0/go.mod h1:Dn721qIggHpt4+EFCcTLTU/vk5ySda2ReITrtgBl60c=
 github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=

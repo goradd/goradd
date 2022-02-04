@@ -19,11 +19,7 @@ func (ctrl *TablePanel) DrawTemplate(ctx context.Context, _w io.Writer) (err err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("pager").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("pager").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -34,11 +30,7 @@ func (ctrl *TablePanel) DrawTemplate(ctx context.Context, _w io.Writer) (err err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("pager").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("pager").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -51,11 +43,7 @@ func (ctrl *TablePanel) DrawTemplate(ctx context.Context, _w io.Writer) (err err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table1").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table1").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -66,11 +54,7 @@ func (ctrl *TablePanel) DrawTemplate(ctx context.Context, _w io.Writer) (err err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("table1").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

@@ -77,7 +77,7 @@ func (c *FormFieldset) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (c *FormFieldset) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
+func (c *FormFieldset) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	var s string
 
 	buf2 := pool.GetBuffer()
@@ -86,9 +86,7 @@ func (c *FormFieldset) DrawInnerHtml(ctx context.Context, w io.Writer) (err erro
 	if c.Text() != "" {
 		buf2.WriteString(html.RenderTag("legend", c.legendAttributes, html2.EscapeString(c.Text())))
 	}
-	if err = c.Panel.DrawInnerHtml(ctx, buf2); err != nil {
-		return
-	}
+	c.Panel.DrawInnerHtml(ctx, buf2)
 	if c.instructions != "" {
 		s = html.RenderTag("small", c.instructionAttributes, html2.EscapeString(c.instructions))
 		buf2.WriteString(s)
@@ -96,9 +94,9 @@ func (c *FormFieldset) DrawInnerHtml(ctx context.Context, w io.Writer) (err erro
 
 	if c.asRow {
 		s = html.RenderTag("div", html.NewAttributes().AddClass("row"), buf2.String())
-		_, err = io.WriteString(w, s)
+		page.WriteString(w, s)
 	} else {
-		_,err = buf2.WriteTo(w)
+		page.WriteString(w, buf2.String())
 	}
 	return
 }

@@ -144,9 +144,7 @@ func (c *FormGroup) DrawTag(ctx context.Context) string {
 		buf.WriteString(c.innerDivAttr.String())
 		buf.WriteString(">")
 	}
-	if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
-		panic(err)
-	}
+	c.this().DrawInnerHtml(ctx, buf)
 	if hasInnerDiv {
 		buf.WriteString("</")
 		buf.WriteString(c.SubTag())

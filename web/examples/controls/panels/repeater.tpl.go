@@ -27,11 +27,7 @@ Repeaters can use Pagers to control which data items are shown in the repeater.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("pager1").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("pager1").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -42,11 +38,7 @@ Repeaters can use Pagers to control which data items are shown in the repeater.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("pager1").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("pager1").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -59,11 +51,7 @@ Repeaters can use Pagers to control which data items are shown in the repeater.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("repeater1").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("repeater1").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -74,11 +62,7 @@ Repeaters can use Pagers to control which data items are shown in the repeater.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("repeater1").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("repeater1").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

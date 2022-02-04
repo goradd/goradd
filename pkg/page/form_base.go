@@ -28,9 +28,9 @@ type FormI interface {
 	PageDrawingFunction() PageDrawFunc
 
 	AddHeadTags()
-	DrawHeaderTags(ctx context.Context, w io.Writer) error
+	DrawHeaderTags(ctx context.Context, w io.Writer)
 	Response() *Response
-	renderAjax(ctx context.Context, w io.Writer) error
+	renderAjax(ctx context.Context, w io.Writer)
 	AddRelatedFiles()
 	AddStyleSheetFile(path string, attributes html.Attributes)
 	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
@@ -40,7 +40,7 @@ type FormI interface {
 	PopLocation(ctx context.Context, fallback string)
 
 	// Lifecycle calls
-	Run(ctx context.Context) error
+	Run(ctx context.Context)
 	CreateControls(ctx context.Context)
 	LoadControls(ctx context.Context)
 	Exit(ctx context.Context, err error)
@@ -65,7 +65,7 @@ type FormBase struct {
 }
 
 // Init initializes the form control. Note that ctx might be nil if we are unit testing.
-func (f *FormBase) Init(ctx context.Context, id string) {
+func (f *FormBase) Init(_ context.Context, id string) {
 	var p = &Page{}
 	p.Init()
 
@@ -115,49 +115,46 @@ func (f *FormBase) AddFontAwesome() {
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
-func (f *FormBase) Draw(ctx context.Context, w io.Writer) (err error) {
+func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 	if f.drawing && !config.Release {
 		panic("draw collission")
 	}
 	f.drawing = true
 	defer f.notDrawing()
-	if err = f.this().PreRender(ctx, w); err != nil {return}
-	if _,err = io.WriteString(w, `<form ` + f.this().DrawingAttributes(ctx).String() + ">\n"); err != nil {return}
-	if err = f.this().DrawTemplate(ctx, w); err != nil {
-		return // the template is required
-	}
+	f.this().PreRender(ctx, w)
+	if _,err := io.WriteString(w, `<form ` + f.this().DrawingAttributes(ctx).String() + ">\n"); err != nil {panic(err)}
+	if err := f.this().DrawTemplate(ctx, w); err != nil {panic(err)} // the template is required
 	// Render controls that are marked to auto render if the form did not render them
-	if err = f.RenderAutoControls(ctx, w); err != nil {
-		panic(err)
-	}
+	f.RenderAutoControls(ctx, w)
 
 	f.resetDrawingFlags()
 
 	// Render hidden controls
 
 	// Place holder for postBack and postAjax functions to place their data
-	if _,err = io.WriteString(w, `<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n"); err != nil {return}
+	if _,err := io.WriteString(w, `<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n"); err != nil {panic(err)}
 
 	// CSRF prevention
 	var csrf string
 
 	csrf = session.GetString(ctx, goradd.SessionCsrf)
 	if csrf == "" {
+		var err error
 		// first time
 		csrf, err = crypt.GenerateRandomString(16)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		session.Set(ctx, goradd.SessionCsrf, csrf)
 	}
-	if _,err = fmt.Fprintf(w, `<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf); err != nil {return}
+	if _,err := fmt.Fprintf(w, `<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf); err != nil {panic(err)}
 
 	// Serialize and write out the pagestate
-	if _,err = fmt.Fprintf(w, `<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()); err != nil {return}
+	if _,err := fmt.Fprintf(w, `<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()); err != nil {panic(err)}
 
-	if err = f.drawBodyScriptFiles(ctx, w); err != nil {return}
+	if err := f.drawBodyScriptFiles(ctx, w); err != nil {panic(err)}
 
-	if _,err = io.WriteString(w, "\n</form>\n"); err != nil {return}
+	if _,err := io.WriteString(w, "\n</form>\n"); err != nil {panic(err)}
 
 	// Draw things that come after the form tag
 
@@ -177,11 +174,11 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) (err error) {
 	} else {
 		s += fmt.Sprintf("goradd.ajaxTimeout = %d;\n", config.AjaxTimeout) // turn on the ajax timeout in release mode
 	}
-	if _, err = fmt.Fprintf(w, `<script>
+	if _, err := fmt.Fprintf(w, `<script>
 %s
-</script>`, s); err != nil {return}
+</script>`, s); err != nil {panic(err)}
 
-	err = f.this().PostRender(ctx, w)
+	f.this().PostRender(ctx, w)
 	return
 }
 
@@ -237,7 +234,7 @@ func (f *FormBase) getDbProfile(ctx context.Context) (s string) {
 }
 
 // renderAjax assembles the ajax response for the entire form and draws it to the return buffer
-func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) (err error) {
+func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) {
 	var buf2 []byte
 	if f.drawing && !config.Release {
 		panic("draw collission")
@@ -247,12 +244,7 @@ func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) (err error) {
 
 	if !f.response.hasExclusiveCommand() { // skip drawing if we are in a high priority situation
 		// gather modified controls
-		err = f.DrawAjax(ctx, &f.response)
-		if err != nil {
-			log.Error("renderAjax error - " + err.Error())
-			// savestate ???
-			return
-		}
+		f.DrawAjax(ctx, &f.response)
 	}
 
 	// Inject any added style sheets and script files
@@ -273,12 +265,13 @@ func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) (err error) {
 	f.mergeInjectedFiles()
 
 	f.resetDrawingFlags()
+	var err error
 	buf2, err = f.response.GetAjaxResponse()
+	if err != nil {panic(err)}
 	//f.response = NewResponse() Do NOT do this here! It messes with testing framework and multi-processing of ajax responses
 	_,err = w.Write(buf2)
+	if err != nil {panic(err)}
 	log.FrameworkDebug("renderAjax - ", string(buf2))
-
-	return
 }
 
 // DrawingAttributes returns the attributes to add to the form tag.
@@ -289,10 +282,8 @@ func (f *FormBase) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // PreRender performs setup operations just before drawing.
-func (f *FormBase) PreRender(ctx context.Context, w io.Writer) (err error) {
-	if err = f.ControlBase.PreRender(ctx, w); err != nil {
-		return
-	}
+func (f *FormBase) PreRender(ctx context.Context, w io.Writer) {
+	f.ControlBase.PreRender(ctx, w)
 
 	f.SetAttribute("method", "post")
 	// Setting the "action" attribute prevents iFrame clickjacking.
@@ -406,7 +397,7 @@ func (f *FormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 
 // DrawHeaderTags is called by the page drawing routine to draw its header tags
 // If you override this, be sure to call this version too
-func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) (err error) {
+func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) {
 	f.mergeInjectedFiles()
 
 	if f.headerStyleSheets != nil {
@@ -417,13 +408,9 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) (err error) 
 			}
 			attributes.Set("rel", "stylesheet")
 			attributes.Set("href", path)
-			if _,err = io.WriteString(w, html.RenderVoidTag("link", attributes)); err != nil {return false}
+			WriteString(w, html.RenderVoidTag("link", attributes))
 			return true
 		})
-	}
-
-	if err != nil {
-		return
 	}
 
 	if f.headerJavaScripts != nil {
@@ -433,7 +420,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) (err error) 
 				attributes = html.NewAttributes()
 			}
 			attributes.Set("src", path)
-			if _,err = io.WriteString(w, html.RenderTag("script", attributes, "")); err != nil {return false}
+			WriteString(w, html.RenderTag("script", attributes, ""))
 			return true
 		})
 	}
@@ -504,9 +491,8 @@ func (f *FormBase) AddHeadTags() {
 
 // Run is a lifecycle function that gets called whenever a page is run, either by a whole page load, or an ajax call.
 // Its a good place to validate that the current user should have access to the information on the page.
-// Returning an error will result in the error message being displayed.
-func (f *FormBase) Run(ctx context.Context) error {
-	return nil
+// You should panic on any errors.
+func (f *FormBase) Run(ctx context.Context) {
 }
 
 // CreateControls is a lifecycle function that gets called whenever a page is created. It happens after the Run call.

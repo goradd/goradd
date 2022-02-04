@@ -140,18 +140,12 @@ func (d *Dialog) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (d *Dialog) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
-	if err = GetPanel(d, d.titleBarID).Draw(ctx, w); err != nil {
-		return
-	}
-	if err = GetPanel(d, d.buttonBarID).Draw(ctx, w); err != nil {
-		return
-	}
-	if _,err = io.WriteString(w, `<div class="gr-dlg-content">`); err != nil {return}
-	if err = d.Panel.DrawInnerHtml(ctx, w); err != nil {
-		return
-	}
-	_, err = io.WriteString(w, `</div>`)
+func (d *Dialog) DrawInnerHtml(ctx context.Context, w io.Writer) {
+	GetPanel(d, d.titleBarID).Draw(ctx, w)
+	GetPanel(d, d.buttonBarID).Draw(ctx, w)
+	page.WriteString(w, `<div class="gr-dlg-content">`)
+	d.Panel.DrawInnerHtml(ctx, w)
+	page.WriteString(w, `</div>`)
 
 	return
 }

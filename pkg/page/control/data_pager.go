@@ -145,7 +145,7 @@ func (c *PagedControl) MarshalState(m maps.Setter) {
 // UnmarshalState is an internal function to restore the state of the control
 func (c *PagedControl) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("pn"); ok {
-		if pn, ok := v.(int); ok {
+		if pn, ok2 := v.(int); ok2 {
 			c.pageNum = pn
 		}
 	}
@@ -261,10 +261,10 @@ func (d *DataPager) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // Action is called by the framework to respond to actions.
-func (d *DataPager) Action(ctx context.Context, params page.ActionParams) {
+func (d *DataPager) Action(_ context.Context, params page.ActionParams) {
 	switch params.ID {
 	case PageClick:
-		pageNum := params.ControlValueInt();
+		pageNum := params.ControlValueInt()
 		p := d.PagedControl()
 		if pageNum < 1 {
 			pageNum = 1
@@ -391,23 +391,21 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 }
 
 // PreRender is called by the framework to load data into the paged control just before drawing.
-func (d *DataPager) PreRender(ctx context.Context, w io.Writer) (err error) {
-	err = d.ControlBase.PreRender(ctx, w)
+func (d *DataPager) PreRender(ctx context.Context, w io.Writer)  {
+	d.ControlBase.PreRender(ctx, w)
 	p := d.PagedControl()
 
-	if err == nil {
-		// If we are being drawn before the paged control, we must tell the paged control to load up its
-		// data so that we can figure out what to do
-		if !p.WasRendered() &&
-			!p.IsRendering() { // not a child control
-			p.LoadData(ctx, p)
-		}
+	// If we are being drawn before the paged control, we must tell the paged control to load up its
+	// data so that we can figure out what to do
+	if !p.WasRendered() &&
+		!p.IsRendering() { // not a child control
+		p.LoadData(ctx, p)
 	}
 	return
 }
 
 // DrawInnerHtml is called by the framework to draw the control's inner html.
-func (d *DataPager) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
+func (d *DataPager) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := d.Self.(DataPagerI).PreviousButtonsHtml()
 	pageStart, pageEnd := d.CalcBunch()
 	for i := pageStart; i <= pageEnd; i++ {
@@ -415,8 +413,7 @@ func (d *DataPager) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) 
 	}
 
 	h += d.Self.(DataPagerI).NextButtonsHtml()
-	_, err = io.WriteString(w, h)
-	return
+	page.WriteString(w, h)
 }
 
 // PreviousButtonsHtml returns the html to draw the previous buttons. Subclasses can override this to
@@ -510,7 +507,7 @@ func (d *DataPager) MarshalState(m maps.Setter) {
 // UnmarshalState is an internal function to restore the state of the control
 func (d *DataPager) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("pageNum"); ok {
-		if i, ok := v.(int); ok {
+		if i, ok2 := v.(int); ok2 {
 			d.PagedControl().SetPageNum(i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
 		}
 	}

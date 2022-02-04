@@ -12,7 +12,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
         <div class="modal-content">
 }}
     d.titleBar.AddClass("modal-header")
-    {{err d.titleBar.Draw(ctx, _w) }}
+    {{g d.titleBar.Draw(ctx, _w) }}
 {{
             <div class="modal-body">
 }}
@@ -20,7 +20,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
     if l > 2 {
         for _,child := range d.Children() {
             if child.ID() != d.titleBar.ID() && child.ID() != d.buttonBar.ID() {
-                {{err child.Draw(ctx, _w) }}
+                {{g child.Draw(ctx, _w) }}
             }
         }
     } else {
@@ -31,7 +31,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
             </div>
 }}
     d.buttonBar.AddClass("modal-footer")
-    {{err d.buttonBar.Draw(ctx, _w) }}
+    {{g d.buttonBar.Draw(ctx, _w) }}
 {{
         </div>
     </div>

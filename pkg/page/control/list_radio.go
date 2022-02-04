@@ -133,12 +133,12 @@ func (l *RadioList) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // DrawInnerHtml is called by the framework to draw the contents of the list.
-func (l *RadioList) DrawInnerHtml(_ context.Context, w io.Writer) (err error) {
+func (l *RadioList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.this().RenderItems(l.items)
 	if l.columnCount > 0 {
 		h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
 	}
-	_, err = io.WriteString(w, h)
+	page.WriteString(w, h)
 	return
 }
 

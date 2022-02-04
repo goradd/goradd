@@ -29,11 +29,7 @@ func (ctrl *TestForm) DrawTemplate(ctx context.Context, _w io.Writer) (err error
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("test-list").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("test-list").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -44,11 +40,7 @@ func (ctrl *TestForm) DrawTemplate(ctx context.Context, _w io.Writer) (err error
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("test-list").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("test-list").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -61,11 +53,7 @@ func (ctrl *TestForm) DrawTemplate(ctx context.Context, _w io.Writer) (err error
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("run-button").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("run-button").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -76,11 +64,7 @@ func (ctrl *TestForm) DrawTemplate(ctx context.Context, _w io.Writer) (err error
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("run-button").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("run-button").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -93,11 +77,7 @@ func (ctrl *TestForm) DrawTemplate(ctx context.Context, _w io.Writer) (err error
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("run-all-button").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("run-all-button").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -108,11 +88,7 @@ func (ctrl *TestForm) DrawTemplate(ctx context.Context, _w io.Writer) (err error
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("run-all-button").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("run-all-button").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -131,11 +107,7 @@ Currently running:
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("running-label").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("running-label").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -146,11 +118,7 @@ Currently running:
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("running-label").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("running-label").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -163,11 +131,7 @@ Currently running:
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("controller").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("controller").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -178,11 +142,7 @@ Currently running:
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("controller").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("controller").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

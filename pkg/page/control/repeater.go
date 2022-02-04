@@ -11,7 +11,7 @@ import (
 
 type RepeaterI interface {
 	PagedControlI
-	DrawItem(ctx context.Context, i int, data interface{}, w io.Writer) (err error)
+	DrawItem(ctx context.Context, i int, data interface{}, w io.Writer)
 	SetItemHtmler(h RepeaterHtmler) RepeaterI
 }
 
@@ -24,7 +24,7 @@ type Repeater struct {
 }
 
 type RepeaterHtmler interface {
-	RepeaterHtml(ctx context.Context, r RepeaterI, i int, data interface{}, w io.Writer) error
+	RepeaterHtml(ctx context.Context, r RepeaterI, i int, data interface{}, w io.Writer)
 }
 
 // NewRepeater creates a new Repeater
@@ -76,19 +76,19 @@ func (r *Repeater) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // DrawInnerHtml is an override to draw the individual items of the repeater.
-func (r *Repeater) DrawInnerHtml(ctx context.Context, w io.Writer) (err error) {
+func (r *Repeater) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	var this = r.this() // Get the sub class so we call into its hooks for drawing
 
 	r.RangeData(func(index int, value interface{}) bool {
-		if err = this.DrawItem(ctx, index, value, w); err != nil {return false}
+		this.DrawItem(ctx, index, value, w)
 		return true
 	})
 	return
 }
 
-func (r *Repeater) DrawItem(ctx context.Context, i int, data interface{}, w io.Writer) (err error) {
+func (r *Repeater) DrawItem(ctx context.Context, i int, data interface{}, w io.Writer) {
 	if r.itemHtmler != nil {
-		if err = r.itemHtmler.RepeaterHtml(ctx, r, i, data, w); err != nil {return}
+		r.itemHtmler.RepeaterHtml(ctx, r, i, data, w)
 	}
 	return
 }

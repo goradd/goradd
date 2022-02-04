@@ -42,9 +42,9 @@ type ColumnI interface {
 	IsHidden() bool
 	AsHeader() bool
 	SetHidden(bool) ColumnI
-	DrawColumnTag(ctx context.Context, w io.Writer) error
-	DrawFooterCell(ctx context.Context, row int, col int, count int, w io.Writer) error
-	DrawCell(ctx context.Context, row int, col int, data interface{}, w io.Writer) error
+	DrawColumnTag(ctx context.Context, w io.Writer)
+	DrawFooterCell(ctx context.Context, row int, col int, count int, w io.Writer)
+	DrawCell(ctx context.Context, row int, col int, data interface{}, w io.Writer)
 	CellText(ctx context.Context, row int, col int, data interface{}) string
 	CellData(ctx context.Context, row int, col int, data interface{}) interface{}
 	HeaderCellHtml(ctx context.Context, row int, col int) string
@@ -305,7 +305,7 @@ func (c *ColumnBase) ColTagAttributes() html.Attributes {
 }
 
 // DrawColumnTag draws the column tag if one was requested.
-func (c *ColumnBase) DrawColumnTag(ctx context.Context, w io.Writer) (err error) {
+func (c *ColumnBase) DrawColumnTag(ctx context.Context, w io.Writer) {
 	if c.isHidden {
 		return
 	}
@@ -313,7 +313,7 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, w io.Writer) (err error)
 	if c.span > 1 {
 		a.Set("span", strconv.Itoa(c.span))
 	}
-	_, err = io.WriteString(w, html.RenderTag("col", a, ""))
+	page.WriteString(w, html.RenderTag("col", a, ""))
 	return
 }
 
@@ -335,7 +335,7 @@ func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h st
 }
 
 // DrawFooterCell will draw the footer cells html into the given buffer.
-func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count int, w io.Writer) (err error) {
+func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count int, w io.Writer) {
 	if c.isHidden {
 		return
 	}
@@ -346,7 +346,7 @@ func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count
 	if c.asHeader {
 		tag = "th"
 	}
-	_, err = io.WriteString(w, html.RenderTag(tag, a, cellHtml))
+	page.WriteString(w, html.RenderTag(tag, a, cellHtml))
 	return
 }
 
@@ -361,7 +361,7 @@ func (c *ColumnBase) FooterCellHtml(ctx context.Context, row int, col int) strin
 }
 
 // DrawCell is the default cell drawing function.
-func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interface{}, w io.Writer) (err error) {
+func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interface{}, w io.Writer) {
 	if c.isHidden {
 		return
 	}
@@ -376,7 +376,7 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 	if c.asHeader {
 		tag = "th"
 	}
-	_, err = io.WriteString(w, html.RenderTag(tag, a, cellHtml))
+	page.WriteString(w, html.RenderTag(tag, a, cellHtml))
 	return
 }
 
