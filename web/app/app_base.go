@@ -78,18 +78,8 @@ func (a *Application) SetupErrorHandling() {
 
 	// Create the top level http error reporter that will catch panics throughout the application
 	// The default will intercept anything unexpected and set it to StdErr. Override this to do something elese.
-
 	a.httpErrorReporter = http2.ErrorReporter{}
 
-	// The following sets the template that controls the html output when an error happens during the processing of a
-	// page request, including any code that panics. By default, in debug mode, it will popup an error message in the browser with debug
-	// information when an error occurs. And in release mode it will popup a simple message that an error occurred and will log the
-	// error to the error log. You can implement this function in your local application object to override it and do something different.
-	if config.Debug {
-		page.ErrorPageFunc = page.DebugErrorPageTmpl
-	} else {
-		page.ErrorPageFunc = page.ReleaseErrorPageTmpl
-	}
 }
 
 // SetupPagestateCaching sets up the service that saves pagestate information that reflects the state of a goradd form to

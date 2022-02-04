@@ -180,15 +180,4 @@ func (m *PageManager) cleanup(p *Page) {
 	log.FrameworkDebugf("Page stopped rendering %s", p.stateId)
 }
 
-func (m *PageManager) makeErrorResponse(ctx context.Context,
-	err *Error,
-	html []byte,
-	w io.Writer) {
-
-	if ErrorPageFunc == nil {
-		panic("No error page template function is defined")
-	}
-
-	ErrorPageFunc(ctx, html, err, w)
-}
 
