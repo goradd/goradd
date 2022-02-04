@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/alexedwards/scs/v2/memstore"
@@ -80,7 +79,7 @@ func (a *Application) SetupErrorHandling() {
 	// Create the top level http error reporter that will catch panics throughout the application
 	// The default will intercept anything unexpected and set it to StdErr. Override this to do something elese.
 
-	a.httpErrorReporter = http2.ErrorReporter{ErrWriter: os.Stderr}
+	a.httpErrorReporter = http2.ErrorReporter{}
 
 	// The following sets the template that controls the html output when an error happens during the processing of a
 	// page request, including any code that panics. By default, in debug mode, it will popup an error message in the browser with debug
@@ -177,40 +176,10 @@ func (a *Application) PutContext(r *http.Request) *http.Request {
 }
 
 func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	pm := page.GetPageManager()
 	if pm.IsPage(r.URL.Path) {
 		ctx := r.Context()
-		headers, errCode := pm.RunPage(ctx, w)
-		if errCode == 0 {
-			if headers != nil {
-				for k, v := range headers {
-					// Multi-value headers can simply be separated with commas I believe
-					w.Header().Set(k, v)
-				}
-			}
-		} else {
-			log.Print(errCode)
-			grctx := page.GetContext(ctx)
-			if grctx.RequestMode() == page.Ajax {
-				js := []interface{}{errCode, headers}
-				s,err := json.Marshal(js)
-				if err == nil {
-					// TODO: Manage error here, most likely out of memory error
-					w.Write(s)
-				}
-				w.WriteHeader(400)
-			} else {
-				if headers != nil {
-					for k, v := range headers {
-						// Multi-value headers can simply be separated with commas I believe
-						w.Header().Set(k, v)
-					}
-				}
-				w.WriteHeader(errCode)
-			}
-
-		}
+		pm.RunPage(ctx, w, r)
 	}
 }
 
@@ -229,9 +198,9 @@ func (a *Application) MakeAppServer() http.Handler {
 	h = a.PutAppContextHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
+	h = a.this().ServePatternMux(h) // Must be after the error handler so panics are intercepted by the error reporter
+	h = a.httpErrorReporter.Use(h) // Default http error handler to intercept panics. Must be after the BufferedOutput
 	h = a.BufferedOutputHandler(h)
-	h = a.this().ServePatternMux(h)
-	h = a.httpErrorReporter.Use(h) // Default http error handler to intercept panics
 	h = a.this().HSTSHandler(h)
 	h = a.this().AccessLogHandler(h)
 

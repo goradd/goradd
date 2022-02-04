@@ -10,7 +10,7 @@ func (f *{{= formName }})Run(ctx context.Context) (err error) {
 /* If you are authorizing the current user, do that here
     if !authorized() {
     //     one option is to just fail with an error page
-	//	   return page.NewFrameworkError(page.FrameworkErrNotAuthorized)
+	//	   return http2.SendFobidden()
 	//     another is to automatically redirect to a new location
 	//     page.Redirect("/login.g")
     }

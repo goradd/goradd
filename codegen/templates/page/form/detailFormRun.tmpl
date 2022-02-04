@@ -8,13 +8,13 @@
 func (f *{{= formName }})Run(ctx context.Context) (err error) {
     if !session.Has(ctx, "{{= t.LcGoName }}DetailID") {
         // Attempting to go the the detail panel without first going to the list panel
-        return page.NewFrameworkError(page.FrameworkErrNotAuthorized)
+        http2.SendForbidden()
     }
 
 /* If you are authorizing the current user, do that here
     if !authorized() {
     //     one option is to just fail with an error page
-	//	   return page.NewFrameworkError(page.FrameworkErrNotAuthorized)
+	//	   http2.SendForbidden()
 	//     another is to automatically redirect to a new location
 	//     page.Redirect("/login.g")
     }

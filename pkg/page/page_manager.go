@@ -6,10 +6,18 @@ import (
 	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"io"
+	http2 "net/http"
 	"reflect"
 )
 
 var pageManager PageManagerI = newPageManager() // Create a new singleton page manager.
+
+var HtmlErrorMessage =
+	`<h1 id="err-title">Error</h1>
+<p>
+An unexpected error has occurred and your request could not be processed. The error has been logged and we will
+attempt to fix the problem as soon as possible.
+</p>`
 
 type FormCreationFunction func(context.Context) FormI
 type formInfo struct {
@@ -19,7 +27,7 @@ type formInfo struct {
 
 type PageManagerI interface {
 	RegisterForm(path string, form FormI, formID string)
-	RunPage(ctx context.Context, w io.Writer) (headers map[string]string, httpErrCode int)
+	RunPage(ctx context.Context, w http2.ResponseWriter, r *http2.Request) ()
 	IsPage(path string) bool
 }
 
@@ -124,23 +132,26 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 }
 
 // RunPage processes the page and writes the response into the buffer. Any special response headers are returned.
-func (m *PageManager) RunPage(ctx context.Context, w io.Writer) (headers map[string]string, httpErrCode int) {
+func (m *PageManager) RunPage(ctx context.Context, w http2.ResponseWriter, req *http2.Request) () {
 	defer func() {
 		if r := recover(); r != nil {
+			var msg string
 			switch v := r.(type) {
 			case error:
-				err := newRunError(ctx, v)
-				m.makeErrorResponse(ctx, err, nil, w)
+				msg = v.Error()
 			case string:
-				err := newRunError(ctx, v)
-				m.makeErrorResponse(ctx, err, nil, w)
-			case *HttpError: // A kind of http panic that just returns a response code and headers
-				headers = v.headers
-				httpErrCode = v.errCode
+				msg = v
+			case http.Error: // A kind of http panic that just returns a response code and headers
+				panic(v) // send it up the panic chain
+			case int: // Just an http error code
+				panic (v)
 			default:
-				err := newRunError(ctx, fmt.Errorf("unknown package error: %v", r))
-				m.makeErrorResponse(ctx, err, nil, w)
+				msg = fmt.Sprintf("%v", v)
 			}
+			// TODO: Need to translate the error message, but we don't have a page context to do it.
+
+			// pass the error on to the error handler above
+			panic (http.NewServerError(msg, req, 2, HtmlErrorMessage))
 		}
 	}()
 
@@ -148,8 +159,9 @@ func (m *PageManager) RunPage(ctx context.Context, w io.Writer) (headers map[str
 
 	if page == nil {
 		// An ajax call, but we could not deserialize the old page. Refresh the entire page to get server access.
+		w.Header().Set("Content-Type", "application/json")
 		_,_ = io.WriteString(w, `{"loc":"reload"}`) // the refresh will be handled in javascript
-		return map[string]string{"Content-Type": "application/json"}, 0
+		return
 	}
 
 	defer m.cleanup(page)
@@ -157,24 +169,10 @@ func (m *PageManager) RunPage(ctx context.Context, w io.Writer) (headers map[str
 	log.FrameworkDebugf("Page started rendering %s, %s", page.stateId, GetContext(ctx))
 
 	err := page.runPage(ctx, w, isNew)
-
-	if e,ok := err.(FrameworkError); ok {
-		if e.Err == FrameworkErrNotAuthorized {
-			_,_ = io.WriteString(w, page.form.GT(e.Error()))
-			return nil, 403
-		} else if e.Err == FrameworkErrRedirect {
-			page.SetResponseHeader("Location", e.Location)
-			return page.responseHeader, 303
-		}
-	}
-
 	if err != nil {
-		log.Error(err)
-		buf := ResetOutputBuffer(ctx)
-		m.makeErrorResponse(ctx, newRunError(ctx, err), buf, w)
-		return
+		// TODO: remove this. All errors should panic in place so we can know where the problem is
+		panic (err)
 	}
-	return page.responseHeader, page.responseError
 }
 
 func (m *PageManager) cleanup(p *Page) {
@@ -194,33 +192,3 @@ func (m *PageManager) makeErrorResponse(ctx context.Context,
 	ErrorPageFunc(ctx, html, err, w)
 }
 
-// HttpError represents an error response to a http request.
-type HttpError struct {
-	headers map[string]string
-	errCode int
-}
-
-// SetResponseHeader sets a key-value in the header response.
-func (e *HttpError) SetResponseHeader(key, value string) {
-	if e.headers == nil {
-		e.headers = map[string]string{key: value}
-	} else {
-		e.headers[key] = value
-	}
-}
-
-// Send will cause the page to error with the given http error code.
-func (e *HttpError) Send(errCode int) {
-	e.errCode = errCode
-	panic(e)
-}
-
-// Redirect aborts the current page load and tells the browser to load a different url. Usually you should
-// use Form.ChangeLocation, but you can use this in extreme situations where you really do not want to return
-// a goradd page at all and just change locations. For example, if you detect some kind of attempt to hack
-// your website, you can use this to redirect to a login page or an error page.
-func Redirect(url string) {
-	e := HttpError{}
-	e.SetResponseHeader("Location", http.MakeLocalPath(url))
-	e.Send(303)
-}

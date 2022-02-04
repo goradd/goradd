@@ -36,6 +36,7 @@ type bufferedResponseWriter struct {
 }
 
 func (bw *bufferedResponseWriter) Write(b []byte) (l int, err error) {
+	// TODO: Set max buffer size
 	if bw.disabled {
 		l, err = bw.ResponseWriter.Write(b)
 	} else {
@@ -109,8 +110,6 @@ func (bw *defaultBufferedOutputManager) Use(next http.Handler) http.Handler {
 		defer pool.PutBuffer(outBuf)
 		next.ServeHTTP(bwriter, r)
 		if bwriter.code != 0 && bwriter.code != 200 {
-			grlog.Error("Buffered write error code ", bwriter.code)
-			grlog.Error(r.URL.Path)
 			w.WriteHeader(bwriter.code)
 		}
 		_, e := w.Write(outBuf.Bytes())
