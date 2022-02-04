@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/alexedwards/scs/v2/memstore"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
@@ -18,13 +17,10 @@ import (
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
-	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/goradd/pkg/sys"
 	"github.com/goradd/goradd/pkg/watcher"
 	"log"
 	"net/http/pprof"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/goradd/goradd/pkg/page"
@@ -34,33 +30,13 @@ import (
 	_ "github.com/goradd/goradd/web/assets"
 )
 
-// StaticDirectoryPaths is a map of patterns to directory locations to serve statically.
-// These can be registered at the command line or in the application
-var StaticDirectoryPaths *maps.StringSliceMap
-
-// StaticBlacklist is the list of file terminators that specify what files we always want to hide from view
-// when a static file directory is searched. The default will always hide .go files. Add to it if you have
-// other kinds of files in your static directories that you do not want to show. Do this only at startup.
-var StaticBlacklist = []string{".go"}
-
-type staticFileProcessor struct {
-	ending    string
-	processor StaticFileProcessorFunc
-}
-
-type StaticFileProcessorFunc func(file string, w http.ResponseWriter, r *http.Request)
-
-// StaticFileProcessors is a map that connects file endings to processors that will process the content and return it
-// to the output stream, bypassing other means of processing static files.
-var staticFileProcessors []staticFileProcessor
-
-// The application interface. A minimal set of commands that the main routine will ask the application to do.
+// ApplicationI allows you to override default functionality in the ApplicationBase.
 // The main routine offers a way of creating mock applications, and alternate versions of the application from the default
 type ApplicationI interface {
 	Init()
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 	PutContext(*http.Request) *http.Request
-	SetupErrorPageTemplate()
+	SetupErrorHandling()
 	SetupPagestateCaching()
 	InitializeLoggers()
 	SetupSessionManager()
@@ -69,22 +45,22 @@ type ApplicationI interface {
 	SetupPaths()
 	SessionHandler(next http.Handler) http.Handler
 	HSTSHandler(next http.Handler) http.Handler
-	ServeStaticFile(w http.ResponseWriter, r *http.Request) bool
 	AccessLogHandler(next http.Handler) http.Handler
 	PutDbContextHandler(next http.Handler) http.Handler
 	ServeAppMux(next http.Handler) http.Handler
 	ServePatternMux(next http.Handler) http.Handler
 }
 
-// The application base, to be embedded in your application
+// Application is the application base, to be embedded in your application
 type Application struct {
 	base.Base
+	httpErrorReporter http2.ErrorReporter
 }
 
 func (a *Application) Init(self ApplicationI) {
 	a.Base.Init(self)
 
-	self.SetupErrorPageTemplate()
+	self.SetupErrorHandling()
 	self.SetupPagestateCaching()
 	self.InitializeLoggers()
 	self.SetupSessionManager()
@@ -98,11 +74,18 @@ func (a *Application) this() ApplicationI {
 	return a.Self.(ApplicationI)
 }
 
-// SetupErrorPageTemplate sets the template that controls the output when an error happens during the processing of a
-// page request, including any code that panics. By default, in debug mode, it will popup an error message in the browser with debug
-// information when an error occurs. And in release mode it will popup a simple message that an error occurred and will log the
-// error to the error log. You can implement this function in your local application object to override it and do something different.
-func (a *Application) SetupErrorPageTemplate() {
+// SetupErrorHandling prepares the application for various types of error handling
+func (a *Application) SetupErrorHandling() {
+
+	// Create the top level http error reporter that will catch panics throughout the application
+	// The default will intercept anything unexpected and set it to StdErr. Override this to do something elese.
+
+	a.httpErrorReporter = http2.ErrorReporter{ErrWriter: os.Stderr}
+
+	// The following sets the template that controls the html output when an error happens during the processing of a
+	// page request, including any code that panics. By default, in debug mode, it will popup an error message in the browser with debug
+	// information when an error occurs. And in release mode it will popup a simple message that an error occurred and will log the
+	// error to the error log. You can implement this function in your local application object to override it and do something different.
 	if config.Debug {
 		page.ErrorPageFunc = page.DebugErrorPageTmpl
 	} else {
@@ -242,14 +225,13 @@ func (a *Application) MakeAppServer() http.Handler {
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler()
 	h = a.this().ServeAppMux(h)
-	h = a.ServeStaticFileHandler(h)
 	h = a.ServePageHandler(h)
 	h = a.PutAppContextHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
 	h = a.BufferedOutputHandler(h)
 	h = a.this().ServePatternMux(h)
-	h = http2.ErrorHandler(h) // Default http error handler to intercept panics
+	h = a.httpErrorReporter.Use(h) // Default http error handler to intercept panics
 	h = a.this().HSTSHandler(h)
 	h = a.this().AccessLogHandler(h)
 
@@ -293,21 +275,6 @@ func (a *Application) ServeRequestHandler() http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// ServeStaticFileHandler serves up static files by calling ServeStaticFile.
-//
-// The difference between this and registering a handler with a muxer is that a muxer
-// will return a 404 error if the file is not found, whereas the below method will pass
-// control to the next handler if the file is not found.
-// This lets you serve static files and dynamically generated files from the same logical web path.
-func (a *Application) ServeStaticFileHandler(next http.Handler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-
-		if !a.this().ServeStaticFile(w, r) && next != nil {
-			next.ServeHTTP(w, r)
-		}
-	}
-	return http.HandlerFunc(fn)
-}
 
 // ServePageHandler processes requests for automated goradd pages.
 func (a *Application) ServePageHandler(next http.Handler) http.Handler {
@@ -355,57 +322,6 @@ func (a *Application) PutDbContextHandler(next http.Handler) http.Handler {
 // writing the buffer out to the stream.
 func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
 	return http2.BufferedOutputManager().Use(next)
-}
-
-// ServeStaticFile serves up static html and other files found in registered directories.
-// If the file is not found, it will return false.
-func (a *Application) ServeStaticFile(w http.ResponseWriter, r *http.Request) bool {
-	url := r.URL.Path
-	var path string
-
-	// StaticDirectoryPaths should be sorted longest to shortest at this point
-	StaticDirectoryPaths.Range(func(pattern string, dir string) bool {
-		if strings2.StartsWith(url, pattern) {
-			fPath := strings.TrimPrefix(url, pattern)
-			if fPath != "" && fPath[0:1] != "/" {
-				// We only matched part of a directory, so not a match
-				return true // go to next iteration
-			}
-			cleaned := strings.TrimPrefix(fPath, "..") // This prevents someone from hacking by using .. to refer to files outside of the directory
-			cleaned = filepath.Clean(cleaned)
-			path = filepath.Join(dir, cleaned)
-			return false // stop iterating
-		}
-		return true
-	})
-
-	if path == "" {
-		return false // the directory was not found in our list of static file directories
-	}
-
-	for _, bl := range StaticBlacklist {
-		if strings2.EndsWith(path, bl) {
-			return false // cannot show this kind of file
-		}
-	}
-
-	if sys.IsDir(path) {
-		path = filepath.Join(path, "index.html")
-	}
-
-	if sys.PathExists(path) {
-		for _, p := range staticFileProcessors {
-			if strings2.EndsWith(path, p.ending) {
-				p.processor(path, w, r)
-				return true
-			}
-		}
-
-		http.ServeFile(w, r, path)
-		return true
-	}
-
-	return false // indicates no static file was found
 }
 
 

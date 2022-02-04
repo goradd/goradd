@@ -1,6 +1,8 @@
 package http
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -87,20 +89,25 @@ func SendBadRequestMessage(message string) {
 	panic (e)
 }
 
-// ErrorHandler wraps the given handler in a default HTTP error handler that
+
+type  ErrorReporter struct {
+	ErrWriter io.Writer // non-http panics will be reported here
+}
+
+// Use wraps the given handler in a default HTTP error handler that
 // will respond appropriately to any panics that happen within the given handler.
 //
 // Panic with an http.Error value to get a specific kind of http error to
 // be output.
-func ErrorHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func (e ErrorReporter) Use(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		defer func() {
 			if r := recover(); r != nil {
 				switch v := r.(type) {
 				case Error: // A kind of http panic that just returns a response code and headers
 					header := w.Header()
-					for k,v := range v.headers {
-						header.Set(k,v)
+					for k,v2 := range v.headers {
+						header.Set(k,v2)
 					}
 					w.WriteHeader(v.errCode)
 					if v.message != "" {
@@ -108,17 +115,29 @@ func ErrorHandler(h http.Handler) http.Handler {
 					}
 				case error:
 					w.WriteHeader(http.StatusInternalServerError)
-					_,_ =w.Write([]byte(v.Error()))
+					if e.ErrWriter != nil {
+						_,_ = e.ErrWriter.Write([]byte(v.Error()))
+					}
 				case string:
 					w.WriteHeader(http.StatusInternalServerError)
-					_,_ =w.Write([]byte(v))
+					if e.ErrWriter != nil {
+						_,_ = io.WriteString(e.ErrWriter, v)
+					}
 				case int:
 					w.WriteHeader(v)
 				default:
 					w.WriteHeader(http.StatusInternalServerError)
+					if e.ErrWriter != nil {
+						if i,ok := v.(fmt.Stringer); ok {
+							_,_ = io.WriteString(e.ErrWriter, i.String())
+						} else {
+							_,_ = io.WriteString(e.ErrWriter, "Unknown internal error")
+						}
+					}
+
 				}
 			}
 		}()
-		h.ServeHTTP(w, r)
+		h.ServeHTTP(w, req)
 	})
 }

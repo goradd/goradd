@@ -32,7 +32,7 @@ func (a *Application) Init() {
 
 // Uncomment and edit to change the error page. You can call the embedded Application version first, and then alter it too.
 /*
-func (a *Application) SetupErrorPageTemplate() {
+func (a *Application) SetupErrorHandling() {
 	if config.Debug {
 		page.ErrorPageFunc = page.DebugErrorPageTmpl
 	} else {
