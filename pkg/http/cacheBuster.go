@@ -24,7 +24,7 @@ var cacheBuster = make (map[string]string)
 // error will be sent back to the browser.
 func RegisterAssetDirectory(prefix string, fsys fs.FS) {
 	prefix = path.Clean(prefix)
-	serv := FileSystemServer{Fsys: fsys, SendModTime: false, MustRespond: true, UseCacheBuster: true}
+	serv := FileSystemServer{Fsys: fsys, SendModTime: false, UseCacheBuster: true}
 	RegisterPrefixHandler(prefix, serv)
 
 	// Walk the entire file system provided to register each file with the cache buster cache so

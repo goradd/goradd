@@ -11,6 +11,6 @@ import (
 var f embed.FS
 
 func init() {
-	fs := http.FileSystemServer{Fsys: f, SendModTime: true, MustRespond: false, Hide: []string{".go", ".got", ".tmp"}}
+	fs := http.FileSystemServer{Fsys: f, SendModTime: true, Hide: []string{".go", ".got", ".tmp"}}
 	http.RegisterAppPrefixHandler("/goradd", fs)
 }

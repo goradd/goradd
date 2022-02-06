@@ -305,7 +305,6 @@ func RegisterStaticPath(
 		Fsys: fileSystem,
 		SendModTime: !useCacheBuster,
 		UseCacheBuster: useCacheBuster,
-		MustRespond: mustRespond,
 		Hide: hide}
 	http2.RegisterPrefixHandler(path, fs)
 	grlog.Infof("Registering static path %s to %s", path, directory)

@@ -39,11 +39,6 @@ type FileSystemServer struct {
 	// the user the file is changed.
 	SendModTime bool
 
-	// MustRespond will cause a NotFound error to be written to the response if no file is found in the file system.
-	// Otherwise, no output will be sent, and Goradd's handler system will pass control to the next handler
-	// in the middleware stack.
-	MustRespond bool
-
 	// UseCacheBuster will look for cache buster paths and fix them.
 	UseCacheBuster bool
 
@@ -58,7 +53,7 @@ type FileSystemServer struct {
 // If f.mustRespond is true and the file is not found, it will respond with a Not Found error. Otherwise it
 // will return without writing anything to w.
 func (f FileSystemServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if !f.serveStaticFile(w,r) && f.MustRespond {
+	if !f.serveStaticFile(w,r) {
 		http.NotFound(w,r)
 	}
 }
