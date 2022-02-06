@@ -189,14 +189,15 @@ func (e ErrorReporter) Use(h http.Handler) http.Handler {
 				}
 				w.WriteHeader(http.StatusInternalServerError)
 				buf := ResetOutputBuffer(req.Context())
-				errMsg += "\nPartial response written:\n" + string(buf)
+				if buf == nil {
+					errMsg += "\nPartial response written:\n" + string(buf)
+				}
 				log.Error(errMsg + stackTrace(stackDepth)) // use the application logger to output the error so we know about it
 				_,_ = io.WriteString(w, newResponse) // Write the alternate response to client
 				return
 			}
 		}()
 		h.ServeHTTP(w, req)
-
 	})
 }
 

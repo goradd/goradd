@@ -222,11 +222,7 @@ func UseMuxer(mux Muxer, next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		h,p := mux.Handler(r)
 		if p != "" {
-			d := WriteDetector{w, false}
-			h.ServeHTTP(&d,r)
-			if !d.HasWritten {
-				next.ServeHTTP(w,r) // skip to next handler
-			}
+			h.ServeHTTP(w,r)
 		} else {
 			next.ServeHTTP(w,r) // skip
 		}

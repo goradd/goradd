@@ -54,6 +54,12 @@ func (bw *bufferedResponseWriter) WriteHeader(code int) {
 	bw.code = code
 }
 
+// WriteString satisfies the StringWriter interface for WriteString optimization
+func (bw *bufferedResponseWriter) WriteString(s string) (n int, err error) {
+	return bw.buf.WriteString(s)
+}
+
+
 // Disable will turn off the buffered response and send responses directly to
 // the response writer above it in the response writer chain.
 //
@@ -83,10 +89,18 @@ func DisableOutputBuffering(ctx context.Context) {
 
 // ResetOutputBuffer returns the current output buffer and resets the output buffer to nothing.
 func ResetOutputBuffer(ctx context.Context) []byte {
-	buf := ctx.Value(goradd.BufferContext).(BufferedResponseWriterI).OutputBuffer()
-	ret := buf.Bytes()
-	buf.Reset()
-	return ret
+	if i := ctx.Value(goradd.BufferContext); i == nil {
+		return nil
+	} else if bw := i.(BufferedResponseWriterI); bw == nil {
+		return nil
+	} else if buf := bw.OutputBuffer(); buf != nil {
+		return nil
+	} else {
+		ret := buf.Bytes()
+		buf.Reset()
+		return ret
+	}
+
 }
 // OutputLen returns the number of bytes written to the output, even if
 // output buffering is disabled.

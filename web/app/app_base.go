@@ -64,6 +64,7 @@ func (a *Application) Init(self ApplicationI) {
 	self.InitializeLoggers()
 	self.SetupSessionManager()
 	self.SetupMessenger()
+	self.SetupPaths()
 	self.SetupDatabaseWatcher()
 
 	page.DefaultCheckboxLabelDrawingMode = html.LabelAfter
@@ -182,15 +183,16 @@ func (a *Application) MakeAppServer() http.Handler {
 	// the handler chain gets built in the reverse order of getting called
 
 	// These handlers are called in reverse order
-	h := a.ServeRequestHandler()
-	h = a.this().ServeAppMux(h)
-	h = a.ServePageHandler(h)
+	h := a.ServeRequestHandler() // Should go at the end of the chain to catch whatever is missed above
+	h = a.this().ServeAppMux(h) // Serves static files out of the root directory, and other items
+	h = a.ServePageHandler(h)  // Serves the Goradd dynamic pages
 	h = a.PutAppContextHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
+	h = a.BufferedOutputHandler(h)  // Must be in front of the session handler
 	h = a.this().ServePatternMux(h) // Must be after the error handler so panics are intercepted by the error reporter
-	h = a.httpErrorReporter.Use(h) // Default http error handler to intercept panics. Must be after the BufferedOutput
-	h = a.BufferedOutputHandler(h)
+									// and must be in front of the buffered output handler because of websocket server
+	h = a.httpErrorReporter.Use(h)  // Default http error handler to intercept panics.
 	h = a.this().HSTSHandler(h)
 	h = a.this().AccessLogHandler(h)
 
