@@ -1848,7 +1848,7 @@ func (c *ControlBase) Deserialize(d Decoder) (err error) {
 	c.isRendering = false
 	c.wasRendered = false
 	c.attributeScripts = nil
-	
+
 	if err = d.Decode(&s); err != nil {
 		panic(err)
 	}

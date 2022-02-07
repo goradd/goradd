@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/goradd"
 	grlog "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/pool"
+	"io"
 	"net/http"
 )
 
@@ -55,8 +56,14 @@ func (bw *bufferedResponseWriter) WriteHeader(code int) {
 }
 
 // WriteString satisfies the StringWriter interface for WriteString optimization
-func (bw *bufferedResponseWriter) WriteString(s string) (n int, err error) {
-	return bw.buf.WriteString(s)
+func (bw *bufferedResponseWriter) WriteString(s string) (l int, err error) {
+	if bw.disabled {
+		l, err = io.WriteString(bw.ResponseWriter, s)
+	} else {
+		l,err = bw.buf.WriteString(s)
+	}
+	bw.len += l
+	return l,err
 }
 
 
