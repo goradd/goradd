@@ -31,8 +31,8 @@ var a embed.FS
 func init() {
 	// This server is designed to serve HTML type files that can be bookmarked.
 	sub, _ := fs.Sub(root, "root")
-	serv := http.FileSystemServer{Fsys: sub, SendModTime: true, MustRespond: false}
-	http.RegisterPrefixHandler("/", serv)
+	serv := http.FileSystemServer{Fsys: sub, SendModTime: true}
+	http.RegisterAppPrefixHandler("/", serv)
 
 	// This server serves assets that are not usually bookmarked. It uses a method called
 	// cache-busting to make sure that when you deploy new versions of these files, the client

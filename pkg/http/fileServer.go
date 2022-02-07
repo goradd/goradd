@@ -49,9 +49,6 @@ type FileSystemServer struct {
 }
 
 // ServeHTTP will serve the file system.
-//
-// If f.mustRespond is true and the file is not found, it will respond with a Not Found error. Otherwise it
-// will return without writing anything to w.
 func (f FileSystemServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !f.serveStaticFile(w,r) {
 		http.NotFound(w,r)

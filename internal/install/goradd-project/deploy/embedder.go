@@ -8,9 +8,9 @@ package web
 //
 import (
 	"embed"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/http"
 	"io/fs"
-	"github.com/goradd/goradd/pkg/config"
 )
 
 //go:embed embed/root/*
@@ -24,8 +24,8 @@ func init() {
 	sub, _ := fs.Sub(root, "embed")
 	sub, _ = fs.Sub(sub, "root")
 
-	serv := http.FileSystemServer{Fsys: sub, SendModTime: true, MustRespond: false}
-	http.RegisterPrefixHandler("/", serv)
+	serv := http.FileSystemServer{Fsys: sub, SendModTime: true}
+	http.RegisterAppPrefixHandler("/", serv)
 
 	// This server serves assets that are not usually bookmarked. It uses a method called
 	// cache-busting to make sure that when you deploy new versions of these files, the client

@@ -297,7 +297,6 @@ func RegisterStaticPath(
 	path string,
 	directory string,
 	useCacheBuster bool,
-	mustRespond bool,
 	hide []string,
 	) {
 	fileSystem := os.DirFS(directory)
