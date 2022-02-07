@@ -127,8 +127,6 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 	// Render controls that are marked to auto render if the form did not render them
 	f.RenderAutoControls(ctx, w)
 
-	f.resetDrawingFlags()
-
 	// Render hidden controls
 
 	// Place holder for postBack and postAjax functions to place their data
@@ -179,6 +177,8 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 </script>`, s); err != nil {panic(err)}
 
 	f.this().PostRender(ctx, w)
+	f.resetDrawingFlags()
+
 	return
 }
 

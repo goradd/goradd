@@ -1844,6 +1844,11 @@ func (c *ControlBase) Serialize(e Encoder) (err error) {
 func (c *ControlBase) Deserialize(d Decoder) (err error) {
 	var s controlEncoding
 
+	// zero out items that are not being retrieved
+	c.isRendering = false
+	c.wasRendered = false
+	c.attributeScripts = nil
+	
 	if err = d.Decode(&s); err != nil {
 		panic(err)
 	}

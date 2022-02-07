@@ -147,6 +147,8 @@ func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
 
 	if err == nil {
 		d.dt = v
+	} else {
+		d.dt = datetime.DateTime{} // set to zero value to indicate an error
 	}
 }
 
