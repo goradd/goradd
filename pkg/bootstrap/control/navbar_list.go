@@ -1,7 +1,6 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
@@ -11,6 +10,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	"io"
 )
 
 type NavbarListI interface {
@@ -77,10 +77,10 @@ func (l *NavbarList) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (l *NavbarList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *NavbarList) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	h := l.getItemsHtml(ctx, l.ListItems(), false)
-	buf.WriteString(h)
-	return nil
+	page.WriteString(w, h)
+	return
 }
 
 func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem, hasParent bool) string {

@@ -8,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	"path"
 )
 
 const (
@@ -39,7 +40,7 @@ func NewItemListPanel(parent page.ControlI, id string) *ItemListPanel {
 
 func (p *ItemListPanel) Init(parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
-	p.ParentForm().AddStyleSheetFile(config.GoraddAssets()+"/css/item-list-panel.css", nil)
+	p.ParentForm().AddStyleSheetFile(path.Join(config.AssetPrefix, "goradd", "css", "item-list-panel.css"), nil)
 	p.FilterPanel = NewPanel(p, p.ID()+"-filter")
 	p.ScrollPanel = NewPanel(p, p.ID()+"-scroller")
 	p.ButtonPanel = NewPanel(p, p.ID()+"-btnpnl")

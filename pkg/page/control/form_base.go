@@ -3,7 +3,6 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -37,8 +36,6 @@ func NewMockForm() *MockForm {
 }
 
 func (f *MockForm) AddRelatedFiles() {
-	page.RegisterAssetDirectory(config.GoraddAssets(), config.AssetPrefix+"goradd")
-	page.RegisterAssetDirectory(config.ProjectAssets(), config.AssetPrefix+"project")
 }
 
 // Init initializes the FormBase. Call this before adding other controls.

@@ -33,7 +33,7 @@ type pool struct {
 // says that the fmt package has an example of how to use pool such that it scales under heavy load, but
 // releases memory when quiet.
 
-func newPool() pool {
+func newPool() *pool {
 	p := pool{
 		sync.Pool{
 			New: func() interface{} {
@@ -42,19 +42,19 @@ func newPool() pool {
 		},
 	}
 
-	return p
+	return &p
 }
 
 // GetBuffer returns a buffer from the pool if one is available, or creates a new one if all the buffers are being used.
 // Generally, you should follow a GetBuffer with a deferred PutBuffer, and the PutBuffer should be in the same
 // function as the GetBuffer to prevent memory leaks.
-func (p pool) GetBuffer() *bytes.Buffer {
+func (p *pool) GetBuffer() *bytes.Buffer {
 	return p.Get().(*bytes.Buffer)
 }
 
 // PutBuffer returns a buffer to the buffer pool. Always do this after you are done with a buffer. If the buffer
 // has grown bigger than MaxBufferSize, it will be removed from the pool so that it can be garbage collected.
-func (p pool) PutBuffer(buffer *bytes.Buffer) {
+func (p *pool) PutBuffer(buffer *bytes.Buffer) {
 	if buffer.Cap() < MaxBufferSize {
 		buffer.Reset()
 		p.Put(buffer)

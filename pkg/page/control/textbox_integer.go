@@ -156,7 +156,7 @@ type IntegerLimit struct {
 	InvalidMessage string
 }
 
-// Use IntegerTextboxCreator to create an integer textbox.
+// IntegerTextboxCreator creates an integer textbox.
 // Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
 type IntegerTextboxCreator struct {

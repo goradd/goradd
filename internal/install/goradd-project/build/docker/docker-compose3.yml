@@ -1,11 +1,11 @@
 # This docker-compose file is an example of how you could deploy the app
 # on a linux server where the app is behind an Apache web server.
 # Similar configurations can be achieved for Nginx or other web servers.
-# This particular example shows the following:
-# 1) The Apache server has been setup with a reverse proxies that maps the
+# This particular example has the following:
+# 1) The Apache server has been setup with reverse proxies that maps the
 #    "/myapp" directory to the application, so that whenever a user goes to
 #    /myapp or a subdirectory, they are actually sent to the goradd app.
-#    To do this, you would add the following directories to the Apache configuration
+#    To do this, you would add the following directives to the Apache configuration
 #    file for the server or virtual server. Note that you can do this for a secure
 #    https: address too, and internally traffic will be automatically sent to the goradd
 #    app without encryption, so that all your encryption and certificate stuff is handled
@@ -25,7 +25,7 @@
 # 5) The db.cfg file should include a "net" value of "unix" to tell the app to use
 #    a unix socket to connect to the database. This is generally faster and safer than
 #    connecting over tcp.
-# 6) volumes parameter below maps the host's unix socket to the place internally that is
+# 6) The volumes parameter below maps the host's unix socket to the place internally that is
 #    the default location that GO's mysql driver looks for the socket.
 version: '3.8'
 services:

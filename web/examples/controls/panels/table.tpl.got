@@ -1,7 +1,4 @@
-{{< package }}panels{{end}}
-{{< imports }}
-{{end}}
-{{< control }}TablePanel{{end}}
+{{< control }}TablePanel{{end control}}
 
 {{define template }}
 {{# Provide some basic styling for tables }}
@@ -40,6 +37,6 @@ to allow the user to page through data when it is too much to display all at onc
 
 {{draw table2}}
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

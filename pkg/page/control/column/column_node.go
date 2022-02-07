@@ -37,7 +37,7 @@ func (c *NodeColumn) GetNode() query.NodeI {
 	return c.node
 }
 
-func (c *NodeColumn) CellData(ctx context.Context, rowNum int, colNum int, data interface{}) interface{} {
+func (c *NodeColumn) CellData(_ context.Context, _ int, _ int, data interface{}) interface{} {
 	if v, ok := data.(Getter); !ok {
 		return ""
 	} else {
@@ -111,7 +111,7 @@ func MakeNodeSlice(columns []control.ColumnI) []query.NodeI {
 	for _, c := range columns {
 		if getter, ok := c.(NodeGetter); ok {
 			node := getter.GetNode()
-			if nodeSorter, ok := node.(query.NodeSorter); ok {
+			if nodeSorter, ok2 := node.(query.NodeSorter); ok2 {
 				switch c.SortDirection() {
 				case control.SortAscending:
 					nodeSorter.Ascending()

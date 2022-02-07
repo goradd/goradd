@@ -1,7 +1,4 @@
-{{< package }}panels{{end}}
-{{< imports }}
-{{end}}
-{{< control }}ImageCapturePanel{{end}}
+{{< control }}ImageCapturePanel{{end control}}
 
 {{define template }}
 <h2>Image Capture Widget</h2>
@@ -16,6 +13,6 @@ from the original capture, to the server, and then when you reload the page, it 
 </p>
 
 {{draw ic1-ff }}
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

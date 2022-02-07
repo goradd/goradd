@@ -81,7 +81,7 @@ func (b *Button) SetButtonStyle(style ButtonStyle) ButtonI {
 	return b.this()
 }
 
-// SetButtonsSize sets the size class of the button.
+// SetButtonSize sets the size class of the button.
 func (b *Button) SetButtonSize(size ButtonSize) ButtonI {
 	b.size = size
 	return b.this()

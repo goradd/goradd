@@ -5,28 +5,28 @@
 var panelName = t.GoName + "EditPanel"
 
 {{# Below we are switching back and forth between putting got code in the template, and using got code to create the template }}
-{{begin gotCode}}
+{{begin *gotCode*}}
 {{< imports }}
-{{end}}
-{{< control }}{{gotCode}}{{= panelName}}{{begin gotCode2}}{{end}}
+{{end imports}}
+{{< control }}{{end *gotCode*}}{{= panelName}}{{begin *gotCode2*}}{{end control}}
 
 {{define template }}
 
-{{gotCode2}}
+{{end *gotCode2*}}
 
 {{g
 for _,col := range t.Columns {
     cd := t.ControlDescription(col)
     if cd == nil {continue}
     if cd.Generator != nil {
-{{begin drawCode}}{{drawChild -{{drawCode}}{{= cd.ControlID }}{{begin drawCode2}}-ff }}
-{{drawCode2}}
+{{begin *drawCode*}}{{drawChild -{{end *drawCode*}}{{= cd.ControlID }}{{begin *drawCode2*}}-ff }}
+{{end *drawCode2*}}
     }
 }
 }}
 
-{{begin gotCode3}}
-{{end}}
+{{begin *gotCode3*}}
+{{end template}}
 
 {{renderControlTemplate}}
-{{gotCode3}}
+{{end *gotCode3*}}

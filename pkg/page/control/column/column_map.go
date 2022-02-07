@@ -29,7 +29,7 @@ func (c *MapColumn) Init(index interface{}) {
 	c.key = index
 }
 
-func (c *MapColumn) CellData(ctx context.Context, rowNum int, colNum int, data interface{}) interface{} {
+func (c *MapColumn) CellData(_ context.Context, rowNum int, colNum int, data interface{}) interface{} {
 	vKey := reflect.ValueOf(c.key)
 	vMap := reflect.ValueOf(data)
 	vValue := vMap.MapIndex(vKey)

@@ -115,24 +115,35 @@ const (
 )
 
 const (
-	Project_ID                  = `ID`
-	Project_Num                 = `Num`
+	Project_ID = `ID`
+
+	Project_Num = `Num`
+
 	Project_ProjectStatusTypeID = `ProjectStatusTypeID`
-	Project_ManagerID           = `ManagerID`
-	Project_Manager             = `Manager`
-	Project_Name                = `Name`
-	Project_Description         = `Description`
-	Project_StartDate           = `StartDate`
-	Project_EndDate             = `EndDate`
-	Project_Budget              = `Budget`
-	Project_Spent               = `Spent`
-	ProjectMilestones           = `Milestones`
-	ProjectChildAsParent        = `ChildAsParent`
-	ProjectChildrenAsParent     = `ChildrenAsParent`
-	ProjectParentAsChild        = `ParentAsChild`
-	ProjectParentsAsChild       = `ParentsAsChild`
-	ProjectTeamMember           = `TeamMember`
-	ProjectTeamMembers          = `TeamMembers`
+
+	Project_ManagerID = `ManagerID`
+
+	Project_Manager = `Manager`
+
+	Project_Name = `Name`
+
+	Project_Description = `Description`
+
+	Project_StartDate = `StartDate`
+
+	Project_EndDate = `EndDate`
+
+	Project_Budget = `Budget`
+
+	Project_Spent = `Spent`
+
+	ProjectMilestones       = `Milestones`
+	ProjectChildAsParent    = `ChildAsParent`
+	ProjectChildrenAsParent = `ChildrenAsParent`
+	ProjectParentAsChild    = `ParentAsChild`
+	ProjectParentsAsChild   = `ParentsAsChild`
+	ProjectTeamMember       = `TeamMember`
+	ProjectTeamMembers      = `TeamMembers`
 )
 
 // Initialize or re-initialize a Project database object to default values.
@@ -1303,10 +1314,13 @@ func (o *projectBase) update(ctx context.Context) {
 				obj.SetProjectID(o.PrimaryKey())
 				obj.Save(ctx)
 			}
+
 		} else {
+
 			for _, obj := range o.oMilestones {
 				obj.Save(ctx)
 			}
+
 		}
 
 		{
@@ -1328,6 +1342,7 @@ func (o *projectBase) update(ctx context.Context) {
 					pks)
 			}
 		}
+
 		{
 			var pks []string
 			o.mParentsAsChild = make(map[string]*Project)
@@ -1347,6 +1362,7 @@ func (o *projectBase) update(ctx context.Context) {
 					pks)
 			}
 		}
+
 		{
 			var pks []string
 			o.mTeamMembers = make(map[string]*Person)
@@ -1394,6 +1410,7 @@ func (o *projectBase) insert(ctx context.Context) {
 		if !o.nameIsValid {
 			panic("a value for Name is required, and there is no default value. Call SetName() before inserting the record.")
 		}
+
 		m := o.getValidFields()
 
 		id := d.Insert(ctx, "project", m)
@@ -1401,12 +1418,14 @@ func (o *projectBase) insert(ctx context.Context) {
 		o._originalPK = id
 
 		if o.oMilestones != nil {
+
 			o.mMilestones = make(map[string]*Milestone)
 			for _, obj := range o.oMilestones {
 				obj.SetProjectID(id)
 				obj.Save(ctx)
 				o.mMilestones[obj.PrimaryKey()] = obj
 			}
+
 		}
 		{
 			var pks []string
@@ -1472,58 +1491,78 @@ func (o *projectBase) insert(ctx context.Context) {
 func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
+
 		fields["id"] = o.id
+
 	}
 	if o.numIsDirty {
+
 		fields["num"] = o.num
+
 	}
 	if o.projectStatusTypeIDIsDirty {
+
 		fields["project_status_type_id"] = o.projectStatusTypeID
+
 	}
 	if o.managerIDIsDirty {
+
 		if o.managerIDIsNull {
 			fields["manager_id"] = nil
 		} else {
 			fields["manager_id"] = o.managerID
 		}
+
 	}
 	if o.nameIsDirty {
+
 		fields["name"] = o.name
+
 	}
 	if o.descriptionIsDirty {
+
 		if o.descriptionIsNull {
 			fields["description"] = nil
 		} else {
 			fields["description"] = o.description
 		}
+
 	}
 	if o.startDateIsDirty {
+
 		if o.startDateIsNull {
 			fields["start_date"] = nil
 		} else {
 			fields["start_date"] = o.startDate.GoTime()
 		}
+
 	}
 	if o.endDateIsDirty {
+
 		if o.endDateIsNull {
 			fields["end_date"] = nil
 		} else {
 			fields["end_date"] = o.endDate.GoTime()
 		}
+
 	}
 	if o.budgetIsDirty {
+
 		if o.budgetIsNull {
 			fields["budget"] = nil
 		} else {
 			fields["budget"] = o.budget
 		}
+
 	}
 	if o.spentIsDirty {
+
 		if o.spentIsNull {
 			fields["spent"] = nil
 		} else {
 			fields["spent"] = o.spent
 		}
+
 	}
 	return
 }
@@ -1531,55 +1570,73 @@ func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
 func (o *projectBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.numIsValid {
+
 		fields["num"] = o.num
+
 	}
 	if o.projectStatusTypeIDIsValid {
+
 		fields["project_status_type_id"] = o.projectStatusTypeID
+
 	}
 	if o.managerIDIsValid {
+
 		if o.managerIDIsNull {
 			fields["manager_id"] = nil
 		} else {
 			fields["manager_id"] = o.managerID
 		}
+
 	}
 	if o.nameIsValid {
+
 		fields["name"] = o.name
+
 	}
 	if o.descriptionIsValid {
+
 		if o.descriptionIsNull {
 			fields["description"] = nil
 		} else {
 			fields["description"] = o.description
 		}
+
 	}
 	if o.startDateIsValid {
+
 		if o.startDateIsNull {
 			fields["start_date"] = nil
 		} else {
 			fields["start_date"] = o.startDate.GoTime()
 		}
+
 	}
 	if o.endDateIsValid {
+
 		if o.endDateIsNull {
 			fields["end_date"] = nil
 		} else {
 			fields["end_date"] = o.endDate.GoTime()
 		}
+
 	}
 	if o.budgetIsValid {
+
 		if o.budgetIsNull {
 			fields["budget"] = nil
 		} else {
 			fields["budget"] = o.budget
 		}
+
 	}
 	if o.spentIsValid {
+
 		if o.spentIsNull {
 			fields["spent"] = nil
 		} else {
 			fields["spent"] = o.spent
 		}
+
 	}
 	return
 }
@@ -1591,6 +1648,7 @@ func (o *projectBase) Delete(ctx context.Context) {
 	}
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
+
 		{
 			objs := QueryMilestones(ctx).
 				Where(Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
@@ -1601,6 +1659,7 @@ func (o *projectBase) Delete(ctx context.Context) {
 			}
 			o.oMilestones = nil
 		}
+
 		d.Associate(ctx,
 			"related_project_assn",
 			"parent_id",
@@ -1656,7 +1715,8 @@ func (o *projectBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.numIsDirty ||
 		o.projectStatusTypeIDIsDirty ||
-		o.managerIDIsDirty || (o.oManager != nil && o.oManager.IsDirty()) ||
+		o.managerIDIsDirty ||
+		(o.oManager != nil && o.oManager.IsDirty()) ||
 		o.nameIsDirty ||
 		o.descriptionIsDirty ||
 		o.startDateIsDirty ||
@@ -1664,6 +1724,7 @@ func (o *projectBase) IsDirty() bool {
 		o.budgetIsDirty ||
 		o.spentIsDirty ||
 		o.oMilestonesIsDirty
+
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -1917,7 +1978,6 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
-
 	if o.oParentsAsChild == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -1930,7 +1990,6 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
-
 	if o.oTeamMembers == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -2312,15 +2371,25 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 //
 // The fields it expects are:
 //   "id" - string
+
 //   "num" - int
+
 //   "projectStatusTypeID" - uint
+
 //   "managerID" - string, nullable
+
 //   "name" - string
+
 //   "description" - string, nullable
+
 //   "startDate" - datetime.DateTime, nullable
+
 //   "endDate" - datetime.DateTime, nullable
+
 //   "budget" - string, nullable
+
 //   "spent" - string, nullable
+
 func (o *projectBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {
@@ -2340,7 +2409,6 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 				if v == nil {
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
-
 				if n, ok := v.(int); ok {
 					o.SetNum(int(n))
 				} else if n, ok := v.(float64); ok {
@@ -2354,7 +2422,6 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 				if v == nil {
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
-
 				if n, ok := v.(int); ok {
 					o.SetProjectStatusType(ProjectStatusType(n))
 				} else if n, ok := v.(float64); ok {
@@ -2363,7 +2430,6 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 					return fmt.Errorf("json field %s must be a number", k)
 				}
 			}
-
 		case "projectStatusType":
 			if s, ok := v.(string); !ok {
 				return fmt.Errorf("json field %s must be a string", k)

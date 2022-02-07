@@ -44,7 +44,7 @@ func (l *RadioList) SetIsInline(i bool) {
 	l.isInline = i
 }
 
-// SetColumnClass sets a string that is applied to every cell. This is useful for setting responsive breakpoints
+// SetCellClass sets a string that is applied to every cell. This is useful for setting responsive breakpoints
 func (l *RadioList) SetCellClass(c string) {
 	l.cellClass = c
 }

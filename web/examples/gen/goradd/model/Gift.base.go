@@ -49,7 +49,8 @@ const (
 
 const (
 	Gift_Number = `Number`
-	Gift_Name   = `Name`
+
+	Gift_Name = `Name`
 )
 
 // Initialize or re-initialize a Gift database object to default values.
@@ -411,6 +412,7 @@ func (o *giftBase) insert(ctx context.Context) {
 		if !o.nameIsValid {
 			panic("a value for Name is required, and there is no default value. Call SetName() before inserting the record.")
 		}
+
 		m := o.getValidFields()
 
 		d.Insert(ctx, "gift", m)
@@ -426,10 +428,14 @@ func (o *giftBase) insert(ctx context.Context) {
 func (o *giftBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.numberIsDirty {
+
 		fields["number"] = o.number
+
 	}
 	if o.nameIsDirty {
+
 		fields["name"] = o.name
+
 	}
 	return
 }
@@ -437,10 +443,14 @@ func (o *giftBase) getModifiedFields() (fields map[string]interface{}) {
 func (o *giftBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.numberIsValid {
+
 		fields["number"] = o.number
+
 	}
 	if o.nameIsValid {
+
 		fields["name"] = o.name
+
 	}
 	return
 }
@@ -471,6 +481,7 @@ func (o *giftBase) resetDirtyStatus() {
 func (o *giftBase) IsDirty() bool {
 	return o.numberIsDirty ||
 		o.nameIsDirty
+
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -632,7 +643,9 @@ func (o *giftBase) MarshalStringMap() map[string]interface{} {
 //
 // The fields it expects are:
 //   "number" - int
+
 //   "name" - string
+
 func (o *giftBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {
@@ -652,7 +665,6 @@ func (o *giftBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 				if v == nil {
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
-
 				if n, ok := v.(int); ok {
 					o.SetNumber(int(n))
 				} else if n, ok := v.(float64); ok {

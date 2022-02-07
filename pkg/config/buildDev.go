@@ -22,15 +22,6 @@ const Release = false
 var projectDir string
 var goraddDir string // filled in by Goradd
 
-// GoraddAssets returns the disk location of the assets directory.
-func GoraddAssets() string {
-	return filepath.Join(goraddDir, "web", "assets")
-}
-
-func ProjectAssets() string {
-	return filepath.Join(projectDir, "web", "assets")
-}
-
 func GoraddDir() string {
 	return goraddDir
 }

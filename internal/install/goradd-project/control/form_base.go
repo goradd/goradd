@@ -21,7 +21,6 @@ func (f *FormBase) Init(ctx context.Context, id string) {
 // You can put overrides that should apply to all your forms here.
 func (f *FormBase) AddRelatedFiles() {
 	f.FormBase.AddRelatedFiles() // add default files
-	//f.AddJQueryUI()				// Load JQuery UI if needed
 	//bsconfig.LoadBootstrap(f) 	// Load Bootstrap if needed
 	// f.AddFontAwesome()			// Load FontAwesome if needed
 	// Load you own site-wide css and js files below
@@ -58,29 +57,4 @@ func (f *FormBase) AddHeadTags() {
 	 */
 }
 
-// AddJQuery adds the jquery javascript to the form
-/* Uncomment this to change how JQuery gets loaded
-func (f *FormBase) AddJQuery() {
-	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery3.js"), false, nil)
-	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.3.1.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=").
-				Set("crossorigin", "anonymous"))
-	}
-}
-*/
 
-// AddJQueryUI adds the JQuery UI javascript to the form. This is not loaded by default, but many add-ons
-// use it, so its here for convenience.
-/* Uncomment this to change how JQueryUI gets loaded
-func (f *FormBase) AddJQueryUI() {
-	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery-ui.js"), false, nil)
-	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=").
-				Set("crossorigin", "anonymous"))
-	}
-}
-*/

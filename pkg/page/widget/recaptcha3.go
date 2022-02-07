@@ -1,10 +1,10 @@
 package widget
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
+	"io"
 )
 
 type Recaptcha3 struct {
@@ -28,7 +28,7 @@ func (r *Recaptcha3) Init(parent page.ControlI, id string) {
 
 }
 
-func (r *Recaptcha3) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (r *Recaptcha3) Draw(ctx context.Context, w io.Writer) (err error) {
 	s := fmt.Sprintf(`<script src="https://www.google.com/recaptcha/api.js?render=%s"></script>
 <script>
 grecaptcha.ready(function() {
@@ -37,6 +37,6 @@ grecaptcha.ready(function() {
 	});
 });
 </script>`, r.SiteKey, r.ID())
-	buf.WriteString(s)
+	_,err = io.WriteString(w, s)
 	return
 }

@@ -9,8 +9,8 @@ services:
         container_name: grapp
         image: grapp
         ports:
-            # Map the image to port 8000. Change to whatever port you want.
-            - "8000:80"
+            # Map the image to port 80. Change to whatever port you want.
+            - "80:80"
         restart: always
 
         # Use a database config file

@@ -56,6 +56,8 @@ github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRF
 github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/alexedwards/scs/v2 v2.5.0 h1:zgxOfNFmiJyXG7UPIuw1g2b9LWBeRLh3PjfB9BDmfL4=
 github.com/alexedwards/scs/v2 v2.5.0/go.mod h1:ToaROZxyKukJKT/xLcVQAChi5k6+Pn1Gvmdl7h3RRj8=
+github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY3JY=
+github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
@@ -200,10 +202,10 @@ github.com/googleapis/gax-go/v2 v2.1.1/go.mod h1:hddJymUZASv3XPyGkUpKj8pPO47Rmb0
 github.com/goradd/gengen v0.3.0 h1:d496hKm+OPqgtNdg71QaKSRCgZbAC3w7AUuhgVOSd/w=
 github.com/goradd/gengen v0.3.0/go.mod h1:35hoePmgDfiH2wBr26ABvqmGnl/laPeJYJ5Sw1DQkkg=
 github.com/goradd/gofile v0.1.6/go.mod h1:FZVfQmXDUNgS7nKPMOsuIxf1VaC1vxYFeP0bmL8fcDU=
-github.com/goradd/gofile v0.2.0 h1:rOv7kkJPPuHK+7Bmidqma1Y4zWrGeNgJ66nOKpMv/uQ=
-github.com/goradd/gofile v0.2.0/go.mod h1:/vUM6h3DSic5pNDSryEoGYw9IL7gbiH+xoqlg9nA+UM=
-github.com/goradd/got v0.9.1 h1:QNA6I20/3XL0PZCI1InhjUDhkgRcix1fnTaP6eNR318=
-github.com/goradd/got v0.9.1/go.mod h1:KyLlXSXfRU0lQ6xHEdZwn5/d79n4HpBMtszZH7VgTH0=
+github.com/goradd/gofile v0.4.1 h1:+ZCB9yH88Y6BGYsI4g2QqDzkmNbE6WneC72pHuR4Q5E=
+github.com/goradd/gofile v0.4.1/go.mod h1:QdiRuLT9rTvWPd1pk1nPx5AJSgbGVj+HZg1cj1GkDOw=
+github.com/goradd/got v0.10.4 h1:rET1ESKgshXFxrFySZmO2h9hze2Tb76k7MkeOJhzdkU=
+github.com/goradd/got v0.10.4/go.mod h1:DotN1a2sHUNMm/iyA5kbd+wOeRkEQHXCTYXlHEHtztY=
 github.com/gorilla/css v1.0.0 h1:BQqNyPTi50JCFMTw/b67hByjMVXZRwGha6wxVGkeihY=
 github.com/gorilla/css v1.0.0/go.mod h1:Dn721qIggHpt4+EFCcTLTU/vk5ySda2ReITrtgBl60c=
 github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=

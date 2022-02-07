@@ -73,13 +73,14 @@ const (
 )
 
 const (
-	Person_ID        = `ID`
+	Person_ID = `ID`
+
 	Person_FirstName = `FirstName`
-	Person_LastName  = `LastName`
-	PersonAddresses  = `Addresses`
 
-	PersonEmployeeInfo = `EmployeeInfo`
+	Person_LastName = `LastName`
 
+	PersonAddresses            = `Addresses`
+	PersonEmployeeInfo         = `EmployeeInfo`
 	PersonLogin                = `Login`
 	PersonProjectsAsManager    = `ProjectsAsManager`
 	PersonPersonType           = `PersonType`
@@ -804,11 +805,15 @@ func (o *personBase) update(ctx context.Context) {
 				obj.SetPersonID(o.PrimaryKey())
 				obj.Save(ctx)
 			}
+
 		} else {
+
 			for _, obj := range o.oAddresses {
 				obj.Save(ctx)
 			}
+
 		}
+
 		if o.oEmployeeInfoIsDirty {
 
 			// Since the other side of the relationship cannot be null, the object to be detached must be deleted
@@ -820,11 +825,15 @@ func (o *personBase) update(ctx context.Context) {
 			}
 			o.oEmployeeInfo.SetPersonID(o.PrimaryKey())
 			o.oEmployeeInfo.Save(ctx)
+
 		} else {
+
 			if o.oEmployeeInfo != nil {
 				o.oEmployeeInfo.Save(ctx)
 			}
+
 		}
+
 		if o.oLoginIsDirty {
 
 			// Since the other side of the relationship cannot be null, the object to be detached must be deleted
@@ -836,12 +845,17 @@ func (o *personBase) update(ctx context.Context) {
 			}
 			o.oLogin.SetPersonID(o.PrimaryKey())
 			o.oLogin.Save(ctx)
+
 		} else {
+
 			if o.oLogin != nil {
 				o.oLogin.Save(ctx)
 			}
+
 		}
+
 		if o.oProjectsAsManagerIsDirty {
+
 			objs := QueryProjects(ctx).
 				Where(Equal(node.Project().ManagerID(), o.PrimaryKey())).
 				Load()
@@ -859,9 +873,11 @@ func (o *personBase) update(ctx context.Context) {
 			}
 
 		} else {
+
 			for _, obj := range o.oProjectsAsManager {
 				obj.Save(ctx)
 			}
+
 		}
 
 		if o.oPersonTypesIsDirty {
@@ -873,6 +889,7 @@ func (o *personBase) update(ctx context.Context) {
 				"person_type_id",
 				o.oPersonTypes)
 		}
+
 		{
 			var pks []string
 			o.mProjectsAsTeamMember = make(map[string]*Project)
@@ -912,6 +929,7 @@ func (o *personBase) insert(ctx context.Context) {
 		if !o.lastNameIsValid {
 			panic("a value for LastName is required, and there is no default value. Call SetLastName() before inserting the record.")
 		}
+
 		m := o.getValidFields()
 
 		id := d.Insert(ctx, "person", m)
@@ -919,31 +937,39 @@ func (o *personBase) insert(ctx context.Context) {
 		o._originalPK = id
 
 		if o.oAddresses != nil {
+
 			o.mAddresses = make(map[string]*Address)
 			for _, obj := range o.oAddresses {
 				obj.SetPersonID(id)
 				obj.Save(ctx)
 				o.mAddresses[obj.PrimaryKey()] = obj
 			}
+
 		}
 
 		if o.oEmployeeInfo != nil {
+
 			o.oEmployeeInfo.SetPersonID(id)
 			o.oEmployeeInfo.Save(ctx)
+
 		}
 
 		if o.oLogin != nil {
+
 			o.oLogin.SetPersonID(id)
 			o.oLogin.Save(ctx)
+
 		}
 
 		if o.oProjectsAsManager != nil {
+
 			o.mProjectsAsManager = make(map[string]*Project)
 			for _, obj := range o.oProjectsAsManager {
 				obj.SetManagerID(id)
 				obj.Save(ctx)
 				o.mProjectsAsManager[obj.PrimaryKey()] = obj
 			}
+
 		}
 		if len(o.oPersonTypes) != 0 {
 			d.Associate(ctx,
@@ -982,13 +1008,19 @@ func (o *personBase) insert(ctx context.Context) {
 func (o *personBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
+
 		fields["id"] = o.id
+
 	}
 	if o.firstNameIsDirty {
+
 		fields["first_name"] = o.firstName
+
 	}
 	if o.lastNameIsDirty {
+
 		fields["last_name"] = o.lastName
+
 	}
 	return
 }
@@ -996,10 +1028,14 @@ func (o *personBase) getModifiedFields() (fields map[string]interface{}) {
 func (o *personBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.firstNameIsValid {
+
 		fields["first_name"] = o.firstName
+
 	}
 	if o.lastNameIsValid {
+
 		fields["last_name"] = o.lastName
+
 	}
 	return
 }
@@ -1011,6 +1047,7 @@ func (o *personBase) Delete(ctx context.Context) {
 	}
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
+
 		{
 			objs := QueryAddresses(ctx).
 				Where(Equal(node.Address().PersonID(), o.PrimaryKey())).
@@ -1021,6 +1058,7 @@ func (o *personBase) Delete(ctx context.Context) {
 			}
 			o.oAddresses = nil
 		}
+
 		{
 			obj := QueryEmployeeInfos(ctx).
 				Where(Equal(node.EmployeeInfo().PersonID(), o.PrimaryKey())).
@@ -1031,6 +1069,7 @@ func (o *personBase) Delete(ctx context.Context) {
 			}
 			o.oEmployeeInfo = nil
 		}
+
 		{
 			obj := QueryLogins(ctx).
 				Where(Equal(node.Login().PersonID(), o.PrimaryKey())).
@@ -1041,6 +1080,7 @@ func (o *personBase) Delete(ctx context.Context) {
 			}
 			o.oLogin = nil
 		}
+
 		{
 			c := QueryProjects(ctx).
 				Where(Equal(node.Project().ManagerID(), o.PrimaryKey())).
@@ -1049,6 +1089,7 @@ func (o *personBase) Delete(ctx context.Context) {
 				panic("Cannot delete a record that has restricted foreign keys pointing to it.")
 			}
 		}
+
 		d.Associate(ctx,
 			"person_persontype_assn",
 			"person_id",
@@ -1096,6 +1137,7 @@ func (o *personBase) IsDirty() bool {
 		o.oEmployeeInfoIsDirty ||
 		o.oLoginIsDirty ||
 		o.oProjectsAsManagerIsDirty
+
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -1194,7 +1236,6 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
-
 	if o.oEmployeeInfo == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -1244,7 +1285,6 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
-
 	if o.oProjectsAsTeamMember == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -1489,8 +1529,11 @@ func (o *personBase) MarshalStringMap() map[string]interface{} {
 //
 // The fields it expects are:
 //   "id" - string
+
 //   "firstName" - string
+
 //   "lastName" - string
+
 func (o *personBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

@@ -60,11 +60,15 @@ const (
 )
 
 const (
-	Address_ID       = `ID`
+	Address_ID = `ID`
+
 	Address_PersonID = `PersonID`
-	Address_Person   = `Person`
-	Address_Street   = `Street`
-	Address_City     = `City`
+
+	Address_Person = `Person`
+
+	Address_Street = `Street`
+
+	Address_City = `City`
 )
 
 // Initialize or re-initialize a Address database object to default values.
@@ -591,6 +595,7 @@ func (o *addressBase) insert(ctx context.Context) {
 		if !o.streetIsValid {
 			panic("a value for Street is required, and there is no default value. Call SetStreet() before inserting the record.")
 		}
+
 		m := o.getValidFields()
 
 		id := d.Insert(ctx, "address", m)
@@ -606,20 +611,28 @@ func (o *addressBase) insert(ctx context.Context) {
 func (o *addressBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
+
 		fields["id"] = o.id
+
 	}
 	if o.personIDIsDirty {
+
 		fields["person_id"] = o.personID
+
 	}
 	if o.streetIsDirty {
+
 		fields["street"] = o.street
+
 	}
 	if o.cityIsDirty {
+
 		if o.cityIsNull {
 			fields["city"] = nil
 		} else {
 			fields["city"] = o.city
 		}
+
 	}
 	return
 }
@@ -627,17 +640,23 @@ func (o *addressBase) getModifiedFields() (fields map[string]interface{}) {
 func (o *addressBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.personIDIsValid {
+
 		fields["person_id"] = o.personID
+
 	}
 	if o.streetIsValid {
+
 		fields["street"] = o.street
+
 	}
 	if o.cityIsValid {
+
 		if o.cityIsNull {
 			fields["city"] = nil
 		} else {
 			fields["city"] = o.city
 		}
+
 	}
 	return
 }
@@ -669,9 +688,11 @@ func (o *addressBase) resetDirtyStatus() {
 
 func (o *addressBase) IsDirty() bool {
 	return o.idIsDirty ||
-		o.personIDIsDirty || (o.oPerson != nil && o.oPerson.IsDirty()) ||
+		o.personIDIsDirty ||
+		(o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.streetIsDirty ||
 		o.cityIsDirty
+
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -929,9 +950,13 @@ func (o *addressBase) MarshalStringMap() map[string]interface{} {
 //
 // The fields it expects are:
 //   "id" - string
+
 //   "personID" - string
+
 //   "street" - string
+
 //   "city" - string, nullable
+
 func (o *addressBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

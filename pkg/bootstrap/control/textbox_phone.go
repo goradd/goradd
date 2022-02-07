@@ -28,7 +28,7 @@ func (t *PhoneTextbox) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-// Use PhoneTextboxCreator to create an email textbox.
+// PhoneTextboxCreator creates an phone textbox.
 // Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
 type PhoneTextboxCreator struct {

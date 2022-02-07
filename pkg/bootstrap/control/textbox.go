@@ -32,7 +32,7 @@ func init() {
 	page.RegisterControl(&Textbox{})
 }
 
-// Use TextboxCreator to create a textbox. Pass it to AddControls of a control, or as a Child of
+// TextboxCreator creates a textbox. Pass it to AddControls of a control, or as a Child of
 // a FormGroup.
 type TextboxCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
@@ -50,7 +50,7 @@ type TextboxCreator struct {
 	// ColumnCount is the number of characters wide the textbox will be, and becomes the width attribute in the tag.
 	// The actual width is browser dependent. For better control, use a width style property.
 	ColumnCount int
-	// RowCount creates a multi-line textarea with the given number of rows. By default the
+	// RowCount creates a multi-line textarea with the given number of rows. By default, the
 	// textbox will expand vertically by this number of lines. Use a height style property for
 	// better control of the height of a textbox.
 	RowCount int

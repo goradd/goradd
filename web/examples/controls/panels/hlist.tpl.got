@@ -1,7 +1,4 @@
-{{< package }}panels{{end}}
-{{< imports }}
-{{end}}
-{{< control }}HListPanel{{end}}
+{{< control }}HListPanel{{end control}}
 
 {{define template }}
 <h2>Hierarchical Lists</h2>
@@ -17,6 +14,6 @@ hierarchical checklists, and more.
 <h3>Unordered List</h3>
 {{draw "unorderedList" }}
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

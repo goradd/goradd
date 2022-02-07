@@ -5,11 +5,10 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/sys"
+	http2 "github.com/goradd/goradd/pkg/http"
+	_ "github.com/goradd/goradd/pkg/messageServer/ws/assets"
 	"net/http"
 	"path"
-	"path/filepath"
 )
 
 type WsMessenger struct {
@@ -23,20 +22,12 @@ func (m *WsMessenger) Start() *WebSocketHub {
 }
 
 func (m *WsMessenger) JavascriptInit() string {
-	return fmt.Sprintf("goradd.initMessagingClient(%q);\n", config.MakeLocalPath(config.WebsocketMessengerPrefix))
+	return fmt.Sprintf("goradd.initMessagingClient(%q);\n", http2.MakeLocalPath(config.WebsocketMessengerPrefix))
 }
 
 func (m *WsMessenger) JavascriptFiles() map[string]html.Attributes {
 	ret := make(map[string]html.Attributes)
-	var p string
-	if config.Release {
-		// Note that this is going to get the file out of the location we copied it to for deployment.
-		// This must be coordinated with that copy operation, which is located by default in the goradd-project/build/makeAssets.sh file
-		p = path.Join(config.AssetPrefix, "messenger", "js", "goradd-ws.js")
-	} else {
-		cur := sys.SourceDirectory()
-		p = filepath.Join(cur, "assets", "js", "goradd-ws.js")
-	}
+	p := path.Join(config.AssetPrefix, "messenger", "js", "goradd-ws.js")
 	ret[p] = nil
 	return ret
 }
@@ -56,14 +47,4 @@ func (m *WsMessenger) WebSocketHandler() http.Handler {
 		clientID := r.Context().Value(goradd.WebSocketContext).(string)
 		serveWs(m.hub, w, r, clientID)
 	})
-}
-
-func WsAssets() string {
-	wsAssets := sys.SourceDirectory()
-	wsAssets = filepath.Join(wsAssets, "assets")
-	return wsAssets
-}
-
-func init() {
-	page.RegisterAssetDirectory(WsAssets(), config.AssetPrefix+"messenger")
 }

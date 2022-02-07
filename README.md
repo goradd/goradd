@@ -45,9 +45,7 @@ the built-in unit test environment and documentation server. You can still work 
 want to or need to do custom UI work, but often you don't have to.
 1) Stability. We want to build applications that real people use, and that means reliance on tried
 and true technologies that work on a broad range of browsers and servers, rather than technologies
-that require lots of Polyfills for emerging standards. JQuery is currently required, and partly because we want
-to make it easy to create Bootstrap based applications. However, Bootstrap has announced
-that they are removing reliance on JQuery, and we will attempt to do so as well.
+that require lots of Polyfills for emerging standards.
 1) Progressive enhancement. If you use the provided widgets, you can create a website
 that works even if the client turns off Javascript. All major browsers are currently supported,
 but we hope to support Opera Mini as well.
@@ -77,12 +75,11 @@ are interested in, but that is not difficult. Some specific issues to consider:
        with the messages and traffic is minimal.
 
 ### Future Goals
+* Expand database drivers, including NoSQL support
 * WebComponents. WebComponent architecture fits particularly well with goradd's architecture. However,
 WebComponents are not fully supported by all major browsers. As WebComponents gain traction, we hope
-to use them for future browser widgets. In the mean-time, we support many JQuery based widgets.
-* Matching GraphQL or GraphQL like interface. The ORM architecture has many similarities to
-GraphQL, and could potentially auto-generate a GraphQL interface to make it easy to integrate
-a mobile app interface. 
+to use them for future browser widgets.
+* Automated generation of a REST Api, including generation of Flutter client code.
 
 ### Anti-patterns
 1) GoRADD's html server is not microservice based. 

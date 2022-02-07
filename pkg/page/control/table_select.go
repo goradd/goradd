@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"path"
 )
 
 // PrimaryKeyer is an interface that is often implemented by model objects.
@@ -38,8 +39,8 @@ func NewSelectTable(parent page.ControlI, id string) *SelectTable {
 
 func (t *SelectTable) Init(parent page.ControlI, id string) {
 	t.Table.Init(parent, id)
-	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/goradd-scrollIntoView.js", false, nil)
-	t.ParentForm().AddJavaScriptFile(config.GoraddAssets() + "/js/table-select.js", false, nil)
+	t.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "/js/goradd-scrollIntoView.js"), false, nil)
+	t.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "/js/table-select.js"), false, nil)
 	t.SetAttribute("tabindex", 0); // Make the entire table focusable and selectable. This can be overridden later if needed.
 	t.AddClass("gr-clickable-rows")
 }

@@ -213,7 +213,7 @@ func (form *TestForm) panicked(message string, testName string) {
 	form.currentFailed = true
 }
 
-// ChangeVal will change the value of a form object. It essentially calls the jQuery .val() function on
+// ChangeVal will change the value of a form object. It essentially calls the javascript .val() function on
 // the html object with the given id, followed by sending a change event to the object. This is not quite
 // the same thing as what happens when a user changes a value, as text boxes may send input events, and change
 // is fired on some objects only when losing focus. However, this will simulate changing a value adequately for most
@@ -322,7 +322,7 @@ func (form *TestForm) ControlValue(id string) interface{} {
 
 }
 
-// ControlAttribute will call the jquery .attr("attribute") function on the given html object looking for the given
+// ControlAttribute will call the .attr("attribute") function on the given html object looking for the given
 // attribute name and will return the value.
 func (form *TestForm) ControlAttribute(id string, attribute string) interface{} {
 	return form.Controller.callWidgetFunction(id, "attr", []interface{}{attribute}, form.captureCaller())

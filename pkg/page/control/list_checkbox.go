@@ -1,10 +1,10 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"io"
 	"strings"
 )
 
@@ -130,11 +130,11 @@ func (l *CheckboxList) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // DrawInnerHtml is called by the framework to draw the contents of the list.
-func (l *CheckboxList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *CheckboxList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.this().RenderItems(l.items)
 	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
-	buf.WriteString(h)
-	return nil
+	page.WriteString(w, h)
+	return
 }
 
 func (l *CheckboxList) RenderItems(items []*ListItem) string {
@@ -281,7 +281,7 @@ func (c CheckboxListCreator) Init(ctx context.Context, ctrl CheckboxListI) {
 	}
 }
 
-// GetRadioList is a convenience method to return the control with the given id from the page.
+// GetCheckboxList is a convenience method to return the control with the given id from the page.
 func GetCheckboxList(c page.ControlI, id string) *CheckboxList {
 	return c.Page().GetControl(id).(*CheckboxList)
 }

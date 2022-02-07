@@ -1,18 +1,18 @@
 {{< imports }}
-{{end}}
+{{end imports}}
 {{< headTags }}
-{{end}}
-{{< package }}examples{{end}}
-{{< title }}Goradd Bootstrap Examples{{end}}
-{{< form }}ControlsForm{{end}}
+{{end headTags}}
+{{< package }}examples{{end package}}
+{{< title }}Goradd Bootstrap Examples{{end title}}
+{{< form }}ControlsForm{{end form}}
 {{< bodyAttributes }}
-{{end}}
+{{end bodyAttributes}}
 
 
 {{define template }}
 {{draw nav }}
 
 {{draw detailPanel }}
-{{end}}
+{{end template}}
 
 {{renderFormTemplate}}

@@ -1,7 +1,7 @@
-{{< package }}orm{{end}}
+{{< package }}orm{{end package}}
 {{< imports }}
-{{end}}
-{{< control }}IntroPanel{{end}}
+{{end imports}}
+{{< control }}IntroPanel{{end control}}
 
 {{define template }}
 <h1>Introduction to the ORM</h1>
@@ -53,6 +53,6 @@ For example, a field named "team_member" in the database will become "TeamMember
 }}
 </p>
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

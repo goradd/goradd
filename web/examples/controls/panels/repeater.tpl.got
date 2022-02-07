@@ -1,7 +1,4 @@
-{{< package }}panels{{end}}
-{{< imports }}
-{{end}}
-{{< control }}RepeaterPanel{{end}}
+{{< control }}RepeaterPanel{{end control}}
 
 {{define template }}
 <h2>Repeaters</h2>
@@ -15,6 +12,6 @@ Repeaters can use Pagers to control which data items are shown in the repeater.
 </p>
 {{draw pager1}}
 {{draw repeater1}}
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

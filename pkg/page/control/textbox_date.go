@@ -42,14 +42,14 @@ func (d *DateTextbox) Init(parent page.ControlI, id string) {
 	d.formats = []string{datetime.UsDateTime}
 }
 
-// SetFormat sets the format of the text allowed. The format is any allowable format
+// SetFormats sets the format of the text allowed. The format is any allowable format
 // that datetime or time can convert.
 func (d *DateTextbox) SetFormats(formats []string) DateTextboxI {
 	d.formats = formats
 	return d
 }
 
-// Format returns the format string specified previously
+// Formats returns the format string specified previously
 func (d *DateTextbox) Formats() []string {
 	return d.formats
 }
@@ -147,6 +147,8 @@ func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
 
 	if err == nil {
 		d.dt = v
+	} else {
+		d.dt = datetime.DateTime{} // set to zero value to indicate an error
 	}
 }
 
@@ -200,7 +202,7 @@ func (v DateValidator) Validate(c page.ControlI, s string) (msg string) {
 	return
 }
 
-// Use DateTextboxCreator to create an email textbox.
+// DateTextboxCreator creates an date textbox.
 // Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
 type DateTextboxCreator struct {

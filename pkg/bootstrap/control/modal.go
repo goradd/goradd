@@ -15,7 +15,6 @@ type ModalBackdropType int
 
 const (
 	ModalBackdrop ModalBackdropType = iota		// Standard bootstrap backdrop. Clicking the backdrop closes the modal.
-	ModalNoBackdrop							    // No backdrop
 	ModalStaticBackdrop							// Clicking the backdrop will not close the modal.
 )
 
@@ -130,6 +129,9 @@ func (m *Modal) AddTitlebarClass(class string) {
 func (m *Modal) DrawingAttributes(ctx context.Context) html.Attributes {
 	a := m.Panel.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "bs-modal")
+	if m.backdrop == ModalStaticBackdrop {
+		a.SetDataAttribute("bs-backdrop", "static")
+	}
 	return a
 }
 
@@ -150,7 +152,8 @@ func (m *Modal) AddButton(
 
 	if options != nil {
 		if options.IsClose {
-			btn.SetAttribute("data-dismiss", "modal") // make it a close button
+			btn.SetDataAttribute("bsDismiss", "modal") // make it a close button
+			btn.SetDataAttribute("bsTarget", m.ID()) // make it a close button
 		} else if options.ConfirmationMessage == "" {
 			if options.OnClick != nil {
 				btn.On(event.Click(), options.OnClick)
@@ -256,11 +259,11 @@ func (m *Modal) Show() {
 	m.SetVisible(true)
 	m.isOpen = true
 	//d.Refresh()
-	m.ParentForm().Response().ExecuteJqueryCommand(m.ID(), "modal", page.PriorityLow, "show")
+	m.ParentForm().Response().ExecuteJavaScript(fmt.Sprintf("bootstrap.Modal.getInstance(document.getElementById('%s')).show();", m.ID()), page.PriorityLow)
 }
 
 func (m *Modal) Hide() {
-	m.ParentForm().Response().ExecuteJqueryCommand(m.ID(), "modal", page.PriorityLow, "hide")
+	m.ParentForm().Response().ExecuteJavaScript(fmt.Sprintf("bootstrap.Modal.getInstance(document.getElementById('%s')).hide()", m.ID()), page.PriorityLow)
 }
 
 func (m *Modal) closed() {
@@ -270,22 +273,12 @@ func (m *Modal) closed() {
 }
 
 func (m *Modal) PutCustomScript(_ context.Context, response *page.Response) {
-	var backdrop interface{}
 
-	switch m.backdrop {
-	case ModalBackdrop:
-		backdrop = true
-	case ModalNoBackdrop:
-		backdrop = false
-	case ModalStaticBackdrop:
-		backdrop = "static"
-	}
-
-	script := fmt.Sprintf(
-		`jQuery("#%s").modal({backdrop: %#v, keyboard: %t, focus: true, show: %t});`,
-		m.ID(), backdrop, m.closeOnEscape, m.isOpen)
+	script := fmt.Sprintf(`
+var m = new bootstrap.Modal(document.getElementById('%s') , {keyboard: %t});
+`, m.ID(), m.closeOnEscape)
 	script += fmt.Sprintf(
-		`jQuery("#%s").on("hidden.bs.modal", function(){g$("%[1]s").trigger("grdlgclosed")});`, m.ID())
+		`g$("%s").on("hidden.bs.modal", function(){g$("%[1]s").trigger("grdlgclosed")});`, m.ID())
 
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }

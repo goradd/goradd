@@ -12,3 +12,8 @@ specific features, like logging, profiling, etc. This allows you to create a rel
 by your testers and deployed on a mirror image of your deployment server, but still has particular debug features so 
 your testers can recreate issues and deliver usable information to your developers.
 
+## Building a Release Version
+See the goradd-project/build directory for sample scripts to build the final version of
+your app. There are examples there to build a standalone application and a dockerized container of
+your app.
+
