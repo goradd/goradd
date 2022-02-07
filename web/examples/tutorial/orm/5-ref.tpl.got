@@ -1,10 +1,10 @@
-{{< package }}orm{{end}}
+{{< package }}orm{{end package}}
 {{< imports }}
 	"github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-{{end}}
-{{< control }}RefPanel{{end}}
+{{end imports}}
+{{define control}}RefPanel{{end control}}
 
 {{define template }}
 <h1>References</h1>
@@ -77,8 +77,6 @@
     {{for}}
 </p>
 
-
-
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

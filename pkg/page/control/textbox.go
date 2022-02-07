@@ -1,7 +1,6 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"encoding/gob"
 	"fmt"
@@ -10,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
+	"io"
 	"strconv"
 )
 
@@ -73,7 +73,7 @@ func NewTextbox(parent page.ControlI, id string) *Textbox {
 	return t
 }
 
-// Initializes a textbox. Normally you will not call this directly.
+// Init initializes a textbox. Normally you will not call this directly.
 func (t *Textbox) Init(parent page.ControlI, id string) {
 	t.ControlBase.Init(parent, id)
 
@@ -129,12 +129,12 @@ func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
 
 // DrawInnerHtml is an internal function that renders the inner html of a tag. In this case, it is rendering the inner
 // text of a textarea
-func (t *Textbox) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	_, err = buf.WriteString(html2.EscapeString(t.Text()))
+func (t *Textbox) DrawInnerHtml(_ context.Context, w io.Writer) {
+	page.WriteString(w, html2.EscapeString(t.Text()))
 	return
 }
 
-// Set the value of the text. Returns itself for chaining.
+// SetText sets the value of the text. Returns itself for chaining.
 func (t *Textbox) SetText(s string) page.ControlI {
 	t.value = s
 	t.AddRenderScript("val", s)
@@ -310,7 +310,7 @@ func (t *Textbox) MarshalState(m maps.Setter) {
 // UnmarshalState is an internal function to restore the state of the control
 func (t *Textbox) UnmarshalState(m maps.Loader) {
 	if v, ok := m.Load("text"); ok {
-		if s, ok := v.(string); ok {
+		if s, ok2 := v.(string); ok2 {
 			t.value = s
 		}
 	}
@@ -373,7 +373,7 @@ func (t *Textbox) Deserialize(d page.Decoder) (err error) {
 	return
 }
 
-// MinLenghtValidator is a validator that checks that the user has entered a minimum length.
+// MinLengthValidator is a validator that checks that the user has entered a minimum length.
 // It is set up automatically by calling SetMinValue.
 type MinLengthValidator struct {
 	Length  int
@@ -416,7 +416,7 @@ func (v MaxLengthValidator) Validate(c page.ControlI, s string) (msg string) {
 	return
 }
 
-// Use TextboxCreator to create a textbox. Pass it to AddControls of a control, or as a Child of
+// TextboxCreator creates a textbox. Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
 type TextboxCreator struct {
 	// ID is the control id of the html widget and must be unique to the page

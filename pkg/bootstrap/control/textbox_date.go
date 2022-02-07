@@ -28,7 +28,7 @@ func (t *DateTextbox) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-// Use DateTextboxCreator to create an email textbox.
+// DateTextboxCreator creates an email textbox.
 // Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
 type DateTextboxCreator struct {
@@ -84,7 +84,7 @@ func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
 	sub.Init(ctx, ctrl)
 }
 
-// GetEmailTextbox is a convenience method to return the control with the given id from the page.
+// GetDateTextbox is a convenience method to return the control with the given id from the page.
 func GetDateTextbox(c page.ControlI, id string) *DateTextbox {
 	return c.Page().GetControl(id).(*DateTextbox)
 }

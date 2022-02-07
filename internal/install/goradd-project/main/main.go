@@ -10,13 +10,11 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/sys"
-	app2 "github.com/goradd/goradd/web/app"
+	_ "goradd-project/web" // Registers file assets through init calls.
 	"goradd-project/web/app"
-	"log"
-	"strings"
+	_ "goradd-project/web/form" // Registers forms through init calls.
+	// _ "goradd-project/api" // Uncomment this if you are implementing an API (i.e. REST api).
 
-	// Below is where you import packages that register forms
-	_ "goradd-project/web/form" // Your  forms.
 	// Custom paths, including additional form directories
 	// _ "mysite"
 )
@@ -26,15 +24,16 @@ var tlsPort = flag.Int("tlsPort", -1, "Serve securely from the given port.")
 var tlsKeyFile = flag.String("keyFile", "", "Path to key file for tls.")
 var tlsCertFile = flag.String("certFile", "", "Path to cert file for tls.")
 
-var assetDir = flag.String("assetDir", "", "The centralized asset directory. Required to run the release version of the app.")
-var htmlDir = flag.String("htmlDir", "", "The centralized html directory. Required to run the release version of the app if you are serving static files.")
 var proxyPath = flag.String("proxyPath", "", "The url path to the application.")
-var staticPaths arrayFlags // See below. Holds the static paths to be registered with the app.
 // Create other flags you might care about here
+
+// dbConfigFile is actually read and used in config/db.go, but we define it here so it can be part of the usage message
+var _ = flag.String("dbConfigFile", "", "The path to the database configuration file.")
 
 func main() {
 	var err error
 
+	flag.Parse()
 	useFlags()
 	a := app.MakeApplication()
 	fmt.Println("\nLaunching server on " + sys.GetIpAddress())
@@ -46,14 +45,6 @@ func main() {
 }
 
 func useFlags() {
-	if *assetDir != "" {
-		config.SetAssetDirectory(*assetDir)
-	}
-
-	if *htmlDir != "" {
-		config.SetHtmlDirectory(*htmlDir)
-	}
-
 	if *proxyPath != "" {
 		config.ProxyPath = *proxyPath
 	}
@@ -72,30 +63,4 @@ func useFlags() {
 	if *tlsCertFile != "" {
 		config.TLSCertFile = *tlsCertFile
 	}
-
-	for _, s := range staticPaths {
-		i := strings.IndexAny(s, ":;")
-		if i == -1 {
-			log.Fatal("map must specify a path and directory, separated by a colon or semicolon")
-		}
-		app2.RegisterStaticPath(s[:i], s[i+1:])
-	}
-
-}
-
-// Setup the ability to add multiple static paths
-type arrayFlags []string
-
-func (i *arrayFlags) String() string {
-	return fmt.Sprint(*i)
-}
-
-func (i *arrayFlags) Set(value string) error {
-	*i = append(*i, value)
-	return nil
-}
-
-func init() {
-	flag.Var(&staticPaths, "map", "Map a physical directory or file to a url path. The path comes first, followed by the directory or file, separated by a comma or semicolon. Directory paths should end with a forward slash (/). You can specify this flag multiple times.")
-	flag.Parse() // Parse the command line flags
 }

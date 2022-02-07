@@ -1,8 +1,9 @@
 package rest
 
-// This is both an examle of how to create handlers for api's, like REST api's, but also is
+// This is both an example of how to create handlers for api's, like REST api's, but also is
 // an important handler to include if you need access to session variables from your handlers.
-
+//
+// To activate this, simply include this file in an import path from your application.
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/api"
@@ -13,7 +14,7 @@ import (
 const HelloPath = "/hello"
 
 func init() {
-	api.RegisterPattern(HelloPath, HelloHandler)
+	api.RegisterAppPattern(HelloPath, HelloHandler)
 }
 
 // HelloHandler sets up the initial communication with the client, establishing

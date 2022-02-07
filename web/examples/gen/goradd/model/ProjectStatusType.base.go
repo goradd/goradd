@@ -16,7 +16,6 @@ const (
 	ProjectStatusTypeCompleted ProjectStatusType = 3
 
 	ProjectStatusTypePlanned ProjectStatusType = 4
-
 )
 
 const ProjectStatusTypeMaxValue = 4
@@ -26,12 +25,18 @@ type ProjectStatusType int
 // String returns the name value of the type and satisfies the fmt.Stringer interface
 func (p ProjectStatusType) String() string {
 	switch p {
-	case 0: return ""
-	case 1: return "Open"
-	case 2: return "Cancelled"
-	case 3: return "Completed"
-	case 4: return "Planned"
-	default: panic("index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "Open"
+	case 2:
+		return "Cancelled"
+	case 3:
+		return "Completed"
+	case 4:
+		return "Planned"
+	default:
+		panic("index out of range")
 	}
 	return "" // prevent warning
 }
@@ -42,45 +47,52 @@ func (p ProjectStatusType) ID() string {
 }
 
 // ProjectStatusTypeFromID converts a ProjectStatusType ID to a ProjectStatusType
-func ProjectStatusTypeFromID (id string) ProjectStatusType {
+func ProjectStatusTypeFromID(id string) ProjectStatusType {
 	switch id {
-	case "1": return ProjectStatusType(1)
-	case "2": return ProjectStatusType(2)
-	case "3": return ProjectStatusType(3)
-	case "4": return ProjectStatusType(4)
+	case "1":
+		return ProjectStatusType(1)
+	case "2":
+		return ProjectStatusType(2)
+	case "3":
+		return ProjectStatusType(3)
+	case "4":
+		return ProjectStatusType(4)
 	}
 	return ProjectStatusType(0)
 }
 
 // ProjectStatusTypeFromName converts a ProjectStatusType name to a ProjectStatusType
-func ProjectStatusTypeFromName (name string) ProjectStatusType {
+func ProjectStatusTypeFromName(name string) ProjectStatusType {
 	switch name {
-	case "Open": return ProjectStatusType(1)
-	case "Cancelled": return ProjectStatusType(2)
-	case "Completed": return ProjectStatusType(3)
-	case "Planned": return ProjectStatusType(4)
+	case "Open":
+		return ProjectStatusType(1)
+	case "Cancelled":
+		return ProjectStatusType(2)
+	case "Completed":
+		return ProjectStatusType(3)
+	case "Planned":
+		return ProjectStatusType(4)
 	}
 	return ProjectStatusType(0)
 }
 
-
 // AllProjectStatusTypes returns a slice of all the ProjectStatusType items
 func AllProjectStatusTypes() (values []ProjectStatusType) {
-    values = append(values, 1)
-    values = append(values, 2)
-    values = append(values, 3)
-    values = append(values, 4)
-    return
+	values = append(values, 1)
+	values = append(values, 2)
+	values = append(values, 3)
+	values = append(values, 4)
+	return
 }
 
 // AllProjectStatusTypesI returns a slice of interfaces that contains all the ProjectStatusType items
 func AllProjectStatusTypesI() (values []interface{}) {
-    values = make([]interface{}, 4, 4)
-    values[0] = ProjectStatusType(1)
-    values[1] = ProjectStatusType(2)
-    values[2] = ProjectStatusType(3)
-    values[3] = ProjectStatusType(4)
-    return
+	values = make([]interface{}, 4, 4)
+	values[0] = ProjectStatusType(1)
+	values[1] = ProjectStatusType(2)
+	values[2] = ProjectStatusType(3)
+	values[3] = ProjectStatusType(4)
+	return
 }
 
 // Label returns the string that will be displayed to a user for this item. Together with
@@ -96,51 +108,74 @@ func (p ProjectStatusType) Value() interface{} {
 	return p.ID()
 }
 
-
 func (p ProjectStatusType) Name() string {
 	switch p {
-	case 0: return ""
-	case 1: return "Open"
-	case 2: return "Cancelled"
-	case 3: return "Completed"
-	case 4: return "Planned"
-	default: panic("Index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "Open"
+	case 2:
+		return "Cancelled"
+	case 3:
+		return "Completed"
+	case 4:
+		return "Planned"
+	default:
+		panic("Index out of range")
 	}
 	return "" // prevent warning
 }
 
 func (p ProjectStatusType) Description() string {
 	switch p {
-	case 0: return ""
-	case 1: return "The project is currently active"
-	case 2: return "The project has been canned"
-	case 3: return "The project has been completed successfully"
-	case 4: return "Project is in the planning stages and has not been assigned a manager"
-	default: panic("Index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "The project is currently active"
+	case 2:
+		return "The project has been canned"
+	case 3:
+		return "The project has been completed successfully"
+	case 4:
+		return "Project is in the planning stages and has not been assigned a manager"
+	default:
+		panic("Index out of range")
 	}
 	return "" // prevent warning
 }
 
 func (p ProjectStatusType) Guidelines() string {
 	switch p {
-	case 0: return ""
-	case 1: return "All projects that we are working on should be in this state"
-	case 2: return ""
-	case 3: return "Celebrate successes!"
-	case 4: return "Get ready"
-	default: panic("Index out of range")
+	case 0:
+		return ""
+	case 1:
+		return "All projects that we are working on should be in this state"
+	case 2:
+		return ""
+	case 3:
+		return "Celebrate successes!"
+	case 4:
+		return "Get ready"
+	default:
+		panic("Index out of range")
 	}
 	return "" // prevent warning
 }
 
 func (p ProjectStatusType) IsActive() bool {
 	switch p {
-	case 0: return false
-	case 1: return true
-	case 2: return true
-	case 3: return true
-	case 4: return false
-	default: panic("Index out of range")
+	case 0:
+		return false
+	case 1:
+		return true
+	case 2:
+		return true
+	case 3:
+		return true
+	case 4:
+		return false
+	default:
+		panic("Index out of range")
 	}
 	return false // prevent warning
 }
@@ -187,11 +222,16 @@ func ProjectStatusTypeIsActives() []bool {
 
 func (p ProjectStatusType) Get(key string) interface{} {
 
-    switch(key) {
-    case "Name": return p.Name()
-    case "Description": return p.Description()
-    case "Guidelines": return p.Guidelines()
-    case "IsActive": return p.IsActive()
-    default: return nil
-    }
+	switch key {
+	case "Name":
+		return p.Name()
+	case "Description":
+		return p.Description()
+	case "Guidelines":
+		return p.Guidelines()
+	case "IsActive":
+		return p.IsActive()
+	default:
+		return nil
+	}
 }

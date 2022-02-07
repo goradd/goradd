@@ -1,7 +1,5 @@
-{{< package }}tutorial{{end}}
-{{< imports }}
-{{end}}
-{{< control }}DefaultPanel{{end}}
+{{< package }}tutorial{{end package}}
+{{define control}}DefaultPanel{{end control}}
 
 {{define template }}
 <h1>Tutorial</h1>
@@ -17,6 +15,6 @@ Welcome to the GoRADD tutorial. These pages will help you learn about:
 Click on the items on the left to go to the various demonstration pages. To see the source code that generated a page,
 click on the <strong>View Source</strong> button in the upper right corner of any page.
 </p>
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

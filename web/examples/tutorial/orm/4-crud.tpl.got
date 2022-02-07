@@ -1,12 +1,12 @@
-{{< package }}orm{{end}}
+{{< package }}orm{{end package}}
 {{< imports }}
 	"github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-{{end}}
-{{< control }}CrudPanel{{end}}
+{{end imports}}
+{{define control}}CrudPanel{{end control}}
 
-{{define template }}
+{{define template}}
 <h1>Creating, Modifying and Deleting Database Objects</h1>
 
 <h2>Creating a Database Obect</h2>
@@ -46,9 +46,6 @@ For example: </p>
     project.Delete()
 </code></pre>
 
-
-
-
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

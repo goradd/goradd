@@ -1,7 +1,4 @@
-{{< package }}panels{{end}}
-{{< imports }}
-{{end}}
-{{< control }}TextboxPanel{{end}}
+{{define control}}TextboxPanel{{end control}}
 
 {{define template }}
 <h2>Textboxes</h2>
@@ -69,6 +66,6 @@ of ones that are commonly supported.
 
 {{draw ajaxButton }}
 {{draw serverButton }}
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

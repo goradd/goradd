@@ -5,7 +5,7 @@ package template
 import (
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
-	"bytes"
+	"io"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"fmt"
 )
@@ -33,8 +33,9 @@ func (n *DbTemplate) FileName(key string) string {
 	return targetDir + "/" + key + "/model/db.go"
 }
 
-func (n *DbTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.Database, buf *bytes.Buffer) {
+func (n *DbTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.Database, _w io.Writer) (err error) {
 	{{: "db/db.tmpl" }}
+	return
 }
 
 func (n *DbTemplate) Overwrite() bool {

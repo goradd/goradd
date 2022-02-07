@@ -61,9 +61,12 @@ const (
 )
 
 const (
-	PersonWithLock_ID           = `ID`
-	PersonWithLock_FirstName    = `FirstName`
-	PersonWithLock_LastName     = `LastName`
+	PersonWithLock_ID = `ID`
+
+	PersonWithLock_FirstName = `FirstName`
+
+	PersonWithLock_LastName = `LastName`
+
 	PersonWithLock_SysTimestamp = `SysTimestamp`
 )
 
@@ -535,6 +538,7 @@ func (o *personWithLockBase) insert(ctx context.Context) {
 		if !o.lastNameIsValid {
 			panic("a value for LastName is required, and there is no default value. Call SetLastName() before inserting the record.")
 		}
+
 		m := o.getValidFields()
 
 		id := d.Insert(ctx, "person_with_lock", m)
@@ -550,20 +554,28 @@ func (o *personWithLockBase) insert(ctx context.Context) {
 func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
+
 		fields["id"] = o.id
+
 	}
 	if o.firstNameIsDirty {
+
 		fields["first_name"] = o.firstName
+
 	}
 	if o.lastNameIsDirty {
+
 		fields["last_name"] = o.lastName
+
 	}
 	if o.sysTimestampIsDirty {
+
 		if o.sysTimestampIsNull {
 			fields["sys_timestamp"] = nil
 		} else {
 			fields["sys_timestamp"] = o.sysTimestamp.GoTime()
 		}
+
 	}
 	return
 }
@@ -571,17 +583,23 @@ func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{})
 func (o *personWithLockBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.firstNameIsValid {
+
 		fields["first_name"] = o.firstName
+
 	}
 	if o.lastNameIsValid {
+
 		fields["last_name"] = o.lastName
+
 	}
 	if o.sysTimestampIsValid {
+
 		if o.sysTimestampIsNull {
 			fields["sys_timestamp"] = nil
 		} else {
 			fields["sys_timestamp"] = o.sysTimestamp.GoTime()
 		}
+
 	}
 	return
 }
@@ -616,6 +634,7 @@ func (o *personWithLockBase) IsDirty() bool {
 		o.firstNameIsDirty ||
 		o.lastNameIsDirty ||
 		o.sysTimestampIsDirty
+
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -847,9 +866,13 @@ func (o *personWithLockBase) MarshalStringMap() map[string]interface{} {
 //
 // The fields it expects are:
 //   "id" - string
+
 //   "firstName" - string
+
 //   "lastName" - string
+
 //   "sysTimestamp" - datetime.DateTime, nullable
+
 func (o *personWithLockBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

@@ -2,16 +2,16 @@
 
 {{define row}}
 <div class="row">
-{{end}}
+{{end row}}
 
 {{define +row}}
 </div>
 <div class="row">
-{{end}}
+{{end +row}}
 
 {{define -row}}
 </div>
-{{end}}
+{{end -row}}
 
 {{define col 1}}
 {{if "$1" == ""}}
@@ -19,7 +19,7 @@
 {{else}}
 <div class="col-$1">
 {{if}}
-{{end}}
+{{end col}}
 
 {{define +col 1}}
 </div>
@@ -28,24 +28,11 @@
 {{else}}
 <div class="col-$1">
 {{if}}
-{{end}}
+{{end +col}}
 
 {{define -col}}
 </div>
-{{end}}
-
-{{define form-row}}
-<div class="form-row">
-{{end}}
-
-{{define +form-row}}
-</div>
-<div class="form-row">
-{{end}}
-
-{{define -form-row}}
-</div>
-{{end}}
+{{end -col}}
 
 
 {{# setInnerDivAttributes sets the InnerDiv attributes on FormGroups. }}
@@ -58,7 +45,7 @@ if ctrl.Page().HasControl("$1") {
     ctrl.Page().GetControl("$1").(FormGroupI).InnerDivAttributes().Merge(`$2`)
 }
 }}
-{{end}}
+{{end setInnerDivAttributes}}
 
 {{define setChildInnerDivAttributes 2}}
 {{g
@@ -66,5 +53,5 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
     ctrl.Page().GetControl(ctrl.ID() + "$1").(FormGroupI).InnerDivAttributes().Merge(`$2`)
 }
 }}
-{{end}}
+{{end setChildInnerDivAttributes}}
 

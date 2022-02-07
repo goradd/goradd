@@ -156,14 +156,12 @@ func (c *FormFieldWrapper) DrawTag(ctx context.Context) string {
 	if describedBy != "" && child != nil {
 		child.SetAttribute("aria-describedby", describedBy)
 	}
-	if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
-		panic(err)
-	}
+	c.this().DrawInnerHtml(ctx, buf)
 	if child != nil && child.ValidationState() != page.ValidationNever {
-		buf.WriteString(html.RenderTag(c.subtag, c.errorAttributes, html2.EscapeString(errorMessage)))
+		page.WriteString(buf, html.RenderTag(c.subtag, c.errorAttributes, html2.EscapeString(errorMessage)))
 	}
 	if c.instructions != "" {
-		buf.WriteString(html.RenderTag(c.subtag, c.instructionAttributes, html2.EscapeString(c.instructions)))
+		page.WriteString(buf, html.RenderTag(c.subtag, c.instructionAttributes, html2.EscapeString(c.instructions)))
 	}
 	return html.RenderTag(c.Tag, attributes, buf.String())
 }
@@ -195,7 +193,7 @@ func (c *FormFieldWrapper) SetInstructionAttributes(a html.Attributes) FormField
 	return c.this()
 }
 
-func (c *FormFieldWrapper) Validate(ctx context.Context) bool {
+func (c *FormFieldWrapper) Validate(_ context.Context) bool {
 	c.checkChildValidation()
 	return true
 }

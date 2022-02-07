@@ -11,14 +11,9 @@ func (o *{{privateName}}Base) resetDirtyStatus() {
 }
 
 func (o *{{privateName}}Base) IsDirty() bool {
-    return {{for _,col := range t.Columns }}
-	    o.{{= col.ModelName() }}IsDirty ||{{if col.ReferenceName() != "" }}
-	    (o.{{= col.ReferenceName() }} != nil && o.{{= col.ReferenceName() }}.IsDirty()) ||{{if}}
-
-{{for}}{{for _,ref := range t.ReverseReferences }}
-        o.{{= ref.Values["objName"]}}IsDirty ||
-{{for}}
-{{- 3}}
+    return {{join t.Columns, "|| \n"}}o.{{= _j.ModelName() }}IsDirty {{if _j.ReferenceName() != "" }} ||
+	    (o.{{= _j.ReferenceName() }} != nil && o.{{= _j.ReferenceName() }}.IsDirty()) {{if}}{{join}}{{if len(t.ReverseReferences) > 0}} || {{if}}
+	    {{join t.ReverseReferences, "|| \n"}}o.{{= _j.Values["objName"]}}IsDirty{{join}}
 
 }
 

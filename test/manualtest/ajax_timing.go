@@ -46,43 +46,37 @@ type AjaxTimingForm struct {
 	Txt2            *Textbox
 	Btn             *Button
 }
-
-func NewAjaxTimingForm(ctx context.Context) page.FormI {
-	f := &AjaxTimingForm{}
-	f.Init(ctx, f, AjaxTimingPath, AjaxTimingId)
-	f.AddRelatedFiles()
+func (f *AjaxTimingForm) Init(ctx context.Context, id string) {
+	f.FormBase.Init(ctx, id)
 	f.createControls(ctx)
-
-	return f
 }
 
 func (f *AjaxTimingForm) createControls(ctx context.Context) {
-	f.Txt1 = NewTextbox(f, "")
+	f.Txt1 = NewTextbox(f, "changer")
 	f.Txt1.SetColumnCount(30)
-	f.Txt1.SetLabel("TextBox KeyUp Test")
+	f.Txt1.SetPlaceholder("TextBox KeyUp Test")
 	f.Txt1.SetText("Change Me")
 	f.Txt1.On(event.Change(), action.Ajax(f.ID(), Txt1ChangeAction))
 	f.Txt1.On(event.KeyUp(), action.Ajax(f.ID(), Txt1KeyUpAction))
 
-	f.Txt1ChangeLabel = NewSpan(f, "")
-	f.Txt1ChangeLabel.SetLabel("Value after Change: ")
+	f.Txt1ChangeLabel = NewSpan(f, "vc")
+	f.Txt1ChangeLabel.SetText("Value after Change: ")
 
-	f.Txt1KeyUpLabel = NewSpan(f, "")
-	f.Txt1KeyUpLabel.SetLabel("Value after Key Up: ")
+	f.Txt1KeyUpLabel = NewSpan(f, "vu")
+	f.Txt1KeyUpLabel.SetText("Value after Key Up: ")
 
-	f.Chk = NewCheckbox(f, "")
-	f.Chk.SetLabel("Checkbox Test")
+	f.Chk = NewCheckbox(f, "cb")
+	f.Chk.SetText("Checkbox Test")
 	f.Chk.On(event.Click(), action.Ajax(f.ID(), ChkChangeAction))
 
-	f.ChkLabel = NewSpan(f, "")
-	f.ChkLabel.SetLabel("Value after Click: ")
+	f.ChkLabel = NewSpan(f, "cbv")
+	f.ChkLabel.SetText("Value after Click: ")
 
-	f.Txt2 = NewTextbox(f, "")
-	f.Txt2.SetLabel("TextBox Refocus Test")
+	f.Txt2 = NewTextbox(f, "tb")
 	f.Txt2.SetText("Change Me")
 	f.Txt2.On(event.Change(), action.Focus(f.Txt1.ID()))
 
-	f.Btn = NewButton(f, "")
+	f.Btn = NewButton(f, "submit")
 	f.Btn.SetLabel("Submit")
 	f.Btn.On(event.Click(), action.Ajax(f.ID(), BtnClickAction))
 	f.Btn.SetValidationType(page.ValidateNone)
@@ -106,7 +100,7 @@ func TestForm(t *browsertest.TestForm) {
 	log.Debug("AjaxTiming test")
 
 	t.LoadUrl(AjaxTimingPath)
-	f := t.GetForm().(*AjaxTimingForm)
+	f := t.ParentForm().(*AjaxTimingForm)
 	t.AssertEqual(AjaxTimingId, f.ID())
 	t.Focus(f.Txt1.ID())
 	//t.TypeValue(f.Txt1.ID(), "m")
@@ -117,7 +111,5 @@ func TestForm(t *browsertest.TestForm) {
 }
 
 func init() {
-	page.RegisterPage(AjaxTimingPath, NewAjaxTimingForm, AjaxTimingId)
-	//browsertest.RegisterTestFunction("AjaxTiming", TestForm)
-
+	page.RegisterForm(AjaxTimingPath, &AjaxTimingForm{}, AjaxTimingId)
 }

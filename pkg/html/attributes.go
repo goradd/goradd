@@ -442,12 +442,13 @@ func (a Attributes) HasClass(c string) bool {
 	return a.HasAttributeValue("class", c)
 }
 
-//SetDataAttribute sets the given value as an html "data-*" attribute. The named value will be retrievable in jQuery by using
+// SetDataAttributeChanged sets the given value as an html "data-*" attribute.
+// The named value will be retrievable in javascript by using
 //
-//	$obj.data("name");
+//	$obj.dataset.valname;
 //
-//Note: Data name cases are handled specially. data-* attribute names are supposed to be lower kebab case. Javascript
-//converts dashed notation to camelCase when converting html attributes into object properties.
+// Note: Data name cases are handled specially. data-* attribute names are supposed to be lower kebab case. Javascript
+// converts dashed notation to camelCase when converting html attributes into object properties.
 // In other words, we give it a camelCase name here, it shows up in the html as
 // a kebab-case name, and then you retrieve it using javascript as camelCase again.
 //
@@ -459,7 +460,7 @@ func (a Attributes) HasClass(c string) bool {
 //	g$('test1').data('testCase');
 //
 // Conversion to special html data-* name formatting is handled here automatically. So if you SetDataAttribute('testCase') here,
-// you can get it using .data('testCase') in jQuery
+// you can get it using .dataset.testCase in javascript
 func (a Attributes) SetDataAttributeChanged(name string, v string) (changed bool, err error) {
 	// validate the name
 	if strings.ContainsAny(name, " !$") {

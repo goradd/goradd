@@ -407,7 +407,7 @@ an AddRelatedFiles function and add it to your form, like so:
 func (f *MyForm) AddReleatedFiles() {
 	f.FormBase.AddRelatedFiles()
 
-	f.AddStyleSheetFile(filepath.Join(config.ProjectAssets(), "css","styles.css"), nil)
+	f.AddStyleSheetFile(path.Join(config.AssetPrefix, "project", css","styles.css"), nil)
 }
 ``` 
 

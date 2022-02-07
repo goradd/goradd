@@ -1,0 +1,118 @@
+/*
+This is a description of the Nunito font that will server the files locally out of our app. This is both
+a demonstration of how to do this, but also useful during development since you are running your app as a local
+web server, and you may not always be connected to the Internet to get the fonts when doing development.
+*/
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito ExtraLight'), local('Nunito-ExtraLight'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-ExtraLight.woff') format('woff');
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito Black'), local('Nunito-Black'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-Black.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito Black Italic'), local('Nunito-BlackItalic'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-BlackItalic.woff') format('woff');
+    font-weight: 900;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito ExtraBold'), local('Nunito-ExtraBold'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-ExtraBold.woff') format('woff');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito Regular'), local('Nunito-Regular'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito SemiBold'), local('Nunito-SemiBold'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-SemiBold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito Bold'), local('Nunito-Bold'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito Italic'), local('Nunito-Italic'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-Italic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito ExtraBold Italic'), local('Nunito-ExtraBoldItalic'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-ExtraBoldItalic.woff') format('woff');
+    font-weight: 800;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito Light'), local('Nunito-Light'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-Light.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito Bold Italic'), local('Nunito-BoldItalic'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-BoldItalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito SemiBold Italic'), local('Nunito-SemiBoldItalic'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-SemiBoldItalic.woff') format('woff');
+    font-weight: 600;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito Light Italic'), local('Nunito-LightItalic'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-LightItalic.woff') format('woff');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    src: local('Nunito ExtraLight Italic'), local('Nunito-ExtraLightItalic'),
+        url('/assets/goradd/welcome/font/Nunito/Nunito-ExtraLightItalic.woff') format('woff');
+    font-weight: 200;
+    font-style: italic;
+}
+

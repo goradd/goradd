@@ -4,16 +4,17 @@
 // Run is called by the framework before the page is operated on, either through Ajax or Server calls.
 // This is a good place to do anything that needs to happen before doing any of your actions or drawing,
 // like checking if the user is authorized to access the page.
-func (f *{{= formName }})Run(ctx context.Context) (err error) {
+func (f *{{= formName }})Run(ctx context.Context) {
 
 /* If you are authorizing the current user, do that here
     if !authorized() {
     //     one option is to just fail with an error page
-	//	   return page.NewFrameworkError(page.FrameworkErrNotAuthorized)
+	//	   http2.SendForbidden()
 	//     another is to automatically redirect to a new location
-	//     page.Redirect("/login.g")
+	//     http2.Redirect("/login.g", http.StatusSeeOther)
     }
 */
+
 	return
 }
 

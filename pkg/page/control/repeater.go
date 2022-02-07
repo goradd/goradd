@@ -1,17 +1,17 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
+	"io"
 )
 
 type RepeaterI interface {
 	PagedControlI
-	DrawItem(ctx context.Context, i int, data interface{}, buf *bytes.Buffer) (err error)
+	DrawItem(ctx context.Context, i int, data interface{}, w io.Writer)
 	SetItemHtmler(h RepeaterHtmler) RepeaterI
 }
 
@@ -24,10 +24,10 @@ type Repeater struct {
 }
 
 type RepeaterHtmler interface {
-	RepeaterHtml(ctx context.Context, r RepeaterI, i int, data interface{}, buf *bytes.Buffer) error
+	RepeaterHtml(ctx context.Context, r RepeaterI, i int, data interface{}, w io.Writer)
 }
 
-// NewTable creates a new table
+// NewRepeater creates a new Repeater
 func NewRepeater(parent page.ControlI, id string) *Repeater {
 	r := &Repeater{}
 	r.Self = r
@@ -76,28 +76,19 @@ func (r *Repeater) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // DrawInnerHtml is an override to draw the individual items of the repeater.
-func (r *Repeater) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (r *Repeater) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	var this = r.this() // Get the sub class so we call into its hooks for drawing
 
 	r.RangeData(func(index int, value interface{}) bool {
-		err = this.DrawItem(ctx, index, value, buf)
-		if err != nil {
-			return false
-		}
+		this.DrawItem(ctx, index, value, w)
 		return true
 	})
-	if err != nil {
-		return
-	}
-
-	return nil
+	return
 }
 
-func (r *Repeater) DrawItem(ctx context.Context, i int, data interface{}, buf *bytes.Buffer) (err error) {
+func (r *Repeater) DrawItem(ctx context.Context, i int, data interface{}, w io.Writer) {
 	if r.itemHtmler != nil {
-		if err = r.itemHtmler.RepeaterHtml(ctx, r, i, data, buf); err != nil {
-			return
-		}
+		r.itemHtmler.RepeaterHtml(ctx, r, i, data, w)
 	}
 	return
 }
@@ -169,7 +160,7 @@ func (r *Repeater) Restore() {
 
 
 
-// PagedTableCreator creates a table that can be paged
+// RepeaterCreator creates a table that can be paged
 type RepeaterCreator struct {
 	// ID is the control id
 	ID               string

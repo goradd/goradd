@@ -137,7 +137,7 @@ type FloatLimit struct {
 	InvalidMessage string
 }
 
-// Use FloatTextboxCreator to create a textbox that only accepts numbers.
+// FloatTextboxCreator creates a textbox that only accepts numbers.
 // Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
 type FloatTextboxCreator struct {

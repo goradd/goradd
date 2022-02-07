@@ -1,5 +1,5 @@
 /*
-The messageServer package implements a general purpose messaging platform based on the gorilla
+Package messageServer implements a general purpose messaging platform based on the gorilla
 websocket implementation. The platform is similar to other messaging platforms like pubnub,
 in that it is channel based.
 

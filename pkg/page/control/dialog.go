@@ -1,12 +1,12 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"io"
 )
 
 // event codes
@@ -54,7 +54,7 @@ type DialogI interface {
 
 // Dialog is the default implementation of a dialog in Goradd. You should not normally call this directly, but
 // rather call GetDialogPanel to create a dialog. GetDialogPanel will then call NewDialogI to create a dialog
-// wraps the panel. To change the default dialog style to a different one, call SetNewDialogFunction()
+// that wraps the panel. To change the default dialog style to a different one, call SetNewDialogFunction()
 type Dialog struct {
 	Panel
 	buttonBarID string
@@ -140,18 +140,12 @@ func (d *Dialog) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (d *Dialog) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = GetPanel(d, d.titleBarID).Draw(ctx, buf); err != nil {
-		return
-	}
-	if err = GetPanel(d, d.buttonBarID).Draw(ctx, buf); err != nil {
-		return
-	}
-	buf.WriteString(`<div class="gr-dlg-content">`)
-	if err = d.Panel.DrawInnerHtml(ctx, buf); err != nil {
-		return
-	}
-	buf.WriteString(`</div>`)
+func (d *Dialog) DrawInnerHtml(ctx context.Context, w io.Writer) {
+	GetPanel(d, d.titleBarID).Draw(ctx, w)
+	GetPanel(d, d.buttonBarID).Draw(ctx, w)
+	page.WriteString(w, `<div class="gr-dlg-content">`)
+	d.Panel.DrawInnerHtml(ctx, w)
+	page.WriteString(w, `</div>`)
 
 	return
 }

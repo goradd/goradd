@@ -1,7 +1,6 @@
 package page
 
 import (
-	"bytes"
 	"context"
 	"encoding/gob"
 	"fmt"
@@ -10,38 +9,38 @@ import (
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
-	"path/filepath"
+	"io"
+	"path"
 	"strings"
 )
 
 type FormI interface {
 	ControlI
 	// Init initializes the base structures of the form. Do this before adding controls to the form.
-	// Note that this signature is different than that of the Init function in FormBase.
+	// Note that this signature is different from that of the Init function in FormBase.
 	Init(ctx context.Context, id string)
 	PageDrawingFunction() PageDrawFunc
 
 	AddHeadTags()
-	DrawHeaderTags(ctx context.Context, buf *bytes.Buffer)
+	DrawHeaderTags(ctx context.Context, w io.Writer)
 	Response() *Response
-	renderAjax(ctx context.Context, buf *bytes.Buffer) error
+	renderAjax(ctx context.Context, w io.Writer)
 	AddRelatedFiles()
 	AddStyleSheetFile(path string, attributes html.Attributes)
 	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
-	AddJQuery()
-	AddJQueryUI()
 	ChangeLocation(url string)
 	PushLocation(ctx context.Context)
 	PopLocation(ctx context.Context, fallback string)
 
 	// Lifecycle calls
-	Run(ctx context.Context) error
+	Run(ctx context.Context)
 	CreateControls(ctx context.Context)
 	LoadControls(ctx context.Context)
 	Exit(ctx context.Context, err error)
@@ -66,7 +65,7 @@ type FormBase struct {
 }
 
 // Init initializes the form control. Note that ctx might be nil if we are unit testing.
-func (f *FormBase) Init(ctx context.Context, id string) {
+func (f *FormBase) Init(_ context.Context, id string) {
 	var p = &Page{}
 	p.Init()
 
@@ -99,38 +98,13 @@ func (f *FormBase) AddRelatedFiles() {
 }
 
 
-
-// AddJQuery adds the jquery javascript to the form
-func (f *FormBase) AddJQuery() {
-	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery3.js"), false, nil)
-	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/jquery-3.4.1.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=").
-				Set("crossorigin", "anonymous"))
-	}
-}
-
-// AddJQueryUI adds the JQuery UI javascript to the form. This is not loaded by default, but many add-ons
-// use it, so its here for convenience.
-func (f *FormBase) AddJQueryUI() {
-	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "jquery-ui.js"), false, nil)
-	} else {
-		f.AddJavaScriptFile("https://code.jquery.com/ui/1.12.1/jquery-ui.min.js", false,
-			html.NewAttributes().Set("integrity", "sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=").
-				Set("crossorigin", "anonymous"))
-	}
-}
-
 // AddGoraddFiles adds the various goradd files to the form
 func (f *FormBase) AddGoraddFiles() {
-	gr := config.GoraddAssets()
-	f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd.js"), false, nil)
+	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "goradd.js"), false, nil)
 	if !config.Release {
-		f.AddJavaScriptFile(filepath.Join(gr, "js", "goradd-debug.js"), false, nil)
+		f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "goradd-debug.js"), false, nil)
 	}
-	f.AddStyleSheetFile(filepath.Join(gr, "css", "goradd.css"), nil)
+	f.AddStyleSheetFile(path.Join(config.AssetPrefix, "goradd", "css", "goradd.css"), nil)
 }
 
 // AddFontAwesome adds the font-awesome files fo the form
@@ -141,49 +115,44 @@ func (f *FormBase) AddFontAwesome() {
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
-func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 	if f.drawing && !config.Release {
 		panic("draw collission")
 	}
 	f.drawing = true
 	defer f.notDrawing()
-	err = f.this().PreRender(ctx, buf)
-	buf.WriteString(`<form ` + f.this().DrawingAttributes(ctx).String() + ">\n")
-	if err = f.this().DrawTemplate(ctx, buf); err != nil {
-		return // the template is required
-	}
+	f.this().PreRender(ctx, w)
+	if _,err := io.WriteString(w, `<form ` + f.this().DrawingAttributes(ctx).String() + ">\n"); err != nil {panic(err)}
+	if err := f.this().DrawTemplate(ctx, w); err != nil {panic(err)} // the template is required
 	// Render controls that are marked to auto render if the form did not render them
-	if err = f.RenderAutoControls(ctx, buf); err != nil {
-		panic(err)
-	}
-
-	f.resetDrawingFlags()
+	f.RenderAutoControls(ctx, w)
 
 	// Render hidden controls
 
 	// Place holder for postBack and postAjax functions to place their data
-	buf.WriteString(`<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n")
+	if _,err := io.WriteString(w, `<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n"); err != nil {panic(err)}
 
 	// CSRF prevention
 	var csrf string
 
 	csrf = session.GetString(ctx, goradd.SessionCsrf)
 	if csrf == "" {
+		var err error
 		// first time
 		csrf, err = crypt.GenerateRandomString(16)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		session.Set(ctx, goradd.SessionCsrf, csrf)
 	}
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf))
+	if _,err := fmt.Fprintf(w, `<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf); err != nil {panic(err)}
 
 	// Serialize and write out the pagestate
-	buf.WriteString(fmt.Sprintf(`<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()))
+	if _,err := fmt.Fprintf(w, `<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()); err != nil {panic(err)}
 
-	f.drawBodyScriptFiles(ctx, buf)
+	if err := f.drawBodyScriptFiles(ctx, w); err != nil {panic(err)}
 
-	buf.WriteString("\n</form>\n")
+	if _,err := io.WriteString(w, "\n</form>\n"); err != nil {panic(err)}
 
 	// Draw things that come after the form tag
 
@@ -203,12 +172,13 @@ func (f *FormBase) Draw(ctx context.Context, buf *bytes.Buffer) (err error) {
 	} else {
 		s += fmt.Sprintf("goradd.ajaxTimeout = %d;\n", config.AjaxTimeout) // turn on the ajax timeout in release mode
 	}
-	s = fmt.Sprintf(`<script>
+	if _, err := fmt.Fprintf(w, `<script>
 %s
-</script>`, s)
-	buf.WriteString(s)
+</script>`, s); err != nil {panic(err)}
 
-	f.this().PostRender(ctx, buf)
+	f.this().PostRender(ctx, w)
+	f.resetDrawingFlags()
+
 	return
 }
 
@@ -264,7 +234,7 @@ func (f *FormBase) getDbProfile(ctx context.Context) (s string) {
 }
 
 // renderAjax assembles the ajax response for the entire form and draws it to the return buffer
-func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) {
 	var buf2 []byte
 	if f.drawing && !config.Release {
 		panic("draw collission")
@@ -274,12 +244,7 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 
 	if !f.response.hasExclusiveCommand() { // skip drawing if we are in a high priority situation
 		// gather modified controls
-		err = f.DrawAjax(ctx, &f.response)
-		if err != nil {
-			log.Error("renderAjax error - " + err.Error())
-			// savestate ???
-			return
-		}
+		f.DrawAjax(ctx, &f.response)
 	}
 
 	// Inject any added style sheets and script files
@@ -300,12 +265,13 @@ func (f *FormBase) renderAjax(ctx context.Context, buf *bytes.Buffer) (err error
 	f.mergeInjectedFiles()
 
 	f.resetDrawingFlags()
+	var err error
 	buf2, err = f.response.GetAjaxResponse()
+	if err != nil {panic(err)}
 	//f.response = NewResponse() Do NOT do this here! It messes with testing framework and multi-processing of ajax responses
-	buf.Write(buf2)
+	_,err = w.Write(buf2)
+	if err != nil {panic(err)}
 	log.FrameworkDebug("renderAjax - ", string(buf2))
-
-	return
 }
 
 // DrawingAttributes returns the attributes to add to the form tag.
@@ -316,16 +282,14 @@ func (f *FormBase) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // PreRender performs setup operations just before drawing.
-func (f *FormBase) PreRender(ctx context.Context, buf *bytes.Buffer) (err error) {
-	if err = f.ControlBase.PreRender(ctx, buf); err != nil {
-		return
-	}
+func (f *FormBase) PreRender(ctx context.Context, w io.Writer) {
+	f.ControlBase.PreRender(ctx, w)
 
 	f.SetAttribute("method", "post")
 	// Setting the "action" attribute prevents iFrame clickjacking.
 	// This only works because we never ajax draw the form, only server render
 	grctx := GetContext(ctx)
-	f.SetAttribute("action", config.MakeLocalPath(grctx.HttpContext.URL.RequestURI()))
+	f.SetAttribute("action", http.MakeLocalPath(grctx.HttpContext.URL.RequestURI()))
 
 	return
 }
@@ -352,15 +316,13 @@ func (f *FormBase) PageDrawingFunction() PageDrawFunc {
 //
 // attributes are the attributes that will be included with the script tag, which is useful for things like
 // crossorigin and integrity attributes.
-//
-// To control the cache-control settings on the file, you should call SetCacheControl.
 func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes) {
 	if forceHeader && f.isOnPage {
 		panic("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
 	}
 
 	if path[:4] != "http" {
-		url := GetAssetUrl(path)
+		url := http.GetAssetUrl(path)
 
 		if url == "" {
 			panic(path + " is not in a registered asset directory")
@@ -409,7 +371,7 @@ func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 // To control the cache-control settings on the file, you should call SetCacheControl.
 func (f *FormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 	if path[:4] != "http" {
-		url := GetAssetUrl(path)
+		url := http.GetAssetUrl(path)
 
 		if url == "" {
 			panic(path + " is not in a registered asset directory")
@@ -435,7 +397,7 @@ func (f *FormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
 
 // DrawHeaderTags is called by the page drawing routine to draw its header tags
 // If you override this, be sure to call this version too
-func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
+func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) {
 	f.mergeInjectedFiles()
 
 	if f.headerStyleSheets != nil {
@@ -446,7 +408,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 			}
 			attributes.Set("rel", "stylesheet")
 			attributes.Set("href", path)
-			buf.WriteString(html.RenderVoidTag("link", attributes))
+			WriteString(w, html.RenderVoidTag("link", attributes))
 			return true
 		})
 	}
@@ -458,10 +420,12 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, buf *bytes.Buffer) {
 				attributes = html.NewAttributes()
 			}
 			attributes.Set("src", path)
-			buf.WriteString(html.RenderTag("script", attributes, ""))
+			WriteString(w, html.RenderTag("script", attributes, ""))
 			return true
 		})
 	}
+
+	return
 }
 
 func (f *FormBase) mergeInjectedFiles() {
@@ -482,17 +446,17 @@ func (f *FormBase) mergeInjectedFiles() {
 	}
 }
 
-func (f *FormBase) drawBodyScriptFiles(ctx context.Context, buf *bytes.Buffer) {
+func (f *FormBase) drawBodyScriptFiles(ctx context.Context, w io.Writer) (err error) {
 	f.bodyJavaScripts.Range(func(path string, attr interface{}) bool {
 		var attributes = attr.(html.Attributes)
 		if attributes == nil {
 			attributes = html.NewAttributes()
 		}
 		attributes.Set("src", path)
-		buf.WriteString(html.RenderTag("script", attributes, "") + "\n")
+		if _, err = io.WriteString(w, html.RenderTag("script", attributes, "") + "\n"); err != nil {return false}
 		return true
 	})
-
+	return
 }
 
 
@@ -501,17 +465,19 @@ func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 	f.response.displayAlert(msg)
 }
 
-// ChangeLocation will redirect the browser to a new URL. It does this AFTER processing the return
+// ChangeLocation will redirect the browser to a new URL.
+//
+// It does this AFTER processing the return
 // values sent to the browser. Generally you should use this to redirect the browser since you may
 // have some data that needs to be processed first. The exception is
 // if you are responding to some kind of security concern where you only want to send back an html
-// redirect without revealing any goradd information, in which case you should use the Page
+// redirect without revealing any goradd information, in which case you should use the page.Redirect function.
 func (f *FormBase) ChangeLocation(url string) {
-	f.response.SetLocation(config.MakeLocalPath(url))
+	f.response.SetLocation(http.MakeLocalPath(url))
 }
 
-// Response returns the form's response object that you can use to queue up javascript commands to the browser to be sent on
-// the next ajax or server request
+// Response returns the form's response object that you can use to queue up javascript commands to the browser to be
+// sent on the next ajax or server request
 func (f *FormBase) Response() *Response {
 	return &f.response
 }
@@ -525,9 +491,8 @@ func (f *FormBase) AddHeadTags() {
 
 // Run is a lifecycle function that gets called whenever a page is run, either by a whole page load, or an ajax call.
 // Its a good place to validate that the current user should have access to the information on the page.
-// Returning an error will result in the error message being displayed.
-func (f *FormBase) Run(ctx context.Context) error {
-	return nil
+// You should panic on any errors.
+func (f *FormBase) Run(ctx context.Context) {
 }
 
 // CreateControls is a lifecycle function that gets called whenever a page is created. It happens after the Run call.

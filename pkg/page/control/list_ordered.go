@@ -1,11 +1,11 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
+	"io"
 	"strconv"
 )
 
@@ -52,7 +52,7 @@ func (l *OrderedList) this() OrderedListI {
 // SetNumberType sets the top level number style for the list. Choose from the OrderedListNumberType* constants.
 // To set a number type for a sublevel, set the "type" attribute on the list item that is the parent of the sub list.
 func (l *OrderedList) SetNumberType(t string) OrderedListI {
-	l.SetAttribute("type", l)
+	l.SetAttribute("type", t)
 	return l.this()
 }
 
@@ -72,10 +72,10 @@ func (l *OrderedList) NumberType() string {
 	}
 }
 
-func (l *OrderedList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *OrderedList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.getItemsHtml(l.items)
-	buf.WriteString(h)
-	return nil
+	page.WriteString(w, h)
+	return
 }
 
 func (l *OrderedList) getItemsHtml(items []*ListItem) string {

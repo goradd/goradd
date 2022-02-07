@@ -1,11 +1,5 @@
-{{< imports }}
-{{end}}
-{{< headTags }}
-{{end}}
-{{< package }}browsertest{{end}}
-{{< title }}Tests{{end}}
-{{< form }}TestForm{{end}}
-{{< bodyAttributes }}{{end}}
+{{< title }}Tests{{end title}}
+{{< form }}TestForm{{end form}}
 
 {{define template }}
 <h1>Browser Based Tests</h1>
@@ -17,6 +11,6 @@ Currently running:
 {{draw running-label }}
 {{draw controller }}
 </div>
-{{end}}
+{{end template}}
 
 {{renderFormTemplate}}

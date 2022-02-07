@@ -2,11 +2,11 @@
 The left arrow below in the tag is a shortcut for "define". In other words, the line below
 defines a "package" fragment.
 }}
-{{< package }}orm{{end}}
+{{< package }}orm{{end package}}
 {{< imports }}
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
-{{end}}
-{{< control }}LoadPanel{{end}}
+{{end imports}}
+{{define control}}LoadPanel{{end control}}
 
 {{< template }}
 <h1>Loading an object</h1>
@@ -31,8 +31,6 @@ project := model.LoadProjectByNum(ctx, 2)
 Project 2: {{= project.Name() }}
 </p>
 
-
-
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

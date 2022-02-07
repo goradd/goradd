@@ -1,9 +1,8 @@
-{{< package }}orm{{end}}
-{{< imports }}
+{{define imports }}
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-{{end}}
-{{< control }}TypesPanel{{end}}
+{{end imports}}
+{{define control }}TypesPanel{{end control}}
 
 {{define template }}
 <h1>Type Tables</h1>
@@ -40,9 +39,9 @@ The status of the {{= project.Name() }} project is {{= project.ProjectStatusType
 }}
 <p>
 The types of {{= person.FirstName() }} {{= person.LastName() }} are
-{{for _,s := range person.PersonTypes() }}{{= s.String() }}, {{for}}{{- 2}}
+{{join person.PersonTypes(),", "}}{{= _j.String() }}{{join}}
 </p>
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

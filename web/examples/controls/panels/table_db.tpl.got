@@ -1,8 +1,7 @@
-{{< package }}panels{{end}}
 {{< imports }}
 	"github.com/goradd/goradd/pkg/orm/db"
-{{end}}
-{{< control }}TableDbPanel{{end}}
+{{end imports}}
+{{define control}}TableDbPanel{{end control}}
 
 {{define template }}
 {{# Provide some basic styling for tables }}
@@ -42,6 +41,6 @@ The table below demonstrates columns that are linked to database queries. For th
 {{draw table1}}
 {{if}}
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

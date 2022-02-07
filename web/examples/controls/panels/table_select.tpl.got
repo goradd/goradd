@@ -1,7 +1,4 @@
-{{< package }}panels{{end}}
-{{< imports }}
-{{end}}
-{{< control }}TableSelectPanel{{end}}
+{{define control }}TableSelectPanel{{end control}}
 
 {{define template }}
 {{# Provide some basic styling  }}
@@ -45,6 +42,6 @@ In each case, you should see the table scrolled so that the item is visible.
 {{draw showButton}}
 
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

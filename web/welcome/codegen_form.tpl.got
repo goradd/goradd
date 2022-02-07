@@ -1,19 +1,14 @@
-{{< imports }}
-{{end}}
-{{< headTags }}
-{{end}}
-{{< package }}welcome{{end}}
-{{< title }}Code Generate{{end}}
-{{< form }}CodegenForm{{end}}
+{{< title }}Code Generate{{end title}}
+{{< form }}CodegenForm{{end form}}
 {{< bodyAttributes }}
-{{end}}
+{{end bodyAttributes}}
 
-{{define template }}
+{{define template}}
 <h1>CodeGenerator</h1>
 {{draw infoPanel }}
 <p>
 If codegen succeeded, exit and restart the app by executing <b>go run goradd-project/main</b>
 </p>
-{{end}}
+{{end template}}
 
 {{> renderFormTemplate}}

@@ -3,7 +3,9 @@
 {{
 
 func init() {
-	browsertest.RegisterTestFunction("{{= formName }} Tests", test{{= formName }})
+    if !config.Release {
+	    browsertest.RegisterTestFunction("{{= formName }} Tests", test{{= formName }})
+	}
 }
 
 func test{{= formName }}(t *browsertest.TestForm)  {

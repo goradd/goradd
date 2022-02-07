@@ -1,9 +1,9 @@
-{{< package }}orm{{end}}
+{{< package }}orm{{end package}}
 {{< imports }}
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
-{{end}}
-{{< control }}OneOnePanel{{end}}
+{{end imports}}
+{{define control}}OneOnePanel{{end control}}
 
 {{define template }}
 <h1>One-to-One Relationships</h1>
@@ -57,6 +57,6 @@ functions for the objects themselves and call Save on the parent object.
     // Delete records created above
     newPerson.Delete(ctx) // newLogin will automatically get deleted because its foreign key constraint is set to CASCADE on Delete
 }}
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

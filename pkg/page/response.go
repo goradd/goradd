@@ -425,7 +425,7 @@ func (r *Response) SetControlAttribute(id string, attribute string, value string
 	r.Unlock()
 }
 
-// SetControlValue calls the jQuery ".val()" function on the given control, passing it the given value.
+// SetControlValue calls the ".val()" function on the given control, passing it the given value.
 func (r *Response) SetControlValue(id string, value string) {
 	r.Lock()
 	if r.controls == nil {

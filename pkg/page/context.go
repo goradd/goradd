@@ -1,7 +1,6 @@
 package page
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -362,6 +361,11 @@ func NewMockContext() (ctx context.Context) {
 	return
 }
 
-func OutputBuffer(ctx context.Context) *bytes.Buffer {
-	return http2.OutputBuffer(ctx)
+// OutputLen returns the number of bytes that have been written to the output.
+func OutputLen(ctx context.Context) int {
+	return http2.OutputLen(ctx)
+}
+
+func ResetOutputBuffer(ctx context.Context) []byte {
+	return http2.ResetOutputBuffer(ctx)
 }

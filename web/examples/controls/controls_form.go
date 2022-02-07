@@ -48,7 +48,7 @@ func (f *ControlsForm) Init(ctx context.Context, formID string) {
 
 func (f *ControlsForm) AddRelatedFiles() {
 	f.FormBase.AddRelatedFiles()
-	f.AddStyleSheetFile(path.Join(config.GoraddAssets(), "css", "welcome.css"), nil)
+	f.AddStyleSheetFile(path.Join(config.AssetPrefix, "goradd", "welcome", "css", "welcome.css"), nil)
 }
 
 

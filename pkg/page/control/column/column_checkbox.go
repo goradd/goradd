@@ -31,7 +31,7 @@ type CheckboxColumn struct {
 	changes      map[string]bool // changes recorded
 }
 
-// NewChecboxColumn creates a new table column that contains a checkbox. You must provide
+// NewCheckboxColumn creates a new table column that contains a checkbox. You must provide
 // a CheckboxProvider which will connect checkbox states to data states
 //
 // The table will keep track of what checkboxes have been clicked and the new values. Call Changes() to get those
@@ -64,7 +64,7 @@ func (c *CheckboxColumn) SetShowCheckAll(s bool) *CheckboxColumn {
 }
 
 // HeaderCellHtml is called by the Table drawing system to draw the HeaderCellHtml.
-func (c *CheckboxColumn) HeaderCellHtml(ctx context.Context, rowNum int, colNum int) (h string) {
+func (c *CheckboxColumn) HeaderCellHtml(_ context.Context, _ int, _ int) (h string) {
 	if c.showCheckAll {
 		a := c.this().CheckboxAttributes(nil)
 		a.Set("type", "checkbox")
@@ -119,7 +119,7 @@ func (c *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes {
 
 // CellText is called by the Table drawing mechanism to draw the content of a cell, which in this case will be
 // a checkbox.
-func (c *CheckboxColumn) CellText(ctx context.Context, rowNum int, colNum int, data interface{}) string {
+func (c *CheckboxColumn) CellText(_ context.Context, _ int, _ int, data interface{}) string {
 	a := c.this().CheckboxAttributes(data)
 	a.Set("type", "checkbox")
 	return html.RenderVoidTag("input", a)
@@ -195,7 +195,7 @@ func (c *CheckboxColumn) AddActions(t page.ControlI) {
 }
 
 // Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.
-func (c *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
+func (c *CheckboxColumn) Action(_ context.Context, params page.ActionParams) {
 	switch params.ActionValueInt() {
 	case AllClickAction:
 		p := new(event.CheckboxColumnActionValues)
@@ -207,7 +207,7 @@ func (c *CheckboxColumn) Action(ctx context.Context, params page.ActionParams) {
 }
 
 // The check all checkbox has been checked.
-func (c *CheckboxColumn) allClick(id string, checked bool, rowNum int, colNum int) {
+func (c *CheckboxColumn) allClick(_ string, checked bool, _ int, _ int) {
 	all := c.checkboxer.All()
 
 	// if we have a checkboxer that will help us check all the objects in the table, use it
@@ -320,7 +320,7 @@ type CheckboxProvider interface {
 	// Attributes returns the attributes that will be applied to the checkbox corresponding to the data row.
 	// Use this primarily for providing custom attributes. Return nil if you have no custom attributes.
 	Attributes(data interface{}) html.Attributes
-	// If you enable the checkAll box, you can use this to return a map of all the ids and their initial values here. This is
+	// All lets you return a map of all the ids and their initial values if you enable the checkAll box. This is
 	// mostly helpful if your table is not showing all the rows at once (i.e. you are using a paginator or scroller and
 	// only showing a subset of data at one time). If your table is showing a checkAll box, and you return nil here, the
 	// checkAll will only perform a javascript checkAll, and thus only check the visible items.
@@ -339,15 +339,15 @@ func (c DefaultCheckboxProvider) DataID() string {
 	return ""
 }
 
-func (c DefaultCheckboxProvider) RowID(data interface{}) string {
+func (c DefaultCheckboxProvider) RowID(_ interface{}) string {
 	return ""
 }
 
-func (c DefaultCheckboxProvider) IsChecked(data interface{}) bool {
+func (c DefaultCheckboxProvider) IsChecked(_ interface{}) bool {
 	return false
 }
 
-func (c DefaultCheckboxProvider) Attributes(data interface{}) html.Attributes {
+func (c DefaultCheckboxProvider) Attributes(_ interface{}) html.Attributes {
 	return nil
 }
 

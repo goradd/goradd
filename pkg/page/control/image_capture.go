@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
+	"path"
 	"strings"
 )
 
@@ -57,7 +58,7 @@ func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 // Init is called by subclasses.
 func (i *ImageCapture) Init(parent page.ControlI, id string) {
 	i.Panel.Init(parent, id)
-	i.ParentForm().AddJavaScriptFile(config.GoraddAssets()+"/js/image-capture.js", false, nil)
+	i.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "/js/image-capture.js"), false, nil)
 	i.typ = "jpeg"
 	i.quality = 0.92
 

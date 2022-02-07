@@ -6,13 +6,13 @@ import (
 	"html"
 )
 
-func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (d *Modal) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
     <div class="modal-dialog" role="document">
         <div class="modal-content">
 }}
     d.titleBar.AddClass("modal-header")
-    d.titleBar.Draw(ctx, buf)
+    {{g d.titleBar.Draw(ctx, _w) }}
 {{
             <div class="modal-body">
 }}
@@ -20,7 +20,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
     if l > 2 {
         for _,child := range d.Children() {
             if child.ID() != d.titleBar.ID() && child.ID() != d.buttonBar.ID() {
-                child.Draw(ctx, buf)
+                {{g child.Draw(ctx, _w) }}
             }
         }
     } else {
@@ -31,7 +31,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
             </div>
 }}
     d.buttonBar.AddClass("modal-footer")
-    d.buttonBar.Draw(ctx, buf)
+    {{g d.buttonBar.Draw(ctx, _w) }}
 {{
         </div>
     </div>
@@ -40,7 +40,7 @@ func (d *Modal) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error)
 	return
 }
 
-func (d *TitleBar) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (d *TitleBar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
     if d.Title != "" {
 {{
      <h5 id="{{= d.Parent().ID() }}_title" class="modal-title">{{= d.Title }}</h5>

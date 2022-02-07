@@ -1,10 +1,10 @@
 package control
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
+	"io"
 	"reflect"
 )
 
@@ -28,7 +28,7 @@ type UnorderedList struct {
 }
 
 const (
-	// UnoderedListStyleDisc is the default list style for main items and is a bullet
+	// UnorderedListStyleDisc is the default list style for main items and is a bullet
 	UnorderedListStyleDisc = "disc" // default
 	// UnorderedListStyleCircle is the default list style for 2nd level items and is an open circle
 	UnorderedListStyleCircle = "circle"
@@ -64,7 +64,7 @@ func (l *UnorderedList) SetItemTag(s string) UnorderedListI {
 	return l.this()
 }
 
-// SetBulletType sets the list-style-type attribute of the list. Choose from the UnorderedListStyle* constants.
+// SetBulletStyle sets the list-style-type attribute of the list. Choose from the UnorderedListStyle* constants.
 func (l *UnorderedList) SetBulletStyle(s string) UnorderedListI {
 	l.ControlBase.SetStyle("list-style-type", s)
 	return l.this()
@@ -86,10 +86,10 @@ func (l *UnorderedList) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (l *UnorderedList) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *UnorderedList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.this().GetItemsHtml(l.items)
-	buf.WriteString(h)
-	return nil
+	page.WriteString(w, h)
+	return
 }
 
 // GetItemsHtml is used by the framework to get the items for the html. It is exported so that

@@ -54,9 +54,12 @@ const (
 )
 
 const (
-	EmployeeInfo_ID             = `ID`
-	EmployeeInfo_PersonID       = `PersonID`
-	EmployeeInfo_Person         = `Person`
+	EmployeeInfo_ID = `ID`
+
+	EmployeeInfo_PersonID = `PersonID`
+
+	EmployeeInfo_Person = `Person`
+
 	EmployeeInfo_EmployeeNumber = `EmployeeNumber`
 )
 
@@ -526,6 +529,7 @@ func (o *employeeInfoBase) insert(ctx context.Context) {
 		if !o.employeeNumberIsValid {
 			panic("a value for EmployeeNumber is required, and there is no default value. Call SetEmployeeNumber() before inserting the record.")
 		}
+
 		m := o.getValidFields()
 
 		id := d.Insert(ctx, "employee_info", m)
@@ -541,13 +545,19 @@ func (o *employeeInfoBase) insert(ctx context.Context) {
 func (o *employeeInfoBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
+
 		fields["id"] = o.id
+
 	}
 	if o.personIDIsDirty {
+
 		fields["person_id"] = o.personID
+
 	}
 	if o.employeeNumberIsDirty {
+
 		fields["employee_number"] = o.employeeNumber
+
 	}
 	return
 }
@@ -555,10 +565,14 @@ func (o *employeeInfoBase) getModifiedFields() (fields map[string]interface{}) {
 func (o *employeeInfoBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.personIDIsValid {
+
 		fields["person_id"] = o.personID
+
 	}
 	if o.employeeNumberIsValid {
+
 		fields["employee_number"] = o.employeeNumber
+
 	}
 	return
 }
@@ -589,8 +603,10 @@ func (o *employeeInfoBase) resetDirtyStatus() {
 
 func (o *employeeInfoBase) IsDirty() bool {
 	return o.idIsDirty ||
-		o.personIDIsDirty || (o.oPerson != nil && o.oPerson.IsDirty()) ||
+		o.personIDIsDirty ||
+		(o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.employeeNumberIsDirty
+
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -808,8 +824,11 @@ func (o *employeeInfoBase) MarshalStringMap() map[string]interface{} {
 //
 // The fields it expects are:
 //   "id" - string
+
 //   "personID" - string
+
 //   "employeeNumber" - int
+
 func (o *employeeInfoBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {
@@ -840,7 +859,6 @@ func (o *employeeInfoBase) UnmarshalStringMap(m map[string]interface{}) (err err
 				if v == nil {
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
-
 				if n, ok := v.(int); ok {
 					o.SetEmployeeNumber(int(n))
 				} else if n, ok := v.(float64); ok {

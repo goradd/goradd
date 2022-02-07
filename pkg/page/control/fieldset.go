@@ -55,9 +55,7 @@ func (c *Fieldset) DrawTag(ctx context.Context) string {
 	if l := c.Text(); l != "" {
 		ctrl = html.RenderTag("legend", nil, html2.EscapeString(l))
 	}
-	if err := c.this().DrawInnerHtml(ctx, buf); err != nil {
-		panic(err)
-	}
+	c.this().DrawInnerHtml(ctx, buf)
 	ctrl = html.RenderTag(c.Tag, attributes, ctrl+buf.String())
 	return ctrl
 }

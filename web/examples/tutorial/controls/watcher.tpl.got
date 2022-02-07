@@ -1,7 +1,7 @@
-{{< package }}watcher{{end}}
+{{< package }}controls{{end package}}
 {{< imports }}
-{{end}}
-{{< control }}WatcherPanel{{end}}
+{{end imports}}
+{{define control}}WatcherPanel{{end control}}
 
 {{define template }}
 <h1>Watching Database Changes</h1>
@@ -31,6 +31,6 @@ This tutorial will teach you how to set up database relationships, and traverse 
 If you have not yet set up the example database, do that now using the following steps.
 }}
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

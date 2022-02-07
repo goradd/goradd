@@ -16,7 +16,7 @@ type InputGroup struct {
 }
 
 
-// Creates a new input group
+// NewInputGroup creates a new input group
 func NewInputGroup(parent page.ControlI, id string) *InputGroup {
 	b := new(InputGroup)
 	b.Self = b

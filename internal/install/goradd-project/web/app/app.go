@@ -1,4 +1,4 @@
-// The app package contains your local application object. It uses an object oriented model to implement a default
+// Package app contains your local application object. It uses an object oriented model to implement a default
 // application, and provides hooks for you to customize its behavior. Web applications can grow in complicated ways,
 // and this is the main place you will customize how the server itself behaves.
 package app
@@ -6,11 +6,9 @@ package app
 import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/web/app"
 	"log"
 	"net/http"
-	"net/http/pprof"
 )
 
 type Application struct {
@@ -30,17 +28,6 @@ func MakeApplication() *Application {
 func (a *Application) Init() {
 	a.Application.Init(a)
 }
-
-// Uncomment and edit to change the error page. You can call the embedded Application version first, and then alter it too.
-/*
-func (a *Application) SetupErrorPageTemplate() {
-	if config.Debug {
-		page.ErrorPageFunc = page.DebugErrorPageTmpl
-	} else {
-		page.ErrorPageFunc = page.ReleaseErrorPageTmpl
-	}
-}
-*/
 
 // Uncomment and edit to change the page cache. You can call the embedded Application version first, and then alter it too.
 /*
@@ -76,17 +63,6 @@ func (a *Application) InitializeLoggers() {
 		log2.Loggers[log2.ErrorLog] = log2.EmailLogger{log.New(os.Stdout,
 		"Error: ", log.Ldate|log.Lmicroseconds|log.Lshortfile), []string{"errors@mybusiness.com", "supervisor@mybusiness.com"}}
 	}
-}
-*/
-
-// SetupAssetDirectories sets up directories that will serve assets. Its best to put your assets in your project/assets
-// directory, but if you need to serve assets from another directory too, you can uncomment the code below to add
-// whatever assets you need.
-/*
-func (a *Application) SetupAssetDirectories() {
-	a.Application.SetupAssetDirectories()
-	page.RegisterAssetDirectory(location, config.AssetPrefix + name)
-
 }
 */
 
@@ -151,7 +127,7 @@ func (a *Application) SetupDatabaseWatcher() {
 
 // RunWebServer launches the main webserver.
 func (a *Application) RunWebServer() (err error) {
-	mux := a.MakeServerMux()
+	handler := a.MakeAppServer()
 
 	// If you are directly responding to encrypted requests, launch a server here. Note that you CAN put the app behind
 	// a web server, like Nginx or Apache and let the web server handle the certificate issues.
@@ -163,62 +139,33 @@ func (a *Application) RunWebServer() (err error) {
 				addr = fmt.Sprint(":", config.TLSPort)
 			}
 
-			log.Fatal(app.ListenAndServeTLSWithTimeouts(addr, config.TLSCertFile, config.TLSKeyFile, mux))
+			log.Fatal(app.ListenAndServeTLSWithTimeouts(addr, config.TLSCertFile, config.TLSKeyFile, handler))
 		}()
 	}
 
-	// TODO: Make a way so that we will automatically redirect to https if specified to do so
-	// I think its a simple matter of providing a mux just for this purpose
 	var addr string
 	if config.Port != 0 {
 		addr = fmt.Sprint(":", config.Port)
 	}
-	err = app.ListenAndServeWithTimeouts(addr, mux)
+	err = app.ListenAndServeWithTimeouts(addr, handler)
 
 	return
 }
 
-func (a *Application) MakeServerMux() *http.ServeMux {
-	mux := http.NewServeMux()
-
-	if config.Debug {
-		// standard go profiling support
-		mux.HandleFunc("/debug/pprof/", pprof.Index)
-		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	}
-
-	// Handle the favicon request.
-	mux.Handle("/favicon.ico", http.HandlerFunc(faviconHandler))
-
-	// Below is an example of how you can add your own handler that piggybacks
-	// on the framework's websocket messenger.
-	//mux.Handle("/ws/myws", a.myWebsocketAuthHandler(messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler()))
-
-	
-	// Serve up the websocket messenger
-	mux.Handle(config.WebsocketMessengerPrefix, http.HandlerFunc(app.WebsocketMessengerHandler))
-
-	// serve up static application asset files
-	mux.Handle(config.AssetPrefix, http.HandlerFunc(page.ServeAsset))
-
-	// send anything you don't explicitly handle above to the goradd app server
-	// note that the app server can serve up static html too. See ServeStaticFile.
-	mux.Handle("/", a.MakeAppServer())
-
-	// Uncomment this and implement ServeData to serve up custom generated
-	// files like PDFs, CSVs, images, etc.
-	//http2.RegisterAppMuxerHandler("/data", http2.ErrorHandler(http.HandlerFunc(a.ServeData)))
-
-	return mux
+// MakeAppServer creates the handler that serves the application.
+//
+// This is typically where you create the middleware stack that divides the server
+// into small pieces that each do one job.
+//
+// The default use the base Application's middleware stack, which itself is quite flexible
+// and has hooks where you can override pieces. Or, you can just replace the whole thing
+// and reimplement it here.
+//
+// See also the Init function where can assign additional handlers to specific paths via
+// the application muxers.
+func (a *Application) MakeAppServer() http.Handler {
+	return a.Application.MakeAppServer()
 }
-
-func faviconHandler(w http.ResponseWriter, r *http.Request) {
-	//http.ServeFile(w, r, page.GetAssetLocation("/assets/project/image/favicon.ico"))
-}
-
 
 // ServeRequest is the place to serve up any files that have not been handled in any other way, either by a previously
 // declared handler, or by the goradd app server, or the static file server. ServeRequest is only called when all
@@ -277,34 +224,3 @@ func (a *Application) PutContext(r *http.Request) *http.Request {
 }
 */
 
-
-// ServeStaticFile serves up static html and other files. The default will serve up the generated form index
-// and any files you put in the HTML directory. If you want to serve up files from other directories, uncomment
-// the line below, but remember you will have to put those files on your release server and point your custom
-// static file server there.
-/*
-func (a *Application) ServeStaticFile (w http.ResponseWriter, r *http.Request) bool {
-
-	// If you do not want the default behavior, remove the following lines
-	if a.Application.ServeStaticFile(w,r) {
-		return true
-	}
-
-	// Serve files from other directories here
-
-	return false	// indicates no static file was found
-}
-*/
-
-// ServeData serves up custom generated files from the /data directory.
-/*
-  This is an example of how to create a custom data server. See above for
-  how this is called.
-func (a *Application) ServeData (w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "data.csv" {
-		serveData(w,r)
-		return
-	}
-	http.NotFound(w, r)
-}
-*/

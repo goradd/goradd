@@ -15,7 +15,7 @@ func (p *{{= panelName }}) ColumnCreators(_ context.Context) []{{= ctrlPkg }}.Co
             Title: "{{if t.ControlDescription(col) != nil}}{{= t.ControlDescription(col).DefaultLabel }}{{else}}{{col.GoName}}{{if}}",
         {{if col.IsDateOnly}}
             ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultDateFormat},
-        {{else if col.IsTimeOnly}}
+        {{elseif col.IsTimeOnly}}
             ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultTimeFormat},
         {{if}}
         },

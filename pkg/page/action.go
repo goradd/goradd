@@ -16,7 +16,7 @@ type ActionParams struct {
 	// ControlID is the control that originated the action
 	ControlId string
 
-	// values, to be accessesed with the Event*, Action* and ControlBase* helper functions
+	// values, to be accessed with the Event*, Action* and ControlBase* helper functions
 	values actionValues
 }
 

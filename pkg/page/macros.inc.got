@@ -9,43 +9,43 @@
     For example: draw mycontrol, class="myclass" }}
 {{define draw 2}}
 {{if `$2` == ""}}
-    {{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
+    {{g ctrl.Page().GetControl("$1").Draw(ctx, _w) }}
 {{else}}
-    {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+    {{g ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
 {{if}}
-{{end}}
+{{end draw}}
 
 {{# drawChild is like draw, but the given id is appended to the parent control's id. }}
 
 {{define drawChild 2}}
 {{if `$2` == ""}}
-    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, buf) }}
+    {{g ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, _w) }}
 {{else}}
-    {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+    {{g ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
 {{if}}
-{{end}}
+{{end drawChild}}
 
 {{# drawIf is like draw, but tests to see if the control is on the page before drawing. }}
 
 {{define drawIf 2}}
 {{if ctrl.Page().HasControl("$1")}}
     {{if `$2` == ""}}
-        {{e ctrl.Page().GetControl("$1").Draw(ctx, buf) }}
+        {{g ctrl.Page().GetControl("$1").Draw(ctx, _w) }}
     {{else}}
-        {{e ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+        {{g ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
     {{if}}
 {{if}}
-{{end}}
+{{end drawIf}}
 
 {{define drawChildIf 2}}
 {{if ctrl.Page().HasControl(ctrl.ID() + "$1")}}
     {{if `$2` == ""}}
-        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, buf) }}
+        {{g ctrl.Page().GetControl(ctrl.ID() + "$1").Draw(ctx, _w) }}
     {{else}}
-        {{e ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, buf) }}
+        {{g ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`).Draw(ctx, _w) }}
     {{if}}
 {{if}}
-{{end}}
+{{end drawChildIf}}
 
 {{# setAttributes sets the attributes of the given control using an attribute setting string. }}
 {{# The string is in the form `name="value` }}
@@ -56,7 +56,7 @@ if ctrl.Page().HasControl("$1") {
     ctrl.Page().GetControl("$1").ProcessAttributeString(`$2`)
 }
 }}
-{{end}}
+{{end setAttributes}}
 
 {{define setChildAttributes 2}}
 {{g
@@ -64,7 +64,7 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
     ctrl.Page().GetControl(ctrl.ID() + "$1").ProcessAttributeString(`$2`)
 }
 }}
-{{end}}
+{{end setChildAttributes}}
 
 {{# setLabelAttributes sets the attributes on controls which have a LabelAttributes function. }}
 {{# This is especially useful to set the label attributes on FormFieldWrappers. }}
@@ -74,7 +74,7 @@ if ctrl.Page().HasControl("$1") {
     ctrl.Page().GetControl("$1").(control.LabelAttributer).LabelAttributes().Merge(`$2`)
 }
 }}
-{{end}}
+{{end setLabelAttributes}}
 
 {{define setChildLabelAttributes 2}}
 {{g
@@ -82,87 +82,79 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
     ctrl.Page().GetControl(ctrl.ID() + "$1").(control.LabelAttributer).LabelAttributes().Merge(`$2`)
 }
 }}
-{{end}}
+{{end setChildLabelAttributes}}
 
 {{# This defaults the package fragment to the name of the directory of the template. You can redefine it if needed in your individual template}}
-{{define package}}{{templateDir}}{{end}}
+{{define package}}{{templateParent}}{{end package}}
 
 
 {{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}
 {{define renderFormTemplate}}
-package {{package }}
+package {{put package}}
 
 import (
     "context"
     "github.com/goradd/goradd/pkg/page"
     "bytes"
-    {{> imports}}
+    {{put? imports}}
 )
 
 
 func (ctrl *{{form}}) AddHeadTags()  {
     ctrl.FormBase.AddHeadTags()
-    if "{{title}}" != "" {
-        ctrl.Page().SetTitle("{{title}}")
+    if "{{put? title}}" != "" {
+        ctrl.Page().SetTitle("{{put? title}}")
     }
 
-	{{> headTags}}
+	{{put? headTags}}
 
 	// deal with body attributes too
-    ctrl.Page().BodyAttributes = `{{> bodyAttributes}}`
+    ctrl.Page().BodyAttributes = `{{put? bodyAttributes}}`
 }
 
 
-func (ctrl *{{form}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *{{form}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
-{{template}}
+{{put template}}
 }}
 	return
 }
-{{end}}
+{{end renderFormTemplate}}
 
 {{define renderControlTemplate}}
-package {{package }}
+package {{put package}}
 
 import (
     "context"
-    "bytes"
-    {{imports}}
+    "io"
+    {{put? imports}}
 )
 
-func (ctrl *{{control}}) DrawTemplate(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (ctrl *{{control}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
-{{template}}
+{{put template}}
 }}
 	return
 }
-{{end}}
+{{end renderControlTemplate}}
 
-{{define renderHtmlTemplate}}
-package {{package }}
+{{define renderResource}}
+package {{put package}}
 
 import (
     "context"
     "bytes"
-    {{imports}}
+    {{put imports}}
 )
 
 func init() {
-    resource.RegisterPath("{{filename}}.html",
-        func(ctx context.Context, buf *bytes.Buffer) (headers map[string]string, err error) {
+    http.RegisterDrawFunc("{{> filename}}",
+        func(ctx context.Context, _w io.Writer) (err error) {
 {{
-<!DOCTYPE html>
-<head>
-<meta charset="utf-8"/>
-<title>{{title}}</title>
-</head>
-<body>
-{{template}}
-</body>
-</html>
+{{put template}}
 }}
         return
 
         })
 }
-{{end}}
+{{end renderResource}}

@@ -9,10 +9,10 @@ its language is very easy to learn. Its similar to the standard Go template lang
 The define statements below create got "fragments", which is just a way to a define a variable. For example,
 the line below creates the "package" fragment and gives it the value "orm".
 }}
-{{define package }}orm{{end}}
+{{define package }}orm{{end package}}
 
 {{# This define tells the compiler to attach the template to the ObjectsPanel control. }}
-{{define control }}ObjectsPanel{{end}}
+{{define control}}ObjectsPanel{{end control}}
 
 {{# The template fragment here defines the actual html we want to output from the control. }}
 {{define template }}
@@ -56,7 +56,7 @@ to take advantage of the changes.</p>
 <div>{{= project.ProjectStatusType().String() }}</div>
 </p>
 
-{{end}}
+{{end template}}
 
 {{#
 The tag below will output the renderControlTemplate fragment, which is a pre-defined fragment that is part of the

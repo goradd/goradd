@@ -1,10 +1,9 @@
-{{< package }}panels{{end}}
 {{< imports }}
 	"github.com/goradd/goradd/pkg/orm/db"
-{{end}}
-{{< control }}TableProxyPanel{{end}}
+{{end imports}}
+{{define control}}TableProxyPanel{{end control}}
 
-{{define template }}
+{{define template}}
 {{# Provide some basic styling for tables }}
 <style>
 table {
@@ -45,6 +44,6 @@ that allow you to click on a record to see detail of the record.
 
 {{if}}
 
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

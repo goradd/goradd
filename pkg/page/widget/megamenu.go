@@ -1,7 +1,6 @@
 package widget
 
 import (
-	"bytes"
 	"context"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/javascript"
@@ -9,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	"io"
 	"reflect"
 	"strconv"
 )
@@ -88,11 +88,11 @@ func (l *MegaMenu) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (l *MegaMenu) DrawInnerHtml(ctx context.Context, buf *bytes.Buffer) (err error) {
+func (l *MegaMenu) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	h := l.this().GetItemsHtml(l.ListItems(), 1)
 	h = html.RenderTag("ul", html.Attributes{"style":"list-style:none"}, h)
-	buf.WriteString(h)
-	return nil
+	page.WriteString(w, h)
+	return
 }
 
 // GetItemsHtml is used by the framework to get the items for the html. It is exported so that

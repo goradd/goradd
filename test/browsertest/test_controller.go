@@ -9,9 +9,10 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
-	"path/filepath"
-	"runtime"
+	"path"
 	"time"
+
+	_ "github.com/goradd/goradd/test/browsertest/assets"
 )
 
 const StepTimeoutSeconds = 10
@@ -65,7 +66,7 @@ func (p *TestController) Init(parent page.ControlI, id string) {
 	p.Tag = "pre"
 	p.stepChannel = make(chan stepItemType, 1)
 	p.markerChannel = make(chan string, 1000)
-	p.ParentForm().AddJavaScriptFile(filepath.Join(TestAssets(), "js", "test_controller.js"), false, nil)
+	p.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "test_controller.js"), false, nil)
 	// Use declarative attribute to attach javascript to the control
 	p.SetDataAttribute("grWidget", "goradd.TestController")
 
@@ -230,11 +231,3 @@ func (p *TestController) closeWindow(description string) {
 	p.waitStep()
 }
 
-func TestAssets() string {
-	_, filename, _, _ := runtime.Caller(0)
-	return filepath.Join(filepath.Dir(filename), "assets")
-}
-
-func init() {
-	page.RegisterAssetDirectory(TestAssets(), config.AssetPrefix+"test")
-}

@@ -1,7 +1,4 @@
-{{< package }}panels{{end}}
-{{< imports }}
-{{end}}
-{{< control }}CheckboxPanel{{end}}
+{{define control}}CheckboxPanel{{end control}}
 
 {{define template }}
 <h2>Checkboxes and Radio Buttons</h2>
@@ -56,6 +53,6 @@ each button. The browser will then make sure only one gets selected.
 
 {{draw ajaxButton }}
 {{draw serverButton }}
-{{end}}
+{{end template}}
 
 {{renderControlTemplate}}

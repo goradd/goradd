@@ -1,12 +1,5 @@
-{{< imports }}
-{{end}}
-{{< headTags }}
-{{end}}
-{{< package }}controls{{end}}
-{{< title }}Control Examples{{end}}
-{{< form }}ControlsForm{{end}}
-{{< bodyAttributes }}
-{{end}}
+{{< title }}Control Examples{{end title}}
+{{< form }}ControlsForm{{end form}}
 
 
 {{define template }}
@@ -34,6 +27,6 @@ function toggleSidebar() {
         {{draw detailPanel }}
     </div>
 </div>
-{{end}}
+{{end template}}
 
 {{renderFormTemplate}}

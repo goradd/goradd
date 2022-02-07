@@ -6,7 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"path/filepath"
+	"path"
 )
 
 const JsUnitTestFormPath = "/goradd/test/jsunit.g"
@@ -32,8 +32,8 @@ func (f *JsUnitForm)Init(ctx context.Context, formID string) {
 
 func (f *JsUnitForm) AddRelatedFiles() {
 	f.FormBase.AddRelatedFiles()
-	f.AddJavaScriptFile(filepath.Join(config.GoraddAssets(), "js", "goradd-js-unit.js"), false, nil)
-	f.AddJavaScriptFile(filepath.Join(TestAssets(), "js", "goradd-js-unit-suite.js"), false, nil)
+	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "goradd-js-unit.js"), false, nil)
+	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "goradd-js-unit-suite.js"), false, nil)
 }
 
 
