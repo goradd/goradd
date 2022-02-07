@@ -75,13 +75,11 @@ are interested in, but that is not difficult. Some specific issues to consider:
        with the messages and traffic is minimal.
 
 ### Future Goals
-* SQL
+* Expand database drivers, including NoSQL support
 * WebComponents. WebComponent architecture fits particularly well with goradd's architecture. However,
 WebComponents are not fully supported by all major browsers. As WebComponents gain traction, we hope
 to use them for future browser widgets.
-* Matching GraphQL or GraphQL like interface. The ORM architecture has many similarities to
-GraphQL, and could potentially auto-generate a GraphQL interface to make it easy to integrate
-a mobile app interface. 
+* Automated generation of a REST Api, including generation of Flutter client code.
 
 ### Anti-patterns
 1) GoRADD's html server is not microservice based. 
