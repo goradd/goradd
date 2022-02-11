@@ -10,7 +10,7 @@ import (
 	_ "goradd-project/tmp/template"
 )
 
-const CiDbUser = "travis"
+const CiDbUser = "tester"
 
 func main() {
 	config()
