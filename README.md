@@ -85,7 +85,7 @@ to use them for future browser widgets.
 1) GoRADD's html server is not microservice based. 
 While you can create microservices that serve parts of your application, at its
 core goradd is a monolithic framework that includes an ORM, an MVC architecture, and a basic control
-and form management library. 
+and form management library. That said, GoRADD is still very scalable.
 2) Object-oriented. Some of goradd uses a code pattern that mirrors traditional object-oriented
 inheritance and gets around some of GO's limitations in this area, including implementing 
 virtual functions. We have found this particularly useful in the control library.
