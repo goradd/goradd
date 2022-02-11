@@ -4,7 +4,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/goradd/goradd/pkg/orm/db"
 )
-const CiDbUser = "travis"
+const CiDbUser = "tester"
 
 func init() {
 	cfg := mysql.NewConfig()

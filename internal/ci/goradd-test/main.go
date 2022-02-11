@@ -24,7 +24,7 @@ func main() {
 
 	a := app.MakeApplication()
 	log2.SetLogger(log2.FrameworkDebugLog, nil) // get rid of framework log for now
-	mux := a.MakeServerMux()
+	mux := a.MakeAppServer()
 
 	// Make sure we always test with serialization turned on so that serialization is tested during the continuous integration tests
 	page.SetPagestateCache(page.NewSerializedPageCache(100, 60*60*24))
