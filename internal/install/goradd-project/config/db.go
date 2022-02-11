@@ -31,8 +31,8 @@ func addDatabase() {
 	cfg := mysql.NewConfig()
 
 	// Local development credentials
-	key := "mydbkey"
-	cfg.DBName = "mydbname"
+	key := "goradd"
+	cfg.DBName = "goradd"
 	cfg.User = "root"
 	cfg.Passwd = "12345"
 	cfg.ParseTime = true

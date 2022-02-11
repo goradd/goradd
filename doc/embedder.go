@@ -14,7 +14,7 @@ import (
 
 func init() {
 	// serve up the markdown files in the doc directory
-	app.RegisterStaticPath("/goradd/doc", sys.SourceDirectory(), false, true, nil)
+	app.RegisterStaticPath("/goradd/doc", sys.SourceDirectory(), false, nil)
 	http2.RegisterFileProcessor(".md", serveMarkdown)
 }
 
