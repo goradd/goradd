@@ -1,7 +1,7 @@
 {{< imports }}
 	"github.com/goradd/goradd/pkg/orm/db"
 {{end imports}}
-{{< control }}TableProxyPanel{{end control}}
+{{define control}}TableProxyPanel{{end control}}
 
 {{define template}}
 {{# Provide some basic styling for tables }}

@@ -1,4 +1,4 @@
-{{< control }}TablePanel{{end control}}
+{{define control}}TablePanel{{end control}}
 
 {{define template }}
 {{# Provide some basic styling for tables }}

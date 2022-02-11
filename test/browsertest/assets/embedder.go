@@ -13,5 +13,5 @@ import (
 var a embed.FS
 
 func init() {
-	http.RegisterAssetDirectory(path.Join(config.AssetPrefix, "/test"), a)
+	http.RegisterAssetDirectory(path.Join(config.AssetPrefix, "goradd", "test"), a)
 }

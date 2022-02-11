@@ -1,5 +1,5 @@
 {{< package }}tutorial{{end package}}
-{{< control }}DefaultPanel{{end control}}
+{{define control}}DefaultPanel{{end control}}
 
 {{define template }}
 <h1>Tutorial</h1>

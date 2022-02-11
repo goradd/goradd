@@ -1,4 +1,4 @@
-{{< control }}RepeaterPanel{{end control}}
+{{define control}}RepeaterPanel{{end control}}
 
 {{define template }}
 <h2>Repeaters</h2>

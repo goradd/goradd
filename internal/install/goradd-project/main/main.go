@@ -27,6 +27,9 @@ var tlsCertFile = flag.String("certFile", "", "Path to cert file for tls.")
 var proxyPath = flag.String("proxyPath", "", "The url path to the application.")
 // Create other flags you might care about here
 
+// dbConfigFile is actually read and used in config/db.go, but we define it here so it can be part of the usage message
+var _ = flag.String("dbConfigFile", "", "The path to the database configuration file.")
+
 func main() {
 	var err error
 

@@ -1,4 +1,4 @@
-{{< control }}TextboxPanel{{end control}}
+{{define control}}TextboxPanel{{end control}}
 
 {{define template }}
 <h2>Textboxes</h2>

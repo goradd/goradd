@@ -67,16 +67,19 @@ func addMyDatabase() {
 	// These are overridden by the database config file if one is specified on the command line.
 	// The recommended way to secure database
 	// credentials in your release version of the app is to store them in this json file
-	// that only the launcher of the app can read. On unix, you would `chmod 400 pw_file` to
+	// that only the launcher of the app can read. On unix, you would `chmod 400 file` to
 	// set the permission of the file. The app then will read the file above and use it
 	// to set the credentials. If using docker, mount the file into the docker container.
+	// See goradd-project/build/docker/ for examples.
 	//
 	// The format of the file should be:
 	// {
-	// 	  "put_db_key_here": {
+	// 	  "key (same as key above)": {
 	//		"dbname": "database name here",
 	//		"user": "database user name here",
 	//		etc.
+	//	  }
+	// }
 	// 	 See MysqlOverrideConfigSettings for more info.
 	//
 	if i,ok := configOverrides[key]; ok {

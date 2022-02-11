@@ -4,7 +4,7 @@
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 {{end imports}}
-{{< control }}RefPanel{{end control}}
+{{define control}}RefPanel{{end control}}
 
 {{define template }}
 <h1>References</h1>

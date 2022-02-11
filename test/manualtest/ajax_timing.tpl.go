@@ -34,11 +34,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("changer").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("changer").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -49,11 +45,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("changer").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("changer").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -75,11 +67,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("vc").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("vc").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -90,11 +78,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("vc").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("vc").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -116,11 +100,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("vu").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("vu").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -131,11 +111,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("vu").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("vu").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -159,11 +135,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("cb").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("cb").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -174,11 +146,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("cb").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("cb").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -200,11 +168,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("cbv").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("cbv").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -215,11 +179,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("cbv").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("cbv").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -243,11 +203,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("tb").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("tb").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -258,11 +214,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("tb").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("tb").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -284,11 +236,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("submit").Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("submit").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -299,11 +247,7 @@ func (ctrl *AjaxTimingForm) DrawTemplate(ctx context.Context, _w io.Writer) (err
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-
-		if err = ctrl.Page().GetControl("submit").ProcessAttributeString(``).Draw(ctx, _w); err != nil {
-			return
-		}
-
+		ctrl.Page().GetControl("submit").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

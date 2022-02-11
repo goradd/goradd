@@ -33,7 +33,7 @@ func LoadBootstrap(form page.FormI) {
 			})
 		if config.Release {
 			form.AddJavaScriptFile("https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js", false,
-				html.NewAttributes().Set("integrity", "sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1").Set("crossorigin", "anonymous"))
+				html.NewAttributes().Set("integrity", "sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p").Set("crossorigin", "anonymous"))
 			form.AddStyleSheetFile("https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css",
 				html.NewAttributes().Set("integrity", "sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3").Set("crossorigin", "anonymous"))
 		} else {

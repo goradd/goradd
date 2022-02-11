@@ -3,7 +3,7 @@
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 {{end imports}}
-{{< control }}ManyManyPanel{{end control}}
+{{define control}}ManyManyPanel{{end control}}
 
 {{define template }}
 <h1>Many-to-Many Relationships</h1>

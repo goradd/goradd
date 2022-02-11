@@ -32,8 +32,8 @@ func (f *JsUnitForm)Init(ctx context.Context, formID string) {
 
 func (f *JsUnitForm) AddRelatedFiles() {
 	f.FormBase.AddRelatedFiles()
-	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "goradd-js-unit.js"), false, nil)
-	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "goradd-js-unit-suite.js"), false, nil)
+	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "goradd-js-unit.js"), false, nil)
+	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "goradd-js-unit-suite.js"), false, nil)
 }
 
 

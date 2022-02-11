@@ -1,7 +1,7 @@
 {{< imports }}
 	"github.com/goradd/goradd/pkg/orm/db"
 {{end imports}}
-{{< control }}TableDbPanel{{end control}}
+{{define control}}TableDbPanel{{end control}}
 
 {{define template }}
 {{# Provide some basic styling for tables }}

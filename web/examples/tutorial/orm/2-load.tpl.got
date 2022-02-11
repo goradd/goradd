@@ -6,7 +6,7 @@ defines a "package" fragment.
 {{< imports }}
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 {{end imports}}
-{{< control }}LoadPanel{{end control}}
+{{define control}}LoadPanel{{end control}}
 
 {{< template }}
 <h1>Loading an object</h1>

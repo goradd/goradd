@@ -3,7 +3,7 @@
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 {{end imports}}
-{{< control }}OneOnePanel{{end control}}
+{{define control}}OneOnePanel{{end control}}
 
 {{define template }}
 <h1>One-to-One Relationships</h1>

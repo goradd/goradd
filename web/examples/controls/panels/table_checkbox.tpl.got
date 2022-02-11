@@ -1,4 +1,4 @@
-{{< control }}TableCheckboxPanel{{end control}}
+{{define control}}TableCheckboxPanel{{end control}}
 
 {{define template }}
 {{# Provide some basic styling for tables }}

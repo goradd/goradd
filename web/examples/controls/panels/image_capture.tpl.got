@@ -1,4 +1,4 @@
-{{< control }}ImageCapturePanel{{end control}}
+{{define control}}ImageCapturePanel{{end control}}
 
 {{define template }}
 <h2>Image Capture Widget</h2>

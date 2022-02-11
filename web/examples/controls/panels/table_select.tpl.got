@@ -1,4 +1,4 @@
-{{< control }}TableSelectPanel{{end control}}
+{{define control }}TableSelectPanel{{end control}}
 
 {{define template }}
 {{# Provide some basic styling  }}

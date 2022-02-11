@@ -3,7 +3,7 @@
     "github.com/goradd/goradd/pkg/page/control"
     . "github.com/goradd/goradd/pkg/bootstrap/control"
 {{end imports}}
-{{< control }}Forms2Panel{{end control}}
+{{define control}}Forms2Panel{{end control}}
 
 {{define template }}
 

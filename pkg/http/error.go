@@ -5,7 +5,6 @@ import (
 	"github.com/goradd/goradd/pkg/log"
 	"io"
 	"net/http"
-	"runtime"
 	"strings"
 	"time"
 )
@@ -192,27 +191,11 @@ func (e ErrorReporter) Use(h http.Handler) http.Handler {
 				if buf == nil {
 					errMsg += "\nPartial response written:\n" + string(buf)
 				}
-				log.Error(errMsg + stackTrace(stackDepth)) // use the application logger to output the error so we know about it
+				log.Error(errMsg + log.StackTrace(stackDepth, MaxErrorStackDepth)) // use the application logger to output the error so we know about it
 				_,_ = io.WriteString(w, newResponse) // Write the alternate response to client
 				return
 			}
 		}()
 		h.ServeHTTP(w, req)
 	})
-}
-
-func stackTrace(startingDepth int) (out string ){
-	for i := 1 + startingDepth; i < MaxErrorStackDepth; i++ {
-		pc, file, line, ok := runtime.Caller(i)
-		if !ok {
-			break
-		}
-		name := ""
-		if f := runtime.FuncForPC(pc); f != nil {
-			name = f.Name()
-		}
-
-		out += fmt.Sprintf("%s:%d -- %s\n", file, line, name)
-	}
-	return
 }

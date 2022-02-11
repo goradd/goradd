@@ -4,7 +4,7 @@
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 {{end imports}}
-{{< control }}CrudPanel{{end control}}
+{{define control}}CrudPanel{{end control}}
 
 {{define template}}
 <h1>Creating, Modifying and Deleting Database Objects</h1>

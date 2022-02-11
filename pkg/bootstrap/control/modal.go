@@ -130,7 +130,7 @@ func (m *Modal) DrawingAttributes(ctx context.Context) html.Attributes {
 	a := m.Panel.DrawingAttributes(ctx)
 	a.SetDataAttribute("grctl", "bs-modal")
 	if m.backdrop == ModalStaticBackdrop {
-		a.SetDataAttribute("bs-backdrop", "static")
+		a.SetDataAttribute("bsBackdrop", "static")
 	}
 	return a
 }

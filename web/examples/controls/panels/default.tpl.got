@@ -1,4 +1,4 @@
-{{< control }}DefaultPanel{{end control}}
+{{define control}}DefaultPanel{{end control}}
 
 {{define template }}
 <p>

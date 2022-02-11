@@ -1,4 +1,4 @@
-{{< control }}HListPanel{{end control}}
+{{define control}}HListPanel{{end control}}
 
 {{define template }}
 <h2>Hierarchical Lists</h2>

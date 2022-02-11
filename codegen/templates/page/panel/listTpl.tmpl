@@ -6,10 +6,9 @@ var panelName = t.GoName + "ListPanel"
 
 {{# Below we are switching back and forth between putting got code in the template, and using got code to create the template }}
 {{begin *strict*}}
-{{< package }}panel{{end package}}
-{{< imports }}
+{{define imports}}
 {{end imports}}
-{{< control }}{{end *strict*}}{{= panelName}}{{begin *strict*}}{{end control}}
+{{define control}}{{end *strict*}}{{= panelName}}{{begin *strict*}}{{end control}}
 
 {{define template }}
 

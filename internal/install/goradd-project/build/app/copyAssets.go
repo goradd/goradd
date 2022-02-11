@@ -5,7 +5,7 @@ package app
 //go:generate gofile remove goradd-project/deploy/stage
 //go:generate gofile mkdir goradd-project/deploy/app
 //go:generate gofile mkdir goradd-project/deploy/stage/root
-//go:generate gofile mkdir goradd-project/deploy/stage/assets/goradd goradd-project/deploy/stage/assets/project goradd-project/deploy/stage/assets/bootstrap
+//go:generate gofile mkdir goradd-project/deploy/stage/assets/goradd goradd-project/deploy/stage/assets/project
 
 // Copy static files
 //go:generate gofile copy goradd-project/web/root/* goradd-project/deploy/stage/root

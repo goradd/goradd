@@ -1,4 +1,4 @@
-{{< control }}DialogsPanel{{end control}}
+{{define control}}DialogsPanel{{end control}}
 
 {{define template }}
 <h2>Dialogs and Alerts</h2>

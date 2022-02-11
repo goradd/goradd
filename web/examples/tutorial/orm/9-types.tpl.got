@@ -1,9 +1,8 @@
-{{< package }}orm{{end package}}
-{{< imports }}
+{{define imports }}
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 {{end imports}}
-{{< control }}TypesPanel{{end control}}
+{{define control }}TypesPanel{{end control}}
 
 {{define template }}
 <h1>Type Tables</h1>

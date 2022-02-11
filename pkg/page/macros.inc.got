@@ -90,68 +90,68 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
 
 {{# renderFormTemplate draws a form that was defined earlier with the "template" tag. }}
 {{define renderFormTemplate}}
-package {{> package}}
+package {{put package}}
 
 import (
     "context"
     "github.com/goradd/goradd/pkg/page"
     "bytes"
-    {{>? imports}}
+    {{put? imports}}
 )
 
 
 func (ctrl *{{form}}) AddHeadTags()  {
     ctrl.FormBase.AddHeadTags()
-    if "{{title}}" != "" {
-        ctrl.Page().SetTitle("{{title}}")
+    if "{{put? title}}" != "" {
+        ctrl.Page().SetTitle("{{put? title}}")
     }
 
-	{{>? headTags}}
+	{{put? headTags}}
 
 	// deal with body attributes too
-    ctrl.Page().BodyAttributes = `{{>? bodyAttributes}}`
+    ctrl.Page().BodyAttributes = `{{put? bodyAttributes}}`
 }
 
 
 func (ctrl *{{form}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
-{{> template}}
+{{put template}}
 }}
 	return
 }
 {{end renderFormTemplate}}
 
 {{define renderControlTemplate}}
-package {{> package}}
+package {{put package}}
 
 import (
     "context"
     "io"
-    {{>? imports}}
+    {{put? imports}}
 )
 
 func (ctrl *{{control}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
-{{> template}}
+{{put template}}
 }}
 	return
 }
 {{end renderControlTemplate}}
 
 {{define renderResource}}
-package {{> package}}
+package {{put package}}
 
 import (
     "context"
     "bytes"
-    {{imports}}
+    {{put imports}}
 )
 
 func init() {
     http.RegisterDrawFunc("{{> filename}}",
         func(ctx context.Context, _w io.Writer) (err error) {
 {{
-{{> template}}
+{{put template}}
 }}
         return
 

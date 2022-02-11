@@ -138,6 +138,7 @@ func (m *PageManager) RunPage(ctx context.Context, w http2.ResponseWriter, req *
 			var msg string
 			switch v := r.(type) {
 			case http.Error: // A kind of http panic that just returns a response code and headers
+				log.Debug()
 				panic(v) // send it up the panic chain
 			case int: // Just an http error code
 				panic (v)

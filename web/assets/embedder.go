@@ -15,7 +15,7 @@ import (
 	"path"
 )
 
-//go:embed css font js
+//go:embed css js
 var a embed.FS
 
 func init() {

@@ -66,7 +66,7 @@ func (p *TestController) Init(parent page.ControlI, id string) {
 	p.Tag = "pre"
 	p.stepChannel = make(chan stepItemType, 1)
 	p.markerChannel = make(chan string, 1000)
-	p.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "test", "js", "test_controller.js"), false, nil)
+	p.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "test_controller.js"), false, nil)
 	// Use declarative attribute to attach javascript to the control
 	p.SetDataAttribute("grWidget", "goradd.TestController")
 

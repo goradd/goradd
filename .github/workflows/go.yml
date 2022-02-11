@@ -18,7 +18,7 @@ jobs:
     env:
       GOFLAGS: -mod=mod
       ROOT_DB_USER: root
-      DB_USER: travis
+      DB_USER: tester
     steps:
     - name: Setup Windows Environment
       if: ${{ runner.os == 'Windows' }}

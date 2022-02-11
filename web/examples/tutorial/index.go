@@ -43,7 +43,7 @@ func (f *IndexForm) Init(ctx context.Context, formID string) {
 
 func (f *IndexForm) AddRelatedFiles() {
 	f.FormBase.AddRelatedFiles()
-	f.AddStyleSheetFile(path.Join(config.AssetPrefix, "goradd", "css", "welcome.css"), nil)
+	f.AddStyleSheetFile(path.Join(config.AssetPrefix, "goradd", "welcome", "css", "welcome.css"), nil)
 }
 
 func (f *IndexForm) LoadControls(ctx context.Context) {

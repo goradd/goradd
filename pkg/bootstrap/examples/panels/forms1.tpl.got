@@ -1,7 +1,7 @@
 {{< package }}panels{{end package}}
 {{< imports }}
 {{end imports}}
-{{< control }}Forms1Panel{{end control}}
+{{define control}}Forms1Panel{{end control}}
 
 {{define template }}
 <h2>Standard Form Layout</h2>

@@ -4,7 +4,7 @@
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 {{end imports}}
-{{< control }}OneManyPanel{{end control}}
+{{define control}}OneManyPanel{{end control}}
 
 {{define template }}
 <h1>One-to-Many Relationships</h1>

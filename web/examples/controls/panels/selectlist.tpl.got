@@ -1,4 +1,4 @@
-{{< control }}SelectListPanel{{end control}}
+{{define control}}SelectListPanel{{end control}}
 
 {{define template }}
 <h2>Selection Lists</h2>

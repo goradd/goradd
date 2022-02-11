@@ -13,15 +13,15 @@ import (
 	"io/fs"
 )
 
-//go:embed embed/root/*
+//go:embed app/root/*
 var root embed.FS
 
-//go:embed embed/assets/*
+//go:embed app/assets/*
 var a embed.FS
 
 func init() {
 	// This server is designed to serve HTML type files that can be bookmarked.
-	sub, _ := fs.Sub(root, "embed")
+	sub, _ := fs.Sub(root, "app")
 	sub, _ = fs.Sub(sub, "root")
 
 	serv := http.FileSystemServer{Fsys: sub, SendModTime: true}
@@ -31,7 +31,7 @@ func init() {
 	// cache-busting to make sure that when you deploy new versions of these files, the client
 	// will not use a previous cached version, but if the file did not change, the client
 	// can still use a cached version.
-	sub,_ = fs.Sub(a, "embed")
+	sub,_ = fs.Sub(a, "app")
 	sub,_ = fs.Sub(sub, "assets")
 	http.RegisterAssetDirectory(config.AssetPrefix, sub)
 }
