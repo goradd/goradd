@@ -1,3 +1,4 @@
+![Build Status](https://img.shields.io/github/workflow/status/goradd/goradd/Go)
 # GoRADD
 A rapid Web application development framework for Go.
 
