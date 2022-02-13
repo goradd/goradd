@@ -58,13 +58,14 @@ func (o *LruCache) Set(key string, v interface{}) {
 	}
 
 	o.Lock()
-	t := time.Now().UnixNano() + o.ttl
+	now := time.Now().UnixNano()
+	t := now + o.ttl
 	i := lruItem{t, v}
 	o.items[key] = i
 	o.Unlock()
 
 	// garbage collect
-	if t % ((int64(o.maxItemCount)/8)+1) == 1 {
+	if now % ((int64(o.maxItemCount)/8)+1) == 1 {
 		go o.gc()
 	}
 }

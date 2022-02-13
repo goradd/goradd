@@ -86,6 +86,7 @@ func TestRemover(t *testing.T) {
 		r.i = i
 		c.Set(s, &r)
 	}
+	c.gc()
 	assert.True(t, r.wasRemoved)
 
 	c = NewLruCache(100, 1)
@@ -100,6 +101,7 @@ func TestRemover(t *testing.T) {
 		s := strconv.Itoa(i)
 		c.Set(s, &r)
 	}
+	c.gc()
 
 	assert.True(t, r.wasRemoved)
 }
