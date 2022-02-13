@@ -78,12 +78,12 @@ func (o *LruCache) Set(key string, v interface{}) {
 	if o.setCounter >= o.gcInterval {
 		o.setCounter = 0
 	}
-	o.Unlock()
-
 	// garbage collect
 	if o.setCounter == 0 {
+		o.gcHappened = true
 		go o.gc()
 	}
+	o.Unlock()
 }
 
 // gc  does a garbage collection. Garbage collection requires significant time, so it is done in a go routine.
