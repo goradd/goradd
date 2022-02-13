@@ -19,7 +19,10 @@ type LruCache struct {
 	maxItemCount int
 	ttl          int64
 	items        map[string]lruItem
-	gcHappened   bool
+	setCounter	 int	// counts to control gc intervals
+	gcInterval	 int  // how many sets needed to trigger a gc. Defaults to maxItemCount/8 or 16, whichever is greater.
+
+	gcHappened   bool // for testing
 }
 
 type lruItem struct {
@@ -41,11 +44,19 @@ type Cleanuper interface {
 // maxItemCount is the maximum number of items the cache can hold.
 // ttl is the age in seconds past when items will be removed.
 func NewLruCache(maxItemCount int, ttlSeconds int64) *LruCache {
+	gci := maxItemCount / 8
+	if gci < 16 {
+		gci = 16
+	}
 	return &LruCache{
 		maxItemCount: maxItemCount,
 		ttl:          ttlSeconds * (1000 * 1000 * 1000), // we compare against nanos
 		items:        make(map[string]lruItem),
+		gcInterval:   gci,
 	}
+}
+
+func (o *LruCache) SetGCInterval(key string, v interface{}) {
 }
 
 // Set puts the item into the cache, and updates its access time
@@ -57,15 +68,20 @@ func (o *LruCache) Set(key string, v interface{}) {
 		panic("Cannot use a blank key in the lru cache")
 	}
 
-	o.Lock()
 	now := time.Now().UnixNano()
 	t := now + o.ttl
 	i := lruItem{t, v}
+
+	o.Lock()
 	o.items[key] = i
+	o.setCounter++
+	if o.setCounter >= o.gcInterval {
+		o.setCounter = 0
+	}
 	o.Unlock()
 
 	// garbage collect
-	if now % ((int64(o.maxItemCount)/8)+1) == 1 {
+	if o.setCounter == 0 {
 		go o.gc()
 	}
 }
