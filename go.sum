@@ -202,10 +202,10 @@ github.com/googleapis/gax-go/v2 v2.1.1/go.mod h1:hddJymUZASv3XPyGkUpKj8pPO47Rmb0
 github.com/goradd/gengen v0.3.0 h1:d496hKm+OPqgtNdg71QaKSRCgZbAC3w7AUuhgVOSd/w=
 github.com/goradd/gengen v0.3.0/go.mod h1:35hoePmgDfiH2wBr26ABvqmGnl/laPeJYJ5Sw1DQkkg=
 github.com/goradd/gofile v0.1.6/go.mod h1:FZVfQmXDUNgS7nKPMOsuIxf1VaC1vxYFeP0bmL8fcDU=
-github.com/goradd/gofile v0.4.1 h1:+ZCB9yH88Y6BGYsI4g2QqDzkmNbE6WneC72pHuR4Q5E=
-github.com/goradd/gofile v0.4.1/go.mod h1:QdiRuLT9rTvWPd1pk1nPx5AJSgbGVj+HZg1cj1GkDOw=
-github.com/goradd/got v1.0.1 h1:0TGCLJNCK5yOCQW7aBQlsNhRHnKfZkWMSZj6lMu8+Fw=
-github.com/goradd/got v1.0.1/go.mod h1:DotN1a2sHUNMm/iyA5kbd+wOeRkEQHXCTYXlHEHtztY=
+github.com/goradd/gofile v1.0.1 h1:m+1j52Pj39T1FlZhKZNzXDT9yT4M2aTn6A+Ms7s/DTY=
+github.com/goradd/gofile v1.0.1/go.mod h1:rCyYFFBr3Ar8jXx4mJfyP/37z6PMFzgTUGzcB+2y/zQ=
+github.com/goradd/got v1.0.2 h1:1c9XvIv9kdrqnR3ZWS2nYEBfOkG2VE5ai5B6ov0woWA=
+github.com/goradd/got v1.0.2/go.mod h1:mNRFIPOtz7F7hPULt4SpDdsfeBYc0C/tXjpbpdMOk2w=
 github.com/gorilla/css v1.0.0 h1:BQqNyPTi50JCFMTw/b67hByjMVXZRwGha6wxVGkeihY=
 github.com/gorilla/css v1.0.0/go.mod h1:Dn721qIggHpt4+EFCcTLTU/vk5ySda2ReITrtgBl60c=
 github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
