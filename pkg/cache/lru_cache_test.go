@@ -2,10 +2,23 @@ package cache
 
 import (
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/stretchr/testify/assert"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
 )
+
+
+type removeTest struct {
+	i int
+	wasRemoved bool
+}
+
+func (r *removeTest) Removed() {
+	r.wasRemoved = true
+}
+
 
 func TestBasicLruCache(t *testing.T) {
 	c := NewLruCache(100, 60*60)
@@ -17,9 +30,18 @@ func TestBasicLruCache(t *testing.T) {
 	c.Set("2", p2)
 
 	p3 := c.Get("1")
-	if p3 != p1 {
-		t.Error("Could not retrieve item")
-	}
+	assert.Equal(t, p3, p1, "Could not retrieve item")
+
+	h := c.Has("2")
+	assert.True(t, h)
+
+	assert.Panics(t, func() {
+		c.Set("1", nil)
+	})
+
+	assert.Panics(t, func() {
+		c.Set("", p1)
+	})
 
 }
 
@@ -43,6 +65,43 @@ func TestLruReplace(t *testing.T) {
 	if c.Get("1") != "4" {
 		t.Error("Could not replace item")
 	}
+}
+
+func TestTriggerGC(t *testing.T) {
+	c := NewLruCache(100, 60*60)
+
+	for i := 0; i < 1000; i++ {
+		s := strconv.Itoa(i)
+		c.Set(s, s)
+	}
+	assert.True(t, c.gcHappened)
+}
+
+func TestRemover(t *testing.T) {
+	var r removeTest
+
+	c := NewLruCache(100, 60*60)
+	for i := 0; i < 1000; i++ {
+		s := strconv.Itoa(i)
+		r.i = i
+		c.Set(s, &r)
+	}
+	assert.True(t, r.wasRemoved)
+
+	c = NewLruCache(100, 1)
+	r.wasRemoved = false
+
+	for i := 0; i < 50; i++ {
+		s := strconv.Itoa(i)
+		c.Set(s, &r)
+	}
+	time.Sleep(2 * time.Second)
+	for i := 0; i < 40; i++ {
+		s := strconv.Itoa(i)
+		c.Set(s, &r)
+	}
+
+	assert.True(t, r.wasRemoved)
 }
 
 func TestLruCacheExit(t *testing.T) {

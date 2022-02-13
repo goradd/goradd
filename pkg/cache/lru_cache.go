@@ -19,36 +19,37 @@ type LruCache struct {
 	maxItemCount int
 	ttl          int64
 	items        map[string]lruItem
+	gcHappened   bool
 }
 
 type lruItem struct {
-	timestamp int64
-	value interface{}
+	expires int64
+	value   interface{}
 }
 
+// Remover is an item that gets notified that it has been removed from the cache.
 type Remover interface {
 	Removed()
 }
 
+// Cleanuper is an item that gets notified that it has been removed from memory, but not the cache.
 type Cleanuper interface {
 	Cleanup()
 }
 
-
-// Create and return a new cache.
-// maxItemCount is the maximum number of items the cache can hold
-// ttl is the age in seconds past when items will be removed
-func NewLruCache(maxItemCount int, ttl int64) *LruCache {
+// NewLruCache creates and returns a new cache.
+// maxItemCount is the maximum number of items the cache can hold.
+// ttl is the age in seconds past when items will be removed.
+func NewLruCache(maxItemCount int, ttlSeconds int64) *LruCache {
 	return &LruCache{
 		maxItemCount: maxItemCount,
-		ttl:          ttl * (1000 * 1000 * 1000), // we compare against nanos
-		items: make(map[string]lruItem),
+		ttl:          ttlSeconds * (1000 * 1000 * 1000), // we compare against nanos
+		items:        make(map[string]lruItem),
 	}
 }
 
-// Puts the item into the cache, and updates its access time
+// Set puts the item into the cache, and updates its access time
 func (o *LruCache) Set(key string, v interface{}) {
-	o.Lock()
 	if v == nil {
 		panic("Cannot put a nil pointer into the lru cache")
 	}
@@ -56,46 +57,51 @@ func (o *LruCache) Set(key string, v interface{}) {
 		panic("Cannot use a blank key in the lru cache")
 	}
 
-	t := time.Now().UnixNano()
+	o.Lock()
+	t := time.Now().UnixNano() + o.ttl
 	i := lruItem{t, v}
 	o.items[key] = i
 	o.Unlock()
-	// garbage collect
 
-	if t%((int64(o.maxItemCount)/8)+1) == 1 {
+	// garbage collect
+	if t % ((int64(o.maxItemCount)/8)+1) == 1 {
 		go o.gc()
 	}
 }
 
-// Garbage collect. Garbage collection requires significant time, so it is done in a go routine.
+// gc  does a garbage collection. Garbage collection requires significant time, so it is done in a go routine.
 func (o *LruCache) gc() {
 	o.Lock()
 	var keys []string
-	for k,_ := range o.items {
+	for k := range o.items {
 		keys = append(keys, k)
 	}
-	sort.Slice(keys, func(i,j int) bool {
-		return o.items[keys[i]].timestamp < o.items[keys[j]].timestamp
+	sort.Slice(keys, func(i, j int) bool {
+		return o.items[keys[i]].expires < o.items[keys[j]].expires
 	})
 	now := time.Now().UnixNano()
 	var itemNum int
 	var k string
-	for itemNum,k = range keys {
-		if o.items[k].timestamp + o.ttl < now {
+	for itemNum, k = range keys {
+		item := o.items[k]
+		if item.expires < now {
 			delete(o.items, k)
-			if c,ok := o.items[k].value.(Remover); ok {
+			if c, ok := item.value.(Remover); ok {
 				c.Removed()
 			}
 		} else {
+			// since items are sorted in timestamp order, we can stop iterating once we find one that isn't expiring
 			break
 		}
 	}
 
+	// If we are still bigger than our max size, delete items from the cache starting with the oldest accessed item
 	if len(o.items) > o.maxItemCount {
 		// TODO: log that the cache is filling up
-		for _,k := range keys[itemNum:] {
+		for _, k = range keys[itemNum:] {
+			item := o.items[k]
 			delete(o.items, k)
-			if c,ok := o.items[k].value.(Remover); ok {
+			if c, ok := item.value.(Remover); ok {
 				c.Removed()
 			}
 			if len(o.items) <= o.maxItemCount {
@@ -103,6 +109,7 @@ func (o *LruCache) gc() {
 			}
 		}
 	}
+	o.gcHappened = true
 	o.Unlock()
 }
 
@@ -115,7 +122,7 @@ func (o *LruCache) Get(key string) interface{} {
 		o.Unlock()
 		return nil
 	}
-	i.timestamp = time.Now().UnixNano()
+	i.expires = time.Now().UnixNano() + o.ttl
 	o.items[key] = i
 	o.Unlock()
 	return i.value
