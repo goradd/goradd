@@ -216,13 +216,13 @@ func HasMilestoneByID(ctx context.Context, id string) bool {
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type MilestonesBuilder struct {
-	base                query.QueryBuilderI
+	builder             query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
 func newMilestoneBuilder(ctx context.Context) *MilestonesBuilder {
 	b := &MilestonesBuilder{
-		base: db.GetDatabase("goradd").NewBuilder(ctx),
+		builder: db.GetDatabase("goradd").NewBuilder(ctx),
 	}
 	return b.Join(node.Milestone())
 }
@@ -231,7 +231,7 @@ func newMilestoneBuilder(ctx context.Context) *MilestonesBuilder {
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
 func (b *MilestonesBuilder) Load() (milestoneSlice []*Milestone) {
-	results := b.base.Load()
+	results := b.builder.Load()
 	if results == nil {
 		return
 	}
@@ -247,7 +247,7 @@ func (b *MilestonesBuilder) Load() (milestoneSlice []*Milestone) {
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
 func (b *MilestonesBuilder) LoadI() (milestoneSlice []interface{}) {
-	results := b.base.Load()
+	results := b.builder.Load()
 	if results == nil {
 		return
 	}
@@ -274,7 +274,7 @@ func (b *MilestonesBuilder) Get() *Milestone {
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
 func (b *MilestonesBuilder) Expand(n query.NodeI) *MilestonesBuilder {
-	b.base.Expand(n)
+	b.builder.Expand(n)
 	return b
 }
 
@@ -287,7 +287,7 @@ func (b *MilestonesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *Mile
 	} else if len(conditions) == 1 {
 		condition = conditions[0]
 	}
-	b.base.Join(n, condition)
+	b.builder.Join(n, condition)
 	if condition != nil {
 		b.hasConditionalJoins = true
 	}
@@ -296,19 +296,19 @@ func (b *MilestonesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *Mile
 
 // Where adds a condition to filter what gets selected.
 func (b *MilestonesBuilder) Where(c query.NodeI) *MilestonesBuilder {
-	b.base.Condition(c)
+	b.builder.Condition(c)
 	return b
 }
 
 // OrderBy specifies how the resulting data should be sorted.
 func (b *MilestonesBuilder) OrderBy(nodes ...query.NodeI) *MilestonesBuilder {
-	b.base.OrderBy(nodes...)
+	b.builder.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
 func (b *MilestonesBuilder) Limit(maxRowCount int, offset int) *MilestonesBuilder {
-	b.base.Limit(maxRowCount, offset)
+	b.builder.Limit(maxRowCount, offset)
 	return b
 }
 
@@ -317,14 +317,14 @@ func (b *MilestonesBuilder) Limit(maxRowCount int, offset int) *MilestonesBuilde
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
 func (b *MilestonesBuilder) Select(nodes ...query.NodeI) *MilestonesBuilder {
-	b.base.Select(nodes...)
+	b.builder.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
 func (b *MilestonesBuilder) Alias(name string, n query.NodeI) *MilestonesBuilder {
-	b.base.Alias(name, n)
+	b.builder.Alias(name, n)
 	return b
 }
 
@@ -332,19 +332,19 @@ func (b *MilestonesBuilder) Alias(name string, n query.NodeI) *MilestonesBuilder
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
 func (b *MilestonesBuilder) Distinct() *MilestonesBuilder {
-	b.base.Distinct()
+	b.builder.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
 func (b *MilestonesBuilder) GroupBy(nodes ...query.NodeI) *MilestonesBuilder {
-	b.base.GroupBy(nodes...)
+	b.builder.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
 func (b *MilestonesBuilder) Having(node query.NodeI) *MilestonesBuilder {
-	b.base.Having(node)
+	b.builder.Having(node)
 	return b
 }
 
@@ -354,20 +354,20 @@ func (b *MilestonesBuilder) Having(node query.NodeI) *MilestonesBuilder {
 //
 // nodes will select individual fields, and should be accompanied by a GroupBy.
 func (b *MilestonesBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
-	return b.base.Count(distinct, nodes...)
+	return b.builder.Count(distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *MilestonesBuilder) Delete() {
-	b.base.Delete()
-	broadcast.BulkChange(b.base.Context(), "goradd", "milestone")
+	b.builder.Delete()
+	broadcast.BulkChange(b.builder.Context(), "goradd", "milestone")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
 func (b *MilestonesBuilder) Subquery() *query.SubqueryNode {
-	return b.base.Subquery()
+	return b.builder.Subquery()
 }
 
 // joinOrSelect is a private helper function for the Load* functions
@@ -375,7 +375,7 @@ func (b *MilestonesBuilder) joinOrSelect(nodes ...query.NodeI) *MilestonesBuilde
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
-			b.base.Join(n, nil)
+			b.builder.Join(n, nil)
 		case *query.ColumnNode:
 			b.Select(n)
 		}

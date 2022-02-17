@@ -1,4 +1,4 @@
-package db
+package sql
 
 // Helper utilities for extracting a description out of a database
 
@@ -6,6 +6,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/goradd/gengen/pkg/maps"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/query"
 	"log"
 	"strconv"
 	"strings"
@@ -30,7 +32,7 @@ const (
 
 
 // Find the json encoded list of options in the given string
-func extractOptions(comment string) (options map[string]interface{}, remainingComment string, err error) {
+func ExtractOptions(comment string) (options map[string]interface{}, remainingComment string, err error) {
 	var optionString string
 	firstIndex := strings.Index(comment, "{")
 	lastIndex := strings.LastIndex(comment, "}")
@@ -48,13 +50,13 @@ func extractOptions(comment string) (options map[string]interface{}, remainingCo
 	return
 }
 
-// Given a data definition description of the table, will extract the length from the definition
+// GetDataDefLength will extract the length from the definition given a data definition description of the table.
 // If more than one number, returns the first number
 // Example:
 //	bigint(21) -> 21
 // varchar(50) -> 50
 // decimal(10,2) -> 10
-func getDataDefLength(description string) int {
+func GetDataDefLength(description string) int {
 	var lastPos, lenPos int
 	var size string
 	if lenPos = strings.Index(description, "("); lenPos != -1 {
@@ -88,7 +90,7 @@ func getBooleanOption(o *maps.SliceMap, option string) (val bool, ok bool) {
 
 // Extracts a minimum and maximum value from the option map, returning defaults if none was found, and making sure
 // the boundaries of anything found are not exceeded
-func getMinMax(o map[string]interface{}, defaultMin float64, defaultMax float64, tableName string, columnName string) (min float64, max float64) {
+func GetMinMax(o map[string]interface{}, defaultMin float64, defaultMax float64, tableName string, columnName string) (min float64, max float64) {
 	var errString string
 
 	if columnName == "" {
@@ -128,23 +130,93 @@ func getMinMax(o map[string]interface{}, defaultMin float64, defaultMax float64,
 	return
 }
 
-func fkRuleToAction(rule sql.NullString) FKAction {
+func FkRuleToAction(rule sql.NullString) db.FKAction {
 
 	if !rule.Valid {
-		return FKActionNone // This means we will emulate foreign key actions
+		return db.FKActionNone // This means we will emulate foreign key actions
 	}
 	switch strings.ToUpper(rule.String) {
 	case "NO ACTION":
 		fallthrough
 	case "RESTRICT":
-		return FKActionRestrict
+		return db.FKActionRestrict
 	case "CASCADE":
-		return FKActionCascade
+		return db.FKActionCascade
 	case "SET DEFAULT":
-		return FKActionSetDefault
+		return db.FKActionSetDefault
 	case "SET NULL":
-		return FKActionSetNull
+		return db.FKActionSetNull
 
 	}
-	return FKActionNone
+	return db.FKActionNone
+}
+
+
+// SqlReceiveRows gets data from a sql result set and returns it as a slice of maps.
+//
+// Each column is mapped to its column name.
+// If you provide columnNames, those will be used in the map. Otherwise it will get the column names out of the
+// result set provided.
+func SqlReceiveRows(rows *sql.Rows,
+	columnTypes []query.GoColumnType,
+	columnNames []string,
+	builder *Builder,
+) []map[string]interface{} {
+
+	var values []map[string]interface{}
+
+	cursor := NewSqlCursor(rows, columnTypes, columnNames, nil)
+	defer cursor.Close()
+	for v := cursor.Next();v != nil;v = cursor.Next() {
+		values = append(values, v)
+	}
+	if builder != nil {
+		values = builder.unpackResult(values)
+	}
+
+	return values
+}
+
+
+// ReceiveRows gets data from a sql result set and returns it as a slice of maps. Each column is mapped to its column name.
+// If you provide column names, those will be used in the map. Otherwise it will get the column names out of the
+// result set provided
+func sqlReceiveRows2(rows *sql.Rows, columnTypes []query.GoColumnType, columnNames []string) (values []map[string]interface{}) {
+	var err error
+
+	values = []map[string]interface{}{}
+
+	columnReceivers := make([]SqlReceiver, len(columnTypes))
+	columnValueReceivers := make([]interface{}, len(columnTypes))
+
+	if columnNames == nil {
+		columnNames, err = rows.Columns()
+		if err != nil {
+			log.Panic(err)
+		}
+	}
+
+	for i, _ := range columnReceivers {
+		columnValueReceivers[i] = &(columnReceivers[i].R)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(columnValueReceivers...)
+
+		if err != nil {
+			log.Panic(err)
+		}
+
+		v1 := make(map[string]interface{}, len(columnReceivers))
+		for j, vr := range columnReceivers {
+			v1[columnNames[j]] = vr.Unpack(columnTypes[j])
+		}
+		values = append(values, v1)
+
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Panic(err)
+	}
+	return
 }

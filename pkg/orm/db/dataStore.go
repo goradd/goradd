@@ -58,6 +58,8 @@ type DatabaseI interface {
 	// committed, it will do nothing. Rollback can therefore be used in a defer statement as a safeguard in case
 	// a transaction fails.
 	Rollback(ctx context.Context, txid TransactionID)
+	// PutContext is called early in the processing of a response to insert an empty context that the database can use if needed.
+	PutBlankContext(ctx context.Context) context.Context
 }
 
 // AddDatabase adds a database to the global database store. Only call this during app startup.

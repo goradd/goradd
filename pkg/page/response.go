@@ -88,9 +88,6 @@ type Response struct {
 	winClose bool
 	// controls are goraddControls that should be inserted or replaced
 	controls map[string]responseControl
-	// profileHtml is the html sent from the database profiling tool to display in a special window
-	// TODO: This is not used currently, and is here for future ajax db profiling
-	profileHtml string
 }
 
 // NewResponse creates a new event response.
@@ -435,12 +432,6 @@ func (r *Response) SetControlValue(id string, value string) {
 	r.Unlock()
 }
 
-func (r *Response) setProfileInfo(info string) {
-	r.Lock()
-	r.profileHtml = info
-	r.Unlock()
-}
-
 // use an encoder since some fields could be nil
 type responseEncoded struct {
 	ExclusiveCommand *responseCommand
@@ -454,7 +445,6 @@ type responseEncoded struct {
 	NewLocation string
 	WinClose bool
 	Controls map[string]responseControl
-	ProfileHtml string
 }
 
 // Serialize encodes the response for the pagestate. Currently, serialization of the response is only
@@ -472,7 +462,6 @@ func (r *Response) Serialize(e Encoder) (err error) {
 		NewLocation:            r.newLocation,
 		WinClose:               r.winClose,
 		Controls:               r.controls,
-		ProfileHtml:            r.profileHtml,
 	}
 	if err = e.Encode(enc); err != nil {
 		panic(err)
@@ -499,7 +488,5 @@ func (r *Response) Deserialize(d Decoder) (err error) {
 	r.newLocation = enc.NewLocation
 	r.winClose = enc.WinClose
 	r.controls = enc.Controls
-	r.profileHtml = enc.ProfileHtml
-
 	return
 }

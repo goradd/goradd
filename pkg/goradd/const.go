@@ -9,8 +9,6 @@ type ContextKey string
 
 const (
 	PageContext      = ContextKey("goradd.page")
-	SessionContext   = ContextKey("goradd.session")
-	SqlContext       = ContextKey("goradd.sql")
 	BufferContext    = ContextKey("goradd.buf")
 	WebSocketContext = ContextKey("goradd.ws")
 )

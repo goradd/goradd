@@ -4,6 +4,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
+	mysql2 "github.com/goradd/goradd/pkg/orm/db/sql/mysql"
 )
 
 // Initialize the databases that the application will use through the database query interfaces
@@ -27,7 +28,7 @@ func addGoraddDatabase() {
 	cfg.Passwd = "12345"
 	cfg.ParseTime = true
 
-	db1 := db.NewMysql5(key, "", cfg)
+	db1 := mysql2.NewMysqlDB(key, "", cfg)
 
 	if !config.Release {
 		db1.StartProfiling()
@@ -80,13 +81,13 @@ func addMyDatabase() {
 	//		etc.
 	//	  }
 	// }
-	// 	 See MysqlOverrideConfigSettings for more info.
+	// 	 See OverrideConfigSettings for more info.
 	//
 	if i,ok := configOverrides[key]; ok {
-		db.MysqlOverrideConfigSettings(cfg, i.(map[string]interface{}))
+		db.OverrideConfigSettings(cfg, i.(map[string]interface{}))
 	}
 
-	db1 := db.NewMysql5(key, "", cfg)
+	db1 := db.NewMysqlDB(key, "", cfg)
 
 	if !config.Release {
 		db1.StartProfiling()

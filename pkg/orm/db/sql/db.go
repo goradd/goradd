@@ -1,4 +1,4 @@
-package db
+package sql
 
 import (
 	"context"
@@ -6,27 +6,28 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"strings"
 	"time"
 )
 
-// The SqlDbI interface describes the interface that a sql database needs to implement so that
-// it will work with the sqlBuilder object.
-type SqlDbI interface {
+// The DbI interface describes the interface that a sql database needs to implement so that
+// it will work with the Builder object.
+type DbI interface {
 	// Exec executes a query that does not expect to return values
 	Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error)
-	// Exec executes a query that returns values
+	// Query executes a query that returns values
 	Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error)
 	// TypeTableSuffix returns the suffix used in a table name to indicate that the table is a type table. By default this is "_type".
 	TypeTableSuffix() string
 	// AssociationTableSuffix returns the suffix used in a table name to indicate that the table is an association table. By default this is "_assn".
 	AssociationTableSuffix() string
 
-	// generateSelectSql will generate the select sql from the builder. This sql can be specific to the database used.
-	generateSelectSql(QueryBuilderI) (sql string, args []interface{})
-	// generateDeleteSql will generate delete sql from the given builder.
-	generateDeleteSql(QueryBuilderI) (sql string, args []interface{})
+	// GenerateSelectSql will generate the select sql from the builder. This sql can be specific to the database used.
+	GenerateSelectSql(QueryBuilderI) (sql string, args []interface{})
+	// GenerateDeleteSql will generate delete sql from the given builder.
+	GenerateDeleteSql(QueryBuilderI) (sql string, args []interface{})
 }
 
 // ProfileEntry contains the data collected during sql profiling
@@ -38,19 +39,18 @@ type ProfileEntry struct {
 	Sql       string
 }
 
-// SqlContext is what is stored in the current context to keep track of queries. You must save a copy of this in the
-// current context with the SqlContext key before calling database functions in order to use transactions or
+// sqlContext is what is stored in the current context to keep track of queries. You must save a copy of this in the
+// current context with the sqlContext key before calling database functions in order to use transactions or
 // database profiling, or anything else the context is required for. The framework does this for you, but you will need
 // to do this yourself if using the orm without the framework.
-type SqlContext struct {
+type sqlContext struct {
 	tx      *sql.Tx
 	txCount int // Keeps track of when to close a transaction
-
 	profiles []ProfileEntry
 }
 
-// SqlDb is a mixin for SQL database drivers. It implements common code needed by all SQL database drivers.
-type SqlDb struct {
+// DbHelper is a mixin for SQL database drivers. It implements common code needed by all SQL database drivers.
+type DbHelper struct {
 	dbKey string  // key of the database as used in the global database map
 	db    *sql.DB // Internal copy of golang database
 
@@ -65,10 +65,11 @@ type SqlDb struct {
 	profiling bool
 }
 
-// NewSqlDb creates a default SqlDb mixin.
-func NewSqlDb(dbKey string) SqlDb {
-	s := SqlDb{
+// NewSqlDb creates a default DbHelper mixin.
+func NewSqlDb(dbKey string, db *sql.DB) DbHelper {
+	s := DbHelper{
 		dbKey:                  dbKey,
+		db: db,
 		typeTableSuffix:        "_type",
 		associationTableSuffix: "_assn",
 		idSuffix:               "_id",
@@ -78,14 +79,10 @@ func NewSqlDb(dbKey string) SqlDb {
 
 // Begin starts a transaction. You should immediately defer a Rollback using the returned transaction id.
 // If you Commit before the Rollback happens, no Rollback will occur. The Begin-Commit-Rollback pattern is nestable.
-func (s *SqlDb) Begin(ctx context.Context) (txid TransactionID) {
-	var c *SqlContext
-
-	i := ctx.Value(goradd.SqlContext)
-	if i == nil {
+func (s *DbHelper) Begin(ctx context.Context) (txid db.TransactionID) {
+	c := s.getContext(ctx)
+	if c == nil {
 		panic("Can't use transactions without pre-loading a context")
-	} else {
-		c = i.(*SqlContext)
 	}
 	c.txCount++
 
@@ -99,17 +96,14 @@ func (s *SqlDb) Begin(ctx context.Context) (txid TransactionID) {
 			panic(err.Error())
 		}
 	}
-	return TransactionID(c.txCount)
+	return db.TransactionID(c.txCount)
 }
 
 // Commit commits the transaction, and if an error occurs, will panic with the error.
-func (s *SqlDb) Commit(ctx context.Context, txid TransactionID) {
-	var c *SqlContext
-	i := ctx.Value(goradd.SqlContext)
-	if i == nil {
+func (s *DbHelper) Commit(ctx context.Context, txid db.TransactionID) {
+	c := s.getContext(ctx)
+	if c == nil {
 		panic("Can't use transactions without pre-loading a context")
-	} else {
-		c = i.(*SqlContext)
 	}
 
 	if c.txCount != int(txid) {
@@ -133,13 +127,10 @@ func (s *SqlDb) Commit(ctx context.Context, txid TransactionID) {
 // that if you call Rollback on a transaction that has already been committed, no Rollback will happen. This makes it easier
 // to implement a transaction management scheme, because you simply always defer a Rollback after a Begin. Pass the txid
 // that you got from the Begin to the Rollback. To trigger a Rollback, simply panic.
-func (s *SqlDb) Rollback(ctx context.Context, txid TransactionID) {
-	var c *SqlContext
-	i := ctx.Value(goradd.SqlContext)
-	if i == nil {
+func (s *DbHelper) Rollback(ctx context.Context, txid db.TransactionID) {
+	c := s.getContext(ctx)
+	if c == nil {
 		panic("Can't use transactions without pre-loading a context")
-	} else {
-		c = i.(*SqlContext)
 	}
 
 	if c.txCount == int(txid) {
@@ -153,12 +144,8 @@ func (s *SqlDb) Rollback(ctx context.Context, txid TransactionID) {
 }
 
 // Exec executes the given SQL code, without returning any result rows.
-func (s *SqlDb) Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error) {
-	var c *SqlContext
-	i := ctx.Value(goradd.SqlContext)
-	if i != nil {
-		c = i.(*SqlContext)
-	}
+func (s *DbHelper) Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error) {
+	c := s.getContext(ctx)
 	log.FrameworkDebug("Exec: ", sql, args)
 
 	var beginTime = time.Now()
@@ -185,11 +172,11 @@ func (s *SqlDb) Exec(ctx context.Context, sql string, args ...interface{}) (r sq
 }
 
 /*
-func (s *SqlDb) Prepare(ctx context.Context, sql string) (r *sql.Stmt, err error) {
-	var c *SqlContext
-	i := ctx.Value(goradd.SqlContext)
+func (s *DbHelper) Prepare(ctx context.Context, sql string) (r *sql.Stmt, err error) {
+	var c *sqlContext
+	i := ctx.Value(goradd.sqlContext)
 	if i != nil {
-		c = i.(*SqlContext)
+		c = i.(*sqlContext)
 	}
 
 	var beginTime = time.Now()
@@ -207,12 +194,8 @@ func (s *SqlDb) Prepare(ctx context.Context, sql string) (r *sql.Stmt, err error
 }*/
 
 // Query executes the given sql, and returns a row result set.
-func (s *SqlDb) Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error) {
-	var c *SqlContext
-	i := ctx.Value(goradd.SqlContext)
-	if i != nil {
-		c = i.(*SqlContext)
-	}
+func (s *DbHelper) Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error) {
+	c := s.getContext(ctx)
 	log.FrameworkDebug("Query: ", sql, args)
 
 	var beginTime = time.Now()
@@ -235,81 +218,88 @@ func (s *SqlDb) Query(ctx context.Context, sql string, args ...interface{}) (r *
 	return
 }
 
-// DbKey returns the database key used in the datastore.
-func (s *SqlDb) DbKey() string {
-	return s.dbKey
+// PutBlankContext puts a blank context into the context chain to track transactions and other
+// special database situations.
+func (s *DbHelper) PutBlankContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, s.contextKey(), &sqlContext{})
+}
+
+func (s *DbHelper) contextKey() goradd.ContextKey {
+	return goradd.ContextKey("goradd.sql-" + s.DbKey())
+}
+
+func (s *DbHelper) getContext(ctx context.Context) *sqlContext {
+	i := ctx.Value(s.contextKey())
+	if i != nil {
+		if c, ok := i.(*sqlContext); ok {
+			return c
+		}
+	}
+	return nil
 }
 
 // SetTypeTableSuffix sets the suffix used to identify type tables.
-func (s *SqlDb) SetTypeTableSuffix(suffix string) {
+func (s *DbHelper) SetTypeTableSuffix(suffix string) {
 	s.typeTableSuffix = suffix
 }
 
 // SetAssociationTableSuffix sets the suffix used to identify association tables.
-func (s *SqlDb) SetAssociationTableSuffix(suffix string) {
+func (s *DbHelper) SetAssociationTableSuffix(suffix string) {
 	s.associationTableSuffix = suffix
 }
 
 // TypeTableSuffix returns the suffix used to identify type tables.
-func (s *SqlDb) TypeTableSuffix() string {
+func (s *DbHelper) TypeTableSuffix() string {
 	return s.typeTableSuffix
 }
 
 // AssociationTableSuffix returns the suffix used to identify association tables.
-func (s *SqlDb) AssociationTableSuffix() string {
+func (s *DbHelper) AssociationTableSuffix() string {
 	return s.associationTableSuffix
 }
 
 // SetAssociatedObjectPrefix sets the prefix string used in code generation to indicate a variable is a database object.
-func (s *SqlDb) SetAssociatedObjectPrefix(prefix string) {
+func (s *DbHelper) SetAssociatedObjectPrefix(prefix string) {
 	s.associatedObjectPrefix = prefix
 }
 
-// SetAssociatedObjectPrefix returns the prefix string used in code generation to indicate a variable is a database object.
-func (s *SqlDb) AssociatedObjectPrefix() string {
+// AssociatedObjectPrefix returns the prefix string used in code generation to indicate a variable is a database object.
+func (s *DbHelper) AssociatedObjectPrefix() string {
 	return s.associatedObjectPrefix
 }
 
 // IdSuffix is the suffix used to indicate that a field is a foreign ky to another table.
-func (s *SqlDb) IdSuffix() string {
+func (s *DbHelper) IdSuffix() string {
 	return s.idSuffix
 }
 
+// DbKey returns the key of the database in the global database store.
+func (s *DbHelper) DbKey() string {
+	return s.dbKey
+}
+
+// SqlDb returns the sql database object.
+func (s *DbHelper) SqlDb() *sql.DB {
+	return s.db
+}
+
+
 // StartProfiling will start the database profiling process.
-func (s *SqlDb) StartProfiling() {
+func (s *DbHelper) StartProfiling() {
 	s.profiling = true
 }
 
-// IsProfiling returns true if we are currently collection SQL database profiling information.
-func IsProfiling(ctx context.Context) bool {
-	var c *SqlContext
-
-	if ctx == nil { // testing
-		return false
-	}
-	i := ctx.Value(goradd.SqlContext)
-	if i != nil {
-		c = i.(*SqlContext)
-		return c.profiles != nil
-	}
-	return false
-}
 
 // GetProfiles returns currently collected profile information
 // TODO: Move profiles to a session variable so we can access ajax queries too
-func GetProfiles(ctx context.Context) []ProfileEntry {
-	var c *SqlContext
-	i := ctx.Value(goradd.SqlContext)
-	if i == nil {
+func (s *DbHelper) GetProfiles(ctx context.Context) []ProfileEntry {
+	c := s.getContext(ctx)
+	if c == nil {
 		panic("Profiling requires a preloaded context.")
-	} else {
-		c = i.(*SqlContext)
 	}
 
-	if c != nil {
-		p := c.profiles
-		c.profiles = nil
-		return p
-	}
-	return nil
+	p := c.profiles
+	c.profiles = nil
+	return p
 }
+

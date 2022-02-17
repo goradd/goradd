@@ -799,13 +799,13 @@ func HasProjectByNum(ctx context.Context, num int) bool {
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type ProjectsBuilder struct {
-	base                query.QueryBuilderI
+	builder             query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
 func newProjectBuilder(ctx context.Context) *ProjectsBuilder {
 	b := &ProjectsBuilder{
-		base: db.GetDatabase("goradd").NewBuilder(ctx),
+		builder: db.GetDatabase("goradd").NewBuilder(ctx),
 	}
 	return b.Join(node.Project())
 }
@@ -814,7 +814,7 @@ func newProjectBuilder(ctx context.Context) *ProjectsBuilder {
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
 func (b *ProjectsBuilder) Load() (projectSlice []*Project) {
-	results := b.base.Load()
+	results := b.builder.Load()
 	if results == nil {
 		return
 	}
@@ -830,7 +830,7 @@ func (b *ProjectsBuilder) Load() (projectSlice []*Project) {
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
 func (b *ProjectsBuilder) LoadI() (projectSlice []interface{}) {
-	results := b.base.Load()
+	results := b.builder.Load()
 	if results == nil {
 		return
 	}
@@ -857,7 +857,7 @@ func (b *ProjectsBuilder) Get() *Project {
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
 func (b *ProjectsBuilder) Expand(n query.NodeI) *ProjectsBuilder {
-	b.base.Expand(n)
+	b.builder.Expand(n)
 	return b
 }
 
@@ -870,7 +870,7 @@ func (b *ProjectsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *Projec
 	} else if len(conditions) == 1 {
 		condition = conditions[0]
 	}
-	b.base.Join(n, condition)
+	b.builder.Join(n, condition)
 	if condition != nil {
 		b.hasConditionalJoins = true
 	}
@@ -879,19 +879,19 @@ func (b *ProjectsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *Projec
 
 // Where adds a condition to filter what gets selected.
 func (b *ProjectsBuilder) Where(c query.NodeI) *ProjectsBuilder {
-	b.base.Condition(c)
+	b.builder.Condition(c)
 	return b
 }
 
 // OrderBy specifies how the resulting data should be sorted.
 func (b *ProjectsBuilder) OrderBy(nodes ...query.NodeI) *ProjectsBuilder {
-	b.base.OrderBy(nodes...)
+	b.builder.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
 func (b *ProjectsBuilder) Limit(maxRowCount int, offset int) *ProjectsBuilder {
-	b.base.Limit(maxRowCount, offset)
+	b.builder.Limit(maxRowCount, offset)
 	return b
 }
 
@@ -900,14 +900,14 @@ func (b *ProjectsBuilder) Limit(maxRowCount int, offset int) *ProjectsBuilder {
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
 func (b *ProjectsBuilder) Select(nodes ...query.NodeI) *ProjectsBuilder {
-	b.base.Select(nodes...)
+	b.builder.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
 func (b *ProjectsBuilder) Alias(name string, n query.NodeI) *ProjectsBuilder {
-	b.base.Alias(name, n)
+	b.builder.Alias(name, n)
 	return b
 }
 
@@ -915,19 +915,19 @@ func (b *ProjectsBuilder) Alias(name string, n query.NodeI) *ProjectsBuilder {
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
 func (b *ProjectsBuilder) Distinct() *ProjectsBuilder {
-	b.base.Distinct()
+	b.builder.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
 func (b *ProjectsBuilder) GroupBy(nodes ...query.NodeI) *ProjectsBuilder {
-	b.base.GroupBy(nodes...)
+	b.builder.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
 func (b *ProjectsBuilder) Having(node query.NodeI) *ProjectsBuilder {
-	b.base.Having(node)
+	b.builder.Having(node)
 	return b
 }
 
@@ -937,20 +937,20 @@ func (b *ProjectsBuilder) Having(node query.NodeI) *ProjectsBuilder {
 //
 // nodes will select individual fields, and should be accompanied by a GroupBy.
 func (b *ProjectsBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
-	return b.base.Count(distinct, nodes...)
+	return b.builder.Count(distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *ProjectsBuilder) Delete() {
-	b.base.Delete()
-	broadcast.BulkChange(b.base.Context(), "goradd", "project")
+	b.builder.Delete()
+	broadcast.BulkChange(b.builder.Context(), "goradd", "project")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
 func (b *ProjectsBuilder) Subquery() *query.SubqueryNode {
-	return b.base.Subquery()
+	return b.builder.Subquery()
 }
 
 // joinOrSelect is a private helper function for the Load* functions
@@ -958,7 +958,7 @@ func (b *ProjectsBuilder) joinOrSelect(nodes ...query.NodeI) *ProjectsBuilder {
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
-			b.base.Join(n, nil)
+			b.builder.Join(n, nil)
 		case *query.ColumnNode:
 			b.Select(n)
 		}

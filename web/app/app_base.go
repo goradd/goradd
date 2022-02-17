@@ -262,15 +262,14 @@ func (a *Application) PutAppContextHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// PutDbContextHandler is an http handler that adds the database context to the current context.
-//
-// This allows the context to be used by various pieces of the app further down the chain. The default
-// assumes a SQL database. Override it to change it.
+// PutDbContextHandler is an http handler that adds the database contexts to the current context.
 func (a *Application) PutDbContextHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		// Create a context that the ORM can use
-		ctx = context.WithValue(ctx, goradd.SqlContext, &db.SqlContext{})
+
+		for _,d := range db.GetDatabases() {
+			ctx = d.PutBlankContext(ctx)
+		}
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)

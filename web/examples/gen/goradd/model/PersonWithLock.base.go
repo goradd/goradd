@@ -244,13 +244,13 @@ func HasPersonWithLockByID(ctx context.Context, id string) bool {
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type PersonWithLocksBuilder struct {
-	base                query.QueryBuilderI
+	builder             query.QueryBuilderI
 	hasConditionalJoins bool
 }
 
 func newPersonWithLockBuilder(ctx context.Context) *PersonWithLocksBuilder {
 	b := &PersonWithLocksBuilder{
-		base: db.GetDatabase("goradd").NewBuilder(ctx),
+		builder: db.GetDatabase("goradd").NewBuilder(ctx),
 	}
 	return b.Join(node.PersonWithLock())
 }
@@ -259,7 +259,7 @@ func newPersonWithLockBuilder(ctx context.Context) *PersonWithLocksBuilder {
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice
 func (b *PersonWithLocksBuilder) Load() (personWithLockSlice []*PersonWithLock) {
-	results := b.base.Load()
+	results := b.builder.Load()
 	if results == nil {
 		return
 	}
@@ -275,7 +275,7 @@ func (b *PersonWithLocksBuilder) Load() (personWithLockSlice []*PersonWithLock) 
 // any errors, they are returned in the context object. If no results come back from the query, it will return
 // an empty slice.
 func (b *PersonWithLocksBuilder) LoadI() (personWithLockSlice []interface{}) {
-	results := b.base.Load()
+	results := b.builder.Load()
 	if results == nil {
 		return
 	}
@@ -302,7 +302,7 @@ func (b *PersonWithLocksBuilder) Get() *PersonWithLock {
 
 // Expand expands an array type node so that it will produce individual rows instead of an array of items
 func (b *PersonWithLocksBuilder) Expand(n query.NodeI) *PersonWithLocksBuilder {
-	b.base.Expand(n)
+	b.builder.Expand(n)
 	return b
 }
 
@@ -315,7 +315,7 @@ func (b *PersonWithLocksBuilder) Join(n query.NodeI, conditions ...query.NodeI) 
 	} else if len(conditions) == 1 {
 		condition = conditions[0]
 	}
-	b.base.Join(n, condition)
+	b.builder.Join(n, condition)
 	if condition != nil {
 		b.hasConditionalJoins = true
 	}
@@ -324,19 +324,19 @@ func (b *PersonWithLocksBuilder) Join(n query.NodeI, conditions ...query.NodeI) 
 
 // Where adds a condition to filter what gets selected.
 func (b *PersonWithLocksBuilder) Where(c query.NodeI) *PersonWithLocksBuilder {
-	b.base.Condition(c)
+	b.builder.Condition(c)
 	return b
 }
 
 // OrderBy specifies how the resulting data should be sorted.
 func (b *PersonWithLocksBuilder) OrderBy(nodes ...query.NodeI) *PersonWithLocksBuilder {
-	b.base.OrderBy(nodes...)
+	b.builder.OrderBy(nodes...)
 	return b
 }
 
 // Limit will return a subset of the data, limited to the offset and number of rows specified
 func (b *PersonWithLocksBuilder) Limit(maxRowCount int, offset int) *PersonWithLocksBuilder {
-	b.base.Limit(maxRowCount, offset)
+	b.builder.Limit(maxRowCount, offset)
 	return b
 }
 
@@ -345,14 +345,14 @@ func (b *PersonWithLocksBuilder) Limit(maxRowCount int, offset int) *PersonWithL
 // tables will also contain pointers back to the parent table, and so the parent node should have the same field selected
 // as the child node if you are querying those fields.
 func (b *PersonWithLocksBuilder) Select(nodes ...query.NodeI) *PersonWithLocksBuilder {
-	b.base.Select(nodes...)
+	b.builder.Select(nodes...)
 	return b
 }
 
 // Alias lets you add a node with a custom name. After the query, you can read out the data using GetAlias() on a
 // returned object. Alias is useful for adding calculations or subqueries to the query.
 func (b *PersonWithLocksBuilder) Alias(name string, n query.NodeI) *PersonWithLocksBuilder {
-	b.base.Alias(name, n)
+	b.builder.Alias(name, n)
 	return b
 }
 
@@ -360,19 +360,19 @@ func (b *PersonWithLocksBuilder) Alias(name string, n query.NodeI) *PersonWithLo
 // using Distinct with joined tables is often not effective, since we force joined tables to include primary keys in the query, and this
 // often ruins the effect of Distinct.
 func (b *PersonWithLocksBuilder) Distinct() *PersonWithLocksBuilder {
-	b.base.Distinct()
+	b.builder.Distinct()
 	return b
 }
 
 // GroupBy controls how results are grouped when using aggregate functions in an Alias() call.
 func (b *PersonWithLocksBuilder) GroupBy(nodes ...query.NodeI) *PersonWithLocksBuilder {
-	b.base.GroupBy(nodes...)
+	b.builder.GroupBy(nodes...)
 	return b
 }
 
 // Having does additional filtering on the results of the query.
 func (b *PersonWithLocksBuilder) Having(node query.NodeI) *PersonWithLocksBuilder {
-	b.base.Having(node)
+	b.builder.Having(node)
 	return b
 }
 
@@ -382,20 +382,20 @@ func (b *PersonWithLocksBuilder) Having(node query.NodeI) *PersonWithLocksBuilde
 //
 // nodes will select individual fields, and should be accompanied by a GroupBy.
 func (b *PersonWithLocksBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
-	return b.base.Count(distinct, nodes...)
+	return b.builder.Count(distinct, nodes...)
 }
 
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *PersonWithLocksBuilder) Delete() {
-	b.base.Delete()
-	broadcast.BulkChange(b.base.Context(), "goradd", "person_with_lock")
+	b.builder.Delete()
+	broadcast.BulkChange(b.builder.Context(), "goradd", "person_with_lock")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
 // you are selecting by adding Alias or Select functions on the subquery builder. Generally you would use
 // this as a node to an Alias function on the surrounding query builder.
 func (b *PersonWithLocksBuilder) Subquery() *query.SubqueryNode {
-	return b.base.Subquery()
+	return b.builder.Subquery()
 }
 
 // joinOrSelect is a private helper function for the Load* functions
@@ -403,7 +403,7 @@ func (b *PersonWithLocksBuilder) joinOrSelect(nodes ...query.NodeI) *PersonWithL
 	for _, n := range nodes {
 		switch n.(type) {
 		case query.TableNodeI:
-			b.base.Join(n, nil)
+			b.builder.Join(n, nil)
 		case *query.ColumnNode:
 			b.Select(n)
 		}
