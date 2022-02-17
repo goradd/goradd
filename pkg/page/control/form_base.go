@@ -2,16 +2,7 @@ package control
 
 import (
 	"context"
-	"fmt"
-	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/page/event"
-	"strings"
-)
-
-const (
-	databaseProfileAction = iota + 10000
 )
 
 // The FormBase is the control that all Form objects should include, and is the master container for all other goradd controls.
@@ -45,19 +36,6 @@ func (f *FormBase) Init(ctx context.Context, id string) {
 
 	f.FormBase.Init(ctx, id)
 
-	if db.IsProfiling(ctx) {
-		btn := NewButton(f, "grProfileButton")
-		btn.SetText("SQL Profile <i class='fas fa-arrow-circle-down' ></i>")
-		btn.SetTextIsHtml(true)
-		btn.On(event.Click(), action.Ajax(f.ID(), databaseProfileAction))
-		btn.SetShouldAutoRender(true)
-
-		panel := NewPanel(f, "grProfilePanel")
-		panel.SetShouldAutoRender(true)
-		panel.SetTextIsHtml(true)
-		panel.SetVisible(false)
-	}
-
 	/*	TODO: Add a dialog and designer click if in design mode
 			if (defined('QCUBED_DESIGN_MODE') && QCUBED_DESIGN_MODE == 1) {
 			// Attach custom event to dialog to handle right click menu items sent by form
@@ -72,30 +50,6 @@ func (f *FormBase) Init(ctx context.Context, id string) {
 
 	*/
 
-}
-
-func (f *FormBase) Action(ctx context.Context, a page.ActionParams) {
-	switch a.ID {
-	case databaseProfileAction:
-		if f.Page().HasControl("grProfilePanel") {
-			c := f.Page().GetControl("grProfilePanel")
-			if c.IsVisible() {
-				c.SetVisible(false)
-			} else {
-				c.SetVisible(true)
-				var s string
-				if profiles := db.GetProfiles(ctx); profiles != nil {
-					for _, profile := range profiles {
-						dif := profile.EndTime.Sub(profile.BeginTime)
-						sql := strings.Replace(profile.Sql, "\n", "<br />", -1)
-						s += fmt.Sprintf(`<p class="profile"><div>Time: %s Begin: %s End: %s</div><div>%s</div></p>`,
-							dif.String(), profile.BeginTime.Format("3:04:05.000"), profile.EndTime.Format("3:04:05.000"), sql)
-					}
-				}
-				c.SetText(s)
-			}
-		}
-	}
 }
 
 

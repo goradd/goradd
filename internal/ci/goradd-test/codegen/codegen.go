@@ -5,6 +5,7 @@ import (
 	"github.com/goradd/goradd/codegen/generator"
 	_ "github.com/goradd/goradd/pkg/bootstrap/generator"
 	"github.com/goradd/goradd/pkg/orm/db"
+	mysql2 "github.com/goradd/goradd/pkg/orm/db/sql/mysql"
 	_ "github.com/goradd/goradd/pkg/page/control/generator"
 	_ "goradd-project/config" // Initialize required variables
 	_ "goradd-project/tmp/template"
@@ -33,7 +34,7 @@ func initDatabases() {
 
 	key := "goradd"
 
-	db1 := db.NewMysql5(key, "", cfg)
+	db1 := mysql2.NewMysqlDB(key, "", cfg)
 
 	db.AddDatabase(db1, key)
 
@@ -45,7 +46,7 @@ func initDatabases() {
 
 	key = "goraddUnit"
 
-	db2 := db.NewMysql5(key, "", cfg)
+	db2 := mysql2.NewMysqlDB(key, "", cfg)
 
 	db.AddDatabase(db2, key)
 

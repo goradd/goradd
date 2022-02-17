@@ -2,11 +2,11 @@
 This config file implements a map with a string key and a joinTreeItem value.
 */
 {
-  "package": "db",
+  "package": "sql",
   "KeyType": "",
-  "ValType": "joinTreeItem",
+  "ValType": "JoinTreeItem",
   "keytype": "string",
-  "valtype": "*joinTreeItem",
+  "valtype": "*JoinTreeItem",
   "Safe": "",
   "valueIsComparer": false,
   "valueIsComparable": false,

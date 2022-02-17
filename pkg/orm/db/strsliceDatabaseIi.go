@@ -12,6 +12,7 @@ type DatabaseISetter interface {
 	Set(string, DatabaseI)
 }
 
+
 // The DatabaseIMapI interface provides a common interface to the many kinds of similar map objects.
 //
 // Most functions that change the map are omitted so that you can wrap the map in additional functionality that might
@@ -26,4 +27,5 @@ type DatabaseIMapI interface {
 	// Range will iterate over the keys and values in the map. Pattern is taken from sync.Map
 	Range(f func(key string, value DatabaseI) bool)
 	Merge(i DatabaseIMapI)
+	String() string
 }

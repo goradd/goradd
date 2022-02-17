@@ -12,12 +12,10 @@ import (
 	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
-	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
 	"io"
 	"path"
-	"strings"
 )
 
 type FormI interface {
@@ -216,21 +214,6 @@ func (f *FormBase) writeAllStates(ctx context.Context) {
 		c := child.control()
 		c.writeState(ctx)
 	})
-}
-
-
-
-// outputSqlProfile looks for sql profiling information and sends it to the browser if found
-func (f *FormBase) getDbProfile(ctx context.Context) (s string) {
-	if profiles := db.GetProfiles(ctx); profiles != nil {
-		for _, profile := range profiles {
-			dif := profile.EndTime.Sub(profile.BeginTime)
-			sql := strings.Replace(profile.Sql, "\n", "<br />", -1)
-			s += fmt.Sprintf(`<p class="profile"><div>Time: %s Begin: %s End: %s</div><div>%s</div></p>`,
-				dif.String(), profile.BeginTime.Format("3:04:05.000"), profile.EndTime.Format("3:04:05.000"), sql)
-		}
-	}
-	return
 }
 
 // renderAjax assembles the ajax response for the entire form and draws it to the return buffer
