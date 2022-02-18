@@ -243,7 +243,7 @@ func (a Attributes) Merge(i interface{}) {
 		return
 	}
 	if a == nil {
-		a = NewAttributes()
+		panic("can't merge into nil attributes")
 	}
 	switch m := i.(type) {
 	case map[string]string:
@@ -581,7 +581,7 @@ func (a Attributes) RemoveStyle(name string) (changed bool) {
 	s := a.StyleMap()
 	if s.Has(name) {
 		changed = true
-		s.Delete(name)
+		s.Remove(name)
 		a.set("style", s.String())
 	}
 	return changed

@@ -6,7 +6,7 @@
 // 1) An "op" value, which is the operation to perform. See OpHello, etc. for possible values
 // 2) A "msg" value, which gets passed on the auth service you provide.
 //
-// You coordinate between your client and your service on how encode your messages. A common way would be
+// You coordinate between your client and your service on how to encode your messages. A common way would be
 // to use json, but its up to you to do the encoding and decoding on either end.
 //
 // See the AuthI interface for details on what each message type should accomplish.

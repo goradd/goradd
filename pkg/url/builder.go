@@ -12,13 +12,14 @@ type Builder struct {
 	values url2.Values
 }
 
-// NewBuilder starts a URL builder
+// NewBuilder starts a URL builder from a basic path.
 func NewBuilder(path string) *Builder {
 	b := &Builder{values: make(url2.Values)}
 	b.url.Path = path
 	return b
 }
 
+// NewBuilderFromUrl creates a new builder from a URL.
 func NewBuilderFromUrl(u url2.URL) *Builder {
 	b := &Builder{url: u}
 	b.values, _ = url2.ParseQuery(u.RawQuery)
@@ -32,16 +33,19 @@ func (u *Builder) SetValue(k string, v interface{}) *Builder {
 	return u
 }
 
+// RemoveValue removes the value from the URL
 func (u *Builder) RemoveValue(k string) *Builder {
 	u.values.Del(k)
 	return u
 }
 
+// SetFragment sets the fragment portion of the URL
 func (u *Builder) SetFragment(f string) *Builder {
 	u.url.Fragment = f
 	return u
 }
 
+// ClearFragment removes the fragment from the URL.
 func (u *Builder) ClearFragment() *Builder {
 	u.url.Fragment = ""
 	return u

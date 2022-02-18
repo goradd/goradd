@@ -45,7 +45,7 @@ func ToDataKey(s string) (string, error) {
 	var ret string
 	for i, p := range pieces {
 		if len(p) == 1 {
-			err := errors.New("Due to a bug, individual kabob words must be at least 2 characters long.")
+			err := errors.New("individual kabob words must be at least 2 characters long.")
 			return s, err
 		}
 		if i != 0 {

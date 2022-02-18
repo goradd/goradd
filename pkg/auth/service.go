@@ -33,8 +33,8 @@ type AuthI interface {
 	// likely by returning a 401 response code in the header.
 	Login(ctx context.Context, msg []byte, w http.ResponseWriter) bool
 	// TokenLogin should attempt to log in using a token and id hash in the message. This would be a token that you have
-	// previously returned in one of the above methods. Put a user id in the session if successful.
-	// Return true if successful and false if not.
+	// previously returned in one of the above methods. Puts a user id in the session if successful.
+	// Returns true if successful and false if not.
 	TokenLogin(ctx context.Context, msg []byte, w http.ResponseWriter) bool
 	// RevokeToken should revoke the token in the message. The session will be closed by the service as well.
 	// You should delete the token from the database.

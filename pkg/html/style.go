@@ -11,6 +11,8 @@ import (
 )
 
 const numericMatch = `-?[\d]*(\.[\d]+)?`
+var numericReplacer,_ = regexp.Compile(numericMatch)
+var numericMatcher,_ = regexp.Compile("^"+numericMatch+"$")
 
 // keys for style attributes that take a number that is not a length
 var nonLengthNumerics = map[string]bool{
@@ -25,16 +27,18 @@ var nonLengthNumerics = map[string]bool{
 	"counter-reset":     true,
 }
 
-// Style makes it easy to add and manipulate individual properties in a generated style sheet
-// Its main use is for generating a style attribute in an HTML tag
-// It implements the String interface to get the style properties as an HTML embeddable string
+// Style makes it easy to add and manipulate individual properties in a generated style sheet.
+//
+// Its main use is for generating a style attribute in an HTML tag.
+// It implements the String interface to get the style properties as an HTML embeddable string.
 type Style map[string]string
 
-// NewStyle initializes an empty Style object
+// NewStyle initializes an empty Style object.
 func NewStyle() Style {
 	return make(map[string]string)
 }
 
+// NewStyleFromMap creates a new style from a string map.
 func NewStyleFromMap(m map[string]string) Style {
 	s := NewStyle()
 	for k,v := range m {
@@ -43,12 +47,14 @@ func NewStyleFromMap(m map[string]string) Style {
 	return s
 }
 
+// Merge merges the styles from one style to another. Conflicts will overwrite the current style.
 func (s Style) Merge(m Style) {
 	for k,v := range m {
 		s[k] = v
 	}
 }
 
+// Len returns the number of properties in the style.
 func (s Style) Len() int {
 	if s == nil {
 		return 0
@@ -56,26 +62,36 @@ func (s Style) Len() int {
 	return len(s)
 }
 
-func (s Style) Has(prop string) bool {
+// Has returns true if the given property is in the style.
+func (s Style) Has(property string) bool {
 	if s == nil {
 		return false
 	}
-	_,ok := s[prop]
+	_,ok := s[property]
 	return ok
 }
 
-func (s Style) Get(prop string) string {
-	return s[prop]
+// Get returns the property.
+func (s Style) Get(property string) string {
+	return s[property]
 }
 
-func (s Style) Delete(prop string) {
-	delete(s, prop)
+// Remove removes the property.
+func (s Style) Remove(property string) {
+	delete(s, property)
 }
+
+// Delete removes the property.
+// Deprecated: use Remove
+func (s Style) Delete(prop string) {
+	s.Remove(prop)
+}
+
 
 // SetTo receives a style encoded "style" attribute into the Style structure (e.g. "width: 4px; border: 1px solid black")
 func (s Style) SetTo(text string) (changed bool, err error) {
 	s.RemoveAll()
-	a := strings.Split(string(text), ";") // break apart into pairs
+	a := strings.Split(text, ";") // break apart into pairs
 	changed = false
 	err = nil
 	for _, value := range a {
@@ -94,51 +110,53 @@ func (s Style) SetTo(text string) (changed bool, err error) {
 	return
 }
 
-// SetChanged sets the given style to the given value. If the value is prefixed with a plus, minus, multiply or divide, and then a space,
+// SetChanged sets the given property to the given value.
+//
+// If the value is prefixed with a plus, minus, multiply or divide, and then a space,
 // it assumes that a number will follow, and the specified operation will be performed in place on the current value
 // For example, Set ("height", "* 2") will double the height value without changing the unit specifier
 // When referring to a value that can be a length, you can use numeric values. In this case, "0" will be passed unchanged,
 // but any other number will automatically get a "px" suffix.
-
-func (s Style) SetChanged(n string, v string) (changed bool, err error) {
-	if strings.Contains(n, " ") {
+func (s Style) SetChanged(property string, value string) (changed bool, err error) {
+	if strings.Contains(property, " ") {
 		err = errors.New("attribute names cannot contain spaces")
 		return
 	}
-	isNumeric, _ := regexp.MatchString("^"+numericMatch+"$", v)
 
-	if strings.HasPrefix(v, "+ ") ||
-		strings.HasPrefix(v, "- ") || // the space here distinguishes between a math operation and a negative value
-		strings.HasPrefix(v, "* ") ||
-		strings.HasPrefix(v, "/ ") {
+	if strings.HasPrefix(value, "+ ") ||
+		strings.HasPrefix(value, "- ") || // the space here distinguishes between a math operation and a negative value
+		strings.HasPrefix(value, "* ") ||
+		strings.HasPrefix(value, "/ ") {
 
-		return s.mathOp(n, v[0:1], v[2:])
+		return s.mathOp(property, value[0:1], value[2:])
 	}
 
-	if v == "0" {
-		changed = s.set(n, v)
+	if value == "0" {
+		changed = s.set(property, value)
 		return
 	}
 
+	isNumeric := numericMatcher.MatchString(value)
 	if isNumeric {
-		if !nonLengthNumerics[n] {
-			v = v + "px"
+		if !nonLengthNumerics[property] {
+			value = value + "px"
 		}
-		changed = s.set(n, v)
+		changed = s.set(property, value)
 		return
 	}
 
-	changed = s.set(n, v)
+	changed = s.set(property, value)
 	return
 }
 
 // Set is like SetChanged, but returns the Style for chaining.
-// It will also allocate a style if passed a nil style, and return it
-func (s Style) Set(n string, v string) Style {
+//
+// It will also allocate a style if passed a nil style, and return it.
+func (s Style) Set(property string, value string) Style {
 	if s == nil {
 		s = NewStyle()
 	}
-	_, err := s.SetChanged(n, v)
+	_, err := s.SetChanged(property, value)
 	if err != nil {
 		panic(err)
 	}
@@ -176,10 +194,10 @@ func opReplacer(op string, v float64) func(string) string {
 	}
 }
 
-// mathOp applies the given math operation and value to all the numeric values found in the given attribute.
+// mathOp applies the given math operation and value to all the numeric values found in the given property.
 // Bug(r) If the operation is working on a zero, and the result is not a zero, we may get a raw number with no unit. Not a big deal, but result will use default unit of browser, which is not always px
-func (s Style) mathOp(attribute string, op string, val string) (changed bool, err error) {
-	cur := s.Get(attribute)
+func (s Style) mathOp(property string, op string, val string) (changed bool, err error) {
+	cur := s.Get(property)
 	if cur == "" {
 		cur = "0"
 	}
@@ -188,12 +206,8 @@ func (s Style) mathOp(attribute string, op string, val string) (changed bool, er
 	if err != nil {
 		return
 	}
-	r, err := regexp.Compile(numericMatch)
-	if err != nil {
-		return
-	}
-	newStr := r.ReplaceAllStringFunc(cur, opReplacer(op, f))
-	changed = s.set(attribute, newStr)
+	newStr := numericReplacer.ReplaceAllStringFunc(cur, opReplacer(op, f))
+	changed = s.set(property, newStr)
 	return
 }
 
@@ -227,7 +241,7 @@ func roundFloat(f float64, digits int) float64 {
 	return f
 }
 
-// encode will output a text version of the style, suitable for inclusion in an html "style" attribute.
+// encode will output a text version of the style, suitable for inclusion in an HTML "style" attribute.
 // it will sort the keys so that they are presented in a consistent and testable way.
 func (s Style) encode() (text string) {
 	keys := stringmap.SortedKeys(s)
@@ -249,9 +263,9 @@ func StyleString(i interface{}) string {
 	case int:
 		sValue = fmt.Sprintf("%dpx", v)
 	case float32:
-		sValue = fmt.Sprintf("%fpx", v)
+		sValue = fmt.Sprintf("%gpx", v)
 	case float64:
-		sValue = fmt.Sprintf("%fpx", v)
+		sValue = fmt.Sprintf("%gpx", v)
 	case string:
 		sValue = v
 	case fmt.Stringer:
@@ -262,19 +276,21 @@ func StyleString(i interface{}) string {
 	return sValue
 }
 
+// StyleCreator is a helper struct to create a style from a string map.
 type StyleCreator map[string]string
 
+// Create creates a style from a StyleCreator.
 func (c StyleCreator) Create() Style {
 	return NewStyleFromMap(c)
 }
 
 // MergeStyleStrings merges the styles found in the two style strings.
-// s2 wins conflicts
+// s2 wins conflicts.
 func MergeStyleStrings (s1, s2 string) string {
 	style1 := NewStyle()
-	style1.SetTo(s1)
+	_,_ = style1.SetTo(s1)
 	style2 := NewStyle()
-	style2.SetTo(s2)
+	_,_ = style2.SetTo(s2)
 	style1.Merge(style2)
 	return style1.String()
 }

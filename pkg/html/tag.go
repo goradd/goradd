@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// The label drawing mode describes how to draw a label when it is drawn.
+// The LabelDrawingMode describes how to draw a label when it is drawn.
 // Various CSS frameworks expect it a certain way. Many are not very forgiving when
 // you don't do it the way they expect.
 type LabelDrawingMode int
@@ -54,10 +54,13 @@ func RenderVoidTag(tag string, attr Attributes) (s string) {
 }
 
 // RenderTag renders a standard html tag with a closing tag.
+//
 // innerHtml is html, and must already be escaped if needed.
+//
 // The tag will be surrounded with newlines to force general formatting consistency.
 // This will cause the tag to be rendered with a space between it and its neighbors if the tag is
 // not a block tag.
+//
 // In the few situations where you would want to
 // get rid of this space, call RenderTagNoSpace()
 func RenderTag(tag string, attr Attributes, innerHtml string) string {
@@ -107,9 +110,9 @@ func RenderTagNoSpace(tag string, attr Attributes, innerHtml string) string {
 		if innerHtml[len(innerHtml)-1:] != "\n" {
 			innerHtml += "\n"
 		}
-		ret += "\n" + // innerhtml is a tag, and so spacing will not matter, so make it look good
+		ret += "\n" + // innerhtml is a tag, and so spacing inside will not matter, so make it look good
 			innerHtml +
-			"</" + tag + ">\n"
+			"</" + tag + ">"
 	}
 	return ret
 }
@@ -132,15 +135,12 @@ func RenderLabel(labelAttributes Attributes, label string, ctrlHtml string, mode
 	panic("Unknown label mode")
 }
 
-// RenderImage renders an image tag with the given sourc, alt and attribute values.
+// RenderImage renders an image tag with the given source, alt and attribute values.
 func RenderImage(src string, alt string, attributes Attributes) string {
 	var a Attributes
+	a = NewAttributes()
+	a.Merge(attributes)
 
-	if attributes != nil {
-		a = attributes.Copy()
-	} else {
-		a = NewAttributes()
-	}
 	a.Set("src", src)
 	a.Set("alt", alt)
 	return RenderVoidTag("img", a)
@@ -149,7 +149,8 @@ func RenderImage(src string, alt string, attributes Attributes) string {
 // Indent will add space to the front of every line in the string. Since indent is used to format code for reading
 // while we are in development mode, we do not need it to be particularly efficient.
 // It will not do this for textarea tags, since that would change the text in the tag.
-func Indent(s string) (out string) {
+func Indent(s string) string {
+	var out string
 	if config.Minify {
 		return s
 	}
@@ -158,16 +159,14 @@ func Indent(s string) (out string) {
 		taOffset = strings.Index(s, "<textarea")
 		if taOffset == -1 {
 			out += indent(s)
-			return
+			return out
 		}
-		if taOffset > 0 {
-			out += indent(s[:taOffset])
-			s = s[taOffset:]
-		}
+		out += indent(s[:taOffset])
+		s = s[taOffset:]
 		taOffset = strings.Index(s, "</textarea>")
 		if taOffset == -1 {
-			// This is an error in the html, so just return
-			return
+			// This is an error in the html, so just return the original
+			return s
 		}
 		out += s[:taOffset+11] // skip textarea close tag
 		s = s[taOffset+11:]
@@ -176,6 +175,9 @@ func Indent(s string) (out string) {
 
 // indents the string unsafely, in that it does not check for allowable tags to indent
 func indent(s string) string {
+	if s == "" {
+		return "" // don't indent empty strings
+	}
 	in := "  "
 	r := strings.NewReplacer("\n", "\n"+in)
 	s = r.Replace(s)
