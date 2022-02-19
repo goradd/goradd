@@ -23,7 +23,7 @@ var voidTags = map[string]bool{
 	"wbr":     true,
 }
 
-// Use a TagBuilder to create a tag using a builder pattern, starting out with the
+// A TagBuilder creates a tag using a builder pattern, starting out with the
 // tag name and slowly adding parts to it, describing it, until you are ready to print
 // out the entire html tag. The zero value is usable.
 type TagBuilder struct {
@@ -63,7 +63,7 @@ func (b *TagBuilder) ID(id string) *TagBuilder {
 // Class sets the class attribute to the value given.
 // If you prefix the value with "+ " the given value will be appended to the end of the current class list.
 // If you prefix the value with "- " the given value will be removed from the class list.
-// Otherwise the current class value is replaced.
+// Otherwise, the current class value is replaced.
 // The given class can be multiple classes separated by a space.
 func (b *TagBuilder) Class(class string) *TagBuilder {
 	if b.attributes == nil {
@@ -81,13 +81,15 @@ func (b *TagBuilder) Link(href string) *TagBuilder {
 	return b
 }
 
-// By default, tags have inner html. This will make the builder output a void tag instead.
+// IsVoid will make the builder output a void tag instead of one with inner html.
 func (b *TagBuilder) IsVoid() *TagBuilder {
 	b.isVoid = true
 	return b
 }
 
-// ControlInnerHtml sets the inner html of the tag. Remember this is HTML, and will not be escaped.
+// InnerHtml sets the inner html of the tag.
+//
+// Remember this is HTML, and will not be escaped.
 func (b *TagBuilder) InnerHtml(html string) *TagBuilder {
 	b.innerHtml = html
 	return b

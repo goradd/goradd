@@ -110,7 +110,7 @@ func TestIndent(t *testing.T) {
 func ExampleRenderImage() {
 	s := RenderImage("http://abc.com/img.jpg", "my image", Attributes{"height":"10", "width":"20"})
 	fmt.Print(s)
-	//Output: <img alt="my image" height="10" src="http://abc.com/img.jpg" width="20" />
+	//Output: <img src="http://abc.com/img.jpg" alt="my image" width="20" height="10" />
 }
 
 func ExampleComment() {

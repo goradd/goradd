@@ -20,8 +20,8 @@ const htmlValueBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234
 
 // RandomString generates a pseudo random string of the given length
 // Characters are drawn from legal HTML values that do not need encoding.
-// The distribution is not perfect, so its not good for crypto, but works for general purposes
-// This also works for GET variables
+// The distribution is not perfect, so it is not good for crypto, but works for general purposes.
+// This also works for GET variables.
 func RandomString(n int) string {
 	b := make([]byte, n)
 	for i := range b {

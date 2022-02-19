@@ -1,10 +1,10 @@
 /*
-The HTML package includes general functions for manipulating html tags, comments and the like.
+Package html includes general functions for manipulating html tags, comments and the like.
 It includes specific functions for manipulating attributes inside of tags, including various
 special attributes like styles, classes, data-* attributes, etc.
 
 Many of the routines return a boolean to indicate whether the data actually changed. This can be used to prevent
-needlessly redrawing html after setting values that had no affect on the attribute list.
+needlessly redrawing html after setting values that had no effect on the attribute list.
 */
 package html
 
@@ -28,8 +28,8 @@ type Attributer interface {
 	Attributes(...interface{}) Attributes
 }
 
-// An html attribute manager. Use SetAttribute to set specific attribute values, and then convert it to a string
-// to get the attributes in a version embeddable in an html tag.
+// Attributes is an HTML attribute manager. Use SetAttribute to set specific attribute values, and then convert it to a string
+// to get the attributes embeddable in an HTML tag.
 type Attributes map[string]string
 
 // NewAttributes initializes a group of html attributes.
@@ -37,7 +37,7 @@ func NewAttributes() Attributes {
 	return make(map[string]string)
 }
 
-// NewAttributesFrom creates new attributes from the given string map.
+// NewAttributesFrom creates new attributes from the given string map or Attributes.
 func NewAttributesFrom(i interface{}) Attributes {
 	a := NewAttributes()
 	a.Merge(i)
@@ -52,6 +52,7 @@ func (a Attributes) Copy() Attributes {
 	return NewAttributesFrom(a)
 }
 
+// Len returns the number of attributes.
 func (a Attributes) Len() int {
 	if a == nil {
 		return 0
@@ -59,6 +60,7 @@ func (a Attributes) Len() int {
 	return len(a)
 }
 
+// Has returns true if the Attributes has the named attribute.
 func (a Attributes) Has(attr string) bool {
 	if a == nil {
 		return false
@@ -67,11 +69,13 @@ func (a Attributes) Has(attr string) bool {
 	return ok
 }
 
+// Get returns the named attribute.
 func (a Attributes) Get(attr string) string {
 	return a[attr]
 }
 
-func (a Attributes) Delete(attr string) {
+// Remove deletes the given attribute.
+func (a Attributes) Remove(attr string) {
 	delete(a, attr)
 }
 
@@ -126,7 +130,7 @@ func (a Attributes) set(k string, v string) bool {
 	return !existed || oldVal != v
 }
 
-// Set is similar to SetChanged, but instead returns an attribute pointer so it can be chained. Will panic on errors.
+// Set is similar to SetChanged, but instead returns an attribute pointer so that it can be chained. Will panic on errors.
 // Use this when you are setting attributes using implicit strings. Set v to an empty string to create a boolean attribute.
 func (a Attributes) Set(name string, v string) Attributes {
 	if a == nil {
@@ -143,7 +147,7 @@ func (a Attributes) Set(name string, v string) Attributes {
 // Returns true if the attribute existed.
 func (a Attributes) RemoveAttribute(name string) bool {
 	if a.Has(name) {
-		a.Delete(name)
+		a.Remove(name)
 		return true
 	}
 	return false
@@ -180,19 +184,19 @@ func (a Attributes) sortedKeys() []string {
 		v2,ok2 := attrSpecialSort[k2]
 		if ok1 {
 			if ok2 {
-				return k1 < k2
+				return v1 < v2
 			}
 			return true
 		} else if ok2 { // and !ok1
 			return false
 		} else { // !ok1 && !ok2
-			return v1 < v2
+			return k1 < k2
 		}
 	})
 	return keys
 }
 
-// String returns the attributes escaped and encoded, ready to be placed in an html tag
+// String returns the attributes escaped and encoded, ready to be placed in an HTML tag
 // For consistency, it will use attrSpecialSort to order the keys. Remaining keys will
 // be output in random order.
 func (a Attributes) String() string {
@@ -215,6 +219,10 @@ func (a Attributes) String() string {
 	return strings.TrimSpace(str)
 }
 
+// Range will call f for each item in the attributes.
+//
+// Keys will be ranged over such that repeating the range will produce the same ordering of keys.
+// Return true from the range function to continue iterating, or false to stop.
 func (a Attributes) Range(f func(key string, value string) bool) {
 	if a == nil {
 		return
@@ -289,7 +297,7 @@ func (a Attributes) Merge(i interface{}) {
 // In other words, if you set the id to the same value that it currently is, it will return false.
 // It will return an error if you attempt to set the id to an illegal value.
 func (a Attributes) SetIDChanged(i string) (changed bool, err error) {
-	if i == "" { // empty attribute is not allowed, so its the same as removal
+	if i == "" { // empty attribute is not allowed, so it is the same as removal
 		changed = a.RemoveAttribute("id")
 		return
 	}
@@ -305,6 +313,9 @@ func (a Attributes) SetIDChanged(i string) (changed bool, err error) {
 
 // SetID sets the id attribute to the given value
 func (a Attributes) SetID(i string) Attributes {
+	if a == nil {
+		a = NewAttributes()
+	}
 	_, err := a.SetIDChanged(i)
 	if err != nil {
 		panic(err)
@@ -320,34 +331,37 @@ func (a Attributes) ID() string {
 	return a.Get("id")
 }
 
-// SetClass sets the class attribute to the value given.
+// SetClassChanged sets the class attribute to the value given.
+//
 // If you prefix the value with "+ " the given value will be appended to the end of the current class list.
-// If you prefix the value with "- " the given value will be removed from an class list.
-// Otherwise the current class value is replaced.
+// If you prefix the value with "- " the given value will be removed from a class list.
+// Otherwise, the current class value is replaced.
 // Returns whether something actually changed or not.
-// v can be multiple classes separated by a space
-func (a Attributes) SetClassChanged(v string) bool {
-	if v == "" { // empty attribute is not allowed, so its the same as removal
-		a.RemoveAttribute("class")
+// value can be multiple classes separated by a space
+func (a Attributes) SetClassChanged(value string) bool {
+	if value == "" { // empty attribute is not allowed, so it is the same as removal
+		return a.RemoveAttribute("class")
 	}
 
-	if strings.HasPrefix(v, "+ ") {
-		return a.AddClassChanged(v[2:])
-	} else if strings.HasPrefix(v, "- ") {
-		return a.RemoveClass(v[2:])
+	if strings.HasPrefix(value, "+ ") {
+		return a.AddClassChanged(value[2:])
+	} else if strings.HasPrefix(value, "- ") {
+		return a.RemoveClass(value[2:])
 	}
 
-	changed := a.set("class", v)
+	changed := a.set("class", value)
 	return changed
 }
 
-// SetClass will set the class to the given value, and return the attributes so you can chain calls.
+// SetClass will set the class to the given value, and return the attributes so that you can chain calls.
 func (a Attributes) SetClass(v string) Attributes {
 	a.SetClassChanged(v)
 	return a
 }
 
-// Use RemoveClass to remove the named class from the list of classes in the class attribute.
+// RemoveClass removes the named class from the list of classes in the class attribute.
+//
+// Returns true if the attribute changed.
 func (a Attributes) RemoveClass(v string) bool {
 	if a.Has("class") {
 		newClass, changed := RemoveAttributeValue(a.Get("class"), v)
@@ -359,12 +373,13 @@ func (a Attributes) RemoveClass(v string) bool {
 	return false
 }
 
-// Use RemoveClassesWithPrefix to remove classes with the given prefix.
+// RemoveClassesWithPrefix removes classes with the given prefix.
+//
 // Many CSS frameworks use families of classes, which are built up from a base family name. For example,
 // Bootstrap uses 'col-lg-6' to represent a table that is 6 units wide on large screens and Foundation
 // uses 'large-6' to do the same thing. This utility removes classes that start with a particular prefix
 // to remove whatever sizing class was specified.
-//Returns true if the list actually changed.
+// Returns true if the list actually changed.
 func (a Attributes) RemoveClassesWithPrefix(v string) bool {
 	if a.Has("class") {
 		newClass, changed := RemoveClassesWithPrefix(a.Get("class"), v)
@@ -417,7 +432,7 @@ func (a Attributes) AddClass(v string) Attributes {
 	return a
 }
 
-// Return the value of the class attribute.
+// Class returns the value of the class attribute.
 func (a Attributes) Class() string {
 	return a.Get("class")
 }
@@ -437,12 +452,12 @@ func (a Attributes) HasAttributeValue(attr string, value string) bool {
 	return false
 }
 
-// ControlHasClass returns true if the given class is in the class list in the class attribute.
+// HasClass returns true if the given class is in the class list in the class attribute.
 func (a Attributes) HasClass(c string) bool {
 	return a.HasAttributeValue("class", c)
 }
 
-// SetDataAttributeChanged sets the given value as an html "data-*" attribute.
+// SetDataAttributeChanged sets the given value as an HTML "data-*" attribute.
 // The named value will be retrievable in javascript by using
 //
 //	$obj.dataset.valname;
@@ -476,7 +491,7 @@ func (a Attributes) SetDataAttributeChanged(name string, v string) (changed bool
 }
 
 // SetDataAttribute sets the given data attribute. Note that data attribute keys must be in camelCase notation and
-// connot be hyphenated. camelCase will get converted to kebab-case in html, and converted back to camelCase when
+// cannot be hyphenated. camelCase will get converted to kebab-case in html, and converted back to camelCase when
 // referring to the data attribute using .data().
 func (a Attributes) SetDataAttribute(name string, v string) Attributes {
 	_, err := a.SetDataAttributeChanged(name, v)
@@ -511,19 +526,19 @@ func (a Attributes) HasDataAttribute(name string) bool {
 	return a.Has(name)
 }
 
-// Returns the css style string, or a blank string if there is none
+// StyleString returns the css style string, or a blank string if there is none.
 func (a Attributes) StyleString() string {
 	return a.Get("style")
 }
 
-// Returns a special Style structure which lets you refer to the styles as a string map
+// StyleMap returns a special Style structure which lets you refer to the styles as a string map.
 func (a Attributes) StyleMap() Style {
 	s := NewStyle()
-	s.SetTo(a.StyleString())
+	_,_ = s.SetTo(a.StyleString())
 	return s
 }
 
-// SetStyle sets the given style to the given value. If the value is prefixed with a plus, minus, multiply or divide, and then a space,
+// SetStyleChanged sets the given style to the given value. If the value is prefixed with a plus, minus, multiply or divide, and then a space,
 // it assumes that a number will follow, and the specified operation will be performed in place on the current value.
 // For example, SetStyle ("height", "* 2") will double the height value without changing the unit specifier.
 // When referring to a value that can be a length, you can use numeric values. In this case, "0" will be passed unchanged,
@@ -537,6 +552,7 @@ func (a Attributes) SetStyleChanged(name string, v string) (changed bool, err er
 	return
 }
 
+// SetStyle sets the given property in the style attribute
 func (a Attributes) SetStyle(name string, v string) Attributes {
 	_, err := a.SetStyleChanged(name, v)
 	if err != nil {
@@ -545,7 +561,7 @@ func (a Attributes) SetStyle(name string, v string) Attributes {
 	return a
 }
 
-// SetStyle merges the given styles with the current styles. The given style wins on collision.
+// SetStyles merges the given styles with the current styles. The given style wins on collision.
 func (a Attributes) SetStyles(s Style) Attributes {
 	styles := a.StyleMap()
 	styles.Merge(s)
@@ -553,7 +569,7 @@ func (a Attributes) SetStyles(s Style) Attributes {
 	return a
 }
 
-// SetStylesTo sets the styles using a traditional css style string with colon and semicolon separatators
+// SetStylesTo sets the styles using a traditional css style string with colon and semicolon separators
 func (a Attributes) SetStylesTo(s string) Attributes {
 	styles := a.StyleMap()
 	if _,err := styles.SetTo(s); err != nil {
@@ -608,7 +624,7 @@ func (a Attributes) SetDisplay(d string) Attributes {
 	return a
 }
 
-// IsDisplayed returns true if the "display" attribute is not set, or if it is set, if its not set to "none".
+// IsDisplayed returns true if the "display" attribute is not set, or if it is set, if it is not set to "none".
 func (a Attributes) IsDisplayed() bool {
 	return a.GetStyle("display") != "none"
 }

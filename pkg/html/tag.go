@@ -184,7 +184,7 @@ func indent(s string) string {
 	return in + strings.TrimSuffix(s, in)
 }
 
-// Comment turns the given text into an html comment and returns the rendered comment
+// Comment turns the given text into an HTML comment and returns the rendered comment
 func Comment(s string) string {
 	return fmt.Sprintf("<!-- %s -->", s)
 }
