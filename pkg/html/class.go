@@ -48,7 +48,7 @@ func HasWord(words string, testWord string) (found bool) {
 	return
 }
 
-// Use RemoveAttributeValue to remove a value from the list of space-separated values given.
+// RemoveAttributeValue removes a value from the list of space-separated values given.
 // You can give it more than one value to remove by
 // separating the values with spaces in the removeValue string. This is particularly useful
 // for removing a class from a class list in a class attribute.

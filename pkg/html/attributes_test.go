@@ -20,6 +20,7 @@ func TestBasicAttributes(t *testing.T) {
 		{"id", "t y", true, true},
 		{"class", "t y", true, false},
 		{"bad name", "t y", true, true},
+		{"style", "a b", false, true},
 	}
 
 	a := NewAttributes()
@@ -34,7 +35,7 @@ func TestBasicAttributes(t *testing.T) {
 			}
 		}
 
-		if c.err && err == nil { // expected an error, but didn't get one
+		if c.err { // expected an error, but didn't get one
 			t.Errorf("Expected error on (%q, %q)", c.attr, c.val)
 			continue // no sense in checking other things, since we were expecting an error
 		}
@@ -48,6 +49,12 @@ func TestBasicAttributes(t *testing.T) {
 			t.Errorf("Basic changed test (%q, %q)", c.attr, c.val)
 		}
 	}
+
+	assert.True(t, a.Has("a"))
+	_,_ = a.SetChanged("a", attributeFalse)
+	assert.False(t, a.Has("style"))
+
+
 }
 
 func TestBasicStyles(t *testing.T) {
@@ -77,7 +84,7 @@ func TestBasicStyles(t *testing.T) {
 			}
 		}
 
-		if c.err && err == nil { // expected an error, but didn't get one
+		if c.err { // expected an error, but didn't get one
 			t.Errorf("Expected error on (%q, %q)", c.attr, c.val)
 			continue // no sense in checking other things, since we were expecting an error
 		}
@@ -191,7 +198,7 @@ func TestDataAttributes(t *testing.T) {
 			}
 		}
 
-		if c.err && err == nil { // expected an error, but didn't get one
+		if c.err { // expected an error, but didn't get one
 			t.Errorf("Expected error on (%q, %q)", c.attr, c.val)
 			continue // no sense in checking other things, since we were expecting an error
 		}
@@ -247,6 +254,9 @@ func TestOutput(t *testing.T) {
 	if s = a.String(); s != expected {
 		t.Errorf("Not escaping. Expected (%q) got (%q)", expected, s)
 	}
+
+	a = Attributes{"ok":"", "id":"3"}
+	assert.Equal(t, `id="3" ok`, a.String())
 }
 
 func TestOverride(t *testing.T) {
@@ -279,11 +289,12 @@ func ExampleNewAttributesFrom() {
 	//Output: 1
 }
 
-func ExampleAttributes_SetAttribute() {
-	a := NewAttributes()
-	a.Set("class", "a")
-	a.Set("id", "b")
+func ExampleAttributes_Set() {
+	var a Attributes
+	a = a.Set("class", "a")
+	a = a.Set("id", "b")
 	fmt.Println(a)
+	//Output: id="b" class="a"
 }
 
 func ExampleAttributes_SetClass() {
@@ -292,10 +303,13 @@ func ExampleAttributes_SetClass() {
 	a.SetClass("+ that")
 	s := a.Class()
 	fmt.Println(s)
+	a.SetClass("")
+	fmt.Println(a.Has("class"))
 	// Output: this that
+	// false
 }
 
-func ExampleAtributes_SetStyle() {
+func ExampleAttributes_SetStyle() {
 	a := NewAttributes()
 	a.SetStyle("height", "4em")
 	a.SetStyle("width", "8")
@@ -306,6 +320,17 @@ func ExampleAtributes_SetStyle() {
 	// 4em
 	// 6px
 }
+
+func ExampleAttributes_SetID() {
+	var a Attributes
+	a = a.SetID("a")
+	fmt.Println(a.ID())
+	a = a.SetID("")
+	fmt.Println(a.Has("id"))
+	//Output: a
+	// false
+}
+
 
 func ExampleAttributes_Override() {
 	a := NewAttributes()
@@ -318,6 +343,7 @@ func ExampleAttributes_Override() {
 
 	a = a.Override(b)
 	fmt.Println(a)
+	//Output: class="that" style="height:4em;width:6px"
 }
 
 func ExampleAttributes_AddClass() {
@@ -363,6 +389,94 @@ func ExampleAttributes_RemoveStyle() {
 	// Output: style="width:5px"
 }
 
+func ExampleAttributes_RemoveClass() {
+	a := Attributes{"class": "this that"}
+	changed := a.RemoveClass("this")
+	fmt.Println(changed)
+	fmt.Println(a.String())
+	changed = a.RemoveClass("other")
+	fmt.Println(changed)
+	fmt.Println(a.String())
+	// Output: true
+	// class="that"
+	// false
+	// class="that"
+}
+
+func ExampleAttributes_RemoveClassesWithPrefix() {
+	a := Attributes{"class": "col-2 that"}
+	a.RemoveClassesWithPrefix("col-")
+	fmt.Println(a.String())
+	// Output: class="that"
+}
+
+func ExampleAttributes_AddAttributeValue() {
+	a := Attributes{"abc": "123"}
+	a.AddAttributeValue("abc", "456")
+	fmt.Println(a.String())
+	// Output: abc="123 456"
+}
+
+func ExampleAttributes_SetDataAttribute() {
+	a := Attributes{"abc": "123"}
+	a.SetDataAttribute("myVal", "456")
+	fmt.Println(a.String())
+	// Output: abc="123" data-my-val="456"
+}
+
+func ExampleAttributes_SetStyles() {
+	a := Attributes{"style": "color:blue"}
+	s := Style{"color":"yellow"}
+	a.SetStyles(s)
+	fmt.Println(a.String())
+	// Output: style="color:yellow"
+}
+
+func ExampleAttributes_SetStylesTo() {
+	a := Attributes{"style": "color:blue"}
+	a.SetStylesTo("color:red")
+	fmt.Println(a.String())
+	// Output: style="color:red"
+}
+
+func ExampleAttributes_SetDisabled() {
+	a := Attributes{"style": "color:blue"}
+	a.SetDisabled(true)
+	fmt.Println(a.String())
+	a.SetDisabled(false)
+	fmt.Println(a.String())
+	// Output: style="color:blue" disabled
+	// style="color:blue"
+}
+
+func ExampleAttributes_SetDisplay() {
+	a := Attributes{"style": "color:blue"}
+	a.SetDisplay("none")
+	fmt.Println(a.String())
+	// Output: style="color:blue;display:none"
+}
+
+func ExampleAttributes_IsDisplayed() {
+	a := Attributes{"style": "color:blue"}
+	a.SetDisplay("none")
+	fmt.Println(a.IsDisplayed())
+	// Output: false
+}
+
+func ExampleAttributes_AttributeString() {
+	a := Attributes{}
+	a.Set("a", AttributeString(int(1)))
+	a.Set("b", AttributeString(float32(2.2)))
+	a.Set("c", AttributeString("test"))
+	a.Set("d", AttributeString(true))
+	a.Set("e", AttributeString(false))
+	fmt.Println(a.String())
+	// Output: a="1" b="2.2" c="test" d
+}
+
+
+
+
 func TestStringMerge(t *testing.T) {
 	a := NewAttributes()
 	a.Merge(`class="here"`)
@@ -380,4 +494,51 @@ func TestStringMerge(t *testing.T) {
 	if d != "g" {
 		t.Error("Attribute string failed")
 	}
+	a.Merge(nil)
+	assert.Equal(t, 2, a.Len())
+
+	a.Merge(Attributes{"style":"color:white"})
+	assert.True(t, a.Has("style"))
+	a.Merge(Attributes{"style":"color:black"})
+	assert.True(t, a.HasStyle("color"))
+	a.Merge(map[string]string{"style":"color:yellow"})
+	assert.Equal(t, "yellow", a.GetStyle("color"))
+
+}
+
+func TestNilAttributes(t *testing.T) {
+	var a Attributes
+	assert.Nil(t, a.Copy())
+	assert.Equal(t, 0, a.Len())
+	assert.False(t, a.Has("b"))
+	assert.Empty(t, a.String())
+	a.Range(func(k string, v string) bool {
+		t.Error("Should not range")
+		return true
+	})
+	assert.Panics(t, func() {
+		a.Merge("b")
+	})
+	assert.Empty(t, a.ID())
+}
+
+func ExampleAttributes_Len() {
+	a := Attributes{"id":"45", "class":"aclass"}
+	fmt.Print(a.Len())
+	//Output: 2
+}
+
+func ExampleAttributes_Range() {
+	a := Attributes{"y":"7", "x":"10", "id":"1", "class":"2", "z":"4"  }
+	a.Range(func(k string, v string) bool {
+		if k == "z" {
+			return false
+		}
+		fmt.Println(k, "=", v)
+		return true
+	})
+	// Output: id = 1
+	// class = 2
+	// x = 10
+	// y = 7
 }

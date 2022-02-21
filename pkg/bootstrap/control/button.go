@@ -54,10 +54,10 @@ const (
 	ButtonSizeSmall             = "btn-sm"
 )
 
-// Add ButtonBlock as a class to a button to make it span a full block
+// ButtonBlock is a class you can add to a button to make it span a full block
 const ButtonBlock = "btn-block"
 
-// Creates a new standard html button
+// NewButton creates a new standard html button
 func NewButton(parent page.ControlI, id string) *Button {
 	b := new(Button)
 	b.Self = b
@@ -65,6 +65,7 @@ func NewButton(parent page.ControlI, id string) *Button {
 	return b
 }
 
+// Init initializes the button
 func (b *Button) Init(parent page.ControlI, id string) {
 	b.Button.Init(parent, id)
 	b.style = ButtonStyleSecondary // default
@@ -87,6 +88,7 @@ func (b *Button) SetButtonSize(size ButtonSize) ButtonI {
 	return b.this()
 }
 
+// DrawingAttributes returns the attributes to add to the tag just before the button is drawn.
 func (b *Button) DrawingAttributes(ctx context.Context) html.Attributes {
 	a := b.Button.DrawingAttributes(ctx)
 	a.AddClass(ButtonClass)
@@ -95,6 +97,7 @@ func (b *Button) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
+// SetIsPrimary determines whether the button is styled as a primary or secondary button.
 func (b *Button) SetIsPrimary(isPrimary bool) {
 	b.Button.SetIsPrimary(isPrimary)
 	if isPrimary {
@@ -104,6 +107,7 @@ func (b *Button) SetIsPrimary(isPrimary bool) {
 	}
 }
 
+// Serialize serializes the state of the control for the pagestate
 func (b *Button) Serialize(e page.Encoder) (err error) {
 	if err = b.Button.Serialize(e); err != nil {
 		return
@@ -120,7 +124,7 @@ func (b *Button) Serialize(e page.Encoder) (err error) {
 	return
 }
 
-
+// Deserialize reconstructs the control from the page state.
 func (b *Button) Deserialize(d page.Decoder) (err error) {
 	if err = b.Button.Deserialize(d); err != nil {
 		return
@@ -137,7 +141,7 @@ func (b *Button) Deserialize(d page.Decoder) (err error) {
 	return
 }
 
-// ButtonCreator is the initialization structure for declarative creation of buttons
+// ButtonCreator is the initialization structure for the declarative creation of the control.
 type ButtonCreator struct {
 	// ID is the control id
 	ID string

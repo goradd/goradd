@@ -2,8 +2,22 @@ package html
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
+func Example_newStyleFromMap() {
+	s := NewStyleFromMap(map[string]string{"color":"green", "size":"9"})
+	fmt.Print(s)
+	//Output: color:green;size:9
+}
+
+func ExampleStyle_Len() {
+	s := NewStyleFromMap(map[string]string{"color":"green", "size":"9"})
+	fmt.Print(s.Len())
+	//Output: 2
+}
+
 
 func ExampleStyle_SetTo() {
 	s := NewStyle()
@@ -19,6 +33,14 @@ func ExampleStyle_Set_a() {
 	//Output: height:9px
 }
 
+func ExampleStyle_Set_b() {
+	s := NewStyle()
+	s.SetTo("height:9px")
+	s.Set("height", "+ 10")
+	fmt.Print(s)
+	//Output: height:19px
+}
+
 func ExampleStyle_Get() {
 	s := NewStyle()
 	s.SetTo("height: 9em; width: 100%; position:absolute")
@@ -26,10 +48,10 @@ func ExampleStyle_Get() {
 	//Output: 100%
 }
 
-func ExampleStyle_Delete() {
+func ExampleStyle_Remove() {
 	s := NewStyle()
 	s.SetTo("height: 9em; width: 100%; position:absolute")
-	s.Delete("position")
+	s.Remove("position")
 	fmt.Print(s)
 	//Output: height:9em;width:100%
 }
@@ -45,54 +67,33 @@ func ExampleStyle_RemoveAll() {
 func ExampleStyle_Has() {
 	s := NewStyle()
 	s.SetTo("height: 9em; width: 100%; position:absolute")
-	found := s.Has("display")
-	fmt.Print(found)
-	//Output:false
+	fmt.Print(s.Has("width"), s.Has("display"))
+	//Output:true false
 }
 
-func ExampleStyle_Set_b() {
-	s := NewStyle()
-	s.SetTo("height:9px")
-	s.Set("height", "+ 10")
-	fmt.Print(s)
-	//Output: height:19px
-}
 
 func TestStyleSet(t *testing.T) {
 	s := NewStyle()
 
 	changed, err := s.SetChanged("height", "4")
-
-	if !changed {
-		t.Error("Expected a change")
-	}
-	if err != nil {
-		t.Error(err)
-	}
+	assert.True(t, changed, "Expected a change")
+	assert.NoError(t, err)
 
 	s.RemoveAll()
-	if s.Has("height") {
-		t.Error("Expected no height")
-	}
+	assert.False(t, s.Has("height"), "Expected no height")
 
 	s.Set("height", "4")
-
 	changed, err = s.SetTo("height: 3; width: 5")
+	assert.True(t, changed, "Expected a change")
+	assert.NoError(t, err)
 
-	if !changed {
-		t.Error("Expected a change")
-	}
-	if err != nil {
-		t.Error(err)
-	}
-	v := s.Get("width")
-	if v != "5px" {
-		t.Error("Expect a width of 5px, got " + v)
-	}
-	if s.Get("height") != "3px" {
-		t.Error("Expect a height of 3px")
-	}
+	assert.Equal(t, "5px", s.Get("width"))
+	assert.Equal(t, "3px", s.Get("height"))
 
+	// test error
+	changed, err = s.SetTo("height of: 3; width: 4")
+	assert.False(t, changed, "Expected no change")
+	assert.Error(t, err)
 }
 
 func TestStyleLengths(t *testing.T) {
@@ -175,5 +176,73 @@ func TestStyle(t *testing.T) {
 
 	if a := s.Get("position"); a != "9px" {
 		t.Error("Style test failed: " + a)
+	}
+}
+
+func TestNilStyle(t *testing.T) {
+	var s Style
+
+	assert.Equal(t, 0, s.Len())
+	assert.False(t, s.Has("a"))
+	assert.Equal(t, "height:1px", s.Set("height", "1").String())
+}
+
+func TestStyle_mathOp(t *testing.T) {
+	c := StyleCreator{"height":"10", "margin":"", "width":"20en"}
+
+	type args struct {
+		attribute string
+		op        string
+		val       string
+	}
+	tests := []struct {
+		name        string
+		s           Style
+		args        args
+		wantChanged bool
+		wantErr     bool
+		wantString  string
+
+	}{
+		{"Test empty", c.Create(), args{"margin", "+", "1"}, true, false, "height:10;margin:1;width:20en"},
+		{"Test float error", c.Create(), args{"margin", "+", "1a"}, false, true, "height:10;margin:;width:20en"},
+		{"Test mul no unit", c.Create(), args{"height", "*", "2"}, true, false, "height:20;margin:;width:20en"},
+		{"Test div w/ unit", c.Create(), args{"width", "/", "2"}, true, false, "height:10;margin:;width:10en"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotChanged, err := tt.s.mathOp(tt.args.attribute, tt.args.op, tt.args.val)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("mathOp() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotChanged != tt.wantChanged {
+				t.Errorf("mathOp() gotChanged = %v, want %v", gotChanged, tt.wantChanged)
+			}
+			assert.Equal(t, tt.wantString, fmt.Sprint(tt.s))
+		})
+	}
+}
+
+func TestStyleString(t *testing.T) {
+	tests := []struct {
+		name string
+		i interface{}
+		want string
+	}{
+		{"int", int(5), "5px"},
+		{"float", float32(5.1), "5.1px"},
+		{"double", float64(5.2), "5.2px"},
+		{"string", "9em", "9em"},
+		{"string2", "9", "9"},
+		{"Stringer", NewStyle(), ""},
+		{"default", []string{"a", "b"}, "[a b]"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := StyleString(tt.i); got != tt.want {
+				t.Errorf("StyleString() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

@@ -57,7 +57,7 @@ func TestToDataAttr(t *testing.T) {
 
 }
 
-func TestToDataJqKey(t *testing.T) {
+func TestToDataKey(t *testing.T) {
 
 	cases := []struct {
 		in, expected string
@@ -70,6 +70,7 @@ func TestToDataJqKey(t *testing.T) {
 		{"this", "this", false},
 		{"this-and-that", "thisAndThat", false},
 		{"this and that", "", true},
+		{"a-b-c", "", true},
 	}
 
 	for _, c := range cases {
