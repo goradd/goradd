@@ -1,6 +1,7 @@
-package datetime
+package time
 
 import (
+	"github.com/goradd/goradd/pkg/log"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"strings"
 	"time"
@@ -28,7 +29,19 @@ const (
 
 	DateOnlyFormat = "2006-01-02"
 	TimeOnlyFormat = "15:04:05"
+
+	UsDate            = "1/2/2006"
+	ShortUsDate       = "1/2/06"
+	EuroDate          = "2/1/2006"
+	UsDateTime        = "1/2/2006 3:04 PM"
+	EuroDateTime      = "2/1/2006 15:04"
+	UsTime            = "3:04 PM"
+	EuroTime          = "15:04"
+	UsDateTimeSeconds = "1/2/2006 3:04:05 PM"
+	LongDateDOW       = "Monday, January 2, 2006"
+	LongDate          = "January 2, 2006"
 )
+
 
 // Parse parses the given layout string to turn a string int a DateTime
 // Since the time.Time doc is not that great about really describing the format, here it is:
@@ -45,34 +58,23 @@ const (
 // am/pm				PM   pm
 // Timezone				MST
 // Offset				-0700   -07   -07:00   Z0700   Z07:00
-func Parse(layout, value string) (DateTime, error) {
-	var ts bool
-	if layout == Stamp || layout == StampMilli || layout == StampMicro || layout == StampNano {
-		ts = true
-	}
 
-	layout, value = strings.ToUpper(layout), strings.ToUpper(value) // standardize Pm, PM or pm
-
-	t, err := time.Parse(layout, value)
-	return DateTime{t, ts}, err
-}
 
 // ParseInOffset is like time.ParseInLocation but uses the given timezone offset in minutes from UTC to
 // be the location of the parsed time.
-func ParseInOffset(layout, value string, tzOffset int) (DateTime, error) {
-	dt, err := Parse(layout, value)
+func ParseInOffset(layout, value string, tzOffset int) (time.Time, error) {
+	t, err := time.Parse(layout, value)
 	if err == nil {
-		dt = dt.As(time.FixedZone("", tzOffset * 60))
+		t = As(t, time.FixedZone("", tzOffset * 60))
 	}
-	return dt, err
+	return t, err
 }
 
 // FromSqlDateTime will receive a Date, Time, DateTime or Timestamp type of string that is typically output by SQL and
-// convert it to our own DateTime object. If the SQL date time string does not have timezone information,
-// the resulting value will be in UTC time, will not be a timestamp, and we are assuming that the SQL itself is in UTC.
-// If it DOES have timezone information, we will assume its a timestamp.
+// convert it to a time.Time. If the SQL date time string does not have timezone information,
+// the resulting value will be in UTC time.
 // If an error occurs, the returned value will be the zero date.
-func FromSqlDateTime(s string) (t DateTime, err error) {
+func FromSqlDateTime(s string) (t time.Time) {
 	var hasDate, hasTime, hasNano, hasTZ bool
 	var form string
 
@@ -106,27 +108,22 @@ func FromSqlDateTime(s string) (t DateTime, err error) {
 		form = "15:04:05"
 	}
 
-	t, err = Parse(form, s)
-
-	if hasTZ {
-		t.isTimestamp = true
+	t, err := time.Parse(form, s)
+	if err == nil {
+		t = t.UTC()
+	} else {
+		// We can't return it, but we can log it
+		log.Warning(err)
 	}
-
 	return
 }
 
+// LayoutHasDate returns true if the given parse layout indicates a date.
 func LayoutHasDate(layout string) bool {
 	return strings2.ContainsAnyStrings(layout, "6", "2", "Jan")
 }
 
+// LayoutHasTime returns true if the give parse layout indicates a time.
 func LayoutHasTime(layout string) bool {
 	return strings2.ContainsAnyStrings(layout, "15", "4", "5", "3")
-}
-
-
-func (d DateTime) Format(layout string) string {
-	if d.IsZero() {
-		return ""
-	}
-	return d.Time.Format(layout)
 }

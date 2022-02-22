@@ -2,7 +2,7 @@ package query
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/datetime"
+	"github.com/goradd/goradd/pkg/time"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -31,5 +31,5 @@ func TestNewAliasValue(t *testing.T) {
 }
 
 func TestAliasValue_DateTime(t *testing.T) {
-	assert.True(t, NewAliasValue("2001-05-04").DateTime().Equal(datetime.NewDateTime("2001-05-04T0:00:00Z")))
+	assert.True(t, NewAliasValue("2001-05-04").Time().Equal(time.NewDate(2001, 5, 4)))
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
@@ -703,17 +702,6 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 		}
 
 	case time.Time:
-		timeFormat := c.timeFormat
-		if timeFormat == "" {
-			timeFormat = config.DefaultDateTimeFormat
-		}
-		out = d.Format(timeFormat)
-
-		if c.format != "" {
-			out = fmt.Sprintf(c.format)
-		}
-
-	case datetime.DateTime:
 		timeFormat := c.timeFormat
 		if timeFormat == "" {
 			timeFormat = config.DefaultDateTimeFormat

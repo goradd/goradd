@@ -8,7 +8,6 @@ package browsertest
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
 	event2 "github.com/goradd/goradd/pkg/messageServer/event"
@@ -16,11 +15,13 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	time2 "github.com/goradd/goradd/pkg/time"
 	log2 "log"
 	"os"
 	"reflect"
 	"runtime"
 	"strings"
+	"time"
 )
 
 var testFormPageState string
@@ -104,14 +105,14 @@ func (form *TestForm) runSelectedTest() {
 
 // Log will send a message to the log. The message might not draw right away.
 func (form *TestForm) Log(s string) {
-	d := datetime.Now()
-	s = d.Format(datetime.StampMicro) + ": " + s
+	d := time.Now()
+	s = d.Format(time2.StampMicro) + ": " + s
 	form.currentLog += s + "\n"
 	form.Controller.logLine(s)
 	//log.Debugf("Log line %s", s)
 }
 
-// Mark the successful end of testing with a message.
+// Done marks the successful end of testing with a message.
 func (form *TestForm) Done(s string) {
 	form.Log(s)
 	form.PushRedraw()

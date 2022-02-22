@@ -2,9 +2,10 @@ package query
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/datetime"
+	time2 "github.com/goradd/goradd/pkg/time"
 	"log"
 	"strconv"
+	"time"
 )
 
 // An AliasValue is returned by the GetAlias function that is generated for each type. You then convert the alias to a
@@ -51,12 +52,9 @@ func (a AliasValue) Int() int {
 	return int(i)
 }
 
-// DateTime returns the value as a datetime.DateTime value.
-func (a AliasValue) DateTime() datetime.DateTime {
-	t, err := datetime.FromSqlDateTime(a.String())
-	if err != nil {
-		panic("Alias DateTime returned unparsable value: " + a.String() + " : " + err.Error())
-	}
+// Time returns the value as a time.Time value.
+func (a AliasValue) Time() time.Time {
+	t := time2.FromSqlDateTime(a.String())
 	return t
 }
 

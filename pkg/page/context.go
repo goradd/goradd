@@ -100,6 +100,7 @@ type HttpContext struct {
 	Header http.Header
 }
 
+
 // AppContext has Goradd application specific information.
 type AppContext struct {
 	err                 error // An error that occurred during the unpacking of the context. We save this for later so we can let the override manager display it if we get that far.
@@ -111,6 +112,9 @@ type AppContext struct {
 	eventID             EventID                           // The event to send to the control
 	actionValues        actionValues
 	refreshIDs			[]string
+	clientTimezoneOffset	int
+	clientTimezone			string
+
 	// NoJavaScript indicates javascript is turned off by the browser
 	NoJavaScript bool
 }
@@ -260,13 +264,18 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				ctx.requestMode = Server
 			}
 
+			type tzParams struct {
+				TimezoneOffset  int				`json:"o"`
+				Timezone  string				`json:"z"`
+			}
+
 			var params struct {
 				ControlValues   map[string]map[string]interface{} `json:"controlValues"`
 				ControlID       string                            `json:"controlID"`
 				EventID         int                               `json:"eventID"`
 				Values          actionValues                      `json:"actionValues"`
 				RefreshIDs		[]string						  `json:"refresh"`
-				TimezoneOffset  int								  `json:"timezoneOffset"`
+				TimezoneInfo	tzParams						  `json:"tz"`
 			}
 
 			dec := json.NewDecoder(strings.NewReader(v))
@@ -279,7 +288,8 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 					ctx.eventID = EventID(params.EventID)
 				}
 				ctx.actionValues = params.Values
-				session.SetClientTimezoneOffset(mainContext, params.TimezoneOffset)
+				ctx.clientTimezoneOffset = params.TimezoneInfo.TimezoneOffset
+				ctx.clientTimezone = params.TimezoneInfo.Timezone
 				if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); !ok {
 					ctx.err = fmt.Errorf("No pagestate found in response")
 					return
@@ -289,11 +299,10 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				return
 			}
 
-		} else if apistate, ok := ctx.FormValue(HtmlVarApistate); ok {
+		} else if apistate, ok2 := ctx.FormValue(HtmlVarApistate); ok2 {
 			// Allows REST clients to also support the timezone offset in the context
-			// Currently the apistate only holds the timezone offset. We can expand that if needed in the future.
-			if offset,err := strconv.Atoi(apistate); err == nil {
-				session.SetClientTimezoneOffset(mainContext, offset)
+			if offset,err2 := strconv.Atoi(apistate); err2 == nil {
+				ctx.clientTimezoneOffset = offset
 			}
 		} else {
 			// Scenarios where we are not posting the form
@@ -315,6 +324,16 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 // RequestMode returns the request mode of the current request.
 func (ctx *Context) RequestMode() RequestMode {
 	return ctx.requestMode
+}
+
+// ClientTimezoneOffset returns the number of minutes offset from GMT for the client's timezone.
+func (ctx *Context) ClientTimezoneOffset() int {
+	return ctx.clientTimezoneOffset
+}
+
+// ClientTimezone returns the name of the timezone of the client, if available.
+func (ctx *Context) ClientTimezone() string {
+	return ctx.clientTimezone
 }
 
 // GetContext returns the page context from the GO context.

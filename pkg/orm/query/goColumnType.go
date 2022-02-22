@@ -64,7 +64,7 @@ func (g GoColumnType) GoType() string {
 	case ColTypeUnsigned64:
 		return "uint64"
 	case ColTypeDateTime:
-		return "datetime.DateTime"
+		return "time.Time"
 	case ColTypeFloat:
 		return "float32" // always internally represent with max bits
 	case ColTypeDouble:
@@ -93,13 +93,7 @@ func (g GoColumnType) DefaultValue() string {
 	case ColTypeUnsigned64:
 		return "0"
 	case ColTypeDateTime:
-		return "datetime.DateTime{}"
-
-		/*
-			v, _ := goradd.DateTime{}.MarshalText()
-			s := string(v[:])
-			return fmt.Sprintf("%#v", s)*/
-
+		return "time.Time{}"
 	case ColTypeFloat:
 		return "0.0" // always internally represent with max bits
 	case ColTypeDouble:
@@ -119,7 +113,7 @@ func ColTypeFromGoTypeString(name string) GoColumnType {
 	case "uint": return ColTypeUnsigned
 	case "int64": return ColTypeInteger64
 	case "uint64": return ColTypeUnsigned64
-	case "datetime.DateTime": return ColTypeDateTime
+	case "time.Time": return ColTypeDateTime
 	case "float32": return ColTypeFloat
 	case "float64": return ColTypeDouble
 	case "bool": return ColTypeBool

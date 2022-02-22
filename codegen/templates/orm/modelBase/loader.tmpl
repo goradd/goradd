@@ -19,9 +19,6 @@ for _, col := range t.Columns {
 			o.{{= col.ModelName() }}IsNull = false
 			o.{{= col.ModelName() }}IsValid = true
 			o.{{= col.ModelName() }}IsDirty = false
-{{if col.IsTimestamp}}
-            o.{{= col.ModelName() }}.SetIsTimestamp(true)
-{{if}}
 		} else {
 			panic("Wrong type found for {{= col.DbName }}.")
 		}

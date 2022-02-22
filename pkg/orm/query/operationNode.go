@@ -73,7 +73,6 @@ const (
 	OpEndsWith   = "EndsWith"
 	OpContains   = "Contains"
 	OpDateAddSeconds   = "AddSeconds" // Adds the given number of seconds to a datetime
-
 )
 
 // String returns a string representation of the Operator type. For convenience, this also corresponds to the SQL

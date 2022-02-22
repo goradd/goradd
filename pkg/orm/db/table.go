@@ -39,8 +39,6 @@ type Table struct {
 	ManyManyReferences []*ManyManyReference
 	// ReverseReferences describes the many-to-one references pointing to this table
 	ReverseReferences []*ReverseReference
-	// HasDateTime is true if the table contains a DateTime column.
-	HasDateTime bool
 }
 
 func (t *Table) PrimaryKeyColumn() *Column {

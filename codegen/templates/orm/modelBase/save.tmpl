@@ -269,10 +269,10 @@ func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}
         if 	o.{{= col.ModelName() }}IsNull {
             fields["{{= col.DbName }}"] = nil
         } else {
-  		    fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName() }}.GoTime(){{else}}o.{{= col.ModelName() }}{{if}}
+  		    fields["{{= col.DbName }}"] = o.{{= col.ModelName() }}
         }
     {{else}}
-		fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName() }}.GoTime(){{else}}o.{{= col.ModelName() }}{{if}}
+		fields["{{= col.DbName }}"] = o.{{= col.ModelName() }}
     {{if}}
 	}
 {{for}}
@@ -290,10 +290,10 @@ func (o *{{privateName}}Base) getValidFields() (fields map[string]interface{}) {
         if 	o.{{= col.ModelName() }}IsNull {
             fields["{{= col.DbName }}"] = nil
         } else {
-  		    fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName() }}.GoTime(){{else}}o.{{= col.ModelName() }}{{if}}
+  		    fields["{{= col.DbName }}"] = o.{{= col.ModelName() }}
         }
     {{else}}
-		fields["{{= col.DbName }}"] = {{if col.ColumnType == query.ColTypeDateTime }}o.{{= col.ModelName() }}.GoTime(){{else}}o.{{= col.ModelName() }}{{if}}
+		fields["{{= col.DbName }}"] = o.{{= col.ModelName() }}
     {{if}}
 	}
 {{for}}

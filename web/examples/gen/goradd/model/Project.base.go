@@ -17,8 +17,9 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"time"
 
-	"github.com/goradd/goradd/pkg/datetime"
+	time2 "github.com/goradd/goradd/pkg/time"
 )
 
 // projectBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
@@ -53,12 +54,12 @@ type projectBase struct {
 	descriptionIsValid bool
 	descriptionIsDirty bool
 
-	startDate        datetime.DateTime
+	startDate        time.Time
 	startDateIsNull  bool
 	startDateIsValid bool
 	startDateIsDirty bool
 
-	endDate        datetime.DateTime
+	endDate        time.Time
 	endDateIsNull  bool
 	endDateIsValid bool
 	endDateIsDirty bool
@@ -108,8 +109,8 @@ const (
 	ProjectManagerIDDefault           = ""
 	ProjectNameDefault                = ""
 	ProjectDescriptionDefault         = ""
-	ProjectStartDateDefault           = datetime.Zero
-	ProjectEndDateDefault             = datetime.Zero
+	ProjectStartDateDefault           = time2.Zero
+	ProjectEndDateDefault             = time2.Zero
 	ProjectBudgetDefault              = ""
 	ProjectSpentDefault               = ""
 )
@@ -175,12 +176,12 @@ func (o *projectBase) Initialize() {
 	o.descriptionIsValid = true
 	o.descriptionIsDirty = true
 
-	o.startDate = datetime.DateTime{}
+	o.startDate = time.Time{}
 	o.startDateIsNull = true
 	o.startDateIsValid = true
 	o.startDateIsDirty = true
 
-	o.endDate = datetime.DateTime{}
+	o.endDate = time.Time{}
 	o.endDateIsNull = true
 	o.endDateIsValid = true
 	o.endDateIsDirty = true
@@ -399,7 +400,7 @@ func (o *projectBase) SetDescription(i interface{}) {
 }
 
 // StartDate returns the loaded value of StartDate.
-func (o *projectBase) StartDate() datetime.DateTime {
+func (o *projectBase) StartDate() time.Time {
 	if o._restored && !o.startDateIsValid {
 		panic("startDate was not selected in the last query and has not been set, and so is not valid")
 	}
@@ -433,10 +434,10 @@ func (o *projectBase) SetStartDate(i interface{}) {
 		if !o.startDateIsNull {
 			o.startDateIsNull = true
 			o.startDateIsDirty = true
-			o.startDate = datetime.DateTime{}
+			o.startDate = time.Time{}
 		}
 	} else {
-		v := i.(datetime.DateTime)
+		v := i.(time.Time)
 		if o.startDateIsNull ||
 			!o._restored ||
 			o.startDate != v {
@@ -449,7 +450,7 @@ func (o *projectBase) SetStartDate(i interface{}) {
 }
 
 // EndDate returns the loaded value of EndDate.
-func (o *projectBase) EndDate() datetime.DateTime {
+func (o *projectBase) EndDate() time.Time {
 	if o._restored && !o.endDateIsValid {
 		panic("endDate was not selected in the last query and has not been set, and so is not valid")
 	}
@@ -483,10 +484,10 @@ func (o *projectBase) SetEndDate(i interface{}) {
 		if !o.endDateIsNull {
 			o.endDateIsNull = true
 			o.endDateIsDirty = true
-			o.endDate = datetime.DateTime{}
+			o.endDate = time.Time{}
 		}
 	} else {
-		v := i.(datetime.DateTime)
+		v := i.(time.Time)
 		if o.endDateIsNull ||
 			!o._restored ||
 			o.endDate != v {
@@ -990,11 +991,11 @@ func CountProjectByDescription(ctx context.Context, description string) uint {
 	return queryProjects(ctx).Where(Equal(node.Project().Description(), description)).Count(false)
 }
 
-func CountProjectByStartDate(ctx context.Context, startDate datetime.DateTime) uint {
+func CountProjectByStartDate(ctx context.Context, startDate time.Time) uint {
 	return queryProjects(ctx).Where(Equal(node.Project().StartDate(), startDate)).Count(false)
 }
 
-func CountProjectByEndDate(ctx context.Context, endDate datetime.DateTime) uint {
+func CountProjectByEndDate(ctx context.Context, endDate time.Time) uint {
 	return queryProjects(ctx).Where(Equal(node.Project().EndDate(), endDate)).Count(false)
 }
 
@@ -1110,11 +1111,11 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 	}
 	if v, ok := m["start_date"]; ok {
 		if v == nil {
-			o.startDate = datetime.DateTime{}
+			o.startDate = time.Time{}
 			o.startDateIsNull = true
 			o.startDateIsValid = true
 			o.startDateIsDirty = false
-		} else if o.startDate, ok = v.(datetime.DateTime); ok {
+		} else if o.startDate, ok = v.(time.Time); ok {
 			o.startDateIsNull = false
 			o.startDateIsValid = true
 			o.startDateIsDirty = false
@@ -1124,15 +1125,15 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 	} else {
 		o.startDateIsValid = false
 		o.startDateIsNull = true
-		o.startDate = datetime.DateTime{}
+		o.startDate = time.Time{}
 	}
 	if v, ok := m["end_date"]; ok {
 		if v == nil {
-			o.endDate = datetime.DateTime{}
+			o.endDate = time.Time{}
 			o.endDateIsNull = true
 			o.endDateIsValid = true
 			o.endDateIsDirty = false
-		} else if o.endDate, ok = v.(datetime.DateTime); ok {
+		} else if o.endDate, ok = v.(time.Time); ok {
 			o.endDateIsNull = false
 			o.endDateIsValid = true
 			o.endDateIsDirty = false
@@ -1142,7 +1143,7 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 	} else {
 		o.endDateIsValid = false
 		o.endDateIsNull = true
-		o.endDate = datetime.DateTime{}
+		o.endDate = time.Time{}
 	}
 	if v, ok := m["budget"]; ok {
 		if v == nil {
@@ -1533,7 +1534,7 @@ func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
 		if o.startDateIsNull {
 			fields["start_date"] = nil
 		} else {
-			fields["start_date"] = o.startDate.GoTime()
+			fields["start_date"] = o.startDate
 		}
 
 	}
@@ -1542,7 +1543,7 @@ func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
 		if o.endDateIsNull {
 			fields["end_date"] = nil
 		} else {
-			fields["end_date"] = o.endDate.GoTime()
+			fields["end_date"] = o.endDate
 		}
 
 	}
@@ -1607,7 +1608,7 @@ func (o *projectBase) getValidFields() (fields map[string]interface{}) {
 		if o.startDateIsNull {
 			fields["start_date"] = nil
 		} else {
-			fields["start_date"] = o.startDate.GoTime()
+			fields["start_date"] = o.startDate
 		}
 
 	}
@@ -1616,7 +1617,7 @@ func (o *projectBase) getValidFields() (fields map[string]interface{}) {
 		if o.endDateIsNull {
 			fields["end_date"] = nil
 		} else {
-			fields["end_date"] = o.endDate.GoTime()
+			fields["end_date"] = o.endDate
 		}
 
 	}
@@ -2382,9 +2383,9 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 
 //   "description" - string, nullable
 
-//   "startDate" - datetime.DateTime, nullable
+//   "startDate" - time.Time, nullable
 
-//   "endDate" - datetime.DateTime, nullable
+//   "endDate" - time.Time, nullable
 
 //   "budget" - string, nullable
 
@@ -2484,9 +2485,17 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 				}
 				switch d := v.(type) {
 				case float64:
-					o.SetStartDate(datetime.NewDateTime(int(d)))
+					// a numeric value, which for JSON, means milliseconds since epoc
+					o.SetStartDate(time.UnixMilli(int64(d)).UTC())
 				case string:
-					o.SetStartDate(datetime.NewDateTime(d))
+					// an ISO8601 string (hopefully)
+					var t time.Time
+					err = t.UnmarshalJSON([]byte(d))
+					if err != nil {
+						return fmt.Errorf("JSON format error for time field %s: %w", k, err)
+					}
+					t = t.UTC()
+					o.SetStartDate(t)
 				default:
 					return fmt.Errorf("json field %s must be a number or a string", k)
 				}
@@ -2499,9 +2508,17 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 				}
 				switch d := v.(type) {
 				case float64:
-					o.SetEndDate(datetime.NewDateTime(int(d)))
+					// a numeric value, which for JSON, means milliseconds since epoc
+					o.SetEndDate(time.UnixMilli(int64(d)).UTC())
 				case string:
-					o.SetEndDate(datetime.NewDateTime(d))
+					// an ISO8601 string (hopefully)
+					var t time.Time
+					err = t.UnmarshalJSON([]byte(d))
+					if err != nil {
+						return fmt.Errorf("JSON format error for time field %s: %w", k, err)
+					}
+					t = t.UTC()
+					o.SetEndDate(t)
 				default:
 					return fmt.Errorf("json field %s must be a number or a string", k)
 				}

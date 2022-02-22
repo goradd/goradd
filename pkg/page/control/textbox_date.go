@@ -3,18 +3,17 @@ package control
 import (
 	"context"
 	"encoding/gob"
-	"github.com/goradd/goradd/pkg/session"
+	time2 "github.com/goradd/goradd/pkg/time"
 	"strings"
 	"time"
 
-	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/page"
 )
 
 type DateTextboxI interface {
 	TextboxI
 	SetFormats(formats []string) DateTextboxI
-	Date() datetime.DateTime
+	Date() time.Time
 	Formats() []string
 }
 
@@ -24,7 +23,7 @@ type DateTextboxI interface {
 type DateTextbox struct {
 	Textbox
 	formats []string         // Variety of formats it will accept. Same as what time.format expects.
-	dt     datetime.DateTime // Converting from text to a datetime is expensive.
+	time     time.Time // Converting from text to a datetime is expensive.
 							 // We maintain a copy of the conversion to prevent duplication of effort.
 }
 
@@ -36,10 +35,11 @@ func NewDateTextbox(parent page.ControlI, id string) *DateTextbox {
 	return d
 }
 
+// Init initializes the control.
 func (d *DateTextbox) Init(parent page.ControlI, id string) {
 	d.Textbox.Init(parent, id)
 	d.ValidateWith(DateValidator{})
-	d.formats = []string{datetime.UsDateTime}
+	d.formats = []string{time2.UsDateTime}
 }
 
 // SetFormats sets the format of the text allowed. The format is any allowable format
@@ -60,11 +60,8 @@ func (d *DateTextbox) SetValue(val interface{}) page.ControlI {
 	switch v := val.(type) {
 	case string:
 		d.SetText(v)
-	case datetime.DateTime:
-		d.SetDate(v)
 	case time.Time:
-		dt := datetime.NewDateTime(v)
-		d.SetDate(dt)
+		d.SetDate(v.UTC())
 	}
 	return d
 }
@@ -73,17 +70,17 @@ func (d *DateTextbox) layouts() []string {
 	return d.formats
 }
 
-func (d *DateTextbox) parseDate(ctx context.Context, s string) (result datetime.DateTime, layoutUsed string, err error) {
+func (d *DateTextbox) parseDate(ctx context.Context, s string) (result time.Time, layoutUsed string, err error) {
 	var grctx *page.Context
 
 	if ctx != nil {
 		grctx = page.GetContext(ctx)
 	}
 	for _,layoutUsed = range d.layouts() {
-		if grctx != nil && datetime.LayoutHasDate(layoutUsed) && datetime.LayoutHasTime(layoutUsed){
-			result, err = datetime.ParseInOffset(layoutUsed, s, session.ClientTimezoneOffset(ctx))
+		if grctx != nil && time2.LayoutHasDate(layoutUsed) && time2.LayoutHasTime(layoutUsed){
+			result, err = time2.ParseInOffset(layoutUsed, s, grctx.ClientTimezoneOffset())
 		} else {
-			result, err = datetime.Parse(layoutUsed, s)
+			result, err = time.Parse(layoutUsed, s)
 		}
 		if err == nil {
 			break
@@ -100,31 +97,31 @@ func (d *DateTextbox) SetText(s string) page.ControlI {
 
 	if err == nil {
 		d.Textbox.SetText(v.Format(layout))
-		d.dt = v
+		d.time = v
 	} else {
 		d.Textbox.SetText("")
-		d.dt = datetime.NewZeroDate()
+		d.time = time.Time{}
 	}
 	return d
 }
 
-// SetDate will set the textbox to the give datetime value
-func (d *DateTextbox) SetDate(dt datetime.DateTime) {
-	s := dt.Format(d.layouts()[0])
+// SetDate will set the textbox to the give time
+func (d *DateTextbox) SetDate(t time.Time) {
+	s := t.Format(d.layouts()[0])
 	d.Textbox.SetText(s)
-	d.dt = dt
+	d.time = t
 }
 
 // Value returns the value as an interface, but the underlying value will be a datetime.
 // If a bad value was entered into the textbox, it will return an empty datetime.
 func (d *DateTextbox) Value() interface{} {
-	return d.dt
+	return d.time
 }
 
 // Date returns the value as a DateTime value based on the format.
 // If a bad value was entered into the textbox, it will return an empty datetime.
-func (d *DateTextbox) Date() datetime.DateTime {
-	return d.dt
+func (d *DateTextbox) Date() time.Time {
+	return d.time
 }
 
 func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
@@ -139,19 +136,20 @@ func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
 	}
 	t := d.Text()
 	if t == "" {
-		d.dt = datetime.NewZeroDate()
+		d.time = time.Time{}
 		return
 	}
 
 	v, _, err := d.parseDate(ctx, t)
 
 	if err == nil {
-		d.dt = v
+		d.time = v
 	} else {
-		d.dt = datetime.DateTime{} // set to zero value to indicate an error
+		d.time = time.Time{} // set to zero value to indicate an error
 	}
 }
 
+// Serialize encodes the control into the pagestate
 func (d *DateTextbox) Serialize(e page.Encoder) (err error) {
 	if err = d.Textbox.Serialize(e); err != nil {
 		return
@@ -159,13 +157,14 @@ func (d *DateTextbox) Serialize(e page.Encoder) (err error) {
 	if err = e.Encode(d.formats); err != nil {
 		return
 	}
-	if err = e.Encode(d.dt); err != nil {
+	if err = e.Encode(d.time); err != nil {
 		return
 	}
 
 	return
 }
 
+// Deserialize recreates the control from the pagestate
 func (d *DateTextbox) Deserialize(dec page.Decoder) (err error) {
 	if err = d.Textbox.Deserialize(dec); err != nil {
 		return
@@ -173,17 +172,19 @@ func (d *DateTextbox) Deserialize(dec page.Decoder) (err error) {
 	if err = dec.Decode(&d.formats); err != nil {
 		return
 	}
-	if err = dec.Decode(&d.dt); err != nil {
+	if err = dec.Decode(&d.time); err != nil {
 		return
 	}
 
 	return
 }
 
+// DateValidator specifies the message to show when the date is not validated.
 type DateValidator struct {
 	Message string
 }
 
+// Validate is called by the framework to validate the control.
 func (v DateValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty string is valid
@@ -235,12 +236,14 @@ type DateTextboxCreator struct {
 	page.ControlOptions
 }
 
+// Create creates a new control from the creator.
 func (c DateTextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewDateTextbox(parent, c.ID)
 	c.Init(ctx, ctrl)
 	return ctrl
 }
 
+// Init initializes the creator.
 func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
 	if c.Formats != nil {
 		ctrl.SetFormats(c.Formats)

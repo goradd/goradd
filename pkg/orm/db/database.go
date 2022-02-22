@@ -206,9 +206,6 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 		if newCol != nil {
 			t.Columns = append(t.Columns, newCol)
 			t.columnMap[newCol.DbName] = newCol
-			if newCol.ColumnType == ColTypeDateTime {
-				t.HasDateTime = true
-			}
 			if newCol.IsPk {
 				pkCount++
 				if pkCount > 1 {
