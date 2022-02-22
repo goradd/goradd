@@ -78,9 +78,9 @@ func (d *DateTextbox) parseDate(ctx context.Context, s string) (result time.Time
 	}
 	for _,layoutUsed = range d.layouts() {
 		if grctx != nil && time2.LayoutHasDate(layoutUsed) && time2.LayoutHasTime(layoutUsed){
-			result, err = time2.ParseInOffset(layoutUsed, s, grctx.ClientTimezoneOffset())
+			result, err = time2.ParseInOffset(layoutUsed, s, grctx.ClientTimezone(), grctx.ClientTimezoneOffset())
 		} else {
-			result, err = time.Parse(layoutUsed, s)
+			result, err = time2.ParseForgiving(layoutUsed, s)
 		}
 		if err == nil {
 			break
