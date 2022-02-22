@@ -922,7 +922,7 @@ func (o *personWithLockBase) UnmarshalStringMap(m map[string]interface{}) (err e
 				case string:
 					// an ISO8601 string (hopefully)
 					var t time.Time
-					err = t.UnmarshalJSON([]byte(d))
+					err = t.UnmarshalJSON([]byte(`"` + d + `"`))
 					if err != nil {
 						return fmt.Errorf("JSON format error for time field %s: %w", k, err)
 					}
