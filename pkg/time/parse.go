@@ -1,10 +1,11 @@
 package time
 
 import (
-	"github.com/goradd/goradd/pkg/log"
-	strings2 "github.com/goradd/goradd/pkg/strings"
 	"strings"
 	"time"
+
+	"github.com/goradd/goradd/pkg/log"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 )
 
 const (
@@ -21,7 +22,8 @@ const (
 	RFC3339     = "2006-01-02T15:04:05Z07:00"
 	RFC3339Nano = "2006-01-02T15:04:05.999999999Z07:00"
 	Kitchen     = "3:04PM"
-	// Handy time stamps.
+	KitchenLc   = "3:04pm"
+
 	Stamp      = "Jan _2 15:04:05"
 	StampMilli = "Jan _2 15:04:05.000"
 	StampMicro = "Jan _2 15:04:05.000000"
@@ -30,18 +32,21 @@ const (
 	DateOnlyFormat = "2006-01-02"
 	TimeOnlyFormat = "15:04:05"
 
-	UsDate            = "1/2/2006"
-	ShortUsDate       = "1/2/06"
-	EuroDate          = "2/1/2006"
-	UsDateTime        = "1/2/2006 3:04 PM"
-	EuroDateTime      = "2/1/2006 15:04"
-	UsTime            = "3:04 PM"
-	EuroTime          = "15:04"
-	UsDateTimeSeconds = "1/2/2006 3:04:05 PM"
-	LongDateDOW       = "Monday, January 2, 2006"
-	LongDate          = "January 2, 2006"
+	UsDate              = "1/2/2006"
+	ShortUsDate         = "1/2/06"
+	EuroDate            = "2/1/2006"
+	UsDateTime          = "1/2/2006 3:04 PM"
+	UsDateTimeLc        = "1/2/2006 3:04 pm"
+	EuroDateTime        = "2/1/2006 15:04"
+	UsTime              = "3:04 PM"
+	UsTimeLc            = "3:04 pm"
+	EuroTime            = "15:04"
+	UsDateTimeSeconds   = "1/2/2006 3:04:05 PM"
+	UsDateTimeSecondsLc = "1/2/2006 3:04:05 pm"
+	EuroDateTimeSeconds = "2/1/2006 15:04:00"
+	LongDateDOW         = "Monday, January 2, 2006"
+	LongDate            = "January 2, 2006"
 )
-
 
 // Parse parses the given layout string to turn a string int a DateTime
 // Since the time.Time doc is not that great about really describing the format, here it is:
@@ -59,27 +64,46 @@ const (
 // Timezone				MST
 // Offset				-0700   -07   -07:00   Z0700   Z07:00
 
-
-// ParseInOffset is like time.ParseInLocation but uses the given timezone offset in minutes from UTC to
-// be the location of the parsed time.
-func ParseInOffset(layout, value string, tzOffset int) (time.Time, error) {
-	t, err := time.Parse(layout, value)
-	if err == nil {
-		t = As(t, time.FixedZone("", tzOffset * 60))
+// ParseInOffset is like time.ParseInLocation but uses the given timezone name and offset in minutes from UTC to
+// be the location of the parsed time. If the timezone name is blank, the offset will only be used.
+func ParseInOffset(layout, value string, tz string, tzOffset int) (t time.Time, err error) {
+	if t, err = ParseForgiving(layout, value); err != nil {
+		return
+	}
+	var loc *time.Location
+	if tz != "" {
+		loc, err = time.LoadLocation(tz)
+	}
+	if loc != nil && err == nil {
+		t = As(t, loc)
+	} else {
+		t = As(t, time.FixedZone(tz, tzOffset*60))
+		err = nil
 	}
 	return t, err
 }
 
-// FromSqlDateTime will receive a Date, Time, DateTime or Timestamp type of string that is typically output by SQL and
-// convert it to a time.Time. If the SQL date time string does not have timezone information,
+// ParseForgiving will parse a value allowing for extra spaces or a difference in case for am/pm.
+func ParseForgiving(layout, value string) (time.Time, error) {
+	layout = strings.ReplaceAll(layout, " ", "")
+	value = strings.ReplaceAll(value, " ", "")
+	layout = strings.ReplaceAll(layout, "pm", "PM")
+	value = strings.ReplaceAll(value, "pm", "PM")
+	value = strings.ReplaceAll(value, "am", "AM")
+	return time.Parse(layout, value)
+}
+
+// FromSqlDateTime will convert an RFC 3339 SQL Date, Time, DateTime or Timestamp to a time.Time.
+//
+// If the SQL date time string does not have timezone information,
 // the resulting value will be in UTC time.
 // If an error occurs, the returned value will be the zero date.
 func FromSqlDateTime(s string) (t time.Time) {
-	var hasDate, hasTime, hasNano, hasTZ bool
+	var hasDate, hasTime, hasFrac, hasTZ bool
 	var form string
 
 	if strings.Contains(s, ".") {
-		hasNano = true
+		hasFrac = true
 	}
 	if strings.Contains(s, "-") {
 		hasDate = true
@@ -92,27 +116,29 @@ func FromSqlDateTime(s string) (t time.Time) {
 		}
 	}
 
-	if hasNano {
-		form = "2006-01-02 15:04:05.999999"
-		if hasTZ {
-			form += "-07"
+	if hasDate {
+		form += "2006-01-02"
+	}
+	if hasTime {
+		if hasDate {
+			form += " "
 		}
-	} else if hasDate && hasTime {
-		form = "2006-01-02 15:04:05"
-		if hasTZ {
-			form += "-07"
-		}
-	} else if hasDate {
-		form = "2006-01-02"
-	} else {
-		form = "15:04:05"
+		form += "15:04:05"
+	}
+
+	if hasFrac {
+		form += ".999999"
+	}
+
+	if hasTZ {
+		form += "-07"
 	}
 
 	t, err := time.Parse(form, s)
 	if err == nil {
 		t = t.UTC()
 	} else {
-		// We can't return it, but we can log it
+		// We can't return the error, but we can log it
 		log.Warning(err)
 	}
 	return
@@ -123,7 +149,7 @@ func LayoutHasDate(layout string) bool {
 	return strings2.ContainsAnyStrings(layout, "6", "2", "Jan")
 }
 
-// LayoutHasTime returns true if the give parse layout indicates a time.
+// LayoutHasTime returns true if the given parse layout indicates a time.
 func LayoutHasTime(layout string) bool {
 	return strings2.ContainsAnyStrings(layout, "15", "4", "5", "3")
 }

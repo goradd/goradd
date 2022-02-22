@@ -12,34 +12,40 @@ func As(t time.Time, location *time.Location) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), location)
 }
 
-// InOffsetTime converts the time.Time to a fixed locale with the given timezone offset.
-// tzOffset is minutes from UTC.
-// See page.GetContext(ctx).ClientTimezoneOffset.
-func InOffsetTime(t time.Time, tzOffset int) time.Time {
-	return t.In(time.FixedZone("", tzOffset * 60))
-}
-
 // DayDiff returns the number of days between the two dates, taking into consideration only the day of the month.
 // So 1 am on the 2nd and 11 pm on the 1st are a day apart.
+//
 // If dt1 is before dt2, the result will be negative. If they are the same day, the result is zero.
-// The dates should be set to the timezone that will determine what day the datetime falls on.
+// The dates should already be set to the timezone that will determine what day the datetime falls on.
+// This function also takes into account leap years (assuming that you are dealing with Gregorian dates).
 func DayDiff(dt1, dt2 time.Time) int {
-	d1 := dt1.YearDay() + NumLeaps(dt1.Year() - 1) + dt1.Year() * 365
-	d2 := dt2.YearDay() + NumLeaps(dt2.Year() - 1) + dt2.Year() * 365
+	d1 := dt1.YearDay() + NumLeaps(dt1.Year()-1) + (dt1.Year()-1)*365
+	d2 := dt2.YearDay() + NumLeaps(dt2.Year()-1) + (dt2.Year()-1)*365
 	return d1 - d2
 }
 
-func IsLeap(year int) bool {
-	return year%4 == 0 && (year%100 != 0 || year%400 == 0)
+// IsLeap returns true if the year is a leap year.
+func IsLeap(year int) (isLeap bool) {
+	if year <= 1582 {
+		return year%4 == 0
+	} else {
+		return year%4 == 0 && (year%100 != 0 || year%400 == 0)
+	}
 }
 
-func NumLeaps(year int) int {
-	return year / 4 - year / 100 + year / 400
+// NumLeaps returns the number of leap years that have occurred since year zero. Note that leap years changed
+// slightly with the Gregorian calendar in 1582.
+func NumLeaps(year int) (leaps int) {
+	leaps = year / 4
+	if year > 1582 {
+		leaps += -year/100 + year/400
+	}
+	return
 }
 
 // NewDateTime creates a time.Time in UTC.
 func NewDateTime(year int, month time.Month, day, hour, min, sec, nsec int) time.Time {
-	t := time.Date(year, time.Month(month), day, hour, min, sec, nsec, time.UTC)
+	t := time.Date(year, month, day, hour, min, sec, nsec, time.UTC)
 	return t
 }
 

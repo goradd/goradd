@@ -15,11 +15,12 @@ const (
 )
 
 // Time returns the time corresponding to the given constant
-func (c Const) Time() time.Time {
+func (c Const) Time() (t time.Time) {
 	switch c {
-	case Zero: return time.Time{}
-	case Now: return time.Now().UTC()
+	case Zero:
+		t = time.Time{}
+	case Now:
+		t = time.Now().UTC()
 	}
-	return time.Time{}
+	return t
 }
-
