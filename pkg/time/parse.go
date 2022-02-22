@@ -46,6 +46,7 @@ const (
 	EuroDateTimeSeconds = "2/1/2006 15:04:00"
 	LongDateDOW         = "Monday, January 2, 2006"
 	LongDate            = "January 2, 2006"
+	SqlDate				= "2006-01-02 15:04:05.000000-07"
 )
 
 // Parse parses the given layout string to turn a string int a DateTime
@@ -143,6 +144,11 @@ func FromSqlDateTime(s string) (t time.Time) {
 	}
 	return
 }
+
+func ToSqlDateTime(t time.Time) (s string) {
+	return t.Format(SqlDate)
+}
+
 
 // LayoutHasDate returns true if the given parse layout indicates a date.
 func LayoutHasDate(layout string) bool {

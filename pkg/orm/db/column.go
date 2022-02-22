@@ -98,13 +98,10 @@ func (cd *Column) DefaultValueAsValue() string {
 	} else if cd.ColumnType == ColTypeDateTime {
 		if cd.DefaultValue == currentTime {
 			return "time.Now().UTC()"
-		} else if b, _ := cd.DefaultValue.(time.Time).MarshalText(); b == nil {
-			return cd.ColumnType.DefaultValue()
 		} else {
-			s := string(b[:])
-			return fmt.Sprintf("time2.FromSqlDateTime(%#v)", s)
+			t := cd.DefaultValue.(time.Time)
+			return fmt.Sprintf("time2.NewDateTime(%d, %d, %d, %d, %d, %d, %d)", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond())
 		}
-
 	} else {
 		return fmt.Sprintf("%#v", cd.DefaultValue)
 	}
