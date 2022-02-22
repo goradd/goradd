@@ -6,9 +6,10 @@ package rest
 // To activate this, simply include this file in an import path from your application.
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/api"
-	"github.com/goradd/goradd/pkg/datetime"
 	"net/http"
+	"time"
+
+	"github.com/goradd/goradd/pkg/api"
 )
 
 const HelloPath = "/hello"
@@ -23,9 +24,9 @@ func init() {
 // current time setting, which might be wrong. The default session handler will
 // require that the client supports cookies.
 func HelloHandler(w http.ResponseWriter, r *http.Request) {
-	dt := datetime.Now().Unix()
-	w.Header().Add("Content-Type","application/json")
-	_,_ = fmt.Fprintf(w, `{"dt":%d}`, dt)
+	dt := time.Now().Unix()
+	w.Header().Add("Content-Type", "application/json")
+	_, _ = fmt.Fprintf(w, `{"dt":%d}`, dt)
 
 	return
 }
