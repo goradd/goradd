@@ -5,27 +5,32 @@ import (
 	"encoding/json"
 )
 
-// Function represents the result of a function call to a global function or function in an object referenced from
-// global space. The purpose
-// of this is to immediately use the results of the function call, as opposed to a Closure, which stores a pointer
-// to a function that is used later.
-// context will become the "this" value inside the closure
-// args will be passed as values, and strings will be quoted. To pass a variable name, wrap the name with a JsCode call.
-func Function(name string, context string, args ...interface{}) functionCall {
-	return functionCall{name, context, args}
+// NewFunctionCall creates a new FunctionCall object.
+//
+// context will become the "this" value inside the Closure.
+// args will be passed as values, and strings will be quoted. To pass a variable name, wrap the name with a NewJsCode call.
+func NewFunctionCall(name string, context string, args ...interface{}) FunctionCall {
+	return FunctionCall{name, context, args}
 }
 
-type functionCall struct {
-	// The function name
+// FunctionCall represents the result of a function call to a global function or function in an object referenced from
+// global space.
+//
+// The purpose of this is to immediately use the results of the function call, as opposed to a Closure,
+// which stores a pointer to a function that is used later.
+type FunctionCall struct {
+	// Name is the function name
 	Name string
-	// If given, the object in the window object which contains the function and is the context for the function.
+	// Context, if given, is the object in the window object which contains the function and is the context for the function.
 	// Use dot '.' notation to traverse the object tree. i.e. "obj1.obj2" refers to window.obj1.obj2 in javascript
 	Context string
-	// Function arguments. Strings will be quoted. Use a JsCode object to output the name of a javascript variable.
+	// Args is the list of arguments of the function call.
+	// Strings will be quoted. Use a NewJsCode object to output the name of a javascript variable.
 	Args []interface{}
 }
 
-func (f functionCall) JavaScript() string {
+// JavaScript implements the JavaScripter interface and outputs the function call as embedded JavaScript.
+func (f FunctionCall) JavaScript() string {
 	var args string
 	if f.Args != nil {
 		args = Arguments(f.Args).JavaScript()
@@ -39,11 +44,8 @@ func (f functionCall) JavaScript() string {
 	return fName + "(" + args + ")"
 }
 
-/**
- * Returns this as a json object to be sent to qcubed.js during ajax drawing.
- * @return mixed
- */
-func (f functionCall) MarshalJSON() (buf []byte, err error) {
+// MarshalJSON implements the json.Marshaller interface.
+func (f FunctionCall) MarshalJSON() (buf []byte, err error) {
 	var obj = map[string]interface{}{}
 
 	obj[JsonObjectType] = "function"
@@ -61,5 +63,5 @@ func (f functionCall) MarshalJSON() (buf []byte, err error) {
 
 func init() {
 	// Register objects so they can be serialized
-	gob.Register(functionCall{})
+	gob.Register(FunctionCall{})
 }

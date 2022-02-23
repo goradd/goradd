@@ -6,11 +6,12 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/goradd/gengen/pkg/maps"
 )
 
 // JavaScripter specifies that an object can be converted to javascript (not JSON!). These objects should also be
@@ -28,14 +29,14 @@ const JsonObjectType = "goraddObject"
 // escaped. Nil pointers become null objects. String maps become javascript objects. To convert a fairly complex object,
 // like a map or slice of objects, convert the inner objects to interfaces
 func ToJavaScript(v interface{}) string {
-	// TODO: Add some introspection to handle any kind of complex object that is a Javascripter at the inner level
+	// TODO: Add some introspection to handle any kind of complex object that is a JavaScripter at the inner level
 	// TODO: This is a good place for Go 1.18 templates to expand on arrays of items.
 	switch s := v.(type) {
 	case JavaScripter:
 		return s.JavaScript()
 	case string:
 		// Note that we cannot use template literals here (backticks) because not all browsers support them
-		b, _ := json.Marshal(s) // This does a good job of handling most escape sequences we might need
+		b, _ := json.Marshal(s)      // This does a good job of handling most escape sequences we might need
 		return fmt.Sprint(string(b)) // will surround with quotes
 	case []string:
 		var values []string
@@ -60,7 +61,7 @@ func ToJavaScript(v interface{}) string {
 
 		for _, k := range keys {
 			v2 := s[k]
-			if v3, ok := v2.(noQuoteKey); ok {
+			if v3, ok := v2.(NoQuoteKey); ok {
 				out += k + ":" + ToJavaScript(v3.Value) + ","
 			} else {
 				out += ToJavaScript(k) + ":" + ToJavaScript(v2) + ","
@@ -91,7 +92,7 @@ func ToJavaScript(v interface{}) string {
 	case maps.MapI:
 		var out string
 		s.Range(func(k string, v interface{}) bool {
-			if v2, ok := v.(noQuoteKey); ok {
+			if v2, ok := v.(NoQuoteKey); ok {
 				out += k + ":" + ToJavaScript(v2.Value) + ","
 			} else {
 				out += ToJavaScript(k) + ":" + ToJavaScript(v) + ","
@@ -130,36 +131,24 @@ func ToJavaScript(v interface{}) string {
 
 // NoQuoteKey is a value wrapper to specify a value in a map whose key should not be quoted when converting to javascript.
 // In some situations, a quoted key has a different meaning from a non-quoted key.
-// For example, when making a list of parameters to pass when calling the a javascript command,
+// For example, when making a list of parameters to pass when calling a javascript command,
 // quoted words are turned into parameters, and non-quoted words
 // are turned into functions. For example, "size" will set the size attribute of the object, and
 // size (no quotes), will call the size() function on the object.
-// i.e. map[string]string {"size":4, "size":NoQuoteKey(JsCode("obj"))}
-func NoQuoteKey(v interface{}) noQuoteKey {
-	return noQuoteKey{v}
-}
-
-type noQuoteKey struct {
+// i.e. map[string]string {"size":4, "size":NoQuoteKey{JsCode{"obj"}}}
+type NoQuoteKey struct {
 	Value interface{}
 }
 
-// Prevent using this as a general value.
-func (n noQuoteKey) JavaScript() string {
-	panic("NoQuoteKey should only be used as a value in a string map.")
-}
-
-type jsCode struct {
-	Code  string
-	IsInt bool
-}
-
-// JsCode represents straight javascript code that should not be escaped or quoted.
+// JsCode represents straight JavaScript code that should not be escaped or quoted.
 // Normally, string values would be quoted. This outputs a string without quoting or escaping.
-func JsCode(s string) jsCode {
-	return jsCode{Code: s}
+type JsCode struct {
+	// Code is the JavaScript code to output.
+	Code string
 }
 
-func (c jsCode) JavaScript() string {
+// JavaScript implements the JavaScripter interface.
+func (c JsCode) JavaScript() string {
 	return c.Code
 }
 
@@ -168,13 +157,18 @@ func (c jsCode) JavaScript() string {
 type Undefined struct {
 }
 
+// JavaScript implements the JavaScripter interface
 func (n Undefined) JavaScript() string {
 	return "undefined"
 }
 
+/*
+If this is needed, it will need to be coordinated with goradd.js and unpacked there. JSON will not accept
+an undefined value.
 func (n Undefined) MarshalJSON() ([]byte, error) {
-	return []byte("undefined"), nil
+	return []byte(`"undefined"`), nil
 }
+*/
 
 // NumberInt is a helper function to convert an expected integer that is returned from a json Unmarshal as a Number,
 // into an actual integer without returning any errors. If there is an error, it just returns 0. Use this when you absolutely
@@ -218,12 +212,11 @@ func NumberString(i interface{}) string {
 		return n
 	}
 	panic("Unknown type for NumberString")
-	return ""
 }
 
 func init() {
 	// Register objects so they can be serialized
-	gob.Register(noQuoteKey{})
-	gob.Register(jsCode{})
+	gob.Register(NoQuoteKey{})
+	gob.Register(JsCode{})
 	gob.Register(Undefined{})
 }

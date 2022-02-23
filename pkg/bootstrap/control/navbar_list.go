@@ -44,7 +44,7 @@ func (l *NavbarList) Init(parent page.ControlI, id string) {
 	pxy := control.NewProxy(l, l.proxyID())
 
 	pxy.On(event.Click(),
-		action.Trigger(l.ID(), NavbarSelect, javascript.JsCode("g$(event.target).data('grAv')")))
+		action.Trigger(l.ID(), NavbarSelect, javascript.JsCode{"g$(event.target).data('grAv')"}))
 	config.LoadBootstrap(l.ParentForm())
 }
 

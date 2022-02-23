@@ -44,7 +44,7 @@ func NewMegaMenu(parent page.ControlI, id string) *MegaMenu {
 	l.Self = l
 	l.Init(parent, id)
 	pxy := control.NewProxy(l, l.ID() + "-pxy")
-	pxy.On(event.Click(), action.Trigger(l.ID(), MegaMenuSelectEvent, javascript.JsCode("g$(event.target).data('grAv')")))
+	pxy.On(event.Click(), action.Trigger(l.ID(), MegaMenuSelectEvent, javascript.JsCode{"g$(event.target).data('grAv')"}))
 
 	return l
 }

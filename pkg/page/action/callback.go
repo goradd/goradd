@@ -116,7 +116,7 @@ func (a *serverAction) RenderScript(params RenderParams) string {
 	if eV != nil {
 		v2.Set("event", eV)
 	} else {
-		v2.Set("event", javascript.JsCode("eventData"))
+		v2.Set("event", javascript.JsCode{"eventData"})
 	}
 	if aV != nil {
 		v2.Set("action", aV)
@@ -198,7 +198,7 @@ func (a *ajaxAction) RenderScript(params RenderParams) string {
 	if eV != nil {
 		v2.Set("event", eV)
 	} else {
-		v2.Set("event", javascript.JsCode("eventData"))
+		v2.Set("event", javascript.JsCode{"eventData"})
 	}
 	if aV != nil {
 		v2.Set("action", aV)
