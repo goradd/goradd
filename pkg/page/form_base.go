@@ -137,7 +137,7 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 	if csrf == "" {
 		var err error
 		// first time
-		csrf, err = crypt.GenerateRandomString(16)
+		csrf, err = crypt.GenerateRandomBase64String(16)
 		if err != nil {
 			panic(err)
 		}

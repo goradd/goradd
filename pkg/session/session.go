@@ -186,25 +186,6 @@ func Reset(ctx context.Context) {
 	getSession(ctx).Set(sessionResetKey, true)
 }
 
-// SetClientTimezoneOffset is used by the framework to remember the timezone offset as reported by the client.
-// It is put in the session in order to remember it as the user navigates the website, since we can only
-// get the timezone offset after the user responds to the first web page.
-func SetClientTimezoneOffset(ctx context.Context, offset int) {
-	SetInt(ctx, timezoneKey, offset)
-}
-
-// ClientTimezoneOffset returns the timezone offset of the browser in minutes from UTC. For example, if the browser
-// is at Pacific Standard Time, which is -8 UTC, this value will be -480. This value is not initialized the very first
-// time a user enters the site, but after the user responds to an Ajax or Server request, it will have a valid value.
-//
-// If it has not been initialized, it will return -1.
-func ClientTimezoneOffset(ctx context.Context) int {
-	if !Has(ctx, timezoneKey) {
-		return -1
-	}
-	return GetInt(ctx, timezoneKey)
-}
-
 func init() {
 	gob.Register(&Session{})
 }

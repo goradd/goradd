@@ -41,12 +41,14 @@ import (
 // Add to this the possibility that your users may be accessing the servers from different timezones than either the
 // database or server, and you get quite a tangle.
 //
+// Add to that the TIMESTAMP has a max year of 2038, so TIMESTAMP itself is going to have to change soon.
+//
 // So, as a general rule, use DATETIME types to represent a date combined with a time, like an appointment in
 // a calendar or a recurring event that happens is entered in the current timezone is and that is editable. If you
 // change timezones, the time will change too.
-// Use TIMESTAMP types to store data that records when an event happened in world time. Use separate DATE and TIME
+// Use TIMESTAMP or DATETIME types to store data that records when an event happened in world time. Use separate DATE and TIME
 // values to record a date and time that should always be thought of in the perspective of the viewer, and
-// that if the viewer changes timezones, the time will not change. 9 am in one timezone is 9 am in the other(i.e. An alarm
+// that if the viewer changes timezones, the time will not change. 9 am in one timezone is 9 am in the other(An alarm
 // for example.)
 //
 // Also, set the Loc configuration parameter to be the same as the server's timezone. By default, its UTC.

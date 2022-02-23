@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // JavaScripter specifies that an object can be converted to javascript (not JSON!). These objects should also be
@@ -23,19 +24,18 @@ type JavaScripter interface {
 const JsonObjectType = "goraddObject"
 
 // ToJavaScript will convert the given value to javascript such that it can be embedded in a browser. If it can, it will
-// use the JavaScripter interface to do the conversion. Otherwise it generally follows json encoding rules. Strings are
+// use the JavaScripter interface to do the conversion. Otherwise, it generally follows json encoding rules. Strings are
 // escaped. Nil pointers become null objects. String maps become javascript objects. To convert a fairly complex object,
 // like a map or slice of objects, convert the inner objects to interfaces
 func ToJavaScript(v interface{}) string {
 	// TODO: Add some introspection to handle any kind of complex object that is a Javascripter at the inner level
-
+	// TODO: This is a good place for Go 1.18 templates to expand on arrays of items.
 	switch s := v.(type) {
 	case JavaScripter:
 		return s.JavaScript()
 	case string:
 		// Note that we cannot use template literals here (backticks) because not all browsers support them
 		b, _ := json.Marshal(s) // This does a good job of handling most escape sequences we might need
-		//s1 := strings.Replace(string(b), "/", `\/`, -1) // Replace forward slashes to avoid potential confusion in browser from closing html tags
 		return fmt.Sprint(string(b)) // will surround with quotes
 	case []string:
 		var values []string
@@ -114,6 +114,8 @@ func ToJavaScript(v interface{}) string {
 		} else {
 			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
 		}
+	case time.Time:
+		return fmt.Sprintf(`new Date(%d)`, s.UnixMilli())
 	case nil:
 		return "null"
 	default:

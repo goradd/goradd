@@ -2,9 +2,13 @@ package db
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/datetime"
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"strings"
+	"time"
+)
+
+const (
+	currentTime           = "now"
 )
 
 // Column describes a database column. Most of the information is either
@@ -64,10 +68,12 @@ type Column struct {
 	referenceFunction string
 }
 
+// ModelName returns the name of the column
 func (cd *Column) ModelName() string {
 	return cd.modelName
 }
 
+// ReferenceName returns the name of the referenced object if this is a forward reference.
 func (cd *Column) ReferenceName() string {
 	return cd.referenceName
 }
@@ -90,35 +96,28 @@ func (cd *Column) DefaultValueAsValue() string {
 			return v
 		}
 	} else if cd.ColumnType == ColTypeDateTime {
-		if cd.DefaultValue == datetime.Current {
-			return "datetime.Now()"
-		} else if b, _ := cd.DefaultValue.(datetime.DateTime).MarshalText(); b == nil {
-			return cd.ColumnType.DefaultValue()
+		if cd.DefaultValue == currentTime {
+			return "time.Now().UTC()"
 		} else {
-			s := string(b[:])
-			if cd.IsTimestamp {
-				return fmt.Sprintf("datetime.NewTimestamp(%#v)", s)
-			} else {
-				return fmt.Sprintf("datetime.NewDateTime(%#v)", s)
-			}
+			t := cd.DefaultValue.(time.Time)
+			return fmt.Sprintf("time2.NewDateTime(%d, %d, %d, %d, %d, %d, %d)", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond())
 		}
-
 	} else {
 		return fmt.Sprintf("%#v", cd.DefaultValue)
 	}
 }
 
-// DefaultValueAsConstant returns the default value of the column as a GO constant
+// DefaultValueAsConstant returns the default value of the column as a Go constant
 func (cd *Column) DefaultValueAsConstant() string {
 	if cd.ColumnType == ColTypeDateTime {
-		if cd.DefaultValue == datetime.Current {
-			return "datetime.Current" // pass this to datetime.NewDateTime()
+		if cd.DefaultValue == currentTime {
+			return `time2.Current`
 		} else if cd.DefaultValue == nil {
-			return "datetime.Zero" // pass this to datetime.NewDateTime()
+			return `time2.Zero`
 		} else {
-			d := cd.DefaultValue.(datetime.DateTime)
+			d := cd.DefaultValue.(time.Time)
 			if b, _ := d.MarshalText(); b == nil {
-				return "datetime.Zero"
+				return `time2.Zero`
 			} else {
 				s := string(b[:])
 				return fmt.Sprintf("%#v", s)
@@ -149,17 +148,17 @@ func (cd *Column) ConvertFromString(varName string) string {
 	return cd.modelName
 }
 
-
+// JsonKey returns the key used for the column when outputting JSON.
 func (cd *Column) JsonKey() string {
 	return cd.modelName
 }
 
-// IsReference returns true if the column is a reference to an object in another table
+// IsReference returns true if the column is a reference to an object in another table.
 func (cd *Column) IsReference() bool {
 	return cd.ForeignKey != nil && !cd.ForeignKey.IsType
 }
 
-// IsType returns true if the column contains a type defined by a type table
+// IsType returns true if the column contains a type defined by a type table.
 func (cd *Column) IsType() bool {
 	return cd.ForeignKey != nil && cd.ForeignKey.IsType
 }
@@ -176,6 +175,7 @@ func (cd *Column) ReferenceJsonKey(dd *Database) string {
 	return LowerCaseIdentifier(strings.TrimSuffix(cd.DbName, dd.ForeignKeySuffix))
 }
 
+// GoType returns the Go variable type corresponding to the column.
 func (cd *Column) GoType() string {
 	return cd.ColumnType.GoType()
 }

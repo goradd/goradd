@@ -32,7 +32,7 @@ func TestJsonUnmarshall1(t *testing.T) {
 	"projectStatusType":"Completed",
 	"projectStatusTypeID":3,
 	"num":14,
-	"startDate":"2020-11-01"
+	"startDate":"2020-11-01T00:00:00Z"
 }
 `),
 		&p)

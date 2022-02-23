@@ -1,9 +1,9 @@
 package dbtest
 
 import (
-	"github.com/goradd/goradd/pkg/datetime"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/time"
 	"github.com/stretchr/testify/assert"
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"
@@ -40,16 +40,16 @@ func TestLogical(t *testing.T) {
 		count      int
 		desc       string
 	}
-	var tests = []testCase{
+	tests := []testCase{
 		{GreaterThan(node.Project().Num(), 3), 0, 4, 1, "Greater than uint test"},
-		{GreaterThan(node.Project().StartDate(), datetime.NewDateTime("1/1/2006", datetime.UsDate)), 0, 2, 2, "Greater than datetime test"},
+		{GreaterThan(node.Project().StartDate(), time.NewDate(2006,1,1)), 0, 2, 2, "Greater than datetime test"},
 		{GreaterThan(node.Project().Spent(), 10000), 1, 2, 2, "Greater than float test"},
 		{LessThan(node.Project().Num(), 3), 1, 2, 2, "Less than uint test"},
-		{LessThan(node.Project().EndDate(), datetime.NewDateTime("1/1/2006", datetime.UsDate)), 1, 4, 2, "Less than date test"},
+		{LessThan(node.Project().EndDate(), time.NewDate(2006,1,1)), 1, 4, 2, "Less than date test"},
 		{IsNull(node.Project().EndDate()), 0, 2, 1, "Is Null test"},
 		{IsNotNull(node.Project().EndDate()), 0, 1, 3, "Is Not Null test"},
 		{GreaterOrEqual(node.Project().ProjectStatusTypeID(), 2), 1, 4, 2, "Greater or Equal test"},
-		{LessOrEqual(node.Project().StartDate(), datetime.NewDateTime("2/15/2006", datetime.UsDate)), 2, 4, 3, "Less or equal date test"},
+		{LessOrEqual(node.Project().StartDate(), time.NewDate(2006,2,15)), 2, 4, 3, "Less or equal date test"},
 		{Or(Equal(node.Project().Num(), 1), Equal(node.Project().Num(), 4)), 1, 4, 2, "Or test"},
 		{Xor(Equal(node.Project().Num(), 3), Equal(node.Project().ProjectStatusTypeID(), 1)), 0, 2, 1, "Xor test"},
 		{Not(Xor(Equal(node.Project().Num(), 3), Equal(node.Project().ProjectStatusTypeID(), 1))), 0, 1, 3, "Not test"},
@@ -59,19 +59,22 @@ func TestLogical(t *testing.T) {
 
 	ctx := getContext()
 
-	var projects []*model.Project
 	for i, c := range tests {
-		projects = model.QueryProjects(ctx).
-			Where(c.testNode).
-			OrderBy(node.Project().Num()).
-			Load()
+		t.Run(c.desc, func(t *testing.T) {
+			var projects []*model.Project
 
-		if len(projects) <= c.objectNum {
-			t.Errorf("Test case produced out of range error. Test case #: %d", i)
-		} else {
-			assert.EqualValues(t, c.expectedId, projects[c.objectNum].Num(), c.desc)
-			assert.EqualValues(t, c.count, len(projects), c.desc + " - count")
-		}
+			projects = model.QueryProjects(ctx).
+				Where(c.testNode).
+				OrderBy(node.Project().Num()).
+				Load()
+
+			if len(projects) <= c.objectNum {
+				t.Errorf("Test case produced out of range error. Test case #: %d", i)
+			} else {
+				assert.EqualValues(t, c.expectedId, projects[c.objectNum].Num(), c.desc)
+				assert.EqualValues(t, c.count, len(projects), c.desc+" - count")
+			}
+		})
 	}
 }
 

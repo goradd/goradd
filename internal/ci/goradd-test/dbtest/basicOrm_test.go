@@ -8,8 +8,8 @@ import (
 	"goradd-project/gen/goradd/model/node"
 	"strconv"
 
-	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/time"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -217,8 +217,8 @@ func TestAlias2(t *testing.T) {
 	assert.Equal(t, 1, project.GetAlias("a").Int())
 	assert.Equal(t, "ACME Website Redesign", project.GetAlias("b").String())
 	assert.Equal(t, 10250.75, project.GetAlias("c").Float())
-	d,_ := datetime.FromSqlDateTime("2004-03-01")
-	assert.EqualValues(t, d, project.GetAlias("d").DateTime())
+	d := time.FromSqlDateTime("2004-03-01")
+	assert.EqualValues(t, d, project.GetAlias("d").Time())
 	assert.Equal(t, false, project.GetAlias("e").Bool())
 
 }

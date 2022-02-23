@@ -17,8 +17,9 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"time"
 
-	"github.com/goradd/goradd/pkg/datetime"
+	time2 "github.com/goradd/goradd/pkg/time"
 )
 
 // personWithLockBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
@@ -38,7 +39,7 @@ type personWithLockBase struct {
 	lastNameIsValid bool
 	lastNameIsDirty bool
 
-	sysTimestamp        datetime.DateTime
+	sysTimestamp        time.Time
 	sysTimestampIsNull  bool
 	sysTimestampIsValid bool
 	sysTimestampIsDirty bool
@@ -57,7 +58,7 @@ const (
 	PersonWithLockIDDefault           = ""
 	PersonWithLockFirstNameDefault    = ""
 	PersonWithLockLastNameDefault     = ""
-	PersonWithLockSysTimestampDefault = datetime.Zero
+	PersonWithLockSysTimestampDefault = time2.Zero
 )
 
 const (
@@ -85,7 +86,7 @@ func (o *personWithLockBase) Initialize() {
 	o.lastNameIsValid = false
 	o.lastNameIsDirty = false
 
-	o.sysTimestamp = datetime.DateTime{}
+	o.sysTimestamp = time.Time{}
 	o.sysTimestampIsNull = true
 	o.sysTimestampIsValid = true
 	o.sysTimestampIsDirty = true
@@ -154,7 +155,7 @@ func (o *personWithLockBase) SetLastName(v string) {
 }
 
 // SysTimestamp returns the loaded value of SysTimestamp.
-func (o *personWithLockBase) SysTimestamp() datetime.DateTime {
+func (o *personWithLockBase) SysTimestamp() time.Time {
 	if o._restored && !o.sysTimestampIsValid {
 		panic("sysTimestamp was not selected in the last query and has not been set, and so is not valid")
 	}
@@ -188,10 +189,10 @@ func (o *personWithLockBase) SetSysTimestamp(i interface{}) {
 		if !o.sysTimestampIsNull {
 			o.sysTimestampIsNull = true
 			o.sysTimestampIsDirty = true
-			o.sysTimestamp = datetime.DateTime{}
+			o.sysTimestamp = time.Time{}
 		}
 	} else {
-		v := i.(datetime.DateTime)
+		v := i.(time.Time)
 		if o.sysTimestampIsNull ||
 			!o._restored ||
 			o.sysTimestamp != v {
@@ -423,7 +424,7 @@ func CountPersonWithLockByLastName(ctx context.Context, lastName string) uint {
 	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(false)
 }
 
-func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp datetime.DateTime) uint {
+func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp time.Time) uint {
 	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(false)
 }
 
@@ -470,22 +471,21 @@ func (o *personWithLockBase) load(m map[string]interface{}, objThis *PersonWithL
 
 	if v, ok := m["sys_timestamp"]; ok {
 		if v == nil {
-			o.sysTimestamp = datetime.DateTime{}
+			o.sysTimestamp = time.Time{}
 			o.sysTimestampIsNull = true
 			o.sysTimestampIsValid = true
 			o.sysTimestampIsDirty = false
-		} else if o.sysTimestamp, ok = v.(datetime.DateTime); ok {
+		} else if o.sysTimestamp, ok = v.(time.Time); ok {
 			o.sysTimestampIsNull = false
 			o.sysTimestampIsValid = true
 			o.sysTimestampIsDirty = false
-			o.sysTimestamp.SetIsTimestamp(true)
 		} else {
 			panic("Wrong type found for sys_timestamp.")
 		}
 	} else {
 		o.sysTimestampIsValid = false
 		o.sysTimestampIsNull = true
-		o.sysTimestamp = datetime.DateTime{}
+		o.sysTimestamp = time.Time{}
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -573,7 +573,7 @@ func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{})
 		if o.sysTimestampIsNull {
 			fields["sys_timestamp"] = nil
 		} else {
-			fields["sys_timestamp"] = o.sysTimestamp.GoTime()
+			fields["sys_timestamp"] = o.sysTimestamp
 		}
 
 	}
@@ -597,7 +597,7 @@ func (o *personWithLockBase) getValidFields() (fields map[string]interface{}) {
 		if o.sysTimestampIsNull {
 			fields["sys_timestamp"] = nil
 		} else {
-			fields["sys_timestamp"] = o.sysTimestamp.GoTime()
+			fields["sys_timestamp"] = o.sysTimestamp
 		}
 
 	}
@@ -871,7 +871,7 @@ func (o *personWithLockBase) MarshalStringMap() map[string]interface{} {
 
 //   "lastName" - string
 
-//   "sysTimestamp" - datetime.DateTime, nullable
+//   "sysTimestamp" - time.Time, nullable
 
 func (o *personWithLockBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
@@ -917,9 +917,17 @@ func (o *personWithLockBase) UnmarshalStringMap(m map[string]interface{}) (err e
 				}
 				switch d := v.(type) {
 				case float64:
-					o.SetSysTimestamp(datetime.NewDateTime(int(d)))
+					// a numeric value, which for JSON, means milliseconds since epoc
+					o.SetSysTimestamp(time.UnixMilli(int64(d)).UTC())
 				case string:
-					o.SetSysTimestamp(datetime.NewDateTime(d))
+					// an ISO8601 string (hopefully)
+					var t time.Time
+					err = t.UnmarshalJSON([]byte(`"` + d + `"`))
+					if err != nil {
+						return fmt.Errorf("JSON format error for time field %s: %w", k, err)
+					}
+					t = t.UTC()
+					o.SetSysTimestamp(t)
 				default:
 					return fmt.Errorf("json field %s must be a number or a string", k)
 				}

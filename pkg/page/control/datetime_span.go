@@ -3,7 +3,6 @@ package control
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/datetime"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"io"
@@ -15,7 +14,7 @@ import (
 type DateTimeSpan struct {
 	Span
 	format string
-	value  datetime.DateTime
+	value  time.Time
 }
 
 // NewDateTimeSpan create a new DateTimeSpan.
@@ -36,12 +35,10 @@ func (s *DateTimeSpan) Init(parent page.ControlI, id string) {
 // or a string that can be parsed by the format string.
 func (s *DateTimeSpan) SetValue(v interface{}) {
 	switch v2 := v.(type) {
-	case datetime.DateTime:
-		s.SetDateTime(v2)
 	case time.Time:
-		s.SetDateTime(datetime.NewDateTime(v2))
+		s.SetDateTime(v2)
 	case string:
-		d, err := datetime.Parse(s.format, v2)
+		d, err := time.Parse(s.format, v2)
 		if err != nil {
 			panic(err)
 		}
@@ -50,7 +47,7 @@ func (s *DateTimeSpan) SetValue(v interface{}) {
 }
 
 // SetDateTime sets the value to a datetime.DateTime.
-func (s *DateTimeSpan) SetDateTime(d datetime.DateTime) {
+func (s *DateTimeSpan) SetDateTime(d time.Time) {
 	s.value = d
 	s.Refresh()
 }
@@ -61,7 +58,7 @@ func (s *DateTimeSpan) Value() interface{} {
 	return s.value
 }
 
-func (s *DateTimeSpan) DateTime() datetime.DateTime {
+func (s *DateTimeSpan) DateTime() time.Time {
 	return s.value
 }
 
@@ -125,7 +122,7 @@ func (s *DateTimeSpan) Deserialize(dec page.Decoder) (err error) {
 type DateTimeSpanCreator struct {
 	ID string
 	Format string
-	Value datetime.DateTime
+	Value time.Time
 	page.ControlOptions
 }
 

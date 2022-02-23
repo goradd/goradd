@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"github.com/goradd/goradd/pkg/datetime"
 	"log"
 	"reflect"
 	"strings"
@@ -16,7 +15,7 @@ type ValueNode struct {
 	value interface{}
 }
 
-// Shortcut for converting a constant value to a node
+// Value is a shortcut for converting a constant value to a node
 func Value(i interface{}) NodeI {
 	return NewValueNode(i)
 }
@@ -28,7 +27,7 @@ func NewValueNode(i interface{}) NodeI {
 	}
 
 	switch v := i.(type) {
-	// do nothings
+	// do nothing
 	case string:
 	case int:
 	case uint:
@@ -41,8 +40,6 @@ func NewValueNode(i interface{}) NodeI {
 		// casts
 	case []byte:
 		n.value = string(v[:])
-	case datetime.DateTime:
-		n.value = v.GoTime()
 	case nil:
 		panic("You cannot use nil as an operator. If you are testing for a NULL, use the IsNull function.")
 	default:
@@ -83,9 +80,9 @@ func NewValueNode(i interface{}) NodeI {
 			fallthrough
 		case reflect.Array:
 			var ary []NodeI
-			for i := 0; i < val.Len(); i++ {
+			for i2 := 0; i2 < val.Len(); i2++ {
 				// TODO: Handle NodeI's here too? Prevent more than one level deep?
-				ary = append(ary, NewValueNode(val.Index(i).Interface()))
+				ary = append(ary, NewValueNode(val.Index(i2).Interface()))
 			}
 			n.value = ary
 		case reflect.String:
@@ -97,16 +94,17 @@ func NewValueNode(i interface{}) NodeI {
 	return n
 }
 
+// Equals returns whether the given node is equal to this node.
 func (n *ValueNode) Equals(n2 NodeI) bool {
 	if cn, ok := n2.(*ValueNode); ok {
-		if an2, ok := cn.value.([]NodeI); ok {
-			if an1, ok := n.value.([]NodeI); !ok {
+		if an2, ok2 := cn.value.([]NodeI); ok2 {
+			if an1, ok3 := n.value.([]NodeI); !ok3 {
 				return false
 			} else if len(an2) != len(an1) {
 				return false
 			} else {
-				for i, n := range an1 {
-					if !n.Equals(an2[i]) {
+				for i, n3 := range an1 {
+					if !n3.Equals(an2[i]) {
 						return false
 					}
 				}
@@ -141,6 +139,7 @@ func (n *ValueNode) nodeType() NodeType {
 	return ValueNodeType
 }
 
+// GobEncode encodes the node for storage and retrieval
 func (n *ValueNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
@@ -153,6 +152,7 @@ func (n *ValueNode) GobEncode() (data []byte, err error) {
 }
 
 
+// GobDecode retrieves the node from storage
 func (n *ValueNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)

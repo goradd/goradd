@@ -1,6 +1,6 @@
 # Dates and Times
 
-In a multi-user, multi-language, client-server product, something so small can be so complicated. 
+In a multi-user, multi-language, client-server product, something so small can be complicated. 
 
 Consider the following scenarios:
 1. You ask a user for a date and time for when an event should happen in the future. What does that
@@ -21,22 +21,35 @@ out on your own. But first some background...
 
 ## Types of date-times
 
-There are a few types of date-times that goradd, and you, need to consider:
-1. Timestamps. This is a set moment in historical time. If you view this moment from different timezones,
+There are a few types of date-times that databases commonly use, and you need to consider:
+### Timestamps
+This is a set moment in historical time. If you view this moment from different timezones,
 you should see the hours differently, since 8:00 am in California is also 11:00 am in New York. If the
 date and time point to a time that locally is in the middle of a change in daylight savings time, you
 might see it as an ambiguous time, but internally, there is no ambiguity. Often, the internal representation
-of this is a number of seconds since a particular moment in known time, GMT.
-2. DateTimes. A date-time has no timezone information. It means an event at a particular date and time
-in whatever timezone you are in. If you change timezones, or daylight savings time changes, the 
-displayed date and time do not change. This is what might be in a scheduling application, since if
-a user creates an event in the future after a change in daylight savings time, you are assuming that the
-user knows there will be a change. For example, if the user sets an alarm for 8:00 in the morning, 
-after daylight savings time the alarm should still be at 8:00 in the morning.
-3. Date only. Since there is no time information, this could be a DateTime with an empty time.
-4. Time only. Since there is no date information, this could be a DateTime with a zero date.
+of this is a number of seconds since a particular moment in known time, usually the unix epoc of Jan. 1, 1970.
 
-Note that sometimes using a Timezone or DateTime might still need timezone information. 
+Some databases have some quirks using timestamps. For example, Mysql always tries to convert
+TIMESTAMP times to local time *of the database server*. This is not necessarily
+the local time of the running application, or the client browser. Also, MySQL
+has a maximum range to the year 2038 for timestamps. For these reasons, you should
+not use TIMESTAMP types in your database. 
+
+Goradd will always return these times as UTC times.
+
+### DateTimes
+A datetime has no timezone information. It means an event at a particular date and time
+in whatever timezone you want to consider it. 
+
+Since Goradd does not know what timezone the datetime is in, nor whether the
+timezone is important, it will **always** return these in UTC time.
+
+### Date only
+Since there is no time information, this is represented in Goradd as a time.Time with an empty time.
+### Time only. 
+Since there is no date information, this is represented in Goradd as a time.Time with a zero date.
+
+Note that sometimes using a Timestamp or DateTime might still need timezone information. 
 Consider the following:
 1. If you schedule a meeting for a particular date and time, and that meeting is after a 
 daylight savings time change, but that meeting might be a video-conference meeting that could be 
@@ -51,8 +64,8 @@ in the local time of when the event occurred, no matter where it is viewed from.
 There really are two representations known as a timezone.
 1. A named timezone, like "America/New_York". This tells us the location in the world where a time
 will be displayed. However, the same timestamp might be displayed differently in that location
-depending on whether daylight savings time IS in effect when viewing that time, and depending on
-whether daylight savings time WAS in effect at the time of the event. For example, if EDT was
+depending on whether daylight savings time is *is* in effect when viewing that time, and depending on
+whether daylight savings time *was* in effect at the time of the event. For example, if EDT was
 in effect at the time of the event, and you are viewing the event from EST, you might want to
 see the event in EST time or in EDT time. It depends on the application.
 2. An offset from UTC. Abbreviations like EDT, EST, PST, PDT, or +0800, etc. tell us the actual
@@ -60,7 +73,8 @@ offset from a daylight savings time agnostic UTC time. As in the above example, 
 this time from a particular location at a particular date and time, what you want to see will
 depend on the application.
 GO has excellent handling of named timezones, but browsers generally only work with offsets
-from UTC. In GO, you can create a Time object with a named timezone, and then if you change the timezone
+from UTC (for now, see the upcoming Temporal type). In GO, you can create a Time object 
+with a named timezone, and then if you change the timezone
 to either a named timezone, or offset timezone, GO will report back the correct time, taking
 into account whether daylight savings time was active in the old and new locations 
 at that particular time.
@@ -80,7 +94,7 @@ MySQL DateTime objects do not save timezone information, but Postgres gives you 
 Both Postgres and MySQL Timestamps are stored internally as
 a number of seconds from a known UTC time, but are converted to a timezoned format when the value
 is transferred to a server. The GO mysql drivers give you the ability to set what timezone that is,
-and it can be different than the server's timezone.
+and it can be different than the GoRADD server's timezone.
 
 ### Browser Capabilities
 Date objects in browsers internally are represented as UTC Timestamps. 
@@ -92,7 +106,8 @@ of the javascript Date constructor to NOT do this, since there are inconsistenci
 interpret these strings. However, I think the only inconsistency is when you DO NOT specify
 a timezone, some browsers assume local time, and others assume UTC. So, if you always specify
 a timezone, you should be OK. Other than that, the only way to create a consistent 
-date-time is to use the Date.UTC() constructor and specify all values in UTC.
+date-time is to use the Date() constructor and specify all values in milliseconds since
+epoc. 
 
 Most modern browsers support the ability to get the local timezone name through the
 following call:
@@ -122,22 +137,25 @@ to know whether the current locale uses 12 or 24 hour time, and to translate day
 the bounding parameters for the search are possibly in a different timezone than the database.
 
 ## Our Approach
-1. We create a DateTime structure that wraps a time.Time item with a boolean isTimeStamp.
-2. A timestamped DateTime is converted to UTC time before sending it somewhere else, like
-the database, or the client via JSON or JavaScript.
-2. A non-timestamped DateTime is always stored as a UTC time, and no conversions are made.
+- Within Goradd, all dates and times are stored in UTC, whether or not they are destined to be 
+displayed in a particular timezone.
+- Controls that work with dates and times must convert to the current timezone in the browser if necessary, 
+but in Goradd, always store them in UTC.
+- If timezone information is important for storing in the database, you must do that in a separate database field. 
+Note that Goradd will automatically supply you the client timezone and timezone offset in the app context.
+- You can specify that a value should be automatically updated to the creation date
+or modification date when it is saved through database comments. Goradd will automatically
+take care of that for you. You can then use a DATETIME type instead of a TIMESTAMP type
+in the database.
 
 ## What You Need to Do
-1. When specifying search parameters on a timestamp, you must convert the client specified
-date-time to UTC before searching. You will likely need to do that in javascript.
-3. If you are providing the client a way to just search by date, then you should probably
-store date-times separately as a Date and Time in the database.
-4. If you are making an app like a scheduling app, where the timezone of the created event
+- Realize that all database searching will be done in UTC.
+- If you are making an app like a scheduling app, where the timezone of the created event
 matters, you should probably store in your database separate date, time and timezone information
 so you can recreate the details needed.
-5. If you are making an app that you believe will need to be internationalized, always let
-javascript do the drawing. Otherwise you can let the server draw, but you will need to find
-out the timezone of the client if the app might be used by people in more than one timezone.
-6. If your timestamps need to be drawn in the timezone it was created, you should store the
-timezone separately with the timestamp. When drawing, let Javascript do the drawing, but
-then append the timezone information you saved.
+- If you are making an app that you believe will need to be internationalized, always let
+javascript do the drawing. The provided Goradd controls do that automatically.
+- If your datetimes need to be drawn in a particular timezone, you should store the
+timezone separately. You will need to write some custom code 
+to add the timezone to the time value, and then let Javascript convert that
+to a displayed value.

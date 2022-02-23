@@ -2,8 +2,8 @@ package sql
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/datetime"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	time2 "github.com/goradd/goradd/pkg/time"
 	"log"
 	"strconv"
 	"time"
@@ -244,29 +244,27 @@ func (r SqlReceiver) DoubleI() interface{} {
 	}
 }
 
-// TimeI returns the value as a datetime.DateTime value in the server's timezone.
+// TimeI returns the value as a time.Time value in UTC, or in the case of CURRENT_TIME, a string "now".
 func (r SqlReceiver) TimeI() interface{} {
 	if r.R == nil {
 		return nil
 	}
 
-	var date datetime.DateTime
+	var t time.Time
 	var err error
 	switch v := r.R.(type) {
 	case time.Time:
-		date = datetime.NewDateTime(v)
+		t = v
 	case string:
-		date, err = datetime.FromSqlDateTime(v) // Note that this must always include timezone information if coming from a timestamp with timezone column
-		if err != nil {
-			return nil // This is likely caused by attempting to read a default value, and getting someting like "CURRENT_TIMESTAMP"
-		}
+		t = time2.FromSqlDateTime(v) // Note that this must always include timezone information if coming from a timestamp with timezone column
 	case []byte:
 		s := string(v)
-		date, err = datetime.FromSqlDateTime(s)
+		if s == "CURRENT_TIMESTAMP" {
+			// Mysql version of now. This would only be asked for if we were looking for a default value.
+			return "now"
+		}
+		t = time2.FromSqlDateTime(s)
 		if err != nil {
-			if s == "CURRENT_TIMESTAMP" { // Mysql version of now
-				return datetime.Current
-			}
 			return nil
 		}
 		// TODO: SQL Lite, may return an int or float. Not sure we can support these.
@@ -275,7 +273,7 @@ func (r SqlReceiver) TimeI() interface{} {
 		return nil
 	}
 
-	return date
+	return t
 }
 
 // Unpack converts a SqlReceiver to a type corresponding to the given GoColumnType

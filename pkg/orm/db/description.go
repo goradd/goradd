@@ -54,7 +54,7 @@ type ColumnDescription struct {
 	//  GoType is the goradd defined column type
 	GoType string
 	// SubType has additional information to the type of column that can help control code generation
-	// When column type is "datetime.DateTime", the column will default to both a date and time format. You can also make it:
+	// When column type is "time.Time", the column will default to both a date and time format. You can also make it:
 	//   date (which means date only)
 	//   time (time only)
 	//   timestamp (we will track the modification time of the table here)

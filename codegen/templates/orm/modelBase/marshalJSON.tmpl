@@ -220,9 +220,17 @@ case query.ColTypeDateTime:
 {{
              switch d := v.(type) {
              case float64:
-                 o.Set{{= col.GoName }}(datetime.NewDateTime(int(d)))
+                // a numeric value, which for JSON, means milliseconds since epoc
+                o.Set{{= col.GoName }}(time.UnixMilli(int64(d)).UTC())
              case string:
-                o.Set{{= col.GoName }}(datetime.NewDateTime(d))
+                // an ISO8601 string (hopefully)
+                var t time.Time
+                err = t.UnmarshalJSON([]byte(`"` + d + `"`))
+                if err != nil {
+                    return fmt.Errorf("JSON format error for time field %s: %w", k, err)
+                }
+                t = t.UTC()
+                o.Set{{= col.GoName }}(t)
              default:
                 return fmt.Errorf("json field %s must be a number or a string", k)
              }
