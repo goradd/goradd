@@ -6,20 +6,21 @@ import (
 	"strings"
 )
 
-// Closure represents a javascript function pointer that can be called by javascript at a later time.
-func Closure(body string, args ...string) closure {
-	return closure{body, args}
+// NewClosure creates a new Closure object.
+func NewClosure(body string, args ...string) Closure {
+	return Closure{body, args}
 }
 
-type closure struct {
-	// Body is the body javascript of the closure
+// Closure represents a javascript function pointer that can be called by javascript at a later time.
+type Closure struct {
+	// Body is the body javascript of the Closure
 	Body string
-	// Args are the names of the arguments in the argument list of the closure
+	// Args are the names of the arguments in the argument list of the Closure
 	Args []string
 }
 
-// JavaScript implements the JavsScripter interface and returns the closure as javascript code.
-func (c closure) JavaScript() string {
+// JavaScript implements the JavaScripter interface and returns the Closure as javascript code.
+func (c Closure) JavaScript() string {
 	var args string
 
 	if c.Args != nil {
@@ -30,8 +31,8 @@ func (c closure) JavaScript() string {
 }
 
 // MarshalJSON implements the json.Marshaller interface.
-// The output of this is designed to be unpacked by the goradd javascript file during Ajax calls.
-func (c closure) MarshalJSON() (buf []byte, err error) {
+// The output of this is designed to be unpacked by the goradd.js javascript file during Ajax calls.
+func (c Closure) MarshalJSON() (buf []byte, err error) {
 	var obj = map[string]interface{}{}
 
 	obj[JsonObjectType] = "closure"
@@ -42,23 +43,24 @@ func (c closure) MarshalJSON() (buf []byte, err error) {
 	return
 }
 
-// ClosureCall represents the result of a javascript closure that is called immediately
-// context will become the "this" variable inside the closure when called.
-func ClosureCall(body string, context string, args ...string) closureCall {
-	return closureCall{body, context, args}
+// NewClosureCall creates a new ClosureCall.
+func NewClosureCall(body string, context string, args ...string) ClosureCall {
+	return ClosureCall{body, context, args}
 }
 
-type closureCall struct {
-	// Body is the body javascript of the closure
+// ClosureCall represents the result of a javascript Closure that is called immediately.
+// context will become the "this" variable inside the Closure when called.
+type ClosureCall struct {
+	// Body is the body javascript of the Closure
 	Body string
-	// Context is what will become the "this" var inside of the closure when called. Specifying "this" will bring the "this" from the outer context in to the closure.
+	// Context is what will become the "this" var inside the Closure when called. Specifying "this" will bring the "this" from the outer context in to the Closure.
 	Context string
-	// Args are the names of the arguments in the argument list of the closure
+	// Args are the names of the arguments in the argument list of the Closure
 	Args []string
 }
 
-// JavaScript implements the JavsScripter interface and returns the closure as javascript code.
-func (c closureCall) JavaScript() string {
+// JavaScript implements the JavaScripter interface and returns the Closure as javascript code.
+func (c ClosureCall) JavaScript() string {
 	var args string
 
 	if c.Args != nil {
@@ -68,8 +70,9 @@ func (c closureCall) JavaScript() string {
 	return "(function(" + args + ") {" + c.Body + "}).call(" + c.Context + ")"
 }
 
-// Implements the json.Marshaller interface. The output of this is designed to be unpacked by the goradd javascript file.
-func (c closureCall) MarshalJSON() (buf []byte, err error) {
+// MarshalJSON implements the json.Marshaller interface.
+// The output of this is designed to be unpacked by the goradd.js javascript file.
+func (c ClosureCall) MarshalJSON() (buf []byte, err error) {
 	var obj = map[string]interface{}{}
 
 	obj[JsonObjectType] = "closure"
@@ -83,6 +86,6 @@ func (c closureCall) MarshalJSON() (buf []byte, err error) {
 
 func init() {
 	// Register objects so they can be serialized
-	gob.Register(closure{})
-	gob.Register(closureCall{})
+	gob.Register(Closure{})
+	gob.Register(ClosureCall{})
 }

@@ -32,7 +32,7 @@ func NewTabs(parent page.ControlI, id string) *Tabs {
 
 func (t *Tabs) Init(parent page.ControlI, id string) {
 	t.Panel.Init(parent, id)
-	t.On(event.Event("show.bs.tab"), action.SetControlValue(t.ID(), "selectedId", javascript.JsCode("event.target.id")))
+	t.On(event.Event("show.bs.tab"), action.SetControlValue(t.ID(), "selectedId", javascript.JsCode{"event.target.id"}))
 }
 
 func (t *Tabs) DrawingAttributes(ctx context.Context) html.Attributes {

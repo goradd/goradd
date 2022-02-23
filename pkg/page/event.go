@@ -137,7 +137,7 @@ func (e *Event) PreventBubbling() *Event {
 // value, or javascript objects that will gather data at the time the event fires. The event will appear in the
 // ActionParams as the EventValue. By default, this will be the value passed in to the event as event data.
 // See on: and trigger: in goradd.js.
-// Example: ActionValue(javascript.JsCode("event.target.id")) will return the target id from the event object passed in to the event handler.
+// Example: ActionValue(javascript.JsCode{"event.target.id"}) will return the target id from the event object passed in to the event handler.
 func (e *Event) ActionValue(r interface{}) *Event {
 	e.actionValue = r
 	return e

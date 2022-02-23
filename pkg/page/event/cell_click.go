@@ -46,7 +46,7 @@ const (
 func CellClick() *page.Event {
 	e := page.NewEvent("click").
 		Selector("td").
-		ActionValue(javascript.JsCode(CellClickDefault))
+		ActionValue(javascript.JsCode{CellClickDefault})
 	return e
 }
 
@@ -54,7 +54,7 @@ func CellClick() *page.Event {
 func HeaderCellClick() *page.Event {
 	e := page.NewEvent("click").
 		Selector("th").
-		ActionValue(javascript.JsCode(CellClickDefault))
+		ActionValue(javascript.JsCode{CellClickDefault})
 	return e
 }
 
@@ -64,7 +64,7 @@ func HeaderCellClick() *page.Event {
 // For example:
 //   e := event.CellClick().ActionValue(event.RowDataActionValue("rowVal")).Delay(100)
 func RowDataActionValue(key string) javascript.JavaScripter {
-	return javascript.JsCode(`g$(this).parent().data("` + key + `")`)
+	return javascript.JsCode{`g$(this).parent().data("` + key + `")`}
 }
 
 // CellDataActionValue sets the ActionValue to javascript that will return the data value of the row clicked on.
@@ -72,5 +72,5 @@ func RowDataActionValue(key string) javascript.JavaScripter {
 // For example:
 //   e := event.CellClick().ActionValue(event.CellDataActionValue("cellVal")).Delay(100)
 func CellDataActionValue(key string) javascript.JavaScripter {
-	return javascript.JsCode(`g$(this).data("` + key + `")`)
+	return javascript.JsCode{`g$(this).data("` + key + `")`}
 }
