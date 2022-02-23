@@ -16,16 +16,16 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 	_, err := rand.Read(b)
 	// Note that err == nil only if we read len(b) bytes.
 	if err != nil {
-		return nil, err
+		b = nil
 	}
 
-	return b, nil
+	return b, err
 }
 
-// GenerateRandomString returns a base64 encoded
+// GenerateRandomBase64String returns a base64 encoded
 // securely generated random string. The given value is the length of the initial random bytes represented by
 // the base64 string. The actual length of the string will be bigger.
-func GenerateRandomString(s int) (string, error) {
+func GenerateRandomBase64String(s int) (string, error) {
 	b, err := GenerateRandomBytes(s)
 	return base64.StdEncoding.EncodeToString(b), err
 }

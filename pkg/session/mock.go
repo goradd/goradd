@@ -16,7 +16,7 @@ func (mgr Mock) Use(next http.Handler) http.Handler {
 	return nil
 }
 
-// Call with to insert the mock session into the current session
+// With inserts the mock session into the current session
 func (mgr Mock) With(ctx context.Context) context.Context {
 	sessionData := NewSession()
 
