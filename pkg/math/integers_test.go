@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func ExampleMath_MinInt() {
+func ExampleMinInt() {
 	i, v := MinInt(50, 13, 9, 200, 7, 23)
 
 	fmt.Printf("%d,%d", i, v)
@@ -29,7 +29,7 @@ func TestMinInt(t *testing.T) {
 	}
 }
 
-func ExampleMath_MaxInt() {
+func ExampleMaxInt() {
 	i, v := MaxInt(50, 13, 9, 200, 7, 23)
 
 	fmt.Printf("%d,%d", i, v)
@@ -53,7 +53,7 @@ func TestMaxInt(t *testing.T) {
 	}
 }
 
-func ExampleMath_DiffInts() {
+func ExampleDiffInts() {
 	diffs := DiffInts(50, 13, 9, 200, 7, 23)
 
 	fmt.Print(diffs)
@@ -72,7 +72,7 @@ func TestDiffInts(t *testing.T) {
 	}
 }
 
-func ExampleMath_SumInts() {
+func ExampleSumInts() {
 	sums := SumInts(50, 13, -9, 200, 7, 23)
 
 	fmt.Print(sums)
@@ -91,7 +91,52 @@ func TestSumInts(t *testing.T) {
 	}
 }
 
-func ExampleMath_PowerInt() {
-	fmt.Print(PowerInt(-1, 5), PowerInt(3, 3), PowerInt(0, 0))
-	// Output: -1 27 0
+func ExampleSquareInt() {
+	fmt.Print(SquareInt(2))
+	// Output: 4
+}
+
+func ExampleCubeInt() {
+	fmt.Print(CubeInt(2))
+	// Output: 8
+}
+
+func ExampleSqSqInt() {
+	fmt.Print(SqSqInt(2))
+	// Output: 16
+}
+
+func ExampleAbsInt() {
+	fmt.Print(AbsInt(-5), AbsInt(5))
+	// Output: 5 5
+}
+
+func ExamplePowerInt() {
+	fmt.Print(PowerInt(3, 3))
+	// Output: 27
+}
+
+func TestPowerInt(t *testing.T) {
+	tests := []struct {
+		name  string
+		base  int
+		power int
+		want  int
+	}{
+		{"-1,5", -1, 5, -1},
+		{"3,3", 3, 3, 27},
+		{"0,0", 0, 0, 0},
+		{"5,1", 5, 1, 5},
+		{"1,-2", 1, -2, 1},
+		{"-1,-3", -1, -3, -1},
+		{"5,0", 5, 0, 1},
+		{"5,-3", 5, -3, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := PowerInt(tt.base, tt.power); got != tt.want {
+				t.Errorf("PowerInt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

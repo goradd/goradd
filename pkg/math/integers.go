@@ -17,7 +17,7 @@ func MinInt(values ...int) (index int, value int) {
 	return
 }
 
-// MaxInts returns the maiximum value from a slice of ints, and the index of that value.
+// MaxInt returns the maximum value from a slice of ints, and the index of that value.
 // The index will be -1 if no items are given.
 func MaxInt(values ...int) (index int, value int) {
 	if len(values) == 0 {
@@ -89,7 +89,9 @@ func SqSqInt(a int) int {
 }
 
 // PowerInt returns the given base integer raised to the given power.
-// If your base integer is zero, you will get a zero back regardless of the power.
+//
+// If your base integer is zero, the result will be zero regardless of the power.
+// Fractions will return as zero.
 func PowerInt(base int, power int) int {
 	if base == 0 {
 		return 0 // ignore undefined situations of power <= 0 in this case, since there is no int NaN
@@ -115,6 +117,7 @@ func PowerInt(base int, power int) int {
 	return v
 }
 
+// AbsInt returns the absolute value of the given int.
 func AbsInt(a int) int {
 	if a < 0 {
 		return -a
