@@ -2,6 +2,10 @@ package strings
 
 import "math/rand"
 
+const alphaLower = "abcdefghijklmnopqrstuvwxyz"
+const alphaUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const alphaNum = "0123456789"
+
 // RandomString generates a pseudo random string of the given length using the given characters.
 // The distribution is not perfect, but works for general purposes
 func RandomString(source string, n int) string {
@@ -27,7 +31,7 @@ const passwordBytes = passwordLower + passwordUpper + passwordNum + passwordSym
 // n must be at least 4
 func PasswordString(n int) string {
 	if n < 4 {
-		panic ("n must be at least 4")
+		panic("n must be at least 4")
 	}
 	b := make([]byte, n)
 	b[0] = passwordLower[rand.Int()%len(passwordLower)]
@@ -37,7 +41,7 @@ func PasswordString(n int) string {
 	for i := 4; i < len(b); i++ {
 		b[i] = passwordBytes[rand.Int()%len(passwordBytes)]
 	}
-	rand.Shuffle(n, func(i,j int) {
+	rand.Shuffle(n, func(i, j int) {
 		temp := b[i]
 		b[i] = b[j]
 		b[j] = temp

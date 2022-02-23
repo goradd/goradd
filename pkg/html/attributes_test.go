@@ -113,7 +113,7 @@ func TestBasicStyles(t *testing.T) {
 	}
 
 	a = NewAttributes()
-	b := []bool{}
+	var b []bool
 	changed, _ = a.SetStyleChanged("height", "9")
 	b = append(b, changed)
 	changed, _ = a.SetStyleChanged("height", "10")
@@ -370,7 +370,7 @@ func ExampleAttributes_HasClass() {
 
 func ExampleAttributes_HasStyle() {
 	a := NewAttributes()
-	b := []bool{}
+	var b []bool
 	var found bool
 	found = a.HasStyle("height")
 	b = append(b, found)
@@ -464,9 +464,9 @@ func ExampleAttributes_IsDisplayed() {
 	// Output: false
 }
 
-func ExampleAttributes_AttributeString() {
+func ExampleAttributeString() {
 	a := Attributes{}
-	a.Set("a", AttributeString(int(1)))
+	a.Set("a", AttributeString(1))
 	a.Set("b", AttributeString(float32(2.2)))
 	a.Set("c", AttributeString("test"))
 	a.Set("d", AttributeString(true))

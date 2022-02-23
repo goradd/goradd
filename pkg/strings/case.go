@@ -2,6 +2,7 @@ package strings
 
 import "strings"
 
+// KebabToCamel convert kebab-case words to CamelCase words.
 func KebabToCamel(s string) string {
 	var r string
 
@@ -17,8 +18,7 @@ func KebabToCamel(s string) string {
 	return r
 }
 
+// SnakeToKebab converts snake_case words to kebab-case words.
 func SnakeToKebab(s string) string {
 	return strings.Replace(s, "_", "-", -1)
 }
-
-

@@ -32,8 +32,8 @@ func Indent(s string) string {
 	return strings.TrimRight(s, "\t")
 }
 
-// Title is a more advanced titling operation, that will convert underscores to spaces, and add spaces to CamelCase
-// words
+// Title is a more advanced titling operation. It will convert underscores to spaces, and add spaces to CamelCase
+// words.
 func Title(s string) string {
 	s = strings.TrimSpace(strings.Title(strings.Replace(s, "_", " ", -1)))
 	if len(s) <= 1 {
@@ -51,7 +51,6 @@ func Title(s string) string {
 	return newString
 }
 
-
 // HasOnlyLetters will return false if any of the characters in the string do not pass the unicode.IsLetter test.
 func HasOnlyLetters(s string) bool {
 	for _, r := range s {
@@ -63,9 +62,9 @@ func HasOnlyLetters(s string) bool {
 }
 
 // JoinContent joins strings together with the separator sep. Only strings that are not empty strings are joined.
-func JoinContent(sep string, items... string) string {
+func JoinContent(sep string, items ...string) string {
 	var l []string
-	for _,i := range items {
+	for _, i := range items {
 		if i != "" {
 			l = append(l, i)
 		}
@@ -82,10 +81,10 @@ func If(cond bool, trueVal, falseVal string) string {
 	}
 }
 
-// ContainsAnyStrings returns true if the needle contains any of the haystacks
-func ContainsAnyStrings(needle string, haystacks... string) bool {
-	for _,h := range haystacks {
-		if strings.Contains(needle, h) {
+// ContainsAnyStrings returns true if the haystack contains any of the needles
+func ContainsAnyStrings(haystack string, needles ...string) bool {
+	for _, h := range needles {
+		if strings.Contains(haystack, h) {
 			return true
 		}
 	}
