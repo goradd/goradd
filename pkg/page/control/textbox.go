@@ -136,8 +136,10 @@ func (t *Textbox) DrawInnerHtml(_ context.Context, w io.Writer) {
 
 // SetText sets the value of the text. Returns itself for chaining.
 func (t *Textbox) SetText(s string) page.ControlI {
-	t.value = s
-	t.AddRenderScript("val", s)
+	if t.value != s {
+		t.value = s
+		t.AddRenderScript("val", s)
+	}
 	return t.this()
 }
 
@@ -250,6 +252,7 @@ func (t *Textbox) SetReadOnly(r bool) TextboxI {
 
 // Sanitize is called by the framework when taking in user input and strips it of potential
 // malicious XSS scripts.
+//
 // The default uses a global sanitizer created at bootup.
 // Override Sanitize in a subclass if you want a per-textbox sanitizer.
 // This is a very difficult thing to get right, and depends a bit on your application on just

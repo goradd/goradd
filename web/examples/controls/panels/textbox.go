@@ -180,7 +180,7 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.ChangeVal("floatText", 6.7)
 	t.ChangeVal("emailText", "me@you.com")
 	t.ChangeVal("dateText", "19/2/2018")
-	t.ChangeVal("timeText", "4:59 am")
+	t.ChangeVal("timeText", "4:59AM")
 	t.ChangeVal("dateTimeText", "2/19/2018 4:23 pm")
 
 	t.Click(btnID)
@@ -194,11 +194,11 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 		t2 := time2.As(GetDateTextbox(f, "dateText").Date(), time.FixedZone("", 0))
 		t.AssertEqual(true, v.Equal(t2))
 
-		v2,_ := time.Parse(time2.UsTime, "4:59 am")
+		v2,_ := time.Parse(time2.UsTime, "4:59 AM")
 		t3 := time2.As(GetDateTextbox(f, "timeText").Date(), time.FixedZone("", 0))
 		t.AssertEqual(true, v2.Equal(t3))
 
-		v3,_ := time.Parse(time2.UsDateTime, "2/19/2018 4:23 pm")
+		v3,_ := time.Parse(time2.UsDateTime, "2/19/2018 4:23 PM")
 		t4 := time2.As(GetDateTextbox(f, "dateTimeText").Date(), time.FixedZone("", 0))
 		t.AssertEqual(true, v3.Equal(t4))
 	})

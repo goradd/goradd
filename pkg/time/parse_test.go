@@ -129,3 +129,12 @@ func TestLayoutHasTime(t *testing.T) {
 		})
 	}
 }
+
+func TestToSqlDateTime(t *testing.T) {
+	s := ToSqlDateTime(NewDateTime(2000, 2,2,0,0,0,0))
+	assert.Equal(t, "2000-02-02 00:00:00.000000+00", s)
+
+	s = ToSqlDateTime(NewDateTime(2000, 2,2,6,6,6,0))
+	assert.Equal(t, "2000-02-02 06:06:06.000000+00", s)
+
+}

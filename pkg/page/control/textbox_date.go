@@ -140,9 +140,10 @@ func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
 		return
 	}
 
-	v, _, err := d.parseDate(ctx, t)
+	v, layout, err := d.parseDate(ctx, t)
 
 	if err == nil {
+		d.Textbox.SetText(v.Format(layout))
 		d.time = v
 	} else {
 		d.time = time.Time{} // set to zero value to indicate an error

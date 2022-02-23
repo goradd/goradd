@@ -145,10 +145,10 @@ func FromSqlDateTime(s string) (t time.Time) {
 	return
 }
 
+// ToSqlDateTime returns a SQL string representing the give time.Time value.
 func ToSqlDateTime(t time.Time) (s string) {
 	return t.Format(SqlDate)
 }
-
 
 // LayoutHasDate returns true if the given parse layout indicates a date.
 func LayoutHasDate(layout string) bool {
