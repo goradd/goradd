@@ -350,6 +350,7 @@ func ExampleAttributes_AddClass() {
 	a := NewAttributes()
 	a.AddClass("this")
 	a.AddClass("that")
+	a.AddClass("")
 	fmt.Println(a)
 	//Output: class="this that"
 }
@@ -541,4 +542,28 @@ func ExampleAttributes_Range() {
 	// class = 2
 	// x = 10
 	// y = 7
+}
+
+func TestAttributes_RemoveClass(t *testing.T) {
+	tests := []struct {
+		name string
+		a    Attributes
+		removeClass 	 string
+		changed bool
+		finalClass string
+	}{
+		{"remove one", Attributes{"id":"1", "class":"this"}, "this", true, ""},
+		{"remove from multiple", Attributes{"id":"1", "class":"this that"}, "this", true, "that"},
+		{"remove from none", Attributes{"id":"1"}, "this", false, ""},
+		{"remove not existing", Attributes{"id":"1", "class":"this that"}, "other", false, "this that"},
+		{"remove multiple", Attributes{"id":"1", "class":"this that other"}, "this other", true, "that"},
+		{"remove multiple one not existing", Attributes{"id":"1", "class":"this that other"}, "nothere other", true, "this that"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			changed := tt.a.RemoveClass(tt.removeClass)
+			assert.Equal(t, tt.changed, changed)
+			assert.Equal(t, tt.finalClass, tt.a.Class())
+		})
+	}
 }
