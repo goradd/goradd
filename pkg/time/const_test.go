@@ -8,6 +8,6 @@ import (
 
 func TestConst_Time(t *testing.T) {
 	assert.True(t, Zero.Time().IsZero())
-	assert.True(t, time.Since(Now.Time()).Seconds() == 0)
-	assert.True(t, time.Since(Current.Time()).Seconds() == 0)
+	assert.Greater(t, 1.0, time.Since(Now.Time()).Seconds())
+	assert.Greater(t, 1.0, time.Since(Current.Time()).Seconds())
 }
