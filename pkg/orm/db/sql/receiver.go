@@ -244,7 +244,7 @@ func (r SqlReceiver) DoubleI() interface{} {
 	}
 }
 
-// TimeI returns the value as a time.Time value in UTC.
+// TimeI returns the value as a time.Time value in UTC, or in the case of CURRENT_TIME, a string "now".
 func (r SqlReceiver) TimeI() interface{} {
 	if r.R == nil {
 		return nil
@@ -259,8 +259,9 @@ func (r SqlReceiver) TimeI() interface{} {
 		t = time2.FromSqlDateTime(v) // Note that this must always include timezone information if coming from a timestamp with timezone column
 	case []byte:
 		s := string(v)
-		if s == "CURRENT_TIMESTAMP" { // Mysql version of now
-			return time.Now().UTC()
+		if s == "CURRENT_TIMESTAMP" {
+			// Mysql version of now. This would only be asked for if we were looking for a default value.
+			return "now"
 		}
 		t = time2.FromSqlDateTime(s)
 		if err != nil {

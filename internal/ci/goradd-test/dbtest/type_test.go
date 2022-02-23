@@ -48,10 +48,9 @@ func TestTimestamp(t *testing.T) {
 	rec2.SetTs(ts)
 	rec2.Save(ctx)
 
-	// Make sure setting null value sets to default
+	// Make sure setting null value sets to default of current time
 	rec.SetTs(nil)
-	assert.Equal(t, 22, rec.Ts().Day())
-
+	assert.True(t, time.Since(rec.Ts()).Seconds() == 0)
 }
 
 func TestDateTime(t *testing.T) {
