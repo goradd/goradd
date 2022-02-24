@@ -100,7 +100,7 @@ func ResetOutputBuffer(ctx context.Context) []byte {
 		return nil
 	} else if bw := i.(BufferedResponseWriterI); bw == nil {
 		return nil
-	} else if buf := bw.OutputBuffer(); buf != nil {
+	} else if buf := bw.OutputBuffer(); buf == nil {
 		return nil
 	} else {
 		ret := buf.Bytes()

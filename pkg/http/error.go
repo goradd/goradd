@@ -126,7 +126,9 @@ type ServerError struct {
 // Error returns the string that is sent to the logger
 func (s ServerError) Error() string {
 	out := s.Err + "\n"
-	out += s.Mode + "  " + s.Request.RequestURI + " " + fmt.Sprintf("%v\n", s.Request.PostForm)
+	if s.Request != nil {
+		out += s.Mode + "  " + s.Request.RequestURI + " " + fmt.Sprintf("%v\n", s.Request.PostForm)
+	}
 	return out
 }
 
@@ -188,10 +190,10 @@ func (e ErrorReporter) Use(h http.Handler) http.Handler {
 				}
 				w.WriteHeader(http.StatusInternalServerError)
 				buf := ResetOutputBuffer(req.Context())
-				if buf == nil {
-					errMsg += "\nPartial response written:\n" + string(buf)
+				if buf != nil {
+					errMsg += "\nPartial response written:" + string(buf)
 				}
-				log.Error(errMsg + log.StackTrace(stackDepth, MaxErrorStackDepth)) // use the application logger to output the error so we know about it
+				log.Error(errMsg + "\n" + log.StackTrace(stackDepth, MaxErrorStackDepth)) // use the application logger to output the error so we know about it
 				_,_ = io.WriteString(w, newResponse) // Write the alternate response to client
 				return
 			}
