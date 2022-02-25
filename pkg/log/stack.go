@@ -6,7 +6,7 @@ import (
 )
 
 // StackTrace returns a formatted stack trace, listing files and functions on each line.
-func StackTrace(startingDepth int, maxDepth int) (out string ){
+func StackTrace(startingDepth int, maxDepth int) (out string) {
 	for i := 1 + startingDepth; i < maxDepth; i++ {
 		pc, file, line, ok := runtime.Caller(i)
 		if !ok {

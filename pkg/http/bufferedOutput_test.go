@@ -3,22 +3,22 @@ package http
 import (
 	"bytes"
 	"context"
-	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-)
 
+	"github.com/goradd/goradd/pkg/goradd"
+	"github.com/stretchr/testify/assert"
+)
 
 func Test_BufferedOutput(t *testing.T) {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		_,_ = io.WriteString(w, "Hey")
-		_,_ = w.Write([]byte("You"))
+		_, _ = io.WriteString(w, "Hey")
+		_, _ = w.Write([]byte("You"))
 
 		b := outputBuffer(r.Context())
-		assert.EqualValues(t,"HeyYou", b.String(), "Output was not buffered")
+		assert.EqualValues(t, "HeyYou", b.String(), "Output was not buffered")
 		assert.Equal(t, 6, OutputLen(r.Context()), "Len was not recorded")
 	}
 	h := BufferedOutputManager().Use(http.HandlerFunc(fn))
@@ -36,10 +36,10 @@ func Test_BufferedOutput(t *testing.T) {
 func Test_UnbufferedOutput(t *testing.T) {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		DisableOutputBuffering(r.Context())
-		_,_ = io.WriteString(w, "Hey")
-		_,_ = w.Write([]byte("You"))
+		_, _ = io.WriteString(w, "Hey")
+		_, _ = w.Write([]byte("You"))
 		b := outputBuffer(r.Context())
-		assert.NotEqualValues(t,"HeyYou", b.String(), "Output was buffered but should not be")
+		assert.NotEqualValues(t, "HeyYou", b.String(), "Output was buffered but should not be")
 		assert.Equal(t, 6, OutputLen(r.Context()), "Len was not recorded")
 	}
 	h := BufferedOutputManager().Use(http.HandlerFunc(fn))
@@ -56,11 +56,11 @@ func Test_UnbufferedOutput(t *testing.T) {
 
 func Test_BufferedOutputCode(t *testing.T) {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		_,_ = io.WriteString(w, "Hey")
+		_, _ = io.WriteString(w, "Hey")
 		w.WriteHeader(300)
 
 		b := outputBuffer(r.Context())
-		assert.EqualValues(t,"Hey", b.String(), "Output was not buffered")
+		assert.EqualValues(t, "Hey", b.String(), "Output was not buffered")
 		assert.Equal(t, 3, OutputLen(r.Context()), "Len was not recorded")
 	}
 	h := BufferedOutputManager().Use(http.HandlerFunc(fn))
@@ -79,11 +79,11 @@ func Test_BufferedOutputCode(t *testing.T) {
 func Test_UnbufferedOutputCode(t *testing.T) {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		DisableOutputBuffering(r.Context())
-		_,_ = io.WriteString(w, "Hey")
+		_, _ = io.WriteString(w, "Hey")
 		w.WriteHeader(300)
 
 		b := outputBuffer(r.Context())
-		assert.NotEqualValues(t,"Hey", b.String(), "Output was not buffered")
+		assert.NotEqualValues(t, "Hey", b.String(), "Output was not buffered")
 		assert.Equal(t, 3, OutputLen(r.Context()), "Len was not recorded")
 	}
 	h := BufferedOutputManager().Use(http.HandlerFunc(fn))
@@ -102,11 +102,11 @@ func Test_UnbufferedOutputCode(t *testing.T) {
 
 func Test_BufferedOutputReset(t *testing.T) {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		_,_ = io.WriteString(w, "Hey")
-		_,_ = w.Write([]byte("You"))
+		_, _ = io.WriteString(w, "Hey")
+		_, _ = w.Write([]byte("You"))
 
 		b := ResetOutputBuffer(r.Context())
-		assert.EqualValues(t,"HeyYou", b, "Output was not buffered")
+		assert.EqualValues(t, "HeyYou", b, "Output was not buffered")
 		assert.Equal(t, 0, OutputLen(r.Context()), "Buffer was not reset")
 	}
 	h := BufferedOutputManager().Use(http.HandlerFunc(fn))

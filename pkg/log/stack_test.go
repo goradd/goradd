@@ -1,11 +1,12 @@
 package log
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestStackTrace(t *testing.T) {
-	s := StackTrace(0,5)
+	s := StackTrace(0, 5)
 	assert.Contains(t, s, "stack_test.go")
 }

@@ -1,17 +1,18 @@
 package http
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io/fs"
 	"os"
 	"testing"
 	"testing/fstest"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func makeFs() fs.FS {
 	fsys := fstest.MapFS{
-		"test1":{Data:[]byte("test"), Mode:os.ModePerm},
-		"test2.js":{Data:[]byte("test2"), Mode:os.ModePerm},
+		"test1":    {Data: []byte("test"), Mode: os.ModePerm},
+		"test2.js": {Data: []byte("test2"), Mode: os.ModePerm},
 	}
 	return fsys
 }
