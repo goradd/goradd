@@ -2,13 +2,15 @@ package http
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/log"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/goradd/goradd/pkg/log"
 )
 
+// MaxErrorStackDepth is the maximum stack depth reported to the error log when a panic happens.
 var MaxErrorStackDepth = 20
 
 // Error represents an error response to an http request.
@@ -39,6 +41,7 @@ func SendErrorCode(errCode int) {
 	panic(e)
 }
 
+// SendErrorMessage sends the error message with the http code to the browser.
 func SendErrorMessage(message string, errCode int) {
 	e := Error{ErrCode: errCode, Message: message}
 	panic(e)
@@ -61,7 +64,7 @@ func SendErrorMessage(message string, errCode int) {
 func Redirect(location string, errCode int) {
 	e := Error{ErrCode: errCode}
 	e.SetResponseHeader("Location", location)
-	panic (e)
+	panic(e)
 }
 
 // SendUnauthorized will send an error code indicating that the user is not authenticated (yes,
@@ -69,14 +72,14 @@ func Redirect(location string, errCode int) {
 // If serving HTML, you likely should redirect to the login page instead.
 func SendUnauthorized() {
 	e := Error{ErrCode: http.StatusUnauthorized}
-	panic (e)
+	panic(e)
 }
 
-// SendForbidden will tell the user that he/she does not have authorization to acceess
+// SendForbidden will tell the user that he/she does not have authorization to access
 // the given resource. The user should be known.
 func SendForbidden() {
 	e := Error{ErrCode: http.StatusForbidden}
-	panic (e)
+	panic(e)
 }
 
 // SendMethodNotAllowed will tell the user that the server is not able
@@ -87,24 +90,28 @@ func SendMethodNotAllowed(allowedMethods ...string) {
 	panic(e)
 }
 
+// SendNotFound sends a StatsNotFound error to the output.
 func SendNotFound() {
 	e := Error{ErrCode: http.StatusNotFound}
-	panic (e)
+	panic(e)
 }
 
+// SendNotFoundMessage sends a StatusNotFound with a message.
 func SendNotFoundMessage(message string) {
 	e := Error{ErrCode: http.StatusNotFound, Message: message}
-	panic (e)
+	panic(e)
 }
 
+// SendBadRequest sends a StatusBadRequest code to the output.
 func SendBadRequest() {
 	e := Error{ErrCode: http.StatusBadRequest}
-	panic (e)
+	panic(e)
 }
 
+// SendBadRequestMessage sends a StatusBadRequest code to the output with a message.
 func SendBadRequestMessage(message string) {
 	e := Error{ErrCode: http.StatusBadRequest, Message: message}
-	panic (e)
+	panic(e)
 }
 
 // ServerError represents an error caused by an unexpected panic
@@ -114,7 +121,7 @@ type ServerError struct {
 	// Mode indicates whether we are serving ajax or not
 	Mode string
 	// the time the error occurred
-	Time time.Time
+	Time    time.Time
 	Request *http.Request
 	// Output will replace what gets written to the output
 	Output string
@@ -122,29 +129,32 @@ type ServerError struct {
 	StackDepth int
 }
 
-
 // Error returns the string that is sent to the logger
 func (s ServerError) Error() string {
 	out := s.Err + "\n"
-	out += s.Mode + "  " + s.Request.RequestURI + " " + fmt.Sprintf("%v\n", s.Request.PostForm)
+	if s.Request != nil {
+		out += s.Mode + "  " + s.Request.RequestURI + " " + fmt.Sprintf("%v\n", s.Request.PostForm)
+	}
 	return out
 }
 
+// NewServerError creates a new ServerError.
 func NewServerError(err string, mode string, r *http.Request, skipFrames int, output string) *ServerError {
 	e := ServerError{
-		Err: err,
-		Mode: mode,
-		Time: time.Now(),
-		Request: r,
-		Output: output,
+		Err:        err,
+		Mode:       mode,
+		Time:       time.Now(),
+		Request:    r,
+		Output:     output,
 		StackDepth: skipFrames,
 	}
 
 	return &e
 }
 
-
-type  ErrorReporter struct {
+// ErrorReporter is a middleware that will catch panics and other errors and convert them to http output messages.
+// It also logs panics to the error logger.
+type ErrorReporter struct {
 }
 
 // Use wraps the given handler in a default HTTP error handler that
@@ -162,13 +172,13 @@ func (e ErrorReporter) Use(h http.Handler) http.Handler {
 				switch v := r.(type) {
 				case Error: // A kind of http panic that just returns a response code and headers
 					header := w.Header()
-					for k,v2 := range v.Headers {
-						header.Set(k,v2)
+					for k, v2 := range v.Headers {
+						header.Set(k, v2)
 					}
 					w.WriteHeader(v.ErrCode)
 					// Write out the message if it is present as the visible response to the error
 					if v.Message != "" {
-						_,_ = w.Write([]byte(v.Message))
+						_, _ = w.Write([]byte(v.Message))
 					}
 					return // a normal http error response, so keep going
 				case int:
@@ -188,11 +198,11 @@ func (e ErrorReporter) Use(h http.Handler) http.Handler {
 				}
 				w.WriteHeader(http.StatusInternalServerError)
 				buf := ResetOutputBuffer(req.Context())
-				if buf == nil {
-					errMsg += "\nPartial response written:\n" + string(buf)
+				if buf != nil {
+					errMsg += "\nPartial response written:" + string(buf)
 				}
-				log.Error(errMsg + log.StackTrace(stackDepth, MaxErrorStackDepth)) // use the application logger to output the error so we know about it
-				_,_ = io.WriteString(w, newResponse) // Write the alternate response to client
+				log.Error(errMsg + "\n" + log.StackTrace(stackDepth, MaxErrorStackDepth)) // use the application logger to output the error so that we know about it
+				_, _ = io.WriteString(w, newResponse)                                     // Write the alternate response to client
 				return
 			}
 		}()

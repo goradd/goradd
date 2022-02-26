@@ -3,9 +3,10 @@ package log
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/config"
 	"log"
 	"os"
+
+	"github.com/goradd/goradd/pkg/config"
 )
 
 const FrameworkDebugLog = 1 // Should only exist when debugging style logs are required for debugging the goradd framework itself.

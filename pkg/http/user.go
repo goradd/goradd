@@ -8,4 +8,3 @@ type User interface {
 	// Use wraps the given handler.
 	Use(http.Handler) http.Handler
 }
-

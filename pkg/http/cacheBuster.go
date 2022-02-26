@@ -1,20 +1,21 @@
 package http
 
 import (
-	"github.com/goradd/goradd/pkg/config"
-	strings2 "github.com/goradd/goradd/pkg/strings"
 	"hash/crc64"
 	"io/fs"
 	"path"
 	"strconv"
+
+	"github.com/goradd/goradd/pkg/config"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 )
 
 var crcTable = crc64.MakeTable(crc64.ECMA)
 
-// cacheBuster maps paths to checksums that are used to tell the browser when its time to reload a resource
-var cacheBuster = make (map[string]string)
+// cacheBuster maps paths to checksums that are used to tell the browser when it is time to reload a resource.
+var cacheBuster = make(map[string]string)
 
-// RegisterAssetDirectory maps a file system to a url path in the application.
+// RegisterAssetDirectory maps a file system to a URL path in the application.
 //
 // The files in the path are registered with the cache buster, so that when you edit the file
 // a new URL will be generated forcing the browser to reload the asset. This is much better than
@@ -37,7 +38,7 @@ func RegisterAssetDirectory(prefix string, fsys fs.FS) {
 			return nil // keep going
 		}
 		var data []byte
-		if data,err = fs.ReadFile(fsys, p2); err != nil {
+		if data, err = fs.ReadFile(fsys, p2); err != nil {
 			return err
 		} else {
 			// CRC it
@@ -62,8 +63,8 @@ func GetAssetUrl(location string) string {
 
 // StripCacheBusterPath removes the hash of the asset file from the path to the asset.
 func StripCacheBusterPath(fPath string) string {
-	dir,f := path.Split(fPath)
-	dir2,f2 := path.Split(dir[:len(dir) - 1]) // ignore trailing slash
+	dir, f := path.Split(fPath)
+	dir2, f2 := path.Split(dir[:len(dir)-1]) // ignore trailing slash
 	if strings2.StartsWith(f2, config.CacheBusterPrefix) {
 		fPath = path.Join(dir2, f)
 	}
@@ -74,10 +75,10 @@ func StripCacheBusterPath(fPath string) string {
 // will contain a hash of the file that will change whenever the file changes, and cause the browser to reload the file.
 // Since we are in control of serving these files, we will later remove the hash before serving it.
 func CacheBustedPath(url string) string {
-	if p,ok := cacheBuster[url]; ok {
+	if p, ok := cacheBuster[url]; ok {
 		// inject the crc as a part of the path.
-		dir,file := path.Split(url)
-		url = path.Join(dir, config.CacheBusterPrefix + p, file)
+		dir, file := path.Split(url)
+		url = path.Join(dir, config.CacheBusterPrefix+p, file)
 	}
 	return url
 }

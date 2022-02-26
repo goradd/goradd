@@ -32,6 +32,7 @@ type handlerMap map[string]http.Handler
 
 // patternHandlers are the handlers that are processed immediately based on the static path.
 var patternHandlers = make(handlerMap)
+
 // appHandlers are the handlers processed at the end of the application handler stack,
 // so these handlers go through session management, authentication, etc. They are also
 // associated with a path.
@@ -40,6 +41,7 @@ var appHandlers = make(handlerMap)
 // PatternMuxer is the muxer that immediately routes handlers based on the path without
 // going through the application handlers. It is automatically loaded during app startup.
 var PatternMuxer Muxer
+
 // AppMuxer is the application muxer that lets you do traditional http handling
 // from behind the application facilities of session management, output buffering,
 // etc. It is automatically loaded during app startup.
@@ -116,7 +118,7 @@ func RegisterAppHandler(pattern string, handler http.Handler) {
 // Note that you CAN register a handler for the root directory.
 //
 // If the handler is presented a URL that it does not recognize, it should
-// return an http error to the ResponseWriter.
+// return an HTTP error to the ResponseWriter.
 //
 // You may call this from an init() function.
 func RegisterPrefixHandler(prefix string, handler http.Handler) {
@@ -135,51 +137,54 @@ func RegisterPrefixHandler(prefix string, handler http.Handler) {
 // Note that you CAN register a handler for the root directory.
 //
 // If the handler is presented a URL that it does not recognize, it should
-// return an http error to the ResponseWriter.
+// return an HTTP error to the ResponseWriter.
 //
 // You may call this from an init() function.
 func RegisterAppPrefixHandler(prefix string, handler http.Handler) {
 	registerPrefixHandler(prefix, handler, appHandlers, AppMuxer)
 }
 
+// A DrawFunc sends output to the Writer. goradd uses this signature in its template functions.
 type DrawFunc func(ctx context.Context, w io.Writer) (err error)
 
-// RegisterDrawFunc registers a an output function for the given pattern.
+// RegisterDrawFunc registers an output function for the given pattern.
 //
 // This could be used to register template output with a path, for example. See the renderResource
 // template macro and the configure.tpl.got file in the welcome application for an example.
+//
+// The file name extension will be used first to determine the Content-Type. If that fails, then
+// the content will be inspected to determine the Content-Type.
 //
 // Registered handlers are served by the AppMuxer.
 func RegisterDrawFunc(pattern string, f DrawFunc) {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+		name := path.Base(r.URL.Path)
+
+		// set the content type by extension first
+		ctype := mime.TypeByExtension(filepath.Ext(name))
+		if ctype != "" {
+			w.Header().Set("Content-Type", ctype)
+		}
+
+		// the write process below will fill in the content-type if not set
 		err := f(ctx, w)
 		if err != nil {
 			panic(err)
-		}
-
-		// Set the content type if not set
-		name := path.Base(r.URL.Path)
-		_, haveType := w.Header()["Content-Type"]
-		if !haveType {
-			ctype := mime.TypeByExtension(filepath.Ext(name))
-			if ctype != "" {
-				w.Header().Set("Content-Type", ctype)
-			}
 		}
 	}
 	h := http.HandlerFunc(fn)
 	RegisterAppHandler(pattern, h)
 }
 
-func registerHandler (pattern string, handler http.Handler, m handlerMap, mux Muxer) {
+func registerHandler(pattern string, handler http.Handler, m handlerMap, mux Muxer) {
 	if m == nil {
 		// The muxer has already been recorded, so register the pattern directly to the muxer
 		mux.Handle(pattern, handler)
 	} else {
 		// the muxer has not yet been used, so cache the pattern in anticipation of the muxer being recorded
 		if _, ok := m[pattern]; ok {
-			panic ("the handler for " + pattern + " is already registered")
+			panic("the handler for " + pattern + " is already registered")
 		}
 		m[pattern] = handler
 	}
@@ -193,18 +198,18 @@ func registerPrefixHandler(prefix string, handler http.Handler, m handlerMap, mu
 			prefix = "/" + prefix
 		}
 		// Make sure the registered prefix ends with a /
-		if prefix[len(prefix) - 1] != '/' {
+		if prefix[len(prefix)-1] != '/' {
 			prefix = prefix + "/"
 		}
 	}
 	// Here we register the handler with a closing / so that the same name without slash will not be confused,
 	// but we do not strip the first / from the file name passed on.
-	registerHandler(prefix, http.StripPrefix(prefix[0:len(prefix) - 1],handler), m, mux)
+	registerHandler(prefix, http.StripPrefix(prefix[0:len(prefix)-1], handler), m, mux)
 }
 
 func useMuxer(mux Muxer, next http.Handler, m *handlerMap) http.Handler {
-	for p,h := range *m {
-		mux.Handle(p,h)
+	for p, h := range *m {
+		mux.Handle(p, h)
 	}
 	*m = nil
 	return UseMuxer(mux, next)
@@ -220,11 +225,11 @@ func UseMuxer(mux Muxer, next http.Handler) http.Handler {
 		panic("mux may not be nil")
 	}
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		h,p := mux.Handler(r)
+		h, p := mux.Handler(r)
 		if p != "" {
-			h.ServeHTTP(w,r)
+			h.ServeHTTP(w, r)
 		} else {
-			next.ServeHTTP(w,r) // skip
+			next.ServeHTTP(w, r) // skip
 		}
 	}
 	return http.HandlerFunc(fn)

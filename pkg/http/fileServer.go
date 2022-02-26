@@ -2,9 +2,6 @@ package http
 
 import (
 	"compress/gzip"
-	"github.com/andybalholm/brotli"
-	"github.com/goradd/goradd/pkg/config"
-	strings2 "github.com/goradd/goradd/pkg/strings"
 	"io"
 	"io/fs"
 	"net/http"
@@ -12,8 +9,12 @@ import (
 	"path"
 	"strings"
 	"time"
-)
 
+	"github.com/andybalholm/brotli"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/log"
+	strings2 "github.com/goradd/goradd/pkg/strings"
+)
 
 // FileSystemServer serves a file system as an http.Handler.
 //
@@ -50,14 +51,14 @@ type FileSystemServer struct {
 
 // ServeHTTP will serve the file system.
 func (f FileSystemServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if !f.serveStaticFile(w,r) {
-		http.NotFound(w,r)
+	if !f.serveStaticFile(w, r) {
+		http.NotFound(w, r)
 	}
 }
 
 // serveStaticFile serves up files found in the file system of f.
 // If the file is not found or cannot be opened, it will return false.
-// File errors will panic.
+// File errors will be logged.
 func (f FileSystemServer) serveStaticFile(w http.ResponseWriter, r *http.Request) bool {
 	p := r.URL.Path
 
@@ -105,13 +106,15 @@ func (f FileSystemServer) serveStaticFile(w http.ResponseWriter, r *http.Request
 	// Check for compressed versions
 	if foundPath := p + ".br"; acceptsBr && f.pathExists(foundPath) {
 		if err := f.servePath(w, r, p, foundPath, "br"); err != nil {
-			panic(err)
+			log.Error(err)
+			return false
 		}
 		return true
 	}
 	if foundPath := p + ".gz"; acceptsGzip && f.pathExists(foundPath) {
 		if err := f.servePath(w, r, p, foundPath, "gzip"); err != nil {
-			panic (err)
+			log.Error(err)
+			return false
 		}
 		return true
 	}
@@ -119,20 +122,22 @@ func (f FileSystemServer) serveStaticFile(w http.ResponseWriter, r *http.Request
 	// Check for uncompressed version
 	if f.pathExists(p) {
 		if err := f.servePath(w, r, p, p, ""); err != nil {
-			panic (err)
+			panic(err)
 		}
 		return true
 	}
 
 	if foundPath := p + ".br"; f.pathExists(foundPath) {
 		if err := f.serveDecompressedBrotli(w, r, p, foundPath); err != nil {
-			panic (err)
+			log.Error(err)
+			return false
 		}
 		return true
 	}
-	if foundPath := p + ".gz"; acceptsGzip && f.pathExists(foundPath) {
+	if foundPath := p + ".gz"; f.pathExists(foundPath) {
 		if err := f.serveDecompressedGzip(w, r, p, foundPath); err != nil {
-			panic (err)
+			log.Error(err)
+			return false
 		}
 		return true
 	}
@@ -172,10 +177,10 @@ func (f FileSystemServer) serveDecompressedBrotli(
 	}
 
 	_, _ = tempFile.Seek(0, 0)
-	return f.serveFile(w,r,name,tempFile)
+	return f.serveFile(w, r, name, tempFile)
 }
 
-// serveDecompressedBrotli will decompress a found brotli file and serve it up
+// serveDecompressedGzip will decompress a found gzip file and serve it up
 // as its decompressed counterpart.
 func (f FileSystemServer) serveDecompressedGzip(
 	w http.ResponseWriter,
@@ -202,7 +207,7 @@ func (f FileSystemServer) serveDecompressedGzip(
 	}(file)
 
 	var gz *gzip.Reader
-	if gz,err = gzip.NewReader(file); err != nil {
+	if gz, err = gzip.NewReader(file); err != nil {
 		return err
 	}
 	if _, err = io.Copy(tempFile, gz); err != nil {
@@ -210,20 +215,20 @@ func (f FileSystemServer) serveDecompressedGzip(
 	}
 
 	_, _ = tempFile.Seek(0, 0)
-	return f.serveFile(w,r,name,tempFile)
+	return f.serveFile(w, r, name, tempFile)
 }
 
-func (f FileSystemServer) pathExists (path string) bool {
-	_,err := fs.Stat(f.Fsys, path)
+func (f FileSystemServer) pathExists(path string) bool {
+	_, err := fs.Stat(f.Fsys, path)
 	return err == nil
 }
 
 // servePath opens the pathInFS file and serves it.
-func (f FileSystemServer) servePath (w http.ResponseWriter,
-				r *http.Request,
-				name string,
-				pathInFS string,
-				encoding string) error {
+func (f FileSystemServer) servePath(w http.ResponseWriter,
+	r *http.Request,
+	name string,
+	pathInFS string,
+	encoding string) error {
 	file, err := f.Fsys.Open(pathInFS)
 	if err != nil {
 		return err
@@ -251,19 +256,18 @@ func (f FileSystemServer) serveFile(w http.ResponseWriter,
 	file fs.File) error {
 	var modTime time.Time
 	if f.SendModTime {
-		if stat,err := file.Stat(); err != nil {
+		if stat, err := file.Stat(); err != nil {
 			return err
 		} else {
 			modTime = stat.ModTime()
 		}
 	}
 
-	if (!config.Release) {
+	if !config.Release {
 		// During development, tell the browser not to cache our static files and assets so that if we change an asset,
 		// we don't have to deal with trying to get the browser to refresh
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=1")
 	}
-	http.ServeContent(w,r,name, modTime, file.(io.ReadSeeker))
+	http.ServeContent(w, r, name, modTime, file.(io.ReadSeeker))
 	return nil
 }
-

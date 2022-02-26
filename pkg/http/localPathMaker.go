@@ -1,12 +1,14 @@
 package http
 
 import (
+	"path"
+
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/strings"
-	"path"
 )
 
-type LocalPathMaker func(string)string
+// LocalPathMaker converts an HTTP path rooted to the application, to a path accessible by the server.
+type LocalPathMaker func(string) string
 
 var localPathMaker LocalPathMaker = defaultLocalPathMaker
 
@@ -18,7 +20,7 @@ func defaultLocalPathMaker(p string) string {
 	if p[len(p)-1] == '/' {
 		hasSlash = true
 	}
-	if p[0] == '/' && config.ProxyPath != "" && !strings.StartsWith(p, config.ProxyPath + "/"){
+	if p[0] == '/' && config.ProxyPath != "" && !strings.StartsWith(p, config.ProxyPath+"/") {
 		p = path.Join(config.ProxyPath, p) // will strip trailing slashes
 		if hasSlash {
 			p = p + "/"
@@ -36,6 +38,9 @@ func MakeLocalPath(p string) string {
 	return localPathMaker(p)
 }
 
+// SetLocalPathMaker sets the local path maker to the given one.
+//
+// The default local path maker will prepend config.ProxyPath to all local paths.
 func SetLocalPathMaker(f LocalPathMaker) {
 	localPathMaker = f
 }
