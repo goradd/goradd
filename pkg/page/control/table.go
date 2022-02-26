@@ -520,9 +520,9 @@ func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
 	switch p.ID {
 	case ColumnAction:
 		var subId string
-		var a action.CallbackActionI
+		var a action.FrameworkCallbackActionI
 		var ok bool
-		if a, ok = p.Action.(action.CallbackActionI); !ok {
+		if a, ok = p.Action.(action.FrameworkCallbackActionI); !ok {
 			panic("Column actions must be a callback action")
 		}
 		if subId = a.GetDestinationControlSubID(); subId == "" {

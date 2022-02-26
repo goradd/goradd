@@ -1189,7 +1189,7 @@ func (c *ControlBase) doAction(ctx context.Context) {
 		if callbackAction := e.getCallbackAction(); callbackAction != nil {
 			p := ActionParams{
 				ID:        callbackAction.ID(),
-				Action:    callbackAction,
+				Action:    callbackAction.(action.CallbackActionI),
 				ControlId: c.ID(),
 			}
 

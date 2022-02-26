@@ -13,7 +13,7 @@ import (
 func TestToJavaScript(t *testing.T) {
 	m1 := maps.NewSliceMap()
 	m1.Set("a", `Hi "`)
-	m1.Set("b", NoQuoteKey{JsCode{"There"}})
+	m1.Set("b", NoQuoteKey{JsCode("There")})
 	m1.Set("c", 4)
 
 	m2 := maps.NewStringSliceMap()
@@ -28,13 +28,13 @@ func TestToJavaScript(t *testing.T) {
 		arg  interface{}
 		want string
 	}{
-		{"JavaScripter", JsCode{"Test"}, "Test"},
+		{"JavaScripter", JsCode("Test"), "Test"},
 		{"Undefined", Undefined{}, "undefined"},
 		{"String", `Hal"s /super/ \fine`, `"Hal\"s /super/ \\fine"`},
 		{"String Slice", []string{`a / ' b`, `C & "D"`}, `["a / ' b","C \u0026 \"D\""]`},
-		{"Interface Slice", []interface{}{"Hi", JsCode{"There"}}, `["Hi",There]`},
-		{"Interface String Map", map[string]interface{}{"a": `Hi "`, "b": NoQuoteKey{JsCode{"There"}}, "c": 4}, `{"a":"Hi \"",b:There,"c":4}`},
-		{"Interface Int Map", map[int]interface{}{1: `Hi "`, 2: JsCode{"There"}, 3: 4}, `{1:"Hi \"",2:There,3:4}`},
+		{"Interface Slice", []interface{}{"Hi", JsCode("There")}, `["Hi",There]`},
+		{"Interface String Map", map[string]interface{}{"a": `Hi "`, "b": NoQuoteKey{JsCode("There")}, "c": 4}, `{"a":"Hi \"",b:There,"c":4}`},
+		{"Interface Int Map", map[int]interface{}{1: `Hi "`, 2: JsCode("There"), 3: 4}, `{1:"Hi \"",2:There,3:4}`},
 		{"MapI", m1, `{"a":"Hi \"",b:There,"c":4}`},
 		{"Empty map", map[string]interface{}{}, `{}`},
 		{"Empty int map", map[int]interface{}{}, `{}`},

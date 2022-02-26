@@ -63,7 +63,7 @@ func NewProxy(parent page.ControlI, id string) *Proxy {
 func (p *Proxy) Init(parent page.ControlI, id string) {
 	p.ControlBase.Init(parent, id)
 	p.SetShouldAutoRender(true)
-	p.SetActionValue(javascript.JsCode{`goradd.proxyVal(event)`})
+	p.SetActionValue(javascript.JsCode(`goradd.proxyVal(event)`))
 }
 
 func (p *Proxy) this() ProxyI {

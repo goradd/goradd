@@ -142,14 +142,11 @@ type NoQuoteKey struct {
 
 // JsCode represents straight JavaScript code that should not be escaped or quoted.
 // Normally, string values would be quoted. This outputs a string without quoting or escaping.
-type JsCode struct {
-	// Code is the JavaScript code to output.
-	Code string
-}
+type JsCode string
 
 // JavaScript implements the JavaScripter interface.
 func (c JsCode) JavaScript() string {
-	return c.Code
+	return string(c)
 }
 
 // Undefined explicitly outputs as "undefined" in javascript. Generally, nil pointers become "null" in javascript, so
@@ -217,6 +214,6 @@ func NumberString(i interface{}) string {
 func init() {
 	// Register objects so they can be serialized
 	gob.Register(NoQuoteKey{})
-	gob.Register(JsCode{})
+	gob.Register(JsCode(""))
 	gob.Register(Undefined{})
 }
