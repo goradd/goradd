@@ -12,7 +12,6 @@ import (
 	"goradd-project/web/app"
 	"log"
 	"net/http"
-
 	// Below is where you import packages that register forms
 	_ "goradd-project/web/form" // Your  forms.
 
@@ -22,7 +21,7 @@ import (
 	_ "goradd-project/gen" // Code-generated forms
 )
 
-func main() {
+func testMain(done chan bool) {
 	var err error
 
 	a := app.MakeApplication()
@@ -35,7 +34,7 @@ func main() {
 	// if this shuts down gracefully, it will return http.ErrServerClosed
 	err = app2.ListenAndServeWithTimeouts(":8000", mux)
 
-	if err != http.ErrServerClosed {
+	if !(err == http.ErrServerClosed || err == nil) {
 		log.Fatal(err)
 	}
 
@@ -43,4 +42,5 @@ func main() {
 
 	// output stats when closed
 	fmt.Print(app2.GetStats())
+	done <- true
 }

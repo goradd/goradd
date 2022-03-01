@@ -7,8 +7,6 @@ import (
 	"runtime"
 	"testing"
 	"time"
-
-	"github.com/goradd/gofile/pkg/sys"
 )
 
 // This file runs the tests found in the test directory. It is set up so that code coverage can be checked as well.
@@ -16,32 +14,39 @@ import (
 // process may generate errors. We test the process from end to end, but to do code coverage, we must directly access
 // the main file as part of the test.
 func TestGoradd(t *testing.T) {
-	go main()
+	done := make(chan bool)
+	go testMain(done)
 
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 3)
 
-	var cmd string
+	var appName string
 
 	currentOs := runtime.GOOS
 	switch currentOs {
 	case "windows":
-		cmd = "Chrome"
+		appName = "Chrome"
 	case "darwin":
-		cmd = `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"`
+		appName = `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`
 	case "linux":
-		cmd = "google-chrome-stable"
+		appName = "google-chrome-stable"
 	}
-	options := "--headless --remote-debugging-port=9222 http://localhost:8000/goradd/Test.g?all=1"
-	cmd += " " + options
 
-	if _, err := sys.ExecuteShellCommand(cmd); err != nil {
+	cmd := exec.Command(appName, "--headless", "--remote-debugging-port=9222", "http://localhost:8000/goradd/Test.g?all=1")
+	err := cmd.Start()
+
+	if err != nil {
 		if e, ok := err.(*exec.Error); ok {
 			_, _ = fmt.Fprintln(os.Stderr, "error running browser test :"+e.Error())
 			os.Exit(1)
 		} else if err2, ok2 := err.(*exec.ExitError); ok2 {
 			_, _ = fmt.Fprintln(os.Stderr, string(err2.Stderr))
 			os.Exit(1)
+		} else {
+			panic(err)
 		}
 	}
+
+	_ = <- done // wait until main is done
+	_ = cmd.Process.Kill() // stop the browser
 }
 
