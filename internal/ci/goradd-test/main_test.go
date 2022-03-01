@@ -22,14 +22,17 @@ func TestGoradd(t *testing.T) {
 
 	var cmd string
 
-	os := runtime.GOOS
-	switch os {
+	currentOs := runtime.GOOS
+	switch currentOs {
 	case "windows":
-		cmd = "Chrome --headless --remote-debugging-port=9222 http://localhost:8000/goradd/Test.g?all=1"
+		cmd = "Chrome"
 	case "darwin":
-		cmd = `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --remote-debugging-port=9222 http://localhost:8000/goradd/Test.g?all=1`
+		cmd = `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"`
 	case "linux":
-		cmd = "google-chrome-stable --headless --remote-debugging-port=9222 http://localhost:8000/goradd/Test.g?all=1"
+		cmd = "google-chrome-stable"
+	}
+	options := "--headless --remote-debugging-port=9222 http://localhost:8000/goradd/Test.g?all=1"
+	cmd += " " + options
 
 	if _, err := sys.ExecuteShellCommand(cmd); err != nil {
 		if e, ok := err.(*exec.Error); ok {
