@@ -112,7 +112,8 @@ type ControlI interface {
 
 	// Drawing support
 
-	DrawTag(context.Context) string
+	// DrawTag is the main drawing function for the control. It should panic on errors.
+	DrawTag(context.Context, io.Writer)
 	DrawInnerHtml(context.Context, io.Writer)
 	DrawTemplate(context.Context, io.Writer) error
 	PreRender(context.Context, io.Writer)
@@ -358,12 +359,16 @@ type ControlBase struct {
 // are subclassing one of the standard controls.
 // ControlBase implementations should call this immediately after a control is created.
 // The ControlBase subclasses should have their own Init function that
-// call this superclass function. This Init function sets up a parent-child relationship with the given parent
-// control, and sets up data structures to use the control in object-oriented ways with virtual functions.
+// calls this superclass function. This Init function sets up a parent-child relationship with the given parent
+// control.
+//
 // The id is the control id that will appear as the id in html. Leave blank for the system to create a unique id for you.
+// A nil parent is for top level controls, primarily forms.
 func (c *ControlBase) Init(parent ControlI, id string) {
 	c.attributes = html.NewAttributes()
-	if parent != nil {
+	if parent == nil {
+		c.id = id
+	} else {
 		c.page = parent.Page()
 		c.id = c.page.GenerateControlID(id)
 	}
@@ -378,8 +383,7 @@ func (c *ControlBase) this() ControlI {
 }
 
 // Restore is called after the control has been deserialized. It notifies the control tree so that it
-// can restore internal pointers.
-// TODO: Serialization is not yet implemented
+// can restore internal pointers if needed.
 func (c *ControlBase) Restore() {
 }
 
@@ -423,22 +427,17 @@ func (c *ControlBase) PreRender(ctx context.Context, w io.Writer) {
 func (c *ControlBase) Draw(ctx context.Context, w io.Writer)  {
 	c.this().PreRender(ctx, w)
 
-	var h string
+	if !config.Minify && GetContext(ctx).RequestMode() != Ajax {
+		if _, err := fmt.Fprintf(w, "<!-- ControlBase Type:%s, Id:%s -->\n", c.Type(), c.ID()); err != nil {panic(err)}
+	}
 
 	if c.isHidden {
 		// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
 		// To fix this, we create an empty, invisible control in the place where we would normally draw
-		h = "<span id=\"" + c.this().ID() + "\" style=\"display:none;\" data-grctl></span>\n"
+		if _, err := fmt.Fprint(w, `<span id="`,c.this().ID(),`" style="display:none;" data-grctl></span>`, "\n"); err != nil {panic(err)}
 	} else {
-		h = c.this().DrawTag(ctx)
+		c.this().DrawTag(ctx, w)
 	}
-
-	if !config.Minify && GetContext(ctx).RequestMode() != Ajax {
-		s := html.Comment(fmt.Sprintf("ControlBase Type:%s, Id:%s", c.Type(), c.ID())) + "\n"
-		if _,err := io.WriteString(w, s); err != nil {panic(err)}
-	}
-
-	if _,err := io.WriteString(w, h); err != nil {panic(err)}
 
 	response := c.ParentForm().Response()
 	c.this().PutCustomScript(ctx, response)
@@ -521,8 +520,7 @@ func (c *ControlBase) PostRender(ctx context.Context, w io.Writer) {
 // DrawTag is responsible for drawing the ControlBase's tag itself.
 // ControlBase implementations can override this to draw the tag in a different way, or draw more than one tag if
 // drawing a compound control.
-func (c *ControlBase) DrawTag(ctx context.Context) string {
-	// TODO: Implement this with a buffer to reduce string allocations
+func (c *ControlBase) DrawTag(ctx context.Context, w io.Writer)  {
 	var ctrl string
 
 	log.FrameworkDebug("Drawing tag: " + c.ID())
@@ -545,7 +543,7 @@ func (c *ControlBase) DrawTag(ctx context.Context) string {
 			ctrl = html.RenderTag(c.Tag, attributes, buf.String())
 		}
 	}
-	return ctrl
+	if _,err := io.WriteString(w, ctrl); err != nil {panic(err)}
 }
 
 // RenderAutoControls is an internal function to draw controls marked to autoRender. These are generally used for hidden controls
@@ -674,8 +672,7 @@ func (c *ControlBase) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-// SetDataAttribute will set a data-* attribute. You do not need to include the "data-" in the name, it will be added
-// automatically.
+// SetDataAttribute will set a data-* attribute. The name should be camelCase, without "data" in the name.
 func (c *ControlBase) SetDataAttribute(name string, val interface{}) {
 	var v string
 	var ok bool
@@ -709,7 +706,7 @@ func (c *ControlBase) ProcessAttributeString(s string) ControlI {
 }
 
 
-// AddAttributeValue will add a class or classes to the control. If adding multiple classes at once, separate them with
+// AddClass will add a class or classes to the control. If adding multiple classes at once, separate them with
 // a space.
 func (c *ControlBase) AddClass(class string) ControlI {
 	if changed := c.attributes.AddClassChanged(class); changed {
@@ -1411,8 +1408,10 @@ func (c *ControlBase) validateSiblingsAndChildren(ctx context.Context) bool {
 }
 
 // SaveState sets whether the control should save its value and other state information so that if the form is redrawn,
-// the value can be restored. Call this during control initialization to cause the control to remember what it
-// is set to, so that if the user returns to the form, it will keep its value.
+// the value can be restored.
+//
+// Call this during control initialization to cause the control to remember what it
+// is set to, so that if the user returns to the page, it will keep its value.
 // This function is also responsible for restoring the previously saved state of the control,
 // so call this only after you have set the default state of a control during creation or initialization.
 func (c *ControlBase) SaveState(ctx context.Context, saveIt bool) {
@@ -1517,7 +1516,7 @@ func (c *ControlBase) MarshalState(m maps.Setter) {
 }
 
 // UnmarshalState is a helper function for controls to get their state from the stateStore. To implement it, a control
-// should read the data out of the given map. If needed, implemet your own version checking scheme. The given map will
+// should read the data out of the given map. If needed, implement your own version checking scheme. The given map will
 // be guaranteed to have been written out by the same kind of control as the one reading it. Be sure to call the super-class
 // version too.
 func (c *ControlBase) UnmarshalState(m maps.Loader) {
@@ -1692,6 +1691,7 @@ func (c *ControlBase) UpdateData(data interface{}) {
 // It also adds all the parents of those nodes.
 // For example, WatchDbTables(ctx, node.Project().Manager()) will watch the project table and the person table.
 func (c *ControlBase) WatchDbTables(ctx context.Context, nodes... query.NodeI) {
+	// Remove the dependency on query here. Have this watch a channel instead of query nodes.
 	if c.watchedKeys == nil {
 		c.watchedKeys = make(map[string]string)
 	}

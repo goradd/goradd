@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	html2 "html"
+	"io"
 )
 
 type CheckboxI interface {
@@ -59,7 +60,8 @@ func (c *CheckboxBase) SetLabelDrawingMode(m html.LabelDrawingMode) {
 // Some CSS frameworks are very particular about how checkboxes get
 // associated with labels. The Text value of the control will become the text directly associated with the checkbox,
 // while the Label value is only shown when drawing a checkbox with a wrapper.
-func (c *CheckboxBase) DrawTag(ctx context.Context) (ctrl string) {
+func (c *CheckboxBase) DrawTag(ctx context.Context, w io.Writer) () {
+	var ctrl string
 	attributes := c.this().DrawingAttributes(ctx)
 	if c.checked {
 		attributes.Set("checked", "")
@@ -88,7 +90,7 @@ func (c *CheckboxBase) DrawTag(ctx context.Context) (ctrl string) {
 		ctrl = html.RenderVoidTag(c.Tag, attributes)
 		ctrl = html.RenderLabel(labelAttributes, text, ctrl, c.LabelMode)
 	}
-	return ctrl
+	if _,err := io.WriteString(w, ctrl); err != nil {panic(err)}
 }
 
 // LabelAttributes returns a pointer to the input label attributes.

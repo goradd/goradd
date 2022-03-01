@@ -71,7 +71,6 @@ func (f *FormBase) Init(_ context.Context, id string) {
 	if id == "" {
 		panic("Forms must have an id assigned")
 	}
-	f.ControlBase.id = id
 
 	f.ControlBase.Init(nil, id)
 	f.Tag = "form"
@@ -581,4 +580,23 @@ func (f *FormBase) Deserialize(d Decoder) (err error) {
 
 func init() {
 	gob.Register(&FormBase{})
+}
+
+type MockForm struct {
+	FormBase
+}
+
+func init() {
+	RegisterControl(&MockForm{})
+}
+
+// NewMockForm creates a form that should be used as a parent of a control when unit testing the control.
+func NewMockForm() *MockForm {
+	f := &MockForm{}
+	f.Self = f
+	f.FormBase.Init(nil, "MockFormID")
+	return f
+}
+
+func (f *MockForm) AddRelatedFiles() {
 }

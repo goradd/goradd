@@ -56,14 +56,14 @@ func (r *Repeater) SetItemHtmler(h RepeaterHtmler) RepeaterI {
 
 // DrawTag is called by the framework to draw the tag. The Repeater overrides this to call into the DataProvider
 // to load the table's data into memory just before drawing. The data will be unloaded after drawing.
-func (r *Repeater) DrawTag(ctx context.Context) string {
+func (r *Repeater) DrawTag(ctx context.Context, w io.Writer) {
 	log.FrameworkDebug("Drawing repeater tag")
 	if r.HasDataProvider() {
 		log.FrameworkDebug("Getting repeater data")
 		r.this().LoadData(ctx, r.this())
 		defer r.ResetData()
 	}
-	return r.ControlBase.DrawTag(ctx)
+	r.ControlBase.DrawTag(ctx, w)
 }
 
 // DrawingAttributes is an override to add attributes to the table, including not showing the table at all if there

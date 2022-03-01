@@ -33,7 +33,7 @@ func TestEmptyFormEncoding(t *testing.T) {
 }*/
 
 type BasicForm struct {
-	control.MockForm
+	page.MockForm
 
 	S string
 }

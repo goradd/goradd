@@ -42,13 +42,13 @@ const (
 // a number after UserPageCacheVersion so there is no conflict with the goradd default.
 var PageCacheVersion int32 = 1
 
-// This value is used to generate unique ids in the control registry. However, if the control registry
+// ControlRegistrySalt is used to generate unique ids in the control registry. However, if the control registry
 // detects a collision, you will need to change this value and restart your app. If you have a running
 // page cache, you should change the PageCacheVersion above as well to invalidate it.
 var ControlRegistrySalt = "goradd"
 
-// If you want to bump the page cache version yourself, you can use this as a starting point so there is no
-// conflict with goradd itself
+// UserPageCacheVersion is a version number you can use as a starting point if you want to keep
+// track of the page cache version yourself.
 const UserPageCacheVersion = 10000
 
 
@@ -90,7 +90,7 @@ type Page struct {
 func (p *Page) Init() {
 }
 
-// Restore is called immediately after the page has been unserialized, to fix up decoded controls.
+// Restore is called immediately after the page has been deserialized, to fix up decoded controls.
 func (p *Page) Restore() {
 	for _,c := range p.controlRegistry {
 		c.Restore()

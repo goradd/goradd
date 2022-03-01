@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	"github.com/goradd/goradd/pkg/page"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestListSelectString(t *testing.T) {
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	d := NewSelectList(p, "")
 
@@ -45,7 +46,7 @@ func TestListSelectString(t *testing.T) {
 }
 
 func TestListSelectInt(t *testing.T) {
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	d := NewSelectList(p, "")
 
@@ -72,7 +73,7 @@ func TestListSelectInt(t *testing.T) {
 
 // This exercises more of the ItemList mixin.
 func TestListSelectData(t *testing.T) {
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	d := NewSelectList(p, "")
 
@@ -115,7 +116,7 @@ func TestListItem(t *testing.T) {
 }
 
 func TestSelectList_Serialize(t *testing.T) {
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	p.AddControls(context.Background(),
 		SelectListCreator{

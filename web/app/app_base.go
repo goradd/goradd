@@ -16,9 +16,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
-	"github.com/goradd/goradd/pkg/sys"
 	"github.com/goradd/goradd/pkg/watcher"
-	"log"
 	"net/http/pprof"
 	"time"
 
@@ -56,6 +54,7 @@ type Application struct {
 	httpErrorReporter http2.ErrorReporter
 }
 
+// Init initializes the application base.
 func (a *Application) Init(self ApplicationI) {
 	a.Base.Init(self)
 
@@ -78,7 +77,7 @@ func (a *Application) this() ApplicationI {
 func (a *Application) SetupErrorHandling() {
 
 	// Create the top level http error reporter that will catch panics throughout the application
-	// The default will intercept anything unexpected and set it to StdErr. Override this to do something elese.
+	// The default will intercept anything unexpected and set it to StdErr. Override this to do something else.
 	a.httpErrorReporter = http2.ErrorReporter{}
 
 }
@@ -115,7 +114,6 @@ func (a *Application) InitializeLoggers() {
 // This setup is useful for development, testing, debugging, and for moderately used websites.
 // However, this default does not scale, so if you are launching multiple copies of the app in production,
 // you should override this with a scalable storage mechanism.
-
 func (a *Application) SetupSessionManager() {
 	s := scs.New()
 	store := memstore.NewWithCleanupInterval(24 * time.Hour) // replace this with a different store if desired
@@ -129,7 +127,7 @@ func (a *Application) SetupSessionManager() {
 
 // SetupMessenger injects the global messenger that permits pub/sub communication between the server and client.
 //
-// You can use this mechanism to setup your own messaging system for application use too.
+// You can use this mechanism to set up your own messaging system for application use too.
 func (a *Application) SetupMessenger() {
 	// The default sets up a websocket based messenger appropriate for development and single-server applications
 	messenger := new (ws.WsMessenger)
@@ -162,10 +160,12 @@ func (a *Application) SetupDatabaseWatcher() {
 	broadcast.Broadcaster = &broadcast.DefaultBroadcaster{}
 }
 
+// PutContext puts application data into the context.
 func (a *Application) PutContext(r *http.Request) *http.Request {
 	return page.PutContext(r, os.Args[1:])
 }
 
+// ServeHTTP serves a Goradd form.
 func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	pm := page.GetPageManager()
 	if pm.IsPage(r.URL.Path) {
@@ -184,13 +184,15 @@ func (a *Application) MakeAppServer() http.Handler {
 
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler() // Should go at the end of the chain to catch whatever is missed above
-	h = a.this().ServeAppMux(h) // Serves static files out of the root directory, and other items
+	h = a.this().ServeAppMux(h) // Serves other dynamic files, and possibly the api
 	h = a.ServePageHandler(h)  // Serves the Goradd dynamic pages
 	h = a.PutAppContextHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
 	h = a.BufferedOutputHandler(h)  // Must be in front of the session handler
-	h = a.this().ServePatternMux(h) // Must be after the error handler so panics are intercepted by the error reporter
+	h = a.StatsHandler(h)
+	h = a.this().ServePatternMux(h) // Serves most static files and websocket requests.
+									// Must be after the error handler so panics are intercepted by the error reporter
 									// and must be in front of the buffered output handler because of websocket server
 	h = a.httpErrorReporter.Use(h)  // Default http error handler to intercept panics.
 	h = a.this().HSTSHandler(h)
@@ -253,7 +255,7 @@ func (a *Application) ServePageHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// PutAppContextHandler is an http handler that adds the application context to the current context.
+// PutAppContextHandler is an HTTP handler that adds the application context to the current context.
 func (a *Application) PutAppContextHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		r = a.this().PutContext(r)
@@ -262,7 +264,7 @@ func (a *Application) PutAppContextHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// PutDbContextHandler is an http handler that adds the database contexts to the current context.
+// PutDbContextHandler is an HTTP handler that adds the database contexts to the current context.
 func (a *Application) PutDbContextHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -287,7 +289,7 @@ func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
 
 // RegisterStaticPath registers the given url path such that it points to the given directory in the host file system.
 //
-// For example, passing "/test", "/my/test/dir" will serve documents out of /my/test/dir whenever a url
+// For example, passing "/test", "/my/test/dir" will serve documents out of /my/test/dir whenever a URL
 // has /test in front of it. Only call this during application startup.
 //
 // hide is a list of file endings for files that should not be served. If a file is searched for, but is not
@@ -343,6 +345,7 @@ func (a *Application) ServeWebsocketMessengerHandler(next http.Handler) http.Han
 	})
 }
 
+// WebsocketMessengerHandler is a handler for Websockets.
 func WebsocketMessengerHandler(w http.ResponseWriter, r *http.Request) {
 	pagestate := r.FormValue("id")
 
@@ -365,52 +368,3 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-// ListenAndServeTLSWithTimeouts starts a secure web server with timeouts. The default http server does
-// not have timeouts by default, which leaves the server open to certain attacks that would start
-// a connection, but then very slowly read or write. Timeout values are taken from global variables
-// defined in config, which you can set at init time.
-func ListenAndServeTLSWithTimeouts(addr, certFile, keyFile string, handler http.Handler) error {
-	// Here we confirm that the CertFile and KeyFile exist. If they don't, ListenAndServeTLS just exit with an open error
-	// and you will not know why.
-	if !sys.PathExists(certFile) {
-		log.Fatalf("TLSCertFile does not exist: %s", config.TLSCertFile)
-	}
-
-	if !sys.PathExists(keyFile) {
-		log.Fatalf("TLSKeyFile does not exist: %s", config.TLSKeyFile)
-	}
-
-	// TODO: https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/ recommends keeping track
-	// of open connections using the ConnState hook for debugging purposes.
-
-	srv := &http.Server{
-		Addr: addr,
-		ReadTimeout:  config.ReadTimeout,
-		ReadHeaderTimeout: config.ReadHeaderTimeout,
-		WriteTimeout: config.WriteTimeout,
-		IdleTimeout:  config.IdleTimeout,
-		Handler:      handler,
-	}
-	return srv.ListenAndServeTLS(certFile, keyFile)
-}
-
-// ListenAndServeWithTimeouts starts a web server with timeouts. The default http server does
-// not have timeouts, which leaves the server open to certain attacks that would start
-// a connection, but then very slowly read or write. Timeout values are taken from global variables
-// defined in config, which you can set at init time. This non-secure version is appropriate
-// if you are serving behind another server, like apache or nginx.
-func ListenAndServeWithTimeouts(addr string, handler http.Handler) error {
-
-	// TODO: https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/ recommends keeping track
-	// of open connections using the ConnState hook for debugging purposes.
-
-	srv := &http.Server{
-		Addr: addr,
-		ReadTimeout:  config.ReadTimeout,
-		ReadHeaderTimeout: config.ReadHeaderTimeout,
-		WriteTimeout: config.WriteTimeout,
-		IdleTimeout:  config.IdleTimeout,
-		Handler:      handler,
-	}
-	return srv.ListenAndServe()
-}

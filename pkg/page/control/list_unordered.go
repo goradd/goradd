@@ -70,12 +70,12 @@ func (l *UnorderedList) SetBulletStyle(s string) UnorderedListI {
 	return l.this()
 }
 
-func (l *UnorderedList) DrawTag(ctx context.Context) string {
+func (l *UnorderedList) DrawTag(ctx context.Context, w io.Writer) {
 	if l.HasDataProvider() {
 		l.this().LoadData(ctx, l.this())
 		defer l.ResetData()
 	}
-	return l.ControlBase.DrawTag(ctx)
+	l.ControlBase.DrawTag(ctx, w)
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the

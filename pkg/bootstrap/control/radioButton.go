@@ -2,10 +2,12 @@ package control
 
 import (
 	"context"
+	"fmt"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"io"
 )
 
 type RadioButtonI interface {
@@ -51,15 +53,16 @@ func (c *RadioButton) GetDrawingLabelAttributes() html.Attributes {
 	return a
 }
 
-func (c *RadioButton) DrawTag(ctx context.Context) (ctrl string) {
-	h := c.RadioButton.DrawTag(ctx)
+func (c *RadioButton) DrawTag(ctx context.Context, w io.Writer) {
 	checkWrapperAttributes := html.NewAttributes().
 		AddClass("form-check").
 		SetDataAttribute("grel", c.ID()) // make sure the entire control gets removed
 	if c.inline {
 		checkWrapperAttributes.AddClass("form-check-inline")
 	}
-	return html.RenderTag("div", checkWrapperAttributes, h)
+	_,_ = fmt.Fprint(w, "<div ", checkWrapperAttributes.String(), ">\n")
+	c.RadioButton.DrawTag(ctx, w)
+	_,_ = io.WriteString(w, "\n</div>")
 }
 
 func (c *RadioButton) Serialize(e page.Encoder) (err error) {

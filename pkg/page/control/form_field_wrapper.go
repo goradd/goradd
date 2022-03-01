@@ -7,6 +7,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/pool"
 	html2 "html"
+	"io"
 	"reflect"
 	"strings"
 )
@@ -107,7 +108,7 @@ func (c *FormFieldWrapper) DrawingAttributes(ctx context.Context) html.Attribute
 	return a
 }
 
-func (c *FormFieldWrapper) DrawTag(ctx context.Context) string {
+func (c *FormFieldWrapper) DrawTag(ctx context.Context, w io.Writer) {
 	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
 	attributes := c.this().DrawingAttributes(ctx)
@@ -163,7 +164,7 @@ func (c *FormFieldWrapper) DrawTag(ctx context.Context) string {
 	if c.instructions != "" {
 		page.WriteString(buf, html.RenderTag(c.subtag, c.instructionAttributes, html2.EscapeString(c.instructions)))
 	}
-	return html.RenderTag(c.Tag, attributes, buf.String())
+	if _,err := io.WriteString(w, html.RenderTag(c.Tag, attributes, buf.String())); err != nil {panic(err)}
 }
 
 func (c *FormFieldWrapper) LabelAttributes() html.Attributes {

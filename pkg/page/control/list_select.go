@@ -179,12 +179,12 @@ func (l *SelectList) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (l *SelectList) DrawTag(ctx context.Context) string {
+func (l *SelectList) DrawTag(ctx context.Context, w io.Writer) {
 	if l.HasDataProvider() {
 		l.this().LoadData(ctx, l.this())
 		defer l.ResetData()
 	}
-	return l.ControlBase.DrawTag(ctx)
+	l.ControlBase.DrawTag(ctx, w)
 }
 
 

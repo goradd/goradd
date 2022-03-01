@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/gob"
 	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestTextbox(t *testing.T) {
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	d := NewTextbox(p, "")
 	d.SetText("abc")
@@ -27,7 +28,7 @@ func TestTextbox(t *testing.T) {
 }
 
 func TestTextboxValidation(t *testing.T) {
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	d := NewTextbox(p, "")
 	d.SetMinLength(2)
@@ -64,7 +65,7 @@ func TestExportCreatorTextbox(t *testing.T) {
 }
 
 func TestTextbox_Serialize(t *testing.T) {
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	c := NewTextbox(p, "")
 	c.SetMinLength(2)

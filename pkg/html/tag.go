@@ -2,7 +2,7 @@ package html
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/config" // TODO: remove reliance on outside package
 	html2 "html"
 	"strings"
 )
@@ -64,28 +64,27 @@ func RenderVoidTag(tag string, attr Attributes) (s string) {
 // In the few situations where you would want to
 // get rid of this space, call RenderTagNoSpace()
 func RenderTag(tag string, attr Attributes, innerHtml string) string {
-	var attrString string
+	b := strings.Builder{}
 
+	_,_ = fmt.Fprint(&b, "<", tag)
 	if attr != nil {
-		attrString = " " + attr.String()
+		_,_ = fmt.Fprint(&b, " ", attr.String())
 	}
-	ret := "<" + tag + attrString + ">"
+	_,_ = fmt.Fprint(&b, ">")
 
-	if innerHtml == "" {
-		ret += "</" + tag + ">"
-	} else {
-		if innerHtml[len(innerHtml)-1:] != "\n" {
-			innerHtml += "\n"
-		}
+	if innerHtml != "" {
 		if !config.Minify {
 			innerHtml = Indent(innerHtml)
 		}
-
-		ret += "\n" + // required here for consistency, will force a space between itself and its neighbors in certain situations
-			innerHtml +
-			"</" + tag + ">\n"
+		b.WriteString("\n") // required for consistency, will force a space between itself and its neighbors in certain situations
+		b.WriteString(innerHtml)
+		// if the innerHtml does not already have a newline, add a newline
+		if innerHtml[len(innerHtml)-1:] != "\n" {
+			b.WriteString("\n")
+		}
 	}
-	return ret
+	_,_ = fmt.Fprint(&b, "</", tag, ">\n")
+	return b.String()
 }
 
 
@@ -116,6 +115,31 @@ func RenderTagNoSpace(tag string, attr Attributes, innerHtml string) string {
 	}
 	return ret
 }
+/* TODO:
+func renderTag(w io.Writer, tag string, attr Attributes, innerHtml io.WriterTo, minify bool, noSpace bool) {
+	_,_ = fmt.Fprint(w, "<", tag)
+	if attr != nil {
+		_,_ = fmt.Fprint(w, " ", attr.String())
+	}
+	_,_ = fmt.Fprint(w, ">")
+
+	if innerHtml != nil {
+		if !minify {
+			innerHtml = Indent(innerHtml)
+		}
+		b.WriteString("\n") // required for consistency, will force a space between itself and its neighbors in certain situations
+		b.WriteString(innerHtml)
+		// if the innerHtml does not already have a newline, add a newline
+		if innerHtml[len(innerHtml)-1:] != "\n" {
+			b.WriteString("\n")
+		}
+	}
+	_,_ = fmt.Fprint(&b, "</", tag, ">\n")
+	return b.String()
+
+
+}
+*/
 
 // RenderLabel is a utility function to render a label, together with its text.
 // Various CSS frameworks require labels to be rendered a certain way.

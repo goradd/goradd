@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	"github.com/goradd/goradd/pkg/page"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +12,7 @@ import (
 
 
 func TestCheckbox_Serialize(t *testing.T) {
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	p.AddControls(context.Background(),
 		CheckboxCreator{

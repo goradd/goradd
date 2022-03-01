@@ -8,7 +8,8 @@ import (
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/pool"
 html2 "html"
-"strings"
+	"io"
+	"strings"
 )
 
 type FormGroupI interface {
@@ -90,7 +91,7 @@ func (c *FormGroup) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (c *FormGroup) DrawTag(ctx context.Context) string {
+func (c *FormGroup) DrawTag(ctx context.Context, w io.Writer) {
 	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
 	attributes := c.this().DrawingAttributes(ctx)
@@ -157,7 +158,8 @@ func (c *FormGroup) DrawTag(ctx context.Context) string {
 		c.ErrorAttributes().SetClass(c.getValidationClass(subControl))
 		buf.WriteString(html.RenderTag(c.SubTag(), c.ErrorAttributes(), errorMessage))
 	}
-	return html.RenderTag(c.Tag, attributes, buf.String())
+
+	if _, err := io.WriteString(w, html.RenderTag(c.Tag, attributes, buf.String())); err != nil {panic(err)}
 }
 
 func (c *FormGroup) getValidationClass(subcontrol page.ControlI) (class string) {
