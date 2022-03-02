@@ -2,10 +2,12 @@ package control
 
 import (
 	"context"
+	"fmt"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"io"
 )
 
 type Checkbox struct {
@@ -42,15 +44,16 @@ func (c *Checkbox) GetDrawingLabelAttributes() html.Attributes {
 	return a
 }
 
-func (c *Checkbox) DrawTag(ctx context.Context) (ctrl string) {
-	h := c.Checkbox.DrawTag(ctx)
+func (c *Checkbox) DrawTag(ctx context.Context, w io.Writer) {
 	checkWrapperAttributes := html.NewAttributes().
 		AddClass("form-check").
 		SetDataAttribute("grel", c.ID()) // make sure the entire control gets removed
 	if c.inline {
 		checkWrapperAttributes.AddClass("form-check-inline")
 	}
-	return html.RenderTag("div", checkWrapperAttributes, h)
+	if _, err := fmt.Fprint(w, "<div ", checkWrapperAttributes.String(), ">\n"); err != nil {panic(err)}
+	c.Checkbox.DrawTag(ctx, w)
+	if _, err := io.WriteString(w, "\n</div>"); err != nil {panic(err)}
 }
 
 func (c *Checkbox) Serialize(e page.Encoder) (err error) {

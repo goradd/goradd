@@ -16,9 +16,9 @@ import (
 func ButtonColumnClick() *page.Event{
 	e := page.NewEvent("click").
 		Selector("[data-gr-btn-col]").
-		ActionValue(javascript.JsCode{
+		ActionValue(javascript.JsCode(
 		`g$(event.goradd.match).closest("tr").data("value")`,
-	})
+	))
 	return e
 }
 

@@ -44,7 +44,7 @@ func (l *NavbarList) Init(parent page.ControlI, id string) {
 	pxy := control.NewProxy(l, l.proxyID())
 
 	pxy.On(event.Click(),
-		action.Trigger(l.ID(), NavbarSelect, javascript.JsCode{"g$(event.target).data('grAv')"}))
+		action.Trigger(l.ID(), NavbarSelect, javascript.JsCode("g$(event.target).data('grAv')")))
 	config.LoadBootstrap(l.ParentForm())
 }
 
@@ -60,12 +60,12 @@ func (l *NavbarList) this() NavbarListI {
 	return l.Self.(NavbarListI)
 }
 
-func (l *NavbarList) DrawTag(ctx context.Context) string {
+func (l *NavbarList) DrawTag(ctx context.Context, w io.Writer) {
 	if l.DataManager.HasDataProvider() {
 		l.this().LoadData(ctx, l.this())
 		defer l.ResetData() // prevent the data from being serialized and taking up space unnecessarily
 	}
-	return l.ControlBase.DrawTag(ctx)
+	l.ControlBase.DrawTag(ctx, w)
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the

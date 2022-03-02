@@ -16,8 +16,8 @@ import (
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
 	time2 "github.com/goradd/goradd/pkg/time"
+	"github.com/goradd/goradd/web/app"
 	log2 "log"
-	"os"
 	"reflect"
 	"runtime"
 	"strings"
@@ -92,7 +92,7 @@ func (form *TestForm) Action(ctx context.Context, a page.ActionParams) {
 	case TestButtonAction:
 		form.runSelectedTest()
 	case TestAllAction:
-		form.testAllAndExit()
+		form.testAllAndExit(ctx)
 	}
 }
 
@@ -379,7 +379,7 @@ func GetTestForm() page.FormI {
 	return nil
 }
 
-func (form *TestForm) testAllAndExit() {
+func (form *TestForm) testAllAndExit(ctx context.Context) {
 	var done = make(chan int)
 
 	form.currentLog = ""
@@ -424,7 +424,8 @@ func (form *TestForm) testAllAndExit() {
 		if form.failed {
 			log2.Fatal("Test failed.")
 		}
-		os.Exit(0)
+		// gracefully shut down the server
+		_ = app.Shutdown(ctx)
 	}()
 }
 

@@ -13,7 +13,7 @@ func TestDataPager_Serialize(t *testing.T) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	p.AddControls(context.Background(),
 		PagedTableCreator{

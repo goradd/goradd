@@ -200,7 +200,7 @@ func (t *Table) FooterRowCount() int {
 
 // DrawTag is called by the framework to draw the table. The Table overrides this to call into the DataProvider
 // to load the table's data into memory just before drawing. The data will be unloaded after drawing.
-func (t *Table) DrawTag(ctx context.Context) string {
+func (t *Table) DrawTag(ctx context.Context, w io.Writer) {
 	log.FrameworkDebug("Drawing table tag")
 	if t.HasDataProvider() {
 		log.FrameworkDebug("Getting table data")
@@ -208,12 +208,12 @@ func (t *Table) DrawTag(ctx context.Context) string {
 		defer t.ResetData()
 	}
 	if t.hideIfEmpty && !t.HasData() {
-		return ""
+		return
 	}
 	for _, c := range t.columns {
 		c.PreRender()
 	}
-	return t.ControlBase.DrawTag(ctx)
+	t.ControlBase.DrawTag(ctx, w)
 }
 
 // DrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
@@ -520,9 +520,9 @@ func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
 	switch p.ID {
 	case ColumnAction:
 		var subId string
-		var a action.CallbackActionI
+		var a action.FrameworkCallbackActionI
 		var ok bool
-		if a, ok = p.Action.(action.CallbackActionI); !ok {
+		if a, ok = p.Action.(action.FrameworkCallbackActionI); !ok {
 			panic("Column actions must be a callback action")
 		}
 		if subId = a.GetDestinationControlSubID(); subId == "" {

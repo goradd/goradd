@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/gob"
 	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -21,7 +22,7 @@ func TestCheckboxColumn_Serialize(t *testing.T) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 
-	f := control.NewMockForm()
+	f := page.NewMockForm()
 
 	f.AddControls(context.Background(),
 		control.TableCreator{

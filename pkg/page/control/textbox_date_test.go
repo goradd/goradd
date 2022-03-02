@@ -1,13 +1,14 @@
 package control
 
 import (
+	"github.com/goradd/goradd/pkg/page"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func TestDateTextbox(t *testing.T) {
-	p := NewMockForm()
+	p := page.NewMockForm()
 
 	d := NewDateTextbox(p, "")
 	d.SetText("2/19/2019 3:04 pm")

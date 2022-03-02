@@ -200,23 +200,27 @@ func (a Attributes) sortedKeys() []string {
 // For consistency, it will use attrSpecialSort to order the keys. Remaining keys will
 // be output in random order.
 func (a Attributes) String() string {
-	var str string
-
 	if a == nil {
 		return ""
 	}
 
-	for _,k := range a.sortedKeys() {
+	b := strings.Builder{}
+	sk :=  a.sortedKeys()
+	lastKey := len(sk) - 1
+	for i,k := range sk {
 		v := a[k]
 		if v == "" {
-			str += k + " "
+			b.WriteString(k)
 		} else {
 			v = gohtml.EscapeString(v)
-			str += fmt.Sprintf("%s=%q ", k, v)
+			_,_ = fmt.Fprintf(&b, "%s=%q", k, v)
+		}
+		if i < lastKey {
+			b.WriteString (" ")
 		}
 	}
 
-	return strings.TrimSpace(str)
+	return b.String()
 }
 
 // Range will call f for each item in the attributes.

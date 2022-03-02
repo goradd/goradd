@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	html2 "html"
+	"io"
 )
 
 type FieldsetI interface {
@@ -44,7 +45,7 @@ func (c *Fieldset) DrawingAttributes(ctx context.Context) html.Attributes {
 }
 
 // DrawTag is called by the framework.
-func (c *Fieldset) DrawTag(ctx context.Context) string {
+func (c *Fieldset) DrawTag(ctx context.Context, w io.Writer) {
 	var ctrl string
 
 	attributes := c.this().DrawingAttributes(ctx)
@@ -57,7 +58,7 @@ func (c *Fieldset) DrawTag(ctx context.Context) string {
 	}
 	c.this().DrawInnerHtml(ctx, buf)
 	ctrl = html.RenderTag(c.Tag, attributes, ctrl+buf.String())
-	return ctrl
+	if _,err := io.WriteString(w, ctrl); err != nil {panic(err)}
 }
 
 // FieldsetCreator declares a Fieldset control. Pass it to AddControls or as

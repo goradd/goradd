@@ -32,7 +32,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
                 ID:            p.ID() + "-pager",
                 PagedControl:  p.ID() + "-list",
             },
-            OnCellClick: action.Ajax(p.ID(), {{= lcPanelName }}RowClick).ActionValue(javascript.JsCode{event.CellClickRowValue}),
+            OnCellClick: action.Ajax(p.ID(), {{= lcPanelName }}RowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
             ControlOptions: page.ControlOptions{
                 Class:          "gr-clickable-rows",
                 WatchedDbTables: page.Nodes(node.{{= t.GoName }}()),

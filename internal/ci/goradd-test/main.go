@@ -4,8 +4,10 @@
 package main
 
 import (
+	"fmt"
 	log2 "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
+	app2 "github.com/goradd/goradd/web/app"
 	_ "goradd-project/config" // Initialize required variables
 	"goradd-project/web/app"
 	"log"
@@ -19,7 +21,7 @@ import (
 	_ "goradd-project/gen" // Code-generated forms
 )
 
-func main() {
+func testMain(done chan bool) {
 	var err error
 
 	a := app.MakeApplication()
@@ -29,11 +31,16 @@ func main() {
 	// Make sure we always test with serialization turned on so that serialization is tested during the continuous integration tests
 	page.SetPagestateCache(page.NewSerializedPageCache(100, 60*60*24))
 
-	err = http.ListenAndServe(":8000", mux)
-	if err != nil {
+	// if this shuts down gracefully, it will return http.ErrServerClosed
+	err = app2.ListenAndServeWithTimeouts(":8000", mux)
+
+	if !(err == http.ErrServerClosed || err == nil) {
 		log.Fatal(err)
 	}
 
 	// Now launch a browser with this address:  http://localhost:8000/goradd/Test.g?all=1
 
+	// output stats when closed
+	fmt.Print(app2.GetStats())
+	done <- true
 }

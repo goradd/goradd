@@ -73,18 +73,12 @@ jobs:
       run: go test github.com/goradd/goradd/pkg/...
 
     - name: Unit Test Database
-      working-directory: ${{ env.home }}/goradd-test
-      run: go test ./dbtest
+      working-directory: ${{ env.home }}/goradd-test/dbtest
+      run: go test
 
-    - name: Browser Based Tests on Linux
+    - name: Browser Based Test
       working-directory: ${{ env.home }}/goradd-test
-      if: ${{ runner.os == 'Linux' }}
-      run: bash test.sh
-      
-    - name: Browser Based Tests on Windows
-      working-directory: ${{ env.home }}/goradd-test
-      if: ${{ runner.os == 'Windows' }}
-      run: ./test.ps1
+      run: go test
 
 
 

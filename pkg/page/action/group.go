@@ -9,16 +9,16 @@ type ActionGroup struct {
 
 // RenderScript renders the group of actions as a single action.
 func (g ActionGroup) RenderScript(params RenderParams) (s string) {
-	for _,a := range g.Actions {
+	for _, a := range g.Actions {
 		s += a.RenderScript(params)
 	}
 	return
 }
 
-// Call Group to join multiple actions into a single action.
+// Group joins multiple actions into a single action.
 func Group(actions ...ActionI) ActionGroup {
 	var foundCallback bool
-	for _,a := range actions {
+	for _, a := range actions {
 		switch a.(type) {
 		case ActionGroup:
 			panic("You cannot put an ActionGroup into another ActionGroup")
@@ -39,6 +39,7 @@ func Group(actions ...ActionI) ActionGroup {
 	return ActionGroup{actions}
 }
 
+// HasServerAction is called by the framework to determine if the action group has a server action in it.
 func (g ActionGroup) HasServerAction() bool {
 	if a := g.GetCallbackAction(); a != nil {
 		return a.IsServerAction()
@@ -46,23 +47,20 @@ func (g ActionGroup) HasServerAction() bool {
 	return false
 }
 
+// HasCallbackAction is called by the framework to determine if the action group has a callback action in it.
 func (g ActionGroup) HasCallbackAction() bool {
-	if a := g.GetCallbackAction(); a != nil {
-		return true
-	}
-	return false
+	return g.GetCallbackAction() != nil
 }
-
 
 // GetCallbackAction returns the embedded callback action in the group, if one exists. Note that
 // you can only have at most one callback action in a group
-func (g ActionGroup) GetCallbackAction() CallbackActionI {
+func (g ActionGroup) GetCallbackAction() FrameworkCallbackActionI {
 	if g.Actions == nil || len(g.Actions) == 0 {
 		return nil
 	}
-	a := g.Actions[len(g.Actions) - 1]
+	a := g.Actions[len(g.Actions)-1]
 	if a2, ok := a.(CallbackActionI); ok {
-		return a2
+		return a2.(FrameworkCallbackActionI)
 	}
 	return nil
 }
