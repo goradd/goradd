@@ -24,7 +24,8 @@ func TestGoradd(t *testing.T) {
 	currentOs := runtime.GOOS
 	switch currentOs {
 	case "windows":
-		appName = `C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`
+		// old versions had it in the x86 directory
+		appName = `C:\Program Files\Google\Chrome\Application\chrome.exe`
 	case "darwin":
 		appName = `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`
 	case "linux":
