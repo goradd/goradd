@@ -290,7 +290,7 @@ func ExampleNewAttributesFrom() {
 }
 
 func ExampleAttributes_Set() {
-	var a Attributes
+	a := Attributes{}
 	a = a.Set("class", "a")
 	a = a.Set("id", "b")
 	fmt.Println(a.SortedString())

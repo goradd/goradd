@@ -183,7 +183,9 @@ func TestNilStyle(t *testing.T) {
 
 	assert.Equal(t, 0, s.Len())
 	assert.False(t, s.Has("a"))
-	assert.Equal(t, "height:1px", s.Set("height", "1").String())
+	assert.Panics(t,func() {
+		s.Set("height", "1").String()
+	})
 }
 
 func TestStyle_mathOp(t *testing.T) {
