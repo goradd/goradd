@@ -2,6 +2,7 @@ package sys
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -224,3 +225,9 @@ func FileCopy(src, dst string) (err error) {
 	return to.Close()
 }
 */
+
+type WriterToFunc func(w io.Writer) (int64, error)
+
+func (f WriterToFunc) WriteTo(w io.Writer) (n int64, err error) {
+	return f(w)
+}

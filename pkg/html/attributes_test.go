@@ -2,10 +2,11 @@ package html
 
 import (
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
-	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
+
+	"github.com/goradd/gengen/pkg/maps"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBasicAttributes(t *testing.T) {
@@ -51,9 +52,8 @@ func TestBasicAttributes(t *testing.T) {
 	}
 
 	assert.True(t, a.Has("a"))
-	_,_ = a.SetChanged("a", attributeFalse)
+	_, _ = a.SetChanged("a", attributeFalse)
 	assert.False(t, a.Has("style"))
-
 
 }
 
@@ -255,8 +255,8 @@ func TestOutput(t *testing.T) {
 		t.Errorf("Not escaping. Expected (%q) got (%q)", expected, s)
 	}
 
-	a = Attributes{"ok":"", "id":"3"}
-	assert.Equal(t, `id="3" ok`, a.String())
+	a = Attributes{"ok": "", "id": "3"}
+	assert.Equal(t, `id="3" ok`, a.SortedString())
 }
 
 func TestOverride(t *testing.T) {
@@ -293,7 +293,7 @@ func ExampleAttributes_Set() {
 	var a Attributes
 	a = a.Set("class", "a")
 	a = a.Set("id", "b")
-	fmt.Println(a)
+	fmt.Println(a.SortedString())
 	//Output: id="b" class="a"
 }
 
@@ -331,7 +331,6 @@ func ExampleAttributes_SetID() {
 	// false
 }
 
-
 func ExampleAttributes_Override() {
 	a := NewAttributes()
 	a.SetClass("this")
@@ -342,7 +341,7 @@ func ExampleAttributes_Override() {
 	b.SetStyle("width", strconv.Itoa(6))
 
 	a = a.Override(b)
-	fmt.Println(a)
+	fmt.Println(a.SortedString())
 	//Output: class="that" style="height:4em;width:6px"
 }
 
@@ -421,13 +420,13 @@ func ExampleAttributes_AddAttributeValue() {
 func ExampleAttributes_SetDataAttribute() {
 	a := Attributes{"abc": "123"}
 	a.SetDataAttribute("myVal", "456")
-	fmt.Println(a.String())
+	fmt.Println(a.SortedString())
 	// Output: abc="123" data-my-val="456"
 }
 
 func ExampleAttributes_SetStyles() {
 	a := Attributes{"style": "color:blue"}
-	s := Style{"color":"yellow"}
+	s := Style{"color": "yellow"}
 	a.SetStyles(s)
 	fmt.Println(a.String())
 	// Output: style="color:yellow"
@@ -443,9 +442,9 @@ func ExampleAttributes_SetStylesTo() {
 func ExampleAttributes_SetDisabled() {
 	a := Attributes{"style": "color:blue"}
 	a.SetDisabled(true)
-	fmt.Println(a.String())
+	fmt.Println(a.SortedString())
 	a.SetDisabled(false)
-	fmt.Println(a.String())
+	fmt.Println(a.SortedString())
 	// Output: style="color:blue" disabled
 	// style="color:blue"
 }
@@ -453,7 +452,7 @@ func ExampleAttributes_SetDisabled() {
 func ExampleAttributes_SetDisplay() {
 	a := Attributes{"style": "color:blue"}
 	a.SetDisplay("none")
-	fmt.Println(a.String())
+	fmt.Println(a.SortedString())
 	// Output: style="color:blue;display:none"
 }
 
@@ -471,12 +470,9 @@ func ExampleAttributeString() {
 	a.Set("c", AttributeString("test"))
 	a.Set("d", AttributeString(true))
 	a.Set("e", AttributeString(false))
-	fmt.Println(a.String())
+	fmt.Println(a.SortedString())
 	// Output: a="1" b="2.2" c="test" d
 }
-
-
-
 
 func TestStringMerge(t *testing.T) {
 	a := NewAttributes()
@@ -498,11 +494,11 @@ func TestStringMerge(t *testing.T) {
 	a.Merge(nil)
 	assert.Equal(t, 2, a.Len())
 
-	a.Merge(Attributes{"style":"color:white"})
+	a.Merge(Attributes{"style": "color:white"})
 	assert.True(t, a.Has("style"))
-	a.Merge(Attributes{"style":"color:black"})
+	a.Merge(Attributes{"style": "color:black"})
 	assert.True(t, a.HasStyle("color"))
-	a.Merge(map[string]string{"style":"color:yellow"})
+	a.Merge(map[string]string{"style": "color:yellow"})
 	assert.Equal(t, "yellow", a.GetStyle("color"))
 
 }
@@ -524,13 +520,13 @@ func TestNilAttributes(t *testing.T) {
 }
 
 func ExampleAttributes_Len() {
-	a := Attributes{"id":"45", "class":"aclass"}
+	a := Attributes{"id": "45", "class": "aclass"}
 	fmt.Print(a.Len())
 	//Output: 2
 }
 
 func ExampleAttributes_Range() {
-	a := Attributes{"y":"7", "x":"10", "id":"1", "class":"2", "z":"4"  }
+	a := Attributes{"y": "7", "x": "10", "id": "1", "class": "2", "z": "4"}
 	a.Range(func(k string, v string) bool {
 		if k == "z" {
 			return false
@@ -546,18 +542,18 @@ func ExampleAttributes_Range() {
 
 func TestAttributes_RemoveClass(t *testing.T) {
 	tests := []struct {
-		name string
-		a    Attributes
-		removeClass 	 string
-		changed bool
-		finalClass string
+		name        string
+		a           Attributes
+		removeClass string
+		changed     bool
+		finalClass  string
 	}{
-		{"remove one", Attributes{"id":"1", "class":"this"}, "this", true, ""},
-		{"remove from multiple", Attributes{"id":"1", "class":"this that"}, "this", true, "that"},
-		{"remove from none", Attributes{"id":"1"}, "this", false, ""},
-		{"remove not existing", Attributes{"id":"1", "class":"this that"}, "other", false, "this that"},
-		{"remove multiple", Attributes{"id":"1", "class":"this that other"}, "this other", true, "that"},
-		{"remove multiple one not existing", Attributes{"id":"1", "class":"this that other"}, "nothere other", true, "this that"},
+		{"remove one", Attributes{"id": "1", "class": "this"}, "this", true, ""},
+		{"remove from multiple", Attributes{"id": "1", "class": "this that"}, "this", true, "that"},
+		{"remove from none", Attributes{"id": "1"}, "this", false, ""},
+		{"remove not existing", Attributes{"id": "1", "class": "this that"}, "other", false, "this that"},
+		{"remove multiple", Attributes{"id": "1", "class": "this that other"}, "this other", true, "that"},
+		{"remove multiple one not existing", Attributes{"id": "1", "class": "this that other"}, "nothere other", true, "this that"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -565,5 +561,20 @@ func TestAttributes_RemoveClass(t *testing.T) {
 			assert.Equal(t, tt.changed, changed)
 			assert.Equal(t, tt.finalClass, tt.a.Class())
 		})
+	}
+}
+
+func BenchmarkSortAttr(b *testing.B) {
+	a := Attributes{"a": "b", "id": "c", "width": "14", "d": "e"}
+
+	for i := 0; i < b.N; i++ {
+		a.String()
+	}
+}
+func BenchmarkSortedKeys(b *testing.B) {
+	a := Attributes{"a": "b", "id": "c", "width": "14", "d": "e"}
+
+	for i := 0; i < b.N; i++ {
+		a.sortedKeys()
 	}
 }

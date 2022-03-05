@@ -12,13 +12,15 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	gohtml "html"
+	"io"
 	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/goradd/gengen/pkg/maps"
 )
 
 const attributeFalse = "**GORADD-FALSE**"
@@ -65,7 +67,7 @@ func (a Attributes) Has(attr string) bool {
 	if a == nil {
 		return false
 	}
-	_,ok := a[attr]
+	_, ok := a[attr]
 	return ok
 }
 
@@ -133,9 +135,6 @@ func (a Attributes) set(k string, v string) bool {
 // Set is similar to SetChanged, but instead returns an attribute pointer so that it can be chained. Will panic on errors.
 // Use this when you are setting attributes using implicit strings. Set v to an empty string to create a boolean attribute.
 func (a Attributes) Set(name string, v string) Attributes {
-	if a == nil {
-		a = NewAttributes()
-	}
 	_, err := a.SetChanged(name, v)
 	if err != nil {
 		panic(err)
@@ -155,19 +154,19 @@ func (a Attributes) RemoveAttribute(name string) bool {
 
 // This is a helper to sort the attribute keys so that special attributes
 // are returned in front
-var attrSpecialSort = map[string] int {
-	"id" : 1,
-	"class" : 2,
-	"style" : 3,
+var attrSpecialSort = map[string]int{
+	"id":    1,
+	"class": 2,
+	"style": 3,
 	// keep name and value together
-	"name" : 4,
-	"value" : 5,
+	"name":  4,
+	"value": 5,
 	// keep src and alt together
-	"src" : 6,
-	"alt" : 7,
+	"src": 6,
+	"alt": 7,
 	// keep width and height together
-	"width" : 8,
-	"height" : 9,
+	"width":  8,
+	"height": 9,
 }
 
 func (a Attributes) sortedKeys() []string {
@@ -177,11 +176,11 @@ func (a Attributes) sortedKeys() []string {
 		keys[idx] = k
 		idx++
 	}
-	sort.Slice(keys, func(i1,i2 int) bool {
+	sort.Slice(keys, func(i1, i2 int) bool {
 		k1 := keys[i1]
 		k2 := keys[i2]
-		v1,ok1 := attrSpecialSort[k1]
-		v2,ok2 := attrSpecialSort[k2]
+		v1, ok1 := attrSpecialSort[k1]
+		v2, ok2 := attrSpecialSort[k2]
 		if ok1 {
 			if ok2 {
 				return v1 < v2
@@ -197,30 +196,96 @@ func (a Attributes) sortedKeys() []string {
 }
 
 // String returns the attributes escaped and encoded, ready to be placed in an HTML tag
-// For consistency, it will use attrSpecialSort to order the keys. Remaining keys will
-// be output in random order.
 func (a Attributes) String() string {
-	if a == nil {
-		return ""
-	}
-
 	b := strings.Builder{}
-	sk :=  a.sortedKeys()
+	_, _ = a.WriteTo(&b)
+	return b.String()
+}
+
+// SortedString returns the attributes escaped and encoded, ready to be placed in an HTML tag
+// For consistency, it will use attrSpecialSort to order the keys.
+func (a Attributes) SortedString() string {
+	b := strings.Builder{}
+	_, _ = a.WriteSortedTo(&b)
+	return b.String()
+}
+
+func writeKV(w io.Writer, k, v string) (n int, err error) {
+	if v == "" {
+		if n, err = writeString(w, k, n); err != nil {
+			return
+		}
+	} else {
+		v = gohtml.EscapeString(v)
+		if n, err = writeString(w, k, n); err != nil {
+			return
+		}
+		if n, err = writeString(w, `="`, n); err != nil {
+			return
+		}
+		if n, err = writeString(w, v, n); err != nil {
+			return
+		}
+		if n, err = writeString(w, `"`, n); err != nil {
+			return
+		}
+	}
+	return
+}
+
+// WriteSortedTo writes the attributes escaped and encoded.
+// For consistency, it will order the keys.
+func (a Attributes) WriteSortedTo(w io.Writer) (n int64, err error) {
+	if a == nil {
+		return
+	}
+	var n1 int
+
+	sk := a.sortedKeys()
 	lastKey := len(sk) - 1
-	for i,k := range sk {
+	for i, k := range sk {
 		v := a[k]
-		if v == "" {
-			b.WriteString(k)
-		} else {
-			v = gohtml.EscapeString(v)
-			_,_ = fmt.Fprintf(&b, "%s=%q", k, v)
+		n1, err = writeKV(w, k, v)
+		n += int64(n1)
+		if err != nil {
+			return
 		}
 		if i < lastKey {
-			b.WriteString (" ")
+			n1, err = io.WriteString(w, " ")
+			n += int64(n1)
+			if err != nil {
+				return
+			}
 		}
 	}
+	return
+}
 
-	return b.String()
+// WriteTo writes the attributes escaped and encoded as fast as possible.
+func (a Attributes) WriteTo(w io.Writer) (n int64, err error) {
+	if a == nil {
+		return
+	}
+	var n1 int
+	i := 1
+	length := len(a)
+	for k, v := range a {
+		n1, err = writeKV(w, k, v)
+		n += int64(n1)
+		if err != nil {
+			return
+		}
+		if i < length {
+			n1, err = io.WriteString(w, " ")
+			n += int64(n1)
+			if err != nil {
+				return
+			}
+
+		}
+		i++
+	}
+	return
 }
 
 // Range will call f for each item in the attributes.
@@ -231,13 +296,12 @@ func (a Attributes) Range(f func(key string, value string) bool) {
 	if a == nil {
 		return
 	}
-	for _,k := range a.sortedKeys() {
+	for _, k := range a.sortedKeys() {
 		if !f(k, a[k]) {
 			break
 		}
 	}
 }
-
 
 // Override returns a new Attributes structure with the current attributes merged with the given attributes.
 // Conflicts are won by the given overrides. Styles will be merged as well.
@@ -259,27 +323,27 @@ func (a Attributes) Merge(i interface{}) {
 	}
 	switch m := i.(type) {
 	case map[string]string:
-		for k,v := range m {
+		for k, v := range m {
 			if k == "style" {
-				if v2,ok := a[k]; ok {
+				if v2, ok := a[k]; ok {
 					v = MergeStyleStrings(v2, v)
 				}
 			}
 			a[k] = v
 		}
 	case Attributes:
-		for k,v := range m {
+		for k, v := range m {
 			if k == "style" {
-				if v2,ok := a[k]; ok {
+				if v2, ok := a[k]; ok {
 					v = MergeStyleStrings(v2, v)
 				}
 			}
 			a[k] = v
 		}
 	case maps.StringMapI:
-		m.Range(func(k,v string) bool {
+		m.Range(func(k, v string) bool {
 			if k == "style" {
-				if v2,ok := a[k]; ok {
+				if v2, ok := a[k]; ok {
 					v = MergeStyleStrings(v2, v)
 				}
 			}
@@ -538,7 +602,7 @@ func (a Attributes) StyleString() string {
 // StyleMap returns a special Style structure which lets you refer to the styles as a string map.
 func (a Attributes) StyleMap() Style {
 	s := NewStyle()
-	_,_ = s.SetTo(a.StyleString())
+	_, _ = s.SetTo(a.StyleString())
 	return s
 }
 
@@ -576,7 +640,7 @@ func (a Attributes) SetStyles(s Style) Attributes {
 // SetStylesTo sets the styles using a traditional css style string with colon and semicolon separators
 func (a Attributes) SetStylesTo(s string) Attributes {
 	styles := a.StyleMap()
-	if _,err := styles.SetTo(s); err != nil {
+	if _, err := styles.SetTo(s); err != nil {
 		return a
 	}
 	a.set("style", styles.String())
@@ -656,15 +720,15 @@ func AttributeString(i interface{}) string {
 
 // getAttributesFromTemplate returns Attributes extracted from a string in the form
 // of name="value"
-func getAttributesFromTemplate(s string)  Attributes {
+func getAttributesFromTemplate(s string) Attributes {
 	pairs := templateMatcher.FindAllString(s, -1)
 	if len(pairs) == 0 {
 		return nil
 	}
 	a := NewAttributes()
-	for _,pair := range pairs {
+	for _, pair := range pairs {
 		kv := strings.Split(pair, "=")
-		val := kv[1][1:len(kv[1])-1] // remove quotes
+		val := kv[1][1 : len(kv[1])-1] // remove quotes
 		a.Set(kv[0], val)
 	}
 	return a
@@ -678,6 +742,7 @@ func (c AttributeCreator) Create() Attributes {
 }
 */
 var templateMatcher *regexp.Regexp
+
 func init() {
 	gob.Register(Attributes{})
 	templateMatcher = regexp.MustCompile(`\w+=".*?"`)
