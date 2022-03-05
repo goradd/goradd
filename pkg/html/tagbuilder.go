@@ -1,7 +1,7 @@
 package html
 
 import (
-	html2 "html"
+	"html"
 )
 
 var voidTags = map[string]bool{
@@ -95,9 +95,9 @@ func (b *TagBuilder) InnerHtml(html string) *TagBuilder {
 	return b
 }
 
-// InnerText sets the inner part of the tag to the given text. The text will be escaped if needed.
+// InnerText sets the inner part of the tag to the given text. The text will be escaped.
 func (b *TagBuilder) InnerText(text string) *TagBuilder {
-	b.innerHtml = html2.EscapeString(text)
+	b.innerHtml = html.EscapeString(text)
 	return b
 }
 

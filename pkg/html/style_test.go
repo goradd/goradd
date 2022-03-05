@@ -2,22 +2,22 @@ package html
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Example_newStyleFromMap() {
-	s := NewStyleFromMap(map[string]string{"color":"green", "size":"9"})
+	s := NewStyleFromMap(map[string]string{"color": "green", "size": "9"})
 	fmt.Print(s)
 	//Output: color:green;size:9
 }
 
 func ExampleStyle_Len() {
-	s := NewStyleFromMap(map[string]string{"color":"green", "size":"9"})
+	s := NewStyleFromMap(map[string]string{"color": "green", "size": "9"})
 	fmt.Print(s.Len())
 	//Output: 2
 }
-
 
 func ExampleStyle_SetTo() {
 	s := NewStyle()
@@ -70,7 +70,6 @@ func ExampleStyle_Has() {
 	fmt.Print(s.Has("width"), s.Has("display"))
 	//Output:true false
 }
-
 
 func TestStyleSet(t *testing.T) {
 	s := NewStyle()
@@ -184,11 +183,13 @@ func TestNilStyle(t *testing.T) {
 
 	assert.Equal(t, 0, s.Len())
 	assert.False(t, s.Has("a"))
-	assert.Equal(t, "height:1px", s.Set("height", "1").String())
+	assert.Panics(t,func() {
+		s.Set("height", "1").String()
+	})
 }
 
 func TestStyle_mathOp(t *testing.T) {
-	c := StyleCreator{"height":"10", "margin":"", "width":"20en"}
+	c := StyleCreator{"height": "10", "margin": "", "width": "20en"}
 
 	type args struct {
 		attribute string
@@ -202,7 +203,6 @@ func TestStyle_mathOp(t *testing.T) {
 		wantChanged bool
 		wantErr     bool
 		wantString  string
-
 	}{
 		{"Test empty", c.Create(), args{"margin", "+", "1"}, true, false, "height:10;margin:1;width:20en"},
 		{"Test float error", c.Create(), args{"margin", "+", "1a"}, false, true, "height:10;margin:;width:20en"},
@@ -227,7 +227,7 @@ func TestStyle_mathOp(t *testing.T) {
 func TestStyleString(t *testing.T) {
 	tests := []struct {
 		name string
-		i interface{}
+		i    interface{}
 		want string
 	}{
 		{"int", int(5), "5px"},

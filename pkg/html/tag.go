@@ -2,8 +2,8 @@ package html
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/config" // TODO: remove reliance on outside package
-	html2 "html"
+	"html"
+	"io"
 	"strings"
 )
 
@@ -42,15 +42,17 @@ func (t VoidTag) Render() string {
 
 // RenderVoidTag renders a void tag using the given tag name and attributes.
 func RenderVoidTag(tag string, attr Attributes) (s string) {
-	if attr == nil {
-		s = "<" + tag + " />"
-	} else {
-		s = "<" + tag + " " + attr.String() + " />"
+	b := strings.Builder{}
+	_, err := WriteVoidTag(&b, tag, attr)
+	if err != nil {
+		panic(err)
 	}
-	if !config.Minify {
-		s += "\n"
-	}
-	return s
+	return b.String()
+}
+
+// WriteVoidTag writes a void tag to the io.Writer.
+func WriteVoidTag(w io.Writer, tag string, attr Attributes) (n int, err error) {
+	return writeTag(w, tag, attr, nil, true, false, false)
 }
 
 // RenderTag renders a standard html tag with a closing tag.
@@ -65,109 +67,286 @@ func RenderVoidTag(tag string, attr Attributes) (s string) {
 // get rid of this space, call RenderTagNoSpace()
 func RenderTag(tag string, attr Attributes, innerHtml string) string {
 	b := strings.Builder{}
-
-	_,_ = fmt.Fprint(&b, "<", tag)
-	if attr != nil {
-		_,_ = fmt.Fprint(&b, " ", attr.String())
-	}
-	_,_ = fmt.Fprint(&b, ">")
-
+	var wto io.WriterTo
 	if innerHtml != "" {
-		if !config.Minify {
-			innerHtml = Indent(innerHtml)
-		}
-		b.WriteString("\n") // required for consistency, will force a space between itself and its neighbors in certain situations
-		b.WriteString(innerHtml)
-		// if the innerHtml does not already have a newline, add a newline
-		if innerHtml[len(innerHtml)-1:] != "\n" {
-			b.WriteString("\n")
-		}
+		wto = strings.NewReader(innerHtml)
 	}
-	_,_ = fmt.Fprint(&b, "</", tag, ">\n")
+
+	_, err := WriteTag(&b, tag, attr, wto)
+	if err != nil {
+		panic(err)
+	}
 	return b.String()
 }
 
+// RenderTagFormatted renders the tag, pretty prints the innerHtml and sorts the attributes.
+//
+// Do not use this for tags where changing the innerHtml will change the appearance.
+func RenderTagFormatted(tag string, attr Attributes, innerHtml string) string {
+	b := strings.Builder{}
+	var wto io.WriterTo
+	if innerHtml != "" {
+		wto = strings.NewReader(innerHtml)
+	}
+	_, err := WriteTagFormatted(&b, tag, attr, wto)
+	if err != nil {
+		panic(err)
+	}
+	return b.String()
+}
+
+// WriteTag writes the tag to the io.Writer.
+func WriteTag(w io.Writer, tag string, attr Attributes, innerHtml io.WriterTo) (n int, err error) {
+	return writeTag(w, tag, attr, innerHtml, false, false, false)
+}
+
+// WriteTagFormatted writes the tag to the io.Writer, pretty prints the innerHtml and sorts the attributes.
+func WriteTagFormatted(w io.Writer, tag string, attr Attributes, innerHtml io.WriterTo) (n int, err error) {
+	return writeTag(w, tag, attr, innerHtml, false, false, true)
+}
 
 // RenderTagNoSpace is similar to RenderTag, but should be used in situations where the tag is an
 // inline tag that you want to visually be right next to its neighbors with no space.
 func RenderTagNoSpace(tag string, attr Attributes, innerHtml string) string {
-	innerHtml = strings.TrimSpace(innerHtml)
-	var attrString string
-
-	if attr != nil {
-		attrString = " " + attr.String()
+	b := strings.Builder{}
+	var wto io.WriterTo
+	if innerHtml != "" {
+		wto = strings.NewReader(innerHtml)
 	}
-	ret := "<" + tag + attrString + ">"
-
-	if innerHtml == "" || innerHtml[:1] != "<" {
-		// either innerHtml is blank, or it is text and not a tag, so reproduce it verbatim
-		ret += innerHtml + "</" + tag + ">"
-	} else {
-		if !config.Minify {
-			innerHtml = Indent(innerHtml)
-		}
-		if innerHtml[len(innerHtml)-1:] != "\n" {
-			innerHtml += "\n"
-		}
-		ret += "\n" + // innerhtml is a tag, and so spacing inside will not matter, so make it look good
-			innerHtml +
-			"</" + tag + ">"
+	_, err := WriteTagNoSpace(&b, tag, attr, wto)
+	if err != nil {
+		panic(err)
 	}
-	return ret
+	return b.String()
 }
-/* TODO:
-func renderTag(w io.Writer, tag string, attr Attributes, innerHtml io.WriterTo, minify bool, noSpace bool) {
-	_,_ = fmt.Fprint(w, "<", tag)
-	if attr != nil {
-		_,_ = fmt.Fprint(w, " ", attr.String())
+
+// WriteTagNoSpace writes the tag to the io.Writer, and does not add any spaces between the tag and the innerHtml.
+func WriteTagNoSpace(w io.Writer, tag string, attr Attributes, innerHtml io.WriterTo) (n int, err error) {
+	return writeTag(w, tag, attr, innerHtml, false, true, false)
+}
+
+// RenderTagNoSpaceFormatted will render without formatting the innerHtml, but WILL sort the attributes.
+func RenderTagNoSpaceFormatted(tag string, attr Attributes, innerHtml string) string {
+	b := strings.Builder{}
+	var wto io.WriterTo
+	if innerHtml != "" {
+		wto = strings.NewReader(innerHtml)
 	}
-	_,_ = fmt.Fprint(w, ">")
+
+	_, err := WriteTagNoSpaceFormatted(&b, tag, attr, wto)
+	if err != nil {
+		panic(err)
+	}
+	return b.String()
+}
+
+// WriteTagNoSpaceFormatted writes to tag without formatting the innerHtml, but WILL sort the attributes.
+func WriteTagNoSpaceFormatted(w io.Writer, tag string, attr Attributes, innerHtml io.WriterTo) (n int, err error) {
+	return writeTag(w, tag, attr, innerHtml, false, true, true)
+}
+
+// writeString is a version of io.WriteString that accumulates the total written from previous writes.
+func writeString(w io.Writer, s string, n int) (n2 int, err error) {
+	n2, err = io.WriteString(w, s)
+	n2 += n
+	return
+}
+
+// writeTag is the main formatter of tags.
+func writeTag(w io.Writer, tag string, attr Attributes, innerHtml io.WriterTo, isVoid bool, noSpace bool, format bool) (n int, err error) {
+	var n3 int64
+
+	if n, err = writeString(w, "<", n); err != nil {
+		return
+	}
+	if n, err = writeString(w, tag, n); err != nil {
+		return
+	}
+	if len(attr) != 0 {
+		if n, err = writeString(w, " ", n); err != nil {
+			return
+		}
+
+		if format {
+			n3, err = attr.WriteSortedTo(w)
+			n += int(n3)
+			if err != nil {
+				return
+			}
+		} else {
+			n3, err = attr.WriteTo(w)
+			n += int(n3)
+			if err != nil {
+				return
+			}
+		}
+	}
+	if n, err = writeString(w, ">", n); err != nil {
+		return
+	}
+
+	if isVoid {
+		return
+	}
 
 	if innerHtml != nil {
-		if !minify {
-			innerHtml = Indent(innerHtml)
+		builder := strings.Builder{}
+		innerW := w
+		var innerN int
+
+		if format {
+			innerW = &builder
 		}
-		b.WriteString("\n") // required for consistency, will force a space between itself and its neighbors in certain situations
-		b.WriteString(innerHtml)
-		// if the innerHtml does not already have a newline, add a newline
-		if innerHtml[len(innerHtml)-1:] != "\n" {
-			b.WriteString("\n")
+		if !noSpace {
+			// required for consistency, will force a space between itself and its neighbors in certain situations
+			if innerN, err = writeString(innerW, "\n", innerN); err != nil {
+				return
+			}
+		}
+		n3, err = innerHtml.WriteTo(innerW)
+		innerN += int(n3)
+		if err != nil {
+			if !format {
+				n += innerN
+			}
+			return
+		}
+		if !noSpace {
+			if innerN, err = writeString(innerW, "\n", innerN); err != nil {
+				if !format {
+					n += innerN
+				}
+				return
+			}
+		}
+		if format {
+			s := builder.String()
+			if !noSpace {
+				s = Indent(s)
+			}
+			if n, err = writeString(w, s, n); err != nil {
+				return
+			}
+		} else {
+			n += innerN
 		}
 	}
-	_,_ = fmt.Fprint(&b, "</", tag, ">\n")
-	return b.String()
-
-
+	if n, err = writeString(w, "</", n); err != nil {
+		return
+	}
+	if n, err = writeString(w, tag, n); err != nil {
+		return
+	}
+	n, err = writeString(w, ">", n)
+	return
 }
-*/
 
 // RenderLabel is a utility function to render a label, together with its text.
 // Various CSS frameworks require labels to be rendered a certain way.
 func RenderLabel(labelAttributes Attributes, label string, ctrlHtml string, mode LabelDrawingMode) string {
-	tag := "label"
-	label = html2.EscapeString(label)
+	b := strings.Builder{}
+
+	var wto io.WriterTo
+	if ctrlHtml != "" {
+		wto = strings.NewReader(ctrlHtml)
+	}
+	_, err := WriteLabel(&b, labelAttributes, label, wto, mode)
+	if err != nil {
+		panic(err)
+	}
+	return b.String()
+}
+
+type writerItems []interface{}
+
+// WriteTo implements the io.WriterTo interface.
+func (i writerItems) WriteTo(w io.Writer) (n int64, err error) {
+	for _, item := range i {
+		switch v := item.(type) {
+		case io.WriterTo:
+			n2, err2 := v.WriteTo(w)
+			n += n2
+			if err2 != nil {
+				return n, err2
+			}
+		case string:
+			n2, err2 := io.WriteString(w, v)
+			n += int64(n2)
+			if err2 != nil {
+				return n, err2
+			}
+		case nil:
+			// do nothing
+		default:
+			n2, err2 := fmt.Fprint(w, v)
+			n += int64(n2)
+			if err2 != nil {
+				return n, err2
+			}
+		}
+	}
+	return
+}
+
+func makeWriterTo(items ...interface{}) io.WriterTo {
+	b := writerItems(items)
+	return b
+}
+
+// WriteLabel is a utility function to render a label, together with its text.
+// Various CSS frameworks require labels to be rendered a certain way.
+func WriteLabel(w io.Writer, labelAttributes Attributes, label string, ctrlHtml io.WriterTo, mode LabelDrawingMode) (n int, err error) {
+	var n64 int64
+	var n2 int
+	label = html.EscapeString(label)
 	switch mode {
 	case LabelBefore:
-		return RenderTagNoSpace(tag, labelAttributes, label) + " " + ctrlHtml
+		if n, err = WriteTagNoSpace(w, "label", labelAttributes, strings.NewReader(label)); err != nil {
+			return
+		}
+		if n, err = writeString(w, " ", n); err != nil {
+			return
+		}
+		n64, err = ctrlHtml.WriteTo(w)
+		n += int(n64)
+		return
 	case LabelAfter:
-		return ctrlHtml + " " + RenderTagNoSpace(tag, labelAttributes, label)
+		n64, err = ctrlHtml.WriteTo(w)
+		n += int(n64)
+		if err != nil {
+			return
+		}
+		if n, err = writeString(w, " ", n); err != nil {
+			return
+		}
+		n2, err = WriteTagNoSpace(w, "label", labelAttributes, strings.NewReader(label))
+		n += n2
+		return
 	case LabelWrapBefore:
-		return RenderTag(tag, labelAttributes, label+" "+ctrlHtml)
+		return WriteTag(w, "label", labelAttributes, makeWriterTo(label, " ", ctrlHtml))
 	case LabelWrapAfter:
-		return RenderTag(tag, labelAttributes, ctrlHtml+" "+label)
+		return WriteTag(w, "label", labelAttributes, makeWriterTo(ctrlHtml, " ", label))
 	}
 	panic("Unknown label mode")
 }
 
 // RenderImage renders an image tag with the given source, alt and attribute values.
+// Panics on error.
 func RenderImage(src string, alt string, attributes Attributes) string {
-	var a Attributes
-	a = NewAttributes()
-	a.Merge(attributes)
+	b := strings.Builder{}
+	_, err := WriteImage(&b, src, alt, attributes)
+	if err != nil {
+		panic(err)
+	}
+	return b.String()
+}
 
+// WriteImage writes an image tag.
+func WriteImage(w io.Writer, src string, alt string, attributes Attributes) (n int, err error) {
+	a := NewAttributesFrom(attributes)
 	a.Set("src", src)
 	a.Set("alt", alt)
-	return RenderVoidTag("img", a)
+	return WriteVoidTag(w, "img", a)
 }
 
 // Indent will add space to the front of every line in the string. Since indent is used to format code for reading
@@ -175,9 +354,6 @@ func RenderImage(src string, alt string, attributes Attributes) string {
 // It will not do this for textarea tags, since that would change the text in the tag.
 func Indent(s string) string {
 	var out string
-	if config.Minify {
-		return s
-	}
 	var taOffset int
 	for {
 		taOffset = strings.Index(s, "<textarea")
@@ -199,13 +375,15 @@ func Indent(s string) string {
 
 // indents the string unsafely, in that it does not check for allowable tags to indent
 func indent(s string) string {
-	if s == "" {
-		return "" // don't indent empty strings
+	var newLines []string
+	a := strings.Split(s, "\n")
+	for _, l := range a {
+		if l != "" {
+			l = "  " + l
+		}
+		newLines = append(newLines, l)
 	}
-	in := "  "
-	r := strings.NewReplacer("\n", "\n"+in)
-	s = r.Replace(s)
-	return in + strings.TrimSuffix(s, in)
+	return strings.Join(newLines, "\n")
 }
 
 // Comment turns the given text into an HTML comment and returns the rendered comment

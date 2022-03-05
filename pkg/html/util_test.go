@@ -5,9 +5,7 @@ import (
 	"testing"
 )
 
-func TestRandomHtmlValueString(t *testing.T) {
-	//rand.Seed(1) // reset random seed
-
+func TestRandomString(t *testing.T) {
 	s := RandomString(40)
 	fmt.Printf(s + " ")
 

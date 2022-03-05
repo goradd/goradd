@@ -3,16 +3,18 @@ package html
 import (
 	"errors"
 	"fmt"
-	"github.com/goradd/goradd/pkg/stringmap"
 	"math"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/goradd/goradd/pkg/stringmap"
 )
 
 const numericMatch = `-?[\d]*(\.[\d]+)?`
-var numericReplacer,_ = regexp.Compile(numericMatch)
-var numericMatcher,_ = regexp.Compile("^"+numericMatch+"$")
+
+var numericReplacer, _ = regexp.Compile(numericMatch)
+var numericMatcher, _ = regexp.Compile("^" + numericMatch + "$")
 
 // keys for style attributes that take a number that is not a length
 var nonLengthNumerics = map[string]bool{
@@ -41,7 +43,7 @@ func NewStyle() Style {
 // NewStyleFromMap creates a new style from a string map.
 func NewStyleFromMap(m map[string]string) Style {
 	s := NewStyle()
-	for k,v := range m {
+	for k, v := range m {
 		s[k] = v
 	}
 	return s
@@ -49,7 +51,7 @@ func NewStyleFromMap(m map[string]string) Style {
 
 // Merge merges the styles from one style to another. Conflicts will overwrite the current style.
 func (s Style) Merge(m Style) {
-	for k,v := range m {
+	for k, v := range m {
 		s[k] = v
 	}
 }
@@ -67,7 +69,7 @@ func (s Style) Has(property string) bool {
 	if s == nil {
 		return false
 	}
-	_,ok := s[property]
+	_, ok := s[property]
 	return ok
 }
 
@@ -86,7 +88,6 @@ func (s Style) Remove(property string) {
 func (s Style) Delete(prop string) {
 	s.Remove(prop)
 }
-
 
 // SetTo receives a style encoded "style" attribute into the Style structure (e.g. "width: 4px; border: 1px solid black")
 func (s Style) SetTo(text string) (changed bool, err error) {
@@ -153,9 +154,6 @@ func (s Style) SetChanged(property string, value string) (changed bool, err erro
 //
 // It will also allocate a style if passed a nil style, and return it.
 func (s Style) Set(property string, value string) Style {
-	if s == nil {
-		s = NewStyle()
-	}
 	_, err := s.SetChanged(property, value)
 	if err != nil {
 		panic(err)
@@ -286,11 +284,11 @@ func (c StyleCreator) Create() Style {
 
 // MergeStyleStrings merges the styles found in the two style strings.
 // s2 wins conflicts.
-func MergeStyleStrings (s1, s2 string) string {
+func MergeStyleStrings(s1, s2 string) string {
 	style1 := NewStyle()
-	_,_ = style1.SetTo(s1)
+	_, _ = style1.SetTo(s1)
 	style2 := NewStyle()
-	_,_ = style2.SetTo(s2)
+	_, _ = style2.SetTo(s2)
 	style1.Merge(style2)
 	return style1.String()
 }

@@ -29,14 +29,14 @@ func ExampleTagBuilder_Link() {
 
 func ExampleTagBuilder_IsVoid() {
 	fmt.Println(NewTagBuilder().Tag("img").IsVoid())
-	// Output: <img />
+	// Output: <img>
 }
 
 func ExampleTagBuilder_InnerHtml() {
 	fmt.Println(NewTagBuilder().Tag("div").InnerHtml("<p>A big deal</p>"))
 	// Output:
 	// <div>
-	//   <p>A big deal</p>
+	// <p>A big deal</p>
 	// </div>
 }
 
@@ -44,7 +44,7 @@ func ExampleTagBuilder_InnerText() {
 	fmt.Println(NewTagBuilder().Tag("div").InnerText("<p>A big deal</p>"))
 	// Output:
 	// <div>
-	//   &lt;p&gt;A big deal&lt;/p&gt;
+	// &lt;p&gt;A big deal&lt;/p&gt;
 	// </div>
 }
 
@@ -53,6 +53,6 @@ func ExampleTagBuilder_String() {
 	fmt.Println(s)
 	// Output:
 	// <div>
-	//   <p>A big deal</p>
+	// <p>A big deal</p>
 	// </div>
 }
