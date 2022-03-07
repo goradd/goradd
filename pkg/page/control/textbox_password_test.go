@@ -2,9 +2,10 @@ package control
 
 import (
 	"bytes"
+	"testing"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestPasswordTextbox(t *testing.T) {
@@ -38,12 +39,11 @@ func TestPasswordCreate(t *testing.T) {
 	ctx := page.NewMockContext()
 	f.AddControls(ctx,
 		PasswordTextboxCreator{
-		ID: "abc",
-		Text: "b",
-		Placeholder: "c",
+			ID:          "abc",
+			Text:        "b",
+			Placeholder: "c",
 		},
 	)
-
 
 	p := GetPasswordTextbox(f, "abc")
 	assert.NotNil(t, p)
