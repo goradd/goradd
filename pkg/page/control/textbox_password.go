@@ -52,8 +52,6 @@ type PasswordTextboxCreator struct {
 	ID string
 	// Placeholder is the placeholder attribute of the textbox and shows as help text inside the field
 	Placeholder string
-	// Type is the type attribute of the textbox
-	Type string
 	// MinLength is the minimum number of characters that the user is required to enter. If the
 	// length is less than this number, a validation error will be shown.
 	MinLength int
@@ -63,12 +61,6 @@ type PasswordTextboxCreator struct {
 	// ColumnCount is the number of characters wide the textbox will be, and becomes the width attribute in the tag.
 	// The actual width is browser dependent. For better control, use a width style property.
 	ColumnCount int
-	// ReadOnly sets the readonly attribute of the textbox, which prevents it from being changed by the user.
-	ReadOnly bool
-	// SaveState will save the text in the textbox, to be restored if the user comes back to the page.
-	// It is particularly helpful when the textbox is being used to filter the results of a query, so that
-	// when the user comes back to the page, he does not have to type the filter text again.
-	SaveState bool
 	// Text is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Text string
 
@@ -85,13 +77,10 @@ func (c PasswordTextboxCreator) Init(ctx context.Context, ctrl PasswordTextboxI)
 	// Reuse subclass
 	sub := TextboxCreator{
 		Placeholder:    c.Placeholder,
-		Type:           c.Type,
 		MinLength:      c.MinLength,
 		MaxLength:      c.MaxLength,
 		ColumnCount:    c.ColumnCount,
-		ReadOnly:       c.ReadOnly,
 		ControlOptions: c.ControlOptions,
-		SaveState:      c.SaveState,
 		Text:           c.Text,
 	}
 	sub.Init(ctx, ctrl)
