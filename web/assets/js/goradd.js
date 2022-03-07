@@ -105,10 +105,12 @@ var g$ = function(el) {
         goradd.each(controls, function (i, c) {
             var id = c.id;
             var blnForm = (id && (id.substr(0, 8) === "Goradd__"));
+            var blnPost = (g$(c).data("grPost") === "");
 
             if (!_inputSupport || // if not oninput support, then post all the controls, rather than just the modified ones, because we might have missed something
                 _ajaxError || // Ajax error would mean that _formObjsModified is invalid. We need to submit everything.
                 (id && _formObjsModified[id]) ||  // We try to ignore controls that have not changed to reduce the amount of data sent in an ajax post.
+                blnPost || // was the control marked to always post,
                 blnForm) {  // all controls with Goradd__ at the beginning of the id are always posted.
 
                 switch (c.type) {
@@ -2203,7 +2205,7 @@ var g$ = function(el) {
         /**
          * data gets or sets custom data that we assign to an element. If getting the data, we will check our private area
          * first for the data, and then check for an attribute if we have not overridden the attribute with private data.
-         * Getting data attached as a "data-*" attribute uses the camelCase version of the name.
+         * To get data attached as a "data-*" attribute, use the camelCase version of the name for the key.
          * Private data is stored in the "goradd.data" object attached to the element.
          * @param {string} key
          * @param {*} [v]

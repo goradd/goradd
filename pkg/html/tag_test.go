@@ -126,6 +126,44 @@ func BenchmarkWriteTag(b *testing.B) {
 	}
 }
 
+func BenchmarkWriterTag(b *testing.B) {
+	buf := bytes.Buffer{}
+	s := "tag"
+	var n int
+	a := Attributes{"a": "b"}
+	w2 := strings.NewReader("abc" + s + "cd")
+	for i := 0; i < b.N; i++ {
+		n2, _ := WriteTag(&buf, s, a, w2)
+		n += n2
+	}
+}
+
+func BenchmarkWriterTag2(b *testing.B) {
+	buf := bytes.Buffer{}
+	s := "tag"
+	var n int
+	a := Attributes{"a": "b"}
+	w2 := makeWritersTo(strings.NewReader("abc"),strings.NewReader(s),strings.NewReader("cd"))
+	for i := 0; i < b.N; i++ {
+		n2, _ := WriteTag(&buf, s, a, w2)
+		n += n2
+	}
+}
+
+func BenchmarkWriterTag3(b *testing.B) {
+	buf := bytes.Buffer{}
+	s := "tag"
+	var n int
+	a := Attributes{"a": "b"}
+	w2 := makeWritersTo(strings.NewReader("abc" + s),strings.NewReader("cd"))
+	for i := 0; i < b.N; i++ {
+		n2, _ := WriteTag(&buf, s, a, w2)
+		n += n2
+	}
+}
+
+
+
 func BenchmarkRenderTag(b *testing.B) {
 	s := "tag"
 	inner := "abc"

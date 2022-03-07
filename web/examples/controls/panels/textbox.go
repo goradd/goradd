@@ -66,9 +66,8 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 		FormFieldWrapperCreator{
 			ID:    "passwordText-ff",
 			Label: "Password",
-			Child: TextboxCreator{
+			Child: PasswordTextboxCreator{
 				ID:   "passwordText",
-				Type: TextboxTypePassword,
 			},
 		},
 		FormFieldWrapperCreator{
