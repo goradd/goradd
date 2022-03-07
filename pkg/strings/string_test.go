@@ -172,3 +172,40 @@ func TestContainsAnyStrings(t *testing.T) {
 		})
 	}
 }
+
+func TestHasCharType(t *testing.T) {
+	type args struct {
+		s          string
+		wantUpper  bool
+		wantLower  bool
+		wantDigit  bool
+		wantPunc   bool
+		wantSymbol bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"lower", args{"a", false, true, false, false, false}, true},
+		{"lowerFail", args{"A", false, true, false, false, false}, false},
+		{"upper", args{"A", true, false, false, false, false}, true},
+		{"upperFail", args{"a", true, false, true, false, false}, false},
+		{"digit", args{"1", false, false, true, false, false}, true},
+		{"digitFail", args{"A", false, false, true, false, false}, false},
+		{"punc", args{",", false, false, false, true, false}, true},
+		{"puncFail", args{"a", false, false, false, true, false}, false},
+		{"symbol", args{"$", false, false, false, false, true}, true},
+		{"symbolFail", args{",", false, false, false, false, true}, false},
+		{"mult1", args{"aA", true, true, false, false, false}, true},
+		{"mult1Fail", args{"a1", true, true, false, false, false}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := HasCharType(tt.args.s, tt.args.wantUpper, tt.args.wantLower, tt.args.wantDigit, tt.args.wantPunc, tt.args.wantSymbol); got != tt.want {
+				t.Errorf("HasCharType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+

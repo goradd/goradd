@@ -90,3 +90,32 @@ func ContainsAnyStrings(haystack string, needles ...string) bool {
 	}
 	return false
 }
+
+// HasCharType returns true if the given string has at least one of all the
+// selected char types.
+func HasCharType(s string, wantUpper, wantLower, wantDigit, wantPunc, wantSymbol bool) bool {
+	var hasUpper, hasLower, hasDigit, hasPunc, hasSymbol bool
+
+	for _,c := range s {
+		if !hasUpper && wantUpper && unicode.IsUpper(c) {
+			hasUpper = true
+		} else if !hasLower && wantLower && unicode.IsLower(c) {
+			hasLower = true
+		} else if !hasDigit && wantDigit && unicode.IsDigit(c) {
+			hasDigit = true
+		} else if !hasPunc && wantPunc && unicode.IsPunct(c) {
+			hasPunc = true
+		} else if !hasSymbol && wantSymbol && unicode.IsSymbol(c) {
+			hasSymbol = true
+		}
+
+		if (!wantUpper || hasUpper) &&
+			(!wantLower || hasLower) &&
+			(!wantDigit || hasDigit) &&
+			(!wantPunc || hasPunc) &&
+			(!wantSymbol || hasSymbol) {
+			return true
+		}
+	}
+	return false
+}

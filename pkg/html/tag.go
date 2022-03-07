@@ -257,38 +257,21 @@ func RenderLabel(labelAttributes Attributes, label string, ctrlHtml string, mode
 	return b.String()
 }
 
-type writerItems []interface{}
+type writerItems []io.WriterTo
 
 // WriteTo implements the io.WriterTo interface.
 func (i writerItems) WriteTo(w io.Writer) (n int64, err error) {
 	for _, item := range i {
-		switch v := item.(type) {
-		case io.WriterTo:
-			n2, err2 := v.WriteTo(w)
-			n += n2
-			if err2 != nil {
-				return n, err2
-			}
-		case string:
-			n2, err2 := io.WriteString(w, v)
-			n += int64(n2)
-			if err2 != nil {
-				return n, err2
-			}
-		case nil:
-			// do nothing
-		default:
-			n2, err2 := fmt.Fprint(w, v)
-			n += int64(n2)
-			if err2 != nil {
-				return n, err2
-			}
+		n2, err2 := item.WriteTo(w)
+		n += n2
+		if err2 != nil {
+			return n, err2
 		}
 	}
 	return
 }
 
-func makeWriterTo(items ...interface{}) io.WriterTo {
+func makeWritersTo(items ...io.WriterTo) io.WriterTo {
 	b := writerItems(items)
 	return b
 }
@@ -323,9 +306,9 @@ func WriteLabel(w io.Writer, labelAttributes Attributes, label string, ctrlHtml 
 		n += n2
 		return
 	case LabelWrapBefore:
-		return WriteTag(w, "label", labelAttributes, makeWriterTo(label, " ", ctrlHtml))
+		return WriteTag(w, "label", labelAttributes, makeWritersTo(strings.NewReader(label + " "), ctrlHtml))
 	case LabelWrapAfter:
-		return WriteTag(w, "label", labelAttributes, makeWriterTo(ctrlHtml, " ", label))
+		return WriteTag(w, "label", labelAttributes, makeWritersTo(ctrlHtml, strings.NewReader(" " + label)))
 	}
 	panic("Unknown label mode")
 }
