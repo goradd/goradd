@@ -8,7 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
@@ -30,8 +30,8 @@ type FormI interface {
 	Response() *Response
 	renderAjax(ctx context.Context, w io.Writer)
 	AddRelatedFiles()
-	AddStyleSheetFile(path string, attributes html.Attributes)
-	AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes)
+	AddStyleSheetFile(path string, attributes html5tag.Attributes)
+	AddJavaScriptFile(path string, forceHeader bool, attributes html5tag.Attributes)
 	DisplayAlert(ctx context.Context, msg string)
 	ChangeLocation(url string)
 	PushLocation(ctx context.Context)
@@ -107,7 +107,7 @@ func (f *FormBase) AddGoraddFiles() {
 // AddFontAwesome adds the font-awesome files fo the form
 func (f *FormBase) AddFontAwesome() {
 	f.AddStyleSheetFile("https://use.fontawesome.com/releases/v5.0.13/css/all.css",
-		html.NewAttributes().Set("integrity", "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp").Set("crossorigin", "anonymous"))
+		html5tag.NewAttributes().Set("integrity", "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp").Set("crossorigin", "anonymous"))
 }
 
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
@@ -232,14 +232,14 @@ func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) {
 	// Inject any added style sheets and script files
 	if f.importedStyleSheets != nil {
 		f.importedStyleSheets.Range(func(k string,v interface{}) bool {
-			f.response.addStyleSheet(k,v.(html.Attributes))
+			f.response.addStyleSheet(k,v.(html5tag.Attributes))
 			return true
 		})
 	}
 
 	if f.importedJavaScripts != nil {
 		f.importedJavaScripts.Range(func(k string,v interface{}) bool {
-			f.response.addJavaScriptFile(k,v.(html.Attributes))
+			f.response.addJavaScriptFile(k,v.(html5tag.Attributes))
 			return true
 		})
 	}
@@ -257,9 +257,9 @@ func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) {
 }
 
 // DrawingAttributes returns the attributes to add to the form tag.
-func (f *FormBase) DrawingAttributes(ctx context.Context) html.Attributes {
+func (f *FormBase) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := f.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "form")
+	a.SetData("grctl", "form")
 	return a
 }
 
@@ -298,7 +298,7 @@ func (f *FormBase) PageDrawingFunction() PageDrawFunc {
 //
 // attributes are the attributes that will be included with the script tag, which is useful for things like
 // crossorigin and integrity attributes.
-func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes html.Attributes) {
+func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes html5tag.Attributes) {
 	if forceHeader && f.isOnPage {
 		panic("You cannot force a JavaScript file to be in the header if you insert it after the page is drawn.")
 	}
@@ -351,7 +351,7 @@ func (f *FormBase) AddMasterJavaScriptFile(url string, attributes []string, file
 // crossorigin and integrity attributes.
 //
 // To control the cache-control settings on the file, you should call SetCacheControl.
-func (f *FormBase) AddStyleSheetFile(path string, attributes html.Attributes) {
+func (f *FormBase) AddStyleSheetFile(path string, attributes html5tag.Attributes) {
 	if path[:4] != "http" {
 		url := http.GetAssetUrl(path)
 
@@ -384,25 +384,25 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) {
 
 	if f.headerStyleSheets != nil {
 		f.headerStyleSheets.Range(func(path string, attr interface{}) bool {
-			var attributes = attr.(html.Attributes)
+			var attributes = attr.(html5tag.Attributes)
 			if attributes == nil {
-				attributes = html.NewAttributes()
+				attributes = html5tag.NewAttributes()
 			}
 			attributes.Set("rel", "stylesheet")
 			attributes.Set("href", path)
-			WriteString(w, html.RenderVoidTag("link", attributes))
+			WriteString(w, html5tag.RenderVoidTag("link", attributes))
 			return true
 		})
 	}
 
 	if f.headerJavaScripts != nil {
 		f.headerJavaScripts.Range(func(path string, attr interface{}) bool {
-			var attributes = attr.(html.Attributes)
+			var attributes = attr.(html5tag.Attributes)
 			if attributes == nil {
-				attributes = html.NewAttributes()
+				attributes = html5tag.NewAttributes()
 			}
 			attributes.Set("src", path)
-			WriteString(w, html.RenderTag("script", attributes, ""))
+			WriteString(w, html5tag.RenderTag("script", attributes, ""))
 			return true
 		})
 	}
@@ -430,12 +430,12 @@ func (f *FormBase) mergeInjectedFiles() {
 
 func (f *FormBase) drawBodyScriptFiles(ctx context.Context, w io.Writer) (err error) {
 	f.bodyJavaScripts.Range(func(path string, attr interface{}) bool {
-		var attributes = attr.(html.Attributes)
+		var attributes = attr.(html5tag.Attributes)
 		if attributes == nil {
-			attributes = html.NewAttributes()
+			attributes = html5tag.NewAttributes()
 		}
 		attributes.Set("src", path)
-		if _, err = io.WriteString(w, html.RenderTag("script", attributes, "") + "\n"); err != nil {return false}
+		if _, err = io.WriteString(w, html5tag.RenderTag("script", attributes, "") + "\n"); err != nil {return false}
 		return true
 	})
 	return

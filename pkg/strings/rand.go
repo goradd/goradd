@@ -2,9 +2,10 @@ package strings
 
 import "math/rand"
 
-const alphaLower = "abcdefghijklmnopqrstuvwxyz"
-const alphaUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const alphaNum = "0123456789"
+const AlphaLower = "abcdefghijklmnopqrstuvwxyz"
+const AlphaUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const AlphaNum = "0123456789"
+const AlphaAll = AlphaLower + AlphaUpper + AlphaNum
 
 // RandomString generates a pseudo random string of the given length using the given characters.
 // The distribution is not perfect, but works for general purposes

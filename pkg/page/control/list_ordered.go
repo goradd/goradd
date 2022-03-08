@@ -2,9 +2,9 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	html2 "html"
+	"html"
 	"io"
 	"strconv"
 )
@@ -87,7 +87,7 @@ func (l *OrderedList) getItemsHtml(items []*ListItem) string {
 			a := item.Attributes().Copy()
 
 			// Certain attributes apply to the sub list and not the list item, so we split them here
-			a2 := html.NewAttributes()
+			a2 := html5tag.NewAttributes()
 			if a.Has("type") {
 				a2.Set("type", a.Get("type"))
 				a.RemoveAttribute("type")
@@ -98,10 +98,10 @@ func (l *OrderedList) getItemsHtml(items []*ListItem) string {
 				a.RemoveAttribute("start")
 			}
 
-			innerhtml = html.RenderTag(l.Tag, a2, innerhtml)
-			h += html.RenderTag(l.itemTag, a, item.Label()+" "+innerhtml)
+			innerhtml = html5tag.RenderTag(l.Tag, a2, innerhtml)
+			h += html5tag.RenderTag(l.itemTag, a, item.Label()+" "+innerhtml)
 		} else {
-			h += html.RenderTag(l.itemTag, item.Attributes(), html2.EscapeString(item.Label()))
+			h += html5tag.RenderTag(l.itemTag, item.Attributes(), html.EscapeString(item.Label()))
 		}
 	}
 	return h

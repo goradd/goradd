@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -14,16 +14,16 @@ type pagedTableTestForm struct {
 	FormBase
 }
 
-func (*pagedTableTestForm) 	TableRowAttributes(row int, data interface{}) html.Attributes {
-	return html.NewAttributes().AddAttributeValue("a", "b")
+func (*pagedTableTestForm) 	TableRowAttributes(row int, data interface{}) html5tag.Attributes {
+	return html5tag.NewAttributes().AddValues("a", "b")
 }
 
-func (*pagedTableTestForm) 	TableHeaderRowAttributes(row int) html.Attributes {
-	return html.NewAttributes().AddAttributeValue("c", "d")
+func (*pagedTableTestForm) 	TableHeaderRowAttributes(row int) html5tag.Attributes {
+	return html5tag.NewAttributes().AddValues("c", "d")
 }
 
-func (*pagedTableTestForm) 	TableFooterRowAttributes(row int) html.Attributes {
-	return html.NewAttributes().AddAttributeValue("e", "f")
+func (*pagedTableTestForm) 	TableFooterRowAttributes(row int) html5tag.Attributes {
+	return html5tag.NewAttributes().AddValues("e", "f")
 }
 
 func (*pagedTableTestForm) 	BindData(ctx context.Context, s DataManagerI) {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -70,9 +70,9 @@ func (l *NavbarList) DrawTag(ctx context.Context, w io.Writer) {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *NavbarList) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *NavbarList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "navbarlist")
+	a.SetData("grctl", "navbarlist")
 	a.AddClass("navbar-nav")
 	return a
 }
@@ -120,7 +120,7 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem
 			}
 		} else {
 			if item.IsDivider() {
-				h += html.RenderTag("div", html.NewAttributes().AddClass("dropdown-divider"), "")
+				h += html5tag.RenderTag("div", html5tag.NewAttributes().AddClass("dropdown-divider"), "")
 			} else if item.Disabled() {
 				if !hasParent {
 					h += fmt.Sprintf(`<li class="nav-item">
@@ -135,7 +135,7 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem
 				itemH := item.RenderLabel()
 				itemAttributes := item.Attributes().Copy()
 				itemAttributes.AddClass("nav-item")
-				linkAttributes := html.NewAttributes()
+				linkAttributes := html5tag.NewAttributes()
 				itemAttributes.Set("role", "menuitem")
 				linkAttributes.AddClass("dropdown-item")
 				if !item.HasAnchor() {
@@ -149,11 +149,11 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem
 				itemAttributes.AddClass("nav-item")
 
 				if item.Anchor() == "" {
-					linkAttributes := html.NewAttributes()
+					linkAttributes := html5tag.NewAttributes()
 					linkAttributes.AddClass("nav-link")
 					itemH = l.ItemProxy().LinkHtml(ctx, itemH, item.Value(), linkAttributes)
 				}
-				itemH = html.RenderTag(l.subItemTag, itemAttributes, itemH)
+				itemH = html5tag.RenderTag(l.subItemTag, itemAttributes, itemH)
 				h += itemH
 			}
 		}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -17,7 +17,7 @@ const (
 
 type CheckboxColumnI interface {
 	control.ColumnI
-	CheckboxAttributes(data interface{}) html.Attributes
+	CheckboxAttributes(data interface{}) html5tag.Attributes
 }
 
 // CheckboxColumn is a table column that contains a checkbox in each row.
@@ -68,7 +68,7 @@ func (c *CheckboxColumn) HeaderCellHtml(_ context.Context, _ int, _ int) (h stri
 	if c.showCheckAll {
 		a := c.this().CheckboxAttributes(nil)
 		a.Set("type", "checkbox")
-		h += html.RenderVoidTag("input", a)
+		h += html5tag.RenderVoidTag("input", a)
 	}
 	if c.IsSortable() {
 		h += c.RenderSortButton(c.Title())
@@ -81,11 +81,11 @@ func (c *CheckboxColumn) HeaderCellHtml(_ context.Context, _ int, _ int) (h stri
 
 // CheckboxAttributes returns the attributes for the input tag that will display the checkbox.
 // If data is nil, it indicates a checkAll box.
-func (c *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes {
+func (c *CheckboxColumn) CheckboxAttributes(data interface{}) html5tag.Attributes {
 	p := c.checkboxer
 	a := p.Attributes(data)
 	if a == nil {
-		a = html.NewAttributes()
+		a = html5tag.NewAttributes()
 	}
 	var id string
 	var pubid string
@@ -93,13 +93,13 @@ func (c *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes {
 	if data == nil {
 		pubid = c.ParentTable().ID() + "_" + c.ID() + "_all"
 		a.Set("id", pubid)
-		a.SetDataAttribute("grAll", "1")
+		a.SetData("grAll", "1")
 	} else if id = p.RowID(data); id != "" {
 		// TODO: optionally encrypt the id in case its a database id. Difficult since database ids might themselves be large hashes (aka Google data store)
 		// Perhaps use the checkbox provider to do that?
 		pubid = c.ParentTable().ID() + "_" + c.ID() + "_" + id
 		a.Set("id", pubid)
-		a.SetDataAttribute("grCheckcol", "1")
+		a.SetData("grCheckcol", "1")
 		c.current[id] = p.IsChecked(data)
 		a.Set("name", c.ParentTable().ID()+"_"+c.ID())
 		a.Set("value", id)
@@ -122,7 +122,7 @@ func (c *CheckboxColumn) CheckboxAttributes(data interface{}) html.Attributes {
 func (c *CheckboxColumn) CellText(_ context.Context, _ int, _ int, data interface{}) string {
 	a := c.this().CheckboxAttributes(data)
 	a.Set("type", "checkbox")
-	return html.RenderVoidTag("input", a)
+	return html5tag.RenderVoidTag("input", a)
 }
 
 // Changes returns a map of ids corresponding to checkboxes that have changed. Both true and false values indicate the
@@ -313,7 +313,7 @@ type CheckboxProvider interface {
 	IsChecked(data interface{}) bool
 	// Attributes returns the attributes that will be applied to the checkbox corresponding to the data row.
 	// Use this primarily for providing custom attributes. Return nil if you have no custom attributes.
-	Attributes(data interface{}) html.Attributes
+	Attributes(data interface{}) html5tag.Attributes
 	// All lets you return a map of all the ids and their initial values if you enable the checkAll box. This is
 	// mostly helpful if your table is not showing all the rows at once (i.e. you are using a paginator or scroller and
 	// only showing a subset of data at one time). If your table is showing a checkAll box, and you return nil here, the
@@ -341,7 +341,7 @@ func (c DefaultCheckboxProvider) IsChecked(_ interface{}) bool {
 	return false
 }
 
-func (c DefaultCheckboxProvider) Attributes(_ interface{}) html.Attributes {
+func (c DefaultCheckboxProvider) Attributes(_ interface{}) html5tag.Attributes {
 	return nil
 }
 

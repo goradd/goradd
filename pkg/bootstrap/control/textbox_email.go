@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )
@@ -22,7 +22,7 @@ func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
 	return t
 }
 
-func (t *EmailTextbox) DrawingAttributes(ctx context.Context) html.Attributes {
+func (t *EmailTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := t.EmailTextbox.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a

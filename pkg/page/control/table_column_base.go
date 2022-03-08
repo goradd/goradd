@@ -6,9 +6,9 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	html2 "html"
+	"html"
 	"io"
 	"strconv"
 	"time"
@@ -48,9 +48,9 @@ type ColumnI interface {
 	CellData(ctx context.Context, row int, col int, data interface{}) interface{}
 	HeaderCellHtml(ctx context.Context, row int, col int) string
 	FooterCellHtml(ctx context.Context, row int, col int) string
-	HeaderAttributes(ctx context.Context, row int, col int) html.Attributes
-	FooterAttributes(ctx context.Context, row int, col int) html.Attributes
-	ColTagAttributes() html.Attributes
+	HeaderAttributes(ctx context.Context, row int, col int) html5tag.Attributes
+	FooterAttributes(ctx context.Context, row int, col int) html5tag.Attributes
+	ColTagAttributes() html5tag.Attributes
 	UpdateFormValues(ctx context.Context)
 	AddActions(ctrl page.ControlI)
 	Action(ctx context.Context, params page.ActionParams)
@@ -89,29 +89,29 @@ type CellTexter interface {
 }
 
 type CellStyler interface {
-	CellAttributes(ctx context.Context, col ColumnI, info CellInfo) html.Attributes
+	CellAttributes(ctx context.Context, col ColumnI, info CellInfo) html5tag.Attributes
 }
 
 
 // ColumnBase is the base implementation of all table columns
 type ColumnBase struct {
 	base.Base
-	id               string
-	parentTable      TableI
-	parentTableID    string // for deserializing
-	title            string
-	html.Attributes // These are static attributes that will appear on each cell
-	headerAttributes []html.Attributes // static attributes per header row
-	footerAttributes []html.Attributes
-	colTagAttributes html.Attributes
-	span             int
-	asHeader         bool
-	isHtml           bool
-	cellTexter     CellTexter
-	cellTexterID   string // for deserialization
-	headerTexter   CellTexter
-	headerTexterID string  // for deserialization
-	footerTexter   CellTexter
+	id                  string
+	parentTable         TableI
+	parentTableID       string // for deserializing
+	title               string
+	html5tag.Attributes                       // These are static attributes that will appear on each cell
+	headerAttributes    []html5tag.Attributes // static attributes per header row
+	footerAttributes    []html5tag.Attributes
+	colTagAttributes    html5tag.Attributes
+	span                int
+	asHeader            bool
+	isHtml              bool
+	cellTexter          CellTexter
+	cellTexterID        string // for deserialization
+	headerTexter        CellTexter
+	headerTexterID      string  // for deserialization
+	footerTexter        CellTexter
 	footerTexterID string  // for deserialization
 	cellStyler     CellStyler // for dynamically styling cells
 	cellStylerID  string  // for deserialization
@@ -127,7 +127,7 @@ type ColumnBase struct {
 
 func (c *ColumnBase) Init(self ColumnI) {
 	c.Base.Init(self)
-	c.Attributes = html.NewAttributes()
+	c.Attributes = html5tag.NewAttributes()
 }
 
 func (c *ColumnBase) init(self ColumnI) {
@@ -256,13 +256,13 @@ func (c *ColumnBase) SetHidden(h bool) ColumnI {
 // The default version will return an attribute structure which you can use to directly
 // manipulate the attributes. If you want something more customized, create your own column and
 // implement this function. row and col are zero based.
-func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) html.Attributes {
+func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) html5tag.Attributes {
 	if len(c.headerAttributes) < row + 1 {
 		// extend the attributes
-		c.headerAttributes = append(c.headerAttributes, make([]html.Attributes, row-len(c.headerAttributes)+1)...)
+		c.headerAttributes = append(c.headerAttributes, make([]html5tag.Attributes, row-len(c.headerAttributes)+1)...)
 	}
 	if c.headerAttributes[row] == nil {
-		c.headerAttributes[row] = html.NewAttributes()
+		c.headerAttributes[row] = html5tag.NewAttributes()
 	}
 	if row == 0 {
 		// for screen readers
@@ -283,22 +283,22 @@ func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) htm
 }
 
 // FooterAttributes returns the attributes to use for the footer cell.
-func (c *ColumnBase) FooterAttributes(ctx context.Context, row int, col int) html.Attributes {
+func (c *ColumnBase) FooterAttributes(ctx context.Context, row int, col int) html5tag.Attributes {
 	if len(c.footerAttributes) < row + 1 {
 		// extend the attributes
-		c.footerAttributes = append(c.footerAttributes, make([]html.Attributes, row-len(c.footerAttributes)+1)...)
+		c.footerAttributes = append(c.footerAttributes, make([]html5tag.Attributes, row-len(c.footerAttributes)+1)...)
 	}
 	if c.footerAttributes[row] == nil {
-		c.footerAttributes[row] = html.NewAttributes()
+		c.footerAttributes[row] = html5tag.NewAttributes()
 	}
 	return c.footerAttributes[row]
 }
 
 // ColTagAttributes specifies attributes that will appear in the column tag. Note that you have to turn on column
 // tags in the table object as well for these to appear.
-func (c *ColumnBase) ColTagAttributes() html.Attributes {
+func (c *ColumnBase) ColTagAttributes() html5tag.Attributes {
 	if c.colTagAttributes == nil {
-		c.colTagAttributes = html.NewAttributes()
+		c.colTagAttributes = html5tag.NewAttributes()
 	}
 	return c.colTagAttributes
 }
@@ -312,7 +312,7 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, w io.Writer) {
 	if c.span > 1 {
 		a.Set("span", strconv.Itoa(c.span))
 	}
-	page.WriteString(w, html.RenderTag("col", a, ""))
+	page.WriteString(w, html5tag.RenderTag("col", a, ""))
 	return
 }
 
@@ -324,7 +324,7 @@ func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h st
 		info := CellInfo{RowNum: row, ColNum: col, isHeaderCell:true}
 		h = c.headerTexter.CellText(ctx, c.this(), info)
 	} else if row == 0 {
-		h = html2.EscapeString(c.title)
+		h = html.EscapeString(c.title)
 		if c.IsSortable() {
 			h = c.this().RenderSortButton(h)
 		}
@@ -345,7 +345,7 @@ func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count
 	if c.asHeader {
 		tag = "th"
 	}
-	page.WriteString(w, html.RenderTag(tag, a, cellHtml))
+	page.WriteString(w, html5tag.RenderTag(tag, a, cellHtml))
 	return
 }
 
@@ -367,7 +367,7 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 
 	cellHtml := c.this().CellText(ctx, row, col, data)
 	if !c.isHtml {
-		cellHtml = html2.EscapeString(cellHtml)
+		cellHtml = html.EscapeString(cellHtml)
 	}
 	a := c.CellAttributes(ctx, row, col, data)
 
@@ -375,7 +375,7 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 	if c.asHeader {
 		tag = "th"
 	}
-	page.WriteString(w, html.RenderTag(tag, a, cellHtml))
+	page.WriteString(w, html5tag.RenderTag(tag, a, cellHtml))
 	return
 }
 
@@ -396,7 +396,7 @@ func (c *ColumnBase) CellData(ctx context.Context, row int, col int, data interf
 
 // CellAttributes returns the attributes of the cell. Column implementations should call this base version first before
 // customizing more. It will use the CellStyler if one was provided.
-func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) html.Attributes {
+func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) html5tag.Attributes {
 	if c.Attributes == nil && c.cellStyler == nil {
 		return nil
 	}
@@ -459,12 +459,12 @@ func (c *ColumnBase) UnmarshalState(m maps.Loader) {}
 
 type columnBaseEncoded struct {
 	ID string
-	Title string
-	Attributes html.Attributes
-	HeaderAttributes []html.Attributes
-	FooterAttributes []html.Attributes
-	ColTagAttributes html.Attributes
-	Span int
+	Title            string
+	Attributes       html5tag.Attributes
+	HeaderAttributes []html5tag.Attributes
+	FooterAttributes []html5tag.Attributes
+	ColTagAttributes html5tag.Attributes
+	Span             int
 	AsHeader bool
 	IsHtml bool
 	IsHidden bool
@@ -589,16 +589,16 @@ func Columns(cols ...ColumnCreator) []ColumnCreator {
 // ColumnOptions are settings you can apply to all types of table columns
 type ColumnOptions struct {
 	// CellAttributes is a static map of attributes to apply to every cell in the column
-	CellAttributes   html.Attributes
+	CellAttributes html5tag.Attributes
 	// HeaderAttributes is a slice of attributes to apply to each row of the header cells in the column.
 	// Each item in the slice corresponds to a row of the header.
-	HeaderAttributes []html.Attributes
+	HeaderAttributes []html5tag.Attributes
 	// FooterAttributes is a slice of attributes to apply to each row of the footer cells in the column.
 	// Each item in the slice corresponds to a row of the footer.
-	FooterAttributes []html.Attributes
+	FooterAttributes []html5tag.Attributes
 	// ColTagAttributes applies attributes to the col tag if col tags are on in the table. There are limited uses for
 	// this, but in particular, you can style a column and give it an id. Use Span to set the span attribute.
-	ColTagAttributes html.Attributes
+	ColTagAttributes html5tag.Attributes
 	// Span is specifically for col tags to specify the width of the styling in the col tag.
 	Span             int
 	// AsHeader will cause the entire column to output header tags (th) instead of standard cell tags (td).
@@ -636,7 +636,7 @@ func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt Column
 	}
 	if opt.ColTagAttributes != nil {
 		if c.colTagAttributes == nil {
-			c.colTagAttributes = html.NewAttributes()
+			c.colTagAttributes = html5tag.NewAttributes()
 		}
 		c.colTagAttributes.Merge(opt.ColTagAttributes)
 	}

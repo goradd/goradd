@@ -3,7 +3,7 @@ package page
 import (
 	"github.com/goradd/goradd/pkg/cache"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 )
 
@@ -76,9 +76,9 @@ func (o *FastPagestateCache) Has(pageId string) bool {
 
 // NewPageID returns a new page id
 func (o *FastPagestateCache) NewPageID() string {
-	s := html.RandomString(40)
+	s := html5tag.RandomString(40)
 	for o.Has(s) { // while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure
-		s = html.RandomString(40)
+		s = html5tag.RandomString(40)
 	}
 	return s
 }
@@ -168,9 +168,9 @@ func (o *SerializedPagestateCache) Has(pageId string) bool {
 
 // NewPageID returns a new page id
 func (o *SerializedPagestateCache) NewPageID() string {
-	s := html.RandomString(40)
+	s := html5tag.RandomString(40)
 	for o.Has(s) { // while it is extremely unlikely that we will get a collision, a collision is such a huge security problem we must make sure
-		s = html.RandomString(40)
+		s = html5tag.RandomString(40)
 	}
 	return s
 }

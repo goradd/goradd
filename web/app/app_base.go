@@ -8,7 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	http2 "github.com/goradd/goradd/pkg/http"
 	grlog "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
@@ -66,7 +66,7 @@ func (a *Application) Init(self ApplicationI) {
 	self.SetupPaths()
 	self.SetupDatabaseWatcher()
 
-	page.DefaultCheckboxLabelDrawingMode = html.LabelAfter
+	page.DefaultCheckboxLabelDrawingMode = html5tag.LabelAfter
 }
 
 func (a *Application) this() ApplicationI {

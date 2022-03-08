@@ -2,10 +2,10 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	buf2 "github.com/goradd/goradd/pkg/pool"
-	html2 "html"
+	"html"
 	"io"
 )
 
@@ -38,9 +38,9 @@ func (c *Fieldset) this() FieldsetI {
 }
 
 // DrawingAttributes is called by the framework.
-func (c *Fieldset) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *Fieldset) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "fieldset")
+	a.SetData("grctl", "fieldset")
 	return a
 }
 
@@ -54,10 +54,10 @@ func (c *Fieldset) DrawTag(ctx context.Context, w io.Writer) {
 	defer buf2.PutBuffer(buf)
 
 	if l := c.Text(); l != "" {
-		ctrl = html.RenderTag("legend", nil, html2.EscapeString(l))
+		ctrl = html5tag.RenderTag("legend", nil, html.EscapeString(l))
 	}
 	c.this().DrawInnerHtml(ctx, buf)
-	ctrl = html.RenderTag(c.Tag, attributes, ctrl+buf.String())
+	ctrl = html5tag.RenderTag(c.Tag, attributes, ctrl+buf.String())
 	if _,err := io.WriteString(w, ctrl); err != nil {panic(err)}
 }
 

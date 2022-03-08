@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"encoding/base64"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"strconv"
 )
@@ -121,7 +121,7 @@ func (i *Image) SetHeight(height int) ImageI {
 }
 
 // DrawingAttributes is called by the framework.
-func (i *Image) DrawingAttributes(ctx context.Context) html.Attributes {
+func (i *Image) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := i.ControlBase.DrawingAttributes(ctx)
 	if i.data != nil {
 		// Turn the data into a source attribute

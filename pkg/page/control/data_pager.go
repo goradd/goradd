@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/math"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -252,9 +252,9 @@ func (d *DataPager) ButtonProxy() *Proxy {
 
 
 // DrawingAttributes is called by the framework to add temporary attributes to the html.
-func (d *DataPager) DrawingAttributes(ctx context.Context) html.Attributes {
+func (d *DataPager) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := d.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "datapager")
+	a.SetData("grctl", "datapager")
 	return a
 }
 
@@ -424,7 +424,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 
 	actionValue = strconv.Itoa(pageNum - 1)
 
-	attr := html.NewAttributes().
+	attr := html5tag.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("arrow previous")
 
@@ -454,7 +454,7 @@ func (d *DataPager) NextButtonsHtml() string {
 	pageNum := p.PageNum()
 	actionValue = strconv.Itoa(pageNum + 1)
 
-	attr := html.NewAttributes().
+	attr := html5tag.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("arrow next")
 
@@ -481,7 +481,7 @@ func (d *DataPager) NextButtonsHtml() string {
 func (d *DataPager) PageButtonsHtml(i int) string {
 	actionValue := strconv.Itoa(i)
 	buttonId := d.ID() + "_page_" + actionValue
-	attr := html.NewAttributes().Set("id", buttonId).Set("role", "tab").AddClass("page")
+	attr := html5tag.NewAttributes().Set("id", buttonId).Set("role", "tab").AddClass("page")
 	p := d.PagedControl()
 	pageNum := p.PageNum()
 

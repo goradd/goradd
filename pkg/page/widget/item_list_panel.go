@@ -3,7 +3,7 @@ package widget
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -74,9 +74,9 @@ func (p *ItemListPanel) this() ItemListPanelI {
 	return p.Self.(ItemListPanelI)
 }
 
-func (c *ItemListPanel) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *ItemListPanel) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.Panel.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "itemlistpnl")
+	a.SetData("grctl", "itemlistpnl")
 	return a
 }
 

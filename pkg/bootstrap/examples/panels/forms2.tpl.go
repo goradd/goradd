@@ -23,11 +23,11 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("nameText-fg") {
-		ctrl.Page().GetControl("nameText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="col-form-label col-2"`)
+		ctrl.Page().GetControl("nameText-fg").(control.LabelAttributer).LabelAttributes().MergeString(`class="col-form-label col-2"`)
 	}
 
 	if ctrl.Page().HasControl("nameText-fg") {
-		ctrl.Page().GetControl("nameText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-10"`)
+		ctrl.Page().GetControl("nameText-fg").(FormGroupI).InnerDivAttributes().MergeString(`class="col-10"`)
 	}
 
 	if `class="row mb-3"` == "" {
@@ -60,11 +60,11 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("streetText-fg") {
-		ctrl.Page().GetControl("streetText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="col-form-label col-2"`)
+		ctrl.Page().GetControl("streetText-fg").(control.LabelAttributer).LabelAttributes().MergeString(`class="col-form-label col-2"`)
 	}
 
 	if ctrl.Page().HasControl("streetText-fg") {
-		ctrl.Page().GetControl("streetText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-10"`)
+		ctrl.Page().GetControl("streetText-fg").(FormGroupI).InnerDivAttributes().MergeString(`class="col-10"`)
 	}
 
 	if `class="row mb-3"` == "" {
@@ -108,7 +108,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("cityText-fg") {
-		ctrl.Page().GetControl("cityText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="col-form-label col-4"`)
+		ctrl.Page().GetControl("cityText-fg").(control.LabelAttributer).LabelAttributes().MergeString(`class="col-form-label col-4"`)
 	}
 
 	if _, err = io.WriteString(_w, `        `); err != nil {
@@ -121,7 +121,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("cityText-fg") {
-		ctrl.Page().GetControl("cityText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-8"`)
+		ctrl.Page().GetControl("cityText-fg").(FormGroupI).InnerDivAttributes().MergeString(`class="col-8"`)
 	}
 
 	if _, err = io.WriteString(_w, `        `); err != nil {
@@ -169,7 +169,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("stateText-fg") {
-		ctrl.Page().GetControl("stateText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="col-form-label col-6"`)
+		ctrl.Page().GetControl("stateText-fg").(control.LabelAttributer).LabelAttributes().MergeString(`class="col-form-label col-6"`)
 	}
 
 	if _, err = io.WriteString(_w, `        `); err != nil {
@@ -182,7 +182,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("stateText-fg") {
-		ctrl.Page().GetControl("stateText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-6"`)
+		ctrl.Page().GetControl("stateText-fg").(FormGroupI).InnerDivAttributes().MergeString(`class="col-6"`)
 	}
 
 	if _, err = io.WriteString(_w, `        `); err != nil {
@@ -230,7 +230,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("zipText-fg") {
-		ctrl.Page().GetControl("zipText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="col-form-label col-4"`)
+		ctrl.Page().GetControl("zipText-fg").(control.LabelAttributer).LabelAttributes().MergeString(`class="col-form-label col-4"`)
 	}
 
 	if _, err = io.WriteString(_w, `        `); err != nil {
@@ -243,7 +243,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("zipText-fg") {
-		ctrl.Page().GetControl("zipText-fg").(FormGroupI).InnerDivAttributes().Merge(`class="col-8"`)
+		ctrl.Page().GetControl("zipText-fg").(FormGroupI).InnerDivAttributes().MergeString(`class="col-8"`)
 	}
 
 	if _, err = io.WriteString(_w, `        `); err != nil {

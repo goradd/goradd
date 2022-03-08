@@ -1,4 +1,4 @@
-package html
+package html5tag
 
 import (
 	"bytes"
@@ -34,12 +34,12 @@ func ExampleVoidTag_Render() {
 }
 
 func ExampleRenderTagNoSpace() {
-	fmt.Println(RenderTagNoSpace("div", NewAttributesFrom(map[string]string{"id": "me"}), "Here I am"))
+	fmt.Println(RenderTagNoSpace("div", Attributes{"id": "me"}, "Here I am"))
 	// Output: <div id="me">Here I am</div>
 }
 
 func ExampleRenderVoidTag() {
-	fmt.Println(RenderVoidTag("img", NewAttributesFrom(map[string]string{"src": "thisFile"})))
+	fmt.Println(RenderVoidTag("img", Attributes{"src": "thisFile"}))
 	// Output: <img src="thisFile">
 }
 
@@ -143,7 +143,7 @@ func BenchmarkWriterTag2(b *testing.B) {
 	s := "tag"
 	var n int
 	a := Attributes{"a": "b"}
-	w2 := makeWritersTo(strings.NewReader("abc"),strings.NewReader(s),strings.NewReader("cd"))
+	w2 := makeWritersTo(strings.NewReader("abc"), strings.NewReader(s), strings.NewReader("cd"))
 	for i := 0; i < b.N; i++ {
 		n2, _ := WriteTag(&buf, s, a, w2)
 		n += n2
@@ -155,14 +155,12 @@ func BenchmarkWriterTag3(b *testing.B) {
 	s := "tag"
 	var n int
 	a := Attributes{"a": "b"}
-	w2 := makeWritersTo(strings.NewReader("abc" + s),strings.NewReader("cd"))
+	w2 := makeWritersTo(strings.NewReader("abc"+s), strings.NewReader("cd"))
 	for i := 0; i < b.N; i++ {
 		n2, _ := WriteTag(&buf, s, a, w2)
 		n += n2
 	}
 }
-
-
 
 func BenchmarkRenderTag(b *testing.B) {
 	s := "tag"

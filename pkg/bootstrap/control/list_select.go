@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )
@@ -29,7 +29,7 @@ func (l *SelectList) Init(parent page.ControlI, id string) {
 }
 
 
-func (l *SelectList) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *SelectList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.SelectList.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a

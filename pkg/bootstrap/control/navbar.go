@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -116,13 +116,13 @@ func (b *Navbar) SetExpand(e NavbarExpandClass) NavbarI {
 	return b.this()
 }
 
-func (b *Navbar) DrawingAttributes(ctx context.Context) html.Attributes {
+func (b *Navbar) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := b.ControlBase.DrawingAttributes(ctx)
 	a.AddClass("navbar")
 	a.AddClass(string(b.style))
 	a.AddClass(string(b.expand))
 	a.AddClass(string(b.background))
-	a.SetDataAttribute("grctl", "bs-navbar")
+	a.SetData("grctl", "bs-navbar")
 	return a
 }
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
@@ -49,14 +49,14 @@ func (t *SelectTable) this() SelectTableI {
 	return t.Self.(SelectTableI)
 }
 
-func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a html.Attributes) {
+func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a html5tag.Attributes) {
 	var id string
 
 	if t.RowStyler() != nil {
 		a = t.RowStyler().TableRowAttributes(row, data)
 		id = a.Get("id") // styler might be giving us an id
 	} else {
-		a = html.NewAttributes()
+		a = html5tag.NewAttributes()
 	}
 
 	// try to guess the id from the data
@@ -74,7 +74,7 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a html.Attrib
 	}
 	if id != "" {
 		// TODO: If configured, encrypt the id so its not publicly showing database ids
-		a.SetDataAttribute("id", id)
+		a.SetData("id", id)
 		// We need an actual id for aria features
 		a.SetID(t.ID() + "_" + id)
 	} else {
@@ -85,16 +85,16 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a html.Attrib
 	return a
 }
 
-func (t *SelectTable) DrawingAttributes(ctx context.Context) html.Attributes {
+func (t *SelectTable) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := t.Table.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "selecttable")
+	a.SetData("grctl", "selecttable")
 	a.Set("role", "listbox")
-	a.SetDataAttribute("grWidget", "goradd.SelectTable")
+	a.SetData("grWidget", "goradd.SelectTable")
 	if t.selectedID != "" {
-		a.SetDataAttribute("grOptSelectedId", t.selectedID)
+		a.SetData("grOptSelectedId", t.selectedID)
 	}
 	if t.reselectable {
-		a.SetDataAttribute("grOptReselect", "1")
+		a.SetData("grOptReselect", "1")
 	}
 
 	return a

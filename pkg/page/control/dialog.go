@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
@@ -47,7 +47,7 @@ type DialogI interface {
 	AddCloseButton(label string, id string)
 	SetButtonText(id string, text string)
 	SetButtonVisible(id string, visible bool)
-	SetButtonStyle(id string, a html.Style)
+	SetButtonStyle(id string, a html5tag.Style)
 	RemoveButton(id string)
 	RemoveAllButtons()
 }
@@ -134,9 +134,9 @@ func (d *Dialog) Title() string {
 }
 
 // DrawingAttributes is called by the framework to set temporary attributes just before drawing.
-func (d *Dialog) DrawingAttributes(ctx context.Context) html.Attributes {
+func (d *Dialog) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := d.Panel.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "dialog")
+	a.SetData("grctl", "dialog")
 	return a
 }
 
@@ -242,7 +242,7 @@ func (d *Dialog) SetButtonText(id string, text string) {
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (d *Dialog) SetButtonStyle(id string, a html.Style) {
+func (d *Dialog) SetButtonStyle(id string, a html5tag.Style) {
 	bb := d.ButtonBar()
 	if ctrl := bb.Child(id); ctrl != nil {
 		ctrl.SetStyles(a)

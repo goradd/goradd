@@ -71,7 +71,7 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
 {{define setLabelAttributes 2}}
 {{g
 if ctrl.Page().HasControl("$1") {
-    ctrl.Page().GetControl("$1").(control.LabelAttributer).LabelAttributes().Merge(`$2`)
+    ctrl.Page().GetControl("$1").(control.LabelAttributer).LabelAttributes().MergeString(`$2`)
 }
 }}
 {{end setLabelAttributes}}
@@ -79,7 +79,7 @@ if ctrl.Page().HasControl("$1") {
 {{define setChildLabelAttributes 2}}
 {{g
 if ctrl.Page().HasControl(ctrl.ID() + "$1") {
-    ctrl.Page().GetControl(ctrl.ID() + "$1").(control.LabelAttributer).LabelAttributes().Merge(`$2`)
+    ctrl.Page().GetControl(ctrl.ID() + "$1").(control.LabelAttributer).LabelAttributes().MergeString(`$2`)
 }
 }}
 {{end setChildLabelAttributes}}

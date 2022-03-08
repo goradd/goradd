@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"io"
@@ -36,9 +36,9 @@ func (c *RadioButton) SetInline(v bool) *RadioButton {
 	return c
 }
 
-func (c *RadioButton) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *RadioButton) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.RadioButton.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "bs-radio")
+	a.SetData("grctl", "bs-radio")
 	a.AddClass("form-check-input")
 
 	if c.Text() == "" {
@@ -47,16 +47,16 @@ func (c *RadioButton) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (c *RadioButton) GetDrawingLabelAttributes() html.Attributes {
+func (c *RadioButton) GetDrawingLabelAttributes() html5tag.Attributes {
 	a := c.RadioButton.GetDrawingLabelAttributes()
 	a.AddClass("form-check-label")
 	return a
 }
 
 func (c *RadioButton) DrawTag(ctx context.Context, w io.Writer) {
-	checkWrapperAttributes := html.NewAttributes().
+	checkWrapperAttributes := html5tag.NewAttributes().
 		AddClass("form-check").
-		SetDataAttribute("grel", c.ID()) // make sure the entire control gets removed
+		SetData("grel", c.ID()) // make sure the entire control gets removed
 	if c.inline {
 		checkWrapperAttributes.AddClass("form-check-inline")
 	}
@@ -91,9 +91,9 @@ type RadioButtonCreator struct {
 	// Checked will initialize the checkbox in its checked state.
 	Checked bool
 	// LabelMode specifies how the label is drawn with the checkbox.
-	LabelMode html.LabelDrawingMode
+	LabelMode html5tag.LabelDrawingMode
 	// LabelAttributes are additional attributes placed on the label tag.
-	LabelAttributes html.Attributes
+	LabelAttributes html5tag.Attributes
 	// SaveState will save the value of the checkbox and restore it when the page is reentered.
 	SaveState bool
 	// Group is the name of the group that the button belongs to
@@ -111,7 +111,7 @@ func (c RadioButtonCreator) Create(ctx context.Context, parent page.ControlI) pa
 	if c.Text != "" {
 		ctrl.SetText(c.Text)
 	}
-	if c.LabelMode != html.LabelDefault {
+	if c.LabelMode != html5tag.LabelDefault {
 		ctrl.LabelMode = c.LabelMode
 	}
 	if c.LabelAttributes != nil {

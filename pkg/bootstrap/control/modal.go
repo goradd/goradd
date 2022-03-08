@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	config2 "github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -126,11 +126,11 @@ func (m *Modal) AddTitlebarClass(class string) {
 	m.titleBar.AddClass(class)
 }
 
-func (m *Modal) DrawingAttributes(ctx context.Context) html.Attributes {
+func (m *Modal) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := m.Panel.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "bs-modal")
+	a.SetData("grctl", "bs-modal")
 	if m.backdrop == ModalStaticBackdrop {
-		a.SetDataAttribute("bsBackdrop", "static")
+		a.SetData("bsBackdrop", "static")
 	}
 	return a
 }
@@ -226,7 +226,7 @@ func (m *Modal) SetButtonVisible(id string, visible bool) {
 }
 
 // SetButtonStyle sets css styles on a button that is already in the dialog
-func (m *Modal) SetButtonStyle(id string, a html.Style) {
+func (m *Modal) SetButtonStyle(id string, a html5tag.Style) {
 	if ctrl := m.buttonBar.Child(m.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetStyles(a)
 	}

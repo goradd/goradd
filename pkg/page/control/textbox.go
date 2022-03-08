@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	html2 "html"
+	"html"
 	"io"
 	"strconv"
 )
@@ -98,9 +98,9 @@ func (t *Textbox) ResetValidators() {
 }
 
 // DrawingAttributes is called by the framework to retrieve the tag's private attributes at draw time.
-func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
+func (t *Textbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := t.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "textbox")
+	a.SetData("grctl", "textbox")
 	a.Set("name", t.ID()) // needed for posts
 	if t.IsRequired() {
 		a.Set("required", "")
@@ -120,7 +120,7 @@ func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
 			a.Set("cols", strconv.Itoa(t.columnCount))
 		}
 	}
-	a.AddAttributeValue("aria-labelledby", t.ID()) // spec says inputs should label themselves so screen reader will read out content of the input
+	a.AddValues("aria-labelledby", t.ID()) // spec says inputs should label themselves so screen reader will read out content of the input
 	if t.readonly {
 		a.Set("readonly", "")
 	}
@@ -130,7 +130,7 @@ func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
 // DrawInnerHtml is an internal function that renders the inner html of a tag. In this case, it is rendering the inner
 // text of a textarea
 func (t *Textbox) DrawInnerHtml(_ context.Context, w io.Writer) {
-	page.WriteString(w, html2.EscapeString(t.Text()))
+	page.WriteString(w, html.EscapeString(t.Text()))
 	return
 }
 

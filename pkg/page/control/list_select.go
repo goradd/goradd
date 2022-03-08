@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
@@ -168,9 +168,9 @@ func (l *SelectList) UnmarshalState(m maps.Loader) {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *SelectList) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *SelectList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "selectlist")
+	a.SetData("grctl", "selectlist")
 	a.Set("name", l.ID()) // needed for posts
 	if l.IsRequired() {
 		a.Set("required", "") // required for some css frameworks, but browser validation is flaky.
@@ -204,7 +204,7 @@ func (l *SelectList) getItemsHtml(items []*ListItem) string {
 			innerhtml := l.getItemsHtml(item.ListItems())
 			attributes := item.Attributes().Copy()
 			attributes.Set("label", item.Label())
-			h += html.RenderTag(tag, attributes, innerhtml)
+			h += html5tag.RenderTag(tag, attributes, innerhtml)
 		} else {
 			attributes := item.Attributes().Copy()
 
@@ -215,7 +215,7 @@ func (l *SelectList) getItemsHtml(items []*ListItem) string {
 				attributes.Set("selected", "")
 			}
 
-			h += html.RenderTag("option", attributes, item.RenderLabel())
+			h += html5tag.RenderTag("option", attributes, item.RenderLabel())
 		}
 	}
 	return h

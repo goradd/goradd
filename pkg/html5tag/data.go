@@ -1,4 +1,4 @@
-package html
+package html5tag
 
 import (
 	"errors"

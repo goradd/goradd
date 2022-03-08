@@ -3,7 +3,7 @@ package panels
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/crypt"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -81,7 +81,7 @@ func (p *TableProxyPanel) CellText(ctx context.Context, col ColumnI, info CellIn
 	id := crypt.SessionEncryptUrlValue(ctx, project.ID()) // Since this is a database id, lets encrypt it for extra security
 
 	// This is just to assign an id for click testing. You don't normally need to assign an id.
-	attr := html.NewAttributes()
+	attr := html5tag.NewAttributes()
 	attr.SetID("pxy" + project.ID())
 
 	pxy := GetProxy(p, "pxy")

@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/pool"
-	html2 "html"
+	"html"
 	"io"
 	"reflect"
 	"strconv"
@@ -28,11 +28,11 @@ type TableI interface {
 	DataManagerI
 	SetCaption(interface{}) TableI
 	DrawCaption(context.Context, io.Writer)
-	GetHeaderRowAttributes(row int) html.Attributes
-	GetFooterRowAttributes(row int) html.Attributes
-	GetRowAttributes(row int, data interface{}) html.Attributes
-	HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes)
-	FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes)
+	GetHeaderRowAttributes(row int) html5tag.Attributes
+	GetFooterRowAttributes(row int) html5tag.Attributes
+	GetRowAttributes(row int, data interface{}) html5tag.Attributes
+	HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html5tag.Attributes)
+	FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html5tag.Attributes)
 	SetHideIfEmpty(h bool) TableI
 	SetHeaderRowCount(count int) TableI
 	SetFooterRowCount(count int) TableI
@@ -62,17 +62,17 @@ type TableI interface {
 type TableRowAttributer interface {
 	// TableRowAttributes returns attributes that should be used on the particular row indicated.
 	// Data is the data for that row.
-	TableRowAttributes(row int, data interface{}) html.Attributes
+	TableRowAttributes(row int, data interface{}) html5tag.Attributes
 }
 
 type TableHeaderRowAttributer interface {
 	// TableHeaderRowAttributes returns attributes to use for the particular header row indicated
-	TableHeaderRowAttributes(row int) html.Attributes
+	TableHeaderRowAttributes(row int) html5tag.Attributes
 }
 
 type TableFooterRowAttributer interface {
 	// TableFooterRowAttributes returns attributes to use for the particular footer row indicated
-	TableFooterRowAttributes(row int) html.Attributes
+	TableFooterRowAttributes(row int) html5tag.Attributes
 }
 
 // Table is a goradd control that outputs a dynamic HTML table object, with table, tr, th and td tags,
@@ -219,9 +219,9 @@ func (t *Table) DrawTag(ctx context.Context, w io.Writer) {
 // DrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
 // is no data to show. This will hide header and footer cells and potentially the outline of the table when there is no
 // data in the table.
-func (t *Table) DrawingAttributes(ctx context.Context) html.Attributes {
+func (t *Table) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := t.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "table")
+	a.SetData("grctl", "table")
 	if !t.HasData() && t.hideIfEmpty {
 		a.SetStyle("display", "none")
 	}
@@ -244,13 +244,13 @@ func (t *Table) DrawInnerHtml(ctx context.Context, w io.Writer) {
 
 	if t.headerRowCount > 0 {
 		t.DrawHeaderRows(ctx, buf2)
-		page.WriteString(buf1, html.RenderTag("thead", nil, buf2.String()))
+		page.WriteString(buf1, html5tag.RenderTag("thead", nil, buf2.String()))
 		buf2.Reset()
 	}
 
 	if t.footerRowCount > 0 {
 		t.DrawFooterRows(ctx, buf2)
-		page.WriteString(buf1, html.RenderTag("tfoot", nil, buf2.String()))
+		page.WriteString(buf1, html5tag.RenderTag("tfoot", nil, buf2.String()))
 		buf2.Reset()
 	}
 
@@ -259,14 +259,14 @@ func (t *Table) DrawInnerHtml(ctx context.Context, w io.Writer) {
 		return true
 	})
 
-	page.WriteString(buf1, html.RenderTag("tbody", nil, buf2.String()))
+	page.WriteString(buf1, html5tag.RenderTag("tbody", nil, buf2.String()))
 }
 
 // DrawCaption is called internally to draw the caption. Subclasses can override this to draw a custom caption.
 func (t *Table) DrawCaption(ctx context.Context, w io.Writer) {
 	switch obj := t.caption.(type) {
 	case string:
-		page.WriteString(w, fmt.Sprintf("<caption>%s</caption>\n", html2.EscapeString(obj)))
+		page.WriteString(w, fmt.Sprintf("<caption>%s</caption>\n", html.EscapeString(obj)))
 	case page.ControlI:
 		page.WriteString(w, "<caption>")
 		obj.Draw(ctx, w)
@@ -298,10 +298,10 @@ func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer)  {
 		for colNum, col := range t.columns {
 			if !col.IsHidden() {
 				cellHtml, attr := this.HeaderCellDrawingInfo(ctx, col, rowNum, colNum)
-				page.WriteString(buf1, html.RenderTag("th", attr, cellHtml))
+				page.WriteString(buf1, html5tag.RenderTag("th", attr, cellHtml))
 			}
 		}
-		page.WriteString(w, html.RenderTag("tr", t.GetHeaderRowAttributes(rowNum), buf1.String()))
+		page.WriteString(w, html5tag.RenderTag("tr", t.GetHeaderRowAttributes(rowNum), buf1.String()))
 		buf1.Reset()
 	}
 	return
@@ -309,7 +309,7 @@ func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer)  {
 
 // HeaderCellDrawingInfo is called internally to provide the info for each header cell drawn. Subclasses can
 // override this.
-func (t *Table) HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes) {
+func (t *Table) HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html5tag.Attributes) {
 	cellHtml = col.HeaderCellHtml(ctx, rowNum, colNum)
 	cellAttributes = col.HeaderAttributes(ctx, rowNum, colNum)
 	return
@@ -317,14 +317,14 @@ func (t *Table) HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum i
 
 // FooterCellDrawingInfo is called internally to provide the info for each header cell drawn. Subclasses can
 // override this.
-func (t *Table) FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html.Attributes) {
+func (t *Table) FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html5tag.Attributes) {
 	cellHtml = col.FooterCellHtml(ctx, rowNum, colNum)
 	cellAttributes = col.FooterAttributes(ctx, rowNum, colNum)
 	return
 }
 
 // GetHeaderRowAttributes is called internally to get the attributes for the tr tags in header rows.
-func (t *Table) GetHeaderRowAttributes(row int) html.Attributes {
+func (t *Table) GetHeaderRowAttributes(row int) html5tag.Attributes {
 	if t.headerRowStyler != nil {
 		return t.headerRowStyler.TableHeaderRowAttributes(row)
 	}
@@ -344,17 +344,17 @@ func (t *Table) DrawFooterRows(ctx context.Context, w io.Writer) {
 				if col.AsHeader() {
 					tag = "th"
 				}
-				page.WriteString(buf1, html.RenderTag(tag, attr, cellHtml))
+				page.WriteString(buf1, html5tag.RenderTag(tag, attr, cellHtml))
 			}
 		}
-		page.WriteString(w, html.RenderTag("tr", t.GetFooterRowAttributes(rowNum), buf1.String()))
+		page.WriteString(w, html5tag.RenderTag("tr", t.GetFooterRowAttributes(rowNum), buf1.String()))
 		buf1.Reset()
 	}
 	return
 }
 
 // GetFooterRowAttributes is called internally to get the attributes for the tr tags in footer rows.
-func (t *Table) GetFooterRowAttributes(row int) html.Attributes {
+func (t *Table) GetFooterRowAttributes(row int) html5tag.Attributes {
 	if t.footerRowStyler != nil {
 		return t.footerRowStyler.TableFooterRowAttributes(row)
 	}
@@ -373,7 +373,7 @@ func (t *Table) DrawRow(ctx context.Context, row int, data interface{}, w io.Wri
 }
 
 // GetRowAttributes is used internally to return the attributes for the tr tag of a data row.
-func (t *Table) GetRowAttributes(row int, data interface{}) html.Attributes {
+func (t *Table) GetRowAttributes(row int, data interface{}) html5tag.Attributes {
 	if t.rowStyler != nil {
 		return t.rowStyler.TableRowAttributes(row, data)
 	}

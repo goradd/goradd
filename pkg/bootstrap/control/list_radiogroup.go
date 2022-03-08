@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -32,7 +32,7 @@ func NewRadioListGroup(parent page.ControlI, id string) *RadioListGroup {
 
 func (l *RadioListGroup) Init(parent page.ControlI, id string) {
 	l.RadioList.Init(parent, id)
-	l.SetLabelDrawingMode(html.LabelWrapAfter)
+	l.SetLabelDrawingMode(html5tag.LabelWrapAfter)
 	l.SetRowClass("")
 	l.buttonStyle = ButtonStyleSecondary
 	config.LoadBootstrap(l.ParentForm())
@@ -50,18 +50,18 @@ func (l *RadioListGroup) SetButtonStyle(buttonStyle string) RadioListGroupI {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *RadioListGroup) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *RadioListGroup) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx) // skip default checkbox list attributes
-	a.SetDataAttribute("grctl", "bs-RadioListGroup")
+	a.SetData("grctl", "bs-RadioListGroup")
 	a.AddClass("btn-group btn-group-toggle")
-	a.SetDataAttribute("toggle", "buttons")
+	a.SetData("toggle", "buttons")
 	return a
 }
 
 // RenderItem is called by the framework to render a single item in the list.
 func (l *RadioListGroup) RenderItem(item *control.ListItem) (h string) {
 	selected := l.SelectedItem().ID() == item.ID()
-	attributes := html.NewAttributes()
+	attributes := html5tag.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", l.ID())
 	attributes.Set("value", item.Value())
@@ -69,12 +69,12 @@ func (l *RadioListGroup) RenderItem(item *control.ListItem) (h string) {
 	if selected {
 		attributes.Set("checked", "")
 	}
-	ctrl := html.RenderVoidTag("input", attributes)
-	labelAttributes := html.NewAttributes().Set("for", item.ID()).AddClass("btn").AddClass(l.buttonStyle)
+	ctrl := html5tag.RenderVoidTag("input", attributes)
+	labelAttributes := html5tag.NewAttributes().Set("for", item.ID()).AddClass("btn").AddClass(l.buttonStyle)
 	if selected {
 		labelAttributes.AddClass("active")
 	}
-	return html.RenderLabel(labelAttributes, item.Label(), ctrl, html.LabelWrapAfter)
+	return html5tag.RenderLabel(labelAttributes, item.Label(), ctrl, html5tag.LabelWrapAfter)
 }
 
 func (l *RadioListGroup) Serialize(e page.Encoder) {

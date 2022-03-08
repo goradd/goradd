@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )
@@ -22,7 +22,7 @@ func NewTextbox(parent page.ControlI, id string) *Textbox {
 	return t
 }
 
-func (t *Textbox) DrawingAttributes(ctx context.Context) html.Attributes {
+func (t *Textbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := t.Textbox.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a

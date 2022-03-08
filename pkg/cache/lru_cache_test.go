@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/strings"
 	"github.com/stretchr/testify/assert"
 	"strconv"
 	"sync"
@@ -219,8 +219,8 @@ func TestLruStress2(t *testing.T) {
 func addN(c *LruCache, n int) {
 	var keys []string
 	for i := 0; i < n; i++ {
-		s := html.RandomString(10)
-		s2 := html.RandomString(5)
+		s := strings.RandomString(strings.AlphaAll, 10)
+		s2 := strings.RandomString(strings.AlphaAll, 5)
 		c.Set(s, s2)
 		keys = append(keys, s)
 	}
@@ -228,7 +228,7 @@ func addN(c *LruCache, n int) {
 	// stress re-adding the same items
 	for i := 0; i < n; i++ {
 		s := keys[i]
-		s2 := html.RandomString(5)
+		s2 := strings.RandomString(strings.AlphaAll, 5)
 		c.Set(s, s2)
 	}
 

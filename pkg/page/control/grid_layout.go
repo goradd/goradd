@@ -1,6 +1,6 @@
 package control
 
-import "github.com/goradd/goradd/pkg/html"
+import "github.com/goradd/goradd/pkg/html5tag"
 
 // LayoutDirection controls whether items are layed out in rows or columns.
 type LayoutDirection int
@@ -21,7 +21,7 @@ type GridLayoutBuilder struct {
 	columnCount   int
 	direction     LayoutDirection
 	rowTag        string
-	rowAttributes html.Attributes
+	rowAttributes html5tag.Attributes
 }
 
 // Items sets the html for each item to display.
@@ -52,9 +52,9 @@ func (g *GridLayoutBuilder) RowClass(t string) *GridLayoutBuilder {
 	return g
 }
 
-func (g *GridLayoutBuilder) getRowAttributes() html.Attributes {
+func (g *GridLayoutBuilder) getRowAttributes() html5tag.Attributes {
 	if g.rowAttributes == nil {
-		g.rowAttributes = html.NewAttributes()
+		g.rowAttributes = html5tag.NewAttributes()
 	}
 	return g.rowAttributes
 }
@@ -83,13 +83,13 @@ func (g *GridLayoutBuilder) wrapRows() string {
 	for i := range g.items {
 		row += g.items[i]
 		if (i+1)%g.columnCount == 0 {
-			rows += html.RenderTag(g.rowTag, g.rowAttributes, row)
+			rows += html5tag.RenderTag(g.rowTag, g.rowAttributes, row)
 			row = ""
 		}
 	}
 	if row != "" {
 		// partial row
-		rows += html.RenderTag(g.rowTag, g.rowAttributes, row)
+		rows += html5tag.RenderTag(g.rowTag, g.rowAttributes, row)
 	}
 	return rows
 }
@@ -108,12 +108,12 @@ func (g *GridLayoutBuilder) wrapColumns() string {
 				row += g.items[i]
 			}
 		}
-		rows += html.RenderTag(g.rowTag, g.rowAttributes, row)
+		rows += html5tag.RenderTag(g.rowTag, g.rowAttributes, row)
 		row = ""
 	}
 	if row != "" {
 		// partial row
-		rows += html.RenderTag(g.rowTag, g.rowAttributes, row)
+		rows += html5tag.RenderTag(g.rowTag, g.rowAttributes, row)
 	}
 	return rows
 }

@@ -2,7 +2,7 @@ package widget
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -82,15 +82,15 @@ func (l *MegaMenu) DrawTag(ctx context.Context, w io.Writer) {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *MegaMenu) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *MegaMenu) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "megamenu")
+	a.SetData("grctl", "megamenu")
 	return a
 }
 
 func (l *MegaMenu) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	h := l.this().GetItemsHtml(l.ListItems(), 1)
-	h = html.RenderTag("ul", html.Attributes{"style":"list-style:none"}, h)
+	h = html5tag.RenderTag("ul", html5tag.Attributes{"style": "list-style:none"}, h)
 	page.WriteString(w, h)
 	return
 }
@@ -104,15 +104,15 @@ func (l *MegaMenu) GetItemsHtml(items []*control.ListItem, level int) string {
 		buttonId := l.ID() + "_" + item.Value()
 		if item.HasChildItems() {
 			innerhtml := l.this().GetItemsHtml(item.ListItems(), level + 1)
-			innerhtml = html.RenderTag("ul", html.Attributes{"style":"list-style:none"}, innerhtml)
-			innerhtml = html.RenderTag("div", html.Attributes{"role":"region", "aria-labeledby":buttonId}, innerhtml)
-			buttonhtml := html.RenderTag("button", html.Attributes{"aria-expanded":`false`, "id":buttonId}, item.Label())
-			innerhtml = html.RenderTag("div", html.Attributes{"role":"heading", "aria-level":strconv.Itoa(level+1)}, buttonhtml) + innerhtml
-			h += html.RenderTag("li", item.Attributes(), innerhtml)
+			innerhtml = html5tag.RenderTag("ul", html5tag.Attributes{"style": "list-style:none"}, innerhtml)
+			innerhtml = html5tag.RenderTag("div", html5tag.Attributes{"role": "region", "aria-labeledby":buttonId}, innerhtml)
+			buttonhtml := html5tag.RenderTag("button", html5tag.Attributes{"aria-expanded": `false`, "id":buttonId}, item.Label())
+			innerhtml = html5tag.RenderTag("div", html5tag.Attributes{"role": "heading", "aria-level":strconv.Itoa(level+1)}, buttonhtml) + innerhtml
+			h += html5tag.RenderTag("li", item.Attributes(), innerhtml)
 		} else {
 			if item.HasAnchor() {
-				a := html.RenderTag("a", item.Attributes(), item.RenderLabel())
-				h += html.RenderTag("li", nil, a)
+				a := html5tag.RenderTag("a", item.Attributes(), item.RenderLabel())
+				h += html5tag.RenderTag("li", nil, a)
 			} else {
 				a := item.Attributes().Copy()
 				a.SetID(buttonId)
@@ -120,7 +120,7 @@ func (l *MegaMenu) GetItemsHtml(items []*control.ListItem, level int) string {
 					item.Value(),
 					a,
 					false)
-				h += html.RenderTag("li", nil, b)
+				h += html5tag.RenderTag("li", nil, b)
 			}
 		}
 	}

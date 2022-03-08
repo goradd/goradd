@@ -1,12 +1,9 @@
-package html
+package html5tag
 
 import (
 	"fmt"
 	"strconv"
 	"testing"
-
-	"github.com/goradd/gengen/pkg/maps"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestBasicAttributes(t *testing.T) {
@@ -51,10 +48,13 @@ func TestBasicAttributes(t *testing.T) {
 		}
 	}
 
-	assert.True(t, a.Has("a"))
-	_, _ = a.SetChanged("a", attributeFalse)
-	assert.False(t, a.Has("style"))
-
+	a.Set("a", FalseValue)
+	if a.Has("a") {
+		t.Error("Missing 'a' attribute")
+	}
+	if a.Has("style") {
+		t.Error("Should not have style attribute")
+	}
 }
 
 func TestBasicStyles(t *testing.T) {
@@ -90,8 +90,9 @@ func TestBasicStyles(t *testing.T) {
 		}
 
 		got := a.GetStyle(c.attr)
-		assert.Equal(t, got, c.val, "BasicStyle set/get (%q, %q), got %q", c.attr, c.val, got)
-
+		if got != c.val {
+			t.Errorf("BasicStyle set/get (%q, %q), got %q", c.attr, c.val, got)
+		}
 		if changed != c.changed {
 			t.Errorf("BasicStyle changed test (%q, %q)", c.attr, c.val)
 		}
@@ -146,21 +147,6 @@ func TestClass(t *testing.T) {
 	a := NewAttributes()
 	for _, c := range cases {
 		changed := a.SetClassChanged(c.val)
-		/*
-			if err != nil {
-				if c.err {	// expected an error
-					continue
-				} else {
-					t.Errorf("Unexpected error on (%q): %v", c.val, err)
-					continue
-				}
-			}
-
-			if (c.err && err == nil) { // expected an error, but didn't get one
-				t.Errorf("Expected error on (%q)", c.val)
-				continue // no sense in checking other things, since we were expecting an error
-			}
-		*/
 		got := a.Class()
 		if got != c.got {
 			t.Errorf("Class set (%q), expected (%q), got (%q)", c.val, c.got, got)
@@ -256,7 +242,9 @@ func TestOutput(t *testing.T) {
 	}
 
 	a = Attributes{"ok": "", "id": "3"}
-	assert.Equal(t, `id="3" ok`, a.SortedString())
+	if `id="3" ok` != a.SortedString() {
+		t.Error("Sorted string failed")
+	}
 }
 
 func TestOverride(t *testing.T) {
@@ -265,34 +253,26 @@ func TestOverride(t *testing.T) {
 	a.Set("id", "b")
 	a.Set("style", "height:4px; width:3px")
 
-	m := a.Override(maps.NewStringMapFromMap(map[string]string{"id": "c", "style": "height:7px"}))
+	m := a.Override(map[string]string{"id": "c", "style": "height:7px"})
 
 	if m.Get("id") != "c" {
-		t.Error("Error overriding id")
+		t.Errorf("Error overriding id. Wanted 'c', got %s", m.Get("id"))
 	}
 
 	if m.GetStyle("height") != "7px" {
-		t.Error("Error overriding height style")
+		t.Errorf("Error overriding height style. Wanted 7px, got %s", m.GetStyle("height"))
 	}
 
-	if m.GetStyle("width") != "3px" {
-		t.Error("Error leaving old style untouched")
+	if m.GetStyle("width") != "" {
+		t.Error("Error overriding style")
 	}
 
 }
 
 // Examples
-
-func ExampleNewAttributesFrom() {
-	a := NewAttributesFrom(map[string]string{"id": "1", "name": "test"})
-	fmt.Println(a.Get("id"))
-	//Output: 1
-}
-
 func ExampleAttributes_Set() {
 	a := Attributes{}
-	a = a.Set("class", "a")
-	a = a.Set("id", "b")
+	a = a.Set("class", "a").Set("id", "b")
 	fmt.Println(a.SortedString())
 	//Output: id="b" class="a"
 }
@@ -322,7 +302,7 @@ func ExampleAttributes_SetStyle() {
 }
 
 func ExampleAttributes_SetID() {
-	var a Attributes
+	a := Attributes{}
 	a = a.SetID("a")
 	fmt.Println(a.ID())
 	a = a.SetID("")
@@ -332,18 +312,24 @@ func ExampleAttributes_SetID() {
 }
 
 func ExampleAttributes_Override() {
-	a := NewAttributes()
-	a.SetClass("this")
-	a.SetStyle("height", "4em")
-
-	b := NewAttributes()
-	b.Set("class", "that")
-	b.SetStyle("width", strconv.Itoa(6))
+	a := NewAttributes().SetClass("this").SetStyle("height", "4em")
+	b := NewAttributes().Set("class", "that").SetStyle("width", "6")
 
 	a = a.Override(b)
 	fmt.Println(a.SortedString())
-	//Output: class="that" style="height:4em;width:6px"
+	//Output: class="that" style="width:6px"
 }
+
+func ExampleAttributes_Merge() {
+	a := NewAttributes().SetClass("this").SetStyle("height", "4em")
+	b := NewAttributes().Set("class", "that").SetStyle("width", "6")
+
+	a = a.Override(b)
+	fmt.Println(a.SortedString())
+	// Output: class="that" style="width:6px"
+}
+
+
 
 func ExampleAttributes_AddClass() {
 	a := NewAttributes()
@@ -410,16 +396,16 @@ func ExampleAttributes_RemoveClassesWithPrefix() {
 	// Output: class="that"
 }
 
-func ExampleAttributes_AddAttributeValue() {
+func ExampleAttributes_AddValues() {
 	a := Attributes{"abc": "123"}
-	a.AddAttributeValue("abc", "456")
+	a.AddValues("abc", "456")
 	fmt.Println(a.String())
 	// Output: abc="123 456"
 }
 
-func ExampleAttributes_SetDataAttribute() {
+func ExampleAttributes_SetData() {
 	a := Attributes{"abc": "123"}
-	a.SetDataAttribute("myVal", "456")
+	a.SetData("myVal", "456")
 	fmt.Println(a.SortedString())
 	// Output: abc="123" data-my-val="456"
 }
@@ -463,26 +449,26 @@ func ExampleAttributes_IsDisplayed() {
 	// Output: false
 }
 
-func ExampleAttributeString() {
+func ExampleValueString() {
 	a := Attributes{}
-	a.Set("a", AttributeString(1))
-	a.Set("b", AttributeString(float32(2.2)))
-	a.Set("c", AttributeString("test"))
-	a.Set("d", AttributeString(true))
-	a.Set("e", AttributeString(false))
+	a.Set("a", ValueString(1))
+	a.Set("b", ValueString(float32(2.2)))
+	a.Set("c", ValueString("test"))
+	a.Set("d", ValueString(true))
+	a.Set("e", ValueString(false))
 	fmt.Println(a.SortedString())
 	// Output: a="1" b="2.2" c="test" d
 }
 
-func TestStringMerge(t *testing.T) {
+func TestMergeString(t *testing.T) {
 	a := NewAttributes()
-	a.Merge(`class="here"`)
+	a.MergeString(`class="here"`)
 	c := a.Class()
 	if c != "here" {
 		t.Error("Attribute string failed")
 	}
 
-	a.Merge(`class="there" m="g"`)
+	a.MergeString(`class="there" m="g"`)
 	c = a.Class()
 	if c != "here there" {
 		t.Error("Attribute string failed")
@@ -492,31 +478,43 @@ func TestStringMerge(t *testing.T) {
 		t.Error("Attribute string failed")
 	}
 	a.Merge(nil)
-	assert.Equal(t, 2, a.Len())
+	if a.Len() != 2 {
+		t.Error("Nil merge failed")
+	}
 
 	a.Merge(Attributes{"style": "color:white"})
-	assert.True(t, a.Has("style"))
-	a.Merge(Attributes{"style": "color:black"})
-	assert.True(t, a.HasStyle("color"))
-	a.Merge(map[string]string{"style": "color:yellow"})
-	assert.Equal(t, "yellow", a.GetStyle("color"))
+	if !a.Has("style") {
+		t.Error("Style merge failed")
+	}
 
+	a.Merge(Attributes{"style": "color:black"})
+	if !a.HasStyle("color") {
+		t.Error("Color style merge failed")
+	}
+	a.Merge(map[string]string{"style": "color:yellow"})
+	if a.GetStyle("color") != "yellow" {
+		t.Error("Color style override failed")
+	}
 }
 
 func TestNilAttributes(t *testing.T) {
 	var a Attributes
-	assert.Nil(t, a.Copy())
-	assert.Equal(t, 0, a.Len())
-	assert.False(t, a.Has("b"))
-	assert.Empty(t, a.String())
+	if a.Len() != 0 {
+		t.Error("Nil length failed")
+	}
+	if a.Has("b") {
+		t.Error("Nil Has failed")
+	}
+	if a.String() != "" {
+		t.Error("Nil String failed")
+	}
 	a.Range(func(k string, v string) bool {
 		t.Error("Should not range")
-		return true
+		return false
 	})
-	assert.Panics(t, func() {
-		a.Merge("b")
-	})
-	assert.Empty(t, a.ID())
+	if a.ID() != "" {
+		t.Error("ID should be empty")
+	}
 }
 
 func ExampleAttributes_Len() {
@@ -558,17 +556,27 @@ func TestAttributes_RemoveClass(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			changed := tt.a.RemoveClass(tt.removeClass)
-			assert.Equal(t, tt.changed, changed)
-			assert.Equal(t, tt.finalClass, tt.a.Class())
+			if tt.changed != changed {
+				t.Errorf("Error on changed. Wanted %v, got %v", tt.changed, changed)
+			}
+			if tt.finalClass != tt.a.Class() {
+				t.Errorf("Error on class. Wanted %v, got %v", tt.finalClass, tt.a.Class())
+			}
 		})
 	}
+}
+
+func ExampleAttributes_IsDisabled() {
+	a := Attributes{"disabled": ""}
+	fmt.Print(a.IsDisabled())
+	// Output: true
 }
 
 func BenchmarkSortAttr(b *testing.B) {
 	a := Attributes{"a": "b", "id": "c", "width": "14", "d": "e"}
 
 	for i := 0; i < b.N; i++ {
-		a.String()
+		_ = a.String()
 	}
 }
 func BenchmarkSortedKeys(b *testing.B) {

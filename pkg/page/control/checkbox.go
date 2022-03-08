@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -22,9 +22,9 @@ func NewCheckbox(parent page.ControlI, id string) *Checkbox {
 // DrawingAttributes is called by the framework to set the temporary attributes that the control
 // needs. Checkboxes set the grctl, name, type and value attributes automatically.
 // You do not normally need to call this function.
-func (c *Checkbox) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *Checkbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.CheckboxBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "checkbox")
+	a.SetData("grctl", "checkbox")
 	a.Set("name", c.ID()) // needed for posts
 	a.Set("type", "checkbox")
 	a.Set("value", "1") // required for html validity
@@ -46,9 +46,9 @@ type CheckboxCreator struct {
 	// Checked will initialize the checkbox in its checked state.
 	Checked bool
 	// LabelMode specifies how the label is drawn with the checkbox.
-	LabelMode html.LabelDrawingMode
+	LabelMode html5tag.LabelDrawingMode
 	// LabelAttributes are additional attributes placed on the label tag.
-	LabelAttributes html.Attributes
+	LabelAttributes html5tag.Attributes
 	// SaveState will save the value of the checkbox and restore it when the page is reentered.
 	SaveState bool
 	page.ControlOptions
@@ -61,7 +61,7 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 	if c.Text != "" {
 		ctrl.SetText(c.Text)
 	}
-	if c.LabelMode != html.LabelDefault {
+	if c.LabelMode != html5tag.LabelDefault {
 		ctrl.LabelMode = c.LabelMode
 	}
 	if c.LabelAttributes != nil {

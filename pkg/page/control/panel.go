@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -40,9 +40,9 @@ func (c *Panel) this() PanelI {
 }
 
 
-func (c *Panel) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *Panel) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "panel")
+	a.SetData("grctl", "panel")
 	return a
 }
 

@@ -11,7 +11,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/i18n"
 	reflect2 "github.com/goradd/goradd/pkg/reflect"
 	"github.com/goradd/goradd/pkg/session"
@@ -79,7 +79,7 @@ type Page struct {
 	form            FormI
 	idCounter       int
 	title           string // page title to draw in head tag
-	htmlHeaderTags  []html.VoidTag
+	htmlHeaderTags  []html5tag.VoidTag
 	responseError   int
 
 	language int // Don't serialize this. This is a cached version of what the session holds.
@@ -542,7 +542,7 @@ func (p *Page) deserializeControl(c ControlI, d Decoder) {
 }
 
 // AddHtmlHeaderTag adds the given tag to the head section of the page.
-func (p *Page) AddHtmlHeaderTag(t html.VoidTag) {
+func (p *Page) AddHtmlHeaderTag(t html5tag.VoidTag) {
 	p.htmlHeaderTags = append(p.htmlHeaderTags, t)
 }
 

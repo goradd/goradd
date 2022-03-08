@@ -1,4 +1,4 @@
-package html
+package html5tag
 
 import (
 	"fmt"
@@ -306,9 +306,9 @@ func WriteLabel(w io.Writer, labelAttributes Attributes, label string, ctrlHtml 
 		n += n2
 		return
 	case LabelWrapBefore:
-		return WriteTag(w, "label", labelAttributes, makeWritersTo(strings.NewReader(label + " "), ctrlHtml))
+		return WriteTag(w, "label", labelAttributes, makeWritersTo(strings.NewReader(label+" "), ctrlHtml))
 	case LabelWrapAfter:
-		return WriteTag(w, "label", labelAttributes, makeWritersTo(ctrlHtml, strings.NewReader(" " + label)))
+		return WriteTag(w, "label", labelAttributes, makeWritersTo(ctrlHtml, strings.NewReader(" "+label)))
 	}
 	panic("Unknown label mode")
 }
@@ -326,9 +326,7 @@ func RenderImage(src string, alt string, attributes Attributes) string {
 
 // WriteImage writes an image tag.
 func WriteImage(w io.Writer, src string, alt string, attributes Attributes) (n int, err error) {
-	a := NewAttributesFrom(attributes)
-	a.Set("src", src)
-	a.Set("alt", alt)
+	a := attributes.Copy().Set("src", src).Set("alt", alt)
 	return WriteVoidTag(w, "img", a)
 }
 
