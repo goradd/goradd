@@ -46,24 +46,20 @@ func (c *GetterColumn) CellData(_ context.Context, rowNum int, colNum int, data 
 	return ""
 }
 
-func (c *GetterColumn) Serialize(e page.Encoder) (err error) {
-	if err = c.ColumnBase.Serialize(e); err != nil {
-		return
+func (c *GetterColumn) Serialize(e page.Encoder) {
+	c.ColumnBase.Serialize(e)
+
+	if err := e.Encode(c.key); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.key); err != nil {
-		return
-	}
-	return
 }
 
-func (c *GetterColumn) Deserialize(dec page.Decoder) (err error) {
-	if err = c.ColumnBase.Deserialize(dec); err != nil {
+func (c *GetterColumn) Deserialize(dec page.Decoder) {
+	c.ColumnBase.Deserialize(dec)
+
+	if err := dec.Decode(&c.key); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&c.key); err != nil {
-		panic(err)
-	}
-	return
 }
 
 

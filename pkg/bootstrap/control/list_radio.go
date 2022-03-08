@@ -69,35 +69,27 @@ func (l *RadioList) RenderItem(item *control.ListItem) (h string) {
 	return
 }
 
-func (l *RadioList) Serialize(e page.Encoder) (err error) {
-	if err = l.RadioList.Serialize(e); err != nil {
-		return
-	}
+func (l *RadioList) Serialize(e page.Encoder) {
+	l.RadioList.Serialize(e)
 
-	if err = e.Encode(l.isInline); err != nil {
-		return err
+	if err := e.Encode(l.isInline); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.cellClass); err != nil {
-		return err
+	if err := e.Encode(l.cellClass); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 
-func (l *RadioList) Deserialize(d page.Decoder) (err error) {
-	if err = l.RadioList.Deserialize(d); err != nil {
-		return
-	}
+func (l *RadioList) Deserialize(d page.Decoder) {
+	l.RadioList.Deserialize(d)
 
-	if err = d.Decode(&l.isInline); err != nil {
-		return
+	if err := d.Decode(&l.isInline); err != nil {
+		panic(err)
 	}
-	if err = d.Decode(&l.cellClass); err != nil {
-		return
+	if err := d.Decode(&l.cellClass); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 

@@ -76,24 +76,19 @@ func (c *NodeColumn) CellData(_ context.Context, _ int, _ int, data interface{})
 	}
 }
 
-func (c *NodeColumn) Serialize(e page.Encoder) (err error) {
-	if err = c.ColumnBase.Serialize(e); err != nil {
-		return
-	}
-	if err = e.Encode(&c.node); err != nil {
+func (c *NodeColumn) Serialize(e page.Encoder) {
+	c.ColumnBase.Serialize(e)
+	if err := e.Encode(&c.node); err != nil {
 		panic(err)
 	}
 	return
 }
 
-func (c *NodeColumn) Deserialize(dec page.Decoder) (err error) {
-	if err = c.ColumnBase.Deserialize(dec); err != nil {
+func (c *NodeColumn) Deserialize(dec page.Decoder) {
+	c.ColumnBase.Deserialize(dec)
+	if err := dec.Decode(&c.node); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&c.node); err != nil {
-		panic(err)
-	}
-	return
 }
 
 

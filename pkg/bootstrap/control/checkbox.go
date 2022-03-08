@@ -56,25 +56,19 @@ func (c *Checkbox) DrawTag(ctx context.Context, w io.Writer) {
 	if _, err := io.WriteString(w, "\n</div>"); err != nil {panic(err)}
 }
 
-func (c *Checkbox) Serialize(e page.Encoder) (err error) {
-	if err = c.Checkbox.Serialize(e); err != nil {
-		return
-	}
+func (c *Checkbox) Serialize(e page.Encoder) {
+	c.Checkbox.Serialize(e)
 
-	if err = e.Encode(c.inline); err != nil {
-		return
+	if err := e.Encode(c.inline); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
-func (c *Checkbox) Deserialize(d page.Decoder) (err error) {
-	if err = c.Checkbox.Deserialize(d); err != nil {
-		return
-	}
+func (c *Checkbox) Deserialize(d page.Decoder) {
+	c.Checkbox.Deserialize(d)
 
-	if err = d.Decode(&c.inline); err != nil {
-		return
+	if err := d.Decode(&c.inline); err != nil {
+		panic(err)
 	}
 	return
 }

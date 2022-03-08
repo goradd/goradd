@@ -10,7 +10,6 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/html"
 	"github.com/goradd/goradd/pkg/i18n"
@@ -395,7 +394,7 @@ func (p *Page) encodeControlRegistry(e *gob.Encoder) (err error) {
 		return
 	}
 	p.form.RangeSelfAndAllChildren(func(ctrl ControlI) {
-		_ = p.encodeControl(ctrl, e)
+		p.encodeControl(ctrl, e)
 		delete(ids, ctrl.ID())
 	})
 
@@ -408,7 +407,7 @@ func (p *Page) encodeControlRegistry(e *gob.Encoder) (err error) {
 			c.RangeSelfAndAllChildren(
 				func(ctrl ControlI) {
 					if _,ok := ids[ctrl.ID()]; ok { // we didn't yet process it
-						_ = p.encodeControl(ctrl, e)
+						p.encodeControl(ctrl, e)
 						delete(ids, ctrl.ID())
 					}
 				})
@@ -418,23 +417,20 @@ func (p *Page) encodeControlRegistry(e *gob.Encoder) (err error) {
 	return
 }
 
-func (p *Page) encodeControl(ctrl ControlI, e *gob.Encoder) (err error){
-	if err = e.Encode(ctrl.ID()); err != nil {
-		return
+func (p *Page) encodeControl(ctrl ControlI, e *gob.Encoder) {
+	if err := e.Encode(ctrl.ID()); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(controlRegistryID(ctrl)); err != nil {
-		return
+	if err := e.Encode(controlRegistryID(ctrl)); err != nil {
+		panic(err)
 	}
 
-	if err = p.serializeControl(ctrl, e); err != nil {
-		return
-	}
-	return
+	p.serializeControl(ctrl, e)
 }
 
 // Users can create exported items on their objects and they will be serialized and restored automatically
 // Alternatively they can implement their own Serialize method.
-func (p *Page) serializeControl(c ControlI, e Encoder) error {
+func (p *Page) serializeControl(c ControlI, e Encoder) {
 	v := reflect.Indirect(reflect.ValueOf(c))
 	fieldCount := v.NumField()
 	_ = fieldCount
@@ -446,19 +442,10 @@ func (p *Page) serializeControl(c ControlI, e Encoder) error {
 			exportedFields[name] = controlCode + ctrl.ID()
 		}
 	}
-	if err := c.Serialize(e); err != nil {
-		if config.Debug {
-			panic("Error serializing control " + c.ID() + ": " + err.Error())
-		}
-		return err
-	}
+	c.Serialize(e)
 	if err := e.Encode(exportedFields); err != nil {
-		if config.Debug {
-			panic ("Error serializing exported fields of " + c.ID() + ": " + err.Error())
-		}
-		return err
+		panic ("Error serializing exported fields of " + c.ID() + ": " + err.Error())
 	}
-	return nil
 }
 
 func (p *Page) UnmarshalBinary(data []byte) (err error) {
@@ -529,19 +516,15 @@ func (p *Page) decodeControl(d *gob.Decoder) (err error) {
 
 	c := createRegisteredControl(registryID, p)
 	p.controlRegistry[id] = c
-	if err = p.deserializeControl(c, d); err != nil {
-		return
-	}
+	p.deserializeControl(c, d)
 	return
 }
 
-func (p *Page) deserializeControl(c ControlI, d Decoder) error {
-	if err := c.Deserialize(d); err != nil {
-		return err
-	}
+func (p *Page) deserializeControl(c ControlI, d Decoder) {
+	c.Deserialize(d)
 	var exportedFields map[string]interface{}
 	if err := d.Decode(&exportedFields); err != nil {
-		return err
+		panic(err)
 	}
 	// Substitute embedded control ids for the actual control
 	for name,val := range exportedFields {
@@ -553,7 +536,9 @@ func (p *Page) deserializeControl(c ControlI, d Decoder) error {
 		}
 	}
 
-	return reflect2.SetFieldValues(c, exportedFields)
+	if err := reflect2.SetFieldValues(c, exportedFields); err != nil {
+		panic(err)
+	}
 }
 
 // AddHtmlHeaderTag adds the given tag to the head section of the page.
@@ -587,6 +572,7 @@ func (p *Page) PushRedraw() {
 	}
 }
 */
+
 // LanguageCode returns the language code that will be put in the lang attribute of the html tag.
 // It is taken from the i18n package.
 func (p *Page) LanguageCode() string {

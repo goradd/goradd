@@ -101,47 +101,39 @@ func (c *FormFieldset) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	return
 }
 
-func (c *FormFieldset) Serialize(e page.Encoder) (err error) {
-	if err = c.Panel.Serialize(e); err != nil {
-		return
-	}
+func (c *FormFieldset) Serialize(e page.Encoder) {
+	c.Panel.Serialize(e)
 
-	if err = e.Encode(c.legendAttributes); err != nil {
-		return err
+	if err := e.Encode(c.legendAttributes); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.asRow); err != nil {
-		return err
+	if err := e.Encode(c.asRow); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.instructions); err != nil {
-		return err
+	if err := e.Encode(c.instructions); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.instructionAttributes); err != nil {
-		return err
+	if err := e.Encode(c.instructionAttributes); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 
-func (c *FormFieldset) Deserialize(d page.Decoder) (err error) {
-	if err = c.Panel.Deserialize(d); err != nil {
-		return
-	}
+func (c *FormFieldset) Deserialize(d page.Decoder) {
+	c.Panel.Deserialize(d)
 
-	if err = d.Decode(&c.legendAttributes); err != nil {
-		return
+	if err := d.Decode(&c.legendAttributes); err != nil {
+		panic(err)
 	}
-	if err = d.Decode(&c.asRow); err != nil {
-		return
+	if err := d.Decode(&c.asRow); err != nil {
+		panic(err)
 	}
-	if err = d.Decode(&c.instructions); err != nil {
-		return
+	if err := d.Decode(&c.instructions); err != nil {
+		panic(err)
 	}
-	if err = d.Decode(&c.instructionAttributes); err != nil {
-		return
+	if err := d.Decode(&c.instructionAttributes); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 

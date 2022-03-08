@@ -139,29 +139,24 @@ func (t *SelectTable) UnmarshalState(m maps.Loader) {
 	}
 }
 
-func (t *SelectTable) Serialize(e page.Encoder) (err error) {
-	if err = t.Table.Serialize(e); err != nil {
-		return
+func (t *SelectTable) Serialize(e page.Encoder) {
+	t.Table.Serialize(e)
+	if err := e.Encode(t.selectedID); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(t.selectedID); err != nil {
-		return
+	if err := e.Encode(t.reselectable); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(t.reselectable); err != nil {
-		return
-	}
-	return
 }
-func (t *SelectTable) Deserialize(dec page.Decoder) (err error) {
-	if err = t.Table.Deserialize(dec); err != nil {
-		return
+func (t *SelectTable) Deserialize(dec page.Decoder) {
+	t.Table.Deserialize(dec)
+
+	if err := dec.Decode(&t.selectedID); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&t.selectedID); err != nil {
-		return
+	if err := dec.Decode(&t.reselectable); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&t.reselectable); err != nil {
-		return
-	}
-	return
 }
 
 // SelectTableCreator is the initialization structure for declarative creation of tables

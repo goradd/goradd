@@ -124,37 +124,25 @@ func (l *UnorderedList) SetData(data interface{}) {
 	l.AddListItems(data)
 }
 
-func (l *UnorderedList) Serialize(e page.Encoder) (err error) {
-	if err = l.ControlBase.Serialize(e); err != nil {
-		return
-	}
-	if err = l.ItemList.Serialize(e); err != nil {
-		return
-	}
-	if err = l.DataManager.Serialize(e); err != nil {
-		return
-	}
+func (l *UnorderedList) Serialize(e page.Encoder) {
+	l.ControlBase.Serialize(e)
 
-	if err = e.Encode(l.itemTag); err != nil {
-		return
+	l.ItemList.Serialize(e)
+
+	l.DataManager.Serialize(e)
+
+	if err := e.Encode(l.itemTag); err != nil {
+		panic(err)
 	}
-	return
 }
 
-func (l *UnorderedList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.ControlBase.Deserialize(dec); err != nil {
-		return
-	}
-	if err = l.ItemList.Deserialize(dec); err != nil {
+func (l *UnorderedList) Deserialize(dec page.Decoder) {
+	l.ControlBase.Deserialize(dec)
+	l.ItemList.Deserialize(dec)
+	l.DataManager.Deserialize(dec)
+	if err := dec.Decode(&l.itemTag); err != nil {
 		panic(err)
 	}
-	if err = l.DataManager.Deserialize(dec); err != nil {
-		panic(err)
-	}
-	if err = dec.Decode(&l.itemTag); err != nil {
-		panic(err)
-	}
-	return
 }
 
 

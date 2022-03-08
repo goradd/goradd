@@ -85,39 +85,29 @@ func (s *DateTimeSpan) DrawingAttributes(ctx context.Context) html.Attributes {
 	return s.ControlBase.DrawingAttributes(ctx)
 }
 
-func (s *DateTimeSpan) Serialize(e page.Encoder) (err error) {
-	if err = s.ControlBase.Serialize(e); err != nil {
-		return
+func (s *DateTimeSpan) Serialize(e page.Encoder) {
+	s.ControlBase.Serialize(e)
+
+	if err := e.Encode(s.format); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(s.format); err != nil {
-		return
+	if err := e.Encode(s.value); err != nil {
+		panic(err)
 	}
-
-	if err = e.Encode(s.value); err != nil {
-		return
-	}
-
-	return
 }
 
-func (s *DateTimeSpan) Deserialize(dec page.Decoder) (err error) {
-	if err = s.ControlBase.Deserialize(dec); err != nil {
-		return
+func (s *DateTimeSpan) Deserialize(dec page.Decoder) {
+	s.ControlBase.Deserialize(dec)
+
+	if err := dec.Decode(&s.format); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&s.format); err != nil {
-		return
+	if err := dec.Decode(&s.value); err != nil {
+		panic(err)
 	}
-
-	if err = dec.Decode(&s.value); err != nil {
-		return
-	}
-
-	return
 }
-
-
 
 type DateTimeSpanCreator struct {
 	ID string

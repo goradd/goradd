@@ -67,8 +67,8 @@ type ColumnI interface {
 	PreRender()
 	MarshalState(m maps.Setter)
 	UnmarshalState(m maps.Loader)
-	Serialize(e page.Encoder) (err error)
-	Deserialize(dec page.Decoder) (err error)
+	Serialize(e page.Encoder)
+	Deserialize(dec page.Decoder)
 	Restore(parentTable TableI)
 }
 
@@ -475,7 +475,7 @@ type columnBaseEncoded struct {
 	CellStyler interface{}
 }
 
-func (c *ColumnBase) Serialize(e page.Encoder) (err error) {
+func (c *ColumnBase) Serialize(e page.Encoder) {
 	s := columnBaseEncoded{
 		ID:               c.id,
 		Title:            c.title,
@@ -507,16 +507,14 @@ func (c *ColumnBase) Serialize(e page.Encoder) (err error) {
 		s.CellStyler = ctrl.ID()
 	}
 
-	if err = e.Encode(s); err != nil {
-		return err
+	if err := e.Encode(s); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
-func (c *ColumnBase) Deserialize(dec page.Decoder) (err error) {
+func (c *ColumnBase) Deserialize(dec page.Decoder) {
 	var s columnBaseEncoded
-	if err = dec.Decode(&s); err != nil {
+	if err := dec.Decode(&s); err != nil {
 		panic(err)
 	}
 
@@ -560,8 +558,6 @@ func (c *ColumnBase) Deserialize(dec page.Decoder) (err error) {
 			c.cellStyler = s.CellStyler.(CellStyler)
 		}
 	}
-
-	return
 }
 
 func (c *ColumnBase) Restore(parentTable TableI) {

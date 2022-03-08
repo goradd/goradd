@@ -269,10 +269,8 @@ type checkboxColumnEncoded struct {
 	Changes           map[string]bool
 }
 
-func (c *CheckboxColumn) Serialize(e page.Encoder) (err error) {
-	if err = c.ColumnBase.Serialize(e); err != nil {
-		return
-	}
+func (c *CheckboxColumn) Serialize(e page.Encoder) {
+	c.ColumnBase.Serialize(e)
 
 	s := checkboxColumnEncoded{
 		ShowCheckAll: c.showCheckAll,
@@ -280,20 +278,18 @@ func (c *CheckboxColumn) Serialize(e page.Encoder) (err error) {
 		Current:      c.current,
 		Changes:      c.changes,
 	}
-	if err = e.Encode(s); err != nil {
+	if err := e.Encode(s); err != nil {
 		panic(err)
 	}
 
 	return
 }
 
-func (c *CheckboxColumn) Deserialize(dec page.Decoder) (err error) {
-	if err = c.ColumnBase.Deserialize(dec); err != nil {
-		panic(err)
-	}
+func (c *CheckboxColumn) Deserialize(dec page.Decoder) {
+	c.ColumnBase.Deserialize(dec)
 
 	s := checkboxColumnEncoded{}
-	if err = dec.Decode(&s); err != nil {
+	if err := dec.Decode(&s); err != nil {
 		panic(err)
 	}
 
@@ -301,8 +297,6 @@ func (c *CheckboxColumn) Deserialize(dec page.Decoder) (err error) {
 	c.checkboxer = s.Checkboxer
 	c.current = s.Current
 	c.changes = s.Changes
-
-	return
 }
 
 

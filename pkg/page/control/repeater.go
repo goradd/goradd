@@ -104,16 +104,10 @@ func (r *Repeater) UnmarshalState(m maps.Loader) {
 }
 
 
-func (r *Repeater) Serialize(e page.Encoder) (err error) {
-	if err = r.ControlBase.Serialize(e); err != nil {
-		return
-	}
-	if err = r.PagedControl.Serialize(e); err != nil {
-		return
-	}
-	if err = r.DataManager.Serialize(e); err != nil {
-		return
-	}
+func (r *Repeater) Serialize(e page.Encoder) {
+	r.ControlBase.Serialize(e)
+	r.PagedControl.Serialize(e)
+	r.DataManager.Serialize(e)
 
 	// If itemHtmler is a control, we will just serialize the control's id, since the control will get
 	// serialized elsewhere. Otherwise, we serialize the itemHtmler itself.
@@ -121,25 +115,18 @@ func (r *Repeater) Serialize(e page.Encoder) (err error) {
 	if ctrl, ok := r.itemHtmler.(page.ControlI); ok {
 		htmler = ctrl.ID()
 	}
-	if err = e.Encode(&htmler); err != nil {
-		return err
+	if err := e.Encode(&htmler); err != nil {
+		panic(err)
 	}
-	return
 }
 
-func (r *Repeater) Deserialize(dec page.Decoder) (err error) {
-	if err = r.ControlBase.Deserialize(dec); err != nil {
-		panic(err)
-	}
-	if err = r.PagedControl.Deserialize(dec); err != nil {
-		panic(err)
-	}
-	if err = r.DataManager.Deserialize(dec); err != nil {
-		panic(err)
-	}
+func (r *Repeater) Deserialize(dec page.Decoder) {
+	r.ControlBase.Deserialize(dec)
+	r.PagedControl.Deserialize(dec)
+	r.DataManager.Deserialize(dec)
 
 	var htmler interface{}
-	if err = dec.Decode(&htmler); err != nil {
+	if err := dec.Decode(&htmler); err != nil {
 		panic(err)
 	}
 	if id,ok := htmler.(string); ok {
@@ -147,7 +134,6 @@ func (r *Repeater) Deserialize(dec page.Decoder) (err error) {
 	} else {
 		r.itemHtmler = htmler.(RepeaterHtmler)
 	}
-	return
 }
 
 func (r *Repeater) Restore() {

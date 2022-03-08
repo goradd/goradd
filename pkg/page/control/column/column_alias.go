@@ -49,24 +49,18 @@ func (c *AliasColumn) CellData(ctx context.Context, row int, col int, data inter
 	}
 }
 
-func (c *AliasColumn) Serialize(e page.Encoder) (err error) {
-	if err = c.ColumnBase.Serialize(e); err != nil {
-		return
+func (c *AliasColumn) Serialize(e page.Encoder) {
+	c.ColumnBase.Serialize(e)
+	if err := e.Encode(c.alias); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.alias); err != nil {
-		return
-	}
-	return
 }
 
-func (c *AliasColumn) Deserialize(dec page.Decoder) (err error) {
-	if err = c.ColumnBase.Deserialize(dec); err != nil {
+func (c *AliasColumn) Deserialize(dec page.Decoder) {
+	c.ColumnBase.Deserialize(dec)
+	if err := dec.Decode(&c.alias); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&c.alias); err != nil {
-		panic(err)
-	}
-	return
 }
 
 // AliasColumnCreator creates a column that displays the content of a database alias. Each row must be

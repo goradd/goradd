@@ -253,31 +253,29 @@ func (l *ItemList) findItemByValue(value string) (container *ItemList, index int
 	return nil, -1 // not found
 }
 
-func (l *ItemList) Serialize(e page.Encoder) (err error) {
-	if err = e.Encode(l.ownerID); err != nil {
-		return
+func (l *ItemList) Serialize(e page.Encoder) {
+	if err := e.Encode(l.ownerID); err != nil {
+		panic(err)
 	}
 	var count int = len(l.items)
-	if err = e.Encode(count); err != nil {
-		return
+	if err := e.Encode(count); err != nil {
+		panic(err)
 	}
 
 	// Opt for our own serialization method, rather than using gob
 	for _,i := range l.items {
 		i.Serialize(e)
 	}
-
-	return
 }
 
-func (l *ItemList) Deserialize(dec page.Decoder) (err error) {
-	if err = dec.Decode(&l.ownerID); err != nil {
-		return
+func (l *ItemList) Deserialize(dec page.Decoder) {
+	if err := dec.Decode(&l.ownerID); err != nil {
+		panic(err)
 	}
 
 	var count int
-	if err = dec.Decode(&count); err != nil {
-		return
+	if err := dec.Decode(&count); err != nil {
+		panic(err)
 	}
 
 	for i := 0; i < count; i++ {

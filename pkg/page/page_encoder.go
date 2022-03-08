@@ -37,8 +37,8 @@ type Decoder interface {
 // Controls are Serializable by default. Other objects that contain controls, or that are not gob.Encoders should implement
 // this as well if they are part of the pagestate.
 type Serializable interface {
-	Serialize(e Encoder) error
-	Deserialize(d Decoder) error
+	Serialize(e Encoder)
+	Deserialize(d Decoder)
 }
 
 type GobPageEncoder struct {

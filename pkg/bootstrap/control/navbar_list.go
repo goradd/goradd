@@ -165,37 +165,23 @@ func (l *NavbarList) OnSelect (action action.ActionI) page.ControlI {
 	return l.On(NavbarSelectEvent(), action)
 }
 
-func (l *NavbarList) Serialize(e page.Encoder) (err error) {
-	if err = l.ControlBase.Serialize(e); err != nil {
-		return
-	}
-	if err = l.ItemList.Serialize(e); err != nil {
-		return
-	}
-	if err = l.DataManager.Serialize(e); err != nil {
-		return
-	}
+func (l *NavbarList) Serialize(e page.Encoder) {
+	l.ControlBase.Serialize(e)
+	l.ItemList.Serialize(e)
+	l.DataManager.Serialize(e)
 
-	if err = e.Encode(l.subItemTag); err != nil {
-		return
+	if err := e.Encode(l.subItemTag); err != nil {
+		panic(err)
 	}
-	return
 }
 
-func (l *NavbarList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.ControlBase.Deserialize(dec); err != nil {
-		return
+func (l *NavbarList) Deserialize(dec page.Decoder) {
+	l.ControlBase.Deserialize(dec)
+	l.ItemList.Deserialize(dec)
+	l.DataManager.Deserialize(dec)
+	if err := dec.Decode(&l.subItemTag); err != nil {
+		panic(err)
 	}
-	if err = l.ItemList.Deserialize(dec); err != nil {
-		return
-	}
-	if err = l.DataManager.Deserialize(dec); err != nil {
-		return
-	}
-	if err = dec.Decode(&l.subItemTag); err != nil {
-		return
-	}
-	return
 }
 
 type NavbarListCreator struct {

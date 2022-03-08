@@ -235,37 +235,25 @@ func (l *SelectList) SetData(data interface{}) {
 	l.AddListItems(data)
 }
 
-func (l *SelectList) Serialize(e page.Encoder) (err error) {
-	if err = l.ControlBase.Serialize(e); err != nil {
-		return
-	}
-	if err = l.ItemList.Serialize(e); err != nil {
-		return
-	}
-	if err = l.DataManager.Serialize(e); err != nil {
-		return
-	}
+func (l *SelectList) Serialize(e page.Encoder) {
+	l.ControlBase.Serialize(e)
 
-	if err = e.Encode(l.selectedValue); err != nil {
-		return
+	l.ItemList.Serialize(e)
+
+	l.DataManager.Serialize(e)
+
+	if err := e.Encode(l.selectedValue); err != nil {
+		panic(err)
 	}
-	return
 }
 
-func (l *SelectList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.ControlBase.Deserialize(dec); err != nil {
-		return
+func (l *SelectList) Deserialize(dec page.Decoder) {
+	l.ControlBase.Deserialize(dec)
+	l.ItemList.Deserialize(dec)
+	l.DataManager.Deserialize(dec)
+	if err := dec.Decode(&l.selectedValue); err != nil {
+		panic(err)
 	}
-	if err = l.ItemList.Deserialize(dec); err != nil {
-		return
-	}
-	if err = l.DataManager.Deserialize(dec); err != nil {
-		return
-	}
-	if err = dec.Decode(&l.selectedValue); err != nil {
-		return
-	}
-	return
 }
 
 

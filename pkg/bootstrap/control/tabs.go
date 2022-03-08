@@ -41,27 +41,21 @@ func (t *Tabs) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (t *Tabs) Serialize(e page.Encoder) (err error) {
-	if err = t.Panel.Serialize(e); err != nil {return}
+func (t *Tabs) Serialize(e page.Encoder) {
+	t.Panel.Serialize(e)
 
-	if err = e.Encode(t.selectedID); err != nil {
-		return err
+	if err := e.Encode(t.selectedID); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 
-func (t *Tabs) Deserialize(d page.Decoder) (err error) {
-	if err = t.Panel.Deserialize(d); err != nil {
-		return
-	}
+func (t *Tabs) Deserialize(d page.Decoder) {
+	t.Panel.Deserialize(d)
 
-	if err = d.Decode(&t.selectedID); err != nil {
-		return
+	if err := d.Decode(&t.selectedID); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 

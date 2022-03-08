@@ -114,21 +114,20 @@ type encodedDataManager struct {
 	Data         interface{}
 }
 
-func (d *DataManager) Serialize(e page.Encoder) (err error) {
+func (d *DataManager) Serialize(e page.Encoder) {
 	enc := encodedDataManager{
 		DataProviderID: d.dataProviderID,
 		Data:           d.data,
 	}
-	if err = e.Encode(enc); err != nil {
+	if err := e.Encode(enc); err != nil {
 		panic (err)
 	}
-	return
 }
 
-func (d *DataManager) Deserialize(dec page.Decoder) (err error) {
+func (d *DataManager) Deserialize(dec page.Decoder) {
 	enc := encodedDataManager{}
 
-	if err = dec.Decode(&enc); err != nil {
+	if err := dec.Decode(&enc); err != nil {
 		panic(err)
 	}
 

@@ -108,37 +108,31 @@ func (b *Button) SetIsPrimary(isPrimary bool) {
 }
 
 // Serialize serializes the state of the control for the pagestate
-func (b *Button) Serialize(e page.Encoder) (err error) {
-	if err = b.Button.Serialize(e); err != nil {
-		return
+func (b *Button) Serialize(e page.Encoder) {
+	b.Button.Serialize(e)
+
+	if err := e.Encode(b.style); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(b.style); err != nil {
-		return err
-	}
-
-	if err = e.Encode(b.size); err != nil {
-		return err
+	if err := e.Encode(b.size); err != nil {
+		panic(err)
 	}
 
 	return
 }
 
 // Deserialize reconstructs the control from the page state.
-func (b *Button) Deserialize(d page.Decoder) (err error) {
-	if err = b.Button.Deserialize(d); err != nil {
-		return
+func (b *Button) Deserialize(d page.Decoder) {
+	b.Button.Deserialize(d)
+
+	if err := d.Decode(&b.style); err != nil {
+		panic(err)
 	}
 
-	if err = d.Decode(&b.style); err != nil {
-		return
+	if err := d.Decode(&b.size); err != nil {
+		panic(err)
 	}
-
-	if err = d.Decode(&b.size); err != nil {
-		return
-	}
-
-	return
 }
 
 // ButtonCreator is the initialization structure for the declarative creation of the control.

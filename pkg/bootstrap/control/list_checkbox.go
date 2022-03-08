@@ -103,32 +103,28 @@ func renderCell(item *control.ListItem, controlHtml string, columnCount int, isI
 	return html.RenderTag("div", attributes, controlHtml)
 }
 
-func (l *CheckboxList) Serialize(e page.Encoder) (err error) {
-	if err = l.CheckboxList.Serialize(e); err != nil {
-		return
-	}
+func (l *CheckboxList) Serialize(e page.Encoder) {
+	l.CheckboxList.Serialize(e)
 
-	if err = e.Encode(l.isInline); err != nil {
-		return err
+	if err := e.Encode(l.isInline); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.cellClass); err != nil {
-		return err
+	if err := e.Encode(l.cellClass); err != nil {
+		panic(err)
 	}
 
 	return
 }
 
 
-func (l *CheckboxList) Deserialize(d page.Decoder) (err error) {
-	if err = l.CheckboxList.Deserialize(d); err != nil {
-		return
-	}
+func (l *CheckboxList) Deserialize(d page.Decoder) {
+	l.CheckboxList.Deserialize(d)
 
-	if err = d.Decode(&l.isInline); err != nil {
-		return
+	if err := d.Decode(&l.isInline); err != nil {
+		panic(err)
 	}
-	if err = d.Decode(&l.cellClass); err != nil {
-		return
+	if err := d.Decode(&l.cellClass); err != nil {
+		panic(err)
 	}
 
 	return

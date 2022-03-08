@@ -132,34 +132,27 @@ func (i *Image) DrawingAttributes(ctx context.Context) html.Attributes {
 	return a
 }
 
-func (i *Image) Serialize(e page.Encoder) (err error) {
-	if err = i.ControlBase.Serialize(e); err != nil {
-		return
-	}
+func (i *Image) Serialize(e page.Encoder) {
+	i.ControlBase.Serialize(e)
 
-	if err = e.Encode(i.data); err != nil {
-		return
+	if err := e.Encode(i.data); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.typ); err != nil {
-		return
+	if err := e.Encode(i.typ); err != nil {
+		panic(err)
 	}
-	return
 }
 
-func (i *Image) Deserialize(dec page.Decoder) (err error) {
-	if err = i.ControlBase.Deserialize(dec); err != nil {
-		return
+func (i *Image) Deserialize(dec page.Decoder) {
+	i.ControlBase.Deserialize(dec)
+
+	if err := dec.Decode(&i.data); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&i.data); err != nil {
-		return
+	if err := dec.Decode(&i.typ); err != nil {
+		panic(err)
 	}
-
-	if err = dec.Decode(&i.typ); err != nil {
-		return
-	}
-
-	return
 }
 
 

@@ -521,18 +521,13 @@ type formEncoded struct {
 	ImportedJS *maps.SliceMap
 }
 
-func (f *FormBase) Serialize(e Encoder) (err error) {
-	if err = f.ControlBase.Serialize(e); err != nil {
-		return
-	}
-
+func (f *FormBase) Serialize(e Encoder)  {
+	f.ControlBase.Serialize(e)
 	if !config.Release {
 		// The response is currently only changed between posts by the testing framework
 		// If we ever need to change forms using some kind of push mechanism, we will need to serialize
 		// the response.
-		if err = f.response.Serialize(e); err != nil {
-			return
-		}
+		f.response.Serialize(e)
 	}
 
 	s := formEncoded{
@@ -543,30 +538,25 @@ func (f *FormBase) Serialize(e Encoder) (err error) {
 		ImportedJS: f.importedJavaScripts,
 	}
 
-	if err = e.Encode(s); err != nil {
-		return
+	if err := e.Encode(s); err != nil {
+		panic(err)
 	}
-	return
 }
 
-func (f *FormBase) Deserialize(d Decoder) (err error) {
-	if err = f.ControlBase.Deserialize(d); err != nil {
-		return
-	}
+func (f *FormBase) Deserialize(d Decoder) {
+	f.ControlBase.Deserialize(d)
 
 	if !config.Release {
 		// The response is currently only changed between posts by the testing framework
 		// If we ever need to change forms using some kind of push mechanism, we will need to serialize
 		// the response.
-		if err = f.response.Deserialize(d); err != nil {
-			return
-		}
+		f.response.Deserialize(d)
 	}
 
 
 	s := formEncoded{}
-	if err = d.Decode(&s); err != nil {
-		return
+	if err := d.Decode(&s); err != nil {
+		panic(err)
 	}
 
 	f.headerStyleSheets = s.HeaderSS

@@ -715,13 +715,9 @@ type tableEncoded struct {
 	SortDescHtml          string
 }
 
-func (t *Table) Serialize(e page.Encoder) (err error) {
-	if err = t.ControlBase.Serialize(e); err != nil {
-		return
-	}
-	if err = t.DataManager.Serialize(e); err != nil {
-		return
-	}
+func (t *Table) Serialize(e page.Encoder) {
+	t.ControlBase.Serialize(e)
+	t.DataManager.Serialize(e)
 
 	s := tableEncoded{
 		HideIfEmpty:      t.hideIfEmpty,
@@ -755,37 +751,31 @@ func (t *Table) Serialize(e page.Encoder) (err error) {
 		s.FooterRowStyler = ctrl.ID()
 	}
 
-	if err = e.Encode(s); err != nil {
-		return err
+	if err := e.Encode(s); err != nil {
+		panic(err)
 	}
 
 	l := len(t.columns)
-	if err = e.Encode(l); err != nil {
-		return err
+	if err := e.Encode(l); err != nil {
+		panic(err)
 	}
 	for _, col := range t.columns {
-		if err = e.Encode(columnRegistryID(col)); err != nil {
-			return
+		if err := e.Encode(columnRegistryID(col)); err != nil {
+			panic(err)
 		}
-		if err = col.Serialize(e); err != nil {
-			return err
-		}
+		col.Serialize(e)
 	}
 
 	return
 }
 
-func (t *Table) Deserialize(dec page.Decoder) (err error) {
-	if err = t.ControlBase.Deserialize(dec); err != nil {
-		panic(err)
-	}
-	if err = t.DataManager.Deserialize(dec); err != nil {
-		panic(err)
-	}
+func (t *Table) Deserialize(dec page.Decoder)  {
+	t.ControlBase.Deserialize(dec)
+	t.DataManager.Deserialize(dec)
 
 	var s tableEncoded
 
-	if err = dec.Decode(&s); err != nil {
+	if err := dec.Decode(&s); err != nil {
 		panic(err)
 	}
 
@@ -816,23 +806,19 @@ func (t *Table) Deserialize(dec page.Decoder) (err error) {
 	}
 
 	var l int
-	if err = dec.Decode(&l); err != nil {
+	if err := dec.Decode(&l); err != nil {
 		panic(err)
 	}
 
 	for idx := 0; idx < l; idx++ {
 		var registryID int
-		if err = dec.Decode(&registryID); err != nil {
+		if err := dec.Decode(&registryID); err != nil {
 			panic(err)
 		}
 		c := createRegisteredColumn(registryID, t)
 		t.columns = append(t.columns, c)
-		if err = c.Deserialize(dec); err != nil {
-			return
-		}
+		c.Deserialize(dec)
 	}
-
-	return
 }
 
 func (t *Table) Restore() {

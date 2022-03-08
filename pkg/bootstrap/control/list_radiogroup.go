@@ -77,26 +77,20 @@ func (l *RadioListGroup) RenderItem(item *control.ListItem) (h string) {
 	return html.RenderLabel(labelAttributes, item.Label(), ctrl, html.LabelWrapAfter)
 }
 
-func (l *RadioListGroup) Serialize(e page.Encoder) (err error) {
-	if err = l.RadioList.Serialize(e); err != nil {
-		return
-	}
+func (l *RadioListGroup) Serialize(e page.Encoder) {
+	l.RadioList.Serialize(e)
 
-	if err = e.Encode(l.buttonStyle); err != nil {
-		return err
+	if err := e.Encode(l.buttonStyle); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 
-func (l *RadioListGroup) Deserialize(d page.Decoder) (err error) {
-	if err = l.RadioList.Deserialize(d); err != nil {
-		return
-	}
+func (l *RadioListGroup) Deserialize(d page.Decoder) {
+	l.RadioList.Deserialize(d)
 
-	if err = d.Decode(&l.buttonStyle); err != nil {
-		return
+	if err := d.Decode(&l.buttonStyle); err != nil {
+		panic(err)
 	}
 
 	return

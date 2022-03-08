@@ -208,48 +208,44 @@ func (l *RadioList) UpdateFormValues(ctx context.Context) {
 	}
 }
 
-func (l *RadioList) Serialize(e page.Encoder) (err error) {
-	if err = l.SelectList.Serialize(e); err != nil {
-		return
+func (l *RadioList) Serialize(e page.Encoder) {
+	l.SelectList.Serialize(e)
+
+	if err := e.Encode(l.columnCount); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.columnCount); err != nil {
-		return
+	if err := e.Encode(l.direction); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.direction); err != nil {
-		return
+	if err := e.Encode(l.labelDrawingMode); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.labelDrawingMode); err != nil {
-		return
+	if err := e.Encode(l.isScrolling); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.isScrolling); err != nil {
-		return
+	if err := e.Encode(l.rowClass); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.rowClass); err != nil {
-		return
-	}
-	return
 }
 
-func (l *RadioList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.SelectList.Deserialize(dec); err != nil {
-		return
+func (l *RadioList) Deserialize(dec page.Decoder) {
+	l.SelectList.Deserialize(dec)
+
+	if err := dec.Decode(&l.columnCount); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.columnCount); err != nil {
-		return
+	if err := dec.Decode(&l.direction); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.direction); err != nil {
-		return
+	if err := dec.Decode(&l.labelDrawingMode); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.labelDrawingMode); err != nil {
-		return
+	if err := dec.Decode(&l.isScrolling); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.isScrolling); err != nil {
-		return
+	if err := dec.Decode(&l.rowClass); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.rowClass); err != nil {
-		return
-	}
-	return
 }
 
 

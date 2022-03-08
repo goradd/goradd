@@ -189,45 +189,37 @@ func (c *CheckboxBase) TextIsLabel() bool {
 }
 
 // Serialize is called by the framework during pagestate serialization.
-func (c *CheckboxBase) Serialize(e page.Encoder) (err error) {
-	if err = c.ControlBase.Serialize(e); err != nil {
-		return
+func (c *CheckboxBase) Serialize(e page.Encoder) {
+	c.ControlBase.Serialize(e)
+
+	if err := e.Encode(c.checked); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(c.checked); err != nil {
-		return err
+	if err := e.Encode(c.LabelMode); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(c.LabelMode); err != nil {
-		return err
+	if err := e.Encode(c.labelAttributes); err != nil {
+		panic(err)
 	}
-
-	if err = e.Encode(c.labelAttributes); err != nil {
-		return err
-	}
-
-	return
 }
 
 // Deserialize is called by the framework during page state serialization.
-func (c *CheckboxBase) Deserialize(d page.Decoder) (err error) {
-	if err = c.ControlBase.Deserialize(d); err != nil {
-		return
+func (c *CheckboxBase) Deserialize(d page.Decoder) {
+	c.ControlBase.Deserialize(d)
+
+	if err := d.Decode(&c.checked); err != nil {
+		panic(err)
 	}
 
-	if err = d.Decode(&c.checked); err != nil {
-		return
+	if err := d.Decode(&c.LabelMode); err != nil {
+		panic(err)
 	}
 
-	if err = d.Decode(&c.LabelMode); err != nil {
-		return
+	if err := d.Decode(&c.labelAttributes); err != nil {
+		panic(err)
 	}
-
-	if err = d.Decode(&c.labelAttributes); err != nil {
-		return
-	}
-
-	return
 }
 
 // utility code for subclasses

@@ -231,61 +231,61 @@ func (i *ListItem) IsEmptyValue() bool {
 	return i.value == ""
 }
 
-func (i *ListItem) Serialize(e page.Encoder) (err error) {
-	if err = e.Encode(&i.value); err != nil {
-		return
+func (i *ListItem) Serialize(e page.Encoder) {
+	if err := e.Encode(&i.value); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.id); err != nil {
-		return
+	if err := e.Encode(i.id); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.label); err != nil {
-		return
+	if err := e.Encode(i.label); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.attributes); err != nil {
-		return
+	if err := e.Encode(i.attributes); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.shouldEscapeLabel); err != nil {
-		return
+	if err := e.Encode(i.shouldEscapeLabel); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.disabled); err != nil {
-		return
+	if err := e.Encode(i.disabled); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.isDivider); err != nil {
-		return
+	if err := e.Encode(i.isDivider); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.anchorAttributes); err != nil {
-		return
+	if err := e.Encode(i.anchorAttributes); err != nil {
+		panic(err)
 	}
-	return i.ItemList.Serialize(e)
+	i.ItemList.Serialize(e)
 }
 
-func (i *ListItem) Deserialize(dec page.Decoder) (err error) {
-	if err = dec.Decode(&i.value); err != nil {
+func (i *ListItem) Deserialize(dec page.Decoder) {
+	if err := dec.Decode(&i.value); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&i.id); err != nil {
+	if err := dec.Decode(&i.id); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&i.label); err != nil {
+	if err := dec.Decode(&i.label); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&i.attributes); err != nil {
+	if err := dec.Decode(&i.attributes); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&i.shouldEscapeLabel); err != nil {
+	if err := dec.Decode(&i.shouldEscapeLabel); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&i.disabled); err != nil {
+	if err := dec.Decode(&i.disabled); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&i.isDivider); err != nil {
+	if err := dec.Decode(&i.isDivider); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&i.anchorAttributes); err != nil {
+	if err := dec.Decode(&i.anchorAttributes); err != nil {
 		panic(err)
 	}
 
-	return i.ItemList.Deserialize(dec)
+	i.ItemList.Deserialize(dec)
 }
 
 // ListValue is a helper for initializing a control based on ItemList.
