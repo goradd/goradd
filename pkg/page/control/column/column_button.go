@@ -55,17 +55,14 @@ func (c *ButtonColumn) CellData(ctx context.Context, row int, col int, data inte
 	return html.RenderTag("button", c.buttonAttributes, c.buttonHtml)
 }
 
-func (c *ButtonColumn) Serialize(e page.Encoder) (err error) {
-	if err = c.ColumnBase.Serialize(e); err != nil {
-		return
+func (c *ButtonColumn) Serialize(e page.Encoder) {
+	c.ColumnBase.Serialize(e)
+	if err := e.Encode(c.buttonHtml); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.buttonHtml); err != nil {
-		return
+	if err := e.Encode(c.buttonAttributes); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.buttonAttributes); err != nil {
-		return
-	}
-	return
 }
 
 // SetButtonHtml sets the html to use inside the button. By default a pencil is drawn.
@@ -75,17 +72,15 @@ func (c *ButtonColumn) SetButtonHtml(h string) {
 }
 
 
-func (c *ButtonColumn) Deserialize(dec page.Decoder) (err error) {
-	if err = c.ColumnBase.Deserialize(dec); err != nil {
+func (c *ButtonColumn) Deserialize(dec page.Decoder) {
+	c.ColumnBase.Deserialize(dec)
+
+	if err := dec.Decode(&c.buttonHtml); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&c.buttonHtml); err != nil {
+	if err := dec.Decode(&c.buttonAttributes); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&c.buttonAttributes); err != nil {
-		panic(err)
-	}
-	return
 }
 
 

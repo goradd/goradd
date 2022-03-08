@@ -331,10 +331,8 @@ type encodedTextbox struct {
 }
 
 // Serialize is used by the framework to serialize the textbox into the pagestate.
-func (t *Textbox) Serialize(e page.Encoder) (err error) {
-	if err = t.ControlBase.Serialize(e); err != nil {
-		panic(err)
-	}
+func (t *Textbox) Serialize(e page.Encoder) {
+	t.ControlBase.Serialize(e)
 
 	s := encodedTextbox{
 		Typ:         t.typ,
@@ -347,22 +345,19 @@ func (t *Textbox) Serialize(e page.Encoder) (err error) {
 		Readonly:    t.readonly,
 	}
 
-	if err = e.Encode(s); err != nil {
+	if err := e.Encode(s); err != nil {
 		panic(err)
 	}
-	return
 }
 
 // Deserialize is used by the pagestate serializer.
-func (t *Textbox) Deserialize(d page.Decoder) (err error) {
-	if err = t.ControlBase.Deserialize(d); err != nil {
-		return
-	}
+func (t *Textbox) Deserialize(d page.Decoder)  {
+	t.ControlBase.Deserialize(d)
 
 	s := encodedTextbox{}
 
-	if err = d.Decode(&s); err != nil {
-		return
+	if err := d.Decode(&s); err != nil {
+		panic(err)
 	}
 
 	t.typ = s.Typ
@@ -373,7 +368,6 @@ func (t *Textbox) Deserialize(d page.Decoder) (err error) {
 	t.columnCount = s.ColumnCount
 	t.rowCount = s.RowCount
 	t.readonly = s.Readonly
-	return
 }
 
 // MinLengthValidator is a validator that checks that the user has entered a minimum length.

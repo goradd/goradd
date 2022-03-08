@@ -174,49 +174,42 @@ func (l *CheckboxList) UpdateFormValues(ctx context.Context) {
 	}
 }
 
-func (l *CheckboxList) Serialize(e page.Encoder) (err error) {
-	if err = l.MultiselectList.Serialize(e); err != nil {
-		return
+func (l *CheckboxList) Serialize(e page.Encoder) {
+	l.MultiselectList.Serialize(e)
+	if err := e.Encode(l.columnCount); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.columnCount); err != nil {
-		return
+	if err := e.Encode(l.direction); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.direction); err != nil {
-		return
+	if err := e.Encode(l.labelDrawingMode); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.labelDrawingMode); err != nil {
-		return
+	if err := e.Encode(l.isScrolling); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.isScrolling); err != nil {
-		return
+	if err := e.Encode(l.rowClass); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.rowClass); err != nil {
-		return
-	}
-	return
 }
 
-func (l *CheckboxList) Deserialize(dec page.Decoder) (err error) {
-	if err = l.MultiselectList.Deserialize(dec); err != nil {
-		return
+func (l *CheckboxList) Deserialize(dec page.Decoder) {
+	l.MultiselectList.Deserialize(dec)
+	if err := dec.Decode(&l.columnCount); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.columnCount); err != nil {
-		return
+	if err := dec.Decode(&l.direction); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.direction); err != nil {
-		return
+	if err := dec.Decode(&l.labelDrawingMode); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.labelDrawingMode); err != nil {
-		return
+	if err := dec.Decode(&l.isScrolling); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.isScrolling); err != nil {
-		return
+	if err := dec.Decode(&l.rowClass); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.rowClass); err != nil {
-		return
-	}
-
-	return
 }
 
 type CheckboxListCreator struct {

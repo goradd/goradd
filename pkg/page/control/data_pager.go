@@ -155,41 +155,39 @@ func (c *PagedControl) UnmarshalState(m maps.Loader) {
 // Serialize encodes the PagedControl data for serialization. Note that all control implementations
 // that use a PagedControl MUST create their own Serialize method, call the base ControlBase's version first,
 // and then call this Serialize method.
-func (c *PagedControl) Serialize(e page.Encoder) (err error) {
-	if err = e.Encode(c.totalItems); err != nil {
-		return
+func (c *PagedControl) Serialize(e page.Encoder) {
+	if err := e.Encode(c.totalItems); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.pageSize); err != nil {
-		return
+	if err := e.Encode(c.pageSize); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.pageNum); err != nil {
-		return
+	if err := e.Encode(c.pageNum); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.dataPagers); err != nil {
-		return
+	if err := e.Encode(c.dataPagers); err != nil {
+		panic(err)
 	}
 
 	return
 }
 
-func (c *PagedControl) Deserialize(dec page.Decoder) (err error) {
-	if err = dec.Decode(&c.totalItems); err != nil {
+func (c *PagedControl) Deserialize(dec page.Decoder) {
+	if err := dec.Decode(&c.totalItems); err != nil {
 		panic(err)
 	}
 
-	if err = dec.Decode(&c.pageSize); err != nil {
+	if err := dec.Decode(&c.pageSize); err != nil {
 		panic(err)
 	}
 
-	if err = dec.Decode(&c.pageNum); err != nil {
+	if err := dec.Decode(&c.pageNum); err != nil {
 		panic(err)
 	}
 
-	if err = dec.Decode(&c.dataPagers); err != nil {
+	if err := dec.Decode(&c.dataPagers); err != nil {
 		panic(err)
 	}
-
-	return
 }
 
 
@@ -517,64 +515,58 @@ func (d *DataPager) PagedControl() PagedControlI {
 	return d.Page().GetControl(d.pagedControlID).(PagedControlI)
 }
 
-func (d *DataPager) Serialize(e page.Encoder) (err error) {
-	if err = d.ControlBase.Serialize(e); err != nil {
-		return
+func (d *DataPager) Serialize(e page.Encoder)  {
+	d.ControlBase.Serialize(e)
+
+	if err := e.Encode(d.maxPageButtons); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.maxPageButtons); err != nil {
-		return
+	if err := e.Encode(d.ObjectName); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.ObjectName); err != nil {
-		return
+	if err := e.Encode(d.ObjectPluralName); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.ObjectPluralName); err != nil {
-		return
+	if err := e.Encode(d.LabelForNext); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.LabelForNext); err != nil {
-		return
+	if err := e.Encode(d.LabelForPrevious); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.LabelForPrevious); err != nil {
-		return
+	if err := e.Encode(d.pagedControlID); err != nil {
+		panic(err)
 	}
-
-	if err = e.Encode(d.pagedControlID); err != nil {
-		return
-	}
-
-	return
 }
 
-func (d *DataPager) Deserialize(dec page.Decoder) (err error) {
-	if err = d.ControlBase.Deserialize(dec); err != nil {
+func (d *DataPager) Deserialize(dec page.Decoder) {
+	d.ControlBase.Deserialize(dec)
+
+	if err := dec.Decode(&d.maxPageButtons); err != nil {
 		panic(err)
 	}
 
-	if err = dec.Decode(&d.maxPageButtons); err != nil {
+	if err := dec.Decode(&d.ObjectName); err != nil {
 		panic(err)
 	}
 
-	if err = dec.Decode(&d.ObjectName); err != nil {
+	if err := dec.Decode(&d.ObjectPluralName); err != nil {
 		panic(err)
 	}
 
-	if err = dec.Decode(&d.ObjectPluralName); err != nil {
+	if err := dec.Decode(&d.LabelForNext); err != nil {
 		panic(err)
 	}
 
-	if err = dec.Decode(&d.LabelForNext); err != nil {
+	if err := dec.Decode(&d.LabelForPrevious); err != nil {
 		panic(err)
 	}
 
-	if err = dec.Decode(&d.LabelForPrevious); err != nil {
-		panic(err)
-	}
-
-	if err = dec.Decode(&d.pagedControlID); err != nil {
+	if err := dec.Decode(&d.pagedControlID); err != nil {
 		panic(err)
 	}
 

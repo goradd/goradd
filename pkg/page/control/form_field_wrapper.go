@@ -217,69 +217,61 @@ func (c *FormFieldWrapper) SubTag() string {
 	return c.subtag
 }
 
-func (c *FormFieldWrapper) Serialize(e page.Encoder) (err error) {
-	if err = c.ControlBase.Serialize(e); err != nil {
-		return
-	}
+func (c *FormFieldWrapper) Serialize(e page.Encoder) {
+	c.ControlBase.Serialize(e)
 
-	if err = e.Encode(c.instructions); err != nil {
-		return
+	if err := e.Encode(c.instructions); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.labelAttributes); err != nil {
-		return
+	if err := e.Encode(c.labelAttributes); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.errorAttributes); err != nil {
-		return
+	if err := e.Encode(c.errorAttributes); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.instructionAttributes); err != nil {
-		return
+	if err := e.Encode(c.instructionAttributes); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.forID); err != nil {
-		return
+	if err := e.Encode(c.forID); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.savedMessage); err != nil {
-		return
+	if err := e.Encode(c.savedMessage); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.subtag); err != nil {
-		return
+	if err := e.Encode(c.subtag); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
-func (c *FormFieldWrapper) Deserialize(dec page.Decoder) (err error) {
-	if err = c.ControlBase.Deserialize(dec); err != nil {
-		return
+func (c *FormFieldWrapper) Deserialize(dec page.Decoder) {
+	c.ControlBase.Deserialize(dec)
+
+	if err := dec.Decode(&c.instructions); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&c.instructions); err != nil {
-		return
+	if err := dec.Decode(&c.labelAttributes); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&c.labelAttributes); err != nil {
-		return
+	if err := dec.Decode(&c.errorAttributes); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&c.errorAttributes); err != nil {
-		return
+	if err := dec.Decode(&c.instructionAttributes); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&c.instructionAttributes); err != nil {
-		return
+	if err := dec.Decode(&c.forID); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&c.forID); err != nil {
-		return
+	if err := dec.Decode(&c.savedMessage); err != nil {
+		panic(err)
 	}
-
-	if err = dec.Decode(&c.savedMessage); err != nil {
-		return
+	if err := dec.Decode(&c.subtag); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&c.subtag); err != nil {
-		return
-	}
-
-	return
 }
 
 

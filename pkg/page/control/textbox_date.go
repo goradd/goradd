@@ -151,33 +151,25 @@ func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
 }
 
 // Serialize encodes the control into the pagestate
-func (d *DateTextbox) Serialize(e page.Encoder) (err error) {
-	if err = d.Textbox.Serialize(e); err != nil {
-		return
+func (d *DateTextbox) Serialize(e page.Encoder)  {
+	d.Textbox.Serialize(e)
+	if err := e.Encode(d.formats); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(d.formats); err != nil {
-		return
+	if err := e.Encode(d.time); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(d.time); err != nil {
-		return
-	}
-
-	return
 }
 
 // Deserialize recreates the control from the pagestate
-func (d *DateTextbox) Deserialize(dec page.Decoder) (err error) {
-	if err = d.Textbox.Deserialize(dec); err != nil {
-		return
+func (d *DateTextbox) Deserialize(dec page.Decoder) {
+	d.Textbox.Deserialize(dec)
+	if err := dec.Decode(&d.formats); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&d.formats); err != nil {
-		return
+	if err := dec.Decode(&d.time); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&d.time); err != nil {
-		return
-	}
-
-	return
 }
 
 // DateValidator specifies the message to show when the date is not validated.

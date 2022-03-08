@@ -186,32 +186,25 @@ func (c *FormGroup) InnerDivAttributes() html.Attributes {
 	return c.innerDivAttr
 }
 
-func (c *FormGroup) Serialize(e page.Encoder) (err error) {
-	if err = c.FormFieldWrapper.Serialize(e); err != nil {
-		return
+func (c *FormGroup) Serialize(e page.Encoder) {
+	c.FormFieldWrapper.Serialize(e)
+	if err := e.Encode(c.innerDivAttr); err != nil {
+		panic(err)
 	}
-
-	if err = e.Encode(c.innerDivAttr); err != nil {
-		return
+	if err := e.Encode(c.useTooltips); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.useTooltips); err != nil {
-		return
-	}
-	return
 }
 
-func (c *FormGroup) Deserialize(dec page.Decoder) (err error) {
-	if err = c.FormFieldWrapper.Deserialize(dec); err != nil {
-		return
-	}
+func (c *FormGroup) Deserialize(dec page.Decoder) {
+	c.FormFieldWrapper.Deserialize(dec)
 
-	if err = dec.Decode(&c.innerDivAttr); err != nil {
-		return
+	if err := dec.Decode(&c.innerDivAttr); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&c.useTooltips); err != nil {
-		return
+	if err := dec.Decode(&c.useTooltips); err != nil {
+		panic(err)
 	}
-	return
 }
 
 // FormGroupCreator creates a FormGroup,

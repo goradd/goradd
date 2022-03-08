@@ -40,23 +40,13 @@ func (t *PagedTable) UnmarshalState(m maps.Loader) {
 }
 
 
-func (t *PagedTable) Serialize(e page.Encoder) (err error) {
-	if err = t.Table.Serialize(e); err != nil {
-		return
-	}
-	if err = t.PagedControl.Serialize(e); err != nil {
-		return
-	}
-	return
+func (t *PagedTable) Serialize(e page.Encoder) {
+	t.Table.Serialize(e)
+	t.PagedControl.Serialize(e)
 }
-func (t *PagedTable) Deserialize(dec page.Decoder) (err error) {
-	if err = t.Table.Deserialize(dec); err != nil {
-		return
-	}
-	if err = t.PagedControl.Deserialize(dec); err != nil {
-		return
-	}
-	return
+func (t *PagedTable) Deserialize(dec page.Decoder) {
+	t.Table.Deserialize(dec)
+	t.PagedControl.Deserialize(dec)
 }
 
 // PagedTableCreator creates a table that can be paged

@@ -216,61 +216,53 @@ func (i *ImageCapture) UnmarshalState(m maps.Loader) {
 	}
 }
 
-func (i *ImageCapture) Serialize(e page.Encoder) (err error) {
-	if err = i.ControlBase.Serialize(e); err != nil {
-		return
-	}
+func (i *ImageCapture) Serialize(e page.Encoder) {
+	i.ControlBase.Serialize(e)
 
-	if err = e.Encode(i.ErrTextID); err != nil {
-		return
+	if err := e.Encode(i.ErrTextID); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.data); err != nil {
-		return
+	if err := e.Encode(i.data); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.shape); err != nil {
-		return
+	if err := e.Encode(i.shape); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.typ); err != nil {
-		return
+	if err := e.Encode(i.typ); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.zoom); err != nil {
-		return
+	if err := e.Encode(i.zoom); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(i.quality); err != nil {
-		return
+	if err := e.Encode(i.quality); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
-func (i *ImageCapture) Deserialize(dec page.Decoder) (err error) {
-	if err = i.ControlBase.Deserialize(dec); err != nil {
-		return
+func (i *ImageCapture) Deserialize(dec page.Decoder) {
+	i.ControlBase.Deserialize(dec)
+
+	if err := dec.Decode(&i.ErrTextID); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&i.ErrTextID); err != nil {
-		return
+	if err := dec.Decode(&i.data); err != nil {
+		panic(err)
+	}
+	if err := dec.Decode(&i.shape); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&i.data); err != nil {
-		return
+	if err := dec.Decode(&i.typ); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&i.shape); err != nil {
-		return
-	}
-
-	if err = dec.Decode(&i.typ); err != nil {
-		return
-	}
-	if err = dec.Decode(&i.zoom); err != nil {
-		return
+	if err := dec.Decode(&i.zoom); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&i.quality); err != nil {
-		return
+	if err := dec.Decode(&i.quality); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 // ImageCaptureCreator is the initialization structure for declarative creation of buttons

@@ -219,8 +219,8 @@ type ControlI interface {
 
 	SetIsRequired(r bool) ControlI
 
-	Serialize(e Encoder) (err error)
-	Deserialize(d Decoder) (err error)
+	Serialize(e Encoder)
+	Deserialize(d Decoder)
 
 	ApplyOptions(ctx context.Context, o ControlOptions)
 	AddControls(ctx context.Context, creators ...Creator)
@@ -1794,7 +1794,7 @@ type controlEncoding struct {
 // Serialize is used by the framework to serialize a control to be saved in the pagestate.
 // It is overridable, and control implementations should call this function first before their
 // own serializer.
-func (c *ControlBase) Serialize(e Encoder) (err error) {
+func (c *ControlBase) Serialize(e Encoder) {
 	s := controlEncoding{
 		Id:					   c.id,
 		Tag:                   c.Tag,
@@ -1830,18 +1830,16 @@ func (c *ControlBase) Serialize(e Encoder) (err error) {
 		s.ChildIDs = append(s.ChildIDs, child.ID())
 	}
 
-	if err = e.Encode(s); err != nil {
+	if err := e.Encode(s); err != nil {
 		panic(err)
 	}
-
-	return
 }
 
 // Deserialize is called by GobDecode to deserialize the control.  It is overridable, and control implementations
 // should call this first before calling their own version. However, after deserialization, the control will
 // not be ready for use, since its parent, form or child controls still need to be deserialized.
 // The Decoded function should be called to fix up the necessary internal pointers.
-func (c *ControlBase) Deserialize(d Decoder) (err error) {
+func (c *ControlBase) Deserialize(d Decoder) {
 	var s controlEncoding
 
 	// zero out items that are not being retrieved
@@ -1849,7 +1847,7 @@ func (c *ControlBase) Deserialize(d Decoder) (err error) {
 	c.wasRendered = false
 	c.attributeScripts = nil
 
-	if err = d.Decode(&s); err != nil {
+	if err := d.Decode(&s); err != nil {
 		panic(err)
 	}
 

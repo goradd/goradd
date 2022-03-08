@@ -37,24 +37,18 @@ func (c *SliceColumn) CellData(_ context.Context, _ int, _ int, data interface{}
 	return vSlice.Index(c.index).Interface()
 }
 
-func (c *SliceColumn) Serialize(e page.Encoder) (err error) {
-	if err = c.ColumnBase.Serialize(e); err != nil {
-		return
+func (c *SliceColumn) Serialize(e page.Encoder) {
+	c.ColumnBase.Serialize(e)
+	if err := e.Encode(c.index); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(c.index); err != nil {
-		return
-	}
-	return
 }
 
-func (c *SliceColumn) Deserialize(dec page.Decoder) (err error) {
-	if err = c.ColumnBase.Deserialize(dec); err != nil {
+func (c *SliceColumn) Deserialize(dec page.Decoder) {
+	c.ColumnBase.Deserialize(dec)
+	if err := dec.Decode(&c.index); err != nil {
 		panic(err)
 	}
-	if err = dec.Decode(&c.index); err != nil {
-		panic(err)
-	}
-	return
 }
 
 

@@ -449,7 +449,7 @@ type responseEncoded struct {
 
 // Serialize encodes the response for the pagestate. Currently, serialization of the response is only
 // used by the testing framework.
-func (r *Response) Serialize(e Encoder) (err error) {
+func (r *Response) Serialize(e Encoder) {
 	enc := responseEncoded{
 		ExclusiveCommand:       r.exclusiveCommand,
 		HighPriorityCommands:   r.highPriorityCommands,
@@ -463,18 +463,16 @@ func (r *Response) Serialize(e Encoder) (err error) {
 		WinClose:               r.winClose,
 		Controls:               r.controls,
 	}
-	if err = e.Encode(enc); err != nil {
+	if err := e.Encode(enc); err != nil {
 		panic(err)
 	}
-
-	return
 }
 
 // Deserialize unpacks the response from the pagestate. Currently the response is only serialized
 // in the testing framework.
-func (r *Response) Deserialize(d Decoder) (err error) {
+func (r *Response) Deserialize(d Decoder) {
 	enc := responseEncoded{}
-	if err = d.Decode(&enc); err != nil {
+	if err := d.Decode(&enc); err != nil {
 		panic(err)
 	}
 	r.exclusiveCommand = enc.ExclusiveCommand
@@ -488,5 +486,4 @@ func (r *Response) Deserialize(d Decoder) (err error) {
 	r.newLocation = enc.NewLocation
 	r.winClose = enc.WinClose
 	r.controls = enc.Controls
-	return
 }

@@ -65,27 +65,21 @@ func (c *RadioButton) DrawTag(ctx context.Context, w io.Writer) {
 	_,_ = io.WriteString(w, "\n</div>")
 }
 
-func (c *RadioButton) Serialize(e page.Encoder) (err error) {
-	if err = c.RadioButton.Serialize(e); err != nil {return}
+func (c *RadioButton) Serialize(e page.Encoder) {
+	c.RadioButton.Serialize(e)
 
-	if err = e.Encode(c.inline); err != nil {
-		return err
+	if err := e.Encode(c.inline); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 
-func (c *RadioButton) Deserialize(d page.Decoder) (err error) {
-	if err = c.RadioButton.Deserialize(d); err != nil {
-		return
-	}
+func (c *RadioButton) Deserialize(d page.Decoder) {
+	c.RadioButton.Deserialize(d)
 
-	if err = d.Decode(&c.inline); err != nil {
-		return
+	if err := d.Decode(&c.inline); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 

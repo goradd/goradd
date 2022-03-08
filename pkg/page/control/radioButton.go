@@ -80,24 +80,18 @@ func (c *RadioButton) UpdateFormValues(ctx context.Context) {
 	c.UpdateRadioFormValues(ctx, c.Group())
 }
 
-func (l *RadioButton) Serialize(e page.Encoder) (err error) {
-	if err = l.CheckboxBase.Serialize(e); err != nil {
-		return
+func (l *RadioButton) Serialize(e page.Encoder) {
+	l.CheckboxBase.Serialize(e)
+	if err := e.Encode(l.group); err != nil {
+		panic(err)
 	}
-	if err = e.Encode(l.group); err != nil {
-		return
-	}
-	return
 }
 
-func (l *RadioButton) Deserialize(dec page.Decoder) (err error) {
-	if err = l.CheckboxBase.Deserialize(dec); err != nil {
-		return
+func (l *RadioButton) Deserialize(dec page.Decoder) {
+	l.CheckboxBase.Deserialize(dec)
+	if err := dec.Decode(&l.group); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&l.group); err != nil {
-		return
-	}
-	return
 }
 
 type RadioButtonCreator struct {

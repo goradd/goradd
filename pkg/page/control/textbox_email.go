@@ -95,38 +95,32 @@ func (t *EmailTextbox) Addresses() (ret []string) {
 	return ret
 }
 
-func (t *EmailTextbox) Serialize(e page.Encoder) (err error) {
-	if err = t.Textbox.Serialize(e); err != nil {
+func (t *EmailTextbox) Serialize(e page.Encoder) {
+	t.Textbox.Serialize(e)
+	if err := e.Encode(t.maxItemCount); err != nil {
 		panic(err)
 	}
-	if err = e.Encode(t.maxItemCount); err != nil {
+	if err := e.Encode(t.items); err != nil {
 		panic(err)
 	}
-	if err = e.Encode(t.items); err != nil {
-		panic(err)
-	}
-	if err = e.Encode(t.parseErr); err != nil {
+	if err := e.Encode(t.parseErr); err != nil {
 		panic(err)
 	}
 
 	return
 }
 
-func (t *EmailTextbox) Deserialize(dec page.Decoder) (err error) {
-	if err = t.Textbox.Deserialize(dec); err != nil {
-		return
+func (t *EmailTextbox) Deserialize(dec page.Decoder) {
+	t.Textbox.Deserialize(dec)
+	if err := dec.Decode(&t.maxItemCount); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&t.maxItemCount); err != nil {
-		return
+	if err := dec.Decode(&t.items); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&t.items); err != nil {
-		return
+	if err := dec.Decode(&t.parseErr); err != nil {
+		panic(err)
 	}
-	if err = dec.Decode(&t.parseErr); err != nil {
-		return
-	}
-
-	return
 }
 
 

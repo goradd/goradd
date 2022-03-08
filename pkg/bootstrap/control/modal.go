@@ -283,52 +283,44 @@ var m = new bootstrap.Modal(document.getElementById('%s') , {keyboard: %t});
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }
 
-func (m *Modal) Serialize(e page.Encoder) (err error) {
-	if err = m.Panel.Serialize(e); err != nil {
-		return
-	}
+func (m *Modal) Serialize(e page.Encoder) {
+	m.Panel.Serialize(e)
 
-	if err = e.Encode(m.isOpen); err != nil {
+	if err := e.Encode(m.isOpen); err != nil {
 		panic(err)
 	}
-	if err = e.Encode(m.closeOnEscape); err != nil {
+	if err := e.Encode(m.closeOnEscape); err != nil {
 		panic(err)
 	}
 
-	if err = e.Encode(m.backdrop); err != nil {
+	if err := e.Encode(m.backdrop); err != nil {
 		panic(err)
 	}
-	if err = e.Encode(m.foundRight); err != nil {
+	if err := e.Encode(m.foundRight); err != nil {
 		panic(err)
 	}
-
-	return
 }
 
 
-func (m *Modal) Deserialize(d page.Decoder) (err error) {
-	if err = m.Panel.Deserialize(d); err != nil {
-		return
-	}
+func (m *Modal) Deserialize(d page.Decoder) {
+	m.Panel.Deserialize(d)
 
-	if err = d.Decode(&m.isOpen); err != nil {
-		return
+	if err := d.Decode(&m.isOpen); err != nil {
+		panic(err)
 	}
-	if err = d.Decode(&m.closeOnEscape); err != nil {
-		return
+	if err := d.Decode(&m.closeOnEscape); err != nil {
+		panic(err)
 	}
 
 	m.titleBar = m.Page().GetControl(m.ID()+"-titlebar").(*TitleBar)
 	m.buttonBar = m.Page().GetControl(m.ID()+"-btnbar").(*control.Panel)
 
-	if err = d.Decode(&m.backdrop); err != nil {
-		return
+	if err := d.Decode(&m.backdrop); err != nil {
+		panic(err)
 	}
-	if err = d.Decode(&m.foundRight); err != nil {
-		return
+	if err := d.Decode(&m.foundRight); err != nil {
+		panic(err)
 	}
-
-	return
 }
 
 

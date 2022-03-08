@@ -318,60 +318,52 @@ func (d *Dialog) SetDialogStyle(s DialogStyle) {
 	d.Refresh()
 }
 
-func (d *Dialog) Serialize(e page.Encoder) (err error) {
-	if err = d.ControlBase.Serialize(e); err != nil {
-		return
+func (d *Dialog) Serialize(e page.Encoder) {
+	d.ControlBase.Serialize(e)
+
+	if err := e.Encode(d.buttonBarID); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.buttonBarID); err != nil {
-		return
+	if err := e.Encode(d.titleBarID); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.titleBarID); err != nil {
-		return
+	if err := e.Encode(d.closeBoxID); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.closeBoxID); err != nil {
-		return
+	if err := e.Encode(d.dialogStyle); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.dialogStyle); err != nil {
-		return
+	if err := e.Encode(d.title); err != nil {
+		panic(err)
 	}
-
-	if err = e.Encode(d.title); err != nil {
-		return
-	}
-
-	return
 }
 
-func (d *Dialog) Deserialize(dec page.Decoder) (err error) {
-	if err = d.ControlBase.Deserialize(dec); err != nil {
-		return
+func (d *Dialog) Deserialize(dec page.Decoder) {
+	d.ControlBase.Deserialize(dec)
+
+	if err := dec.Decode(&d.buttonBarID); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&d.buttonBarID); err != nil {
-		return
+	if err := dec.Decode(&d.titleBarID); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&d.titleBarID); err != nil {
-		return
+	if err := dec.Decode(&d.closeBoxID); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&d.closeBoxID); err != nil {
-		return
+	if err := dec.Decode(&d.dialogStyle); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&d.dialogStyle); err != nil {
-		return
+	if err := dec.Decode(&d.title); err != nil {
+		panic(err)
 	}
-
-	if err = dec.Decode(&d.title); err != nil {
-		return
-	}
-
-	return
 }
 
 // NewDialogI creates a new dialog in a css framework independent way, by returning a DialogI interface.

@@ -39,11 +39,9 @@ func (t *PasswordTextbox) Init(parent page.ControlI, id string) {
 // Serialize is used by the framework to serialize the textbox into the pagestate.
 //
 // This special override prevents the value of the password from ever getting put into the pagestate store.
-func (t *PasswordTextbox) Serialize(e page.Encoder) (err error) {
+func (t *PasswordTextbox) Serialize(e page.Encoder) {
 	t.value = ""
-	if err = t.Textbox.Serialize(e); err != nil {
-		panic(err)
-	}
+	t.Textbox.Serialize(e)
 	return
 }
 

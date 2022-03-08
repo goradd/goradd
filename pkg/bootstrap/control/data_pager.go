@@ -125,37 +125,29 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 	return d.ButtonProxy().ButtonHtml(actionValue, actionValue, attr, false)
 }
 
-func (d *DataPager) Serialize(e page.Encoder) (err error) {
-	if err = d.DataPager.Serialize(e); err != nil {
-		return
+func (d *DataPager) Serialize(e page.Encoder)  {
+	d.DataPager.Serialize(e)
+
+	if err := e.Encode(d.ButtonStyle); err != nil {
+		panic(err)
 	}
 
-	if err = e.Encode(d.ButtonStyle); err != nil {
-		return
+	if err := e.Encode(d.HighlightStyle); err != nil {
+		panic(err)
 	}
-
-	if err = e.Encode(d.HighlightStyle); err != nil {
-		return
-	}
-
-	return
 }
 
 
-func (d *DataPager) Deserialize(dec page.Decoder) (err error) {
-	if err = d.DataPager.Deserialize(dec); err != nil {
-		return
+func (d *DataPager) Deserialize(dec page.Decoder) {
+	d.DataPager.Deserialize(dec)
+
+	if err := dec.Decode(&d.ButtonStyle); err != nil {
+		panic(err)
 	}
 
-	if err = dec.Decode(&d.ButtonStyle); err != nil {
-		return
+	if err := dec.Decode(&d.HighlightStyle); err != nil {
+		panic(err)
 	}
-
-	if err = dec.Decode(&d.HighlightStyle); err != nil {
-		return
-	}
-
-	return
 }
 
 // DataPagerCreator is the initialization structure for declarative creation of data pagers

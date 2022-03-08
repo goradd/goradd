@@ -51,32 +51,6 @@ func (f *BasicForm) CreateControls(ctx context.Context) {
 	f.S = "test"
 }
 
-/*
-func (f *BasicForm) Serialize(e page.Encoder) (err error) {
-	if err = f.FormBase.Serialize(e); err != nil {
-		return
-	}
-
-	if err = e.EncodeControl(f.txt1); err != nil {
-		return err
-	}
-	return
-}
-
-func (f *BasicForm) Deserialize(d page.Decoder, p *page.Page) (err error) {
-	if err = f.FormBase.Deserialize(d, p); err != nil {
-		return
-	}
-
-	if c,err := d.DecodeControl(p); err != nil {
-		return err
-	} else {
-		f.txt1 = c.(*control.Textbox)
-	}
-	return
-
-}
-*/
 
 func TestBasicFormEncoding(t *testing.T) {
 	var form = CreateBasicForm(nil)
