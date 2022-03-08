@@ -1,14 +1,13 @@
-package html
+package html5tag
 
 import (
 	"errors"
 	"fmt"
 	"math"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/goradd/goradd/pkg/stringmap"
 )
 
 const numericMatch = `-?[\d]*(\.[\d]+)?`
@@ -83,14 +82,8 @@ func (s Style) Remove(property string) {
 	delete(s, property)
 }
 
-// Delete removes the property.
-// Deprecated: use Remove
-func (s Style) Delete(prop string) {
-	s.Remove(prop)
-}
-
-// SetTo receives a style encoded "style" attribute into the Style structure (e.g. "width: 4px; border: 1px solid black")
-func (s Style) SetTo(text string) (changed bool, err error) {
+// SetString receives a style encoded "style" attribute into the Style structure (e.g. "width: 4px; border: 1px solid black")
+func (s Style) SetString(text string) (changed bool, err error) {
 	s.RemoveAll()
 	a := strings.Split(text, ";") // break apart into pairs
 	changed = false
@@ -242,7 +235,11 @@ func roundFloat(f float64, digits int) float64 {
 // encode will output a text version of the style, suitable for inclusion in an HTML "style" attribute.
 // it will sort the keys so that they are presented in a consistent and testable way.
 func (s Style) encode() (text string) {
-	keys := stringmap.SortedKeys(s)
+	var keys []string
+	for k := range s {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
 
 	for i, k := range keys {
 		if i > 0 {
@@ -286,9 +283,9 @@ func (c StyleCreator) Create() Style {
 // s2 wins conflicts.
 func MergeStyleStrings(s1, s2 string) string {
 	style1 := NewStyle()
-	_, _ = style1.SetTo(s1)
+	_, _ = style1.SetString(s1)
 	style2 := NewStyle()
-	_, _ = style2.SetTo(s2)
+	_, _ = style2.SetString(s2)
 	style1.Merge(style2)
 	return style1.String()
 }

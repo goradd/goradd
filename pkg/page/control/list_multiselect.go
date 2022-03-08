@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"io"
 	"reflect"
@@ -240,9 +240,9 @@ func (l *MultiselectList) DrawTag(ctx context.Context, w io.Writer) {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *MultiselectList) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *MultiselectList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "multilist")
+	a.SetData("grctl", "multilist")
 	a.Set("name", l.ID()) // needed for posts
 	a.Set("multiple", "")
 	if l.IsRequired() {
@@ -266,14 +266,14 @@ func (l *MultiselectList) getItemsHtml(items []*ListItem) string {
 			innerhtml := l.getItemsHtml(item.ListItems())
 			attributes := item.Attributes().Copy()
 			attributes.Set("label", item.Label())
-			h += html.RenderTag(tag, attributes, innerhtml) + "\n"
+			h += html5tag.RenderTag(tag, attributes, innerhtml) + "\n"
 		} else {
 			attributes := item.Attributes().Copy()
 			attributes.Set("value", item.Value())
 			if l.IsValueSelected(item.Value()) {
 				attributes.Set("selected", "")
 			}
-			h += html.RenderTag("option", attributes, item.Label()) + "\n"
+			h += html5tag.RenderTag("option", attributes, item.Label()) + "\n"
 		}
 	}
 	return h

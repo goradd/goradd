@@ -2,18 +2,18 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/pool"
-	html2 "html"
+	"html"
 	"io"
 	"reflect"
 	"strings"
 )
 
 type LabelAttributer interface {
-	LabelAttributes() html.Attributes
+	LabelAttributes() html5tag.Attributes
 }
 
 type FormFieldWrapperI interface {
@@ -22,9 +22,9 @@ type FormFieldWrapperI interface {
 	For() string
 	Instructions() string
 	SetInstructions(string) FormFieldWrapperI
-	LabelAttributes() html.Attributes
-	ErrorAttributes() html.Attributes
-	InstructionAttributes() html.Attributes
+	LabelAttributes() html5tag.Attributes
+	ErrorAttributes() html5tag.Attributes
+	InstructionAttributes() html5tag.Attributes
 }
 
 // FormFieldWrapper is a Goradd control that wraps other controls, and provides common companion
@@ -36,10 +36,10 @@ type FormFieldWrapper struct {
 	instructions string
 	// labelAttributes are the attributes that will be directly put on the Label tag. The label tag itself comes
 	// from the "Text" item in the control.
-	labelAttributes html.Attributes
-	errorAttributes html.Attributes
-	instructionAttributes html.Attributes
-	forID string
+	labelAttributes       html5tag.Attributes
+	errorAttributes       html5tag.Attributes
+	instructionAttributes html5tag.Attributes
+	forID                 string
 	// savedMessage is what we use to determine if the subcontrol changed validation state. This needs to be serialized.
 	savedMessage string
 	// subtag is the tag to used for instructions and error
@@ -57,13 +57,13 @@ func (c *FormFieldWrapper) Init(parent page.ControlI, id string) {
 	c.ControlBase.Init(parent, id)
 	c.Tag = "div"
 	c.subtag = "div"
-	c.labelAttributes = html.NewAttributes().
+	c.labelAttributes = html5tag.NewAttributes().
 		SetID(c.ID() + "_lbl").
 		SetClass("goradd-lbl")
-	c.errorAttributes = html.NewAttributes().
+	c.errorAttributes = html5tag.NewAttributes().
 		SetID(c.ID() + "_err").
 		SetClass("goradd-error")
-	c.instructionAttributes = html.NewAttributes().
+	c.instructionAttributes = html5tag.NewAttributes().
 		SetID(c.ID() + "_inst").
 		SetClass("goradd-instructions")
 }
@@ -102,9 +102,9 @@ func (c *FormFieldWrapper) Instructions() string {
 	return c.instructions
 }
 
-func (c *FormFieldWrapper) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *FormFieldWrapper) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "formField")
+	a.SetData("grctl", "formField")
 	return a
 }
 
@@ -138,7 +138,7 @@ func (c *FormFieldWrapper) DrawTag(ctx context.Context, w io.Writer) {
 		if c.forID != "" {
 			c.labelAttributes.Set("for", c.forID)
 		}
-		buf.WriteString(html.RenderTag("label", c.labelAttributes, html2.EscapeString(text)))
+		buf.WriteString(html5tag.RenderTag("label", c.labelAttributes, html.EscapeString(text)))
 		if child != nil {
 			child.SetAttribute("aria-labelledby", c.ID() + "_lbl")
 		}
@@ -159,37 +159,37 @@ func (c *FormFieldWrapper) DrawTag(ctx context.Context, w io.Writer) {
 	}
 	c.this().DrawInnerHtml(ctx, buf)
 	if child != nil && child.ValidationState() != page.ValidationNever {
-		page.WriteString(buf, html.RenderTag(c.subtag, c.errorAttributes, html2.EscapeString(errorMessage)))
+		page.WriteString(buf, html5tag.RenderTag(c.subtag, c.errorAttributes, html.EscapeString(errorMessage)))
 	}
 	if c.instructions != "" {
-		page.WriteString(buf, html.RenderTag(c.subtag, c.instructionAttributes, html2.EscapeString(c.instructions)))
+		page.WriteString(buf, html5tag.RenderTag(c.subtag, c.instructionAttributes, html.EscapeString(c.instructions)))
 	}
-	if _,err := io.WriteString(w, html.RenderTag(c.Tag, attributes, buf.String())); err != nil {panic(err)}
+	if _,err := io.WriteString(w, html5tag.RenderTag(c.Tag, attributes, buf.String())); err != nil {panic(err)}
 }
 
-func (c *FormFieldWrapper) LabelAttributes() html.Attributes {
+func (c *FormFieldWrapper) LabelAttributes() html5tag.Attributes {
 	return c.labelAttributes
 }
 
-func (c *FormFieldWrapper) SetLabelAttributes(a html.Attributes) FormFieldWrapperI {
+func (c *FormFieldWrapper) SetLabelAttributes(a html5tag.Attributes) FormFieldWrapperI {
 	c.labelAttributes = a
 	return c.this()
 }
 
-func (c *FormFieldWrapper) ErrorAttributes() html.Attributes {
+func (c *FormFieldWrapper) ErrorAttributes() html5tag.Attributes {
 	return c.errorAttributes
 }
 
-func (c *FormFieldWrapper) SetErrorAttributes(a html.Attributes) FormFieldWrapperI {
+func (c *FormFieldWrapper) SetErrorAttributes(a html5tag.Attributes) FormFieldWrapperI {
 	c.errorAttributes = a
 	return c.this()
 }
 
-func (c *FormFieldWrapper) InstructionAttributes() html.Attributes {
+func (c *FormFieldWrapper) InstructionAttributes() html5tag.Attributes {
 	return c.instructionAttributes
 }
 
-func (c *FormFieldWrapper) SetInstructionAttributes(a html.Attributes) FormFieldWrapperI {
+func (c *FormFieldWrapper) SetInstructionAttributes(a html5tag.Attributes) FormFieldWrapperI {
 	c.instructionAttributes = a
 	return c.this()
 }
@@ -294,11 +294,11 @@ type FormFieldWrapperCreator struct {
 	// that control is wrapped, you should explicitly sepecify the For control id here.
 	For string
 	// LabelAttributes are additional attributes to add to the label tag.
-	LabelAttributes html.Attributes
+	LabelAttributes html5tag.Attributes
 	// ErrorAttributes are additional attributes to add to the tag that displays the error.
-	ErrorAttributes html.Attributes
+	ErrorAttributes html5tag.Attributes
 	// InstructionAttributes are additional attributes to add to the tag that displays the instructions.
-	InstructionAttributes html.Attributes
+	InstructionAttributes html5tag.Attributes
 	// Set IsInline to true to use a "span" instead of a "div" in the wrapping tag.
 	IsInline bool
 	// ControlOptions are additional options for the wrapper tag

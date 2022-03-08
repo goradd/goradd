@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +31,7 @@ func TestMapColumn_Serialize(t *testing.T) {
 						CellAttributes:   nil,
 						HeaderAttributes: nil,
 						FooterAttributes: nil,
-						ColTagAttributes: html.Attributes{
+						ColTagAttributes: html5tag.Attributes{
 							"a":"b",
 						},
 						Span:             0,

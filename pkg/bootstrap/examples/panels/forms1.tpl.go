@@ -20,7 +20,7 @@ This is an example of a very generic form layout in Bootstrap.
 	}
 
 	if ctrl.Page().HasControl("nameText-fg") {
-		ctrl.Page().GetControl("nameText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="form-label"`)
+		ctrl.Page().GetControl("nameText-fg").(control.LabelAttributer).LabelAttributes().MergeString(`class="form-label"`)
 	}
 
 	if `` == "" {
@@ -48,7 +48,7 @@ This is an example of a very generic form layout in Bootstrap.
 	}
 
 	if ctrl.Page().HasControl("childrenText-fg") {
-		ctrl.Page().GetControl("childrenText-fg").(control.LabelAttributer).LabelAttributes().Merge(`class="form-label"`)
+		ctrl.Page().GetControl("childrenText-fg").(control.LabelAttributer).LabelAttributes().MergeString(`class="form-label"`)
 	}
 
 	if `` == "" {

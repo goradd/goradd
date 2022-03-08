@@ -2,7 +2,7 @@ package column
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -26,7 +26,7 @@ func ButtonColumnClick() *page.Event{
 type ButtonColumn struct {
 	control.ColumnBase
 	buttonHtml       string
-	buttonAttributes html.Attributes
+	buttonAttributes html5tag.Attributes
 }
 
 // NewButtonColumn creates a new button column.
@@ -40,19 +40,19 @@ func NewButtonColumn() *ButtonColumn {
 func (c *ButtonColumn) Init() {
 	c.ColumnBase.Init(c)
 	c.buttonHtml = `&#9998` // default to a standard pencil icon
-	c.buttonAttributes = html.NewAttributes().
+	c.buttonAttributes = html5tag.NewAttributes().
 		AddClass("gr-transparent-btn") // style so button part does not show, only the icon
 	c.SetIsHtml(true)
 }
 
 // ButtonAttributes returns the attributes of the button. You can directly manipulate those.
-func (c *ButtonColumn) ButtonAttributes() html.Attributes {
+func (c *ButtonColumn) ButtonAttributes() html5tag.Attributes {
 	return c.buttonAttributes
 }
 
 func (c *ButtonColumn) CellData(ctx context.Context, row int, col int, data interface{}) interface{} {
-	c.buttonAttributes.SetDataAttribute("grBtnCol", "1") // make sure we are tagged so event will fire
-	return html.RenderTag("button", c.buttonAttributes, c.buttonHtml)
+	c.buttonAttributes.SetData("grBtnCol", "1") // make sure we are tagged so event will fire
+	return html5tag.RenderTag("button", c.buttonAttributes, c.buttonHtml)
 }
 
 func (c *ButtonColumn) Serialize(e page.Encoder) {
@@ -93,7 +93,7 @@ type ButtonColumnCreator struct {
 	// IconHtml specifies the html to put inside the button
 	ButtonHtml string
 	// ButtonAttributes lets you set the button attributes how you want.
-	ButtonAttributes html.Attributes
+	ButtonAttributes html5tag.Attributes
 	control.ColumnOptions
 }
 

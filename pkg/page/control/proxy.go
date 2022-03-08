@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/crypt"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
-	html2 "html"
+	"html"
 	"io"
 	"strings"
 )
@@ -18,17 +18,17 @@ type ProxyI interface {
 	page.ControlI
 	LinkHtml(label string,
 		actionValue string,
-		attributes html.Attributes,
+		attributes html5tag.Attributes,
 	) string
 	TagHtml(label string,
 		actionValue string,
-		attributes html.Attributes,
+		attributes html5tag.Attributes,
 		tag string,
 		rawHtml bool,
 	) string
 	ButtonHtml(label string,
 		eventActionValue string,
-		attributes html.Attributes,
+		attributes html5tag.Attributes,
 		rawHtml bool,
 	) string
 	OnSubmit(action action.ActionI) *page.Event
@@ -94,10 +94,10 @@ func (p *Proxy) Draw(ctx context.Context, w io.Writer) {
 func (p *Proxy) LinkHtml(ctx context.Context,
 	label string,
 	actionValue string,
-	attributes html.Attributes,
+	attributes html5tag.Attributes,
 ) string {
 	if attributes == nil {
-		attributes = html.NewAttributes()
+		attributes = html5tag.NewAttributes()
 	}
 	attributes.Set("onclick", "return false;") // make sure we do not follow the link if javascript is on.
 	var href string
@@ -126,15 +126,15 @@ func (p *Proxy) LinkHtml(ctx context.Context,
 // TagHtml lets you customize the tag that will be used to embed the proxy.
 func (p *Proxy) TagHtml(label string,
 	actionValue string,
-	attributes html.Attributes,
+	attributes html5tag.Attributes,
 	tag string,
 	labelIsHtml bool,
 ) string {
-	a := html.NewAttributes()
-	a.SetDataAttribute("grProxy", p.ID())
+	a := html5tag.NewAttributes()
+	a.SetData("grProxy", p.ID())
 
 	if actionValue != "" {
-		a.SetDataAttribute("grAv", actionValue)
+		a.SetData("grAv", actionValue)
 	}
 
 	if attributes != nil {
@@ -142,20 +142,20 @@ func (p *Proxy) TagHtml(label string,
 	}
 
 	if !labelIsHtml {
-		label = html2.EscapeString(label)
+		label = html.EscapeString(label)
 	}
 
-	return html.RenderTagNoSpace(tag, a, label)
+	return html5tag.RenderTagNoSpace(tag, a, label)
 }
 
 // ButtonHtml outputs the proxy as a button tag.
 // actionValue becomes the event's ControlValue parameter
 func (p *Proxy) ButtonHtml(label string,
 	actionValue string,
-	attributes html.Attributes,
+	attributes html5tag.Attributes,
 	labelIsHtml bool,
 ) string {
-	a := html.NewAttributes()
+	a := html5tag.NewAttributes()
 	a.Set("onclick", "return false")  // To prevent a return from activating the button
 	a.Set("type", "submit")           // To support non-javascript situations
 	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts
@@ -171,12 +171,12 @@ func (p *Proxy) ButtonHtml(label string,
 }
 
 // ActionAttributes returns attributes that can be included in any tag to attach a proxy to the tag.
-func (p *Proxy) ActionAttributes(actionValue string) html.Attributes {
-	a := html.NewAttributes()
-	a.SetDataAttribute("grProxy", p.ID())
+func (p *Proxy) ActionAttributes(actionValue string) html5tag.Attributes {
+	a := html5tag.NewAttributes()
+	a.SetData("grProxy", p.ID())
 
 	if actionValue != "" {
-		a.SetDataAttribute("grAv", actionValue)
+		a.SetData("grAv", actionValue)
 	}
 
 	return a

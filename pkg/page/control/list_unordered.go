@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"io"
 	"reflect"
@@ -80,9 +80,9 @@ func (l *UnorderedList) DrawTag(ctx context.Context, w io.Writer) {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *UnorderedList) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *UnorderedList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "hlist")
+	a.SetData("grctl", "hlist")
 	return a
 }
 
@@ -100,10 +100,10 @@ func (l *UnorderedList) GetItemsHtml(items []*ListItem) string {
 	for _, item := range items {
 		if item.HasChildItems() {
 			innerhtml := l.this().GetItemsHtml(item.ListItems())
-			innerhtml = html.RenderTag(l.Tag, nil, innerhtml)
-			h += html.RenderTag(l.itemTag, item.Attributes(), item.Label()+" "+innerhtml)
+			innerhtml = html5tag.RenderTag(l.Tag, nil, innerhtml)
+			h += html5tag.RenderTag(l.itemTag, item.Attributes(), item.Label()+" "+innerhtml)
 		} else {
-			h += html.RenderTag(l.itemTag, item.Attributes(), item.RenderLabel())
+			h += html5tag.RenderTag(l.itemTag, item.Attributes(), item.RenderLabel())
 		}
 	}
 	return h

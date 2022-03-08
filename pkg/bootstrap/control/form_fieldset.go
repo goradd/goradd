@@ -2,17 +2,17 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/pool"
-	html2 "html"
+	"html"
 	"io"
 )
 
 type FormFieldsetI interface {
 	control.PanelI
-	LegendAttributes() html.Attributes
+	LegendAttributes() html5tag.Attributes
 	SetAsRow(r bool) FormFieldsetI
 	SetInstructions(instructions string) FormFieldsetI
 }
@@ -22,10 +22,10 @@ type FormFieldsetI interface {
 // You will need to coordinate with whatever you are drawing internally to get the formatting right.
 type FormFieldset struct {
 	control.Panel
-	legendAttributes html.Attributes
-	asRow bool
-	instructions string
-	instructionAttributes html.Attributes
+	legendAttributes      html5tag.Attributes
+	asRow                 bool
+	instructions          string
+	instructionAttributes html5tag.Attributes
 }
 
 func NewFormFieldset(parent page.ControlI, id string) *FormFieldset {
@@ -38,9 +38,9 @@ func NewFormFieldset(parent page.ControlI, id string) *FormFieldset {
 func (c *FormFieldset) Init(parent page.ControlI, id string) {
 	c.Panel.Init(parent, id)
 	c.Tag = "fieldset"
-	c.legendAttributes = html.NewAttributes()
+	c.legendAttributes = html5tag.NewAttributes()
 	c.legendAttributes.AddClass("pt-0") // helps with alignment. Remove if needed
-	c.instructionAttributes = html.NewAttributes().
+	c.instructionAttributes = html5tag.NewAttributes().
 		SetID(c.ID() + "_inst").
 		SetClass("form-text")
 }
@@ -49,7 +49,7 @@ func (c *FormFieldset) this() FormFieldsetI {
 	return c.Self.(FormFieldsetI)
 }
 
-func (c *FormFieldset) LegendAttributes() html.Attributes {
+func (c *FormFieldset) LegendAttributes() html5tag.Attributes {
 	return c.legendAttributes
 }
 
@@ -66,14 +66,14 @@ func (c *FormFieldset) SetInstructions(instructions string) FormFieldsetI {
 	return c.this()
 }
 
-func (c *FormFieldset) InstructionAttributes() html.Attributes {
+func (c *FormFieldset) InstructionAttributes() html5tag.Attributes {
 	return c.instructionAttributes
 }
 
 
-func (c *FormFieldset) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *FormFieldset) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.Panel.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "formFieldset")
+	a.SetData("grctl", "formFieldset")
 	return a
 }
 
@@ -84,16 +84,16 @@ func (c *FormFieldset) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	defer pool.PutBuffer(buf2)
 
 	if c.Text() != "" {
-		buf2.WriteString(html.RenderTag("legend", c.legendAttributes, html2.EscapeString(c.Text())))
+		buf2.WriteString(html5tag.RenderTag("legend", c.legendAttributes, html.EscapeString(c.Text())))
 	}
 	c.Panel.DrawInnerHtml(ctx, buf2)
 	if c.instructions != "" {
-		s = html.RenderTag("small", c.instructionAttributes, html2.EscapeString(c.instructions))
+		s = html5tag.RenderTag("small", c.instructionAttributes, html.EscapeString(c.instructions))
 		buf2.WriteString(s)
 	}
 
 	if c.asRow {
-		s = html.RenderTag("div", html.NewAttributes().AddClass("row"), buf2.String())
+		s = html5tag.RenderTag("div", html5tag.NewAttributes().AddClass("row"), buf2.String())
 		page.WriteString(w, s)
 	} else {
 		page.WriteString(w, buf2.String())
@@ -150,7 +150,7 @@ type FormFieldsetCreator struct {
 	// like a RadioList or CheckboxList
 	Child page.Creator
 	// LegendAttributes are additional attributes to add to the label tag.
-	LegendAttributes html.Attributes
+	LegendAttributes html5tag.Attributes
 	// Instructions contains help text that accompanies the control
 	Instructions string
 	// Set AsRow to true to put the legend on the same row as the content

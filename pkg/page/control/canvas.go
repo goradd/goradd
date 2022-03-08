@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -32,9 +32,9 @@ func (c *Canvas) Init(parent page.ControlI, id string) {
 
 // DrawingAttributes is called by the framework to get the temporary attributes that are specifically set by
 // this control just before drawing.
-func (c *Canvas) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *Canvas) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "canvas")
+	a.SetData("grctl", "canvas")
 	return a
 }
 

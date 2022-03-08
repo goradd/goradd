@@ -1,4 +1,4 @@
-package html
+package html5tag
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func ExampleStyle_Len() {
 
 func ExampleStyle_SetTo() {
 	s := NewStyle()
-	s.SetTo("height: 9em; width: 100%; position:absolute")
+	s.SetString("height: 9em; width: 100%; position:absolute")
 	fmt.Print(s)
 	//Output: height:9em;position:absolute;width:100%
 }
@@ -35,7 +35,7 @@ func ExampleStyle_Set_a() {
 
 func ExampleStyle_Set_b() {
 	s := NewStyle()
-	s.SetTo("height:9px")
+	s.SetString("height:9px")
 	s.Set("height", "+ 10")
 	fmt.Print(s)
 	//Output: height:19px
@@ -43,14 +43,14 @@ func ExampleStyle_Set_b() {
 
 func ExampleStyle_Get() {
 	s := NewStyle()
-	s.SetTo("height: 9em; width: 100%; position:absolute")
+	s.SetString("height: 9em; width: 100%; position:absolute")
 	fmt.Print(s.Get("width"))
 	//Output: 100%
 }
 
 func ExampleStyle_Remove() {
 	s := NewStyle()
-	s.SetTo("height: 9em; width: 100%; position:absolute")
+	s.SetString("height: 9em; width: 100%; position:absolute")
 	s.Remove("position")
 	fmt.Print(s)
 	//Output: height:9em;width:100%
@@ -58,7 +58,7 @@ func ExampleStyle_Remove() {
 
 func ExampleStyle_RemoveAll() {
 	s := NewStyle()
-	s.SetTo("height: 9em; width: 100%; position:absolute")
+	s.SetString("height: 9em; width: 100%; position:absolute")
 	s.RemoveAll()
 	fmt.Print(s)
 	//Output:
@@ -66,7 +66,7 @@ func ExampleStyle_RemoveAll() {
 
 func ExampleStyle_Has() {
 	s := NewStyle()
-	s.SetTo("height: 9em; width: 100%; position:absolute")
+	s.SetString("height: 9em; width: 100%; position:absolute")
 	fmt.Print(s.Has("width"), s.Has("display"))
 	//Output:true false
 }
@@ -75,24 +75,45 @@ func TestStyleSet(t *testing.T) {
 	s := NewStyle()
 
 	changed, err := s.SetChanged("height", "4")
-	assert.True(t, changed, "Expected a change")
-	assert.NoError(t, err)
+	if !changed {
+		t.Error("Expected a change")
+	}
+	if err != nil {
+		t.Error(err)
+	}
 
 	s.RemoveAll()
-	assert.False(t, s.Has("height"), "Expected no height")
+	if s.Has("height") {
+		t.Error("Expected no height")
+	}
 
 	s.Set("height", "4")
-	changed, err = s.SetTo("height: 3; width: 5")
-	assert.True(t, changed, "Expected a change")
-	assert.NoError(t, err)
+	changed, err = s.SetString("height: 3; width: 5")
+	if !changed {
+		t.Error("Expected a change")
+	}
+	if err != nil {
+		t.Error(err)
+	}
 
-	assert.Equal(t, "5px", s.Get("width"))
-	assert.Equal(t, "3px", s.Get("height"))
+	if !changed {
+		t.Error("Expected a change")
+	}
+	if "5px" != s.Get("width") {
+		t.Errorf("Wrong width. Expected 5px, got %s.", s.Get("width"))
+	}
+	if "3px" != s.Get("height") {
+		t.Errorf("Wrong height. Expected 5px, got %s.", s.Get("height"))
+	}
 
 	// test error
-	changed, err = s.SetTo("height of: 3; width: 4")
-	assert.False(t, changed, "Expected no change")
-	assert.Error(t, err)
+	changed, err = s.SetString("height of: 3; width: 4")
+	if changed {
+		t.Error("Expected no change")
+	}
+	if err == nil {
+		t.Error("Expected an error")
+	}
 }
 
 func TestStyleLengths(t *testing.T) {
@@ -181,11 +202,13 @@ func TestStyle(t *testing.T) {
 func TestNilStyle(t *testing.T) {
 	var s Style
 
-	assert.Equal(t, 0, s.Len())
-	assert.False(t, s.Has("a"))
-	assert.Panics(t,func() {
-		s.Set("height", "1").String()
-	})
+	if s.Len() != 0 {
+		t.Error("Nil style should have zero length")
+	}
+
+	if s.Has("a") {
+		t.Error("Nil style should be empty")
+	}
 }
 
 func TestStyle_mathOp(t *testing.T) {

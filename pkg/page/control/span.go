@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -28,9 +28,9 @@ func (c *Span) Init(parent page.ControlI, id string) {
 	c.Tag = "span"
 }
 
-func (c *Span) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *Span) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "span")
+	a.SetData("grctl", "span")
 	return a
 }
 

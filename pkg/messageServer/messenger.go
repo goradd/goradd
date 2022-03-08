@@ -11,7 +11,7 @@ package messageServer
 
 import (
 	"encoding/json"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 )
 
@@ -23,7 +23,7 @@ type MessengerI interface {
 	// Send sends a message to the given channel
 	Send(channel string, message string)
 	// JavascriptFiles returns file names and attributes used to embed the need javascript files for your messenger
-	JavascriptFiles() map[string]html.Attributes
+	JavascriptFiles() map[string]html5tag.Attributes
 }
 
 // Send sends a message to the given channel via the current messenger

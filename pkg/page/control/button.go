@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
@@ -80,9 +80,9 @@ func (b *Button) On(e *page.Event, action action.ActionI) page.ControlI {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (b *Button) DrawingAttributes(ctx context.Context) html.Attributes {
+func (b *Button) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := b.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "button")
+	a.SetData("grctl", "button")
 
 	a.Set("name", page.HtmlVarAction) // needed for non-javascript posts
 	a.Set("value", b.ID())

@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	grctl "github.com/goradd/goradd/pkg/page/control"
@@ -89,7 +89,7 @@ func (b *Button) SetButtonSize(size ButtonSize) ButtonI {
 }
 
 // DrawingAttributes returns the attributes to add to the tag just before the button is drawn.
-func (b *Button) DrawingAttributes(ctx context.Context) html.Attributes {
+func (b *Button) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := b.Button.DrawingAttributes(ctx)
 	a.AddClass(ButtonClass)
 	a.AddClass(string(b.style))

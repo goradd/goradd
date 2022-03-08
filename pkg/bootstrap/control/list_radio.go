@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -32,7 +32,7 @@ func NewRadioList(parent page.ControlI, id string) *RadioList {
 
 func (l *RadioList) Init(parent page.ControlI, id string) {
 	l.RadioList.Init(parent, id)
-	l.SetLabelDrawingMode(html.LabelAfter)
+	l.SetLabelDrawingMode(html5tag.LabelAfter)
 	l.SetRowClass("row")
 }
 
@@ -55,9 +55,9 @@ func (l *RadioList) SetCellClass(c string) {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *RadioList) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *RadioList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx) // skip default checkbox list attributes
-	a.SetDataAttribute("grctl", "bs-RadioList")
+	a.SetData("grctl", "bs-RadioList")
 	return a
 }
 
@@ -106,7 +106,7 @@ type RadioListCreator struct {
 	// LayoutDirection determines how the items are arranged in the columns
 	LayoutDirection control.LayoutDirection
 	// LabelDrawingMode specifies how the labels on the radio buttons will be associated with the buttons
-	LabelDrawingMode html.LabelDrawingMode
+	LabelDrawingMode html5tag.LabelDrawingMode
 	// IsScrolling will give the inner div a vertical scroll style. You will need to style the height of the outer control to have a fixed style as well.
 	IsScrolling bool
 	// RowClass is the class assigned to each row

@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"io"
 	"strings"
@@ -12,7 +12,7 @@ type CheckboxListI interface {
 	MultiselectListI
 	SetColumnCount(int) CheckboxListI
 	SetLayoutDirection(direction LayoutDirection) CheckboxListI
-	SetLabelDrawingMode(mode html.LabelDrawingMode) CheckboxListI
+	SetLabelDrawingMode(mode html5tag.LabelDrawingMode) CheckboxListI
 	SetIsScrolling(s bool) CheckboxListI
 	SetRowClass(c string) CheckboxListI
 
@@ -34,7 +34,7 @@ type CheckboxList struct {
 	// direction controls how items are placed when there are columns.
 	direction LayoutDirection
 	// labelDrawingMode determines how labels are drawn. The default is to use the global setting.
-	labelDrawingMode html.LabelDrawingMode
+	labelDrawingMode html5tag.LabelDrawingMode
 	// isScrolling determines if we are going to let the list scroll. You will need to limit the size of the
 	// control for scrolling to happen.
 	isScrolling bool
@@ -91,7 +91,7 @@ func (l *CheckboxList) LayoutDirection() LayoutDirection {
 }
 
 // SetLabelDrawingMode indicates how labels for each of the checkboxes are drawn.
-func (l *CheckboxList) SetLabelDrawingMode(mode html.LabelDrawingMode) CheckboxListI {
+func (l *CheckboxList) SetLabelDrawingMode(mode html5tag.LabelDrawingMode) CheckboxListI {
 	l.labelDrawingMode = mode
 	l.Refresh()
 	return l.this()
@@ -118,9 +118,9 @@ func (l *CheckboxList) SetRowClass(c string) CheckboxListI {
 // DrawingAttributes retrieves the tag's attributes at draw time.
 // You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *CheckboxList) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *CheckboxList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "checkboxlist")
+	a.SetData("grctl", "checkboxlist")
 	a.AddClass("gr-cbl")
 
 	if l.isScrolling {
@@ -132,7 +132,7 @@ func (l *CheckboxList) DrawingAttributes(ctx context.Context) html.Attributes {
 // DrawInnerHtml is called by the framework to draw the contents of the list.
 func (l *CheckboxList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.this().RenderItems(l.items)
-	h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
+	h = html5tag.RenderTag("div", html5tag.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
 	page.WriteString(w, h)
 	return
 }
@@ -225,7 +225,7 @@ type CheckboxListCreator struct {
 	// LayoutDirection determines how the items are arranged in the columns
 	LayoutDirection LayoutDirection
 	// LabelDrawingMode specifies how the labels on the radio buttons will be associated with the buttons
-	LabelDrawingMode html.LabelDrawingMode
+	LabelDrawingMode html5tag.LabelDrawingMode
 	// IsScrolling will give the inner div a vertical scroll style. You will need to style the height of the outer control to have a fixed style as well.
 	IsScrolling bool
 	// RowClass is the class assigned to each row
@@ -259,7 +259,7 @@ func (c CheckboxListCreator) Init(ctx context.Context, ctrl CheckboxListI) {
 		ctrl.SetColumnCount(c.ColumnCount)
 	}
 	ctrl.SetLayoutDirection(c.LayoutDirection)
-	if c.LabelDrawingMode != html.LabelDefault {
+	if c.LabelDrawingMode != html5tag.LabelDefault {
 		ctrl.SetLabelDrawingMode(c.LabelDrawingMode)
 	}
 	if c.IsScrolling {

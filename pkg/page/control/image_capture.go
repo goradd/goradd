@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"path"
@@ -163,23 +163,23 @@ func (i *ImageCapture) PutCustomScript(ctx context.Context, response *page.Respo
 */
 
 // DrawingAttributes is called by the framework.
-func (i *ImageCapture) DrawingAttributes(ctx context.Context) html.Attributes {
+func (i *ImageCapture) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := i.Panel.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "imagecapture")
-	a.SetDataAttribute("grWidget", "goradd.ImageCapture")
+	a.SetData("grctl", "imagecapture")
+	a.SetData("grWidget", "goradd.ImageCapture")
 
 	d := base64.StdEncoding.EncodeToString(i.data)
 	d = "data:image/" + i.typ + ";base64," + d
-	a.SetDataAttribute("grOptData", d)
-	a.SetDataAttribute("grOptSelectButtonName", i.GT("Capture"))
+	a.SetData("grOptData", d)
+	a.SetData("grOptSelectButtonName", i.GT("Capture"))
 	if i.zoom > 0 {
-		a.SetDataAttribute("grOptZoom", fmt.Sprint(i.zoom))
+		a.SetData("grOptZoom", fmt.Sprint(i.zoom))
 	}
 	if i.shape != "" {
-		a.SetDataAttribute("grOptShape", fmt.Sprint(i.shape))
+		a.SetData("grOptShape", fmt.Sprint(i.shape))
 	}
-	a.SetDataAttribute("grOptMimeType", i.typ)
-	a.SetDataAttribute("grOptQuality", fmt.Sprint(i.quality))
+	a.SetData("grOptMimeType", i.typ)
+	a.SetData("grOptQuality", fmt.Sprint(i.quality))
 /*
 	if i.data != nil {
 		// Turn the data into a source attribute

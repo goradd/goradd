@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	http2 "github.com/goradd/goradd/pkg/http"
 	_ "github.com/goradd/goradd/pkg/messageServer/ws/assets"
 	"net/http"
@@ -25,8 +25,8 @@ func (m *WsMessenger) JavascriptInit() string {
 	return fmt.Sprintf("goradd.initMessagingClient(%q);\n", http2.MakeLocalPath(config.WebsocketMessengerPrefix))
 }
 
-func (m *WsMessenger) JavascriptFiles() map[string]html.Attributes {
-	ret := make(map[string]html.Attributes)
+func (m *WsMessenger) JavascriptFiles() map[string]html5tag.Attributes {
+	ret := make(map[string]html5tag.Attributes)
 	p := path.Join(config.AssetPrefix, "messenger", "js", "goradd-ws.js")
 	ret[p] = nil
 	return ret

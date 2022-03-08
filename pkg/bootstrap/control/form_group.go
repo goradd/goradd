@@ -1,30 +1,31 @@
 package control
 
 import (
-"context"
-"github.com/goradd/goradd/pkg/html"
-"github.com/goradd/goradd/pkg/log"
-"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/pool"
-html2 "html"
+	"context"
+	"html"
 	"io"
 	"strings"
+
+	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/pool"
 )
 
 type FormGroupI interface {
 	control.FormFieldWrapperI
 	SetUseTooltips(use bool) FormGroupI
 	UseTooltips() bool
-	InnerDivAttributes() html.Attributes
+	InnerDivAttributes() html5tag.Attributes
 }
 
 // FormGroup is a Goradd control that wraps other controls, and provides common companion
 // functionality like a form label, validation state display, and help text.
 type FormGroup struct {
 	control.FormFieldWrapper
-	innerDivAttr html.Attributes
-	useTooltips   bool // uses tooltips for the error class
+	innerDivAttr html5tag.Attributes
+	useTooltips  bool // uses tooltips for the error class
 }
 
 func NewFormGroup(parent page.ControlI, id string) *FormGroup {
@@ -36,7 +37,7 @@ func NewFormGroup(parent page.ControlI, id string) *FormGroup {
 
 func (c *FormGroup) Init(parent page.ControlI, id string) {
 	c.FormFieldWrapper.Init(parent, id)
-	c.innerDivAttr = html.NewAttributes()
+	c.innerDivAttr = html5tag.NewAttributes()
 	c.InstructionAttributes().AddClass("form-text")
 }
 
@@ -70,7 +71,6 @@ func (c *FormGroup) setChildValidation() {
 	}
 }
 
-
 // SetUseTooltips sets whether to use tooltips to display validation messages.
 func (c *FormGroup) SetUseTooltips(use bool) FormGroupI {
 	c.useTooltips = use
@@ -81,9 +81,9 @@ func (c *FormGroup) UseTooltips() bool {
 	return c.useTooltips
 }
 
-func (c *FormGroup) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *FormGroup) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.FormFieldWrapper.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "formGroup")
+	a.SetData("grctl", "formGroup")
 	if c.useTooltips {
 		// bootstrap requires that parent of a tool-tipped object has position relative
 		c.SetStyle("position", "relative")
@@ -102,7 +102,7 @@ func (c *FormGroup) DrawTag(ctx context.Context, w io.Writer) {
 	errorMessage := subControl.ValidationMessage()
 	if errorMessage != "" {
 		attributes.AddClass("error")
-		errorMessage = html2.EscapeString(errorMessage)
+		errorMessage = html.EscapeString(errorMessage)
 	} else {
 		errorMessage = "&nbsp;"
 	}
@@ -120,7 +120,7 @@ func (c *FormGroup) DrawTag(ctx context.Context, w io.Writer) {
 
 	if text != "" {
 		c.LabelAttributes().Set("for", c.For())
-		buf.WriteString(html.RenderTag("label", c.LabelAttributes(), html2.EscapeString(text)))
+		buf.WriteString(html5tag.RenderTag("label", c.LabelAttributes(), html.EscapeString(text)))
 	}
 
 	var describedBy string
@@ -152,19 +152,22 @@ func (c *FormGroup) DrawTag(ctx context.Context, w io.Writer) {
 		buf.WriteString(">")
 	}
 	if c.Instructions() != "" {
-		buf.WriteString(html.RenderTag("small", c.InstructionAttributes(), html2.EscapeString(c.Instructions())))
+		buf.WriteString(html5tag.RenderTag("small", c.InstructionAttributes(), html.EscapeString(c.Instructions())))
 	}
 	if subControl.ValidationState() != page.ValidationNever {
 		c.ErrorAttributes().SetClass(c.getValidationClass(subControl))
-		buf.WriteString(html.RenderTag(c.SubTag(), c.ErrorAttributes(), errorMessage))
+		buf.WriteString(html5tag.RenderTag(c.SubTag(), c.ErrorAttributes(), errorMessage))
 	}
 
-	if _, err := io.WriteString(w, html.RenderTag(c.Tag, attributes, buf.String())); err != nil {panic(err)}
+	if _, err := io.WriteString(w, html5tag.RenderTag(c.Tag, attributes, buf.String())); err != nil {
+		panic(err)
+	}
 }
 
 func (c *FormGroup) getValidationClass(subcontrol page.ControlI) (class string) {
 	switch subcontrol.ValidationState() {
-	case page.ValidationWaiting:fallthrough
+	case page.ValidationWaiting:
+		fallthrough
 	case page.ValidationValid:
 		if c.UseTooltips() {
 			class = "valid-tooltip"
@@ -182,7 +185,7 @@ func (c *FormGroup) getValidationClass(subcontrol page.ControlI) (class string) 
 	return
 }
 
-func (c *FormGroup) InnerDivAttributes() html.Attributes {
+func (c *FormGroup) InnerDivAttributes() html5tag.Attributes {
 	return c.innerDivAttr
 }
 
@@ -226,11 +229,11 @@ type FormGroupCreator struct {
 	// that control is wrapped, you should explicitly specify the For control id here.
 	For string
 	// LabelAttributes are additional attributes to add to the label tag.
-	LabelAttributes html.Attributes
+	LabelAttributes html5tag.Attributes
 	// ErrorAttributes are additional attributes to add to the tag that displays the error.
-	ErrorAttributes html.Attributes
+	ErrorAttributes html5tag.Attributes
 	// InstructionAttributes are additional attributes to add to the tag that displays the instructions.
-	InstructionAttributes html.Attributes
+	InstructionAttributes html5tag.Attributes
 	// Set IsInline to true to use a "span" instead of a "div" in the wrapping tag.
 	IsInline bool
 	// ControlOptions are additional options for the wrapper tag
@@ -238,10 +241,10 @@ type FormGroupCreator struct {
 	// InnerDivAttributes are the attributes for the additional div wrapper of the control
 	// To achieve certain effects, Bootstrap needs this addition div. To display the div, you
 	// must specify its attributes here. Otherwise, no inner div will be displayed.
-	InnerDivAttributes html.Attributes
+	InnerDivAttributes html5tag.Attributes
 	// UseTooltips will cause validation errors to be displayed with tooltips, a specific
 	// feature of Bootstrap
-	UseTooltips   bool
+	UseTooltips bool
 }
 
 // Create is called by the framework to create the control. You do not
@@ -258,14 +261,14 @@ func (f FormGroupCreator) Create(ctx context.Context, parent page.ControlI) page
 func (f FormGroupCreator) Init(ctx context.Context, c FormGroupI) {
 	// Reuse parent creator
 	ff := control.FormFieldWrapperCreator{
-		ControlOptions: f.ControlOptions,
-		Label: f.Label,
-		For: f.For,
-		Instructions: f.Instructions,
-		LabelAttributes: f.LabelAttributes,
-		ErrorAttributes: f.ErrorAttributes,
+		ControlOptions:        f.ControlOptions,
+		Label:                 f.Label,
+		For:                   f.For,
+		Instructions:          f.Instructions,
+		LabelAttributes:       f.LabelAttributes,
+		ErrorAttributes:       f.ErrorAttributes,
 		InstructionAttributes: f.InstructionAttributes,
-		Child: f.Child,
+		Child:                 f.Child,
 	}
 
 	ff.Init(ctx, c)

@@ -1,7 +1,7 @@
 package control
 
 import (
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
@@ -127,7 +127,7 @@ func (p *DialogPanel) SetButtonVisible(id string, visible bool) {
 }
 
 // SetButtonStyle sets the style of the given button
-func (p *DialogPanel) SetButtonStyle(id string, a html.Style) {
+func (p *DialogPanel) SetButtonStyle(id string, a html5tag.Style) {
 	p.getDialog().SetButtonStyle(id, a)
 }
 

@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )
@@ -22,7 +22,7 @@ func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 	return t
 }
 
-func (t *IntegerTextbox) DrawingAttributes(ctx context.Context) html.Attributes {
+func (t *IntegerTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := t.IntegerTextbox.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a

@@ -2,7 +2,7 @@ package panels
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
@@ -45,9 +45,9 @@ func (p *CheckboxPanel) Init(ctx context.Context, parent page.ControlI, id strin
 			For:"checkbox1",
 			Instructions:"These are instructions for checkbox 1",
 			Child:CheckboxCreator{
-				ID:"checkbox1",
-				Text:"My text is before",
-				LabelMode:html.LabelBefore,
+				ID:        "checkbox1",
+				Text:      "My text is before",
+				LabelMode: html5tag.LabelBefore,
 			},
 		},
 		FormFieldWrapperCreator{
@@ -56,9 +56,9 @@ func (p *CheckboxPanel) Init(ctx context.Context, parent page.ControlI, id strin
 			For:"checkbox2",
 			Instructions:"These are instructions for checkbox 2",
 			Child:CheckboxCreator{
-				ID:"checkbox2",
-				Text:"My text is after, and is wrapping the control",
-				LabelMode:html.LabelWrapAfter,
+				ID:        "checkbox2",
+				Text:      "My text is after, and is wrapping the control",
+				LabelMode: html5tag.LabelWrapAfter,
 			},
 		},
 		RadioButtonCreator{

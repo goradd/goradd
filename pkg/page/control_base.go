@@ -6,7 +6,7 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/i18n"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/log"
@@ -84,7 +84,7 @@ type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string,
 // DefaultCheckboxLabelDrawingMode is a setting used by checkboxes and radio buttons to default how they draw labels.
 // Some CSS framworks are very picky about whether checkbox labels wrap the control, or sit next to the control,
 // and whether the label is before or after the control
-var DefaultCheckboxLabelDrawingMode = html.LabelAfter
+var DefaultCheckboxLabelDrawingMode = html5tag.LabelAfter
 
 // The DataConnector moves data between the control and the database model. It is a thin view-model controller
 // that can be customized on a per-control basis.
@@ -144,15 +144,15 @@ type ControlI interface {
 	Attribute(string) string
 	HasAttribute(string) bool
 	ProcessAttributeString(s string) ControlI
-	DrawingAttributes(context.Context) html.Attributes
+	DrawingAttributes(context.Context) html5tag.Attributes
 	AddClass(class string) ControlI
 	RemoveClass(class string) ControlI
 	HasClass(class string) bool
-	SetStyles(html.Style)
+	SetStyles(html5tag.Style)
 	SetStyle(name string, value string) ControlI
 	SetWidthStyle(w interface{}) ControlI
 	SetHeightStyle(w interface{}) ControlI
-	Attributes() html.Attributes
+	Attributes() html5tag.Attributes
 	SetDisplay(d string) ControlI
 	SetDisabled(d bool)
 	IsDisabled() bool
@@ -284,11 +284,11 @@ type ControlBase struct {
 	hasNoSpace bool
 	// attributes are the collection of custom attributes to apply to the control. This does not include all the
 	// attributes that will be drawn, as some are added temporarily just before drawing by GetDrawingAttributes()
-	attributes html.Attributes
+	attributes html5tag.Attributes
 	// text is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
 	text string
 	// textLabelMode describes how to draw the internal label
-	textLabelMode html.LabelDrawingMode
+	textLabelMode html5tag.LabelDrawingMode
 	// textIsHtml will prevent the text output from being escaped
 	textIsHtml bool
 
@@ -365,7 +365,7 @@ type ControlBase struct {
 // The id is the control id that will appear as the id in html. Leave blank for the system to create a unique id for you.
 // A nil parent is for top level controls, primarily forms.
 func (c *ControlBase) Init(parent ControlI, id string) {
-	c.attributes = html.NewAttributes()
+	c.attributes = html5tag.NewAttributes()
 	if parent == nil {
 		c.id = id
 	} else {
@@ -528,7 +528,7 @@ func (c *ControlBase) DrawTag(ctx context.Context, w io.Writer)  {
 	attributes := c.this().DrawingAttributes(ctx)
 
 	if c.IsVoidTag {
-		ctrl = html.RenderVoidTag(c.Tag, attributes)
+		ctrl = html5tag.RenderVoidTag(c.Tag, attributes)
 	} else {
 		buf := buf2.GetBuffer()
 		defer buf2.PutBuffer(buf)
@@ -537,10 +537,10 @@ func (c *ControlBase) DrawTag(ctx context.Context, w io.Writer)  {
 		if c.Tag == "" {
 			ctrl = buf.String() // a wrapper with no tag. Just inserts functionality and draws its children.
 		} else if c.hasNoSpace {
-			ctrl = html.RenderTagNoSpace(c.Tag, attributes, buf.String())
+			ctrl = html5tag.RenderTagNoSpace(c.Tag, attributes, buf.String())
 
 		} else {
-			ctrl = html.RenderTag(c.Tag, attributes, buf.String())
+			ctrl = html5tag.RenderTag(c.Tag, attributes, buf.String())
 		}
 	}
 	if _,err := io.WriteString(w, ctrl); err != nil {panic(err)}
@@ -616,13 +616,13 @@ func (c *ControlBase) DrawText(ctx context.Context, w io.Writer) {
 
 // SetAttribute sets an html attribute of the control. You can manually set most any attribute, but be careful
 // not to set the id attribute, or any attribute that is managed by the control itself. If you are setting
-// a data-* attribute, use SetDataAttribute instead. If you are adding a class to the control, use AddAttributeValue.
+// a data-* attribute, use SetDataAttribute instead. If you are adding a class to the control, use MergeWords.
 func (c *ControlBase) SetAttribute(name string, val interface{}) ControlI {
 	if name == "id" {
 		panic("You can only set the 'id' attribute of a control when it is created")
 	}
 
-	changed, err := c.attributes.SetChanged(name, html.AttributeString(val))
+	changed, err := c.attributes.SetChanged(name, html5tag.ValueString(val))
 	if err != nil {
 		panic(err)
 	}
@@ -654,10 +654,10 @@ func (c *ControlBase) HasAttribute(name string) bool {
 // return a set of attributes that should override those set by the user. This allows controls to set attributes
 // that should take precedence over other attributes, and that are critical to drawing the
 // tag of the control. This function is designed to only be called by ControlBase implementations.
-func (c *ControlBase) DrawingAttributes(ctx context.Context) html.Attributes {
-	a := html.NewAttributesFrom(c.attributes)
-	a.SetID(c.id)                   // make sure the control id is set at a minimum
-	a.SetDataAttribute("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
+func (c *ControlBase) DrawingAttributes(ctx context.Context) html5tag.Attributes {
+	a := c.attributes.Copy()
+	a.SetID(c.id)          // make sure the control id is set at a minimum
+	a.SetData("grctl", "") // make sure control is registered. Overriding controls can put a control name here.
 
 	if c.isRequired {
 		a.Set("aria-required", "true")
@@ -666,7 +666,7 @@ func (c *ControlBase) DrawingAttributes(ctx context.Context) html.Attributes {
 	channels := stringmap.JoinStrings(c.watchedKeys, "=", ";")
 
 	if channels != "" {
-		a.SetDataAttribute("grWatch", channels)
+		a.SetData("grWatch", channels)
 	}
 
 	return a
@@ -681,7 +681,7 @@ func (c *ControlBase) SetDataAttribute(name string, val interface{}) {
 		v = fmt.Sprint(v)
 	}
 
-	changed, err := c.attributes.SetDataAttributeChanged(name, v)
+	changed, err := c.attributes.SetDataChanged(name, v)
 	if err != nil {
 		panic(err)
 	}
@@ -691,7 +691,7 @@ func (c *ControlBase) SetDataAttribute(name string, val interface{}) {
 	}
 }
 
-func (c *ControlBase) MergeAttributes(a html.Attributes) ControlI {
+func (c *ControlBase) MergeAttributes(a html5tag.Attributes) ControlI {
 	c.attributes.Merge(a)
 	return c.this()
 }
@@ -700,7 +700,7 @@ func (c *ControlBase) MergeAttributes(a html.Attributes) ControlI {
 // Attributes are of the form `name="value"`.
 func (c *ControlBase) ProcessAttributeString(s string) ControlI {
 	if s != "" {
-		c.attributes.Merge(s)
+		c.attributes.MergeString(s)
 	}
 	return c.this()
 }
@@ -737,7 +737,7 @@ func (c *ControlBase)HasClass(class string) bool {
 // Some controls setup attributes at initialization time, so you could potentially write over those.
 // Also, if you change attributes during an ajax call, the changes will not be reflected unless you redraw
 // the control. The primary use for this function is to allow controls to set up attributes during initialization.
-func (c *ControlBase) Attributes() html.Attributes {
+func (c *ControlBase) Attributes() html5tag.Attributes {
 	return c.attributes
 }
 
@@ -1605,7 +1605,7 @@ func (c *ControlBase) SetVisible(v bool) {
 }
 
 // SetStyles sets the style attribute of the control to the given values.
-func (c *ControlBase) SetStyles(s html.Style) {
+func (c *ControlBase) SetStyles(s html5tag.Style) {
 	c.attributes.SetStyles(s)
 	c.Refresh() // TODO: Do this with javascript
 }
@@ -1629,7 +1629,7 @@ func (c *ControlBase) RemoveClassesWithPrefix(prefix string) {
 
 // SetWidthStyle sets the width style property
 func (c *ControlBase) SetWidthStyle(w interface{}) ControlI {
-	v := html.StyleString(w)
+	v := html5tag.StyleString(w)
 	c.attributes.SetStyle("width", v)
 	c.AddRenderScript("css", "width", v) // use javascript to set this value
 	return c.this()
@@ -1637,7 +1637,7 @@ func (c *ControlBase) SetWidthStyle(w interface{}) ControlI {
 
 // SetHeightStyle sets the height style property
 func (c *ControlBase) SetHeightStyle(h interface{}) ControlI {
-	v := html.StyleString(h)
+	v := html5tag.StyleString(h)
 	c.attributes.SetStyle("height", v)
 	c.AddRenderScript("css", "height", v) // use javascript to set this value
 	return c.this()
@@ -1762,11 +1762,11 @@ type controlEncoding struct {
 	ChildIDs              []string
 	Tag                   string
 	IsVoidTag             bool
-	HasNoSpace            bool
-	Attributes            html.Attributes
-	Text                  string
-	TextLabelMode         html.LabelDrawingMode
-	TextIsHtml        	  bool
+	HasNoSpace    bool
+	Attributes    html5tag.Attributes
+	Text          string
+	TextLabelMode html5tag.LabelDrawingMode
+	TextIsHtml    bool
 	IsRequired            bool
 	IsHidden              bool
 	IsOnPage              bool
@@ -1903,11 +1903,11 @@ func Nodes(n ...query.NodeI) []query.NodeI {
 // ControlOptions are options common to all controls
 type ControlOptions struct {
 	// Attributes will set the attributes of the control. Use DataAttributes to set data attributes, Styles to set styles, and Class to set the class
-	Attributes html.Attributes
+	Attributes html5tag.Attributes
 	// Attributes will set the attributes of the control. Use DataAttributes to set data attributes, Styles to set styles, and Class to set the class
 	DataAttributes DataAttributeMap
 	// Styles sets the styles of the control's tag
-	Styles html.Style
+	Styles html5tag.Style
 	// Class sets the class of the control's tag. Prefix a class with "+" to add a class, or "-" to remove a class.
 	Class string
 	// IsDisabled initializes the control in the disabled state, with a "disabled" attribute

@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"strconv"
@@ -43,7 +43,7 @@ func (d *DataPager) this() DataPagerI {
 	return d.Self.(DataPagerI)
 }
 
-func (d *DataPager) DrawingAttributes(ctx context.Context) html.Attributes {
+func (d *DataPager) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := d.DataPager.DrawingAttributes(ctx)
 	a.AddClass("btn-group")
 	return a
@@ -56,7 +56,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 	pageNum := d.PagedControl().PageNum()
 	actionValue = strconv.Itoa(pageNum - 1)
 
-	attr := html.NewAttributes().
+	attr := html5tag.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("btn " + string(d.ButtonStyle))
 
@@ -83,7 +83,7 @@ func (d *DataPager) NextButtonsHtml() string {
 
 	actionValue = strconv.Itoa(pageNum + 1)
 
-	attr := html.NewAttributes().
+	attr := html5tag.NewAttributes().
 		Set("id", d.ID()+"_arrow_"+actionValue).
 		SetClass("btn " + string(d.ButtonStyle))
 
@@ -109,7 +109,7 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 	pageNum := d.PagedControl().PageNum()
 
 	actionValue := strconv.Itoa(i)
-	attr := html.NewAttributes().Set("id", d.ID()+"_page_"+actionValue).
+	attr := html5tag.NewAttributes().Set("id", d.ID()+"_page_"+actionValue).
 		Set("role", "tab").
 		AddClass("btn")
 	if pageNum == i {

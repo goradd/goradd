@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"io"
@@ -69,9 +69,9 @@ func (r *Repeater) DrawTag(ctx context.Context, w io.Writer) {
 // DrawingAttributes is an override to add attributes to the table, including not showing the table at all if there
 // is no data to show. This will hide header and footer cells and potentially the outline of the table when there is no
 // data in the table.
-func (r *Repeater) DrawingAttributes(ctx context.Context) html.Attributes {
+func (r *Repeater) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := r.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "repeater")
+	a.SetData("grctl", "repeater")
 	return a
 }
 

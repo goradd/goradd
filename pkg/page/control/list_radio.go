@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
@@ -14,7 +14,7 @@ type RadioListI interface {
 	SelectListI
 	SetColumnCount(int) RadioListI
 	SetLayoutDirection(direction LayoutDirection) RadioListI
-	SetLabelDrawingMode(mode html.LabelDrawingMode) RadioListI
+	SetLabelDrawingMode(mode html5tag.LabelDrawingMode) RadioListI
 	SetIsScrolling(s bool) RadioListI
 	SetRowClass(c string) RadioListI
 
@@ -37,7 +37,7 @@ type RadioList struct {
 	// direction controls how items are placed when there are columns.
 	direction LayoutDirection
 	// labelDrawingMode determines how labels are drawn. The default is to use the global setting.
-	labelDrawingMode html.LabelDrawingMode
+	labelDrawingMode html5tag.LabelDrawingMode
 	// isScrolling determines if we are going to let the list scroll. You will need to limit the size of the
 	// control for scrolling to happen.
 	isScrolling bool
@@ -94,7 +94,7 @@ func (l *RadioList) LayoutDirection() LayoutDirection {
 }
 
 // SetLabelDrawingMode indicates how labels for each of the checkboxes are drawn.
-func (l *RadioList) SetLabelDrawingMode(mode html.LabelDrawingMode) RadioListI {
+func (l *RadioList) SetLabelDrawingMode(mode html5tag.LabelDrawingMode) RadioListI {
 	l.labelDrawingMode = mode
 	l.Refresh()
 	return l.this()
@@ -120,9 +120,9 @@ func (l *RadioList) SetRowClass(c string) RadioListI {
 // DrawingAttributes retrieves the tag's attributes at draw time.
 // You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *RadioList) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *RadioList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "radiolist")
+	a.SetData("grctl", "radiolist")
 	a.AddClass("gr-cbl")
 
 	if l.isScrolling {
@@ -136,7 +136,7 @@ func (l *RadioList) DrawingAttributes(ctx context.Context) html.Attributes {
 func (l *RadioList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.this().RenderItems(l.items)
 	if l.columnCount > 0 {
-		h = html.RenderTag("div", html.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
+		h = html5tag.RenderTag("div", html5tag.NewAttributes().SetClass("gr-cbl-table").SetID(l.ID()+"_cbl"), h)
 	}
 	page.WriteString(w, h)
 	return
@@ -165,12 +165,12 @@ func (l *RadioList) RenderItem(item *ListItem) (h string) {
 	return
 }
 
-func renderCheckItemControl(item *ListItem, typ string, labelMode html.LabelDrawingMode, selected bool, name string) string {
-	if labelMode == html.LabelDefault {
+func renderCheckItemControl(item *ListItem, typ string, labelMode html5tag.LabelDrawingMode, selected bool, name string) string {
+	if labelMode == html5tag.LabelDefault {
 		labelMode = page.DefaultCheckboxLabelDrawingMode
 	}
 
-	attributes := html.NewAttributes()
+	attributes := html5tag.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", name)
 	attributes.Set("value", item.Value())
@@ -178,8 +178,8 @@ func renderCheckItemControl(item *ListItem, typ string, labelMode html.LabelDraw
 	if selected {
 		attributes.Set("checked", "")
 	}
-	ctrl := html.RenderVoidTag("input", attributes)
-	return html.RenderLabel(html.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, labelMode)
+	ctrl := html5tag.RenderVoidTag("input", attributes)
+	return html5tag.RenderLabel(html5tag.NewAttributes().Set("for", item.ID()), item.Label(), ctrl, labelMode)
 }
 
 func renderCell(item *ListItem, controlHtml string, hasColumns bool) string {
@@ -196,7 +196,7 @@ func renderCell(item *ListItem, controlHtml string, hasColumns bool) string {
 	attributes := item.Attributes().Copy()
 	attributes.SetID(itemId)
 	attributes.AddClass(cellClass)
-	return html.RenderTag("div", attributes, controlHtml)
+	return html5tag.RenderTag("div", attributes, controlHtml)
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
@@ -262,7 +262,7 @@ type RadioListCreator struct {
 	// LayoutDirection determines how the items are arranged in the columns
 	LayoutDirection LayoutDirection
 	// LabelDrawingMode specifies how the labels on the radio buttons will be associated with the buttons
-	LabelDrawingMode html.LabelDrawingMode
+	LabelDrawingMode html5tag.LabelDrawingMode
 	// IsScrolling will give the inner div a vertical scroll style. You will need to style the height of the outer control to have a fixed style as well.
 	IsScrolling bool
 	// RowClass is the class assigned to each row
@@ -299,7 +299,7 @@ func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
 		ctrl.SetColumnCount(c.ColumnCount)
 	}
 	ctrl.SetLayoutDirection(c.LayoutDirection)
-	if c.LabelDrawingMode != html.LabelDefault {
+	if c.LabelDrawingMode != html5tag.LabelDefault {
 		ctrl.SetLabelDrawingMode(c.LabelDrawingMode)
 	}
 	if c.IsScrolling {

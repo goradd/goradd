@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )
@@ -39,7 +39,7 @@ func NewCheckboxList(parent page.ControlI, id string) *CheckboxList {
 
 func (l *CheckboxList) Init(parent page.ControlI, id string) {
 	l.CheckboxList.Init(parent, id)
-	l.SetLabelDrawingMode(html.LabelAfter)
+	l.SetLabelDrawingMode(html5tag.LabelAfter)
 	l.SetRowClass("row")
 }
 
@@ -59,9 +59,9 @@ func (l *CheckboxList) SetCellClass(c string) {
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
-func (l *CheckboxList) DrawingAttributes(ctx context.Context) html.Attributes {
+func (l *CheckboxList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.ControlBase.DrawingAttributes(ctx) // skip default checkbox list attributes
-	a.SetDataAttribute("grctl", "bs-checkboxlist")
+	a.SetData("grctl", "bs-checkboxlist")
 	return a
 }
 
@@ -74,7 +74,7 @@ func (l *CheckboxList) RenderItem(item *control.ListItem) (h string) {
 }
 
 func renderItemControl(item *control.ListItem, typ string, selected bool, name string) string {
-	attributes := html.NewAttributes()
+	attributes := html5tag.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", name)
 	attributes.Set("value", item.Value())
@@ -83,8 +83,8 @@ func renderItemControl(item *control.ListItem, typ string, selected bool, name s
 	if selected {
 		attributes.Set("checked", "")
 	}
-	ctrl := html.RenderVoidTag("input", attributes)
-	return html.RenderLabel(html.NewAttributes().Set("for", item.ID()).AddClass("form-check-label"), item.Label(), ctrl, html.LabelAfter)
+	ctrl := html5tag.RenderVoidTag("input", attributes)
+	return html5tag.RenderLabel(html5tag.NewAttributes().Set("for", item.ID()).AddClass("form-check-label"), item.Label(), ctrl, html5tag.LabelAfter)
 }
 
 func renderCell(item *control.ListItem, controlHtml string, columnCount int, isInline bool, cellClass string) string {
@@ -100,7 +100,7 @@ func renderCell(item *control.ListItem, controlHtml string, columnCount int, isI
 	if cellClass != "" {
 		attributes.AddClass(cellClass)
 	}
-	return html.RenderTag("div", attributes, controlHtml)
+	return html5tag.RenderTag("div", attributes, controlHtml)
 }
 
 func (l *CheckboxList) Serialize(e page.Encoder) {
@@ -144,7 +144,7 @@ type CheckboxListCreator struct {
 	// LayoutDirection determines how the items are arranged in the columns
 	LayoutDirection control.LayoutDirection
 	// LabelDrawingMode specifies how the labels on the radio buttons will be associated with the buttons
-	LabelDrawingMode html.LabelDrawingMode
+	LabelDrawingMode html5tag.LabelDrawingMode
 	// IsScrolling will give the inner div a vertical scroll style. You will need to style the height of the outer control to have a fixed style as well.
 	IsScrolling bool
 	// RowClass is the class assigned to each row

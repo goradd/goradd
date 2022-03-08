@@ -5,7 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	action2 "github.com/goradd/goradd/pkg/page/action"
 )
 
@@ -241,7 +241,7 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 	actionJs += "if (event.goradd && event.goradd.postFunc) {event.goradd.postFunc();}\n"
 
 	if !config.Minify {
-		actionJs = html.Indent(actionJs)
+		actionJs = html5tag.Indent(actionJs)
 	}
 	actionJs = fmt.Sprintf("goradd.queueAction({f: (function(){\n%s\n}).bind(this.element), d: %d, name: '%s'});\n", actionJs, e.delay, e.JsEvent)
 

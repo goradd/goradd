@@ -2,9 +2,9 @@ package control
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	html2 "html"
+	"html"
 	"strconv"
 )
 
@@ -44,11 +44,11 @@ type ListItem struct {
 	value string // html list item values eventually get expressed as a string in the html
 	id    string
 	label             string
-	attributes        html.Attributes
+	attributes        html5tag.Attributes
 	shouldEscapeLabel bool
 	disabled          bool
 	isDivider         bool
-	anchorAttributes  html.Attributes
+	anchorAttributes  html5tag.Attributes
 }
 
 // NewListItem creates a new item for a list. Specify an empty string for an item that represents no selection.
@@ -181,9 +181,9 @@ func (i *ListItem) Anchor() string {
 	return i.anchorAttributes.Get("href")
 }
 
-func (i *ListItem) AnchorAttributes() html.Attributes {
+func (i *ListItem) AnchorAttributes() html5tag.Attributes {
 	if i.anchorAttributes == nil {
-		i.anchorAttributes = html.NewAttributes()
+		i.anchorAttributes = html5tag.NewAttributes()
 	}
 	return i.anchorAttributes
 }
@@ -195,21 +195,21 @@ func (i *ListItem) SetShouldEscapeLabel(e bool) *ListItem {
 
 func (i *ListItem) RenderLabel() (h string) {
 	if i.shouldEscapeLabel {
-		h = html2.EscapeString(i.label)
+		h = html.EscapeString(i.label)
 	} else {
 		h = i.label
 	}
 	if i.Anchor() != "" && !i.disabled {
-		h = html.RenderTag("a", i.anchorAttributes, h)
+		h = html5tag.RenderTag("a", i.anchorAttributes, h)
 	}
 	return
 }
 
 // Attributes returns a pointer to the attributes of the item for customization. You can directly set the attributes
 // on the returned object.
-func (i *ListItem) Attributes() html.Attributes {
+func (i *ListItem) Attributes() html5tag.Attributes {
 	if i.attributes == nil {
-		i.attributes = html.NewAttributes()
+		i.attributes = html5tag.NewAttributes()
 	}
 	return i.attributes
 }

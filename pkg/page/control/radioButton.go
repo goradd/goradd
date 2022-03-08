@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -62,9 +62,9 @@ func (c *RadioButton) SetChecked(v bool) RadioButtonI {
 }
 
 // DrawingAttributes is called by the framework to create temporary attributes for the input tag.
-func (c *RadioButton) DrawingAttributes(ctx context.Context) html.Attributes {
+func (c *RadioButton) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.CheckboxBase.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "radio")
+	a.SetData("grctl", "radio")
 	a.Set("type", "radio")
 	if c.group == "" {
 		a.Set("name", c.ID()) // treat it like a checkbox if no group is specified
@@ -102,9 +102,9 @@ type RadioButtonCreator struct {
 	// Checked will initialize the checkbox in its checked state.
 	Checked bool
 	// LabelMode specifies how the label is drawn with the checkbox.
-	LabelMode html.LabelDrawingMode
+	LabelMode html5tag.LabelDrawingMode
 	// LabelAttributes are additional attributes placed on the label tag.
-	LabelAttributes html.Attributes
+	LabelAttributes html5tag.Attributes
 	// SaveState will save the value of the checkbox and restore it when the page is reentered.
 	SaveState bool
 	// Group is the name of the group that the button belongs to
@@ -119,7 +119,7 @@ func (c RadioButtonCreator) Create(ctx context.Context, parent page.ControlI) pa
 	if c.Text != "" {
 		ctrl.SetText(c.Text)
 	}
-	if c.LabelMode != html.LabelDefault {
+	if c.LabelMode != html5tag.LabelDefault {
 		ctrl.LabelMode = c.LabelMode
 	}
 	if c.LabelAttributes != nil {

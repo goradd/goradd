@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html"
+	"github.com/goradd/goradd/pkg/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -35,9 +35,9 @@ func (t *Tabs) Init(parent page.ControlI, id string) {
 	t.On(event.Event("show.bs.tab"), action.SetControlValue(t.ID(), "selectedId", javascript.JsCode("event.target.id")))
 }
 
-func (t *Tabs) DrawingAttributes(ctx context.Context) html.Attributes {
+func (t *Tabs) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := t.Panel.DrawingAttributes(ctx)
-	a.SetDataAttribute("grctl", "bs-tabs")
+	a.SetData("grctl", "bs-tabs")
 	return a
 }
 
