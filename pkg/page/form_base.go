@@ -8,7 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"

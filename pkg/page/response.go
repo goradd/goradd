@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"sync"
 )

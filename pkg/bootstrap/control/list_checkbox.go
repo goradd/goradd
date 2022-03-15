@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )

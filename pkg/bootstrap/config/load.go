@@ -3,7 +3,7 @@ package config
 import (
 	_ "github.com/goradd/goradd/pkg/bootstrap/assets"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"path"
 )

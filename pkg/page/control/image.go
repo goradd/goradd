@@ -3,7 +3,7 @@ package control
 import (
 	"context"
 	"encoding/base64"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"strconv"
 )

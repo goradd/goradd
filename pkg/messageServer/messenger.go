@@ -11,7 +11,7 @@ package messageServer
 
 import (
 	"encoding/json"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 )
 

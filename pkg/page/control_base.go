@@ -6,7 +6,7 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/i18n"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/log"

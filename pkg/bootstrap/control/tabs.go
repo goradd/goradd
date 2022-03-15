@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"

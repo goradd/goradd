@@ -8,6 +8,8 @@ require (
 	github.com/goradd/gengen v0.3.0
 	github.com/goradd/gofile v1.0.1
 	github.com/goradd/got v1.0.2
+	github.com/goradd/html5tag v1.0.1
+
 	github.com/gorilla/websocket v1.4.2
 	github.com/kenshaw/snaker v0.2.0
 	github.com/microcosm-cc/bluemonday v1.0.17

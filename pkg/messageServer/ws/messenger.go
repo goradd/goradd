@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	http2 "github.com/goradd/goradd/pkg/http"
 	_ "github.com/goradd/goradd/pkg/messageServer/ws/assets"
 	"net/http"

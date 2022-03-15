@@ -3,7 +3,7 @@ package page
 import (
 	"github.com/goradd/goradd/pkg/cache"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 )
 
