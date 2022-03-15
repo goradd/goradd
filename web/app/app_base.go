@@ -8,7 +8,6 @@ import (
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/goradd/goradd/pkg/html5tag"
 	http2 "github.com/goradd/goradd/pkg/http"
 	grlog "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
@@ -17,6 +16,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/watcher"
+	"github.com/goradd/html5tag"
 	"net/http/pprof"
 	"time"
 

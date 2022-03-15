@@ -1,6 +1,6 @@
 package control
 
-import "github.com/goradd/goradd/pkg/html5tag"
+import "github.com/goradd/html5tag"
 
 // LayoutDirection controls whether items are layed out in rows or columns.
 type LayoutDirection int

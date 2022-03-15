@@ -2,7 +2,7 @@ package control
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/html5tag"
+	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"html"
 	"strconv"
