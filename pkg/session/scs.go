@@ -41,16 +41,16 @@ func (mgr ScsManager) Use(next http.Handler) http.Handler {
 			panic("Error loading or unpacking session: " + err.Error())
 		}
 
-		var data *Session
-		if d := mgr.SessionManager.Get(ctx, scsSessionDataKey); data != nil {
-			data = d.(*Session)
+		var sess *Session
+		if d := mgr.SessionManager.Get(ctx, scsSessionDataKey); sess != nil {
+			sess = d.(*Session)
 			log.FrameworkDebug("Found session")
 		} else {
-			data = NewSession()
+			sess = NewSession()
 			log.FrameworkDebug("Creating new session")
 		}
 
-		ctx = context.WithValue(ctx, sessionContext, data)
+		ctx = context.WithValue(ctx, sessionContext, sess)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 
@@ -60,17 +60,17 @@ func (mgr ScsManager) Use(next http.Handler) http.Handler {
 				r.MultipartForm.RemoveAll()
 			}*/
 
-		if data.data.Has(sessionResetKey) {
+		if sess.data.Has(sessionResetKey) {
 			// Our session requested a reset. We are safe to do this here because the buffered output handler
 			// will ensure that we can write headers even if output has been sent.
-			data.data.Delete(sessionResetKey)
+			sess.data.Delete(sessionResetKey)
 			if err = mgr.SessionManager.RenewToken(ctx); err != nil {
 				panic("Error renewing session token: %s" + err.Error())
 			}
 		}
 
-		if data.data.Len() > 0 {
-			mgr.SessionManager.Put(ctx, scsSessionDataKey, data)
+		if sess.data.Len() > 0 {
+			mgr.SessionManager.Put(ctx, scsSessionDataKey, sess)
 			token2, expiry, _ := mgr.SessionManager.Commit(ctx)
 			if err != nil {
 				panic("Error marshalling session data: " + err.Error())

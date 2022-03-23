@@ -3,8 +3,6 @@ package page
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/html5tag"
 	"github.com/goradd/maps"

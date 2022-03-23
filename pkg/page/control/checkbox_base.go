@@ -2,8 +2,6 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/html5tag"
 	"html"
@@ -178,7 +176,7 @@ func (c *CheckboxBase) MarshalState(m page.SavedState) {
 // UnmarshalState restores the state of the checkbox if coming back to a form in the same session.
 func (c *CheckboxBase) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load("checked"); ok {
-		if v2, ok := v.(bool); ok {
+		if v2, ok2 := v.(bool); ok2 {
 			c.checked = v2
 		}
 	}
