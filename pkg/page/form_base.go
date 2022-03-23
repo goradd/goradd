@@ -7,7 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
@@ -591,6 +590,7 @@ func (f *FormBase) Deserialize(d Decoder) {
 
 func init() {
 	gob.Register(&FormBase{})
+	gob.Register(new(headerItem))
 }
 
 type MockForm struct {

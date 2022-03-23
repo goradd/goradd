@@ -2,6 +2,7 @@ package page
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
@@ -1986,4 +1987,9 @@ func (c *ControlBase) FireTestMarker(marker string) {
 		log.FrameworkDebug("Firing test marker: ", marker)
 		c.ParentForm().Response().ExecuteJsFunction("goradd.postMarker", marker)
 	}
+}
+
+func inti() {
+	gob.Register(new(stateType))
+	gob.Register(new(stateStoreType))
 }

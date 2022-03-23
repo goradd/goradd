@@ -187,4 +187,5 @@ func Reset(ctx context.Context) {
 
 func init() {
 	gob.Register(&Session{})
+	gob.Register(new(sessionData))
 }
