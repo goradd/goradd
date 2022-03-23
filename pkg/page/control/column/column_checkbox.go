@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 )
 
 const (
@@ -191,7 +192,7 @@ func (c *CheckboxColumn) AddActions(t page.ControlI) {
 		CheckboxColumnClick().
 		Selector(`input[data-gr-all]`).
 		Private(),
-		action.Ajax(c.ParentTable().ID() + "_" + c.ID(), control.ColumnAction).ActionValue(AllClickAction))
+		action.Ajax(c.ParentTable().ID()+"_"+c.ID(), control.ColumnAction).ActionValue(AllClickAction))
 }
 
 // Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.
@@ -242,13 +243,13 @@ func (c *CheckboxColumn) PreRender() {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (c *CheckboxColumn) MarshalState(m maps.Setter) {
+func (c *CheckboxColumn) MarshalState(m page.SavedState) {
 	m.Set(c.ID()+"_changes", c.changes)
 	m.Set(c.ID()+"_dataid", c.checkboxer.DataID())
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (c *CheckboxColumn) UnmarshalState(m maps.Loader) {
+func (c *CheckboxColumn) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load(c.ID() + "_dataid"); ok {
 		if dataid, ok2 := v.(string); ok2 {
 			if dataid == c.checkboxer.DataID() { // only restore checkboxes if the data itself has not changed
@@ -263,10 +264,10 @@ func (c *CheckboxColumn) UnmarshalState(m maps.Loader) {
 }
 
 type checkboxColumnEncoded struct {
-	ShowCheckAll      bool
-	Checkboxer        CheckboxProvider
-	Current			  map[string]bool
-	Changes           map[string]bool
+	ShowCheckAll bool
+	Checkboxer   CheckboxProvider
+	Current      map[string]bool
+	Changes      map[string]bool
 }
 
 func (c *CheckboxColumn) Serialize(e page.Encoder) {
@@ -298,7 +299,6 @@ func (c *CheckboxColumn) Deserialize(dec page.Decoder) {
 	c.current = s.Current
 	c.changes = s.Changes
 }
-
 
 // The CheckboxProvider interface defines a set of functions that you implement to provide for the initial display
 // of a checkbox. You can descend your own CheckboxProvider from the DefaultCheckboxProvider to get the default
@@ -350,7 +350,7 @@ func (c DefaultCheckboxProvider) All() map[string]bool {
 }
 
 func init() {
-	gob.Register(map[string]bool(nil)) // We must register this here because we are putting the changes map into the session,
+	gob.Register(map[string]bool(nil))      // We must register this here because we are putting the changes map into the session,
 	gob.Register(DefaultCheckboxProvider{}) // We must register this here because we are putting the changes map into the session,
 	control.RegisterColumn(CheckboxColumn{})
 }
@@ -362,7 +362,7 @@ type CheckboxColumnCreator struct {
 	// ShowCheckAll will show a checkbox in the header that the user can use to check all the boxes in the column.
 	ShowCheckAll bool
 	// CheckboxProvider tells us which checkboxes are on or off, and how the checkboxes are styled.
-	CheckboxProvider   CheckboxProvider
+	CheckboxProvider CheckboxProvider
 	// Title is the title of the column that appears in the header
 	Title string
 	// Sortable makes the column display sort arrows in the header
@@ -387,4 +387,3 @@ func (c CheckboxColumnCreator) Create(ctx context.Context, parent control.TableI
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
 }
-

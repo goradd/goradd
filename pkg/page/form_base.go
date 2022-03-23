@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
@@ -14,6 +13,8 @@ import (
 	"github.com/goradd/goradd/pkg/messageServer"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
+	"github.com/goradd/html5tag"
+	"github.com/goradd/maps"
 	"io"
 	"path"
 )
@@ -47,6 +48,8 @@ type FormI interface {
 	writeAllStates(ctx context.Context)
 }
 
+type headerItem = maps.SliceMap[string, html5tag.Attributes]
+
 // FormBase is a base for the FormBase struct that is in the control package.
 // Normally, you should not descend your forms from here, but rather from the control.Form struct.
 // It is the basic control structure for the application and also serves as the drawing mechanism for the
@@ -54,12 +57,12 @@ type FormI interface {
 type FormBase struct {
 	drawing bool
 	ControlBase
-	response Response
-	headerStyleSheets   *maps.SliceMap
-	importedStyleSheets *maps.SliceMap // when refreshing, these get moved to the headerStyleSheets
-	headerJavaScripts   *maps.SliceMap
-	bodyJavaScripts     *maps.SliceMap
-	importedJavaScripts *maps.SliceMap // when refreshing, these get moved to the bodyJavaScripts
+	response            Response
+	headerStyleSheets   *headerItem
+	importedStyleSheets *headerItem // when refreshing, these get moved to the headerStyleSheets
+	headerJavaScripts   *headerItem
+	bodyJavaScripts     *headerItem
+	importedJavaScripts *headerItem // when refreshing, these get moved to the bodyJavaScripts
 }
 
 // Init initializes the form control. Note that ctx might be nil if we are unit testing.
@@ -88,12 +91,11 @@ func (f *FormBase) AddRelatedFiles() {
 	f.AddGoraddFiles()
 	if messageServer.Messenger != nil {
 		files := messageServer.Messenger.JavascriptFiles()
-		for file,attr := range files {
+		for file, attr := range files {
 			f.AddJavaScriptFile(file, false, attr)
 		}
 	}
 }
-
 
 // AddGoraddFiles adds the various goradd files to the form
 func (f *FormBase) AddGoraddFiles() {
@@ -119,15 +121,21 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 	f.drawing = true
 	defer f.notDrawing()
 	f.this().PreRender(ctx, w)
-	if _,err := io.WriteString(w, `<form ` + f.this().DrawingAttributes(ctx).String() + ">\n"); err != nil {panic(err)}
-	if err := f.this().DrawTemplate(ctx, w); err != nil {panic(err)} // the template is required
+	if _, err := io.WriteString(w, `<form `+f.this().DrawingAttributes(ctx).String()+">\n"); err != nil {
+		panic(err)
+	}
+	if err := f.this().DrawTemplate(ctx, w); err != nil {
+		panic(err)
+	} // the template is required
 	// Render controls that are marked to auto render if the form did not render them
 	f.RenderAutoControls(ctx, w)
 
 	// Render hidden controls
 
 	// Place holder for postBack and postAjax functions to place their data
-	if _,err := io.WriteString(w, `<input type="hidden" name="` + htmlVarParams + `" id="` + htmlVarParams + `" value="" />` + "\n"); err != nil {panic(err)}
+	if _, err := io.WriteString(w, `<input type="hidden" name="`+htmlVarParams+`" id="`+htmlVarParams+`" value="" />`+"\n"); err != nil {
+		panic(err)
+	}
 
 	// CSRF prevention
 	var csrf string
@@ -142,14 +150,22 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 		}
 		session.Set(ctx, goradd.SessionCsrf, csrf)
 	}
-	if _,err := fmt.Fprintf(w, `<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf); err != nil {panic(err)}
+	if _, err := fmt.Fprintf(w, `<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf); err != nil {
+		panic(err)
+	}
 
 	// Serialize and write out the pagestate
-	if _,err := fmt.Fprintf(w, `<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()); err != nil {panic(err)}
+	if _, err := fmt.Fprintf(w, `<input type="hidden" name="`+HtmlVarPagestate+`" id="`+HtmlVarPagestate+`" value="%s" />`, f.page.StateID()); err != nil {
+		panic(err)
+	}
 
-	if err := f.drawBodyScriptFiles(ctx, w); err != nil {panic(err)}
+	if err := f.drawBodyScriptFiles(ctx, w); err != nil {
+		panic(err)
+	}
 
-	if _,err := io.WriteString(w, "\n</form>\n"); err != nil {panic(err)}
+	if _, err := io.WriteString(w, "\n</form>\n"); err != nil {
+		panic(err)
+	}
 
 	// Draw things that come after the form tag
 
@@ -171,7 +187,9 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 	}
 	if _, err := fmt.Fprintf(w, `<script>
 %s
-</script>`, s); err != nil {panic(err)}
+</script>`, s); err != nil {
+		panic(err)
+	}
 
 	f.this().PostRender(ctx, w)
 	f.resetDrawingFlags()
@@ -190,7 +208,6 @@ func (f *FormBase) resetDrawingFlags() {
 		c.isModified = false
 	})
 }
-
 
 func (f *FormBase) updateValues(ctx context.Context) {
 	f.RangeAllChildren(func(child ControlI) {
@@ -231,15 +248,15 @@ func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) {
 
 	// Inject any added style sheets and script files
 	if f.importedStyleSheets != nil {
-		f.importedStyleSheets.Range(func(k string,v interface{}) bool {
-			f.response.addStyleSheet(k,v.(html5tag.Attributes))
+		f.importedStyleSheets.Range(func(k string, v html5tag.Attributes) bool {
+			f.response.addStyleSheet(k, v)
 			return true
 		})
 	}
 
 	if f.importedJavaScripts != nil {
-		f.importedJavaScripts.Range(func(k string,v interface{}) bool {
-			f.response.addJavaScriptFile(k,v.(html5tag.Attributes))
+		f.importedJavaScripts.Range(func(k string, v html5tag.Attributes) bool {
+			f.response.addJavaScriptFile(k, v)
 			return true
 		})
 	}
@@ -249,10 +266,14 @@ func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) {
 	f.resetDrawingFlags()
 	var err error
 	buf2, err = f.response.GetAjaxResponse()
-	if err != nil {panic(err)}
+	if err != nil {
+		panic(err)
+	}
 	//f.response = NewResponse() Do NOT do this here! It messes with testing framework and multi-processing of ajax responses
-	_,err = w.Write(buf2)
-	if err != nil {panic(err)}
+	_, err = w.Write(buf2)
+	if err != nil {
+		panic(err)
+	}
 	log.FrameworkDebug("renderAjax - ", string(buf2))
 }
 
@@ -318,17 +339,17 @@ func (f *FormBase) AddJavaScriptFile(path string, forceHeader bool, attributes h
 			return // file is already on the page
 		}
 		if f.importedJavaScripts == nil {
-			f.importedJavaScripts = maps.NewSliceMap()
+			f.importedJavaScripts = new(headerItem)
 		}
 		f.importedJavaScripts.Set(path, attributes)
 	} else if forceHeader {
 		if f.headerJavaScripts == nil {
-			f.headerJavaScripts = maps.NewSliceMap()
+			f.headerJavaScripts = new(headerItem)
 		}
 		f.headerJavaScripts.Set(path, attributes)
 	} else {
 		if f.bodyJavaScripts == nil {
-			f.bodyJavaScripts = maps.NewSliceMap()
+			f.bodyJavaScripts = new(headerItem)
 		}
 		f.bodyJavaScripts.Set(path, attributes)
 	}
@@ -366,12 +387,12 @@ func (f *FormBase) AddStyleSheetFile(path string, attributes html5tag.Attributes
 			return // the style sheet was already included when the form was loaded the first time
 		}
 		if f.importedStyleSheets == nil {
-			f.importedStyleSheets = maps.NewSliceMap()
+			f.importedStyleSheets = new(headerItem)
 		}
 		f.importedStyleSheets.Set(path, attributes)
 	} else {
 		if f.headerStyleSheets == nil {
-			f.headerStyleSheets = maps.NewSliceMap()
+			f.headerStyleSheets = new(headerItem)
 		}
 		f.headerStyleSheets.Set(path, attributes)
 	}
@@ -383,8 +404,8 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) {
 	f.mergeInjectedFiles()
 
 	if f.headerStyleSheets != nil {
-		f.headerStyleSheets.Range(func(path string, attr interface{}) bool {
-			var attributes = attr.(html5tag.Attributes)
+		f.headerStyleSheets.Range(func(path string, attr html5tag.Attributes) bool {
+			var attributes = attr
 			if attributes == nil {
 				attributes = html5tag.NewAttributes()
 			}
@@ -396,8 +417,8 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) {
 	}
 
 	if f.headerJavaScripts != nil {
-		f.headerJavaScripts.Range(func(path string, attr interface{}) bool {
-			var attributes = attr.(html5tag.Attributes)
+		f.headerJavaScripts.Range(func(path string, attr html5tag.Attributes) bool {
+			var attributes = attr
 			if attributes == nil {
 				attributes = html5tag.NewAttributes()
 			}
@@ -413,7 +434,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) {
 func (f *FormBase) mergeInjectedFiles() {
 	if f.importedStyleSheets != nil {
 		if f.headerStyleSheets == nil {
-			f.headerStyleSheets = maps.NewSliceMap()
+			f.headerStyleSheets = new(headerItem)
 		}
 		f.headerStyleSheets.Merge(f.importedStyleSheets)
 		f.importedStyleSheets = nil
@@ -421,7 +442,7 @@ func (f *FormBase) mergeInjectedFiles() {
 
 	if f.importedJavaScripts != nil {
 		if f.headerJavaScripts == nil {
-			f.headerJavaScripts = maps.NewSliceMap()
+			f.headerJavaScripts = new(headerItem)
 		}
 		f.headerJavaScripts.Merge(f.importedJavaScripts)
 		f.importedJavaScripts = nil
@@ -429,18 +450,19 @@ func (f *FormBase) mergeInjectedFiles() {
 }
 
 func (f *FormBase) drawBodyScriptFiles(ctx context.Context, w io.Writer) (err error) {
-	f.bodyJavaScripts.Range(func(path string, attr interface{}) bool {
-		var attributes = attr.(html5tag.Attributes)
+	f.bodyJavaScripts.Range(func(path string, attr html5tag.Attributes) bool {
+		var attributes = attr
 		if attributes == nil {
 			attributes = html5tag.NewAttributes()
 		}
 		attributes.Set("src", path)
-		if _, err = io.WriteString(w, html5tag.RenderTag("script", attributes, "") + "\n"); err != nil {return false}
+		if _, err = io.WriteString(w, html5tag.RenderTag("script", attributes, "")+"\n"); err != nil {
+			return false
+		}
 		return true
 	})
 	return
 }
-
 
 // DisplayAlert will display a javascript alert with the given message.
 func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
@@ -514,14 +536,14 @@ func (f *FormBase) PopLocation(ctx context.Context, fallback string) {
 }
 
 type formEncoded struct {
-	HeaderSS   *maps.SliceMap
-	ImportedSS *maps.SliceMap
-	HeaderJS   *maps.SliceMap
-	BodyJS     *maps.SliceMap
-	ImportedJS *maps.SliceMap
+	HeaderSS   *headerItem
+	ImportedSS *headerItem
+	HeaderJS   *headerItem
+	BodyJS     *headerItem
+	ImportedJS *headerItem
 }
 
-func (f *FormBase) Serialize(e Encoder)  {
+func (f *FormBase) Serialize(e Encoder) {
 	f.ControlBase.Serialize(e)
 	if !config.Release {
 		// The response is currently only changed between posts by the testing framework
@@ -552,7 +574,6 @@ func (f *FormBase) Deserialize(d Decoder) {
 		// the response.
 		f.response.Deserialize(d)
 	}
-
 
 	s := formEncoded{}
 	if err := d.Decode(&s); err != nil {

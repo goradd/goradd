@@ -2,11 +2,10 @@ package db
 
 import (
 	"context"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/orm/op"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/maps"
 )
-
 
 // LimitInfo is the information needed to limit the rows being requested.
 type LimitInfo struct {
@@ -24,14 +23,16 @@ type QueryBuilder struct {
 	OrderBys      []NodeI
 	ConditionNode NodeI
 	IsDistinct    bool
-	AliasNodes    *maps.SliceMap
+	AliasNodes    *AliasNodesType
 	// Adds a COUNT(*) to the select list
-	GroupBys  []NodeI
-	Selects   []NodeI
+	GroupBys   []NodeI
+	Selects    []NodeI
 	LimitInfo  *LimitInfo
 	HavingNode NodeI
 	IsSubquery bool
 }
+
+type AliasNodesType = maps.SliceMap[string, Aliaser]
 
 // Init initializes the QueryBuilder.
 func (b *QueryBuilder) Init(ctx context.Context) {
@@ -63,7 +64,7 @@ func (b *QueryBuilder) Join(n NodeI, condition NodeI) {
 // any query.Aliaser kind of node.
 func (b *QueryBuilder) Alias(name string, n NodeI) {
 	if b.AliasNodes == nil {
-		b.AliasNodes = maps.NewSliceMap()
+		b.AliasNodes = new(AliasNodesType)
 	}
 	a := n.(Aliaser)
 	a.SetAlias(name)
@@ -160,7 +161,7 @@ func (b *QueryBuilder) Count(_ bool, _ ...NodeI) uint {
 }
 
 // LoadCursor is a stub that helps the QueryBuilder implement the query.QueryBuilderI interface so it can be included in sub-queries.
-func (b *QueryBuilder) 	LoadCursor() CursorI {
+func (b *QueryBuilder) LoadCursor() CursorI {
 	return nil
 }
 
@@ -194,7 +195,7 @@ func Nodes(b QueryBuilder) []NodeI {
 	}
 	nodes = append(nodes, b.Selects...)
 
-	b.AliasNodes.Range(func(key string, value interface{}) bool {
+	b.AliasNodes.Range(func(key string, value Aliaser) bool {
 		nodes = append(nodes, value.(NodeI))
 		return true
 	})
@@ -202,14 +203,12 @@ func Nodes(b QueryBuilder) []NodeI {
 	return nodes
 }
 
-
-
 type QueryExport struct {
 	Joins      []NodeI
 	OrderBys   []NodeI
 	Condition  NodeI
 	Distinct   bool
-	AliasNodes *maps.SliceMap
+	AliasNodes *AliasNodesType
 	// Adds a COUNT(*) to the select list
 	GroupBys   []NodeI
 	Selects    []NodeI

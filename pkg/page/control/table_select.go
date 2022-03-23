@@ -3,12 +3,13 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
+	"github.com/goradd/maps"
 	"path"
 )
 
@@ -26,7 +27,7 @@ type SelectTableI interface {
 // SelectTable is a table that is row selectable. To detect a row selection, trigger on event.RowSelected
 type SelectTable struct {
 	Table
-	selectedID string
+	selectedID   string
 	reselectable bool
 }
 
@@ -41,7 +42,7 @@ func (t *SelectTable) Init(parent page.ControlI, id string) {
 	t.Table.Init(parent, id)
 	t.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "/js/goradd-scrollIntoView.js"), false, nil)
 	t.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "/js/table-select.js"), false, nil)
-	t.SetAttribute("tabindex", 0); // Make the entire table focusable and selectable. This can be overridden later if needed.
+	t.SetAttribute("tabindex", 0) // Make the entire table focusable and selectable. This can be overridden later if needed.
 	t.AddClass("gr-clickable-rows")
 }
 
@@ -68,7 +69,7 @@ func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a html5tag.At
 			id = obj.PrimaryKey()
 		case map[string]string:
 			id, _ = obj["id"]
-		case maps.StringGetter:
+		case maps.Getter[string, string]:
 			id = obj.Get("id")
 		}
 	}
@@ -126,12 +127,11 @@ func (t *SelectTable) SetReselectable(r bool) SelectTableI {
 	return t.this()
 }
 
-
-func (t *SelectTable) MarshalState(m maps.Setter) {
+func (t *SelectTable) MarshalState(m page.SavedState) {
 	m.Set("selId", t.selectedID)
 }
 
-func (t *SelectTable) UnmarshalState(m maps.Loader) {
+func (t *SelectTable) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load("selId"); ok {
 		if id, ok2 := v.(string); ok2 {
 			t.selectedID = id
@@ -163,42 +163,42 @@ func (t *SelectTable) Deserialize(dec page.Decoder) {
 type SelectTableCreator struct {
 
 	// ID is the control id
-	ID               string
+	ID string
 	// Caption is the content of the caption tag, and can either be a string, or a data pager
-	Caption          interface{}
+	Caption interface{}
 	// HideIfEmpty will hide the table completely if it has no data. Otherwise, the table and headers will be shown, but no data rows
-	HideIfEmpty      bool
+	HideIfEmpty bool
 	// HeaderRowCount is the number of header rows. You must set this to at least 1 to show header rows.
-	HeaderRowCount   int
+	HeaderRowCount int
 	// FooterRowCount is the number of footer rows.
-	FooterRowCount   int
+	FooterRowCount int
 	// RowStyler returns the attributes to be used in a cell.
-	RowStyler        TableRowAttributer
+	RowStyler TableRowAttributer
 	// RowStylerID is a control id for the control that will be the RowStyler of the table.
-	RowStylerID      string
+	RowStylerID string
 	// HeaderRowStyler returns the attributes to be used in a header cell.
-	HeaderRowStyler  TableHeaderRowAttributer
+	HeaderRowStyler TableHeaderRowAttributer
 	// HeaderRowStylerID is a control id for the control that will be the HeaderRowStyler of the table.
-	HeaderRowStylerID  string
+	HeaderRowStylerID string
 	// FooterRowStyler returns the attributes to be used in a footer cell. It can be either a control id or a TableFooterRowAttributer.
-	FooterRowStyler  TableFooterRowAttributer
+	FooterRowStyler TableFooterRowAttributer
 	// FooterRowStylerID is a control id for the control that will be the FooterRowStyler of the table.
-	FooterRowStylerID  string
+	FooterRowStylerID string
 	// Columns are the column creators that will add columns to the table
-	Columns          []ColumnCreator
+	Columns []ColumnCreator
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// Data is the actual data for the table, and should be a slice of objects
-	Data             interface{}
+	Data interface{}
 	// Sortable will make the table sortable
-	Sortable         bool
+	Sortable bool
 	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
 	SortHistoryLimit int
 	page.ControlOptions
 	// OnRowSelected is the action to take when the row is selected
-	OnRowSelected    action.ActionI
+	OnRowSelected action.ActionI
 	// SelectedID is the row id that will start as the selection
 	SelectedID string
 	// Reselectable determines if you will get a select command when the user taps the item that is already selected.
@@ -206,8 +206,6 @@ type SelectTableCreator struct {
 	// SaveState will cause the table to remember the selection
 	SaveState bool
 }
-
-
 
 // Create is called by the framework to create a new control from the Creator. You
 // do not normally need to call this.
@@ -220,7 +218,7 @@ func (c SelectTableCreator) Create(ctx context.Context, parent page.ControlI) pa
 // Init is called by implementations of Buttons to initialize a control with the
 // creator. You do not normally need to call this.
 func (c SelectTableCreator) Init(ctx context.Context, ctrl SelectTableI) {
-	sub := TableCreator {
+	sub := TableCreator{
 		ID:               c.ID,
 		Caption:          c.Caption,
 		HideIfEmpty:      c.HideIfEmpty,

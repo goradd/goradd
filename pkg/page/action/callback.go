@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/javascript"
+	"github.com/goradd/maps"
 )
 
 // CallbackActionI defines actions that result in a callback to us. Specifically Server and Ajax actions are defined for now.
@@ -113,7 +113,7 @@ func Server(destControlId string, actionId int) CallbackActionI {
 
 // RenderScript is called by the framework to render the script as javascript.
 func (a *serverAction) RenderScript(params RenderParams) string {
-	v := maps.NewSliceMap()
+	v := new(maps.SliceMap[string, any])
 	v.Set("controlID", params.TriggeringControlID)
 	v.Set("eventId", params.EventID)
 	if a.CallAsync {
@@ -121,7 +121,7 @@ func (a *serverAction) RenderScript(params RenderParams) string {
 	}
 
 	eV, aV, cV := params.EventActionValue, a.Value, params.ControlActionValue
-	v2 := maps.NewSliceMap()
+	v2 := new(maps.SliceMap[string, any])
 	if eV != nil {
 		v2.Set("event", eV)
 	} else {
@@ -196,7 +196,7 @@ func Ajax(destControlId string, actionID int) CallbackActionI {
 
 // RenderScript renders the script as javascript.
 func (a *ajaxAction) RenderScript(params RenderParams) string {
-	v := maps.NewSliceMap()
+	v := new(maps.SliceMap[string, any])
 	v.Set("controlID", params.TriggeringControlID)
 	v.Set("eventId", params.EventID)
 	if a.CallAsync {
@@ -204,7 +204,7 @@ func (a *ajaxAction) RenderScript(params RenderParams) string {
 	}
 
 	eV, aV, cV := params.EventActionValue, a.Value, params.ControlActionValue
-	v2 := maps.NewSliceMap()
+	v2 := new(maps.SliceMap[string, any])
 	if eV != nil {
 		v2.Set("event", eV)
 	} else {

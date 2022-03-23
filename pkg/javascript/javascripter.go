@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goradd/gengen/pkg/maps"
+	"github.com/goradd/maps"
 )
 
 // JavaScripter specifies that an object can be converted to javascript (not JSON!). These objects should also be
@@ -89,7 +89,7 @@ func ToJavaScript(v interface{}) string {
 			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
 		}
 
-	case maps.MapI:
+	case maps.MapI[string, any]:
 		var out string
 		s.Range(func(k string, v interface{}) bool {
 			if v2, ok := v.(NoQuoteKey); ok {
@@ -104,7 +104,7 @@ func ToJavaScript(v interface{}) string {
 		} else {
 			return "{" + out[:len(out)-1] + "}" // remove final comma and wrap in a javascript object
 		}
-	case maps.StringMapI:
+	case maps.MapI[string, string]:
 		var out string
 		s.Range(func(k string, v string) bool {
 			out += ToJavaScript(k) + ":" + ToJavaScript(v) + ","
@@ -122,7 +122,7 @@ func ToJavaScript(v interface{}) string {
 	default:
 		/** TBD
 		rv := reflect.ValueOf(v)
-		if rv.Kind() == reflect.Map {
+		if rv.Kind() == reflect.StdMap {
 
 		}*/
 		return fmt.Sprint(s)

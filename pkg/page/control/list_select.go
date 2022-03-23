@@ -8,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 	"io"
 	"reflect"
 	"strconv"
@@ -52,7 +53,6 @@ func (l *SelectList) this() SelectListI {
 	return l.Self.(SelectListI)
 }
 
-
 // Validate is called by the framework to validate the contents of the control. For a SelectList,
 // this is typically just checking to see if something was selected if a selection is required.
 func (l *SelectList) Validate(ctx context.Context) bool {
@@ -61,7 +61,7 @@ func (l *SelectList) Validate(ctx context.Context) bool {
 	}
 
 	sel := l.SelectedItem()
-	if l.IsRequired() && (sel == nil ||  sel.IsEmptyValue()) {
+	if l.IsRequired() && (sel == nil || sel.IsEmptyValue()) {
 		if l.ErrorForRequired == "" {
 			l.SetValidationError(l.GT("A selection is required"))
 		} else {
@@ -92,7 +92,7 @@ func (l *SelectList) SelectedItem() *ListItem {
 		l.selectedValue = l.items[0].Value()
 		return l.items[0]
 	}
-	_,i := l.GetItemByValue(l.selectedValue)
+	_, i := l.GetItemByValue(l.selectedValue)
 	return i
 }
 
@@ -102,7 +102,7 @@ func (l *SelectList) SelectedItem() *ListItem {
 // Otherwise it will compare against the current item list and panic if the item does not exist.
 func (l *SelectList) SetSelectedValue(v string) {
 	if !l.HasDataProvider() {
-		_,item := l.GetItemByValue(v)
+		_, item := l.GetItemByValue(v)
 		if item == nil {
 			panic("Attempting to set the SelectList to a value that does not exist in the list. Value: " + v)
 		}
@@ -133,7 +133,7 @@ func (l *SelectList) IntValue() int {
 	if l.selectedValue == "" {
 		return 0
 	} else {
-		i,_ := strconv.Atoi(l.selectedValue)
+		i, _ := strconv.Atoi(l.selectedValue)
 		return i
 	}
 }
@@ -153,12 +153,12 @@ func (l *SelectList) SelectedLabel() string {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (l *SelectList) MarshalState(m maps.Setter) {
+func (l *SelectList) MarshalState(m page.SavedState) {
 	m.Set("sel", l.selectedValue)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (l *SelectList) UnmarshalState(m maps.Loader) {
+func (l *SelectList) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load("sel"); ok {
 		if s, ok2 := v.(string); ok2 {
 			l.selectedValue = s
@@ -174,7 +174,7 @@ func (l *SelectList) DrawingAttributes(ctx context.Context) html5tag.Attributes 
 	a.Set("name", l.ID()) // needed for posts
 	if l.IsRequired() {
 		a.Set("required", "") // required for some css frameworks, but browser validation is flaky.
-							  // set the "novalidate" attribute on the form for server-side validation only.
+		// set the "novalidate" attribute on the form for server-side validation only.
 	}
 	return a
 }
@@ -186,7 +186,6 @@ func (l *SelectList) DrawTag(ctx context.Context, w io.Writer) {
 	}
 	l.ControlBase.DrawTag(ctx, w)
 }
-
 
 // DrawInnerHtml is called by the framework during drawing of the control to draw the inner html of the control
 func (l *SelectList) DrawInnerHtml(_ context.Context, w io.Writer) {
@@ -256,7 +255,6 @@ func (l *SelectList) Deserialize(dec page.Decoder) {
 	}
 }
 
-
 type SelectListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
@@ -317,7 +315,6 @@ func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 	}
 }
 
-
 // GetSelectList is a convenience method to return the control with the given id from the page.
 func GetSelectList(c page.ControlI, id string) *SelectList {
 	return c.Page().GetControl(id).(*SelectList)
@@ -326,7 +323,6 @@ func GetSelectList(c page.ControlI, id string) *SelectList {
 func GetSelectListI(c page.ControlI, id string) SelectListI {
 	return c.Page().GetControl(id).(SelectListI)
 }
-
 
 func init() {
 	page.RegisterControl(&SelectList{})

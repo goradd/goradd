@@ -8,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 	"io"
 	"strconv"
 )
@@ -138,19 +139,18 @@ func (c *PagedControl) SqlLimits() (maxRowCount, offset int) {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (c *PagedControl) MarshalState(m maps.Setter) {
+func (c *PagedControl) MarshalState(m page.SavedState) {
 	m.Set("pn", c.pageNum)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (c *PagedControl) UnmarshalState(m maps.Loader) {
+func (c *PagedControl) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load("pn"); ok {
 		if pn, ok2 := v.(int); ok2 {
 			c.pageNum = pn
 		}
 	}
 }
-
 
 // Serialize encodes the PagedControl data for serialization. Note that all control implementations
 // that use a PagedControl MUST create their own Serialize method, call the base ControlBase's version first,
@@ -189,7 +189,6 @@ func (c *PagedControl) Deserialize(dec page.Decoder) {
 		panic(err)
 	}
 }
-
 
 // DataPagerI is the data pager interface that allows this object to call into subclasses.
 type DataPagerI interface {
@@ -249,7 +248,6 @@ func (d *DataPager) proxyID() string {
 func (d *DataPager) ButtonProxy() *Proxy {
 	return GetProxy(d, d.proxyID())
 }
-
 
 // DrawingAttributes is called by the framework to add temporary attributes to the html.
 func (d *DataPager) DrawingAttributes(ctx context.Context) html5tag.Attributes {
@@ -389,7 +387,7 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 }
 
 // PreRender is called by the framework to load data into the paged control just before drawing.
-func (d *DataPager) PreRender(ctx context.Context, w io.Writer)  {
+func (d *DataPager) PreRender(ctx context.Context, w io.Writer) {
 	d.ControlBase.PreRender(ctx, w)
 	p := d.PagedControl()
 
@@ -498,12 +496,12 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (d *DataPager) MarshalState(m maps.Setter) {
+func (d *DataPager) MarshalState(m page.SavedState) {
 	m.Set("pageNum", d.PagedControl().PageNum())
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (d *DataPager) UnmarshalState(m maps.Loader) {
+func (d *DataPager) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load("pageNum"); ok {
 		if i, ok2 := v.(int); ok2 {
 			d.PagedControl().SetPageNum(i) // admittedly, multiple pagers will repeat the same call, but not likely to effect performance
@@ -515,7 +513,7 @@ func (d *DataPager) PagedControl() PagedControlI {
 	return d.Page().GetControl(d.pagedControlID).(PagedControlI)
 }
 
-func (d *DataPager) Serialize(e page.Encoder)  {
+func (d *DataPager) Serialize(e page.Encoder) {
 	d.ControlBase.Serialize(e)
 
 	if err := e.Encode(d.maxPageButtons); err != nil {
@@ -596,12 +594,11 @@ type DataPagerCreator struct {
 	page.ControlOptions
 }
 
-
 // Create is called by the framework to create a new control from the Creator. You
 // do not normally need to call this.
 func (c DataPagerCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	if !parent.Page().HasControl(c.PagedControl) {
-		panic ("you must declare the paged control before the data pager")
+		panic("you must declare the paged control before the data pager")
 	}
 	p := parent.Page().GetControl(c.PagedControl).(PagedControlI)
 	ctrl := NewDataPager(parent, c.ID, p)

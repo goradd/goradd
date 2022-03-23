@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 	"html"
 	"io"
 	"strconv"
@@ -306,12 +306,12 @@ func (t *Textbox) UpdateFormValues(ctx context.Context) {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (t *Textbox) MarshalState(m maps.Setter) {
+func (t *Textbox) MarshalState(m page.SavedState) {
 	m.Set("text", t.Text())
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (t *Textbox) UnmarshalState(m maps.Loader) {
+func (t *Textbox) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load("text"); ok {
 		if s, ok2 := v.(string); ok2 {
 			t.value = s
@@ -351,7 +351,7 @@ func (t *Textbox) Serialize(e page.Encoder) {
 }
 
 // Deserialize is used by the pagestate serializer.
-func (t *Textbox) Deserialize(d page.Decoder)  {
+func (t *Textbox) Deserialize(d page.Decoder) {
 	t.ControlBase.Deserialize(d)
 
 	s := encodedTextbox{}
@@ -500,7 +500,6 @@ func GetTextbox(c page.ControlI, id string) *Textbox {
 func GetTextboxI(c page.ControlI, id string) TextboxI {
 	return c.Page().GetControl(id).(TextboxI)
 }
-
 
 func init() {
 	// gob.Register(&Textbox{}) register control.Textbox instead

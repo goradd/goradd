@@ -75,24 +75,24 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 }
 
 func (p *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent,id)
+	p.Panel.Init(parent, id)
 
 	p.AddControls(ctx,
 		PagedTableCreator{
 			ID:             "table1",
 			HeaderRowCount: 1,
 			DataProvider:   p,
-			Columns:[]ColumnCreator {
+			Columns: []ColumnCreator{
 				column.TexterColumnCreator{
 					TexterID: "tablePanel",
-					Title:"Custom",
+					Title:    "Custom",
 				},
 				column.SliceColumnCreator{
-					Index:1,
-					Title:"Slice",
+					Index: 1,
+					Title: "Slice",
 				},
 			},
-			PageSize:5,
+			PageSize: 5,
 		},
 		// A DataPager can be a standalone control, which you draw manually
 		DataPagerCreator{
@@ -100,32 +100,30 @@ func (p *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 			PagedControl: "table1",
 		},
 		PagedTableCreator{
-			ID: "table2",
+			ID:             "table2",
 			HeaderRowCount: 1,
 			DataProviderID: "tablePanel", // You can use the id of a provider too
-			Columns:[]ColumnCreator {
+			Columns: []ColumnCreator{
 				column.TexterColumnCreator{
 					TexterID: "tablePanel",
-					Title:"Custom",
+					Title:    "Custom",
 				},
 				column.MapColumnCreator{
-					Index:"id",
-					Title:"Map",
+					Index: "id",
+					Title: "StdMap",
 				},
 				column.GetterColumnCreator{
-					Index:"name",
-					Title:"Getter",
+					Index: "name",
+					Title: "Getter",
 				},
-
 			},
-			PageSize:5,
+			PageSize: 5,
 			// A DataPager can also be a caption, and will get drawn for you as part of the table
-			Caption:DataPagerCreator{
+			Caption: DataPagerCreator{
 				ID:           "pager2",
 				PagedControl: "table2",
 			},
 		},
-
 	)
 }
 

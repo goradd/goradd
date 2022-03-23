@@ -80,32 +80,31 @@ func (f *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 	f.Panel.Init(parent, id)
 	f.AddControls(ctx,
 		control.PagedTableCreator{
-			ID: "table1",
+			ID:             "table1",
 			HeaderRowCount: 1,
-			DataProvider: f,
-			Columns:[]control.ColumnCreator {
+			DataProvider:   f,
+			Columns: []control.ColumnCreator{
 				column.TexterColumnCreator{
 					TexterID: "tablePanel",
-					Title:"Custom",
+					Title:    "Custom",
 				},
 				column.MapColumnCreator{
-					Index:"id",
-					Title:"Map",
+					Index: "id",
+					Title: "StdMap",
 				},
 				column.GetterColumnCreator{
-					Index:"name",
-					Title:"Getter",
+					Index: "name",
+					Title: "Getter",
 				},
-
 			},
-			PageSize:5,
+			PageSize: 5,
 			// A DataPager can also be a caption, and will get drawn for you as part of the table
 			ControlOptions: page.ControlOptions{
 				Class: "table", // this makes the table bootstrap style
 			},
 		},
 		DataPagerCreator{ // bootstrap puts its caption at the bottom of a table, so its not a good place for a pager
-			ID: "pager",
+			ID:           "pager",
 			PagedControl: "table1",
 		},
 	)

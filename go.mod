@@ -5,16 +5,27 @@ require (
 	github.com/andybalholm/brotli v1.0.4
 	github.com/gedex/inflector v0.0.0-20170307190818-16278e9db813
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/goradd/gengen v0.3.0
 	github.com/goradd/gofile v1.0.1
 	github.com/goradd/got v1.0.2
 	github.com/goradd/html5tag v1.0.1
-
+	github.com/goradd/maps v0.1.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/kenshaw/snaker v0.2.0
 	github.com/microcosm-cc/bluemonday v1.0.17
-	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shurcooL/github_flavored_markdown v0.0.0-20210228213109-c3a9aa474629
+	github.com/spf13/cobra v1.3.0
+	github.com/stretchr/testify v1.7.1
+	golang.org/x/text v0.3.7
+)
+
+require (
+	github.com/aymerick/douceur v0.2.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/gorilla/css v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/russross/blackfriday v1.5.2 // indirect
+	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shurcooL/go v0.0.0-20200502201357-93f07166e636 // indirect
 	github.com/shurcooL/go-goon v0.0.0-20210110234559-7585751d9a17 // indirect
 	github.com/shurcooL/highlight_diff v0.0.0-20181222201841-111da2e7d480 // indirect
@@ -23,9 +34,9 @@ require (
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/sourcegraph/annotate v0.0.0-20160123013949-f4cad6c6324d // indirect
 	github.com/sourcegraph/syntaxhighlight v0.0.0-20170531221838-bd320f5d308e // indirect
-	github.com/spf13/cobra v1.3.0
-	github.com/stretchr/testify v1.7.0
-	golang.org/x/text v0.3.7
+	github.com/spf13/pflag v1.0.5 // indirect
+	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-go 1.16
+go 1.18

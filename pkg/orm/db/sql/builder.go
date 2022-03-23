@@ -4,15 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	db2 "github.com/goradd/goradd/pkg/orm/db"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/maps"
 	"strconv"
 )
 
 const countAlias = "_count"
 const columnAliasPrefix = "c_"
 const tableAliasPrefix = "t_"
+
+type objectMapType = maps.SliceMap[string, any]
+type aliasMapType = maps.SliceMap[string, any]
 
 // A Builder is a helper object to organize a Query object eventually into a SQL string.
 // It builds the join tree and creates the aliases that will eventually be used to generate
@@ -33,9 +36,9 @@ type Builder struct {
 	RootJoinTreeItem  *JoinTreeItem           // The top of the join tree
 	SubPrefix         string                  // The prefix for sub items. If this is a sub query, this gets updated
 	SubqueryCounter   int                     // Helper to make unique prefixes for subqueries
-	ColumnAliases     *JoinTreeItemSliceMap   // Map to go from an alias to a JoinTreeItem for columns, which can also get us to a node
+	ColumnAliases     *JoinTreeItemSliceMap   // StdMap to go from an alias to a JoinTreeItem for columns, which can also get us to a node
 	ColumnAliasNumber int                     // Helper to make unique generated aliases
-	TableAliases      *JoinTreeItemSliceMap   // Map to go from an alias to a JoinTreeItem for tables
+	TableAliases      *JoinTreeItemSliceMap   // StdMap to go from an alias to a JoinTreeItem for tables
 	NodeMap           map[NodeI]*JoinTreeItem // A map that gets us to a JoinTreeItem from a node.
 	RowId             int                     // Counter for creating fake ids when doing distinct or orderby selects
 	ParentBuilder     *Builder                // The parent builder of a subquery
@@ -59,7 +62,6 @@ func (b *Builder) Subquery() *SubqueryNode {
 	b.IsSubquery = true
 	return n
 }
-
 
 // Load terminates the builder, queries the database, and returns the results as an array of interfaces similar in structure to a json structure
 func (b *Builder) Load() (result []map[string]interface{}) {
@@ -105,7 +107,7 @@ func (b *Builder) Load() (result []map[string]interface{}) {
 // like reverse FKs or Multi-multi relationships
 func (b *Builder) LoadCursor() CursorI {
 	for _, n := range db2.Nodes(b.QueryBuilder) {
-		if NodeIsExpander(n) && !NodeIsExpanded(n){
+		if NodeIsExpander(n) && !NodeIsExpanded(n) {
 			panic("You cannot use a database cursor with a multiple relationship like a reverse relationship or multi-multi relationship.")
 		}
 	}
@@ -137,7 +139,7 @@ func (b *Builder) LoadCursor() CursorI {
 	for i := colCount; i < len(names); i++ {
 		columnTypes[i] = ColTypeBytes // These will be unpacked when they are retrieved
 	}
-	return 	NewSqlCursor(rows, columnTypes, nil, b)
+	return NewSqlCursor(rows, columnTypes, nil, b)
 }
 
 func (b *Builder) Delete() {
@@ -206,7 +208,6 @@ func (b *Builder) buildJoinTree() {
 	}
 	b.assignTableAliases(b.RootJoinTreeItem)
 }
-
 
 // Adds the node to the join tree.
 func (b *Builder) addNodeToJoinTree(n NodeI) {
@@ -386,7 +387,7 @@ func (b *Builder) makeColumnAliases() {
 		// SQL in general has a problem with group by items that are not selected, so we always select group by columns by implication
 		// Some SQL forms have gotten around the problem by just choosing a random result, but modern SQL engines now consider this an error
 		for _, n := range b.GroupBys {
-			_,isAlias := n.(*AliasNode)
+			_, isAlias := n.(*AliasNode)
 
 			if !isAlias {
 				b.assignAlias(b.GetItemFromNode(n))
@@ -514,8 +515,8 @@ that each object arrives, but then look for items in order.
 func (b *Builder) unpackResult(rows []map[string]interface{}) (out []map[string]interface{}) {
 	var o2 db2.ValueMap
 
-	oMap := maps.NewSliceMap()
-	aliasMap := maps.NewSliceMap()
+	oMap := new(objectMapType)
+	aliasMap := new(aliasMapType)
 
 	// First we create a tree structure of the data that will mirror the node structure
 	for _, row := range rows {
@@ -524,7 +525,7 @@ func (b *Builder) unpackResult(rows []map[string]interface{}) (out []map[string]
 	}
 
 	// We then walk the tree and create the final data structure as arrays
-	oMap.Range(func(key string, value interface{}) bool {
+	oMap.Range(func(key string, value any) bool {
 		// Duplicate rows that are part of a join that is not an array join
 		out2 := b.expandNode(b.RootJoinTreeItem, value.(db2.ValueMap))
 		// Add the Alias calculations specifically requested by the caller
@@ -542,10 +543,10 @@ func (b *Builder) unpackResult(rows []map[string]interface{}) (out []map[string]
 // unpackObject finds the object that corresponds to parent in the row, and either adds it to the oMap, or if its
 // already in the oMap, reuses the old one and adds more data to it. oMap should only contain objects of parent type.
 // Returns the row id to use to refer to the row later.
-func (b *Builder) unpackObject(parent *JoinTreeItem, row db2.ValueMap, oMap *maps.SliceMap) (rowId string) {
+func (b *Builder) unpackObject(parent *JoinTreeItem, row db2.ValueMap, oMap *objectMapType) (rowId string) {
 	var obj db2.ValueMap
 	var arrayKey string
-	var currentArray *maps.SliceMap
+	var currentArray *objectMapType
 
 	if b.IsDistinct || b.GroupBys != nil {
 		// We are not identifying the row by a PK because of one of the following:
@@ -578,12 +579,12 @@ func (b *Builder) unpackObject(parent *JoinTreeItem, row db2.ValueMap, oMap *map
 		// if this is an embedded object, collect a group of objects
 		if i, ok := obj[arrayKey]; !ok {
 			// If this is the first time, create the group
-			newArray := maps.NewSliceMap()
+			newArray := new(objectMapType)
 			obj[arrayKey] = newArray
 			b.unpackObject(childItem, row, newArray)
 		} else {
 			// Already have a group, so add to the group
-			currentArray = i.(*maps.SliceMap)
+			currentArray = i.(*objectMapType)
 			b.unpackObject(childItem, row, currentArray)
 		}
 	}
@@ -741,11 +742,11 @@ func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray
 			switch NodeGetType(childItem.Node) {
 			case ReferenceNodeType:
 				// Should be a one or zero item array here
-				om := nodeObject[tableGoName].(*maps.SliceMap)
+				om := nodeObject[tableGoName].(*objectMapType)
 				if om.Len() > 1 {
 					panic("Cannot have an array with more than one item here.")
 				} else if om.Len() == 1 {
-					innerNodeObject = nodeObject[tableGoName].(*maps.SliceMap).GetAt(0).(db2.ValueMap)
+					innerNodeObject = nodeObject[tableGoName].(*objectMapType).GetAt(0).(db2.ValueMap)
 					innerCopies = b.expandNode(childItem, innerNodeObject)
 					if len(innerCopies) > 1 {
 						for _, cp2 := range innerCopies {
@@ -761,7 +762,7 @@ func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray
 			case ReverseReferenceNodeType:
 				if childItem.Expanded { // unique reverse or single expansion many
 					newArray = []db2.ValueMap{}
-					nodeObject[tableGoName].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
+					nodeObject[tableGoName].(*objectMapType).Range(func(key string, value interface{}) bool {
 						innerNodeObject = value.(db2.ValueMap)
 						innerCopies = b.expandNode(childItem, innerNodeObject)
 						for _, ic := range innerCopies {
@@ -778,7 +779,7 @@ func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray
 					// From this point up, we should not be creating additional copies, since from this point down, we
 					// are gathering an array
 					newArray = []db2.ValueMap{}
-					nodeObject[tableGoName].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
+					nodeObject[tableGoName].(*objectMapType).Range(func(key string, value interface{}) bool {
 						innerNodeObject = value.(db2.ValueMap)
 						innerCopies = b.expandNode(childItem, innerNodeObject)
 						for _, ic := range innerCopies {
@@ -792,7 +793,7 @@ func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray
 			case ManyManyNodeType:
 				if ManyManyNodeIsTypeTable(childItem.Node.(TableNodeI).EmbeddedNode_().(*ManyManyNode)) {
 					var intArray []uint
-					nodeObject[tableGoName].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
+					nodeObject[tableGoName].(*objectMapType).Range(func(key string, value interface{}) bool {
 						innerNodeObject = value.(db2.ValueMap)
 						typeKey := innerNodeObject[ColumnNodeDbName(childItem.Node.(TableNodeI).PrimaryKeyNode())]
 						switch v := typeKey.(type) {
@@ -815,7 +816,7 @@ func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray
 
 				} else {
 					newArray = []db2.ValueMap{}
-					nodeObject[tableGoName].(*maps.SliceMap).Range(func(key string, value interface{}) bool {
+					nodeObject[tableGoName].(*objectMapType).Range(func(key string, value interface{}) bool {
 						innerNodeObject = value.(db2.ValueMap)
 						innerCopies = b.expandNode(childItem, innerNodeObject)
 						for _, ic := range innerCopies {
@@ -845,7 +846,7 @@ func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray
 }
 
 // unpack the manually aliased items from the result
-func (b *Builder) unpackSpecialAliases(rootItem *JoinTreeItem, rowId string, row db2.ValueMap, aliasMap *maps.SliceMap) {
+func (b *Builder) unpackSpecialAliases(rootItem *JoinTreeItem, rowId string, row db2.ValueMap, aliasMap *aliasMapType) {
 	var obj db2.ValueMap
 
 	if curObj := aliasMap.Get(rowId); curObj != nil {
@@ -854,7 +855,7 @@ func (b *Builder) unpackSpecialAliases(rootItem *JoinTreeItem, rowId string, row
 		obj = db2.NewValueMap()
 	}
 
-	b.AliasNodes.Range(func(key string, value interface{}) bool {
+	b.AliasNodes.Range(func(key string, value Aliaser) bool {
 		obj[key] = row[key]
 		return true
 	})

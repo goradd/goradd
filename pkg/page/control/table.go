@@ -10,6 +10,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/pool"
+	"github.com/goradd/html5tag"
 	"html"
 	"io"
 	"reflect"
@@ -55,7 +56,7 @@ type TableI interface {
 	SortIconHtml(c ColumnI) string
 	SetSortIconHtml(sortable string, asc string, desc string)
 	DrawRow(ctx context.Context, row int, data interface{}, w io.Writer)
-	SetSortColumnsByID(ids... string)
+	SetSortColumnsByID(ids ...string)
 }
 
 // TableRowAttributer is used to style particular table rows.
@@ -236,7 +237,7 @@ func (t *Table) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	defer pool.PutBuffer(buf1)
 	buf2 := pool.GetBuffer()
 	defer pool.PutBuffer(buf2)
-	defer func() { _,_ = io.WriteString(w, buf1.String()) }() // Make sure we write out the content of buf 1 even on an error
+	defer func() { _, _ = io.WriteString(w, buf1.String()) }() // Make sure we write out the content of buf 1 even on an error
 
 	t2.DrawCaption(ctx, buf1)
 
@@ -289,7 +290,7 @@ func (t *Table) DrawColumnTags(ctx context.Context, w io.Writer) {
 	return
 }
 
-func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer)  {
+func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer) {
 	var this = t.this() // Get the sub class so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
@@ -603,18 +604,18 @@ func (t *Table) SortColumns() (ret []ColumnI) {
 // will be set to not be sorting at all.
 //
 // The columns specified must be sortable.
-func (t *Table) SetSortColumnsByID(ids... string) {
-	for _,col := range t.columns {
+func (t *Table) SetSortColumnsByID(ids ...string) {
+	for _, col := range t.columns {
 		sd := col.SortDirection()
 		if sd != NotSortable {
 			col.SetSortDirection(NotSorted)
 		}
 	}
 	t.sortColumns = ids
-	for _,id := range ids {
+	for _, id := range ids {
 		if col := t.GetColumnByID(id); col != nil {
 			if col.SortDirection() == NotSortable {
-				panic ("column " + col.ID() + " is not sortable and so cannot be put in the sort list")
+				panic("column " + col.ID() + " is not sortable and so cannot be put in the sort list")
 			}
 			col.SetSortDirection(SortDescending)
 		}
@@ -677,7 +678,7 @@ func (t *Table) SortIconHtml(c ColumnI) string {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (t *Table) MarshalState(m maps.Setter) {
+func (t *Table) MarshalState(m page.SavedState) {
 	m.Set("sortColumns", t.sortColumns)
 	for _, col := range t.columns {
 		col.MarshalState(m)
@@ -685,7 +686,7 @@ func (t *Table) MarshalState(m maps.Setter) {
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (t *Table) UnmarshalState(m maps.Loader) {
+func (t *Table) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load("sortColumns"); ok {
 		if s, ok2 := v.([]string); ok2 {
 			t.sortColumns = s
@@ -769,7 +770,7 @@ func (t *Table) Serialize(e page.Encoder) {
 	return
 }
 
-func (t *Table) Deserialize(dec page.Decoder)  {
+func (t *Table) Deserialize(dec page.Decoder) {
 	t.ControlBase.Deserialize(dec)
 	t.DataManager.Deserialize(dec)
 

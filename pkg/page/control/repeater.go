@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 	"io"
 )
 
@@ -19,7 +20,7 @@ type Repeater struct {
 	page.ControlBase
 	PagedControl
 	DataManager
-	itemHtmler RepeaterHtmler
+	itemHtmler   RepeaterHtmler
 	itemHtmlerId string // only used for serialization
 }
 
@@ -94,15 +95,14 @@ func (r *Repeater) DrawItem(ctx context.Context, i int, data interface{}, w io.W
 }
 
 // MarshalState is an internal function to save the state of the control
-func (r *Repeater) MarshalState(m maps.Setter) {
+func (r *Repeater) MarshalState(m page.SavedState) {
 	r.PagedControl.MarshalState(m)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (r *Repeater) UnmarshalState(m maps.Loader) {
+func (r *Repeater) UnmarshalState(m page.SavedState) {
 	r.PagedControl.UnmarshalState(m)
 }
-
 
 func (r *Repeater) Serialize(e page.Encoder) {
 	r.ControlBase.Serialize(e)
@@ -129,7 +129,7 @@ func (r *Repeater) Deserialize(dec page.Decoder) {
 	if err := dec.Decode(&htmler); err != nil {
 		panic(err)
 	}
-	if id,ok := htmler.(string); ok {
+	if id, ok := htmler.(string); ok {
 		r.itemHtmlerId = id
 	} else {
 		r.itemHtmler = htmler.(RepeaterHtmler)
@@ -144,28 +144,24 @@ func (r *Repeater) Restore() {
 	return
 }
 
-
-
 // RepeaterCreator creates a table that can be paged
 type RepeaterCreator struct {
 	// ID is the control id
-	ID               string
+	ID string
 	// ItemHtmler is the object that provides the html for each item
-	ItemHtmler	RepeaterHtmler
+	ItemHtmler RepeaterHtmler
 	// DataProvider is the data binder for the table. It can be either a control id or a DataBinder
 	DataProvider DataBinder
 	// DataProviderID is the control id of the data binder for the table.
-	DataProviderID	string
+	DataProviderID string
 	// Data is the actual data for the table, and should be a slice of objects
-	Data             interface{}
+	Data interface{}
 	page.ControlOptions
 	// PageSize is the number of rows to include in a page
-	PageSize         int
+	PageSize int
 	// SaveState will cause the table to remember what page it was on
 	SaveState bool
 }
-
-
 
 // Create is called by the framework to create a new control from the Creator. You
 // do not normally need to call this.

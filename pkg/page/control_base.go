@@ -3,7 +3,6 @@ package page
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/base"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/html5tag"
@@ -16,6 +15,8 @@ import (
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/pkg/watcher"
+	"github.com/goradd/html5tag"
+	"github.com/goradd/maps"
 	gohtml "html"
 	"io"
 	"reflect"
@@ -81,6 +82,16 @@ type ControlTemplateFunc func(ctx context.Context, control ControlI, w io.Writer
 // ControlWrapperFunc is a template function that specifies how wrappers will draw
 type ControlWrapperFunc func(ctx context.Context, control ControlI, ctrl string, w io.Writer) error
 
+// SavedState is the container for saving control states so that the control state can be restored when
+// the user comes back to the page.
+//
+// This is particularly useful for controls that affect the appearance of
+// the page. An example would be a textbox or dropdown that filters a list of items.
+type SavedState = maps.MapI[string, any]
+
+type stateType = maps.Map[string, any]
+type stateStoreType = maps.Map[string, SavedState]
+
 // DefaultCheckboxLabelDrawingMode is a setting used by checkboxes and radio buttons to default how they draw labels.
 // Some CSS framworks are very picky about whether checkbox labels wrap the control, or sit next to the control,
 // and whether the label is before or after the control
@@ -101,7 +112,6 @@ type DataConnector interface {
 type DataLoader interface {
 	Load(ctx context.Context) []interface{}
 }
-
 
 // ControlI is the interface that all controls must support. The functions are implemented by the
 // ControlBase methods. See the ControlBase method implementation for a description of each method.
@@ -166,7 +176,6 @@ type ControlI interface {
 	SetValidationError(e string)
 	ResetValidation()
 
-
 	WasRendered() bool
 	IsRendering() bool
 	IsVisible() bool
@@ -199,8 +208,8 @@ type ControlI interface {
 	// data in the control will remain the same. This is particularly useful if the control is used as a filter for the
 	// contents of another control.
 	SaveState(context.Context, bool)
-	MarshalState(m maps.Setter)
-	UnmarshalState(m maps.Loader)
+	MarshalState(m SavedState)
+	UnmarshalState(m SavedState)
 
 	// Shortcuts for translation
 
@@ -230,7 +239,7 @@ type ControlI interface {
 	RefreshData(data interface{})
 	UpdateData(data interface{})
 
-	WatchDbTables(ctx context.Context, nodes... query.NodeI)
+	WatchDbTables(ctx context.Context, nodes ...query.NodeI)
 	WatchDbRecord(ctx context.Context, n query.NodeI, pk string)
 	WatchChannel(ctx context.Context, channel string)
 }
@@ -406,7 +415,7 @@ func (c *ControlBase) PreRender(ctx context.Context, w io.Writer) {
 		form == nil ||
 		c.Page() != form.Page() {
 
-		panic (fmt.Sprintf("Control %s can not be drawn because it is not a member of a form that is on the override.", c.ID()))
+		panic(fmt.Sprintf("Control %s can not be drawn because it is not a member of a form that is on the override.", c.ID()))
 	}
 
 	if c.wasRendered || c.isRendering {
@@ -424,17 +433,21 @@ func (c *ControlBase) PreRender(ctx context.Context, w io.Writer) {
 }
 
 // Draw renders the control structure into the given buffer.
-func (c *ControlBase) Draw(ctx context.Context, w io.Writer)  {
+func (c *ControlBase) Draw(ctx context.Context, w io.Writer) {
 	c.this().PreRender(ctx, w)
 
 	if !config.Minify && GetContext(ctx).RequestMode() != Ajax {
-		if _, err := fmt.Fprintf(w, "<!-- ControlBase Type:%s, Id:%s -->\n", c.Type(), c.ID()); err != nil {panic(err)}
+		if _, err := fmt.Fprintf(w, "<!-- ControlBase Type:%s, Id:%s -->\n", c.Type(), c.ID()); err != nil {
+			panic(err)
+		}
 	}
 
 	if c.isHidden {
 		// We are invisible, but not using a wrapper. This creates a problem, in that when we go visible, we do not know what to replace
 		// To fix this, we create an empty, invisible control in the place where we would normally draw
-		if _, err := fmt.Fprint(w, `<span id="`,c.this().ID(),`" style="display:none;" data-grctl></span>`, "\n"); err != nil {panic(err)}
+		if _, err := fmt.Fprint(w, `<span id="`, c.this().ID(), `" style="display:none;" data-grctl></span>`, "\n"); err != nil {
+			panic(err)
+		}
 	} else {
 		c.this().DrawTag(ctx, w)
 	}
@@ -520,7 +533,7 @@ func (c *ControlBase) PostRender(ctx context.Context, w io.Writer) {
 // DrawTag is responsible for drawing the ControlBase's tag itself.
 // ControlBase implementations can override this to draw the tag in a different way, or draw more than one tag if
 // drawing a compound control.
-func (c *ControlBase) DrawTag(ctx context.Context, w io.Writer)  {
+func (c *ControlBase) DrawTag(ctx context.Context, w io.Writer) {
 	var ctrl string
 
 	log.FrameworkDebug("Drawing tag: " + c.ID())
@@ -543,7 +556,9 @@ func (c *ControlBase) DrawTag(ctx context.Context, w io.Writer)  {
 			ctrl = html5tag.RenderTag(c.Tag, attributes, buf.String())
 		}
 	}
-	if _,err := io.WriteString(w, ctrl); err != nil {panic(err)}
+	if _, err := io.WriteString(w, ctrl); err != nil {
+		panic(err)
+	}
 }
 
 // RenderAutoControls is an internal function to draw controls marked to autoRender. These are generally used for hidden controls
@@ -609,7 +624,9 @@ func (c *ControlBase) DrawText(ctx context.Context, w io.Writer) {
 		if !c.textIsHtml {
 			text = gohtml.EscapeString(text)
 		}
-		if _,err := io.WriteString(w, text); err != nil {panic(err)}
+		if _, err := io.WriteString(w, text); err != nil {
+			panic(err)
+		}
 	}
 	return
 }
@@ -705,7 +722,6 @@ func (c *ControlBase) ProcessAttributeString(s string) ControlI {
 	return c.this()
 }
 
-
 // AddClass will add a class or classes to the control. If adding multiple classes at once, separate them with
 // a space.
 func (c *ControlBase) AddClass(class string) ControlI {
@@ -713,7 +729,7 @@ func (c *ControlBase) AddClass(class string) ControlI {
 		// Note here. We cannot just draw the class, because DrawingAttributes might return
 		// a class, and DrawingAttributes requires a context. So we coordinate with goradd.js
 		// to be able to add and remove a class.
-		c.AddRenderScript("class", "+" + class)
+		c.AddRenderScript("class", "+"+class)
 	}
 	return c.this()
 }
@@ -721,17 +737,16 @@ func (c *ControlBase) AddClass(class string) ControlI {
 // RemoveClass will remove the named class from the control.
 func (c *ControlBase) RemoveClass(class string) ControlI {
 	if changed := c.attributes.RemoveClass(class); changed {
-		c.AddRenderScript("class", "-" + class)
+		c.AddRenderScript("class", "-"+class)
 	}
 	return c.this()
 }
 
 // HasClass returns true if the class has been assigned to the control from the GO side. We do not currently detect
 // class changes done in javascript.
-func (c *ControlBase)HasClass(class string) bool {
+func (c *ControlBase) HasClass(class string) bool {
 	return c.attributes.HasClass(class)
 }
-
 
 // Attributes returns a pointer to the attributes of the control. Use this with caution.
 // Some controls setup attributes at initialization time, so you could potentially write over those.
@@ -959,7 +974,6 @@ func (f *ControlBase) ResetValidation() {
 	})
 }
 
-
 // ChildValidationChanged is sent by the framework when a child control's validation message
 // has changed. Parent controls can use this to change messages or attributes in response.
 func (c *ControlBase) ChildValidationChanged() {
@@ -1061,7 +1075,7 @@ func (c *ControlBase) On(e *Event, a action.ActionI) ControlI {
 
 // Off removes all event handlers from the control
 func (c *ControlBase) Off() {
-	for id,e := range c.events {
+	for id, e := range c.events {
 		if !e.isPrivate() {
 			delete(c.events, id)
 		}
@@ -1087,7 +1101,6 @@ func (c *ControlBase) HasCallbackAction(eventName string) bool {
 	}
 	return false
 }
-
 
 // GetEvent returns the event associated with the eventName, which corresponds to the javascript
 // trigger name.
@@ -1149,8 +1162,6 @@ func (c *ControlBase) WrapEvent(eventName string, selector string, eventJs strin
 func (c *ControlBase) UpdateFormValues(ctx context.Context) {
 
 }
-
-
 
 // doAction is an internal function that the form manager uses to send callback actions to controls.
 func (c *ControlBase) doAction(ctx context.Context) {
@@ -1425,25 +1436,25 @@ func (c *ControlBase) SaveState(ctx context.Context, saveIt bool) {
 // the parent control. In this situation, you want to see things in the same state they were in, and not have to set up
 // the filter all over again.
 func (c *ControlBase) writeState(ctx context.Context) {
-	var stateStore *maps.Map
-	var state *maps.Map
+	var stateStore *stateStoreType
+	var state *stateType
 	var ok bool
 
 	if c.shouldSaveState {
-		state = maps.NewMap()
+		state = new(stateType)
 		c.this().MarshalState(state)
 		stateKey := c.ParentForm().ID() + ":" + c.ID()
 		if state.Len() > 0 {
 			state.Set(sessionControlTypeState, c.Type()) // so we can make sure the type is the same when we read, in situations where control Ids are dynamic
 			i := session.Get(ctx, sessionControlStates)
 			if i == nil {
-				stateStore = maps.NewMap()
+				stateStore = new(stateStoreType)
 				session.Set(ctx, sessionControlStates, stateStore)
-			} else if _, ok = i.(*maps.Map); !ok {
-				stateStore = maps.NewMap()
+			} else if _, ok = i.(*stateStoreType); !ok {
+				stateStore = new(stateStoreType)
 				session.Set(ctx, sessionControlStates, stateStore)
 			} else {
-				stateStore = i.(*maps.Map)
+				stateStore = i.(*stateStoreType)
 			}
 			stateStore.Set(stateKey, state)
 		}
@@ -1452,25 +1463,25 @@ func (c *ControlBase) writeState(ctx context.Context) {
 
 // readState is an internal function that will read the state of itself
 func (c *ControlBase) readState(ctx context.Context) {
-	var stateStore *maps.Map
-	var state *maps.Map
+	var stateStore *stateStoreType
+	var state *stateType
 	var ok bool
 
 	if c.shouldSaveState {
 		if i := session.Get(ctx, sessionControlStates); i != nil {
-			if stateStore, ok = i.(*maps.Map); !ok {
+			if stateStore, ok = i.(*stateStoreType); !ok {
 				return
 				// Indicates the entire control state store changed types, so completely ignore it
 			}
 
 			key := c.ParentForm().ID() + ":" + c.ID()
 			i2 := stateStore.Get(key)
-			if state, ok = i2.(*maps.Map); !ok {
+			if state, ok = i2.(*stateType); !ok {
 				return
 				// Indicates This particular item was not stored correctly
 			}
 
-			if typ, _ := state.LoadString(sessionControlTypeState); typ != c.Type() {
+			if typ := state.Get(sessionControlTypeState).(string); typ != c.Type() {
 				return // types are not equal, ids must have changed
 			}
 
@@ -1486,14 +1497,14 @@ func (c *ControlBase) ResetSavedState(ctx context.Context) {
 }
 
 func (c *ControlBase) resetState(ctx context.Context) {
-	var stateStore *maps.Map
+	var stateStoreType *maps.StdMap
 	var ok bool
 
 	if c.shouldSaveState {
 		i := session.Get(ctx, sessionControlStates)
-		if stateStore, ok = i.(*maps.Map); ok {
+		if stateStoreType, ok = i.(*maps.StdMap); ok {
 			key := c.ParentForm().ID() + ":" + c.ID()
-			stateStore.Set(key, nil) // we need to notify writeState to remove it, or writeState will just stomp on it
+			stateStoreType.Set(key, nil) // we need to notify writeState to remove it, or writeState will just stomp on it
 		}
 	}
 
@@ -1512,14 +1523,14 @@ func (c *ControlBase) resetState(ctx context.Context) {
 // Note that the control id is used as a key for the state,
 // so that if you are dynamically adding controls, you should make sure you give a specific, non-changing control id
 // to the control, or the state may be lost.
-func (c *ControlBase) MarshalState(m maps.Setter) {
+func (c *ControlBase) MarshalState(m SavedState) {
 }
 
-// UnmarshalState is a helper function for controls to get their state from the stateStore. To implement it, a control
+// UnmarshalState is a helper function for controls to get their state from the stateStoreType. To implement it, a control
 // should read the data out of the given map. If needed, implement your own version checking scheme. The given map will
 // be guaranteed to have been written out by the same kind of control as the one reading it. Be sure to call the super-class
 // version too.
-func (c *ControlBase) UnmarshalState(m maps.Loader) {
+func (c *ControlBase) UnmarshalState(m SavedState) {
 }
 
 // GT translates strings using the Goradd dictionary.
@@ -1690,12 +1701,12 @@ func (c *ControlBase) UpdateData(data interface{}) {
 // WatchDbTables will add the table nodes to the list of database tables that the control is watching.
 // It also adds all the parents of those nodes.
 // For example, WatchDbTables(ctx, node.Project().Manager()) will watch the project table and the person table.
-func (c *ControlBase) WatchDbTables(ctx context.Context, nodes... query.NodeI) {
+func (c *ControlBase) WatchDbTables(ctx context.Context, nodes ...query.NodeI) {
 	// Remove the dependency on query here. Have this watch a channel instead of query nodes.
 	if c.watchedKeys == nil {
 		c.watchedKeys = make(map[string]string)
 	}
-	for _,n := range nodes {
+	for _, n := range nodes {
 		for {
 			c.watchedKeys[watcher.MakeKey(ctx, query.NodeDbKey(n), query.NodeTableName(n), "")] = ""
 			n = query.ParentNode(n)
@@ -1719,7 +1730,6 @@ func (c *ControlBase) WatchDbRecord(ctx context.Context, n query.NodeI, pk strin
 		c.watchedKeys[channel] = ""
 	}
 }
-
 
 // WatchChannel allows you to specify any channel to watch that will cause a redraw
 func (c *ControlBase) WatchChannel(ctx context.Context, channel string) {
@@ -1762,11 +1772,11 @@ type controlEncoding struct {
 	ChildIDs              []string
 	Tag                   string
 	IsVoidTag             bool
-	HasNoSpace    bool
-	Attributes    html5tag.Attributes
-	Text          string
-	TextLabelMode html5tag.LabelDrawingMode
-	TextIsHtml    bool
+	HasNoSpace            bool
+	Attributes            html5tag.Attributes
+	Text                  string
+	TextLabelMode         html5tag.LabelDrawingMode
+	TextIsHtml            bool
 	IsRequired            bool
 	IsHidden              bool
 	IsOnPage              bool
@@ -1786,9 +1796,9 @@ type controlEncoding struct {
 	Events                EventMap
 	EventCounter          EventID
 	ShouldSaveState       bool
-	IsModified			  bool		// For testing framework
-	DataConnector 		  DataConnector
-	WatchedKeys			  map[string]string
+	IsModified            bool // For testing framework
+	DataConnector         DataConnector
+	WatchedKeys           map[string]string
 }
 
 // Serialize is used by the framework to serialize a control to be saved in the pagestate.
@@ -1796,14 +1806,14 @@ type controlEncoding struct {
 // own serializer.
 func (c *ControlBase) Serialize(e Encoder) {
 	s := controlEncoding{
-		Id:					   c.id,
+		Id:                    c.id,
 		Tag:                   c.Tag,
 		IsVoidTag:             c.IsVoidTag,
 		HasNoSpace:            c.hasNoSpace,
 		Attributes:            c.attributes,
 		Text:                  c.text,
 		TextLabelMode:         c.textLabelMode,
-		TextIsHtml:        	   c.textIsHtml,
+		TextIsHtml:            c.textIsHtml,
 		IsRequired:            c.isRequired,
 		IsHidden:              c.isHidden,
 		IsOnPage:              c.isOnPage,
@@ -1820,13 +1830,13 @@ func (c *ControlBase) Serialize(e Encoder) {
 		Events:                c.events,
 		EventCounter:          c.eventCounter,
 		ShouldSaveState:       c.shouldSaveState,
-		ParentID:			   c.parentId,
-		IsModified:				c.isModified,
-		DataConnector:			c.dataConnector,
-		WatchedKeys:			c.watchedKeys,
+		ParentID:              c.parentId,
+		IsModified:            c.isModified,
+		DataConnector:         c.dataConnector,
+		WatchedKeys:           c.watchedKeys,
 	}
 
-	for _,child := range c.children {
+	for _, child := range c.children {
 		s.ChildIDs = append(s.ChildIDs, child.ID())
 	}
 
@@ -1881,7 +1891,7 @@ func (c *ControlBase) Deserialize(d Decoder) {
 	c.watchedKeys = s.WatchedKeys
 
 	// This relies on the children being deserialized first, which is taken care of by the page serializer
-	for _,id := range s.ChildIDs {
+	for _, id := range s.ChildIDs {
 		c.children = append(c.children, c.page.GetControl(id))
 	}
 	return
@@ -1890,7 +1900,7 @@ func (c *ControlBase) Deserialize(d Decoder) {
 // EventList is a list of event and action pairs. Use action.Group as the Action to assign multiple actions to
 // an event.
 type EventList []struct {
-	Event *Event
+	Event  *Event
 	Action action.ActionI
 }
 
@@ -1925,18 +1935,17 @@ type ControlOptions struct {
 	WatchedDbTables []query.NodeI
 }
 
-
 func (c *ControlBase) ApplyOptions(ctx context.Context, o ControlOptions) {
 	if o.Attributes != nil {
 		c.MergeAttributes(o.Attributes)
 	}
-	for k,v := range o.DataAttributes {
+	for k, v := range o.DataAttributes {
 		c.SetDataAttribute(k, v)
 	}
-	for k,v := range o.Styles {
+	for k, v := range o.Styles {
 		c.SetStyle(k, v)
 	}
-	for _,a := range o.On {
+	for _, a := range o.On {
 		c.On(a.Event, a.Action)
 	}
 	if o.Class != "" {
@@ -1965,7 +1974,7 @@ type Creator interface {
 
 // AddControls adds subcontrols to a control using a Create function
 func (c *ControlBase) AddControls(ctx context.Context, creators ...Creator) {
-	for _,creator := range creators {
+	for _, creator := range creators {
 		creator.Create(ctx, c)
 	}
 }
@@ -1979,5 +1988,3 @@ func (c *ControlBase) FireTestMarker(marker string) {
 		c.ParentForm().Response().ExecuteJsFunction("goradd.postMarker", marker)
 	}
 }
-
-

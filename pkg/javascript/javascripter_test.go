@@ -4,24 +4,24 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/goradd/gengen/pkg/maps"
 	. "github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/time"
+	"github.com/goradd/maps"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestToJavaScript(t *testing.T) {
-	m1 := maps.NewSliceMap()
+	m1 := new(maps.SliceMap[string, any])
 	m1.Set("a", `Hi "`)
 	m1.Set("b", NoQuoteKey{JsCode("There")})
 	m1.Set("c", 4)
 
-	m2 := maps.NewStringSliceMap()
+	m2 := new(maps.SliceMap[string, string])
 	m2.Set("a", `Hi "`)
 	m2.Set("b", "There")
 	m2.Set("c", "4")
 
-	m3 := maps.NewSliceMap()
+	m3 := new(maps.SliceMap[string, any])
 
 	tests := []struct {
 		name string
@@ -33,8 +33,8 @@ func TestToJavaScript(t *testing.T) {
 		{"String", `Hal"s /super/ \fine`, `"Hal\"s /super/ \\fine"`},
 		{"String Slice", []string{`a / ' b`, `C & "D"`}, `["a / ' b","C \u0026 \"D\""]`},
 		{"Interface Slice", []interface{}{"Hi", JsCode("There")}, `["Hi",There]`},
-		{"Interface String Map", map[string]interface{}{"a": `Hi "`, "b": NoQuoteKey{JsCode("There")}, "c": 4}, `{"a":"Hi \"",b:There,"c":4}`},
-		{"Interface Int Map", map[int]interface{}{1: `Hi "`, 2: JsCode("There"), 3: 4}, `{1:"Hi \"",2:There,3:4}`},
+		{"Interface String StdMap", map[string]interface{}{"a": `Hi "`, "b": NoQuoteKey{JsCode("There")}, "c": 4}, `{"a":"Hi \"",b:There,"c":4}`},
+		{"Interface Int StdMap", map[int]interface{}{1: `Hi "`, 2: JsCode("There"), 3: 4}, `{1:"Hi \"",2:There,3:4}`},
 		{"MapI", m1, `{"a":"Hi \"",b:There,"c":4}`},
 		{"Empty map", map[string]interface{}{}, `{}`},
 		{"Empty int map", map[int]interface{}{}, `{}`},

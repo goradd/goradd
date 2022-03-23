@@ -14,11 +14,10 @@ import (
 )
 
 var dependencies = []string{
-	"github.com/goradd/got/...",        // Template processor
-	"golang.org/x/tools/cmd/goimports", // For auto-fixing of import declarations
-	"github.com/goradd/gofile/...",     // For deployment
-	"github.com/goradd/gengen/...",     // For creation of generics
-	"github.com/tdewolff/minify/v2/cmd/minify",   // for deployment
+	"github.com/goradd/got/...",                // Template processor
+	"golang.org/x/tools/cmd/goimports",         // For auto-fixing of import declarations
+	"github.com/goradd/gofile/...",             // For deployment
+	"github.com/tdewolff/minify/v2/cmd/minify", // for deployment
 }
 
 // install will copy the project and tmp directories to the cwd

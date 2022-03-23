@@ -5,6 +5,7 @@ import (
 	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 	"io"
 	"reflect"
 	"strconv"
@@ -212,13 +213,13 @@ func (l *MultiselectList) SetData(data interface{}) {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (l *MultiselectList) MarshalState(m maps.Setter) {
+func (l *MultiselectList) MarshalState(m page.SavedState) {
 	values := l.SelectedValues()
 	m.Set("sel", values)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (l *MultiselectList) UnmarshalState(m maps.Loader) {
+func (l *MultiselectList) UnmarshalState(m page.SavedState) {
 	l.selectedValues = map[string]bool{}
 
 	if s, ok := m.Load("sel"); ok {
@@ -251,7 +252,7 @@ func (l *MultiselectList) DrawingAttributes(ctx context.Context) html5tag.Attrib
 	return a
 }
 
-func (l *MultiselectList) DrawInnerHtml(_ context.Context, w io.Writer)  {
+func (l *MultiselectList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.getItemsHtml(l.items)
 	page.WriteString(w, h)
 	return
@@ -341,7 +342,6 @@ func (c MultiselectListCreator) Create(ctx context.Context, parent page.ControlI
 	}
 	return ctrl
 }
-
 
 // GetMultiselectList is a convenience method to return the control with the given id from the page.
 func GetMultiselectList(c page.ControlI, id string) *MultiselectList {

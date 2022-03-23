@@ -15,7 +15,6 @@ import (
 	"path/filepath"
 )
 
-
 // BuildingExamples turns on the building of the templates for the examples code.
 // This is specific to automating the build of the examples database code.
 // You do not normally need to set this.
@@ -23,7 +22,7 @@ var BuildingExamples bool
 
 type CodeGenerator struct {
 	// Tables is a map of the tables by database
-	Tables     map[string]map[string]TableType
+	Tables map[string]map[string]TableType
 	// TypeTables is a map of the type tables by database
 	TypeTables map[string]map[string]TypeTableType
 
@@ -42,25 +41,25 @@ type TypeTableType struct {
 
 // ImportType represents an import path required for a control. This is analyzed per-table.
 type ImportType struct {
-	Path      string
-	Alias     string // blank if not needing an alias
+	Path  string
+	Alias string // blank if not needing an alias
 }
 
 // ControlDescription is matched with a Column below and provides additional information regarding
 // how information in a column can be used to generate a default control to edit that information.
 // It is specifically for code generation.
 type ControlDescription struct {
-	Path		   string
+	Path string
 	// Package is the package alias to be used when referring to the package the control is in. It is generated on a per-file basis.
-	Package		   string
+	Package string
 	// Imports is the list of imported packages that the control uses
-	Imports        []string
-	ControlType    string
-	ControlName    string
-	ControlID      string // default id to generate
-	DefaultLabel   string
-	Generator      ControlGenerator
-	Connector	   string
+	Imports      []string
+	ControlType  string
+	ControlName  string
+	ControlID    string // default id to generate
+	DefaultLabel string
+	Generator    ControlGenerator
+	Connector    string
 }
 
 func (cd *ControlDescription) ControlIDConst() string {
@@ -95,7 +94,7 @@ func Generate() {
 		databases = []db.DatabaseI{db.GetDatabase("goradd")}
 	}
 
-	// Map object names to tables, making sure there are no duplicates
+	// StdMap object names to tables, making sure there are no duplicates
 	for _, database := range databases {
 		key := database.Describe().DbKey
 		codegen.Tables[key] = make(map[string]TableType)
@@ -124,8 +123,8 @@ func Generate() {
 				matchManyManyReferencesWithControls(table, descriptions, importAliases)
 
 				var i []ImportType
-				for _,k := range stringmap.SortedKeys(importAliases) {
-					i = append(i, ImportType{k,importAliases[k]})
+				for _, k := range stringmap.SortedKeys(importAliases) {
+					i = append(i, ImportType{k, importAliases[k]})
 				}
 
 				t := TableType{
@@ -233,14 +232,14 @@ func Generate() {
 func RunGoImports(fileName string) {
 	// run imports on all generated go files
 	if strings.EndsWith(fileName, ".go") {
-		curDir,_ := os.Getwd()
+		curDir, _ := os.Getwd()
 		_ = os.Chdir(filepath.Dir(fileName)) // run it from the file's directory to pick up the correct go.mod file if there is one
 		_, err := sys.ExecuteShellCommand("goimports -w " + filepath.Base(fileName))
 		_ = os.Chdir(curDir)
 		if err != nil {
-			if e,ok := err.(*exec.Error); ok {
+			if e, ok := err.(*exec.Error); ok {
 				panic("error running goimports: " + e.Error()) // perhaps goimports is not installed?
-			} else if e2,ok2 := err.(*exec.ExitError); ok2 {
+			} else if e2, ok2 := err.(*exec.ExitError); ok2 {
 				// Likely a syntax error in the resulting file
 				log.Print(string(e2.Stderr))
 			}
@@ -257,7 +256,7 @@ func (c *CodeGenerator) ResetImports() {
 // so the path can be referred to using the correct package name or package alias. Call this on all
 // paths used by the file before calling ImportString.
 func (c *CodeGenerator) AddImportPaths(paths ...string) {
-	for _,p := range paths {
+	for _, p := range paths {
 		if p == "" {
 			return
 		}
@@ -288,7 +287,7 @@ func (c *CodeGenerator) AddObjectPath(p string) {
 
 // ImportStrings returns strings to use in an import statement for all of the objects and imports entered
 func (c *CodeGenerator) ImportStrings() (ret string) {
-	for p,a := range c.importAliasesByPath {
+	for p, a := range c.importAliasesByPath {
 		pkg := path.Base(p)
 		if a == pkg {
 			ret += fmt.Sprintf("%#v\n", p)
@@ -301,7 +300,7 @@ func (c *CodeGenerator) ImportStrings() (ret string) {
 
 // ObjectType returns the string that should be used for an object type given its module path
 func (c *CodeGenerator) ObjectType(p string) string {
-	imp,t := path.Split(p)
+	imp, t := path.Split(p)
 	imp = path.Clean(imp)
 	if a := c.importAliasesByPath[imp]; a == "" {
 		panic("unknown object path: " + p)
@@ -326,6 +325,3 @@ func (c *CodeGenerator) ObjectPackage(imp string) string {
 		return a
 	}
 }
-
-
-
