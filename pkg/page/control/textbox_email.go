@@ -3,8 +3,9 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/pkg/page"
 	"net/mail"
+
+	"github.com/goradd/goradd/pkg/page"
 )
 
 type EmailTextboxI interface {
@@ -122,7 +123,6 @@ func (t *EmailTextbox) Deserialize(dec page.Decoder) {
 		panic(err)
 	}
 }
-
 
 // EmailTextboxCreator creates an email textbox.
 // Pass it to AddControls of a control, or as a Child of

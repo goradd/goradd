@@ -2,14 +2,15 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/log"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/pool"
 	"html"
 	"io"
 	"reflect"
 	"strings"
+
+	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/pool"
+	"github.com/goradd/html5tag"
 )
 
 type LabelAttributer interface {
@@ -140,7 +141,7 @@ func (c *FormFieldWrapper) DrawTag(ctx context.Context, w io.Writer) {
 		}
 		buf.WriteString(html5tag.RenderTag("label", c.labelAttributes, html.EscapeString(text)))
 		if child != nil {
-			child.SetAttribute("aria-labelledby", c.ID() + "_lbl")
+			child.SetAttribute("aria-labelledby", c.ID()+"_lbl")
 		}
 	}
 
@@ -164,7 +165,9 @@ func (c *FormFieldWrapper) DrawTag(ctx context.Context, w io.Writer) {
 	if c.instructions != "" {
 		page.WriteString(buf, html5tag.RenderTag(c.subtag, c.instructionAttributes, html.EscapeString(c.instructions)))
 	}
-	if _,err := io.WriteString(w, html5tag.RenderTag(c.Tag, attributes, buf.String())); err != nil {panic(err)}
+	if _, err := io.WriteString(w, html5tag.RenderTag(c.Tag, attributes, buf.String())); err != nil {
+		panic(err)
+	}
 }
 
 func (c *FormFieldWrapper) LabelAttributes() html5tag.Attributes {
@@ -274,7 +277,6 @@ func (c *FormFieldWrapper) Deserialize(dec page.Decoder) {
 	}
 }
 
-
 // Use FormFieldWrapperCreator to create a FormFieldWrapper,
 // which wraps a control with a div or span that also has a label, validation error
 // text and optional instructions. Pass the creator of the control you
@@ -365,7 +367,7 @@ func GetCreatorID(c page.Creator) string {
 // This would be the id of the child control followed by the postfix
 func CalcWrapperID(wrapperId string, childCreator page.Creator, postfix string) string {
 	id := wrapperId
-	if id == ""  &&
+	if id == "" &&
 		childCreator != nil {
 		childId := GetCreatorID(childCreator)
 		if childId != "" {

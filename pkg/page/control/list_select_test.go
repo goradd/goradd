@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"github.com/goradd/goradd/pkg/page"
 	"testing"
+
+	"github.com/goradd/goradd/pkg/page"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -121,7 +122,7 @@ func TestSelectList_Serialize(t *testing.T) {
 	p.AddControls(context.Background(),
 		SelectListCreator{
 			ID: "c",
-			Items: []ListValue {
+			Items: []ListValue{
 				{"a", 1},
 				{"b", 2},
 			},
@@ -141,4 +142,3 @@ func TestSelectList_Serialize(t *testing.T) {
 
 	assert.Equal(t, "2", c2.Value())
 }
-

@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"github.com/goradd/html5tag"
+	"testing"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/html5tag"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestMapColumn_Serialize(t *testing.T) {

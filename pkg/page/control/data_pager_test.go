@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	"testing"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestDataPager_Serialize(t *testing.T) {
@@ -17,7 +18,7 @@ func TestDataPager_Serialize(t *testing.T) {
 
 	p.AddControls(context.Background(),
 		PagedTableCreator{
-			ID:"table",
+			ID: "table",
 		},
 		DataPagerCreator{
 			ID:               "dp",

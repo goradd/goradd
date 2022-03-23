@@ -2,12 +2,13 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/html5tag"
 	"io"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type MultiselectListI interface {

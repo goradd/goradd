@@ -2,11 +2,12 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
-	buf2 "github.com/goradd/goradd/pkg/pool"
 	"html"
 	"io"
+
+	"github.com/goradd/goradd/pkg/page"
+	buf2 "github.com/goradd/goradd/pkg/pool"
+	"github.com/goradd/html5tag"
 )
 
 type FieldsetI interface {
@@ -58,7 +59,9 @@ func (c *Fieldset) DrawTag(ctx context.Context, w io.Writer) {
 	}
 	c.this().DrawInnerHtml(ctx, buf)
 	ctrl = html5tag.RenderTag(c.Tag, attributes, ctrl+buf.String())
-	if _,err := io.WriteString(w, ctrl); err != nil {panic(err)}
+	if _, err := io.WriteString(w, ctrl); err != nil {
+		panic(err)
+	}
 }
 
 // FieldsetCreator declares a Fieldset control. Pass it to AddControls or as

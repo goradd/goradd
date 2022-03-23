@@ -3,13 +3,14 @@ package control
 import (
 	"context"
 	"fmt"
+	"io"
+	"reflect"
+	"strconv"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
-	"io"
-	"reflect"
-	"strconv"
 )
 
 type SelectListI interface {

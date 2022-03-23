@@ -2,6 +2,7 @@ package column
 
 import (
 	"context"
+
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
@@ -89,7 +90,6 @@ func (c AliasColumnCreator) Create(ctx context.Context, parent control.TableI) c
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
 }
-
 
 func init() {
 	control.RegisterColumn(AliasColumn{})

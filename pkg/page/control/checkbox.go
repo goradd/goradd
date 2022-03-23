@@ -2,8 +2,9 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
+
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 // Checkbox is a basic html checkbox input form control.
@@ -37,7 +38,6 @@ func (c *Checkbox) UpdateFormValues(ctx context.Context) {
 	c.UpdateCheckboxFormValues(ctx)
 }
 
-
 type CheckboxCreator struct {
 	// ID is the id of the control
 	ID string
@@ -68,7 +68,7 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 		ctrl.LabelAttributes().Merge(c.LabelAttributes)
 	}
 
-	ctrl.ApplyOptions(ctx, c.ControlOptions, )
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
 	}

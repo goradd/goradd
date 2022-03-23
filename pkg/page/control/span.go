@@ -2,8 +2,9 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
+
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type SpanI interface {
@@ -35,10 +36,10 @@ func (c *Span) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 }
 
 type SpanCreator struct {
-	ID string
-	Text string
+	ID         string
+	Text       string
 	TextIsHtml bool
-	Children []page.Creator
+	Children   []page.Creator
 	page.ControlOptions
 }
 

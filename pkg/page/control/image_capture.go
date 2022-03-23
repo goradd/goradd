@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"path"
+	"strings"
+
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/html5tag"
-	"path"
-	"strings"
 )
 
 type ImageCaptureShape string

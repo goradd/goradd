@@ -3,16 +3,17 @@ package control
 import (
 	"context"
 	"fmt"
+	"html"
+	"io"
+	"reflect"
+	"strconv"
+
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/html5tag"
-	"html"
-	"io"
-	"reflect"
-	"strconv"
 )
 
 const (

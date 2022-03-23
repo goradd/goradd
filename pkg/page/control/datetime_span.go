@@ -2,11 +2,12 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
 	"io"
 	"time"
+
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 // DateTimeSpan is a span that displays a datetime value as static text. This is a typical default control to use
@@ -62,7 +63,6 @@ func (s *DateTimeSpan) DateTime() time.Time {
 	return s.value
 }
 
-
 // SetFormat sets the format string. This should be a time.TimeFormat string described at
 // https://golang.org/pkg/time/#Time.Format
 func (s *DateTimeSpan) SetFormat(format string) *DateTimeSpan {
@@ -110,9 +110,9 @@ func (s *DateTimeSpan) Deserialize(dec page.Decoder) {
 }
 
 type DateTimeSpanCreator struct {
-	ID string
+	ID     string
 	Format string
-	Value time.Time
+	Value  time.Time
 	page.ControlOptions
 }
 

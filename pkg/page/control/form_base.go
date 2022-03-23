@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -12,10 +13,7 @@ type FormBase struct {
 	page.FormBase
 }
 
-
 // Init initializes the form.
 func (f *FormBase) Init(ctx context.Context, id string) {
 	f.FormBase.Init(ctx, id)
 }
-
-

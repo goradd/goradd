@@ -3,15 +3,15 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/goradd/pkg/base"
-	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/html5tag"
 	"html"
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/goradd/goradd/pkg/base"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type SortDirection int

@@ -1,10 +1,10 @@
 package control
 
 import (
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 )
 
 // DialogButtonOptions are optional additional items you can add to a dialog button.
@@ -54,18 +54,18 @@ type DialogPanel struct {
 // or it returns the dialog panel with the given id that already exists. isNew will indicate whether it
 // created a new dialog, or is returning an existing one.
 func GetDialogPanel(parent page.ControlI, id string) (dialogPanel *DialogPanel, isNew bool) {
-	if parent.Page().HasControl(id)  { // dialog has already been created, but is hidden
+	if parent.Page().HasControl(id) { // dialog has already been created, but is hidden
 		return parent.Page().GetControl(id).(*DialogPanel), false
 	}
 
-	dlg := NewDialogI(parent.ParentForm(), id + "-dlg")
+	dlg := NewDialogI(parent.ParentForm(), id+"-dlg")
 	dialogPanel = new(DialogPanel)
 	dialogPanel.Self = dialogPanel
 	dialogPanel.Init(dlg, id)
 	return dialogPanel, true
 }
 
-func (p *DialogPanel) Init(parent page.ControlI, id string)  {
+func (p *DialogPanel) Init(parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
 	p.AddClass("gr-dlg-pnl") // Give the ability to provide a consistent style across the app to all panels in a dialog
 }
@@ -136,7 +136,6 @@ func (p *DialogPanel) SetButtonText(id string, text string) {
 	p.getDialog().SetButtonText(id, text)
 }
 
-
 // RemoveButton removes the given button from the dialog
 func (p *DialogPanel) RemoveButton(id string) {
 	p.getDialog().RemoveButton(id)
@@ -160,7 +159,7 @@ func (p *DialogPanel) RemoveAllButtons() {
 // You can detect a close button by calling OnClose(action).
 // Call SetDialogStyle on the result to control the look of the alery.
 func Alert(parent page.ControlI, message string, buttons interface{}) *DialogPanel {
-	dialogPanel,_ := GetDialogPanel(parent, "gr-alert")
+	dialogPanel, _ := GetDialogPanel(parent, "gr-alert")
 	dialogPanel.SetText(message)
 	dialogPanel.RemoveAllButtons()
 	if buttons != nil {

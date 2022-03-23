@@ -2,10 +2,11 @@ package control
 
 import (
 	"context"
+	"io"
+
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/html5tag"
-	"io"
 )
 
 type RepeaterI interface {

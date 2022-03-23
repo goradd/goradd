@@ -2,13 +2,14 @@ package control
 
 import (
 	"context"
+	"io"
+	"strconv"
+
 	"github.com/goradd/goradd/pkg/math"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
-	"io"
-	"strconv"
 )
 
 const (

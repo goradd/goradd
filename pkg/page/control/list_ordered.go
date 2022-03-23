@@ -2,11 +2,12 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
 	"html"
 	"io"
 	"strconv"
+
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type OrderedListI interface {
@@ -47,7 +48,6 @@ func (l *OrderedList) Init(parent page.ControlI, id string) {
 func (l *OrderedList) this() OrderedListI {
 	return l.Self.(OrderedListI)
 }
-
 
 // SetNumberType sets the top level number style for the list. Choose from the OrderedListNumberType* constants.
 // To set a number type for a sublevel, set the "type" attribute on the list item that is the parent of the sub list.

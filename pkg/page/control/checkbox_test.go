@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"github.com/goradd/goradd/pkg/page"
 	"testing"
+
+	"github.com/goradd/goradd/pkg/page"
 
 	"github.com/stretchr/testify/assert"
 )
-
 
 func TestCheckbox_Serialize(t *testing.T) {
 	p := page.NewMockForm()
@@ -41,4 +41,3 @@ func TestCheckbox_Serialize(t *testing.T) {
 	assert.Equal(t, true, c3.Checked())
 	assert.Equal(t, false, c4.Checked())
 }
-

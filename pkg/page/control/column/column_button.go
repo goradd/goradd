@@ -2,10 +2,11 @@ package column
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
+
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/html5tag"
 )
 
 // ButtonColumnClick returns an event that detects a click on the icon in the column.
@@ -13,12 +14,12 @@ import (
 // If you need to also know the column clicked on, you can set the Action's action value to:
 //   javascript.NewJsCode(g$(event.goradd.match).columnId())
 // and then get the value from the ActionValue.
-func ButtonColumnClick() *page.Event{
+func ButtonColumnClick() *page.Event {
 	e := page.NewEvent("click").
 		Selector("[data-gr-btn-col]").
 		ActionValue(javascript.JsCode(
-		`g$(event.goradd.match).closest("tr").data("value")`,
-	))
+			`g$(event.goradd.match).closest("tr").data("value")`,
+		))
 	return e
 }
 
@@ -71,7 +72,6 @@ func (c *ButtonColumn) SetButtonHtml(h string) {
 	c.buttonHtml = h
 }
 
-
 func (c *ButtonColumn) Deserialize(dec page.Decoder) {
 	c.ColumnBase.Deserialize(dec)
 
@@ -82,7 +82,6 @@ func (c *ButtonColumn) Deserialize(dec page.Decoder) {
 		panic(err)
 	}
 }
-
 
 // ButtonColumnCreator creates a column that displays a clickable icon.
 type ButtonColumnCreator struct {
@@ -112,7 +111,6 @@ func (c ButtonColumnCreator) Create(ctx context.Context, parent control.TableI) 
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
 }
-
 
 func init() {
 	control.RegisterColumn(ButtonColumn{})

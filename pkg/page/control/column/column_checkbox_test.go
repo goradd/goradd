@@ -1,22 +1,22 @@
-package  column
+package column
 
 import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"github.com/goradd/html5tag"
+	"testing"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/html5tag"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestCheckbox_Attributes(t *testing.T) {
 	col := NewCheckboxColumn(DefaultCheckboxProvider{})
-	col.ColTagAttributes().Set("a","b")
+	col.ColTagAttributes().Set("a", "b")
 	assert.Equal(t, "b", col.ColTagAttributes().Get("a"))
 }
-
 
 func TestCheckboxColumn_Serialize(t *testing.T) {
 	var buf bytes.Buffer
@@ -26,34 +26,33 @@ func TestCheckboxColumn_Serialize(t *testing.T) {
 
 	f.AddControls(context.Background(),
 		control.TableCreator{
-			ID:                "table",
+			ID: "table",
 			Columns: control.Columns(
 				CheckboxColumnCreator{
-					ID:            "a1",
-					CheckboxProvider:         DefaultCheckboxProvider{},
-					Title:         "Checkbox",
-					Sortable:      true,
+					ID:               "a1",
+					CheckboxProvider: DefaultCheckboxProvider{},
+					Title:            "Checkbox",
+					Sortable:         true,
 					ColumnOptions: control.ColumnOptions{
 						CellAttributes:   nil,
 						HeaderAttributes: nil,
 						FooterAttributes: nil,
 						ColTagAttributes: html5tag.Attributes{
-							"a":"b",
+							"a": "b",
 						},
-						Span:             0,
-						AsHeader:         false,
-						IsHtml:           false,
-						HeaderTexter:     nil,
-						FooterTexter:     nil,
-						IsHidden:         true,
-						Format:           "",
-						TimeFormat:       "",
+						Span:         0,
+						AsHeader:     false,
+						IsHtml:       false,
+						HeaderTexter: nil,
+						FooterTexter: nil,
+						IsHidden:     true,
+						Format:       "",
+						TimeFormat:   "",
 					},
 				},
 			),
 		},
 	)
-
 
 	c := control.GetTable(f, "table")
 	col := c.GetColumnByID("a1")

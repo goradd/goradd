@@ -2,8 +2,9 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
+
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type LinkI interface {
@@ -34,7 +35,6 @@ func (l *Link) Init(parent page.ControlI, id string) {
 func (l *Link) this() LinkI {
 	return l.Self.(LinkI)
 }
-
 
 // SetLabel sets the text that appears between the a tags.
 func (l *Link) SetLabel(label string) page.ControlI {

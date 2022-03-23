@@ -2,12 +2,12 @@ package control
 
 import (
 	"fmt"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
 	"html"
 	"strconv"
-)
 
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
+)
 
 type ItemLister interface {
 	Value() interface{}
@@ -26,7 +26,6 @@ type ItemIntIDer interface {
 	String() string
 }
 
-
 type Labeler interface {
 	Label() string
 }
@@ -41,8 +40,8 @@ type Labeler interface {
 // user selects a list item, you would use the id to retrieve the ListItem selected.
 type ListItem struct {
 	ItemList
-	value string // html list item values eventually get expressed as a string in the html
-	id    string
+	value             string // html list item values eventually get expressed as a string in the html
+	id                string
 	label             string
 	attributes        html5tag.Attributes
 	shouldEscapeLabel bool
@@ -109,7 +108,6 @@ func NewItemFromItemIntIDer(i ItemIntIDer) *ListItem {
 	return l
 }
 
-
 func (i *ListItem) SetValue(v string) *ListItem {
 	i.value = v
 	return i
@@ -120,10 +118,9 @@ func (i *ListItem) Value() string {
 }
 
 func (i *ListItem) IntValue() int {
-	v,_ := strconv.Atoi(i.value)
+	v, _ := strconv.Atoi(i.value)
 	return v
 }
-
 
 func (i *ListItem) ID() string {
 	return i.id
@@ -223,7 +220,6 @@ func (i *ListItem) AddClass(class string) *ListItem {
 	i.Attributes().AddClass(class)
 	return i
 }
-
 
 // IsEmptyValue returns true if the value is empty, meaning it does not satisfy a selection being made
 // if the list has IsRequired turned on.

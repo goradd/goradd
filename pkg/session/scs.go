@@ -42,7 +42,7 @@ func (mgr ScsManager) Use(next http.Handler) http.Handler {
 		}
 
 		var sess *Session
-		if d := mgr.SessionManager.Get(ctx, scsSessionDataKey); sess != nil {
+		if d := mgr.SessionManager.Get(ctx, scsSessionDataKey); d != nil {
 			sess = d.(*Session)
 			log.FrameworkDebug("Found session")
 		} else {

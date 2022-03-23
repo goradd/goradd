@@ -2,8 +2,9 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
+
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type RadioButtonI interface {

@@ -2,12 +2,13 @@ package control
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/goradd/pkg/page"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/page"
 )
 
 // IDer is an object that can embed a list.
@@ -45,7 +46,7 @@ type ItemListI interface {
 // Serialize and Deserialize methods, and the ones here.
 type ItemList struct {
 	ownerID string
-	items []*ListItem
+	items   []*ListItem
 }
 
 // NewItemList creates a new item list. "owner" is the object that has the list embedded in it, and must be
@@ -263,7 +264,7 @@ func (l *ItemList) Serialize(e page.Encoder) {
 	}
 
 	// Opt for our own serialization method, rather than using gob
-	for _,i := range l.items {
+	for _, i := range l.items {
 		i.Serialize(e)
 	}
 }
@@ -286,7 +287,6 @@ func (l *ItemList) Deserialize(dec page.Decoder) {
 
 	return
 }
-
 
 // SortIds sorts a list of auto-generated ids in numerical and hierarchical order.
 // This is normally just called by the framework.
@@ -327,7 +327,6 @@ func (p IdSlice) Less(i, j int) bool {
 }
 
 func (p IdSlice) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
-
 
 // NoSelectionItemList returns a default item list to start a selection list that allows no selection
 func NoSelectionItemList() []interface{} {

@@ -2,9 +2,10 @@ package column
 
 import (
 	"context"
+	"reflect"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"reflect"
 )
 
 // MapColumn is a table that works with data that is in the form of a map. The data item itself must be convertible into
@@ -54,8 +55,6 @@ func (c *MapColumn) Deserialize(dec page.Decoder) {
 		panic(err)
 	}
 }
-
-
 
 // MapColumnCreator creates a column that treats each row of data as a map of data.
 // The index can be any valid map index, and the value must be a standard kind of value that

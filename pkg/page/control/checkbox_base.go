@@ -2,10 +2,11 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/html5tag"
 	"html"
 	"io"
+
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type CheckboxI interface {
