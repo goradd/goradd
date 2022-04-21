@@ -239,14 +239,16 @@ func (m *DB) generateColumnListWithAliases(b *sql2.Builder) (sql string, args []
 		return true
 	})
 
-	b.AliasNodes.Range(func(key string, v Aliaser) bool {
-		node := v.(NodeI)
-		aliaser := v.(Aliaser)
-		s, a := m.generateNodeSql(b, node, false)
-		sql += s + " AS `" + aliaser.GetAlias() + "`,\n"
-		args = append(args, a...)
-		return true
-	})
+	if b.AliasNodes != nil {
+		b.AliasNodes.Range(func(key string, v Aliaser) bool {
+			node := v.(NodeI)
+			aliaser := v.(Aliaser)
+			s, a := m.generateNodeSql(b, node, false)
+			sql += s + " AS `" + aliaser.GetAlias() + "`,\n"
+			args = append(args, a...)
+			return true
+		})
+	}
 
 	sql = strings.TrimSuffix(sql, ",\n")
 	sql += "\n"

@@ -195,10 +195,12 @@ func Nodes(b QueryBuilder) []NodeI {
 	}
 	nodes = append(nodes, b.Selects...)
 
-	b.AliasNodes.Range(func(key string, value Aliaser) bool {
-		nodes = append(nodes, value.(NodeI))
-		return true
-	})
+	if b.AliasNodes != nil {
+		b.AliasNodes.Range(func(key string, value Aliaser) bool {
+			nodes = append(nodes, value.(NodeI))
+			return true
+		})
+	}
 
 	return nodes
 }

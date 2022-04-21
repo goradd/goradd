@@ -601,7 +601,11 @@ func (b *Builder) unpackLeaf(j *JoinTreeItem, row db2.ValueMap, obj db2.ValueMap
 	switch node := j.Node.(type) {
 	case *ColumnNode:
 		key = j.Alias
-		if b.ColumnAliases.Has(key) && !b.AliasNodes.Has(key) { // could be a special alias, which we should unpack differently
+		if b.ColumnAliases != nil &&
+			b.ColumnAliases.Has(key) &&
+			(b.AliasNodes == nil ||
+				!b.AliasNodes.Has(key)) { // could be a special alias, which we should unpack differently
+
 			fieldName = ColumnNodeDbName(node)
 			obj[fieldName] = row[key]
 		}
@@ -855,10 +859,12 @@ func (b *Builder) unpackSpecialAliases(rootItem *JoinTreeItem, rowId string, row
 		obj = db2.NewValueMap()
 	}
 
-	b.AliasNodes.Range(func(key string, value Aliaser) bool {
-		obj[key] = row[key]
-		return true
-	})
+	if b.AliasNodes != nil {
+		b.AliasNodes.Range(func(key string, value Aliaser) bool {
+			obj[key] = row[key]
+			return true
+		})
+	}
 
 	if len(obj) > 0 {
 		aliasMap.Set(rowId, obj)
