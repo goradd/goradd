@@ -85,7 +85,7 @@ source-level debugger is very easy to use.
 Goradd is module aware. Whenever you run goradd tools, it will look
 in the nearest go.mod file to read the current module environment.
 
-## GO 1.16+
+## GO 1.18+
 GO 1.16 adds a new wrinkle to the module problem. Before this version, GO would automatically
 update the go.mod and go.sum files with any missing packages. You could also tell it to 
 automatically update to the latest version of everything.

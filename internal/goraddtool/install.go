@@ -6,6 +6,7 @@ import (
 	sys2 "github.com/goradd/gofile/pkg/sys"
 	install2 "github.com/goradd/goradd/internal/install"
 	"github.com/goradd/goradd/pkg/sys"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -36,6 +37,7 @@ func install(step int, overwrite bool) {
 	}
 }
 
+// copyInstall copies the contents of the internal install directory to the current working directory.
 func copyInstall(overwrite bool) {
 	var err error
 	var fInfos []os.FileInfo
@@ -77,6 +79,23 @@ func copyInstall(overwrite bool) {
 			log.Fatal("could not rename go.mod: " + err.Error())
 		}
 	}
+
+	// When goradd is installed, all its files are read-only. Copying the directory will copy these files as
+	// read-only as well, which is not what we want, since the project directory is something we want the user to edit.
+	// So, we recursively make all the project files read only.
+	err = filepath.WalkDir(cwd, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			_ = os.Chmod(path, 0644)
+		}
+		return nil
+	})
+	if err != nil {
+		log.Fatal("could not walk install directory: " + err.Error())
+	}
+
 }
 
 func depInstall() {
