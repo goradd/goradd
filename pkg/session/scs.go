@@ -71,7 +71,7 @@ func (mgr ScsManager) Use(next http.Handler) http.Handler {
 
 		if sess.data.Len() > 0 {
 			mgr.SessionManager.Put(ctx, scsSessionDataKey, sess)
-			token2, expiry, _ := mgr.SessionManager.Commit(ctx)
+			token2, expiry, err := mgr.SessionManager.Commit(ctx)
 			if err != nil {
 				panic("Error marshalling session data: " + err.Error())
 				return

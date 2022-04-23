@@ -1989,7 +1989,9 @@ func (c *ControlBase) FireTestMarker(marker string) {
 	}
 }
 
-func inti() {
+func init() {
 	gob.Register(new(stateType))
 	gob.Register(new(stateStoreType))
+	gob.Register(new(maps.Map[string, any]))
+	gob.Register(new(maps.Map[string, SavedState]))
 }
