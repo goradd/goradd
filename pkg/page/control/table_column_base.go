@@ -3,15 +3,15 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/goradd/pkg/base"
-	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
 	"html"
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/goradd/goradd/pkg/base"
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type SortDirection int
@@ -65,8 +65,8 @@ type ColumnI interface {
 	RenderSortButton(labelHtml string) string
 	SetIsHtml(columnIsHtml bool) ColumnI
 	PreRender()
-	MarshalState(m maps.Setter)
-	UnmarshalState(m maps.Loader)
+	MarshalState(m page.SavedState)
+	UnmarshalState(m page.SavedState)
 	Serialize(e page.Encoder)
 	Deserialize(dec page.Decoder)
 	Restore(parentTable TableI)
@@ -75,9 +75,9 @@ type ColumnI interface {
 // CellInfo is provided to the cell texter so the cell texter knows how to draw.
 // Its a struct here so that the info can grow without the CellTexter signature having to change.
 type CellInfo struct {
-	RowNum int
-	ColNum int
-	Data interface{}
+	RowNum       int
+	ColNum       int
+	Data         interface{}
 	isHeaderCell bool
 	isFooterCell bool
 }
@@ -91,7 +91,6 @@ type CellTexter interface {
 type CellStyler interface {
 	CellAttributes(ctx context.Context, col ColumnI, info CellInfo) html5tag.Attributes
 }
-
 
 // ColumnBase is the base implementation of all table columns
 type ColumnBase struct {
@@ -110,13 +109,13 @@ type ColumnBase struct {
 	cellTexter          CellTexter
 	cellTexterID        string // for deserialization
 	headerTexter        CellTexter
-	headerTexterID      string  // for deserialization
+	headerTexterID      string // for deserialization
 	footerTexter        CellTexter
-	footerTexterID string  // for deserialization
-	cellStyler     CellStyler // for dynamically styling cells
-	cellStylerID  string  // for deserialization
-	isHidden         bool
-	sortDirection    SortDirection
+	footerTexterID      string     // for deserialization
+	cellStyler          CellStyler // for dynamically styling cells
+	cellStylerID        string     // for deserialization
+	isHidden            bool
+	sortDirection       SortDirection
 	// Format is a format string. It will be applied using fmt.Sprintf. If you don't provide a Format string, standard
 	// string conversion operations will be used.
 	format string
@@ -257,7 +256,7 @@ func (c *ColumnBase) SetHidden(h bool) ColumnI {
 // manipulate the attributes. If you want something more customized, create your own column and
 // implement this function. row and col are zero based.
 func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) html5tag.Attributes {
-	if len(c.headerAttributes) < row + 1 {
+	if len(c.headerAttributes) < row+1 {
 		// extend the attributes
 		c.headerAttributes = append(c.headerAttributes, make([]html5tag.Attributes, row-len(c.headerAttributes)+1)...)
 	}
@@ -284,7 +283,7 @@ func (c *ColumnBase) HeaderAttributes(ctx context.Context, row int, col int) htm
 
 // FooterAttributes returns the attributes to use for the footer cell.
 func (c *ColumnBase) FooterAttributes(ctx context.Context, row int, col int) html5tag.Attributes {
-	if len(c.footerAttributes) < row + 1 {
+	if len(c.footerAttributes) < row+1 {
 		// extend the attributes
 		c.footerAttributes = append(c.footerAttributes, make([]html5tag.Attributes, row-len(c.footerAttributes)+1)...)
 	}
@@ -321,7 +320,7 @@ func (c *ColumnBase) DrawColumnTag(ctx context.Context, w io.Writer) {
 // into another object.
 func (c *ColumnBase) HeaderCellHtml(ctx context.Context, row int, col int) (h string) {
 	if c.headerTexter != nil {
-		info := CellInfo{RowNum: row, ColNum: col, isHeaderCell:true}
+		info := CellInfo{RowNum: row, ColNum: col, isHeaderCell: true}
 		h = c.headerTexter.CellText(ctx, c.this(), info)
 	} else if row == 0 {
 		h = html.EscapeString(c.title)
@@ -352,7 +351,7 @@ func (c *ColumnBase) DrawFooterCell(ctx context.Context, row int, col int, count
 // FooterCellHtml returns the html to use in the given footer cell.
 func (c *ColumnBase) FooterCellHtml(ctx context.Context, row int, col int) string {
 	if c.footerTexter != nil {
-		info := CellInfo{RowNum: row, ColNum: col, isFooterCell:true}
+		info := CellInfo{RowNum: row, ColNum: col, isFooterCell: true}
 		return c.footerTexter.CellText(ctx, c.this(), info) // careful, this does not get escaped
 	}
 
@@ -382,7 +381,7 @@ func (c *ColumnBase) DrawCell(ctx context.Context, row int, col int, data interf
 // CellText returns the text in the cell. It will use the CellTexter if one was provided.
 func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interface{}) string {
 	if c.cellTexter != nil {
-		info := CellInfo{RowNum: row, ColNum: col, Data:data}
+		info := CellInfo{RowNum: row, ColNum: col, Data: data}
 		return c.cellTexter.CellText(ctx, c.this(), info)
 	}
 	d := c.this().CellData(ctx, row, col, data)
@@ -393,7 +392,6 @@ func (c *ColumnBase) CellData(ctx context.Context, row int, col int, data interf
 	return ""
 }
 
-
 // CellAttributes returns the attributes of the cell. Column implementations should call this base version first before
 // customizing more. It will use the CellStyler if one was provided.
 func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data interface{}) html5tag.Attributes {
@@ -402,7 +400,7 @@ func (c *ColumnBase) CellAttributes(ctx context.Context, row int, col int, data 
 	}
 	a := c.Attributes.Copy()
 	if c.cellStyler != nil {
-		info := CellInfo{RowNum: row, ColNum: col, Data:data}
+		info := CellInfo{RowNum: row, ColNum: col, Data: data}
 		a2 := c.cellStyler.CellAttributes(ctx, c.this(), info)
 		a.Merge(a2)
 	}
@@ -452,27 +450,27 @@ func (c *ColumnBase) SetSortDirection(d SortDirection) ColumnI {
 func (c *ColumnBase) PreRender() {}
 
 // MarshalState is an internal function to save the state of the control.
-func (c *ColumnBase) MarshalState(m maps.Setter) {}
+func (c *ColumnBase) MarshalState(m page.SavedState) {}
 
 // UnmarshalState is an internal function to restore the state of the control.
-func (c *ColumnBase) UnmarshalState(m maps.Loader) {}
+func (c *ColumnBase) UnmarshalState(m page.SavedState) {}
 
 type columnBaseEncoded struct {
-	ID string
+	ID               string
 	Title            string
 	Attributes       html5tag.Attributes
 	HeaderAttributes []html5tag.Attributes
 	FooterAttributes []html5tag.Attributes
 	ColTagAttributes html5tag.Attributes
 	Span             int
-	AsHeader bool
-	IsHtml bool
-	IsHidden bool
-	SortDirection SortDirection
-	CellTexter interface{}
-	HeaderTexter interface{}
-	FooterTexter interface{}
-	CellStyler interface{}
+	AsHeader         bool
+	IsHtml           bool
+	IsHidden         bool
+	SortDirection    SortDirection
+	CellTexter       interface{}
+	HeaderTexter     interface{}
+	FooterTexter     interface{}
+	CellStyler       interface{}
 }
 
 func (c *ColumnBase) Serialize(e page.Encoder) {
@@ -494,16 +492,16 @@ func (c *ColumnBase) Serialize(e page.Encoder) {
 		CellStyler:       c.cellStyler,
 	}
 
-	if ctrl,ok := c.cellTexter.(page.ControlI); ok {
+	if ctrl, ok := c.cellTexter.(page.ControlI); ok {
 		s.CellTexter = ctrl.ID()
 	}
-	if ctrl,ok := c.headerTexter.(page.ControlI); ok {
+	if ctrl, ok := c.headerTexter.(page.ControlI); ok {
 		s.HeaderTexter = ctrl.ID()
 	}
-	if ctrl,ok := c.footerTexter.(page.ControlI); ok {
+	if ctrl, ok := c.footerTexter.(page.ControlI); ok {
 		s.FooterTexter = ctrl.ID()
 	}
-	if ctrl,ok := c.cellStyler.(page.ControlI); ok {
+	if ctrl, ok := c.cellStyler.(page.ControlI); ok {
 		s.CellStyler = ctrl.ID()
 	}
 
@@ -531,28 +529,28 @@ func (c *ColumnBase) Deserialize(dec page.Decoder) {
 	c.sortDirection = s.SortDirection
 
 	if s.CellTexter != nil {
-		if v,ok := s.CellTexter.(string); ok {
+		if v, ok := s.CellTexter.(string); ok {
 			c.cellTexterID = v
 		} else {
 			c.cellTexter = s.CellTexter.(CellTexter)
 		}
 	}
 	if s.HeaderTexter != nil {
-		if v,ok := s.HeaderTexter.(string); ok {
+		if v, ok := s.HeaderTexter.(string); ok {
 			c.headerTexterID = v
 		} else {
 			c.headerTexter = s.HeaderTexter.(CellTexter)
 		}
 	}
 	if s.FooterTexter != nil {
-		if v,ok := s.FooterTexter.(string); ok {
+		if v, ok := s.FooterTexter.(string); ok {
 			c.footerTexterID = v
 		} else {
 			c.footerTexter = s.FooterTexter.(CellTexter)
 		}
 	}
 	if s.CellStyler != nil {
-		if v,ok := s.CellStyler.(string); ok {
+		if v, ok := s.CellStyler.(string); ok {
 			c.cellStylerID = v
 		} else {
 			c.cellStyler = s.CellStyler.(CellStyler)
@@ -600,20 +598,20 @@ type ColumnOptions struct {
 	// this, but in particular, you can style a column and give it an id. Use Span to set the span attribute.
 	ColTagAttributes html5tag.Attributes
 	// Span is specifically for col tags to specify the width of the styling in the col tag.
-	Span             int
+	Span int
 	// AsHeader will cause the entire column to output header tags (th) instead of standard cell tags (td).
 	// This is useful for columns on the left or right that contain labels for the rows.
-	AsHeader   bool
+	AsHeader bool
 	// IsHtml will cause the text of the cells to NOT be escaped
-	IsHtml           bool
+	IsHtml bool
 	// HeaderTexter is an object that will provide the text of the header cells. This can be either an
 	// object that you have set up prior, or a string id of a control
-	HeaderTexter   	 interface{}
+	HeaderTexter interface{}
 	// FooterTexter is an object that will provide the text of the footer cells. This can be either an
 	// object that you have set up prior, or a string id of a control
-	FooterTexter   	 interface{}
+	FooterTexter interface{}
 	// IsHidden will start the column out in a hidden state so that it will not initially be drawn
-	IsHidden         bool
+	IsHidden bool
 	// Format is a format string applied to the data using fmt.Sprintf
 	Format string
 	// TimeFormat is a format string applied specifically to time data using time.Format
@@ -623,13 +621,13 @@ type ColumnOptions struct {
 func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt ColumnOptions) {
 	c.Attributes.Merge(opt.CellAttributes)
 	if opt.HeaderAttributes != nil {
-		for i,row := range opt.HeaderAttributes {
+		for i, row := range opt.HeaderAttributes {
 			attr := c.HeaderAttributes(ctx, i, 0)
 			attr.Merge(row)
 		}
 	}
 	if opt.FooterAttributes != nil {
-		for i,row := range opt.FooterAttributes {
+		for i, row := range opt.FooterAttributes {
 			attr := c.FooterAttributes(ctx, i, 0)
 			attr.Merge(row)
 		}
@@ -651,14 +649,14 @@ func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt Column
 		c.isHtml = true
 	}
 	if opt.HeaderTexter != nil {
-		if s,ok := opt.HeaderTexter.(string); ok {
+		if s, ok := opt.HeaderTexter.(string); ok {
 			c.SetHeaderTexter(parent.Page().GetControl(s).(CellTexter))
 		} else {
 			c.SetHeaderTexter(opt.HeaderTexter.(CellTexter))
 		}
 	}
 	if opt.FooterTexter != nil {
-		if s,ok := opt.FooterTexter.(string); ok {
+		if s, ok := opt.FooterTexter.(string); ok {
 			c.SetFooterTexter(parent.Page().GetControl(s).(CellTexter))
 		} else {
 			c.SetFooterTexter(opt.FooterTexter.(CellTexter))

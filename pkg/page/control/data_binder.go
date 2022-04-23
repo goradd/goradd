@@ -2,9 +2,10 @@ package control
 
 import (
 	"context"
+	"reflect"
+
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
-	"reflect"
 )
 
 type DataBinder interface {
@@ -31,9 +32,9 @@ type DataManager struct {
 	dataProviderID string
 
 	// data is a temporary copy of the drawing data that is intended to only be loaded during drawing, and then unloaded after drawing.
-	data         interface{}
+	data interface{}
 	// dataOffset is the first row number represented by the data
-	dataOffset   int
+	dataOffset int
 }
 
 func (d *DataManager) SetDataProvider(b DataBinder) {
@@ -67,7 +68,6 @@ func (d *DataManager) SetDataWithOffset(data interface{}, offset int) {
 	d.dataOffset = offset
 }
 
-
 // ResetData is called by controls that use a data binder to unload the data after it is used.
 func (d *DataManager) ResetData() {
 	if d.HasDataProvider() {
@@ -80,8 +80,8 @@ func (d *DataManager) ResetData() {
 func (d *DataManager) LoadData(ctx context.Context, owner DataManagerI) {
 	if d.HasDataProvider() && // load data if we have a data provider
 		!d.HasData() { // We might have already been told to load the data so that another related control
-		               // can access information in this control. For example, a paged control and a pager.
-		               // This MANDATES that the control then unload the data after drawing
+		// can access information in this control. For example, a paged control and a pager.
+		// This MANDATES that the control then unload the data after drawing
 
 		log.FrameworkDebug("Calling BindData")
 		dataProvider := owner.Page().GetControl(d.dataProviderID).(DataBinder)
@@ -98,7 +98,7 @@ func (d *DataManager) RangeData(f func(int, interface{}) bool) {
 	listValue := reflect.ValueOf(d.data)
 	for i := 0; i < listValue.Len(); i++ {
 		itemI := listValue.Index(i).Interface()
-		result := f(i + d.dataOffset, itemI)
+		result := f(i+d.dataOffset, itemI)
 		if !result {
 			break
 		}
@@ -111,7 +111,7 @@ func (d *DataManager) HasData() bool {
 
 type encodedDataManager struct {
 	DataProviderID string
-	Data         interface{}
+	Data           interface{}
 }
 
 func (d *DataManager) Serialize(e page.Encoder) {
@@ -120,7 +120,7 @@ func (d *DataManager) Serialize(e page.Encoder) {
 		Data:           d.data,
 	}
 	if err := e.Encode(enc); err != nil {
-		panic (err)
+		panic(err)
 	}
 }
 
@@ -135,4 +135,3 @@ func (d *DataManager) Deserialize(dec page.Decoder) {
 	d.data = enc.Data
 	return
 }
-

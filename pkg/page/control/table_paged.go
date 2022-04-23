@@ -2,7 +2,7 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/gengen/pkg/maps"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 )
@@ -30,15 +30,14 @@ func (t *PagedTable) Init(parent page.ControlI, id string) {
 }
 
 // MarshalState is an internal function to save the state of the control
-func (t *PagedTable) MarshalState(m maps.Setter) {
+func (t *PagedTable) MarshalState(m page.SavedState) {
 	t.PagedControl.MarshalState(m)
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (t *PagedTable) UnmarshalState(m maps.Loader) {
+func (t *PagedTable) UnmarshalState(m page.SavedState) {
 	t.PagedControl.UnmarshalState(m)
 }
-
 
 func (t *PagedTable) Serialize(e page.Encoder) {
 	t.Table.Serialize(e)
@@ -52,49 +51,46 @@ func (t *PagedTable) Deserialize(dec page.Decoder) {
 // PagedTableCreator creates a table that can be paged
 type PagedTableCreator struct {
 	// ID is the control id
-	ID               string
+	ID string
 	// Caption is the content of the caption tag, and can either be a string, or a data pager
-	Caption          interface{}
+	Caption interface{}
 	// HideIfEmpty will hide the table completely if it has no data. Otherwise, the table and headers will be shown, but no data rows
-	HideIfEmpty      bool
+	HideIfEmpty bool
 	// HeaderRowCount is the number of header rows. You must set this to at least 1 to show header rows.
-	HeaderRowCount   int
+	HeaderRowCount int
 	// FooterRowCount is the number of footer rows.
-	FooterRowCount   int
+	FooterRowCount int
 	// RowStyler returns the attributes to be used in a cell.
-	RowStyler        TableRowAttributer
+	RowStyler TableRowAttributer
 	// RowStylerID is a control id for the control that will be the RowStyler of the table.
-	RowStylerID      string
+	RowStylerID string
 	// HeaderRowStyler returns the attributes to be used in a header cell.
-	HeaderRowStyler  TableHeaderRowAttributer
+	HeaderRowStyler TableHeaderRowAttributer
 	// HeaderRowStylerID is a control id for the control that will be the HeaderRowStyler of the table.
-	HeaderRowStylerID  string
+	HeaderRowStylerID string
 	// FooterRowStyler returns the attributes to be used in a footer cell. It can be either a control id or a TableFooterRowAttributer.
-	FooterRowStyler  TableFooterRowAttributer
+	FooterRowStyler TableFooterRowAttributer
 	// FooterRowStylerID is a control id for the control that will be the FooterRowStyler of the table.
-	FooterRowStylerID  string
+	FooterRowStylerID string
 	// Columns are the column creators that will add columns to the table
-	Columns          []ColumnCreator
+	Columns []ColumnCreator
 	// DataProvider is the data binder for the table. It can be either a control id or a DataBinder
 	DataProvider DataBinder
 	// DataProviderID is the control id of the data binder for the table.
-	DataProviderID	string
+	DataProviderID string
 	// Data is the actual data for the table, and should be a slice of objects
-	Data             interface{}
+	Data interface{}
 	// Sortable will make the table sortable
-	Sortable         bool
+	Sortable bool
 	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
 	SortHistoryLimit int
-	OnCellClick action.CallbackActionI
+	OnCellClick      action.CallbackActionI
 	page.ControlOptions
 	// PageSize is the number of rows to include in a page
-	PageSize         int
+	PageSize int
 	// SaveState will cause the table to remember what page it was on
 	SaveState bool
-
 }
-
-
 
 // Create is called by the framework to create a new control from the Creator. You
 // do not normally need to call this.
@@ -107,26 +103,26 @@ func (c PagedTableCreator) Create(ctx context.Context, parent page.ControlI) pag
 // Init is called by implementations of Buttons to initialize a control with the
 // creator. You do not normally need to call this.
 func (c PagedTableCreator) Init(ctx context.Context, ctrl PagedTableI) {
-	sub := TableCreator {
-		ID:               c.ID,
-		Caption:          c.Caption,
-		HideIfEmpty:      c.HideIfEmpty,
-		HeaderRowCount:   c.HeaderRowCount,
-		FooterRowCount:   c.FooterRowCount,
-		RowStyler:        c.RowStyler,
-		RowStylerID:      c.RowStylerID,
-		HeaderRowStyler:  c.HeaderRowStyler,
+	sub := TableCreator{
+		ID:                c.ID,
+		Caption:           c.Caption,
+		HideIfEmpty:       c.HideIfEmpty,
+		HeaderRowCount:    c.HeaderRowCount,
+		FooterRowCount:    c.FooterRowCount,
+		RowStyler:         c.RowStyler,
+		RowStylerID:       c.RowStylerID,
+		HeaderRowStyler:   c.HeaderRowStyler,
 		HeaderRowStylerID: c.HeaderRowStylerID,
-		FooterRowStyler:  c.FooterRowStyler,
+		FooterRowStyler:   c.FooterRowStyler,
 		FooterRowStylerID: c.FooterRowStylerID,
-		Columns:          c.Columns,
-		DataProvider:     c.DataProvider,
-		DataProviderID:   c.DataProviderID,
-		Data:             c.Data,
-		Sortable:         c.Sortable,
-		SortHistoryLimit: c.SortHistoryLimit,
-		OnCellClick: 	  c.OnCellClick,
-		ControlOptions:   c.ControlOptions,
+		Columns:           c.Columns,
+		DataProvider:      c.DataProvider,
+		DataProviderID:    c.DataProviderID,
+		Data:              c.Data,
+		Sortable:          c.Sortable,
+		SortHistoryLimit:  c.SortHistoryLimit,
+		OnCellClick:       c.OnCellClick,
+		ControlOptions:    c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)
 	if c.PageSize != 0 {

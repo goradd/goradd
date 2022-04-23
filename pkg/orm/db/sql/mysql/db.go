@@ -69,7 +69,7 @@ import (
 type DB struct {
 	sql2.DbHelper
 	goraddDatabase *db.Database
-	databaseName string
+	databaseName   string
 }
 
 // NewMysqlDB returns a new DB database object that you can add to the datastore.
@@ -86,7 +86,6 @@ func NewMysqlDB(dbKey string, params string, config *mysql.Config) *DB {
 			panic("could not parse the connection string")
 		}
 	}
-
 
 	db3, err := sqldb.Open("mysql", params)
 	if err != nil {
@@ -108,25 +107,42 @@ func NewMysqlDB(dbKey string, params string, config *mysql.Config) *DB {
 // OverrideConfigSettings will use a map read in from a json file to modify
 // the given config settings
 func OverrideConfigSettings(config *mysql.Config, jsonContent map[string]interface{}) {
-	for k,v := range jsonContent {
+	for k, v := range jsonContent {
 		switch k {
-		case "dbname": config.DBName = v.(string)
-		case "user": config.User = v.(string)
-		case "password": config.Passwd = v.(string)
-		case "net": config.Net = v.(string) 	// Typically, tcp or unix (for unix sockets).
-		case "address": config.Addr = v.(string) // Note: if you set address, you MUST set net also.
-		case "params": config.Params = stringmap.ToStringStringMap(v.(map[string]interface{}))
-		case "collation": config.Collation = v.(string)
-		case "maxAllowedPacket": config.MaxAllowedPacket = int(v.(float64))
-		case "serverPubKey": config.ServerPubKey = v.(string)
-		case "tlsConfig": config.TLSConfig = v.(string)
-		case "timeout": config.Timeout = time.Duration(int(v.(float64))) * time.Second
-		case "readTimeout": config.ReadTimeout = time.Duration(int(v.(float64))) * time.Second
-		case "writeTimeout": config.WriteTimeout = time.Duration(int(v.(float64))) * time.Second
-		case "allowAllFiles": config.AllowAllFiles = v.(bool)
-		case "allowCleartextPasswords": config.AllowCleartextPasswords = v.(bool)
-		case "allowNativePasswords": config.AllowNativePasswords = v.(bool)
-		case "allowOldPasswords": config.AllowOldPasswords = v.(bool)
+		case "dbname":
+			config.DBName = v.(string)
+		case "user":
+			config.User = v.(string)
+		case "password":
+			config.Passwd = v.(string)
+		case "net":
+			config.Net = v.(string) // Typically, tcp or unix (for unix sockets).
+		case "address":
+			config.Addr = v.(string) // Note: if you set address, you MUST set net also.
+		case "params":
+			config.Params = stringmap.ToStringStringMap(v.(map[string]interface{}))
+		case "collation":
+			config.Collation = v.(string)
+		case "maxAllowedPacket":
+			config.MaxAllowedPacket = int(v.(float64))
+		case "serverPubKey":
+			config.ServerPubKey = v.(string)
+		case "tlsConfig":
+			config.TLSConfig = v.(string)
+		case "timeout":
+			config.Timeout = time.Duration(int(v.(float64))) * time.Second
+		case "readTimeout":
+			config.ReadTimeout = time.Duration(int(v.(float64))) * time.Second
+		case "writeTimeout":
+			config.WriteTimeout = time.Duration(int(v.(float64))) * time.Second
+		case "allowAllFiles":
+			config.AllowAllFiles = v.(bool)
+		case "allowCleartextPasswords":
+			config.AllowCleartextPasswords = v.(bool)
+		case "allowNativePasswords":
+			config.AllowNativePasswords = v.(bool)
+		case "allowOldPasswords":
+			config.AllowOldPasswords = v.(bool)
 		}
 	}
 
@@ -223,14 +239,16 @@ func (m *DB) generateColumnListWithAliases(b *sql2.Builder) (sql string, args []
 		return true
 	})
 
-	b.AliasNodes.Range(func(key string, v interface{}) bool {
-		node := v.(NodeI)
-		aliaser := v.(Aliaser)
-		s, a := m.generateNodeSql(b, node, false)
-		sql += s + " AS `" + aliaser.GetAlias() + "`,\n"
-		args = append(args, a...)
-		return true
-	})
+	if b.AliasNodes != nil {
+		b.AliasNodes.Range(func(key string, v Aliaser) bool {
+			node := v.(NodeI)
+			aliaser := v.(Aliaser)
+			s, a := m.generateNodeSql(b, node, false)
+			sql += s + " AS `" + aliaser.GetAlias() + "`,\n"
+			args = append(args, a...)
+			return true
+		})
+	}
 
 	sql = strings.TrimSuffix(sql, ",\n")
 	sql += "\n"
@@ -604,7 +622,6 @@ func (m *DB) Insert(ctx context.Context, table string, fields map[string]interfa
 	}
 }
 
-
 // Delete deletes the indicated record from the database.
 func (m *DB) Delete(ctx context.Context, table string, pkName string, pkValue interface{}) {
 	var sql = "DELETE FROM " + table + "\n"
@@ -635,7 +652,7 @@ func (m *DB) Associate(ctx context.Context,
 	// TODO: Could optimize by separating out what gets deleted, what gets added, and what stays the same.
 
 	// First delete all previous associations
-	var sql = "DELETE FROM " + table +  " WHERE " + column + "=?"
+	var sql = "DELETE FROM " + table + " WHERE " + column + "=?"
 	_, e := m.Exec(ctx, sql, pk)
 	if e != nil {
 		panic(e.Error())
@@ -645,16 +662,14 @@ func (m *DB) Associate(ctx context.Context,
 	}
 
 	// Add new associations
-	for _,relatedPk := range reflect.InterfaceSlice(relatedPks) {
-		sql = "INSERT " + table +  " SET " + column + "=?, " + relatedColumn + "=?"
+	for _, relatedPk := range reflect.InterfaceSlice(relatedPks) {
+		sql = "INSERT " + table + " SET " + column + "=?, " + relatedColumn + "=?"
 		_, e = m.Exec(ctx, sql, pk, relatedPk)
 		if e != nil {
 			panic(e.Error())
 		}
 	}
 }
-
-
 
 func (m *DB) makeSetSql(fields map[string]interface{}) (sql string, args []interface{}) {
 	if len(fields) == 0 {

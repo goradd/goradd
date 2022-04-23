@@ -2,10 +2,11 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
 	"io"
 	"strings"
+
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type CheckboxListI interface {
@@ -114,7 +115,6 @@ func (l *CheckboxList) SetRowClass(c string) CheckboxListI {
 	return l.this()
 }
 
-
 // DrawingAttributes retrieves the tag's attributes at draw time.
 // You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
@@ -139,7 +139,7 @@ func (l *CheckboxList) DrawInnerHtml(_ context.Context, w io.Writer) {
 
 func (l *CheckboxList) RenderItems(items []*ListItem) string {
 	var hItems []string
-	for _,item := range items {
+	for _, item := range items {
 		hItems = append(hItems, l.this().RenderItem(item))
 	}
 	if l.columnCount == 0 {

@@ -3,9 +3,10 @@ package control
 import (
 	"context"
 	"encoding/base64"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
 	"strconv"
+
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type ImageI interface {
@@ -155,9 +156,6 @@ func (i *Image) Deserialize(dec page.Decoder) {
 	}
 }
 
-
-
-
 // ImageCreator is the initialization structure for declarative creation of buttons
 type ImageCreator struct {
 	// ID is the control id
@@ -165,11 +163,11 @@ type ImageCreator struct {
 	// Src is the content of the source attribute, usually a url
 	Src string
 	// Alt is the text displayed for screen readers
-	Alt string
+	Alt      string
 	MimeType string
-	Width int
-	Height int
-	Data []byte
+	Width    int
+	Height   int
+	Data     []byte
 	page.ControlOptions
 }
 

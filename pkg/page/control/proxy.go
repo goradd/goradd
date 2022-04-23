@@ -3,15 +3,16 @@ package control
 import (
 	"context"
 	"fmt"
+	"html"
+	"io"
+	"strings"
+
 	"github.com/goradd/goradd/pkg/crypt"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
-	"html"
-	"io"
-	"strings"
+	"github.com/goradd/html5tag"
 )
 
 type ProxyI interface {
@@ -189,7 +190,7 @@ func (p *Proxy) WrapEvent(eventName string, _ string, eventJs string, options ma
 }
 
 type On struct {
-	Event *page.Event
+	Event  *page.Event
 	Action action.ActionI
 }
 

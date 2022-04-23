@@ -2,10 +2,11 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 )
 
 type ButtonI interface {
@@ -52,7 +53,6 @@ func (c *Button) this() ButtonI {
 	return c.Self.(ButtonI)
 }
 
-
 // SetLabel is an alias for SetText on buttons. Standard buttons do not normally have separate labels.
 // Subclasses can redefine this if they use separate labels.
 func (b *Button) SetLabel(label string) page.ControlI {
@@ -69,7 +69,6 @@ func (b *Button) SetIsPrimary(s bool) {
 		b.SetAttribute("type", "button")
 	}
 }
-
 
 // On causes the given actions to execute when the given event is triggered.
 func (b *Button) On(e *page.Event, action action.ActionI) page.ControlI {
@@ -114,7 +113,7 @@ type ButtonCreator struct {
 	OnSubmit action.ActionI
 	// OnClick is an action to take when the button is pressed. Do not specify both
 	// a OnClick and OnSubmit.
-	OnClick action.ActionI
+	OnClick        action.ActionI
 	ValidationType page.ValidationType
 	page.ControlOptions
 }

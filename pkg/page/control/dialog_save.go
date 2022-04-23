@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 )
@@ -41,16 +42,16 @@ func (p *DialogSavePanel) Init(dlg page.ControlI, id string) {
 	p.DialogPanel.Init(dlg, id)
 	p.AddCloseButton(p.GT("Cancel"), CancelButtonnID)
 	p.AddButton(p.GT("Save"), SaveButtonID, &DialogButtonOptions{
-		Validates:true,
-		IsPrimary:true,
-		OnClick:action.Ajax(p.ID(), saveDlgSaveAction),
+		Validates: true,
+		IsPrimary: true,
+		OnClick:   action.Ajax(p.ID(), saveDlgSaveAction),
 	})
 }
 
 func (p *DialogSavePanel) Load(ctx context.Context, pk string) (data interface{}, err error) {
 	ep := p.SavePanel()
 	if ep == nil {
-		panic ("the child of a SaveDialog must be an SaveablePanel")
+		panic("the child of a SaveDialog must be an SaveablePanel")
 	}
 
 	err = ep.Load(ctx, pk)
@@ -77,7 +78,7 @@ func (p *DialogSavePanel) SavePanel() SaveablePanel {
 		return nil
 	}
 	for i := len(children) - 1; i >= 0; i-- {
-		if c,ok := children[i].(SaveablePanel); ok {
+		if c, ok := children[i].(SaveablePanel); ok {
 			return c
 		}
 	}

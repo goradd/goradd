@@ -2,9 +2,10 @@ package column
 
 import (
 	"context"
+	"reflect"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"reflect"
 )
 
 // SliceColumn is a table that works with data that is in the form of a slice. The data item itself must be convertible into
@@ -50,7 +51,6 @@ func (c *SliceColumn) Deserialize(dec page.Decoder) {
 		panic(err)
 	}
 }
-
 
 // SliceColumnCreator creates a column that treats each row as a slice of data.
 type SliceColumnCreator struct {

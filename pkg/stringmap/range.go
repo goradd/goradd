@@ -16,7 +16,7 @@ func SortedKeys(i interface{}) []string {
 	vKeys := vMap.MapKeys()
 	keys := make([]string, len(vKeys), len(vKeys))
 	idx := 0
-	for _,vKey := range vKeys {
+	for _, vKey := range vKeys {
 		keys[idx] = vKey.String()
 		idx++
 	}
@@ -26,16 +26,16 @@ func SortedKeys(i interface{}) []string {
 
 // Range is a convenience method to range over any map that uses strings as keys in a
 // predictable order from lowest to highest. It uses
-// a similar Range type function to the sync.Map.Range function.
-func Range(m interface{}, f func (key string, val interface {}) bool) {
+// a similar Range type function to the sync.StdMap.Range function.
+func Range(m interface{}, f func(key string, val interface{}) bool) {
 	v := reflect.ValueOf(m)
 	keys := v.MapKeys()
 
-	sort.Slice(keys, func(a,b int) bool {
+	sort.Slice(keys, func(a, b int) bool {
 		return keys[a].String() < keys[b].String()
 	})
 
-	for _,kv := range keys {
+	for _, kv := range keys {
 		vv := v.MapIndex(kv)
 		result := f(kv.String(), vv.Interface())
 		if !result {

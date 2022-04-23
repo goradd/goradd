@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"fmt"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 )
@@ -13,9 +14,9 @@ const (
 )
 
 const (
-	SaveButtonID = "saveBtn"
+	SaveButtonID    = "saveBtn"
 	CancelButtonnID = "cancelBtn"
-	DeleteButtonID = "deleteBtn"
+	DeleteButtonID  = "deleteBtn"
 )
 
 type EditablePanel interface {
@@ -52,16 +53,16 @@ func (p *DialogEditPanel) Init(dlg page.ControlI, id string, objectName string) 
 	p.AddButton(p.GT("Delete"),
 		DeleteButtonID,
 		&DialogButtonOptions{
-			PushLeft:true,
-			ConfirmationMessage:fmt.Sprintf(p.GT("Are you sure you want to delete this %s?"), objectName),
-			OnClick:action.Ajax(p.ID(), editDlgDeleteAction),
+			PushLeft:            true,
+			ConfirmationMessage: fmt.Sprintf(p.GT("Are you sure you want to delete this %s?"), objectName),
+			OnClick:             action.Ajax(p.ID(), editDlgDeleteAction),
 		})
 
 	p.AddCloseButton(p.GT("Cancel"), CancelButtonnID)
 	p.AddButton(p.GT("Save"), SaveButtonID, &DialogButtonOptions{
-		Validates:true,
-		IsPrimary:true,
-		OnClick:action.Ajax(p.ID(), editDlgSaveAction),
+		Validates: true,
+		IsPrimary: true,
+		OnClick:   action.Ajax(p.ID(), editDlgSaveAction),
 	})
 
 	p.ObjectName = objectName
@@ -70,7 +71,7 @@ func (p *DialogEditPanel) Init(dlg page.ControlI, id string, objectName string) 
 func (p *DialogEditPanel) Load(ctx context.Context, pk string) (data interface{}, err error) {
 	ep := p.EditPanel()
 	if ep == nil {
-		panic ("the child of an EditDialog must be an EditablePanel")
+		panic("the child of an EditDialog must be an EditablePanel")
 	}
 
 	err = ep.Load(ctx, pk)
@@ -108,7 +109,7 @@ func (p *DialogEditPanel) EditPanel() EditablePanel {
 		return nil
 	}
 	for i := len(children) - 1; i >= 0; i-- {
-		if c,ok := children[i].(EditablePanel); ok {
+		if c, ok := children[i].(EditablePanel); ok {
 			return c
 		}
 	}

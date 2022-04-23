@@ -3,9 +3,10 @@ package control
 import (
 	"context"
 	"encoding/gob"
-	time2 "github.com/goradd/goradd/pkg/time"
 	"strings"
 	"time"
+
+	time2 "github.com/goradd/goradd/pkg/time"
 
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -22,9 +23,9 @@ type DateTextboxI interface {
 // Dates and times will be converted to Browser local time.
 type DateTextbox struct {
 	Textbox
-	formats []string         // Variety of formats it will accept. Same as what time.format expects.
-	time     time.Time // Converting from text to a datetime is expensive.
-							 // We maintain a copy of the conversion to prevent duplication of effort.
+	formats []string  // Variety of formats it will accept. Same as what time.format expects.
+	time    time.Time // Converting from text to a datetime is expensive.
+	// We maintain a copy of the conversion to prevent duplication of effort.
 }
 
 // NewDateTextbox creates a new DateTextbox.
@@ -54,7 +55,6 @@ func (d *DateTextbox) Formats() []string {
 	return d.formats
 }
 
-
 // SetValue will set the DateTextbox to the given value if possible.
 func (d *DateTextbox) SetValue(val interface{}) page.ControlI {
 	switch v := val.(type) {
@@ -76,8 +76,8 @@ func (d *DateTextbox) parseDate(ctx context.Context, s string) (result time.Time
 	if ctx != nil {
 		grctx = page.GetContext(ctx)
 	}
-	for _,layoutUsed = range d.layouts() {
-		if grctx != nil && time2.LayoutHasDate(layoutUsed) && time2.LayoutHasTime(layoutUsed){
+	for _, layoutUsed = range d.layouts() {
+		if grctx != nil && time2.LayoutHasDate(layoutUsed) && time2.LayoutHasTime(layoutUsed) {
 			result, err = time2.ParseInOffset(layoutUsed, s, grctx.ClientTimezone(), grctx.ClientTimezoneOffset())
 		} else {
 			result, err = time2.ParseForgiving(layoutUsed, s)
@@ -151,7 +151,7 @@ func (d *DateTextbox) UpdateFormValues(ctx context.Context) {
 }
 
 // Serialize encodes the control into the pagestate
-func (d *DateTextbox) Serialize(e page.Encoder)  {
+func (d *DateTextbox) Serialize(e page.Encoder) {
 	d.Textbox.Serialize(e)
 	if err := e.Encode(d.formats); err != nil {
 		panic(err)
@@ -251,7 +251,7 @@ func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
 		ReadOnly:       c.ReadOnly,
 		ControlOptions: c.ControlOptions,
 		SaveState:      c.SaveState,
-		Text: c.Text,
+		Text:           c.Text,
 	}
 	sub.Init(ctx, ctrl)
 }

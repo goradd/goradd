@@ -1,10 +1,11 @@
 package control
 
 import (
+	"testing"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestNewButton(t *testing.T) {
@@ -22,7 +23,6 @@ func TestNewButton(t *testing.T) {
 
 	b.SetIsPrimary(false)
 	assert.Equal(t, "button", b.Attributes().Get("type"))
-
 
 	a := b.DrawingAttributes(ctx)
 	assert.True(t, a.Has("name"))
@@ -47,12 +47,12 @@ func TestButtonCreator(t *testing.T) {
 	ctx := page.NewMockContext()
 	f.AddControls(ctx,
 		ButtonCreator{
-			ID:          "abc",
-			Text:        "b",
-			IsPrimary: true,
-			OnClick: action.Blur("d"),
+			ID:             "abc",
+			Text:           "b",
+			IsPrimary:      true,
+			OnClick:        action.Blur("d"),
 			ValidationType: page.ValidateChildrenOnly,
-			ControlOptions: page.ControlOptions {
+			ControlOptions: page.ControlOptions{
 				Class: "c",
 			},
 		},

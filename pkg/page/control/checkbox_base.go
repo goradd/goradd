@@ -2,11 +2,11 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
 	"html"
 	"io"
+
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type CheckboxI interface {
@@ -60,7 +60,7 @@ func (c *CheckboxBase) SetLabelDrawingMode(m html5tag.LabelDrawingMode) {
 // Some CSS frameworks are very particular about how checkboxes get
 // associated with labels. The Text value of the control will become the text directly associated with the checkbox,
 // while the Label value is only shown when drawing a checkbox with a wrapper.
-func (c *CheckboxBase) DrawTag(ctx context.Context, w io.Writer) () {
+func (c *CheckboxBase) DrawTag(ctx context.Context, w io.Writer) {
 	var ctrl string
 	attributes := c.this().DrawingAttributes(ctx)
 	if c.checked {
@@ -90,7 +90,9 @@ func (c *CheckboxBase) DrawTag(ctx context.Context, w io.Writer) () {
 		ctrl = html5tag.RenderVoidTag(c.Tag, attributes)
 		ctrl = html5tag.RenderLabel(labelAttributes, text, ctrl, c.LabelMode)
 	}
-	if _,err := io.WriteString(w, ctrl); err != nil {panic(err)}
+	if _, err := io.WriteString(w, ctrl); err != nil {
+		panic(err)
+	}
 }
 
 // LabelAttributes returns a pointer to the input label attributes.
@@ -168,14 +170,14 @@ func (c *CheckboxBase) Value() interface{} {
 
 // MarshalState is called by the framework to save the state of the checkbox between form
 // views. Call SetState(true) to enable state saving.
-func (c *CheckboxBase) MarshalState(m maps.Setter) {
+func (c *CheckboxBase) MarshalState(m page.SavedState) {
 	m.Set("checked", c.checked)
 }
 
 // UnmarshalState restores the state of the checkbox if coming back to a form in the same session.
-func (c *CheckboxBase) UnmarshalState(m maps.Loader) {
+func (c *CheckboxBase) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load("checked"); ok {
-		if v2, ok := v.(bool); ok {
+		if v2, ok2 := v.(bool); ok2 {
 			c.checked = v2
 		}
 	}

@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/goradd/gengen/pkg/maps"
-	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/log"
-	"github.com/goradd/goradd/pkg/page"
 	"path"
 	"strings"
+
+	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type ImageCaptureShape string
@@ -40,11 +40,11 @@ type ImageCapture struct {
 	Panel
 
 	ErrTextID string
-	data    []byte
-	shape   ImageCaptureShape
-	typ     string
-	zoom    int
-	quality float32
+	data      []byte
+	shape     ImageCaptureShape
+	typ       string
+	zoom      int
+	quality   float32
 }
 
 // NewImageCapture creates a new image capture panel.
@@ -63,7 +63,7 @@ func (i *ImageCapture) Init(parent page.ControlI, id string) {
 	i.quality = 0.92
 
 	NewCanvas(i, i.canvasID())
-	
+
 	NewButton(i, i.captureID()).
 		SetText(i.GT("New Image"))
 
@@ -71,7 +71,7 @@ func (i *ImageCapture) Init(parent page.ControlI, id string) {
 		SetDisplay("none").
 		SetText(i.GT("Switch Camera"))
 
-	i.ErrTextID = i.ID()+"-err"
+	i.ErrTextID = i.ID() + "-err"
 	et := NewPanel(i, i.ErrTextID)
 	et.Tag = "p"
 	et.SetDisplay("none")
@@ -93,7 +93,6 @@ func (i *ImageCapture) captureID() string {
 func (i *ImageCapture) switchID() string {
 	return i.ID() + "-switch"
 }
-
 
 func (i *ImageCapture) Data() []byte {
 	return i.data // clone?
@@ -180,13 +179,13 @@ func (i *ImageCapture) DrawingAttributes(ctx context.Context) html5tag.Attribute
 	}
 	a.SetData("grOptMimeType", i.typ)
 	a.SetData("grOptQuality", fmt.Sprint(i.quality))
-/*
-	if i.data != nil {
-		// Turn the data into a source attribute
-		d := base64.StdEncoding.EncodeToString(i.data)
-		d = "data:image/" + i.typ + ";base64," + d
-		a.Set("src", d)
-	}*/
+	/*
+		if i.data != nil {
+			// Turn the data into a source attribute
+			d := base64.StdEncoding.EncodeToString(i.data)
+			d = "data:image/" + i.typ + ";base64," + d
+			a.Set("src", d)
+		}*/
 	return a
 }
 
@@ -202,13 +201,14 @@ func (i *ImageCapture) UpdateFormValues(ctx context.Context) {
 		}
 	}
 }
+
 // MarshalState is an internal function to save the state of the control
-func (i *ImageCapture) MarshalState(m maps.Setter) {
+func (i *ImageCapture) MarshalState(m page.SavedState) {
 	m.Set("data", i.Data())
 }
 
 // UnmarshalState is an internal function to restore the state of the control
-func (i *ImageCapture) UnmarshalState(m maps.Loader) {
+func (i *ImageCapture) UnmarshalState(m page.SavedState) {
 	if v, ok := m.Load("data"); ok {
 		if s, ok := v.([]byte); ok {
 			i.data = s
@@ -268,11 +268,11 @@ func (i *ImageCapture) Deserialize(dec page.Decoder) {
 // ImageCaptureCreator is the initialization structure for declarative creation of buttons
 type ImageCaptureCreator struct {
 	// ID is the control id
-	ID string
-	MaskShape   	ImageCaptureShape
-	MimeType    string
-	Zoom    int
-	Quality float32
+	ID        string
+	MaskShape ImageCaptureShape
+	MimeType  string
+	Zoom      int
+	Quality   float32
 	SaveState bool
 	page.ControlOptions
 }

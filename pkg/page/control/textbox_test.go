@@ -3,10 +3,11 @@ package control
 import (
 	"bytes"
 	"encoding/gob"
+	"testing"
+
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestTextbox(t *testing.T) {
@@ -50,10 +51,9 @@ func TestTextboxValidation(t *testing.T) {
 	assert.True(t, d.ValidationMessage() == "")
 }
 
-
 func TestExportCreatorTextbox(t *testing.T) {
 	c := TextboxCreator{
-		ID: "id",
+		ID:          "id",
 		Placeholder: "placeholder",
 	}
 	s := generator.ExportCreator(c)
@@ -86,4 +86,3 @@ func TestTextbox_Serialize(t *testing.T) {
 	assert.Equal(t, 2, c2.MinLength())
 	assert.Equal(t, 5, c2.MaxLength())
 }
-

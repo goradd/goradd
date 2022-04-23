@@ -1,10 +1,11 @@
 package control
 
 import (
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDateTextbox(t *testing.T) {

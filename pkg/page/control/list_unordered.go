@@ -2,10 +2,11 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
-	"github.com/goradd/goradd/pkg/page"
 	"io"
 	"reflect"
+
+	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 type UnorderedListI interface {
@@ -144,7 +145,6 @@ func (l *UnorderedList) Deserialize(dec page.Decoder) {
 		panic(err)
 	}
 }
-
 
 type UnorderedListCreator struct {
 	ID string

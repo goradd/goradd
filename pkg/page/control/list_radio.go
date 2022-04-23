@@ -2,12 +2,13 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
+	"io"
+	"strings"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
-	"io"
-	"strings"
+	"github.com/goradd/html5tag"
 )
 
 type RadioListI interface {
@@ -20,7 +21,6 @@ type RadioListI interface {
 
 	RenderItems(items []*ListItem) string
 	RenderItem(item *ListItem) string
-
 }
 
 // RadioList is a single-select control that presents its choices as a list of radio buttons.
@@ -144,7 +144,7 @@ func (l *RadioList) DrawInnerHtml(_ context.Context, w io.Writer) {
 
 func (l *RadioList) RenderItems(items []*ListItem) string {
 	var hItems []string
-	for _,item := range items {
+	for _, item := range items {
 		hItems = append(hItems, l.this().RenderItem(item))
 	}
 	if l.columnCount == 0 {
@@ -247,7 +247,6 @@ func (l *RadioList) Deserialize(dec page.Decoder) {
 		panic(err)
 	}
 }
-
 
 type RadioListCreator struct {
 	ID string

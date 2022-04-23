@@ -2,6 +2,7 @@ package column
 
 import (
 	"context"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 )
@@ -61,7 +62,6 @@ func (c *GetterColumn) Deserialize(dec page.Decoder) {
 		panic(err)
 	}
 }
-
 
 // GetterColumnCreator creates a column that uses a Getter to get the text of each cell.
 type GetterColumnCreator struct {

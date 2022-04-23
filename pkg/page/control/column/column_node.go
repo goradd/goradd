@@ -2,6 +2,7 @@ package column
 
 import (
 	"context"
+
 	"github.com/goradd/goradd/pkg/iface"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/page"
@@ -90,8 +91,6 @@ func (c *NodeColumn) Deserialize(dec page.Decoder) {
 		panic(err)
 	}
 }
-
-
 
 type NodeGetter interface {
 	GetNode() query.NodeI

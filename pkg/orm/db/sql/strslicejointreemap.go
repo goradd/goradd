@@ -20,18 +20,18 @@ import (
 type JoinTreeItemSliceMap struct {
 	items map[string]*JoinTreeItem
 	order []string
-	lessF func(key1,key2 string, val1, val2 *JoinTreeItem) bool
+	lessF func(key1, key2 string, val1, val2 *JoinTreeItem) bool
 }
 
 // NewJoinTreeItemSliceMap creates a new map that maps string's to *JoinTreeItem's.
 func NewJoinTreeItemSliceMap() *JoinTreeItemSliceMap {
-	return new (JoinTreeItemSliceMap)
+	return new(JoinTreeItemSliceMap)
 }
 
 // NewJoinTreeItemSliceMapFrom creates a new JoinTreeItemMap from a
 // JoinTreeItemMapI interface object
 func NewJoinTreeItemSliceMapFrom(i JoinTreeItemMapI) *JoinTreeItemSliceMap {
-	m := new (JoinTreeItemSliceMap)
+	m := new(JoinTreeItemSliceMap)
 	m.Merge(i)
 	return m
 }
@@ -45,8 +45,8 @@ func NewJoinTreeItemSliceMapFromMap(i map[string]*JoinTreeItem) *JoinTreeItemSli
 	m.order = make([]string, len(m.items), len(m.items))
 	j := 0
 	for k := range m.items {
-	    m.order[j] = k
-	    j++
+		m.order[j] = k
+		j++
 	}
 	return m
 }
@@ -55,30 +55,26 @@ func NewJoinTreeItemSliceMapFromMap(i map[string]*JoinTreeItem) *JoinTreeItemSli
 // on an ongoing basis. Normally, items will iterate in the order they were added.
 // The sort function is a Less function, that returns true when item 1 is "less" than item 2.
 // The sort function receives both the keys and values, so it can use either to decide how to sort.
-func (o *JoinTreeItemSliceMap) SetSortFunc(f func(key1,key2 string, val1, val2 *JoinTreeItem) bool) *JoinTreeItemSliceMap {
-    o.lessF = f
-    if f != nil && len(o.order) > 0 {
-        sort.Slice(o.order, func(i,j int) bool {
-            return f(o.order[i], o.order[j], o.items[o.order[i]], o.items[o.order[j]])
-        })
-    }
+func (o *JoinTreeItemSliceMap) SetSortFunc(f func(key1, key2 string, val1, val2 *JoinTreeItem) bool) *JoinTreeItemSliceMap {
+	o.lessF = f
+	if f != nil && len(o.order) > 0 {
+		sort.Slice(o.order, func(i, j int) bool {
+			return f(o.order[i], o.order[j], o.items[o.order[i]], o.items[o.order[j]])
+		})
+	}
 
-    return o
+	return o
 }
 
 // SortByKeys sets up the map to have its sort order sort by keys, lowest to highest
 func (o *JoinTreeItemSliceMap) SortByKeys() *JoinTreeItemSliceMap {
-    o.SetSortFunc(keySortJoinTreeItemSliceMap)
-    return o
+	o.SetSortFunc(keySortJoinTreeItemSliceMap)
+	return o
 }
 
 func keySortJoinTreeItemSliceMap(key1, key2 string, val1, val2 *JoinTreeItem) bool {
-    return key1 < key2
+	return key1 < key2
 }
-
-
-
-
 
 // Set sets the given key to the given value.
 // If the key already exists, the range order will not change.
@@ -87,50 +83,50 @@ func (o *JoinTreeItemSliceMap) Set(key string, val *JoinTreeItem) {
 	var oldVal *JoinTreeItem
 
 	if o == nil {
-	    panic("You must initialize the map before using it.")
+		panic("You must initialize the map before using it.")
 	}
 
 	if o.items == nil {
-	    o.items = make(map[string]*JoinTreeItem)
+		o.items = make(map[string]*JoinTreeItem)
 	}
 
 	_, ok = o.items[key]
-    if o.lessF != nil {
-        if ok {
-            // delete old key location
-            loc := sort.Search (len(o.items), func(n int) bool {
-                return !o.lessF(o.order[n], key, o.items[o.order[n]], oldVal)
-            })
-            o.order = append(o.order[:loc], o.order[loc+1:]...)
-        }
+	if o.lessF != nil {
+		if ok {
+			// delete old key location
+			loc := sort.Search(len(o.items), func(n int) bool {
+				return !o.lessF(o.order[n], key, o.items[o.order[n]], oldVal)
+			})
+			o.order = append(o.order[:loc], o.order[loc+1:]...)
+		}
 
-        loc := sort.Search (len(o.order), func(n int) bool {
-            return o.lessF(key, o.order[n], val, o.items[o.order[n]])
-        })
-        // insert
-        o.order = append(o.order, key)
-        copy(o.order[loc+1:], o.order[loc:])
-        o.order[loc] = key
-    } else {
-        if !ok {
-            o.order = append(o.order, key)
-        }
-    }
-    o.items[key] = val
+		loc := sort.Search(len(o.order), func(n int) bool {
+			return o.lessF(key, o.order[n], val, o.items[o.order[n]])
+		})
+		// insert
+		o.order = append(o.order, key)
+		copy(o.order[loc+1:], o.order[loc:])
+		o.order[loc] = key
+	} else {
+		if !ok {
+			o.order = append(o.order, key)
+		}
+	}
+	o.items[key] = val
 
 	return
 }
 
 // SetAt sets the given key to the given value, but also inserts it at the index specified.  If the index is bigger than
 // the length, it puts it at the end. Negative indexes are backwards from the end.
-func (o *JoinTreeItemSliceMap) SetAt(index int, key string, val *JoinTreeItem)  {
-    if o == nil {
-        panic("You must initialize the map before using it.")
-    }
+func (o *JoinTreeItemSliceMap) SetAt(index int, key string, val *JoinTreeItem) {
+	if o == nil {
+		panic("You must initialize the map before using it.")
+	}
 
-    if o.lessF != nil {
-        panic("You cannot use SetAt if you are also using a sort function.")
-    }
+	if o.lessF != nil {
+		panic("You cannot use SetAt if you are also using a sort function.")
+	}
 
 	if index >= len(o.order) {
 		o.Set(key, val)
@@ -153,72 +149,68 @@ func (o *JoinTreeItemSliceMap) SetAt(index int, key string, val *JoinTreeItem)  
 		o.order[index] = key
 	}
 	o.items[key] = val
-    return
+	return
 }
 
 // Delete removes the item with the given key.
 func (o *JoinTreeItemSliceMap) Delete(key string) {
-    if o == nil {
-        return
-    }
+	if o == nil {
+		return
+	}
 
-    if _,ok := o.items[key]; ok {
-        if o.lessF != nil {
-            oldVal := o.items[key]
-            loc := sort.Search (len(o.items), func(n int) bool {
-                return !o.lessF(o.order[n], key, o.items[o.order[n]], oldVal)
-            })
-            o.order = append(o.order[:loc], o.order[loc+1:]...)
-        } else {
-            for i, v := range o.order {
-                if v == key {
-                    o.order = append(o.order[:i], o.order[i+1:]...)
-                    break
-                }
-            }
-        }
-        delete(o.items, key)
-    }
+	if _, ok := o.items[key]; ok {
+		if o.lessF != nil {
+			oldVal := o.items[key]
+			loc := sort.Search(len(o.items), func(n int) bool {
+				return !o.lessF(o.order[n], key, o.items[o.order[n]], oldVal)
+			})
+			o.order = append(o.order[:loc], o.order[loc+1:]...)
+		} else {
+			for i, v := range o.order {
+				if v == key {
+					o.order = append(o.order[:i], o.order[i+1:]...)
+					break
+				}
+			}
+		}
+		delete(o.items, key)
+	}
 }
 
 // Get returns the value based on its key. If the key does not exist, an empty value is returned.
 func (o *JoinTreeItemSliceMap) Get(key string) (val *JoinTreeItem) {
-    val,_ = o.Load(key)
-    return
+	val, _ = o.Load(key)
+	return
 }
 
 // Load returns the value based on its key, and a boolean indicating whether it exists in the map.
-// This is the same interface as sync.Map.Load()
+// This is the same interface as sync.StdMap.Load()
 func (o *JoinTreeItemSliceMap) Load(key string) (val *JoinTreeItem, ok bool) {
-    if o == nil {
-        return
-    }
-    if o.items != nil {
-    	val, ok = o.items[key]
-    }
+	if o == nil {
+		return
+	}
+	if o.items != nil {
+		val, ok = o.items[key]
+	}
 	return
 }
-
-
 
 // Has returns true if the given key exists in the map.
 func (o *JoinTreeItemSliceMap) Has(key string) (ok bool) {
-    if o == nil {
-        return false
-    }
-    if o.items != nil {
-	    _, ok = o.items[key]
-    }
+	if o == nil {
+		return false
+	}
+	if o.items != nil {
+		_, ok = o.items[key]
+	}
 	return
 }
 
-
-
 // GetAt returns the value based on its position. If the position is out of bounds, an empty value is returned.
 func (o *JoinTreeItemSliceMap) GetAt(position int) (val *JoinTreeItem) {
-    if o == nil {
-        return
-    }
+	if o == nil {
+		return
+	}
 	if position < len(o.order) && position >= 0 {
 		val, _ = o.items[o.order[position]]
 	}
@@ -227,9 +219,9 @@ func (o *JoinTreeItemSliceMap) GetAt(position int) (val *JoinTreeItem) {
 
 // GetKeyAt returns the key based on its position. If the position is out of bounds, an empty value is returned.
 func (o *JoinTreeItemSliceMap) GetKeyAt(position int) (key string) {
-    if o == nil {
-        return
-    }
+	if o == nil {
+		return
+	}
 	if position < len(o.order) && position >= 0 {
 		key = o.order[position]
 	}
@@ -238,45 +230,44 @@ func (o *JoinTreeItemSliceMap) GetKeyAt(position int) (key string) {
 
 // Values returns a slice of the values in the order they were added or sorted.
 func (o *JoinTreeItemSliceMap) Values() (vals []*JoinTreeItem) {
-    if o == nil {
-        return
-    }
+	if o == nil {
+		return
+	}
 
-    if o.items != nil {
-  	    vals = make([]*JoinTreeItem, len(o.order))
-        for i, v := range o.order {
-            vals[i] = o.items[v]
-        }
-    }
+	if o.items != nil {
+		vals = make([]*JoinTreeItem, len(o.order))
+		for i, v := range o.order {
+			vals[i] = o.items[v]
+		}
+	}
 
 	return
 }
 
 // Keys returns the keys of the map, in the order they were added or sorted
 func (o *JoinTreeItemSliceMap) Keys() (keys []string) {
-    if o == nil {
-        return
-    }
+	if o == nil {
+		return
+	}
 
-    if len(o.order) != 0 {
- 	    keys = make([]string, len(o.order))
-        for i, v := range o.order {
-            keys[i] = v
-        }
-    }
+	if len(o.order) != 0 {
+		keys = make([]string, len(o.order))
+		for i, v := range o.order {
+			keys[i] = v
+		}
+	}
 
 	return
 }
 
 // Len returns the number of items in the map
 func (o *JoinTreeItemSliceMap) Len() int {
-    if o == nil {
-        return 0
-    }
-    l := len(o.order)
+	if o == nil {
+		return 0
+	}
+	l := len(o.order)
 	return l
 }
-
 
 // Copy will make a copy of the map and a copy of the underlying data.
 func (o *JoinTreeItemSliceMap) Copy() *JoinTreeItemSliceMap {
@@ -309,7 +300,7 @@ func (o *JoinTreeItemSliceMap) MarshalBinary() (data []byte, err error) {
 // UnmarshalBinary implements the BinaryUnmarshaler interface to convert a byte stream to a
 // JoinTreeItemSliceMap
 func (o *JoinTreeItemSliceMap) UnmarshalBinary(data []byte) (err error) {
-    var items map[string]*JoinTreeItem
+	var items map[string]*JoinTreeItem
 	var order []string
 
 	buf := bytes.NewBuffer(data)
@@ -319,8 +310,8 @@ func (o *JoinTreeItemSliceMap) UnmarshalBinary(data []byte) (err error) {
 	}
 
 	if err == nil {
-        o.items = items
-        o.order = order
+		o.items = items
+		o.order = order
 	}
 	return err
 }
@@ -335,21 +326,20 @@ func (o *JoinTreeItemSliceMap) MarshalJSON() (data []byte, err error) {
 // UnmarshalJSON implements the json.Unmarshaler interface to convert a json object to a JoinTreeItemMap.
 // The JSON must start with an object.
 func (o *JoinTreeItemSliceMap) UnmarshalJSON(data []byte) (err error) {
-    var items map[string]*JoinTreeItem
+	var items map[string]*JoinTreeItem
 
 	if err = json.Unmarshal(data, &items); err == nil {
-        o.items = items
-        // Create a default order, since these are inherently unordered
-        o.order = make([]string, len(o.items))
-        i := 0
-        for k := range o.items {
-            o.order[i] = k
-            i++
-        }
+		o.items = items
+		// Create a default order, since these are inherently unordered
+		o.order = make([]string, len(o.items))
+		i := 0
+		for k := range o.items {
+			o.order[i] = k
+			i++
+		}
 	}
 	return
 }
-
 
 // Merge the given map into the current one
 func (o *JoinTreeItemSliceMap) Merge(i JoinTreeItemMapI) {
@@ -367,11 +357,10 @@ func (o *JoinTreeItemSliceMap) MergeMap(m map[string]*JoinTreeItem) {
 		return
 	}
 
-	for k,v := range m {
+	for k, v := range m {
 		o.Set(k, v)
 	}
 }
-
 
 // Range will call the given function with every key and value in the order
 // they were placed in the map, or in if you sorted the map, in your custom order.
@@ -380,13 +369,13 @@ func (o *JoinTreeItemSliceMap) Range(f func(key string, value *JoinTreeItem) boo
 	if o == nil {
 		return
 	}
-	if  o.items != nil {
-        for _, k := range o.order {
-            if !f(k, o.items[k]) {
-                break
-            }
-        }
-    }
+	if o.items != nil {
+		for _, k := range o.order {
+			if !f(k, o.items[k]) {
+				break
+			}
+		}
+	}
 }
 
 // Equals returns true if the map equals the given map, paying attention only to the content of the
@@ -412,7 +401,9 @@ func (o *JoinTreeItemSliceMap) Equals(i JoinTreeItemMapI) bool {
 }
 
 func (o *JoinTreeItemSliceMap) Clear() {
-    if o == nil {return}
+	if o == nil {
+		return
+	}
 	o.items = nil
 	o.order = nil
 
@@ -435,8 +426,6 @@ func (o *JoinTreeItemSliceMap) String() string {
 	return s
 }
 
-
-
 func init() {
-	gob.Register(new (JoinTreeItemSliceMap))
+	gob.Register(new(JoinTreeItemSliceMap))
 }

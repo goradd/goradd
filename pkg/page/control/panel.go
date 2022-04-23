@@ -3,15 +3,15 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/html5tag"
+
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 )
 
 // Children is just a helper function for doing declarative control creation for child control creators
 func Children(creators ...page.Creator) []page.Creator {
 	return creators
 }
-
 
 type PanelI interface {
 	page.ControlI
@@ -39,7 +39,6 @@ func (c *Panel) this() PanelI {
 	return c.Self.(PanelI)
 }
 
-
 func (c *Panel) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.ControlBase.DrawingAttributes(ctx)
 	a.SetData("grctl", "panel")
@@ -55,7 +54,6 @@ func (c *Panel) Value() interface{} {
 func (c *Panel) SetValue(v interface{}) page.ControlI {
 	return c.SetText(fmt.Sprint(v))
 }
-
 
 // PanelCreator creates a div control with child controls.
 // Pass it to AddControls or as a child of a parent control.

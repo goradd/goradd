@@ -2,11 +2,12 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
+	"io"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
-	"io"
+	"github.com/goradd/html5tag"
 )
 
 // event codes
@@ -78,11 +79,9 @@ func (d *Dialog) Init(parent page.ControlI, id string) {
 	// container is owned by the form itself, even if sub-controls create the dialog.
 	var overlay page.ControlI
 
-
 	if id == "" {
 		panic("Dialogs must have an id.")
 	}
-
 
 	if !parent.Page().HasControl(DialogOverlayID) {
 		overlay = NewPanel(parent.ParentForm(), DialogOverlayID)
@@ -95,11 +94,11 @@ func (d *Dialog) Init(parent page.ControlI, id string) {
 	d.Panel.Init(overlay, id)
 	d.Tag = "div"
 
-	d.titleBarID = d.ID()+"-title"
+	d.titleBarID = d.ID() + "-title"
 	tb := NewPanel(d, d.titleBarID)
 	tb.AddClass("gr-dialog-title")
 
-	d.buttonBarID = d.ID()+"-buttons"
+	d.buttonBarID = d.ID() + "-buttons"
 	bb := NewPanel(d, d.buttonBarID)
 	bb.AddClass("gr-dialog-buttons")
 	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
@@ -120,8 +119,6 @@ func (d *Dialog) CloseBox() *Button {
 	}
 	return GetButton(d, d.closeBoxID)
 }
-
-
 
 // SetTitle sets the title of the dialog
 func (d *Dialog) SetTitle(t string) {
@@ -262,12 +259,12 @@ func (d *Dialog) SetHasCloseBox(h bool) {
 }
 
 func (d *Dialog) addCloseBox() {
-	d.closeBoxID = d.ID()+"-cb"
+	d.closeBoxID = d.ID() + "-cb"
 	cb := NewButton(d.TitleBar(), d.closeBoxID)
 	cb.AddClass("gr-dialog-close")
 	cb.SetText(`<span">X</span>`)
 	cb.SetTextIsHtml(true)
-	cb.On(event.Click(),  action.Trigger(d.ID(), event.DialogClosedEvent, nil))
+	cb.On(event.Click(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 }
 
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
@@ -300,7 +297,7 @@ func (d *Dialog) Hide() {
 	d.SetVisible(false)
 	overlay := GetPanel(d, DialogOverlayID)
 	var vis bool
-	for _,child := range overlay.Children() {
+	for _, child := range overlay.Children() {
 		if child.IsVisible() {
 			vis = true
 			break
@@ -382,7 +379,7 @@ func defaultNewDialogFunc(form page.FormI, id string) DialogI {
 
 // SetNewDialogFunction sets the function that will create new dialogs. This is normally called by a CSS dialog implementation
 // to set how dialogs are created in the application.
-func SetNewDialogFunction(f DialogIFuncType ) {
+func SetNewDialogFunction(f DialogIFuncType) {
 	newDialogFunc = f
 }
 
@@ -391,7 +388,6 @@ func SetNewDialogFunction(f DialogIFuncType ) {
 func RestoreNewDialogFunction() {
 	newDialogFunc = defaultNewDialogFunc
 }
-
 
 func init() {
 	page.RegisterControl(&Dialog{})

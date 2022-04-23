@@ -5,7 +5,6 @@ package sql
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/goradd/gengen/pkg/maps"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"log"
@@ -29,7 +28,6 @@ const (
 	SqlTypeBool      = "Bool"
 	SqlTypeDecimal   = "Decimal" // a fixed point type
 )
-
 
 // Find the json encoded list of options in the given string
 func ExtractOptions(comment string) (options map[string]interface{}, remainingComment string, err error) {
@@ -83,10 +81,12 @@ func getNumericOption(o map[string]interface{}, option string, defaultValue floa
 }
 
 // Retrieves a boolean value from the options
+/*
 func getBooleanOption(o *maps.SliceMap, option string) (val bool, ok bool) {
 	val, ok = o.LoadBool(option)
 	return
 }
+*/
 
 // Extracts a minimum and maximum value from the option map, returning defaults if none was found, and making sure
 // the boundaries of anything found are not exceeded
@@ -151,7 +151,6 @@ func FkRuleToAction(rule sql.NullString) db.FKAction {
 	return db.FKActionNone
 }
 
-
 // SqlReceiveRows gets data from a sql result set and returns it as a slice of maps.
 //
 // Each column is mapped to its column name.
@@ -167,7 +166,7 @@ func SqlReceiveRows(rows *sql.Rows,
 
 	cursor := NewSqlCursor(rows, columnTypes, columnNames, nil)
 	defer cursor.Close()
-	for v := cursor.Next();v != nil;v = cursor.Next() {
+	for v := cursor.Next(); v != nil; v = cursor.Next() {
 		values = append(values, v)
 	}
 	if builder != nil {
@@ -176,7 +175,6 @@ func SqlReceiveRows(rows *sql.Rows,
 
 	return values
 }
-
 
 // ReceiveRows gets data from a sql result set and returns it as a slice of maps. Each column is mapped to its column name.
 // If you provide column names, those will be used in the map. Otherwise it will get the column names out of the

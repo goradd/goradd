@@ -1,22 +1,22 @@
-package  column
+package column
 
 import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"github.com/goradd/html5tag"
+	"testing"
+
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/html5tag"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestAlias_Attributes(t *testing.T) {
 	col := NewAliasColumn("Alias")
-	col.ColTagAttributes().Set("a","b")
+	col.ColTagAttributes().Set("a", "b")
 	assert.Equal(t, "b", col.ColTagAttributes().Get("a"))
 }
-
 
 func TestAliasColumn_Serialize(t *testing.T) {
 	var buf bytes.Buffer
@@ -26,34 +26,33 @@ func TestAliasColumn_Serialize(t *testing.T) {
 
 	f.AddControls(context.Background(),
 		control.TableCreator{
-			ID:                "table",
+			ID: "table",
 			Columns: control.Columns(
 				AliasColumnCreator{
-					ID:            "a1",
-					Alias:         "DataOption",
-					Title:         "Alias",
-					Sortable:      true,
+					ID:       "a1",
+					Alias:    "DataOption",
+					Title:    "Alias",
+					Sortable: true,
 					ColumnOptions: control.ColumnOptions{
 						CellAttributes:   nil,
 						HeaderAttributes: nil,
 						FooterAttributes: nil,
 						ColTagAttributes: html5tag.Attributes{
-							"a":"b",
+							"a": "b",
 						},
-						Span:             0,
-						AsHeader:         false,
-						IsHtml:           false,
-						HeaderTexter:     nil,
-						FooterTexter:     nil,
-						IsHidden:         true,
-						Format:           "",
-						TimeFormat:       "",
+						Span:         0,
+						AsHeader:     false,
+						IsHtml:       false,
+						HeaderTexter: nil,
+						FooterTexter: nil,
+						IsHidden:     true,
+						Format:       "",
+						TimeFormat:   "",
 					},
 				},
 			),
 		},
 	)
-
 
 	c := control.GetTable(f, "table")
 	col := c.GetColumnByID("a1")
