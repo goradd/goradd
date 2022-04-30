@@ -84,10 +84,10 @@ func addMyDatabase() {
 	// 	 See OverrideConfigSettings for more info.
 	//
 	if i,ok := configOverrides[key]; ok {
-		db.OverrideConfigSettings(cfg, i.(map[string]interface{}))
+		mysql2.OverrideConfigSettings(cfg, i.(map[string]interface{}))
 	}
 
-	db1 := db.NewMysqlDB(key, "", cfg)
+	db1 := mysql2.NewMysqlDB(key, "", cfg)
 
 	if !config.Release {
 		db1.StartProfiling()
