@@ -4,7 +4,7 @@ import (
 	"io"
 	"context"
 
-	"github.com/goradd/goradd/pkg/html"
+	html "github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 )
 
