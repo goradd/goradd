@@ -259,6 +259,39 @@ func (b *MilestonesBuilder) LoadI() (milestoneSlice []interface{}) {
 	return milestoneSlice
 }
 
+// LoadCursor terminates the query builder, performs the query, and returns a cursor to the query.
+//
+// A query cursor is useful for dealing with large amounts of query results. However, there are some
+// limitations to its use. When working with SQL databases, you cannot use a cursor while querying
+// many-to-many or reverse relationships that will create an array of values.
+//
+// Call Next() on the returned cursor object to step through the results. Make sure you call Close
+// on the cursor object when you are done. You should use
+//   defer cursor.Close()
+// to make sure the cursor gets closed.
+func (b *MilestonesBuilder) LoadCursor() milestoneCursor {
+	cursor := b.builder.LoadCursor()
+
+	return milestoneCursor{cursor}
+}
+
+type milestoneCursor struct {
+	query.CursorI
+}
+
+// Next returns the current Milestone object and moves the cursor to the next one.
+//
+// If there are no more records, it returns nil.
+func (c milestoneCursor) Next() *Milestone {
+	row := c.CursorI.Next()
+	if row == nil {
+		return nil
+	}
+	o := new(Milestone)
+	o.load(row, o, nil, "")
+	return o
+}
+
 // Get is a convenience method to return only the first item found in a query.
 // The entire query is performed, so you should generally use this only if you know
 // you are selecting on one or very few items.
