@@ -69,6 +69,14 @@ func DateOnly(t time.Time) time.Time {
 	return NewDate(t.Year(), t.Month(), t.Day())
 }
 
+// AtGMTOffset returns a new time that represents the same instant
+// as the given time, but with the location changed to the given offset
+// in minutes from GMT, such that the resulting time will now be
+// in the local time of the timezone specified by the offset.
+func AtGMTOffset(t time.Time, tzOffset int) time.Time {
+	return t.In(time.FixedZone("", tzOffset*60))
+}
+
 func init() {
 	gob.Register(time.Time{})
 }
