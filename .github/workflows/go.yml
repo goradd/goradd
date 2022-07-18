@@ -43,12 +43,12 @@ jobs:
     - name: Setup Databases
       run: |
         mysql -u${{ env.ROOT_DB_USER }} -h '127.0.0.1' -e 'create database goradd;'
-        mysql -u${{ env.ROOT_DB_USER }} -h '127.0.0.1' -e 'create database goraddUnit;'
+        mysql -u${{ env.ROOT_DB_USER }} -h '127.0.0.1' -e 'create database goradd_unit;'
         mysql -u${{ env.ROOT_DB_USER }} -h '127.0.0.1' -e "CREATE USER '${{ env.DB_USER }}'@'localhost' IDENTIFIED BY ''"
         mysql -u${{ env.ROOT_DB_USER }} -h '127.0.0.1' -e "GRANT ALL PRIVILEGES ON *.* TO '${{ env.DB_USER }}'@'localhost'"
         mysql -u${{ env.ROOT_DB_USER }} -h '127.0.0.1' -e "FLUSH PRIVILEGES"
         mysql -u${{ env.ROOT_DB_USER }} -h '127.0.0.1' -e 'source ./web/examples/db/mysql.sql;' goradd
-        mysql -u${{ env.ROOT_DB_USER }} -h '127.0.0.1' -e 'source ./internal/ci/db/goraddunit.mysql.sql;' goraddUnit
+        mysql -u${{ env.ROOT_DB_USER }} -h '127.0.0.1' -e 'source ./internal/ci/db/goradd_unit.mysql.sql;' goradd_unit
 
     - name: Build
       run: go install
