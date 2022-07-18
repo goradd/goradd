@@ -31,7 +31,6 @@ func TestMultiWhere(t *testing.T) {
 	assert.Len(t, projects, 1)
 }
 
-
 func TestLogical(t *testing.T) {
 	type testCase struct {
 		testNode   query.NodeI
@@ -42,17 +41,17 @@ func TestLogical(t *testing.T) {
 	}
 	tests := []testCase{
 		{GreaterThan(node.Project().Num(), 3), 0, 4, 1, "Greater than uint test"},
-		{GreaterThan(node.Project().StartDate(), time.NewDate(2006,1,1)), 0, 2, 2, "Greater than datetime test"},
+		{GreaterThan(node.Project().StartDate(), time.NewDate(2006, 1, 1)), 0, 2, 2, "Greater than datetime test"},
 		{GreaterThan(node.Project().Spent(), 10000), 1, 2, 2, "Greater than float test"},
 		{LessThan(node.Project().Num(), 3), 1, 2, 2, "Less than uint test"},
-		{LessThan(node.Project().EndDate(), time.NewDate(2006,1,1)), 1, 4, 2, "Less than date test"},
+		{LessThan(node.Project().EndDate(), time.NewDate(2006, 1, 1)), 1, 4, 2, "Less than date test"},
 		{IsNull(node.Project().EndDate()), 0, 2, 1, "Is Null test"},
 		{IsNotNull(node.Project().EndDate()), 0, 1, 3, "Is Not Null test"},
-		{GreaterOrEqual(node.Project().ProjectStatusTypeID(), 2), 1, 4, 2, "Greater or Equal test"},
-		{LessOrEqual(node.Project().StartDate(), time.NewDate(2006,2,15)), 2, 4, 3, "Less or equal date test"},
+		{GreaterOrEqual(node.Project().StatusTypeID(), 2), 1, 4, 2, "Greater or Equal test"},
+		{LessOrEqual(node.Project().StartDate(), time.NewDate(2006, 2, 15)), 2, 4, 3, "Less or equal date test"},
 		{Or(Equal(node.Project().Num(), 1), Equal(node.Project().Num(), 4)), 1, 4, 2, "Or test"},
-		{Xor(Equal(node.Project().Num(), 3), Equal(node.Project().ProjectStatusTypeID(), 1)), 0, 2, 1, "Xor test"},
-		{Not(Xor(Equal(node.Project().Num(), 3), Equal(node.Project().ProjectStatusTypeID(), 1))), 0, 1, 3, "Not test"},
+		{Xor(Equal(node.Project().Num(), 3), Equal(node.Project().StatusTypeID(), 1)), 0, 2, 1, "Xor test"},
+		{Not(Xor(Equal(node.Project().Num(), 3), Equal(node.Project().StatusTypeID(), 1))), 0, 1, 3, "Not test"},
 		{Like(node.Project().Name(), "%ACME%"), 1, 4, 2, "Like test"},
 		{In(node.Project().Num(), 2, 3, 4), 1, 3, 3, "In test"},
 	}
@@ -132,16 +131,16 @@ func TestAggregates(t *testing.T) {
 	ctx := getContext()
 	projects := model.QueryProjects(ctx).
 		Alias("sum", Sum(node.Project().Spent())).
-		OrderBy(node.Project().ProjectStatusTypeID()).
-		GroupBy(node.Project().ProjectStatusTypeID()).
+		OrderBy(node.Project().StatusTypeID()).
+		GroupBy(node.Project().StatusTypeID()).
 		Load()
 
 	assert.EqualValues(t, 77400.5, projects[0].GetAlias("sum").Float())
 
 	projects2 := model.QueryProjects(ctx).
 		Alias("min", Min(node.Project().Spent())).
-		OrderBy(node.Project().ProjectStatusTypeID()).
-		GroupBy(node.Project().ProjectStatusTypeID()).
+		OrderBy(node.Project().StatusTypeID()).
+		GroupBy(node.Project().StatusTypeID()).
 		Load()
 
 	assert.EqualValues(t, 4200.50, projects2[0].GetAlias("min").Float())
@@ -159,7 +158,7 @@ func TestAliases(t *testing.T) {
 		Where(IsNotNull(nConson)).
 		Join(nVoyel, In(nVoyel.Name(), "Milestone A", "Milestone E", "Milestone I")).
 		Join(nConson, NotIn(nConson.Name(), "Milestone A", "Milestone E", "Milestone I")).
-		GroupBy(node.Person().ID(),node.Person().FirstName(), node.Person().LastName()).
+		GroupBy(node.Person().ID(), node.Person().FirstName(), node.Person().LastName()).
 		Alias("min_voyel", Min(nVoyel.Name())).
 		Alias("min_conson", Min(nConson.Name())).
 		Load()

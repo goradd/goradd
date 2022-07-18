@@ -12,15 +12,15 @@ func TestJsonMarshall1(t *testing.T) {
 	ctx := getContext()
 	p := model.LoadProject(ctx, "1",
 		node.Project().Name(),
-		node.Project().ProjectStatusType(),
+		node.Project().StatusType(),
 		node.Project().Manager().FirstName())
-	j,err := json.Marshal(p)
+	j, err := json.Marshal(p)
 	assert.NoError(t, err)
 	m := make(map[string]interface{})
 	err = json.Unmarshal(j, &m)
 	assert.NoError(t, err)
 	assert.Exactly(t, "ACME Website Redesign", m["name"])
-	assert.Exactly(t, "Completed", m["projectStatusType"])
+	assert.Exactly(t, "Completed", m["statusType"])
 	assert.Exactly(t, "Karen", m["manager"].(map[string]interface{})["firstName"])
 }
 
@@ -29,8 +29,8 @@ func TestJsonUnmarshall1(t *testing.T) {
 	err := json.Unmarshal([]byte(
 		`{
 	"name":"ACME Website Redesign",
-	"projectStatusType":"Completed",
-	"projectStatusTypeID":3,
+	"statusType":"Completed",
+	"statusTypeID":3,
 	"num":14,
 	"startDate":"2020-11-01T00:00:00Z"
 }
@@ -38,7 +38,7 @@ func TestJsonUnmarshall1(t *testing.T) {
 		&p)
 	assert.NoError(t, err)
 	assert.Exactly(t, "ACME Website Redesign", p.Name())
-	assert.Exactly(t, model.ProjectStatusTypeCompleted, p.ProjectStatusType())
+	assert.Exactly(t, model.ProjectStatusTypeCompleted, p.StatusType())
 	assert.Exactly(t, 14, p.Num())
 	assert.Exactly(t, 2020, p.StartDate().Year())
 }
@@ -49,14 +49,14 @@ func TestJsonMarshall2(t *testing.T) {
 		node.Person().FirstName(),
 		node.Person().LastName(),
 		node.Person().PersonTypes())
-	j,err := json.Marshal(p)
+	j, err := json.Marshal(p)
 	assert.NoError(t, err)
 	m := make(map[string]interface{})
 	err = json.Unmarshal(j, &m)
 	assert.NoError(t, err)
 	assert.Equal(t, "John", m["firstName"])
 	assert.Equal(t, "Doe", m["lastName"])
-	assert.ElementsMatch(t, []float64{2,3}, m["personTypes"])
+	assert.ElementsMatch(t, []float64{2, 3}, m["personTypes"])
 }
 
 func TestJsonUnmarshall2(t *testing.T) {
@@ -74,4 +74,3 @@ func TestJsonUnmarshall2(t *testing.T) {
 	assert.Equal(t, "Doe", p.LastName())
 	assert.ElementsMatch(t, []model.PersonType{model.PersonTypeManager, model.PersonTypeInactive}, p.PersonTypes())
 }
-

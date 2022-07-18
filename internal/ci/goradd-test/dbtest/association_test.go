@@ -79,7 +79,6 @@ func TestManySelect(t *testing.T) {
 	assert.Equal(t, "ACME Payment System", name)
 }
 
-
 func Test2Nodes(t *testing.T) {
 	ctx := getContext()
 	milestones := model.QueryMilestones(ctx).
@@ -117,7 +116,6 @@ func TestForwardMany(t *testing.T) {
 
 }
 
-
 func TestManyForward(t *testing.T) {
 	ctx := getContext()
 	people := model.QueryPeople(ctx).
@@ -150,7 +148,7 @@ func TestConditionalJoin(t *testing.T) {
 	// Reverse references
 	people := model.QueryPeople(ctx).
 		Join(node.Person().Addresses(), Equal(node.Person().Addresses().City(), "New York")).
-		Join(node.Person().ProjectsAsManager(), Equal(node.Person().ProjectsAsManager().ProjectStatusTypeID(), model.ProjectStatusTypeOpen)).
+		Join(node.Person().ProjectsAsManager(), Equal(node.Person().ProjectsAsManager().StatusTypeID(), model.ProjectStatusTypeOpen)).
 		Join(node.Person().ProjectsAsManager().Milestones()).
 		Join(node.Person().Login(), Like(node.Person().Login().Username(), "b%")).
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsManager().Name()).
@@ -221,7 +219,7 @@ func TestSelectByID(t *testing.T) {
 	p := people[0]
 	require.NotNil(t, p)
 	m := p.ProjectAsManager(id)
-	require.NotNil(t, m, "Could not fine project as manager: " + id)
+	require.NotNil(t, m, "Could not fine project as manager: "+id)
 	assert.Equal(t, m.Name(), "ACME Payment System")
 }
 
