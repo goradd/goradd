@@ -87,7 +87,7 @@ to take advantage of the changes.</p>
 		return
 	}
 
-	if _, err = io.WriteString(_w, project.ProjectStatusType().String()); err != nil {
+	if _, err = io.WriteString(_w, project.StatusType().String()); err != nil {
 		return
 	}
 

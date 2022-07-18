@@ -199,7 +199,36 @@ case query.ColTypeDouble:
                 return fmt.Errorf("json field %s must be a number", k)
             }
 }}
-case query.ColTypeBytes: fallthrough // BASE64 for binary data?
+case query.ColTypeBytes:
+{{
+            switch d := v.(type) {
+            case string:
+            {
+                // A base 64 encoded string
+                if b,err2 := base64.StdEncoding.DecodeString(d); err2 == nil {
+                    o.Set{{= col.GoName }}(b)
+                } else {
+                    return fmt.Errorf("json field %s must be either a Base64 encoded string or an array of byte values", k)
+                }
+            }
+            case []interface{}:
+            {
+                // An array of byte values. Unfortunately, these come through as float64s, and so need to be converted
+                b := make([]byte, len(d), len(d))
+                for i,b1 := range d {
+                    if f,ok := b1.(float64); !ok {
+                        return fmt.Errorf("json field %s must be either a Base64 encoded string or an array of byte values", k)
+                    } else {
+                        b[i] = uint8(f)
+                    }
+                }
+                o.Set{{= col.GoName }}(b)
+            }
+            default:
+                return fmt.Errorf("json field %s must be either a Base64 encoded string or an array of byte values", k)
+            }
+
+}}
 case query.ColTypeString:
 {{
             if s,ok := v.(string); !ok {

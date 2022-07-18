@@ -24,7 +24,7 @@ func init() {
 
 	cfg = mysql.NewConfig()
 
-	cfg.DBName = "goraddUnit"
+	cfg.DBName = "goradd_unit"
 	cfg.User = CiDbUser
 	cfg.Passwd = ""
 
@@ -38,7 +38,7 @@ func init() {
 
 func getContext() context.Context {
 	ctx := context.Background()
-	for _,d := range db.GetDatabases() {
+	for _, d := range db.GetDatabases() {
 		ctx = d.PutBlankContext(ctx)
 	}
 	return ctx

@@ -5,6 +5,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"
+	model2 "goradd-project/gen/goraddUnit/model"
+
 	"testing"
 )
 
@@ -73,4 +75,18 @@ func TestJsonUnmarshall2(t *testing.T) {
 	assert.Equal(t, "John", p.FirstName())
 	assert.Equal(t, "Doe", p.LastName())
 	assert.ElementsMatch(t, []model.PersonType{model.PersonTypeManager, model.PersonTypeInactive}, p.PersonTypes())
+}
+
+func TestJsonMarshall3(t *testing.T) {
+	ctx := getContext()
+	r := model2.LoadTypeTest(ctx, "1")
+	j, err := json.Marshal(r)
+	assert.NoError(t, err)
+
+	r2 := model2.NewTypeTest()
+	err = r2.UnmarshalJSON(j)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 5, r2.TestInt())
+	assert.Equal(t, "abcd", string(r2.TestBlob()))
 }
