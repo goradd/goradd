@@ -54,7 +54,7 @@ The status of the `); err != nil {
 		return
 	}
 
-	if _, err = io.WriteString(_w, project.ProjectStatusType().String()); err != nil {
+	if _, err = io.WriteString(_w, project.StatusType().String()); err != nil {
 		return
 	}
 

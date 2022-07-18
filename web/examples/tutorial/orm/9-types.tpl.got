@@ -32,7 +32,7 @@ type tables for values that you know will not change.
     project := model.LoadProject(ctx, "1")
 }}
 <p>
-The status of the {{= project.Name() }} project is {{= project.ProjectStatusType().String() }}.
+The status of the {{= project.Name() }} project is {{= project.StatusType().String() }}.
 </p>
 {{g
     person := model.LoadPerson(ctx, "3", node.Person().PersonTypes()) // Note that we are joining the type table because it has a many-many association

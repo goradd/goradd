@@ -53,7 +53,7 @@ to take advantage of the changes.</p>
 <div>Project 1</div>
 <div>{{= project.Name() }}</div>
 <div>{{= project.Description() }}</div>
-<div>{{= project.ProjectStatusType().String() }}</div>
+<div>{{= project.StatusType().String() }}</div>
 </p>
 
 {{end template}}
