@@ -22,7 +22,6 @@ func TestInsertNotInitialized(t *testing.T) {
 
 }
 
-
 func TestCrudForwardOneManyNull(t *testing.T) {
 	ctx := getContext()
 	address := model.NewAddress()
@@ -142,7 +141,6 @@ func TestCrudForwardOneManySetNull(t *testing.T) {
 	assert.Equal(t, "testReverse2", f3.Reverse().Name())
 	detached := f2.ReverseID()
 
-
 	r2 := model2.NewReverse()
 	r2.SetName("testReverse3")
 	f3.SetReverse(r2)
@@ -239,7 +237,6 @@ func TestCrudForwardOneManyRestrict(t *testing.T) {
 	assert.Equal(t, "testReverse2", f3.Reverse().Name())
 	detached := f2.ReverseID()
 
-
 	r2 := model2.NewReverse()
 	r2.SetName("testReverse3")
 	f3.SetReverse(r2)
@@ -248,7 +245,7 @@ func TestCrudForwardOneManyRestrict(t *testing.T) {
 	f4 := model2.LoadForwardRestrict(ctx, f3.ID(), node2.ForwardRestrict().Reverse())
 	assert.Equal(t, "testReverse3", f4.Reverse().Name())
 
-	assert.Panics(t, func() {f4.Reverse().Delete(ctx)})
+	assert.Panics(t, func() { f4.Reverse().Delete(ctx) })
 	id1 := f4.ID()
 	id2 := f4.Reverse().ID()
 
@@ -314,7 +311,6 @@ func TestCrudReverseOneManyRestrict(t *testing.T) {
 	r4.Delete(ctx)
 }
 
-
 func TestCrudForwardOneOneCascade(t *testing.T) {
 	ctx := getContext()
 	f := model2.NewForwardCascadeUnique()
@@ -336,7 +332,6 @@ func TestCrudForwardOneOneCascade(t *testing.T) {
 
 	f3 := model2.LoadForwardCascadeUnique(ctx, f2.ID(), node2.ForwardCascadeUnique().Reverse())
 	assert.Equal(t, "testReverse2", f3.Reverse().Name(), "Field in forward looking unique linked record was saved.")
-
 
 	r2 := model2.NewReverse()
 	r2.SetName("testReverse3")
@@ -411,7 +406,6 @@ func TestCrudForwardOneOneSetNull(t *testing.T) {
 
 	f3 := model2.LoadForwardNullUnique(ctx, f2.ID(), node2.ForwardNullUnique().Reverse())
 	assert.Equal(t, "testReverse2", f3.Reverse().Name(), "Field in forward looking unique linked record was saved.")
-
 
 	r2 := model2.NewReverse()
 	r2.SetName("testReverse3")
@@ -490,7 +484,6 @@ func TestCrudForwardOneOneRestrict(t *testing.T) {
 	f3 := model2.LoadForwardRestrictUnique(ctx, f2.ID(), node2.ForwardRestrictUnique().Reverse())
 	assert.Equal(t, "testReverse2", f3.Reverse().Name(), "Field in forward looking unique linked record was saved.")
 
-
 	r2 := model2.NewReverse()
 	r2.SetName("testReverse3")
 	f3.SetReverse(r2)
@@ -554,7 +547,7 @@ func TestCrudManyMany(t *testing.T) {
 	project := model.NewProject()
 	project.SetName("NewProject")
 	project.SetNum(100)
-	project.SetProjectStatusType(model.ProjectStatusTypeOpen)
+	project.SetStatusType(model.ProjectStatusTypeOpen)
 
 	p1 := model.NewPerson()
 	p1.SetFirstName("Me")
@@ -567,7 +560,7 @@ func TestCrudManyMany(t *testing.T) {
 	p3 := model.LoadPerson(ctx, "1")
 	project.SetManager(p3)
 
-	project.SetTeamMembers([]*model.Person {p1, p2})
+	project.SetTeamMembers([]*model.Person{p1, p2})
 	project.Save(ctx)
 
 	assert.Equal(t, p2.ID(), project.TeamMember(p2.ID()).ID())
@@ -630,5 +623,3 @@ func TestCrudIntKey(t *testing.T) {
 	g3 = model.LoadGift(ctx, 5)
 	assert.Nil(t, g3)
 }
-
-

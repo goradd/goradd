@@ -35,9 +35,9 @@ type projectBase struct {
 	numIsValid bool
 	numIsDirty bool
 
-	projectStatusTypeID        uint
-	projectStatusTypeIDIsValid bool
-	projectStatusTypeIDIsDirty bool
+	statusTypeID        uint
+	statusTypeIDIsValid bool
+	statusTypeIDIsDirty bool
 
 	managerID        string
 	managerIDIsNull  bool
@@ -103,16 +103,16 @@ type projectBase struct {
 }
 
 const (
-	ProjectIDDefault                  = ""
-	ProjectNumDefault                 = 0
-	ProjectProjectStatusTypeIDDefault = 0
-	ProjectManagerIDDefault           = ""
-	ProjectNameDefault                = ""
-	ProjectDescriptionDefault         = ""
-	ProjectStartDateDefault           = time2.Zero
-	ProjectEndDateDefault             = time2.Zero
-	ProjectBudgetDefault              = ""
-	ProjectSpentDefault               = ""
+	ProjectIDDefault           = ""
+	ProjectNumDefault          = 0
+	ProjectStatusTypeIDDefault = 0
+	ProjectManagerIDDefault    = ""
+	ProjectNameDefault         = ""
+	ProjectDescriptionDefault  = ""
+	ProjectStartDateDefault    = time2.Zero
+	ProjectEndDateDefault      = time2.Zero
+	ProjectBudgetDefault       = ""
+	ProjectSpentDefault        = ""
 )
 
 const (
@@ -120,7 +120,7 @@ const (
 
 	Project_Num = `Num`
 
-	Project_ProjectStatusTypeID = `ProjectStatusTypeID`
+	Project_StatusTypeID = `StatusTypeID`
 
 	Project_ManagerID = `ManagerID`
 
@@ -158,9 +158,9 @@ func (o *projectBase) Initialize() {
 	o.numIsValid = false
 	o.numIsDirty = false
 
-	o.projectStatusTypeID = 0
-	o.projectStatusTypeIDIsValid = false
-	o.projectStatusTypeIDIsDirty = false
+	o.statusTypeID = 0
+	o.statusTypeIDIsValid = false
+	o.statusTypeIDIsDirty = false
 
 	o.managerID = ""
 	o.managerIDIsNull = true
@@ -609,18 +609,18 @@ func (o *projectBase) GetAlias(key string) query.AliasValue {
 	}
 }
 
-func (o *projectBase) ProjectStatusType() ProjectStatusType {
-	if o._restored && !o.projectStatusTypeIDIsValid {
-		panic("projectStatusTypeID was not selected in the last query and so is not valid")
+func (o *projectBase) StatusType() ProjectStatusType {
+	if o._restored && !o.statusTypeIDIsValid {
+		panic("statusTypeID was not selected in the last query and so is not valid")
 	}
-	return ProjectStatusType(o.projectStatusTypeID)
+	return ProjectStatusType(o.statusTypeID)
 }
 
-func (o *projectBase) SetProjectStatusType(v ProjectStatusType) {
-	if o.projectStatusTypeID != uint(v) {
-		o.projectStatusTypeID = uint(v)
-		o.projectStatusTypeIDIsDirty = true
-		o.projectStatusTypeIDIsValid = true
+func (o *projectBase) SetStatusType(v ProjectStatusType) {
+	if o.statusTypeID != uint(v) {
+		o.statusTypeID = uint(v)
+		o.statusTypeIDIsDirty = true
+		o.statusTypeIDIsValid = true
 	}
 }
 
@@ -1008,8 +1008,8 @@ func CountProjectByNum(ctx context.Context, num int) uint {
 	return queryProjects(ctx).Where(Equal(node.Project().Num(), num)).Count(false)
 }
 
-func CountProjectByProjectStatusTypeID(ctx context.Context, projectStatusTypeID uint) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().ProjectStatusTypeID(), projectStatusTypeID)).Count(false)
+func CountProjectByStatusTypeID(ctx context.Context, statusTypeID uint) uint {
+	return queryProjects(ctx).Where(Equal(node.Project().StatusTypeID(), statusTypeID)).Count(false)
 }
 
 func CountProjectByManagerID(ctx context.Context, managerID string) uint {
@@ -1069,16 +1069,16 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 		o.num = 0
 	}
 
-	if v, ok := m["project_status_type_id"]; ok && v != nil {
-		if o.projectStatusTypeID, ok = v.(uint); ok {
-			o.projectStatusTypeIDIsValid = true
-			o.projectStatusTypeIDIsDirty = false
+	if v, ok := m["status_type_id"]; ok && v != nil {
+		if o.statusTypeID, ok = v.(uint); ok {
+			o.statusTypeIDIsValid = true
+			o.statusTypeIDIsDirty = false
 		} else {
-			panic("Wrong type found for project_status_type_id.")
+			panic("Wrong type found for status_type_id.")
 		}
 	} else {
-		o.projectStatusTypeIDIsValid = false
-		o.projectStatusTypeID = 0
+		o.statusTypeIDIsValid = false
+		o.statusTypeID = 0
 	}
 
 	if v, ok := m["manager_id"]; ok {
@@ -1437,8 +1437,8 @@ func (o *projectBase) insert(ctx context.Context) {
 			panic("a value for Num is required, and there is no default value. Call SetNum() before inserting the record.")
 		}
 
-		if !o.projectStatusTypeIDIsValid {
-			panic("a value for ProjectStatusTypeID is required, and there is no default value. Call SetProjectStatusTypeID() before inserting the record.")
+		if !o.statusTypeIDIsValid {
+			panic("a value for StatusTypeID is required, and there is no default value. Call SetStatusTypeID() before inserting the record.")
 		}
 
 		if !o.nameIsValid {
@@ -1534,9 +1534,9 @@ func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
 		fields["num"] = o.num
 
 	}
-	if o.projectStatusTypeIDIsDirty {
+	if o.statusTypeIDIsDirty {
 
-		fields["project_status_type_id"] = o.projectStatusTypeID
+		fields["status_type_id"] = o.statusTypeID
 
 	}
 	if o.managerIDIsDirty {
@@ -1608,9 +1608,9 @@ func (o *projectBase) getValidFields() (fields map[string]interface{}) {
 		fields["num"] = o.num
 
 	}
-	if o.projectStatusTypeIDIsValid {
+	if o.statusTypeIDIsValid {
 
-		fields["project_status_type_id"] = o.projectStatusTypeID
+		fields["status_type_id"] = o.statusTypeID
 
 	}
 	if o.managerIDIsValid {
@@ -1733,7 +1733,7 @@ func deleteProject(ctx context.Context, pk string) {
 func (o *projectBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.numIsDirty = false
-	o.projectStatusTypeIDIsDirty = false
+	o.statusTypeIDIsDirty = false
 	o.managerIDIsDirty = false
 	o.nameIsDirty = false
 	o.descriptionIsDirty = false
@@ -1748,7 +1748,7 @@ func (o *projectBase) resetDirtyStatus() {
 func (o *projectBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.numIsDirty ||
-		o.projectStatusTypeIDIsDirty ||
+		o.statusTypeIDIsDirty ||
 		o.managerIDIsDirty ||
 		(o.oManager != nil && o.oManager.IsDirty()) ||
 		o.nameIsDirty ||
@@ -1779,14 +1779,14 @@ func (o *projectBase) Get(key string) interface{} {
 		}
 		return o.num
 
-	case "ProjectStatusTypeID":
-		if !o.projectStatusTypeIDIsValid {
+	case "StatusTypeID":
+		if !o.statusTypeIDIsValid {
 			return nil
 		}
-		return o.projectStatusTypeID
+		return o.statusTypeID
 
-	case "ProjectStatusType":
-		return o.ProjectStatusType()
+	case "StatusType":
+		return o.StatusType()
 
 	case "ManagerID":
 		if !o.managerIDIsValid {
@@ -1877,13 +1877,13 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.projectStatusTypeID); err != nil {
+	if err := encoder.Encode(o.statusTypeID); err != nil {
 		return nil, err
 	}
-	if err := encoder.Encode(o.projectStatusTypeIDIsValid); err != nil {
+	if err := encoder.Encode(o.statusTypeIDIsValid); err != nil {
 		return nil, err
 	}
-	if err := encoder.Encode(o.projectStatusTypeIDIsDirty); err != nil {
+	if err := encoder.Encode(o.statusTypeIDIsDirty); err != nil {
 		return nil, err
 	}
 
@@ -2088,13 +2088,13 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.projectStatusTypeID); err != nil {
+	if err = dec.Decode(&o.statusTypeID); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.projectStatusTypeIDIsValid); err != nil {
+	if err = dec.Decode(&o.statusTypeIDIsValid); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.projectStatusTypeIDIsDirty); err != nil {
+	if err = dec.Decode(&o.statusTypeIDIsDirty); err != nil {
 		return
 	}
 
@@ -2297,12 +2297,12 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 		v["num"] = o.num
 	}
 
-	if o.projectStatusTypeIDIsValid {
-		v["projectStatusTypeID"] = o.projectStatusTypeID
+	if o.statusTypeIDIsValid {
+		v["statusTypeID"] = o.statusTypeID
 	}
 
-	if o.projectStatusTypeIDIsValid {
-		v["projectStatusType"] = o.ProjectStatusType().String()
+	if o.statusTypeIDIsValid {
+		v["statusType"] = o.StatusType().String()
 	}
 	if o.managerIDIsValid {
 		if o.managerIDIsNull {
@@ -2408,7 +2408,7 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 
 //   "num" - int
 
-//   "projectStatusTypeID" - uint
+//   "statusTypeID" - uint
 
 //   "managerID" - string, nullable
 
@@ -2451,20 +2451,20 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 					return fmt.Errorf("json field %s must be a number", k)
 				}
 			}
-		case "projectStatusTypeID":
+		case "statusTypeID":
 			{
 				if v == nil {
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
 				if n, ok := v.(int); ok {
-					o.SetProjectStatusType(ProjectStatusType(n))
+					o.SetStatusType(ProjectStatusType(n))
 				} else if n, ok := v.(float64); ok {
-					o.SetProjectStatusType(ProjectStatusType(int(n)))
+					o.SetStatusType(ProjectStatusType(int(n)))
 				} else {
 					return fmt.Errorf("json field %s must be a number", k)
 				}
 			}
-		case "projectStatusType":
+		case "statusType":
 			if s, ok := v.(string); !ok {
 				return fmt.Errorf("json field %s must be a string", k)
 			} else {
@@ -2472,7 +2472,7 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 				if int(t) == 0 {
 					return fmt.Errorf("invalid value for field %s", k)
 				}
-				o.SetProjectStatusType(t)
+				o.SetStatusType(t)
 			}
 
 		case "managerID":

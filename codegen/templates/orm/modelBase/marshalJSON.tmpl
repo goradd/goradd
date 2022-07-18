@@ -133,9 +133,9 @@ func (o *{{privateName}}Base) UnmarshalStringMap(m map[string]interface{}) (err 
 {{if col.IsType()}}
 {{# handle type tables specially}}
            if n,ok := v.(int); ok {
-                o.Set{{= col.ReferenceFunction() }}({{= col.ReferenceFunction() }}(n))
+                o.Set{{= col.ReferenceFunction() }}({{= col.ForeignKey.GoType }}(n))
            } else if n,ok := v.(float64); ok {
-                o.Set{{= col.ReferenceFunction() }}({{= col.ReferenceFunction() }}(int(n)))
+                o.Set{{= col.ReferenceFunction() }}({{= col.ForeignKey.GoType }}(int(n)))
            } else {
                 return fmt.Errorf("json field %s must be a number", k)
            }
@@ -246,7 +246,7 @@ case query.ColTypeDateTime:
             if s,ok := v.(string); !ok {
                 return fmt.Errorf("json field %s must be a string", k)
             } else {
-                t := {{= col.ReferenceFunction() }}FromName(s)
+                t := {{= col.ForeignKey.GoType }}FromName(s)
                 if int(t) == 0 {
                     return fmt.Errorf("invalid value for field %s", k)
                 }

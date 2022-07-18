@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestBasic(t *testing.T) {
 
 	ctx := getContext()
@@ -45,7 +44,6 @@ func TestSort(t *testing.T) {
 	if people[0].FirstName() != "Alex" {
 		t.Error("Person found not Alex, found " + people[0].FirstName())
 	}
-
 
 	// Testing for regression bug with multiple sorts
 	people = model.QueryPeople(ctx).
@@ -118,7 +116,7 @@ func TestBasicType(t *testing.T) {
 		OrderBy(node.Project().ID()).
 		Load()
 
-	if projects[0].ProjectStatusType() != model.ProjectStatusTypeCompleted {
+	if projects[0].StatusType() != model.ProjectStatusTypeCompleted {
 		t.Error("Did not find correct project type.")
 	}
 }
@@ -298,7 +296,6 @@ func TestSaveAndDelete(t *testing.T) {
 	assert.Len(t, people, 0, "Deleted the person")
 }
 
-
 func TestSingleEmpty(t *testing.T) {
 	ctx := getContext()
 
@@ -374,25 +371,25 @@ func TestHaving(t *testing.T) {
 
 func TestFailedJoins(t *testing.T) {
 	ctx := getContext()
-	assert.Panics(t, func(){model.QueryProjects(ctx).Join(node.Person())})
-	assert.Panics(t, func(){model.QueryProjects(ctx).Join(node.Project().ManagerID())})
+	assert.Panics(t, func() { model.QueryProjects(ctx).Join(node.Person()) })
+	assert.Panics(t, func() { model.QueryProjects(ctx).Join(node.Project().ManagerID()) })
 }
 
 func TestFailedExpand(t *testing.T) {
 	ctx := getContext()
-	assert.Panics(t, func(){model.QueryProjects(ctx).Expand(node.Person())})
-	assert.Panics(t, func(){model.QueryProjects(ctx).Expand(node.Project().Manager())})
+	assert.Panics(t, func() { model.QueryProjects(ctx).Expand(node.Person()) })
+	assert.Panics(t, func() { model.QueryProjects(ctx).Expand(node.Project().Manager()) })
 }
 
 func TestFailedGroupBy(t *testing.T) {
 	ctx := getContext()
-	assert.Panics(t, func(){model.
-		QueryProjects(ctx).
-		GroupBy(node.Project().Name()).
-			Select(node.Project().Name())})
+	assert.Panics(t, func() {
+		model.
+			QueryProjects(ctx).
+			GroupBy(node.Project().Name()).
+			Select(node.Project().Name())
+	})
 }
-
-
 
 // Test that we can get from an integer keyed database
 func TestIntKey(t *testing.T) {
