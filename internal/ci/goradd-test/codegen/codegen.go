@@ -40,7 +40,7 @@ func initDatabases() {
 
 	cfg = mysql.NewConfig()
 
-	cfg.DBName = "goraddUnit"
+	cfg.DBName = "goradd_unit"
 	cfg.User = CiDbUser
 	cfg.Passwd = ""
 
