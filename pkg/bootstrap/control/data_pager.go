@@ -3,9 +3,9 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/html5tag"
 	"strconv"
 )
 
@@ -24,7 +24,7 @@ type DataPager struct {
 }
 
 func NewDataPager(parent page.ControlI, id string, pagedControl control.PagedControlI) *DataPager {
-	d := new (DataPager)
+	d := new(DataPager)
 	d.Self = d
 	d.Init(parent, id, pagedControl)
 	return d
@@ -32,8 +32,8 @@ func NewDataPager(parent page.ControlI, id string, pagedControl control.PagedCon
 
 func (d *DataPager) Init(parent page.ControlI, id string, pagedControl control.PagedControlI) {
 	d.DataPager.Init(parent, id, pagedControl)
-	d.SetLabels(`<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>`,
-		`<span aria-hidden="true">&raquo;</span> <span class="sr-only">Next</span>`)
+	d.SetLabels(`<span aria-hidden="true">&laquo;</span><span class="visually-hidden">Previous</span>`,
+		`<span aria-hidden="true">&raquo;</span> <span class="visually-hidden">Next</span>`)
 	d.ButtonStyle = ButtonStyleOutlineSecondary
 	d.HighlightStyle = ButtonStylePrimary
 	d.SetAttribute("aria-label", "Data pager")
@@ -125,7 +125,7 @@ func (d *DataPager) PageButtonsHtml(i int) string {
 	return d.ButtonProxy().ButtonHtml(actionValue, actionValue, attr, false)
 }
 
-func (d *DataPager) Serialize(e page.Encoder)  {
+func (d *DataPager) Serialize(e page.Encoder) {
 	d.DataPager.Serialize(e)
 
 	if err := e.Encode(d.ButtonStyle); err != nil {
@@ -136,7 +136,6 @@ func (d *DataPager) Serialize(e page.Encoder)  {
 		panic(err)
 	}
 }
-
 
 func (d *DataPager) Deserialize(dec page.Decoder) {
 	d.DataPager.Deserialize(dec)
@@ -168,18 +167,16 @@ type DataPagerCreator struct {
 	PagedControl string
 	page.ControlOptions
 	// ButtonStyle is the style that will be used to draw the standard buttons
-	ButtonStyle    ButtonStyle
+	ButtonStyle ButtonStyle
 	// HighlightStyle is the style that will be used to draw the highlighted buttons
 	HighlightStyle ButtonStyle
-
 }
-
 
 // Create is called by the framework to create a new control from the Creator. You
 // do not normally need to call this.
 func (c DataPagerCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	if !parent.Page().HasControl(c.PagedControl) {
-		panic ("you must declare the paged control before the data pager")
+		panic("you must declare the paged control before the data pager")
 	}
 	p := parent.Page().GetControl(c.PagedControl).(control.PagedControlI)
 	ctrl := NewDataPager(parent, c.ID, p)
@@ -194,13 +191,13 @@ func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 	ctrl.(*DataPager).HighlightStyle = c.HighlightStyle
 
 	sub := control.DataPagerCreator{
-		MaxPageButtons: c.MaxPageButtons,
-		ObjectName: c.ObjectName,
+		MaxPageButtons:   c.MaxPageButtons,
+		ObjectName:       c.ObjectName,
 		ObjectPluralName: c.ObjectPluralName,
-		LabelForNext: c.LabelForNext,
+		LabelForNext:     c.LabelForNext,
 		LabelForPrevious: c.LabelForPrevious,
-		PagedControl:  c.PagedControl,
-		ControlOptions: c.ControlOptions,
+		PagedControl:     c.PagedControl,
+		ControlOptions:   c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)
 }
