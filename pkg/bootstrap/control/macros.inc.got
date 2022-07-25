@@ -43,6 +43,10 @@
 {{if}}
 {{end container}}
 
+{{define -container}}
+</div>
+{{end -container}}
+
 
 {{# setInnerDivAttributes sets the InnerDiv attributes on FormGroups. }}
 {{# This creates a div wrapper around the control that the FormGroup is managing. }}
