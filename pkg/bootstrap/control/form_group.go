@@ -6,11 +6,11 @@ import (
 	"io"
 	"strings"
 
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/pool"
+	"github.com/goradd/html5tag"
 )
 
 type FormGroupI interface {
@@ -114,7 +114,7 @@ func (c *FormGroup) DrawTag(ctx context.Context, w io.Writer) {
 	if text == "" {
 		text = subControl.Attribute("placeholder")
 		if text != "" {
-			c.LabelAttributes().SetClass("sr-only") // make a hidden label for screen readers
+			c.LabelAttributes().SetClass("visually-hidden") // make a hidden label for screen readers
 		}
 	}
 
