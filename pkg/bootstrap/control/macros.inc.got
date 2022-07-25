@@ -35,6 +35,15 @@
 {{end -col}}
 
 
+{{define container 1}}
+{{if "$1" == ""}}
+<div class="container">
+{{else}}
+<div class="container-$1">
+{{if}}
+{{end container}}
+
+
 {{# setInnerDivAttributes sets the InnerDiv attributes on FormGroups. }}
 {{# This creates a div wrapper around the control that the FormGroup is managing. }}
 {{# This is of the form name="value" }}
