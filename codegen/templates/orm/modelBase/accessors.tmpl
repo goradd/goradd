@@ -179,6 +179,9 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.ColumnType.GoType()
 {{if col.IsReference()}}
 		o.{{= col.ReferenceName() }} = nil
 {{if}}
+{{if col.IsPk}}
+		o._restored = false
+{{if}}
 	}
 {{g } }}
 
@@ -224,4 +227,10 @@ func (o *{{privateName}}Base) GetAlias(key string) query.AliasValue {
 		return query.NewAliasValue([]byte{})
 	}
 }
+
+// IsNew returns true if the object will create a new record when saved.
+func (o *{{privateName}}Base) IsNew() bool {
+	return !o._restored
+}
+
 }}
