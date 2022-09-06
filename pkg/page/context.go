@@ -78,8 +78,8 @@ type Context struct {
 
 // HttpContext contains typical things we can extract from an http request.
 type HttpContext struct {
-	// Req is the original http.Request object
-	Req *http.Request
+	// Request is the original http.Request object
+	Request *http.Request
 	// URL is the url being queried
 	URL *url.URL
 	// formVars is a private version of the form variables. Use the FormValue and FormValues functions to get these
@@ -100,33 +100,32 @@ type HttpContext struct {
 	Header http.Header
 }
 
-
 // AppContext has Goradd application specific information.
 type AppContext struct {
-	err                 error // An error that occurred during the unpacking of the context. We save this for later so we can let the override manager display it if we get that far.
-	requestMode         RequestMode
-	cliArgs             []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
-	pageStateId         string
-	customControlValues map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
-	actionControlID     string                            // If an action, the control sending the action
-	eventID             EventID                           // The event to send to the control
-	actionValues        actionValues
-	refreshIDs			[]string
-	clientTimezoneOffset	int
-	clientTimezone			string
+	err                  error // An error that occurred during the unpacking of the context. We save this for later so we can let the override manager display it if we get that far.
+	requestMode          RequestMode
+	cliArgs              []string // All arguments from the command line, whether from the command line call, or the ones that started the daemon
+	pageStateId          string
+	customControlValues  map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
+	actionControlID      string                            // If an action, the control sending the action
+	eventID              EventID                           // The event to send to the control
+	actionValues         actionValues
+	refreshIDs           []string
+	clientTimezoneOffset int
+	clientTimezone       string
 
 	// NoJavaScript indicates javascript is turned off by the browser
 	NoJavaScript bool
 }
 
 // String is a string representation of all the information in the context, and should primarily be used for debugging.
-func (c *Context) String() string {
-	b, _ := json.Marshal(c.actionValues)
+func (ctx *Context) String() string {
+	b, _ := json.Marshal(ctx.actionValues)
 	actionValues := string(b[:])
-	s := fmt.Sprintf("URL: %s, Mode: %s, FormBase Values: %v, ControlBase ID: %s, Event ID: %d, Action Values: %s, Page State: %s", c.URL, c.requestMode, c.formVars, c.actionControlID, c.eventID, actionValues, c.pageStateId)
+	s := fmt.Sprintf("URL: %s, Mode: %s, FormBase Values: %v, ControlBase ID: %s, Event ID: %d, Action Values: %s, Page State: %s", ctx.URL, ctx.requestMode, ctx.formVars, ctx.actionControlID, ctx.eventID, actionValues, ctx.pageStateId)
 
-	if c.err != nil {
-		s += fmt.Sprintf(", Error: %s", c.err.Error())
+	if ctx.err != nil {
+		s += fmt.Sprintf(", Error: %s", ctx.err.Error())
 	}
 	return s
 }
@@ -163,7 +162,7 @@ func (ctx *Context) fillHttp(r *http.Request) (err error) {
 		err = r.ParseForm()
 	}
 
-	ctx.Req = r
+	ctx.Request = r
 	ctx.URL = r.URL
 	ctx.formVars = r.Form
 	ctx.Host = r.Host
@@ -228,12 +227,11 @@ func (ctx *Context) HasCustomControlValue(id string, key string) bool {
 	return false
 }
 
-
 // fillApp fills the app structure with app specific information from the request
 // Do not panic here!
 func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 	var ok bool
-	var v string = ""
+	var v = ""
 	//var i interface{}
 	var err error
 
@@ -245,7 +243,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				// we are in a minimalist environment, where only buttons submit forms
 
 				// If the pagestate is coming from a GET, it is encoded and encrypted
-				if _, ok := ctx.Req.PostForm[HtmlVarPagestate]; !ok {
+				if _, ok := ctx.Request.PostForm[HtmlVarPagestate]; !ok {
 					ctx.pageStateId = crypt.SessionDecryptUrlValue(mainContext, ctx.pageStateId)
 				}
 				ctx.NoJavaScript = true
@@ -265,17 +263,17 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 			}
 
 			type tzParams struct {
-				TimezoneOffset  int				`json:"o"`
-				Timezone  string				`json:"z"`
+				TimezoneOffset int    `json:"o"`
+				Timezone       string `json:"z"`
 			}
 
 			var params struct {
-				ControlValues   map[string]map[string]interface{} `json:"controlValues"`
-				ControlID       string                            `json:"controlID"`
-				EventID         int                               `json:"eventID"`
-				Values          actionValues                      `json:"actionValues"`
-				RefreshIDs		[]string						  `json:"refresh"`
-				TimezoneInfo	tzParams						  `json:"tz"`
+				ControlValues map[string]map[string]interface{} `json:"controlValues"`
+				ControlID     string                            `json:"controlID"`
+				EventID       int                               `json:"eventID"`
+				Values        actionValues                      `json:"actionValues"`
+				RefreshIDs    []string                          `json:"refresh"`
+				TimezoneInfo  tzParams                          `json:"tz"`
 			}
 
 			dec := json.NewDecoder(strings.NewReader(v))
@@ -291,7 +289,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				ctx.clientTimezoneOffset = params.TimezoneInfo.TimezoneOffset
 				ctx.clientTimezone = params.TimezoneInfo.Timezone
 				if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); !ok {
-					ctx.err = fmt.Errorf("No pagestate found in response")
+					ctx.err = fmt.Errorf("no pagestate found in response")
 					return
 				}
 			} else {
@@ -301,7 +299,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 
 		} else if apistate, ok2 := ctx.FormValue(HtmlVarApistate); ok2 {
 			// Allows REST clients to also support the timezone offset in the context
-			if offset,err2 := strconv.Atoi(apistate); err2 == nil {
+			if offset, err2 := strconv.Atoi(apistate); err2 == nil {
 				ctx.clientTimezoneOffset = offset
 			}
 		} else {

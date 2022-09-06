@@ -1,11 +1,16 @@
 package strings
 
-import "math/rand"
+import (
+	crand "crypto/rand"
+	"math/big"
+	"math/rand"
+)
 
 const AlphaLower = "abcdefghijklmnopqrstuvwxyz"
 const AlphaUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const AlphaNum = "0123456789"
 const AlphaAll = AlphaLower + AlphaUpper + AlphaNum
+const Token68 = AlphaAll + "-._~+/"
 
 // RandomString generates a pseudo random string of the given length using the given characters.
 // The distribution is not perfect, but works for general purposes
@@ -49,4 +54,20 @@ func PasswordString(n int) string {
 	})
 
 	return string(b)
+}
+
+// CryptoString returns a cryptographically secure random string from the given source.
+// Use AlphaAll, AlphaUpper, AlphaLower, or AlphaNum as shortcuts for source.
+func CryptoString(source string, n int) string {
+	ret := make([]byte, n)
+	l := big.NewInt(int64(len(source)))
+	for i := 0; i < n; i++ {
+		num, err := crand.Int(crand.Reader, l)
+		if err != nil {
+			return ""
+		}
+		ret[i] = source[num.Int64()]
+	}
+
+	return string(ret)
 }
