@@ -4,17 +4,7 @@
 
 // Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
 func (p *{{= panelName }}) Reload(ctx context.Context) error {
-{{if !t.PrimaryKeyColumn().IsId}}
-    if p.{{= t.GoName }}.IsNew() {
-{{# If the primary key column is not an Id column, then the primary key is assigned manually and not auto-generated.
-    In this case, we will reset everything to new, but will restore the prior assigned primary key. }}
-        pk := p.{{= t.GoName }}.PrimaryKey()
-        _ = p.this().Load(ctx, {{= t.PrimaryKeyColumn().DefaultValueAsValue() }}) // creating new, so will not err
-        p.{{= t.GoName }}.Set{{= t.PrimaryKeyColumn().GoName }}(pk)
-        return nil
-    }
-{{if}}
-    return p.this().Load(ctx, p.{{= t.GoName }}.PrimaryKey())
+    return p.this().Load(ctx, p.{{= t.GoName }}.OriginalPrimaryKey())
 }
 
 }}

@@ -179,9 +179,6 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.ColumnType.GoType()
 {{if col.IsReference()}}
 		o.{{= col.ReferenceName() }} = nil
 {{if}}
-{{if col.IsPk}}
-		o._restored = false
-{{if}}
 	}
 {{g } }}
 
