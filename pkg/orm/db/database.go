@@ -34,7 +34,6 @@ type Database struct {
 	typeTableMap map[string]*TypeTable
 }
 
-
 /*
 type Option struct {
 	key   string
@@ -42,18 +41,16 @@ type Option struct {
 }
 */
 
-
 // NewDatabase creates a new Database object from the given DatabaseDescription object.
 func NewDatabase(dbKey string, foreignKeySuffix string, desc DatabaseDescription) *Database {
-	d := Database {
+	d := Database{
 		DbKey:                  dbKey,
 		AssociatedObjectPrefix: desc.AssociatedObjectPrefix,
-		ForeignKeySuffix: foreignKeySuffix,
+		ForeignKeySuffix:       foreignKeySuffix,
 	}
 	d.analyze(desc)
 	return &d
 }
-
 
 // Given a database description, analyze will perform an analysis of the database, and modify some of the fields to prepare
 // the description for use in codegen and the orm
@@ -66,7 +63,7 @@ func (d *Database) analyze(desc DatabaseDescription) {
 	}
 
 	// deal with type tables first
-	for _,table := range desc.Tables {
+	for _, table := range desc.Tables {
 		if table.TypeData != nil {
 			tt := d.analyzeTypeTable(table)
 			d.TypeTables = append(d.TypeTables, tt)
@@ -75,7 +72,7 @@ func (d *Database) analyze(desc DatabaseDescription) {
 	}
 
 	// get the regular tables
-	for _,table := range desc.Tables {
+	for _, table := range desc.Tables {
 		if table.TypeData == nil {
 			t := d.analyzeTable(table)
 			if t != nil {
@@ -86,27 +83,25 @@ func (d *Database) analyze(desc DatabaseDescription) {
 	}
 
 	// analyze foreign keys after the columns are in place
-	for _,table := range desc.Tables {
+	for _, table := range desc.Tables {
 		if table.TypeData == nil {
 			d.analyzeForeignKeys(table)
 		}
 	}
 
 	// analyze reverse references after the foreign keys are in place
-	for _,table := range d.Tables {
+	for _, table := range d.Tables {
 		d.analyzeReverseReferences(table)
 	}
 
-
-	for _,assn := range desc.MM {
+	for _, assn := range desc.MM {
 		d.analyzeAssociation(assn)
 	}
 }
 
-
 // analyzeTypeTables will analyze the type tables provided by the database description
 func (d *Database) analyzeTypeTable(desc TableDescription) *TypeTable {
-	tt := &TypeTable {
+	tt := &TypeTable{
 		DbKey:         d.DbKey,
 		DbName:        desc.Name,
 		LiteralName:   desc.LiteralName,
@@ -132,7 +127,7 @@ func (d *Database) analyzeTypeTable(desc TableDescription) *TypeTable {
 	tt.Values = desc.TypeData
 	tt.FieldTypes = make(map[string]GoColumnType)
 
-	for _,col := range desc.Columns {
+	for _, col := range desc.Columns {
 		tt.FieldNames = append(tt.FieldNames, col.Name)
 		tt.FieldTypes[col.Name] = ColTypeFromGoTypeString(col.GoType)
 	}
@@ -176,9 +171,9 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 		LiteralPlural: desc.LiteralPlural,
 		GoName:        desc.GoName,
 		GoPlural:      desc.GoPlural,
-		Comment:	   desc.Comment,
-		Options:	   desc.Options,
-		columnMap: make(map[string]*Column),
+		Comment:       desc.Comment,
+		Options:       desc.Options,
+		columnMap:     make(map[string]*Column),
 	}
 
 	if t.LiteralName == "" {
@@ -201,7 +196,7 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 	}
 
 	var pkCount int
-	for _,col := range desc.Columns {
+	for _, col := range desc.Columns {
 		newCol := d.analyzeColumn(col)
 		if newCol != nil {
 			t.Columns = append(t.Columns, newCol)
@@ -216,20 +211,19 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 		}
 	}
 
-	for _,idx := range desc.Indexes {
+	for _, idx := range desc.Indexes {
 		var columns []*Column
-		for _,name := range idx.ColumnNames {
+		for _, name := range idx.ColumnNames {
 			col := t.GetColumn(name)
 			if col == nil {
 				panic("Cannot find column " + name + " of table " + t.DbName)
 			}
-			columns = append (columns, col)
+			columns = append(columns, col)
 		}
-		t.Indexes = append(t.Indexes, Index{IsUnique:idx.IsUnique, Columns:columns})
+		t.Indexes = append(t.Indexes, Index{IsUnique: idx.IsUnique, Columns: columns})
 	}
 	return t
 }
-
 
 func (d *Database) analyzeReverseReferences(td *Table) {
 	var td2 *Table
@@ -238,7 +232,7 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 	for _, col = range td.Columns {
 		if col.ForeignKey != nil {
 			td2 = d.Table(col.ForeignKey.ReferencedTable)
-			if td2 == nil  {
+			if td2 == nil {
 				continue // pointing to a type table
 			}
 			// Determine the go name, which is the name used to refer to the reverse reference.
@@ -253,14 +247,14 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 			if objName != "" {
 				objName = UpperCaseIdentifier(objName)
 			}
-			goName,_ := col.Options["GoName"].(string)
+			goName, _ := col.Options["GoName"].(string)
 			if goName == "" {
 				goName = UpperCaseIdentifier(td.DbName)
 				if objName != "" {
 					goName = goName + "As" + objName
 				}
 			}
-			goPlural,_ := col.Options["GoPlural"].(string)
+			goPlural, _ := col.Options["GoPlural"].(string)
 			if goPlural == "" {
 				goPlural = inflector.Pluralize(td.DbName)
 				goPlural = UpperCaseIdentifier(goPlural)
@@ -272,9 +266,9 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 			goTypePlural := td.GoPlural
 
 			// Check for name conflicts
-			for _,col2 := range td2.Columns {
+			for _, col2 := range td2.Columns {
 				if goName == col2.GoName {
-					log.Printf ("Error: table %s has a field name %s that is the same as the %s table that is referring to it. Either change these names, or provide an alternate GoName in the options.", td2.GoName, goName, td.GoName)
+					log.Printf("Error: table %s has a field name %s that is the same as the %s table that is referring to it. Either change these names, or provide an alternate GoName in the options.", td2.GoName, goName, td.GoName)
 				}
 			}
 
@@ -285,16 +279,15 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 				colName = snaker.CamelToSnake(goPlural)
 			}
 
-
 			ref := ReverseReference{
-				DbColumn:            colName,
-				AssociatedTable: 	 td,
-				AssociatedColumn:    col,
-				GoName:              goName,
-				GoPlural:            goPlural,
-				GoType:              goType,
-				GoTypePlural:        goTypePlural,
-				Values: 			 make(map[string]string),
+				DbColumn:         colName,
+				AssociatedTable:  td,
+				AssociatedColumn: col,
+				GoName:           goName,
+				GoPlural:         goPlural,
+				GoType:           goType,
+				GoTypePlural:     goTypePlural,
+				Values:           make(map[string]string),
 			}
 
 			td2.ReverseReferences = append(td2.ReverseReferences, &ref)
@@ -354,7 +347,6 @@ func (d *Database) makeManyManyRef(t1, c1, t2, c2, g2, g2p, t string, isType boo
 		goPlural = inflector.Pluralize(goName)
 	}
 
-
 	ref := ManyManyReference{
 		AssnTableName:        t,
 		AssnColumnName:       c1,
@@ -385,8 +377,8 @@ func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
 		IsUnique:              desc.IsUnique,
 		IsTimestamp:           desc.SubType == "timestamp" || desc.SubType == "auto timestamp",
 		IsAutoUpdateTimestamp: desc.SubType == "auto timestamp",
-		IsDateOnly:			   desc.SubType == "date",
-		IsTimeOnly:			   desc.SubType == "time",
+		IsDateOnly:            desc.SubType == "date",
+		IsTimeOnly:            desc.SubType == "time",
 		Comment:               desc.Comment,
 		Options:               desc.Options,
 	}
@@ -399,7 +391,6 @@ func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
 		c.GoName = d.dbNameToGoName(c.DbName)
 	}
 
-
 	c.modelName = LowerCaseIdentifier(c.DbName)
 
 	return c
@@ -408,7 +399,7 @@ func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
 func (d *Database) analyzeForeignKeys(desc TableDescription) {
 	t := d.Table(desc.Name)
 	if t != nil {
-		for _,col := range desc.Columns {
+		for _, col := range desc.Columns {
 			d.analyzeForeignKey(t, col)
 		}
 	}
@@ -418,10 +409,10 @@ func (d *Database) analyzeForeignKey(t *Table, cd ColumnDescription) {
 	c := t.columnMap[cd.Name]
 	if cd.ForeignKey != nil {
 		f := &ForeignKeyInfo{
-			ReferencedTable:    cd.ForeignKey.ReferencedTable,
-			ReferencedColumn:   cd.ForeignKey.ReferencedColumn,
-			UpdateAction: FKActionFromString(cd.ForeignKey.UpdateAction),
-			DeleteAction: FKActionFromString(cd.ForeignKey.DeleteAction),
+			ReferencedTable:  cd.ForeignKey.ReferencedTable,
+			ReferencedColumn: cd.ForeignKey.ReferencedColumn,
+			UpdateAction:     FKActionFromString(cd.ForeignKey.UpdateAction),
+			DeleteAction:     FKActionFromString(cd.ForeignKey.DeleteAction),
 		}
 
 		if (f.UpdateAction == FKActionSetNull || f.DeleteAction == FKActionSetNull) &&
@@ -432,6 +423,14 @@ func (d *Database) analyzeForeignKey(t *Table, cd ColumnDescription) {
 		goName := c.GoName
 		suffix := UpperCaseIdentifier(d.ForeignKeySuffix)
 		goName = strings.TrimSuffix(goName, suffix)
+		if goName == "" || c.IsPk {
+			// Either:
+			// - the primary key is also a foreign key, which would be a 1-1 relationship, or
+			// - the name of column is just a foreign key suffix, as in "id"
+			// So we use the name of the foreign key table as the object name
+			goName = f.ReferencedTable
+			goName = UpperCaseIdentifier(goName)
+		}
 		f.GoName = goName
 		f.IsType = d.IsTypeTable(cd.ForeignKey.ReferencedTable)
 
@@ -491,8 +490,6 @@ func (d *Database) IsTypeTable(name string) bool {
 	_, ok := d.typeTableMap[name]
 	return ok
 }
-
-
 
 func isReservedIdentifier(s string) bool {
 	switch s {
