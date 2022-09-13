@@ -11,7 +11,7 @@ import (
 func init() {
 	t := ListPanelTemplate {
 		generator.Template {
-			Overwrite: false,
+			Overwrite: true,
 			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}

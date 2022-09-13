@@ -1,0 +1,68 @@
+// listAction.tmpl
+
+{{
+func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
+	switch a.ID {
+	case {{= lcPanelName }}Search:
+		p.Page().GetControl(p.ID() + "-list").Refresh() // redraw the table
+	case {{= lcPanelName }}RowClick: // edit
+		id := a.ActionValueString()
+	    if id != "" {
+			p.ZoomItem(ctx, id)
+			// Change the above to the below to edit on clicking the whole row, rather than clicking the edit column
+			// p.EditItem(ctx, id)
+	    }
+	case {{= lcPanelName }}NewClick: // new
+		p.EditItem(ctx, "")
+	case {{= lcPanelName }}ButtonClick: // edit button column was clicked
+		id := a.EventValueString()
+	    if id != "" {
+			p.EditItem(ctx, id)
+	    }
+	}
+}
+
+// EditItem responds to an action to edit an item in the list.
+//
+// pk is the primary key of the database object to edit
+func (p *{{= panelName }}) EditItem(ctx context.Context, pk string) {
+    p.EditItemWithForm(ctx, pk)
+    //p.EditItemWithDialog(ctx, pk)
+}
+
+// EditItemWithForm will go to the corresponding edit form to edit the item
+func (p *{{= panelName }}) EditItemWithForm(ctx context.Context, pk string) {
+    if pk == "" {
+        session.Remove(ctx, "{{= t.LcGoName }}EditID")
+    } else {
+        session.SetString(ctx, "{{= t.LcGoName }}EditID", pk)
+    }
+    // This points to the default edit form path created by the templates. If you change the URL there, also change this.
+	p.ParentForm().ChangeLocation("{{= editFormPath }}")
+}
+
+// EditItemWithDialog will popup a dialog to edit the item
+func (p *{{= panelName }}) EditItemWithDialog(ctx context.Context, pk string) {
+	ed, isNew := {{= ctrlPkg }}.GetDialogEditPanel(p, p.ID() + "-editDlg", p.T("{{= t.LiteralName }}"))
+	if isNew {
+		New{{= t.GoName }}EditPanel(ctx, ed, p.ID() + "-editPanel")
+	}
+	if data, err := ed.Load(ctx, pk); err == nil {
+		// any other initializations go here
+		// obj := data.(*model.{{= t.GoName }})
+		_ = data.(*model.{{= t.GoName }}) // remove and replace with line above to get the loaded data
+
+	    ed.Show()
+	}
+}
+
+
+// ZoomItem responds to an action to zoom into the given item.
+func (p *{{= panelName }}) ZoomItem(ctx context.Context, id string) {
+    // This points to the default detail form path created by the templates. If you change the URL there, also change this.
+    if id != "" {
+        session.SetString(ctx, "{{= t.LcGoName }}DetailID", id)
+    }
+	p.ParentForm().ChangeLocation("{{= detailFormPath }}")
+}
+}}

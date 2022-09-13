@@ -1,4 +1,4 @@
-package rest
+package api
 
 // This is both an example of how to create handlers for api's, like REST api's, but also is
 // an important handler to include if you need access to session variables from your handlers.

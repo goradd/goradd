@@ -1,0 +1,9 @@
+// listGet.tmpl
+
+{{
+
+func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
+	return c.Page().GetControl(id).(*{{= panelName }})
+}
+
+}}

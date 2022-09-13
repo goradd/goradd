@@ -13,8 +13,6 @@ import (
 	_ "goradd-project/web" // Registers file assets through init calls.
 	"goradd-project/web/app"
 	_ "goradd-project/web/form" // Registers forms through init calls.
-	// _ "goradd-project/api" // Uncomment this if you are implementing an API (i.e. REST api).
-
 	// Custom paths, including additional form directories
 	// _ "mysite"
 )
@@ -25,6 +23,7 @@ var tlsKeyFile = flag.String("keyFile", "", "Path to key file for tls.")
 var tlsCertFile = flag.String("certFile", "", "Path to cert file for tls.")
 
 var proxyPath = flag.String("proxyPath", "", "The url path to the application.")
+
 // Create other flags you might care about here
 
 // dbConfigFile is actually read and used in config/db.go, but we define it here so it can be part of the usage message
