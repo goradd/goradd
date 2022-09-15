@@ -473,8 +473,8 @@ func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 // It does this AFTER processing the return
 // values sent to the browser. Generally you should use this to redirect the browser since you may
 // have some data that needs to be processed first. The exception is
-// if you are responding to some kind of security concern where you only want to send back an html
-// redirect without revealing any goradd information, in which case you should use the page.Redirect function.
+// if you are responding to some kind of security concern where you only want to send back an HTML
+// redirect without revealing any goradd information, in which case you should use the http.Redirect function.
 func (f *FormBase) ChangeLocation(url string) {
 	f.response.SetLocation(http.MakeLocalPath(url))
 }

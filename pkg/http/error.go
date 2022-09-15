@@ -89,6 +89,14 @@ func SendUnauthorized() {
 	panic(e)
 }
 
+// SendUnauthorizedMessage will send an error code indicating that the user is not authenticated (yes,
+// even though the title is "authorized", it really means "authenticated", i.e. not logged in.)
+// If serving HTML, you likely should redirect to the login page instead.
+func SendUnauthorizedMessage(message string) {
+	e := Error{ErrCode: http.StatusUnauthorized, Message: message}
+	panic(e)
+}
+
 // SendForbidden will tell the user that he/she does not have authorization to access
 // the given resource. The user should be known.
 func SendForbidden() {
