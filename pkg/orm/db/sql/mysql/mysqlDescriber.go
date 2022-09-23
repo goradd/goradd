@@ -34,9 +34,9 @@ type mysqlTable struct {
 }
 
 type mysqlColumn struct {
-	name         string
-	defaultValue sql2.SqlReceiver
-	isNullable   string
+	name            string
+	defaultValue    sql2.SqlReceiver
+	isNullable      string
 	dataType        string
 	dataLen         int
 	characterMaxLen sql.NullInt64
@@ -270,7 +270,7 @@ func (m *DB) getIndexes() (indexes map[string][]mysqlIndex, err error) {
 			return nil, err
 		}
 		tableIndexes := indexes[index.tableName]
-		tableIndexes =	append(tableIndexes, index)
+		tableIndexes = append(tableIndexes, index)
 		indexes[index.tableName] = tableIndexes
 	}
 	err = rows.Err()
@@ -597,7 +597,7 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		cd.GoType = ColTypeString.GoType()
 	}
 
-	cd.DefaultValue = column.defaultValue.Unpack(ColTypeFromGoTypeString(cd.GoType))
+	cd.DefaultValue = column.defaultValue.UnpackDefaultValue(ColTypeFromGoTypeString(cd.GoType))
 }
 
 func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable) db.DatabaseDescription {
@@ -605,7 +605,7 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable) db.Databa
 	dd := db.DatabaseDescription{Key: m.DbKey(), AssociatedObjectPrefix: m.AssociatedObjectPrefix()}
 
 	keys := stringmap.SortedKeys(rawTables)
-	for _,tableName := range keys {
+	for _, tableName := range keys {
 		table := rawTables[tableName]
 		if table.options["skip"] != nil {
 			continue
@@ -615,7 +615,7 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable) db.Databa
 			t := m.getTypeTableDescription(table)
 			dd.Tables = append(dd.Tables, t)
 		} else if strings2.EndsWith(tableName, m.AssociationTableSuffix()) {
-			if mm,ok := m.getManyManyDescription(table); ok {
+			if mm, ok := m.getManyManyDescription(table); ok {
 				dd.MM = append(dd.MM, mm)
 			}
 		} else {
@@ -646,7 +646,7 @@ func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 	}
 
 	td := db.TableDescription{
-		Name:        t.name,
+		Name:    t.name,
 		Columns: columnDescriptions,
 	}
 
@@ -688,7 +688,7 @@ func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 
 	// Build the indexes
 	indexes := make(map[string]*db.IndexDescription)
-	for _,idx := range t.indexes {
+	for _, idx := range t.indexes {
 		/*if idx.name == "PRIMARY" {
 			continue // assume primary keys are always indexed, so we don't need to report this
 		}*/
@@ -700,13 +700,12 @@ func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 			indexes[idx.name] = i
 		}
 	}
-	stringmap.Range(indexes, func(key string, val interface {}) bool {
+	stringmap.Range(indexes, func(key string, val interface{}) bool {
 		td.Indexes = append(td.Indexes, *(val.(*db.IndexDescription)))
 		return true
 	})
 	return td
 }
-
 
 func (m *DB) getTypeTableDescription(t mysqlTable) db.TableDescription {
 	td := m.getTableDescription(t)
@@ -748,14 +747,14 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.Colum
 		if cd.GoName, ok = opt.(string); !ok {
 			log.Print("Error in table comment for table " + table.name + ":" + column.name + ": goName is not a string")
 		}
-		delete(column.options,"goName")
+		delete(column.options, "goName")
 	}
 
 	if opt := column.options["shouldAutoUpdate"]; opt != nil {
 		if shouldAutoUpdate, ok = opt.(bool); !ok {
 			log.Print("Error in table comment for table " + table.name + ":" + column.name + ": shouldAutoUpdate is not a boolean")
 		}
-		delete(column.options,"shouldAutoUpdate")
+		delete(column.options, "shouldAutoUpdate")
 	}
 
 	m.processTypeInfo(table.name, column, &cd)
@@ -789,7 +788,6 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.Colum
 
 	return cd
 }
-
 
 func (m *DB) getManyManyDescription(t mysqlTable) (mm db.ManyManyDescription, ok bool) {
 	td := m.getTableDescription(t)
@@ -829,7 +827,7 @@ func (m *DB) getManyManyDescription(t mysqlTable) (mm db.ManyManyDescription, ok
 		idx1 = 1
 		idx2 = 0
 	}
-	options,_,_ := sql2.ExtractOptions(t.columns[idx1].comment)
+	options, _, _ := sql2.ExtractOptions(t.columns[idx1].comment)
 	mm.Table1 = td.Columns[idx1].ForeignKey.ReferencedTable
 	mm.Column1 = td.Columns[idx1].Name
 	if opt := options["goName"]; opt != nil {
@@ -845,7 +843,7 @@ func (m *DB) getManyManyDescription(t mysqlTable) (mm db.ManyManyDescription, ok
 		}
 	}
 
-	options,_,_ = sql2.ExtractOptions(t.columns[idx2].comment)
+	options, _, _ = sql2.ExtractOptions(t.columns[idx2].comment)
 	mm.Table2 = td.Columns[idx2].ForeignKey.ReferencedTable
 	mm.Column2 = td.Columns[idx2].Name
 	if opt := options["goName"]; opt != nil {
@@ -865,4 +863,3 @@ func (m *DB) getManyManyDescription(t mysqlTable) (mm db.ManyManyDescription, ok
 	ok = true
 	return
 }
-
