@@ -3,6 +3,7 @@ package sql
 import (
 	"fmt"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 	time2 "github.com/goradd/goradd/pkg/time"
 	"log"
 	"strconv"
@@ -295,7 +296,8 @@ func (r SqlReceiver) TimeI() interface{} {
 		if s == "NULL" {
 			return nil
 		}
-		if s == "CURRENT_TIMESTAMP" {
+		u := strings.ToUpper(s)
+		if strings2.StartsWith(u, "CURRENT_TIMESTAMP") {
 			// Mysql version of now. This would only be asked for if we were looking for a default value.
 			return "now"
 		}
