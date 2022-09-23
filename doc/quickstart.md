@@ -2,6 +2,9 @@
 ## Installation
 ### Setup Your Environment
 
+If you have problems with the following directions, 
+see [Debugging Installation Problems](#debugging-installation-problems) below.
+
 1. Install go. Installation instructions for go are here: https://go.dev/doc/install
 2. Create a new project directory *outside* of your go directory and change your working directory 
 to the new directory. Note that go will create and use the "go" directory inside your home
@@ -35,8 +38,6 @@ inside of here.
 
 You may also notice a number of executables that were installed 
 that will be used by goradd to build your application.
-
-If you have problems, see [Debugging Installation Problems](#debugging-installation-problems) below.
 
 ### Run the app
 1. Change your working directory to the goradd-project directory that was created in the prior step. 
@@ -86,7 +87,7 @@ Goradd is module aware. Whenever you run goradd tools, it will look
 in the nearest go.mod file to read the current module environment.
 
 ## GO 1.18+
-GO 1.16 adds a new wrinkle to the module problem. Before this version, GO would automatically
+GO 1.16 added a new wrinkle to the module problem. Before this version, GO would automatically
 update the go.mod and go.sum files with any missing packages. You could also tell it to 
 automatically update to the latest version of everything.
 
@@ -104,23 +105,27 @@ See the following for more info:
 
 # Debugging Installation Problems
 Recent versions of the GO install process will create a "go" directory in your home
-directory, and it should put the bin directory inside of that directory
+directory, and it should put the "bin" directory inside of that directory
 into your PATH environment variable. This will allow go programs to be executed
 from the command line.
 
 If you have an an older version of GO, or something in this process fails, you may need to manually
 set this process up.
 
-First, make sure you can execute go by executing ```go version```. You should
+First, make sure you can execute go by executing 
+```
+go version
+```
+You should
 see a go version string. If not, reinstall go.
 
-Next, check your environment for a GOPATH variable. 
-On Windows, execute ```set```. On a Mac or Linux, execute ```printenv```.
-If you have a GOPATH variable, make sure the directory it points to exists
-and has a bin directory. If it does not exist, make sure there is a go
-directory inside you HOME directory (HOMEPATH on Windows), make sure there is
-a bin directory inside it, and that both are writable, and the bin directory
-has execute priviledges.
+Next, check your GOPATH by executing 
+```
+go env GOPATH
+```
+
+Make sure there is a bin directory inside it, and that both are writable, 
+and the bin directory has execute priviledges.
 
 Finally, make sure the above go/bin directory is in your execution PATH.
 Google "How to add to the execution Path for {Windows|Mac|Linux}" to get
@@ -129,12 +134,18 @@ info on that.
 If everything is set up correctly, you should be able to run the following
 commands:
 
-```go install golang.org/x/example/hello```
+```
+go install golang.org/x/example/hello
+```
 
 and
 
-```hello```
+```
+hello
+```
 
 and then see the message:
 
-```Hello, Go examples!```
+```
+Hello, Go examples!
+```
