@@ -6,6 +6,7 @@ import (
 	time2 "github.com/goradd/goradd/pkg/time"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type SqlReceiver struct {
 	R interface{}
 }
 
+// IntI returns the receiver as an interface to an int.
 func (r SqlReceiver) IntI() interface{} {
 	if r.R == nil {
 		return nil
@@ -38,7 +40,11 @@ func (r SqlReceiver) IntI() interface{} {
 		}
 		return i
 	case []byte:
-		i, err := strconv.Atoi(string(r.R.([]byte)[:]))
+		v := string(r.R.([]byte)[:])
+		if v == "NULL" {
+			return nil
+		} // MariaDB does this for default values
+		i, err := strconv.Atoi(v)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -72,7 +78,11 @@ func (r SqlReceiver) UintI() interface{} {
 		}
 		return uint(i)
 	case []byte:
-		i, err := strconv.ParseUint(string(r.R.([]byte)[:]), 10, 32)
+		v := string(r.R.([]byte)[:])
+		if v == "NULL" {
+			return nil
+		} // MariaDB does this for default values
+		i, err := strconv.ParseUint(v, 10, 32)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -100,7 +110,11 @@ func (r SqlReceiver) Int64I() interface{} {
 		}
 		return i
 	case []byte:
-		i, err := strconv.ParseInt(string(r.R.([]byte)[:]), 10, 64)
+		v := string(r.R.([]byte)[:])
+		if v == "NULL" {
+			return nil
+		} // MariaDB does this for default values
+		i, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -124,6 +138,8 @@ func (r SqlReceiver) Uint64I() interface{} {
 		return uint64(r.R.(int64))
 	case int:
 		return uint64(r.R.(int))
+	case uint64:
+		return r.R
 	case string: // Mysql returns this if the detected value is greater than int64 size
 		i, err := strconv.ParseUint(r.R.(string), 10, 64)
 		if err != nil {
@@ -131,7 +147,11 @@ func (r SqlReceiver) Uint64I() interface{} {
 		}
 		return i
 	case []byte:
-		i, err := strconv.ParseUint(string(r.R.([]byte)[:]), 10, 64)
+		v := string(r.R.([]byte)[:])
+		if v == "NULL" {
+			return nil
+		} // MariaDB does this for default values
+		i, err := strconv.ParseUint(v, 10, 64)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -161,7 +181,11 @@ func (r SqlReceiver) BoolI() interface{} {
 		}
 		return b
 	case []byte:
-		b, err := strconv.ParseBool(string(r.R.([]byte)[:]))
+		v := string(r.R.([]byte)[:])
+		if v == "NULL" {
+			return nil
+		} // MariaDB does this for default values
+		b, err := strconv.ParseBool(v)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -182,7 +206,8 @@ func (r SqlReceiver) StringI() interface{} {
 	case string:
 		return r.R
 	case []byte:
-		return string(r.R.([]byte)[:])
+		v := string(r.R.([]byte)[:])
+		return v
 	default:
 		return fmt.Sprint(r.R)
 	}
@@ -205,7 +230,11 @@ func (r SqlReceiver) FloatI() interface{} {
 		}
 		return f
 	case []byte:
-		f, err := strconv.ParseFloat(string(r.R.([]byte)[:]), 32)
+		v := string(r.R.([]byte)[:])
+		if v == "NULL" {
+			return nil
+		} // MariaDB does this for default values
+		f, err := strconv.ParseFloat(v, 32)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -233,7 +262,11 @@ func (r SqlReceiver) DoubleI() interface{} {
 		}
 		return f
 	case []byte:
-		f, err := strconv.ParseFloat(string(r.R.([]byte)[:]), 64)
+		v := string(r.R.([]byte)[:])
+		if v == "NULL" {
+			return nil
+		} // MariaDB does this for default values
+		f, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -259,6 +292,9 @@ func (r SqlReceiver) TimeI() interface{} {
 		t = time2.FromSqlDateTime(v) // Note that this must always include timezone information if coming from a timestamp with timezone column
 	case []byte:
 		s := string(v)
+		if s == "NULL" {
+			return nil
+		}
 		if s == "CURRENT_TIMESTAMP" {
 			// Mysql version of now. This would only be asked for if we were looking for a default value.
 			return "now"
@@ -304,3 +340,41 @@ func (r SqlReceiver) Unpack(typ GoColumnType) interface{} {
 	}
 }
 
+// UnpackDefaultValue converts a SqlReceiver used to get the default value
+// to a type corresponding to the given GoColumnType.
+func (r SqlReceiver) UnpackDefaultValue(typ GoColumnType) interface{} {
+	switch typ {
+	case ColTypeBytes:
+		return r.R
+	case ColTypeString:
+		s := r.StringI()
+		if s == nil {
+			return s
+		}
+		if s.(string) == "NULL" {
+			return nil
+		}
+		// Unwrap single quotes coming from mariadb
+		s = strings.Trim(s.(string), `"'`)
+		return s
+
+	case ColTypeInteger:
+		return r.IntI()
+	case ColTypeUnsigned:
+		return r.UintI()
+	case ColTypeInteger64:
+		return r.Int64I()
+	case ColTypeUnsigned64:
+		return r.Uint64I()
+	case ColTypeDateTime:
+		return r.TimeI()
+	case ColTypeFloat:
+		return r.FloatI()
+	case ColTypeDouble:
+		return r.DoubleI()
+	case ColTypeBool:
+		return r.BoolI()
+	default:
+		return r.R
+	}
+}
