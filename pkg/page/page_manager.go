@@ -12,8 +12,7 @@ import (
 
 var pageManager PageManagerI = newPageManager() // Create a new singleton page manager.
 
-var HtmlErrorMessage =
-	`<h1 id="err-title">Error</h1>
+var HtmlErrorMessage = `<h1 id="err-title">Error</h1>
 <p>
 An unexpected error has occurred and your request could not be processed. The error has been logged and we will
 attempt to fix the problem as soon as possible.
@@ -22,12 +21,12 @@ attempt to fix the problem as soon as possible.
 type FormCreationFunction func(context.Context) FormI
 type formInfo struct {
 	formID string
-	typ reflect.Type
+	typ    reflect.Type
 }
 
 type PageManagerI interface {
 	RegisterForm(path string, form FormI, formID string)
-	RunPage(ctx context.Context, w http2.ResponseWriter, r *http2.Request) ()
+	RunPage(ctx context.Context, w http2.ResponseWriter, r *http2.Request)
 	IsPage(path string) bool
 }
 
@@ -36,7 +35,7 @@ type PageManagerI interface {
 // created for each page that associate a function to create a page, with the URL that corresponds to the page,
 // and the ID of the page.
 type PageManager struct {
-	forms map[string]formInfo                      // maps paths to form info
+	forms map[string]formInfo // maps paths to form info
 }
 
 // PagePathPrefix is a prefix you can use in front of all goradd pages, like a directory path, to indicate that
@@ -48,8 +47,8 @@ func GetPageManager() PageManagerI {
 	return pageManager
 }
 
-// SetPageManger injects a new page manager. Call this at init time.
-func SetPageManager(p PageManagerI)  {
+// SetPageManager injects a new page manager. Call this at init time.
+func SetPageManager(p PageManagerI) {
 	pageManager = p
 }
 
@@ -65,7 +64,7 @@ func RegisterForm(path string, form FormI, id string) {
 	pageManager.RegisterForm(path, form, id)
 }
 
-func (m *PageManager)RegisterForm(path string, f FormI, id string) {
+func (m *PageManager) RegisterForm(path string, f FormI, id string) {
 	if path == "" {
 		panic(`you cannot register the empty path. If you want a default, register just a slash. ("/")`)
 	}
@@ -132,7 +131,7 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 }
 
 // RunPage processes the page and writes the response into the buffer. Any special response headers are returned.
-func (m *PageManager) RunPage(ctx context.Context, w http2.ResponseWriter, req *http2.Request) () {
+func (m *PageManager) RunPage(ctx context.Context, w http2.ResponseWriter, req *http2.Request) {
 	defer func() {
 		if r := recover(); r != nil {
 			var msg string
@@ -141,7 +140,7 @@ func (m *PageManager) RunPage(ctx context.Context, w http2.ResponseWriter, req *
 				log.Debug()
 				panic(v) // send it up the panic chain
 			case int: // Just an http error code
-				panic (v)
+				panic(v)
 			case error:
 				msg = v.Error()
 			case string:
@@ -154,7 +153,7 @@ func (m *PageManager) RunPage(ctx context.Context, w http2.ResponseWriter, req *
 			grCtx := GetContext(ctx)
 			mode := grCtx.requestMode.String()
 			// pass the error on to the error handler above
-			panic (http.NewServerError(msg, mode, req, 2, HtmlErrorMessage))
+			panic(http.NewServerError(msg, mode, req, 2, HtmlErrorMessage))
 		}
 	}()
 
@@ -163,7 +162,7 @@ func (m *PageManager) RunPage(ctx context.Context, w http2.ResponseWriter, req *
 	if page == nil {
 		// An ajax call, but we could not deserialize the old page. Refresh the entire page to get server access.
 		w.Header().Set("Content-Type", "application/json")
-		_,_ = io.WriteString(w, `{"loc":"reload"}`) // the refresh will be handled in javascript
+		_, _ = io.WriteString(w, `{"loc":"reload"}`) // the refresh will be handled in javascript
 		return
 	}
 
@@ -174,7 +173,7 @@ func (m *PageManager) RunPage(ctx context.Context, w http2.ResponseWriter, req *
 	err := page.runPage(ctx, w, isNew)
 	if err != nil {
 		// TODO: remove this. All errors should panic in place so we can know where the problem is
-		panic (err)
+		panic(err)
 	}
 }
 
@@ -182,5 +181,3 @@ func (m *PageManager) cleanup(p *Page) {
 	p.renderStatus = PageIsNotRendering
 	log.FrameworkDebugf("Page stopped rendering %s", p.stateId)
 }
-
-

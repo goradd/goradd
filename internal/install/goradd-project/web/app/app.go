@@ -17,8 +17,8 @@ type Application struct {
 	// Your own vars, methods and overrides
 }
 
-// Create the application object and related objects
-// You can potentially read command line params and make other versions of the app for testing purposes
+// MakeApplication creates the application object and related objects.
+// You can potentially read command line params and make other versions of the app for testing purposes.
 func MakeApplication() *Application {
 	a := new(Application)
 	a.Init()
@@ -223,4 +223,3 @@ func (a *Application) PutContext(r *http.Request) *http.Request {
 	return a.Application.PutContext(r)
 }
 */
-

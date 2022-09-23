@@ -11,7 +11,7 @@ require (
 	github.com/goradd/maps v0.1.2
 	github.com/gorilla/websocket v1.4.2
 	github.com/kenshaw/snaker v0.2.0
-	github.com/microcosm-cc/bluemonday v1.0.17
+	github.com/microcosm-cc/bluemonday v1.0.20
 	github.com/shurcooL/github_flavored_markdown v0.0.0-20210228213109-c3a9aa474629
 	github.com/spf13/cobra v1.3.0
 	github.com/stretchr/testify v1.7.1

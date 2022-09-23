@@ -1,0 +1,16 @@
+// listBaseStruct.tmpl
+
+{{
+
+const (
+	{{= lcPanelName }}RowClick = iota + 1000
+	{{= lcPanelName }}NewClick
+	{{= lcPanelName }}Search
+	{{= lcPanelName }}ButtonClick
+)
+
+type {{= panelName }} struct {
+	{{= ctrlPkg }}.Panel
+}
+
+}}

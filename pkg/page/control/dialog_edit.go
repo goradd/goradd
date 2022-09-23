@@ -24,7 +24,7 @@ type EditablePanel interface {
 	Load(ctx context.Context, pk string) error
 	Save(ctx context.Context)
 	Delete(ctx context.Context)
-	Data() interface{}
+	DataI() interface{}
 }
 
 // DialogEditPanel is a dialog panel that pre-loads Save, Cancel and Delete buttons, and treats its one
@@ -87,7 +87,7 @@ func (p *DialogEditPanel) Load(ctx context.Context, pk string) (data interface{}
 		p.SetButtonVisible(DeleteButtonID, true)
 		p.SetTitle(fmt.Sprintf(p.GT("Edit %s"), p.ObjectName))
 	}
-	data = ep.Data()
+	data = ep.DataI()
 	return
 }
 

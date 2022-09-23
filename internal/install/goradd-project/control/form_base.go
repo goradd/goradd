@@ -5,7 +5,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/control"
 )
 
-// The local FormBase override. All generated forms descend from this one. You can change how all the forms in your
+// FormBase is the local form override. All generated forms descend from this one. You can change how all the forms in your
 // application work by making modifications here, and then making sure all your forms include this one.
 type FormBase struct {
 	control.FormBase
@@ -18,12 +18,16 @@ func (f *FormBase) Init(ctx context.Context, id string) {
 	//f.Page().SetDrawFunction()
 }
 
-// You can put overrides that should apply to all your forms here.
+// AddRelatedFiles is the place to add css, javascript and other files that should be loaded for all forms.
 func (f *FormBase) AddRelatedFiles() {
 	f.FormBase.AddRelatedFiles() // add default files
-	//bsconfig.LoadBootstrap(f) 	// Load Bootstrap if needed
-	// f.AddFontAwesome()			// Load FontAwesome if needed
-	// Load you own site-wide css and js files below
+
+	// Load Bootstrap if needed. Its normally added by all bootstrap controls, but if you are
+	// creating a form that just uses straight bootstrap css, without using the goradd bootstrap controls
+	// then this will make it so that those pages will work too.
+	//bsconfig.LoadBootstrap(f)
+
+	// Load your own site-wide css and js files below
 	//f.AddStyleSheetFile(filepath.Join(config2.ProjectAssets(), "css","my.css"), nil)
 }
 
@@ -43,18 +47,4 @@ func (f *FormBase) AddHeadTags() {
 		},
 	)
 	*/
-
-	/* Uncomment this for bootstrap
-	f.Page().AddHtmlHeaderTag(
-		html.VoidTag{
-			Tag: "meta",
-			Attr: html.Attributes{
-				"name":    "viewport",
-				"content": "width=device-width, initial-scale=1, shrink-to-fit=no",
-			},
-		},
-	)
-	 */
 }
-
-

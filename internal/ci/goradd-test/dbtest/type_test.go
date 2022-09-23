@@ -27,19 +27,19 @@ func TestTimestamp(t *testing.T) {
 	ts := rec.Ts()
 
 	// Make sure a timestamp that goes into the database in a different timezone will be saved in UTC
-	loc,err := time.LoadLocation("America/New_York")
+	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
 		panic("Cannot load location") // might need to turn this off on windows
 	}
-	ts2 := time.Date(2002, time.July, 2, 10,4,3,0,loc)
+	ts2 := time.Date(2002, time.July, 2, 10, 4, 3, 0, loc)
 	rec.SetTs(ts2)
-	zone,_ := rec.Ts().Zone()
+	zone, _ := rec.Ts().Zone()
 	assert.Equal(t, "EDT", zone)
 	rec.Save(ctx)
 
 	rec2 := model.LoadTypeTest(ctx, "1")
 	ts3 := rec2.Ts()
-	zone,_ = rec2.Ts().Zone()
+	zone, _ = rec2.Ts().Zone()
 	assert.Equal(t, "UTC", zone)
 
 	assert.True(t, ts3.Equal(ts2))
@@ -61,19 +61,19 @@ func TestDateTime(t *testing.T) {
 	ts := rec.DateTime()
 
 	// Make sure a timestamp that goes into the database in a different timezone will be saved in UTC
-	loc,err := time.LoadLocation("America/New_York")
+	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
 		panic("Cannot load location") // might need to turn this off on windows
 	}
-	ts2 := time.Date(2002, time.July, 2, 10,4,3,0,loc)
+	ts2 := time.Date(2002, time.July, 2, 10, 4, 3, 0, loc)
 	rec.SetDateTime(ts2)
-	zone,_ := rec.DateTime().Zone()
+	zone, _ := rec.DateTime().Zone()
 	assert.Equal(t, "EDT", zone)
 	rec.Save(ctx)
 
 	rec2 := model.LoadTypeTest(ctx, "1")
 	ts3 := rec2.DateTime()
-	zone,_ = rec2.DateTime().Zone()
+	zone, _ = rec2.DateTime().Zone()
 	assert.Equal(t, "UTC", zone)
 
 	assert.True(t, ts3.Equal(ts2))
@@ -87,7 +87,3 @@ func TestDateTime(t *testing.T) {
 	assert.True(t, rec.DateTime().IsZero())
 
 }
-
-
-
-

@@ -26,10 +26,10 @@ func (f *ControlsForm) Init(ctx context.Context, formID string) {
 	f.AddControls(ctx,
 		bootstrap.NavbarCreator{
 			ID: "nav",
-			Children:Children(
+			Children: Children(
 				bootstrap.NavbarListCreator{
-					ID: "navList",
-					DataProvider:f,
+					ID:           "navList",
+					DataProvider: f,
 				},
 			),
 		},
@@ -71,19 +71,16 @@ func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
 	for _, c := range controls {
 		item := bootstrap.GetNavbarList(f, "navList").AddItem(c.name, c.key)
 		a := url.
-			NewBuilderFromUrl(*pageContext.URL).
+			NewBuilderFromUrl(pageContext.URL).
 			SetValue("control", c.key).
 			String()
 		item.SetAnchor(a)
 	}
 }
 
-
 func init() {
 	page.RegisterForm(ControlsFormPath, &ControlsForm{}, ControlsFormId)
 }
-
-
 
 type createFunction func(ctx context.Context, parent page.ControlI)
 
@@ -95,7 +92,6 @@ type controlEntry struct {
 }
 
 var controls []controlEntry
-
 
 func RegisterPanel(key string,
 	name string,

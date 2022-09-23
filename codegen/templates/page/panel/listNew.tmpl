@@ -1,0 +1,24 @@
+// listNew.tpl
+
+{{
+
+func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
+    p := new({{= panelName }})
+    p.Self = p
+	p.Init(ctx, parent, id)
+	return p
+}
+
+func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(parent, id)
+	p.CreateControls(ctx)
+	session.Remove(ctx, "{{= t.LcGoName }}EditID")
+	session.Remove(ctx, "{{= t.LcGoName }}DetailID")
+}
+
+func init() {
+    page.RegisterControl(&{{= panelName }}{})
+}
+
+
+}}

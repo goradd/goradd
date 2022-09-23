@@ -1,171 +1,29 @@
-//list.tmpl
+// list.tmpl
 
 // The master template for the ListPanel classes
 
-var objectType = "List" // Eventually we might make it possible to generate multiple object types
-var panelName = t.GoName + objectType + "Panel"
-var lcPanelName = t.LcGoName + objectType + "Panel"
+{{: listVars.tmpl }}
 
-var editFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Edit")
-var detailFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Detail")
+{{: listImport.tmpl }}
 
-{{
+{{: listStruct.tmpl }}
 
-package panel
+{{: listNew.tmpl }}
 
-// This implementation file is not modified during code generation. Changes to this file will be preserved.
+{{: listCreateControls.tmpl }}
 
-import(
-	"context"
-	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/action"
-	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/event"
-	"github.com/goradd/goradd/pkg/url"
-	"goradd-project/gen/{{= dd.DbKey }}/model"
-	"github.com/goradd/goradd/pkg/session"
-)
+{{: listColumnCreators.tmpl }}
 
-const (
-	{{= lcPanelName }}RowClick = iota + 1000
-	{{= lcPanelName }}NewClick
-	{{= lcPanelName }}Search
-	{{= lcPanelName }}ButtonClick
-)
+{{: listAction.tmpl }}
 
-type {{= panelName }} struct {
-	{{= panelName }}Base
-}
+{{: listBindData.tmpl }}
 
-func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
-    p := new({{= panelName }})
-    p.Self = p
-	p.Init(ctx, parent, id)
-	return p
-}
+{{: listTableRowAttributes.tmpl }}
 
-func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.{{= panelName }}Base.Init(parent, id)
-	p.CreateControls(ctx)
-	session.Remove(ctx, "{{= t.LcGoName }}EditID")
-	session.Remove(ctx, "{{= t.LcGoName }}DetailID")
-}
+{{: listLoad.tmpl }}
 
-/*
-func (p *{{= panelName }}) CreateControls(ctx context.Context) {
-}
-*/
+{{: listInclude.tmpl }}
 
-func (p *{{= panelName }}) ColumnCreators(ctx context.Context) []control.ColumnCreator {
+{{: listGet.tmpl }}
 
-    // Replace this with specific column creators if needed
-    creators := p.{{= panelName }}Base.ColumnCreators(ctx)
-
-
-    // Comment out these lines to remove the edit column
-    creators = append(creators, column.ButtonColumnCreator {
-        Title: p.GT("Edit"),
-    })
-    p.On(column.ButtonColumnClick(), action.Ajax(p.ID(), {{= lcPanelName }}ButtonClick))
-
-    return creators
-}
-
-func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
-	switch a.ID {
-	case {{= lcPanelName }}Search:
-		p.Page().GetControl(p.ID() + "-list").Refresh() // redraw the table
-	case {{= lcPanelName }}RowClick: // edit
-		id := a.ActionValueString()
-	    if id != "" {
-			p.ZoomItem(ctx, id)
-			// Change the above to the below to edit on clicking the whole row, rather than clicking the edit column
-			// p.EditItem(ctx, id)
-	    }
-	case {{= lcPanelName }}NewClick: // new
-		p.EditItem(ctx, "")
-	case {{= lcPanelName }}ButtonClick: // edit button column was clicked
-		id := a.EventValueString()
-	    if id != "" {
-			p.EditItem(ctx, id)
-	    }
-	default:
-	    p.{{= panelName }}Base.Action(ctx, a)
-
-	}
-}
-
-// EditItem responds to an action to edit an item in the list.
-//
-// pk is the primary key of the database object to edit
-func (p *{{= panelName }}) EditItem(ctx context.Context, pk string) {
-    p.EditItemWithForm(ctx, pk)
-    //p.EditItemWithDialog(ctx, pk)
-}
-
-// EditItemWithForm will go to the corresponding edit form to edit the item
-func (p *{{= panelName }}) EditItemWithForm(ctx context.Context, pk string) {
-    if pk == "" {
-        session.Remove(ctx, "{{= t.LcGoName }}EditID")
-    } else {
-        session.SetString(ctx, "{{= t.LcGoName }}EditID", pk)
-    }
-    // This points to the default edit form path created by the templates. If you change the URL there, also change this.
-	p.ParentForm().ChangeLocation("{{= editFormPath }}")
-}
-
-// EditItemWithDialog will popup a dialog to edit the item
-func (p *{{= panelName }}) EditItemWithDialog(ctx context.Context, pk string) {
-	ed, isNew := GetDialogEditPanel(p, p.ID() + "-editDlg", p.T("{{= t.LiteralName }}"))
-	if isNew {
-		New{{= t.GoName }}EditPanel(ctx, ed, p.ID() + "-editPanel")
-	}
-	if data, err := ed.Load(ctx, pk); err == nil {
-		// any other initializations go here
-		// obj := data.(*model.{{= t.GoName }})
-		_ = data.(*model.{{= t.GoName }}) // remove and replace with line above to get the loaded data
-
-	    ed.Show()
-	}
-}
-
-
-// ZoomItem responds to an action to zoom into the given item.
-func (p *{{= panelName }}) ZoomItem(ctx context.Context, id string) {
-    // This points to the default detail form path created by the templates. If you change the URL there, also change this.
-    if id != "" {
-        session.SetString(ctx, "{{= t.LcGoName }}DetailID", id)
-    }
-	p.ParentForm().ChangeLocation("{{= detailFormPath }}")
-}
-
-/* See the base class. Likely you will want to copy it and paste it here to modify how
-queries are performed. The default filters based on the filter text box.
-func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
-   return p.{{= panelName }}Base.BuildQuery(ctx context.Context)
-}
-*/
-
-func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
-	return c.Page().GetControl(id).(*{{= panelName }})
-}
-
-// {{= panelName }}Creator creates a {{= panelName }}.
-type {{= panelName }}Creator struct {
-	// ID is the id the tag will have on the page and must be unique on the page
-	ID string
-	page.ControlOptions
-}
-
-// Create is called by the framework to create the panel. You do not normally need to call this.
-func (c {{= panelName }}Creator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	ctrl := New{{= panelName }}(ctx, parent, c.ID)
-	return ctrl
-}
-
-
-func init() {
-    page.RegisterControl(&{{= panelName }}{})
-}
-
-}}
+{{: listCreator.tmpl }}

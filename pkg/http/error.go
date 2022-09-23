@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -33,6 +34,19 @@ func (e *Error) SetResponseHeader(key, value string) {
 
 func (e Error) Error() string {
 	return e.Message
+}
+
+func (e Error) Send() {
+	panic(e)
+}
+
+// SetAuthenticateError sets the WWW-Authenticate with the given authScheme and values.
+func (e Error) SetAuthenticateError(authScheme string, values map[string]string) {
+	items := []string{authScheme}
+	for k, v := range values {
+		items = append(items, fmt.Sprintf(`%s=%q`, k, v))
+	}
+	e.SetResponseHeader("WWW-Authenticate", strings.Join(items, " "))
 }
 
 // SendErrorCode will cause the page to error with the given http error code.
@@ -75,6 +89,14 @@ func SendUnauthorized() {
 	panic(e)
 }
 
+// SendUnauthorizedMessage will send an error code indicating that the user is not authenticated (yes,
+// even though the title is "authorized", it really means "authenticated", i.e. not logged in.)
+// If serving HTML, you likely should redirect to the login page instead.
+func SendUnauthorizedMessage(message string) {
+	e := Error{ErrCode: http.StatusUnauthorized, Message: message}
+	panic(e)
+}
+
 // SendForbidden will tell the user that he/she does not have authorization to access
 // the given resource. The user should be known.
 func SendForbidden() {
@@ -111,6 +133,20 @@ func SendBadRequest() {
 // SendBadRequestMessage sends a StatusBadRequest code to the output with a message.
 func SendBadRequestMessage(message string) {
 	e := Error{ErrCode: http.StatusBadRequest, Message: message}
+	panic(e)
+}
+
+// SendJsonAuthenticateError sends a WWW-Authenticate error encoding the values into
+// both the WWW-Authenticate and as a json response
+func SendJsonAuthenticateError(errCode int, authScheme string, values map[string]string) {
+	e := Error{ErrCode: errCode}
+	e.SetAuthenticateError(authScheme, values)
+	b, err := json.Marshal(values)
+	if err != nil {
+		panic("bad value map")
+	}
+	e.Message = string(b)
+	e.SetResponseHeader("Content-Type", "application/json")
 	panic(e)
 }
 

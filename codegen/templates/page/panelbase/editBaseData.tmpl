@@ -1,0 +1,10 @@
+// data.tmpl
+
+{{
+
+// DataI returns the data object being edited as an interface
+func (p *{{= panelName }}) DataI() interface{} {
+   return p.{{= t.GoName }}
+}
+
+}}

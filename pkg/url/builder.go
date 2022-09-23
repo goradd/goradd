@@ -8,19 +8,24 @@ import (
 
 // Builder uses a builder pattern to create a URL.
 type Builder struct {
-	url    url2.URL
+	url    *url2.URL
 	values url2.Values
 }
 
 // NewBuilder starts a URL builder from a basic path.
 func NewBuilder(path string) *Builder {
-	b := &Builder{values: make(url2.Values)}
-	b.url.Path = path
+	b := &Builder{}
+	var err error
+	b.url, err = url2.Parse(path)
+	if err != nil {
+		panic(err)
+	}
+	b.values = b.url.Query()
 	return b
 }
 
 // NewBuilderFromUrl creates a new builder from a URL.
-func NewBuilderFromUrl(u url2.URL) *Builder {
+func NewBuilderFromUrl(u *url2.URL) *Builder {
 	b := &Builder{url: u}
 	b.values, _ = url2.ParseQuery(u.RawQuery)
 	return b

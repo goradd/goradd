@@ -1,4 +1,4 @@
-// listBaseBindData.tmpl
+// listBindData.tmpl
 
 {{
 
@@ -7,10 +7,10 @@
 func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
     list := {{= ctrlPkg }}.GetPagedTable(p, p.ID() + "-list")
 	if list.HasDataPagers() {
-		list.SetTotalItems(p.this().BuildQuery(ctx).Count(false))
+		list.SetTotalItems(p.BuildQuery(ctx).Count(false))
 	}
 
-	builder := p.this().BuildQuery(ctx)
+	builder := p.BuildQuery(ctx)
 
 	// Since we are asking the database to do the sort, we have to make a slice of nodes
 	sortNodes := column.MakeNodeSlice(list.SortColumns())

@@ -1,0 +1,18 @@
+// listCreator.tmpl
+
+{{
+
+// {{= panelName }}Creator creates a {{= panelName }}.
+type {{= panelName }}Creator struct {
+	// ID is the id the tag will have on the page and must be unique on the page
+	ID string
+	page.ControlOptions
+}
+
+// Create is called by the framework to create the panel. You do not normally need to call this.
+func (c {{= panelName }}Creator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+	ctrl := New{{= panelName }}(ctx, parent, c.ID)
+	return ctrl
+}
+
+}}

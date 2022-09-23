@@ -1,10 +1,10 @@
-// listBaseColumnCreators.tmpl
+// listColumnCreators.tmpl
 
 {{
 
 // ColumnCreators returns just the column creators for the table
 func (p *{{= panelName }}) ColumnCreators(_ context.Context) []{{= ctrlPkg }}.ColumnCreator {
-	return []{{= ctrlPkg }}.ColumnCreator {
+	creators := []{{= ctrlPkg }}.ColumnCreator {
 {{for _,col := range t.Columns }}
         column.NodeColumnCreator{
         {{if col.IsReference() || col.IsType() }}
@@ -21,5 +21,12 @@ func (p *{{= panelName }}) ColumnCreators(_ context.Context) []{{= ctrlPkg }}.Co
         },
 {{for}}
     }
+    // Comment out these lines to remove the edit column
+    creators = append(creators, column.ButtonColumnCreator {
+        Title: p.GT("Edit"),
+    })
+    p.On(column.ButtonColumnClick(), action.Ajax(p.ID(), {{= lcPanelName }}ButtonClick))
+
+    return creators
 }
 }}

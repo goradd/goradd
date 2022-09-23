@@ -2,6 +2,7 @@ package http
 
 import (
 	"path"
+	strings2 "strings"
 
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/strings"
@@ -16,6 +17,10 @@ func defaultLocalPathMaker(p string) string {
 	var hasSlash bool
 	if p == "" {
 		panic(`cannot make a local path to an empty path. If you are trying to refer to the root, use '/'.`)
+	}
+	if strings2.Index(p, "://") != -1 {
+		// We have a schema, so do not change the path
+		return p
 	}
 	if p[len(p)-1] == '/' {
 		hasSlash = true

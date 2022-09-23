@@ -6,12 +6,13 @@ import (
 	"io"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"path"
+	"fmt"
 )
 
 func init() {
 	t := ListPanelTemplate {
 		generator.Template {
-			Overwrite: false,
+			Overwrite: true,
 			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}
