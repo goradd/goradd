@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/gob"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/html5tag"
 )
 
 type SelectListI interface {
@@ -28,10 +28,9 @@ func (l *SelectList) Init(parent page.ControlI, id string) {
 	config.LoadBootstrap(l.ParentForm())
 }
 
-
 func (l *SelectList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.SelectList.DrawingAttributes(ctx)
-	a.AddClass("form-control")
+	a.AddClass("form-select")
 	return a
 }
 
@@ -68,18 +67,17 @@ func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) pag
 func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 
 	sub := control.SelectListCreator{
-		ID: c.ID,
-		Items: c.Items,
-		NilItem: c.NilItem,
-		DataProvider: c.DataProvider,
-		Size: c.Size,
-		Value: c.Value,
-		SaveState: c.SaveState,
+		ID:             c.ID,
+		Items:          c.Items,
+		NilItem:        c.NilItem,
+		DataProvider:   c.DataProvider,
+		Size:           c.Size,
+		Value:          c.Value,
+		SaveState:      c.SaveState,
 		ControlOptions: c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)
 }
-
 
 // GetSelectList is a convenience method to return the control with the given id from the page.
 func GetSelectList(c page.ControlI, id string) *SelectList {
