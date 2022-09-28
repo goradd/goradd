@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 	"io"
 )
 
@@ -17,7 +17,7 @@ type NavbarListI interface {
 	page.ControlI
 	control.ItemListI
 	control.DataManagerI
-	OnSelect (action action.ActionI) page.ControlI
+	OnSelect(action action.ActionI) page.ControlI
 }
 
 type NavbarList struct {
@@ -26,7 +26,6 @@ type NavbarList struct {
 	subItemTag string
 	control.DataManager
 }
-
 
 func NewNavbarList(parent page.ControlI, id string) *NavbarList {
 	t := &NavbarList{}
@@ -111,7 +110,7 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem
 				itemClass += item.Attributes().Class()
 				h += fmt.Sprintf(
 					`<%s class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" id="%s_menu" role="menu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <a class="nav-link dropdown-toggle" id="%s_menu" role="menu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         %s
     </a>
     <div class="dropdown-menu %s" aria-labelledby="%s_menu">`, l.subItemTag, item.ID(), item.RenderLabel(), itemClass, item.ID())
@@ -161,7 +160,7 @@ func (l *NavbarList) getItemsHtml(ctx context.Context, items []*control.ListItem
 	return h
 }
 
-func (l *NavbarList) OnSelect (action action.ActionI) page.ControlI {
+func (l *NavbarList) OnSelect(action action.ActionI) page.ControlI {
 	return l.On(NavbarSelectEvent(), action)
 }
 
@@ -222,7 +221,6 @@ func (c NavbarListCreator) Init(ctx context.Context, ctrl NavbarListI) {
 	}
 }
 
-
 // GetNavbarList is a convenience method to return the control with the given id from the page.
 func GetNavbarList(c page.ControlI, id string) *NavbarList {
 	return c.Page().GetControl(id).(*NavbarList)
@@ -237,4 +235,3 @@ const NavbarSelect = "gr-bs-navbarselect"
 func NavbarSelectEvent() *page.Event {
 	return page.NewEvent(NavbarSelect)
 }
-
