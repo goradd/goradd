@@ -43,16 +43,11 @@ func (l *Dropdown) Init(parent page.ControlI, id string) {
 	l.Tag = "div"
 	l.buttonAttributes = html5tag.NewAttributes()
 	l.menuAttributes = html5tag.NewAttributes()
-	pxy := control.NewProxy(l, l.proxyID())
 
-	// Trigger a NavbarSelect whenever an anchor with an href of "#" is clicked.
-	// ActionValue will be the id of the control.
-	pxy.On(event.Click().Selector(`a[href="#"][class~="dropdown-item"]`).PreventingDefault(),
-		action.Trigger(l.ID(), DropdownSelect, javascript.JsCode("g$(event.target).id")))
-}
-
-func (l *Dropdown) proxyID() string {
-	return l.ID() + "-pxy"
+	// Trigger a DropdownSelect whenever an anchor with an href of "#" is clicked.
+	// EventValue will be the value of the list item.
+	l.On(event.Click().Selector(`a[href="#"][class~="dropdown-item"]`).Capture(),
+		action.Trigger(l.ID(), DropdownSelect, javascript.JsCode(`g$(event.target).data("grEv")`)))
 }
 
 // this() supports object oriented features by giving easy access to the virtual function interface.
@@ -125,6 +120,10 @@ func (l *Dropdown) DrawInnerHtml(_ context.Context, w io.Writer) {
 func (l *Dropdown) GetItemsHtml(items []*control.ListItem) string {
 	// make sure the list items have the correct classes before drawing them
 	for _, item := range items {
+		if item.Anchor() == "" {
+			item.SetAnchor("#")
+			item.AnchorAttributes().SetData("grEv", item.Value())
+		}
 		item.AnchorAttributes().AddClass("dropdown-item")
 	}
 	return l.UnorderedList.GetItemsHtml(items)
@@ -177,7 +176,7 @@ type DropdownCreator struct {
 	// MenuAttributes are additional attributes that will be assigned to the menu.
 	MenuAttributes html5tag.Attributes
 	// OnClick is the action to take when a link is clicked or selected. It will only respond
-	// to anchor tags whose href is set to "#".
+	// to anchor tags whose href is set to "#". The EventValue will be the value of the item clicked.
 	OnClick action.ActionI
 	// ControlOptions are additional settings for the control.
 	// If this is part of a Navbar, you should add the "nav-item" class.

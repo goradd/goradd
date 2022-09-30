@@ -10,6 +10,7 @@ import (
 type NavLinkI interface {
 	grctl.LinkI
 	SetFormID(formID string) NavLinkI
+	SetValue(eventValue string) NavLinkI
 }
 
 // NavLink creates an anchor tag with a nav-link class. It is used to create a link in a NavBar, and
@@ -18,6 +19,8 @@ type NavLink struct {
 	grctl.Link
 	// formID is the id that corresponds to the link so that the link can be made active when on that page.
 	formID string
+	// eventValue is the event value sent when the link is clicked
+	eventValue string
 }
 
 // NewNavLink creates a new NavLink.
@@ -43,10 +46,20 @@ func (l *NavLink) SetFormID(formID string) NavLinkI {
 	return l.this()
 }
 
+// SetValue sets the EventValue that is sent to the action when the link is clicked.
+func (l *NavLink) SetValue(value string) NavLinkI {
+	l.eventValue = value
+	return l.this()
+}
+
 // DrawingAttributes returns the attributes to add to the tag just before the button is drawn.
 func (l *NavLink) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.Link.DrawingAttributes(ctx)
 	a.AddClass("nav-link")
+	a.SetData("grctl", "navLink")
+	if l.eventValue != "" {
+		a.SetData("grEv", l.eventValue)
+	}
 	if l.ParentForm().ID() == l.formID {
 		a.AddClass("active")
 		a.Set("aria-current", "page")
@@ -60,6 +73,9 @@ func (l *NavLink) Serialize(e page.Encoder) {
 	if err := e.Encode(l.formID); err != nil {
 		panic(err)
 	}
+	if err := e.Encode(l.eventValue); err != nil {
+		panic(err)
+	}
 	return
 }
 
@@ -68,6 +84,9 @@ func (l *NavLink) Deserialize(d page.Decoder) {
 	l.Link.Deserialize(d)
 
 	if err := d.Decode(&l.formID); err != nil {
+		panic(err)
+	}
+	if err := d.Decode(&l.eventValue); err != nil {
 		panic(err)
 	}
 }
@@ -84,7 +103,9 @@ type NavLinkCreator struct {
 	// FormID is the form ID of the form that corresponds to this link. If this is the current form,
 	// the link will get attributes that make it display as active.
 	FormID string
-
+	// Value is the event value sent with the event when the link is clicked.
+	Value string
+	// ControlOptions are additional options to assign to the link.
 	page.ControlOptions
 }
 
@@ -109,6 +130,9 @@ func (c NavLinkCreator) Init(ctx context.Context, ctrl NavLinkI) {
 	sub.Init(ctx, ctrl)
 	if c.FormID != "" {
 		ctrl.SetFormID(c.FormID)
+	}
+	if c.Value != "" {
+		ctrl.SetValue(c.Value)
 	}
 }
 

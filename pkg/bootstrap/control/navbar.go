@@ -6,7 +6,6 @@ import (
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
 )
@@ -97,16 +96,9 @@ func (b *Navbar) Init(parent page.ControlI, id string) {
 	b.expand = NavbarExpandLarge
 	config.LoadBootstrap(b.ParentForm())
 
-	pxy := control.NewProxy(b, b.proxyID())
+	b.On(event.Click().Selector(`a[href="#"][class~="nav-link"]`).Capture(),
+		action.Trigger(b.ID(), NavbarSelect, javascript.JsCode(`g$(event.target).data("grEv")`)))
 
-	// Trigger a NavbarSelect whenever a nav-link with an href of "#" is clicked.
-	// ActionValue will be the id of the control.
-	pxy.On(event.Click().Selector(`a[href="#"][class~="nav-link]"`).PreventingDefault(),
-		action.Trigger(b.ID(), NavbarSelect, javascript.JsCode("g$(event.target).id")))
-}
-
-func (b *Navbar) proxyID() string {
-	return b.ID() + "-pxy"
 }
 
 func (b *Navbar) this() NavbarI {
@@ -209,7 +201,7 @@ type NavbarCreator struct {
 	// BrandLocation controls the placement of the brand item
 	BrandLocation NavbarCollapsedBrandPlacement
 	// OnClick is the action to take when a link is clicked. It will only respond
-	// to nav-link items that have an href of "#".
+	// to nav-link items that have an href of "#". The EventValue will be the id of the item clicked.
 	OnClick action.ActionI
 
 	page.ControlOptions
