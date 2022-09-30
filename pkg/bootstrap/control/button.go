@@ -3,10 +3,10 @@ package control
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	grctl "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/html5tag"
 )
 
 type ButtonI interface {
@@ -57,7 +57,7 @@ const (
 // ButtonBlock is a class you can add to a button to make it span a full block
 const ButtonBlock = "btn-block"
 
-// NewButton creates a new standard html button
+// NewButton creates a new bootstrap html button
 func NewButton(parent page.ControlI, id string) *Button {
 	b := new(Button)
 	b.Self = b
@@ -147,10 +147,10 @@ type ButtonCreator struct {
 	OnSubmit action.ActionI
 	// OnClick is an action to take when the button is pressed. Do not specify both
 	// a OnSubmit and OnClick.
-	OnClick action.ActionI
-	Style ButtonStyle
-	Size ButtonSize
-	IsPrimary bool
+	OnClick        action.ActionI
+	Style          ButtonStyle
+	Size           ButtonSize
+	IsPrimary      bool
 	ValidationType page.ValidationType
 	page.ControlOptions
 }
@@ -166,7 +166,7 @@ func (c ButtonCreator) Create(ctx context.Context, parent page.ControlI) page.Co
 
 // Init is called by implementations of Buttons to initialize a control with the
 // creator. You do not normally need to call this.
-func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI)  {
+func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 	sub := grctl.ButtonCreator{
 		ID:             c.ID,
 		Text:           c.Text,

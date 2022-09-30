@@ -166,6 +166,7 @@ type ControlI interface {
 	SetDisplay(d string) ControlI
 	SetDisabled(d bool)
 	IsDisabled() bool
+	SetTextIsHtml(bool) ControlI
 
 	PutCustomScript(ctx context.Context, response *Response)
 
@@ -1552,8 +1553,9 @@ func (c *ControlBase) GT(message string) string {
 // This version passes the literal string.
 //
 // Examples
-//   textbox.T("I have %d things", count, i18n.Comment("This will need multiple translations based on the count value"));
-//	 textbox.SetText(textbox.T("S", i18n.ID("South")));
+//
+//	  textbox.T("I have %d things", count, i18n.Comment("This will need multiple translations based on the count value"));
+//		 textbox.SetText(textbox.T("S", i18n.ID("South")));
 func (c *ControlBase) T(message string, params ...interface{}) string {
 	builder, args := i18n.ExtractBuilderFromArguments(params)
 	if len(args) > 0 {

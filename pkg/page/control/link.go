@@ -30,6 +30,7 @@ func NewLink(parent page.ControlI, id string) *Link {
 func (l *Link) Init(parent page.ControlI, id string) {
 	l.ControlBase.Init(parent, id)
 	l.Tag = "a"
+	l.SetAttribute("href", "#") // default link to hash tag by convention
 }
 
 func (l *Link) this() LinkI {

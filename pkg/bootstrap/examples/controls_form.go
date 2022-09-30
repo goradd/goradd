@@ -27,9 +27,8 @@ func (f *ControlsForm) Init(ctx context.Context, formID string) {
 		bootstrap.NavbarCreator{
 			ID: "nav",
 			Children: Children(
-				bootstrap.NavbarListCreator{
-					ID:           "navList",
-					DataProvider: f,
+				bootstrap.NavGroupCreator{
+					ID: "navList",
 				},
 			),
 		},
@@ -64,17 +63,19 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 }
 
 func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
+	navGroup := bootstrap.GetNavGroup(f, "navList")
+	navGroup.RemoveChildren()
 	sort.Slice(controls, func(i, j int) bool {
 		return controls[i].order < controls[j].order
 	})
 	pageContext := page.GetContext(ctx)
 	for _, c := range controls {
-		item := bootstrap.GetNavbarList(f, "navList").AddItem(c.name, c.key)
+		item := bootstrap.NewNavLink(navGroup, c.key)
 		a := url.
 			NewBuilderFromUrl(pageContext.URL).
 			SetValue("control", c.key).
 			String()
-		item.SetAnchor(a)
+		item.SetLocation(a)
 	}
 }
 

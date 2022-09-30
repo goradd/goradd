@@ -8,7 +8,8 @@ import (
 	"github.com/goradd/html5tag"
 )
 
-// Children is just a helper function for doing declarative control creation for child control creators
+// Children is a helper function for doing declarative control creation for child control creators.
+// It returns the creators passed to it as a slice.
 func Children(creators ...page.Creator) []page.Creator {
 	return creators
 }
@@ -73,13 +74,19 @@ type PanelCreator struct {
 // Create is called by the framework to create the panel. You do not normally need to call this.
 func (c PanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewPanel(parent, c.ID)
+	c.Init(ctx, ctrl)
+	return ctrl
+}
+
+// Init is called by implementations to initialize a control with the
+// creator. You do not normally need to call this.
+func (c PanelCreator) Init(ctx context.Context, ctrl PanelI) {
 	if c.Text != "" {
 		ctrl.SetText(c.Text)
 	}
 	ctrl.SetTextIsHtml(c.TextIsHtml)
 	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	ctrl.AddControls(ctx, c.Children...)
-	return ctrl
 }
 
 // GetPanel is a convenience method to return the panel with the given id from the page.
