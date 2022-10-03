@@ -16,6 +16,8 @@ const (
 // pattern. It will compute the number of rows required, and then wrap the rows in
 // row html, and the cells in cell html. You can have the items flow with the rows, or flow
 // across the row axis. You can use this to build a table or a table-like structure.
+//
+// This is largely obsoleted by CSS Grid.
 type GridLayoutBuilder struct {
 	items         []string
 	columnCount   int

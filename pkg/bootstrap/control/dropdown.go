@@ -85,6 +85,7 @@ func (l *Dropdown) OnClick(a action.ActionI) DropdownI {
 func (l *Dropdown) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := l.UnorderedList.DrawingAttributes(ctx)
 	a.AddClass("dropdown")
+	a.Set("grctl", "bs-dropdown")
 	if l.asNavItem {
 		a.AddClass("nav-item")
 	}

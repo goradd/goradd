@@ -96,8 +96,8 @@ func (b *Navbar) Init(parent page.ControlI, id string) {
 	b.expand = NavbarExpandLarge
 	config.LoadBootstrap(b.ParentForm())
 
-	b.On(event.Click().Selector(`a[href="#"][class~="nav-link"]`).Capture(),
-		action.Trigger(b.ID(), NavbarSelect, javascript.JsCode(`g$(event.target).data("grEv")`)))
+	b.On(event.Click().Selector(`a[href="#"][data-grctl="navlink"]`).Capture(),
+		action.Trigger(b.ID(), NavbarSelect, javascript.JsCode(`g$(event.target).id`)))
 
 }
 

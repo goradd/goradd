@@ -27,8 +27,11 @@ func (f *ControlsForm) Init(ctx context.Context, formID string) {
 		bootstrap.NavbarCreator{
 			ID: "nav",
 			Children: Children(
-				bootstrap.NavGroupCreator{
+				PanelCreator{
 					ID: "navList",
+					ControlOptions: page.ControlOptions{
+						Class: bootstrap.NavbarNav,
+					},
 				},
 			),
 		},
@@ -47,35 +50,45 @@ func (f *ControlsForm) LoadControls(ctx context.Context) {
 		f.SetAttribute("novalidate", true) // bypass html validation for testing
 	}
 
+	var p string
+
 	if id, ok := page.GetContext(ctx).FormValue("control"); ok {
 		for _, c := range controls {
 			if c.key == id {
 				createF = c.f
+				p = id
 			}
 		}
 	}
 
 	if createF == nil {
 		createF = controls[0].f
+		p = controls[0].key
 	}
+
+	f.loadNavbar(ctx, p)
 
 	createF(ctx, GetPanel(f, "detailPanel"))
 }
 
-func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
-	navGroup := bootstrap.GetNavGroup(f, "navList")
+func (f *ControlsForm) loadNavbar(ctx context.Context, curKey string) {
+	navGroup := GetPanel(f, "navList")
 	navGroup.RemoveChildren()
 	sort.Slice(controls, func(i, j int) bool {
 		return controls[i].order < controls[j].order
 	})
 	pageContext := page.GetContext(ctx)
 	for _, c := range controls {
-		item := bootstrap.NewNavLink(navGroup, c.key)
+		item := bootstrap.NewNavLink(navGroup, c.key+"-link")
 		a := url.
 			NewBuilderFromUrl(pageContext.URL).
 			SetValue("control", c.key).
 			String()
 		item.SetLocation(a)
+		item.SetText(c.name)
+		if curKey == c.key {
+			item.SetIsActive(true)
+		}
 	}
 }
 
