@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	grctl "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
 )
 
@@ -98,13 +99,14 @@ func (b *Button) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 }
 
 // SetIsPrimary determines whether the button is styled as a primary or secondary button.
-func (b *Button) SetIsPrimary(isPrimary bool) {
+func (b *Button) SetIsPrimary(isPrimary bool) grctl.ButtonI {
 	b.Button.SetIsPrimary(isPrimary)
 	if isPrimary {
 		b.style = ButtonStylePrimary
 	} else {
 		b.style = ButtonStyleSecondary
 	}
+	return b.this()
 }
 
 // Serialize serializes the state of the control for the pagestate
@@ -151,7 +153,7 @@ type ButtonCreator struct {
 	Style          ButtonStyle
 	Size           ButtonSize
 	IsPrimary      bool
-	ValidationType page.ValidationType
+	ValidationType event.ValidationType
 	page.ControlOptions
 }
 

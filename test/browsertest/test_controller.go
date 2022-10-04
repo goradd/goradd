@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/event"
 	"path"
 	"time"
 
@@ -22,16 +23,13 @@ const (
 	testMarkerAction
 )
 
-func TestStepEvent() *page.Event {
-	e := &page.Event{JsEvent: "teststep"}
-	return e
+func TestStepEvent() *event.Event {
+	return event.NewEvent("teststep")
 }
 
-func TestMarkerEvent() *page.Event {
-	e := &page.Event{JsEvent: "testmarker"}
-	return e
+func TestMarkerEvent() *event.Event {
+	return event.NewEvent("testmarker")
 }
-
 
 type stepItemType struct {
 	Step int
@@ -40,9 +38,8 @@ type stepItemType struct {
 
 type markerItemType struct {
 	Marker string
-	Err  string
+	Err    string
 }
-
 
 type TestController struct {
 	control.Panel
@@ -83,7 +80,7 @@ func (p *TestController) logLine(line string) {
 func (p *TestController) loadUrl(url string, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
 	p.ExecuteWidgetFunction("loadUrl", len(p.stepDescriptions), url)
-	p.waitStep(); // load function will wait until window is loaded before firing
+	p.waitStep() // load function will wait until window is loaded before firing
 }
 
 func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
@@ -102,9 +99,9 @@ func (p *TestController) Action(ctx context.Context, a page.ActionParams) {
 	case testMarkerAction:
 		marker := a.EventValueString()
 		select {
-			case p.markerChannel <- marker:
-			default: // If we overflow the marker channel, we just move on and assume nobody is listening
-					 // Maybe we should close the channel at this point and stop sending?
+		case p.markerChannel <- marker:
+		default: // If we overflow the marker channel, we just move on and assume nobody is listening
+			// Maybe we should close the channel at this point and stop sending?
 		}
 	}
 
@@ -164,10 +161,9 @@ func (p *TestController) waitMarker(desc string, expectedMarker string) {
 	}
 }
 
-
 func (p *TestController) changeVal(id string, val interface{}, description string) {
 	p.stepDescriptions = append(p.stepDescriptions, description)
-	s,_ := json.Marshal(val)
+	s, _ := json.Marshal(val)
 	p.ExecuteWidgetFunction("changeVal", len(p.stepDescriptions), id, string(s))
 	p.waitStep()
 }
@@ -195,7 +191,6 @@ func (p *TestController) waitSubmit(desc string) {
 	p.stepDescriptions = append(p.stepDescriptions, desc)
 	p.waitStep()
 }
-
 
 func (p *TestController) callWidgetFunction(id string, funcName string, params []interface{}, description string) interface{} {
 	p.stepDescriptions = append(p.stepDescriptions, description)
@@ -230,4 +225,3 @@ func (p *TestController) closeWindow(description string) {
 	p.ExecuteWidgetFunction("closeWindow", len(p.stepDescriptions))
 	p.waitStep()
 }
-

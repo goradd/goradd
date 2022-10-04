@@ -44,7 +44,7 @@ const (
 )
 
 // A DialogPanel is the interface between the default dialog style, and a panel.
-//To put a dialog on the screen, call GetDialogPanel()
+// To put a dialog on the screen, call GetDialogPanel()
 // and then add child controls to that panel, call AddButton() to add buttons to the dialog, and then call Show().
 type DialogPanel struct {
 	Panel
@@ -76,7 +76,7 @@ func (p *DialogPanel) getDialog() DialogI {
 
 // OnClose attaches an action that will happen when the dialog closes.
 func (p *DialogPanel) OnClose(a action.ActionI) {
-	p.getDialog().On(event.DialogClosed().Validate(page.ValidateNone), a)
+	p.getDialog().On(event.DialogClosed().Validate(event.ValidateNone), a)
 }
 
 // OnButton attaches an action handler that responds to button presses. The id of the pressed button will

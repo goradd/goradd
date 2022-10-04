@@ -2,6 +2,7 @@ package column
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/page/event"
 
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
@@ -12,10 +13,12 @@ import (
 // ButtonColumnClick returns an event that detects a click on the icon in the column.
 // The EventValue will be the row value clicked on.
 // If you need to also know the column clicked on, you can set the Action's action value to:
-//   javascript.NewJsCode(g$(event.goradd.match).columnId())
+//
+//	javascript.NewJsCode(g$(event.goradd.match).columnId())
+//
 // and then get the value from the ActionValue.
-func ButtonColumnClick() *page.Event {
-	e := page.NewEvent("click").
+func ButtonColumnClick() *event.Event {
+	e := event.Click().
 		Selector("[data-gr-btn-col]").
 		ActionValue(javascript.JsCode(
 			`g$(event.goradd.match).closest("tr").data("value")`,

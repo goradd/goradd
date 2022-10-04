@@ -244,6 +244,6 @@ func init() {
 	page.RegisterControl(&Navbar{})
 }
 
-func NavbarSelectEvent() *page.Event {
-	return page.NewEvent(NavbarSelect)
+func NavbarSelectEvent() *event.Event {
+	return event.NewEvent(NavbarSelect)
 }

@@ -14,7 +14,7 @@ type ButtonI interface {
 	SetLabel(label string) ButtonI
 	OnSubmit(action action.ActionI) ButtonI
 	OnClick(action action.ActionI) ButtonI
-	SetIsPrimary(p bool) ButtonI
+	SetIsPrimary(bool) ButtonI
 }
 
 // Button is a standard html form button. It corresponds to a <button> tag in html.
@@ -47,7 +47,7 @@ func (b *Button) Init(parent page.ControlI, id string) {
 	b.ControlBase.Init(parent, id)
 	b.Tag = "button"
 	b.SetAttribute("type", "button")
-	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
+	b.SetValidationType(event.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
 
 func (b *Button) this() ButtonI {
@@ -73,7 +73,7 @@ func (b *Button) SetIsPrimary(s bool) ButtonI {
 }
 
 // On causes the given actions to execute when the given event is triggered.
-func (b *Button) On(e *page.Event, action action.ActionI) page.ControlI {
+func (b *Button) On(e *event.Event, action action.ActionI) page.ControlI {
 	e.Terminating() // prevent default action (override submit)
 	b.ControlBase.On(e, action)
 	return b.this()
@@ -126,7 +126,7 @@ type ButtonCreator struct {
 	// a OnClick and OnSubmit.
 	OnClick action.ActionI
 	// ValidationType controls how the page will be validating when the button is clicked.
-	ValidationType page.ValidationType
+	ValidationType event.ValidationType
 	// ControlOptions are additional options that are common to all controls.
 	page.ControlOptions
 }
@@ -150,7 +150,7 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 	if c.OnClick != nil {
 		ctrl.OnClick(c.OnClick)
 	}
-	if c.ValidationType != page.ValidateDefault {
+	if c.ValidationType != event.ValidateDefault {
 		ctrl.SetValidationType(c.ValidationType)
 	}
 	if c.IsPrimary {

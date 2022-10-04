@@ -17,7 +17,7 @@ func (f *{{= formName }}) CreateControls(ctx context.Context) {
             ID: {{= title }}CancelButtonID,
             Text: f.GT("Cancel"),
             OnSubmit: action.Ajax(f.ID(), {{= title }}CancelAction),
-  	        ValidationType: page.ValidateNone,
+  	        ValidationType: event.ValidateNone,
         },
         {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
             ID: {{= title }}DeleteButtonID,
@@ -26,7 +26,7 @@ func (f *{{= formName }}) CreateControls(ctx context.Context) {
                 action.Confirm(f.GT("Are you sure you want to delete this item?")),
                 action.Ajax(f.ID(), {{= title }}DeleteAction),
  	        ),
- 	        ValidationType: page.ValidateNone,
+ 	        ValidationType: event.ValidateNone,
        },
     )
 }

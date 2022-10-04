@@ -2,12 +2,12 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 )
 
 type TabsI interface {
@@ -32,7 +32,7 @@ func NewTabs(parent page.ControlI, id string) *Tabs {
 
 func (t *Tabs) Init(parent page.ControlI, id string) {
 	t.Panel.Init(parent, id)
-	t.On(event.Event("show.bs.tab"), action.SetControlValue(t.ID(), "selectedId", javascript.JsCode("event.target.id")))
+	t.On(event.NewEvent("show.bs.tab"), action.SetControlValue(t.ID(), "selectedId", javascript.JsCode("event.target.id")))
 }
 
 func (t *Tabs) DrawingAttributes(ctx context.Context) html5tag.Attributes {
@@ -49,7 +49,6 @@ func (t *Tabs) Serialize(e page.Encoder) {
 	}
 }
 
-
 func (t *Tabs) Deserialize(d page.Decoder) {
 	t.Panel.Deserialize(d)
 
@@ -57,8 +56,6 @@ func (t *Tabs) Deserialize(d page.Decoder) {
 		panic(err)
 	}
 }
-
-
 
 type TabsCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
@@ -73,7 +70,6 @@ func (c TabsCreator) Create(ctx context.Context, parent page.ControlI) page.Cont
 	ctrl.AddControls(ctx, c.Children...)
 	return ctrl
 }
-
 
 // GetTabs is a convenience method to return the control with the given id from the page.
 func GetTabs(c page.ControlI, id string) *Tabs {

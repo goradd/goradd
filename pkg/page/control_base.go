@@ -11,6 +11,7 @@ import (
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
 	buf2 "github.com/goradd/goradd/pkg/pool"
 	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/stringmap"
@@ -28,35 +29,11 @@ const sessionControlTypeState string = "goradd.controlType"
 
 const RequiredErrorMessage string = "A value is required"
 
-// ValidationType is used by active controls, like buttons, to determine what other items on the form will get validated
-// when the button is pressed. You can set the ValidationType for a control, but you can also set it for individual events
-// and override the control's validation setting.
-type ValidationType int
-
-const (
-	// ValidateDefault is used by events to indicate they are not overriding a control validation. You should not need to use this.
-	ValidateDefault ValidationType = iota
-	// ValidateNone indicates the control will not validate the form
-	ValidateNone
-	// ValidateForm is the default validation for buttons, and indicates the entire form and all controls will validate.
-	ValidateForm
-	// ValidateSiblingsAndChildren will validate the current control, and all siblings of the control and all
-	// children of the siblings and current control.
-	ValidateSiblingsAndChildren
-	// ValidateSiblingOnly will validate only the siblings of the current control, but not any child controls.
-	ValidateSiblingsOnly
-	// ValidateChildrenOnly will validate only the children of the current control.
-	ValidateChildrenOnly
-	// ValidateContainer will use the validation setting of a parent control with ValidateSiblingsAndChildren, ValidateSiblingsOnly,
-	// ValidateChildrenOnly, or ValidateTargetsOnly as the stopping point for validation.
-	ValidateContainer
-	// ValidateTargetsOnly will only validate the specified targets
-	ValidateTargetsOnly
-)
-
 // ValidationState is used internally by the framework to determine how the control's wrapper handles drawing validation error
 // messages. Different wrappers use it to set classes or attributes of the error message or the overall control.
 type ValidationState int
+
+type eventMap map[event.EventID]*event.Event
 
 const (
 	// ValidationWaiting is the default for controls that accept validation. It means that the control expects to be validated,
@@ -93,7 +70,7 @@ type stateType = maps.Map[string, any]
 type stateStoreType = maps.Map[string, SavedState]
 
 // DefaultCheckboxLabelDrawingMode is a setting used by checkboxes and radio buttons to default how they draw labels.
-// Some CSS framworks are very picky about whether checkbox labels wrap the control, or sit next to the control,
+// Some CSS frameworks are very picky about whether checkbox labels wrap the control, or sit next to the control,
 // and whether the label is before or after the control
 var DefaultCheckboxLabelDrawingMode = html5tag.LabelAfter
 
@@ -190,7 +167,7 @@ type ControlI interface {
 	PrivateAction(context.Context, ActionParams)
 	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
-	On(e *Event, a action.ActionI) ControlI
+	On(e *event.Event, a action.ActionI) ControlI
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
 	HasServerAction(eventName string) bool
@@ -201,8 +178,8 @@ type ControlI interface {
 
 	Validate(ctx context.Context) bool
 	ValidationState() ValidationState
-	ValidationType(*Event) ValidationType
-	SetValidationType(typ ValidationType) ControlI
+	ValidationType(*event.Event) event.ValidationType
+	SetValidationType(typ event.ValidationType) ControlI
 	ChildValidationChanged()
 
 	// SaveState tells the control whether to save the basic state of the control, so that when the form is reentered, the
@@ -246,13 +223,13 @@ type ControlI interface {
 }
 
 type attributeScriptEntry struct {
-	id       string        // id of the object to execute the command on. This should be the id of the control, or a a related html object.
+	id       string        // id of the object to execute the command on. This should be the id of the control, or a related html object.
 	f        string        // the  function to call
 	commands []interface{} // parameters to the function
 }
 
 // ControlBase is the basis for UI controls and widgets in goradd. It corresponds to a standard html form object or tag, or a custom javascript
-// widget. A Control renders a tag and everything inside of the tag, but can also include a wrapper which associates
+// widget. A Control renders a tag and everything inside the tag, but can also include a wrapper which associates
 // a label, instructions and error messages with the tag. A Control can also associate javascript
 // with itself to make sure the javascript is loaded on the page when the control is drawn, and can render
 // javascript that will initialize a custom javascript widget.
@@ -264,7 +241,7 @@ type attributeScriptEntry struct {
 //
 // A Control is part of a system that will reflect the state of the control between the client and server.
 // When a user updates a control in the browser and performs an action that requires a response from the
-// server, the goradd javascript will gather up all the changes in the form and send those to the server.
+// server, the goradd javascript will gather all the changes in the form and send those to the server.
 // The control can read those values and update its own internal state, so that from the perspective
 // of the programmer referring to the control, the values in the ControlBase are the same as what the user sees in a browser.
 //
@@ -295,7 +272,7 @@ type ControlBase struct {
 	// attributes are the collection of custom attributes to apply to the control. This does not include all the
 	// attributes that will be drawn, as some are added temporarily just before drawing by GetDrawingAttributes()
 	attributes html5tag.Attributes
-	// text is a multi purpose string that can be button text, inner text inside of tags, etc. depending on the control.
+	// text is a multipurpose string that can be button text, inner text inside of tags, etc. depending on the control.
 	text string
 	// textLabelMode describes how to draw the internal label
 	textLabelMode html5tag.LabelDrawingMode
@@ -336,10 +313,10 @@ type ControlBase struct {
 	// validationMessage is the current validation message that will display when drawing the control
 	// This gets copied from ValidMessage at drawing time if the control is in an invalid state
 	validationMessage string
-	// validationState is the current validation state of the control, and will effect how the control is drawn.
+	// validationState is the current validation state of the control, and will affect how the control is drawn.
 	validationState ValidationState
 	// validationType indicates how the control will validate itself. See ValidationType for a description.
-	validationType ValidationType
+	validationType event.ValidationType
 	// validationTargets is the list of control IDs to target validation
 	validationTargets []string
 	// This blocks a parent from validating this control. Useful for dialogs, and other situations where sub-controls should control their own space.
@@ -348,12 +325,12 @@ type ControlBase struct {
 	// actionValue is the value that will be provided as the ControlValue for any actions that are triggered by this control.
 	actionValue interface{}
 	// events are all the events added by the control user that the control might trigger
-	events EventMap
+	events eventMap
 	// eventCounter is used to generate a unique id for an event to help us route the event through the system.
-	eventCounter EventID
+	eventCounter event.EventID
 	// shouldSaveState indicates that we should save parts of our state into a session variable so that if
 	// the client should come back to the form, we will attempt to restore the state of the control. The state
-	// in this situation would be the user's input, so text in a textbox, or the selection from a list.
+	// in this situation would be the user's input, so text in a Textbox, or the selection from a list.
 	shouldSaveState bool
 	// encoded is used during the serialization process to prevent encoding a control multiple times.
 	encoded bool
@@ -386,7 +363,7 @@ func (c *ControlBase) Init(parent ControlI, id string) {
 	c.isModified = true
 }
 
-// this supports object oriented features by giving easy access to the virtual function interface.
+// this supports object-oriented features by giving easy access to the virtual function interface.
 // Subclasses should provide a duplicate. Calls that implement chaining should return the result of this function.
 func (c *ControlBase) this() ControlI {
 	return c.Self.(ControlI)
@@ -580,7 +557,7 @@ func (c *ControlBase) RenderAutoControls(ctx context.Context, w io.Writer) {
 
 // DrawTemplate is used by the framework to draw the ControlBase with a template.
 // Controls that use templates should use this function signature for the template. That will override this one, and
-// we will then detect that the template was drawn. Otherwise, we detect that no template was defined and it will move
+// we will then detect that the template was drawn. Otherwise, we detect that no template was defined, and it will move
 // on to drawing the controls without a template, or just the text if text is defined.
 func (c *ControlBase) DrawTemplate(ctx context.Context, w io.Writer) (err error) {
 	// Don't change this to use some kind of function injection, as such things are not serializable
@@ -632,7 +609,7 @@ func (c *ControlBase) DrawText(ctx context.Context, w io.Writer) {
 	return
 }
 
-// SetAttribute sets an html attribute of the control. You can manually set most any attribute, but be careful
+// SetAttribute sets an HTML attribute of the control. You can manually set almost any attribute, but be careful
 // not to set the id attribute, or any attribute that is managed by the control itself. If you are setting
 // a data-* attribute, use SetDataAttribute instead. If you are adding a class to the control, use MergeWords.
 func (c *ControlBase) SetAttribute(name string, val interface{}) ControlI {
@@ -657,7 +634,7 @@ func (c *ControlBase) SetAttribute(name string, val interface{}) ControlI {
 	return c.this()
 }
 
-// Return the value of a custom attribute. Note that this will not return values that are set only during
+// Attribute returns the value of a custom attribute. Note that this will not return values that are set only during
 // drawing and that are managed by the ControlBase implementation.
 func (c *ControlBase) Attribute(name string) string {
 	return c.attributes.Get(name)
@@ -925,7 +902,7 @@ func (c *ControlBase) SetIsRequired(r bool) ControlI {
 	return c.this()
 }
 
-// IsRequired returns true if the control requires input from the user to pass validation.
+// IsRequired returns true if the control requires a value to be set in order to pass validation.
 func (c *ControlBase) IsRequired() bool {
 	return c.isRequired
 }
@@ -955,8 +932,8 @@ func (c *ControlBase) SetValidationError(e string) {
 	}
 }
 
-func (f *ControlBase) ResetValidation() {
-	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
+func (c *ControlBase) ResetValidation() {
+	c.RangeSelfAndAllChildren(func(ctrl ControlI) {
 		c := ctrl.control()
 		var changed bool
 		if c.validationMessage != "" {
@@ -1038,7 +1015,7 @@ func (c *ControlBase) SetHasNoSpace(v bool) ControlI {
 // by the form automatically, after all other controls are drawn, if the control was not drawn in
 // some other way. An example of an auto-rendered control would be a dialog box that starts out hidden,
 // but then is shown by some user response. Such controls are normally shown by javascript, and are
-// absolutely positioned so that they do not effect the layout of the rest of the form.
+// absolutely positioned so that they do not affect the layout of the rest of the form.
 func (c *ControlBase) SetShouldAutoRender(r bool) {
 	c.shouldAutoRender = r
 }
@@ -1050,11 +1027,10 @@ func (c *ControlBase) ShouldAutoRender() bool {
 
 // On adds an event listener to the control that will trigger the given actions.
 // To have a single event fire multiple actions, use action.Group() to combine the actions into one.
-func (c *ControlBase) On(e *Event, a action.ActionI) ControlI {
+func (c *ControlBase) On(e *event.Event, a action.ActionI) ControlI {
 	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
 	// implement a script block with every control connected by id
-	e.addAction(a)
 	c.eventCounter++
 
 	// Get a new event id
@@ -1067,17 +1043,17 @@ func (c *ControlBase) On(e *Event, a action.ActionI) ControlI {
 	}
 
 	if c.events == nil {
-		c.events = map[EventID]*Event{}
+		c.events = map[event.EventID]*event.Event{}
 	}
 	c.events[c.eventCounter] = e
-	e.eventID = c.eventCounter
+	event.SetEventItems(e, a, c.eventCounter)
 	return c.this()
 }
 
 // Off removes all event handlers from the control
 func (c *ControlBase) Off() {
 	for id, e := range c.events {
-		if !e.isPrivate() {
+		if !e.IsPrivate() {
 			delete(c.events, id)
 		}
 	}
@@ -1105,7 +1081,7 @@ func (c *ControlBase) HasCallbackAction(eventName string) bool {
 
 // GetEvent returns the event associated with the eventName, which corresponds to the javascript
 // trigger name.
-func (c *ControlBase) GetEvent(eventName string) *Event {
+func (c *ControlBase) GetEvent(eventName string) *event.Event {
 	for _, e := range c.events {
 		if e.Name() == eventName {
 			return e
@@ -1128,7 +1104,7 @@ func (c *ControlBase) ActionValue() interface{} {
 }
 
 // Action processes actions. Typically, the Action function will first look at the id to know how to handle it.
-// This is just an empty implemenation. Sub-controls should implement this.
+// This is just an empty implementation. Sub-controls should implement this.
 func (c *ControlBase) Action(ctx context.Context, a ActionParams) {
 }
 
@@ -1138,13 +1114,13 @@ func (c *ControlBase) Action(ctx context.Context, a ActionParams) {
 func (c *ControlBase) PrivateAction(ctx context.Context, a ActionParams) {
 }
 
-// GetActionScripts is an internal function called during drawing to gather up all the event related
+// GetActionScripts is an internal function called during drawing to gather all the event related
 // scripts attached to the control and send them to the response.
 func (c *ControlBase) GetActionScripts(r *Response) {
 	// Render actions
 	if c.events != nil {
 		for id, e := range c.events {
-			s := e.renderActions(c.this(), id)
+			s := event.RenderActions(e, c.this(), id)
 			r.ExecuteJavaScript(s, PriorityStandard)
 		}
 	}
@@ -1166,20 +1142,20 @@ func (c *ControlBase) UpdateFormValues(ctx context.Context) {
 
 // doAction is an internal function that the form manager uses to send callback actions to controls.
 func (c *ControlBase) doAction(ctx context.Context) {
-	var e *Event
+	var e *event.Event
 	var ok bool
 	var isPrivate bool
 	var grCtx = GetContext(ctx)
 
 	if e, ok = c.events[grCtx.eventID]; ok {
-		isPrivate = e.isPrivate()
+		isPrivate = e.IsPrivate()
 	}
 
 	if !ok {
 		// This is the situation where we are submitting a form using a button in a browser
 		// where javascript has been turned off. We assume we only have a click event on the button
 		// and so just grab it.
-		var id EventID
+		var id event.EventID
 		for id, e = range c.events {
 			break
 		}
@@ -1188,14 +1164,14 @@ func (c *ControlBase) doAction(ctx context.Context) {
 		}
 	}
 
-	if (e.validationOverride != ValidateNone && e.validationOverride != ValidateDefault) ||
-		(e.validationOverride == ValidateDefault && c.this().ValidationType(e) != ValidateNone) {
+	if (e.GetValidationOverride() != event.ValidateNone && e.GetValidationOverride() != event.ValidateDefault) ||
+		(e.GetValidationOverride() == event.ValidateDefault && c.this().ValidationType(e) != event.ValidateNone) {
 		c.ParentForm().ResetValidation()
 	}
 
 	if c.passesValidation(ctx, e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
-		if callbackAction := e.getCallbackAction(); callbackAction != nil {
+		if callbackAction := e.GetCallbackAction(); callbackAction != nil {
 			p := ActionParams{
 				ID:        callbackAction.ID(),
 				Action:    callbackAction.(action.CallbackActionI),
@@ -1236,20 +1212,20 @@ func (c *ControlBase) SetBlockParentValidation(block bool) {
 	c.blockParentValidation = block
 }
 
-// SetValidationType specifies how this control validates other controls. Typically its either ValidateNone or ValidateForm.
+// SetValidationType specifies how this control validates other controls. Typically, its either ValidateNone or ValidateForm.
 // ValidateForm will validate all the controls on the form.
 // ValidateSiblingsAndChildren will validate the immediate siblings of the target controls and their children
 // ValidateSiblingsOnly will validate only the siblings of the target controls
 // ValidateTargetsOnly will validate only the specified target controls
-func (c *ControlBase) SetValidationType(typ ValidationType) ControlI {
+func (c *ControlBase) SetValidationType(typ event.ValidationType) ControlI {
 	c.validationType = typ
 	return c.this()
 }
 
 // ValidationType is an internal function to return the validation type. It allows subclasses to override it.
-func (c *ControlBase) ValidationType(e *Event) ValidationType {
-	if c.validationType == ValidateNone || c.validationType == ValidateDefault {
-		return ValidateNone
+func (c *ControlBase) ValidationType(e *event.Event) event.ValidationType {
+	if c.validationType == event.ValidateNone || c.validationType == event.ValidateDefault {
+		return event.ValidateNone
 	} else {
 		return c.validationType
 	}
@@ -1263,32 +1239,32 @@ func (c *ControlBase) SetValidationTargets(controlIDs ...string) {
 }
 
 // passesValidation checks to see if the event requires validation, and if so, if it passes the required validation
-func (c *ControlBase) passesValidation(ctx context.Context, event *Event) (valid bool) {
-	validation := c.this().ValidationType(event)
+func (c *ControlBase) passesValidation(ctx context.Context, e *event.Event) (valid bool) {
+	validation := c.this().ValidationType(e)
 
-	if v := event.validationOverride; v != ValidateDefault {
+	if v := e.GetValidationOverride(); v != event.ValidateDefault {
 		validation = v
 	}
 
-	if validation == ValidateDefault || validation == ValidateNone {
+	if validation == event.ValidateDefault || validation == event.ValidateNone {
 		return true
 	}
 
 	var targets []ControlI
 
 	if c.validationTargets == nil {
-		if c.validationType == ValidateForm {
+		if c.validationType == event.ValidateForm {
 			targets = []ControlI{c.ParentForm()}
-		} else if c.validationType == ValidateContainer {
+		} else if c.validationType == event.ValidateContainer {
 			for target := c.Parent(); target != nil; target = target.Parent() {
 				switch target.control().validationType {
-				case ValidateChildrenOnly:
+				case event.ValidateChildrenOnly:
 					fallthrough
-				case ValidateSiblingsAndChildren:
+				case event.ValidateSiblingsAndChildren:
 					fallthrough
-				case ValidateSiblingsOnly:
+				case event.ValidateSiblingsOnly:
 					fallthrough
-				case ValidateTargetsOnly:
+				case event.ValidateTargetsOnly:
 					validation = target.control().validationType
 					targets = []ControlI{target}
 					break
@@ -1297,14 +1273,14 @@ func (c *ControlBase) passesValidation(ctx context.Context, event *Event) (valid
 			if targets == nil {
 				// Target is the form
 				targets = []ControlI{c.ParentForm()}
-				validation = ValidateForm
+				validation = event.ValidateForm
 			}
 		} else {
 			targets = []ControlI{c}
 		}
 	} else {
-		if c.validationType == ValidateForm ||
-			c.validationType == ValidateContainer {
+		if c.validationType == event.ValidateForm ||
+			c.validationType == event.ValidateContainer {
 			panic("Unsupported validation type and target combo.")
 		}
 		for _, id := range c.validationTargets {
@@ -1317,22 +1293,22 @@ func (c *ControlBase) passesValidation(ctx context.Context, event *Event) (valid
 	valid = true
 
 	switch validation {
-	case ValidateForm:
+	case event.ValidateForm:
 		valid = c.ParentForm().control().validateSelfAndChildren(ctx)
-	case ValidateSiblingsAndChildren:
+	case event.ValidateSiblingsAndChildren:
 		for _, t := range targets {
 			valid = t.control().validateSiblingsAndChildren(ctx) && valid
 		}
-	case ValidateSiblingsOnly:
+	case event.ValidateSiblingsOnly:
 		for _, t := range targets {
 			valid = t.control().validateSelfAndSiblings(ctx) && valid
 		}
-	case ValidateChildrenOnly:
+	case event.ValidateChildrenOnly:
 		for _, t := range targets {
 			valid = t.control().validateSelfAndChildren(ctx) && valid
 		}
 
-	case ValidateTargetsOnly:
+	case event.ValidateTargetsOnly:
 		var valid bool
 		for _, t := range targets {
 			valid = t.Validate(ctx) && valid
@@ -1548,7 +1524,7 @@ func (c *ControlBase) GT(message string) string {
 // T sends strings to the translator for translation, and returns the translated string. The language is taken from the
 // session. See the i18n package for more info on that mechanism.
 // Additionally, you can add an i18n.ID() call to add an id to the translation to disambiguate it from similar strings, and
-// you can add a i18n.Comment() call to add an extracted comment for the translators. The message string should be a literal
+// you can add an i18n.Comment() call to add an extracted comment for the translators. The message string should be a literal
 // string and not a variable, so that an extractor can extract it from your source to put it into a translation file.
 // This version passes the literal string.
 //
@@ -1568,7 +1544,7 @@ func (c *ControlBase) T(message string, params ...interface{}) string {
 }
 
 // TPrintf is like T(), but works like Sprintf, returning the translated string, but sending the arguments to the message
-// as if the message was an Sprintf format string. The go/text extractor has code that can do interesting things with
+// as if the message was a Sprintf format string. The go/text extractor has code that can do interesting things with
 // this kind of string.
 func (c *ControlBase) TPrintf(message string, params ...interface{}) string {
 	builder, args := i18n.ExtractBuilderFromArguments(params)
@@ -1578,7 +1554,7 @@ func (c *ControlBase) TPrintf(message string, params ...interface{}) string {
 		Sprintf(message, args...)
 }
 
-// SetDisable will set the "disabled" attribute of the control.
+// SetDisabled will set the "disabled" attribute of the control.
 func (c *ControlBase) SetDisabled(d bool) {
 	c.attributes.SetDisabled(d)
 	c.Refresh()
@@ -1733,7 +1709,7 @@ func (c *ControlBase) WatchDbRecord(ctx context.Context, n query.NodeI, pk strin
 	}
 }
 
-// WatchChannel allows you to specify any channel to watch that will cause a redraw
+// WatchChannel allows you to specify any channel to watch that will cause the control to redraw.
 func (c *ControlBase) WatchChannel(ctx context.Context, channel string) {
 	if c.watchedKeys == nil {
 		c.watchedKeys = make(map[string]string)
@@ -1741,7 +1717,7 @@ func (c *ControlBase) WatchChannel(ctx context.Context, channel string) {
 	c.watchedKeys[channel] = ""
 }
 
-// MockFormValue will mock the process of getting a form value from an http response for
+// MockFormValue will mock the process of getting a form value from an HTTP response for
 // testing purposes. This includes calling UpdateFormValues and Validate on the control.
 // It returns the result of the Validate function.
 func (c *ControlBase) MockFormValue(value string) bool {
@@ -1791,12 +1767,12 @@ type controlEncoding struct {
 	ValidMessage          string
 	ValidationMessage     string
 	ValidationState       ValidationState
-	ValidationType        ValidationType
+	ValidationType        event.ValidationType
 	ValidationTargets     []string
 	BlockParentValidation bool
 	ActionValue           interface{}
-	Events                EventMap
-	EventCounter          EventID
+	Events                eventMap
+	EventCounter          event.EventID
 	ShouldSaveState       bool
 	IsModified            bool // For testing framework
 	DataConnector         DataConnector
@@ -1902,7 +1878,7 @@ func (c *ControlBase) Deserialize(d Decoder) {
 // EventList is a list of event and action pairs. Use action.Group as the Action to assign multiple actions to
 // an event.
 type EventList []struct {
-	Event  *Event
+	Event  *event.Event
 	Action action.ActionI
 }
 
@@ -1926,7 +1902,7 @@ type ControlOptions struct {
 	IsDisabled bool
 	// IsRequired is used by the validator. If a value is required, and the control is empty, it will not pass validation.
 	IsRequired bool
-	// IsHidden initializes this control as hidden. A place holder will be sent in the html so that when the control is shown through ajax, we will know where to put it.
+	// IsHidden initializes this control as hidden. A placeholder will be sent in the html so that when the control is shown through ajax, we will know where to put it.
 	IsHidden bool
 	// On adds events with actions to the control
 	On EventList
@@ -1996,4 +1972,6 @@ func init() {
 	gob.Register(new(stateStoreType))
 	gob.Register(new(maps.Map[string, any]))
 	gob.Register(new(maps.Map[string, SavedState]))
+	gob.Register(new(eventMap))
+	gob.Register(new(map[event.EventID]*event.Event))
 }

@@ -1,6 +1,7 @@
 package control
 
 import (
+	"github.com/goradd/goradd/pkg/page/event"
 	"testing"
 
 	"github.com/goradd/goradd/pkg/page"
@@ -51,7 +52,7 @@ func TestButtonCreator(t *testing.T) {
 			Text:           "b",
 			IsPrimary:      true,
 			OnClick:        action.Blur("d"),
-			ValidationType: page.ValidateChildrenOnly,
+			ValidationType: event.ValidateChildrenOnly,
 			ControlOptions: page.ControlOptions{
 				Class: "c",
 			},

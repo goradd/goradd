@@ -4,18 +4,18 @@ import (
 	"context"
 	"fmt"
 	config2 "github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 )
 
 type ModalBackdropType int
 
 const (
-	ModalBackdrop ModalBackdropType = iota		// Standard bootstrap backdrop. Clicking the backdrop closes the modal.
-	ModalStaticBackdrop							// Clicking the backdrop will not close the modal.
+	ModalBackdrop       ModalBackdropType = iota // Standard bootstrap backdrop. Clicking the backdrop closes the modal.
+	ModalStaticBackdrop                          // Clicking the backdrop will not close the modal.
 )
 
 type ModalI interface {
@@ -61,7 +61,7 @@ func (m *Modal) Init(parent page.ControlI, id string) {
 	m.Tag = "div"
 	m.SetShouldAutoRender(true)
 
-	m.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
+	m.SetValidationType(event.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
 	m.SetBlockParentValidation(true)
 	config2.LoadBootstrap(m.ParentForm())
 
@@ -73,7 +73,7 @@ func (m *Modal) Init(parent page.ControlI, id string) {
 	m.titleBar = NewTitleBar(m, m.ID()+"-titlebar")
 	m.buttonBar = control.NewPanel(m, m.ID()+"-btnbar")
 
-	m.On(event.DialogClosed().Validate(page.ValidateNone).Private(), action.Ajax(m.ID(), DialogClosed))
+	m.On(event.DialogClosed().Validate(event.ValidateNone).Private(), action.Ajax(m.ID(), DialogClosed))
 }
 
 func (m *Modal) this() ModalI {
@@ -137,8 +137,9 @@ func (m *Modal) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 
 // AddButton adds a button to the modal. Buttons should be added in the order to appear.
 // Styling options you can include in options.Options:
-//  style - ButtonStyle value
-//  size - ButtonSize value
+//
+//	style - ButtonStyle value
+//	size - ButtonSize value
 func (m *Modal) AddButton(
 	label string,
 	id string,
@@ -153,7 +154,7 @@ func (m *Modal) AddButton(
 	if options != nil {
 		if options.IsClose {
 			btn.SetDataAttribute("bsDismiss", "modal") // make it a close button
-			btn.SetDataAttribute("bsTarget", m.ID()) // make it a close button
+			btn.SetDataAttribute("bsTarget", m.ID())   // make it a close button
 		} else if options.ConfirmationMessage == "" {
 			if options.OnClick != nil {
 				btn.On(event.Click(), options.OnClick)
@@ -186,10 +187,9 @@ func (m *Modal) AddButton(
 		m.foundRight = true
 	}
 
-
 	if options != nil {
 		if options.Validates {
-			btn.SetValidationType(page.ValidateContainer)
+			btn.SetValidationType(event.ValidateContainer)
 		}
 
 		if options.Options != nil && len(options.Options) > 0 {
@@ -301,7 +301,6 @@ func (m *Modal) Serialize(e page.Encoder) {
 	}
 }
 
-
 func (m *Modal) Deserialize(d page.Decoder) {
 	m.Panel.Deserialize(d)
 
@@ -312,8 +311,8 @@ func (m *Modal) Deserialize(d page.Decoder) {
 		panic(err)
 	}
 
-	m.titleBar = m.Page().GetControl(m.ID()+"-titlebar").(*TitleBar)
-	m.buttonBar = m.Page().GetControl(m.ID()+"-btnbar").(*control.Panel)
+	m.titleBar = m.Page().GetControl(m.ID() + "-titlebar").(*TitleBar)
+	m.buttonBar = m.Page().GetControl(m.ID() + "-btnbar").(*control.Panel)
 
 	if err := d.Decode(&m.backdrop); err != nil {
 		panic(err)
@@ -322,8 +321,6 @@ func (m *Modal) Deserialize(d page.Decoder) {
 		panic(err)
 	}
 }
-
-
 
 type TitleBar struct {
 	control.Panel
@@ -344,29 +341,28 @@ func init() {
 }
 
 type ModalButtonCreator struct {
-	Label string
-	ID string
-	Validates bool
+	Label               string
+	ID                  string
+	Validates           bool
 	ConfirmationMessage string
-	PushLeft bool
-	IsClose bool
-	Options map[string]interface{}
+	PushLeft            bool
+	IsClose             bool
+	Options             map[string]interface{}
 }
 
-func ModalButtons (buttons ...ModalButtonCreator) []ModalButtonCreator {
+func ModalButtons(buttons ...ModalButtonCreator) []ModalButtonCreator {
 	return buttons
 }
 
-
 type ModalCreator struct {
-	ID string
-	Title string
+	ID            string
+	Title         string
 	TitlebarClass string
-	HasCloseBox bool
-	Style control.DialogStyle
-	Backdrop ModalBackdropType
-	Buttons []ModalButtonCreator
-	OnButton action.ActionI
+	HasCloseBox   bool
+	Style         control.DialogStyle
+	Backdrop      ModalBackdropType
+	Buttons       []ModalButtonCreator
+	OnButton      action.ActionI
 	page.ControlOptions
 	Children []page.Creator
 }
@@ -411,7 +407,6 @@ func (c ModalCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 
 	return ctrl
 }
-
 
 // GetListGroup is a convenience method to return the control with the given id from the page.
 func GetModal(c page.ControlI, id string) *Modal {

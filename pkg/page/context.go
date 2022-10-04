@@ -8,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/goradd"
 	http2 "github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/session"
 	"mime/multipart"
 	"net/http"
@@ -53,7 +54,7 @@ func (m RequestMode) String() string {
 	case Ajax:
 		return "Ajax"
 	case CustomAjax:
-		return "Custom Ajax"
+		return "NewEvent Ajax"
 	case Cli:
 		return "Command-line"
 	}
@@ -108,7 +109,7 @@ type AppContext struct {
 	pageStateId          string
 	customControlValues  map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
 	actionControlID      string                            // If an action, the control sending the action
-	eventID              EventID                           // The event to send to the control
+	eventID              event.EventID                     // The event to send to the control
 	actionValues         actionValues
 	refreshIDs           []string
 	clientTimezoneOffset int
@@ -283,7 +284,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				ctx.actionControlID = params.ControlID
 				ctx.refreshIDs = params.RefreshIDs
 				if params.EventID != 0 {
-					ctx.eventID = EventID(params.EventID)
+					ctx.eventID = event.EventID(params.EventID)
 				}
 				ctx.actionValues = params.Values
 				ctx.clientTimezoneOffset = params.TimezoneInfo.TimezoneOffset

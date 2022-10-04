@@ -1,39 +1,53 @@
 package event
 
-import "github.com/goradd/goradd/pkg/page"
-
-func KeyDown() *page.Event {
-	return &page.Event{JsEvent: "keydown"}
+// KeyDown responds to the javascript "keydown" event.
+func KeyDown() *Event {
+	return &Event{jsEvent: "keydown"}
 }
 
-func KeyUp() *page.Event {
-	return &page.Event{JsEvent: "keyup"}
+// KeyUp responds to the javascript "keyup" event.
+func KeyUp() *Event {
+	return &Event{jsEvent: "keyup"}
 }
 
-func KeyPress() *page.Event {
-	return &page.Event{JsEvent: "keypress"}
+// KeyPress responds to the javascript "keypress" event.
+// Deprecated: this is deprecated by the web standards. Use KeyDown or BeforeInput instead.
+func KeyPress() *Event {
+	return &Event{jsEvent: "keypress"}
 }
 
-func Backspace() *page.Event {
+// BeforeInput responds to the javascript "beforeinput" event.
+// This event is fired before a control is changed by text edits.
+func BeforeInput() *Event {
+	return &Event{jsEvent: "beforeinput"}
+}
+
+// Backspace is a keydown event for the backspace key.
+func Backspace() *Event {
 	return KeyDown().Condition("event.keyCode == 8")
 }
 
-func EnterKey() *page.Event {
+// EnterKey is a keydown event for the enter key.
+func EnterKey() *Event {
 	return KeyDown().Condition("event.keyCode == 13")
 }
 
-func EscapeKey() *page.Event {
+// EscapeKey is a keydown event for the escape key.
+func EscapeKey() *Event {
 	return KeyDown().Condition("event.keyCode == 27")
 }
 
-func TabKey() *page.Event {
+// TabKey is a keydown event for the tab key.
+func TabKey() *Event {
 	return KeyDown().Condition("event.keyCode == 9")
 }
 
-func UpArrow() *page.Event {
+// UpArrow is a keydown event for the up arrow.
+func UpArrow() *Event {
 	return KeyDown().Condition("event.keyCode == 38")
 }
 
-func DownArrow() *page.Event {
+// DownArrow is a keydown event for the down arrow.
+func DownArrow() *Event {
 	return KeyDown().Condition("event.keyCode == 40")
 }
