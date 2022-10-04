@@ -5,8 +5,9 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/html5tag"
 	action2 "github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/html5tag"
+	"strconv"
 )
 
 // EventID is a unique id used to specify which event is triggering.
@@ -78,8 +79,13 @@ func (e *Event) Condition(javascript string) *Event {
 }
 
 // Delay is the time in milliseconds to wait before triggering the actions.
-func (e *Event) Delay(d int) *Event {
-	e.delay = d
+//
+// During the delay time, if the event is repeated, the delay timer will restart and
+// only one event will eventually be fired. For example, if you have a KeyDown event with a delay,
+// and the user enters multiple keys during the delay time, only one keydown event will fire, and it
+// will fire delay ms after the last keydown event was received.
+func (e *Event) Delay(delay int) *Event {
+	e.delay = delay
 	return e
 }
 
@@ -107,14 +113,15 @@ func (e *Event) Capture() *Event {
 	return e
 }
 
-// Call Blocking to cause this event to prevent other events from firing after this fires, but before it processes.
+// Blocking prevents other events from firing after this fires, but before it processes.
 // If another event fires between the time when this event fires and when a response is received, it will be lost.
 func (e *Event) Blocking() *Event {
 	e.blocking = true
 	return e
 }
 
-// Call Terminating to cause the event not to bubble or do the default action.
+// Terminating prevents the event from bubbling or doing the default action. It is essentially a combination
+// of calling PreventDefault and StopPropagation.
 func (e *Event) Terminating() *Event {
 	e.preventDefault = true
 	e.stopPropagation = true
@@ -179,7 +186,7 @@ func (e *Event) HasServerAction() bool {
 	}
 }
 
-// HasServerAction returns true if at least one of the event's actions is a server action.
+// HasCallbackAction returns true if at least one of the event's actions is a callback action.
 func (e *Event) HasCallbackAction() bool {
 	switch a := e.action.(type) {
 	case action2.CallbackActionI:
@@ -193,12 +200,6 @@ func (e *Event) HasCallbackAction() bool {
 
 func (e *Event) Name() string {
 	return e.JsEvent
-}
-
-// EventId returns the private event id generated when the event was assigned a control
-// Useful in special situations when drawing a control
-func (e *Event) GetID() EventID {
-	return e.eventID
 }
 
 func (e *Event) addAction(a action2.ActionI) {
@@ -243,7 +244,18 @@ func (e *Event) renderActions(control ControlI, eventID EventID) string {
 	if !config.Minify {
 		actionJs = html5tag.Indent(actionJs)
 	}
-	actionJs = fmt.Sprintf("goradd.queueAction({f: (function(){\n%s\n}).bind(this.element), d: %d, name: '%s'});\n", actionJs, e.delay, e.JsEvent)
+	if e.delay == 0 {
+		actionJs = fmt.Sprintf(
+			"goradd.queueAction({f: (function(){\n%s\n}).bind(this.element), name: '%s'});\n",
+			actionJs, e.JsEvent,
+		)
+	} else {
+		actionJs = fmt.Sprintf(
+			"goradd.queueAction({f: (function(){\n%s\n}).bind(this.element), name: '%s', d: %d, k: '%s'});\n",
+			actionJs, e.JsEvent, e.delay,
+			// An event key unique to events used on the page, for preventing the same event from repeating during the delay time
+			control.ID()+"-"+strconv.Itoa(int(e.eventID)))
+	}
 
 	if e.condition != "" {
 		js = fmt.Sprintf("if (%s) {%s%s\n};", e.condition, js, actionJs)
