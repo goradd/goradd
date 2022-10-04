@@ -1,0 +1,55 @@
+{{define package }}controls{{end package}}
+{{define imports }}
+{{end imports}}
+{{define control}}IntroPanel{{end control}}
+
+{{define template }}
+<h1>Introduction to GoRADD Controls</h1>
+<p>
+GoRADD controls are structs written in Go code that mirror html and javascript code sent to the browser.
+The GoRADD framework takes care of the back and forth communication between the server and the client browser,
+such that when the GoRADD control is changed on the server, the equivalent browser control is changed, and when the
+user makes a change to the control in the browser, the change is reflected in the server. Also, if the user performs
+an action that is being watched, the server code will be notified when the user does that action in the browser.
+</p>
+<p>
+The idea is that for the most part, you create your web site using Go code and html templates, and the html controls you
+use automatically send their data to the server so you do not need to figure out how to route the client data to the
+server. They also automatically reflect their values so that you can just think about manipulating the controls
+in Go code, vs. worrying about how to deal with Post, Get and other HTTP mechanics.
+</p>
+<p>
+The simple example here will wait for you to type something into the text field, and will then display a message with
+the content.
+</p>
+<label>Text Field</label>{{draw textField }}
+<p>
+Click on the Source Code button above to view the source code for this page. You will notice that in Go, the
+control is created using this code in the Init function of the <em>0-intro.go</em> file:
+</p>
+<code>
+	textBox := NewTextbox(p, "textField")
+	textBox.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))
+</code>
+<p>
+Later parts of this tutorial will teach you about events and actions. The thing to notice is how easy it is
+to declare an HTML control and tell it what to do.
+</p>
+<p>
+The control is drawn in the template file with this code:
+</p>
+<code>
+{{# The begin and end block below tell the template engine to turn off processing and turn it back on, so that
+    you will see the template code in the output. Otherwise, it would try to draw the field again. }}
+{{begin strict}}
+{{draw textField }}
+{{end strict}}
+</code>
+<p>
+Note that "textField" is the id of the control, which was assigned when the control was created. It is also the
+HTML id of the control.
+</p>
+
+{{end template}}
+
+{{renderControlTemplate}}
