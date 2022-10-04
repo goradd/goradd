@@ -1090,8 +1090,8 @@ var g$ = function(el) {
         // Action queue support
         //////////////////////////////
         /* Javascript has a problem when two events happen simultaneously. In particular, a click event might also
-        result in a change event, and under certain circumstances this could cause the click event to be dropped. In particular,
-        if the change event moves the focus away from the button that was clicked, the click event will not record.
+        result in a change event, and under certain circumstances this could cause the click event to be dropped.
+        If the change event moves the focus away from the button that was clicked, the click event will not record.
         We therefore delay the processing of all events to try to queue them up before processing.
         Its very strange. Something to debug at a future date.
         */
@@ -1119,7 +1119,8 @@ var g$ = function(el) {
                 var params = goradd._actionQueue.shift();
                 goradd.log("processAction: " + params.name + " delay: " + params.d);
                 if (params.d > 0) {
-                    setTimeout(params.f, params.d);
+                    // If the event is repeated during the delay, the action will not be repeated
+                    goradd.setTimer(params.k, params.f, params.d);
                 } else {
                     params.f();
                 }
