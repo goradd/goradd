@@ -40,7 +40,7 @@ type Labeler interface {
 // user selects a list item, you would use the id to retrieve the ListItem selected.
 type ListItem struct {
 	ItemList
-	value             string // html list item values eventually get expressed as a string in the html
+	value             string
 	id                string
 	label             string
 	attributes        html5tag.Attributes

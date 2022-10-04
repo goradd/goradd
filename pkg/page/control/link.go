@@ -9,8 +9,9 @@ import (
 
 type LinkI interface {
 	page.ControlI
-	SetLabel(label string) page.ControlI
+	SetLabel(label string) LinkI
 	SetLocation(href string) LinkI
+	SetDownload(string) LinkI
 }
 
 // Link is a standard html link. It corresponds to a <a> tag in html.
@@ -30,6 +31,7 @@ func NewLink(parent page.ControlI, id string) *Link {
 func (l *Link) Init(parent page.ControlI, id string) {
 	l.ControlBase.Init(parent, id)
 	l.Tag = "a"
+	l.SetAttribute("href", "#") // default link to hash tag by convention
 }
 
 func (l *Link) this() LinkI {
@@ -37,7 +39,7 @@ func (l *Link) this() LinkI {
 }
 
 // SetLabel sets the text that appears between the a tags.
-func (l *Link) SetLabel(label string) page.ControlI {
+func (l *Link) SetLabel(label string) LinkI {
 	l.SetText(label)
 	return l.this()
 }
@@ -54,12 +56,13 @@ func (l *Link) SetLocation(url string) LinkI {
 // destination to be downloaded. Pass a value to name the download
 // file, or pass the empty string to cause the browser to use the
 // link name as the file name.
-func (l *Link) SetDownload(v string) {
-	if v == "" {
+func (l *Link) SetDownload(filename string) LinkI {
+	if filename == "" {
 		l.SetAttribute("download", true)
 	} else {
-		l.SetAttribute("download", v)
+		l.SetAttribute("download", filename)
 	}
+	return l.this()
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
@@ -72,12 +75,17 @@ func (l *Link) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 
 // LinkCreator is the initialization structure for declarative creation of links
 type LinkCreator struct {
-	// ID is the control id
+	// ID is the control id. Leave blank to have one automatically assigned.
 	ID string
-	// Text is the text displayed inside the link
+	// Text is the text displayed inside the link.
 	Text string
-	// Location is the destination of the link (the href attribute)
+	// Location is the destination of the link (the href attribute).
 	Location string
+	// Download indicates that the "download" attribute should be assigned to the link.
+	// Set to true to use the text of the link as the name of the file. Otherwise set to a string
+	// to indicate the name of the file.
+	Download any
+	// ControlOptions are additional options for the html control.
 	page.ControlOptions
 }
 
@@ -95,6 +103,11 @@ func (c LinkCreator) Init(ctx context.Context, ctrl LinkI) {
 	ctrl.SetLabel(c.Text)
 	if c.Location != "" {
 		ctrl.SetLocation(c.Location)
+	}
+	if v, ok := c.Download.(bool); ok && v {
+		ctrl.SetDownload("")
+	} else if v2, ok := c.Download.(string); ok {
+		ctrl.SetDownload(v2)
 	}
 	ctrl.ApplyOptions(ctx, c.ControlOptions)
 }

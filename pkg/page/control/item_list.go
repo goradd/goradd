@@ -71,7 +71,7 @@ func (l *ItemList) AddItemAt(index int, label string, value ...string) {
 	l.AddListItemAt(index, NewListItem(label, value...))
 }
 
-// AddItemAt adds the item at the given index. If the index is negative, it counts from the end. If the index is
+// AddListItemAt adds the item at the given index. If the index is negative, it counts from the end. If the index is
 // -1 or bigger than the number of items, it adds it to the end. If the index is zero, or is negative and smaller than
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
 // hierarchical list, so use sparingly.

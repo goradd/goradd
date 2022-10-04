@@ -3,8 +3,11 @@ package control
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/html5tag"
+	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 )
 
 const (
@@ -45,25 +48,29 @@ const (
 	NavbarCollapsedBrandHidden
 )
 
+const NavbarSelect = "gr-bs-navbarselect"
+
 type NavbarI interface {
 	page.ControlI
 	SetNavbarStyle(style NavbarStyle) NavbarI
 	SetBrand(label string, anchor string, p NavbarCollapsedBrandPlacement) NavbarI
 	SetBackgroundClass(c BackgroundColorClass) NavbarI
 	SetExpand(e NavbarExpandClass) NavbarI
+	OnClick(action action.ActionI) NavbarI
 }
 
 // Navbar is a bootstrap navbar object. Use SetText() to set the logo text of the navbar, and
 // SetTextIsHtml() to true to turn off encoding if needed. Add child controls to populate it.
+// When adding NavLink objects, they should be grouped together using the NavGroup object.
 type Navbar struct {
 	page.ControlBase
-	brandAnchor string
+	brandAnchor   string
 	brandLocation NavbarCollapsedBrandPlacement
 
 	style NavbarStyle
 	//container ContainerClass ??
-	background    BackgroundColorClass
-	expand        NavbarExpandClass
+	background BackgroundColorClass
+	expand     NavbarExpandClass
 }
 
 type NavbarStyle string
@@ -88,6 +95,10 @@ func (b *Navbar) Init(parent page.ControlI, id string) {
 	b.background = BackgroundColorDark
 	b.expand = NavbarExpandLarge
 	config.LoadBootstrap(b.ParentForm())
+
+	b.On(event.Click().Selector(`a[href="#"][data-grctl="navlink"]`).Capture(),
+		action.Trigger(b.ID(), NavbarSelect, javascript.JsCode(`g$(event.target).id`)))
+
 }
 
 func (b *Navbar) this() NavbarI {
@@ -113,6 +124,14 @@ func (b *Navbar) SetBrand(label string, anchor string, p NavbarCollapsedBrandPla
 
 func (b *Navbar) SetExpand(e NavbarExpandClass) NavbarI {
 	b.expand = e
+	return b.this()
+}
+
+// OnClick sets the action to take when a link in the Navbar is selected.
+// It will only respond to links whose href is "#", which indicates its an empty link.
+// The ActionValue will be the id of the link clicked.
+func (b *Navbar) OnClick(a action.ActionI) NavbarI {
+	b.On(NavbarSelectEvent(), a)
 	return b.this()
 }
 
@@ -148,7 +167,6 @@ func (b *Navbar) Serialize(e page.Encoder) {
 	return
 }
 
-
 func (b *Navbar) Deserialize(d page.Decoder) {
 	b.ControlBase.Deserialize(d)
 
@@ -170,18 +188,21 @@ func (b *Navbar) Deserialize(d page.Decoder) {
 }
 
 type NavbarCreator struct {
-	ID string
+	ID    string
 	Brand string
-	// HeaderAnchor is the url to go to when the main logo in the navbar is clicked
+	// BrandAnchor is the url to go to when the main logo in the navbar is clicked
 	BrandAnchor string
 	// Style is either NavbarDark or NavbarLight
 	Style NavbarStyle
 	// BackgroundColorClass is one of the background colors that you can assign the navbar
-	BackgroundColorClass    BackgroundColorClass
+	BackgroundColorClass BackgroundColorClass
 	// Expand determines at what screen width the navbar will be expanded.
-	Expand        NavbarExpandClass
+	Expand NavbarExpandClass
 	// BrandLocation controls the placement of the brand item
 	BrandLocation NavbarCollapsedBrandPlacement
+	// OnClick is the action to take when a link is clicked. It will only respond
+	// to nav-link items that have an href of "#". The EventValue will be the id of the item clicked.
+	OnClick action.ActionI
 
 	page.ControlOptions
 	Children []page.Creator
@@ -206,7 +227,10 @@ func (c NavbarCreator) Init(ctx context.Context, ctrl NavbarI) {
 		ctrl.SetBackgroundClass(c.BackgroundColorClass)
 	}
 	if c.Expand != "" {
-		ctrl.SetExpand (c.Expand)
+		ctrl.SetExpand(c.Expand)
+	}
+	if c.OnClick != nil {
+		ctrl.OnClick(c.OnClick)
 	}
 	ctrl.AddControls(ctx, c.Children...)
 }
@@ -218,4 +242,8 @@ func GetNavbar(c page.ControlI, id string) *Navbar {
 
 func init() {
 	page.RegisterControl(&Navbar{})
+}
+
+func NavbarSelectEvent() *page.Event {
+	return page.NewEvent(NavbarSelect)
 }

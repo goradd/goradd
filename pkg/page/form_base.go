@@ -105,12 +105,6 @@ func (f *FormBase) AddGoraddFiles() {
 	f.AddStyleSheetFile(path.Join(config.AssetPrefix, "goradd", "css", "goradd.css"), nil)
 }
 
-// AddFontAwesome adds the font-awesome files fo the form
-func (f *FormBase) AddFontAwesome() {
-	f.AddStyleSheetFile("https://use.fontawesome.com/releases/v5.0.13/css/all.css",
-		html5tag.NewAttributes().Set("integrity", "sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp").Set("crossorigin", "anonymous"))
-}
-
 // Draw renders the form. Even though forms are technically controls, we use a custom drawing
 // routine for performance reasons and for control.
 func (f *FormBase) Draw(ctx context.Context, w io.Writer) {

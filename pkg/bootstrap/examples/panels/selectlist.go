@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"github.com/goradd/html5tag"
 	"strings"
 )
 
@@ -40,37 +41,48 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		FormGroupCreator{
 			Label: "Standard SelectList",
 			Child: SelectListCreator{
-				ID: "singleSelectList",
+				ID:      "singleSelectList",
 				NilItem: "- Select One -",
-				Items: itemList,
-				ControlOptions:page.ControlOptions{
+				Items:   itemList,
+				ControlOptions: page.ControlOptions{
 					IsRequired: true,
+				},
+			},
+		},
+		FormGroupCreator{
+			Label: "Dropdown",
+			Child: DropdownCreator{
+				ID:    "dropdown",
+				Text:  "Select One",
+				Items: itemList,
+				ButtonAttributes: html5tag.Attributes{
+					"class": "btn-outline-primary",
 				},
 			},
 		},
 		FormGroupCreator{
 			Label: "SelectList With Size",
 			Child: SelectListCreator{
-				ID: "selectListWithSize",
+				ID:    "selectListWithSize",
 				Items: itemList,
-				Size: 4,
-				ControlOptions:page.ControlOptions{
+				Size:  4,
+				ControlOptions: page.ControlOptions{
 					IsRequired: true,
 				},
 			},
 		},
 		FormFieldsetCreator{
-			Legend: "Radio List",
+			Legend:       "Radio List",
 			Instructions: "A radio list",
 			Child: RadioListCreator{
-				ID: "radioList1",
+				ID:    "radioList1",
 				Items: itemList,
 			},
 		},
 		FormFieldsetCreator{
 			Legend: "Checkbox List",
 			Child: CheckboxListCreator{
-				ID: "checklist1",
+				ID:    "checklist1",
 				Items: itemList,
 			},
 		},
@@ -84,9 +96,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 			Text:     "Submit Server",
 			OnSubmit: action.Ajax("selectListPanel", ButtonSubmit),
 		},
-
 	)
-
 
 }
 
@@ -98,8 +108,7 @@ func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 	}
 }
 
-
-func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
+func testSelectListAjaxSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "lists").String()
 	t.LoadUrl(myUrl)
 
@@ -108,7 +117,7 @@ func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
 	t.Done("Complete")
 }
 
-func testSelectListServerSubmit(t *browsertest.TestForm)  {
+func testSelectListServerSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "lists").String()
 	t.LoadUrl(myUrl)
 
@@ -126,7 +135,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.AssertEqual(true, t.ControlHasClass("singleSelectList-fg", "error"))
 
 	t.WithForm(func(f page.FormI) {
-		t.AssertEqual(2,  GetSelectList(f, "selectListWithSize").IntValue())
+		t.AssertEqual(2, GetSelectList(f, "selectListWithSize").IntValue())
 	})
 
 	t.ChooseListValue("singleSelectList", "1")
@@ -136,7 +145,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 
 	t.Click(btnID)
 
-	t.WithForm(func (f page.FormI) {
+	t.WithForm(func(f page.FormI) {
 		t.AssertEqual(1, GetSelectList(f, "singleSelectList").IntValue())
 		t.AssertEqual(2, GetSelectList(f, "selectListWithSize").IntValue())
 		t.AssertEqual(3, GetRadioList(f, "radioList1").IntValue())
