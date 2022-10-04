@@ -11,9 +11,10 @@ import (
 
 type ButtonI interface {
 	page.ControlI
-	SetLabel(label string) page.ControlI
-	OnSubmit(action action.ActionI) page.ControlI
-	SetIsPrimary(p bool)
+	SetLabel(label string) ButtonI
+	OnSubmit(action action.ActionI) ButtonI
+	OnClick(action action.ActionI) ButtonI
+	SetIsPrimary(p bool) ButtonI
 }
 
 // Button is a standard html form button. It corresponds to a <button> tag in html.
@@ -49,25 +50,26 @@ func (b *Button) Init(parent page.ControlI, id string) {
 	b.SetValidationType(page.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
 
-func (c *Button) this() ButtonI {
-	return c.Self.(ButtonI)
+func (b *Button) this() ButtonI {
+	return b.Self.(ButtonI)
 }
 
 // SetLabel is an alias for SetText on buttons. Standard buttons do not normally have separate labels.
 // Subclasses can redefine this if they use separate labels.
-func (b *Button) SetLabel(label string) page.ControlI {
+func (b *Button) SetLabel(label string) ButtonI {
 	b.SetText(label)
 	return b.this()
 }
 
 // SetIsPrimary will set this button to be the default button on the form, which is the button clicked when
 // the user presses a return. Some browsers only respond to this when there is a textbox on the screen.
-func (b *Button) SetIsPrimary(s bool) {
+func (b *Button) SetIsPrimary(s bool) ButtonI {
 	if s {
 		b.SetAttribute("type", "submit")
 	} else {
 		b.SetAttribute("type", "button")
 	}
+	return b.this()
 }
 
 // On causes the given actions to execute when the given event is triggered.
@@ -94,9 +96,18 @@ func (b *Button) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 // It debounces the click, so that all other events are lost until this event processes. It should generally be used for
 // operations that will eventually redirect to a different page. If coupling this with an ajax response, you should
 // probably also make the response priority PriorityFinal.
-func (b *Button) OnSubmit(action action.ActionI) page.ControlI {
+func (b *Button) OnSubmit(action action.ActionI) ButtonI {
 	// We delay here to try to make sure any other delayed events are executed first.
-	return b.On(event.Click().Terminating().Delay(200).Blocking(), action)
+	b.this().On(event.Click().Delay(200).Blocking(), action)
+	return b.this()
+}
+
+// OnClick is shortcut for adding a click event handler.
+//
+// If your handler causes a new page to load, you should consider using OnSubmit instead.
+func (b *Button) OnClick(action action.ActionI) ButtonI {
+	b.this().On(event.Click(), action)
+	return b.this()
 }
 
 // ButtonCreator is the initialization structure for declarative creation of buttons
@@ -113,8 +124,10 @@ type ButtonCreator struct {
 	OnSubmit action.ActionI
 	// OnClick is an action to take when the button is pressed. Do not specify both
 	// a OnClick and OnSubmit.
-	OnClick        action.ActionI
+	OnClick action.ActionI
+	// ValidationType controls how the page will be validating when the button is clicked.
 	ValidationType page.ValidationType
+	// ControlOptions are additional options that are common to all controls.
 	page.ControlOptions
 }
 
@@ -135,7 +148,7 @@ func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 		ctrl.OnSubmit(c.OnSubmit)
 	}
 	if c.OnClick != nil {
-		ctrl.On(event.Click(), c.OnClick)
+		ctrl.OnClick(c.OnClick)
 	}
 	if c.ValidationType != page.ValidateDefault {
 		ctrl.SetValidationType(c.ValidationType)

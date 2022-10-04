@@ -25,7 +25,7 @@ the content.
 <label>Text Field</label>{{draw textField }}
 <p>
 Click on the Source Code button above to view the source code for this page. You will notice that in Go, the
-control is created using this code in the Init function of the <em>0-intro.go</em> file:
+control is created using this code in the <i>Init</i> function of the <i>0-intro.go</i> file:
 </p>
 <code>
 	textBox := NewTextbox(p, "textField")
@@ -47,7 +47,7 @@ The control is drawn in the template file with this code:
 </code>
 <p>
 Note that "textField" is the id of the control, which was assigned when the control was created. It is also the
-HTML id of the control.
+HTML <var>id</var> of the control.
 </p>
 
 {{end template}}

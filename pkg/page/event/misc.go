@@ -35,7 +35,6 @@ func DialogButton() *page.Event {
 	return e
 }
 
-
 const DialogClosedEvent = "grdlgclosed"
 
 // DialogClosed indicates that a dialog has closed. This is a good time to do any required cleanup.
@@ -49,7 +48,8 @@ func TimerExpired() *page.Event {
 	return &page.Event{JsEvent: "goradd.timerexpired"}
 }
 
-// Custom returns an event that responds to the given javascript event
+// Event returns an event that responds to the given named javascript event. Use this to create a response to a custom
+// javascript event.
 func Event(event string) *page.Event {
 	return &page.Event{JsEvent: event}
 }
