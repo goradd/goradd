@@ -1,4 +1,4 @@
-package page
+package action
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -30,7 +30,7 @@ var tests1 = []struct {
 }
 
 func TestValues(t *testing.T) {
-	var a ActionParams
+	var a Params
 
 	for _, test := range tests1 {
 		a.values.Event = test.data

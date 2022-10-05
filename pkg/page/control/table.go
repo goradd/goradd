@@ -516,7 +516,7 @@ func (t *Table) UpdateFormValues(ctx context.Context) {
 }
 
 // PrivateAction is called by the framework to allow controls to process actions internal to themselves.
-func (t *Table) PrivateAction(ctx context.Context, p page.ActionParams) {
+func (t *Table) PrivateAction(ctx context.Context, p action.Params) {
 	switch p.ID {
 	case ColumnAction:
 		var subId string
@@ -624,9 +624,10 @@ func (t *Table) SetSortColumnsByID(ids ...string) {
 // SetSortIconHtml set the html used to draw the sort icons.
 // If a string is blank, it will not be changed.
 // Use the following for font awesome icons
-// 		`<i class="fa fa-sort fa-lg"></i>`
-//		`<i class="fa fa-sort-asc fa-lg"></i>`
-//		`<i class="fa fa-sort-desc fa-lg"></i>`
+//
+//	`<i class="fa fa-sort fa-lg"></i>`
+//	`<i class="fa fa-sort-asc fa-lg"></i>`
+//	`<i class="fa fa-sort-desc fa-lg"></i>`
 func (t *Table) SetSortIconHtml(sortable string, asc string, desc string) {
 	if sortable != "" {
 		t.sortableHtml = sortable

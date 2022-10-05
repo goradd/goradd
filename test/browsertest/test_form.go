@@ -86,7 +86,7 @@ func (form *TestForm) LoadControls(ctx context.Context) {
 	})
 }
 
-func (form *TestForm) Action(ctx context.Context, a page.ActionParams) {
+func (form *TestForm) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case TestButtonAction:
 		form.runSelectedTest()

@@ -3,7 +3,6 @@ package panels
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/crypt"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -13,6 +12,7 @@ import (
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	. "github.com/goradd/goradd/web/examples/gen/goradd/model"
+	"github.com/goradd/html5tag"
 )
 
 type TableProxyPanel struct {
@@ -31,27 +31,27 @@ func (p *TableProxyPanel) Init(ctx context.Context, parent page.ControlI, id str
 	p.AddControls(ctx,
 		ProxyCreator{
 			ID: "pxy",
-			On: On {
+			On: On{
 				Event:  event.Click(),
 				Action: action.Ajax(p.ID(), ProxyClick),
 			},
 		},
 		PagedTableCreator{
-			ID: "table1",
-			DataProvider:p,
-			Columns:[]ColumnCreator {
+			ID:           "table1",
+			DataProvider: p,
+			Columns: []ColumnCreator{
 				column.TexterColumnCreator{
 					Texter: p,
 					ColumnOptions: ColumnOptions{
-						IsHtml:true,
+						IsHtml: true,
 					},
 				},
 			},
 			SaveState: true,
-			Caption:DataPagerCreator{
+			Caption: DataPagerCreator{
 				PagedControl: "table1",
 			},
-			PageSize:5,
+			PageSize: 5,
 		},
 		ProjectPanelCreator{},
 	)
@@ -91,7 +91,7 @@ func (p *TableProxyPanel) CellText(ctx context.Context, col ColumnI, info CellIn
 	return v
 }
 
-func (p *TableProxyPanel) Action(ctx context.Context, a page.ActionParams) {
+func (p *TableProxyPanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ProxyClick:
 		id := a.ControlValueString()
@@ -132,9 +132,9 @@ func testTableProxyCol(t *browsertest.TestForm) {
 	t.LoadUrl(myUrl)
 
 	t.ClickHtmlItem("pxy1")
-/*	h := t.ControlInnerHtml("nameItem")
-	t.AssertEqual("<label>Name</label>ACME Website Redesign", h)
-*/	t.Done("Complete")
+	/*	h := t.ControlInnerHtml("nameItem")
+		t.AssertEqual("<label>Name</label>ACME Website Redesign", h)
+	*/t.Done("Complete")
 
 }
 

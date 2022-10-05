@@ -156,7 +156,7 @@ func (e *Event) PreventBubbling() *Event {
 
 // ActionValue is a value that will be returned to the actions that will be process by this event. Specify a static
 // value, or javascript objects that will gather data at the time the event fires. The event will appear in the
-// ActionParams as the EventValue. By default, this will be the value passed in to the event as event data.
+// Params as the EventValue. By default, this will be the value passed in to the event as event data.
 //
 // See on: and trigger: in goradd.js.
 //

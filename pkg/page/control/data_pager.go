@@ -256,7 +256,7 @@ func (d *DataPager) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 }
 
 // Action is called by the framework to respond to actions.
-func (d *DataPager) Action(_ context.Context, params page.ActionParams) {
+func (d *DataPager) Action(_ context.Context, params action.Params) {
 	switch params.ID {
 	case PageClick:
 		pageNum := params.ControlValueInt()
@@ -306,7 +306,7 @@ in the pager. It should try to represent an easy to navigate interface that can 
 
 A "Bunch" is defined as the collection of numbers that lies in between the pair of Ellipsis ("...")
 
-Layout
+# Layout
 
 For an IndexCount of 10
 2   213   2 (two items to the left of the bunch, and then 2 indexes, selected index, 3 indexes, and then two items to the right of the bunch)

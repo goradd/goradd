@@ -24,18 +24,17 @@ type IndexForm struct {
 	Num int
 }
 
-
 func (f *IndexForm) Init(ctx context.Context, formID string) {
 	f.FormBase.Init(ctx, formID)
 	f.AddRelatedFiles()
 
 	f.AddControls(ctx,
 		PanelCreator{
-			ID:"detailPanel",
+			ID: "detailPanel",
 		},
 		ButtonCreator{
-			ID: "viewSourceButton",
-			Text: "View Source",
+			ID:      "viewSourceButton",
+			Text:    "View Source",
 			OnClick: action.Ajax(f.ID(), ViewSourceAction),
 		},
 	)
@@ -61,7 +60,7 @@ func (f *IndexForm) LoadControls(ctx context.Context) {
 			return
 		}
 
-		for i,pr := range pl {
+		for i, pr := range pl {
 			if pr.id == id {
 				pr.f(ctx, GetPanel(f, "detailPanel"))
 				f.Cat = cat
@@ -75,7 +74,7 @@ func (f *IndexForm) LoadControls(ctx context.Context) {
 }
 
 func (f *IndexForm) ShowSourceDialog() {
-	d, isNew := GetDialogPanel(f,"sourceDialog")
+	d, isNew := GetDialogPanel(f, "sourceDialog")
 	if isNew {
 		d.SetTitle("Source")
 		d.AddCloseButton("Close", "close")
@@ -85,11 +84,10 @@ func (f *IndexForm) ShowSourceDialog() {
 	d.Show()
 }
 
-
-func (f *IndexForm) Action(ctx context.Context, a page.ActionParams) {
+func (f *IndexForm) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ViewSourceAction:
-		if l,ok := pages[f.Cat]; ok {
+		if l, ok := pages[f.Cat]; ok {
 			pr := l[f.Num]
 			f.ShowSourceDialog()
 			GetSourcePanel(f).show(pr.files)
@@ -97,8 +95,6 @@ func (f *IndexForm) Action(ctx context.Context, a page.ActionParams) {
 	}
 }
 
-
 func init() {
 	page.RegisterForm(IndexFormPath, &IndexForm{}, IndexFormId)
 }
-

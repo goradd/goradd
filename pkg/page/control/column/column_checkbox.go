@@ -195,7 +195,7 @@ func (c *CheckboxColumn) AddActions(t page.ControlI) {
 }
 
 // Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.
-func (c *CheckboxColumn) Action(_ context.Context, params page.ActionParams) {
+func (c *CheckboxColumn) Action(_ context.Context, params action.Params) {
 	switch params.ActionValueInt() {
 	case AllClickAction:
 		p := new(event.CheckboxColumnActionValues)

@@ -8,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/goradd"
 	http2 "github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/session"
 	"mime/multipart"
@@ -110,7 +111,7 @@ type AppContext struct {
 	customControlValues  map[string]map[string]interface{} // map of new control values keyed by control id. This supplements what comes through in the formVars as regular post variables. Numbers are preserved as json.Number types.
 	actionControlID      string                            // If an action, the control sending the action
 	eventID              event.EventID                     // The event to send to the control
-	actionValues         actionValues
+	actionValues         action.RawActionValues
 	refreshIDs           []string
 	clientTimezoneOffset int
 	clientTimezone       string
@@ -272,7 +273,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				ControlValues map[string]map[string]interface{} `json:"controlValues"`
 				ControlID     string                            `json:"controlID"`
 				EventID       int                               `json:"eventID"`
-				Values        actionValues                      `json:"actionValues"`
+				Values        action.RawActionValues            `json:"actionValues"`
 				RefreshIDs    []string                          `json:"refresh"`
 				TimezoneInfo  tzParams                          `json:"tz"`
 			}

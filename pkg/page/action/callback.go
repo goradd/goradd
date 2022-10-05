@@ -94,13 +94,14 @@ type serverAction struct {
 // - You are having trouble making an Ajax action work for some reason, and a Server action might get around the problem.
 // - You are submitting a multi-part form, like when uploading a file.
 // When the action fires, the Action() function of the Goradd control identified by the
-// destControlId will be called, and the given actionID will be the ID passed in the ActionParams of the call.
+// destControlId will be called, and the given actionID will be the ID passed in the Params of the call.
 // You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the control's id with another id that indicates the internal destination,
 // separated with an underscore.
 //
 // The returned action uses a Builder pattern to add options, so for example you might call:
-//   myControl.On(event.Click(), action.Server("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
+//
+//	myControl.On(event.Click(), action.Server("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
 func Server(destControlId string, actionId int) CallbackActionI {
 	a := &serverAction{
 		CallbackAction{
@@ -177,13 +178,14 @@ type ajaxAction struct {
 }
 
 // Ajax creates an ajax action. When the action fires, the Action() function of the Goradd control identified by the
-// destControlId will be called, and the given actionID will be the ID passed in the ActionParams of the call.
+// destControlId will be called, and the given actionID will be the ID passed in the Params of the call.
 // You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the control's id with another id that indicates the internal destination,
 // separated with an underscore.
 //
 // The returned action uses a Builder pattern to add options, so for example you might call:
-//   myControl.On(event.Click(), action.Ajax("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
+//
+//	myControl.On(event.Click(), action.Ajax("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
 func Ajax(destControlId string, actionID int) CallbackActionI {
 	a := &ajaxAction{
 		CallbackAction{

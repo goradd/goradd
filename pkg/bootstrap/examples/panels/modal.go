@@ -17,7 +17,6 @@ type ModalPanel struct {
 	control.Panel
 }
 
-
 func NewModalPanel(ctx context.Context, parent page.ControlI) {
 	p := &ModalPanel{}
 	p.Self = p
@@ -28,10 +27,10 @@ func NewModalPanel(ctx context.Context, parent page.ControlI) {
 func (p *ModalPanel) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
 	p.Panel.AddControls(ctx,
-		ButtonCreator {
-			ID: "popupButton",
-			Text: "Popup Modal",
-			OnSubmit:action.Ajax(p.ID(), PopupClick),
+		ButtonCreator{
+			ID:       "popupButton",
+			Text:     "Popup Modal",
+			OnSubmit: action.Ajax(p.ID(), PopupClick),
 		},
 	)
 
@@ -43,7 +42,7 @@ func (p *ModalPanel) Init(ctx context.Context, parent page.ControlI, id string) 
 	t.SetText("What is in the modal?")
 }
 
-func (p *ModalPanel)  Action(ctx context.Context, a page.ActionParams) {
+func (p *ModalPanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case PopupClick:
 		m := GetModal(p, "modal")

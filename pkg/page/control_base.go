@@ -163,8 +163,8 @@ type ControlI interface {
 	Refresh()
 	NeedsRefresh() bool
 
-	Action(context.Context, ActionParams)
-	PrivateAction(context.Context, ActionParams)
+	Action(context.Context, action.Params)
+	PrivateAction(context.Context, action.Params)
 	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
 	On(e *event.Event, a action.ActionI) ControlI
@@ -1105,13 +1105,13 @@ func (c *ControlBase) ActionValue() interface{} {
 
 // Action processes actions. Typically, the Action function will first look at the id to know how to handle it.
 // This is just an empty implementation. Sub-controls should implement this.
-func (c *ControlBase) Action(ctx context.Context, a ActionParams) {
+func (c *ControlBase) Action(ctx context.Context, a action.Params) {
 }
 
 // PrivateAction processes actions that a control sets up for itself, and that it does not want to give the opportunity
 // for users of the control to manipulate or remove those actions. Generally, private actions should call their superclass
 // PrivateAction function too.
-func (c *ControlBase) PrivateAction(ctx context.Context, a ActionParams) {
+func (c *ControlBase) PrivateAction(ctx context.Context, a action.Params) {
 }
 
 // GetActionScripts is an internal function called during drawing to gather all the event related
@@ -1172,16 +1172,11 @@ func (c *ControlBase) doAction(ctx context.Context) {
 	if c.passesValidation(ctx, e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
 		if callbackAction := e.GetCallbackAction(); callbackAction != nil {
-			p := ActionParams{
-				ID:        callbackAction.ID(),
-				Action:    callbackAction.(action.CallbackActionI),
-				ControlId: c.ID(),
-			}
-
-			// grCtx.actionValues is a json representation of the action values. We extract the json, but since json does
-			// not differentiate between float and int, we will leave all numbers as json.Number types so we can extract later.
-			// use javascript.NumberInt() to easily convert numbers in interfaces to int values.
-			p.values = grCtx.actionValues
+			p := action.NewActionParams(callbackAction.ID(),
+				callbackAction.(action.CallbackActionI),
+				c.ID(),
+				grCtx.actionValues,
+			)
 
 			if c.Page().HasControl(callbackAction.GetDestinationControlID()) {
 				dest := c.Page().GetControl(callbackAction.GetDestinationControlID())

@@ -2,33 +2,32 @@ package panels
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"github.com/goradd/html5tag"
 )
 
 type CheckboxPanel struct {
 	Panel
 }
 
-func (p *CheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
+func (p *CheckboxPanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
 		var sel string
-		if GetRadioButton(p,"radio1").Checked() {
+		if GetRadioButton(p, "radio1").Checked() {
 			sel = "radio1"
-		} else if GetRadioButton(p,"radio2").Checked() {
+		} else if GetRadioButton(p, "radio2").Checked() {
 			sel = "radio2"
-		} else if GetRadioButton(p,"radio3").Checked() {
+		} else if GetRadioButton(p, "radio3").Checked() {
 			sel = "radio3"
 		}
-		GetPanel(p,"infoPanel").SetText(sel)
+		GetPanel(p, "infoPanel").SetText(sel)
 	}
 }
-
 
 func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
 	p := &CheckboxPanel{}
@@ -40,44 +39,44 @@ func (p *CheckboxPanel) Init(ctx context.Context, parent page.ControlI, id strin
 	p.Panel.Init(parent, "checkboxPanel")
 	p.AddControls(ctx,
 		FormFieldWrapperCreator{
-			ID:"checkbox1-ff",
-			Label:"Checkbox 1:",
-			For:"checkbox1",
-			Instructions:"These are instructions for checkbox 1",
-			Child:CheckboxCreator{
+			ID:           "checkbox1-ff",
+			Label:        "Checkbox 1:",
+			For:          "checkbox1",
+			Instructions: "These are instructions for checkbox 1",
+			Child: CheckboxCreator{
 				ID:        "checkbox1",
 				Text:      "My text is before",
 				LabelMode: html5tag.LabelBefore,
 			},
 		},
 		FormFieldWrapperCreator{
-			ID:"checkbox2-ff",
-			Label:"Checkbox 2:",
-			For:"checkbox2",
-			Instructions:"These are instructions for checkbox 2",
-			Child:CheckboxCreator{
+			ID:           "checkbox2-ff",
+			Label:        "Checkbox 2:",
+			For:          "checkbox2",
+			Instructions: "These are instructions for checkbox 2",
+			Child: CheckboxCreator{
 				ID:        "checkbox2",
 				Text:      "My text is after, and is wrapping the control",
 				LabelMode: html5tag.LabelWrapAfter,
 			},
 		},
 		RadioButtonCreator{
-			ID:"radio1",
-			Group:"mygroup",
-			Text:"Here",
+			ID:    "radio1",
+			Group: "mygroup",
+			Text:  "Here",
 		},
 		RadioButtonCreator{
-			ID:"radio2",
-			Group:"mygroup",
-			Text:"There",
+			ID:    "radio2",
+			Group: "mygroup",
+			Text:  "There",
 		},
 		RadioButtonCreator{
-			ID:"radio3",
-			Group:"mygroup",
-			Text:"Everywhere",
+			ID:    "radio3",
+			Group: "mygroup",
+			Text:  "Everywhere",
 		},
 		PanelCreator{
-			ID:"infoPanel",
+			ID: "infoPanel",
 		},
 		ButtonCreator{
 			ID:       "ajaxButton",
@@ -89,7 +88,6 @@ func (p *CheckboxPanel) Init(ctx context.Context, parent page.ControlI, id strin
 			Text:     "Submit Server",
 			OnSubmit: action.Server("checkboxPanel", ButtonSubmit),
 		},
-
 	)
 }
 
@@ -100,14 +98,14 @@ func init() {
 }
 
 // testPlain exercises the plain text box
-func testCheckboxAjaxSubmit(t *browsertest.TestForm)  {
+func testCheckboxAjaxSubmit(t *browsertest.TestForm) {
 
 	testCheckboxSubmit(t, "ajaxButton")
 
 	t.Done("Complete")
 }
 
-func testCheckboxServerSubmit(t *browsertest.TestForm)  {
+func testCheckboxServerSubmit(t *browsertest.TestForm) {
 
 	testCheckboxSubmit(t, "serverButton")
 
@@ -129,12 +127,12 @@ func testCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.SetCheckbox("radio2", true)
 	t.Click(btnID) // click will change form
 
-	t.WithForm(func (f page.FormI) {
-		t.AssertEqual(true, GetCheckbox(f,"checkbox1").Checked())
+	t.WithForm(func(f page.FormI) {
+		t.AssertEqual(true, GetCheckbox(f, "checkbox1").Checked())
 		t.AssertEqual(false, GetCheckbox(f, "checkbox2").Checked())
 		t.AssertEqual(false, GetRadioButton(f, "radio1").Checked())
 		t.AssertEqual(true, GetRadioButton(f, "radio2").Checked())
-		t.AssertEqual("radio2", GetPanel(f,"infoPanel").Text())
+		t.AssertEqual("radio2", GetPanel(f, "infoPanel").Text())
 
 	})
 
@@ -143,17 +141,16 @@ func testCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.SetCheckbox("radio3", true)
 	t.SetCheckbox("checkbox1", false)
 	t.Click(btnID)
-	t.WithForm(func (f page.FormI) {
-		t.AssertEqual(false, GetCheckbox(f,"checkbox1").Checked())
+	t.WithForm(func(f page.FormI) {
+		t.AssertEqual(false, GetCheckbox(f, "checkbox1").Checked())
 		GetRadioButton(f, "radio1").SetChecked(true)
-		t.AssertEqual("radio3", GetPanel(f,"infoPanel").Text())
+		t.AssertEqual("radio3", GetPanel(f, "infoPanel").Text())
 	})
-
 
 	t.Click(btnID)
 	t.Click(btnID) // two clicks are required to get the response back
-	t.WithForm(func (f page.FormI) {
-		t.AssertEqual("radio1", GetPanel(f,"infoPanel").Text())
+	t.WithForm(func(f page.FormI) {
+		t.AssertEqual("radio1", GetPanel(f, "infoPanel").Text())
 		t.AssertEqual(true, GetRadioButton(f, "radio1").Checked())
 		t.AssertEqual(false, GetRadioButton(f, "radio2").Checked())
 		t.AssertEqual(false, GetRadioButton(f, "radio3").Checked())
