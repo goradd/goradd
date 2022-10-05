@@ -5,4 +5,4 @@ package web
 // Every time you change a template file, you should run this file.
 // Or, alternatively, set up your IDE to run it before you do a build.
 
-//go:generate got -t tpl.got -i -I github.com/goradd/goradd/pkg/page/macros.inc.got -d goradd-project/web/*/*
+//go:generate got -t tpl.got -i -I github.com/goradd/goradd/pkg/page/macros.inc.got -d goradd-project/web/*
