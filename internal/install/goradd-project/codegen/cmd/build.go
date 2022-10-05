@@ -23,8 +23,4 @@ package main
 //go:generate go run codegen.go
 
 // Build the resulting templates
-//go:generate gofile generate goradd-project/gen/*/form/build.go
-//go:generate gofile generate goradd-project/gen/*/panel/build.go
-
-// Build the templates that were moved to the form directory
-//go:generate gofile generate goradd-project/web/form/build.go
+//go:generate got -t tpl.got -i -I github.com/goradd/goradd/pkg/page/macros.inc.got -d goradd-project/gen/*/*

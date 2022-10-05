@@ -1,0 +1,47 @@
+// editCreateControls.tmpl
+
+{{
+// CreateControls creates the controls in the edit panel and adds them to the panel.
+func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+    p.AddControls(ctx,
+{{g
+    for _,col := range t.Columns {
+        cd := t.ControlDescription(col)
+        if cd == nil {continue}
+        if cd.Generator != nil && !col.IsPk {
+{{
+        p.{{= cd.ControlName }}Creator(),
+}}
+        }
+    }
+
+        for _,ref := range t.ReverseReferences {
+            cd := t.ControlDescription(ref)
+            if cd == nil {continue}
+            if cd.Generator != nil {
+    {{
+            p.{{= cd.ControlName }}Creator(),
+    }}
+            }
+
+        }
+/*
+        for _,ref := range t.ManyManyReferences {
+            cd := t.ControlDescription(ref)
+            if cd == nil {continue}
+            if cd.Generator != nil {
+    {{
+            p.{{= cd.ControlName }}Creator(),
+    }}
+            }
+
+        }
+*/
+}}
+    )
+}
+
+
+
+}}
+
