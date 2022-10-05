@@ -11,7 +11,7 @@ import (
 func init() {
 	t := EditPanelTemplate {
 		generator.Template {
-			Overwrite: false,
+			Overwrite: true,
 			TargetDir: config.ProjectDir() + "/gen",
 		},
 	}

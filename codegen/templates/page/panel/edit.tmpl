@@ -36,60 +36,61 @@ func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id st
 	p.CreateControls(ctx)
 }
 
-/* Override and call base class, or completely replace as you need
-func (p *{{= panelName }}) CreateControls(ctx context.Context) {
-    p.{{= panelName }}Base.CreateControls(ctx)
-}
-*/
+{{: editCreateControls.tmpl }}
 
-/* Override and call base class, or completely replace as you need
 // Load loads up the edit panel with data from the database. pk is the primary key of a model.{{= t.GoName }}
 // database record
-func (p *{{= panelName }}) Load(ctx context.Context, pk string) error {
-    return p.{{= panelName }}Base.Load(ctx, pk)
-}
-*/
+func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) (err error) {
+    if err = p.{{= panelName }}Base.Load(ctx, pk); err != nil {
+        return err
+    }
 
-/* Override and call base class, or completely replace as you need
+    // Add additional items to load here
+
+    return
+}
+
+
 // Validate validates the controls in the panel
 func (p *{{= panelName }}) Validate(ctx context.Context) bool {
 	isValid := p.{{= panelName }}Base.Validate(ctx)
 
 	// add other validations here
+
     return isValid
 }
-*/
 
-/* Override and call base class, or completely replace as you need
+
 // Refresh loads the controls with data from the cached model.{{= t.GoName }} object.
 func (p *{{= panelName }}) Refresh() {
     p.{{= panelName }}Base.Refresh()
 }
-*/
 
-/* Override and call base class, or completely replace as you need
+
 // Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
 func (p *{{= panelName }}) Reload(ctx context.Context) {
-    p.Load(p.{{= t.GoName }}.PrimaryKey())
+    p.{{= panelName }}Base.Reload(ctx)
 }
-*/
 
-/* Override and call base class, or completely replace as you need
+
 // Save writes out the data that is currently in the controls
 func (p *{{= panelName }}) Save(ctx context.Context) {
     p.{{= panelName }}Base.Save(ctx)
 }
-*/
 
-/* Override and call base class, or completely replace as you need
+
 // Delete deletes the object currently being edited
 func (p *{{= panelName }}) Delete(ctx context.Context) {
     p.{{= panelName }}Base.Delete(ctx)
 }
-*/
+
+// BindData loads data into controls whose content is dynamically generated.
+func (p *{{= panelName }}) BindData(ctx context.Context, s control.DataManagerI) {
+    p.{{= panelName }}Base.BindData(ctx, s)
+}
 
 /*
-If you add additional members to the struct, you should serialize them and deserialize them below.
+If you add additional non-exported members to the struct, you should serialize them and deserialize them below.
 Pointers will need to be checked for nil before serializing.
 Errors should panic.
 

@@ -5,8 +5,8 @@ require (
 	github.com/andybalholm/brotli v1.0.4
 	github.com/gedex/inflector v0.0.0-20170307190818-16278e9db813
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/goradd/gofile v1.0.1
-	github.com/goradd/got v1.0.2
+	github.com/goradd/gofile v1.0.3
+	github.com/goradd/got v1.0.3
 	github.com/goradd/html5tag v1.0.1
 	github.com/goradd/maps v0.1.2
 	github.com/gorilla/websocket v1.4.2
