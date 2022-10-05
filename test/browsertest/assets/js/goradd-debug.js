@@ -14,7 +14,7 @@ debug-only code. It is only loaded in debug mode.
             // This next line is a potential security hole, so its important that this code NOT be loaded by the release version.
             window.opener.postMessage({pagestate: g$('Goradd__PageState').val()}, "*");
             goradd.form().addEventListener ('teststep', goradd.testStep);
-            event = new CustomEvent('teststep', { bubbles: true, detail: -1 });
+            var event = new CustomEvent('teststep', { bubbles: true, detail: -1 });
             goradd.form().dispatchEvent(event);
         }
     };

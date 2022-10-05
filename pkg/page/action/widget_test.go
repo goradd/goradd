@@ -16,11 +16,6 @@ func TestBlur(t *testing.T) {
 	assert.Equal(t, `g$('a').blur();`, js)
 }
 
-func TestConfirm(t *testing.T) {
-	js := Confirm("a").RenderScript(RenderParams{})
-	assert.Equal(t, `if (!window.confirm("a")) return false;`, js)
-}
-
 func TestCss(t *testing.T) {
 	js := Css("a", "b", "c").RenderScript(RenderParams{})
 	assert.Equal(t, `g$('a').css("b","c");`, js)
@@ -34,36 +29,9 @@ func TestFocus(t *testing.T) {
 	assert.Equal(t, `g$('a').focus();`, js)
 }
 
-func TestGoraddFunction(t *testing.T) {
-	js := GoraddFunction("a").RenderScript(RenderParams{})
-	assert.Equal(t, `goradd.a();`, js)
-	js = GoraddFunction("a", "b", 3).RenderScript(RenderParams{})
-	assert.Equal(t, `goradd.a("b",3);`, js)
-}
-
 func TestHide(t *testing.T) {
 	js := Hide("a").RenderScript(RenderParams{})
 	assert.Equal(t, `g$('a').hide();`, js)
-}
-
-func TestJavascript(t *testing.T) {
-	js := Javascript("a+b=c").RenderScript(RenderParams{})
-	assert.Equal(t, `a+b=c;`, js)
-}
-
-func TestMessage(t *testing.T) {
-	js := Message("a").RenderScript(RenderParams{})
-	assert.Equal(t, `goradd.msg("a");`, js)
-}
-
-func TestRedirect(t *testing.T) {
-	js := Redirect("http://a/b/c").RenderScript(RenderParams{})
-	assert.Equal(t, `goradd.redirect("http://a/b/c");`, js)
-}
-
-func TestRefresh(t *testing.T) {
-	js := Refresh("a").RenderScript(RenderParams{})
-	assert.Equal(t, `goradd.refresh("a");`, js)
 }
 
 func TestRemoveClass(t *testing.T) {
@@ -74,11 +42,6 @@ func TestRemoveClass(t *testing.T) {
 func TestSelect(t *testing.T) {
 	js := Select("a").RenderScript(RenderParams{})
 	assert.Equal(t, `g$('a').selectAll();`, js)
-}
-
-func TestSetControlValue(t *testing.T) {
-	js := SetControlValue("a", "b", "c").RenderScript(RenderParams{})
-	assert.Equal(t, `goradd.setControlValue("a","b","c");`, js)
 }
 
 func TestShow(t *testing.T) {

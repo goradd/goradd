@@ -1,0 +1,45 @@
+{{define package }}controls{{end package}}
+{{define imports }}
+{{end imports}}
+{{define control}}EventsPanel{{end control}}
+
+{{define template }}
+<h1>Events and Actions</h1>
+<p>
+GoRADD controls respond to javascript events, and they send the response to your GoRADD application in the
+form of <i>Actions<i>.
+</p>
+<p>
+Consider the code below from the previous example:
+</p>
+<code>
+	textBox := NewTextbox(p, "textField")
+	textBox.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))
+</code>
+<p>
+This code creates a <i>Textbox</i> control, and then tells it to respond to javascript <i>input</i> events.
+The response from the event is a javascript action that will display a message on the screen, using the value of
+the Textbox as the text of the message. The <i>On</i> function associates the event with the action.
+</p>
+<h2>Events</h2>
+<p>
+While the <i>On</i> event can associate any event with an action, most controls have shortcuts for the events that
+are typically assigned to that control. For example:
+</p>
+<code>
+	btn := NewButton(p, "btn1")
+	btn.OnClick(action.Ajax(p.ID(), 1))
+</code>
+<p>
+This code creates a button and tells it to send an Ajax action when the button is clicked. It is equivalent to:
+</p>
+<code>
+	btn := NewButton(p, "btn1")
+	btn.On(event.Click(),action.Ajax(p.ID(), 1))
+</code>
+<p>
+GoRADD includes shortcuts for most of the events you would need to respond to, but you can
+</p>
+{{end template}}
+
+{{renderControlTemplate}}

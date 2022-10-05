@@ -32,7 +32,7 @@ type ProxyI interface {
 		attributes html5tag.Attributes,
 		rawHtml bool,
 	) string
-	OnSubmit(action action.ActionI) *page.Event
+	OnSubmit(action action.ActionI) *event.Event
 }
 
 // Proxy is a control that attaches events to controls. It is useful for attaching
@@ -43,10 +43,11 @@ type ProxyI interface {
 // To use a Proxy, create it in the control that wraps the controls the proxy will manage.
 // Attach an event to the proxy control, and in the action handler, look for the ControlValue in the Action Value
 // to know which of the controls sent the event. Draw the proxy with one of the following:
-//   LinkHtml() - Output the proxy as a link
-//   ButtonHtml() - Output the proxy as a button
-//   TagHtml() - Output the proxy in any tag
-//   ActionAttributes() - Returns attributes you can use in any custom control to attach a proxy
+//
+//	LinkHtml() - Output the proxy as a link
+//	ButtonHtml() - Output the proxy as a button
+//	TagHtml() - Output the proxy in any tag
+//	ActionAttributes() - Returns attributes you can use in any custom control to attach a proxy
 //
 // The ProxyColumn of the Table object will use a proxy to draw items in a table column.
 type Proxy struct {
@@ -190,7 +191,7 @@ func (p *Proxy) WrapEvent(eventName string, _ string, eventJs string, options ma
 }
 
 type On struct {
-	Event  *page.Event
+	Event  *event.Event
 	Action action.ActionI
 }
 

@@ -42,7 +42,7 @@ type TestForm struct {
 	currentFailed   bool
 	currentTestName string
 	callerInfo      string
-	usingForm		bool
+	usingForm       bool
 }
 
 func (form *TestForm) Init(ctx context.Context, formID string) {
@@ -69,15 +69,14 @@ func (form *TestForm) createControls(ctx context.Context) {
 	NewSpan(form, "running-label")
 
 	NewButton(form, "run-button").
-		SetValidationType(page.ValidateNone).
+		SetValidationType(event.ValidateNone).
 		SetText("Run Test").
 		On(event.Click(), action.Ajax(form.ID(), TestButtonAction))
 
-
 	NewButton(form, "run-all-button").
 		SetText("Run All Tests").
-		SetValidationType(page.ValidateNone).
-		On(event.Click(), action.Redirect(TestFormPath + "?all=1"))
+		SetValidationType(event.ValidateNone).
+		On(event.Click(), action.Redirect(TestFormPath+"?all=1"))
 }
 
 func (form *TestForm) LoadControls(ctx context.Context) {
@@ -87,7 +86,7 @@ func (form *TestForm) LoadControls(ctx context.Context) {
 	})
 }
 
-func (form *TestForm) Action(ctx context.Context, a page.ActionParams) {
+func (form *TestForm) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case TestButtonAction:
 		form.runSelectedTest()
@@ -125,7 +124,7 @@ func (form *TestForm) PushRedraw() {
 // LoadUrl will launch a new window controlled by the test form. It will wait for the
 // new url to be loaded in the window, and if the new url contains a goradd form, it will return
 // the form.
-func (form *TestForm) LoadUrl(url string)  {
+func (form *TestForm) LoadUrl(url string) {
 	form.Log("Loading url: " + url)
 	form.Controller.loadUrl(url, form.captureCaller())
 }
@@ -147,22 +146,21 @@ func (form *TestForm) getForm() page.FormI {
 // WithForm gives you access to the current form so that you can set or get values in the form.
 // Call it with a function that will receive the form.
 // Do not call test functions that might cause an ajax or server call to fire from within the function.
-func (form *TestForm) WithForm(f func(page.FormI) ) {
+func (form *TestForm) WithForm(f func(page.FormI)) {
 	pc := page.GetPagestateCache()
 	testForm := pc.Get(form.Controller.pagestate).Form()
 	{
 		form.usingForm = true
-		defer func(){ form.usingForm = false}()
+		defer func() { form.usingForm = false }()
 		f(testForm)
 	}
 	pc.Set(form.Controller.pagestate, testForm.Page())
 }
 
-
 func (form *TestForm) AssertNil(v interface{}) {
 	isNil := v == nil ||
 		reflect.ValueOf(v).IsNil() // this will panic if value is not nillable, so be careful
-	if !isNil{
+	if !isNil {
 		form.error(fmt.Sprintf("*** AssertNil failed. (%s)", form.captureCaller()))
 	}
 }
@@ -308,7 +306,6 @@ func (form *TestForm) WaitMarker(expectedMarker string) {
 	form.Controller.waitMarker(form.captureCaller(), expectedMarker)
 }
 
-
 // CallControlFunction will call the given function with the given parameters on the goradd object
 // specified by the id. It will return the javascript result of the function call.
 func (form *TestForm) CallControlFunction(id string, funcName string, params ...interface{}) interface{} {
@@ -342,10 +339,11 @@ func (form *TestForm) ControlInnerHtml(id string) string {
 // HtmlElementInfo will return the inner html drawn by a goradd control
 func (form *TestForm) HtmlElementInfo(selector string, attribute string) string {
 	res := form.Controller.getHtmlElementInfo(selector, attribute, form.captureCaller())
-	if res == nil {return ""}
+	if res == nil {
+		return ""
+	}
 	return strings.TrimSpace(res.(string))
 }
-
 
 /*
 func (f *TestForm) TypeValue(id string, chars string) {
@@ -475,7 +473,6 @@ func (form *TestForm) testOne(testName string) {
 func (form *TestForm) NoSerialize() bool {
 	return true
 }
-
 
 func init() {
 	page.RegisterForm(TestFormPath, &TestForm{}, TestFormId)

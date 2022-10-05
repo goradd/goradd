@@ -101,8 +101,8 @@ func (d *Dialog) Init(parent page.ControlI, id string) {
 	d.buttonBarID = d.ID() + "-buttons"
 	bb := NewPanel(d, d.buttonBarID)
 	bb.AddClass("gr-dialog-buttons")
-	d.SetValidationType(page.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
-	d.On(event.DialogClosed().Validate(page.ValidateNone).Private(), action.Ajax(d.ID(), DialogClosed))
+	d.SetValidationType(event.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
+	d.On(event.DialogClosed().Validate(event.ValidateNone).Private(), action.Ajax(d.ID(), DialogClosed))
 }
 
 func (d *Dialog) TitleBar() *Panel {
@@ -162,7 +162,7 @@ func (d *Dialog) AddButton(
 	if options != nil {
 		if options.Validates {
 			//d.validators[id] = true
-			btn.SetValidationType(page.ValidateContainer)
+			btn.SetValidationType(event.ValidateContainer)
 		}
 
 		if options.IsPrimary {
@@ -272,13 +272,13 @@ func (d *Dialog) addCloseBox() {
 func (d *Dialog) AddCloseButton(label string, id string) {
 	btn := NewButton(d.ButtonBar(), id)
 	btn.SetLabel(label)
-	btn.SetValidationType(page.ValidateNone)
+	btn.SetValidationType(event.ValidateNone)
 	btn.On(event.Click(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 }
 
 // PrivateAction is called by the framework and will respond to the DialogClose action sent by any close buttons on the
 // page to close the dialog. You do not normally need to call this.
-func (d *Dialog) PrivateAction(_ context.Context, a page.ActionParams) {
+func (d *Dialog) PrivateAction(_ context.Context, a action.Params) {
 	switch a.ID {
 	case DialogClosed:
 		d.Hide()

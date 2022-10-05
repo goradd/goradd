@@ -1,55 +1,45 @@
 package event
 
-import (
-	"github.com/goradd/goradd/pkg/page"
-)
-
-func Change() *page.Event {
-	return &page.Event{JsEvent: "change"}
+func Change() *Event {
+	return &Event{jsEvent: "change"}
 }
 
 // DragDrop returns an event that responds to the javascript drop event
-func DragDrop() *page.Event {
-	return &page.Event{JsEvent: "drop"}
+func DragDrop() *Event {
+	return &Event{jsEvent: "drop"}
 }
 
-func Input() *page.Event {
-	return &page.Event{JsEvent: "input"}
+func Input() *Event {
+	return &Event{jsEvent: "input"}
 }
 
-func Select() *page.Event {
-	return &page.Event{JsEvent: "select"}
+func Select() *Event {
+	return &Event{jsEvent: "select"}
 }
 
 // TableSort is a custom event for responding to a table sort event
-func TableSort() *page.Event {
-	e := &page.Event{JsEvent: "grsort"}
+func TableSort() *Event {
+	e := &Event{jsEvent: "grsort"}
 	return e
 }
 
 const DialogButtonEvent = "gr-dlgbtn"
 
 // DialogButton returns an event that detects clicking on a dialog's button.
-func DialogButton() *page.Event {
-	e := &page.Event{JsEvent: DialogButtonEvent}
+func DialogButton() *Event {
+	e := &Event{jsEvent: DialogButtonEvent}
 	return e
 }
-
 
 const DialogClosedEvent = "grdlgclosed"
 
 // DialogClosed indicates that a dialog has closed. This is a good time to do any required cleanup.
-func DialogClosed() *page.Event {
-	e := &page.Event{JsEvent: DialogClosedEvent}
+func DialogClosed() *Event {
+	e := &Event{jsEvent: DialogClosedEvent}
 	return e
 }
 
 // TimerExpired is used in conjunction with a JsTimer control to detect the expiration of the timer
-func TimerExpired() *page.Event {
-	return &page.Event{JsEvent: "goradd.timerexpired"}
-}
-
-// Custom returns an event that responds to the given javascript event
-func Event(event string) *page.Event {
-	return &page.Event{JsEvent: event}
+func TimerExpired() *Event {
+	return &Event{jsEvent: "goradd.timerexpired"}
 }

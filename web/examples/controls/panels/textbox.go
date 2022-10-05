@@ -67,7 +67,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 			ID:    "passwordText-ff",
 			Label: "Password",
 			Child: PasswordTextboxCreator{
-				ID:   "passwordText",
+				ID: "passwordText",
 			},
 		},
 		FormFieldWrapperCreator{
@@ -89,7 +89,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 			ID:    "dateText-ff",
 			Label: "Euro Date",
 			Child: DateTextboxCreator{
-				ID:     "dateText",
+				ID:      "dateText",
 				Formats: []string{time2.EuroDate},
 			},
 		},
@@ -97,7 +97,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 			ID:    "timeText-ff",
 			Label: "U.S. Time",
 			Child: DateTextboxCreator{
-				ID:     "timeText",
+				ID:      "timeText",
 				Formats: []string{time2.UsTime},
 			},
 		},
@@ -114,7 +114,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 	)
 }
 
-func (p *TextboxPanel) Action(ctx context.Context, a page.ActionParams) {
+func (p *TextboxPanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
 	}
@@ -189,15 +189,15 @@ func testTextboxSubmit(t *browsertest.TestForm, btnID string) {
 		t.AssertEqual(6.7, GetFloatTextbox(f, "floatText").Float64())
 		t.AssertEqual("me@you.com", GetEmailTextbox(f, "emailText").Text())
 
-		v,_ := time.Parse(time2.EuroDate, "19/2/2018")
+		v, _ := time.Parse(time2.EuroDate, "19/2/2018")
 		t2 := time2.As(GetDateTextbox(f, "dateText").Date(), time.FixedZone("", 0))
 		t.AssertEqual(true, v.Equal(t2))
 
-		v2,_ := time.Parse(time2.UsTime, "4:59 AM")
+		v2, _ := time.Parse(time2.UsTime, "4:59 AM")
 		t3 := time2.As(GetDateTextbox(f, "timeText").Date(), time.FixedZone("", 0))
 		t.AssertEqual(true, v2.Equal(t3))
 
-		v3,_ := time.Parse(time2.UsDateTime, "2/19/2018 4:23 PM")
+		v3, _ := time.Parse(time2.UsDateTime, "2/19/2018 4:23 PM")
 		t4 := time2.As(GetDateTextbox(f, "dateTimeText").Date(), time.FixedZone("", 0))
 		t.AssertEqual(true, v3.Equal(t4))
 	})

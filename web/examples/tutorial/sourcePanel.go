@@ -18,7 +18,7 @@ const (
 type SourcePanel struct {
 	Panel
 	ButtonPanel *Panel
-	FilePanel *FilePanel
+	FilePanel   *FilePanel
 }
 
 func NewSourcePanel(parent page.ControlI, id string) *SourcePanel {
@@ -38,7 +38,7 @@ func (p *SourcePanel) Init(parent page.ControlI, id string) {
 func (p *SourcePanel) show(files []string) {
 	p.ButtonPanel.RemoveChildren()
 
-	for i,path := range files {
+	for i, path := range files {
 		base := filepath.Base(path)
 		b := NewButton(p.ButtonPanel, "")
 		b.SetLabel(fmt.Sprintf("%d. %s", i, base))
@@ -47,14 +47,13 @@ func (p *SourcePanel) show(files []string) {
 	}
 }
 
-func (p *SourcePanel) Action(ctx context.Context, a page.ActionParams) {
+func (p *SourcePanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case FileAction:
 		file := a.ControlValueString()
 		p.FilePanel.SetFile(file)
 	}
 }
-
 
 func init() {
 	page.RegisterControl(&SourcePanel{})

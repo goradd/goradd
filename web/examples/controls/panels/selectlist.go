@@ -2,12 +2,12 @@ package panels
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
+	"github.com/goradd/html5tag"
 	"strings"
 )
 
@@ -39,10 +39,10 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		FormFieldWrapperCreator{
 			Label: "Standard SelectList",
 			Child: SelectListCreator{
-				ID: "singleSelectList",
+				ID:      "singleSelectList",
 				NilItem: "- Select One -",
-				Items: itemList,
-				ControlOptions:page.ControlOptions{
+				Items:   itemList,
+				ControlOptions: page.ControlOptions{
 					IsRequired: true,
 				},
 			},
@@ -50,10 +50,10 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		FormFieldWrapperCreator{
 			Label: "SelectList With Size",
 			Child: SelectListCreator{
-				ID: "selectListWithSize",
+				ID:    "selectListWithSize",
 				Items: itemList,
-				Size: 4,
-				ControlOptions:page.ControlOptions{
+				Size:  4,
+				ControlOptions: page.ControlOptions{
 					IsRequired: true,
 				},
 			},
@@ -61,28 +61,28 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		FormFieldWrapperCreator{
 			Label: "Rows Radio List",
 			Child: RadioListCreator{
-				ID: "radioList1",
-				Items: itemList,
+				ID:          "radioList1",
+				Items:       itemList,
 				ColumnCount: 2,
 			},
 		},
 		FormFieldWrapperCreator{
 			Label: "Columns Radio List",
 			Child: RadioListCreator{
-				ID: "radioList2",
-				Items: itemList,
-				ColumnCount: 2,
+				ID:              "radioList2",
+				Items:           itemList,
+				ColumnCount:     2,
 				LayoutDirection: LayoutColumn,
 			},
 		},
 		FormFieldWrapperCreator{
 			Label: "Scrolling Radio List",
 			Child: RadioListCreator{
-				ID: "radioList3",
-				Items: itemList,
+				ID:          "radioList3",
+				Items:       itemList,
 				IsScrolling: true,
-				ControlOptions:page.ControlOptions{
-					Styles: html5tag.Style {
+				ControlOptions: page.ControlOptions{
+					Styles: html5tag.Style{
 						"height": "80px",
 					},
 				},
@@ -91,9 +91,9 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		FormFieldWrapperCreator{
 			Label: "Multiselect List",
 			Child: MultiselectListCreator{
-				ID: "multiselectList",
+				ID:    "multiselectList",
 				Items: itemList,
-				ControlOptions:page.ControlOptions{
+				ControlOptions: page.ControlOptions{
 					IsRequired: true,
 				},
 			},
@@ -101,9 +101,9 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		FormFieldWrapperCreator{
 			Label: "Checkbox List",
 			Child: CheckboxListCreator{
-				ID: "checklist1",
-				Items: itemList,
-				ColumnCount:2,
+				ID:          "checklist1",
+				Items:       itemList,
+				ColumnCount: 2,
 			},
 		},
 		ButtonCreator{
@@ -116,13 +116,10 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 			Text:     "Submit Server",
 			OnSubmit: action.Server("selectListPanel", ButtonSubmit),
 		},
-
 	)
 }
 
-
-
-func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
+func (p *SelectListPanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
 		checklist1 := GetCheckboxList(p, "checklist1")
@@ -131,14 +128,13 @@ func (p *SelectListPanel) Action(ctx context.Context, a page.ActionParams) {
 	}
 }
 
-
 func init() {
 	browsertest.RegisterTestFunction("Select List Ajax Submit", testSelectListAjaxSubmit)
 	browsertest.RegisterTestFunction("Select List Server Submit", testSelectListServerSubmit)
 }
 
 // testPlain exercises the plain text box
-func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
+func testSelectListAjaxSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").SetValue("testing", 1).String()
 	t.LoadUrl(myUrl)
 
@@ -147,7 +143,7 @@ func testSelectListAjaxSubmit(t *browsertest.TestForm)  {
 	t.Done("Complete")
 }
 
-func testSelectListServerSubmit(t *browsertest.TestForm)  {
+func testSelectListServerSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "selectlist").SetValue("testing", 1).String()
 	t.LoadUrl(myUrl)
 
@@ -212,4 +208,3 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 func init() {
 	page.RegisterControl(&SelectListPanel{})
 }
-

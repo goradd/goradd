@@ -24,6 +24,13 @@ function toggleSidebar() {
             <li><a href="{{= path }}?pageID=orm-{{= pr.id }}">{{= pr.title }}</a></li>
         {{for}}
           </ul>
+          <h2>Controls</h2>
+           <ul>
+             {{for _,pr := range pages["controls"]}}
+                 <li><a href="{{= path }}?pageID=controls-{{= pr.id }}">{{= pr.title }}</a></li>
+             {{for}}
+           </ul>
+
   </div>
 </div>
 <div id="content" class="open">

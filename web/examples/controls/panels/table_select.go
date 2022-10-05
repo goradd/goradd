@@ -19,7 +19,6 @@ type TableSelectPanel struct {
 	Panel
 }
 
-
 func NewTableSelectPanel(ctx context.Context, parent page.ControlI) {
 	p := &TableSelectPanel{}
 	p.Self = p
@@ -30,7 +29,7 @@ func (p *TableSelectPanel) Init(ctx context.Context, parent page.ControlI, id st
 	p.Panel.Init(parent, "tableSelectPanel")
 
 	// In this first example, we create a small table pre-filled with data
-	var items = []map[string]string {
+	var items = []map[string]string{
 		{"id": "1", "col1": "Row 1, Col 1", "col2": "Row 1, Col 2"},
 		{"id": "2", "col1": "Row 2, Col 1", "col2": "Row 2, Col 2"},
 		{"id": "3", "col1": "Row 3, Col 1", "col2": "Row 3, Col 2"},
@@ -38,7 +37,7 @@ func (p *TableSelectPanel) Init(ctx context.Context, parent page.ControlI, id st
 	p.AddControls(ctx,
 		SelectTableCreator{
 			ID: "table1",
-			Columns:[]ColumnCreator {
+			Columns: []ColumnCreator{
 				column.MapColumnCreator{
 					Index: "col1",
 				},
@@ -49,14 +48,14 @@ func (p *TableSelectPanel) Init(ctx context.Context, parent page.ControlI, id st
 			ControlOptions: page.ControlOptions{
 				Class: "gr-table-rows",
 			},
-			SaveState: true,
+			SaveState:     true,
 			OnRowSelected: action.Ajax(p.ID(), rowSelectedEvent),
-			Data: items,
+			Data:          items,
 		},
 		SelectTableCreator{
-			ID: "table2",
+			ID:           "table2",
 			DataProvider: p, // The data provider can be a predefined control, including the parent of the table.
-			Columns:[]ColumnCreator {
+			Columns: []ColumnCreator{
 				column.MapColumnCreator{
 					Index: "col1",
 				},
@@ -66,19 +65,19 @@ func (p *TableSelectPanel) Init(ctx context.Context, parent page.ControlI, id st
 			},
 			ControlOptions: page.ControlOptions{
 				Class: "gr-table-rows",
-				DataAttributes: page.DataAttributeMap {
+				DataAttributes: page.DataAttributeMap{
 					"grOptScrollable": true, // make it scrollable
 				},
 			},
-			SaveState: true,
+			SaveState:     true,
 			OnRowSelected: action.Ajax(p.ID(), rowSelectedEvent),
 		},
 		PanelCreator{
 			ID: "infoPanel",
 		},
 		ButtonCreator{
-			ID:       "showButton",
-			Text:     "Show Selected Item",
+			ID:      "showButton",
+			Text:    "Show Selected Item",
 			OnClick: action.Javascript("g$('table2').showSelectedItem()"),
 		},
 	)
@@ -93,28 +92,25 @@ func (p *TableSelectPanel) Init(ctx context.Context, parent page.ControlI, id st
 
 }
 
-
 // BindData satisfies the data provider interface so that the parent panel of the table
 // is the one that is providing the table.
 func (p *TableSelectPanel) BindData(ctx context.Context, s DataManagerI) {
 	var items []map[string]string
 	for i := 0; i < 50; i++ {
-		item := map[string]string{"id": strconv.Itoa(i), "col1": fmt.Sprintf("Row %d, Col 0", i), "col2":fmt.Sprintf("Row %d, Col 1", i)}
+		item := map[string]string{"id": strconv.Itoa(i), "col1": fmt.Sprintf("Row %d, Col 0", i), "col2": fmt.Sprintf("Row %d, Col 1", i)}
 		items = append(items, item)
 	}
 
 	s.(*SelectTable).SetData(items)
 }
 
-
-func (p *TableSelectPanel) Action(ctx context.Context, a page.ActionParams) {
+func (p *TableSelectPanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case rowSelectedEvent:
 		rowID := a.EventValueString()
 		GetPanel(p, "infoPanel").SetText(fmt.Sprintf("Row %s was selected.", rowID))
 	}
 }
-
 
 func init() {
 	page.RegisterControl(&TableSelectPanel{})

@@ -91,7 +91,7 @@ func (p *DialogEditPanel) Load(ctx context.Context, pk string) (data interface{}
 	return
 }
 
-func (p *DialogEditPanel) Action(ctx context.Context, a page.ActionParams) {
+func (p *DialogEditPanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case editDlgSaveAction:
 		p.EditPanel().Save(ctx)

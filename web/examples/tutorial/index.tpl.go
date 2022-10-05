@@ -82,6 +82,49 @@ function toggleSidebar() {
 
 	if _, err = io.WriteString(_w, `
           </ul>
+          <h2>Controls</h2>
+           <ul>
+             `); err != nil {
+		return
+	}
+
+	for _, pr := range pages["controls"] {
+
+		if _, err = io.WriteString(_w, `
+                 <li><a href="`); err != nil {
+			return
+		}
+
+		if _, err = io.WriteString(_w, path); err != nil {
+			return
+		}
+
+		if _, err = io.WriteString(_w, `?pageID=controls-`); err != nil {
+			return
+		}
+
+		if _, err = io.WriteString(_w, pr.id); err != nil {
+			return
+		}
+
+		if _, err = io.WriteString(_w, `">`); err != nil {
+			return
+		}
+
+		if _, err = io.WriteString(_w, pr.title); err != nil {
+			return
+		}
+
+		if _, err = io.WriteString(_w, `</a></li>
+             `); err != nil {
+			return
+		}
+
+	}
+
+	if _, err = io.WriteString(_w, `
+           </ul>
+
   </div>
 </div>
 <div id="content" class="open">

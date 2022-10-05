@@ -2,12 +2,12 @@ package widget
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 	"io"
 	"reflect"
 	"strconv"
@@ -38,12 +38,11 @@ type MegaMenuI interface {
 	SetAriaLabel(l string) MegaMenuI
 }
 
-
 func NewMegaMenu(parent page.ControlI, id string) *MegaMenu {
 	l := &MegaMenu{}
 	l.Self = l
 	l.Init(parent, id)
-	pxy := control.NewProxy(l, l.ID() + "-pxy")
+	pxy := control.NewProxy(l, l.ID()+"-pxy")
 	pxy.On(event.Click(), action.Trigger(l.ID(), MegaMenuSelectEvent, javascript.JsCode("g$(event.target).data('grAv')")))
 
 	return l
@@ -60,11 +59,9 @@ func (l *MegaMenu) this() MegaMenuI {
 	return l.Self.(MegaMenuI)
 }
 
-
 func (l *MegaMenu) getProxy() *control.Proxy {
 	return control.GetProxy(l, l.ID()+"-pxy")
 }
-
 
 // SetAriaLabel sets the aria label that will be used in the tag. e.g. main menu
 func (l *MegaMenu) SetAriaLabel(s string) MegaMenuI {
@@ -103,11 +100,11 @@ func (l *MegaMenu) GetItemsHtml(items []*control.ListItem, level int) string {
 	for _, item := range items {
 		buttonId := l.ID() + "_" + item.Value()
 		if item.HasChildItems() {
-			innerhtml := l.this().GetItemsHtml(item.ListItems(), level + 1)
+			innerhtml := l.this().GetItemsHtml(item.ListItems(), level+1)
 			innerhtml = html5tag.RenderTag("ul", html5tag.Attributes{"style": "list-style:none"}, innerhtml)
-			innerhtml = html5tag.RenderTag("div", html5tag.Attributes{"role": "region", "aria-labeledby":buttonId}, innerhtml)
-			buttonhtml := html5tag.RenderTag("button", html5tag.Attributes{"aria-expanded": `false`, "id":buttonId}, item.Label())
-			innerhtml = html5tag.RenderTag("div", html5tag.Attributes{"role": "heading", "aria-level":strconv.Itoa(level+1)}, buttonhtml) + innerhtml
+			innerhtml = html5tag.RenderTag("div", html5tag.Attributes{"role": "region", "aria-labeledby": buttonId}, innerhtml)
+			buttonhtml := html5tag.RenderTag("button", html5tag.Attributes{"aria-expanded": `false`, "id": buttonId}, item.Label())
+			innerhtml = html5tag.RenderTag("div", html5tag.Attributes{"role": "heading", "aria-level": strconv.Itoa(level + 1)}, buttonhtml) + innerhtml
 			h += html5tag.RenderTag("li", item.Attributes(), innerhtml)
 		} else {
 			if item.HasAnchor() {
@@ -154,7 +151,6 @@ func (l *MegaMenu) Deserialize(dec page.Decoder) {
 	l.DataManager.Deserialize(dec)
 }
 
-
 type MegaMenuCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
@@ -164,7 +160,7 @@ type MegaMenuCreator struct {
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	// AriaLabel is the aria label attribute.
-	AriaLabel string
+	AriaLabel    string
 	OnMenuSelect action.ActionI
 	page.ControlOptions
 }
@@ -205,10 +201,8 @@ func init() {
 	page.RegisterControl(&MegaMenu{})
 }
 
-
 const MegaMenuSelectEvent = "megamenuselect"
 
-func MegaMenuSelect() *page.Event {
-	return page.NewEvent(MegaMenuSelectEvent)
+func MegaMenuSelect() *event.Event {
+	return event.NewEvent(MegaMenuSelectEvent)
 }
-

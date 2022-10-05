@@ -11,7 +11,6 @@ import (
 	"github.com/goradd/goradd/test/browsertest"
 )
 
-
 const AjaxTimingPath = "/goradd/test/AjaxTiming.g"
 const AjaxTimingId = "AjaxTimingForm"
 
@@ -46,6 +45,7 @@ type AjaxTimingForm struct {
 	Txt2            *Textbox
 	Btn             *Button
 }
+
 func (f *AjaxTimingForm) Init(ctx context.Context, id string) {
 	f.FormBase.Init(ctx, id)
 	f.createControls(ctx)
@@ -79,10 +79,10 @@ func (f *AjaxTimingForm) createControls(ctx context.Context) {
 	f.Btn = NewButton(f, "submit")
 	f.Btn.SetLabel("Submit")
 	f.Btn.On(event.Click(), action.Ajax(f.ID(), BtnClickAction))
-	f.Btn.SetValidationType(page.ValidateNone)
+	f.Btn.SetValidationType(event.ValidateNone)
 }
 
-func (f *AjaxTimingForm) Action(ctx context.Context, a page.ActionParams) {
+func (f *AjaxTimingForm) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case Txt1ChangeAction:
 		f.Txt1ChangeLabel.SetText(f.Txt1.Text())

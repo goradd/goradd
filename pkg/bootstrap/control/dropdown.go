@@ -224,6 +224,6 @@ func init() {
 	page.RegisterControl(&Dropdown{})
 }
 
-func DropdownSelectEvent() *page.Event {
-	return page.NewEvent(DropdownSelect)
+func DropdownSelectEvent() *event.Event {
+	return event.NewEvent(DropdownSelect)
 }

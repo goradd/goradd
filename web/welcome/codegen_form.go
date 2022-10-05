@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/goradd/gofile/pkg/sys"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"os/exec"
 	"path/filepath"
@@ -30,7 +31,7 @@ func (f *CodegenForm) createControls(ctx context.Context) {
 	control.NewPanel(f, "infoPanel")
 }
 
-func (f *CodegenForm) Action(ctx context.Context, a page.ActionParams) {
+func (f *CodegenForm) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case CodegenRefreshAction:
 		f.Refresh()

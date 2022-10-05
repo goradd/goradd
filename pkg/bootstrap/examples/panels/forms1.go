@@ -25,7 +25,6 @@ type Forms1Panel struct {
 	control.Panel
 }
 
-
 func NewForms1Panel(ctx context.Context, parent page.ControlI) {
 	p := &Forms1Panel{}
 	p.Self = p
@@ -37,17 +36,17 @@ func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string)
 	p.Panel.Init(parent, id)
 	p.Panel.AddControls(ctx,
 		FormGroupCreator{
-			Label:"Name",
+			Label: "Name",
 			Child: TextboxCreator{
 				ID: "nameText",
 			},
 		},
 		FormGroupCreator{
-			Label:"Child Count",
-			Instructions:"How many children do you have?",
+			Label:        "Child Count",
+			Instructions: "How many children do you have?",
 			Child: IntegerTextboxCreator{
-				ID: "childrenText",
-				ColumnCount:2,
+				ID:          "childrenText",
+				ColumnCount: 2,
 				ControlOptions: page.ControlOptions{
 					IsRequired: true,
 				},
@@ -60,37 +59,37 @@ func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string)
 				{"Married", "Married"},
 				{"Divorced", "Divorced"},
 			},
-			Value: "Single",
+			Value:    "Single",
 			OnChange: action.Ajax(p.ID(), RadioChange),
 		},
 		control.SpanCreator{
 			ID: "radioResult",
 		},
 		FormGroupCreator{
-			Label: "Dog",
-			Instructions:"Do you have a dog?",
-			Child: CheckboxCreator {
+			Label:        "Dog",
+			Instructions: "Do you have a dog?",
+			Child: CheckboxCreator{
 				ID:   "dogCheck",
 				Text: "I have a dog",
 			},
 		},
-		ButtonCreator {
-			ID: "ajaxButton",
-			Text: "Submit Ajax",
-			OnSubmit:action.Ajax(p.ID(), AjaxSubmit),
+		ButtonCreator{
+			ID:       "ajaxButton",
+			Text:     "Submit Ajax",
+			OnSubmit: action.Ajax(p.ID(), AjaxSubmit),
 		},
-		ButtonCreator {
-			ID: "serverButton",
-			Text: "Submit Server",
-			OnSubmit:action.Server(p.ID(), ServerSubmit),
+		ButtonCreator{
+			ID:       "serverButton",
+			Text:     "Submit Server",
+			OnSubmit: action.Server(p.ID(), ServerSubmit),
 		},
 	)
 }
 
-func (p *Forms1Panel) Action(ctx context.Context, a page.ActionParams) {
+func (p *Forms1Panel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case RadioChange:
-		c:=control.GetSpan(p, "radioResult")
+		c := control.GetSpan(p, "radioResult")
 		r := GetRadioListGroup(p, "status")
 		s := r.StringValue()
 		c.SetText(s)

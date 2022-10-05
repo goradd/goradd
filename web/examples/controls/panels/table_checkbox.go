@@ -14,7 +14,6 @@ import (
 
 type TableCheckboxPanel struct {
 	Panel
-
 }
 
 type Table1Data map[string]string
@@ -48,22 +47,22 @@ func (p *TableCheckboxPanel) Init(ctx context.Context, parent page.ControlI, id 
 	p.Panel.Init(parent, "checkboxTablePanel")
 	p.AddControls(ctx,
 		PagedTableCreator{
-			ID: "table1",
+			ID:             "table1",
 			HeaderRowCount: 1,
-			DataProvider: p,
-			Columns:[]ColumnCreator {
+			DataProvider:   p,
+			Columns: []ColumnCreator{
 				column.MapColumnCreator{
 					Index: "name",
-					Title:"Name",
+					Title: "Name",
 				},
 				column.CheckboxColumnCreator{
-					ID:"check1",
-					Title:"Selected",
-					ShowCheckAll:true,
-					CheckboxProvider:SelectedProvider{},
+					ID:               "check1",
+					Title:            "Selected",
+					ShowCheckAll:     true,
+					CheckboxProvider: SelectedProvider{},
 				},
 			},
-			PageSize:5,
+			PageSize:  5,
 			SaveState: true,
 		},
 		// A DataPager can be a standalone control, which you draw manually
@@ -94,7 +93,7 @@ func (f *TableCheckboxPanel) BindData(ctx context.Context, s DataManagerI) {
 	s.SetData(table1Data[start:end])
 }
 
-func (p *TableCheckboxPanel) Action(ctx context.Context, a page.ActionParams) {
+func (p *TableCheckboxPanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
 		col := GetPagedTable(p, "table1").GetColumnByID("check1").(*column.CheckboxColumn)

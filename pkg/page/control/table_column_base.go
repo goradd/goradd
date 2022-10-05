@@ -3,6 +3,7 @@ package control
 import (
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/pkg/page/action"
 	"html"
 	"io"
 	"strconv"
@@ -53,7 +54,7 @@ type ColumnI interface {
 	ColTagAttributes() html5tag.Attributes
 	UpdateFormValues(ctx context.Context)
 	AddActions(ctrl page.ControlI)
-	Action(ctx context.Context, params page.ActionParams)
+	Action(ctx context.Context, params action.Params)
 	SetCellTexter(s CellTexter) ColumnI
 	SetHeaderTexter(s CellTexter) ColumnI
 	SetFooterTexter(s CellTexter) ColumnI
@@ -427,7 +428,7 @@ func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 
 // Action does a table action that is directed at this table
 // Column implementations can implement this method to receive private actions that they have added using AddActions
-func (c *ColumnBase) Action(ctx context.Context, params page.ActionParams) {}
+func (c *ColumnBase) Action(ctx context.Context, params action.Params) {}
 
 func (c *ColumnBase) RenderSortButton(labelHtml string) string {
 	labelHtml += ` ` + c.ParentTable().SortIconHtml(c)

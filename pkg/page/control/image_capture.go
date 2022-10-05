@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/goradd/goradd/pkg/page/event"
 	"path"
 	"strings"
 
@@ -23,8 +24,8 @@ const (
 const imageCaptureScriptCommand = "imageCapture"
 
 // CaptureEvent triggers when the capture button has been pressed, and the image has been captured.
-func CaptureEvent() *page.Event {
-	return &page.Event{JsEvent: "capture"}
+func CaptureEvent() *event.Event {
+	return event.NewEvent("capture")
 }
 
 type ImageCaptureI interface {

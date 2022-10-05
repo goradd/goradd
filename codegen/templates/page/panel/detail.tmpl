@@ -39,7 +39,7 @@ func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id st
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 }
 
-func (p *{{= panelName }}) Action(ctx context.Context, a page.ActionParams) {
+func (p *{{= panelName }}) Action(ctx context.Context, a action.Params) {
     switch a.ID {
     default:
         p.Panel.Action(ctx, a)

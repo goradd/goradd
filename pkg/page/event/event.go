@@ -1,4 +1,17 @@
-package page
+// Package event contains functions that specify various kinds of javascript events that GoRADD controls respond to.
+//
+// Create an event by using one of the predefined event creation functions like Click(), or
+// call NewEvent() to create an event that responds to any named javascript event. If needed, add
+// additional requirements for the event using the builder pattern functions like Event.Delay(), Event.Selector() and
+// Event.Condition().
+//
+// For example, the code below will create an event that waits for clicks on the button, but debounces
+// the clicks and also prevents all other actions from happening while waiting for the event to fire. This
+// would be typically useful in a submit button where you want to prevent multiple submissions of the same button.
+//
+//	e := Click().Delay(200).Blocking()
+//	btn := NewButton().On(e, action.Redirect("/mypage"))
+package event
 
 import (
 	"bytes"
@@ -10,22 +23,21 @@ import (
 	"strconv"
 )
 
-// EventID is a unique id used to specify which event is triggering.
+// EventID is used internally by the framework to set a unique id used to specify which event is triggering.
 type EventID uint16
-type EventMap map[EventID]*Event
 
 // Event represents a javascript event that triggers an action. Create it with a call to NewEvent(), or one of the
 // predefined events in the event package, like event.Click()
 type Event struct {
-	// JsEvent is the JavaScript event that will be triggered by the event.
-	JsEvent string
+	// jsEvent is the JavaScript event that will be triggered by the event.
+	jsEvent string
 	// condition is a javascript comparison test that if present, must evaluate as true for the event to fire
 	condition string
 	// delay is the number of milliseconds to delay firing the action after the event triggers
 	delay int
 	// selector is a css selector that will filter the event bubbling up from a sub-item. The event must originate from
-	// an html object that the selector specifies. Inside the event handler, event.goradd.match will contain the
-	// html item that was selected by the selector. Note that by default, if this object has other objects inside of it,
+	// an HTML object that the selector specifies. Inside the event handler, event.goradd.match will contain the
+	// html item that was selected by the selector. Note that by default, if this object has other objects inside it,
 	// events will not bubble up from those objects. Set "bubbles" to true to have sub objects bubble their events.
 	selector string
 	// blocking specifies that once the event fires, all other events will be blocked until the action associated with
@@ -39,7 +51,7 @@ type Event struct {
 	// preventDefault will cause the preventDefault function to be called on the event, which prevents the
 	// default action. In particular, this would prevent a submit button from submitting a form.
 	preventDefault bool
-	// stopPropogation will cause the stopPropogation jQuery function to be called on the event, which prevents the event
+	// stopPropagation will cause the stopPropagation jQuery function to be called on the event, which prevents the event
 	// from bubbling.
 	stopPropagation bool
 	// validationOverride allows the event to override the control's validation mechanism.
@@ -62,13 +74,13 @@ type Event struct {
 // NewEvent creates an event that triggers on the given javascript event name.
 // Use the builder pattern functions from *Event to add delays, conditions, etc.
 func NewEvent(name string) *Event {
-	return &Event{JsEvent: name}
+	return &Event{jsEvent: name}
 }
 
 // String returns a debug string listing the contents of the event.
 func (e *Event) String() string {
 	return fmt.Sprintf("Event: %s, Condition: %s, Delay: %d, Selector: %s, Blocking: %t",
-		e.JsEvent, e.condition, e.delay, e.selector, e.blocking)
+		e.jsEvent, e.condition, e.delay, e.selector, e.blocking)
 }
 
 // Condition specifies a javascript condition to check before triggering the event. The given string should be javascript
@@ -97,9 +109,9 @@ func (e *Event) Selector(s string) *Event {
 	return e
 }
 
-// Bubbles works with a Selector to allow events to come from sub-control
+// Bubbles works with a Selector to allow events to come from a sub-control
 // of the selected control. The event could be blocked by the sub-control if
-// the subcontrol issues a preventPropagation on the event.
+// the sub-control issues a preventPropagation on the event.
 func (e *Event) Bubbles() *Event {
 	e.bubbles = true
 	return e
@@ -108,6 +120,8 @@ func (e *Event) Bubbles() *Event {
 // Capture works with a Selector to allow events to come from a sub-control
 // of the selected control. The event never actually reaches the sub-control
 // for processing, and instead is captured and handled by the selected control.
+// This is generally used in special situations where you do not want to allow
+// sub-controls to prevent bubbling.
 func (e *Event) Capture() *Event {
 	e.capture = true
 	return e
@@ -128,13 +142,13 @@ func (e *Event) Terminating() *Event {
 	return e
 }
 
-// Call PreventingDefault to cause the event not to do the default action.
+// PreventingDefault causes the event not to do the default action.
 func (e *Event) PreventingDefault() *Event {
 	e.preventDefault = true
 	return e
 }
 
-// Call PreventBubbling to cause the event to not bubble to enclosing objects.
+// PreventBubbling causes the event to not bubble to enclosing objects.
 func (e *Event) PreventBubbling() *Event {
 	e.stopPropagation = true
 	return e
@@ -142,9 +156,15 @@ func (e *Event) PreventBubbling() *Event {
 
 // ActionValue is a value that will be returned to the actions that will be process by this event. Specify a static
 // value, or javascript objects that will gather data at the time the event fires. The event will appear in the
-// ActionParams as the EventValue. By default, this will be the value passed in to the event as event data.
+// Params as the EventValue. By default, this will be the value passed in to the event as event data.
+//
 // See on: and trigger: in goradd.js.
-// Example: ActionValue(javascript.JsCode{"event.target.id"}) will return the target id from the event object passed in to the event handler.
+//
+// For example:
+//
+//	ActionValue(javascript.JsCode{"event.target.id"})
+//
+// will cause the EventValue for the action to be the HTML id of the target object of the event.
 func (e *Event) ActionValue(r interface{}) *Event {
 	e.actionValue = r
 	return e
@@ -198,82 +218,14 @@ func (e *Event) HasCallbackAction() bool {
 	}
 }
 
+// Name returns the name of the javascript event being triggered.
 func (e *Event) Name() string {
-	return e.JsEvent
+	return e.jsEvent
 }
 
-func (e *Event) addAction(a action2.ActionI) {
-	e.action = a
-}
-
-func (e *Event) renderActions(control ControlI, eventID EventID) string {
-	if e.action == nil {
-		return ""
-	}
-
-	var js string
-	var options map[string]interface{}
-
-	if e.capture || e.bubbles {
-		options = make(map[string]interface{})
-		if e.bubbles {
-			options["bubbles"] = true
-		}
-		if e.capture {
-			options["capture"] = true
-		}
-	}
-
-	if e.preventDefault {
-		js += "event.preventDefault();\n"
-	}
-	if e.stopPropagation {
-		js += "event.stopPropagation();\n"
-	}
-
-	var params = action2.RenderParams{control.ID(), control.ActionValue(), uint16(eventID), e.actionValue}
-
-	var actionJs = e.action.RenderScript(params)
-
-	if e.blocking {
-		actionJs += "goradd.blockEvents = true;\n"
-	}
-
-	actionJs += "if (event.goradd && event.goradd.postFunc) {event.goradd.postFunc();}\n"
-
-	if !config.Minify {
-		actionJs = html5tag.Indent(actionJs)
-	}
-	if e.delay == 0 {
-		actionJs = fmt.Sprintf(
-			"goradd.queueAction({f: (function(){\n%s\n}).bind(this.element), name: '%s'});\n",
-			actionJs, e.JsEvent,
-		)
-	} else {
-		actionJs = fmt.Sprintf(
-			"goradd.queueAction({f: (function(){\n%s\n}).bind(this.element), name: '%s', d: %d, k: '%s'});\n",
-			actionJs, e.JsEvent, e.delay,
-			// An event key unique to events used on the page, for preventing the same event from repeating during the delay time
-			control.ID()+"-"+strconv.Itoa(int(e.eventID)))
-	}
-
-	if e.condition != "" {
-		js = fmt.Sprintf("if (%s) {%s%s\n};", e.condition, js, actionJs)
-	} else {
-		js = js + actionJs
-	}
-
-	js = control.WrapEvent(e.JsEvent, e.selector, js, options)
-
-	if !config.Minify {
-		// Render a comment
-		js = fmt.Sprintf("/*** Event: %s  ControlBase Type: %T, ControlBase Id: %s  ***/\n%s\n", e.JsEvent, control, control.ID(), js)
-	}
-
-	return js
-}
-
-func (e *Event) getCallbackAction() action2.FrameworkCallbackActionI {
+// GetCallbackAction will return the action associated with the event if it is a callback action.
+// Otherwise, it will return nil.
+func (e *Event) GetCallbackAction() action2.FrameworkCallbackActionI {
 	switch a := e.action.(type) {
 	case action2.CallbackActionI:
 		return a.(action2.FrameworkCallbackActionI)
@@ -284,8 +236,14 @@ func (e *Event) getCallbackAction() action2.FrameworkCallbackActionI {
 	}
 }
 
-func (e *Event) isPrivate() bool {
+// IsPrivate returns whether this is an event private to the control or one created from outside the control.
+func (e *Event) IsPrivate() bool {
 	return e.private
+}
+
+// GetValidationOverride returns the validation type of the event that will override the control's validation type.
+func (e *Event) GetValidationOverride() ValidationType {
+	return e.validationOverride
 }
 
 // eventEncoded contains exported types. We use this to serialize an event for the page serializer.
@@ -308,7 +266,7 @@ type eventEncoded struct {
 
 func (e *Event) GobEncode() (data []byte, err error) {
 	s := eventEncoded{
-		JsEvent:                   e.JsEvent,
+		JsEvent:                   e.jsEvent,
 		Condition:                 e.condition,
 		Delay:                     e.delay,
 		Selector:                  e.selector,
@@ -338,7 +296,7 @@ func (e *Event) GobDecode(data []byte) (err error) {
 	if err = dec.Decode(&s); err != nil {
 		return
 	}
-	e.JsEvent = s.JsEvent
+	e.jsEvent = s.JsEvent
 	e.condition = s.Condition
 	e.delay = s.Delay
 	e.selector = s.Selector
@@ -354,6 +312,91 @@ func (e *Event) GobDecode(data []byte) (err error) {
 	e.validationTargetsOverride = s.ValidationTargetsOverride
 
 	return nil
+}
+
+// SetEventItems is used internally by the framework to set up an event.
+// You should not normally need to call this function.
+func SetEventItems(e *Event, action action2.ActionI, eventId EventID) {
+	e.action = action
+	e.eventID = eventId
+}
+
+// renderer is used to help avoid import loops by defining the functions that impact rendering
+// without importing the page or control packages
+type renderer interface {
+	ID() string
+	ActionValue() any
+	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
+}
+
+// RenderActions is used internally by the framework to render the javascript
+// associated with the event and connected actions.
+// You should not normally need to call this function.
+func RenderActions(e *Event, control renderer, eventID EventID) string {
+	if e.action == nil {
+		return ""
+	}
+
+	var js string
+	var options map[string]interface{}
+
+	if e.capture || e.bubbles {
+		options = make(map[string]interface{})
+		if e.bubbles {
+			options["bubbles"] = true
+		}
+		if e.capture {
+			options["capture"] = true
+		}
+	}
+
+	if e.preventDefault {
+		js += "event.preventDefault();\n"
+	}
+	if e.stopPropagation {
+		js += "event.stopPropagation();\n"
+	}
+
+	var params = action2.RenderParams{TriggeringControlID: control.ID(), ControlActionValue: control.ActionValue(), EventID: uint16(eventID), EventActionValue: e.actionValue}
+
+	var actionJs = e.action.RenderScript(params)
+
+	if e.blocking {
+		actionJs += "goradd.blockEvents = true;\n"
+	}
+
+	actionJs += "if (event.goradd && event.goradd.postFunc) {event.goradd.postFunc();}\n"
+
+	if !config.Minify {
+		actionJs = html5tag.Indent(actionJs)
+	}
+	if e.delay == 0 {
+		actionJs = fmt.Sprintf(
+			"goradd.queueAction({f: (function(){\n%s\n}).bind(this.element), name: '%s'});\n",
+			actionJs, e.jsEvent,
+		)
+	} else {
+		actionJs = fmt.Sprintf(
+			"goradd.queueAction({f: (function(){\n%s\n}).bind(this.element), name: '%s', d: %d, k: '%s'});\n",
+			actionJs, e.jsEvent, e.delay,
+			// An event key unique to events used on the page, for preventing the same event from repeating during the delay time
+			control.ID()+"-"+strconv.Itoa(int(e.eventID)))
+	}
+
+	if e.condition != "" {
+		js = fmt.Sprintf("if (%s) {%s%s\n};", e.condition, js, actionJs)
+	} else {
+		js = js + actionJs
+	}
+
+	js = control.WrapEvent(e.jsEvent, e.selector, js, options)
+
+	if !config.Minify {
+		// Render a comment
+		js = fmt.Sprintf("/*** Event: %s  ControlBase Type: %T, ControlBase Id: %s  ***/\n%s\n", e.jsEvent, control, control.ID(), js)
+	}
+
+	return js
 }
 
 func init() {

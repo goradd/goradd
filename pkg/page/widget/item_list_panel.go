@@ -3,11 +3,11 @@ package widget
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 	"path"
 )
 
@@ -80,7 +80,7 @@ func (c *ItemListPanel) DrawingAttributes(ctx context.Context) html5tag.Attribut
 	return a
 }
 
-func (f *ItemListPanel) Action(ctx context.Context, a page.ActionParams) {
+func (f *ItemListPanel) Action(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case filterChanged:
 		f.ItemTable.Refresh() // TODO: Change this to some kind of data only refresh so that when control is redrawn the scroll position is maintained
