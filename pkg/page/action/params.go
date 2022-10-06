@@ -11,10 +11,10 @@ import (
 //
 //   - Action value, a value assigned to the action when it is created,
 //   - Control value, a value returned by certain custom controls
-//   - Event value: value assigned by certain event types
+//   - Event value, a value assigned by certain event types
 //
-// Use the accessor functions like ActionValueInt or ControlValueString to extract an appropriately typed value
-// from the action.
+// Use the accessor functions like [Params.ActionValueInt] or [Params.ControlValueString] to extract an appropriately
+// typed value from the action.
 type Params struct {
 	// Id is the id assigned when the action is created
 	ID int

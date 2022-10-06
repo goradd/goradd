@@ -10,9 +10,10 @@ type redirectAction struct {
 }
 
 // Redirect will navigate to the given page.
-// TODO: If javascript is turned off, this should still work. We would need to detect the presence of javascript,
-// and then emit a server action instead
 func Redirect(url string) ActionI {
+	// TODO: If javascript is turned off, this should still work. We would need to detect the presence of javascript,
+	// and then emit a server action instead
+
 	return redirectAction{Location: url}
 }
 
