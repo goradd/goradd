@@ -9,11 +9,24 @@ import (
 
 func (b *Navbar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
+	if _, err = io.WriteString(_w, `    <div class="`); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, string(b.containerClass)); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, `">
+`); err != nil {
+		return
+	}
+
 	if err = b.drawToggleAndBrand(ctx, _w); err != nil {
 		return
 	}
 
-	if _, err = io.WriteString(_w, `	<div class="collapse navbar-collapse" id="`); err != nil {
+	if _, err = io.WriteString(_w, `        <div class="collapse navbar-collapse" id="`); err != nil {
 		return
 	}
 
@@ -22,7 +35,7 @@ func (b *Navbar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 	}
 
 	if _, err = io.WriteString(_w, `_collapse">
-	    `); err != nil {
+            `); err != nil {
 		return
 	}
 
@@ -31,13 +44,13 @@ func (b *Navbar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 	}
 
 	if _, err = io.WriteString(_w, `
-		`); err != nil {
+            `); err != nil {
 		return
 	}
 	b.DrawChildren(ctx, _w)
 	if _, err = io.WriteString(_w, `
-	</div>
-
+        </div>
+    </div>
 `); err != nil {
 		return
 	}
@@ -47,7 +60,7 @@ func (b *Navbar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 func (b *Navbar) drawToggleButton(ctx context.Context, _w io.Writer) (err error) {
 
-	if _, err = io.WriteString(_w, `  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#`); err != nil {
+	if _, err = io.WriteString(_w, `  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#`); err != nil {
 		return
 	}
 

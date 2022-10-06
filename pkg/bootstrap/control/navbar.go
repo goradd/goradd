@@ -56,6 +56,7 @@ type NavbarI interface {
 	SetBrand(label string, anchor string, p NavbarCollapsedBrandPlacement) NavbarI
 	SetBackgroundClass(c BackgroundColorClass) NavbarI
 	SetExpand(e NavbarExpandClass) NavbarI
+	SetContainerClass(class ContainerClass) NavbarI
 	OnClick(action action.ActionI) NavbarI
 }
 
@@ -67,10 +68,10 @@ type Navbar struct {
 	brandAnchor   string
 	brandLocation NavbarCollapsedBrandPlacement
 
-	style NavbarStyle
-	//container ContainerClass ??
-	background BackgroundColorClass
-	expand     NavbarExpandClass
+	style          NavbarStyle
+	background     BackgroundColorClass
+	expand         NavbarExpandClass
+	containerClass ContainerClass
 }
 
 type NavbarStyle string
@@ -94,6 +95,7 @@ func (b *Navbar) Init(parent page.ControlI, id string) {
 	b.style = NavbarDark // default
 	b.background = BackgroundColorDark
 	b.expand = NavbarExpandLarge
+	b.containerClass = Container
 	config.LoadBootstrap(b.ParentForm())
 
 	b.On(event.Click().Selector(`a[href="#"][data-grctl="bs-navlink"]`).Capture(),
@@ -124,6 +126,11 @@ func (b *Navbar) SetBrand(label string, anchor string, p NavbarCollapsedBrandPla
 
 func (b *Navbar) SetExpand(e NavbarExpandClass) NavbarI {
 	b.expand = e
+	return b.this()
+}
+
+func (b *Navbar) SetContainerClass(class ContainerClass) NavbarI {
+	b.containerClass = class
 	return b.this()
 }
 
@@ -200,6 +207,9 @@ type NavbarCreator struct {
 	Expand NavbarExpandClass
 	// BrandLocation controls the placement of the brand item
 	BrandLocation NavbarCollapsedBrandPlacement
+	// ContainerClass is the class of the container that will wrap the contents of the navbar
+	ContainerClass ContainerClass
+
 	// OnClick is the action to take when a link is clicked. It will only respond
 	// to nav-link items that have an href of "#". The EventValue will be the id of the item clicked.
 	OnClick action.ActionI
@@ -231,6 +241,9 @@ func (c NavbarCreator) Init(ctx context.Context, ctrl NavbarI) {
 	}
 	if c.OnClick != nil {
 		ctrl.OnClick(c.OnClick)
+	}
+	if c.ContainerClass != "" {
+		ctrl.SetContainerClass(c.ContainerClass)
 	}
 	ctrl.AddControls(ctx, c.Children...)
 }

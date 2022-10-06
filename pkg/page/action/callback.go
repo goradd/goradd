@@ -9,7 +9,8 @@ import (
 	"github.com/goradd/maps"
 )
 
-// CallbackActionI defines actions that result in a callback to us. Specifically Server and Ajax actions are defined for now.
+// CallbackActionI defines actions that result in a callback to the server.
+// Specifically Server and Ajax actions are defined for now.
 // There is potential for a Message action, like through WebSocket, PubHub, etc.
 type CallbackActionI interface {
 	ActionI
