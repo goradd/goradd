@@ -2,24 +2,25 @@ package event
 
 // KeyDown responds to the javascript "keydown" event.
 func KeyDown() *Event {
-	return &Event{jsEvent: "keydown"}
+	return NewEvent("keydown")
 }
 
 // KeyUp responds to the javascript "keyup" event.
 func KeyUp() *Event {
-	return &Event{jsEvent: "keyup"}
+	return NewEvent("keyup")
+
 }
 
 // KeyPress responds to the javascript "keypress" event.
 // Deprecated: this is deprecated by the web standards. Use KeyDown or BeforeInput instead.
 func KeyPress() *Event {
-	return &Event{jsEvent: "keypress"}
+	return NewEvent("keypress")
 }
 
 // BeforeInput responds to the javascript "beforeinput" event.
 // This event is fired before a control is changed by text edits.
 func BeforeInput() *Event {
-	return &Event{jsEvent: "beforeinput"}
+	return NewEvent("beforeinput")
 }
 
 // Backspace is a keydown event for the backspace key.

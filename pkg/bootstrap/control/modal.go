@@ -278,7 +278,7 @@ func (m *Modal) PutCustomScript(_ context.Context, response *page.Response) {
 var m = new bootstrap.Modal(document.getElementById('%s') , {keyboard: %t});
 `, m.ID(), m.closeOnEscape)
 	script += fmt.Sprintf(
-		`g$("%s").on("hidden.bs.modal", function(){g$("%[1]s").trigger("grdlgclosed")});`, m.ID())
+		`g$("%s").on("hidden.bs.modal", function(){g$("%[1]s").trigger("%s")});`, m.ID(), event.DialogClosedEvent)
 
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }

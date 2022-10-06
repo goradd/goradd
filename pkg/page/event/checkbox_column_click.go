@@ -4,7 +4,7 @@ import (
 	"github.com/goradd/goradd/pkg/javascript"
 )
 
-// CheckboxColumnClick retuns an event that will detect a click on a checkbox table in a table, and set up the return
+// CheckboxColumnClick returns an event that will detect a click on a checkbox table in a table, and set up the return
 // parameters to return:
 //
 //	row: the index of the clicked row
@@ -12,9 +12,7 @@ import (
 //	checked: the checked state of the checkbox after the click is processed
 //	id: the id of the cell clicked
 func CheckboxColumnClick() *Event {
-	e := &Event{
-		jsEvent: "click",
-	}
+	e := Click()
 
 	m := map[string]interface{}{
 		"row":     javascript.JsCode(`g$(event.target).closest("tr").rowIndex`),

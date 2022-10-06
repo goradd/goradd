@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
 	"html"
 	"io"
 	"strconv"
@@ -430,10 +431,13 @@ func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 // Column implementations can implement this method to receive private actions that they have added using AddActions
 func (c *ColumnBase) Action(ctx context.Context, params action.Params) {}
 
+// RenderSortButton returns the html that draws the sort button.
 func (c *ColumnBase) RenderSortButton(labelHtml string) string {
 	labelHtml += ` ` + c.ParentTable().SortIconHtml(c)
 
-	return fmt.Sprintf(`<button class="gr-transparent-btn" onclick="g$('%s').trigger('grsort', '%s'); return false;">%s</button>`, c.parentTable.ID(), c.ID(), labelHtml)
+	return fmt.Sprintf(
+		`<button class="gr-transparent-btn" onclick="g$('%s').trigger('%s', '%s'); return false;">%s</button>`,
+		c.parentTable.ID(), event.TableSortEvent, c.ID(), labelHtml)
 }
 
 // SortDirection returns the current sort direction.

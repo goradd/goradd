@@ -43,7 +43,7 @@
 
             if ((this.options.reselect || selId !== prevSelId) && $row.hasClass ("selected")) {
                 goradd.setControlValue(this.element.id, "selectedId", selId);
-                this.trigger('rowselected', selId);
+                this.trigger('gr-rowselected', selId);
             }
             event.preventDefault();
         },
@@ -84,7 +84,7 @@
                 if (newId !== prevId) {
                     this._selectRow(newRow);
                     goradd.setControlValue(this.element.id, "selectedId", this.options.selectedId);
-                    this.trigger('rowselected', this.options.selectedId);
+                    this.trigger('gr-rowselected', this.options.selectedId);
                     this.showSelectedItem();
                     e.preventDefault();
                 }
