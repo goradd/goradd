@@ -1,16 +1,15 @@
 // Package event contains functions that specify various kinds of javascript events that GoRADD controls respond to.
 //
-// Create an event by using one of the predefined event creation functions like Click(), or
-// call NewEvent() to create an event that responds to any named javascript event. If needed, add
-// additional requirements for the event using the builder pattern functions like Event.Delay(), Event.Selector() and
-// Event.Condition().
+// Create an event by using one of the predefined event creation functions like [Click], or
+// call [NewEvent] to create an event that responds to any named javascript event. If needed, add
+// additional requirements for the event using the builder pattern functions like [Event.Delay], [Event.Selector]
+// and [Event.Condition].
 //
 // For example, the code below will create an event that waits for clicks on the button, but debounces
 // the clicks and also prevents all other actions from happening while waiting for the event to fire. This
 // would be typically useful in a submit button where you want to prevent multiple submissions of the same button.
 //
-//	e := Click().Delay(200).Blocking()
-//	btn := NewButton().On(e, action.Redirect("/mypage"))
+//	btn := NewButton().On(event.Click().Delay(200).Blocking(), action.Redirect("/mypage"))
 package event
 
 import (
