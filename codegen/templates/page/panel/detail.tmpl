@@ -47,7 +47,7 @@ func (p *{{= panelName }}) Action(ctx context.Context, a action.Params) {
     }
 }
 
-// Load loads up the edit panel with data from the database. pk is the primary key of a model.{{= t.GoName }}
+// Load puts data from the database into the panel. pk is the primary key of a model.{{= t.GoName }}
 // database record
 func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error {
 	p.{{= t.GoName }} = model.Load{{= t.GoName }}(ctx, pk,

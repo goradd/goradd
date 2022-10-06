@@ -18,6 +18,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/javascript"
 	action2 "github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/html5tag"
 	"strconv"
@@ -154,9 +155,9 @@ func (e *Event) PreventBubbling() *Event {
 	return e
 }
 
-// ActionValue is a value that will be returned to the actions that will be process by this event. Specify a static
+// ActionValue sets the event value in the actions triggered by this event. Specify a static
 // value, or javascript objects that will gather data at the time the event fires. The event will appear in the
-// Params as the EventValue. By default, this will be the value passed in to the event as event data.
+// Params as the EventValue. By default, this will be the value passed in to the javascript event as event data.
 //
 // See on: and trigger: in goradd.js.
 //
@@ -170,8 +171,14 @@ func (e *Event) ActionValue(r interface{}) *Event {
 	return e
 }
 
-// GetActionValue returns the value associated with the action of the event.
-func (e *Event) GetActionValue() interface{} {
+// EventValueTargetID will set the event value of the resulting action to the HTML id of the target of the event.
+func (e *Event) EventValueTargetID() *Event {
+	e.actionValue = javascript.JsCode("event.target.id")
+	return e
+}
+
+// GetActionValue returns the event value associated with the actions resulting from the event.
+func GetActionValue(e *Event) interface{} {
 	return e.actionValue
 }
 
@@ -195,7 +202,7 @@ func (e *Event) Private() *Event {
 }
 
 // HasServerAction returns true if at least one of the event's actions is a server action.
-func (e *Event) HasServerAction() bool {
+func HasServerAction(e *Event) bool {
 	switch a := e.action.(type) {
 	case action2.FrameworkCallbackActionI:
 		return a.IsServerAction()
@@ -207,7 +214,7 @@ func (e *Event) HasServerAction() bool {
 }
 
 // HasCallbackAction returns true if at least one of the event's actions is a callback action.
-func (e *Event) HasCallbackAction() bool {
+func HasCallbackAction(e *Event) bool {
 	switch a := e.action.(type) {
 	case action2.CallbackActionI:
 		return true
@@ -219,13 +226,13 @@ func (e *Event) HasCallbackAction() bool {
 }
 
 // Name returns the name of the javascript event being triggered.
-func (e *Event) Name() string {
+func Name(e *Event) string {
 	return e.jsEvent
 }
 
 // GetCallbackAction will return the action associated with the event if it is a callback action.
 // Otherwise, it will return nil.
-func (e *Event) GetCallbackAction() action2.FrameworkCallbackActionI {
+func GetCallbackAction(e *Event) action2.FrameworkCallbackActionI {
 	switch a := e.action.(type) {
 	case action2.CallbackActionI:
 		return a.(action2.FrameworkCallbackActionI)
@@ -242,7 +249,7 @@ func (e *Event) IsPrivate() bool {
 }
 
 // GetValidationOverride returns the validation type of the event that will override the control's validation type.
-func (e *Event) GetValidationOverride() ValidationType {
+func GetValidationOverride(e *Event) ValidationType {
 	return e.validationOverride
 }
 
@@ -264,6 +271,7 @@ type eventEncoded struct {
 	ValidationTargetsOverride []string
 }
 
+// GobEncode is called by the framework to binary encode the event.
 func (e *Event) GobEncode() (data []byte, err error) {
 	s := eventEncoded{
 		JsEvent:                   e.jsEvent,
@@ -289,6 +297,7 @@ func (e *Event) GobEncode() (data []byte, err error) {
 	return
 }
 
+// GobDecode is called by the framework to binary decode the event.
 func (e *Event) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)

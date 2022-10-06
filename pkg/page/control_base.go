@@ -1062,7 +1062,7 @@ func (c *ControlBase) Off() {
 // HasServerAction returns true if one of the actions attached to the given event is a Server action.
 func (c *ControlBase) HasServerAction(eventName string) bool {
 	for _, e := range c.events {
-		if e.Name() == eventName && e.HasServerAction() {
+		if event.Name(e) == eventName && event.HasServerAction(e) {
 			return true
 		}
 	}
@@ -1072,7 +1072,7 @@ func (c *ControlBase) HasServerAction(eventName string) bool {
 // HasCallbackAction returns true if one of the actions attached to the given event is a Server action.
 func (c *ControlBase) HasCallbackAction(eventName string) bool {
 	for _, e := range c.events {
-		if e.Name() == eventName && e.HasCallbackAction() {
+		if event.Name(e) == eventName && event.HasCallbackAction(e) {
 			return true
 		}
 	}
@@ -1083,7 +1083,7 @@ func (c *ControlBase) HasCallbackAction(eventName string) bool {
 // trigger name.
 func (c *ControlBase) GetEvent(eventName string) *event.Event {
 	for _, e := range c.events {
-		if e.Name() == eventName {
+		if event.Name(e) == eventName {
 			return e
 		}
 	}
@@ -1164,14 +1164,14 @@ func (c *ControlBase) doAction(ctx context.Context) {
 		}
 	}
 
-	if (e.GetValidationOverride() != event.ValidateNone && e.GetValidationOverride() != event.ValidateDefault) ||
-		(e.GetValidationOverride() == event.ValidateDefault && c.this().ValidationType(e) != event.ValidateNone) {
+	if (event.GetValidationOverride(e) != event.ValidateNone && event.GetValidationOverride(e) != event.ValidateDefault) ||
+		(event.GetValidationOverride(e) == event.ValidateDefault && c.this().ValidationType(e) != event.ValidateNone) {
 		c.ParentForm().ResetValidation()
 	}
 
 	if c.passesValidation(ctx, e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
-		if callbackAction := e.GetCallbackAction(); callbackAction != nil {
+		if callbackAction := event.GetCallbackAction(e); callbackAction != nil {
 			p := action.NewActionParams(callbackAction.ID(),
 				callbackAction.(action.CallbackActionI),
 				c.ID(),
@@ -1237,7 +1237,7 @@ func (c *ControlBase) SetValidationTargets(controlIDs ...string) {
 func (c *ControlBase) passesValidation(ctx context.Context, e *event.Event) (valid bool) {
 	validation := c.this().ValidationType(e)
 
-	if v := e.GetValidationOverride(); v != event.ValidateDefault {
+	if v := event.GetValidationOverride(e); v != event.ValidateDefault {
 		validation = v
 	}
 
