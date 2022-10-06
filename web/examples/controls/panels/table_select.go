@@ -109,6 +109,8 @@ func (p *TableSelectPanel) Action(ctx context.Context, a action.Params) {
 	case rowSelectedEvent:
 		rowID := a.EventValueString()
 		GetPanel(p, "infoPanel").SetText(fmt.Sprintf("Row %s was selected.", rowID))
+	default:
+		p.Panel.Action(ctx, a)
 	}
 }
 

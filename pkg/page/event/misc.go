@@ -1,45 +1,28 @@
 package event
 
+// Change triggers on the javascript change event.
+// The change event triggers after a change has been recorded on a control. For text boxes, this occurs
+// after focus leaves the text box. Other controls, like select controls, change immediately when a new item
+// is selected.
 func Change() *Event {
-	return &Event{jsEvent: "change"}
+	return NewEvent("change")
 }
 
 // DragDrop returns an event that responds to the javascript drop event
 func DragDrop() *Event {
-	return &Event{jsEvent: "drop"}
+	return NewEvent("drop")
+
 }
 
+// Input triggers on the input event. The input event happens when text box type controls have
+// been changed at all. This is the event you want to watch if you want to know when a user has typed
+// in a text box, or pressed backspace, or cut or pasted into the text box.
 func Input() *Event {
-	return &Event{jsEvent: "input"}
+	return NewEvent("input")
+
 }
 
+// Select triggers on the select event. The select event happens when text is selected in the control.
 func Select() *Event {
-	return &Event{jsEvent: "select"}
-}
-
-// TableSort is a custom event for responding to a table sort event
-func TableSort() *Event {
-	e := &Event{jsEvent: "grsort"}
-	return e
-}
-
-const DialogButtonEvent = "gr-dlgbtn"
-
-// DialogButton returns an event that detects clicking on a dialog's button.
-func DialogButton() *Event {
-	e := &Event{jsEvent: DialogButtonEvent}
-	return e
-}
-
-const DialogClosedEvent = "grdlgclosed"
-
-// DialogClosed indicates that a dialog has closed. This is a good time to do any required cleanup.
-func DialogClosed() *Event {
-	e := &Event{jsEvent: DialogClosedEvent}
-	return e
-}
-
-// TimerExpired is used in conjunction with a JsTimer control to detect the expiration of the timer
-func TimerExpired() *Event {
-	return &Event{jsEvent: "goradd.timerexpired"}
+	return NewEvent("select")
 }

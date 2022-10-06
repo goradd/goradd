@@ -23,7 +23,7 @@ const (
 //     object clicked inside the cell. This could be important, for example,
 //     if you had form objects inside the cell, and you wanted to behave differently
 //     if a form object was clicked on, verses clicking outside the form object.
-//   - event.goradd.match: This will be the cell object clicked on, even if an item inside of the cell was clicked.
+//   - event.goradd.match: This will be the cell object clicked on, even if an item inside the cell was clicked.
 //
 // Here are some examples of return params you can specify to return data to your action handler:
 //
@@ -58,7 +58,7 @@ func HeaderCellClick() *Event {
 	return e
 }
 
-// RowDataActionValue returns code to use in the ActionValue to to return the data value of the row clicked on.
+// RowDataActionValue returns code to use in the ActionValue to return the data value of the row clicked on.
 // The code can be used directly, or in a map or array.
 // For example:
 //

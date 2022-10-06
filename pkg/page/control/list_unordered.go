@@ -16,6 +16,7 @@ type UnorderedListI interface {
 	GetItemsHtml(items []*ListItem) string
 	SetBulletStyle(s string) UnorderedListI
 	SetItemTag(s string) UnorderedListI
+	ItemTag() string
 }
 
 // UnorderedList is a dynamically generated html unordered list (ul). Such lists are often used as the basis for
@@ -65,6 +66,11 @@ func (l *UnorderedList) SetItemTag(s string) UnorderedListI {
 	return l.this()
 }
 
+// ItemTag returns the HTML tag for an item in the list.
+func (l *UnorderedList) ItemTag() string {
+	return l.itemTag
+}
+
 // SetBulletStyle sets the list-style-type attribute of the list. Choose from the UnorderedListStyle* constants.
 func (l *UnorderedList) SetBulletStyle(s string) UnorderedListI {
 	l.ControlBase.SetStyle("list-style-type", s)
@@ -87,13 +93,14 @@ func (l *UnorderedList) DrawingAttributes(ctx context.Context) html5tag.Attribut
 	return a
 }
 
+// DrawInnerHtml is called by the framework to draw the content of the tag.
 func (l *UnorderedList) DrawInnerHtml(_ context.Context, w io.Writer) {
 	h := l.this().GetItemsHtml(l.items)
 	page.WriteString(w, h)
 	return
 }
 
-// GetItemsHtml is used by the framework to get the items for the html. It is exported so that
+// GetItemsHtml returns the HTML for the items. It is exported so that
 // it can be overridden by other implementations of an UnorderedList.
 func (l *UnorderedList) GetItemsHtml(items []*ListItem) string {
 	var h = ""
@@ -127,11 +134,8 @@ func (l *UnorderedList) SetData(data interface{}) {
 
 func (l *UnorderedList) Serialize(e page.Encoder) {
 	l.ControlBase.Serialize(e)
-
 	l.ItemList.Serialize(e)
-
 	l.DataManager.Serialize(e)
-
 	if err := e.Encode(l.itemTag); err != nil {
 		panic(err)
 	}
@@ -146,6 +150,8 @@ func (l *UnorderedList) Deserialize(dec page.Decoder) {
 	}
 }
 
+// UnorderedListCreator is a declarative helper to create an UnorderedListControl.
+// Pass it to control.AddControls() to add the declared list to the control.
 type UnorderedListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
