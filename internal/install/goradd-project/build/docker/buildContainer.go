@@ -9,3 +9,6 @@ package docker
 // and imported there with docker load command.
 
 //go:generate docker save -o ./grapp.tar grapp
+
+// Cleanup by removing the image from docker.
+//go:generate docker image rm grapp
