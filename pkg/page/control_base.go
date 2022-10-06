@@ -1172,7 +1172,8 @@ func (c *ControlBase) doAction(ctx context.Context) {
 	if c.passesValidation(ctx, e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
 		if callbackAction := event.GetCallbackAction(e); callbackAction != nil {
-			p := action.NewActionParams(callbackAction.ID(),
+			p := action.NewActionParams(
+				callbackAction.ID(),
 				callbackAction.(action.CallbackActionI),
 				c.ID(),
 				grCtx.actionValues,

@@ -3,8 +3,13 @@ package control
 type ContainerClass string
 
 const (
-	Container      ContainerClass = "container"
-	ContainerFluid                = "container-fluid"
+	Container       ContainerClass = "container"
+	ContainerFluid                 = "container-fluid"
+	ContainerSmall                 = "container-sm"
+	ContainerMedium                = "container-md"
+	ContainerLarge                 = "container-lg"
+	ContainerXL                    = "container-xl"
+	ContainerXXL                   = "container-xxl"
 )
 
 type TextColorClass string

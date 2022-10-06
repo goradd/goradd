@@ -13,7 +13,7 @@ require (
 	github.com/kenshaw/snaker v0.2.0
 	github.com/microcosm-cc/bluemonday v1.0.20
 	github.com/shurcooL/github_flavored_markdown v0.0.0-20210228213109-c3a9aa474629
-	github.com/spf13/cobra v1.3.0
+	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/text v0.3.7
 )
@@ -22,7 +22,7 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday v1.5.2 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
