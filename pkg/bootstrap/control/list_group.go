@@ -2,8 +2,11 @@ package control
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/javascript"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/event"
 )
 
 type ListGroupI interface {
@@ -38,7 +41,6 @@ func (l *ListGroup) Init(parent page.ControlI, id string) {
 
 func (l *ListGroup) GetItemsHtml(items []*control.ListItem) string {
 	// make sure the list items have the correct classes before drawing them
-
 	for _, item := range items {
 		item.Attributes().AddClass("list-group-item list-group-item-action")
 	}
@@ -54,8 +56,11 @@ type ListGroupCreator struct {
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProviderID string
 	page.ControlOptions
-	// ItemTag is the tag of the items. It defaults to "li".
+	// ItemTag is the tag of the items. It defaults to "a".
 	ItemTag string
+	// OnClick is the action to take when an item is clicked.
+	// The id of the item will appear as the action's ControlValue.
+	OnClick action.ActionI
 }
 
 // Create is called by the framework to create a new control from the Creator. You
@@ -68,8 +73,8 @@ func (c ListGroupCreator) Create(ctx context.Context, parent page.ControlI) page
 
 func (c ListGroupCreator) Init(ctx context.Context, ctrl ListGroupI) {
 	sub := control.UnorderedListCreator{
-		Items:c.Items,
-		DataProvider:c.DataProvider,
+		Items:          c.Items,
+		DataProvider:   c.DataProvider,
 		ControlOptions: c.ControlOptions,
 	}
 
@@ -77,6 +82,12 @@ func (c ListGroupCreator) Init(ctx context.Context, ctrl ListGroupI) {
 
 	if c.ItemTag != "" {
 		ctrl.SetItemTag(c.ItemTag)
+	}
+
+	if c.OnClick != nil {
+		ctrl.On(event.Click().Selector(ctrl.ItemTag()), c.OnClick)
+		// Set the Control action value to the item clicked on
+		ctrl.SetActionValue(javascript.JsCode("event.target.id"))
 	}
 }
 
