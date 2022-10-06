@@ -1053,7 +1053,7 @@ func (c *ControlBase) On(e *event.Event, a action.ActionI) ControlI {
 // Off removes all event handlers from the control
 func (c *ControlBase) Off() {
 	for id, e := range c.events {
-		if !e.IsPrivate() {
+		if !event.IsPrivate(e) {
 			delete(c.events, id)
 		}
 	}
@@ -1148,7 +1148,7 @@ func (c *ControlBase) doAction(ctx context.Context) {
 	var grCtx = GetContext(ctx)
 
 	if e, ok = c.events[grCtx.eventID]; ok {
-		isPrivate = e.IsPrivate()
+		isPrivate = event.IsPrivate(e)
 	}
 
 	if !ok {

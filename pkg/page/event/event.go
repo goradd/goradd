@@ -244,7 +244,7 @@ func GetCallbackAction(e *Event) action2.FrameworkCallbackActionI {
 }
 
 // IsPrivate returns whether this is an event private to the control or one created from outside the control.
-func (e *Event) IsPrivate() bool {
+func IsPrivate(e *Event) bool {
 	return e.private
 }
 
