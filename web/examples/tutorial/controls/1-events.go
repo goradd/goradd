@@ -32,14 +32,13 @@ func (p *EventsPanel) Init(ctx context.Context, parent page.ControlI, id string)
 	btn := NewButton(p, "btn1")
 	btn.OnClick(action.Ajax(p.ID(), 1))
 }
-
 func init() {
 	page.RegisterControl(&EventsPanel{})
 
 	dir := sys.SourceDirectory()
-	tutorial.RegisterTutorialPage("controls", 0, "intro", "Introduction to GoRADD Controls", NewEventsPanel,
+	tutorial.RegisterTutorialPage("controls", 0, "events", "Events and Actions", NewEventsPanel,
 		[]string{
 			sys.SourcePath(),
-			filepath.Join(dir, "0-intro.tpl.got"),
+			filepath.Join(dir, "1-events.tpl.got"),
 		})
 }
