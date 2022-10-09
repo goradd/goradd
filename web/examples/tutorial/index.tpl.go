@@ -6,6 +6,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/page"
 )
 
@@ -39,7 +40,25 @@ function toggleSidebar() {
 	if _, err = io.WriteString(_w, `<div id="sidebar" class="open">
     <a href="javascript:void(0)" id="togglebtn" onclick="toggleSidebar();"><span id="isopen">&larrb;</span><span id="isclosed">&rarrb;</span></a>
     <div id="sidebar_content">
-        <h2><a href="/goradd/tutorial.g">Home</a></h2>
+        <h2><a href="`); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, `
+`); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, http.MakeLocalPath("/goradd/tutorial.g")); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, `
+`); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, `">Home</a></h2>
         <h2>ORM</h2>
           <ul>
         `); err != nil {
@@ -53,15 +72,7 @@ function toggleSidebar() {
 			return
 		}
 
-		if _, err = io.WriteString(_w, path); err != nil {
-			return
-		}
-
-		if _, err = io.WriteString(_w, `?pageID=orm-`); err != nil {
-			return
-		}
-
-		if _, err = io.WriteString(_w, pr.id); err != nil {
+		if _, err = io.WriteString(_w, http.MakeLocalPath(path+`?pageID=orm-`+pr.id)); err != nil {
 			return
 		}
 
@@ -95,15 +106,7 @@ function toggleSidebar() {
 			return
 		}
 
-		if _, err = io.WriteString(_w, path); err != nil {
-			return
-		}
-
-		if _, err = io.WriteString(_w, `?pageID=controls-`); err != nil {
-			return
-		}
-
-		if _, err = io.WriteString(_w, pr.id); err != nil {
+		if _, err = io.WriteString(_w, http.MakeLocalPath(path+`?pageID=controls-`+pr.id)); err != nil {
 			return
 		}
 

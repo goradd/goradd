@@ -3,6 +3,7 @@ package controls
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/config"
+	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
@@ -82,7 +83,7 @@ func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
 			NewBuilderFromUrl(pageContext.URL).
 			SetValue("control", c.key).
 			String()
-		item.SetAnchor(a)
+		item.SetAnchor(http.MakeLocalPath(a))
 	}
 }
 

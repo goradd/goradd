@@ -3,6 +3,7 @@ package examples
 import (
 	"context"
 	bootstrap "github.com/goradd/goradd/pkg/bootstrap/control"
+	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/url"
@@ -84,7 +85,7 @@ func (f *ControlsForm) loadNavbar(ctx context.Context, curKey string) {
 			NewBuilderFromUrl(pageContext.URL).
 			SetValue("control", c.key).
 			String()
-		item.SetLocation(a)
+		item.SetLocation(http.MakeLocalPath(a))
 		item.SetText(c.name)
 		if curKey == c.key {
 			item.SetIsActive(true)
