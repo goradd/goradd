@@ -51,11 +51,13 @@ jobs:
     - name: Install
       working-directory: ${{ github.workspace }}
       run: |
-       goradd install
-       cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
-       mv ./goradd-test/gomod.txt ./goradd-test/go.mod
-       echo "replace github.com/goradd/goradd => ${{ github.workspace }}/goradd-src" >> ./goradd-project/go.mod
-       echo "replace github.com/goradd/goradd => ${{ github.workspace }}/goradd-src" >> ./goradd-test/go.mod
+        goradd install
+        cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
+        mv ./goradd-test/gomod.txt ./goradd-test/go.mod
+        echo "replace github.com/goradd/goradd => ${{ github.workspace }}/goradd-src" >> ./goradd-project/go.mod
+        echo "replace github.com/goradd/goradd => ${{ github.workspace }}/goradd-src" >> ./goradd-test/go.mod
+        cd goradd-test
+        go mod tidy
 
     - name: Codegen
       working-directory: ${{ github.workspace }}/goradd-test/codegen
