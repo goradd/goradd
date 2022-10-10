@@ -79,5 +79,9 @@ jobs:
       working-directory: ${{ env.home }}/goradd-test
       run: go test
 
+    - name: Pre-cleanup step
+      working-directory: ${{ env.home }}
+      run: chown -R $USER:$USER *
+
 
 
