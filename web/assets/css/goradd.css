@@ -131,14 +131,7 @@ table.gr-clickable-rows > tbody > tr > td,
 table.gr-clickable-rows > tbody > tr > th,
 ul.gr-clickable-rows > li,
 .gr-clickable-rows > div {
-  -webkit-user-select: none;
-  /* webkit (safari, chrome) browsers */
-  -moz-user-select: none;
-  /* mozilla browsers */
-  -khtml-user-select: none;
-  /* webkit (konqueror) browsers */
-  -ms-user-select: none;
-  /* IE10+ */
+  user-select: none;
   cursor: default;
 }
 table.gr-clickable-rows > tbody > tr > td .nosel,
@@ -204,22 +197,16 @@ presentation of the controls provided with goradd.
 
 */
 #gr-dlg-overlay {
-  position: fixed;
-  /* Sit on top of the override content */
-  width: 100%;
-  /* Full width (cover the whole override) */
-  height: 100%;
-  /* Full height (cover the whole override) */
+  position: fixed; /* Sit on top of the override content */
+  width: 100%; /* Full width (cover the whole override) */
+  height: 100%; /* Full height (cover the whole override) */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  /* Black background with opacity */
-  z-index: 10;
-  /* Specify a stack order in case you're using a different order for other elements */
-  cursor: pointer;
-  /* Add a pointer on hover */
+  background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+  z-index: 10; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
 }
 
 div[data-grctl=dialog] {
@@ -371,30 +358,5 @@ textarea[data-grctl] {
   color: inherit;
   background-color: inherit;
 }
-
-/* Modification to jquery ui dialog styling that allows for left/right buttons and other fixes */
-/*
-jQuery UI is not actively developed, so we are deprecating this.
-.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
-  float: none !important;
-  text-align: right;
-}
-
-.ui-button-left {
-  float: left;
-}
-
-// The following is to allow for correct positioning of an alert icon
-.ui-dialog-title {
-  float: none !important;
-  width: auto !important;
-}
-
-.ui-dialog-titlebar .ui-icon {
-  display: inline-block;
-  margin-right: .3em;
-  vertical-align: middle;
-}
-*/
 
 /*# sourceMappingURL=goradd.css.map */
