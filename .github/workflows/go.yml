@@ -80,8 +80,9 @@ jobs:
       run: go test
 
     - name: Pre-cleanup step
+      if: ${{ runner.os == 'Linux' }}
       working-directory: ${{ env.home }}
-      run: chown -R $USER:$USER *
+      run: sudo chown -R $USER:$USER *
 
 
 
