@@ -57,13 +57,11 @@ jobs:
     - name: Install
       working-directory: ${{ env.home }}
       run: |
-       cp -r ${{ github.workspace }}/internal/install/goradd-project .
+       goradd install
        cp -r ${{ github.workspace }}/internal/ci/goradd-test .
-       mv ./goradd-project/gomod.txt ./goradd-project/go.mod
        mv ./goradd-test/gomod.txt ./goradd-test/go.mod
        echo "replace github.com/goradd/goradd => ${{ github.workspace }}" >> ./goradd-project/go.mod
        echo "replace github.com/goradd/goradd => ${{ github.workspace }}" >> ./goradd-test/go.mod
-       goradd install -s2  # use the goradd tool to complete the install
 
     - name: Codegen
       working-directory: ${{ env.home }}/goradd-test/codegen
