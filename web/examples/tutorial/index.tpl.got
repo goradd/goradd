@@ -17,17 +17,17 @@ function toggleSidebar() {
 <div id="sidebar" class="open">
     <a href="javascript:void(0)" id="togglebtn" onclick="toggleSidebar();"><span id="isopen">&larrb;</span><span id="isclosed">&rarrb;</span></a>
     <div id="sidebar_content">
-        <h2><a href="/goradd/tutorial.g">Home</a></h2>
+        <h2><a href="{{localPath /goradd/tutorial.g}}">Home</a></h2>
         <h2>ORM</h2>
           <ul>
         {{for _,pr := range pages["orm"]}}
-            <li><a href="{{= path }}?pageID=orm-{{= pr.id }}">{{= pr.title }}</a></li>
+            <li><a href="{{= http.MakeLocalPath(path + `?pageID=orm-` + pr.id ) }}">{{= pr.title }}</a></li>
         {{for}}
           </ul>
           <h2>Controls</h2>
            <ul>
              {{for _,pr := range pages["controls"]}}
-                 <li><a href="{{= path }}?pageID=controls-{{= pr.id }}">{{= pr.title }}</a></li>
+                 <li><a href="{{= http.MakeLocalPath(path + `?pageID=controls-` + pr.id) }}">{{= pr.title }}</a></li>
              {{for}}
            </ul>
 

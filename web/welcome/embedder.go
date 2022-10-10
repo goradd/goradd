@@ -10,7 +10,6 @@ import (
 
 // This file embeds the static files found here into the application.
 
-//go:embed index.html
 var f embed.FS
 
 //go:embed assets/css assets/font
@@ -20,7 +19,7 @@ func init() {
 	fsys := http.FileSystemServer{Fsys: f, SendModTime: true, Hide: []string{".go", ".got", ".tmp"}}
 	http.RegisterAppPrefixHandler("/goradd", fsys)
 
-	sub,_ := fs.Sub(a, "assets")
+	sub, _ := fs.Sub(a, "assets")
 	http.RegisterAssetDirectory(path.Join(config.AssetPrefix, "goradd", "welcome"), sub)
 
 }

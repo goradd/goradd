@@ -4,17 +4,19 @@ package doc
 // To make this happen, the main application just needs to import it.
 
 import (
+	"embed"
 	http2 "github.com/goradd/goradd/pkg/http"
-	"github.com/goradd/goradd/pkg/sys"
-	"github.com/goradd/goradd/web/app"
 	"github.com/shurcooL/github_flavored_markdown"
 	"io"
 	"net/http"
 )
 
+//go:embed *
+var docFS embed.FS
+
 func init() {
-	// serve up the markdown files in the doc directory
-	app.RegisterStaticPath("/goradd/doc", sys.SourceDirectory(), false, nil)
+	fs := http2.FileSystemServer{Fsys: docFS, SendModTime: true}
+	http2.RegisterAppPrefixHandler("/goradd/doc", fs)
 	http2.RegisterFileProcessor(".md", serveMarkdown)
 }
 

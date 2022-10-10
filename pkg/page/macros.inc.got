@@ -84,6 +84,10 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
 }}
 {{end setChildLabelAttributes}}
 
+{{define localPath 1}}
+{{= http.MakeLocalPath("$1") }}
+{{end localPath}}
+
 {{# This defaults the package fragment to the name of the directory of the template. You can redefine it if needed in your individual template}}
 {{define package}}{{templateParent}}{{end package}}
 

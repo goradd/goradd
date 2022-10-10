@@ -10,6 +10,7 @@ import (
 	_ "github.com/goradd/goradd/web/examples"
 	_ "github.com/goradd/goradd/web/welcome"
 	_ "goradd-project/gen" // Code-generated forms
+	_ "goradd-project/web" // Registers file assets through init calls.
 )
 
 // This file conditionally includes examples, generated forms, and other things

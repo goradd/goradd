@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/sys"
-	_ "goradd-project/web" // Registers file assets through init calls.
 	"goradd-project/web/app"
 	_ "goradd-project/web/form" // Registers forms through init calls.
 	// Custom paths, including additional form directories

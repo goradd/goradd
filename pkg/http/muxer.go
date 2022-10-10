@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
 	"path"
 	"path/filepath"
 )
@@ -183,6 +184,7 @@ func registerHandler(pattern string, handler http.Handler, m handlerMap, mux Mux
 		mux.Handle(pattern, handler)
 	} else {
 		// the muxer has not yet been used, so cache the pattern in anticipation of the muxer being recorded
+
 		if _, ok := m[pattern]; ok {
 			panic("the handler for " + pattern + " is already registered")
 		}
@@ -225,7 +227,21 @@ func UseMuxer(mux Muxer, next http.Handler) http.Handler {
 		panic("mux may not be nil")
 	}
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		h, p := mux.Handler(r)
+		var h http.Handler
+		var p string
+		if len(r.URL.Path) > 0 && r.URL.Path[len(r.URL.Path)-1] == '/' {
+			// First check for index.html
+			r2 := new(http.Request)
+			*r2 = *r
+			r2.URL = new(url.URL)
+			*r2.URL = *r.URL
+			r2.URL.Path = r.URL.Path + "index.html"
+			h, p = mux.Handler(r2)
+		}
+
+		if p == "" {
+			h, p = mux.Handler(r)
+		}
 		if p != "" {
 			h.ServeHTTP(w, r)
 		} else {

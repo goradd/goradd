@@ -5,11 +5,10 @@
 If you have problems with the following directions, 
 see [Debugging Installation Problems](#debugging-installation-problems) below.
 
-1. Install go. Installation instructions for go are here: https://go.dev/doc/install
+1. Install go. Installation instructions for go are here: https://go.dev/doc/install.
 2. Create a new project directory *outside* of your go directory and change your working directory 
 to the new directory. Note that go will create and use the "go" directory inside your home
-directory for installing packages and go-based applications. 
-Do NOT put your project in this directory.
+directory for installing packages and go-based applications. Do NOT put your project in that directory.
 
 For example, to create a "myproject" directory for your project in your HOME directory, do the following:
 
@@ -29,27 +28,35 @@ cd myproject
 
 ### Install Goradd
 1. Execute ```go install github.com/goradd/goradd@latest```
-1. Execute ```goradd install```
+2. Execute ```goradd install```
 
-You should now have a new directory in your current directory:
-* goradd-project. This is where you will build out your project. You **can** put some
-files outside of this path, but goradd will be placing its code generated files
-inside of here.
-
-You may also notice a number of executables that were installed 
-that will be used by goradd to build your application.
+The _goradd install_ step will execute a series of commands to install required packages.
+It will display what commands it is executing, and it may pause at times. Allow it to complete. 
+You should now have a new directory in your current directory called _goradd-project_. 
+This is where you will build out your go-based web project.
 
 ### Run the app
 1. Change your working directory to the goradd-project directory that was created in the prior step. 
 2. From the command line, run:
-```go run -mod mod goradd-project/main```
-You will see a number of messages about additional go packages being installed.
+```go run goradd-project/main```
 3. Once you see "Launching Server...", point your browser to the following URL. 
 `http://localhost/goradd/`
 
 If everything is working fine, you should see the Goradd startup screen. It will lead 
 you through some additional configuration steps and get you started building your
 application.
+
+If you get an error message that looks something like this:
+```
+listen tcp :80: bind: address already in use
+```
+It means your computer already has a webserver running at port 80. You can use a different port as follows:
+1. Execute:
+```go run goradd-project/main -port XXXX```
+Where XXXX is the port number you would like to use. 8082 for example.
+2. Go to the following address in your browser:
+`http://localhost:XXXX/goradd/`
+Where XXXX is the same number used in the prior step.
 
 ## Configuration
 ### Database
@@ -85,20 +92,6 @@ source-level debugger is very easy to use.
 # Modules
 Goradd is module aware. Whenever you run goradd tools, it will look
 in the nearest go.mod file to read the current module environment.
-
-## GO 1.18+
-GO 1.16 added a new wrinkle to the module problem. Before this version, GO would automatically
-update the go.mod and go.sum files with any missing packages. You could also tell it to 
-automatically update to the latest version of everything.
-
-However, in GO 1.16, they made the go.mod file read-only by default. This is great for people
-who are trying to carefully control their builds, but for most development, it made life more difficult.
-The good news is that there are many ways to deal with the problem:
-1. Manually update using `go get` for every single dependency (Ugh).
-2. Add the `-mod mod` build flag whenever you are building
-3. Add `-mod=mod` to your GOFLAGS environment variable. As in `GOFLAGS=-mod=mod`
-4. Add `-mod=mod` to the private GOFLAGS environment that is only for Go. To do this, 
-   run `go env -w GOFLAGS=-mod=mod` on your command line. To undo this, run `go env -u GOFLAGS`
 
 See the following for more info:
 * [Go wiki on modules](https://github.com/golang/go/wiki/Modules)

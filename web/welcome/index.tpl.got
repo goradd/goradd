@@ -1,0 +1,34 @@
+{{< imports }}
+"github.com/goradd/goradd/pkg/http"
+{{end imports}}
+{{< filename }}/goradd/index.html{{end filename}}
+
+{{define template}}<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Welcome to Goradd</title>
+<link href="{{localPath /assets/goradd/welcome/css/welcome.css}}" rel="stylesheet">
+</head>
+<body>
+<h1>Welcome to Goradd!</h1>
+<p>
+Congratulations, you have correctly installed Goradd! Here are some additional things you can
+do to learn about goradd and begin building your application.
+</p>
+
+<ul>
+<li><a href="{{localPath /goradd/configure.html}}">Configure your database</a></li>
+<li><a href="{{localPath /goradd/tutorial.g}}">Walk through the goradd tutorial</a></li>
+<li><a href="{{localPath /goradd/examples/controls.g}}">View the standard control examples</a></li>
+<li><a href="{{localPath /goradd/examples/bootstrap.g}}">View the Bootstrap control examples</a></li>
+<li><a href="{{localPath /goradd/build.g?cmd=codegen}}">Run the code generator</a></li>
+<li><a href="{{localPath /goradd/forms}}">View the generated forms</a></li>
+<li><a href="{{localPath /goradd/doc/contents.md}}">View the documentation</a></li>
+<li><a href="{{localPath /goradd/Test.g}}">Run the browser-based tests</a></li>
+</ul>
+</body>
+</html>
+{{end template}}
+
+{{> renderResource}}

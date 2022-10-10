@@ -62,19 +62,19 @@ the content.
 
 	if _, err = io.WriteString(_w, `<p>
 Click on the Source Code button above to view the source code for this page. You will notice that in Go, the
-control is created using this code in the Init function of the <em>0-intro.go</em> file:
-</p>
+control is created using this code in the <i>Init</i> function of the <i>0-intro.go</i> file:
+
 <code>
-	textBox := NewTextbox(p, "textField")
-	textBox.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))
+textBox := NewTextbox(p, "textField")
+textBox.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))
 </code>
-<p>
+
 Later parts of this tutorial will teach you about events and actions. The thing to notice is how easy it is
 to declare an HTML control and tell it what to do.
 </p>
 <p>
 The control is drawn in the template file with this code:
-</p>
+
 <code>
 `); err != nil {
 		return
@@ -86,9 +86,9 @@ The control is drawn in the template file with this code:
 	}
 
 	if _, err = io.WriteString(_w, `</code>
-<p>
+
 Note that "textField" is the id of the control, which was assigned when the control was created. It is also the
-HTML id of the control.
+HTML <var>id</var> of the control.
 </p>
 
 `); err != nil {

@@ -7,18 +7,19 @@ import (
 	install2 "github.com/goradd/goradd/internal/install"
 	"github.com/goradd/goradd/pkg/sys"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 )
 
-var dependencies = []string{
-	"github.com/goradd/got/...",                // Template processor
-	"golang.org/x/tools/cmd/goimports",         // For auto-fixing of import declarations
-	"github.com/goradd/gofile/...",             // For deployment
-	"github.com/tdewolff/minify/v2/cmd/minify", // for deployment
+var commands = []string{
+	"go mod init goradd-project",                                 // Create go.mod file
+	"go mod tidy",                                                // Setup go.mod file
+	"go install github.com/goradd/got/...@latest",                // Template processor
+	"go install golang.org/x/tools/cmd/goimports@latest",         // For auto-fixing of import declarations
+	"go install github.com/goradd/gofile/...@latest",             // For deployment
+	"go install github.com/tdewolff/minify/v2/cmd/minify@latest", // for deployment
 }
 
 // install will copy the project and tmp directories to the cwd
@@ -38,19 +39,17 @@ func install(step int, overwrite bool) {
 
 // copyInstall copies the contents of the internal install directory to the current working directory.
 func copyInstall(overwrite bool) {
-	var err error
-	var fInfos []os.FileInfo
-
-	if fInfos, err = ioutil.ReadDir(install2.InstallFolderLocation); err != nil {
+	dirEntries, err := os.ReadDir(install2.InstallFolderLocation)
+	if err != nil {
 		log.Fatal(fmt.Errorf("could not read the install directory: %s", err.Error()))
 	}
 
-	for _, fInfo := range fInfos {
-		if !fInfo.IsDir() {
+	for _, dirEntry := range dirEntries {
+		if !dirEntry.IsDir() {
 			continue
 		}
-		dest := filepath.Join(cwd, fInfo.Name())
-		fmt.Println("Copying " + fInfo.Name() + " ...")
+		dest := filepath.Join(cwd, dirEntry.Name())
+		fmt.Println("Copying " + dirEntry.Name() + " ...")
 		if sys.PathExists(dest) {
 			if !overwrite {
 				fmt.Printf("\n*** The %s directory already exists. Replace it? [y,n] ", dest)
@@ -66,22 +65,15 @@ func copyInstall(overwrite bool) {
 				log.Fatal("could not remove directory: " + err.Error())
 			}
 		}
-		err = sys2.CopyDirectory(filepath.Join(install2.InstallFolderLocation, fInfo.Name()), cwd, sys2.CopyDoNotOverwrite)
+		err = sys2.CopyDirectory(filepath.Join(install2.InstallFolderLocation, dirEntry.Name()), cwd, sys2.CopyDoNotOverwrite)
 		if err != nil {
 			log.Fatal("could not copy directory: " + err.Error())
-		}
-
-		dest2 := filepath.Join(dest, "go.mod")
-		dest3 := filepath.Join(dest, "go.mod")
-		err = os.Rename(dest2, dest3)
-		if err != nil {
-			log.Fatal("could not rename go.mod: " + err.Error())
 		}
 	}
 
 	// When goradd is installed, all its files are read-only. Copying the directory will copy these files as
 	// read-only as well, which is not what we want, since the project directory is something we want the user to edit.
-	// So, we recursively make all the project files read only.
+	// So, we recursively make all the project files read-write.
 	err = filepath.WalkDir(cwd, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -100,29 +92,21 @@ func copyInstall(overwrite bool) {
 func depInstall() {
 	var err error
 
-	// install binary dependencies
+	// install binary commands
 	err = os.Chdir(filepath.Join(cwd, "goradd-project"))
 	if err != nil {
 		log.Fatal("could not change to the goradd-project directory: " + err.Error())
 	}
 
-	if res, err := sys2.ExecuteShellCommand("go mod tidy"); err != nil {
-		fmt.Print(string(res))
-		fmt.Print(string(err.(*exec.ExitError).Stderr))
-		// the error message that was generated
-		log.Fatal("could not run go mod tidy")
-	}
-
-	for _, dep := range dependencies {
+	for _, c := range commands {
 		var res []byte
-		fmt.Print("Installing " + dep + " ")
-		res, err = sys2.ExecuteShellCommand("go install " + dep + "@latest")
-		if err != nil {
-			fmt.Print(string(res))
-			fmt.Print(string(err.(*exec.ExitError).Stderr))
-			// the error message that was generated
-			log.Fatal("could not get " + dep + " " + err.Error())
-		}
+		fmt.Print("Executing " + c + " ")
+		res, err = sys2.ExecuteShellCommand(c)
 		fmt.Println(string(res))
+		if err != nil {
+			fmt.Println(string(err.(*exec.ExitError).Stderr))
+			// the error message that was generated
+			log.Fatal("could not execute " + c + " " + err.Error())
+		}
 	}
 }

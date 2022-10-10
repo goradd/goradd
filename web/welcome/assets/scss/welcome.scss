@@ -102,3 +102,10 @@ body {
     overflow-y: scroll;
   }
 }
+
+code {
+  display: block;
+  white-space: pre; // Make sure code is presented as is.
+  background-color: #e2e3e5;
+  padding: 0em 0.5em 1em 2em;
+}
