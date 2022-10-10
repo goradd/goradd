@@ -29,7 +29,7 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
       run: echo "home=$HOME" >> $GITHUB_ENV
       
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -79,10 +79,6 @@ jobs:
       working-directory: ${{ env.home }}/goradd-test
       run: go test
 
-    - name: Pre-cleanup step
-      if: ${{ runner.os == 'Linux' }}
-      working-directory: ${{ env.home }}
-      run: sudo chown -R $USER:$USER *
 
 
 
