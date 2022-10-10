@@ -41,8 +41,8 @@ jobs:
         mysql -u${{ env.ROOT_DB_USER }} -e "CREATE USER '${{ env.DB_USER }}'@'localhost' IDENTIFIED BY ''"
         mysql -u${{ env.ROOT_DB_USER }} -e "GRANT ALL PRIVILEGES ON *.* TO '${{ env.DB_USER }}'@'localhost'"
         mysql -u${{ env.ROOT_DB_USER }} -e "FLUSH PRIVILEGES"
-        mysql -u${{ env.ROOT_DB_USER }} -e 'source ./web/examples/db/mysql.sql;' goradd
-        mysql -u${{ env.ROOT_DB_USER }} -e 'source ./internal/ci/db/goradd_unit.mysql.sql;' goradd_unit
+        mysql -u${{ env.ROOT_DB_USER }} -e 'source ./goradd-src/web/examples/db/mysql.sql;' goradd
+        mysql -u${{ env.ROOT_DB_USER }} -e 'source ./goradd-src/internal/ci/db/goradd_unit.mysql.sql;' goradd_unit
 
     - name: Build
       working-directory: ${{ github.workspace }}/goradd-src
