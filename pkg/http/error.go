@@ -66,10 +66,8 @@ func SendErrorMessage(message string, errCode int) {
 //
 // This will set the Location header to point to the new location.
 //
-// Be sure to call http.MakeLocalPath() if the resource is pointing to a
-// location on this server.
-//
 // errCode should be a 3XX error, like one of the following:
+//
 //	StatusMovedPermanently  = 301 // RFC 7231, 6.4.2
 //	StatusFound             = 302 // RFC 7231, 6.4.3
 //	StatusSeeOther          = 303 // RFC 7231, 6.4.4
@@ -77,7 +75,7 @@ func SendErrorMessage(message string, errCode int) {
 //	StatusPermanentRedirect = 308 // RFC 7538, 3
 func Redirect(location string, errCode int) {
 	e := Error{ErrCode: errCode}
-	e.SetResponseHeader("Location", location)
+	e.SetResponseHeader("Location", MakeLocalPath(location))
 	panic(e)
 }
 

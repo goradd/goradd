@@ -1,10 +1,8 @@
 package http
 
 import (
-	"path"
-	strings2 "strings"
-
 	"github.com/goradd/goradd/pkg/config"
+	"path"
 )
 
 // LocalPathMaker converts an HTTP path rooted to the application, to a path accessible by the server.
@@ -17,13 +15,10 @@ func defaultLocalPathMaker(p string) string {
 	if p == "" {
 		panic(`cannot make a local path to an empty path. If you are trying to refer to the root, use '/'.`)
 	}
-	if strings2.Index(p, "://") != -1 {
-		// We have a schema, so do not change the path
-		return p
-	}
 	if p[len(p)-1] == '/' {
 		hasSlash = true
 	}
+	// We want to prevent local paths (here/there) and external paths (http://here/there) from getting additional paths
 	if p[0] == '/' && config.ProxyPath != "" {
 		p = path.Join(config.ProxyPath, p) // will strip trailing slashes
 		if hasSlash {
