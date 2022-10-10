@@ -133,6 +133,9 @@ ul.gr-clickable-rows > li,
 .gr-clickable-rows > div
 {
   user-select: none;
+  -moz-user-select: none; /* mozilla browsers */
+  -webkit-user-select: none; /* webkit (konqueror) browsers */
+  -ms-user-select: none; /* IE10+ */
   cursor: default;
   .nosel {
     cursor: not-allowed;
