@@ -17,22 +17,14 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         db: [mariadb]
     env:
-      GOFLAGS: -mod=mod
       ROOT_DB_USER: root
       DB_USER: tester
     steps:
-    - name: Setup Windows Environment
-      if: ${{ runner.os == 'Windows' }}
-      run: echo "home=$HOME" >> $env:GITHUB_ENV
-      
-    - name: Setup Linux Environment
-      if: ${{ runner.os == 'Linux' }}
-      run: echo "home=$HOME" >> $GITHUB_ENV
-      
     - uses: actions/checkout@v3
+      path: goradd-src
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: 1.19
 
@@ -52,31 +44,32 @@ jobs:
         mysql -u${{ env.ROOT_DB_USER }} -e 'source ./internal/ci/db/goradd_unit.mysql.sql;' goradd_unit
 
     - name: Build
+      working-directory: ${{ github.workspace }}/goradd-src
       run: go install
 
     - name: Install
-      working-directory: ${{ env.home }}
+      working-directory: ${{ github.workspace }}
       run: |
        goradd install
-       cp -r ${{ github.workspace }}/internal/ci/goradd-test .
+       cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
        mv ./goradd-test/gomod.txt ./goradd-test/go.mod
-       echo "replace github.com/goradd/goradd => ${{ github.workspace }}" >> ./goradd-project/go.mod
-       echo "replace github.com/goradd/goradd => ${{ github.workspace }}" >> ./goradd-test/go.mod
+       echo "replace github.com/goradd/goradd => ${{ github.workspace }}/goradd-src" >> ./goradd-project/go.mod
+       echo "replace github.com/goradd/goradd => ${{ github.workspace }}/goradd-src" >> ./goradd-test/go.mod
 
     - name: Codegen
-      working-directory: ${{ env.home }}/goradd-test/codegen
+      working-directory: ${{ github.workspace }}/goradd-test/codegen
       run: go generate build.go
 
     - name: Unit Test Packages
-      working-directory: ${{ env.home }}/goradd-project
+      working-directory: ${{ github.workspace }}/goradd-project
       run: go test github.com/goradd/goradd/pkg/...
 
     - name: Unit Test Database
-      working-directory: ${{ env.home }}/goradd-test/dbtest
+      working-directory: ${{ github.workspace }}/goradd-test/dbtest
       run: go test
 
     - name: Browser Based Test
-      working-directory: ${{ env.home }}/goradd-test
+      working-directory: ${{ github.workspace }}/goradd-test
       run: go test
 
 
