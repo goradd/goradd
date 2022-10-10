@@ -17,7 +17,7 @@ func defaultLocalPathMaker(p string) string {
 	if p == "" {
 		panic(`cannot make a local path to an empty path. If you are trying to refer to the root, use '/'.`)
 	}
-	if strings2.Index(p, "://") != -1 {
+	if strings2.Index(p, ":/") != -1 {
 		// We have a schema, so do not change the path
 		return p
 	}
