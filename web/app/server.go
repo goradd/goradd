@@ -18,23 +18,23 @@ func ListenAndServeTLSWithTimeouts(addr, certFile, keyFile string, handler http.
 	// Here we confirm that the CertFile and KeyFile exist. If they don't, ListenAndServeTLS just exit with an open error
 	// and you will not know why.
 	if !sys.PathExists(certFile) {
-		log.Fatalf("TLSCertFile does not exist: %s", config.TLSCertFile)
+		log.Fatalf("TLSCertFile does not exist: %s", certFile)
 	}
 
 	if !sys.PathExists(keyFile) {
-		log.Fatalf("TLSKeyFile does not exist: %s", config.TLSKeyFile)
+		log.Fatalf("TLSKeyFile does not exist: %s", keyFile)
 	}
 
 	// TODO: https://blog.gopheracademy.com/advent-2016/exposing-go-on-the-internet/ recommends keeping track
 	// of open connections using the ConnState hook for debugging purposes.
 
 	server = &http.Server{
-		Addr: addr,
-		ReadTimeout:  config.ReadTimeout,
+		Addr:              addr,
+		ReadTimeout:       config.ReadTimeout,
 		ReadHeaderTimeout: config.ReadHeaderTimeout,
-		WriteTimeout: config.WriteTimeout,
-		IdleTimeout:  config.IdleTimeout,
-		Handler:      handler,
+		WriteTimeout:      config.WriteTimeout,
+		IdleTimeout:       config.IdleTimeout,
+		Handler:           handler,
 	}
 	return server.ListenAndServeTLS(certFile, keyFile)
 }
@@ -50,12 +50,12 @@ func ListenAndServeWithTimeouts(addr string, handler http.Handler) error {
 	// of open connections using the ConnState hook for debugging purposes.
 
 	server = &http.Server{
-		Addr: addr,
-		ReadTimeout:  config.ReadTimeout,
+		Addr:              addr,
+		ReadTimeout:       config.ReadTimeout,
 		ReadHeaderTimeout: config.ReadHeaderTimeout,
-		WriteTimeout: config.WriteTimeout,
-		IdleTimeout:  config.IdleTimeout,
-		Handler:      handler,
+		WriteTimeout:      config.WriteTimeout,
+		IdleTimeout:       config.IdleTimeout,
+		Handler:           handler,
 	}
 	return server.ListenAndServe()
 }

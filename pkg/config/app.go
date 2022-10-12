@@ -31,14 +31,3 @@ var AjaxTimeout = 10000
 
 // CacheBusterPrefix is a fragment that is included with cache busted paths.
 var CacheBusterPrefix = "gr."
-
-// Port lets you change the port number that the app will run on, vs. the default
-var Port int = 0
-var TLSPort int = 0 // This will require ssl certificates. The default has this turned off.
-
-// You will need to put in the path to your certfile and keyfile below.
-// The default implementation only uses these for the release build.
-
-// TLSCertFile is the path for the https certificate. By default, it is only used in the release build.
-var TLSCertFile = ""
-var TLSKeyFile = ""

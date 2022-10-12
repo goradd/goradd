@@ -3,6 +3,7 @@ package main
 // The spaces in this import block serve to prevent goimports from rearranging the order of the files.
 import (
 	_ "goradd-project/config" // Initialize required variables. This MUST come first.
+	config2 "goradd-project/config"
 
 	// _ "goradd-project/api" // Uncomment this if you are implementing an API (i.e. REST api).
 
@@ -12,6 +13,7 @@ import (
 	"github.com/goradd/goradd/pkg/sys"
 	"goradd-project/web/app"
 	_ "goradd-project/web/form" // Registers forms through init calls.
+	// _ "goradd-project/api" // Uncomment this if you are implementing an API (i.e. REST api).
 	// Custom paths, including additional form directories
 	// _ "mysite"
 )
@@ -48,17 +50,17 @@ func useFlags() {
 	}
 
 	if *port != -1 {
-		config.Port = *port
+		config2.Port = *port
 	}
 
 	if *tlsPort != -1 {
-		config.TLSPort = *tlsPort
+		config2.TLSPort = *tlsPort
 	}
 
 	if *tlsKeyFile != "" {
-		config.TLSKeyFile = *tlsKeyFile
+		config2.TLSKeyFile = *tlsKeyFile
 	}
 	if *tlsCertFile != "" {
-		config.TLSCertFile = *tlsCertFile
+		config2.TLSCertFile = *tlsCertFile
 	}
 }
