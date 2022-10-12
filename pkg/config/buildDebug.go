@@ -1,4 +1,4 @@
-// +build !nodebug
+//go:build !nodebug
 
 package config
 
