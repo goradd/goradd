@@ -26,17 +26,23 @@ func NewEventsPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 func (p *EventsPanel) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
 
-	textBox := NewTextbox(p, "textField")
-	textBox.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))
+	textBox1 := NewTextbox(p, "textBox1")
+	textBox1.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))
 
-	btn := NewButton(p, "btn1")
-	btn.OnClick(action.Ajax(p.ID(), 1))
+	btn1 := NewButton(p, "btn1")
+	btn1.SetText("Click Me")
+	btn1.OnClick(action.Message("btn1 clicked"))
+
+	textBox2 := NewTextbox(p, "textBox2")
+	textBox2.On(event.NewEvent("cut"), action.Message("textbox2 cut"))
+	textBox2.SetText("Cut Me")
+
 }
 func init() {
 	page.RegisterControl(&EventsPanel{})
 
 	dir := sys.SourceDirectory()
-	tutorial.RegisterTutorialPage("controls", 0, "events", "Events and Actions", NewEventsPanel,
+	tutorial.RegisterTutorialPage("controls", 1, "events", "Events", NewEventsPanel,
 		[]string{
 			sys.SourcePath(),
 			filepath.Join(dir, "1-events.tpl.got"),

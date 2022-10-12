@@ -3,8 +3,8 @@
 //
 // For example:
 //
-//	  button := NewButton(p, "okButton").SetText("OK")
-//		 button.On(event.Click(), action.Message(javascript.JsCode("event.target.value") + "was clicked"))
+//	button := NewButton(p, "okButton").SetText("OK")
+//	button.On(event.Click(), action.Message(javascript.JsCode("event.target.value") + "was clicked"))
 //
 // will create a Message action that responds to a button click.
 //

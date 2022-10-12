@@ -1,0 +1,39 @@
+{{define package }}controls{{end package}}
+{{define imports }}
+{{end imports}}
+{{define control}}ActionsPanel{{end control}}
+
+{{define template }}
+<h1>Actions</h1>
+<h2>Intro</h2>
+<p>
+As mentioned previously, <i>Events</i> are attached to controls and trigger <i>Actions</i>.
+</p>
+<p>
+There are three types of actions:
+<ul>
+<li>Javascript Actions
+<li>Server Actions
+<li>Ajax Actions
+</ul>
+</p>
+<h2>Javascript Actions</h2>
+<p>
+Javascript Actions are snippets of Javascript code that execute in the client browser in response to an event.
+</p>
+<p>
+For example, the following code will convert any text to uppercase while it is typed.
+</p>
+<label>To Uppercase</label>{{draw textbox1}}
+<code>
+textbox1 := NewTextbox(p, "textbox1")
+textbox1.On(event.Input(), action.Javascript("event.target.value = event.target.value.toUpperCase()"))
+</code>
+<p>
+GoRADD predefines some Javascript actions to do common tasks. You can find the complete list of predefined Javascript
+actions in the <a href="https://pkg.go.dev/github.com/goradd/goradd/pkg/page/action">Actions Documentation</a> under the ActionI heading.
+</p>
+
+{{end template}}
+
+{{renderControlTemplate}}

@@ -142,8 +142,8 @@ func (e *Event) Terminating() *Event {
 	return e
 }
 
-// PreventingDefault causes the event not to do the default action.
-func (e *Event) PreventingDefault() *Event {
+// PreventDefault causes the event not to do the default action.
+func (e *Event) PreventDefault() *Event {
 	e.preventDefault = true
 	return e
 }
