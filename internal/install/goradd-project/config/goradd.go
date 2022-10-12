@@ -6,9 +6,9 @@ import (
 	"runtime"
 )
 
-func initGoradd() {
-	setupPorts()
+// This file is for code that changes global variables that are part of the GoRADD framework.
 
+func initGoradd() {
 	setupDateFormats()
 	setupTranslator()
 	//setupBootstrap()
@@ -27,22 +27,8 @@ func initGoradd() {
 
 	//config.ApiPrefix = "/myapi" // Uncomment this to change the prefix for api calls (aka REST calls). The default is "/api".
 	//config.WebsocketMessengerPrefix = "/ws/" // Sets the websocket messenger prefix. Set to blank to turn off the websocket messenger.
-												// Otherwise, set to whatever prefix will not conflict with the rest of your app.
+	// Otherwise, set to whatever prefix will not conflict with the rest of your app.
 
-}
-
-// setupPorts gives you an opportunity to hardcode the port values and certificate locations in your app.
-// you can also put these on the command line
-func setupPorts() {
-	/*
-		config.Port = 8000
-		config.TLSPort = 8001 // This will require ssl certificates.
-
-		// You will need to put in the path to your certfile and keyfile below.
-		// The default implementation only uses these for the release build.
-		config.TLSCertFile = ""
-		config.TLSKeyFile = ""
-	*/
 }
 
 func setupDateFormats() {

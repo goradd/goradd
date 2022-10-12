@@ -4,6 +4,7 @@ package config
 // We can make sure this gets called first by importing config with an underscore
 
 func init() {
+	initLogs()
 	initDatabases()
 	initGoradd()
 	initApp()

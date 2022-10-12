@@ -5,8 +5,8 @@ package app
 
 import (
 	"fmt"
-	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/web/app"
+	"goradd-project/config"
 	"log"
 	"net/http"
 )
@@ -17,16 +17,59 @@ type Application struct {
 	// Your own vars, methods and overrides
 }
 
-// MakeApplication creates the application object and related objects.
-// You can potentially read command line params and make other versions of the app for testing purposes.
+// MakeApplication creates the application object and related objects
+// You can potentially read command line params and make other versions of the app for testing purposes
 func MakeApplication() *Application {
 	a := new(Application)
 	a.Init()
 	return a
 }
 
+// Init initializations the application object.
 func (a *Application) Init() {
 	a.Application.Init(a)
+}
+
+// MakeAppServer creates the handler that serves the application.
+//
+// This is typically where you create the middleware stack that divides the server
+// into small pieces that each do one job.
+//
+// The default use the base Application's middleware stack, which itself is quite flexible
+// and has hooks where you can override pieces. Or, you can just replace the whole thing
+// and reimplement it here.
+//
+// See also the Init function where can assign additional handlers to specific paths via
+// the application muxers.
+func (a *Application) MakeAppServer() http.Handler {
+	return a.Application.MakeAppServer()
+}
+
+// RunWebServer launches the main webserver.
+func (a *Application) RunWebServer() (err error) {
+	handler := a.MakeAppServer()
+
+	// If you are directly responding to encrypted requests, launch a server here. Note that you CAN put the app behind
+	// a web server, like Nginx or Apache and let the web server handle the certificate issues.
+
+	if config.TLSPort != 0 {
+		go func() {
+			var addr string
+			if config.TLSPort != 0 {
+				addr = fmt.Sprint(":", config.TLSPort)
+			}
+
+			log.Fatal(app.ListenAndServeTLSWithTimeouts(addr, config.TLSCertFile, config.TLSKeyFile, handler))
+		}()
+	}
+
+	var addr string
+	if config.Port != 0 {
+		addr = fmt.Sprint(":", config.Port)
+	}
+	err = app.ListenAndServeWithTimeouts(addr, handler)
+
+	return
 }
 
 // Uncomment and edit to change the page cache. You can call the embedded Application version first, and then alter it too.
@@ -47,22 +90,6 @@ func (a *Application) SetupPagestateCaching() {
 	// Controls how pages are serialized if a serialization cache is being used. This version uses the gob encoder.
 	// You likely will not need to change this, but you might if your database cannot handle binary data.
 	page.SetPageEncoder(page.GobPageEncoder{})
-}
-*/
-
-// InitializeLoggers allows you to set up the various types of logs for various types of builds. By default, the DebugLog
-// and FrameworkDebugLogs will be deactivated when the config.Debug variables are false. Otherwise, configure how you
-// want, and simply remove a log if you don't want it to log anything.
-/*
-func (a *Application) InitializeLoggers() {
-	a.Application.InitializeLoggers()
-
-	// This example turns the error log into an email logger in release mode so we will be notified when errors
-	// occur on our production server
-	if config.Release {
-		log2.Loggers[log2.ErrorLog] = log2.EmailLogger{log.New(os.Stdout,
-		"Error: ", log.Ldate|log.Lmicroseconds|log.Lshortfile), []string{"errors@mybusiness.com", "supervisor@mybusiness.com"}}
-	}
 }
 */
 
@@ -124,48 +151,6 @@ func (a *Application) SetupDatabaseWatcher() {
 	broadcast.Broadcaster = &broadcast.DefaultBroadcaster{}
 }
 */
-
-// RunWebServer launches the main webserver.
-func (a *Application) RunWebServer() (err error) {
-	handler := a.MakeAppServer()
-
-	// If you are directly responding to encrypted requests, launch a server here. Note that you CAN put the app behind
-	// a web server, like Nginx or Apache and let the web server handle the certificate issues.
-
-	if config.TLSPort != 0 {
-		go func() {
-			var addr string
-			if config.TLSPort != 0 {
-				addr = fmt.Sprint(":", config.TLSPort)
-			}
-
-			log.Fatal(app.ListenAndServeTLSWithTimeouts(addr, config.TLSCertFile, config.TLSKeyFile, handler))
-		}()
-	}
-
-	var addr string
-	if config.Port != 0 {
-		addr = fmt.Sprint(":", config.Port)
-	}
-	err = app.ListenAndServeWithTimeouts(addr, handler)
-
-	return
-}
-
-// MakeAppServer creates the handler that serves the application.
-//
-// This is typically where you create the middleware stack that divides the server
-// into small pieces that each do one job.
-//
-// The default use the base Application's middleware stack, which itself is quite flexible
-// and has hooks where you can override pieces. Or, you can just replace the whole thing
-// and reimplement it here.
-//
-// See also the Init function where can assign additional handlers to specific paths via
-// the application muxers.
-func (a *Application) MakeAppServer() http.Handler {
-	return a.Application.MakeAppServer()
-}
 
 // ServeRequest is the place to serve up any files that have not been handled in any other way, either by a previously
 // declared handler, or by the goradd app server, or the static file server. ServeRequest is only called when all
