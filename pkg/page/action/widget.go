@@ -12,8 +12,9 @@ type widgetAction struct {
 	Args      []interface{}
 }
 
-// WidgetFunction calls a goradd widget function in javascript on an HTML control with the given id.
-// Available functions are defined by the widget object in goradd.js
+// WidgetFunction calls a GoRADD widget function in javascript on an HTML control with the given id.
+// Functions for all widgets are defined by the widget object in goradd.js. Additional widget functions
+// can be defined in the javascript for each individual widget.
 func WidgetFunction(controlID string, operation string, arguments ...interface{}) ActionI {
 	return widgetAction{controlID, operation, arguments}
 }

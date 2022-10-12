@@ -19,7 +19,7 @@ import (
 // FileSystemServer serves a file system as an http.Handler.
 //
 // The file system contained can point to compressed versions of http resources, and those
-// compressed version will be served when possible. In fact, you may only store compressed versions,
+// compressed version will be served when possible. If you only store compressed versions,
 // and if the browser does not support compression, the compressed file will be decompressed here
 // before serving the file. This lets you save space by only storing a compressed file, at the cost
 // of some speed. Since most browsers support compression, this should not be a big deal.

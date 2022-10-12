@@ -23,8 +23,8 @@ func BeforeInput() *Event {
 	return NewEvent("beforeinput")
 }
 
-// Backspace is a keydown event for the backspace key.
-func Backspace() *Event {
+// BackspaceKey is a keydown event for the backspace key.
+func BackspaceKey() *Event {
 	return KeyDown().Condition("event.keyCode == 8")
 }
 
@@ -43,12 +43,12 @@ func TabKey() *Event {
 	return KeyDown().Condition("event.keyCode == 9")
 }
 
-// UpArrow is a keydown event for the up arrow.
-func UpArrow() *Event {
+// UpArrowKey is a keydown event for the up arrow.
+func UpArrowKey() *Event {
 	return KeyDown().Condition("event.keyCode == 38")
 }
 
-// DownArrow is a keydown event for the down arrow.
-func DownArrow() *Event {
+// DownArrowKey is a keydown event for the down arrow.
+func DownArrowKey() *Event {
 	return KeyDown().Condition("event.keyCode == 40")
 }

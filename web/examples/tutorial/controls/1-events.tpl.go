@@ -9,37 +9,176 @@ import (
 
 func (ctrl *EventsPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
-	if _, err = io.WriteString(_w, `<h1>Events and Actions</h1>
+	if _, err = io.WriteString(_w, `<h1>Events</h1>
+<h2>Intro</h2>
 <p>
-GoRADD controls respond to javascript events, and they send the response to your GoRADD application in the
-form of <i>Actions<i>.
+You can assign <i>Events</i> to GoRADD controls to trigger <i>Actions</i> using the <i>On</i> function.
+<i>Events</i> create javascript events that are attached to Goradd controls.
 </p>
 <p>
 Consider the code below from the previous example:
-</p>
+<br>
+<label>Textbox1</label>`); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, `
+`); err != nil {
+		return
+	}
+
+	if `` == "" {
+
+		if _, err = io.WriteString(_w, `    `); err != nil {
+			return
+		}
+		ctrl.Page().GetControl("textBox1").Draw(ctx, _w)
+		if _, err = io.WriteString(_w, `
+`); err != nil {
+			return
+		}
+
+	} else {
+
+		if _, err = io.WriteString(_w, `    `); err != nil {
+			return
+		}
+		ctrl.Page().GetControl("textBox1").ProcessAttributeString(``).Draw(ctx, _w)
+		if _, err = io.WriteString(_w, `
+`); err != nil {
+			return
+		}
+
+	}
+
+	if _, err = io.WriteString(_w, `<br>
 <code>
 textBox := NewTextbox(p, "textField")
 textBox.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))
 </code>
+<br>
 <p>
 This code creates a <i>Textbox</i> control, and then tells it to respond to javascript <i>input</i> events.
 The response from the event is a javascript action that will display a message on the screen, using the value of
 the Textbox as the text of the message. The <i>On</i> function associates the event with the action.
 </p>
-<h2>Events</h2>
+<h2>Default Events</h2>
 <p>
-While the <i>On</i> event can associate any event with an action, most controls have shortcuts for the events that
-are typically assigned to that control. For example:
+While the <i>On()</i> function can associate any event with an action, most controls have default event functions
+for the events that are typically assigned to that control. For example:
+<br>
+`); err != nil {
+		return
+	}
+
+	if `` == "" {
+
+		if _, err = io.WriteString(_w, `    `); err != nil {
+			return
+		}
+		ctrl.Page().GetControl("btn1").Draw(ctx, _w)
+		if _, err = io.WriteString(_w, `
+`); err != nil {
+			return
+		}
+
+	} else {
+
+		if _, err = io.WriteString(_w, `    `); err != nil {
+			return
+		}
+		ctrl.Page().GetControl("btn1").ProcessAttributeString(``).Draw(ctx, _w)
+		if _, err = io.WriteString(_w, `
+`); err != nil {
+			return
+		}
+
+	}
+
+	if _, err = io.WriteString(_w, `<br>
+<code>
+btn1 := NewButton(p, "btn1")
+btn1.OnClick(action.Message("btn1 clicked"))
+</code>
+<br>
+This code creates a button and tells it to display a message when the button is clicked. It is equivalent to:
+</p>
 <code>
 btn := NewButton(p, "btn1")
-btn.OnClick(action.Ajax(p.ID(), 1))
+btn.On(event.Click(), action.Message("btn1 clicked"))
 </code>
-This code creates a button and tells it to send an Ajax action when the button is clicked. It is equivalent to:
-<code>
-btn := NewButton(p, "btn1")
-btn.On(event.Click(),action.Ajax(p.ID(), 1))
+<h2>Predefined Events</h2>
+<p>
+GoRADD includes shortcuts for common javascript events. Typical shortcuts include:
+</p>
+<ul>
+<li>event.Focus()
+<li>event.Blur()
+<li>event.Change()
+<li>event.Input()
+<li>event.KeyDown()
+<li>event.KeyUp()
+<li>event.DragDrop()
+</ul>
+<p>
+There are also some KeyDown events that have their own shortcuts:
+</p>
+<ul>
+<li>event.BackspaceKey()
+<li>event.EnterKey()
+<li>event.EscapeKey()
+<li>event.TabKey()
+<li>event.UpArrowKey()
+<li>event.DownArrowKey()
+</ul>
+</p>
+<p>
+All the predefined events are listed in the <a href="https://pkg.go.dev/github.com/goradd/goradd/pkg/page/event">Event Documentation</a>.
+</p>
+<h2>Custom Events</h2>
+You can create an event trigger for any javascript
+event using event.NewEvent(). The textbox below shows a message when text is selected and cut. (command-X or ctrl-x).
+<br>
+<label>Textbox2</label>`); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, `
+`); err != nil {
+		return
+	}
+
+	if `` == "" {
+
+		if _, err = io.WriteString(_w, `    `); err != nil {
+			return
+		}
+		ctrl.Page().GetControl("textBox2").Draw(ctx, _w)
+		if _, err = io.WriteString(_w, `
+`); err != nil {
+			return
+		}
+
+	} else {
+
+		if _, err = io.WriteString(_w, `    `); err != nil {
+			return
+		}
+		ctrl.Page().GetControl("textBox2").ProcessAttributeString(``).Draw(ctx, _w)
+		if _, err = io.WriteString(_w, `
+`); err != nil {
+			return
+		}
+
+	}
+
+	if _, err = io.WriteString(_w, `<code>
+textBox2 := NewTextbox(p, "textBox2")
+textBox2.SetText("Cut Me")
+textBox2.On(event.NewEvent("cut"), action.Message("textbox2 cut"))
 </code>
-GoRADD includes shortcuts for most of the events you would need to respond to, but you can
+</p>
+<p>
 </p>
 `); err != nil {
 		return
