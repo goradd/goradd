@@ -50,22 +50,6 @@ func (a *Application) SetupPagestateCaching() {
 }
 */
 
-// InitializeLoggers allows you to set up the various types of logs for various types of builds. By default, the DebugLog
-// and FrameworkDebugLogs will be deactivated when the config.Debug variables are false. Otherwise, configure how you
-// want, and simply remove a log if you don't want it to log anything.
-/*
-func (a *Application) InitializeLoggers() {
-	a.Application.InitializeLoggers()
-
-	// This example turns the error log into an email logger in release mode so we will be notified when errors
-	// occur on our production server
-	if config.Release {
-		log2.Loggers[log2.ErrorLog] = log2.EmailLogger{log.New(os.Stdout,
-		"Error: ", log.Ldate|log.Lmicroseconds|log.Lshortfile), []string{"errors@mybusiness.com", "supervisor@mybusiness.com"}}
-	}
-}
-*/
-
 // SetupMessenger injects the global messenger that permits pub/sub communication between the server and client.
 // Uncomment the following if you need to change parameters on the hub.
 // If you don't need this at all, you can uncomment below and simply make it an empty function.

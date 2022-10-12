@@ -35,7 +35,6 @@ type ApplicationI interface {
 	PutContext(*http.Request) *http.Request
 	SetupErrorHandling()
 	SetupPagestateCaching()
-	InitializeLoggers()
 	SetupSessionManager()
 	SetupMessenger()
 	SetupDatabaseWatcher()
@@ -60,7 +59,6 @@ func (a *Application) Init(self ApplicationI) {
 
 	self.SetupErrorHandling()
 	self.SetupPagestateCaching()
-	self.InitializeLoggers()
 	self.SetupSessionManager()
 	self.SetupMessenger()
 	self.SetupPaths()
@@ -98,14 +96,6 @@ func (a *Application) SetupPagestateCaching() {
 	page.SetPageEncoder(page.GobPageEncoder{})
 }
 
-
-// InitializeLoggers sets up the various types of logs for various types of builds. By default, the DebugLog
-// and FrameworkDebugLogs will be deactivated when the config.Debug variables are false. Otherwise, configure how you
-// want, and simply remove a log if you don't want it to log anything.
-func (a *Application) InitializeLoggers() {
-	grlog.CreateDefaultLoggers()
-}
-
 // SetupSessionManager sets up the global session manager. The session can be used to save data that is specific to a user
 // and specific to the user's time on a browser. Sessions are often used to save login credentials so that you know
 // the current user is logged in.
@@ -130,7 +120,7 @@ func (a *Application) SetupSessionManager() {
 // You can use this mechanism to set up your own messaging system for application use too.
 func (a *Application) SetupMessenger() {
 	// The default sets up a websocket based messenger appropriate for development and single-server applications
-	messenger := new (ws.WsMessenger)
+	messenger := new(ws.WsMessenger)
 	messageServer.Messenger = messenger
 	messenger.Start()
 }
@@ -150,7 +140,6 @@ func (a *Application) SetupPaths() {
 		http2.RegisterPrefixHandler(config.WebsocketMessengerPrefix, http.HandlerFunc(WebsocketMessengerHandler))
 	}
 }
-
 
 // SetupDatabaseWatcher injects the global database watcher
 // and the database broadcaster which together detect database changes and
@@ -174,7 +163,6 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 // MakeAppServer creates the handler chain that will handle http requests. There are a ton of ways to do this, 3rd party
 // libraries to help with this, and middlewares you can use. This is a working example, and not a declaration of any
 // "right" way to do this, since it can be very application specific. Generally you must make sure that
@@ -184,17 +172,17 @@ func (a *Application) MakeAppServer() http.Handler {
 
 	// These handlers are called in reverse order
 	h := a.ServeRequestHandler() // Should go at the end of the chain to catch whatever is missed above
-	h = a.this().ServeAppMux(h) // Serves other dynamic files, and possibly the api
-	h = a.ServePageHandler(h)  // Serves the Goradd dynamic pages
+	h = a.this().ServeAppMux(h)  // Serves other dynamic files, and possibly the api
+	h = a.ServePageHandler(h)    // Serves the Goradd dynamic pages
 	h = a.PutAppContextHandler(h)
 	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
-	h = a.BufferedOutputHandler(h)  // Must be in front of the session handler
+	h = a.BufferedOutputHandler(h) // Must be in front of the session handler
 	h = a.StatsHandler(h)
 	h = a.this().ServePatternMux(h) // Serves most static files and websocket requests.
-									// Must be after the error handler so panics are intercepted by the error reporter
-									// and must be in front of the buffered output handler because of websocket server
-	h = a.httpErrorReporter.Use(h)  // Default http error handler to intercept panics.
+	// Must be after the error handler so panics are intercepted by the error reporter
+	// and must be in front of the buffered output handler because of websocket server
+	h = a.httpErrorReporter.Use(h) // Default http error handler to intercept panics.
 	h = a.this().HSTSHandler(h)
 	h = a.this().AccessLogHandler(h)
 
@@ -228,7 +216,6 @@ func (a *Application) HSTSHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-
 // ServeRequestHandler is the last handler on the default call chain.
 // It returns a simple not found error by default.
 func (a *Application) ServeRequestHandler() http.Handler {
@@ -237,7 +224,6 @@ func (a *Application) ServeRequestHandler() http.Handler {
 	}
 	return http.HandlerFunc(fn)
 }
-
 
 // ServePageHandler processes requests for automated goradd pages.
 func (a *Application) ServePageHandler(next http.Handler) http.Handler {
@@ -269,7 +255,7 @@ func (a *Application) PutDbContextHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		for _,d := range db.GetDatabases() {
+		for _, d := range db.GetDatabases() {
 			ctx = d.PutBlankContext(ctx)
 		}
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -277,15 +263,12 @@ func (a *Application) PutDbContextHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-
-
 // BufferedOutputHandler manages the buffering of http output.
 // It will save all output in a buffer, and make sure any and all Header sets can happen before
 // writing the buffer out to the stream.
 func (a *Application) BufferedOutputHandler(next http.Handler) http.Handler {
 	return http2.BufferedOutputManager().Use(next)
 }
-
 
 // RegisterStaticPath registers the given url path such that it points to the given directory in the host file system.
 //
@@ -299,13 +282,13 @@ func RegisterStaticPath(
 	directory string,
 	useCacheBuster bool,
 	hide []string,
-	) {
+) {
 	fileSystem := os.DirFS(directory)
 	fs := http2.FileSystemServer{
-		Fsys: fileSystem,
-		SendModTime: !useCacheBuster,
+		Fsys:           fileSystem,
+		SendModTime:    !useCacheBuster,
 		UseCacheBuster: useCacheBuster,
-		Hide: hide}
+		Hide:           hide}
 	http2.RegisterPrefixHandler(path, fs)
 	grlog.Infof("Registering static path %s to %s", path, directory)
 }
@@ -332,16 +315,16 @@ func (a *Application) ServePatternMux(next http.Handler) http.Handler {
 // It uses the pagestate as the client id, verifying the page state is valid
 func (a *Application) ServeWebsocketMessengerHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			pagestate := r.FormValue("id")
+		pagestate := r.FormValue("id")
 
-			if !page.HasPage(pagestate) {
-				// The page manager has no record of the pagestate, so either it is expired or never existed
-				return // TODO: return error?
-			}
+		if !page.HasPage(pagestate) {
+			// The page manager has no record of the pagestate, so either it is expired or never existed
+			return // TODO: return error?
+		}
 
-			// Inject the pagestate as the client ID so the next handler down can read it
-			ctx := context.WithValue(r.Context(), goradd.WebSocketContext, pagestate)
-			messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler().ServeHTTP(w, r.WithContext(ctx))
+		// Inject the pagestate as the client ID so the next handler down can read it
+		ctx := context.WithValue(r.Context(), goradd.WebSocketContext, pagestate)
+		messageServer.Messenger.(*ws.WsMessenger).WebSocketHandler().ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
@@ -367,4 +350,3 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 	}
 	return http.HandlerFunc(fn)
 }
-

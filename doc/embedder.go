@@ -1,7 +1,5 @@
+// Package doc contains documentation as Markdown files for the
 package doc
-
-// This file causes the directory to be served up as a static file directory.
-// To make this happen, the main application just needs to import it.
 
 import (
 	"embed"
@@ -22,7 +20,7 @@ func init() {
 
 // serveMarkdown converts markdown files to html and serves them.
 // This would be more efficient if they were preprocessed into html files and served as html,
-// but this is an example of how live processing of files can be done.
+// but this is an example of how to process text files.
 func serveMarkdown(r io.Reader, w http.ResponseWriter, req *http.Request) error {
 	markdown, err := io.ReadAll(r)
 	if err != nil {
