@@ -14,25 +14,32 @@ import (
 // There is potential for a Message action, like through WebSocket, PubHub, etc.
 type CallbackActionI interface {
 	ActionI
+	// ActionValue lets you set a value that will be available to the action handler as the ActionValue() function in the ActionParam structure
+	// sent to the event handler. This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
+	// javascript.Closures will be called immediately with a (this) parameter.
 	ActionValue(v interface{}) CallbackActionI
+	// Async will cause the action to be handled asynchronously. Use this only in special situations where you know that you
+	// do not need information from other actions.
 	Async() CallbackActionI
+	// DestinationControlID sets the id of the control that will receive the action.
+	//
+	// Composite controls can specify a sub id which indicates that the action should be sent to
+	// a component inside the main control by concatenating the control's id with another id that
+	// indicates the internal destination, separated with an underscore.
 	DestinationControlID(id string) CallbackActionI
 }
 
-// G_CallbackActionI is used by the framework to access actions. Callback actions must satisfy
+// CallbackActionAccessor is used by the framework and the internals of controls to access actions.
+// Callback actions must satisfy
 // this interface, as well as the CallbackActionI interface.
-//
-// This is separated here so that IDEs will not pick up these functions for framework users.
-type G_CallbackActionI interface {
+type CallbackActionAccessor interface {
 	// ID returns the id assigned to the action when the action was created.
 	ID() int
 	// GetDestinationControlID returns the id that the action was sent to.
 	GetDestinationControlID() string
 	// GetDestinationControlSubID returns the id of the sub-control that is the destination of the action, if one was assigned.
 	GetDestinationControlSubID() string
-	// GetActionValue returns the action value that was assigned to the action when the action was fired.
-	GetActionValue() interface{}
-	// IsServerAction returns true if this is a server action.
+	// IsServerAction returns true if the action is a server action
 	IsServerAction() bool
 }
 
@@ -45,8 +52,8 @@ type callbackAction struct {
 	CallAsync     bool
 }
 
-// G_CB is a private helper for encoding callback actions
-type G_CB = callbackAction
+// CB is a private helper for encoding callback actions
+type CB = callbackAction
 
 // ID returns the action id that was defined when the action was created.
 func (a *callbackAction) ID() int {
@@ -83,7 +90,7 @@ func (a *callbackAction) GetDestinationControlSubID() string {
 }
 
 type serverAction struct {
-	G_CB
+	CB
 }
 
 // Server creates a server action, which is an action that will use a POST submission mechanism to trigger the action.
@@ -166,7 +173,8 @@ func (a *serverAction) DestinationControlID(id string) CallbackActionI {
 	return a
 }
 
-// IsServerAction returns true if this is a server action
+// IsServerAction returns true if this is a server action.
+// This is used by the test harness.
 func (a *serverAction) IsServerAction() bool {
 	return true
 }
@@ -190,7 +198,7 @@ func (a *serverAction) GobDecode(data []byte) (err error) {
 }*/
 
 type ajaxAction struct {
-	G_CB
+	CB
 }
 
 // Ajax creates an ajax action. When the action fires, the Action() function of the GoRADD control identified by the
@@ -263,6 +271,7 @@ func (a *ajaxAction) DestinationControlID(id string) CallbackActionI {
 }
 
 // IsServerAction will return false if this is not a server action.
+// This is used by the test harness.
 func (a *ajaxAction) IsServerAction() bool {
 	return false
 }

@@ -1152,15 +1152,16 @@ func (c *ControlBase) doAction(ctx context.Context) {
 	if c.passesValidation(ctx, e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
 		if callbackAction := event.GetCallbackAction(e); callbackAction != nil {
+			cba := callbackAction.(action.CallbackActionAccessor)
 			p := action.NewActionParams(
-				callbackAction.ID(),
-				callbackAction.(action.CallbackActionI),
+				cba.ID(),
+				callbackAction,
 				c.ID(),
 				grCtx.actionValues,
 			)
 
-			if c.Page().HasControl(callbackAction.GetDestinationControlID()) {
-				dest := c.Page().GetControl(callbackAction.GetDestinationControlID())
+			if c.Page().HasControl(cba.GetDestinationControlID()) {
+				dest := c.Page().GetControl(cba.GetDestinationControlID())
 				if isPrivate {
 					if log.HasLogger(log.FrameworkDebugLog) {
 						log.FrameworkDebugf("doAction - PrivateAction, DestId: %s, ActionId: %d, Action: %s, TriggerId: %s",

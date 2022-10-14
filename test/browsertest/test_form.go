@@ -281,7 +281,7 @@ func (form *TestForm) Click(id string) {
 func hasServerAction(c page.ControlI, eventName string) bool {
 	if e := c.Event(eventName); e != nil {
 		if a := event.GetCallbackAction(e); a != nil {
-			return a.IsServerAction()
+			return a.(action.CallbackActionAccessor).IsServerAction()
 		}
 	}
 	return false
