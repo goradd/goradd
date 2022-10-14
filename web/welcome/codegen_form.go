@@ -31,7 +31,7 @@ func (f *CodegenForm) createControls(ctx context.Context) {
 	control.NewPanel(f, "infoPanel")
 }
 
-func (f *CodegenForm) Action(ctx context.Context, a action.Params) {
+func (f *CodegenForm) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case CodegenRefreshAction:
 		f.Refresh()

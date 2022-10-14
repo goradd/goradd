@@ -119,7 +119,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 	)
 }
 
-func (p *SelectListPanel) Action(ctx context.Context, a action.Params) {
+func (p *SelectListPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
 		checklist1 := GetCheckboxList(p, "checklist1")

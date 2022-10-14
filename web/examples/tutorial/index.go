@@ -84,7 +84,7 @@ func (f *IndexForm) ShowSourceDialog() {
 	d.Show()
 }
 
-func (f *IndexForm) Action(ctx context.Context, a action.Params) {
+func (f *IndexForm) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ViewSourceAction:
 		if l, ok := pages[f.Cat]; ok {

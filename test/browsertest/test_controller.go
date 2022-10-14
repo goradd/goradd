@@ -83,7 +83,7 @@ func (p *TestController) loadUrl(url string, description string) {
 	p.waitStep() // load function will wait until window is loaded before firing
 }
 
-func (p *TestController) Action(ctx context.Context, a action.Params) {
+func (p *TestController) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case testStepAction:
 		stepItem := new(stepItemType)

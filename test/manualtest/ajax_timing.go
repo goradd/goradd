@@ -82,7 +82,7 @@ func (f *AjaxTimingForm) createControls(ctx context.Context) {
 	f.Btn.SetValidationType(event.ValidateNone)
 }
 
-func (f *AjaxTimingForm) Action(ctx context.Context, a action.Params) {
+func (f *AjaxTimingForm) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case Txt1ChangeAction:
 		f.Txt1ChangeLabel.SetText(f.Txt1.Text())

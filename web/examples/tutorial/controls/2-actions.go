@@ -42,7 +42,7 @@ func (p *ActionsPanel) Init(ctx context.Context, parent page.ControlI, id string
 	span1.SetText("Unknown - click the button")
 }
 
-func (p *ActionsPanel) Action(ctx context.Context, a action.Params) {
+func (p *ActionsPanel) DoAction(ctx context.Context, a action.Params) {
 	span1 := GetSpan(p, "timeSpan")
 	switch a.ID {
 	case 1000:

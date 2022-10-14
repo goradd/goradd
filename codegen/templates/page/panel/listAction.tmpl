@@ -1,7 +1,7 @@
 // listAction.tmpl
 
 {{
-func (p *{{= panelName }}) Action(ctx context.Context, a action.Params) {
+func (p *{{= panelName }}) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case {{= lcPanelName }}Search:
 		p.Page().GetControl(p.ID() + "-list").Refresh() // redraw the table

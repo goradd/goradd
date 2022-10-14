@@ -46,7 +46,7 @@ func (p *DialogsPanel) Init(ctx context.Context, parent page.ControlI, id string
 	RestoreNewDialogFunction()
 }
 
-func (p *DialogsPanel) Action(ctx context.Context, a action.Params) {
+func (p *DialogsPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonAlert:
 		Alert(p, "Look out!", nil)

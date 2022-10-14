@@ -245,7 +245,7 @@ func (m *Modal) AddCloseButton(label string, id string) {
 	m.AddButton(label, id, &control.DialogButtonOptions{IsClose: true})
 }
 
-func (m *Modal) PrivateAction(_ context.Context, a action.Params) {
+func (m *Modal) DoPrivateAction(_ context.Context, a action.Params) {
 	switch a.ID {
 	case DialogClosed:
 		m.closed()

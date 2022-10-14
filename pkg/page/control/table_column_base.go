@@ -55,7 +55,7 @@ type ColumnI interface {
 	ColTagAttributes() html5tag.Attributes
 	UpdateFormValues(ctx context.Context)
 	AddActions(ctrl page.ControlI)
-	Action(ctx context.Context, params action.Params)
+	DoAction(ctx context.Context, params action.Params)
 	SetCellTexter(s CellTexter) ColumnI
 	SetHeaderTexter(s CellTexter) ColumnI
 	SetFooterTexter(s CellTexter) ColumnI
@@ -429,7 +429,7 @@ func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 
 // Action does a table action that is directed at this table
 // Column implementations can implement this method to receive private actions that they have added using AddActions
-func (c *ColumnBase) Action(ctx context.Context, params action.Params) {}
+func (c *ColumnBase) DoAction(ctx context.Context, params action.Params) {}
 
 // RenderSortButton returns the html that draws the sort button.
 func (c *ColumnBase) RenderSortButton(labelHtml string) string {

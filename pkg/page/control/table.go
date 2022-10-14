@@ -515,8 +515,8 @@ func (t *Table) UpdateFormValues(ctx context.Context) {
 	}
 }
 
-// PrivateAction is called by the framework to allow controls to process actions internal to themselves.
-func (t *Table) PrivateAction(ctx context.Context, p action.Params) {
+// DoPrivateAction is called by the framework to allow controls to process actions internal to themselves.
+func (t *Table) DoPrivateAction(ctx context.Context, p action.Params) {
 	switch p.ID {
 	case ColumnAction:
 		var subId string
@@ -530,7 +530,7 @@ func (t *Table) PrivateAction(ctx context.Context, p action.Params) {
 		}
 		c := t.GetColumnByID(subId)
 		if c != nil {
-			c.Action(ctx, p)
+			c.DoAction(ctx, p)
 		}
 	case SortClick:
 		t.sortClick(p.EventValueString())

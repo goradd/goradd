@@ -63,7 +63,7 @@ func (p *DialogSavePanel) Load(ctx context.Context, pk string) (data interface{}
 	return
 }
 
-func (p *DialogSavePanel) Action(ctx context.Context, a action.Params) {
+func (p *DialogSavePanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case saveDlgSaveAction:
 		p.SavePanel().Save(ctx)

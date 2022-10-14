@@ -102,7 +102,7 @@ type serverAction struct {
 //   - You are having trouble making an Ajax action work for some reason, and a Server action might get around the problem.
 //   - You are submitting a multipart form, like when uploading a file.
 //
-// When the action fires, the Action() function of the GoRADD control identified by the
+// When the action fires, the DoAction() function of the GoRADD control identified by the
 // destControlId will be called, and the given actionID will be the ID passed in the Params of the call.
 //
 // You send an action to a sub-control  specify a sub id which indicates that the action should be sent to something
@@ -201,7 +201,7 @@ type ajaxAction struct {
 	CB
 }
 
-// Ajax creates an ajax action. When the action fires, the Action() function of the GoRADD control identified by the
+// Ajax creates an ajax action. When the action fires, the DoAction() function of the GoRADD control identified by the
 // destControlId will be called, and the given actionID will be the ID passed in the Params of the call.
 // You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the control's id with another id that indicates the internal destination,

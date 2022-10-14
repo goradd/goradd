@@ -91,7 +91,7 @@ func (p *TableProxyPanel) CellText(ctx context.Context, col ColumnI, info CellIn
 	return v
 }
 
-func (p *TableProxyPanel) Action(ctx context.Context, a action.Params) {
+func (p *TableProxyPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ProxyClick:
 		id := a.ControlValueString()

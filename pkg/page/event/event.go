@@ -67,7 +67,7 @@ type Event struct {
 	// This is used in very special situations when you want to not allow a bubbled event to be blocked by a sub-object as it bubbles.
 	capture bool
 	// private indicates the event is private to the control and cannot be changed or removed. It is responded to in
-	// the PrivateAction function
+	// the DoPrivateAction function
 	private bool
 }
 

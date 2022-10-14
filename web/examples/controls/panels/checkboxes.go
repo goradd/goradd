@@ -14,7 +14,7 @@ type CheckboxPanel struct {
 	Panel
 }
 
-func (p *CheckboxPanel) Action(ctx context.Context, a action.Params) {
+func (p *CheckboxPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
 		var sel string

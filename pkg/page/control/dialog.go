@@ -77,7 +77,7 @@ func NewDialog(parent page.ControlI, id string) *Dialog {
 func (d *Dialog) Init(parent page.ControlI, id string) {
 	// Our strategy here is to create a dialog overlay that is a container for the currently shown dialogs. This
 	// container is owned by the form itself, even if sub-controls create the dialog.
-	var overlay page.ControlI
+	var overlay *Panel
 
 	if id == "" {
 		panic("Dialogs must have an id.")
@@ -87,7 +87,7 @@ func (d *Dialog) Init(parent page.ControlI, id string) {
 		overlay = NewPanel(parent.ParentForm(), DialogOverlayID)
 		overlay.SetShouldAutoRender(true)
 	} else {
-		overlay = parent.Page().GetControl(DialogOverlayID)
+		overlay = GetPanel(parent, DialogOverlayID)
 	}
 
 	// Make the overlay our parent
@@ -276,9 +276,9 @@ func (d *Dialog) AddCloseButton(label string, id string) {
 	btn.On(event.Click(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
 }
 
-// PrivateAction is called by the framework and will respond to the DialogClose action sent by any close buttons on the
+// DoPrivateAction is called by the framework and will respond to the DialogClose action sent by any close buttons on the
 // page to close the dialog. You do not normally need to call this.
-func (d *Dialog) PrivateAction(_ context.Context, a action.Params) {
+func (d *Dialog) DoPrivateAction(_ context.Context, a action.Params) {
 	switch a.ID {
 	case DialogClosed:
 		d.Hide()

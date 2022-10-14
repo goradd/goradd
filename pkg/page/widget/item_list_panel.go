@@ -80,7 +80,7 @@ func (c *ItemListPanel) DrawingAttributes(ctx context.Context) html5tag.Attribut
 	return a
 }
 
-func (f *ItemListPanel) Action(ctx context.Context, a action.Params) {
+func (f *ItemListPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case filterChanged:
 		f.ItemTable.Refresh() // TODO: Change this to some kind of data only refresh so that when control is redrawn the scroll position is maintained

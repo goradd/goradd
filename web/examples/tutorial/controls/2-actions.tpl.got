@@ -34,15 +34,15 @@ actions in the <a href="https://pkg.go.dev/github.com/goradd/goradd/pkg/page/act
 </p>
 <h2>Callback Actions</h2>
 <p>
-Callback actions invoke the control.Action() that is in every GoRADD control. You specify the id
-of the control that will receive the action, and your own integer id that is sent to the Action() function,
+Callback actions invoke the control.DoAction() that is in every GoRADD control. You specify the id
+of the control that will receive the action, and your own integer id that is sent to the DoAction() function,
 and the action function takes it from there.
 </p>
 <p>
 The two buttons below use Ajax actions to get both the server's time and browser's time.
 Click on the "2-actions.go" button under the View Source list to see how these buttons are
-created and how the Action() function responds.
-Note that the Action() function just sets the text of the span and the span is automatically redrawn
+created and how the DoAction() function responds.
+Note that the DoAction() function just sets the text of the span and the span is automatically redrawn
 in the browser with the new value.
 </p>
 <p>

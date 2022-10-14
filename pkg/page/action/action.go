@@ -15,12 +15,12 @@
 // Javascript Actions execute javascript code that is handled immediately by the browser. Goradd provides
 // a number of standard Javascript actions, like [Redirect]. Also, the [Javascript] action can execute any javascript.
 //
-// Callback Actions invoke the Action() function on GoRADD controls. There are currently two kinds of
+// Callback Actions invoke the DoAction() function on GoRADD controls. There are currently two kinds of
 // Callback Actions:
 //   - [Server] and
 //   - [Ajax]
 //
-// You specify the control id of the receiving control, and an integer representing the action. The Action()
+// You specify the control id of the receiving control, and an integer representing the action. The DoAction()
 // function can then do whatever is needed on the server side.
 //
 // Server actions use the standard http Post method of html forms, and cause a page to completely refresh.
@@ -37,7 +37,7 @@
 // In addition to the action id, a Callback action can receive data that is sent with the action, data that is sent by
 // the control, and also data that is sent by the event that triggered the action. This data can be static data
 // when the action is created, or dynamic data that is gathered by javascript when the action is invoked.
-// See the action.Params structure for a description of what is supplied to the Action() function.
+// See the action.Params structure for a description of what is supplied to the DoAction() function.
 //
 // To execute multiple actions in response to an event, put the actions in an actionGroup. The actionGroup
 // can have multiple javascript actions, but only one callback action.
@@ -55,10 +55,10 @@ type ActionI interface {
 type RenderParams struct {
 	// TriggeringControlID is the id of the control that triggered the action
 	TriggeringControlID string
-	// ControlActionValue is the control action value that will be received by the Action() function.
+	// ControlActionValue is the control action value that will be received by the DoAction() function.
 	ControlActionValue interface{}
 	// EventID is the event that triggered the action
 	EventID uint16
-	// EventActionValue is the event action value that will be received by the Action() function.
+	// EventActionValue is the event action value that will be received by the DoAction() function.
 	EventActionValue interface{}
 }

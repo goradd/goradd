@@ -12,7 +12,7 @@ import (
 
 // ButtonColumnClick returns an event that detects a click on the icon in the column.
 // The EventValue will be the row value clicked on.
-// If you need to also know the column clicked on, you can set the Action's action value to:
+// If you need to also know the column clicked on, you can set the DoAction's action value to:
 //
 //	javascript.NewJsCode(g$(event.goradd.match).columnId())
 //

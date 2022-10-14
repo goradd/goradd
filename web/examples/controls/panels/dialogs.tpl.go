@@ -18,7 +18,7 @@ give important information to the user, and more complex dialogs gather informat
 When coding dialogs in a desktop application, often you can make your code pause while the
 user gives a response, but you cannot do that in a web application. In Goradd, you pop up a
 dialog and provide actions that will be fired when the user clicks a button or closes the dialog.
-You then respond to those actions in an Action() function.
+You then respond to those actions in an DoAction() function.
 </p>
 <p>
 The process of presenting a dialog in a web application can be quite complex. Making sure the dialog

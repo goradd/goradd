@@ -47,7 +47,7 @@ func (p *SourcePanel) show(files []string) {
 	}
 }
 
-func (p *SourcePanel) Action(ctx context.Context, a action.Params) {
+func (p *SourcePanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case FileAction:
 		file := a.ControlValueString()

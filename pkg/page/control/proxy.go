@@ -41,7 +41,7 @@ type ProxyI interface {
 // that are sending it events by the ActionValue that you gave the proxy.
 //
 // To use a Proxy, create it in the control that wraps the controls the proxy will manage.
-// Attach an event to the proxy control, and in the action handler, look for the ControlValue in the Action Value
+// Attach an event to the proxy control, and in the action handler, look for the ControlValue in the DoAction Value
 // to know which of the controls sent the event. Draw the proxy with one of the following:
 //
 //	LinkHtml() - Output the proxy as a link
@@ -86,7 +86,7 @@ func (p *Proxy) Draw(ctx context.Context, w io.Writer) {
 	// p.this().PutCustomScript(ctx, response) // Proxies should not have custom scripts?
 
 	p.GetActionScripts(response)
-	p.PostRender(ctx, w)
+	p.DrawPostRender(ctx, w)
 	return
 }
 

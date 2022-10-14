@@ -86,7 +86,7 @@ func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string)
 	)
 }
 
-func (p *Forms1Panel) Action(ctx context.Context, a action.Params) {
+func (p *Forms1Panel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case RadioChange:
 		c := control.GetSpan(p, "radioResult")

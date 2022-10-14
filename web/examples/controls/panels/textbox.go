@@ -114,7 +114,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 	)
 }
 
-func (p *TextboxPanel) Action(ctx context.Context, a action.Params) {
+func (p *TextboxPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
 	}

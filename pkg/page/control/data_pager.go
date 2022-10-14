@@ -256,7 +256,7 @@ func (d *DataPager) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 }
 
 // Action is called by the framework to respond to actions.
-func (d *DataPager) Action(_ context.Context, params action.Params) {
+func (d *DataPager) DoAction(_ context.Context, params action.Params) {
 	switch params.ID {
 	case PageClick:
 		pageNum := params.ControlValueInt()
@@ -386,8 +386,8 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 }
 
 // PreRender is called by the framework to load data into the paged control just before drawing.
-func (d *DataPager) PreRender(ctx context.Context, w io.Writer) {
-	d.ControlBase.PreRender(ctx, w)
+func (d *DataPager) DrawPreRender(ctx context.Context, w io.Writer) {
+	d.ControlBase.DrawPreRender(ctx, w)
 	p := d.PagedControl()
 
 	// If we are being drawn before the paged control, we must tell the paged control to load up its

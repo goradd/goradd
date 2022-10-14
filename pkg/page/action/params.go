@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Params are sent to the control.Action() function in response to a user action.
+// Params are sent to the control.DoAction() function in response to a user action.
 // Each action might contain one of three kinds of values:
 //
 //   - Action value, a value assigned to the action when it is created,
