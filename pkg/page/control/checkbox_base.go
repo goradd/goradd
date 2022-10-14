@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/html5tag"
 )
 
+// CheckboxI is the interface for all checkbox-like objects.
 type CheckboxI interface {
 	page.ControlI
 	GetDrawingLabelAttributes() html5tag.Attributes

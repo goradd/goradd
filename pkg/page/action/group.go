@@ -39,28 +39,15 @@ func Group(actions ...ActionI) ActionGroup {
 	return ActionGroup{actions}
 }
 
-// HasServerAction is called by the framework to determine if the action group has a server action in it.
-func (g ActionGroup) HasServerAction() bool {
-	if a := g.GetCallbackAction(); a != nil {
-		return a.IsServerAction()
-	}
-	return false
-}
-
-// HasCallbackAction is called by the framework to determine if the action group has a callback action in it.
-func (g ActionGroup) HasCallbackAction() bool {
-	return g.GetCallbackAction() != nil
-}
-
 // GetCallbackAction returns the embedded callback action in the group, if one exists. Note that
 // you can only have at most one callback action in a group
-func (g ActionGroup) GetCallbackAction() FrameworkCallbackActionI {
+func (g ActionGroup) GetCallbackAction() G_CallbackActionI {
 	if g.Actions == nil || len(g.Actions) == 0 {
 		return nil
 	}
 	a := g.Actions[len(g.Actions)-1]
 	if a2, ok := a.(CallbackActionI); ok {
-		return a2.(FrameworkCallbackActionI)
+		return a2.(G_CallbackActionI)
 	}
 	return nil
 }

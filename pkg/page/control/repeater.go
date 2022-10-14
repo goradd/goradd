@@ -143,7 +143,7 @@ func (r *Repeater) Restore() {
 	return
 }
 
-// RepeaterCreator creates a table that can be paged
+// RepeaterCreator creates a control that can be paged.
 type RepeaterCreator struct {
 	// ID is the control id
 	ID string

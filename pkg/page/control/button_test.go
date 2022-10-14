@@ -36,11 +36,11 @@ func TestButtonOn(t *testing.T) {
 
 	b := NewButton(form, "btnId")
 
-	assert.Nil(t, b.GetEvent("click"))
+	assert.Nil(t, b.Event("click"))
 	b.OnSubmit(action.Confirm("Help!"))
-	assert.NotNil(t, b.GetEvent("click"))
+	assert.NotNil(t, b.Event("click"))
 	b.Off()
-	assert.Nil(t, b.GetEvent("click"))
+	assert.Nil(t, b.Event("click"))
 }
 
 func TestButtonCreator(t *testing.T) {
@@ -64,5 +64,5 @@ func TestButtonCreator(t *testing.T) {
 	assert.Equal(t, "abc", b.ID())
 	assert.True(t, b.HasClass("c"))
 	assert.Equal(t, "submit", b.Attributes().Get("type"))
-	assert.NotNil(t, b.GetEvent("click"))
+	assert.NotNil(t, b.Event("click"))
 }

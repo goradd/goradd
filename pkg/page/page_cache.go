@@ -3,8 +3,8 @@ package page
 import (
 	"github.com/goradd/goradd/pkg/cache"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/log"
+	"github.com/goradd/html5tag"
 )
 
 // PagestateCacheI is the page cache interface. The PageCache saves and restores pages in between page
@@ -17,7 +17,6 @@ type PagestateCacheI interface {
 }
 
 var pageCache PagestateCacheI
-
 
 // SetPagestateCache will set the page cache to the given object.
 func SetPagestateCache(c PagestateCacheI) {
@@ -94,10 +93,9 @@ type SerializedPagestateCache struct {
 	cache.LruCache
 	testPageID string // Used for testing serialization using automated testing. Not for production.
 	testPage   *Page
-
 }
 
-// This special interface is used by our test harness to prevent the serialization of the
+// The TestFormI interface is used by our test harness to prevent the serialization of the
 // test form.
 type TestFormI interface {
 	NoSerialize() bool
@@ -105,14 +103,14 @@ type TestFormI interface {
 
 func NewSerializedPageCache(maxEntries int, TTL int64) *SerializedPagestateCache {
 	return &SerializedPagestateCache{
-		LruCache:*cache.NewLruCache(maxEntries, TTL),
+		LruCache: *cache.NewLruCache(maxEntries, TTL),
 	}
 }
 
 // Set puts the page into the page cache, and updates its access time, pushing it to the end of the removal queue
 // Page must already be assigned a state ID. Use NewPageId to do that.
 func (o *SerializedPagestateCache) Set(pageId string, page *Page) {
-	if _,ok := page.Form().(TestFormI); ok {
+	if _, ok := page.Form().(TestFormI); ok {
 		o.testPageID = pageId
 		o.testPage = page
 		return

@@ -23,7 +23,6 @@ import (
 	"reflect"
 )
 
-const PrivateActionBase = 1000
 const sessionControlStates string = "goradd.controlStates"
 const sessionControlTypeState string = "goradd.controlType"
 
@@ -170,8 +169,7 @@ type ControlI interface {
 	On(e *event.Event, a action.ActionI) ControlI
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
-	HasServerAction(eventName string) bool
-	HasCallbackAction(eventName string) bool
+	Event(eventName string) *event.Event
 
 	// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
 	UpdateFormValues(context.Context)
@@ -228,7 +226,7 @@ type attributeScriptEntry struct {
 	commands []interface{} // parameters to the function
 }
 
-// ControlBase is the basis for UI controls and widgets in goradd. It corresponds to a standard html form object or tag, or a custom javascript
+// ControlBase is the basis for UI controls and widgets in GoRADD. It corresponds to a standard html form object or tag, or a custom javascript
 // widget. A Control renders a tag and everything inside the tag, but can also include a wrapper which associates
 // a label, instructions and error messages with the tag. A Control can also associate javascript
 // with itself to make sure the javascript is loaded on the page when the control is drawn, and can render
@@ -236,14 +234,14 @@ type attributeScriptEntry struct {
 //
 // A Control can have child Controls. It
 // can either allow the framework to automatically draw the child Controls as part of the inner-html of
-// the ControlBase, can use a template to draw the Child controls, or manually draw them. The ControlBase is part
-// of a hierarchical tree structure, with the Form being the root of the tree.
+// the ControlBase, can use a template to draw the Child controls, or manually draw them. Controls form
+// a hierarchical tree structure, with the Form control being the root of the tree.
 //
 // A Control is part of a system that will reflect the state of the control between the client and server.
 // When a user updates a control in the browser and performs an action that requires a response from the
-// server, the goradd javascript will gather all the changes in the form and send those to the server.
+// server, the GoRADD javascript will gather all the changes in the form and send those to the server.
 // The control can read those values and update its own internal state, so that from the perspective
-// of the programmer referring to the control, the values in the ControlBase are the same as what the user sees in a browser.
+// of the programmer referring to the control, the values in the Control are the same as what the user sees in a browser.
 //
 // This ControlBase struct is a mixin that all controls should use. You would not normally create a ControlBase directly,
 // but rather create one of the "subclasses" of ControlBase. See the control package for Controls that implement
@@ -349,8 +347,8 @@ type ControlBase struct {
 // calls this superclass function. This Init function sets up a parent-child relationship with the given parent
 // control.
 //
-// The id is the control id that will appear as the id in html. Leave blank for the system to create a unique id for you.
-// A nil parent is for top level controls, primarily forms.
+// The id is the control id that will appear as the id in HTML. Leave blank for the system to create a unique id for you.
+// A nil parent is for top level controls, primarily Forms.
 func (c *ControlBase) Init(parent ControlI, id string) {
 	c.attributes = html5tag.NewAttributes()
 	if parent == nil {
@@ -1059,29 +1057,9 @@ func (c *ControlBase) Off() {
 	}
 }
 
-// HasServerAction returns true if one of the actions attached to the given event is a Server action.
-func (c *ControlBase) HasServerAction(eventName string) bool {
-	for _, e := range c.events {
-		if event.Name(e) == eventName && event.HasServerAction(e) {
-			return true
-		}
-	}
-	return false
-}
-
-// HasCallbackAction returns true if one of the actions attached to the given event is a Server action.
-func (c *ControlBase) HasCallbackAction(eventName string) bool {
-	for _, e := range c.events {
-		if event.Name(e) == eventName && event.HasCallbackAction(e) {
-			return true
-		}
-	}
-	return false
-}
-
-// GetEvent returns the event associated with the eventName, which corresponds to the javascript
+// Event returns the event associated with the eventName, which corresponds to the javascript
 // trigger name.
-func (c *ControlBase) GetEvent(eventName string) *event.Event {
+func (c *ControlBase) Event(eventName string) *event.Event {
 	for _, e := range c.events {
 		if event.Name(e) == eventName {
 			return e
@@ -1091,19 +1069,21 @@ func (c *ControlBase) GetEvent(eventName string) *event.Event {
 }
 
 // SetActionValue sets a value that is provided to actions when they are triggered. The value can be a static value
-// or one of the javascript.* objects that can dynamically generate values. The value is then sent back to the action
-// handler after the action is triggered.
+// or one of the javascript.* objects that can dynamically generate values. The value is then sent back to the Action
+// function after the action is triggered as the ControlActionValue in the action.Params struct.
 func (c *ControlBase) SetActionValue(v interface{}) ControlI {
 	c.actionValue = v
 	return c.this()
 }
 
-// ActionValue returns the control's action value
+// ActionValue returns the control's action value that is sent to the Action function in the ControlActionValue of the
+// action.Params struct.
 func (c *ControlBase) ActionValue() interface{} {
 	return c.actionValue
 }
 
-// Action processes actions. Typically, the Action function will first look at the id to know how to handle it.
+// Action processes action.Ajax and action.Server actions.
+// Typically, the Action function will first look at the id to know how to handle it.
 // This is just an empty implementation. Sub-controls should implement this.
 func (c *ControlBase) Action(ctx context.Context, a action.Params) {
 }

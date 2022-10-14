@@ -38,11 +38,15 @@
 // the control, and also data that is sent by the event that triggered the action. This data can be static data
 // when the action is created, or dynamic data that is gathered by javascript when the action is invoked.
 // See the action.Params structure for a description of what is supplied to the Action() function.
+//
+// To execute multiple actions in response to an event, put the actions in an ActionGroup. The ActionGroup
+// can have multiple javascript actions, but only one callback action.
 package action
 
 // ActionI is an interface that defines actions that can be triggered by events
 type ActionI interface {
 	// RenderScript is called by the framework to return the action's javascript.
+	// You can create your own custom javascript action by defining a RenderScript function.
 	RenderScript(params RenderParams) string
 }
 

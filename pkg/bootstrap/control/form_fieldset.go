@@ -2,10 +2,10 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/pool"
+	"github.com/goradd/html5tag"
 	"html"
 	"io"
 )
@@ -53,7 +53,7 @@ func (c *FormFieldset) LegendAttributes() html5tag.Attributes {
 	return c.legendAttributes
 }
 
-func (c *FormFieldset) SetAsRow(r bool) FormFieldsetI{
+func (c *FormFieldset) SetAsRow(r bool) FormFieldsetI {
 	c.asRow = r
 	return c.this()
 }
@@ -69,7 +69,6 @@ func (c *FormFieldset) SetInstructions(instructions string) FormFieldsetI {
 func (c *FormFieldset) InstructionAttributes() html5tag.Attributes {
 	return c.instructionAttributes
 }
-
 
 func (c *FormFieldset) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := c.Panel.DrawingAttributes(ctx)
@@ -118,7 +117,6 @@ func (c *FormFieldset) Serialize(e page.Encoder) {
 	}
 }
 
-
 func (c *FormFieldset) Deserialize(d page.Decoder) {
 	c.Panel.Deserialize(d)
 
@@ -135,7 +133,6 @@ func (c *FormFieldset) Deserialize(d page.Decoder) {
 		panic(err)
 	}
 }
-
 
 // FormFieldsetCreator creates a bootstrap fieldset,
 // which wraps a control group with a fieldset.
@@ -160,8 +157,8 @@ type FormFieldsetCreator struct {
 }
 
 func (f FormFieldsetCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	id := control.CalcWrapperID(f.ID, f.Child, "fs")
-	c := NewFormFieldset(parent,id)
+	id := control.MakeCreatorWrapperID(f.ID, f.Child, "fs")
+	c := NewFormFieldset(parent, id)
 	f.Init(ctx, c)
 	return c
 }

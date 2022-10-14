@@ -272,10 +272,19 @@ func (form *TestForm) Click(id string) {
 	form.Controller.click(id, form.captureCaller())
 	f := form.getForm()
 	c := f.Page().GetControl(id)
-	if c.HasServerAction("click") {
+	if hasServerAction(c, "click") {
 		// wait for the new page to load
 		form.Controller.waitSubmit(form.callerInfo)
 	}
+}
+
+func hasServerAction(c page.ControlI, eventName string) bool {
+	if e := c.Event(eventName); e != nil {
+		if a := event.GetCallbackAction(e); a != nil {
+			return a.IsServerAction()
+		}
+	}
+	return false
 }
 
 // ClickSubItem sends a click to the html object with the given sub-id inside the given control.
@@ -283,7 +292,7 @@ func (form *TestForm) ClickSubItem(id string, subId string) {
 	form.Controller.click(id+"_"+subId, form.captureCaller())
 	f := form.getForm()
 	c := f.Page().GetControl(id)
-	if c.HasServerAction("click") {
+	if hasServerAction(c, "click") {
 		// wait for the new page to load
 		form.Controller.waitSubmit(form.callerInfo)
 	}

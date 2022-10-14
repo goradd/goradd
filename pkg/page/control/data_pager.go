@@ -33,7 +33,7 @@ type PagedControlI interface {
 }
 
 // PagedControl is a mixin that makes a ControlBase controllable by a data pager. All embedders of a
-// PagedControl MUST implement the Serialize and Deserialize methods so that the base ControlBase versions
+// PagedControl MUST implement the Serialize and Deserialize methods so that the ControlBase versions
 // of these functions will get called.
 type PagedControl struct {
 	totalItems int

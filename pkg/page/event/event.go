@@ -200,30 +200,6 @@ func (e *Event) Private() *Event {
 	return e
 }
 
-// HasServerAction returns true if at least one of the event's actions is a server action.
-func HasServerAction(e *Event) bool {
-	switch a := e.action.(type) {
-	case action2.FrameworkCallbackActionI:
-		return a.IsServerAction()
-	case action2.ActionGroup:
-		return a.HasServerAction()
-	default:
-		return false
-	}
-}
-
-// HasCallbackAction returns true if at least one of the event's actions is a callback action.
-func HasCallbackAction(e *Event) bool {
-	switch a := e.action.(type) {
-	case action2.CallbackActionI:
-		return true
-	case action2.ActionGroup:
-		return a.HasCallbackAction()
-	default:
-		return false
-	}
-}
-
 // Name returns the name of the javascript event being triggered.
 func Name(e *Event) string {
 	return e.jsEvent
@@ -231,10 +207,10 @@ func Name(e *Event) string {
 
 // GetCallbackAction will return the action associated with the event if it is a callback action.
 // Otherwise, it will return nil.
-func GetCallbackAction(e *Event) action2.FrameworkCallbackActionI {
+func GetCallbackAction(e *Event) action2.G_CallbackActionI {
 	switch a := e.action.(type) {
 	case action2.CallbackActionI:
-		return a.(action2.FrameworkCallbackActionI)
+		return a.(action2.G_CallbackActionI)
 	case action2.ActionGroup:
 		return a.GetCallbackAction()
 	default:
