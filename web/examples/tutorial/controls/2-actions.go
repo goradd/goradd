@@ -6,6 +6,8 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/textbox"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/sys"
 	"github.com/goradd/goradd/web/examples/tutorial"
@@ -35,14 +37,14 @@ func (p *ActionsPanel) Init(ctx context.Context, parent page.ControlI, id string
 
 	btn2 := NewButton(p, "clientTimeButton").SetText("Get Client Time")
 	btn2.On(event.Click(), action.Ajax(p.ID(), 1001).ActionValue(javascript.NewClosureCall(
-		`var today = new Date(); return today.getHours() + ':' + today.getMinutes();`, "",
+		`var today = new DateTextbox(); return today.getHours() + ':' + today.getMinutes();`, "",
 	)))
 
 	span1 := NewSpan(p, "timeSpan")
 	span1.SetText("Unknown - click the button")
 }
 
-func (p *ActionsPanel) Action(ctx context.Context, a action.Params) {
+func (p *ActionsPanel) DoAction(ctx context.Context, a action.Params) {
 	span1 := GetSpan(p, "timeSpan")
 	switch a.ID {
 	case 1000:

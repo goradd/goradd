@@ -42,7 +42,7 @@ func (p *ModalPanel) Init(ctx context.Context, parent page.ControlI, id string) 
 	t.SetText("What is in the modal?")
 }
 
-func (p *ModalPanel) Action(ctx context.Context, a action.Params) {
+func (p *ModalPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case PopupClick:
 		m := GetModal(p, "modal")

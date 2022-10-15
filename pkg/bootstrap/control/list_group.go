@@ -6,11 +6,12 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/page/event"
 )
 
 type ListGroupI interface {
-	control.UnorderedListI
+	list.UnorderedListI
 }
 
 // A ListGroup implements the Bootstrap ListGroup control.
@@ -22,7 +23,7 @@ type ListGroupI interface {
 // Use the data provider to AddItems to the list, assigning attributes as needed to produce the items you want.
 // You can also use a proxy control to create the attributes.
 type ListGroup struct {
-	control.UnorderedList
+	list.UnorderedList
 }
 
 func NewListGroup(parent page.ControlI, id string) *ListGroup {
@@ -39,7 +40,7 @@ func (l *ListGroup) Init(parent page.ControlI, id string) {
 	l.AddClass("list-group")
 }
 
-func (l *ListGroup) GetItemsHtml(items []*control.ListItem) string {
+func (l *ListGroup) GetItemsHtml(items []*list.Item) string {
 	// make sure the list items have the correct classes before drawing them
 	for _, item := range items {
 		item.Attributes().AddClass("list-group-item list-group-item-action")
@@ -50,7 +51,7 @@ func (l *ListGroup) GetItemsHtml(items []*control.ListItem) string {
 type ListGroupCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
-	Items []control.ListValue
+	Items []list.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
@@ -72,7 +73,7 @@ func (c ListGroupCreator) Create(ctx context.Context, parent page.ControlI) page
 }
 
 func (c ListGroupCreator) Init(ctx context.Context, ctrl ListGroupI) {
-	sub := control.UnorderedListCreator{
+	sub := list.UnorderedListCreator{
 		Items:          c.Items,
 		DataProvider:   c.DataProvider,
 		ControlOptions: c.ControlOptions,

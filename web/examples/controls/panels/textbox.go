@@ -5,6 +5,8 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/textbox"
 	time2 "github.com/goradd/goradd/pkg/time"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
@@ -44,28 +46,28 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 		},
 		FormFieldWrapperCreator{
 			ID:    "intText-ff",
-			Label: "Integer Text",
+			Label: "IntegerTextbox Text",
 			Child: IntegerTextboxCreator{
 				ID: "intText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "floatText-ff",
-			Label: "Float Text",
+			Label: "FloatTextbox Text",
 			Child: FloatTextboxCreator{
 				ID: "floatText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "emailText-ff",
-			Label: "Email Text",
+			Label: "EmailTextbox Text",
 			Child: EmailTextboxCreator{
 				ID: "emailText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "passwordText-ff",
-			Label: "Password",
+			Label: "PasswordTextbox",
 			Child: PasswordTextboxCreator{
 				ID: "passwordText",
 			},
@@ -75,19 +77,19 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 			Label: "Search",
 			Child: TextboxCreator{
 				ID:   "searchText",
-				Type: TextboxTypeSearch,
+				Type: SearchType,
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "dateTimeText-ff",
-			Label: "U.S. Date-time",
+			Label: "U.S. DateTextbox-time",
 			Child: DateTextboxCreator{
 				ID: "dateTimeText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "dateText-ff",
-			Label: "Euro Date",
+			Label: "Euro DateTextbox",
 			Child: DateTextboxCreator{
 				ID:      "dateText",
 				Formats: []string{time2.EuroDate},
@@ -114,7 +116,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 	)
 }
 
-func (p *TextboxPanel) Action(ctx context.Context, a action.Params) {
+func (p *TextboxPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
 	}

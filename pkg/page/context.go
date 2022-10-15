@@ -124,7 +124,7 @@ type AppContext struct {
 func (ctx *Context) String() string {
 	b, _ := json.Marshal(ctx.actionValues)
 	actionValues := string(b[:])
-	s := fmt.Sprintf("URL: %s, Mode: %s, FormBase Values: %v, ControlBase ID: %s, Event ID: %d, Action Values: %s, Page State: %s", ctx.URL, ctx.requestMode, ctx.formVars, ctx.actionControlID, ctx.eventID, actionValues, ctx.pageStateId)
+	s := fmt.Sprintf("URL: %s, Mode: %s, FormBase Values: %v, ControlBase ID: %s, Event ID: %d, DoAction Values: %s, Page State: %s", ctx.URL, ctx.requestMode, ctx.formVars, ctx.actionControlID, ctx.eventID, actionValues, ctx.pageStateId)
 
 	if ctx.err != nil {
 		s += fmt.Sprintf(", Error: %s", ctx.err.Error())

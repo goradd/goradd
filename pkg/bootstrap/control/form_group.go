@@ -250,7 +250,7 @@ type FormGroupCreator struct {
 // Create is called by the framework to create the control. You do not
 // normally need to call it.
 func (f FormGroupCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	id := control.CalcWrapperID(f.ID, f.Child, "fg")
+	id := control.MakeCreatorWrapperID(f.ID, f.Child, "fg")
 	c := NewFormGroup(parent, id)
 	f.Init(ctx, c)
 	return c

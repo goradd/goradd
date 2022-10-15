@@ -11,7 +11,7 @@ func init() {
 	generator2.RegisterControlGenerator(Textbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/Textbox")
 }
 
-// This structure describes the textbox to the connector dialog and code generator
+// Textbox describes the textbox to the connector dialog and code generator
 type Textbox struct {
 	generator3.Textbox // base it on the built-in generator
 }

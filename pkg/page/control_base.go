@@ -23,7 +23,6 @@ import (
 	"reflect"
 )
 
-const PrivateActionBase = 1000
 const sessionControlStates string = "goradd.controlStates"
 const sessionControlTypeState string = "goradd.controlType"
 
@@ -95,23 +94,20 @@ type DataLoader interface {
 type ControlI interface {
 	ID() string
 	control() *ControlBase
+
+	// support for drawing
+
 	DrawI
-
-	// Drawing support
-
-	// DrawTag is the main drawing function for the control. It should panic on errors.
 	DrawTag(context.Context, io.Writer)
 	DrawInnerHtml(context.Context, io.Writer)
 	DrawTemplate(context.Context, io.Writer) error
-	PreRender(context.Context, io.Writer)
-	PostRender(context.Context, io.Writer)
-	ShouldAutoRender() bool
-	SetShouldAutoRender(bool)
+	DrawPreRender(context.Context, io.Writer)
+	DrawPostRender(context.Context, io.Writer)
 	DrawAjax(ctx context.Context, response *Response)
 	DrawChildren(ctx context.Context, w io.Writer)
 	DrawText(ctx context.Context, w io.Writer)
 
-	// Hierarchy functions
+	// hierarchy functions
 
 	Parent() ControlI
 	Children() []ControlI
@@ -125,7 +121,7 @@ type ControlI interface {
 	RangeAllChildren(func(ControlI))
 	RangeSelfAndAllChildren(func(ControlI))
 
-	// hmtl and css
+	// html and css
 
 	SetAttribute(name string, val interface{}) ControlI
 	Attribute(string) string
@@ -163,15 +159,14 @@ type ControlI interface {
 	Refresh()
 	NeedsRefresh() bool
 
-	Action(context.Context, action.Params)
-	PrivateAction(context.Context, action.Params)
+	DoAction(context.Context, action.Params)
+	DoPrivateAction(context.Context, action.Params)
 	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
 	On(e *event.Event, a action.ActionI) ControlI
 	Off()
 	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
-	HasServerAction(eventName string) bool
-	HasCallbackAction(eventName string) bool
+	Event(eventName string) *event.Event
 
 	// UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
 	UpdateFormValues(context.Context)
@@ -228,7 +223,7 @@ type attributeScriptEntry struct {
 	commands []interface{} // parameters to the function
 }
 
-// ControlBase is the basis for UI controls and widgets in goradd. It corresponds to a standard html form object or tag, or a custom javascript
+// ControlBase is the basis for UI controls and widgets in GoRADD. It corresponds to a standard html form object or tag, or a custom javascript
 // widget. A Control renders a tag and everything inside the tag, but can also include a wrapper which associates
 // a label, instructions and error messages with the tag. A Control can also associate javascript
 // with itself to make sure the javascript is loaded on the page when the control is drawn, and can render
@@ -236,18 +231,17 @@ type attributeScriptEntry struct {
 //
 // A Control can have child Controls. It
 // can either allow the framework to automatically draw the child Controls as part of the inner-html of
-// the ControlBase, can use a template to draw the Child controls, or manually draw them. The ControlBase is part
-// of a hierarchical tree structure, with the Form being the root of the tree.
+// the ControlBase, can use a template to draw the Child controls, or manually draw them. Controls form
+// a hierarchical tree structure, with the Form control being the root of the tree.
 //
 // A Control is part of a system that will reflect the state of the control between the client and server.
 // When a user updates a control in the browser and performs an action that requires a response from the
-// server, the goradd javascript will gather all the changes in the form and send those to the server.
+// server, the GoRADD javascript will gather all the changes in the form and send those to the server.
 // The control can read those values and update its own internal state, so that from the perspective
-// of the programmer referring to the control, the values in the ControlBase are the same as what the user sees in a browser.
+// of the programmer referring to the control, the values in the Control are the same as what the user sees in a browser.
 //
 // This ControlBase struct is a mixin that all controls should use. You would not normally create a ControlBase directly,
-// but rather create one of the "subclasses" of ControlBase. See the control package for Controls that implement
-// standard html widgets.
+// but rather create one of the "subclasses" of ControlBase. See the [control] package for basic control implementations.
 type ControlBase struct {
 	base.Base
 
@@ -349,8 +343,9 @@ type ControlBase struct {
 // calls this superclass function. This Init function sets up a parent-child relationship with the given parent
 // control.
 //
-// The id is the control id that will appear as the id in html. Leave blank for the system to create a unique id for you.
-// A nil parent is for top level controls, primarily forms.
+// The id given will be used as the id in the corresponding HTML tag, and should be unique on the page.
+// Leave blank for the system to create a unique id for you.
+// A nil parent is for top level controls, primarily Forms.
 func (c *ControlBase) Init(parent ControlI, id string) {
 	c.attributes = html5tag.NewAttributes()
 	if parent == nil {
@@ -369,7 +364,8 @@ func (c *ControlBase) this() ControlI {
 	return c.Self.(ControlI)
 }
 
-// Restore is called after the control has been deserialized. It notifies the control tree so that it
+// Restore is called by the framework for control implemenatations.
+// It is called after the control has been deserialized. It notifies the control tree so that it
 // can restore internal pointers if needed.
 func (c *ControlBase) Restore() {
 }
@@ -385,9 +381,9 @@ func (c *ControlBase) control() *ControlBase {
 	return c
 }
 
-// PreRender is called by the framework to notify the control that it is about to be drawn. If you
+// DrawPreRender is called by the framework to notify the control that it is about to be drawn. If you
 // override it, be sure to also call this parent function as well.
-func (c *ControlBase) PreRender(ctx context.Context, w io.Writer) {
+func (c *ControlBase) DrawPreRender(ctx context.Context, w io.Writer) {
 	form := c.ParentForm()
 	if c.Page() == nil ||
 		form == nil ||
@@ -412,7 +408,7 @@ func (c *ControlBase) PreRender(ctx context.Context, w io.Writer) {
 
 // Draw renders the control structure into the given buffer.
 func (c *ControlBase) Draw(ctx context.Context, w io.Writer) {
-	c.this().PreRender(ctx, w)
+	c.this().DrawPreRender(ctx, w)
 
 	if !config.Minify && GetContext(ctx).RequestMode() != Ajax {
 		if _, err := fmt.Fprintf(w, "<!-- ControlBase Type:%s, Id:%s -->\n", c.Type(), c.ID()); err != nil {
@@ -433,14 +429,13 @@ func (c *ControlBase) Draw(ctx context.Context, w io.Writer) {
 	response := c.ParentForm().Response()
 	c.this().PutCustomScript(ctx, response)
 	c.GetActionScripts(response)
-	c.this().PostRender(ctx, w)
+	c.this().DrawPostRender(ctx, w)
 	return
 }
 
 // PutCustomScript is called by the framework to ask the control to inject any javascript it needs into the form.
 // In particular, this is the place where Controls add javascript that transforms the html into a custom javascript control.
 // A ControlBase implementation does this by calling functions on the response object.
-// This implementation is a stub.
 func (c *ControlBase) PutCustomScript(ctx context.Context, response *Response) {
 
 }
@@ -484,7 +479,7 @@ func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) {
 
 		// ask the child controls to potentially render, since this control doesn't need to
 		for _, child := range c.children {
-			if child.IsOnPage() || child.ShouldAutoRender() {
+			if child.IsOnPage() || child.control().shouldAutoRender {
 				child.DrawAjax(ctx, response)
 			}
 		}
@@ -492,9 +487,9 @@ func (c *ControlBase) DrawAjax(ctx context.Context, response *Response) {
 	return
 }
 
-// PostRender is called by the framework at the end of drawing, and is the place where controls
+// DrawPostRender is called by the framework at the end of drawing, and is the place where controls
 // do any post-drawing cleanup needed.
-func (c *ControlBase) PostRender(ctx context.Context, w io.Writer) {
+func (c *ControlBase) DrawPostRender(ctx context.Context, w io.Writer) {
 	// Update watcher
 	//if ($This->objWatcher) {
 	//$This->objWatcher->makeCurrent();
@@ -546,7 +541,7 @@ func (c *ControlBase) RenderAutoControls(ctx context.Context, w io.Writer) {
 	// Figuring out where to draw these controls can be difficult.
 
 	for _, ctrl := range c.children {
-		if ctrl.ShouldAutoRender() &&
+		if ctrl.control().shouldAutoRender &&
 			!ctrl.WasRendered() {
 
 			ctrl.Draw(ctx, w)
@@ -555,7 +550,7 @@ func (c *ControlBase) RenderAutoControls(ctx context.Context, w io.Writer) {
 	return
 }
 
-// DrawTemplate is used by the framework to draw the ControlBase with a template.
+// DrawTemplate is used by the framework to draw the Control using a template.
 // Controls that use templates should use this function signature for the template. That will override this one, and
 // we will then detect that the template was drawn. Otherwise, we detect that no template was defined, and it will move
 // on to drawing the controls without a template, or just the text if text is defined.
@@ -611,7 +606,7 @@ func (c *ControlBase) DrawText(ctx context.Context, w io.Writer) {
 
 // SetAttribute sets an HTML attribute of the control. You can manually set almost any attribute, but be careful
 // not to set the id attribute, or any attribute that is managed by the control itself. If you are setting
-// a data-* attribute, use SetDataAttribute instead. If you are adding a class to the control, use MergeWords.
+// a data-* attribute, use [SetDataAttribute] instead. If you are adding a class to the control, use [AddClass].
 func (c *ControlBase) SetAttribute(name string, val interface{}) ControlI {
 	if name == "id" {
 		panic("You can only set the 'id' attribute of a control when it is created")
@@ -668,6 +663,12 @@ func (c *ControlBase) DrawingAttributes(ctx context.Context) html5tag.Attributes
 }
 
 // SetDataAttribute will set a data-* attribute. The name should be camelCase, without "data" in the name.
+// For example:
+//
+//	SetDataAttribute("myVal", 5)
+//
+// will result in the "data-my-val=5" attribute appearing in the HTML, which will be accessible from
+// javascript using .data("myVal").
 func (c *ControlBase) SetDataAttribute(name string, val interface{}) {
 	var v string
 	var ok bool
@@ -686,6 +687,7 @@ func (c *ControlBase) SetDataAttribute(name string, val interface{}) {
 	}
 }
 
+// MergeAttributes will merge the given attributes into the control's attributes.
 func (c *ControlBase) MergeAttributes(a html5tag.Attributes) ControlI {
 	c.attributes.Merge(a)
 	return c.this()
@@ -1059,29 +1061,9 @@ func (c *ControlBase) Off() {
 	}
 }
 
-// HasServerAction returns true if one of the actions attached to the given event is a Server action.
-func (c *ControlBase) HasServerAction(eventName string) bool {
-	for _, e := range c.events {
-		if event.Name(e) == eventName && event.HasServerAction(e) {
-			return true
-		}
-	}
-	return false
-}
-
-// HasCallbackAction returns true if one of the actions attached to the given event is a Server action.
-func (c *ControlBase) HasCallbackAction(eventName string) bool {
-	for _, e := range c.events {
-		if event.Name(e) == eventName && event.HasCallbackAction(e) {
-			return true
-		}
-	}
-	return false
-}
-
-// GetEvent returns the event associated with the eventName, which corresponds to the javascript
+// Event returns the event associated with the eventName, which corresponds to the javascript
 // trigger name.
-func (c *ControlBase) GetEvent(eventName string) *event.Event {
+func (c *ControlBase) Event(eventName string) *event.Event {
 	for _, e := range c.events {
 		if event.Name(e) == eventName {
 			return e
@@ -1091,27 +1073,29 @@ func (c *ControlBase) GetEvent(eventName string) *event.Event {
 }
 
 // SetActionValue sets a value that is provided to actions when they are triggered. The value can be a static value
-// or one of the javascript.* objects that can dynamically generate values. The value is then sent back to the action
-// handler after the action is triggered.
+// or one of the javascript.* objects that can dynamically generate values. The value is then sent back to the Action
+// function after the action is triggered as the ControlActionValue in the action.Params struct.
 func (c *ControlBase) SetActionValue(v interface{}) ControlI {
 	c.actionValue = v
 	return c.this()
 }
 
-// ActionValue returns the control's action value
+// ActionValue returns the control's action value that is sent to the Action function in the ControlActionValue of the
+// action.Params struct.
 func (c *ControlBase) ActionValue() interface{} {
 	return c.actionValue
 }
 
-// Action processes actions. Typically, the Action function will first look at the id to know how to handle it.
-// This is just an empty implementation. Sub-controls should implement this.
-func (c *ControlBase) Action(ctx context.Context, a action.Params) {
+// DoAction is called by the framework in response to a [action.Server] or [action.Ajax] action.
+// Forms and controls should implement this method to handle the action.
+// Typically, the Action function will first look at the id to know how to handle it.
+func (c *ControlBase) DoAction(ctx context.Context, a action.Params) {
 }
 
-// PrivateAction processes actions that a control sets up for itself, and that it does not want to give the opportunity
-// for users of the control to manipulate or remove those actions. Generally, private actions should call their superclass
-// PrivateAction function too.
-func (c *ControlBase) PrivateAction(ctx context.Context, a action.Params) {
+// DoPrivateAction processes actions that a control sets up for itself, and that it does not want to give the opportunity
+// for users of the control to manipulate or remove those actions. Generally, private actions should call their embedded
+// DoPrivateAction method too.
+func (c *ControlBase) DoPrivateAction(ctx context.Context, a action.Params) {
 }
 
 // GetActionScripts is an internal function called during drawing to gather all the event related
@@ -1172,27 +1156,28 @@ func (c *ControlBase) doAction(ctx context.Context) {
 	if c.passesValidation(ctx, e) {
 		log.FrameworkDebug("doAction - triggered event: ", e.String())
 		if callbackAction := event.GetCallbackAction(e); callbackAction != nil {
+			cba := callbackAction.(action.CallbackActionAccessor)
 			p := action.NewActionParams(
-				callbackAction.ID(),
-				callbackAction.(action.CallbackActionI),
+				cba.ID(),
+				callbackAction,
 				c.ID(),
 				grCtx.actionValues,
 			)
 
-			if c.Page().HasControl(callbackAction.GetDestinationControlID()) {
-				dest := c.Page().GetControl(callbackAction.GetDestinationControlID())
+			if c.Page().HasControl(cba.GetDestinationControlID()) {
+				dest := c.Page().GetControl(cba.GetDestinationControlID())
 				if isPrivate {
 					if log.HasLogger(log.FrameworkDebugLog) {
-						log.FrameworkDebugf("doAction - PrivateAction, DestId: %s, ActionId: %d, Action: %s, TriggerId: %s",
+						log.FrameworkDebugf("doAction - DoPrivateAction, DestId: %s, ActionId: %d, DoAction: %s, TriggerId: %s",
 							dest.ID(), p.ID, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
-					dest.PrivateAction(ctx, p)
+					dest.DoPrivateAction(ctx, p)
 				} else {
 					if log.HasLogger(log.FrameworkDebugLog) {
-						log.FrameworkDebugf("doAction - Action, DestId: %s, ActionId: %d, Action: %s, TriggerId: %s",
+						log.FrameworkDebugf("doAction - DoAction, DestId: %s, ActionId: %d, DoAction: %s, TriggerId: %s",
 							dest.ID(), p.ID, reflect.TypeOf(p.Action).String(), p.ControlId)
 					}
-					dest.Action(ctx, p)
+					dest.DoAction(ctx, p)
 				}
 			}
 		}
@@ -1203,16 +1188,17 @@ func (c *ControlBase) doAction(ctx context.Context) {
 
 // SetBlockParentValidation will prevent a parent from validating this control. This is generally useful for panels and
 // other containers of controls that wish to have their own validation scheme. Dialogs in particular need this since
-// they essentially act as a separate form, even though technically they are included in a form.
+// they act as a separate form, even though technically they are included in a form.
 func (c *ControlBase) SetBlockParentValidation(block bool) {
 	c.blockParentValidation = block
 }
 
 // SetValidationType specifies how this control validates other controls. Typically, its either ValidateNone or ValidateForm.
-// ValidateForm will validate all the controls on the form.
-// ValidateSiblingsAndChildren will validate the immediate siblings of the target controls and their children
-// ValidateSiblingsOnly will validate only the siblings of the target controls
-// ValidateTargetsOnly will validate only the specified target controls
+//
+//   - ValidateForm will validate all the controls on the form.
+//   - ValidateSiblingsAndChildren will validate the immediate siblings of the target controls and their children
+//   - ValidateSiblingsOnly will validate only the siblings of the target controls
+//   - ValidateTargetsOnly will validate only the specified target controls
 func (c *ControlBase) SetValidationType(typ event.ValidationType) ControlI {
 	c.validationType = typ
 	return c.this()
@@ -1491,18 +1477,20 @@ func (c *ControlBase) resetState(ctx context.Context) {
 }
 */
 
-// MarshalState is a helper function for controls to save their basic state, so that if the form is reloaded, the
-// value that the user entered will not be lost. Implementing controls should add items to the given map.
+// MarshalState is a helper function for control implementations to save their state,
+// so that if the form is reloaded, the value that the user entered will not be lost.
+// Implementing controls should add items to the given map.
 // Note that the control id is used as a key for the state,
 // so that if you are dynamically adding controls, you should make sure you give a specific, non-changing control id
 // to the control, or the state may be lost.
 func (c *ControlBase) MarshalState(m SavedState) {
 }
 
-// UnmarshalState is a helper function for controls to get their state from the stateStoreType. To implement it, a control
-// should read the data out of the given map. If needed, implement your own version checking scheme. The given map will
-// be guaranteed to have been written out by the same kind of control as the one reading it. Be sure to call the super-class
-// version too.
+// UnmarshalState is a helper function for control implementations to retrieve their state from state storage.
+// To implement it, a control should read the data out of the given map.
+// If needed, implement your own version checking scheme.
+// The given map will be guaranteed to have been written out by the same kind of control as the one reading it.
+// Control implementations should be sure to call the superclass version too.
 func (c *ControlBase) UnmarshalState(m SavedState) {
 }
 
@@ -1524,10 +1512,10 @@ func (c *ControlBase) GT(message string) string {
 // string and not a variable, so that an extractor can extract it from your source to put it into a translation file.
 // This version passes the literal string.
 //
-// Examples
+// Examples:
 //
-//	  textbox.T("I have %d things", count, i18n.Comment("This will need multiple translations based on the count value"));
-//		 textbox.SetText(textbox.T("S", i18n.ID("South")));
+//	textbox.T("I have %d things", count, i18n.Comment("This will need multiple translations based on the count value"));
+//	textbox.SetText(textbox.T("S", i18n.ID("South")));
 func (c *ControlBase) T(message string, params ...interface{}) string {
 	builder, args := i18n.ExtractBuilderFromArguments(params)
 	if len(args) > 0 {
@@ -1649,7 +1637,7 @@ func (c *ControlBase) SetWillBeValidated(v bool) {
 	}
 }
 
-// DataConnector returns the data connector.
+// DataConnector returns the control's data connector if one has been set.
 func (c *ControlBase) DataConnector() DataConnector {
 	return c.dataConnector
 }
@@ -1660,12 +1648,16 @@ func (c *ControlBase) SetDataConnector(d DataConnector) ControlI {
 	return c.this()
 }
 
+// RefreshData is called by forms to tell controls to set their appearance based on the data provided.
+// The default calls the data connector to do this.
 func (c *ControlBase) RefreshData(data interface{}) {
 	if c.dataConnector != nil {
 		c.dataConnector.Refresh(c.this(), data)
 	}
 }
 
+// UpdateData is called by forms to tell controls to put the control value into the provided data object.
+// The default calls the data connector to do this.
 func (c *ControlBase) UpdateData(data interface{}) {
 	if c.dataConnector != nil && c.IsOnPage() {
 		c.dataConnector.Update(c.this(), data)
@@ -1673,6 +1665,7 @@ func (c *ControlBase) UpdateData(data interface{}) {
 }
 
 // WatchDbTables will add the table nodes to the list of database tables that the control is watching.
+// When data in that table changes, the control is updated.
 // It also adds all the parents of those nodes.
 // For example, WatchDbTables(ctx, node.Project().Manager()) will watch the project table and the person table.
 func (c *ControlBase) WatchDbTables(ctx context.Context, nodes ...query.NodeI) {
@@ -1871,15 +1864,17 @@ func (c *ControlBase) Deserialize(d Decoder) {
 	return
 }
 
-// EventList is a list of event and action pairs. Use action.Group as the Action to assign multiple actions to
-// an event.
+// EventList is used by Creators to declare a list of event and action pairs.
+// Use action.Group as the Action to assign multiple actions to single event.
 type EventList []struct {
 	Event  *event.Event
 	Action action.ActionI
 }
 
+// DataAttributeMap is used by Creators to declare a map of data attributes.
 type DataAttributeMap map[string]interface{}
 
+// Nodes is used by Creators to specify a list of nodes.
 func Nodes(n ...query.NodeI) []query.NodeI {
 	return n
 }
@@ -1888,7 +1883,7 @@ func Nodes(n ...query.NodeI) []query.NodeI {
 type ControlOptions struct {
 	// Attributes will set the attributes of the control. Use DataAttributes to set data attributes, Styles to set styles, and Class to set the class
 	Attributes html5tag.Attributes
-	// Attributes will set the attributes of the control. Use DataAttributes to set data attributes, Styles to set styles, and Class to set the class
+	// DataAttributes will set the data-* attributes of the control.
 	DataAttributes DataAttributeMap
 	// Styles sets the styles of the control's tag
 	Styles html5tag.Style
@@ -1909,6 +1904,7 @@ type ControlOptions struct {
 	WatchedDbTables []query.NodeI
 }
 
+// ApplyOptions is called by Creators to apply the default control options.
 func (c *ControlBase) ApplyOptions(ctx context.Context, o ControlOptions) {
 	if o.Attributes != nil {
 		c.MergeAttributes(o.Attributes)
@@ -1941,12 +1937,13 @@ func (c *ControlBase) ApplyOptions(ctx context.Context, o ControlOptions) {
 	}
 }
 
-// Creator is the interface all declarative helpers need to implement
+// Creator is the interface all declarative helpers need to implement.
+// It is used to add multiple controls with various settings from a single Go struct.
 type Creator interface {
 	Create(ctx context.Context, parent ControlI) ControlI
 }
 
-// AddControls adds subcontrols to a control using a Create function
+// AddControls adds sub-controls to a control using a Create function
 func (c *ControlBase) AddControls(ctx context.Context, creators ...Creator) {
 	for _, creator := range creators {
 		creator.Create(ctx, c)
@@ -1954,8 +1951,8 @@ func (c *ControlBase) AddControls(ctx context.Context, creators ...Creator) {
 }
 
 // FireTestMarker sends a marker signal to the browser test runner. You would normally send this from some place
-// in your application if you want to wait until your app has gotten to that spot. Call WaitMarker on the test
-// form to wait for the marker.
+// in your application during testing if you want to wait until your app has gotten to that spot.
+// Call WaitMarker on the test form to wait for the marker.
 func (c *ControlBase) FireTestMarker(marker string) {
 	if config.Debug {
 		log.FrameworkDebug("Firing test marker: ", marker)

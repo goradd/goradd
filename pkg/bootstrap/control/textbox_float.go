@@ -2,17 +2,17 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/textbox"
+	"github.com/goradd/html5tag"
 )
 
 type FloatTextboxI interface {
-	control.FloatTextboxI
+	textbox.FloatI
 }
 
 type FloatTextbox struct {
-	control.FloatTextbox
+	textbox.FloatTextbox
 }
 
 func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
@@ -60,11 +60,11 @@ type FloatTextboxCreator struct {
 	// MinValue is the minimum value the user can enter. If the user does not
 	// enter at least this amount, or enters something that is not an integer, it will fail validation
 	// and the FormFieldWrapper will show an error.
-	MinValue *control.FloatLimit
+	MinValue *textbox.FloatLimit
 	// MaxValue is the maximum value the user can enter. If the user enter more
 	// than this amount, or enters something that is not an integer, it will fail validation
 	// and the FormFieldWrapper will show an error.
-	MaxValue *control.FloatLimit
+	MaxValue *textbox.FloatLimit
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Value interface{}
 
@@ -83,7 +83,7 @@ func (c FloatTextboxCreator) Create(ctx context.Context, parent page.ControlI) p
 // creator. You do not normally need to call this.
 func (c FloatTextboxCreator) Init(ctx context.Context, ctrl FloatTextboxI) {
 	// Reuse subclass
-	sub := control.FloatTextboxCreator{
+	sub := textbox.FloatTextboxCreator{
 		Placeholder:    c.Placeholder,
 		Type:           c.Type,
 		MinLength:      c.MinLength,
@@ -92,9 +92,9 @@ func (c FloatTextboxCreator) Init(ctx context.Context, ctrl FloatTextboxI) {
 		ReadOnly:       c.ReadOnly,
 		ControlOptions: c.ControlOptions,
 		SaveState:      c.SaveState,
-		MinValue: c.MinValue,
-		MaxValue: c.MaxValue,
-		Value: c.Value,
+		MinValue:       c.MinValue,
+		MaxValue:       c.MaxValue,
+		Value:          c.Value,
 	}
 	sub.Init(ctx, ctrl)
 }
@@ -103,7 +103,6 @@ func (c FloatTextboxCreator) Init(ctx context.Context, ctrl FloatTextboxI) {
 func GetFloatTextbox(c page.ControlI, id string) *FloatTextbox {
 	return c.Page().GetControl(id).(*FloatTextbox)
 }
-
 
 func init() {
 	page.RegisterControl(&FloatTextbox{})

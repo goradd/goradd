@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
 	"io"
@@ -14,7 +15,7 @@ import (
 const DropdownSelect = "gr-bs-dropdownselect"
 
 type DropdownI interface {
-	control.UnorderedListI
+	list.UnorderedListI
 	SetAsNavItem(bool) DropdownI
 	ButtonAttributes() html5tag.Attributes
 	MenuAttributes() html5tag.Attributes
@@ -25,7 +26,7 @@ type DropdownI interface {
 // The Dropdown is a button combined with a list. The button shows the list, allowing the user
 // to select an item from the list.
 type Dropdown struct {
-	control.UnorderedList
+	list.UnorderedList
 	asNavItem        bool
 	buttonAttributes html5tag.Attributes
 	menuAttributes   html5tag.Attributes
@@ -109,7 +110,7 @@ func (l *Dropdown) DrawInnerHtml(_ context.Context, w io.Writer) {
 			btnAttr.AddClass("btn"),
 			l.Text())
 	}
-	hItems := l.this().GetItemsHtml(l.ListItems())
+	hItems := l.this().GetItemsHtml(l.Items())
 
 	menuAttr := l.menuAttributes.Copy()
 	menuAttr.AddClass("dropdown-menu")
@@ -118,7 +119,7 @@ func (l *Dropdown) DrawInnerHtml(_ context.Context, w io.Writer) {
 	return
 }
 
-func (l *Dropdown) GetItemsHtml(items []*control.ListItem) string {
+func (l *Dropdown) GetItemsHtml(items []*list.Item) string {
 	// make sure the list items have the correct classes before drawing them
 	for _, item := range items {
 		if item.Anchor() == "" {
@@ -165,7 +166,7 @@ type DropdownCreator struct {
 	// Text is the label that will appear in the dropdown button
 	Text string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
-	Items []control.ListValue
+	Items []list.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
@@ -193,7 +194,7 @@ func (c DropdownCreator) Create(ctx context.Context, parent page.ControlI) page.
 }
 
 func (c DropdownCreator) Init(ctx context.Context, ctrl DropdownI) {
-	sub := control.UnorderedListCreator{
+	sub := list.UnorderedListCreator{
 		Items:          c.Items,
 		DataProvider:   c.DataProvider,
 		DataProviderID: c.DataProviderID,

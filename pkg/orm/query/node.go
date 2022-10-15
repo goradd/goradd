@@ -5,13 +5,13 @@ type FieldType int
 
 const (
 	Blob FieldType = iota
-	Integer
+	IntegerTextbox
 	VarChar
 	Char
 	DateTime
 	Date
 	Time
-	Float
+	FloatTextbox
 	Bit
 )*/
 
@@ -130,7 +130,6 @@ func NodeDbKey(n NodeI) string {
 	return n.databaseKey()
 }
 
-
 // NodeIsConditioner is used internally by the framework to determine if the node has a join condition.
 func NodeIsConditioner(n NodeI) bool {
 	if tn, _ := n.(TableNodeI); tn != nil {
@@ -191,7 +190,9 @@ func NodeIsExpanded(n NodeI) bool {
 // NodeIsExpander is used internally by the framework to detect if the node can be an expanded many-many relationship.
 func NodeIsExpander(n NodeI) bool {
 	if tn, ok := n.(TableNodeI); ok {
-		if tn.getParent() == nil {return false}
+		if tn.getParent() == nil {
+			return false
+		}
 		if en, ok := tn.EmbeddedNode_().(Expander); ok {
 			return en.isExpander()
 		}

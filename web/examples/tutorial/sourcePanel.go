@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/button"
 	"github.com/goradd/goradd/pkg/page/event"
 	"path/filepath"
 )
@@ -47,7 +48,7 @@ func (p *SourcePanel) show(files []string) {
 	}
 }
 
-func (p *SourcePanel) Action(ctx context.Context, a action.Params) {
+func (p *SourcePanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case FileAction:
 		file := a.ControlValueString()

@@ -7,10 +7,10 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(CheckboxList{}, "github.com/goradd/goradd/pkg/page/control/CheckboxList")
+	generator.RegisterControlGenerator(CheckboxList{}, "github.com/goradd/goradd/pkg/page/control/list/CheckboxList")
 }
 
-// This structure describes the CheckboxList to the connector dialog and code generator
+// CheckboxList describes the CheckboxList to the connector dialog and code generator
 type CheckboxList struct {
 }
 
@@ -19,13 +19,13 @@ func (d CheckboxList) NewFunc() string {
 }
 
 func (d CheckboxList) SupportsColumn(ref interface{}) bool {
-	if rr,ok := ref.(*db.ReverseReference); ok {
+	if rr, ok := ref.(*db.ReverseReference); ok {
 		if rr.IsUnique() {
 			return false
 		}
 		return true
 	}
-	if _,ok := ref.(*db.ManyManyReference); ok {
+	if _, ok := ref.(*db.ManyManyReference); ok {
 		return true
 	}
 
@@ -34,7 +34,7 @@ func (d CheckboxList) SupportsColumn(ref interface{}) bool {
 
 func (d CheckboxList) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	s = fmt.Sprintf(
-`%s.CheckboxListCreator{
+		`%s.CheckboxListCreator{
 	ID:           p.ID() + "-%s",
 	DataProvider: p,
 	ControlOptions: page.ControlOptions{
@@ -43,7 +43,6 @@ func (d CheckboxList) GenerateCreator(ref interface{}, desc *generator.ControlDe
 }`, desc.Package, desc.ControlID, desc.Connector)
 	return
 }
-
 
 func (d CheckboxList) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) string {
 	switch ref.(type) {
@@ -61,26 +60,25 @@ func (d CheckboxList) GenerateRefresh(ref interface{}, desc *generator.ControlDe
 }
 
 func (d CheckboxList) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) string {
-/*	switch col := ref.(type) {
-	case *db.ReverseReference:
-		return fmt.Sprintf(`
-			values := ctrl.SelectedValues()
-			model.Unasso
-			`,
-			col.GoPlural)
-	case *db.ManyManyReference:
-		return fmt.Sprintf(`
-			values := []string
-			for _,obj := range model.Load%s(ctx) {
-				values = append(values, obj.PrimaryKey())
-			}
-			ctrl.SetSelectedValues(values)`,
-			col.GoPlural)
-	}
-*/
+	/*	switch col := ref.(type) {
+		case *db.ReverseReference:
+			return fmt.Sprintf(`
+				values := ctrl.SelectedValues()
+				model.Unasso
+				`,
+				col.GoPlural)
+		case *db.ManyManyReference:
+			return fmt.Sprintf(`
+				values := []string
+				for _,obj := range model.Load%s(ctx) {
+					values = append(values, obj.PrimaryKey())
+				}
+				ctrl.SetSelectedValues(values)`,
+				col.GoPlural)
+		}
+	*/
 	return ``
 }
-
 
 func (d CheckboxList) GenerateProvider(ref interface{}, desc *generator.ControlDescription) string {
 	switch col := ref.(type) {

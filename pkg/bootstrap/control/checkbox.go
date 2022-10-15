@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/button"
+	"github.com/goradd/html5tag"
 	"io"
 )
 
 type Checkbox struct {
-	control.Checkbox
+	button.Checkbox
 	inline bool
 }
 
@@ -51,9 +51,13 @@ func (c *Checkbox) DrawTag(ctx context.Context, w io.Writer) {
 	if c.inline {
 		checkWrapperAttributes.AddClass("form-check-inline")
 	}
-	if _, err := fmt.Fprint(w, "<div ", checkWrapperAttributes.String(), ">\n"); err != nil {panic(err)}
+	if _, err := fmt.Fprint(w, "<div ", checkWrapperAttributes.String(), ">\n"); err != nil {
+		panic(err)
+	}
 	c.Checkbox.DrawTag(ctx, w)
-	if _, err := io.WriteString(w, "\n</div>"); err != nil {panic(err)}
+	if _, err := io.WriteString(w, "\n</div>"); err != nil {
+		panic(err)
+	}
 }
 
 func (c *Checkbox) Serialize(e page.Encoder) {

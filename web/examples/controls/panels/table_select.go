@@ -7,7 +7,9 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/column"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/table"
+	"github.com/goradd/goradd/pkg/page/control/table/column"
 	"strconv"
 )
 
@@ -104,13 +106,13 @@ func (p *TableSelectPanel) BindData(ctx context.Context, s DataManagerI) {
 	s.(*SelectTable).SetData(items)
 }
 
-func (p *TableSelectPanel) Action(ctx context.Context, a action.Params) {
+func (p *TableSelectPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case rowSelectedEvent:
 		rowID := a.EventValueString()
 		GetPanel(p, "infoPanel").SetText(fmt.Sprintf("Row %s was selected.", rowID))
 	default:
-		p.Panel.Action(ctx, a)
+		p.Panel.DoAction(ctx, a)
 	}
 }
 

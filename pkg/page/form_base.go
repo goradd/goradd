@@ -113,7 +113,7 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 	}
 	f.drawing = true
 	defer f.notDrawing()
-	f.this().PreRender(ctx, w)
+	f.this().DrawPreRender(ctx, w)
 	if _, err := io.WriteString(w, `<form `+f.this().DrawingAttributes(ctx).String()+">\n"); err != nil {
 		panic(err)
 	}
@@ -184,7 +184,7 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 		panic(err)
 	}
 
-	f.this().PostRender(ctx, w)
+	f.this().DrawPostRender(ctx, w)
 	f.resetDrawingFlags()
 
 	return
@@ -278,8 +278,8 @@ func (f *FormBase) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 }
 
 // PreRender performs setup operations just before drawing.
-func (f *FormBase) PreRender(ctx context.Context, w io.Writer) {
-	f.ControlBase.PreRender(ctx, w)
+func (f *FormBase) DrawPreRender(ctx context.Context, w io.Writer) {
+	f.ControlBase.DrawPreRender(ctx, w)
 
 	f.SetAttribute("method", "post")
 	// Setting the "action" attribute prevents iFrame clickjacking.

@@ -1,7 +1,7 @@
 // Package page is the user-interface layer of goradd, and implements state management and rendering
 // of an html page, as well as the framework for rendering controls.
 //
-// To use the page package, you start by creating a form object, and then adding controls to that form.
+// To use the page package, you start by creating a form object, and then add controls to that form.
 // You also should add a drawing template to define additional html for the form.
 package page
 
@@ -11,11 +11,11 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/goradd/goradd/pkg/goradd"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/i18n"
 	reflect2 "github.com/goradd/goradd/pkg/reflect"
 	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
+	"github.com/goradd/html5tag"
 	"io"
 	http2 "net/http"
 	"reflect"
@@ -50,18 +50,16 @@ var ControlRegistrySalt = "goradd"
 // track of the page cache version yourself.
 const UserPageCacheVersion = 10000
 
-
 // PageDrawFunc is the type of the page drawing function. This is implemented by the page drawing template.
 type PageDrawFunc func(context.Context, *Page, io.Writer) error
 
-// DrawI is the interface for items that draw into the draw buffer
+// DrawI is the interface for items that draw into the draw buffer.
 type DrawI interface {
 	Draw(context.Context, io.Writer)
 }
 
 // A code we use during serialization to indicate that we just unserialized a control id
 const controlCode = "**grc**"
-
 
 // The Page object is the top level drawing object, and is essentially a wrapper for the form. The Page draws the
 // html, head and body tags, and includes the one Form object on the page. The page also maintains a record of all
@@ -91,7 +89,7 @@ func (p *Page) Init() {
 
 // Restore is called immediately after the page has been deserialized, to fix up decoded controls.
 func (p *Page) Restore() {
-	for _,c := range p.controlRegistry {
+	for _, c := range p.controlRegistry {
 		c.Restore()
 	}
 }
@@ -127,7 +125,7 @@ func (p *Page) runPage(ctx context.Context, w http2.ResponseWriter, isNew bool) 
 		}
 
 		// Redraw controls that requested a redraw, probably through the watcher mechanism
-		for _,id := range grCtx.refreshIDs {
+		for _, id := range grCtx.refreshIDs {
 			if p.HasControl(id) {
 				p.GetControl(id).Refresh()
 			}
@@ -160,21 +158,31 @@ func (p *Page) Form() FormI {
 // Draw draws the page.
 func (p *Page) Draw(ctx context.Context, w io.Writer) {
 	f := p.form.PageDrawingFunction()
-	if err := f(ctx, p, w); err != nil {panic(err)}
+	if err := f(ctx, p, w); err != nil {
+		panic(err)
+	}
 }
 
 // DrawHeaderTags draws all the inner html for the head tag
 func (p *Page) DrawHeaderTags(ctx context.Context, w io.Writer) {
 	if p.title != "" {
-		if _,err := io.WriteString(w, "  <title>"); err != nil {panic(err)}
-		if _,err := io.WriteString(w, p.title); err != nil {panic(err)}
-		if _,err := io.WriteString(w, "  </title>\n"); err != nil {panic(err)}
+		if _, err := io.WriteString(w, "  <title>"); err != nil {
+			panic(err)
+		}
+		if _, err := io.WriteString(w, p.title); err != nil {
+			panic(err)
+		}
+		if _, err := io.WriteString(w, "  </title>\n"); err != nil {
+			panic(err)
+		}
 	}
 
 	// draw things like additional meta tags, etc
 	if p.htmlHeaderTags != nil {
 		for _, tag := range p.htmlHeaderTags {
-			if _,err := io.WriteString(w, tag.Render()); err != nil {panic(err)}
+			if _, err := io.WriteString(w, tag.Render()); err != nil {
+				panic(err)
+			}
 		}
 	}
 
@@ -228,7 +236,7 @@ func (p *Page) GetControl(id string) ControlI {
 	if p.controlRegistry == nil {
 		panic("control registry is not initialized")
 	}
-	if c,ok := p.controlRegistry[id]; !ok {
+	if c, ok := p.controlRegistry[id]; !ok {
 		panic("control with id " + id + " was not found")
 	} else {
 		return c
@@ -239,7 +247,7 @@ func (p *Page) HasControl(id string) bool {
 	if id == "" {
 		return false
 	}
-	_,ok := p.controlRegistry[id]
+	_, ok := p.controlRegistry[id]
 	return ok
 }
 
@@ -252,7 +260,7 @@ func (p *Page) addControl(control ControlI) {
 	}
 
 	if p.controlRegistry == nil {
-		p.controlRegistry = make (map[string]ControlI)
+		p.controlRegistry = make(map[string]ControlI)
 	}
 
 	if p.HasControl(id) {
@@ -290,7 +298,7 @@ func (p *Page) removeControl(id string) {
 	// TODO: Application::ExecuteSelectorFunction('#' . $objControl->getWrapperID(), 'remove');
 	// TODO: Make This a direct command in the ajax renderer
 
-	delete (p.controlRegistry,id)
+	delete(p.controlRegistry, id)
 }
 
 // Title returns the content of the <title> tag that will be output in the head of the page.
@@ -403,10 +411,10 @@ func (p *Page) encodeControlRegistry(e *gob.Encoder) (err error) {
 		// process one item out of map at a time
 		// we need to do it this way because these unattached items might have children, and we must
 		// ensure that all children get serialized first
-		for _,c := range ids {
+		for _, c := range ids {
 			c.RangeSelfAndAllChildren(
 				func(ctrl ControlI) {
-					if _,ok := ids[ctrl.ID()]; ok { // we didn't yet process it
+					if _, ok := ids[ctrl.ID()]; ok { // we didn't yet process it
 						p.encodeControl(ctrl, e)
 						delete(ids, ctrl.ID())
 					}
@@ -437,14 +445,14 @@ func (p *Page) serializeControl(c ControlI, e Encoder) {
 	exportedFields := reflect2.FieldValues(c)
 
 	// convert all embedded controls to the id of the control
-	for name,val := range exportedFields {
-		if ctrl,ok := val.(ControlI); ok {
+	for name, val := range exportedFields {
+		if ctrl, ok := val.(ControlI); ok {
 			exportedFields[name] = controlCode + ctrl.ID()
 		}
 	}
 	c.Serialize(e)
 	if err := e.Encode(exportedFields); err != nil {
-		panic ("Error serializing exported fields of " + c.ID() + ": " + err.Error())
+		panic("Error serializing exported fields of " + c.ID() + ": " + err.Error())
 	}
 }
 
@@ -527,8 +535,8 @@ func (p *Page) deserializeControl(c ControlI, d Decoder) {
 		panic(err)
 	}
 	// Substitute embedded control ids for the actual control
-	for name,val := range exportedFields {
-		if s,ok := val.(string); ok && strings2.StartsWith(s, controlCode) {
+	for name, val := range exportedFields {
+		if s, ok := val.(string); ok && strings2.StartsWith(s, controlCode) {
 			id := s[len(controlCode):]
 			if ctrl, ok2 := p.controlRegistry[id]; ok2 {
 				exportedFields[name] = ctrl
@@ -547,7 +555,7 @@ func (p *Page) AddHtmlHeaderTag(t html5tag.VoidTag) {
 }
 
 func (p *Page) HasMetaTag(name string) bool {
-	for _,t := range p.htmlHeaderTags {
+	for _, t := range p.htmlHeaderTags {
 		if t.Tag == "meta" &&
 			t.Attr["name"] == name {
 			return true
@@ -555,7 +563,6 @@ func (p *Page) HasMetaTag(name string) bool {
 	}
 	return false
 }
-
 
 // PushRedraw will cause the form to refresh in between events. This will cause the client to pull
 // the ajax response. Its possible that this will happen while drawing. We avoid the race condition
@@ -585,4 +592,3 @@ func (p *Page) Cleanup() {
 		ctrl.Cleanup()
 	})
 }
-

@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/page/action"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/dialog"
 	"path"
 	"strings"
 
@@ -84,7 +86,7 @@ func (f *IndexForm) ShowSourceDialog() {
 	d.Show()
 }
 
-func (f *IndexForm) Action(ctx context.Context, a action.Params) {
+func (f *IndexForm) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ViewSourceAction:
 		if l, ok := pages[f.Cat]; ok {

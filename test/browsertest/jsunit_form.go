@@ -6,12 +6,12 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/button"
 	"path"
 )
 
 const JsUnitTestFormPath = "/goradd/test/jsunit.g"
 const JsUnitTestFormId = "JsUnitTestForm"
-
 
 type JsUnitForm struct {
 	FormBase
@@ -19,7 +19,7 @@ type JsUnitForm struct {
 	RunButton *Button
 }
 
-func (f *JsUnitForm)Init(ctx context.Context, formID string) {
+func (f *JsUnitForm) Init(ctx context.Context, formID string) {
 	f.FormBase.Init(ctx, formID)
 	f.AddRelatedFiles()
 
@@ -36,12 +36,11 @@ func (f *JsUnitForm) AddRelatedFiles() {
 	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "goradd-js-unit-suite.js"), false, nil)
 }
 
-
 func init() {
 	RegisterTestFunction("Goradd JavaScript Unit Tests", testJsUnit)
 }
 
-func testJsUnit(t *TestForm)  {
+func testJsUnit(t *TestForm) {
 	t.LoadUrl(JsUnitTestFormPath)
 	t.Click("startButton")
 

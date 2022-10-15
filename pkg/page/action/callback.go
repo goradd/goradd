@@ -14,55 +14,61 @@ import (
 // There is potential for a Message action, like through WebSocket, PubHub, etc.
 type CallbackActionI interface {
 	ActionI
+	// ActionValue lets you set a value that will be available to the action handler as the ActionValue() function in the ActionParam structure
+	// sent to the event handler. This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
+	// javascript.Closures will be called immediately with a (this) parameter.
 	ActionValue(v interface{}) CallbackActionI
-	Validator(v int) CallbackActionI
+	// Async will cause the action to be handled asynchronously. Use this only in special situations where you know that you
+	// do not need information from other actions.
 	Async() CallbackActionI
+	// DestinationControlID sets the id of the control that will receive the action.
+	//
+	// Composite controls can specify a sub id which indicates that the action should be sent to
+	// a component inside the main control by concatenating the control's id with another id that
+	// indicates the internal destination, separated with an underscore.
 	DestinationControlID(id string) CallbackActionI
 }
 
-// FrameworkCallbackActionI is the interface the framework uses to access actions. Callback actions must satisfy
+// CallbackActionAccessor is used by the framework and the internals of controls to access actions.
+// Callback actions must satisfy
 // this interface, as well as the CallbackActionI interface.
-//
-// This is separated here so that IDEs will not pick up these functions for framework users.
-type FrameworkCallbackActionI interface {
+type CallbackActionAccessor interface {
 	// ID returns the id assigned to the action when the action was created.
 	ID() int
 	// GetDestinationControlID returns the id that the action was sent to.
 	GetDestinationControlID() string
 	// GetDestinationControlSubID returns the id of the sub-control that is the destination of the action, if one was assigned.
 	GetDestinationControlSubID() string
-	// GetActionValue returns the action value that was assigned to the action when the action was fired.
-	GetActionValue() interface{}
-	// IsServerAction returns true if this is a server action.
+	// IsServerAction returns true if the action is a server action
 	IsServerAction() bool
 }
 
-// CallbackAction is a kind of superclass for Ajax and Server actions. Do not use this class directly.
-//
-// This class is exported so that the encoder can see its fields.
-type CallbackAction struct {
-	ActionID           int
-	DestControlID      string
-	SubID              string
-	Value              interface{}
-	ValidationOverride int // overrides the validation setting that is on the control
-	CallAsync          bool
+// callbackAction is a kind of superclass for Ajax and Server actions.
+type callbackAction struct {
+	ActionID      int
+	DestControlID string
+	SubID         string
+	Value         interface{}
+	CallAsync     bool
 }
 
+// CB is a private helper for encoding callback actions
+type CB = callbackAction
+
 // ID returns the action id that was defined when the action was created.
-func (a *CallbackAction) ID() int {
+func (a *callbackAction) ID() int {
 	return a.ActionID
 }
 
 // GetActionValue returns the action value given to the action when it was created.
-func (a *CallbackAction) GetActionValue() interface{} {
+func (a *callbackAction) GetActionValue() interface{} {
 	return a.Value
 }
 
 // Assign the destination control id. You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the control's id with another id that indicates the internal destination,
 // separated with an underscore.
-func (a *CallbackAction) setDestinationControlID(id string) {
+func (a *callbackAction) setDestinationControlID(id string) {
 	parts := strings.SplitN(id, "_", 2)
 	if len(parts) == 2 {
 		a.DestControlID = parts[0]
@@ -73,30 +79,33 @@ func (a *CallbackAction) setDestinationControlID(id string) {
 }
 
 // GetDestinationControlID returns the control that the action will operate on.
-func (a *CallbackAction) GetDestinationControlID() string {
+func (a *callbackAction) GetDestinationControlID() string {
 	return a.DestControlID
 }
 
 // GetDestinationControlSubID returns the sub id so that a composite control can send the
 // action to a sub control.
-func (a *CallbackAction) GetDestinationControlSubID() string {
+func (a *callbackAction) GetDestinationControlSubID() string {
 	return a.SubID
 }
 
 type serverAction struct {
-	CallbackAction
+	CB
 }
 
 // Server creates a server action, which is an action that will use a POST submission mechanism to trigger the action.
 // Generally, with modern browsers, server actions are not that useful, since they cause an entire page to reload, while
-// Ajax actions do not, and so are Ajax actions are quicker to process. However, there are special cases where a server action might be
+// Ajax actions do not, and therefore Ajax actions are quicker to process.
+// However, there are special cases where a server action might be
 // useful, like:
-// - You are moving to a new page anyway.
-// - You are having trouble making an Ajax action work for some reason, and a Server action might get around the problem.
-// - You are submitting a multi-part form, like when uploading a file.
-// When the action fires, the Action() function of the Goradd control identified by the
+//   - You are moving to a new page anyway.
+//   - You are having trouble making an Ajax action work for some reason, and a Server action might get around the problem.
+//   - You are submitting a multipart form, like when uploading a file.
+//
+// When the action fires, the DoAction() function of the GoRADD control identified by the
 // destControlId will be called, and the given actionID will be the ID passed in the Params of the call.
-// You can specify a sub id which indicates that the action should be sent to something
+//
+// You send an action to a sub-control  specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the control's id with another id that indicates the internal destination,
 // separated with an underscore.
 //
@@ -105,7 +114,7 @@ type serverAction struct {
 //	myControl.On(event.Click(), action.Server("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
 func Server(destControlId string, actionId int) CallbackActionI {
 	a := &serverAction{
-		CallbackAction{
+		callbackAction{
 			ActionID: actionId,
 		},
 	}
@@ -147,12 +156,6 @@ func (a *serverAction) ActionValue(v interface{}) CallbackActionI {
 	return a
 }
 
-// Validator lets you override the validation setting for the control that the action is being sent to.
-func (a *serverAction) Validator(v int) CallbackActionI {
-	a.ValidationOverride = v
-	return a
-}
-
 // Async will cause the action to be handled asynchronously. Use this only in special situations where you know that you
 // do not need information from other actions.
 func (a *serverAction) Async() CallbackActionI {
@@ -161,24 +164,44 @@ func (a *serverAction) Async() CallbackActionI {
 }
 
 // DestinationControlID sets the id of the control that will receive the action.
-// You can specify a sub id which indicates that the action should be sent to something
-// inside the main control by concatenating the control's id with another id that indicates the internal destination,
+//
+// Implementations of composite controls can specify a sub id which indicates that the action should be sent to
+// an item inside a control by concatenating the control's id with another id that indicates the internal destination,
 // separated with an underscore.
 func (a *serverAction) DestinationControlID(id string) CallbackActionI {
 	a.setDestinationControlID(id)
 	return a
 }
 
-// IsServerAction returns true if this is a server action
+// IsServerAction returns true if this is a server action.
+// This is used by the test harness.
 func (a *serverAction) IsServerAction() bool {
 	return true
 }
 
-type ajaxAction struct {
-	CallbackAction
+/*
+func (a *serverAction) GobEncode() (data []byte, err error) {
+	var buf bytes.Buffer
+	e := gob.NewEncoder(&buf)
+
+	if err = a.callbackAction.encode(e); err != nil {
+		return nil, err
+	}
+	data = buf.Bytes()
+	return
 }
 
-// Ajax creates an ajax action. When the action fires, the Action() function of the Goradd control identified by the
+func (a *serverAction) GobDecode(data []byte) (err error) {
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	return a.callbackAction.decode(dec)
+}*/
+
+type ajaxAction struct {
+	CB
+}
+
+// Ajax creates an ajax action. When the action fires, the DoAction() function of the GoRADD control identified by the
 // destControlId will be called, and the given actionID will be the ID passed in the Params of the call.
 // You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the control's id with another id that indicates the internal destination,
@@ -189,7 +212,7 @@ type ajaxAction struct {
 //	myControl.On(event.Click(), action.Ajax("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
 func Ajax(destControlId string, actionID int) CallbackActionI {
 	a := &ajaxAction{
-		CallbackAction{
+		callbackAction{
 			ActionID: actionID,
 		},
 	}
@@ -231,12 +254,6 @@ func (a *ajaxAction) ActionValue(v interface{}) CallbackActionI {
 	return a
 }
 
-// Validator lets you override the validation setting for the control that the action is being sent to.
-func (a *ajaxAction) Validator(v int) CallbackActionI {
-	a.ValidationOverride = v
-	return a
-}
-
 // Async will cause the action to be handled asynchronously. Use this only in special situations where you know that you
 // do not need information from other actions.
 func (a *ajaxAction) Async() CallbackActionI {
@@ -254,10 +271,29 @@ func (a *ajaxAction) DestinationControlID(id string) CallbackActionI {
 }
 
 // IsServerAction will return false if this is not a server action.
+// This is used by the test harness.
 func (a *ajaxAction) IsServerAction() bool {
 	return false
 }
 
+/*
+	func (a *ajaxAction) GobEncode() (data []byte, err error) {
+		var buf bytes.Buffer
+		e := gob.NewEncoder(&buf)
+
+		if err = a.callbackAction.encode(e); err != nil {
+			return nil, err
+		}
+		data = buf.Bytes()
+		return
+	}
+
+	func (a *ajaxAction) GobDecode(data []byte) (err error) {
+		buf := bytes.NewBuffer(data)
+		dec := gob.NewDecoder(buf)
+		return a.callbackAction.decode(dec)
+	}
+*/
 func init() {
 	// Register actions so they can be serialized
 	gob.Register(&ajaxAction{})

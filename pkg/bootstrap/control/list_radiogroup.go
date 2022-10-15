@@ -3,11 +3,12 @@ package control
 import (
 	"context"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/html5tag"
 )
 
 type RadioListGroupI interface {
@@ -47,7 +48,6 @@ func (l *RadioListGroup) SetButtonStyle(buttonStyle string) RadioListGroupI {
 	return l
 }
 
-
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *RadioListGroup) DrawingAttributes(ctx context.Context) html5tag.Attributes {
@@ -59,7 +59,7 @@ func (l *RadioListGroup) DrawingAttributes(ctx context.Context) html5tag.Attribu
 }
 
 // RenderItem is called by the framework to render a single item in the list.
-func (l *RadioListGroup) RenderItem(item *control.ListItem) (h string) {
+func (l *RadioListGroup) RenderItem(item *list.Item) (h string) {
 	selected := l.SelectedItem().ID() == item.ID()
 	attributes := html5tag.NewAttributes()
 	attributes.SetID(item.ID())
@@ -85,7 +85,6 @@ func (l *RadioListGroup) Serialize(e page.Encoder) {
 	}
 }
 
-
 func (l *RadioListGroup) Deserialize(d page.Decoder) {
 	l.RadioList.Deserialize(d)
 
@@ -96,11 +95,10 @@ func (l *RadioListGroup) Deserialize(d page.Decoder) {
 	return
 }
 
-
 type RadioListGroupCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
-	Items []control.ListValue
+	Items []list.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
@@ -110,7 +108,7 @@ type RadioListGroupCreator struct {
 	// SaveState saves the selected value so that it is restored if the form is returned to.
 	ButtonStyle string
 	// OnChange is the action to take when any of the radio buttons in the list change
-	OnChange action.ActionI
+	OnChange  action.ActionI
 	SaveState bool
 	page.ControlOptions
 }
@@ -125,11 +123,11 @@ func (c RadioListGroupCreator) Create(ctx context.Context, parent page.ControlI)
 
 func (c RadioListGroupCreator) Init(ctx context.Context, ctrl RadioListGroupI) {
 	sub := RadioListCreator{
-		ID: c.ID,
-		Items: c.Items,
-		DataProvider: c.DataProvider,
-		Value: c.Value,
-		SaveState: c.SaveState,
+		ID:             c.ID,
+		Items:          c.Items,
+		DataProvider:   c.DataProvider,
+		Value:          c.Value,
+		SaveState:      c.SaveState,
 		ControlOptions: c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)

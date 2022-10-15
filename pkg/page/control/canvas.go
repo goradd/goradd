@@ -11,7 +11,7 @@ type CanvasI interface {
 	page.ControlI
 }
 
-// Canvas is a Goradd control that is an html canvas control. It currently does not have any primitives
+// Canvas is a GoRADD control that is an HTML canvas control. It currently does not have any primitives
 // to draw on the canvas, and is here primarily to create a canvas that you would draw on using JavaScript.
 type Canvas struct {
 	page.ControlBase

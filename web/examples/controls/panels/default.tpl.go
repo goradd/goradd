@@ -31,7 +31,7 @@ controls fall in to these categories:
 	}
 
 	if _, err = io.WriteString(_w, ` tags</li>
-<li>Custom controls that let you edit database data types, like an Integer or Date field</li>
+<li>Custom controls that let you edit database data types, like an IntegerTextbox or Date field</li>
 <li>Custom controls that let you create database relationships, like one-to-many relationships</li>
 <li>Useful controls for dealing with common situations</li>
 <li>Controls corresponding to widgets found in supported css/js libraries, like Bootstrap</li>

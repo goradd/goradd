@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 )
@@ -27,7 +28,6 @@ var hlistProjects = []hlistProject{
 
 type HListPanel struct {
 	Panel
-
 }
 
 func NewHListPanel(ctx context.Context, parent page.ControlI) {
@@ -47,12 +47,12 @@ func (p *HListPanel) Init(ctx context.Context, parent page.ControlI, id string) 
 	}
 	p.AddControls(ctx,
 		OrderedListCreator{
-			ID: "orderedList",
-			Items:itemList,
+			ID:    "orderedList",
+			Items: itemList,
 		},
 		UnorderedListCreator{
-			ID: "unorderedList",
-			DataProviderID:"HListPanel",
+			ID:             "unorderedList",
+			DataProviderID: "HListPanel",
 		},
 	)
 }
@@ -63,11 +63,11 @@ func (p *HListPanel) BindData(ctx context.Context, s DataManagerI) {
 	ulist := s.(*UnorderedList)
 	ulist.Clear()
 	for _, proj := range hlistProjects {
-		listItem := NewListItem(proj.name)
+		listItem := NewItem(proj.name)
 		for _, per := range proj.people {
-			listItem.AddItem(per.name)
+			listItem.Add(per.name)
 		}
-		ulist.AddListItems(listItem)
+		ulist.AddItems(listItem)
 	}
 }
 
@@ -77,7 +77,7 @@ func init() {
 }
 
 // testPlain exercises the plain text box
-func testHListAjaxSubmit(t *browsertest.TestForm)  {
+func testHListAjaxSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "HList").SetValue("testing", 1).String()
 	t.LoadUrl(myUrl)
 
@@ -86,7 +86,7 @@ func testHListAjaxSubmit(t *browsertest.TestForm)  {
 	t.Done("Complete")
 }
 
-func testHListServerSubmit(t *browsertest.TestForm)  {
+func testHListServerSubmit(t *browsertest.TestForm) {
 	var myUrl = url.NewBuilder(controlsFormPath).SetValue("control", "HList").SetValue("testing", 1).String()
 	t.LoadUrl(myUrl)
 

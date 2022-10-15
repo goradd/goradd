@@ -35,11 +35,17 @@ func (c *Span) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	return a
 }
 
+// SpanCreator creates a "span" tag.
 type SpanCreator struct {
-	ID         string
-	Text       string
+	// ID is the HTML id of the tag.
+	ID string
+	// Text is the content inside the span tag.
+	Text string
+	// TextIsHtml specifies that the content is HTML and should not be escaped.
 	TextIsHtml bool
-	Children   []page.Creator
+	// Children are child controls of the span.
+	Children []page.Creator
+	// ControlOptions are standard options you can set on any GoRADD control.
 	page.ControlOptions
 }
 

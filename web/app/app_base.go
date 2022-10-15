@@ -89,7 +89,9 @@ func (a *Application) SetupPagestateCaching() {
 	// and whether you are in development mode, etc. This default is for an in-memory store on one server and only one
 	// process on that server. It basically does not serialize anything and leaves the entire pagestate intact in memory.
 	// This makes for a very fast server, but one that takes up quite a bit of RAM if you have a lot of simultaneous users.
-	page.SetPagestateCache(page.NewFastPageCache(1000, 60*60*24))
+	if page.GetPagestateCache() == nil {
+		page.SetPagestateCache(page.NewFastPageCache(1000, 60*60*24))
+	}
 
 	// Controls how pages are serialized if a serialization cache is being used. This version uses the gob encoder.
 	// You likely will not need to change this, but you might if your database cannot handle binary data.

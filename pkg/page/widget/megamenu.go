@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
 	"io"
@@ -26,15 +27,15 @@ import (
 // to add additional styling for your situation.
 type MegaMenu struct {
 	page.ControlBase
-	control.ItemList
+	list.List
 	control.DataManager
 }
 
 type MegaMenuI interface {
 	page.ControlI
-	control.ItemListI
+	list.ListI
 	control.DataManagerI
-	GetItemsHtml(items []*control.ListItem, level int) string
+	GetItemsHtml(items []*list.Item, level int) string
 	SetAriaLabel(l string) MegaMenuI
 }
 
@@ -50,7 +51,7 @@ func NewMegaMenu(parent page.ControlI, id string) *MegaMenu {
 
 func (l *MegaMenu) Init(parent page.ControlI, id string) {
 	l.ControlBase.Init(parent, id)
-	l.ItemList = control.NewItemList(l)
+	l.List = list.NewList(l)
 	l.Tag = "nav"
 }
 
@@ -86,7 +87,7 @@ func (l *MegaMenu) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 }
 
 func (l *MegaMenu) DrawInnerHtml(ctx context.Context, w io.Writer) {
-	h := l.this().GetItemsHtml(l.ListItems(), 1)
+	h := l.this().GetItemsHtml(l.Items(), 1)
 	h = html5tag.RenderTag("ul", html5tag.Attributes{"style": "list-style:none"}, h)
 	page.WriteString(w, h)
 	return
@@ -94,13 +95,13 @@ func (l *MegaMenu) DrawInnerHtml(ctx context.Context, w io.Writer) {
 
 // GetItemsHtml is used by the framework to get the items for the html. It is exported so that
 // it can be overridden by other implementations of an MegaMenu.
-func (l *MegaMenu) GetItemsHtml(items []*control.ListItem, level int) string {
+func (l *MegaMenu) GetItemsHtml(items []*list.Item, level int) string {
 	var h = ""
 
 	for _, item := range items {
 		buttonId := l.ID() + "_" + item.Value()
 		if item.HasChildItems() {
-			innerhtml := l.this().GetItemsHtml(item.ListItems(), level+1)
+			innerhtml := l.this().GetItemsHtml(item.Items(), level+1)
 			innerhtml = html5tag.RenderTag("ul", html5tag.Attributes{"style": "list-style:none"}, innerhtml)
 			innerhtml = html5tag.RenderTag("div", html5tag.Attributes{"role": "region", "aria-labeledby": buttonId}, innerhtml)
 			buttonhtml := html5tag.RenderTag("button", html5tag.Attributes{"aria-expanded": `false`, "id": buttonId}, item.Label())
@@ -125,7 +126,7 @@ func (l *MegaMenu) GetItemsHtml(items []*control.ListItem, level int) string {
 }
 
 // SetData replaces the current list with the given data.
-// ItemLister, ItemIDer, Labeler or Stringer types are accepted.
+// ValueLabeler, ItemIDer, Labeler or Stringer types are accepted.
 // This function can accept one or more lists of items, or
 // single items. They will all get added to the top level of the list. To add sub items, get a list item
 // and add items to it.
@@ -135,26 +136,26 @@ func (l *MegaMenu) SetData(data interface{}) {
 		panic("you must call SetData with a slice or array")
 	}
 
-	l.ItemList.Clear()
-	l.AddListItems(data)
+	l.List.Clear()
+	l.AddItems(data)
 }
 
 func (l *MegaMenu) Serialize(e page.Encoder) {
 	l.ControlBase.Serialize(e)
-	l.ItemList.Serialize(e)
+	l.List.Serialize(e)
 	l.DataManager.Serialize(e)
 }
 
 func (l *MegaMenu) Deserialize(dec page.Decoder) {
 	l.ControlBase.Deserialize(dec)
-	l.ItemList.Deserialize(dec)
+	l.List.Deserialize(dec)
 	l.DataManager.Deserialize(dec)
 }
 
 type MegaMenuCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
-	Items []control.ListValue
+	Items []list.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
@@ -175,7 +176,7 @@ func (c MegaMenuCreator) Create(ctx context.Context, parent page.ControlI) page.
 
 func (c MegaMenuCreator) Init(ctx context.Context, ctrl MegaMenuI) {
 	if c.Items != nil {
-		ctrl.AddListItems(c.Items)
+		ctrl.AddItems(c.Items)
 	}
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)

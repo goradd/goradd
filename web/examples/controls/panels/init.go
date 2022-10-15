@@ -8,7 +8,7 @@ func init() {
 	controls.RegisterPanel("checkbox", "Checkboxes and Radio Buttons", NewCheckboxPanel)
 	controls.RegisterPanel("selectlist", "Selection Lists", NewSelectListPanel)
 	controls.RegisterPanel("table", "Tables", NewTablePanel)
-	controls.RegisterPanel("tablecheckbox", "Tables - Checkbox Column", NewTableCheckboxPanel)
+	controls.RegisterPanel("tablecheckbox", "Tables - CheckboxList Column", NewTableCheckboxPanel)
 	controls.RegisterPanel("tabledb", "Tables - Database Columns", NewTableDbPanel)
 	controls.RegisterPanel("tableproxy", "Tables - Proxy Column", NewTableProxyPanel)
 	controls.RegisterPanel("tableselect", "Tables - Select Row", NewTableSelectPanel)
@@ -17,4 +17,3 @@ func init() {
 	controls.RegisterPanel("dialogs", "Dialogs", NewDialogsPanel)
 	controls.RegisterPanel("imagecapture", "Image Capture Widget", NewImageCapturePanel)
 }
-

@@ -12,7 +12,7 @@ func init() {
 	generator2.RegisterControlGenerator(DateTextbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/DateTextbox")
 }
 
-// This structure describes the textbox to the connector dialog and code generator
+// DateTextbox describes the textbox to the connector dialog and code generator
 type DateTextbox struct {
 	generator3.DateTextbox // base it on the built-in generator
 }

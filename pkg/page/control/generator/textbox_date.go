@@ -9,16 +9,15 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(DateTextbox{}, "github.com/goradd/goradd/pkg/page/control/DateTextbox")
+	generator.RegisterControlGenerator(DateTextbox{}, "github.com/goradd/goradd/pkg/page/control/textbox/DateTextbox")
 }
 
-// This structure describes the IntegerTextbox to the connector dialog and code generator
+// DateTextbox describes the DateTextbox to the connector dialog and code generator
 type DateTextbox struct {
 }
 
-
 func (d DateTextbox) SupportsColumn(ref interface{}) bool {
-	if col,ok := ref.(*db.Column); ok &&
+	if col, ok := ref.(*db.Column); ok &&
 		col.ColumnType == query.ColTypeDateTime {
 		return true
 	}
@@ -36,7 +35,7 @@ func (d DateTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDes
 		format = config.DefaultDateTimeEntryFormat
 	}
 	s = fmt.Sprintf(
-`%s.DateTextboxCreator{
+		`%s.DateTextboxCreator{
 	ID:        p.ID() + "-%s",
 	Formats:    []string{%#v},
 	ControlOptions: page.ControlOptions{
@@ -46,7 +45,6 @@ func (d DateTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDes
 }`, desc.Package, desc.ControlID, format, !col.IsNullable, desc.Connector)
 	return
 }
-
 
 func (d DateTextbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetValue(val)`

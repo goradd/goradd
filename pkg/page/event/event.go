@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/javascript"
-	action2 "github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/html5tag"
 	"strconv"
 )
@@ -47,7 +47,7 @@ type Event struct {
 	// this value will become the EventValue returned to the action.
 	actionValue interface{}
 	// action is the action that the event triggers. Multiple actions can be specified using an action group.
-	action action2.ActionI
+	action action.ActionI
 	// preventDefault will cause the preventDefault function to be called on the event, which prevents the
 	// default action. In particular, this would prevent a submit button from submitting a form.
 	preventDefault bool
@@ -67,7 +67,7 @@ type Event struct {
 	// This is used in very special situations when you want to not allow a bubbled event to be blocked by a sub-object as it bubbles.
 	capture bool
 	// private indicates the event is private to the control and cannot be changed or removed. It is responded to in
-	// the PrivateAction function
+	// the DoPrivateAction function
 	private bool
 }
 
@@ -200,42 +200,22 @@ func (e *Event) Private() *Event {
 	return e
 }
 
-// HasServerAction returns true if at least one of the event's actions is a server action.
-func HasServerAction(e *Event) bool {
-	switch a := e.action.(type) {
-	case action2.FrameworkCallbackActionI:
-		return a.IsServerAction()
-	case action2.ActionGroup:
-		return a.HasServerAction()
-	default:
-		return false
-	}
-}
-
-// HasCallbackAction returns true if at least one of the event's actions is a callback action.
-func HasCallbackAction(e *Event) bool {
-	switch a := e.action.(type) {
-	case action2.CallbackActionI:
-		return true
-	case action2.ActionGroup:
-		return a.HasCallbackAction()
-	default:
-		return false
-	}
-}
-
 // Name returns the name of the javascript event being triggered.
 func Name(e *Event) string {
 	return e.jsEvent
 }
 
+type getCallbackActioner interface {
+	GetCallbackAction() action.CallbackActionI
+}
+
 // GetCallbackAction will return the action associated with the event if it is a callback action.
 // Otherwise, it will return nil.
-func GetCallbackAction(e *Event) action2.FrameworkCallbackActionI {
+func GetCallbackAction(e *Event) action.CallbackActionI {
 	switch a := e.action.(type) {
-	case action2.CallbackActionI:
-		return a.(action2.FrameworkCallbackActionI)
-	case action2.ActionGroup:
+	case action.CallbackActionI:
+		return a
+	case getCallbackActioner:
 		return a.GetCallbackAction()
 	default:
 		return nil
@@ -263,7 +243,7 @@ type eventEncoded struct {
 	Capture                   bool
 	Private                   bool
 	ActionValue               interface{} // A static value, or js to get a dynamic value when the action returns to us.
-	Action                    action2.ActionI
+	Action                    action.ActionI
 	PreventDefault            bool
 	StopPropagation           bool
 	ValidationOverride        ValidationType
@@ -324,7 +304,7 @@ func (e *Event) GobDecode(data []byte) (err error) {
 
 // SetEventItems is used internally by the framework to set up an event.
 // You should not normally need to call this function.
-func SetEventItems(e *Event, action action2.ActionI, eventId EventID) {
+func SetEventItems(e *Event, action action.ActionI, eventId EventID) {
 	e.action = action
 	e.eventID = eventId
 }
@@ -365,7 +345,7 @@ func RenderActions(e *Event, control renderer, eventID EventID) string {
 		js += "event.stopPropagation();\n"
 	}
 
-	var params = action2.RenderParams{TriggeringControlID: control.ID(), ControlActionValue: control.ActionValue(), EventID: uint16(eventID), EventActionValue: e.actionValue}
+	var params = action.RenderParams{TriggeringControlID: control.ID(), ControlActionValue: control.ActionValue(), EventID: uint16(eventID), EventActionValue: e.actionValue}
 
 	var actionJs = e.action.RenderScript(params)
 

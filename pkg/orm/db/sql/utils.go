@@ -23,7 +23,7 @@ const (
 	SqlTypeDatetime  = "DateTime"
 	SqlTypeDate      = "Date"
 	SqlTypeTime      = "Time"
-	SqlTypeFloat     = "Float"
+	SqlTypeFloat     = "FloatTextbox"
 	SqlTypeDouble    = "Double"
 	SqlTypeBool      = "Bool"
 	SqlTypeDecimal   = "Decimal" // a fixed point type
@@ -51,7 +51,9 @@ func ExtractOptions(comment string) (options map[string]interface{}, remainingCo
 // GetDataDefLength will extract the length from the definition given a data definition description of the table.
 // If more than one number, returns the first number
 // Example:
+//
 //	bigint(21) -> 21
+//
 // varchar(50) -> 50
 // decimal(10,2) -> 10
 func GetDataDefLength(description string) int {

@@ -16,14 +16,14 @@ for _,col := range t.Columns {
     case "{{= cd.ControlID }}":
         var items []interface{}
 {{if col.IsNullable}}
-        items = {{= ctrlPkg }}.NoSelectionItemList()
+        items = list.NoSelectionItemList()
 {{else}}
     {{if col.IsType() }}
         if p.{{= t.GoName }} == nil || int(p.{{= t.GoName }}.{{= col.ReferenceFunction() }}()) == 0 {
     {{else}}
         if p.{{= t.GoName }} == nil || p.{{= t.GoName }}.{{= col.GoName }}() == {{= col.ColumnType.DefaultValue() }} {
     {{if}}
-            items = {{= ctrlPkg }}.SelectOneItemList()
+            items = list.SelectOneItemList()
         }
 {{if}}
         items = append(items, s.DataConnector().(page.DataLoader).Load(ctx)...)

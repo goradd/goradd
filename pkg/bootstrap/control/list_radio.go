@@ -2,14 +2,15 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
+	"github.com/goradd/html5tag"
 )
 
 type RadioListI interface {
-	control.RadioListI
+	list.RadioListI
 }
 
 // RadioList is a multi-select control that presents its choices as a list of radio buttons.
@@ -18,7 +19,7 @@ type RadioListI interface {
 // to scroll as well, so that the final structure can be styled like a multi-table table, or a single-table
 // scrolling list much like a standard html select list.
 type RadioList struct {
-	control.RadioList
+	list.RadioList
 	isInline  bool
 	cellClass string
 }
@@ -52,7 +53,6 @@ func (l *RadioList) SetCellClass(c string) {
 // TODO: Use bootstrap styling for the columns rather than table styling
 // Also coordinate with FormFieldset
 
-
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *RadioList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
@@ -62,7 +62,7 @@ func (l *RadioList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 }
 
 // RenderItem is called by the framework to render a single item in the list.
-func (l *RadioList) RenderItem(item *control.ListItem) (h string) {
+func (l *RadioList) RenderItem(item *list.Item) (h string) {
 	selected := l.SelectedItem().ID() == item.ID()
 	h = renderItemControl(item, "radio", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)
@@ -80,7 +80,6 @@ func (l *RadioList) Serialize(e page.Encoder) {
 	}
 }
 
-
 func (l *RadioList) Deserialize(d page.Decoder) {
 	l.RadioList.Deserialize(d)
 
@@ -92,11 +91,10 @@ func (l *RadioList) Deserialize(d page.Decoder) {
 	}
 }
 
-
 type RadioListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
-	Items []control.ListValue
+	Items []list.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
@@ -129,20 +127,19 @@ func (c RadioListCreator) Create(ctx context.Context, parent page.ControlI) page
 }
 
 func (c RadioListCreator) Init(ctx context.Context, ctrl RadioListI) {
-	sub := control.RadioListCreator{
-		ID: c.ID,
-		Items: c.Items,
-		DataProvider: c.DataProvider,
-		ColumnCount: c.ColumnCount,
-		LayoutDirection: c.LayoutDirection,
+	sub := list.RadioListCreator{
+		ID:               c.ID,
+		Items:            c.Items,
+		DataProvider:     c.DataProvider,
+		ColumnCount:      c.ColumnCount,
+		LayoutDirection:  c.LayoutDirection,
 		LabelDrawingMode: c.LabelDrawingMode,
-		IsScrolling: c.IsScrolling,
-		RowClass: c.RowClass,
-		Value: c.Value,
-		OnChange: c.OnChange,
-		SaveState: c.SaveState,
-		ControlOptions: c.ControlOptions,
-
+		IsScrolling:      c.IsScrolling,
+		RowClass:         c.RowClass,
+		Value:            c.Value,
+		OnChange:         c.OnChange,
+		SaveState:        c.SaveState,
+		ControlOptions:   c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)
 }

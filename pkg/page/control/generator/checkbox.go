@@ -8,15 +8,15 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(Checkbox{}, "github.com/goradd/goradd/pkg/page/control/Checkbox")
+	generator.RegisterControlGenerator(Checkbox{}, "github.com/goradd/goradd/pkg/page/control/button/Checkbox")
 }
 
-// This structure describes the Checkbox to the connector dialog and code generator
+// Checkbox describes the Checkbox to the connector dialog and code generator
 type Checkbox struct {
 }
 
 func (d Checkbox) SupportsColumn(ref interface{}) bool {
-	if col,ok := ref.(*db.Column); ok && col.ColumnType == query.ColTypeBool {
+	if col, ok := ref.(*db.Column); ok && col.ColumnType == query.ColTypeBool {
 		return true
 	}
 	return false
@@ -42,5 +42,3 @@ func (d Checkbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescri
 func (d Checkbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `val := ctrl.Checked()`
 }
-
-

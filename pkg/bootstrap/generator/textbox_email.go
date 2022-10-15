@@ -11,7 +11,7 @@ func init() {
 	generator2.RegisterControlGenerator(EmailTextbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/EmailTextbox")
 }
 
-// This structure describes the EmailTextbox to the connector dialog and code generator
+// EmailTextbox describes the EmailTextbox to the connector dialog and code generator
 type EmailTextbox struct {
 	generator3.EmailTextbox // base it on the built-in generator
 }

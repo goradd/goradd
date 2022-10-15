@@ -3,21 +3,21 @@
 {{
 
 // ColumnCreators returns just the column creators for the table
-func (p *{{= panelName }}) ColumnCreators(_ context.Context) []{{= ctrlPkg }}.ColumnCreator {
-	creators := []{{= ctrlPkg }}.ColumnCreator {
+func (p *{{= panelName }}) ColumnCreators(_ context.Context) []table.ColumnCreator {
+	creators := []table.ColumnCreator {
 {{for _,col := range t.Columns }}
         column.NodeColumnCreator{
-        {{if col.IsReference() || col.IsType() }}
+{{if col.IsReference() || col.IsType() }}
             Node: node.{{= t.GoName }}().{{= col.ReferenceFunction() }}(),
-        {{else}}
+{{else}}
             Node: node.{{= t.GoName }}().{{= col.GoName }}(),
-        {{if}}
+{{if}}
             Title: "{{if t.ControlDescription(col) != nil}}{{= t.ControlDescription(col).DefaultLabel }}{{else}}{{col.GoName}}{{if}}",
-        {{if col.IsDateOnly}}
-            ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultDateFormat},
-        {{elseif col.IsTimeOnly}}
-            ColumnOptions: {{= ctrlPkg }}.ColumnOptions{TimeFormat: config.DefaultTimeFormat},
-        {{if}}
+{{if col.IsDateOnly}}
+            ColumnOptions: table.ColumnOptions{TimeFormat: config.DefaultDateFormat},
+{{elseif col.IsTimeOnly}}
+            ColumnOptions: table.ColumnOptions{TimeFormat: config.DefaultTimeFormat},
+{{if}}
         },
 {{for}}
     }

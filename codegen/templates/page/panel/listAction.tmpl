@@ -1,7 +1,7 @@
 // listAction.tmpl
 
 {{
-func (p *{{= panelName }}) Action(ctx context.Context, a action.Params) {
+func (p *{{= panelName }}) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case {{= lcPanelName }}Search:
 		p.Page().GetControl(p.ID() + "-list").Refresh() // redraw the table
@@ -43,7 +43,7 @@ func (p *{{= panelName }}) EditItemWithForm(ctx context.Context, pk string) {
 
 // EditItemWithDialog will popup a dialog to edit the item
 func (p *{{= panelName }}) EditItemWithDialog(ctx context.Context, pk string) {
-	ed, isNew := {{= ctrlPkg }}.GetDialogEditPanel(p, p.ID() + "-editDlg", p.T("{{= t.LiteralName }}"))
+	ed, isNew := dialog.GetEditPanel(p, p.ID() + "-editDlg", p.T("{{= t.LiteralName }}"))
 	if isNew {
 		New{{= t.GoName }}EditPanel(ctx, ed, p.ID() + "-editPanel")
 	}

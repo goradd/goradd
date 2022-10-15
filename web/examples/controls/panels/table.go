@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/column"
+	. "github.com/goradd/goradd/pkg/page/control/table"
+	column2 "github.com/goradd/goradd/pkg/page/control/table/column"
 )
 
 type TablePanel struct {
@@ -83,11 +84,11 @@ func (p *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 			HeaderRowCount: 1,
 			DataProvider:   p,
 			Columns: []ColumnCreator{
-				column.TexterColumnCreator{
+				column2.TexterColumnCreator{
 					TexterID: "tablePanel",
 					Title:    "Custom",
 				},
-				column.SliceColumnCreator{
+				column2.SliceColumnCreator{
 					Index: 1,
 					Title: "Slice",
 				},
@@ -104,15 +105,15 @@ func (p *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 			HeaderRowCount: 1,
 			DataProviderID: "tablePanel", // You can use the id of a provider too
 			Columns: []ColumnCreator{
-				column.TexterColumnCreator{
+				column2.TexterColumnCreator{
 					TexterID: "tablePanel",
 					Title:    "Custom",
 				},
-				column.MapColumnCreator{
+				column2.MapColumnCreator{
 					Index: "id",
 					Title: "StdMap",
 				},
-				column.GetterColumnCreator{
+				column2.GetterColumnCreator{
 					Index: "name",
 					Title: "Getter",
 				},

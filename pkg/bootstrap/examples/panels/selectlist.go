@@ -7,6 +7,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"github.com/goradd/html5tag"
@@ -25,7 +26,7 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 }
 
 func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	itemList := []control.ListValue{
+	itemList := []list.ListValue{
 		{"First", 1},
 		{"Second", 2},
 		{"Third", 3},
@@ -80,7 +81,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 			},
 		},
 		FormFieldsetCreator{
-			Legend: "Checkbox List",
+			Legend: "CheckboxList List",
 			Child: CheckboxListCreator{
 				ID:    "checklist1",
 				Items: itemList,
@@ -100,7 +101,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 
 }
 
-func (p *SelectListPanel) Action(ctx context.Context, a action.Params) {
+func (p *SelectListPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
 		GetFormFieldset(p, "checklist1-fs").SetInstructions(

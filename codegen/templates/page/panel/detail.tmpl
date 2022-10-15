@@ -14,6 +14,7 @@ package panel
 import(
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/dialog"
 	"context"
 	"goradd-project/gen/{{dd.DbKey}}/connector"
 	"goradd-project/gen/{{dd.DbKey}}/model"
@@ -40,10 +41,10 @@ func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id st
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 }
 
-func (p *{{= panelName }}) Action(ctx context.Context, a action.Params) {
+func (p *{{= panelName }}) DoAction(ctx context.Context, a action.Params) {
     switch a.ID {
     default:
-        p.Panel.Action(ctx, a)
+        p.Panel.DoAction(ctx, a)
     }
 }
 
@@ -60,7 +61,7 @@ func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType()
 {{for}}
     )
     if p.{{= t.GoName }} == nil {
-        d := control.Alert(p, p.ParentForm().GT("The record was not found. Perhaps it was recently deleted by someone else."), "OK")
+        d := dialog.Alert(p, p.ParentForm().GT("The record was not found. Perhaps it was recently deleted by someone else."), "OK")
         d.SetTitle(p.ParentForm().GT("Error"))
         return page.NewFrameworkError(page.FrameworkErrRecordNotFound)
     }

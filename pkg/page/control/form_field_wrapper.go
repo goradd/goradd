@@ -28,12 +28,12 @@ type FormFieldWrapperI interface {
 	InstructionAttributes() html5tag.Attributes
 }
 
-// FormFieldWrapper is a Goradd control that wraps other controls, and provides common companion
+// FormFieldWrapper is a GoRADD control that wraps other controls, and provides common companion
 // functionality like a form label, validation state display, and help text.
 type FormFieldWrapper struct {
 	page.ControlBase
 
-	// instructions is text associated with the control for extra explanation. You could also try adding a tooltip to the wrapper.
+	// instructions offer extra information to the user. You could also try adding a tooltip to the wrapper.
 	instructions string
 	// labelAttributes are the attributes that will be directly put on the Label tag. The label tag itself comes
 	// from the "Text" item in the control.
@@ -41,7 +41,7 @@ type FormFieldWrapper struct {
 	errorAttributes       html5tag.Attributes
 	instructionAttributes html5tag.Attributes
 	forID                 string
-	// savedMessage is what we use to determine if the subcontrol changed validation state. This needs to be serialized.
+	// savedMessage is what we use to determine if the sub-control changed validation state. This needs to be serialized.
 	savedMessage string
 	// subtag is the tag to used for instructions and error
 	subtag string
@@ -277,7 +277,7 @@ func (c *FormFieldWrapper) Deserialize(dec page.Decoder) {
 	}
 }
 
-// Use FormFieldWrapperCreator to create a FormFieldWrapper,
+// FormFieldWrapperCreator creates a FormFieldWrapper,
 // which wraps a control with a div or span that also has a label, validation error
 // text and optional instructions. Pass the creator of the control you
 // are wrapping as the Child item.
@@ -289,11 +289,11 @@ type FormFieldWrapperCreator struct {
 	Label string
 	// Child is the creator of the child control you want to wrap
 	Child page.Creator
-	// Instructions is help text that will follow the control and that further describes its purpose or use.
+	// Instructions offer help text that will follow the control and that further describes its purpose or use.
 	Instructions string
 	// For specifies the id of the control that the label is for, and that is the control that we are wrapping.
 	// You normally do not need this, as it will simply look at the first child control, but if for some reason
-	// that control is wrapped, you should explicitly sepecify the For control id here.
+	// that control is wrapped, you should explicitly specify the For control id here.
 	For string
 	// LabelAttributes are additional attributes to add to the label tag.
 	LabelAttributes html5tag.Attributes
@@ -308,11 +308,11 @@ type FormFieldWrapperCreator struct {
 }
 
 // Create is called by the framework to create the control. You do not
-// normally need to call it directly. Instead either pass this creator to
+// normally need to call it directly. Instead, either pass this creator to
 // AddControls for the parent control you want to add this to, or add this to
 // the Children of the parent control's creator.
 func (f FormFieldWrapperCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	id := CalcWrapperID(f.ID, f.Child, "ff")
+	id := MakeCreatorWrapperID(f.ID, f.Child, "ff")
 	c := NewFormField(parent, id)
 	f.Init(ctx, c)
 	if f.IsInline { // subclasses might deal with this issue differently
@@ -356,16 +356,17 @@ func GetFormFieldWrapper(c page.ControlI, id string) *FormFieldWrapper {
 	return c.Page().GetControl(id).(*FormFieldWrapper)
 }
 
-// GetCreatorID uses reflection to get the id of the given creator
+// GetCreatorID uses reflection to get the id of the given creator.
 func GetCreatorID(c page.Creator) string {
 	v := reflect.ValueOf(c)
 	f := v.FieldByName("ID")
 	return f.String()
 }
 
-// CalcWrapperID returns the computed id of a control that wraps another control
-// This would be the id of the child control followed by the postfix
-func CalcWrapperID(wrapperId string, childCreator page.Creator, postfix string) string {
+// MakeCreatorWrapperID is used by Creators of wrapper controls to return the computed id of a
+// parent control that wraps a control creator.
+// This would be the id of the parent control, followed by the id of the child control, followed by the postfix.
+func MakeCreatorWrapperID(wrapperId string, childCreator page.Creator, postfix string) string {
 	id := wrapperId
 	if id == "" &&
 		childCreator != nil {

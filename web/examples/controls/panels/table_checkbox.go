@@ -6,7 +6,9 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/column"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/table"
+	column2 "github.com/goradd/goradd/pkg/page/control/table/column"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"strconv"
@@ -23,7 +25,7 @@ type Table1Data map[string]string
 var table1Data = getCheckTestData()
 
 type SelectedProvider struct {
-	column.DefaultCheckboxProvider
+	column2.DefaultCheckboxProvider
 }
 
 func (c SelectedProvider) RowID(data interface{}) string {
@@ -51,11 +53,11 @@ func (p *TableCheckboxPanel) Init(ctx context.Context, parent page.ControlI, id 
 			HeaderRowCount: 1,
 			DataProvider:   p,
 			Columns: []ColumnCreator{
-				column.MapColumnCreator{
+				column2.MapColumnCreator{
 					Index: "name",
 					Title: "Name",
 				},
-				column.CheckboxColumnCreator{
+				column2.CheckboxColumnCreator{
 					ID:               "check1",
 					Title:            "Selected",
 					ShowCheckAll:     true,
@@ -93,10 +95,10 @@ func (f *TableCheckboxPanel) BindData(ctx context.Context, s DataManagerI) {
 	s.SetData(table1Data[start:end])
 }
 
-func (p *TableCheckboxPanel) Action(ctx context.Context, a action.Params) {
+func (p *TableCheckboxPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
-		col := GetPagedTable(p, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		col := GetPagedTable(p, "table1").GetColumnByID("check1").(*column2.CheckboxColumn)
 		for k, v := range col.Changes() {
 			i, _ := strconv.Atoi(k)
 			var s string
@@ -109,9 +111,9 @@ func (p *TableCheckboxPanel) Action(ctx context.Context, a action.Params) {
 }
 
 func init() {
-	browsertest.RegisterTestFunction("Table - Checkbox Nav", testTableCheckboxNav)
-	browsertest.RegisterTestFunction("Table - Checkbox Ajax Submit", testTableCheckboxAjaxSubmit)
-	browsertest.RegisterTestFunction("Table - Checkbox Server Submit", testTableCheckboxServerSubmit)
+	browsertest.RegisterTestFunction("Table - CheckboxList Nav", testTableCheckboxNav)
+	browsertest.RegisterTestFunction("Table - CheckboxList Ajax Submit", testTableCheckboxAjaxSubmit)
+	browsertest.RegisterTestFunction("Table - CheckboxList Server Submit", testTableCheckboxServerSubmit)
 
 	gob.Register(SelectedProvider{}) // We must register this here because we are putting the changes map into the session,
 	page.RegisterControl(&TableCheckboxPanel{})
@@ -124,7 +126,7 @@ func testTableCheckboxNav(t *browsertest.TestForm) {
 	t.SetCheckbox("table1_check1_1", true)
 	t.WithForm(func(f page.FormI) {
 		table := f.Page().GetControl("table1").(*PagedTable)
-		col := table.GetColumnByID("check1").(*column.CheckboxColumn)
+		col := table.GetColumnByID("check1").(*column2.CheckboxColumn)
 		changes := col.Changes()
 		_, ok := changes["1"]
 		t.AssertEqual(false, ok)
@@ -134,7 +136,7 @@ func testTableCheckboxNav(t *browsertest.TestForm) {
 	t.ClickSubItem("pager", "page_2")
 	t.WithForm(func(f page.FormI) {
 		table := f.Page().GetControl("table1").(*PagedTable)
-		col := table.GetColumnByID("check1").(*column.CheckboxColumn)
+		col := table.GetColumnByID("check1").(*column2.CheckboxColumn)
 		changes := col.Changes()
 		changed, _ := changes["1"]
 		t.AssertEqual(true, changed)
@@ -169,7 +171,7 @@ func testTableCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 
 	t.SetCheckbox("table1_check1_1", true)
 	t.WithForm(func(f page.FormI) {
-		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column2.CheckboxColumn)
 		changes := col.Changes()
 		_, ok := changes["1"]
 		t.AssertEqual(false, ok)
@@ -178,7 +180,7 @@ func testTableCheckboxSubmit(t *browsertest.TestForm, btnID string) {
 	t.Click(btnID)
 	// click above can cause form to reset
 	t.WithForm(func(f page.FormI) {
-		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column.CheckboxColumn)
+		col := GetPagedTable(f, "table1").GetColumnByID("check1").(*column2.CheckboxColumn)
 		changes := col.Changes()
 		changed, _ := changes["1"]
 		t.AssertEqual(true, changed)

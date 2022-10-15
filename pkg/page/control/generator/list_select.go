@@ -8,10 +8,10 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(SelectList{}, "github.com/goradd/goradd/pkg/page/control/SelectList")
+	generator.RegisterControlGenerator(SelectList{}, "github.com/goradd/goradd/pkg/page/control/list/SelectList")
 }
 
-// This structure describes the SelectList to the connector dialog and code generator
+// SelectList describes the SelectList to the connector dialog and code generator
 type SelectList struct {
 }
 
@@ -20,7 +20,7 @@ func (d SelectList) Imports() []string {
 }
 
 func (d SelectList) SupportsColumn(ref interface{}) bool {
-	if col,ok := ref.(*db.Column); ok && col.ForeignKey != nil {
+	if col, ok := ref.(*db.Column); ok && col.ForeignKey != nil {
 		return true
 	}
 	return false
@@ -29,7 +29,7 @@ func (d SelectList) SupportsColumn(ref interface{}) bool {
 func (d SelectList) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`%s.SelectListCreator{
+		`%s.SelectListCreator{
 	ID:           p.ID() + "-%s",
 	DataProvider: p,
 	ControlOptions: page.ControlOptions{
@@ -39,7 +39,6 @@ func (d SelectList) GenerateCreator(ref interface{}, desc *generator.ControlDesc
 }`, desc.Package, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
-
 
 func (d SelectList) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) string {
 	return `ctrl.SetValue(val)`
@@ -83,7 +82,7 @@ func (d SelectList) GenerateUpdate(ref interface{}, desc *generator.ControlDescr
 
 	if col.IsNullable {
 		s += fmt.Sprintf(
-`
+			`
 if sv == "" {
 	val = nil
 } else {

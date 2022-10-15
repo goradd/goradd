@@ -5,17 +5,17 @@
 // BindData determines what records will be displayed in the lister.
 // Override to change what records get displayed.
 func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
-    list := {{= ctrlPkg }}.GetPagedTable(p, p.ID() + "-list")
-	if list.HasDataPagers() {
-		list.SetTotalItems(p.BuildQuery(ctx).Count(false))
+    t := table.GetPagedTable(p, p.ID() + "-list")
+	if t.HasDataPagers() {
+		t.SetTotalItems(p.BuildQuery(ctx).Count(false))
 	}
 
 	builder := p.BuildQuery(ctx)
 
 	// Since we are asking the database to do the sort, we have to make a slice of nodes
-	sortNodes := column.MakeNodeSlice(list.SortColumns())
+	sortNodes := column.MakeNodeSlice(t.SortColumns())
 
-	d := builder.Limit(list.SqlLimits()).
+	d := builder.Limit(t.SqlLimits()).
 		OrderBy(sortNodes...).
 		Load()
 
@@ -23,12 +23,12 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataMa
 }
 
 func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
-    filterText := {{= ctrlPkg }}.GetTextboxI(p, p.ID() + "-filterText").Text()
+    filterText := textbox.GetTextboxI(p, p.ID() + "-filterText").Text()
 	q := model.Query{{= t.GoPlural }}(ctx)
 	q = q.Where(op.Or(
-    {{for _,col := range t.Columns }}
+{{for _,col := range t.Columns }}
     		op.StartsWith(node.{{= t.GoName }}().{{= col.GoName }}(), filterText),
-    {{for}}
+{{for}}
     	))
 	return q
 }

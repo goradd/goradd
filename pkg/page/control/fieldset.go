@@ -15,7 +15,7 @@ type FieldsetI interface {
 }
 
 // Fieldset is a Panel that is drawn with a fieldset tag. The panel's text is used as the legend tag.
-// Fieldset's cannot have wrappers.
+// Fieldset controls cannot have wrappers.
 type Fieldset struct {
 	Panel
 }

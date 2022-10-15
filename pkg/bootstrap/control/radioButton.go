@@ -4,18 +4,18 @@ import (
 	"context"
 	"fmt"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/button"
+	"github.com/goradd/html5tag"
 	"io"
 )
 
 type RadioButtonI interface {
-	control.RadioButtonI
+	button.RadioButtonI
 }
 
 type RadioButton struct {
-	control.RadioButton
+	button.RadioButton
 	inline bool
 }
 
@@ -60,9 +60,9 @@ func (c *RadioButton) DrawTag(ctx context.Context, w io.Writer) {
 	if c.inline {
 		checkWrapperAttributes.AddClass("form-check-inline")
 	}
-	_,_ = fmt.Fprint(w, "<div ", checkWrapperAttributes.String(), ">\n")
+	_, _ = fmt.Fprint(w, "<div ", checkWrapperAttributes.String(), ">\n")
 	c.RadioButton.DrawTag(ctx, w)
-	_,_ = io.WriteString(w, "\n</div>")
+	_, _ = io.WriteString(w, "\n</div>")
 }
 
 func (c *RadioButton) Serialize(e page.Encoder) {
@@ -73,7 +73,6 @@ func (c *RadioButton) Serialize(e page.Encoder) {
 	}
 }
 
-
 func (c *RadioButton) Deserialize(d page.Decoder) {
 	c.RadioButton.Deserialize(d)
 
@@ -81,7 +80,6 @@ func (c *RadioButton) Deserialize(d page.Decoder) {
 		panic(err)
 	}
 }
-
 
 type RadioButtonCreator struct {
 	// ID is the id of the control

@@ -7,7 +7,8 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/column"
+	. "github.com/goradd/goradd/pkg/page/control/table"
+	"github.com/goradd/goradd/pkg/page/control/table/column"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
@@ -91,7 +92,7 @@ func (p *TableProxyPanel) CellText(ctx context.Context, col ColumnI, info CellIn
 	return v
 }
 
-func (p *TableProxyPanel) Action(ctx context.Context, a action.Params) {
+func (p *TableProxyPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ProxyClick:
 		id := a.ControlValueString()

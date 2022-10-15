@@ -14,6 +14,8 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/button"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/page/event"
 	time2 "github.com/goradd/goradd/pkg/time"
 	"github.com/goradd/goradd/web/app"
@@ -63,17 +65,17 @@ func (form *TestForm) Init(ctx context.Context, formID string) {
 func (form *TestForm) createControls(ctx context.Context) {
 	form.Controller = NewTestController(form, "controller")
 
-	NewSelectList(form, "test-list").
+	list.NewSelectList(form, "test-list").
 		SetAttribute("size", 10)
 
 	NewSpan(form, "running-label")
 
-	NewButton(form, "run-button").
+	button.NewButton(form, "run-button").
 		SetValidationType(event.ValidateNone).
 		SetText("Run Test").
 		On(event.Click(), action.Ajax(form.ID(), TestButtonAction))
 
-	NewButton(form, "run-all-button").
+	button.NewButton(form, "run-all-button").
 		SetText("Run All Tests").
 		SetValidationType(event.ValidateNone).
 		On(event.Click(), action.Redirect(TestFormPath+"?all=1"))
@@ -81,12 +83,12 @@ func (form *TestForm) createControls(ctx context.Context) {
 
 func (form *TestForm) LoadControls(ctx context.Context) {
 	tests.Range(func(k string, v interface{}) bool {
-		GetSelectList(form, "test-list").AddItem(k, k)
+		list.GetSelectList(form, "test-list").Add(k, k)
 		return true
 	})
 }
 
-func (form *TestForm) Action(ctx context.Context, a action.Params) {
+func (form *TestForm) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case TestButtonAction:
 		form.runSelectedTest()
@@ -96,7 +98,7 @@ func (form *TestForm) Action(ctx context.Context, a action.Params) {
 }
 
 func (form *TestForm) runSelectedTest() {
-	testList := GetSelectList(form, "test-list")
+	testList := list.GetSelectList(form, "test-list")
 	GetSpan(form, "running-label").SetText(testList.SelectedItem().Label())
 	name := testList.SelectedItem().Value()
 	form.testOne(name)
@@ -272,10 +274,19 @@ func (form *TestForm) Click(id string) {
 	form.Controller.click(id, form.captureCaller())
 	f := form.getForm()
 	c := f.Page().GetControl(id)
-	if c.HasServerAction("click") {
+	if hasServerAction(c, "click") {
 		// wait for the new page to load
 		form.Controller.waitSubmit(form.callerInfo)
 	}
+}
+
+func hasServerAction(c page.ControlI, eventName string) bool {
+	if e := c.Event(eventName); e != nil {
+		if a := event.GetCallbackAction(e); a != nil {
+			return a.(action.CallbackActionAccessor).IsServerAction()
+		}
+	}
+	return false
 }
 
 // ClickSubItem sends a click to the html object with the given sub-id inside the given control.
@@ -283,7 +294,7 @@ func (form *TestForm) ClickSubItem(id string, subId string) {
 	form.Controller.click(id+"_"+subId, form.captureCaller())
 	f := form.getForm()
 	c := f.Page().GetControl(id)
-	if c.HasServerAction("click") {
+	if hasServerAction(c, "click") {
 		// wait for the new page to load
 		form.Controller.waitSubmit(form.callerInfo)
 	}
