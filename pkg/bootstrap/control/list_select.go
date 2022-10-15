@@ -6,14 +6,15 @@ import (
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/html5tag"
 )
 
 type SelectListI interface {
-	control.SelectListI
+	list.SelectListI
 }
 type SelectList struct {
-	control.SelectList
+	list.SelectList
 }
 
 func NewSelectList(parent page.ControlI, id string) *SelectList {
@@ -41,7 +42,7 @@ func init() {
 type SelectListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
-	Items []control.ListValue
+	Items []list.ListValue
 	// NilItem is a helper to add an item at the top of the list with a nil value. This is often
 	// used to specify no selection, or a message that a selection is required.
 	NilItem string
@@ -66,7 +67,7 @@ func (c SelectListCreator) Create(ctx context.Context, parent page.ControlI) pag
 
 func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 
-	sub := control.SelectListCreator{
+	sub := list.SelectListCreator{
 		ID:             c.ID,
 		Items:          c.Items,
 		NilItem:        c.NilItem,

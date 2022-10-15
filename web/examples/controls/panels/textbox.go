@@ -5,6 +5,8 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/textbox"
 	time2 "github.com/goradd/goradd/pkg/time"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
@@ -45,28 +47,28 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 		FormFieldWrapperCreator{
 			ID:    "intText-ff",
 			Label: "Integer Text",
-			Child: IntegerTextboxCreator{
+			Child: IntegerCreator{
 				ID: "intText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "floatText-ff",
 			Label: "Float Text",
-			Child: FloatTextboxCreator{
+			Child: FloatCreator{
 				ID: "floatText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "emailText-ff",
 			Label: "Email Text",
-			Child: EmailTextboxCreator{
+			Child: EmailCreator{
 				ID: "emailText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "passwordText-ff",
 			Label: "Password",
-			Child: PasswordTextboxCreator{
+			Child: PasswordCreator{
 				ID: "passwordText",
 			},
 		},
@@ -75,20 +77,20 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 			Label: "Search",
 			Child: TextboxCreator{
 				ID:   "searchText",
-				Type: TextboxTypeSearch,
+				Type: SearchType,
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "dateTimeText-ff",
 			Label: "U.S. Date-time",
-			Child: DateTextboxCreator{
+			Child: DateCreator{
 				ID: "dateTimeText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "dateText-ff",
 			Label: "Euro Date",
-			Child: DateTextboxCreator{
+			Child: DateCreator{
 				ID:      "dateText",
 				Formats: []string{time2.EuroDate},
 			},
@@ -96,7 +98,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 		FormFieldWrapperCreator{
 			ID:    "timeText-ff",
 			Label: "U.S. Time",
-			Child: DateTextboxCreator{
+			Child: DateCreator{
 				ID:      "timeText",
 				Formats: []string{time2.UsTime},
 			},

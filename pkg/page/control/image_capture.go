@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/goradd/goradd/pkg/page/control/button"
 	"github.com/goradd/goradd/pkg/page/event"
 	"path"
 	"strings"
@@ -23,8 +24,9 @@ const (
 
 const imageCaptureScriptCommand = "imageCapture"
 
-// CaptureEvent triggers when the capture button has been pressed, and the image has been captured.
-func CaptureEvent() *event.Event {
+// ImageCaptureEvent triggers when the capture button has been pressed on an ImageCapture control,
+// and the image has been captured.
+func ImageCaptureEvent() *event.Event {
 	return event.NewEvent("capture")
 }
 
@@ -65,10 +67,10 @@ func (i *ImageCapture) Init(parent page.ControlI, id string) {
 
 	NewCanvas(i, i.canvasID())
 
-	NewButton(i, i.captureID()).
+	button.NewButton(i, i.captureID()).
 		SetText(i.GT("New Image"))
 
-	NewButton(i, i.switchID()).
+	button.NewButton(i, i.switchID()).
 		SetDisplay("none").
 		SetText(i.GT("Switch Camera"))
 

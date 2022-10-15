@@ -11,7 +11,7 @@ func init() {
 	generator.RegisterControlGenerator(DateTimeSpan{}, "github.com/goradd/goradd/pkg/page/control/DateTimeSpan")
 }
 
-// This structure describes the DateTimeSpan to the connector dialog and code generator
+// DateTimeSpan describes the DateTimeSpan to the connector dialog and code generator
 type DateTimeSpan struct {
 }
 
@@ -19,9 +19,8 @@ func (d DateTimeSpan) NewFunc() string {
 	return "NewDateTimeSpan"
 }
 
-
 func (d DateTimeSpan) SupportsColumn(ref interface{}) bool {
-	if col,ok := ref.(*db.Column); ok &&
+	if col, ok := ref.(*db.Column); ok &&
 		col.ColumnType == query.ColTypeDateTime {
 		return true
 	}
@@ -31,7 +30,7 @@ func (d DateTimeSpan) SupportsColumn(ref interface{}) bool {
 func (d DateTimeSpan) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`%s.DateTimeSpanCreator{
+		`%s.DateTimeSpanCreator{
 	ID:        p.ID() + "-%s",
 	ControlOptions: page.ControlOptions{
 		IsDisabled:	   %#v,
@@ -41,7 +40,6 @@ func (d DateTimeSpan) GenerateCreator(ref interface{}, desc *generator.ControlDe
 	return
 }
 
-
 func (d DateTimeSpan) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetDateTime(val)`
 }
@@ -49,4 +47,3 @@ func (d DateTimeSpan) GenerateRefresh(ref interface{}, desc *generator.ControlDe
 func (d DateTimeSpan) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return ""
 }
-

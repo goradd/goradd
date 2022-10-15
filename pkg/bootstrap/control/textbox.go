@@ -2,17 +2,17 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/textbox"
+	"github.com/goradd/html5tag"
 )
 
 type TextboxI interface {
-	control.TextboxI
+	textbox.TextboxI
 }
 
 type Textbox struct {
-	control.Textbox
+	textbox.Textbox
 }
 
 func NewTextbox(parent page.ControlI, id string) *Textbox {
@@ -77,7 +77,7 @@ func (c TextboxCreator) Create(ctx context.Context, parent page.ControlI) page.C
 
 func (c TextboxCreator) Init(ctx context.Context, ctrl TextboxI) {
 	// Reuse subclass
-	sub := control.TextboxCreator{
+	sub := textbox.TextboxCreator{
 		Placeholder:    c.Placeholder,
 		Type:           c.Type,
 		MinLength:      c.MinLength,

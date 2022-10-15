@@ -5,6 +5,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/button"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"github.com/goradd/html5tag"
@@ -40,7 +41,7 @@ func (p *CheckboxPanel) Init(ctx context.Context, parent page.ControlI, id strin
 	p.AddControls(ctx,
 		FormFieldWrapperCreator{
 			ID:           "checkbox1-ff",
-			Label:        "Checkbox 1:",
+			Label:        "CheckboxList 1:",
 			For:          "checkbox1",
 			Instructions: "These are instructions for checkbox 1",
 			Child: CheckboxCreator{
@@ -51,7 +52,7 @@ func (p *CheckboxPanel) Init(ctx context.Context, parent page.ControlI, id strin
 		},
 		FormFieldWrapperCreator{
 			ID:           "checkbox2-ff",
-			Label:        "Checkbox 2:",
+			Label:        "CheckboxList 2:",
 			For:          "checkbox2",
 			Instructions: "These are instructions for checkbox 2",
 			Child: CheckboxCreator{
@@ -92,8 +93,8 @@ func (p *CheckboxPanel) Init(ctx context.Context, parent page.ControlI, id strin
 }
 
 func init() {
-	browsertest.RegisterTestFunction("Checkbox Ajax Submit", testCheckboxAjaxSubmit)
-	browsertest.RegisterTestFunction("Checkbox Server Submit", testCheckboxServerSubmit)
+	browsertest.RegisterTestFunction("CheckboxList Ajax Submit", testCheckboxAjaxSubmit)
+	browsertest.RegisterTestFunction("CheckboxList Server Submit", testCheckboxServerSubmit)
 	page.RegisterControl(&CheckboxPanel{})
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/url"
 	"path"
 )
@@ -78,7 +79,7 @@ func (f *ControlsForm) BindData(ctx context.Context, s DataManagerI) {
 	list := GetUnorderedList(f, ControlsFormListID)
 	list.Clear()
 	for _, c := range controls {
-		item := list.AddItem(c.name, c.key)
+		item := list.Add(c.name, c.key)
 		a := url.
 			NewBuilderFromUrl(pageContext.URL).
 			SetValue("control", c.key).

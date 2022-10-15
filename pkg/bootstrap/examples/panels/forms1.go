@@ -7,6 +7,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 )
@@ -54,7 +55,7 @@ func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string)
 		},
 		RadioListGroupCreator{
 			ID: "status",
-			Items: []control.ListValue{
+			Items: []list.ListValue{
 				{"Single", "Single"},
 				{"Married", "Married"},
 				{"Divorced", "Divorced"},

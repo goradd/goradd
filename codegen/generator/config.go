@@ -56,21 +56,21 @@ func DefaultControlType(ref interface{}) string {
 		case query.ColTypeString:
 			return "github.com/goradd/goradd/pkg/page/control/Textbox"
 		case query.ColTypeInteger:
-			return "github.com/goradd/goradd/pkg/page/control/IntegerTextbox"
+			return "github.com/goradd/goradd/pkg/page/control/Integer"
 		case query.ColTypeUnsigned:
-			return "github.com/goradd/goradd/pkg/page/control/IntegerTextbox"
+			return "github.com/goradd/goradd/pkg/page/control/Integer"
 		case query.ColTypeInteger64:
-			return "github.com/goradd/goradd/pkg/page/control/IntegerTextbox"
+			return "github.com/goradd/goradd/pkg/page/control/Integer"
 		case query.ColTypeUnsigned64:
-			return "github.com/goradd/goradd/pkg/page/control/IntegerTextbox"
+			return "github.com/goradd/goradd/pkg/page/control/Integer"
 		case query.ColTypeDateTime:
 			return "github.com/goradd/goradd/pkg/page/control/DateTimeSpan"
 		case query.ColTypeFloat:
-			return "github.com/goradd/goradd/pkg/page/control/FloatTextbox"
+			return "github.com/goradd/goradd/pkg/page/control/Float"
 		case query.ColTypeDouble:
-			return "github.com/goradd/goradd/pkg/page/control/FloatTextbox"
+			return "github.com/goradd/goradd/pkg/page/control/Float"
 		case query.ColTypeBool:
-			return "github.com/goradd/goradd/pkg/page/control/Checkbox"
+			return "github.com/goradd/goradd/pkg/page/control/CheckboxList"
 		case query.ColTypeUnknown:
 			return ""
 		default:
@@ -81,10 +81,9 @@ func DefaultControlType(ref interface{}) string {
 	}
 }
 
-
 func WrapFormField(wrapper string, label string, forId string, child string) string {
 	return fmt.Sprintf(
-`%s{
+		`%s{
 	ID: p.ID() + "-%s-ff",
 	For:  p.ID() + "-%s",
 	Label: "%s",

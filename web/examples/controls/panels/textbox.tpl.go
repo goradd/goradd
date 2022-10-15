@@ -80,9 +80,9 @@ a sql database. To make a <i>textarea</i> instead of an <i>input</i> tag, set th
 	}
 
 	if _, err = io.WriteString(_w, `</p>
-<h4>IntegerTextbox</h4>
+<h4>Integer</h4>
 <p>
-An *IntegerTextbox corresponds to an integer item in a database, like an INT in
+An *Integer corresponds to an integer item in a database, like an INT in
 a sql database. Integer textboxes are validated to make sure they contain an integer.
 `); err != nil {
 		return
@@ -113,9 +113,9 @@ a sql database. Integer textboxes are validated to make sure they contain an int
 	}
 
 	if _, err = io.WriteString(_w, `</p>
-<h4>DateTextbox</h4>
+<h4>Date</h4>
 <p>
-A *DateTextbox corresponds to a Date, Time or DateTime in a database.
+A *Date corresponds to a Date, Time or DateTime in a database.
 Timestamps generally are not editable, so they usually generate a DateTimeSpan (as in html span).
 These textboxes validate to make sure they match a particular format.
 `); err != nil {
@@ -196,9 +196,9 @@ These textboxes validate to make sure they match a particular format.
 
 	if _, err = io.WriteString(_w, `</p>
 
-<h4>FloatTextbox</h4>
+<h4>Float</h4>
 <p>
-A *FloatTextbox corresponds to a floating point number item in a database, like a FLOAT in
+A *Float corresponds to a floating point number item in a database, like a FLOAT in
 a sql database. Float textboxes are validated to make sure they contain a numeric value.
 Click on one of the Submit buttons below to cause the controls to validate.
 `); err != nil {

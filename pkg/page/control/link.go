@@ -14,7 +14,7 @@ type LinkI interface {
 	SetDownload(string) LinkI
 }
 
-// Link is a standard html link. It corresponds to a <a> tag in html.
+// Link is a standard html link. It corresponds to an <a> tag in html.
 type Link struct {
 	page.ControlBase
 }

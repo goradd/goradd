@@ -2,17 +2,19 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/textbox"
+	"github.com/goradd/html5tag"
 )
 
+type super = textbox.Date
+
 type DateTextboxI interface {
-	control.DateTextboxI
+	textbox.DateI
 }
 
 type DateTextbox struct {
-	control.DateTextbox
+	super
 }
 
 func NewDateTextbox(parent page.ControlI, id string) *DateTextbox {
@@ -23,7 +25,7 @@ func NewDateTextbox(parent page.ControlI, id string) *DateTextbox {
 }
 
 func (t *DateTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
-	a := t.DateTextbox.DrawingAttributes(ctx)
+	a := t.super.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }
@@ -69,7 +71,7 @@ func (c DateTextboxCreator) Create(ctx context.Context, parent page.ControlI) pa
 
 func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
 	// Reuse subclass
-	sub := control.DateTextboxCreator{
+	sub := textbox.DateCreator{
 		Placeholder:    c.Placeholder,
 		MinLength:      c.MinLength,
 		MaxLength:      c.MaxLength,

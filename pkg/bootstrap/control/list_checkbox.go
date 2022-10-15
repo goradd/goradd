@@ -3,9 +3,10 @@ package control
 import (
 	"context"
 	"fmt"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
+	"github.com/goradd/html5tag"
 )
 
 type ItemDirection int
@@ -16,7 +17,7 @@ const (
 )
 
 type CheckboxListI interface {
-	control.CheckboxListI
+	list.CheckboxListI
 }
 
 // CheckboxList is a multi-select control that presents its choices as a list of checkboxes.
@@ -25,7 +26,7 @@ type CheckboxListI interface {
 // to scroll as well, so that the final structure can be styled like a multi-table table, or a single-table
 // scrolling list much like a standard html select list.
 type CheckboxList struct {
-	control.CheckboxList
+	list.CheckboxList
 	isInline  bool
 	cellClass string
 }
@@ -56,7 +57,6 @@ func (l *CheckboxList) SetCellClass(c string) {
 	l.cellClass = c
 }
 
-
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (l *CheckboxList) DrawingAttributes(ctx context.Context) html5tag.Attributes {
@@ -66,14 +66,14 @@ func (l *CheckboxList) DrawingAttributes(ctx context.Context) html5tag.Attribute
 }
 
 // RenderItem is called by the framework to render a single item in the list.
-func (l *CheckboxList) RenderItem(item *control.ListItem) (h string) {
+func (l *CheckboxList) RenderItem(item *list.Item) (h string) {
 	selected := l.IsValueSelected(item.Value())
 	h = renderItemControl(item, "checkbox", selected, l.ID())
 	h = renderCell(item, h, l.ColumnCount(), l.isInline, l.cellClass)
 	return
 }
 
-func renderItemControl(item *control.ListItem, typ string, selected bool, name string) string {
+func renderItemControl(item *list.Item, typ string, selected bool, name string) string {
 	attributes := html5tag.NewAttributes()
 	attributes.SetID(item.ID())
 	attributes.Set("name", name)
@@ -87,7 +87,7 @@ func renderItemControl(item *control.ListItem, typ string, selected bool, name s
 	return html5tag.RenderLabel(html5tag.NewAttributes().Set("for", item.ID()).AddClass("form-check-label"), item.Label(), ctrl, html5tag.LabelAfter)
 }
 
-func renderCell(item *control.ListItem, controlHtml string, columnCount int, isInline bool, cellClass string) string {
+func renderCell(item *list.Item, controlHtml string, columnCount int, isInline bool, cellClass string) string {
 	attributes := item.Attributes().Copy()
 	attributes.SetID(item.ID() + "_item")
 	attributes.AddClass("form-check")
@@ -95,7 +95,7 @@ func renderCell(item *control.ListItem, controlHtml string, columnCount int, isI
 		attributes.AddClass("form-check-inline")
 	}
 	if columnCount > 0 {
-		attributes.AddClass(fmt.Sprintf("col-%d", 12 / columnCount))
+		attributes.AddClass(fmt.Sprintf("col-%d", 12/columnCount))
 	}
 	if cellClass != "" {
 		attributes.AddClass(cellClass)
@@ -116,7 +116,6 @@ func (l *CheckboxList) Serialize(e page.Encoder) {
 	return
 }
 
-
 func (l *CheckboxList) Deserialize(d page.Decoder) {
 	l.CheckboxList.Deserialize(d)
 
@@ -130,11 +129,10 @@ func (l *CheckboxList) Deserialize(d page.Decoder) {
 	return
 }
 
-
 type CheckboxListCreator struct {
 	ID string
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
-	Items []control.ListValue
+	Items []list.ListValue
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider control.DataBinder
 	// DataProviderID is the id of a control that will dynamically provide the data for the list and that implements the DataBinder interface.
@@ -165,19 +163,18 @@ func (c CheckboxListCreator) Create(ctx context.Context, parent page.ControlI) p
 }
 
 func (c CheckboxListCreator) Init(ctx context.Context, ctrl CheckboxListI) {
-	sub := control.CheckboxListCreator{
-		ID: c.ID,
-		Items: c.Items,
-		DataProvider: c.DataProvider,
-		ColumnCount: c.ColumnCount,
-		LayoutDirection: c.LayoutDirection,
+	sub := list.CheckboxListCreator{
+		ID:               c.ID,
+		Items:            c.Items,
+		DataProvider:     c.DataProvider,
+		ColumnCount:      c.ColumnCount,
+		LayoutDirection:  c.LayoutDirection,
 		LabelDrawingMode: c.LabelDrawingMode,
-		IsScrolling: c.IsScrolling,
-		RowClass: c.RowClass,
-		Value: c.Value,
-		SaveState: c.SaveState,
-		ControlOptions: c.ControlOptions,
-
+		IsScrolling:      c.IsScrolling,
+		RowClass:         c.RowClass,
+		Value:            c.Value,
+		SaveState:        c.SaveState,
+		ControlOptions:   c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)
 }

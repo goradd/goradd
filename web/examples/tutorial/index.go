@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/page/action"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/dialog"
 	"path"
 	"strings"
 

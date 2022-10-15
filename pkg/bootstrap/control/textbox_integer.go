@@ -2,17 +2,17 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/textbox"
+	"github.com/goradd/html5tag"
 )
 
 type IntegerTextboxI interface {
-	control.IntegerTextboxI
+	textbox.IntegerI
 }
 
 type IntegerTextbox struct {
-	control.IntegerTextbox
+	textbox.Integer
 }
 
 func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
@@ -23,7 +23,7 @@ func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 }
 
 func (t *IntegerTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
-	a := t.IntegerTextbox.DrawingAttributes(ctx)
+	a := t.Integer.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }
@@ -60,11 +60,11 @@ type IntegerTextboxCreator struct {
 	// MinValue is the minimum value the user can enter. If the user does not
 	// enter at least this amount, or enters something that is not an integer, it will fail validation
 	// and the FormFieldWrapper will show an error.
-	MinValue *control.IntegerLimit
+	MinValue *textbox.IntegerLimit
 	// MaxValue is the maximum value the user can enter. If the user enter more
 	// than this amount, or enters something that is not an integer, it will fail validation
 	// and the FormFieldWrapper will show an error.
-	MaxValue *control.IntegerLimit
+	MaxValue *textbox.IntegerLimit
 	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
 	Value interface{}
 
@@ -83,7 +83,7 @@ func (c IntegerTextboxCreator) Create(ctx context.Context, parent page.ControlI)
 // creator. You do not normally need to call this.
 func (c IntegerTextboxCreator) Init(ctx context.Context, ctrl IntegerTextboxI) {
 	// Reuse subclass
-	sub := control.IntegerTextboxCreator{
+	sub := textbox.IntegerCreator{
 		Placeholder:    c.Placeholder,
 		Type:           c.Type,
 		MinLength:      c.MinLength,

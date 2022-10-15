@@ -33,7 +33,7 @@ table th {
   color: white;
 }
 </style>
-<h2>Tables - Checkbox Columns</h2>
+<h2>Tables - CheckboxList Columns</h2>
 <p>
 A CheckboxColumn displays a single checkbox in a column. When you create it, you designate a
 CheckboxProvider, which will determine what the initial state of the checkboxes will be. Once set up,

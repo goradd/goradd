@@ -9,7 +9,7 @@ func init() {
 	generator.RegisterControlGenerator(Panel{}, "github.com/goradd/goradd/pkg/page/control/Panel")
 }
 
-// This structure describes the Panel to the connector dialog and code generator
+// Panel describes the Panel to the connector dialog and code generator
 type Panel struct {
 }
 
@@ -23,7 +23,7 @@ func (d Panel) SupportsColumn(ref interface{}) bool {
 
 func (d Panel) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	s = fmt.Sprintf(
-`%s.PanelCreator{
+		`%s.PanelCreator{
 	ID:        p.ID() + "-%s",
 	ControlOptions: page.ControlOptions{
 		DataConnector: %s{},
@@ -32,7 +32,6 @@ func (d Panel) GenerateCreator(ref interface{}, desc *generator.ControlDescripti
 	return
 }
 
-
 func (d Panel) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetText(fmt.Sprint(val))`
 }
@@ -40,4 +39,3 @@ func (d Panel) GenerateRefresh(ref interface{}, desc *generator.ControlDescripti
 func (d Panel) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return ""
 }
-

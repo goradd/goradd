@@ -11,14 +11,14 @@ func init() {
 	generator.RegisterControlGenerator(Textbox{}, "github.com/goradd/goradd/pkg/page/control/Textbox")
 }
 
-// This structure describes the textbox to the connector dialog and code generator
+// Textbox describes the textbox to the connector dialog and code generator
 type Textbox struct {
 }
 
 func (d Textbox) SupportsColumn(ref interface{}) bool {
-	if col,ok := ref.(*db.Column); ok &&
+	if col, ok := ref.(*db.Column); ok &&
 		(col.ColumnType == query.ColTypeBytes ||
-		col.ColumnType == query.ColTypeString) {
+			col.ColumnType == query.ColTypeString) {
 		return true
 	}
 	return false
@@ -38,8 +38,6 @@ func (d Textbox) GenerateCreator(ref interface{}, desc *generator.ControlDescrip
 	return
 }
 
-
-
 func (d Textbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetText(val)`
 }
@@ -47,4 +45,3 @@ func (d Textbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescrip
 func (d Textbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `val := ctrl.Text()`
 }
-

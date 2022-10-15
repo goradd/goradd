@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	generator2.RegisterControlGenerator(FloatTextbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/FloatTextbox")
+	generator2.RegisterControlGenerator(FloatTextbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/Float")
 }
 
 // This structure describes the textbox to the connector dialog and code generator

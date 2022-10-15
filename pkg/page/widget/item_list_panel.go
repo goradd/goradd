@@ -6,6 +6,9 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/table"
+	. "github.com/goradd/goradd/pkg/page/control/textbox"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
 	"path"
@@ -51,7 +54,7 @@ func (p *ItemListPanel) Init(parent page.ControlI, id string) {
 
 	p.FilterText = NewTextbox(p.FilterPanel, p.ID()+"-filtertxt")
 	p.FilterText.SetPlaceholder(p.ParentForm().GT("Search"))
-	p.FilterText.SetType(TextboxTypeSearch)
+	p.FilterText.SetType(SearchType)
 
 	p.ItemTable = NewSelectTable(p.ScrollPanel, p.ID()+"-table")
 

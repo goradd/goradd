@@ -14,6 +14,8 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/button"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/page/event"
 	time2 "github.com/goradd/goradd/pkg/time"
 	"github.com/goradd/goradd/web/app"
@@ -63,17 +65,17 @@ func (form *TestForm) Init(ctx context.Context, formID string) {
 func (form *TestForm) createControls(ctx context.Context) {
 	form.Controller = NewTestController(form, "controller")
 
-	NewSelectList(form, "test-list").
+	list.NewSelectList(form, "test-list").
 		SetAttribute("size", 10)
 
 	NewSpan(form, "running-label")
 
-	NewButton(form, "run-button").
+	button.NewButton(form, "run-button").
 		SetValidationType(event.ValidateNone).
 		SetText("Run Test").
 		On(event.Click(), action.Ajax(form.ID(), TestButtonAction))
 
-	NewButton(form, "run-all-button").
+	button.NewButton(form, "run-all-button").
 		SetText("Run All Tests").
 		SetValidationType(event.ValidateNone).
 		On(event.Click(), action.Redirect(TestFormPath+"?all=1"))
@@ -81,7 +83,7 @@ func (form *TestForm) createControls(ctx context.Context) {
 
 func (form *TestForm) LoadControls(ctx context.Context) {
 	tests.Range(func(k string, v interface{}) bool {
-		GetSelectList(form, "test-list").AddItem(k, k)
+		list.GetSelectList(form, "test-list").Add(k, k)
 		return true
 	})
 }
@@ -96,7 +98,7 @@ func (form *TestForm) DoAction(ctx context.Context, a action.Params) {
 }
 
 func (form *TestForm) runSelectedTest() {
-	testList := GetSelectList(form, "test-list")
+	testList := list.GetSelectList(form, "test-list")
 	GetSpan(form, "running-label").SetText(testList.SelectedItem().Label())
 	name := testList.SelectedItem().Value()
 	form.testOne(name)

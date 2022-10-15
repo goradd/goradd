@@ -15,6 +15,14 @@ type RepeaterI interface {
 	SetItemHtmler(h RepeaterHtmler) RepeaterI
 }
 
+// Repeater is an HTML control that draws repeating child items.
+//
+// Repeater is similar to a table, but more general purpose. Instead of drawing inside a table tag
+// and using columns for formatting, it draws inside a div tag (which you can change by setting the Tag value),
+// and repeats any kind of child item.
+//
+// Like a table, the child items can be based on content taken from a DataBinder. You can also limit
+// the amount of data displayed at one time by calling DataPager() and assigning a pager control.
 type Repeater struct {
 	page.ControlBase
 	PagedControl

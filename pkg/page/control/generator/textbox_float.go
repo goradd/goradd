@@ -8,15 +8,15 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(FloatTextbox{}, "github.com/goradd/goradd/pkg/page/control/FloatTextbox")
+	generator.RegisterControlGenerator(FloatTextbox{}, "github.com/goradd/goradd/pkg/page/control/Float")
 }
 
-// This structure describes the FloatTextbox to the connector dialog and code generator
+// FloatTextbox describes the FloatTextbox to the connector dialog and code generator
 type FloatTextbox struct {
 }
 
 func (d FloatTextbox) SupportsColumn(ref interface{}) bool {
-	if col,ok := ref.(*db.Column); ok && (col.ColumnType == query.ColTypeFloat || col.ColumnType == query.ColTypeDouble) {
+	if col, ok := ref.(*db.Column); ok && (col.ColumnType == query.ColTypeFloat || col.ColumnType == query.ColTypeDouble) {
 		return true
 	}
 	return false
@@ -34,7 +34,6 @@ func (d FloatTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDe
 		}`, desc.Package, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
-
 
 func (d FloatTextbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetValue(val)`

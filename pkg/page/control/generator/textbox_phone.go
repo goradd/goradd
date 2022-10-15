@@ -8,15 +8,15 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(PhoneTextbox{}, "github.com/goradd/goradd/pkg/page/control/PhoneTextbox")
+	generator.RegisterControlGenerator(PhoneTextbox{}, "github.com/goradd/goradd/pkg/page/control/Phone")
 }
 
-// This structure describes the PhoneTextbox to the connector dialog and code generator
+// PhoneTextbox describes the PhoneTextbox to the connector dialog and code generator
 type PhoneTextbox struct {
 }
 
 func (d PhoneTextbox) SupportsColumn(ref interface{}) bool {
-	if col,ok := ref.(*db.Column); ok &&
+	if col, ok := ref.(*db.Column); ok &&
 		(col.ColumnType == query.ColTypeBytes ||
 			col.ColumnType == query.ColTypeString) {
 		return true
@@ -28,7 +28,7 @@ func (d PhoneTextbox) SupportsColumn(ref interface{}) bool {
 func (d PhoneTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`%s.PhoneTextboxCreator{
+		`%s.PhoneTextboxCreator{
 	ID:        p.ID() + "-%s",
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
@@ -37,7 +37,6 @@ func (d PhoneTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDe
 }`, desc.Package, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
-
 
 func (d PhoneTextbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetText(val)`

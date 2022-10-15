@@ -7,7 +7,8 @@ import (
 	"github.com/goradd/goradd/pkg/bootstrap/examples"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/column"
+	"github.com/goradd/goradd/pkg/page/control/table"
+	column2 "github.com/goradd/goradd/pkg/page/control/table/column"
 )
 
 type TablePanel struct {
@@ -79,20 +80,20 @@ func NewTablePanel(ctx context.Context, parent page.ControlI) {
 func (f *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) {
 	f.Panel.Init(parent, id)
 	f.AddControls(ctx,
-		control.PagedTableCreator{
+		table.PagedTableCreator{
 			ID:             "table1",
 			HeaderRowCount: 1,
 			DataProvider:   f,
-			Columns: []control.ColumnCreator{
-				column.TexterColumnCreator{
+			Columns: []table.ColumnCreator{
+				column2.TexterColumnCreator{
 					TexterID: "tablePanel",
 					Title:    "Custom",
 				},
-				column.MapColumnCreator{
+				column2.MapColumnCreator{
 					Index: "id",
 					Title: "StdMap",
 				},
-				column.GetterColumnCreator{
+				column2.GetterColumnCreator{
 					Index: "name",
 					Title: "Getter",
 				},
@@ -124,7 +125,7 @@ func (f *TablePanel) BindData(ctx context.Context, s control.DataManagerI) {
 }
 
 // CellText here satisfies the CellTexter interface so that the panel can provide the text for a cell.
-func (f *TablePanel) CellText(ctx context.Context, col control.ColumnI, info control.CellInfo) string {
+func (f *TablePanel) CellText(ctx context.Context, col table.ColumnI, info table.CellInfo) string {
 	// Here is an example of how to figure out what table we are talking about.
 	tid := col.ParentTable().ID()
 	switch tid {

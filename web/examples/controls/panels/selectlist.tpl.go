@@ -17,7 +17,7 @@ that represent what is available through standard html controls. Many css/javasc
 these standard html widgets as the basis for their more elaborate selection mechanisms.
 </p>
 <p>
-Selection lists all use the ItemList mixin, so you have a single kind of interface to add labels and
+Selection lists all use the List mixin, so you have a single kind of interface to add labels and
 associated values to the list. Individual items can be styled as well.
 </p>
 <p>
@@ -235,7 +235,7 @@ turn off browser validity checking by setting the &#34;novalidate&#34; attribute
 
 	}
 
-	if _, err = io.WriteString(_w, `<h4>Checkbox List</h4>
+	if _, err = io.WriteString(_w, `<h4>CheckboxList List</h4>
 <p>
 This list is similar to the radio list above, but uses checkboxes so you can select multiple
 items. It is a much better way to present to the user a selection of multiple items, and is the default

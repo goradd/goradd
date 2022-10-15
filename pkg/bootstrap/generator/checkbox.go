@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	generator2.RegisterControlGenerator(Checkbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/Checkbox")
+	generator2.RegisterControlGenerator(Checkbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/CheckboxList")
 }
 
 // This structure describes the textbox to the connector dialog and code generator

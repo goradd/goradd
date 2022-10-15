@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	"github.com/goradd/goradd/pkg/page/control/table"
 	"testing"
 
 	"github.com/goradd/goradd/pkg/page"
@@ -17,7 +18,7 @@ func TestDataPager_Serialize(t *testing.T) {
 	p := page.NewMockForm()
 
 	p.AddControls(context.Background(),
-		PagedTableCreator{
+		table.PagedTableCreator{
 			ID: "table",
 		},
 		DataPagerCreator{

@@ -2,17 +2,17 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/textbox"
+	"github.com/goradd/html5tag"
 )
 
 type EmailTextboxI interface {
-	control.EmailTextboxI
+	textbox.EmailI
 }
 
 type EmailTextbox struct {
-	control.EmailTextbox
+	textbox.Email
 }
 
 func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
@@ -23,7 +23,7 @@ func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
 }
 
 func (t *EmailTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
-	a := t.EmailTextbox.DrawingAttributes(ctx)
+	a := t.Email.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }
@@ -73,7 +73,7 @@ func (c EmailTextboxCreator) Init(ctx context.Context, ctrl EmailTextboxI) {
 		ctrl.SetMaxItemCount(c.MaxItemCount)
 	}
 	// Reuse subclass
-	sub := control.EmailTextboxCreator{
+	sub := textbox.EmailCreator{
 		Placeholder:    c.Placeholder,
 		Type:           c.Type,
 		MinLength:      c.MinLength,

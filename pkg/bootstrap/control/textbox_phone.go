@@ -2,17 +2,17 @@ package control
 
 import (
 	"context"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
-	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/textbox"
+	"github.com/goradd/html5tag"
 )
 
 type PhoneTextboxI interface {
-	control.PhoneTextboxI
+	textbox.PhoneI
 }
 
 type PhoneTextbox struct {
-	control.PhoneTextbox
+	textbox.Phone
 }
 
 func NewPhoneTextbox(parent page.ControlI, id string) *PhoneTextbox {
@@ -23,7 +23,7 @@ func NewPhoneTextbox(parent page.ControlI, id string) *PhoneTextbox {
 }
 
 func (t *PhoneTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
-	a := t.PhoneTextbox.DrawingAttributes(ctx)
+	a := t.Phone.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }
@@ -67,7 +67,7 @@ func (c PhoneTextboxCreator) Create(ctx context.Context, parent page.ControlI) p
 
 func (c PhoneTextboxCreator) Init(ctx context.Context, ctrl PhoneTextboxI) {
 	// Reuse subclass
-	sub := control.PhoneTextboxCreator{
+	sub := textbox.PhoneCreator{
 		Placeholder:    c.Placeholder,
 		Type:           c.Type,
 		MinLength:      c.MinLength,

@@ -6,7 +6,9 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
-	"github.com/goradd/goradd/pkg/page/control/column"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/table"
+	column2 "github.com/goradd/goradd/pkg/page/control/table/column"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model"
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 	"strconv"
@@ -26,40 +28,40 @@ func (p *TableDbPanel) Init(ctx context.Context, parent page.ControlI, id string
 	p.Panel.Init(parent, id)
 	p.AddControls(ctx,
 		PagedTableCreator{
-			ID: "table1",
+			ID:             "table1",
 			HeaderRowCount: 1,
-			DataProvider: p, // The data provider can be a predefined control, including the parent of the table.
-			Sortable: true,
-			Columns:[]ColumnCreator {
-				column.TexterColumnCreator{
-					ID: "num",
+			DataProvider:   p, // The data provider can be a predefined control, including the parent of the table.
+			Sortable:       true,
+			Columns: []ColumnCreator{
+				column2.TexterColumnCreator{
+					ID:     "num",
 					Texter: p,
-					Title:"#",
+					Title:  "#",
 				},
-				column.NodeColumnCreator{
-					Node: node.Person().FirstName(),
-					Title:"First Name",
-					Sortable:true,
+				column2.NodeColumnCreator{
+					Node:     node.Person().FirstName(),
+					Title:    "First Name",
+					Sortable: true,
 				},
-				column.NodeColumnCreator{
-					Node: node.Person().LastName(),
-					Title:"Last Name",
-					Sortable:true,
+				column2.NodeColumnCreator{
+					Node:     node.Person().LastName(),
+					Title:    "Last Name",
+					Sortable: true,
 				},
 
-				column.TexterColumnCreator{
-					ID: "combined",
+				column2.TexterColumnCreator{
+					ID:     "combined",
 					Texter: p,
-					Title:"Combined",
+					Title:  "Combined",
 				},
-				column.AliasColumnCreator{
+				column2.AliasColumnCreator{
 					Alias: "manager_count",
 					Title: "Project Count",
 				},
 			},
-			PageSize:5,
+			PageSize:  5,
 			SaveState: true,
-			Caption:DataPagerCreator{
+			Caption: DataPagerCreator{
 				ID:           "pager",
 				PagedControl: "table1",
 			},
@@ -88,7 +90,7 @@ func (p *TableDbPanel) BindData(ctx context.Context, s DataManagerI) {
 	// figure out how to sort the columns. This could be a simple process, or complex, depending on your data
 
 	// Since we are asking the database to do the sort, we have to make a slice of nodes
-	sortNodes := column.MakeNodeSlice(t.SortColumns())
+	sortNodes := column2.MakeNodeSlice(t.SortColumns())
 	maxRowCount, offset := t.SqlLimits()
 	people := model.QueryPeople(ctx).
 		Alias("manager_count",

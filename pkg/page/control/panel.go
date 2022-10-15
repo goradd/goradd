@@ -18,8 +18,25 @@ type PanelI interface {
 	page.ControlI
 }
 
-// Panel is a Goradd control that is a basic "div" wrapper. Use it to style and listen to events on a div. It
-// can also be used as the basis for more advanced javascript controls.
+// Panel is a GoRADD control that is a basic "div" wrapper.
+//
+// Panel can be used for any kind of HTML tag by simply changing the Tag attribute. For example,
+//  panel.Tag = "nav"
+//
+// Turns a panel into a "nav" tag.
+//
+// Customize how the tag is drawn by calling functions inherited from ControlBase. With these, you can
+// set the class, data attributes, or any attribute. Call SetText() to set a string that will be
+// drawn inside the div tag. Call SetTextIsHtml() to tell the control to treat the text as HTML and
+// not escape it.
+//
+// One typical use for a Panel is as a container for custom HTML and child controls. Child controls assigned
+// to the Panel will automatically be drawn by default in the order they were assigned.
+//
+// To customize this behavior, embed a Panel into your own custom struct, and then define the
+// DrawInnerHtml() function on your struct. The framework will automatically call that function.
+// Or, use a template to create the DrawTemplate function on your struct and the framework will use that
+// instead. Examples can be found in the tutorial, in the bootstrap package, and in the code-generated panels.
 type Panel struct {
 	page.ControlBase
 }

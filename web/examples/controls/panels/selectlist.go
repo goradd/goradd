@@ -5,6 +5,8 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/button"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"github.com/goradd/html5tag"
@@ -24,7 +26,7 @@ func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
 func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
 
-	itemList := []ListValue{
+	itemList := []list.ListValue{
 		{"First", 1},
 		{"Second", 2},
 		{"Third", 3},
@@ -38,7 +40,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 	p.AddControls(ctx,
 		FormFieldWrapperCreator{
 			Label: "Standard SelectList",
-			Child: SelectListCreator{
+			Child: list.SelectListCreator{
 				ID:      "singleSelectList",
 				NilItem: "- Select One -",
 				Items:   itemList,
@@ -49,7 +51,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		},
 		FormFieldWrapperCreator{
 			Label: "SelectList With Size",
-			Child: SelectListCreator{
+			Child: list.SelectListCreator{
 				ID:    "selectListWithSize",
 				Items: itemList,
 				Size:  4,
@@ -60,7 +62,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		},
 		FormFieldWrapperCreator{
 			Label: "Rows Radio List",
-			Child: RadioListCreator{
+			Child: list.RadioListCreator{
 				ID:          "radioList1",
 				Items:       itemList,
 				ColumnCount: 2,
@@ -68,7 +70,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		},
 		FormFieldWrapperCreator{
 			Label: "Columns Radio List",
-			Child: RadioListCreator{
+			Child: list.RadioListCreator{
 				ID:              "radioList2",
 				Items:           itemList,
 				ColumnCount:     2,
@@ -77,7 +79,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		},
 		FormFieldWrapperCreator{
 			Label: "Scrolling Radio List",
-			Child: RadioListCreator{
+			Child: list.RadioListCreator{
 				ID:          "radioList3",
 				Items:       itemList,
 				IsScrolling: true,
@@ -90,7 +92,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		},
 		FormFieldWrapperCreator{
 			Label: "Multiselect List",
-			Child: MultiselectListCreator{
+			Child: list.MultiselectListCreator{
 				ID:    "multiselectList",
 				Items: itemList,
 				ControlOptions: page.ControlOptions{
@@ -99,19 +101,19 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 			},
 		},
 		FormFieldWrapperCreator{
-			Label: "Checkbox List",
-			Child: CheckboxListCreator{
+			Label: "CheckboxList List",
+			Child: list.CheckboxListCreator{
 				ID:          "checklist1",
 				Items:       itemList,
 				ColumnCount: 2,
 			},
 		},
-		ButtonCreator{
+		button.ButtonCreator{
 			ID:       "ajaxButton",
 			Text:     "Submit Ajax",
 			OnSubmit: action.Ajax("selectListPanel", ButtonSubmit),
 		},
-		ButtonCreator{
+		button.ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Server",
 			OnSubmit: action.Server("selectListPanel", ButtonSubmit),
@@ -122,7 +124,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 func (p *SelectListPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
-		checklist1 := GetCheckboxList(p, "checklist1")
+		checklist1 := list.GetCheckboxList(p, "checklist1")
 		checklistWrapper := GetFormFieldWrapper(p, "checklist1-ff")
 		checklistWrapper.SetInstructions(strings.Join(checklist1.SelectedIds(), ","))
 	}
@@ -163,7 +165,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.AssertEqual(true, t.ControlHasClass("multiselectList-ff", "error"))
 
 	t.WithForm(func(f page.FormI) {
-		t.AssertEqual(2, GetSelectList(f, "selectListWithSize").IntValue())
+		t.AssertEqual(2, list.GetSelectList(f, "selectListWithSize").IntValue())
 	})
 	t.ChooseListValue("singleSelectList", "1")
 	t.ChooseListValue("selectListWithSize", "2")
@@ -174,11 +176,11 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.Click(btnID)
 
 	t.WithForm(func(f page.FormI) {
-		t.AssertEqual(1, GetSelectList(f, "singleSelectList").IntValue())
-		t.AssertEqual("2", GetSelectList(f, "selectListWithSize").Value())
-		t.AssertEqual(3, GetRadioList(f, "radioList1").IntValue())
-		t.AssertEqual("4", GetRadioList(f, "radioList2").Value())
-		v := GetMultiselectList(f, "multiselectList").Value().([]string)
+		t.AssertEqual(1, list.GetSelectList(f, "singleSelectList").IntValue())
+		t.AssertEqual("2", list.GetSelectList(f, "selectListWithSize").Value())
+		t.AssertEqual(3, list.GetRadioList(f, "radioList1").IntValue())
+		t.AssertEqual("4", list.GetRadioList(f, "radioList2").Value())
+		v := list.GetMultiselectList(f, "multiselectList").Value().([]string)
 		t.AssertEqual("5", v[0])
 	})
 }

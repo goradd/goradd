@@ -7,6 +7,7 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/dialog"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
 )
@@ -19,7 +20,7 @@ const (
 )
 
 type ModalI interface {
-	control.DialogI
+	dialog.DialogI
 }
 
 // Modal is a bootstrap modal dialog.
@@ -94,18 +95,18 @@ func (m *Modal) SetHasCloseBox(h bool) {
 	}
 }
 
-func (m *Modal) SetDialogStyle(style control.DialogStyle) {
+func (m *Modal) SetDialogStyle(style dialog.Style) {
 	var class string
 	switch style {
-	case control.DialogStyleDefault:
+	case dialog.DefaultStyle:
 		class = BackgroundColorNone + " " + TextColorBody
-	case control.DialogStyleWarning:
+	case dialog.WarningStyle:
 		class = BackgroundColorWarning + " " + TextColorBody
-	case control.DialogStyleError:
+	case dialog.ErrorStyle:
 		class = BackgroundColorDanger + " " + TextColorLight
-	case control.DialogStyleSuccess:
+	case dialog.SuccessStyle:
 		class = BackgroundColorSuccess + " " + TextColorLight
-	case control.DialogStyleInfo:
+	case dialog.InfoStyle:
 		class = BackgroundColorInfo + " " + TextColorLight
 	}
 	m.titleBar.RemoveClassesWithPrefix("bg-")
@@ -143,7 +144,7 @@ func (m *Modal) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 func (m *Modal) AddButton(
 	label string,
 	id string,
-	options *control.DialogButtonOptions,
+	options *dialog.ButtonOptions,
 ) {
 	if id == "" {
 		id = label
@@ -242,7 +243,7 @@ func (m *Modal) SetButtonText(id string, text string) {
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog (by hiding it).
 func (m *Modal) AddCloseButton(label string, id string) {
-	m.AddButton(label, id, &control.DialogButtonOptions{IsClose: true})
+	m.AddButton(label, id, &dialog.ButtonOptions{IsClose: true})
 }
 
 func (m *Modal) DoPrivateAction(_ context.Context, a action.Params) {
@@ -359,7 +360,7 @@ type ModalCreator struct {
 	Title         string
 	TitlebarClass string
 	HasCloseBox   bool
-	Style         control.DialogStyle
+	Style         dialog.Style
 	Backdrop      ModalBackdropType
 	Buttons       []ModalButtonCreator
 	OnButton      action.ActionI
@@ -381,7 +382,7 @@ func (c ModalCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 	if c.HasCloseBox {
 		ctrl.SetHasCloseBox(true)
 	}
-	if c.Style != control.DialogStyleDefault {
+	if c.Style != dialog.DefaultStyle {
 		ctrl.SetDialogStyle(c.Style)
 	}
 	if c.Backdrop != ModalBackdrop {
@@ -389,7 +390,7 @@ func (c ModalCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 	}
 	if c.Buttons != nil {
 		for _, button := range c.Buttons {
-			ctrl.AddButton(button.Label, button.ID, &control.DialogButtonOptions{
+			ctrl.AddButton(button.Label, button.ID, &dialog.ButtonOptions{
 				Validates:           button.Validates,
 				ConfirmationMessage: button.ConfirmationMessage,
 				PushLeft:            button.PushLeft,

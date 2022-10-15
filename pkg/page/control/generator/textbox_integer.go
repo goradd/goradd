@@ -8,17 +8,17 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(IntegerTextbox{}, "github.com/goradd/goradd/pkg/page/control/IntegerTextbox")
+	generator.RegisterControlGenerator(IntegerTextbox{}, "github.com/goradd/goradd/pkg/page/control/Integer")
 }
 
-// This structure describes the IntegerTextbox to the connector dialog and code generator
+// IntegerTextbox describes the IntegerTextbox to the connector dialog and code generator
 type IntegerTextbox struct {
 }
 
 func (d IntegerTextbox) SupportsColumn(ref interface{}) bool {
-	if col,ok := ref.(*db.Column); ok &&
+	if col, ok := ref.(*db.Column); ok &&
 		(col.ColumnType == query.ColTypeInteger ||
-		col.ColumnType == query.ColTypeInteger64) &&
+			col.ColumnType == query.ColTypeInteger64) &&
 		!col.IsReference() {
 		return true
 	}
@@ -28,7 +28,7 @@ func (d IntegerTextbox) SupportsColumn(ref interface{}) bool {
 func (d IntegerTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
 	s = fmt.Sprintf(
-`%s.IntegerTextboxCreator{
+		`%s.IntegerTextboxCreator{
 	ID:        p.ID() + "-%s",
 	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
@@ -37,7 +37,6 @@ func (d IntegerTextbox) GenerateCreator(ref interface{}, desc *generator.Control
 }`, desc.Package, desc.ControlID, !col.IsNullable, desc.Connector)
 	return
 }
-
 
 func (d IntegerTextbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `ctrl.SetValue(val)`

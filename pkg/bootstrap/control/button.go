@@ -5,7 +5,7 @@ import (
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
-	grctl "github.com/goradd/goradd/pkg/page/control"
+	grctl "github.com/goradd/goradd/pkg/page/control/button"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
 )

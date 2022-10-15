@@ -5,6 +5,9 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/dialog"
+	. "github.com/goradd/goradd/pkg/page/control/textbox"
 )
 
 type DialogsPanel struct {
@@ -60,12 +63,12 @@ func (p *DialogsPanel) DoAction(ctx context.Context, a action.Params) {
 			dp.SetTitle("What do you want for Christmas?")
 			tb := NewTextbox(dp, "msg-txt")
 			tb.SetIsRequired(true)
-			dp.AddButton("For Me", "forme", &DialogButtonOptions{
+			dp.AddButton("For Me", "forme", &ButtonOptions{
 				IsPrimary: true,
 				Validates: true,
 				//OnClick:action.Ajax(p.ID(), ForMeAction), // You can handle button actions this way
 			})
-			dp.AddButton("For You", "foryou", &DialogButtonOptions{
+			dp.AddButton("For You", "foryou", &ButtonOptions{
 				Validates: true,
 				//OnClick:action.Ajax(p.ID(), ForYouAction),
 			})

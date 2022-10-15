@@ -7,6 +7,8 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
 	. "github.com/goradd/goradd/pkg/page/control"
+	. "github.com/goradd/goradd/pkg/page/control/button"
+	. "github.com/goradd/goradd/pkg/page/control/textbox"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/test/browsertest"
 )
@@ -66,7 +68,7 @@ func (f *AjaxTimingForm) createControls(ctx context.Context) {
 	f.Txt1KeyUpLabel.SetText("Value after Key Up: ")
 
 	f.Chk = NewCheckbox(f, "cb")
-	f.Chk.SetText("Checkbox Test")
+	f.Chk.SetText("CheckboxList Test")
 	f.Chk.On(event.Click(), action.Ajax(f.ID(), ChkChangeAction))
 
 	f.ChkLabel = NewSpan(f, "cbv")
