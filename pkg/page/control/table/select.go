@@ -58,8 +58,8 @@ func (t *SelectTable) this() SelectTableI {
 	return t.Self.(SelectTableI)
 }
 
-// GetRowAttributes is an override to return the rows identified by an id.
-func (t *SelectTable) GetRowAttributes(row int, data interface{}) (a html5tag.Attributes) {
+// RowAttributes is an override to return the rows identified by an id.
+func (t *SelectTable) RowAttributes(row int, data interface{}) (a html5tag.Attributes) {
 	var id string
 
 	if t.RowStyler() != nil {

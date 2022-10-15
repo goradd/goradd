@@ -11,7 +11,7 @@ import (
 func TestListItem_Serialize(t *testing.T) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
-	li := NewListItem("test", "5")
+	li := NewItem("test", "5")
 	li.Serialize(enc)
 
 	li2 := Item{}

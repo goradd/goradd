@@ -58,7 +58,7 @@ func NewList(owner IDer) List {
 
 // Add adds the given item to the end of the list. The value is optional, but should only be one or zero values.
 func (l *List) Add(label string, value ...string) *Item {
-	i := NewListItem(label, value...)
+	i := NewItem(label, value...)
 	l.AddItemAt(len(l.items), i)
 	return i
 }
@@ -69,7 +69,7 @@ func (l *List) Add(label string, value ...string) *Item {
 // the negative value of the number of items, it adds to the beginning. This can be an expensive operation in a long
 // hierarchical list, so use sparingly.
 func (l *List) AddAt(index int, label string, value ...string) {
-	l.AddItemAt(index, NewListItem(label, value...))
+	l.AddItemAt(index, NewItem(label, value...))
 }
 
 // AddItemAt adds the item at the given index. If the index is negative, it counts from the end. If the index is
@@ -331,10 +331,10 @@ func (p IdSlice) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 
 // NoSelectionItemList returns a default item list to start a selection list that allows no selection
 func NoSelectionItemList() []interface{} {
-	return []interface{}{NewListItem(config.NoSelectionString, "")}
+	return []interface{}{NewItem(config.NoSelectionString, "")}
 }
 
 // SelectOneItemList returns a default item list to start a selection list that asks the user to select an item
 func SelectOneItemList() []interface{} {
-	return []interface{}{NewListItem(config.SelectOneString, "")}
+	return []interface{}{NewItem(config.SelectOneString, "")}
 }

@@ -56,7 +56,7 @@ func BootstrapCodegenSetup() {
 				if col.IsTimestamp {
 					return "github.com/goradd/goradd/pkg/page/control/DateTimeSpan"
 				} else {
-					return "github.com/goradd/goradd/pkg/bootstrap/control/Date"
+					return "github.com/goradd/goradd/pkg/bootstrap/control/DateTextbox"
 				}
 			default:
 				return

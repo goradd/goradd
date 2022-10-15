@@ -34,9 +34,9 @@ type TableI interface {
 	control2.DataManagerI
 	SetCaption(interface{}) TableI
 	DrawCaption(context.Context, io.Writer)
-	GetHeaderRowAttributes(row int) html5tag.Attributes
-	GetFooterRowAttributes(row int) html5tag.Attributes
-	GetRowAttributes(row int, data interface{}) html5tag.Attributes
+	HeaderRowAttributes(row int) html5tag.Attributes
+	FooterRowAttributes(row int) html5tag.Attributes
+	RowAttributes(row int, data interface{}) html5tag.Attributes
 	HeaderCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html5tag.Attributes)
 	FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum int, colNum int) (cellHtml string, cellAttributes html5tag.Attributes)
 	SetHideIfEmpty(h bool) TableI
@@ -175,7 +175,7 @@ func (t *Table) HideIfEmpty() bool {
 	return t.hideIfEmpty
 }
 
-// MakeSortable makes a table sortable. It will attach sortable events and show the header if its not shown.
+// MakeSortable makes a table sortable. It will attach sortable events and show the header if it's not shown.
 func (t *Table) MakeSortable() TableI {
 	t.On(ColumnSortEvent().Private(), action.Ajax(t.ID(), SortClick))
 	if t.headerRowCount == 0 {
@@ -243,7 +243,7 @@ func (t *Table) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 
 // DrawInnerHtml is an override to draw the meat of the table.
 func (t *Table) DrawInnerHtml(ctx context.Context, w io.Writer) {
-	var t2 = t.this() // Get the sub class so we call into its hooks for drawing
+	var t2 = t.this() // Get the subclass so that we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
 	defer pool.PutBuffer(buf1)
@@ -305,7 +305,7 @@ func (t *Table) DrawColumnTags(ctx context.Context, w io.Writer) {
 
 // DrawHeaderRows is called by the framework to call the header rows of the table.
 func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer) {
-	var this = t.this() // Get the sub class so we call into its hooks for drawing
+	var this = t.this() // Get the subclass so that we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
 	defer pool.PutBuffer(buf1)
@@ -316,7 +316,7 @@ func (t *Table) DrawHeaderRows(ctx context.Context, w io.Writer) {
 				page.WriteString(buf1, html5tag.RenderTag("th", attr, cellHtml))
 			}
 		}
-		page.WriteString(w, html5tag.RenderTag("tr", t.GetHeaderRowAttributes(rowNum), buf1.String()))
+		page.WriteString(w, html5tag.RenderTag("tr", t.HeaderRowAttributes(rowNum), buf1.String()))
 		buf1.Reset()
 	}
 	return
@@ -338,8 +338,8 @@ func (t *Table) FooterCellDrawingInfo(ctx context.Context, col ColumnI, rowNum i
 	return
 }
 
-// GetHeaderRowAttributes is called internally to get the attributes for the tr tags in header rows.
-func (t *Table) GetHeaderRowAttributes(row int) html5tag.Attributes {
+// HeaderRowAttributes is called internally to get the attributes for the tr tags in header rows.
+func (t *Table) HeaderRowAttributes(row int) html5tag.Attributes {
 	if t.headerRowStyler != nil {
 		return t.headerRowStyler.HeaderRowAttributes(row)
 	}
@@ -348,7 +348,7 @@ func (t *Table) GetHeaderRowAttributes(row int) html5tag.Attributes {
 
 // DrawFooterRows is called by the framework to draw the tf rows of the table.
 func (t *Table) DrawFooterRows(ctx context.Context, w io.Writer) {
-	var this = t.this() // Get the sub class so we call into its hooks for drawing
+	var this = t.this() // Get the subclass so we call into its hooks for drawing
 
 	buf1 := pool.GetBuffer()
 	defer pool.PutBuffer(buf1)
@@ -363,14 +363,14 @@ func (t *Table) DrawFooterRows(ctx context.Context, w io.Writer) {
 				page.WriteString(buf1, html5tag.RenderTag(tag, attr, cellHtml))
 			}
 		}
-		page.WriteString(w, html5tag.RenderTag("tr", t.GetFooterRowAttributes(rowNum), buf1.String()))
+		page.WriteString(w, html5tag.RenderTag("tr", t.FooterRowAttributes(rowNum), buf1.String()))
 		buf1.Reset()
 	}
 	return
 }
 
-// GetFooterRowAttributes is called internally to get the attributes for the tr tags in footer rows.
-func (t *Table) GetFooterRowAttributes(row int) html5tag.Attributes {
+// FooterRowAttributes is called internally to get the attributes for the tr tags in footer rows.
+func (t *Table) FooterRowAttributes(row int) html5tag.Attributes {
 	if t.footerRowStyler != nil {
 		return t.footerRowStyler.FooterRowAttributes(row)
 	}
@@ -380,7 +380,7 @@ func (t *Table) GetFooterRowAttributes(row int) html5tag.Attributes {
 // DrawRow is called by the framework to draw a row of the table.
 func (t *Table) DrawRow(ctx context.Context, row int, data interface{}, w io.Writer) {
 	page.WriteString(w, "<tr ")
-	page.WriteString(w, t.this().GetRowAttributes(row, data).String())
+	page.WriteString(w, t.this().RowAttributes(row, data).String())
 	page.WriteString(w, ">")
 	for i, col := range t.columns {
 		col.DrawCell(ctx, row, i, data, w)
@@ -389,8 +389,8 @@ func (t *Table) DrawRow(ctx context.Context, row int, data interface{}, w io.Wri
 	return
 }
 
-// GetRowAttributes is used internally to return the attributes for the tr tag of a data row.
-func (t *Table) GetRowAttributes(row int, data interface{}) html5tag.Attributes {
+// RowAttributes is used internally to return the attributes for the tr tag of a data row.
+func (t *Table) RowAttributes(row int, data interface{}) html5tag.Attributes {
 	if t.rowStyler != nil {
 		return t.rowStyler.RowAttributes(row, data)
 	}
@@ -479,7 +479,7 @@ func (t *Table) RemoveColumnByTitle(title string) {
 	}
 }
 
-// ClearColumns removes all of the columns.
+// ClearColumns removes all the columns.
 func (t *Table) ClearColumns() {
 	if len(t.columns) > 0 {
 		t.columns = []ColumnI{}
@@ -487,7 +487,7 @@ func (t *Table) ClearColumns() {
 	}
 }
 
-// HideColumns hides all of the columns, keeping them in the column list, but causing them not to draw.
+// HideColumns hides all the columns, keeping them in the column list, but causing them not to draw.
 func (t *Table) HideColumns() {
 	for _, col := range t.columns {
 		col.SetHidden(true)
@@ -495,7 +495,7 @@ func (t *Table) HideColumns() {
 	t.Refresh()
 }
 
-// ShowColumns sets all of the columns to be shown.
+// ShowColumns sets all the columns to be shown.
 func (t *Table) ShowColumns() {
 	for _, col := range t.columns {
 		col.SetHidden(false)

@@ -50,47 +50,47 @@ type Item struct {
 	anchorAttributes  html5tag.Attributes
 }
 
-// NewListItem creates a new item for a list. Specify an empty string for an item that represents no selection.
-func NewListItem(label string, value ...string) *Item {
-	l := &Item{label: label}
+// NewItem creates a new item for a list. Specify an empty string for an item that represents no selection.
+func NewItem(label string, value ...string) *Item {
+	i := &Item{label: label}
 	if c := len(value); c == 1 {
-		l.value = value[0]
+		i.value = value[0]
 	} else if c > 1 {
-		panic("Call NewListItem with zero or one value only.")
+		panic("Call NewItem with zero or one value only.")
 	} else {
-		l.value = label
+		i.value = label
 	}
 
-	l.List = NewList(l)
-	return l
+	i.List = NewList(i)
+	return i
 }
 
 // NewItemFromValueLabeler creates a new item from any object that has a Value and Label method.
-func NewItemFromValueLabeler(i ValueLabeler) *Item {
-	var l *Item
+func NewItemFromValueLabeler(v ValueLabeler) *Item {
+	var i *Item
 
-	if i.Value() == nil {
-		l = &Item{value: "", label: i.Label()}
+	if v.Value() == nil {
+		i = &Item{value: "", label: v.Label()}
 	} else {
-		l = &Item{value: fmt.Sprint(i.Value()), label: i.Label()}
+		i = &Item{value: fmt.Sprint(v.Value()), label: v.Label()}
 	}
-	l.List = NewList(l)
-	return l
+	i.List = NewList(i)
+	return i
 }
 
 // NewItemFromLabeler creates a new item from any object that has just a Label method.
-func NewItemFromLabeler(i Labeler) *Item {
-	l := &Item{label: i.Label(), value: i.Label()}
-	l.List = NewList(l)
-	return l
+func NewItemFromLabeler(l Labeler) *Item {
+	i := &Item{label: l.Label(), value: l.Label()}
+	i.List = NewList(i)
+	return i
 }
 
 // NewItemFromStringer creates a new item from any object that has just a String method.
 // The label and value will be the same.
-func NewItemFromStringer(i fmt.Stringer) *Item {
-	l := &Item{label: i.String(), value: i.String()}
-	l.List = NewList(l)
-	return l
+func NewItemFromStringer(s fmt.Stringer) *Item {
+	i := &Item{label: s.String(), value: s.String()}
+	i.List = NewList(i)
+	return i
 }
 
 // NewItemFromItemIDer creates a new item from any object that has an ID and String method.

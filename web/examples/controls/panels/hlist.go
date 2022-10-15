@@ -63,7 +63,7 @@ func (p *HListPanel) BindData(ctx context.Context, s DataManagerI) {
 	ulist := s.(*UnorderedList)
 	ulist.Clear()
 	for _, proj := range hlistProjects {
-		listItem := NewListItem(proj.name)
+		listItem := NewItem(proj.name)
 		for _, per := range proj.people {
 			listItem.Add(per.name)
 		}
