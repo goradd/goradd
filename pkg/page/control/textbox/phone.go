@@ -12,30 +12,30 @@ type PhoneI interface {
 	TextboxI
 }
 
-// Phone is a Textbox control that validates for phone numbers.
-type Phone struct {
+// PhoneTextbox is a Textbox control that validates for phone numbers.
+type PhoneTextbox struct {
 	Textbox
 }
 
 // NewPhoneTextbox creates a new textbox that validates its input as an email address.
 // multi will allow the textbox to accept multiple email addresses separated by a comma.
-func NewPhoneTextbox(parent page.ControlI, id string) *Phone {
-	t := &Phone{}
+func NewPhoneTextbox(parent page.ControlI, id string) *PhoneTextbox {
+	t := &PhoneTextbox{}
 	t.Self = t
 	t.Init(parent, id)
 	return t
 }
 
-func (t *Phone) Init(parent page.ControlI, id string) {
+func (t *PhoneTextbox) Init(parent page.ControlI, id string) {
 	t.Textbox.Init(parent, id)
 	t.SetType(TelType)
 }
 
-func (t *Phone) this() PhoneI {
+func (t *PhoneTextbox) this() PhoneI {
 	return t.Self.(PhoneI)
 }
 
-func (t *Phone) Validate(ctx context.Context) bool {
+func (t *PhoneTextbox) Validate(ctx context.Context) bool {
 	ret := t.Textbox.Validate(ctx)
 
 	if ret {
@@ -61,10 +61,10 @@ func (t *Phone) Validate(ctx context.Context) bool {
 	return ret
 }
 
-// PhoneCreator creates an phone textbox.
+// PhoneTextboxCreator creates an phone textbox.
 // Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
-type PhoneCreator struct {
+type PhoneTextboxCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
 	ID string
 	// Placeholder is the placeholder attribute of the textbox and shows as help text inside the field
@@ -92,13 +92,13 @@ type PhoneCreator struct {
 	page.ControlOptions
 }
 
-func (c PhoneCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+func (c PhoneTextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewPhoneTextbox(parent, c.ID)
 	c.Init(ctx, ctrl)
 	return ctrl
 }
 
-func (c PhoneCreator) Init(ctx context.Context, ctrl PhoneI) {
+func (c PhoneTextboxCreator) Init(ctx context.Context, ctrl PhoneI) {
 	// Reuse subclass
 	sub := TextboxCreator{
 		Placeholder:    c.Placeholder,
@@ -115,10 +115,10 @@ func (c PhoneCreator) Init(ctx context.Context, ctrl PhoneI) {
 }
 
 // GetPhoneTextbox is a convenience method to return the control with the given id from the page.
-func GetPhoneTextbox(c page.ControlI, id string) *Phone {
-	return c.Page().GetControl(id).(*Phone)
+func GetPhoneTextbox(c page.ControlI, id string) *PhoneTextbox {
+	return c.Page().GetControl(id).(*PhoneTextbox)
 }
 
 func init() {
-	page.RegisterControl(&Phone{})
+	page.RegisterControl(&PhoneTextbox{})
 }

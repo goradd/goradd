@@ -15,7 +15,7 @@ func TestAjax(t *testing.T) {
 	})
 	assert.Equal(t, `goradd.postAjax({"controlID":"b","eventId":2,"actionValues":{"event":"c","control":1}});`, js)
 
-	js = Ajax("a", 2).ActionValue(3).Async().Validator(2).DestinationControlID("f").RenderScript(RenderParams{})
+	js = Ajax("a", 2).ActionValue(3).Async().DestinationControlID("f").RenderScript(RenderParams{})
 	assert.Equal(t, `goradd.postAjax({"controlID":"","eventId":0,"async":true,"actionValues":{"event":eventData,"action":3}});`, js)
 }
 
@@ -28,6 +28,6 @@ func TestServer(t *testing.T) {
 	})
 	assert.Equal(t, `goradd.postBack({"controlID":"b","eventId":2,"actionValues":{"event":"c","control":1}});`, js)
 
-	js = Server("a", 2).ActionValue(3).Async().Validator(2).DestinationControlID("f").RenderScript(RenderParams{})
+	js = Server("a", 2).ActionValue(3).Async().DestinationControlID("f").RenderScript(RenderParams{})
 	assert.Equal(t, `goradd.postBack({"controlID":"","eventId":0,"async":true,"actionValues":{"event":eventData,"action":3}});`, js)
 }

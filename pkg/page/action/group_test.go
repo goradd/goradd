@@ -12,7 +12,6 @@ func TestActionGroup_GetCallbackAction(t *testing.T) {
 }
 
 func TestActionGroup_GetCallbackActionNil(t *testing.T) {
-	assert.Nil(t, Group().GetCallbackAction())
-	assert.Nil(t, Group(AddClass("a", "b"), RemoveClass("c", "d")).GetCallbackAction())
-
+	assert.Nil(t, Group().(GroupI).GetCallbackAction())
+	assert.Nil(t, Group(AddClass("a", "b"), RemoveClass("c", "d")).(GroupI).GetCallbackAction())
 }

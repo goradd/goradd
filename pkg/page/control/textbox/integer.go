@@ -15,32 +15,32 @@ type IntegerI interface {
 	SetMaxValue(maxValue int, invalidMessage string) IntegerI
 }
 
-type Integer struct {
+type IntegerTextbox struct {
 	Textbox
 	minValue *int
 	maxValue *int
 }
 
-func NewIntegerTextbox(parent page.ControlI, id string) *Integer {
-	t := &Integer{}
+func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
+	t := &IntegerTextbox{}
 	t.Self = t
 	t.Init(parent, id)
 	return t
 }
 
-func (t *Integer) Init(parent page.ControlI, id string) {
+func (t *IntegerTextbox) Init(parent page.ControlI, id string) {
 	t.Textbox.Init(parent, id)
 	t.ValidateWith(IntValidator{})
 }
 
-func (t *Integer) this() IntegerI {
+func (t *IntegerTextbox) this() IntegerI {
 	return t.Self.(IntegerI)
 }
 
 // SetMinValue creates a validator that makes sure the value of the text box is at least the
 // given value. Specify your own error message, or leave the error message blank and a standard error message will
 // be presented if the value is not valid.
-func (t *Integer) SetMinValue(minValue int, invalidMessage string) IntegerI {
+func (t *IntegerTextbox) SetMinValue(minValue int, invalidMessage string) IntegerI {
 	t.ValidateWith(MinIntValidator{minValue, invalidMessage})
 	t.minValue = new(int)
 	*t.minValue = minValue
@@ -50,47 +50,47 @@ func (t *Integer) SetMinValue(minValue int, invalidMessage string) IntegerI {
 // SetMaxValue creates a validator that makes sure the value of the text box is at most the
 // given value. Specify your own error message, or leave the error message blank and a standard error message will
 // be presented if the value is not valid.
-func (t *Integer) SetMaxValue(maxValue int, invalidMessage string) IntegerI {
+func (t *IntegerTextbox) SetMaxValue(maxValue int, invalidMessage string) IntegerI {
 	t.ValidateWith(MaxIntValidator{maxValue, invalidMessage})
 	t.maxValue = new(int)
 	*t.maxValue = maxValue
 	return t.this()
 }
 
-func (t *Integer) SetValue(v interface{}) page.ControlI {
+func (t *IntegerTextbox) SetValue(v interface{}) page.ControlI {
 	t.Textbox.SetValue(v)
 	newValue := t.Int()
 	if t.minValue != nil && *t.minValue > newValue {
-		panic("Setting Integer to a value less than minimum value.")
+		panic("Setting IntegerTextbox to a value less than minimum value.")
 	}
 	if t.maxValue != nil && *t.maxValue < newValue {
-		panic("Setting Integer to a value greater than the maximum value.")
+		panic("Setting IntegerTextbox to a value greater than the maximum value.")
 	}
 	return t.this()
 }
 
-func (t *Integer) SetInt(v int) IntegerI {
+func (t *IntegerTextbox) SetInt(v int) IntegerI {
 	t.Textbox.SetValue(v)
 	if t.minValue != nil && *t.minValue > v {
-		panic("Setting Integer to a value less than minimum value.")
+		panic("Setting IntegerTextbox to a value less than minimum value.")
 	}
 	if t.maxValue != nil && *t.maxValue < v {
-		panic("Setting Integer to a value greater than the maximum value.")
+		panic("Setting IntegerTextbox to a value greater than the maximum value.")
 	}
 	return t.this()
 }
 
-func (t *Integer) Value() interface{} {
+func (t *IntegerTextbox) Value() interface{} {
 	return t.Int()
 }
 
-func (t *Integer) Int() int {
+func (t *IntegerTextbox) Int() int {
 	text := t.Textbox.Text()
 	v, _ := strconv.Atoi(text)
 	return v
 }
 
-func (t *Integer) Int64() int64 {
+func (t *IntegerTextbox) Int64() int64 {
 	text := t.Textbox.Text()
 	i64, _ := strconv.ParseInt(text, 10, 0)
 	return i64
@@ -157,10 +157,10 @@ type IntegerLimit struct {
 	InvalidMessage string
 }
 
-// IntegerCreator creates an integer textbox.
+// IntegerTextboxCreator creates an integer textbox.
 // Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
-type IntegerCreator struct {
+type IntegerTextboxCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
 	ID string
 	// Placeholder is the placeholder attribute of the textbox and shows as help text inside the field
@@ -202,7 +202,7 @@ type IntegerCreator struct {
 
 // Create is called by the framework to create a new control from the Creator. You
 // do not normally need to call this.
-func (c IntegerCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+func (c IntegerTextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewIntegerTextbox(parent, c.ID)
 	c.Init(ctx, ctrl)
 	return ctrl
@@ -210,7 +210,7 @@ func (c IntegerCreator) Create(ctx context.Context, parent page.ControlI) page.C
 
 // Init is called by implementations of Textboxes to initialize a control with the
 // creator. You do not normally need to call this.
-func (c IntegerCreator) Init(ctx context.Context, ctrl IntegerI) {
+func (c IntegerTextboxCreator) Init(ctx context.Context, ctrl IntegerI) {
 	if c.MinValue != nil {
 		ctrl.SetMinValue(c.MinValue.Value, c.MinValue.InvalidMessage)
 	}
@@ -235,13 +235,13 @@ func (c IntegerCreator) Init(ctx context.Context, ctrl IntegerI) {
 }
 
 // GetIntegerTextbox is a convenience method to return the control with the given id from the page.
-func GetIntegerTextbox(c page.ControlI, id string) *Integer {
-	return c.Page().GetControl(id).(*Integer)
+func GetIntegerTextbox(c page.ControlI, id string) *IntegerTextbox {
+	return c.Page().GetControl(id).(*IntegerTextbox)
 }
 
 func init() {
 	gob.Register(MaxIntValidator{})
 	gob.Register(MinIntValidator{})
 	gob.Register(IntValidator{})
-	page.RegisterControl(&Integer{})
+	page.RegisterControl(&IntegerTextbox{})
 }

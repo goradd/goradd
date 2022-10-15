@@ -12,7 +12,7 @@ type IntegerTextboxI interface {
 }
 
 type IntegerTextbox struct {
-	textbox.Integer
+	textbox.IntegerTextbox
 }
 
 func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
@@ -23,7 +23,7 @@ func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 }
 
 func (t *IntegerTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
-	a := t.Integer.DrawingAttributes(ctx)
+	a := t.IntegerTextbox.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }
@@ -83,7 +83,7 @@ func (c IntegerTextboxCreator) Create(ctx context.Context, parent page.ControlI)
 // creator. You do not normally need to call this.
 func (c IntegerTextboxCreator) Init(ctx context.Context, ctrl IntegerTextboxI) {
 	// Reuse subclass
-	sub := textbox.IntegerCreator{
+	sub := textbox.IntegerTextboxCreator{
 		Placeholder:    c.Placeholder,
 		Type:           c.Type,
 		MinLength:      c.MinLength,

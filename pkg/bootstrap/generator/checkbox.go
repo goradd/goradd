@@ -11,7 +11,7 @@ func init() {
 	generator2.RegisterControlGenerator(Checkbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/CheckboxList")
 }
 
-// This structure describes the textbox to the connector dialog and code generator
+// Checkbox describes the textbox to the connector dialog and code generator
 type Checkbox struct {
 	generator3.Checkbox // base it on the built-in generator
 }

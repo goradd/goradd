@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(Textbox{}, "github.com/goradd/goradd/pkg/page/control/Textbox")
+	generator.RegisterControlGenerator(Textbox{}, "github.com/goradd/goradd/pkg/page/control/textbox/Textbox")
 }
 
 // Textbox describes the textbox to the connector dialog and code generator

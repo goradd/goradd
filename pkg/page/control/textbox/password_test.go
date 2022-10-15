@@ -38,7 +38,7 @@ func TestPasswordCreate(t *testing.T) {
 	f := page.NewMockForm()
 	ctx := page.NewMockContext()
 	f.AddControls(ctx,
-		PasswordCreator{
+		PasswordTextboxCreator{
 			ID:          "abc",
 			Text:        "b",
 			Placeholder: "c",

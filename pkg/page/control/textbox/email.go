@@ -13,10 +13,10 @@ type EmailI interface {
 	SetMaxItemCount(count int) EmailI
 }
 
-// Email is a Textbox control that validates for email addresses.
+// EmailTextbox is a Textbox control that validates for email addresses.
 // It can accept multiple addresses separated by commas, and can accept any address in RFC5322 format (Barry Gibbs <bg@example.com>)
 // making it useful for people copying addresses out of an email client and pasting into the field.
-type Email struct {
+type EmailTextbox struct {
 	Textbox
 	maxItemCount int
 	items        []*mail.Address
@@ -25,24 +25,24 @@ type Email struct {
 
 // NewEmailTextbox creates a new textbox that validates its input as an email address.
 // multi will allow the textbox to accept multiple email addresses separated by a comma.
-func NewEmailTextbox(parent page.ControlI, id string) *Email {
-	t := &Email{}
+func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
+	t := &EmailTextbox{}
 	t.Self = t
 	t.Init(parent, id)
 	return t
 }
 
-func (t *Email) Init(parent page.ControlI, id string) {
+func (t *EmailTextbox) Init(parent page.ControlI, id string) {
 	t.Textbox.Init(parent, id)
 	t.maxItemCount = 1
 	t.SetType(EmailType)
 }
 
-func (t *Email) this() EmailI {
+func (t *EmailTextbox) this() EmailI {
 	return t.Self.(EmailI)
 }
 
-func (t *Email) SetMaxItemCount(max int) EmailI {
+func (t *EmailTextbox) SetMaxItemCount(max int) EmailI {
 	t.maxItemCount = max
 	if t.maxItemCount > 1 {
 		t.SetType(DefaultType) // Some browsers cannot handle multiple emails in an email type of text input
@@ -51,7 +51,7 @@ func (t *Email) SetMaxItemCount(max int) EmailI {
 	return t.this()
 }
 
-func (t *Email) Validate(ctx context.Context) bool {
+func (t *EmailTextbox) Validate(ctx context.Context) bool {
 	ret := t.Textbox.Validate(ctx)
 
 	if ret {
@@ -72,7 +72,7 @@ func (t *Email) Validate(ctx context.Context) bool {
 }
 
 // UpdateFormValues is used by the framework to cause the control to retrieve its values from the form
-func (t *Email) UpdateFormValues(ctx context.Context) {
+func (t *EmailTextbox) UpdateFormValues(ctx context.Context) {
 	t.Textbox.UpdateFormValues(ctx)
 	if t.Text() == "" {
 		t.items = nil
@@ -89,14 +89,14 @@ func (t *Email) UpdateFormValues(ctx context.Context) {
 }
 
 // Addresses returns a slice of the individual addresses entered, stripped of any extra text entered.
-func (t *Email) Addresses() (ret []string) {
+func (t *EmailTextbox) Addresses() (ret []string) {
 	for _, item := range t.items {
 		ret = append(ret, item.Address)
 	}
 	return ret
 }
 
-func (t *Email) Serialize(e page.Encoder) {
+func (t *EmailTextbox) Serialize(e page.Encoder) {
 	t.Textbox.Serialize(e)
 	if err := e.Encode(t.maxItemCount); err != nil {
 		panic(err)
@@ -111,7 +111,7 @@ func (t *Email) Serialize(e page.Encoder) {
 	return
 }
 
-func (t *Email) Deserialize(dec page.Decoder) {
+func (t *EmailTextbox) Deserialize(dec page.Decoder) {
 	t.Textbox.Deserialize(dec)
 	if err := dec.Decode(&t.maxItemCount); err != nil {
 		panic(err)
@@ -124,10 +124,10 @@ func (t *Email) Deserialize(dec page.Decoder) {
 	}
 }
 
-// EmailCreator creates an email textbox.
+// EmailTextboxCreator creates an email textbox.
 // Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
-type EmailCreator struct {
+type EmailTextboxCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
 	ID string
 	// Placeholder is the placeholder attribute of the textbox and shows as help text inside the field
@@ -158,13 +158,13 @@ type EmailCreator struct {
 	page.ControlOptions
 }
 
-func (c EmailCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+func (c EmailTextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewEmailTextbox(parent, c.ID)
 	c.Init(ctx, ctrl)
 	return ctrl
 }
 
-func (c EmailCreator) Init(ctx context.Context, ctrl EmailI) {
+func (c EmailTextboxCreator) Init(ctx context.Context, ctrl EmailI) {
 	if c.MaxItemCount > 1 {
 		ctrl.SetMaxItemCount(c.MaxItemCount)
 	}
@@ -184,10 +184,10 @@ func (c EmailCreator) Init(ctx context.Context, ctrl EmailI) {
 }
 
 // GetEmailTextbox is a convenience method to return the control with the given id from the page.
-func GetEmailTextbox(c page.ControlI, id string) *Email {
-	return c.Page().GetControl(id).(*Email)
+func GetEmailTextbox(c page.ControlI, id string) *EmailTextbox {
+	return c.Page().GetControl(id).(*EmailTextbox)
 }
 
 func init() {
-	page.RegisterControl(&Email{})
+	page.RegisterControl(&EmailTextbox{})
 }

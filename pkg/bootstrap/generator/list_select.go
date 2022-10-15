@@ -11,7 +11,7 @@ func init() {
 	generator2.RegisterControlGenerator(SelectList{}, "github.com/goradd/goradd/pkg/bootstrap/control/SelectList")
 }
 
-// This structure describes the textbox to the connector dialog and code generator
+// SelectList describes the textbox to the connector dialog and code generator
 type SelectList struct {
 	generator3.SelectList // base it on the built-in generator
 }

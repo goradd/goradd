@@ -12,7 +12,7 @@ type FloatTextboxI interface {
 }
 
 type FloatTextbox struct {
-	textbox.Float
+	textbox.FloatTextbox
 }
 
 func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
@@ -23,7 +23,7 @@ func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
 }
 
 func (t *FloatTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
-	a := t.Float.DrawingAttributes(ctx)
+	a := t.FloatTextbox.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }
@@ -83,7 +83,7 @@ func (c FloatTextboxCreator) Create(ctx context.Context, parent page.ControlI) p
 // creator. You do not normally need to call this.
 func (c FloatTextboxCreator) Init(ctx context.Context, ctrl FloatTextboxI) {
 	// Reuse subclass
-	sub := textbox.FloatCreator{
+	sub := textbox.FloatTextboxCreator{
 		Placeholder:    c.Placeholder,
 		Type:           c.Type,
 		MinLength:      c.MinLength,

@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(EmailTextbox{}, "github.com/goradd/goradd/pkg/page/control/generator/EmailTextbox")
+	generator.RegisterControlGenerator(EmailTextbox{}, "github.com/goradd/goradd/pkg/page/control/textbox/EmailTextbox")
 }
 
 // EmailTextbox describes the EmailTextbox to the connector dialog and code generator

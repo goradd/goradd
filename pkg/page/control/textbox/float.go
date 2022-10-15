@@ -15,64 +15,64 @@ type FloatI interface {
 	SetMaxValue(maxValue float64, invalidMessage string) FloatI
 }
 
-// Float is a textbox control that ensures a valid floating point number is entered in the field.
-type Float struct {
+// FloatTextbox is a textbox control that ensures a valid floating point number is entered in the field.
+type FloatTextbox struct {
 	Textbox
 }
 
-func NewFloatTextbox(parent page.ControlI, id string) *Float {
-	t := &Float{}
+func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
+	t := &FloatTextbox{}
 	t.Self = t
 	t.Init(parent, id)
 	return t
 }
 
-func (t *Float) Init(parent page.ControlI, id string) {
+func (t *FloatTextbox) Init(parent page.ControlI, id string) {
 	t.Textbox.Init(parent, id)
 	t.ValidateWith(FloatValidator{})
 }
 
-func (t *Float) this() FloatI {
+func (t *FloatTextbox) this() FloatI {
 	return t.Self.(FloatI)
 }
 
-func (t *Float) SetMinValue(minValue float64, invalidMessage string) FloatI {
+func (t *FloatTextbox) SetMinValue(minValue float64, invalidMessage string) FloatI {
 	t.ValidateWith(MinFloatValidator{minValue, invalidMessage})
 	return t.this()
 }
 
-func (t *Float) SetMaxValue(maxValue float64, invalidMessage string) FloatI {
+func (t *FloatTextbox) SetMaxValue(maxValue float64, invalidMessage string) FloatI {
 	t.ValidateWith(MaxFloatValidator{maxValue, invalidMessage})
 	return t.this()
 }
 
-func (t *Float) Value() interface{} {
+func (t *FloatTextbox) Value() interface{} {
 	return t.Float64()
 }
 
-func (t *Float) Float64() float64 {
+func (t *FloatTextbox) Float64() float64 {
 	text := t.Textbox.Text()
 	v, _ := strconv.ParseFloat(text, 64)
 	return v
 }
 
-func (t *Float) Float32() float32 {
+func (t *FloatTextbox) Float32() float32 {
 	text := t.Textbox.Text()
 	v, _ := strconv.ParseFloat(text, 32)
 	return float32(v)
 }
 
-func (t *Float) SetFloat64(v float64) *Float {
+func (t *FloatTextbox) SetFloat64(v float64) *FloatTextbox {
 	t.Textbox.SetValue(v)
 	return t
 }
 
-func (t *Float) SetFloat32(v float32) *Float {
+func (t *FloatTextbox) SetFloat32(v float32) *FloatTextbox {
 	t.Textbox.SetValue(v)
 	return t
 }
 
-func (t *Float) SetValue(v interface{}) page.ControlI {
+func (t *FloatTextbox) SetValue(v interface{}) page.ControlI {
 	t.Textbox.SetValue(v)
 	return t.this()
 }
@@ -138,10 +138,10 @@ type FloatLimit struct {
 	InvalidMessage string
 }
 
-// FloatCreator creates a textbox that only accepts numbers.
+// FloatTextboxCreator creates a textbox that only accepts numbers.
 // Pass it to AddControls of a control, or as a Child of
 // a FormFieldWrapper.
-type FloatCreator struct {
+type FloatTextboxCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
 	ID string
 	// Placeholder is the placeholder attribute of the textbox and shows as help text inside the field
@@ -183,7 +183,7 @@ type FloatCreator struct {
 
 // Create is called by the framework to create a new control from the Creator. You
 // do not normally need to call this.
-func (c FloatCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
+func (c FloatTextboxCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewFloatTextbox(parent, c.ID)
 	c.Init(ctx, ctrl)
 	return ctrl
@@ -191,7 +191,7 @@ func (c FloatCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 
 // Init is called by implementations of Textboxes to initialize a control with the
 // creator. You do not normally need to call this.
-func (c FloatCreator) Init(ctx context.Context, ctrl FloatI) {
+func (c FloatTextboxCreator) Init(ctx context.Context, ctrl FloatI) {
 	if c.MinValue != nil {
 		ctrl.SetMinValue(c.MinValue.Value, c.MinValue.InvalidMessage)
 	}
@@ -216,13 +216,13 @@ func (c FloatCreator) Init(ctx context.Context, ctrl FloatI) {
 }
 
 // GetFloatTextbox is a convenience method to return the control with the given id from the page.
-func GetFloatTextbox(c page.ControlI, id string) *Float {
-	return c.Page().GetControl(id).(*Float)
+func GetFloatTextbox(c page.ControlI, id string) *FloatTextbox {
+	return c.Page().GetControl(id).(*FloatTextbox)
 }
 
 func init() {
 	gob.Register(MaxFloatValidator{})
 	gob.Register(MinFloatValidator{})
 	gob.Register(FloatValidator{})
-	page.RegisterControl(&Float{})
+	page.RegisterControl(&FloatTextbox{})
 }

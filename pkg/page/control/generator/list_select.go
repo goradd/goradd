@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(SelectList{}, "github.com/goradd/goradd/pkg/page/control/SelectList")
+	generator.RegisterControlGenerator(SelectList{}, "github.com/goradd/goradd/pkg/page/control/list/SelectList")
 }
 
 // SelectList describes the SelectList to the connector dialog and code generator

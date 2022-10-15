@@ -8,10 +8,10 @@ import (
 )
 
 func init() {
-	generator2.RegisterControlGenerator(IntegerTextbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/Integer")
+	generator2.RegisterControlGenerator(IntegerTextbox{}, "github.com/goradd/goradd/pkg/bootstrap/control/IntegerTextbox")
 }
 
-// This structure describes the textbox to the connector dialog and code generator
+// IntegerTextbox describes the textbox to the connector dialog and code generator
 type IntegerTextbox struct {
 	generator3.IntegerTextbox // base it on the built-in generator
 }

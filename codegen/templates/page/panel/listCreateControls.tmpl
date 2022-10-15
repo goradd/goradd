@@ -8,10 +8,10 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 		{{= ctrlPkg }}.PanelCreator{
 			ID: p.ID() + "-filterPanel",
 			Children: {{= ctrlPkg }}.Children(
-				{{= ctrlPkg }}.TextboxCreator{
+				textbox.TextboxCreator{
 					ID:          p.ID() + "-filterText",
 					Placeholder: p.GT("Search..."),
-					Type:        {{= ctrlPkg }}.TextboxTypeSearch,
+					Type:        textbox.SearchType,
 					ControlOptions: page.ControlOptions{
 						On: page.EventList{
 							{event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
@@ -21,7 +21,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 				},
 			),
 		},
-        {{= ctrlPkg }}.PagedTableCreator{
+        table.PagedTableCreator{
             ID:  p.ID() + "-list",
             HeaderRowCount: 0,
             DataProviderID: p.ID(),

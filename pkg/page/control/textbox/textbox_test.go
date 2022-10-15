@@ -58,7 +58,7 @@ func TestExportCreatorTextbox(t *testing.T) {
 	}
 	s := generator.ExportCreator(c)
 
-	assert.Equal(t, `control.TextboxCreator{
+	assert.Equal(t, `textbox.TextboxCreator{
 	ID:"id",
 	Placeholder:"placeholder",
 }`, s)

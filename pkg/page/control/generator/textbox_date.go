@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(DateTextbox{}, "github.com/goradd/goradd/pkg/page/control/Date")
+	generator.RegisterControlGenerator(DateTextbox{}, "github.com/goradd/goradd/pkg/page/control/textbox/DateTextbox")
 }
 
 // DateTextbox describes the DateTextbox to the connector dialog and code generator

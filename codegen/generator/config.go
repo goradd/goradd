@@ -18,9 +18,9 @@ var DefaultControlTypeFunc = DefaultControlType
 var DefaultFormFieldCreator = "github.com/goradd/goradd/pkg/page/control/FormFieldWrapperCreator"
 
 // DefaultButtonCreator defines what buttons will be used for generated forms.
-var DefaultButtonCreator = "github.com/goradd/goradd/pkg/page/control/ButtonCreator"
+var DefaultButtonCreator = "github.com/goradd/goradd/pkg/page/control/button/ButtonCreator"
 
-// DefaultButtonCreator defines what buttons will be used for generated forms.
+// DefaultDataPagerCreator defines what pager will be used for generated forms.
 var DefaultDataPagerCreator = "github.com/goradd/goradd/pkg/page/control/DataPagerCreator"
 
 // DefaultStaticTextType is the type of control to create to display content as static text rather than something editable.
@@ -35,18 +35,18 @@ func DefaultControlType(ref interface{}) string {
 		if col.IsUnique() {
 			return "" // select list I think instead
 		} else if col.IsNullable() {
-			return "github.com/goradd/goradd/pkg/page/control/CheckboxList"
+			return "github.com/goradd/goradd/pkg/page/control/list/CheckboxList"
 		}
 		return ""
 	case *db.ManyManyReference:
-		return "github.com/goradd/goradd/pkg/page/control/CheckboxList"
+		return "github.com/goradd/goradd/pkg/page/control/list/CheckboxList"
 	case *db.Column:
 		if col.IsPk {
 			return "github.com/goradd/goradd/pkg/page/control/Span" // primary keys are not editable
 		}
 
 		if col.IsReference() || col.IsType() {
-			return "github.com/goradd/goradd/pkg/page/control/SelectList"
+			return "github.com/goradd/goradd/pkg/page/control/list/SelectList"
 		}
 
 		// default control types for columns
@@ -54,23 +54,23 @@ func DefaultControlType(ref interface{}) string {
 		case query.ColTypeBytes:
 			return ""
 		case query.ColTypeString:
-			return "github.com/goradd/goradd/pkg/page/control/Textbox"
+			return "github.com/goradd/goradd/pkg/page/control/textbox/Textbox"
 		case query.ColTypeInteger:
-			return "github.com/goradd/goradd/pkg/page/control/Integer"
+			return "github.com/goradd/goradd/pkg/page/control/textbox/IntegerTextbox"
 		case query.ColTypeUnsigned:
-			return "github.com/goradd/goradd/pkg/page/control/Integer"
+			return "github.com/goradd/goradd/pkg/page/control/textbox/IntegerTextbox"
 		case query.ColTypeInteger64:
-			return "github.com/goradd/goradd/pkg/page/control/Integer"
+			return "github.com/goradd/goradd/pkg/page/control/textbox/IntegerTextbox"
 		case query.ColTypeUnsigned64:
-			return "github.com/goradd/goradd/pkg/page/control/Integer"
+			return "github.com/goradd/goradd/pkg/page/control/textbox/IntegerTextbox"
 		case query.ColTypeDateTime:
 			return "github.com/goradd/goradd/pkg/page/control/DateTimeSpan"
 		case query.ColTypeFloat:
-			return "github.com/goradd/goradd/pkg/page/control/Float"
+			return "github.com/goradd/goradd/pkg/page/control/textbox/FloatTextbox"
 		case query.ColTypeDouble:
-			return "github.com/goradd/goradd/pkg/page/control/Float"
+			return "github.com/goradd/goradd/pkg/page/control/textbox/FloatTextbox"
 		case query.ColTypeBool:
-			return "github.com/goradd/goradd/pkg/page/control/CheckboxList"
+			return "github.com/goradd/goradd/pkg/page/control/button/Checkbox"
 		case query.ColTypeUnknown:
 			return ""
 		default:

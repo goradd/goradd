@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(CheckboxList{}, "github.com/goradd/goradd/pkg/page/control/CheckboxList")
+	generator.RegisterControlGenerator(CheckboxList{}, "github.com/goradd/goradd/pkg/page/control/list/CheckboxList")
 }
 
 // CheckboxList describes the CheckboxList to the connector dialog and code generator

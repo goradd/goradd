@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	generator.RegisterControlGenerator(PhoneTextbox{}, "github.com/goradd/goradd/pkg/page/control/Phone")
+	generator.RegisterControlGenerator(PhoneTextbox{}, "github.com/goradd/goradd/pkg/page/control/textbox/PhoneTextbox")
 }
 
 // PhoneTextbox describes the PhoneTextbox to the connector dialog and code generator

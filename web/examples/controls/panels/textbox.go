@@ -46,29 +46,29 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 		},
 		FormFieldWrapperCreator{
 			ID:    "intText-ff",
-			Label: "Integer Text",
-			Child: IntegerCreator{
+			Label: "IntegerTextbox Text",
+			Child: IntegerTextboxCreator{
 				ID: "intText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "floatText-ff",
-			Label: "Float Text",
-			Child: FloatCreator{
+			Label: "FloatTextbox Text",
+			Child: FloatTextboxCreator{
 				ID: "floatText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "emailText-ff",
-			Label: "Email Text",
-			Child: EmailCreator{
+			Label: "EmailTextbox Text",
+			Child: EmailTextboxCreator{
 				ID: "emailText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "passwordText-ff",
-			Label: "Password",
-			Child: PasswordCreator{
+			Label: "PasswordTextbox",
+			Child: PasswordTextboxCreator{
 				ID: "passwordText",
 			},
 		},
@@ -82,15 +82,15 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 		},
 		FormFieldWrapperCreator{
 			ID:    "dateTimeText-ff",
-			Label: "U.S. Date-time",
-			Child: DateCreator{
+			Label: "U.S. DateTextbox-time",
+			Child: DateTextboxCreator{
 				ID: "dateTimeText",
 			},
 		},
 		FormFieldWrapperCreator{
 			ID:    "dateText-ff",
-			Label: "Euro Date",
-			Child: DateCreator{
+			Label: "Euro DateTextbox",
+			Child: DateTextboxCreator{
 				ID:      "dateText",
 				Formats: []string{time2.EuroDate},
 			},
@@ -98,7 +98,7 @@ func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string
 		FormFieldWrapperCreator{
 			ID:    "timeText-ff",
 			Label: "U.S. Time",
-			Child: DateCreator{
+			Child: DateTextboxCreator{
 				ID:      "timeText",
 				Formats: []string{time2.UsTime},
 			},

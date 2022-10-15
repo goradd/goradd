@@ -37,7 +37,7 @@ func (p *ActionsPanel) Init(ctx context.Context, parent page.ControlI, id string
 
 	btn2 := NewButton(p, "clientTimeButton").SetText("Get Client Time")
 	btn2.On(event.Click(), action.Ajax(p.ID(), 1001).ActionValue(javascript.NewClosureCall(
-		`var today = new Date(); return today.getHours() + ':' + today.getMinutes();`, "",
+		`var today = new DateTextbox(); return today.getHours() + ':' + today.getMinutes();`, "",
 	)))
 
 	span1 := NewSpan(p, "timeSpan")

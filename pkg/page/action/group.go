@@ -7,6 +7,10 @@ type actionGroup struct {
 	Actions []ActionI
 }
 
+type GroupI interface {
+	GetCallbackAction() CallbackActionI
+}
+
 // RenderScript renders the group of actions as a single action.
 func (g actionGroup) RenderScript(params RenderParams) (s string) {
 	for _, a := range g.Actions {

@@ -176,7 +176,7 @@ func (c MegaMenuCreator) Create(ctx context.Context, parent page.ControlI) page.
 
 func (c MegaMenuCreator) Init(ctx context.Context, ctrl MegaMenuI) {
 	if c.Items != nil {
-		ctrl.AddListItems(c.Items)
+		ctrl.AddItems(c.Items)
 	}
 	if c.DataProvider != nil {
 		ctrl.SetDataProvider(c.DataProvider)

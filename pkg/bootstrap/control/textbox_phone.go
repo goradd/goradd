@@ -12,7 +12,7 @@ type PhoneTextboxI interface {
 }
 
 type PhoneTextbox struct {
-	textbox.Phone
+	textbox.PhoneTextbox
 }
 
 func NewPhoneTextbox(parent page.ControlI, id string) *PhoneTextbox {
@@ -23,7 +23,7 @@ func NewPhoneTextbox(parent page.ControlI, id string) *PhoneTextbox {
 }
 
 func (t *PhoneTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
-	a := t.Phone.DrawingAttributes(ctx)
+	a := t.PhoneTextbox.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }
@@ -67,7 +67,7 @@ func (c PhoneTextboxCreator) Create(ctx context.Context, parent page.ControlI) p
 
 func (c PhoneTextboxCreator) Init(ctx context.Context, ctrl PhoneTextboxI) {
 	// Reuse subclass
-	sub := textbox.PhoneCreator{
+	sub := textbox.PhoneTextboxCreator{
 		Placeholder:    c.Placeholder,
 		Type:           c.Type,
 		MinLength:      c.MinLength,

@@ -7,7 +7,7 @@ import (
 	"github.com/goradd/html5tag"
 )
 
-type super = textbox.Date
+type super = textbox.DateTextbox
 
 type DateTextboxI interface {
 	textbox.DateI
@@ -71,7 +71,7 @@ func (c DateTextboxCreator) Create(ctx context.Context, parent page.ControlI) pa
 
 func (c DateTextboxCreator) Init(ctx context.Context, ctrl DateTextboxI) {
 	// Reuse subclass
-	sub := textbox.DateCreator{
+	sub := textbox.DateTextboxCreator{
 		Placeholder:    c.Placeholder,
 		MinLength:      c.MinLength,
 		MaxLength:      c.MaxLength,

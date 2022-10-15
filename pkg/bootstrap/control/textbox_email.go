@@ -12,7 +12,7 @@ type EmailTextboxI interface {
 }
 
 type EmailTextbox struct {
-	textbox.Email
+	textbox.EmailTextbox
 }
 
 func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
@@ -23,7 +23,7 @@ func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
 }
 
 func (t *EmailTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes {
-	a := t.Email.DrawingAttributes(ctx)
+	a := t.EmailTextbox.DrawingAttributes(ctx)
 	a.AddClass("form-control")
 	return a
 }
@@ -73,7 +73,7 @@ func (c EmailTextboxCreator) Init(ctx context.Context, ctrl EmailTextboxI) {
 		ctrl.SetMaxItemCount(c.MaxItemCount)
 	}
 	// Reuse subclass
-	sub := textbox.EmailCreator{
+	sub := textbox.EmailTextboxCreator{
 		Placeholder:    c.Placeholder,
 		Type:           c.Type,
 		MinLength:      c.MinLength,
