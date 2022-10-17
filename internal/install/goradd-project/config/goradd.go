@@ -48,8 +48,9 @@ func setupTranslator() {
 
 /*
 func setupBootstrap() {
-	control.SetNewDialogFunction(func(form page.FormI, id string) control.DialogI {
+	dialog.SetNewDialogFunction(func(form page.FormI, id string) dialog.DialogI {
 		return control2.NewModal(form, id)
 	})
 }
+
 */

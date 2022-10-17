@@ -77,7 +77,7 @@ and the action function takes it from there.
 </p>
 <p>
 The two buttons below use Ajax actions to get both the server's time and browser's time.
-Click on the "2-actions.go" button under the source file list to see how these buttons are
+Click on the "2-actions.go" button under the View Source list to see how these buttons are
 created and how the DoAction() function responds.
 Note that the DoAction() function just sets the text of the span and the span is automatically redrawn
 in the browser with the new value.
