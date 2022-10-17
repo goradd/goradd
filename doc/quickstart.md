@@ -89,6 +89,30 @@ source-level debugger is very easy to use.
 * Visual Studio Code
 * Eclipse with GoClipse
 
+## Setting Up Debugging
+When debugging, be sure to execute the main directory as a package, rather than just executing the main.go file. The reason for this is that by executing as a package, *all* the .go file in the main directory will be included. Executing just the main.go file will exclude the other .go files, and these other .go files have useful includes for the development process.
+
+Here is an example launch.json configuration file for setting up debugging in VS Code. It assumes you have installed the VS Code Go extensions.
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name":"Debug Goradd Program",
+            "type":"go",
+            "request":"launch",
+            "mode":"debug",
+            "program": "${workspaceFolder}/goradd-project/main"
+        }
+    ]
+}
+```
+
+If you attempt to debug and you get an error about CGO and missing stdlib.h file, it means that the C to Go interface is enabled, but Go cannot find a C compiler. Either install a C compiler like gcc, or turn off CGO using this command:
+```sh
+go env -w CGO_ENABLED=0
+```
+
 # Modules
 Goradd is module aware. Whenever you run goradd tools, it will look
 in the nearest go.mod file to read the current module environment.
