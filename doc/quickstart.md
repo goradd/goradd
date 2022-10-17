@@ -50,10 +50,13 @@ If you get an error message that looks something like this:
 ```
 listen tcp :80: bind: address already in use
 ```
-It means your computer already has a webserver running at port 80. You can use a different port as follows:
+It means your computer already has a webserver running at port 80. If instead the message is a permission denied error, it means
+your operating system has reserved low numbered ports for system use. By default, goradd applications run on the standard HTTP port 80.
+
+In either case, you can use a different port as follows. Try using port 8000 to start with.
 1. Execute:
 ```go run goradd-project/main -port XXXX```
-Where XXXX is the port number you would like to use. 8082 for example.
+Where XXXX is the port number you would like to use.
 2. Go to the following address in your browser:
 `http://localhost:XXXX/goradd/`
 Where XXXX is the same number used in the prior step.
