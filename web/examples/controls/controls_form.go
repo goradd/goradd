@@ -1,3 +1,5 @@
+// Package controls contains example pages that demonstrate how to set up and
+// use various Goradd controls. Most Goradd controls mirror html controls.
 package controls
 
 import (

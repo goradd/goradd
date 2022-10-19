@@ -1,3 +1,4 @@
+// Package tutorial contains the tutorial for learning about GoRADD.
 package tutorial
 
 import (
