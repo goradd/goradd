@@ -13,7 +13,7 @@ type FileProcessorFunc func(r io.Reader, w http.ResponseWriter, req *http.Reques
 var fileProcessors map[string]FileProcessorFunc
 
 // RegisterFileProcessor registers a processor function for static files that have a particular extension.
-// Do this at init time.
+// Do this at init time. The extension must begin with a dot and only have one dot in it.
 func RegisterFileProcessor(extension string, processorFunc FileProcessorFunc) {
 	if fileProcessors == nil {
 		fileProcessors = make(map[string]FileProcessorFunc)
