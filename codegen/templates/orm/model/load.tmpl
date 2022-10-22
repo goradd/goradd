@@ -3,7 +3,7 @@
 
 {{
 
-// Load returns a {{t.GoName}} from the database.
+// Load{{= t.GoName }} returns a {{t.GoName}} from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func Load{{= t.GoName }}(ctx context.Context, primaryKey {{= t.PrimaryKeyColumn().ColumnType.GoType() }}, joinOrSelectNodes ...query.NodeI) *{{t.GoName}} {

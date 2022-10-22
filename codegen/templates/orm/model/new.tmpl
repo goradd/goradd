@@ -1,7 +1,7 @@
 //new.tmpl
 {{
 
-// Create a new {{= t.GoName }} object and initialize to default values.
+// New{{= t.GoName }} creates a new {{= t.GoName }} object and initializes it to default values.
 func New{{= t.GoName }}() *{{= t.GoName }} {
 	o := new({{= t.GoName }})
 	o.Initialize()

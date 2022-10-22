@@ -1,9 +1,15 @@
 // struct.tmpl
 {{
-// {{= t.GoName }} is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-// Do not directly access the internal variables, but rather use the accessor functions, since this class maintains internal state
-// related to the variables.
-
+// {{= t.GoName }} is a code generated ORM structure that accesses the {{= t.DbName }} table in the database.
+//
+// To insert a new {{= t.GoName }} in the database, call New{{= t.GoName }}, followed by Save().
+//
+//  o := New{{= t.GoName }}()
+//  o.Save()
+//
+// To get a {{= t.GoName }} object from the database, call one of the Load* methods to get an object by
+// its primary key or one of its indexes, or call Query{{= t.GoName }} to use a builder pattern to build
+// and execute query.
 type {{= t.GoName }} struct {
 }}
 
