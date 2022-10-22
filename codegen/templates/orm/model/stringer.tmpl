@@ -1,0 +1,12 @@
+//stringer.tmpl
+{{
+
+// String implements the Stringer interface and returns the default label for the object as it appears in html lists.
+func (o *{{= t.GoName }}) String() string  {
+    if o == nil {
+        return ""
+    }
+    return fmt.Sprintf("{{= t.GoName }} %v", o.PrimaryKey())
+}
+
+}}

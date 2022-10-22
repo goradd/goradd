@@ -4,15 +4,16 @@ import (
 	"github.com/goradd/goradd/codegen/generator"
 	"github.com/goradd/goradd/pkg/config"
 	"io"
+	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/orm/db"
-    strings2 "github.com/goradd/goradd/pkg/strings"
-    "fmt"
+	"strings"
+	"fmt"
 )
 
 func init() {
 	t := ModelTemplate {
 		generator.Template {
-			Overwrite: false,
+			Overwrite: true,
 		},
 	}
 	generator.AddTableTemplate(&t)
@@ -40,4 +41,3 @@ func (n *ModelTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Da
 func (n *ModelTemplate) Overwrite() bool {
 	return n.Template.Overwrite
 }
-

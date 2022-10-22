@@ -10,7 +10,7 @@ for _,col := range t.Columns {
 {{
 
 
-func (o *{{privateName}}Base) {{= refFunc }}() {{= col.ForeignKey.GoType }} {
+func (o *{{= t.GoName }}) {{= refFunc }}() {{= col.ForeignKey.GoType }} {
 	if o._restored && !o.{{= col.ModelName() }}IsValid {
 		panic ("{{= col.ModelName() }} was not selected in the last query and so is not valid")
 	}
@@ -22,7 +22,7 @@ func (o *{{privateName}}Base) {{= refFunc }}() {{= col.ForeignKey.GoType }} {
 	if col.IsNullable {
 {{
 
-func (o *{{privateName}}Base) {{= refFunc }}IsNull() bool {
+func (o *{{= t.GoName }}) {{= refFunc }}IsNull() bool {
 	return o.{{= col.ModelName() }}IsNull
 }
 
@@ -33,7 +33,7 @@ func (o *{{privateName}}Base) {{= refFunc }}IsNull() bool {
 	if col.IsNullable {
 {{
 
-func (o *{{privateName}}Base) Set{{= refFunc }}(i interface{}) {
+func (o *{{= t.GoName }}) Set{{= refFunc }}(i interface{}) {
 	if i == nil {
 		if !o.{{= col.ModelName() }}IsNull {
 			o.{{= col.ModelName() }}IsNull = true
@@ -55,7 +55,7 @@ func (o *{{privateName}}Base) Set{{= refFunc }}(i interface{}) {
 	} else {
 {{
 
-func (o *{{privateName}}Base) Set{{= refFunc }}(v {{= col.ForeignKey.GoType }}) {
+func (o *{{= t.GoName }}) Set{{= refFunc }}(v {{= col.ForeignKey.GoType }}) {
 	if o.{{= col.ModelName() }} != {{= col.ColumnType.GoType() }}(v) {
 		o.{{= col.ModelName() }} = {{= col.ColumnType.GoType() }}(v)
 		o.{{= col.ModelName() }}IsDirty = true

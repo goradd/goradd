@@ -3,6 +3,12 @@
 builderName := t.GoPlural + "Builder"
 {{
 
+// Query{{= t.GoPlural}} returns a new builder that gives you general purpose access to the {{= t.GoName }} records
+// in the database.
+func Query{{= t.GoPlural}}(ctx context.Context) *{{= builderName}} {
+	return new{{t.GoName}}Builder(ctx)
+}
+
 // The {{builderName}} uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete

@@ -6,7 +6,7 @@
 
 // Save will update or insert the object, depending on the state of the object.
 // If it has any auto-generated ids, those will be updated.
-func (o *{{privateName}}Base) Save(ctx context.Context)  {
+func (o *{{= t.GoName }}) Save(ctx context.Context)  {
 	if o._restored {
 		o.update(ctx)
 	} else {
@@ -15,7 +15,7 @@ func (o *{{privateName}}Base) Save(ctx context.Context)  {
 }
 
 // update will update the values in the database, saving any changed values.
-func (o *{{privateName}}Base) update(ctx context.Context) {
+func (o *{{= t.GoName }}) update(ctx context.Context) {
     var modifiedFields map[string]interface{}
     d := Database()
     db.ExecuteTransaction(ctx, d, func() {
@@ -165,7 +165,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
 }
 
 // insert will insert the item into the database. Related items will be saved.
-func (o *{{privateName}}Base) insert(ctx context.Context) {
+func (o *{{= t.GoName }}) insert(ctx context.Context) {
     d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 {{g
@@ -261,7 +261,7 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "{{t.DbKey}}", "{{t.DbName}}", o.PrimaryKey())
 }
 
-func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}) {
+func (o *{{= t.GoName }}) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 {{for _,col := range t.Columns}}
 	if o.{{= col.ModelName() }}IsDirty {
@@ -279,7 +279,7 @@ func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}
 	return
 }
 
-func (o *{{privateName}}Base) getValidFields() (fields map[string]interface{}) {
+func (o *{{= t.GoName }}) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 {{for _,col := range t.Columns}}
 {{g

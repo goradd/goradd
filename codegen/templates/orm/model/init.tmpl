@@ -1,0 +1,11 @@
+//init.tmpl
+{{
+
+func init() {
+{{if generator.BuildingExamples }}
+    gob.RegisterName("Example{{= t.GoName }}", new({{= t.GoName }}))
+{{else}}
+    gob.Register(new({{= t.GoName }}))
+{{if}}
+}
+}}
