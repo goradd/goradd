@@ -6,7 +6,6 @@ import (
 	"io"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/orm/db"
-	"strings"
 	"fmt"
 )
 
