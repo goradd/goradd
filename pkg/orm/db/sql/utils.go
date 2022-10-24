@@ -29,7 +29,7 @@ const (
 	SqlTypeDecimal   = "Decimal" // a fixed point type
 )
 
-// Find the json encoded list of options in the given string
+// ExtractOptions finds the json encoded list of options in the given string
 func ExtractOptions(comment string) (options map[string]interface{}, remainingComment string, err error) {
 	var optionString string
 	firstIndex := strings.Index(comment, "{")
@@ -178,7 +178,7 @@ func SqlReceiveRows(rows *sql.Rows,
 	return values
 }
 
-// ReceiveRows gets data from a sql result set and returns it as a slice of maps. Each column is mapped to its column name.
+// sqlReceiveRows2 gets data from a sql result set and returns it as a slice of maps. Each column is mapped to its column name.
 // If you provide column names, those will be used in the map. Otherwise it will get the column names out of the
 // result set provided
 func sqlReceiveRows2(rows *sql.Rows, columnTypes []query.GoColumnType, columnNames []string) (values []map[string]interface{}) {
