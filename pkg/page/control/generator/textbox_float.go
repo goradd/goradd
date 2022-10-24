@@ -24,14 +24,31 @@ func (d FloatTextbox) SupportsColumn(ref interface{}) bool {
 
 func (d FloatTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
+	sMinVal := fmt.Sprintf("%v", col.MinValue)
+	sMaxVal := fmt.Sprintf("%v", col.MaxValue)
+
 	s = fmt.Sprintf(
 		`%s.FloatTextboxCreator{
 			ID:        p.ID() + "-%s",
+`, desc.Package, desc.ControlID)
+
+	s += `    // Set this with a "min" value in the column comment. For example: {"min":1.00}
+    MinValue: &textbox.FloatLimit{
+		Value: ` + sMinVal + `,
+		InvalidMessage: fmt.Sprintf(p.GT("Must be at least %g"),` + sMinVal + `),
+	},
+    // Set this with a "max" value in the column comment. For example: {"max":10.00}
+	MaxValue: &textbox.FloatLimit{
+		Value: ` + sMaxVal + `,
+		InvalidMessage: fmt.Sprintf(p.GT("Must be at most %g"), ` + sMaxVal + `),
+	},		
+`
+	s += fmt.Sprintf(`
 			ControlOptions: page.ControlOptions{
 				IsRequired:      %#v,
 				DataConnector: %s{},
 			},
-		}`, desc.Package, desc.ControlID, !col.IsNullable, desc.Connector)
+		}`, !col.IsNullable, desc.Connector)
 	return
 }
 

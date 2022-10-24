@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-// Exports the given creator so that it can be embedded in a go file.
+// ExportCreator export the given creator so that it can be embedded in a go file.
 // Empty items are not exported
 // Not all creators can be exported. This function is mainly a helper for code generation of controls.
 // Specifically, events and actions do not export cleanly currently. But that should not be a problem for code generation.
@@ -26,8 +26,10 @@ func ExportCreator(creator interface{}) string {
 		}
 
 		switch field.Type.Kind() {
-		case reflect.Chan: panic("creator cannot have a channel, since channels are not serializable")
-		case reflect.Func: panic("creator cannot have a function, since functions are not serializable. Try an interface instead.")
+		case reflect.Chan:
+			panic("creator cannot have a channel, since channels are not serializable")
+		case reflect.Func:
+			panic("creator cannot have a function, since functions are not serializable. Try an interface instead.")
 		case reflect.Struct:
 			if f := val.MethodByName("Export"); f.IsValid() {
 				result := f.Call(nil)
@@ -40,7 +42,8 @@ func ExportCreator(creator interface{}) string {
 				result := f.Call(nil)
 				s += field.Name + ":" + result[0].String() + ",\n"
 			}
-		case reflect.Array:fallthrough
+		case reflect.Array:
+			fallthrough
 		case reflect.Slice:
 			s += field.Name + ":" + exportSlice(val) + ",\n"
 		default:
@@ -58,11 +61,14 @@ func exportSlice(slice reflect.Value) string {
 		val := slice.Index(i)
 
 		switch val.Type().Kind() {
-		case reflect.Chan: panic("creator cannot have a channel, since channels are not serializable")
-		case reflect.Func: panic("creator cannot have a function, since functions are not serializable. Try an interface instead.")
+		case reflect.Chan:
+			panic("creator cannot have a channel, since channels are not serializable")
+		case reflect.Func:
+			panic("creator cannot have a function, since functions are not serializable. Try an interface instead.")
 		case reflect.Struct:
 			s += ExportCreator(val.Interface()) + ",\n"
-		case reflect.Array:fallthrough
+		case reflect.Array:
+			fallthrough
 		case reflect.Slice:
 			s += exportSlice(val)
 
@@ -77,4 +83,3 @@ func exportSlice(slice reflect.Value) string {
 func isZero(v reflect.Value) bool {
 	return !v.IsValid() || reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }
-
