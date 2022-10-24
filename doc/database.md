@@ -1,14 +1,25 @@
 # Databases
-The database structure is central to Goradd. Goradd is designed to generate code from the database
-structure, and then try to respond gracefully to changes in that structure. Your database will
-strongly influence how data is presented and manipulated in a goradd application, and you will spend
-much of your initial design process in working out the details of your database structure.
+The database structure is central to Goradd. The GoRADD code generator generates Go objects based
+on the structure of SQL databaase code (called the ORM). Whenever you change the structure of the database, 
+you should run the code generator to make sure the Go code reflects the structure of the database.
+
+You will spend much of your initial design process in working out the details of your database structure.
 
 Goradd borrows from SQL terminology to think of databases in terms of tables and columns.
 Each row in the spreadsheet is a record, and each column in that row is a field 
 of data.
 
 ## Tables
+Tables (with a few exceptions mentioned below) become Go struct objects in GoRADD. Tables contain columns,
+and these columns become the member variables in the Go struct.
+
+The name of the table in the database is used by default to name the object type in Go code. You can 
+change this value by setting the goName option in the database. See [Options](#options) below.
+
+Tables can contain indexes to columns. All unique indexes become LoadBy* functions
+in Go. For example, a unique index on the "id" field will create a LoadById() function
+in the Go object.
+
 ## Columns
 Columns define the fields of data that make up a row. You will want to define the following in a column.
 
@@ -49,3 +60,43 @@ If you do not give a column a default value, and a column is Nullable, its defau
 However, if you do not give a column a default value, and the column is not Nullable, the ORM will
 require that you explicity set a value for that column before you can insert the record into the database,
 and will panic if you try to insert a record whose required columns have not been set.
+
+## Options
+Tables and Columns have a few configurable options to customize code generation. In SQL code, you place
+these options in the Comment field of the table or Column as JSON. For example, putting the following in
+the Comment field of a table will change the name that Go uses for the table to MyObject:
+```json
+{"goName":"MyObject"}
+```
+
+### Table Options
+<dl>
+  <dt><strong>literalName</strong></dt>
+  <dd>The public word used in panels and forms when referring to this type of object. For example: person, employee, user.
+      This should be lowercase. If you specify this, you should also specify a literalPlural</dd>
+  <dt><strong>literalPlural</strong></dt>
+  <dd>The plural word used to publicly refer to this type of object. For example: people, employees, users.
+      This should be lowercase.</dd>
+  <dt><strong>goName</strong></dt>
+  <dd>The internal name used when referring to the object in Go code.</dd>
+  <dt><strong>goPlural</strong></dt>
+  <dd>The internal plural name used when referring to the object in Go code.</dd>
+  <dt><strong>stringer</strong></dt>
+  <dd>The name of the field the object should use in its String() function to name the object.
+      If there is a "name" field, it will automatically be used. You can specify a different database
+      field here. For example: {"stringer":"title"} will look for a title column in the database and use
+      its value when calling the String() function on the object.</dd>
+
+</dl>
+
+### Column Options
+<dl>
+  <dt><strong>goName</strong></dt>
+  <dd>The internal name used when referring to the field in Go code.</dd>
+  <dt><strong>goPlural</strong></dt>
+  <dd>The internal plural name used when referring to the field in Go code.</dd>
+  <dt><strong>min</strong></dt>
+  <dd>The minimum value allowed for numeric fields.</dd>
+  <dt><strong>max</strong></dt>
+  <dd>The maximum value allowed for numeric fields.</dd>
+</dl>
