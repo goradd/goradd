@@ -23,9 +23,9 @@ const  (
 for _,col := range t.Columns {
 {{
     {{= t.GoName }}_{{= col.GoName}} = `{{= col.GoName }}`
-    {{if col.IsReference()}}
+{{if col.IsReference()}}
     {{= t.GoName }}_{{= col.ForeignKey.GoName }} = `{{= col.ForeignKey.GoName }}`
-    {{if}}
+{{if}}
 }}
 }
 

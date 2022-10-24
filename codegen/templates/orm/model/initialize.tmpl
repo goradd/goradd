@@ -1,9 +1,9 @@
-//init.tmpl
+//initialize.tmpl
 {{
 
 
 // Initialize or re-initialize a {{= t.GoName }} database object to default values.
-func (o *{{privateName}}Base) Initialize() {
+func (o *{{= t.GoName}}) Initialize() {
 
 {{for _,col := range t.Columns}}
 	o.{{col.ModelName()}} = {{= col.DefaultValueAsValue() }}

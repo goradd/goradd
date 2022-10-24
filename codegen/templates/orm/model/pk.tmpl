@@ -4,12 +4,12 @@ if t.PrimaryKeyColumn() != nil {
 {{
 
 // PrimaryKey returns the value of the primary key.
-func (o *{{privateName}}Base) PrimaryKey() {{typ}} {
+func (o *{{= t.GoName }}) PrimaryKey() {{typ}} {
 	return o.{{= t.PrimaryKeyColumn().ModelName() }}
 }
 
 // OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
-func (o *{{privateName}}Base) OriginalPrimaryKey() {{typ}} {
+func (o *{{= t.GoName }}) OriginalPrimaryKey() {{typ}} {
 	return o._originalPK
 }
 

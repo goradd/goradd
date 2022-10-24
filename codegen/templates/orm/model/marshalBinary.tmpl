@@ -4,7 +4,7 @@
 // It should be used for transmitting database objects over the wire, or for temporary storage. It does not send
 // a version number, so if the data format changes, its up to you to invalidate the old stored objects.
 // The framework uses this to serialize the object when it is stored in a control.
-func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
+func (o *{{= t.GoName }}) MarshalBinary() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	encoder := gob.NewEncoder(buf)
 
@@ -110,7 +110,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
     return buf.Bytes(), nil
 }
 
-func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
+func (o *{{= t.GoName }}) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)

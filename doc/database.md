@@ -4,9 +4,9 @@ structure, and then try to respond gracefully to changes in that structure. Your
 strongly influence how data is presented and manipulated in a goradd application, and you will spend
 much of your initial design process in working out the details of your database structure.
 
-Goradd borrows from SQL terminology to think of databases in terms of tables and columns. You can
-Each row in the spreadsheet is a collection of information, and each column in that row is a field 
-of data of a particular type.
+Goradd borrows from SQL terminology to think of databases in terms of tables and columns.
+Each row in the spreadsheet is a record, and each column in that row is a field 
+of data.
 
 ## Tables
 ## Columns
