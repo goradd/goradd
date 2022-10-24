@@ -241,6 +241,9 @@ func (f FileSystemServer) servePath(w http.ResponseWriter,
 	if p := fileProcessors[ext]; p != nil {
 		return p(file, w, r)
 	}
+	if c := contentTypes[ext]; c != "" {
+		w.Header().Set("Content-Type", c)
+	}
 	if encoding != "" {
 		w.Header().Set("Content-Encoding", encoding)
 	}

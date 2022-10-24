@@ -1,3 +1,4 @@
+// Package manualtest contains tests of the framework that require manual setup or execution.
 package manualtest
 
 import (

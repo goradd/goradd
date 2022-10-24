@@ -152,7 +152,7 @@ func (c *FormGroup) DrawTag(ctx context.Context, w io.Writer) {
 		buf.WriteString(">")
 	}
 	if c.Instructions() != "" {
-		buf.WriteString(html5tag.RenderTag("small", c.InstructionAttributes(), html.EscapeString(c.Instructions())))
+		buf.WriteString(html5tag.RenderTag("div", c.InstructionAttributes(), html.EscapeString(c.Instructions())))
 	}
 	if subControl.ValidationState() != page.ValidationNever {
 		c.ErrorAttributes().SetClass(c.getValidationClass(subControl))

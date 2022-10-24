@@ -1,6 +1,6 @@
 //go:build !release
-// +build !release
 
+// Package assets contains the css and javascript required to run a goradd server.
 package assets
 
 // This file embeds the static files found here into the application during development.

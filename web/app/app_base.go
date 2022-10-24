@@ -1,3 +1,4 @@
+// Package app contains the default web application server.
 package app
 
 import (

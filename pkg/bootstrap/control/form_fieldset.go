@@ -87,7 +87,7 @@ func (c *FormFieldset) DrawInnerHtml(ctx context.Context, w io.Writer) {
 	}
 	c.Panel.DrawInnerHtml(ctx, buf2)
 	if c.instructions != "" {
-		s = html5tag.RenderTag("small", c.instructionAttributes, html.EscapeString(c.instructions))
+		s = html5tag.RenderTag("div", c.instructionAttributes, html.EscapeString(c.instructions))
 		buf2.WriteString(s)
 	}
 
