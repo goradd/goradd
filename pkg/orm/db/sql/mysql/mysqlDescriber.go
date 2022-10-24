@@ -395,16 +395,14 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 			if isUnsigned {
 				cd.NativeType = sql2.SqlTypeInteger
 				cd.GoType = ColTypeUnsigned.GoType()
-				min, max := sql2.GetMinMax(column.options, 0, 255, tableName, column.name)
-				cd.MinValue = uint(min)
-				cd.MaxValue = uint(max)
+				cd.MinValue = uint64(0)
+				cd.MaxValue = uint64(255)
 				cd.MaxCharLength = 3
 			} else {
 				cd.NativeType = sql2.SqlTypeInteger
 				cd.GoType = ColTypeInteger.GoType()
-				min, max := sql2.GetMinMax(column.options, -128, 127, tableName, column.name)
-				cd.MinValue = int(min)
-				cd.MaxValue = int(max)
+				cd.MinValue = int64(-128)
+				cd.MaxValue = int64(127)
 				cd.MaxCharLength = 4 // allow for a negative sign
 			}
 		}
@@ -413,16 +411,14 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		if isUnsigned {
 			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeUnsigned.GoType()
-			min, max := sql2.GetMinMax(column.options, 0, 4294967295, tableName, column.name)
-			cd.MinValue = uint(min)
-			cd.MaxValue = uint(max)
+			cd.MinValue = uint64(0)
+			cd.MaxValue = uint64(4294967295)
 			cd.MaxCharLength = 10
 		} else {
 			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeInteger.GoType()
-			min, max := sql2.GetMinMax(column.options, -2147483648, 2147483647, tableName, column.name)
-			cd.MinValue = int(min)
-			cd.MaxValue = int(max)
+			cd.MinValue = int64(-2147483648)
+			cd.MaxValue = int64(2147483647)
 			cd.MaxCharLength = 11
 		}
 
@@ -430,16 +426,14 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		if isUnsigned {
 			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeUnsigned.GoType()
-			min, max := sql2.GetMinMax(column.options, 0, 65535, tableName, column.name)
-			cd.MinValue = uint(min)
-			cd.MaxValue = uint(max)
+			cd.MinValue = uint64(0)
+			cd.MaxValue = uint64(65535)
 			cd.MaxCharLength = 5
 		} else {
 			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeInteger.GoType()
-			min, max := sql2.GetMinMax(column.options, -32768, 32767, tableName, column.name)
-			cd.MinValue = int(min)
-			cd.MaxValue = int(max)
+			cd.MinValue = int64(-32768)
+			cd.MaxValue = int64(32767)
 			cd.MaxCharLength = 6
 		}
 
@@ -447,16 +441,14 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		if isUnsigned {
 			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeUnsigned.GoType()
-			min, max := sql2.GetMinMax(column.options, 0, 16777215, tableName, column.name)
-			cd.MinValue = uint(min)
-			cd.MaxValue = uint(max)
+			cd.MinValue = uint64(0)
+			cd.MaxValue = uint64(16777215)
 			cd.MaxCharLength = 8
 		} else {
 			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeInteger.GoType()
-			min, max := sql2.GetMinMax(column.options, -8388608, 8388607, tableName, column.name)
-			cd.MinValue = int(min)
-			cd.MaxValue = int(max)
+			cd.MinValue = int64(-8388608)
+			cd.MaxValue = int64(8388607)
 			cd.MaxCharLength = 8
 		}
 
@@ -465,68 +457,27 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		if isUnsigned {
 			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeUnsigned64.GoType()
-
-			if v := column.options["min"]; v != nil {
-				if v2, ok := v.(float64); !ok {
-					log.Print("Error in min value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
-					cd.MinValue = uint64(0)
-				} else if v2 < 0 {
-					log.Print("Error in min value in comment for table " + tableName + ":" + column.name + ". Value cannot be less than zero.")
-					cd.MinValue = uint64(0)
-				} else {
-					cd.MinValue = uint64(v2)
-				}
-			} else {
-				cd.MinValue = 0
-			}
-
-			if v := column.options["max"]; v != nil {
-				if v2, ok := v.(float64); !ok {
-					log.Print("Error in max value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
-					cd.MaxValue = uint64(math.MaxUint64)
-				} else {
-					cd.MaxValue = int64(v2)
-				}
-			} else {
-				cd.MaxValue = uint64(math.MaxUint64)
-			}
+			cd.MinValue = uint64(0)
+			cd.MaxValue = uint64(math.MaxUint64)
 			cd.MaxCharLength = 20
 		} else {
 			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeInteger64.GoType()
-			if v := column.options["min"]; v != nil {
-				if v2, ok := v.(float64); !ok {
-					log.Print("Error in min value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
-					cd.MinValue = int64(math.MinInt64)
-				} else {
-					cd.MinValue = int64(v2)
-				}
-			} else {
-				cd.MinValue = int64(math.MinInt64)
-			}
-
-			if v := column.options["max"]; v != nil {
-				if v2, ok := v.(float64); !ok {
-					log.Print("Error in max value in comment for table " + tableName + ":" + column.name + ". Value is not a valid number.")
-					cd.MaxValue = int64(math.MaxInt64)
-				} else {
-					cd.MaxValue = int64(v2)
-				}
-			} else {
-				cd.MaxValue = int64(math.MaxInt64)
-			}
+			cd.MinValue = int64(math.MinInt64)
+			cd.MaxValue = int64(math.MaxInt64)
 			cd.MaxCharLength = 20
 		}
 
 	case "float":
 		cd.NativeType = sql2.SqlTypeFloat
 		cd.GoType = ColTypeFloat.GoType()
-		cd.MinValue, cd.MaxValue = sql2.GetMinMax(column.options, -math.MaxFloat32, math.MaxFloat32, tableName, column.name)
+		cd.MinValue = -math.MaxFloat32 // float64 type
+		cd.MaxValue = math.MaxFloat32
 	case "double":
 		cd.NativeType = sql2.SqlTypeDouble
 		cd.GoType = ColTypeDouble.GoType()
-		cd.MinValue, cd.MaxValue = sql2.GetMinMax(column.options, -math.MaxFloat64, math.MaxFloat64, tableName, column.name)
-
+		cd.MinValue = -math.MaxFloat64
+		cd.MaxValue = math.MaxFloat64
 	case "varchar":
 		cd.NativeType = sql2.SqlTypeVarchar
 		cd.GoType = ColTypeString.GoType()
@@ -650,39 +601,6 @@ func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 		Columns: columnDescriptions,
 	}
 
-	var ok bool
-	if opt := t.options["literalName"]; opt != nil {
-		if td.LiteralName, ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + t.name + ": literalName is not a string")
-		}
-		delete(t.options, "literalName")
-	}
-
-	if opt := t.options["literalPlural"]; opt != nil {
-		if td.LiteralPlural, ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + t.name + ": literalPlural is not a string")
-		}
-		delete(t.options, "literalPlural")
-	}
-
-	if opt := t.options["goName"]; opt != nil {
-		if td.GoName, ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + t.name + ": goName is not a string")
-		} else {
-			td.GoName = strings.Title(td.GoName)
-		}
-		delete(t.options, "goName")
-	}
-
-	if opt := t.options["goPlural"]; opt != nil {
-		if td.GoPlural, ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + t.name + ": goPlural is not a string")
-		} else {
-			td.GoPlural = strings.Title(td.GoPlural)
-		}
-		delete(t.options, "goPlural")
-	}
-
 	td.Comment = t.comment
 	td.Options = t.options
 
@@ -743,18 +661,10 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.Colum
 	var ok bool
 	var shouldAutoUpdate bool
 
-	if opt := column.options["goName"]; opt != nil {
-		if cd.GoName, ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + table.name + ":" + column.name + ": goName is not a string")
-		}
-		delete(column.options, "goName")
-	}
-
 	if opt := column.options["shouldAutoUpdate"]; opt != nil {
 		if shouldAutoUpdate, ok = opt.(bool); !ok {
 			log.Print("Error in table comment for table " + table.name + ":" + column.name + ": shouldAutoUpdate is not a boolean")
 		}
-		delete(column.options, "shouldAutoUpdate")
 	}
 
 	m.processTypeInfo(table.name, column, &cd)

@@ -90,48 +90,6 @@ func getBooleanOption(o *maps.SliceMap, option string) (val bool, ok bool) {
 }
 */
 
-// Extracts a minimum and maximum value from the option map, returning defaults if none was found, and making sure
-// the boundaries of anything found are not exceeded
-func GetMinMax(o map[string]interface{}, defaultMin float64, defaultMax float64, tableName string, columnName string) (min float64, max float64) {
-	var errString string
-
-	if columnName == "" {
-		errString = "table " + tableName
-	} else {
-		errString = "table " + tableName + ":" + columnName
-	}
-
-	v, ok := getNumericOption(o, "min", defaultMin)
-	if !ok {
-		log.Print("Error in min value in comment for " + errString + ". Value is not a valid number.")
-		min = defaultMin
-	} else {
-		if v < defaultMin {
-			log.Print("Error in min value in comment for " + errString + ". Value is less than the allowed minimum.")
-			min = defaultMin
-		} else {
-			min = v
-		}
-	}
-	delete(o, "min")
-
-	v, ok = getNumericOption(o, "max", defaultMax)
-	if !ok {
-		log.Print("Error in max value in comment for " + errString + ". Value is not a valid number.")
-		max = defaultMax
-	} else {
-		if v > defaultMax {
-			log.Print("Error in max value in comment for " + errString + ". Value is more than the allowed maximum.")
-			max = defaultMax
-		} else {
-			max = v
-		}
-	}
-	delete(o, "max")
-
-	return
-}
-
 func FkRuleToAction(rule sql.NullString) db.FKAction {
 
 	if !rule.Valid {

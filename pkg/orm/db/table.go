@@ -14,7 +14,7 @@ type Table struct {
 	LiteralName string
 	// LiteralPlural is the plural name of the object. Use the "literalPlural" option in the comment to override the default. Should be lower case.
 	LiteralPlural string
-	// GoName is name of the struct when referring to it in go code. Use the "goName" option in the comment to override the default.
+	// GoName is the name of the struct when referring to it in go code. Use the "goName" option in the comment to override the default.
 	GoName string
 	// GoPlural is the name of a collection of these objects when referring to them in go code. Use the "goPlural" option in the comment to override the default.
 	GoPlural string
@@ -22,7 +22,7 @@ type Table struct {
 	LcGoName string
 	// Columns is a list of ColumnDescriptions, one for each column in the table.
 	Columns []*Column
-	// columnMap is an internal map of the columns
+	// columnMap is an internal map of the columns by database name of the column
 	columnMap map[string]*Column
 	// Indexes are the indexes defined in the database. Unique indexes will result in LoadBy* functions.
 	Indexes []Index
@@ -49,8 +49,7 @@ func (t *Table) PrimaryKeyGoType() string {
 	return t.PrimaryKeyColumn().ColumnType.GoType()
 }
 
-
-// GetColumn returns a Column given the name of a column
+// GetColumn returns a Column given the database name of a column
 func (t *Table) GetColumn(name string) *Column {
 	return t.columnMap[name]
 }
