@@ -1,54 +1,43 @@
 package db
 
-// This file describes the export/import structure that allows a user to manually describe the structure of the
-// database. In particular, this is required when working with a NoSQL database, since the structure cannot be
-// inferred from the database.
-
+// DatabaseDescription generically describes a database to GoRADD. It is sent to NewDatabase() to create a
+// DB object that is used internally by GoRADD to access the database. DatabaseDescription should be able to be
+// inferred by reading the structure of SQL databases, or read directly from an import file.
 type DatabaseDescription struct {
 	// The database key corresponding to its key in the global database cluster
 	Key string
 	// Tables are the tables in the database
 	Tables []TableDescription
 	// MM are the many-to-many links between tables. In SQL databases, these are actual tables,
-	// but in NoSQL, they become array fields on either side of the relationship.
+	// but in NoSQL, these might be array fields on either side of the relationship.
 	MM []ManyManyDescription
 
 	// The prefix for related objects.
 	AssociatedObjectPrefix string
 }
 
+// TableDescription describes a database object to GoRADD.
 type TableDescription struct {
 	// Name is the name of the database table or collection.
 	Name string
 	// Columns is a list of ColumnDescriptions, one for each column in the table.
-	// The first column(s) is the primary key
+	// The first columns are the primary keys. Usually there is just one primary key.
 	Columns []ColumnDescription
 	// Indexes are the indexes defined in the database. Unique indexes will result in LoadBy* functions.
 	Indexes []IndexDescription
 	// TypeData is the data of the type table if this is a type table. The data structure must match that of the columns.
 	TypeData []map[string]interface{}
 
-	// Code-generation overrides. Leave these as empty to get the default value inferred by the Name above
-
-	// LiteralName is the name of the object when used in a context that can be presented to the user
-	LiteralName string
-	// LiteralPlural is the plural form of the object when used in a context that can be presented to the user
-	LiteralPlural string
-	// GoName is the name of the created ORM object that reflects what is in the database
-	GoName string
-	// GoPlural is the name that will be used to represent a collection of ORM objects
-	GoPlural string
-	// Comment is a comment about the table
+	// Comment is an optional comment about the table
 	Comment string
 	// Options are key-value settings that can be used to further describe code generation
 	Options map[string]interface{}
 }
 
+// ColumnDescription describes a field of a database object to GoRADD.
 type ColumnDescription struct {
 	// Name is the name of the column in the database. This is blank if this is a "virtual" table for sql tables like an association or virtual attribute query.
 	Name string
-	// GoName is the name of the column in go code
-	GoName string
 	// NativeType is the type of the column as described by the database itself.
 	NativeType string
 	//  GoType is the goradd defined column type
@@ -88,7 +77,7 @@ type ColumnDescription struct {
 	Options map[string]interface{}
 }
 
-
+// ForeignKeyDescription describes a pointer from one database object to another database object.
 type ForeignKeyDescription struct {
 	//DbKey string	// We don't support cross database foreign keys yet. Someday maybe.
 	// ReferencedTable is the name of the table on the other end of the foreign key
@@ -120,6 +109,7 @@ type IndexDescription struct {
 	ColumnNames []string
 }
 
+// ManyManyDescription describes a many-to-many relationship table that contains a two-way pointer between database objects.
 type ManyManyDescription struct {
 	// Table1 is the name of the first table that is part of the relationship. The private key of that table will be referred to.
 	Table1 string
@@ -147,5 +137,3 @@ type ManyManyDescription struct {
 	// needed for SQL databases, but not for NoSQL, as NoSQL will create additional array columns on each side of the relationship.
 	AssnTableName string
 }
-
-

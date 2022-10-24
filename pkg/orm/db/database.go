@@ -11,6 +11,17 @@ import (
 	"strings"
 )
 
+// These constants define the indexes used in the Options of Tables and Columns
+const (
+	LiteralNameOption    = "literalName"    // Used in tables only
+	LiteralPluralOption  = "literalPlural"  // Used in tables only
+	GoNameOption         = "goName"         // Used in tables and columns
+	GoPluralOption       = "goPlural"       // Used in tables and columns
+	MinOption            = "min"            // Used in numeric columns
+	MaxOption            = "max"            // Used in number columns
+	StringerColumnOption = "stringerColumn" // Used in tables only to specify what column to output in the String function. Is the db name of the column.
+)
+
 // The Database is the top level struct that contains a complete description of a database for purposes of
 // creating queries and doing code generation
 type Database struct {
@@ -33,13 +44,6 @@ type Database struct {
 	// typeTableMap gets to type tables by internal name
 	typeTableMap map[string]*TypeTable
 }
-
-/*
-type Option struct {
-	key   string
-	value string
-}
-*/
 
 // NewDatabase creates a new Database object from the given DatabaseDescription object.
 func NewDatabase(dbKey string, foreignKeySuffix string, desc DatabaseDescription) *Database {
@@ -101,49 +105,61 @@ func (d *Database) analyze(desc DatabaseDescription) {
 
 // analyzeTypeTables will analyze the type tables provided by the database description
 func (d *Database) analyzeTypeTable(desc TableDescription) *TypeTable {
-	tt := &TypeTable{
+	t := &TypeTable{
 		DbKey:         d.DbKey,
 		DbName:        desc.Name,
-		LiteralName:   desc.LiteralName,
-		LiteralPlural: desc.LiteralPlural,
-		GoName:        desc.GoName,
-		GoPlural:      desc.GoPlural,
-	}
-	if tt.LiteralName == "" {
-		tt.LiteralName = d.dbNameToEnglishName(tt.DbName)
-	}
-	if tt.GoName == "" {
-		tt.GoName = d.dbNameToGoName(tt.DbName)
-	}
-	if tt.LiteralPlural == "" {
-		tt.LiteralPlural = d.dbNameToEnglishPlural(tt.DbName)
-	}
-	if tt.GoPlural == "" {
-		tt.GoPlural = d.dbNameToGoPlural(tt.DbName)
+		LiteralName:   d.dbNameToEnglishName(desc.Name),
+		LiteralPlural: d.dbNameToEnglishPlural(desc.Name),
+		GoName:        d.dbNameToGoName(desc.Name),
+		GoPlural:      d.dbNameToGoPlural(desc.Name),
 	}
 
-	tt.LcGoName = strings.ToLower(tt.GoName[:1]) + tt.GoName[1:]
+	var ok bool
+	if opt := desc.Options[LiteralNameOption]; opt != nil {
+		if t.LiteralName, ok = opt.(string); !ok {
+			log.Print("Error in option for table " + desc.Name + ": literalName is not a string")
+		}
+	}
 
-	tt.Values = desc.TypeData
-	tt.FieldTypes = make(map[string]GoColumnType)
+	if opt := desc.Options[LiteralPluralOption]; opt != nil {
+		if t.LiteralPlural, ok = opt.(string); !ok {
+			log.Print("Error in option for table " + desc.Name + ": literalPlural is not a string")
+		}
+	}
+
+	if opt := desc.Options[GoNameOption]; opt != nil {
+		if t.GoName, ok = opt.(string); !ok {
+			log.Print("Error in option for table " + desc.Name + ": goName is not a string")
+		}
+	}
+
+	if opt := desc.Options[GoPluralOption]; opt != nil {
+		if t.GoPlural, ok = opt.(string); !ok {
+			log.Print("Error in option for table " + desc.Name + ": goPlural is not a string")
+		}
+	}
+
+	t.LcGoName = strings.ToLower(t.GoName[:1]) + t.GoName[1:]
+
+	t.Values = desc.TypeData
+	t.FieldTypes = make(map[string]GoColumnType)
 
 	for _, col := range desc.Columns {
-		tt.FieldNames = append(tt.FieldNames, col.Name)
-		tt.FieldTypes[col.Name] = ColTypeFromGoTypeString(col.GoType)
+		t.FieldNames = append(t.FieldNames, col.Name)
+		t.FieldTypes[col.Name] = ColTypeFromGoTypeString(col.GoType)
 	}
 
-	tt.Constants = make(map[int]string, len(tt.FieldNames))
-	names := tt.FieldNames
+	t.Constants = make(map[int]string, len(t.FieldNames))
+	names := t.FieldNames
 	var key int
 	var value string
-	var ok bool
 
-	if len(tt.Values) == 0 {
-		log.Print("Warning: type table " + tt.DbName + " has no data entries. Specify constants by adding entries to this table.")
+	if len(t.Values) == 0 {
+		log.Print("Warning: type table " + t.DbName + " has no data entries. Specify constants by adding entries to this table.")
 	}
 
 	r := regexp.MustCompile("[^a-zA-Z0-9_]+")
-	for _, m := range tt.Values {
+	for _, m := range t.Values {
 		key, ok = m[names[0]].(int)
 		if !ok {
 			key = int(m[names[0]].(uint))
@@ -155,11 +171,11 @@ func (d *Database) analyzeTypeTable(desc TableDescription) *TypeTable {
 		for _, word := range a {
 			con += strings.Title(strings.ToLower(word))
 		}
-		tt.Constants[key] = con
+		t.Constants[key] = con
 	}
 
-	tt.PkField = tt.FieldGoName(0)
-	return tt
+	t.PkField = t.FieldGoName(0)
+	return t
 }
 
 // analyzeTable will analyze the table provided by the description
@@ -167,27 +183,40 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 	t := &Table{
 		DbKey:         d.DbKey,
 		DbName:        desc.Name,
-		LiteralName:   desc.LiteralName,
-		LiteralPlural: desc.LiteralPlural,
-		GoName:        desc.GoName,
-		GoPlural:      desc.GoPlural,
+		LiteralName:   d.dbNameToEnglishName(desc.Name),
+		LiteralPlural: d.dbNameToEnglishPlural(desc.Name),
+		GoName:        d.dbNameToGoName(desc.Name),
+		GoPlural:      d.dbNameToGoPlural(desc.Name),
 		Comment:       desc.Comment,
 		Options:       desc.Options,
 		columnMap:     make(map[string]*Column),
 	}
 
-	if t.LiteralName == "" {
-		t.LiteralName = d.dbNameToEnglishName(t.DbName)
+	var ok bool
+	if opt := desc.Options[LiteralNameOption]; opt != nil {
+		if t.LiteralName, ok = opt.(string); !ok {
+			log.Print("Error in option for table " + desc.Name + ": literalName is not a string")
+		}
 	}
-	if t.GoName == "" {
-		t.GoName = d.dbNameToGoName(t.DbName)
+
+	if opt := desc.Options[LiteralPluralOption]; opt != nil {
+		if t.LiteralPlural, ok = opt.(string); !ok {
+			log.Print("Error in option for table " + desc.Name + ": literalPlural is not a string")
+		}
 	}
-	if t.LiteralPlural == "" {
-		t.LiteralPlural = d.dbNameToEnglishPlural(t.DbName)
+
+	if opt := desc.Options[GoNameOption]; opt != nil {
+		if t.GoName, ok = opt.(string); !ok {
+			log.Print("Error in option for table " + desc.Name + ": goName is not a string")
+		}
 	}
-	if t.GoPlural == "" {
-		t.GoPlural = d.dbNameToGoPlural(t.DbName)
+
+	if opt := desc.Options[GoPluralOption]; opt != nil {
+		if t.GoPlural, ok = opt.(string); !ok {
+			log.Print("Error in option for table " + desc.Name + ": goPlural is not a string")
+		}
 	}
+
 	t.LcGoName = strings.ToLower(t.GoName[:1]) + t.GoName[1:]
 
 	if t.GoName == t.GoPlural {
@@ -247,14 +276,14 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 			if objName != "" {
 				objName = UpperCaseIdentifier(objName)
 			}
-			goName, _ := col.Options["GoName"].(string)
+			goName, _ := col.Options[GoNameOption].(string)
 			if goName == "" {
 				goName = UpperCaseIdentifier(td.DbName)
 				if objName != "" {
 					goName = goName + "As" + objName
 				}
 			}
-			goPlural, _ := col.Options["GoPlural"].(string)
+			goPlural, _ := col.Options[GoPluralOption].(string)
 			if goPlural == "" {
 				goPlural = inflector.Pluralize(td.DbName)
 				goPlural = UpperCaseIdentifier(goPlural)
@@ -268,7 +297,7 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 			// Check for name conflicts
 			for _, col2 := range td2.Columns {
 				if goName == col2.GoName {
-					log.Printf("Error: table %s has a field name %s that is the same as the %s table that is referring to it. Either change these names, or provide an alternate GoName in the options.", td2.GoName, goName, td.GoName)
+					log.Printf("Error: table %s has a field name %s that is the same as the %s table that is referring to it. Either change these names, or provide an alternate goName in the options.", td2.GoName, goName, td.GoName)
 				}
 			}
 
@@ -364,7 +393,7 @@ func (d *Database) makeManyManyRef(t1, c1, t2, c2, g2, g2p, t string, isType boo
 func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
 	c := &Column{
 		DbName:                desc.Name,
-		GoName:                desc.GoName,
+		GoName:                d.dbNameToGoName(desc.Name),
 		NativeType:            desc.NativeType,
 		ColumnType:            ColTypeFromGoTypeString(desc.GoType),
 		MaxCharLength:         desc.MaxCharLength,
@@ -387,11 +416,27 @@ func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
 		c.ColumnType = ColTypeString // We treat auto-generated ids as strings for cross database compatibility.
 	}
 
-	if c.GoName == "" {
-		c.GoName = d.dbNameToGoName(c.DbName)
+	var ok bool
+	if opt := desc.Options[GoNameOption]; opt != nil {
+		if c.GoName, ok = opt.(string); !ok {
+			log.Printf("Error in option for column " + desc.Name + ": goName is not a string")
+		}
 	}
 
 	c.modelName = LowerCaseIdentifier(c.DbName)
+
+	var err error
+	if opt := desc.Options[MinOption]; opt != nil {
+		if c.MinValue, err = getMinOption(c.MinValue, opt); err != nil {
+			log.Printf("Error in 'min' option for column %s: %s", desc.Name, err.Error())
+		}
+	}
+
+	if opt := desc.Options[MaxOption]; opt != nil {
+		if c.MaxValue, err = getMaxOption(c.MaxValue, opt); err != nil {
+			log.Printf("Error in 'max' option for column %s: %s", desc.Name, err.Error())
+		}
+	}
 
 	return c
 }

@@ -64,7 +64,7 @@ This will do the following:
 3. Run the resulting go code to generate the forms and ORM and place them in the
 `goradd-project/gen` directory
 
-Each time you change something in the database, you should run the code generator.
+Each time you change the structure of the database, you should run the code generator.
 
 
 ## The Gen Directory
