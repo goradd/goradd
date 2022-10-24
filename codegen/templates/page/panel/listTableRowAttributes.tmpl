@@ -2,7 +2,7 @@
 
 {{
 
-func (p *{{= panelName }}) TableRowAttributes(row int, data interface{}) html5tag.Attributes {
+func (p *{{= panelName }}) RowAttributes(row int, data interface{}) html5tag.Attributes {
 	return html5tag.NewAttributes().SetData("value", {{if t.PrimaryKeyGoType() == "string"}}data.(*model.{{= t.GoName }}).PrimaryKey(){{else}}fmt.Sprint(data.(*model.{{= t.GoName }}).PrimaryKey()){{if}})
 }
 
