@@ -4,7 +4,7 @@
 // Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
 // select only the fields you want when you query for the object. Another way to control the output
 // is to call MarshalStringMap, modify the map, then encode the map.
-func (o *{{= t.GoName }}) MarshalJSON() (data []byte, err error) {
+func (o *{{privateName}}Base) MarshalJSON() (data []byte, err error) {
     v := o.MarshalStringMap()
     return json.Marshal(v)
 }
@@ -12,7 +12,7 @@ func (o *{{= t.GoName }}) MarshalJSON() (data []byte, err error) {
 // MarshalStringMap serializes the object into a string map of interfaces.
 // Only valid data will be serialized, meaning, you can control what gets serialized by using Select to
 // select only the fields you want when you query for the object. The keys are the same as the json keys.
-func (o *{{= t.GoName }}) MarshalStringMap() (map[string]interface{}) {
+func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
     v := make(map[string]interface{})
 
 {{for _,col := range t.Columns}}
@@ -88,7 +88,7 @@ func (o *{{= t.GoName }}) MarshalStringMap() (map[string]interface{}) {
     return v
 }
 
-// UnmarshalJSON unmarshalls the given json data into the {{= t.GoName}}. The {{= t.GoName}} can be a
+// UnmarshalJSON unmarshalls the given json data into the {{privateName}}. The {{privateName}} can be a
 // newly created object, or one loaded from the database.
 //
 // After unmarshalling, the object is not  saved. You must call Save to insert it into the database
@@ -101,14 +101,16 @@ func (o *{{= t.GoName }}) MarshalStringMap() (map[string]interface{}) {
 //   "{{= col.JsonKey() }}" - {{= col.GoType() }}{{if col.IsNullable}}, nullable{{if}}
 
 {{for}}
-func (o *{{= t.GoName }}) UnmarshalJSON (data []byte) (err error) {
+func (o *{{privateName}}Base) UnmarshalJSON (data []byte) (err error) {
     var v map[string]interface{}
     if err = json.Unmarshal(data, &v); err != nil { return err}
     return o.UnmarshalStringMap(v)
 }
 
 // UnmarshalStringMap will load the values from the stringmap into the object.
-func (o *{{= t.GoName }}) UnmarshalStringMap(m map[string]interface{}) (err error) {
+//
+// Override this in {{privateName}} to modify the json before sending it here.
+func (o *{{privateName}}Base) UnmarshalStringMap(m map[string]interface{}) (err error) {
     for k,v := range m {
         switch k {
 {{for _,col := range t.Columns}}
