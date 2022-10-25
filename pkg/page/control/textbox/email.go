@@ -42,10 +42,12 @@ func (t *EmailTextbox) this() EmailI {
 	return t.Self.(EmailI)
 }
 
+// SetMaxItemCount increases the number of email addresses accepted by the field.
 func (t *EmailTextbox) SetMaxItemCount(max int) EmailI {
 	t.maxItemCount = max
 	if t.maxItemCount > 1 {
 		t.SetType(DefaultType) // Some browsers cannot handle multiple emails in an email type of text input
+		t.SetAttribute("inputmode", "email")
 	}
 	t.Refresh()
 	return t.this()

@@ -15,7 +15,14 @@ type FloatI interface {
 	SetMaxValue(maxValue float64, invalidMessage string) FloatI
 }
 
-// FloatTextbox is a textbox control that ensures a valid floating point number is entered in the field.
+// FloatTextbox is a textbox control that expects a floating-point value and does server-side
+// validation on min and max values. It sets the inputmode to "decimal" to inform mobile browsers to
+// expect decimal input.
+//
+// If you would like to have client-side validation and spinner buttons, call SetType(NumberType),
+// and set the min, max, and step attributes accordingly. The step attribute is particularly important
+// to set to a decimal value, since by default, numeric text fields have a step of 1 and do not allow
+// decimal input.
 type FloatTextbox struct {
 	Textbox
 }
@@ -27,9 +34,11 @@ func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
 	return t
 }
 
+// Init is called by the framework, and subclasses of the FloatTextbox.
 func (t *FloatTextbox) Init(parent page.ControlI, id string) {
 	t.Textbox.Init(parent, id)
 	t.ValidateWith(FloatValidator{})
+	t.SetAttribute("inputmode", "decimal") // set inputmode for mobile input, but do it here so programmer could cancel this if desired.
 }
 
 func (t *FloatTextbox) this() FloatI {
@@ -50,12 +59,14 @@ func (t *FloatTextbox) Value() interface{} {
 	return t.Float64()
 }
 
+// Float64 returns the value as a float64.
 func (t *FloatTextbox) Float64() float64 {
 	text := t.Textbox.Text()
 	v, _ := strconv.ParseFloat(text, 64)
 	return v
 }
 
+// Float32 returns the value as a float32.
 func (t *FloatTextbox) Float32() float32 {
 	text := t.Textbox.Text()
 	v, _ := strconv.ParseFloat(text, 32)

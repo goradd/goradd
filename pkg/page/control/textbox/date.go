@@ -118,8 +118,8 @@ func (d *DateTextbox) Value() interface{} {
 	return d.time
 }
 
-// DateTextbox returns the value as a DateTime value based on the format.
-// If a bad value was entered into the textbox, it will return an empty datetime.
+// Date returns the value as a time.Time value.
+// If a bad value was entered into the textbox, it will return an empty value.
 func (d *DateTextbox) Date() time.Time {
 	return d.time
 }
