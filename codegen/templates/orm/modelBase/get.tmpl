@@ -6,7 +6,7 @@
 // Get returns the value of a field in the object based on the field's name.
 // It will also get related objects if they are loaded.
 // Invalid fields and objects are returned as nil
-func (o *{{= t.GoName }}) Get(key string) interface{} {
+func (o *{{privateName}}Base) Get(key string) interface{} {
 
     switch key {
 }}

@@ -7,7 +7,6 @@ package main
 
 // Remove old files
 //go:generate gofile remove goradd-project/tmp/template/*.tpl.go
-//go:generate gofile remove goradd-project/gen/*/connector/*.base.go
 //go:generate gofile remove goradd-project/gen/*/form/*
 //go:generate gofile remove goradd-project/gen/*/model/*.base.go
 //go:generate gofile remove goradd-project/gen/*/model/node/*

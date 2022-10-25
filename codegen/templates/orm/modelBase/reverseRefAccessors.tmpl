@@ -9,7 +9,7 @@ for _,ref := range t.ReverseReferences {
 
 // {{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded.
 // Otherwise, it will return nil.
-func (o *{{= t.GoName }}) {{= ref.GoName }}() *{{ref.GoType}} {
+func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.GoType}} {
 	if o.{{oName}} == nil {
 		return nil
 	}
@@ -18,7 +18,7 @@ func (o *{{= t.GoName }}) {{= ref.GoName }}() *{{ref.GoType}} {
 
 // Load{{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded.
 // Otherwise, it will load a new one and return it.
-func (o *{{= t.GoName }}) Load{{= ref.GoName }}(ctx context.Context) *{{ref.GoType}} {
+func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.GoType}} {
 	if o.{{oName}} == nil {
 		o.{{oName}} = Load{{ref.GoType}}By{{= associatedGoName }}(ctx, o.{{= t.PrimaryKeyColumn().GoName }}())
 	}
@@ -36,7 +36,7 @@ func (o *{{= t.GoName }}) Load{{= ref.GoName }}(ctx context.Context) *{{ref.GoTy
 // If you did not use a join to query the items in the first place, used a conditional join,
 // or joined with an expansion, be particularly careful, since you may be changing an item
 // that is not currently attached to this {{t.GoName}}.
-func (o *{{= t.GoName }}) Set{{= ref.GoName }}(obj *{{= ref.GoType }}) {
+func (o *{{privateName}}Base) Set{{= ref.GoName }}(obj *{{= ref.GoType }}) {
 {{if ref.IsNullable() }}
     if o.{{oName}} != nil && o.{{oName}}.IsDirty() {
         panic("The {{= ref.GoName }} has changed. You must save it first before changing to a different one.")
@@ -53,7 +53,7 @@ func (o *{{= t.GoName }}) Set{{= ref.GoName }}(obj *{{= ref.GoType }}) {
 {{
 // {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.
 // Otherwise, it will return nil. It will not return {{ref.GoType}} objects that are not saved.
-func (o *{{= t.GoName }}) {{= ref.GoName }}(pk {{= ref.AssociatedPkType() }}) *{{ref.GoType}} {
+func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= ref.AssociatedPkType() }}) *{{ref.GoType}} {
 	if o.{{mName}} == nil {
 		return nil
 	}
@@ -62,7 +62,7 @@ func (o *{{= t.GoName }}) {{= ref.GoName }}(pk {{= ref.AssociatedPkType() }}) *{
 }
 
 // {{ref.GoPlural}} returns a slice of {{ref.GoType}} objects if loaded.
-func (o *{{= t.GoName }}) {{= ref.GoPlural }}() []*{{ref.GoType}} {
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.GoType}} {
 	if o.{{oName}} == nil {
 		return nil
 	}
@@ -70,8 +70,8 @@ func (o *{{= t.GoName }}) {{= ref.GoPlural }}() []*{{ref.GoType}} {
 }
 
 // Load{{ref.GoPlural}} loads a new slice of {{ref.GoType}} objects and returns it.
-func (o *{{= t.GoName }}) Load{{= ref.GoPlural }}(ctx context.Context, conditions ...interface{}) []*{{ref.GoType}} {
-	qb := Query{{ref.GoTypePlural}}(ctx)
+func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, conditions ...interface{}) []*{{ref.GoType}} {
+	qb := query{{ref.GoTypePlural}}(ctx)
 	cond := Equal(node.{{= ref.GoType }}().{{= associatedGoName }}(), o.PrimaryKey())
 	if conditions != nil {
 		conditions = append(conditions, cond)
@@ -83,7 +83,7 @@ func (o *{{= t.GoName }}) Load{{= ref.GoPlural }}(ctx context.Context, condition
 }
 
 // Count{{ref.GoPlural}} returns the number of {{ref.GoType}} objects in the database connected to this object.
-func (o *{{= t.GoName }}) Count{{ref.GoPlural}}(ctx context.Context) int {
+func (o *{{privateName}}Base) Count{{ref.GoPlural}}(ctx context.Context) int {
 	return int(Query{{= ref.GoTypePlural }}(ctx).
 	    Where(Equal(node.{{= ref.GoType }}().{{= ref.AssociatedColumn.GoName }}(), o.PrimaryKey())).
 	    Count(false))
@@ -100,7 +100,7 @@ func (o *{{= t.GoName }}) Count{{ref.GoPlural}}(ctx context.Context) int {
 // If you did not use a join to query the items in the first place, used a conditional join,
 // or joined with an expansion, be particularly careful, since you may be changing items
 // that are not currently attached to this {{t.GoName}}.
-func (o *{{= t.GoName }}) Set{{= ref.GoPlural }}(objs []*{{= ref.GoType }}) {
+func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{= ref.GoType }}) {
     for _,obj := range o.{{oName}} {
         if obj.IsDirty() {
             panic("You cannot overwrite items that have changed but have not been saved.")

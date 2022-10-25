@@ -1,28 +1,8 @@
 //delete.tmpl
 {{
 
-// Delete{{= t.GoName }} deletes the given record from the database. Note that you can also delete
-// loaded {{= t.GoName }} objects by calling Delete on them.
-func Delete{{= t.GoName }}(ctx context.Context, pk {{= t.PrimaryKeyColumn().GoType() }}) {
-	delete{{= t.GoName }}(ctx, pk)
-}
-
-
-// delete{{= t.GoName }} deletes the associated record from the database.
-func delete{{= t.GoName }}(ctx context.Context, pk {{= t.PrimaryKeyColumn().GoType() }}) {
-{{if len(t.ReverseReferences) == 0 && len(t.ManyManyReferences) == 0}}
-	d := db.GetDatabase("{{t.DbKey}}")
-	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn().DbName }}", pk)
-	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(pk))
-{{else}}
-    if obj := Load{{= t.GoName }}(ctx, pk, node.{{= t.GoName}}().PrimaryKeyNode()); obj != nil {
-        obj.Delete(ctx)
-    }
-{{if}}
-}
-
 // Delete deletes the associated record from the database.
-func (o *{{= t.GoName }}) Delete(ctx context.Context) {
+func (o *{{privateName}}Base) Delete(ctx context.Context) {
 	if !o._restored {
 		panic ("Cannot delete a record that has no primary key value.")
 	}
@@ -119,5 +99,17 @@ func (o *{{= t.GoName }}) Delete(ctx context.Context) {
 	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(o.{{= t.PrimaryKeyColumn().ModelName() }}))
 }
 
+// delete{{= t.GoName }} deletes the associated record from the database.
+func delete{{= t.GoName }}(ctx context.Context, pk {{= t.PrimaryKeyColumn().GoType() }}) {
+{{if len(t.ReverseReferences) == 0 && len(t.ManyManyReferences) == 0}}
+	d := db.GetDatabase("{{t.DbKey}}")
+	d.Delete(ctx, "{{t.DbName}}", "{{= t.PrimaryKeyColumn().DbName }}", pk)
+	broadcast.Delete(ctx, "{{t.DbKey}}", "{{t.DbName}}", fmt.Sprint(pk))
+{{else}}
+    if obj := Load{{= t.GoName }}(ctx, pk, node.{{= t.GoName}}().PrimaryKeyNode()); obj != nil {
+        obj.Delete(ctx)
+    }
+{{if}}
+}
 
 }}
