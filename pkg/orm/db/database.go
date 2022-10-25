@@ -13,13 +13,12 @@ import (
 
 // These constants define the indexes used in the Options of Tables and Columns
 const (
-	LiteralNameOption    = "literalName"    // Used in tables only
-	LiteralPluralOption  = "literalPlural"  // Used in tables only
-	GoNameOption         = "goName"         // Used in tables and columns
-	GoPluralOption       = "goPlural"       // Used in tables and columns
-	MinOption            = "min"            // Used in numeric columns
-	MaxOption            = "max"            // Used in number columns
-	StringerColumnOption = "stringerColumn" // Used in tables only to specify what column to output in the String function. Is the db name of the column.
+	LiteralNameOption   = "literalName"   // Used in tables only
+	LiteralPluralOption = "literalPlural" // Used in tables only
+	GoNameOption        = "goName"        // Used in tables and columns
+	GoPluralOption      = "goPlural"      // Used in tables and columns
+	MinOption           = "min"           // Used in numeric columns
+	MaxOption           = "max"           // Used in number columns
 )
 
 // The Database is the top level struct that contains a complete description of a database for purposes of
