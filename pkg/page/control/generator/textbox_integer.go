@@ -27,14 +27,28 @@ func (d IntegerTextbox) SupportsColumn(ref interface{}) bool {
 
 func (d IntegerTextbox) GenerateCreator(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
+	sMinVal := fmt.Sprintf("%v", col.MinValue)
+	sMaxVal := fmt.Sprintf("%v", col.MaxValue)
 	s = fmt.Sprintf(
 		`%s.IntegerTextboxCreator{
 	ID:        p.ID() + "-%s",
-	ControlOptions: page.ControlOptions{
+`, desc.Package, desc.ControlID)
+	s += `    // Set this with a "min" value in the column comment. For example: {"min":100}
+    MinValue: &textbox.IntegerLimit{
+		Value: ` + sMinVal + `,
+		InvalidMessage: fmt.Sprintf(p.GT("Must be at least %d"),` + sMinVal + `),
+	},
+    // Set this with a "max" value in the column comment. For example: {"max":1000}
+	MaxValue: &textbox.IntegerLimit{
+		Value: ` + sMaxVal + `,
+		InvalidMessage: fmt.Sprintf(p.GT("Must be at most %d"), ` + sMaxVal + `),
+	},
+`
+	s += fmt.Sprintf(`	ControlOptions: page.ControlOptions{
 		IsRequired:      %#v,
 		DataConnector: %s{},
 	},
-}`, desc.Package, desc.ControlID, !col.IsNullable, desc.Connector)
+}`, !col.IsNullable, desc.Connector)
 	return
 }
 

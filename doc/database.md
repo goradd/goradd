@@ -96,7 +96,7 @@ the Comment field of a table will change the name that Go uses for the table to 
   <dt><strong>goPlural</strong></dt>
   <dd>The internal plural name used when referring to the field in Go code.</dd>
   <dt><strong>min</strong></dt>
-  <dd>The minimum value allowed for numeric fields.</dd>
+  <dd>The minimum value allowed for numeric fields. Can be a json number or a string that will be converted to a number. ("500")</dd>
   <dt><strong>max</strong></dt>
-  <dd>The maximum value allowed for numeric fields.</dd>
+  <dd>The maximum value allowed for numeric fields. Can be a json number or a string that will be converted to a number. ("500")</dd>
 </dl>

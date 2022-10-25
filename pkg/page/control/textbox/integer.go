@@ -15,6 +15,11 @@ type IntegerI interface {
 	SetMaxValue(maxValue int, invalidMessage string) IntegerI
 }
 
+// IntegerTextbox is a textbox that only permits integers.
+// It does server-side validation on a minimum and maximum value when set.
+// It sets the inputmode attribute on the html textbox to "numeric" to inform mobile browsers
+// that numeric data is expected. If you would like client-side validation and up and down spinner arrows,
+// call SetType(NumberType), and set the min and max attributes.
 type IntegerTextbox struct {
 	Textbox
 	minValue *int
@@ -31,6 +36,7 @@ func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 func (t *IntegerTextbox) Init(parent page.ControlI, id string) {
 	t.Textbox.Init(parent, id)
 	t.ValidateWith(IntValidator{})
+	t.SetAttribute("inputmode", "numeric") // set inputmode for mobile input, but do it here so programmer could cancel this if desired.
 }
 
 func (t *IntegerTextbox) this() IntegerI {
