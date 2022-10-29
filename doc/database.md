@@ -81,12 +81,6 @@ the Comment field of a table will change the name that Go uses for the table to 
   <dd>The internal name used when referring to the object in Go code.</dd>
   <dt><strong>goPlural</strong></dt>
   <dd>The internal plural name used when referring to the object in Go code.</dd>
-  <dt><strong>stringerColumn</strong></dt>
-  <dd>The name of the field the object should use in its String() function to name the object.
-      If there is a "name" field, it will automatically be used. You can specify a different database
-      field here. For example: {"stringer":"title"} will look for a title column in the database and use
-      its value when calling the String() function on the object.</dd>
-
 </dl>
 
 ### Column Options
