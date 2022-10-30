@@ -4,14 +4,14 @@ import (
 	"context"
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/strings"
+	"github.com/goradd/maps"
 )
 
-// The dataStore is the central database collection used in codegeneration and the orm.
+type DatabaseMap = maps.SliceMap[string, DatabaseI]
+
+// The dataStore is the central database collection used in code generation and the orm.
 var datastore struct {
-	// TODO: Change these to OrderedMaps. Since they are used for code generation, we want them to be iterated consistently
-	databases  *DatabaseISliceMap
-	tables     map[string]map[string]*Table
-	typeTables map[string]map[string]*TypeTable
+	databases *DatabaseMap
 }
 
 //type LoaderFunc func(QueryBuilderI, map[string]interface{})
@@ -68,7 +68,7 @@ func AddDatabase(d DatabaseI, key string) {
 		panic("data keys can only have letters in them. They are used in titles of variables. Please change " + key)
 	}
 	if datastore.databases == nil {
-		datastore.databases = NewDatabaseISliceMap()
+		datastore.databases = new(DatabaseMap)
 	}
 
 	datastore.databases.Set(key, d)
@@ -82,24 +82,4 @@ func GetDatabase(key string) DatabaseI {
 // GetDatabases returns all databases in the datastore
 func GetDatabases() []DatabaseI {
 	return datastore.databases.Values()
-}
-
-// GetTableDescription returns a table description given a database key and the struct name corresponding to the table.
-// You must call AnalyzeDatabases first to use this.
-func GetTableDescription(key string, goTypeName string) *Table {
-	td, ok := datastore.tables[key][goTypeName]
-	if !ok {
-		return nil
-	}
-	return td
-}
-
-// GetTypeTableDescription returns a type table description given a database key and the struct name corresponding to the table.
-// You must call AnalyzeDatabases first to use this.
-func GetTypeTableDescription(key string, goTypeName string) *TypeTable {
-	td, ok := datastore.typeTables[key][goTypeName]
-	if !ok {
-		return nil
-	}
-	return td
 }
