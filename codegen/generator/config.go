@@ -6,10 +6,6 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-// TODO: Remove this. We just need a module path to the control I think.
-// Also, explore making a default generator so that you don't need one for all controls, just ones that are different than normal.
-type ControlCreationInfo string
-
 // DefaultControlTypeFunc is the injected function that determines the default control type for a particular type of database column.
 // It gets initialized here, so that if you want to replace it, you can first call the default function
 var DefaultControlTypeFunc = DefaultControlType
