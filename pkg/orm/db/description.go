@@ -9,9 +9,6 @@ type DatabaseDescription struct {
 	// MM are the many-to-many links between tables. In SQL databases, these are actual tables,
 	// but in NoSQL, these might be array fields on either side of the relationship.
 	MM []ManyManyDescription
-
-	// The prefix for related objects.
-	AssociatedObjectPrefix string
 }
 
 // TableDescription describes a database object to GoRADD.

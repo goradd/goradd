@@ -26,9 +26,6 @@ type DatabaseI interface {
 	// a json file.
 	Describe() *Database
 
-	// AssociatedObjectPrefix is a prefix we add to all variables that point to ORM objects. By default this is an "o".
-	AssociatedObjectPrefix() string
-
 	// NewBuilder returns a newly created query builder
 	NewBuilder(ctx context.Context) QueryBuilderI
 

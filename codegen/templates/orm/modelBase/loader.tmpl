@@ -53,7 +53,7 @@ for _, col := range t.Columns {
 	} // else
 
 	if col.IsReference() {
-		oName := col.ReferenceName()
+		oName := objectPrefix + col.ReferenceFunction()
 
 {{
 	if v, ok := m["{{= col.ForeignKey.GoName }}"]; ok {
@@ -79,7 +79,7 @@ for _, col := range t.Columns {
 
 // Many-Many references
 for _,ref := range t.ManyManyReferences {
-	oName := dd.AssociatedObjectPrefix + ref.GoPlural
+	oName := objectPrefix + ref.GoPlural
 
 	if ref.IsTypeAssociation {
 

@@ -25,7 +25,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
     }
 
 {{if col.IsReference() }}
-    if o.{{= col.ReferenceName()}} == nil {
+    if o.{{= objectPrefix + col.ReferenceFunction()}} == nil {
         if err := encoder.Encode(false); err != nil {
             return nil, err
         }
@@ -33,7 +33,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
         if err := encoder.Encode(true); err != nil {
             return nil, err
         }
-        if err := encoder.Encode(o.{{= col.ReferenceName()}}); err != nil {
+        if err := encoder.Encode(o.{{= objectPrefix + col.ReferenceFunction()}}); err != nil {
             return nil, err
         }
     }
@@ -42,7 +42,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
 
 {{for _,ref := range t.ReverseReferences}}
 {{if ref.IsUnique() }}
-    if o.{{dd.AssociatedObjectPrefix}}{{= ref.GoName }} == nil {
+    if o.{{= objectPrefix }}{{= ref.GoName }} == nil {
         if err := encoder.Encode(false); err != nil {
             return nil, err
         }
@@ -50,12 +50,12 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
         if err := encoder.Encode(true); err != nil {
             return nil, err
         }
-        if err := encoder.Encode(o.{{= dd.AssociatedObjectPrefix}}{{= ref.GoName }}); err != nil {
+        if err := encoder.Encode(o.{{= objectPrefix}}{{= ref.GoName }}); err != nil {
             return nil, err
         }
     }
 {{else}}
-    if o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} == nil {
+    if o.{{= objectPrefix}}{{= ref.GoPlural }} == nil {
         if err := encoder.Encode(false); err != nil {
             return nil, err
         }
@@ -63,7 +63,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
         if err := encoder.Encode(true); err != nil {
             return nil, err
         }
-        if err := encoder.Encode(o.{{= dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}); err != nil {
+        if err := encoder.Encode(o.{{= objectPrefix}}{{= ref.GoPlural }}); err != nil {
             return nil, err
         }
     }
@@ -72,7 +72,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
 {{for}}
 
 {{for _,ref := range t.ManyManyReferences}}
-    if o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} == nil {
+    if o.{{= objectPrefix}}{{= ref.GoPlural }} == nil {
         if err := encoder.Encode(false); err != nil {
             return nil, err
         }
@@ -80,7 +80,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
         if err := encoder.Encode(true); err != nil {
             return nil, err
         }
-        if err := encoder.Encode(o.{{= dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}); err != nil {
+        if err := encoder.Encode(o.{{= objectPrefix}}{{= ref.GoPlural }}); err != nil {
             return nil, err
         }
     }
@@ -139,7 +139,7 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
         return
     }
     if isPtr {
-        if err = dec.Decode(&o.{{= col.ReferenceName() }}); err != nil {
+        if err = dec.Decode(&o.{{= objectPrefix + col.ReferenceFunction() }}); err != nil {
             return
         }
     }
@@ -152,7 +152,7 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
         return
     }
     if isPtr {
-        if err = dec.Decode(&o.{{dd.AssociatedObjectPrefix}}{{= ref.GoName }}); err != nil {
+        if err = dec.Decode(&o.{{= objectPrefix}}{{= ref.GoName }}); err != nil {
             return
         }
     }
@@ -161,12 +161,12 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
         return
     }
     if isPtr {
-        if err = dec.Decode(&o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}); err != nil {
+        if err = dec.Decode(&o.{{= objectPrefix }}{{= ref.GoPlural }}); err != nil {
             return
         }
-        if len(o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}) > 0 {
+        if len(o.{{= objectPrefix}}{{= ref.GoPlural }}) > 0 {
             o.m{{= ref.GoPlural }} = make(map[{{= ref.AssociatedPkType() }}] *{{= ref.GoType }})
-            for _,p := range o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} {
+            for _,p := range o.{{= objectPrefix }}{{= ref.GoPlural }} {
                 o.m{{= ref.GoPlural }}[p.PrimaryKey()] = p
             }
         }
@@ -179,14 +179,14 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
         return
     }
     if isPtr {
-        if err = dec.Decode(&o.{{dd.AssociatedObjectPrefix}}{{ref.GoPlural}}); err != nil {
+        if err = dec.Decode(&o.{{= objectPrefix}}{{ref.GoPlural}}); err != nil {
             return
         }
 {{if !ref.IsTypeAssociation}}
-        if len(o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }}) > 0 {
+        if len(o.{{= objectPrefix}}{{= ref.GoPlural }}) > 0 {
             o.m{{= ref.GoPlural }} = make(map[string] *{{= ref.AssociatedObjectName }})
 
-            for _,p := range o.{{dd.AssociatedObjectPrefix}}{{= ref.GoPlural }} {
+            for _,p := range o.{{= objectPrefix }}{{= ref.GoPlural }} {
                 o.m{{= ref.GoPlural }}[p.PrimaryKey()] = p
             }
         }

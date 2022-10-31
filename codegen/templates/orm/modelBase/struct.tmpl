@@ -19,7 +19,7 @@ for _,col := range t.Columns {
 	{{= col.ModelName() }}IsValid bool
 	{{= col.ModelName() }}IsDirty bool
 {{if col.IsReference()}}
-	{{= col.ReferenceName() }} *{{= col.ForeignKey.GoType }}
+	{{= objectPrefix + col.ReferenceFunction() }} *{{= col.ForeignKey.GoType }}
 {{if}}
 
 }}
@@ -36,13 +36,13 @@ if len(t.ReverseReferences) > 0 {
 
 for _,ref := range t.ReverseReferences {
 	if ref.IsUnique() {
-        ref.Values["objName"] = dd.AssociatedObjectPrefix + ref.GoName
+        ref.Values["objName"] = objectPrefix + ref.GoName
 {{
 	{{= ref.Values["objName"] }} *{{= ref.GoType }}
 	{{= ref.Values["objName"] }}IsDirty bool
 }}
 	} else {
-        ref.Values["objName"] = dd.AssociatedObjectPrefix + ref.GoPlural
+        ref.Values["objName"] = objectPrefix + ref.GoPlural
 	    ref.Values["mapName"] = "m" + ref.GoPlural
 {{
 	{{= ref.Values["objName"] }} []*{{= ref.GoType }} // Objects in the order they were queried
@@ -62,11 +62,11 @@ if len(t.ManyManyReferences) > 0 {
 
 for _,ref := range t.ManyManyReferences {
 {{
-	{{dd.AssociatedObjectPrefix}}{{ref.GoPlural}} []{{if !ref.IsTypeAssociation }}*{{if}}{{ref.AssociatedObjectName}}
+	{{= objectPrefix }}{{ref.GoPlural}} []{{if !ref.IsTypeAssociation }}*{{if}}{{ref.AssociatedObjectName}}
 {{if !ref.IsTypeAssociation }}
 	m{{= ref.GoPlural }} map[string] *{{ref.AssociatedObjectName}}					  // Objects by PK
 {{if}}
-    {{dd.AssociatedObjectPrefix}}{{ref.GoPlural}}IsDirty bool
+    {{= objectPrefix }}{{ref.GoPlural}}IsDirty bool
 
 }}
 } // for

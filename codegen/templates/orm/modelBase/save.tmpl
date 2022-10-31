@@ -24,7 +24,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
     // Here we deal with forward references
     for _,col := range t.Columns {
         if col.IsReference() {
-            oName := col.ReferenceName()
+            oName := objectPrefix + col.ReferenceFunction()
 
 }}
         if o.{{= oName }} != nil {
@@ -122,7 +122,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
     {{for}} {{# Reverse References }}
     {{for _,ref := range t.ManyManyReferences }}
 {{g
-    oName := ref.ObjName(dd)
+    oName := objectPrefix + ref.GoPlural
 }}
     {{if ref.IsTypeAssociation}}
         if o.{{= oName }}IsDirty {
@@ -172,7 +172,7 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
     // Here we save forward references, get the id, and then set the corresponding foreign key
     for _,col := range t.Columns {
         if col.IsReference() {
-            oName := col.ReferenceName()
+            oName := objectPrefix + col.ReferenceFunction()
 
 }}
     if o.{{= oName }} != nil {
@@ -221,7 +221,7 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
 {{for}}
 {{for _,ref := range t.ManyManyReferences }}
 {{g
-    oName := ref.ObjName(dd)
+    oName := objectPrefix + ref.GoPlural
 }}
 {{if ref.IsTypeAssociation}}
     if len(o.{{= oName }}) != 0 {
