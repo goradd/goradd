@@ -307,7 +307,6 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 				GoPlural:         goPlural,
 				GoType:           goType,
 				GoTypePlural:     goTypePlural,
-				Values:           make(map[string]string),
 			}
 
 			td2.ReverseReferences = append(td2.ReverseReferences, &ref)

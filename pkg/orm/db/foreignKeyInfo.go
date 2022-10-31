@@ -19,7 +19,7 @@ type ForeignKeyInfo struct {
 	GoTypePlural string
 	// IsType is true if this is a related type
 	IsType bool
-	// RR is filled in by the analyzer and represent a reverse reference relationship
+	// RR is filled in by the analyzer and represents a reverse reference relationship
 	RR *ReverseReference
 }
 
@@ -58,21 +58,30 @@ const (
 
 func (a FKAction) String() string {
 	switch a {
-	case FKActionSetNull: return "Null"
-	case FKActionSetDefault: return "Default"
-	case FKActionCascade: return "Cascade"
-	case FKActionRestrict: return "Restrict"
-	default: return "" // None
+	case FKActionSetNull:
+		return "Null"
+	case FKActionSetDefault:
+		return "Default"
+	case FKActionCascade:
+		return "Cascade"
+	case FKActionRestrict:
+		return "Restrict"
+	default:
+		return "" // None
 	}
 }
 
 func FKActionFromString(s string) FKAction {
 	switch s {
-	case "Null": return FKActionSetNull
-	case "Default": return FKActionSetDefault
-	case "Cascade": return FKActionCascade
-	case "Restrict": return FKActionRestrict
-	default: return FKActionNone
+	case "Null":
+		return FKActionSetNull
+	case "Default":
+		return FKActionSetDefault
+	case "Cascade":
+		return FKActionCascade
+	case "Restrict":
+		return FKActionRestrict
+	default:
+		return FKActionNone
 	}
 }
-

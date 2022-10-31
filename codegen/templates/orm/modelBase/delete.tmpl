@@ -22,7 +22,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 if obj != nil {
                     obj.Delete(ctx)
                 }
-                o.{{= ref.Values["objName"] }} = nil
+                o.{{= oRef(ref) }} = nil
             }
             {{elseif ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
             {
@@ -34,7 +34,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                    obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
                    obj.Save(ctx)
                 }
-                o.{{= ref.Values["objName"] }} = nil
+                o.{{= oRef(ref) }} = nil
             }
             {{elseif ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
              {
@@ -56,7 +56,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                 for _,obj := range objs {
                     obj.Delete(ctx)
                 }
-                o.{{= ref.Values["objName"] }} = nil
+                o.{{= oRef(ref) }} = nil
             }
             {{elseif ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull}}
             {
@@ -68,7 +68,7 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
                    obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
                    obj.Save(ctx)
                 }
-                o.{{= ref.Values["objName"] }} = nil
+                o.{{= oRef(ref) }} = nil
             }
             {{elseif ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict}}
              {

@@ -909,7 +909,7 @@ func (o *personBase) update(ctx context.Context) {
 					obj.Save(ctx)
 				}
 			}
-			for _, obj := range o.oProjectsAsManager {
+			for _, obj := range o.mProjectsAsManager {
 				obj.SetManagerID(o.PrimaryKey())
 				obj.Save(ctx)
 			}
@@ -979,39 +979,31 @@ func (o *personBase) insert(ctx context.Context) {
 		o._originalPK = id
 
 		if o.oAddresses != nil {
-
 			o.mAddresses = make(map[string]*Address)
 			for _, obj := range o.oAddresses {
 				obj.SetPersonID(id)
 				obj.Save(ctx)
 				o.mAddresses[obj.PrimaryKey()] = obj
 			}
-
 		}
 
 		if o.oEmployeeInfo != nil {
-
 			o.oEmployeeInfo.SetPersonID(id)
 			o.oEmployeeInfo.Save(ctx)
-
 		}
 
 		if o.oLogin != nil {
-
 			o.oLogin.SetPersonID(id)
 			o.oLogin.Save(ctx)
-
 		}
 
 		if o.oProjectsAsManager != nil {
-
 			o.mProjectsAsManager = make(map[string]*Project)
 			for _, obj := range o.oProjectsAsManager {
 				obj.SetManagerID(id)
 				obj.Save(ctx)
 				o.mProjectsAsManager[obj.PrimaryKey()] = obj
 			}
-
 		}
 		if len(o.oPersonTypes) != 0 {
 			d.Associate(ctx,

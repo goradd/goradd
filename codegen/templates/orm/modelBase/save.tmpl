@@ -24,7 +24,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
     // Here we deal with forward references
     for _,col := range t.Columns {
         if col.IsReference() {
-            oName := objectPrefix + col.ReferenceFunction()
+            oName := oRef(col)
 
 }}
         if o.{{= oName }} != nil {
@@ -47,32 +47,32 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
         }
 
     {{for _,ref := range t.ReverseReferences }}
-        if o.{{= ref.Values["objName"]}}IsDirty {
+        if o.{{= objectPrefix}}{{if ref.IsUnique() }}{{= ref.GoName }}{{else}}{{= ref.GoPlural }}{{if}}IsDirty {
         {{if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull ||
                 (ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict && ref.IsNullable()) }}
             {{if ref.IsUnique()}}
                obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                         Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                         Get()
-               if obj != nil  && obj.PrimaryKey() != o.{{= ref.Values["objName"] }}.PrimaryKey() {
+               if obj != nil  && obj.PrimaryKey() != o.{{= oRef(ref) }}.PrimaryKey() {
                    obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
                    obj.Save(ctx)
                }
-               o.{{= ref.Values["objName"]}}.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
-               o.{{= ref.Values["objName"]}}.Save(ctx)
+               o.{{= oRef(ref) }}.Set{{= ref.AssociatedColumn.GoName }}(o.PrimaryKey())
+               o.{{= oRef(ref) }}.Save(ctx)
             {{else}}
                objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                           Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                           Load()
                // TODO:select only the required fields
                for _,obj := range objs {
-                  if _,ok := o.{{= ref.Values["mapName"] }}[obj.PrimaryKey()]; !ok {
+                  if _,ok := o.{{= mapPrefix + ref.GoPlural }}[obj.PrimaryKey()]; !ok {
                       // The old object is not in the group of new objects
                       obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
                       obj.Save(ctx)
                   }
                }
-               for _,obj := range o.{{= ref.Values["objName"] }} {
+               for _,obj := range o.{{= mapPrefix + ref.GoPlural }} {
                   obj.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
                   obj.Save(ctx)
                }
@@ -84,11 +84,11 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
                     obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                               Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                               Get()
-                    if obj != nil  && obj.PrimaryKey() != o.{{= ref.Values["objName"] }}.PrimaryKey() {
+                    if obj != nil  && obj.PrimaryKey() != o.{{= oRef(ref) }}.PrimaryKey() {
                         obj.Delete(ctx)
                     }
-                    o.{{= ref.Values["objName"]}}.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
-                    o.{{= ref.Values["objName"]}}.Save(ctx)
+                    o.{{= oRef(ref) }}.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
+                    o.{{= oRef(ref) }}.Save(ctx)
              {{else}}
                     // Since the other side of the relationship cannot be null, the objects to be detached must be deleted
                     // We take care to only delete objects that are not being reattached
@@ -97,12 +97,12 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
                                Load()
                     // TODO: select only the required fields
                     for _,obj := range objs {
-                       if _,ok := o.{{= ref.Values["mapName"] }}[obj.PrimaryKey()]; !ok {
+                       if _,ok := o.{{= mapPrefix + ref.GoPlural }}[obj.PrimaryKey()]; !ok {
                            // The old object is not in the group of new objects
                            obj.Delete(ctx)
                        }
                     }
-                    for _,obj := range o.{{= ref.Values["objName"] }} {
+                    for _,obj := range o.{{= oRef(ref) }} {
                        obj.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
                        obj.Save(ctx)
                     }
@@ -110,11 +110,11 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
         {{if}}
         } else {
         {{if ref.IsUnique()}}
-            if o.{{= ref.Values["objName"]}} != nil {
-                o.{{= ref.Values["objName"]}}.Save(ctx)
+            if o.{{= oRef(ref) }} != nil {
+                o.{{= oRef(ref) }}.Save(ctx)
             }
         {{else}}
-            for _,obj := range o.{{= ref.Values["objName"]}} {
+            for _,obj := range o.{{= oRef(ref) }} {
                 obj.Save(ctx)
             }
         {{if}}
@@ -122,7 +122,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
     {{for}} {{# Reverse References }}
     {{for _,ref := range t.ManyManyReferences }}
 {{g
-    oName := objectPrefix + ref.GoPlural
+    oName := oRef(ref)
 }}
     {{if ref.IsTypeAssociation}}
         if o.{{= oName }}IsDirty {
@@ -172,7 +172,7 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
     // Here we save forward references, get the id, and then set the corresponding foreign key
     for _,col := range t.Columns {
         if col.IsReference() {
-            oName := objectPrefix + col.ReferenceFunction()
+            oName := oRef(col)
 
 }}
     if o.{{= oName }} != nil {
@@ -204,24 +204,29 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
 	o._originalPK = id
 {{if}}
 {{for _,ref := range t.ReverseReferences }}
+{{g    oName := oRef(ref) }}
+
     {{# Nullable or not nullable, we do the same thing since there is no need to detach anything since this is new}}
-    if o.{{= ref.Values["objName"]}} != nil {
-    {{if ref.IsUnique()}}
-        o.{{= ref.Values["objName"]}}.Set{{= ref.AssociatedColumn.GoName}}(id)
-        o.{{= ref.Values["objName"]}}.Save(ctx)
-    {{else}}
-        o.{{= ref.Values["mapName"]}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
-        for _,obj := range o.{{= ref.Values["objName"]}} {
+{{if ref.IsUnique()}}
+
+    if o.{{= oName }} != nil {
+        o.{{= oName }}.Set{{= ref.AssociatedColumn.GoName}}(id)
+        o.{{= oName }}.Save(ctx)
+{{else}}
+{{g mName := mapPrefix + ref.GoPlural }}
+    if o.{{= oName }} != nil {
+        o.{{= mName }} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
+        for _,obj := range o.{{= oName }} {
             obj.Set{{= ref.AssociatedColumn.GoName}}(id)
             obj.Save(ctx)
-            o.{{= ref.Values["mapName"]}}[obj.PrimaryKey()] = obj
+            o.{{= mName }}[obj.PrimaryKey()] = obj
         }
-    {{if}}
+{{if}}
     }
 {{for}}
 {{for _,ref := range t.ManyManyReferences }}
 {{g
-    oName := objectPrefix + ref.GoPlural
+    oName := oRef(ref)
 }}
 {{if ref.IsTypeAssociation}}
     if len(o.{{= oName }}) != 0 {

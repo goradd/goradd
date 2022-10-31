@@ -62,7 +62,7 @@ func (o *{{privateName}}Base) {{= col.GoName }}_I() interface{} {
 	}
 
 	if col.IsReference() {
-		oName := objectPrefix + col.ReferenceFunction()
+		oName := oRef(col)
 
 {{
 
@@ -98,7 +98,7 @@ func (o *{{privateName}}Base) Load{{= col.ForeignKey.GoName }}(ctx context.Conte
 	if col.IsNullable {
 		var oName string
 		if col.IsReference() {
-			oName = objectPrefix + col.ReferenceFunction()
+			oName = oRef(col)
 		}
 {{
 
@@ -136,7 +136,7 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(i interface{}) {
 }}
 
 		if col.IsReference() {
-			oName := objectPrefix + col.ReferenceFunction()
+			oName := oRef(col)
 
 {{
 
@@ -177,7 +177,7 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.ColumnType.GoType()
 		o.{{= col.ModelName() }} = v
 		o.{{= col.ModelName() }}IsDirty = true
 {{if col.IsReference()}}
-		o.{{= objectPrefix + col.ReferenceFunction() }} = nil
+		o.{{= oRef(col) }} = nil
 {{if}}
 	}
 {{g } }}
@@ -188,7 +188,7 @@ func (o *{{privateName}}Base) Set{{= col.GoName }}(v {{= col.ColumnType.GoType()
 }}
 
 		if col.IsReference() {
-			oName := objectPrefix + col.ReferenceFunction()
+			oName := oRef(col)
 
 {{
 // Set{{= col.ForeignKey.GoName }} sets the value of {{= col.ForeignKey.GoName }} in the object, to be saved later using the Save() function.

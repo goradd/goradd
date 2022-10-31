@@ -5,15 +5,15 @@ func (o *{{privateName}}Base) resetDirtyStatus() {
 	o.{{= col.ModelName() }}IsDirty = false
 {{for}}
 {{for _,ref := range t.ReverseReferences }}
-	o.{{=  ref.Values["objName"] }}IsDirty = false
+	o.{{= oRef(ref) }}IsDirty = false
 {{for}}
 
 }
 
 func (o *{{privateName}}Base) IsDirty() bool {
     return {{join t.Columns, "|| \n"}}o.{{= _j.ModelName() }}IsDirty {{if _j.ReferenceFunction() != "" && !_j.IsType() }} ||
-	    (o.{{= objectPrefix + _j.ReferenceFunction() }} != nil && o.{{= objectPrefix + _j.ReferenceFunction() }}.IsDirty()) {{if}}{{join}}{{if len(t.ReverseReferences) > 0}} || {{if}}
-	    {{join t.ReverseReferences, "|| \n"}}o.{{= _j.Values["objName"]}}IsDirty{{join}}
+	    (o.{{= oRef(_j) }} != nil && o.{{= oRef(_j) }}.IsDirty()) {{if}}{{join}}{{if len(t.ReverseReferences) > 0}} || {{if}}
+	    {{join t.ReverseReferences, "|| \n"}}o.{{= oRef(_j) }}IsDirty{{join}}
 
 }
 

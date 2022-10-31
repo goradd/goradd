@@ -38,7 +38,7 @@ type projectBase struct {
 	managerIDIsNull  bool
 	managerIDIsValid bool
 	managerIDIsDirty bool
-	oManager         *Person
+	oManagerID       *Person
 
 	name        string
 	nameIsValid bool
@@ -268,7 +268,7 @@ func (o *projectBase) ManagerID_I() interface{} {
 
 // Manager returns the current value of the loaded Manager, and nil if its not loaded.
 func (o *projectBase) Manager() *Person {
-	return o.oManager
+	return o.oManagerID
 }
 
 // LoadManager returns the related Manager. If it is not already loaded,
@@ -278,11 +278,11 @@ func (o *projectBase) LoadManager(ctx context.Context) *Person {
 		return nil
 	}
 
-	if o.oManager == nil {
+	if o.oManagerID == nil {
 		// Load and cache
-		o.oManager = LoadPerson(ctx, o.ManagerID())
+		o.oManagerID = LoadPerson(ctx, o.ManagerID())
 	}
-	return o.oManager
+	return o.oManagerID
 }
 
 func (o *projectBase) SetManagerID(i interface{}) {
@@ -292,7 +292,7 @@ func (o *projectBase) SetManagerID(i interface{}) {
 			o.managerIDIsNull = true
 			o.managerIDIsDirty = true
 			o.managerID = ""
-			o.oManager = nil
+			o.oManagerID = nil
 		}
 	} else {
 		v := i.(string)
@@ -303,7 +303,7 @@ func (o *projectBase) SetManagerID(i interface{}) {
 			o.managerIDIsNull = false
 			o.managerID = v
 			o.managerIDIsDirty = true
-			o.oManager = nil
+			o.oManagerID = nil
 		}
 	}
 }
@@ -315,10 +315,10 @@ func (o *projectBase) SetManager(v *Person) {
 			o.managerIDIsNull = true
 			o.managerIDIsDirty = true
 			o.managerID = ""
-			o.oManager = nil
+			o.oManagerID = nil
 		}
 	} else {
-		o.oManager = v
+		o.oManagerID = v
 		if o.managerIDIsNull || !o._restored || o.managerID != v.PrimaryKey() {
 			o.managerIDIsNull = false
 			o.managerID = v.PrimaryKey()
@@ -1108,16 +1108,16 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 		o.managerID = ""
 	}
 	if v, ok := m["Manager"]; ok {
-		if oManager, ok2 := v.(map[string]interface{}); ok2 {
-			o.oManager = new(Person)
-			o.oManager.load(oManager, o.oManager, objThis, "ProjectsAsManager")
+		if oManagerID, ok2 := v.(map[string]interface{}); ok2 {
+			o.oManagerID = new(Person)
+			o.oManagerID.load(oManagerID, o.oManagerID, objThis, "ProjectsAsManager")
 			o.managerIDIsValid = true
 			o.managerIDIsDirty = false
 		} else {
-			panic("Wrong type found for oManager object.")
+			panic("Wrong type found for oManagerID object.")
 		}
 	} else {
-		o.oManager = nil
+		o.oManagerID = nil
 	}
 
 	if v, ok := m["name"]; ok && v != nil {
@@ -1323,9 +1323,9 @@ func (o *projectBase) update(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		if o.oManager != nil {
-			o.oManager.Save(ctx)
-			id := o.oManager.PrimaryKey()
+		if o.oManagerID != nil {
+			o.oManagerID.Save(ctx)
+			id := o.oManagerID.PrimaryKey()
 			o.SetManagerID(id)
 		}
 
@@ -1436,9 +1436,9 @@ func (o *projectBase) update(ctx context.Context) {
 func (o *projectBase) insert(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
-		if o.oManager != nil {
-			o.oManager.Save(ctx)
-			o.SetManager(o.oManager)
+		if o.oManagerID != nil {
+			o.oManagerID.Save(ctx)
+			o.SetManager(o.oManagerID)
 		}
 
 		if !o.numIsValid {
@@ -1460,14 +1460,12 @@ func (o *projectBase) insert(ctx context.Context) {
 		o._originalPK = id
 
 		if o.oMilestones != nil {
-
 			o.mMilestones = make(map[string]*Milestone)
 			for _, obj := range o.oMilestones {
 				obj.SetProjectID(id)
 				obj.Save(ctx)
 				o.mMilestones[obj.PrimaryKey()] = obj
 			}
-
 		}
 		{
 			var pks []string
@@ -1758,7 +1756,7 @@ func (o *projectBase) IsDirty() bool {
 		o.numIsDirty ||
 		o.statusTypeIDIsDirty ||
 		o.managerIDIsDirty ||
-		(o.oManager != nil && o.oManager.IsDirty()) ||
+		(o.oManagerID != nil && o.oManagerID.IsDirty()) ||
 		o.nameIsDirty ||
 		o.descriptionIsDirty ||
 		o.startDateIsDirty ||
@@ -1908,7 +1906,7 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if o.oManager == nil {
+	if o.oManagerID == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
 		}
@@ -1916,7 +1914,7 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(true); err != nil {
 			return nil, err
 		}
-		if err := encoder.Encode(o.oManager); err != nil {
+		if err := encoder.Encode(o.oManagerID); err != nil {
 			return nil, err
 		}
 	}
@@ -2123,7 +2121,7 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
-		if err = dec.Decode(&o.oManager); err != nil {
+		if err = dec.Decode(&o.oManagerID); err != nil {
 			return
 		}
 	}

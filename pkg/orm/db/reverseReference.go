@@ -25,8 +25,6 @@ type ReverseReference struct {
 	GoType string
 	// GoTypePlural is the plural of the type of object in the collection of "many" objects
 	GoTypePlural string
-	// Values are freeform values available to the code generation process
-	Values map[string]string
 }
 
 // AssociatedGoName returns the name of the column that is pointing back to us. The name returned
@@ -53,7 +51,4 @@ func (r *ReverseReference) AssociatedTableName() string {
 
 func (r *ReverseReference) AssociatedPkType() string {
 	return r.AssociatedTable.PrimaryKeyColumn().ColumnType.GoType()
-
 }
-
-

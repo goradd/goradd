@@ -10,6 +10,13 @@ import (
 	"fmt"
 )
 
+// global variable setting
+{{: "modelBase/vars.tmpl" }}
+
+// support functions
+{{: "modelBase/funcs.tmpl" }}
+
+
 func init() {
 	t := ModelBaseTemplate {
 		generator.Template {

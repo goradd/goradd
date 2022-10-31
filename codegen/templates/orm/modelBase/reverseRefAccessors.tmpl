@@ -1,8 +1,7 @@
 //reverseRefAccessors.tmpl
 for _,ref := range t.ReverseReferences {
-	oName := ref.Values["objName"]
-	mName := ref.Values["mapName"]
 	associatedGoName := ref.AssociatedGoName()
+	oName := oRef(ref)
 
 	if ref.IsUnique() {
 {{
@@ -49,6 +48,7 @@ func (o *{{privateName}}Base) Set{{= ref.GoName }}(obj *{{= ref.GoType }}) {
 
 }}
 	} else { // Unique
+    	mName := mapPrefix + ref.GoPlural
 
 {{
 // {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.

@@ -28,7 +28,7 @@ type loginBase struct {
 	personIDIsNull  bool
 	personIDIsValid bool
 	personIDIsDirty bool
-	oPerson         *Person
+	oPersonID       *Person
 
 	username        string
 	usernameIsValid bool
@@ -154,7 +154,7 @@ func (o *loginBase) PersonID_I() interface{} {
 
 // Person returns the current value of the loaded Person, and nil if its not loaded.
 func (o *loginBase) Person() *Person {
-	return o.oPerson
+	return o.oPersonID
 }
 
 // LoadPerson returns the related Person. If it is not already loaded,
@@ -164,11 +164,11 @@ func (o *loginBase) LoadPerson(ctx context.Context) *Person {
 		return nil
 	}
 
-	if o.oPerson == nil {
+	if o.oPersonID == nil {
 		// Load and cache
-		o.oPerson = LoadPerson(ctx, o.PersonID())
+		o.oPersonID = LoadPerson(ctx, o.PersonID())
 	}
-	return o.oPerson
+	return o.oPersonID
 }
 
 func (o *loginBase) SetPersonID(i interface{}) {
@@ -178,7 +178,7 @@ func (o *loginBase) SetPersonID(i interface{}) {
 			o.personIDIsNull = true
 			o.personIDIsDirty = true
 			o.personID = ""
-			o.oPerson = nil
+			o.oPersonID = nil
 		}
 	} else {
 		v := i.(string)
@@ -189,7 +189,7 @@ func (o *loginBase) SetPersonID(i interface{}) {
 			o.personIDIsNull = false
 			o.personID = v
 			o.personIDIsDirty = true
-			o.oPerson = nil
+			o.oPersonID = nil
 		}
 	}
 }
@@ -201,10 +201,10 @@ func (o *loginBase) SetPerson(v *Person) {
 			o.personIDIsNull = true
 			o.personIDIsDirty = true
 			o.personID = ""
-			o.oPerson = nil
+			o.oPersonID = nil
 		}
 	} else {
-		o.oPerson = v
+		o.oPersonID = v
 		if o.personIDIsNull || !o._restored || o.personID != v.PrimaryKey() {
 			o.personIDIsNull = false
 			o.personID = v.PrimaryKey()
@@ -661,16 +661,16 @@ func (o *loginBase) load(m map[string]interface{}, objThis *Login, objParent int
 		o.personID = ""
 	}
 	if v, ok := m["Person"]; ok {
-		if oPerson, ok2 := v.(map[string]interface{}); ok2 {
-			o.oPerson = new(Person)
-			o.oPerson.load(oPerson, o.oPerson, objThis, "Logins")
+		if oPersonID, ok2 := v.(map[string]interface{}); ok2 {
+			o.oPersonID = new(Person)
+			o.oPersonID.load(oPersonID, o.oPersonID, objThis, "Logins")
 			o.personIDIsValid = true
 			o.personIDIsDirty = false
 		} else {
-			panic("Wrong type found for oPerson object.")
+			panic("Wrong type found for oPersonID object.")
 		}
 	} else {
-		o.oPerson = nil
+		o.oPersonID = nil
 	}
 
 	if v, ok := m["username"]; ok && v != nil {
@@ -737,9 +737,9 @@ func (o *loginBase) update(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		if o.oPerson != nil {
-			o.oPerson.Save(ctx)
-			id := o.oPerson.PrimaryKey()
+		if o.oPersonID != nil {
+			o.oPersonID.Save(ctx)
+			id := o.oPersonID.PrimaryKey()
 			o.SetPersonID(id)
 		}
 
@@ -763,9 +763,9 @@ func (o *loginBase) update(ctx context.Context) {
 func (o *loginBase) insert(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
-		if o.oPerson != nil {
-			o.oPerson.Save(ctx)
-			o.SetPerson(o.oPerson)
+		if o.oPersonID != nil {
+			o.oPersonID.Save(ctx)
+			o.SetPerson(o.oPersonID)
 		}
 
 		if !o.usernameIsValid {
@@ -884,7 +884,7 @@ func (o *loginBase) resetDirtyStatus() {
 func (o *loginBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.personIDIsDirty ||
-		(o.oPerson != nil && o.oPerson.IsDirty()) ||
+		(o.oPersonID != nil && o.oPersonID.IsDirty()) ||
 		o.usernameIsDirty ||
 		o.passwordIsDirty ||
 		o.isEnabledIsDirty
@@ -965,7 +965,7 @@ func (o *loginBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if o.oPerson == nil {
+	if o.oPersonID == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
 		}
@@ -973,7 +973,7 @@ func (o *loginBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(true); err != nil {
 			return nil, err
 		}
-		if err := encoder.Encode(o.oPerson); err != nil {
+		if err := encoder.Encode(o.oPersonID); err != nil {
 			return nil, err
 		}
 	}
@@ -1068,7 +1068,7 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
-		if err = dec.Decode(&o.oPerson); err != nil {
+		if err = dec.Decode(&o.oPersonID); err != nil {
 			return
 		}
 	}

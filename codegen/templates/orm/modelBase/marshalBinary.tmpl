@@ -25,7 +25,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
     }
 
 {{if col.IsReference() }}
-    if o.{{= objectPrefix + col.ReferenceFunction()}} == nil {
+    if o.{{= oRef(col) }} == nil {
         if err := encoder.Encode(false); err != nil {
             return nil, err
         }
@@ -33,7 +33,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
         if err := encoder.Encode(true); err != nil {
             return nil, err
         }
-        if err := encoder.Encode(o.{{= objectPrefix + col.ReferenceFunction()}}); err != nil {
+        if err := encoder.Encode(o.{{= oRef(col) }}); err != nil {
             return nil, err
         }
     }
@@ -139,7 +139,7 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
         return
     }
     if isPtr {
-        if err = dec.Decode(&o.{{= objectPrefix + col.ReferenceFunction() }}); err != nil {
+        if err = dec.Decode(&o.{{= oRef(col) }}); err != nil {
             return
         }
     }

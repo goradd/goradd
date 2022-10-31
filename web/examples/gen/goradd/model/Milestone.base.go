@@ -27,7 +27,7 @@ type milestoneBase struct {
 	projectID        string
 	projectIDIsValid bool
 	projectIDIsDirty bool
-	oProject         *Project
+	oProjectID       *Project
 
 	name        string
 	nameIsValid bool
@@ -112,7 +112,7 @@ func (o *milestoneBase) ProjectIDIsValid() bool {
 
 // Project returns the current value of the loaded Project, and nil if its not loaded.
 func (o *milestoneBase) Project() *Project {
-	return o.oProject
+	return o.oProjectID
 }
 
 // LoadProject returns the related Project. If it is not already loaded,
@@ -122,11 +122,11 @@ func (o *milestoneBase) LoadProject(ctx context.Context) *Project {
 		return nil
 	}
 
-	if o.oProject == nil {
+	if o.oProjectID == nil {
 		// Load and cache
-		o.oProject = LoadProject(ctx, o.ProjectID())
+		o.oProjectID = LoadProject(ctx, o.ProjectID())
 	}
-	return o.oProject
+	return o.oProjectID
 }
 
 // SetProjectID sets the value of ProjectID in the object, to be saved later using the Save() function.
@@ -135,7 +135,7 @@ func (o *milestoneBase) SetProjectID(v string) {
 	if o.projectID != v || !o._restored {
 		o.projectID = v
 		o.projectIDIsDirty = true
-		o.oProject = nil
+		o.oProjectID = nil
 	}
 
 }
@@ -145,7 +145,7 @@ func (o *milestoneBase) SetProject(v *Project) {
 	if v == nil {
 		panic("Cannot set Project to a null value.")
 	} else {
-		o.oProject = v
+		o.oProjectID = v
 		o.projectIDIsValid = true
 		if o.projectID != v.PrimaryKey() {
 			o.projectID = v.PrimaryKey()
@@ -467,16 +467,16 @@ func (o *milestoneBase) load(m map[string]interface{}, objThis *Milestone, objPa
 	}
 
 	if v, ok := m["Project"]; ok {
-		if oProject, ok2 := v.(map[string]interface{}); ok2 {
-			o.oProject = new(Project)
-			o.oProject.load(oProject, o.oProject, objThis, "Milestones")
+		if oProjectID, ok2 := v.(map[string]interface{}); ok2 {
+			o.oProjectID = new(Project)
+			o.oProjectID.load(oProjectID, o.oProjectID, objThis, "Milestones")
 			o.projectIDIsValid = true
 			o.projectIDIsDirty = false
 		} else {
-			panic("Wrong type found for oProject object.")
+			panic("Wrong type found for oProjectID object.")
 		}
 	} else {
-		o.oProject = nil
+		o.oProjectID = nil
 	}
 
 	if v, ok := m["name"]; ok && v != nil {
@@ -513,9 +513,9 @@ func (o *milestoneBase) update(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		if o.oProject != nil {
-			o.oProject.Save(ctx)
-			id := o.oProject.PrimaryKey()
+		if o.oProjectID != nil {
+			o.oProjectID.Save(ctx)
+			id := o.oProjectID.PrimaryKey()
 			o.SetProjectID(id)
 		}
 
@@ -539,9 +539,9 @@ func (o *milestoneBase) update(ctx context.Context) {
 func (o *milestoneBase) insert(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
-		if o.oProject != nil {
-			o.oProject.Save(ctx)
-			o.SetProject(o.oProject)
+		if o.oProjectID != nil {
+			o.oProjectID.Save(ctx)
+			o.SetProject(o.oProjectID)
 		}
 
 		if !o.projectIDIsValid {
@@ -626,7 +626,7 @@ func (o *milestoneBase) resetDirtyStatus() {
 func (o *milestoneBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.projectIDIsDirty ||
-		(o.oProject != nil && o.oProject.IsDirty()) ||
+		(o.oProjectID != nil && o.oProjectID.IsDirty()) ||
 		o.nameIsDirty
 
 }
@@ -690,7 +690,7 @@ func (o *milestoneBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if o.oProject == nil {
+	if o.oProjectID == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
 		}
@@ -698,7 +698,7 @@ func (o *milestoneBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(true); err != nil {
 			return nil, err
 		}
-		if err := encoder.Encode(o.oProject); err != nil {
+		if err := encoder.Encode(o.oProjectID); err != nil {
 			return nil, err
 		}
 	}
@@ -767,7 +767,7 @@ func (o *milestoneBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
-		if err = dec.Decode(&o.oProject); err != nil {
+		if err = dec.Decode(&o.oProjectID); err != nil {
 			return
 		}
 	}
