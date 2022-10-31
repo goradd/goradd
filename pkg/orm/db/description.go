@@ -4,8 +4,6 @@ package db
 // DB object that is used internally by GoRADD to access the database. DatabaseDescription should be able to be
 // inferred by reading the structure of SQL databases, or read directly from an import file.
 type DatabaseDescription struct {
-	// The database key corresponding to its key in the global database cluster
-	Key string
 	// Tables are the tables in the database
 	Tables []TableDescription
 	// MM are the many-to-many links between tables. In SQL databases, these are actual tables,

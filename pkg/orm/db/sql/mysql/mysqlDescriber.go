@@ -553,7 +553,7 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable) db.DatabaseDescription {
 
-	dd := db.DatabaseDescription{Key: m.DbKey(), AssociatedObjectPrefix: m.AssociatedObjectPrefix()}
+	dd := db.DatabaseDescription{AssociatedObjectPrefix: m.AssociatedObjectPrefix()}
 
 	keys := stringmap.SortedKeys(rawTables)
 	for _, tableName := range keys {
