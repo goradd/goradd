@@ -72,7 +72,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
                       obj.Save(ctx)
                   }
                }
-               for _,obj := range o.{{= mapPrefix + ref.GoPlural }} {
+               for _,obj := range o.{{= oRef(ref) }} {
                   obj.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
                   obj.Save(ctx)
                }
