@@ -24,12 +24,15 @@ import (
 //
 // Timezones
 // Timezones are always tricky. Mysql has some interesting quirks:
-//  - Datetime types are internally stored in the timezone of the server, and then returned based on the
+//   - Datetime types are internally stored in the timezone of the server, and then returned based on the
+//
 // timezone of the client.
-//  - Timestamp types are internally stored in UTC and returned in the timezone of the client.
+//   - Timestamp types are internally stored in UTC and returned in the timezone of the client.
+//
 // The benefit of this is that you can move your database
 // to a server in another timezone, and the times will automatically change to the correct timezone.
-//  - The mysql-go-driver has the ability to set a default timezone in the Loc configuration parameter
+//   - The mysql-go-driver has the ability to set a default timezone in the Loc configuration parameter
+//
 // It appears to convert all times to this timezone before sending them
 // to the database, and then when receiving times, it will set this as the timezone of the date.
 //
@@ -79,12 +82,6 @@ func NewMysqlDB(dbKey string, params string, config *mysql.Config) *DB {
 	}
 	if params == "" {
 		params = config.FormatDSN()
-	} else {
-		var err error
-		config, err = mysql.ParseDSN(params)
-		if err != nil {
-			panic("could not parse the connection string")
-		}
 	}
 
 	db3, err := sqldb.Open("mysql", params)
@@ -93,7 +90,7 @@ func NewMysqlDB(dbKey string, params string, config *mysql.Config) *DB {
 	}
 	err = db3.Ping()
 	if err != nil {
-		panic("Could not ping database: " + err.Error())
+		panic("Could not ping database " + dbKey + ":" + err.Error())
 	}
 
 	m := DB{
