@@ -8,7 +8,6 @@ builderName := t.GoPlural + "Builder"
 // End a query by calling either Load, Count, or Delete
 type {{builderName}} struct {
 	builder query.QueryBuilderI
-	hasConditionalJoins bool
 }
 
 func new{{t.GoName}}Builder(ctx context.Context) *{{builderName}} {
@@ -113,9 +112,6 @@ func (b *{{builderName}}) Join(n query.NodeI, conditions... query.NodeI) *{{buil
 		condition = conditions[0]
 	}
 	b.builder.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
 	return b
 }
 
