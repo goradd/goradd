@@ -71,6 +71,12 @@ func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.GoType}} {
 
 // Load{{ref.GoPlural}} loads a new slice of {{ref.GoType}} objects and returns it.
 func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, conditions ...interface{}) []*{{ref.GoType}} {
+    for _,obj := range o.{{oName}} {
+        if obj.IsDirty() {
+            panic("You cannot load over items that have changed but have not been saved.")
+        }
+    }
+
 	qb := query{{ref.GoTypePlural}}(ctx)
 	cond := Equal(node.{{= ref.GoType }}().{{= associatedGoName }}(), o.PrimaryKey())
 	if conditions != nil {
