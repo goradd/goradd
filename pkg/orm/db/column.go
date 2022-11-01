@@ -8,12 +8,12 @@ import (
 )
 
 const (
-	currentTime           = "now"
+	currentTime = "now"
 )
 
 // Column describes a database column. Most of the information is either
 // gleaned from the structure of the database, or is taken from a file that describes the relationships between
-// different record types. Some of the information is filled in after analysis. Some of the information can be
+// different record types. Some information is filled in after analysis. Some information can be
 // provided through information embedded in database comments.
 type Column struct {
 	// DbName is the name of the column in the database. This is blank if this is a "virtual" table for sql tables like an association or virtual attribute query.
@@ -45,7 +45,7 @@ type Column struct {
 	IsUnique bool
 	// IsTimestamp is true if the field is a timestamp. Timestamps represent a specific point in world time.
 	IsTimestamp bool
-	// IsAutoUpdateTimestamp is true if the database is updating the timestamp. Otherwise we will do it manually.
+	// IsAutoUpdateTimestamp is true if the database is updating the timestamp. Otherwise, we will do it manually.
 	IsAutoUpdateTimestamp bool
 	// IsDateOnly indicates that we have a datetime type of column that should only be concerned about the date
 	IsDateOnly bool
@@ -55,15 +55,13 @@ type Column struct {
 	Comment string
 
 	// Filled in by analyzer
+
 	// Options are the options extracted from the comments string
 	Options map[string]interface{}
 	// ForeignKey is additional information describing a foreign key relationship
 	ForeignKey *ForeignKeyInfo
-
 	// modelName is a cache for the internal model name of this column.
 	modelName string
-	// referenceName is a cache for the internal referenced object if this is a forward reference (foreign key to non-type table)
-	referenceName string
 	// referenceFunction is a cache for the name of the function to call to get to the referenced object. This will work for referenced types too.
 	referenceFunction string
 }
@@ -72,13 +70,6 @@ type Column struct {
 func (cd *Column) ModelName() string {
 	return cd.modelName
 }
-
-// ReferenceName returns the name of the referenced object if this is a forward reference.
-func (cd *Column) ReferenceName() string {
-	return cd.referenceName
-}
-
-
 
 // DefaultConstantName returns the name of the default value constant that will be used to refer to the default value
 func (cd *Column) DefaultConstantName(tableName string) string {
@@ -139,13 +130,12 @@ func (cd *Column) ConvertFromString(varName string) string {
 	case ColTypeString:
 		return varName
 	case ColTypeInteger:
-		return fmt.Sprintf("func() int {i,_ := strconv.Atoi(%s); return i}()",varName)
+		return fmt.Sprintf("func() int {i,_ := strconv.Atoi(%s); return i}()", varName)
 	case ColTypeInteger64:
-		return fmt.Sprintf("func() int64 {i,_ := strconv.Atoi(%s); return int64(i)}()",varName)
+		return fmt.Sprintf("func() int64 {i,_ := strconv.Atoi(%s); return int64(i)}()", varName)
 	default:
 		panic("Not yet implemented. Implement this conversion.")
 	}
-	return cd.modelName
 }
 
 // JsonKey returns the key used for the column when outputting JSON.
@@ -163,7 +153,6 @@ func (cd *Column) IsType() bool {
 	return cd.ForeignKey != nil && cd.ForeignKey.IsType
 }
 
-
 // ReferenceFunction returns the function name that should be used to refer to the object
 // that is referred to by a forward reference. It is extracted from the name of foreign key.
 func (cd *Column) ReferenceFunction() string {
@@ -179,4 +168,3 @@ func (cd *Column) ReferenceJsonKey(dd *Database) string {
 func (cd *Column) GoType() string {
 	return cd.ColumnType.GoType()
 }
-

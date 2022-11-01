@@ -1,0 +1,28 @@
+// funcs.tmpl
+
+// Functions used by the other templates. Override this template to customize.
+
+// oRef returns the internal object name of a reference to a foreign object.
+func oRef(obj any) string {
+    switch r := obj.(type) {
+    case *db.ReverseReference:
+        if r.IsUnique() {
+            return objectPrefix + r.GoName
+        } else {
+            return objectPrefix + r.GoPlural
+        }
+    case *db.ManyManyReference:
+        return objectPrefix + r.GoPlural
+    case *db.Column:
+        if !r.IsReference() || r.ForeignKey == nil {
+            panic("not a reference")
+        }
+        if r.IsType() {
+            panic("type tables do not store a reference")
+        }
+        return objectPrefix + r.GoName
+    }
+    return ""
+}
+
+

@@ -114,7 +114,6 @@ func TestUniqueReverse(t *testing.T) {
 	assert.Equal(t, "jdoe", person.Login().Username())
 }
 
-
 // TestReverseReferenceManySave is testing save and delete for a reverse reference that cannot be null.
 func TestReverseReferenceManySave(t *testing.T) {
 	ctx := getContext()
@@ -203,4 +202,14 @@ func TestReverseReferenceCount(t *testing.T) {
 	ct := person.CountAddresses(ctx)
 	assert.Equal(t, 2, ct)
 
+}
+
+func TestReverseLoad(t *testing.T) {
+	ctx := getContext()
+
+	project := model.LoadProject(ctx, "1")
+	project.LoadMilestones(ctx)
+	milestone := project.Milestone("3")
+	assert.NotNil(t, milestone)
+	assert.Equal(t, "3", milestone.ID())
 }

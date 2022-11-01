@@ -53,7 +53,7 @@ for _, col := range t.Columns {
 	} // else
 
 	if col.IsReference() {
-		oName := col.ReferenceName()
+		oName := oRef(col)
 
 {{
 	if v, ok := m["{{= col.ForeignKey.GoName }}"]; ok {
@@ -79,7 +79,7 @@ for _, col := range t.Columns {
 
 // Many-Many references
 for _,ref := range t.ManyManyReferences {
-	oName := dd.AssociatedObjectPrefix + ref.GoPlural
+	oName := oRef(ref)
 
 	if ref.IsTypeAssociation {
 
@@ -128,8 +128,10 @@ for _,ref := range t.ManyManyReferences {
 // Reverse references
 for _,ref := range t.ReverseReferences {
 	parentName := ref.AssociatedColumn.ForeignKey.GoName
-	oName := ref.Values["objName"]
+    oName := oRef(ref)
+
 	if ref.IsUnique() {
+
 {{
 	if v, ok := m["{{= ref.GoName }}"]; ok {
 		if {{oName}}, ok2 := v.(db.ValueMap); ok2 {
@@ -147,7 +149,7 @@ for _,ref := range t.ReverseReferences {
 }}
 
 	} else {
-		mName := ref.Values["mapName"]
+		mName := mapPrefix + ref.GoPlural
 
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {

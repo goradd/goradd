@@ -44,8 +44,8 @@ type ProfileEntry struct {
 // database profiling, or anything else the context is required for. The framework does this for you, but you will need
 // to do this yourself if using the orm without the framework.
 type sqlContext struct {
-	tx      *sql.Tx
-	txCount int // Keeps track of when to close a transaction
+	tx       *sql.Tx
+	txCount  int // Keeps track of when to close a transaction
 	profiles []ProfileEntry
 }
 
@@ -59,9 +59,6 @@ type DbHelper struct {
 	associationTableSuffix string // Primarily for sql tables
 	idSuffix               string // suffix to strip off the ends of names of foreign keys when converting them to internal names
 
-	// These codegen options may be moved higher up in hierarchy some day
-	associatedObjectPrefix string // Helps differentiate between objects and local values
-
 	profiling bool
 }
 
@@ -69,7 +66,7 @@ type DbHelper struct {
 func NewSqlDb(dbKey string, db *sql.DB) DbHelper {
 	s := DbHelper{
 		dbKey:                  dbKey,
-		db: db,
+		db:                     db,
 		typeTableSuffix:        "_type",
 		associationTableSuffix: "_assn",
 		idSuffix:               "_id",
@@ -258,16 +255,6 @@ func (s *DbHelper) AssociationTableSuffix() string {
 	return s.associationTableSuffix
 }
 
-// SetAssociatedObjectPrefix sets the prefix string used in code generation to indicate a variable is a database object.
-func (s *DbHelper) SetAssociatedObjectPrefix(prefix string) {
-	s.associatedObjectPrefix = prefix
-}
-
-// AssociatedObjectPrefix returns the prefix string used in code generation to indicate a variable is a database object.
-func (s *DbHelper) AssociatedObjectPrefix() string {
-	return s.associatedObjectPrefix
-}
-
 // IdSuffix is the suffix used to indicate that a field is a foreign ky to another table.
 func (s *DbHelper) IdSuffix() string {
 	return s.idSuffix
@@ -283,12 +270,10 @@ func (s *DbHelper) SqlDb() *sql.DB {
 	return s.db
 }
 
-
 // StartProfiling will start the database profiling process.
 func (s *DbHelper) StartProfiling() {
 	s.profiling = true
 }
-
 
 // GetProfiles returns currently collected profile information
 // TODO: Move profiles to a session variable so we can access ajax queries too

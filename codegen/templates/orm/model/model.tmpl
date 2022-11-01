@@ -16,14 +16,14 @@ type {{= t.GoName }} struct {
 	{{= strings2.LcFirst(t.GoName) }}Base
 }
 
-// Create a new {{= t.GoName }} object and initialize to default values.
+// New{{= t.GoName }} creates a new {{= t.GoName }} object and initializes it to default values.
 func New{{= t.GoName }}() *{{= t.GoName }} {
 	o := new({{= t.GoName }})
 	o.Initialize()
 	return o
 }
 
-// Initialize or re-initialize a {{= t.GoName }} database object to default values.
+// Initialize will initialize or re-initialize a {{= t.GoName }} database object to default values.
 func (o *{{= t.GoName }}) Initialize() {
 	o.{{= strings2.LcFirst(t.GoName) }}Base.Initialize()
     // Add your own initializations here

@@ -1,8 +1,7 @@
 //reverseRefAccessors.tmpl
 for _,ref := range t.ReverseReferences {
-	oName := ref.Values["objName"]
-	mName := ref.Values["mapName"]
 	associatedGoName := ref.AssociatedGoName()
+	oName := oRef(ref)
 
 	if ref.IsUnique() {
 {{
@@ -49,6 +48,7 @@ func (o *{{privateName}}Base) Set{{= ref.GoName }}(obj *{{= ref.GoType }}) {
 
 }}
 	} else { // Unique
+    	mName := mapPrefix + ref.GoPlural
 
 {{
 // {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.
@@ -71,6 +71,12 @@ func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.GoType}} {
 
 // Load{{ref.GoPlural}} loads a new slice of {{ref.GoType}} objects and returns it.
 func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, conditions ...interface{}) []*{{ref.GoType}} {
+    for _,obj := range o.{{oName}} {
+        if obj.IsDirty() {
+            panic("You cannot load over items that have changed but have not been saved.")
+        }
+    }
+
 	qb := query{{ref.GoTypePlural}}(ctx)
 	cond := Equal(node.{{= ref.GoType }}().{{= associatedGoName }}(), o.PrimaryKey())
 	if conditions != nil {
@@ -79,6 +85,13 @@ func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, condi
 	}
 
 	o.{{oName}} = qb.Where(cond).Load()
+
+    o.{{mName}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
+    for _,obj := range o.{{oName}} {
+        pk := obj.{{= ref.AssociatedTable.PrimaryKeyColumn().GoName}}()
+        o.{{mName}}[pk] = obj
+    }
+
 	return o.{{oName}}
 }
 

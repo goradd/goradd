@@ -30,13 +30,9 @@ type Database struct {
 	Tables []*Table
 	// TypeTables contains a description of the enumerated types from the type tables in the database
 	TypeTables []*TypeTable
-	// AssociatedObjectPrefix is a prefix placed in front of generated object names. Defaults to "o".
-	AssociatedObjectPrefix string
 
 	// Text to strip off the end of foreign key references when converting to names. Defaults to "_id"
 	ForeignKeySuffix string
-
-	// These items are filled in by analysis
 
 	// tableMap is used to get to tables by internal name
 	tableMap map[string]*Table
@@ -47,23 +43,19 @@ type Database struct {
 // NewDatabase creates a new Database object from the given DatabaseDescription object.
 func NewDatabase(dbKey string, foreignKeySuffix string, desc DatabaseDescription) *Database {
 	d := Database{
-		DbKey:                  dbKey,
-		AssociatedObjectPrefix: desc.AssociatedObjectPrefix,
-		ForeignKeySuffix:       foreignKeySuffix,
+		DbKey:            dbKey,
+		ForeignKeySuffix: foreignKeySuffix,
 	}
 	d.analyze(desc)
 	return &d
 }
 
-// Given a database description, analyze will perform an analysis of the database, and modify some of the fields to prepare
+// Given a database description, analyze will perform an analysis of the database, and modify some fields to prepare
 // the description for use in codegen and the orm
 func (d *Database) analyze(desc DatabaseDescription) {
 
 	d.typeTableMap = make(map[string]*TypeTable)
 	d.tableMap = make(map[string]*Table)
-	if d.AssociatedObjectPrefix == "" {
-		d.AssociatedObjectPrefix = "o"
-	}
 
 	// deal with type tables first
 	for _, table := range desc.Tables {
@@ -315,7 +307,6 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 				GoPlural:         goPlural,
 				GoType:           goType,
 				GoTypePlural:     goTypePlural,
-				Values:           make(map[string]string),
 			}
 
 			td2.ReverseReferences = append(td2.ReverseReferences, &ref)
@@ -492,7 +483,6 @@ func (d *Database) analyzeForeignKey(t *Table, cd ColumnDescription) {
 			if fkc.IsId {
 				c.ColumnType = ColTypeString // Always use strings to refer to auto-generated ids for cross database compatibility
 			}
-			c.referenceName = d.AssociatedObjectPrefix + f.GoName
 			c.referenceFunction = f.GoName
 		}
 		c.ForeignKey = f
