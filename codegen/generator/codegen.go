@@ -26,6 +26,7 @@ type CodeGenerator struct {
 	// TypeTables is a map of the type tables by database
 	TypeTables map[string]map[string]TypeTableType
 
+	// importAliasesByPath stores import paths by package name to help correctly manage packages with the same name
 	importAliasesByPath map[string]string
 }
 
@@ -83,7 +84,6 @@ func (t *TableType) ControlDescription(ref interface{}) *ControlDescription {
 }
 
 func Generate() {
-
 	codegen := CodeGenerator{
 		Tables:     make(map[string]map[string]TableType),
 		TypeTables: make(map[string]map[string]TypeTableType),

@@ -26,10 +26,6 @@ type ManyManyReference struct {
 	MM *ManyManyReference
 }
 
-func (m *ManyManyReference) ObjName(dd *Database) string {
-	return dd.AssociatedObjectPrefix + m.GoPlural
-}
-
 func (m *ManyManyReference) JsonKey(dd *Database) string {
 	return LowerCaseIdentifier(m.GoPlural)
 }

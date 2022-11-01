@@ -16,6 +16,7 @@ const tableAliasPrefix = "t_"
 
 type objectMapType = maps.SliceMap[string, any]
 type aliasMapType = maps.SliceMap[string, any]
+type JoinTreeItemSliceMap = maps.SliceMap[string, *JoinTreeItem]
 
 // A Builder is a helper object to organize a Query object eventually into a SQL string.
 // It builds the join tree and creates the aliases that will eventually be used to generate
@@ -48,8 +49,8 @@ type Builder struct {
 func NewSqlBuilder(ctx context.Context, db DbI) *Builder {
 	b := &Builder{
 		db:            db,
-		ColumnAliases: NewJoinTreeItemSliceMap(),
-		TableAliases:  NewJoinTreeItemSliceMap(),
+		ColumnAliases: new(JoinTreeItemSliceMap),
+		TableAliases:  new(JoinTreeItemSliceMap),
 		NodeMap:       make(map[NodeI]*JoinTreeItem),
 	}
 	b.QueryBuilder.Init(ctx)
@@ -521,7 +522,7 @@ func (b *Builder) unpackResult(rows []map[string]interface{}) (out []map[string]
 	// First we create a tree structure of the data that will mirror the node structure
 	for _, row := range rows {
 		rowId := b.unpackObject(b.RootJoinTreeItem, row, oMap)
-		b.unpackSpecialAliases(b.RootJoinTreeItem, rowId, row, aliasMap)
+		b.unpackSpecialAliases(rowId, row, aliasMap)
 	}
 
 	// We then walk the tree and create the final data structure as arrays
@@ -850,7 +851,7 @@ func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray
 }
 
 // unpack the manually aliased items from the result
-func (b *Builder) unpackSpecialAliases(rootItem *JoinTreeItem, rowId string, row db2.ValueMap, aliasMap *aliasMapType) {
+func (b *Builder) unpackSpecialAliases(rowId string, row db2.ValueMap, aliasMap *aliasMapType) {
 	var obj db2.ValueMap
 
 	if curObj := aliasMap.Get(rowId); curObj != nil {
