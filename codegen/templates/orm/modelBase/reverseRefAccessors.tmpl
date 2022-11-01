@@ -79,6 +79,13 @@ func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, condi
 	}
 
 	o.{{oName}} = qb.Where(cond).Load()
+
+    o.{{mName}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
+    for _,obj := range o.{{oName}} {
+        pk := obj.{{= ref.AssociatedTable.PrimaryKeyColumn().GoName}}()
+        o.{{mName}}[pk] = obj
+    }
+
 	return o.{{oName}}
 }
 
