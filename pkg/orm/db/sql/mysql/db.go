@@ -19,7 +19,7 @@ import (
 )
 
 // DB is the goradd driver for mysql databases. It works through the excellent go-sql-driver driver,
-// to supply functionality above go's built in driver. To use it, call NewMysqlDB, but afterwards,
+// to supply functionality above go's built in driver. To use it, call NewDB, but afterwards,
 // work through the DB parent interface so that the underlying database can be swapped out later if needed.
 //
 // Timezones
@@ -71,20 +71,31 @@ import (
 // timezone the MYSQL server is set to.
 type DB struct {
 	sql2.DbHelper
-	goraddDatabase *db.Database
-	databaseName   string
+	model        *db.Model
+	databaseName string
 }
 
-// NewMysqlDB returns a new DB database object that you can add to the datastore.
-func NewMysqlDB(dbKey string, params string, config *mysql.Config) *DB {
-	if params == "" && config == nil {
+// NewDB returns a new DB database object that you can add to the datastore.
+// If connectionString is set, it will be used to create the configuration. Otherwise,
+// use a config setting.
+//
+// The postgres driver specifies that you must use ParseConfig
+// to create the initial configuration, although that can be sent a blank string to
+// gather initial values from environment variables. You can then change items in
+// the configuration structure. For example:
+//
+//	config,_ := pgx.ParseConfig(connectionString)
+//	config.Password = "mysecret"
+//	db := pgsql.NewDB(key, "", config)
+func NewDB(dbKey string, connectionString string, config *mysql.Config) *DB {
+	if connectionString == "" && config == nil {
 		panic("must specify how to connect to the database")
 	}
-	if params == "" {
-		params = config.FormatDSN()
+	if connectionString == "" {
+		connectionString = config.FormatDSN()
 	}
 
-	db3, err := sqldb.Open("mysql", params)
+	db3, err := sqldb.Open("mysql", connectionString)
 	if err != nil {
 		panic("Could not open database: " + err.Error())
 	}
@@ -97,7 +108,6 @@ func NewMysqlDB(dbKey string, params string, config *mysql.Config) *DB {
 		DbHelper: sql2.NewSqlDb(dbKey, db3),
 	}
 	m.databaseName = config.DBName // save off the database name for later use
-	m.loadDescription()
 	return &m
 }
 
@@ -153,9 +163,9 @@ func (m *DB) NewBuilder(ctx context.Context) QueryBuilderI {
 	return sql2.NewSqlBuilder(ctx, m)
 }
 
-// Describe returns the database description object
-func (m *DB) Describe() *db.Database {
-	return m.goraddDatabase
+// Model returns the database description object
+func (m *DB) Model() *db.Model {
+	return m.model
 }
 
 // GenerateSelectSql generates SQL for a SELECT clause.
@@ -311,9 +321,9 @@ func (m *DB) generateJoinSql(b *sql2.Builder, j *sql2.JoinTreeItem) (sql string,
 
 		var pk string
 		if ManyManyNodeIsTypeTable(node) {
-			pk = snaker.CamelToSnake(m.Describe().TypeTable(ManyManyNodeRefTable(node)).PkField)
+			pk = snaker.CamelToSnake(m.Model().TypeTable(ManyManyNodeRefTable(node)).PkField)
 		} else {
-			pk = m.Describe().Table(ManyManyNodeRefTable(node)).PrimaryKeyColumn().DbName
+			pk = m.Model().Table(ManyManyNodeRefTable(node)).PrimaryKeyColumn().DbName
 		}
 
 		sql += "`" + ManyManyNodeDbTable(node) + "` AS `" + j.Alias + "a` ON `" +

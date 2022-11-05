@@ -89,11 +89,10 @@ func NewMysql2 (dbKey string , options DbOptions, config *mysql.Config) (*DB, er
 	return &source,err
 }*/
 
-func (m *DB) loadDescription() {
-
+func (m *DB) Analyze(options Options) {
 	rawTables := m.getRawTables()
-	description := m.descriptionFromRawTables(rawTables)
-	m.goraddDatabase = db.NewDatabase(m.DbKey(), m.IdSuffix(), description)
+	description := m.descriptionFromRawTables(rawTables, options)
+	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, description)
 }
 
 func (m *DB) getRawTables() map[string]mysqlTable {
@@ -373,33 +372,33 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	switch column.dataType {
 	case "time":
-		cd.NativeType = sql2.SqlTypeTime
-		cd.GoType = ColTypeDateTime.GoType()
+		cd.NativeType = sql2.TimeType
+		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "time"
 	case "timestamp":
-		cd.NativeType = sql2.SqlTypeTimestamp
-		cd.GoType = ColTypeDateTime.GoType()
+		cd.NativeType = sql2.TimestampType
+		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "timestamp"
 	case "datetime":
-		cd.NativeType = sql2.SqlTypeDatetime
-		cd.GoType = ColTypeDateTime.GoType()
+		cd.NativeType = sql2.DatetimeType
+		cd.GoType = ColTypeTime.GoType()
 	case "date":
-		cd.NativeType = sql2.SqlTypeDate
-		cd.GoType = ColTypeDateTime.GoType()
+		cd.NativeType = sql2.DateType
+		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "date"
 	case "tinyint":
 		if dataLen == 1 {
-			cd.NativeType = sql2.SqlTypeBool
+			cd.NativeType = sql2.BoolType
 			cd.GoType = ColTypeBool.GoType()
 		} else {
 			if isUnsigned {
-				cd.NativeType = sql2.SqlTypeInteger
+				cd.NativeType = sql2.IntegerType
 				cd.GoType = ColTypeUnsigned.GoType()
 				cd.MinValue = uint64(0)
 				cd.MaxValue = uint64(255)
 				cd.MaxCharLength = 3
 			} else {
-				cd.NativeType = sql2.SqlTypeInteger
+				cd.NativeType = sql2.IntegerType
 				cd.GoType = ColTypeInteger.GoType()
 				cd.MinValue = int64(-128)
 				cd.MaxValue = int64(127)
@@ -409,13 +408,13 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "int":
 		if isUnsigned {
-			cd.NativeType = sql2.SqlTypeInteger
+			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeUnsigned.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(4294967295)
 			cd.MaxCharLength = 10
 		} else {
-			cd.NativeType = sql2.SqlTypeInteger
+			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeInteger.GoType()
 			cd.MinValue = int64(-2147483648)
 			cd.MaxValue = int64(2147483647)
@@ -424,13 +423,13 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "smallint":
 		if isUnsigned {
-			cd.NativeType = sql2.SqlTypeInteger
+			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeUnsigned.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(65535)
 			cd.MaxCharLength = 5
 		} else {
-			cd.NativeType = sql2.SqlTypeInteger
+			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeInteger.GoType()
 			cd.MinValue = int64(-32768)
 			cd.MaxValue = int64(32767)
@@ -439,13 +438,13 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "mediumint":
 		if isUnsigned {
-			cd.NativeType = sql2.SqlTypeInteger
+			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeUnsigned.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(16777215)
 			cd.MaxCharLength = 8
 		} else {
-			cd.NativeType = sql2.SqlTypeInteger
+			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeInteger.GoType()
 			cd.MinValue = int64(-8388608)
 			cd.MaxValue = int64(8388607)
@@ -455,13 +454,13 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 	case "bigint": // We need to be explicit about this in go, since int will be whatever the OS native int size is, but go will support int64 always.
 		// Also, since Json can only be decoded into float64s, we are limited in our ability to represent large min and max numbers in the json to about 2^53
 		if isUnsigned {
-			cd.NativeType = sql2.SqlTypeInteger
+			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeUnsigned64.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(math.MaxUint64)
 			cd.MaxCharLength = 20
 		} else {
-			cd.NativeType = sql2.SqlTypeInteger
+			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeInteger64.GoType()
 			cd.MinValue = int64(math.MinInt64)
 			cd.MaxValue = int64(math.MaxInt64)
@@ -469,66 +468,66 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		}
 
 	case "float":
-		cd.NativeType = sql2.SqlTypeFloat
+		cd.NativeType = sql2.FloatType
 		cd.GoType = ColTypeFloat.GoType()
 		cd.MinValue = -math.MaxFloat32 // float64 type
 		cd.MaxValue = math.MaxFloat32
 	case "double":
-		cd.NativeType = sql2.SqlTypeDouble
+		cd.NativeType = sql2.DoubleType
 		cd.GoType = ColTypeDouble.GoType()
 		cd.MinValue = -math.MaxFloat64
 		cd.MaxValue = math.MaxFloat64
 	case "varchar":
-		cd.NativeType = sql2.SqlTypeVarchar
+		cd.NativeType = sql2.VarcharType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen)
 
 	case "char":
-		cd.NativeType = sql2.SqlTypeChar
+		cd.NativeType = sql2.CharType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen)
 
 	case "blob":
-		cd.NativeType = sql2.SqlTypeBlob
+		cd.NativeType = sql2.BlobType
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 65535
 	case "tinyblob":
-		cd.NativeType = sql2.SqlTypeBlob
+		cd.NativeType = sql2.BlobType
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 255
 	case "mediumblob":
-		cd.NativeType = sql2.SqlTypeBlob
+		cd.NativeType = sql2.BlobType
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 16777215
 	case "longblob":
-		cd.NativeType = sql2.SqlTypeBlob
+		cd.NativeType = sql2.BlobType
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = math.MaxUint32
 
 	case "text":
-		cd.NativeType = sql2.SqlTypeText
+		cd.NativeType = sql2.TextType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 65535
 	case "tinytext":
-		cd.NativeType = sql2.SqlTypeText
+		cd.NativeType = sql2.TextType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 255
 	case "mediumtext":
-		cd.NativeType = sql2.SqlTypeText
+		cd.NativeType = sql2.TextType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 16777215
 	case "longtext":
-		cd.NativeType = sql2.SqlTypeText
+		cd.NativeType = sql2.TextType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = math.MaxUint32
 
 	case "decimal": // No native equivalent in Go. See the "Big" go package for support. You will need to shephard numbers into and out of string format to move data to the database
-		cd.NativeType = sql2.SqlTypeDecimal
+		cd.NativeType = sql2.DecimalType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen) + 3
 
 	case "year":
-		cd.NativeType = sql2.SqlTypeInteger
+		cd.NativeType = sql2.IntegerType
 		cd.GoType = ColTypeInteger.GoType()
 
 	case "set":
@@ -544,14 +543,14 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	default:
-		cd.NativeType = sql2.SqlTypeUnknown
+		cd.NativeType = sql2.UnknownType
 		cd.GoType = ColTypeString.GoType()
 	}
 
 	cd.DefaultValue = column.defaultValue.UnpackDefaultValue(ColTypeFromGoTypeString(cd.GoType))
 }
 
-func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable) db.DatabaseDescription {
+func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable, options Options) db.DatabaseDescription {
 
 	dd := db.DatabaseDescription{}
 
@@ -562,11 +561,11 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable) db.Databa
 			continue
 		}
 
-		if strings2.EndsWith(tableName, m.TypeTableSuffix()) {
+		if strings2.EndsWith(tableName, options.TypeTableSuffix) {
 			t := m.getTypeTableDescription(table)
 			dd.Tables = append(dd.Tables, t)
-		} else if strings2.EndsWith(tableName, m.AssociationTableSuffix()) {
-			if mm, ok := m.getManyManyDescription(table); ok {
+		} else if strings2.EndsWith(tableName, options.AssociationTableSuffix) {
+			if mm, ok := m.getManyManyDescription(table, options.TypeTableSuffix); ok {
 				dd.MM = append(dd.MM, mm)
 			}
 		} else {
@@ -699,7 +698,7 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.Colum
 	return cd
 }
 
-func (m *DB) getManyManyDescription(t mysqlTable) (mm db.ManyManyDescription, ok bool) {
+func (m *DB) getManyManyDescription(t mysqlTable, typeTableSuffix string) (mm db.ManyManyDescription, ok bool) {
 	td := m.getTableDescription(t)
 	if len(td.Columns) != 2 {
 		log.Print("Error: table " + td.Name + " must have only 2 primary key columns.")
@@ -722,7 +721,7 @@ func (m *DB) getManyManyDescription(t mysqlTable) (mm db.ManyManyDescription, ok
 			return
 		}
 
-		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, m.TypeTableSuffix()) {
+		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, typeTableSuffix) {
 			if typeIndex != -1 {
 				log.Print("Error: table " + td.Name + ":" + " cannot have two foreign keys to type tables.")
 				return

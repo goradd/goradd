@@ -52,7 +52,7 @@ func BootstrapCodegenSetup() {
 				return "github.com/goradd/goradd/pkg/bootstrap/control/FloatTextbox"
 			case query.ColTypeBool:
 				return "github.com/goradd/goradd/pkg/bootstrap/control/Checkbox"
-			case query.ColTypeDateTime:
+			case query.ColTypeTime:
 				if col.IsTimestamp {
 					return "github.com/goradd/goradd/pkg/page/control/DateTimeSpan"
 				} else {

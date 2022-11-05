@@ -13,20 +13,20 @@ import (
 )
 
 const (
-	SqlTypeUnknown   = "Unknown"
-	SqlTypeBlob      = "Blob"
-	SqlTypeVarchar   = "VarChar"
-	SqlTypeChar      = "Char"
-	SqlTypeText      = "Text"
-	SqlTypeInteger   = "Int"
-	SqlTypeTimestamp = "Timestamp"
-	SqlTypeDatetime  = "DateTime"
-	SqlTypeDate      = "Date"
-	SqlTypeTime      = "Time"
-	SqlTypeFloat     = "FloatTextbox"
-	SqlTypeDouble    = "Double"
-	SqlTypeBool      = "Bool"
-	SqlTypeDecimal   = "Decimal" // a fixed point type
+	UnknownType   = "Unknown"
+	BlobType      = "Blob"
+	VarcharType   = "VarChar"
+	CharType      = "Char"
+	TextType      = "Text"
+	IntegerType   = "Int"
+	TimestampType = "Timestamp"
+	DatetimeType  = "DateTime"
+	DateType      = "Date"
+	TimeType      = "Time"
+	FloatType     = "FloatTextbox"
+	DoubleType    = "Double"
+	BoolType      = "Bool"
+	DecimalType   = "Decimal" // a fixed point type
 )
 
 // ExtractOptions finds the json encoded list of options in the given string

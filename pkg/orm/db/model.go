@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gedex/inflector"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/kenshaw/snaker"
 	"log"
 	"regexp"
@@ -21,9 +22,9 @@ const (
 	MaxOption           = "max"           // Used in number columns
 )
 
-// The Database is the top level struct that contains a complete description of a database for purposes of
-// creating queries and doing code generation
-type Database struct {
+// Model is the top level struct that contains a description of the database modeled as objects.
+// It is used in code generation and query creation.
+type Model struct {
 	// The database key corresponding to its key in the global database cluster
 	DbKey string
 	// Tables are the tables in the database
@@ -40,9 +41,9 @@ type Database struct {
 	typeTableMap map[string]*TypeTable
 }
 
-// NewDatabase creates a new Database object from the given DatabaseDescription object.
-func NewDatabase(dbKey string, foreignKeySuffix string, desc DatabaseDescription) *Database {
-	d := Database{
+// NewModel creates a new Database object from the given DatabaseDescription object.
+func NewModel(dbKey string, foreignKeySuffix string, desc DatabaseDescription) *Model {
+	d := Model{
 		DbKey:            dbKey,
 		ForeignKeySuffix: foreignKeySuffix,
 	}
@@ -52,27 +53,27 @@ func NewDatabase(dbKey string, foreignKeySuffix string, desc DatabaseDescription
 
 // Given a database description, analyze will perform an analysis of the database, and modify some fields to prepare
 // the description for use in codegen and the orm
-func (d *Database) analyze(desc DatabaseDescription) {
+func (m *Model) analyze(desc DatabaseDescription) {
 
-	d.typeTableMap = make(map[string]*TypeTable)
-	d.tableMap = make(map[string]*Table)
+	m.typeTableMap = make(map[string]*TypeTable)
+	m.tableMap = make(map[string]*Table)
 
 	// deal with type tables first
 	for _, table := range desc.Tables {
 		if table.TypeData != nil {
-			tt := d.analyzeTypeTable(table)
-			d.TypeTables = append(d.TypeTables, tt)
-			d.typeTableMap[tt.DbName] = tt
+			tt := m.analyzeTypeTable(table)
+			m.TypeTables = append(m.TypeTables, tt)
+			m.typeTableMap[tt.DbName] = tt
 		}
 	}
 
 	// get the regular tables
 	for _, table := range desc.Tables {
 		if table.TypeData == nil {
-			t := d.analyzeTable(table)
+			t := m.analyzeTable(table)
 			if t != nil {
-				d.Tables = append(d.Tables, t)
-				d.tableMap[t.DbName] = t
+				m.Tables = append(m.Tables, t)
+				m.tableMap[t.DbName] = t
 			}
 		}
 	}
@@ -80,22 +81,22 @@ func (d *Database) analyze(desc DatabaseDescription) {
 	// analyze foreign keys after the columns are in place
 	for _, table := range desc.Tables {
 		if table.TypeData == nil {
-			d.analyzeForeignKeys(table)
+			m.analyzeForeignKeys(table)
 		}
 	}
 
 	// analyze reverse references after the foreign keys are in place
-	for _, table := range d.Tables {
-		d.analyzeReverseReferences(table)
+	for _, table := range m.Tables {
+		m.analyzeReverseReferences(table)
 	}
 
 	for _, assn := range desc.MM {
-		d.analyzeAssociation(assn)
+		m.analyzeAssociation(assn)
 	}
 }
 
 // analyzeTypeTables will analyze the type tables provided by the database description
-func (d *Database) analyzeTypeTable(desc TableDescription) *TypeTable {
+func (d *Model) analyzeTypeTable(desc TableDescription) *TypeTable {
 	t := &TypeTable{
 		DbKey:         d.DbKey,
 		DbName:        desc.Name,
@@ -170,7 +171,7 @@ func (d *Database) analyzeTypeTable(desc TableDescription) *TypeTable {
 }
 
 // analyzeTable will analyze the table provided by the description
-func (d *Database) analyzeTable(desc TableDescription) *Table {
+func (d *Model) analyzeTable(desc TableDescription) *Table {
 	t := &Table{
 		DbKey:         d.DbKey,
 		DbName:        desc.Name,
@@ -245,7 +246,7 @@ func (d *Database) analyzeTable(desc TableDescription) *Table {
 	return t
 }
 
-func (d *Database) analyzeReverseReferences(td *Table) {
+func (d *Model) analyzeReverseReferences(td *Table) {
 	var td2 *Table
 
 	var col *Column
@@ -318,7 +319,7 @@ func (d *Database) analyzeReverseReferences(td *Table) {
 // Analyzes an association table and creates special virtual columns in the corresponding tables it points to.
 // Association tables are used by SQL databases to create many-many relationships. NoSQL databases can define their
 // association columns directly and store an array of records numbers on either end of the association.
-func (d *Database) analyzeAssociation(mm ManyManyDescription) {
+func (d *Model) analyzeAssociation(mm ManyManyDescription) {
 	if d.TypeTable(mm.Table2) == nil {
 		ref1 := d.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, false)
 		ref2 := d.makeManyManyRef(mm.Table2, mm.Column2, mm.Table1, mm.Column1, mm.GoName1, mm.GoPlural1, mm.AssnTableName, false)
@@ -331,7 +332,7 @@ func (d *Database) analyzeAssociation(mm ManyManyDescription) {
 	}
 }
 
-func (d *Database) makeManyManyRef(t1, c1, t2, c2, g2, g2p, t string, isType bool) *ManyManyReference {
+func (d *Model) makeManyManyRef(t1, c1, t2, c2, g2, g2p, t string, isType bool) *ManyManyReference {
 	sourceTableName := t1
 	destTableName := t2
 	sourceObjName := strings.TrimSuffix(c1, d.ForeignKeySuffix)
@@ -380,7 +381,7 @@ func (d *Database) makeManyManyRef(t1, c1, t2, c2, g2, g2p, t string, isType boo
 	return &ref
 }
 
-func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
+func (d *Model) analyzeColumn(desc ColumnDescription) *Column {
 	c := &Column{
 		DbName:                desc.Name,
 		GoName:                d.dbNameToGoName(desc.Name),
@@ -431,7 +432,7 @@ func (d *Database) analyzeColumn(desc ColumnDescription) *Column {
 	return c
 }
 
-func (d *Database) analyzeForeignKeys(desc TableDescription) {
+func (d *Model) analyzeForeignKeys(desc TableDescription) {
 	t := d.Table(desc.Name)
 	if t != nil {
 		for _, col := range desc.Columns {
@@ -440,7 +441,7 @@ func (d *Database) analyzeForeignKeys(desc TableDescription) {
 	}
 }
 
-func (d *Database) analyzeForeignKey(t *Table, cd ColumnDescription) {
+func (d *Model) analyzeForeignKey(t *Table, cd ColumnDescription) {
 	c := t.columnMap[cd.Name]
 	if cd.ForeignKey != nil {
 		f := &ForeignKeyInfo{
@@ -489,24 +490,24 @@ func (d *Database) analyzeForeignKey(t *Table, cd ColumnDescription) {
 	}
 }
 
-func (d *Database) dbNameToEnglishName(name string) string {
-	return strings.Title(strings.Replace(name, "_", " ", -1))
+func (d *Model) dbNameToEnglishName(name string) string {
+	return strings2.Title(name)
 }
 
-func (d *Database) dbNameToEnglishPlural(name string) string {
+func (d *Model) dbNameToEnglishPlural(name string) string {
 	return inflector.Pluralize(d.dbNameToEnglishName(name))
 }
 
-func (d *Database) dbNameToGoName(name string) string {
+func (d *Model) dbNameToGoName(name string) string {
 	return UpperCaseIdentifier(name)
 }
 
-func (d *Database) dbNameToGoPlural(name string) string {
+func (d *Model) dbNameToGoPlural(name string) string {
 	return inflector.Pluralize(d.dbNameToGoName(name))
 }
 
 // Table returns a Table from the database given the table name.
-func (d *Database) Table(name string) *Table {
+func (d *Model) Table(name string) *Table {
 	if v, ok := d.tableMap[name]; ok {
 		return v
 	} else {
@@ -515,12 +516,12 @@ func (d *Database) Table(name string) *Table {
 }
 
 // TypeTable returns a TypeTable from the database given the table name.
-func (d *Database) TypeTable(name string) *TypeTable {
+func (d *Model) TypeTable(name string) *TypeTable {
 	return d.typeTableMap[name]
 }
 
 // IsTypeTable returns true if the given name is the name of a type table in the database
-func (d *Database) IsTypeTable(name string) bool {
+func (d *Model) IsTypeTable(name string) bool {
 	_, ok := d.typeTableMap[name]
 	return ok
 }

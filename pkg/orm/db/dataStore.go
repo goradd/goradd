@@ -20,11 +20,11 @@ type TransactionID int
 
 // DatabaseI is the interface that describes the behaviors required for a database implementation.
 type DatabaseI interface {
-	// Describe returns a Database object, which is a description of the tables and fields in
+	// Model returns a Model object, which is a description of the tables and fields in
 	// a database and their relationships. SQL databases can, for the most part, generate this description
 	// based on their structure. NoSQL databases would need to get this description some other way, like through
-	// a json file.
-	Describe() *Database
+	// a configuration file.
+	Model() *Model
 
 	// NewBuilder returns a newly created query builder
 	NewBuilder(ctx context.Context) QueryBuilderI

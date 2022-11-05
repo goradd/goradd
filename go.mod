@@ -8,7 +8,7 @@ require (
 	github.com/goradd/gofile v1.0.3
 	github.com/goradd/got v1.0.3
 	github.com/goradd/html5tag v1.0.1
-	github.com/goradd/maps v0.1.2
+	github.com/goradd/maps v0.1.3
 	github.com/gorilla/websocket v1.4.2
 	github.com/jackc/pgx/v5 v5.0.4
 	github.com/kenshaw/snaker v0.2.0

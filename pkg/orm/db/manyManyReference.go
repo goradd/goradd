@@ -26,6 +26,6 @@ type ManyManyReference struct {
 	MM *ManyManyReference
 }
 
-func (m *ManyManyReference) JsonKey(dd *Database) string {
+func (m *ManyManyReference) JsonKey(dd *Model) string {
 	return LowerCaseIdentifier(m.GoPlural)
 }

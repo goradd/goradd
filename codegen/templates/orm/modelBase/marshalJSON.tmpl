@@ -245,7 +245,7 @@ case query.ColTypeBool:
                 o.Set{{= col.GoName }}(b)
             }
 }}
-case query.ColTypeDateTime:
+case query.ColTypeTime:
 {{
              switch d := v.(type) {
              case float64:

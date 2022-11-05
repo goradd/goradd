@@ -1,6 +1,6 @@
 package db
 
-// DatabaseDescription generically describes a database to GoRADD. It is sent to NewDatabase() to create a
+// DatabaseDescription generically describes a database to GoRADD. It is sent to NewModel() to create a
 // DB object that is used internally by GoRADD to access the database. DatabaseDescription should be able to be
 // inferred by reading the structure of SQL databases, or read directly from an import file.
 type DatabaseDescription struct {

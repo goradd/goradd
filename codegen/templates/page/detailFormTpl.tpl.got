@@ -26,7 +26,7 @@ func (n *DetailFormTplTemplate) FileName(key string, t generator.TableType) stri
 	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "DetailForm.tpl.got"
 }
 
-func (n *DetailFormTplTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType,  _w io.Writer) (err error) {
+func (n *DetailFormTplTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Model, t generator.TableType,  _w io.Writer) (err error) {
 	{{: "form/detailformtpl.tmpl" }}
 	return
 }

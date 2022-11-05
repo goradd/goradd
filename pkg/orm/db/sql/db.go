@@ -1,3 +1,8 @@
+// Package sql contains helper functions that connect a standard Go database/sql object
+// to the GoRADD system.
+//
+// Most of the functionality in this package is used by database implementations. GoRADD users would
+// not normally directly call functions in this package.
 package sql
 
 import (
@@ -13,17 +18,14 @@ import (
 )
 
 // The DbI interface describes the interface that a sql database needs to implement so that
-// it will work with the Builder object.
+// it will work with the Builder object. If you know a DatabaseI object is
+// standard Go database/sql database, you can
+// cast it to this type to gain access to the low level SQL driver and send it raw SQL commands.
 type DbI interface {
 	// Exec executes a query that does not expect to return values
 	Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error)
 	// Query executes a query that returns values
 	Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error)
-	// TypeTableSuffix returns the suffix used in a table name to indicate that the table is a type table. By default this is "_type".
-	TypeTableSuffix() string
-	// AssociationTableSuffix returns the suffix used in a table name to indicate that the table is an association table. By default this is "_assn".
-	AssociationTableSuffix() string
-
 	// GenerateSelectSql will generate the select sql from the builder. This sql can be specific to the database used.
 	GenerateSelectSql(QueryBuilderI) (sql string, args []interface{})
 	// GenerateDeleteSql will generate delete sql from the given builder.
@@ -51,25 +53,16 @@ type sqlContext struct {
 
 // DbHelper is a mixin for SQL database drivers. It implements common code needed by all SQL database drivers.
 type DbHelper struct {
-	dbKey string  // key of the database as used in the global database map
-	db    *sql.DB // Internal copy of golang database
-
-	// codegen options
-	typeTableSuffix        string // Primarily for sql tables
-	associationTableSuffix string // Primarily for sql tables
-	idSuffix               string // suffix to strip off the ends of names of foreign keys when converting them to internal names
-
+	dbKey     string  // key of the database as used in the global database map
+	db        *sql.DB // Internal copy of a Go database/sql object
 	profiling bool
 }
 
 // NewSqlDb creates a default DbHelper mixin.
 func NewSqlDb(dbKey string, db *sql.DB) DbHelper {
 	s := DbHelper{
-		dbKey:                  dbKey,
-		db:                     db,
-		typeTableSuffix:        "_type",
-		associationTableSuffix: "_assn",
-		idSuffix:               "_id",
+		dbKey: dbKey,
+		db:    db,
 	}
 	return s
 }
@@ -235,37 +228,12 @@ func (s *DbHelper) getContext(ctx context.Context) *sqlContext {
 	return nil
 }
 
-// SetTypeTableSuffix sets the suffix used to identify type tables.
-func (s *DbHelper) SetTypeTableSuffix(suffix string) {
-	s.typeTableSuffix = suffix
-}
-
-// SetAssociationTableSuffix sets the suffix used to identify association tables.
-func (s *DbHelper) SetAssociationTableSuffix(suffix string) {
-	s.associationTableSuffix = suffix
-}
-
-// TypeTableSuffix returns the suffix used to identify type tables.
-func (s *DbHelper) TypeTableSuffix() string {
-	return s.typeTableSuffix
-}
-
-// AssociationTableSuffix returns the suffix used to identify association tables.
-func (s *DbHelper) AssociationTableSuffix() string {
-	return s.associationTableSuffix
-}
-
-// IdSuffix is the suffix used to indicate that a field is a foreign ky to another table.
-func (s *DbHelper) IdSuffix() string {
-	return s.idSuffix
-}
-
 // DbKey returns the key of the database in the global database store.
 func (s *DbHelper) DbKey() string {
 	return s.dbKey
 }
 
-// SqlDb returns the sql database object.
+// SqlDb returns the underlying database/sql database object.
 func (s *DbHelper) SqlDb() *sql.DB {
 	return s.db
 }
@@ -287,4 +255,3 @@ func (s *DbHelper) GetProfiles(ctx context.Context) []ProfileEntry {
 	c.profiles = nil
 	return p
 }
-

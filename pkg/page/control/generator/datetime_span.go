@@ -21,7 +21,7 @@ func (d DateTimeSpan) NewFunc() string {
 
 func (d DateTimeSpan) SupportsColumn(ref interface{}) bool {
 	if col, ok := ref.(*db.Column); ok &&
-		col.ColumnType == query.ColTypeDateTime {
+		col.ColumnType == query.ColTypeTime {
 		return true
 	}
 	return false

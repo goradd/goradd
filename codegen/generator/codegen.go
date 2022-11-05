@@ -96,10 +96,10 @@ func Generate() {
 
 	// StdMap object names to tables, making sure there are no duplicates
 	for _, database := range databases {
-		key := database.Describe().DbKey
+		key := database.Model().DbKey
 		codegen.Tables[key] = make(map[string]TableType)
 		codegen.TypeTables[key] = make(map[string]TypeTableType)
-		dd := database.Describe()
+		dd := database.Model()
 
 		// Create wrappers for the tables with extra analysis required for form generation
 		for _, typeTable := range dd.TypeTables {
@@ -142,7 +142,7 @@ func Generate() {
 
 	// Generate the templates.
 	for _, database := range databases {
-		dd := database.Describe()
+		dd := database.Model()
 		dbKey := dd.DbKey
 
 		for _, tableKey := range stringmap.SortedKeys(codegen.TypeTables[dbKey]) {

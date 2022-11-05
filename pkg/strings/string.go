@@ -26,7 +26,7 @@ func LcFirst(s string) string {
 	return strings.ToLower(s[:1]) + s[1:]
 }
 
-// Indent will indent very line of the string with a tab
+// Indent will indent every line of the string with a tab
 func Indent(s string) string {
 	s = "\t" + strings.Replace(s, "\n", "\n\t", -1)
 	return strings.TrimRight(s, "\t")
@@ -96,7 +96,7 @@ func ContainsAnyStrings(haystack string, needles ...string) bool {
 func HasCharType(s string, wantUpper, wantLower, wantDigit, wantPunc, wantSymbol bool) bool {
 	var hasUpper, hasLower, hasDigit, hasPunc, hasSymbol bool
 
-	for _,c := range s {
+	for _, c := range s {
 		if !hasUpper && wantUpper && unicode.IsUpper(c) {
 			hasUpper = true
 		} else if !hasLower && wantLower && unicode.IsLower(c) {

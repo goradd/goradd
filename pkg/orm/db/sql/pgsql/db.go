@@ -1,4 +1,4 @@
-package mysql
+package pgsql
 
 import (
 	"context"
@@ -19,14 +19,16 @@ import (
 // DB is the goradd driver for postgresql databases.
 type DB struct {
 	sql2.DbHelper
-	goraddDatabase *db.Database
-	databaseName   string
-	schemas        []string
+	model        *db.Model
+	databaseName string
+	schemas      []string
 }
 
-// NewDB returns a new Postgresql DB database object that you can add to the datastore.
-// If params is set, those will be used to create the configuration. Otherwise,
-// use a config setting.
+// NewDB returns a new Postgresql DB database object based on the pgx driver
+// that you can add to the datastore.
+// If connectionString is set, it will be used to create the configuration. Otherwise,
+// use a config setting. Using a configSetting can potentially give you access to the
+// underlying pgx database for advanced operations.
 //
 // The postgres driver specifies that you must use ParseConfig
 // to create the initial configuration, although that can be sent a blank string to
@@ -36,7 +38,9 @@ type DB struct {
 //	config,_ := pgx.ParseConfig(connectionString)
 //	config.Password = "mysecret"
 //	db := pgsql.NewDB(key, "", config)
-func NewDB(dbKey string, connectionString string, config *pgx.ConnConfig) *DB {
+func NewDB(dbKey string,
+	connectionString string,
+	config *pgx.ConnConfig) *DB {
 	if connectionString == "" && config == nil {
 		panic("must specify how to connect to the database")
 	}
@@ -58,7 +62,6 @@ func NewDB(dbKey string, connectionString string, config *pgx.ConnConfig) *DB {
 		DbHelper: sql2.NewSqlDb(dbKey, db3),
 	}
 	m.databaseName = config.Database // save off the database name for later use
-	m.loadDescription()
 	return &m
 }
 
@@ -92,9 +95,9 @@ func (m *DB) NewBuilder(ctx context.Context) QueryBuilderI {
 	return sql2.NewSqlBuilder(ctx, m)
 }
 
-// Describe returns the database description object
-func (m *DB) Describe() *db.Database {
-	return m.goraddDatabase
+// Model returns the database description object
+func (m *DB) Model() *db.Model {
+	return m.model
 }
 
 // GenerateSelectSql generates SQL for a SELECT clause.
@@ -250,9 +253,9 @@ func (m *DB) generateJoinSql(b *sql2.Builder, j *sql2.JoinTreeItem) (sql string,
 
 		var pk string
 		if ManyManyNodeIsTypeTable(node) {
-			pk = snaker.CamelToSnake(m.Describe().TypeTable(ManyManyNodeRefTable(node)).PkField)
+			pk = snaker.CamelToSnake(m.Model().TypeTable(ManyManyNodeRefTable(node)).PkField)
 		} else {
-			pk = m.Describe().Table(ManyManyNodeRefTable(node)).PrimaryKeyColumn().DbName
+			pk = m.Model().Table(ManyManyNodeRefTable(node)).PrimaryKeyColumn().DbName
 		}
 
 		sql += "`" + ManyManyNodeDbTable(node) + "` AS `" + j.Alias + "a` ON `" +

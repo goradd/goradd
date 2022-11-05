@@ -28,7 +28,7 @@ func addGoraddDatabase() {
 	cfg.Passwd = "12345"
 	cfg.ParseTime = true
 
-	db1 := mysql2.NewMysqlDB(key, "", cfg)
+	db1 := mysql2.NewDB(key, "", cfg)
 
 	if !config.Release {
 		db1.StartProfiling()
@@ -87,7 +87,7 @@ func addMyDatabase() {
 		mysql2.OverrideConfigSettings(cfg, i.(map[string]interface{}))
 	}
 
-	db1 := mysql2.NewMysqlDB(key, "", cfg)
+	db1 := mysql2.NewDB(key, "", cfg)
 
 	if !config.Release {
 		db1.StartProfiling()

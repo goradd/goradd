@@ -329,7 +329,7 @@ func (r SqlReceiver) Unpack(typ GoColumnType) interface{} {
 		return r.Int64I()
 	case ColTypeUnsigned64:
 		return r.Uint64I()
-	case ColTypeDateTime:
+	case ColTypeTime:
 		return r.TimeI()
 	case ColTypeFloat:
 		return r.FloatI()
@@ -368,7 +368,7 @@ func (r SqlReceiver) UnpackDefaultValue(typ GoColumnType) interface{} {
 		return r.Int64I()
 	case ColTypeUnsigned64:
 		return r.Uint64I()
-	case ColTypeDateTime:
+	case ColTypeTime:
 		return r.TimeI()
 	case ColTypeFloat:
 		return r.FloatI()
