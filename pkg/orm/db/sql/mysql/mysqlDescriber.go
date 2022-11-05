@@ -594,9 +594,12 @@ func (m *DB) getTypeTableDescription(t mysqlTable) db.TableDescription {
 	var columnNames []string
 	var columnTypes []GoColumnType
 
-	for _, c := range td.Columns {
+	for i, c := range td.Columns {
 		columnNames = append(columnNames, c.Name)
 		colType := ColTypeFromGoTypeString(c.GoType)
+		if i == 0 {
+			colType = ColTypeInteger // Force first value to be treated like an integer
+		}
 		columnTypes = append(columnTypes, colType)
 	}
 

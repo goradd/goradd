@@ -368,6 +368,8 @@ func (m *DB) processTypeInfo(tableName string, column pgColumn, cd *db.ColumnDes
 		cd.SubType = "time"
 	case "timestamp":
 		cd.GoType = ColTypeTime.GoType()
+	case "timestamp with time zone":
+		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "timestamp"
 	case "datetime": // TODO:
 		cd.GoType = ColTypeTime.GoType()
@@ -515,9 +517,12 @@ func (m *DB) getTypeTableDescription(t pgTable) db.TableDescription {
 	var columnNames []string
 	var columnTypes []GoColumnType
 
-	for _, c := range td.Columns {
+	for i, c := range td.Columns {
 		columnNames = append(columnNames, c.Name)
 		colType := ColTypeFromGoTypeString(c.GoType)
+		if i == 0 {
+			colType = ColTypeInteger // Force first value to be treated like an integer
+		}
 		columnTypes = append(columnTypes, colType)
 	}
 

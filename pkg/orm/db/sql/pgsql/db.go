@@ -174,7 +174,7 @@ func (m *DB) GenerateDeleteSql(qb QueryBuilderI) (sql string, args []interface{}
 
 func (m *DB) generateColumnListWithAliases(b *sql2.Builder) (sql string, args []interface{}) {
 	b.ColumnAliases.Range(func(key string, j *sql2.JoinTreeItem) bool {
-		sql += m.generateColumnNodeSql(j.Parent.Alias, j.Node) + " AS `" + key + "`,\n"
+		sql += m.generateColumnNodeSql(j.Parent.Alias, j.Node) + " AS " + key + ",\n"
 		return true
 	})
 
@@ -183,7 +183,7 @@ func (m *DB) generateColumnListWithAliases(b *sql2.Builder) (sql string, args []
 			node := v.(NodeI)
 			aliaser := v.(Aliaser)
 			s, a := m.generateNodeSql(b, node, false)
-			sql += s + " AS `" + aliaser.GetAlias() + "`,\n"
+			sql += s + " AS " + aliaser.GetAlias() + ",\n"
 			args = append(args, a...)
 			return true
 		})

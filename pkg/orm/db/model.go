@@ -143,8 +143,6 @@ func (d *Model) analyzeTypeTable(desc TableDescription) *TypeTable {
 
 	t.Constants = make(map[int]string, len(t.FieldNames))
 	names := t.FieldNames
-	var key int
-	var value string
 
 	if len(t.Values) == 0 {
 		log.Print("Warning: type table " + t.DbName + " has no data entries. Specify constants by adding entries to this table.")
@@ -152,16 +150,16 @@ func (d *Model) analyzeTypeTable(desc TableDescription) *TypeTable {
 
 	r := regexp.MustCompile("[^a-zA-Z0-9_]+")
 	for _, m := range t.Values {
-		key, ok = m[names[0]].(int)
+		key, ok := m[names[0]].(int)
 		if !ok {
-			key = int(m[names[0]].(uint))
+			panic("first column of type table must be an integer")
 		}
-		value = m[names[1]].(string)
+		value := m[names[1]].(string)
 		var con string
 
 		a := r.Split(value, -1)
 		for _, word := range a {
-			con += strings.Title(strings.ToLower(word))
+			con += strings2.Title(strings.ToLower(word))
 		}
 		t.Constants[key] = con
 	}
