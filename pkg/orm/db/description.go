@@ -41,8 +41,7 @@ type ColumnDescription struct {
 	// When column type is "time.Time", the column will default to both a date and time format. You can also make it:
 	//   date (which means date only)
 	//   time (time only)
-	//   timestamp (we will track the modification time of the table here)
-	//   auto timestamp (the database is automatically updating this timestamp for us)
+	//   timestamp (not editable by the user)
 	SubType string
 	// MaxCharLength is the maximum length of characters to allow in the column if a string type column.
 	// If the database has the ability to specify this, this will correspond to what is specified.

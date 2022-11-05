@@ -19,11 +19,6 @@ This file contains the code that parses the data structure found in a MySQL data
 our own cross-platform internal database description object.
 */
 
-const (
-	ColumnTypeSet  = "Set"
-	ColumnTypeEnum = "Enum"
-)
-
 type mysqlTable struct {
 	name    string
 	columns []mysqlColumn
@@ -369,36 +364,30 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 	dataLen := sql2.GetDataDefLength(column.columnType)
 
 	isUnsigned := strings.Contains(column.columnType, "unsigned")
+	cd.NativeType = column.dataType
 
 	switch column.dataType {
 	case "time":
-		cd.NativeType = sql2.TimeType
 		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "time"
 	case "timestamp":
-		cd.NativeType = sql2.TimestampType
 		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "timestamp"
 	case "datetime":
-		cd.NativeType = sql2.DatetimeType
 		cd.GoType = ColTypeTime.GoType()
 	case "date":
-		cd.NativeType = sql2.DateType
 		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "date"
 	case "tinyint":
 		if dataLen == 1 {
-			cd.NativeType = sql2.BoolType
 			cd.GoType = ColTypeBool.GoType()
 		} else {
 			if isUnsigned {
-				cd.NativeType = sql2.IntegerType
 				cd.GoType = ColTypeUnsigned.GoType()
 				cd.MinValue = uint64(0)
 				cd.MaxValue = uint64(255)
 				cd.MaxCharLength = 3
 			} else {
-				cd.NativeType = sql2.IntegerType
 				cd.GoType = ColTypeInteger.GoType()
 				cd.MinValue = int64(-128)
 				cd.MaxValue = int64(127)
@@ -408,13 +397,11 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "int":
 		if isUnsigned {
-			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeUnsigned.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(4294967295)
 			cd.MaxCharLength = 10
 		} else {
-			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeInteger.GoType()
 			cd.MinValue = int64(-2147483648)
 			cd.MaxValue = int64(2147483647)
@@ -423,13 +410,11 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "smallint":
 		if isUnsigned {
-			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeUnsigned.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(65535)
 			cd.MaxCharLength = 5
 		} else {
-			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeInteger.GoType()
 			cd.MinValue = int64(-32768)
 			cd.MaxValue = int64(32767)
@@ -438,13 +423,11 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "mediumint":
 		if isUnsigned {
-			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeUnsigned.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(16777215)
 			cd.MaxCharLength = 8
 		} else {
-			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeInteger.GoType()
 			cd.MinValue = int64(-8388608)
 			cd.MaxValue = int64(8388607)
@@ -454,13 +437,11 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 	case "bigint": // We need to be explicit about this in go, since int will be whatever the OS native int size is, but go will support int64 always.
 		// Also, since Json can only be decoded into float64s, we are limited in our ability to represent large min and max numbers in the json to about 2^53
 		if isUnsigned {
-			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeUnsigned64.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(math.MaxUint64)
 			cd.MaxCharLength = 20
 		} else {
-			cd.NativeType = sql2.IntegerType
 			cd.GoType = ColTypeInteger64.GoType()
 			cd.MinValue = int64(math.MinInt64)
 			cd.MaxValue = int64(math.MaxInt64)
@@ -468,82 +449,65 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		}
 
 	case "float":
-		cd.NativeType = sql2.FloatType
 		cd.GoType = ColTypeFloat32.GoType()
 		cd.MinValue = -math.MaxFloat32 // float64 type
 		cd.MaxValue = math.MaxFloat32
 	case "double":
-		cd.NativeType = sql2.DoubleType
 		cd.GoType = ColTypeFloat64.GoType()
 		cd.MinValue = -math.MaxFloat64
 		cd.MaxValue = math.MaxFloat64
 	case "varchar":
-		cd.NativeType = sql2.VarcharType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen)
 
 	case "char":
-		cd.NativeType = sql2.CharType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen)
 
 	case "blob":
-		cd.NativeType = sql2.BlobType
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 65535
 	case "tinyblob":
-		cd.NativeType = sql2.BlobType
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 255
 	case "mediumblob":
-		cd.NativeType = sql2.BlobType
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 16777215
 	case "longblob":
-		cd.NativeType = sql2.BlobType
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = math.MaxUint32
 
 	case "text":
-		cd.NativeType = sql2.TextType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 65535
 	case "tinytext":
-		cd.NativeType = sql2.TextType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 255
 	case "mediumtext":
-		cd.NativeType = sql2.TextType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 16777215
 	case "longtext":
-		cd.NativeType = sql2.TextType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = math.MaxUint32
 
 	case "decimal": // No native equivalent in Go. See the "Big" go package for support. You will need to shephard numbers into and out of string format to move data to the database
-		cd.NativeType = sql2.DecimalType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen) + 3
 
 	case "year":
-		cd.NativeType = sql2.IntegerType
 		cd.GoType = ColTypeInteger.GoType()
 
 	case "set":
 		log.Print("Note: Using association tables is preferred to using DB SET columns in table " + tableName + ":" + column.name + ".")
-		cd.NativeType = ColumnTypeSet
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	case "enum":
 		log.Print("Note: Using type tables is preferred to using DB ENUM columns in table " + tableName + ":" + column.name + ".")
-		cd.NativeType = ColumnTypeEnum
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	default:
-		cd.NativeType = sql2.UnknownType
 		cd.GoType = ColTypeString.GoType()
 	}
 
@@ -657,14 +621,6 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.Colum
 	cd := db.ColumnDescription{
 		Name: column.name,
 	}
-	var ok bool
-	var shouldAutoUpdate bool
-
-	if opt := column.options["shouldAutoUpdate"]; opt != nil {
-		if shouldAutoUpdate, ok = opt.(bool); !ok {
-			log.Print("Error in table comment for table " + table.name + ":" + column.name + ": shouldAutoUpdate is not a boolean")
-		}
-	}
 
 	m.processTypeInfo(table.name, column, &cd)
 
@@ -676,11 +632,7 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.Colum
 	// indicates that the database is handling update on modify
 	// In MySQL this is detectable. In other databases, if you can set this up, but its hard to detect, you can create a comment property to spec this
 	if strings.Contains(column.extra, "CURRENT_TIMESTAMP") {
-		cd.SubType = "auto timestamp"
-	}
-
-	if cd.SubType == "auto timestamp" && shouldAutoUpdate {
-		log.Print("Error in table comment for table " + table.name + ":" + column.name + ": shouldAutoUpdate should not be set on a table that the database is automatically updating.")
+		cd.SubType = "timestamp"
 	}
 
 	cd.Comment = column.comment

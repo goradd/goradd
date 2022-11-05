@@ -22,7 +22,7 @@ type Column struct {
 	GoName string
 	// NativeType is the type of the column as described by the database itself.
 	NativeType string
-	//  ColumnType is the goradd defined column type
+	//  ColumnType is the equivalent Go type to the database column
 	ColumnType GoColumnType
 	// MaxCharLength is the maximum length of characters to allow in the column if a string type column.
 	// If the database has the ability to specify this, this will correspond to what is specified.
@@ -44,12 +44,12 @@ type Column struct {
 	// IsUnique is true if the column's table has a single unique index on the column.
 	IsUnique bool
 	// IsTimestamp is true if the field is a timestamp. Timestamps represent a specific point in world time.
+	// By default, timestamps are treated as not editable by the user. To automatically update a timestamp
+	// value when its saved, you should edit the Save method in the model.
 	IsTimestamp bool
-	// IsAutoUpdateTimestamp is true if the database is updating the timestamp. Otherwise, we will do it manually.
-	IsAutoUpdateTimestamp bool
-	// IsDateOnly indicates that we have a datetime type of column that should only be concerned about the date
+	// IsDateOnly indicates that we have a time type of column that should only be concerned about the date and not the time.
 	IsDateOnly bool
-	// IsTimeOnly indicates that we have a datetime type of column that should only be concerned about the time
+	// IsTimeOnly indicates that we have a time type of column that should only be concerned about the time and not the date.
 	IsTimeOnly bool
 	// Comment is the contents of the comment associated with this field
 	Comment string

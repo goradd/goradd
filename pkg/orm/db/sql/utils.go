@@ -12,23 +12,6 @@ import (
 	"strings"
 )
 
-const (
-	UnknownType   = "Unknown"
-	BlobType      = "Blob"
-	VarcharType   = "VarChar"
-	CharType      = "Char"
-	TextType      = "Text"
-	IntegerType   = "Int"
-	TimestampType = "Timestamp"
-	DatetimeType  = "DateTime"
-	DateType      = "Date"
-	TimeType      = "Time"
-	FloatType     = "FloatTextbox"
-	DoubleType    = "Double"
-	BoolType      = "Bool"
-	DecimalType   = "Decimal" // a fixed point type
-)
-
 // ExtractOptions finds the json encoded list of options in the given string
 func ExtractOptions(comment string) (options map[string]interface{}, remainingComment string, err error) {
 	var optionString string

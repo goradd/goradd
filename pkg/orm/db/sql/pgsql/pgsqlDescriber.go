@@ -361,36 +361,30 @@ WHERE tc.constraint_type = 'FOREIGN KEY' AND
 
 // Convert the database native type to a more generic sql type, and a go table type.
 func (m *DB) processTypeInfo(tableName string, column pgColumn, cd *db.ColumnDescription) {
+
 	switch column.dataType {
 	case "time":
-		cd.NativeType = sql2.TimeType
 		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "time"
 	case "timestamp":
-		cd.NativeType = sql2.TimestampType
 		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "timestamp"
 	case "datetime": // TODO:
-		cd.NativeType = sql2.DatetimeType
 		cd.GoType = ColTypeTime.GoType()
 	case "date":
-		cd.NativeType = sql2.DateType
 		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "date"
 
 	case "boolean":
-		cd.NativeType = sql2.BoolType
 		cd.GoType = ColTypeBool.GoType()
 
 	case "int":
-		cd.NativeType = sql2.IntegerType
 		cd.GoType = ColTypeInteger.GoType()
 		cd.MinValue = int64(-2147483648)
 		cd.MaxValue = int64(2147483647)
 		cd.MaxCharLength = 11
 
 	case "smallint":
-		cd.NativeType = sql2.IntegerType
 		cd.GoType = ColTypeInteger.GoType()
 		cd.MinValue = int64(-32768)
 		cd.MaxValue = int64(32767)
@@ -398,58 +392,49 @@ func (m *DB) processTypeInfo(tableName string, column pgColumn, cd *db.ColumnDes
 
 	case "bigint": // We need to be explicit about this in go, since int will be whatever the OS native int size is, but go will support int64 always.
 		// Also, since Json can only be decoded into float64s, we are limited in our ability to represent large min and max numbers in the json to about 2^53
-		cd.NativeType = sql2.IntegerType
 		cd.GoType = ColTypeInteger64.GoType()
 		cd.MinValue = int64(math.MinInt64)
 		cd.MaxValue = int64(math.MaxInt64)
 		cd.MaxCharLength = 20
 
 	case "real":
-		cd.NativeType = sql2.FloatType
 		cd.GoType = ColTypeFloat32.GoType()
 		cd.MinValue = -math.MaxFloat32 // float64 type
 		cd.MaxValue = math.MaxFloat32
 
 	case "double precision":
-		cd.NativeType = sql2.DoubleType
 		cd.GoType = ColTypeFloat64.GoType()
 		cd.MinValue = -math.MaxFloat64
 		cd.MaxValue = math.MaxFloat64
 
 	case "character varying":
-		cd.NativeType = sql2.VarcharType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	case "char":
-		cd.NativeType = sql2.CharType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	case "bytea":
-		cd.NativeType = sql2.BlobType
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 65535
 
 	case "text":
-		cd.NativeType = sql2.TextType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 65535
 
 	case "numeric": // No native equivalent in Go. See the "Big" go package for support. You will need to shephard numbers into and out of string format to move data to the database
-		cd.NativeType = sql2.DecimalType
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64) + 3
 
 	case "year":
-		cd.NativeType = sql2.IntegerType
 		cd.GoType = ColTypeInteger.GoType()
 
 	default:
-		cd.NativeType = sql2.UnknownType
 		cd.GoType = ColTypeString.GoType()
 	}
 
+	cd.NativeType = column.dataType
 	cd.DefaultValue = getDefaultValue(column.defaultValue, ColTypeFromGoTypeString(cd.GoType))
 }
 
