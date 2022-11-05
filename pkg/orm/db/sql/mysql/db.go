@@ -611,7 +611,7 @@ func (m *DB) Update(ctx context.Context, table string, fields map[string]interfa
 	sql += s
 	args = append(args, a...)
 
-	sql += "WHERE " + pkName + " = ?"
+	sql += "WHERE " + iq(pkName) + " = ?"
 	args = append(args, pkValue)
 	_, e := m.Exec(ctx, sql, args...)
 	if e != nil {
@@ -622,7 +622,7 @@ func (m *DB) Update(ctx context.Context, table string, fields map[string]interfa
 // Insert inserts the given data as a new record in the database.
 // It returns the record id of the new record.
 func (m *DB) Insert(ctx context.Context, table string, fields map[string]interface{}) string {
-	var sql = "INSERT " + table + "\n"
+	var sql = "INSERT " + iq(table) + "\n"
 	var args []interface{}
 	s, a := m.makeSetSql(fields)
 	sql += s
@@ -642,9 +642,9 @@ func (m *DB) Insert(ctx context.Context, table string, fields map[string]interfa
 
 // Delete deletes the indicated record from the database.
 func (m *DB) Delete(ctx context.Context, table string, pkName string, pkValue interface{}) {
-	var sql = "DELETE FROM " + table + "\n"
+	var sql = "DELETE FROM " + iq(table) + "\n"
 	var args []interface{}
-	sql += "WHERE " + pkName + " = ?"
+	sql += "WHERE " + iq(pkName) + " = ?"
 	args = append(args, pkValue)
 	_, e := m.Exec(ctx, sql, args...)
 	if e != nil {
