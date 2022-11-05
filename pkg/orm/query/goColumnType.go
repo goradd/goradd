@@ -12,8 +12,8 @@ const (
 	ColTypeInteger64
 	ColTypeUnsigned64
 	ColTypeTime
-	ColTypeFloat
-	ColTypeDouble
+	ColTypeFloat32
+	ColTypeFloat64
 	ColTypeBool
 )
 
@@ -36,10 +36,10 @@ func (g GoColumnType) String() string {
 		return "ColTypeUnsigned64"
 	case ColTypeTime:
 		return "ColTypeTime"
-	case ColTypeFloat:
-		return "ColTypeFloat"
-	case ColTypeDouble:
-		return "ColTypeDouble"
+	case ColTypeFloat32:
+		return "ColTypeFloat32"
+	case ColTypeFloat64:
+		return "ColTypeFloat64"
 	case ColTypeBool:
 		return "ColTypeBool"
 	}
@@ -65,9 +65,9 @@ func (g GoColumnType) GoType() string {
 		return "uint64"
 	case ColTypeTime:
 		return "time.Time"
-	case ColTypeFloat:
+	case ColTypeFloat32:
 		return "float32" // always internally represent with max bits
-	case ColTypeDouble:
+	case ColTypeFloat64:
 		return "float64" // always internally represent with max bits
 	case ColTypeBool:
 		return "bool"
@@ -94,9 +94,9 @@ func (g GoColumnType) DefaultValue() string {
 		return "0"
 	case ColTypeTime:
 		return "time.Time{}"
-	case ColTypeFloat:
+	case ColTypeFloat32:
 		return "0.0" // always internally represent with max bits
-	case ColTypeDouble:
+	case ColTypeFloat64:
 		return "0.0" // always internally represent with max bits
 	case ColTypeBool:
 		return "false"
@@ -123,9 +123,9 @@ func ColTypeFromGoTypeString(name string) GoColumnType {
 	case "time.Time":
 		return ColTypeTime
 	case "float32":
-		return ColTypeFloat
+		return ColTypeFloat32
 	case "float64":
-		return ColTypeDouble
+		return ColTypeFloat64
 	case "bool":
 		return ColTypeBool
 	default:

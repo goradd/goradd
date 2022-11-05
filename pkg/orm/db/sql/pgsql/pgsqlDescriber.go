@@ -406,13 +406,13 @@ func (m *DB) processTypeInfo(tableName string, column pgColumn, cd *db.ColumnDes
 
 	case "real":
 		cd.NativeType = sql2.FloatType
-		cd.GoType = ColTypeFloat.GoType()
+		cd.GoType = ColTypeFloat32.GoType()
 		cd.MinValue = -math.MaxFloat32 // float64 type
 		cd.MaxValue = math.MaxFloat32
 
 	case "double precision":
 		cd.NativeType = sql2.DoubleType
-		cd.GoType = ColTypeDouble.GoType()
+		cd.GoType = ColTypeFloat64.GoType()
 		cd.MinValue = -math.MaxFloat64
 		cd.MaxValue = math.MaxFloat64
 
@@ -700,10 +700,10 @@ func getDefaultValue(sqlVal sql.NullString, typ GoColumnType) interface{} {
 	case ColTypeTime:
 		// TODO
 		return nil
-	case ColTypeFloat:
+	case ColTypeFloat32:
 		i, _ := strconv.ParseFloat(v, 32)
 		return float32(i)
-	case ColTypeDouble:
+	case ColTypeFloat64:
 		i, _ := strconv.ParseFloat(v, 64)
 		return i
 	case ColTypeBool:

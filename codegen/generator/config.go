@@ -61,9 +61,9 @@ func DefaultControlType(ref interface{}) string {
 			return "github.com/goradd/goradd/pkg/page/control/textbox/IntegerTextbox"
 		case query.ColTypeTime:
 			return "github.com/goradd/goradd/pkg/page/control/DateTimeSpan"
-		case query.ColTypeFloat:
+		case query.ColTypeFloat32:
 			return "github.com/goradd/goradd/pkg/page/control/textbox/FloatTextbox"
-		case query.ColTypeDouble:
+		case query.ColTypeFloat64:
 			return "github.com/goradd/goradd/pkg/page/control/textbox/FloatTextbox"
 		case query.ColTypeBool:
 			return "github.com/goradd/goradd/pkg/page/control/button/Checkbox"

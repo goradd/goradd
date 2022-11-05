@@ -469,12 +469,12 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "float":
 		cd.NativeType = sql2.FloatType
-		cd.GoType = ColTypeFloat.GoType()
+		cd.GoType = ColTypeFloat32.GoType()
 		cd.MinValue = -math.MaxFloat32 // float64 type
 		cd.MaxValue = math.MaxFloat32
 	case "double":
 		cd.NativeType = sql2.DoubleType
-		cd.GoType = ColTypeDouble.GoType()
+		cd.GoType = ColTypeFloat64.GoType()
 		cd.MinValue = -math.MaxFloat64
 		cd.MaxValue = math.MaxFloat64
 	case "varchar":

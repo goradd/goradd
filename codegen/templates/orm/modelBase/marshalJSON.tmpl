@@ -183,7 +183,7 @@ case query.ColTypeUnsigned64:
                 return fmt.Errorf("json field %s must be a number", k)
             }
 }}
-case query.ColTypeFloat:
+case query.ColTypeFloat32:
 {{
             if n,ok := v.(float64); ok {
                 o.Set{{= col.GoName }}(float32(n))
@@ -191,7 +191,7 @@ case query.ColTypeFloat:
                 return fmt.Errorf("json field %s must be a number", k)
             }
 }}
-case query.ColTypeDouble:
+case query.ColTypeFloat64:
 {{
             if n,ok := v.(float64); ok {
                 o.Set{{= col.GoName }}(n)

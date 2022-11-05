@@ -16,7 +16,7 @@ type FloatTextbox struct {
 }
 
 func (d FloatTextbox) SupportsColumn(ref interface{}) bool {
-	if col, ok := ref.(*db.Column); ok && (col.ColumnType == query.ColTypeFloat || col.ColumnType == query.ColTypeDouble) {
+	if col, ok := ref.(*db.Column); ok && (col.ColumnType == query.ColTypeFloat32 || col.ColumnType == query.ColTypeFloat64) {
 		return true
 	}
 	return false
@@ -58,7 +58,7 @@ func (d FloatTextbox) GenerateRefresh(ref interface{}, desc *generator.ControlDe
 
 func (d FloatTextbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	col := ref.(*db.Column)
-	if col.ColumnType == query.ColTypeFloat {
+	if col.ColumnType == query.ColTypeFloat32 {
 		return `val := ctrl.Float32()`
 	} else {
 		return `val := ctrl.Float64()`
