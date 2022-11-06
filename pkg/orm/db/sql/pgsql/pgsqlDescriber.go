@@ -472,9 +472,13 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]pgTable, options Opti
 func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 	var columnDescriptions []db.ColumnDescription
 
-	pkColumns := make(map[string]bool)
 	// Build the indexes
+	pkColumns := make(map[string]bool)
 	indexes := make(map[string]*db.IndexDescription)
+	uniqueColumns := make(map[string]bool)
+
+	// Fill pkColumns map with the column names of all the pk columns
+	// Also file the indexes map with a list of columns for each index
 	for _, idx := range t.indexes {
 		if idx.primary {
 			pkColumns[idx.columnName] = true
@@ -487,15 +491,27 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 		}
 	}
 
+	// File the uniqueColumns map with all the columns that have a single unique index,
+	// including any PK columns. Single indexes are used to determine 1 to 1 relationships.
+	for _, i := range indexes {
+		if len(i.ColumnNames) == 1 && i.IsUnique {
+			uniqueColumns[i.ColumnNames[0]] = true
+		}
+	}
+	if len(pkColumns) == 1 {
+		for k, _ := range pkColumns {
+			uniqueColumns[k] = true
+		}
+	}
+
 	var pkCount int
 	for _, col := range t.columns {
-		cd := m.getColumnDescription(t, col)
+		cd := m.getColumnDescription(t, col, pkColumns[col.name], uniqueColumns[col.name])
 
-		isPk := pkColumns[col.name]
-
-		if isPk {
+		if cd.IsPk {
 			// private keys go first
-			// the following code does an insert after whatever previous pks have been found. Its important to do these in order.
+			// the following code does an insert after whatever previous pks have been found.
+			// It is important to do these in order.
 			columnDescriptions = append(columnDescriptions, db.ColumnDescription{})
 			copy(columnDescriptions[pkCount+1:], columnDescriptions[pkCount:])
 			columnDescriptions[pkCount] = cd
@@ -506,18 +522,18 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 	}
 
 	td := db.TableDescription{
-		Name:    t.queryName,
+		Name:    t.name,
 		Columns: columnDescriptions,
 	}
-
-	stringmap.Range(indexes, func(key string, val interface{}) bool {
-		td.Indexes = append(td.Indexes, *(val.(*db.IndexDescription)))
-		return true
-	})
 
 	td.Comment = t.comment
 	td.Options = t.options
 
+	// Create the indexes array in index name order so its predictable
+	stringmap.Range(indexes, func(key string, val interface{}) bool {
+		td.Indexes = append(td.Indexes, *(val.(*db.IndexDescription)))
+		return true
+	})
 	return td
 }
 
@@ -559,7 +575,7 @@ ORDER BY
 	return td
 }
 
-func (m *DB) getColumnDescription(table pgTable, column pgColumn) db.ColumnDescription {
+func (m *DB) getColumnDescription(table pgTable, column pgColumn, isPk bool, isUnique bool) db.ColumnDescription {
 	cd := db.ColumnDescription{
 		Name: column.name,
 	}
@@ -567,28 +583,9 @@ func (m *DB) getColumnDescription(table pgTable, column pgColumn) db.ColumnDescr
 
 	// treat auto incrementing values as id values
 	cd.IsId = column.defaultValue.Valid && strings.Contains(column.defaultValue.String, "nextval")
-
-	var foundPK, foundUnique bool
-	for _, i := range table.indexes {
-		if i.unique {
-			if foundUnique {
-				foundUnique = false // multiple column index
-				break
-			}
-			foundUnique = true
-		}
-		if i.primary {
-			if foundPK {
-				foundPK = false // multiple column PK
-				break
-			}
-			foundPK = true
-		}
-	}
-
-	cd.IsPk = foundPK
+	cd.IsPk = isPk
 	cd.IsNullable = column.isNullable == "YES"
-	cd.IsUnique = foundUnique || foundPK
+	cd.IsUnique = isUnique
 
 	cd.Comment = column.comment
 	cd.Options = column.options

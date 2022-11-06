@@ -543,13 +543,46 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable, options O
 func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 	var columnDescriptions []db.ColumnDescription
 
+	// Build the indexes
+	pkColumns := make(map[string]bool)
+	indexes := make(map[string]*db.IndexDescription)
+	uniqueColumns := make(map[string]bool)
+
+	// Fill pkColumns map with the column names of all the pk columns
+	// Also file the indexes map with a list of columns for each index
+	for _, idx := range t.indexes {
+		if idx.name == "PRIMARY" {
+			pkColumns[idx.columnName] = true
+		} else if i, ok2 := indexes[idx.name]; ok2 {
+			i.ColumnNames = append(i.ColumnNames, idx.columnName)
+			sort.Strings(i.ColumnNames) // make sure this list stays in a predictable order each time
+		} else {
+			i = &db.IndexDescription{IsUnique: !idx.nonUnique, ColumnNames: []string{idx.columnName}}
+			indexes[idx.name] = i
+		}
+	}
+
+	// File the uniqueColumns map with all the columns that have a single unique index,
+	// including any PK columns. Single indexes are used to determine 1 to 1 relationships.
+	for _, i := range indexes {
+		if len(i.ColumnNames) == 1 && i.IsUnique {
+			uniqueColumns[i.ColumnNames[0]] = true
+		}
+	}
+	if len(pkColumns) == 1 {
+		for k, _ := range pkColumns {
+			uniqueColumns[k] = true
+		}
+	}
+
 	var pkCount int
 	for _, col := range t.columns {
-		cd := m.getColumnDescription(t, col)
+		cd := m.getColumnDescription(t, col, pkColumns[col.name], uniqueColumns[col.name])
 
 		if cd.IsPk {
 			// private keys go first
-			// the following code does an insert after whatever previous pks have been found. Its important to do these in order.
+			// the following code does an insert after whatever previous pks have been found.
+			// It is important to do these in order.
 			columnDescriptions = append(columnDescriptions, db.ColumnDescription{})
 			copy(columnDescriptions[pkCount+1:], columnDescriptions[pkCount:])
 			columnDescriptions[pkCount] = cd
@@ -567,20 +600,7 @@ func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 	td.Comment = t.comment
 	td.Options = t.options
 
-	// Build the indexes
-	indexes := make(map[string]*db.IndexDescription)
-	for _, idx := range t.indexes {
-		/*if idx.name == "PRIMARY" {
-			continue // assume primary keys are always indexed, so we don't need to report this
-		}*/
-		if i, ok2 := indexes[idx.name]; ok2 {
-			i.ColumnNames = append(i.ColumnNames, idx.columnName)
-			sort.Strings(i.ColumnNames) // make sure this list stays in a predictable order each time
-		} else {
-			i = &db.IndexDescription{IsUnique: !idx.nonUnique, ColumnNames: []string{idx.columnName}}
-			indexes[idx.name] = i
-		}
-	}
+	// Create the indexes array in index name order so its predictable
 	stringmap.Range(indexes, func(key string, val interface{}) bool {
 		td.Indexes = append(td.Indexes, *(val.(*db.IndexDescription)))
 		return true
@@ -620,7 +640,7 @@ func (m *DB) getTypeTableDescription(t mysqlTable) db.TableDescription {
 	return td
 }
 
-func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.ColumnDescription {
+func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn, isPk bool, isUnique bool) db.ColumnDescription {
 	cd := db.ColumnDescription{
 		Name: column.name,
 	}
@@ -628,9 +648,9 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.Colum
 	m.processTypeInfo(table.name, column, &cd)
 
 	cd.IsId = strings.Contains(column.extra, "auto_increment")
-	cd.IsPk = column.key == "PRI"
+	cd.IsPk = isPk
 	cd.IsNullable = column.isNullable == "YES"
-	cd.IsUnique = (column.key == "UNI") || cd.IsPk
+	cd.IsUnique = isUnique
 
 	// indicates that the database is handling update on modify
 	// In MySQL this is detectable. In other databases, if you can set this up, but its hard to detect, you can create a comment property to spec this
