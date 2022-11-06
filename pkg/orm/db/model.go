@@ -319,18 +319,20 @@ func (m *Model) importReverseReferences(td *Table) {
 // association columns directly and store an array of records numbers on either end of the association.
 func (m *Model) importAssociation(mm ManyManyDescription) {
 	if m.TypeTable(mm.Table2) == nil {
-		ref1 := m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, false)
-		ref2 := m.makeManyManyRef(mm.Table2, mm.Column2, mm.Table1, mm.Column1, mm.GoName1, mm.GoPlural1, mm.AssnTableName, false)
+		ref1 := m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, false, mm.SupportsForeignKeys)
+		ref2 := m.makeManyManyRef(mm.Table2, mm.Column2, mm.Table1, mm.Column1, mm.GoName1, mm.GoPlural1, mm.AssnTableName, false, mm.SupportsForeignKeys)
 		ref1.MM = ref2
 		ref2.MM = ref1
-
 	} else {
 		// type table
-		m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, true)
+		m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, true, mm.SupportsForeignKeys)
 	}
 }
 
-func (m *Model) makeManyManyRef(t1, c1, t2, c2, g2, g2p, t string, isType bool) *ManyManyReference {
+func (m *Model) makeManyManyRef(
+	t1, c1, t2, c2, g2, g2p, t string,
+	isType, supportsForeignKeys bool,
+) *ManyManyReference {
 	sourceTableName := t1
 	destTableName := t2
 	sourceObjName := strings.TrimSuffix(c1, m.ForeignKeySuffix)
@@ -374,6 +376,7 @@ func (m *Model) makeManyManyRef(t1, c1, t2, c2, g2, g2p, t string, isType bool) 
 		GoName:               goName,
 		GoPlural:             goPlural,
 		IsTypeAssociation:    isType,
+		SupportsForeignKeys:  supportsForeignKeys,
 	}
 	sourceTable.ManyManyReferences = append(sourceTable.ManyManyReferences, &ref)
 	return &ref

@@ -19,9 +19,8 @@ import (
 // DB is the goradd driver for postgresql databases.
 type DB struct {
 	sql2.DbHelper
-	model        *db.Model
-	databaseName string
-	schemas      []string
+	model   *db.Model
+	schemas []string
 }
 
 // NewDB returns a new Postgresql DB database object based on the pgx driver
@@ -61,7 +60,6 @@ func NewDB(dbKey string,
 	m := DB{
 		DbHelper: sql2.NewSqlDb(dbKey, db3),
 	}
-	m.databaseName = config.Database // save off the database name for later use
 	return &m
 }
 

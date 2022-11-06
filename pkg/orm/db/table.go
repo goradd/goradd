@@ -39,6 +39,16 @@ type Table struct {
 	ManyManyReferences []*ManyManyReference
 	// ReverseReferences describes the many-to-one references pointing to this table
 	ReverseReferences []*ReverseReference
+
+	// SupportsForeignKeys determines whether the table uses a storage engine that
+	// supports foreign keys. Some examples: Postgres supports foreign keys across all tables,
+	// while some MySQL database engines do not support foreign keys, and the engine
+	// can be assigned on a table-by-table basis.
+	//
+	// If the table has foreign key support, the code generator will assume that the
+	// database will automatically handle updates and deletes of foreign key values.
+	// If not, the code generator will attempt to update the foreign keys as appropriate.
+	SupportsForeignKeys bool
 }
 
 func (t *Table) PrimaryKeyColumn() *Column {

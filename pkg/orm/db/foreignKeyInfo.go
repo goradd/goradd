@@ -1,15 +1,20 @@
 package db
 
-// ForeignKeyInfo is additional information to describe what a foreign key points to
+// ForeignKeyInfo is additional information to describe what a foreign key points to.
+// Cross database foreign keys are not supported.
 type ForeignKeyInfo struct {
-	//DbKey string	// We don't support cross database foreign keys yet. Someday maybe.
 	// ReferencedTable is the name of the table on the other end of the foreign key
 	ReferencedTable string
-	// ReferencedColumn is the database column name in the linked table that matches this column name. Often that is the primary key of the other table.
+	// ReferencedColumn is the database column name in the linked table that matches this column name.
+	// Often that is the primary key of the other table.
 	ReferencedColumn string
-	// UpdateAction indicates how the database will react when the other end of the relationship's value changes.
+	// UpdateAction indicates how the column will react when the other end of the relationship's value changes.
+	// Some databases react automatically, but databases or tables that do not support
+	// foreign keys will need to be updated manually.
 	UpdateAction FKAction
-	// DeleteAction indicates how the database will react when the other end of the relationship's record is deleted.
+	// DeleteAction indicates how the column will react when the other end of the relationship's record is deleted.
+	// Some databases react automatically, but databases or tables that do not support
+	// foreign keys will need to be updated manually.
 	DeleteAction FKAction
 	// GoName is the name we should use to refer to the related object
 	GoName string

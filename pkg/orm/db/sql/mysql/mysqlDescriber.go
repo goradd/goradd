@@ -20,12 +20,13 @@ our own cross-platform internal database description object.
 */
 
 type mysqlTable struct {
-	name    string
-	columns []mysqlColumn
-	indexes []mysqlIndex
-	fkMap   map[string]mysqlForeignKey
-	comment string
-	options map[string]interface{}
+	name                string
+	columns             []mysqlColumn
+	indexes             []mysqlIndex
+	fkMap               map[string]mysqlForeignKey
+	comment             string
+	options             map[string]interface{}
+	supportsForeignKeys bool
 }
 
 type mysqlColumn struct {
@@ -133,7 +134,7 @@ func (m *DB) getRawTables() map[string]mysqlTable {
 
 // Gets information for a table
 func (m *DB) getTables() []mysqlTable {
-	var tableName, tableComment string
+	var tableName, tableComment, tableEngine string
 	var tables []mysqlTable
 
 	// Use the MySQL5 Information Schema to get a list of all the tables in this database
@@ -143,7 +144,8 @@ func (m *DB) getTables() []mysqlTable {
 	rows, err := m.SqlDb().Query(fmt.Sprintf(`
 	SELECT
 	table_name,
-	table_comment
+	table_comment,
+	engine
 	FROM
 	information_schema.tables
 	WHERE
@@ -156,17 +158,22 @@ func (m *DB) getTables() []mysqlTable {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err = rows.Scan(&tableName, &tableComment)
+		err = rows.Scan(&tableName, &tableComment, &tableEngine)
+		var supportsForeignKeys bool
+		if tableEngine == "InnoDB" {
+			supportsForeignKeys = true
+		}
 		if err != nil {
 			log.Fatal(err)
 		}
 		log.Println(tableName)
 		table := mysqlTable{
-			name:    tableName,
-			comment: tableComment,
-			columns: []mysqlColumn{},
-			fkMap:   make(map[string]mysqlForeignKey),
-			indexes: []mysqlIndex{},
+			name:                tableName,
+			comment:             tableComment,
+			columns:             []mysqlColumn{},
+			fkMap:               make(map[string]mysqlForeignKey),
+			indexes:             []mysqlIndex{},
+			supportsForeignKeys: supportsForeignKeys,
 		}
 		if table.options, table.comment, err = sql2.ExtractOptions(table.comment); err != nil {
 			log.Print("Error in comment options for table " + table.name + " - " + err.Error())
@@ -183,7 +190,6 @@ func (m *DB) getTables() []mysqlTable {
 }
 
 func (m *DB) getColumns(table string) (columns []mysqlColumn, err error) {
-
 	dbName := m.databaseName
 
 	rows, err := m.SqlDb().Query(fmt.Sprintf(`
@@ -593,8 +599,9 @@ func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 	}
 
 	td := db.TableDescription{
-		Name:    t.name,
-		Columns: columnDescriptions,
+		Name:                t.name,
+		Columns:             columnDescriptions,
+		SupportsForeignKeys: t.supportsForeignKeys,
 	}
 
 	td.Comment = t.comment
@@ -682,23 +689,27 @@ func (m *DB) getManyManyDescription(t mysqlTable, typeTableSuffix string) (mm db
 	var typeIndex = -1
 	for i, cd := range td.Columns {
 		if !cd.IsPk {
-			log.Print("Error: table " + td.Name + ":" + cd.Name + " must be a primary key.")
+			log.Print("Error: column " + td.Name + ":" + cd.Name + " must be a primary key.")
 			return
 		}
 
 		if cd.ForeignKey == nil {
-			log.Print("Error: table " + td.Name + ":" + cd.Name + " must be a foreign key.")
+			log.Print("Error: column " + td.Name + ":" + cd.Name + " must be a foreign key.")
 			return
 		}
 
+		if cd.ForeignKey.DeleteAction != db.FKActionCascade {
+			log.Print("Warning: column " + td.Name + ":" + cd.Name + " has a DELETE action that is not CASCADE. You will need to manually delete the relationship before the associated object is deleted.")
+		}
+
 		if cd.IsNullable {
-			log.Print("Error: table " + td.Name + ":" + cd.Name + " cannot be nullable.")
+			log.Print("Error: column " + td.Name + ":" + cd.Name + " cannot be nullable.")
 			return
 		}
 
 		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, typeTableSuffix) {
 			if typeIndex != -1 {
-				log.Print("Error: table " + td.Name + ":" + " cannot have two foreign keys to type tables.")
+				log.Print("Error: column " + td.Name + ":" + " cannot have two foreign keys to type tables.")
 				return
 			}
 			typeIndex = i
@@ -744,6 +755,7 @@ func (m *DB) getManyManyDescription(t mysqlTable, typeTableSuffix string) (mm db
 	}
 
 	mm.AssnTableName = t.name
+	mm.SupportsForeignKeys = t.supportsForeignKeys
 	ok = true
 	return
 }

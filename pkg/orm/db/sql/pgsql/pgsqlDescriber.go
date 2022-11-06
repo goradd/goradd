@@ -522,8 +522,9 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 	}
 
 	td := db.TableDescription{
-		Name:    t.name,
-		Columns: columnDescriptions,
+		Name:                t.name,
+		Columns:             columnDescriptions,
+		SupportsForeignKeys: true, // Postgres supports foreign keys in all tables
 	}
 
 	td.Comment = t.comment
@@ -620,6 +621,10 @@ func (m *DB) getManyManyDescription(t pgTable, typeTableSuffix string) (mm db.Ma
 			return
 		}
 
+		if cd.ForeignKey.DeleteAction != db.FKActionCascade {
+			log.Print("Warning: column " + td.Name + ":" + cd.Name + " has a DELETE action that is not CASCADE. You will need to manually delete the relationship before the associated object is deleted.")
+		}
+
 		if cd.IsNullable {
 			log.Print("Error: table " + td.Name + ":" + cd.Name + " cannot be nullable.")
 			return
@@ -673,6 +678,7 @@ func (m *DB) getManyManyDescription(t pgTable, typeTableSuffix string) (mm db.Ma
 	}
 
 	mm.AssnTableName = t.name
+	mm.SupportsForeignKeys = true
 	ok = true
 	return
 }

@@ -27,6 +27,9 @@ type TableDescription struct {
 	Comment string
 	// Options are key-value settings that can be used to further describe code generation
 	Options map[string]interface{}
+	// SupportsForeignKeys indicates that the engine for the table will automatically
+	// update foreign keys per its internal constraints.
+	SupportsForeignKeys bool
 }
 
 // ColumnDescription describes a field of a database object to GoRADD.
@@ -74,18 +77,17 @@ type ColumnDescription struct {
 	Options map[string]interface{}
 }
 
-// ForeignKeyDescription describes a pointer from one database object to another database object.
+// ForeignKeyDescription describes a pointer from one database column to another database column.
+// Cross database foreign keys are not supported. Foreign keys between schemas for databases
+// that support schemas ARE supported.
 type ForeignKeyDescription struct {
-	//DbKey string	// We don't support cross database foreign keys.
 	// ReferencedTable is the name of the table on the other end of the foreign key
 	ReferencedTable string
 	// ReferencedColumn is the database column name in the linked table that matches this column. Often that is the primary key of the other table.
 	ReferencedColumn string
-	// UpdateAction indicates how the database will react when the referenced item's id changes. See
-	// FKActionFromString for possible values.
+	// UpdateAction indicates how the column will react when the referenced item's ID changes.
 	UpdateAction FKAction
-	// DeleteAction indicates how the database will react when the referenced item is deleted. See
-	//	// FKActionFromString for possible values
+	// DeleteAction indicates how the column will react when the referenced item is deleted.
 	DeleteAction FKAction
 	// IsUnique is true if the reference is one-to-one
 	IsUnique bool
@@ -135,4 +137,8 @@ type ManyManyDescription struct {
 	// AssnTableName is the name of the intermediate association table that will be used to create the relationship. This is
 	// needed for SQL databases, but not for NoSQL, as NoSQL will create additional array columns on each side of the relationship.
 	AssnTableName string
+	// SupportsForeignKeys indicates that the database engine for the table will automatically take
+	// care of updating foreign key pointers when the item pointed to has an updated key or is deleted.
+	// If this is false, the code generator will need to do the updating.
+	SupportsForeignKeys bool
 }
