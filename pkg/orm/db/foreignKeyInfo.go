@@ -42,18 +42,23 @@ func (fk *ForeignKeyInfo) GoVarName() string {
 }
 
 // FKAction indicates how the database handles situations when one side of a relationship is deleted or the key
-// is changed. These generally correspond to the options available in MySQL InnoDB databases.
+// is changed.
 type FKAction int
 
 // The foreign key actions tell us what the database will do automatically if a foreign key object is changed. This allows
 // us to do the appropriate thing when we detect in the ORM that a linked object is changing.
 const (
-	FKActionNone FKAction = iota // In a typical database, this is the same as Restrict. For OUR purposes, it means we should deal with it ourselves.
-	// This would be the situation when we are emulating foreign key constraints for databases that don't support them.
+	// FKActionNone indicates the database does not support foreign key actions, so we should deal with it ourselves.
+	FKActionNone FKAction = iota
+	// FKActionSetNull indicates the foreign key will be set to null
 	FKActionSetNull
-	FKActionSetDefault // Not supported in MySQL!
-	FKActionCascade    //
-	FKActionRestrict   // The database is going to choke on this. We will try to error before something like this happens.
+	// FKActionSetDefault indicates the foreign key will be set to a default value
+	FKActionSetDefault
+	// FKActionCascade indicates the foreign key will automatically update values during an update, and
+	// automatically delete related records during a delete.
+	FKActionCascade
+	// FKActionRestrict indicates the database will prevent the action from happening by likely panicking with an error
+	FKActionRestrict
 )
 
 func (a FKAction) String() string {

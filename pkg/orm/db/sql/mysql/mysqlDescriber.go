@@ -645,8 +645,8 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.Colum
 		cd.ForeignKey = &db.ForeignKeyDescription{
 			ReferencedTable:  fk.referencedTableName.String,
 			ReferencedColumn: fk.referencedColumnName.String,
-			UpdateAction:     sql2.FkRuleToAction(fk.updateRule).String(),
-			DeleteAction:     sql2.FkRuleToAction(fk.deleteRule).String(),
+			UpdateAction:     fkRuleToAction(fk.updateRule),
+			DeleteAction:     fkRuleToAction(fk.deleteRule),
 		}
 	}
 
@@ -726,4 +726,25 @@ func (m *DB) getManyManyDescription(t mysqlTable, typeTableSuffix string) (mm db
 	mm.AssnTableName = t.name
 	ok = true
 	return
+}
+
+func fkRuleToAction(rule sql.NullString) db.FKAction {
+
+	if !rule.Valid {
+		return db.FKActionNone // This means we will emulate foreign key actions
+	}
+	switch strings.ToUpper(rule.String) {
+	case "NO ACTION":
+		fallthrough
+	case "RESTRICT":
+		return db.FKActionRestrict
+	case "CASCADE":
+		return db.FKActionCascade
+	case "SET DEFAULT":
+		return db.FKActionSetDefault
+	case "SET NULL":
+		return db.FKActionSetNull
+
+	}
+	return db.FKActionNone
 }

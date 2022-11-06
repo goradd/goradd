@@ -33,7 +33,7 @@ type Table struct {
 	// Comment is the general comment included in the database
 	Comment string
 
-	// The following items are filled in by the analyze process
+	// The following items are filled in by the importDescription process
 
 	// ManyManyReferences describe the many-to-many references pointing to this table
 	ManyManyReferences []*ManyManyReference
@@ -42,6 +42,12 @@ type Table struct {
 }
 
 func (t *Table) PrimaryKeyColumn() *Column {
+	if len(t.Columns) == 0 {
+		return nil
+	}
+	if !t.Columns[0].IsPk {
+		return nil
+	}
 	return t.Columns[0]
 }
 

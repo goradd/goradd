@@ -172,6 +172,11 @@ func (m *DB) GenerateDeleteSql(qb QueryBuilderI) (sql string, args []interface{}
 	return
 }
 
+// iq surrounds the given value with sql identifier quotes.
+func iq(v string) string {
+	return string('"') + v + string('"')
+}
+
 func (m *DB) generateColumnListWithAliases(b *sql2.Builder) (sql string, args []interface{}) {
 	b.ColumnAliases.Range(func(key string, j *sql2.JoinTreeItem) bool {
 		sql += m.generateColumnNodeSql(j.Parent.Alias, j.Node) + " AS " + key + ",\n"
@@ -183,7 +188,13 @@ func (m *DB) generateColumnListWithAliases(b *sql2.Builder) (sql string, args []
 			node := v.(NodeI)
 			aliaser := v.(Aliaser)
 			s, a := m.generateNodeSql(b, node, false)
-			sql += s + " AS " + aliaser.GetAlias() + ",\n"
+			sql += s
+			alias := aliaser.GetAlias()
+			if alias != "" {
+				// This happens in a subquery
+				sql += " AS " + alias
+			}
+			sql += ",\n"
 			args = append(args, a...)
 			return true
 		})
@@ -201,7 +212,7 @@ func (m *DB) generateFromSql(b *sql2.Builder) (sql string, args []interface{}) {
 	sql = "FROM\n"
 
 	j := b.RootJoinTreeItem
-	sql += "`" + NodeTableName(j.Node) + "` AS `" + j.Alias + "`\n"
+	sql += iq(NodeTableName(j.Node)) + " AS " + j.Alias + "\n"
 
 	for _, cj := range j.ChildReferences {
 		s, a = m.generateJoinSql(b, cj)
@@ -222,9 +233,9 @@ func (m *DB) generateJoinSql(b *sql2.Builder, j *sql2.JoinTreeItem) (sql string,
 	switch node := tn.EmbeddedNode_().(type) {
 	case *ReferenceNode:
 		sql = "LEFT JOIN "
-		sql += "`" + ReferenceNodeRefTable(node) + "` AS `" +
-			j.Alias + "` ON `" + j.Parent.Alias + "`.`" +
-			ReferenceNodeDbColumnName(node) + "` = `" + j.Alias + "`.`" + ReferenceNodeRefColumn(node) + "`"
+		sql += iq(ReferenceNodeRefTable(node)) + " AS " +
+			j.Alias + " ON " + j.Parent.Alias + "." +
+			iq(ReferenceNodeDbColumnName(node)) + " = " + j.Alias + "." + iq(ReferenceNodeRefColumn(node))
 		if j.JoinCondition != nil {
 			s, a := m.generateNodeSql(b, j.JoinCondition, false)
 			sql += " AND " + s
@@ -236,9 +247,9 @@ func (m *DB) generateJoinSql(b *sql2.Builder, j *sql2.JoinTreeItem) (sql string,
 		}
 
 		sql = "LEFT JOIN "
-		sql += "`" + ReverseReferenceNodeRefTable(node) + "` AS `" +
-			j.Alias + "` ON `" + j.Parent.Alias + "`.`" +
-			ReverseReferenceNodeKeyColumnName(node) + "` = `" + j.Alias + "`.`" + ReverseReferenceNodeRefColumn(node) + "`"
+		sql += iq(ReverseReferenceNodeRefTable(node)) + " AS " +
+			j.Alias + " ON " + j.Parent.Alias + "." +
+			iq(ReverseReferenceNodeKeyColumnName(node)) + " = " + j.Alias + "." + iq(ReverseReferenceNodeRefColumn(node))
 		if j.JoinCondition != nil {
 			s, a := m.generateNodeSql(b, j.JoinCondition, false)
 			sql += " AND " + s
@@ -258,12 +269,12 @@ func (m *DB) generateJoinSql(b *sql2.Builder, j *sql2.JoinTreeItem) (sql string,
 			pk = m.Model().Table(ManyManyNodeRefTable(node)).PrimaryKeyColumn().DbName
 		}
 
-		sql += "`" + ManyManyNodeDbTable(node) + "` AS `" + j.Alias + "a` ON `" +
-			j.Parent.Alias + "`.`" +
-			ColumnNodeDbName(ParentNode(node).(TableNodeI).PrimaryKeyNode()) +
-			"` = `" + j.Alias + "a`.`" + ManyManyNodeDbColumn(node) + "`\n"
-		sql += "LEFT JOIN `" + ManyManyNodeRefTable(node) + "` AS `" + j.Alias + "` ON `" + j.Alias + "a`.`" + ManyManyNodeRefColumn(node) +
-			"` = `" + j.Alias + "`.`" + pk + "`"
+		sql += iq(ManyManyNodeDbTable(node)) + " AS " + j.Alias + "a ON " +
+			j.Parent.Alias + "." +
+			iq(ColumnNodeDbName(ParentNode(node).(TableNodeI).PrimaryKeyNode())) +
+			" = " + j.Alias + "a." + iq(ManyManyNodeDbColumn(node)) + "\n"
+		sql += "LEFT JOIN " + iq(ManyManyNodeRefTable(node)) + " AS " + j.Alias + " ON " + j.Alias + "a." + iq(ManyManyNodeRefColumn(node)) +
+			" = " + j.Alias + "." + iq(pk)
 
 		if j.JoinCondition != nil {
 			s, a := m.generateNodeSql(b, j.JoinCondition, false)
@@ -298,7 +309,7 @@ func (m *DB) generateNodeSql(b *sql2.Builder, n NodeI, useAlias bool) (sql strin
 			sql = m.generateColumnNodeSql(item.Parent.Alias, node)
 		}
 	case *AliasNode:
-		sql = "`" + node.GetAlias() + "`"
+		sql = iq(node.GetAlias())
 	case *SubqueryNode:
 		sql, args = m.generateSubquerySql(node)
 	case TableNodeI:
@@ -435,11 +446,11 @@ func (m *DB) generateOperationSql(b *sql2.Builder, n *OperationNode, useAlias bo
 
 // Generate the column node sql.
 func (m *DB) generateColumnNodeSql(parentAlias string, node NodeI) (sql string) {
-	return "`" + parentAlias + "`.`" + ColumnNodeDbName(node.(*ColumnNode)) + "`"
+	return parentAlias + "." + iq(ColumnNodeDbName(node.(*ColumnNode)))
 }
 
 func (m *DB) generateAlias(alias string) (sql string) {
-	return "`" + alias + "`"
+	return alias
 }
 
 func (m *DB) generateNodeListSql(b *sql2.Builder, nodes []NodeI, useAlias bool) (sql string, args []interface{}) {
@@ -532,7 +543,7 @@ func (m *DB) Update(ctx context.Context, table string, fields map[string]interfa
 	sql += s
 	args = append(args, a...)
 
-	sql += "WHERE " + pkName + " = ?"
+	sql += "WHERE " + iq(pkName) + " = ?"
 	args = append(args, pkValue)
 	_, e := m.Exec(ctx, sql, args...)
 	if e != nil {
@@ -543,7 +554,7 @@ func (m *DB) Update(ctx context.Context, table string, fields map[string]interfa
 // Insert inserts the given data as a new record in the database.
 // It returns the record id of the new record.
 func (m *DB) Insert(ctx context.Context, table string, fields map[string]interface{}) string {
-	var sql = "INSERT " + table + "\n"
+	var sql = "INSERT " + iq(table) + "\n"
 	var args []interface{}
 	s, a := m.makeSetSql(fields)
 	sql += s
@@ -563,9 +574,9 @@ func (m *DB) Insert(ctx context.Context, table string, fields map[string]interfa
 
 // Delete deletes the indicated record from the database.
 func (m *DB) Delete(ctx context.Context, table string, pkName string, pkValue interface{}) {
-	var sql = "DELETE FROM " + table + "\n"
+	var sql = "DELETE FROM " + iq(table) + "\n"
 	var args []interface{}
-	sql += "WHERE " + pkName + " = ?"
+	sql += "WHERE " + iq(pkName) + " = ?"
 	args = append(args, pkValue)
 	_, e := m.Exec(ctx, sql, args...)
 	if e != nil {
@@ -591,7 +602,7 @@ func (m *DB) Associate(ctx context.Context,
 	// TODO: Could optimize by separating out what gets deleted, what gets added, and what stays the same.
 
 	// First delete all previous associations
-	var sql = "DELETE FROM " + table + " WHERE " + column + "=?"
+	var sql = "DELETE FROM " + iq(table) + " WHERE " + iq(column) + "=?"
 	_, e := m.Exec(ctx, sql, pk)
 	if e != nil {
 		panic(e.Error())
@@ -602,7 +613,7 @@ func (m *DB) Associate(ctx context.Context,
 
 	// Add new associations
 	for _, relatedPk := range reflect.InterfaceSlice(relatedPks) {
-		sql = "INSERT " + table + " SET " + column + "=?, " + relatedColumn + "=?"
+		sql = "INSERT " + iq(table) + " SET " + iq(column) + "=?, " + iq(relatedColumn) + "=?"
 		_, e = m.Exec(ctx, sql, pk, relatedPk)
 		if e != nil {
 			panic(e.Error())

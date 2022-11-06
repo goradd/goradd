@@ -5,7 +5,6 @@ package sql
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"log"
 	"strconv"
@@ -72,27 +71,6 @@ func getBooleanOption(o *maps.SliceMap, option string) (val bool, ok bool) {
 	return
 }
 */
-
-func FkRuleToAction(rule sql.NullString) db.FKAction {
-
-	if !rule.Valid {
-		return db.FKActionNone // This means we will emulate foreign key actions
-	}
-	switch strings.ToUpper(rule.String) {
-	case "NO ACTION":
-		fallthrough
-	case "RESTRICT":
-		return db.FKActionRestrict
-	case "CASCADE":
-		return db.FKActionCascade
-	case "SET DEFAULT":
-		return db.FKActionSetDefault
-	case "SET NULL":
-		return db.FKActionSetNull
-
-	}
-	return db.FKActionNone
-}
 
 // SqlReceiveRows gets data from a sql result set and returns it as a slice of maps.
 //

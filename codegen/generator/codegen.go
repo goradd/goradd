@@ -7,7 +7,6 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/pkg/strings"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -164,7 +163,7 @@ func Generate() {
 				if err := os.MkdirAll(fp, 0777); err != nil {
 					log.Print(err)
 				}
-				if err := ioutil.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
+				if err := os.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
 					log.Print(err)
 				} else {
 					log.Printf("Writing %s", fileName)
@@ -175,6 +174,10 @@ func Generate() {
 
 		for _, tableKey := range stringmap.SortedKeys(codegen.Tables[dbKey]) {
 			table := codegen.Tables[dbKey][tableKey]
+			if table.PrimaryKeyColumn() == nil {
+				log.Println("Skipping table " + table.DbName + " since it has no primary key column")
+				continue
+			}
 			for _, tableTemplate := range TableTemplates {
 				buf.Reset()
 				tableTemplate.GenerateTable(codegen, dd, table, buf)
@@ -191,7 +194,7 @@ func Generate() {
 				if err := os.MkdirAll(fp, 0777); err != nil {
 					log.Print(err)
 				}
-				if err := ioutil.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
+				if err := os.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
 					log.Print(err)
 				} else {
 					log.Printf("Writing %s", fileName)
@@ -217,7 +220,7 @@ func Generate() {
 			if err := os.MkdirAll(fp, 0777); err != nil {
 				log.Print(err)
 			}
-			if err := ioutil.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
+			if err := os.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
 				log.Print(err)
 			} else {
 				log.Printf("Writing %s", fileName)

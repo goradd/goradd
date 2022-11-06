@@ -87,8 +87,10 @@ func (m *DB) getRawTables(options Options) map[string]pgTable {
 	}
 
 	for _, table := range tables {
+		tableIndex := table.schema + "." + table.name
+
 		// Do some processing on the foreign keys
-		for _, fk := range foreignKeys[table.schema+"."+table.name] {
+		for _, fk := range foreignKeys[tableIndex] {
 			if fk.referencedColumnName.Valid && fk.referencedTableName.Valid {
 				if _, ok := table.fkMap[fk.columnName]; ok {
 					log.Printf("Warning: Column %s:%s multi-table foreign keys are not supported.", table.name, fk.columnName)
@@ -104,14 +106,14 @@ func (m *DB) getRawTables(options Options) map[string]pgTable {
 			return nil
 		}
 
-		table.indexes = indexes[table.name]
+		table.indexes = indexes[tableIndex]
 		table.columns = columns
 		i := table.name
 		if options.UseQualifiedNames {
-			i = table.schema + "." + table.name
+			i = tableIndex
 		}
 		if _, ok := tableMap[i]; ok {
-			log.Printf("Error: Column %s is already registered. You may need to set useUnqualifiedNames.", table.name)
+			log.Printf("Error: Column %s is already registered. You may need to set useQualifiedNames.", table.name)
 		}
 		tableMap[i] = table
 	}
@@ -315,7 +317,7 @@ FROM
     JOIN pg_constraint as pgc
       ON tc.constraint_name = pgc.conname
 WHERE tc.constraint_type = 'FOREIGN KEY' AND
-      tc.table_schema IN ('%s');
+      tc.table_schema IN ('%s')
 	`, strings.Join(schemas, "','"))
 
 	rows, err := m.SqlDb().Query(stmt)
@@ -336,6 +338,7 @@ WHERE tc.constraint_type = 'FOREIGN KEY' AND
 			&fk.referencedColumnName,
 			&fk.updateRule,
 			&fk.deleteRule)
+
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
@@ -469,11 +472,28 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]pgTable, options Opti
 func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 	var columnDescriptions []db.ColumnDescription
 
+	pkColumns := make(map[string]bool)
+	// Build the indexes
+	indexes := make(map[string]*db.IndexDescription)
+	for _, idx := range t.indexes {
+		if idx.primary {
+			pkColumns[idx.columnName] = true
+		} else if i, ok2 := indexes[idx.name]; ok2 {
+			i.ColumnNames = append(i.ColumnNames, idx.columnName)
+			sort.Strings(i.ColumnNames) // make sure this list stays in a predictable order each time
+		} else {
+			i = &db.IndexDescription{IsUnique: idx.unique, ColumnNames: []string{idx.columnName}}
+			indexes[idx.name] = i
+		}
+	}
+
 	var pkCount int
 	for _, col := range t.columns {
 		cd := m.getColumnDescription(t, col)
 
-		if cd.IsPk {
+		isPk := pkColumns[col.name]
+
+		if isPk {
 			// private keys go first
 			// the following code does an insert after whatever previous pks have been found. Its important to do these in order.
 			columnDescriptions = append(columnDescriptions, db.ColumnDescription{})
@@ -490,24 +510,14 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 		Columns: columnDescriptions,
 	}
 
-	td.Comment = t.comment
-	td.Options = t.options
-
-	// Build the indexes
-	indexes := make(map[string]*db.IndexDescription)
-	for _, idx := range t.indexes {
-		if i, ok2 := indexes[idx.name]; ok2 {
-			i.ColumnNames = append(i.ColumnNames, idx.columnName)
-			sort.Strings(i.ColumnNames) // make sure this list stays in a predictable order each time
-		} else {
-			i = &db.IndexDescription{IsUnique: idx.unique, ColumnNames: []string{idx.columnName}}
-			indexes[idx.name] = i
-		}
-	}
 	stringmap.Range(indexes, func(key string, val interface{}) bool {
 		td.Indexes = append(td.Indexes, *(val.(*db.IndexDescription)))
 		return true
 	})
+
+	td.Comment = t.comment
+	td.Options = t.options
+
 	return td
 }
 
@@ -587,8 +597,8 @@ func (m *DB) getColumnDescription(table pgTable, column pgColumn) db.ColumnDescr
 		cd.ForeignKey = &db.ForeignKeyDescription{
 			ReferencedTable:  fk.referencedTableName.String,
 			ReferencedColumn: fk.referencedColumnName.String,
-			UpdateAction:     sql2.FkRuleToAction(fk.updateRule).String(),
-			DeleteAction:     sql2.FkRuleToAction(fk.deleteRule).String(),
+			UpdateAction:     fkRuleToAction(fk.updateRule),
+			DeleteAction:     fkRuleToAction(fk.deleteRule),
 		}
 	}
 
@@ -701,4 +711,25 @@ func getDefaultValue(sqlVal sql.NullString, typ GoColumnType) interface{} {
 	default:
 		return nil
 	}
+}
+
+func fkRuleToAction(rule sql.NullString) db.FKAction {
+
+	if !rule.Valid {
+		return db.FKActionNone // This means we will emulate foreign key actions
+	}
+	switch strings.ToUpper(rule.String) {
+	case "":
+		fallthrough
+	case "r":
+		return db.FKActionRestrict
+	case "c":
+		return db.FKActionCascade
+	case "d":
+		return db.FKActionSetDefault
+	case "n":
+		return db.FKActionSetNull
+
+	}
+	return db.FKActionNone
 }

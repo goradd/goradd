@@ -73,15 +73,17 @@ type ColumnDescription struct {
 
 // ForeignKeyDescription describes a pointer from one database object to another database object.
 type ForeignKeyDescription struct {
-	//DbKey string	// We don't support cross database foreign keys yet. Someday maybe.
+	//DbKey string	// We don't support cross database foreign keys.
 	// ReferencedTable is the name of the table on the other end of the foreign key
 	ReferencedTable string
 	// ReferencedColumn is the database column name in the linked table that matches this column. Often that is the primary key of the other table.
 	ReferencedColumn string
-	// UpdateAction indicates how the database will react when the referenced item's id changes.
-	UpdateAction string
-	// DeleteAction indicates how the database will react when the referenced item is deleted.
-	DeleteAction string
+	// UpdateAction indicates how the database will react when the referenced item's id changes. See
+	// FKActionFromString for possible values.
+	UpdateAction FKAction
+	// DeleteAction indicates how the database will react when the referenced item is deleted. See
+	//	// FKActionFromString for possible values
+	DeleteAction FKAction
 	// IsUnique is true if the reference is one-to-one
 	IsUnique bool
 
