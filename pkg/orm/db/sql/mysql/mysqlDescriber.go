@@ -659,8 +659,6 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn, isPk boo
 	cd.IsNullable = column.isNullable == "YES"
 	cd.IsUnique = isUnique
 
-	// indicates that the database is handling update on modify
-	// In MySQL this is detectable. In other databases, if you can set this up, but its hard to detect, you can create a comment property to spec this
 	if strings.Contains(column.extra, "CURRENT_TIMESTAMP") {
 		cd.SubType = "timestamp"
 	}
