@@ -79,7 +79,7 @@ func (cd *Column) DefaultConstantName(tableName string) string {
 
 // DefaultValueAsValue returns the default value of the column as a GO value
 func (cd *Column) DefaultValueAsValue() string {
-	if cd.DefaultValue == nil {
+	if cd.DefaultValue == nil || cd.IsId {
 		v := cd.ColumnType.DefaultValue()
 		if v == "" {
 			return "nil"
