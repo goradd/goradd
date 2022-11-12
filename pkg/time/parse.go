@@ -48,7 +48,7 @@ const (
 	EuroDateTimeSeconds = "2/1/2006 15:04:00"
 	LongDateDOW         = "Monday, January 2, 2006"
 	LongDate            = "January 2, 2006"
-	SqlDate				= "2006-01-02 15:04:05.000000-07"
+	SqlDate             = "2006-01-02 15:04:05.000000-07"
 )
 
 // Parse parses the given layout string to turn a string int a DateTime
@@ -105,7 +105,6 @@ func ParseForgiving(layout, value string) (time.Time, error) {
 // the resulting value will be in UTC time.
 // If an error occurs, the returned value will be the zero date.
 func FromSqlDateTime(s string) (t time.Time) {
-	var hasDate, hasTime, hasFrac, hasTZ bool
 	var form string
 
 	// First check for a unix time
