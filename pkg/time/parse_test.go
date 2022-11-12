@@ -77,7 +77,11 @@ func TestFromSqlDateTime(t *testing.T) {
 		{"datetime", "2020-06-02 03:42:01", NewDateTime(2020,6,2,3,42,1,0)},
 		{"bad date", "2020-06-32", time.Time{}},
 		{"bad time", "27:04", time.Time{}},
-		{"with timezone", "2020-06-02 03:42:01-04", NewDateTime(2020,6,2,7,42,1,0)},
+		{"RFC3339", "2020-06-02T03:42:01-04:00", NewDateTime(2020, 6, 2, 7, 42, 1, 0)},
+		{"RFC1128 short", "2020-06-02 03:42:01 -0400", NewDateTime(2020, 6, 2, 7, 42, 1, 0)},
+		{"RFC1128 long", "2020-06-02 03:42:01 -0400 EST", NewDateTime(2020, 6, 2, 7, 42, 1, 0)},
+		{"Unix time", "1591108921", NewDateTime(2020, 6, 2, 14, 42, 1, 0)},
+		{"Unix with fraction", "1591108921.123", NewDateTime(2020, 6, 2, 14, 42, 1, 123000000)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
