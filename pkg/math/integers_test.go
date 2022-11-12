@@ -13,12 +13,12 @@ func ExampleMinInt() {
 }
 
 func TestMinInt(t *testing.T) {
-	i, v := MinInt()
+	i, v := MinInt[int]()
 	if i != -1 || v != 0 {
 		t.Error("MinInt test failed for zero elements")
 	}
 
-	i, v = MinInt(7)
+	i, v = MinInt[int](7)
 	if i != 0 || v != 7 {
 		t.Error("MinInt test failed for one element")
 	}
@@ -37,7 +37,7 @@ func ExampleMaxInt() {
 }
 
 func TestMaxInt(t *testing.T) {
-	i, v := MaxInt()
+	i, v := MaxInt[int]()
 	if i != -1 || v != 0 {
 		t.Error("MaxInt test failed for zero elements")
 	}
@@ -61,7 +61,7 @@ func ExampleDiffInts() {
 }
 
 func TestDiffInts(t *testing.T) {
-	values := DiffInts()
+	values := DiffInts[int]()
 	if values != nil {
 		t.Error("DiffInts test failed for empty list")
 	}
@@ -80,7 +80,7 @@ func ExampleSumInts() {
 }
 
 func TestSumInts(t *testing.T) {
-	values := SumInts()
+	values := SumInts[int]()
 	if values != nil {
 		t.Error("SumInts test failed for empty list")
 	}
