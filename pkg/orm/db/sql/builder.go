@@ -255,7 +255,7 @@ func (b *Builder) addNodeToJoinTree(n NodeI) {
 	}
 }
 
-// gatherContainedNodes will return all of the nodes "contained" by the given node, including the given
+// gatherContainedNodes will return the given node and all the nodes "contained" by the given node, including the given
 // node if it makes sense. Contained nodes are nodes that need to become part of the join tree, but that
 // are embedded inside operations, subqueries, etc.
 func (b *Builder) gatherContainedNodes(n NodeI) (nodes []NodeI) {
