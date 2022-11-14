@@ -204,7 +204,8 @@ func (b *Builder) Count(distinct bool, nodes ...NodeI) uint {
 // After the intention of the query is gathered, this will add the various nodes from the query
 // to the node tree to establish the joins.
 func (b *Builder) buildJoinTree() {
-	for _, n := range db2.Nodes(b.QueryBuilder) {
+	nodes := db2.Nodes(b.QueryBuilder)
+	for _, n := range nodes {
 		b.addNodeToJoinTree(n)
 	}
 	b.assignTableAliases(b.RootJoinTreeItem)
@@ -255,7 +256,7 @@ func (b *Builder) addNodeToJoinTree(n NodeI) {
 	}
 }
 
-// gatherContainedNodes will return all of the nodes "contained" by the given node, including the given
+// gatherContainedNodes will return the given node and all the nodes "contained" by the given node, including the given
 // node if it makes sense. Contained nodes are nodes that need to become part of the join tree, but that
 // are embedded inside operations, subqueries, etc.
 func (b *Builder) gatherContainedNodes(n NodeI) (nodes []NodeI) {
@@ -473,11 +474,7 @@ func (b *Builder) assignAlias(item *JoinTreeItem) {
 	_, isColumnNode := item.Node.(*ColumnNode)
 
 	if item.Alias == "" {
-		// if it doesn't have a pre-assigned alias, give it an automated one
-		if a, ok := item.Node.(Aliaser); ok && a.GetAlias() != "" {
-			// This node has been assigned an alias by the developer, so use it
-			item.Alias = a.GetAlias()
-		} else if isColumnNode {
+		if isColumnNode {
 			item.Alias = columnAliasPrefix + b.SubPrefix + strconv.Itoa(b.ColumnAliasNumber)
 			b.ColumnAliasNumber++
 		} else {
