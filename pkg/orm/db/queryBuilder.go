@@ -46,6 +46,10 @@ func (b *QueryBuilder) Context() context.Context {
 
 // Join will attach the given reference node to the builder.
 func (b *QueryBuilder) Join(n NodeI, condition NodeI) {
+	// Possible TBD: If we ever want to support joining the same tables multiple
+	// times with different conditions, we could use an alias to name each join. We would
+	// then need to create an Alias node to specify which join is meant in different clauses.
+
 	if b.Joins != nil {
 		if !NodeIsReferenceI(n) {
 			panic("you can only join Reference, ReverseReference and ManyManyReference nodes")

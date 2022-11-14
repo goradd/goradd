@@ -107,6 +107,10 @@ func ParseForgiving(layout, value string) (time.Time, error) {
 func FromSqlDateTime(s string) (t time.Time) {
 	var form string
 
+	if len(s) < 4 {
+		return // must at least have some minimal amount of data to start
+	}
+
 	// First check for a unix time
 	if _, e := strconv.ParseFloat(s, 64); e == nil {
 		parts := strings.Split(s, ".")
@@ -132,8 +136,9 @@ func FromSqlDateTime(s string) (t time.Time) {
 
 			if strings.LastIndexAny(s, "+-") > strings.LastIndex(s, ":") {
 				hasTZ = true
+				lastChar := s[len(s)-1]
 
-				if s[len(s)-1] == 'T' {
+				if lastChar == 'T' || lastChar == 'C' {
 					hasLocale = true
 				}
 			}
