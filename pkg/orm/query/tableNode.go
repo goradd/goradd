@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// TableNodeI is the interface that all table nodes must implement. TableNodes are create by the code generation
+// TableNodeI is the interface that all table nodes must implement. TableNodes are created by the code generation
 // process, one for each table in the database.
 type TableNodeI interface {
 	ReferenceNodeI
@@ -56,7 +56,6 @@ func (n *TableNode) tableName() string {
 func (n *TableNode) databaseKey() string {
 	return n.dbKey
 }
-
 
 func (n *TableNode) goName() string {
 	return n.goPropName
@@ -126,7 +125,6 @@ func (n *TableNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-
 func (n *TableNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
@@ -144,7 +142,6 @@ func (n *TableNode) GobDecode(data []byte) (err error) {
 	}
 	return
 }
-
 
 func init() {
 	gob.Register(&TableNode{})

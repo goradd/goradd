@@ -1,7 +1,7 @@
 package time
 
 import (
-	"math"
+	"github.com/goradd/goradd/pkg/math"
 	"strconv"
 	"strings"
 	"time"
@@ -107,10 +107,20 @@ func ParseForgiving(layout, value string) (time.Time, error) {
 func FromSqlDateTime(s string) (t time.Time) {
 	var form string
 
+	if len(s) < 4 {
+		return // must at least have some minimal amount of data to start
+	}
+
 	// First check for a unix time
-	if u, e := strconv.ParseFloat(s, 32); e == nil {
-		i, f := math.Modf(u)
-		t = time.Unix(int64(i), int64(f*1000000)*1000)
+	if _, e := strconv.ParseFloat(s, 64); e == nil {
+		parts := strings.Split(s, ".")
+		var i, f int64
+		i, _ = strconv.ParseInt(parts[0], 10, 64)
+		if len(parts) > 1 && parts[1] != "" {
+			f, _ = strconv.ParseInt(parts[1], 10, 64)
+			f = f * math.PowerInt[int64](10, int64(9-len(parts[1])))
+		}
+		t = time.Unix(i, f).UTC()
 		return
 	}
 
@@ -126,8 +136,9 @@ func FromSqlDateTime(s string) (t time.Time) {
 
 			if strings.LastIndexAny(s, "+-") > strings.LastIndex(s, ":") {
 				hasTZ = true
+				lastChar := s[len(s)-1]
 
-				if s[len(s)-1] == 'T' {
+				if lastChar == 'T' || lastChar == 'C' {
 					hasLocale = true
 				}
 			}
