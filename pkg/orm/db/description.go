@@ -14,6 +14,7 @@ type DatabaseDescription struct {
 // TableDescription describes a database object to GoRADD.
 type TableDescription struct {
 	// Name is the name of the database table or collection.
+	// Schemas will be delineated with a period in the name.
 	Name string
 	// Columns is a list of ColumnDescriptions, one for each column in the table.
 	// The first columns are the primary keys. Usually there is just one primary key.

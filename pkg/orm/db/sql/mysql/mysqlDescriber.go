@@ -54,7 +54,6 @@ type mysqlForeignKey struct {
 	constraintName       string
 	tableName            string
 	columnName           string
-	referencedSchema     sql.NullString
 	referencedTableName  sql.NullString
 	referencedColumnName sql.NullString
 	updateRule           sql.NullString

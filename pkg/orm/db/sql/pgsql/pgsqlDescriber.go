@@ -113,7 +113,7 @@ func (m *DB) getRawTables(options Options) map[string]pgTable {
 			i = tableIndex
 		}
 		if _, ok := tableMap[i]; ok {
-			log.Printf("Error: Column %s is already registered. You may need to set useQualifiedNames.", table.name)
+			log.Printf("Error: Column %s is already registered. You may need to set UseQualifiedNames.", table.name)
 		}
 		tableMap[i] = table
 	}
@@ -366,15 +366,19 @@ WHERE tc.constraint_type = 'FOREIGN KEY' AND
 func (m *DB) processTypeInfo(tableName string, column pgColumn, cd *db.ColumnDescription) {
 
 	switch column.dataType {
+	case "time without time zone":
+		fallthrough
 	case "time":
 		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "time"
 	case "timestamp":
-		cd.GoType = ColTypeTime.GoType()
+		fallthrough
 	case "timestamp with time zone":
 		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "timestamp"
-	case "datetime": // TODO:
+	case "datetime":
+		fallthrough
+	case "timestamp without time zone":
 		cd.GoType = ColTypeTime.GoType()
 	case "date":
 		cd.GoType = ColTypeTime.GoType()
@@ -383,6 +387,8 @@ func (m *DB) processTypeInfo(tableName string, column pgColumn, cd *db.ColumnDes
 	case "boolean":
 		cd.GoType = ColTypeBool.GoType()
 
+	case "integer":
+		fallthrough
 	case "int":
 		cd.GoType = ColTypeInteger.GoType()
 		cd.MinValue = int64(-2147483648)
@@ -453,6 +459,14 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]pgTable, options Opti
 		if table.options["skip"] != nil {
 			continue
 		}
+		if strings.Contains(table.name, ".") {
+			log.Print("Error: Table " + table.schema + "." + table.name + " cannot contain a period in its name. Skipping.")
+			continue
+		}
+		if strings.Contains(table.schema, ".") {
+			log.Print("Error: Schema " + table.schema + "." + table.name + " cannot contain a period in its schema name. Skipping.")
+			continue
+		}
 
 		if strings2.EndsWith(tableName, options.TypeTableSuffix) {
 			t := m.getTypeTableDescription(table)
@@ -506,6 +520,11 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 
 	var pkCount int
 	for _, col := range t.columns {
+		if strings.Contains(col.name, ".") {
+			log.Print(`Error: Column "` + col.name + `" cannot contain a period in its name. Skipping.`)
+			continue
+		}
+
 		cd := m.getColumnDescription(t, col, pkColumns[col.name], uniqueColumns[col.name])
 
 		if cd.IsPk {
@@ -521,8 +540,13 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 		}
 	}
 
+	tableName := t.name
+	if t.schema != "" {
+		tableName = t.schema + "." + tableName
+	}
+
 	td := db.TableDescription{
-		Name:                t.name,
+		Name:                tableName,
 		Columns:             columnDescriptions,
 		SupportsForeignKeys: true, // Postgres supports foreign keys in all tables
 	}
@@ -542,10 +566,12 @@ func (m *DB) getTypeTableDescription(t pgTable) db.TableDescription {
 	td := m.getTableDescription(t)
 
 	var columnNames []string
+	var quotedNames []string
 	var columnTypes []GoColumnType
 
 	for i, c := range td.Columns {
 		columnNames = append(columnNames, c.Name)
+		quotedNames = append(quotedNames, iq(c.Name))
 		colType := ColTypeFromGoTypeString(c.GoType)
 		if i == 0 {
 			colType = ColTypeInteger // Force first value to be treated like an integer
@@ -555,15 +581,15 @@ func (m *DB) getTypeTableDescription(t pgTable) db.TableDescription {
 
 	stmt := fmt.Sprintf(`
 SELECT
-	"%s"
+	%s
 FROM
-    "%s"
+    %s
 ORDER BY
-    "%s"
+    %s
 `,
-		strings.Join(columnNames, `","`),
-		td.Name,
-		columnNames[0])
+		strings.Join(quotedNames, `,`),
+		iq(td.Name),
+		quotedNames[0])
 
 	result, err := m.SqlDb().Query(stmt)
 
@@ -592,8 +618,13 @@ func (m *DB) getColumnDescription(table pgTable, column pgColumn, isPk bool, isU
 	cd.Options = column.options
 
 	if fk, ok2 := table.fkMap[cd.Name]; ok2 {
+		tableName := fk.referencedTableName.String
+		if fk.referencedSchema.Valid && fk.referencedSchema.String != "" {
+			tableName = fk.referencedSchema.String + "." + tableName
+		}
+
 		cd.ForeignKey = &db.ForeignKeyDescription{
-			ReferencedTable:  fk.referencedTableName.String,
+			ReferencedTable:  tableName,
 			ReferencedColumn: fk.referencedColumnName.String,
 			UpdateAction:     fkRuleToAction(fk.updateRule),
 			DeleteAction:     fkRuleToAction(fk.deleteRule),

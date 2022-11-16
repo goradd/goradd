@@ -221,7 +221,7 @@ func (m *DB) GenerateDeleteSql(qb QueryBuilderI) (sql string, args []interface{}
 
 	j := b.RootJoinTreeItem
 
-	sql = "DELETE " + j.Alias + " "
+	sql = "DELETE " + iq(j.Alias) + " "
 
 	s, a = m.generateFromSql(b)
 	sql += s
@@ -260,7 +260,7 @@ func (m *DB) generateColumnListWithAliases(b *sql2.Builder) (sql string, args []
 			alias := aliaser.GetAlias()
 			if alias != "" {
 				// This happens in a subquery
-				sql += " AS " + alias
+				sql += " AS " + iq(alias)
 			}
 			sql += ",\n"
 			args = append(args, a...)
@@ -280,7 +280,7 @@ func (m *DB) generateFromSql(b *sql2.Builder) (sql string, args []interface{}) {
 	sql = "FROM\n"
 
 	j := b.RootJoinTreeItem
-	sql += iq(NodeTableName(j.Node)) + " AS " + j.Alias + "\n"
+	sql += iq(NodeTableName(j.Node)) + " AS " + iq(j.Alias) + "\n"
 
 	for _, cj := range j.ChildReferences {
 		s, a = m.generateJoinSql(b, cj)
@@ -302,8 +302,8 @@ func (m *DB) generateJoinSql(b *sql2.Builder, j *sql2.JoinTreeItem) (sql string,
 	case *ReferenceNode:
 		sql = "LEFT JOIN "
 		sql += iq(ReferenceNodeRefTable(node)) + " AS " +
-			j.Alias + " ON " + j.Parent.Alias + "." +
-			iq(ReferenceNodeDbColumnName(node)) + " = " + j.Alias + "." + iq(ReferenceNodeRefColumn(node))
+			iq(j.Alias) + " ON " + iq(j.Parent.Alias) + "." +
+			iq(ReferenceNodeDbColumnName(node)) + " = " + iq(j.Alias) + "." + iq(ReferenceNodeRefColumn(node))
 		if j.JoinCondition != nil {
 			s, a := m.generateNodeSql(b, j.JoinCondition, false)
 			sql += " AND " + s
@@ -316,8 +316,8 @@ func (m *DB) generateJoinSql(b *sql2.Builder, j *sql2.JoinTreeItem) (sql string,
 
 		sql = "LEFT JOIN "
 		sql += iq(ReverseReferenceNodeRefTable(node)) + " AS " +
-			j.Alias + " ON " + j.Parent.Alias + "." +
-			iq(ReverseReferenceNodeKeyColumnName(node)) + " = " + j.Alias + "." + iq(ReverseReferenceNodeRefColumn(node))
+			iq(j.Alias) + " ON " + iq(j.Parent.Alias) + "." +
+			iq(ReverseReferenceNodeKeyColumnName(node)) + " = " + iq(j.Alias) + "." + iq(ReverseReferenceNodeRefColumn(node))
 		if j.JoinCondition != nil {
 			s, a := m.generateNodeSql(b, j.JoinCondition, false)
 			sql += " AND " + s
@@ -337,12 +337,12 @@ func (m *DB) generateJoinSql(b *sql2.Builder, j *sql2.JoinTreeItem) (sql string,
 			pk = m.Model().Table(ManyManyNodeRefTable(node)).PrimaryKeyColumn().DbName
 		}
 
-		sql += iq(ManyManyNodeDbTable(node)) + " AS " + j.Alias + "a ON " +
-			j.Parent.Alias + "." +
+		sql += iq(ManyManyNodeDbTable(node)) + " AS " + iq(j.Alias+"a") + " ON " +
+			iq(j.Parent.Alias) + "." +
 			iq(ColumnNodeDbName(ParentNode(node).(TableNodeI).PrimaryKeyNode())) +
-			" = " + j.Alias + "a." + iq(ManyManyNodeDbColumn(node)) + "\n"
-		sql += "LEFT JOIN " + iq(ManyManyNodeRefTable(node)) + " AS " + j.Alias + " ON " + j.Alias + "a." + iq(ManyManyNodeRefColumn(node)) +
-			" = " + j.Alias + "." + iq(pk)
+			" = " + iq(j.Alias+"a") + "." + iq(ManyManyNodeDbColumn(node)) + "\n"
+		sql += "LEFT JOIN " + iq(ManyManyNodeRefTable(node)) + " AS " + iq(j.Alias) + " ON " + iq(j.Alias+"a") + "." + iq(ManyManyNodeRefColumn(node)) +
+			" = " + iq(j.Alias) + "." + iq(pk)
 
 		if j.JoinCondition != nil {
 			s, a := m.generateNodeSql(b, j.JoinCondition, false)
@@ -397,7 +397,7 @@ func (m *DB) generateSubquerySql(node *SubqueryNode) (sql string, args []interfa
 
 func (m *DB) generateOperationSql(b *sql2.Builder, n *OperationNode, useAlias bool) (sql string, args []interface{}) {
 	if useAlias && n.GetAlias() != "" {
-		sql = n.GetAlias()
+		sql = iq(n.GetAlias())
 		return
 	}
 	switch OperationNodeOperator(n) {
@@ -518,7 +518,7 @@ func (m *DB) generateColumnNodeSql(parentAlias string, node NodeI) (sql string) 
 }
 
 func (m *DB) generateAlias(alias string) (sql string) {
-	return alias
+	return iq(alias)
 }
 
 func (m *DB) generateNodeListSql(b *sql2.Builder, nodes []NodeI, useAlias bool) (sql string, args []interface{}) {

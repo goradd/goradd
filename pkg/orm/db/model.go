@@ -149,12 +149,12 @@ func (m *Model) importTypeTable(desc TableDescription) *TypeTable {
 	}
 
 	r := regexp.MustCompile("[^a-zA-Z0-9_]+")
-	for _, m := range t.Values {
-		key, ok := m[names[0]].(int)
+	for _, val := range t.Values {
+		key, ok := val[names[0]].(int)
 		if !ok {
 			panic("first column of type table must be an integer")
 		}
-		value := m[names[1]].(string)
+		value := val[names[1]].(string)
 		var con string
 
 		a := r.Split(value, -1)

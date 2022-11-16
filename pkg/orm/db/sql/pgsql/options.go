@@ -22,10 +22,6 @@ type Options struct {
 	UseQualifiedNames bool
 	// Schemas lets you specify which specific schemas you want to select.
 	// If no schemas are specified, then all available schemas will be used.
-	// Note that you cannot specify a subset of schemas, ones that do not have overlapping
-	// table names, to avoid setting useQualifiedNames to true. The Postgres default search
-	// path will be used to find unqualified names during a query, and it might choose
-	// schemas not in the schema list you specify.
 	Schemas []string
 }
 
