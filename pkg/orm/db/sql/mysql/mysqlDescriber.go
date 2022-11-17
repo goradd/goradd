@@ -495,7 +495,10 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = math.MaxUint32
 
-	case "decimal": // No native equivalent in Go. See the "Big" go package for support. You will need to shephard numbers into and out of string format to move data to the database
+	case "decimal":
+		// No native equivalent in Go.
+		// See the shopspring/decimal package for possible support.
+		// You will need to shepherd numbers into and out of string format to move data to the database.
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen) + 3
 

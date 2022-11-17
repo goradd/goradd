@@ -425,7 +425,10 @@ func (m *DB) processTypeInfo(tableName string, column pgColumn, cd *db.ColumnDes
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 65535
 
-	case "numeric": // No native equivalent in Go. See the "Big" go package for support. You will need to shephard numbers into and out of string format to move data to the database
+	case "numeric":
+		// No native equivalent in Go.
+		// See the shopspring/decimal package for support.
+		// You will need to shepherd numbers into and out of string format to move data to the database.
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64) + 3
 
@@ -711,6 +714,10 @@ func getDefaultValue(sqlVal sql.NullString, typ GoColumnType) interface{} {
 	}
 	v := sqlVal.String
 
+	if strings2.StartsWith(v, "NULL") {
+		return nil
+	}
+
 	switch typ {
 	case ColTypeBytes:
 		return nil
@@ -743,7 +750,7 @@ func fkRuleToAction(rule sql.NullString) db.FKAction {
 	if !rule.Valid {
 		return db.FKActionNone // This means we will emulate foreign key actions
 	}
-	switch strings.ToUpper(rule.String) {
+	switch rule.String {
 	case "":
 		fallthrough
 	case "r":

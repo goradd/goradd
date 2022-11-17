@@ -384,8 +384,14 @@ func (m *DB) generateOperationSql(b *sql2.Builder, n *OperationNode, useAlias bo
 		operands := OperationNodeOperands(n)
 		s := m.generateNodeSql(b, operands[0], useAlias, args)
 		s2 := m.generateNodeSql(b, operands[1], useAlias, args)
-
 		sql = fmt.Sprintf(`DATE_ADD(%s, INTERVAL (%s) SECOND)`, s, s2)
+
+	case OpXor:
+		// PGSQL does not have an XOR operator, so we have to manually implement the code
+		operands := OperationNodeOperands(n)
+		s := m.generateNodeSql(b, operands[0], useAlias, args)
+		s2 := m.generateNodeSql(b, operands[1], useAlias, args)
+		sql = fmt.Sprintf(`(((%[1]s) AND NOT (%[2]s)) OR (NOT (%[1]s) AND (%[2]s)))`, s, s2)
 
 	default:
 		for _, o := range OperationNodeOperands(n) {
@@ -580,7 +586,7 @@ func (m *DB) makeSetSql(fields map[string]interface{}, args argLister) (sql stri
 	}
 	sql = "SET "
 	for k, v := range fields {
-		sql += fmt.Sprintf("%s=%s, ", k, args.addArg(v))
+		sql += fmt.Sprintf("%s=%s, ", iq(k), args.addArg(v))
 	}
 
 	sql = strings.TrimSuffix(sql, ", ")
@@ -597,7 +603,7 @@ func (m *DB) makeInsertSql(fields map[string]interface{}, args argLister) (sql s
 	var values []string
 
 	for k, v := range fields {
-		keys = append(keys, k)
+		keys = append(keys, iq(k))
 		values = append(values, args.addArg(v))
 	}
 
