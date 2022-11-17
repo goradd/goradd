@@ -7,11 +7,11 @@ package main
 
 // Remove old files
 //go:generate gofile remove goradd-project/tmp/template/*.tpl.go
-//go:generate gofile remove goradd-project/gen/*/form/*
+//go:generate gofile remove goradd-project/gen/*/form
 //go:generate gofile remove goradd-project/gen/*/model/*.base.go
-//go:generate gofile remove goradd-project/gen/*/model/node/*
-//go:generate gofile remove goradd-project/gen/*/panel/*
-//go:generate gofile remove goradd-project/gen/*/panelbase/*
+//go:generate gofile remove goradd-project/gen/*/model/node
+//go:generate gofile remove goradd-project/gen/*/panel
+//go:generate gofile remove goradd-project/gen/*/panelbase
 
 // Generate the templates
 //go:generate got -t got -o goradd-project/tmp/template -I goradd-project/codegen/templates/orm -d github.com/goradd/goradd/codegen/templates/orm -i

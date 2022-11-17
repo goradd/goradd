@@ -87,7 +87,7 @@ func NewMysql2 (dbKey string , options DbOptions, config *mysql.Config) (*DB, er
 func (m *DB) Analyze(options Options) {
 	rawTables := m.getRawTables()
 	description := m.descriptionFromRawTables(rawTables, options)
-	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, description)
+	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, false, description)
 }
 
 func (m *DB) getRawTables() map[string]mysqlTable {

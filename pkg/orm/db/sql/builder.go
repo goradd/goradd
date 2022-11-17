@@ -803,6 +803,8 @@ func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray
 							intArray = append(intArray, v)
 						case int:
 							intArray = append(intArray, uint(v))
+						case int64:
+							intArray = append(intArray, uint(v))
 						}
 						return true
 					})

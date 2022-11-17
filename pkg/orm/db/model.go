@@ -39,13 +39,31 @@ type Model struct {
 	tableMap map[string]*Table
 	// typeTableMap gets to type tables by internal name
 	typeTableMap map[string]*TypeTable
+	// ignoreSchemas indicates that the database uses table schemas, but we will ignore
+	// them when generating object names. This means that the different tables in the schemas in the database
+	// will not have overlapping names.
+	ignoreSchemas bool
 }
 
 // NewModel creates a new Model object from the given DatabaseDescription object.
-func NewModel(dbKey string, foreignKeySuffix string, desc DatabaseDescription) *Model {
+//
+// dbKey is the unique key used throughout Goradd to refer to the database.
+//
+// foreignKeySuffix is the name ending that will be used to indicate a field is a foreign key pointer.
+//
+// ignoreSchemas indicates to ignore schema names when generating object names. If true and the
+// database supports schemas, it will not use schema names to generate object names. If the database
+// does not support schemas, this should be false
+//
+// desc is the description of the database.
+func NewModel(dbKey string,
+	foreignKeySuffix string,
+	ignoreSchemas bool,
+	desc DatabaseDescription) *Model {
 	d := Model{
 		DbKey:            dbKey,
 		ForeignKeySuffix: foreignKeySuffix,
+		ignoreSchemas:    ignoreSchemas,
 	}
 	d.importDescription(desc)
 	return &d
@@ -97,13 +115,20 @@ func (m *Model) importDescription(desc DatabaseDescription) {
 
 // importTypeTable will import the type table provided by the database description
 func (m *Model) importTypeTable(desc TableDescription) *TypeTable {
+	tableName := desc.Name
+	if m.ignoreSchemas {
+		parts := strings.Split(tableName, ".")
+		if len(parts) == 2 {
+			tableName = parts[1]
+		}
+	}
 	t := &TypeTable{
 		DbKey:         m.DbKey,
 		DbName:        desc.Name,
-		LiteralName:   m.dbNameToEnglishName(desc.Name),
-		LiteralPlural: m.dbNameToEnglishPlural(desc.Name),
-		GoName:        m.dbNameToGoName(desc.Name),
-		GoPlural:      m.dbNameToGoPlural(desc.Name),
+		LiteralName:   m.dbNameToEnglishName(tableName),
+		LiteralPlural: m.dbNameToEnglishPlural(tableName),
+		GoName:        m.dbNameToGoName(tableName),
+		GoPlural:      m.dbNameToGoPlural(tableName),
 	}
 
 	var ok bool
@@ -170,13 +195,21 @@ func (m *Model) importTypeTable(desc TableDescription) *TypeTable {
 
 // importTable will import the table provided by the description
 func (m *Model) importTable(desc TableDescription) *Table {
+	tableName := desc.Name
+	if m.ignoreSchemas {
+		parts := strings.Split(tableName, ".")
+		if len(parts) == 2 {
+			tableName = parts[1]
+		}
+	}
+
 	t := &Table{
 		DbKey:         m.DbKey,
 		DbName:        desc.Name,
-		LiteralName:   m.dbNameToEnglishName(desc.Name),
-		LiteralPlural: m.dbNameToEnglishPlural(desc.Name),
-		GoName:        m.dbNameToGoName(desc.Name),
-		GoPlural:      m.dbNameToGoPlural(desc.Name),
+		LiteralName:   m.dbNameToEnglishName(tableName),
+		LiteralPlural: m.dbNameToEnglishPlural(tableName),
+		GoName:        m.dbNameToGoName(tableName),
+		GoPlural:      m.dbNameToGoPlural(tableName),
 		Comment:       desc.Comment,
 		Options:       desc.Options,
 		columnMap:     make(map[string]*Column),
@@ -262,21 +295,19 @@ func (m *Model) importReverseReferences(td *Table) {
 
 			objName := col.DbName
 			objName = strings.TrimSuffix(objName, m.ForeignKeySuffix)
-			objName = strings.Replace(objName, td2.DbName, "", 1)
-			if objName != "" {
-				objName = UpperCaseIdentifier(objName)
-			}
+			objName = UpperCaseIdentifier(objName)
+			objName = strings.Replace(objName, td2.GoName, "", 1)
+
 			goName, _ := col.Options[GoNameOption].(string)
 			if goName == "" {
-				goName = UpperCaseIdentifier(td.DbName)
+				goName = td.GoName
 				if objName != "" {
 					goName = goName + "As" + objName
 				}
 			}
 			goPlural, _ := col.Options[GoPluralOption].(string)
 			if goPlural == "" {
-				goPlural = inflector.Pluralize(td.DbName)
-				goPlural = UpperCaseIdentifier(goPlural)
+				goPlural = td.GoPlural
 				if objName != "" {
 					goPlural = goPlural + "As" + objName
 				}
@@ -339,6 +370,12 @@ func (m *Model) makeManyManyRef(
 	destObjName := strings.TrimSuffix(c2, m.ForeignKeySuffix)
 	sourceTable := m.Table(sourceTableName)
 
+	if m.ignoreSchemas {
+		parts := strings.Split(sourceTableName, ".")
+		if len(parts) == 2 {
+			sourceTableName = parts[1]
+		}
+	}
 	var objName string
 	if isType {
 		destTable := m.TypeTable(destTableName)

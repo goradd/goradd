@@ -22,14 +22,13 @@ our own cross-platform internal database description object.
 */
 
 type pgTable struct {
-	name      string
-	schema    string
-	queryName string // qualifiedName or just table name, depending on useQualifiedNames
-	columns   []pgColumn
-	indexes   []pgIndex
-	fkMap     map[string]pgForeignKey
-	comment   string
-	options   map[string]interface{}
+	name    string
+	schema  string
+	columns []pgColumn
+	indexes []pgIndex
+	fkMap   map[string]pgForeignKey
+	comment string
+	options map[string]interface{}
 }
 
 type pgColumn struct {
@@ -68,13 +67,13 @@ type pgForeignKey struct {
 func (m *DB) Analyze(options Options) {
 	rawTables := m.getRawTables(options)
 	description := m.descriptionFromRawTables(rawTables, options)
-	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, description)
+	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, !options.UseQualifiedNames, description)
 }
 
 func (m *DB) getRawTables(options Options) map[string]pgTable {
 	var tableMap = make(map[string]pgTable)
 
-	tables, schemas2 := m.getTables(options.Schemas, options.UseQualifiedNames)
+	tables, schemas2 := m.getTables(options.Schemas)
 
 	indexes, err := m.getIndexes(schemas2)
 	if err != nil {
@@ -108,14 +107,7 @@ func (m *DB) getRawTables(options Options) map[string]pgTable {
 
 		table.indexes = indexes[tableIndex]
 		table.columns = columns
-		i := table.name
-		if options.UseQualifiedNames {
-			i = tableIndex
-		}
-		if _, ok := tableMap[i]; ok {
-			log.Printf("Error: Column %s is already registered. You may need to set UseQualifiedNames.", table.name)
-		}
-		tableMap[i] = table
+		tableMap[tableIndex] = table
 	}
 
 	return tableMap
@@ -123,7 +115,7 @@ func (m *DB) getRawTables(options Options) map[string]pgTable {
 }
 
 // Gets information for a table
-func (m *DB) getTables(schemas []string, useQualifiedNames bool) ([]pgTable, []string) {
+func (m *DB) getTables(schemas []string) ([]pgTable, []string) {
 	var tableName, tableSchema, tableComment string
 	var tables []pgTable
 	var schemaMap maps.Set[string]
@@ -158,13 +150,12 @@ func (m *DB) getTables(schemas []string, useQualifiedNames bool) ([]pgTable, []s
 		log.Println(tableSchema + "." + tableName)
 		schemaMap.Add(tableSchema)
 		table := pgTable{
-			name:      tableName,
-			schema:    tableSchema,
-			queryName: strings2.If(useQualifiedNames, tableSchema+"."+tableName, tableName),
-			comment:   tableComment,
-			columns:   []pgColumn{},
-			fkMap:     make(map[string]pgForeignKey),
-			indexes:   []pgIndex{},
+			name:    tableName,
+			schema:  tableSchema,
+			comment: tableComment,
+			columns: []pgColumn{},
+			fkMap:   make(map[string]pgForeignKey),
+			indexes: []pgIndex{},
 		}
 		if table.options, table.comment, err = sql2.ExtractOptions(table.comment); err != nil {
 			log.Print("Error in comment options for table " + table.name + " - " + err.Error())
@@ -513,7 +504,7 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 		}
 	}
 	if len(pkColumns) == 1 {
-		for k, _ := range pkColumns {
+		for k := range pkColumns {
 			uniqueColumns[k] = true
 		}
 	}
