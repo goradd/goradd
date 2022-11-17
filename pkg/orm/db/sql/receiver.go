@@ -298,7 +298,6 @@ func (r SqlReceiver) TimeI() interface{} {
 		}
 		u := strings.ToUpper(s)
 		if strings2.StartsWith(u, "CURRENT_TIMESTAMP") {
-			// Mysql version of now. This would only be asked for if we were looking for a default value.
 			return "now"
 		}
 		t = time2.FromSqlDateTime(s)
@@ -311,7 +310,7 @@ func (r SqlReceiver) TimeI() interface{} {
 		return nil
 	}
 
-	return t
+	return t.UTC()
 }
 
 // Unpack converts a SqlReceiver to a type corresponding to the given GoColumnType

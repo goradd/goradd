@@ -8,6 +8,7 @@ import (
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/stringmap"
 	strings2 "github.com/goradd/goradd/pkg/strings"
+	time2 "github.com/goradd/goradd/pkg/time"
 	"github.com/goradd/maps"
 	"log"
 	"math"
@@ -730,8 +731,10 @@ func getDefaultValue(sqlVal sql.NullString, typ GoColumnType) interface{} {
 		i, _ := strconv.Atoi(v)
 		return int64(i)
 	case ColTypeTime:
-		// TODO
-		return nil
+		if v == "CURRENT_TIMESTAMP" {
+			return "now"
+		}
+		return time2.FromSqlDateTime(v).UTC()
 	case ColTypeFloat32:
 		i, _ := strconv.ParseFloat(v, 32)
 		return float32(i)
