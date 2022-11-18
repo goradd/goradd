@@ -114,7 +114,7 @@ func (cd *Column) DefaultValueAsConstant() string {
 				return fmt.Sprintf("%#v", s)
 			}
 		}
-	} else if cd.DefaultValue == nil {
+	} else if cd.DefaultValue == nil || cd.IsId {
 		return cd.ColumnType.DefaultValue()
 	} else {
 		return fmt.Sprintf("%#v", cd.DefaultValue)
