@@ -100,6 +100,7 @@ func SqlReceiveRows(rows *sql.Rows,
 // sqlReceiveRows2 gets data from a sql result set and returns it as a slice of maps. Each column is mapped to its column name.
 // If you provide column names, those will be used in the map. Otherwise it will get the column names out of the
 // result set provided
+// This unused code is here in case we need to jetison the cursor method above.
 func sqlReceiveRows2(rows *sql.Rows, columnTypes []query.GoColumnType, columnNames []string) (values []map[string]interface{}) {
 	var err error
 

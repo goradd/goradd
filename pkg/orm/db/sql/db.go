@@ -12,7 +12,6 @@ import (
 	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/orm/db"
-	. "github.com/goradd/goradd/pkg/orm/query"
 	"strings"
 	"time"
 )
@@ -26,10 +25,12 @@ type DbI interface {
 	Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error)
 	// Query executes a query that returns values
 	Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error)
-	// GenerateSelectSql will generate the select sql from the builder. This sql can be specific to the database used.
-	GenerateSelectSql(QueryBuilderI) (sql string, args []interface{})
-	// GenerateDeleteSql will generate delete sql from the given builder.
-	GenerateDeleteSql(QueryBuilderI) (sql string, args []interface{})
+	// QuoteIdentifier will put quotes around an identifier
+	QuoteIdentifier(string) string
+	// FormatArgument will return the placeholder string for the n'th argument
+	// in a sql string. Some sqls just use "?" while others identify an argument
+	// by location, like Postgres's $1, $2, etc.
+	FormatArgument(n int) string
 }
 
 // ProfileEntry contains the data collected during sql profiling

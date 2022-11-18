@@ -14,8 +14,6 @@ import (
 	//"goradd/orm/query"
 	"context"
 	. "github.com/goradd/goradd/pkg/orm/query"
-	"github.com/kenshaw/snaker"
-	"strconv"
 )
 
 // DB is the goradd driver for mysql databases. It works through the excellent go-sql-driver driver,
@@ -168,438 +166,42 @@ func (m *DB) Model() *db.Model {
 	return m.model
 }
 
-// GenerateSelectSql generates SQL for a SELECT clause.
-// It returns the clause plus the arguments that substitute for values.
-func (m *DB) GenerateSelectSql(qb QueryBuilderI) (sql string, args []interface{}) {
-	b := qb.(*sql2.Builder)
-
-	var s string
-	var a []interface{}
-
-	if b.IsDistinct {
-		sql = "SELECT DISTINCT\n"
-	} else {
-		sql = "SELECT\n"
-	}
-
-	s, a = m.generateColumnListWithAliases(b)
-	sql += s
-	args = append(args, a...)
-
-	s, a = m.generateFromSql(b)
-	sql += s
-	args = append(args, a...)
-
-	s, a = m.generateWhereSql(b)
-	sql += s
-	args = append(args, a...)
-
-	s, a = m.generateGroupBySql(b)
-	sql += s
-	args = append(args, a...)
-
-	s, a = m.generateHaving(b)
-	sql += s
-	args = append(args, a...)
-
-	s, a = m.generateOrderBySql(b)
-	sql += s
-	args = append(args, a...)
-
-	sql += m.generateLimitSql(b)
-
-	return
-}
-
-// GenerateDeleteSql generates SQL for a DELETE clause.
-// It returns the generated SQL plus the arguments for value substitutions.
-func (m *DB) GenerateDeleteSql(qb QueryBuilderI) (sql string, args []interface{}) {
-	b := qb.(*sql2.Builder)
-
-	var s string
-	var a []interface{}
-
-	j := b.RootJoinTreeItem
-
-	sql = "DELETE " + iq(j.Alias) + " "
-
-	s, a = m.generateFromSql(b)
-	sql += s
-	args = append(args, a...)
-
-	s, a = m.generateWhereSql(b)
-	sql += s
-	args = append(args, a...)
-
-	s, a = m.generateOrderBySql(b)
-	sql += s
-	args = append(args, a...)
-
-	sql += m.generateLimitSql(b)
-
-	return
-}
-
 // iq surrounds the given value with sql identifier quotes.
 func iq(v string) string {
 	return string('`') + v + string('`')
 }
 
-func (m *DB) generateColumnListWithAliases(b *sql2.Builder) (sql string, args []interface{}) {
-	b.ColumnAliases.Range(func(key string, j *sql2.JoinTreeItem) bool {
-		sql += m.generateColumnNodeSql(j.Parent.Alias, j.Node) + " AS " + key + ",\n"
-		return true
-	})
-
-	if b.AliasNodes != nil {
-		b.AliasNodes.Range(func(key string, v Aliaser) bool {
-			node := v.(NodeI)
-			aliaser := v.(Aliaser)
-			s, a := m.generateNodeSql(b, node, false)
-			sql += s
-			alias := aliaser.GetAlias()
-			if alias != "" {
-				// This happens in a subquery
-				sql += " AS " + iq(alias)
-			}
-			sql += ",\n"
-			args = append(args, a...)
-			return true
-		})
-	}
-
-	sql = strings.TrimSuffix(sql, ",\n")
-	sql += "\n"
-	return
+// QuoteIdentifier surrounds the given identifier with quote characters
+// appropriate for Postgres
+func (m *DB) QuoteIdentifier(v string) string {
+	return iq(v)
 }
 
-func (m *DB) generateFromSql(b *sql2.Builder) (sql string, args []interface{}) {
-	var s string
-	var a []interface{}
-
-	sql = "FROM\n"
-
-	j := b.RootJoinTreeItem
-	sql += iq(NodeTableName(j.Node)) + " AS " + iq(j.Alias) + "\n"
-
-	for _, cj := range j.ChildReferences {
-		s, a = m.generateJoinSql(b, cj)
-		sql += s
-		args = append(args, a...)
-	}
-	return
+// FormatArgument formats the given argument number for embedding in a SQL statement.
+// Mysql just uses a question mark as a placeholder.
+func (m *DB) FormatArgument(n int) string {
+	return "?"
 }
 
-func (m *DB) generateJoinSql(b *sql2.Builder, j *sql2.JoinTreeItem) (sql string, args []interface{}) {
-	var tn TableNodeI
-	var ok bool
-
-	if tn, ok = j.Node.(TableNodeI); !ok {
-		return
-	}
-
-	switch node := tn.EmbeddedNode_().(type) {
-	case *ReferenceNode:
-		sql = "LEFT JOIN "
-		sql += iq(ReferenceNodeRefTable(node)) + " AS " +
-			iq(j.Alias) + " ON " + iq(j.Parent.Alias) + "." +
-			iq(ReferenceNodeDbColumnName(node)) + " = " + iq(j.Alias) + "." + iq(ReferenceNodeRefColumn(node))
-		if j.JoinCondition != nil {
-			s, a := m.generateNodeSql(b, j.JoinCondition, false)
-			sql += " AND " + s
-			args = append(args, a...)
-		}
-	case *ReverseReferenceNode:
-		if b.LimitInfo != nil && ReverseReferenceNodeIsArray(node) {
-			panic("We do not currently support limited queries with an array join.")
-		}
-
-		sql = "LEFT JOIN "
-		sql += iq(ReverseReferenceNodeRefTable(node)) + " AS " +
-			iq(j.Alias) + " ON " + iq(j.Parent.Alias) + "." +
-			iq(ReverseReferenceNodeKeyColumnName(node)) + " = " + iq(j.Alias) + "." + iq(ReverseReferenceNodeRefColumn(node))
-		if j.JoinCondition != nil {
-			s, a := m.generateNodeSql(b, j.JoinCondition, false)
-			sql += " AND " + s
-			args = append(args, a...)
-		}
-	case *ManyManyNode:
-		if b.LimitInfo != nil {
-			panic("We do not currently support limited queries with an array join.")
-		}
-
-		sql = "LEFT JOIN "
-
-		var pk string
-		if ManyManyNodeIsTypeTable(node) {
-			pk = snaker.CamelToSnake(m.Model().TypeTable(ManyManyNodeRefTable(node)).PkField)
-		} else {
-			pk = m.Model().Table(ManyManyNodeRefTable(node)).PrimaryKeyColumn().DbName
-		}
-
-		sql += iq(ManyManyNodeDbTable(node)) + " AS " + iq(j.Alias+"a") + " ON " +
-			iq(j.Parent.Alias) + "." +
-			iq(ColumnNodeDbName(ParentNode(node).(TableNodeI).PrimaryKeyNode())) +
-			" = " + iq(j.Alias+"a") + "." + iq(ManyManyNodeDbColumn(node)) + "\n"
-		sql += "LEFT JOIN " + iq(ManyManyNodeRefTable(node)) + " AS " + iq(j.Alias) + " ON " + iq(j.Alias+"a") + "." + iq(ManyManyNodeRefColumn(node)) +
-			" = " + iq(j.Alias) + "." + iq(pk)
-
-		if j.JoinCondition != nil {
-			s, a := m.generateNodeSql(b, j.JoinCondition, false)
-			sql += " AND " + s
-			args = append(args, a...)
-		}
-	default:
-		return
-	}
-	sql += "\n"
-	for _, cj := range j.ChildReferences {
-		s, a := m.generateJoinSql(b, cj)
-		sql += s
-		args = append(args, a...)
-
-	}
-	return
+// DeleteUsesAlias indicates the database requires the alias of a table after
+// a delete clause when using aliases in the delete
+func (m *DB) DeleteUsesAlias() bool {
+	return true
 }
 
-func (m *DB) generateNodeSql(b *sql2.Builder, n NodeI, useAlias bool) (sql string, args []interface{}) {
-	switch node := n.(type) {
-	case *ValueNode:
-		sql = "?"
-		args = append(args, ValueNodeGetValue(node))
-	case *OperationNode:
-		sql, args = m.generateOperationSql(b, node, useAlias)
-	case *ColumnNode:
-		item := b.GetItemFromNode(node)
-		if useAlias {
-			sql = m.generateAlias(item.Alias)
-		} else {
-			sql = m.generateColumnNodeSql(item.Parent.Alias, node)
-		}
-	case *AliasNode:
-		sql = iq(node.GetAlias())
-	case *SubqueryNode:
-		sql, args = m.generateSubquerySql(node)
-	case TableNodeI:
-		tj := b.GetItemFromNode(node)
-		sql = m.generateColumnNodeSql(tj.Alias, node.PrimaryKeyNode())
-	default:
-		panic("Can't generate sql from node type.")
-	}
-	return
-}
-
-func (m *DB) generateSubquerySql(node *SubqueryNode) (sql string, args []interface{}) {
-	sql, args = m.GenerateSelectSql(SubqueryBuilder(node).(*sql2.Builder))
-	sql = "(" + sql + ")"
-	return
-}
-
-func (m *DB) generateOperationSql(b *sql2.Builder, n *OperationNode, useAlias bool) (sql string, args []interface{}) {
-	if useAlias && n.GetAlias() != "" {
-		sql = iq(n.GetAlias())
-		return
-	}
-	switch OperationNodeOperator(n) {
-	case OpFunc:
-		if len(OperationNodeOperands(n)) > 0 {
-			for _, o := range OperationNodeOperands(n) {
-				s, a := m.generateNodeSql(b, o, useAlias)
-				sql += s + ","
-				args = append(args, a...)
-			}
-			sql = sql[:len(sql)-1]
-		} else {
-			if OperationNodeFunction(n) == "COUNT" {
-				sql = "*"
-			}
-		}
-
-		if OperationNodeDistinct(n) {
-			sql = "DISTINCT " + sql
-		}
-		sql = OperationNodeFunction(n) + "(" + sql + ") "
-
-	case OpNull:
-		fallthrough
-	case OpNotNull:
-		s, a := m.generateNodeSql(b, OperationNodeOperands(n)[0], useAlias)
-		sql = s + " IS " + OperationNodeOperator(n).String()
-		args = append(args, a...)
-		sql = "(" + sql + ") "
-
-	case OpNot:
-		s, a := m.generateNodeSql(b, OperationNodeOperands(n)[0], useAlias)
-		sql = OperationNodeOperator(n).String() + " " + s
-		args = append(args, a...)
-		sql = "(" + sql + ") "
-
-	case OpIn:
-		fallthrough
-	case OpNotIn:
-		s, a := m.generateNodeSql(b, OperationNodeOperands(n)[0], useAlias)
-		sql = s + " " + OperationNodeOperator(n).String() + " ("
-		args = append(args, a...)
-
-		for _, o := range ValueNodeGetValue(OperationNodeOperands(n)[1].(*ValueNode)).([]NodeI) {
-			s, a = m.generateNodeSql(b, o, useAlias)
-			sql += s + ","
-			args = append(args, a...)
-		}
-		sql = strings.TrimSuffix(sql, ",") + ") "
-
-	case OpAll:
-		fallthrough
-	case OpNone:
-		sql = "(" + OperationNodeOperator(n).String() + ") "
-	case OpStartsWith:
-		// SQL supports this with a LIKE operation
-		operands := OperationNodeOperands(n)
-		s, a := m.generateNodeSql(b, operands[0], useAlias)
-		v := ValueNodeGetValue(operands[1].(*ValueNode)).(string)
-		v += "%"
-
-		args = append(args, a...)
-		args = append(args, v)
-
-		sql = fmt.Sprintf(`(%s LIKE ?)`, s)
-	case OpEndsWith:
-		// SQL supports this with a LIKE operation
-		operands := OperationNodeOperands(n)
-		s, a := m.generateNodeSql(b, operands[0], useAlias)
-		v := ValueNodeGetValue(operands[1].(*ValueNode)).(string)
-		v = "%" + v
-
-		args = append(args, a...)
-		args = append(args, v)
-
-		sql = fmt.Sprintf(`(%s LIKE ?)`, s)
-	case OpContains:
-		// SQL supports this with a LIKE operation
-		operands := OperationNodeOperands(n)
-		s, a := m.generateNodeSql(b, operands[0], useAlias)
-		v := ValueNodeGetValue(operands[1].(*ValueNode)).(string)
-		v = "%" + v + "%"
-
-		args = append(args, a...)
-		args = append(args, v)
-
-		sql = fmt.Sprintf(`(%s LIKE ?)`, s)
-
+// OperationSql provides Postgres specific SQL for certain operators.
+func (m *DB) OperationSql(op Operator, operandStrings []string) (sql string) {
+	switch op {
 	case OpDateAddSeconds:
 		// Modifying a datetime in the query
 		// Only works on date, datetime and timestamps. Not times.
-		operands := OperationNodeOperands(n)
-		s, a := m.generateNodeSql(b, operands[0], useAlias)
-		s2, a2 := m.generateNodeSql(b, operands[1], useAlias)
-
-		args = append(args, a...)
-		args = append(args, a2...)
-
+		s := operandStrings[0]
+		s2 := operandStrings[1]
 		sql = fmt.Sprintf(`DATE_ADD(%s, INTERVAL (%s) SECOND)`, s, s2)
-
-	default:
-		for _, o := range OperationNodeOperands(n) {
-			s, a := m.generateNodeSql(b, o, useAlias)
-			sql += s + " " + OperationNodeOperator(n).String() + " "
-			args = append(args, a...)
-		}
-
-		sql = strings.TrimSuffix(sql, " "+OperationNodeOperator(n).String()+" ")
-		sql = "(" + sql + ") "
-
+	case OpXor:
+		sOp := " " + op.String() + " "
+		sql = " (" + strings.Join(operandStrings, sOp) + ") "
 	}
-	return
-}
-
-// Generate the column node sql.
-func (m *DB) generateColumnNodeSql(parentAlias string, node NodeI) (sql string) {
-	return parentAlias + "." + iq(ColumnNodeDbName(node.(*ColumnNode)))
-}
-
-func (m *DB) generateAlias(alias string) (sql string) {
-	return iq(alias)
-}
-
-func (m *DB) generateNodeListSql(b *sql2.Builder, nodes []NodeI, useAlias bool) (sql string, args []interface{}) {
-	for _, node := range nodes {
-		s, a := m.generateNodeSql(b, node, useAlias)
-		sql += s + ","
-		args = append(args, a...)
-	}
-	sql = strings.TrimSuffix(sql, ",")
-	return
-}
-
-func (m *DB) generateOrderBySql(b *sql2.Builder) (sql string, args []interface{}) {
-	if b.OrderBys != nil && len(b.OrderBys) > 0 {
-		sql = "ORDER BY "
-		for _, n := range b.OrderBys {
-			s, a := m.generateNodeSql(b, n, true)
-			if sorter, ok := n.(NodeSorter); ok {
-				if NodeSorterSortDesc(sorter) {
-					s += " DESC"
-				}
-			}
-			sql += s + ","
-			args = append(args, a...)
-		}
-		sql = strings.TrimSuffix(sql, ",")
-		sql += "\n"
-	}
-	return
-}
-
-func (m *DB) generateGroupBySql(b *sql2.Builder) (sql string, args []interface{}) {
-	if b.GroupBys != nil && len(b.GroupBys) > 0 {
-		sql = "GROUP BY "
-		for _, n := range b.GroupBys {
-			s, a := m.generateNodeSql(b, n, true)
-			sql += s + ","
-			args = append(args, a...)
-		}
-		sql = strings.TrimSuffix(sql, ",")
-		sql += "\n"
-	}
-	return
-}
-
-func (m *DB) generateWhereSql(b *sql2.Builder) (sql string, args []interface{}) {
-	if b.ConditionNode != nil {
-		sql = "WHERE "
-		var s string
-		s, args = m.generateNodeSql(b, b.ConditionNode, false)
-		sql += s + "\n"
-	}
-	return
-}
-
-func (m *DB) generateHaving(b *sql2.Builder) (sql string, args []interface{}) {
-	if b.HavingNode != nil {
-		sql = "HAVING "
-		var s string
-		s, args = m.generateNodeSql(b, b.HavingNode, false)
-		sql += s + "\n"
-	}
-	return
-}
-
-func (m *DB) generateLimitSql(b *sql2.Builder) (sql string) {
-	if b.LimitInfo == nil {
-		return ""
-	}
-	if b.LimitInfo.Offset > 0 {
-		sql = strconv.Itoa(b.LimitInfo.Offset) + ","
-	}
-
-	if b.LimitInfo.MaxRowCount > -1 {
-		sql += strconv.Itoa(b.LimitInfo.MaxRowCount)
-	}
-
-	if sql != "" {
-		sql = "LIMIT " + sql + "\n"
-	}
-
 	return
 }
 

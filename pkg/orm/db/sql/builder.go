@@ -70,9 +70,7 @@ func (b *Builder) Load() (result []map[string]interface{}) {
 
 	b.makeColumnAliases()
 
-	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
-	sql, args := b.db.GenerateSelectSql(b)
-
+	sql, args := b.generateSelectSql()
 	rows, err := b.db.Query(b.Ctx, sql, args...)
 
 	if err != nil {
@@ -118,7 +116,7 @@ func (b *Builder) LoadCursor() CursorI {
 	b.makeColumnAliases()
 
 	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
-	sql, args := b.db.GenerateSelectSql(b)
+	sql, args := b.generateSelectSql()
 
 	rows, err := b.db.Query(b.Ctx, sql, args...)
 
@@ -146,12 +144,8 @@ func (b *Builder) LoadCursor() CursorI {
 func (b *Builder) Delete() {
 	b.IsDelete = true
 	b.buildJoinTree()
-
-	// Hand off the generation of sql statements to the database, since different databases generate sql differently
-	sql, args := b.db.GenerateDeleteSql(b)
-
+	sql, args := b.generateDeleteSql()
 	_, err := b.db.Exec(b.Ctx, sql, args...)
-
 	if err != nil {
 		panic(err)
 	}
@@ -169,7 +163,6 @@ func (b *Builder) Count(distinct bool, nodes ...NodeI) uint {
 	if len(b.Selects) > 0 {
 		panic("cannot count a query that also has items selected. Use an alias for a Count node instead")
 	}
-
 	if len(b.GroupBys) > 0 {
 		panic("cannot count a query that also has group by items. Use an alias for a Count node instead")
 	}
@@ -180,12 +173,9 @@ func (b *Builder) Count(distinct bool, nodes ...NodeI) uint {
 	}
 
 	b.Alias(countAlias, n)
-
 	b.buildJoinTree()
 
-	// Hand off the generation of sql select statements to the database, since different databases generate sql differently
-	sql, args := b.db.GenerateSelectSql(b)
-
+	sql, args := b.generateSelectSql()
 	rows, err := b.db.Query(b.Ctx, sql, args...)
 
 	if err != nil {
@@ -193,9 +183,7 @@ func (b *Builder) Count(distinct bool, nodes ...NodeI) uint {
 	}
 
 	names, _ := rows.Columns()
-
 	columnTypes := []GoColumnType{ColTypeUnsigned}
-
 	result = SqlReceiveRows(rows, columnTypes, names, nil)
 
 	return result[0][countAlias].(uint)
@@ -869,4 +857,18 @@ func (b *Builder) unpackSpecialAliases(rowId string, row db2.ValueMap, aliasMap 
 	if len(obj) > 0 {
 		aliasMap.Set(rowId, obj)
 	}
+}
+
+func (b *Builder) generateSelectSql() (sql string, args []any) {
+	g := NewGenerator(b)
+	sql = g.generateSelectSql()
+	args = g.argList
+	return
+}
+
+func (b *Builder) generateDeleteSql() (sql string, args []any) {
+	g := NewGenerator(b)
+	sql = g.generateDeleteSql()
+	args = g.argList
+	return
 }
