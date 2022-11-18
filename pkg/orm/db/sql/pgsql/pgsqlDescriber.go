@@ -221,6 +221,7 @@ ORDER BY
 				log.Print("Error in table comment options for table " + table + ":" + col.name + " - " + err.Error())
 			}
 		}
+
 		columns = append(columns, col)
 	}
 	err = rows.Err()
@@ -714,6 +715,11 @@ func getDefaultValue(sqlVal sql.NullString, typ GoColumnType) interface{} {
 		return nil
 	}
 	v := sqlVal.String
+
+	if parts := strings.Split(v, "::"); len(parts) == 2 {
+		v = parts[0]
+		v = strings.Trim(v, `"'`)
+	}
 
 	if strings2.StartsWith(v, "NULL") {
 		return nil
