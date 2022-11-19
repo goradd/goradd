@@ -62,6 +62,7 @@ jobs:
       run: |
         goradd install
         cp ${{ github.workspace }}/goradd-src/internal/ci/go.work .
+        cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
         cd goradd-test
         go mod tidy
 
