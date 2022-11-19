@@ -18,6 +18,7 @@ See the [Quick Start](doc/quickstart.md) guide to get started.
 - A supported database up and running on your local development computer. 
 Current supported databases are:
     - Mysql
+    - Postgres
 
 ### For Developing GoRADD itself
 - Sass (to build the css files from the scss source)
@@ -58,15 +59,13 @@ model to follow.
 1) Scalability. GoRADD is architected for scalability. All user state information is serializable
 to key-value stores. You might need to build the interface to the particular key-value store you
 are interested in, but that is not difficult. Some specific issues to consider:
-    1. GoRADD requires a MySQL database at this point for your main data store. 
+    1. GoRADD requires a MySQL or Postgres database at this point for your main data store. 
         SQL is great for creating most common data
            structures, is great when you need to change your structure without destroying data, and
            is fast enough for most applications. However, all data access is done through a common API,
-           so switching an application that is already written to another SQL database like Postgresql, Oracle, or any
+           so switching an application that is already written to another SQL database like Postgres, Oracle, or any
             other database is very straight-forward
-           and is just a matter of implementing the database layer. In fact, the database layer is generic
-           enough that you could switch to a NoSQL implementation
-           as your product matures and you need scalability at speed.
+           and is just a matter of implementing the database layer.
     2. GoRADD maintains the state of each user of the website in something we call the *pagestate*.
        The pagestate is serializable to any key-value store. Currently, only an in-memory store is
        provided, but writing an interface to any common key-value store is easy.

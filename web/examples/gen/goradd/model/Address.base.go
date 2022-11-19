@@ -262,32 +262,11 @@ func LoadAddress(ctx context.Context, primaryKey string, joinOrSelectNodes ...qu
 	return queryAddresses(ctx).Where(Equal(node.Address().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// LoadAddressByID queries for a single Address object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryAddresses() to start a query builder.
-func LoadAddressByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Address {
-	q := queryAddresses(ctx)
-	q = q.Where(Equal(node.Address().ID(), id))
-	return q.
-		joinOrSelect(joinOrSelectNodes...).
-		Get()
-}
-
-// HasAddressByID returns true if the
-// given unique index values exist in the database.
-func HasAddressByID(ctx context.Context, id string) bool {
-	q := queryAddresses(ctx)
-	q = q.Where(Equal(node.Address().ID(), id))
-	return q.Count(false) == 1
-}
-
 // The AddressesBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type AddressesBuilder struct {
-	builder             query.QueryBuilderI
-	hasConditionalJoins bool
+	builder query.QueryBuilderI
 }
 
 func newAddressBuilder(ctx context.Context) *AddressesBuilder {
@@ -393,9 +372,6 @@ func (b *AddressesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *Addre
 		condition = conditions[0]
 	}
 	b.builder.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
 	return b
 }
 

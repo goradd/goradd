@@ -227,32 +227,11 @@ func LoadPersonWithLock(ctx context.Context, primaryKey string, joinOrSelectNode
 	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// LoadPersonWithLockByID queries for a single PersonWithLock object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryPersonWithLocks() to start a query builder.
-func LoadPersonWithLockByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
-	q := queryPersonWithLocks(ctx)
-	q = q.Where(Equal(node.PersonWithLock().ID(), id))
-	return q.
-		joinOrSelect(joinOrSelectNodes...).
-		Get()
-}
-
-// HasPersonWithLockByID returns true if the
-// given unique index values exist in the database.
-func HasPersonWithLockByID(ctx context.Context, id string) bool {
-	q := queryPersonWithLocks(ctx)
-	q = q.Where(Equal(node.PersonWithLock().ID(), id))
-	return q.Count(false) == 1
-}
-
 // The PersonWithLocksBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type PersonWithLocksBuilder struct {
-	builder             query.QueryBuilderI
-	hasConditionalJoins bool
+	builder query.QueryBuilderI
 }
 
 func newPersonWithLockBuilder(ctx context.Context) *PersonWithLocksBuilder {
@@ -358,9 +337,6 @@ func (b *PersonWithLocksBuilder) Join(n query.NodeI, conditions ...query.NodeI) 
 		condition = conditions[0]
 	}
 	b.builder.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
 	return b
 }
 

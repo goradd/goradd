@@ -379,32 +379,11 @@ func HasLoginByUsername(ctx context.Context, username string) bool {
 	return q.Count(false) == 1
 }
 
-// LoadLoginByID queries for a single Login object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryLogins() to start a query builder.
-func LoadLoginByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Login {
-	q := queryLogins(ctx)
-	q = q.Where(Equal(node.Login().ID(), id))
-	return q.
-		joinOrSelect(joinOrSelectNodes...).
-		Get()
-}
-
-// HasLoginByID returns true if the
-// given unique index values exist in the database.
-func HasLoginByID(ctx context.Context, id string) bool {
-	q := queryLogins(ctx)
-	q = q.Where(Equal(node.Login().ID(), id))
-	return q.Count(false) == 1
-}
-
 // The LoginsBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type LoginsBuilder struct {
-	builder             query.QueryBuilderI
-	hasConditionalJoins bool
+	builder query.QueryBuilderI
 }
 
 func newLoginBuilder(ctx context.Context) *LoginsBuilder {
@@ -510,9 +489,6 @@ func (b *LoginsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *LoginsBu
 		condition = conditions[0]
 	}
 	b.builder.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
 	return b
 }
 

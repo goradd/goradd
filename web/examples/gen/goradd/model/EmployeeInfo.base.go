@@ -199,26 +199,6 @@ func LoadEmployeeInfo(ctx context.Context, primaryKey string, joinOrSelectNodes 
 	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// LoadEmployeeInfoByID queries for a single EmployeeInfo object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryEmployeeInfos() to start a query builder.
-func LoadEmployeeInfoByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *EmployeeInfo {
-	q := queryEmployeeInfos(ctx)
-	q = q.Where(Equal(node.EmployeeInfo().ID(), id))
-	return q.
-		joinOrSelect(joinOrSelectNodes...).
-		Get()
-}
-
-// HasEmployeeInfoByID returns true if the
-// given unique index values exist in the database.
-func HasEmployeeInfoByID(ctx context.Context, id string) bool {
-	q := queryEmployeeInfos(ctx)
-	q = q.Where(Equal(node.EmployeeInfo().ID(), id))
-	return q.Count(false) == 1
-}
-
 // LoadEmployeeInfoByPersonID queries for a single EmployeeInfo object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
@@ -243,8 +223,7 @@ func HasEmployeeInfoByPersonID(ctx context.Context, personID string) bool {
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type EmployeeInfosBuilder struct {
-	builder             query.QueryBuilderI
-	hasConditionalJoins bool
+	builder query.QueryBuilderI
 }
 
 func newEmployeeInfoBuilder(ctx context.Context) *EmployeeInfosBuilder {
@@ -350,9 +329,6 @@ func (b *EmployeeInfosBuilder) Join(n query.NodeI, conditions ...query.NodeI) *E
 		condition = conditions[0]
 	}
 	b.builder.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
 	return b
 }
 

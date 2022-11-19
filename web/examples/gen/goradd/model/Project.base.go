@@ -713,6 +713,12 @@ func (o *projectBase) Milestones() []*Milestone {
 
 // LoadMilestones loads a new slice of Milestone objects and returns it.
 func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interface{}) []*Milestone {
+	for _, obj := range o.oMilestones {
+		if obj.IsDirty() {
+			panic("You cannot load over items that have changed but have not been saved.")
+		}
+	}
+
 	qb := queryMilestones(ctx)
 	cond := Equal(node.Milestone().ProjectID(), o.PrimaryKey())
 	if conditions != nil {
@@ -721,6 +727,13 @@ func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interfac
 	}
 
 	o.oMilestones = qb.Where(cond).Load()
+
+	o.mMilestones = make(map[string]*Milestone)
+	for _, obj := range o.oMilestones {
+		pk := obj.ID()
+		o.mMilestones[pk] = obj
+	}
+
 	return o.oMilestones
 }
 
@@ -762,26 +775,6 @@ func LoadProject(ctx context.Context, primaryKey string, joinOrSelectNodes ...qu
 	return queryProjects(ctx).Where(Equal(node.Project().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// LoadProjectByID queries for a single Project object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryProjects() to start a query builder.
-func LoadProjectByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Project {
-	q := queryProjects(ctx)
-	q = q.Where(Equal(node.Project().ID(), id))
-	return q.
-		joinOrSelect(joinOrSelectNodes...).
-		Get()
-}
-
-// HasProjectByID returns true if the
-// given unique index values exist in the database.
-func HasProjectByID(ctx context.Context, id string) bool {
-	q := queryProjects(ctx)
-	q = q.Where(Equal(node.Project().ID(), id))
-	return q.Count(false) == 1
-}
-
 // LoadProjectByNum queries for a single Project object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
@@ -806,8 +799,7 @@ func HasProjectByNum(ctx context.Context, num int) bool {
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type ProjectsBuilder struct {
-	builder             query.QueryBuilderI
-	hasConditionalJoins bool
+	builder query.QueryBuilderI
 }
 
 func newProjectBuilder(ctx context.Context) *ProjectsBuilder {
@@ -913,9 +905,6 @@ func (b *ProjectsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *Projec
 		condition = conditions[0]
 	}
 	b.builder.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
 	return b
 }
 

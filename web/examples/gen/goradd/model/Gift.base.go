@@ -141,32 +141,11 @@ func LoadGift(ctx context.Context, primaryKey int, joinOrSelectNodes ...query.No
 	return queryGifts(ctx).Where(Equal(node.Gift().Number(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// LoadGiftByNumber queries for a single Gift object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryGifts() to start a query builder.
-func LoadGiftByNumber(ctx context.Context, number int, joinOrSelectNodes ...query.NodeI) *Gift {
-	q := queryGifts(ctx)
-	q = q.Where(Equal(node.Gift().Number(), number))
-	return q.
-		joinOrSelect(joinOrSelectNodes...).
-		Get()
-}
-
-// HasGiftByNumber returns true if the
-// given unique index values exist in the database.
-func HasGiftByNumber(ctx context.Context, number int) bool {
-	q := queryGifts(ctx)
-	q = q.Where(Equal(node.Gift().Number(), number))
-	return q.Count(false) == 1
-}
-
 // The GiftsBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type GiftsBuilder struct {
-	builder             query.QueryBuilderI
-	hasConditionalJoins bool
+	builder query.QueryBuilderI
 }
 
 func newGiftBuilder(ctx context.Context) *GiftsBuilder {
@@ -272,9 +251,6 @@ func (b *GiftsBuilder) Join(n query.NodeI, conditions ...query.NodeI) *GiftsBuil
 		condition = conditions[0]
 	}
 	b.builder.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
 	return b
 }
 
