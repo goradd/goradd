@@ -87,7 +87,7 @@ func (n *personWithLockNode) SysTimestamp() *query.ColumnNode {
 		"person_with_lock",
 		"sys_timestamp",
 		"SysTimestamp",
-		query.ColTypeDateTime,
+		query.ColTypeTime,
 		false,
 	)
 	query.SetParentNode(cn, n)

@@ -7,15 +7,10 @@ package main
 
 // Generate the templates
 //go:generate gofile remove goradd-project/tmp/template/*.tpl.go
+//go:generate gofile remove goradd-project/gen/*/form
+//go:generate gofile remove goradd-project/gen/*/model/*
+//go:generate gofile remove goradd-project/gen/*/panel
+//go:generate gofile remove goradd-project/gen/*/panelbase
+
 //go:generate got -t got -o goradd-project/tmp/template -I goradd-project/codegen/templates/orm -d github.com/goradd/goradd/codegen/templates/orm
 //go:generate got -t got -o goradd-project/tmp/template -I goradd-project/codegen/templates/page -d github.com/goradd/goradd/codegen/templates/page
-
-// Run the code generator
-//go:generate go run codegen.go
-
-// Build the resulting templates
-//go:generate gofile generate goradd-project/gen/*/form/build.go
-//go:generate gofile generate goradd-project/gen/*/panel/build.go
-
-// Build the templates that were moved to the form directory
-//go:generate gofile generate goradd-project/web/form/build.go

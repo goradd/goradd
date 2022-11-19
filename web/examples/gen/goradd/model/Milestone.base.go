@@ -199,32 +199,11 @@ func LoadMilestone(ctx context.Context, primaryKey string, joinOrSelectNodes ...
 	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// LoadMilestoneByID queries for a single Milestone object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryMilestones() to start a query builder.
-func LoadMilestoneByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Milestone {
-	q := queryMilestones(ctx)
-	q = q.Where(Equal(node.Milestone().ID(), id))
-	return q.
-		joinOrSelect(joinOrSelectNodes...).
-		Get()
-}
-
-// HasMilestoneByID returns true if the
-// given unique index values exist in the database.
-func HasMilestoneByID(ctx context.Context, id string) bool {
-	q := queryMilestones(ctx)
-	q = q.Where(Equal(node.Milestone().ID(), id))
-	return q.Count(false) == 1
-}
-
 // The MilestonesBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type MilestonesBuilder struct {
-	builder             query.QueryBuilderI
-	hasConditionalJoins bool
+	builder query.QueryBuilderI
 }
 
 func newMilestoneBuilder(ctx context.Context) *MilestonesBuilder {
@@ -330,9 +309,6 @@ func (b *MilestonesBuilder) Join(n query.NodeI, conditions ...query.NodeI) *Mile
 		condition = conditions[0]
 	}
 	b.builder.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
 	return b
 }
 

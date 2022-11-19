@@ -5,28 +5,10 @@ package sql
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"log"
 	"strconv"
 	"strings"
-)
-
-const (
-	SqlTypeUnknown   = "Unknown"
-	SqlTypeBlob      = "Blob"
-	SqlTypeVarchar   = "VarChar"
-	SqlTypeChar      = "Char"
-	SqlTypeText      = "Text"
-	SqlTypeInteger   = "Int"
-	SqlTypeTimestamp = "Timestamp"
-	SqlTypeDatetime  = "DateTime"
-	SqlTypeDate      = "Date"
-	SqlTypeTime      = "Time"
-	SqlTypeFloat     = "FloatTextbox"
-	SqlTypeDouble    = "Double"
-	SqlTypeBool      = "Bool"
-	SqlTypeDecimal   = "Decimal" // a fixed point type
 )
 
 // ExtractOptions finds the json encoded list of options in the given string
@@ -90,27 +72,6 @@ func getBooleanOption(o *maps.SliceMap, option string) (val bool, ok bool) {
 }
 */
 
-func FkRuleToAction(rule sql.NullString) db.FKAction {
-
-	if !rule.Valid {
-		return db.FKActionNone // This means we will emulate foreign key actions
-	}
-	switch strings.ToUpper(rule.String) {
-	case "NO ACTION":
-		fallthrough
-	case "RESTRICT":
-		return db.FKActionRestrict
-	case "CASCADE":
-		return db.FKActionCascade
-	case "SET DEFAULT":
-		return db.FKActionSetDefault
-	case "SET NULL":
-		return db.FKActionSetNull
-
-	}
-	return db.FKActionNone
-}
-
 // SqlReceiveRows gets data from a sql result set and returns it as a slice of maps.
 //
 // Each column is mapped to its column name.
@@ -139,6 +100,7 @@ func SqlReceiveRows(rows *sql.Rows,
 // sqlReceiveRows2 gets data from a sql result set and returns it as a slice of maps. Each column is mapped to its column name.
 // If you provide column names, those will be used in the map. Otherwise it will get the column names out of the
 // result set provided
+// This unused code is here in case we need to jetison the cursor method above.
 func sqlReceiveRows2(rows *sql.Rows, columnTypes []query.GoColumnType, columnNames []string) (values []map[string]interface{}) {
 	var err error
 

@@ -59,6 +59,7 @@ for _,ref := range t.ManyManyReferences {
 
 	if ref.IsTypeAssociation {
 		assnTable := dd.TypeTable(ref.AssociatedTableName)
+		pk := assnTable.FieldNames[0]
 
 {{
 
@@ -72,6 +73,7 @@ func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTa
 			"{{= ref.GoPlural }}",
 			"{{= ref.AssociatedTableName }}",
 			"{{= ref.AssociatedColumnName }}",
+			"{{= pk }}",
 			true,
 		),
 	}
@@ -84,6 +86,7 @@ func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTa
 	} else {
 
 		assnTable := dd.Table(ref.AssociatedTableName)
+        pk := assnTable.PrimaryKeyColumn().DbName
 {{
 // {{= ref.GoPlural }} represents the many-to-many relationship formed by the {{= ref.AssnTableName }} table.
 func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTable.GoName) }}Node  {
@@ -95,6 +98,7 @@ func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTa
 			"{{= ref.GoPlural }}",
 			"{{= ref.AssociatedTableName }}",
 			"{{= ref.AssociatedColumnName }}",
+			"{{= pk }}",
 			false,
 		),
 	}

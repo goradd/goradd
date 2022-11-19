@@ -1,4 +1,4 @@
-// package stringmap contains utilities to handle common map operations
+// Package stringmap contains utilities to handle common map operations
 package stringmap
 
 import (
@@ -72,14 +72,12 @@ func GetBool(m map[string]interface{}, key string) (bool, bool) {
 	return s, true
 }
 
-
-
 // ToStringStringMap converts a map[string]interface{} to map[string]string. Any
 // items in the incoming map that are not strings are ignored.
 func ToStringStringMap(in map[string]interface{}) map[string]string {
 	out := make(map[string]string, len(in))
 	for k := range in {
-		if s,ok := GetString(in, k); ok {
+		if s, ok := GetString(in, k); ok {
 			out[k] = s
 		}
 	}

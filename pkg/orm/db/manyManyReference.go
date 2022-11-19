@@ -6,7 +6,9 @@ type ManyManyReference struct {
 	AssnTableName string
 	// AssnColumnName is the column creating the association. NoSQL: The table storing the array of ids on the other end. SQL: the column in the association table pointing towards us.
 	AssnColumnName string
-
+	// SupportsForeignKeys indicates that updates and deletes are automatically handled by the database engine.
+	// If this is false, the code generator will need to manually update these items.
+	SupportsForeignKeys bool
 	// AssociatedTableName is the database table being linked. NoSQL & SQL: The table we are joining to
 	AssociatedTableName string
 	// AssociatedColumnName is the database column being linked. NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
@@ -26,6 +28,6 @@ type ManyManyReference struct {
 	MM *ManyManyReference
 }
 
-func (m *ManyManyReference) JsonKey(dd *Database) string {
+func (m *ManyManyReference) JsonKey(dd *Model) string {
 	return LowerCaseIdentifier(m.GoPlural)
 }

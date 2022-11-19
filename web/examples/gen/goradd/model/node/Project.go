@@ -173,7 +173,7 @@ func (n *projectNode) StartDate() *query.ColumnNode {
 		"project",
 		"start_date",
 		"StartDate",
-		query.ColTypeDateTime,
+		query.ColTypeTime,
 		false,
 	)
 	query.SetParentNode(cn, n)
@@ -187,7 +187,7 @@ func (n *projectNode) EndDate() *query.ColumnNode {
 		"project",
 		"end_date",
 		"EndDate",
-		query.ColTypeDateTime,
+		query.ColTypeTime,
 		false,
 	)
 	query.SetParentNode(cn, n)
@@ -232,6 +232,7 @@ func (n *projectNode) ChildrenAsParent() *projectNode {
 			"ChildrenAsParent",
 			"project",
 			"child_id",
+			"id",
 			false,
 		),
 	}
@@ -250,6 +251,7 @@ func (n *projectNode) ParentsAsChild() *projectNode {
 			"ParentsAsChild",
 			"project",
 			"parent_id",
+			"id",
 			false,
 		),
 	}
@@ -268,6 +270,7 @@ func (n *projectNode) TeamMembers() *personNode {
 			"TeamMembers",
 			"person",
 			"team_member_id",
+			"id",
 			false,
 		),
 	}

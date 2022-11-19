@@ -17,7 +17,7 @@ func init() {
 
 	key := "goradd"
 
-	db1 := mysql2.NewMysqlDB(key, "", cfg)
+	db1 := mysql2.NewDB(key, "", cfg)
 
 	db.AddDatabase(db1, key)
 
@@ -29,7 +29,7 @@ func init() {
 
 	key = "goraddUnit"
 
-	db2 := mysql2.NewMysqlDB(key, "", cfg)
+	db2 := mysql2.NewDB(key, "", cfg)
 
 	db.AddDatabase(db2, key)
 

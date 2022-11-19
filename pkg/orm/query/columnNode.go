@@ -120,7 +120,6 @@ func (n *ColumnNode) databaseKey() string {
 	return n.dbKey
 }
 
-
 func (n *ColumnNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	var alias string
@@ -131,7 +130,7 @@ func (n *ColumnNode) log(level int) {
 	log.Print(tabs + "Col: " + n.dbTable + "." + n.dbColumn + alias)
 }
 
-// GoColumnType is used internally by the framework to return the go type corresponding to the given column.
+// ColumnNodeGoType is used internally by the framework to return the go type corresponding to the given column.
 func ColumnNodeGoType(n *ColumnNode) GoColumnType {
 	return n.goType
 }

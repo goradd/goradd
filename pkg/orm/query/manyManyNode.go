@@ -15,24 +15,26 @@ type ManyManyNode struct {
 	nodeLink
 	// Which database in the global list of databases does the node belong to
 	dbKey string
-	// NoSQL: The originating table. SQL: The association table
+	// The association table
 	dbTable string
-	// NoSQL: The table storing the array of ids on the other end. SQL: the table in the association table pointing towards us.
+	// The column in the association table pointing toward the primary object.
 	dbColumn string
-	// Property in the original object used to ref to this object or node.
+	// Property in the primary object used to refer to the object collection.
 	goPropName string
 
-	// NoSQL & SQL: The table we are joining to
+	// The table we are joining to.
 	refTable string
-	// NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
+	// Column in association table pointing forwards to refTable
 	refColumn string
+	// Primary key column of refTable
+	refPk string
 	// Are we expanding as an array, or one item at a time.
 	isArray bool
 	// Is this pointing to a type table item?
 	isTypeTable bool
 }
 
-// NewManyManyNode  is used internally by the framework to return a new ManyMany node.
+// NewManyManyNode  is used internally by the ORM to create a new many-to-many node.
 func NewManyManyNode(
 	dbKey string,
 	// NoSQL: The originating table. SQL: The association table
@@ -45,6 +47,8 @@ func NewManyManyNode(
 	refTableName string,
 	// NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
 	refColumn string,
+	// The primary key of refTableName
+	refPk string,
 	// Are we pointing to a type table
 	isType bool,
 ) *ManyManyNode {
@@ -55,6 +59,7 @@ func NewManyManyNode(
 		goPropName:  goName,
 		refTable:    refTableName,
 		refColumn:   refColumn,
+		refPk:       refPk,
 		isArray:     true,
 		isTypeTable: isType,
 	}
@@ -69,6 +74,7 @@ func (n *ManyManyNode) copy() NodeI {
 		goPropName:    n.goPropName,
 		refTable:      n.refTable,
 		refColumn:     n.refColumn,
+		refPk:         n.refPk,
 		isArray:       n.isArray,
 		isTypeTable:   n.isTypeTable,
 		nodeAlias:     nodeAlias{n.alias},
@@ -118,7 +124,6 @@ func (n *ManyManyNode) databaseKey() string {
 	return n.dbKey
 }
 
-
 func (n *ManyManyNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "MM: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + "." + n.refColumn + " AS " + n.GetAlias())
@@ -130,16 +135,17 @@ func (n *ManyManyNode) goName() string {
 }
 
 type manyManyNodeEncoded struct {
-	Alias string
-	Condition NodeI
-	Parent NodeI
-	DbKey string
-	DbTable string
-	DbColumn string
-	GoPropName string
-	RefTable string
-	RefColumn string
-	IsArray bool
+	Alias       string
+	Condition   NodeI
+	Parent      NodeI
+	DbKey       string
+	DbTable     string
+	DbColumn    string
+	GoPropName  string
+	RefTable    string
+	RefColumn   string
+	RefPk       string
+	IsArray     bool
 	IsTypeTable bool
 }
 
@@ -148,16 +154,17 @@ func (n *ManyManyNode) GobEncode() (data []byte, err error) {
 	e := gob.NewEncoder(&buf)
 
 	s := manyManyNodeEncoded{
-		Alias: n.alias,
-		Condition: n.condition,
-		Parent: n.parentNode,
-		DbKey: n.dbKey,
-		DbTable: n.dbTable,
-		DbColumn: n.dbColumn,
-		GoPropName: n.goPropName,
-		RefTable: n.refTable,
-		RefColumn: n.refColumn,
-		IsArray: n.isArray,
+		Alias:       n.alias,
+		Condition:   n.condition,
+		Parent:      n.parentNode,
+		DbKey:       n.dbKey,
+		DbTable:     n.dbTable,
+		DbColumn:    n.dbColumn,
+		GoPropName:  n.goPropName,
+		RefTable:    n.refTable,
+		RefColumn:   n.refColumn,
+		RefPk:       n.refPk,
+		IsArray:     n.isArray,
 		IsTypeTable: n.isTypeTable,
 	}
 
@@ -168,7 +175,6 @@ func (n *ManyManyNode) GobEncode() (data []byte, err error) {
 	data = buf.Bytes()
 	return
 }
-
 
 func (n *ManyManyNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
@@ -186,12 +192,12 @@ func (n *ManyManyNode) GobDecode(data []byte) (err error) {
 	n.goPropName = s.GoPropName
 	n.refTable = s.RefTable
 	n.refColumn = s.RefColumn
+	n.refPk = s.RefPk
 	n.isArray = s.IsArray
 	n.isTypeTable = s.IsTypeTable
 	SetParentNode(n, s.Parent)
 	return
 }
-
 
 func init() {
 	gob.Register(&ManyManyNode{})
@@ -215,6 +221,11 @@ func ManyManyNodeRefTable(n *ManyManyNode) string {
 // ManyManyNodeRefColumn is used internally by the framework to return the column name on the other end of the link
 func ManyManyNodeRefColumn(n *ManyManyNode) string {
 	return n.refColumn
+}
+
+// ManyManyNodeRefPk is used internally by the ORM to return the primary key column name of the table being pointed to.
+func ManyManyNodeRefPk(n *ManyManyNode) string {
+	return n.refPk
 }
 
 // ManyManyNodeDbTable is used internally by the framework to return the table name of the table the node belongs to

@@ -32,7 +32,7 @@ func (n *TypeTableNodeTemplate) FileName(key string, tt generator.TypeTableType)
 	return targetDir + "/" + key + "/model/node/" + tt.GoName + ".go"
 }
 
-func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.CodeGenerator, dd *db.Database, tt generator.TypeTableType, _w io.Writer) (err error) {
+func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.CodeGenerator, dd *db.Model, tt generator.TypeTableType, _w io.Writer) (err error) {
 	{{: "typeTable/typeTableNode.tmpl" }}
 	return
 }

@@ -89,6 +89,7 @@ func (n *personNode) PersonTypes() *personTypeNode {
 			"PersonTypes",
 			"person_type",
 			"person_type_id",
+			"id",
 			true,
 		),
 	}
@@ -107,6 +108,7 @@ func (n *personNode) ProjectsAsTeamMember() *projectNode {
 			"ProjectsAsTeamMember",
 			"project",
 			"project_id",
+			"id",
 			false,
 		),
 	}

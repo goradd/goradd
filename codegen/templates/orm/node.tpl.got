@@ -35,7 +35,7 @@ func (n *NodeTemplate) FileName(key string, t generator.TableType) string {
 	return targetDir + "/" + key + "/model/node/" + t.GoName + ".go"
 }
 
-func (n *NodeTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Database, t generator.TableType, _w io.Writer) (err error) {
+func (n *NodeTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Model, t generator.TableType, _w io.Writer) (err error) {
 	{{: "node/node.tmpl" }}
 	return
 }

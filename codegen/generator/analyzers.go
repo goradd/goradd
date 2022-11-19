@@ -24,7 +24,7 @@ func matchColumnsWithControls(database db.DatabaseI, t *db.Table, descriptions m
 
 			generator := GetControlGenerator(controlPath)
 			if generator != nil {
-				if imp,ok := generator.(Importer); ok {
+				if imp, ok := generator.(Importer); ok {
 					imports = imp.Imports()
 				}
 			}
@@ -45,19 +45,19 @@ func matchColumnsWithControls(database db.DatabaseI, t *db.Table, descriptions m
 
 			defaultID := snaker.CamelToSnake(col.GoName)
 			if col.ForeignKey != nil {
-				defaultID = strings.TrimSuffix(defaultID, database.Describe().ForeignKeySuffix)
+				defaultID = strings.TrimSuffix(defaultID, database.Model().ForeignKeySuffix)
 			}
 			defaultID = strings.Replace(defaultID, "_", "-", -1) // snake to kebab
 
 			cd := ControlDescription{
-				Path: controlPath,
-				Imports: imports,
-				ControlType: typ,
-				ControlName: controlName,
-				ControlID: defaultID,
+				Path:         controlPath,
+				Imports:      imports,
+				ControlType:  typ,
+				ControlName:  controlName,
+				ControlID:    defaultID,
 				DefaultLabel: defaultLabel,
-				Generator: generator,
-				Connector:t.GoName + controlName + "Connector",
+				Generator:    generator,
+				Connector:    t.GoName + controlName + "Connector",
 			}
 			descriptions[col] = &cd
 		}
@@ -77,8 +77,8 @@ func ControlPath(ref interface{}) string {
 	case *db.ManyManyReference:
 		// need to set this up, getting default from the many-many table if it exists
 	case *db.Column:
-		if i,ok := col.Options["controlPath"]; ok { // a module based control path
-			controlPath,ok = i.(string)
+		if i, ok := col.Options["controlPath"]; ok { // a module based control path
+			controlPath, ok = i.(string)
 			if !ok {
 				panic("controlPath must be a string")
 			}
@@ -103,7 +103,7 @@ func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{
 
 			generator := GetControlGenerator(controlPath)
 			if generator != nil {
-				if imp,ok := generator.(Importer); ok {
+				if imp, ok := generator.(Importer); ok {
 					imports = imp.Imports()
 				}
 			}
@@ -118,16 +118,15 @@ func matchReverseReferencesWithControls(t *db.Table, descriptions map[interface{
 			var defaultID string
 			defaultID = strings.Replace(snaker.CamelToSnake(rr.GoPlural), "_", "-", -1)
 
-
 			cd := ControlDescription{
-				Path: controlPath,
-				Imports: imports,
-				ControlType: typ,
-				ControlName: controlName,
-				ControlID: defaultID,
+				Path:         controlPath,
+				Imports:      imports,
+				ControlType:  typ,
+				ControlName:  controlName,
+				ControlID:    defaultID,
 				DefaultLabel: defaultLabel,
-				Generator: generator,
-				Connector:t.GoName + controlName + "Connector",
+				Generator:    generator,
+				Connector:    t.GoName + controlName + "Connector",
 			}
 			descriptions[rr] = &cd
 		}
@@ -145,7 +144,7 @@ func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface
 
 			generator := GetControlGenerator(controlPath)
 			if generator != nil {
-				if imp,ok := generator.(Importer); ok {
+				if imp, ok := generator.(Importer); ok {
 					imports = imp.Imports()
 				}
 			}
@@ -161,14 +160,14 @@ func matchManyManyReferencesWithControls(t *db.Table, descriptions map[interface
 			defaultID = strings.Replace(snaker.CamelToSnake(mm.GoPlural), "_", "-", -1)
 
 			cd := ControlDescription{
-				Path: controlPath,
-				Imports: imports,
-				ControlType: typ,
-				ControlName: controlName,
-				ControlID: defaultID,
+				Path:         controlPath,
+				Imports:      imports,
+				ControlType:  typ,
+				ControlName:  controlName,
+				ControlID:    defaultID,
 				DefaultLabel: defaultLabel,
-				Generator: generator,
-				Connector:t.GoName + controlName + "Connector",
+				Generator:    generator,
+				Connector:    t.GoName + controlName + "Connector",
 			}
 			descriptions[mm] = &cd
 		}

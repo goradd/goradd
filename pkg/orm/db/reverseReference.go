@@ -33,7 +33,7 @@ func (r *ReverseReference) AssociatedGoName() string {
 	return UpperCaseIdentifier(r.AssociatedColumn.DbName)
 }
 
-func (r *ReverseReference) JsonKey(dd *Database) string {
+func (r *ReverseReference) JsonKey(dd *Model) string {
 	return LowerCaseIdentifier(strings.TrimSuffix(r.AssociatedColumn.DbName, dd.ForeignKeySuffix))
 }
 

@@ -30,11 +30,18 @@
 	To configure your database, edit the goradd-project/config/db.go file. You will see directions there.
 	If you want to run the examples code and tutorial, you should create a local copy of the goradd
 	examples database. To do that, create a "goradd" database and import the sql code found in the goradd/web/examples/db directory,
-	which is reprinted below for your convenience.
+	which is reprinted below for your convenience. See below for the Postgres version.
 </p>
+<h2>MySQL</h2>
 <pre>
 <code>
-{{:! ../examples/db/mysql.sql }}
+{{:! ../examples/db/mysql.goradd.sql }}
+</code>
+</pre>
+<h2>Postgres</h2>
+<pre>
+<code>
+{{:! ../examples/db/pg.goradd.sql }}
 </code>
 </pre>
 </body>

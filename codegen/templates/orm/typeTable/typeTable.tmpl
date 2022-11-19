@@ -18,10 +18,7 @@ import (
 const (
 }}
 for _,value := range tt.Values {
-	key,ok := value[keyField].(int)
-	if !ok {
-		key = int(value[keyField].(uint))
-	}
+	key,_ := value[keyField].(int)
 	con := tt.Constants[key]
 {{
 	{{= propName }}{{= con }} {{= propName }} = {{u key }}
