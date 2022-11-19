@@ -240,6 +240,12 @@ func (o *personBase) Addresses() []*Address {
 
 // LoadAddresses loads a new slice of Address objects and returns it.
 func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{}) []*Address {
+	for _, obj := range o.oAddresses {
+		if obj.IsDirty() {
+			panic("You cannot load over items that have changed but have not been saved.")
+		}
+	}
+
 	qb := queryAddresses(ctx)
 	cond := Equal(node.Address().PersonID(), o.PrimaryKey())
 	if conditions != nil {
@@ -248,6 +254,13 @@ func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{
 	}
 
 	o.oAddresses = qb.Where(cond).Load()
+
+	o.mAddresses = make(map[string]*Address)
+	for _, obj := range o.oAddresses {
+		pk := obj.ID()
+		o.mAddresses[pk] = obj
+	}
+
 	return o.oAddresses
 }
 
@@ -363,6 +376,12 @@ func (o *personBase) ProjectsAsManager() []*Project {
 
 // LoadProjectsAsManager loads a new slice of Project objects and returns it.
 func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...interface{}) []*Project {
+	for _, obj := range o.oProjectsAsManager {
+		if obj.IsDirty() {
+			panic("You cannot load over items that have changed but have not been saved.")
+		}
+	}
+
 	qb := queryProjects(ctx)
 	cond := Equal(node.Project().ManagerID(), o.PrimaryKey())
 	if conditions != nil {
@@ -371,6 +390,13 @@ func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...in
 	}
 
 	o.oProjectsAsManager = qb.Where(cond).Load()
+
+	o.mProjectsAsManager = make(map[string]*Project)
+	for _, obj := range o.oProjectsAsManager {
+		pk := obj.ID()
+		o.mProjectsAsManager[pk] = obj
+	}
+
 	return o.oProjectsAsManager
 }
 
@@ -412,32 +438,11 @@ func LoadPerson(ctx context.Context, primaryKey string, joinOrSelectNodes ...que
 	return queryPeople(ctx).Where(Equal(node.Person().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// LoadPersonByID queries for a single Person object by the given unique index values.
-// joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
-// If you need a more elaborate query, use QueryPeople() to start a query builder.
-func LoadPersonByID(ctx context.Context, id string, joinOrSelectNodes ...query.NodeI) *Person {
-	q := queryPeople(ctx)
-	q = q.Where(Equal(node.Person().ID(), id))
-	return q.
-		joinOrSelect(joinOrSelectNodes...).
-		Get()
-}
-
-// HasPersonByID returns true if the
-// given unique index values exist in the database.
-func HasPersonByID(ctx context.Context, id string) bool {
-	q := queryPeople(ctx)
-	q = q.Where(Equal(node.Person().ID(), id))
-	return q.Count(false) == 1
-}
-
 // The PeopleBuilder uses the QueryBuilderI interface from the database to build a query.
 // All query operations go through this query builder.
 // End a query by calling either Load, Count, or Delete
 type PeopleBuilder struct {
-	builder             query.QueryBuilderI
-	hasConditionalJoins bool
+	builder query.QueryBuilderI
 }
 
 func newPersonBuilder(ctx context.Context) *PeopleBuilder {
@@ -543,9 +548,6 @@ func (b *PeopleBuilder) Join(n query.NodeI, conditions ...query.NodeI) *PeopleBu
 		condition = conditions[0]
 	}
 	b.builder.Join(n, condition)
-	if condition != nil {
-		b.hasConditionalJoins = true
-	}
 	return b
 }
 
@@ -909,7 +911,7 @@ func (o *personBase) update(ctx context.Context) {
 					obj.Save(ctx)
 				}
 			}
-			for _, obj := range o.mProjectsAsManager {
+			for _, obj := range o.oProjectsAsManager {
 				obj.SetManagerID(o.PrimaryKey())
 				obj.Save(ctx)
 			}

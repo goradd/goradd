@@ -19,18 +19,14 @@ This file contains the code that parses the data structure found in a MySQL data
 our own cross-platform internal database description object.
 */
 
-const (
-	ColumnTypeSet  = "Set"
-	ColumnTypeEnum = "Enum"
-)
-
 type mysqlTable struct {
-	name    string
-	columns []mysqlColumn
-	indexes []mysqlIndex
-	fkMap   map[string]mysqlForeignKey
-	comment string
-	options map[string]interface{}
+	name                string
+	columns             []mysqlColumn
+	indexes             []mysqlIndex
+	fkMap               map[string]mysqlForeignKey
+	comment             string
+	options             map[string]interface{}
+	supportsForeignKeys bool
 }
 
 type mysqlColumn struct {
@@ -58,7 +54,6 @@ type mysqlForeignKey struct {
 	constraintName       string
 	tableName            string
 	columnName           string
-	referencedSchema     sql.NullString
 	referencedTableName  sql.NullString
 	referencedColumnName sql.NullString
 	updateRule           sql.NullString
@@ -89,11 +84,10 @@ func NewMysql2 (dbKey string , options DbOptions, config *mysql.Config) (*DB, er
 	return &source,err
 }*/
 
-func (m *DB) loadDescription() {
-
+func (m *DB) Analyze(options Options) {
 	rawTables := m.getRawTables()
-	description := m.descriptionFromRawTables(rawTables)
-	m.goraddDatabase = db.NewDatabase(m.DbKey(), m.IdSuffix(), description)
+	description := m.descriptionFromRawTables(rawTables, options)
+	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, false, description)
 }
 
 func (m *DB) getRawTables() map[string]mysqlTable {
@@ -139,7 +133,7 @@ func (m *DB) getRawTables() map[string]mysqlTable {
 
 // Gets information for a table
 func (m *DB) getTables() []mysqlTable {
-	var tableName, tableComment string
+	var tableName, tableComment, tableEngine string
 	var tables []mysqlTable
 
 	// Use the MySQL5 Information Schema to get a list of all the tables in this database
@@ -149,7 +143,8 @@ func (m *DB) getTables() []mysqlTable {
 	rows, err := m.SqlDb().Query(fmt.Sprintf(`
 	SELECT
 	table_name,
-	table_comment
+	table_comment,
+	engine
 	FROM
 	information_schema.tables
 	WHERE
@@ -162,17 +157,22 @@ func (m *DB) getTables() []mysqlTable {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err = rows.Scan(&tableName, &tableComment)
+		err = rows.Scan(&tableName, &tableComment, &tableEngine)
+		var supportsForeignKeys bool
+		if tableEngine == "InnoDB" {
+			supportsForeignKeys = true
+		}
 		if err != nil {
 			log.Fatal(err)
 		}
 		log.Println(tableName)
 		table := mysqlTable{
-			name:    tableName,
-			comment: tableComment,
-			columns: []mysqlColumn{},
-			fkMap:   make(map[string]mysqlForeignKey),
-			indexes: []mysqlIndex{},
+			name:                tableName,
+			comment:             tableComment,
+			columns:             []mysqlColumn{},
+			fkMap:               make(map[string]mysqlForeignKey),
+			indexes:             []mysqlIndex{},
+			supportsForeignKeys: supportsForeignKeys,
 		}
 		if table.options, table.comment, err = sql2.ExtractOptions(table.comment); err != nil {
 			log.Print("Error in comment options for table " + table.name + " - " + err.Error())
@@ -189,7 +189,6 @@ func (m *DB) getTables() []mysqlTable {
 }
 
 func (m *DB) getColumns(table string) (columns []mysqlColumn, err error) {
-
 	dbName := m.databaseName
 
 	rows, err := m.SqlDb().Query(fmt.Sprintf(`
@@ -370,36 +369,30 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 	dataLen := sql2.GetDataDefLength(column.columnType)
 
 	isUnsigned := strings.Contains(column.columnType, "unsigned")
+	cd.NativeType = column.dataType
 
 	switch column.dataType {
 	case "time":
-		cd.NativeType = sql2.SqlTypeTime
-		cd.GoType = ColTypeDateTime.GoType()
+		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "time"
 	case "timestamp":
-		cd.NativeType = sql2.SqlTypeTimestamp
-		cd.GoType = ColTypeDateTime.GoType()
+		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "timestamp"
 	case "datetime":
-		cd.NativeType = sql2.SqlTypeDatetime
-		cd.GoType = ColTypeDateTime.GoType()
+		cd.GoType = ColTypeTime.GoType()
 	case "date":
-		cd.NativeType = sql2.SqlTypeDate
-		cd.GoType = ColTypeDateTime.GoType()
+		cd.GoType = ColTypeTime.GoType()
 		cd.SubType = "date"
 	case "tinyint":
 		if dataLen == 1 {
-			cd.NativeType = sql2.SqlTypeBool
 			cd.GoType = ColTypeBool.GoType()
 		} else {
 			if isUnsigned {
-				cd.NativeType = sql2.SqlTypeInteger
 				cd.GoType = ColTypeUnsigned.GoType()
 				cd.MinValue = uint64(0)
 				cd.MaxValue = uint64(255)
 				cd.MaxCharLength = 3
 			} else {
-				cd.NativeType = sql2.SqlTypeInteger
 				cd.GoType = ColTypeInteger.GoType()
 				cd.MinValue = int64(-128)
 				cd.MaxValue = int64(127)
@@ -409,13 +402,11 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "int":
 		if isUnsigned {
-			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeUnsigned.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(4294967295)
 			cd.MaxCharLength = 10
 		} else {
-			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeInteger.GoType()
 			cd.MinValue = int64(-2147483648)
 			cd.MaxValue = int64(2147483647)
@@ -424,13 +415,11 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "smallint":
 		if isUnsigned {
-			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeUnsigned.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(65535)
 			cd.MaxCharLength = 5
 		} else {
-			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeInteger.GoType()
 			cd.MinValue = int64(-32768)
 			cd.MaxValue = int64(32767)
@@ -439,13 +428,11 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 
 	case "mediumint":
 		if isUnsigned {
-			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeUnsigned.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(16777215)
 			cd.MaxCharLength = 8
 		} else {
-			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeInteger.GoType()
 			cd.MinValue = int64(-8388608)
 			cd.MaxValue = int64(8388607)
@@ -455,13 +442,11 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 	case "bigint": // We need to be explicit about this in go, since int will be whatever the OS native int size is, but go will support int64 always.
 		// Also, since Json can only be decoded into float64s, we are limited in our ability to represent large min and max numbers in the json to about 2^53
 		if isUnsigned {
-			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeUnsigned64.GoType()
 			cd.MinValue = uint64(0)
 			cd.MaxValue = uint64(math.MaxUint64)
 			cd.MaxCharLength = 20
 		} else {
-			cd.NativeType = sql2.SqlTypeInteger
 			cd.GoType = ColTypeInteger64.GoType()
 			cd.MinValue = int64(math.MinInt64)
 			cd.MaxValue = int64(math.MaxInt64)
@@ -469,89 +454,75 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		}
 
 	case "float":
-		cd.NativeType = sql2.SqlTypeFloat
-		cd.GoType = ColTypeFloat.GoType()
+		cd.GoType = ColTypeFloat32.GoType()
 		cd.MinValue = -math.MaxFloat32 // float64 type
 		cd.MaxValue = math.MaxFloat32
 	case "double":
-		cd.NativeType = sql2.SqlTypeDouble
-		cd.GoType = ColTypeDouble.GoType()
+		cd.GoType = ColTypeFloat64.GoType()
 		cd.MinValue = -math.MaxFloat64
 		cd.MaxValue = math.MaxFloat64
 	case "varchar":
-		cd.NativeType = sql2.SqlTypeVarchar
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen)
 
 	case "char":
-		cd.NativeType = sql2.SqlTypeChar
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen)
 
 	case "blob":
-		cd.NativeType = sql2.SqlTypeBlob
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 65535
 	case "tinyblob":
-		cd.NativeType = sql2.SqlTypeBlob
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 255
 	case "mediumblob":
-		cd.NativeType = sql2.SqlTypeBlob
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = 16777215
 	case "longblob":
-		cd.NativeType = sql2.SqlTypeBlob
 		cd.GoType = ColTypeBytes.GoType()
 		cd.MaxCharLength = math.MaxUint32
 
 	case "text":
-		cd.NativeType = sql2.SqlTypeText
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 65535
 	case "tinytext":
-		cd.NativeType = sql2.SqlTypeText
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 255
 	case "mediumtext":
-		cd.NativeType = sql2.SqlTypeText
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = 16777215
 	case "longtext":
-		cd.NativeType = sql2.SqlTypeText
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = math.MaxUint32
 
-	case "decimal": // No native equivalent in Go. See the "Big" go package for support. You will need to shephard numbers into and out of string format to move data to the database
-		cd.NativeType = sql2.SqlTypeDecimal
+	case "decimal":
+		// No native equivalent in Go.
+		// See the shopspring/decimal package for possible support.
+		// You will need to shepherd numbers into and out of string format to move data to the database.
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(dataLen) + 3
 
 	case "year":
-		cd.NativeType = sql2.SqlTypeInteger
 		cd.GoType = ColTypeInteger.GoType()
 
 	case "set":
 		log.Print("Note: Using association tables is preferred to using DB SET columns in table " + tableName + ":" + column.name + ".")
-		cd.NativeType = ColumnTypeSet
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	case "enum":
 		log.Print("Note: Using type tables is preferred to using DB ENUM columns in table " + tableName + ":" + column.name + ".")
-		cd.NativeType = ColumnTypeEnum
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	default:
-		cd.NativeType = sql2.SqlTypeUnknown
 		cd.GoType = ColTypeString.GoType()
 	}
 
 	cd.DefaultValue = column.defaultValue.UnpackDefaultValue(ColTypeFromGoTypeString(cd.GoType))
 }
 
-func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable) db.DatabaseDescription {
+func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable, options Options) db.DatabaseDescription {
 
 	dd := db.DatabaseDescription{}
 
@@ -562,11 +533,11 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable) db.Databa
 			continue
 		}
 
-		if strings2.EndsWith(tableName, m.TypeTableSuffix()) {
+		if strings2.EndsWith(tableName, options.TypeTableSuffix) {
 			t := m.getTypeTableDescription(table)
 			dd.Tables = append(dd.Tables, t)
-		} else if strings2.EndsWith(tableName, m.AssociationTableSuffix()) {
-			if mm, ok := m.getManyManyDescription(table); ok {
+		} else if strings2.EndsWith(tableName, options.AssociationTableSuffix) {
+			if mm, ok := m.getManyManyDescription(table, options.TypeTableSuffix); ok {
 				dd.MM = append(dd.MM, mm)
 			}
 		} else {
@@ -580,13 +551,46 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable) db.Databa
 func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 	var columnDescriptions []db.ColumnDescription
 
+	// Build the indexes
+	pkColumns := make(map[string]bool)
+	indexes := make(map[string]*db.IndexDescription)
+	uniqueColumns := make(map[string]bool)
+
+	// Fill pkColumns map with the column names of all the pk columns
+	// Also file the indexes map with a list of columns for each index
+	for _, idx := range t.indexes {
+		if idx.name == "PRIMARY" {
+			pkColumns[idx.columnName] = true
+		} else if i, ok2 := indexes[idx.name]; ok2 {
+			i.ColumnNames = append(i.ColumnNames, idx.columnName)
+			sort.Strings(i.ColumnNames) // make sure this list stays in a predictable order each time
+		} else {
+			i = &db.IndexDescription{IsUnique: !idx.nonUnique, ColumnNames: []string{idx.columnName}}
+			indexes[idx.name] = i
+		}
+	}
+
+	// File the uniqueColumns map with all the columns that have a single unique index,
+	// including any PK columns. Single indexes are used to determine 1 to 1 relationships.
+	for _, i := range indexes {
+		if len(i.ColumnNames) == 1 && i.IsUnique {
+			uniqueColumns[i.ColumnNames[0]] = true
+		}
+	}
+	if len(pkColumns) == 1 {
+		for k, _ := range pkColumns {
+			uniqueColumns[k] = true
+		}
+	}
+
 	var pkCount int
 	for _, col := range t.columns {
-		cd := m.getColumnDescription(t, col)
+		cd := m.getColumnDescription(t, col, pkColumns[col.name], uniqueColumns[col.name])
 
 		if cd.IsPk {
 			// private keys go first
-			// the following code does an insert after whatever previous pks have been found. Its important to do these in order.
+			// the following code does an insert after whatever previous pks have been found.
+			// It is important to do these in order.
 			columnDescriptions = append(columnDescriptions, db.ColumnDescription{})
 			copy(columnDescriptions[pkCount+1:], columnDescriptions[pkCount:])
 			columnDescriptions[pkCount] = cd
@@ -597,27 +601,15 @@ func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 	}
 
 	td := db.TableDescription{
-		Name:    t.name,
-		Columns: columnDescriptions,
+		Name:                t.name,
+		Columns:             columnDescriptions,
+		SupportsForeignKeys: t.supportsForeignKeys,
 	}
 
 	td.Comment = t.comment
 	td.Options = t.options
 
-	// Build the indexes
-	indexes := make(map[string]*db.IndexDescription)
-	for _, idx := range t.indexes {
-		/*if idx.name == "PRIMARY" {
-			continue // assume primary keys are always indexed, so we don't need to report this
-		}*/
-		if i, ok2 := indexes[idx.name]; ok2 {
-			i.ColumnNames = append(i.ColumnNames, idx.columnName)
-			sort.Strings(i.ColumnNames) // make sure this list stays in a predictable order each time
-		} else {
-			i = &db.IndexDescription{IsUnique: !idx.nonUnique, ColumnNames: []string{idx.columnName}}
-			indexes[idx.name] = i
-		}
-	}
+	// Create the indexes array in index name order so its predictable
 	stringmap.Range(indexes, func(key string, val interface{}) bool {
 		td.Indexes = append(td.Indexes, *(val.(*db.IndexDescription)))
 		return true
@@ -631,9 +623,12 @@ func (m *DB) getTypeTableDescription(t mysqlTable) db.TableDescription {
 	var columnNames []string
 	var columnTypes []GoColumnType
 
-	for _, c := range td.Columns {
+	for i, c := range td.Columns {
 		columnNames = append(columnNames, c.Name)
 		colType := ColTypeFromGoTypeString(c.GoType)
+		if i == 0 {
+			colType = ColTypeInteger // Force first value to be treated like an integer
+		}
 		columnTypes = append(columnTypes, colType)
 	}
 
@@ -654,34 +649,20 @@ func (m *DB) getTypeTableDescription(t mysqlTable) db.TableDescription {
 	return td
 }
 
-func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.ColumnDescription {
+func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn, isPk bool, isUnique bool) db.ColumnDescription {
 	cd := db.ColumnDescription{
 		Name: column.name,
-	}
-	var ok bool
-	var shouldAutoUpdate bool
-
-	if opt := column.options["shouldAutoUpdate"]; opt != nil {
-		if shouldAutoUpdate, ok = opt.(bool); !ok {
-			log.Print("Error in table comment for table " + table.name + ":" + column.name + ": shouldAutoUpdate is not a boolean")
-		}
 	}
 
 	m.processTypeInfo(table.name, column, &cd)
 
 	cd.IsId = strings.Contains(column.extra, "auto_increment")
-	cd.IsPk = column.key == "PRI"
+	cd.IsPk = isPk
 	cd.IsNullable = column.isNullable == "YES"
-	cd.IsUnique = (column.key == "UNI") || cd.IsPk
+	cd.IsUnique = isUnique
 
-	// indicates that the database is handling update on modify
-	// In MySQL this is detectable. In other databases, if you can set this up, but its hard to detect, you can create a comment property to spec this
 	if strings.Contains(column.extra, "CURRENT_TIMESTAMP") {
-		cd.SubType = "auto timestamp"
-	}
-
-	if cd.SubType == "auto timestamp" && shouldAutoUpdate {
-		log.Print("Error in table comment for table " + table.name + ":" + column.name + ": shouldAutoUpdate should not be set on a table that the database is automatically updating.")
+		cd.SubType = "timestamp"
 	}
 
 	cd.Comment = column.comment
@@ -691,15 +672,15 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn) db.Colum
 		cd.ForeignKey = &db.ForeignKeyDescription{
 			ReferencedTable:  fk.referencedTableName.String,
 			ReferencedColumn: fk.referencedColumnName.String,
-			UpdateAction:     sql2.FkRuleToAction(fk.updateRule).String(),
-			DeleteAction:     sql2.FkRuleToAction(fk.deleteRule).String(),
+			UpdateAction:     fkRuleToAction(fk.updateRule),
+			DeleteAction:     fkRuleToAction(fk.deleteRule),
 		}
 	}
 
 	return cd
 }
 
-func (m *DB) getManyManyDescription(t mysqlTable) (mm db.ManyManyDescription, ok bool) {
+func (m *DB) getManyManyDescription(t mysqlTable, typeTableSuffix string) (mm db.ManyManyDescription, ok bool) {
 	td := m.getTableDescription(t)
 	if len(td.Columns) != 2 {
 		log.Print("Error: table " + td.Name + " must have only 2 primary key columns.")
@@ -708,23 +689,27 @@ func (m *DB) getManyManyDescription(t mysqlTable) (mm db.ManyManyDescription, ok
 	var typeIndex = -1
 	for i, cd := range td.Columns {
 		if !cd.IsPk {
-			log.Print("Error: table " + td.Name + ":" + cd.Name + " must be a primary key.")
+			log.Print("Error: column " + td.Name + ":" + cd.Name + " must be a primary key.")
 			return
 		}
 
 		if cd.ForeignKey == nil {
-			log.Print("Error: table " + td.Name + ":" + cd.Name + " must be a foreign key.")
+			log.Print("Error: column " + td.Name + ":" + cd.Name + " must be a foreign key.")
 			return
+		}
+
+		if cd.ForeignKey.DeleteAction != db.FKActionCascade {
+			log.Print("Warning: column " + td.Name + ":" + cd.Name + " has a DELETE action that is not CASCADE. You will need to manually delete the relationship before the associated object is deleted.")
 		}
 
 		if cd.IsNullable {
-			log.Print("Error: table " + td.Name + ":" + cd.Name + " cannot be nullable.")
+			log.Print("Error: column " + td.Name + ":" + cd.Name + " cannot be nullable.")
 			return
 		}
 
-		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, m.TypeTableSuffix()) {
+		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, typeTableSuffix) {
 			if typeIndex != -1 {
-				log.Print("Error: table " + td.Name + ":" + " cannot have two foreign keys to type tables.")
+				log.Print("Error: column " + td.Name + ":" + " cannot have two foreign keys to type tables.")
 				return
 			}
 			typeIndex = i
@@ -770,6 +755,28 @@ func (m *DB) getManyManyDescription(t mysqlTable) (mm db.ManyManyDescription, ok
 	}
 
 	mm.AssnTableName = t.name
+	mm.SupportsForeignKeys = t.supportsForeignKeys
 	ok = true
 	return
+}
+
+func fkRuleToAction(rule sql.NullString) db.FKAction {
+
+	if !rule.Valid {
+		return db.FKActionNone // This means we will emulate foreign key actions
+	}
+	switch strings.ToUpper(rule.String) {
+	case "NO ACTION":
+		fallthrough
+	case "RESTRICT":
+		return db.FKActionRestrict
+	case "CASCADE":
+		return db.FKActionCascade
+	case "SET DEFAULT":
+		return db.FKActionSetDefault
+	case "SET NULL":
+		return db.FKActionSetNull
+
+	}
+	return db.FKActionNone
 }

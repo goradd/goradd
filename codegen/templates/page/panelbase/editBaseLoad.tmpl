@@ -1,8 +1,8 @@
 // load.tmpl
 
 {{
-// Load reads a new record from the database and loads the edit controls with the information found. pk is the primary key
-// of the record.
+// Load reads a new record from the database and loads the edit controls with the information found.
+// pk is the primary key of the record.
 func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error {
 	if pk == {{= t.PrimaryKeyColumn().DefaultValueAsConstant() }} {
 		p.{{= t.GoName }} = model.New{{= t.GoName }}()

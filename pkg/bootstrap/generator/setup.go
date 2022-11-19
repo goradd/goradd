@@ -46,13 +46,13 @@ func BootstrapCodegenSetup() {
 				fallthrough
 			case query.ColTypeUnsigned64:
 				return "github.com/goradd/goradd/pkg/bootstrap/control/IntegerTextbox"
-			case query.ColTypeFloat:
+			case query.ColTypeFloat32:
 				return "github.com/goradd/goradd/pkg/bootstrap/control/FloatTextbox"
-			case query.ColTypeDouble:
+			case query.ColTypeFloat64:
 				return "github.com/goradd/goradd/pkg/bootstrap/control/FloatTextbox"
 			case query.ColTypeBool:
 				return "github.com/goradd/goradd/pkg/bootstrap/control/Checkbox"
-			case query.ColTypeDateTime:
+			case query.ColTypeTime:
 				if col.IsTimestamp {
 					return "github.com/goradd/goradd/pkg/page/control/DateTimeSpan"
 				} else {

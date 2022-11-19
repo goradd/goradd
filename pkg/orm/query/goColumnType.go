@@ -11,9 +11,9 @@ const (
 	ColTypeUnsigned
 	ColTypeInteger64
 	ColTypeUnsigned64
-	ColTypeDateTime
-	ColTypeFloat
-	ColTypeDouble
+	ColTypeTime
+	ColTypeFloat32
+	ColTypeFloat64
 	ColTypeBool
 )
 
@@ -34,12 +34,12 @@ func (g GoColumnType) String() string {
 		return "ColTypeInteger64"
 	case ColTypeUnsigned64:
 		return "ColTypeUnsigned64"
-	case ColTypeDateTime:
-		return "ColTypeDateTime"
-	case ColTypeFloat:
-		return "ColTypeFloat"
-	case ColTypeDouble:
-		return "ColTypeDouble"
+	case ColTypeTime:
+		return "ColTypeTime"
+	case ColTypeFloat32:
+		return "ColTypeFloat32"
+	case ColTypeFloat64:
+		return "ColTypeFloat64"
 	case ColTypeBool:
 		return "ColTypeBool"
 	}
@@ -63,11 +63,11 @@ func (g GoColumnType) GoType() string {
 		return "int64"
 	case ColTypeUnsigned64:
 		return "uint64"
-	case ColTypeDateTime:
+	case ColTypeTime:
 		return "time.Time"
-	case ColTypeFloat:
+	case ColTypeFloat32:
 		return "float32" // always internally represent with max bits
-	case ColTypeDouble:
+	case ColTypeFloat64:
 		return "float64" // always internally represent with max bits
 	case ColTypeBool:
 		return "bool"
@@ -92,11 +92,11 @@ func (g GoColumnType) DefaultValue() string {
 		return "0"
 	case ColTypeUnsigned64:
 		return "0"
-	case ColTypeDateTime:
+	case ColTypeTime:
 		return "time.Time{}"
-	case ColTypeFloat:
+	case ColTypeFloat32:
 		return "0.0" // always internally represent with max bits
-	case ColTypeDouble:
+	case ColTypeFloat64:
 		return "0.0" // always internally represent with max bits
 	case ColTypeBool:
 		return "false"
@@ -106,17 +106,29 @@ func (g GoColumnType) DefaultValue() string {
 
 func ColTypeFromGoTypeString(name string) GoColumnType {
 	switch name {
-	case "Unknown": return ColTypeUnknown
-	case "[]byte": return ColTypeBytes
-	case "string": return ColTypeString
-	case "int": return ColTypeInteger
-	case "uint": return ColTypeUnsigned
-	case "int64": return ColTypeInteger64
-	case "uint64": return ColTypeUnsigned64
-	case "time.Time": return ColTypeDateTime
-	case "float32": return ColTypeFloat
-	case "float64": return ColTypeDouble
-	case "bool": return ColTypeBool
-	default: panic("unknown column go type " + name)
-}
+	case "Unknown":
+		return ColTypeUnknown
+	case "[]byte":
+		return ColTypeBytes
+	case "string":
+		return ColTypeString
+	case "int":
+		return ColTypeInteger
+	case "uint":
+		return ColTypeUnsigned
+	case "int64":
+		return ColTypeInteger64
+	case "uint64":
+		return ColTypeUnsigned64
+	case "time.Time":
+		return ColTypeTime
+	case "float32":
+		return ColTypeFloat32
+	case "float64":
+		return ColTypeFloat64
+	case "bool":
+		return ColTypeBool
+	default:
+		panic("unknown column go type " + name)
+	}
 }

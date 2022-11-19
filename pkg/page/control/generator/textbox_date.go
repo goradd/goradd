@@ -18,7 +18,7 @@ type DateTextbox struct {
 
 func (d DateTextbox) SupportsColumn(ref interface{}) bool {
 	if col, ok := ref.(*db.Column); ok &&
-		col.ColumnType == query.ColTypeDateTime {
+		col.ColumnType == query.ColTypeTime {
 		return true
 	}
 	return false
