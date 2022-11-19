@@ -52,11 +52,9 @@ jobs:
     - name: Install
       working-directory: ${{ github.workspace }}
       run: |
-        goradd install
+        cp ${{ github.workspace }}/goradd-src/internal/ci/go.work .
         cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
-        mv ./goradd-test/gomod.txt ./goradd-test/go.mod
-        echo "replace github.com/goradd/goradd => ${{ github.workspace }}/goradd-src" >> ./goradd-project/go.mod
-        echo "replace github.com/goradd/goradd => ${{ github.workspace }}/goradd-src" >> ./goradd-test/go.mod
+        goradd install
         cd goradd-test
         go mod tidy
 
