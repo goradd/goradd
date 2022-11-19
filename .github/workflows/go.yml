@@ -45,6 +45,14 @@ jobs:
         mysql -u${{ env.ROOT_DB_USER }} -e 'source ./goradd-src/web/examples/db/mysql.goradd.sql;' goradd
         mysql -u${{ env.ROOT_DB_USER }} -e 'source ./goradd-src/internal/ci/db/mysql.goradd_unit.sql;' goradd_unit
 
+    - name: Start PostgresDB
+      if: ${{ matrix.db == 'postgres' }}
+      uses: harmon758/postgresql-action@v1
+      with:
+        postgresql version: '11'
+        postgresql db: 'goradd'
+        postgresql user: '${{ env.DB_USER }}'
+
     - name: Build
       working-directory: ${{ github.workspace }}/goradd-src
       run: go install
@@ -54,7 +62,12 @@ jobs:
       run: |
         cp ${{ github.workspace }}/goradd-src/internal/ci/go.work .
         cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
-        goradd install
+        cp -r ${{ github.workspace }}/goradd-src/internal/install/goradd-project .
+        cd goradd-project
+        go mod init goradd-project
+        echo "replace github.com/goradd/goradd => ${{ github.workspace }}/goradd-src" >> ./go.mod
+        cd ..
+        goradd install -s 2
         cd goradd-test
         go mod tidy
 
