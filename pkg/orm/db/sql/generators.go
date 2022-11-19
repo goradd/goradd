@@ -3,40 +3,41 @@ package sql
 import (
 	"fmt"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	"strings"
 )
 
-type OperationSqler interface {
+type operationSqler interface {
 	OperationSql(op Operator, operandStrings []string) string
 }
 
-type DeleteUsesAliaser interface {
+type deleteUsesAliaser interface {
 	DeleteUsesAlias() bool
 }
 
-// Generator is an aid to generating various sql statements.
+// selectGenerator is an aid to generating various sql statements.
 // SQL dialects are similar, but have small variations. This object
 // attempts to handle the major issues, while allowing individual
 // implementations of SQL to do their own tweaks.
-type Generator struct {
+type selectGenerator struct {
 	b       *Builder
 	argList []any
 }
 
-func NewGenerator(builder *Builder) *Generator {
-	return &Generator{b: builder}
+func newSelectGenerator(builder *Builder) *selectGenerator {
+	return &selectGenerator{b: builder}
 }
 
-func (g *Generator) iq(v string) string {
+func (g *selectGenerator) iq(v string) string {
 	return g.b.db.QuoteIdentifier(v)
 }
 
-func (g *Generator) addArg(v any) string {
+func (g *selectGenerator) addArg(v any) string {
 	g.argList = append(g.argList, v)
 	return g.b.db.FormatArgument(len(g.argList))
 }
 
-func (g *Generator) generateSelectSql() (sql string) {
+func (g *selectGenerator) generateSelectSql() (sql string) {
 	if g.b.IsDistinct {
 		sql = "SELECT DISTINCT\n"
 	} else {
@@ -53,8 +54,8 @@ func (g *Generator) generateSelectSql() (sql string) {
 	return
 }
 
-func (g *Generator) generateDeleteSql() (sql string) {
-	if t, ok := g.b.db.(DeleteUsesAliaser); ok && t.DeleteUsesAlias() {
+func (g *selectGenerator) generateDeleteSql() (sql string) {
+	if t, ok := g.b.db.(deleteUsesAliaser); ok && t.DeleteUsesAlias() {
 		j := g.b.RootJoinTreeItem
 		alias := g.iq(j.Alias)
 		sql = "DELETE " + alias + "\n"
@@ -70,7 +71,7 @@ func (g *Generator) generateDeleteSql() (sql string) {
 	return
 }
 
-func (g *Generator) generateColumnListWithAliases() (sql string) {
+func (g *selectGenerator) generateColumnListWithAliases() (sql string) {
 	g.b.ColumnAliases.Range(func(key string, j *JoinTreeItem) bool {
 		sql += g.generateColumnNodeSql(j.Parent.Alias, j.Node) + " AS " + g.iq(key) + ",\n"
 		return true
@@ -97,11 +98,11 @@ func (g *Generator) generateColumnListWithAliases() (sql string) {
 }
 
 // Generate the column node sql.
-func (g *Generator) generateColumnNodeSql(parentAlias string, node NodeI) (sql string) {
+func (g *selectGenerator) generateColumnNodeSql(parentAlias string, node NodeI) (sql string) {
 	return g.iq(parentAlias) + "." + g.iq(ColumnNodeDbName(node.(*ColumnNode)))
 }
 
-func (g *Generator) generateNodeSql(n NodeI, useAlias bool) (sql string) {
+func (g *selectGenerator) generateNodeSql(n NodeI, useAlias bool) (sql string) {
 	switch node := n.(type) {
 	case *ValueNode:
 		v := ValueNodeGetValue(node)
@@ -137,7 +138,7 @@ func (g *Generator) generateNodeSql(n NodeI, useAlias bool) (sql string) {
 	return
 }
 
-func (g *Generator) generateOperationSql(n *OperationNode, useAlias bool) (sql string) {
+func (g *selectGenerator) generateOperationSql(n *OperationNode, useAlias bool) (sql string) {
 	if useAlias && n.GetAlias() != "" {
 		sql = g.iq(n.GetAlias())
 		return
@@ -148,7 +149,7 @@ func (g *Generator) generateOperationSql(n *OperationNode, useAlias bool) (sql s
 		operands = append(operands, g.generateNodeSql(o, useAlias))
 	}
 
-	if o, ok := g.b.db.(OperationSqler); ok {
+	if o, ok := g.b.db.(operationSqler); ok {
 		sql = o.OperationSql(OperationNodeOperator(n), operands)
 		if sql != "" {
 			return sql
@@ -238,11 +239,11 @@ func (g *Generator) generateOperationSql(n *OperationNode, useAlias bool) (sql s
 	return
 }
 
-func (g *Generator) generateAlias(alias string) (sql string) {
+func (g *selectGenerator) generateAlias(alias string) (sql string) {
 	return g.iq(alias)
 }
 
-func (g *Generator) generateSubquerySql(node *SubqueryNode) (sql string) {
+func (g *selectGenerator) generateSubquerySql(node *SubqueryNode) (sql string) {
 	// The copy below intentionally reuses the argList and db items
 	g2 := *g
 	g2.b = SubqueryBuilder(node).(*Builder)
@@ -251,7 +252,7 @@ func (g *Generator) generateSubquerySql(node *SubqueryNode) (sql string) {
 	return
 }
 
-func (g *Generator) generateFromSql() (sql string) {
+func (g *selectGenerator) generateFromSql() (sql string) {
 	sql = "FROM\n"
 
 	j := g.b.RootJoinTreeItem
@@ -263,7 +264,7 @@ func (g *Generator) generateFromSql() (sql string) {
 	return
 }
 
-func (g *Generator) generateJoinSql(j *JoinTreeItem) (sql string) {
+func (g *selectGenerator) generateJoinSql(j *JoinTreeItem) (sql string) {
 	var tn TableNodeI
 	var ok bool
 
@@ -324,7 +325,7 @@ func (g *Generator) generateJoinSql(j *JoinTreeItem) (sql string) {
 	return
 }
 
-func (g *Generator) generateWhereSql() (sql string) {
+func (g *selectGenerator) generateWhereSql() (sql string) {
 	if g.b.ConditionNode != nil {
 		sql = "WHERE "
 		var s string
@@ -334,7 +335,7 @@ func (g *Generator) generateWhereSql() (sql string) {
 	return
 }
 
-func (g *Generator) generateGroupBySql() (sql string) {
+func (g *selectGenerator) generateGroupBySql() (sql string) {
 	if g.b.GroupBys != nil && len(g.b.GroupBys) > 0 {
 		sql = "GROUP BY "
 		for _, n := range g.b.GroupBys {
@@ -349,7 +350,7 @@ func (g *Generator) generateGroupBySql() (sql string) {
 
 // Note that some SQLs (MySQL, SqlLite) allow the use of aliases in a having clause,
 // and some (Postgres) do not. We might need to check for this at some point.
-func (g *Generator) generateHaving() (sql string) {
+func (g *selectGenerator) generateHaving() (sql string) {
 	if g.b.HavingNode != nil {
 		sql = "HAVING "
 		var s string
@@ -359,7 +360,7 @@ func (g *Generator) generateHaving() (sql string) {
 	return
 }
 
-func (g *Generator) generateLimitSql() (sql string) {
+func (g *selectGenerator) generateLimitSql() (sql string) {
 	if g.b.LimitInfo == nil {
 		return ""
 	}
@@ -374,7 +375,7 @@ func (g *Generator) generateLimitSql() (sql string) {
 	return
 }
 
-func (g *Generator) generateOrderBySql() (sql string) {
+func (g *selectGenerator) generateOrderBySql() (sql string) {
 	if g.b.OrderBys != nil && len(g.b.OrderBys) > 0 {
 		sql = "ORDER BY "
 		for _, n := range g.b.OrderBys {
@@ -390,4 +391,56 @@ func (g *Generator) generateOrderBySql() (sql string) {
 		sql += "\n"
 	}
 	return
+}
+
+// GenerateUpdate is a helper function for database implementations to generate an update statement.
+func GenerateUpdate(db DbI, table string, fields map[string]any, pkName string, pkValue any) (sql string, args []any) {
+	if len(fields) == 0 {
+		panic("No fields to set")
+	}
+
+	sql = "UPDATE " + db.QuoteIdentifier(table) + "\nSET "
+
+	var sets []string
+
+	// We range on sorted keys to give SQL optimizers a chance to use a prepared
+	// statement by making sure the same fields show up in the same order.
+	stringmap.Range(fields, func(k string, v any) bool {
+		args = append(args, v)
+		s := fmt.Sprintf("%s=%s", db.QuoteIdentifier(k), db.FormatArgument(len(args)))
+		sets = append(sets, s)
+		return true
+	})
+
+	sql += strings.Join(sets, ", ")
+	args = append(args, pkValue)
+	sql += "\nWHERE " + db.QuoteIdentifier(pkName) +
+		fmt.Sprintf(" = %s", db.FormatArgument(len(args)))
+
+	return
+}
+
+// GenerateInsert is a helper function for database implementations to generate an insert statement.
+func GenerateInsert(db DbI, table string, fields map[string]any) (sql string, args []any) {
+	if len(fields) == 0 {
+		panic("No fields to insert")
+	}
+
+	var keys []string
+	var values []string
+
+	// We range on sorted keys to give SQL optimizers a chance to use a prepared
+	// statement by making sure the same fields show up in the same order.
+	stringmap.Range(fields, func(k string, v any) bool {
+		keys = append(keys, db.QuoteIdentifier(k))
+		args = append(args, v)
+		values = append(values, db.FormatArgument(len(args)))
+		return true
+	})
+
+	sql = "INSERT INTO " + db.QuoteIdentifier(table)
+	sql += "(" + strings.Join(keys, ",") + ")\nVALUES ("
+	sql += strings.Join(values, ",") + ")\n"
+	return
+
 }

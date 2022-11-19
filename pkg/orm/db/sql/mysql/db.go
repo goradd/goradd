@@ -6,7 +6,6 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/goradd/goradd/pkg/orm/db"
 	sql2 "github.com/goradd/goradd/pkg/orm/db/sql"
-	"github.com/goradd/goradd/pkg/reflect"
 	"github.com/goradd/goradd/pkg/stringmap"
 	"strings"
 	"time"
@@ -206,15 +205,13 @@ func (m *DB) OperationSql(op Operator, operandStrings []string) (sql string) {
 }
 
 // Update sets specific fields of a record that already exists in the database to the given data.
-func (m *DB) Update(ctx context.Context, table string, fields map[string]interface{}, pkName string, pkValue interface{}) {
-	var sql = "UPDATE " + table + "\n"
-	var args []interface{}
-	s, a := m.makeSetSql(fields)
-	sql += s
-	args = append(args, a...)
+func (m *DB) Update(ctx context.Context,
+	table string,
+	fields map[string]any,
+	pkName string,
+	pkValue any) {
 
-	sql += "WHERE " + iq(pkName) + " = ?"
-	args = append(args, pkValue)
+	sql, args := sql2.GenerateUpdate(m, table, fields, pkName, pkValue)
 	_, e := m.Exec(ctx, sql, args...)
 	if e != nil {
 		panic(e.Error())
@@ -224,12 +221,7 @@ func (m *DB) Update(ctx context.Context, table string, fields map[string]interfa
 // Insert inserts the given data as a new record in the database.
 // It returns the record id of the new record.
 func (m *DB) Insert(ctx context.Context, table string, fields map[string]interface{}) string {
-	var sql = "INSERT " + iq(table) + "\n"
-	var args []interface{}
-	s, a := m.makeSetSql(fields)
-	sql += s
-	args = append(args, a...)
-
+	sql, args := sql2.GenerateInsert(m, table, fields)
 	if r, err := m.Exec(ctx, sql, args...); err != nil {
 		panic(err.Error())
 	} else {
@@ -245,10 +237,8 @@ func (m *DB) Insert(ctx context.Context, table string, fields map[string]interfa
 // Delete deletes the indicated record from the database.
 func (m *DB) Delete(ctx context.Context, table string, pkName string, pkValue interface{}) {
 	var sql = "DELETE FROM " + iq(table) + "\n"
-	var args []interface{}
 	sql += "WHERE " + iq(pkName) + " = ?"
-	args = append(args, pkValue)
-	_, e := m.Exec(ctx, sql, args...)
+	_, e := m.Exec(ctx, sql, pkValue)
 	if e != nil {
 		panic(e.Error())
 	}
@@ -267,41 +257,8 @@ func (m *DB) Associate(ctx context.Context,
 	pk interface{},
 	_ string,
 	relatedColumn string,
-	relatedPks interface{}) { //relatedPks must be a slice of items
+	relatedPks interface{}) {
 
-	// TODO: Could optimize by separating out what gets deleted, what gets added, and what stays the same.
+	sql2.Associate(ctx, m, table, column, pk, relatedColumn, relatedPks)
 
-	// First delete all previous associations
-	var sql = "DELETE FROM " + iq(table) + " WHERE " + iq(column) + "=?"
-	_, e := m.Exec(ctx, sql, pk)
-	if e != nil {
-		panic(e.Error())
-	}
-	if relatedPks == nil {
-		return
-	}
-
-	// Add new associations
-	for _, relatedPk := range reflect.InterfaceSlice(relatedPks) {
-		sql = "INSERT " + iq(table) + " SET " + iq(column) + "=?, " + iq(relatedColumn) + "=?"
-		_, e = m.Exec(ctx, sql, pk, relatedPk)
-		if e != nil {
-			panic(e.Error())
-		}
-	}
-}
-
-func (m *DB) makeSetSql(fields map[string]interface{}) (sql string, args []interface{}) {
-	if len(fields) == 0 {
-		panic("No fields to set")
-	}
-	sql = "SET "
-	for k, v := range fields {
-		sql += fmt.Sprintf("%s=?, ", k)
-		args = append(args, v)
-	}
-
-	sql = strings.TrimSuffix(sql, ", ")
-	sql += "\n"
-	return
 }

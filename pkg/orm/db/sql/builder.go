@@ -860,14 +860,14 @@ func (b *Builder) unpackSpecialAliases(rowId string, row db2.ValueMap, aliasMap 
 }
 
 func (b *Builder) generateSelectSql() (sql string, args []any) {
-	g := NewGenerator(b)
+	g := newSelectGenerator(b)
 	sql = g.generateSelectSql()
 	args = g.argList
 	return
 }
 
 func (b *Builder) generateDeleteSql() (sql string, args []any) {
-	g := NewGenerator(b)
+	g := newSelectGenerator(b)
 	sql = g.generateDeleteSql()
 	args = g.argList
 	return
