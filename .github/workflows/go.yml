@@ -67,7 +67,7 @@ jobs:
         go mod tidy
 
     - name: Codegen Mysql
-      if: ${{ matrix.db == 'mysql' }}
+      if: ${{ matrix.db == 'mariadb' }}
       working-directory: ${{ github.workspace }}/goradd-test/codegen
       run: go generate buildMysql.go
 
