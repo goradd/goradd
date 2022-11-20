@@ -80,11 +80,18 @@ jobs:
       working-directory: ${{ github.workspace }}/goradd-project
       run: go test github.com/goradd/goradd/pkg/...
 
-    - name: Unit Test Database
+    - name: Unit Test Mysql Database
+      if: ${{ matrix.db == 'mariadb' }}
       working-directory: ${{ github.workspace }}/goradd-test/dbtest
-      run: go test
+      run: go test --tags=mysql -v
 
-    - name: Browser Based Test
+    - name: Unit Test Postgres Database
+      if: ${{ matrix.db == 'postgres' }}
+      working-directory: ${{ github.workspace }}/goradd-test/dbtest
+      run: go test --tags=postgres -v
+
+    - name: Browser Based Test Mysql
+      if: ${{ matrix.db == 'mariadb' }}
       working-directory: ${{ github.workspace }}/goradd-test
       run: go test
 
