@@ -5,11 +5,10 @@ package dbtest
 import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/db/sql/pgsql"
-	"github.com/jackc/pgx/v5"
 )
 
-const CiDbUser = "root"
-const CiDbPassword = "12345"
+const CiDbUser = "tester"
+const CiDbPassword = ""
 
 func init() {
 	initPostgres()
