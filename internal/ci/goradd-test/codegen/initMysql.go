@@ -8,8 +8,8 @@ import (
 	mysql2 "github.com/goradd/goradd/pkg/orm/db/sql/mysql"
 )
 
-const CiDbUser = "root"
-const CiDbPassword = "12345"
+const CiDbUser = "tester"
+const CiDbPassword = ""
 
 func init() {
 	initMysql()
