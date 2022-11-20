@@ -1,20 +1,15 @@
-//go:build postgres
-
-package dbtest
+package config
 
 import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/db/sql/pgsql"
+	"github.com/jackc/pgx/v5"
 )
 
 const CiDbUser = "tester"
 const CiDbPassword = ""
 
-func init() {
-	initPostgres()
-}
-
-func initPostgres() {
+func initDatabases() {
 	cfg, _ := pgx.ParseConfig("")
 
 	key := "goradd"

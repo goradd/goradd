@@ -1,6 +1,4 @@
-//go:build mysql
-
-package main
+package config
 
 import (
 	"github.com/go-sql-driver/mysql"
@@ -11,11 +9,7 @@ import (
 const CiDbUser = "tester"
 const CiDbPassword = ""
 
-func init() {
-	initMysql()
-}
-
-func initMysql() {
+func initDatabases() {
 	cfg := mysql.NewConfig()
 
 	cfg.DBName = "goradd"

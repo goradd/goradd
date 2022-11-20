@@ -29,13 +29,26 @@ jobs:
       with:
         go-version: 1.19
 
+    - name: Install goradd
+      working-directory: ${{ github.workspace }}/goradd-src
+      run: go install
+
+    - name: Install goradd-project
+      working-directory: ${{ github.workspace }}
+      run: |
+        goradd install
+
+    - name: Unit test packages
+      working-directory: ${{ github.workspace }}/goradd-project
+      run: go test github.com/goradd/goradd/pkg/...
+
     - name: Start MariaDB
       if: ${{ matrix.db == 'mariadb' }}
       uses: ankane/setup-mariadb@v1
       with:
         database: goradd
 
-    - name: Setup MariaDatabases
+    - name: Setup Maria Databases
       if: ${{ matrix.db == 'mariadb' }}
       run: |
         mysqladmin -u${{ env.ROOT_DB_USER }}  create goradd_unit
@@ -45,6 +58,12 @@ jobs:
         mysql -u${{ env.ROOT_DB_USER }} -e 'source ./goradd-src/web/examples/db/mysql.goradd.sql;' goradd
         mysql -u${{ env.ROOT_DB_USER }} -e 'source ./goradd-src/internal/ci/db/mysql.goradd_unit.sql;' goradd_unit
 
+    - name: Setup MariaDB Init file
+      if: ${{ matrix.db == 'mariadb' }}
+      working-directory: ${{ github.workspace }}/goradd-project/config
+      run: |
+        cp ${{ github.workspace }}/goradd-src/internal/ci/goradd-test/config/initMysql.go ./db.go
+
     - name: Start PostgresDB
       if: ${{ matrix.db == 'postgres' }}
       uses: harmon758/postgresql-action@v1
@@ -53,45 +72,23 @@ jobs:
         postgresql db: 'goradd'
         postgresql user: '${{ env.DB_USER }}'
 
-    - name: Build
-      working-directory: ${{ github.workspace }}/goradd-src
-      run: go install
-
-    - name: Install
+    - name: Install goradd-test
       working-directory: ${{ github.workspace }}
       run: |
-        goradd install
         cp ${{ github.workspace }}/goradd-src/internal/ci/go.work .
         cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
         cd goradd-test
         go mod tidy
 
-    - name: Codegen Mysql
-      if: ${{ matrix.db == 'mariadb' }}
+    - name: Codegen
       working-directory: ${{ github.workspace }}/goradd-test/codegen
-      run: go generate buildMysql.go
+      run: go generate build.go
 
-    - name: Codegen Postgres
-      if: ${{ matrix.db == 'postgres' }}
-      working-directory: ${{ github.workspace }}/goradd-test/codegen
-      run: go generate buildPostgres.go
-
-    - name: Unit Test Packages
-      working-directory: ${{ github.workspace }}/goradd-project
-      run: go test github.com/goradd/goradd/pkg/...
-
-    - name: Unit Test Mysql Database
-      if: ${{ matrix.db == 'mariadb' }}
+    - name: Unit Test Database
       working-directory: ${{ github.workspace }}/goradd-test/dbtest
-      run: go test --tags=mysql -v
+      run: go test
 
-    - name: Unit Test Postgres Database
-      if: ${{ matrix.db == 'postgres' }}
-      working-directory: ${{ github.workspace }}/goradd-test/dbtest
-      run: go test --tags=postgres -v
-
-    - name: Browser Based Test Mysql
-      if: ${{ matrix.db == 'mariadb' }}
+    - name: Browser Based Test
       working-directory: ${{ github.workspace }}/goradd-test
       run: go test
 
