@@ -66,9 +66,15 @@ jobs:
         cd goradd-test
         go mod tidy
 
-    - name: Codegen
+    - name: Codegen Mysql
+      if: ${{ matrix.db == 'mysql' }}
       working-directory: ${{ github.workspace }}/goradd-test/codegen
-      run: go generate build.go
+      run: go generate buildMysql.go
+
+    - name: Codegen Postgres
+      if: ${{ matrix.db == 'postgres' }}
+      working-directory: ${{ github.workspace }}/goradd-test/codegen
+      run: go generate buildPostgres.go
 
     - name: Unit Test Packages
       working-directory: ${{ github.workspace }}/goradd-project
