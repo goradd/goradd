@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/db/sql/pgsql"
+	pgx "github.com/jackc/pgx/v5"
 )
 
 const CiDbUser = "root"
