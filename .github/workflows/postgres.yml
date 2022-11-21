@@ -35,6 +35,7 @@ jobs:
     env:
       PGUSER: tester
       PGPASSWORD: 12345
+      PGHOST: localhost
 
     steps:
       - uses: actions/checkout@v3
