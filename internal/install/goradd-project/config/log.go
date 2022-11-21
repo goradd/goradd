@@ -14,8 +14,12 @@ func initLogs() {
 	if !config.Release {
 		// Development build
 		grlog.CreateDefaultLoggers()
+		/* Uncomment to watch the SQL being sent to the database
+		grlog.SetLogger(grlog.SqlLog, grlog.StandardLogger{Logger: log.New(os.Stderr,
+			"Sql:     ", log.Ldate|log.Lmicroseconds|log.Llongfile)})
+		*/
 	} else {
-		grlog.SetLogger(grlog.ErrorLog, grlog.StandardLogger{log.New(os.Stderr,
+		grlog.SetLogger(grlog.ErrorLog, grlog.StandardLogger{Logger: log.New(os.Stderr,
 			"Error:     ", log.Ldate|log.Lmicroseconds|log.Llongfile)})
 	}
 }

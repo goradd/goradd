@@ -137,7 +137,7 @@ func (s *DbHelper) Rollback(ctx context.Context, txid db.TransactionID) {
 // Exec executes the given SQL code, without returning any result rows.
 func (s *DbHelper) Exec(ctx context.Context, sql string, args ...interface{}) (r sql.Result, err error) {
 	c := s.getContext(ctx)
-	log.FrameworkDebug("Exec: ", sql, args)
+	log.Sql("Exec: ", sql, args)
 
 	var beginTime = time.Now()
 
@@ -187,7 +187,7 @@ func (s *DbHelper) Prepare(ctx context.Context, sql string) (r *sql.Stmt, err er
 // Query executes the given sql, and returns a row result set.
 func (s *DbHelper) Query(ctx context.Context, sql string, args ...interface{}) (r *sql.Rows, err error) {
 	c := s.getContext(ctx)
-	log.FrameworkDebug("Query: ", sql, args)
+	log.Sql("Query: ", sql, args)
 
 	var beginTime = time.Now()
 	if c != nil && c.tx != nil {

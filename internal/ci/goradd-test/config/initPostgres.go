@@ -3,11 +3,11 @@ package config
 import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/db/sql/pgsql"
-	"github.com/jackc/pgx/v5"
+	pgx "github.com/jackc/pgx/v5"
 )
 
-const CiDbUser = "tester"
-const CiDbPassword = ""
+const CiDbUser = "root"
+const CiDbPassword = "12345"
 
 func initDatabases() {
 	cfg, _ := pgx.ParseConfig("")

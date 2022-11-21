@@ -1,0 +1,88 @@
+name: Postgres Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Service containers to run with `runner-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: 12345
+          POSTGRES_DB: goradd
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    env:
+      PGUSER: root
+      PGPASSWORD: 12345
+      PGHOST: localhost
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: goradd-src
+
+      - name: Setup Postgres Databases
+        run: |
+          createdb goradd_unit
+          psql -d goradd -a -f './goradd-src/web/examples/db/pg.goradd.sql'
+          psql -d goradd_unit -a -f './goradd-src/internal/ci/db/pg.goradd_unit.sql'
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Install goradd
+        working-directory: ${{ github.workspace }}/goradd-src
+        run: go install
+
+      - name: Install goradd-project
+        working-directory: ${{ github.workspace }}
+        run: |
+          goradd install
+
+      - name: Setup Postgres Init file
+        working-directory: ${{ github.workspace }}/goradd-project/config
+        run: |
+          cp ${{ github.workspace }}/goradd-src/internal/ci/goradd-test/config/initPostgres.go ./db.go
+
+      - name: Install goradd-test
+        working-directory: ${{ github.workspace }}
+        run: |
+          cp ${{ github.workspace }}/goradd-src/internal/ci/go.work .
+          cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
+          cd goradd-test
+          go mod tidy
+
+      - name: Codegen
+        working-directory: ${{ github.workspace }}/goradd-test/codegen
+        run: go generate build.go
+
+      - name: Unit Test Database
+        working-directory: ${{ github.workspace }}/goradd-test/dbtest
+        run: go test
+
+
+
+

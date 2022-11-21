@@ -1,4 +1,4 @@
-name: Go
+name: Unit Tests And MariaDB Test
 
 on:
   push:
@@ -15,7 +15,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        db: [mariadb]
     env:
       ROOT_DB_USER: root
       DB_USER: tester
@@ -43,13 +42,11 @@ jobs:
       run: go test github.com/goradd/goradd/pkg/...
 
     - name: Start MariaDB
-      if: ${{ matrix.db == 'mariadb' }}
       uses: ankane/setup-mariadb@v1
       with:
         database: goradd
 
     - name: Setup Maria Databases
-      if: ${{ matrix.db == 'mariadb' }}
       run: |
         mysqladmin -u${{ env.ROOT_DB_USER }}  create goradd_unit
         mysql -u${{ env.ROOT_DB_USER }} -e "CREATE USER '${{ env.DB_USER }}'@'localhost' IDENTIFIED BY ''"
@@ -59,18 +56,9 @@ jobs:
         mysql -u${{ env.ROOT_DB_USER }} -e 'source ./goradd-src/internal/ci/db/mysql.goradd_unit.sql;' goradd_unit
 
     - name: Setup MariaDB Init file
-      if: ${{ matrix.db == 'mariadb' }}
       working-directory: ${{ github.workspace }}/goradd-project/config
       run: |
         cp ${{ github.workspace }}/goradd-src/internal/ci/goradd-test/config/initMysql.go ./db.go
-
-    - name: Start PostgresDB
-      if: ${{ matrix.db == 'postgres' }}
-      uses: harmon758/postgresql-action@v1
-      with:
-        postgresql version: '11'
-        postgresql db: 'goradd'
-        postgresql user: '${{ env.DB_USER }}'
 
     - name: Install goradd-test
       working-directory: ${{ github.workspace }}

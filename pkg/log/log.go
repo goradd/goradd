@@ -13,6 +13,7 @@ const FrameworkDebugLog = 1 // Should only exist when debugging style logs are r
 const InfoLog = 2           // Info log is designed to always exist. These would be messages we only need to check periodically to know the system is working correctly.
 const WarningLog = 3        // Should be sent to sysop periodically (daily perhaps?). Would generally be issues involving low resources.
 const ErrorLog = 4          // Should be sent to sysop immediately
+const SqlLog = 5            // For watching SQL statements as they are sent to the database driver
 const DebugLog = 10         // Debug log for the developer's application, separate from the goradd framework debug log
 
 // LoggerI is the interface for all loggers.
@@ -88,6 +89,11 @@ func FrameworkDebugf(format string, v ...interface{}) {
 	if config.Debug {
 		_printf(FrameworkDebugLog, format, v...)
 	}
+}
+
+// Sql outputs the sql sent to the database driver.
+func Sql(v ...interface{}) {
+	_print(SqlLog, v...)
 }
 
 // Warning prints to the Warning logger.

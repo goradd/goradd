@@ -704,6 +704,11 @@ func (b *Builder) GetItemFromNode(node NodeI) *JoinTreeItem {
 	return j
 }
 
+func (b *Builder) GetAliasedNode(node AliasNodeI) NodeI {
+	j := b.AliasNodes.Get(node.GetAlias())
+	return j.(NodeI)
+}
+
 // Craziness of handling situation where an array node wants to be individually expanded.
 func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray []db2.ValueMap) {
 	var item db2.ValueMap
