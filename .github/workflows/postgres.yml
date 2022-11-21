@@ -12,13 +12,45 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Service containers to run with `runner-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_USER: tester
+          POSTGRES_PASSWORD: 12345
+          POSTGRES_DB: goradd
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
     env:
-      ROOT_DB_USER: root
-      DB_USER: tester
+      PGUSER: tester
+      PGPASSWORD: 12345
+
     steps:
       - uses: actions/checkout@v3
         with:
           path: goradd-src
+
+      - name: Setup Postgres Databases
+        run: |
+          createdb goradd_unit
+          psql -d goradd -a -f './goradd-src/web/examples/db/pg.goradd.sql'
+          psql -d goradd_unit -a -f './goradd-src/internal/ci/db/pg.goradd_unit.sql'
+
+      - name: Setup Postgres Init file
+        working-directory: ${{ github.workspace }}/goradd-project/config
+        run: |
+          cp ${{ github.workspace }}/goradd-src/internal/ci/goradd-test/config/initPostgres.go ./db.go
 
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -33,26 +65,6 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           goradd install
-
-      - name: Start PostgresDB
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql version: '11'
-          postgresql db: 'goradd'
-          postgresql user: '${{ env.ROOT_DB_USER }}'
-
-      - name: Setup Postgres Databases
-        run: |
-          createdb -U '${{ env.DB_USER }}' goradd_unit
-          createuser -U '${{ env.DB_USER }}' -w '${{ env.DB_USER }}'
-          psql -U ${{ env.ROOT_DB_USER }} -e "GRANT ALL PRIVILEGES ON *.* TO '${{ env.DB_USER }}'@'localhost'"
-          psql -U ${{ env.ROOT_DB_USER }} -d goradd -a -f './goradd-src/web/examples/db/pg.goradd.sql'
-          psql -U ${{ env.ROOT_DB_USER }} -d goradd_unit -a -f './goradd-src/internal/ci/db/pg.goradd_unit.sql'
-
-      - name: Setup Postgres Init file
-        working-directory: ${{ github.workspace }}/goradd-project/config
-        run: |
-          cp ${{ github.workspace }}/goradd-src/internal/ci/goradd-test/config/initPostgres.go ./db.go
 
       - name: Install goradd-test
         working-directory: ${{ github.workspace }}
