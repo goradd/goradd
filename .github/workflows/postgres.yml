@@ -1,4 +1,4 @@
-name: Postgres
+name: Postgres Test
 
 on:
   push:
