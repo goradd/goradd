@@ -20,7 +20,7 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
-          POSTGRES_USER: tester
+          POSTGRES_USER: root
           POSTGRES_PASSWORD: 12345
           POSTGRES_DB: goradd
         # Set health checks to wait until postgres has started
@@ -33,7 +33,7 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
     env:
-      PGUSER: tester
+      PGUSER: root
       PGPASSWORD: 12345
       PGHOST: localhost
 
@@ -48,11 +48,6 @@ jobs:
           psql -d goradd -a -f './goradd-src/web/examples/db/pg.goradd.sql'
           psql -d goradd_unit -a -f './goradd-src/internal/ci/db/pg.goradd_unit.sql'
 
-      - name: Setup Postgres Init file
-        working-directory: ${{ github.workspace }}/goradd-project/config
-        run: |
-          cp ${{ github.workspace }}/goradd-src/internal/ci/goradd-test/config/initPostgres.go ./db.go
-
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
@@ -66,6 +61,11 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           goradd install
+
+      - name: Setup Postgres Init file
+        working-directory: ${{ github.workspace }}/goradd-project/config
+        run: |
+          cp ${{ github.workspace }}/goradd-src/internal/ci/goradd-test/config/initPostgres.go ./db.go
 
       - name: Install goradd-test
         working-directory: ${{ github.workspace }}
