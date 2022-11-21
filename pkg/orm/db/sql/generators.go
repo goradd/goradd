@@ -126,7 +126,15 @@ func (g *selectGenerator) generateNodeSql(n NodeI, useAlias bool) (sql string) {
 			sql = g.generateColumnNodeSql(item.Parent.Alias, node)
 		}
 	case *AliasNode:
-		sql = g.iq(node.GetAlias())
+		if useAlias {
+			sql = g.iq(node.GetAlias())
+		} else {
+			n := g.b.GetAliasedNode(node)
+			if n != nil {
+				sql = g.generateNodeSql(n, useAlias)
+			}
+		}
+
 	case *SubqueryNode:
 		sql = g.generateSubquerySql(node)
 	case TableNodeI:
