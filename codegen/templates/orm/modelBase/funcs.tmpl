@@ -20,7 +20,7 @@ func oRef(obj any) string {
         if r.IsType() {
             panic("type tables do not store a reference")
         }
-        return objectPrefix + r.GoName
+        return objectPrefix + r.ForeignKey.GoName
     }
     return ""
 }
