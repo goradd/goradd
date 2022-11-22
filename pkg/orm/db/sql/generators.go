@@ -153,6 +153,8 @@ func (g *selectGenerator) generateOperationSql(n *OperationNode, useAlias bool) 
 	}
 
 	var operands []string
+	operator := OperationNodeOperator(n)
+
 	for _, o := range OperationNodeOperands(n) {
 		operands = append(operands, g.generateNodeSql(o, useAlias))
 	}
@@ -164,7 +166,7 @@ func (g *selectGenerator) generateOperationSql(n *OperationNode, useAlias bool) 
 		}
 	}
 
-	switch OperationNodeOperator(n) {
+	switch operator {
 	case OpFunc:
 		if len(operands) > 0 {
 			sql = strings.Join(operands, ",")
@@ -203,24 +205,23 @@ func (g *selectGenerator) generateOperationSql(n *OperationNode, useAlias bool) 
 	case OpNone:
 		sql = "(" + OperationNodeOperator(n).String() + ") "
 	case OpStartsWith:
-		// SQL supports this with a LIKE operation
-		s := operands[0]
-		v := operands[1]
-		v += "%"
-		sql = fmt.Sprintf(`(%s LIKE %s)`, s, v)
+		// Last argument should be the 2nd operand
+		s := g.argList[len(g.argList)-1].(string)
+		s += "%"
+		g.argList[len(g.argList)-1] = s
+		sql = fmt.Sprintf(`(%s LIKE %s)`, operands[0], operands[1])
 	case OpEndsWith:
 		// SQL supports this with a LIKE operation
-		s := operands[0]
-		v := operands[1]
-		v = "%" + v
-		sql = fmt.Sprintf(`(%s LIKE %s)`, s, v)
+		s := g.argList[len(g.argList)-1].(string)
+		s = "%" + s
+		g.argList[len(g.argList)-1] = s
+		sql = fmt.Sprintf(`(%s LIKE %s)`, operands[0], operands[1])
 	case OpContains:
 		// SQL supports this with a LIKE operation
-		s := operands[0]
-		v := operands[1]
-		v = "%" + v + "%"
-		sql = fmt.Sprintf(`(%s LIKE %s)`, s, v)
-
+		s := g.argList[len(g.argList)-1].(string)
+		s = "%" + s + "%"
+		g.argList[len(g.argList)-1] = s
+		sql = fmt.Sprintf(`(%s LIKE %s)`, operands[0], operands[1])
 	case OpDateAddSeconds:
 		// Modifying a datetime in the query
 		// Only works on date, datetime and timestamps. Not times.

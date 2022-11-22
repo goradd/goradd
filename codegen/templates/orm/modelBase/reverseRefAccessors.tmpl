@@ -1,7 +1,9 @@
-//reverseRefAccessors.tmpl
+//*** reverseRefAccessors.tmpl
+
 for _,ref := range t.ReverseReferences {
 	associatedGoName := ref.AssociatedGoName()
 	oName := oRef(ref)
+	assocColIsPk := ref.AssociatedColumn.IsPk
 
 	if ref.IsUnique() {
 {{
@@ -19,7 +21,11 @@ func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.GoType}} {
 // Otherwise, it will load a new one and return it.
 func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.GoType}} {
 	if o.{{oName}} == nil {
+{{if assocColIsPk }}
+		o.{{oName}} = Load{{ref.GoType}}(ctx, o.{{= t.PrimaryKeyColumn().GoName }}())
+{{else}}
 		o.{{oName}} = Load{{ref.GoType}}By{{= associatedGoName }}(ctx, o.{{= t.PrimaryKeyColumn().GoName }}())
+{{if}}
 	}
 	return o.{{oName}}
 }
