@@ -135,7 +135,7 @@ func SendBadRequestMessage(message string) {
 }
 
 // SendJsonAuthenticateError sends a WWW-Authenticate error encoding the values into
-// both the WWW-Authenticate and as a json response
+// both the WWW-Authenticate header and as a json response
 func SendJsonAuthenticateError(errCode int, authScheme string, values map[string]string) {
 	e := Error{ErrCode: errCode}
 	e.SetAuthenticateError(authScheme, values)
