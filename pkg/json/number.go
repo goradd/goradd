@@ -10,6 +10,8 @@ import (
 // know you are expecting an integer. Can convert strings too.
 func NumberInt(i interface{}) int {
 	switch n := i.(type) {
+	case float64:
+		return int(n)
 	case json.Number:
 		v, _ := n.Int64()
 		return int(v)
@@ -25,6 +27,8 @@ func NumberInt(i interface{}) int {
 // know you are expecting a float. Can convert strings too.
 func NumberFloat(i interface{}) float64 {
 	switch n := i.(type) {
+	case float64:
+		return n
 	case json.Number:
 		v, _ := n.Float64()
 		return v
@@ -41,8 +45,7 @@ func NumberFloat(i interface{}) float64 {
 func NumberString(i interface{}) string {
 	switch n := i.(type) {
 	case json.Number:
-		v := n.String()
-		return v
+		return n.String()
 	case string:
 		return n
 	}
