@@ -9,7 +9,10 @@ func (f *{{= formName }}) LoadControls(ctx context.Context) {
 
     id := session.GetString(ctx, "{{= t.LcGoName }}DetailID")
 
-    if id != "" {
+    if id == "" {
+        // This is a programming error. Perhaps you inadvertently deleted the "{{= t.LcGoName }}DetailID" session variable?
+    	panic("session variable not found")
+    } else {
  	    err := panel.Get{{= t.GoName }}DetailPanel(f, {{= title }}DetailPanelID).Load(ctx, {{= t.PrimaryKeyColumn().ConvertFromString("id") }})
  	    if err == nil {
             f.Page().SetTitle(f.T({{= title }}Singular))

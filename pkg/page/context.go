@@ -113,6 +113,7 @@ type AppContext struct {
 	eventID              event.EventID                     // The event to send to the control
 	actionValues         action.RawActionValues
 	refreshIDs           []string
+	hasTimezoneInfo      bool
 	clientTimezoneOffset int
 	clientTimezone       string
 
@@ -290,6 +291,12 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				ctx.actionValues = params.Values
 				ctx.clientTimezoneOffset = params.TimezoneInfo.TimezoneOffset
 				ctx.clientTimezone = params.TimezoneInfo.Timezone
+				ctx.hasTimezoneInfo = true
+
+				// Save in a session for recovery when we have a session but do not have client info
+				session.SetInt(mainContext, goradd.SessionTimezoneOffset, params.TimezoneInfo.TimezoneOffset)
+				session.SetString(mainContext, goradd.SessionTimezone, params.TimezoneInfo.Timezone)
+
 				if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); !ok {
 					ctx.err = fmt.Errorf("no pagestate found in response")
 					return
@@ -303,6 +310,7 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 			// Allows REST clients to also support the timezone offset in the context
 			if offset, err2 := strconv.Atoi(apistate); err2 == nil {
 				ctx.clientTimezoneOffset = offset
+				ctx.hasTimezoneInfo = true
 			}
 		} else {
 			// Scenarios where we are not posting the form
@@ -313,6 +321,13 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 			} else {
 				// A new call to our web page
 				ctx.requestMode = Http
+
+				// Recover client timezone if it was saved earlier
+				if session.Has(mainContext, goradd.SessionTimezoneOffset) {
+					ctx.hasTimezoneInfo = true
+					ctx.clientTimezoneOffset = session.GetInt(mainContext, goradd.SessionTimezoneOffset)
+					ctx.clientTimezone = session.GetString(mainContext, goradd.SessionTimezone)
+				}
 			}
 		}
 	} else {
@@ -334,6 +349,11 @@ func (ctx *Context) ClientTimezoneOffset() int {
 // ClientTimezone returns the name of the timezone of the client, if available.
 func (ctx *Context) ClientTimezone() string {
 	return ctx.clientTimezone
+}
+
+// HasTimezoneInfo returns true if timezone info is valid.
+func (ctx *Context) HasTimezoneInfo() bool {
+	return ctx.hasTimezoneInfo
 }
 
 // GetContext returns the page context from the GO context.

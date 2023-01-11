@@ -1,4 +1,4 @@
-// Package auth provides a default authentication framework based on user name and password.
+// Package auth provides on possible authentication framework based on username and password.
 // To use it, call RegisterAuthenticationService and pass it a structure that will handle the various
 // routines for authentication.
 //
@@ -10,6 +10,11 @@
 // to use json, but its up to you to do the encoding and decoding on either end.
 //
 // See the AuthI interface for details on what each message type should accomplish.
+//
+// This authentication system can be used to implement a token authorization flow, which is not the recommended way of doing
+// authorization in apps, but is an acceptable way of doing it. It requires a client that can store cookies.
+// The primary problem with this flow is that the client must gather that username and password, which can be
+// problematic for mobile app clients since they must be very careful to not locally store the password accidentally.
 package auth
 
 import (

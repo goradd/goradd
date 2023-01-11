@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	time2 "github.com/goradd/goradd/pkg/time"
 	"html"
 	"io"
 	"strconv"
@@ -124,12 +125,16 @@ type ColumnBase struct {
 	cellStylerID        string     // for deserialization
 	isHidden            bool
 	sortDirection       SortDirection
-	// Format is a format string. It will be applied using fmt.Sprintf. If you don't provide a Format string, standard
+	// format is a format string. It will be applied using fmt.Sprintf. If you don't provide a Format string, standard
 	// string conversion operations will be used.
 	format string
-	// TimeFormat is applied to the data using time.Format. You can have both a Format and TimeFormat, and the Format
+	// timeFormat is applied to the data using time.Format. You can have both a Format and TimeFormat, and the Format
 	// will be applied using fmt.Sprintf after the TimeFormat is applied using time.Format.
 	timeFormat string
+	// tzOffset is a timezone offset in minutes from GMT to apply to time data before applying the timeFormat.
+	tzOffset int
+	// useTzOffset specifies whether to use the tzOffset value, or leave the time alone
+	useTzOffset bool
 }
 
 func (c *ColumnBase) Init(self ColumnI) {
@@ -216,6 +221,21 @@ func (c *ColumnBase) SetFormat(format string) ColumnI {
 // using the format string.
 func (c *ColumnBase) SetTimeFormat(timeFormat string) ColumnI {
 	c.timeFormat = timeFormat
+	return c.this()
+}
+
+// SetTimezoneOffset specifies that time data should be converted to the given offset in minutes from GMT
+// before being displayed. See the page.ClientTimezoneOffset() function for getting the timezone offset
+// of the client.
+func (c *ColumnBase) SetTimezoneOffset(tzOffset int) ColumnI {
+	c.tzOffset = tzOffset
+	c.useTzOffset = true
+	return c.this()
+}
+
+// RemoveTimezoneOffset removes the timezone offset so that time data will not be adjusted before being displayed.
+func (c *ColumnBase) RemoveTimezoneOffset(tzOffset int) ColumnI {
+	c.useTzOffset = false
 	return c.this()
 }
 
@@ -490,6 +510,9 @@ type columnBaseEncoded struct {
 	HeaderTexter     interface{}
 	FooterTexter     interface{}
 	CellStyler       interface{}
+	Format           string
+	TimeFormat       string
+	TzOffset         interface{}
 }
 
 func (c *ColumnBase) Serialize(e page.Encoder) {
@@ -509,6 +532,8 @@ func (c *ColumnBase) Serialize(e page.Encoder) {
 		HeaderTexter:     c.headerTexter,
 		FooterTexter:     c.footerTexter,
 		CellStyler:       c.cellStyler,
+		Format:           c.format,
+		TimeFormat:       c.timeFormat,
 	}
 
 	if ctrl, ok := c.cellTexter.(page.ControlI); ok {
@@ -522,6 +547,9 @@ func (c *ColumnBase) Serialize(e page.Encoder) {
 	}
 	if ctrl, ok := c.cellStyler.(page.ControlI); ok {
 		s.CellStyler = ctrl.ID()
+	}
+	if c.useTzOffset {
+		s.TzOffset = c.tzOffset
 	}
 
 	if err := e.Encode(s); err != nil {
@@ -546,6 +574,8 @@ func (c *ColumnBase) Deserialize(dec page.Decoder) {
 	c.isHtml = s.IsHtml
 	c.isHidden = s.IsHidden
 	c.sortDirection = s.SortDirection
+	c.format = s.Format
+	c.timeFormat = s.TimeFormat
 
 	if s.CellTexter != nil {
 		if v, ok := s.CellTexter.(string); ok {
@@ -573,6 +603,12 @@ func (c *ColumnBase) Deserialize(dec page.Decoder) {
 			c.cellStylerID = v
 		} else {
 			c.cellStyler = s.CellStyler.(CellStyler)
+		}
+	}
+	if s.TzOffset != nil {
+		if v, ok := s.TzOffset.(int); ok {
+			c.tzOffset = v
+			c.useTzOffset = true
 		}
 	}
 }
@@ -623,18 +659,21 @@ type ColumnOptions struct {
 	AsHeader bool
 	// IsHtml will cause the text of the cells to NOT be escaped
 	IsHtml bool
-	// HeaderTexter is an object that will provide the text of the header cells. This can be either an
-	// object that you have set up prior, or a string id of a control
+	// HeaderTexter is an object that will provide the text of the header cells.
+	// This can be either an object that you have set up prior, or a string id of a control.
 	HeaderTexter interface{}
-	// FooterTexter is an object that will provide the text of the footer cells. This can be either an
-	// object that you have set up prior, or a string id of a control
+	// FooterTexter is an object that will provide the text of the footer cells.
+	// This can be either an object that you have set up prior, or a string id of a control.
 	FooterTexter interface{}
-	// IsHidden will start the column out in a hidden state so that it will not initially be drawn
+	// IsHidden will start the column out in a hidden state so that it will not initially be drawn.
 	IsHidden bool
-	// Format is a format string applied to the data using fmt.Sprintf
+	// Format is a format string applied to the data using fmt.Sprintf.
 	Format string
-	// TimeFormat is a format string applied specifically to time data using time.Format
+	// TimeFormat is a format string applied specifically to time data using time.Format.
 	TimeFormat string
+	// TimezoneOffset is an offset in minutes from GMT that represents the timezone that time data will be converted to
+	// before being displayed. Specify an integer, or do not specify to leave the time alone.
+	TimezoneOffset interface{}
 }
 
 func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt ColumnOptions) {
@@ -687,6 +726,13 @@ func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt Column
 	if opt.TimeFormat != "" {
 		c.SetTimeFormat(opt.TimeFormat)
 	}
+	if opt.TimezoneOffset != nil {
+		if v, ok := opt.TimezoneOffset.(int); !ok {
+			panic("TimezoneOffset must be an int")
+		} else {
+			c.SetTimezoneOffset(v)
+		}
+	}
 }
 
 // ApplyFormat is used by table columns to apply the given fmt.Sprintf and time.Format strings to the data.
@@ -715,11 +761,15 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 		}
 
 	case time.Time:
+		t := d
+		if c.useTzOffset {
+			t = time2.AtGMTOffset(t, c.tzOffset)
+		}
 		timeFormat := c.timeFormat
 		if timeFormat == "" {
 			timeFormat = config.DefaultDateTimeFormat
 		}
-		out = d.Format(timeFormat)
+		out = t.Format(timeFormat)
 
 		if c.format != "" {
 			out = fmt.Sprintf(c.format, out)

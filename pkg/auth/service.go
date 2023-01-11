@@ -8,7 +8,7 @@ import (
 var authService AuthI
 
 // AuthI describes the interface for the authorization service you should implement. Note that rate limiting and
-// general hacker protection has already been done for you. The msg parameter below is the decoded json sent
+// general hacker protection have already been done for you. The msg parameter below is the decoded json sent
 // by the client, and that you can use for your own needs.
 type AuthI interface {
 	// NewUser should create a new user in your database with credentials specified in the message.
