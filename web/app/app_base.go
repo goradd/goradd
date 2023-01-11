@@ -178,14 +178,14 @@ func (a *Application) MakeAppServer() http.Handler {
 	h = a.this().ServeAppMux(h)  // Serves other dynamic files, and possibly the api
 	h = a.ServePageHandler(h)    // Serves the Goradd dynamic pages
 	h = a.PutAppContextHandler(h)
-	h = a.this().PutDbContextHandler(h)
 	h = a.this().SessionHandler(h)
 	h = a.BufferedOutputHandler(h) // Must be in front of the session handler
 	h = a.StatsHandler(h)
 	h = a.this().ServePatternMux(h) // Serves most static files and websocket requests.
 	// Must be after the error handler so panics are intercepted by the error reporter
 	// and must be in front of the buffered output handler because of websocket server
-	h = a.httpErrorReporter.Use(h) // Default http error handler to intercept panics.
+	h = a.this().PutDbContextHandler(h) // This is here so that the PatternMux handlers can use the ORM
+	h = a.httpErrorReporter.Use(h)      // Default http error handler to intercept panics.
 	h = a.this().HSTSHandler(h)
 	h = a.this().AccessLogHandler(h)
 
