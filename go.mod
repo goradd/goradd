@@ -16,7 +16,7 @@ require (
 	github.com/shurcooL/github_flavored_markdown v0.0.0-20210228213109-c3a9aa474629
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/text v0.3.8
+	golang.org/x/text v0.7.0
 )
 
 require (
@@ -40,7 +40,7 @@ require (
 	github.com/sourcegraph/syntaxhighlight v0.0.0-20170531221838-bd320f5d308e // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
-	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
+	golang.org/x/net v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
