@@ -29,16 +29,16 @@ jobs:
         go-version: 1.20
 
     - name: Install goradd
-      working-directory: $GITHUB_WORKSPACE/goradd-src
+      working-directory: ./goradd-src
       run: go install
 
     - name: Install goradd-project
-      working-directory: ${{ github.workspace }}
+      working-directory: .
       run: |
         goradd install
 
     - name: Unit test packages
-      working-directory: ${{ github.workspace }}/goradd-project
+      working-directory: ./goradd-project
       run: go test github.com/goradd/goradd/pkg/...
 
     - name: Start MariaDB
@@ -56,12 +56,12 @@ jobs:
         mysql -u${{ env.ROOT_DB_USER }} -e 'source ./goradd-src/internal/ci/db/mysql.goradd_unit.sql;' goradd_unit
 
     - name: Setup MariaDB Init file
-      working-directory: ${{ github.workspace }}/goradd-project/config
+      working-directory: ./goradd-project/config
       run: |
         cp ${{ github.workspace }}/goradd-src/internal/ci/goradd-test/config/initMysql.go ./db.go
 
     - name: Install goradd-test
-      working-directory: ${{ github.workspace }}
+      working-directory: .
       run: |
         cp ${{ github.workspace }}/goradd-src/internal/ci/go.work .
         cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
@@ -69,15 +69,15 @@ jobs:
         go mod tidy
 
     - name: Codegen
-      working-directory: ${{ github.workspace }}/goradd-test/codegen
+      working-directory: ./goradd-test/codegen
       run: go generate build.go
 
     - name: Unit Test Database
-      working-directory: ${{ github.workspace }}/goradd-test/dbtest
+      working-directory: ./goradd-test/dbtest
       run: go test
 
     - name: Browser Based Test
-      working-directory: ${{ github.workspace }}/goradd-test
+      working-directory: ./goradd-test
       run: go test
 
 
