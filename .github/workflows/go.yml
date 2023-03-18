@@ -29,7 +29,7 @@ jobs:
         go-version: 1.20
 
     - name: Install goradd
-      working-directory: ${{ GITHUB_WORKSPACE }}/goradd-src
+      working-directory: $GITHUB_WORKSPACE/goradd-src
       run: go install
 
     - name: Install goradd-project
