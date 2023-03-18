@@ -392,12 +392,13 @@ func ConvertToBool(v interface{}) bool {
 
 // NewMockContext creates a context for testing.
 func NewMockContext() (ctx context.Context) {
-	r := httptest.NewRequest("", "/", nil)
-	r = PutContext(r, nil)
 	s := session.NewMock()
 	session.SetSessionManager(s)
+	r := httptest.NewRequest("", "/", nil)
 	ctx = s.With(r.Context())
-	return
+	r = r.WithContext(ctx)
+	r = PutContext(r, nil)
+	return r.Context()
 }
 
 // OutputLen returns the number of bytes that have been written to the output.
