@@ -38,7 +38,7 @@ jobs:
         goradd install
 
     - name: Unit test packages
-      working-directory: ./goradd-project
+      working-directory: ./goradd-src
       run: go test github.com/goradd/goradd/pkg/...
 
     - name: Start MariaDB
