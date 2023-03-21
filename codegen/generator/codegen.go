@@ -93,8 +93,11 @@ func Generate() {
 		databases = []db.DatabaseI{db.GetDatabase("goradd")}
 	}
 
-	// StdMap object names to tables, making sure there are no duplicates
+	// map object names to tables, making sure there are no duplicates
 	for _, database := range databases {
+		if database.Model() == nil {
+			panic("Missing model. Did you forget to call Analyze on the database?")
+		}
 		key := database.Model().DbKey
 		codegen.Tables[key] = make(map[string]TableType)
 		codegen.TypeTables[key] = make(map[string]TypeTableType)

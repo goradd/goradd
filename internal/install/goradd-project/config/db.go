@@ -119,6 +119,8 @@ func addMyDatabase() {
 	}
 
 	db1 := mysql2.NewDB(key, "", cfg)
+	opt := mysql2.DefaultOptions()
+	db1.Analyze(opt)
 
 	if !config.Release {
 		db1.StartProfiling()
