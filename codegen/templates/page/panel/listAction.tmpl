@@ -8,9 +8,11 @@ func (p *{{= panelName }}) DoAction(ctx context.Context, a action.Params) {
 	case {{= lcPanelName }}RowClick: // edit
 		id := a.ActionValueString()
 	    if id != "" {
-			p.ZoomItem(ctx, id)
-			// Change the above to the below to edit on clicking the whole row, rather than clicking the edit column
-			// p.EditItem(ctx, id)
+	        if {{= t.LcGoName}}ListTapZoom {
+                p.ZoomItem(ctx, id)
+            } else {
+                p.EditItem(ctx, id)
+            }
 	    }
 	case {{= lcPanelName }}NewClick: // new
 		p.EditItem(ctx, "")
@@ -26,8 +28,11 @@ func (p *{{= panelName }}) DoAction(ctx context.Context, a action.Params) {
 //
 // pk is the primary key of the database object to edit
 func (p *{{= panelName }}) EditItem(ctx context.Context, pk string) {
-    p.EditItemWithForm(ctx, pk)
-    //p.EditItemWithDialog(ctx, pk)
+	if {{= t.LcGoName }}ListEditWithDialog {
+		p.EditItemWithDialog(ctx, pk)
+	} else {
+		p.EditItemWithForm(ctx, pk)
+	}
 }
 
 // EditItemWithForm will go to the corresponding edit form to edit the item

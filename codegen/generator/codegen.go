@@ -178,7 +178,7 @@ func Generate() {
 		for _, tableKey := range stringmap.SortedKeys(codegen.Tables[dbKey]) {
 			table := codegen.Tables[dbKey][tableKey]
 			if table.PrimaryKeyColumn() == nil {
-				log.Println("Skipping table " + table.DbName + " since it has no primary key column")
+				log.Println("*** Skipping table " + table.DbName + " since it has no primary key column")
 				continue
 			}
 			for _, tableTemplate := range TableTemplates {

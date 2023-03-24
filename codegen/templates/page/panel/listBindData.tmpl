@@ -23,13 +23,16 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataMa
 }
 
 func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
-    filterText := textbox.GetTextboxI(p, p.ID() + "-filterText").Text()
 	q := model.Query{{= t.GoPlural }}(ctx)
-	q = q.Where(op.Or(
+	if {{= t.LcGoName }}ListShowFilterBar {
+        filterText := textbox.GetTextboxI(p, p.ID() + "-filterText").Text()
+
+	    q = q.Where(op.Or(
 {{for _,col := range t.Columns }}
     		op.StartsWith(node.{{= t.GoName }}().{{= col.GoName }}(), filterText),
 {{for}}
     	))
+    }
 	return q
 }
 
