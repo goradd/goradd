@@ -24,6 +24,16 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataMa
 
 func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
 	q := model.Query{{= t.GoPlural }}(ctx)
+{{if forwardJoins != nil}}
+    // Joins for display of related objects. The default joins just forward references.
+    // If you need reverse or many-many references, add those here.
+    // You can also optimize your query by removing forward references that are not
+    // being used in the query or display of the list.
+{{for _,col := range forwardJoins }}
+    q.Join(node.{{= t.GoName }}().{{= col.ForeignKey.GoName }}())
+{{for}}
+{{if}}
+
 	if {{= t.LcGoName }}ListShowFilterBar {
         filterText := textbox.GetTextboxI(p, p.ID() + "-filterText").Text()
 
