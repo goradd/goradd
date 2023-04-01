@@ -274,6 +274,7 @@ func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) {
 func (f *FormBase) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := f.ControlBase.DrawingAttributes(ctx)
 	a.SetData("grctl", "form")
+	a.Set("novalidate", "") // form validation is inconsistent on browsers and causes framework problems
 	return a
 }
 

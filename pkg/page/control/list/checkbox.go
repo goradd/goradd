@@ -169,8 +169,14 @@ func (l *CheckboxList) UpdateFormValues(ctx context.Context) {
 
 	if grctx.RequestMode() == page.Server {
 		// Using name attribute to return rendered checkboxes that are turned on.
-		if v, ok := grctx.FormValues(controlID); ok {
-			l.SetSelectedValuesNoRefresh(v)
+		v, _ := grctx.FormValues(controlID)
+		l.SetSelectedValuesNoRefresh(v)
+	} else {
+		// Individual checkbox ids are recorded in the form values
+		for _, item := range l.Items() {
+			if v, ok := grctx.FormValue(item.ID()); ok {
+				l.SetSelectedValueNoRefresh(item.Value(), v == "true")
+			}
 		}
 	}
 }

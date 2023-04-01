@@ -131,9 +131,14 @@ func (l *MultiselectList) SetSelectedValueNoRefresh(value string, on bool) {
 	}
 }
 
-// Value implements the Valuer interface for general purpose value getting and setting
+// Value implements the Valuer interface for general purpose value getting and setting.
 func (l *MultiselectList) Value() interface{} {
 	return l.SelectedValues()
+}
+
+// ValueString returns the values as a comma-delimited string.
+func (l *MultiselectList) ValueString() string {
+	return strings.Join(l.SelectedValues(), ",")
 }
 
 // SetValue implements the Valuer interface for general purpose value getting and setting
@@ -246,9 +251,6 @@ func (l *MultiselectList) DrawingAttributes(ctx context.Context) html5tag.Attrib
 	a.SetData("grctl", "multilist")
 	a.Set("name", l.ID()) // needed for posts
 	a.Set("multiple", "")
-	if l.IsRequired() {
-		a.Set("required", "")
-	}
 	return a
 }
 

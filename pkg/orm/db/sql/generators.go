@@ -120,7 +120,7 @@ func (g *selectGenerator) generateNodeSql(n NodeI, useAlias bool) (sql string) {
 		return g.generateOperationSql(node, useAlias)
 	case *ColumnNode:
 		item := g.b.GetItemFromNode(node)
-		if useAlias {
+		if useAlias && item.Alias != "" {
 			sql = g.generateAlias(item.Alias)
 		} else {
 			sql = g.generateColumnNodeSql(item.Parent.Alias, node)
