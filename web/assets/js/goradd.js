@@ -2379,7 +2379,7 @@ var g$ = function(el) {
         },
         /**
          * columnId is a convenience method to find the column id that the current object resides in.
-         * This is specifically from within a goradd Table object, since it marks header rows with the id of the column.
+         * This is specifically from within a goradd Table object, since it marks the colgroup with the column ids.
          */
         columnId: function () {
             var idx;
