@@ -2,6 +2,8 @@ package button
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/page/action"
+	"github.com/goradd/goradd/pkg/page/event"
 
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/html5tag"
@@ -51,6 +53,9 @@ type CheckboxCreator struct {
 	LabelAttributes html5tag.Attributes
 	// SaveState will save the value of the checkbox and restore it when the page is reentered.
 	SaveState bool
+	// OnChange is an action to take when the user checks or unchecks the control.
+	OnChange action.ActionI
+
 	page.ControlOptions
 }
 
@@ -71,6 +76,10 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	if c.SaveState {
 		ctrl.SaveState(ctx, c.SaveState)
+	}
+
+	if c.OnChange != nil {
+		ctrl.On(event.Change(), c.OnChange)
 	}
 	return ctrl
 }
