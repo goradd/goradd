@@ -9,7 +9,7 @@ import (
 )
 
 type DataBinder interface {
-	// A DataBinder must be a control so that we can serialize it
+	// ID of the DataBinder. A DataBinder must be a control so that we can serialize it.
 	ID() string
 	// BindData is called by the data manager to get the data for the control during draw time
 	BindData(ctx context.Context, s DataManagerI)
