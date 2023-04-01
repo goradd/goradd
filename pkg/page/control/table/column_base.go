@@ -337,12 +337,13 @@ func (c *ColumnBase) ColTagAttributes() html5tag.Attributes {
 	return c.colTagAttributes
 }
 
-// DrawColumnTag draws the column tag if one was requested.
+// DrawColumnTag draws the column tag in the colgroup.
 func (c *ColumnBase) DrawColumnTag(ctx context.Context, w io.Writer) {
 	if c.isHidden {
 		return
 	}
 	a := c.this().ColTagAttributes()
+	a.SetID(c.parentTable.ID() + "-" + c.ID())
 	if c.span > 1 {
 		a.Set("span", strconv.Itoa(c.span))
 	}
