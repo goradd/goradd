@@ -220,11 +220,18 @@ func (o *personWithLockBase) IsNew() bool {
 	return !o._restored
 }
 
-// Load returns a PersonWithLock from the database.
+// LoadPersonWithLock returns a PersonWithLock from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadPersonWithLock(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
 	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// HasPersonWithLock returns true if a PersonWithLock with the give key exists database.
+func HasPersonWithLock(ctx context.Context, primaryKey string) bool {
+	q := queryPersonWithLocks(ctx)
+	q = q.Where(Equal(node.PersonWithLock().ID(), primaryKey))
+	return q.Count(false) == 1
 }
 
 // The PersonWithLocksBuilder uses the QueryBuilderI interface from the database to build a query.

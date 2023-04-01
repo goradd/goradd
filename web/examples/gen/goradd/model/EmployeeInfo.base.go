@@ -27,7 +27,7 @@ type employeeInfoBase struct {
 	personID        string
 	personIDIsValid bool
 	personIDIsDirty bool
-	oPersonID       *Person
+	oPerson         *Person
 
 	employeeNumber        int
 	employeeNumberIsValid bool
@@ -112,7 +112,7 @@ func (o *employeeInfoBase) PersonIDIsValid() bool {
 
 // Person returns the current value of the loaded Person, and nil if its not loaded.
 func (o *employeeInfoBase) Person() *Person {
-	return o.oPersonID
+	return o.oPerson
 }
 
 // LoadPerson returns the related Person. If it is not already loaded,
@@ -122,11 +122,11 @@ func (o *employeeInfoBase) LoadPerson(ctx context.Context) *Person {
 		return nil
 	}
 
-	if o.oPersonID == nil {
+	if o.oPerson == nil {
 		// Load and cache
-		o.oPersonID = LoadPerson(ctx, o.PersonID())
+		o.oPerson = LoadPerson(ctx, o.PersonID())
 	}
-	return o.oPersonID
+	return o.oPerson
 }
 
 // SetPersonID sets the value of PersonID in the object, to be saved later using the Save() function.
@@ -135,7 +135,7 @@ func (o *employeeInfoBase) SetPersonID(v string) {
 	if o.personID != v || !o._restored {
 		o.personID = v
 		o.personIDIsDirty = true
-		o.oPersonID = nil
+		o.oPerson = nil
 	}
 
 }
@@ -145,7 +145,7 @@ func (o *employeeInfoBase) SetPerson(v *Person) {
 	if v == nil {
 		panic("Cannot set Person to a null value.")
 	} else {
-		o.oPersonID = v
+		o.oPerson = v
 		o.personIDIsValid = true
 		if o.personID != v.PrimaryKey() {
 			o.personID = v.PrimaryKey()
@@ -192,11 +192,18 @@ func (o *employeeInfoBase) IsNew() bool {
 	return !o._restored
 }
 
-// Load returns a EmployeeInfo from the database.
+// LoadEmployeeInfo returns a EmployeeInfo from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadEmployeeInfo(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *EmployeeInfo {
 	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// HasEmployeeInfo returns true if a EmployeeInfo with the give key exists database.
+func HasEmployeeInfo(ctx context.Context, primaryKey string) bool {
+	q := queryEmployeeInfos(ctx)
+	q = q.Where(Equal(node.EmployeeInfo().ID(), primaryKey))
+	return q.Count(false) == 1
 }
 
 // LoadEmployeeInfoByPersonID queries for a single EmployeeInfo object by the given unique index values.
@@ -463,16 +470,16 @@ func (o *employeeInfoBase) load(m map[string]interface{}, objThis *EmployeeInfo,
 	}
 
 	if v, ok := m["Person"]; ok {
-		if oPersonID, ok2 := v.(map[string]interface{}); ok2 {
-			o.oPersonID = new(Person)
-			o.oPersonID.load(oPersonID, o.oPersonID, objThis, "EmployeeInfos")
+		if oPerson, ok2 := v.(map[string]interface{}); ok2 {
+			o.oPerson = new(Person)
+			o.oPerson.load(oPerson, o.oPerson, objThis, "EmployeeInfos")
 			o.personIDIsValid = true
 			o.personIDIsDirty = false
 		} else {
-			panic("Wrong type found for oPersonID object.")
+			panic("Wrong type found for oPerson object.")
 		}
 	} else {
-		o.oPersonID = nil
+		o.oPerson = nil
 	}
 
 	if v, ok := m["employee_number"]; ok && v != nil {
@@ -509,9 +516,9 @@ func (o *employeeInfoBase) update(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		if o.oPersonID != nil {
-			o.oPersonID.Save(ctx)
-			id := o.oPersonID.PrimaryKey()
+		if o.oPerson != nil {
+			o.oPerson.Save(ctx)
+			id := o.oPerson.PrimaryKey()
 			o.SetPersonID(id)
 		}
 
@@ -535,9 +542,9 @@ func (o *employeeInfoBase) update(ctx context.Context) {
 func (o *employeeInfoBase) insert(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
-		if o.oPersonID != nil {
-			o.oPersonID.Save(ctx)
-			o.SetPerson(o.oPersonID)
+		if o.oPerson != nil {
+			o.oPerson.Save(ctx)
+			o.SetPerson(o.oPerson)
 		}
 
 		if !o.personIDIsValid {
@@ -622,7 +629,7 @@ func (o *employeeInfoBase) resetDirtyStatus() {
 func (o *employeeInfoBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.personIDIsDirty ||
-		(o.oPersonID != nil && o.oPersonID.IsDirty()) ||
+		(o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.employeeNumberIsDirty
 
 }
@@ -686,7 +693,7 @@ func (o *employeeInfoBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if o.oPersonID == nil {
+	if o.oPerson == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
 		}
@@ -694,7 +701,7 @@ func (o *employeeInfoBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(true); err != nil {
 			return nil, err
 		}
-		if err := encoder.Encode(o.oPersonID); err != nil {
+		if err := encoder.Encode(o.oPerson); err != nil {
 			return nil, err
 		}
 	}
@@ -763,7 +770,7 @@ func (o *employeeInfoBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
-		if err = dec.Decode(&o.oPersonID); err != nil {
+		if err = dec.Decode(&o.oPerson); err != nil {
 			return
 		}
 	}

@@ -16,7 +16,7 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataMa
 
         // Here we get sort columns from the table.
         // Alternatively, use table nodes to set the sort order.
-        builder.OrderBy(column.MakeNodeSlice(t.SortColumns()))
+        builder.OrderBy(column.MakeNodeSlice(t.SortColumns())...)
 
         // Limit the results to what is visible in the table
         builder.Limit(t.SqlLimits())

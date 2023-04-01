@@ -134,11 +134,18 @@ func (o *giftBase) IsNew() bool {
 	return !o._restored
 }
 
-// Load returns a Gift from the database.
+// LoadGift returns a Gift from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadGift(ctx context.Context, primaryKey int, joinOrSelectNodes ...query.NodeI) *Gift {
 	return queryGifts(ctx).Where(Equal(node.Gift().Number(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// HasGift returns true if a Gift with the give key exists database.
+func HasGift(ctx context.Context, primaryKey int) bool {
+	q := queryGifts(ctx)
+	q = q.Where(Equal(node.Gift().Number(), primaryKey))
+	return q.Count(false) == 1
 }
 
 // The GiftsBuilder uses the QueryBuilderI interface from the database to build a query.

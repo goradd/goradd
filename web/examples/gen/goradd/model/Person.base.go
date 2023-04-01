@@ -431,11 +431,18 @@ func (o *personBase) SetProjectsAsManager(objs []*Project) {
 	o.oProjectsAsManagerIsDirty = true
 }
 
-// Load returns a Person from the database.
+// LoadPerson returns a Person from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadPerson(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Person {
 	return queryPeople(ctx).Where(Equal(node.Person().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// HasPerson returns true if a Person with the give key exists database.
+func HasPerson(ctx context.Context, primaryKey string) bool {
+	q := queryPeople(ctx)
+	q = q.Where(Equal(node.Person().ID(), primaryKey))
+	return q.Count(false) == 1
 }
 
 // The PeopleBuilder uses the QueryBuilderI interface from the database to build a query.
