@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/html5tag"
@@ -52,10 +53,12 @@ type SelectListCreator struct {
 	DataProviderID string
 	// Size specifies how many items to show, and turns the list into a scrolling list
 	Size int
-	// Value is the initial value of the textbox. Often its best to load the value in a separate Load step after creating the control.
+	// Value is the initial value of the select. Often its best to load the value in a separate Load step after creating the control.
 	Value string
 	// SaveState saves the selected value so that it is restored if the form is returned to.
 	SaveState bool
+	// OnChange is an action to take when the user changes what is selected (as in, when the javascript change event fires).
+	OnChange action.ActionI
 	page.ControlOptions
 }
 
@@ -72,10 +75,12 @@ func (c SelectListCreator) Init(ctx context.Context, ctrl SelectListI) {
 		Items:          c.Items,
 		NilItem:        c.NilItem,
 		DataProvider:   c.DataProvider,
+		DataProviderID: c.DataProviderID,
 		Size:           c.Size,
 		Value:          c.Value,
 		SaveState:      c.SaveState,
 		ControlOptions: c.ControlOptions,
+		OnChange:       c.OnChange,
 	}
 	sub.Init(ctx, ctrl)
 }
