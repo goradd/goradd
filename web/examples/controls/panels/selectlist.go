@@ -10,7 +10,6 @@ import (
 	"github.com/goradd/goradd/pkg/url"
 	"github.com/goradd/goradd/test/browsertest"
 	"github.com/goradd/html5tag"
-	"strings"
 )
 
 type SelectListPanel struct {
@@ -126,7 +125,8 @@ func (p *SelectListPanel) DoAction(ctx context.Context, a action.Params) {
 	case ButtonSubmit:
 		checklist1 := list.GetCheckboxList(p, "checklist1")
 		checklistWrapper := GetFormFieldWrapper(p, "checklist1-ff")
-		checklistWrapper.SetInstructions(strings.Join(checklist1.SelectedIds(), ","))
+		values := checklist1.ValueString()
+		checklistWrapper.SetInstructions(values)
 	}
 }
 
@@ -172,6 +172,7 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.CheckGroup("radioList1", "3")
 	t.CheckGroup("radioList2", "4")
 	t.ChooseListValues("multiselectList", "5")
+	t.SetCheckbox("checklist1_2", true)
 
 	t.Click(btnID)
 
@@ -183,6 +184,8 @@ func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 		v := list.GetMultiselectList(f, "multiselectList").Value().([]string)
 		t.AssertEqual("5", v[0])
 	})
+	t.AssertEqual("3", t.ControlInnerHtml("checklist1-ff_inst"))
+
 }
 
 /*

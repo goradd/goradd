@@ -174,7 +174,7 @@ func (l *SelectList) DrawingAttributes(ctx context.Context) html5tag.Attributes 
 	a.Set("name", l.ID()) // needed for posts
 	if l.IsRequired() {
 		a.Set("required", "") // required for some css frameworks, but browser validation is flaky.
-		// set the "novalidate" attribute on the form for server-side validation only.
+		// By default, we set the "novalidate" attribute on the form for server-side validation only.
 	}
 	return a
 }
