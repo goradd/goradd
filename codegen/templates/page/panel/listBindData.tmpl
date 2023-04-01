@@ -5,21 +5,26 @@
 // BindData determines what records will be displayed in the lister.
 // Override to change what records get displayed.
 func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
-    t := table.GetPagedTable(p, p.ID() + "-list")
-	if t.HasDataPagers() {
-		t.SetTotalItems(p.BuildQuery(ctx).Count(false))
-	}
+    switch s.ID() {
+    case p.ID() + "-list": // the table
+        t := table.GetPagedTable(p, p.ID() + "-list")
+        if t.HasDataPagers() {
+            t.SetTotalItems(p.BuildQuery(ctx).Count(false))
+        }
 
-	builder := p.BuildQuery(ctx)
+        builder := p.BuildQuery(ctx)
 
-	// Since we are asking the database to do the sort, we have to make a slice of nodes
-	sortNodes := column.MakeNodeSlice(t.SortColumns())
+        // Here we get sort columns from the table.
+        // Alternatively, use table nodes to set the sort order.
+        builder.OrderBy(column.MakeNodeSlice(t.SortColumns()))
 
-	d := builder.Limit(t.SqlLimits()).
-		OrderBy(sortNodes...).
-		Load()
+        // Limit the results to what is visible in the table
+        builder.Limit(t.SqlLimits())
 
-	s.SetData(d)
+        d := builder.Load()
+        s.SetData(d)
+
+    }
 }
 
 func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
