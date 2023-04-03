@@ -53,10 +53,10 @@ jobs:
           psql -d goradd -a -f './goradd-src/web/examples/db/pg.goradd.sql'
           psql -d goradd_unit -a -f './goradd-src/internal/ci/db/pg.goradd_unit.sql'
 
-      - name: Set up Go
+      - name: Set up Go ${{ matrix.go }}
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ matrix.os }}
+          go-version: ${{ matrix.go }}
 
       - name: Install goradd
         working-directory: ${{ github.workspace }}/goradd-src
