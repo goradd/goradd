@@ -5,7 +5,6 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 	"io"
 	"github.com/goradd/goradd/pkg/orm/db"
-    "strings"
 )
 
 func init() {
