@@ -57,6 +57,8 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
+          check-latest: true
+          cache-dependency-path: goradd-src/go.sum
 
       - name: Install goradd
         working-directory: ${{ github.workspace }}/goradd-src
