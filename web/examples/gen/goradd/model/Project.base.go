@@ -12,6 +12,7 @@ import (
 
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/op"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/stringmap"
@@ -651,6 +652,18 @@ func (o *projectBase) SetChildrenAsParent(objs []*Project) {
 	o.oChildrenAsParentIsDirty = true
 }
 
+// LoadChildrenAsParent loads the associated ChildAsParent objects.
+func (o *projectBase) LoadChildrenAsParent(ctx context.Context) {
+	o.oChildrenAsParent = QueryProjects(ctx).
+		Where(op.Equal(node.Project().ParentsAsChild(), o.PrimaryKey())).
+		Load()
+
+	o.mChildrenAsParent = map[string]*Project{}
+	for _, i := range o.oChildrenAsParent {
+		o.mChildrenAsParent[i.PrimaryKey()] = i
+	}
+}
+
 // ParentAsChild returns a single Project object by primary key, if one was loaded
 // otherwise, it will return nil.
 func (o *projectBase) ParentAsChild(pk string) *Project {
@@ -672,6 +685,18 @@ func (o *projectBase) SetParentsAsChild(objs []*Project) {
 	o.oParentsAsChildIsDirty = true
 }
 
+// LoadParentsAsChild loads the associated ParentAsChild objects.
+func (o *projectBase) LoadParentsAsChild(ctx context.Context) {
+	o.oParentsAsChild = QueryProjects(ctx).
+		Where(op.Equal(node.Project().ChildrenAsParent(), o.PrimaryKey())).
+		Load()
+
+	o.mParentsAsChild = map[string]*Project{}
+	for _, i := range o.oParentsAsChild {
+		o.mParentsAsChild[i.PrimaryKey()] = i
+	}
+}
+
 // TeamMember returns a single Person object by primary key, if one was loaded
 // otherwise, it will return nil.
 func (o *projectBase) TeamMember(pk string) *Person {
@@ -691,6 +716,18 @@ func (o *projectBase) TeamMembers() []*Person {
 func (o *projectBase) SetTeamMembers(objs []*Person) {
 	o.oTeamMembers = objs
 	o.oTeamMembersIsDirty = true
+}
+
+// LoadTeamMembers loads the associated TeamMember objects.
+func (o *projectBase) LoadTeamMembers(ctx context.Context) {
+	o.oTeamMembers = QueryPeople(ctx).
+		Where(op.Equal(node.Person().ProjectsAsTeamMember(), o.PrimaryKey())).
+		Load()
+
+	o.mTeamMembers = map[string]*Person{}
+	for _, i := range o.oTeamMembers {
+		o.mTeamMembers[i.PrimaryKey()] = i
+	}
 }
 
 // Milestone returns a single Milestone object by primary key, if one was loaded.

@@ -137,7 +137,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
     {{else}}
         {
             var pks []string
-            o.m{{= ref.GoPlural }} = make(map[string] *{{ref.AssociatedObjectName}})
+            o.m{{= ref.GoPlural }} = make(map[string] *{{ref.AssociatedObjectType}})
 
             for _,obj := range o.{{= oName }} {
                 obj.Save(ctx)
@@ -241,7 +241,7 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
 {{else}}
     {
         var pks []string
-        o.m{{= ref.GoPlural }} = make(map[string] *{{ref.AssociatedObjectName}})
+        o.m{{= ref.GoPlural }} = make(map[string] *{{ref.AssociatedObjectType}})
         for _,obj := range o.{{= oName }} {
             obj.Save(ctx)
             o.m{{= ref.GoPlural }}[obj.PrimaryKey()] = obj

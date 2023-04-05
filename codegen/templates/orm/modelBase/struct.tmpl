@@ -62,9 +62,9 @@ if len(t.ManyManyReferences) > 0 {
 
 for _,ref := range t.ManyManyReferences {
 {{
-	{{= objectPrefix }}{{ref.GoPlural}} []{{if !ref.IsTypeAssociation }}*{{if}}{{ref.AssociatedObjectName}}
+	{{= objectPrefix }}{{ref.GoPlural}} []{{if !ref.IsTypeAssociation }}*{{if}}{{ref.AssociatedObjectType}}
 {{if !ref.IsTypeAssociation }}
-	m{{= ref.GoPlural }} map[string] *{{ref.AssociatedObjectName}}					  // Objects by PK
+	m{{= ref.GoPlural }} map[string] *{{ref.AssociatedObjectType}}					  // Objects by PK
 {{if}}
     {{= objectPrefix }}{{ref.GoPlural}}IsDirty bool
 
