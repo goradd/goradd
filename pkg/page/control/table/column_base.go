@@ -131,10 +131,8 @@ type ColumnBase struct {
 	// timeFormat is applied to the data using time.Format. You can have both a Format and TimeFormat, and the Format
 	// will be applied using fmt.Sprintf after the TimeFormat is applied using time.Format.
 	timeFormat string
-	// tzOffset is a timezone offset in minutes from GMT to apply to time data before applying the timeFormat.
-	tzOffset int
-	// useTzOffset specifies whether to use the tzOffset value, or leave the time alone
-	useTzOffset bool
+	// showLocalTime will convert a time to client local time for display.
+	showLocalTime bool
 }
 
 func (c *ColumnBase) Init(self ColumnI) {
@@ -224,18 +222,9 @@ func (c *ColumnBase) SetTimeFormat(timeFormat string) ColumnI {
 	return c.this()
 }
 
-// SetTimezoneOffset specifies that time data should be converted to the given offset in minutes from GMT
-// before being displayed. See the page.ClientTimezoneOffset() function for getting the timezone offset
-// of the client.
-func (c *ColumnBase) SetTimezoneOffset(tzOffset int) ColumnI {
-	c.tzOffset = tzOffset
-	c.useTzOffset = true
-	return c.this()
-}
-
-// RemoveTimezoneOffset removes the timezone offset so that time data will not be adjusted before being displayed.
-func (c *ColumnBase) RemoveTimezoneOffset(tzOffset int) ColumnI {
-	c.useTzOffset = false
+// SetShowLocalTime will convert a time into client local time for display.
+func (c *ColumnBase) SetShowLocalTime(showLocalTime bool) ColumnI {
+	c.showLocalTime = showLocalTime
 	return c.this()
 }
 
@@ -421,6 +410,9 @@ func (c *ColumnBase) CellText(ctx context.Context, row int, col int, data interf
 		return c.cellTexter.CellText(ctx, c.this(), info)
 	}
 	d := c.this().CellData(ctx, row, col, data)
+	if t, ok := d.(time.Time); c.showLocalTime && ok {
+		d = time2.AtGMTOffset(t, page.GetContext(ctx).ClientTimezoneOffset())
+	}
 	return c.ApplyFormat(d)
 }
 
@@ -513,7 +505,7 @@ type columnBaseEncoded struct {
 	CellStyler       interface{}
 	Format           string
 	TimeFormat       string
-	TzOffset         interface{}
+	ShowLocalTime    bool
 }
 
 func (c *ColumnBase) Serialize(e page.Encoder) {
@@ -549,9 +541,7 @@ func (c *ColumnBase) Serialize(e page.Encoder) {
 	if ctrl, ok := c.cellStyler.(page.ControlI); ok {
 		s.CellStyler = ctrl.ID()
 	}
-	if c.useTzOffset {
-		s.TzOffset = c.tzOffset
-	}
+	s.ShowLocalTime = c.showLocalTime
 
 	if err := e.Encode(s); err != nil {
 		panic(err)
@@ -606,12 +596,7 @@ func (c *ColumnBase) Deserialize(dec page.Decoder) {
 			c.cellStyler = s.CellStyler.(CellStyler)
 		}
 	}
-	if s.TzOffset != nil {
-		if v, ok := s.TzOffset.(int); ok {
-			c.tzOffset = v
-			c.useTzOffset = true
-		}
-	}
+	c.showLocalTime = s.ShowLocalTime
 }
 
 func (c *ColumnBase) Restore(parentTable TableI) {
@@ -672,9 +657,8 @@ type ColumnOptions struct {
 	Format string
 	// TimeFormat is a format string applied specifically to time data using time.Format.
 	TimeFormat string
-	// TimezoneOffset is an offset in minutes from GMT that represents the timezone that time data will be converted to
-	// before being displayed. Specify an integer, or do not specify to leave the time alone.
-	TimezoneOffset interface{}
+	// ShowLocalTime will convert the time to the client's local time.
+	ShowLocalTime bool
 }
 
 func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt ColumnOptions) {
@@ -727,13 +711,7 @@ func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt Column
 	if opt.TimeFormat != "" {
 		c.SetTimeFormat(opt.TimeFormat)
 	}
-	if opt.TimezoneOffset != nil {
-		if v, ok := opt.TimezoneOffset.(int); !ok {
-			panic("TimezoneOffset must be an int")
-		} else {
-			c.SetTimezoneOffset(v)
-		}
-	}
+	c.SetShowLocalTime(opt.ShowLocalTime)
 }
 
 // ApplyFormat is used by table columns to apply the given fmt.Sprintf and time.Format strings to the data.
@@ -763,9 +741,6 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 
 	case time.Time:
 		t := d
-		if c.useTzOffset {
-			t = time2.AtGMTOffset(t, c.tzOffset)
-		}
 		timeFormat := c.timeFormat
 		if timeFormat == "" {
 			timeFormat = config.DefaultDateTimeFormat
