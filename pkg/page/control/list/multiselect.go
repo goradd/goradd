@@ -3,6 +3,7 @@ package list
 import (
 	"context"
 	control2 "github.com/goradd/goradd/pkg/page/control"
+	reflect2 "github.com/goradd/goradd/pkg/reflect"
 	"io"
 	"reflect"
 	"strconv"
@@ -165,7 +166,18 @@ func (l *MultiselectList) SetValue(v interface{}) {
 		}
 
 	default:
-		panic("Unknown id list type")
+		if v2, ok := v.(ItemIDer); ok {
+			l.selectedValues[v2.ID()] = true
+		} else if reflect2.IsSlice(v) {
+			items := reflect2.InterfaceSlice(v)
+			for _, item := range items {
+				if v2, ok := item.(ItemIDer); ok {
+					l.selectedValues[v2.ID()] = true
+				}
+			}
+		} else {
+			panic("Unknown id list type")
+		}
 	}
 }
 

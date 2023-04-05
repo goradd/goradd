@@ -12,12 +12,12 @@ import (
 	"github.com/goradd/goradd/pkg/page"
 )
 
-// IDer is an object that can embed a list.
+// IDer is an object that has an ID.
 type IDer interface {
 	ID() string
 }
 
-// IDSetter is an interface for an item that sets an id.
+// IDSetter is an interface for an item that sets an ID.
 type IDSetter interface {
 	SetID(id string)
 }
