@@ -11,6 +11,7 @@ import (
 
 	"github.com/goradd/goradd/pkg/orm/broadcast"
 	"github.com/goradd/goradd/pkg/orm/db"
+	"github.com/goradd/goradd/pkg/orm/op"
 	. "github.com/goradd/goradd/pkg/orm/op"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/stringmap"
@@ -218,6 +219,18 @@ func (o *personBase) ProjectsAsTeamMember() []*Project {
 func (o *personBase) SetProjectsAsTeamMember(objs []*Project) {
 	o.oProjectsAsTeamMember = objs
 	o.oProjectsAsTeamMemberIsDirty = true
+}
+
+// LoadProjectsAsTeamMember loads the associated ProjectAsTeamMember objects.
+func (o *personBase) LoadProjectsAsTeamMember(ctx context.Context) {
+	o.oProjectsAsTeamMember = QueryProjects(ctx).
+		Where(op.Equal(node.Project().TeamMembers(), o.PrimaryKey())).
+		Load()
+
+	o.mProjectsAsTeamMember = map[string]*Project{}
+	for _, i := range o.oProjectsAsTeamMember {
+		o.mProjectsAsTeamMember[i.PrimaryKey()] = i
+	}
 }
 
 // Address returns a single Address object by primary key, if one was loaded.
